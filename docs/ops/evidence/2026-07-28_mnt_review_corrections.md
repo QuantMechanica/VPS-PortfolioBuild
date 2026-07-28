@@ -379,3 +379,77 @@ Zusätzlich bestanden `python -m py_compile` für die geänderten Python-Quellen
 5. MNT-043/044 für Rebuild und rückwirkende Q05–Q07-Neubeurteilung ausführen.
 
 Keiner dieser Schritte wurde von diesem headless Codex-Lauf vorweggenommen.
+
+## Round 2 corrections — 2026-07-29
+
+Dieser Abschnitt korrigiert die Runde-1-Evidenz additiv; die damalige
+Ausführungshistorie wird nicht umgeschrieben.
+
+### Task-Matrix: BEFORE und vorgeschlagenes AFTER
+
+Die Spalte „Zielprincipal / LogonType“ in WP-B.2 beschrieb das vorgeschlagene
+AFTER, nicht den beobachteten Istzustand. Insbesondere waren AgyGovernor und
+WorkerDedupe **nicht bereits** SYSTEM-Tasks mit Session-Wrapper. Die
+`before/*.xml`-Exporte belegen für alle vier auth-/sessiongebundenen Lanes den
+Administrator-SID `S-1-5-21-1736347224-3968129211-1303436014-500` mit
+`InteractiveToken`:
+
+| Task | BEFORE-Action | vorgeschlagenes AFTER |
+|---|---|---|
+| `QM_StrategyFarm_AgyGovernor` | direkt `pythonw.exe agy_governor.py` als InteractiveToken | SYSTEM-Scheduler → `run_in_console_session.ps1` → `qm-admin` |
+| `QM_StrategyFarm_GeminiOrchestration_15min` | `cmd.exe /c python.exe ... >> ... 2>&1` als InteractiveToken | SYSTEM-Scheduler → Session-Wrapper → `qm-admin`-`pythonw.exe` |
+| `QM_StrategyFarm_MailboxSourceIntake_Daily` | direkt `pythonw.exe mailbox_source_intake.py` als InteractiveToken | SYSTEM-Scheduler → Session-Wrapper → `qm-admin`-`pythonw.exe` |
+| `QM_StrategyFarm_WorkerDedupe` | direkt `python.exe start_terminal_workers.py --dedupe` als InteractiveToken | SYSTEM-Scheduler → Session-Wrapper → `qm-admin` |
+
+Die beiden in Runde 1 noch bare-SYSTEM vorgeschlagenen Lanes Gemini und
+Mailbox nutzen im korrigierten AFTER jetzt ebenfalls
+`run_in_console_session.ps1 -TargetUser qm-admin`. Das ist für Gemini zwingend,
+weil agy den benutzerspezifischen Credential-Manager-Eintrag
+`gemini:antigravity` und `LOCALAPPDATA\agy` verwendet
+(`run_agent_orchestration_task.py`, `_AGY_BIN_CANDIDATES` und Kopfkommentar).
+Mailbox bindet dadurch den dokumentierten Administrator-`CODEX_HOME` und den
+gleichen Benutzer-Authkontext. Der LocalSystem-Task bleibt nur Scheduler; die
+authentifizierte Python-Action läuft im vorhandenen Benutzer-Token.
+
+Die Entfernung des `cmd.exe`-Redirect-Wrappers ist ausschließlich eine
+**unexecuted Änderung in**
+`after/QM_StrategyFarm_GeminiOrchestration_15min.xml`. Sie wurde in Runde 1
+fälschlich `run_agent_orchestration_task.py` zugeschrieben; das Python-Modul
+ändert keinen Scheduled-Task-Action-Vertrag.
+
+### Reichweite der State-Machine-Verifikation
+
+Die Runde-1-Behauptung einer byteweisen Erhaltung der gesamten Recovery- und
+Reboot-State-Machine war nicht ausgeführt: `Test-LiveAlarmState.ps1` erhielt
+`-BaselineWatchdogPath ''`, daher wurde PART 5c übersprungen. Gegen
+`fa215b3e9` ist der Haupt-State-Machine-Block erwartungsgemäß verschieden,
+weil RUNNING/PARKED/MAINTENANCE ihn absichtlich verändert.
+
+Korrekt und nachprüfbar ist nur:
+
+- Der Haupt-Recovery-State-Machine wurde für Park-Awareness absichtlich
+  geändert und besitzt strukturelle Guard-Tests; für ihn wird keine
+  Byte-Invarianz behauptet.
+- Der Reboot-**Ausführungsblock** ab
+  `if ($actions -contains 'controlled_reboot_requested')` bis vor die
+  post-block Status/Exit-Abbildung ist gegenüber `fa215b3e9`
+  inhaltsidentisch (Checkout-Zeilenenden normalisiert). PART 5c vergleicht
+  jetzt ausschließlich diesen Block, wenn ein Vorgängerpfad übergeben wird.
+- Der Test-Headline und die Warnung benennen diese eingeschränkte Reichweite;
+  ein leerer Baseline-Pfad ist nur noch ein explizit übersprungener optionaler
+  Reboot-Block-Vergleich, kein ausgeführter Verbatim-Nachweis.
+
+### Weitere Round-2-Entscheidungen
+
+- MNT-004 ist fail-closed festgelegt: `contract_expired` gewinnt gegen
+  `MAINTENANCE` und `probe_unknown`. Ein gültiger Maintenance-Zustand
+  unterdrückt weiterhin Laufzeit-Recovery.
+- Das strengere KS-Verhalten ist beabsichtigt: Ein
+  `KS_BASELINE_LOADED`-Event ohne `payload.hash` zählt als `hash_mismatch`, nie
+  als `loaded_ok`. MNT-001 und ein eigener Regressionstest schreiben das fest.
+- `Live_Alarm_State.ps1` ist nun Teil der ASCII- und PS5.1-Parser-CI. Die drei
+  Nicht-ASCII-Bytes im Laufzeit-Verifier
+  `verify_ftmo_round25_live_contract.ps1` wurden durch ASCII ersetzt.
+- Die direkten `pythonw.exe`-Entry-Points besitzen einen top-level
+  Exception-Hook in ihre lane-eigenen Logverzeichnisse, sodass ein Absturz vor
+  dem normalen Run-Log nicht mehr still bleibt.
