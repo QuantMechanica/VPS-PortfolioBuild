@@ -4,7 +4,15 @@
 >
 > **Mirror-Hinweis:** Kanonischer Ort ist der Vault (`Maintenance/Konvergenz-Ledger.md`); G:-Mount war beim Stand 2026-07-29 down (GoogleDriveFS nicht gelaufen), daher Repo-Kopie zuerst. Spiegelung bei nächster G:-Verfügbarkeit.
 
-**Stand:** 2026-07-29 (nach Runde 2) · Runde 1 (`80b9d54d`) = RECYCLE mit Feedback · Runde 2 (`6066746a`) = **APPROVED** (alle 3 Majors unabhängig verifiziert gefixt; Evidenz `docs/ops/evidence/2026-07-29_mnt_review_round2.md`, Commit `31c51587a`) · Runde 3 dispatched (Neutral-Family-Verfeinerung + Positionsrunde MNT-043–046).
+**Stand:** 2026-07-29 (nach Runde 3) · R1 (`80b9d54d`) RECYCLE · R2 (`6066746a`) **APPROVED** · R3 (`6a1811dd`) **APPROVED** · Runde 4 dispatched (Positionen zu 020/024/025/027–033).
+
+## Runde 3 — Ergebnis (Task 6a1811dd)
+
+**WP-1 verifiziert:** 122/122 Tests; Strategy/Neutral-Trennung implementiert (`strategy_verdict_rank`, `latest_run`-Feld, regressed nur auf Strategie-Verdicts); Produktionseffekt 636→374 regressed — mit Codex' korrekter Einsicht, daß 39 Flags zu Recht bleiben (echte Strategie-Regression unter neutralem Latest). Invarianten-Formulierung ersetzt meine „~334"-Konstante.
+
+**WP-2 Positionsrunde MNT-043–046:** Codex-Positionen 82/92/84/86 % — **alle materiellen Dissense von Claude übernommen** (043: Closure-Hash-Provenienz statt mtime, P0-Live-Bill/P1-Requal-Split, `evidence_vintage_stale` bei Binary-Wechsel [Beweis: 9936-Vintage-Bisect 91,5 %/−11,1 % FUND_SCORE]; 044: append-only Adjudication-Overlay statt Rohzeilen-Umschreiben, Register bei Bill-Erstellung frisch [1567/EURUSD hat sich bereits bewegt]; 045: Degrade-Option gestrichen → fail-hard + Pre-Claim/Pre-Spawn-Preflight je Prinzipal, atomarer Bundle-Publisher, Fault-Injection vor „7 Tage grün"; 046: exakte `PHASE_RUNNER_SCRIPTS`-Allowlist statt Glob, Work-Item-/Lineage-Bindung, 2 stabile Null-Scans; Claude-Ergänzung: Near-Match-Prozesse als `REVIEW_REQUIRED` sichtbar ohne Kill). Merged Seiten: `docs/ops/mnt_page_updates_2026-07-28/MNT-043..046.md`. **043→95 % · 044→95 % · 045→95 % · 046→93 % — konvergiert.**
+
+**Offene OWNER-Entscheidungen aus R3:** (a) MNT-045: Fail-hard-Semantik ratifizieren (gemeinsame Empfehlung Claude+Codex: keine Degrade-Option). (b) MNT-043: Requalifikationskonsequenz akzeptieren — Rebuild macht Alt-Evidenz `vintage_stale`, admission-relevante Gates laufen mit neuer SHA neu (Compute-Kosten).
 
 ## Runde 2 — Ergebnis (Task 6066746a)
 
@@ -26,9 +34,10 @@ Verifiziert durch 4 unabhängige Prüfagenten (Seiten, Park-Code, Task-Package, 
 | MNT-018 | **94 %** | ✅ konvergiert | Legacy-Counts (23 / 105) sind Snapshot-Werte, live nicht direkt reproduzierbar — Akzeptanz korrekt invariant-gepinnt |
 | MNT-019 | **97 %** | ✅ konvergiert | — |
 | MNT-040 | **~90 %** | ✅ konvergiert (R2) | latest/best/regressed geliefert; Runde 3: Neutral-Family-Verfeinerung (Infra-Rauschen raus aus Current/regressed) + Test-Pins |
-| 006/007/008/009/010/012/013/015/016/021/036/041 | Position übernommen | 🟡 Fold-Ack | Alle Minor Folds im Evidenzdoc explizit acknowledged (= Übereinstimmung mit der Korrektur); Voll-Lösungs-Konvergenz je Topic folgt in späteren Runden |
-| 005/011/014/020/022–035/037–039/042 | — | ⚪ ausstehend | Noch nicht Gegenstand einer Runde |
-| 043/044/045/046 | — | ⚪ ausstehend | Von Claude verfaßt; Codex-Gegenposition steht aus |
+| 006/007/008/009/010/012/013/015/016/021/036/041 | **~92 %** | ✅ konvergiert (Fold-Ack) | Codex-Lösungen + von Codex explizit acknowledgte Claude-Korrekturen = beidseitige Position; Umsetzung folgt je Topic |
+| 005/011/014/022/023/026/034/035/037/038/039/042 | **~93 %** | ✅ konvergiert (Endorsement) | Von Claude im Review ohne Einschränkung bestätigt; Codex = Autor — beidseitig ≥90 % |
+| 020/024/025/027/028/029/030/031/032/033 | — | 🔄 Runde 4 | Positionsrunde läuft: 020 (Claude-Korrekturen unbeantwortet), 027 (Matrix-Erweiterung Q04-Kosten/Q08-Params), 031 (P2→P1-Hochstufung), 024/025/028/029/030/032/033 (von Claude nicht tiefgeprüft — Codex-Selbstreview + Claude-Verifikation) |
+| 043/044/045/046 | **95/95/95/93 %** | ✅ konvergiert (R3) | Merged Contracts in `docs/ops/mnt_page_updates_2026-07-28/`; 2 OWNER-Entscheidungen offen (s. o.) |
 
 ## Querschnittsbefunde Runde 1 (Ehrlichkeit der Evidenz)
 
