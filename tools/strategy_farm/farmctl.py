@@ -3809,7 +3809,11 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
 
     # Freeze the exact artifacts before launch. The resulting hashes are stored
     # in the active claim and must match run_smoke/v2 before classification.
-    expected_ex5_path = candidates[0] / f"{ea_dir_name}.ex5"
+    expected_ex5_path = (
+        Path(str(item_payload["staged_ex5_path"]))
+        if item_payload.get("staged_ex5_path")
+        else candidates[0] / f"{ea_dir_name}.ex5"
+    )
     expected_mq5_path = candidates[0] / f"{ea_dir_name}.mq5"
     expected_setfile_path = Path(setfile_path)
     if not expected_ex5_path.is_file() or not expected_setfile_path.is_file():
@@ -3820,6 +3824,15 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             "expected_setfile_path": str(expected_setfile_path),
         }
     expected_ex5_sha256 = _sha256_file(expected_ex5_path)
+    staged_required_sha = str(item_payload.get("staged_ex5_sha256") or "").strip().lower()
+    if staged_required_sha and expected_ex5_sha256 != staged_required_sha:
+        return {
+            "spawned": False,
+            "reason": "staged_ex5_sha256_mismatch_before_spawn",
+            "expected_ex5_path": str(expected_ex5_path),
+            "expected_ex5_sha256": expected_ex5_sha256,
+            "staged_ex5_sha256": staged_required_sha,
+        }
     expected_setfile_sha256 = _sha256_file(expected_setfile_path)
     expected_mq5_sha256 = _sha256_file(expected_mq5_path) if expected_mq5_path.is_file() else None
     expected_expert = f"QM\\{ea_dir_name}"
