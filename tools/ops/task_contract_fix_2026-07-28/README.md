@@ -28,6 +28,9 @@ Proposed disposition:
 
 OWNER/Claude interactive-session usage:
 
+Apply this package only after this branch has been merged and deployed to
+`C:\QM\repo`; the proposed task actions reference code at that canonical path.
+
 ```powershell
 # Read-only comparison; safe default.
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Apply-TaskContractFix.ps1

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from xml.etree import ElementTree
 
@@ -11,6 +12,19 @@ NS = {"t": "http://schemas.microsoft.com/windows/2004/02/mit/task"}
 
 def _after(task_name: str) -> ElementTree.Element:
     return ElementTree.parse(PACKAGE / "after" / f"{task_name}.xml").getroot()
+
+
+def _duration_seconds(value: str) -> int:
+    match = re.fullmatch(
+        r"PT(?:(?P<hours>\d+)H)?(?:(?P<minutes>\d+)M)?(?:(?P<seconds>\d+)S)?",
+        value,
+    )
+    assert match is not None
+    return (
+        int(match.group("hours") or 0) * 3600
+        + int(match.group("minutes") or 0) * 60
+        + int(match.group("seconds") or 0)
+    )
 
 
 def test_auth_bound_after_contracts_use_qm_admin_console_wrapper() -> None:
@@ -37,6 +51,16 @@ def test_auth_bound_after_contracts_use_qm_admin_console_wrapper() -> None:
         assert entry_script in arguments
         assert wait_arg in arguments
         assert "qm-admin" in description
+        exe_match = re.search(r"-Exe\s+'([^']+)'", arguments)
+        wait_match = re.search(r"-WaitSeconds\s+(\d+)", arguments)
+        execution_limit = root.findtext(
+            ".//t:Settings/t:ExecutionTimeLimit", namespaces=NS
+        )
+        assert exe_match is not None
+        assert exe_match.group(1).lower().endswith(r"\pythonw.exe")
+        assert wait_match is not None
+        assert execution_limit is not None
+        assert int(wait_match.group(1)) <= _duration_seconds(execution_limit)
 
 
 def test_package_warns_that_xml_force_registration_can_reenable_tasks() -> None:

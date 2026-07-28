@@ -164,6 +164,104 @@ def test_pipeline_view_latest_fail_exposes_regression_after_older_pass(tmp_path:
     assert ea["current_stage"] == "Q03_fail"
 
 
+def test_pipeline_view_maps_production_legacy_p2_to_q02(tmp_path: Path) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as con:
+        _work_item(
+            con,
+            item_id="legacy-p2-pass",
+            ea_id="10006",
+            phase="P2",
+            symbol="EURUSD.DWX",
+            status="done",
+            verdict="PASS",
+            updated_at="2026-07-28T12:00:00Z",
+        )
+        con.commit()
+
+    view = farmctl.pipeline_view(root)
+    ea = next(row for row in view["eas"] if row["ea_id"] == "QM5_10006")
+
+    assert list(ea["phases"]) == ["Q02"]
+    assert ea["phases"]["Q02"]["verdict"] == "PASS"
+    assert ea["current_stage"] == "Q02_pass"
+
+
+def test_pipeline_view_neutral_latest_preserves_strategy_state_and_exposes_run(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as con:
+        _work_item(
+            con,
+            item_id="q02-pass-older",
+            ea_id="10007",
+            phase="Q02",
+            symbol="EURUSD.DWX",
+            status="done",
+            verdict="PASS",
+            updated_at="2026-07-27T12:00:00Z",
+        )
+        _work_item(
+            con,
+            item_id="q02-infra-newer",
+            ea_id="10007",
+            phase="Q02",
+            symbol="EURUSD.DWX",
+            status="done",
+            verdict="INFRA_FAIL",
+            updated_at="2026-07-28T12:00:00Z",
+        )
+        con.commit()
+
+    view = farmctl.pipeline_view(root)
+    ea = next(row for row in view["eas"] if row["ea_id"] == "QM5_10007")
+    phase = ea["phases"]["Q02"]
+
+    assert phase["verdict"] == "PASS"
+    assert phase["best_verdict"] == "PASS"
+    assert phase["regressed"] is False
+    assert phase["latest_run"] == {
+        "work_item_id": "q02-infra-newer",
+        "status": "done",
+        "verdict": "INFRA_FAIL",
+        "updated_at": "2026-07-28T12:00:00Z",
+    }
+    assert ea["current_stage"] == "Q02_infra_fail"
+
+
+def test_pipeline_view_folds_mixed_case_legacy_suffix_phases(tmp_path: Path) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as con:
+        for item_id, phase, updated_at in (
+            ("legacy-p5b", "P5b", "2026-07-28T12:00:00Z"),
+            ("legacy-p5c", "P5c", "2026-07-28T12:01:00Z"),
+            ("legacy-p9b", "P9b", "2026-07-28T12:02:00Z"),
+        ):
+            _work_item(
+                con,
+                item_id=item_id,
+                ea_id="10008",
+                phase=phase,
+                symbol="EURUSD.DWX",
+                status="done",
+                verdict="PASS",
+                updated_at=updated_at,
+            )
+        con.commit()
+
+    view = farmctl.pipeline_view(root)
+    ea = next(row for row in view["eas"] if row["ea_id"] == "QM5_10008")
+
+    assert list(ea["phases"]) == ["Q05", "Q12"]
+    assert ea["phases"]["Q05"]["work_item_count"] == 2
+    assert ea["phases"]["Q12"]["latest_work_item_id"] == "legacy-p9b"
+    assert ea["current_stage"] == "Q12_pass"
+
+
 def test_pipeline_view_skips_unbound_tasks_and_normalizes_phase_aliases(
     tmp_path: Path,
 ) -> None:

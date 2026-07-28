@@ -29,9 +29,9 @@ except ModuleNotFoundError:
     from tools.strategy_farm.cache_audit import has_ea_history_window, has_history_window
 
 try:
-    from phase_ids import PHASE_ORDER, phase_label, phase_qid
+    from phase_ids import LEGACY_P_TO_Q, PHASE_ORDER, phase_label, phase_qid
 except ModuleNotFoundError:
-    from tools.strategy_farm.phase_ids import PHASE_ORDER, phase_label, phase_qid
+    from tools.strategy_farm.phase_ids import LEGACY_P_TO_Q, PHASE_ORDER, phase_label, phase_qid
 
 try:
     from managed_codex import (
@@ -2192,7 +2192,8 @@ def pipeline_view(root: Path) -> dict[str, Any]:
         text = str(value).strip() if value is not None else ""
         return text or None
 
-    def verdict_rank(value: Any) -> int:
+    def strategy_verdict_rank(value: Any) -> int:
+        """Rank strategy-result families; zero is neutral/non-strategy state."""
         verdict = str(value or "").strip().upper()
         if (
             verdict in {"AUTO_PASS", "MODE_SELECTED", "MULTI_SEED_MIXED", "MULTI_SEED_PASS"}
@@ -2200,11 +2201,15 @@ def pipeline_view(root: Path) -> dict[str, Any]:
         ):
             return 2
         if (
-            verdict in {"INVALID", "INVALID_BUILD_STATIC_FIDELITY", "ZERO_TRADES", "DRAFT_DEFECT"}
-            or verdict.startswith("FAIL")
+            verdict == "DRAFT_DEFECT"
+            or verdict.startswith(("FAIL", "INVALID", "ZERO_TRADES", "RETIR"))
         ):
             return 1
         return 0
+
+    legacy_phase_lookup = {
+        legacy.casefold(): canonical for legacy, canonical in LEGACY_P_TO_Q.items()
+    }
 
     def display_phase(value: Any) -> str:
         """Canonical operator phase, including storage-only suffix aliases.
@@ -2213,7 +2218,8 @@ def pipeline_view(root: Path) -> dict[str, Any]:
         view is operator-facing, so a known/forward-compatible Qxx suffix is
         folded into its Q gate. Non-Q keys are rejected from this Q-only view.
         """
-        qid = phase_qid(str(value or "").strip().upper())
+        raw = str(value or "").strip()
+        qid = phase_qid(legacy_phase_lookup.get(raw.casefold(), raw)).upper()
         suffix = re.fullmatch(r"(Q\d{2})(?:[_-].+)", qid)
         operator_qid = suffix.group(1) if suffix else qid
         return operator_qid if re.fullmatch(r"Q\d{2}", operator_qid) else ""
@@ -2316,26 +2322,55 @@ def pipeline_view(root: Path) -> dict[str, Any]:
             if verdict:
                 verdict_counts[verdict] = verdict_counts.get(verdict, 0) + 1
         latest = max(rows, key=work_item_order)
-        best = max(
-            rows,
-            key=lambda row: (verdict_rank(row["verdict"]), work_item_order(row)),
+        strategy_rows = [
+            row for row in rows if strategy_verdict_rank(row["verdict"]) > 0
+        ]
+        latest_strategy = (
+            max(strategy_rows, key=work_item_order) if strategy_rows else None
         )
-        latest_verdict = str(latest["verdict"] or "").strip() or None
-        best_verdict = str(best["verdict"] or "").strip() or None
+        best_strategy = (
+            max(
+                strategy_rows,
+                key=lambda row: (
+                    strategy_verdict_rank(row["verdict"]),
+                    work_item_order(row),
+                ),
+            )
+            if strategy_rows
+            else None
+        )
+        latest_run_verdict = str(latest["verdict"] or "").strip() or None
+        latest_strategy_verdict = (
+            str(latest_strategy["verdict"] or "").strip() or None
+            if latest_strategy is not None
+            else None
+        )
+        best_verdict = (
+            str(best_strategy["verdict"] or "").strip() or None
+            if best_strategy is not None
+            else None
+        )
         phase_status = str(latest["status"] or "unknown").strip().lower()
         surviving = sorted({
             str(row["symbol"])
             for row in rows
-            if verdict_rank(row["verdict"]) == 2 and row["symbol"]
+            if strategy_verdict_rank(row["verdict"]) == 2 and row["symbol"]
         })
         entry["phases"][phase] = {
             "status": phase_status,
-            "verdict": latest_verdict,
+            "verdict": latest_strategy_verdict,
             "best_verdict": best_verdict,
             "regressed": bool(
-                latest_verdict
-                and verdict_rank(best_verdict) > verdict_rank(latest_verdict)
+                latest_strategy_verdict
+                and strategy_verdict_rank(best_verdict)
+                > strategy_verdict_rank(latest_strategy_verdict)
             ),
+            "latest_run": {
+                "work_item_id": latest["id"],
+                "status": phase_status,
+                "verdict": latest_run_verdict,
+                "updated_at": latest["updated_at"] or latest["created_at"],
+            },
             "attempts": sum(int(row["attempt_count"] or 0) for row in rows),
             "surviving_symbols": surviving,
             "work_item_count": len(rows),
@@ -2343,7 +2378,7 @@ def pipeline_view(root: Path) -> dict[str, Any]:
             "verdict_counts": dict(sorted(verdict_counts.items())),
             "latest_work_item_id": latest["id"],
             "latest_updated_at": latest["updated_at"] or latest["created_at"],
-            "best_work_item_id": best["id"],
+            "best_work_item_id": best_strategy["id"] if best_strategy is not None else None,
             "source": "work_items",
             "_latest_sort_key": work_item_order(latest),
         }
@@ -2358,12 +2393,16 @@ def pipeline_view(root: Path) -> dict[str, Any]:
                 key=lambda phase: entry["phases"][phase]["_latest_sort_key"],
             )
             phase_data = entry["phases"][decisive]
-            if phase_data["status"] == "active":
+            latest_run = phase_data["latest_run"]
+            if latest_run["status"] == "active":
                 entry["current_stage"] = f"{decisive}_running"
-            elif phase_data["status"] == "pending":
+            elif latest_run["status"] == "pending":
                 entry["current_stage"] = f"{decisive}_pending"
             else:
-                entry["current_stage"] = f"{decisive}_{(phase_data['verdict'] or phase_data['status']).lower()}"
+                entry["current_stage"] = (
+                    f"{decisive}_"
+                    f"{(latest_run['verdict'] or latest_run['status']).lower()}"
+                )
             ordered_phases = sorted(
                 entry["phases"],
                 key=lambda phase: (phase_rank.get(phase, len(PHASE_ORDER)), phase),
