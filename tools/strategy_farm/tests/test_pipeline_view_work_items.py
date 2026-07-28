@@ -126,7 +126,7 @@ def test_pipeline_view_uses_work_items_over_later_failed_build_and_handles_strin
     assert ea["current_stage"] != "build_failed"
 
 
-def test_pipeline_view_pass_family_dominates_fail_within_phase(tmp_path: Path) -> None:
+def test_pipeline_view_latest_fail_exposes_regression_after_older_pass(tmp_path: Path) -> None:
     root = tmp_path / "farm"
     farmctl.init_db(root)
     with farmctl.connect(root) as con:
@@ -156,12 +156,15 @@ def test_pipeline_view_pass_family_dominates_fail_within_phase(tmp_path: Path) -
     ea = next(row for row in view["eas"] if row["ea_id"] == "QM5_10002")
 
     assert list(ea["phases"]) == ["Q03"]
-    assert ea["phases"]["Q03"]["verdict"] == "PASS"
+    assert ea["phases"]["Q03"]["verdict"] == "FAIL"
+    assert ea["phases"]["Q03"]["best_verdict"] == "PASS"
+    assert ea["phases"]["Q03"]["regressed"] is True
+    assert ea["phases"]["Q03"]["latest_work_item_id"] == "q03-fail-newer"
     assert ea["phases"]["Q03"]["work_item_count"] == 2
-    assert ea["current_stage"] == "Q03_pass"
+    assert ea["current_stage"] == "Q03_fail"
 
 
-def test_pipeline_view_ignores_non_pipeline_tasks_and_normalizes_lowercase_phase(
+def test_pipeline_view_skips_unbound_tasks_and_normalizes_phase_aliases(
     tmp_path: Path,
 ) -> None:
     root = tmp_path / "farm"
@@ -175,6 +178,22 @@ def test_pipeline_view_ignores_non_pipeline_tasks_and_normalizes_lowercase_phase
             payload={"title": "not an EA"},
             created_at="2026-07-28T12:00:00Z",
         )
+        _task(
+            con,
+            task_id="12345678-phantom-build",
+            kind="build_ea",
+            status="failed",
+            payload={"slug": "missing-identity"},
+            created_at="2026-07-28T12:01:00Z",
+        )
+        _task(
+            con,
+            task_id="87654321-phantom-review",
+            kind="ea_review",
+            status="done",
+            payload={"verdict": "APPROVE_FOR_BACKTEST"},
+            created_at="2026-07-28T12:02:00Z",
+        )
         _work_item(
             con,
             item_id="q03-lowercase",
@@ -185,9 +204,44 @@ def test_pipeline_view_ignores_non_pipeline_tasks_and_normalizes_lowercase_phase
             verdict="PASS",
             updated_at="2026-07-28T12:00:00Z",
         )
+        _work_item(
+            con,
+            item_id="q09-suffixed",
+            ea_id="10004",
+            phase="Q09_PORTFOLIO",
+            symbol="EURUSD.DWX",
+            status="done",
+            verdict="PASS",
+            updated_at="2026-07-28T12:03:00Z",
+        )
+        _work_item(
+            con,
+            item_id="unknown-phase",
+            ea_id="10004",
+            phase="Q88_EXPERIMENTAL",
+            symbol="GBPUSD.DWX",
+            status="done",
+            verdict="FAIL",
+            updated_at="2026-07-28T12:04:00Z",
+        )
+        _work_item(
+            con,
+            item_id="non-q-phase",
+            ea_id="10005",
+            phase="EXPERIMENTAL",
+            symbol="GBPUSD.DWX",
+            status="done",
+            verdict="FAIL",
+            updated_at="2026-07-28T12:05:00Z",
+        )
         con.commit()
 
     view = farmctl.pipeline_view(root)
 
-    assert [row["ea_id"] for row in view["eas"]] == ["QM5_10003"]
+    assert [row["ea_id"] for row in view["eas"]] == ["QM5_10003", "QM5_10004"]
     assert list(view["eas"][0]["phases"]) == ["Q03"]
+    second = view["eas"][1]
+    assert list(second["phases"]) == ["Q09", "Q88"]
+    assert second["phases"]["Q09"]["latest_work_item_id"] == "q09-suffixed"
+    assert second["phases"]["Q88"]["latest_work_item_id"] == "unknown-phase"
+    assert second["current_stage"] == "Q88_fail"

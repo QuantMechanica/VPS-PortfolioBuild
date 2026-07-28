@@ -860,13 +860,6 @@ def check_live_uptime() -> list[dict]:
 
     dxz_running = state.get("dxz_running") is True
     ftmo_running = state.get("ftmo_running") is True
-    if state.get("process_probe_ok") is not True:
-        return [finding(
-            "live_mt5_uptime", FAIL,
-            "live process inventory failed; watchdog correctly refused destructive recovery, but uptime is unknown",
-            hint="Repair CIM/WMI process enumeration; verify both exact terminal paths manually.", evidence=ev,
-        )]
-
     expected_dxz_state = str(state.get("expected_dxz_state") or "RUNNING").upper()
     expected_ftmo_state = str(state.get("expected_ftmo_state") or "RUNNING").upper()
     valid_expected_states = {"RUNNING", "PARKED", "MAINTENANCE"}
@@ -885,6 +878,13 @@ def check_live_uptime() -> list[dict]:
             hint="Correct the OWNER-approved RUNNING/PARKED/MAINTENANCE contract; do not infer a live state.",
             evidence=ev,
         )]
+    if state.get("expected_state_review_expired") is True:
+        return [finding(
+            "live_mt5_expected_state", FAIL,
+            f"live expected-state review expired at {state.get('expected_state_review_expires_utc')}",
+            hint="OWNER must review and renew the RUNNING/PARKED contract; do not infer a new live state.",
+            evidence=ev,
+        )]
     if (
         state.get("maintenance") is True
         or expected_dxz_state == "MAINTENANCE"
@@ -895,12 +895,11 @@ def check_live_uptime() -> list[dict]:
             f"live recovery is in MAINTENANCE; DXZ running={dxz_running}, FTMO running={ftmo_running}",
             hint="Remove LIVE_UPTIME_MAINTENANCE.flag after the maintenance window.", evidence=ev,
         )]
-    if state.get("expected_state_review_expired") is True:
+    if state.get("process_probe_ok") is not True:
         return [finding(
-            "live_mt5_expected_state", FAIL,
-            f"live expected-state review expired at {state.get('expected_state_review_expires_utc')}",
-            hint="OWNER must review and renew the RUNNING/PARKED contract; do not infer a new live state.",
-            evidence=ev,
+            "live_mt5_uptime", FAIL,
+            "live process inventory failed; watchdog correctly refused destructive recovery, but uptime is unknown",
+            hint="Repair CIM/WMI process enumeration; verify both exact terminal paths manually.", evidence=ev,
         )]
 
     actual = {"DXZ": dxz_running, "FTMO": ftmo_running}

@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
   WS-E1 fixture / state-machine tests for the live-terminal alarm STATE contract
-  (Live_Alarm_State.ps1) and recovery-invariance proof for T_Live_Watchdog.ps1.
+  (Live_Alarm_State.ps1) and reboot-safety checks for T_Live_Watchdog.ps1.
 
 .DESCRIPTION
   Two independent proofs, plain asserts, no live process access:
@@ -14,15 +14,16 @@
        transition-deduplication invariant (transitions / since_utc / last_change
        move ONLY on a genuine condition change) and the atomic write + schema.
 
-    2. RECOVERY INVARIANCE  -- the modified watchdog preserves the existing
-       recovery + reboot state machine byte-for-byte (verbatim block comparison
-       against the pristine canonical baseline), the alarm emission is guarded and
-       side-effect-free, and the helper contains no launcher / reboot / mail /
-       process-control commands.
+    2. REBOOT SAFETY -- the modified watchdog retains the required recovery and
+       reboot guards, the optional baseline check proves only the reboot execution
+       block byte-for-byte, the alarm emission is guarded and side-effect-free,
+       and the helper contains no launcher / reboot / mail / process-control
+       commands. The main recovery state machine was intentionally changed for
+       RUNNING/PARKED/MAINTENANCE awareness and is not claimed invariant.
 
 .PARAMETER HelperPath           Live_Alarm_State.ps1 (default: ..\Live_Alarm_State.ps1)
 .PARAMETER WatchdogPath         modified T_Live_Watchdog.ps1 (default: ..\T_Live_Watchdog.ps1)
-.PARAMETER BaselineWatchdogPath pristine canonical watchdog for the verbatim check (optional)
+.PARAMETER BaselineWatchdogPath predecessor watchdog for the reboot-block-only comparison (optional)
 .PARAMETER WorkDir              scratch dir for fixture state files (default: temp)
 #>
 param(
@@ -104,6 +105,8 @@ $cases = @(
     @{ name = 'review expired';                 expect = 'contract_expired'; facts = (New-Facts -ReviewExpired $true) },
     @{ name = 'expected maintenance';           expect = 'maintenance'; facts = (New-Facts -ExpectedState 'MAINTENANCE' -Running $false -ProcessCount 0) },
     # precedence
+    @{ name = 'precedence expiry>maintenance'; expect = 'contract_expired'; facts = (New-Facts -ReviewExpired $true -Maintenance $true) },
+    @{ name = 'precedence expiry>probe';       expect = 'contract_expired'; facts = (New-Facts -ReviewExpired $true -ProbeOk $false) },
     @{ name = 'precedence maintenance>probe';  expect = 'maintenance';   facts = (New-Facts -Maintenance $true -ProbeOk $false) },
     @{ name = 'precedence probe>duplicate';    expect = 'probe_unknown'; facts = (New-Facts -ProbeOk $false -ProcessCount 2) },
     @{ name = 'precedence launch_failed>missing'; expect = 'launch_failed'; facts = (New-Facts -Running $false -ProcessCount 0 -SupervisorLaunchFailed $true -SessionExists $false) },
@@ -337,7 +340,7 @@ foreach ($forbidden in @(
 }
 
 # ===========================================================================
-# PART 5 -- RECOVERY INVARIANCE of the modified watchdog.
+# PART 5 -- REBOOT SAFETY of the modified watchdog.
 # ===========================================================================
 Assert-QmTrue -Condition (Test-Path -LiteralPath $WatchdogPath -PathType Leaf) -Name "watchdog exists: $WatchdogPath"
 $wdTokens = $null; $wdParseErrors = $null
@@ -358,8 +361,8 @@ Assert-QmTrue -Condition ($idxEvidence -lt $idxAlarmGuard -and $idxAlarmGuard -l
 Assert-QmTrue -Condition ($wdText.Contains('. $alarmHelperScript')) -Name 'helper dot-sourced fail-closed'
 Assert-QmTrue -Condition ($wdText.Contains('Join-Path $PSScriptRoot ''Live_Alarm_State.ps1''')) -Name 'helper resolved via $PSScriptRoot'
 
-# 5b. Every recovery/reboot action + safety string literal from the canonical
-#     watchdog is still present (superset check) -- proves nothing was removed.
+# 5b. Required recovery/reboot action and safety literals remain present. This
+#     is a structural guard, not a byte-for-byte proof of the main state machine.
 $recoveryTokens = @(
     'noop_maintenance_flag', 'noop_process_probe_failed', 'noop_post_relaunch_process_probe_failed',
     'delegated_to_session_supervisor', 'resident_supervisor_unavailable',
@@ -379,33 +382,32 @@ foreach ($tok in $recoveryTokens) {
     Assert-QmTrue -Condition ($wdText.Contains($tok)) -Name "recovery token preserved: '$tok'"
 }
 
-# 5c. STRONG verbatim-block comparison vs the pristine canonical baseline (if given).
+# 5c. Reboot execution block comparison vs the predecessor (if supplied).
+#     Deliberately do not compare the main state machine: park-awareness changed it.
 if ($BaselineWatchdogPath -and (Test-Path -LiteralPath $BaselineWatchdogPath -PathType Leaf)) {
     $baseText = [IO.File]::ReadAllText($BaselineWatchdogPath)
-    # Block A: all recovery functions + main state machine + the main evidence write.
-    $aStart = 'function Get-UtcStamp {'
-    $aEnd = 'Write-Evidence -State $state -Record $record'
-    $ai = $baseText.IndexOf($aStart, [StringComparison]::Ordinal)
-    $aj = $baseText.IndexOf($aEnd, [StringComparison]::Ordinal)
-    Assert-QmTrue -Condition ($ai -ge 0 -and $aj -gt $ai) -Name 'baseline: block A anchors found'
-    $blockA = $baseText.Substring($ai, ($aj - $ai) + $aEnd.Length)
-    Assert-QmTrue -Condition ($wdText.Contains($blockA)) -Name 'INVARIANCE: recovery functions + main state machine byte-for-byte preserved'
-
-    # Block B: the entire reboot state machine, from its entry to EOF.
+    # Entire reboot execution block, excluding the post-block status-to-exit
+    # mapping (which park-awareness intentionally changed).
     $bStart = "if (`$actions -contains 'controlled_reboot_requested') {"
+    $bEnd = "if (`$status -eq 'critical') { exit 2 }"
     $bi = $baseText.IndexOf($bStart, [StringComparison]::Ordinal)
-    Assert-QmTrue -Condition ($bi -ge 0) -Name 'baseline: block B anchor found'
-    $blockB = $baseText.Substring($bi).TrimEnd("`r", "`n")
-    Assert-QmTrue -Condition ($wdText.Contains($blockB)) -Name 'INVARIANCE: reboot state machine byte-for-byte preserved'
+    $bj = $baseText.IndexOf($bEnd, $bi, [StringComparison]::Ordinal)
+    $wi = $wdText.IndexOf($bStart, [StringComparison]::Ordinal)
+    $wj = $wdText.IndexOf($bEnd, $wi, [StringComparison]::Ordinal)
+    Assert-QmTrue -Condition ($bi -ge 0) -Name 'baseline: reboot execution anchor found'
+    Assert-QmTrue -Condition ($bj -gt $bi -and $wi -ge 0 -and $wj -gt $wi) -Name 'baseline/current: reboot execution end anchor found'
+    $baseBlock = $baseText.Substring($bi, $bj - $bi).Replace("`r`n", "`n")
+    $currentBlock = $wdText.Substring($wi, $wj - $wi).Replace("`r`n", "`n")
+    Assert-QmTrue -Condition ($currentBlock -ceq $baseBlock) -Name 'INVARIANCE: reboot execution block content preserved'
 
-    # The canonical variable lines around the insertion point are untouched.
+    # Structural anchors around the insertion point remain explicit.
     Assert-QmTrue -Condition ($wdText.Contains("`$sessionSupervisorStarter = Join-Path `$repoRoot 'tools\strategy_farm\Start_Live_SessionSupervisor.ps1'")) `
-        -Name 'INVARIANCE: canonical supervisor-starter var line intact'
+        -Name 'STRUCTURE: canonical supervisor-starter var line intact'
     Assert-QmTrue -Condition ($wdText.Contains("`$dxzPath = 'C:\QM\mt5\T_Live\MT5_Base\terminal64.exe'")) `
-        -Name 'INVARIANCE: canonical dxzPath var line intact'
+        -Name 'STRUCTURE: canonical dxzPath var line intact'
 } else {
     [void]$script:Failures  # baseline not supplied -> structural checks (5a/5b) still ran
-    Write-Warning 'Baseline watchdog not supplied; skipped strong verbatim-block comparison (structural checks still enforced).'
+    Write-Warning 'Baseline watchdog not supplied; skipped optional reboot-block comparison (structural checks still enforced).'
 }
 
 # ---------------------------------------------------------------------------

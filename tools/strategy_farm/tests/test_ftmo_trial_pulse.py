@@ -92,8 +92,22 @@ def test_parked_state_fails_closed_when_process_probe_is_unknown() -> None:
     assert state["alarm"] == "ftmo_terminal_process_probe_unknown"
 
 
-def test_maintenance_suppresses_park_contract_alarm() -> None:
+def test_contract_expiry_wins_over_maintenance() -> None:
     now = datetime(2026, 9, 1, tzinfo=timezone.utc)
+
+    state = ftmo_trial_pulse.assess_expected_state(
+        terminal_up=True,
+        now=now,
+        maintenance=True,
+    )
+
+    assert state["effective_state"] == "MAINTENANCE"
+    assert state["condition"] == "contract_expired"
+    assert state["alarm"] == "expected_state_review_expired"
+
+
+def test_unexpired_maintenance_suppresses_runtime_alarm() -> None:
+    now = datetime(2026, 7, 28, tzinfo=timezone.utc)
 
     state = ftmo_trial_pulse.assess_expected_state(
         terminal_up=True,
@@ -104,6 +118,18 @@ def test_maintenance_suppresses_park_contract_alarm() -> None:
     assert state["effective_state"] == "MAINTENANCE"
     assert state["condition"] == "maintenance"
     assert state["alarm"] is None
+
+
+def test_contract_expiry_wins_over_unknown_process_probe() -> None:
+    now = datetime(2026, 9, 1, tzinfo=timezone.utc)
+
+    state = ftmo_trial_pulse.assess_expected_state(
+        terminal_up=None,
+        now=now,
+    )
+
+    assert state["condition"] == "contract_expired"
+    assert state["alarm"] == "expected_state_review_expired"
 
 
 def test_pulse_is_observer_only_no_halt_signal_emission() -> None:

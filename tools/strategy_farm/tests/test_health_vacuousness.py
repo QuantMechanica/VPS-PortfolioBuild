@@ -587,6 +587,29 @@ class KsBaselineDormancyTest(unittest.TestCase):
         self.assertEqual(res["status"], "OK", res["detail"])
         self.assertIn("loaded_ok=4", res["detail"])
 
+    def test_loaded_event_without_hash_is_intentional_mismatch(self):
+        tmp = Path(self.enterContext(_tmpdir()))
+        bdir, ldir, manifest = self._fixture(tmp, with_mismatch=False, with_dormant=False)
+        _write_json(bdir / "QM5_9404_EURGBP.json", {"hash": "DDD"})
+        records = [
+            {"ts_utc": "2026-07-25T00:00:00Z", "ea_id": 9404, "symbol": "EURGBP",
+             "event": "KS_BASELINE_LOADED", "payload": {"hash": "DDD"}},
+            {"ts_utc": "2026-07-26T00:00:00Z", "ea_id": 9401, "symbol": "EURUSD",
+             "event": "KS_BASELINE_LOADED", "payload": {"path": "QM/baselines/QM5_9401_EURUSD.json"}},
+        ]
+        with (ldir / "QM5_book.log").open("a", encoding="utf-8") as fh:
+            for record in records:
+                fh.write(json.dumps(record) + "\n")
+
+        with mock.patch.object(health, "LIVE_TERMINAL_BASELINE_DIR", tmp / "no_local"), \
+                mock.patch.object(health, "LIVE_COMMON_BASELINE_DIR", bdir), \
+                mock.patch.object(health, "LIVE_QM_LOG_DIR", ldir), \
+                mock.patch.object(health, "DXZ_BOOK_MANIFEST", manifest):
+            res = health.chk_ks_baseline_dormancy()
+
+        self.assertEqual(res["status"], "FAIL")
+        self.assertIn("hash_mismatch=1", res["detail"])
+
     def test_missing_logs_is_unknown_not_green(self):
         tmp = Path(self.enterContext(_tmpdir()))
         bdir, _ldir, manifest = self._fixture(tmp)

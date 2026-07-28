@@ -440,6 +440,21 @@ def test_unreadable_leads_csv_is_not_a_false_green(tmp_path, monkeypatch) -> Non
     assert mailbox.main() == 2
 
 
+def test_pythonw_excepthook_persists_uncaught_traceback(tmp_path, monkeypatch) -> None:
+    crash_log = tmp_path / "mailbox_pythonw_crash.log"
+    monkeypatch.setattr(mailbox, "PYTHONW_CRASH_LOG", crash_log)
+    try:
+        raise RuntimeError("mailbox-hook-probe")
+    except RuntimeError:
+        exc_type, exc, tb = sys.exc_info()
+        assert exc_type is not None and exc is not None
+        mailbox._pythonw_excepthook(exc_type, exc, tb)
+
+    text = crash_log.read_text(encoding="utf-8")
+    assert "uncaught top-level exception" in text
+    assert "RuntimeError: mailbox-hook-probe" in text
+
+
 def test_task_contract_is_interactive_retrying_and_always_on() -> None:
     repo = MODULE_PATH.parents[2]
     installer = (repo / "tools" / "strategy_farm" / "install_mailbox_source_intake_task.ps1").read_text(

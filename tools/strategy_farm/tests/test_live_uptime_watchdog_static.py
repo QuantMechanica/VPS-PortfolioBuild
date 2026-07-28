@@ -17,17 +17,30 @@ DXZ_PROFILE = TOOLS / "prepare_dxz_v2_liveops_profile.ps1"
 FTMO_CONTRACT = TOOLS / "verify_ftmo_round25_live_contract.ps1"
 SESSION_SUPERVISOR = TOOLS / "Live_MT5_SessionSupervisor.ps1"
 SESSION_SUPERVISOR_STARTER = TOOLS / "Start_Live_SessionSupervisor.ps1"
+ALARM_STATE = TOOLS / "Live_Alarm_State.ps1"
+PROFILE_CONTRACT = TOOLS / "liveops_profile_contract.ps1"
 TASK_MANIFEST = TOOLS / "qm_tasks.manifest.ps1"
 
 
 def test_live_scripts_are_windows_powershell_encoding_safe() -> None:
-    for path in (WATCHDOG, INSTALLER, DXZ_ON, FTMO_ON, DXZ_PROFILE, FTMO_CONTRACT, SESSION_SUPERVISOR, SESSION_SUPERVISOR_STARTER):
+    for path in (
+        WATCHDOG, INSTALLER, DXZ_ON, FTMO_ON, DXZ_PROFILE, FTMO_CONTRACT,
+        SESSION_SUPERVISOR, SESSION_SUPERVISOR_STARTER, ALARM_STATE,
+        PROFILE_CONTRACT,
+    ):
         assert all(byte < 128 for byte in path.read_bytes()), path
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows PowerShell 5.1 only")
 def test_windows_powershell_51_parses_live_uptime_scripts() -> None:
-    paths = ",".join(f"'{path}'" for path in (WATCHDOG, INSTALLER, DXZ_ON, FTMO_ON, DXZ_PROFILE, FTMO_CONTRACT, SESSION_SUPERVISOR, SESSION_SUPERVISOR_STARTER))
+    paths = ",".join(
+        f"'{path}'"
+        for path in (
+            WATCHDOG, INSTALLER, DXZ_ON, FTMO_ON, DXZ_PROFILE, FTMO_CONTRACT,
+            SESSION_SUPERVISOR, SESSION_SUPERVISOR_STARTER, ALARM_STATE,
+            PROFILE_CONTRACT,
+        )
+    )
     parser = (
         "$failed=$false;"
         f"foreach($path in @({paths})){{"
@@ -142,13 +155,14 @@ def test_dxz_recovery_uses_sealed_v2_plus_read_only_monitor_wrapper() -> None:
 def test_ftmo_recovery_verifies_approved_profile_presets_and_binaries_before_launch() -> None:
     launcher = FTMO_ON.read_text(encoding="ascii")
     contract = FTMO_CONTRACT.read_text(encoding="ascii")
+    shared_contract = PROFILE_CONTRACT.read_text(encoding="ascii")
 
     assert "verify_ftmo_round25_live_contract.ps1" in launcher
     assert launcher.index("& powershell.exe") < launcher.index("[IO.File]::ReadAllText($common")
     assert contract.count("binary_sha=") == 12
     assert contract.count("preset_sha=") == 12
     assert "Assert-ExactProfileFiles" in contract
-    assert "expected exactly one expert" in contract
+    assert "expected exactly one expert" in shared_contract
     assert "Assert-PackageManifest" in contract
     assert "terminal binary hash mismatch" in contract
     assert "package binary hash mismatch" in contract
@@ -178,6 +192,7 @@ def test_resident_session_supervisor_is_fail_closed_and_non_destructive() -> Non
 def test_watchdog_bakes_parked_ftmo_contract_without_process_control() -> None:
     source = WATCHDOG.read_text(encoding="ascii")
     launcher = FTMO_ON.read_text(encoding="ascii")
+    alarm_state = ALARM_STATE.read_text(encoding="ascii")
 
     assert "$expectedDxzState = 'RUNNING'" in source
     assert "$expectedFtmoState = 'PARKED'" in source
@@ -189,6 +204,10 @@ def test_watchdog_bakes_parked_ftmo_contract_without_process_control() -> None:
     assert "$expectedFtmoState = 'PARKED'" in launcher
     assert "FTMO launch suppressed by baked expected state" in launcher
     assert launcher.index("if ($expectedFtmoState -ne 'RUNNING')") < launcher.index("$identity =")
+    assert source.index("if ($expectedStateReviewExpired)") < source.index("} elseif ($maintenance) {")
+    assert alarm_state.index("if ($ReviewExpired)") < alarm_state.index(
+        "if ($Maintenance -or $ExpectedState -eq 'MAINTENANCE')"
+    )
 
 
 def test_system_watchdog_delegates_in_session_instead_of_demand_starting_gui_tasks() -> None:

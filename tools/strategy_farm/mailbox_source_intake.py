@@ -42,7 +42,33 @@ import re
 import sqlite3
 import subprocess
 import sys
+import traceback
 from pathlib import Path
+
+
+def _pythonw_excepthook(exc_type: type[BaseException], exc: BaseException, tb) -> None:
+    """Persist otherwise invisible top-level pythonw failures."""
+    try:
+        crash_log = globals().get(
+            "PYTHONW_CRASH_LOG",
+            Path(r"D:\QM\reports\sourcing_intake")
+            / "mailbox_source_intake_pythonw_crash.log",
+        )
+        crash_log.parent.mkdir(parents=True, exist_ok=True)
+        stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        with crash_log.open("a", encoding="utf-8") as handle:
+            handle.write(f"\n[{stamp}] uncaught top-level exception\n")
+            traceback.print_exception(exc_type, exc, tb, file=handle)
+    except Exception:
+        # An exception hook must never mask the original failure.
+        pass
+
+
+if __name__ == "__main__":
+    # Install before project-local imports so pythonw import/startup failures are
+    # durable even when the normal intake run log has not been created.
+    sys.excepthook = _pythonw_excepthook
+
 
 try:
     from managed_codex import (
@@ -68,6 +94,7 @@ INTAKE_DIR = Path(r"D:\QM\reports\sourcing_intake")
 LEADS_CSV = INTAKE_DIR / "leads.csv"
 TRIAGE_STATE = INTAKE_DIR / "analyst_triage_state.json"   # terminal-status audit; never a NEW-lead gate
 RUN_LOG = INTAKE_DIR / "mailbox_source_intake_run_log.jsonl"
+PYTHONW_CRASH_LOG = INTAKE_DIR / "mailbox_source_intake_pythonw_crash.log"
 PROMPT_OUT_DIR = INTAKE_DIR / "analyst_prompts"
 
 PYTHONW = r"C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe"

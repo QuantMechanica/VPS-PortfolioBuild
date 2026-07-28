@@ -597,7 +597,16 @@ if (-not $DryRun.IsPresent) {
 }
 
 $maintenance = Test-MaintenanceRequested
-if ($maintenance) {
+if ($expectedStateReviewExpired) {
+    # Contract review expiry outranks MAINTENANCE and probe uncertainty.  It
+    # still performs no recovery action, but it must stay visibly fail-closed
+    # until OWNER renews the baked RUNNING/PARKED decision.
+    $status = 'critical'
+    $state.consecutive_both_down = 0
+    $state.consecutive_relaunch_failed = 0
+    $actions.Add('noop_expected_state_review_expired')
+    $errors.Add("expected_state_review_expired:$expectedStateReviewExpiresUtc")
+} elseif ($maintenance) {
     $status = 'maintenance'
     # A maintenance observation must never count toward a later destructive
     # action. Removing the flag always starts a fresh confirmation sequence.
@@ -614,9 +623,6 @@ if ($maintenance) {
     $actions.Add('noop_process_probe_failed')
     $errors.Add("process_probe_failed:$($proc.probe_error)")
 } else {
-    if ($expectedStateReviewExpired) {
-        $errors.Add("expected_state_review_expired:$expectedStateReviewExpiresUtc")
-    }
     # Restore the resident recovery loop itself when its heartbeat is stale or
     # absent. RunEx binds the task to the already existing qm-admin desktop,
     # including a disconnected RDP session; it never launches MT5 from SYSTEM.

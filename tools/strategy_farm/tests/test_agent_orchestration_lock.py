@@ -76,3 +76,18 @@ def test_old_owner_token_cannot_release_replacement_lock(tmp_path, monkeypatch) 
     orchestration.release_lock(lock_info)
 
     assert lock_path.exists()
+
+
+def test_pythonw_excepthook_persists_uncaught_traceback(tmp_path, monkeypatch) -> None:
+    crash_log = tmp_path / "orchestration_pythonw_crash.log"
+    monkeypatch.setattr(orchestration, "PYTHONW_CRASH_LOG", crash_log)
+    try:
+        raise RuntimeError("orchestration-hook-probe")
+    except RuntimeError:
+        exc_type, exc, tb = sys.exc_info()
+        assert exc_type is not None and exc is not None
+        orchestration._pythonw_excepthook(exc_type, exc, tb)
+
+    text = crash_log.read_text(encoding="utf-8")
+    assert "uncaught top-level exception" in text
+    assert "RuntimeError: orchestration-hook-probe" in text

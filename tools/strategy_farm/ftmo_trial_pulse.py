@@ -98,10 +98,10 @@ def assess_expected_state(
     effective = "MAINTENANCE" if maintenance or expected == "MAINTENANCE" else expected
     if invalid:
         condition, alarm = "contract_invalid", "expected_state_contract_invalid"
-    elif effective == "MAINTENANCE":
-        condition, alarm = "maintenance", None
     elif review_expired:
         condition, alarm = "contract_expired", "expected_state_review_expired"
+    elif effective == "MAINTENANCE":
+        condition, alarm = "maintenance", None
     elif terminal_up is None:
         condition, alarm = "probe_unknown", "ftmo_terminal_process_probe_unknown"
     elif expected == "PARKED" and terminal_up:

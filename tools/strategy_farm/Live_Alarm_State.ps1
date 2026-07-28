@@ -70,9 +70,10 @@
   makes the file safe for change-driven consumers (no thrash on a stable alarm).
 
 .CONDITION DERIVATION (per session; precedence top to bottom)
-    maintenance     maintenance flag/expected state   (suppresses all alarms)
-    probe_unknown   watchdog process probe UNKNOWN     (fail-closed; not "both up")
     contract_expired expected-state review expired     (fail-closed until reviewed)
+    maintenance     maintenance flag/expected state   (suppresses runtime alarms,
+                                                        never contract expiry)
+    probe_unknown   watchdog process probe UNKNOWN     (fail-closed; not "both up")
     parked          PARKED target absent               (healthy expected state)
     unexpected_running PARKED target has a process     (alarm; never auto-stop)
     duplicate       >1 terminal for this session, OR exactly one but placed in the
@@ -145,14 +146,14 @@ function Get-LiveAlarmCondition {
         [AllowNull()][string]$SupervisorReason,
         [bool]$SupervisorLaunchFailed
     )
+    if ($ReviewExpired) {
+        return [pscustomobject]@{ condition = 'contract_expired'; detail = 'expected_state_review_expired' }
+    }
     if ($Maintenance -or $ExpectedState -eq 'MAINTENANCE') {
         return [pscustomobject]@{ condition = 'maintenance'; detail = 'maintenance_flag_active' }
     }
     if (-not $ProbeOk) {
         return [pscustomobject]@{ condition = 'probe_unknown'; detail = 'process_probe_failed' }
-    }
-    if ($ReviewExpired) {
-        return [pscustomobject]@{ condition = 'contract_expired'; detail = 'expected_state_review_expired' }
     }
     if ($ExpectedState -eq 'PARKED') {
         if ($Running -or $ProcessCount -gt 0) {

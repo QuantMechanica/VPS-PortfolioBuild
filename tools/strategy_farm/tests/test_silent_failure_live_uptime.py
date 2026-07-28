@@ -155,6 +155,27 @@ def test_live_uptime_fails_closed_when_process_probe_is_unknown(tmp_path, monkey
     assert "unknown" in result[0]["detail"]
 
 
+def test_live_uptime_contract_expiry_wins_over_maintenance_and_probe_unknown(
+    tmp_path, monkeypatch
+) -> None:
+    state_path = tmp_path / "live.json"
+    _write_state(
+        state_path,
+        process_probe_ok=False,
+        maintenance=True,
+        expected_state_review_expired=True,
+        expected_state_review_expires_utc="2026-08-25T00:00:00Z",
+    )
+    monkeypatch.setattr(monitor, "LIVE_UPTIME_STATE", state_path)
+    monkeypatch.setattr(monitor, "_now", lambda: NOW)
+
+    result = monitor.check_live_uptime()
+
+    assert result[0]["name"] == "live_mt5_expected_state"
+    assert result[0]["status"] == monitor.FAIL
+    assert "expired" in result[0]["detail"]
+
+
 def test_live_uptime_fails_on_profile_drift(tmp_path, monkeypatch) -> None:
     state_path = tmp_path / "live.json"
     _write_state(state_path, dxz_profile="DarwinexZero_V1")

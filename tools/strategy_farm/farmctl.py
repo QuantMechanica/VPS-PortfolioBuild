@@ -2206,6 +2206,25 @@ def pipeline_view(root: Path) -> dict[str, Any]:
             return 1
         return 0
 
+    def display_phase(value: Any) -> str:
+        """Canonical operator phase, including storage-only suffix aliases.
+
+        Storage still distinguishes rows such as Q09_PORTFOLIO.  The pipeline
+        view is operator-facing, so a known/forward-compatible Qxx suffix is
+        folded into its Q gate. Non-Q keys are rejected from this Q-only view.
+        """
+        qid = phase_qid(str(value or "").strip().upper())
+        suffix = re.fullmatch(r"(Q\d{2})(?:[_-].+)", qid)
+        operator_qid = suffix.group(1) if suffix else qid
+        return operator_qid if re.fullmatch(r"Q\d{2}", operator_qid) else ""
+
+    def work_item_order(row: sqlite3.Row) -> tuple[str, str, str]:
+        return (
+            str(row["updated_at"] or row["created_at"] or ""),
+            str(row["created_at"] or ""),
+            str(row["id"] or ""),
+        )
+
     with connect(root) as conn:
         task_rows = conn.execute(
             "SELECT id, kind, status, payload_json, created_at, updated_at "
@@ -2224,7 +2243,10 @@ def pipeline_view(root: Path) -> dict[str, Any]:
         if kind not in {"build_ea", "ea_review"} and not kind.startswith("backtest_"):
             continue
         payload = json.loads(r["payload_json"]) if r["payload_json"] else {}
-        ea_id = payload.get("ea_id") or r["id"]
+        # Build/review/task UUIDs are not EA identities.  Rows without the
+        # explicit payload binding are metadata-orphans and must not create
+        # phantom QM5_<uuid-prefix> entries.
+        ea_id = payload.get("ea_id")
         if not ea_id:
             continue
         entry = ensure_entry(ea_id, slug=payload.get("slug") or "", updated_at=r["updated_at"])
@@ -2260,7 +2282,7 @@ def pipeline_view(root: Path) -> dict[str, Any]:
                 else:
                     entry["_task_stage"] = f"review_{(verdict or '?').lower()}"
         elif kind.startswith("backtest_"):
-            phase = phase_qid(str(payload.get("phase") or kind.replace("backtest_", "")).strip().upper())
+            phase = display_phase(payload.get("phase") or kind.replace("backtest_", ""))
             classification = payload.get("classification") or {}
             entry["_legacy_phases"][phase] = {
                 "task_id": r["id"],
@@ -2268,13 +2290,14 @@ def pipeline_view(root: Path) -> dict[str, Any]:
                 "verdict": classification.get("verdict"),
                 "attempts": int(payload.get("attempt_count", 0)),
                 "surviving_symbols": classification.get("surviving_symbols", []),
+                "latest_updated_at": r["updated_at"] or r["created_at"],
                 "source": "legacy_tasks_fallback",
             }
 
     grouped: dict[tuple[str, str], list[sqlite3.Row]] = {}
     for row in work_rows:
         ea_id = _normalise_ea_label(row["ea_id"])
-        phase = phase_qid(str(row["phase"] or "").strip().upper())
+        phase = display_phase(row["phase"])
         if not ea_id or not phase:
             continue
         entry = ensure_entry(ea_id, updated_at=row["updated_at"])
@@ -2292,19 +2315,14 @@ def pipeline_view(root: Path) -> dict[str, Any]:
             verdict = str(row["verdict"] or "").strip()
             if verdict:
                 verdict_counts[verdict] = verdict_counts.get(verdict, 0) + 1
-        dominant = max(
+        latest = max(rows, key=work_item_order)
+        best = max(
             rows,
-            key=lambda row: (verdict_rank(row["verdict"]), str(row["updated_at"] or ""), str(row["id"])),
+            key=lambda row: (verdict_rank(row["verdict"]), work_item_order(row)),
         )
-        dominant_verdict = str(dominant["verdict"] or "").strip() or None
-        if status_counts.get("active"):
-            phase_status = "active"
-        elif status_counts.get("pending"):
-            phase_status = "pending"
-        elif status_counts.get("done"):
-            phase_status = "done"
-        else:
-            phase_status = "failed"
+        latest_verdict = str(latest["verdict"] or "").strip() or None
+        best_verdict = str(best["verdict"] or "").strip() or None
+        phase_status = str(latest["status"] or "unknown").strip().lower()
         surviving = sorted({
             str(row["symbol"])
             for row in rows
@@ -2312,26 +2330,33 @@ def pipeline_view(root: Path) -> dict[str, Any]:
         })
         entry["phases"][phase] = {
             "status": phase_status,
-            "verdict": dominant_verdict,
+            "verdict": latest_verdict,
+            "best_verdict": best_verdict,
+            "regressed": bool(
+                latest_verdict
+                and verdict_rank(best_verdict) > verdict_rank(latest_verdict)
+            ),
             "attempts": sum(int(row["attempt_count"] or 0) for row in rows),
             "surviving_symbols": surviving,
             "work_item_count": len(rows),
             "status_counts": dict(sorted(status_counts.items())),
             "verdict_counts": dict(sorted(verdict_counts.items())),
-            "latest_work_item_id": dominant["id"],
+            "latest_work_item_id": latest["id"],
+            "latest_updated_at": latest["updated_at"] or latest["created_at"],
+            "best_work_item_id": best["id"],
             "source": "work_items",
+            "_latest_sort_key": work_item_order(latest),
         }
         entry["total_attempts"] += sum(int(row["attempt_count"] or 0) for row in rows)
 
     for entry in eas.values():
         if entry["phases"]:
-            ordered_phases = sorted(
+            # "Current" is the latest identity-bound run, not the historically
+            # highest/best gate.  Historical best remains visible per phase.
+            decisive = max(
                 entry["phases"],
-                key=lambda phase: (phase_rank.get(phase, -1), phase),
+                key=lambda phase: entry["phases"][phase]["_latest_sort_key"],
             )
-            active = [phase for phase in ordered_phases if entry["phases"][phase]["status"] == "active"]
-            pending = [phase for phase in ordered_phases if entry["phases"][phase]["status"] == "pending"]
-            decisive = active[-1] if active else (pending[-1] if pending else ordered_phases[-1])
             phase_data = entry["phases"][decisive]
             if phase_data["status"] == "active":
                 entry["current_stage"] = f"{decisive}_running"
@@ -2339,13 +2364,31 @@ def pipeline_view(root: Path) -> dict[str, Any]:
                 entry["current_stage"] = f"{decisive}_pending"
             else:
                 entry["current_stage"] = f"{decisive}_{(phase_data['verdict'] or phase_data['status']).lower()}"
+            ordered_phases = sorted(
+                entry["phases"],
+                key=lambda phase: (phase_rank.get(phase, len(PHASE_ORDER)), phase),
+            )
+            entry["phases"] = {
+                phase: {
+                    key: value
+                    for key, value in entry["phases"][phase].items()
+                    if key != "_latest_sort_key"
+                }
+                for phase in ordered_phases
+            }
         elif entry["_legacy_phases"]:
             entry["phases"] = entry["_legacy_phases"]
             ordered_phases = sorted(
                 entry["phases"],
-                key=lambda phase: (phase_rank.get(phase, -1), phase),
+                key=lambda phase: (phase_rank.get(phase, len(PHASE_ORDER)), phase),
             )
-            decisive = ordered_phases[-1]
+            decisive = max(
+                ordered_phases,
+                key=lambda phase: (
+                    str(entry["phases"][phase].get("latest_updated_at") or ""),
+                    str(entry["phases"][phase].get("task_id") or ""),
+                ),
+            )
             phase_data = entry["phases"][decisive]
             if phase_data["status"] == "active":
                 entry["current_stage"] = f"{decisive}_running"
@@ -2353,6 +2396,7 @@ def pipeline_view(root: Path) -> dict[str, Any]:
                 entry["current_stage"] = f"{decisive}_pending"
             else:
                 entry["current_stage"] = f"{decisive}_{(phase_data['verdict'] or phase_data['status']).lower()}"
+            entry["phases"] = {phase: entry["phases"][phase] for phase in ordered_phases}
             entry["per_ea_source"] = "legacy_tasks_fallback"
         else:
             entry["current_stage"] = entry["_task_stage"]
