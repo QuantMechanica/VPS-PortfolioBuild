@@ -20,7 +20,7 @@
   deterministic deduplication.
 
   Top-level schema:
-    schema_version   int     contract version (1)
+    schema_version   int     contract version (2)
     generated_utc    string  UTC 'yyyy-MM-ddTHH:mm:ssZ' of THIS write; refreshed
                              every cycle so consumers can detect a dead watchdog
                              (staleness => treat as UNKNOWN/RED, never green).
@@ -31,13 +31,19 @@
     reboot_suppressed bool   a reboot-suppression / cancel / countdown-abort action
                              fired this cycle (informational for consumers).
     any_alarm        bool    true if ANY session condition is an alarm condition
-                             (missing|duplicate|launch_failed|probe_unknown|stale).
+                             (missing|duplicate|launch_failed|probe_unknown|stale|
+                             unexpected_running|contract_expired).
+    any_new_escalation bool  true only on the cycle where an identical alarm
+                             first reaches escalation_threshold.
     sessions         object  { T_LIVE: <entry>, FTMO: <entry> }
 
   Per-session entry schema (the deduplicated STATE contract):
     session            string  'T_LIVE' | 'FTMO'
-    condition          string  ok | missing | duplicate | launch_failed |
-                               probe_unknown | stale | maintenance
+    expected_state     string  RUNNING | PARKED | MAINTENANCE
+    condition          string  ok | parked | missing | duplicate |
+                                launch_failed | probe_unknown | stale |
+                                unexpected_running | contract_expired |
+                                maintenance
     detail             string  human-readable reason; MAY change without counting
                                as a transition (informational only).
     alarm              bool    condition is one of the alarm conditions above.
@@ -53,7 +59,10 @@
                                baseline with transitions=0; it increments only when
                                the condition value actually changes.
     previous_condition string  the condition this session held before last_change
-                               (null on the first observation).
+                                (null on the first observation).
+    identical_failure_cycles int  consecutive cycles of this exact alarm condition.
+    escalation_sent_utc string UTC of the one escalation edge for this condition.
+    new_escalation      bool   true only when the threshold is reached this cycle.
 
   DEDUPLICATION invariant: while a session's condition is unchanged across cycles,
   transitions / since_utc / last_change / previous_condition are preserved
@@ -61,8 +70,11 @@
   makes the file safe for change-driven consumers (no thrash on a stable alarm).
 
 .CONDITION DERIVATION (per session; precedence top to bottom)
-    maintenance     maintenance flag active           (suppresses all alarms)
+    maintenance     maintenance flag/expected state   (suppresses all alarms)
     probe_unknown   watchdog process probe UNKNOWN     (fail-closed; not "both up")
+    contract_expired expected-state review expired     (fail-closed until reviewed)
+    parked          PARKED target absent               (healthy expected state)
+    unexpected_running PARKED target has a process     (alarm; never auto-stop)
     duplicate       >1 terminal for this session, OR exactly one but placed in the
                     wrong desktop session
     launch_failed   terminal absent AND the resident supervisor (fresh heartbeat)
@@ -76,9 +88,15 @@
 
 Set-StrictMode -Version Latest
 
-$script:QmLiveAlarmStateVersion = 1
-$script:QmLiveAlarmConditions = @('ok', 'missing', 'duplicate', 'launch_failed', 'probe_unknown', 'stale', 'maintenance')
-$script:QmLiveAlarmAlarmConditions = @('missing', 'duplicate', 'launch_failed', 'probe_unknown', 'stale')
+$script:QmLiveAlarmStateVersion = 2
+$script:QmLiveAlarmConditions = @(
+    'ok', 'parked', 'missing', 'duplicate', 'launch_failed', 'probe_unknown',
+    'stale', 'unexpected_running', 'contract_expired', 'maintenance'
+)
+$script:QmLiveAlarmAlarmConditions = @(
+    'missing', 'duplicate', 'launch_failed', 'probe_unknown', 'stale',
+    'unexpected_running', 'contract_expired'
+)
 $script:QmLiveAlarmSessions = @('T_LIVE', 'FTMO')
 
 function Get-LiveAlarmUtcStamp {
@@ -115,6 +133,8 @@ function Get-LiveAlarmCondition {
     #>
     [CmdletBinding()]
     param(
+        [ValidateSet('RUNNING', 'PARKED', 'MAINTENANCE')][string]$ExpectedState = 'RUNNING',
+        [bool]$ReviewExpired = $false,
         [bool]$Maintenance,
         [bool]$ProbeOk,
         [bool]$Running,
@@ -125,11 +145,23 @@ function Get-LiveAlarmCondition {
         [AllowNull()][string]$SupervisorReason,
         [bool]$SupervisorLaunchFailed
     )
-    if ($Maintenance) {
+    if ($Maintenance -or $ExpectedState -eq 'MAINTENANCE') {
         return [pscustomobject]@{ condition = 'maintenance'; detail = 'maintenance_flag_active' }
     }
     if (-not $ProbeOk) {
         return [pscustomobject]@{ condition = 'probe_unknown'; detail = 'process_probe_failed' }
+    }
+    if ($ReviewExpired) {
+        return [pscustomobject]@{ condition = 'contract_expired'; detail = 'expected_state_review_expired' }
+    }
+    if ($ExpectedState -eq 'PARKED') {
+        if ($Running -or $ProcessCount -gt 0) {
+            return [pscustomobject]@{
+                condition = 'unexpected_running'
+                detail = "expected_parked_process_count=$ProcessCount"
+            }
+        }
+        return [pscustomobject]@{ condition = 'parked'; detail = 'expected_parked_and_off' }
     }
     if ($ProcessCount -gt 1) {
         return [pscustomobject]@{ condition = 'duplicate'; detail = "duplicate_process_count=$ProcessCount" }
@@ -169,19 +201,25 @@ function Update-LiveAlarmEntry {
     param(
         [string]$SessionName,
         [AllowNull()]$PrevEntry,
+        [ValidateSet('RUNNING', 'PARKED', 'MAINTENANCE')][string]$ExpectedState,
         [string]$Condition,
         [AllowNull()][string]$Detail,
-        [string]$NowStamp
+        [string]$NowStamp,
+        [ValidateRange(1, 60)][int]$EscalationThreshold = 3
     )
     $prevCondition = $null
     $prevSince = $null
     $prevTransitions = 0
     $prevLastChange = $null
+    $prevFailureCycles = 0
+    $prevEscalationSentUtc = $null
     if ($null -ne $PrevEntry) {
         try { $prevCondition = [string]$PrevEntry.condition } catch { $prevCondition = $null }
         try { $prevSince = ConvertTo-LiveAlarmStamp $PrevEntry.since_utc } catch { $prevSince = $null }
         try { $prevTransitions = [int]$PrevEntry.transitions } catch { $prevTransitions = 0 }
         try { $prevLastChange = ConvertTo-LiveAlarmStamp $PrevEntry.last_change } catch { $prevLastChange = $null }
+        try { $prevFailureCycles = [int]$PrevEntry.identical_failure_cycles } catch { $prevFailureCycles = 0 }
+        try { $prevEscalationSentUtc = ConvertTo-LiveAlarmStamp $PrevEntry.escalation_sent_utc } catch { $prevEscalationSentUtc = $null }
     }
 
     if ([string]::IsNullOrEmpty($prevCondition)) {
@@ -204,15 +242,37 @@ function Update-LiveAlarmEntry {
         $previousCondition = $prevCondition
     }
 
+    $isAlarm = Test-LiveAlarmCondition -Condition $Condition
+    $newEscalation = $false
+    if (-not $isAlarm) {
+        $failureCycles = 0
+        $escalationSentUtc = $null
+    } elseif ($prevCondition -eq $Condition) {
+        $failureCycles = $prevFailureCycles + 1
+        $escalationSentUtc = $prevEscalationSentUtc
+    } else {
+        $failureCycles = 1
+        $escalationSentUtc = $null
+    }
+    if ($isAlarm -and (-not $escalationSentUtc) -and $failureCycles -ge $EscalationThreshold) {
+        $escalationSentUtc = $NowStamp
+        $newEscalation = $true
+    }
+
     return [ordered]@{
         session = $SessionName
+        expected_state = $ExpectedState
         condition = $Condition
         detail = $Detail
-        alarm = (Test-LiveAlarmCondition -Condition $Condition)
+        alarm = $isAlarm
         since_utc = $since
         last_change = $lastChange
         transitions = $transitions
         previous_condition = $previousCondition
+        identical_failure_cycles = $failureCycles
+        escalation_threshold = $EscalationThreshold
+        escalation_sent_utc = $escalationSentUtc
+        new_escalation = $newEscalation
     }
 }
 
@@ -293,15 +353,20 @@ function Build-LiveAlarmState {
         [AllowNull()][string]$WatchdogStatus,
         [bool]$Maintenance,
         [bool]$RebootSuppressed,
-        [System.Collections.IDictionary]$Sessions
+        [System.Collections.IDictionary]$Sessions,
+        [System.Collections.IDictionary]$ExpectedStates = @{ T_LIVE = 'RUNNING'; FTMO = 'RUNNING' },
+        [ValidateRange(1, 60)][int]$EscalationThreshold = 3
     )
     $sessionOut = [ordered]@{}
     $anyAlarm = $false
+    $anyNewEscalation = $false
     foreach ($name in $script:QmLiveAlarmSessions) {
         $c = $Sessions[$name]
         if ($null -eq $c) {
             $c = [pscustomobject]@{ condition = 'probe_unknown'; detail = 'session_condition_not_supplied' }
         }
+        $expectedState = [string]$ExpectedStates[$name]
+        if ([string]::IsNullOrWhiteSpace($expectedState)) { $expectedState = 'RUNNING' }
         $prevEntry = $null
         if ($null -ne $PrevDocument -and ($PrevDocument.PSObject.Properties.Name -contains 'sessions') -and $null -ne $PrevDocument.sessions) {
             if ($PrevDocument.sessions.PSObject.Properties.Name -contains $name) {
@@ -309,8 +374,10 @@ function Build-LiveAlarmState {
             }
         }
         $entry = Update-LiveAlarmEntry -SessionName $name -PrevEntry $prevEntry `
-            -Condition ([string]$c.condition) -Detail ([string]$c.detail) -NowStamp $NowStamp
+            -ExpectedState $expectedState -Condition ([string]$c.condition) `
+            -Detail ([string]$c.detail) -NowStamp $NowStamp -EscalationThreshold $EscalationThreshold
         if ($entry.alarm) { $anyAlarm = $true }
+        if ($entry.new_escalation) { $anyNewEscalation = $true }
         $sessionOut[$name] = $entry
     }
     return [ordered]@{
@@ -321,6 +388,8 @@ function Build-LiveAlarmState {
         maintenance = $Maintenance
         reboot_suppressed = $RebootSuppressed
         any_alarm = $anyAlarm
+        any_new_escalation = $anyNewEscalation
+        escalation_threshold = $EscalationThreshold
         sessions = $sessionOut
     }
 }
@@ -339,6 +408,8 @@ function Write-LiveAlarmState {
         [bool]$Maintenance,
         [bool]$RebootSuppressed,
         [System.Collections.IDictionary]$Sessions,
+        [System.Collections.IDictionary]$ExpectedStates = @{ T_LIVE = 'RUNNING'; FTMO = 'RUNNING' },
+        [ValidateRange(1, 60)][int]$EscalationThreshold = 3,
         [switch]$DryRun
     )
     $prev = $null
@@ -346,7 +417,8 @@ function Write-LiveAlarmState {
         try { $prev = Get-Content -LiteralPath $AlarmFilePath -Raw -ErrorAction Stop | ConvertFrom-Json } catch { $prev = $null }
     }
     $doc = Build-LiveAlarmState -PrevDocument $prev -NowStamp $NowStamp -WatchdogStatus $WatchdogStatus `
-        -Maintenance $Maintenance -RebootSuppressed $RebootSuppressed -Sessions $Sessions
+        -Maintenance $Maintenance -RebootSuppressed $RebootSuppressed -Sessions $Sessions `
+        -ExpectedStates $ExpectedStates -EscalationThreshold $EscalationThreshold
     $json = $doc | ConvertTo-Json -Depth 6
 
     if ($DryRun.IsPresent) {

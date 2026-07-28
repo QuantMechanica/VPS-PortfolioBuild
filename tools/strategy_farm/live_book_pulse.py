@@ -23,6 +23,9 @@ from typing import Any
 
 
 DEFAULT_LIVE_ROOT = Path(r"C:\QM\mt5\T_Live")
+DEFAULT_COMMON_BASELINE_DIR = Path(
+    r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files\QM\baselines"
+)
 DEFAULT_OUTPUT_JSON = Path(r"D:\QM\reports\state\live_book_pulse.json")
 DEFAULT_APPEND_LOG = Path(r"D:\QM\reports\state\live_book_pulse.log")
 DEFAULT_ALARM_LOG = Path(r"D:\QM\strategy_farm\state\health_alarms.log")
@@ -417,6 +420,118 @@ def load_book_manifest(path_value: str | Path | None) -> dict[str, Any]:
         }
     )
     return result
+
+
+def _ks_baseline_file(directory: Path, ea_id: int, symbol: str) -> Path | None:
+    symbol_file = str(symbol).replace(".", "_")
+    names = [f"QM5_{ea_id}_{symbol_file}.json"]
+    if symbol_file.upper().endswith("_DWX"):
+        names.append(f"QM5_{ea_id}_{symbol_file[:-4]}.json")
+    for name in names:
+        candidate = Path(directory) / name
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def assess_ks_baselines(
+    manifest: dict[str, Any],
+    terminal_roots: list[Path],
+    latest_events: dict[str, dict[str, Any]],
+    common_baseline_dir: Path = DEFAULT_COMMON_BASELINE_DIR,
+) -> dict[str, Any]:
+    """Bind each live sleeve to the EA loader's effective KS baseline.
+
+    The MQL loader searches terminal-local MQL5/Files first and FILE_COMMON
+    second. Both roots are inspected here; divergent mirrors are never green.
+    """
+    if not manifest.get("loaded") or not isinstance(manifest.get("sleeves"), list):
+        return {
+            "status": "WARN",
+            "detail": "book_manifest_unavailable",
+            "expected_sleeves": 0,
+            "loaded_ok": 0,
+            "dormant": [],
+            "missing_files": [],
+            "hash_mismatches": [],
+            "mirror_divergences": [],
+            "loader_precedence": "terminal_local_then_file_common",
+        }
+
+    dormant: list[str] = []
+    missing_files: list[str] = []
+    hash_mismatches: list[str] = []
+    mirror_divergences: list[str] = []
+    loaded_ok = 0
+    sources: Counter[str] = Counter()
+    local_dirs = [root / "MQL5" / "Files" / "QM" / "baselines" for root in terminal_roots]
+
+    for sleeve in manifest["sleeves"]:
+        ea_id = int(sleeve["ea_id"])
+        symbol = str(sleeve.get("symbol") or "")
+        key = str(sleeve.get("key") or f"{ea_id}|{normalize_symbol(symbol)}")
+        local_path = next(
+            (path for directory in local_dirs if (path := _ks_baseline_file(directory, ea_id, symbol))),
+            None,
+        )
+        common_path = _ks_baseline_file(common_baseline_dir, ea_id, symbol)
+        effective_path = local_path or common_path
+        source = "terminal_local" if local_path else ("file_common" if common_path else "none")
+        sources[source] += 1
+
+        if local_path and common_path:
+            try:
+                if local_path.read_bytes() != common_path.read_bytes():
+                    mirror_divergences.append(key)
+            except OSError:
+                mirror_divergences.append(key)
+
+        if effective_path is None:
+            missing_files.append(key)
+            continue
+        try:
+            document = json.loads(effective_path.read_text(encoding="utf-8-sig"))
+            expected_hash = str(document.get("hash") or "")
+        except (OSError, json.JSONDecodeError, AttributeError):
+            expected_hash = ""
+        if not expected_hash:
+            missing_files.append(key)
+            continue
+
+        observed = latest_events.get(key)
+        if not observed or observed.get("event") != "KS_BASELINE_LOADED":
+            dormant.append(key)
+            continue
+        if str(observed.get("hash") or "") != expected_hash:
+            hash_mismatches.append(key)
+            continue
+        loaded_ok += 1
+
+    if mirror_divergences or hash_mismatches:
+        status = "FAIL"
+    elif dormant or missing_files:
+        status = "WARN"
+    else:
+        status = "OK"
+    return {
+        "status": status,
+        "detail": (
+            f"loaded_ok={loaded_ok}/{len(manifest['sleeves'])}; "
+            f"dormant={len(dormant)}; missing_files={len(missing_files)}; "
+            f"hash_mismatches={len(hash_mismatches)}; "
+            f"mirror_divergences={len(mirror_divergences)}"
+        ),
+        "expected_sleeves": len(manifest["sleeves"]),
+        "loaded_ok": loaded_ok,
+        "dormant": dormant,
+        "missing_files": missing_files,
+        "hash_mismatches": hash_mismatches,
+        "mirror_divergences": mirror_divergences,
+        "baseline_sources": dict(sorted(sources.items())),
+        "terminal_local_dirs": [str(path) for path in local_dirs],
+        "file_common_dir": str(common_baseline_dir),
+        "loader_precedence": "terminal_local_then_file_common",
+    }
 
 
 def select_manifest_presets(
@@ -860,6 +975,7 @@ def parse_ea_logs(
     warning_samples: list[dict[str, Any]] = []
     parse_errors = 0
     latest_equity: dict[str, Any] | None = None
+    latest_ks_events: dict[str, dict[str, Any]] = {}
 
     for path in ea_log_files:
         try:
@@ -881,6 +997,28 @@ def parse_ea_logs(
             event_name = str(event.get("event") or "")
             event_counts[event_name] += 1
             payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
+            if event_name in {"KS_BASELINE_LOADED", "KS_BASELINE_ABSENT"}:
+                try:
+                    raw_ea = event.get("ea_id")
+                    ea_id = int(str(raw_ea).replace("QM5_", ""))
+                except (TypeError, ValueError):
+                    try:
+                        ea_id = int(event.get("magic") or 0) // 10000
+                    except (TypeError, ValueError):
+                        ea_id = 0
+                symbol_norm = normalize_symbol(event.get("symbol") or payload.get("symbol"))
+                if ea_id and symbol_norm:
+                    key = f"{ea_id}|{symbol_norm}"
+                    ts = str(event.get("ts_utc") or "")
+                    previous = latest_ks_events.get(key)
+                    if previous is None or ts >= str(previous.get("ts_utc") or ""):
+                        latest_ks_events[key] = {
+                            "event": event_name,
+                            "ts_utc": ts or None,
+                            "hash": payload.get("hash"),
+                            "path": payload.get("path") or payload.get("expected_path"),
+                            "source_file": str(path),
+                        }
             if event_name == "EQUITY_SNAPSHOT":
                 # Account-level equity is the same across all sleeve EAs; keep the
                 # newest snapshot so the cockpit can show the DXZ book's live value.
@@ -988,6 +1126,7 @@ def parse_ea_logs(
         "book_equity": latest_equity,
         "sleeves_from_ea_logs": sorted(sleeves.values(), key=lambda row: int(row["magic"])),
         "event_counts": dict(sorted(event_counts.items())),
+        "latest_ks_baseline_events": latest_ks_events,
         "position_events_by_magic": position_events_by_magic,
         "active_trade_manager_entry_count": len(open_positions),
         "active_trade_manager_entries": sorted(
@@ -1170,6 +1309,17 @@ def is_market_hours(now: datetime) -> bool:
 
 def build_alarms(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
     alarms: list[dict[str, Any]] = []
+    ks = snapshot.get("kill_switch_baselines", {})
+    if ks.get("status") != "OK":
+        alarms.append(
+            {
+                "class": "live_book",
+                "severity": "FAIL" if ks.get("status") == "FAIL" else "WARN",
+                "metric": "ks_baseline_status",
+                "value": f"{ks.get('loaded_ok', 0)}/{ks.get('expected_sleeves', 0)}",
+                "detail": ks.get("detail") or "ks_baseline_state_unknown",
+            }
+        )
     hb = snapshot.get("heartbeat", {})
     heartbeat_alarm_details = hb.get("alarm_details") or []
     if heartbeat_alarm_details:
@@ -1399,6 +1549,11 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
         "manifest_reconcile": manifest_reconcile,
         "preset_consistency": preset_consistency,
         "ea_logs": ea_logs,
+        "kill_switch_baselines": assess_ks_baselines(
+            book_manifest,
+            terminal_roots,
+            ea_logs.get("latest_ks_baseline_events") or {},
+        ),
     }
     snapshot["alarms"] = build_alarms(snapshot)
     snapshot["verdict"] = "ALARM" if snapshot["alarms"] else "OK"
@@ -1459,6 +1614,9 @@ def main(argv: list[str] | None = None) -> int:
                 snapshot["heartbeat"].get("latest_scan_finished") or {}
             ).get("minutes_since"),
             "heartbeat_position_exposed": snapshot["heartbeat"].get("position_exposed"),
+            "ks_baseline_status": snapshot["kill_switch_baselines"].get("status"),
+            "ks_baseline_loaded_ok": snapshot["kill_switch_baselines"].get("loaded_ok"),
+            "ks_baseline_expected_sleeves": snapshot["kill_switch_baselines"].get("expected_sleeves"),
             "alarm_count": len(snapshot["alarms"]),
         },
     )

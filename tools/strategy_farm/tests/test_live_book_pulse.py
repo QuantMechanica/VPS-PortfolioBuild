@@ -304,3 +304,116 @@ def test_manifest_preset_selection_chooses_newest_matching_magic() -> None:
     assert result["selected_count"] == 1
     assert result["selected"][0]["path"] == "dxz23_live.set"
     assert result["ambiguous"][0]["chosen"] == "dxz23_live.set"
+
+
+def test_ks_baseline_metric_uses_terminal_local_precedence_and_detects_mirror_drift(
+    tmp_path: Path,
+) -> None:
+    terminal = tmp_path / "terminal"
+    local = terminal / "MQL5" / "Files" / "QM" / "baselines"
+    common = tmp_path / "common"
+    local.mkdir(parents=True)
+    common.mkdir()
+    local_doc = {"hash": "LOCAL", "trades_sorted": list(range(10))}
+    (local / "QM5_10440_NDX.json").write_text(json.dumps(local_doc), encoding="utf-8")
+    (common / "QM5_10440_NDX.json").write_text(
+        json.dumps({"hash": "COMMON", "trades_sorted": list(range(10))}),
+        encoding="utf-8",
+    )
+    manifest = {
+        "loaded": True,
+        "sleeves": [{
+            "key": "10440|NDX",
+            "ea_id": 10440,
+            "symbol": "NDX.DWX",
+            "symbol_norm": "NDX",
+        }],
+    }
+    events = {
+        "10440|NDX": {
+            "event": "KS_BASELINE_LOADED",
+            "hash": "LOCAL",
+            "ts_utc": "2026-07-28T00:00:00Z",
+        },
+    }
+
+    result = live_book_pulse.assess_ks_baselines(
+        manifest,
+        [terminal],
+        events,
+        common_baseline_dir=common,
+    )
+
+    assert result["status"] == "FAIL"
+    assert result["loaded_ok"] == 1
+    assert result["baseline_sources"] == {"terminal_local": 1}
+    assert result["mirror_divergences"] == ["10440|NDX"]
+
+
+def test_ks_baseline_metric_prevents_green_when_loaded_event_is_absent(tmp_path: Path) -> None:
+    terminal = tmp_path / "terminal"
+    local = terminal / "MQL5" / "Files" / "QM" / "baselines"
+    local.mkdir(parents=True)
+    (local / "QM5_10440_NDX.json").write_text(
+        json.dumps({"hash": "EXPECTED", "trades_sorted": list(range(10))}),
+        encoding="utf-8",
+    )
+    manifest = {
+        "loaded": True,
+        "sleeves": [{
+            "key": "10440|NDX",
+            "ea_id": 10440,
+            "symbol": "NDX.DWX",
+            "symbol_norm": "NDX",
+        }],
+    }
+
+    result = live_book_pulse.assess_ks_baselines(
+        manifest,
+        [terminal],
+        {},
+        common_baseline_dir=tmp_path / "absent_common",
+    )
+    alarms = live_book_pulse.build_alarms({
+        "kill_switch_baselines": result,
+        "heartbeat": {"alarm": False, "alarm_details": []},
+        "terminal_journals": {"loaded_sleeve_count": 1, "account_id": "4000090541"},
+        "book_manifest": {"enabled": True, "loaded": True, "status": "LIVE",
+                          "expected_sleeve_count": 1, "actual_manifest_sleeve_count": 1,
+                          "declared_sleeve_count": 1, "duplicate_key_count": 0},
+        "manifest_reconcile": {"expected_count": 1},
+        "live_presets": {"ambiguous_selections": []},
+        "preset_consistency": {"mismatches": []},
+    })
+
+    assert result["status"] == "WARN"
+    assert result["loaded_ok"] == 0
+    assert result["dormant"] == ["10440|NDX"]
+    assert any(alarm["metric"] == "ks_baseline_status" for alarm in alarms)
+
+
+def test_parse_ea_logs_exposes_latest_ks_baseline_event(tmp_path: Path) -> None:
+    root = tmp_path / "terminal"
+    qm_dir = root / "MQL5" / "Files" / "QM"
+    qm_dir.mkdir(parents=True)
+    log = qm_dir / "QM5_10440_ea-104400003.log"
+    log.write_text(
+        json.dumps({
+            "ts_utc": "2026-07-28T10:00:00Z",
+            "ea_id": "QM5_10440",
+            "symbol": "NDX.DWX",
+            "event": "KS_BASELINE_LOADED",
+            "payload": {"hash": "EXPECTED", "path": "terminal-local"},
+        }) + "\n",
+        encoding="utf-8",
+    )
+
+    result = live_book_pulse.parse_ea_logs([root], {}, tail_bytes=64_000)
+
+    assert result["latest_ks_baseline_events"]["10440|NDX"] == {
+        "event": "KS_BASELINE_LOADED",
+        "ts_utc": "2026-07-28T10:00:00Z",
+        "hash": "EXPECTED",
+        "path": "terminal-local",
+        "source_file": str(log),
+    }

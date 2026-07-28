@@ -40,6 +40,72 @@ def test_snapshot_age_rejects_invalid_timestamp() -> None:
     assert ftmo_trial_pulse.snapshot_age_minutes("not-a-time") is None
 
 
+def test_expected_state_parked_off_is_ok() -> None:
+    now = datetime(2026, 7, 28, tzinfo=timezone.utc)
+
+    state = ftmo_trial_pulse.assess_expected_state(terminal_up=False, now=now)
+
+    assert state["expected_state"] == "PARKED"
+    assert state["condition"] == "parked"
+    assert state["alarm"] is None
+
+
+def test_expected_state_parked_running_is_alarm() -> None:
+    now = datetime(2026, 7, 28, tzinfo=timezone.utc)
+
+    state = ftmo_trial_pulse.assess_expected_state(terminal_up=True, now=now)
+
+    assert state["condition"] == "unexpected_running"
+    assert state["alarm"] == "ftmo_terminal_running_while_parked"
+
+
+def test_expected_state_expiry_fails_closed() -> None:
+    now = datetime(2026, 8, 25, tzinfo=timezone.utc)
+
+    state = ftmo_trial_pulse.assess_expected_state(terminal_up=False, now=now)
+
+    assert state["review_expired"] is True
+    assert state["condition"] == "contract_expired"
+    assert state["alarm"] == "expected_state_review_expired"
+
+
+def test_invalid_expected_state_fails_closed_even_during_maintenance() -> None:
+    now = datetime(2026, 7, 28, tzinfo=timezone.utc)
+
+    state = ftmo_trial_pulse.assess_expected_state(
+        terminal_up=False,
+        now=now,
+        maintenance=True,
+        expected_state="UNKNOWN",
+    )
+
+    assert state["condition"] == "contract_invalid"
+    assert state["alarm"] == "expected_state_contract_invalid"
+
+
+def test_parked_state_fails_closed_when_process_probe_is_unknown() -> None:
+    now = datetime(2026, 7, 28, tzinfo=timezone.utc)
+
+    state = ftmo_trial_pulse.assess_expected_state(terminal_up=None, now=now)
+
+    assert state["condition"] == "probe_unknown"
+    assert state["alarm"] == "ftmo_terminal_process_probe_unknown"
+
+
+def test_maintenance_suppresses_park_contract_alarm() -> None:
+    now = datetime(2026, 9, 1, tzinfo=timezone.utc)
+
+    state = ftmo_trial_pulse.assess_expected_state(
+        terminal_up=True,
+        now=now,
+        maintenance=True,
+    )
+
+    assert state["effective_state"] == "MAINTENANCE"
+    assert state["condition"] == "maintenance"
+    assert state["alarm"] is None
+
+
 def test_pulse_is_observer_only_no_halt_signal_emission() -> None:
     """One-authority tombstone (WS-G' round 2): the FTMO pulse must never emit a
     halt/liquidation signal. The single armed halt authority is the

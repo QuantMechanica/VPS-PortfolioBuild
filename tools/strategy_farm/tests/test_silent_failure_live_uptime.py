@@ -68,6 +68,81 @@ def test_live_uptime_fails_when_one_terminal_is_missing(tmp_path, monkeypatch) -
     assert "FTMO" in result[0]["detail"]
 
 
+def test_live_uptime_accepts_parked_ftmo_when_off(tmp_path, monkeypatch) -> None:
+    state_path = tmp_path / "live.json"
+    _write_state(
+        state_path,
+        ftmo_running=False,
+        expected_dxz_state="RUNNING",
+        expected_ftmo_state="PARKED",
+        expected_ftmo_profile=None,
+        session_placement_ok=True,
+    )
+    monkeypatch.setattr(monitor, "LIVE_UPTIME_STATE", state_path)
+    monkeypatch.setattr(monitor, "_now", lambda: NOW)
+
+    result = monitor.check_live_uptime()
+
+    assert result[0]["status"] == monitor.OK
+    assert "FTMO=PARKED" in result[0]["detail"]
+
+
+def test_live_uptime_alarms_when_parked_ftmo_is_running(tmp_path, monkeypatch) -> None:
+    state_path = tmp_path / "live.json"
+    _write_state(
+        state_path,
+        expected_dxz_state="RUNNING",
+        expected_ftmo_state="PARKED",
+        expected_ftmo_profile=None,
+    )
+    monkeypatch.setattr(monitor, "LIVE_UPTIME_STATE", state_path)
+    monkeypatch.setattr(monitor, "_now", lambda: NOW)
+
+    result = monitor.check_live_uptime()
+
+    assert result[0]["name"] == "live_mt5_expected_state"
+    assert result[0]["status"] == monitor.FAIL
+    assert "FTMO" in result[0]["detail"]
+
+
+def test_live_uptime_alarms_when_expected_state_review_expired(tmp_path, monkeypatch) -> None:
+    state_path = tmp_path / "live.json"
+    _write_state(
+        state_path,
+        ftmo_running=False,
+        expected_dxz_state="RUNNING",
+        expected_ftmo_state="PARKED",
+        expected_state_review_expired=True,
+        expected_state_review_expires_utc="2026-08-25T00:00:00Z",
+    )
+    monkeypatch.setattr(monitor, "LIVE_UPTIME_STATE", state_path)
+    monkeypatch.setattr(monitor, "_now", lambda: NOW)
+
+    result = monitor.check_live_uptime()
+
+    assert result[0]["name"] == "live_mt5_expected_state"
+    assert result[0]["status"] == monitor.FAIL
+    assert "expired" in result[0]["detail"]
+
+
+def test_live_uptime_fails_closed_on_invalid_expected_state(tmp_path, monkeypatch) -> None:
+    state_path = tmp_path / "live.json"
+    _write_state(
+        state_path,
+        expected_dxz_state="UNKNOWN",
+        expected_ftmo_state="PARKED",
+        maintenance=True,
+    )
+    monkeypatch.setattr(monitor, "LIVE_UPTIME_STATE", state_path)
+    monkeypatch.setattr(monitor, "_now", lambda: NOW)
+
+    result = monitor.check_live_uptime()
+
+    assert result[0]["name"] == "live_mt5_expected_state"
+    assert result[0]["status"] == monitor.FAIL
+    assert "DXZ" in result[0]["detail"]
+
+
 def test_live_uptime_fails_closed_when_process_probe_is_unknown(tmp_path, monkeypatch) -> None:
     state_path = tmp_path / "live.json"
     _write_state(state_path, process_probe_ok=False, dxz_running=False, ftmo_running=False)

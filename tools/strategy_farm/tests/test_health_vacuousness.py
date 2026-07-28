@@ -548,7 +548,8 @@ class KsBaselineDormancyTest(unittest.TestCase):
     def test_mismatch_fails_and_classification(self):
         tmp = Path(self.enterContext(_tmpdir()))
         bdir, ldir, manifest = self._fixture(tmp, with_mismatch=True, with_dormant=True)
-        with mock.patch.object(health, "LIVE_COMMON_BASELINE_DIR", bdir), \
+        with mock.patch.object(health, "LIVE_TERMINAL_BASELINE_DIR", tmp / "no_local"), \
+                mock.patch.object(health, "LIVE_COMMON_BASELINE_DIR", bdir), \
                 mock.patch.object(health, "LIVE_QM_LOG_DIR", ldir), \
                 mock.patch.object(health, "DXZ_BOOK_MANIFEST", manifest):
             res = health.chk_ks_baseline_dormancy()
@@ -561,7 +562,8 @@ class KsBaselineDormancyTest(unittest.TestCase):
     def test_dormant_only_warns(self):
         tmp = Path(self.enterContext(_tmpdir()))
         bdir, ldir, manifest = self._fixture(tmp, with_mismatch=False, with_dormant=True)
-        with mock.patch.object(health, "LIVE_COMMON_BASELINE_DIR", bdir), \
+        with mock.patch.object(health, "LIVE_TERMINAL_BASELINE_DIR", tmp / "no_local"), \
+                mock.patch.object(health, "LIVE_COMMON_BASELINE_DIR", bdir), \
                 mock.patch.object(health, "LIVE_QM_LOG_DIR", ldir), \
                 mock.patch.object(health, "DXZ_BOOK_MANIFEST", manifest):
             res = health.chk_ks_baseline_dormancy()
@@ -577,7 +579,8 @@ class KsBaselineDormancyTest(unittest.TestCase):
                           "event": "KS_BASELINE_LOADED", "payload": {"hash": "DDD"}})
         with (ldir / "QM5_book.log").open("a", encoding="utf-8") as fh:
             fh.write(rec + "\n")
-        with mock.patch.object(health, "LIVE_COMMON_BASELINE_DIR", bdir), \
+        with mock.patch.object(health, "LIVE_TERMINAL_BASELINE_DIR", tmp / "no_local"), \
+                mock.patch.object(health, "LIVE_COMMON_BASELINE_DIR", bdir), \
                 mock.patch.object(health, "LIVE_QM_LOG_DIR", ldir), \
                 mock.patch.object(health, "DXZ_BOOK_MANIFEST", manifest):
             res = health.chk_ks_baseline_dormancy()
@@ -587,12 +590,36 @@ class KsBaselineDormancyTest(unittest.TestCase):
     def test_missing_logs_is_unknown_not_green(self):
         tmp = Path(self.enterContext(_tmpdir()))
         bdir, _ldir, manifest = self._fixture(tmp)
-        with mock.patch.object(health, "LIVE_COMMON_BASELINE_DIR", bdir), \
+        with mock.patch.object(health, "LIVE_TERMINAL_BASELINE_DIR", tmp / "no_local"), \
+                mock.patch.object(health, "LIVE_COMMON_BASELINE_DIR", bdir), \
                 mock.patch.object(health, "LIVE_QM_LOG_DIR", tmp / "does_not_exist"), \
                 mock.patch.object(health, "DXZ_BOOK_MANIFEST", manifest):
             res = health.chk_ks_baseline_dormancy()
         self.assertEqual(res["status"], "WARN")
         self.assertIn("log_dir_missing", res["detail"])
+
+    def test_divergent_terminal_local_and_common_mirrors_fail(self):
+        tmp = Path(self.enterContext(_tmpdir()))
+        common, ldir, manifest = self._fixture(tmp, with_mismatch=False, with_dormant=False)
+        _write_json(common / "QM5_9404_EURGBP.json", {"hash": "DDD"})
+        rec = json.dumps({"ts_utc": "2026-07-25T00:00:00Z", "ea_id": 9404, "symbol": "EURGBP",
+                          "event": "KS_BASELINE_LOADED", "payload": {"hash": "DDD"}})
+        with (ldir / "QM5_book.log").open("a", encoding="utf-8") as fh:
+            fh.write(rec + "\n")
+        local = tmp / "terminal" / "baselines"
+        local.mkdir(parents=True)
+        for path in common.glob("*.json"):
+            (local / path.name).write_bytes(path.read_bytes())
+        _write_json(local / "QM5_9401_EURUSD.json", {"hash": "LOCAL-DIFFERENT"})
+
+        with mock.patch.object(health, "LIVE_TERMINAL_BASELINE_DIR", local), \
+                mock.patch.object(health, "LIVE_COMMON_BASELINE_DIR", common), \
+                mock.patch.object(health, "LIVE_QM_LOG_DIR", ldir), \
+                mock.patch.object(health, "DXZ_BOOK_MANIFEST", manifest):
+            res = health.chk_ks_baseline_dormancy()
+
+        self.assertEqual(res["status"], "FAIL")
+        self.assertIn("mirror_divergent=1", res["detail"])
 
     def test_missing_manifest_is_unknown_not_green(self):
         tmp = Path(self.enterContext(_tmpdir()))

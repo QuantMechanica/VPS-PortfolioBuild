@@ -116,9 +116,11 @@ PROVENANCE_HASH_ALIASES = {
 TIER_CANDIDATE = "CANDIDATE"
 TIER_AUTHENTICATED = "AUTHENTICATED"
 # KS divergence kill-switch baseline dormancy (detector d). Live QM EA logs for the DXZ
-# book, the deployed manifest, and the live Common baseline dir. QM_DXZ_BOOK_MANIFEST
+# book, the deployed manifest, and both baseline search roots used by the EA
+# loader (terminal-local first, FILE_COMMON fallback). QM_DXZ_BOOK_MANIFEST
 # mirrors live_book_pulse.py's pointer so both consume the same signed book.
 LIVE_QM_LOG_DIR = Path(r"C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM")
+LIVE_TERMINAL_BASELINE_DIR = LIVE_QM_LOG_DIR / "baselines"
 LIVE_COMMON_BASELINE_DIR = Path(
     r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files\QM\baselines"
 )
@@ -2353,20 +2355,46 @@ def chk_phase_invalid_rate_7d(con) -> dict:
     return _check("phase_invalid_rate_7d", "OK", round(worst_rate, 1), INVALID_RATE_WARN_PCT, detail, "")
 
 
-def _baseline_hash_for(ea_id: int, symbol: str) -> str | None:
-    """Expected KS baseline hash for a live sleeve — the 'hash' field of the on-disk
-    Common baseline file (canonical or the suffix-stripped alias; both carry the same
-    content hash). This binds expected identity to the deployed baseline, so the check
-    is 'the loaded distribution matches THIS baseline', never merely 'a file exists'."""
+def _baseline_file_for(directory: Path, ea_id: int, symbol: str) -> Path | None:
     symc = str(symbol).replace(".", "_")
-    cands = [LIVE_COMMON_BASELINE_DIR / f"QM5_{ea_id}_{symc}.json"]
+    cands = [Path(directory) / f"QM5_{ea_id}_{symc}.json"]
     if symc.upper().endswith("_DWX"):
-        cands.append(LIVE_COMMON_BASELINE_DIR / f"QM5_{ea_id}_{symc[:-4]}.json")
+        cands.append(Path(directory) / f"QM5_{ea_id}_{symc[:-4]}.json")
     for c in cands:
-        d = _read_json_path(c)
-        if d and d.get("hash"):
-            return str(d["hash"])
+        if c.is_file():
+            return c
     return None
+
+
+def _baseline_resolution_for(ea_id: int, symbol: str) -> dict:
+    """Resolve exactly as the EA does: terminal-local first, Common fallback.
+
+    A simultaneous, byte-divergent mirror is a hard configuration defect even
+    when the currently loaded hash matches the terminal-local winner.
+    """
+    local_path = _baseline_file_for(LIVE_TERMINAL_BASELINE_DIR, ea_id, symbol)
+    common_path = _baseline_file_for(LIVE_COMMON_BASELINE_DIR, ea_id, symbol)
+    effective_path = local_path or common_path
+    effective_doc = _read_json_path(effective_path) if effective_path else None
+    divergent = False
+    if local_path and common_path:
+        try:
+            divergent = local_path.read_bytes() != common_path.read_bytes()
+        except OSError:
+            divergent = True
+    return {
+        "hash": str(effective_doc["hash"]) if effective_doc and effective_doc.get("hash") else None,
+        "source": "terminal_local" if local_path else ("file_common" if common_path else None),
+        "effective_path": str(effective_path) if effective_path else None,
+        "terminal_path": str(local_path) if local_path else None,
+        "common_path": str(common_path) if common_path else None,
+        "mirror_divergent": divergent,
+    }
+
+
+def _baseline_hash_for(ea_id: int, symbol: str) -> str | None:
+    """Backward-compatible scalar accessor for tests/diagnostics."""
+    return _baseline_resolution_for(ea_id, symbol).get("hash")
 
 
 def _scan_ks_events(log_dir: Path) -> tuple[dict, str]:
@@ -2430,7 +2458,7 @@ def chk_ks_baseline_dormancy() -> dict:
         ea, sym = _ea_id_int(s.get("ea_id")), s.get("symbol")
         if ea is None or not sym:
             continue
-        expected[(ea, _norm_symbol(sym))] = _baseline_hash_for(ea, sym)
+        expected[(ea, _norm_symbol(sym))] = _baseline_resolution_for(ea, sym)
 
     observed, log_status = _scan_ks_events(LIVE_QM_LOG_DIR)
     if log_status != "ok":
@@ -2443,8 +2471,15 @@ def chk_ks_baseline_dormancy() -> dict:
     dormant: list[str] = []
     no_file: list[str] = []
     mismatch: list[str] = []
-    for (ea, nsym), exp_hash in sorted(expected.items()):
+    mirror_divergent: list[str] = []
+    sources: dict[str, int] = {}
+    for (ea, nsym), baseline in sorted(expected.items()):
         label = f"{ea}/{nsym}"
+        exp_hash = baseline.get("hash")
+        source = str(baseline.get("source") or "none")
+        sources[source] = sources.get(source, 0) + 1
+        if baseline.get("mirror_divergent"):
+            mirror_divergent.append(label)
         obs = observed.get((ea, nsym))
         if exp_hash is None:
             no_file.append(label)
@@ -2452,7 +2487,7 @@ def chk_ks_baseline_dormancy() -> dict:
         if obs is None or obs["event"] == "KS_BASELINE_ABSENT":
             dormant.append(label)
             continue
-        if obs.get("hash") and obs["hash"] != exp_hash:
+        if str(obs.get("hash") or "") != str(exp_hash):
             mismatch.append(label)
             continue
         loaded_ok += 1
@@ -2460,16 +2495,19 @@ def chk_ks_baseline_dormancy() -> dict:
     total = len(expected)
     dormant_total = len(dormant) + len(no_file)
     detail = (f"manifest={DXZ_BOOK_MANIFEST.name} live_logs={LIVE_QM_LOG_DIR} sleeves={total} "
+              f"loader_precedence=terminal_local_then_file_common baseline_sources={sources} "
               f"loaded_ok={loaded_ok} dormant={len(dormant)} no_baseline_file={len(no_file)} "
-              f"hash_mismatch={len(mismatch)} dormant_list={dormant[:8]} "
+              f"hash_mismatch={len(mismatch)} mirror_divergent={len(mirror_divergent)} "
+              f"dormant_list={dormant[:8]} "
               f"nofile={no_file[:8]} mismatch={mismatch[:8]}")
     hint = ("Live sleeves without a loaded KS baseline run with the divergence kill-switch DORMANT. "
             "Generate/deploy the Q10 baseline (gen_q10_baseline.py --deploy-live, OWNER-gated) and "
             "confirm KS_BASELINE_LOADED in the live QM logs.")
-    if mismatch:
-        return _check("ks_baseline_dormancy", "FAIL", f"hash_mismatch={len(mismatch)}", 0, detail,
-                      "A live sleeve loaded a baseline whose hash != the deployed on-disk baseline "
-                      "(stale / wrong distribution). " + hint)
+    if mismatch or mirror_divergent:
+        value = f"hash_mismatch={len(mismatch)},mirror_divergent={len(mirror_divergent)}"
+        return _check("ks_baseline_dormancy", "FAIL", value, 0, detail,
+                      "KS baseline roots disagree or a live sleeve loaded a hash other than the "
+                      "effective terminal-local/Common baseline. Reconcile to one source of truth. " + hint)
     if dormant_total:
         return _check("ks_baseline_dormancy", "WARN", dormant_total, 0, detail, hint)
     return _check("ks_baseline_dormancy", "OK", 0, 0, detail, "")

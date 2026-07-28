@@ -170,6 +170,25 @@ def test_resident_session_supervisor_is_fail_closed_and_non_destructive() -> Non
     assert "Stop-Process" not in source
     assert "shutdown.exe" not in source
     assert "AutoTrading" not in source
+    assert "$expectedFtmoState = 'PARKED'" in source
+    assert "parked_no_relaunch:$name" in source
+    assert "$expectedFtmoState -eq 'RUNNING' -and $misses.FTMO" in source
+
+
+def test_watchdog_bakes_parked_ftmo_contract_without_process_control() -> None:
+    source = WATCHDOG.read_text(encoding="ascii")
+    launcher = FTMO_ON.read_text(encoding="ascii")
+
+    assert "$expectedDxzState = 'RUNNING'" in source
+    assert "$expectedFtmoState = 'PARKED'" in source
+    assert "$expectedFtmoProfile = $null" in source
+    assert "$expectedStateReviewExpiresUtc = '2026-08-25T00:00:00Z'" in source
+    assert "parked_no_relaunch:FTMO" in source
+    assert "expected_parked_but_running:FTMO" in source
+    assert "Stop-Process" not in source
+    assert "$expectedFtmoState = 'PARKED'" in launcher
+    assert "FTMO launch suppressed by baked expected state" in launcher
+    assert launcher.index("if ($expectedFtmoState -ne 'RUNNING')") < launcher.index("$identity =")
 
 
 def test_system_watchdog_delegates_in_session_instead_of_demand_starting_gui_tasks() -> None:

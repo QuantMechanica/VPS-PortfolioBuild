@@ -29,9 +29,9 @@ except ModuleNotFoundError:
     from tools.strategy_farm.cache_audit import has_ea_history_window, has_history_window
 
 try:
-    from phase_ids import phase_label, phase_qid
+    from phase_ids import PHASE_ORDER, phase_label, phase_qid
 except ModuleNotFoundError:
-    from tools.strategy_farm.phase_ids import phase_label, phase_qid
+    from tools.strategy_farm.phase_ids import PHASE_ORDER, phase_label, phase_qid
 
 try:
     from managed_codex import (
@@ -2151,8 +2151,8 @@ def backfill_work_items(root: Path) -> dict[str, Any]:
 def pipeline_view(root: Path) -> dict[str, Any]:
     """Per-EA lifecycle table — answers "where does each EA stand RIGHT NOW?"
 
-    Aggregates state across the tasks table for every EA seen in build_ea +
-    backtest_<phase> + ea_review rows. Output is one row per EA with columns:
+    Build/review metadata comes from tasks; canonical gate state comes from
+    work_items. Output is one row per EA with columns:
       ea_id, slug (from build payload), card_status (approved/etc.),
       build_status, build_smoke, review_verdict, p2_verdict, p3_verdict, ...
       attempts (sum across tasks), terminal_state (which phase is active).
@@ -2161,33 +2161,75 @@ def pipeline_view(root: Path) -> dict[str, Any]:
     """
     init_db(root)
     eas: dict[str, dict[str, Any]] = {}
+
+    def ensure_entry(ea_id: Any, *, slug: str = "", updated_at: str | None = None) -> dict[str, Any]:
+        label = _normalise_ea_label(ea_id)
+        entry = eas.setdefault(label, {
+            "ea_id": label,
+            "slug": slug,
+            "build": None,
+            "review": None,
+            "phases": {},
+            "current_stage": "card",
+            "total_attempts": 0,
+            "last_activity": updated_at,
+            "per_ea_source": "tasks",
+            "_task_stage": "card",
+            "_legacy_phases": {},
+        })
+        if not entry["slug"] and slug:
+            entry["slug"] = slug
+        if updated_at and (not entry["last_activity"] or updated_at > entry["last_activity"]):
+            entry["last_activity"] = updated_at
+        return entry
+
+    def review_verdict(payload: dict[str, Any]) -> str | None:
+        raw = payload.get("verdict")
+        if isinstance(raw, dict):
+            value = raw.get("verdict")
+        else:
+            value = raw
+        text = str(value).strip() if value is not None else ""
+        return text or None
+
+    def verdict_rank(value: Any) -> int:
+        verdict = str(value or "").strip().upper()
+        if (
+            verdict in {"AUTO_PASS", "MODE_SELECTED", "MULTI_SEED_MIXED", "MULTI_SEED_PASS"}
+            or verdict.startswith("PASS")
+        ):
+            return 2
+        if (
+            verdict in {"INVALID", "INVALID_BUILD_STATIC_FIDELITY", "ZERO_TRADES", "DRAFT_DEFECT"}
+            or verdict.startswith("FAIL")
+        ):
+            return 1
+        return 0
+
     with connect(root) as conn:
-        rows = conn.execute(
+        task_rows = conn.execute(
             "SELECT id, kind, status, payload_json, created_at, updated_at "
-            "FROM tasks ORDER BY created_at"
+            "FROM tasks ORDER BY updated_at, created_at, id"
         ).fetchall()
-    for r in rows:
+        work_rows = conn.execute(
+            "SELECT id, phase, ea_id, symbol, status, verdict, attempt_count, "
+            "evidence_path, claimed_by, created_at, updated_at "
+            "FROM work_items ORDER BY updated_at, created_at, id"
+        ).fetchall()
+
+    # Tasks remain authoritative for build/review metadata only. Legacy bundled
+    # backtest tasks are retained solely as a fallback for EAs with no work_items.
+    for r in task_rows:
+        kind = str(r["kind"] or "")
+        if kind not in {"build_ea", "ea_review"} and not kind.startswith("backtest_"):
+            continue
         payload = json.loads(r["payload_json"]) if r["payload_json"] else {}
         ea_id = payload.get("ea_id") or r["id"]
         if not ea_id:
             continue
-        entry = eas.setdefault(ea_id, {
-            "ea_id": ea_id,
-            "slug": payload.get("slug") or "",
-            "build": None,
-            "review": None,
-            "phases": {},          # phase_label → {status, verdict, attempts, surviving_symbols}
-            "current_stage": "card",
-            "total_attempts": 0,
-            "last_activity": r["updated_at"],
-        })
-        if not entry["slug"] and payload.get("slug"):
-            entry["slug"] = payload["slug"]
-        if r["updated_at"] > entry["last_activity"]:
-            entry["last_activity"] = r["updated_at"]
+        entry = ensure_entry(ea_id, slug=payload.get("slug") or "", updated_at=r["updated_at"])
         entry["total_attempts"] += int(payload.get("attempt_count", 0))
 
-        kind = r["kind"]
         if kind == "build_ea":
             build_result = payload.get("build_result")
             build_result_smoke = build_result.get("smoke_result") if isinstance(build_result, dict) else None
@@ -2198,41 +2240,124 @@ def pipeline_view(root: Path) -> dict[str, Any]:
                 "blocked_reason": payload.get("blocked_reason"),
             }
             if r["status"] == "pending":
-                entry["current_stage"] = "build_pending"
+                entry["_task_stage"] = "build_pending"
             elif r["status"] == "active":
-                entry["current_stage"] = "building"
+                entry["_task_stage"] = "building"
             elif r["status"] in ("done", ):
-                entry["current_stage"] = "built"
+                entry["_task_stage"] = "built"
             elif r["status"] in ("failed", "blocked"):
-                entry["current_stage"] = f"build_{r['status']}"
+                entry["_task_stage"] = f"build_{r['status']}"
         elif kind == "ea_review":
-            verdict_doc = payload.get("verdict") or {}
+            verdict = review_verdict(payload)
             entry["review"] = {
                 "task_id": r["id"],
                 "status": r["status"],
-                "verdict": verdict_doc.get("verdict"),
+                "verdict": verdict,
             }
             if r["status"] == "done":
-                if verdict_doc.get("verdict") == "APPROVE_FOR_BACKTEST":
-                    entry["current_stage"] = "review_approved"
+                if verdict == "APPROVE_FOR_BACKTEST":
+                    entry["_task_stage"] = "review_approved"
                 else:
-                    entry["current_stage"] = f"review_{verdict_doc.get('verdict','?').lower()}"
+                    entry["_task_stage"] = f"review_{(verdict or '?').lower()}"
         elif kind.startswith("backtest_"):
-            phase = payload.get("phase") or kind.replace("backtest_", "").upper()
+            phase = phase_qid(str(payload.get("phase") or kind.replace("backtest_", "")).strip().upper())
             classification = payload.get("classification") or {}
-            entry["phases"][phase] = {
+            entry["_legacy_phases"][phase] = {
                 "task_id": r["id"],
                 "status": r["status"],
                 "verdict": classification.get("verdict"),
                 "attempts": int(payload.get("attempt_count", 0)),
                 "surviving_symbols": classification.get("surviving_symbols", []),
+                "source": "legacy_tasks_fallback",
             }
-            if r["status"] == "pending":
-                entry["current_stage"] = f"{phase}_pending"
-            elif r["status"] == "active":
-                entry["current_stage"] = f"{phase}_running"
-            elif r["status"] == "done":
-                entry["current_stage"] = f"{phase}_{(classification.get('verdict') or '?').lower()}"
+
+    grouped: dict[tuple[str, str], list[sqlite3.Row]] = {}
+    for row in work_rows:
+        ea_id = _normalise_ea_label(row["ea_id"])
+        phase = phase_qid(str(row["phase"] or "").strip().upper())
+        if not ea_id or not phase:
+            continue
+        entry = ensure_entry(ea_id, updated_at=row["updated_at"])
+        entry["per_ea_source"] = "work_items"
+        grouped.setdefault((ea_id, phase), []).append(row)
+
+    phase_rank = {phase: index for index, phase in enumerate(PHASE_ORDER)}
+    for (ea_id, phase), rows in grouped.items():
+        entry = eas[ea_id]
+        status_counts: dict[str, int] = {}
+        verdict_counts: dict[str, int] = {}
+        for row in rows:
+            status = str(row["status"] or "")
+            status_counts[status] = status_counts.get(status, 0) + 1
+            verdict = str(row["verdict"] or "").strip()
+            if verdict:
+                verdict_counts[verdict] = verdict_counts.get(verdict, 0) + 1
+        dominant = max(
+            rows,
+            key=lambda row: (verdict_rank(row["verdict"]), str(row["updated_at"] or ""), str(row["id"])),
+        )
+        dominant_verdict = str(dominant["verdict"] or "").strip() or None
+        if status_counts.get("active"):
+            phase_status = "active"
+        elif status_counts.get("pending"):
+            phase_status = "pending"
+        elif status_counts.get("done"):
+            phase_status = "done"
+        else:
+            phase_status = "failed"
+        surviving = sorted({
+            str(row["symbol"])
+            for row in rows
+            if verdict_rank(row["verdict"]) == 2 and row["symbol"]
+        })
+        entry["phases"][phase] = {
+            "status": phase_status,
+            "verdict": dominant_verdict,
+            "attempts": sum(int(row["attempt_count"] or 0) for row in rows),
+            "surviving_symbols": surviving,
+            "work_item_count": len(rows),
+            "status_counts": dict(sorted(status_counts.items())),
+            "verdict_counts": dict(sorted(verdict_counts.items())),
+            "latest_work_item_id": dominant["id"],
+            "source": "work_items",
+        }
+        entry["total_attempts"] += sum(int(row["attempt_count"] or 0) for row in rows)
+
+    for entry in eas.values():
+        if entry["phases"]:
+            ordered_phases = sorted(
+                entry["phases"],
+                key=lambda phase: (phase_rank.get(phase, -1), phase),
+            )
+            active = [phase for phase in ordered_phases if entry["phases"][phase]["status"] == "active"]
+            pending = [phase for phase in ordered_phases if entry["phases"][phase]["status"] == "pending"]
+            decisive = active[-1] if active else (pending[-1] if pending else ordered_phases[-1])
+            phase_data = entry["phases"][decisive]
+            if phase_data["status"] == "active":
+                entry["current_stage"] = f"{decisive}_running"
+            elif phase_data["status"] == "pending":
+                entry["current_stage"] = f"{decisive}_pending"
+            else:
+                entry["current_stage"] = f"{decisive}_{(phase_data['verdict'] or phase_data['status']).lower()}"
+        elif entry["_legacy_phases"]:
+            entry["phases"] = entry["_legacy_phases"]
+            ordered_phases = sorted(
+                entry["phases"],
+                key=lambda phase: (phase_rank.get(phase, -1), phase),
+            )
+            decisive = ordered_phases[-1]
+            phase_data = entry["phases"][decisive]
+            if phase_data["status"] == "active":
+                entry["current_stage"] = f"{decisive}_running"
+            elif phase_data["status"] == "pending":
+                entry["current_stage"] = f"{decisive}_pending"
+            else:
+                entry["current_stage"] = f"{decisive}_{(phase_data['verdict'] or phase_data['status']).lower()}"
+            entry["per_ea_source"] = "legacy_tasks_fallback"
+        else:
+            entry["current_stage"] = entry["_task_stage"]
+        entry.pop("_task_stage", None)
+        entry.pop("_legacy_phases", None)
 
     # Order: by ea_id ascending
     out = sorted(eas.values(), key=lambda e: e["ea_id"])
@@ -2242,7 +2367,13 @@ def pipeline_view(root: Path) -> dict[str, Any]:
     for e in out:
         s = e["current_stage"]
         summary["by_stage"][s] = summary["by_stage"].get(s, 0) + 1
-    return {"eas": out, "summary": summary, "count": len(out)}
+    return {
+        "eas": out,
+        "summary": summary,
+        "count": len(out),
+        "per_ea_source": "work_items_with_task_metadata",
+        "phase_display_rule": "Q-series display is canonical; legacy task phases are fallback-only.",
+    }
 
 
 def _as_float_or_none(value: Any) -> float | None:

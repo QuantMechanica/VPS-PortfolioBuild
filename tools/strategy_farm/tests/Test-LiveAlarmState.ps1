@@ -67,6 +67,8 @@ Assert-QmTrue -Condition (Test-Path -LiteralPath $HelperPath -PathType Leaf) -Na
 # ===========================================================================
 function New-Facts {
     param(
+        [ValidateSet('RUNNING', 'PARKED', 'MAINTENANCE')][string]$ExpectedState = 'RUNNING',
+        [bool]$ReviewExpired = $false,
         [bool]$Maintenance = $false,
         [bool]$ProbeOk = $true,
         [bool]$Running = $true,
@@ -78,6 +80,7 @@ function New-Facts {
         [bool]$SupervisorLaunchFailed = $false
     )
     return @{
+        ExpectedState = $ExpectedState; ReviewExpired = $ReviewExpired
         Maintenance = $Maintenance; ProbeOk = $ProbeOk; Running = $Running
         ProcessCount = $ProcessCount; SessionExists = $SessionExists; PlacementOk = $PlacementOk
         SupervisorHeartbeatReady = $SupervisorHeartbeatReady; SupervisorReason = $SupervisorReason
@@ -96,6 +99,10 @@ $cases = @(
     @{ name = 'maintenance';                   expect = 'maintenance';   facts = (New-Facts -Maintenance $true -Running $false -ProcessCount 0) },
     @{ name = 'probe_unknown';                 expect = 'probe_unknown'; facts = (New-Facts -ProbeOk $false) },
     @{ name = 'stale (terminal up, hb stale)'; expect = 'stale';         facts = (New-Facts -SupervisorHeartbeatReady $false -SupervisorReason 'state_stale') },
+    @{ name = 'parked and off';                expect = 'parked';        facts = (New-Facts -ExpectedState 'PARKED' -Running $false -ProcessCount 0) },
+    @{ name = 'parked but running';             expect = 'unexpected_running'; facts = (New-Facts -ExpectedState 'PARKED') },
+    @{ name = 'review expired';                 expect = 'contract_expired'; facts = (New-Facts -ReviewExpired $true) },
+    @{ name = 'expected maintenance';           expect = 'maintenance'; facts = (New-Facts -ExpectedState 'MAINTENANCE' -Running $false -ProcessCount 0) },
     # precedence
     @{ name = 'precedence maintenance>probe';  expect = 'maintenance';   facts = (New-Facts -Maintenance $true -ProbeOk $false) },
     @{ name = 'precedence probe>duplicate';    expect = 'probe_unknown'; facts = (New-Facts -ProbeOk $false -ProcessCount 2) },
@@ -107,6 +114,7 @@ foreach ($session in @('T_LIVE', 'FTMO')) {
     foreach ($case in $cases) {
         # splat a hashtable of named params:
         $splat = @{
+            ExpectedState = $case.facts.ExpectedState; ReviewExpired = $case.facts.ReviewExpired
             Maintenance = $case.facts.Maintenance; ProbeOk = $case.facts.ProbeOk; Running = $case.facts.Running
             ProcessCount = $case.facts.ProcessCount; SessionExists = $case.facts.SessionExists; PlacementOk = $case.facts.PlacementOk
             SupervisorHeartbeatReady = $case.facts.SupervisorHeartbeatReady; SupervisorReason = $case.facts.SupervisorReason
@@ -124,7 +132,10 @@ Assert-QmTrue  -Condition (Test-LiveAlarmCondition -Condition 'duplicate')     -
 Assert-QmTrue  -Condition (Test-LiveAlarmCondition -Condition 'launch_failed') -Name 'launch_failed is alarm'
 Assert-QmTrue  -Condition (Test-LiveAlarmCondition -Condition 'probe_unknown') -Name 'probe_unknown is alarm'
 Assert-QmTrue  -Condition (Test-LiveAlarmCondition -Condition 'stale')         -Name 'stale is alarm'
+Assert-QmTrue  -Condition (Test-LiveAlarmCondition -Condition 'unexpected_running') -Name 'unexpected_running is alarm'
+Assert-QmTrue  -Condition (Test-LiveAlarmCondition -Condition 'contract_expired') -Name 'contract_expired is alarm'
 Assert-QmFalse -Condition (Test-LiveAlarmCondition -Condition 'ok')            -Name 'ok is not alarm'
+Assert-QmFalse -Condition (Test-LiveAlarmCondition -Condition 'parked')        -Name 'parked is not alarm'
 Assert-QmFalse -Condition (Test-LiveAlarmCondition -Condition 'maintenance')   -Name 'maintenance is not alarm'
 
 # ===========================================================================
@@ -133,13 +144,23 @@ Assert-QmFalse -Condition (Test-LiveAlarmCondition -Condition 'maintenance')   -
 $requiredSessionKeys = @('session', 'condition', 'since_utc', 'transitions', 'last_change')
 
 function Write-Cycle {
-    param([string]$Path, [string]$Stamp, [hashtable]$Sessions, [bool]$Maintenance = $false, [bool]$RebootSuppressed = $false, [string]$Status = 'degraded')
+    param(
+        [string]$Path,
+        [string]$Stamp,
+        [hashtable]$Sessions,
+        [bool]$Maintenance = $false,
+        [bool]$RebootSuppressed = $false,
+        [string]$Status = 'degraded',
+        [hashtable]$ExpectedStates = @{ T_LIVE = 'RUNNING'; FTMO = 'RUNNING' },
+        [int]$EscalationThreshold = 3
+    )
     $sess = @{}
     foreach ($k in $Sessions.Keys) {
         $sess[$k] = [pscustomobject]@{ condition = $Sessions[$k]; detail = ("detail_for_" + $Sessions[$k]) }
     }
     Write-LiveAlarmState -AlarmFilePath $Path -NowStamp $Stamp -WatchdogStatus $Status `
-        -Maintenance $Maintenance -RebootSuppressed $RebootSuppressed -Sessions $sess | Out-Null
+        -Maintenance $Maintenance -RebootSuppressed $RebootSuppressed -Sessions $sess `
+        -ExpectedStates $ExpectedStates -EscalationThreshold $EscalationThreshold | Out-Null
     return (Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json)
 }
 
@@ -210,6 +231,29 @@ Assert-QmEqual -Expected 'missing' -Actual $rb0.sessions.T_LIVE.condition -Name 
 Assert-QmEqual -Expected 'missing' -Actual $rb0.sessions.FTMO.condition -Name 'reboot-suppression: FTMO missing'
 Assert-QmEqual -Expected $true -Actual $rb0.any_alarm -Name 'reboot-suppression: any_alarm true'
 Assert-QmEqual -Expected 'critical' -Actual $rb0.watchdog_status -Name 'reboot-suppression: watchdog_status critical'
+
+# Park-aware state + exactly one escalation edge after three identical failures.
+$parkFile = Join-Path $WorkDir 'live_alarm_state_parked.json'
+if (Test-Path -LiteralPath $parkFile) { Remove-Item -LiteralPath $parkFile -Force }
+$expected = @{ T_LIVE = 'RUNNING'; FTMO = 'PARKED' }
+$pk0 = Write-Cycle -Path $parkFile -Stamp '2026-07-26T12:00:00Z' `
+    -Sessions @{ T_LIVE = 'ok'; FTMO = 'parked' } -ExpectedStates $expected
+Assert-QmEqual -Expected 'PARKED' -Actual $pk0.sessions.FTMO.expected_state -Name 'FTMO expected state persisted'
+Assert-QmEqual -Expected $false -Actual $pk0.sessions.FTMO.alarm -Name 'PARKED+OFF is healthy'
+$pk1 = Write-Cycle -Path $parkFile -Stamp '2026-07-26T12:01:00Z' `
+    -Sessions @{ T_LIVE = 'ok'; FTMO = 'unexpected_running' } -ExpectedStates $expected
+$pk2 = Write-Cycle -Path $parkFile -Stamp '2026-07-26T12:02:00Z' `
+    -Sessions @{ T_LIVE = 'ok'; FTMO = 'unexpected_running' } -ExpectedStates $expected
+$pk3 = Write-Cycle -Path $parkFile -Stamp '2026-07-26T12:03:00Z' `
+    -Sessions @{ T_LIVE = 'ok'; FTMO = 'unexpected_running' } -ExpectedStates $expected
+$pk4 = Write-Cycle -Path $parkFile -Stamp '2026-07-26T12:04:00Z' `
+    -Sessions @{ T_LIVE = 'ok'; FTMO = 'unexpected_running' } -ExpectedStates $expected
+Assert-QmEqual -Expected 1 -Actual $pk1.sessions.FTMO.identical_failure_cycles -Name 'alarm streak starts at one'
+Assert-QmEqual -Expected $false -Actual $pk2.sessions.FTMO.new_escalation -Name 'no escalation before threshold'
+Assert-QmEqual -Expected $true -Actual $pk3.sessions.FTMO.new_escalation -Name 'single escalation at threshold'
+Assert-QmEqual -Expected $false -Actual $pk4.sessions.FTMO.new_escalation -Name 'steady alarm does not re-escalate'
+Assert-QmEqual -Expected '2026-07-26T12:03:00Z' -Actual (ConvertTo-LiveAlarmStamp $pk4.sessions.FTMO.escalation_sent_utc) `
+    -Name 'first escalation timestamp is stable'
 
 # atomic write: no temp/backup residue left behind in the work dir.
 $residue = @(Get-ChildItem -LiteralPath $WorkDir -Force | Where-Object { $_.Name -like '.live_alarm_state.*' })
