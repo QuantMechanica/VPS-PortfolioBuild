@@ -3854,6 +3854,8 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         cmd.extend(["-FromDate", from_date])
     if to_date:
         cmd.extend(["-ToDate", to_date])
+    if item_payload.get("staged_ex5_path"):
+        cmd.append("-SkipExpertDeploy")
 
     log_fh = open(log_path, "w", encoding="utf-8")
     creationflags = 0

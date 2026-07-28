@@ -31,6 +31,7 @@ param(
     [string]$DispatchPhase = "P1",
     [string]$DispatchVersion = "smoke",
     [string]$DispatchSubGateHash,
+    [switch]$SkipExpertDeploy,
     [switch]$AllowRunningTerminal,
     [switch]$AllowMissingRealTicksLogMarker,
     # Q04 commission gate: round-trip USD/lot to apply via the tester groups file.
@@ -2140,7 +2141,12 @@ if (-not $Expert) {
 # Codex build → compile → smoke chains failed at "Experts\QM\<EA>.ex5 not
 # found" because only p2_baseline.py deployed binaries — run_smoke had no
 # self-deploy step. 2026-05-16 QM5_1046 build hit exactly this.
-$expertBinaryIdentity = Deploy-ExpertBinaryToTerminal -ExpertPath $Expert -TerminalName $effectiveTerminal
+$expertBinaryIdentity = if ($SkipExpertDeploy.IsPresent) {
+    Write-Host ("run_smoke.deploy_skip=worker_staged terminal={0} expert='{1}'" -f $effectiveTerminal, $Expert)
+    $null
+} else {
+    Deploy-ExpertBinaryToTerminal -ExpertPath $Expert -TerminalName $effectiveTerminal
+}
 $expertRelativeBinary = if ($Expert.EndsWith('.ex5', [System.StringComparison]::OrdinalIgnoreCase)) { $Expert } else { "$Expert.ex5" }
 $deployedExpertPath = Join-Path (Join-Path $terminalRoot 'MQL5\Experts') $expertRelativeBinary
 $deployedExpertIdentity = Get-FileEvidenceIdentity -Path $deployedExpertPath -AllowMissing

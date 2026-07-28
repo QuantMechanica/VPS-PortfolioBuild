@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import atexit
 import faulthandler
+import hashlib
 import json
 import math
 import os
@@ -1596,6 +1597,80 @@ def _find_summary(report_root: str | None, payload: dict[str, Any] | None = None
     return None
 
 
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _prepare_staged_ex5(item: sqlite3.Row, terminal: str) -> dict[str, Any] | None:
+    payload = _json_loads(item["payload_json"])
+    raw_path = payload.get("staged_ex5_path")
+    raw_sha = payload.get("staged_ex5_sha256")
+    if raw_path is None and raw_sha is None:
+        return None
+    if not raw_path or not raw_sha:
+        raise ValueError("staged_ex5_path_and_sha256_required_together")
+    expected = str(raw_sha).strip().lower()
+    if len(expected) != 64 or any(ch not in "0123456789abcdef" for ch in expected):
+        raise ValueError("staged_ex5_sha256_invalid")
+    source = Path(str(raw_path))
+    if not source.is_file():
+        raise ValueError(f"staged_ex5_missing:{source}")
+    source_sha = _sha256_file(source)
+    if source_sha != expected:
+        raise ValueError(f"staged_ex5_source_sha256_mismatch:{source_sha}")
+
+    ea_dir = farmctl._ea_dir_from_setfile_path(Path(str(item["setfile_path"])), str(item["ea_id"]))
+    if ea_dir is None:
+        ea_dir = farmctl._preferred_ea_dir(str(item["ea_id"]))
+    if ea_dir is None:
+        raise ValueError("staged_ex5_ea_dir_unresolved")
+    destination = farmctl.MT5_ROOT / terminal / "MQL5" / "Experts" / "QM" / f"{ea_dir.name}.ex5"
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_suffix(destination.suffix + f".{os.getpid()}.tmp")
+    try:
+        shutil.copy2(source, temporary)
+        copied_sha = _sha256_file(temporary)
+        if copied_sha != expected:
+            raise ValueError(f"staged_ex5_copy_sha256_mismatch:{copied_sha}")
+        os.replace(temporary, destination)
+    finally:
+        temporary.unlink(missing_ok=True)
+    pre_run_sha = _sha256_file(destination)
+    if pre_run_sha != expected:
+        raise ValueError(f"staged_ex5_pre_run_sha256_mismatch:{pre_run_sha}")
+    return {
+        "source_path": str(source),
+        "destination_path": str(destination),
+        "required_sha256": expected,
+        "pre_run_sha256": pre_run_sha,
+    }
+
+
+def _verify_and_record_staged_ex5(payload: dict[str, Any]) -> dict[str, Any] | None:
+    staging = payload.get("staged_ex5")
+    if not isinstance(staging, dict):
+        return None
+    actual = _sha256_file(Path(str(staging["destination_path"])))
+    staging["post_run_sha256"] = actual
+    staging["verified"] = actual == staging["required_sha256"]
+    summary_path = _find_summary(payload.get("report_root"))
+    if summary_path:
+        summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
+        summary["staged_ex5"] = staging
+        temporary = summary_path.with_suffix(summary_path.suffix + f".{os.getpid()}.tmp")
+        temporary.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        os.replace(temporary, summary_path)
+    if not staging["verified"]:
+        raise ValueError(
+            f"staged_ex5_post_run_sha256_mismatch:{actual}:expected:{staging['required_sha256']}"
+        )
+    return staging
+
+
 def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> tuple[Path, dict[str, Any]] | None:
     phase = str(item["phase"])
     if phase in farmctl.REAL_PHASE_RUNNER_PHASES:
@@ -2688,6 +2763,22 @@ def _monitor_spawned_work_item(
         # Child exited on its own after a plausible runtime, or this worker adopted
         # an already-running child whose runtime began before adoption.
         exit_code = 0
+    try:
+        _verify_and_record_staged_ex5(payload)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        with farmctl.connect(root) as conn:
+            row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
+        if row is None:
+            return {"action": "staged_ex5_post_run_failed", "item_id": item["id"], "reason": str(exc)}
+        return {
+            "action": "staged_ex5_post_run_failed",
+            "item_id": item["id"],
+            **_fail_work_item_preflight(
+                root,
+                row,
+                {"reason": "staged_ex5_post_run_sha256_mismatch", "detail": str(exc)},
+            ),
+        }
     return {"action": "finished", "item_id": item["id"], **_finish_work_item(root, item["id"], exit_code)}
 
 
@@ -2758,6 +2849,28 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
     # Serialize the terminal64 DLL-init window across workers to kill the 0xC0000142
     # launch_fault storm that hits when many terminals launch at once (TTL leaky
     # semaphore, fail-open — see LAUNCH_GATE_* and _acquire_launch_slot).
+    try:
+        staging = _prepare_staged_ex5(row, terminal)
+    except (OSError, ValueError) as exc:
+        return {
+            "action": "staged_ex5_preflight_failed",
+            "item_id": item["id"],
+            **_fail_work_item_preflight(
+                root,
+                row,
+                {"reason": "staged_ex5_preflight_failed", "detail": str(exc)},
+            ),
+        }
+    if staging:
+        existing_payload["staged_ex5"] = staging
+        with farmctl.connect(root) as conn:
+            conn.execute(
+                "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='active'",
+                (json.dumps(existing_payload, sort_keys=True), farmctl.utc_now(), item["id"]),
+            )
+            conn.commit()
+        row = dict(row)
+        row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
     _acquire_launch_slot(terminal)
     spawn = farmctl._spawn_work_item_runner(root, row, terminal)
     now = farmctl.utc_now()
