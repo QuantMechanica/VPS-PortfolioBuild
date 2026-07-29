@@ -17,6 +17,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import math
 import os
 import re
 import shutil
@@ -44,15 +45,40 @@ DEFAULT_FILE_COMMON_Q08_EQUITY = Path(
     r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files\QM\q08_equity"
 )
 ALLOWED_TERMINALS = frozenset({"T1", "T2", "T3", "T4", "T6", "T7", "T8", "T9", "T10"})
-FTMO_BOOK3_MEASUREMENT_CONTRACT = "FTMO_BOOK3_FIDELITY_LADDER_V1"
+FTMO_BOOK3_MEASUREMENT_CONTRACT = (
+    "FTMO_BOOK3_FIDELITY_LADDER_V2_FULL_LIFECYCLE_NET"
+)
+FTMO_BOOK3_EVIDENCE_VINTAGE = "FTMO_BOOK3_20260729_V2"
+FTMO_BOOK3_MONEY_BASIS = "FULL_POSITION_LIFECYCLE_ACTUAL_V1"
+FTMO_BOOK3_FIDELITY_ALGORITHM = (
+    "maximum_bipartite_exact_time_side_price_full_lifecycle_money_volume/v3"
+)
+FTMO_BOOK3_MONEY_TOLERANCE = 0.005
+FTMO_BOOK3_VOLUME_TOLERANCE = 0.005
+FTMO_BOOK3_PRICE_TOLERANCE = 0.0
+FTMO_BOOK3_EXPECTED_EXECUTION_INPUT_COUNT = 307
+FTMO_BOOK3_FIDELITY_STAGE_MEMBERS = {
+    0: {
+        "standalone": {"rung": "R0", "sequence": 0, "magic": 99360000, "symbol": "USDJPY.DWX"},
+        "joint": {"rung": "J0", "sequence": 1, "magic": 201810000, "symbol": "USDJPY.DWX"},
+    },
+    1: {
+        "standalone": {"rung": "R1", "sequence": 2, "magic": 101450034, "symbol": "XAUUSD.DWX"},
+        "joint": {"rung": "J1", "sequence": 3, "magic": 201810001, "symbol": "XAUUSD.DWX"},
+    },
+    2: {
+        "standalone": {"rung": "R2", "sequence": 4, "magic": 131080000, "symbol": "XTIUSD.DWX"},
+        "joint": {"rung": "J2", "sequence": 5, "magic": 201810002, "symbol": "XTIUSD.DWX"},
+    },
+}
 FTMO_BOOK3_SYMBOLS = ("USDJPY.DWX", "XAUUSD.DWX", "XTIUSD.DWX")
 FTMO_BOOK3_RUNGS: dict[str, tuple[int, str | None]] = {
     "R0": (0, None),
-    "J0": (1, "FTMO_BOOK3_20260729_V1_J0"),
+    "J0": (1, "FTMO_BOOK3_20260729_V2_J0"),
     "R1": (2, None),
-    "J1": (3, "FTMO_BOOK3_20260729_V1_J1"),
+    "J1": (3, "FTMO_BOOK3_20260729_V2_J1"),
     "R2": (4, None),
-    "J2": (5, "FTMO_BOOK3_20260729_V1_J2"),
+    "J2": (5, "FTMO_BOOK3_20260729_V2_J2"),
 }
 FTMO_BOOK3_CALENDAR_FILES = (
     "news_calendar_2015_2025.csv",
@@ -763,7 +789,7 @@ def _ftmo_runtime_source_paths(
         ).resolve(),
         "preregistration": (
             repo_root
-            / "docs/ops/evidence/2026-07-29_ftmo_book3_execution_preregistration.md"
+            / "docs/ops/evidence/2026-07-29_ftmo_book3_execution_preregistration_v2.md"
         ).resolve(),
         "qm_tasks_manifest": (
             repo_root / "tools/strategy_farm/qm_tasks.manifest.ps1"
@@ -1043,7 +1069,7 @@ def _ftmo_source_binding_plan(
 
     preregistration = (
         repo_root
-        / "docs/ops/evidence/2026-07-29_ftmo_book3_execution_preregistration.md"
+        / "docs/ops/evidence/2026-07-29_ftmo_book3_execution_preregistration_v2.md"
     )
     expected_prereg_sha = payload.get("preregistration_sha256")
     actual_prereg_sha = sha256_file(preregistration) if preregistration.is_file() else None
@@ -2013,6 +2039,14 @@ def _ftmo_work_core_plan(
             payload.get("schema"),
             "qm.ftmo-book3-q02-work-item-payload/v1",
         ),
+        "evidence vintage": (
+            payload.get("evidence_vintage"),
+            FTMO_BOOK3_EVIDENCE_VINTAGE,
+        ),
+        "money basis": (
+            payload.get("money_basis"),
+            FTMO_BOOK3_MONEY_BASIS,
+        ),
         "measurement sequence": (payload.get("measurement_sequence"), core["sequence"]),
         "terminal": (terminal, "T10"),
         "payload terminal": (str(payload.get("terminal") or "").upper(), "T10"),
@@ -2234,12 +2268,392 @@ def _runtime_source_expected_hash(payload: dict[str, Any], role: str) -> str | N
     return value if isinstance(value, str) and _SHA256_RE.fullmatch(value) else None
 
 
+def _runtime_source_expected_artifact(
+    payload: dict[str, Any], role: str
+) -> dict[str, Any] | None:
+    rows = payload.get("runtime_source_artifacts")
+    if not isinstance(rows, list):
+        return None
+    selected = [
+        item
+        for item in rows
+        if isinstance(item, dict) and item.get("role") == role
+    ]
+    if len(selected) != 1:
+        return None
+    item = selected[0]
+    if (
+        set(item) != {"role", "path", "sha256", "bytes"}
+        or not isinstance(item.get("path"), str)
+        or not Path(item["path"]).is_absolute()
+        or not isinstance(item.get("sha256"), str)
+        or not _SHA256_RE.fullmatch(item["sha256"])
+        or isinstance(item.get("bytes"), bool)
+        or not isinstance(item.get("bytes"), int)
+        or item["bytes"] <= 0
+    ):
+        return None
+    return {
+        "path": item["path"],
+        "sha256": item["sha256"],
+        "bytes": item["bytes"],
+    }
+
+
+def _exact_finite_number(value: Any, expected: float) -> bool:
+    return (
+        not isinstance(value, bool)
+        and isinstance(value, (int, float))
+        and math.isfinite(float(value))
+        and float(value) == expected
+    )
+
+
+def _fidelity_utc(value: Any) -> dt.datetime | None:
+    if type(value) is not str:
+        return None
+    try:
+        parsed = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None or parsed.utcoffset() != dt.timedelta(0):
+        return None
+    return parsed
+
+
+_FIDELITY_FIELD_NOT_SUPPLIED = object()
+
+
+def _fidelity_bound_file_errors(
+    *,
+    label: str,
+    path_value: Any,
+    sha_value: Any,
+    byte_value: Any = _FIDELITY_FIELD_NOT_SUPPLIED,
+    line_value: Any = _FIDELITY_FIELD_NOT_SUPPLIED,
+) -> list[str]:
+    errors: list[str] = []
+    if type(path_value) is not str or not Path(path_value).is_absolute():
+        return [f"{label} path is not an absolute string"]
+    if type(sha_value) is not str or not _SHA256_RE.fullmatch(sha_value):
+        return [f"{label} SHA-256 is not canonical lower-hex"]
+    byte_required = byte_value is not _FIDELITY_FIELD_NOT_SUPPLIED
+    line_required = line_value is not _FIDELITY_FIELD_NOT_SUPPLIED
+    if byte_required and (type(byte_value) is not int or byte_value <= 0):
+        errors.append(f"{label} bytes must be a positive integer")
+    if line_required and (type(line_value) is not int or line_value <= 0):
+        errors.append(f"{label} lines must be a positive integer")
+    path = Path(path_value)
+    if not path.is_file():
+        errors.append(f"{label} file is missing: {path}")
+        return errors
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != sha_value:
+        errors.append(f"{label} file SHA-256 mismatch")
+    if byte_required and len(raw) != byte_value:
+        errors.append(f"{label} file byte count mismatch")
+    if line_required and len(raw.splitlines()) != line_value:
+        errors.append(f"{label} file line count mismatch")
+    return errors
+
+
+def _validate_ftmo_gate_operand(
+    operand: Any,
+    *,
+    role: str,
+    stage: int,
+    expected_work_item_id: Any,
+    expected_source_commit: Any,
+    expected_execution_identity: Any,
+    expected_framework_include_sha256: Any,
+    expected_evidence_path: Any,
+    expected_runtime_sources: dict[str, dict[str, Any]],
+    errors: list[str],
+) -> dict[str, Any]:
+    label = f"fidelity receipt {role} operand"
+    if not isinstance(operand, dict):
+        errors.append(f"{label} must be an object")
+        return {}
+    expected_keys = {
+        "role",
+        "rung",
+        "sequence",
+        "receipt_path",
+        "receipt_sha256",
+        "work_item_id",
+        "started_at_utc",
+        "completed_at_utc",
+        "source_commit",
+        "factory_off_sha256",
+        "source_binding",
+        "runner_artifacts",
+        "execution_input_artifacts_sha256",
+        "execution_input_observed_bundle_sha256",
+        "execution_input_artifact_count",
+        "post_payload_sha256",
+        "post_evidence",
+        "q08_trades",
+        "magic",
+        "symbol",
+    }
+    if set(operand) != expected_keys:
+        errors.append(f"{label} fields are not exact")
+    member = FTMO_BOOK3_FIDELITY_STAGE_MEMBERS.get(stage, {}).get(role, {})
+    exact_values = {
+        "role": role,
+        "rung": member.get("rung"),
+        "work_item_id": expected_work_item_id,
+        "source_commit": expected_source_commit,
+        "execution_input_artifacts_sha256": expected_execution_identity,
+        "magic": member.get("magic"),
+        "symbol": member.get("symbol"),
+    }
+    for key, expected in exact_values.items():
+        if operand.get(key) != expected:
+            errors.append(f"{label} {key} mismatch")
+    if type(operand.get("sequence")) is not int or operand.get("sequence") != member.get(
+        "sequence"
+    ):
+        errors.append(f"{label} sequence mismatch or type substitution")
+    if type(operand.get("magic")) is not int:
+        errors.append(f"{label} magic must be an integer")
+    for key in (
+        "receipt_sha256",
+        "factory_off_sha256",
+        "execution_input_artifacts_sha256",
+        "execution_input_observed_bundle_sha256",
+        "post_payload_sha256",
+    ):
+        value = operand.get(key)
+        if type(value) is not str or not _SHA256_RE.fullmatch(value):
+            errors.append(f"{label} {key} is not canonical lower-hex")
+    if (
+        type(operand.get("execution_input_artifact_count")) is not int
+        or operand.get("execution_input_artifact_count")
+        != FTMO_BOOK3_EXPECTED_EXECUTION_INPUT_COUNT
+    ):
+        errors.append(f"{label} execution-input count mismatch or type substitution")
+    started = _fidelity_utc(operand.get("started_at_utc"))
+    completed = _fidelity_utc(operand.get("completed_at_utc"))
+    if started is None or completed is None or started > completed:
+        errors.append(f"{label} timestamps are invalid or out of order")
+    errors.extend(
+        _fidelity_bound_file_errors(
+            label=f"{label} runner receipt",
+            path_value=operand.get("receipt_path"),
+            sha_value=operand.get("receipt_sha256"),
+        )
+    )
+
+    source_binding = operand.get("source_binding")
+    expected_source_binding_keys = {
+        "framework_include_tree",
+        "preregistration",
+        "isolated_runner",
+        "terminal_worker",
+        "preparation_controller",
+        "runtime_sources",
+    }
+    if not isinstance(source_binding, dict) or set(source_binding) != expected_source_binding_keys:
+        errors.append(f"{label} source_binding fields are not exact")
+        source_binding = {}
+    direct_to_runtime = {
+        "preregistration": "preregistration",
+        "isolated_runner": "isolated_runner",
+        "terminal_worker": "terminal_worker",
+        "preparation_controller": "preparation_controller",
+    }
+    for direct, runtime_role in direct_to_runtime.items():
+        row = source_binding.get(direct)
+        expected = expected_runtime_sources.get(runtime_role)
+        if not isinstance(row, dict) or set(row) != {"path", "sha256"}:
+            errors.append(f"{label} {direct} binding fields are not exact")
+            continue
+        if (
+            type(row.get("path")) is not str
+            or not Path(row["path"]).is_absolute()
+            or type(row.get("sha256")) is not str
+            or not _SHA256_RE.fullmatch(row["sha256"])
+        ):
+            errors.append(f"{label} {direct} binding types are invalid")
+            continue
+        if expected is None or (
+            os.path.normcase(os.path.abspath(row["path"]))
+            != os.path.normcase(os.path.abspath(expected["path"]))
+            or row["sha256"] != expected["sha256"]
+        ):
+            errors.append(f"{label} {direct} binding mismatches expected runtime source")
+    tree = source_binding.get("framework_include_tree")
+    if not isinstance(tree, dict) or set(tree) != {"path", "sha256", "file_count"}:
+        errors.append(f"{label} framework include binding fields are not exact")
+    elif (
+        type(tree.get("path")) is not str
+        or not Path(tree["path"]).is_absolute()
+        or type(tree.get("sha256")) is not str
+        or not _SHA256_RE.fullmatch(tree["sha256"])
+        or type(tree.get("file_count")) is not int
+        or tree["file_count"] <= 0
+    ):
+        errors.append(f"{label} framework include binding types are invalid")
+    elif tree["sha256"] != expected_framework_include_sha256:
+        errors.append(f"{label} framework include binding hash mismatch")
+
+    runtime_block = source_binding.get("runtime_sources")
+    if not isinstance(runtime_block, dict) or set(runtime_block) != {
+        "canonical_sha256",
+        "roles",
+    }:
+        errors.append(f"{label} runtime_sources fields are not exact")
+        runtime_block = {}
+    runtime_roles = runtime_block.get("roles")
+    if not isinstance(runtime_roles, dict) or set(runtime_roles) != set(
+        FTMO_RUNTIME_SOURCE_ROLES
+    ):
+        errors.append(f"{label} runtime source roles are not exact")
+        runtime_roles = {}
+    canonical_rows: list[dict[str, Any]] = []
+    for runtime_role in FTMO_RUNTIME_SOURCE_ROLES:
+        row = runtime_roles.get(runtime_role)
+        expected = expected_runtime_sources.get(runtime_role)
+        if not isinstance(row, dict) or set(row) != {"role", "path", "sha256", "bytes"}:
+            errors.append(f"{label} runtime source {runtime_role} fields are not exact")
+            continue
+        if (
+            row.get("role") != runtime_role
+            or type(row.get("path")) is not str
+            or not Path(row["path"]).is_absolute()
+            or type(row.get("sha256")) is not str
+            or not _SHA256_RE.fullmatch(row["sha256"])
+            or type(row.get("bytes")) is not int
+            or row["bytes"] <= 0
+        ):
+            errors.append(f"{label} runtime source {runtime_role} types are invalid")
+            continue
+        canonical_rows.append(dict(row))
+        if expected is None or row != {"role": runtime_role, **expected}:
+            errors.append(f"{label} runtime source {runtime_role} binding mismatch")
+    expected_runtime_identity = canonical_sha256(
+        sorted(canonical_rows, key=lambda row: (row["role"], row["path"]))
+    )
+    if (
+        type(runtime_block.get("canonical_sha256")) is not str
+        or runtime_block.get("canonical_sha256") != expected_runtime_identity
+    ):
+        errors.append(f"{label} runtime source canonical identity mismatch")
+
+    artifacts = operand.get("runner_artifacts")
+    if not isinstance(artifacts, dict) or set(artifacts) != {"setfile", "staged_ex5", "mq5"}:
+        errors.append(f"{label} runner_artifacts fields are not exact")
+    else:
+        for artifact_role, row in artifacts.items():
+            if (
+                not isinstance(row, dict)
+                or set(row) != {"path", "sha256"}
+                or type(row.get("path")) is not str
+                or not Path(row["path"]).is_absolute()
+                or type(row.get("sha256")) is not str
+                or not _SHA256_RE.fullmatch(row["sha256"])
+            ):
+                errors.append(f"{label} runner artifact {artifact_role} is invalid")
+                continue
+            errors.extend(
+                _fidelity_bound_file_errors(
+                    label=f"{label} runner artifact {artifact_role}",
+                    path_value=row.get("path"),
+                    sha_value=row.get("sha256"),
+                )
+            )
+
+    evidence = operand.get("post_evidence")
+    if not isinstance(evidence, dict) or set(evidence) != {
+        "path",
+        "resolved_path",
+        "sha256",
+        "bytes",
+    }:
+        errors.append(f"{label} post_evidence fields are not exact")
+    else:
+        if (
+            type(expected_evidence_path) is not str
+            or not expected_evidence_path.strip()
+            or os.path.normcase(os.path.abspath(evidence.get("path", "")))
+            != os.path.normcase(os.path.abspath(expected_evidence_path))
+        ):
+            errors.append(f"{label} post_evidence path does not match ladder evidence")
+        if (
+            type(evidence.get("resolved_path")) is not str
+            or not Path(evidence["resolved_path"]).is_absolute()
+            or os.path.normcase(os.path.abspath(evidence.get("path", "")))
+            != os.path.normcase(os.path.abspath(evidence["resolved_path"]))
+        ):
+            errors.append(f"{label} post_evidence resolved path mismatch")
+        errors.extend(
+            _fidelity_bound_file_errors(
+                label=f"{label} post evidence",
+                path_value=evidence.get("path"),
+                sha_value=evidence.get("sha256"),
+                byte_value=evidence.get("bytes"),
+            )
+        )
+
+    stream = operand.get("q08_trades")
+    if not isinstance(stream, dict) or set(stream) != {
+        "source",
+        "target",
+        "path",
+        "sha256",
+        "bytes",
+        "lines",
+        "selected_trade_count",
+    }:
+        errors.append(f"{label} q08_trades fields are not exact")
+    else:
+        if (
+            type(stream.get("source")) is not str
+            or not Path(stream["source"]).is_absolute()
+            or type(stream.get("target")) is not str
+            or not Path(stream["target"]).is_absolute()
+            or type(stream.get("path")) is not str
+            or not Path(stream["path"]).is_absolute()
+            or os.path.normcase(os.path.abspath(stream["target"]))
+            != os.path.normcase(os.path.abspath(stream["path"]))
+        ):
+            errors.append(f"{label} q08_trades path binding mismatch")
+        selected = stream.get("selected_trade_count")
+        if type(selected) is not int or selected <= 0:
+            errors.append(f"{label} selected trade count must be a positive integer")
+        if type(stream.get("lines")) is int and type(selected) is int and selected > stream["lines"]:
+            errors.append(f"{label} selected trade count exceeds physical lines")
+        errors.extend(
+            _fidelity_bound_file_errors(
+                label=f"{label} q08 harvest",
+                path_value=stream.get("path"),
+                sha_value=stream.get("sha256"),
+                byte_value=stream.get("bytes"),
+                line_value=stream.get("lines"),
+            )
+        )
+    return {
+        "started": started,
+        "completed": completed,
+        "factory_off_sha256": operand.get("factory_off_sha256"),
+        "source_binding": source_binding,
+        "execution_input_observed_bundle_sha256": operand.get(
+            "execution_input_observed_bundle_sha256"
+        ),
+        "selected_trade_count": (
+            stream.get("selected_trade_count") if isinstance(stream, dict) else None
+        ),
+    }
+
+
 def _ftmo_fidelity_receipt_plan(
     payload: dict[str, Any],
     *,
     ladder_order: dict[str, Any],
     receipt_path: Path | None,
     expected_receipt_sha256: str | None,
+    expected_factory_off_sha256: str | None,
 ) -> dict[str, Any]:
     if payload.get("measurement_contract") != FTMO_BOOK3_MEASUREMENT_CONTRACT:
         if receipt_path is not None or expected_receipt_sha256 is not None:
@@ -2260,6 +2674,11 @@ def _ftmo_fidelity_receipt_plan(
         else ((sequence // 2) - 1 if isinstance(sequence, int) else None)
     )
     errors: list[str] = []
+    if (
+        type(expected_factory_off_sha256) is not str
+        or not _SHA256_RE.fullmatch(expected_factory_off_sha256)
+    ):
+        errors.append("expected FACTORY_OFF SHA-256 is not canonical lower-hex")
     if payload.get("required_fidelity_stage") != expected_stage:
         errors.append(
             "payload required_fidelity_stage does not match the rung sequence"
@@ -2321,32 +2740,89 @@ def _ftmo_fidelity_receipt_plan(
         "standalone": (rungs.get(expected_stage * 2) or {}).get("id"),
         "joint": (rungs.get(expected_stage * 2 + 1) or {}).get("id"),
     }
+    expected_evidence_paths = {
+        "standalone": (rungs.get(expected_stage * 2) or {}).get("evidence_path"),
+        "joint": (rungs.get(expected_stage * 2 + 1) or {}).get("evidence_path"),
+    }
     expected_source_commit = payload.get("authoritative_source_commit")
     expected_execution_inputs = payload.get("execution_input_artifacts_sha256")
-    expected_gate_sha = _runtime_source_expected_hash(payload, "fidelity_gate")
-    expected_runner_sha = _runtime_source_expected_hash(payload, "isolated_runner")
-    expected_preparation_sha = _runtime_source_expected_hash(
+    expected_gate = _runtime_source_expected_artifact(payload, "fidelity_gate")
+    expected_runner = _runtime_source_expected_artifact(payload, "isolated_runner")
+    expected_preparation = _runtime_source_expected_artifact(
         payload, "preparation_controller"
     )
-    expected_comparator_sha = _runtime_source_expected_hash(
+    expected_comparator = _runtime_source_expected_artifact(
         payload, "fidelity_comparator"
     )
+    expected_runtime_sources = {
+        role: _runtime_source_expected_artifact(payload, role)
+        for role in FTMO_RUNTIME_SOURCE_ROLES
+    }
+    for role, artifact in expected_runtime_sources.items():
+        if artifact is None:
+            errors.append(f"runtime source binding is invalid or missing: {role}")
     if receipt is not None:
+        expected_top_keys = {
+            "schema",
+            "generated_at_utc",
+            "stage",
+            "verdict",
+            "work_item_ids",
+            "source_commit",
+            "execution_input_artifacts_sha256",
+            "controller_path",
+            "controller_sha256",
+            "controller_bytes",
+            "isolated_runner_sha256",
+            "preparation_controller_sha256",
+            "comparator_sha256",
+            "comparator",
+            "errors",
+            "contract",
+            "safety",
+            "operands",
+            "comparison",
+            "adjudication_id",
+        }
+        if set(receipt) != expected_top_keys:
+            errors.append("fidelity receipt top-level fields are not exact")
+        if _fidelity_utc(receipt.get("generated_at_utc")) is None:
+            errors.append("fidelity receipt generated_at_utc is not a UTC timestamp")
+        if type(receipt.get("stage")) is not int or receipt.get("stage") != expected_stage:
+            errors.append("fidelity receipt stage mismatch or type substitution")
+        if not isinstance(receipt.get("work_item_ids"), dict) or set(
+            receipt.get("work_item_ids") or {}
+        ) != {"standalone", "joint"}:
+            errors.append("fidelity receipt work_item_ids fields are not exact")
+        elif any(type(value) is not str or not value for value in receipt["work_item_ids"].values()):
+            errors.append("fidelity receipt work_item_ids types are invalid")
+        if type(receipt.get("controller_bytes")) is not int or receipt.get(
+            "controller_bytes"
+        ) <= 0:
+            errors.append("fidelity receipt controller_bytes must be a positive integer")
         exact = {
-            "schema": "qm.ftmo-book3-fidelity-adjudication-receipt/v1",
-            "stage": expected_stage,
+            "schema": "qm.ftmo-book3-fidelity-adjudication-receipt/v2",
             "verdict": "PASS",
             "errors": [],
             "work_item_ids": expected_ids,
             "source_commit": expected_source_commit,
             "execution_input_artifacts_sha256": expected_execution_inputs,
-            "controller_path": str(
-                Path(__file__).resolve().with_name("ftmo_book3_fidelity_gate.py")
+            "controller_path": expected_gate.get("path") if expected_gate else None,
+            "controller_sha256": (
+                expected_gate.get("sha256") if expected_gate else None
             ),
-            "controller_sha256": expected_gate_sha,
-            "isolated_runner_sha256": expected_runner_sha,
-            "preparation_controller_sha256": expected_preparation_sha,
-            "comparator_sha256": expected_comparator_sha,
+            "controller_bytes": expected_gate.get("bytes") if expected_gate else None,
+            "isolated_runner_sha256": (
+                expected_runner.get("sha256") if expected_runner else None
+            ),
+            "preparation_controller_sha256": (
+                expected_preparation.get("sha256")
+                if expected_preparation
+                else None
+            ),
+            "comparator_sha256": (
+                expected_comparator.get("sha256") if expected_comparator else None
+            ),
         }
         for key, expected in exact.items():
             if receipt.get(key) != expected:
@@ -2354,11 +2830,72 @@ def _ftmo_fidelity_receipt_plan(
                     f"fidelity receipt {key} mismatch: "
                     f"expected={expected!r} actual={receipt.get(key)!r}"
                 )
+        expected_comparator_binding = expected_comparator or {
+            "path": None,
+            "sha256": None,
+            "bytes": None,
+        }
+        comparator_binding = receipt.get("comparator")
+        if (
+            not isinstance(comparator_binding, dict)
+            or set(comparator_binding) != {"path", "sha256", "bytes"}
+            or type(comparator_binding.get("path")) is not str
+            or type(comparator_binding.get("sha256")) is not str
+            or type(comparator_binding.get("bytes")) is not int
+            or comparator_binding != expected_comparator_binding
+        ):
+            errors.append("fidelity receipt comparator binding mismatch")
         contract = receipt.get("contract")
-        if not isinstance(contract, dict) or contract.get(
-            "measurement_contract"
-        ) != FTMO_BOOK3_MEASUREMENT_CONTRACT:
-            errors.append("fidelity receipt measurement contract mismatch")
+        expected_contract_keys = {
+            "measurement_contract",
+            "expected_execution_input_count",
+            "match_rate_required",
+            "unmatched_required",
+            "both_operands_nonempty",
+            "money_tolerance",
+            "volume_tolerance",
+            "price_tolerance",
+            "money_basis",
+        }
+        if not isinstance(contract, dict) or set(contract) != expected_contract_keys:
+            errors.append("fidelity receipt contract fields are not exact")
+        else:
+            contract_exact = {
+                "measurement_contract": FTMO_BOOK3_MEASUREMENT_CONTRACT,
+                "expected_execution_input_count": (
+                    FTMO_BOOK3_EXPECTED_EXECUTION_INPUT_COUNT
+                ),
+                "both_operands_nonempty": True,
+                "money_basis": FTMO_BOOK3_MONEY_BASIS,
+            }
+            for key, expected in contract_exact.items():
+                type_valid = (
+                    type(contract.get(key)) is bool
+                    if key == "both_operands_nonempty"
+                    else type(contract.get(key)) is int
+                    if key == "expected_execution_input_count"
+                    else type(contract.get(key)) is str
+                )
+                if not type_valid or contract.get(key) != expected:
+                    errors.append(
+                        f"fidelity receipt contract {key} mismatch: "
+                        f"expected={expected!r} actual={contract.get(key)!r}"
+                    )
+            numeric_contract = {
+                "match_rate_required": (1.0, float),
+                "unmatched_required": (0.0, int),
+                "money_tolerance": (FTMO_BOOK3_MONEY_TOLERANCE, float),
+                "volume_tolerance": (FTMO_BOOK3_VOLUME_TOLERANCE, float),
+                "price_tolerance": (FTMO_BOOK3_PRICE_TOLERANCE, float),
+            }
+            for key, (expected, expected_type) in numeric_contract.items():
+                if type(contract.get(key)) is not expected_type or not _exact_finite_number(
+                    contract.get(key), expected
+                ):
+                    errors.append(
+                        f"fidelity receipt contract {key} mismatch: "
+                        f"expected={expected!r} actual={contract.get(key)!r}"
+                    )
         safety = receipt.get("safety")
         expected_safety = {
             "read_only_inputs": True,
@@ -2369,19 +2906,145 @@ def _ftmo_fidelity_receipt_plan(
             "touches_live_scope": False,
             "touches_autotrading": False,
         }
-        if safety != expected_safety:
+        if (
+            not isinstance(safety, dict)
+            or set(safety) != set(expected_safety)
+            or any(type(value) is not bool for value in safety.values())
+            or safety != expected_safety
+        ):
             errors.append("fidelity receipt safety block mismatch")
         comparison = receipt.get("comparison")
-        if not isinstance(comparison, dict) or not (
-            comparison.get("match_rate") == 1.0
-            and comparison.get("unmatched_standalone") == 0
-            and comparison.get("unmatched_joint") == 0
-            and isinstance(comparison.get("standalone_trades"), int)
-            and comparison.get("standalone_trades") > 0
-            and isinstance(comparison.get("joint_trades"), int)
-            and comparison.get("joint_trades") > 0
+        expected_comparison_keys = {
+            "algorithm",
+            "money_basis",
+            "money_tolerance",
+            "volume_tolerance",
+            "price_tolerance",
+            "standalone_trades",
+            "joint_trades",
+            "matched",
+            "unmatched_standalone",
+            "unmatched_joint",
+            "match_rate",
+            "unmatched_standalone_sample",
+            "unmatched_joint_sample",
+        }
+        if (
+            not isinstance(comparison, dict)
+            or set(comparison) != expected_comparison_keys
         ):
-            errors.append("fidelity receipt comparison is not an exact non-empty match")
+            errors.append("fidelity receipt comparison fields are not exact")
+        else:
+            counts = {
+                key: comparison.get(key)
+                for key in ("standalone_trades", "joint_trades", "matched")
+            }
+            counts_valid = all(
+                type(value) is int
+                and value > 0
+                for value in counts.values()
+            )
+            comparison_valid = (
+                comparison.get("algorithm") == FTMO_BOOK3_FIDELITY_ALGORITHM
+                and comparison.get("money_basis") == FTMO_BOOK3_MONEY_BASIS
+                and type(comparison.get("algorithm")) is str
+                and type(comparison.get("money_basis")) is str
+                and type(comparison.get("money_tolerance")) is float
+                and _exact_finite_number(
+                    comparison.get("money_tolerance"),
+                    FTMO_BOOK3_MONEY_TOLERANCE,
+                )
+                and type(comparison.get("volume_tolerance")) is float
+                and _exact_finite_number(
+                    comparison.get("volume_tolerance"),
+                    FTMO_BOOK3_VOLUME_TOLERANCE,
+                )
+                and type(comparison.get("price_tolerance")) is float
+                and _exact_finite_number(
+                    comparison.get("price_tolerance"),
+                    FTMO_BOOK3_PRICE_TOLERANCE,
+                )
+                and type(comparison.get("match_rate")) is float
+                and _exact_finite_number(comparison.get("match_rate"), 1.0)
+                and type(comparison.get("unmatched_standalone")) is int
+                and comparison.get("unmatched_standalone") == 0
+                and type(comparison.get("unmatched_joint")) is int
+                and comparison.get("unmatched_joint") == 0
+                and counts_valid
+                and counts["standalone_trades"] == counts["joint_trades"]
+                and counts["matched"] == counts["standalone_trades"]
+                and comparison.get("unmatched_standalone_sample") == []
+                and comparison.get("unmatched_joint_sample") == []
+            )
+            if not comparison_valid:
+                errors.append(
+                    "fidelity receipt comparison is not an exact non-empty "
+                    "maximum-cardinality match"
+                )
+        operands = receipt.get("operands")
+        if not isinstance(operands, dict) or set(operands) != {"standalone", "joint"}:
+            errors.append("fidelity receipt operands fields are not exact")
+        else:
+            operand_results = {
+                role: _validate_ftmo_gate_operand(
+                    operands.get(role),
+                    role=role,
+                    stage=expected_stage,
+                    expected_work_item_id=expected_ids[role],
+                    expected_source_commit=expected_source_commit,
+                    expected_execution_identity=expected_execution_inputs,
+                    expected_framework_include_sha256=payload.get(
+                        "framework_include_tree_sha256"
+                    ),
+                    expected_evidence_path=expected_evidence_paths[role],
+                    expected_runtime_sources={
+                        key: value
+                        for key, value in expected_runtime_sources.items()
+                        if value is not None
+                    },
+                    errors=errors,
+                )
+                for role in ("standalone", "joint")
+            }
+            standalone_operand = operand_results["standalone"]
+            joint_operand = operand_results["joint"]
+            if standalone_operand.get("factory_off_sha256") != joint_operand.get(
+                "factory_off_sha256"
+            ):
+                errors.append("fidelity receipt operand FACTORY_OFF identities are spliced")
+            if standalone_operand.get("factory_off_sha256") != expected_factory_off_sha256:
+                errors.append("fidelity receipt operand FACTORY_OFF identity is not current")
+            if standalone_operand.get("source_binding") != joint_operand.get(
+                "source_binding"
+            ):
+                errors.append("fidelity receipt operand source bindings are spliced")
+            standalone_completed = standalone_operand.get("completed")
+            joint_started = joint_operand.get("started")
+            if (
+                standalone_completed is None
+                or joint_started is None
+                or standalone_completed > joint_started
+            ):
+                errors.append("fidelity receipt operand execution order is invalid")
+            if standalone_operand.get(
+                "execution_input_observed_bundle_sha256"
+            ) != joint_operand.get("execution_input_observed_bundle_sha256"):
+                errors.append(
+                    "fidelity receipt operand observed execution-input identities are spliced"
+                )
+            if isinstance(comparison, dict):
+                if comparison.get("standalone_trades") != standalone_operand.get(
+                    "selected_trade_count"
+                ):
+                    errors.append(
+                        "fidelity receipt standalone comparison count does not match operand"
+                    )
+                if comparison.get("joint_trades") != joint_operand.get(
+                    "selected_trade_count"
+                ):
+                    errors.append(
+                        "fidelity receipt joint comparison count does not match operand"
+                    )
         identity = {
             key: value
             for key, value in receipt.items()
@@ -2557,6 +3220,7 @@ def build_plan(
         ladder_order=ladder_order,
         receipt_path=fidelity_receipt_path,
         expected_receipt_sha256=expected_fidelity_receipt_sha256,
+        expected_factory_off_sha256=sha256_file(flag),
     )
     errors.extend(fidelity_receipt.get("errors") or [])
 

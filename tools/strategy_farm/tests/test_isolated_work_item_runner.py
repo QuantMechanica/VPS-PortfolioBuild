@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import copy
 import hashlib
 import json
 import os
@@ -315,7 +316,7 @@ def test_ftmo_source_binding_revalidates_commit_tree_prereg_and_controllers(
         / "docs"
         / "ops"
         / "evidence"
-        / "2026-07-29_ftmo_book3_execution_preregistration.md"
+        / "2026-07-29_ftmo_book3_execution_preregistration_v2.md"
     )
     include.mkdir(parents=True)
     prereg.parent.mkdir(parents=True)
@@ -328,16 +329,18 @@ def test_ftmo_source_binding_revalidates_commit_tree_prereg_and_controllers(
     preparation_controller.write_text("# bound preparation controller\n", encoding="utf-8")
     setfile = tmp_path / "j0.set"
     setfile.write_text(
-        "qm_evidence_run_id=FTMO_BOOK3_20260729_V1_J0\n",
+        "qm_evidence_run_id=FTMO_BOOK3_20260729_V2_J0\n",
         encoding="utf-8",
     )
     commit = "a" * 40
     tree_sha, _ = runner._tree_content_sha256(include)
     payload = {
         "measurement_contract": runner.FTMO_BOOK3_MEASUREMENT_CONTRACT,
+        "evidence_vintage": runner.FTMO_BOOK3_EVIDENCE_VINTAGE,
+        "money_basis": runner.FTMO_BOOK3_MONEY_BASIS,
         "measurement_rung": "J0",
         "measurement_sequence": 1,
-        "evidence_run_id": "FTMO_BOOK3_20260729_V1_J0",
+        "evidence_run_id": "FTMO_BOOK3_20260729_V2_J0",
         "authoritative_source_commit": commit,
         "controller_head_commit": commit,
         "framework_include_tree_sha256": tree_sha,
@@ -382,7 +385,7 @@ def test_ftmo_source_binding_revalidates_commit_tree_prereg_and_controllers(
     valid = runner._ftmo_source_binding_plan(
         payload, repo_root=repo, worker_script=worker, setfile_path=setfile
     )
-    assert valid["valid"] is True
+    assert valid["valid"] is True, valid["errors"]
 
     (include / "one.mqh").write_text("// tampered include\n", encoding="utf-8")
     invalid = runner._ftmo_source_binding_plan(
@@ -808,29 +811,54 @@ def test_post_execution_input_revalidation_detects_drift(
     assert any("changed during isolated run" in error for error in post["errors"])
 
 
-def test_fidelity_stage_receipt_is_required_and_hash_bound(tmp_path: Path) -> None:
+@pytest.mark.parametrize(("stage", "sequence"), [(0, 2), (1, 4)])
+def test_fidelity_stage_receipt_is_required_and_hash_bound(
+    tmp_path: Path, stage: int, sequence: int
+) -> None:
     hashes = {
-        "fidelity_gate": "1" * 64,
-        "isolated_runner": "2" * 64,
-        "preparation_controller": "3" * 64,
-        "fidelity_comparator": "4" * 64,
+        role: f"{index + 1:064x}"
+        for index, role in enumerate(runner.FTMO_RUNTIME_SOURCE_ROLES)
     }
     runtime_sources = [
-        {"role": role, "path": str((tmp_path / role).resolve()), "sha256": value, "bytes": 1}
-        for role, value in sorted(hashes.items())
+        {
+            "role": role,
+            "path": str((tmp_path / "runtime" / role).resolve()),
+            "sha256": value,
+            "bytes": index + 100,
+        }
+        for index, (role, value) in enumerate(sorted(hashes.items()))
     ]
     payload = {
         "measurement_contract": runner.FTMO_BOOK3_MEASUREMENT_CONTRACT,
-        "measurement_sequence": 2,
-        "required_fidelity_stage": 0,
+        "measurement_sequence": sequence,
+        "required_fidelity_stage": stage,
         "authoritative_source_commit": "a" * 40,
+        "framework_include_tree_sha256": "e" * 64,
         "execution_input_artifacts_sha256": "b" * 64,
         "runtime_source_artifacts": runtime_sources,
     }
     ladder = {
         "rungs": [
-            {"rung": "R0", "id": "r0-id"},
-            {"rung": "J0", "id": "j0-id"},
+            {
+                "rung": "R0",
+                "id": "r0-id",
+                "evidence_path": str((tmp_path / "standalone_evidence.json").resolve()),
+            },
+            {
+                "rung": "J0",
+                "id": "j0-id",
+                "evidence_path": str((tmp_path / "joint_evidence.json").resolve()),
+            },
+            {
+                "rung": "R1",
+                "id": "r1-id",
+                "evidence_path": str((tmp_path / "standalone_evidence.json").resolve()),
+            },
+            {
+                "rung": "J1",
+                "id": "j1-id",
+                "evidence_path": str((tmp_path / "joint_evidence.json").resolve()),
+            },
         ]
     }
     missing = runner._ftmo_fidelity_receipt_plan(
@@ -838,24 +866,144 @@ def test_fidelity_stage_receipt_is_required_and_hash_bound(tmp_path: Path) -> No
         ladder_order=ladder,
         receipt_path=None,
         expected_receipt_sha256=None,
+        expected_factory_off_sha256="f" * 64,
     )
+    runtime_by_role = {row["role"]: row for row in runtime_sources}
+    normalized_runtime_roles = {
+        role: {
+            "role": role,
+            "path": row["path"],
+            "sha256": row["sha256"],
+            "bytes": row["bytes"],
+        }
+        for role, row in runtime_by_role.items()
+    }
+    source_binding = {
+        "framework_include_tree": {
+            "path": str((tmp_path / "framework" / "include" / "QM").resolve()),
+            "sha256": "e" * 64,
+            "file_count": 91,
+        },
+        **{
+            direct: {
+                "path": runtime_by_role[runtime_role]["path"],
+                "sha256": runtime_by_role[runtime_role]["sha256"],
+            }
+            for direct, runtime_role in {
+                "preregistration": "preregistration",
+                "isolated_runner": "isolated_runner",
+                "terminal_worker": "terminal_worker",
+                "preparation_controller": "preparation_controller",
+            }.items()
+        },
+        "runtime_sources": {
+            "canonical_sha256": runner.canonical_sha256(
+                sorted(
+                    normalized_runtime_roles.values(),
+                    key=lambda row: (row["role"], row["path"]),
+                )
+            ),
+            "roles": normalized_runtime_roles,
+        },
+    }
+    expected_ids = {
+        "standalone": f"r{stage}-id",
+        "joint": f"j{stage}-id",
+    }
+
+    def gate_operand(role: str) -> dict:
+        member = runner.FTMO_BOOK3_FIDELITY_STAGE_MEMBERS[stage][role]
+        runner_receipt = (tmp_path / f"{role}_runner_receipt.json").resolve()
+        runner_receipt.write_text(
+            json.dumps({"role": role, "stage": stage}) + "\n", encoding="utf-8"
+        )
+        evidence = (tmp_path / f"{role}_evidence.json").resolve()
+        evidence.write_text(json.dumps({"verdict": "PASS"}) + "\n", encoding="utf-8")
+        q08 = (tmp_path / f"{role}_q08.jsonl").resolve()
+        q08.write_text(
+            '{"event":"TRADE_CLOSED","trade":1}\n'
+            '{"event":"TRADE_CLOSED","trade":2}\n',
+            encoding="utf-8",
+        )
+        artifact_rows = {}
+        for artifact_role in ("setfile", "staged_ex5", "mq5"):
+            artifact_path = (tmp_path / role / artifact_role).resolve()
+            artifact_path.parent.mkdir(parents=True, exist_ok=True)
+            artifact_path.write_bytes(f"{role}:{artifact_role}\n".encode("utf-8"))
+            artifact_rows[artifact_role] = {
+                "path": str(artifact_path),
+                "sha256": _sha(artifact_path),
+            }
+        started_hour = 10 if role == "standalone" else 12
+        return {
+            "role": role,
+            "rung": member["rung"],
+            "sequence": member["sequence"],
+            "receipt_path": str(runner_receipt),
+            "receipt_sha256": _sha(runner_receipt),
+            "work_item_id": expected_ids[role],
+            "started_at_utc": f"2026-07-29T{started_hour:02d}:00:00+00:00",
+            "completed_at_utc": f"2026-07-29T{started_hour + 1:02d}:00:00+00:00",
+            "source_commit": "a" * 40,
+            "factory_off_sha256": "f" * 64,
+            "source_binding": copy.deepcopy(source_binding),
+            "runner_artifacts": artifact_rows,
+            "execution_input_artifacts_sha256": "b" * 64,
+            "execution_input_observed_bundle_sha256": "d" * 64,
+            "execution_input_artifact_count": runner.FTMO_BOOK3_EXPECTED_EXECUTION_INPUT_COUNT,
+            "post_payload_sha256": "c" * 64,
+            "post_evidence": {
+                "path": str(evidence),
+                "resolved_path": str(evidence),
+                "sha256": _sha(evidence),
+                "bytes": evidence.stat().st_size,
+            },
+            "q08_trades": {
+                "source": str((tmp_path / "common" / f"{role}.jsonl").resolve()),
+                "target": str(q08),
+                "path": str(q08),
+                "sha256": _sha(q08),
+                "bytes": q08.stat().st_size,
+                "lines": 2,
+                "selected_trade_count": 2,
+            },
+            "magic": member["magic"],
+            "symbol": member["symbol"],
+        }
+
     receipt = {
-        "schema": "qm.ftmo-book3-fidelity-adjudication-receipt/v1",
+        "schema": "qm.ftmo-book3-fidelity-adjudication-receipt/v2",
         "generated_at_utc": "2026-07-29T12:00:00+00:00",
-        "stage": 0,
+        "stage": stage,
         "verdict": "PASS",
         "errors": [],
-        "work_item_ids": {"standalone": "r0-id", "joint": "j0-id"},
+        "work_item_ids": expected_ids,
         "source_commit": "a" * 40,
         "execution_input_artifacts_sha256": "b" * 64,
-        "controller_path": str(
-            Path(runner.__file__).resolve().with_name("ftmo_book3_fidelity_gate.py")
-        ),
+        "controller_path": runtime_by_role["fidelity_gate"]["path"],
         "controller_sha256": hashes["fidelity_gate"],
+        "controller_bytes": runtime_by_role["fidelity_gate"]["bytes"],
         "isolated_runner_sha256": hashes["isolated_runner"],
         "preparation_controller_sha256": hashes["preparation_controller"],
         "comparator_sha256": hashes["fidelity_comparator"],
-        "contract": {"measurement_contract": runner.FTMO_BOOK3_MEASUREMENT_CONTRACT},
+        "comparator": {
+            "path": runtime_by_role["fidelity_comparator"]["path"],
+            "sha256": hashes["fidelity_comparator"],
+            "bytes": runtime_by_role["fidelity_comparator"]["bytes"],
+        },
+        "contract": {
+            "measurement_contract": runner.FTMO_BOOK3_MEASUREMENT_CONTRACT,
+            "expected_execution_input_count": (
+                runner.FTMO_BOOK3_EXPECTED_EXECUTION_INPUT_COUNT
+            ),
+            "match_rate_required": 1.0,
+            "unmatched_required": 0,
+            "both_operands_nonempty": True,
+            "money_tolerance": runner.FTMO_BOOK3_MONEY_TOLERANCE,
+            "volume_tolerance": runner.FTMO_BOOK3_VOLUME_TOLERANCE,
+            "price_tolerance": runner.FTMO_BOOK3_PRICE_TOLERANCE,
+            "money_basis": runner.FTMO_BOOK3_MONEY_BASIS,
+        },
         "safety": {
             "read_only_inputs": True,
             "create_only_output": True,
@@ -865,12 +1013,24 @@ def test_fidelity_stage_receipt_is_required_and_hash_bound(tmp_path: Path) -> No
             "touches_live_scope": False,
             "touches_autotrading": False,
         },
+        "operands": {
+            "standalone": gate_operand("standalone"),
+            "joint": gate_operand("joint"),
+        },
         "comparison": {
+            "algorithm": runner.FTMO_BOOK3_FIDELITY_ALGORITHM,
+            "money_basis": runner.FTMO_BOOK3_MONEY_BASIS,
+            "money_tolerance": runner.FTMO_BOOK3_MONEY_TOLERANCE,
+            "volume_tolerance": runner.FTMO_BOOK3_VOLUME_TOLERANCE,
+            "price_tolerance": runner.FTMO_BOOK3_PRICE_TOLERANCE,
             "match_rate": 1.0,
             "unmatched_standalone": 0,
             "unmatched_joint": 0,
             "standalone_trades": 2,
             "joint_trades": 2,
+            "matched": 2,
+            "unmatched_standalone_sample": [],
+            "unmatched_joint_sample": [],
         },
     }
     identity = {
@@ -890,26 +1050,120 @@ def test_fidelity_stage_receipt_is_required_and_hash_bound(tmp_path: Path) -> No
             + "\n"
         ).encode("utf-8")
     ).hexdigest()
-    path = (tmp_path / "stage0.json").resolve()
+    path = (tmp_path / f"stage{stage}.json").resolve()
     path.write_text(json.dumps(receipt, sort_keys=True) + "\n", encoding="utf-8")
     valid = runner._ftmo_fidelity_receipt_plan(
         payload,
         ladder_order=ladder,
         receipt_path=path,
         expected_receipt_sha256=_sha(path),
-    )
-    receipt["verdict"] = "FAIL"
-    path.write_text(json.dumps(receipt, sort_keys=True) + "\n", encoding="utf-8")
-    invalid = runner._ftmo_fidelity_receipt_plan(
-        payload,
-        ladder_order=ladder,
-        receipt_path=path,
-        expected_receipt_sha256=_sha(path),
+        expected_factory_off_sha256="f" * 64,
     )
     assert missing["valid"] is False
-    assert valid["valid"] is True
-    assert invalid["valid"] is False
-    assert any("verdict mismatch" in error for error in invalid["errors"])
+    assert valid["valid"] is True, valid["errors"]
+
+    def validate_mutation(mutator) -> dict:
+        candidate = copy.deepcopy(receipt)
+        mutator(candidate)
+        identity = {
+            key: value
+            for key, value in candidate.items()
+            if key not in {"generated_at_utc", "adjudication_id"}
+        }
+        candidate["adjudication_id"] = hashlib.sha256(
+            (
+                json.dumps(
+                    identity,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                )
+                + "\n"
+            ).encode("utf-8")
+        ).hexdigest()
+        path.write_text(json.dumps(candidate, sort_keys=True) + "\n", encoding="utf-8")
+        return runner._ftmo_fidelity_receipt_plan(
+            payload,
+            ladder_order=ladder,
+            receipt_path=path,
+            expected_receipt_sha256=_sha(path),
+            expected_factory_off_sha256="f" * 64,
+        )
+
+    invalid_cases = (
+        lambda candidate: candidate.__setitem__("verdict", "FAIL"),
+        lambda candidate: candidate.pop("operands"),
+        lambda candidate: candidate.__setitem__("unexpected", True),
+        lambda candidate: candidate.__setitem__("stage", bool(stage)),
+        lambda candidate: candidate["contract"].__setitem__(
+            "expected_execution_input_count", 307.0
+        ),
+        lambda candidate: candidate["contract"].__setitem__(
+            "both_operands_nonempty", 1
+        ),
+        lambda candidate: candidate["contract"].__setitem__(
+            "money_tolerance", 0.006
+        ),
+        lambda candidate: candidate["comparison"].__setitem__(
+            "algorithm", "count_only"
+        ),
+        lambda candidate: candidate["comparison"].__setitem__("matched", 1),
+        lambda candidate: candidate["comparison"].__setitem__(
+            "price_tolerance", 0.00001
+        ),
+        lambda candidate: candidate["comparison"].__setitem__(
+            "unmatched_joint", 0.0
+        ),
+        lambda candidate: candidate["operands"]["standalone"].__setitem__(
+            "role", "joint"
+        ),
+        lambda candidate: candidate["operands"]["standalone"].__setitem__(
+            "execution_input_artifact_count", 307.0
+        ),
+        lambda candidate: candidate["operands"]["joint"]["q08_trades"].__setitem__(
+            "selected_trade_count", 2.0
+        ),
+        lambda candidate: candidate["operands"]["standalone"]["post_evidence"].__setitem__(
+            "bytes", None
+        ),
+        lambda candidate: candidate["operands"]["joint"]["q08_trades"].__setitem__(
+            "bytes", True
+        ),
+        lambda candidate: candidate["operands"]["joint"]["q08_trades"].__setitem__(
+            "lines", 2.0
+        ),
+        lambda candidate: candidate["operands"]["standalone"]["q08_trades"].__setitem__(
+            "lines", 3
+        ),
+        lambda candidate: candidate["comparison"].__setitem__(
+            "standalone_trades", 1
+        ),
+        lambda candidate: candidate["operands"]["joint"].__setitem__(
+            "execution_input_observed_bundle_sha256", "8" * 64
+        ),
+        lambda candidate: [
+            candidate["operands"][role].__setitem__(
+                "factory_off_sha256", "0" * 64
+            )
+            for role in ("standalone", "joint")
+        ],
+        lambda candidate: candidate["operands"]["standalone"]["runner_artifacts"][
+            "mq5"
+        ].__setitem__("sha256", "7" * 64),
+        lambda candidate: candidate["operands"]["joint"]["source_binding"][
+            "runtime_sources"
+        ]["roles"]["fidelity_gate"].__setitem__("sha256", "9" * 64),
+    )
+    for mutate in invalid_cases:
+        assert validate_mutation(mutate)["valid"] is False
+
+
+def test_stage1_standalone_magic_is_authoritative_literal() -> None:
+    assert (
+        runner.FTMO_BOOK3_FIDELITY_STAGE_MEMBERS[1]["standalone"]["magic"]
+        == 101450034
+    )
 
 
 def test_invalid_dry_run_cli_returns_exit_two(

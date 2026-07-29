@@ -40,12 +40,24 @@ except ModuleNotFoundError:
 SCHEMA_PREPARE = "qm.ftmo-book3-q02-prepare-plan/v1"
 SCHEMA_RELEASE = "qm.ftmo-book3-q02-release-holds-plan/v1"
 SCHEMA_RECEIPT = "qm.ftmo-book3-q02-maintenance-receipt/v1"
-SCHEMA_FIDELITY = "qm.ftmo-book3-fidelity-adjudication-receipt/v1"
+SCHEMA_FIDELITY = "qm.ftmo-book3-fidelity-adjudication-receipt/v2"
 FIDELITY_STAGES = (0, 1, 2)
-FIDELITY_MEASUREMENT_CONTRACT = "FTMO_BOOK3_FIDELITY_LADDER_V1"
+FIDELITY_MEASUREMENT_CONTRACT = (
+    "FTMO_BOOK3_FIDELITY_LADDER_V2_FULL_LIFECYCLE_NET"
+)
+EVIDENCE_VINTAGE = "FTMO_BOOK3_20260729_V2"
+PREREGISTRATION_REL = Path(
+    "docs/ops/evidence/2026-07-29_ftmo_book3_execution_preregistration_v2.md"
+)
+FULL_LIFECYCLE_MONEY_BASIS = "FULL_POSITION_LIFECYCLE_ACTUAL_V1"
+FIDELITY_COMPARISON_ALGORITHM = (
+    "maximum_bipartite_exact_time_side_price_full_lifecycle_money_volume/v3"
+)
 DEFAULT_ROOT = Path(r"D:\QM\strategy_farm")
 DEFAULT_REPO = Path(r"C:\QM\repo")
-DEFAULT_ARTIFACT_ROOT = Path(r"D:\QM\strategy_farm\artifacts\ftmo_book3")
+DEFAULT_ARTIFACT_ROOT = Path(
+    r"D:\QM\strategy_farm\artifacts\ftmo_book3_v2_full_lifecycle_20260730_a02"
+)
 DEFAULT_REPORT_ROOT = Path(r"D:\QM\reports\work_items")
 DEFAULT_COMMON_QM = Path(
     r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files\QM"
@@ -75,6 +87,15 @@ RUNTIME_SOURCE_ROLES = (
     "fidelity_comparator",
     "preregistration",
 )
+COMPILE_MANIFEST_NAME = "compile_manifest.json"
+COMPILE_CONTRACT = "FTMO_BOOK3_PORTABLE_COMPILE_V2"
+COMPILE_CONTROLLER_REL = Path("tools/strategy_farm/compile_ftmo_book3_v2.ps1")
+COMPILE_EAS: tuple[tuple[int, str], ...] = (
+    (9936, "QM5_9936_ff-range-breakout-gmt3-h1"),
+    (10145, "QM5_10145_tsm-meanret"),
+    (13108, "QM5_13108_xti-mtsm-s2"),
+    (20181, "QM5_20181_ftmo-joint-multisym-timer"),
+)
 TERMINAL = "T10"
 FORBIDDEN_TERMINALS = ("T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T_LIVE")
 HOLD_CODE = "FTMO_BOOK3_Q02_ISOLATED_ONLY"
@@ -92,7 +113,7 @@ RUN_SPECS: tuple[dict[str, Any], ...] = (
         "code": "R0", "ea_id": "QM5_9936", "symbol": "USDJPY.DWX", "period": "H1",
         "ea_dir": "QM5_9936_ff-range-breakout-gmt3-h1",
         "set_name": "QM5_9936_ff-range-breakout-gmt3-h1_USDJPY.DWX_H1_backtest.set",
-        "ex5_sha256": "d201a06594c04c49effc5caa53f274350fb6a3b972efe2b0248e23ba75cf33d3",
+        "ex5_sha256": None,
         "evidence_run_id": None,
         "basket_symbols": (),
     },
@@ -101,14 +122,14 @@ RUN_SPECS: tuple[dict[str, Any], ...] = (
         "ea_dir": "QM5_20181_ftmo-joint-multisym-timer",
         "set_name": "QM5_20181_ftmo-joint-multisym-timer_USDJPY.DWX_H1_replay_runner.set",
         "ex5_sha256": None,
-        "evidence_run_id": "FTMO_BOOK3_20260729_V1_J0",
+        "evidence_run_id": "FTMO_BOOK3_20260729_V2_J0",
         "basket_symbols": ("USDJPY.DWX",),
     },
     {
         "code": "R1", "ea_id": "QM5_10145", "symbol": "XAUUSD.DWX", "period": "D1",
         "ea_dir": "QM5_10145_tsm-meanret",
         "set_name": "QM5_10145_tsm-meanret_XAUUSD.DWX_D1_backtest.set",
-        "ex5_sha256": "d55a86cb6054a3965a7f944ad38e9b720ab72cc1c113d74523b9bc07eb86f696",
+        "ex5_sha256": None,
         "evidence_run_id": None,
         "basket_symbols": (),
     },
@@ -117,14 +138,14 @@ RUN_SPECS: tuple[dict[str, Any], ...] = (
         "ea_dir": "QM5_20181_ftmo-joint-multisym-timer",
         "set_name": "QM5_20181_ftmo-joint-multisym-timer_USDJPY.DWX_H1_book2_9936_10145.set",
         "ex5_sha256": None,
-        "evidence_run_id": "FTMO_BOOK3_20260729_V1_J1",
+        "evidence_run_id": "FTMO_BOOK3_20260729_V2_J1",
         "basket_symbols": ("USDJPY.DWX", "XAUUSD.DWX"),
     },
     {
         "code": "R2", "ea_id": "QM5_13108", "symbol": "XTIUSD.DWX", "period": "D1",
         "ea_dir": "QM5_13108_xti-mtsm-s2",
         "set_name": "QM5_13108_xti-mtsm-s2_XTIUSD.DWX_D1_backtest.set",
-        "ex5_sha256": "59d65959212ddae72e2d1ea3fe16d53649dcff2dffe3bfd5efb99f70fccc3179",
+        "ex5_sha256": None,
         "evidence_run_id": None,
         "basket_symbols": (),
     },
@@ -133,20 +154,20 @@ RUN_SPECS: tuple[dict[str, Any], ...] = (
         "ea_dir": "QM5_20181_ftmo-joint-multisym-timer",
         "set_name": "QM5_20181_ftmo-joint-multisym-timer_USDJPY.DWX_H1_book3_9936_10145_13108.set",
         "ex5_sha256": None,
-        "evidence_run_id": "FTMO_BOOK3_20260729_V1_J2",
+        "evidence_run_id": "FTMO_BOOK3_20260729_V2_J2",
         "basket_symbols": ("USDJPY.DWX", "XAUUSD.DWX", "XTIUSD.DWX"),
     },
 )
 
 
-def _bound_run_specs(joint_ex5_sha256: str) -> tuple[dict[str, Any], ...]:
-    if not re.fullmatch(r"[0-9a-f]{64}", joint_ex5_sha256):
-        raise ContractError("joint EX5 SHA-256 must be exactly 64 lowercase hexadecimal characters")
-    return tuple(
-        {**spec, "ex5_sha256": joint_ex5_sha256}
-        if spec["ea_id"] == "QM5_20181" else dict(spec)
-        for spec in RUN_SPECS
-    )
+def _bound_run_specs(ex5_by_ea: dict[str, str]) -> tuple[dict[str, Any], ...]:
+    expected = {f"QM5_{ea_id}" for ea_id, _ in COMPILE_EAS}
+    if set(ex5_by_ea) != expected or any(
+        not re.fullmatch(r"[0-9a-f]{64}", value)
+        for value in ex5_by_ea.values()
+    ):
+        raise ContractError("compile manifest does not bind the exact four EX5 hashes")
+    return tuple({**spec, "ex5_sha256": ex5_by_ea[str(spec["ea_id"])]} for spec in RUN_SPECS)
 
 
 def utc_now() -> str:
@@ -330,6 +351,222 @@ def _tree_artifact(path: Path, role: str) -> dict[str, Any]:
     return {"role": role, "path": str(path), "sha256": canonical_sha(rows), "file_count": len(rows), "valid": bool(rows)}
 
 
+def _compile_tree_digest(path: Path) -> dict[str, Any]:
+    """Reproduce compile_ftmo_book3_v2.ps1 Get-TreeDigest byte-for-byte."""
+    root = Path(path).resolve(strict=True)
+    # Windows PowerShell's ``Sort-Object FullName`` orders an ASCII sibling
+    # such as ``QM_Branding.mqh`` before a child such as ``QM\modules\...``.
+    # Python's ordinal path sort does the opposite because ``\\`` sorts before
+    # ``_``.  Treat separators as a high sentinel to match the producer.
+    def powershell_fullname_key(child: Path) -> str:
+        return str(child.resolve()).casefold().replace("\\", "\uffff").replace("/", "\uffff")
+
+    files = sorted(
+        (child for child in root.rglob("*") if child.is_file()),
+        key=powershell_fullname_key,
+    )
+    if not files:
+        raise ContractError(f"compile tree is empty: {root}")
+    rows: list[bytes] = []
+    total = 0
+    for child in files:
+        resolved = child.resolve(strict=True)
+        try:
+            relative = resolved.relative_to(root).as_posix()
+        except ValueError as exc:
+            raise ContractError(f"compile tree member escaped root: {child}") from exc
+        size = resolved.stat().st_size
+        rows.append(f"{relative}\0{sha256_file(resolved)}\0{size}\n".encode("utf-8"))
+        total += size
+    return {
+        "root": str(root),
+        "sha256": hashlib.sha256(b"".join(rows)).hexdigest(),
+        "file_count": len(files),
+        "total_bytes": total,
+    }
+
+
+def _require_exact_path(value: Any, expected: Path, label: str) -> Path:
+    supplied = Path(str(value or ""))
+    if not supplied.is_absolute() or _path_identity(supplied) != _path_identity(expected):
+        raise ContractError(f"{label} path mismatch: expected={expected} actual={value}")
+    return supplied
+
+
+def _require_current_file(binding: Any, expected: Path, label: str) -> dict[str, Any]:
+    if not isinstance(binding, dict):
+        raise ContractError(f"{label} binding must be an object")
+    path = _require_exact_path(binding.get("path"), expected, label)
+    if not path.is_file():
+        raise ContractError(f"{label} is missing: {path}")
+    actual = sha256_file(path)
+    if binding.get("sha256") != actual:
+        raise ContractError(f"{label} SHA-256 mismatch")
+    return {"path": str(path), "sha256": actual, "bytes": path.stat().st_size}
+
+
+def _git_ancestor_with_clean_compile_scope(
+    repo: Path, compile_commit: str, authoritative_commit: str,
+) -> None:
+    if compile_commit == authoritative_commit:
+        return
+    proc = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", compile_commit, authoritative_commit],
+        cwd=repo, capture_output=True, text=True, timeout=30,
+        creationflags=(subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0),
+    )
+    if proc.returncode != 0:
+        raise ContractError("compile source_commit is not an ancestor of authoritative prepare commit")
+    scope = [
+        *(f"framework/EAs/{name}" for _, name in COMPILE_EAS),
+        "framework/include",
+        COMPILE_CONTROLLER_REL.as_posix(),
+    ]
+    changed = _git(repo, "diff", "--name-only", f"{compile_commit}..{authoritative_commit}", "--", *scope)
+    if changed:
+        raise ContractError(f"compile-relevant source changed after compile source_commit: {changed}")
+
+
+def _load_compile_manifest(
+    *, repo: Path, artifact_root: Path, flag: Path,
+    authoritative_source_commit: str, supplied_joint_ex5_sha256: str | None = None,
+) -> tuple[dict[str, Any], dict[str, str]]:
+    manifest_path = artifact_root / COMPILE_MANIFEST_NAME
+    resolved, raw, manifest_sha, _ = _read_unaliased_regular_file_once(
+        manifest_path, "FTMO Book-3 compile manifest"
+    )
+    document = _strict_json_object(raw, "FTMO Book-3 compile manifest")
+    fixed = {
+        "schema_version": 2,
+        "contract": COMPILE_CONTRACT,
+        "result": "PASS",
+        "create_only": True,
+        "serial_compile": True,
+        "canonical_publication_after_four_pass": True,
+        "terminals_started": [],
+        "terminals_modified": [],
+    }
+    for key, expected in fixed.items():
+        if type(document.get(key)) is not type(expected) or document.get(key) != expected:
+            raise ContractError(f"compile manifest has invalid {key}")
+    _require_exact_path(document.get("artifact_root"), artifact_root, "compile artifact_root")
+    compile_commit = document.get("source_commit")
+    if not isinstance(compile_commit, str) or not re.fullmatch(r"[0-9a-f]{40}", compile_commit):
+        raise ContractError("compile manifest source_commit must be 40 lowercase hexadecimal characters")
+    _git_ancestor_with_clean_compile_scope(repo, compile_commit, authoritative_source_commit)
+
+    factory = document.get("factory_off")
+    if not isinstance(factory, dict):
+        raise ContractError("compile manifest factory_off binding is missing")
+    _require_exact_path(factory.get("path"), flag, "compile factory_off")
+    if not flag.is_file() or factory.get("sha256") != sha256_file(flag):
+        raise ContractError("compile manifest FACTORY_OFF binding drifted")
+    mutation = document.get("mutation_lock")
+    if not isinstance(mutation, dict) or mutation.get("required_absent") is not True:
+        raise ContractError("compile manifest mutation-lock absence contract is invalid")
+    expected_lock = path_for_factory_flag(flag)
+    _require_exact_path(mutation.get("path"), expected_lock, "compile mutation_lock")
+
+    controller_path = repo / COMPILE_CONTROLLER_REL
+    controller = _require_current_file(document.get("tool"), controller_path, "compile controller")
+    compiler = document.get("compiler")
+    if not isinstance(compiler, dict) or compiler.get("portable") is not True or compiler.get("invocation_switch") != "/portable":
+        raise ContractError("compile manifest portable compiler identity is invalid")
+    template_root = Path(str(compiler.get("source_template_root") or ""))
+    if not template_root.is_absolute() or not template_root.is_dir():
+        raise ContractError("compile manifest compiler source_template_root is invalid")
+    expected_compiler_paths = {
+        "source_path": template_root / "MetaEditor64.exe",
+        "workspace_path": artifact_root / "workspace/portable_metaeditor/MetaEditor64.exe",
+    }
+    for key, expected_path in expected_compiler_paths.items():
+        path = Path(str(compiler.get(key) or ""))
+        _require_exact_path(path, expected_path, f"compile compiler {key}")
+        if not path.is_file():
+            raise ContractError(f"compile manifest compiler {key} is missing")
+        if compiler.get(key.replace("path", "sha256")) != sha256_file(path):
+            raise ContractError(f"compile manifest compiler {key} hash drifted")
+    if compiler.get("source_sha256") != compiler.get("workspace_sha256"):
+        raise ContractError("portable compiler source/workspace identity mismatch")
+    if not isinstance(compiler.get("file_version"), str) or not compiler["file_version"]:
+        raise ContractError("compile manifest compiler file_version is missing")
+    if not isinstance(compiler.get("product_version"), str) or not compiler["product_version"]:
+        raise ContractError("compile manifest compiler product_version is missing")
+    for key, expected_path in (
+        ("isolated_appdata", artifact_root / "workspace/profile/Roaming"),
+        ("isolated_localappdata", artifact_root / "workspace/profile/Local"),
+    ):
+        _require_exact_path(compiler.get(key), expected_path, f"compile compiler {key}")
+
+    current_overlay = _compile_tree_digest(repo / "framework/include")
+    include_trees = document.get("include_trees")
+    if not isinstance(include_trees, dict):
+        raise ContractError("compile manifest include_trees binding is missing")
+    for key in ("repo_overlay", "repo_overlay_after"):
+        if include_trees.get(key) != current_overlay:
+            raise ContractError(f"compile manifest {key} does not match current repo include tree")
+
+    expected_order = [name for _, name in COMPILE_EAS]
+    if document.get("compile_order") != expected_order:
+        raise ContractError("compile manifest compile_order is not the exact four-EA order")
+    results = document.get("results")
+    if not isinstance(results, list) or len(results) != len(COMPILE_EAS):
+        raise ContractError("compile manifest must contain exactly four results")
+    ex5_by_ea: dict[str, str] = {}
+    for result, (ea_id, name) in zip(results, COMPILE_EAS):
+        if not isinstance(result, dict):
+            raise ContractError("compile result must be an object")
+        if result.get("ea_id") != ea_id or type(result.get("ea_id")) is not int or result.get("name") != name:
+            raise ContractError("compile result ID/name/order mismatch")
+        if result.get("result") != "PASS" or result.get("errors") != 0 or result.get("warnings") != 0:
+            raise ContractError(f"compile result is not strict PASS: {name}")
+        if type(result.get("errors")) is not int or type(result.get("warnings")) is not int:
+            raise ContractError(f"compile result counters must be integers: {name}")
+        # MetaEditor64 uses both 0 and 1 as successful process exit codes in
+        # observed portable builds.  PASS remains anchored to fresh EX5/log
+        # hashes plus the parsed 0-error/0-warning result.
+        if type(result.get("metaeditor_exit_code")) is not int or result.get("metaeditor_exit_code") not in {0, 1}:
+            raise ContractError(f"compile result MetaEditor exit code is outside the accepted producer contract: {name}")
+        mq5 = repo / "framework/EAs" / name / f"{name}.mq5"
+        _require_exact_path(result.get("source_mq5_path"), mq5, f"compile source MQ5 {name}")
+        if not mq5.is_file() or result.get("source_mq5_sha256") != sha256_file(mq5):
+            raise ContractError(f"compile source MQ5 hash drifted: {name}")
+        ex5 = artifact_root / "canonical_staged_ex5" / f"{name}.ex5"
+        log = artifact_root / "canonical_compile_logs" / f"{name}.compile.log"
+        _require_exact_path(result.get("ex5_path"), ex5, f"compiled EX5 {name}")
+        _require_exact_path(result.get("compile_log_path"), log, f"compile log {name}")
+        if not ex5.is_file() or result.get("ex5_sha256") != sha256_file(ex5):
+            raise ContractError(f"compiled EX5 hash drifted: {name}")
+        if not log.is_file() or result.get("compile_log_sha256") != sha256_file(log):
+            raise ContractError(f"compile log hash drifted: {name}")
+        raw_log = log.read_bytes()
+        encoding = "utf-16" if raw_log.startswith((b"\xff\xfe", b"\xfe\xff")) or b"\x00" in raw_log[:256] else "utf-8-sig"
+        if "Result: 0 errors, 0 warnings" not in raw_log.decode(encoding, errors="replace"):
+            raise ContractError(f"compile log is not a strict pass: {name}")
+        ex5_by_ea[f"QM5_{ea_id}"] = str(result["ex5_sha256"])
+
+    publication = document.get("publication")
+    if not isinstance(publication, dict):
+        raise ContractError("compile manifest publication binding is missing")
+    for key, directory in (
+        ("staged_ex5_tree", artifact_root / "canonical_staged_ex5"),
+        ("compile_logs_tree", artifact_root / "canonical_compile_logs"),
+    ):
+        if publication.get(key) != _compile_tree_digest(directory):
+            raise ContractError(f"compile manifest publication {key} drifted")
+    joint = ex5_by_ea["QM5_20181"]
+    if supplied_joint_ex5_sha256 is not None and supplied_joint_ex5_sha256 != joint:
+        raise ContractError("supplied joint EX5 SHA-256 differs from compile manifest")
+    binding = {
+        "path": str(resolved),
+        "sha256": manifest_sha,
+        "bytes": len(raw),
+        "source_commit": compile_commit,
+        "compile_controller": controller,
+    }
+    return binding, ex5_by_ea
+
+
 def _factory_processes() -> list[dict[str, Any]]:
     try:
         try:
@@ -435,7 +672,7 @@ def _registry_errors(registry: Path, resolver: Path) -> list[str]:
 
 def _repo_paths(repo: Path, controller_path: Path) -> tuple[list[Path], list[Path]]:
     source_paths = [
-        repo / "docs/ops/evidence/2026-07-29_ftmo_book3_execution_preregistration.md",
+        repo / PREREGISTRATION_REL,
         repo / "framework/registry/magic_numbers.csv",
         repo / "framework/include/QM/QM_MagicResolver.mqh",
         repo / "framework/include/QM",
@@ -537,10 +774,6 @@ def _validate_prepare_operations(
     manifest: dict[str, Any], *, validate_live_source: bool = True
 ) -> None:
     _validate_manifest_topology(manifest)
-    specs = _bound_run_specs(str(manifest.get("joint_ex5_sha256") or ""))
-    operations = manifest.get("operations") or []
-    if manifest.get("terminal") != TERMINAL or len(operations) != len(specs):
-        raise ContractError("prepare manifest is not the exact six-item T10 contract")
     repo = Path(str(manifest["repo"]))
     artifact_root = Path(str(manifest["artifact_root"]))
     report_root = Path(str(manifest["report_root"]))
@@ -548,6 +781,21 @@ def _validate_prepare_operations(
     t10_bases = Path(str(manifest["t10_bases"]))
     calendar_source = Path(str(manifest["calendar_source"]))
     calendar_common = Path(str(manifest["calendar_common"]))
+    compile_binding, ex5_by_ea = _load_compile_manifest(
+        repo=repo,
+        artifact_root=artifact_root,
+        flag=Path(str(manifest["factory_off"]["path"])),
+        authoritative_source_commit=str(manifest["git"]["authoritative_source_commit"]),
+        supplied_joint_ex5_sha256=str(manifest.get("joint_ex5_sha256") or ""),
+    )
+    if manifest.get("compile_manifest") != compile_binding:
+        raise ContractError("prepare compile-manifest binding drifted")
+    if manifest.get("compiled_ex5_sha256_by_ea") != ex5_by_ea:
+        raise ContractError("prepare compiled EX5 map drifted")
+    specs = _bound_run_specs(ex5_by_ea)
+    operations = manifest.get("operations") or []
+    if manifest.get("terminal") != TERMINAL or len(operations) != len(specs):
+        raise ContractError("prepare manifest is not the exact six-item T10 contract")
     artifacts = manifest.get("artifacts") or []
     roles = [str(item.get("role") or "") for item in artifacts]
     paths = [str(item.get("path") or "").casefold() for item in artifacts]
@@ -556,13 +804,30 @@ def _validate_prepare_operations(
     if any(item.get("valid") is not True for item in artifacts):
         raise ContractError("prepare manifest contains an invalid artifact")
     amap = _artifact_map(artifacts)
+    if "compile_manifest" not in amap or "compile_controller" not in amap:
+        raise ContractError("prepare manifest is missing compile provenance artifacts")
+    if {
+        key: amap["compile_manifest"].get(key)
+        for key in ("path", "sha256", "bytes")
+    } != {
+        key: compile_binding[key] for key in ("path", "sha256", "bytes")
+    }:
+        raise ContractError("prepare compile-manifest artifact binding is invalid")
+    if {
+        key: amap["compile_controller"].get(key)
+        for key in ("path", "sha256", "bytes")
+    } != compile_binding["compile_controller"]:
+        raise ContractError("prepare compile-controller artifact binding is invalid")
     expected_controller_artifacts = {
         role: {
             "path": amap[role]["path"],
             "sha256": amap[role]["sha256"],
             "bytes": amap[role]["bytes"],
         }
-        for role in ("preparation_controller", "isolated_runner", "terminal_worker")
+        for role in (
+            "preparation_controller", "isolated_runner", "terminal_worker",
+            "compile_manifest",
+        )
     }
     if manifest.get("controller_artifacts") != expected_controller_artifacts:
         raise ContractError("prepare manifest controller artifact bindings are invalid")
@@ -631,6 +896,9 @@ def _validate_prepare_operations(
             "source": str(common_qm / "q08_equity" / "20181_USDJPY_DWX.jsonl"),
         }] if spec["basket_symbols"] else [])
         checks = {
+            "measurement_contract": FIDELITY_MEASUREMENT_CONTRACT,
+            "evidence_vintage": EVIDENCE_VINTAGE,
+            "money_basis": FULL_LIFECYCLE_MONEY_BASIS,
             "measurement_rung": spec["code"], "measurement_sequence": sequence,
             "evidence_run_id": spec.get("evidence_run_id"),
             "required_fidelity_stage": required_fidelity_stage,
@@ -653,6 +921,12 @@ def _validate_prepare_operations(
             "terminal_worker_sha256": amap["terminal_worker"]["sha256"],
             "preparation_controller_path": amap["preparation_controller"]["path"],
             "preparation_controller_sha256": amap["preparation_controller"]["sha256"],
+            "compile_manifest_path": compile_binding["path"],
+            "compile_manifest_sha256": compile_binding["sha256"],
+            "compile_manifest_bytes": compile_binding["bytes"],
+            "compile_source_commit": compile_binding["source_commit"],
+            "compile_controller_path": compile_binding["compile_controller"]["path"],
+            "compile_controller_sha256": compile_binding["compile_controller"]["sha256"],
             "runtime_source_artifacts": runtime_sources,
             "runtime_source_artifacts_sha256": runtime_sources_sha,
             "execution_input_artifacts": execution_inputs,
@@ -689,6 +963,9 @@ def _validate_prepare_operations(
                 raise ContractError(f"prepare operation {spec['code']} payload has invalid {key}")
         expected_identity = {
             "schema": "qm.ftmo-book3-q02-work-item/v1",
+            "measurement_contract": FIDELITY_MEASUREMENT_CONTRACT,
+            "evidence_vintage": EVIDENCE_VINTAGE,
+            "money_basis": FULL_LIFECYCLE_MONEY_BASIS,
             "code": spec["code"], "sequence": sequence, "ea_id": spec["ea_id"],
             "evidence_run_id": spec.get("evidence_run_id"),
             "required_fidelity_stage": required_fidelity_stage,
@@ -703,6 +980,11 @@ def _validate_prepare_operations(
             "isolated_runner_sha256": amap["isolated_runner"]["sha256"],
             "terminal_worker_sha256": amap["terminal_worker"]["sha256"],
             "preparation_controller_sha256": amap["preparation_controller"]["sha256"],
+            "compile_manifest_path": compile_binding["path"],
+            "compile_manifest_sha256": compile_binding["sha256"],
+            "compile_manifest_bytes": compile_binding["bytes"],
+            "compile_source_commit": compile_binding["source_commit"],
+            "compile_controller_sha256": compile_binding["compile_controller"]["sha256"],
             "runtime_source_artifacts_sha256": runtime_sources_sha,
             "execution_input_artifacts_sha256": execution_inputs_sha,
             "execution_data_bundle_sha256": data_bundle_sha,
@@ -906,11 +1188,12 @@ def _runtime_source_artifacts(artifacts: list[dict[str, Any]]) -> list[dict[str,
 
 def _repo_artifacts(repo: Path, controller_path: Path) -> list[dict[str, Any]]:
     items = [
-        _artifact(repo / "docs/ops/evidence/2026-07-29_ftmo_book3_execution_preregistration.md", "preregistration"),
+        _artifact(repo / PREREGISTRATION_REL, "preregistration"),
         _artifact(repo / "framework/registry/magic_numbers.csv", "magic_registry"),
         _artifact(repo / "framework/include/QM/QM_MagicResolver.mqh", "magic_resolver"),
         _tree_artifact(repo / "framework/include/QM", "framework_include_tree"),
         _artifact(controller_path, "preparation_controller"),
+        _artifact(repo / COMPILE_CONTROLLER_REL, "compile_controller"),
         _artifact(repo / "tools/strategy_farm/terminal_worker.py", "terminal_worker"),
         _artifact(repo / "tools/strategy_farm/isolated_work_item_runner.py", "isolated_runner"),
         _artifact(repo / "tools/strategy_farm/farmctl.py", "farmctl"),
@@ -951,7 +1234,8 @@ def _artifact_map(artifacts: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
 def _item_contract(
     spec: dict[str, Any], *, repo: Path, artifact_root: Path, report_root: Path,
     common_qm: Path, t10_bases: Path, calendar_source: Path, calendar_common: Path,
-    git_identity: dict[str, Any], artifacts: list[dict[str, Any]], sequence: int,
+    git_identity: dict[str, Any], compile_binding: dict[str, Any],
+    artifacts: list[dict[str, Any]], sequence: int,
 ) -> dict[str, Any]:
     amap = _artifact_map(artifacts)
     ea_dir = repo / "framework/EAs" / spec["ea_dir"]
@@ -970,6 +1254,9 @@ def _item_contract(
     ])
     identity = {
         "schema": "qm.ftmo-book3-q02-work-item/v1",
+        "measurement_contract": FIDELITY_MEASUREMENT_CONTRACT,
+        "evidence_vintage": EVIDENCE_VINTAGE,
+        "money_basis": FULL_LIFECYCLE_MONEY_BASIS,
         "code": spec["code"], "sequence": sequence, "ea_id": spec["ea_id"],
         "evidence_run_id": spec.get("evidence_run_id"),
         "required_fidelity_stage": required_fidelity_stage,
@@ -984,6 +1271,11 @@ def _item_contract(
         "isolated_runner_sha256": amap["isolated_runner"]["sha256"],
         "terminal_worker_sha256": amap["terminal_worker"]["sha256"],
         "preparation_controller_sha256": amap["preparation_controller"]["sha256"],
+        "compile_manifest_path": compile_binding["path"],
+        "compile_manifest_sha256": compile_binding["sha256"],
+        "compile_manifest_bytes": compile_binding["bytes"],
+        "compile_source_commit": compile_binding["source_commit"],
+        "compile_controller_sha256": compile_binding["compile_controller"]["sha256"],
         "runtime_source_artifacts_sha256": runtime_sources_sha,
         "execution_input_artifacts_sha256": execution_inputs_sha,
         "execution_data_bundle_sha256": data_bundle_sha,
@@ -1001,7 +1293,9 @@ def _item_contract(
     trade_source = common_qm / "q08_trades" / f"{str(spec['ea_id']).replace('QM5_', '')}_{str(spec['symbol']).replace('.', '_')}.jsonl"
     payload: dict[str, Any] = {
         "schema": "qm.ftmo-book3-q02-work-item-payload/v1",
-        "measurement_contract": "FTMO_BOOK3_FIDELITY_LADDER_V1",
+        "measurement_contract": FIDELITY_MEASUREMENT_CONTRACT,
+        "evidence_vintage": EVIDENCE_VINTAGE,
+        "money_basis": FULL_LIFECYCLE_MONEY_BASIS,
         "measurement_rung": spec["code"], "measurement_sequence": sequence,
         "evidence_run_id": spec.get("evidence_run_id"),
         "required_fidelity_stage": required_fidelity_stage,
@@ -1021,6 +1315,12 @@ def _item_contract(
         "terminal_worker_sha256": identity["terminal_worker_sha256"],
         "preparation_controller_path": amap["preparation_controller"]["path"],
         "preparation_controller_sha256": identity["preparation_controller_sha256"],
+        "compile_manifest_path": compile_binding["path"],
+        "compile_manifest_sha256": compile_binding["sha256"],
+        "compile_manifest_bytes": compile_binding["bytes"],
+        "compile_source_commit": compile_binding["source_commit"],
+        "compile_controller_path": compile_binding["compile_controller"]["path"],
+        "compile_controller_sha256": compile_binding["compile_controller"]["sha256"],
         "runtime_source_artifacts": runtime_sources,
         "runtime_source_artifacts_sha256": runtime_sources_sha,
         "execution_input_artifacts": execution_inputs,
@@ -1079,7 +1379,7 @@ def _item_contract(
 
 
 def build_prepare_plan(
-    *, source_commit: str, joint_ex5_sha256: str,
+    *, source_commit: str, joint_ex5_sha256: str | None = None,
     root: Path = DEFAULT_ROOT, repo: Path = DEFAULT_REPO,
     artifact_root: Path = DEFAULT_ARTIFACT_ROOT, report_root: Path = DEFAULT_REPORT_ROOT,
     common_qm: Path = DEFAULT_COMMON_QM, controller_path: Path | None = None,
@@ -1089,7 +1389,6 @@ def build_prepare_plan(
 ) -> dict[str, Any]:
     if not re.fullmatch(r"[0-9a-f]{40}", source_commit):
         raise ContractError("source commit must be exactly 40 lowercase hexadecimal characters")
-    specs = _bound_run_specs(joint_ex5_sha256)
     controller_path = Path(controller_path or __file__).resolve()
     db = root / "state/farm_state.sqlite"
     flag = root / "state/FACTORY_OFF.flag"
@@ -1102,8 +1401,23 @@ def build_prepare_plan(
     ))
     git_identity, git_errors = _git_identity(repo, controller_path, source_commit)
     errors.extend(git_errors)
+    compile_binding: dict[str, Any] = {}
+    ex5_by_ea: dict[str, str] = {}
+    specs: tuple[dict[str, Any], ...] = ()
+    try:
+        compile_binding, ex5_by_ea = _load_compile_manifest(
+            repo=repo,
+            artifact_root=artifact_root,
+            flag=flag,
+            authoritative_source_commit=source_commit,
+            supplied_joint_ex5_sha256=joint_ex5_sha256,
+        )
+        specs = _bound_run_specs(ex5_by_ea)
+    except ContractError as exc:
+        errors.append(f"COMPILE_MANIFEST_INVALID:{exc}")
     artifacts = (
         _repo_artifacts(repo, controller_path)
+        + [_artifact(artifact_root / COMPILE_MANIFEST_NAME, "compile_manifest")]
         + _external_artifacts(artifact_root, specs)
         + _execution_data_artifacts(t10_bases)
         + _calendar_artifacts(calendar_source, calendar_common)
@@ -1160,7 +1474,8 @@ def build_prepare_plan(
             _item_contract(spec, repo=repo, artifact_root=artifact_root, report_root=report_root,
                            common_qm=common_qm, t10_bases=t10_bases,
                            calendar_source=calendar_source, calendar_common=calendar_common,
-                           git_identity=git_identity, artifacts=artifacts, sequence=index)
+                           git_identity=git_identity, compile_binding=compile_binding,
+                           artifacts=artifacts, sequence=index)
             for index, spec in enumerate(specs)
         ]
     db_state = None
@@ -1189,7 +1504,9 @@ def build_prepare_plan(
         "schema": SCHEMA_PREPARE, "mode": "dry_run", "generated_at_utc": utc_now(),
         "root": str(root), "repo": str(repo), "artifact_root": str(artifact_root),
         "report_root": str(report_root), "common_qm": str(common_qm), "terminal": TERMINAL,
-        "joint_ex5_sha256": joint_ex5_sha256,
+        "joint_ex5_sha256": ex5_by_ea.get("QM5_20181"),
+        "compiled_ex5_sha256_by_ea": ex5_by_ea,
+        "compile_manifest": compile_binding,
         "t10_bases": str(t10_bases), "calendar_source": str(calendar_source),
         "calendar_common": str(calendar_common), "calendar_preflight": calendar_preflight,
         "factory_off": {"path": str(flag), "sha256": sha256_file(flag) if flag.is_file() else None},
@@ -1201,7 +1518,10 @@ def build_prepare_plan(
                 "sha256": _artifact_map(artifacts)[role]["sha256"],
                 "bytes": _artifact_map(artifacts)[role]["bytes"],
             }
-            for role in ("preparation_controller", "isolated_runner", "terminal_worker")
+            for role in (
+                "preparation_controller", "isolated_runner", "terminal_worker",
+                "compile_manifest",
+            )
         },
         "execution_input_artifacts_sha256": canonical_sha(input_artifacts),
         "runtime_source_artifacts_sha256": canonical_sha(
@@ -1229,11 +1549,26 @@ def _verify_artifacts(manifest: dict[str, Any]) -> None:
 def _semantic_source_errors(manifest: dict[str, Any]) -> list[str]:
     """Recompute authorization semantics from the currently bound bytes."""
     repo = Path(str(manifest["repo"]))
-    specs = _bound_run_specs(str(manifest.get("joint_ex5_sha256") or ""))
-    errors = _registry_errors(
+    errors: list[str] = []
+    try:
+        compile_binding, ex5_by_ea = _load_compile_manifest(
+            repo=repo,
+            artifact_root=Path(str(manifest["artifact_root"])),
+            flag=Path(str(manifest["factory_off"]["path"])),
+            authoritative_source_commit=str(manifest["git"]["authoritative_source_commit"]),
+            supplied_joint_ex5_sha256=str(manifest.get("joint_ex5_sha256") or ""),
+        )
+        if manifest.get("compile_manifest") != compile_binding:
+            errors.append("compile-manifest binding drifted")
+        if manifest.get("compiled_ex5_sha256_by_ea") != ex5_by_ea:
+            errors.append("compiled EX5 map drifted")
+        specs = _bound_run_specs(ex5_by_ea)
+    except ContractError as exc:
+        return [f"compile manifest invalid: {exc}"]
+    errors.extend(_registry_errors(
         repo / "framework/registry/magic_numbers.csv",
         repo / "framework/include/QM/QM_MagicResolver.mqh",
-    )
+    ))
     for spec in specs:
         errors.extend(_validate_set(
             spec,
@@ -1552,20 +1887,248 @@ def _bound_runtime_artifact(manifest: dict[str, Any], role: str) -> dict[str, An
 
 
 def _require_fidelity_equal(label: str, expected: Any, actual: Any) -> None:
-    if actual != expected:
+    def typed_equal(left: Any, right: Any) -> bool:
+        if type(left) is not type(right):
+            return False
+        if isinstance(left, dict):
+            return set(left) == set(right) and all(
+                typed_equal(left[key], right[key]) for key in left
+            )
+        if isinstance(left, list):
+            return len(left) == len(right) and all(
+                typed_equal(a, b) for a, b in zip(left, right)
+            )
+        return left == right
+
+    if not typed_equal(expected, actual):
         raise ContractError(
             f"fidelity adjudication {label} mismatch: expected={expected!r} actual={actual!r}"
         )
 
 
+def _require_exact_keys(value: Any, expected: set[str], label: str) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise ContractError(f"{label} must be an object")
+    if set(value) != expected:
+        raise ContractError(
+            f"{label} keyset mismatch: missing={sorted(expected - set(value))} "
+            f"extra={sorted(set(value) - expected)}"
+        )
+    return value
+
+
+def _fidelity_operand_spec(stage: int, role: str) -> dict[str, Any]:
+    rows = {
+        0: {
+            "standalone": ("R0", 0, 99360000, "USDJPY.DWX", "9936_USDJPY_DWX"),
+            "joint": ("J0", 1, 201810000, "USDJPY.DWX", "20181_USDJPY_DWX"),
+        },
+        1: {
+            "standalone": ("R1", 2, 101450034, "XAUUSD.DWX", "10145_XAUUSD_DWX"),
+            "joint": ("J1", 3, 201810001, "XAUUSD.DWX", "20181_USDJPY_DWX"),
+        },
+        2: {
+            "standalone": ("R2", 4, 131080000, "XTIUSD.DWX", "13108_XTIUSD_DWX"),
+            "joint": ("J2", 5, 201810002, "XTIUSD.DWX", "20181_USDJPY_DWX"),
+        },
+    }
+    rung, sequence, magic, symbol, source_stem = rows[stage][role]
+    return {
+        "role": role, "rung": rung, "sequence": sequence,
+        "magic": magic, "symbol": symbol, "source_stem": source_stem,
+    }
+
+
+def _validate_fidelity_operand(
+    *, operand: Any, stage: int, role: str, operation: dict[str, Any],
+    manifest: dict[str, Any], artifacts: dict[str, dict[str, Any]],
+    expected_work_payload_sha256: str,
+) -> dict[str, Any]:
+    label = f"stage {stage} {role} operand"
+    expected_keys = {
+        "role", "rung", "sequence", "receipt_path", "receipt_sha256",
+        "work_item_id", "started_at_utc", "completed_at_utc", "source_commit",
+        "factory_off_sha256", "source_binding", "runner_artifacts",
+        "execution_input_artifacts_sha256", "execution_input_observed_bundle_sha256",
+        "post_payload_sha256", "post_evidence", "q08_trades", "magic", "symbol",
+        "execution_input_artifact_count",
+    }
+    row = _require_exact_keys(operand, expected_keys, label)
+    spec = _fidelity_operand_spec(stage, role)
+    for key in ("role", "rung", "sequence", "magic", "symbol"):
+        _require_fidelity_equal(f"{label}.{key}", spec[key], row.get(key))
+    _require_fidelity_equal(f"{label}.work_item_id", operation["work_item_id"], row.get("work_item_id"))
+    _require_fidelity_equal(
+        f"{label}.source_commit",
+        manifest["git"]["authoritative_source_commit"], row.get("source_commit"),
+    )
+    _require_fidelity_equal(
+        f"{label}.factory_off_sha256", manifest["factory_off"]["sha256"],
+        row.get("factory_off_sha256"),
+    )
+    _require_fidelity_equal(
+        f"{label}.execution_input_artifacts_sha256",
+        manifest["execution_input_artifacts_sha256"],
+        row.get("execution_input_artifacts_sha256"),
+    )
+    _require_fidelity_equal(f"{label}.execution_input_artifact_count", 307, row.get("execution_input_artifact_count"))
+    observed = row.get("execution_input_observed_bundle_sha256")
+    if not isinstance(observed, str) or not re.fullmatch(r"[0-9a-f]{64}", observed):
+        raise ContractError(f"{label} observed execution-input identity is invalid")
+    try:
+        started = dt.datetime.fromisoformat(str(row.get("started_at_utc")))
+        completed = dt.datetime.fromisoformat(str(row.get("completed_at_utc")))
+    except ValueError as exc:
+        raise ContractError(f"{label} timestamps are invalid") from exc
+    if started.tzinfo is None or completed.tzinfo is None or started >= completed:
+        raise ContractError(f"{label} timestamps are not an ordered timezone-aware interval")
+
+    receipt_path = Path(str(row.get("receipt_path") or ""))
+    resolved_receipt, receipt_raw, receipt_sha, _ = _read_unaliased_regular_file_once(
+        receipt_path, f"{label} isolated-runner receipt"
+    )
+    _require_fidelity_equal(f"{label}.receipt_path", str(resolved_receipt), row.get("receipt_path"))
+    _require_fidelity_equal(f"{label}.receipt_sha256", receipt_sha, row.get("receipt_sha256"))
+    if len(receipt_raw) <= 0:
+        raise ContractError(f"{label} isolated-runner receipt is empty")
+    runner_receipt = _strict_json_object(
+        receipt_raw, f"{label} isolated-runner receipt"
+    )
+    runner_post_payload_sha = runner_receipt.get("post_payload_sha256")
+    if not isinstance(runner_post_payload_sha, str) or not re.fullmatch(
+        r"[0-9a-f]{64}", runner_post_payload_sha
+    ):
+        raise ContractError(f"{label} runner post_payload_sha256 is invalid")
+    _require_fidelity_equal(
+        f"{label}.runner post_payload_sha256",
+        expected_work_payload_sha256, runner_post_payload_sha,
+    )
+    _require_fidelity_equal(
+        f"{label}.post_payload_sha256",
+        runner_post_payload_sha, row.get("post_payload_sha256"),
+    )
+
+    runtime_rows = _runtime_source_artifacts(manifest.get("artifacts") or [])
+    expected_runtime_roles = {
+        item["role"]: {
+            "role": item["role"], "path": item["path"],
+            "sha256": item["sha256"], "bytes": item["bytes"],
+        }
+        for item in runtime_rows
+    }
+    expected_runtime = {
+        "canonical_sha256": canonical_sha(runtime_rows),
+        "roles": expected_runtime_roles,
+    }
+    binding = _require_exact_keys(
+        row.get("source_binding"),
+        {
+            "framework_include_tree", "preregistration", "isolated_runner",
+            "terminal_worker", "preparation_controller", "runtime_sources",
+        },
+        f"{label}.source_binding",
+    )
+    expected_direct: dict[str, Any] = {
+        "framework_include_tree": {
+            "path": os.path.normcase(os.path.abspath(artifacts["framework_include_tree"]["path"])),
+            "sha256": artifacts["framework_include_tree"]["sha256"],
+            "file_count": artifacts["framework_include_tree"]["file_count"],
+        }
+    }
+    for key in ("preregistration", "isolated_runner", "terminal_worker", "preparation_controller"):
+        expected_direct[key] = {
+            "path": os.path.normcase(os.path.abspath(artifacts[key]["path"])),
+            "sha256": artifacts[key]["sha256"],
+        }
+    for key, expected in expected_direct.items():
+        _require_fidelity_equal(f"{label}.source_binding.{key}", expected, binding.get(key))
+    _require_fidelity_equal(f"{label}.source_binding.runtime_sources", expected_runtime, binding.get("runtime_sources"))
+
+    run_artifacts = _require_exact_keys(
+        row.get("runner_artifacts"), {"setfile", "staged_ex5", "mq5"},
+        f"{label}.runner_artifacts",
+    )
+    payload = json.loads(operation["payload_json"])
+    expected_runner_artifacts = {
+        "setfile": {"path": os.path.normcase(os.path.abspath(operation["setfile_path"])), "sha256": payload["expected_setfile_sha256"]},
+        "staged_ex5": {"path": os.path.normcase(os.path.abspath(payload["staged_ex5_path"])), "sha256": payload["staged_ex5_sha256"]},
+        "mq5": {
+            "path": os.path.normcase(os.path.abspath(str(Path(manifest["repo"]) / "framework/EAs" / payload["ea_dir_name"] / f"{payload['ea_dir_name']}.mq5"))),
+            "sha256": payload["expected_mq5_sha256"],
+        },
+    }
+    _require_fidelity_equal(f"{label}.runner_artifacts", expected_runner_artifacts, run_artifacts)
+
+    evidence = _require_exact_keys(
+        row.get("post_evidence"), {"path", "resolved_path", "sha256", "bytes"},
+        f"{label}.post_evidence",
+    )
+    evidence_path = Path(str(evidence.get("path") or ""))
+    resolved_evidence, evidence_raw, evidence_sha, _ = _read_unaliased_regular_file_once(
+        evidence_path, f"{label} post evidence"
+    )
+    for key, expected in {
+        "resolved_path": str(resolved_evidence), "sha256": evidence_sha, "bytes": len(evidence_raw),
+    }.items():
+        _require_fidelity_equal(f"{label}.post_evidence.{key}", expected, evidence.get(key))
+
+    q08 = _require_exact_keys(
+        row.get("q08_trades"),
+        {"source", "target", "path", "sha256", "bytes", "lines", "selected_trade_count"},
+        f"{label}.q08_trades",
+    )
+    _require_fidelity_equal(f"{label}.q08_trades.source", payload["post_run_file_common_source"], q08.get("source"))
+    expected_target = Path(operation["report_root"]) / f"q08_trades_{spec['source_stem']}.timer_v2.jsonl"
+    _require_exact_path(q08.get("target"), expected_target, f"{label} q08 target")
+    q08_path = Path(str(q08.get("path") or ""))
+    resolved_q08, q08_raw, q08_sha, _ = _read_unaliased_regular_file_once(q08_path, f"{label} q08 trades")
+    _require_fidelity_equal(f"{label}.q08 target/path", _path_identity(expected_target), _path_identity(resolved_q08))
+    expected_q08 = {
+        "sha256": q08_sha, "bytes": len(q08_raw), "lines": len(q08_raw.splitlines()),
+    }
+    for key, expected in expected_q08.items():
+        _require_fidelity_equal(f"{label}.q08_trades.{key}", expected, q08.get(key))
+    selected = q08.get("selected_trade_count")
+    if isinstance(selected, bool) or not isinstance(selected, int) or selected <= 0:
+        raise ContractError(f"{label} selected trade count must be a positive integer")
+    return {
+        "started": started, "completed": completed, "selected_trade_count": selected,
+        "observed_execution_identity": observed,
+    }
+
+
 def _validate_fidelity_receipt(
     *, stage: int, path: Path, manifest: dict[str, Any],
     expected_work_item_ids: list[str],
+    current_work_payload_sha256_by_id: dict[str, str],
 ) -> tuple[dict[str, Any], tuple[int, int]]:
     label = f"stage {stage} fidelity receipt"
     resolved, raw, receipt_sha, file_identity = _read_unaliased_regular_file_once(path, label)
     receipt = _strict_json_object(raw, label)
+    _require_exact_keys(
+        receipt,
+        {
+            "schema", "generated_at_utc", "stage", "verdict", "work_item_ids",
+            "source_commit", "execution_input_artifacts_sha256", "controller_path",
+            "controller_sha256", "controller_bytes", "isolated_runner_sha256",
+            "preparation_controller_sha256", "comparator_sha256", "errors",
+            "contract", "safety", "comparator", "operands", "comparison",
+            "adjudication_id",
+        },
+        label,
+    )
     _require_fidelity_equal("schema", SCHEMA_FIDELITY, receipt.get("schema"))
+    generated = receipt.get("generated_at_utc")
+    if not isinstance(generated, str):
+        raise ContractError(f"{label} generated_at_utc must be a string")
+    try:
+        generated_time = dt.datetime.fromisoformat(generated)
+    except ValueError as exc:
+        raise ContractError(f"{label} generated_at_utc is invalid") from exc
+    if generated_time.tzinfo is None:
+        raise ContractError(f"{label} generated_at_utc must be timezone-aware")
+    if isinstance(receipt.get("stage"), bool) or not isinstance(receipt.get("stage"), int):
+        raise ContractError(f"{label} stage must be an integer")
     _require_fidelity_equal("stage", stage, receipt.get("stage"))
     _require_fidelity_equal("verdict", "PASS", receipt.get("verdict"))
     _require_fidelity_equal("errors", [], receipt.get("errors"))
@@ -1604,17 +2167,15 @@ def _validate_fidelity_receipt(
     _require_fidelity_equal(
         "comparator_sha256", comparator["sha256"], receipt.get("comparator_sha256")
     )
-    comparator_receipt = receipt.get("comparator")
-    if not isinstance(comparator_receipt, dict):
-        raise ContractError(f"{label} comparator binding is missing")
+    comparator_receipt = _require_exact_keys(
+        receipt.get("comparator"), {"path", "sha256", "bytes"},
+        f"{label} comparator",
+    )
     for key in ("path", "sha256", "bytes"):
         _require_fidelity_equal(
             f"comparator.{key}", comparator[key], comparator_receipt.get(key)
         )
 
-    contract = receipt.get("contract")
-    if not isinstance(contract, dict):
-        raise ContractError(f"{label} contract is missing")
     expected_contract = {
         "measurement_contract": FIDELITY_MEASUREMENT_CONTRACT,
         "expected_execution_input_count": len(_required_execution_input_roles()),
@@ -1623,13 +2184,12 @@ def _validate_fidelity_receipt(
         "both_operands_nonempty": True,
         "money_tolerance": 0.005,
         "volume_tolerance": 0.005,
+        "price_tolerance": 0.0,
+        "money_basis": FULL_LIFECYCLE_MONEY_BASIS,
     }
-    for key, expected in expected_contract.items():
-        _require_fidelity_equal(f"contract.{key}", expected, contract.get(key))
-    safety = receipt.get("safety")
-    if not isinstance(safety, dict):
-        raise ContractError(f"{label} safety declaration is missing")
-    for key, expected in {
+    contract = _require_exact_keys(receipt.get("contract"), set(expected_contract), f"{label} contract")
+    _require_fidelity_equal("contract", expected_contract, contract)
+    expected_safety = {
         "read_only_inputs": True,
         "create_only_output": True,
         "opens_factory_db": False,
@@ -1637,20 +2197,34 @@ def _validate_fidelity_receipt(
         "mutates_factory_state": False,
         "touches_live_scope": False,
         "touches_autotrading": False,
-    }.items():
-        _require_fidelity_equal(f"safety.{key}", expected, safety.get(key))
+    }
+    safety = _require_exact_keys(receipt.get("safety"), set(expected_safety), f"{label} safety")
+    _require_fidelity_equal("safety", expected_safety, safety)
 
-    comparison = receipt.get("comparison")
-    if not isinstance(comparison, dict):
-        raise ContractError(f"{label} comparison is missing")
+    comparison = _require_exact_keys(
+        receipt.get("comparison"),
+        {
+            "algorithm", "money_basis", "money_tolerance", "volume_tolerance",
+            "price_tolerance", "standalone_trades", "joint_trades", "matched",
+            "unmatched_standalone", "unmatched_joint", "match_rate",
+            "unmatched_standalone_sample", "unmatched_joint_sample",
+        },
+        f"{label} comparison",
+    )
     _require_fidelity_equal(
         "comparison.algorithm",
-        "maximum_bipartite_exact_time_tolerant_money_volume/v1",
+        FIDELITY_COMPARISON_ALGORITHM,
         comparison.get("algorithm"),
+    )
+    _require_fidelity_equal(
+        "comparison.money_basis",
+        FULL_LIFECYCLE_MONEY_BASIS,
+        comparison.get("money_basis"),
     )
     for key, expected in {
         "money_tolerance": 0.005,
         "volume_tolerance": 0.005,
+        "price_tolerance": 0.0,
         "unmatched_standalone": 0,
         "unmatched_joint": 0,
         "match_rate": 1.0,
@@ -1666,6 +2240,41 @@ def _validate_fidelity_receipt(
         raise ContractError(f"{label} comparison operands must both be non-empty")
     if counts["matched"] != counts["standalone_trades"] or counts["matched"] != counts["joint_trades"]:
         raise ContractError(f"{label} comparison does not prove exact cardinality match")
+    _require_fidelity_equal("comparison.unmatched_standalone_sample", [], comparison.get("unmatched_standalone_sample"))
+    _require_fidelity_equal("comparison.unmatched_joint_sample", [], comparison.get("unmatched_joint_sample"))
+
+    operands = _require_exact_keys(
+        receipt.get("operands"), {"standalone", "joint"}, f"{label} operands"
+    )
+    amap = _artifact_map(manifest.get("artifacts") or [])
+    prepare_operations = manifest.get("prepare_operations") or manifest["operations"]
+    if len(prepare_operations) != 6 or any("payload_json" not in item for item in prepare_operations):
+        raise ContractError(f"{label} is missing the authenticated prepare operations")
+    standalone_auth = _validate_fidelity_operand(
+        operand=operands["standalone"], stage=stage, role="standalone",
+        operation=prepare_operations[pair_offset], manifest=manifest, artifacts=amap,
+        expected_work_payload_sha256=current_work_payload_sha256_by_id[
+            expected_pair["standalone"]
+        ],
+    )
+    joint_auth = _validate_fidelity_operand(
+        operand=operands["joint"], stage=stage, role="joint",
+        operation=prepare_operations[pair_offset + 1], manifest=manifest, artifacts=amap,
+        expected_work_payload_sha256=current_work_payload_sha256_by_id[
+            expected_pair["joint"]
+        ],
+    )
+    if standalone_auth["completed"] > joint_auth["started"]:
+        raise ContractError(f"{label} serial operand order is invalid")
+    if standalone_auth["observed_execution_identity"] != joint_auth["observed_execution_identity"]:
+        raise ContractError(f"{label} operand execution-input observations are spliced")
+    _require_fidelity_equal(
+        "comparison.standalone_trades",
+        standalone_auth["selected_trade_count"], counts["standalone_trades"],
+    )
+    _require_fidelity_equal(
+        "comparison.joint_trades", joint_auth["selected_trade_count"], counts["joint_trades"],
+    )
 
     adjudication_id = receipt.get("adjudication_id")
     if not isinstance(adjudication_id, str) or not re.fullmatch(r"[0-9a-f]{64}", adjudication_id):
@@ -1687,9 +2296,15 @@ def _validate_fidelity_receipt_set(
     manifest: dict[str, Any],
     supplied: list[tuple[int, Path]],
     expected_work_item_ids: list[str],
+    current_work_payload_sha256_by_id: dict[str, str],
 ) -> list[dict[str, Any]]:
     if len(expected_work_item_ids) != 6:
         raise ContractError("fidelity adjudications require the exact six-item ladder")
+    if set(current_work_payload_sha256_by_id) != set(expected_work_item_ids) or any(
+        not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value)
+        for value in current_work_payload_sha256_by_id.values()
+    ):
+        raise ContractError("fidelity adjudications require exact current work-payload hashes")
     if len(supplied) != len(FIDELITY_STAGES):
         raise ContractError("exactly three fidelity receipts are required (stages 0,1,2)")
     stages = [stage for stage, _path in supplied]
@@ -1708,6 +2323,7 @@ def _validate_fidelity_receipt_set(
             path=Path(path),
             manifest=manifest,
             expected_work_item_ids=expected_work_item_ids,
+            current_work_payload_sha256_by_id=current_work_payload_sha256_by_id,
         )
         path_identity = _path_identity(Path(binding["path"]))
         if path_identity in path_identities or file_identity in file_identities:
@@ -1762,6 +2378,10 @@ def build_release_plan(
             prepare_manifest,
             list(fidelity_receipts or []),
             authorized_work_item_ids,
+            {
+                operation["work_item_id"]: operation["work_payload_sha256"]
+                for operation in operations
+            },
         )
     except ContractError as exc:
         errors.append(str(exc))
@@ -1776,7 +2396,10 @@ def build_release_plan(
         "calendar_source": prepare_manifest["calendar_source"],
         "calendar_common": prepare_manifest["calendar_common"],
         "joint_ex5_sha256": prepare_manifest["joint_ex5_sha256"],
+        "compiled_ex5_sha256_by_ea": prepare_manifest["compiled_ex5_sha256_by_ea"],
+        "compile_manifest": prepare_manifest["compile_manifest"],
         "prepare_plan_id": prepare_manifest["plan_id"], "terminal": TERMINAL,
+        "prepare_operations": prepare_manifest["operations"],
         "authorized_work_item_ids": authorized_work_item_ids,
         "execution_input_artifacts_sha256": prepare_manifest["execution_input_artifacts_sha256"],
         "runtime_source_artifacts_sha256": prepare_manifest["runtime_source_artifacts_sha256"],
@@ -1796,7 +2419,18 @@ def build_release_plan(
 
 def _validate_release_operations(manifest: dict[str, Any]) -> None:
     _validate_manifest_topology(manifest)
-    specs = _bound_run_specs(str(manifest.get("joint_ex5_sha256") or ""))
+    compile_binding, ex5_by_ea = _load_compile_manifest(
+        repo=Path(str(manifest["repo"])),
+        artifact_root=Path(str(manifest["artifact_root"])),
+        flag=Path(str(manifest["factory_off"]["path"])),
+        authoritative_source_commit=str(manifest["git"]["authoritative_source_commit"]),
+        supplied_joint_ex5_sha256=str(manifest.get("joint_ex5_sha256") or ""),
+    )
+    if manifest.get("compile_manifest") != compile_binding:
+        raise ContractError("release compile-manifest binding drifted")
+    if manifest.get("compiled_ex5_sha256_by_ea") != ex5_by_ea:
+        raise ContractError("release compiled EX5 map drifted")
+    specs = _bound_run_specs(ex5_by_ea)
     operations = manifest.get("operations") or []
     if manifest.get("terminal") != TERMINAL or len(operations) != len(specs):
         raise ContractError("release manifest is not exactly six T10 holds")
@@ -1818,17 +2452,22 @@ def _validate_release_operations(manifest: dict[str, Any]) -> None:
             t10_bases=Path(manifest["t10_bases"]),
             calendar_source=Path(manifest["calendar_source"]),
             calendar_common=Path(manifest["calendar_common"]),
-            git_identity=manifest["git"], artifacts=artifacts, sequence=sequence,
+            git_identity=manifest["git"], compile_binding=compile_binding,
+            artifacts=artifacts, sequence=sequence,
         )
         for sequence, spec in enumerate(specs)
     ]
     expected_ids = [item["work_item_id"] for item in expected]
+    if manifest.get("prepare_operations") != expected:
+        raise ContractError("release manifest prepare-operation bindings are not exact")
     if manifest.get("authorized_work_item_ids") != expected_ids:
         raise ContractError("release manifest authorized work-item IDs are not the exact six-item ladder")
     if [item.get("work_item_id") for item in operations] != expected_ids:
         raise ContractError("release operations are not the exact six-item ladder")
     fidelity_bindings = manifest.get("fidelity_adjudications")
     if (
+        type(manifest.get("fidelity_adjudication_count")) is not int
+        or
         manifest.get("fidelity_adjudication_count") != len(FIDELITY_STAGES)
         or not isinstance(fidelity_bindings, list)
         or len(fidelity_bindings) != len(FIDELITY_STAGES)
@@ -1839,7 +2478,15 @@ def _validate_release_operations(manifest: dict[str, Any]) -> None:
         if not isinstance(binding, dict):
             raise ContractError("release manifest fidelity binding must be an object")
         supplied.append((binding.get("stage"), Path(str(binding.get("path") or ""))))
-    current_bindings = _validate_fidelity_receipt_set(manifest, supplied, expected_ids)
+    current_bindings = _validate_fidelity_receipt_set(
+        manifest,
+        supplied,
+        expected_ids,
+        {
+            operation["work_item_id"]: operation["work_payload_sha256"]
+            for operation in operations
+        },
+    )
     if current_bindings != fidelity_bindings:
         raise ContractError("release manifest fidelity adjudication bindings drifted")
     for item in operations:
@@ -1995,10 +2642,8 @@ def main(argv: list[str] | None = None) -> int:
                 raise ContractError(
                     "--fidelity-receipt is valid only with --release-from-prepare-manifest"
                 )
-            if not args.source_commit or not args.joint_ex5_sha256:
-                raise ContractError(
-                    "prepare dry-run requires --source-commit and --joint-ex5-sha256"
-                )
+            if not args.source_commit:
+                raise ContractError("prepare dry-run requires --source-commit")
             plan = build_prepare_plan(source_commit=args.source_commit,
                                       joint_ex5_sha256=args.joint_ex5_sha256,
                                       root=args.root, repo=args.repo, artifact_root=args.artifact_root,

@@ -78,12 +78,13 @@ def _fixture(tmp_path: Path, monkeypatch) -> dict:
         "qm_tasks.manifest.ps1",
         "factory_process_scope.ps1",
         "ftmo_book3_fidelity_gate.py",
+        "compile_ftmo_book3_v2.ps1",
     ):
         path = repo / "tools/strategy_farm" / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(f"# {name}\n", encoding="utf-8")
     controller.write_text("# controller\n", encoding="utf-8")
-    prereg = repo / "docs/ops/evidence/2026-07-29_ftmo_book3_execution_preregistration.md"
+    prereg = repo / planner.PREREGISTRATION_REL
     prereg.parent.mkdir(parents=True)
     prereg.write_text("# frozen preregistration\n", encoding="utf-8")
     include = repo / "framework/include/QM"
@@ -94,12 +95,12 @@ def _fixture(tmp_path: Path, monkeypatch) -> dict:
     phase_utils.write_text("# phase utils\n", encoding="utf-8")
 
     raw_specs = [
-        ("R0", "QM5_9936", "USDJPY.DWX", "H1", "EA_9936", "r0.set", (), None),
-        ("J0", "QM5_20181", "USDJPY.DWX", "H1", "EA_20181", "j0.set", ("USDJPY.DWX",), "FTMO_BOOK3_20260729_V1_J0"),
-        ("R1", "QM5_10145", "XAUUSD.DWX", "D1", "EA_10145", "r1.set", (), None),
-        ("J1", "QM5_20181", "USDJPY.DWX", "H1", "EA_20181", "j1.set", ("USDJPY.DWX", "XAUUSD.DWX"), "FTMO_BOOK3_20260729_V1_J1"),
-        ("R2", "QM5_13108", "XTIUSD.DWX", "D1", "EA_13108", "r2.set", (), None),
-        ("J2", "QM5_20181", "USDJPY.DWX", "H1", "EA_20181", "j2.set", ("USDJPY.DWX", "XAUUSD.DWX", "XTIUSD.DWX"), "FTMO_BOOK3_20260729_V1_J2"),
+        ("R0", "QM5_9936", "USDJPY.DWX", "H1", "QM5_9936_ff-range-breakout-gmt3-h1", "r0.set", (), None),
+        ("J0", "QM5_20181", "USDJPY.DWX", "H1", "QM5_20181_ftmo-joint-multisym-timer", "j0.set", ("USDJPY.DWX",), "FTMO_BOOK3_20260729_V2_J0"),
+        ("R1", "QM5_10145", "XAUUSD.DWX", "D1", "QM5_10145_tsm-meanret", "r1.set", (), None),
+        ("J1", "QM5_20181", "USDJPY.DWX", "H1", "QM5_20181_ftmo-joint-multisym-timer", "j1.set", ("USDJPY.DWX", "XAUUSD.DWX"), "FTMO_BOOK3_20260729_V2_J1"),
+        ("R2", "QM5_13108", "XTIUSD.DWX", "D1", "QM5_13108_xti-mtsm-s2", "r2.set", (), None),
+        ("J2", "QM5_20181", "USDJPY.DWX", "H1", "QM5_20181_ftmo-joint-multisym-timer", "j2.set", ("USDJPY.DWX", "XAUUSD.DWX", "XTIUSD.DWX"), "FTMO_BOOK3_20260729_V2_J2"),
     ]
     specs = []
     for code, ea_id, symbol, period, ea_dir_name, set_name, basket_symbols, evidence_run_id in raw_specs:
@@ -210,6 +211,75 @@ def _fixture(tmp_path: Path, monkeypatch) -> dict:
     flag.write_bytes(b"intentional-off\n")
     db = state / "farm_state.sqlite"
     _create_db(db)
+    compiler_source = tmp_path / "portable-template" / "MetaEditor64.exe"
+    compiler_workspace = artifact_root / "workspace" / "portable_metaeditor" / "MetaEditor64.exe"
+    compiler_source.parent.mkdir(parents=True)
+    compiler_workspace.parent.mkdir(parents=True)
+    compiler_source.write_bytes(b"portable-metaeditor")
+    compiler_workspace.write_bytes(compiler_source.read_bytes())
+    results = []
+    for ea_id, name in planner.COMPILE_EAS:
+        mq5 = repo / "framework/EAs" / name / f"{name}.mq5"
+        ex5 = artifact_root / "canonical_staged_ex5" / f"{name}.ex5"
+        log = artifact_root / "canonical_compile_logs" / f"{name}.compile.log"
+        results.append({
+            "ea_id": ea_id,
+            "name": name,
+            "result": "PASS",
+            "errors": 0,
+            "warnings": 0,
+            "metaeditor_exit_code": 0,
+            "source_mq5_path": str(mq5),
+            "source_mq5_sha256": _sha(mq5),
+            "staged_mq5_path": str(mq5),
+            "staged_mq5_sha256": _sha(mq5),
+            "ex5_path": str(ex5),
+            "ex5_sha256": _sha(ex5),
+            "compile_log_path": str(log),
+            "compile_log_sha256": _sha(log),
+        })
+    compile_controller = repo / planner.COMPILE_CONTROLLER_REL
+    compile_manifest = {
+        "schema_version": 2,
+        "contract": planner.COMPILE_CONTRACT,
+        "result": "PASS",
+        "source_commit": commit,
+        "artifact_root": str(artifact_root),
+        "create_only": True,
+        "serial_compile": True,
+        "canonical_publication_after_four_pass": True,
+        "terminals_started": [],
+        "terminals_modified": [],
+        "factory_off": {"path": str(flag), "sha256": _sha(flag)},
+        "mutation_lock": {"path": str(state / "FACTORY_MUTATION.lock"), "required_absent": True},
+        "tool": {"path": str(compile_controller), "sha256": _sha(compile_controller)},
+        "compiler": {
+            "portable": True,
+            "invocation_switch": "/portable",
+            "source_template_root": str(compiler_source.parent),
+            "source_path": str(compiler_source),
+            "source_sha256": _sha(compiler_source),
+            "workspace_path": str(compiler_workspace),
+            "workspace_sha256": _sha(compiler_workspace),
+            "file_version": "5.0",
+            "product_version": "5.0",
+            "isolated_appdata": str(artifact_root / "workspace/profile/Roaming"),
+            "isolated_localappdata": str(artifact_root / "workspace/profile/Local"),
+        },
+        "include_trees": {
+            "repo_overlay": planner._compile_tree_digest(repo / "framework/include"),
+            "repo_overlay_after": planner._compile_tree_digest(repo / "framework/include"),
+        },
+        "compile_order": [name for _, name in planner.COMPILE_EAS],
+        "results": results,
+        "publication": {
+            "staged_ex5_tree": planner._compile_tree_digest(artifact_root / "canonical_staged_ex5"),
+            "compile_logs_tree": planner._compile_tree_digest(artifact_root / "canonical_compile_logs"),
+        },
+    }
+    (artifact_root / planner.COMPILE_MANIFEST_NAME).write_text(
+        json.dumps(compile_manifest, indent=2) + "\n", encoding="utf-8"
+    )
     monkeypatch.setattr(planner, "_factory_processes", lambda: [])
     monkeypatch.setattr(
         planner, "_calendar_preflight",
@@ -262,6 +332,98 @@ def _fidelity_receipt_value(env: dict, stage: int) -> dict:
     pair = env["plan"]["operations"][stage * 2: stage * 2 + 2]
     gate_artifact = artifacts["fidelity_gate"]
     comparator_artifact = artifacts["fidelity_comparator"]
+    runtime_rows = planner._runtime_source_artifacts(env["plan"]["artifacts"])
+    runtime_binding = {
+        "canonical_sha256": planner.canonical_sha(runtime_rows),
+        "roles": {
+            item["role"]: {
+                "role": item["role"], "path": item["path"],
+                "sha256": item["sha256"], "bytes": item["bytes"],
+            }
+            for item in runtime_rows
+        },
+    }
+
+    def operand(role: str, operation: dict, minute: int) -> dict:
+        payload = json.loads(operation["payload_json"])
+        spec = planner._fidelity_operand_spec(stage, role)
+        work_root = Path(operation["report_root"])
+        work_root.mkdir(parents=True, exist_ok=True)
+        with sqlite3.connect(env["db"]) as conn:
+            current_payload_text = conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (operation["work_item_id"],),
+            ).fetchone()[0]
+        current_payload_sha = hashlib.sha256(str(current_payload_text).encode()).hexdigest()
+        runner_receipt = (work_root / "isolated-runner-receipt.json").resolve()
+        runner_receipt.write_bytes(planner.canonical_bytes({
+            "schema_version": 1, "mode": "apply", "state": "completed",
+            "success": True, "work_item_id": operation["work_item_id"],
+            "post_payload_sha256": current_payload_sha,
+        }))
+        evidence = (work_root / "evidence.json").resolve()
+        evidence.write_bytes(planner.canonical_bytes({"work_item_id": operation["work_item_id"]}))
+        q08 = (work_root / f"q08_trades_{spec['source_stem']}.timer_v2.jsonl").resolve()
+        q08.write_bytes(b'{"event":"TRADE_CLOSED"}\n' * (stage + 1))
+        direct = {
+            "framework_include_tree": {
+                "path": str(Path(artifacts["framework_include_tree"]["path"]).resolve()).lower(),
+                "sha256": artifacts["framework_include_tree"]["sha256"],
+                "file_count": artifacts["framework_include_tree"]["file_count"],
+            }
+        }
+        for key in ("preregistration", "isolated_runner", "terminal_worker", "preparation_controller"):
+            direct[key] = {
+                "path": str(Path(artifacts[key]["path"]).resolve()).lower(),
+                "sha256": artifacts[key]["sha256"],
+            }
+        direct["runtime_sources"] = json.loads(json.dumps(runtime_binding))
+        return {
+            "role": role,
+            "rung": spec["rung"],
+            "sequence": spec["sequence"],
+            "receipt_path": str(runner_receipt),
+            "receipt_sha256": _sha(runner_receipt),
+            "work_item_id": operation["work_item_id"],
+            "started_at_utc": f"2026-07-29T12:{minute:02d}:00+00:00",
+            "completed_at_utc": f"2026-07-29T12:{minute + 1:02d}:00+00:00",
+            "source_commit": env["commit"],
+            "factory_off_sha256": env["plan"]["factory_off"]["sha256"],
+            "source_binding": direct,
+            "runner_artifacts": {
+                "setfile": {
+                    "path": str(Path(operation["setfile_path"]).resolve()).lower(),
+                    "sha256": payload["expected_setfile_sha256"],
+                },
+                "staged_ex5": {
+                    "path": str(Path(payload["staged_ex5_path"]).resolve()).lower(),
+                    "sha256": payload["staged_ex5_sha256"],
+                },
+                "mq5": {
+                    "path": str((env["repo"] / "framework/EAs" / payload["ea_dir_name"] / f"{payload['ea_dir_name']}.mq5").resolve()).lower(),
+                    "sha256": payload["expected_mq5_sha256"],
+                },
+            },
+            "execution_input_artifacts_sha256": env["plan"]["execution_input_artifacts_sha256"],
+            "execution_input_observed_bundle_sha256": "a" * 64,
+            "post_payload_sha256": current_payload_sha,
+            "post_evidence": {
+                "path": str(evidence), "resolved_path": str(evidence),
+                "sha256": _sha(evidence), "bytes": evidence.stat().st_size,
+            },
+            "q08_trades": {
+                "source": payload["post_run_file_common_source"],
+                "target": str(q08), "path": str(q08), "sha256": _sha(q08),
+                "bytes": q08.stat().st_size, "lines": stage + 1,
+                "selected_trade_count": stage + 1,
+            },
+            "magic": spec["magic"],
+            "symbol": spec["symbol"],
+            "execution_input_artifact_count": 307,
+        }
+
+    standalone_operand = operand("standalone", pair[0], stage * 10)
+    joint_operand = operand("joint", pair[1], stage * 10 + 2)
     result = {
         "schema": planner.SCHEMA_FIDELITY,
         "generated_at_utc": f"2026-07-29T12:0{stage}:00+00:00",
@@ -287,12 +449,14 @@ def _fidelity_receipt_value(env: dict, stage: int) -> dict:
         "errors": [],
         "contract": {
             "measurement_contract": planner.FIDELITY_MEASUREMENT_CONTRACT,
+            "money_basis": planner.FULL_LIFECYCLE_MONEY_BASIS,
             "expected_execution_input_count": 307,
             "match_rate_required": 1.0,
             "unmatched_required": 0,
             "both_operands_nonempty": True,
             "money_tolerance": 0.005,
             "volume_tolerance": 0.005,
+            "price_tolerance": 0.0,
         },
         "safety": {
             "read_only_inputs": True,
@@ -304,9 +468,11 @@ def _fidelity_receipt_value(env: dict, stage: int) -> dict:
             "touches_autotrading": False,
         },
         "comparison": {
-            "algorithm": "maximum_bipartite_exact_time_tolerant_money_volume/v1",
+            "algorithm": planner.FIDELITY_COMPARISON_ALGORITHM,
+            "money_basis": planner.FULL_LIFECYCLE_MONEY_BASIS,
             "money_tolerance": 0.005,
             "volume_tolerance": 0.005,
+            "price_tolerance": 0.0,
             "standalone_trades": stage + 1,
             "joint_trades": stage + 1,
             "matched": stage + 1,
@@ -317,8 +483,8 @@ def _fidelity_receipt_value(env: dict, stage: int) -> dict:
             "unmatched_joint_sample": [],
         },
         "operands": {
-            "standalone": {"work_item_id": pair[0]["work_item_id"]},
-            "joint": {"work_item_id": pair[1]["work_item_id"]},
+            "standalone": standalone_operand,
+            "joint": joint_operand,
         },
     }
     result["adjudication_id"] = planner._fidelity_adjudication_id(result)
@@ -361,11 +527,14 @@ def test_prepare_plan_is_exact_six_item_t10_contract(tmp_path: Path, monkeypatch
         assert payload["from_date"] == "2018.07.02" and payload["to_date"] == "2025.12.31"
         assert payload["auto_enqueue"] is False and payload["auto_promote"] is False
         expected_evidence_run_id = (
-            f"FTMO_BOOK3_20260729_V1_{row['code']}"
+            f"FTMO_BOOK3_20260729_V2_{row['code']}"
             if row["code"].startswith("J")
             else None
         )
         assert payload["evidence_run_id"] == expected_evidence_run_id
+        assert payload["measurement_contract"] == planner.FIDELITY_MEASUREMENT_CONTRACT
+        assert payload["evidence_vintage"] == planner.EVIDENCE_VINTAGE
+        assert payload["money_basis"] == planner.FULL_LIFECYCLE_MONEY_BASIS
         expected_fidelity_stage = (
             None if payload["measurement_sequence"] < 2
             else (payload["measurement_sequence"] // 2) - 1
@@ -386,6 +555,7 @@ def test_prepare_plan_is_exact_six_item_t10_contract(tmp_path: Path, monkeypatch
         assert payload["isolated_runner_sha256"] == plan["controller_artifacts"]["isolated_runner"]["sha256"]
         assert payload["terminal_worker_sha256"] == plan["controller_artifacts"]["terminal_worker"]["sha256"]
         assert payload["preparation_controller_sha256"] == plan["controller_artifacts"]["preparation_controller"]["sha256"]
+        assert payload["compile_manifest_sha256"] == plan["controller_artifacts"]["compile_manifest"]["sha256"]
         assert [item["role"] for item in payload["runtime_source_artifacts"]] == sorted(
             planner.RUNTIME_SOURCE_ROLES
         )
@@ -396,11 +566,153 @@ def test_prepare_plan_is_exact_six_item_t10_contract(tmp_path: Path, monkeypatch
         assert row["hold"]["release_on_restart"] == 0
 
 
-def test_prepare_cli_requires_explicit_source_and_joint_ex5_bindings() -> None:
-    with pytest.raises(planner.ContractError, match="--source-commit and --joint-ex5-sha256"):
+def test_prepare_cli_requires_source_commit_and_derives_joint_ex5_binding() -> None:
+    with pytest.raises(planner.ContractError, match="--source-commit"):
         planner.main([])
-    with pytest.raises(planner.ContractError, match="64 lowercase hexadecimal"):
-        planner._bound_run_specs("A" * 64)
+    with pytest.raises(planner.ContractError, match="exact four EX5 hashes"):
+        planner._bound_run_specs({"QM5_20181": "A" * 64})
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda value: value.update({"result": "FAIL"}),
+        lambda value: value["compile_order"].reverse(),
+        lambda value: value["results"][0].update({"ex5_sha256": "0" * 64}),
+        lambda value: value["include_trees"]["repo_overlay"].update({"sha256": "0" * 64}),
+    ],
+    ids=("top-level-fail", "compile-order", "ex5-hash", "include-overlay"),
+)
+def test_prepare_apply_rereads_compile_manifest_and_rejects_tampering(
+    tmp_path: Path, monkeypatch, mutate,
+) -> None:
+    env = _fixture(tmp_path, monkeypatch)
+    plan_path = tmp_path / "prepare-plan.json"
+    plan_sha = _write_plan(plan_path, env["plan"])
+    compile_path = env["artifact_root"] / planner.COMPILE_MANIFEST_NAME
+    document = json.loads(compile_path.read_text(encoding="utf-8"))
+    mutate(document)
+    compile_path.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+    with pytest.raises(planner.ContractError, match="compile manifest|compile result|compiled EX5"):
+        planner.apply_prepare(
+            manifest_path=plan_path,
+            expected_manifest_sha256=plan_sha,
+            confirm_plan_id=env["plan"]["plan_id"],
+            expected_factory_off_sha256=env["plan"]["factory_off"]["sha256"],
+            expected_db_state_sha256=env["plan"]["db"]["logical_state_sha256"],
+            expected_source_commit=env["commit"],
+            snapshot_path=tmp_path / "tampered.sqlite",
+            receipt_path=tmp_path / "tampered-receipt.json",
+        )
+    with sqlite3.connect(env["db"]) as conn:
+        assert conn.execute("SELECT COUNT(*) FROM work_items").fetchone()[0] == 0
+
+
+def test_prepare_derives_all_four_ex5_hashes_and_optional_joint_must_match(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    env = _fixture(tmp_path, monkeypatch)
+    manifest = json.loads(
+        (env["artifact_root"] / planner.COMPILE_MANIFEST_NAME).read_text(encoding="utf-8")
+    )
+    expected = {f"QM5_{row['ea_id']}": row["ex5_sha256"] for row in manifest["results"]}
+    assert env["plan"]["compiled_ex5_sha256_by_ea"] == expected
+    assert env["plan"]["joint_ex5_sha256"] == expected["QM5_20181"]
+    bad = planner.build_prepare_plan(
+        source_commit=env["commit"], joint_ex5_sha256="0" * 64,
+        root=env["root"], repo=env["repo"], artifact_root=env["artifact_root"],
+        report_root=env["report_root"], common_qm=env["common_qm"],
+        controller_path=env["controller"], t10_bases=env["t10_bases"],
+        calendar_source=env["calendar_source"], calendar_common=env["calendar_common"],
+    )
+    assert bad["valid"] is False
+    assert any("supplied joint EX5" in error for error in bad["errors"])
+
+
+def test_compile_tree_digest_matches_powershell_fullname_sibling_order(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "include"
+    nested = root / "QM" / "modules"
+    nested.mkdir(parents=True)
+    branding = root / "QM_Branding.mqh"
+    module = nested / "module.mqh"
+    branding.write_bytes(b"branding")
+    module.write_bytes(b"module")
+    expected_stream = (
+        f"QM_Branding.mqh\0{_sha(branding)}\0{branding.stat().st_size}\n"
+        f"QM/modules/module.mqh\0{_sha(module)}\0{module.stat().st_size}\n"
+    ).encode("utf-8")
+    assert planner._compile_tree_digest(root)["sha256"] == hashlib.sha256(expected_stream).hexdigest()
+
+
+def test_compile_manifest_accepts_observed_metaeditor_exit_code_one(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    env = _fixture(tmp_path, monkeypatch)
+    path = env["artifact_root"] / planner.COMPILE_MANIFEST_NAME
+    document = json.loads(path.read_text(encoding="utf-8"))
+    for result in document["results"]:
+        result["metaeditor_exit_code"] = 1
+    path.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+    plan = planner.build_prepare_plan(
+        source_commit=env["commit"], root=env["root"], repo=env["repo"],
+        artifact_root=env["artifact_root"], report_root=env["report_root"],
+        common_qm=env["common_qm"], controller_path=env["controller"],
+        t10_bases=env["t10_bases"], calendar_source=env["calendar_source"],
+        calendar_common=env["calendar_common"],
+    )
+    assert plan["valid"] is True, plan["errors"]
+
+
+def test_real_a02_compile_manifest_loads_when_present() -> None:
+    path = planner.DEFAULT_ARTIFACT_ROOT / planner.COMPILE_MANIFEST_NAME
+    if not path.is_file():
+        pytest.skip("real A02 compile manifest is not present")
+    binding, hashes = planner._load_compile_manifest(
+        repo=planner.DEFAULT_REPO,
+        artifact_root=planner.DEFAULT_ARTIFACT_ROOT,
+        flag=planner.DEFAULT_ROOT / "state/FACTORY_OFF.flag",
+        authoritative_source_commit="6c8917a9a90f4ee9ecd2668ab90cc356c8d49e91",
+    )
+    assert binding["path"] == str(path.resolve())
+    assert set(hashes) == {"QM5_9936", "QM5_10145", "QM5_13108", "QM5_20181"}
+
+
+def test_compile_commit_may_be_ancestor_only_without_compile_scope_changes(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    env = _fixture(tmp_path, monkeypatch)
+    unrelated = env["repo"] / "docs/unrelated.md"
+    unrelated.parent.mkdir(parents=True, exist_ok=True)
+    unrelated.write_text("unrelated\n", encoding="utf-8")
+    _git(env["repo"], "add", ".")
+    _git(env["repo"], "commit", "-m", "unrelated")
+    newer_commit = _git(env["repo"], "rev-parse", "HEAD")
+    allowed = planner.build_prepare_plan(
+        source_commit=newer_commit,
+        root=env["root"], repo=env["repo"], artifact_root=env["artifact_root"],
+        report_root=env["report_root"], common_qm=env["common_qm"],
+        controller_path=env["controller"], t10_bases=env["t10_bases"],
+        calendar_source=env["calendar_source"], calendar_common=env["calendar_common"],
+    )
+    assert allowed["valid"] is True
+    assert allowed["compile_manifest"]["source_commit"] == env["commit"]
+
+    mq5 = env["repo"] / "framework/EAs" / planner.COMPILE_EAS[0][1] / f"{planner.COMPILE_EAS[0][1]}.mq5"
+    mq5.write_text(mq5.read_text(encoding="utf-8") + "// drift\n", encoding="utf-8")
+    _git(env["repo"], "add", ".")
+    _git(env["repo"], "commit", "-m", "compile scope drift")
+    drift_commit = _git(env["repo"], "rev-parse", "HEAD")
+    rejected = planner.build_prepare_plan(
+        source_commit=drift_commit,
+        root=env["root"], repo=env["repo"], artifact_root=env["artifact_root"],
+        report_root=env["report_root"], common_qm=env["common_qm"],
+        controller_path=env["controller"], t10_bases=env["t10_bases"],
+        calendar_source=env["calendar_source"], calendar_common=env["calendar_common"],
+    )
+    assert rejected["valid"] is False
+    assert any("compile-relevant source changed" in error for error in rejected["errors"])
 
 
 def test_joint_payload_uses_legacy_trade_plus_equity_batch_contract(tmp_path: Path, monkeypatch) -> None:
@@ -502,6 +814,51 @@ def test_release_apply_deactivates_only_own_six_holds(tmp_path: Path, monkeypatc
     with sqlite3.connect(env["db"]) as conn:
         assert conn.execute("SELECT COUNT(*) FROM work_item_holds WHERE hold_code=? AND active=0", (planner.HOLD_CODE,)).fetchone()[0] == 6
         assert conn.execute("SELECT COUNT(*) FROM work_item_holds WHERE hold_code='LEGACY' AND active=1").fetchone()[0] == 9
+
+
+def test_release_authenticates_legitimate_runtime_payload_mutation(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    env = _fixture(tmp_path, monkeypatch)
+    _apply_prepare(env, tmp_path)
+    _terminalize(env)
+    target = env["plan"]["operations"][0]
+    with sqlite3.connect(env["db"]) as conn:
+        payload = json.loads(conn.execute(
+            "SELECT payload_json FROM work_items WHERE id=?", (target["work_item_id"],)
+        ).fetchone()[0])
+        payload["runtime_result"] = {"receipt_bound": True}
+        conn.execute(
+            "UPDATE work_items SET payload_json=? WHERE id=?",
+            (json.dumps(payload, sort_keys=True, separators=(",", ":")), target["work_item_id"]),
+        )
+    release = planner.build_release_plan(
+        env["plan"], _fidelity_receipts(env, tmp_path / "mutated-payload")
+    )
+    assert release["valid"] is True, release["errors"]
+    current = next(
+        item for item in release["operations"]
+        if item["work_item_id"] == target["work_item_id"]
+    )
+    assert current["work_payload_sha256"] != hashlib.sha256(
+        target["payload_json"].encode()
+    ).hexdigest()
+
+
+def test_release_rejects_noninteger_fidelity_adjudication_count(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    env = _fixture(tmp_path, monkeypatch)
+    _apply_prepare(env, tmp_path)
+    _terminalize(env)
+    release = planner.build_release_plan(
+        env["plan"], _fidelity_receipts(env, tmp_path / "count-type")
+    )
+    assert release["valid"] is True, release["errors"]
+    release["fidelity_adjudication_count"] = 3.0
+    planner._assign_plan_id(release)
+    with pytest.raises(planner.ContractError, match="exactly three"):
+        planner._validate_release_operations(release)
 
 
 def test_rehashed_release_manifest_cannot_target_a_preexisting_hold(tmp_path: Path, monkeypatch) -> None:
@@ -631,6 +988,71 @@ def test_release_plan_independently_rejects_invalid_adjudication_identity(
         assert release["valid"] is False, prefix
         assert any(expected_error in error for error in release["errors"]), release["errors"]
         assert release["fidelity_adjudications"] == []
+
+
+def test_recomputed_fabricated_summary_cannot_release_without_exact_operands(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    env = _fixture(tmp_path, monkeypatch)
+    _apply_prepare(env, tmp_path)
+    _terminalize(env)
+
+    def fabricate(stage: int, value: dict) -> None:
+        if stage != 0:
+            return
+        value["operands"] = {
+            "standalone": {"work_item_id": value["work_item_ids"]["standalone"]},
+            "joint": {"work_item_id": value["work_item_ids"]["joint"]},
+        }
+        value["adjudication_id"] = planner._fidelity_adjudication_id(value)
+
+    release = planner.build_release_plan(
+        env["plan"],
+        _fidelity_receipts(env, tmp_path / "fabricated", mutate=fabricate),
+    )
+    assert release["valid"] is False
+    assert any("operand keyset mismatch" in error for error in release["errors"])
+
+
+@pytest.mark.parametrize("target", ["runner_receipt", "q08_trades", "post_evidence"])
+def test_release_plan_authenticates_current_operand_files(
+    tmp_path: Path, monkeypatch, target: str,
+) -> None:
+    env = _fixture(tmp_path, monkeypatch)
+    _apply_prepare(env, tmp_path)
+    _terminalize(env)
+    receipts = _fidelity_receipts(env, tmp_path / f"operand-{target}")
+    stage_zero = json.loads(receipts[0][1].read_text(encoding="utf-8"))
+    operand = stage_zero["operands"]["standalone"]
+    path = Path(
+        operand["receipt_path"] if target == "runner_receipt"
+        else operand[target]["path"]
+    )
+    path.write_bytes(path.read_bytes() + b"tamper\n")
+    release = planner.build_release_plan(env["plan"], receipts)
+    assert release["valid"] is False
+    assert release["fidelity_adjudications"] == []
+
+
+def test_recomputed_operand_binding_tamper_cannot_release(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    env = _fixture(tmp_path, monkeypatch)
+    _apply_prepare(env, tmp_path)
+    _terminalize(env)
+
+    def splice(stage: int, value: dict) -> None:
+        if stage != 1:
+            return
+        value["operands"]["joint"]["rung"] = "J2"
+        value["operands"]["joint"]["source_binding"]["runtime_sources"]["canonical_sha256"] = "0" * 64
+        value["adjudication_id"] = planner._fidelity_adjudication_id(value)
+
+    release = planner.build_release_plan(
+        env["plan"], _fidelity_receipts(env, tmp_path / "spliced", mutate=splice)
+    )
+    assert release["valid"] is False
+    assert any("joint operand.rung mismatch" in error for error in release["errors"]), release["errors"]
 
 
 def test_release_plan_rejects_duplicate_json_and_aliased_paths(
