@@ -599,7 +599,7 @@ def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE
             """
             SELECT * FROM agent_tasks
             WHERE state IN ('BACKLOG', 'TODO')
-            ORDER BY priority ASC, updated_at ASC, created_at ASC
+            ORDER BY priority DESC, updated_at ASC, created_at ASC
             LIMIT 25
             """
         ).fetchall()
@@ -846,7 +846,9 @@ def enqueue_friday_smoke_tasks(
                 root,
                 task_type,
                 state="TODO",
-                priority=5,
+                # Operator convention is high=urgent; keep restart smoke ahead
+                # of ordinary priority-50 work.
+                priority=95,
                 required_capabilities=capabilities,
                 payload={
                     "reason": "friday_orchestration_smoke",
@@ -1557,7 +1559,12 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--max-routes", type=int, default=5)
     enqueue = sub.add_parser("enqueue")
     enqueue.add_argument("task_type", choices=sorted(TASK_TYPE_CAPABILITIES))
-    enqueue.add_argument("--priority", type=int, default=50)
+    enqueue.add_argument(
+        "--priority",
+        type=int,
+        default=50,
+        help="Task urgency; higher values route earlier (default: 50)",
+    )
     enqueue.add_argument("--state", default="TODO", choices=sorted(TASK_STATES))
     enqueue.add_argument("--payload-json", default="{}")
     enqueue.add_argument("--skills", help="Comma-separated list of required skills")
