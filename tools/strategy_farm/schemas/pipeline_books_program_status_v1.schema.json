@@ -10,6 +10,7 @@
     "as_of_utc",
     "freshness_max_age_hours",
     "authority",
+    "binding_hash_contract",
     "safety",
     "bindings",
     "work_packages",
@@ -65,6 +66,10 @@
     },
     "freshness_max_age_hours": {"type": "integer", "minimum": 1, "maximum": 720},
     "authority": {"const": "SOURCE_STATUS_ONLY_NO_RUNTIME_AUTHORITY"},
+    "binding_hash_contract": {
+      "const": "TEXT_BYTES_CRLF_TO_LF_SHA256_V1",
+      "description": "SHA-256 over tracked text bytes after mapping CRLF byte pairs to LF; BOM, standalone CR, whitespace and all other bytes remain significant."
+    },
     "safety": {
       "type": "object",
       "additionalProperties": false,

@@ -1,9 +1,10 @@
 {
   "schema_version": "qm.pipeline-books-dashboard-status/v1",
   "program_id": "PIPELINE_BOOKS_DXZ_FTMO_2026_07",
-  "as_of_utc": "2026-07-29T16:42:44Z",
+  "as_of_utc": "2026-07-29T17:23:36Z",
   "freshness_max_age_hours": 168,
   "authority": "SOURCE_STATUS_ONLY_NO_RUNTIME_AUTHORITY",
+  "binding_hash_contract": "TEXT_BYTES_CRLF_TO_LF_SHA256_V1",
   "safety": {
     "factory_state": "INTENTIONALLY_OFF",
     "factory_action_authorized": false,
@@ -168,7 +169,7 @@
   "verification_lanes": {
     "green": {
       "state": "PASS",
-      "passed": 3005,
+      "passed": 3010,
       "skipped": 1,
       "deselected": 5,
       "subtests_passed": 34,

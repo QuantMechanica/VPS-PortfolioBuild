@@ -1,6 +1,6 @@
 # Claude-Handoff: unabhängiger Audit von W6–W8 und den Dashboards
 
-Du bist Claude in der Rolle eines unabhängigen Senior-Auditors für QuantMechanica. Prüfe den vollständigen Implementierungsstack ab Commit `b62cf063` bis zum Auditzeitpunkt vorliegenden finalen `HEAD`, einschließlich der nachfolgenden, zuletzt integrierten W6-/W7-/W8- und Dashboard-Welle.
+Du bist Claude in der Rolle eines unabhängigen Senior-Auditors für QuantMechanica. Prüfe den vollständigen Implementierungsstack ab Commit `b62cf063` bis zum post-integrierten Canonical-`HEAD`, einschließlich der W6-/W7-/W8-/Dashboard-Welle, der Canonical-Integration, der Checkout-portablen Textbindung und der dauerhaften Veröffentlichung beider D:-Dashboards. Die Commits `21c238d5f82702f3f45b21a759dad52916e46c05` und `be63772bf5370204312ea174d3627c0a74cceaa1` müssen Vorfahren des finalen `HEAD` sein; bestimme das tatsächliche Audit-`HEAD` aus dem neuen Canonical-Publication-Receipt und rechne die Ancestry unabhängig nach.
 
 Arbeite evidenzgetrieben. Vertraue weder Commit-Texten noch Statusdokumenten, Dashboard-Anzeigen oder früheren Auditberichten ohne unabhängige Reproduktion. Ein grüner Test ersetzt keine Architekturprüfung, ein vorhandenes Artefakt ersetzt keine Runtime-Integration, und ein Dashboard-Label ersetzt keine Autorisierung.
 
@@ -14,7 +14,7 @@ Beantworte unabhängig:
    - W6 nur als `PARTIAL` beziehungsweise `PARTIAL_SOURCE_IMPLEMENTED`, solange die Flotte nicht vollständig migriert, kompiliert und prospektiv belegt ist;
    - W7 nur als `DRY_RUN`, `PLAN_ONLY` oder `NOT_APPLIED`, solange keine OWNER-autorisierte Migration erfolgt ist;
    - W8 nur als `SOURCE_ONLY`, `SHADOW` oder gleichwertige Vorstufe, solange weder ein reales Zielbuch zugelassen noch eine FTMO-Challenge gekauft oder gehandelt wurde?
-4. Stimmen Source, Tests, Schemas, MQL-Verträge, Dokumentation und Generatoren überein, und ist der getrennte Deploymentzustand der beiden durch Canonical-Tasks verwalteten HTML-Dateien ehrlich ausgewiesen?
+4. Stimmen Source, Tests, Schemas, MQL-Verträge, Dokumentation, Canonical-Checkout und die dauerhaft publizierten HTML-Dateien überein? Ist belegt, dass beide ALWAYS_ON-Tasks nach der Integration nicht mehr auf den alten Generatorstand zurückfallen?
 5. Werden Legacy-Q08-Urteile wie `FAIL_SOFT` klar von Q08-v3-Evidenzurteilen getrennt?
 6. Wurden vorhandene Claude-eigene Dokumente oder Briefs durch die neue Implementierung sachlich überholt?
 
@@ -36,6 +36,8 @@ Für jede solche Angabe gilt ausdrücklich:
 
 Wenn kein finales Evidence-Receipt vorhanden ist, dessen Stack-Basis und `HEAD` exakt zu deinem Auditobjekt passen, ist das ein Finding. Erfinde keine Ersatzwerte und verwende keine alten Zahlen als vermeintlich finale Baseline.
 
+Das bestehende `docs/ops/evidence/2026-07-29_pipeline_books_dashboard_render_receipt.md` ist historische Pre-Integration-/Preview-Evidenz. Für diesen Audit ist zusätzlich `docs/ops/evidence/2026-07-29_pipeline_books_canonical_publication_receipt.md` erforderlich. Das neue Receipt muss Canonical-`HEAD`, den aktuellen Handoff-Hash, beide Renderer, Task-Provenienz und beide publizierten D:-Artefakte binden. Fehlt es oder bindet es den aktuellen Stand nicht, ist die dauerhafte Publikation nicht vollständig auditiert.
+
 Im Bericht müssen behauptete und selbst gemessene Werte getrennt stehen. Abweichungen sind zu erklären, nicht zu glätten.
 
 ## 3. Absolute Sicherheitsgrenze
@@ -55,7 +57,7 @@ Während des gesamten Audits verboten:
 - eine FTMO-Challenge oder andere Leistung kaufen;
 - Geld-, Risiko- oder Live-Entscheidungen auslösen;
 - `D:\QM\strategy_farm\dashboards\strategies.html` oder `D:\QM\strategy_farm\dashboards\cockpit.html` neu rendern oder überschreiben;
-- bestehende Canonical-Dirty-Änderungen in `C:\QM\repo` verändern, stagen, committen, verschieben, löschen oder formatieren.
+- den zu Auditbeginn gemessenen Canonical-Worktree-Zustand in `C:\QM\repo` verändern, stagen, committen, verschieben, löschen oder formatieren.
 
 Alle produktiven Datenquellen sind ausschließlich read-only zu öffnen. SQLite nur über URI `mode=ro` und zusätzlich `PRAGMA query_only=ON`; wenn möglich auch `immutable=1`. Verwende keine Anwendung, deren Initialisierung bereits Tabellen, Metriken, Caches oder State-Dateien aktualisiert.
 
@@ -63,16 +65,17 @@ Die Dashboard-Hauptprogramme dürfen nicht gegen `D:\QM\strategy_farm` gestartet
 
 ## 4. Zulässige Arbeitsumgebung
 
-Auditiere einen sauberen, dedizierten Worktree auf dem finalen Ziel-`HEAD`. Arbeite nicht direkt im schmutzigen Canonical-Worktree.
+Auditiere einen sauberen, dedizierten Worktree auf Basis des finalen Canonical-`HEAD`. Arbeite nicht direkt in `C:\QM\repo`.
 
 Vorbedingung:
 
 - `b62cf063` ist auflösbar;
-- das finale `HEAD` enthält die gesamte zur Prüfung übergebene W6-/W7-/W8-/Dashboard-Welle;
-- der Audit-Worktree ist vor deinen optionalen Dokumentationsänderungen clean;
-- das finale Evidence-Receipt bindet den unmittelbar vorhergehenden Implementierungscommit; ein einzelner nachfolgender, reiner Receipt-Commit ist zulässig und von dir unabhängig als solcher zu verifizieren.
+- die W6-/W7-/W8-/Dashboard-Welle ist vollständig in Canonical enthalten;
+- `21c238d5f82702f3f45b21a759dad52916e46c05` und `be63772bf5370204312ea174d3627c0a74cceaa1` sind Vorfahren des finalen `HEAD`;
+- das neue Canonical-Publication-Receipt bindet exakt den finalen Stand und der Audit-Worktree ist vor deinen optionalen Dokumentationsänderungen clean;
+- beide D:-Outputs wurden erst nach der Canonical-Integration mit den integrierten Generatoren publiziert.
 
-Falls die Welle noch uncommitted ist, `HEAD` und Evidence-Receipt nicht zusammenpassen oder du nur einen halb integrierten Worktree siehst: keine fremden Änderungen übernehmen oder committen. Dokumentiere den Blocker und fordere den korrekten finalen Auditstand an.
+Ist einer dieser Punkte nicht erfüllt, behandle das nicht als bloß „noch nicht integrierte Welle“, sondern als widersprüchlichen oder unvollständigen Releasezustand. Übernimm oder committe keine fremden Änderungen; dokumentiere den Blocker und fordere den korrekten finalen Auditstand an.
 
 Prüfe den Stack einschließlich des Baseline-Commits mit einer Range entsprechend:
 
@@ -113,10 +116,11 @@ Mindestens erfassen:
    - `T_Live` mit PID, vollständigem Pfad und Startzeit separat festhalten;
    - `T_Live` darf niemals als Factory-Reap-Kandidat erscheinen.
 5. Canonical-Worktree `C:\QM\repo`
-   - Branch/HEAD;
+   - Branch und `HEAD`;
    - vollständiges `git status --porcelain=v2`;
-   - SHA-256 aller bereits geänderten und untracked Dateien;
-   - dieser Zustand ist user-owned und muss nach dem Audit byte-identisch bleiben.
+   - SHA-256 aller beim Auditstart geänderten und untracked Dateien;
+   - nicht voraussetzen, dass der historische Dirty-Satz noch unverändert gilt;
+   - dieser aktuelle Zustand ist user-owned und muss nach dem Audit byte-identisch bleiben.
 6. Audit-Worktree
    - Branch, HEAD und Cleanliness.
 7. Gerenderte Dashboards und autonome Render-Provenienz
@@ -124,7 +128,7 @@ Mindestens erfassen:
    - `D:\QM\strategy_farm\dashboards\cockpit.html`;
    - jeweils Existenz, Größe, SHA-256, LastWriteTime und Render-Badge/Renderzeit read-only erfassen;
    - `QM_StrategyFarm_Cockpit_2min` und `QM_StrategyFarm_Dashboard_Hourly` einschließlich Action, Working Directory, LastRunTime, NextRunTime und LastTaskResult read-only erfassen;
-   - beachten: beide ALWAYS_ON-Tasks laufen absichtlich aus `C:\QM\repo` weiter und dürfen die Dateien während des Audits autonom ersetzen. Eine solche Änderung ist anhand Task-History und Generator-Provenienz zuzuordnen; sie ist weder als Auditmutation zu verschweigen noch fälschlich dem Auditor anzulasten.
+   - beachten: beide ALWAYS_ON-Tasks laufen absichtlich aus `C:\QM\repo` weiter und enthalten dort jetzt den integrierten Generatorstand. Beide D:-Seiten müssen die neuen Programmelemente enthalten. Hashänderungen durch Renderzeit oder aktuelle read-only Daten sind zulässig; ein Rückfall auf die markerlose Pre-Integration-Ausgabe ist ein Finding. Eine autonome Änderung ist anhand Task-History und Generator-Provenienz zuzuordnen.
 8. Produktive Datenbank
    - nur wenn für einen Claim wirklich nötig: Dateihash und read-only Schema-/Census-Abfragen;
    - keine Verbindung ohne `mode=ro`, `query_only=ON` und nach Möglichkeit `immutable=1`.
@@ -136,8 +140,9 @@ Wenn der GUI-Zustand des T_Live-AutoTrading-Buttons nicht verlässlich read-only
 Lies vollständig, nicht nur auszugsweise:
 
 - `CLAUDE.md`;
+- `docs/ops/evidence/2026-07-29_pipeline_books_canonical_publication_receipt.md` als aktuelle Integrations- und Publikationsautorität;
 - `docs/ops/evidence/2026-07-29_pipeline_books_w6_w8_dashboard_wave.md`;
-- `docs/ops/evidence/2026-07-29_pipeline_books_dashboard_render_receipt.md`;
+- `docs/ops/evidence/2026-07-29_pipeline_books_dashboard_render_receipt.md` ausschließlich als historische Pre-Integration-/Preview-Evidenz;
 - `docs/ops/MASTER_PIPELINE_BOOKS_IMPLEMENTATION_PLAN_2026-07-29.md`;
 - `docs/ops/evidence/2026-07-29_pipeline_books_foundation_wave.md`;
 - `docs/ops/MNT_IMPLEMENTATION_STATUS_2026-07-29.json` und die korrespondierende MD-Sicht;
@@ -150,6 +155,8 @@ Prüfe Links, Hashbindungen und Statusclaims. Ein Dokument darf nicht dadurch al
 ## 7. Auditstrang A – kompletter Commit-Stack
 
 Prüfe jeden Commit von `b62cf063` bis `HEAD` einzeln und zusätzlich den Gesamtdiff gegen `b62cf063^`.
+
+Verifiziere außerdem die tatsächliche Canonical-Integration. Ein Fast-forward im Reflog ist kein zusätzlicher Commit. Entscheidend ist, dass Implementierungs- und Receipt-Commit im finalen Canonical-`HEAD` enthalten sind und das neue Publication-Receipt alle späteren Härtungs-, Handoff- und Receipt-Commits korrekt bindet.
 
 Für jeden Commit:
 
@@ -301,29 +308,47 @@ Prüfe:
 
 1. Duplicate-Key-, Float-, Nonfinite-, Path- und Exact-Key-Rejection.
 2. Unabhängig nachgerechnete File- und Canonical-Hashes.
-3. Exakte W0–W8-Keysets und Zielpfade.
-4. `FRESH`, `STALE`, `MISSING`, `INVALID` als explizite Zustände.
-5. `MISSING`/`INVALID` dürfen niemals als leere grüne Sicht erscheinen.
-6. `STALE` darf höchstens die letzte validierte Sicht mit klarer Warnung zeigen.
-7. Nach finalen W6-/W7-/W8-Dokuänderungen müssen Plan-/Evidence-Bindings im Statusdokument auf den finalen Bytes basieren.
-8. Safety-Felder dürfen keinerlei Runtime-Autorisierung enthalten.
-9. Testzahlen, Residual-Anzahl und Work-Package-Status müssen dem finalen Evidence-Receipt entsprechen: **aus finalem Evidence-Receipt lesen und unabhängig nachrechnen**.
+3. Den expliziten Text-Binding-Vertrag `TEXT_BYTES_CRLF_TO_LF_SHA256_V1`: Nur CRLF-Bytepaare werden vor dem Hashen auf LF abgebildet; BOM, alleinstehendes CR, Whitespace und alle sonstigen Bytes bleiben hashrelevant. Config, Schema, Helper, alle sechs gebundenen Hashes und Regressionstests müssen denselben Vertrag verwenden. Prüfe LF, CRLF, BOM, Einzel-CR und Inhaltsdrift unabhängig.
+4. Exakte W0–W8-Keysets und Zielpfade.
+5. `FRESH`, `STALE`, `MISSING`, `INVALID` als explizite Zustände.
+6. `MISSING`/`INVALID` dürfen niemals als leere grüne Sicht erscheinen.
+7. `STALE` darf höchstens die letzte validierte Sicht mit klarer Warnung zeigen.
+8. Nach finalen W6-/W7-/W8-Dokuänderungen müssen Plan-/Evidence-Bindings im Statusdokument auf den finalen Bytes basieren.
+9. Safety-Felder dürfen keinerlei Runtime-Autorisierung enthalten.
+10. Testzahlen, Residual-Anzahl und Work-Package-Status müssen dem finalen Evidence-Receipt entsprechen: **aus finalem Evidence-Receipt lesen und unabhängig nachrechnen**.
 
 Ein hash-ungültiges oder sachlich veraltetes Statusdokument ist mindestens ein Dashboard-/Dokumentationsfinding; es darf nicht durch Lockerung des Validators „repariert“ werden.
 
 ## 13. Auditstrang G – Dashboard-Generatoren und gerenderte HTML-Dateien
 
-Die reale Publikationsgrenze ist Teil des Audits: Die ALWAYS_ON-Tasks starten die
-Generatoren aus `C:\QM\repo`, nicht aus einem Audit- oder Integrationsworktree. Vor
-Integration darf eine manuelle Worktree-Ausgabe daher nur ein transienter Preview sein
-und wird beim nächsten Tasklauf erwartbar durch die Canonical-Version ersetzt. Prüfe
-Receipt-Zeitstempel, Task-History und beide transienten Render-Hashes unabhängig. Melde
-einen fehlenden oder verschleierten Deploymenthinweis als Finding; behandle die ehrlich
-dokumentierte, taskverursachte Ersetzung nicht als Runtime-Autorisierung der Welle.
-Der finale Receipt dokumentiert außerdem eine produktive DB-Hashänderung, deren Mtime
-direkt auf den noch alten Canonical-Hourly-Renderer folgt. Reproduziere diese Zuordnung
-read-only. Verschweige den Drift nicht; schreibe ihn aber nur dann dem Implementierungs-
-worktree zu, wenn du einen entsprechenden Schreibpfad oder Prozessbeleg findest.
+Die reale Publikationsgrenze ist jetzt geschlossen: Die geprüften Renderer befinden sich
+im Canonical-Checkout `C:\QM\repo`, und beide verwalteten D:-Dateien wurden nach der
+Integration mit diesem Stand publiziert. Die im historischen Render-Receipt beschriebenen
+transienten Worktree-Previews und ihre anschließende Ersetzung durch den alten
+Canonical-Renderer bleiben historische Evidenz, beschreiben aber nicht mehr den aktuellen
+Deploymentzustand.
+
+Verifiziere für den aktuellen Zustand unabhängig:
+
+- Canonical-Ancestry und Integrationszeitpunkt;
+- Source- und Statusvertrag des finalen Canonical-`HEAD`;
+- Task-Actions und Working Directories;
+- Renderzeit, Größe, Hash und semantische Marker beider D:-Dateien;
+- zeitliche Reihenfolge Integration → Publikation → nachfolgende autonome Taskläufe;
+- dass ein späterer Cockpit- beziehungsweise Hourly-Lauf die neuen Programmelemente nicht wieder entfernt.
+
+Verlange wegen dynamischer Renderzeiten keine blinde Bytegleichheit. Vergleiche
+Statuszustand, gebundene Plan-/Evidence-/Policy-/Rulepack-Hashes, W0–W8-Klassifikationen,
+Residuals und OWNER-Blocker. Falls kein Commit im HTML eingebettet ist, trianguliere die
+Provenienz aus Task-Action, Ausführungszeit und source-spezifischen Markern und dokumentiere
+diese Einschränkung.
+
+Der im historischen Receipt dokumentierte DB-Drift des alten Canonical-Hourly-Renderers
+bleibt eine historische Attribution. Für den aktuellen integrierten Renderer gilt unter
+vorhandenem oder nicht sicher lesbarem `FACTORY_OFF.flag`: Der `ea_metrics`-Writer muss
+unterdrückt bleiben. Beobachte einen natürlichen Tasklauf read-only, soweit er in das
+Auditfenster fällt; starte den Task nicht selbst. Eine aktuelle DB-Änderung darf nicht mit
+dem alten Drift erklärt werden, sondern benötigt eine neue kausale Zuordnung.
 
 Prüfe Source und Output paarweise:
 
@@ -395,6 +420,8 @@ Prüfe alle im Stack neu hinzugefügten oder geänderten JSON-Schemas und ihre P
 
 Parse alle JSON-Dateien mit Duplicate-Key-Guard. Berechne gebundene SHA-256 unabhängig nach. Verwende nicht nur den projektionseigenen Validator als einzige Bestätigung seiner eigenen Hashfunktion.
 
+Für die sechs Textbindungen des Dashboard-Status gilt ausschließlich der explizite Vertrag `TEXT_BYTES_CRLF_TO_LF_SHA256_V1`, nicht ein plattformabhängiger Roh-Worktree-Hash. Binärartefakte dürfen diesem Textvertrag nicht still untergeordnet werden.
+
 ## 15. Verbindlicher Testplan
 
 Führe zunächst fokussierte Tests je Arbeitsstrang aus und danach die vollständige grüne Lane.
@@ -455,27 +482,13 @@ Wenn die Residual-Lane wegen inzwischen behobener externer Evidenz weniger als f
 
 Pytest- oder Subprozess-`__pycache__` ist als Audit-Nebenwirkung transparent auszuweisen. Lösche nichts aus Canonical- oder Runtime-Pfaden, nur um die Baseline optisch sauber zu machen.
 
-## 16. Canonical-Dirty-Schutz
+## 16. Canonical-Baseline-Schutz
 
-Die bereits vorhandenen offenen Änderungen unter `C:\QM\repo` gehören nicht dir.
+`C:\QM\repo` ist jetzt der integrierte Canonical-Checkout. Sein aktueller Worktree-Zustand ist beim Auditstart neu zu messen; der frühere Pre-Integration-Dirty-Satz darf nicht ungeprüft fortgeschrieben werden.
 
-Du musst:
+Erfasse Branch, `HEAD`, vollständigen Status und Bytehashes aller aktuellen Dirty-/Untracked-Dateien. Vergleiche historische Triage-Dokumente nur für tatsächlich überlappende Pfade. Neuere offene Änderungen sind ebenfalls user-owned und müssen zwischen Anfang und Ende byte-identisch bleiben.
 
-- ihren Anfangsstatus und ihre Bytehashes erfassen;
-- sie mit der versionierten Open-Worktree-Triage vergleichen;
-- prüfen, ob der neue Stack sie fälschlich als integriert, erledigt oder releasable bezeichnet;
-- ihren Endstatus und ihre Bytehashes erneut erfassen.
-
-Du darfst nicht:
-
-- sie formatieren oder normalisieren;
-- Quarantäne-Renames zurückdrehen;
-- Public-Data-Dateien regenerieren;
-- untracked Dateien übernehmen;
-- sie stagen oder committen;
-- einen Clean-Worktree vortäuschen.
-
-Jede Abweichung Anfang versus Ende ist ein Sicherheitsfinding, sofern sie nicht ausschließlich aus einer vorher explizit autorisierten, audit-eigenen Datei in deinem separaten Audit-Worktree stammt.
+Der Auditor darf keine Canonical-Datei formatieren, normalisieren, stagen, committen, zurücksetzen, übernehmen oder löschen. Insbesondere keine Quarantäne-Renames zurückdrehen, Public-Data-Dateien regenerieren oder einen Clean-Worktree vortäuschen. Jede unerklärte Abweichung ist ein Sicherheitsfinding.
 
 ## 17. Begrenzte Erlaubnis für Claude-eigene Dokumentkorrekturen
 
@@ -525,7 +538,7 @@ Wenn du irgendeine Datei änderst, erstelle ein maschinenlesbares und ein mensch
 - genaue fachliche Begründung;
 - ausgeführte fokussierte Tests;
 - vollständige Green-/Residual-Ergebnisse, sofern nach dem Patch erneut relevant;
-- Bestätigung, dass keine Code-, Runtime-, D:-, Canonical-Dirty- oder Sicherheitsdatei geändert wurde;
+- Bestätigung, dass keine Code-, Runtime-, D:-, Canonical-Baseline- oder Sicherheitsdatei geändert wurde;
 - Vorher-/Nachher-Hashes der Sicherheitsbaseline.
 
 Wenn keine Korrektur nötig ist, erstelle trotzdem einen kurzen Patch-Receipt-Abschnitt im Auditbericht: `patches_applied: 0` und begründe, dass keine zulässige Claude-Datei evidenzbasiert veraltet war.
@@ -568,7 +581,7 @@ Vergleiche mindestens:
 - alle abgeleiteten OFF-/Hazard-Taskzustände;
 - Factory-/Terminal-/Metatester-Prozessscan;
 - T_Live PID, Pfad und Startzeit;
-- Canonical-Dirty-Dateien bytegenau;
+- Canonical-Baseline und alle zu Auditbeginn offenen Dateien bytegenau;
 - produktive DB, sofern ihr Hash Teil der Baseline war;
 - beide D:-HTML-Dateien samt Task-History; autonome, zeitlich passende ALWAYS_ON-Rewrites
   separat vom Auditdiff ausweisen;
@@ -613,7 +626,7 @@ Schreibe den Abschlussbericht auf Deutsch mit diesen Abschnitten:
     - Green Lane;
     - exakt fünf External Residuals;
     - Statik/AST/JSON.
-12. **Canonical-Dirty-Unverändertheit**
+12. **Canonical-Baseline-Unverändertheit**
 13. **Findings nach Severity**
 14. **Claude-Dokumentkorrekturen und Patch-Receipt**
 15. **Bekannte Restarbeit und OWNER-Entscheidungen**
@@ -632,8 +645,9 @@ Bestätige am Ende ausdrücklich, sofern die Evidenz nichts anderes autorisiert:
 - W8 hat weder ein reales DXZ-Challenger-Buch zugelassen noch eine FTMO-Challenge gekauft, deployed oder gehandelt;
 - `READY_FOR_OWNER_DECISION` ist kein `GO`;
 - Dashboard-Status ist eine read-only Projektion und keine Autorität;
+- Canonical-Integration und dauerhafte Dashboard-Publikation sind keine Factory-, Scheduler-, MT5-, Deployment-, Kauf-, Geld- oder AutoTrading-Autorisierung;
 - die fünf External Residuals bleiben sichtbare externe Restarbeit, solange kein versionierter OWNER-Pfad sie legitim auflöst;
-- Canonical-Dirty-Dateien blieben unverändert;
+- der zu Auditbeginn gemessene Canonical-Worktree-Zustand blieb unverändert;
 - dein Audit hat keine D:-HTML-Datei geschrieben; jede Byteänderung ist entweder anhand
   der ALWAYS_ON-Task-History kausal zugeordnet oder als ungeklärtes Finding gemeldet.
 

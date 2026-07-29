@@ -25,6 +25,7 @@ except ModuleNotFoundError:  # direct ``python tools/strategy_farm/*.py`` execut
 
 
 SCHEMA_VERSION = "qm.pipeline-books-dashboard-status/v1"
+TEXT_HASH_CONTRACT = "TEXT_BYTES_CRLF_TO_LF_SHA256_V1"
 DEFAULT_CONFIG = (
     Path(__file__).resolve().parent / "config" / "pipeline_books_program_status.v1.json"
 )
@@ -50,6 +51,7 @@ TOP_LEVEL_KEYS = {
     "as_of_utc",
     "freshness_max_age_hours",
     "authority",
+    "binding_hash_contract",
     "safety",
     "bindings",
     "work_packages",
@@ -159,17 +161,22 @@ def _repo_path(repo_root: Path, relative: Any, path: str) -> Path:
     return resolved
 
 
-def _file_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
+def _bound_text_sha256(path: Path) -> str:
+    """Hash bound text deterministically across Git LF/CRLF checkouts.
+
+    Git may materialize the same tracked text with LF or CRLF depending on the
+    checkout configuration.  The binding contract therefore maps CRLF to LF
+    before hashing.  Every other byte remains integrity-relevant: a BOM,
+    standalone CR, whitespace, or content change still changes the digest.
+    """
+
     try:
-        with path.open("rb") as handle:
-            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-                digest.update(chunk)
+        raw = path.read_bytes()
     except FileNotFoundError:
         raise ProgramStatusError(f"bound artifact missing: {path}")
     except OSError as exc:
         raise ProgramStatusError(f"cannot read bound artifact {path}: {exc}") from exc
-    return digest.hexdigest()
+    return hashlib.sha256(raw.replace(b"\r\n", b"\n")).hexdigest()
 
 
 def _verify_file_binding(binding: Any, repo_root: Path, path: str) -> Path:
@@ -178,7 +185,7 @@ def _verify_file_binding(binding: Any, repo_root: Path, path: str) -> Path:
     _exact_keys(binding, {"path", "file_sha256"}, path)
     source = _repo_path(repo_root, binding["path"], f"{path}.path")
     expected = _sha(binding["file_sha256"], f"{path}.file_sha256")
-    actual = _file_sha256(source)
+    actual = _bound_text_sha256(source)
     if actual != expected:
         _fail(path, f"file hash mismatch for {binding['path']}: expected {expected}, got {actual}")
     return source
@@ -234,7 +241,7 @@ def _validate_bindings(value: Any, repo_root: Path) -> None:
     )
     policy_path = _repo_path(repo_root, policy["path"], "$.bindings.q08_policy.path")
     policy_file_hash = _sha(policy["file_sha256"], "$.bindings.q08_policy.file_sha256")
-    actual_file_hash = _file_sha256(policy_path)
+    actual_file_hash = _bound_text_sha256(policy_path)
     if actual_file_hash != policy_file_hash:
         _fail("$.bindings.q08_policy", "file hash mismatch")
     policy_payload = _parse_json(policy_path)
@@ -270,7 +277,7 @@ def _validate_bindings(value: Any, repo_root: Path) -> None:
             _fail(path, "duplicate rulepack_id")
         source = _repo_path(repo_root, binding["path"], f"{path}.path")
         expected_file = _sha(binding["file_sha256"], f"{path}.file_sha256")
-        if _file_sha256(source) != expected_file:
+        if _bound_text_sha256(source) != expected_file:
             _fail(path, "file hash mismatch")
         try:
             loaded = load_rulepack_path(source)
@@ -512,6 +519,11 @@ def load_program_status(
         _fail("$.freshness_max_age_hours", "must be an integer from 1 through 720")
     if value["authority"] != "SOURCE_STATUS_ONLY_NO_RUNTIME_AUTHORITY":
         _fail("$.authority", "must deny runtime authority")
+    if value["binding_hash_contract"] != TEXT_HASH_CONTRACT:
+        _fail(
+            "$.binding_hash_contract",
+            f"must be {TEXT_HASH_CONTRACT}",
+        )
     _validate_safety(value["safety"])
     _validate_bindings(value["bindings"], root)
     _validate_work_packages(value["work_packages"])

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import datetime as dt
+import hashlib
 import json
 import shutil
 from pathlib import Path
@@ -17,7 +18,7 @@ from tools.strategy_farm.pipeline_books_dashboard_status import (
 )
 
 
-NOW = dt.datetime(2026, 7, 29, 17, 0, tzinfo=dt.UTC)
+NOW = dt.datetime(2026, 7, 29, 18, 0, tzinfo=dt.UTC)
 
 
 def _payload() -> dict:
@@ -63,7 +64,7 @@ def test_snapshot_reports_fresh_with_orthogonal_status_fields() -> None:
     assert snapshot["state"] == "FRESH"
     assert snapshot["valid"] is True
     assert snapshot["error"] == ""
-    assert snapshot["generated_at_utc"] == "2026-07-29T17:00:00Z"
+    assert snapshot["generated_at_utc"] == "2026-07-29T18:00:00Z"
     assert snapshot["config_as_of_utc"] <= snapshot["generated_at_utc"]
     assert snapshot["work_packages"][6]["source_status"] == "PARTIAL_IMPLEMENTED"
     assert snapshot["work_packages"][6]["runtime_status"] == "MIGRATION_NOT_APPLIED"
@@ -119,6 +120,66 @@ def test_bound_plan_byte_drift_is_invalid(tmp_path: Path) -> None:
     snapshot = program_status_snapshot(config, repo_root=root, now_utc=NOW)
     assert snapshot["state"] == "INVALID"
     assert "hash mismatch" in snapshot["error"]
+
+
+def test_bound_text_hash_is_portable_across_lf_and_crlf_checkouts(tmp_path: Path) -> None:
+    config, root, value = _materialize(tmp_path)
+    bindings = value["bindings"]
+    rows = [bindings["plan"], bindings["evidence"], bindings["q08_policy"], bindings["test_lanes"]]
+    rows.extend(bindings["rulepacks"])
+
+    for binding in rows:
+        source = root / binding["path"]
+        lf_bytes = source.read_bytes().replace(b"\r\n", b"\n")
+        assert hashlib.sha256(lf_bytes).hexdigest() == binding["file_sha256"]
+        source.write_bytes(lf_bytes.replace(b"\n", b"\r\n"))
+
+    assert load_program_status(config, repo_root=root)["binding_hash_contract"] == (
+        "TEXT_BYTES_CRLF_TO_LF_SHA256_V1"
+    )
+
+    for binding in rows:
+        source = root / binding["path"]
+        source.write_bytes(source.read_bytes().replace(b"\r\n", b"\n"))
+
+    assert load_program_status(config, repo_root=root)["binding_hash_contract"] == (
+        "TEXT_BYTES_CRLF_TO_LF_SHA256_V1"
+    )
+
+
+def test_bound_text_hash_keeps_non_eol_bytes_integrity_relevant(tmp_path: Path) -> None:
+    config, root, value = _materialize(tmp_path)
+    plan = root / value["bindings"]["plan"]["path"]
+    plan.write_bytes(plan.read_bytes() + b"\r")
+
+    with pytest.raises(ProgramStatusError, match="file hash mismatch"):
+        load_program_status(config, repo_root=root)
+
+
+def test_bound_text_hash_rejects_utf8_bom_drift(tmp_path: Path) -> None:
+    config, root, value = _materialize(tmp_path)
+    plan = root / value["bindings"]["plan"]["path"]
+    plan.write_bytes(b"\xef\xbb\xbf" + plan.read_bytes())
+
+    with pytest.raises(ProgramStatusError, match="file hash mismatch"):
+        load_program_status(config, repo_root=root)
+
+
+@pytest.mark.parametrize("contract", [None, "RAW_FILE_SHA256_V1"])
+def test_binding_hash_contract_is_required_and_exact(
+    tmp_path: Path, contract: str | None
+) -> None:
+    payload = _payload()
+    if contract is None:
+        payload.pop("binding_hash_contract")
+        match = "key set mismatch"
+    else:
+        payload["binding_hash_contract"] = contract
+        match = "must be TEXT_BYTES_CRLF_TO_LF_SHA256_V1"
+    config, root, _ = _materialize(tmp_path, payload)
+
+    with pytest.raises(ProgramStatusError, match=match):
+        load_program_status(config, repo_root=root)
 
 
 def test_rulepack_canonical_hash_must_match_lane_and_artifact(tmp_path: Path) -> None:

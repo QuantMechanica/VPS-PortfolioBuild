@@ -6,7 +6,7 @@ from pathlib import Path
 from tools.strategy_farm import render_cockpit
 
 
-NOW = dt.datetime(2026, 7, 29, 16, 0, tzinfo=dt.UTC)
+NOW = dt.datetime(2026, 7, 29, 18, 0, tzinfo=dt.UTC)
 
 
 def test_cockpit_programme_snapshot_uses_source_repo_and_is_fresh() -> None:

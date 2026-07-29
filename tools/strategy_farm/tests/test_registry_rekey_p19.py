@@ -143,6 +143,13 @@ def test_p19_registry_directory_filename_and_source_ids_agree() -> None:
     for path in EAS.iterdir():
         if not path.is_dir():
             continue
+        # Git does not own empty directories.  Old local scaffolding can
+        # therefore survive a checkout even after every source-bearing
+        # duplicate was archived.  Treat only directories containing an MQ5
+        # source as production identities; a wrong or duplicate source still
+        # remains visible and fails the checks below.
+        if not any(path.glob("*.mq5")):
+            continue
         match = re.fullmatch(r"QM5_(\d+)_(.+)", path.name)
         if not match:
             continue
