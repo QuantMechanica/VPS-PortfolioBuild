@@ -40,6 +40,8 @@ void OnDeinit(const int reason)
    QM13301_GatedOnDeinit(reason);
   }
 
+datetime g_qm13301_last_management_run = 0;
+
 bool QM13301_TimerGuardsAllow()
   {
    if(!QM_KillSwitchCheck())
@@ -75,9 +77,31 @@ void QM13301_CloseOnStrategyExit()
      }
   }
 
+bool QM13301_ManagementDue(const datetime broker_now)
+  {
+   return (g_qm13301_last_management_run == 0 ||
+           broker_now - g_qm13301_last_management_run >= 1);
+  }
+
+void QM13301_RunManagement(const datetime broker_now)
+  {
+   Strategy_ManageOpenPosition();
+   QM13301_CloseOnStrategyExit();
+   g_qm13301_last_management_run = broker_now;
+  }
+
 void OnTick()
   {
-   if(!QM13301_TimerGuardsAllow())
+   const datetime broker_now = TimeCurrent();
+   const bool guards_allow = QM13301_TimerGuardsAllow();
+
+   // Tester timers advance with simulated time.  The final tick before a
+   // session gap may therefore have no following timer event.  Catch up on
+   // that tick when the shared one-second management stamp is stale.
+   if(guards_allow && QM13301_ManagementDue(broker_now))
+      QM13301_RunManagement(broker_now);
+
+   if(!guards_allow)
       return;
 
    // Entry logic is unchanged and remains gated to each newly closed bar.
@@ -95,10 +119,12 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+   const datetime broker_now = TimeCurrent();
+   if(!QM13301_ManagementDue(broker_now))
+      return;
    if(!QM13301_TimerGuardsAllow())
       return;
-   Strategy_ManageOpenPosition();
-   QM13301_CloseOnStrategyExit();
+   QM13301_RunManagement(broker_now);
   }
 
 void OnTradeTransaction(const MqlTradeTransaction &trans,
