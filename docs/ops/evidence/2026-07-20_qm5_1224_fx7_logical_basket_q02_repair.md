@@ -1,5 +1,9 @@
 # QM5_1224 FX7 Logical-Basket Q02 Infrastructure Repair
 
+Date: 2026-07-20  
+Router task: `19983f60-f3ba-4c18-9f5c-bef086d37f65`  
+EA: `QM5_1224_white-okunev-fx-xmom`
+
 ## Outcome
 
 `QM5_1224_white-okunev-fx-xmom` is now a compile-clean, single-host logical
@@ -19,6 +23,12 @@ is pending:
 
 This is a queue handoff, not a profitability claim. Q02 owns the economic
 verdict.
+
+Canonical inputs are the EA's `basket_manifest.json`, the logical
+`QM5_1224_FX7_XMOM_D1_D1_backtest.set`, the matching compiled EX5, compile log,
+and build-check JSON. The set is fail-closed at `RISK_FIXED=500`,
+`RISK_PERCENT=0`, `qm_news_stale_max_hours=336`, and `PORTFOLIO_WEIGHT=1`.
+Earlier historical component verdicts remain untouched as audit history.
 
 ## Why This Unit Was Selected
 
