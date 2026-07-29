@@ -1,9 +1,11 @@
 # QM5_20181 — FTMO joint multi-symbol (OnTimer) — BACKTEST-ONLY
 
 Measurement instrument. One EA runs the Q09-admitted runner+satellite book on ONE
-simulated $100k account in ONE tester run so the account equity curve is REAL. Symbols
-are input parameters; sleeves are dispatched by symbol; the EA is driven from OnTimer
-for non-host satellites while the host runner stays on OnTick.
+simulated $100k account in ONE tester run. MT5 account equity is real at every observed
+callback, but the in-EA sampler is not an event-complete curve for non-host symbols (see
+the explicit evidence boundary below). Symbols are input parameters; sleeves are
+dispatched by symbol; the EA is driven from OnTimer for non-host satellites while the
+host runner stays on OnTick.
 
 Built piece by piece (OWNER 2026-07-27, "Stück für Stück"), each sleeve admitted only at
 `match_rate == 1.0` before the next is added:
@@ -23,7 +25,7 @@ Built piece by piece (OWNER 2026-07-27, "Stück für Stück"), each sleeve admit
   sees the host tick stream (RECON A `:19-26`). The runner is NOT timer-driven — where the
   task's "OnTimer-driven loop" framing conflicts with the exit-cadence recon, the recon
   wins.
-- **OnTimer (model-second, `EventSetTimer(1)`).** Drives the account-equity sampler at 1 s
+- **OnTimer (model-second, `EventSetTimer(1)`).** Drives the observed account-equity sampler at 1 s
   resolution and the non-host satellite dispatch (per-symbol new-bar detection via
   a process-local D1 latch initialized independently for every tester pass). Terminal
   GlobalVariables are deliberately not used for entry cadence because they survive
@@ -37,6 +39,22 @@ Built piece by piece (OWNER 2026-07-27, "Stück für Stück"), each sleeve admit
 The source defaults keep both satellites disabled so singleton and two-sleeve controls
 cannot silently change when loaded without their set file. Sleeve membership is explicit
 in each governed set; `..._book3_9936_10145_13108.set` is the authoritative step-3 input.
+`qm_evidence_run_id` is also mandatory: the J0/J1/J2 governed sets bind an exact
+rung-specific identity and a missing or membership-inconsistent value refuses init.
+
+## FTMO evidence-v2 boundary
+
+The trade stream is rebuilt at tester shutdown as one complete position lifecycle
+per row, with position/deal IDs and entry/exit cost events. The legacy comparison
+fields remain present.
+
+The in-EA equity sampler is **not** event-complete for non-host symbols. A move
+and recovery within one model-second can occur between timer callbacks. It therefore
+prefixes the diagnostic equity stream with a v2 metadata/point pair carrying
+`coverage_complete: false`; the money adapter must return `SETUP_DATA_MISSING`.
+An external all-tick/account-event replay producer is required before any FTMO
+daily-loss, maximum-loss, or target result can be admitted. See
+`docs/ops/evidence/2026-07-29_ftmo_book3_v2_producer_setup_block.md`.
 
 ## Fidelity control (fixes the 20180 cross-vintage defect)
 

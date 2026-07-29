@@ -1,3 +1,4 @@
+import json
 import sys
 from pathlib import Path
 
@@ -31,7 +32,7 @@ def test_floating_and_closed_losses_share_daily_floor() -> None:
     assert result["floor"] == 95_000.0
 
 
-def test_exact_daily_loss_floor_is_a_breach() -> None:
+def test_exact_daily_loss_floor_is_not_a_breach() -> None:
     trace = [
         row("2026-01-04T23:00:00Z", anchor=True),
         row("2026-01-05T10:00:00Z", balance=97_000.0, equity=95_000.0, open_positions=1),
@@ -39,17 +40,25 @@ def test_exact_daily_loss_floor_is_a_breach() -> None:
 
     result = joint.evaluate_path(trace)
 
-    assert result["status"] == "DAILY_BREACH"
-    assert result["floor"] == 95_000.0
+    assert result["status"] == "NOT_REACHED"
 
 
-def test_exact_static_max_loss_floor_is_a_breach() -> None:
-    trace = [row("2026-01-04T23:00:00Z", equity=90_000.0, anchor=True)]
+def test_exact_static_max_loss_floor_is_not_a_breach() -> None:
+    trace = [
+        row("2026-01-04T23:00:00Z", anchor=True),
+        row("2026-01-05T10:00:00Z", balance=95_000.0, equity=95_000.0),
+        row("2026-01-05T23:00:00Z", balance=95_000.0, equity=95_000.0, anchor=True),
+        row(
+            "2026-01-06T10:00:00Z",
+            balance=95_000.0,
+            equity=90_000.0,
+            open_positions=1,
+        ),
+    ]
 
     result = joint.evaluate_path(trace)
 
-    assert result["status"] == "MAX_BREACH"
-    assert result["floor"] == 90_000.0
+    assert result["status"] == "NOT_REACHED"
 
 
 def test_static_max_loss_can_bind_without_daily_breach() -> None:
@@ -84,11 +93,41 @@ def test_target_requires_four_trading_days_and_flat_book() -> None:
             open_positions=1 if index == 3 else 0,
             opened=1,
         ))
-    trace.append(row("2026-01-08T00:00:00Z", balance=110_000.0, open_positions=0))
+    trace.append(row("2026-01-08T00:00:00Z", balance=110_000.01, open_positions=0))
 
     result = joint.evaluate_path(trace)
-    assert result["status"] == "PASS"
+    assert result["status"] == "LEGACY_RESEARCH_ONLY"
+    assert result["legacy_screen_status"] == "PASS"
+    assert result["decision_gate_eligible"] is False
     assert result["trading_days"] == 4
+
+
+def test_deprecated_cli_never_emits_decision_pass_or_exit_zero(tmp_path: Path) -> None:
+    trace = []
+    for index, balance in enumerate(
+        (100_000.0, 102_500.0, 105_000.0, 107_500.0, 110_000.01)
+    ):
+        trace.append(
+            row(
+                f"2026-01-{5 + index:02d}T23:00:00Z",
+                balance=balance,
+                opened=1 if index else 0,
+                anchor=True,
+            )
+        )
+    source = tmp_path / "legacy.jsonl"
+    out = tmp_path / "legacy-result.json"
+    source.write_text(
+        "".join(json.dumps(item) + "\n" for item in trace), encoding="utf-8"
+    )
+
+    exit_code = joint.main(["--trace", str(source), "--out", str(out)])
+    artifact = json.loads(out.read_text(encoding="utf-8"))
+
+    assert exit_code == 2
+    assert artifact["status"] == "LEGACY_RESEARCH_ONLY"
+    assert artifact["legacy_screen_status"] == "PASS"
+    assert artifact["decision_gate_eligible"] is False
 
 
 def test_missing_midnight_anchor_fails_closed() -> None:
@@ -137,10 +176,12 @@ def test_two_phase_uses_fresh_starting_balance() -> None:
             ))
         return trace
 
-    result = joint.evaluate_two_phase(passing_trace(110_000.0), passing_trace(105_000.0))
-    assert result["status"] == "PASS"
-    assert result["phase1"]["balance"] == 110_000.0
-    assert result["phase2"]["balance"] == 105_000.0
+    result = joint.evaluate_two_phase(passing_trace(110_000.01), passing_trace(105_000.01))
+    assert result["status"] == "LEGACY_RESEARCH_ONLY"
+    assert result["legacy_screen_status"] == "PASS"
+    assert result["decision_gate_eligible"] is False
+    assert result["phase1"]["balance"] == 110_000.01
+    assert result["phase2"]["balance"] == 105_000.01
 
 
 def sleeve_row(

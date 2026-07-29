@@ -1,8 +1,14 @@
-"""Exact FTMO 2-Step rule evaluation for synchronized portfolio equity traces.
+"""Deprecated sparse-trace FTMO research evaluator.
 
-This module does not invent intraday paths from trade entry/exit/MAE summaries.
-It evaluates a joint trace only after all sleeves have been sampled on the same
-UTC grid and their source evidence has passed report reconciliation.
+This legacy module predates the tick/event-complete money-evidence contract.  It
+does not carry source provenance, regular-grid enforcement, interval-minimum
+equity, cost lifecycle reconciliation, or a current hash-bound FTMO rules
+snapshot.  It therefore never returns the decision status ``PASS`` and its CLI
+never exits zero.  Use ``ftmo_joint_output_adapter.py`` for an admissible screen.
+
+The frozen FTMO boundary operators are literal: equity must be strictly below
+a loss floor to breach, and flat-book balance must be strictly above a profit
+target to pass. Equality satisfies neither event.
 """
 
 from __future__ import annotations
@@ -18,7 +24,9 @@ from zoneinfo import ZoneInfo
 
 
 PRAGUE = ZoneInfo("Europe/Prague")
-EPSILON = 1e-9
+DEPRECATION_REASON = (
+    "DEPRECATED_SPARSE_TRACE_EVALUATOR_USE_FTMO_JOINT_OUTPUT_ADAPTER"
+)
 
 
 @dataclass(frozen=True)
@@ -171,7 +179,7 @@ def evaluate_path(
             trading_days.add(local_day)
 
         assert daily_floor is not None
-        if row["equity"] <= rules.maximum_loss_floor:
+        if row["equity"] < rules.maximum_loss_floor:
             return {
                 "status": "MAX_BREACH",
                 "timestamp_utc": timestamp.isoformat(),
@@ -179,7 +187,7 @@ def evaluate_path(
                 "floor": rules.maximum_loss_floor,
                 "trading_days": len(trading_days),
             }
-        if row["equity"] <= daily_floor:
+        if row["equity"] < daily_floor:
             return {
                 "status": "DAILY_BREACH",
                 "timestamp_utc": timestamp.isoformat(),
@@ -189,12 +197,16 @@ def evaluate_path(
                 "trading_days": len(trading_days),
             }
         if (
-            row["balance"] + EPSILON >= rules.target_balance
+            row["balance"] > rules.target_balance
             and row["open_positions"] == 0
             and len(trading_days) >= rules.minimum_trading_days
         ):
             return {
-                "status": "PASS",
+                "status": "LEGACY_RESEARCH_ONLY",
+                "legacy_screen_status": "PASS",
+                "reason": DEPRECATION_REASON,
+                "decision_gate_eligible": False,
+                "challenge_proof": False,
                 "timestamp_utc": timestamp.isoformat(),
                 "balance": row["balance"],
                 "trading_days": len(trading_days),
@@ -203,6 +215,9 @@ def evaluate_path(
     final = trace[-1]
     return {
         "status": "NOT_REACHED",
+        "reason": DEPRECATION_REASON,
+        "decision_gate_eligible": False,
+        "challenge_proof": False,
         "balance": final["balance"],
         "equity": final["equity"],
         "open_positions": final["open_positions"],
@@ -284,11 +299,21 @@ def evaluate_two_phase(
     phase2_rows: Iterable[Mapping[str, Any]],
 ) -> dict[str, Any]:
     phase1 = evaluate_path(phase1_rows, rules=PHASE1_RULES)
-    if phase1["status"] != "PASS":
+    if phase1.get("legacy_screen_status") != "PASS":
         return {"status": "PHASE1_NOT_PASSED", "phase1": phase1, "phase2": None}
     phase2 = evaluate_path(phase2_rows, rules=PHASE2_RULES)
     return {
-        "status": "PASS" if phase2["status"] == "PASS" else "PHASE2_NOT_PASSED",
+        "status": (
+            "LEGACY_RESEARCH_ONLY"
+            if phase2.get("legacy_screen_status") == "PASS"
+            else "PHASE2_NOT_PASSED"
+        ),
+        "legacy_screen_status": (
+            "PASS" if phase2.get("legacy_screen_status") == "PASS" else "NOT_PASSED"
+        ),
+        "reason": DEPRECATION_REASON,
+        "decision_gate_eligible": False,
+        "challenge_proof": False,
         "phase1": phase1,
         "phase2": phase2,
     }
@@ -322,7 +347,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"wrote {args.out} status={artifact['status']}")
     else:
         print(rendered, end="")
-    return 0 if artifact["status"] == "PASS" else 2
+    return 2
 
 
 if __name__ == "__main__":

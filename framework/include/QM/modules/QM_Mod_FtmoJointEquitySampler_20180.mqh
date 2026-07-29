@@ -1,17 +1,23 @@
 #ifndef QM_MOD_FTMO_JOINT_EQUITY_SAMPLER_20180_MQH
 #define QM_MOD_FTMO_JOINT_EQUITY_SAMPLER_20180_MQH
 
+#ifndef QM_FJ_FTMO_PRODUCER_VERSION
+#define QM_FJ_FTMO_PRODUCER_VERSION "QM5_20181_FTMO_TRACE_V2"
+#endif
+
 // =============================================================================
 // QM5_20180 FTMO JOINT (backtest-only) — account-equity sampler.
 // -----------------------------------------------------------------------------
-// PRIMARY DELIVERABLE (design §7 / task requirement #4): a REAL account-equity
-// series so the FTMO -5% daily / -10% total / +10% / +5% predicates are direct
-// reads instead of a proxy that "invents intratrade equity"
-// (a5768d03_equity_export_gap_2026-07-27.md).
+// LEGACY DIAGNOSTIC DELIVERABLE (design §7 / task requirement #4): observed
+// account-equity rows instead of a proxy that invents intratrade equity
+// (a5768d03_equity_export_gap_2026-07-27.md).  These rows are FTMO-complete only
+// when every enabled position is on the host symbol.  QM5_20181 J1/J2 carry
+// non-host symbols and therefore use the explicit v2 setup block below.
 //
 // The shipped emitter QM_EquityStreamOnNewBar emits ONE snapshot per DAY at the
-// day CLOSE — it captures neither intraday equity nor the intraday LOW that the
-// -5% daily limit is a predicate on. This sampler adds the missing resolution.
+// day CLOSE — it captures neither observed intraday equity nor observed lows.
+// This sampler adds diagnostic resolution; it does not by itself prove a
+// tick/event-complete FTMO interval minimum for a multi-symbol book.
 //
 // File conventions mirror the Q08 trade stream exactly (QM_Common.mqh:952-979):
 //   FILE_COMMON, FILE_WRITE|FILE_TXT|FILE_ANSI, persistent handle truncated once
@@ -25,12 +31,12 @@
 //   EQUITY_LOW — every NEW intraday (per-broker-day) low of account equity, plus
 //                one anchor row at each broker-day rollover.
 //
-// WHY THIS IS COMPLETE FOR THIS INSTRUMENT (adversarial-review C4 does NOT bite):
-//   C4 showed the sampler under-samples when the account carries a NON-host
-//   symbol whose intraday troughs fall between host ticks. This instrument is
-//   USDJPY-ONLY: both sleeves trade the host symbol, so every account-equity
-//   move happens on a host tick and QM_FJ_Eq_OnTick (called every OnTick) sees
-//   it at full tick resolution. No cross-symbol under-sampling exists here.
+// COMPLETENESS BOUNDARY (adversarial-review C4):
+//   QM5_20180 is USDJPY-only, so every price-driven equity move is on the host
+//   tick stream. QM5_20181 J1/J2 are NOT USDJPY-only: XAUUSD/XTIUSD can make and
+//   reverse a trough between host ticks and between one-second timer callbacks.
+//   Their legacy rows are diagnostic only. QM_FJ_Eq_ConfigureV2Blocked writes
+//   coverage_complete=false so the downstream money gate cannot consume them.
 //
 // COST (adversarial-review M3): the per-tick path reads ACCOUNT_EQUITY and does
 // one comparison. The O(PositionsTotal) floating-P&L scan runs ONLY when a row
@@ -48,6 +54,8 @@ bool   g_qm_fj_eq_have_low = false;
 long   g_qm_fj_eq_magics[];
 int    g_qm_fj_eq_nmagics  = 0;
 
+double QM_FJ_Eq_FloatingForMagic(const long magic);
+
 void QM_FJ_Eq_Configure(const long &magics[])
   {
    g_qm_fj_eq_nmagics = ArraySize(magics);
@@ -57,6 +65,121 @@ void QM_FJ_Eq_Configure(const long &magics[])
    g_qm_fj_eq_day_key  = -1;
    g_qm_fj_eq_have_low = false;
    g_qm_fj_eq_day_low  = 0.0;
+  }
+
+// Configure the explicit FTMO-v2 setup-block envelope used by QM5_20181.
+//
+// The producer can truthfully observe account equity on every HOST tick plus
+// every model-second timer callback.  It cannot prove the sub-second ticks of
+// XAUUSD/XTIUSD that occur between those callbacks.  Therefore this function
+// writes the exact requested v2 metadata followed by one coverage point with
+// coverage_complete=false.  The adapter consequently returns
+// SETUP_DATA_MISSING instead of interpreting the legacy sampler as a money gate.
+// Existing EQUITY_LOW/EQUITY_BAR rows continue afterwards for diagnostics and
+// historical consumers; no legacy trading or comparator path is changed.
+bool QM_FJ_Eq_ConfigureV2Blocked(const long &magics[],
+                                 const string &symbols[],
+                                 const string run_id)
+  {
+   QM_FJ_Eq_Configure(magics);
+   if(run_id == "" || AccountInfoString(ACCOUNT_CURRENCY) != "USD" ||
+      g_qm_fj_eq_nmagics <= 0 ||
+      g_qm_fj_eq_nmagics != ArraySize(symbols))
+      return false;
+
+   string members = "[";
+   string covered_magics = "[";
+   string covered_symbols = "[";
+   string floating = "[";
+   double floating_total = 0.0;
+   for(int i = 0; i < g_qm_fj_eq_nmagics; ++i)
+     {
+      if(magics[i] <= 0 || symbols[i] == "")
+         return false;
+      for(int j = 0; j < i; ++j)
+         if(magics[j] == magics[i] || symbols[j] == symbols[i])
+            return false;
+      const double value = QM_FJ_Eq_FloatingForMagic(magics[i]);
+      floating_total += value;
+      if(i > 0)
+        {
+         members += ",";
+         covered_magics += ",";
+         covered_symbols += ",";
+         floating += ",";
+        }
+      members += StringFormat("{\"magic\":%I64d,\"symbol\":\"%s\"}",
+                              magics[i],
+                              QM_LoggerEscapeJson(symbols[i]));
+      covered_magics += (string)magics[i];
+      covered_symbols += StringFormat("\"%s\"",
+                                      QM_LoggerEscapeJson(symbols[i]));
+      floating += StringFormat(
+         "{\"magic\":%I64d,\"symbol\":\"%s\",\"f\":%.2f}",
+         magics[i],
+         QM_LoggerEscapeJson(symbols[i]),
+         value);
+     }
+   members += "]";
+   covered_magics += "]";
+   covered_symbols += "]";
+   floating += "]";
+
+   const datetime now = TimeCurrent();
+   const double balance = AccountInfoDouble(ACCOUNT_BALANCE);
+   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   g_qm_fj_eq_buf += StringFormat(
+      "{\"event\":\"FTMO_JOINT_TRACE_META\",\"schema_version\":1,"
+      "\"q08_trade_schema_version\":2,\"trace_id\":\"%s\","
+      "\"run_id\":\"%s\",\"producer_version\":\"%s\","
+      "\"currency\":\"USD\",\"grid_seconds\":3600,"
+      "\"money_decimals\":2,\"host_symbol\":\"%s\","
+      "\"expected_members\":%s,"
+      "\"balance_basis\":\"NET_CLOSED_TRADING_PNL_INCLUDING_COSTS_NO_EXTERNAL_CASHFLOWS\","
+      "\"equity_basis\":\"MARK_TO_MARKET_INCLUDING_OPEN_PNL_SWAP_COMMISSION\","
+      "\"opened_positions_basis\":\"RECONCILED_POSITION_FIRST_OPEN_EVENTS_IN_INTERVAL_(PREVIOUS_TS,TS]\","
+      "\"interval_min_equity_basis\":\"TICK_EVENT_COMPLETE_INTERVAL_MIN_EQUITY_INCLUDING_ENDPOINTS\","
+      "\"pending_orders_basis\":\"RECONCILED_PENDING_ORDER_STATE_AT_ENDPOINT_AND_EVENT_COMPLETE_INTERVAL\","
+      "\"coverage_basis\":\"TICK_EVENT_COMPLETE_ALL_BOOK_SYMBOLS_AND_ACCOUNT_EVENTS\","
+      "\"trade_net_basis\":\"FULL_POSITION_LIFECYCLE_PROFIT_SWAP_AND_ENTRY_EXIT_COMMISSION\","
+      "\"floating_basis\":\"OPEN_POSITION_PROFIT_AND_ACCRUED_SWAP_BY_MAGIC\","
+      "\"producer_status\":\"SETUP_DATA_MISSING\","
+      "\"coverage_observation_basis\":\"HOST_TICK_PLUS_MODEL_SECOND_TIMER_NOT_EVENT_COMPLETE\","
+      "\"producer_block_reasons\":[\"NON_HOST_SUBSECOND_TICKS_NOT_OBSERVED\","
+      "\"EVENT_COMPLETE_MTM_REPLAY_PRODUCER_MISSING\"]}\r\n",
+      QM_LoggerEscapeJson(run_id),
+      QM_LoggerEscapeJson(run_id),
+      QM_FJ_FTMO_PRODUCER_VERSION,
+      QM_LoggerEscapeJson(_Symbol),
+      members);
+   g_qm_fj_eq_buf += StringFormat(
+      "{\"event\":\"FTMO_JOINT_TRACE_POINT\",\"schema_version\":1,"
+      "\"trace_id\":\"%s\",\"run_id\":\"%s\","
+      "\"producer_version\":\"%s\",\"interval_sequence\":0,"
+      "\"interval_start_utc\":%I64d,\"interval_end_utc\":%I64d,"
+      "\"t_utc\":%I64d,\"balance\":%.2f,\"equity\":%.2f,"
+      "\"interval_min_equity\":%.2f,\"open_positions\":%d,"
+      "\"opened_positions\":0,\"pending_orders\":%d,"
+      "\"day_anchor\":false,\"coverage_complete\":false,"
+      "\"covered_magics\":%s,\"covered_symbols\":%s,"
+      "\"fl_total\":%.2f,\"fl\":%s,"
+      "\"coverage_block_reason\":\"NON_HOST_SUBSECOND_TICKS_NOT_OBSERVED\"}\r\n",
+      QM_LoggerEscapeJson(run_id),
+      QM_LoggerEscapeJson(run_id),
+      QM_FJ_FTMO_PRODUCER_VERSION,
+      (long)QM_BrokerToUTC(now),
+      (long)QM_BrokerToUTC(now),
+      (long)QM_BrokerToUTC(now),
+      balance,
+      equity,
+      equity,
+      PositionsTotal(),
+      OrdersTotal(),
+      covered_magics,
+      covered_symbols,
+      floating_total,
+      floating);
+   return true;
   }
 
 int QM_FJ_Eq_DayKey(const datetime t)

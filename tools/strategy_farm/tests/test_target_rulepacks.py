@@ -182,6 +182,27 @@ def test_validator_rejects_target_rule_tampering_and_unofficial_domains() -> Non
         rulepacks.validate_rulepack(dxz)
 
 
+def test_ftmo_snapshot_contract_is_required_hash_bound_and_fresh() -> None:
+    missing = rulepacks.load_rulepack(FTMO_ID).as_dict()
+    for key in rulepacks.SOURCE_SNAPSHOT_KEYS:
+        missing["official_sources"][0].pop(key)
+    with pytest.raises(rulepacks.RulepackValidationError, match="require hash-bound snapshots"):
+        rulepacks.validate_rulepack(missing)
+
+    tampered = rulepacks.load_rulepack(FTMO_ID).as_dict()
+    for source in tampered["official_sources"]:
+        source["snapshot_sha256"] = "0" * 64
+    with pytest.raises(rulepacks.RulepackValidationError, match="snapshot hash mismatch"):
+        rulepacks.validate_rulepack(tampered)
+
+    stale = rulepacks.load_rulepack(FTMO_ID).as_dict()
+    for source in stale["official_sources"]:
+        source["retrieved_on"] = "2026-07-20"
+        source["retrieved_at_utc"] = "2026-07-20T19:25:39Z"
+    with pytest.raises(rulepacks.RulepackValidationError, match="snapshot age must be 0..7"):
+        rulepacks.validate_rulepack(stale)
+
+
 def test_rulepack_filename_must_match_payload_identity(tmp_path: Path) -> None:
     payload = rulepacks.load_rulepack(DXZ_ID).as_dict()
     target = tmp_path / f"{FTMO_ID}.json"

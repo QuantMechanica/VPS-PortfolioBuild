@@ -18,8 +18,8 @@ import hashlib
 import json
 import re
 from dataclasses import dataclass
-from datetime import date
-from pathlib import Path
+from datetime import date, datetime, timezone
+from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping, Sequence
 from urllib.parse import urlparse
 
@@ -53,7 +53,14 @@ ROOT_KEYS = {
     "evaluation_profile",
     "deployment_boundary",
 }
-SOURCE_KEYS = {"source_id", "title", "url", "authority", "retrieved_on"}
+SOURCE_REQUIRED_KEYS = {"source_id", "title", "url", "authority", "retrieved_on"}
+SOURCE_SNAPSHOT_KEYS = {
+    "retrieved_at_utc",
+    "snapshot_path",
+    "snapshot_sha256",
+    "content_identity_basis",
+}
+SOURCE_ALLOWED_KEYS = SOURCE_REQUIRED_KEYS | SOURCE_SNAPSHOT_KEYS
 RULE_KEYS = {"rule_id", "category", "description", "scope", "parameters", "source_ids"}
 GUARDRAIL_KEYS = {
     "guardrail_id",
@@ -235,6 +242,22 @@ def _require_iso_date(value: Any, path: str) -> str:
     return text
 
 
+def _require_iso_utc_datetime(value: Any, path: str) -> str:
+    text = _require_string(value, path)
+    if not text.endswith("Z"):
+        _fail(path, "must use canonical UTC Z form")
+    try:
+        parsed = datetime.fromisoformat(text[:-1] + "+00:00")
+    except ValueError as exc:
+        raise RulepackValidationError(f"{path}: must be an ISO-8601 UTC timestamp") from exc
+    if parsed.tzinfo != timezone.utc or parsed.microsecond:
+        _fail(path, "must be second-resolution UTC")
+    canonical = parsed.strftime("%Y-%m-%dT%H:%M:%SZ")
+    if canonical != text:
+        _fail(path, "must use canonical YYYY-MM-DDTHH:MM:SSZ form")
+    return text
+
+
 def _require_object(value: Any, path: str) -> dict[str, Any]:
     if not isinstance(value, dict):
         _fail(path, "must be an object")
@@ -258,7 +281,15 @@ def _index_unique(records: Iterable[Mapping[str, Any]], key: str, path: str) -> 
 
 
 def _validate_source(source: Mapping[str, Any], path: str, as_of: str) -> None:
-    _require_exact_keys(source, SOURCE_KEYS, path)
+    missing = sorted(SOURCE_REQUIRED_KEYS - set(source))
+    extra = sorted(set(source) - SOURCE_ALLOWED_KEYS)
+    if missing or extra:
+        fragments = []
+        if missing:
+            fragments.append(f"missing={missing}")
+        if extra:
+            fragments.append(f"extra={extra}")
+        _fail(path, "; ".join(fragments))
     _require_identifier(source["source_id"], f"{path}.source_id")
     _require_string(source["title"], f"{path}.title")
     if source["authority"] != "OFFICIAL_PROVIDER":
@@ -270,6 +301,34 @@ def _validate_source(source: Mapping[str, Any], path: str, as_of: str) -> None:
     parsed = urlparse(url)
     if parsed.scheme != "https" or not parsed.netloc or parsed.username or parsed.password:
         _fail(f"{path}.url", "must be a credential-free HTTPS URL")
+    present_snapshot_keys = SOURCE_SNAPSHOT_KEYS & set(source)
+    if present_snapshot_keys and present_snapshot_keys != SOURCE_SNAPSHOT_KEYS:
+        _fail(path, "provider snapshot fields must be supplied as one complete contract")
+    if present_snapshot_keys:
+        retrieved_at = _require_iso_utc_datetime(
+            source["retrieved_at_utc"], f"{path}.retrieved_at_utc"
+        )
+        if retrieved_at[:10] != retrieved:
+            _fail(f"{path}.retrieved_at_utc", "date must match retrieved_on")
+        snapshot_path = _require_string(source["snapshot_path"], f"{path}.snapshot_path")
+        pure = PurePosixPath(snapshot_path)
+        if (
+            "\\" in snapshot_path
+            or pure.is_absolute()
+            or ".." in pure.parts
+            or pure.as_posix() != snapshot_path
+        ):
+            _fail(f"{path}.snapshot_path", "must be a normalized relative POSIX path")
+        snapshot_sha = _require_string(
+            source["snapshot_sha256"], f"{path}.snapshot_sha256"
+        )
+        if not re.fullmatch(r"[0-9a-f]{64}", snapshot_sha):
+            _fail(f"{path}.snapshot_sha256", "must be canonical lower-hex SHA-256")
+        if source["content_identity_basis"] not in {
+            "NORMALIZED_PROVIDER_RULE_SNAPSHOT",
+            "RAW_PROVIDER_RESPONSE",
+        }:
+            _fail(f"{path}.content_identity_basis", "unsupported snapshot identity basis")
 
 
 def _validate_rule(rule: Mapping[str, Any], path: str, source_ids: set[str]) -> None:
@@ -492,6 +551,54 @@ def _validate_ftmo(
         hostname = urlparse(source["url"]).hostname or ""
         if hostname != "ftmo.com" and not hostname.endswith(".ftmo.com"):
             _fail(f"$.official_sources[{source_id}].url", "FTMO sources must use ftmo.com")
+        missing_snapshot = SOURCE_SNAPSHOT_KEYS - set(source)
+        if missing_snapshot:
+            _fail(
+                f"$.official_sources[{source_id}]",
+                f"FTMO decision sources require hash-bound snapshots: {sorted(missing_snapshot)}",
+            )
+
+    snapshot_contracts = {
+        (
+            str(source["retrieved_at_utc"]),
+            str(source["snapshot_path"]),
+            str(source["snapshot_sha256"]),
+            str(source["content_identity_basis"]),
+        )
+        for source in sources.values()
+    }
+    if len(snapshot_contracts) != 1:
+        _fail("$.official_sources", "FTMO sources must bind one normalized snapshot identity")
+    retrieved_at, snapshot_rel, expected_snapshot_sha, identity_basis = next(
+        iter(snapshot_contracts)
+    )
+    if identity_basis != "NORMALIZED_PROVIDER_RULE_SNAPSHOT":
+        _fail(
+            "$.official_sources.content_identity_basis",
+            "FTMO dynamic web pages require the normalized provider-rule snapshot",
+        )
+    as_of_date = date.fromisoformat(str(payload["as_of"]))
+    retrieved_date = date.fromisoformat(retrieved_at[:10])
+    age_days = (as_of_date - retrieved_date).days
+    if age_days < 0 or age_days > 7:
+        _fail(
+            "$.official_sources.retrieved_at_utc",
+            f"FTMO snapshot age must be 0..7 days at rulepack as_of, actual={age_days}",
+        )
+    repo_root = Path(__file__).resolve().parents[2]
+    snapshot_path = (repo_root / snapshot_rel).resolve()
+    try:
+        snapshot_path.relative_to(repo_root)
+    except ValueError:
+        _fail("$.official_sources.snapshot_path", "snapshot resolves outside repository")
+    if not snapshot_path.is_file():
+        _fail("$.official_sources.snapshot_path", f"snapshot file is missing: {snapshot_path}")
+    actual_snapshot_sha = hashlib.sha256(snapshot_path.read_bytes()).hexdigest()
+    if actual_snapshot_sha != expected_snapshot_sha:
+        _fail(
+            "$.official_sources.snapshot_sha256",
+            f"snapshot hash mismatch: expected={expected_snapshot_sha} actual={actual_snapshot_sha}",
+        )
 
     _expect_parameters(
         rules,

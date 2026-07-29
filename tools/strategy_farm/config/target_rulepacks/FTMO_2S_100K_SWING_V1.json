@@ -18,35 +18,66 @@
       "title": "FTMO Trading Objectives",
       "url": "https://ftmo.com/en/trading-objectives/",
       "authority": "OFFICIAL_PROVIDER",
-      "retrieved_on": "2026-07-29"
+      "retrieved_on": "2026-07-29",
+      "retrieved_at_utc": "2026-07-29T19:25:39Z",
+      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
+    },
+    {
+      "source_id": "ftmo_2_step_challenge_official",
+      "title": "FTMO Challenge: 2-Step",
+      "url": "https://ftmo.com/en/2-step-challenge/",
+      "authority": "OFFICIAL_PROVIDER",
+      "retrieved_on": "2026-07-29",
+      "retrieved_at_utc": "2026-07-29T19:25:39Z",
+      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     },
     {
       "source_id": "ftmo_news_official",
       "title": "Can I trade news?",
       "url": "https://ftmo.com/faq/can-i-trade-news/",
       "authority": "OFFICIAL_PROVIDER",
-      "retrieved_on": "2026-07-29"
+      "retrieved_on": "2026-07-29",
+      "retrieved_at_utc": "2026-07-29T19:25:39Z",
+      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     },
     {
       "source_id": "ftmo_weekend_official",
       "title": "Do I have to close my positions overnight or before the weekend?",
       "url": "https://ftmo.com/en/faq/do-i-have-to-close-my-positions-overnight-or-before-the-weekend/",
       "authority": "OFFICIAL_PROVIDER",
-      "retrieved_on": "2026-07-29"
+      "retrieved_on": "2026-07-29",
+      "retrieved_at_utc": "2026-07-29T19:25:39Z",
+      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     },
     {
       "source_id": "ftmo_ea_official",
       "title": "Which instruments can I trade and what strategies am I allowed to use?",
       "url": "https://ftmo.com/en/faq/which-instruments-can-i-trade-and-what-strategies-am-i-allowed-to-use/",
       "authority": "OFFICIAL_PROVIDER",
-      "retrieved_on": "2026-07-29"
+      "retrieved_on": "2026-07-29",
+      "retrieved_at_utc": "2026-07-29T19:25:39Z",
+      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     },
     {
       "source_id": "ftmo_forbidden_practices_official",
       "title": "Forbidden Trading Practices",
       "url": "https://ftmo.com/en/forbidden-trading-practices/",
       "authority": "OFFICIAL_PROVIDER",
-      "retrieved_on": "2026-07-29"
+      "retrieved_on": "2026-07-29",
+      "retrieved_at_utc": "2026-07-29T19:25:39Z",
+      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
     }
   ],
   "official_rules": [

@@ -7,6 +7,7 @@
 #include <QM/QM_PropFirm.mqh>   // phase selector — used at OFF only (RECORD, never ENFORCE)
 #include <QM/modules/QM_Mod_FtmoJointRangeBreakout_20180.mqh>   // host runner (9936) — line-verified vs 9936
 #include <QM/modules/QM_Mod_FtmoJointEquitySampler_20180.mqh>   // N-magic account-equity sampler
+#include <QM/modules/QM_Mod_FtmoJointTradeV2_20181.mqh>         // tester-only FTMO lifecycle evidence
 
 // =============================================================================
 // QM5_20181 — MULTI-SYMBOL, OnTimer-DRIVEN JOINT FTMO BACKTEST-ONLY EA
@@ -78,18 +79,21 @@
 //   * ships no live/demo/ftmo set, no deploy manifest; ea_id status is
 //     "backtest-only" in the registry.
 //
-// EQUITY. QM_Mod_FtmoJointEquitySampler_20180 emits a real per-bar +
-// every-intraday-low account-equity stream with a per-sleeve floating breakdown
-// (Common\Files\QM\q08_equity\20181_USDJPY_DWX.jsonl). Driven from BOTH OnTick
-// (host-tick resolution) AND OnTimer (1 s model-time resolution — plan §5) so a
-// future non-host satellite's between-tick intraday low is not missed. RECORD,
-// not ENFORCE.
+// EQUITY. QM_Mod_FtmoJointEquitySampler_20180 keeps the legacy per-bar/observed-
+// low diagnostics, but now prefixes an explicit FTMO-v2 setup-block envelope.
+// Host ticks plus the one-second timer cannot observe every sub-second non-host tick, so
+// it MUST NOT attest event-complete MTM minima.  The envelope says
+// coverage_complete=false; the downstream money adapter fails closed until an
+// external tick/event replay producer supplies the complete regular grid.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework — BACKTEST-ONLY joint instrument"
 input int    qm_ea_id                   = 20181;
 input int    qm_magic_slot_offset       = 0;      // host slot
 input uint   qm_rng_seed                = 42;
+
+input group "Evidence identity — mandatory, exact rung binding"
+input string qm_evidence_run_id         = "";    // J0/J1/J2 exact value; guarded in OnInit
 
 input group "Risk — BACKTEST-ONLY: RISK_FIXED, never RISK_PERCENT (HR4)"
 input double RISK_PERCENT               = 0.0;    // MUST be 0 (guarded in OnInit)
@@ -184,6 +188,24 @@ QM_JT_Sat g_sats[];
 int       g_sat_count = 0;
 
 // -----------------------------------------------------------------------------
+string QM20181ExpectedEvidenceRunId()
+  {
+   if(!s0_enabled || (s2_enabled && !s1_enabled))
+      return "";
+   if(s2_enabled)
+      return "FTMO_BOOK3_20260729_V1_J2";
+   if(s1_enabled)
+      return "FTMO_BOOK3_20260729_V1_J1";
+   return "FTMO_BOOK3_20260729_V1_J0";
+  }
+
+bool QM20181EvidenceRunIdValid()
+  {
+   const string expected = QM20181ExpectedEvidenceRunId();
+   return expected != "" && qm_evidence_run_id == expected;
+  }
+
+// -----------------------------------------------------------------------------
 int OnInit()
   {
    // ---- Backtest-only structural guards ------------------------------------
@@ -210,6 +232,13 @@ int OnInit()
    if(qm_stress_reject_probability != 0.0)
      {
       Print("QM5_20181 is a measurement instrument: qm_stress_reject_probability must be 0.");
+      return INIT_FAILED;
+     }
+   if(!QM20181EvidenceRunIdValid())
+     {
+      Print("QM5_20181: qm_evidence_run_id is missing or does not match the exact "
+            "enabled-sleeve rung (expected=", QM20181ExpectedEvidenceRunId(),
+            ", actual=", qm_evidence_run_id, ").");
       return INIT_FAILED;
      }
 
@@ -308,10 +337,18 @@ int OnInit()
       if(s1_symbol == "" || s1_symbol == host_symbol || s1_risk_fixed <= 0.0)
          return INIT_FAILED;
       if(!SymbolSelect(s1_symbol, true))
+        {
+         Print("QM5_20181: could not select sleeve-1 symbol ", s1_symbol,
+               " (error=", GetLastError(), ").");
          return INIT_FAILED;
+        }
       double warmup[];
       if(CopyClose(s1_symbol, PERIOD_D1, 0, MathMax(64, s1_lookback_n + s1_atr_period + 10), warmup) <= 0)
+        {
+         Print("QM5_20181: sleeve-1 D1 history warmup failed for ", s1_symbol,
+               " (error=", GetLastError(), ").");
          return INIT_FAILED;
+        }
       g_sats[sat_index].slot = 1;
       g_sats[sat_index].symbol = s1_symbol;
       g_sats[sat_index].tf = PERIOD_D1;
@@ -343,12 +380,20 @@ int OnInit()
          s2_max_hold_days > 14 || s2_max_spread_points < 0)
          return INIT_FAILED;
       if(!SymbolSelect(s2_symbol, true))
+        {
+         Print("QM5_20181: could not select sleeve-2 symbol ", s2_symbol,
+               " (error=", GetLastError(), ").");
          return INIT_FAILED;
+        }
       double warmup2[];
       const int required = MathMax(s2_momentum_days + 1,
                                    s2_percentile_history + s2_partial_moment_days + 1);
       if(CopyClose(s2_symbol, PERIOD_D1, 1, required, warmup2) != required)
+        {
+         Print("QM5_20181: sleeve-2 D1 history warmup failed for ", s2_symbol,
+               " (required=", required, ", error=", GetLastError(), ").");
          return INIT_FAILED;
+        }
       g_sats[sat_index].slot = 2;
       g_sats[sat_index].symbol = s2_symbol;
       g_sats[sat_index].tf = PERIOD_D1;
@@ -371,16 +416,41 @@ int OnInit()
    // ---- Equity sampler: per-sleeve floating breakdown keyed on the enabled
    //      sleeves' magics (step 1: the runner only).
    long eqmagics[];
+   string eqsymbols[];
    ArrayResize(eqmagics, 1 + g_sat_count);
+   ArrayResize(eqsymbols, 1 + g_sat_count);
    eqmagics[0] = m0;
+   eqsymbols[0] = s0_symbol;
    for(int i = 0; i < g_sat_count; ++i)
+     {
       eqmagics[1 + i] = g_sats[i].magic;
-   QM_FJ_Eq_Configure(eqmagics);
+      eqsymbols[1 + i] = g_sats[i].symbol;
+     }
+   if(!QM_FJ_Eq_ConfigureV2Blocked(eqmagics, eqsymbols, qm_evidence_run_id))
+     {
+      Print("QM5_20181: FTMO equity evidence setup-block configuration failed.");
+      return INIT_FAILED;
+     }
+   if(!QM_FJ_TradeV2Configure(qm_ea_id,
+                              host_symbol,
+                              qm_evidence_run_id,
+                              eqmagics,
+                              eqsymbols))
+     {
+      Print("QM5_20181: FTMO trade lifecycle-v2 configuration failed.");
+      return INIT_FAILED;
+     }
 
    // ---- Model-second timer. RECON A: OnTimer fires on simulated time; the
    //      useful floor is 1 s (TimeCurrent() is second-resolution). Drives the
    //      equity sampler now; drives non-host satellites in step 2.
-   EventSetTimer(1);
+   ResetLastError();
+   if(!EventSetTimer(1))
+     {
+      Print("QM5_20181: EventSetTimer(1) failed; refusing silent satellite disablement "
+            "(error=", GetLastError(), ").");
+      return INIT_FAILED;
+     }
 
    QM_LogEvent(QM_INFO, "INIT_OK",
                StringFormat("{\"instrument\":\"ftmo_joint_multisym_timer\",\"step\":1,"
@@ -934,8 +1004,18 @@ void OnDeinit(const int reason)
   {
    EventKillTimer();
    QM_FJ_Eq_Shutdown();
+   // Prepare while framework MAE state still exists.  Publication happens only
+   // after QM_FrameworkShutdown has closed the legacy q08 stream handle.
+   const bool trade_v2_ready = QM_FJ_TradeV2Prepare();
+   if(!trade_v2_ready)
+      QM_LogEvent(QM_WARN,
+                  "FTMO_TRADE_V2_SETUP_BLOCKED",
+                  StringFormat("{\"reason\":\"%s\"}",
+                               QM_LoggerEscapeJson(g_qm_fj_trade_v2_block)));
    QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
    QM_FrameworkShutdown();
+   if(trade_v2_ready && !QM_FJ_TradeV2Commit())
+      Print("QM5_20181: FTMO trade lifecycle-v2 commit failed; evidence is inadmissible.");
   }
 
 // -----------------------------------------------------------------------------
@@ -951,7 +1031,8 @@ void OnTick()
    // Per-tick account-equity low sampler — read-only (equity/position reads +
    // file write to a SEPARATE JSONL). Cannot affect the trade stream, so runner
    // singleton-replay fidelity is unchanged. Runs BEFORE the news early-return
-   // so a broker-day anchor / intraday low is never missed.
+   // so every host-tick-observable anchor/low is retained; non-host sub-second
+   // completeness remains explicitly blocked in the v2 envelope.
    QM_FJ_Eq_OnTick();
 
    const datetime broker_now = TimeCurrent();

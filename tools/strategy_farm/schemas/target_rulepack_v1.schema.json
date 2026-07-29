@@ -91,7 +91,13 @@
         "title": {"type": "string", "minLength": 1},
         "url": {"type": "string", "format": "uri", "pattern": "^https://"},
         "authority": {"const": "OFFICIAL_PROVIDER"},
-        "retrieved_on": {"type": "string", "format": "date"}
+        "retrieved_on": {"type": "string", "format": "date"},
+        "retrieved_at_utc": {"type": "string", "format": "date-time"},
+        "snapshot_path": {"type": "string", "minLength": 1},
+        "snapshot_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "content_identity_basis": {
+          "enum": ["NORMALIZED_PROVIDER_RULE_SNAPSHOT", "RAW_PROVIDER_RESPONSE"]
+        }
       }
     },
     "officialRule": {

@@ -42,8 +42,8 @@
       {
         "rulepack_id": "FTMO_2S_100K_SWING_V1",
         "path": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V1.json",
-        "file_sha256": "3bc593c6264fccedc0edfe1c67ee97dd3b7cc37384f6f863ac7c71fb7d823cb8",
-        "canonical_sha256": "c675a1fa48d425d9d581c4ea235586d6312fa09bf2e1b92f49f205b73dc99825"
+        "file_sha256": "d446e03526ad03de502cb8cbc38c810362c36d968cf01fb5881cd68d339f4e77",
+        "canonical_sha256": "e65f58fc7dc43becbfc5e671bc4f3c526af998b086a787994be8694780b62d59"
       }
     ]
   },
@@ -160,7 +160,7 @@
       "label": "FTMO two-step 100K swing",
       "state": "RESEARCH_EVALUATOR_SOURCE_IMPLEMENTED",
       "rulepack_id": "FTMO_2S_100K_SWING_V1",
-      "rulepack_canonical_sha256": "c675a1fa48d425d9d581c4ea235586d6312fa09bf2e1b92f49f205b73dc99825",
+      "rulepack_canonical_sha256": "e65f58fc7dc43becbfc5e671bc4f3c526af998b086a787994be8694780b62d59",
       "eligibility": "NOT_EVALUATED",
       "deployment_authority": "NONE",
       "next_action": "Feed the implemented dossier with the exact governor, frozen three-sleeve book and free-trial shadow before any money gate."

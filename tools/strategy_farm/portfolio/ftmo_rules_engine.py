@@ -22,7 +22,7 @@ Input contract
         "grid_seconds": 60,
         "balance_basis": "NET_CLOSED_TRADING_PNL_INCLUDING_COSTS_NO_EXTERNAL_CASHFLOWS",
         "equity_basis": "MARK_TO_MARKET_INCLUDING_OPEN_PNL_SWAP_COMMISSION",
-        "opened_positions_basis": "RECONCILED_DEAL_OPEN_EVENTS_IN_INTERVAL_(PREVIOUS_TS,TS]",
+        "opened_positions_basis": "RECONCILED_POSITION_FIRST_OPEN_EVENTS_IN_INTERVAL_(PREVIOUS_TS,TS]",
         "interval_min_equity_basis": "TICK_EVENT_COMPLETE_INTERVAL_MIN_EQUITY_INCLUDING_ENDPOINTS",
         "rows": [{
             "ts_utc": "2026-01-04T23:00:00Z",
@@ -39,10 +39,10 @@ Rows are instantaneous observations on one regular UTC grid.  The trace starts
 and ends at exact 00:00 Europe/Prague boundaries.  ``day_anchor`` is required
 and must be true exactly at every such boundary, including CET/CEST changes.
 The last row closes the preceding complete Prague day.  ``opened_positions``
-counts reconciled deal-open events in ``(previous_ts, ts]``.  Such a count is
-credited to the endpoint's Prague date; anchor rows must therefore carry zero
-opens so an interval never ambiguously crosses a day boundary.  The first row
-has no preceding interval and must also carry zero opens.
+counts reconciled position first-open events in ``(previous_ts, ts]``.  Such a
+count is credited to the endpoint's Prague date; anchor rows must therefore
+carry zero opens so an interval never ambiguously crosses a day boundary.  The
+first row has no preceding interval and must also carry zero opens.
 
 ``interval_min_equity`` is the tick/event-complete minimum over the interval,
 including both endpoints.  On the first row it must equal endpoint equity.  At
@@ -54,7 +54,7 @@ closed PnL is inadmissible for equity-loss objectives.
 Boundary/operator assumptions follow the official wording literally:
 
 * equity below (``<``), not equal to, a loss limit is a breach;
-* target balance equal to or above the target passes that objective;
+* target balance strictly above the target passes that objective;
 * 1-Step Maximum Loss trails the highest balance observed at a Prague midnight;
 * Best Day uses net closed daily PnL inferred from balance changes, and includes
   the current partial day when testing an intraday target/flat-book point;
@@ -88,7 +88,9 @@ EQUITY_BASIS_MTM = "MARK_TO_MARKET_INCLUDING_OPEN_PNL_SWAP_COMMISSION"
 BALANCE_BASIS_NET_TRADING = (
     "NET_CLOSED_TRADING_PNL_INCLUDING_COSTS_NO_EXTERNAL_CASHFLOWS"
 )
-OPENED_POSITIONS_BASIS = "RECONCILED_DEAL_OPEN_EVENTS_IN_INTERVAL_(PREVIOUS_TS,TS]"
+OPENED_POSITIONS_BASIS = (
+    "RECONCILED_POSITION_FIRST_OPEN_EVENTS_IN_INTERVAL_(PREVIOUS_TS,TS]"
+)
 INTERVAL_MIN_EQUITY_BASIS = (
     "TICK_EVENT_COMPLETE_INTERVAL_MIN_EQUITY_INCLUDING_ENDPOINTS"
 )
@@ -159,6 +161,50 @@ _FROZEN_OFFICIAL_RULE_SETS = (
     TWO_STEP_PHASE1,
     TWO_STEP_VERIFICATION,
 )
+
+
+def frozen_rule_profile() -> dict[str, Any]:
+    """Return the canonical arithmetic profile implemented by this module.
+
+    A separately captured, current official-rules snapshot can bind this value
+    by SHA-256.  Keeping the source retrieval receipt outside this pure engine
+    prevents a historical trace evaluation from silently refreshing, or merely
+    claiming to refresh, the official rule source.
+    """
+
+    return {
+        "profile_schema_version": 1,
+        "day_boundary_timezone": "Europe/Prague",
+        "loss_limit_breach_operator": "equity < limit",
+        "profit_target_operator": "balance > target with all positions closed",
+        "rule_sets": [
+            {
+                "rule_set_id": rules.rule_set_id,
+                "product": rules.product,
+                "phase": rules.phase,
+                "profit_target_fraction": format(rules.profit_target_fraction, "f"),
+                "maximum_daily_loss_fraction": format(
+                    rules.maximum_daily_loss_fraction, "f"
+                ),
+                "maximum_loss_fraction": format(rules.maximum_loss_fraction, "f"),
+                "maximum_loss_model": rules.maximum_loss_model.value,
+                "minimum_trading_days": rules.minimum_trading_days,
+                "best_day_fraction": (
+                    None
+                    if rules.best_day_fraction is None
+                    else format(rules.best_day_fraction, "f")
+                ),
+            }
+            for rules in _FROZEN_OFFICIAL_RULE_SETS
+        ],
+    }
+
+
+def frozen_rule_profile_sha256() -> str:
+    rendered = json.dumps(
+        frozen_rule_profile(), sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(rendered).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -809,7 +855,7 @@ def _base_result(
             "interval_min_equity_basis": INTERVAL_MIN_EQUITY_BASIS,
             "maximum_accepted_grid_seconds": assumptions.maximum_grid_seconds,
             "loss_limit_breach_operator": "equity < limit",
-            "profit_target_operator": "balance >= target with flat book",
+            "profit_target_operator": "balance > target with flat book",
             "time_limit_days": None,
             "between_sample_equity_guard": "TICK_EVENT_COMPLETE_INTERVAL_MINIMUM",
             "scaled_money_rounding": "ROUND_FLOOR",
@@ -988,7 +1034,7 @@ def evaluate_trace(
         last_best_day = best_day
         last_best_ratio = best_ratio
 
-        at_target = point.balance >= target_balance
+        at_target = point.balance > target_balance
         flat_book = point.open_positions == 0 and point.equity == point.balance
         target_seen = target_seen or at_target
         flat_target_seen = flat_target_seen or (at_target and flat_book)

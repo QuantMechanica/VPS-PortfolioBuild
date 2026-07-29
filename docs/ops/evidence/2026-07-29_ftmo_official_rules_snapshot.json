@@ -1,0 +1,88 @@
+{
+  "schema": "qm.ftmo-official-rules-snapshot/v1",
+  "retrieved_at_utc": "2026-07-29T19:25:39Z",
+  "retrieval_method": "HTTPS GET from the official FTMO origin; normalized claims independently checked against the rendered official pages",
+  "profile": "FTMO Challenge 2-Step / USD 100000 / Swing",
+  "freshness_max_age_days": 7,
+  "raw_response_note": "FTMO pages contain dynamic bytes: repeated responses can differ while URL, status, byte length and Last-Modified remain unchanged. Raw-response hashes below are retrieval observations, not stable semantic identities. The repository file hash is the durable normalized snapshot identity.",
+  "sources": [
+    {
+      "source_id": "ftmo_trading_objectives_official",
+      "url": "https://ftmo.com/en/trading-objectives/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": 287652,
+      "response_sha256_observation": "969e1695777ea12d2566c370dcf84ec643a3e75f19f0516799e4e86cdd0368a5",
+      "last_modified_utc_observation": "2026-07-29T19:25:11Z"
+    },
+    {
+      "source_id": "ftmo_2_step_challenge_official",
+      "url": "https://ftmo.com/en/2-step-challenge/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": 319181,
+      "response_sha256_observation": "a7094e8a8e7b55be8cb3ebe94f4134c28cb5bc8e15596f2bef8917210fce9ddc",
+      "last_modified_utc_observation": "2026-07-29T19:25:13Z"
+    },
+    {
+      "source_id": "ftmo_news_official",
+      "url": "https://ftmo.com/faq/can-i-trade-news/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": 379346,
+      "response_sha256_observation": "087572c04d5516385daaeca85be7a4c83dbd965915923fd199f6713aa3e09665",
+      "last_modified_utc_observation": "2026-07-29T19:25:30Z"
+    },
+    {
+      "source_id": "ftmo_weekend_official",
+      "url": "https://ftmo.com/en/faq/do-i-have-to-close-my-positions-overnight-or-before-the-weekend/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": 374382,
+      "response_sha256_observation": "866df2e14ab741250bec7c3cb46d751efdd7d1bfda8fc5041bcfd9a821d9ed03",
+      "last_modified_utc_observation": "2026-07-29T19:25:31Z"
+    },
+    {
+      "source_id": "ftmo_ea_official",
+      "url": "https://ftmo.com/en/faq/which-instruments-can-i-trade-and-what-strategies-am-i-allowed-to-use/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": 375562,
+      "response_sha256_observation": "c084fc8f4979b163c8ef059e079bf09c55f495d02d250b0d35962e83a75823e2",
+      "last_modified_utc_observation": "2026-07-29T19:25:31Z"
+    },
+    {
+      "source_id": "ftmo_forbidden_practices_official",
+      "url": "https://ftmo.com/en/forbidden-trading-practices/",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "response_bytes": 253469,
+      "response_sha256_observation": "b707261bfea3866853af1941d27885ebe5c29dd015b37e033d621c0ecd767353",
+      "last_modified_utc_observation": "2026-07-29T19:25:31Z"
+    }
+  ],
+  "normalized_claims": {
+    "phase1_profit_target_percent": "10",
+    "verification_profit_target_percent": "5",
+    "profit_target_operator": "STRICTLY_GREATER_THAN_TARGET_WHILE_FLAT",
+    "maximum_daily_loss_percent_of_initial": "5",
+    "maximum_daily_loss_reset_timezone": "Europe/Prague",
+    "maximum_daily_loss_reset_local_time": "00:00:00",
+    "maximum_daily_loss_basis": "MIDNIGHT_BALANCE_MINUS_FIXED_INITIAL_CAPITAL_AMOUNT",
+    "maximum_daily_loss_breach_operator": "EQUITY_STRICTLY_BELOW_LIMIT",
+    "maximum_loss_percent_of_initial": "10",
+    "maximum_loss_model": "STATIC_INITIAL_CAPITAL",
+    "maximum_loss_breach_operator": "EQUITY_STRICTLY_BELOW_LIMIT",
+    "minimum_trading_days_per_phase": 4,
+    "trading_day_qualifier": "AT_LEAST_ONE_POSITION_OPENED_DURING_PRAGUE_LOCAL_DAY",
+    "maximum_trading_period_days": null,
+    "swing_news_restriction_during_evaluation": false,
+    "swing_overnight_or_weekend_restriction": false,
+    "expert_advisors_allowed_subject_to_rules": true,
+    "simultaneous_order_limit": 200,
+    "position_limit_per_day": 2000,
+    "hyperactive_server_request_threshold_per_day": 2000,
+    "real_market_replicability_required": true
+  },
+  "scope_limit": "This snapshot supports research and Free-Trial/shadow gates only. It is not a purchase authorization and must be refreshed before any paid Challenge decision if older than seven days."
+}

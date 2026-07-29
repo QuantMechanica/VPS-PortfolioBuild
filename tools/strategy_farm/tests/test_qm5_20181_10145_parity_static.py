@@ -191,6 +191,9 @@ def test_20181_remains_backtest_only_and_safety_gated() -> None:
     assert "if(RISK_PERCENT>0.0)" in init
     assert "if(prop_phase!=QM_PROP_PHASE_OFF)" in init
     assert "if(qm_stress_reject_probability!=0.0)" in init
+    assert "if(!EventSetTimer(1))" in init
+    assert "refusingsilentsatellitedisablement" in init.lower()
+    assert "sleeve-1D1historywarmupfailed" in init
     assert "if(!QM_KillSwitchCheck())" in timer
     assert "QM_BasketOpenPosition(qm_ea_id,qm_news_mode_legacy,20,req,ticket)" in run
 

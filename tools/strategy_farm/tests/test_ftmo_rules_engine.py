@@ -541,6 +541,31 @@ def test_exact_loss_limit_is_not_a_breach_under_published_below_wording() -> Non
     assert result["assumptions"]["loss_limit_breach_operator"] == "equity < limit"
 
 
+def test_exact_profit_target_is_not_a_pass_under_published_exceeds_wording() -> None:
+    exact = normalized(
+        days=4,
+        events={
+            (0, 10, 0): {"balance": "102500.00", "opened_positions": 1},
+            (1, 10, 0): {"balance": "105000.00", "opened_positions": 1},
+            (2, 10, 0): {"balance": "107500.00", "opened_positions": 1},
+            (3, 10, 0): {"balance": "110000.00", "opened_positions": 1},
+        },
+    )
+
+    result = engine.evaluate_two_step_phase(
+        exact,
+        phase="PHASE1",
+        initial_balance="100000.00",
+        assumptions=HOURLY,
+    )
+
+    assert result["status"] == "NOT_PASSED"
+    assert result["missing_objectives"] == ["PROFIT_TARGET"]
+    assert result["assumptions"]["profit_target_operator"] == (
+        "balance > target with flat book"
+    )
+
+
 def test_one_step_maximum_loss_trails_highest_midnight_balance_only_upward() -> None:
     trace = normalized(
         days=5,
@@ -619,7 +644,7 @@ def test_one_step_best_day_denominator_excludes_negative_days() -> None:
             (0, 10, 0): {"balance": "106000.00", "opened_positions": 1},
             (1, 10, 0): {"balance": "104000.00", "opened_positions": 1},
             (2, 10, 0): {"balance": "108000.00", "opened_positions": 1},
-            (3, 10, 0): {"balance": "110000.00", "opened_positions": 1},
+            (3, 10, 0): {"balance": "110000.01", "opened_positions": 1},
         },
     )
 
@@ -628,18 +653,18 @@ def test_one_step_best_day_denominator_excludes_negative_days() -> None:
     )
 
     assert result["status"] == "SCREEN_PASS"
-    assert result["positive_days_profit"] == "12000.00"
+    assert result["positive_days_profit"] == "12000.01"
     assert result["best_day_profit"] == "6000.00"
-    assert result["best_day_fraction"] == "0.5"
+    assert Decimal(result["best_day_fraction"]) < Decimal("0.5")
 
 
 def test_one_step_target_requires_flat_book_at_same_sample() -> None:
     trace = normalized(
         events={
-            (0, 10, 0): {"balance": "105000.00", "opened_positions": 1},
+            (0, 10, 0): {"balance": "105000.01", "opened_positions": 1},
             (1, 10, 0): {
-                "balance": "110000.00",
-                "equity": "110000.00",
+                "balance": "110000.02",
+                "equity": "110000.02",
                 "open_positions": 1,
                 "opened_positions": 1,
             },
@@ -673,6 +698,9 @@ def four_day_profit_trace(
         }
         for day in range(4)
     }
+    events[(3, 10, 0)]["balance"] = (
+        "105000.01" if verification else "110000.01"
+    )
     return normalized(
         trace_id=trace_id,
         start_date=start_date,
@@ -706,7 +734,7 @@ def test_two_step_phase1_and_verification_have_distinct_targets() -> None:
 def test_two_step_target_does_not_waive_four_trading_days() -> None:
     trace = normalized(
         days=4,
-        events={(0, 10, 0): {"balance": "110000.00", "opened_positions": 1}},
+        events={(0, 10, 0): {"balance": "110000.01", "opened_positions": 1}},
     )
 
     result = engine.evaluate_two_step_phase(
@@ -765,7 +793,7 @@ def test_two_step_has_no_engine_deadline() -> None:
         (0, 10, 0): {"balance": "101250.00", "opened_positions": 1},
         (10, 10, 0): {"balance": "102500.00", "opened_positions": 1},
         (20, 10, 0): {"balance": "103750.00", "opened_positions": 1},
-        (39, 10, 0): {"balance": "105000.00", "opened_positions": 1},
+        (39, 10, 0): {"balance": "105000.01", "opened_positions": 1},
     }
     trace = normalized(days=40, events=events)
 
