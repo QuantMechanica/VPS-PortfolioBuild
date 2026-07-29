@@ -1,9 +1,11 @@
 """Reconcile an MAE trade stream against its originating MT5 smoke report.
 
-The current Q08 emitter records only the closing-side commission. For known
-one-entry/one-exit streams, adding that commission once more should reproduce
-MT5 Net Profit. A stream is rejected when trade count or corrected net does not
-match the report; such a stream must not feed FTMO portfolio simulations.
+Historical unmarked Q08 rows record only closing-side commission and retain the
+known one-entry/one-exit correction.  Lifecycle-v1 rows carry an explicit money
+basis and already include actual entry and exit commission in their money
+decomposition; ``mae_acct`` remains a separate floating-MAE measure.  Unknown,
+malformed, or mixed money bases are rejected before a stream can feed portfolio
+simulation.
 """
 
 from __future__ import annotations
@@ -13,6 +15,25 @@ import json
 import os
 from pathlib import Path
 from typing import Any, Iterable
+
+try:
+    from .ftmo_phase1_mae import (
+        FULL_POSITION_LIFECYCLE_ACTUAL_V1,
+        LEGACY_Q08_MONEY_BASIS,
+        Q08MoneyBasisError,
+        Q08MoneyRowError,
+        q08_money_basis,
+        q08_round_trip_values,
+    )
+except ImportError:  # direct script execution
+    from ftmo_phase1_mae import (  # type: ignore
+        FULL_POSITION_LIFECYCLE_ACTUAL_V1,
+        LEGACY_Q08_MONEY_BASIS,
+        Q08MoneyBasisError,
+        Q08MoneyRowError,
+        q08_money_basis,
+        q08_round_trip_values,
+    )
 
 
 DEFAULT_STREAM_DIR = (
@@ -49,7 +70,40 @@ def summarize_stream(path: Path) -> dict[str, Any]:
             if str(row.get("event") or "TRADE_CLOSED") == "TRADE_CLOSED":
                 trades.append(row)
     raw_net = sum(_number(row.get("net")) for row in trades)
-    closing_commission = sum(_number(row.get("commission")) for row in trades)
+    basis_counts = {
+        LEGACY_Q08_MONEY_BASIS: 0,
+        FULL_POSITION_LIFECYCLE_ACTUAL_V1: 0,
+    }
+    unknown_basis_rows = 0
+    malformed_money_rows = 0
+    corrected_values: list[float] = []
+    closing_commission = 0.0
+    total_commission = 0.0
+    for row in trades:
+        try:
+            basis = q08_money_basis(row)
+        except Q08MoneyBasisError:
+            unknown_basis_rows += 1
+            continue
+        basis_counts[basis] += 1
+        try:
+            corrected_net, _ = q08_round_trip_values(row)
+        except (Q08MoneyBasisError, Q08MoneyRowError, TypeError, ValueError, OverflowError):
+            malformed_money_rows += 1
+            continue
+        corrected_values.append(corrected_net)
+        if basis == FULL_POSITION_LIFECYCLE_ACTUAL_V1:
+            closing_commission += _number(row.get("exit_commission"))
+        else:
+            closing_commission += _number(row.get("commission"))
+        total_commission += _number(row.get("commission"))
+
+    observed_bases = [basis for basis, count in basis_counts.items() if count]
+    mixed_money_basis = len(observed_bases) > 1
+    homogeneous_basis = observed_bases[0] if len(observed_bases) == 1 else None
+    money_contract_valid = not (
+        unknown_basis_rows or malformed_money_rows or mixed_money_basis
+    )
     return {
         "path": str(path),
         "exists": True,
@@ -60,7 +114,16 @@ def summarize_stream(path: Path) -> dict[str, Any]:
         ),
         "raw_net": round(raw_net, 6),
         "closing_commission": round(closing_commission, 6),
-        "round_trip_corrected_net": round(raw_net + closing_commission, 6),
+        "total_commission": round(total_commission, 6),
+        "money_basis": homogeneous_basis,
+        "money_basis_counts": basis_counts,
+        "mixed_money_basis": mixed_money_basis,
+        "unknown_money_basis_rows": unknown_basis_rows,
+        "malformed_money_rows": malformed_money_rows,
+        "money_contract_valid": money_contract_valid,
+        "round_trip_corrected_net": (
+            round(sum(corrected_values), 6) if money_contract_valid else None
+        ),
     }
 
 
@@ -113,6 +176,14 @@ def reconcile_case(
         reasons.append("stream_missing")
     if stream.get("invalid_rows"):
         reasons.append(f"stream_invalid_rows:{stream['invalid_rows']}")
+    if stream.get("unknown_money_basis_rows"):
+        reasons.append(
+            f"stream_unknown_money_basis_rows:{stream['unknown_money_basis_rows']}"
+        )
+    if stream.get("malformed_money_rows"):
+        reasons.append(f"stream_malformed_money_rows:{stream['malformed_money_rows']}")
+    if stream.get("mixed_money_basis"):
+        reasons.append("stream_mixed_money_basis")
     if stream.get("missing_mae_rows"):
         reasons.append(f"stream_missing_mae_rows:{stream['missing_mae_rows']}")
     if not report.get("exists"):
@@ -127,22 +198,32 @@ def reconcile_case(
         count_delta = int(stream["trade_count"]) - int(report["trade_count"])
         if count_delta:
             reasons.append(f"trade_count_mismatch:{stream['trade_count']}!={report['trade_count']}")
-        net_delta = float(stream["round_trip_corrected_net"]) - float(report["net_profit"])
-        net_tolerance = max(
-            absolute_tolerance,
-            cents_per_trade_tolerance * int(report["trade_count"]),
-        )
-        if abs(net_delta) > net_tolerance:
-            reasons.append(
-                f"corrected_net_mismatch:delta={net_delta:.2f}:tolerance={net_tolerance:.2f}"
+        if stream.get("round_trip_corrected_net") is not None:
+            net_delta = float(stream["round_trip_corrected_net"]) - float(report["net_profit"])
+            net_tolerance = max(
+                absolute_tolerance,
+                cents_per_trade_tolerance * int(report["trade_count"]),
             )
+            if abs(net_delta) > net_tolerance:
+                reasons.append(
+                    f"corrected_net_mismatch:delta={net_delta:.2f}:tolerance={net_tolerance:.2f}"
+                )
 
+    basis = stream.get("money_basis")
+    if not stream.get("money_contract_valid"):
+        contract = "invalid_or_mixed_money_basis"
+    elif basis == FULL_POSITION_LIFECYCLE_ACTUAL_V1:
+        contract = "full_position_lifecycle_actual_v1"
+    elif basis == LEGACY_Q08_MONEY_BASIS:
+        contract = "one_entry_one_exit_duplicate_closing_commission"
+    else:
+        contract = "invalid_or_mixed_money_basis"
     return {
         "ea_id": int(ea_id),
         "symbol": symbol.upper(),
         "status": "PASS" if not reasons else "FAIL",
         "reasons": reasons,
-        "contract": "one_entry_one_exit_duplicate_closing_commission",
+        "contract": contract,
         "count_delta": count_delta,
         "corrected_net_delta": round(net_delta, 6) if net_delta is not None else None,
         "net_tolerance": round(net_tolerance, 6) if net_tolerance is not None else None,

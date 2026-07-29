@@ -28,7 +28,9 @@ class P2PrescreenPolicyTests(unittest.TestCase):
         }
         for phase, contract in (
             ("Q02", None),
+            ("Q02", "FTMO_BOOK3_FIDELITY_LADDER_V1"),
             ("Q02", "FTMO_BOOK3_FIDELITY_LADDER_V1_NEAR_MATCH"),
+            ("Q02", "FTMO_BOOK3_FIDELITY_LADDER_V2_FULL_LIFECYCLE_NET_NEAR_MATCH"),
             ("P2", farmctl.FTMO_BOOK3_FIDELITY_MEASUREMENT_CONTRACT),
         ):
             with self.subTest(phase=phase, contract=contract):

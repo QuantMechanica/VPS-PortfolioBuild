@@ -14,7 +14,7 @@
 ;==========================================================
 qm_ea_id=20181
 qm_magic_slot_offset=0
-qm_evidence_run_id=FTMO_BOOK3_20260729_V1_J0
+qm_evidence_run_id=FTMO_BOOK3_20260729_V2_J0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

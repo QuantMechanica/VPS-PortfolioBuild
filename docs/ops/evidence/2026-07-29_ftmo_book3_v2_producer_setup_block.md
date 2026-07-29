@@ -12,7 +12,7 @@ tester can establish honestly, and explicitly blocks the part it cannot.
 - `q08_trades` is rebuilt from the authoritative tester deal history as one
   schema-v2 row per fully closed position. Rows carry a shared run ID, stable
   position and entry/exit deal IDs, profit, swap, all entry/exit commissions,
-  zero/non-zero fee accounting, deal-bound component-labelled balance events,
+  an explicit zero fee, deal-bound component-labelled balance events,
   producer version `QM5_20181_FTMO_TRACE_V2`, and the legacy fields used by Q08
   and the singleton replay comparator.
 - `q08_equity` starts with `FTMO_JOINT_TRACE_META` and one
@@ -24,7 +24,7 @@ tester can establish honestly, and explicitly blocks the part it cannot.
   block. They remain useful for fidelity and diagnosis, but they cannot become
   FTMO money evidence by relabelling.
 - The evidence run identity is mandatory and exact. The governed rung sets bind
-  `FTMO_BOOK3_20260729_V1_J0`, `..._J1`, and `..._J2`. Empty, mismatched, or an
+  `FTMO_BOOK3_20260729_V2_J0`, `..._J1`, and `..._J2`. Empty, mismatched, or an
   impossible sleeve combination fails `OnInit`.
 
 This is expected to produce `SETUP_DATA_MISSING` at the money adapter, never a

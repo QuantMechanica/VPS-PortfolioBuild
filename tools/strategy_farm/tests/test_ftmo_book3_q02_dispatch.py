@@ -123,7 +123,12 @@ def test_exact_ftmo_book3_q02_contract_uses_full_immutable_window(
 
 @pytest.mark.parametrize(
     "contract",
-    [None, "FTMO_BOOK3_FIDELITY_LADDER_V1_NEAR_MATCH"],
+    [
+        None,
+        "FTMO_BOOK3_FIDELITY_LADDER_V1",
+        "FTMO_BOOK3_FIDELITY_LADDER_V1_NEAR_MATCH",
+        "FTMO_BOOK3_FIDELITY_LADDER_V2_FULL_LIFECYCLE_NET_NEAR_MATCH",
+    ],
 )
 def test_ordinary_and_near_match_q02_contracts_retain_prescreen(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, contract: str | None

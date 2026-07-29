@@ -1,6 +1,9 @@
 import datetime as dt
+import json
 import sys
 from pathlib import Path
+
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -90,6 +93,118 @@ def test_q08_round_trip_values_add_missing_entry_commission() -> None:
 
     assert net == 95.0
     assert mae == -45.0
+
+
+def test_q08_round_trip_values_use_marked_full_lifecycle_money_once() -> None:
+    net, mae = ftmo_phase1_mae.q08_round_trip_values(
+        {
+            "money_basis": "FULL_POSITION_LIFECYCLE_ACTUAL_V1",
+            "profit": 105.0,
+            "swap": 0.0,
+            "fee": 0.0,
+            "entry_commission": -3.0,
+            "exit_commission": -2.0,
+            "commission": -5.0,
+            "net": 100.0,
+            "mae_acct": -40.0,
+        }
+    )
+
+    assert net == 100.0
+    assert mae == -43.0
+
+
+def test_marked_mae_entry_commission_cannot_fall_below_lifecycle_net() -> None:
+    net, mae = ftmo_phase1_mae.q08_round_trip_values(
+        {
+            "money_basis": "FULL_POSITION_LIFECYCLE_ACTUAL_V1",
+            "profit": -95.0,
+            "swap": 0.0,
+            "fee": 0.0,
+            "entry_commission": -3.0,
+            "exit_commission": -2.0,
+            "commission": -5.0,
+            "net": -100.0,
+            "mae_acct": -100.0,
+        }
+    )
+
+    assert net == -100.0
+    assert mae == -100.0
+
+
+@pytest.mark.parametrize("basis", [None, "", "FULL_POSITION_LIFECYCLE_ACTUAL_V2"])
+def test_q08_round_trip_values_reject_unknown_explicit_basis(basis: object) -> None:
+    with pytest.raises(ftmo_phase1_mae.Q08MoneyBasisError):
+        ftmo_phase1_mae.q08_round_trip_values(
+            {"money_basis": basis, "net": 100.0, "mae_acct": -40.0}
+        )
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"entry_commission": None},
+        {"commission": -4.0},
+        {"net": 99.0},
+        {"mae_acct": float("nan")},
+    ],
+)
+def test_q08_round_trip_values_reject_malformed_marked_money(overrides: dict) -> None:
+    row = {
+        "money_basis": "FULL_POSITION_LIFECYCLE_ACTUAL_V1",
+        "profit": 105.0,
+        "swap": 0.0,
+        "fee": 0.0,
+        "entry_commission": -3.0,
+        "exit_commission": -2.0,
+        "commission": -5.0,
+        "net": 100.0,
+        "mae_acct": -40.0,
+    }
+    row.update(overrides)
+
+    with pytest.raises(ftmo_phase1_mae.Q08MoneyRowError):
+        ftmo_phase1_mae.q08_round_trip_values(row)
+
+
+def test_q08_round_trip_values_reject_marked_row_without_fee() -> None:
+    row = {
+        "money_basis": "FULL_POSITION_LIFECYCLE_ACTUAL_V1",
+        "profit": 105.0,
+        "swap": 0.0,
+        "entry_commission": -3.0,
+        "exit_commission": -2.0,
+        "commission": -5.0,
+        "net": 100.0,
+        "mae_acct": -40.0,
+    }
+
+    with pytest.raises(ftmo_phase1_mae.Q08MoneyRowError, match="missing fee"):
+        ftmo_phase1_mae.q08_round_trip_values(row)
+
+
+def test_load_trades_rejects_mixed_money_bases(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stream = tmp_path / "9001_NDX_DWX.jsonl"
+    rows = [
+        {"event": "TRADE_CLOSED", "net": 10.0, "mae_acct": -2.0, "entry_time": 1},
+        {
+            "event": "TRADE_CLOSED",
+            "money_basis": "FULL_POSITION_LIFECYCLE_ACTUAL_V1",
+            "net": 10.0,
+            "mae_acct": -2.0,
+            "entry_time": 2,
+        },
+    ]
+    stream.write_text(
+        "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
+    )
+    monkeypatch.setattr(ftmo_phase1_mae, "Q08", tmp_path)
+
+    with pytest.raises(ftmo_phase1_mae.Q08MoneyBasisError, match="mixed"):
+        ftmo_phase1_mae.load_trades(9001, "NDX.DWX")
 
 
 def test_continuous_calendar_days_include_idle_days() -> None:

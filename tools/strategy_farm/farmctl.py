@@ -3903,7 +3903,9 @@ Q02_TO_YEAR_BY_PERIOD: dict[str, int] = {
     "D1":  2024, "W1":  2024, "MN1": 2024,
 }
 Q02_SKIP_PRESCREEN_PERIODS: set[str] = {"D1", "W1", "MN1"}  # full run is cheap on slow TFs
-FTMO_BOOK3_FIDELITY_MEASUREMENT_CONTRACT = "FTMO_BOOK3_FIDELITY_LADDER_V1"
+FTMO_BOOK3_FIDELITY_MEASUREMENT_CONTRACT = (
+    "FTMO_BOOK3_FIDELITY_LADDER_V2_FULL_LIFECYCLE_NET"
+)
 # 2026-06-10 OWNER gate-acceleration #1 — frequency-aware prescreen guard:
 # cards expecting fewer than this many trades/year/symbol skip the 6-month
 # prescreen entirely (a seasonal/swing card can legitimately have 0 trades in

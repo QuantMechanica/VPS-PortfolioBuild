@@ -193,10 +193,10 @@ string QM20181ExpectedEvidenceRunId()
    if(!s0_enabled || (s2_enabled && !s1_enabled))
       return "";
    if(s2_enabled)
-      return "FTMO_BOOK3_20260729_V1_J2";
+      return "FTMO_BOOK3_20260729_V2_J2";
    if(s1_enabled)
-      return "FTMO_BOOK3_20260729_V1_J1";
-   return "FTMO_BOOK3_20260729_V1_J0";
+      return "FTMO_BOOK3_20260729_V2_J1";
+   return "FTMO_BOOK3_20260729_V2_J0";
   }
 
 bool QM20181EvidenceRunIdValid()

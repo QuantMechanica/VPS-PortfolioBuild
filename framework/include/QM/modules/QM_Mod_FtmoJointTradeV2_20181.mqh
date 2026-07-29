@@ -41,9 +41,11 @@ struct QM_FJ_TradeV2Lifecycle
    ulong    position_id;
    long     magic;
    string   symbol;
+   string   side;
    datetime entry_time;
    datetime close_time;
    double   entry_volume;
+   double   entry_price_volume_sum;
    double   exit_volume;
    double   profit;
    double   swap;
@@ -242,13 +244,16 @@ bool QM_FJ_TradeV2Prepare()
       const datetime deal_time =
          (datetime)HistoryDealGetInteger(deal, DEAL_TIME);
       const double volume = HistoryDealGetDouble(deal, DEAL_VOLUME);
+      const double price = HistoryDealGetDouble(deal, DEAL_PRICE);
       const double profit = HistoryDealGetDouble(deal, DEAL_PROFIT);
       const double swap = HistoryDealGetDouble(deal, DEAL_SWAP);
       const double commission = HistoryDealGetDouble(deal, DEAL_COMMISSION);
       const double fee = HistoryDealGetDouble(deal, DEAL_FEE);
 
+      const string side = QM_FrameworkQ08CanonicalSide(deal_type);
       if(position_id == 0 || deal_time <= 0 || volume <= 0.0 ||
          !MathIsValidNumber(volume) ||
+         side == "" || !MathIsValidNumber(price) || price <= 0.0 ||
          !QM_FJ_TradeV2IsCentExact(profit) ||
          !QM_FJ_TradeV2IsCentExact(swap) ||
          !QM_FJ_TradeV2IsCentExact(commission) ||
@@ -279,9 +284,11 @@ bool QM_FJ_TradeV2Prepare()
             rows[row_index].position_id = position_id;
             rows[row_index].magic = magic;
             rows[row_index].symbol = symbol;
+            rows[row_index].side = side;
             rows[row_index].entry_time = deal_time;
             rows[row_index].close_time = 0;
             rows[row_index].entry_volume = 0.0;
+            rows[row_index].entry_price_volume_sum = 0.0;
             rows[row_index].exit_volume = 0.0;
             rows[row_index].profit = 0.0;
             rows[row_index].swap = 0.0;
@@ -297,7 +304,8 @@ bool QM_FJ_TradeV2Prepare()
             rows[row_index].balance_events = "";
             rows[row_index].balance_event_count = 0;
            }
-         if(rows[row_index].magic != magic || rows[row_index].symbol != symbol)
+         if(rows[row_index].magic != magic || rows[row_index].symbol != symbol ||
+            rows[row_index].side != side)
            {
             QM_FJ_TradeV2Block("POSITION_MEMBER_CHANGED");
             break;
@@ -307,6 +315,15 @@ bool QM_FJ_TradeV2Prepare()
              deal_time < rows[row_index].entry_time)
             ? deal_time : rows[row_index].entry_time;
          rows[row_index].entry_volume += volume;
+         rows[row_index].entry_price_volume_sum += price * volume;
+         if(!MathIsValidNumber(rows[row_index].entry_volume) ||
+            !MathIsValidNumber(rows[row_index].entry_price_volume_sum) ||
+            rows[row_index].entry_volume <= 0.0 ||
+            rows[row_index].entry_price_volume_sum <= 0.0)
+           {
+            QM_FJ_TradeV2Block("ENTRY_PRICE_OR_VOLUME_AGGREGATE_INVALID");
+            break;
+           }
          rows[row_index].commission = QM_FJ_TradeV2Cents(
             rows[row_index].commission + commission);
          rows[row_index].entry_commission = QM_FJ_TradeV2Cents(
@@ -341,7 +358,7 @@ bool QM_FJ_TradeV2Prepare()
          rows[row_index].commission + commission);
       rows[row_index].exit_commission = QM_FJ_TradeV2Cents(
          rows[row_index].exit_commission + commission);
-      rows[row_index].close_price = HistoryDealGetDouble(deal, DEAL_PRICE);
+      rows[row_index].close_price = price;
       rows[row_index].last_exit_deal = deal;
       QM_FJ_TradeV2AppendId(rows[row_index].exit_deal_ids,
                             rows[row_index].exit_count,
@@ -388,6 +405,11 @@ bool QM_FJ_TradeV2Prepare()
       if(rows[i].entry_count <= 0 || rows[i].exit_count != 1 ||
          rows[i].last_exit_deal == 0 ||
          rows[i].entry_time <= 0 || rows[i].close_time <= rows[i].entry_time ||
+         rows[i].side == "" ||
+         !MathIsValidNumber(rows[i].entry_volume) || rows[i].entry_volume <= 0.0 ||
+         !MathIsValidNumber(rows[i].entry_price_volume_sum) ||
+         rows[i].entry_price_volume_sum <= 0.0 ||
+         !MathIsValidNumber(rows[i].close_price) || rows[i].close_price <= 0.0 ||
          MathAbs(rows[i].entry_volume - rows[i].exit_volume) > tolerance ||
          QM_FJ_TradeV2PositionStillOpen(rows[i].position_id))
         {
@@ -408,6 +430,18 @@ bool QM_FJ_TradeV2Prepare()
       const double net = QM_FJ_TradeV2Cents(rows[i].profit + rows[i].swap +
                                             rows[i].commission);
       mae = MathMin(MathMin(0.0, mae), net);
+      const double entry_price =
+         rows[i].entry_price_volume_sum / rows[i].entry_volume;
+      if(!MathIsValidNumber(entry_price) || entry_price <= 0.0)
+        {
+         QM_FJ_TradeV2Block("POSITION_ENTRY_PRICE_INVALID");
+         g_qm_fj_trade_v2_payload = "";
+         return false;
+        }
+      const string entry_price_json =
+         QM_FrameworkQ08StablePriceJson(entry_price);
+      const string exit_price_json =
+         QM_FrameworkQ08StablePriceJson(rows[i].close_price);
       const double notional = QM_FrameworkDealNotionalAccount(
          rows[i].last_exit_deal,
          rows[i].symbol,
@@ -426,7 +460,9 @@ bool QM_FJ_TradeV2Prepare()
          "\"position_fully_closed\":true,"
          "\"position_id\":%I64u,\"entry_deal_ids\":[%s],"
          "\"exit_deal_ids\":[%s],\"magic\":%I64d,"
-         "\"symbol\":\"%s\",\"entry_time\":%I64d,\"time\":%I64d,"
+         "\"symbol\":\"%s\",\"side\":\"%s\","
+         "\"entry_price\":%s,\"exit_price\":%s,"
+         "\"entry_time\":%I64d,\"time\":%I64d,"
          "\"profit\":%.2f,\"swap\":%.2f,\"commission\":%.2f,"
          "\"entry_commission\":%.2f,\"exit_commission\":%.2f,\"fee\":0.00,"
          "\"net\":%.2f,\"balance_events\":[%s],"
@@ -438,6 +474,9 @@ bool QM_FJ_TradeV2Prepare()
          rows[i].exit_deal_ids,
          rows[i].magic,
          QM_LoggerEscapeJson(rows[i].symbol),
+         rows[i].side,
+         entry_price_json,
+         exit_price_json,
          (long)rows[i].entry_time,
          (long)rows[i].close_time,
          rows[i].profit,

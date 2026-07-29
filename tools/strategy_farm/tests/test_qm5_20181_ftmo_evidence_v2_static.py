@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from tools.strategy_farm.portfolio import ftmo_joint_output_adapter as adapter
@@ -29,6 +30,12 @@ TRADES = (
     / "modules"
     / "QM_Mod_FtmoJointTradeV2_20181.mqh"
 )
+BOOK3_STANDALONES = {
+    "9936": REPO / "framework" / "EAs" / "QM5_9936_ff-range-breakout-gmt3-h1" / "QM5_9936_ff-range-breakout-gmt3-h1.mq5",
+    "10145": REPO / "framework" / "EAs" / "QM5_10145_tsm-meanret" / "QM5_10145_tsm-meanret.mq5",
+    "13108": REPO / "framework" / "EAs" / "QM5_13108_xti-mtsm-s2" / "QM5_13108_xti-mtsm-s2.mq5",
+}
+JOINT_RANGE = REPO / "framework" / "include" / "QM" / "modules" / "QM_Mod_FtmoJointRangeBreakout_20180.mqh"
 SETS = {
     "J0": EA_DIR
     / "sets"
@@ -50,6 +57,12 @@ def _compact(value: str) -> str:
     return "".join(value.split())
 
 
+def _executable_source(path: Path) -> str:
+    source = _source(path)
+    source = re.sub(r"/\*.*?\*/", "", source, flags=re.DOTALL)
+    return re.sub(r"//[^\r\n]*", "", source)
+
+
 def _set_values(path: Path) -> dict[str, str]:
     values: dict[str, str] = {}
     for raw_line in _source(path).splitlines():
@@ -66,14 +79,14 @@ def test_evidence_run_identity_is_mandatory_and_exactly_rung_bound() -> None:
 
     assert 'inputstringqm_evidence_run_id="";' in source
     assert "if(!QM20181EvidenceRunIdValid())" in source
-    assert 'return"FTMO_BOOK3_20260729_V1_J0";' in source
-    assert 'return"FTMO_BOOK3_20260729_V1_J1";' in source
-    assert 'return"FTMO_BOOK3_20260729_V1_J2";' in source
+    assert 'return"FTMO_BOOK3_20260729_V2_J0";' in source
+    assert 'return"FTMO_BOOK3_20260729_V2_J1";' in source
+    assert 'return"FTMO_BOOK3_20260729_V2_J2";' in source
     assert "qm_evidence_run_id==expected" in source
 
     for rung, path in SETS.items():
         values = _set_values(path)
-        assert values["qm_evidence_run_id"] == f"FTMO_BOOK3_20260729_V1_{rung}"
+        assert values["qm_evidence_run_id"] == f"FTMO_BOOK3_20260729_V2_{rung}"
 
 
 def test_equity_v2_is_an_explicit_setup_block_not_a_false_attestation() -> None:
@@ -135,6 +148,11 @@ def test_trade_v2_is_history_based_complete_lifecycle_evidence() -> None:
     ):
         assert required_field in source
 
+    for strict_identity_field in ("side", "entry_price", "exit_price"):
+        assert strict_identity_field in source
+    assert "QM_FrameworkQ08CanonicalSide" in source
+    assert "QM_FrameworkQ08StablePriceJson" in source
+
     # Existing replay/Q08 consumers still receive their required legacy fields.
     for legacy_field in (
         '\\"event\\\":\\"TRADE_CLOSED\\"',
@@ -153,6 +171,41 @@ def test_trade_v2_is_history_based_complete_lifecycle_evidence() -> None:
     assert '"PROFIT"' in source
     assert '"SWAP"' in source
     assert '\\"deal_id\\\"' in source
+
+
+def test_book3_trade_cardinality_is_single_exit_and_scale_in_guarded() -> None:
+    joint_ea = _executable_source(EA)
+    joint_range = _executable_source(JOINT_RANGE)
+    standalones = {
+        key: _executable_source(path) for key, path in BOOK3_STANDALONES.items()
+    }
+
+    # These exact sleeves have no executable partial-close path. Full closes,
+    # SL and TP produce one exit in the deterministic tester; the evidence
+    # producer still fails closed if that invariant is ever broken.
+    for source in (*standalones.values(), joint_ea, joint_range):
+        assert "QM_TM_PartialClose(" not in source
+        assert "PositionClosePartial(" not in source
+    assert "rows[i].exit_count != 1" in _source(TRADES)
+
+    assert (
+        "if(Strategy_HasOurOpenPosition()||Strategy_HasOurPendingOrders())returnfalse;"
+        in _compact(standalones["9936"])
+    )
+    assert (
+        "if((int)PositionGetInteger(POSITION_MAGIC)!=magic)continue;returnfalse;"
+        in _compact(standalones["10145"])
+    )
+    assert "if(Strategy_HasOpenPosition())returnfalse;" in _compact(
+        standalones["13108"]
+    )
+    assert (
+        "if(QM_FJ_RB_HasOurOpenPosition(p)||QM_FJ_RB_HasOurPendingOrders(p))return;"
+        in _compact(joint_range)
+    )
+    assert _compact(joint_ea).count(
+        "if(QM20181_HasPosition(sat,ticket))return;"
+    ) >= 2
 
 
 def test_v2_prepares_before_framework_state_is_cleared_and_commits_after_close() -> None:
@@ -184,8 +237,8 @@ def test_declared_equity_coverage_gap_reaches_the_intended_adapter_block() -> No
         "event": adapter.EQUITY_META_EVENT,
         "schema_version": adapter.ADAPTER_SCHEMA_VERSION,
         "q08_trade_schema_version": adapter.Q08_TRADE_SCHEMA_VERSION,
-        "trace_id": "FTMO_BOOK3_20260729_V1_J0",
-        "run_id": "FTMO_BOOK3_20260729_V1_J0",
+        "trace_id": "FTMO_BOOK3_20260729_V2_J0",
+        "run_id": "FTMO_BOOK3_20260729_V2_J0",
         "producer_version": "QM5_20181_FTMO_TRACE_V2",
         "currency": "USD",
         "grid_seconds": 3600,
@@ -208,14 +261,14 @@ def test_declared_equity_coverage_gap_reaches_the_intended_adapter_block() -> No
     blocked_point = {
         "event": adapter.EQUITY_POINT_EVENT,
         "schema_version": adapter.ADAPTER_SCHEMA_VERSION,
-        "trace_id": "FTMO_BOOK3_20260729_V1_J0",
-        "run_id": "FTMO_BOOK3_20260729_V1_J0",
+        "trace_id": "FTMO_BOOK3_20260729_V2_J0",
+        "run_id": "FTMO_BOOK3_20260729_V2_J0",
         "producer_version": "QM5_20181_FTMO_TRACE_V2",
         "coverage_complete": False,
     }
     provenance = adapter.ProvenanceBinding(
         work_item_id="ftmo-book3-static-fixture",
-        evidence_run_id="FTMO_BOOK3_20260729_V1_J0",
+        evidence_run_id="FTMO_BOOK3_20260729_V2_J0",
         producer_version="QM5_20181_FTMO_TRACE_V2",
         runner_receipt_path="receipt.json",
         runner_receipt_sha256="c" * 64,

@@ -19,7 +19,7 @@ Block-bootstrap over calendar days gives P(pass) for a given horizon. Scale per 
 Stufe-2 (exact) would need per-bar portfolio equity; this is the conservative Stufe-1.
 """
 from __future__ import annotations
-import json, glob, os, re, random, collections, statistics, datetime as dt, argparse, csv
+import json, glob, os, re, random, collections, statistics, datetime as dt, argparse, csv, math
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -32,6 +32,91 @@ TARGET = START * 1.10
 EPSILON = 1e-9
 FTMO_TZ = ZoneInfo("Europe/Prague")
 SYMMAP = {"US100": "NDX", "GER40": "GDAXI", "USOIL": "XTIUSD"}
+LEGACY_Q08_MONEY_BASIS = "LEGACY_ONE_ENTRY_ONE_EXIT_CLOSE_COMMISSION_V0"
+FULL_POSITION_LIFECYCLE_ACTUAL_V1 = "FULL_POSITION_LIFECYCLE_ACTUAL_V1"
+FULL_LIFECYCLE_FEE_TOLERANCE = 0.005
+
+
+class Q08MoneyBasisError(ValueError):
+    """The row declares an unsupported or malformed Q08 money basis."""
+
+
+class Q08MoneyRowError(ValueError):
+    """The row does not satisfy its declared Q08 money-basis contract."""
+
+
+def q08_money_basis(row):
+    """Return the explicit basis, or the historical basis for an unmarked row.
+
+    Absence is the only legacy discriminator.  An explicit null, empty string, or
+    unknown marker is not legacy evidence and therefore fails closed.
+    """
+    if "money_basis" not in row:
+        return LEGACY_Q08_MONEY_BASIS
+    basis = row["money_basis"]
+    if basis != FULL_POSITION_LIFECYCLE_ACTUAL_V1:
+        raise Q08MoneyBasisError(f"unsupported q08 money_basis: {basis!r}")
+    return basis
+
+
+def q08_stream_money_basis(rows):
+    """Return one homogeneous trade-stream basis, failing closed on mixtures."""
+    bases = {
+        q08_money_basis(row)
+        for row in rows
+        if str(row.get("event") or "TRADE_CLOSED") == "TRADE_CLOSED"
+    }
+    if len(bases) > 1:
+        raise Q08MoneyBasisError(
+            "mixed q08 money_basis values: " + ",".join(sorted(bases))
+        )
+    return next(iter(bases), None)
+
+
+def _marked_money_number(row, field):
+    if field not in row:
+        raise Q08MoneyRowError(f"marked q08 row missing {field}")
+    value = row[field]
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise Q08MoneyRowError(f"marked q08 row has non-numeric {field}")
+    number = float(value)
+    if not math.isfinite(number):
+        raise Q08MoneyRowError(f"marked q08 row has non-finite {field}")
+    return number
+
+
+def _full_lifecycle_money_values(row):
+    values = {
+        field: _marked_money_number(row, field)
+        for field in (
+            "profit",
+            "swap",
+            "fee",
+            "entry_commission",
+            "exit_commission",
+            "commission",
+            "net",
+        )
+    }
+    # MAE is required and finite for this consumer, but it is deliberately not
+    # part of the versioned full-lifecycle money identity above.
+    values["mae_acct"] = _marked_money_number(row, "mae_acct")
+    expected_commission = values["entry_commission"] + values["exit_commission"]
+    if not math.isclose(
+        values["commission"], expected_commission, rel_tol=0.0, abs_tol=1e-6
+    ):
+        raise Q08MoneyRowError(
+            "marked q08 commission != entry_commission + exit_commission"
+        )
+    expected_net = values["profit"] + values["swap"] + values["commission"]
+    if abs(values["fee"]) > FULL_LIFECYCLE_FEE_TOLERANCE:
+        raise Q08MoneyRowError("marked q08 row has unsupported non-zero fee")
+    expected_net += values["fee"]
+    if not math.isclose(values["net"], expected_net, rel_tol=0.0, abs_tol=1e-6):
+        raise Q08MoneyRowError(
+            "marked q08 net != profit + swap + commission + fee"
+        )
+    return values
 
 
 def load_ftmo_book():
@@ -66,16 +151,34 @@ def load_trades(ea, sym):
         if "mae_acct" in o and "entry_time" in o:
             fresh = True
         rows.append(o)
+    q08_stream_money_basis(rows)
     return rows, fresh
 
 
 def q08_round_trip_values(row):
-    """Return report-reconciled net and MAE including the missing entry commission.
+    """Return report-reconciled net and MAE for either supported Q08 schema.
 
-    Q08 emits the closing deal commission only. For the fixed-volume, one-entry/
-    one-exit streams used here, adding the same per-side commission once more
-    reconciles stream net exactly to MT5 report Net Profit.
+    Historical unmarked rows contain only closing-side commission, so their
+    fixed-volume one-entry/one-exit correction is retained.  Marked lifecycle-v1
+    rows already contain actual entry and exit commission in ``net`` and must
+    not be charged a second time.  Their ``mae_acct`` remains the framework's
+    floating-MAE measure (with the producer's close-loss cap), not a versioned
+    full-lifecycle commission measure.  The consumer adds only the row's actual
+    allocated entry commission to obtain conservative account MAE; exit
+    commission is already represented by the close-loss cap when relevant.
     """
+    basis = q08_money_basis(row)
+    if basis == FULL_POSITION_LIFECYCLE_ACTUAL_V1:
+        values = _full_lifecycle_money_values(row)
+        net = values["net"]
+        mae = min(0.0, values["mae_acct"] + values["entry_commission"])
+        # The lifecycle-v1 producer already caps mae_acct at the full-lifecycle
+        # net.  Adding entry commission is conservative only until it would
+        # count that cost twice and push MAE below the realized lifecycle loss.
+        if net < 0.0:
+            mae = max(net, mae)
+        return net, mae
+
     close_commission = float(row.get("commission", 0.0))
     net = float(row["net"]) + close_commission
     mae = min(0.0, float(row.get("mae_acct", 0.0)) + close_commission, net)

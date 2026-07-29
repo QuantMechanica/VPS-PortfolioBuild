@@ -18,9 +18,19 @@ from pathlib import Path
 from typing import Iterable
 
 try:
-    from .ftmo_phase1_mae import Q08, ftmo_calendar_day, q08_round_trip_values
+    from .ftmo_phase1_mae import (
+        Q08,
+        ftmo_calendar_day,
+        q08_round_trip_values,
+        q08_stream_money_basis,
+    )
 except ImportError:  # direct script execution
-    from ftmo_phase1_mae import Q08, ftmo_calendar_day, q08_round_trip_values
+    from ftmo_phase1_mae import (
+        Q08,
+        ftmo_calendar_day,
+        q08_round_trip_values,
+        q08_stream_money_basis,
+    )
 
 
 def _number(value: object) -> float | None:
@@ -32,7 +42,7 @@ def _number(value: object) -> float | None:
 
 
 def load_closed_trades(path: Path) -> list[dict]:
-    rows: list[dict] = []
+    source_rows: list[dict] = []
     with path.open(encoding="utf-8") as handle:
         for line in handle:
             try:
@@ -41,21 +51,26 @@ def load_closed_trades(path: Path) -> list[dict]:
                 continue
             if row.get("event") not in (None, "TRADE_CLOSED"):
                 continue
-            net = _number(row.get("net"))
-            close_time = _number(row.get("time"))
-            entry_time = _number(row.get("entry_time"))
-            mae_acct = _number(row.get("mae_acct"))
-            if None in (net, close_time, entry_time, mae_acct):
-                continue
-            corrected_net, corrected_mae = q08_round_trip_values(row)
-            rows.append(
-                {
-                    "net": corrected_net,
-                    "time": close_time,
-                    "entry_time": entry_time,
-                    "mae_acct": corrected_mae,
-                }
-            )
+            source_rows.append(row)
+
+    q08_stream_money_basis(source_rows)
+    rows: list[dict] = []
+    for row in source_rows:
+        net = _number(row.get("net"))
+        close_time = _number(row.get("time"))
+        entry_time = _number(row.get("entry_time"))
+        mae_acct = _number(row.get("mae_acct"))
+        if None in (net, close_time, entry_time, mae_acct):
+            continue
+        corrected_net, corrected_mae = q08_round_trip_values(row)
+        rows.append(
+            {
+                "net": corrected_net,
+                "time": close_time,
+                "entry_time": entry_time,
+                "mae_acct": corrected_mae,
+            }
+        )
     return rows
 
 
@@ -115,7 +130,10 @@ def analyze_rows(
         "annual_net_at_internal_daily_limit": round(annual_net * daily_scale_cap, 2),
         "median_hold_hours": round(statistics.median(hold_hours), 2),
         "max_hold_hours": round(max(hold_hours), 2),
-        "method": "lifetime_mae_plus_entry_commission_summed_on_each_spanned_cest_day",
+        "method": (
+            "lifetime_floating_mae_plus_basis_aware_entry_commission_"
+            "summed_on_each_spanned_cest_day"
+        ),
     }
 
 

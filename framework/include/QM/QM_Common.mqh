@@ -94,6 +94,28 @@ struct QM_PositionMaeState
 QM_PositionMaeState g_qm_q08_mae_states[];       // MAE of currently-open positions (swept on close)
 QM_PositionMaeState g_qm_q08_mae_closed[];       // archived MAE of closed positions, kept for the OnDeinit history walk
 
+// Authoritative money ownership for the legacy Q08 stream. A position can have
+// multiple IN deals (scale-ins) and multiple OUT / OUT_BY deals (partial exits),
+// so entry-side commission cannot be recovered from a closing deal in isolation.
+struct QM_FrameworkQ08Lifecycle
+  {
+   ulong    position_id;
+   long     magic;
+   string   symbol;
+   string   side;
+   datetime entry_time;
+   double   entry_volume;
+   double   entry_price_volume_sum;
+   double   entry_commission;
+   double   exit_volume;
+   double   validated_entry_volume;
+   double   validated_exit_volume;
+   double   allocated_exit_volume;
+   double   allocated_entry_commission;
+   int      entry_count;
+   int      exit_count;
+  };
+
 string QM_FrameworkSlug(const int ea_id)
   {
    return StringFormat("ea-%04d", ea_id);
@@ -1039,76 +1061,661 @@ double QM_FrameworkQ08LookupMae(const ulong position_id, datetime &entry_time_ou
    return 0.0;
   }
 
+int QM_FrameworkQ08LifecycleIndex(const QM_FrameworkQ08Lifecycle &rows[],
+                                  const ulong position_id)
+  {
+   const int count = ArraySize(rows);
+   for(int i = 0; i < count; ++i)
+      if(rows[i].position_id == position_id)
+         return i;
+   return -1;
+  }
+
+double QM_FrameworkQ08MoneyRound(const double value)
+  {
+   return MathRound(value * 100.0) / 100.0;
+  }
+
+string QM_FrameworkQ08CanonicalSide(const long deal_type)
+  {
+   if(deal_type == DEAL_TYPE_BUY)
+      return "BUY";
+   if(deal_type == DEAL_TYPE_SELL)
+      return "SELL";
+   return "";
+  }
+
+string QM_FrameworkQ08StablePriceJson(const double value)
+  {
+   // Both standalone and joint producers call this helper. Sixteen fixed
+   // decimals retain all meaningful MT5 symbol precision while producing one
+   // locale-independent, deterministic JSON number representation.
+   return DoubleToString(value, 16);
+  }
+
+bool QM_FrameworkQ08MoneyCentExact(const double value)
+  {
+   return MathIsValidNumber(value) &&
+          MathAbs(value - QM_FrameworkQ08MoneyRound(value)) <= 0.0000001;
+  }
+
+double QM_FrameworkQ08VolumeTolerance(const string symbol)
+  {
+   const double step = SymbolInfoDouble(symbol, SYMBOL_VOLUME_STEP);
+   if(!MathIsValidNumber(step) || step <= 0.0)
+      return 0.0000001;
+   return MathMax(0.0000001, step * 0.000001);
+  }
+
+void QM_FrameworkQ08RejectLifecycle(const string reason,
+                                    const ulong position_id,
+                                    const ulong deal_id)
+  {
+   // No valid row from this history walk may survive a lifecycle failure. The
+   // final target is replaced only after a complete validated temp stream, so
+   // clearing this in-memory buffer cannot expose a partial current-run file.
+   g_qm_q08_trade_log = "";
+   QM_LogEvent(
+      QM_ERROR,
+      "Q08_LIFECYCLE_INVALID",
+      StringFormat("{\"reason\":\"%s\",\"position_id\":%I64u,\"deal_id\":%I64u}",
+                   QM_LoggerEscapeJson(reason), position_id, deal_id));
+  }
+
+bool QM_FrameworkQ08WriteTempChunk(const int handle,
+                                   long &bytes_written)
+  {
+   const int length = StringLen(g_qm_q08_trade_log);
+   if(length == 0)
+      return true;
+   ResetLastError();
+   const uint written = FileWriteString(handle, g_qm_q08_trade_log);
+   if((int)written != length)
+      return false;
+   bytes_written += (long)written;
+   g_qm_q08_trade_log = "";
+   return true;
+  }
+
+bool QM_FrameworkQ08AllocateEntryCommission(QM_FrameworkQ08Lifecycle &row,
+                                            const double exit_volume,
+                                            double &entry_commission_out)
+  {
+   entry_commission_out = 0.0;
+   if(!MathIsValidNumber(exit_volume) || exit_volume <= 0.0 ||
+      !MathIsValidNumber(row.entry_volume) || row.entry_volume <= 0.0 ||
+      !MathIsValidNumber(row.entry_commission))
+      return false;
+
+   const double tolerance = QM_FrameworkQ08VolumeTolerance(row.symbol);
+   const double next_exit_volume = row.allocated_exit_volume + exit_volume;
+   if(!MathIsValidNumber(next_exit_volume) ||
+      next_exit_volume > row.entry_volume + tolerance)
+      return false;
+
+   const double total_entry_commission =
+      QM_FrameworkQ08MoneyRound(row.entry_commission);
+   const bool final_exit =
+      MathAbs(next_exit_volume - row.entry_volume) <= tolerance;
+   // Cumulative proportional targets avoid cent-rounding drift across many
+   // partial exits. The final exit receives the exact unallocated remainder.
+   const double target_allocated = final_exit
+      ? total_entry_commission
+      : QM_FrameworkQ08MoneyRound(
+           total_entry_commission * next_exit_volume / row.entry_volume);
+   entry_commission_out = QM_FrameworkQ08MoneyRound(
+      target_allocated - row.allocated_entry_commission);
+   if(!MathIsValidNumber(target_allocated) ||
+      !MathIsValidNumber(entry_commission_out))
+      return false;
+
+   row.allocated_exit_volume = next_exit_volume;
+   row.allocated_entry_commission = target_allocated;
+   return true;
+  }
+
 // Rebuild the entire Q08 per-trade stream deterministically from the deal HISTORY at shutdown.
 // This is the authoritative source (matches the tester report by construction) — the previous
 // OnTradeTransaction event stream silently dropped closes the tester never delivered an event
-// for. One TRADE_CLOSED line per closing deal (OUT / OUT_BY / INOUT) owned by this EA, in deal
-// order, with the MAE looked up from the live-tracked arrays. Buffer is flushed at ~32 KB.
+// for. One TRADE_CLOSED line per OUT / OUT_BY deal owned by this EA is retained for legacy
+// consumers. Before any line is published, the full position lifecycle is validated and actual
+// IN commissions are allocated across partial exits. A bounded ~32 KB buffer is written to a
+// temp stream only after validation; the final Common\Files target is replaced in one move.
 void QM_FrameworkQ08EmitFromHistory()
   {
    if(!g_qm_fw_initialized)
       return;
    if(!HistorySelect(0, TimeCurrent()))
+     {
+      QM_FrameworkQ08RejectLifecycle("HISTORY_SELECT_FAILED", 0, 0);
       return;
-   const int total = HistoryDealsTotal();
-   // Pass 1: collect the position_ids this EA OPENED. The opening deal (IN / INOUT) reliably
-   // carries the EA magic. SL/TP-triggered CLOSING deals often carry DEAL_MAGIC 0, so ownership
-   // MUST be decided on the open — deciding it on the close silently drops every TP/SL exit
-   // (observed: 54/1762 closes with magic 0, all take-profit winners, $46.7k, on QM5_10546).
-   ulong owned_pos[];
-   long  owned_magic[];
-   for(int i = 0; i < total; ++i)
-     {
-      const ulong deal = HistoryDealGetTicket(i);
-      if(deal == 0)
-         continue;
-      const long entry = HistoryDealGetInteger(deal, DEAL_ENTRY);
-      if(entry != DEAL_ENTRY_IN && entry != DEAL_ENTRY_INOUT)
-         continue;
-      const long opening_magic = HistoryDealGetInteger(deal, DEAL_MAGIC);
-      if(!QM_FrameworkOwnsMagicSymbol(opening_magic,
-                                      HistoryDealGetString(deal, DEAL_SYMBOL)))
-         continue;
-      const int n = ArraySize(owned_pos);
-      ArrayResize(owned_pos, n + 1);
-      ArrayResize(owned_magic, n + 1);
-      owned_pos[n] = (ulong)HistoryDealGetInteger(deal, DEAL_POSITION_ID);
-      owned_magic[n] = opening_magic;
      }
-   // Pass 2: emit one TRADE_CLOSED line per closing deal of a position we opened.
+   const int total = HistoryDealsTotal();
+   QM_FrameworkQ08Lifecycle lifecycles[];
+   bool lifecycle_invalid = false;
+   string lifecycle_reason = "";
+   ulong lifecycle_position = 0;
+   ulong lifecycle_deal = 0;
+
+   // Pass 1: collect every owned IN deal. The opening deal reliably carries
+   // the EA magic; SL/TP exits often carry DEAL_MAGIC 0. Grouping by
+   // DEAL_POSITION_ID makes scale-ins one lifecycle and preserves the earliest
+   // entry time plus the actual sum of all entry commissions.
    for(int i = 0; i < total; ++i)
      {
       const ulong deal = HistoryDealGetTicket(i);
       if(deal == 0)
-         continue;
+        {
+         lifecycle_invalid = true;
+         lifecycle_reason = "HISTORY_DEAL_TICKET_ZERO";
+         break;
+        }
       const long entry = HistoryDealGetInteger(deal, DEAL_ENTRY);
-      if(entry != DEAL_ENTRY_OUT && entry != DEAL_ENTRY_OUT_BY && entry != DEAL_ENTRY_INOUT)
+      const ulong position_id =
+         (ulong)HistoryDealGetInteger(deal, DEAL_POSITION_ID);
+      const string symbol = HistoryDealGetString(deal, DEAL_SYMBOL);
+      const long magic = HistoryDealGetInteger(deal, DEAL_MAGIC);
+      int row_index = QM_FrameworkQ08LifecycleIndex(lifecycles, position_id);
+
+      if(entry == DEAL_ENTRY_INOUT)
+        {
+         if(row_index >= 0 || QM_FrameworkOwnsMagicSymbol(magic, symbol))
+           {
+            lifecycle_invalid = true;
+            lifecycle_reason = "INOUT_REVERSAL_UNSUPPORTED";
+            lifecycle_position = position_id;
+            lifecycle_deal = deal;
+            break;
+           }
          continue;
-      const ulong pos_id = (ulong)HistoryDealGetInteger(deal, DEAL_POSITION_ID);
-      bool owned = false;
-      long opening_magic = 0;
-      for(int k = ArraySize(owned_pos) - 1; k >= 0; --k)
-         if(owned_pos[k] == pos_id) { owned = true; opening_magic = owned_magic[k]; break; }
-      if(!owned)
+        }
+      if(entry != DEAL_ENTRY_IN)
          continue;
-      const string sym        = HistoryDealGetString(deal, DEAL_SYMBOL);
-      const double profit     = HistoryDealGetDouble(deal, DEAL_PROFIT);
-      const double swap       = HistoryDealGetDouble(deal, DEAL_SWAP);
+
+      if(!QM_FrameworkOwnsMagicSymbol(magic, symbol))
+        {
+         // A later foreign scale-in on an already-owned netting position makes
+         // its money attribution ambiguous; never publish a partial truth.
+         if(row_index >= 0)
+           {
+            lifecycle_invalid = true;
+            lifecycle_reason = "OWNED_POSITION_FOREIGN_SCALE_IN";
+            lifecycle_position = position_id;
+            lifecycle_deal = deal;
+            break;
+           }
+         continue;
+        }
+
+      const datetime deal_time =
+         (datetime)HistoryDealGetInteger(deal, DEAL_TIME);
+      const long deal_type = HistoryDealGetInteger(deal, DEAL_TYPE);
+      const string side = QM_FrameworkQ08CanonicalSide(deal_type);
+      const double volume = HistoryDealGetDouble(deal, DEAL_VOLUME);
+      const double price = HistoryDealGetDouble(deal, DEAL_PRICE);
       const double commission = HistoryDealGetDouble(deal, DEAL_COMMISSION);
-      const double net        = profit + swap + commission;
-      const double vol        = HistoryDealGetDouble(deal, DEAL_VOLUME);
-      const double price      = HistoryDealGetDouble(deal, DEAL_PRICE);
-      const double notional   = QM_FrameworkDealNotionalAccount(deal, sym, vol, price);
-      const long   d_t        = (long)HistoryDealGetInteger(deal, DEAL_TIME);
-      datetime entry_time = 0;
-      double mae_acct = QM_FrameworkQ08LookupMae(pos_id, entry_time);
-      entry_time = QM_FrameworkMaeFindEntryTimeInHistory(pos_id, entry_time > 0 ? entry_time : (datetime)d_t);
+      const double profit = HistoryDealGetDouble(deal, DEAL_PROFIT);
+      const double swap = HistoryDealGetDouble(deal, DEAL_SWAP);
+      const double fee = HistoryDealGetDouble(deal, DEAL_FEE);
+      if(position_id == 0 || symbol == "" || magic <= 0 || deal_time <= 0 ||
+         side == "" || !MathIsValidNumber(price) || price <= 0.0 ||
+         !MathIsValidNumber(volume) || volume <= 0.0 ||
+         !QM_FrameworkQ08MoneyCentExact(commission) ||
+         !QM_FrameworkQ08MoneyCentExact(profit) ||
+         !QM_FrameworkQ08MoneyCentExact(swap) ||
+         !QM_FrameworkQ08MoneyCentExact(fee) ||
+         MathAbs(profit) > 0.0000001 || MathAbs(swap) > 0.0000001 ||
+         MathAbs(fee) > 0.0000001)
+        {
+         lifecycle_invalid = true;
+         lifecycle_reason = "ENTRY_IDENTITY_VOLUME_OR_MONEY_INVALID";
+         lifecycle_position = position_id;
+         lifecycle_deal = deal;
+         break;
+        }
+
+      if(row_index < 0)
+        {
+         const int count = ArraySize(lifecycles);
+         ArrayResize(lifecycles, count + 1);
+         row_index = count;
+         lifecycles[row_index].position_id = position_id;
+         lifecycles[row_index].magic = magic;
+         lifecycles[row_index].symbol = symbol;
+         lifecycles[row_index].side = side;
+         lifecycles[row_index].entry_time = deal_time;
+         lifecycles[row_index].entry_volume = 0.0;
+         lifecycles[row_index].entry_price_volume_sum = 0.0;
+         lifecycles[row_index].entry_commission = 0.0;
+         lifecycles[row_index].exit_volume = 0.0;
+         lifecycles[row_index].validated_entry_volume = 0.0;
+         lifecycles[row_index].validated_exit_volume = 0.0;
+         lifecycles[row_index].allocated_exit_volume = 0.0;
+         lifecycles[row_index].allocated_entry_commission = 0.0;
+         lifecycles[row_index].entry_count = 0;
+         lifecycles[row_index].exit_count = 0;
+        }
+      else if(lifecycles[row_index].magic != magic ||
+              lifecycles[row_index].symbol != symbol ||
+              lifecycles[row_index].side != side)
+        {
+         lifecycle_invalid = true;
+         lifecycle_reason = "POSITION_ENTRY_IDENTITY_CHANGED";
+         lifecycle_position = position_id;
+         lifecycle_deal = deal;
+         break;
+        }
+
+      if(deal_time < lifecycles[row_index].entry_time)
+         lifecycles[row_index].entry_time = deal_time;
+      lifecycles[row_index].entry_volume += volume;
+      lifecycles[row_index].entry_price_volume_sum += price * volume;
+      lifecycles[row_index].entry_commission += commission;
+      ++lifecycles[row_index].entry_count;
+      if(!MathIsValidNumber(lifecycles[row_index].entry_volume) ||
+         !MathIsValidNumber(lifecycles[row_index].entry_price_volume_sum) ||
+         !MathIsValidNumber(lifecycles[row_index].entry_commission))
+        {
+         lifecycle_invalid = true;
+         lifecycle_reason = "ENTRY_AGGREGATE_INVALID";
+         lifecycle_position = position_id;
+         lifecycle_deal = deal;
+         break;
+        }
+     }
+
+   if(lifecycle_invalid)
+     {
+      QM_FrameworkQ08RejectLifecycle(lifecycle_reason,
+                                     lifecycle_position,
+                                     lifecycle_deal);
+      return;
+     }
+   const int lifecycle_count = ArraySize(lifecycles);
+   if(lifecycle_count == 0)
+      return;
+
+   double notional_by_history[];
+   ArrayResize(notional_by_history, total);
+   ArrayInitialize(notional_by_history, 0.0);
+   int lifecycle_index_by_history[];
+   ArrayResize(lifecycle_index_by_history, total);
+   ArrayInitialize(lifecycle_index_by_history, -1);
+   long deal_time_by_history[];
+   ArrayResize(deal_time_by_history, total);
+   ArrayInitialize(deal_time_by_history, 0);
+   double profit_by_history[];
+   double swap_by_history[];
+   double exit_commission_by_history[];
+   double volume_by_history[];
+   double exit_price_by_history[];
+   ArrayResize(profit_by_history, total);
+   ArrayResize(swap_by_history, total);
+   ArrayResize(exit_commission_by_history, total);
+   ArrayResize(volume_by_history, total);
+   ArrayResize(exit_price_by_history, total);
+   ArrayInitialize(profit_by_history, 0.0);
+   ArrayInitialize(swap_by_history, 0.0);
+   ArrayInitialize(exit_commission_by_history, 0.0);
+   ArrayInitialize(volume_by_history, 0.0);
+   ArrayInitialize(exit_price_by_history, 0.0);
+
+   // Pass 2: validate every relevant exit and the final volume balance. No
+   // stream output occurs here. OUT_BY is a normal closing leg; INOUT is an
+   // ambiguous close+open reversal and blocks the entire stream.
+   for(int i = 0; i < total; ++i)
+     {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0)
+        {
+         lifecycle_invalid = true;
+         lifecycle_reason = "HISTORY_DEAL_TICKET_ZERO";
+         break;
+        }
+      const long entry = HistoryDealGetInteger(deal, DEAL_ENTRY);
+      const ulong position_id =
+         (ulong)HistoryDealGetInteger(deal, DEAL_POSITION_ID);
+      const string symbol = HistoryDealGetString(deal, DEAL_SYMBOL);
+      const long magic = HistoryDealGetInteger(deal, DEAL_MAGIC);
+      const int row_index =
+         QM_FrameworkQ08LifecycleIndex(lifecycles, position_id);
+
+      if(entry == DEAL_ENTRY_INOUT)
+        {
+         if(row_index >= 0 || QM_FrameworkOwnsMagicSymbol(magic, symbol))
+           {
+            lifecycle_invalid = true;
+            lifecycle_reason = "INOUT_REVERSAL_UNSUPPORTED";
+            lifecycle_position = position_id;
+            lifecycle_deal = deal;
+            break;
+           }
+         continue;
+        }
+      if(entry == DEAL_ENTRY_IN)
+        {
+         if(row_index >= 0)
+           {
+            const long deal_type = HistoryDealGetInteger(deal, DEAL_TYPE);
+            const string side = QM_FrameworkQ08CanonicalSide(deal_type);
+            const double volume = HistoryDealGetDouble(deal, DEAL_VOLUME);
+            const double price = HistoryDealGetDouble(deal, DEAL_PRICE);
+            const double tolerance =
+               QM_FrameworkQ08VolumeTolerance(lifecycles[row_index].symbol);
+            if(magic != lifecycles[row_index].magic ||
+               symbol != lifecycles[row_index].symbol ||
+               side != lifecycles[row_index].side ||
+               !MathIsValidNumber(price) || price <= 0.0 ||
+               !MathIsValidNumber(volume) || volume <= 0.0)
+              {
+               lifecycle_invalid = true;
+               lifecycle_reason = "POSITION_ENTRY_IDENTITY_CHANGED";
+               lifecycle_position = position_id;
+               lifecycle_deal = deal;
+               break;
+              }
+            // A position identifier may scale in while volume remains open,
+            // but it may not be reused after a complete close.
+            if(lifecycles[row_index].exit_count > 0 &&
+               MathAbs(lifecycles[row_index].validated_entry_volume -
+                       lifecycles[row_index].validated_exit_volume) <= tolerance)
+              {
+               lifecycle_invalid = true;
+               lifecycle_reason = "POSITION_IDENTIFIER_REOPENED";
+               lifecycle_position = position_id;
+               lifecycle_deal = deal;
+               break;
+              }
+            lifecycles[row_index].validated_entry_volume += volume;
+           }
+         continue;
+        }
+      if(entry != DEAL_ENTRY_OUT && entry != DEAL_ENTRY_OUT_BY)
+        {
+         if(row_index >= 0)
+           {
+            lifecycle_invalid = true;
+            lifecycle_reason = "DEAL_ENTRY_KIND_UNSUPPORTED";
+            lifecycle_position = position_id;
+            lifecycle_deal = deal;
+            break;
+           }
+         continue;
+        }
+      if(row_index < 0)
+        {
+         if(QM_FrameworkOwnsMagicSymbol(magic, symbol))
+           {
+            lifecycle_invalid = true;
+            lifecycle_reason = "OWNED_EXIT_WITHOUT_ENTRY";
+            lifecycle_position = position_id;
+            lifecycle_deal = deal;
+            break;
+           }
+         continue;
+        }
+
+      const long deal_type = HistoryDealGetInteger(deal, DEAL_TYPE);
+      const datetime deal_time =
+         (datetime)HistoryDealGetInteger(deal, DEAL_TIME);
+      const double volume = HistoryDealGetDouble(deal, DEAL_VOLUME);
+      const double profit = HistoryDealGetDouble(deal, DEAL_PROFIT);
+      const double swap = HistoryDealGetDouble(deal, DEAL_SWAP);
+      const double commission = HistoryDealGetDouble(deal, DEAL_COMMISSION);
+      const double fee = HistoryDealGetDouble(deal, DEAL_FEE);
+      const double price = HistoryDealGetDouble(deal, DEAL_PRICE);
+      if(symbol != lifecycles[row_index].symbol ||
+         (deal_type != DEAL_TYPE_BUY && deal_type != DEAL_TYPE_SELL) ||
+         deal_time < lifecycles[row_index].entry_time ||
+         !MathIsValidNumber(volume) || volume <= 0.0 ||
+         !QM_FrameworkQ08MoneyCentExact(profit) ||
+         !QM_FrameworkQ08MoneyCentExact(swap) ||
+         !QM_FrameworkQ08MoneyCentExact(commission) ||
+         !QM_FrameworkQ08MoneyCentExact(fee) ||
+         MathAbs(fee) > 0.0000001 ||
+         !MathIsValidNumber(price) || price <= 0.0)
+        {
+         lifecycle_invalid = true;
+         lifecycle_reason = "EXIT_IDENTITY_VOLUME_OR_MONEY_INVALID";
+         lifecycle_position = position_id;
+         lifecycle_deal = deal;
+         break;
+        }
+
+      lifecycles[row_index].exit_volume += volume;
+      lifecycles[row_index].validated_exit_volume += volume;
+      ++lifecycles[row_index].exit_count;
+      const double tolerance =
+         QM_FrameworkQ08VolumeTolerance(lifecycles[row_index].symbol);
+      if(!MathIsValidNumber(lifecycles[row_index].exit_volume) ||
+         !MathIsValidNumber(lifecycles[row_index].validated_exit_volume) ||
+         lifecycles[row_index].validated_exit_volume >
+            lifecycles[row_index].validated_entry_volume + tolerance ||
+         lifecycles[row_index].exit_volume >
+            lifecycles[row_index].entry_volume + tolerance)
+        {
+         lifecycle_invalid = true;
+         lifecycle_reason = "EXIT_VOLUME_EXCEEDS_ENTRY_VOLUME";
+         lifecycle_position = position_id;
+         lifecycle_deal = deal;
+         break;
+        }
+      const double notional = QM_FrameworkDealNotionalAccount(
+         deal, symbol, volume, price);
+      if(!MathIsValidNumber(notional) || notional <= 0.0)
+        {
+         lifecycle_invalid = true;
+         lifecycle_reason = "EXIT_NOTIONAL_INVALID";
+         lifecycle_position = position_id;
+         lifecycle_deal = deal;
+         break;
+        }
+      notional_by_history[i] = notional;
+      lifecycle_index_by_history[i] = row_index;
+      deal_time_by_history[i] = (long)deal_time;
+      profit_by_history[i] = QM_FrameworkQ08MoneyRound(profit);
+      swap_by_history[i] = QM_FrameworkQ08MoneyRound(swap);
+      exit_commission_by_history[i] = QM_FrameworkQ08MoneyRound(commission);
+      volume_by_history[i] = volume;
+      exit_price_by_history[i] = price;
+     }
+
+   if(!lifecycle_invalid)
+      for(int i = 0; i < lifecycle_count; ++i)
+        {
+         const double tolerance =
+            QM_FrameworkQ08VolumeTolerance(lifecycles[i].symbol);
+         if(lifecycles[i].entry_count <= 0 || lifecycles[i].exit_count <= 0 ||
+            lifecycles[i].entry_time <= 0 ||
+            !MathIsValidNumber(lifecycles[i].entry_volume) ||
+            !MathIsValidNumber(lifecycles[i].entry_price_volume_sum) ||
+            lifecycles[i].entry_price_volume_sum <= 0.0 ||
+            !MathIsValidNumber(lifecycles[i].exit_volume) ||
+            MathAbs(lifecycles[i].validated_entry_volume -
+                    lifecycles[i].entry_volume) > tolerance ||
+            MathAbs(lifecycles[i].validated_exit_volume -
+                    lifecycles[i].exit_volume) > tolerance ||
+            MathAbs(lifecycles[i].entry_volume - lifecycles[i].exit_volume) >
+               tolerance ||
+            QM_FrameworkMaePositionStillOpen(lifecycles[i].position_id))
+           {
+            lifecycle_invalid = true;
+            lifecycle_reason = "POSITION_LIFECYCLE_NOT_FULLY_CLOSED";
+            lifecycle_position = lifecycles[i].position_id;
+            break;
+           }
+        }
+
+   if(lifecycle_invalid)
+     {
+      QM_FrameworkQ08RejectLifecycle(lifecycle_reason,
+                                     lifecycle_position,
+                                     lifecycle_deal);
+      return;
+     }
+
+   // Pass 3: pre-compute all proportional entry-commission allocations. A
+   // cumulative rounded target assigns cents stably; the final exit receives
+   // the exact remainder. This pass also completes before any output.
+   double entry_commission_by_history[];
+   ArrayResize(entry_commission_by_history, total);
+   ArrayInitialize(entry_commission_by_history, 0.0);
+   for(int i = 0; i < lifecycle_count; ++i)
+     {
+      lifecycles[i].allocated_exit_volume = 0.0;
+      lifecycles[i].allocated_entry_commission = 0.0;
+     }
+   for(int i = 0; i < total; ++i)
+     {
+      const int row_index = lifecycle_index_by_history[i];
+      if(row_index < 0)
+         continue;
+      const ulong position_id = lifecycles[row_index].position_id;
+      const double volume = volume_by_history[i];
+      double allocated_entry_commission = 0.0;
+      if(!QM_FrameworkQ08AllocateEntryCommission(
+            lifecycles[row_index], volume, allocated_entry_commission))
+        {
+         lifecycle_invalid = true;
+         lifecycle_reason = "ENTRY_COMMISSION_ALLOCATION_INVALID";
+         lifecycle_position = position_id;
+         lifecycle_deal = 0;
+         break;
+        }
+      entry_commission_by_history[i] = allocated_entry_commission;
+     }
+   if(!lifecycle_invalid)
+      for(int i = 0; i < lifecycle_count; ++i)
+        {
+         const double tolerance =
+            QM_FrameworkQ08VolumeTolerance(lifecycles[i].symbol);
+         if(MathAbs(lifecycles[i].allocated_exit_volume -
+                    lifecycles[i].entry_volume) > tolerance ||
+            MathAbs(lifecycles[i].allocated_entry_commission -
+                    QM_FrameworkQ08MoneyRound(
+                       lifecycles[i].entry_commission)) > 0.0000001)
+           {
+            lifecycle_invalid = true;
+            lifecycle_reason = "ENTRY_COMMISSION_ALLOCATION_INCOMPLETE";
+            lifecycle_position = lifecycles[i].position_id;
+            break;
+           }
+        }
+
+   const bool lifecycle_validated = !lifecycle_invalid;
+   if(!lifecycle_validated)
+     {
+      QM_FrameworkQ08RejectLifecycle(lifecycle_reason,
+                                     lifecycle_position,
+                                     lifecycle_deal);
+      return;
+     }
+
+   // Pass 4: create a complete temp stream solely from the immutable values
+   // captured by Pass 2/3. The final Common\Files target is replaced in one
+   // FileMove only after the complete temp stream is flushed and size-checked.
+   string q08_sym = _Symbol;
+   StringReplace(q08_sym, ".", "_");
+   const string q08_path = StringFormat(
+      "QM\\q08_trades\\%d_%s.jsonl", g_qm_fw_ea_id, q08_sym);
+   const string q08_temp_path = q08_path + ".full_lifecycle.tmp";
+   if(g_qm_q08_fh != INVALID_HANDLE)
+     {
+      FileClose(g_qm_q08_fh);
+      g_qm_q08_fh = INVALID_HANDLE;
+     }
+   g_qm_q08_trade_log = "";
+   ResetLastError();
+   const int q08_temp_fh = FileOpen(
+      q08_temp_path, FILE_WRITE | FILE_TXT | FILE_ANSI | FILE_COMMON);
+   if(q08_temp_fh == INVALID_HANDLE)
+     {
+      QM_FrameworkQ08RejectLifecycle("TEMP_STREAM_OPEN_FAILED", 0, 0);
+      return;
+     }
+   long q08_temp_bytes = 0;
+   bool q08_temp_valid = true;
+   for(int i = 0; i < total; ++i)
+     {
+      const int row_index = lifecycle_index_by_history[i];
+      if(row_index < 0)
+         continue;
+
+      const ulong position_id = lifecycles[row_index].position_id;
+      const string symbol = lifecycles[row_index].symbol;
+      const double profit = profit_by_history[i];
+      const double swap = swap_by_history[i];
+      const double entry_commission = entry_commission_by_history[i];
+      const double exit_commission = exit_commission_by_history[i];
+      const double commission = QM_FrameworkQ08MoneyRound(
+         entry_commission + exit_commission);
+      const double net = QM_FrameworkQ08MoneyRound(
+         profit + swap + commission);
+      const double volume = volume_by_history[i];
+      const double entry_price =
+         lifecycles[row_index].entry_price_volume_sum /
+         lifecycles[row_index].entry_volume;
+      const double exit_price = exit_price_by_history[i];
+      const string entry_price_json =
+         QM_FrameworkQ08StablePriceJson(entry_price);
+      const string exit_price_json =
+         QM_FrameworkQ08StablePriceJson(exit_price);
+      const long deal_time = deal_time_by_history[i];
+      datetime mae_entry_time = 0;
+      double mae_acct = QM_FrameworkQ08LookupMae(position_id,
+                                                 mae_entry_time);
       mae_acct = MathMin(mae_acct, net);
       g_qm_q08_trade_log += StringFormat(
-         "{\"event\":\"TRADE_CLOSED\",\"magic\":%I64d,\"time\":%I64d,\"entry_time\":%I64d,\"mae_acct\":%.2f,\"net\":%.2f,\"profit\":%.2f,\"swap\":%.2f,\"commission\":%.2f,\"volume\":%.2f,\"notional\":%.2f,\"symbol\":\"%s\"}\r\n",
-         opening_magic, d_t, (long)entry_time, mae_acct, net, profit, swap, commission, vol, notional, QM_LoggerEscapeJson(sym));
-      if(StringLen(g_qm_q08_trade_log) >= 32768)
-         QM_FrameworkQ08Flush();
+         "{\"event\":\"TRADE_CLOSED\",\"money_basis\":\"FULL_POSITION_LIFECYCLE_ACTUAL_V1\",\"magic\":%I64d,\"side\":\"%s\",\"entry_price\":%s,\"exit_price\":%s,\"time\":%I64d,\"entry_time\":%I64d,\"mae_acct\":%.2f,\"net\":%.2f,\"profit\":%.2f,\"swap\":%.2f,\"fee\":0.00,\"commission\":%.2f,\"entry_commission\":%.2f,\"exit_commission\":%.2f,\"volume\":%.2f,\"notional\":%.2f,\"symbol\":\"%s\"}\r\n",
+         lifecycles[row_index].magic,
+         lifecycles[row_index].side,
+         entry_price_json,
+         exit_price_json,
+         deal_time,
+         (long)lifecycles[row_index].entry_time,
+         mae_acct,
+         net,
+         profit,
+         swap,
+         commission,
+         entry_commission,
+         exit_commission,
+         volume,
+         notional_by_history[i],
+         QM_LoggerEscapeJson(symbol));
+      if(StringLen(g_qm_q08_trade_log) >= 32768 &&
+         !QM_FrameworkQ08WriteTempChunk(q08_temp_fh, q08_temp_bytes))
+        {
+         q08_temp_valid = false;
+         lifecycle_position = position_id;
+         break;
+        }
+     }
+   if(q08_temp_valid)
+      q08_temp_valid = QM_FrameworkQ08WriteTempChunk(
+         q08_temp_fh, q08_temp_bytes);
+   FileFlush(q08_temp_fh);
+   if(q08_temp_valid &&
+      (q08_temp_bytes <= 0 ||
+       (long)FileSize(q08_temp_fh) != q08_temp_bytes))
+      q08_temp_valid = false;
+   FileClose(q08_temp_fh);
+   if(!q08_temp_valid)
+     {
+      FileDelete(q08_temp_path, FILE_COMMON);
+      QM_FrameworkQ08RejectLifecycle(
+         "TEMP_STREAM_WRITE_OR_SIZE_FAILED", lifecycle_position, 0);
+      return;
+     }
+   ResetLastError();
+   if(!FileMove(q08_temp_path,
+                FILE_COMMON,
+                q08_path,
+                FILE_COMMON | FILE_REWRITE))
+     {
+      FileDelete(q08_temp_path, FILE_COMMON);
+      QM_FrameworkQ08RejectLifecycle("TEMP_STREAM_FINAL_MOVE_FAILED", 0, 0);
+      return;
      }
   }
 

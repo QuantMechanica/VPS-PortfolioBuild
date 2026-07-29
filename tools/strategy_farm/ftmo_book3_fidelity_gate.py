@@ -34,8 +34,10 @@ from pathlib import Path
 from typing import Any
 
 
-SCHEMA = "qm.ftmo-book3-fidelity-adjudication-receipt/v1"
-MEASUREMENT_CONTRACT = "FTMO_BOOK3_FIDELITY_LADDER_V1"
+SCHEMA = "qm.ftmo-book3-fidelity-adjudication-receipt/v2"
+MEASUREMENT_CONTRACT = "FTMO_BOOK3_FIDELITY_LADDER_V2_FULL_LIFECYCLE_NET"
+FULL_LIFECYCLE_MONEY_BASIS = "FULL_POSITION_LIFECYCLE_ACTUAL_V1"
+JOINT_PRODUCER_VERSION = "QM5_20181_FTMO_TRACE_V2"
 EXPECTED_EXECUTION_INPUT_COUNT = 307
 RUNTIME_SOURCE_ROLES = (
     "preparation_controller",
@@ -66,6 +68,8 @@ SUCCESS_CHECK_KEYS = (
 )
 MONEY_TOLERANCE = Decimal("0.005")
 VOLUME_TOLERANCE = Decimal("0.005")
+PRICE_TOLERANCE = Decimal("0")
+CANONICAL_SIDES = frozenset({"BUY", "SELL"})
 DEFAULT_COMPARATOR = Path(__file__).resolve().with_name("compare_joint_replay.py")
 _SHA256_RE = re.compile(r"[0-9a-f]{64}")
 _COMMIT_RE = re.compile(r"[0-9a-f]{40}")
@@ -108,7 +112,7 @@ STAGES: dict[int, StageSpec] = {
         ),
         joint=OperandSpec(
             "joint", "J0", 1, "QM5_20181", "USDJPY.DWX",
-            201810000, "USDJPY.DWX", "FTMO_BOOK3_20260729_V1_J0",
+            201810000, "USDJPY.DWX", "FTMO_BOOK3_20260729_V2_J0",
             "20181_USDJPY_DWX",
         ),
     ),
@@ -120,7 +124,7 @@ STAGES: dict[int, StageSpec] = {
         ),
         joint=OperandSpec(
             "joint", "J1", 3, "QM5_20181", "USDJPY.DWX",
-            201810001, "XAUUSD.DWX", "FTMO_BOOK3_20260729_V1_J1",
+            201810001, "XAUUSD.DWX", "FTMO_BOOK3_20260729_V2_J1",
             "20181_USDJPY_DWX",
         ),
     ),
@@ -132,7 +136,7 @@ STAGES: dict[int, StageSpec] = {
         ),
         joint=OperandSpec(
             "joint", "J2", 5, "QM5_20181", "USDJPY.DWX",
-            201810002, "XTIUSD.DWX", "FTMO_BOOK3_20260729_V1_J2",
+            201810002, "XTIUSD.DWX", "FTMO_BOOK3_20260729_V2_J2",
             "20181_USDJPY_DWX",
         ),
     ),
@@ -942,6 +946,213 @@ def _decimal(value: Any, label: str) -> Decimal:
     return parsed
 
 
+def _positive_deal_ids(value: Any, label: str) -> list[int]:
+    _require(isinstance(value, list) and bool(value), f"{label} must be a non-empty array")
+    result = [_exact_int(item, f"{label}[{index}]") for index, item in enumerate(value)]
+    _require(all(item > 0 for item in result), f"{label} must contain only positive integers")
+    _require(len(result) == len(set(result)), f"{label} contains duplicate deal IDs")
+    return result
+
+
+def _validate_joint_lineage(
+    row: dict[str, Any],
+    money: dict[str, Decimal],
+    *,
+    label: str,
+    entry_time: int,
+    close_time: int,
+) -> None:
+    """Validate lifecycle-v2 deal lineage and its declared balance ledger.
+
+    The lineage grammar can represent ordered partial exits without pretending
+    they happened at the final close timestamp.  The current Book-3 joint
+    producer separately setup-blocks ``exit_count != 1`` because its one-row-
+    per-position output would not have the standalone producer's per-exit
+    cardinality.  This validator therefore does not imply generic partial-close
+    fidelity support.
+    """
+
+    position_id = _exact_int(row.get("position_id"), f"{label} position_id")
+    _require(position_id > 0, f"{label} position_id must be positive")
+    entry_ids = _positive_deal_ids(row.get("entry_deal_ids"), f"{label} entry_deal_ids")
+    exit_ids = _positive_deal_ids(row.get("exit_deal_ids"), f"{label} exit_deal_ids")
+    _require(
+        not (set(entry_ids) & set(exit_ids)),
+        f"{label} entry/exit deal IDs overlap",
+    )
+
+    events = row.get("balance_events")
+    _require(
+        isinstance(events, list) and bool(events),
+        f"{label} balance_events must be a non-empty array",
+    )
+    exact_fields = {"deal_id", "time", "component", "amount"}
+    allowed_components = {"PROFIT", "SWAP", "COMMISSION", "FEE"}
+    entry_id_set = set(entry_ids)
+    exit_id_set = set(exit_ids)
+    seen: set[tuple[int, str]] = set()
+    event_time_by_deal: dict[int, int] = {}
+    amounts: dict[tuple[str, str], Decimal] = {}
+
+    for index, event in enumerate(events):
+        event_label = f"{label} balance_events[{index}]"
+        _require(isinstance(event, dict), f"{event_label} must be an object")
+        _require(set(event) == exact_fields, f"{event_label} fields mismatch")
+        deal_id = _exact_int(event["deal_id"], f"{event_label} deal_id")
+        _require(deal_id > 0, f"{event_label} deal_id must be positive")
+        event_time = _exact_int(event["time"], f"{event_label} time")
+        _require(event_time > 0, f"{event_label} time must be positive")
+        component = event["component"]
+        _require(
+            isinstance(component, str) and component in allowed_components,
+            f"{event_label} component invalid",
+        )
+        _require(
+            not isinstance(event["amount"], bool)
+            and isinstance(event["amount"], (int, float)),
+            f"{event_label} amount must be a JSON number",
+        )
+        amount = _decimal(event["amount"], f"{event_label} amount")
+        identity = (deal_id, component)
+        _require(identity not in seen, f"{event_label} duplicates deal/component")
+        seen.add(identity)
+        previous_time = event_time_by_deal.setdefault(deal_id, event_time)
+        _require(
+            previous_time == event_time,
+            f"{event_label} deal components have inconsistent times",
+        )
+
+        if deal_id in entry_id_set:
+            _require(component == "COMMISSION", f"{event_label} entry component invalid")
+            _require(
+                entry_time <= event_time <= close_time,
+                f"{event_label} entry event time outside lifecycle",
+            )
+            bucket = ("entry", component)
+        else:
+            _require(deal_id in exit_id_set, f"{event_label} deal_id outside declared lineage")
+            _require(
+                entry_time <= event_time <= close_time,
+                f"{event_label} exit event time outside lifecycle",
+            )
+            bucket = ("exit", component)
+        amounts[bucket] = amounts.get(bucket, Decimal("0")) + amount
+
+    for deal_id in entry_ids:
+        _require(
+            (deal_id, "COMMISSION") in seen,
+            f"{label} entry deal {deal_id} lacks COMMISSION event",
+        )
+    for deal_id in exit_ids:
+        for component in allowed_components:
+            _require(
+                (deal_id, component) in seen,
+                f"{label} exit deal {deal_id} lacks {component} event",
+            )
+    entry_event_times = [event_time_by_deal[deal_id] for deal_id in entry_ids]
+    exit_event_times = [event_time_by_deal[deal_id] for deal_id in exit_ids]
+    _require(
+        entry_event_times == sorted(entry_event_times),
+        f"{label} entry deal/event ordering is not monotonic",
+    )
+    _require(
+        exit_event_times == sorted(exit_event_times),
+        f"{label} exit deal/event ordering is not monotonic",
+    )
+    _require(
+        entry_event_times[0] == entry_time,
+        f"{label} first entry deal does not establish entry_time",
+    )
+    _require(
+        exit_event_times[-1] == close_time,
+        f"{label} final exit deal does not establish close time",
+    )
+
+    expected = {
+        ("entry", "COMMISSION"): money["entry_commission"],
+        ("exit", "PROFIT"): money["profit"],
+        ("exit", "SWAP"): money["swap"],
+        ("exit", "COMMISSION"): money["exit_commission"],
+        ("exit", "FEE"): money["fee"],
+    }
+    _require(set(amounts) == set(expected), f"{label} balance-event components mismatch")
+    for bucket, declared in expected.items():
+        _require(
+            amounts[bucket] == declared,
+            f"{label} balance-event {bucket[0]} {bucket[1]} does not reconcile",
+        )
+
+
+def _full_lifecycle_money(
+    row: dict[str, Any], *, spec: OperandSpec, label: str
+) -> dict[str, Decimal]:
+    """Validate one producer's actual full-position money decomposition.
+
+    V2 deliberately compares producer truth without reconstructing a missing
+    entry-side cost in Python.  Standalone rows must therefore carry the
+    framework's explicit full-lifecycle marker; joint rows must carry the
+    already-versioned lifecycle-v2 identity.  Any legacy or ambiguous row is
+    setup-blocked rather than normalized heuristically.
+    """
+
+    if spec.role == "standalone":
+        _require(
+            "schema_version" not in row,
+            f"{label} standalone schema_version is ambiguous",
+        )
+        _require(
+            row.get("money_basis") == FULL_LIFECYCLE_MONEY_BASIS,
+            f"{label} standalone money_basis mismatch",
+        )
+    else:
+        _require(row.get("schema_version") == 2, f"{label} joint schema_version mismatch")
+        _require(
+            row.get("producer_version") == JOINT_PRODUCER_VERSION,
+            f"{label} joint producer_version mismatch",
+        )
+        _require(row.get("run_id") == spec.evidence_run_id, f"{label} joint run_id mismatch")
+        _require(
+            row.get("position_fully_closed") is True,
+            f"{label} joint position is not fully closed",
+        )
+    values = {
+        key: _decimal(row.get(key), f"{label} {key}")
+        for key in (
+            "profit",
+            "swap",
+            "commission",
+            "entry_commission",
+            "exit_commission",
+            "net",
+        )
+    }
+    _require("fee" in row, f"{label} fee is missing")
+    fee = _decimal(row["fee"], f"{label} fee")
+    _require(abs(fee) <= MONEY_TOLERANCE, f"{label} non-zero fee is unsupported")
+    _require(
+        abs(
+            values["commission"]
+            - values["entry_commission"]
+            - values["exit_commission"]
+        )
+        <= MONEY_TOLERANCE,
+        f"{label} commission components do not reconcile",
+    )
+    _require(
+        abs(
+            values["net"]
+            - values["profit"]
+            - values["swap"]
+            - values["commission"]
+            - fee
+        )
+        <= MONEY_TOLERANCE,
+        f"{label} full-lifecycle net does not reconcile",
+    )
+    values["fee"] = fee
+    return values
+
+
 def _load_trades_once(path: Path, expected: dict[str, Any], spec: OperandSpec, stage: int) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     resolved, raw, actual_sha = _read_bound_bytes(
         path, str(expected["sha256"]), f"{spec.role} harvested q08_trades"
@@ -984,15 +1195,37 @@ def _load_trades_once(path: Path, expected: dict[str, Any], spec: OperandSpec, s
         entry_time = _exact_int(row.get("entry_time"), f"{spec.role} trade line {line_number} entry_time")
         close_time = _exact_int(row.get("time"), f"{spec.role} trade line {line_number} time")
         _require(entry_time > 0 and close_time > entry_time, f"{spec.role} trade line {line_number} time order invalid")
-        net = _decimal(row.get("net"), f"{spec.role} trade line {line_number} net")
+        label = f"{spec.role} trade line {line_number}"
+        money = _full_lifecycle_money(row, spec=spec, label=label)
+        if spec.role == "joint":
+            _validate_joint_lineage(
+                row,
+                money,
+                label=label,
+                entry_time=entry_time,
+                close_time=close_time,
+            )
+        side = row.get("side")
+        _require(
+            isinstance(side, str) and side in CANONICAL_SIDES,
+            f"{label} side must be canonical BUY or SELL",
+        )
+        entry_price = _decimal(row.get("entry_price"), f"{label} entry_price")
+        exit_price = _decimal(row.get("exit_price"), f"{label} exit_price")
+        _require(entry_price > 0, f"{label} entry_price must be positive")
+        _require(exit_price > 0, f"{label} exit_price must be positive")
         volume = _decimal(row.get("volume"), f"{spec.role} trade line {line_number} volume")
         _require(volume > 0, f"{spec.role} trade line {line_number} volume must be positive")
         selected.append(
             {
                 "entry_time": entry_time,
                 "time": close_time,
-                "net": net,
+                "side": side,
+                "entry_price": entry_price,
+                "exit_price": exit_price,
+                **money,
                 "volume": volume,
+                "money_basis": FULL_LIFECYCLE_MONEY_BASIS,
             }
         )
     return selected, {
@@ -1017,7 +1250,23 @@ def _maximum_matching(
         for index in reference_by_time.get(time_key, []):
             reference_row = standalone[index]
             if (
-                abs(joint_row["net"] - reference_row["net"]) <= MONEY_TOLERANCE
+                joint_row["side"] == reference_row["side"]
+                and abs(joint_row["entry_price"] - reference_row["entry_price"])
+                <= PRICE_TOLERANCE
+                and abs(joint_row["exit_price"] - reference_row["exit_price"])
+                <= PRICE_TOLERANCE
+                and all(
+                    abs(joint_row[key] - reference_row[key]) <= MONEY_TOLERANCE
+                    for key in (
+                        "net",
+                        "profit",
+                        "swap",
+                        "commission",
+                        "entry_commission",
+                        "exit_commission",
+                        "fee",
+                    )
+                )
                 and abs(joint_row["volume"] - reference_row["volume"]) <= VOLUME_TOLERANCE
             ):
                 candidates.append(index)
@@ -1050,7 +1299,16 @@ def _public_trade(row: dict[str, Any]) -> dict[str, Any]:
     return {
         "entry_time": row["entry_time"],
         "time": row["time"],
+        "side": row["side"],
+        "entry_price": str(row["entry_price"]),
+        "exit_price": str(row["exit_price"]),
         "net": str(row["net"]),
+        "profit": str(row["profit"]),
+        "swap": str(row["swap"]),
+        "commission": str(row["commission"]),
+        "entry_commission": str(row["entry_commission"]),
+        "exit_commission": str(row["exit_commission"]),
+        "fee": str(row["fee"]),
         "volume": str(row["volume"]),
     }
 
@@ -1068,9 +1326,11 @@ def _comparison(joint: list[dict[str, Any]], standalone: list[dict[str, Any]]) -
     denominator = max(len(joint), len(standalone))
     match_rate = matched / denominator if denominator else None
     return {
-        "algorithm": "maximum_bipartite_exact_time_tolerant_money_volume/v1",
+        "algorithm": "maximum_bipartite_exact_time_side_price_full_lifecycle_money_volume/v3",
+        "money_basis": FULL_LIFECYCLE_MONEY_BASIS,
         "money_tolerance": float(MONEY_TOLERANCE),
         "volume_tolerance": float(VOLUME_TOLERANCE),
+        "price_tolerance": float(PRICE_TOLERANCE),
         "standalone_trades": len(standalone),
         "joint_trades": len(joint),
         "matched": matched,
@@ -1123,6 +1383,8 @@ def adjudicate(
             "both_operands_nonempty": True,
             "money_tolerance": float(MONEY_TOLERANCE),
             "volume_tolerance": float(VOLUME_TOLERANCE),
+            "price_tolerance": float(PRICE_TOLERANCE),
+            "money_basis": FULL_LIFECYCLE_MONEY_BASIS,
         },
         "safety": {
             "read_only_inputs": True,

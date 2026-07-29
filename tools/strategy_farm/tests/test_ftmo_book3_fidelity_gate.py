@@ -135,18 +135,70 @@ def _fingerprint(raw: bytes) -> dict:
     }
 
 
-def _trade_line(spec: gate.OperandSpec, *, net: str = "10.00", volume: str = "0.10") -> bytes:
+def _trade_row(
+    spec: gate.OperandSpec,
+    *,
+    net: str = "10.00",
+    volume: str = "0.10",
+    overrides: dict | None = None,
+) -> dict:
+    net_value = float(net)
+    row = {
+        "event": "TRADE_CLOSED",
+        "magic": spec.trade_magic,
+        "symbol": spec.trade_symbol,
+        "side": "BUY",
+        "entry_price": "100.1250000000000000",
+        "exit_price": "101.3750000000000000",
+        "entry_time": 100,
+        "time": 200,
+        "profit": net_value + 2.0,
+        "swap": 0.0,
+        "fee": 0.0,
+        "entry_commission": -1.0,
+        "exit_commission": -1.0,
+        "commission": -2.0,
+        "net": net_value,
+        "mae_acct": -5.0,
+        "volume": float(volume),
+        "notional": 10_000.0,
+    }
+    if spec.role == "standalone":
+        row["money_basis"] = gate.FULL_LIFECYCLE_MONEY_BASIS
+    else:
+        row.update(
+            {
+                "schema_version": 2,
+                "run_id": spec.evidence_run_id,
+                "producer_version": gate.JOINT_PRODUCER_VERSION,
+                "position_fully_closed": True,
+                "position_id": 123_456,
+                "entry_deal_ids": [7001],
+                "exit_deal_ids": [7002],
+                "balance_events": [
+                    {"deal_id": 7001, "time": 100, "component": "COMMISSION", "amount": -1.0},
+                    {"deal_id": 7002, "time": 200, "component": "PROFIT", "amount": net_value + 2.0},
+                    {"deal_id": 7002, "time": 200, "component": "SWAP", "amount": 0.0},
+                    {"deal_id": 7002, "time": 200, "component": "COMMISSION", "amount": -1.0},
+                    {"deal_id": 7002, "time": 200, "component": "FEE", "amount": 0.0},
+                ],
+            }
+        )
+    if overrides:
+        row.update(overrides)
+    return row
+
+
+def _trade_line(
+    spec: gate.OperandSpec,
+    *,
+    net: str = "10.00",
+    volume: str = "0.10",
+    overrides: dict | None = None,
+) -> bytes:
     return (
         json.dumps(
-            {
-                "event": "TRADE_CLOSED",
-                "magic": spec.trade_magic,
-                "symbol": spec.trade_symbol,
-                "entry_time": 100,
-                "time": 200,
-                "net": net,
-                "volume": volume,
-            },
+            _trade_row(spec, net=net, volume=volume, overrides=overrides),
             separators=(",", ":"),
         )
         + "\n"
@@ -466,6 +518,7 @@ def test_passes_each_exact_stage_contract(tmp_path, stage):
     result = gate.adjudicate(**kwargs)
 
     assert result["verdict"] == "PASS"
+    assert result["schema"] == "qm.ftmo-book3-fidelity-adjudication-receipt/v2"
     assert result["stage"] == stage
     assert result["work_item_ids"] == {
         "standalone": result["operands"]["standalone"]["work_item_id"],
@@ -482,10 +535,17 @@ def test_passes_each_exact_stage_contract(tmp_path, stage):
     assert result["preparation_controller_sha256"] == f"{904:064x}"
     assert result["comparator_sha256"] == kwargs["expected_comparator_sha256"]
     assert result["adjudication_id"] == gate._adjudication_id(result)
+    assert result["contract"]["measurement_contract"] == (
+        "FTMO_BOOK3_FIDELITY_LADDER_V2_FULL_LIFECYCLE_NET"
+    )
+    assert result["contract"]["money_basis"] == gate.FULL_LIFECYCLE_MONEY_BASIS
+    assert result["contract"]["price_tolerance"] == 0.0
     assert result["comparison"] == {
-        "algorithm": "maximum_bipartite_exact_time_tolerant_money_volume/v1",
+        "algorithm": "maximum_bipartite_exact_time_side_price_full_lifecycle_money_volume/v3",
+        "money_basis": gate.FULL_LIFECYCLE_MONEY_BASIS,
         "money_tolerance": 0.005,
         "volume_tolerance": 0.005,
+        "price_tolerance": 0.0,
         "standalone_trades": 1,
         "joint_trades": 1,
         "matched": 1,
@@ -519,6 +579,275 @@ def test_tolerance_is_inclusive_but_above_tolerance_fails(tmp_path):
     assert result["comparison"]["match_rate"] == 0.0
     assert result["comparison"]["unmatched_standalone"] == 1
     assert result["comparison"]["unmatched_joint"] == 1
+
+
+def test_missing_standalone_money_basis_is_setup_blocked(tmp_path):
+    spec = gate.STAGES[0]
+    row = _trade_row(spec.standalone)
+    row.pop("money_basis")
+    kwargs, _, _ = _case(
+        tmp_path,
+        0,
+        standalone_raw=(json.dumps(row, separators=(",", ":")) + "\n").encode(),
+    )
+
+    result = gate.adjudicate(**kwargs)
+
+    assert result["verdict"] == "SETUP_BLOCKED"
+    assert "standalone money_basis mismatch" in result["errors"][0]
+
+
+@pytest.mark.parametrize("role", ["standalone", "joint"])
+def test_missing_fee_is_setup_blocked(tmp_path, role):
+    spec = gate.STAGES[0]
+    operand = spec.standalone if role == "standalone" else spec.joint
+    row = _trade_row(operand)
+    row.pop("fee")
+    raw = (json.dumps(row, separators=(",", ":")) + "\n").encode()
+    kwargs, _, _ = _case(
+        tmp_path,
+        0,
+        standalone_raw=raw if role == "standalone" else None,
+        joint_raw=raw if role == "joint" else None,
+    )
+
+    result = gate.adjudicate(**kwargs)
+
+    assert result["verdict"] == "SETUP_BLOCKED"
+    assert f"{role} trade line 1 fee is missing" in result["errors"][0]
+
+
+@pytest.mark.parametrize(
+    ("overrides", "message"),
+    [
+        ({"commission": -3.0}, "commission components do not reconcile"),
+        ({"net": 9.0}, "full-lifecycle net does not reconcile"),
+    ],
+)
+def test_inconsistent_full_lifecycle_components_are_setup_blocked(
+    tmp_path, overrides, message
+):
+    spec = gate.STAGES[0]
+    kwargs, _, _ = _case(
+        tmp_path,
+        0,
+        standalone_raw=_trade_line(spec.standalone, overrides=overrides),
+    )
+
+    result = gate.adjudicate(**kwargs)
+
+    assert result["verdict"] == "SETUP_BLOCKED"
+    assert message in result["errors"][0]
+
+
+def test_consistent_but_different_money_components_fail_fidelity(tmp_path):
+    spec = gate.STAGES[0]
+    kwargs, _, _ = _case(
+        tmp_path,
+        0,
+        joint_raw=_trade_line(
+            spec.joint,
+            overrides={
+                "entry_commission": -1.006,
+                "exit_commission": -0.994,
+                "balance_events": [
+                    {"deal_id": 7001, "time": 100, "component": "COMMISSION", "amount": -1.006},
+                    {"deal_id": 7002, "time": 200, "component": "PROFIT", "amount": 12.0},
+                    {"deal_id": 7002, "time": 200, "component": "SWAP", "amount": 0.0},
+                    {"deal_id": 7002, "time": 200, "component": "COMMISSION", "amount": -0.994},
+                    {"deal_id": 7002, "time": 200, "component": "FEE", "amount": 0.0},
+                ],
+            },
+        ),
+    )
+
+    result = gate.adjudicate(**kwargs)
+
+    assert result["verdict"] == "FAIL"
+    assert result["comparison"]["algorithm"].endswith("/v3")
+    assert result["comparison"]["money_basis"] == gate.FULL_LIFECYCLE_MONEY_BASIS
+    assert result["comparison"]["match_rate"] == 0.0
+
+
+@pytest.mark.parametrize("missing_key", ["run_id", "position_id", "entry_deal_ids", "exit_deal_ids", "balance_events"])
+def test_joint_v2_run_id_and_lineage_are_mandatory(tmp_path, missing_key):
+    spec = gate.STAGES[0]
+    row = _trade_row(spec.joint)
+    row.pop(missing_key)
+    kwargs, _, _ = _case(
+        tmp_path,
+        0,
+        joint_raw=(json.dumps(row, separators=(",", ":")) + "\n").encode(),
+    )
+
+    result = gate.adjudicate(**kwargs)
+
+    assert result["verdict"] == "SETUP_BLOCKED"
+    assert missing_key in result["errors"][0]
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("side", "SELL"),
+        ("entry_price", "100.1250000000000001"),
+        ("exit_price", "101.3750000000000001"),
+    ],
+)
+def test_side_or_any_price_drift_fails_exact_fidelity(tmp_path, field, value):
+    spec = gate.STAGES[0]
+    kwargs, _, _ = _case(
+        tmp_path,
+        0,
+        joint_raw=_trade_line(spec.joint, overrides={field: value}),
+    )
+
+    result = gate.adjudicate(**kwargs)
+
+    assert result["verdict"] == "FAIL"
+    assert result["comparison"]["price_tolerance"] == 0.0
+    assert result["comparison"]["match_rate"] == 0.0
+
+
+@pytest.mark.parametrize("role", ["standalone", "joint"])
+def test_noncanonical_side_is_setup_blocked(tmp_path, role):
+    spec = gate.STAGES[0]
+    operand = spec.standalone if role == "standalone" else spec.joint
+    raw = _trade_line(operand, overrides={"side": "buy"})
+    kwargs, _, _ = _case(
+        tmp_path,
+        0,
+        standalone_raw=raw if role == "standalone" else None,
+        joint_raw=raw if role == "joint" else None,
+    )
+
+    result = gate.adjudicate(**kwargs)
+
+    assert result["verdict"] == "SETUP_BLOCKED"
+    assert "side must be canonical BUY or SELL" in result["errors"][0]
+
+
+@pytest.mark.parametrize(
+    ("overrides", "message"),
+    [
+        ({"position_id": 0}, "position_id must be positive"),
+        ({"position_id": True}, "position_id must be an integer"),
+        ({"entry_deal_ids": [7001, 7001]}, "contains duplicate deal IDs"),
+        ({"exit_deal_ids": [7001]}, "entry/exit deal IDs overlap"),
+        ({"entry_deal_ids": [0]}, "must contain only positive integers"),
+        ({"balance_events": []}, "must be a non-empty array"),
+        (
+            {
+                "balance_events": [
+                    {
+                        "deal_id": 7001,
+                        "time": 100,
+                        "component": "COMMISSION",
+                        "amount": -1.0,
+                        "extra": True,
+                    }
+                ]
+            },
+            "fields mismatch",
+        ),
+        (
+            {
+                "balance_events": [
+                    {"deal_id": 7001, "time": 100, "component": "PROFIT", "amount": -1.0}
+                ]
+            },
+            "entry component invalid",
+        ),
+        (
+            {
+                "balance_events": [
+                    {
+                        "deal_id": 7001,
+                        "time": 100,
+                        "component": "COMMISSION",
+                        "amount": "-1.0",
+                    }
+                ]
+            },
+            "amount must be a JSON number",
+        ),
+        (
+            {
+                "balance_events": [
+                    {"deal_id": 9999, "time": 100, "component": "COMMISSION", "amount": -1.0}
+                ]
+            },
+            "outside declared lineage",
+        ),
+        (
+            {
+                "balance_events": [
+                    {"deal_id": 7001, "time": 100, "component": "COMMISSION", "amount": -1.0},
+                    {"deal_id": 7002, "time": 199, "component": "PROFIT", "amount": 12.0},
+                    {"deal_id": 7002, "time": 199, "component": "SWAP", "amount": 0.0},
+                    {"deal_id": 7002, "time": 199, "component": "COMMISSION", "amount": -1.0},
+                    {"deal_id": 7002, "time": 199, "component": "FEE", "amount": 0.0},
+                ]
+            },
+            "final exit deal does not establish close time",
+        ),
+        (
+            {
+                "balance_events": [
+                    {"deal_id": 7001, "time": 100, "component": "COMMISSION", "amount": -0.99},
+                    {"deal_id": 7002, "time": 200, "component": "PROFIT", "amount": 12.0},
+                    {"deal_id": 7002, "time": 200, "component": "SWAP", "amount": 0.0},
+                    {"deal_id": 7002, "time": 200, "component": "COMMISSION", "amount": -1.0},
+                    {"deal_id": 7002, "time": 200, "component": "FEE", "amount": 0.0},
+                ]
+            },
+            "does not reconcile",
+        ),
+    ],
+)
+def test_joint_lineage_is_strict_and_money_reconciled(tmp_path, overrides, message):
+    spec = gate.STAGES[0]
+    kwargs, _, _ = _case(
+        tmp_path,
+        0,
+        joint_raw=_trade_line(spec.joint, overrides=overrides),
+    )
+
+    result = gate.adjudicate(**kwargs)
+
+    assert result["verdict"] == "SETUP_BLOCKED"
+    assert message in result["errors"][0]
+
+
+def test_joint_lineage_accepts_ordered_partial_exit_events():
+    spec = gate.STAGES[0]
+    partial_events = [
+        {"deal_id": 7001, "time": 100, "component": "COMMISSION", "amount": -1.0},
+        {"deal_id": 7002, "time": 150, "component": "PROFIT", "amount": 5.0},
+        {"deal_id": 7002, "time": 150, "component": "SWAP", "amount": 0.0},
+        {"deal_id": 7002, "time": 150, "component": "COMMISSION", "amount": -0.4},
+        {"deal_id": 7002, "time": 150, "component": "FEE", "amount": 0.0},
+        {"deal_id": 7003, "time": 200, "component": "PROFIT", "amount": 7.0},
+        {"deal_id": 7003, "time": 200, "component": "SWAP", "amount": 0.0},
+        {"deal_id": 7003, "time": 200, "component": "COMMISSION", "amount": -0.6},
+        {"deal_id": 7003, "time": 200, "component": "FEE", "amount": 0.0},
+    ]
+    row = _trade_row(
+        spec.joint,
+        overrides={
+            "exit_deal_ids": [7002, 7003],
+            "balance_events": partial_events,
+        },
+    )
+    money = gate._full_lifecycle_money(row, spec=spec.joint, label="joint fixture")
+
+    gate._validate_joint_lineage(
+        row,
+        money,
+        label="joint fixture",
+        entry_time=100,
+        close_time=200,
+    )
 
 
 def test_empty_filtered_operand_is_setup_blocked(tmp_path):
