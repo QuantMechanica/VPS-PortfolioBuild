@@ -10,6 +10,55 @@ import farmctl  # noqa: E402
 
 
 class P2PrescreenPolicyTests(unittest.TestCase):
+    def test_ftmo_book3_exact_q02_window_is_taken_from_payload(self) -> None:
+        payload = {
+            "measurement_contract": farmctl.FTMO_BOOK3_FIDELITY_MEASUREMENT_CONTRACT,
+            "from_date": "2018.07.02",
+            "to_date": "2025.12.31",
+        }
+        self.assertEqual(
+            farmctl._ftmo_book3_q02_exact_window("Q02", payload),
+            ("2018.07.02", "2025.12.31"),
+        )
+
+    def test_ftmo_book3_override_requires_exact_contract_and_q02(self) -> None:
+        base = {
+            "from_date": "2018.07.02",
+            "to_date": "2025.12.31",
+        }
+        for phase, contract in (
+            ("Q02", None),
+            ("Q02", "FTMO_BOOK3_FIDELITY_LADDER_V1_NEAR_MATCH"),
+            ("P2", farmctl.FTMO_BOOK3_FIDELITY_MEASUREMENT_CONTRACT),
+        ):
+            with self.subTest(phase=phase, contract=contract):
+                payload = dict(base)
+                if contract is not None:
+                    payload["measurement_contract"] = contract
+                self.assertIsNone(
+                    farmctl._ftmo_book3_q02_exact_window(phase, payload)
+                )
+
+    def test_ftmo_book3_exact_q02_window_rejects_invalid_payload_dates(self) -> None:
+        invalid_windows = (
+            (None, "2025.12.31"),
+            ("2018.07.02", None),
+            (" 2018.07.02", "2025.12.31"),
+            ("2018.02.30", "2025.12.31"),
+            ("2025.12.31", "2018.07.02"),
+        )
+        for from_date, to_date in invalid_windows:
+            with self.subTest(from_date=from_date, to_date=to_date):
+                payload = {
+                    "measurement_contract": (
+                        farmctl.FTMO_BOOK3_FIDELITY_MEASUREMENT_CONTRACT
+                    ),
+                    "from_date": from_date,
+                    "to_date": to_date,
+                }
+                with self.assertRaises(ValueError):
+                    farmctl._ftmo_book3_q02_exact_window("Q02", payload)
+
     def test_prescreen_window_is_recent_six_months_inside_p2_window(self) -> None:
         self.assertEqual(
             farmctl._p2_prescreen_dates(2022),

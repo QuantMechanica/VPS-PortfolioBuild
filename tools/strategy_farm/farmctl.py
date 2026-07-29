@@ -3903,12 +3903,40 @@ Q02_TO_YEAR_BY_PERIOD: dict[str, int] = {
     "D1":  2024, "W1":  2024, "MN1": 2024,
 }
 Q02_SKIP_PRESCREEN_PERIODS: set[str] = {"D1", "W1", "MN1"}  # full run is cheap on slow TFs
+FTMO_BOOK3_FIDELITY_MEASUREMENT_CONTRACT = "FTMO_BOOK3_FIDELITY_LADDER_V1"
 # 2026-06-10 OWNER gate-acceleration #1 — frequency-aware prescreen guard:
 # cards expecting fewer than this many trades/year/symbol skip the 6-month
 # prescreen entirely (a seasonal/swing card can legitimately have 0 trades in
 # any given 6-month window; killing it there would be a false negative —
 # DL-070 swing-track protection, OWNER "we would early miss a chance").
 Q02_PRESCREEN_MIN_EXPECTED_TPY = 12
+
+
+def _ftmo_book3_q02_exact_window(
+    phase: str, payload: dict[str, Any]
+) -> tuple[str, str] | None:
+    """Return the immutable FTMO fidelity window or fail closed if malformed."""
+    if (
+        phase != "Q02"
+        or payload.get("measurement_contract")
+        != FTMO_BOOK3_FIDELITY_MEASUREMENT_CONTRACT
+    ):
+        return None
+
+    parsed: dict[str, tuple[str, dt.date]] = {}
+    for key in ("from_date", "to_date"):
+        raw = payload.get(key)
+        value = _valid_ymd_date(raw)
+        if not isinstance(raw, str) or value != raw:
+            raise ValueError(f"{key} must be a canonical YYYY.MM.DD string")
+        try:
+            parsed[key] = (value, dt.datetime.strptime(value, "%Y.%m.%d").date())
+        except ValueError as exc:
+            raise ValueError(f"{key} is not a valid calendar date") from exc
+
+    if parsed["from_date"][1] > parsed["to_date"][1]:
+        raise ValueError("from_date must not be later than to_date")
+    return parsed["from_date"][0], parsed["to_date"][0]
 
 
 def _summary_net_profit_total(summary: dict[str, Any]) -> float | None:
@@ -4576,6 +4604,15 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         item_payload = json.loads(item_row["payload_json"] or "{}")
     except json.JSONDecodeError:
         item_payload = {}
+    try:
+        ftmo_book3_exact_window = _ftmo_book3_q02_exact_window(phase, item_payload)
+    except ValueError as exc:
+        return {
+            "spawned": False,
+            "reason": "ftmo_book3_fidelity_window_invalid",
+            "detail": str(exc),
+            "measurement_contract": item_payload.get("measurement_contract"),
+        }
     runner_symbol = str(item_payload.get("host_symbol") or symbol)
     runner_period = str(item_payload.get("host_timeframe") or _detect_ea_period(ea_id, setfile_path))
     if runner_symbol == str(symbol):
@@ -4677,6 +4714,12 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
                 from_date = explicit_from_date
             if explicit_to_date:
                 to_date = explicit_to_date
+        # The preregistered FTMO Book-3 ladder is an exact, one-shot measurement
+        # contract. Its payload dates are immutable evidence inputs, so the
+        # generic six-month Q02 prescreen must neither replace nor requeue them.
+        if ftmo_book3_exact_window is not None:
+            from_date, to_date = ftmo_book3_exact_window
+            skip_prescreen = True
         if phase == "Q02" and not skip_prescreen:
             # Frequency-aware guard (gate-acceleration #1): low-freq cards go
             # straight to the full window — a 6-month probe proves nothing
@@ -4748,7 +4791,11 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     # (2018.07.02) so every possible member has data — costs ~9 months of FX history
     # (6.5y remains, ample) for guaranteed multi-symbol correctness. 2026-06-25.
     # Date strings are "YYYY.MM.DD" so lexical < is chronological <.
-    if from_date and from_date < DWX_MULTI_SYMBOL_FULL_HISTORY_FROM:
+    if (
+        ftmo_book3_exact_window is None
+        and from_date
+        and from_date < DWX_MULTI_SYMBOL_FULL_HISTORY_FROM
+    ):
         from_date = DWX_MULTI_SYMBOL_FULL_HISTORY_FROM
     year = 2024
     min_trade_info = _effective_min_trades(root, ea_id, from_date, to_date, year)

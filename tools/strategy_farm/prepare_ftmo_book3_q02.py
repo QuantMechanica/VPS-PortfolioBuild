@@ -533,7 +533,9 @@ def _content_uuid(content_sha256: str) -> str:
     return str(uuid.UUID(bytes=bytes(uuid_bytes)))
 
 
-def _validate_prepare_operations(manifest: dict[str, Any]) -> None:
+def _validate_prepare_operations(
+    manifest: dict[str, Any], *, validate_live_source: bool = True
+) -> None:
     _validate_manifest_topology(manifest)
     specs = _bound_run_specs(str(manifest.get("joint_ex5_sha256") or ""))
     operations = manifest.get("operations") or []
@@ -573,12 +575,13 @@ def _validate_prepare_operations(manifest: dict[str, Any]) -> None:
     for role, expected_path in expected_input_paths.items():
         if amap[role].get("path") != expected_path:
             raise ContractError(f"prepare manifest execution input has invalid path: {role}")
-    rulepack_errors = _rulepack_snapshot_errors(
-        Path(amap["ftmo_rulepack"]["path"]),
-        Path(amap["ftmo_official_rules_snapshot"]["path"]),
-    )
-    if rulepack_errors:
-        raise ContractError("; ".join(rulepack_errors))
+    if validate_live_source:
+        rulepack_errors = _rulepack_snapshot_errors(
+            Path(amap["ftmo_rulepack"]["path"]),
+            Path(amap["ftmo_official_rules_snapshot"]["path"]),
+        )
+        if rulepack_errors:
+            raise ContractError("; ".join(rulepack_errors))
     execution_inputs = _execution_input_artifacts(artifacts)
     if [item["role"] for item in execution_inputs] != sorted(expected_input_paths):
         raise ContractError("prepare manifest execution input artifact list is not exact")
@@ -718,9 +721,10 @@ def _validate_prepare_operations(manifest: dict[str, Any]) -> None:
             for key, expected in basket_checks.items():
                 if payload.get(key) != expected:
                     raise ContractError(f"prepare operation {spec['code']} payload has invalid {key}")
-    semantic_errors = _semantic_source_errors(manifest)
-    if semantic_errors:
-        raise ContractError("; ".join(semantic_errors))
+    if validate_live_source:
+        semantic_errors = _semantic_source_errors(manifest)
+        if semantic_errors:
+            raise ContractError("; ".join(semantic_errors))
 
 
 def _external_artifacts(
