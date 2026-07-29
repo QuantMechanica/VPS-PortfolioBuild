@@ -591,9 +591,46 @@ def _git_head(repo_root: Path) -> str:
     return process.stdout.strip().lower()
 
 
-def _git_clean_plan(repo_root: Path) -> dict[str, Any]:
+def _git_clean_plan(
+    repo_root: Path, *, scoped_paths: Any = (),
+) -> dict[str, Any]:
+    try:
+        resolved_repo = repo_root.resolve(strict=True)
+    except OSError as exc:
+        return {
+            "valid": False,
+            "error": f"authoritative source repository is unavailable: {exc}",
+            "porcelain": None,
+        }
+    relative_paths: list[str] = []
+    for raw_path in scoped_paths:
+        try:
+            resolved = Path(raw_path).resolve(strict=True)
+            relative = resolved.relative_to(resolved_repo)
+        except (OSError, ValueError) as exc:
+            return {
+                "valid": False,
+                "error": f"Git-bound runtime source is outside the repository: {raw_path}: {exc}",
+                "porcelain": None,
+            }
+        rendered = relative.as_posix()
+        if rendered not in relative_paths:
+            relative_paths.append(rendered)
+    if not relative_paths:
+        return {
+            "valid": False,
+            "error": "Git-bound runtime source scope is empty",
+            "porcelain": None,
+        }
     process = subprocess.run(
-        ["git", "status", "--porcelain=v1", "--untracked-files=all"],
+        [
+            "git",
+            "status",
+            "--porcelain=v1",
+            "--untracked-files=all",
+            "--",
+            *sorted(relative_paths),
+        ],
         cwd=str(repo_root),
         capture_output=True,
         text=True,
@@ -610,7 +647,11 @@ def _git_clean_plan(repo_root: Path) -> dict[str, Any]:
     porcelain = process.stdout
     return {
         "valid": porcelain == "",
-        "error": None if porcelain == "" else "authoritative source worktree is not clean",
+        "error": (
+            None
+            if porcelain == ""
+            else "authoritative runtime-source scope is not clean"
+        ),
         "porcelain": porcelain,
     }
 
@@ -865,9 +906,15 @@ def _ftmo_runtime_source_plan(
             "runtime_source_artifacts_sha256 mismatch: "
             f"expected={expected_list_sha} actual={actual_list_sha}"
         )
-    git = _git_clean_plan(repo_root)
+    # The repository can legitimately contain unrelated OWNER work in progress.
+    # Git cleanliness therefore applies to the exact, hash-bound runtime-source
+    # manifest, not to unrelated dashboard/public-data paths.  Every execution
+    # input and EA artifact is independently hash-checked above/below.
+    git = _git_clean_plan(repo_root, scoped_paths=expected.values())
     if not git.get("valid"):
-        errors.append(str(git.get("error") or "authoritative source worktree is not clean"))
+        errors.append(
+            str(git.get("error") or "authoritative runtime-source scope is not clean")
+        )
     return {
         "requested": True,
         "valid": not errors,

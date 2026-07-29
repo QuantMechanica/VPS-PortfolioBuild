@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import sqlite3
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -375,7 +376,7 @@ def test_ftmo_source_binding_revalidates_commit_tree_prereg_and_controllers(
     monkeypatch.setattr(
         runner,
         "_git_clean_plan",
-        lambda _repo: {"valid": True, "error": None, "porcelain": ""},
+        lambda _repo, **_kwargs: {"valid": True, "error": None, "porcelain": ""},
     )
 
     valid = runner._ftmo_source_binding_plan(
@@ -400,6 +401,53 @@ def test_ftmo_source_binding_revalidates_commit_tree_prereg_and_controllers(
         "runtime source farmctl SHA-256 mismatch" in error
         for error in runtime_invalid["errors"]
     )
+
+
+def test_git_clean_plan_is_limited_to_bound_runtime_sources(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    bound = repo / "runtime.py"
+    unrelated = repo / "public-data.json"
+    bound.write_text("# bound\n", encoding="utf-8")
+    unrelated.write_text("{}\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    subprocess.run(["git", "add", "."], cwd=repo, check=True)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=FTMO test",
+            "-c",
+            "user.email=ftmo-test@example.invalid",
+            "commit",
+            "-qm",
+            "initial",
+        ],
+        cwd=repo,
+        check=True,
+    )
+
+    unrelated.write_text('{"owner":"open"}\n', encoding="utf-8")
+    scoped = runner._git_clean_plan(repo, scoped_paths=[bound])
+    assert scoped == {"valid": True, "error": None, "porcelain": ""}
+
+    bound.write_text("# dirty bound source\n", encoding="utf-8")
+    dirty = runner._git_clean_plan(repo, scoped_paths=[bound])
+    assert dirty["valid"] is False
+    assert dirty["error"] == "authoritative runtime-source scope is not clean"
+    assert "runtime.py" in dirty["porcelain"]
+
+
+def test_git_clean_plan_rejects_empty_or_outside_scope(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    outside = tmp_path / "outside.py"
+    outside.write_text("# outside\n", encoding="utf-8")
+
+    assert runner._git_clean_plan(repo)["valid"] is False
+    result = runner._git_clean_plan(repo, scoped_paths=[outside])
+    assert result["valid"] is False
+    assert "outside the repository" in result["error"]
 
 
 def test_execute_is_hash_bound_and_writes_receipt(tmp_path: Path, monkeypatch) -> None:
