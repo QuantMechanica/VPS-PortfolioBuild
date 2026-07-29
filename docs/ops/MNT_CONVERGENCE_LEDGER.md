@@ -4,7 +4,19 @@
 >
 > **Mirror-Hinweis:** Kanonischer Ort ist der Vault (`Maintenance/Konvergenz-Ledger.md`); G:-Mount war beim Stand 2026-07-29 down (GoogleDriveFS nicht gelaufen), daher Repo-Kopie zuerst. Spiegelung bei nächster G:-Verfügbarkeit.
 
-**Stand:** 2026-07-29 (nach Runde 3) · R1 (`80b9d54d`) RECYCLE · R2 (`6066746a`) **APPROVED** · R3 (`6a1811dd`) **APPROVED** · Runde 4 dispatched (Positionen zu 020/024/025/027–033).
+**Stand:** 2026-07-29 (nach Runde 4) · R1 RECYCLE · R2/R3/R4 **APPROVED** · **✅ KONVERGENZ-MANDAT ERFÜLLT: 46/46 Topics ≥90 %.** Verbleibend: Umsetzung + OWNER-Entscheidungen (unten).
+
+## Runde 4 — Ergebnis (Task 3fbc789c): letzte 10 Topics konvergiert
+
+Alle 10 Positionen 93–99 %, evidenzgebunden (E1–E11 im Positionspapier). Kernpunkte: **MNT-031 P1-Hochstufung akzeptiert (99 %)** mit ancestry-erhaltender Integrationsstrategie (Divergenz inzwischen 4/1751; lokales `main` KEIN sicherer Proxy: 25/2733); MNT-020 alle 4 Claude-Korrekturen akzeptiert, Handle-Cache bleibt korrekt Hypothese bis Same-Source-A/B; MNT-027 beide Matrix-Erweiterungen; MNT-024/025/028 G:-Lauffähigkeitsvertrag + Drei-Zustands-Preflight (`MOUNT_UNAVAILABLE`/`TARGET_MISSING`/`TARGET_INVALID`); MNT-029 Renderer-Defekt real (`render_cockpit.py` schluckt Feed-Fehler; `owner_decisions.json` stale seit 23.07. → Claude-Refresh fällig); MNT-030 Kette 003→030 notwendig-nicht-hinreichend; MNT-032 **zwei Claude-Behauptungen widerlegt und akzeptiert** (Schwelle 150 GB seit 21.07., nicht „>80 GB" — CLAUDE.md war stale, korrigiert); MNT-033 generierte Sicht statt dritter Autorität.
+
+**Incident während Runde 4 (behoben):** Purge-Task (SYSTEM) seit ~01:20 in 0x800710E0-Klasse; D: brannte 208→42,6 GB in ~9 h. Claude-Sofortmaßnahme: kanonische Purge direkt ausgeführt → **240,6 GB frei (198 GB reclaimed)**, aktive Terminals T2/T3/T6 geschützt, 9/9 Worker danach gesund. Scheduler-Heilung hängt an MNT-003-Apply.
+
+## Verbleibende Arbeit (nach Konvergenz)
+
+1. **OWNER-Entscheidungen:** (a) MNT-045 Fail-hard ratifizieren; (b) MNT-043 Requalifikationskonsequenz (`vintage_stale`); (c) MNT-031 Integrationsfenster autorisieren (Merge der 4 main-Commits, dann main-Fast-Forward); (d) Task-Contract-Package interaktiv applyen (PLAN → WhatIf → Apply) — heilt 0x800710E0-Klasse inkl. Purge-/agy-/Mailbox-Lanes.
+2. **Claude:** `owner_decisions.json` refresh; Vault-Spiegelung Maintenance-Ordner sobald G: zurück.
+3. **Umsetzung je Topic** gemäß konvergierter Contracts (Reihenfolgen: 009→010, 003→002→004, 003→030, 043→017/018/020/044).
 
 ## Runde 3 — Ergebnis (Task 6a1811dd)
 
@@ -36,7 +48,7 @@ Verifiziert durch 4 unabhängige Prüfagenten (Seiten, Park-Code, Task-Package, 
 | MNT-040 | **~90 %** | ✅ konvergiert (R2) | latest/best/regressed geliefert; Runde 3: Neutral-Family-Verfeinerung (Infra-Rauschen raus aus Current/regressed) + Test-Pins |
 | 006/007/008/009/010/012/013/015/016/021/036/041 | **~92 %** | ✅ konvergiert (Fold-Ack) | Codex-Lösungen + von Codex explizit acknowledgte Claude-Korrekturen = beidseitige Position; Umsetzung folgt je Topic |
 | 005/011/014/022/023/026/034/035/037/038/039/042 | **~93 %** | ✅ konvergiert (Endorsement) | Von Claude im Review ohne Einschränkung bestätigt; Codex = Autor — beidseitig ≥90 % |
-| 020/024/025/027/028/029/030/031/032/033 | — | 🔄 Runde 4 | Positionsrunde läuft: 020 (Claude-Korrekturen unbeantwortet), 027 (Matrix-Erweiterung Q04-Kosten/Q08-Params), 031 (P2→P1-Hochstufung), 024/025/028/029/030/032/033 (von Claude nicht tiefgeprüft — Codex-Selbstreview + Claude-Verifikation) |
+| 020/024/025/027/028/029/030/031/032/033 | **96/94/97/98/94/97/98/99/93/97 %** | ✅ konvergiert (R4) | Alle Refinements beidseitig akzeptiert; 031 jetzt P1; 030 P1 solange Lane down; 032 P1-Incident behoben/P2-Härtung |
 | 043/044/045/046 | **95/95/95/93 %** | ✅ konvergiert (R3) | Merged Contracts in `docs/ops/mnt_page_updates_2026-07-28/`; 2 OWNER-Entscheidungen offen (s. o.) |
 
 ## Querschnittsbefunde Runde 1 (Ehrlichkeit der Evidenz)

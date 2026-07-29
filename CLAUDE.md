@@ -165,7 +165,7 @@ operational state. Essentials:
   recover with **`Factory_OFF.ps1` then `Factory_ON.ps1 -NoPause`** (admin, visible
   session; `echo '' |` pipes Enter past OFF's Read-Host). A worker-only restart does NOT
   fix it. **Do NOT VPS-reboot** (stops T_Live live trading) unless OFF/ON fails.
-- **Disk (D:) fast-burn:** `tester_cache_purge.ps1` runs every **20min** (no-op >80GB).
+- **Disk (D:) fast-burn:** `tester_cache_purge.ps1` runs every **20min** (no-op ≥150GB free; LowWater 80→150 seit 2026-07-21).
   `NO_HISTORY;INCOMPLETE_RUNS` = first-attempt cold-cache transient (self-heals; do NOT
   re-import .DWX history — ops 6e26c61f for the worker-retry fix).
 
