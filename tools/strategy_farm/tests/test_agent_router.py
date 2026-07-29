@@ -100,7 +100,7 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             self.assertTrue(codex["enabled"])
             self.assertEqual(codex["max_parallel"], 5)
 
-    def test_routes_by_capability_and_wip_limit(self) -> None:
+    def test_routes_highest_priority_first_by_capability_and_wip_limit(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             agent_router.sync_default_registry(root, claude_disabled_flag=root / "missing.flag")
@@ -110,9 +110,9 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             first = agent_router.route_once(root)
             second = agent_router.route_once(root)
 
-            self.assertEqual(first.task_id, build["task_id"])
+            self.assertEqual(first.task_id, research["task_id"])
             self.assertEqual(first.assigned_agent, "gemini")
-            self.assertEqual(second.task_id, research["task_id"])
+            self.assertEqual(second.task_id, build["task_id"])
             self.assertEqual(second.assigned_agent, "gemini")
 
     def test_gemini_build_review_creates_codex_review_task(self) -> None:
@@ -151,21 +151,21 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             blocked = agent_router.enqueue_task(
                 root,
                 "research_strategy",
-                priority=5,
+                priority=90,
                 required_capabilities=["research", "strategy", "source_discovery"],
             )
             for _ in range(2):
                 filler = agent_router.enqueue_task(
                     root,
                     "research_strategy",
-                    priority=1,
+                    priority=100,
                     required_capabilities=["research", "strategy", "source_discovery"],
                 )
                 decision = agent_router.route_once(root, claude_disabled_flag=root / "missing.flag")
                 self.assertEqual(decision.assigned_agent, "gemini")
                 self.assertEqual(decision.task_id, filler["task_id"])
 
-            ops = agent_router.enqueue_task(root, "ops_issue", priority=10)
+            ops = agent_router.enqueue_task(root, "ops_issue", priority=80)
             decision = agent_router.route_once(root, claude_disabled_flag=root / "missing.flag")
 
             self.assertEqual(decision.task_id, ops["task_id"])
@@ -247,6 +247,10 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             agent_router.sync_default_registry(root, claude_disabled_flag=root / "missing.flag")
             created = agent_router.enqueue_friday_smoke_tasks(root, claude_disabled_flag=root / "missing.flag")
             self.assertEqual(len(created["created"]), 3)
+            self.assertEqual(
+                {task["priority"] for task in agent_router.list_tasks(root)},
+                {95},
+            )
 
             routed = agent_router.route_many(root, max_routes=5, claude_disabled_flag=root / "missing.flag")
             assigned = {row["assigned_agent"] for row in routed if row["reason"] == "assigned"}

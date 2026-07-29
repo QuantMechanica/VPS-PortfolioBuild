@@ -37,6 +37,10 @@ try:
     import farmctl
 except ModuleNotFoundError:
     from tools.strategy_farm import farmctl
+try:
+    import agent_router
+except ModuleNotFoundError:
+    from tools.strategy_farm import agent_router
 
 ROOT = Path(r"D:\QM\strategy_farm")
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -1264,6 +1268,54 @@ def chk_codex_bridge_heartbeat(con) -> dict:
                   f"heartbeat age {age}s", "")
 
 
+def chk_agent_lane_heartbeat(con) -> dict:
+    """Expose enabled router lanes that routing suppresses due to stale heartbeat."""
+    threshold_hours = agent_router.LANE_HEARTBEAT_STALE_HOURS
+    now_ts = dt.datetime.now(dt.UTC).timestamp()
+    stale: list[tuple[str, float]] = []
+    rows = con.execute(
+        """
+        SELECT agent_id
+        FROM agent_registry
+        WHERE enabled=1 AND max_parallel > 0
+        ORDER BY agent_id
+        """
+    ).fetchall()
+    for row in rows:
+        agent_id = str(row[0])
+        heartbeat = ROOT / "state" / f"lane_{agent_id}_heartbeat.json"
+        if not heartbeat.exists():
+            # Match agent_router._lane_heartbeat_stale: missing is no prior
+            # liveness evidence, not proof that a lane died.
+            continue
+        try:
+            age_hours = max(0.0, (now_ts - heartbeat.stat().st_mtime) / 3600)
+        except OSError:
+            continue
+        if age_hours > threshold_hours:
+            stale.append((agent_id, age_hours))
+
+    if stale:
+        detail = ", ".join(f"{agent_id}={age:.1f}h" for agent_id, age in stale)
+        return _check(
+            "agent_lane_heartbeat_stale",
+            "WARN",
+            len(stale),
+            0,
+            f"enabled router lane heartbeat stale beyond {threshold_hours}h: {detail}",
+            "Inspect/re-run the affected lane's scheduled orchestration task; "
+            "0x800710E0 indicates interactive-queue death. Do not restart MT5 terminals.",
+        )
+    return _check(
+        "agent_lane_heartbeat_stale",
+        "OK",
+        0,
+        0,
+        f"no enabled router lane heartbeat older than {threshold_hours}h",
+        "",
+    )
+
+
 def chk_disk_free_space(con) -> dict:
     """D: free-space watchdog for reports/log growth."""
     free_gb = shutil.disk_usage("D:/").free / (1024 ** 3)
@@ -1641,6 +1693,7 @@ ALL_CHECKS = [
     ("unbuilt_cards_count",    chk_unbuilt_cards_count,    True),
     ("unenqueued_eas_count",   chk_unenqueued_eas_count,   True),
     ("codex_bridge_heartbeat", chk_codex_bridge_heartbeat, True),
+    ("agent_lane_heartbeat",   chk_agent_lane_heartbeat,   True),
     ("disk_free_space",        chk_disk_free_space,        True),
     ("p_pass_stagnation",      chk_p_pass_stagnation,      True),
     ("phase_infra_graveyard",  chk_phase_infra_graveyard,  True),
