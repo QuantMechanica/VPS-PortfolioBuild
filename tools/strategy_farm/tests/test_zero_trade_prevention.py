@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -123,7 +124,8 @@ Filters: news blackout only.
                 )
                 conn.commit()
 
-            result = farmctl.enqueue_backtest(root, "review-pass", "P2")
+            with mock.patch.dict(os.environ, {"QM_AGENT_ID": "controller"}):
+                result = farmctl.enqueue_backtest(root, "review-pass", "P2")
 
             self.assertFalse(result["enqueued"])
             self.assertEqual(result["reason"], "q01_trade_generation_zero_trades")

@@ -17,7 +17,7 @@ from tools.strategy_farm import farmctl
 
 
 def _insert_task(root: Path, *, task_type: str, state: str, payload: dict | None = None,
-                 artifact_path: str | None = None) -> str:
+                 artifact_path: str | None = None, verdict: str | None = None) -> str:
     """Insert an agent_task directly in a chosen state (bypasses enqueue's TODO)."""
     import uuid
     tid = str(uuid.uuid4())
@@ -29,9 +29,9 @@ def _insert_task(root: Path, *, task_type: str, state: str, payload: dict | None
                 id, task_type, state, priority, required_capabilities_json,
                 required_skills_json, assigned_agent, budget_class, parent_id,
                 artifact_path, verdict, payload_json, created_at, updated_at
-            ) VALUES (?, ?, ?, 50, '[]', '[]', NULL, 'standard', NULL, ?, NULL, ?, ?, ?)
+            ) VALUES (?, ?, ?, 50, '[]', '[]', NULL, 'standard', NULL, ?, ?, ?, ?, ?)
             """,
-            (tid, task_type, state, artifact_path, json.dumps(payload or {}), now, now),
+            (tid, task_type, state, artifact_path, verdict, json.dumps(payload or {}), now, now),
         )
         conn.commit()
     return tid
@@ -55,6 +55,23 @@ class ReconcileExitsTests(unittest.TestCase):
             tid = _insert_task(root, task_type="research_strategy", state="APPROVED")
             agent_router.reconcile_task_exits(root, apply=True)
             self.assertEqual(_state_of(root, tid), "PASSED")
+
+    def test_approved_safe_defer_resolves_to_blocked_not_passed(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            tid = _insert_task(
+                root,
+                task_type="ops_issue",
+                state="APPROVED",
+                verdict="SAFE_DEFER accepted: isolated but repair remains open",
+            )
+            result = agent_router.reconcile_task_exits(root, apply=True)
+            self.assertEqual(_state_of(root, tid), "BLOCKED")
+            self.assertIn(
+                "APPROVED->BLOCKED:approved_safe_defer_not_completed",
+                result["would_move"],
+            )
+            self.assertTrue(_payload_of(root, tid)["safe_defer_reclassified"])
 
     def test_approved_build_ea_advances_to_pipeline(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
@@ -199,6 +216,24 @@ class RemovedTaskTypeTests(unittest.TestCase):
 
 
 class ArtifactFileEnforcementTests(unittest.TestCase):
+    def test_safe_defer_cannot_close_review_as_approved(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            evidence = root / "defer.md"
+            evidence.write_text("repair deferred", encoding="utf-8")
+            created = agent_router.enqueue_task(root, "ops_issue")
+            agent_router.update_task(root, created["task_id"], state="REVIEW")
+            result = agent_router.close_review_task(
+                root,
+                created["task_id"],
+                close_state="APPROVED",
+                verdict="SAFE-DEFER: terminal isolated",
+                artifact_path=str(evidence),
+            )
+            self.assertFalse(result["closed"])
+            self.assertEqual(result["reason"], "safe_defer_must_be_blocked")
+            self.assertEqual(_state_of(root, created["task_id"]), "REVIEW")
+
     def test_directory_artifact_rejected_on_update_task(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)

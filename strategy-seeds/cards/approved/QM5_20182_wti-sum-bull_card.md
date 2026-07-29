@@ -58,7 +58,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: QUEUED_FACTORY_OFF
+q02_status: BLOCKED_FACTORY_OFF
 review_focus: "Falsify whether Ewald's WTI July-November short persists in the mutually exclusive positive 252-D1 state and supplies direct crude-oil exposure distinct from the certified XAU/SP500/NDX/XNG book."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -255,7 +255,7 @@ change, portfolio-gate edit, or portfolio admission is authorized.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-29 | initial source-backed WTI summer positive-state counterfade card and strict build | Q01 | PASS |
-| v1 | 2026-07-29 | initial targeted sweep refused by FACTORY_OFF; canonical build record then enqueued one pending Q02 row without dispatch | Q02 | QUEUED_FACTORY_OFF |
+| v1 | 2026-07-29 | targeted sweep correctly refused; old build-record path bypassed Factory OFF and its row was quarantined | Q02 | BLOCKED_FACTORY_OFF |
 
 ## Pipeline phase status
 
@@ -263,4 +263,4 @@ change, portfolio-gate edit, or portfolio admission is authorized.
 |---|---|---|---|
 | G0 Research Intake | 2026-07-29 | APPROVED | this card and governed source packet |
 | Q01 Build Validation | 2026-07-29 | PASS | strict build gate: 0 errors, 0 warnings, all static checks PASS |
-| Q02 Baseline Screening | 2026-07-29 | QUEUED_FACTORY_OFF | work item `60181936-0403-49bc-b221-dda4f35eb584`; pending, unclaimed, attempt 0 |
+| Q02 Baseline Screening | 2026-07-29 | BLOCKED_FACTORY_OFF | invalid work item `60181936-0403-49bc-b221-dda4f35eb584` quarantined `failed/BLOCKED_FACTORY_OFF`; fresh row only after coordinated restart |

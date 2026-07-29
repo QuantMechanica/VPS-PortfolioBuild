@@ -59,11 +59,10 @@ ZERO_TRADE_REWORK_DEDUP_HOURS = 6
 PHASE_ACTIVE_TIMEOUT_MIN = dict(farmctl.PHASE_ACTIVE_TIMEOUT_MIN)
 FACTORY_TERMINALS = tuple(f"T{i}" for i in range(1, 11))
 MT5_SATURATION_MIN_WORKERS = 7
-# Operator/RAM-governor concurrency cap — terminals listed here are
-# intentionally offline (mirrors start_terminal_workers._disabled_terminals).
-# Saturation must be judged against the ENABLED fleet, not the installed one,
-# or every deliberate RAM throttle reads as a factory-down CRITICAL
-# (OWNER 2026-07-07: cockpit cried CRITICAL on a healthy 6/6-enabled fleet).
+# Operator safety/quarantine list — terminals here are intentionally offline
+# (mirrors start_terminal_workers._disabled_terminals).  It lowers the urgent
+# failure floor, but it must not erase missing design capacity: a complete
+# enabled subset is WARN whenever fewer than all ten installed slots are usable.
 DISABLED_TERMINALS_FILE = ROOT / "state" / "disabled_terminals.txt"
 
 # --- WS-F standing vacuousness audit (ULTRACODE 2026-07-26) ------------------
@@ -998,13 +997,13 @@ def chk_mt5_dispatch_idle(con) -> dict:
 
 
 def chk_mt5_worker_saturation(con) -> dict:
-    """At least 2/3 of the ENABLED T1-T10 worker fleet should be alive.
+    """At least 2/3 of the enabled fleet must run; design loss remains WARN.
 
     The factory has ten installed terminal_worker daemons, but the
-    disabled_terminals.txt cap (RAM governor) can deliberately park some.
-    Saturation compares alive workers against the enabled fleet only —
-    a fully-alive throttled fleet is OK, not CRITICAL. T_Live is
-    deliberately outside this regex and must never be counted.
+    disabled_terminals.txt safety list can deliberately park some. A fully
+    alive enabled subset avoids a false factory-down FAIL, while the missing
+    installed capacity remains visible as WARN. T_Live is deliberately outside
+    this regex and must never be counted.
     """
     try:
         out = subprocess.run(
@@ -1037,24 +1036,43 @@ def chk_mt5_worker_saturation(con) -> dict:
             running.add(match.group(1).upper())
     disabled = _disabled_terminals()
     enabled = [t for t in FACTORY_TERMINALS if t not in disabled]
-    expected = len(enabled) or len(FACTORY_TERMINALS)
+    enabled_expected = len(enabled) or len(FACTORY_TERMINALS)
+    design_expected = len(FACTORY_TERMINALS)
     # 2/3 of the enabled fleet, never stricter than the full-fleet floor of 7.
-    min_workers = min(MT5_SATURATION_MIN_WORKERS, max(1, -(-2 * expected // 3)))
+    min_workers = min(
+        MT5_SATURATION_MIN_WORKERS,
+        max(1, -(-2 * enabled_expected // 3)),
+    )
     running_enabled = {t for t in running if t not in disabled}
     count = len(running_enabled)
-    detail = (f"{count}/{expected} enabled terminal_worker daemons alive "
-              f"({', '.join(sorted(running_enabled)) or 'none'})")
+    detail = (
+        f"{count}/{design_expected} design terminal_worker capacity alive; "
+        f"{count}/{enabled_expected} enabled daemons alive "
+        f"({', '.join(sorted(running_enabled)) or 'none'})"
+    )
     if disabled:
-        detail += f" // {len(disabled)} parked by disabled_terminals.txt cap: {', '.join(sorted(disabled))}"
+        detail += (
+            f" // {len(disabled)} unavailable by disabled_terminals.txt "
+            f"safety/quarantine policy: {', '.join(sorted(disabled))}"
+        )
     if count < min_workers:
         return _check("mt5_worker_saturation", "FAIL", count, min_workers,
                       detail,
                       "Run `python tools/strategy_farm/start_terminal_workers.py --dedupe`; inspect worker logs if any slot stays dark.")
-    if count < expected:
-        return _check("mt5_worker_saturation", "WARN", count, expected,
+    if count < enabled_expected:
+        return _check("mt5_worker_saturation", "WARN", count, design_expected,
                       detail,
                       "Fleet is above 2/3 of enabled capacity but not fully saturated; restart missing workers when convenient.")
-    return _check("mt5_worker_saturation", "OK", count, expected, detail, "")
+    if enabled_expected < design_expected:
+        return _check(
+            "mt5_worker_saturation",
+            "WARN",
+            count,
+            design_expected,
+            detail,
+            "Enabled workers are healthy, but design capacity is reduced; resolve or explicitly ratify each quarantined terminal.",
+        )
+    return _check("mt5_worker_saturation", "OK", count, design_expected, detail, "")
 
 
 def _parse_utc_datetime(value: str | None) -> dt.datetime | None:
@@ -1644,44 +1662,56 @@ def chk_phase_infra_graveyard(con) -> dict:
 def chk_q02_stranded_exhausted_pairs(con) -> dict:
     """Detect Q02 pairs that exhausted the ordinary INFRA retry budget and vanished.
 
-    A pair is stranded only when it has no real Q02 verdict, no pending/active
-    successor, and at least the canonical sweep retry cap worth of INFRA_FAIL
-    rows. This is deliberately pair-level: counting raw failure rows hides how
-    many distinct EA/symbol candidates silently left the pipeline.
+    Storage has two names for this gate: canonical ``Q02`` and legacy ``P2``.
+    They form one logical history and therefore must be grouped together.  A
+    pair is stranded only when it has no pending/active successor, at least the
+    canonical retry cap worth of ``INFRA_FAIL`` rows, and *no other terminal
+    disposition*.  The last condition deliberately treats ``ZERO_TRADES`` /
+    ``MIN_TRADES_NOT_MET`` as the frequency-floor/retire lane and ``INVALID`` as
+    a non-retryable evidence disposition.  Neither is retryable infrastructure.
+
+    The query expresses an invariant rather than pinning a fleet count: every
+    exhausted infra-only pair must either have an open successor or a non-infra
+    terminal disposition.  This remains valid as the live census changes.
     """
     retry_cap = 12  # sweep_enqueue_built_eas.MAX_INFRA_ATTEMPTS
-    real_verdicts = (
-        "PASS", "PASS_SOFT", "PASS_LOWFREQ", "FAIL", "FAIL_HARD",
-        "FAIL_SOFT", "RETIRE", "MULTI_SEED_PASS",
-    )
-    placeholders = ",".join("?" for _ in real_verdicts)
     row = con.execute(
-        f"""
+        """
         SELECT COUNT(*)
         FROM (
             SELECT ea_id, symbol
             FROM work_items
-            WHERE phase='Q02'
+            WHERE phase IN ('Q02', 'P2')
             GROUP BY ea_id, symbol
-            HAVING SUM(CASE WHEN verdict IN ({placeholders}) THEN 1 ELSE 0 END)=0
+            HAVING SUM(
+                       CASE
+                           WHEN status IN ('done', 'failed')
+                            AND verdict IS NOT NULL
+                            AND TRIM(verdict) <> ''
+                            AND UPPER(verdict) <> 'INFRA_FAIL'
+                           THEN 1 ELSE 0
+                       END
+                   )=0
                AND SUM(CASE WHEN status IN ('pending','active') THEN 1 ELSE 0 END)=0
-               AND SUM(CASE WHEN verdict='INFRA_FAIL' THEN 1 ELSE 0 END) >= ?
+               AND SUM(CASE WHEN UPPER(verdict)='INFRA_FAIL' THEN 1 ELSE 0 END) >= ?
         )
         """,
-        (*real_verdicts, retry_cap),
+        (retry_cap,),
     ).fetchone()
     stranded = int(row[0] or 0)
     if stranded:
         return _check(
             "q02_stranded_exhausted_pairs", "FAIL", stranded, 0,
-            f"{stranded} Q02 EA/symbol pairs have no real verdict, no queued "
-            f"successor, and >= {retry_cap} INFRA_FAIL rows",
+            f"{stranded} Q02/P2 EA/symbol pairs have no non-infra terminal "
+            f"disposition, no queued successor, and >= {retry_cap} INFRA_FAIL rows",
             "Classify the cohort by row-bound aggregate and verdict_reason; "
-            "run an OWNER-sized governed canary before any bulk requeue.",
+            "route valid zero-trade outcomes to RETIRE/frequency-floor and INVALID "
+            "outcomes to evidence repair; run an OWNER-sized governed canary "
+            "before any bulk infra requeue.",
         )
     return _check(
         "q02_stranded_exhausted_pairs", "OK", 0, 0,
-        "no retry-exhausted Q02 pair has vanished without a verdict", "",
+        "no retry-exhausted Q02/P2 pair has vanished without a non-infra disposition", "",
     )
 
 

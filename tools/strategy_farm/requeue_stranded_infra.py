@@ -38,25 +38,37 @@ Those are deliberate poison sentinels — the log-bomb path stamps `attempt_coun
 so a requeue does not re-bomb the journal disk, and the active-timeout reaper stamps 50.
 Flipping them blind would re-detonate; we leave them terminal.
 
-CANARY discipline: default `--limit 50`, ordered deepest-phase-first then EA priority, so the
-nearly-free deep wins (Q07/Q06/Q05) go first. Full release requires an explicit `--limit 0`.
+WAVE discipline (OWNER 2026-07-29): exactly 5 rows in Wave 1, then exactly 25 rows in Wave 2.
+Wave 2 is impossible without a read-only PASS receipt proving all five Wave-1 rows reached real
+terminal verdicts with zero recurrent INFRA/INVALID outcomes.  The receipt also binds the exact
+next 25 rows and is revalidated immediately before apply. Q08 invalid-report rows are always
+BLOCKED, never retryable.  `--limit` and unlimited release are retired.
 
 Modes (default = dry-run, read-only via `mode=ro`, mutates nothing):
 
-    # dry-run canary (writes a reversible snapshot; NO DB writes)
-    python tools/strategy_farm/requeue_stranded_infra.py \
+    # dry-run Wave 1 (exactly five; writes a reversible snapshot; NO DB writes)
+    python tools/strategy_farm/requeue_stranded_infra.py --wave 1 \
         --snapshot-out D:/QM/reports/state/requeue_stranded_infra_snapshot.json
 
-    # full projection (no limit)
-    python tools/strategy_farm/requeue_stranded_infra.py --limit 0
+    # read-only Q03..Q08 health/disposition census
+    python tools/strategy_farm/requeue_stranded_infra.py --health-census
 
     # include the Q02 above-sweep-cap graveyard
     python tools/strategy_farm/requeue_stranded_infra.py --include-q02-exhausted
 
     # execute the flip (Factory OFF + DB quiescent). --snapshot-out is MANDATORY:
     # it is the DURABLE JOURNAL that makes apply crash-safe and revert byte-faithful.
-    python tools/strategy_farm/requeue_stranded_infra.py --apply \
-        --snapshot-out D:/QM/reports/state/requeue_stranded_infra_snapshot.json
+    python tools/strategy_farm/requeue_stranded_infra.py --wave 1 --apply \
+        --snapshot-out D:/QM/reports/state/requeue_stranded_infra_wave1.json
+
+    # after all five settle, issue a read-only receipt; BLOCKED receipts cannot open Wave 2
+    python tools/strategy_farm/requeue_stranded_infra.py \
+        --assess-wave1 D:/QM/reports/state/requeue_stranded_infra_wave1.json \
+        --receipt-out D:/QM/reports/state/requeue_stranded_infra_wave1_receipt.json
+
+    # Wave 2 is exactly 25 and bound to the receipt's frozen selection
+    python tools/strategy_farm/requeue_stranded_infra.py --wave 2 \
+        --wave1-receipt D:/QM/reports/state/requeue_stranded_infra_wave1_receipt.json
 
     # undo, guarded on the exact post-apply state recorded in the journal
     python tools/strategy_farm/requeue_stranded_infra.py \
@@ -86,6 +98,7 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import hashlib
 import json
 import os
 import re
@@ -125,7 +138,14 @@ DEFAULT_WI_REPORTS = Path(r"D:\QM\reports\work_items")
 DEFAULT_SNAPSHOT_DIR = Path(r"D:\QM\reports\state")
 
 DEFAULT_DEEP_PHASES = ("Q04", "Q05", "Q06", "Q07")
+HEALTH_PHASES = ("Q03", "Q04", "Q05", "Q06", "Q07", "Q08")
 Q02_PHASE = "Q02"
+
+# OWNER 2026-07-29 / MNT-007: recovery is deliberately bounded to exactly two
+# releases.  There is no "full" or caller-selected apply size any more.
+RECOVERY_WAVE_SIZES = {1: 5, 2: 25}
+WAVE_RECEIPT_SCHEMA = "qm.mnt007.wave1_receipt.v1"
+WAVE_CONTRACT = "MNT-007_STRANDED_INFRA_5_THEN_25"
 
 # Per-group INFRA_FAIL row-count cap. Identical to sweep_enqueue_built_eas.MAX_INFRA_ATTEMPTS
 # (=12): a (ea,symbol,setfile) that has stacked >=12 INFRA rows is either a permanent defect
@@ -140,14 +160,40 @@ MAX_INFRA_ATTEMPTS = 12
 ATTEMPT_COUNT_POISON_FLOOR = 12
 
 # Deeper phase first (Q07 is closest to a survivor). Mirrors terminal_worker._phase_rank order.
-PHASE_DEPTH = {"Q10": 10, "Q09": 9, "Q08": 8, "Q07": 7, "Q06": 6, "Q05": 5, "Q04": 4,
-               "Q03": 3, "Q02": 2}
+PHASE_DEPTH = {
+    "Q13": 13, "Q12": 12, "Q11": 11, "Q10": 10, "Q09_NEWS": 9.5,
+    "Q09_PORTFOLIO": 9.4, "Q09": 9, "Q08": 8, "Q07": 7, "Q06": 6,
+    "Q05": 5, "Q04": 4, "Q03": 3, "Q02": 2,
+}
 
 SETFILE_MISSING = "setfile_missing"
 
 
 def _utc_now() -> str:
     return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()
+
+
+def _canonical_sha256(value: Any) -> str:
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest().upper()
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest().upper()
+
+
+def _json_obj(raw: Any) -> dict[str, Any]:
+    if isinstance(raw, dict):
+        return raw
+    try:
+        value = json.loads(raw or "{}")
+    except (TypeError, json.JSONDecodeError):
+        return {}
+    return value if isinstance(value, dict) else {}
 
 
 def _ea_int(ea_id: Any) -> int | None:
@@ -242,7 +288,7 @@ def _ea_has_ex5(cfg: Config, ea_id: str) -> bool:
 # --------------------------------------------------------------------------- selection
 
 _STRANDED_SQL = """
-SELECT x.ea_id, x.symbol, x.setfile_path, COUNT(*) AS infra_count,
+SELECT x.ea_id, x.symbol, x.phase, x.setfile_path, COUNT(*) AS infra_count,
        MAX(x.updated_at) AS latest_ts,
        (SELECT z.id FROM work_items z
         WHERE z.ea_id=x.ea_id AND z.phase=x.phase AND z.symbol=x.symbol
@@ -352,6 +398,57 @@ def _has_log_bomb_marker(payload: dict[str, Any]) -> bool:
     return any(str(r).upper() == "LOG_BOMB" for r in (payload.get("reason_classes") or []))
 
 
+def _is_q08_invalid_report(payload: dict[str, Any]) -> bool:
+    """Return True for the non-retryable Q08 invalid-report family.
+
+    The legacy writer used several shapes: ``phase_runner_invalid_report`` in a
+    reason field, ``INVALID_REPORT`` in ``reason_classes``, and later the
+    explicit ``invalid_report_reclassified`` / ``invalid_report_reasons`` keys.
+    Treat every one as the same fail-closed boundary.  This deliberately does
+    not infer invalidity from a missing evidence file alone.
+    """
+    if payload.get("invalid_report_reclassified") is True:
+        return True
+    if payload.get("invalid_report_reasons"):
+        return True
+    values: list[Any] = [
+        payload.get("verdict_reason"), payload.get("final_failure"),
+        payload.get("prior_failure"), payload.get("reason"), payload.get("reason_class"),
+        payload.get("transient_infra_signature"),
+    ]
+    for key in ("reason_classes", "reasons"):
+        value = payload.get(key)
+        values.extend(value if isinstance(value, list) else [value])
+    for value in values:
+        upper = str(value or "").upper()
+        tokens = set(re.sub(r"[^A-Z0-9]+", " ", upper).split())
+        if "INVALID_REPORT" in upper or "INVALID" in tokens:
+            return True
+    return False
+
+
+def _later_phase_successor(
+    conn: sqlite3.Connection, ea_id: str, symbol: str, phase: str,
+) -> sqlite3.Row | None:
+    """Find pair-level progression beyond ``phase``.
+
+    Once a pair reached a deeper phase, its lower-phase INFRA row is historical
+    even when a stale setfile path makes it look stranded.  It must never be
+    resurrected by a recovery sweep.
+    """
+    depth = PHASE_DEPTH.get(phase, -1)
+    later = tuple(p for p, p_depth in PHASE_DEPTH.items() if p_depth > depth)
+    if not later:
+        return None
+    placeholders = ",".join("?" for _ in later)
+    return conn.execute(
+        f"SELECT id, phase, status, verdict, updated_at FROM work_items "
+        f"WHERE ea_id=? AND symbol=? AND phase IN ({placeholders}) "
+        f"ORDER BY updated_at DESC, id DESC LIMIT 1",
+        (ea_id, symbol, *later),
+    ).fetchone()
+
+
 def _classify_group(
     cfg: Config,
     conn: sqlite3.Connection,
@@ -366,10 +463,7 @@ def _classify_group(
     latest_id = group["latest_id"]
     row = _fetch_row(conn, latest_id) if latest_id else None
     setfile = row["setfile_path"] if row else group["setfile_path"]
-    try:
-        payload = json.loads(row["payload_json"] or "{}") if row else {}
-    except (TypeError, json.JSONDecodeError):
-        payload = {}
+    payload = _json_obj(row["payload_json"] if row else None)
     attempt_count = int(row["attempt_count"] or 0) if row else 0
     report_root = cfg.wi_reports_root / str(latest_id) if latest_id else None
     artifact_survives = bool(report_root and report_root.exists())
@@ -405,6 +499,22 @@ def _classify_group(
         return info
     if row["verdict"] != "INFRA_FAIL" or row["status"] not in ("done", "failed"):
         info["reason"] = "latest_row_not_terminal_infra"
+        return info
+
+    phase = str(row["phase"] or info.get("phase") or "")
+    successor = _later_phase_successor(conn, ea_id, symbol, phase)
+    if successor is not None:
+        info["reason"] = "historical_phase_advanced"
+        info["superseded_by"] = {
+            "work_item_id": successor["id"], "phase": successor["phase"],
+            "status": successor["status"], "verdict": successor["verdict"],
+        }
+        return info
+
+    # OWNER 2026-07-29: Q08 invalid reports are INVALID evidence, not transient
+    # infrastructure.  They are blocked even if still mislabeled INFRA_FAIL.
+    if phase == "Q08" and _is_q08_invalid_report(payload):
+        info["reason"] = "q08_invalid_report_non_retryable"
         return info
 
     skip = symbol_skip_fn(symbol)
@@ -562,9 +672,503 @@ def _plan(
     }
 
 
+def _is_real_verdict_row(row: sqlite3.Row | dict[str, Any]) -> bool:
+    verdict = str(row["verdict"] or "").strip().upper()
+    return str(row["status"] or "").lower() in {"done", "failed"} and bool(verdict) \
+        and verdict != "INFRA_FAIL"
+
+
+def _health_census(
+    cfg: Config,
+    *,
+    phases: tuple[str, ...] = HEALTH_PHASES,
+    symbol_skip_fn: Callable[[str], str | None] | None = None,
+    conn: sqlite3.Connection | None = None,
+) -> dict[str, Any]:
+    """Read-only disposition census for every Q03..Q08 INFRA-bearing group.
+
+    A current infra-only group is one with no real verdict, no pending/active
+    successor in the same group, and no pair-level progression to a deeper
+    phase.  Every such group is deterministically classified as RETRY, BLOCKED,
+    or RETIRED.  Superseded groups remain visible as historical exclusions.
+    """
+    if symbol_skip_fn is None:
+        symbol_skip_fn = lambda s: farmctl._q02_symbol_skip_reason(s, allow_logical_basket=True)
+    own_conn = conn is None
+    if own_conn:
+        conn = _open_ro(cfg.db)
+    assert conn is not None
+
+    target = tuple(dict.fromkeys(phases))
+    all_known = tuple(
+        p for p, depth in PHASE_DEPTH.items()
+        if depth >= min(PHASE_DEPTH.get(q, 3) for q in target)
+    )
+    placeholders = ",".join("?" for _ in all_known)
+    try:
+        rows = conn.execute(
+            "SELECT id, ea_id, symbol, phase, setfile_path, status, verdict, attempt_count, "
+            "evidence_path, claimed_by, payload_json, updated_at FROM work_items "
+            f"WHERE phase IN ({placeholders})",
+            all_known,
+        ).fetchall()
+
+        groups: dict[tuple[str, str, str, str], list[sqlite3.Row]] = {}
+        pair_rows: dict[tuple[str, str], list[sqlite3.Row]] = {}
+        target_set = set(target)
+        for row in rows:
+            pair_rows.setdefault((str(row["ea_id"]), str(row["symbol"])), []).append(row)
+            if row["phase"] in target_set:
+                key = (
+                    str(row["ea_id"]), str(row["symbol"]), str(row["phase"]),
+                    str(row["setfile_path"] or ""),
+                )
+                groups.setdefault(key, []).append(row)
+
+        per_phase: dict[str, dict[str, Any]] = {
+            phase: {
+                "infra_groups": 0,
+                "current_infra_only": 0,
+                "dispositions": {"RETRY": 0, "BLOCKED": 0, "RETIRED": 0, "REAL_VERDICT": 0},
+                "historical_exclusions": {},
+                "q08_invalid_report_blocked": 0,
+                "unresolved": 0,
+            }
+            for phase in target
+        }
+        current_cases: list[dict[str, Any]] = []
+        historical_examples: list[dict[str, Any]] = []
+        q08_invalid_retryable = 0
+        infra_pairs = {phase: set() for phase in target}
+        current_pairs = {phase: set() for phase in target}
+        historical_pairs = {phase: set() for phase in target}
+
+        for (ea_id, symbol, phase, setfile_key), group_rows in groups.items():
+            infra_rows = [r for r in group_rows if str(r["verdict"] or "").upper() == "INFRA_FAIL"]
+            if not infra_rows:
+                continue
+            stats = per_phase[phase]
+            stats["infra_groups"] += 1
+            infra_pairs[phase].add((ea_id, symbol))
+            latest_infra = max(infra_rows, key=lambda r: (str(r["updated_at"] or ""), str(r["id"])))
+            real_rows = [r for r in group_rows if _is_real_verdict_row(r)]
+            open_rows = [r for r in group_rows if str(r["status"] or "").lower() in {"pending", "active"}]
+            phase_depth = PHASE_DEPTH.get(phase, -1)
+            later_rows = [
+                r for r in pair_rows.get((ea_id, symbol), [])
+                if PHASE_DEPTH.get(str(r["phase"]), -1) > phase_depth
+            ]
+
+            historical_reason: str | None = None
+            disposition: str
+            reason: str
+            if real_rows:
+                disposition, reason = "REAL_VERDICT", "superseded_by_real_verdict"
+                historical_reason = reason
+            elif open_rows:
+                disposition, reason = "RETRY", "successor_in_flight"
+            elif later_rows:
+                disposition, reason = "BLOCKED", "historical_phase_advanced"
+                historical_reason = reason
+            else:
+                stats["current_infra_only"] += 1
+                current_pairs[phase].add((ea_id, symbol))
+                synthetic_group = {
+                    "ea_id": ea_id, "symbol": symbol, "phase": phase,
+                    "setfile_path": setfile_key or None,
+                    "infra_count": len(infra_rows), "latest_ts": latest_infra["updated_at"],
+                    "latest_id": latest_infra["id"],
+                }
+                classified = _classify_group(
+                    cfg, conn, synthetic_group, is_q02=False, symbol_skip_fn=symbol_skip_fn,
+                )
+                reason = str(classified["reason"] or "unclassified")
+                registry_status = cfg.registry.get(_ea_int(ea_id), (None, None))[0]
+                if registry_status != "active":
+                    disposition = "RETIRED"
+                elif classified["decision"] == "REQUEUE":
+                    disposition = "RETRY"
+                else:
+                    disposition = "BLOCKED"
+                payload = _json_obj(latest_infra["payload_json"])
+                if phase == "Q08" and _is_q08_invalid_report(payload):
+                    if disposition == "RETRY":
+                        q08_invalid_retryable += 1
+                    stats["q08_invalid_report_blocked"] += 1
+                current_cases.append({
+                    "ea_id": ea_id,
+                    "symbol": symbol,
+                    "phase": phase,
+                    "setfile_path": setfile_key or None,
+                    "latest_work_item_id": latest_infra["id"],
+                    "latest_updated_at": latest_infra["updated_at"],
+                    "infra_rows": len(infra_rows),
+                    "disposition": disposition,
+                    "reason": reason,
+                    "registry_status": registry_status,
+                    "evidence_present": bool(latest_infra["evidence_path"]),
+                })
+
+            if disposition not in stats["dispositions"]:
+                stats["unresolved"] += 1
+            else:
+                stats["dispositions"][disposition] += 1
+            if historical_reason:
+                historical_pairs[phase].add((ea_id, symbol))
+                hist = stats["historical_exclusions"]
+                hist[historical_reason] = hist.get(historical_reason, 0) + 1
+                if len(historical_examples) < 100:
+                    historical_examples.append({
+                        "ea_id": ea_id, "symbol": symbol, "phase": phase,
+                        "latest_work_item_id": latest_infra["id"],
+                        "reason": historical_reason,
+                    })
+    finally:
+        if own_conn:
+            conn.close()
+
+    disposition_totals = {"RETRY": 0, "BLOCKED": 0, "RETIRED": 0, "REAL_VERDICT": 0}
+    for phase, stats in per_phase.items():
+        stats["infra_pairs"] = len(infra_pairs[phase])
+        stats["current_infra_only_pairs"] = len(current_pairs[phase])
+        stats["historical_exclusion_pairs"] = len(historical_pairs[phase])
+        for name in disposition_totals:
+            disposition_totals[name] += int(stats["dispositions"][name])
+    unresolved = sum(int(stats["unresolved"]) for stats in per_phase.values())
+    invariant_ok = unresolved == 0 and q08_invalid_retryable == 0
+    return {
+        "schema_version": "qm.mnt007.health_census.v1",
+        "generated_at_utc": _utc_now(),
+        "db": str(cfg.db),
+        "phases": list(target),
+        "read_only": True,
+        "per_phase": per_phase,
+        "disposition_totals": disposition_totals,
+        "current_infra_only_total": sum(
+            int(stats["current_infra_only"]) for stats in per_phase.values()
+        ),
+        "current_infra_only_pair_phase_total": sum(
+            int(stats["current_infra_only_pairs"]) for stats in per_phase.values()
+        ),
+        "historical_exclusion_total": sum(
+            sum(int(n) for n in stats["historical_exclusions"].values())
+            for stats in per_phase.values()
+        ),
+        "historical_exclusion_pair_phase_total": sum(
+            int(stats["historical_exclusion_pairs"]) for stats in per_phase.values()
+        ),
+        "current_cases": sorted(
+            current_cases,
+            key=lambda item: (PHASE_DEPTH.get(item["phase"], 0), item["ea_id"], item["symbol"]),
+        ),
+        "historical_examples": historical_examples,
+        "invariant": {
+            "name": "every_current_infra_only_group_has_disposition",
+            "status": "PASS" if invariant_ok else "FAIL",
+            "allowed_current_dispositions": ["RETRY", "BLOCKED", "RETIRED"],
+            "unresolved": unresolved,
+            "q08_invalid_report_retryable": q08_invalid_retryable,
+        },
+    }
+
+
+def _selection_contract(plan: dict[str, Any]) -> dict[str, Any]:
+    rows = [
+        {
+            "work_item_id": row["work_item_id"],
+            "ea_id": row["ea_id"],
+            "symbol": row["symbol"],
+            "phase": row["phase"],
+            "setfile_path": row.get("setfile_path"),
+            "prior_state": row.get("prior_state"),
+        }
+        for row in plan.get("canary", [])
+    ]
+    return {
+        "size": len(rows),
+        "work_item_ids": [row["work_item_id"] for row in rows],
+        "rows": rows,
+        "sha256": _canonical_sha256(rows),
+    }
+
+
+def _assess_wave1(
+    cfg: Config,
+    journal_path: Path,
+    *,
+    phases: tuple[str, ...],
+    include_q02_exhausted: bool,
+    symbol_skip_fn: Callable[[str], str | None] | None = None,
+    priority_fn: Callable[[str], float] | None = None,
+) -> dict[str, Any]:
+    """Read-only Wave-1 outcome assessment and Wave-2 candidate binding."""
+    journal_path = Path(journal_path).resolve()
+    source = json.loads(journal_path.read_text(encoding="utf-8"))
+    wave = source.get("recovery_wave") or {}
+    entries = ((source.get("journal") or {}).get("entries") or {})
+    blockers: list[str] = []
+    if source.get("tool") != "requeue_stranded_infra.py":
+        blockers.append("source_not_requeue_stranded_infra_journal")
+    if int(wave.get("number") or 0) != 1 or int(wave.get("size") or 0) != 5:
+        blockers.append("source_not_exact_wave1_size_5")
+    if (source.get("journal") or {}).get("state") != "committed":
+        blockers.append("wave1_journal_not_committed")
+    if int((source.get("applied") or {}).get("requeued") or -1) != 5:
+        blockers.append("wave1_applied_count_not_5")
+    if len(entries) != 5:
+        blockers.append("wave1_journal_entry_count_not_5")
+
+    outcomes: list[dict[str, Any]] = []
+    conn = _open_ro(cfg.db)
+    try:
+        for wid, entry in sorted(entries.items()):
+            row = _fetch_row(conn, wid)
+            if row is None:
+                outcomes.append({
+                    "work_item_id": wid, "phase": entry.get("phase"),
+                    "status": None, "verdict": None, "classification": "MISSING",
+                })
+                blockers.append(f"wave1_row_missing:{wid}")
+                continue
+            status = str(row["status"] or "").lower()
+            verdict = str(row["verdict"] or "").upper()
+            payload = _json_obj(row["payload_json"])
+            if status in {"pending", "active"}:
+                classification = "IN_FLIGHT"
+                blockers.append(f"wave1_not_terminal:{wid}:{status}")
+            elif verdict == "INFRA_FAIL":
+                classification = "INFRA_FAIL"
+                blockers.append(f"wave1_infra_recurrence:{wid}")
+            elif not verdict:
+                classification = "NO_VERDICT"
+                blockers.append(f"wave1_terminal_without_verdict:{wid}")
+            elif verdict in {"INVALID", "INVALID_REPORT", "NO_HISTORY", "NO_REAL_TICKS"}:
+                classification = "INVALID"
+                blockers.append(f"wave1_invalid_outcome:{wid}:{verdict}")
+            elif str(row["phase"]) == "Q08" and _is_q08_invalid_report(payload):
+                classification = "INVALID"
+                blockers.append(f"wave1_q08_invalid_report:{wid}")
+            else:
+                classification = "REAL_VERDICT"
+            outcomes.append({
+                "work_item_id": wid,
+                "ea_id": row["ea_id"],
+                "symbol": row["symbol"],
+                "phase": row["phase"],
+                "status": row["status"],
+                "verdict": row["verdict"],
+                "updated_at": row["updated_at"],
+                "classification": classification,
+            })
+    finally:
+        conn.close()
+
+    health = _health_census(cfg, symbol_skip_fn=symbol_skip_fn)
+    if health["invariant"]["status"] != "PASS":
+        blockers.append("health_disposition_invariant_failed")
+    if int(health["invariant"]["q08_invalid_report_retryable"]) != 0:
+        blockers.append("q08_invalid_report_exposed_to_retry")
+
+    wave2_plan = _plan(
+        cfg,
+        phases=phases,
+        include_q02_exhausted=include_q02_exhausted,
+        limit=RECOVERY_WAVE_SIZES[2],
+        symbol_skip_fn=symbol_skip_fn,
+        priority_fn=priority_fn,
+    )
+    selection = _selection_contract(wave2_plan)
+    if selection["size"] != RECOVERY_WAVE_SIZES[2]:
+        blockers.append(
+            f"wave2_requires_exactly_25_eligible:found={selection['size']}"
+        )
+
+    real_count = sum(1 for row in outcomes if row["classification"] == "REAL_VERDICT")
+    infra_count = sum(1 for row in outcomes if row["classification"] == "INFRA_FAIL")
+    invalid_count = sum(1 for row in outcomes if row["classification"] == "INVALID")
+    scope = {
+        "phases": list(phases),
+        "include_q02_exhausted": bool(include_q02_exhausted),
+    }
+    decision_basis = {
+        "source_journal_sha256": _file_sha256(journal_path),
+        "db": str(Path(cfg.db).resolve()),
+        "scope": scope,
+        "outcomes": outcomes,
+        "health_invariant": health["invariant"],
+        "wave2_selection": selection,
+        "blockers": sorted(set(blockers)),
+    }
+    return {
+        "gate": "PASS" if not blockers else "BLOCKED",
+        "blockers": sorted(set(blockers)),
+        "source_journal": str(journal_path),
+        "source_journal_sha256": decision_basis["source_journal_sha256"],
+        "scope": scope,
+        "wave1": {
+            "expected_size": RECOVERY_WAVE_SIZES[1],
+            "outcomes": outcomes,
+            "terminal_real_verdicts": real_count,
+            "infra_recurrences": infra_count,
+            "invalid_outcomes": invalid_count,
+            "yield_pct": round(100.0 * real_count / RECOVERY_WAVE_SIZES[1], 3),
+            "infra_rate_pct": round(100.0 * infra_count / RECOVERY_WAVE_SIZES[1], 3),
+        },
+        "wave2": {
+            "exact_size": RECOVERY_WAVE_SIZES[2],
+            "selection": selection,
+        },
+        "health_census": health,
+        "decision_digest": _canonical_sha256(decision_basis),
+    }
+
+
+def _write_wave1_receipt(
+    cfg: Config,
+    journal_path: Path,
+    receipt_path: Path,
+    *,
+    phases: tuple[str, ...],
+    include_q02_exhausted: bool,
+    symbol_skip_fn: Callable[[str], str | None] | None = None,
+    priority_fn: Callable[[str], float] | None = None,
+) -> dict[str, Any]:
+    assessment = _assess_wave1(
+        cfg,
+        journal_path,
+        phases=phases,
+        include_q02_exhausted=include_q02_exhausted,
+        symbol_skip_fn=symbol_skip_fn,
+        priority_fn=priority_fn,
+    )
+    receipt = {
+        "schema_version": WAVE_RECEIPT_SCHEMA,
+        "contract": WAVE_CONTRACT,
+        "generated_at_utc": _utc_now(),
+        "read_only_assessment": True,
+        "db": str(Path(cfg.db).resolve()),
+        "assessment": assessment,
+    }
+    _write_journal(receipt_path, receipt)
+    return receipt
+
+
+def _validate_wave2_receipt(
+    cfg: Config,
+    receipt_path: Path,
+    *,
+    phases: tuple[str, ...],
+    include_q02_exhausted: bool,
+    symbol_skip_fn: Callable[[str], str | None] | None = None,
+    priority_fn: Callable[[str], float] | None = None,
+) -> dict[str, Any]:
+    """Fail closed unless a fresh, exact Wave-1 PASS binds the next 25 rows."""
+    receipt_path = Path(receipt_path).resolve()
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    if receipt.get("schema_version") != WAVE_RECEIPT_SCHEMA or receipt.get("contract") != WAVE_CONTRACT:
+        raise RuntimeError("wave-2 receipt schema/contract mismatch")
+    if str(Path(receipt.get("db") or "").resolve()) != str(Path(cfg.db).resolve()):
+        raise RuntimeError("wave-2 receipt is bound to a different DB")
+    recorded = receipt.get("assessment") or {}
+    if recorded.get("gate") != "PASS":
+        raise RuntimeError(
+            "wave-2 blocked by Wave-1 receipt: " + ", ".join(recorded.get("blockers") or ["unknown"])
+        )
+    expected_scope = {
+        "phases": list(phases),
+        "include_q02_exhausted": bool(include_q02_exhausted),
+    }
+    if recorded.get("scope") != expected_scope:
+        raise RuntimeError("wave-2 receipt recovery scope differs from requested scope")
+
+    fresh = _assess_wave1(
+        cfg,
+        Path(recorded["source_journal"]),
+        phases=phases,
+        include_q02_exhausted=include_q02_exhausted,
+        symbol_skip_fn=symbol_skip_fn,
+        priority_fn=priority_fn,
+    )
+    if fresh.get("gate") != "PASS":
+        raise RuntimeError(
+            "wave-2 live revalidation failed: " + ", ".join(fresh.get("blockers") or ["unknown"])
+        )
+    if fresh.get("decision_digest") != recorded.get("decision_digest"):
+        raise RuntimeError("wave-2 receipt decision basis drifted since assessment")
+    return {
+        "receipt_path": str(receipt_path),
+        "receipt_sha256": _file_sha256(receipt_path),
+        "decision_digest": fresh["decision_digest"],
+        "selection": fresh["wave2"]["selection"],
+    }
+
+
+def _plan_wave(
+    cfg: Config,
+    *,
+    wave: int,
+    phases: tuple[str, ...],
+    include_q02_exhausted: bool,
+    wave1_receipt: Path | None = None,
+    symbol_skip_fn: Callable[[str], str | None] | None = None,
+    priority_fn: Callable[[str], float] | None = None,
+) -> dict[str, Any]:
+    if wave not in RECOVERY_WAVE_SIZES:
+        raise RuntimeError(f"unsupported recovery wave {wave}; allowed: 1, 2")
+    gate: dict[str, Any] | None = None
+    if wave == 2:
+        if wave1_receipt is None:
+            raise RuntimeError("wave 2 requires --wave1-receipt")
+        gate = _validate_wave2_receipt(
+            cfg,
+            wave1_receipt,
+            phases=phases,
+            include_q02_exhausted=include_q02_exhausted,
+            symbol_skip_fn=symbol_skip_fn,
+            priority_fn=priority_fn,
+        )
+    elif wave1_receipt is not None:
+        raise RuntimeError("--wave1-receipt is valid only with --wave 2")
+
+    size = RECOVERY_WAVE_SIZES[wave]
+    plan = _plan(
+        cfg,
+        phases=phases,
+        include_q02_exhausted=include_q02_exhausted,
+        limit=size,
+        symbol_skip_fn=symbol_skip_fn,
+        priority_fn=priority_fn,
+    )
+    selection = _selection_contract(plan)
+    blockers: list[str] = []
+    if selection["size"] != size:
+        blockers.append(f"wave_{wave}_requires_exactly_{size}_eligible:found={selection['size']}")
+    if gate is not None and selection["sha256"] != gate["selection"]["sha256"]:
+        blockers.append("wave_2_selection_does_not_match_receipt")
+    health = _health_census(cfg, symbol_skip_fn=symbol_skip_fn)
+    if health["invariant"]["status"] != "PASS":
+        blockers.append("health_disposition_invariant_failed")
+    plan["recovery_wave"] = {
+        "contract": WAVE_CONTRACT,
+        "number": wave,
+        "size": size,
+        "status": "READY" if not blockers else "BLOCKED",
+        "blockers": blockers,
+        "selection": selection,
+    }
+    plan["wave_gate"] = gate
+    plan["health_census"] = health
+    return plan
+
+
 def _print_plan(plan: dict[str, Any]) -> None:
-    print(f"stranded-INFRA requeue plan  (phases={','.join(plan['phases'])}, "
-          f"limit={plan['limit']}, q02_exhausted={plan['include_q02_exhausted']})")
+    wave = plan.get("recovery_wave") or {}
+    wave_text = (
+        f"wave={wave.get('number')} exact_size={wave.get('size')} status={wave.get('status')}, "
+        if wave else ""
+    )
+    print(f"stranded-INFRA requeue plan  ({wave_text}phases={','.join(plan['phases'])}, "
+          f"q02_exhausted={plan['include_q02_exhausted']})")
     print(f"open items at start: {plan['open_at_start']}  (pending={plan['pending_at_start']})")
     print("")
     hdr = f"{'phase':6} {'stranded':>8} {'eligible':>8} {'refused':>7}  artifact(surv/purge)"
@@ -585,8 +1189,14 @@ def _print_plan(plan: dict[str, Any]) -> None:
     print(f"canary artifact survives/purged: "
           f"{plan['canary_artifact_survives']}/{plan['canary_artifact_purged']}")
     print(f"queue impact: pending {plan['pending_at_start']} -> "
-          f"{plan['projected_pending_after_canary']} (canary) / "
-          f"{plan['projected_pending_after_full']} (full release --limit 0)")
+          f"{plan['projected_pending_after_canary']} (bounded wave)")
+    if wave.get("blockers"):
+        print("wave blockers: " + "; ".join(wave["blockers"]))
+    health = plan.get("health_census") or {}
+    if health:
+        print(f"health census Q03-Q08: invariant={health['invariant']['status']} "
+              f"current_infra_only={health['current_infra_only_total']} "
+              f"historical={health['historical_exclusion_total']}")
     print("")
     print("canary list (deepest phase first):")
     print(f"  {'phase':6} {'ea_id':12} {'symbol':14} {'infra':>5} {'att':>4} art  prior_reason")
@@ -626,6 +1236,8 @@ def _revalidate(cfg: Config, conn: sqlite3.Connection, entry: dict[str, Any]) ->
     ).fetchone()
     if dn:
         return "sibling_done_non_infra"
+    if _later_phase_successor(conn, ea_id, symbol, phase) is not None:
+        return "historical_phase_advanced"
     if farmctl._q02_symbol_skip_reason(symbol, allow_logical_basket=True):
         return "symbol_skip"
     num = _ea_int(ea_id)
@@ -637,10 +1249,9 @@ def _revalidate(cfg: Config, conn: sqlite3.Connection, entry: dict[str, Any]) ->
         return "no_ex5"
     if int(row["attempt_count"] or 0) >= ATTEMPT_COUNT_POISON_FLOOR:
         return "poison_attempt_count_sentinel"
-    try:
-        payload = json.loads(row["payload_json"] or "{}")
-    except (TypeError, json.JSONDecodeError):
-        payload = {}
+    payload = _json_obj(row["payload_json"])
+    if phase == "Q08" and _is_q08_invalid_report(payload):
+        return "q08_invalid_report_non_retryable"
     if _has_log_bomb_marker(payload):
         return "log_bomb_marker"
     if is_q02:
@@ -656,10 +1267,7 @@ def _build_flip_payload(entry: dict[str, Any], row: sqlite3.Row, now: str,
     Preserves the verified flip payload shape: stale runtime keys cleared, requeue provenance
     stamped, prior INFRA verdict/reason retained, archive destination recorded when present.
     """
-    try:
-        payload = json.loads(row["payload_json"] or "{}")
-    except (TypeError, json.JSONDecodeError):
-        payload = {}
+    payload = _json_obj(row["payload_json"])
     _clear_stale_runtime_payload(payload)
     payload["requeued_by"] = "requeue_stranded_infra"
     payload["requeued_at_utc"] = now
@@ -683,6 +1291,34 @@ def _apply(cfg: Config, plan: dict[str, Any], journal_path: Path) -> dict[str, A
     partial filesystem move is compensated and the DB transaction rolled back before raising.
     """
     journal_path = Path(journal_path)
+    recovery_wave = plan.get("recovery_wave") or {}
+    if recovery_wave:
+        if recovery_wave.get("status") != "READY":
+            raise RuntimeError(
+                "recovery wave is not READY: "
+                + ", ".join(recovery_wave.get("blockers") or ["unknown blocker"])
+            )
+        expected_size = int(recovery_wave.get("size") or 0)
+        if len(plan.get("canary") or []) != expected_size:
+            raise RuntimeError(
+                f"recovery wave must contain exactly {expected_size} rows; "
+                f"found {len(plan.get('canary') or [])}"
+            )
+        if int(recovery_wave.get("number") or 0) == 2:
+            gate = plan.get("wave_gate") or {}
+            receipt_path = gate.get("receipt_path")
+            if not receipt_path or _file_sha256(Path(receipt_path)) != gate.get("receipt_sha256"):
+                raise RuntimeError("wave-2 receipt missing or changed after planning")
+            fresh_gate = _validate_wave2_receipt(
+                cfg,
+                Path(receipt_path),
+                phases=tuple(plan.get("phases") or ()),
+                include_q02_exhausted=bool(plan.get("include_q02_exhausted")),
+            )
+            if fresh_gate["decision_digest"] != gate.get("decision_digest"):
+                raise RuntimeError("wave-2 gate drifted after planning")
+            if fresh_gate["selection"]["sha256"] != recovery_wave["selection"]["sha256"]:
+                raise RuntimeError("wave-2 selected rows no longer match receipt")
     canary = plan.get("canary") or []
     now = _utc_now()
     if not canary:
@@ -942,8 +1578,17 @@ def main(argv: list[str] | None = None) -> int:
                     help="comma list of deep phases to sweep (default Q04,Q05,Q06,Q07)")
     ap.add_argument("--include-q02-exhausted", action="store_true",
                     help="also requeue Q02 groups ABOVE the sweep's INFRA cap (its unreachable set)")
-    ap.add_argument("--limit", type=int, default=50,
-                    help="canary size (deepest-phase-first). 0 = full release.")
+    ap.add_argument("--wave", type=int, choices=sorted(RECOVERY_WAVE_SIZES), default=1,
+                    help="bounded recovery wave: 1 = exactly 5, 2 = exactly 25")
+    ap.add_argument("--wave1-receipt", type=Path,
+                    help="required PASS receipt for --wave 2")
+    ap.add_argument("--assess-wave1", type=Path,
+                    help="read-only assessment of a committed Wave-1 journal")
+    ap.add_argument("--receipt-out", type=Path,
+                    help="durable Wave-1 assessment receipt (required with --assess-wave1)")
+    ap.add_argument("--health-census", action="store_true",
+                    help="print the read-only Q03-Q08 disposition census and exit")
+    ap.add_argument("--limit", type=int, default=None, help=argparse.SUPPRESS)
     ap.add_argument("--apply", action="store_true",
                     help="execute the flip (Factory OFF + DB quiescent). Default is dry-run.")
     ap.add_argument("--revert", type=Path, help="revert using a snapshot from a prior --apply")
@@ -953,6 +1598,51 @@ def main(argv: list[str] | None = None) -> int:
 
     cfg = Config.build(db=args.db, eas_root=args.eas_root,
                        registry_path=args.registry, wi_reports_root=args.wi_reports_root)
+
+    if args.limit is not None:
+        print("--limit was retired by MNT-007; applies are fixed to --wave 1 (5) then "
+              "--wave 2 (25).", file=sys.stderr)
+        return 2
+
+    phases = tuple(p.strip() for p in args.phases.split(",") if p.strip())
+
+    if args.health_census:
+        if args.apply or args.revert or args.assess_wave1 or args.receipt_out:
+            print("--health-census is read-only and cannot be combined with mutation/receipt modes",
+                  file=sys.stderr)
+            return 2
+        census = _health_census(cfg)
+        print(json.dumps(census, indent=1, sort_keys=True))
+        if args.snapshot_out is not None:
+            _write_journal(args.snapshot_out, census)
+            print(f"health census written: {args.snapshot_out}")
+        return 0 if census["invariant"]["status"] == "PASS" else 1
+
+    if args.assess_wave1 is not None:
+        if args.apply or args.revert or args.wave1_receipt:
+            print("--assess-wave1 is a standalone read-only mode", file=sys.stderr)
+            return 2
+        if args.receipt_out is None:
+            print("--assess-wave1 requires --receipt-out", file=sys.stderr)
+            return 2
+        try:
+            receipt = _write_wave1_receipt(
+                cfg,
+                args.assess_wave1,
+                args.receipt_out,
+                phases=phases,
+                include_q02_exhausted=args.include_q02_exhausted,
+            )
+        except (OSError, ValueError, KeyError, RuntimeError, json.JSONDecodeError) as ex:
+            print(f"Wave-1 assessment failed closed: {ex}", file=sys.stderr)
+            return 1
+        print(json.dumps(receipt, indent=1, sort_keys=True))
+        print(f"Wave-1 receipt written: {args.receipt_out}")
+        return 0 if receipt["assessment"]["gate"] == "PASS" else 1
+
+    if args.receipt_out is not None:
+        print("--receipt-out is valid only with --assess-wave1", file=sys.stderr)
+        return 2
 
     if args.revert is not None:
         try:
@@ -967,12 +1657,23 @@ def main(argv: list[str] | None = None) -> int:
               "before any DB mutation. Aborting, no writes performed.", file=sys.stderr)
         return 2
 
-    phases = tuple(p.strip() for p in args.phases.split(",") if p.strip())
-    plan = _plan(cfg, phases=phases, include_q02_exhausted=args.include_q02_exhausted,
-                 limit=args.limit)
+    try:
+        plan = _plan_wave(
+            cfg,
+            wave=args.wave,
+            phases=phases,
+            include_q02_exhausted=args.include_q02_exhausted,
+            wave1_receipt=args.wave1_receipt,
+        )
+    except (OSError, ValueError, KeyError, RuntimeError, json.JSONDecodeError) as ex:
+        print(f"wave planning failed closed: {ex}", file=sys.stderr)
+        return 2
     _print_plan(plan)
 
     if args.apply:
+        if plan["recovery_wave"]["status"] != "READY":
+            print("--apply refused: exact bounded wave is not READY", file=sys.stderr)
+            return 2
         # _apply owns the journal: it writes 'planned' before any move/commit, then 'committed'.
         try:
             _apply(cfg, plan, args.snapshot_out)

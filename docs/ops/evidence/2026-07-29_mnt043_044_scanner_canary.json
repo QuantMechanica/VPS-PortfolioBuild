@@ -1,0 +1,75 @@
+{
+  "artifact_type": "MNT043_044_READ_ONLY_SCANNER_CANARY",
+  "observed_at_utc": "2026-07-29T08:30:00+00:00",
+  "repo_head_before_uncommitted_implementation": "637d5a152ba51607bdec5e856300dae57f6d0388",
+  "command_contract": {
+    "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "repo_root": "C:\\QM\\repo",
+    "phases": [
+      "Q06",
+      "Q07"
+    ],
+    "sqlite_mode": "ro",
+    "sqlite_query_only": true,
+    "report_written": false,
+    "overlay_written": false,
+    "factory_actions": 0,
+    "tlive_actions": 0,
+    "historical_verdict_updates": 0
+  },
+  "scan_fingerprint_sha256": "de36a0a98fe185cc64e0c469400b8d24cea7ee0d4cab14d74fc9b531f7e183e9",
+  "live_manifest": {
+    "authority": "FALLBACK_UNAUTHENTICATED",
+    "runtime_pointer_exists": false,
+    "path": "D:\\QM\\reports\\portfolio\\portfolio_manifest_live_24sleeve_20260724.json",
+    "sha256": "8c719b080e18d30d83432f0999d694f699f2859cef72c0ce7738631fb084eab6",
+    "declared_status": "LIVE",
+    "sleeves": 24
+  },
+  "summary": {
+    "subjects": 50,
+    "subject_statuses": {
+      "MISSING": 18,
+      "UNBOUND": 32
+    },
+    "adjudications": 580,
+    "coverage_statuses": {
+      "BOUND_HOLD": 73,
+      "MISSING": 8,
+      "PAIR_ONLY_UNBOUND": 19
+    },
+    "effective_statuses": {
+      "EVIDENCE_VINTAGE_STALE": 7,
+      "PROVENANCE_UNVERIFIED": 573
+    },
+    "priorities": {
+      "P0_ADMISSION": 115,
+      "P0_LIVE": 75,
+      "P1_HISTORY": 390
+    },
+    "selected_reason_counts": {
+      "BINARY_VINTAGE_MISMATCH": 7,
+      "EVIDENCE_VERDICT_MISMATCH": 2,
+      "IDENTITY_HASH_MISSING": 580,
+      "MISSING_FILE": 251,
+      "NULL_KPI": 2,
+      "PARSE_ERROR_BACKFILL": 1,
+      "SEED_AUTH_MISSING": 138,
+      "ZERO_VARIANCE": 23
+    }
+  },
+  "known_p0_reproduction": {
+    "work_item_id": "37308752-fa5f-41fc-9756-13113058f976",
+    "ea_id": "QM5_13128",
+    "symbol": "NDX.DWX",
+    "phase": "Q07",
+    "effective_admission_status": "PROVENANCE_UNVERIFIED",
+    "reason_classes": [
+      "MISSING_FILE",
+      "PARSE_ERROR_BACKFILL",
+      "IDENTITY_HASH_MISSING"
+    ],
+    "live_action": "HOLD_OWNER_REVIEW"
+  },
+  "note": "Snapshot counts are observations, not hard-coded scanner expectations. The full report was intentionally not persisted during this canary. Re-running after DB/filesystem movement can change counts and scan fingerprint."
+}

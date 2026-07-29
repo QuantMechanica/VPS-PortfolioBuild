@@ -1860,6 +1860,7 @@ def main() -> int:
     ap.add_argument("--symbol", help="symbol e.g. NDX.DWX")
     ap.add_argument("--log", type=Path, help="path to EA JSON-lines log")
     ap.add_argument("--out-dir", type=Path, help="override output dir")
+    ap.add_argument("--out-prefix", type=Path, help=argparse.SUPPRESS)
     ap.add_argument("--terminal", help="MT5 terminal (T1-T10) for the baseline trade-log backtest")
     ap.add_argument("--baseline-setfile", type=Path,
                     help="explicit baseline setfile for Q08 baseline and neighborhood support runs")

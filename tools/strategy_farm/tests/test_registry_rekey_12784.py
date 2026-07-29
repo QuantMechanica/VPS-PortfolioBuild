@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import re
 from pathlib import Path
 
@@ -52,11 +53,17 @@ def test_intraday_engine_is_rekeyed_without_reusing_progo_identity() -> None:
     }
 
 
-def test_rekey_preserves_old_binary_but_new_identity_has_no_stale_ex5() -> None:
+def test_rekey_preserves_old_binary_and_binds_the_post_rekey_build() -> None:
     obsolete = EAS / "_obsolete_QM5_12784_intraday-config-engine_pre-rekey"
     current = EAS / "QM5_20007_intraday-config-engine"
-    assert (obsolete / "QM5_12784_intraday-config-engine.ex5").is_file()
-    assert not (current / "QM5_20007_intraday-config-engine.ex5").exists()
+    obsolete_binary = obsolete / "QM5_12784_intraday-config-engine.ex5"
+    current_binary = current / "QM5_20007_intraday-config-engine.ex5"
+    assert obsolete_binary.is_file()
+    assert current_binary.is_file()
+    assert hashlib.sha256(current_binary.read_bytes()).hexdigest() == (
+        "07ecef35b8012f876b59e1cd93e1370a1f16496fd2f47672ce1f798eb398fbc3"
+    )
+    assert current_binary.read_bytes() != obsolete_binary.read_bytes()
 
     source = (current / "QM5_20007_intraday-config-engine.mq5").read_text(
         encoding="utf-8"

@@ -218,6 +218,7 @@ def main() -> int:
                     help="Optional pre-deployed MT5 expert path override")
     ap.add_argument("--terminal", default="T2")
     ap.add_argument("--report-root", type=Path, default=Path("D:/QM/reports/pipeline"))
+    ap.add_argument("--out-prefix", type=Path, help=argparse.SUPPRESS)
     ap.add_argument("--timeout-sec", type=int, default=DEFAULT_TIMEOUT_SEC)
     ap.add_argument("--latest-full-year", type=int,
                     help="Cap full-history window when validated custom-symbol history ends before default")

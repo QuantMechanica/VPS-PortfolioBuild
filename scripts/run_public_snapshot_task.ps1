@@ -2,7 +2,9 @@
 param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$LogPath = "C:\Windows\Temp\qm_public_snapshot.log",
-    [string]$PythonExe = "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe"
+    [string]$PythonExe = "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe",
+    [string]$FactoryOffFlagPath = "D:\QM\strategy_farm\state\FACTORY_OFF.flag",
+    [string]$FactoryMutationLockPath = "D:\QM\strategy_farm\state\FACTORY_MUTATION.lock"
 )
 
 Set-StrictMode -Version Latest
@@ -17,8 +19,46 @@ function Write-TaskLog {
 New-Item -ItemType Directory -Path (Split-Path -Parent $LogPath) -Force | Out-Null
 Write-TaskLog "public_snapshot_task start"
 
-Push-Location $RepoRoot
+$mutationLockStream = $null
+$locationPushed = $false
 try {
+    # MNT-052: the public exporter writes tracked files.  FACTORY_OFF therefore
+    # gates it even though dashboards and read-only health tasks remain online.
+    if (Test-Path -LiteralPath $FactoryOffFlagPath) {
+        Write-TaskLog "public_snapshot_task skipped=FACTORY_OFF.flag"
+        return
+    }
+
+    $lockParent = Split-Path -Parent $FactoryMutationLockPath
+    New-Item -ItemType Directory -Path $lockParent -Force | Out-Null
+    try {
+        $mutationLockStream = [System.IO.File]::Open(
+            $FactoryMutationLockPath,
+            [System.IO.FileMode]::CreateNew,
+            [System.IO.FileAccess]::ReadWrite,
+            [System.IO.FileShare]::None
+        )
+        $lockRecord = [ordered]@{
+            pid = $PID
+            owner = 'public_snapshot'
+            created_at = [datetime]::UtcNow.ToString('o')
+        } | ConvertTo-Json -Compress
+        $lockBytes = [System.Text.Encoding]::UTF8.GetBytes($lockRecord)
+        $mutationLockStream.Write($lockBytes, 0, $lockBytes.Length)
+        $mutationLockStream.Flush($true)
+    }
+    catch [System.IO.IOException] {
+        Write-TaskLog "public_snapshot_task skipped=factory_mutation_lock_busy"
+        return
+    }
+
+    if (Test-Path -LiteralPath $FactoryOffFlagPath) {
+        Write-TaskLog "public_snapshot_task skipped=FACTORY_OFF.flag_after_lock"
+        return
+    }
+
+    Push-Location $RepoRoot
+    $locationPushed = $true
     if (-not (Test-Path -LiteralPath $PythonExe)) {
         throw "Python executable not found: $PythonExe"
     }
@@ -52,5 +92,11 @@ catch {
     throw
 }
 finally {
-    Pop-Location
+    if ($locationPushed) {
+        Pop-Location
+    }
+    if ($null -ne $mutationLockStream) {
+        $mutationLockStream.Dispose()
+        Remove-Item -LiteralPath $FactoryMutationLockPath -Force -ErrorAction SilentlyContinue
+    }
 }

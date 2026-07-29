@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "run_id": "mnt-20260729-factory-off-reconcile-v1",
+  "description": "Quarantine two invalid Q02 rows created through OFF/stale-result bypasses; release stale active ownership into explicit holds; retain valid pending handoffs for coordinated restart. No raw history deletion.",
+  "operations": [
+    {
+      "work_item_id": "60181936-0403-49bc-b221-dda4f35eb584",
+      "action": "quarantine",
+      "hold_code": "FACTORY_OFF_AUTO_Q02_BYPASS",
+      "reason": "QM5_20182 Q02 was auto-enqueued by record_build_result while FACTORY_OFF was intentional; Q01 remains valid, this row is not admission-authoritative.",
+      "expected": {
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "phase": "Q02",
+        "ea_id": "QM5_20182",
+        "symbol": "XTIUSD.DWX"
+      },
+      "to_status": "failed",
+      "to_verdict": "BLOCKED_FACTORY_OFF",
+      "release_on_restart": false
+    },
+    {
+      "work_item_id": "88ba4560-fd7f-456f-903f-f4982d8f9cf3",
+      "action": "quarantine",
+      "hold_code": "STALE_BUILD_RESULT_AUTO_Q02_BYPASS",
+      "reason": "QM5_20172 Q02 came from a previous review-failed build result that was materialized during rework; a fresh generation-bound result is required.",
+      "expected": {
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "phase": "Q02",
+        "ea_id": "QM5_20172",
+        "symbol": "XTIUSD.DWX"
+      },
+      "to_status": "failed",
+      "to_verdict": "BLOCKED_STALE_BUILD_RESULT",
+      "release_on_restart": false
+    },
+    {
+      "work_item_id": "3746e558-6eff-436b-9365-cfec9b7f1a63",
+      "action": "requeue_hold",
+      "hold_code": "STALE_ACTIVE_FACTORY_OFF",
+      "reason": "Recorded T8/PID ownership is stale and no T1-T10 terminal or phase process exists; preserve retry payload and release only at coordinated restart.",
+      "expected": {
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T8",
+        "phase": "Q02",
+        "ea_id": "QM5_9107",
+        "symbol": "GBPCAD.DWX"
+      },
+      "to_status": "pending",
+      "to_verdict": null,
+      "release_on_restart": true
+    },
+    {
+      "work_item_id": "ded31f32-92fb-45a7-b318-aa00c2f3f41c",
+      "action": "requeue_hold",
+      "hold_code": "STALE_ACTIVE_FACTORY_OFF",
+      "reason": "Recorded T2/PID ownership is stale and no T1-T10 terminal or phase process exists; preserve retry payload and release only at coordinated restart.",
+      "expected": {
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T2",
+        "phase": "Q02",
+        "ea_id": "QM5_1114",
+        "symbol": "XTIUSD.DWX"
+      },
+      "to_status": "pending",
+      "to_verdict": null,
+      "release_on_restart": true
+    },
+    {
+      "work_item_id": "8ac4c99e-6c0d-4263-af55-785920a129e7",
+      "action": "requeue_hold",
+      "hold_code": "ISOLATED_T6_ONE_SHOT_REQUIRED",
+      "reason": "QM5_13301 timer-v2 ownership is stale; retain for the OWNER-selected isolated T6 one-shot, never release with the general restart cohort.",
+      "expected": {
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "phase": "Q02",
+        "ea_id": "QM5_13301",
+        "symbol": "GDAXI.DWX"
+      },
+      "to_status": "pending",
+      "to_verdict": null,
+      "release_on_restart": false
+    },
+    {
+      "work_item_id": "4bd848eb-d744-4f97-9a30-8323f0925394",
+      "action": "requeue_hold",
+      "hold_code": "STALE_ACTIVE_FACTORY_OFF",
+      "reason": "Recorded Q07 T9/PID ownership is stale and no allowlisted q07 runner exists; preserve lineage and release only at coordinated restart.",
+      "expected": {
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T9",
+        "phase": "Q07",
+        "ea_id": "QM5_10272",
+        "symbol": "XAUUSD.DWX"
+      },
+      "to_status": "pending",
+      "to_verdict": null,
+      "release_on_restart": true
+    },
+    {
+      "work_item_id": "5c788bbb-cf26-4f6d-ac86-35bd869c5893",
+      "action": "requeue_hold",
+      "hold_code": "STALE_ACTIVE_FACTORY_OFF",
+      "reason": "Recorded T7/PID ownership is stale and no T1-T10 terminal or phase process exists; preserve retry payload and release only at coordinated restart.",
+      "expected": {
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T7",
+        "phase": "Q02",
+        "ea_id": "QM5_9107",
+        "symbol": "NZDJPY.DWX"
+      },
+      "to_status": "pending",
+      "to_verdict": null,
+      "release_on_restart": true
+    },
+    {
+      "work_item_id": "d3c2c5ad-9455-4241-b30c-a9cb9260a4b5",
+      "action": "requeue_hold",
+      "hold_code": "STALE_ACTIVE_FACTORY_OFF",
+      "reason": "Recorded T3/PID ownership is stale and no T1-T10 terminal or phase process exists; preserve promotion lineage and release only at coordinated restart.",
+      "expected": {
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "phase": "Q03",
+        "ea_id": "QM5_11072",
+        "symbol": "EURUSD.DWX"
+      },
+      "to_status": "pending",
+      "to_verdict": null,
+      "release_on_restart": true
+    },
+    {
+      "work_item_id": "36bfac85-63e2-46a7-9f35-8ae583252d2f",
+      "action": "hold",
+      "hold_code": "VALID_PENDING_FACTORY_OFF",
+      "reason": "QM5_20062 Q01 is valid; Q02 remains intentionally pending and must be released only by the coordinated restart gate.",
+      "expected": {
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "phase": "Q02",
+        "ea_id": "QM5_20062",
+        "symbol": "EURUSD.DWX"
+      },
+      "to_status": "pending",
+      "to_verdict": null,
+      "release_on_restart": true
+    },
+    {
+      "work_item_id": "ad1aaca6-e639-4680-94c7-5108902438d2",
+      "action": "hold",
+      "hold_code": "VALID_PENDING_FACTORY_OFF",
+      "reason": "QM5_11916 history-lock recovery was completed without starting a test; retain its valid requeue for the coordinated restart cohort.",
+      "expected": {
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "phase": "Q02",
+        "ea_id": "QM5_11916",
+        "symbol": "EURUSD.DWX"
+      },
+      "to_status": "pending",
+      "to_verdict": null,
+      "release_on_restart": true
+    }
+  ]
+}

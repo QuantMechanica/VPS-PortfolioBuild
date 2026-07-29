@@ -146,6 +146,13 @@ def _time(day: int, minute: int) -> str:
 
 def _native_report(segment_id: str, *, inference: bool) -> str:
     row = _identity_row(segment_id)
+    segment_periods = {
+        "pre_B": ("2017.10.25", "2023.12.12"),
+        "post_B_pre_C": ("2023.12.18", "2025.10.08"),
+        "post_C_pre_D": ("2025.11.03", "2025.12.17"),
+        "post_D_tail": ("2025.12.22", "2025.12.31"),
+    }
+    period_start, period_end = segment_periods[segment_id]
     entry_comment = f"QM10939E|GCPBL|{row['initial_stop']}|{row['initial_target']}"
     exit_comment = "QM10939X|TP"
     deals = ""
@@ -157,7 +164,7 @@ def _native_report(segment_id: str, *, inference: bool) -> str:
     return f"""<html><body><table>
 <tr><td>Expert:</td><td>QM5_10939</td></tr>
 <tr><td>Symbol:</td><td>GBPUSD.DWX</td></tr>
-<tr><td>Period:</td><td>H4 (2017.10.25 - 2025.12.31)</td></tr>
+<tr><td>Period:</td><td>H4 ({period_start} - {period_end})</td></tr>
 <tr><td>History Quality:</td><td>100% real ticks</td></tr>
 <tr><td>Bars:</td><td>1000</td></tr>
 <tr><td>Ticks:</td><td>100000</td></tr>

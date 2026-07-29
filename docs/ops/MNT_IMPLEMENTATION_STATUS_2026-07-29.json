@@ -1,0 +1,536 @@
+{
+  "schema_version": 1,
+  "artifact_type": "MNT_IMPLEMENTATION_STATUS",
+  "generated_at_utc": "2026-07-29T12:57:00Z",
+  "scope": "MNT-001..MNT-053",
+  "repository": {
+    "worktree": "C:/QM/worktrees/mnt-20260729-integration",
+    "branch": "agents/mnt-20260729-implementation",
+    "base_head": "e06c68f8285618aa8dfbba8ddd0037c0515f9f74"
+  },
+  "safety_state": {
+    "factory_intentionally_off": true,
+    "factory_restarted": false,
+    "canary_restart_used": false,
+    "t_live_touched": false,
+    "auto_trading_touched": false,
+    "note": "Status snapshot only. CONTRACT convergence is not implementation, deployment, runtime acceptance, or live authorization."
+  },
+  "verification": {
+    "command": "python -m pytest -q tools/strategy_farm/tests framework/scripts/tests",
+    "passed": 2635,
+    "failed": 5,
+    "skipped": 1,
+    "subtests_passed": 25,
+    "duration_seconds": 340.82,
+    "residual_plan": "docs/ops/evidence/2026-07-29_integration_residual_action_plan.md",
+    "closure_evidence": "docs/ops/evidence/2026-07-29_maintenance_implementation_closure.md",
+    "residual_contracts_weakened_or_skipped": false
+  },
+  "status_definitions": {
+    "COMPLETED_RUNTIME": "The narrowly defined runtime scope has durable completion evidence; dependent tickets may remain open.",
+    "SOURCE_IMPLEMENTED": "Source plus focused regression coverage exists; deployment, observation, or domain reruns may remain.",
+    "RUNTIME_DEFERRED": "Tooling or an apply plan exists, but the intended runtime operation was deliberately not executed.",
+    "PARTIAL": "A material portion is implemented, while another material portion or acceptance proof remains.",
+    "CONTRACT_ONLY": "Solution and acceptance contract converged, with no substantial implementation completed.",
+    "NOT_IMPLEMENTED": "The ticket-specific defect is not implemented in the current snapshot."
+  },
+  "summary": {
+    "total": 53,
+    "by_status": {
+      "COMPLETED_RUNTIME": 4,
+      "SOURCE_IMPLEMENTED": 10,
+      "RUNTIME_DEFERRED": 5,
+      "PARTIAL": 19,
+      "CONTRACT_ONLY": 13,
+      "NOT_IMPLEMENTED": 2
+    },
+    "p0_p1_complete_claimed": false,
+    "restart_gate_open": false,
+    "restart_blockers": [
+      "The current runtime OFF predates the MNT-046 source and has no OWNER-approved real OFF/ON end-to-end evidence",
+      "Legacy Factory-OFF record has no OWNER-authorized 21-task restore-intent manifest; the new guard refuses to invent it",
+      "Multiple P0/P1 runtime acceptance items remain open",
+      "Seven release_on_restart work-item holds remain active"
+    ]
+  },
+  "items": [
+    {
+      "id": "MNT-001",
+      "title": "Live KS-Baselines wieder aktivieren",
+      "priority": "P0",
+      "status": "PARTIAL",
+      "delivered": "Dual-directory KS checks, loader/health visibility and regression coverage are implemented.",
+      "remaining": "Reconcile 54 divergent pairs under OWNER authority and prove hash-bound loaded baselines for 24/24 live sleeves.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-28/MNT-001.md"]
+    },
+    {
+      "id": "MNT-002",
+      "title": "Live-Supervisor und Task-Contract reparieren",
+      "priority": "P0",
+      "status": "PARTIAL",
+      "delivered": "Supervisor root cause, source/task-contract correction and tests exist.",
+      "remaining": "Apply the task package and prove a real console-session heartbeat and restart contract.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-28/MNT-002.md"]
+    },
+    {
+      "id": "MNT-003",
+      "title": "Interaktive Scheduled Tasks stabilisieren",
+      "priority": "P0",
+      "status": "RUNTIME_DEFERRED",
+      "delivered": "Eight-task PLAN/WhatIf/Apply/Rollback package and tests are prepared.",
+      "remaining": "OWNER-controlled apply and runtime verification of the 0x800710E0 InteractiveToken class.",
+      "evidence": ["tools/ops/task_contract_fix_2026-07-28/README.md"]
+    },
+    {
+      "id": "MNT-004",
+      "title": "FTMO-Monitoring park-aware machen",
+      "priority": "P0",
+      "status": "SOURCE_IMPLEMENTED",
+      "delivered": "Parked/maintenance/expiry state contract, watchdog/pulse changes and tests exist.",
+      "remaining": "Deploy after MNT-003 and prove no runtime relaunch or alarm loop.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-28/MNT-004.md"]
+    },
+    {
+      "id": "MNT-005",
+      "title": "Legacy-Q02-Reaper progress-aware machen",
+      "priority": "P0",
+      "status": "SOURCE_IMPLEMENTED",
+      "delivered": "The legacy Q02 reaper is progress-aware and source-tested.",
+      "remaining": "Observe after restart that progressing runs are never reaped.",
+      "evidence": []
+    },
+    {
+      "id": "MNT-006",
+      "title": "Q02-Stranding und Health-Semantik korrigieren",
+      "priority": "P0",
+      "status": "PARTIAL",
+      "delivered": "Health groups Q02/P2 as one history, uses an invariant infra-only definition and treats ZERO, INVALID and DRAFT as terminal non-infra dispositions; focused tests pass. Read-only census leaves 265 true infra-only pairs and removes 24 prior false positives.",
+      "remaining": "The runtime backlog remains deferred to the controlled MNT-007 waves, so this is not complete.",
+      "evidence": ["tools/strategy_farm/tests/test_health_q02_stranded.py"]
+    },
+    {
+      "id": "MNT-007",
+      "title": "Infra-Graveyards Q03 bis Q08 aufarbeiten",
+      "priority": "P0",
+      "status": "RUNTIME_DEFERRED",
+      "delivered": "Exact 5-then-25 wave contract, immutable receipts, Q08 invalid block and tests are implemented.",
+      "remaining": "Run wave 1, require 5/5 real terminal PASS and zero invalid/infra, then run exactly 25 and adjudicate the remainder.",
+      "evidence": ["docs/ops/evidence/2026-07-29_mnt007_wave_contract.md"]
+    },
+    {
+      "id": "MNT-008",
+      "title": "NO_HISTORY-Restbestand schließen",
+      "priority": "P1",
+      "status": "CONTRACT_ONLY",
+      "delivered": "Invariant-based NO_HISTORY disposition is converged.",
+      "remaining": "Resolve the legacy-P2-inclusive residual population; never route valid zero as infra retry.",
+      "evidence": ["docs/ops/MNT_CONVERGENCE_LEDGER.md"]
+    },
+    {
+      "id": "MNT-009",
+      "title": "Null-Verdicts und Evidence-Bindung bereinigen",
+      "priority": "P1",
+      "status": "PARTIAL",
+      "delivered": "Forward triggers reject new terminal NULL verdicts. Runtime classified 832/832 legacy NULL rows and hash-bound 1,005 existing lineage-valid artifacts; the idempotent post-plan has zero terminal NULL rows.",
+      "remaining": "45,833 rows have no admissible artifact. Do not invent evidence; bind only provenance-backed artifacts or retain the explicit unbound state.",
+      "evidence": ["docs/ops/evidence/2026-07-29_mnt009_010_reconciliation_plan.json", "docs/ops/evidence/2026-07-29_mnt009_010_reconciliation_apply.json", "docs/ops/evidence/2026-07-29_mnt009_010_reconciliation_apply.md"]
+    },
+    {
+      "id": "MNT-010",
+      "title": "Logische Backtest-Task-Zombies schließen",
+      "priority": "P1",
+      "status": "COMPLETED_RUNTIME",
+      "delivered": "The shared atomic parent CAS and append-only ledger are implemented. Runtime closed all 43 observed zombies: 13 PASS, 27 INFRA_FAIL and 3 STRATEGY_FAIL; all PASS progressions were durably deferred under Factory OFF and no task was enqueued.",
+      "remaining": "Post-restart observation only; the idempotent post-plan reports zero further physical parent zombies.",
+      "evidence": ["docs/ops/evidence/2026-07-29_mnt009_010_reconciliation_apply.json", "docs/ops/evidence/2026-07-29_mnt009_010_reconciliation_apply.md"]
+    },
+    {
+      "id": "MNT-011",
+      "title": "Repo-Dirty-Guard dauerhaft entkoppeln",
+      "priority": "P1",
+      "status": "PARTIAL",
+      "delivered": "Magic-resolver hashes and tracked in-repository text dependencies use Git-canonical LF bytes after an exact raw-byte check; CRLF drift and negative boundaries are regression-tested.",
+      "remaining": "Complete the general dirty-guard separation for generated and untracked artifacts; runtime setfiles deliberately remain byte-exact.",
+      "evidence": ["framework/scripts/tests/test_magic_resolver_hash_newlines.py", "tools/strategy_farm/tests/test_magic_resolver_reconcile_newlines.py", "docs/ops/evidence/2026-07-29_execution_contract_residual_triage.md"]
+    },
+    {
+      "id": "MNT-012",
+      "title": "Buildtask-Zombies und R3-Widersprüche schließen",
+      "priority": "P1",
+      "status": "PARTIAL",
+      "delivered": "Build claim/R-gate guards are implemented; QM5_1457 and QM5_1459 were reconciled from pending to blocked under exact hashes, snapshot, CAS and an append-only ledger.",
+      "remaining": "Align both Runtime Cards to the real R3/G0 state under OWNER/Research authority.",
+      "evidence": ["docs/ops/evidence/2026-07-29_mnt012_build_zombie_reconciliation_apply.json", "docs/ops/mnt_page_updates_2026-07-28/MNT-012.md"]
+    },
+    {
+      "id": "MNT-013",
+      "title": "Approved-Card-Buildbacklog kontrolliert abbauen",
+      "priority": "P1",
+      "status": "RUNTIME_DEFERRED",
+      "delivered": "A controlled READY preflight/drain contract exists.",
+      "remaining": "Execute bounded drain waves and persist run evidence.",
+      "evidence": ["docs/ops/MNT_CONVERGENCE_LEDGER.md"]
+    },
+    {
+      "id": "MNT-014",
+      "title": "RECYCLE-Backlog nach Disposition auflösen",
+      "priority": "P1",
+      "status": "CONTRACT_ONLY",
+      "delivered": "Disposition classes instead of blanket RECYCLE-to-TODO are converged.",
+      "remaining": "Materialize the backlog disposition and evidence-bind every transition.",
+      "evidence": ["docs/ops/MNT_CONVERGENCE_LEDGER.md"]
+    },
+    {
+      "id": "MNT-015",
+      "title": "Wiederholte Nullsignal-Events deduplizieren",
+      "priority": "P1",
+      "status": "SOURCE_IMPLEMENTED",
+      "delivered": "Append-only events now have a transactional dedupe sidecar; identical null signals are suppressed for 24 hours, changes emit immediately and suppression counts are retained; tests pass.",
+      "remaining": "All 297847 historical events remain unchanged; runtime sidecar population and 24-hour evidence are deferred until Factory_ON.",
+      "evidence": ["tools/strategy_farm/tests/test_event_deduplication.py"]
+    },
+    {
+      "id": "MNT-016",
+      "title": "Verdict-Metadaten und Taxonomie säubern",
+      "priority": "P1",
+      "status": "PARTIAL",
+      "delivered": "Forward taxonomy and verdict-family handling are improved.",
+      "remaining": "Adjudicate historical bidirectional contamination including verdict_reason and the INFRA status split.",
+      "evidence": ["docs/ops/evidence/2026-07-28_mnt_review_corrections.md"]
+    },
+    {
+      "id": "MNT-017",
+      "title": "Q05-Q06 Stress-Provenance authentifizieren",
+      "priority": "P1",
+      "status": "PARTIAL",
+      "delivered": "Forward provenance checks and the per-EA wiring contract exist.",
+      "remaining": "Repair the 13-EA cohort, rebuild via MNT-043 and rerun Q05/Q06.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-28/MNT-017.md"]
+    },
+    {
+      "id": "MNT-018",
+      "title": "Q07 Seed-Authentifizierung reparieren",
+      "priority": "P1",
+      "status": "PARTIAL",
+      "delivered": "New Q07 runs fail closed when seed authentication is missing.",
+      "remaining": "Requalify the legacy population with rebuilt binaries and requested/effective seed evidence.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-28/MNT-018.md"]
+    },
+    {
+      "id": "MNT-019",
+      "title": "T5 mit einer echten A-B-Probe diagnostizieren",
+      "priority": "P1",
+      "status": "CONTRACT_ONLY",
+      "delivered": "A valid positive-control and same-indicator A/B contract is defined.",
+      "remaining": "Execute the real T5 A/B and do not assert the handle-cache hypothesis before proof.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-28/MNT-019.md"]
+    },
+    {
+      "id": "MNT-020",
+      "title": "BarsCalculated-first Kohorte reparieren",
+      "priority": "P1",
+      "status": "CONTRACT_ONLY",
+      "delivered": "Call-site linter, same-source A/B and rebuild contract converged.",
+      "remaining": "Remove TEMP DIAG, implement linter/cache repair, triage 20143/20144, rebuild and rerun the cohort.",
+      "evidence": ["docs/ops/CODEX_BRIEF_mnt_review_round4_2026-07-29.md"]
+    },
+    {
+      "id": "MNT-021",
+      "title": "Q12- und Live-Kandidatenregister reconciliieren",
+      "priority": "P1",
+      "status": "PARTIAL",
+      "delivered": "Registry self-duplicates and stale re-key fixture assumptions were corrected.",
+      "remaining": "Reconcile Q12/live state, version-amend DXZ10939/12567, and make provenance-backed decisions for 25 stale runtime-setfile bindings; live decisions remain OWNER-bound.",
+      "evidence": ["docs/ops/evidence/2026-07-28_mnt_review_corrections.md", "docs/ops/evidence/2026-07-29_integration_residual_action_plan.md"]
+    },
+    {
+      "id": "MNT-022",
+      "title": "FTMO Step-2 und Trial-Gates abschließen",
+      "priority": "P1",
+      "status": "PARTIAL",
+      "delivered": "FTMO slot 2 is source-locked to OWNER choice QM5_13108 and a book-3 set exists.",
+      "remaining": "Compile QM5_20181 and prove source/binary fidelity, joint replay, estimator and governor parity.",
+      "evidence": ["docs/ops/evidence/2026-07-29_qm5_20181_slot2_owner_lock.md"]
+    },
+    {
+      "id": "MNT-023",
+      "title": "DXZ Next-Book-Trigger messbar machen",
+      "priority": "P1",
+      "status": "SOURCE_IMPLEMENTED",
+      "delivered": "Strict trigger implements Sharpe +0.06 and drawdown worsening no greater than +0.05 percentage points, with tests.",
+      "remaining": "Deployment and runtime use are not yet evidenced.",
+      "evidence": ["docs/ops/evidence/2026-07-29_mnt023_dxz_next_book_trigger_contract.md"]
+    },
+    {
+      "id": "MNT-024",
+      "title": "Vault-Navigation kanonisch bereinigen",
+      "priority": "P2",
+      "status": "CONTRACT_ONLY",
+      "delivered": "Canonical navigation and G-drive preflight contract converged.",
+      "remaining": "Run in the Vault mount context and correct active/historical navigation.",
+      "evidence": ["docs/ops/CODEX_BRIEF_mnt_review_round4_2026-07-29.md"]
+    },
+    {
+      "id": "MNT-025",
+      "title": "Gebrochene aktive Vault-Pfade korrigieren",
+      "priority": "P2",
+      "status": "CONTRACT_ONLY",
+      "delivered": "Three-state MOUNT_UNAVAILABLE/TARGET_MISSING/TARGET_INVALID preflight converged.",
+      "remaining": "Correct active paths and test under the qm-admin principal.",
+      "evidence": ["docs/ops/CODEX_BRIEF_mnt_review_round4_2026-07-29.md"]
+    },
+    {
+      "id": "MNT-026",
+      "title": "Dedup-Checks fail-closed und UTF-8-fest machen",
+      "priority": "P2",
+      "status": "CONTRACT_ONLY",
+      "delivered": "Fail-closed encoding/path contract converged.",
+      "remaining": "Implement the checks and False-CLEAN fault tests.",
+      "evidence": ["docs/ops/MNT_CONVERGENCE_LEDGER.md"]
+    },
+    {
+      "id": "MNT-027",
+      "title": "Gate-Dokumentation Q01-Q10 synchronisieren",
+      "priority": "P2",
+      "status": "CONTRACT_ONLY",
+      "delivered": "Q01-Q10 matrix including Q04 cost and Q08 strategy-parameter requirements converged.",
+      "remaining": "Synchronize and lint the actual Vault/repository gate documentation.",
+      "evidence": ["docs/ops/CODEX_BRIEF_mnt_review_round4_2026-07-29.md"]
+    },
+    {
+      "id": "MNT-028",
+      "title": "Company-Manifest und Vault-Linter erneuern",
+      "priority": "P2",
+      "status": "CONTRACT_ONLY",
+      "delivered": "Versioned manifest/linter baseline and G-drive runner contract converged.",
+      "remaining": "Renew the manifest, dispose 31 broken links and re-enable important checks.",
+      "evidence": ["docs/ops/CODEX_BRIEF_mnt_review_round4_2026-07-29.md"]
+    },
+    {
+      "id": "MNT-029",
+      "title": "Owner-Decisions und Morning Brief frisch halten",
+      "priority": "P2",
+      "status": "CONTRACT_ONLY",
+      "delivered": "The renderer contract forbids masking source failure as an empty feed.",
+      "remaining": "Repair and refresh owner_decisions.json, Morning Brief and renderer.",
+      "evidence": ["docs/ops/CODEX_BRIEF_mnt_review_round4_2026-07-29.md"]
+    },
+    {
+      "id": "MNT-030",
+      "title": "agy-Mailbox- und Source-Lane wiederherstellen",
+      "priority": "P1",
+      "status": "PARTIAL",
+      "delivered": "Legacy key gemini resolves only to Antigravity agy; Gemini CLI fallbacks are removed.",
+      "remaining": "Apply MNT-003 and prove qm-admin credential, mailbox lane and runtime heartbeats.",
+      "evidence": ["docs/ops/evidence/2026-07-29_antigravity_backend_lock.md"]
+    },
+    {
+      "id": "MNT-031",
+      "title": "Repo-Worktree- und Integrationswahrheit klären",
+      "priority": "P1",
+      "status": "PARTIAL",
+      "delivered": "Maintenance work was integrated into an ancestry-preserving worktree.",
+      "remaining": "Complete canonical-main fast-forward, origin reconciliation and inventory/disposition of 76 worktrees.",
+      "evidence": ["docs/ops/evidence/2026-07-29_mnt_round4_positions.md", "docs/ops/evidence/2026-07-29_open_worktree_changes_triage.md"]
+    },
+    {
+      "id": "MNT-032",
+      "title": "Disk-RAM- und Cache-Purge robuster machen",
+      "priority": "P1/P2",
+      "status": "PARTIAL",
+      "delivered": "The acute purge incident was remediated and capacity reclaimed.",
+      "remaining": "Heal the scheduler through MNT-003 and implement disk/RAM/cache hardening and reclaim telemetry.",
+      "evidence": ["docs/ops/MNT_CONVERGENCE_LEDGER.md"]
+    },
+    {
+      "id": "MNT-033",
+      "title": "Messbares Milestone-Ledger einführen",
+      "priority": "P2",
+      "status": "CONTRACT_ONLY",
+      "delivered": "A generated view rather than a third manual authority is converged.",
+      "remaining": "Implement owner, acceptance, actual, evidence and distance fields.",
+      "evidence": ["docs/ops/CODEX_BRIEF_mnt_review_round4_2026-07-29.md"]
+    },
+    {
+      "id": "MNT-034",
+      "title": "Recovery-814 kontrolliert abschließen",
+      "priority": "P1",
+      "status": "PARTIAL",
+      "delivered": "Earlier recovery requeues completed and new 5-to-25 waves are source-guarded.",
+      "remaining": "Execute waves and adjudicate the remaining cohort by verdict family.",
+      "evidence": ["docs/ops/evidence/2026-07-29_mnt007_wave_contract.md"]
+    },
+    {
+      "id": "MNT-035",
+      "title": "Health-Oberflächen zu einem Vertrag zusammenführen",
+      "priority": "P1",
+      "status": "NOT_IMPLEMENTED",
+      "delivered": "Problem and target contract are known.",
+      "remaining": "Unify Farm Health, Silent Monitor and Live Pulse status semantics.",
+      "evidence": ["docs/ops/MNT_CONVERGENCE_LEDGER.md"]
+    },
+    {
+      "id": "MNT-036",
+      "title": "Probation Review 2026-08-24 vorbereiten",
+      "priority": "P2",
+      "status": "CONTRACT_ONLY",
+      "delivered": "Probation anchor 2026-07-13 and review target 2026-08-24 are fixed.",
+      "remaining": "Produce fixed evidence for QM5_1556, QM5_10706 and QM5_13128.",
+      "evidence": ["docs/ops/evidence/2026-07-28_mnt_review_corrections.md"]
+    },
+    {
+      "id": "MNT-037",
+      "title": "Safe-Defer darf nicht PASS werden",
+      "priority": "P1",
+      "status": "COMPLETED_RUNTIME",
+      "delivered": "SAFE_DEFER can no longer close as PASS in source; runtime task 61cfbaf3 was hash-bound reclassified from PASSED to BLOCKED.",
+      "remaining": "Only post-restart observation remains; the incident transition stays append-only evidenced.",
+      "evidence": ["docs/ops/evidence/2026-07-29_mnt037_safe_defer_reclassification.json"]
+    },
+    {
+      "id": "MNT-038",
+      "title": "Adaptive Symbol-Fanout Stopregeln",
+      "priority": "P1",
+      "status": "NOT_IMPLEMENTED",
+      "delivered": "Stop-rule contract converged.",
+      "remaining": "Implement adaptive fanout stop rules for cohort-wide deterministic defects.",
+      "evidence": ["docs/ops/MNT_CONVERGENCE_LEDGER.md"]
+    },
+    {
+      "id": "MNT-039",
+      "title": "Agent-Task-Limbo bereinigen",
+      "priority": "P1",
+      "status": "RUNTIME_DEFERRED",
+      "delivered": "Reconciler and health view are prepared.",
+      "remaining": "Apply to runtime data and evidence-bind every disposition.",
+      "evidence": ["docs/ops/MNT_CONVERGENCE_LEDGER.md"]
+    },
+    {
+      "id": "MNT-040",
+      "title": "Pipeline-Statusaggregator korrigieren",
+      "priority": "P1",
+      "status": "SOURCE_IMPLEMENTED",
+      "delivered": "pipeline_view reads work items, separates strategy/neutral state, supports latest/best/regressed and canonical phase keys, with tests.",
+      "remaining": "Deploy and verify the operator runtime view after maintenance.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-28/MNT-040.md"]
+    },
+    {
+      "id": "MNT-041",
+      "title": "T5-Kapazität sichtbar machen",
+      "priority": "P2",
+      "status": "SOURCE_IMPLEMENTED",
+      "delivered": "Health reports a healthy T5 quarantine as WARN 9/10 design, separates enabled from design capacity and no longer calls it a RAM cap; five focused tests pass.",
+      "remaining": "Verify the deployed runtime display after restart.",
+      "evidence": ["tools/strategy_farm/tests/test_health_mt5_capacity.py"]
+    },
+    {
+      "id": "MNT-042",
+      "title": "Quartals-Re-Q08 2026-10-01 vorbereiten",
+      "priority": "P2",
+      "status": "CONTRACT_ONLY",
+      "delivered": "The 2026-10-01 date and freeze requirement are documented.",
+      "remaining": "Materialize the exact scope, input and compute manifest.",
+      "evidence": ["docs/ops/MNT_CONVERGENCE_LEDGER.md"]
+    },
+    {
+      "id": "MNT-043",
+      "title": "Flottenweite Recompile-Schuld begleichen",
+      "priority": "P0",
+      "status": "PARTIAL",
+      "delivered": "Read-only closure scanner, recursive include/hash binding, schemas and tests are implemented.",
+      "remaining": "No fleet rebuild, static live-halt proof or fresh Q06/Q07 runs have completed. DXZ10939/12567 and 25 setfiles also need provenance-bound requalification; the 50-subject canary has zero PASS.",
+      "evidence": ["docs/ops/MNT043_044_CLOSURE_DRIFT_SCANNER.md", "docs/ops/evidence/2026-07-29_mnt043_044_scanner_canary.json", "docs/ops/evidence/2026-07-29_integration_residual_action_plan.md"]
+    },
+    {
+      "id": "MNT-044",
+      "title": "Q06-Q07-Altlast re-adjudizieren",
+      "priority": "P0",
+      "status": "PARTIAL",
+      "delivered": "Append-only adjudication overlay and read-only scanner exist; live always yields HOLD_OWNER_REVIEW.",
+      "remaining": "Review 580 legacy adjudications, rerun rebuilt offenders and integrate the overlay into readers.",
+      "evidence": ["docs/ops/MNT043_044_CLOSURE_DRIFT_SCANNER.md", "docs/ops/evidence/2026-07-29_mnt043_044_scanner_canary.json"]
+    },
+    {
+      "id": "MNT-045",
+      "title": "Tester-Kalenderabhängigkeit entschärfen",
+      "priority": "P1",
+      "status": "PARTIAL",
+      "delivered": "Per-principal calendar preflight before claim and immediately before spawn, fine taxonomy, and a hash-bound atomic two-file publisher with immutable bundle/manifest are implemented and tested.",
+      "remaining": "Twenty-four genuine QM20009 drift findings remain: shared D:/QM inputs cover through 2026-07-31 while Common copies remain at 2026-07-24. Validate, atomically publish, authorize the rebind, then observe seven runtime days.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-28/MNT-045.md", "docs/ops/evidence/2026-07-29_execution_contract_residual_triage.md"]
+    },
+    {
+      "id": "MNT-046",
+      "title": "Factory_OFF muss Phase-Runner reapen",
+      "priority": "P1",
+      "status": "SOURCE_IMPLEMENTED",
+      "delivered": "A shared versioned 16-runner allowlist, exact script/UUID/out-prefix/terminal lineage, T5 and T_Live exclusion, near-match REVIEW_REQUIRED, ordered reaping and the two-zero-scan contract are implemented. PowerShell has 254 passing assertions, Python has 31 passing focused tests, and 16/16 real argv parser/classifier cases pass.",
+      "remaining": "A real OWNER-approved OFF end-to-end proof is runtime-deferred under the MNT-052 exit gate.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-28/MNT-046.md"]
+    },
+    {
+      "id": "MNT-047",
+      "title": "Phantom-Dispatch-Reservierungen reconciliieren",
+      "priority": "P0",
+      "status": "COMPLETED_RUNTIME",
+      "delivered": "Archived 73 phantom reservations, reset T1-T10 from 3 to 0, preserved phase-matrix hash and verified a consistent post dry-run.",
+      "remaining": "Only the coordinated restart dependency under MNT-052 remains outside this ticket scope.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-29/MNT-047.md"]
+    },
+    {
+      "id": "MNT-048",
+      "title": "Eingebettete Build-Ergebnisse generationsfest binden",
+      "priority": "P0",
+      "status": "SOURCE_IMPLEMENTED",
+      "delivered": "Generation, attempt-token and identity-hash binding plus QM5_20172 stale-result quarantine are implemented.",
+      "remaining": "Produce a fresh QM5_20172 build/Q02 after exit and separately audit historical fleet scope.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-29/MNT-048.md", "docs/ops/evidence/2026-07-29_qm5_20172_q02_stale_build_result_incident.json"]
+    },
+    {
+      "id": "MNT-049",
+      "title": "record-build darf Factory-OFF nicht übergehen",
+      "priority": "P0",
+      "status": "SOURCE_IMPLEMENTED",
+      "delivered": "record-build blocks before DB write; an OFF hash-bound result-only override can never auto-enqueue Q02; the QM5_20182 row is quarantined.",
+      "remaining": "Create a fresh QM5_20182 Q02 only after the coordinated exit.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-29/MNT-049.md", "docs/ops/evidence/2026-07-29_qm5_20182_q02_factory_off_bypass_incident.json"]
+    },
+    {
+      "id": "MNT-050",
+      "title": "Q09_NEWS als echte evidenzgebundene Phase einführen",
+      "priority": "P1",
+      "status": "RUNTIME_DEFERRED",
+      "delivered": "Q09_NEWS v2, seven modes, five seeds, paired arms, calendar/lineage schema, Q10 dual binding and migration tooling are implemented.",
+      "remaining": "Runtime migration and real Q09_NEWS/Q10 runs were deliberately not performed.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-29/MNT-050.md"]
+    },
+    {
+      "id": "MNT-051",
+      "title": "Offene Work-Items Tasks und Cards reconciliieren",
+      "priority": "P0",
+      "status": "COMPLETED_RUNTIME",
+      "delivered": "Reconciled ten transitions/holds; QM5_13301 T6 completed done/PASS, received an honest fidelity FAIL assessment and its completed hold was released.",
+      "remaining": "Seven general restart holds remain; QM5_20172 and QM5_20182 require valid follow-up work.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-29/MNT-051.md", "docs/ops/evidence/2026-07-29_13301_timer_v2_deviation.md", "docs/ops/evidence/2026-07-29_qm13301_completed_hold_release.json"]
+    },
+    {
+      "id": "MNT-052",
+      "title": "Factory-OFF als vollständige Mutationsgrenze",
+      "priority": "P0",
+      "status": "PARTIAL",
+      "delivered": "Broad OFF quiescence, global mutation/restart locks, hold release, hourly-monitor guard and the MNT-046 phase-runner scope are source-implemented; 30 runtime tasks are disabled. Legacy-v1 restore now requires the exact OFF-flag hash plus 21 explicit Boolean task decisions and OWNER metadata, and Factory_ON revalidates that exact set.",
+      "remaining": "Obtain an OWNER-authorized 21-task restore-intent manifest; never infer the pre-OFF decisions. Then execute the real approved OFF/ON end-to-end run with runtime evidence.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-29/MNT-052.md", "docs/ops/evidence/2026-07-29_mnt052_legacy_restore_intent_guard.md", "docs/ops/evidence/2026-07-29_maintenance_implementation_closure.md"]
+    },
+    {
+      "id": "MNT-053",
+      "title": "Scope-Audits dürfen nicht in die Runtime-DB lecken",
+      "priority": "P0",
+      "status": "SOURCE_IMPLEMENTED",
+      "delivered": "Every _scope_guard call has an explicit target-DB sink and temp-root/AST regression tests.",
+      "remaining": "Observe after restart; five historical incident events remain append-only visible.",
+      "evidence": ["docs/ops/mnt_page_updates_2026-07-29/MNT-053.md", "tools/strategy_farm/tests/test_farmctl_scope_audit_isolation.py"]
+    }
+  ]
+}

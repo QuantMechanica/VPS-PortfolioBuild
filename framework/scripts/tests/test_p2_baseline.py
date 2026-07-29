@@ -261,9 +261,10 @@ class P2BaselineTests(unittest.TestCase):
         self.assertEqual(reason, "")
 
     def test_derive_verdict_evidence_floor_dl082(self) -> None:
-        # DL-082 §4 contract, both directions of the constant-evidence curve:
-        # thin sample at the old headline FAILS; high-N small-edge PASSES down
-        # to the 1.10 cost-noise bottom.
+        # DL-082 §4 contract, both directions of the dormant constant-evidence
+        # curve.  OWNER disabled the curve on 2026-07-25 in favour of the flat
+        # 1.10 floor, but retained it behind the explicit feature flag so it can
+        # be re-enabled without changing its statistical contract.
         thin = {
             "result": "PASS",
             "model4_log_marker_detected": True,
@@ -271,9 +272,6 @@ class P2BaselineTests(unittest.TestCase):
             "runs": [{"total_trades": 50, "profit_factor": 1.30, "drawdown": 5000.0}],
             "report_dir": "/tmp/report",
         }
-        verdict, reason, _ = p2_baseline.derive_verdict(thin, min_trades=20)
-        self.assertEqual(verdict, "FAIL")
-        self.assertIn("pf_below_q02_floor", reason)
         dense = {
             "result": "PASS",
             "model4_log_marker_detected": True,
@@ -281,9 +279,32 @@ class P2BaselineTests(unittest.TestCase):
             "runs": [{"total_trades": 1000, "profit_factor": 1.15, "drawdown": 5000.0}],
             "report_dir": "/tmp/report",
         }
-        verdict, reason, _ = p2_baseline.derive_verdict(dense, min_trades=20)
+        with patch.dict(p2_baseline.Q02_EVIDENCE_FLOOR, {"enabled": True}):
+            verdict, reason, _ = p2_baseline.derive_verdict(thin, min_trades=20)
+            self.assertEqual(verdict, "FAIL")
+            self.assertIn("pf_below_q02_floor", reason)
+
+            verdict, reason, _ = p2_baseline.derive_verdict(dense, min_trades=20)
+            self.assertEqual(verdict, "PASS")
+            self.assertEqual(reason, "")
+
+    def test_derive_verdict_owner_flat_pf_floor_is_operational(self) -> None:
+        self.assertFalse(p2_baseline.Q02_EVIDENCE_FLOOR["enabled"])
+        summary = {
+            "result": "PASS",
+            "model4_log_marker_detected": True,
+            "reason_classes": ["OK"],
+            "runs": [{"total_trades": 50, "profit_factor": 1.30, "drawdown": 5000.0}],
+            "report_dir": "/tmp/report",
+        }
+        verdict, reason, _ = p2_baseline.derive_verdict(summary, min_trades=20)
         self.assertEqual(verdict, "PASS")
         self.assertEqual(reason, "")
+
+        summary["runs"][0]["profit_factor"] = 1.09
+        verdict, reason, _ = p2_baseline.derive_verdict(summary, min_trades=20)
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("pf_below_q02_floor", reason)
 
 
 if __name__ == "__main__":

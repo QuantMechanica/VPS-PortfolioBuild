@@ -121,4 +121,4 @@ correlation authorization.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-29 | Initial build from approved G0 card | Q01 PASS; Q02 work item `60181936-0403-49bc-b221-dda4f35eb584` pending under `FACTORY_OFF.flag` |
+| v1 | 2026-07-29 | Initial build from approved G0 card | Q01 PASS; invalid Q02 row `60181936-0403-49bc-b221-dda4f35eb584` quarantined `BLOCKED_FACTORY_OFF`; fresh Q02 requires coordinated restart |

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "qm/mnt-adjudication-overlay-event/v1",
+  "title": "Append-only MNT re-adjudication overlay event",
+  "type": "object",
+  "required": [
+    "schema",
+    "tool",
+    "reviewer",
+    "observed_at_utc",
+    "work_item_id",
+    "raw_row_sha256",
+    "phase",
+    "ea_id",
+    "symbol",
+    "original_status",
+    "original_verdict",
+    "effective_admission_status",
+    "reason_classes",
+    "priority",
+    "live_action",
+    "adjudication_fingerprint_sha256",
+    "event_id",
+    "previous_event_sha256",
+    "event_sha256"
+  ],
+  "properties": {
+    "schema": {"const": "qm/mnt-adjudication-overlay-event/v1"},
+    "tool": {"const": "mnt_closure_drift/v1"},
+    "reviewer": {"type": "string", "minLength": 1},
+    "observed_at_utc": {"type": "string", "format": "date-time"},
+    "work_item_id": {"type": "string", "minLength": 1},
+    "raw_row_sha256": {"$ref": "#/$defs/sha256"},
+    "phase": {"enum": ["Q06", "Q07"]},
+    "ea_id": {"type": "string", "pattern": "^QM5_[0-9]+$"},
+    "symbol": {"type": "string", "minLength": 1},
+    "original_status": {"const": "done"},
+    "original_verdict": {"const": "PASS"},
+    "effective_admission_status": {
+      "enum": ["PASS", "PROVENANCE_UNVERIFIED", "EVIDENCE_VINTAGE_STALE"]
+    },
+    "reason_classes": {"type": "array", "items": {"type": "string"}},
+    "priority": {"enum": ["P0_LIVE", "P0_ADMISSION", "P1_HISTORY"]},
+    "live_action": {
+      "enum": ["HOLD_OWNER_REVIEW", "NO_AUTOMATIC_LIVE_ACTION", "NO_RUNTIME_ACTION"]
+    },
+    "evidence_path": {"type": ["string", "null"]},
+    "evidence_sha256": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+    "adjudication_fingerprint_sha256": {"$ref": "#/$defs/sha256"},
+    "event_id": {"$ref": "#/$defs/sha256"},
+    "previous_event_sha256": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+    "event_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

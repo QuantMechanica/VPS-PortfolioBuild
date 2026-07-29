@@ -1,0 +1,52 @@
+;==========================================================
+; QM5 Set File — 3-SLEEVE BOOK
+; runner 9936:USDJPY + satellite 10145:XAUUSD + satellite 13108:XTIUSD
+; ea_id:        20181
+; purpose:      Step-3 governed measurement after OWNER locked slot 2 to 13108
+; decision:     2026-07-29; 13108 is timer-safe; 13301 is excluded
+; environment:  backtest (BACKTEST-ONLY instrument)
+; host_symbol:  USDJPY.DWX
+; sizing:       RISK_FIXED=1000 per sleeve, RISK_PERCENT=0
+;==========================================================
+qm_ea_id=20181
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_risk_cap_pct=1.0
+qm_stress_reject_probability=0.0
+host_symbol=USDJPY.DWX
+; --- Sleeve 0 : RUNNER — QM5_9936 ---
+s0_enabled=1
+s0_symbol=USDJPY.DWX
+s0_risk_fixed=1000
+s0_range_start_hr=1
+s0_range_end_hr=6
+s0_cancel_hr=13
+s0_close_hr=20
+s0_atr_period=14
+s0_min_range_atr_mult=0.4
+s0_max_range_atr_mult=2.5
+s0_trail_trigger_r=1.0
+s0_range_scan_bars=36
+; --- Sleeve 1 : SATELLITE-1 — QM5_10145 ---
+s1_enabled=1
+s1_symbol=XAUUSD.DWX
+s1_risk_fixed=1000
+s1_lookback_n=15
+s1_shorts_enabled=0
+s1_atr_period=14
+s1_atr_stop_mult=3.0
+s1_min_abs_mean_return=0.0
+; --- Sleeve 2 : SATELLITE-2 — QM5_13108 (OWNER-confirmed) ---
+s2_enabled=1
+s2_symbol=XTIUSD.DWX
+s2_risk_fixed=1000
+s2_momentum_days=30
+s2_partial_moment_days=5
+s2_percentile_history=252
+s2_tail_percentile=80.0
+s2_atr_period=20
+s2_atr_sl_mult=3.0
+s2_max_hold_days=8
+s2_max_spread_points=1500

@@ -292,8 +292,16 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
         self.assertLess(dump_pos, guard_pos)
         self.assertLess(guard_pos, reset_pos)
 
-        kill_pos = factory_on.index("foreach ($p in $termsBefore)")
-        clear_pos = factory_on.index("watchdog reset admission block cleared")
+        preflight_pos = factory_on.index("# Preflight and stale factory-process drain")
+        kill_pos = factory_on.index("\n    Stop-FactoryProcesses\n", preflight_pos)
+        lock_pos = factory_on.index(
+            "Enter-FactoryMutationLock -Owner 'factory_on_restart_window'"
+        )
+        self.assertLess(lock_pos, kill_pos)
+        clear_pos = factory_on.index(
+            "Remove-Item -LiteralPath $watchdogResetBlockPath",
+            kill_pos,
+        )
         spawn_pos = factory_on.index("start_terminal_workers.py")
         self.assertLess(kill_pos, clear_pos)
         self.assertLess(clear_pos, spawn_pos)
@@ -304,7 +312,8 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             clear_block,
         )
         self.assertIn("-ErrorAction Stop", clear_block)
-        self.assertIn("FACTORY ON ABORTED before worker spawn", clear_block)
+        self.assertIn("Invoke-FailClosedRollback", factory_on)
+        self.assertIn("FACTORY ON FAILED CLOSED", factory_on)
 
     def test_claim_respects_payload_avoid_terminals(self) -> None:
         with self._root() as tmp:

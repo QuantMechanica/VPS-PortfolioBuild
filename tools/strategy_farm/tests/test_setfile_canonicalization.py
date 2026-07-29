@@ -121,6 +121,9 @@ class SetfileCanonicalizationTests(unittest.TestCase):
                 return {
                     "spawned": True,
                     "pid": 12345,
+                    "process_creation_key": "test-process:12345",
+                    "process_image_path": "test-runner.exe",
+                    "process_started_at_epoch": 1.0,
                     "log_path": str(root / "logs" / "fake.log"),
                     "report_root": str(root / "reports" / "stale-q02"),
                     "ea_dir_name": "QM5_9004_demo",

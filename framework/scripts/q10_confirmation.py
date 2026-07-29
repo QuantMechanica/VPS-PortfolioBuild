@@ -309,6 +309,7 @@ def main() -> int:
                     help="Q09 chosen compliance profile (default = DXZ)")
     ap.add_argument("--terminal", default="T2")
     ap.add_argument("--report-root", type=Path, default=Path("D:/QM/reports/pipeline"))
+    ap.add_argument("--out-prefix", type=Path, help=argparse.SUPPRESS)
     ap.add_argument("--timeout-sec", type=int, default=3600,
                     help="Full-history runs take longer than a single-year run")
     ap.add_argument("--latest-full-year", type=int,

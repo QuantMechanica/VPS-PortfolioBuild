@@ -1,0 +1,79 @@
+{
+  "applied_at": "2026-07-29T12:18:03+00:00",
+  "auto_enqueue_during_factory_off": false,
+  "database": {
+    "path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "post_file_sha256": "25b3f2620fa8724d88aeb3549e32d65dda8103bca6fb4b079a45558ed63d05f6",
+    "post_logical_sha256": "25b3f2620fa8724d88aeb3549e32d65dda8103bca6fb4b079a45558ed63d05f6",
+    "pre_file_sha256": "3f77860fa3962c85ae1c3e4257163044d3322301e9f2b598a9a25491853f1831",
+    "pre_logical_sha256": "3f77860fa3962c85ae1c3e4257163044d3322301e9f2b598a9a25491853f1831",
+    "wal_checkpoint": {
+      "busy": 0,
+      "checkpointed_frames": 0,
+      "log_frames": 0
+    }
+  },
+  "evidence_statement": "NULL migrations are legacy DB-state dispositions, not recreated test evidence. Evidence bindings reference only pre-existing, manifest-hashed artifacts.",
+  "factory_off": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_OFF.flag",
+    "sha256": "09cc4f83e8d5f384f03bc51306beff2cdd165108559a00dbf665097c60b47f1c"
+  },
+  "maintenance_status": {
+    "MNT-009": {
+      "existing_evidence_bindings": 1005,
+      "null_verdict_scope": "COMPLETED_RUNTIME",
+      "remaining_unbound_rows": 45833,
+      "status": "PARTIAL"
+    },
+    "MNT-010": {
+      "parent_closures": 43,
+      "pass_progressions_deferred_factory_off": 13,
+      "status": "COMPLETED_RUNTIME"
+    }
+  },
+  "manifest": {
+    "path": "C:\\QM\\worktrees\\mnt-20260729-integration\\docs\\ops\\evidence\\2026-07-29_mnt009_010_reconciliation_plan.json",
+    "sha256": "f5249c4cba64bcd6c03b668533fd2eb1d8b81e819c851ee7a6b0ffcde26624b2"
+  },
+  "mode": "APPLY_RECEIPT",
+  "operation_counts": {
+    "evidence_bindings": 1005,
+    "null_dispositions": 832,
+    "parent_closures": 43
+  },
+  "plan_census": {
+    "evidence_binding_status": "PARTIAL",
+    "evidence_bindings_inside_null_dispositions": 18,
+    "evidence_still_unbound": 45833,
+    "existing_evidence_bindings_planned": 1005,
+    "existing_evidence_source_counts": {
+      "archived_report_root_on_requeue": 22,
+      "log_path": 459,
+      "report_root": 524
+    },
+    "infra_invalid_without_evidence_path": 46040,
+    "infra_invalid_without_evidence_path_before_mnt009": 46040,
+    "new_infra_without_evidence_from_null_disposition": 798,
+    "null_disposition_counts": {
+      "CROSS_SECTIONAL_PAIR_SUPERSEDED": 27,
+      "NDX_HISTORY_REPAIR_PARK": 804,
+      "OWNER_USDJPY_ONLY_ADMISSION": 1
+    },
+    "parent_closures_planned_after_mnt009": 43,
+    "parent_predicted_verdicts": {
+      "INFRA_FAIL": 27,
+      "PASS": 13,
+      "STRATEGY_FAIL": 3
+    },
+    "physical_parent_zombies": 43,
+    "projected_infra_invalid_without_evidence_after_null_disposition": 46838,
+    "terminal_null_verdict_rows": 832,
+    "unbound_evidence_statement": "No artifact is invented. Rows without an existing, lineage-valid payload-bound file remain explicitly unbound."
+  },
+  "plan_id": "cb494c756acd3a7f9378acf9b6b209f74b06b1960684cd0ce2c5584344c8b713",
+  "schema_version": "mnt009-010-reconciliation/v1",
+  "snapshot": {
+    "path": "D:\\QM\\strategy_farm\\state\\snapshots\\farm_state_mnt009_010_pre_20260729T121800Z.sqlite",
+    "sha256": "caa1bc7bebfa0cc5afaa5fbee7e38661f4b94201d473d090739122eb443ebf7a"
+  }
+}

@@ -30,14 +30,16 @@ try {
         throw "Required process-scope guard is missing: $processScopePath"
     }
     . $processScopePath
-    if ($script:QmFactoryProcessScopeVersion -ne 1) {
+    if ($script:QmFactoryProcessScopeVersion -ne 2) {
         throw 'Process-scope guard version mismatch.'
     }
     foreach ($requiredFunction in @(
         'Test-QmFactoryMt5ImagePath',
         'Test-QmFactoryWorkerCommandLine',
         'Test-QmFactoryRunSmokeCommandLine',
-        'Test-QmFactoryPumpCommandLine'
+        'Test-QmFactoryPumpCommandLine',
+        'Test-QmFactoryPhaseRunnerCommandLine',
+        'Get-QmFactoryPhaseRunnerClassification'
     )) {
         if (-not (Get-Command -Name $requiredFunction -CommandType Function -ErrorAction SilentlyContinue)) {
             throw "Process-scope guard lacks required function: $requiredFunction"
@@ -84,6 +86,16 @@ $checks = @(
        OK=(@(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
               Where-Object { Test-QmFactoryWorkerCommandLine -CommandLine $_.CommandLine }).Count -eq 0);
        Expected='0 running' },
+    @{ Name='factory phase runners=0';
+       OK=(@(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
+              Where-Object { Test-QmFactoryPhaseRunnerCommandLine -CommandLine $_.CommandLine }).Count -eq 0);
+       Expected='0 running' },
+    @{ Name='phase-runner near-matches REVIEW_REQUIRED=0';
+       OK=(@(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
+              Where-Object {
+                  (Get-QmFactoryPhaseRunnerClassification -CommandLine $_.CommandLine).Disposition -eq 'REVIEW_REQUIRED'
+              }).Count -eq 0);
+       Expected='0 unresolved' },
     @{ Name='factory terminal64 (T1..T10)=0';
        OK=(@(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
               Where-Object { Test-QmFactoryMt5ImagePath -Path $_.ExecutablePath -ImageName 'terminal64.exe' }).Count -eq 0);

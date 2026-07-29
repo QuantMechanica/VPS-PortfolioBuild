@@ -35,3 +35,13 @@ bear-regime variants, and `QM5_12567` RSI pullback logic.
 
 No manual tester, live setfile, T_Live access, AutoTrading action, deploy
 manifest, portfolio manifest, or portfolio-gate change was performed.
+
+## Reconciliation note — 2026-07-29
+
+This document remains the historical enqueue receipt. The referenced work item
+subsequently completed `done/DRAFT_DEFECT`; it is not a Q02 PASS. A second row,
+`88ba4560-fd7f-456f-903f-f4982d8f9cf3`, was later materialized from the stale
+review-failed build result and has been quarantined as
+`failed/BLOCKED_STALE_BUILD_RESULT` under transition-ledger sequence 2. A fresh
+Q02 requires a new generation-bound build result and the coordinated restart
+contract.

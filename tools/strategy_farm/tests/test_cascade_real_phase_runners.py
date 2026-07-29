@@ -14,6 +14,17 @@ import farmctl  # noqa: E402
 
 
 class CascadeRealPhaseRunnerTests(unittest.TestCase):
+    def _install_spawn_identity_fixture(self) -> None:
+        old_process_identity = farmctl.get_process_identity
+        self.addCleanup(setattr, farmctl, "get_process_identity", old_process_identity)
+        farmctl.get_process_identity = lambda pid: {
+            "pid": pid,
+            "is_running": True,
+            "creation_key": f"test-process:{pid}",
+            "image_path": sys.executable,
+            "started_at_epoch": 1.0,
+        }
+
     def _insert_work_item(self, root: Path, *, item_id: str, phase: str,
                           symbol: str = "EURUSD.DWX",
                           payload: dict | None = None) -> None:
@@ -53,6 +64,7 @@ class CascadeRealPhaseRunnerTests(unittest.TestCase):
             old_running = farmctl._running_mt5_terminals
             try:
                 farmctl.subprocess.Popen = FakeProc
+                self._install_spawn_identity_fixture()
                 farmctl.MT5_TERMINALS = ("T1",)
                 farmctl._running_mt5_terminals = lambda: set()
                 result = farmctl.dispatch_work_items(root, timeout_minutes=8)
@@ -91,6 +103,7 @@ class CascadeRealPhaseRunnerTests(unittest.TestCase):
             old_running = farmctl._running_mt5_terminals
             try:
                 farmctl.subprocess.Popen = FakeProc
+                self._install_spawn_identity_fixture()
                 farmctl.MT5_TERMINALS = ("T1",)
                 farmctl._running_mt5_terminals = lambda: set()
                 farmctl.dispatch_work_items(root, timeout_minutes=8)
@@ -121,6 +134,7 @@ class CascadeRealPhaseRunnerTests(unittest.TestCase):
             old_running = farmctl._running_mt5_terminals
             try:
                 farmctl.subprocess.Popen = FakeProc
+                self._install_spawn_identity_fixture()
                 farmctl.MT5_TERMINALS = ("T1",)
                 farmctl._running_mt5_terminals = lambda: set()
                 farmctl.dispatch_work_items(root, timeout_minutes=8)

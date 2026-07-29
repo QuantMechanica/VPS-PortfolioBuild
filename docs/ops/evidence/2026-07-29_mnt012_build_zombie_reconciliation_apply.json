@@ -1,0 +1,54 @@
+{
+  "schema_version": "qm.mnt012.blocked-build-reconciliation.apply-receipt.v1",
+  "generated_at_utc": "2026-07-29T11:37:08Z",
+  "run_id": "MNT012-20260729-BLOCKED-BUILD-ZOMBIES-01",
+  "manifest_path": "docs/ops/evidence/2026-07-29_mnt012_build_zombie_reconciliation_manifest.json",
+  "manifest_sha256": "e4c25b4dfc14067822b9d918eddab6f4856e370cac195d17a4317a1fd6c23013",
+  "factory_off": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_OFF.flag",
+    "sha256": "09cc4f83e8d5f384f03bc51306beff2cdd165108559a00dbf665097c60b47f1c",
+    "remained_asserted": true
+  },
+  "database": {
+    "path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "pre_file_sha256": "b147327029c27ec8f3f3fafcc8d661d4fcb6ecb9fe0e440aa1d8d0ebb941382b",
+    "pre_logical_state_sha256": "b147327029c27ec8f3f3fafcc8d661d4fcb6ecb9fe0e440aa1d8d0ebb941382b",
+    "post_file_sha256": "b147327029c27ec8f3f3fafcc8d661d4fcb6ecb9fe0e440aa1d8d0ebb941382b",
+    "post_logical_state_sha256": "96ccc557ce8beb3e96f0b6507a79c92871613c06eaf673bd3ae4e39bfff910a6",
+    "wal_note": "The committed transition was WAL-visible; therefore the main-file hash remained unchanged while the logical serialized-state hash changed."
+  },
+  "snapshot": {
+    "path": "D:\\QM\\strategy_farm\\state\\snapshots\\farm_state_mnt012_pre_20260729T113000Z.sqlite",
+    "sha256": "87a141d9e7c051570c653ec795bd1612b6bc5589d50e740ff58868f933d445ba"
+  },
+  "transitions": [
+    {
+      "task_id": "76b745d5-fe8d-4f63-900e-aa8c6743f551",
+      "card_id": "QM5_1457",
+      "from_status": "pending",
+      "to_status": "blocked",
+      "reason": "non_dwx_rates_inputs_required_by_card",
+      "target_payload_sha256": "6040d8641455e82993775470ff15df2fdba994c3e2d00bbb156fd36c03b8a7fd",
+      "ledger_seq": 1
+    },
+    {
+      "task_id": "08cfd80b-c78c-4527-9143-e650cdc847d1",
+      "card_id": "QM5_1459",
+      "from_status": "pending",
+      "to_status": "blocked",
+      "reason": "r3_missing_lumber_and_ief_dwx_series",
+      "target_payload_sha256": "b7e0e78875cbe4efbd4f501b29046ea647744d702e22e8081e638be60da2f571",
+      "ledger_seq": 2
+    }
+  ],
+  "idempotency_recheck": {
+    "mode": "apply_idempotent_noop",
+    "already_applied": true,
+    "mutated": false,
+    "ledger_sequences": [1, 2]
+  },
+  "cards_mutated": false,
+  "factory_restarted": false,
+  "t_live_touched": false,
+  "autotrading_touched": false
+}

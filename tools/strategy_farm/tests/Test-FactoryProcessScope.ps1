@@ -30,10 +30,12 @@ $helperPath = Join-Path $strategyFarmRoot 'factory_process_scope.ps1'
 $factoryOffPath = Join-Path $strategyFarmRoot 'Factory_OFF.ps1'
 $factoryOnPath = Join-Path $strategyFarmRoot 'Factory_ON.ps1'
 $testWindowOffPath = Join-Path $strategyFarmRoot 'TestWindow_OFF.ps1'
+$allowlistPath = Join-Path $strategyFarmRoot 'phase_runner_allowlist.v1.json'
+$farmctlPath = Join-Path $strategyFarmRoot 'farmctl.py'
 
 . $helperPath
 
-Assert-QmEqual -Expected 1 -Actual $script:QmFactoryProcessScopeVersion -Name 'scope helper version'
+Assert-QmEqual -Expected 2 -Actual $script:QmFactoryProcessScopeVersion -Name 'scope helper version'
 
 # Exact MT5 image-path contract.
 $acceptedImages = @(
@@ -156,6 +158,136 @@ Assert-QmTrue -Condition (Test-QmDirectFactoryWorkItemReportRoot -Path "D:\QM\re
 Assert-QmFalse -Condition (Test-QmDirectFactoryWorkItemReportRoot -Path 'D:\QM\reports\work_items\not-a-guid') `
     -Name 'reject non-UUID factory work-item report root'
 
+# MNT-046: the shared, versioned allowlist is the sole phase-runner inventory.
+$allowlist = Get-Content -LiteralPath $allowlistPath -Raw | ConvertFrom-Json
+Assert-QmEqual -Expected 'qm-phase-runner-allowlist/v1' -Actual $allowlist.schema_version `
+    -Name 'phase-runner allowlist schema is pinned'
+Assert-QmEqual -Expected 16 -Actual @($allowlist.entries).Count `
+    -Name 'all canonical PHASE_RUNNER_SCRIPTS entries are pinned'
+Assert-QmTrue -Condition ([System.IO.File]::ReadAllText($farmctlPath).Contains('phase_runner_allowlist.v1.json')) `
+    -Name 'farmctl consumes the shared phase-runner allowlist'
+
+$runnerRoot = 'D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b'
+foreach ($entry in @($allowlist.entries)) {
+    $scriptPath = 'C:\QM\repo\' + ([string]$entry.repo_relative_path).Replace('/', '\')
+    $commandLine = "python.exe `"$scriptPath`" --out-prefix `"$runnerRoot`""
+    if ([string]$entry.terminal_selector -eq 'required') {
+        $commandLine += ' --terminal T1'
+    }
+    $classification = Get-QmFactoryPhaseRunnerClassification -CommandLine $commandLine
+    Assert-QmTrue -Condition (Test-QmFactoryPhaseRunnerCommandLine -CommandLine $commandLine) `
+        -Name "accept allowlisted phase runner $($entry.phase)"
+    Assert-QmEqual -Expected 'FACTORY_OWNED' -Actual $classification.Disposition `
+        -Name "classify allowlisted phase runner $($entry.phase)"
+    Assert-QmEqual -Expected ([string]$entry.phase) -Actual $classification.Phase `
+        -Name "bind allowlisted phase $($entry.phase)"
+    Assert-QmEqual -Expected $workItemId -Actual $classification.WorkItemId `
+        -Name "bind work-item UUID for $($entry.phase)"
+}
+
+$worktreeRunner = 'pythonw.exe -u C:\QM\worktrees\mnt-20260729-integration\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T10'
+Assert-QmTrue -Condition (Test-QmFactoryPhaseRunnerCommandLine -CommandLine $worktreeRunner) `
+    -Name 'accept exact allowlisted runner from one direct QM worktree'
+
+$runnerNegativeCases = @(
+    @{ Name='basename only'; Command='python.exe q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T1'; Review=$true },
+    @{ Name='foreign root'; Command='python.exe C:\Temp\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T1'; Review=$true },
+    @{ Name='T_Live selector'; Command='python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T_Live'; Review=$true },
+    @{ Name='intentional T5 selector'; Command='python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T5'; Review=$true },
+    @{ Name='duplicate out-prefix'; Command='python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --out-prefix D:\QM\reports\work_items\100034e8-7161-430b-be4f-e140cb99789b --terminal T1'; Review=$true },
+    @{ Name='duplicate terminal'; Command='python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T1 --terminal T2'; Review=$true },
+    @{ Name='required terminal missing'; Command='python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b'; Review=$true },
+    @{ Name='work_items evil'; Command='python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items_evil\000034e8-7161-430b-be4f-e140cb99789b --terminal T1'; Review=$true },
+    @{ Name='non UUID'; Command='python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\not-a-guid --terminal T1'; Review=$true },
+    @{ Name='nested below UUID'; Command='python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b\nested --terminal T1'; Review=$true },
+    @{ Name='relative script'; Command='python.exe framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T1'; Review=$true },
+    @{ Name='wrong interpreter'; Command='pwsh.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T1'; Review=$false }
+)
+foreach ($case in $runnerNegativeCases) {
+    $classification = Get-QmFactoryPhaseRunnerClassification -CommandLine $case.Command
+    Assert-QmFalse -Condition (Test-QmFactoryPhaseRunnerCommandLine -CommandLine $case.Command) `
+        -Name "never reap phase-runner negative: $($case.Name)"
+    $expectedDisposition = $(if ($case.Review) { 'REVIEW_REQUIRED' } else { 'NOT_FACTORY' })
+    Assert-QmEqual -Expected $expectedDisposition -Actual $classification.Disposition `
+        -Name "near-match disposition: $($case.Name)"
+}
+
+# Pre-deploy legacy runners with an exact known identity must never disappear
+# from OFF verification merely because they predate the UUID marker. They are
+# visible REVIEW_REQUIRED near-matches and remain outside reap ownership.
+$legacyRunnerCases = @(
+    @{
+        Name = 'exact q07 script without lineage marker'
+        Command = 'python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --ea QM5_9999 --terminal T1'
+        Phase = 'Q07'
+        Reason = 'out_prefix_missing'
+    },
+    @{
+        Name = 'exact p2 script with non-work-item output root'
+        Command = 'python.exe C:\QM\repo\framework\scripts\p2_baseline.py --ea QM5_9999 --out-prefix D:\QM\reports\pipeline --terminal T1'
+        Phase = 'Q02'
+        Reason = 'out_prefix_not_direct_work_item_uuid'
+    },
+    @{
+        Name = 'historical P3 module invocation'
+        Command = 'python.exe -m framework.scripts.p3_param_sweep --ea QM5_9999 --symbols EURUSD.DWX'
+        Phase = 'Q03'
+        Reason = 'legacy_module_runner_without_exact_uuid_lineage'
+    },
+    @{
+        Name = 'deprecated P4 direct runner'
+        Command = 'python.exe C:\QM\repo\framework\scripts\p4_walk_forward.py --ea QM5_9999'
+        Phase = 'P4'
+        Reason = 'deprecated_legacy_runner_not_reap_allowlisted'
+    },
+    @{
+        Name = 'pre-rewrite Q09 direct runner'
+        Command = 'python.exe C:\QM\repo\framework\scripts\q09_news_mode.py --ea QM5_9999'
+        Phase = 'Q09_LEGACY'
+        Reason = 'deprecated_legacy_runner_not_reap_allowlisted'
+    }
+)
+foreach ($case in $legacyRunnerCases) {
+    $classification = Get-QmFactoryPhaseRunnerClassification -CommandLine $case.Command
+    Assert-QmEqual -Expected 'REVIEW_REQUIRED' -Actual $classification.Disposition `
+        -Name "legacy runner visible for review: $($case.Name)"
+    Assert-QmEqual -Expected $case.Phase -Actual $classification.Phase `
+        -Name "legacy runner phase retained: $($case.Name)"
+    Assert-QmEqual -Expected $case.Reason -Actual $classification.MatcherReason `
+        -Name "legacy runner review reason: $($case.Name)"
+    Assert-QmFalse -Condition (Test-QmFactoryPhaseRunnerCommandLine -CommandLine $case.Command) `
+        -Name "legacy runner is never reap-owned: $($case.Name)"
+}
+$foreignModule = Get-QmFactoryPhaseRunnerClassification `
+    -CommandLine 'python.exe -m framework.scripts.p3_param_sweep_evil --ea QM5_9999'
+Assert-QmEqual -Expected 'NOT_FACTORY' -Actual $foreignModule.Disposition `
+    -Name 'near module name is not promoted to legacy runner review'
+$foreignLegacyPath = Get-QmFactoryPhaseRunnerClassification `
+    -CommandLine 'python.exe C:\Temp\p4_walk_forward.py --ea QM5_9999'
+Assert-QmEqual -Expected 'NOT_FACTORY' -Actual $foreignLegacyPath.Disposition `
+    -Name 'foreign legacy runner basename remains outside Factory scope'
+
+$zeroScanA = [pscustomobject]@{
+    scanned_at='2026-07-29T10:00:00.000Z'; worker_daemons=@(); phase_runners=@();
+    smoke_wrappers=@(); terminal64=@(); metatester64=@(); review_required=@()
+}
+$zeroScanB = [pscustomobject]@{
+    scanned_at='2026-07-29T10:00:02.000Z'; worker_daemons=@(); phase_runners=@();
+    smoke_wrappers=@(); terminal64=@(); metatester64=@(); review_required=@()
+}
+$nonNullScan = [pscustomobject]@{
+    scanned_at='2026-07-29T10:00:04.000Z'; worker_daemons=@(); phase_runners=@([pscustomobject]@{pid=42});
+    smoke_wrappers=@(); terminal64=@(); metatester64=@(); review_required=@()
+}
+Assert-QmTrue -Condition (Test-QmStableFactoryNullScans -Scans @($zeroScanA,$zeroScanB)) `
+    -Name 'two distinct consecutive null scans establish stable process quiescence'
+Assert-QmFalse -Condition (Test-QmStableFactoryNullScans -Scans @($zeroScanA)) `
+    -Name 'one null scan is insufficient'
+Assert-QmFalse -Condition (Test-QmStableFactoryNullScans -Scans @($zeroScanA,$zeroScanA)) `
+    -Name 'same scan cannot be counted twice'
+Assert-QmFalse -Condition (Test-QmStableFactoryNullScans -Scans @($zeroScanA,$nonNullScan)) `
+    -Name 'phase runner breaks stable null-scan contract'
+
 # Pump matching is exact despite the one known repository-relative launch form.
 $acceptedPumps = @(
     'pythonw.exe C:\QM\repo\tools\strategy_farm\run_pump_task.py',
@@ -210,7 +342,7 @@ foreach ($forbiddenCommand in @(
 # must not retain any historical broad path/sub-string process classifier.
 $staticCases = @(
     @($factoryOffPath, 'FACTORY OFF ABORTED before mutation', 'Stop-ScheduledTask'),
-    @($factoryOnPath, 'FACTORY ON ABORTED before mutation', 'Remove-Item -Path $factoryOffFlagPath'),
+    @($factoryOnPath, 'FACTORY ON ABORTED before mutation', 'Remove-Item -LiteralPath $factoryOffFlagPath'),
     @($testWindowOffPath, 'TEST WINDOW OFF ABORTED before mutation', "& (Join-Path `$PSScriptRoot 'Factory_OFF.ps1')")
 )
 foreach ($case in $staticCases) {
@@ -238,18 +370,44 @@ foreach ($case in $staticCases) {
 $offText = [System.IO.File]::ReadAllText($factoryOffPath)
 $onText = [System.IO.File]::ReadAllText($factoryOnPath)
 $windowText = [System.IO.File]::ReadAllText($testWindowOffPath)
-Assert-QmTrue -Condition ($offText.Contains("Test-QmFactoryMt5ImagePath -Path `$_.ExecutablePath -ImageName 'terminal64.exe'")) `
+Assert-QmTrue -Condition ($offText.Contains("Test-QmFactoryMt5ImagePath -Path `$process.ExecutablePath -ImageName 'terminal64.exe'")) `
     -Name 'Factory_OFF uses exact terminal classifier'
-Assert-QmTrue -Condition ($offText.Contains("Test-QmFactoryMt5ImagePath -Path `$_.ExecutablePath -ImageName 'metatester64.exe'")) `
+Assert-QmTrue -Condition ($offText.Contains("Test-QmFactoryMt5ImagePath -Path `$process.ExecutablePath -ImageName 'metatester64.exe'")) `
     -Name 'Factory_OFF uses exact metatester classifier'
-Assert-QmTrue -Condition ($offText.Contains('Test-QmFactoryRunSmokeCommandLine -CommandLine $_.CommandLine')) `
+Assert-QmTrue -Condition ($offText.Contains('Test-QmFactoryRunSmokeCommandLine -CommandLine $process.CommandLine')) `
     -Name 'Factory_OFF uses exact wrapper classifier'
+Assert-QmTrue -Condition ($offText.Contains('Get-QmFactoryPhaseRunnerClassification -CommandLine $process.CommandLine')) `
+    -Name 'Factory_OFF uses exact phase-runner classifier'
+Assert-QmTrue -Condition ($offText.Contains('REVIEW_REQUIRED near-matches are evidence only')) `
+    -Name 'Factory_OFF makes near-match no-reap policy explicit'
+Assert-QmTrue -Condition ($offText.Contains("schema_version = 'mnt046-factory-off-quiescence/v1'")) `
+    -Name 'Factory_OFF writes versioned MNT-046 evidence'
+Assert-QmTrue -Condition ($offText.Contains('Wait-FactoryStableNullScans -TimeoutSeconds 20 -IntervalSeconds 2')) `
+    -Name 'Factory_OFF requires bounded consecutive stable scans'
+Assert-QmTrue -Condition ($offText.Contains('stable_null_scan_count')) `
+    -Name 'Factory_OFF evidence records stable null-scan count'
+$phaseReapIndex = $offText.IndexOf('Stop-EvidencedFactoryProcesses -EvidenceRecords $beforeProcessScan.phase_runners', [System.StringComparison]::Ordinal)
+$workerReapIndex = $offText.IndexOf('Stop-EvidencedFactoryProcesses -EvidenceRecords $beforeProcessScan.worker_daemons', [System.StringComparison]::Ordinal)
+$wrapperReapIndex = $offText.IndexOf('Stop-EvidencedFactoryProcesses -EvidenceRecords $beforeProcessScan.smoke_wrappers', [System.StringComparison]::Ordinal)
+$terminalReapIndex = $offText.IndexOf('Stop-EvidencedFactoryProcesses -EvidenceRecords $beforeProcessScan.terminal64', [System.StringComparison]::Ordinal)
+Assert-QmTrue -Condition (
+    $phaseReapIndex -ge 0 -and $phaseReapIndex -lt $workerReapIndex -and
+    $workerReapIndex -lt $wrapperReapIndex -and $wrapperReapIndex -lt $terminalReapIndex
+) -Name 'Factory_OFF reap order is phase-runner then worker/wrapper then MT5 children'
 Assert-QmTrue -Condition ($onText.Contains("Test-QmFactoryMt5ImagePath -Path `$_.ExecutablePath -ImageName 'terminal64.exe'")) `
     -Name 'Factory_ON uses exact terminal classifier'
+Assert-QmTrue -Condition ($onText.Contains("`$snapshot.phase_runners + `$snapshot.daemons + `$snapshot.wrappers")) `
+    -Name 'Factory_ON stale drain includes phase runners in safe order'
+Assert-QmTrue -Condition ($onText.Contains('no ambiguous process was reaped')) `
+    -Name 'Factory_ON refuses REVIEW_REQUIRED near-matches without reaping'
 Assert-QmTrue -Condition ($windowText.Contains("Name='factory terminal64 (T1..T10)=0'")) `
     -Name 'TestWindow reports factory-only terminal scope'
 Assert-QmTrue -Condition ($windowText.Contains('Test-QmFactoryPumpCommandLine -CommandLine $_.CommandLine')) `
     -Name 'TestWindow uses exact pump classifier'
+Assert-QmTrue -Condition ($windowText.Contains("Name='factory phase runners=0'")) `
+    -Name 'TestWindow verifies phase-runner quiescence'
+Assert-QmTrue -Condition ($windowText.Contains("Name='phase-runner near-matches REVIEW_REQUIRED=0'")) `
+    -Name 'TestWindow surfaces unresolved phase-runner near-matches'
 
 if ($script:Failures.Count -gt 0) {
     $script:Failures | ForEach-Object { Write-Error $_ }

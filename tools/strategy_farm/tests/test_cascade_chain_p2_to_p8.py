@@ -103,6 +103,7 @@ class CascadeChainP2ToP8Tests(unittest.TestCase):
             old_pipeline = farmctl.PIPELINE_REPORT_ROOT
             old_news = farmctl.NEWS_MATRIX_FALLBACK
             old_popen = farmctl.subprocess.Popen
+            old_process_identity = farmctl.get_process_identity
             old_terminals = farmctl.MT5_TERMINALS
             old_running = farmctl._running_mt5_terminals
             old_active = farmctl.active_mt5_terminals
@@ -110,9 +111,18 @@ class CascadeChainP2ToP8Tests(unittest.TestCase):
                 farmctl.PIPELINE_REPORT_ROOT = pipeline_root
                 farmctl.NEWS_MATRIX_FALLBACK = fallback_news
                 farmctl.subprocess.Popen = FakeProc
-                farmctl.MT5_TERMINALS = tuple(f"T{i}" for i in range(1, 7))
+                farmctl.get_process_identity = lambda pid: {
+                    "pid": pid,
+                    "is_running": True,
+                    "creation_key": f"test-process:{pid}",
+                    "image_path": sys.executable,
+                    "started_at_epoch": 1.0,
+                }
+                # MNT046 deliberately excludes T5 from real phase-runner scope.
+                phase_terminals = ("T1", "T2", "T3", "T4", "T6", "T7")
+                farmctl.MT5_TERMINALS = phase_terminals
                 farmctl._running_mt5_terminals = lambda: set()
-                farmctl.active_mt5_terminals = lambda: [f"T{i}" for i in range(1, 7)]
+                farmctl.active_mt5_terminals = lambda: list(phase_terminals)
                 for idx, phase in enumerate(phases, start=1):
                     self._insert_work_item(root, item_id=f"wi-{phase}", ea_id="QM5_9999", phase=phase, symbol=f"EURUSD{idx}.DWX")
                 farmctl.dispatch_work_items(root, timeout_minutes=8)
@@ -120,6 +130,7 @@ class CascadeChainP2ToP8Tests(unittest.TestCase):
                 farmctl.PIPELINE_REPORT_ROOT = old_pipeline
                 farmctl.NEWS_MATRIX_FALLBACK = old_news
                 farmctl.subprocess.Popen = old_popen
+                farmctl.get_process_identity = old_process_identity
                 farmctl.MT5_TERMINALS = old_terminals
                 farmctl._running_mt5_terminals = old_running
                 farmctl.active_mt5_terminals = old_active

@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "classification": "FACTORY_OFF_AUTO_Q02_BYPASS",
+  "disposition": "QUARANTINED",
+  "recorded_at_utc": "2026-07-29T09:56:47Z",
+  "ea_id": "QM5_20182",
+  "build_task_id": "3c6339bd-59c7-479f-891f-085483113394",
+  "q01_status": "PASS",
+  "q02_status": "BLOCKED_FACTORY_OFF",
+  "invalid_q02_work_item_id": "60181936-0403-49bc-b221-dda4f35eb584",
+  "invalid_q02_final_status": "failed",
+  "invalid_q02_final_verdict": "BLOCKED_FACTORY_OFF",
+  "maintenance_run_id": "mnt-20260729-factory-off-reconcile-v1",
+  "transition_ledger_seq": 1,
+  "hold_code": "FACTORY_OFF_AUTO_Q02_BYPASS",
+  "release_on_restart": false,
+  "build_result": {
+    "compile_succeeded": true,
+    "build_check_passed": true,
+    "smoke_result": "deferred_p2_smoke",
+    "tester_launched": false
+  },
+  "reason": "record_build_result auto-enqueued Q02 while the OWNER-intentional FACTORY_OFF flag existed; the row is not admission-authoritative",
+  "next_action": "Create a fresh generation-bound Q02 row only through the coordinated post-maintenance restart contract."
+}

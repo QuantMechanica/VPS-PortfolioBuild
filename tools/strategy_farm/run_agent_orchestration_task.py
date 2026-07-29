@@ -74,8 +74,6 @@ PYTHONW_CRASH_LOG = LOG_DIR / "agent_orchestration_pythonw_crash.log"
 LOCK_DIR = FARM_ROOT / "locks"
 PYTHON_EXE = Path(r"C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe")
 CODEX_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\codex.cmd")
-GEMINI_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\gemini.cmd")
-GEMINI_NODE_BUNDLE = Path(r"C:\Users\Administrator\AppData\Roaming\npm\node_modules\@google\gemini-cli\bundle\gemini.js")
 # Antigravity CLI (agy) — replaces the deprecated gemini-cli for the "gemini" lane
 # (2026-06-29). Headless via `agy -p`; auth = Windows Credential Manager (gemini:antigravity),
 # OWNER-authenticated, no API key. agy does NOT read stdin -> prompt passed as a -p file-pointer.
@@ -100,7 +98,7 @@ CLAUDE_BUDGET_POLICY = FARM_ROOT / "CLAUDE_BUDGET_POLICY.json"
 # Each headless cycle is mostly routine orchestration (claim work, run gates,
 # write the cycle log, monitor health) — work that does not need the top model.
 # Default Claude headless to Sonnet and let OWNER raise to opus per-run via env;
-# Codex/Gemini default to their config.toml model unless an env override is set.
+# Codex/Antigravity default to their account model unless an env override is set.
 # Interactive sessions (e.g. the senior agent) are unaffected — they ignore
 # these vars. Empty string => omit the flag (use the CLI/account default).
 #   $env:QM_CLAUDE_HEADLESS_MODEL = 'opus'   # bump a cycle back to Opus
@@ -122,8 +120,8 @@ def resolve_cli(agent: str) -> str:
         return str(CODEX_FALLBACK if CODEX_FALLBACK.exists() else "codex")
     if agent == "gemini":
         # Antigravity CLI (agy) is the live backend; gemini-cli is DEAD (OWNER
-        # 2026-07-02) and must never be silently revived. No gemini.cmd/gemini
-        # fallback: if agy is missing we return its expected path and let the
+        # 2026-07-02) and must never be silently revived. No deprecated npm
+        # fallback exists: if agy is missing we return its expected path and let the
         # spawn fail LOUDLY (visible in the result JSON) instead of running the
         # deprecated CLI with incompatible args, which burned every scheduled
         # slot 2026-07-06/07 while reporting only a generic rc=1.
@@ -147,13 +145,12 @@ def agent_env(agent: str) -> dict[str, str]:
     if agent == "codex":
         env["CODEX_HOME"] = str(CODEX_HOME)
     if agent == "gemini":
-        # Scheduled tasks run as SYSTEM; point Gemini at the operator profile
-        # where OAuth and workspace trust are configured.
+        # Scheduled tasks run as SYSTEM; point agy at the operator profile where
+        # its Windows Credential Manager token and workspace trust are configured.
         env["USERPROFILE"] = str(AGENT_USER_HOME)
         env["HOME"] = str(AGENT_USER_HOME)
         env["HOMEDRIVE"] = "C:"
         env["HOMEPATH"] = r"\Users\Administrator"
-        env.setdefault("GEMINI_DEFAULT_AUTH_TYPE", "oauth-personal")
         env.setdefault("TERM", "dumb")
         env.setdefault("NO_COLOR", "1")
         env.setdefault("FORCE_COLOR", "0")
@@ -169,7 +166,7 @@ def agent_env(agent: str) -> dict[str, str]:
 def build_prompt(agent: str, cwd: Path) -> str:
     edge_charter = cwd / "docs" / "ops" / "EDGE_LAB_CHARTER_2026-05-22.md"
     profitability = cwd / "docs" / "ops" / "PROFITABILITY_TRACK_2026-05-21.md"
-    # G: drive (Google Drive for Desktop) is mounted per-user. Gemini/agy runs as SYSTEM
+    # G: drive (Google Drive for Desktop) is mounted per-user. Antigravity/agy runs as SYSTEM
     # in a scheduled task with no G: mount -> any G: access raises PermissionError and
     # strands the task IN_PROGRESS (Rule 13, OPERATING_RULES_2026-07-03). Skip G: paths
     # for gemini; Claude/Codex run interactively or have G: via the user session.
@@ -582,6 +579,7 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
     cmd = command_for(agent, cwd, prompt_path)
     payload: dict[str, Any] = {
         "agent": agent,
+        "execution_backend": "agy" if agent == "gemini" else agent,
         "slot": slot,
         "dry_run": dry_run,
         "prompt_path": str(prompt_path),

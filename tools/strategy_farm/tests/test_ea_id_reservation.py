@@ -1,8 +1,10 @@
 import csv
+import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -12,6 +14,13 @@ import farmctl  # noqa: E402
 
 
 class EaIdReservationTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._agent_patch = mock.patch.dict(os.environ, {"QM_AGENT_ID": "controller"})
+        self._agent_patch.start()
+
+    def tearDown(self) -> None:
+        self._agent_patch.stop()
+
     def _repo(self) -> tempfile.TemporaryDirectory:
         return tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
 

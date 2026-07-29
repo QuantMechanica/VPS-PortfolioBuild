@@ -238,6 +238,245 @@ class SelectionTests(_Base):
         self.assertIn("below_sweep_cap_left_to_hourly_sweep",
                       plan["per_phase"]["Q02"]["refuse_reasons"])
 
+    def test_q08_invalid_report_is_never_requeued(self):
+        self.assertTrue(rsi._is_q08_invalid_report(
+            {"verdict_reason": "phase_runner_invalid_report"}
+        ))
+        self.assertTrue(rsi._is_q08_invalid_report(
+            {"verdict_reason": "q08_8.5_neighborhood:neighborhood_evidence_lineage_invalid"}
+        ))
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _d, sf = self._make_ea(root, 500, "slug")
+            db = self._db(root)
+            self._insert(
+                db, id="q08-invalid", phase="Q08", ea_id="QM5_500",
+                symbol="EURUSD.DWX", setfile_path=str(sf), status="failed",
+                verdict="INFRA_FAIL",
+                payload={"verdict_reason": "phase_runner_invalid_report"},
+            )
+            cfg = self._cfg(root, [(500, "active", "slug")])
+            plan = rsi._plan(
+                cfg, phases=("Q08",), include_q02_exhausted=False, limit=5,
+                symbol_skip_fn=NO_SKIP, priority_fn=FLAT_PRIO,
+            )
+        self.assertEqual(plan["eligible_total"], 0)
+        self.assertEqual(
+            plan["per_phase"]["Q08"]["refuse_reasons"],
+            {"q08_invalid_report_non_retryable": 1},
+        )
+
+    def test_pair_that_advanced_to_deeper_phase_is_historical(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _d, sf = self._make_ea(root, 500, "slug")
+            db = self._db(root)
+            self._insert(db, id="old-q04", phase="Q04", ea_id="QM5_500",
+                         symbol="EURUSD.DWX", setfile_path=str(sf), status="failed",
+                         verdict="INFRA_FAIL")
+            self._insert(db, id="new-q05", phase="Q05", ea_id="QM5_500",
+                         symbol="EURUSD.DWX", setfile_path=str(sf), status="failed",
+                         verdict="INFRA_FAIL", updated_at="2024-02-01T00:00:00+00:00")
+            cfg = self._cfg(root, [(500, "active", "slug")])
+            plan = rsi._plan(
+                cfg, phases=("Q04",), include_q02_exhausted=False, limit=5,
+                symbol_skip_fn=NO_SKIP, priority_fn=FLAT_PRIO,
+            )
+        self.assertEqual(plan["eligible_total"], 0)
+        self.assertEqual(
+            plan["per_phase"]["Q04"]["refuse_reasons"],
+            {"historical_phase_advanced": 1},
+        )
+
+
+class HealthCensusTests(_Base):
+    def test_cross_phase_census_exposes_dispositions_and_historical_exclusions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            made = {}
+            registry = []
+            for num in range(500, 506):
+                _d, made[num] = self._make_ea(root, num, f"slug{num}")
+                registry.append((num, "retired" if num == 503 else "active", f"slug{num}"))
+            db = self._db(root)
+
+            # Q03 has an explicit successor in flight -> RETRY, not stranded.
+            self._insert(db, id="q03-infra", phase="Q03", ea_id="QM5_500",
+                         symbol="EURUSD.DWX", setfile_path=str(made[500]), status="failed",
+                         verdict="INFRA_FAIL")
+            self._insert(db, id="q03-next", phase="Q03", ea_id="QM5_500",
+                         symbol="EURUSD.DWX", setfile_path=str(made[500]), status="pending",
+                         verdict=None, updated_at="2024-02-01T00:00:00+00:00")
+            # Q04 is a real retry candidate.
+            self._insert(db, id="q04-retry", phase="Q04", ea_id="QM5_501",
+                         symbol="EURUSD.DWX", setfile_path=str(made[501]), status="failed",
+                         verdict="INFRA_FAIL")
+            # Q05 was superseded by a real verdict and remains visible as history.
+            self._insert(db, id="q05-infra", phase="Q05", ea_id="QM5_502",
+                         symbol="EURUSD.DWX", setfile_path=str(made[502]), status="failed",
+                         verdict="INFRA_FAIL")
+            self._insert(db, id="q05-pass", phase="Q05", ea_id="QM5_502",
+                         symbol="EURUSD.DWX", setfile_path=str(made[502]), status="done",
+                         verdict="PASS", updated_at="2024-02-01T00:00:00+00:00")
+            # Q06 retired; Q07 poison; Q08 invalid-report boundary.
+            self._insert(db, id="q06-retired", phase="Q06", ea_id="QM5_503",
+                         symbol="EURUSD.DWX", setfile_path=str(made[503]), status="failed",
+                         verdict="INFRA_FAIL")
+            self._insert(db, id="q07-poison", phase="Q07", ea_id="QM5_504",
+                         symbol="EURUSD.DWX", setfile_path=str(made[504]), status="failed",
+                         verdict="INFRA_FAIL", attempt_count=99)
+            self._insert(db, id="q08-invalid", phase="Q08", ea_id="QM5_505",
+                         symbol="EURUSD.DWX", setfile_path=str(made[505]), status="failed",
+                         verdict="INFRA_FAIL",
+                         payload={"reason_classes": ["INVALID_REPORT"]})
+            cfg = self._cfg(root, registry)
+
+            census = rsi._health_census(cfg, symbol_skip_fn=NO_SKIP)
+
+        self.assertTrue(census["read_only"])
+        self.assertEqual(census["phases"], list(rsi.HEALTH_PHASES))
+        self.assertEqual(census["invariant"]["status"], "PASS")
+        self.assertEqual(census["invariant"]["q08_invalid_report_retryable"], 0)
+        self.assertEqual(census["per_phase"]["Q04"]["dispositions"]["RETRY"], 1)
+        self.assertEqual(census["per_phase"]["Q05"]["dispositions"]["REAL_VERDICT"], 1)
+        self.assertEqual(census["per_phase"]["Q06"]["dispositions"]["RETIRED"], 1)
+        self.assertEqual(census["per_phase"]["Q07"]["dispositions"]["BLOCKED"], 1)
+        self.assertEqual(census["per_phase"]["Q08"]["q08_invalid_report_blocked"], 1)
+        self.assertEqual(
+            census["per_phase"]["Q05"]["historical_exclusions"],
+            {"superseded_by_real_verdict": 1},
+        )
+
+
+class WaveContractTests(_Base):
+    def _cohort(self, root: Path, count: int = 30):
+        db = self._db(root)
+        registry = []
+        for offset in range(count):
+            num = 500 + offset
+            slug = f"slug{num}"
+            _d, sf = self._make_ea(root, num, slug)
+            registry.append((num, "active", slug))
+            self._insert(
+                db, id=f"wi{num}", phase="Q04", ea_id=f"QM5_{num}",
+                symbol="EURUSD.DWX", setfile_path=str(sf), status="failed",
+                verdict="INFRA_FAIL", attempt_count=1,
+                updated_at=f"2024-01-{(offset % 28) + 1:02d}T00:00:00+00:00",
+            )
+        return db, self._cfg(root, registry)
+
+    @staticmethod
+    def _settle(db: Path, ids: list[str], *, fail_id: str | None = None):
+        conn = sqlite3.connect(db)
+        for wid in ids:
+            verdict = "INFRA_FAIL" if wid == fail_id else "PASS"
+            conn.execute(
+                "UPDATE work_items SET status='done', verdict=?, updated_at=? WHERE id=?",
+                (verdict, "2024-03-01T00:00:00+00:00", wid),
+            )
+        conn.commit()
+        conn.close()
+
+    def test_wave1_is_exactly_5_and_pass_receipt_binds_exactly_25(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            db, cfg = self._cohort(root, 30)
+            wave1 = rsi._plan_wave(
+                cfg, wave=1, phases=("Q04",), include_q02_exhausted=False,
+                symbol_skip_fn=NO_SKIP, priority_fn=FLAT_PRIO,
+            )
+            self.assertEqual(wave1["recovery_wave"]["status"], "READY")
+            self.assertEqual(wave1["canary_count"], 5)
+            journal = root / "wave1.json"
+            rsi._apply(cfg, wave1, journal)
+            wave1_ids = wave1["recovery_wave"]["selection"]["work_item_ids"]
+            self._settle(db, wave1_ids)
+
+            receipt_path = root / "wave1-receipt.json"
+            receipt = rsi._write_wave1_receipt(
+                cfg, journal, receipt_path, phases=("Q04",),
+                include_q02_exhausted=False,
+                symbol_skip_fn=NO_SKIP, priority_fn=FLAT_PRIO,
+            )
+            self.assertEqual(receipt["assessment"]["gate"], "PASS")
+            self.assertEqual(receipt["assessment"]["wave1"]["yield_pct"], 100.0)
+            self.assertEqual(receipt["assessment"]["wave1"]["infra_rate_pct"], 0.0)
+            self.assertEqual(receipt["assessment"]["wave2"]["selection"]["size"], 25)
+
+            wave2 = rsi._plan_wave(
+                cfg, wave=2, phases=("Q04",), include_q02_exhausted=False,
+                wave1_receipt=receipt_path,
+                symbol_skip_fn=NO_SKIP, priority_fn=FLAT_PRIO,
+            )
+            self.assertEqual(wave2["recovery_wave"]["status"], "READY")
+            self.assertEqual(wave2["canary_count"], 25)
+            self.assertEqual(
+                wave2["recovery_wave"]["selection"]["sha256"],
+                receipt["assessment"]["wave2"]["selection"]["sha256"],
+            )
+
+    def test_wave1_infra_recurrence_blocks_receipt_and_wave2(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            db, cfg = self._cohort(root, 30)
+            wave1 = rsi._plan_wave(
+                cfg, wave=1, phases=("Q04",), include_q02_exhausted=False,
+                symbol_skip_fn=NO_SKIP, priority_fn=FLAT_PRIO,
+            )
+            journal = root / "wave1.json"
+            rsi._apply(cfg, wave1, journal)
+            ids = wave1["recovery_wave"]["selection"]["work_item_ids"]
+            self._settle(db, ids, fail_id=ids[0])
+            receipt_path = root / "blocked-receipt.json"
+            receipt = rsi._write_wave1_receipt(
+                cfg, journal, receipt_path, phases=("Q04",),
+                include_q02_exhausted=False,
+                symbol_skip_fn=NO_SKIP, priority_fn=FLAT_PRIO,
+            )
+            self.assertEqual(receipt["assessment"]["gate"], "BLOCKED")
+            self.assertTrue(any(
+                reason.startswith("wave1_infra_recurrence:")
+                for reason in receipt["assessment"]["blockers"]
+            ))
+            with self.assertRaises(RuntimeError):
+                rsi._plan_wave(
+                    cfg, wave=2, phases=("Q04",), include_q02_exhausted=False,
+                    wave1_receipt=receipt_path,
+                    symbol_skip_fn=NO_SKIP, priority_fn=FLAT_PRIO,
+                )
+
+    def test_wave2_requires_receipt_and_rejects_tampering(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            db, cfg = self._cohort(root, 30)
+            with self.assertRaises(RuntimeError):
+                rsi._plan_wave(
+                    cfg, wave=2, phases=("Q04",), include_q02_exhausted=False,
+                    symbol_skip_fn=NO_SKIP, priority_fn=FLAT_PRIO,
+                )
+
+            wave1 = rsi._plan_wave(
+                cfg, wave=1, phases=("Q04",), include_q02_exhausted=False,
+                symbol_skip_fn=NO_SKIP, priority_fn=FLAT_PRIO,
+            )
+            journal = root / "wave1.json"
+            rsi._apply(cfg, wave1, journal)
+            self._settle(db, wave1["recovery_wave"]["selection"]["work_item_ids"])
+            receipt_path = root / "receipt.json"
+            receipt = rsi._write_wave1_receipt(
+                cfg, journal, receipt_path, phases=("Q04",),
+                include_q02_exhausted=False,
+                symbol_skip_fn=NO_SKIP, priority_fn=FLAT_PRIO,
+            )
+            receipt["assessment"]["decision_digest"] = "0" * 64
+            rsi._write_journal(receipt_path, receipt)
+            with self.assertRaises(RuntimeError):
+                rsi._plan_wave(
+                    cfg, wave=2, phases=("Q04",), include_q02_exhausted=False,
+                    wave1_receipt=receipt_path,
+                    symbol_skip_fn=NO_SKIP, priority_fn=FLAT_PRIO,
+                )
+
 
 class ApplyRevertTests(_Base):
     def _stranded(self, root):

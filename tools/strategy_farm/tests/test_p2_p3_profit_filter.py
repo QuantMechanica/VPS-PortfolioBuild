@@ -33,8 +33,16 @@ class P2P3ProfitFilterTests(unittest.TestCase):
             repo_root = Path(tmp) / "repo"
             ea_dir = repo_root / "framework" / "EAs" / "QM5_9999_demo"
             ea_sets = ea_dir / "sets"
+            registry_dir = repo_root / "framework" / "registry"
             ea_sets.mkdir(parents=True)
+            registry_dir.mkdir(parents=True)
             (ea_dir / "QM5_9999_demo.ex5").write_text("compiled", encoding="utf-8")
+            (registry_dir / "dwx_symbol_matrix.csv").write_text(
+                "symbol,asset_class,canonical_name_verified\n"
+                "EURUSD.DWX,forex,true\n"
+                "NDX.DWX,indices,true\n",
+                encoding="utf-8",
+            )
             profit_set = ea_sets / "QM5_9999_demo_NDX.DWX_D1_backtest.set"
             loss_set = ea_sets / "QM5_9999_demo_EURUSD.DWX_D1_backtest.set"
             profit_set.write_text("", encoding="utf-8")

@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_20181 FTMO JOINT MULTI-SYMBOL (OnTimer) — BACKTEST-ONLY measurement instrument. STEP 1: runner 9936:USDJPY only."
+#property description "QM5_20181 FTMO JOINT MULTI-SYMBOL (OnTimer) — BACKTEST-ONLY measurement instrument; slot 2 is OWNER-locked to 13108:XTIUSD."
 
 #include <QM/QM_Common.mqh>
 #include <QM/QM_BasketOrder.mqh>
@@ -141,7 +141,7 @@ input int    s1_atr_period         = 14;
 input double s1_atr_stop_mult      = 3.0;
 input double s1_min_abs_mean_return = 0.0;
 
-input group "Sleeve 2 — SATELLITE-2 13108:XTIUSD (OnTimer, TIMER-SAFE; disabled pending OWNER confirm)"
+input group "Sleeve 2 — SATELLITE-2 13108:XTIUSD (OnTimer, TIMER-SAFE; OWNER-confirmed, enabled by governed book set)"
 input bool   s2_enabled                    = false;
 input string s2_symbol                     = "XTIUSD.DWX";
 input double s2_risk_fixed                 = 1000.0;

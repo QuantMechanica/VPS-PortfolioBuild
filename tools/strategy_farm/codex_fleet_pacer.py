@@ -38,6 +38,8 @@ PROMPT_DIR = PACER_DIR / "prompts"
 LOG_DIR = PACER_DIR / "logs"
 STATE = Path(r"D:/QM/reports/state/codex_fleet_pacer_state.json")
 LOG = Path(r"D:/QM/reports/state/codex_fleet_pacer.log")
+FACTORY_OFF_FLAG = FARM_ROOT / "state" / "FACTORY_OFF.flag"
+FACTORY_MUTATION_LOCK = FARM_ROOT / "state" / "FACTORY_MUTATION.lock"
 
 # Pacing parameters
 SOFT_CEIL_PCT = 92.0     # stop spawning at/above this weekly-used % (OWNER 2026-06-26: higher utilization)
@@ -74,10 +76,105 @@ def _alive(pid: int) -> bool:
     return is_managed_codex_pid_live(FARM_ROOT, int(pid))
 
 
+def _factory_off_cleanup(*, dry_run: bool) -> dict[str, object]:
+    """Stop only Codex processes registered in the farm's managed lease store.
+
+    Manually started Codex shells are not registered there and are therefore out
+    of scope.  The cleanup deliberately covers all managed purposes (pacer,
+    orchestration, build and review): disabling the scheduler wrapper alone does
+    not guarantee that an already-spawned child exits with it.
+    """
+    leases = list_live_managed_codex_processes(FARM_ROOT)
+    stops: list[dict[str, object]] = []
+    for lease in leases:
+        pid = int(lease["pid"])
+        if dry_run:
+            stops.append({
+                "pid": pid,
+                "purpose": lease.get("purpose"),
+                "stopped": False,
+                "reason": "dry_run",
+            })
+            continue
+        try:
+            stop = dict(terminate_managed_codex_pid(FARM_ROOT, pid))
+        except Exception as exc:
+            stop = {"pid": pid, "stopped": False, "reason": repr(exc)}
+        stop.setdefault("purpose", lease.get("purpose"))
+        stops.append(stop)
+    remaining = list_live_managed_codex_processes(FARM_ROOT)
+    return {
+        "managed_before": len(leases),
+        "managed_remaining": len(remaining),
+        "stops": stops,
+    }
+
+
+def _write_state(state: dict[str, object], *, dry_run: bool) -> None:
+    if dry_run:
+        return
+    STATE.parent.mkdir(parents=True, exist_ok=True)
+    STATE.write_text(json.dumps(state, indent=2), encoding="utf-8")
+
+
+def _acquire_spawn_lock() -> int | None:
+    """Join the Factory OFF writer handover for the spawn/register window."""
+    FACTORY_MUTATION_LOCK.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        fd = os.open(
+            str(FACTORY_MUTATION_LOCK),
+            os.O_CREAT | os.O_EXCL | os.O_WRONLY,
+        )
+    except FileExistsError:
+        _log(f"spawn_skip factory_mutation_lock_busy={FACTORY_MUTATION_LOCK}")
+        return None
+    try:
+        record = {
+            "pid": os.getpid(),
+            "owner": "codex_fleet_pacer_spawn",
+            "created_at": _now().replace(microsecond=0).isoformat(),
+        }
+        os.write(fd, json.dumps(record, sort_keys=True).encode("utf-8"))
+        os.fsync(fd)
+    except Exception:
+        os.close(fd)
+        try:
+            FACTORY_MUTATION_LOCK.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
+    if FACTORY_OFF_FLAG.exists():
+        os.close(fd)
+        try:
+            FACTORY_MUTATION_LOCK.unlink(missing_ok=True)
+        except OSError:
+            pass
+        _log("spawn_skip factory_off_after_lock")
+        return None
+    return fd
+
+
+def _release_spawn_lock(fd: int | None) -> None:
+    if fd is None:
+        return
+    os.close(fd)
+    try:
+        FACTORY_MUTATION_LOCK.unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
 def _spawn_agent(prompt_name: str) -> int | None:
     prompt = PROMPT_DIR / prompt_name
     if not prompt.exists():
         _log(f"spawn_skip missing_prompt={prompt}")
+        return None
+    try:
+        spawn_lock_fd = _acquire_spawn_lock()
+    except Exception as exc:
+        _log(f"spawn_skip factory_mutation_lock_error={exc!r}")
+        return None
+    if spawn_lock_fd is None:
         return None
     stamp = _now().strftime("%Y%m%d_%H%M%S")
     live_log = LOG_DIR / f"agent_{stamp}_{prompt_name.split('.')[0]}.live.log"
@@ -106,6 +203,8 @@ def _spawn_agent(prompt_name: str) -> int | None:
     except Exception as exc:
         _log(f"spawn_failed prompt={prompt_name} err={exc}")
         return None
+    finally:
+        _release_spawn_lock(spawn_lock_fd)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -113,6 +212,28 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--max-agents", type=int, default=DEFAULT_MAX_AGENTS)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
+
+    # MNT-052: FACTORY_OFF is a software interlock, not merely a scheduler
+    # preference.  Check it before quota reads or prompt discovery and drain all
+    # farm-owned Codex children that may have outlived their scheduled wrapper.
+    if FACTORY_OFF_FLAG.exists():
+        cleanup = _factory_off_cleanup(dry_run=args.dry_run)
+        state: dict[str, object] = {
+            "ts": _now().replace(microsecond=0).isoformat(),
+            "action": "factory_off_cleanup",
+            "factory_off_flag": str(FACTORY_OFF_FLAG),
+            "dry_run": args.dry_run,
+            **cleanup,
+        }
+        _write_state(state, dry_run=args.dry_run)
+        _log(
+            "factory_off_cleanup "
+            f"managed_before={cleanup['managed_before']} "
+            f"managed_remaining={cleanup['managed_remaining']} "
+            f"dry_run={args.dry_run}"
+        )
+        print(json.dumps(state, indent=2))
+        return 0 if args.dry_run or cleanup["managed_remaining"] == 0 else 1
 
     try:
         used, reset = _read_quota()
@@ -176,7 +297,11 @@ def main(argv: list[str] | None = None) -> int:
     spawned = 0
     if not args.dry_run:
         for _ in range(to_spawn):
-            if used >= SOFT_CEIL_PCT:
+            # Close the check/spawn race with Factory_OFF.ps1.  OFF writes the
+            # interlock before it disables tasks, and then waits for cleanup.
+            if used >= SOFT_CEIL_PCT or FACTORY_OFF_FLAG.exists():
+                if FACTORY_OFF_FLAG.exists():
+                    action = "factory_off_no_spawn"
                 break
             pid = _spawn_agent(PROMPT_ROTATION[rotation_idx % len(PROMPT_ROTATION)])
             rotation_idx += 1
@@ -193,9 +318,7 @@ def main(argv: list[str] | None = None) -> int:
         "hard_ceiling_stops": hard_ceiling_stops,
         "soft_ceil": SOFT_CEIL_PCT, "hard_ceil": HARD_CEIL_PCT, "max_agents": args.max_agents,
     }
-    if not args.dry_run:
-        STATE.parent.mkdir(parents=True, exist_ok=True)
-        STATE.write_text(json.dumps(state, indent=2), encoding="utf-8")
+    _write_state(state, dry_run=args.dry_run)
     _log(f"used={used:.1f}% rate={state['rate_pct_per_hr']} target_rate={target_rate:.3f}/hr "
          f"h_to_reset={hours_to_reset:.1f} running={running} target={target} spawned={spawned} action={action}")
     print(json.dumps(state, indent=2))

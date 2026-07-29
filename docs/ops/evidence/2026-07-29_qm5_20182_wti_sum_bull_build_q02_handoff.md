@@ -1,4 +1,4 @@
-# QM5_20182 WTI Summer Positive-Trend Counterfade — Q01 PASS / Q02 Enqueued
+# QM5_20182 WTI Summer Positive-Trend Counterfade — Q01 PASS / Q02 BLOCKED_FACTORY_OFF
 
 Date: 2026-07-29 (Europe/Berlin)
 
@@ -8,6 +8,13 @@ Build commit: `ca57932a7ad78b61487abeaa6818c7e6a2b70a3c`
 
 ## Outcome
 
+Corrective status (2026-07-29): Q01 remains PASS. The Q02 row created by the
+old `record_build_result` path while the OWNER-intentional Factory-OFF flag was
+present was an interlock bypass, not a valid handoff. Work item
+`60181936-0403-49bc-b221-dda4f35eb584` is now quarantined as
+`failed/BLOCKED_FACTORY_OFF` with a non-releasing hold. A fresh Q02 may be
+created only by the coordinated restart contract.
+
 `QM5_20182_wti-sum-bull` is a new, low-frequency structural WTI candidate.
 On the first tradable D1 bar of each broker week from July through November,
 it may open one `XTIUSD.DWX` short only when the completed 252-D1 WTI log
@@ -16,10 +23,9 @@ uses the framework Friday close at broker hour 21, and consumes the week before
 fallible gates so a flat or rejected decision cannot retry.
 
 The card, deterministic identities, source packet, EA, binary, spec, and one
-locked `RISK_FIXED` backtest setfile were committed. Q01 passed. The canonical
-build-result contract then enqueued exactly one pending Q02 work item. The
-farm's authoritative `FACTORY_OFF.flag` remains in place, so no tester was
-dispatched.
+locked `RISK_FIXED` backtest setfile were committed. Q01 passed. No valid Q02
+handoff exists while the farm's authoritative `FACTORY_OFF.flag` remains in
+place, and no tester was dispatched.
 
 This is a research build, not a certification, portfolio admission, or
 decorrelation result.
@@ -126,9 +132,9 @@ and strict EA build gates passed.
   `D:/QM/reports/framework/21/build_check_20260729_082958.json`
 
 No smoke test, manual tester, or pipeline phase was run by this agent. Q02 is
-pending for the paced fleet.
+blocked by the intentional Factory-OFF interlock.
 
-## Paced Q02 handoff
+## Invalid Q02 handoff incident and disposition
 
 Immediately before enqueue at `2026-07-29T08:33:05Z`, the read-only MT5 slot
 scan reported zero running factory terminals, zero terminal workers, and zero
@@ -144,9 +150,9 @@ It returned:
 `{"skipped":"FACTORY_OFF.flag set","flag":"D:\\QM\\strategy_farm\\state\\FACTORY_OFF.flag"}`
 
 That sweep correctly refused to operate while the factory-off interlock was
-set. The supported build-record handoff remains available under the interlock
-because it writes a pending row without dispatching MT5. The repository card
-was copied byte-for-byte to the farm's approved-card directory, then:
+set. The old build-record path incorrectly remained available because it wrote
+a pending row without immediately dispatching MT5. Factory OFF prohibits queue
+mutation as well as terminal dispatch. The historical sequence was:
 
 - Pre-build-task DB backup:
   `D:/QM/strategy_farm/state/backups/farm_state_before_qm5_20182_build_task_20260729T083700Z.sqlite`
@@ -157,17 +163,23 @@ was copied byte-for-byte to the farm's approved-card directory, then:
   `F7086596FCD8F66F470AD737562A3641B5CC86177D7787E5DC812F98BAF6C200`
 - Pre-record DB backup:
   `D:/QM/strategy_farm/state/backups/farm_state_before_qm5_20182_record_build_q02_20260729T083757Z.sqlite`
-- Auto-enqueue result: one enqueued, zero skipped
-- Q02 work item: `60181936-0403-49bc-b221-dda4f35eb584`
-- State: `pending`, unclaimed, attempt 0
+- Auto-enqueue result at the time: one invalid row, zero skipped
+- Invalid Q02 work item: `60181936-0403-49bc-b221-dda4f35eb584`
+- Initial state: `pending`, unclaimed, attempt 0
 - Symbol/timeframe: `XTIUSD.DWX` / D1
 - Created: `2026-07-29T08:37:57+00:00`
 
-The final work-item postcheck returned exactly one row and
-`Q02_pending: 1`. A second MT5 slot scan at `2026-07-29T08:38:07Z` still
+The historical postcheck returned exactly one row and `Q02_pending: 1`. A
+second MT5 slot scan at `2026-07-29T08:38:07Z` still
 reported zero factory terminals and only the separate pre-existing `T_Live`
 process. The current execution hold is the factory-off safety interlock, not
 observed tester CPU saturation. No dispatch command was issued.
+
+The maintenance reconciliation `mnt-20260729-factory-off-reconcile-v1`
+changed the invalid row to `failed/BLOCKED_FACTORY_OFF`, transition-ledger seq
+1, hold `FACTORY_OFF_AUTO_Q02_BYPASS`, `release_on_restart=false`. The durable
+incident receipt is
+`2026-07-29_qm5_20182_q02_factory_off_bypass_incident.json`.
 
 AutoTrading, the portfolio gate, the T_Live manifest, all T_Live files, and
 live setfiles were not touched.

@@ -4,7 +4,7 @@
 **Slug:** `wti-fri-bear`
 **Source:** `GORSKA-MOP-WTI-FRIBEAR-2026`
 **Author of this spec:** Development
-**Last revised:** 2026-07-26
+**Last revised:** 2026-07-29
 
 ---
 
@@ -102,4 +102,5 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-26 | Initial source-backed build | OWNER commodity/energy sleeve mission |
+| v2 | 2026-07-29 | Reconcile Q02 truth | Original Q02=`DRAFT_DEFECT`; stale-result re-enqueue quarantined `BLOCKED_STALE_BUILD_RESULT`; no fresh Q02 before coordinated restart |
 

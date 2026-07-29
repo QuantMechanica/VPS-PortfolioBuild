@@ -407,6 +407,82 @@ def test_runtime_binding_rejects_source_setfile_hash_slot_and_magic_drift(
     }.issubset(codes)
 
 
+def _track_with_git_lf(repo: Path, artifact: Path) -> None:
+    subprocess.run(["git", "init", "-q", str(repo)], check=True)
+    subprocess.run(
+        ["git", "-C", str(repo), "config", "core.autocrlf", "false"],
+        check=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(repo), "add", "--", str(artifact.relative_to(repo))],
+        check=True,
+    )
+
+
+def test_tracked_repo_text_dependency_hash_is_lf_canonical(tmp_path: Path) -> None:
+    contract, _source = _write_enriched_contract_fixture(tmp_path)
+    dependency = next(
+        item for item in contract["data_dependencies"] if item["dependency_id"] == "side_guard"
+    )
+    artifact = tmp_path / dependency["path"]
+    lf_bytes = b"day,allow\n2026-07-22,1\n"
+    crlf_bytes = lf_bytes.replace(b"\n", b"\r\n")
+    expected = hashlib.sha256(lf_bytes).hexdigest()
+    dependency["sha256"] = expected
+    artifact.write_bytes(lf_bytes)
+    _track_with_git_lf(tmp_path, artifact)
+
+    for content in (lf_bytes, crlf_bytes):
+        artifact.write_bytes(content)
+        codes = {
+            issue.code
+            for issue in lint.lint_contract(
+                contract,
+                repo_root=tmp_path,
+                as_of=date(2026, 7, 22),
+            )
+        }
+        assert "dependency_hash_mismatch" not in codes
+
+    artifact.write_bytes(b"day,allow\r\n2026-07-22,0\r\n")
+    codes = {
+        issue.code
+        for issue in lint.lint_contract(
+            contract,
+            repo_root=tmp_path,
+            as_of=date(2026, 7, 22),
+        )
+    }
+    assert "dependency_hash_mismatch" in codes
+
+
+def test_untracked_dependency_and_runtime_setfile_remain_byte_exact(
+    tmp_path: Path,
+) -> None:
+    contract, _source = _write_enriched_contract_fixture(tmp_path)
+    dependency = next(
+        item for item in contract["data_dependencies"] if item["dependency_id"] == "side_guard"
+    )
+    artifact = tmp_path / dependency["path"]
+    artifact.write_bytes(artifact.read_bytes().replace(b"\n", b"\r\n"))
+
+    setfile = tmp_path / contract["runtime_binding"]["setfile"]
+    original_setfile = setfile.read_bytes()
+    _track_with_git_lf(tmp_path, setfile)
+    setfile.write_bytes(original_setfile.replace(b"\n", b"\r\n"))
+
+    codes = {
+        issue.code
+        for issue in lint.lint_contract(
+            contract,
+            repo_root=tmp_path,
+            as_of=date(2026, 7, 22),
+        )
+    }
+    assert "dependency_hash_mismatch" in codes
+    assert "runtime_setfile_hash_mismatch" in codes
+
+
 def test_enriched_contract_still_requires_explicit_bar_gate(tmp_path: Path) -> None:
     contract, source = _write_enriched_contract_fixture(tmp_path)
     source.write_text(

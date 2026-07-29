@@ -1,0 +1,85 @@
+{
+  "schema_version": "qm-phase-runner-allowlist/v1",
+  "entries": [
+    {
+      "phase": "Q02",
+      "repo_relative_path": "framework/scripts/p2_baseline.py",
+      "terminal_selector": "required"
+    },
+    {
+      "phase": "Q03",
+      "repo_relative_path": "framework/scripts/p3_param_sweep.py",
+      "terminal_selector": "optional"
+    },
+    {
+      "phase": "Q04",
+      "repo_relative_path": "framework/scripts/q04_walkforward.py",
+      "terminal_selector": "required"
+    },
+    {
+      "phase": "Q05",
+      "repo_relative_path": "framework/scripts/q05_stress_medium.py",
+      "terminal_selector": "required"
+    },
+    {
+      "phase": "Q06",
+      "repo_relative_path": "framework/scripts/q06_stress_harsh.py",
+      "terminal_selector": "required"
+    },
+    {
+      "phase": "Q07",
+      "repo_relative_path": "framework/scripts/q07_multiseed.py",
+      "terminal_selector": "required"
+    },
+    {
+      "phase": "Q08",
+      "repo_relative_path": "framework/scripts/q08_davey/aggregate.py",
+      "terminal_selector": "required"
+    },
+    {
+      "phase": "Q09_NEWS",
+      "repo_relative_path": "tools/strategy_farm/q09_news_runner.py",
+      "terminal_selector": "optional"
+    },
+    {
+      "phase": "Q09_PORTFOLIO",
+      "repo_relative_path": "framework/scripts/q09_portfolio.py",
+      "terminal_selector": "optional"
+    },
+    {
+      "phase": "Q10",
+      "repo_relative_path": "framework/scripts/q10_confirmation.py",
+      "terminal_selector": "required"
+    },
+    {
+      "phase": "P5",
+      "repo_relative_path": "framework/scripts/p5_stress_driver.py",
+      "terminal_selector": "required"
+    },
+    {
+      "phase": "P5b",
+      "repo_relative_path": "framework/scripts/p5b_noise_driver.py",
+      "terminal_selector": "required"
+    },
+    {
+      "phase": "P5c",
+      "repo_relative_path": "framework/scripts/p5c_crisis_slices.py",
+      "terminal_selector": "required"
+    },
+    {
+      "phase": "P6",
+      "repo_relative_path": "framework/scripts/p6_multiseed_driver.py",
+      "terminal_selector": "required"
+    },
+    {
+      "phase": "P7",
+      "repo_relative_path": "framework/scripts/p7_statval.py",
+      "terminal_selector": "optional"
+    },
+    {
+      "phase": "P8",
+      "repo_relative_path": "framework/scripts/p8_news_driver.py",
+      "terminal_selector": "required"
+    }
+  ]
+}

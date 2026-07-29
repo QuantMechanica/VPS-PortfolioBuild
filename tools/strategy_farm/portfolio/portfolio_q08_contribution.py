@@ -642,6 +642,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--ea-id", required=True)
     parser.add_argument("--symbol", required=True)
     parser.add_argument("--report-root", type=Path, required=True)
+    parser.add_argument("--out-prefix", type=Path, help=argparse.SUPPRESS)
     parser.add_argument("--q08-summary", type=Path)
     parser.add_argument("--common-dir", type=Path, default=portfolio_admission.DEFAULT_ADMISSION_COMMON_DIR)
     parser.add_argument("--candidates-db", type=Path, default=DEFAULT_CANDIDATES_DB)

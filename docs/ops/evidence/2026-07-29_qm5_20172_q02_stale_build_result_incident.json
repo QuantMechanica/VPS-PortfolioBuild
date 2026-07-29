@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "classification": "STALE_BUILD_RESULT_AUTO_Q02_BYPASS",
+  "disposition": "QUARANTINED",
+  "recorded_at_utc": "2026-07-29T09:54:40Z",
+  "ea_id": "QM5_20172",
+  "build_task_id": "485df7ca-fbff-474e-b82c-9578eb5c2225",
+  "q01_status": "PASS",
+  "original_q02": {
+    "work_item_id": "ab8d8b7a-1c17-4cdc-b259-080cab3b75df",
+    "status": "done",
+    "verdict": "DRAFT_DEFECT"
+  },
+  "invalid_q02_work_item_id": "88ba4560-fd7f-456f-903f-f4982d8f9cf3",
+  "invalid_q02_final_status": "failed",
+  "invalid_q02_final_verdict": "BLOCKED_STALE_BUILD_RESULT",
+  "maintenance_run_id": "mnt-20260729-factory-off-reconcile-v1",
+  "transition_ledger_seq": 2,
+  "hold_code": "STALE_BUILD_RESULT_AUTO_Q02_BYPASS",
+  "release_on_restart": false,
+  "reason": "A previous review-failed build result was materialized again during rework; neither that row nor the original DRAFT_DEFECT row is admission-authoritative.",
+  "next_action": "Record a fresh generation-, source-, binary- and result-hash-bound build result, then create a new Q02 only through the coordinated post-maintenance restart contract."
+}

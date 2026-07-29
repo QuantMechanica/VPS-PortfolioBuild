@@ -12,8 +12,10 @@ import csv
 import hashlib
 import json
 import re
+import subprocess
 from dataclasses import asdict, dataclass
 from datetime import date
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -320,6 +322,67 @@ def _sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _sha256_git_lf_text(path: Path) -> str:
+    """Hash text as Git's canonical LF bytes without hiding other drift."""
+
+    digest = hashlib.sha256()
+    pending = b""
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            data = pending + chunk
+            pending = b""
+            if data.endswith(b"\r"):
+                data, pending = data[:-1], b"\r"
+            digest.update(data.replace(b"\r\n", b"\n"))
+    digest.update(pending)
+    return digest.hexdigest()
+
+
+@lru_cache(maxsize=1024)
+def _is_repo_tracked_text(repo_root: str, artifact: str) -> bool:
+    """Return true only when Git classifies an in-repository artifact as text."""
+
+    root = Path(repo_root).resolve()
+    path = Path(artifact).resolve()
+    try:
+        relative = path.relative_to(root).as_posix()
+    except ValueError:
+        return False
+
+    try:
+        completed = subprocess.run(
+            [
+                "git",
+                "-C",
+                str(root),
+                "ls-files",
+                "--error-unmatch",
+                "--eol",
+                "--",
+                f":(literal){relative}",
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    if completed.returncode != 0:
+        return False
+    return re.match(r"^i/(?:lf|crlf|mixed)\s", completed.stdout) is not None
+
+
+def _dependency_hash_matches(path: Path, expected: str, *, repo_root: Path) -> bool:
+    """Accept exact bytes, plus Git-LF bytes for tracked in-repository text only."""
+
+    if _sha256_file(path) == expected:
+        return True
+    if not _is_repo_tracked_text(str(repo_root.resolve()), str(path.resolve())):
+        return False
+    return _sha256_git_lf_text(path) == expected
 
 
 def _calendar_csv_coverage(path: Path) -> tuple[tuple[date, date] | None, str | None]:
@@ -754,8 +817,7 @@ def _lint_dependency_file(
                 path=path,
             )
         ]
-    actual_hash = _sha256_file(path)
-    if actual_hash != expected_hash:
+    if not _dependency_hash_matches(path, expected_hash, repo_root=repo_root):
         return [
             _issue(
                 "dependency_hash_mismatch",

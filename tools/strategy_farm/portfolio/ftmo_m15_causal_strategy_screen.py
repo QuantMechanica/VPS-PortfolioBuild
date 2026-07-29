@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import itertools
 import json
+import weakref
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Iterable, Sequence
@@ -26,8 +27,11 @@ except ImportError:  # pragma: no cover - direct script execution
 
 EVIDENCE_END_YEAR = 2025
 
-_ARRAY_CACHE: dict[int, dict[str, np.ndarray]] = {}
-_SESSION_CACHE: dict[tuple[int, str, int, int], list[list[int]]] = {}
+_FrameRef = weakref.ReferenceType[pd.DataFrame]
+_ARRAY_CACHE: dict[int, tuple[_FrameRef, dict[str, np.ndarray]]] = {}
+_SESSION_CACHE: dict[
+    tuple[int, str, int, int], tuple[_FrameRef, list[list[int]]]
+] = {}
 
 
 @dataclass(frozen=True)
@@ -41,7 +45,21 @@ class Instrument:
 
 
 def _values(frame: pd.DataFrame, column: str) -> np.ndarray:
-    arrays = _ARRAY_CACHE.setdefault(id(frame), {})
+    frame_id = id(frame)
+    cached = _ARRAY_CACHE.get(frame_id)
+    if cached is None or cached[0]() is not frame:
+        frame_ref: _FrameRef
+
+        def discard(dead_ref: _FrameRef) -> None:
+            current = _ARRAY_CACHE.get(frame_id)
+            if current is not None and current[0] is dead_ref:
+                _ARRAY_CACHE.pop(frame_id, None)
+
+        frame_ref = weakref.ref(frame, discard)
+        arrays: dict[str, np.ndarray] = {}
+        _ARRAY_CACHE[frame_id] = (frame_ref, arrays)
+    else:
+        arrays = cached[1]
     if column not in arrays:
         arrays[column] = frame[column].to_numpy()
     return arrays[column]
@@ -75,8 +93,9 @@ def session_days(frame: pd.DataFrame, instrument: Instrument) -> list[list[int]]
         instrument.session_start_minute,
         instrument.session_end_minute,
     )
-    if cache_key in _SESSION_CACHE:
-        return _SESSION_CACHE[cache_key]
+    cached = _SESSION_CACHE.get(cache_key)
+    if cached is not None and cached[0]() is frame:
+        return cached[1]
     weekdays = frame[frame["weekday"] < 5]
     minute = _values(frame, "minute")
     days: list[list[int]] = []
@@ -89,7 +108,15 @@ def session_days(frame: pd.DataFrame, instrument: Instrument) -> list[list[int]]
         ]
         if indices and int(minute[indices[0]]) == instrument.session_start_minute:
             days.append(indices)
-    _SESSION_CACHE[cache_key] = days
+    frame_ref: _FrameRef
+
+    def discard(dead_ref: _FrameRef) -> None:
+        current = _SESSION_CACHE.get(cache_key)
+        if current is not None and current[0] is dead_ref:
+            _SESSION_CACHE.pop(cache_key, None)
+
+    frame_ref = weakref.ref(frame, discard)
+    _SESSION_CACHE[cache_key] = (frame_ref, days)
     return days
 
 

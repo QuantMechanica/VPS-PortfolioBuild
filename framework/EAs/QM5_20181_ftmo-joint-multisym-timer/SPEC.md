@@ -9,9 +9,10 @@ Built piece by piece (OWNER 2026-07-27, "Stück für Stück"), each sleeve admit
 `match_rate == 1.0` before the next is added:
 
 - **Step 1:** scaffold + RUNNER only — 9936:USDJPY on the host chart, OnTick.
-- **Step 2 (this file):** satellite-1 10145:XAUUSD is fully wired on OnTimer and
-  remains input-disabled until its fidelity measurement.
-- Step 3: satellite-2, measurement-gated GDAXI vs 12969:USDJPY.
+- **Step 2:** satellite-1 10145:XAUUSD is fully wired on OnTimer.
+- **Step 3:** OWNER locked slot 2 to the deployable, timer-safe
+  **13108:XTIUSD** sleeve on 2026-07-29. The governed three-sleeve set enables
+  9936 + 10145 + 13108. The per-tick 13301 variant is not a slot in this EA.
 
 ## Architecture
 
@@ -29,7 +30,11 @@ Built piece by piece (OWNER 2026-07-27, "Stück für Stück"), each sleeve admit
   satellite enabled. The satellite warms its own history and uses the explicit
   `QM_BasketOrder` symbol/magic path; it never mutates slot 0's framework ownership.
 - **Magic.** Slot-pinned: slot 0 = USDJPY.DWX (magic 201810000), slot 1 = XAUUSD.DWX
-  (201810001, registered ahead for step 2). `magic = ea_id*10000 + slot`.
+  (201810001), slot 2 = XTIUSD.DWX (201810002). `magic = ea_id*10000 + slot`.
+
+The source defaults keep both satellites disabled so singleton and two-sleeve controls
+cannot silently change when loaded without their set file. Sleeve membership is explicit
+in each governed set; `..._book3_9936_10145_13108.set` is the authoritative step-3 input.
 
 ## Fidelity control (fixes the 20180 cross-vintage defect)
 

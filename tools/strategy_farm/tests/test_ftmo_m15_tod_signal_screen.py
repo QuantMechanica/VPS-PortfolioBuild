@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import gc
+import weakref
 from datetime import date
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from tools.strategy_farm.portfolio import ftmo_m15_causal_strategy_screen as m15
@@ -65,6 +68,57 @@ def test_signal_uses_completed_bars_and_sets_direction() -> None:
     assert continuation and fade
     assert continuation[0].side == 1
     assert fade[0].side == -1
+
+
+def test_frame_caches_reject_stale_entries_for_a_reused_identity() -> None:
+    """A recycled ``id(frame)`` must never expose arrays from the old frame."""
+
+    frame = _frame()
+    stale_frame = _frame().iloc[:10].copy()
+    instrument = _instrument()
+    frame_id = id(frame)
+    session_key = (
+        frame_id,
+        instrument.timezone,
+        instrument.session_start_minute,
+        instrument.session_end_minute,
+    )
+    m15._ARRAY_CACHE[frame_id] = (
+        weakref.ref(stale_frame),
+        {"minute": np.arange(len(stale_frame), dtype=int)},
+    )
+    m15._SESSION_CACHE[session_key] = (weakref.ref(stale_frame), [[9]])
+
+    try:
+        days = m15.session_days(frame, instrument)
+        assert [len(indices) for indices in days] == [32, 32, 16]
+        assert len(m15._values(frame, "minute")) == len(frame)
+        assert m15._ARRAY_CACHE[frame_id][0]() is frame
+        assert m15._SESSION_CACHE[session_key][0]() is frame
+    finally:
+        m15._ARRAY_CACHE.clear()
+        m15._SESSION_CACHE.clear()
+
+
+def test_frame_caches_release_entries_when_frame_is_collected() -> None:
+    frame = _frame()
+    instrument = _instrument()
+    frame_id = id(frame)
+    session_key = (
+        frame_id,
+        instrument.timezone,
+        instrument.session_start_minute,
+        instrument.session_end_minute,
+    )
+    m15.session_days(frame, instrument)
+    assert frame_id in m15._ARRAY_CACHE
+    assert session_key in m15._SESSION_CACHE
+
+    del frame
+    gc.collect()
+
+    assert frame_id not in m15._ARRAY_CACHE
+    assert session_key not in m15._SESSION_CACHE
 
 
 def test_dual_touch_is_charged_as_stop() -> None:

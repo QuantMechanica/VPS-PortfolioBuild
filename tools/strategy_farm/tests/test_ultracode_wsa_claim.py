@@ -95,7 +95,13 @@ class _FarmDB:
 
     def mark_done(self, wid: str) -> None:
         with closing(self.conn()) as c:
-            c.execute("UPDATE work_items SET status='done' WHERE id=?", (wid,))
+            # A completed work item must carry an explicit terminal verdict.
+            # These queue-contention tests do not exercise gate economics, so
+            # PASS is the neutral successful completion used to free the slot.
+            c.execute(
+                "UPDATE work_items SET status='done', verdict='PASS' WHERE id=?",
+                (wid,),
+            )
             c.commit()
 
 

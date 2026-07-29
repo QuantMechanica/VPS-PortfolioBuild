@@ -5,11 +5,11 @@
 #  Categories drive ON/OFF behaviour:
 #    FACTORY      - dispatch engine.  ON: enable+start | OFF: stop+disable
 #    AI           - agent orchestration. ON: enable+start | OFF: stop+disable
-#    ALWAYS_ON    - dashboards/health/briefs/snapshot/housekeeping.
-#                   ON: ENSURE enabled (safety-net) | OFF: LEAVE ALONE
-#                   (you still get the morning brief / Friday source report /
-#                    reboot diagnostics / health / dashboards
-#                    even when the factory is OFF — by design).
+#    ALWAYS_ON    - dashboards/health/briefs/snapshot/housekeeping baseline.
+#                   ON: ENSURE enabled (safety-net). OFF normally leaves these
+#                   alone, but Factory_OFF's explicit QM_QUIESCENCE_TASKS set
+#                   overrides this category for autonomous repo/DB writers.
+#                   Read-only live/health paths remain outside that override.
 #    ENFORCE_DISABLED - unsafe paths and OWNER-disabled channels that must stay OFF.
 #                   ON: force-disable if drifted on | OFF: leave disabled.
 #
@@ -35,7 +35,7 @@ $QM_AI_TASKS = @(
     # API pull, ALWAYS_ON below). Receiver was never actually registered.
 )
 
-# --- always-on support: ON ensures enabled, OFF leaves running -------
+# --- always-on baseline: selected writers may be quiescence-overridden on OFF ---
 $QM_ALWAYSON_TASKS = @(
     'QM_StrategyFarm_Cockpit_2min',           # cockpit.html every 2 min
     'QM_StrategyFarm_Dashboard_Hourly',       # current/strategies/EA-detail pages

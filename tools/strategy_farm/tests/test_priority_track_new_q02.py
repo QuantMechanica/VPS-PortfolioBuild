@@ -100,11 +100,11 @@ def test_force_build_does_not_depend_on_strategy_priority(tmp_path: Path) -> Non
         conn.execute(
             """
             INSERT INTO work_items(
-                id, kind, phase, ea_id, symbol, setfile_path, status,
+                id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
                 attempt_count, payload_json, created_at, updated_at
             ) VALUES (
                 'prior', 'backtest', 'Q02', 'QM5_9001', 'EURUSD.DWX',
-                'prior.set', 'done', 0, '{}',
+                'prior.set', 'done', 'PASS', 0, '{}',
                 '2026-01-01T00:00:00+00:00', '2026-01-01T00:00:00+00:00'
             )
             """
@@ -136,11 +136,11 @@ def test_first_q02_is_priority_but_existing_organic_survivor_is_unchanged(
         conn.execute(
             """
             INSERT INTO work_items(
-                id, kind, phase, ea_id, symbol, setfile_path, status,
+                id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
                 attempt_count, payload_json, created_at, updated_at
             ) VALUES (
                 'organic-history', 'backtest', 'Q02', 'QM5_9002', 'EURUSD.DWX',
-                'prior.set', 'done', 0, '{}',
+                'prior.set', 'done', 'PASS', 0, '{}',
                 '2026-01-01T00:00:00+00:00', '2026-01-01T00:00:00+00:00'
             )
             """

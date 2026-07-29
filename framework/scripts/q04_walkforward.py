@@ -1061,6 +1061,7 @@ def main() -> int:
     ap.add_argument("--terminal", default="T2", help="MT5 terminal (T1-T10)")
     ap.add_argument("--report-root", type=Path, default=Path("D:/QM/reports/pipeline"),
                     help="Durable aggregate/fold-summary root")
+    ap.add_argument("--out-prefix", type=Path, help=argparse.SUPPRESS)
     ap.add_argument("--scratch-root", type=Path,
                     help="Volatile tester/report workspace (defaults to --report-root)")
     ap.add_argument("--evidence-key",

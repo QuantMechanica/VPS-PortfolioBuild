@@ -707,10 +707,18 @@ def directed_research_targets(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
     """
     try:
         import research_matrix
+    except ModuleNotFoundError:
+        try:
+            from tools.strategy_farm import research_matrix
+        except Exception as exc:  # pragma: no cover - defensive
+            return {"available": False, "ranked_targets": [], "reason": f"matrix_unavailable:{exc}"}
     except Exception as exc:  # pragma: no cover - defensive
         return {"available": False, "ranked_targets": [], "reason": f"matrix_unavailable:{exc}"}
     try:
-        sc = research_matrix.sleeve_coverage()
+        sc = research_matrix.sleeve_coverage(
+            db_path=farmctl.db_path(root),
+            cards_dir=root / CARDS_APPROVED_REL,
+        )
     except Exception as exc:  # pragma: no cover - defensive
         return {"available": False, "ranked_targets": [], "reason": f"matrix_error:{exc}"}
     return {
@@ -1073,6 +1081,7 @@ def update_task(
                     "reason": "codex_review_required_for_gemini_code",
                     "source_task_id": task_id,
                     "source_agent": "gemini",
+                    "source_execution_backend": "agy",
                     "source_task_type": row["task_type"],
                     "source_artifact_path": artifact_path or row["artifact_path"],
                     "source_verdict": verdict,
@@ -1170,6 +1179,13 @@ def close_review_task(
         raise ValueError(f"close_state must be one of {sorted(REVIEW_CLOSE_STATES)}")
     if not verdict.strip():
         raise ValueError("verdict is required")
+    if close_state == "APPROVED" and _is_safe_defer_verdict(verdict):
+        return {
+            "closed": False,
+            "task_id": task_id,
+            "reason": "safe_defer_must_be_blocked",
+            "detail": "SAFE_DEFER records unfinished work and cannot use the APPROVED/PASSED path",
+        }
     now = farmctl.utc_now()
     with closing(connect(root)) as conn:
         row = conn.execute("SELECT * FROM agent_tasks WHERE id=?", (task_id,)).fetchone()
@@ -1264,6 +1280,12 @@ def _task_ea_id(payload: dict[str, Any]) -> str | None:
     return f"QM5_{m.group(1)}" if m else None
 
 
+def _is_safe_defer_verdict(value: Any) -> bool:
+    """Return true only for the explicit SAFE_DEFER verdict family."""
+    text = str(value or "").strip().upper()
+    return re.match(r"^SAFE(?:[\s_-]+)DEFER\b", text) is not None
+
+
 def _ea_pipeline_verdict(conn: sqlite3.Connection, ea_id: str | None) -> str | None:
     """The pipeline's closing verdict for an EA, READ from work_items — never
     manufactured (Hard Rule: pipeline verdicts come only from the pipeline).
@@ -1315,6 +1337,13 @@ def _compute_task_exit(
         return "BLOCKED", "pipeline_run_retired_not_agent_lane", {}
 
     if state == "APPROVED":
+        review_verdict = row["verdict"] or payload.get("review_close_verdict")
+        if _is_safe_defer_verdict(review_verdict):
+            return (
+                "BLOCKED",
+                "approved_safe_defer_not_completed",
+                {"safe_defer_reclassified": True},
+            )
         if task_type in PIPELINE_BOUND_TASK_TYPES:
             return "PIPELINE", "approved_build_handed_to_pipeline", {}
         # research / review / ops / triage: APPROVED already IS the accepted

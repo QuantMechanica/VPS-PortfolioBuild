@@ -97,7 +97,11 @@ def test_locked_defaults_fail_initialization_and_no_year_veto_exists() -> None:
 
 
 def test_only_research_setfiles_exist_and_bind_current_source_hash() -> None:
-    source_hash = hashlib.sha256(SOURCE.read_bytes()).hexdigest()
+    # Set-file build bindings use the repository-canonical LF byte stream.
+    # Git may materialize the same tracked source as CRLF on Windows, which
+    # must not turn a content-identical checkout into a false hash mismatch.
+    source_bytes = SOURCE.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    source_hash = hashlib.sha256(source_bytes).hexdigest()
     setfiles = sorted((EA_DIR / "sets").glob("*.set"))
     assert {path.name for path in setfiles} == {
         "QM5_13207_ws30-fri-t20a_WS30.DWX_M15_backtest.set",

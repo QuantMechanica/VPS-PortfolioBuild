@@ -27,7 +27,9 @@ Usage: python sweep_enqueue_built_eas.py [--apply] [--queue-ceiling N] [--ea QM5
 Default is dry-run. Evidence JSON written either way.
 """
 import csv
+import atexit
 import json
+import os
 import re
 import sqlite3
 import sys
@@ -35,17 +37,66 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
-EAS = Path(r"C:\QM\repo\framework\EAs")
-REGISTRY = Path(r"C:\QM\repo\framework\registry\ea_id_registry.csv")
-EVIDENCE = Path(r"D:\QM\reports\state\claude_sweep_enqueue_2026-06-10.json")
+FARM_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
+REPO_ROOT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
+REPORT_ROOT = Path(os.environ.get("QM_REPORT_ROOT", r"D:\QM\reports"))
+DB = FARM_ROOT / "state" / "farm_state.sqlite"
+EAS = REPO_ROOT / "framework" / "EAs"
+REGISTRY = REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv"
+EVIDENCE = REPORT_ROOT / "state" / "claude_sweep_enqueue_2026-06-10.json"
 SETFILE_RE = re.compile(r"_([A-Z][A-Z0-9.]{2,})_([A-Z0-9]+)_backtest\.set$")
 PRIORITY_EAS = {"QM5_1049", "QM5_1047", "QM5_1085", "QM5_1158"}
-_FACTORY_OFF_FLAG = Path(r"D:\QM\strategy_farm\state\FACTORY_OFF.flag")
+_FACTORY_OFF_FLAG = FARM_ROOT / "state" / "FACTORY_OFF.flag"
+_FACTORY_MUTATION_LOCK = FARM_ROOT / "state" / "FACTORY_MUTATION.lock"
 if _FACTORY_OFF_FLAG.exists():
     print(json.dumps({"skipped": "FACTORY_OFF.flag set", "flag": str(_FACTORY_OFF_FLAG)}))
     raise SystemExit(0)
 APPLY = "--apply" in sys.argv
+
+
+def _release_mutation_lock() -> None:
+    global _MUTATION_LOCK_FD
+    if _MUTATION_LOCK_FD is None:
+        return
+    os.close(_MUTATION_LOCK_FD)
+    _MUTATION_LOCK_FD = None
+    try:
+        _FACTORY_MUTATION_LOCK.unlink()
+    except OSError:
+        pass
+
+
+def _acquire_mutation_lock() -> int | None:
+    _FACTORY_MUTATION_LOCK.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        fd = os.open(
+            str(_FACTORY_MUTATION_LOCK),
+            os.O_CREAT | os.O_EXCL | os.O_WRONLY,
+        )
+    except FileExistsError:
+        return None
+    record = {
+        "pid": os.getpid(),
+        "owner": "sweep_enqueue_built_eas",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    os.write(fd, json.dumps(record, sort_keys=True).encode("utf-8"))
+    return fd
+
+
+_MUTATION_LOCK_FD: int | None = None
+if APPLY:
+    _MUTATION_LOCK_FD = _acquire_mutation_lock()
+    if _MUTATION_LOCK_FD is None:
+        print(json.dumps({
+            "skipped": "factory mutation lock busy",
+            "lock": str(_FACTORY_MUTATION_LOCK),
+        }))
+        raise SystemExit(0)
+    atexit.register(_release_mutation_lock)
+    if _FACTORY_OFF_FLAG.exists():
+        print(json.dumps({"skipped": "FACTORY_OFF.flag set after lock", "flag": str(_FACTORY_OFF_FLAG)}))
+        raise SystemExit(0)
 QUEUE_CEILING = 7000
 if "--queue-ceiling" in sys.argv:
     QUEUE_CEILING = int(sys.argv[sys.argv.index("--queue-ceiling") + 1])
@@ -78,7 +129,7 @@ if "--symbols" in sys.argv:
             TARGET_SYMBOLS.add(symbol)
 NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
 
-sys.path.insert(0, r"C:\QM\repo\tools\strategy_farm")
+sys.path.insert(0, str(REPO_ROOT / "tools" / "strategy_farm"))
 import farmctl  # staging helpers (_stage_q02_setfiles, _record_q02_deferral)
 REQUEUE_EXCLUDED_EAS = farmctl.load_requeue_excluded_eas()
 
@@ -92,7 +143,7 @@ REQUEUE_EXCLUDED_EAS = farmctl.load_requeue_excluded_eas()
 # framework/scripts has no __init__.py -> module import via sys.path, appended
 # (not inserted) so it can never shadow tools/strategy_farm modules.
 try:
-    sys.path.append(r"C:\QM\repo\framework\scripts")
+    sys.path.append(str(REPO_ROOT / "framework" / "scripts"))
     from q08_5_neighborhood_runner import (
         parse_setfile_assignments as _q08_parse_setfile,
     )
@@ -167,6 +218,7 @@ report = {"generated_at": NOW, "apply": APPLY,
           "wave_budget": budget,
           "part1_never_tested": {"enqueued": [], "skipped": []},
           "part2_stranded": {"enqueued": [], "skipped": []}}
+deferred_records = []
 
 def pending_active_exists(ea_id, symbol, phase):
     return cur.execute(
@@ -261,7 +313,10 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
         parsed.append((sf, symbol, m.group(2)))
     stage1, deferred = farmctl._stage_q02_setfiles(parsed)
     if deferred and APPLY:
-        farmctl._record_q02_deferral(ea_id, deferred, "sweep_enqueue")
+        # Defer the sidecar write until the same final interlock check as the DB
+        # commit.  Otherwise OFF racing this sweep could roll back SQLite while
+        # leaving a promoted/deferred file mutation behind.
+        deferred_records.append((ea_id, deferred, "sweep_enqueue"))
     for _sf, _sym, _tf in deferred:
         report["part1_never_tested"]["skipped"].append(
             {"ea_id": ea_id, "symbol": _sym, "reason": "staged_deferred_symbol"})
@@ -398,6 +453,7 @@ try:
                       if deferred_file.exists() else {})
 except (json.JSONDecodeError, OSError):
     deferred_state = {}
+deferred_state_present = bool(deferred_state)
 if deferred_state:
     pending_q = cur.execute(
         "SELECT COUNT(*) FROM work_items WHERE status='pending'").fetchone()[0]
@@ -450,12 +506,23 @@ if deferred_state:
                  "reason": payload["promotion_reason"]})
         if APPLY:
             deferred_state.pop(ea_id, None)
-    if APPLY:
+if APPLY:
+    # Factory_OFF writes the flag before stopping this task and waits for the
+    # global mutation lock.  If the flag arrived during the read/plan phase,
+    # roll back every pending SQLite insert and leave sidecars untouched.
+    if _FACTORY_OFF_FLAG.exists():
+        con.rollback()
+        print(json.dumps({
+            "skipped": "FACTORY_OFF.flag set before commit",
+            "flag": str(_FACTORY_OFF_FLAG),
+        }))
+        raise SystemExit(0)
+    con.commit()
+    for ea_id, deferred, source in deferred_records:
+        farmctl._record_q02_deferral(ea_id, deferred, source)
+    if deferred_state_present:
         deferred_file.write_text(json.dumps(deferred_state, indent=1),
                                  encoding="utf-8")
-
-if APPLY:
-    con.commit()
 EVIDENCE.write_text(json.dumps(report, indent=1), encoding="utf-8")
 
 p1, p2 = report["part1_never_tested"], report["part2_stranded"]

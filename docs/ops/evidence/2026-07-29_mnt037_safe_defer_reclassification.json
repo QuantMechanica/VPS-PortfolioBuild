@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-07-29T11:07:41Z",
+  "maintenance_id": "MNT-037",
+  "task_id": "61cfbaf3-a51d-437d-923c-a3eeff7f5116",
+  "task_type": "ops_issue",
+  "operation": "reclassify_safe_defer",
+  "from_state": "PASSED",
+  "to_state": "BLOCKED",
+  "verdict_sha256": "7f119c90fba9798e840362ef1e969b420b26bc321e06540b8e20435d13100235",
+  "reason": "SAFE_DEFER is unfinished repair work and cannot remain PASSED",
+  "database_binding": {
+    "pre_file_sha256": "5ba8c364427c8e66b9221eeab278f7740ce38ad142e74e0bb95c7a9731b0c35c",
+    "pre_logical_state_sha256": "5ba8c364427c8e66b9221eeab278f7740ce38ad142e74e0bb95c7a9731b0c35c",
+    "post_file_sha256": "b147327029c27ec8f3f3fafcc8d661d4fcb6ecb9fe0e440aa1d8d0ebb941382b",
+    "post_logical_state_sha256": "b147327029c27ec8f3f3fafcc8d661d4fcb6ecb9fe0e440aa1d8d0ebb941382b",
+    "wal_checkpoint_busy": 0
+  },
+  "factory_state": {
+    "factory_off_remained_asserted": true,
+    "factory_off_sha256": "09cc4f83e8d5f384f03bc51306beff2cdd165108559a00dbf665097c60b47f1c"
+  },
+  "snapshot": {
+    "path": "D:\\QM\\reports\\maintenance\\2026-07-29_mnt_program\\mnt037_safe_defer_pre_reclassify_20260729_110739Z.sqlite",
+    "sha256": "082da8d80c596521bd1d7864c06dc8921f44bf8c8c2eec0107750e86606f9206"
+  },
+  "safety": {
+    "global_mutation_lock": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "factory_started": false,
+    "t_live_touched": false,
+    "auto_trading_touched": false
+  }
+}

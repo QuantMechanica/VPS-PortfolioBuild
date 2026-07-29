@@ -28,18 +28,10 @@ PRODUCTION_IDENTITIES = {
     if key not in {"12075", "12076"}
 }
 
-# Deferred P1.9 PHYSICAL state on the canonical checkout (2026-07-21): the
-# registry re-keys landed registry-only; the on-disk EA dirs still carry the
-# OLD id-slug pairings until the dir-rename + resolver-regen pass in the
-# 2026-07-26 factory-OFF window. These dirs were pump-committed after the
-# codex worktree's merge-base, which is why the test passed there.
-# REMOVE this set after the Saturday pass renames the dirs.
-DEFERRED_PHYSICAL_IDENTITIES = {
-    ("1157", "qp-stress-reversal-sp500"),   # pre-rekey pairing of 12074
-    ("1619", "ehlers-adaptive-cg-h4"),      # pre-rekey pairing of 12247
-    ("1624", "ehlers-adaptive-cg-h4"),      # pre-rekey duplicate of 12249
-    ("1643", "aa-overnight-mom"),           # pre-rekey pairing of 1619
-}
+# The 2026-07-26 physical rename/archive pass is complete.  Keeping the old
+# transitional identities in the expected production set would now require
+# directories that were deliberately archived or re-keyed.
+DEFERRED_PHYSICAL_IDENTITIES: set[tuple[str, str]] = set()
 
 REMAINING_REGISTRY_ONLY_REKEYS = {
     ("1492", "as-raa-balanced"): (

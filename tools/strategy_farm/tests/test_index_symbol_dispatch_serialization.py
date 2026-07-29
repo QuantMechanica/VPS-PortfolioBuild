@@ -42,6 +42,7 @@ class IndexSymbolDispatchSerializationTests(unittest.TestCase):
                 return {
                     "spawned": True,
                     "pid": 9000 + len(spawned),
+                    "process_creation_key": f"test:{9000 + len(spawned)}",
                     "log_path": str(root / "logs" / f"{item_row['id']}.log"),
                     "report_root": str(root / "reports" / item_row["id"]),
                     "ea_dir_name": "QM5_9999_demo",

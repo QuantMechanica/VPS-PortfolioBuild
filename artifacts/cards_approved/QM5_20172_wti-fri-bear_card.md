@@ -28,7 +28,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
 q01_status: PASS
-q02_status: ENQUEUED
+q02_status: BLOCKED_STALE_BUILD_RESULT
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 g0_approval_reasoning: "OWNER commodity/energy sleeve mission: R1 PASS governed peer-reviewed composite packet; R2 PASS genuine Friday boundary, negative completed 252-D1 return, one BUY, ATR stop, next-D1 exit, and persistent weekly attempt; R3 PASS registered XTIUSD.DWX D1; R4 PASS deterministic native MT5 data only, no ML/grid/martingale. Semantically distinct from positive-trend and unconditional Friday variants."
 ---
@@ -103,15 +103,19 @@ calendar, positions, deals, and terminal global state only.
 
 ## Safety Boundary
 
-Approval covers the card, allocation, compile, one RISK_FIXED backtest setfile,
-and paced Q02 enqueue. It authorizes no manual backtest, live setfile, T_Live
-or AutoTrading action, manifest change, portfolio-gate change, admission, or
-correlation claim.
+Approval covers the card, allocation, compile, and one RISK_FIXED backtest
+setfile. The original Q02 completed as `DRAFT_DEFECT`; a later row created from
+the stale review-failed build result was quarantined and is not
+admission-authoritative. A new Q02 requires a fresh generation-bound build
+result and the coordinated post-maintenance restart contract. This authorizes
+no manual backtest, live setfile, T_Live or AutoTrading action, manifest change,
+portfolio-gate change, admission, or correlation claim.
 
 ## Pipeline History
 
 | version | date | phase | verdict |
 |---|---|---|---|
 | v1 | 2026-07-26 | Q01 | PASS: strict compile, 0 errors, 0 warnings |
-| v1 | 2026-07-26 | Q02 | ENQUEUED: work item `ab8d8b7a-1c17-4cdc-b259-080cab3b75df` |
+| v1 | 2026-07-26 | Q02 | DRAFT_DEFECT: work item `ab8d8b7a-1c17-4cdc-b259-080cab3b75df` completed with a real non-PASS verdict |
+| v1 | 2026-07-29 | Q02 | BLOCKED_STALE_BUILD_RESULT: invalid row `88ba4560-fd7f-456f-903f-f4982d8f9cf3` quarantined; fresh generation-bound result required |
 

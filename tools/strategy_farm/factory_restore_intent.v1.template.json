@@ -1,0 +1,39 @@
+{
+  "schema_version": "qm.factory-restore-intent/v1",
+  "manifest_id": null,
+  "legacy_off_flag": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_OFF.flag",
+    "sha256": null
+  },
+  "owner_authorization": {
+    "authority": "OWNER",
+    "authorized_by": null,
+    "authorized_at_utc": null,
+    "decision": "RESTORE_EXACT_PRE_OFF_TASK_INTENT",
+    "decision_ref": null,
+    "scope": "QM_QUIESCENCE_TASKS_RESTORE_INTENT"
+  },
+  "task_enabled_before": {
+    "QM_CodexParallel_RestoreOnReset": null,
+    "QM_ClaudeParallel_RestoreOnReset": null,
+    "QM_NewsCalendar_Refresh": null,
+    "QM_Repo_Push": null,
+    "QM_StrategyFarm_AgyGovernor": null,
+    "QM_StrategyFarm_CodexFleetPacer": null,
+    "QM_StrategyFarm_FactoryRecycle_Daily": null,
+    "QM_StrategyFarm_SweepEnqueue_Hourly": null,
+    "QM_StrategyFarm_MailboxSourceIntake_Daily": null,
+    "QM_StrategyFarm_InboxCleanup_Daily": null,
+    "QM_StrategyFarm_PlausibilityScan": null,
+    "QM_StrategyFarm_QuotaGovernor": null,
+    "QM_StrategyFarm_REvalDrain_15min": null,
+    "QM_StrategyFarm_ReportsLogPurge_12h": null,
+    "QM_StrategyFarm_SourcingIntakeSweep": null,
+    "QM_Public_Snapshot_Hourly": null,
+    "QM_StrategyFarm_TesterCachePurge": null,
+    "QM_StrategyFarm_WorkerDedupe": null,
+    "QM_StrategyFarm_WorktreeClean_4h": null,
+    "QM_StrategyFarm_HourlyMonitor_60min": null,
+    "QM_WorkItemLogPruner_Daily_0310": null
+  }
+}

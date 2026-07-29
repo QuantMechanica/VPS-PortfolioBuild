@@ -24,7 +24,7 @@ OUTPUTS
 - framework/include/QM/QM_MagicResolver.mqh — rewritten in-place
   - QM_MAGIC_REG_EA_ID / SLOT / SYMBOL / MAGIC arrays regenerated
   - QM_MAGIC_REGISTRY_ROWS bumped
-  - QM_MAGIC_REGISTRY_SHA256 set to sha256(magic_numbers.csv bytes)
+  - QM_MAGIC_REGISTRY_SHA256 set to sha256 of the Git-canonical LF bytes
 
 USAGE
     python framework/scripts/update_magic_resolver.py
@@ -139,7 +139,11 @@ def load_rows(*, keep_obsolete: bool) -> tuple[list[dict], list[int]]:
 
 
 def csv_sha256_upper() -> str:
-    return hashlib.sha256(REGISTRY_CSV.read_bytes()).hexdigest().upper()
+    # Git checks this text file out as LF or CRLF depending on worktree config.
+    # The resolver is a tracked derived artifact, so its embedded identity must
+    # not churn merely because a linked Windows worktree uses autocrlf.
+    canonical = REGISTRY_CSV.read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(canonical).hexdigest().upper()
 
 
 def render_mqh(rows: list[dict]) -> str:

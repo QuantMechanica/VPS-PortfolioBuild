@@ -31,6 +31,7 @@ from framework.scripts._phase_utils import cold_cache_summary_signature
 
 
 POLL_SLEEP_SECONDS = 2.0
+NEWS_CALENDAR_GUARD_SLEEP_SECONDS = 30.0
 MAX_WORK_ITEM_RETRIES = 3
 # Disk circuit-breaker (2026-06-19 incident): if free space on the runtime drive
 # drops below this, workers must NOT claim+run backtests (MT5 fails ticks
@@ -837,6 +838,60 @@ def _clear_stale_runtime_payload(payload: dict[str, Any]) -> None:
         payload.pop(field, None)
 
 
+def _defer_news_calendar_preflight(
+    root: Path,
+    row: sqlite3.Row | dict[str, Any],
+    terminal: str,
+    calendar: dict[str, Any],
+) -> dict[str, Any]:
+    """Release a pre-spawn claim without consuming attempt/claim capacity."""
+    payload = _json_loads(row["payload_json"])
+    claimed_at = payload.get("claimed_at_iso")
+    _clear_stale_runtime_payload(payload)
+    for field in ("claim_stage", "targeted_factory_off_run", "staged_ex5"):
+        payload.pop(field, None)
+    now = farmctl.utc_now()
+
+    def _release() -> bool:
+        with farmctl.connect(root) as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            cur = conn.execute(
+                """
+                UPDATE work_items
+                SET status='pending', verdict=NULL, claimed_by=NULL,
+                    payload_json=?, updated_at=?
+                WHERE id=? AND status='active' AND claimed_by=?
+                """,
+                (
+                    json.dumps(payload, sort_keys=True),
+                    now,
+                    row["id"],
+                    terminal,
+                ),
+            )
+            if cur.rowcount == 1:
+                farmctl.retract_claim_ledger(
+                    conn,
+                    terminal,
+                    row["id"],
+                    str(claimed_at) if claimed_at else None,
+                )
+            conn.commit()
+            return cur.rowcount == 1
+
+    released = bool(_with_sqlite_retry(_release))
+    return {
+        "status": "pending" if released else str(row.get("status", "active") if isinstance(row, dict) else row["status"]),
+        "reason": f"NEWS_CALENDAR_{calendar.get('status')}",
+        "calendar_preflight_blocked": True,
+        "claim_released": released,
+        "attempt_count_unchanged": True,
+        "principal": calendar.get("principal"),
+        "common_dir": calendar.get("common_dir"),
+        "news_calendar_preflight": calendar,
+    }
+
+
 def _accumulate_avoid_terminal(payload: dict[str, Any], failed_terminal: str | None) -> list[str]:
     """Add a sick terminal to the item's avoid_terminals steering list.
 
@@ -969,6 +1024,10 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     additionally require higher commit and physical-RAM headroom than ordinary
     single-symbol jobs to avoid process-start and allocator failures.
     """
+    # Read before opening the claim transaction. Cached stat-bound results keep
+    # idle worker polling cheap; every actual spawn performs an uncached re-read.
+    calendar_preflight = farmctl._news_calendar_preflight(use_cache=True)
+
     def _claim() -> dict[str, Any]:
         farmctl.init_db(root)
         now = farmctl.utc_now()
@@ -1049,6 +1108,17 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             """,
                             (json.dumps(payload, sort_keys=True), now, active_terminal["id"], terminal),
                         )
+
+                if not calendar_preflight.get("ok"):
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "news_calendar_preflight_failed",
+                        "calendar_status": calendar_preflight.get("status"),
+                        "principal": calendar_preflight.get("principal"),
+                        "common_dir": calendar_preflight.get("common_dir"),
+                        "news_calendar_preflight": calendar_preflight,
+                    }
 
                 if root.resolve() == farmctl.DEFAULT_ROOT.resolve() and terminal in farmctl._running_mt5_terminals():
                     conn.commit()
@@ -1290,6 +1360,18 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
             "claimed": False,
             "reason": "factory_off_required",
             "flag": str(factory_off_flag),
+        }
+
+    calendar_preflight = farmctl._news_calendar_preflight(use_cache=True)
+    if not calendar_preflight.get("ok"):
+        return {
+            "claimed": False,
+            "reason": "news_calendar_preflight_failed",
+            "item_id": item_id,
+            "calendar_status": calendar_preflight.get("status"),
+            "principal": calendar_preflight.get("principal"),
+            "common_dir": calendar_preflight.get("common_dir"),
+            "news_calendar_preflight": calendar_preflight,
         }
 
     def _claim() -> dict[str, Any]:
@@ -2227,82 +2309,11 @@ def _phase_from_task_kind(kind: str) -> str:
 
 
 def _aggregate_finished_parent(root: Path, parent_task_id: str | None) -> dict[str, Any] | None:
-    if not parent_task_id:
-        return None
-    now = farmctl.utc_now()
-    with farmctl.connect(root) as conn:
-        summary = conn.execute(
-            """
-            SELECT COUNT(*) AS total,
-                   SUM(CASE WHEN status='done' OR status='failed' THEN 1 ELSE 0 END) AS finished
-            FROM work_items
-            WHERE parent_task_id=?
-            """,
-            (parent_task_id,),
-        ).fetchone()
-        if not summary or int(summary["total"] or 0) == 0 or summary["total"] != summary["finished"]:
-            return None
-        parent = conn.execute("SELECT * FROM tasks WHERE id=?", (parent_task_id,)).fetchone()
-        if not parent or parent["status"] == "done":
-            return None
-        wis = conn.execute("SELECT * FROM work_items WHERE parent_task_id=?", (parent_task_id,)).fetchall()
-        phase = _phase_from_task_kind(parent["kind"])
-        pass_symbols = [w["symbol"] for w in wis if w["verdict"] == "PASS"]
-        p2_profit_skipped: list[dict[str, Any]] = []
-        if phase == "P2":
-            surviving, p2_profit_skipped = farmctl._filter_p2_profitable_symbols(conn, parent_task_id, pass_symbols)
-        else:
-            surviving = pass_symbols
-        verdict = farmctl._aggregate_work_item_verdict(phase, list(wis), surviving)
-        classification: dict[str, Any] = {
-            "verdict": verdict,
-            "surviving_symbols": surviving,
-            "counts_by_verdict": {
-                v: sum(1 for w in wis if w["verdict"] == v)
-                for v in ("PASS", "FAIL", "ZERO_TRADES", "DRAFT_DEFECT", "MIN_TRADES_NOT_MET", "INVALID", "INFRA_FAIL")
-            },
-            "source": "terminal_worker_aggregate",
-        }
-        if verdict == "DRAFT_DEFECT":
-            classification["route"] = "RE_DRAFT"
-            classification["retire_strategy"] = False
-        if p2_profit_skipped:
-            classification["p2_p3_profit_filter_skipped"] = p2_profit_skipped
-        parent_payload = _json_loads(parent["payload_json"])
-        parent_payload["classification"] = classification
-        parent_payload["completed_at_iso"] = now
-        conn.execute(
-            "UPDATE tasks SET status='done', payload_json=?, updated_at=? WHERE id=?",
-            (json.dumps(parent_payload, sort_keys=True), now, parent_task_id),
-        )
-        conn.commit()
-
-    auto_next = None
-    if verdict == "PASS":
-        next_map = {"P2": "P3", "P3": "P3.5", "P3.5": "P4"}
-        next_phase = next_map.get(phase)
-        if next_phase and next_phase in farmctl.SUPPORTED_BACKTEST_PHASES:
-            npp_kind = next_phase.lower().replace(".", "")
-            with farmctl.connect(root) as conn:
-                existing = conn.execute(
-                    "SELECT id FROM tasks WHERE kind=? AND payload_json LIKE ?",
-                    (f"backtest_{npp_kind}", f"%\"ea_id\": \"{parent_payload.get('ea_id')}\"%"),
-                ).fetchone()
-            if not existing:
-                enq = farmctl.enqueue_backtest(root, parent_task_id, next_phase)
-                if enq.get("enqueued"):
-                    auto_next = {
-                        "phase": next_phase,
-                        "task_id": enq.get("task_id"),
-                        "work_items_created": len(enq.get("work_items_created", [])),
-                    }
-    return {
-        "parent_task_id": parent_task_id,
-        "phase": phase,
-        "verdict": verdict,
-        "surviving_symbols": surviving,
-        "auto_next": auto_next,
-    }
+    return farmctl.aggregate_finished_parent_cas(
+        root,
+        parent_task_id,
+        source="terminal_worker_aggregate",
+    )
 
 
 def _work_item_preflight_failure(item: sqlite3.Row) -> dict[str, Any] | None:
@@ -2846,6 +2857,21 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             timeout_seconds,
             adopted=True,
         )
+    # This early read avoids staging against a known-bad bundle and may reuse the
+    # stat-bound claim cache. The shared spawn boundary below always re-reads
+    # uncached immediately before subprocess creation.
+    calendar_preflight = farmctl._news_calendar_preflight(use_cache=True)
+    if not calendar_preflight.get("ok"):
+        return {
+            "action": "calendar_preflight_deferred",
+            "item_id": item["id"],
+            **_defer_news_calendar_preflight(
+                root,
+                row,
+                terminal,
+                calendar_preflight,
+            ),
+        }
     # Serialize the terminal64 DLL-init window across workers to kill the 0xC0000142
     # launch_fault storm that hits when many terminals launch at once (TTL leaky
     # semaphore, fail-open — see LAUNCH_GATE_* and _acquire_launch_slot).
@@ -2875,6 +2901,18 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
     spawn = farmctl._spawn_work_item_runner(root, row, terminal)
     now = farmctl.utc_now()
     if not spawn.get("spawned"):
+        if spawn.get("calendar_preflight_blocked"):
+            calendar_preflight = spawn.get("news_calendar_preflight") or {}
+            return {
+                "action": "calendar_preflight_deferred",
+                "item_id": item["id"],
+                **_defer_news_calendar_preflight(
+                    root,
+                    row,
+                    terminal,
+                    calendar_preflight,
+                ),
+            }
         if spawn.get("pending_runner"):
             payload = _json_loads(row["payload_json"])
             payload.update({
@@ -3081,6 +3119,25 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
             if claim.get("reason") == "sqlite_locked":
                 print(json.dumps({"event": "sqlite_locked", "terminal": terminal, "action": "claim_backoff"}), flush=True)
                 time.sleep(SQLITE_LOCK_BACKOFF_SECONDS + random.random())
+                continue
+            if claim.get("reason") == "news_calendar_preflight_failed":
+                print(
+                    json.dumps(
+                        {
+                            "event": "news_calendar_preflight_deferred",
+                            "terminal": terminal,
+                            "status": claim.get("calendar_status"),
+                            "principal": claim.get("principal"),
+                            "common_dir": claim.get("common_dir"),
+                            "news_calendar_preflight": claim.get(
+                                "news_calendar_preflight"
+                            ),
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
+                )
+                time.sleep(NEWS_CALENDAR_GUARD_SLEEP_SECONDS)
                 continue
             if claim.get("reason") in {"commit_probe_failed", "commit_headroom_low"}:
                 print(json.dumps({

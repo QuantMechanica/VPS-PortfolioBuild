@@ -39,3 +39,7 @@ s0_range_scan_bars=36
 s1_enabled=0
 s1_symbol=XAUUSD.DWX
 s1_risk_fixed=1000
+; --- Sleeve 2 : SATELLITE-2 (13108:XTIUSD) — DISABLED in runner control ---
+s2_enabled=0
+s2_symbol=XTIUSD.DWX
+s2_risk_fixed=1000

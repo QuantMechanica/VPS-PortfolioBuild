@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "qm/mnt-closure-drift-report/v1",
+  "title": "MNT-043/MNT-044 closure and drift report",
+  "type": "object",
+  "required": [
+    "schema",
+    "tool",
+    "observed_at_utc",
+    "read_only_contract",
+    "database",
+    "repo_root",
+    "phases",
+    "manifests",
+    "seed_registry",
+    "subjects",
+    "cohort_coverage",
+    "adjudications",
+    "summary",
+    "scan_fingerprint_sha256"
+  ],
+  "properties": {
+    "schema": {"const": "qm/mnt-closure-drift-report/v1"},
+    "tool": {"const": "mnt_closure_drift/v1"},
+    "observed_at_utc": {"type": "string", "format": "date-time"},
+    "read_only_contract": {
+      "type": "object",
+      "required": [
+        "sqlite_uri_mode",
+        "sqlite_query_only",
+        "runtime_db_writes",
+        "factory_actions",
+        "tlive_actions",
+        "historical_verdict_updates"
+      ],
+      "properties": {
+        "sqlite_uri_mode": {"const": "ro"},
+        "sqlite_query_only": {"const": true},
+        "runtime_db_writes": {"const": 0},
+        "factory_actions": {"const": 0},
+        "tlive_actions": {"const": 0},
+        "historical_verdict_updates": {"const": 0}
+      },
+      "additionalProperties": false
+    },
+    "database": {"type": "string"},
+    "repo_root": {"type": "string"},
+    "phases": {
+      "type": "array",
+      "items": {"enum": ["Q06", "Q07"]},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "manifests": {"type": "array", "items": {"type": "object"}},
+    "seed_registry": {
+      "type": "object",
+      "required": ["path", "sha256", "seeds"],
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "seeds": {
+          "type": "array",
+          "items": {"type": "integer"},
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "subjects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "subject_id",
+          "ea_id",
+          "symbol",
+          "status",
+          "issues",
+          "memberships",
+          "canonical_artifacts",
+          "artifacts"
+        ],
+        "properties": {
+          "subject_id": {"$ref": "#/$defs/sha256"},
+          "ea_id": {"type": "string", "pattern": "^QM5_[0-9]+$"},
+          "symbol": {"type": "string", "minLength": 1},
+          "status": {"enum": ["CLOSED", "DRIFT", "MISSING", "UNBOUND"]},
+          "issues": {"type": "array", "items": {"type": "string"}},
+          "memberships": {"type": "array", "items": {"type": "object"}},
+          "canonical_artifacts": {"type": "object"},
+          "artifacts": {"type": "array", "items": {"type": "object"}}
+        }
+      }
+    },
+    "cohort_coverage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "subject_id",
+          "ea_id",
+          "symbol",
+          "subject_status",
+          "lineage_issues",
+          "phases"
+        ],
+        "properties": {
+          "subject_id": {"$ref": "#/$defs/sha256"},
+          "ea_id": {"type": "string", "pattern": "^QM5_[0-9]+$"},
+          "symbol": {"type": "string", "minLength": 1},
+          "subject_status": {"enum": ["CLOSED", "DRIFT", "MISSING", "UNBOUND"]},
+          "lineage_issues": {"type": "array", "items": {"type": "string"}},
+          "phases": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "phase",
+                "status",
+                "lineage_bound_work_item_ids",
+                "pair_match_work_item_ids",
+                "effective_statuses"
+              ],
+              "properties": {
+                "phase": {"enum": ["Q06", "Q07"]},
+                "status": {
+                  "enum": [
+                    "BOUND_PASS",
+                    "BOUND_HOLD",
+                    "PAIR_ONLY_UNBOUND",
+                    "MISSING",
+                    "SUBJECT_CLOSURE_HOLD"
+                  ]
+                },
+                "lineage_bound_work_item_ids": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "pair_match_work_item_ids": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "effective_statuses": {"type": "object"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "adjudications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "work_item_id",
+          "raw_row_sha256",
+          "phase",
+          "ea_id",
+          "symbol",
+          "original_status",
+          "original_verdict",
+          "effective_admission_status",
+          "reason_classes",
+          "priority",
+          "live_action",
+          "bindings",
+          "adjudication_fingerprint_sha256"
+        ],
+        "properties": {
+          "work_item_id": {"type": "string", "minLength": 1},
+          "raw_row_sha256": {"$ref": "#/$defs/sha256"},
+          "phase": {"enum": ["Q06", "Q07"]},
+          "ea_id": {"type": "string", "pattern": "^QM5_[0-9]+$"},
+          "symbol": {"type": "string", "minLength": 1},
+          "effective_admission_status": {
+            "enum": ["PASS", "PROVENANCE_UNVERIFIED", "EVIDENCE_VINTAGE_STALE"]
+          },
+          "reason_classes": {"type": "array", "items": {"type": "string"}},
+          "priority": {"enum": ["P0_LIVE", "P0_ADMISSION", "P1_HISTORY"]},
+          "live_action": {
+            "enum": ["HOLD_OWNER_REVIEW", "NO_AUTOMATIC_LIVE_ACTION", "NO_RUNTIME_ACTION"]
+          },
+          "bindings": {"type": "object"},
+          "adjudication_fingerprint_sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    },
+    "summary": {"type": "object"},
+    "scan_fingerprint_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

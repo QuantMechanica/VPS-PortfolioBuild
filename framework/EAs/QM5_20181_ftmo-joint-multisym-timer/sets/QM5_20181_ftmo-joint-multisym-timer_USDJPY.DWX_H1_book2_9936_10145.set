@@ -47,3 +47,7 @@ s1_shorts_enabled=0
 s1_atr_period=14
 s1_atr_stop_mult=3.0
 s1_min_abs_mean_return=0.0
+; --- Sleeve 2 : SATELLITE-2 (13108:XTIUSD) — DISABLED in 2-sleeve control ---
+s2_enabled=0
+s2_symbol=XTIUSD.DWX
+s2_risk_fixed=1000

@@ -22,7 +22,16 @@ $ErrorActionPreference = 'Continue'
 $repo = 'C:\QM\repo'
 $py   = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe'
 $triageLog = 'D:\QM\reports\state\hourly_monitor.jsonl'
+$factoryOffFlag = 'D:\QM\strategy_farm\state\FACTORY_OFF.flag'
 . (Join-Path $PSScriptRoot 'qm_tasks.manifest.ps1')
+
+# This monitor historically repaired task-state drift and therefore is a
+# mutator despite its name.  Full maintenance quiescence wins over its
+# ALWAYS_ON legacy classification: while OFF it must not run health writers,
+# re-enable tasks, or append triage state.
+if (Test-Path -LiteralPath $factoryOffFlag -PathType Leaf) {
+    exit 0
+}
 
 $now = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 $actions = @()

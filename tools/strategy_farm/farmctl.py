@@ -55,6 +55,34 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm.process_identity import get_process_identity
 
+try:
+    from q09_news_schema import (
+        SchemaError as Q09NewsSchemaError,
+        add_dependency as add_q09_dependency,
+        assert_q10_dependency_gate,
+        ensure_schema as ensure_q09_news_schema,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.q09_news_schema import (
+        SchemaError as Q09NewsSchemaError,
+        add_dependency as add_q09_dependency,
+        assert_q10_dependency_gate,
+        ensure_schema as ensure_q09_news_schema,
+    )
+
+try:
+    import news_calendar_gate
+except ModuleNotFoundError:
+    from tools.strategy_farm import news_calendar_gate
+
+try:
+    from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
+except ModuleNotFoundError:
+    from tools.strategy_farm.factory_mutation_lock import (
+        FactoryMutationLock,
+        path_for_factory_flag,
+    )
+
 
 DEFAULT_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 DB_REL = Path("state") / "farm_state.sqlite"
@@ -85,6 +113,77 @@ SHARED_BUILD_PATHS = [
 ]
 
 PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
+PHASE_RUNNER_ALLOWLIST_PATH = Path(__file__).resolve().with_name(
+    "phase_runner_allowlist.v1.json"
+)
+
+
+def _load_phase_runner_allowlist() -> tuple[str, dict[str, str], dict[str, str]]:
+    """Load the one versioned phase-runner allowlist shared with Factory_OFF.
+
+    ``PHASE_RUNNER_SCRIPTS`` keeps its historical values for callers and tests,
+    while ``PHASE_RUNNER_REPO_PATHS`` preserves the exact repository-relative
+    identity consumed by the PowerShell process classifier.
+    """
+
+    try:
+        payload = json.loads(PHASE_RUNNER_ALLOWLIST_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(
+            f"phase-runner allowlist is missing or invalid: {PHASE_RUNNER_ALLOWLIST_PATH}: {exc}"
+        ) from exc
+    schema = str(payload.get("schema_version") or "")
+    if schema != "qm-phase-runner-allowlist/v1":
+        raise RuntimeError(f"unsupported phase-runner allowlist schema: {schema!r}")
+    entries = payload.get("entries")
+    if not isinstance(entries, list) or not entries:
+        raise RuntimeError("phase-runner allowlist must contain entries")
+
+    scripts: dict[str, str] = {}
+    repo_paths: dict[str, str] = {}
+    seen_phase_keys: set[str] = set()
+    seen_repo_path_keys: set[str] = set()
+    for raw_entry in entries:
+        if not isinstance(raw_entry, dict):
+            raise RuntimeError("phase-runner allowlist entry must be an object")
+        phase = str(raw_entry.get("phase") or "").strip()
+        relative = str(raw_entry.get("repo_relative_path") or "").strip().replace("\\", "/")
+        selector = str(raw_entry.get("terminal_selector") or "").strip()
+        parts = Path(relative).parts
+        phase_key = phase.casefold()
+        repo_path_key = relative.casefold()
+        if (
+            not phase
+            or phase_key in seen_phase_keys
+            or repo_path_key in seen_repo_path_keys
+            or not relative.endswith(".py")
+            or Path(relative).is_absolute()
+            or ".." in parts
+            or selector not in {"required", "optional"}
+        ):
+            raise RuntimeError(f"invalid phase-runner allowlist entry: {raw_entry!r}")
+        framework_prefix = "framework/scripts/"
+        tools_prefix = "tools/strategy_farm/"
+        if relative.startswith(framework_prefix):
+            script_name = relative[len(framework_prefix):]
+        elif relative.startswith(tools_prefix):
+            script_name = relative[len(tools_prefix):]
+            if "/" in script_name:
+                raise RuntimeError(f"unsupported strategy-farm runner path: {relative!r}")
+        else:
+            raise RuntimeError(f"phase runner lies outside approved repo namespaces: {relative!r}")
+        seen_phase_keys.add(phase_key)
+        seen_repo_path_keys.add(repo_path_key)
+        scripts[phase] = script_name
+        repo_paths[phase] = relative
+    return schema, scripts, repo_paths
+
+
+(
+    PHASE_RUNNER_ALLOWLIST_VERSION,
+    PHASE_RUNNER_SCRIPTS,
+    PHASE_RUNNER_REPO_PATHS,
+) = _load_phase_runner_allowlist()
 
 
 def _normalise_ea_label(ea_id: Any) -> str:
@@ -119,32 +218,14 @@ def is_q02_requeue_excluded(ea_id: Any, excluded: set[str] | None = None) -> boo
 # references in classify_* / report-csv paths remain inert (no rows to read).
 SUPPORTED_BACKTEST_PHASES = ("Q02", "Q03", "Q04")
 CASCADE_BACKTEST_PHASES = (
-    "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q09_PORTFOLIO", "Q10",
+    "Q04", "Q05", "Q06", "Q07", "Q08", "Q09_NEWS", "Q09_PORTFOLIO", "Q10",
     # Back-compat for pre-rewrite P-key work_items/test fixtures.
     "P5", "P5b", "P5c", "P6", "P7", "P8",
 )
 REAL_PHASE_RUNNER_PHASES = (
-    "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q09_PORTFOLIO", "Q10",
+    "Q04", "Q05", "Q06", "Q07", "Q08", "Q09_NEWS", "Q09_PORTFOLIO", "Q10",
     "P5", "P5b", "P5c", "P6", "P7", "P8",
 )
-PHASE_RUNNER_SCRIPTS = {
-    "Q02": "p2_baseline.py",            # verdict rewritten for PF>1.20/T>150/DD<15%
-    "Q03": "p3_param_sweep.py",         # unchanged behaviour, phase-tag renamed
-    "Q04": "q04_walkforward.py",        # NEW: anchored 3-fold + $7/lot commission
-    "Q05": "q05_stress_medium.py",      # NEW: slip+2/spread×2/comm×2
-    "Q06": "q06_stress_harsh.py",       # NEW: slip5/spread×3/comm×3/10% reject
-    "Q07": "q07_multiseed.py",          # NEW: 5 seeds, PF variance < 20%
-    "Q08": "q08_davey/aggregate.py",    # NEW: 10 Davey sub-gates
-    "Q09": "q09_news_mode.py",          # TODO: news-mode sweep runner
-    "Q09_PORTFOLIO": "q09_portfolio.py",
-    "Q10": "q10_confirmation.py",       # NEW: full-history canonical + baseline capture
-    "P5": "p5_stress_driver.py",
-    "P5b": "p5b_noise_driver.py",
-    "P5c": "p5c_crisis_slices.py",
-    "P6": "p6_multiseed_driver.py",
-    "P7": "p7_statval.py",
-    "P8": "p8_news_driver.py",
-}
 Q09_PORTFOLIO_MIN_TRADES = 20
 Q08_NEIGHBORHOOD_MAX_PARAMS = 2
 # Keep these budgets aligned with q08_davey.aggregate and
@@ -183,6 +264,11 @@ P5PLUS_MIN_SHARPE = 0.6
 FACTORY_TERMINAL_PATTERN = re.compile(r"^T(?:[1-9]|10)$", re.IGNORECASE)
 LIVE_TERMINAL_NAMES = {"T_LIVE", "T6_LIVE"}
 MT5_TERMINALS = tuple(f"T{i}" for i in range(1, 11))  # factory fleet, T_Live is never a factory slot
+# MNT-046: autonomous phase-runner parents are reap-eligible only with the
+# same structurally non-live selector set enforced by factory_process_scope.
+# T5 remains available to unrelated legacy/run_smoke workflows, but no phase
+# runner may be launched there.  T_Live is already outside MT5_TERMINALS.
+PHASE_RUNNER_TERMINALS = tuple(t for t in MT5_TERMINALS if t != "T5")
 MT5_WORK_ITEM_FEED_MULTIPLIER = 2
 MT5_WORK_ITEM_MIN_FEED_DEPTH = 20
 BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT = 8000  # OWNER 2026-06-05 today-boost: keep building (EA count growing); accept deeper backtest queue. Revert to 1000/3000 when restrictions resume.
@@ -277,6 +363,10 @@ def _assert_canonical_checkout() -> None:
 def is_factory_terminal_name(value: Any) -> bool:
     terminal = str(value or "").upper()
     return bool(FACTORY_TERMINAL_PATTERN.fullmatch(terminal)) and terminal not in LIVE_TERMINAL_NAMES
+
+
+def is_phase_runner_terminal_name(value: Any) -> bool:
+    return str(value or "").upper() in PHASE_RUNNER_TERMINALS
 
 
 def available_mt5_terminals(mt5_root: Path | None = None) -> tuple[str, ...]:
@@ -449,11 +539,13 @@ def _repo_dirty_status(root_path: Path = REPO_ROOT) -> dict[str, Any]:
 # as an internal or external command". Try shutil.which first, then fall
 # back to these.
 _CODEX_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\codex.cmd")
-_GEMINI_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\gemini.cmd")
-_GEMINI_NODE_BUNDLE = Path(r"C:\Users\Administrator\AppData\Roaming\npm\node_modules\@google\gemini-cli\bundle\gemini.js")
 _CLAUDE_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\claude.cmd")
 # Antigravity CLI (agy) — the live backend for the "gemini" lane (gemini-cli is dead, 2026-06-29).
-_AGY_BIN = Path(os.environ.get("LOCALAPPDATA", r"C:\Users\Administrator\AppData\Local")) / "agy" / "bin" / "agy.exe"
+_AGY_BIN_CANDIDATES = (
+    Path(os.environ.get("LOCALAPPDATA", r"C:\Users\Administrator\AppData\Local")) / "agy" / "bin" / "agy.exe",
+    Path(r"C:\Users\Administrator\AppData\Local\agy\bin\agy.exe"),
+)
+_AGY_BIN = next((path for path in _AGY_BIN_CANDIDATES if path.exists()), _AGY_BIN_CANDIDATES[-1])
 # ConPTY wrapper: agy hangs on non-TTY stdout; this runs it under a real pseudo-console (pywinpty).
 _CONPTY_RUNNER = Path(__file__).resolve().parent / "agy_conpty_run.py"
 _CODEX_HOME = Path(os.environ.get("CODEX_HOME", r"C:\Users\Administrator\.codex"))
@@ -535,10 +627,9 @@ def _resolve_gemini_command() -> tuple[list[str], bool]:
     p = _shutil.which("agy")
     if p:
         return [p], False
-    node = _shutil.which("node.exe") or _shutil.which("node")
-    if node and _GEMINI_NODE_BUNDLE.exists():
-        return [node, str(_GEMINI_NODE_BUNDLE)], False  # legacy fallback (dead cli)
-    return ["agy"], False
+    # Fail loudly at spawn on the expected agy path. There is deliberately no
+    # Node/npm Gemini fallback: the legacy lane key is routing metadata only.
+    return [str(_AGY_BIN)], False
 
 
 def _gemini_env() -> dict[str, str]:
@@ -547,7 +638,6 @@ def _gemini_env() -> dict[str, str]:
     env["HOME"] = r"C:\Users\Administrator"
     env["HOMEDRIVE"] = "C:"
     env["HOMEPATH"] = r"\Users\Administrator"
-    env.setdefault("GEMINI_DEFAULT_AUTH_TYPE", "oauth-personal")
     env.setdefault("TERM", "dumb")
     env.setdefault("NO_COLOR", "1")
     env.setdefault("FORCE_COLOR", "0")
@@ -697,6 +787,19 @@ def db_path(root: Path) -> Path:
     return root / DB_REL
 
 
+FACTORY_OFF_REL = Path("state") / "FACTORY_OFF.flag"
+
+
+def factory_off_flag_path(root: Path) -> Path:
+    """Return the single canonical Factory-OFF interlock for a runtime root."""
+    return root / FACTORY_OFF_REL
+
+
+def factory_is_off(root: Path) -> bool:
+    """Fail closed when the durable Factory-OFF flag exists."""
+    return factory_off_flag_path(root).is_file()
+
+
 def connect(root: Path) -> sqlite3.Connection:
     conn = sqlite3.connect(db_path(root), timeout=30)
     conn.row_factory = sqlite3.Row
@@ -805,6 +908,7 @@ def pending_claim_order_sql() -> str:
             -- head of the pipeline. Legacy P-keys preserved at their original ranks.
             WHEN 'Q10'  THEN 0
             WHEN 'Q09_PORTFOLIO' THEN 1
+            WHEN 'Q09_NEWS' THEN 1
             WHEN 'Q09'  THEN 1
             WHEN 'Q08'  THEN 2
             WHEN 'Q07'  THEN 3
@@ -850,6 +954,13 @@ def pending_claim_order_sql() -> str:
             ELSE 3 END AS _asset_rank
         FROM work_items w
         WHERE w.status='pending'
+          -- Historical Q09 is an inspection-only alias.  New work is Q09_NEWS
+          -- and legacy rows must never be claimed/re-executed under a new contract.
+          AND w.phase<>'Q09'
+          AND NOT EXISTS (
+            SELECT 1 FROM work_item_holds h
+            WHERE h.work_item_id=w.id AND h.active=1
+          )
           AND NOT EXISTS (
             SELECT 1 FROM poison_pill_quarantine q
             WHERE q.ea_id=w.ea_id AND q.symbol=w.symbol AND q.phase=w.phase
@@ -926,6 +1037,29 @@ def record_claim_ledger(
     )
 
 
+def retract_claim_ledger(
+    conn: sqlite3.Connection,
+    terminal: "str | None",
+    work_item_id: str,
+    claimed_at_utc: "str | None",
+) -> None:
+    """Retract a synchronous pre-spawn deferral from the capacity ledger."""
+    ensure_claim_class_ledger(conn)
+    conn.execute(
+        """
+        DELETE FROM claim_class_ledger
+        WHERE seq=(
+            SELECT seq FROM claim_class_ledger
+            WHERE work_item_id=?
+              AND COALESCE(terminal, '')=COALESCE(?, '')
+              AND (? IS NULL OR claimed_at_utc=?)
+            ORDER BY seq DESC LIMIT 1
+        )
+        """,
+        (str(work_item_id), terminal, claimed_at_utc, claimed_at_utc),
+    )
+
+
 def init_dirs(root: Path) -> None:
     for rel in RUNTIME_DIRS:
         (root / rel).mkdir(parents=True, exist_ok=True)
@@ -975,6 +1109,21 @@ def init_db(root: Path) -> None:
                 entity_id TEXT NOT NULL,
                 event TEXT NOT NULL,
                 detail_json TEXT NOT NULL
+            );
+
+            -- MNT-015: compact mutable index used only to decide whether a raw
+            -- event should be appended.  `events` itself remains append-only;
+            -- no historical event row is updated or deleted.  The primary key
+            -- serializes concurrent observers of the same logical signal.
+            CREATE TABLE IF NOT EXISTS event_dedupe_state (
+                entity_type TEXT NOT NULL,
+                entity_id TEXT NOT NULL,
+                event TEXT NOT NULL,
+                detail_sha256 TEXT NOT NULL,
+                last_emitted_ts TEXT,
+                last_seen_ts TEXT NOT NULL,
+                suppressed_count INTEGER NOT NULL DEFAULT 0,
+                PRIMARY KEY(entity_type, entity_id, event)
             );
 
             -- Per-(EA × symbol × phase × setfile) work units. One bundled
@@ -1028,6 +1177,107 @@ def init_db(root: Path) -> None:
                 PRIMARY KEY (ea_id, symbol, phase)
             );
 
+            -- Item-specific operational holds.  Unlike poison_pill_quarantine,
+            -- these do not quarantine every future run for the same EA/symbol/
+            -- phase.  They are used for Factory-OFF incidents, maintenance
+            -- reconciliation, and explicit release-on-restart work.
+            CREATE TABLE IF NOT EXISTS work_item_holds (
+                work_item_id TEXT PRIMARY KEY,
+                hold_code TEXT NOT NULL,
+                reason TEXT NOT NULL,
+                active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0,1)),
+                release_on_restart INTEGER NOT NULL DEFAULT 0 CHECK (release_on_restart IN (0,1)),
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                released_at TEXT,
+                release_note TEXT
+            );
+            CREATE INDEX IF NOT EXISTS idx_work_item_holds_active
+                ON work_item_holds(active, release_on_restart);
+
+            -- Append-only transition journal for maintenance and dispatch
+            -- reconciliation.  Raw work_items/events remain untouched; this
+            -- ledger records every corrective transition with an idempotency
+            -- key so a guarded apply can be safely retried.
+            CREATE TABLE IF NOT EXISTS work_item_transition_ledger (
+                seq INTEGER PRIMARY KEY AUTOINCREMENT,
+                idempotency_key TEXT NOT NULL UNIQUE,
+                ts TEXT NOT NULL,
+                work_item_id TEXT NOT NULL,
+                action TEXT NOT NULL,
+                from_status TEXT,
+                to_status TEXT,
+                from_verdict TEXT,
+                to_verdict TEXT,
+                from_claimed_by TEXT,
+                to_claimed_by TEXT,
+                reason TEXT NOT NULL,
+                run_id TEXT,
+                detail_json TEXT NOT NULL
+            );
+
+            CREATE TRIGGER IF NOT EXISTS trg_work_item_transition_ledger_no_update
+            BEFORE UPDATE ON work_item_transition_ledger
+            BEGIN
+                SELECT RAISE(ABORT, 'work_item_transition_ledger is append-only');
+            END;
+
+            CREATE TRIGGER IF NOT EXISTS trg_work_item_transition_ledger_no_delete
+            BEFORE DELETE ON work_item_transition_ledger
+            BEGIN
+                SELECT RAISE(ABORT, 'work_item_transition_ledger is append-only');
+            END;
+
+            -- MNT-009: a physical terminal state without a verdict is not a
+            -- completed work item.  The historical 2026-07-14/15 population
+            -- is migrated by the guarded maintenance reconciler; forward
+            -- transitions fail closed at the database boundary.
+            CREATE TRIGGER IF NOT EXISTS trg_work_items_terminal_requires_verdict_update
+            BEFORE UPDATE OF status, verdict ON work_items
+            WHEN NEW.status IN ('done', 'failed') AND NEW.verdict IS NULL
+            BEGIN
+                SELECT RAISE(ABORT, 'terminal work_item requires verdict');
+            END;
+
+            CREATE TRIGGER IF NOT EXISTS trg_work_items_terminal_requires_verdict_insert
+            BEFORE INSERT ON work_items
+            WHEN NEW.status IN ('done', 'failed') AND NEW.verdict IS NULL
+            BEGIN
+                SELECT RAISE(ABORT, 'terminal work_item requires verdict');
+            END;
+
+            -- MNT-010: parent completion is a separate, append-only state
+            -- transition.  The child-state hash makes every CAS closure
+            -- reconstructable without rewriting raw child history.
+            CREATE TABLE IF NOT EXISTS parent_task_transition_ledger (
+                seq INTEGER PRIMARY KEY AUTOINCREMENT,
+                idempotency_key TEXT NOT NULL UNIQUE,
+                ts TEXT NOT NULL,
+                parent_task_id TEXT NOT NULL,
+                action TEXT NOT NULL,
+                from_status TEXT,
+                to_status TEXT,
+                from_payload_sha256 TEXT NOT NULL,
+                to_payload_sha256 TEXT NOT NULL,
+                child_state_sha256 TEXT NOT NULL,
+                verdict TEXT NOT NULL,
+                reason TEXT NOT NULL,
+                run_id TEXT,
+                detail_json TEXT NOT NULL
+            );
+
+            CREATE TRIGGER IF NOT EXISTS trg_parent_task_transition_ledger_no_update
+            BEFORE UPDATE ON parent_task_transition_ledger
+            BEGIN
+                SELECT RAISE(ABORT, 'parent_task_transition_ledger is append-only');
+            END;
+
+            CREATE TRIGGER IF NOT EXISTS trg_parent_task_transition_ledger_no_delete
+            BEFORE DELETE ON parent_task_transition_ledger
+            BEGIN
+                SELECT RAISE(ABORT, 'parent_task_transition_ledger is append-only');
+            END;
+
             -- ULTRACODE WS-A (2026-07-26): durable rolling ledger of successful
             -- claims (class 'priority'|'recovery'), shared by every claimant. Backs
             -- the recovery idle-cap (recovery <= 1 of the last CLAIM_RECOVERY_WINDOW
@@ -1050,6 +1300,11 @@ def init_db(root: Path) -> None:
             conn.execute("ALTER TABLE sources ADD COLUMN assigned_worker TEXT")
         except sqlite3.OperationalError:
             pass  # already exists
+        # Q09_NEWS v2 is an additive sidecar schema.  Install it on every
+        # init/repair without rewriting historical work_items or candidates.
+        _ensure_portfolio_candidates_table(conn)
+        conn.commit()
+        ensure_q09_news_schema(conn)
 
 
 def event(conn: sqlite3.Connection, entity_type: str, entity_id: str, name: str, detail: dict[str, Any]) -> None:
@@ -1062,7 +1317,256 @@ def event(conn: sqlite3.Connection, entity_type: str, entity_id: str, name: str,
     )
 
 
-def _scope_guard(scope: str, *, tool: str, args_summary: str = "") -> None:
+DEAD_ZERO_TRADE_EVENT = "ea_dead_zero_trade_3x_rework_failed"
+DEAD_ZERO_TRADE_EVENT_DEDUPE_HOURS = 24
+
+
+def _event_detail_json(detail: dict[str, Any]) -> str:
+    """Canonical event payload used for identity, independent of JSON spacing."""
+    return json.dumps(detail, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def _event_detail_sha256(detail: dict[str, Any]) -> str:
+    return hashlib.sha256(_event_detail_json(detail).encode("utf-8")).hexdigest()
+
+
+def _event_time(value: str | None) -> dt.datetime | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        parsed = dt.datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=dt.UTC)
+    return parsed.astimezone(dt.UTC)
+
+
+def _historic_event_detail_sha256(detail_json: str) -> str:
+    """Hash a historical event's business payload.
+
+    Recurrence rows emitted by :func:`event_deduped` carry an ``_event_dedupe``
+    observation block.  It is transport metadata, not part of the signal state,
+    and is stripped when a missing sidecar row is bootstrapped from raw history.
+    Malformed legacy JSON is deliberately unique so the current valid signal is
+    appended instead of being silently discarded.
+    """
+    try:
+        parsed = json.loads(detail_json)
+    except (json.JSONDecodeError, TypeError):
+        return "malformed:" + hashlib.sha256(str(detail_json).encode("utf-8")).hexdigest()
+    if not isinstance(parsed, dict):
+        return "non_object:" + hashlib.sha256(str(detail_json).encode("utf-8")).hexdigest()
+    parsed.pop("_event_dedupe", None)
+    return _event_detail_sha256(parsed)
+
+
+def event_deduped(
+    conn: sqlite3.Connection,
+    entity_type: str,
+    entity_id: str,
+    name: str,
+    detail: dict[str, Any],
+    *,
+    dedupe_hours: float,
+    now: dt.datetime | None = None,
+) -> dict[str, Any]:
+    """Append the first, changed, or periodically recurring signal only.
+
+    Identical observations inside the rolling window are represented in
+    ``event_dedupe_state`` and do not create another raw event.  A changed
+    business payload is appended immediately; an unchanged signal is appended
+    again once the rolling window has elapsed, together with the number of
+    suppressed observations.  The raw ``events`` table is append-only.
+
+    ``INSERT OR IGNORE`` on the sidecar primary key is intentionally the first
+    write.  SQLite's writer serialization therefore prevents two concurrent
+    pump processes from both deciding that the same observation is new.
+    """
+    if dedupe_hours <= 0:
+        raise ValueError("dedupe_hours must be greater than zero")
+    observed_at = now or dt.datetime.now(dt.UTC)
+    if observed_at.tzinfo is None:
+        observed_at = observed_at.replace(tzinfo=dt.UTC)
+    observed_at = observed_at.astimezone(dt.UTC).replace(microsecond=0)
+    observed_ts = observed_at.isoformat()
+    detail_sha256 = _event_detail_sha256(detail)
+
+    # This INSERT is deliberately the first SQL statement: even when it is
+    # ignored for an existing key, it enters SQLite's serialized writer path
+    # before any read/decision.  A second observer therefore sees the first
+    # observer's committed state instead of independently deciding "new".
+    inserted = conn.execute(
+        """
+        INSERT OR IGNORE INTO event_dedupe_state(
+            entity_type, entity_id, event, detail_sha256,
+            last_emitted_ts, last_seen_ts, suppressed_count
+        ) VALUES (?, ?, ?, ?, ?, ?, 0)
+        """,
+        (entity_type, entity_id, name, detail_sha256, None, observed_ts),
+    ).rowcount == 1
+
+    # Bootstrap a newly-created sidecar row from the newest raw event so
+    # enabling MNT-015 does not manufacture one duplicate per EA.  No
+    # historical row is modified.  Existing keys skip this scan entirely.
+    prior = None
+    if inserted:
+        prior = conn.execute(
+            """
+            SELECT ts, detail_json
+            FROM events
+            WHERE entity_type=? AND entity_id=? AND event=?
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (entity_type, entity_id, name),
+        ).fetchone()
+        if prior:
+            prior_ts = str(prior["ts"] if isinstance(prior, sqlite3.Row) else prior[0])
+            prior_detail = str(
+                prior["detail_json"] if isinstance(prior, sqlite3.Row) else prior[1]
+            )
+            conn.execute(
+                """
+                UPDATE event_dedupe_state
+                SET detail_sha256=?, last_emitted_ts=?
+                WHERE entity_type=? AND entity_id=? AND event=?
+                """,
+                (
+                    _historic_event_detail_sha256(prior_detail),
+                    prior_ts,
+                    entity_type,
+                    entity_id,
+                    name,
+                ),
+            )
+    state = conn.execute(
+        """
+        SELECT detail_sha256, last_emitted_ts, suppressed_count
+        FROM event_dedupe_state
+        WHERE entity_type=? AND entity_id=? AND event=?
+        """,
+        (entity_type, entity_id, name),
+    ).fetchone()
+    if state is None:  # pragma: no cover - schema/connection corruption
+        raise sqlite3.IntegrityError("event_dedupe_state insert disappeared")
+
+    state_sha = str(state["detail_sha256"] if isinstance(state, sqlite3.Row) else state[0])
+    last_emitted_raw = state["last_emitted_ts"] if isinstance(state, sqlite3.Row) else state[1]
+    suppressed = int((state["suppressed_count"] if isinstance(state, sqlite3.Row) else state[2]) or 0)
+    last_emitted = _event_time(last_emitted_raw)
+    elapsed_hours = (
+        max(0.0, (observed_at - last_emitted).total_seconds() / 3600.0)
+        if last_emitted is not None else None
+    )
+    changed = state_sha != detail_sha256
+    recurrence_due = last_emitted is None or (
+        elapsed_hours is not None and elapsed_hours >= dedupe_hours
+    )
+
+    if changed or recurrence_due:
+        emitted_detail = dict(detail)
+        if suppressed:
+            emitted_detail["_event_dedupe"] = {
+                "suppressed_identical_observations": suppressed,
+                "rolling_window_hours": dedupe_hours,
+            }
+        conn.execute(
+            """
+            INSERT INTO events(ts, entity_type, entity_id, event, detail_json)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (observed_ts, entity_type, entity_id, name, json.dumps(emitted_detail, sort_keys=True)),
+        )
+        conn.execute(
+            """
+            UPDATE event_dedupe_state
+            SET detail_sha256=?, last_emitted_ts=?, last_seen_ts=?, suppressed_count=0
+            WHERE entity_type=? AND entity_id=? AND event=?
+            """,
+            (detail_sha256, observed_ts, observed_ts, entity_type, entity_id, name),
+        )
+        return {
+            "appended": True,
+            "reason": "state_changed" if changed else (
+                "recurrence_due" if last_emitted is not None else "first_observation"
+            ),
+            "suppressed_since_previous": suppressed,
+        }
+
+    conn.execute(
+        """
+        UPDATE event_dedupe_state
+        SET last_seen_ts=?, suppressed_count=suppressed_count+1
+        WHERE entity_type=? AND entity_id=? AND event=?
+        """,
+        (observed_ts, entity_type, entity_id, name),
+    )
+    return {
+        "appended": False,
+        "reason": "identical_within_rolling_window",
+        "suppressed_since_previous": suppressed + 1,
+    }
+
+
+def event_census(
+    conn: sqlite3.Connection,
+    name: str,
+    *,
+    rolling_hours: float = 24,
+    now: dt.datetime | None = None,
+) -> dict[str, Any]:
+    """Report rolling-window and lifetime counts as distinct measurements."""
+    if rolling_hours <= 0:
+        raise ValueError("rolling_hours must be greater than zero")
+    observed_at = now or dt.datetime.now(dt.UTC)
+    if observed_at.tzinfo is None:
+        observed_at = observed_at.replace(tzinfo=dt.UTC)
+    observed_at = observed_at.astimezone(dt.UTC).replace(microsecond=0)
+    cutoff = (observed_at - dt.timedelta(hours=rolling_hours)).isoformat()
+    lifetime = conn.execute(
+        "SELECT COUNT(*), COUNT(DISTINCT entity_type || char(0) || entity_id) "
+        "FROM events WHERE event=?",
+        (name,),
+    ).fetchone()
+    rolling = conn.execute(
+        "SELECT COUNT(*), COUNT(DISTINCT entity_type || char(0) || entity_id) "
+        "FROM events WHERE event=? AND ts>=? AND ts<=?",
+        (name, cutoff, observed_at.isoformat()),
+    ).fetchone()
+    suppressed = conn.execute(
+        "SELECT COALESCE(SUM(suppressed_count), 0) FROM event_dedupe_state WHERE event=?",
+        (name,),
+    ).fetchone()
+    return {
+        "event": name,
+        "measurement_windows": {
+            "rolling": {
+                "hours": rolling_hours,
+                "from_utc": cutoff,
+                "through_utc": observed_at.isoformat(),
+                "rows": int(rolling[0] or 0),
+                "entities": int(rolling[1] or 0),
+            },
+            "lifetime": {
+                "rows": int(lifetime[0] or 0),
+                "entities": int(lifetime[1] or 0),
+            },
+        },
+        "currently_suppressed_identical_observations": int(suppressed[0] or 0),
+    }
+
+
+def _scope_guard(
+    scope: str,
+    *,
+    tool: str,
+    args_summary: str = "",
+    conn: sqlite3.Connection | None = None,
+) -> None:
     """DL-065 controller-safe choke-point guard. Trusted base (pump/controller,
     no QM_AGENT_ID) passes + audits; a spawned agent identity is enforced
     fail-closed and raises agent_scopes.ScopeDenied if out of scope."""
@@ -1070,7 +1574,7 @@ def _scope_guard(scope: str, *, tool: str, args_summary: str = "") -> None:
         import agent_scopes  # same dir on sys.path when run as controller
     except ImportError:  # pragma: no cover
         from tools.strategy_farm import agent_scopes  # type: ignore
-    agent_scopes.guard(scope, tool=tool, args_summary=args_summary)
+    agent_scopes.guard(scope, tool=tool, args_summary=args_summary, conn=conn)
 
 
 def parse_card_frontmatter(card_path: Path) -> dict[str, Any]:
@@ -1256,6 +1760,12 @@ def _read_csv_dicts_with_columns(path: Path) -> tuple[list[str], list[dict[str, 
 
 R1_BUILD_READY_VALUES = frozenset({"PASS", "TIER_A", "TIER_B", "TIER_C"})
 R_STRICT_PASS_FIELDS = ("r2_mechanical", "r3_data_available", "r4_ml_forbidden")
+R_GATE_BODY_FIELDS = {
+    "R1": "r1_track_record",
+    "R2": "r2_mechanical",
+    "R3": "r3_data_available",
+    "R4": "r4_ml_forbidden",
+}
 OWNER_SOURCE_RECOVERY_ID = "OWNER-FABIAN-GRABNER-R1-RECOVERY-20260723"
 
 
@@ -1270,19 +1780,115 @@ def _card_r1_build_ready(fm: dict[str, Any]) -> bool:
     return bool(str(fm.get("source_id") or "").strip())
 
 
-def _card_r_gate_ready(fm: dict[str, Any]) -> bool:
+def _normalise_r_gate_status(value: Any) -> str:
+    """Return the first explicit R-gate status token in a table/frontmatter value."""
+    plain = re.sub(r"[`*_]", "", str(value or "")).strip().upper()
+    match = re.search(r"\b(PASS|FAIL|UNKNOWN|PENDING|TIER_A|TIER_B|TIER_C)\b", plain)
+    return match.group(1) if match else plain
+
+
+def strategy_card_r_gate_consistency(
+    card_path: Path,
+    fm: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Compare explicit body R1-R4 rows with flat frontmatter, fail-closed for R2-R4.
+
+    Older cards without a body table remain compatible.  Once a card states an
+    R2/R3/R4 body verdict, however, a non-PASS value or a contradictory
+    frontmatter value is a hard error.  This prevents an optimistic metadata
+    edit from making a visibly UNKNOWN data gate build-claimable.
+    """
+    path = Path(card_path)
+    errors: list[str] = []
+    warnings: list[str] = []
+    try:
+        text = path.read_text(encoding="utf-8-sig", errors="ignore")
+    except OSError as exc:
+        return {
+            "ok": False,
+            "errors": [f"r_gate_card_unreadable:{path}:{exc}"],
+            "warnings": [],
+            "body_statuses": {},
+            "frontmatter_statuses": {},
+        }
+    current_fm = fm if fm is not None else parse_card_frontmatter(path)
+    body_statuses: dict[str, str] = {}
+    for line in text.splitlines():
+        if "|" not in line:
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) < 2:
+            continue
+        label = re.sub(r"[`*_]", "", cells[0]).strip().upper()
+        match = re.match(r"^(R[1-4])(?:\b|\s|:|-)", label)
+        if not match:
+            continue
+        gate = match.group(1)
+        status = _normalise_r_gate_status(cells[1])
+        if status not in {
+            "PASS", "FAIL", "UNKNOWN", "PENDING", "TIER_A", "TIER_B", "TIER_C"
+        }:
+            continue
+        prior = body_statuses.get(gate)
+        if prior is not None and prior != status:
+            errors.append(f"{gate.lower()}_body_status_conflict:{prior}:{status}")
+            continue
+        body_statuses[gate] = status
+
+    frontmatter_statuses = {
+        gate: _normalise_r_gate_status(current_fm.get(field))
+        for gate, field in R_GATE_BODY_FIELDS.items()
+    }
+    for gate in ("R2", "R3", "R4"):
+        body_status = body_statuses.get(gate)
+        if body_status is None:
+            continue
+        field = R_GATE_BODY_FIELDS[gate]
+        frontmatter_status = frontmatter_statuses[gate]
+        if body_status != "PASS":
+            errors.append(f"{field}_body_not_PASS:{body_status}")
+        if frontmatter_status != body_status:
+            errors.append(
+                f"{field}_frontmatter_body_mismatch:"
+                f"frontmatter={frontmatter_status or 'MISSING'}:body={body_status}"
+            )
+
+    r1_body = body_statuses.get("R1")
+    r1_frontmatter = frontmatter_statuses["R1"]
+    if r1_body is not None and r1_frontmatter and r1_body != r1_frontmatter:
+        warnings.append(
+            "r1_track_record_frontmatter_body_mismatch:"
+            f"frontmatter={r1_frontmatter}:body={r1_body}"
+        )
+    if not body_statuses:
+        warnings.append("r_gate_body_rows_missing")
+    return {
+        "ok": not errors,
+        "errors": errors,
+        "warnings": warnings,
+        "body_statuses": body_statuses,
+        "frontmatter_statuses": frontmatter_statuses,
+    }
+
+
+def _card_r_gate_ready(fm: dict[str, Any], card_path: Path | None = None) -> bool:
     """Return whether a card is ready for build-task emission.
 
     DL-082 made R1 a source/track-record tier rather than a strict PASS gate.
     R2-R4 remain deterministic hard gates.
     """
-    return (
+    frontmatter_ready = (
         _card_r1_build_ready(fm)
         and all(
             str(fm.get(key) or "").strip().upper() == "PASS"
             for key in R_STRICT_PASS_FIELDS
         )
     )
+    if not frontmatter_ready:
+        return False
+    if card_path is None:
+        return True
+    return bool(strategy_card_r_gate_consistency(card_path, fm).get("ok"))
 
 
 def _card_r_gate_pass_count(fm: dict[str, Any]) -> int:
@@ -1327,6 +1933,9 @@ def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> d
     for key in R_STRICT_PASS_FIELDS:
         if str(fm.get(key) or "").strip().upper() != "PASS":
             errors.append(f"{key}_not_PASS:{fm.get(key)!r}")
+    r_gate_consistency = strategy_card_r_gate_consistency(card_path, fm)
+    errors.extend(r_gate_consistency["errors"])
+    warnings.extend(r_gate_consistency["warnings"])
     try:
         expected_trades = int(str(fm.get("expected_trades_per_year_per_symbol") or "").strip())
         if expected_trades < 2:
@@ -1667,6 +2276,168 @@ def _claude_g0_fallback_allowed(
     )
 
 
+_BUILD_TASK_ACTIVE_BLOCK_FIELDS = ("blocked_reason", "blocked_at", "blocked_at_utc")
+_BUILD_TASK_TERMINAL_PAYLOAD_FIELDS = (
+    "final_failure",
+    "superseded_by",
+    "duplicate_of_task_id",
+)
+
+
+def _task_row_value(task_row: Any, key: str, default: Any = None) -> Any:
+    try:
+        if hasattr(task_row, "keys") and key in task_row.keys():
+            return task_row[key]
+    except (KeyError, TypeError):
+        pass
+    return default
+
+
+def _payload_marker_is_active(value: Any) -> bool:
+    if value is None or value is False:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    return True
+
+
+def _build_task_claim_guard(
+    root: Path | None,
+    task_row: Any,
+    *,
+    require_card: bool = True,
+) -> dict[str, Any]:
+    """Read-only eligibility guard shared by every build dispatch lane.
+
+    ``last_blocked_reason`` alone is deliberately historical and therefore not
+    an active marker: the bounded retry/rework paths retain it.  An accompanying
+    ``blocked_at``/``blocked_at_utc`` is active and makes a pending row
+    non-claimable until an explicit state reconciliation clears or transitions
+    it.
+    """
+    task_id = str(_task_row_value(task_row, "id", "") or "")
+    try:
+        payload = json.loads(_task_row_value(task_row, "payload_json", "{}") or "{}")
+    except (json.JSONDecodeError, TypeError) as exc:
+        return {
+            "claimable": False,
+            "code": "payload_json_invalid",
+            "reason": f"payload_json_invalid:{exc}",
+            "task_id": task_id,
+        }
+    if not isinstance(payload, dict):
+        return {
+            "claimable": False,
+            "code": "payload_json_not_object",
+            "reason": "payload_json_not_object",
+            "task_id": task_id,
+        }
+
+    for field in _BUILD_TASK_ACTIVE_BLOCK_FIELDS:
+        if _payload_marker_is_active(payload.get(field)):
+            detail = payload.get("blocked_reason") or payload.get("last_blocked_reason") or field
+            return {
+                "claimable": False,
+                "code": f"active_{field}",
+                "reason": f"active_{field}:{str(detail).strip()}",
+                "task_id": task_id,
+                "ea_id": str(payload.get("ea_id") or ""),
+            }
+    for field in _BUILD_TASK_TERMINAL_PAYLOAD_FIELDS:
+        if _payload_marker_is_active(payload.get(field)):
+            return {
+                "claimable": False,
+                "code": f"terminal_{field}",
+                "reason": f"terminal_{field}:{str(payload.get(field)).strip()}",
+                "task_id": task_id,
+                "ea_id": str(payload.get("ea_id") or ""),
+            }
+
+    ea_id = str(payload.get("ea_id") or _task_row_value(task_row, "card_id", "") or "").strip()
+    raw_card_path = str(payload.get("card_path") or "").strip()
+    if root is None:
+        return {
+            "claimable": True,
+            "code": "eligible_payload_only",
+            "reason": "eligible_payload_only",
+            "task_id": task_id,
+            "ea_id": ea_id,
+        }
+
+    card_path: Path | None = None
+    if raw_card_path:
+        candidate = Path(raw_card_path)
+        if not candidate.is_absolute():
+            candidate = Path(root) / candidate
+        if candidate.is_file():
+            card_path = candidate
+    if card_path is None and ea_id:
+        card_path = _find_approved_card_for_ea(Path(root), ea_id)
+    if card_path is None:
+        if not require_card:
+            return {
+                "claimable": True,
+                "code": "eligible_no_card_check",
+                "reason": "eligible_no_card_check",
+                "task_id": task_id,
+                "ea_id": ea_id,
+            }
+        return {
+            "claimable": False,
+            "code": "card_missing",
+            "reason": f"card_missing:{raw_card_path or ea_id}",
+            "task_id": task_id,
+            "ea_id": ea_id,
+        }
+    try:
+        fm = parse_card_frontmatter(card_path)
+        consistency = strategy_card_r_gate_consistency(card_path, fm)
+    except (OSError, ValueError) as exc:
+        return {
+            "claimable": False,
+            "code": "card_unreadable",
+            "reason": f"card_unreadable:{card_path}:{exc}",
+            "task_id": task_id,
+            "ea_id": ea_id,
+            "card_path": str(card_path),
+        }
+    if str(fm.get("g0_status") or "").strip().upper() != "APPROVED":
+        return {
+            "claimable": False,
+            "code": "g0_not_approved",
+            "reason": f"g0_not_approved:{fm.get('g0_status')!r}",
+            "task_id": task_id,
+            "ea_id": ea_id,
+            "card_path": str(card_path),
+        }
+    if not _card_r_gate_ready(fm, card_path):
+        errors = list(consistency.get("errors") or [])
+        if not errors:
+            errors = [
+                f"{field}_not_PASS:{fm.get(field)!r}"
+                for field in R_STRICT_PASS_FIELDS
+                if str(fm.get(field) or "").strip().upper() != "PASS"
+            ]
+        return {
+            "claimable": False,
+            "code": "r_gate_not_ready",
+            "reason": "r_gate_not_ready:" + ";".join(errors),
+            "task_id": task_id,
+            "ea_id": ea_id,
+            "card_path": str(card_path),
+            "r_gate": consistency,
+        }
+    return {
+        "claimable": True,
+        "code": "eligible",
+        "reason": "eligible",
+        "task_id": task_id,
+        "ea_id": ea_id,
+        "card_path": str(card_path),
+        "r_gate": consistency,
+    }
+
+
 def _claude_buildable_pending_rows(
     rows: list[sqlite3.Row],
     *,
@@ -1695,6 +2466,9 @@ def _claude_buildable_pending_rows(
     seen: set[str] = set()
     candidates: list[sqlite3.Row] = []
     for row in rows:
+        claim_guard = _build_task_claim_guard(root, row, require_card=root is not None)
+        if not claim_guard.get("claimable"):
+            continue
         try:
             payload = json.loads(row["payload_json"] or "{}")
         except (json.JSONDecodeError, TypeError):
@@ -2543,6 +3317,7 @@ PHASE_NOMENCLATURE = {
     "Q07": "P5b",
     "Q08": "P5c",
     "Q09": "P6",
+    "Q09_NEWS": "P6",
     "Q09_PORTFOLIO": "P6",
     "Q10": "P7",
     "Q11": "P8",
@@ -2838,11 +3613,16 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
     verdict_upper = raw_verdict.upper()
     reason = str(summary.get("reason") or summary.get("criterion") or "").strip()
     phase_key = _normalize_phase(phase or summary.get("phase"))
+    raw_phase_key = str(phase or summary.get("phase") or "").strip().upper()
 
     if verdict_upper in {"PENDING_IMPLEMENTATION", "PENDING_RUNNER"}:
         return verdict_upper, reason or "phase runner not implemented yet"
     if verdict_upper == "WAITING_INPUT":
         return verdict_upper, reason or "phase runner waiting for required input"
+    if raw_phase_key == "Q09_NEWS" and verdict_upper in {
+        "CONFIG_LOCKED", "REVIEW_REQUIRED", "INVALID_EVIDENCE",
+    }:
+        return verdict_upper, reason or raw_verdict
     # ULTRACODE WS-H (2026-07-26): for Q08 ONLY, evaluate the authenticated dominant
     # sub-gate evidence BEFORE the generic top-level infra return. A Q08 run the
     # harness labelled INFRA_FAIL/ERROR/TIMEOUT whose ONLY blocking sub-gates are the
@@ -3016,7 +3796,10 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, p
     P2-P4 mirror p2_baseline's derive_verdict. P5+ additionally requires
     profitable OOS behavior and bounded drawdown when those metrics exist.
     """
-    if "phase" in summary and "runs" not in summary:
+    if (
+        ("phase" in summary and "runs" not in summary)
+        or str(phase or "").strip().upper() == "Q09_NEWS"
+    ):
         return _derive_phase_runner_verdict(summary, min_trades=min_trades, phase=phase)
 
     phase_key = str(phase or "").strip().upper()
@@ -3789,73 +4572,10 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             runner_period = str(basket_manifest["host_timeframe"])
 
     if phase in REAL_PHASE_RUNNER_PHASES:
-        report_root = Path(r"D:\QM\reports\work_items") / item_row["id"]
-        report_root.mkdir(parents=True, exist_ok=True)
-        timestamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%SZ")
-        safe_phase = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(phase))
-        safe_symbol = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(symbol))
-        log_path = root / "logs" / f"phase_runner_{safe_phase}_{ea_id}_{safe_symbol}_{timestamp}.log"
-        log_path.parent.mkdir(parents=True, exist_ok=True)
-
-        cmd = _phase_runner_cmd(
-            phase,
-            ea_id,
-            terminal,
-            surviving_symbols=[symbol],
-            out_prefix=report_root,
-            setfile_path=setfile_path,
-        )
-        if cmd is None:
-            return {
-                "spawned": False,
-                "pending_runner": True,
-                "reason": "phase runner not implemented yet -- skipping for now",
-                "log_path": str(log_path),
-                "report_root": str(report_root),
-                "ea_dir_name": ea_id,
-                "phase_runner": None,
-            }
-
-        log_fh = open(log_path, "w", encoding="utf-8")
-        creationflags = 0
-        if sys.platform == "win32":
-            creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
-        env = {**os.environ}
-        env["PYTHONPATH"] = os.pathsep.join(
-            [
-                str(REPO_ROOT / "framework" / "scripts"),
-                str(REPO_ROOT),
-                env.get("PYTHONPATH", ""),
-            ]
-        )
-        proc = subprocess.Popen(
-            cmd,
-            cwd=str(REPO_ROOT),
-            stdout=log_fh,
-            stderr=subprocess.STDOUT,
-            stdin=subprocess.DEVNULL,
-            creationflags=creationflags,
-            close_fds=True,
-            env=env,
-        )
-        try:
-            process_identity = _capture_spawned_process_identity(proc)
-        finally:
-            log_fh.close()
-        return {
-            "spawned": True,
-            "pid": proc.pid,
-            **process_identity,
-            "log_path": str(log_path),
-            "report_root": str(report_root),
-            "ea_dir_name": ea_id,
-            "phase_runner": cmd[1] if len(cmd) > 1 else None,
-            "effective_min_trades": 5,
-            "setfile_path": setfile_path,
-            "setfile_path_canonicalized_from": (
-                original_setfile_path if canonical_setfile_path else None
-            ),
-        }
+        # One implementation owns every work-item phase runner.  Retaining the
+        # historical `_phase_runner_cmd` spawn here would reintroduce argv that
+        # differ from the exact MNT-046 lineage contract.
+        return _spawn_phase_runner_for_work_item(root, item_row, terminal)
 
     # Resolve full EA dir name (with slug) for the -EALabel arg. Existing
     # work_items are anchored by their setfile path; this avoids selecting the
@@ -4153,11 +4873,11 @@ def _phase_runner_inputs(root: Path, ea_id: str, phase: str) -> dict[str, Any]:
     # {} here lets _phase_runner_cmd_for_work_item build the Q-runner cmd
     # straight from the work_item row.
     #
-    # The legacy CLI dispatch in _phase_runner_cmd() below still calls this
-    # function with raw P-keys (P5/P5b/P5c/P7/P8) and relies on the legacy
-    # input lookup that follows — so do NOT short-circuit on the normalized
-    # P-key, only on the inbound Q-name.
-    if raw_phase in ("Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q09_PORTFOLIO", "Q10"):
+    # The retained, non-dispatched legacy command builder below still calls
+    # this function in unit/diagnostic contexts with raw P-keys
+    # (P5/P5b/P5c/P7/P8), so do NOT short-circuit on the normalized P-key,
+    # only on the inbound Q-name.
+    if raw_phase in ("Q04", "Q05", "Q06", "Q07", "Q08", "Q09_NEWS", "Q09_PORTFOLIO", "Q10"):
         return {}
 
     phase_key = _normalize_phase(phase)
@@ -4453,11 +5173,31 @@ def _work_item_artifact_repo_root(item_row: sqlite3.Row) -> Path:
 
 
 def _phase_runner_script_path(phase: str, repo_root: Path | None = None) -> Path | None:
-    script_name = PHASE_RUNNER_SCRIPTS.get(str(phase or "").strip())
+    phase_key = str(phase or "").strip()
+    script_name = PHASE_RUNNER_SCRIPTS.get(phase_key)
     if not script_name:
         return None
     root = repo_root or REPO_ROOT
-    path = root / "framework" / "scripts" / script_name
+    repo_relative = PHASE_RUNNER_REPO_PATHS.get(phase_key)
+    expected_script_name = None
+    if repo_relative:
+        framework_prefix = "framework/scripts/"
+        tools_prefix = "tools/strategy_farm/"
+        expected_script_name = (
+            repo_relative[len(framework_prefix):]
+            if repo_relative.startswith(framework_prefix)
+            else repo_relative[len(tools_prefix):]
+            if repo_relative.startswith(tools_prefix)
+            else None
+        )
+    if repo_relative and script_name == expected_script_name:
+        path = root / Path(repo_relative)
+    elif phase_key == "Q09_NEWS":
+        # Preserve the historical mutable-test seam when a test replaces the
+        # mapping entry with a deliberately missing filename.
+        path = root / "tools" / "strategy_farm" / script_name
+    else:
+        path = root / "framework" / "scripts" / script_name
     return path if path.exists() else None
 
 
@@ -4541,6 +5281,14 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         payload = json.loads(item_row["payload_json"] or "{}")
     except json.JSONDecodeError:
         payload = {}
+    if phase == "Q10":
+        # Historical Q10 rows may predate the paired Q09 contract.  They remain
+        # visible, but can no longer execute without both authenticated arms.
+        try:
+            with connect(root) as dependency_conn:
+                assert_q10_dependency_gate(dependency_conn, str(item_row["id"]))
+        except (Q09NewsSchemaError, sqlite3.Error):
+            return None
     if payload.get("host_symbol"):
         runner_symbol = str(payload["host_symbol"])
     if payload.get("host_timeframe"):
@@ -4638,6 +5386,9 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--to-date", "2025.12.31",
             "--run-mt5",
         ])
+        # p8_news_driver consumes the same artifact as --base-setfile and does
+        # not expose the generic --setfile option.
+        _remove_cmd_arg(cmd, "--setfile")
         news_matrix = report_root / ea_id / "P7" / "news_matrix.csv"
         if not news_matrix.exists() and NEWS_MATRIX_FALLBACK.exists():
             news_matrix = NEWS_MATRIX_FALLBACK
@@ -4646,6 +5397,35 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
     # PT3 2026-05-23 — Qxx canonical phase runners (post-pipeline-rewrite).
     # Each new runner has a slightly different CLI; bridge from the generic
     # worker args (--ea, --symbol, --period, --setfile) here.
+    elif phase == "Q02":
+        # Q02/Q03 are still dispatched through run_smoke work-items today,
+        # but they remain in the shared runner allowlist for the legacy task
+        # path.  Keep this pure builder complete so the allowlisted command
+        # contract can be validated end-to-end and future callers cannot emit
+        # an unbound p2_baseline invocation.
+        cmd = [
+            _console_python_executable(),
+            str(script_path),
+            "--ea", ea_label,
+            "--symbols", runner_symbol,
+            "--period", runner_period,
+            "--from-year", "2017",
+            "--to-year", "2022",
+            "--out-prefix", str(report_root),
+            "--terminal", terminal or "T1",
+        ]
+    elif phase == "Q03":
+        cmd = [
+            _console_python_executable(),
+            str(script_path),
+            "--ea", ea_label,
+            "--symbols", runner_symbol,
+            "--periods", runner_period,
+            "--year", "2022",
+            "--max-runs", "24",
+            "--max-parallel", "1",
+            "--out-prefix", str(report_root),
+        ]
     elif phase == "Q04":
         # Q04 raw tester output remains isolated in the volatile work-item
         # directory, but fold summaries and aggregate evidence publish to the
@@ -4731,17 +5511,29 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--baseline-setfile", str(item_row["setfile_path"] or ""),
             "--neighborhood-max-params", str(Q08_NEIGHBORHOOD_MAX_PARAMS),
         ]
-    elif phase == "Q09":
-        cmd.extend([
-            "--baseline-setfile", str(item_row["setfile_path"] or ""),
-            "--terminal", terminal or "T1",
-        ])
-        _remove_cmd_arg(cmd, "--setfile")
+    elif phase == "Q09_NEWS":
+        # The v2 runner only collects an immutable, externally executed paired
+        # run plan.  Missing plans stay fail-closed as PENDING_RUNNER.
+        raw_plan_path = str(payload.get("q09_run_plan_path") or "").strip()
+        if not raw_plan_path:
+            return None
+        plan_path = Path(raw_plan_path)
+        if not plan_path.is_absolute():
+            plan_path = runner_repo_root / plan_path
+        if not plan_path.is_file():
+            return None
+        cmd = [
+            _console_python_executable(),
+            str(script_path),
+            "collect",
+            "--plan", str(plan_path),
+            "--output-root", str(report_root),
+        ]
     elif phase == "Q09_PORTFOLIO":
         payload = json.loads(item_row["payload_json"] or "{}")
         cmd = [
             _console_python_executable(),
-            str(REPO_ROOT / "framework" / "scripts" / "q09_portfolio.py"),
+            str(script_path),
             "--ea-id", ea_id,
             "--symbol", symbol,
             "--report-root", str(report_root),
@@ -4767,10 +5559,16 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
     # this is a no-op for it.) Carry the --out-prefix value into --report-root;
     # --report-root otherwise defaults to the shared pipeline tree and breaks
     # per-work-item evidence isolation.
-    if str(phase).startswith("Q"):
+    if phase in {"Q04", "Q05", "Q06", "Q07", "Q08", "Q09_NEWS", "Q09_PORTFOLIO", "Q10"}:
         _remove_cmd_arg(cmd, "--period")
         if "--out-prefix" in cmd:
             cmd[cmd.index("--out-prefix")] = "--report-root"
+    # MNT-046 process-lineage marker.  Every Factory-owned phase-runner process
+    # carries one exact direct UUID root even when its functional CLI writes via
+    # --report-root/--scratch-root/--output-root.  The runner parsers accept this
+    # as a suppressed, non-functional argument; Factory_OFF alone consumes it.
+    if "--out-prefix" not in cmd:
+        cmd.extend(["--out-prefix", str(report_root)])
     return cmd
 
 
@@ -4864,8 +5662,55 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
     }
 
 
+def _news_calendar_preflight(*, use_cache: bool) -> dict[str, Any]:
+    """Return a JSON-safe, fail-closed calendar diagnostic."""
+    try:
+        return news_calendar_gate.preflight_news_calendar(
+            use_cache=use_cache
+        ).as_dict()
+    except Exception as exc:
+        # An unexpected helper/read failure is itself a parse-invalid condition;
+        # claim/spawn paths must never fail open because diagnostics crashed.
+        try:
+            principal = news_calendar_gate.executing_principal()
+            common_dir = str(news_calendar_gate.resolve_common_dir())
+            source_dir = str(news_calendar_gate.resolve_source_dir())
+        except Exception:
+            principal = "<unknown>"
+            common_dir = "<unresolved>"
+            source_dir = "<unresolved>"
+        return {
+            "ok": False,
+            "status": news_calendar_gate.STATUS_PARSE_INVALID,
+            "principal": principal,
+            "source_dir": source_dir,
+            "common_dir": common_dir,
+            "detail": f"calendar preflight helper failed: {exc}",
+        }
+
+
 def _spawn_work_item_runner(root: Path, item_row: sqlite3.Row,
                             terminal: str) -> dict[str, Any]:
+    if (
+        item_row["phase"] in REAL_PHASE_RUNNER_PHASES
+        and not is_phase_runner_terminal_name(terminal)
+    ):
+        return {
+            "spawned": False,
+            "phase_runner_scope_blocked": True,
+            "reason": f"phase runner terminal outside MNT-046 scope: {terminal}",
+        }
+    # MNT-045 TOCTOU boundary: this is the last shared Python call before every
+    # phase runner/run_smoke subprocess. Never cache the pre-spawn read.
+    calendar = _news_calendar_preflight(use_cache=False)
+    if not calendar.get("ok"):
+        status = str(calendar.get("status") or news_calendar_gate.STATUS_PARSE_INVALID)
+        return {
+            "spawned": False,
+            "calendar_preflight_blocked": True,
+            "reason": f"NEWS_CALENDAR_{status}",
+            "news_calendar_preflight": calendar,
+        }
     if item_row["phase"] in REAL_PHASE_RUNNER_PHASES:
         return _spawn_phase_runner_for_work_item(root, item_row, terminal)
     return _spawn_run_smoke_for_work_item(root, item_row, terminal)
@@ -5889,6 +6734,110 @@ def _promote_zero_trade_q02_cohort_to_draft_defect(
     return promoted
 
 
+# A physically terminal child is eligible for parent aggregation only when its
+# verdict has an explicit, stable disposition.  PENDING_RUNNER/WAITING_INPUT
+# are intentionally absent: they are parked execution states, not completed
+# child judgements.  Unknown future strings fail closed until their semantics
+# are added deliberately.
+PARENT_CHILD_VERDICT_TAXONOMY_VERSION = "qm-parent-child-verdicts/v1"
+CANONICAL_PARENT_CHILD_VERDICTS = frozenset({
+    "PASS",
+    "PASS_SOFT",
+    "PASS_LOWFREQ",
+    "PASS_PORTFOLIO",
+    "FAIL",
+    "FAIL_SOFT",
+    "FAIL_HARD",
+    "FAIL_PORTFOLIO",
+    "FAIL_DD_PORTFOLIO_REVIEW",
+    "ZERO_TRADES",
+    "DRAFT_DEFECT",
+    "MIN_TRADES_NOT_MET",
+    "INFRA_FAIL",
+    "INVALID",
+    "INVALID_EVIDENCE",
+    "INVALID_BUILD_STATIC_FIDELITY",
+    "NEED_MORE_DATA",
+    "REPORT_ONLY",
+    "CONFIG_LOCKED",
+    "REVIEW_REQUIRED",
+    "RETIRE",
+    "RETIRED_LOW_FREQ",
+    "RETIRED_WITHOUT_BUILD",
+    "RETIRED_ARCHIVED",
+    "SUPERSEDED",
+    "SUPERSEDED_DUPLICATE",
+    "SUPERSEDED_BY_LOGICAL_BASKET",
+    "CANCELLED_DUPLICATE_REQUEUE",
+    "OBSOLETE_NON_DWX_SYMBOL",
+    "BLOCKED_STALE_BUILD_RESULT",
+    "BLOCKED_FACTORY_OFF",
+})
+PHYSICALLY_TERMINAL_WORK_ITEM_STATUSES = frozenset({"done", "failed"})
+PARENT_PROGRESSION_MAP = {
+    "P2": "P3",
+    "P3": "P3.5",
+    "P3.5": "P4",
+    "Q02": "Q03",
+    "Q03": "Q04",
+}
+
+
+def _canonical_json_sha256(value: Any) -> str:
+    raw = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _parent_phase_from_task_kind(kind: str) -> str:
+    raw = str(kind or "").replace("backtest_", "").upper()
+    return {"P35": "P3.5", "Q35": "Q03.5"}.get(raw, raw)
+
+
+def terminal_child_state_sha256(
+    work_items: list[sqlite3.Row] | list[dict[str, Any]],
+) -> str:
+    """Hash only the closure-relevant child fields in stable id order."""
+    rows = [
+        {
+            "id": str(_work_item_value(row, "id", "") or ""),
+            "status": str(_work_item_value(row, "status", "") or ""),
+            "verdict": (
+                str(_work_item_value(row, "verdict", "")).upper()
+                if _work_item_value(row, "verdict", None) is not None
+                else None
+            ),
+        }
+        for row in work_items
+    ]
+    rows.sort(key=lambda row: row["id"])
+    return _canonical_json_sha256(rows)
+
+
+def _terminal_child_refusal(
+    work_items: list[sqlite3.Row] | list[dict[str, Any]],
+) -> dict[str, list[str]]:
+    nonterminal_status: list[str] = []
+    missing_verdict: list[str] = []
+    noncanonical_verdict: list[str] = []
+    for row in work_items:
+        item_id = str(_work_item_value(row, "id", "") or "")
+        status = str(_work_item_value(row, "status", "") or "")
+        raw_verdict = _work_item_value(row, "verdict", None)
+        if status not in PHYSICALLY_TERMINAL_WORK_ITEM_STATUSES:
+            nonterminal_status.append(item_id)
+        if raw_verdict is None or not str(raw_verdict).strip():
+            missing_verdict.append(item_id)
+            continue
+        verdict = str(raw_verdict).upper()
+        if verdict not in CANONICAL_PARENT_CHILD_VERDICTS:
+            noncanonical_verdict.append(f"{item_id}:{verdict}")
+    return {
+        "nonterminal_status": sorted(nonterminal_status),
+        "missing_verdict": sorted(missing_verdict),
+        "noncanonical_verdict": sorted(noncanonical_verdict),
+    }
+
+
 def _aggregate_work_item_verdict(
     phase: str,
     work_items: list[sqlite3.Row] | list[dict[str, Any]],
@@ -5918,6 +6867,449 @@ def _aggregate_work_item_verdict(
     if infra_fail_count > 0 and strategy_fail_count == 0:
         return "INFRA_FAIL"
     return "STRATEGY_FAIL"
+
+
+def _defer_parent_progression_factory_off(root: Path, result: dict[str, Any]) -> None:
+    """Durably turn a READY progression into DEFERRED after OFF appears."""
+    parent_task_id = str(result["parent_task_id"])
+    now = utc_now()
+    with connect(root) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        parent = conn.execute(
+            "SELECT * FROM tasks WHERE id=?", (parent_task_id,)
+        ).fetchone()
+        if parent is None or parent["status"] != "done":
+            conn.rollback()
+            raise RuntimeError(f"cannot defer missing/non-done parent {parent_task_id}")
+        payload_raw = str(parent["payload_json"] or "{}")
+        payload = json.loads(payload_raw)
+        classification = payload.get("classification") or {}
+        progression = classification.get("progression") or {}
+        next_phase = progression.get("next_phase") or (
+            result.get("progression") or {}
+        ).get("next_phase")
+        if progression.get("status") == "DEFERRED_FACTORY_OFF":
+            conn.commit()
+            result["progression"] = progression
+            result["auto_next"] = None
+            return
+        deferred = {
+            "status": "DEFERRED_FACTORY_OFF",
+            "next_phase": next_phase,
+            "deferred_at": now,
+        }
+        classification["progression"] = deferred
+        payload["classification"] = classification
+        updated_payload = json.dumps(payload, sort_keys=True)
+        cursor = conn.execute(
+            """
+            UPDATE tasks SET payload_json=?, updated_at=?
+            WHERE id=? AND status='done' AND updated_at=? AND payload_json=?
+            """,
+            (updated_payload, now, parent_task_id, parent["updated_at"], payload_raw),
+        )
+        if cursor.rowcount != 1:
+            conn.rollback()
+            raise RuntimeError(f"progression defer CAS lost for {parent_task_id}")
+        child_hash = str(classification.get("child_state_sha256") or "")
+        verdict = str(classification.get("verdict") or "")
+        flag = factory_off_flag_path(root)
+        flag_sha = _sha256_file(flag) if flag.is_file() else None
+        detail = {
+            "source": "parent_progression_pre_enqueue_guard",
+            "factory_off_flag": str(flag),
+            "factory_off_sha256": flag_sha,
+            "progression": deferred,
+        }
+        conn.execute(
+            """
+            INSERT INTO parent_task_transition_ledger(
+                idempotency_key,ts,parent_task_id,action,from_status,to_status,
+                from_payload_sha256,to_payload_sha256,child_state_sha256,
+                verdict,reason,run_id,detail_json
+            ) VALUES (?,? ,?,'defer_progression_factory_off','done','done',
+                      ?,?,?,?,?,NULL,?)
+            """,
+            (
+                f"parent-defer-off:{parent_task_id}:{child_hash}",
+                now,
+                parent_task_id,
+                hashlib.sha256(payload_raw.encode("utf-8")).hexdigest(),
+                hashlib.sha256(updated_payload.encode("utf-8")).hexdigest(),
+                child_hash,
+                verdict,
+                "FACTORY_OFF appeared before next-phase enqueue",
+                json.dumps(detail, sort_keys=True),
+            ),
+        )
+        conn.execute(
+            """
+            INSERT INTO events(ts,entity_type,entity_id,event,detail_json)
+            VALUES (?,'task',?,'parent_progression_deferred_factory_off',?)
+            """,
+            (now, parent_task_id, json.dumps(detail, sort_keys=True)),
+        )
+        conn.commit()
+    result["progression"] = deferred
+    result["auto_next"] = None
+
+
+def _auto_enqueue_parent_progression(root: Path, result: dict[str, Any]) -> None:
+    """Enqueue one READY parent while its caller still owns the factory lock."""
+    if factory_is_off(root):
+        _defer_parent_progression_factory_off(root, result)
+        return
+    next_phase = (result.get("progression") or {}).get("next_phase")
+    if not next_phase or next_phase not in SUPPORTED_BACKTEST_PHASES:
+        return
+    parent_payload = result.get("parent_payload") or {}
+    next_kind = str(next_phase).lower().replace(".", "")
+    with connect(root) as check_conn:
+        existing = check_conn.execute(
+            "SELECT id FROM tasks WHERE kind=? AND payload_json LIKE ?",
+            (
+                f"backtest_{next_kind}",
+                f"%\"ea_id\": \"{parent_payload.get('ea_id')}\"%",
+            ),
+        ).fetchone()
+    if existing:
+        if factory_is_off(root):
+            _defer_parent_progression_factory_off(root, result)
+            return
+        result["auto_next"] = {
+            "phase": next_phase,
+            "task_id": existing["id"],
+            "status": "existing",
+        }
+        return
+    if factory_is_off(root):
+        _defer_parent_progression_factory_off(root, result)
+        return
+    enqueued = enqueue_backtest(root, result["parent_task_id"], next_phase)
+    if enqueued.get("enqueued"):
+        result["auto_next"] = {
+            "phase": next_phase,
+            "task_id": enqueued.get("task_id"),
+            "work_items_created": len(enqueued.get("work_items_created", [])),
+        }
+    else:
+        if enqueued.get("reason") == "factory_off" or factory_is_off(root):
+            _defer_parent_progression_factory_off(root, result)
+            return
+        result["auto_next"] = {
+            "phase": next_phase,
+            "status": "deferred",
+            "reason": enqueued.get("reason"),
+        }
+
+
+def aggregate_finished_parent_cas(
+    root: Path,
+    parent_task_id: str | None,
+    *,
+    source: str,
+    conn: sqlite3.Connection | None = None,
+    completed_at: str | None = None,
+    run_id: str | None = None,
+    expected_parent_payload_sha256: str | None = None,
+    expected_child_state_sha256: str | None = None,
+    auto_enqueue: bool = True,
+    factory_off: bool | None = None,
+    ledger_detail: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    """Close one fully-finished parent with one atomic compare-and-swap.
+
+    This is the sole parent-aggregation implementation used by ``farmctl`` and
+    ``terminal_worker``.  NULL, execution-placeholder, and unknown child
+    verdicts are refused.  When Factory OFF is present, a PASS parent is closed
+    but its next-phase progression is durably marked ``DEFERRED_FACTORY_OFF``;
+    this function never enqueues through the OFF boundary.
+
+    A supplied connection must already be inside a transaction.  This permits
+    the MNT-009 -> MNT-010 reconciler to migrate child dispositions and close
+    their parent in the same all-or-nothing transaction.
+    """
+    if not parent_task_id:
+        return None
+    root = Path(root)
+    now = completed_at or utc_now()
+    owns_connection = conn is None
+    global_lock: FactoryMutationLock | None = None
+    if owns_connection:
+        global_lock = FactoryMutationLock(
+            path_for_factory_flag(factory_off_flag_path(root)),
+            owner=f"parent_aggregate:{source}:{parent_task_id}",
+        )
+        try:
+            global_lock.__enter__()
+        except RuntimeError as exc:
+            return {
+                "closed": False,
+                "reason": "factory_mutation_lock_busy",
+                "parent_task_id": parent_task_id,
+                "detail": str(exc),
+            }
+    elif factory_off is None:
+        raise RuntimeError(
+            "a caller-supplied transaction must also supply lock-bound factory_off state"
+        )
+    elif auto_enqueue:
+        raise RuntimeError("a caller-supplied transaction cannot auto-enqueue")
+    # The normal runtime reads OFF only after acquiring the same global lock
+    # used by Factory_OFF/Factory_ON.  It holds that lock through any enqueue,
+    # closing the flag-check/next-phase TOCTOU window.
+    is_off = factory_is_off(root) if factory_off is None else bool(factory_off)
+    try:
+        active_conn = conn if conn is not None else connect(root)
+    except BaseException:
+        if global_lock is not None:
+            global_lock.__exit__(*sys.exc_info())
+        raise
+    if not owns_connection and not active_conn.in_transaction:
+        raise RuntimeError("aggregate_finished_parent_cas requires an active transaction")
+
+    result: dict[str, Any]
+    try:
+        if owns_connection:
+            active_conn.execute("BEGIN IMMEDIATE")
+        parent = active_conn.execute(
+            "SELECT * FROM tasks WHERE id=?", (parent_task_id,)
+        ).fetchone()
+        if parent is None:
+            result = {"closed": False, "reason": "parent_missing", "parent_task_id": parent_task_id}
+        elif str(parent["status"]) == "done":
+            result = {
+                "closed": False,
+                "reason": "parent_already_done",
+                "parent_task_id": parent_task_id,
+            }
+        elif str(parent["status"]) not in {"pending", "active"}:
+            result = {
+                "closed": False,
+                "reason": "parent_status_not_closable",
+                "parent_task_id": parent_task_id,
+                "parent_status": str(parent["status"]),
+            }
+        else:
+            work_items = active_conn.execute(
+                "SELECT * FROM work_items WHERE parent_task_id=? ORDER BY id",
+                (parent_task_id,),
+            ).fetchall()
+            if not work_items:
+                result = {
+                    "closed": False,
+                    "reason": "parent_has_no_children",
+                    "parent_task_id": parent_task_id,
+                }
+            else:
+                refusal = _terminal_child_refusal(list(work_items))
+                refused = any(refusal.values())
+                child_hash = terminal_child_state_sha256(list(work_items))
+                parent_payload_raw = str(parent["payload_json"] or "{}")
+                parent_payload_hash = hashlib.sha256(
+                    parent_payload_raw.encode("utf-8")
+                ).hexdigest()
+                if expected_parent_payload_sha256 and parent_payload_hash != expected_parent_payload_sha256:
+                    raise RuntimeError(
+                        f"parent payload hash drift for {parent_task_id}: "
+                        f"{parent_payload_hash} != {expected_parent_payload_sha256}"
+                    )
+                if expected_child_state_sha256 and child_hash != expected_child_state_sha256:
+                    raise RuntimeError(
+                        f"child state hash drift for {parent_task_id}: "
+                        f"{child_hash} != {expected_child_state_sha256}"
+                    )
+                if refused:
+                    result = {
+                        "closed": False,
+                        "reason": "child_contract_refused",
+                        "parent_task_id": parent_task_id,
+                        "child_state_sha256": child_hash,
+                        **refusal,
+                    }
+                else:
+                    try:
+                        parent_payload = json.loads(parent_payload_raw)
+                    except json.JSONDecodeError as exc:
+                        raise RuntimeError(
+                            f"invalid parent payload_json for {parent_task_id}"
+                        ) from exc
+                    if not isinstance(parent_payload, dict):
+                        raise RuntimeError(f"parent payload_json is not an object for {parent_task_id}")
+                    phase = _parent_phase_from_task_kind(str(parent["kind"]))
+                    pass_symbols = [
+                        str(row["symbol"])
+                        for row in work_items
+                        if str(row["verdict"] or "").upper() == "PASS"
+                    ]
+                    p2_profit_skipped: list[dict[str, Any]] = []
+                    if phase == "P2":
+                        surviving, p2_profit_skipped = _filter_p2_profitable_symbols(
+                            active_conn, parent_task_id, pass_symbols
+                        )
+                    else:
+                        surviving = pass_symbols
+                    verdict = _aggregate_work_item_verdict(phase, list(work_items), surviving)
+                    encountered = sorted({str(row["verdict"]).upper() for row in work_items})
+                    count_keys = sorted({
+                        "PASS", "FAIL", "ZERO_TRADES", "DRAFT_DEFECT",
+                        "MIN_TRADES_NOT_MET", "INVALID", "INFRA_FAIL",
+                        *encountered,
+                    })
+                    next_phase = PARENT_PROGRESSION_MAP.get(phase) if verdict == "PASS" else None
+                    if next_phase and is_off:
+                        progression = {
+                            "status": "DEFERRED_FACTORY_OFF",
+                            "next_phase": next_phase,
+                            "deferred_at": now,
+                        }
+                    elif next_phase:
+                        progression = {
+                            "status": "READY",
+                            "next_phase": next_phase,
+                        }
+                    else:
+                        progression = {"status": "NOT_APPLICABLE"}
+                    classification: dict[str, Any] = {
+                        "verdict": verdict,
+                        "surviving_symbols": surviving,
+                        "counts_by_verdict": {
+                            key: sum(
+                                1 for row in work_items
+                                if str(row["verdict"] or "").upper() == key
+                            )
+                            for key in count_keys
+                        },
+                        "source": source,
+                        "verdict_taxonomy_version": PARENT_CHILD_VERDICT_TAXONOMY_VERSION,
+                        "child_state_sha256": child_hash,
+                        "progression": progression,
+                    }
+                    if verdict == "DRAFT_DEFECT":
+                        classification["route"] = "RE_DRAFT"
+                        classification["retire_strategy"] = False
+                    if p2_profit_skipped:
+                        classification["p2_p3_profit_filter_skipped"] = p2_profit_skipped
+                    parent_payload["classification"] = classification
+                    parent_payload["completed_at_iso"] = now
+                    updated_payload = json.dumps(parent_payload, sort_keys=True)
+                    updated_payload_hash = hashlib.sha256(
+                        updated_payload.encode("utf-8")
+                    ).hexdigest()
+                    cursor = active_conn.execute(
+                        """
+                        UPDATE tasks
+                        SET status='done', payload_json=?, updated_at=?
+                        WHERE id=? AND status=? AND updated_at=? AND payload_json=?
+                        """,
+                        (
+                            updated_payload,
+                            now,
+                            parent_task_id,
+                            parent["status"],
+                            parent["updated_at"],
+                            parent_payload_raw,
+                        ),
+                    )
+                    if cursor.rowcount != 1:
+                        raise RuntimeError(f"parent CAS lost for {parent_task_id}")
+                    idempotency_key = f"parent-close:{parent_task_id}:{child_hash}"
+                    detail = {
+                        "source": source,
+                        "factory_off": is_off,
+                        "classification": classification,
+                        "children": [
+                            {
+                                "id": row["id"],
+                                "status": row["status"],
+                                "verdict": row["verdict"],
+                            }
+                            for row in work_items
+                        ],
+                    }
+                    if ledger_detail:
+                        detail["reconciliation"] = dict(ledger_detail)
+                    ledger = active_conn.execute(
+                        """
+                        INSERT INTO parent_task_transition_ledger(
+                            idempotency_key, ts, parent_task_id, action,
+                            from_status, to_status, from_payload_sha256,
+                            to_payload_sha256, child_state_sha256, verdict,
+                            reason, run_id, detail_json
+                        ) VALUES (?, ?, ?, 'close_finished_parent', ?, 'done',
+                                  ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            idempotency_key,
+                            now,
+                            parent_task_id,
+                            parent["status"],
+                            parent_payload_hash,
+                            updated_payload_hash,
+                            child_hash,
+                            verdict,
+                            "all children physically terminal with canonical verdicts",
+                            run_id,
+                            json.dumps(detail, sort_keys=True),
+                        ),
+                    )
+                    active_conn.execute(
+                        """
+                        INSERT INTO events(ts, entity_type, entity_id, event, detail_json)
+                        VALUES (?, 'task', ?, 'parent_closed_from_work_items', ?)
+                        """,
+                        (
+                            now,
+                            parent_task_id,
+                            json.dumps({
+                                "verdict": verdict,
+                                "child_state_sha256": child_hash,
+                                "source": source,
+                                "progression": progression,
+                                "ledger_seq": ledger.lastrowid,
+                            }, sort_keys=True),
+                        ),
+                    )
+                    result = {
+                        "closed": True,
+                        "parent_task_id": parent_task_id,
+                        "ea_id": parent_payload.get("ea_id"),
+                        "phase": phase,
+                        "verdict": verdict,
+                        "surviving_symbols": surviving,
+                        "child_state_sha256": child_hash,
+                        "progression": progression,
+                        "ledger_seq": ledger.lastrowid,
+                        "parent_payload": parent_payload,
+                        "auto_next": None,
+                    }
+        if owns_connection:
+            active_conn.commit()
+    except BaseException:
+        if owns_connection:
+            active_conn.rollback()
+        if global_lock is not None:
+            exc_info = sys.exc_info()
+            global_lock.__exit__(*exc_info)
+            global_lock = None
+        raise
+    finally:
+        if owns_connection:
+            active_conn.close()
+
+    try:
+        if (
+            result.get("closed")
+            and auto_enqueue
+            and not is_off
+            and result.get("verdict") == "PASS"
+        ):
+            _auto_enqueue_parent_progression(root, result)
+        result.pop("parent_payload", None)
+        return result
+    finally:
+        if global_lock is not None:
+            global_lock.__exit__(None, None, None)
 
 
 def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, Any]:
@@ -6239,7 +7631,20 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
     # guard and no ledger, so it could double-run a row another claimant already won.
     factory_terminals = active_mt5_terminals()
     free_terminals = [t for t in factory_terminals if t not in busy_terminals]
+    calendar_gate_open = True
     if free_terminals:
+        calendar = _news_calendar_preflight(use_cache=True)
+        if not calendar.get("ok"):
+            calendar_gate_open = False
+            actions.append({
+                "action": "calendar_preflight_deferred",
+                "reason": f"NEWS_CALENDAR_{calendar.get('status')}",
+                "status": calendar.get("status"),
+                "principal": calendar.get("principal"),
+                "common_dir": calendar.get("common_dir"),
+                "news_calendar_preflight": calendar,
+            })
+    if free_terminals and calendar_gate_open:
         with connect(root) as conn:
             import poison_pill_quarantine
             poison_pill_quarantine.refresh_pending(conn)
@@ -6250,6 +7655,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
         for item in pending:
             if not free_terminals:
                 break
+            item_payload_raw = item["payload_json"]
             try:
                 item_payload = json.loads(item["payload_json"] or "{}")
                 if not isinstance(item_payload, dict):
@@ -6269,7 +7675,24 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                     "active_symbol": claimed_symbol_keys[item_symbol_key],
                 })
                 continue
-            terminal = free_terminals.pop(0)
+            if item["phase"] in REAL_PHASE_RUNNER_PHASES:
+                eligible_terminals = [
+                    candidate for candidate in free_terminals
+                    if is_phase_runner_terminal_name(candidate)
+                ]
+                if not eligible_terminals:
+                    actions.append({
+                        "action": "phase_runner_terminal_scope_deferred",
+                        "reason": "no_non_live_phase_runner_terminal_available",
+                        "item_id": item["id"],
+                        "ea_id": item["ea_id"],
+                        "excluded_terminals": sorted(free_terminals),
+                    })
+                    continue
+                terminal = eligible_terminals[0]
+                free_terminals.remove(terminal)
+            else:
+                terminal = free_terminals.pop(0)
             # --- CLAIM-THEN-SPAWN, full CAS (all inside ONE BEGIN IMMEDIATE) ---
             # A pre-spawn claim payload that carries claimed_by_worker_pid so a
             # concurrent terminal_worker.claim_atomic for this same terminal treats the
@@ -6335,6 +7758,50 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             # ONLY NOW spawn the runner.
             spawn = _spawn_work_item_runner(root, item, terminal)
             if not spawn.get("spawned"):
+                if spawn.get("calendar_preflight_blocked"):
+                    calendar = spawn.get("news_calendar_preflight") or {}
+                    # The fresh pre-spawn read closed a TOCTOU window after our
+                    # pre-claim read. Restore the exact pending payload and retract
+                    # the capacity-ledger entry; attempt_count is never touched.
+                    with connect(root) as conn2:
+                        conn2.execute("BEGIN IMMEDIATE")
+                        cur = conn2.execute(
+                            """
+                            UPDATE work_items
+                            SET status='pending', verdict=NULL, claimed_by=NULL,
+                                payload_json=?, updated_at=?
+                            WHERE id=? AND status='active' AND claimed_by=?
+                            """,
+                            (
+                                item_payload_raw,
+                                started_iso,
+                                item["id"],
+                                terminal,
+                            ),
+                        )
+                        if cur.rowcount == 1:
+                            retract_claim_ledger(
+                                conn2,
+                                terminal,
+                                item["id"],
+                                started_iso,
+                            )
+                        conn2.commit()
+                    actions.append({
+                        "action": "calendar_preflight_deferred",
+                        "reason": spawn.get("reason"),
+                        "status": calendar.get("status"),
+                        "item_id": item["id"],
+                        "ea_id": item["ea_id"],
+                        "terminal_released": terminal,
+                        "claim_released": cur.rowcount == 1,
+                        "attempt_count_unchanged": True,
+                        "principal": calendar.get("principal"),
+                        "common_dir": calendar.get("common_dir"),
+                        "news_calendar_preflight": calendar,
+                    })
+                    free_terminals.insert(0, terminal)
+                    continue
                 if spawn.get("waiting_input"):
                     payload = {
                         "verdict_reason": spawn.get("reason"),
@@ -6452,82 +7919,47 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
 
     # --- Phase 3: aggregate completed parents ---
     with connect(root) as conn:
-        # Find parent_task_ids that have all work_items done but parent is still active/pending
-        parent_summaries = conn.execute(
+        # Candidate discovery is read-only.  Each close below re-reads and
+        # validates every child inside its own BEGIN IMMEDIATE CAS transaction.
+        parent_ids = [
+            row["parent_task_id"]
+            for row in conn.execute(
             """
             SELECT parent_task_id,
                    COUNT(*) AS total,
-                   SUM(CASE WHEN status='done' OR status='failed' THEN 1 ELSE 0 END) AS finished,
-                   SUM(CASE WHEN verdict='PASS' THEN 1 ELSE 0 END) AS passes
+                   SUM(CASE WHEN status='done' OR status='failed' THEN 1 ELSE 0 END) AS finished
             FROM work_items
             WHERE parent_task_id IS NOT NULL
             GROUP BY parent_task_id
             HAVING total = finished
             """
-        ).fetchall()
-        for ps in parent_summaries:
-            parent_id = ps["parent_task_id"]
-            if not parent_id:
-                continue
-            parent_row = conn.execute("SELECT * FROM tasks WHERE id=?", (parent_id,)).fetchone()
-            if not parent_row or parent_row["status"] == "done":
-                continue
-            # Build classification from work_items
-            wis = conn.execute("SELECT * FROM work_items WHERE parent_task_id=?", (parent_id,)).fetchall()
-            phase = parent_row["kind"].replace("backtest_", "").upper()
-            pass_symbols = [w["symbol"] for w in wis if w["verdict"] == "PASS"]
-            p2_profit_skipped: list[dict[str, Any]] = []
-            if phase == "P2":
-                surviving, p2_profit_skipped = _filter_p2_profitable_symbols(conn, parent_id, pass_symbols)
-            else:
-                surviving = pass_symbols
-            verdict = _aggregate_work_item_verdict(phase, list(wis), surviving)
-            classification = {
-                "verdict": verdict,
-                "surviving_symbols": surviving,
-                "counts_by_verdict": {
-                    v: sum(1 for w in wis if w["verdict"] == v)
-                    for v in ("PASS", "FAIL", "INVALID", "INFRA_FAIL", "ZERO_TRADES", "DRAFT_DEFECT", "MIN_TRADES_NOT_MET")
-                },
-                "source": "work_items_aggregate",
-            }
-            if verdict == "DRAFT_DEFECT":
-                classification["route"] = "RE_DRAFT"
-                classification["retire_strategy"] = False
-            if p2_profit_skipped:
-                classification["p2_p3_profit_filter_skipped"] = p2_profit_skipped
-            parent_payload = json.loads(parent_row["payload_json"]) if parent_row["payload_json"] else {}
-            parent_payload["classification"] = classification
-            parent_payload["completed_at_iso"] = started_iso
-            conn.execute(
-                "UPDATE tasks SET status='done', payload_json=?, updated_at=? WHERE id=?",
-                (json.dumps(parent_payload), started_iso, parent_id),
-            )
-            conn.commit()
-            # Auto-enqueue next phase on PASS
-            auto_next = None
-            if verdict == "PASS":
-                next_map = {"P2": "P3", "P3": "P3.5", "P3.5": "P4"}
-                npp = next_map.get(phase)
-                if npp and npp in SUPPORTED_BACKTEST_PHASES:
-                    npp_kind = npp.lower().replace(".", "")  # P3.5 → 'p35' for task kind
-                    existing = conn.execute(
-                        "SELECT id FROM tasks WHERE kind=? AND payload_json LIKE ?",
-                        (f"backtest_{npp_kind}", f"%\"ea_id\": \"{parent_payload.get('ea_id')}\"%"),
-                    ).fetchone()
-                    if not existing:
-                        enq = enqueue_backtest(root, parent_id, npp)
-                        if enq.get("enqueued"):
-                            auto_next = {"phase": npp, "task_id": enq.get("task_id"),
-                                        "work_items_created": len(enq.get("work_items_created", []))}
+            ).fetchall()
+        ]
+    for parent_id in parent_ids:
+        aggregated = aggregate_finished_parent_cas(
+            root,
+            parent_id,
+            source="work_items_aggregate",
+            completed_at=started_iso,
+        )
+        if aggregated and aggregated.get("closed"):
             actions.append({
                 "action": "parent_classified",
                 "parent_task_id": parent_id,
-                "ea_id": parent_payload.get("ea_id"),
-                "phase": phase,
-                "verdict": verdict,
-                "surviving_symbols": surviving,
-                "auto_next": auto_next,
+                "ea_id": aggregated.get("ea_id"),
+                "phase": aggregated.get("phase"),
+                "verdict": aggregated.get("verdict"),
+                "surviving_symbols": aggregated.get("surviving_symbols", []),
+                "progression": aggregated.get("progression"),
+                "auto_next": aggregated.get("auto_next"),
+            })
+        elif aggregated and aggregated.get("reason") == "child_contract_refused":
+            actions.append({
+                "action": "parent_classification_refused",
+                "parent_task_id": parent_id,
+                "reason": aggregated.get("reason"),
+                "missing_verdict": aggregated.get("missing_verdict", []),
+                "noncanonical_verdict": aggregated.get("noncanonical_verdict", []),
             })
 
     result = {
@@ -7165,11 +8597,21 @@ def _spawn_codex_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[str
     record_review_result expects APPROVE_FOR_BACKTEST or REJECT_REWORK.
     """
     build_task_id = build_task_row["id"]
+    build_payload = json.loads(build_task_row["payload_json"] or "{}")
     with connect(root) as conn:
-        existing = conn.execute(
-            "SELECT id FROM tasks WHERE kind='ea_review' AND payload_json LIKE ?",
+        existing_rows = conn.execute(
+            "SELECT id, payload_json FROM tasks WHERE kind='ea_review' AND payload_json LIKE ?",
             (f"%\"build_task_id\": \"{build_task_id}\"%",),
-        ).fetchone()
+        ).fetchall()
+    existing = None
+    for candidate in existing_rows:
+        try:
+            candidate_payload = json.loads(candidate["payload_json"] or "{}")
+        except (json.JSONDecodeError, TypeError):
+            continue
+        if _review_matches_build_generation(candidate_payload, build_payload):
+            existing = candidate
+            break
     if existing:
         return {"spawned": False, "reason": "ea_review task already exists", "review_task_id": existing[0]}
 
@@ -7247,11 +8689,21 @@ def _spawn_codex_for_pre_review(root: Path, build_task_row: sqlite3.Row) -> dict
     with payload.build_task_id + payload.verdict_path.
     """
     build_task_id = build_task_row["id"]
+    payload_build = json.loads(build_task_row["payload_json"])
     with connect(root) as conn:
-        existing = conn.execute(
-            "SELECT id, status FROM tasks WHERE kind='codex_review' AND payload_json LIKE ?",
+        existing_rows = conn.execute(
+            "SELECT id, status, payload_json FROM tasks WHERE kind='codex_review' AND payload_json LIKE ?",
             (f"%\"build_task_id\": \"{build_task_id}\"%",),
-        ).fetchone()
+        ).fetchall()
+    existing = None
+    for candidate in existing_rows:
+        try:
+            candidate_payload = json.loads(candidate["payload_json"] or "{}")
+        except (json.JSONDecodeError, TypeError):
+            continue
+        if _review_matches_build_generation(candidate_payload, payload_build):
+            existing = candidate
+            break
     if existing:
         return {
             "spawned": False,
@@ -7259,7 +8711,6 @@ def _spawn_codex_for_pre_review(root: Path, build_task_row: sqlite3.Row) -> dict
             "codex_review_task_id": existing["id"],
         }
 
-    payload_build = json.loads(build_task_row["payload_json"])
     codex_result = payload_build.get("codex_result") or {}
     mq5_path = codex_result.get("mq5_path") or ""
     ex5_path = codex_result.get("ex5_path") or ""
@@ -7273,6 +8724,7 @@ def _spawn_codex_for_pre_review(root: Path, build_task_row: sqlite3.Row) -> dict
             card_id=build_task_row["card_id"],
             payload={
                 "build_task_id": build_task_id,
+                "build_generation": _build_generation(payload_build),
                 "ea_id": payload_build.get("ea_id"),
                 "card_path": payload_build.get("card_path"),
                 "mq5_path": mq5_path,
@@ -7418,6 +8870,32 @@ def _pre_review_ready(root: Path, build_task_row: sqlite3.Row) -> tuple[bool, st
     return True, ""
 
 
+def _build_generation(payload: dict[str, Any] | None) -> int:
+    """Return the monotonic build generation (legacy rows are generation zero)."""
+    try:
+        return max(0, int((payload or {}).get("build_generation", 0)))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _review_matches_build_generation(
+    review_payload: dict[str, Any] | None,
+    build_payload: dict[str, Any] | None,
+) -> bool:
+    return (
+        not (review_payload or {}).get("superseded_by_build_generation")
+        and _build_generation(review_payload) == _build_generation(build_payload)
+    )
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def _materialize_embedded_build_result(
     root: Path,
     build_task_id: str,
@@ -7430,12 +8908,25 @@ def _materialize_embedded_build_result(
     downstream recorder and pre-review gate require the durable JSON file, so
     recreate it only when the embedded result is clearly for this same task.
     """
+    # A review rework deliberately invalidates every result from the previous
+    # generation.  Never recreate its archived JSON from the stale payload.
+    if payload.get("codex_review_rework") is True:
+        return None
+
     result = payload.get("codex_result")
     if not isinstance(result, dict) or not result:
         return None
 
     result_task_id = str(result.get("task_id") or "").strip()
-    if result_task_id and result_task_id != str(build_task_id):
+    if result_task_id != str(build_task_id):
+        return None
+
+    payload_generation = _build_generation(payload)
+    result_generation = _build_generation(result)
+    if result_generation != payload_generation:
+        return None
+    attempt_token = str(payload.get("build_attempt_token") or "").strip()
+    if attempt_token and str(result.get("build_attempt_token") or "").strip() != attempt_token:
         return None
 
     known_missing_file_case = (
@@ -7495,6 +8986,8 @@ def _block_unreviewable_build(root: Path, build_task_row: sqlite3.Row, reason: s
 def _latest_codex_review_fail_for_build(
     conn: sqlite3.Connection,
     build_task_id: str,
+    *,
+    build_generation: int = 0,
 ) -> dict[str, Any] | None:
     rows = conn.execute(
         """
@@ -7509,6 +9002,11 @@ def _latest_codex_review_fail_for_build(
         try:
             payload = json.loads(row["payload_json"] or "{}")
         except (json.JSONDecodeError, TypeError):
+            continue
+        if (
+            _build_generation(payload) != build_generation
+            or payload.get("superseded_by_build_generation") is not None
+        ):
             continue
         verdict = payload.get("verdict") if isinstance(payload.get("verdict"), dict) else None
         verdict_path = payload.get("verdict_path")
@@ -7594,6 +9092,13 @@ Rework constraints:
 - Prefer the smallest source change that satisfies the review finding.
 - After the fix, `compile_one.ps1 -Strict` and `build_check.ps1 -Strict` for this EA must pass with 0 errors and 0 warnings.
 - If a finding conflicts with the generic build prompt, the review finding wins for this rework.
+
+Immutable retry identity (mandatory in the result JSON):
+
+- `build_generation`: `{_build_generation(payload)}`
+- `build_attempt_token`: `{str(payload.get("build_attempt_token") or "").strip()}`
+
+A result from an earlier generation is stale and must not be reused.
 """
     Path(prompt_path).write_text(template + rework, encoding="utf-8", newline="\n")
     return prompt_path, build_result_path
@@ -7684,7 +9189,12 @@ def _prepare_codex_review_fail_reworks(root: Path, limit: int = 1) -> list[dict[
                     (json.dumps(payload), utc_now(), row["id"]),
                 )
                 continue
-            review_fail = _latest_codex_review_fail_for_build(conn, row["id"])
+            current_generation = _build_generation(payload)
+            review_fail = _latest_codex_review_fail_for_build(
+                conn,
+                row["id"],
+                build_generation=current_generation,
+            )
             if review_fail is None and payload.get("last_codex_review_findings"):
                 review_fail = {
                     "review_task_id": payload.get("last_codex_review_task_id"),
@@ -7698,21 +9208,47 @@ def _prepare_codex_review_fail_reworks(root: Path, limit: int = 1) -> list[dict[
 
             if not recovering_prepared_rework:
                 _archive_rework_artifacts(root, row["id"], payload, attempt)
+            next_generation = (
+                current_generation if recovering_prepared_rework else current_generation + 1
+            )
+            next_attempt_token = (
+                str(payload.get("build_attempt_token") or "").strip()
+                if recovering_prepared_rework
+                else str(uuid.uuid4())
+            )
+            prompt_payload = dict(payload)
+            prompt_payload["build_generation"] = next_generation
+            prompt_payload["build_attempt_token"] = next_attempt_token
             prompt_path, build_result_path = _write_codex_review_rework_prompt(
                 root,
                 row,
-                payload,
+                prompt_payload,
                 review_fail,
             )
             updated = dict(payload)
-            updated.pop("blocked_reason", None)
-            updated.pop("pid", None)
-            updated.pop("started_at_iso", None)
-            updated.pop("build_result", None)
+            invalidated_keys = (
+                "blocked_reason",
+                "pid",
+                "started_at_iso",
+                "build_result",
+                "codex_result",
+                "auto_q02_enqueued",
+                "embedded_build_result_materialized_at",
+                "spec_validation",
+                "strategy_entry_validation",
+                "fail_code",
+            )
+            invalidated_present = [key for key in invalidated_keys if key in updated]
+            for key in invalidated_keys:
+                updated.pop(key, None)
             updated["prompt_path"] = prompt_path
             updated["build_result_path"] = build_result_path
             updated["codex_review_rework"] = True
             updated["codex_review_rework_attempt_count"] = attempt
+            updated["build_generation"] = next_generation
+            updated["build_attempt_token"] = next_attempt_token
+            updated["previous_build_generation"] = current_generation
+            updated["invalidated_build_payload_keys"] = invalidated_present
             updated["last_blocked_reason"] = "codex_review_fail"
             updated["last_codex_review_task_id"] = review_fail["review_task_id"]
             updated["last_codex_review_findings"] = review_fail["findings"]
@@ -7722,12 +9258,28 @@ def _prepare_codex_review_fail_reworks(root: Path, limit: int = 1) -> list[dict[
             else:
                 updated["attempt_count"] = int(updated.get("attempt_count", 0)) + 1
 
-            if review_fail.get("review_task_id"):
+            # Keep every prior review row as immutable history.  Generation-aware
+            # selectors below ignore it for the new build generation.
+            review_rows = conn.execute(
+                "SELECT id, payload_json FROM tasks WHERE kind='codex_review' "
+                "AND payload_json LIKE '%\"build_task_id\": \"' || ? || '\"%'",
+                (row["id"],),
+            ).fetchall()
+            superseded_review_ids: list[str] = []
+            for review_row in review_rows:
+                try:
+                    review_payload = json.loads(review_row["payload_json"] or "{}")
+                except (json.JSONDecodeError, TypeError):
+                    continue
+                if _build_generation(review_payload) != current_generation:
+                    continue
+                review_payload["superseded_by_build_generation"] = next_generation
+                review_payload["superseded_at"] = utc_now()
                 conn.execute(
-                    "DELETE FROM tasks WHERE kind='codex_review' "
-                    "AND payload_json LIKE '%\"build_task_id\": \"' || ? || '\"%'",
-                    (row["id"],),
+                    "UPDATE tasks SET payload_json=?, updated_at=? WHERE id=?",
+                    (json.dumps(review_payload), utc_now(), review_row["id"]),
                 )
+                superseded_review_ids.append(review_row["id"])
             conn.execute(
                 "UPDATE tasks SET status='pending', payload_json=?, updated_at=? WHERE id=?",
                 (json.dumps(updated), utc_now(), row["id"]),
@@ -7737,6 +9289,10 @@ def _prepare_codex_review_fail_reworks(root: Path, limit: int = 1) -> list[dict[
                 "attempt": attempt,
                 "review_task_id": review_fail["review_task_id"],
                 "findings_count": len(review_fail["findings"]),
+                "from_build_generation": current_generation,
+                "to_build_generation": next_generation,
+                "invalidated_payload_keys": invalidated_present,
+                "superseded_review_task_ids": superseded_review_ids,
             })
             prepared.append({
                 "build_task_id": row["id"],
@@ -8202,7 +9758,7 @@ def _spawn_codex_for_build_claimed(root: Path, task_row: sqlite3.Row) -> dict[st
 
 
 def _spawn_gemini_for_build_claimed(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
-    """Spawn Gemini CLI for a pending build_ea task using the Codex build contract.
+    """Spawn Antigravity/agy for the legacy ``gemini`` build lane.
 
     Gemini is allowed to draft/implement, but completion still flows through
     record-build and the existing Codex pre-review gate before any backtest.
@@ -8426,6 +9982,19 @@ def _spawn_with_build_dispatch_claim(
         payload = {}
     task_id = str(task_row["id"])
     ea_id = str(payload.get("ea_id") or task_row["card_id"] or "")
+    # Reject durable block/terminal payload markers before creating even the
+    # short-lived dispatch claim.  Card state is checked again against the
+    # current row after the claim so stale selection cannot bypass it.
+    initial_guard = _build_task_claim_guard(root, task_row, require_card=False)
+    if not initial_guard.get("claimable"):
+        return {
+            "spawned": False,
+            "agent": agent,
+            "task_id": task_id,
+            "ea_id": ea_id,
+            "reason": f"build_task_not_claimable:{initial_guard.get('code')}",
+            "claim_guard": initial_guard,
+        }
     claim = _acquire_build_dispatch_claim(
         root,
         ea_id=ea_id,
@@ -8469,6 +10038,16 @@ def _spawn_with_build_dispatch_claim(
                 ),
             }
         task_row = current_row
+        current_guard = _build_task_claim_guard(root, task_row, require_card=True)
+        if not current_guard.get("claimable"):
+            return {
+                "spawned": False,
+                "agent": agent,
+                "task_id": task_id,
+                "ea_id": ea_id,
+                "reason": f"build_task_not_claimable:{current_guard.get('code')}",
+                "claim_guard": current_guard,
+            }
 
         # Another pump may also have dispatched and persisted/logged the task
         # just before this process acquired the lock.
@@ -8750,6 +10329,8 @@ def _detect_zerotrade_dead_eas(con: sqlite3.Connection, root: Path = DEFAULT_ROO
     Find EAs where >=80% of done P2 work_items are FAILs caused by
     MIN_TRADES_NOT_MET, with at least 5 done P2 samples. Create one fresh
     build_ea retry task plus one bridge .md task, de-duped over 6 hours.
+    Once all three reworks are exhausted, preserve the first/changed terminal
+    signal and throttle identical raw events over a rolling 24-hour window.
     """
     rows = con.execute(
         """
@@ -8841,12 +10422,12 @@ def _detect_zerotrade_dead_eas(con: sqlite3.Connection, root: Path = DEFAULT_ROO
             (ea_id,),
         ).fetchone()[0]
         if prior_attempts >= 3:
-            event(con, "ea", ea_id, "ea_dead_zero_trade_3x_rework_failed", {
+            event_deduped(con, "ea", ea_id, DEAD_ZERO_TRADE_EVENT, {
                 "verdict": "DEAD_ZERO_TRADE_3X_REWORK_FAILED",
                 "zero_trade_ratio": ratio,
                 "sample_size": done,
                 "zero_trade_failures": zt,
-            })
+            }, dedupe_hours=DEAD_ZERO_TRADE_EVENT_DEDUPE_HOURS)
             continue
 
         card_path = _find_first_path([
@@ -8984,7 +10565,7 @@ def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
         # before emitting a build task.
         try:
             fm = parse_card_frontmatter(card_md)
-            if not _card_r_gate_ready(fm):
+            if not _card_r_gate_ready(fm, card_md):
                 continue
         except Exception:
             continue
@@ -10155,6 +11736,143 @@ def _ensure_portfolio_candidates_table(conn: sqlite3.Connection) -> None:
     )
 
 
+def _work_item_evidence_sha256(work_item: sqlite3.Row) -> str | None:
+    raw_path = str(work_item["evidence_path"] or "").strip()
+    if not raw_path:
+        return None
+    path = Path(raw_path)
+    try:
+        if not path.is_file():
+            return None
+        return _sha256_file(path).lower()
+    except OSError:
+        return None
+
+
+def _add_q08_input_dependency(
+    conn: sqlite3.Connection,
+    *,
+    child_work_item_id: str,
+    q08_work_item: sqlite3.Row,
+    evidence_sha256: str,
+) -> None:
+    verdict = str(q08_work_item["verdict"] or "").strip().upper()
+    if verdict not in {"PASS", "FAIL_SOFT"}:
+        raise Q09NewsSchemaError(f"Q08 verdict cannot feed Q09: {verdict or 'missing'}")
+    add_q09_dependency(
+        conn,
+        child_work_item_id=child_work_item_id,
+        dependency_role="Q08_INPUT",
+        parent_work_item_id=str(q08_work_item["id"]),
+        parent_evidence_sha256=evidence_sha256,
+        required_verdicts=[verdict],
+    )
+
+
+def _q10_dependency_context(
+    conn: sqlite3.Connection,
+    q09_news_work_item: sqlite3.Row,
+) -> tuple[dict[str, Any] | None, str]:
+    """Resolve one fully authenticated portfolio sibling for a Q09_NEWS row."""
+    news_id = str(q09_news_work_item["id"])
+    q08_dependency = conn.execute(
+        """
+        SELECT parent_work_item_id FROM work_item_dependencies
+        WHERE child_work_item_id=? AND dependency_role='Q08_INPUT'
+        """,
+        (news_id,),
+    ).fetchone()
+    if q08_dependency is None:
+        return None, "q09_news_q08_dependency_missing"
+    q08_id = str(q08_dependency[0])
+    news_test = conn.execute(
+        """
+        SELECT q08_work_item_id,aggregate_path,aggregate_sha256
+        FROM q09_news_tests
+        WHERE work_item_id=? AND verdict='CONFIG_LOCKED'
+        """,
+        (news_id,),
+    ).fetchone()
+    if news_test is None:
+        return None, "q09_news_config_lock_missing"
+    if str(news_test[0]) != q08_id:
+        return None, "q09_news_q08_lineage_mismatch"
+    news_evidence_path = str(news_test[1] or "").strip()
+    news_evidence_sha256 = str(news_test[2] or "").strip().lower()
+    if str(q09_news_work_item["evidence_path"] or "").strip() != news_evidence_path:
+        return None, "q09_news_evidence_path_mismatch"
+    try:
+        if (
+            not news_evidence_path
+            or not Path(news_evidence_path).is_file()
+            or _sha256_file(Path(news_evidence_path)).lower() != news_evidence_sha256
+        ):
+            return None, "q09_news_evidence_hash_mismatch"
+    except OSError:
+        return None, "q09_news_evidence_unreadable"
+
+    portfolio_rows = conn.execute(
+        """
+        SELECT p.* FROM work_items p
+        JOIN work_item_dependencies d
+          ON d.child_work_item_id=p.id
+         AND d.dependency_role='Q08_INPUT'
+         AND d.parent_work_item_id=?
+        WHERE p.phase='Q09_PORTFOLIO'
+          AND p.status='done'
+          AND p.verdict='PASS_PORTFOLIO'
+          AND p.ea_id=? AND p.symbol=? AND p.setfile_path=?
+        ORDER BY p.updated_at DESC, p.id DESC
+        """,
+        (
+            q08_id,
+            q09_news_work_item["ea_id"],
+            q09_news_work_item["symbol"],
+            q09_news_work_item["setfile_path"],
+        ),
+    ).fetchall()
+    for portfolio in portfolio_rows:
+        portfolio_sha256 = _work_item_evidence_sha256(portfolio)
+        if portfolio_sha256:
+            return {
+                "q08_work_item_id": q08_id,
+                "q09_news_evidence_sha256": news_evidence_sha256,
+                "q09_portfolio_work_item": portfolio,
+                "q09_portfolio_evidence_sha256": portfolio_sha256,
+            }, ""
+    if portfolio_rows:
+        return None, "q09_portfolio_evidence_missing_or_unreadable"
+    return None, "matching_q09_portfolio_pass_missing"
+
+
+def _bind_q10_dependencies(
+    conn: sqlite3.Connection,
+    *,
+    q10_work_item_id: str,
+    q09_news_work_item_id: str,
+    dependency_context: dict[str, Any],
+) -> None:
+    portfolio = dependency_context["q09_portfolio_work_item"]
+    add_q09_dependency(
+        conn,
+        child_work_item_id=q10_work_item_id,
+        dependency_role="Q09_NEWS",
+        parent_work_item_id=q09_news_work_item_id,
+        parent_evidence_sha256=dependency_context["q09_news_evidence_sha256"],
+        required_verdicts=["CONFIG_LOCKED"],
+    )
+    add_q09_dependency(
+        conn,
+        child_work_item_id=q10_work_item_id,
+        dependency_role="Q09_PORTFOLIO",
+        parent_work_item_id=str(portfolio["id"]),
+        parent_evidence_sha256=dependency_context["q09_portfolio_evidence_sha256"],
+        required_verdicts=["PASS_PORTFOLIO"],
+    )
+    # This additionally proves the paired arms and all five canonical seeds.
+    assert_q10_dependency_gate(conn, q10_work_item_id)
+
+
 def _q08_verdict_from_classification(classification: dict[str, Any]) -> str | None:
     """Re-derive the Q08 verdict from a stored per-gate tier map, matching
     aggregate.py precedence (HARD > INVALID > SOFT)."""
@@ -10201,6 +11919,11 @@ def _promote_q08_soft_fails_to_q09_portfolio(
     conn: sqlite3.Connection,
     result: dict[str, Any],
 ) -> int:
+    if conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='work_item_dependencies'"
+    ).fetchone() is None:
+        # An uninitialised/partial DB must not create unbound portfolio work.
+        return 0
     _migrate_legacy_q08_verdicts(conn)
     promoted = 0
     q08_soft_rows = conn.execute(
@@ -10224,6 +11947,15 @@ def _promote_q08_soft_fails_to_q09_portfolio(
         if pair in promoted_pairs:
             continue
         promoted_pairs.add(pair)
+        q08_evidence_sha256 = _work_item_evidence_sha256(wi)
+        if not q08_evidence_sha256:
+            result["q09_portfolio_promotions_skipped"].append({
+                "ea_id": wi["ea_id"],
+                "symbol": wi["symbol"],
+                "from_work_item_id": wi["id"],
+                "reason": "q08_evidence_missing_or_unreadable",
+            })
+            continue
         trade_count = _q08_trade_count_from_work_item(wi)
         if trade_count is None:
             trade_count = _phase_summary_trade_count(wi["evidence_path"])
@@ -10259,6 +11991,12 @@ def _promote_q08_soft_fails_to_q09_portfolio(
                     now,
                 ),
             )
+            _add_q08_input_dependency(
+                conn,
+                child_work_item_id=new_id,
+                q08_work_item=wi,
+                evidence_sha256=q08_evidence_sha256,
+            )
             result["q09_portfolio_promotions_skipped"].append({
                 "work_item_id": new_id,
                 "ea_id": wi["ea_id"],
@@ -10288,6 +12026,12 @@ def _promote_q08_soft_fails_to_q09_portfolio(
                 now,
             ),
         )
+        _add_q08_input_dependency(
+            conn,
+            child_work_item_id=new_id,
+            q08_work_item=wi,
+            evidence_sha256=q08_evidence_sha256,
+        )
         result["q09_portfolio_promotions"].append({
             "work_item_id": new_id,
             "ea_id": wi["ea_id"],
@@ -10303,78 +12047,15 @@ def _admit_q09_portfolio_passes(
     conn: sqlite3.Connection,
     result: dict[str, Any],
 ) -> int:
-    _ensure_portfolio_candidates_table(conn)
-    admitted = 0
-    now = utc_now()
-    q09_pass_rows = conn.execute(
-        """
-        SELECT w.* FROM work_items w
-        WHERE w.status='done'
-          AND w.phase='Q09_PORTFOLIO'
-          AND w.verdict='PASS_PORTFOLIO'
-          AND NOT EXISTS (
-            SELECT 1 FROM portfolio_candidates pc
-            WHERE pc.ea_id = w.ea_id
-              AND pc.symbol = w.symbol
-              AND pc.q11_work_item_id = w.id
-          )
-        ORDER BY
-          CASE WHEN w.setfile_path LIKE '%_ablation_%' THEN 1 ELSE 0 END,
-          w.updated_at ASC
-        LIMIT 20
-        """
-    ).fetchall()
-    admitted_keys: set[tuple[str, str]] = set()
-    for wi in q09_pass_rows:
-        candidate_key = (str(wi["ea_id"]), str(wi["symbol"] or ""))
-        if candidate_key in admitted_keys:
-            continue
-        existing_ready = conn.execute(
-            """
-            SELECT 1 FROM portfolio_candidates
-            WHERE ea_id=? AND symbol=? AND state='Q12_REVIEW_READY'
-            LIMIT 1
-            """,
-            candidate_key,
-        ).fetchone()
-        if existing_ready:
-            admitted_keys.add(candidate_key)
-            continue
-        conn.execute(
-            """
-            INSERT INTO portfolio_candidates(
-                ea_id, symbol, q11_work_item_id, state, evidence_path,
-                first_seen_at, updated_at
-            )
-            VALUES (?, ?, ?, 'Q12_REVIEW_READY', ?, ?, ?)
-            """,
-            (wi["ea_id"], wi["symbol"], wi["id"], wi["evidence_path"], now, now),
-        )
-        try:
-            payload = json.loads(wi["payload_json"] or "{}")
-        except json.JSONDecodeError:
-            payload = {}
-        payload["portfolio_only"] = True
-        payload["portfolio_candidate_state"] = "Q12_REVIEW_READY"
-        conn.execute(
-            "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=?",
-            (json.dumps(payload, sort_keys=True), now, wi["id"]),
-        )
-        event(conn, "portfolio_candidate", wi["ea_id"], "Q12_REVIEW_READY", {
-            "symbol": wi["symbol"],
-            "q09_portfolio_work_item_id": wi["id"],
-            "evidence_path": wi["evidence_path"],
-            "portfolio_only": True,
-        })
-        result["q09_portfolio_admissions"].append({
-            "ea_id": wi["ea_id"],
-            "symbol": wi["symbol"],
-            "q09_portfolio_work_item_id": wi["id"],
-            "state": "Q12_REVIEW_READY",
-        })
-        admitted_keys.add(candidate_key)
-        admitted += 1
-    return admitted
+    """Historical compatibility hook; direct portfolio admission is forbidden.
+
+    Q09_PORTFOLIO is one dependency of Q10, never an independent Q12
+    qualification authority.  Eligible candidates are exposed only by the
+    additive ``portfolio_candidates_eligible`` view after a complete bound
+    Q09_NEWS + Q09_PORTFOLIO + Q10 qualification is appended.
+    """
+    del conn, result
+    return 0
 
 
 ARTIFACT_COMMIT_ALLOWLIST = (
@@ -10600,16 +12281,17 @@ def _reconcile_magic_resolver(root: Path) -> dict[str, Any]:
     pump interval; the existing _auto_commit_build_artifacts then ships the
     .mqh (it is in SHARED_BUILD_PATHS).
 
-    Cheap-guarded: the resolver embeds the source CSV's SHA256, so we only
-    regenerate when sha256(magic_numbers.csv) != that embedded hash. In-sync
-    cycles do zero work and create no dirty-tree churn.
+    Cheap-guarded: the resolver embeds the source CSV's Git-canonical SHA256,
+    so LF/CRLF checkout policy cannot create false drift in linked worktrees.
+    In-sync cycles do zero work and create no dirty-tree churn.
     """
     try:
         if not (MAGIC_CSV_PATH.exists() and MAGIC_RESOLVER_PATH.exists()
                 and MAGIC_REGEN_SCRIPT.exists()):
             return {"regenerated": False, "reason": "missing_inputs"}
         import hashlib
-        csv_hash = hashlib.sha256(MAGIC_CSV_PATH.read_bytes()).hexdigest().upper()
+        canonical_csv = MAGIC_CSV_PATH.read_bytes().replace(b"\r\n", b"\n")
+        csv_hash = hashlib.sha256(canonical_csv).hexdigest().upper()
         mqh = MAGIC_RESOLVER_PATH.read_text(encoding="utf-8", errors="replace")
         m = re.search(r"[0-9A-F]{64}", mqh)
         if m and m.group(0) == csv_hash:
@@ -10646,7 +12328,7 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
     live_log freshness so re-runs while Codex is still going don't
     double-spawn.
     """
-    factory_off_flag = root / "state" / "FACTORY_OFF.flag"
+    factory_off_flag = factory_off_flag_path(root)
     if factory_off_flag.exists():
         return {"pumped_at": utc_now(), "skipped": "FACTORY_OFF.flag set"}
     init_db(root)
@@ -10737,6 +12419,11 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
     result["dispatch"] = dispatch_tick(root)
     with connect(root) as conn:
         result["zerotrade_rework_flagged"] = _detect_zerotrade_dead_eas(conn, root)
+        result["zerotrade_terminal_event_census"] = event_census(
+            conn,
+            DEAD_ZERO_TRADE_EVENT,
+            rolling_hours=DEAD_ZERO_TRADE_EVENT_DEDUPE_HOURS,
+        )
 
     result["resume_mining"] = resume_mining(root)
     result["research_cards_extracted"] = _extract_cards_from_research_results(root)
@@ -10929,7 +12616,7 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
     try:
         ps_out = subprocess.run(
             ["powershell.exe", "-NoProfile", "-Command",
-             "(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'gemini\\.js|gemini\\.cmd' }).Count"],
+             "@(Get-Process -Name agy -ErrorAction SilentlyContinue).Count"],
             capture_output=True, text=True, timeout=10,
             creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
         )
@@ -11028,9 +12715,14 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
         seen_eas: set[str] = set(in_flight_eas)
         pending_builds = []
         skipped_perma_blocked = 0
+        result["build_claim_guard_skipped"] = []
         result["duplicate_pending_builds_blocked"] = []
         for row in all_pending:
             if str(row["id"]) in in_flight_task_ids:
+                continue
+            claim_guard = _build_task_claim_guard(root, row, require_card=True)
+            if not claim_guard.get("claimable"):
+                result["build_claim_guard_skipped"].append(claim_guard)
                 continue
             payload = json.loads(row["payload_json"])
             duplicate_block = _block_duplicate_pending_build_if_pipelined(conn, row, payload)
@@ -11119,6 +12811,7 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
     claude_pending_eligible = len(
         _claude_buildable_pending_rows(
             claude_pending_before_auto,
+            root=root,
             in_flight_task_ids=_in_flight_build_task_ids(
                 root, claude_pending_before_auto
             ),
@@ -11184,7 +12877,7 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                     # quality is informational; R2-R4 remain strict PASS.
                     try:
                         fm = parse_card_frontmatter(f)
-                        if not _card_r_gate_ready(fm):
+                        if not _card_r_gate_ready(fm, f):
                             continue
                     except Exception:
                         continue
@@ -11282,6 +12975,7 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
             ).fetchall()
         claude_candidates = _claude_buildable_pending_rows(
             claude_pending,
+            root=root,
             in_flight_task_ids=_in_flight_build_task_ids(
                 root, claude_pending
             ),
@@ -11432,6 +13126,9 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                 SELECT 1 FROM tasks r
                 WHERE r.kind='codex_review'
                   AND r.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
+                  AND COALESCE(CAST(json_extract(r.payload_json, '$.build_generation') AS INTEGER), 0)
+                      = COALESCE(CAST(json_extract(b.payload_json, '$.build_generation') AS INTEGER), 0)
+                  AND json_extract(r.payload_json, '$.superseded_by_build_generation') IS NULL
               )
             ORDER BY b.updated_at ASC LIMIT ?
             """
@@ -11516,11 +13213,17 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                 WHERE cr.kind='codex_review' AND cr.status='done'
                   AND cr.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
                   AND cr.payload_json LIKE '%"verdict": "PASS"%'
+                  AND COALESCE(CAST(json_extract(cr.payload_json, '$.build_generation') AS INTEGER), 0)
+                      = COALESCE(CAST(json_extract(b.payload_json, '$.build_generation') AS INTEGER), 0)
+                  AND json_extract(cr.payload_json, '$.superseded_by_build_generation') IS NULL
               )
               AND NOT EXISTS (
                 SELECT 1 FROM tasks r
                 WHERE r.kind='ea_review'
                   AND r.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
+                  AND COALESCE(CAST(json_extract(r.payload_json, '$.build_generation') AS INTEGER), 0)
+                      = COALESCE(CAST(json_extract(b.payload_json, '$.build_generation') AS INTEGER), 0)
+                  AND json_extract(r.payload_json, '$.superseded_by_build_generation') IS NULL
               )
             ORDER BY b.updated_at ASC LIMIT ?
             """,
@@ -11942,17 +13645,16 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
     result["q09_portfolio_promotions"] = []
     result["q09_portfolio_promotions_skipped"] = []
     result["q09_portfolio_admissions"] = []
-    # 2026-05-23 OR3 — Qxx cascade map. Each phase's PASS promotes to the next.
-    # Q09 News Mode auto-defaults to Mode 3 (per Vault), no explicit PASS needed
-    # — so Q08 PASS cascades directly to Q10 (skipping the Q09 mode-selection
-    # step which is handled as a setfile patch in the Q10 runner).
+    # Q09_NEWS is a canonical, evidence-producing phase.  Q10 is created only
+    # after its CONFIG_LOCKED result can be paired with a PASS_PORTFOLIO sibling.
     cascade_phase_map = {
         "Q03": "Q04",
         "Q04": "Q05",
         "Q05": "Q06",
         "Q06": "Q07",
         "Q07": "Q08",
-        "Q08": "Q10",   # Q09 is auto-defaulted; Q10 is the closing per-(EA, sym) verdict
+        "Q08": "Q09_NEWS",
+        "Q09_NEWS": "Q10",
     }
     cascade_pass_verdicts = {
         "Q03": {"PASS"},
@@ -11961,6 +13663,7 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
         "Q06": {"PASS"},
         "Q07": {"PASS"},
         "Q08": {"PASS"},
+        "Q09_NEWS": {"CONFIG_LOCKED"},
         # Pre-rewrite keys retained inert for any orphan reads against the
         # empty post-wipe DB. These will never match new rows.
         "P3": {"PASS"},
@@ -12014,6 +13717,32 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                         "reason": "missing_setfile",
                     })
                     continue
+                q08_evidence_sha256: str | None = None
+                q10_dependency_context: dict[str, Any] | None = None
+                if next_phase == "Q09_NEWS":
+                    q08_evidence_sha256 = _work_item_evidence_sha256(wi)
+                    if not q08_evidence_sha256:
+                        result["cascade_promotions_skipped"].append({
+                            "ea_id": wi["ea_id"],
+                            "symbol": wi["symbol"],
+                            "from_phase": prev_phase,
+                            "to_phase": next_phase,
+                            "from_work_item_id": wi["id"],
+                            "reason": "q08_evidence_missing_or_unreadable",
+                        })
+                        continue
+                elif next_phase == "Q10":
+                    q10_dependency_context, dependency_reason = _q10_dependency_context(conn, wi)
+                    if q10_dependency_context is None:
+                        result["cascade_promotions_skipped"].append({
+                            "ea_id": wi["ea_id"],
+                            "symbol": wi["symbol"],
+                            "from_phase": prev_phase,
+                            "to_phase": next_phase,
+                            "from_work_item_id": wi["id"],
+                            "reason": dependency_reason,
+                        })
+                        continue
                 next_kind = next_phase.lower().replace(".", "")
                 parent = conn.execute(
                     "SELECT id, status FROM tasks WHERE kind=? "
@@ -12037,16 +13766,51 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                     _apply_phase_timeout_min(payload, next_phase)
                 if next_phase in {"Q05", "Q06", "Q07", "Q10"}:
                     _apply_q_phase_full_history_from(payload, next_phase)
-                conn.execute(
-                    """
+                contract_phase = next_phase in {"Q09_NEWS", "Q10"}
+                insert_sql = """
                     INSERT INTO work_items
                       (id, kind, phase, ea_id, symbol, setfile_path, status,
                        attempt_count, parent_task_id, payload_json, created_at, updated_at)
                     VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, ?, ?, ?, ?)
-                    """,
-                    (new_id, next_phase, wi["ea_id"], wi["symbol"], wi["setfile_path"],
-                     parent_id, json.dumps(payload, sort_keys=True), now, now),
+                """
+                insert_args = (
+                    new_id, next_phase, wi["ea_id"], wi["symbol"], wi["setfile_path"],
+                    parent_id, json.dumps(payload, sort_keys=True), now, now,
                 )
+                if not contract_phase:
+                    conn.execute(insert_sql, insert_args)
+                else:
+                    conn.execute("SAVEPOINT q09_contract_promotion")
+                    try:
+                        conn.execute(insert_sql, insert_args)
+                        if next_phase == "Q09_NEWS":
+                            _add_q08_input_dependency(
+                                conn,
+                                child_work_item_id=new_id,
+                                q08_work_item=wi,
+                                evidence_sha256=str(q08_evidence_sha256),
+                            )
+                        else:
+                            _bind_q10_dependencies(
+                                conn,
+                                q10_work_item_id=new_id,
+                                q09_news_work_item_id=str(wi["id"]),
+                                dependency_context=q10_dependency_context or {},
+                            )
+                    except (Q09NewsSchemaError, sqlite3.Error, KeyError) as exc:
+                        conn.execute("ROLLBACK TO q09_contract_promotion")
+                        conn.execute("RELEASE q09_contract_promotion")
+                        result["cascade_promotions_skipped"].append({
+                            "ea_id": wi["ea_id"],
+                            "symbol": wi["symbol"],
+                            "from_phase": prev_phase,
+                            "to_phase": next_phase,
+                            "from_work_item_id": wi["id"],
+                            "reason": f"dependency_contract_rejected:{exc}",
+                        })
+                        continue
+                    else:
+                        conn.execute("RELEASE q09_contract_promotion")
                 reopened_parent = False
                 if parent and parent["id"] not in reopened_parents and parent["status"] == "done":
                     conn.execute(
@@ -12123,7 +13887,7 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                 "q04_default_probe": True,
             })
         q09_promoted = _promote_q08_soft_fails_to_q09_portfolio(conn, result)
-        q09_admitted = _admit_q09_portfolio_passes(conn, result)
+        q09_admitted = 0
         if result["cascade_promotions"] or q09_promoted or q09_admitted:
             conn.commit()
 
@@ -13285,15 +15049,27 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
     actually the previous backtest task id (kept name for back-compat).
     """
     phase = phase_qid(phase)
-    _scope_guard("mt5.backtest.dispatch", tool="enqueue_backtest",
-                 args_summary=f"{review_task_id}:{phase}")
-    if phase not in SUPPORTED_BACKTEST_PHASES:
+    if factory_is_off(root):
         return {
             "enqueued": False,
-            "reason": f"Phase {phase} not yet supported. Supported: {SUPPORTED_BACKTEST_PHASES}",
+            "blocked": True,
+            "reason": "factory_off",
+            "phase": phase,
+            "factory_off_flag": str(factory_off_flag_path(root)),
         }
     init_db(root)
     with connect(root) as conn:
+        _scope_guard(
+            "mt5.backtest.dispatch",
+            tool="enqueue_backtest",
+            args_summary=f"{review_task_id}:{phase}",
+            conn=conn,
+        )
+        if phase not in SUPPORTED_BACKTEST_PHASES:
+            return {
+                "enqueued": False,
+                "reason": f"Phase {phase} not yet supported. Supported: {SUPPORTED_BACKTEST_PHASES}",
+            }
         pred_row = conn.execute("SELECT * FROM tasks WHERE id = ?", (review_task_id,)).fetchone()
         if pred_row is None:
             return {"enqueued": False, "reason": f"Predecessor task not found: {review_task_id}"}
@@ -13441,6 +15217,12 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
     older review-task enqueue path. This keeps the operator-facing command
     idempotent and avoids duplicate EA/symbol/phase rows.
     """
+    if str(phase or "").strip().upper() == "Q09":
+        return {
+            "enqueued": False,
+            "phase": "Q09",
+            "reason": "historical Q09 alias is read-only; use Q09_NEWS",
+        }
     if phase not in CASCADE_BACKTEST_PHASES:
         return {
             "enqueued": False,
@@ -13465,9 +15247,9 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
         "Q06": "Q05",
         "Q07": "Q06",
         "Q08": "Q07",
-        "Q09": "Q08",
+        "Q09_NEWS": "Q08",
         "Q09_PORTFOLIO": "Q08",
-        "Q10": "Q08",
+        "Q10": "Q09_NEWS",
         "P5": "P4",
         "P5b": "P5",
         "P5c": "P5",
@@ -13481,9 +15263,9 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
         "Q06": {"PASS"},
         "Q07": {"PASS"},
         "Q08": {"PASS", "MULTI_SEED_PASS"},  # Q07 = multi-seed phase
-        "Q09": {"PASS"},
+        "Q09_NEWS": {"PASS"},
         "Q09_PORTFOLIO": {"FAIL_SOFT"},
-        "Q10": {"PASS"},
+        "Q10": {"CONFIG_LOCKED"},
         "P5": {"PASS"},
         "P5b": {"PASS"},
         "P5c": {"PASS"},
@@ -13517,6 +15299,26 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                     "reason": "missing_setfile",
                 })
                 continue
+            q08_evidence_sha256: str | None = None
+            q10_dependency_context: dict[str, Any] | None = None
+            if phase in {"Q09_NEWS", "Q09_PORTFOLIO"}:
+                q08_evidence_sha256 = _work_item_evidence_sha256(prev)
+                if not q08_evidence_sha256:
+                    skipped.append({
+                        "id": prev["id"],
+                        "symbol": prev["symbol"],
+                        "reason": "q08_evidence_missing_or_unreadable",
+                    })
+                    continue
+            elif phase == "Q10":
+                q10_dependency_context, dependency_reason = _q10_dependency_context(conn, prev)
+                if q10_dependency_context is None:
+                    skipped.append({
+                        "id": prev["id"],
+                        "symbol": prev["symbol"],
+                        "reason": dependency_reason,
+                    })
+                    continue
             payload = _promotion_payload_with_basket_context(
                 prev,
                 {
@@ -13569,6 +15371,17 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                 (ea_id, phase, prev["symbol"], prev["setfile_path"]),
             ).fetchone()
             if existing:
+                if phase == "Q10":
+                    try:
+                        assert_q10_dependency_gate(conn, str(existing["id"]))
+                    except (Q09NewsSchemaError, sqlite3.Error) as exc:
+                        skipped.append({
+                            "id": existing["id"],
+                            "symbol": existing["symbol"],
+                            "status": existing["status"],
+                            "reason": f"existing_q10_dependency_contract_invalid:{exc}",
+                        })
+                        continue
                 if existing["status"] in {"pending", "active"}:
                     skipped.append({
                         "id": existing["id"],
@@ -13593,24 +15406,54 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                 requeued.append({"id": existing["id"], "symbol": existing["symbol"]})
                 continue
             wid = str(uuid.uuid4())
-            conn.execute(
-                """
+            contract_phase = phase in {"Q09_NEWS", "Q09_PORTFOLIO", "Q10"}
+            insert_sql = """
                 INSERT INTO work_items
                   (id, kind, phase, ea_id, symbol, setfile_path, status,
                    attempt_count, parent_task_id, payload_json, created_at, updated_at)
                 VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, NULL, ?, ?, ?)
-                """,
-                (
-                    wid,
-                    phase,
-                    ea_id,
-                    prev["symbol"],
-                    prev["setfile_path"],
-                    json.dumps(payload, sort_keys=True),
-                    now,
-                    now,
-                ),
+            """
+            insert_args = (
+                wid,
+                phase,
+                ea_id,
+                prev["symbol"],
+                prev["setfile_path"],
+                json.dumps(payload, sort_keys=True),
+                now,
+                now,
             )
+            if not contract_phase:
+                conn.execute(insert_sql, insert_args)
+            else:
+                conn.execute("SAVEPOINT q09_contract_enqueue")
+                try:
+                    conn.execute(insert_sql, insert_args)
+                    if phase in {"Q09_NEWS", "Q09_PORTFOLIO"}:
+                        _add_q08_input_dependency(
+                            conn,
+                            child_work_item_id=wid,
+                            q08_work_item=prev,
+                            evidence_sha256=str(q08_evidence_sha256),
+                        )
+                    else:
+                        _bind_q10_dependencies(
+                            conn,
+                            q10_work_item_id=wid,
+                            q09_news_work_item_id=str(prev["id"]),
+                            dependency_context=q10_dependency_context or {},
+                        )
+                except (Q09NewsSchemaError, sqlite3.Error, KeyError) as exc:
+                    conn.execute("ROLLBACK TO q09_contract_enqueue")
+                    conn.execute("RELEASE q09_contract_enqueue")
+                    skipped.append({
+                        "id": prev["id"],
+                        "symbol": prev["symbol"],
+                        "reason": f"dependency_contract_rejected:{exc}",
+                    })
+                    continue
+                else:
+                    conn.execute("RELEASE q09_contract_enqueue")
             created.append({"id": wid, "symbol": prev["symbol"], "setfile_path": prev["setfile_path"]})
         if created or requeued or skipped:
             event(
@@ -13743,11 +15586,11 @@ def _phase_runner_cmd(phase: str, ea_id: str, terminal: str | None = None,
                        surviving_symbols: list[str] | None = None,
                        out_prefix: Path | None = None,
                        setfile_path: str | None = None) -> list[str] | None:
-    """Return the subprocess argv for the runner of a given phase, or None.
+    """Build historical argv for diagnostics only; no spawn callsite remains.
 
-    P2 takes all setfiles in the EA dir; P3+ runs only on `surviving_symbols`
-    from the predecessor phase (P2 PASS symbols). When `terminal` is given
-    (P2-only path), pins p2_baseline to one terminal for fleet saturation.
+    MNT-046 permanently deprecated the parent-task dispatcher that consumed
+    this function. Current Factory processes must use
+    ``_phase_runner_cmd_for_work_item`` so UUID and selector lineage are exact.
     """
     phase_aliases = {
         "p3.5": "P3.5",
@@ -13963,34 +15806,13 @@ def _payload_assigned_terminal(payload: dict[str, Any]) -> str | None:
 
 
 def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
-    """Hybrid saturated dispatch (Achse B v2, OWNER 2026-05-16).
+    """Poll historical parent tasks without spawning new legacy runners.
 
-    Single-EA case (1 pending task, idle fleet) → run that EA on ALL installed factory terminals
-    via p2_baseline.py without --terminal arg (legacy mode, p2_baseline
-    distributes symbols across installed factory terminals in its own ThreadPoolExecutor). This
-    saturates the fleet WITHIN one EA.
-
-    Multi-EA case (≥2 pending tasks, or some terminals already busy) → assign
-    one EA per free terminal up to 5 concurrent. Each EA runs its symbols
-    sequentially on its assigned terminal (p2_baseline --terminal Tn). This
-    saturates the fleet ACROSS EAs.
-
-    Two complementary modes cover the throughput spectrum:
-    - Pipeline starting up / single-EA-in-flight → ALL mode (5x faster per EA)
-    - Pipeline saturated / many EAs queued → per-terminal mode (5x EAs in parallel)
-
-    Order of operations:
-    1. Poll every active backtest task. If its report.csv exists, classify
-       and mark done. If older than timeout_hours with no report, mark failed.
-       For ALL-mode tasks, mark all 5 terminals busy while running.
-    2. Decide mode:
-       - If exactly 1 pending task AND 0 busy terminals → spawn in ALL mode
-       - Else → assign one task per free terminal
-       Spawn the phase runner accordingly, record assignment in task payload.
-
-    HR16-saturate: at the EA level, multiple EAs can be in P2 concurrently
-    via per-terminal mode. HR16-strict still holds at the source-research
-    level (one active source for mining).
+    MNT-046 deprecated both historical direct-spawn modes because their argv
+    cannot satisfy the exact work-item UUID and non-live terminal lineage
+    contract.  Existing active rows are still polled to completion/timeout;
+    pending parent rows stay visible and must be materialized into work_items.
+    All current spawning is owned by ``dispatch_work_items``.
     """
     init_db(root)
     actions: list[dict[str, Any]] = []
@@ -14199,144 +16021,28 @@ def dispatch_tick(root: Path, timeout_hours: float = 6.0) -> dict[str, Any]:
             "ORDER BY t.created_at"
         ).fetchall()
 
-        # Hybrid: single-EA-in-flight + idle fleet → ALL mode (full saturation
-        # within one EA, p2_baseline distributes its symbols across installed factory terminals).
-        # Else: per-terminal mode (multi-EA saturates across EAs).
-        use_all_mode = (
-            len(pending_rows) == 1
-            and len(busy_terminals) == 0
-            and len(free_terminals) == len(factory_terminals)
-            and len(factory_terminals) > 0
-        )
-        dispatch_mode = "single_ea_all_terminals" if use_all_mode else "per_terminal"
-
-        if use_all_mode:
-            pending_row = pending_rows[0]
-            payload = json.loads(pending_row["payload_json"])
-            phase = payload.get("phase")
-            ea_id = payload.get("ea_id")
-            surviving_symbols = payload.get("surviving_symbols")
-            cmd = _phase_runner_cmd(phase, ea_id, terminal=None, surviving_symbols=surviving_symbols)  # no --terminal = all installed factory terminals
-            if cmd is None:
-                update_task(
-                    conn,
-                    pending_row["id"],
-                    status="failed",
-                    payload_merge={"failure_reason": f"no runner for phase {phase}"},
-                )
-                actions.append({
-                    "task_id": pending_row["id"],
-                    "action": "no_runner",
-                    "phase": phase,
-                    "ea_id": ea_id,
-                })
-            else:
-                log_path = root / "logs" / f"dispatch_{pending_row['id']}.log"
-                log_path.parent.mkdir(parents=True, exist_ok=True)
-                creationflags = 0
-                if sys.platform == "win32":
-                    creationflags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS  # type: ignore[attr-defined]
-                log_fh = open(log_path, "w", encoding="utf-8")
-                env = {**os.environ, "PYTHONPATH": str(REPO_ROOT)}
-                proc = subprocess.Popen(
-                    cmd,
-                    cwd=str(REPO_ROOT),
-                    stdout=log_fh,
-                    stderr=subprocess.STDOUT,
-                    creationflags=creationflags,
-                    close_fds=True,
-                    env=env,
-                )
-                update_task(
-                    conn,
-                    pending_row["id"],
-                    status="active",
-                    payload_merge={
-                        "started_at_iso": started_iso,
-                        "pid": proc.pid,
-                        "log_path": str(log_path),
-                        "cmd": cmd,
-                        "assigned_terminal": "ALL",
-                        "dispatch_mode": "single_ea_all_terminals",
-                    },
-                )
-                busy_terminals.update(factory_terminals)
-                actions.append({
-                    "task_id": pending_row["id"],
-                    "action": "started",
-                    "phase": phase,
-                    "ea_id": ea_id,
-                    "terminal": "ALL",
-                    "mode": "single_ea_all_terminals",
-                    "pid": proc.pid,
-                    "log_path": str(log_path),
-                })
-        else:
-            # Per-terminal mode: 1 EA per free terminal
-            for terminal in free_terminals:
-                if not pending_rows:
-                    break
-                pending_row = pending_rows.pop(0)
-                payload = json.loads(pending_row["payload_json"])
-                phase = payload.get("phase")
-                ea_id = payload.get("ea_id")
-                surviving_symbols = payload.get("surviving_symbols")
-                cmd = _phase_runner_cmd(phase, ea_id, terminal=terminal, surviving_symbols=surviving_symbols)
-                if cmd is None:
-                    update_task(
-                        conn,
-                        pending_row["id"],
-                        status="failed",
-                        payload_merge={"failure_reason": f"no runner for phase {phase}"},
-                    )
-                    actions.append({
-                        "task_id": pending_row["id"],
-                        "action": "no_runner",
-                        "phase": phase,
-                        "ea_id": ea_id,
-                    })
-                    continue
-
-                log_path = root / "logs" / f"dispatch_{pending_row['id']}.log"
-                log_path.parent.mkdir(parents=True, exist_ok=True)
-                creationflags = 0
-                if sys.platform == "win32":
-                    creationflags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS  # type: ignore[attr-defined]
-                log_fh = open(log_path, "w", encoding="utf-8")
-                env = {**os.environ, "PYTHONPATH": str(REPO_ROOT)}
-                proc = subprocess.Popen(
-                    cmd,
-                    cwd=str(REPO_ROOT),
-                    stdout=log_fh,
-                    stderr=subprocess.STDOUT,
-                    creationflags=creationflags,
-                    close_fds=True,
-                    env=env,
-                )
-                update_task(
-                    conn,
-                    pending_row["id"],
-                    status="active",
-                    payload_merge={
-                        "started_at_iso": started_iso,
-                        "pid": proc.pid,
-                        "log_path": str(log_path),
-                        "cmd": cmd,
-                        "assigned_terminal": terminal,
-                        "dispatch_mode": "per_terminal",
-                    },
-                )
-                busy_terminals.add(terminal)
-                actions.append({
-                    "task_id": pending_row["id"],
-                    "action": "started",
-                    "phase": phase,
-                    "ea_id": ea_id,
-                    "terminal": terminal,
-                    "mode": "per_terminal",
-                    "pid": proc.pid,
-                    "log_path": str(log_path),
-                })
+        # MNT-046: the bundled parent-task dispatcher is permanently fail-
+        # closed.  It cannot bind every legacy runner to one direct work-item
+        # UUID and one non-live terminal (the historical ALL mode had neither,
+        # and P3 used ``python -m``).  Pump materializes Q02 parents into
+        # work_items; later phases are created by the work-item cascade.  Keep
+        # orphaned legacy parents pending and visible for explicit migration,
+        # but never create another autonomous process from this path.
+        dispatch_mode = "legacy_direct_spawn_deprecated"
+        for pending_row in pending_rows:
+            try:
+                payload = json.loads(pending_row["payload_json"] or "{}")
+            except (TypeError, json.JSONDecodeError):
+                payload = {}
+            actions.append({
+                "task_id": pending_row["id"],
+                "action": "legacy_direct_spawn_blocked",
+                "reason": "work_item_uuid_lineage_required",
+                "phase": payload.get("phase"),
+                "ea_id": payload.get("ea_id"),
+                "migration": "materialize_work_items",
+                "all_mode_disabled": True,
+            })
 
     return {
         "scanned_at": started_iso,
@@ -14558,6 +16264,16 @@ def approve_card(root: Path, card_path_str: str, reasoning: str,
     ea_id = fm.get("ea_id")
     if not ea_id:
         return {"approved": False, "reason": "Card frontmatter missing ea_id"}
+
+    r_gate_consistency = strategy_card_r_gate_consistency(card_path, fm)
+    if not r_gate_consistency["ok"]:
+        return {
+            "approved": False,
+            "reason": "r_gate_body_frontmatter_conflict",
+            "issues": r_gate_consistency["errors"],
+            "r_gate": r_gate_consistency,
+            "card_path": str(card_path),
+        }
 
     contract_issues = _approval_card_contract_issues(card_path, fm)
     if contract_issues:
@@ -15159,18 +16875,114 @@ def _validate_ea_strategy_entry(build_result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str, Any]:
+def record_build_result(
+    root: Path,
+    task_id: str,
+    result_file: str,
+    *,
+    allow_factory_off: bool = False,
+    expected_factory_off_sha256: str | None = None,
+) -> dict[str, Any]:
     """Read Codex's build result JSON, transition the build_ea task."""
+    off_flag = factory_off_flag_path(root)
+    if factory_is_off(root):
+        actual_flag_sha = _sha256_file(off_flag)
+        expected_flag_sha = str(expected_factory_off_sha256 or "").strip().lower()
+        if not allow_factory_off:
+            return {
+                "recorded": False,
+                "reason": "factory_off",
+                "factory_off_flag": str(off_flag),
+                "factory_off_sha256": actual_flag_sha,
+            }
+        if not expected_flag_sha or expected_flag_sha != actual_flag_sha.lower():
+            return {
+                "recorded": False,
+                "reason": "factory_off_override_hash_mismatch",
+                "factory_off_flag": str(off_flag),
+                "factory_off_sha256": actual_flag_sha,
+            }
     init_db(root)
     rp = Path(result_file).resolve()
     if not rp.exists():
         return {"recorded": False, "reason": f"Result file not found: {rp}"}
+    if ".codex_review_fail_attempt_" in rp.name:
+        return {"recorded": False, "reason": "archived_build_result_is_not_recordable", "path": str(rp)}
     try:
         result = json.loads(rp.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         return {"recorded": False, "reason": f"Invalid JSON in {rp}: {exc}"}
 
-    result.setdefault("task_id", task_id)
+    with connect(root) as conn:
+        task_row = conn.execute("SELECT * FROM tasks WHERE id=?", (task_id,)).fetchone()
+    if task_row is None:
+        return {"recorded": False, "reason": f"Task not found: {task_id}"}
+    if task_row["kind"] != "build_ea":
+        return {
+            "recorded": False,
+            "reason": f"Task {task_id} kind={task_row['kind']!r}, expected build_ea",
+        }
+    task_payload = json.loads(task_row["payload_json"] or "{}")
+    result_task_id = str(result.get("task_id") or "").strip()
+    if result_task_id and result_task_id != str(task_id):
+        return {
+            "recorded": False,
+            "reason": "build_result_task_id_mismatch",
+            "expected_task_id": task_id,
+            "result_task_id": result_task_id,
+        }
+    result["task_id"] = task_id
+    expected_generation = _build_generation(task_payload)
+    if _build_generation(result) != expected_generation:
+        return {
+            "recorded": False,
+            "reason": "build_generation_mismatch",
+            "expected_build_generation": expected_generation,
+            "result_build_generation": _build_generation(result),
+        }
+    expected_attempt_token = str(task_payload.get("build_attempt_token") or "").strip()
+    if expected_attempt_token:
+        actual_attempt_token = str(result.get("build_attempt_token") or "").strip()
+        if actual_attempt_token != expected_attempt_token:
+            return {
+                "recorded": False,
+                "reason": "build_attempt_token_mismatch",
+                "expected_build_generation": expected_generation,
+            }
+        expected_result_path = Path(str(task_payload.get("build_result_path") or ""))
+        if expected_result_path and not _same_path(rp, expected_result_path):
+            return {
+                "recorded": False,
+                "reason": "build_result_path_mismatch",
+                "expected_path": str(expected_result_path),
+                "actual_path": str(rp),
+            }
+    initial_result_sha256 = _sha256_file(rp)
+    prior_result_sha256 = str(task_payload.get("build_result_sha256") or "").strip().lower()
+    if task_row["status"] == "done" and prior_result_sha256 == initial_result_sha256.lower():
+        return {
+            "recorded": True,
+            "already_recorded": True,
+            "task_id": task_id,
+            "new_status": "done",
+            "build_result_sha256": initial_result_sha256,
+            "auto_q02_enqueued": task_payload.get("auto_q02_enqueued"),
+        }
+    if task_row["status"] not in ("pending", "active"):
+        return {
+            "recorded": False,
+            "reason": "build_task_not_recordable",
+            "task_status": task_row["status"],
+        }
+    if task_row["status"] == "pending":
+        pending_guard = _build_task_claim_guard(root, task_row, require_card=False)
+        if not pending_guard.get("claimable"):
+            return {
+                "recorded": False,
+                "reason": f"build_task_not_recordable:{pending_guard.get('code')}",
+                "task_status": task_row["status"],
+                "claim_guard": pending_guard,
+            }
     blocked = result.get("blocked_reason")
     smoke = result.get("smoke_result")
     smoke_framework_error_after_good_build = (
@@ -15198,6 +17010,9 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
     payload_merge: dict[str, Any] = {
         "build_result_path": str(rp),
         "codex_result": result,
+        "build_generation": expected_generation,
+        "build_attempt_token": expected_attempt_token or None,
+        "codex_review_rework": False,
     }
     if fail_code:
         payload_merge["fail_code"] = fail_code
@@ -15269,6 +17084,10 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
         auto_q02 = _auto_enqueue_q02_for_build(root, result)
         payload_merge["auto_q02_enqueued"] = auto_q02
 
+    payload_merge["build_result_sha256"] = _sha256_file(rp)
+    payload_merge["build_recorded_at"] = utc_now()
+    payload_merge["recorded_during_factory_off_override"] = bool(factory_is_off(root))
+
     with connect(root) as conn:
         updated = update_task(conn, task_id, status=new_status, payload_merge=payload_merge)
     if updated is None:
@@ -15284,7 +17103,9 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
         "next_action_hint": (
             f"Q02 auto-enqueued ({len(auto_q02.get('enqueued', [])) if auto_q02 else 0} work_items); "
             f"worker daemons will dispatch on next tick"
-            if new_status == "done" and auto_q02
+            if new_status == "done" and auto_q02 and auto_q02.get("enqueued")
+            else "Q02 blocked by FACTORY_OFF; enqueue only after the coordinated restart gate"
+            if new_status == "done" and auto_q02 and auto_q02.get("reason") == "factory_off"
             else f"python tools/strategy_farm/farmctl.py claude-review-prompt --build-task-id {task_id}"
             if new_status == "done" else f"Build failed/blocked. Inspect {rp} and rework or escalate."
         ),
@@ -15408,6 +17229,16 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
 
     Returns {"enqueued": [{...}], "skipped": [{...}]} for observability.
     """
+    if factory_is_off(root):
+        flag = factory_off_flag_path(root)
+        return {
+            "enqueued": [],
+            "skipped": [],
+            "reason": "factory_off",
+            "factory_off_flag": str(flag),
+            "factory_off_sha256": _sha256_file(flag),
+        }
+
     ea_id = build_result.get("ea_id")
     setfiles = build_result.get("setfiles_generated") or []
     if not ea_id or not setfiles:
@@ -15647,6 +17478,7 @@ def render_claude_review_prompt(root: Path, build_task_id: str, out_path: str | 
             card_id=row["card_id"],
             payload={
                 "build_task_id": build_task_id,
+                "build_generation": _build_generation(payload),
                 "ea_id": payload.get("ea_id"),
                 "card_path": payload.get("card_path"),
                 "mq5_path": codex_result.get("mq5_path"),
@@ -15917,9 +17749,25 @@ def reserve_ea_ids(
     the historical race where parallel agents each read "highest ID" and append
     colliding rows.
     """
-    _scope_guard("registry.reserve_ea_ids", tool="reserve_ea_ids",
-                 args_summary=f"{owner}:{len(slugs)} slugs")
-    del root  # registry is repo-scoped, not runtime-root scoped.
+    # The registry is repo-scoped, but the authorization audit is explicitly
+    # bound to the caller-supplied farm root. Never let agent_scopes fall back to
+    # DEFAULT_ROOT (which can leak a temp/test audit into production runtime).
+    init_db(root)
+    with connect(root) as audit_conn:
+        try:
+            _scope_guard(
+                "registry.reserve_ea_ids",
+                tool="reserve_ea_ids",
+                args_summary=f"{owner}:{len(slugs)} slugs",
+                conn=audit_conn,
+            )
+        except Exception:
+            # ScopeDenied still needs its DENY record durably committed to this
+            # explicit sink before the exception propagates.
+            audit_conn.commit()
+            raise
+        else:
+            audit_conn.commit()
     cleaned_slugs = [str(slug).strip() for slug in slugs if str(slug).strip()]
     if not cleaned_slugs:
         return {"reserved": False, "reason": "no_slugs_provided"}
@@ -16033,6 +17881,15 @@ def build_parser() -> argparse.ArgumentParser:
     record_build = sub.add_parser("record-build", help="Record Codex build result JSON into the build_ea task")
     record_build.add_argument("--task-id", required=True)
     record_build.add_argument("--result-file", required=True, help="Path to Codex's build result JSON")
+    record_build.add_argument(
+        "--allow-factory-off",
+        action="store_true",
+        help="Permit only the build-record transition while OFF; Q02 remains blocked. Requires --expected-factory-off-sha256.",
+    )
+    record_build.add_argument(
+        "--expected-factory-off-sha256",
+        help="Exact SHA-256 of the current FACTORY_OFF.flag for a hash-bound one-shot.",
+    )
 
     review_prompt = sub.add_parser(
         "claude-review-prompt", help="Create an ea_review task and render the Claude EA-review prompt"
@@ -16162,10 +18019,25 @@ def build_parser() -> argparse.ArgumentParser:
 # (2026-07-03 mass false-invalidation incident, 5167 work_items).
 _CANONICAL_CHECKOUT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
 _STATE_MUTATING_COMMANDS = frozenset({
-    "pump", "repair", "dispatch-tick", "tick", "backfill-work-items",
+    "init", "pump", "repair", "dispatch-tick", "tick", "backfill-work-items",
     "enqueue-backtest", "approve-card", "reidentify-recovery-card",
-    "reject-card", "seed-sources",
+    "reject-card", "seed-sources", "record-build", "record-review",
+    "claude-prompt", "build-ea", "claude-review-prompt", "claim-source", "set-source-status",
+    "reserve-ea-ids", "reserve-terminal", "release-terminal",
+    "resume-mining", "add-source",
 })
+
+
+def _command_mutates_state(args: argparse.Namespace) -> bool:
+    if args.command in _STATE_MUTATING_COMMANDS:
+        return True
+    if args.command == "reconcile-mt5":
+        return bool(args.fix_workers or args.fix_orphan_terminals)
+    if args.command == "ea-metrics":
+        return not bool(getattr(args, "no_build", False))
+    if args.command == "fund-score":
+        return bool(getattr(args, "refresh_cache", False))
+    return False
 
 
 def _assert_canonical_checkout(command: str = "state-mutating command") -> None:
@@ -16198,8 +18070,19 @@ def main(argv: list[str] | None = None) -> int:
     # those overrides. This attributes pump/controller actions correctly in the
     # agent_audit trail and is the prerequisite for later flipping unknown->fail-closed.
     os.environ.setdefault("QM_AGENT_ID", "controller")
-    if args.command in _STATE_MUTATING_COMMANDS:
+    mutates_state = _command_mutates_state(args)
+    if mutates_state:
         _assert_canonical_checkout(args.command)
+    if mutates_state and args.command != "record-build" and factory_is_off(root):
+        flag = factory_off_flag_path(root)
+        print_json({
+            "blocked": True,
+            "reason": "factory_off",
+            "command": args.command,
+            "factory_off_flag": str(flag),
+            "factory_off_sha256": _sha256_file(flag),
+        })
+        return 3
 
     if args.command == "init":
         init_db(root)
@@ -16223,6 +18106,7 @@ def main(argv: list[str] | None = None) -> int:
         print_json(_health_run_all())
     elif args.command == "repair":
         _assert_canonical_checkout()
+        init_db(root)
         try:
             from repair import run_all as _repair_run_all
         except ImportError:
@@ -16260,7 +18144,13 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "build-ea":
         print_json(render_codex_build_prompt(root, args.card, args.out))
     elif args.command == "record-build":
-        print_json(record_build_result(root, args.task_id, args.result_file))
+        print_json(record_build_result(
+            root,
+            args.task_id,
+            args.result_file,
+            allow_factory_off=args.allow_factory_off,
+            expected_factory_off_sha256=args.expected_factory_off_sha256,
+        ))
     elif args.command == "claude-review-prompt":
         print_json(render_claude_review_prompt(root, args.build_task_id, args.out))
     elif args.command == "record-review":
