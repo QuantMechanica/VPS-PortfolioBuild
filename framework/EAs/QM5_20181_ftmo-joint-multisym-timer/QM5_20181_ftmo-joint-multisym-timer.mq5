@@ -173,6 +173,10 @@ struct QM_JT_Sat
    int             kind;        // strategy-family id (unimplemented in step 1)
    double          risk_fixed;
    datetime        last_closed_bar;
+   long            last_observed_tick_msc;
+   datetime        news_bar_time;
+   bool            news_evaluated;
+   bool            news_allows;
    int             target_state;
    bool            state_valid;
   };
@@ -314,9 +318,14 @@ int OnInit()
       g_sats[sat_index].magic = QM_FrameworkRegisterMagicSymbol(qm_ea_id, 1, s1_symbol);
       g_sats[sat_index].kind = 10145;
       g_sats[sat_index].risk_fixed = s1_risk_fixed;
-      const string bar_key = StringFormat("QM.20181.1.%s.lastbar", s1_symbol);
-      g_sats[sat_index].last_closed_bar = GlobalVariableCheck(bar_key)
-                                  ? (datetime)GlobalVariableGet(bar_key) : 0;
+      // BACKTEST-only state is deliberately process-local.  Terminal global
+      // variables survive independent tester runs and made an identical replay
+      // depend on which run had used the terminal before it.
+      g_sats[sat_index].last_closed_bar = 0;
+      g_sats[sat_index].last_observed_tick_msc = 0;
+      g_sats[sat_index].news_bar_time = 0;
+      g_sats[sat_index].news_evaluated = false;
+      g_sats[sat_index].news_allows = false;
       g_sats[sat_index].target_state = 0;
       g_sats[sat_index].state_valid = false;
       if(g_sats[sat_index].magic <= 0)
@@ -325,9 +334,10 @@ int OnInit()
      }
    if(s2_enabled)
      {
-      if(s2_symbol == "" || s2_symbol == host_symbol || s2_symbol == s1_symbol ||
-         s2_risk_fixed <= 0.0 || s2_momentum_days < 2 ||
+      if(s2_symbol != "XTIUSD.DWX" || s2_symbol == host_symbol || s2_symbol == s1_symbol ||
+         s2_risk_fixed <= 0.0 || s2_momentum_days < 2 || s2_momentum_days > 250 ||
          s2_partial_moment_days != 5 || s2_percentile_history < 100 ||
+         s2_percentile_history > 1000 ||
          s2_tail_percentile != 80.0 || s2_atr_period <= 1 ||
          s2_atr_sl_mult <= 0.0 || s2_max_hold_days <= 0 ||
          s2_max_hold_days > 14 || s2_max_spread_points < 0)
@@ -335,7 +345,8 @@ int OnInit()
       if(!SymbolSelect(s2_symbol, true))
          return INIT_FAILED;
       double warmup2[];
-      const int required = s2_percentile_history + s2_partial_moment_days + 1;
+      const int required = MathMax(s2_momentum_days + 1,
+                                   s2_percentile_history + s2_partial_moment_days + 1);
       if(CopyClose(s2_symbol, PERIOD_D1, 1, required, warmup2) != required)
          return INIT_FAILED;
       g_sats[sat_index].slot = 2;
@@ -344,9 +355,13 @@ int OnInit()
       g_sats[sat_index].magic = QM_FrameworkRegisterMagicSymbol(qm_ea_id, 2, s2_symbol);
       g_sats[sat_index].kind = 13108;
       g_sats[sat_index].risk_fixed = s2_risk_fixed;
-      const string bar_key2 = StringFormat("QM.20181.2.%s.lastbar", s2_symbol);
-      g_sats[sat_index].last_closed_bar = GlobalVariableCheck(bar_key2)
-                                         ? (datetime)GlobalVariableGet(bar_key2) : 0;
+      // Tester runs must be replay-independent.  Terminal global variables
+      // survive independent passes and would poison the first D1 decision.
+      g_sats[sat_index].last_closed_bar = 0;
+      g_sats[sat_index].last_observed_tick_msc = 0;
+      g_sats[sat_index].news_bar_time = 0;
+      g_sats[sat_index].news_evaluated = false;
+      g_sats[sat_index].news_allows = false;
       g_sats[sat_index].target_state = 0;
       g_sats[sat_index].state_valid = false;
       if(g_sats[sat_index].magic <= 0)
@@ -395,34 +410,141 @@ bool QM20181_HasPosition(const QM_JT_Sat &sat, ulong &ticket)
    return false;
   }
 
-double QM20181_MeanReturn(const string symbol)
-  {
+bool QM20181_10145FreshD1Tick(QM_JT_Sat &sat,
+                              datetime &broker_now,
+                              datetime &current_bar)
+   {
+   broker_now = 0;
+   current_bar = 0;
+
+   MqlTick tick;
+   if(!SymbolInfoTick(sat.symbol, tick))
+      return false;
+
+   const long tick_msc = (tick.time_msc > 0)
+                         ? tick.time_msc
+                         : ((long)tick.time * 1000);
+   if(tick_msc <= 0 || tick_msc <= sat.last_observed_tick_msc)
+      return false;
+   sat.last_observed_tick_msc = tick_msc;
+
+   // A host-clock timer can fire before the first XAUUSD tick of a new broker
+   // day.  Do not consume the D1 new-bar latch or submit at the nominal 01:00
+   // boundary on a stale quote.  The first timer observation of a genuinely new
+   // XAUUSD tick is the reproducible non-host equivalent of standalone OnTick.
+   current_bar = iTime(sat.symbol, PERIOD_D1, 0);
+   if(current_bar <= 0 || tick.time < current_bar)
+      return false;
+
+   broker_now = tick.time;
+   return (broker_now > 0);
+   }
+
+bool QM20181_10145NewsAllows(QM_JT_Sat &sat,
+                             const datetime current_bar,
+                             const datetime broker_now)
+   {
+   // Standalone 10145 runs on a D1 chart, so the framework's FW1 verdict is
+   // cached for the whole D1 bar.  The joint chart is H1: snapshot the same
+   // first-XAU-tick verdict locally instead of accidentally re-evaluating it on
+   // every host H1 bar.  NEWS_ONLY retains its legacy per-tick semantics.
+   const bool axes_active =
+      (qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
+       qm_news_compliance != QM_NEWS_COMPLIANCE_NONE);
+   if(!axes_active && qm_news_mode_legacy == QM_NEWS_NEWS_ONLY)
+      return QM_NewsAllowsTrade(sat.symbol, broker_now, qm_news_mode_legacy);
+
+   if(sat.news_bar_time != current_bar)
+     {
+      sat.news_bar_time = current_bar;
+      sat.news_evaluated = false;
+      sat.news_allows = false;
+     }
+   if(sat.news_evaluated)
+      return sat.news_allows;
+
+   if(axes_active)
+      sat.news_allows = QM_NewsAllowsTrade2(sat.symbol, broker_now,
+                                            qm_news_temporal,
+                                            qm_news_compliance);
+   else
+      sat.news_allows = QM_NewsAllowsTrade(sat.symbol, broker_now,
+                                           qm_news_mode_legacy);
+   sat.news_evaluated = true;
+   return sat.news_allows;
+   }
+
+bool QM20181_10145MeanReturn(const string symbol, double &mean_return)
+   {
+   mean_return = 0.0;
+   if(s1_lookback_n <= 0)
+      return false;
    const double recent = iClose(symbol, PERIOD_D1, 1);
    const double old = iClose(symbol, PERIOD_D1, 1 + s1_lookback_n);
-   if(recent <= 0.0 || old <= 0.0 || s1_lookback_n <= 0)
-      return 0.0;
-   return MathLog(recent / old) / (double)s1_lookback_n;
-  }
+   if(recent <= 0.0 || old <= 0.0)
+      return false;
+   mean_return = MathLog(recent / old) / (double)s1_lookback_n;
+   return MathIsValidNumber(mean_return);
+   }
 
 void QM20181_Run10145(QM_JT_Sat &sat)
-  {
-   const datetime closed_bar = iTime(sat.symbol, PERIOD_D1, 1);
-   if(closed_bar <= 0 || closed_bar == sat.last_closed_bar)
+   {
+   if(sat.tf != PERIOD_D1 || s1_lookback_n <= 0)
       return;
-   sat.last_closed_bar = closed_bar;
-   GlobalVariableSet(StringFormat("QM.20181.%d.%s.lastbar", sat.slot, sat.symbol),
-                     (double)closed_bar);
 
-   const double mean_return = QM20181_MeanReturn(sat.symbol);
-   ulong ticket = 0;
-   if(QM20181_HasPosition(sat, ticket))
+   datetime broker_now = 0;
+   datetime current_bar = 0;
+   if(!QM20181_10145FreshD1Tick(sat, broker_now, current_bar))
+      return;
+
+   // Same gate order as standalone 10145: kill (OnTimer caller) -> FW1 news ->
+   // Friday close -> manage/exit -> canonical per-symbol D1 new-bar latch.  A
+   // blocked gate never consumes the entry event.  The local FW1 snapshot above
+   // preserves standalone's D1 cache despite the joint host being H1.
+   if(!QM20181_10145NewsAllows(sat, current_bar, broker_now))
+      return;
+   if(QM_FrameworkFridayCloseNow(broker_now))
      {
-      const ENUM_POSITION_TYPE side = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if((side == POSITION_TYPE_BUY && mean_return <= 0.0) ||
-         (side == POSITION_TYPE_SELL && s1_shorts_enabled && mean_return > 0.0))
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+      // The host normally reaches the same shared close first.  Calling the
+      // idempotent handler here also preserves standalone behaviour when the
+      // non-host XAUUSD tick is the first observable Friday-close event.
+      QM_FrameworkHandleFridayClose();
       return;
      }
+
+   const datetime closed_bar = iTime(sat.symbol, PERIOD_D1, 1);
+   double mean_return = 0.0;
+   const bool mean_valid = QM20181_10145MeanReturn(sat.symbol, mean_return);
+
+   ulong ticket = 0;
+   if(mean_valid && QM20181_HasPosition(sat, ticket))
+     {
+      const ENUM_POSITION_TYPE position_side =
+         (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const bool should_close =
+         (position_side == POSITION_TYPE_BUY && mean_return <= 0.0) ||
+         (position_side == POSITION_TYPE_SELL && s1_shorts_enabled && mean_return > 0.0);
+      if(should_close)
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+      }
+
+   // Standalone evaluates the exit on every symbol tick BEFORE consuming the
+   // new-bar event.  This also lets a failed close retry on later XAUUSD ticks,
+   // while preventing a delayed same-day entry because the bar was consumed.
+   if(!QM_IsNewBar(sat.symbol, PERIOD_D1))
+      return;
+   if(closed_bar <= 0 || !mean_valid)
+      return;
+   sat.last_closed_bar = closed_bar;
+
+   // Standalone closes an opposite position before its new-bar entry hook and
+   // may therefore reverse on that same first tradable tick.  Re-check the
+   // explicit satellite identity before reproducing that entry behaviour.
+   if(QM20181_HasPosition(sat, ticket))
+      return;
+
+   if(s1_atr_period <= 0 || s1_atr_stop_mult <= 0.0)
+      return;
 
    const double threshold = MathMax(0.0, s1_min_abs_mean_return);
    QM_OrderType side = QM_BUY;
@@ -434,9 +556,20 @@ void QM20181_Run10145(QM_JT_Sat &sat)
       return;
 
    const double entry = QM_BasketMarketPrice(sat.symbol, side);
-   const double sl = QM_StopATR(sat.symbol, side, entry, s1_atr_period, s1_atr_stop_mult);
+   if(entry <= 0.0)
+      return;
+
+   // QM_StopATR resolves PERIOD_CURRENT, which is the host H1 chart in 20181.
+   // Standalone 10145 is D1; bind the same closed D1 ATR explicitly.
+   const double atr = QM_ATR(sat.symbol, PERIOD_D1, s1_atr_period, 1);
+   const double sl = QM_StopATRFromValue(sat.symbol, side, entry, atr,
+                                         s1_atr_stop_mult);
    const double point = SymbolInfoDouble(sat.symbol, SYMBOL_POINT);
-   if(entry <= 0.0 || sl <= 0.0 || point <= 0.0)
+   if(atr <= 0.0 || sl <= 0.0 || point <= 0.0)
+      return;
+   if(side == QM_BUY && sl >= entry)
+      return;
+   if(side == QM_SELL && sl <= entry)
       return;
 
    QM_BasketOrderRequest req;
@@ -445,13 +578,42 @@ void QM20181_Run10145(QM_JT_Sat &sat)
    req.price = 0.0;
    req.sl = sl;
    req.tp = 0.0;
-   req.lots = QM_LotsForRisk(sat.symbol, MathAbs(entry - sl) / point,
-                             QM_RISK_MODE_FIXED, sat.risk_fixed);
+   const ENUM_ORDER_TYPE margin_order_type = QM_OrderTypeIsBuy(side)
+                                              ? ORDER_TYPE_BUY
+                                              : ORDER_TYPE_SELL;
+   req.lots = QM_LotsForRiskAtEntry(sat.symbol,
+                                     MathAbs(entry - sl) / point,
+                                     margin_order_type,
+                                     entry,
+                                     QM_RISK_MODE_FIXED,
+                                     sat.risk_fixed);
    req.reason = (side == QM_BUY) ? "TSM_MEANRET_LONG" : "TSM_MEANRET_SHORT";
    req.symbol_slot = sat.slot;
    req.expiration_seconds = 0;
    if(req.lots > 0.0)
       QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, req, ticket);
+  }
+
+bool QM20181_13108LoadClosedCloses(const string symbol, double &closes[])
+  {
+   const int momentum_required = s2_momentum_days + 1;
+   const int percentile_required = s2_percentile_history
+                                   + s2_partial_moment_days + 1;
+   const int required = MathMax(momentum_required, percentile_required);
+   if(required <= 0)
+      return false;
+
+   ArrayResize(closes, required);
+   ArraySetAsSeries(closes, true);
+   if(CopyClose(symbol, PERIOD_D1, 1, required, closes) != required)
+      return false;
+
+   for(int i = 0; i < required; ++i)
+     {
+      if(closes[i] <= 0.0 || !MathIsValidNumber(closes[i]))
+         return false;
+     }
+   return true;
   }
 
 bool QM20181_13108PartialMoments(const double &closes[],
@@ -461,32 +623,58 @@ bool QM20181_13108PartialMoments(const double &closes[],
   {
    upm = 0.0;
    lpm = 0.0;
+   if(base_shift < 1 || s2_partial_moment_days <= 0)
+      return false;
+
    for(int j = 0; j < s2_partial_moment_days; ++j)
      {
       const int current_index = base_shift + j - 1;
       const int prior_index = current_index + 1;
-      if(current_index < 0 || prior_index >= ArraySize(closes))
+      if(prior_index >= ArraySize(closes))
          return false;
-      const double daily_return = closes[current_index] / closes[prior_index] - 1.0;
+
+      const double current_close = closes[current_index];
+      const double prior_close = closes[prior_index];
+      if(current_close <= 0.0 || prior_close <= 0.0)
+         return false;
+
+      const double daily_return = current_close / prior_close - 1.0;
       if(!MathIsValidNumber(daily_return))
          return false;
+      const double squared = daily_return * daily_return;
       if(daily_return > 0.0)
-         upm += daily_return * daily_return;
+         upm += squared;
       else if(daily_return < 0.0)
-         lpm += daily_return * daily_return;
+         lpm += squared;
      }
+
    upm /= s2_partial_moment_days;
    lpm /= s2_partial_moment_days;
-   return true;
+   return MathIsValidNumber(upm) && MathIsValidNumber(lpm);
   }
 
-double QM20181_13108Percentile(double &values[])
+bool QM20181_13108MomentumReturn(const double &closes[], double &momentum_return)
+  {
+   momentum_return = 0.0;
+   for(int j = 0; j < s2_momentum_days; ++j)
+     {
+      if(j + 1 >= ArraySize(closes))
+         return false;
+      const double daily_return = closes[j] / closes[j + 1] - 1.0;
+      if(!MathIsValidNumber(daily_return))
+         return false;
+      momentum_return += daily_return;
+     }
+   return MathIsValidNumber(momentum_return);
+  }
+
+double QM20181_13108Percentile(double &values[], const double percentile)
   {
    const int count = ArraySize(values);
-   if(count <= 0)
+   if(count <= 0 || percentile <= 0.0 || percentile > 100.0)
       return -1.0;
    ArraySort(values);
-   int rank = (int)MathCeil(s2_tail_percentile * count / 100.0) - 1;
+   int rank = (int)MathCeil(percentile * count / 100.0) - 1;
    rank = MathMax(0, MathMin(count - 1, rank));
    return values[rank];
   }
@@ -494,35 +682,38 @@ double QM20181_13108Percentile(double &values[])
 bool QM20181_13108Target(const string symbol, int &target_state)
   {
    target_state = 0;
-   const int required = MathMax(s2_momentum_days + 1,
-                                s2_percentile_history + s2_partial_moment_days + 1);
    double closes[];
-   ArrayResize(closes, required);
-   ArraySetAsSeries(closes, true);
-   if(CopyClose(symbol, PERIOD_D1, 1, required, closes) != required)
+   if(!QM20181_13108LoadClosedCloses(symbol, closes))
       return false;
 
    double momentum_return = 0.0;
-   for(int j = 0; j < s2_momentum_days; ++j)
-      momentum_return += closes[j] / closes[j + 1] - 1.0;
-
    double current_upm = 0.0;
    double current_lpm = 0.0;
+   if(!QM20181_13108MomentumReturn(closes, momentum_return))
+      return false;
    if(!QM20181_13108PartialMoments(closes, 1, current_upm, current_lpm))
       return false;
+
    double historical_upm[];
    double historical_lpm[];
    ArrayResize(historical_upm, s2_percentile_history);
    ArrayResize(historical_lpm, s2_percentile_history);
    for(int i = 0; i < s2_percentile_history; ++i)
      {
-      if(!QM20181_13108PartialMoments(closes, i + 2,
-                                     historical_upm[i], historical_lpm[i]))
+      double obs_upm = 0.0;
+      double obs_lpm = 0.0;
+      if(!QM20181_13108PartialMoments(closes, i + 2, obs_upm, obs_lpm))
          return false;
+      historical_upm[i] = obs_upm;
+      historical_lpm[i] = obs_lpm;
      }
-   const double up_reference = QM20181_13108Percentile(historical_upm);
-   const double low_reference = QM20181_13108Percentile(historical_lpm);
-   if(up_reference <= 0.0 || low_reference <= 0.0)
+
+   const double up_reference =
+      QM20181_13108Percentile(historical_upm, s2_tail_percentile);
+   const double low_reference =
+      QM20181_13108Percentile(historical_lpm, s2_tail_percentile);
+   if(up_reference <= 0.0 || low_reference <= 0.0 ||
+      !MathIsValidNumber(up_reference) || !MathIsValidNumber(low_reference))
       return false;
 
    const bool up_tail = current_upm >= up_reference;
@@ -538,43 +729,187 @@ bool QM20181_13108Target(const string symbol, int &target_state)
    return true;
   }
 
-void QM20181_Run13108(QM_JT_Sat &sat)
+bool QM20181_13108FreshD1Tick(QM_JT_Sat &sat,
+                              datetime &broker_now,
+                              datetime &current_bar)
   {
-   const datetime closed_bar = iTime(sat.symbol, PERIOD_D1, 1);
-   if(closed_bar <= 0 || closed_bar == sat.last_closed_bar)
-      return;
-   sat.last_closed_bar = closed_bar;
-   GlobalVariableSet(StringFormat("QM.20181.%d.%s.lastbar", sat.slot, sat.symbol),
-                     (double)closed_bar);
-   sat.state_valid = QM20181_13108Target(sat.symbol, sat.target_state);
+   broker_now = 0;
+   current_bar = 0;
 
-   ulong ticket = 0;
-   if(QM20181_HasPosition(sat, ticket))
+   MqlTick tick;
+   if(!SymbolInfoTick(sat.symbol, tick))
+      return false;
+   const long tick_msc = (tick.time_msc > 0)
+                         ? tick.time_msc
+                         : ((long)tick.time * 1000);
+   if(tick_msc <= 0 || tick_msc <= sat.last_observed_tick_msc)
+      return false;
+   sat.last_observed_tick_msc = tick_msc;
+
+   // A host-clock timer must not consume the XTI D1 latch while the quote still
+   // belongs to the prior broker day.  Wait for the first genuine XTI tick.
+   current_bar = iTime(sat.symbol, PERIOD_D1, 0);
+   if(current_bar <= 0 || tick.time < current_bar)
+      return false;
+   broker_now = tick.time;
+   return (broker_now > 0);
+  }
+
+bool QM20181_13108NewsAllows(QM_JT_Sat &sat,
+                             const datetime current_bar,
+                             const datetime broker_now)
+  {
+   const bool axes_active =
+      (qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
+       qm_news_compliance != QM_NEWS_COMPLIANCE_NONE);
+   if(!axes_active && qm_news_mode_legacy == QM_NEWS_NEWS_ONLY)
+      return QM_NewsAllowsTrade(sat.symbol, broker_now, qm_news_mode_legacy);
+
+   if(sat.news_bar_time != current_bar)
      {
-      const int position_state =
-         PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY ? 1 : -1;
+      sat.news_bar_time = current_bar;
+      sat.news_evaluated = false;
+      sat.news_allows = false;
+     }
+   if(sat.news_evaluated)
+      return sat.news_allows;
+
+   // Standalone 13108 evaluates canonical FW1 once on its first D1 tick.  The
+   // joint chart is H1, so retain that first-XTI-tick verdict in a sleeve-local
+   // D1 snapshot instead of re-evaluating it on later host bars.
+   if(axes_active)
+      sat.news_allows = QM_NewsAllowsTrade2(sat.symbol, broker_now,
+                                            qm_news_temporal,
+                                            qm_news_compliance);
+   else
+      sat.news_allows = QM_NewsAllowsTrade(sat.symbol, broker_now,
+                                           qm_news_mode_legacy);
+   sat.news_evaluated = true;
+   return sat.news_allows;
+  }
+
+void QM20181_13108ManagePositions(const QM_JT_Sat &sat,
+                                  const datetime broker_now)
+  {
+   const int max_hold_seconds = MathMax(1, s2_max_hold_days) * 86400;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != sat.symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != sat.magic)
+         continue;
+
+      const long position_type = PositionGetInteger(POSITION_TYPE);
+      const int position_state = (position_type == POSITION_TYPE_BUY) ? 1 : -1;
       const datetime opened_at = (datetime)PositionGetInteger(POSITION_TIME);
       const bool stale = opened_at > 0 &&
-                         TimeCurrent() - opened_at >= MathMax(1, s2_max_hold_days) * 86400;
-      if(stale || !sat.state_valid || sat.target_state == 0 ||
-         position_state != sat.target_state)
+                         broker_now - opened_at >= max_hold_seconds;
+      const bool target_changed = !sat.state_valid || sat.target_state == 0 ||
+                                  position_state != sat.target_state;
+      if(stale || target_changed)
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-      return;
      }
+  }
+
+bool QM20181_13108NoTrade(const QM_JT_Sat &sat)
+  {
+   if(sat.slot != 2 || sat.tf != PERIOD_D1 || sat.symbol != "XTIUSD.DWX")
+      return true;
+   if(sat.magic <= 0 || sat.risk_fixed <= 0.0)
+      return true;
+   if(s2_momentum_days < 2 || s2_momentum_days > 250)
+      return true;
+   if(s2_partial_moment_days != 5)
+      return true;
+   if(s2_percentile_history < 100 || s2_percentile_history > 1000)
+      return true;
+   if(s2_tail_percentile != 80.0)
+      return true;
+   if(s2_atr_period <= 1 || s2_atr_sl_mult <= 0.0)
+      return true;
+   if(s2_max_hold_days <= 0 || s2_max_hold_days > 14)
+      return true;
+   return (s2_max_spread_points < 0);
+  }
+
+bool QM20181_13108ExitSignal()
+  {
+   return false;
+  }
+
+void QM20181_Run13108(QM_JT_Sat &sat)
+  {
+   datetime broker_now = 0;
+   datetime current_bar = 0;
+   if(!QM20181_13108FreshD1Tick(sat, broker_now, current_bar))
+      return;
+
+   // Standalone order: Friday -> no-trade -> new-D1 state/manage -> optional
+   // exit -> news -> entry.  A Friday/no-trade block does not consume the D1
+   // latch, and no satellite check changes the runner's OnTick cadence.
+   if(QM_FrameworkFridayCloseNow(broker_now))
+      return;
+   if(QM20181_13108NoTrade(sat))
+      return;
+   if(!QM_IsNewBar(sat.symbol, PERIOD_D1))
+      return;
+
+   sat.last_closed_bar = iTime(sat.symbol, PERIOD_D1, 1);
+   sat.state_valid = QM20181_13108Target(sat.symbol, sat.target_state);
+   QM20181_13108ManagePositions(sat, broker_now);
+
+   if(QM20181_13108ExitSignal())
+     {
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+        {
+         const ulong exit_ticket = PositionGetTicket(i);
+         if(exit_ticket == 0 || !PositionSelectByTicket(exit_ticket))
+            continue;
+         if(PositionGetString(POSITION_SYMBOL) != sat.symbol)
+            continue;
+         if((int)PositionGetInteger(POSITION_MAGIC) != sat.magic)
+            continue;
+         QM_TM_ClosePosition(exit_ticket, QM_EXIT_STRATEGY);
+        }
+     }
+
+   if(!QM20181_13108NewsAllows(sat, current_bar, broker_now))
+      return;
+
+   ulong ticket = 0;
+   // Management may close an opposite or stale position.  Re-check instead of
+   // returning unconditionally so standalone's same-D1 close/reopen (including
+   // a direction reversal) remains possible; a failed close still blocks entry.
+   if(QM20181_HasPosition(sat, ticket))
+      return;
    if(!sat.state_valid || sat.target_state == 0)
       return;
    if(s2_max_spread_points > 0 &&
       SymbolInfoInteger(sat.symbol, SYMBOL_SPREAD) > s2_max_spread_points)
       return;
 
+   const double atr = QM_ATR(sat.symbol, PERIOD_D1, s2_atr_period, 1);
+   if(atr <= 0.0 || !MathIsValidNumber(atr))
+      return;
+
    const QM_OrderType side = sat.target_state > 0 ? QM_BUY : QM_SELL;
    const double entry = QM_BasketMarketPrice(sat.symbol, side);
-   const double atr = QM_ATR(sat.symbol, PERIOD_D1, s2_atr_period, 1);
+   if(entry <= 0.0 || !MathIsValidNumber(entry))
+      return;
+
    const double sl = QM_StopRulesNormalizePrice(
       sat.symbol, QM_StopATRFromValue(sat.symbol, side, entry, atr, s2_atr_sl_mult));
    const double point = SymbolInfoDouble(sat.symbol, SYMBOL_POINT);
-   if(entry <= 0.0 || atr <= 0.0 || sl <= 0.0 || point <= 0.0)
+   if(sl <= 0.0 || point <= 0.0 || !MathIsValidNumber(sl))
       return;
+   if((side == QM_BUY && sl >= entry) || (side == QM_SELL && sl <= entry))
+      return;
+
+   const double sl_points = MathAbs(entry - sl) / point;
+   const ENUM_ORDER_TYPE margin_order_type = QM_OrderTypeToMT5(side);
 
    QM_BasketOrderRequest req;
    req.symbol = sat.symbol;
@@ -582,8 +917,12 @@ void QM20181_Run13108(QM_JT_Sat &sat)
    req.price = 0.0;
    req.sl = sl;
    req.tp = 0.0;
-   req.lots = QM_LotsForRisk(sat.symbol, MathAbs(entry - sl) / point,
-                             QM_RISK_MODE_FIXED, sat.risk_fixed);
+   req.lots = QM_LotsForRiskAtEntry(sat.symbol,
+                                    sl_points,
+                                    margin_order_type,
+                                    entry,
+                                    QM_RISK_MODE_FIXED,
+                                    sat.risk_fixed);
    req.reason = side == QM_BUY ? "XTI_MTSM_S2_LONG" : "XTI_MTSM_S2_SHORT";
    req.symbol_slot = sat.slot;
    req.expiration_seconds = 0;

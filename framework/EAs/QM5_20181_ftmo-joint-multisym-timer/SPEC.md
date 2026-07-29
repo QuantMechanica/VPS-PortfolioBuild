@@ -25,7 +25,9 @@ Built piece by piece (OWNER 2026-07-27, "Stück für Stück"), each sleeve admit
   wins.
 - **OnTimer (model-second, `EventSetTimer(1)`).** Drives the account-equity sampler at 1 s
   resolution and the non-host satellite dispatch (per-symbol new-bar detection via
-  a restart-persisted closed-bar timestamp).
+  a process-local D1 latch initialized independently for every tester pass). Terminal
+  GlobalVariables are deliberately not used for entry cadence because they survive
+  otherwise independent replays and would make fidelity terminal-history-dependent.
 - **Isolation.** The host framework remains in single-symbol mode even with a
   satellite enabled. The satellite warms its own history and uses the explicit
   `QM_BasketOrder` symbol/magic path; it never mutates slot 0's framework ownership.

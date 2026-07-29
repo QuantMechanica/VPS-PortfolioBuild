@@ -13,10 +13,15 @@ re-magicking: (entry_time, close_time, net, volume). A trade matches iff all fou
 agree (net/volume to the cent / to the volume step). The reported match rate is
 the fidelity metric. A low match rate is a FINDING to report, not to tune away.
 
-    python compare_joint_replay.py --joint <joint_singleton.jsonl> \
-                                   --gated <gated_sleeve.jsonl> [--money-tol 0.005]
+    python compare_joint_replay.py --joint <joint_book.jsonl> \
+                                   --joint-magic 201810001 \
+                                   --gated <gated_sleeve.jsonl> \
+                                   --gated-magic 101450000 [--money-tol 0.005]
 
-Exit code 0 iff match_rate == 1.0 (bit-for-bit), else 2.
+The magic filters are optional for backwards-compatible singleton operands and
+required in practice when the joint stream contains more than one sleeve.  An
+empty filtered operand is invalid and can never pass.  Exit code 0 iff both
+operands are non-empty and match_rate == 1.0 (bit-for-bit), else 2.
 """
 from __future__ import annotations
 
@@ -26,8 +31,16 @@ import sys
 from pathlib import Path
 
 
-def load_closed(path: Path) -> list[dict]:
+def load_closed(
+    path: Path,
+    *,
+    magic: int | None = None,
+    symbol: str | None = None,
+) -> list[dict]:
+    """Load closed trades, optionally selecting one exact sleeve identity."""
+
     rows: list[dict] = []
+    expected_symbol = symbol.strip().upper() if symbol is not None else None
     with path.open(encoding="utf-8", errors="replace") as f:
         for line in f:
             line = line.strip()
@@ -39,6 +52,17 @@ def load_closed(path: Path) -> list[dict]:
                 continue
             if o.get("event") != "TRADE_CLOSED":
                 continue
+            if magic is not None:
+                try:
+                    observed_magic = int(o.get("magic"))
+                except (TypeError, ValueError):
+                    continue
+                if observed_magic != magic:
+                    continue
+            if expected_symbol is not None:
+                observed_symbol = str(o.get("symbol") or "").strip().upper()
+                if observed_symbol != expected_symbol:
+                    continue
             rows.append(o)
     return rows
 
@@ -83,23 +107,51 @@ def classify(joint: list[dict], gated: list[dict], money_tol: float, vol_tol: fl
     return counts
 
 
-def main() -> int:
+def positive_magic(value: str) -> int:
+    """Argparse type for registry magics, which are strictly positive ints."""
+
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("magic must be an integer") from exc
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("magic must be greater than zero")
+    return parsed
+
+
+def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--joint", required=True, type=Path,
                     help="joint-EA singleton Q08 stream (20180_USDJPY_DWX.jsonl)")
     ap.add_argument("--gated", required=True, type=Path,
                     help="gated sleeve Q08 stream (9936_/13213_USDJPY_DWX.jsonl)")
+    ap.add_argument("--joint-magic", type=positive_magic,
+                    help="select this exact magic from the joint stream")
+    ap.add_argument("--gated-magic", type=positive_magic,
+                    help="select this exact magic from the gated stream")
+    ap.add_argument("--joint-symbol",
+                    help="optionally select this exact symbol from the joint stream")
+    ap.add_argument("--gated-symbol",
+                    help="optionally select this exact symbol from the gated stream")
     ap.add_argument("--money-tol", type=float, default=0.005,
                     help="absolute tolerance for net (USD); default 0.005 = half a cent")
     ap.add_argument("--vol-tol", type=float, default=0.005,
                     help="absolute tolerance for volume (lots); default 0.005 = half a step")
     ap.add_argument("--max-report", type=int, default=20,
                     help="max mismatches to print")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
-    joint = load_closed(args.joint)
-    gated = load_closed(args.gated)
+    joint = load_closed(
+        args.joint,
+        magic=args.joint_magic,
+        symbol=args.joint_symbol,
+    )
+    gated = load_closed(
+        args.gated,
+        magic=args.gated_magic,
+        symbol=args.gated_symbol,
+    )
     categories = classify(joint, gated, args.money_tol, args.vol_tol)
 
     gated_by_key: dict[tuple[int, int], list[dict]] = {}
@@ -130,22 +182,36 @@ def main() -> int:
 
     leftover_gated = sum(len(v) for v in gated_by_key.values())
     denom = max(len(joint), len(gated))
-    match_rate = (matched / denom) if denom else 1.0
-
-    print(json.dumps({
+    operands_nonempty = bool(joint) and bool(gated)
+    match_rate = (matched / denom) if operands_nonempty else None
+    result = {
+        "valid": operands_nonempty,
+        "reason": None if operands_nonempty else "empty_filtered_operand",
         "joint_trades": len(joint),
         "gated_trades": len(gated),
         "matched": matched,
         "unmatched_joint": unmatched_joint,
         "unmatched_gated": leftover_gated,
-        "match_rate": round(match_rate, 6),
+        "match_rate": round(match_rate, 6) if match_rate is not None else None,
         "mismatch_categories": categories,
-    }, indent=2))
+        "filters": {
+            "joint_magic": args.joint_magic,
+            "gated_magic": args.gated_magic,
+            "joint_symbol": args.joint_symbol,
+            "gated_symbol": args.gated_symbol,
+        },
+    }
+    print(json.dumps(result, indent=2))
     if mismatches:
         print("first mismatches:")
         print("\n".join(mismatches))
 
-    return 0 if (match_rate == 1.0 and unmatched_joint == 0 and leftover_gated == 0) else 2
+    return 0 if (
+        operands_nonempty
+        and match_rate == 1.0
+        and unmatched_joint == 0
+        and leftover_gated == 0
+    ) else 2
 
 
 if __name__ == "__main__":
