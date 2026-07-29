@@ -15368,3 +15368,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12351,alp-ema12-26,6,WS30.DWX,123510006,2026-07-27,Codex,active
 20181,ftmo-joint-multisym-timer,0,USDJPY.DWX,201810000,2026-07-27T00:00:00Z,Claude,active
 20181,ftmo-joint-multisym-timer,1,XAUUSD.DWX,201810001,2026-07-27T00:00:00Z,Claude,active
+20182,wti-sum-bull,0,XTIUSD.DWX,201820000,2026-07-29T08:25:41Z,Codex,active
