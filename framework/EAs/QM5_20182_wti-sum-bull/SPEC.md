@@ -121,4 +121,4 @@ correlation authorization.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-29 | Initial build from approved G0 card | Q01 PASS; Q02 not yet enqueued |
+| v1 | 2026-07-29 | Initial build from approved G0 card | Q01 PASS; Q02 blocked by canonical `FACTORY_OFF.flag` |

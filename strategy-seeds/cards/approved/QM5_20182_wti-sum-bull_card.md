@@ -56,9 +56,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
+pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: BLOCKED_FACTORY_OFF
 review_focus: "Falsify whether Ewald's WTI July-November short persists in the mutually exclusive positive 252-D1 state and supplies direct crude-oil exposure distinct from the certified XAU/SP500/NDX/XNG book."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -255,6 +255,7 @@ change, portfolio-gate edit, or portfolio admission is authorized.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-29 | initial source-backed WTI summer positive-state counterfade card and strict build | Q01 | PASS |
+| v1 | 2026-07-29 | targeted paced enqueue refused by canonical FACTORY_OFF safety flag | Q02 | BLOCKED_FACTORY_OFF |
 
 ## Pipeline phase status
 
@@ -262,4 +263,4 @@ change, portfolio-gate edit, or portfolio admission is authorized.
 |---|---|---|---|
 | G0 Research Intake | 2026-07-29 | APPROVED | this card and governed source packet |
 | Q01 Build Validation | 2026-07-29 | PASS | strict build gate: 0 errors, 0 warnings, all static checks PASS |
-| Q02 Baseline Screening | 2026-07-29 | NOT_ENQUEUED | pending paced-fleet capacity recheck |
+| Q02 Baseline Screening | 2026-07-29 | BLOCKED_FACTORY_OFF | canonical targeted enqueue created zero work items; see build/Q02 handoff evidence |
