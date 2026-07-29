@@ -83,6 +83,19 @@ except ModuleNotFoundError:
         path_for_factory_flag,
     )
 
+try:
+    from windows_job_object import (
+        bind_spawned_process_to_kill_job,
+        reap_finished_job_objects,
+        suspended_runner_creation_flags,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.windows_job_object import (
+        bind_spawned_process_to_kill_job,
+        reap_finished_job_objects,
+        suspended_runner_creation_flags,
+    )
+
 
 DEFAULT_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 DB_REL = Path("state") / "farm_state.sqlite"
@@ -4804,10 +4817,13 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     if item_payload.get("staged_ex5_path"):
         cmd.append("-SkipExpertDeploy")
 
+    # Production reaches this boundary from the resident per-terminal worker
+    # daemon. Its lifetime owns the retained Job handle for the full runner
+    # tree. A one-shot direct dispatcher intentionally cannot hand that handle
+    # off: parent exit closes the Job and terminates the contained tree.
+    reap_finished_job_objects()
     log_fh = open(log_path, "w", encoding="utf-8")
-    creationflags = 0
-    if sys.platform == "win32":
-        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
+    creationflags = suspended_runner_creation_flags()
     proc = subprocess.Popen(
         cmd,
         cwd=str(REPO_ROOT),
@@ -4818,7 +4834,11 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         close_fds=True,
     )
     try:
-        process_identity = _capture_spawned_process_identity(proc)
+        process_identity = bind_spawned_process_to_kill_job(
+            proc,
+            _capture_spawned_process_identity,
+            process_created_suspended=(sys.platform == "win32"),
+        )
     finally:
         log_fh.close()
     return {
@@ -5621,12 +5641,14 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
             "phase_runner": None,
         }
 
+    # The resident terminal_worker process is the production caller and owns
+    # the retained Job handle until every descendant exits. Direct one-shot
+    # dispatch is deliberately non-detaching: its exit kills the Job tree.
+    reap_finished_job_objects()
     log_fh = open(log_path, "a", encoding="utf-8")
     log_fh.write(f"\n{utc_now()} spawning phase runner: {' '.join(cmd)}\n")
     log_fh.flush()
-    creationflags = 0
-    if sys.platform == "win32":
-        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
+    creationflags = suspended_runner_creation_flags()
     env = {**os.environ}
     env["PYTHONPATH"] = os.pathsep.join(
         [str(runner_repo_root), env.get("PYTHONPATH", "")]
@@ -5642,7 +5664,11 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
         env=env,
     )
     try:
-        process_identity = _capture_spawned_process_identity(proc)
+        process_identity = bind_spawned_process_to_kill_job(
+            proc,
+            _capture_spawned_process_identity,
+            process_created_suspended=(sys.platform == "win32"),
+        )
     finally:
         log_fh.close()
     return {
@@ -7851,6 +7877,11 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 "process_creation_key": spawn["process_creation_key"],
                 "process_image_path": spawn.get("process_image_path"),
                 "process_started_at_epoch": spawn.get("process_started_at_epoch"),
+                "job_object_assigned": spawn.get("job_object_assigned"),
+                "job_object_mode": spawn.get("job_object_mode"),
+                "job_object_registry_key": spawn.get("job_object_registry_key"),
+                "process_started_suspended": spawn.get("process_started_suspended"),
+                "primary_thread_resumed": spawn.get("primary_thread_resumed"),
                 "log_path": spawn["log_path"],
                 "report_root": spawn["report_root"],
                 "ea_dir_name": spawn["ea_dir_name"],

@@ -339,9 +339,9 @@ The programme is complete only when:
 | W3 statistical foundations | `PARTIAL_SHADOW_SOURCE_IMPLEMENTED` | Complete zero-filled calendar panels, synchronized sleeves, bound PnL capital basis, frequency-correct Sharpe and deterministic joint moving-block bootstrap | Intraday MTM paths, nested walk-forward, calibrated joint costs, execution Monte Carlo, DSR/FDR goldens, Q09 multiplicity and Q10 propagation |
 | W4 Q08 v3 | `SHADOW_FOUNDATION_SOURCE_IMPLEMENTED` | Additive archetype policy, strict evidence contracts and non-weighted five-state aggregation | Production subtests, calibration, dual evaluation and OWNER-approved canonical promotion |
 | W5 target admission | `RULEPACK_FOUNDATION_SOURCE_IMPLEMENTED` | Strict, versioned DXZ and FTMO research rulepacks with separate evidence/eligibility semantics | Authenticated candidate views, synchronized book simulation, marginal-contribution engine and book manifests |
-| W6 EA framework | `PLANNED` | No production framework or governor change in this wave | All W6 deliverables and Python/MQL parity evidence |
-| W7 migration | `BLOCKED_ON_CANONICAL_WIRING_AND_OWNER` | No migration or historical rewrite | Inventory, dry run, discordance matrix, OWNER approval and idempotent apply |
-| W8 outcome lanes | `BLOCKED_ON_FIDELITY_REQUALIFICATION_AND_MONEY_GATE` | No deployed challenger, challenge purchase or trading action | Exact-book evidence, prospective shadow, signed risk gates and separate OWNER decisions |
+| W6 EA framework | `PARTIAL_SOURCE_IMPLEMENTED_RUNTIME_MIGRATION_BLOCKED` | Additive one-way V3 runtime identity/READY contract binds independent source generation and the exact magic registry; standard and basket entries are single-EA/symbol/magic fail-closed; V3 baskets share directional risk, margin and FTMO-governor rails; strict-default Magic Resolver; suspended-before-assign Windows Job containment; symmetric read-only history-overlap audit; complete fail-closed lifecycle taxonomy | Cohort migration of legacy EAs; a versioned multi-identity contract for genuine baskets; atomic generic kill-switch persistence; physical isolation of the shared `Bases/Custom` store; canonical typed-lifecycle apply; exact three-sleeve simulation and prospective Python/MQL/fault-injection evidence |
+| W7 migration | `DRY_RUN_SOURCE_IMPLEMENTED_OWNER_APPLY_BLOCKED` | Deterministic read-only Q08 inventory bound to the one canonical policy artifact; lineage/alias/collision analysis; embedded normalized shadow manifest whose decisions are recomputed from typed subtest results; self-validating content-addressed migration plan and old/new discordance contract; no apply or historical rewrite exists | Bind OWNER-ratified current DXZ/FTMO selectors and real evidence-producing V3 subtests, resolve collision holds, obtain OWNER approval, then implement and prove an idempotent append-only apply |
+| W8 outcome lanes | `SHADOW_EVALUATOR_SOURCE_IMPLEMENTED_NO_GO` | Strict combined DXZ/FTMO outcome dossier re-hashes every real evidence and seal file under an allowed root, binds seal-to-lane/slot/artifact semantics, forbids cross-lane reuse by resolved path and hash, validates metric/probability bounds, and is capped at `READY_FOR_OWNER_DECISION` with every action `NONE` | Exact book/simulation/shadow evidence, DXZ prospective probation, FTMO free-trial observation, semantic evidence review, fidelity closure and separate signed deploy/purchase decisions |
 
 ### W0.2 — Deferred OWNER and design decisions
 
@@ -377,16 +377,70 @@ canonical authority. It contains:
 The implementation receipt is
 `docs/ops/evidence/2026-07-29_pipeline_books_foundation_wave.md`.
 
+### W6-W8 and dashboard continuation
+
+The controlled continuation implements the remaining source-only decisions without
+crossing the Factory-OFF, deployment, money or AutoTrading boundaries:
+
+- W6 production-boundary primitives are present, but the new V3 contract is opt-in until
+  legacy EAs migrate in compile-tested cohorts. Its initialization is one-way, its source
+  generation and registry identity are independently bound, and every V3 standard/basket
+  entry is restricted to the exact single EA/symbol/magic identity. Legacy compatibility
+  remains explicit and is not described as `READY`; multi-identity V3 baskets remain
+  blocked until a separate versioned contract exists.
+- Windows runner children are created suspended and only resumed after exact-handle Job
+  assignment, identity capture and registry retention. Assignment, identity, registry or
+  resume failure kills and waits the contained tree instead of exposing a pre-assignment
+  execution race.
+- The live read-only topology audit currently returns `FAIL_CLOSED`: all nine runner
+  terminals resolve `Bases/Custom` to one shared store. No junction was changed during
+  this wave.
+- The typed lifecycle projection inventories the legacy encoding without changing the
+  database; `WAITING_INPUT`, `BLOCKED` and `QUARANTINED` remain nonterminal in the V2
+  contract, all observed PASS-like verdicts map to `SUCCEEDED`, and unknown or internally
+  inconsistent verdict/status combinations fail closed.
+- W7 inventories all 536 current legacy Q08 rows. It accepts only the repository-owned
+  Q08-v3 policy binding and recomputes every supplied decision from normalized typed
+  subtest results; the normalized binding manifest is embedded and revalidated with the
+  plan. Without an OWNER-ratified current-target manifest or real Q08-v3 evidence, the
+  generated plan is advisory and cannot apply.
+- W8 can produce only `NO_GO` or `READY_FOR_OWNER_DECISION`; declared evidence must exist,
+  match its re-computed hash and, when sealed, carry a distinct real seal that exactly
+  binds lane, slot, identity, artifact and fidelity. Cross-lane reuse and incoherent
+  probability bounds fail closed. It has no code path for purchase, deployment, Factory,
+  scheduler, MT5 or AutoTrading actions.
+- The versioned `strategies.html` and `cockpit.html` generators now render the same
+  hash-bound W0-W8 source view, distinguish legacy Q08 `FAIL_SOFT` from Q08-v3 evidence
+  states, expose the exact five external residuals and surface all OWNER blockers.
+  Missing, stale or hash-drifted input renders visibly invalid instead of empty/green.
+- Durable publication to the two managed `D:\QM\strategy_farm\dashboards` paths remains
+  a release step: the enabled ALWAYS_ON dashboard tasks execute `C:\QM\repo`, so they
+  replace any integration-worktree preview at the next two-minute/hourly run. This wave
+  did not alter or stop those tasks. After the reviewed commit is integrated into the
+  canonical checkout, the unchanged tasks materialize the new views automatically.
+- The hourly generator now treats Factory OFF as a hard boundary for its ancillary
+  `ea_metrics` upserts and opens all remaining dashboard SQLite reads with `mode=ro` plus
+  `query_only=ON`. The legacy canonical task can continue to change the DB until this
+  source wave is integrated; that autonomous pre-integration drift must remain explicit.
+
+The continuation receipt is
+`docs/ops/evidence/2026-07-29_pipeline_books_w6_w8_dashboard_wave.md`.
+
 ## 10. Next controlled implementation sequence
 
-1. Integrate the gate manifest, execution bundle and orthogonal state fields into one
+1. Integrate this reviewed wave into the canonical checkout and let the unchanged
+   ALWAYS_ON render tasks publish both managed dashboard files; do not repoint or disable
+   the tasks merely to preserve a worktree preview.
+2. Integrate the gate manifest, execution bundle and orthogonal state fields into one
    transactional build/enqueue path; keep Q08 v3 shadow-only.
-2. Persist Card/G0/experiment records append-only and derive full family-level trial
+3. Persist Card/G0/experiment records append-only and derive full family-level trial
    counts before enabling DSR/FDR decisions.
-3. Complete W3 MTM, cost, nested-validation and statistical reference suites.
-4. Implement W6 account-wide governor and immutable framework contract with Python/MQL
-   parity and Windows fault injection.
-5. Produce a read-only W7 inventory and discordance report; request OWNER approval before
-   any append-only re-adjudication apply.
-6. Run a frozen DXZ challenger and a separate FTMO free-trial/shadow lane. Neither outcome
+4. Complete W3 MTM, cost, nested-validation and statistical reference suites.
+5. Migrate a small compile-tested EA cohort to the implemented W6 V3 runtime contract,
+   isolate the shared Custom history store in an OWNER window, and complete kill-switch
+   persistence plus Python/MQL/Windows fault injection.
+6. Ratify the W7 current-target manifest, resolve collision holds, attach real Q08-v3
+   decisions and request OWNER approval before implementing any append-only apply.
+7. Feed the implemented W8 dossier with a frozen DXZ challenger and a separate FTMO
+   free-trial/shadow lane. Neither outcome
    authorizes deployment, challenge purchase, Factory-ON or AutoTrading.

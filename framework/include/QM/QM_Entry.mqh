@@ -9,6 +9,8 @@
 #include "QM_MagicResolver.mqh"
 #include "QM_Logger.mqh"
 #include "QM_SeedRNG.mqh"
+#include "QM_RuntimeExecutionContract.mqh"
+#include "QM_FTMOGovernorClient.mqh"
 
 struct QM_EntryRequest
 {
@@ -45,7 +47,9 @@ enum QM_EntryResult
    QM_ENTRY_REJECTED_RISK,
    QM_ENTRY_REJECTED_BROKER,
    QM_ENTRY_REJECTED_DUPLICATE,
-   QM_ENTRY_REJECTED_STRESS       // FW2: Q06 HARSH simulated trade rejection
+   QM_ENTRY_REJECTED_STRESS,      // FW2: Q06 HARSH simulated trade rejection
+   QM_ENTRY_REJECTED_CONTRACT,
+   QM_ENTRY_REJECTED_GOVERNOR
 };
 
 int                       g_qm_entry_ea_id              = 0;
@@ -82,6 +86,8 @@ string QM_EntryResultToString(const QM_EntryResult result)
       case QM_ENTRY_REJECTED_BROKER:     return "QM_ENTRY_REJECTED_BROKER";
       case QM_ENTRY_REJECTED_DUPLICATE:  return "QM_ENTRY_REJECTED_DUPLICATE";
       case QM_ENTRY_REJECTED_STRESS:     return "QM_ENTRY_REJECTED_STRESS";
+      case QM_ENTRY_REJECTED_CONTRACT:   return "QM_ENTRY_REJECTED_CONTRACT";
+      case QM_ENTRY_REJECTED_GOVERNOR:   return "QM_ENTRY_REJECTED_GOVERNOR";
    }
    return "QM_ENTRY_REJECTED_BROKER";
 }
@@ -185,6 +191,24 @@ QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
 {
    out_ticket = 0;
 
+   if(!QM_RuntimeExecutionEntryAllowed())
+   {
+      QM_EntryLogReject(req, QM_ENTRY_REJECTED_CONTRACT,
+                        g_qm_runtime_execution_block_reason);
+      return QM_ENTRY_REJECTED_CONTRACT;
+   }
+
+   const bool v3_execution =
+      (g_qm_runtime_execution_state == QM_RUNTIME_EXECUTION_READY);
+   if(v3_execution &&
+      (g_qm_entry_ea_id != g_qm_runtime_execution_contract.ea_id ||
+       _Symbol != g_qm_runtime_execution_contract.symbol))
+   {
+      QM_EntryLogReject(req, QM_ENTRY_REJECTED_CONTRACT,
+                        "v3_entry_identity_not_contract_bound");
+      return QM_ENTRY_REJECTED_CONTRACT;
+   }
+
    if(!QM_KillSwitchCheck())
    {
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_KILLSWITCH, QM_KillSwitchHaltReason());
@@ -229,6 +253,14 @@ QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
    {
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_BROKER, "magic_resolution_failed");
       return QM_ENTRY_REJECTED_BROKER;
+   }
+   if(v3_execution && magic != g_qm_runtime_execution_contract.magic)
+   {
+      // The current V3 schema is deliberately single-magic. Multi-strategy
+      // magic sets require a future explicit/versioned identity contract.
+      QM_EntryLogReject(req, QM_ENTRY_REJECTED_CONTRACT,
+                        "v3_magic_not_contract_bound");
+      return QM_ENTRY_REJECTED_CONTRACT;
    }
    if(explicit_magic != 0 && !QM_KillSwitchOwnsMagic((long)magic))
    {
@@ -280,11 +312,19 @@ QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
    const ENUM_ORDER_TYPE margin_order_type = QM_OrderTypeIsBuy(req.type)
                                               ? ORDER_TYPE_BUY
                                               : ORDER_TYPE_SELL;
+   if(sl_points <= 0.0 ||
+      (margin_order_type == ORDER_TYPE_BUY && req.sl >= entry_price) ||
+      (margin_order_type == ORDER_TYPE_SELL && req.sl <= entry_price))
+   {
+      QM_EntryLogReject(req, QM_ENTRY_REJECTED_RISK, "invalid_stop_direction");
+      return QM_ENTRY_REJECTED_RISK;
+   }
    // Exactly zero means no explicit risk override and preserves the configured
    // global risk-money semantics.  Entry then applies its side/price-aware
    // OrderCalcMargin rail; direct legacy QM_LotsForRisk callers remain on their
    // historical path.  Invalid explicit values resolve to zero lots and reject.
    g_qm_risk_clamp_flag = false;   // audit P1.4: fresh clamp evidence for THIS sizing pass
+   QM_RiskSizerResetProfitFallback();
    double lots = 0.0;
    if(use_explicit_risk_mode)
       lots = QM_LotsForRiskAtEntry(_Symbol,
@@ -304,6 +344,49 @@ QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
                                       margin_order_type,
                                       entry_price,
                                       explicit_risk_percent);
+
+   if(QM_RuntimeExecutionGovernorRequired())
+   {
+      double governor_scale = 0.0;
+      string governor_reason = "GOVERNOR_UNKNOWN";
+      if(!QM_FTMO_ReadGovernorScale(
+            g_qm_runtime_execution_contract.governor_policy_id,
+            g_qm_runtime_execution_contract.challenge_instance_id,
+            g_qm_runtime_execution_contract.governor_heartbeat_max_age_seconds,
+            governor_scale,
+            governor_reason))
+      {
+         QM_EntryLogReject(req, QM_ENTRY_REJECTED_GOVERNOR, governor_reason);
+         return QM_ENTRY_REJECTED_GOVERNOR;
+      }
+      QM_SymbolRiskSnapshot governor_snapshot;
+      if(!QM_RiskSizerReadSymbolSnapshot(_Symbol, governor_snapshot))
+      {
+         QM_EntryLogReject(req, QM_ENTRY_REJECTED_GOVERNOR,
+                           "GOVERNOR_SYMBOL_SNAPSHOT_INVALID");
+         return QM_ENTRY_REJECTED_GOVERNOR;
+      }
+      lots = QM_RiskSizerQuantizeLots(lots * governor_scale,
+                                       governor_snapshot.volume_min,
+                                       governor_snapshot.volume_max,
+                                       governor_snapshot.volume_step);
+      if(lots <= 0.0)
+      {
+         QM_EntryLogReject(req, QM_ENTRY_REJECTED_GOVERNOR,
+                           "GOVERNOR_SCALE_ZERO_LOTS");
+         return QM_ENTRY_REJECTED_GOVERNOR;
+      }
+   }
+   if(g_qm_risk_profit_fallback_flag)
+   {
+      QM_LogEvent(QM_WARN, "RISK_LOSS_CALC_FALLBACK",
+                  StringFormat("{\"method\":\"snapshot\",\"reason\":\"%s\",\"error\":%d,\"symbol\":\"%s\",\"magic\":%d}",
+                               QM_LoggerEscapeJson(g_qm_risk_profit_fallback_reason),
+                               g_qm_risk_profit_fallback_error,
+                               QM_LoggerEscapeJson(_Symbol),
+                               magic));
+      QM_RiskSizerResetProfitFallback();
+   }
    // audit P1.4: a sizing clamp (per-trade cap or margin rail) that reduced
    // this entry below its risk target must leave an evidence line — silent
    // under-sizing violates evidence-over-claims. Logged before the zero-lot

@@ -123,3 +123,24 @@ def test_entry_margin_cap_uses_actual_side_and_resolved_price() -> None:
         "QM_LotsForRiskAtEntry(_Symbol"
     )
 
+
+def test_entry_risk_prefers_directional_account_currency_loss_with_visible_fallback() -> None:
+    exact = function_body(RISK_SIZER, "QM_RiskSizerExactDirectionalLossPerLot")
+    assert "OrderCalcProfit(order_type" in exact
+    assert "directional_profit >= 0.0" in exact
+    assert "(-directional_profit) / reference_lots" in exact
+    assert "order_calc_profit_unavailable" in exact
+
+    directional = function_body(RISK_SIZER, "QM_LotsForRiskAtEntryDirectional")
+    assert directional.index("QM_RiskSizerExactDirectionalLossPerLot") < directional.index(
+        "QM_LotsForRiskFromSnapshot"
+    )
+    assert "QM_RiskSizerNoteProfitFallback" in directional
+
+    entry_internal = function_body(ENTRY, "QM_EntryInternal")
+    assert "invalid_stop_direction" in entry_internal
+    assert entry_internal.index("QM_RiskSizerResetProfitFallback") < entry_internal.index(
+        "QM_LotsForRiskAtEntry(_Symbol"
+    )
+    assert "RISK_LOSS_CALC_FALLBACK" in entry_internal
+

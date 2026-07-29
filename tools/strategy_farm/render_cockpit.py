@@ -36,6 +36,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+try:  # package import in tests and module consumers
+    from tools.strategy_farm.pipeline_books_dashboard_status import program_status_snapshot
+except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit.py``
+    from pipeline_books_dashboard_status import program_status_snapshot
+
 ROOT = Path(r"D:\QM\strategy_farm")
 REPO = Path(r"C:\QM\repo")
 DB = ROOT / "state" / "farm_state.sqlite"
@@ -49,6 +54,14 @@ REPORTS_STATE = Path(r"D:\QM\reports\state")
 LIVE_BOOK_PULSE = REPORTS_STATE / "live_book_pulse.json"
 FTMO_TRIAL_PULSE = REPORTS_STATE / "ftmo_trial_pulse.json"
 OWNER_DECISIONS_FILE = REPORTS_STATE / "owner_decisions.json"
+PROGRAM_REPO = Path(__file__).resolve().parents[2]
+PROGRAM_STATUS_FILE = (
+    PROGRAM_REPO
+    / "tools"
+    / "strategy_farm"
+    / "config"
+    / "pipeline_books_program_status.v1.json"
+)
 
 # Cockpit v7 additions (2026-07-19)
 # FACTORY_OFF.flag distinguishes an intentional maintenance stop from a genuine
@@ -276,9 +289,10 @@ def quota_snapshot() -> dict:
 # === Data collection ===
 
 def db_rows(query: str, params: tuple = ()) -> list[dict]:
-    con = sqlite3.connect(str(DB))
+    con = sqlite3.connect(f"file:{DB.as_posix()}?mode=ro", uri=True)
     con.row_factory = sqlite3.Row
     try:
+        con.execute("PRAGMA query_only=ON")
         return [dict(r) for r in con.execute(query, params).fetchall()]
     finally:
         con.close()
@@ -293,6 +307,7 @@ def db_rows_ro(query: str, params: tuple = ()) -> list[dict]:
     con = sqlite3.connect(f"file:{DB.as_posix()}?mode=ro", uri=True)
     con.row_factory = sqlite3.Row
     try:
+        con.execute("PRAGMA query_only=ON")
         return [dict(r) for r in con.execute(query, params).fetchall()]
     finally:
         con.close()
@@ -828,6 +843,193 @@ def _ell(s: str, n: int) -> str:
     """Truncate with a visible ellipsis — a hard cut mid-word reads as a bug."""
     s = str(s)
     return s if len(s) <= n else s[: n - 1].rstrip() + "…"
+
+
+def pipeline_books_program_snapshot(
+    *, now_utc: dt.datetime | None = None
+) -> dict:
+    """Read the hash-bound programme projection without mutating farm state."""
+
+    return program_status_snapshot(
+        PROGRAM_STATUS_FILE,
+        repo_root=PROGRAM_REPO,
+        now_utc=now_utc,
+    )
+
+
+def render_pipeline_books_program(snapshot: dict) -> str:
+    """Render the fail-closed W0--W8 programme panel.
+
+    Missing and invalid sources deliberately render a red, non-empty panel.
+    A stale but hash-valid source retains its detail for diagnosis while its
+    headline remains non-valid and visually blocked.
+    """
+
+    state = str(snapshot.get("state") or "INVALID").upper()
+    state_cls = "fresh" if state == "FRESH" else ("stale" if state == "STALE" else "invalid")
+    as_of = snapshot.get("config_as_of_utc") or "n/a"
+    age = snapshot.get("age_hours")
+    age_text = f"{age:.1f}h old" if isinstance(age, (int, float)) else "age unavailable"
+    error = str(snapshot.get("error") or "")
+    source_detail = f"as of {as_of} // {age_text}"
+    if error:
+        source_detail += f" // {error}"
+
+    work_packages = snapshot.get("work_packages") or []
+    if not work_packages:
+        return (
+            f'<div class="pb-program pb-program-{state_cls}">'
+            '<div class="pb-source">'
+            f'<span class="pb-source-state">PROGRAM SOURCE {e(state)}</span>'
+            f'<span class="pb-source-detail">{e(source_detail)}</span>'
+            '</div>'
+            '<div class="pb-invalid-body">'
+            '<b>NO TRUSTED W0–W8 STATUS AVAILABLE.</b> '
+            'The dashboard refuses to replace a missing or invalid source with CLEAR, PASS, or zero blockers.'
+            '</div></div>'
+        )
+
+    bindings = snapshot.get("bindings") or {}
+    plan_hash = str((bindings.get("plan") or {}).get("file_sha256") or "")
+    evidence_hash = str((bindings.get("evidence") or {}).get("file_sha256") or "")
+    source_detail += f" // plan {plan_hash[:12]} // evidence {evidence_hash[:12]}"
+
+    wave_rows: list[str] = []
+    for row in work_packages:
+        status = str(row.get("status") or "UNKNOWN")
+        if "BLOCKED" in status:
+            row_cls = "blocked"
+        elif status == "PLANNED" or "NOT_IMPLEMENTED" in str(row.get("source_status") or ""):
+            row_cls = "planned"
+        elif "SHADOW" in status or "RULEPACK" in status or "FOUNDATION" in status:
+            row_cls = "shadow"
+        else:
+            row_cls = "implemented"
+        wave_rows.append(
+            f'<div class="pb-wave pb-wave-{row_cls}">'
+            f'<div class="pb-wave-id">{e(row.get("id"))}</div>'
+            f'<div class="pb-wave-title">{e(row.get("title"))}</div>'
+            f'<div class="pb-wave-status">{e(status)}</div>'
+            f'<div class="pb-wave-axes">SRC {e(row.get("source_status"))} · '
+            f'RUN {e(row.get("runtime_status"))}</div>'
+            f'<div class="pb-wave-next">NEXT // {e(row.get("next_action"))}</div>'
+            '</div>'
+        )
+
+    safety = snapshot.get("safety") or {}
+    safety_html = (
+        '<div class="pb-safety">'
+        f'<span><b>FACTORY</b> {e(safety.get("factory_state", "UNKNOWN"))}</span>'
+        '<span><b>RUNTIME AUTHORITY</b> NONE</span>'
+        '<span><b>SCHEDULER / MT5 / AUTOTRADING / DEPLOY</b> NO ACTION AUTHORIZED</span>'
+        '</div>'
+    )
+
+    q08 = snapshot.get("q08_v3") or {}
+    verdicts = " · ".join(str(item) for item in (q08.get("verdict_states") or []))
+    policy_hash = str(q08.get("policy_canonical_sha256") or "")
+    q08_html = (
+        '<div class="pb-contract">'
+        '<div class="pb-contract-lbl">Q08 V3 // EVIDENCE</div>'
+        f'<div class="pb-contract-val">{e(q08.get("lifecycle", "UNKNOWN"))}</div>'
+        f'<div class="pb-contract-sub">promotion {e(q08.get("promotion_state", "UNKNOWN"))} '
+        f'// policy {e(policy_hash[:12])}</div>'
+        f'<div class="pb-verdicts">{e(verdicts)}</div>'
+        f'<div class="pb-contract-note">{e(q08.get("evidence_semantics", ""))}</div>'
+        '</div>'
+    )
+
+    lane_cards: list[str] = []
+    for lane in snapshot.get("target_lanes") or []:
+        lane_hash = str(lane.get("rulepack_canonical_sha256") or "")
+        lane_cards.append(
+            '<div class="pb-contract">'
+            f'<div class="pb-contract-lbl">{e(lane.get("label"))}</div>'
+            f'<div class="pb-contract-val">{e(lane.get("state"))}</div>'
+            f'<div class="pb-contract-sub">{e(lane.get("rulepack_id"))} '
+            f'// {e(lane_hash[:12])} // eligibility {e(lane.get("eligibility"))}</div>'
+            f'<div class="pb-contract-note">NEXT // {e(lane.get("next_action"))}</div>'
+            '</div>'
+        )
+
+    verification = snapshot.get("verification_lanes") or {}
+    green = verification.get("green") or {}
+    residual = verification.get("external_residual") or {}
+    residual_labels = " // ".join(
+        str(item.get("label") or "") for item in (residual.get("items") or [])
+    )
+    verification_html = (
+        '<div class="pb-contract pb-verification">'
+        '<div class="pb-contract-lbl">VERIFICATION LANES</div>'
+        f'<div class="pb-lane-line pass"><b>GREEN {e(green.get("state", "UNKNOWN"))}</b> '
+        f'{e(green.get("passed", 0))} passed · {e(green.get("skipped", 0))} skipped · '
+        f'{e(green.get("deselected", 0))} exact deselected · '
+        f'{e(green.get("subtests_passed", 0))} subtests</div>'
+        f'<div class="pb-lane-line residual"><b>EXTERNAL RESIDUAL '
+        f'{e(residual.get("state", "UNKNOWN"))}</b> · {e(residual.get("expected_count", 0))} exact</div>'
+        f'<div class="pb-contract-note">{e(residual_labels)}</div>'
+        '</div>'
+    )
+
+    blockers = snapshot.get("owner_blockers") or []
+    blocker_rows = "".join(
+        '<div class="pb-blocker">'
+        f'<span class="pb-blocker-id">{e(row.get("id"))}</span>'
+        f'<span class="pb-blocker-title">{e(row.get("title"))}'
+        f'<small>SAFE DEFAULT // {e(row.get("safe_default"))}</small></span>'
+        f'<span class="pb-blocker-blocks">BLOCKS {e(" · ".join(row.get("blocks") or []))}</span>'
+        '</div>'
+        for row in blockers
+    )
+
+    return (
+        f'<div class="pb-program pb-program-{state_cls}">'
+        '<div class="pb-source">'
+        f'<span class="pb-source-state">PROGRAM SOURCE {e(state)}</span>'
+        f'<span class="pb-source-detail">{e(source_detail)}</span>'
+        '</div>'
+        f'{safety_html}'
+        f'<div class="pb-waves">{"".join(wave_rows)}</div>'
+        f'<div class="pb-contracts">{q08_html}{"".join(lane_cards)}{verification_html}</div>'
+        '<div class="pb-blockers-head">'
+        f'<span>OWNER BLOCKERS</span><b>{len(blockers):02d} OPEN</b>'
+        '</div>'
+        f'<div class="pb-blockers">{blocker_rows}</div>'
+        '</div>'
+    )
+
+
+def pipeline_books_owner_decision_rows(snapshot: dict) -> list[dict]:
+    """Project verified programme blockers into the primary OWNER surface."""
+
+    state = str(snapshot.get("state") or "INVALID").upper()
+    blockers = snapshot.get("owner_blockers") or []
+    if not blockers:
+        error = _ell(str(snapshot.get("error") or "trusted status unavailable"), 78)
+        return [
+            {
+                "cat": "PROGRAM STATUS",
+                "title": f"Pipeline Books source {state}",
+                "detail": error,
+                "due": "",
+                "alert": True,
+            }
+        ]
+    rows: list[dict] = []
+    for blocker in blockers:
+        rows.append(
+            {
+                "cat": "PROGRAM",
+                "title": _ell(str(blocker.get("title") or blocker.get("id") or "OWNER decision"), 64),
+                "detail": _ell(
+                    f"{blocker.get('id', '')} // safe: {blocker.get('safe_default', '')}",
+                    96,
+                ),
+                "due": "",
+                "alert": True,
+            }
+        )
+    return rows
 
 
 def owner_decision_rows(q12_count: int) -> list[dict]:
@@ -1402,6 +1604,8 @@ def main() -> int:
     next_book = frontier_next_book_snapshot()
     heartbeats = ops_heartbeats_snapshot()
     q12_count = q12_review_ready_count()
+    programme = pipeline_books_program_snapshot()
+    programme_html = render_pipeline_books_program(programme)
 
     # Pipeline health (written by `farmctl health`, scheduled every 15 min)
     health_file = ROOT / "state" / "health.json"
@@ -1415,8 +1619,9 @@ def main() -> int:
     # 7-day trend chart data — counts per day of key events
     def _trend_data() -> dict:
         try:
-            con = sqlite3.connect(str(DB))
+            con = sqlite3.connect(f"file:{DB.as_posix()}?mode=ro", uri=True)
             con.row_factory = sqlite3.Row
+            con.execute("PRAGMA query_only=ON")
             rows = list(con.execute("""
                 SELECT DATE(ts) day, event, COUNT(*) c FROM events
                 WHERE ts >= date('now', '-7 days')
@@ -1430,8 +1635,9 @@ def main() -> int:
             days.setdefault(r["day"], {})[r["event"]] = r["c"]
         # P2-PASS counts per day from work_items (more reliable signal)
         try:
-            con = sqlite3.connect(str(DB))
+            con = sqlite3.connect(f"file:{DB.as_posix()}?mode=ro", uri=True)
             con.row_factory = sqlite3.Row
+            con.execute("PRAGMA query_only=ON")
             for r in con.execute("""
                 SELECT DATE(updated_at) day, COUNT(*) c FROM work_items
                 WHERE phase IN ('Q02','P2') AND status='done' AND verdict='PASS'
@@ -1648,6 +1854,8 @@ def main() -> int:
 
     # ---------- 2. LIVE MONEY ROW (OWNER rework 2026-07-07) ----------
     decisions = owner_decision_rows(q12_count)
+    decisions.extend(pipeline_books_owner_decision_rows(programme))
+    decisions.sort(key=lambda row: (0 if row.get("alert") else 1, str(row.get("due") or "9999-12-31")))
 
     dxz = money.get("dxz") or {}
     ftmo = money.get("ftmo") or {}
@@ -2851,6 +3059,95 @@ a.frontier-tile:hover { background: var(--surface-2); }
   letter-spacing: 0.05em; line-height: 1.5;
 }
 
+/* PIPELINE BOOKS PROGRAMME — hash-bound W0..W8 source projection */
+.pb-program { background: var(--surface-1); border: 1px solid var(--border); }
+.pb-program-fresh { border-top: 3px solid var(--pass); }
+.pb-program-stale { border-top: 3px solid var(--warn); }
+.pb-program-invalid { border-top: 3px solid var(--fail); }
+.pb-source {
+  display: flex; justify-content: space-between; gap: 24px; align-items: baseline;
+  padding: 11px 16px; border-bottom: 1px solid var(--border);
+  background: var(--surface-2); font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.pb-source-state { font-weight: 700; color: var(--pass); white-space: nowrap; }
+.pb-program-stale .pb-source-state { color: var(--warn); }
+.pb-program-invalid .pb-source-state { color: var(--fail); }
+.pb-source-detail { color: var(--text-3); text-align: right; overflow-wrap: anywhere; }
+.pb-invalid-body {
+  padding: 24px; color: var(--fail); font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px; line-height: 1.6;
+}
+.pb-safety {
+  display: flex; flex-wrap: wrap; gap: 12px 30px; padding: 10px 16px;
+  border-bottom: 1px solid var(--border); color: var(--warn);
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.pb-safety b { color: var(--text-2); margin-right: 5px; }
+.pb-waves {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px; background: var(--border); border-bottom: 1px solid var(--border);
+}
+.pb-wave { background: var(--surface-1); padding: 13px 15px; min-height: 142px; }
+.pb-wave-id {
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 20px;
+  font-weight: 700; color: var(--signal); float: left; margin-right: 11px;
+}
+.pb-wave-title { font-size: 12px; font-weight: 600; min-height: 37px; color: var(--text); }
+.pb-wave-status, .pb-wave-axes {
+  clear: both; padding-top: 7px; font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: var(--pass);
+  overflow-wrap: anywhere;
+}
+.pb-wave-axes { clear: none; padding-top: 3px; color: var(--text-3); font-weight: 400; }
+.pb-wave-next { margin-top: 8px; font-size: 10px; color: var(--text-3); line-height: 1.35; }
+.pb-wave-shadow .pb-wave-status, .pb-wave-planned .pb-wave-status { color: var(--warn); }
+.pb-wave-blocked .pb-wave-id, .pb-wave-blocked .pb-wave-status { color: var(--fail); }
+.pb-contracts {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px; background: var(--border); border-bottom: 1px solid var(--border);
+}
+.pb-contract { background: var(--surface-1); padding: 14px 16px; min-height: 124px; }
+.pb-contract-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px;
+  font-weight: 700; letter-spacing: 0.13em; color: var(--text-3); text-transform: uppercase;
+}
+.pb-contract-val {
+  margin-top: 7px; font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 15px; font-weight: 700; color: var(--warn); overflow-wrap: anywhere;
+}
+.pb-contract-sub, .pb-verdicts, .pb-lane-line {
+  margin-top: 4px; font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; color: var(--text-3); overflow-wrap: anywhere;
+}
+.pb-verdicts { color: var(--signal); }
+.pb-contract-note { margin-top: 7px; color: var(--text-3); font-size: 10px; line-height: 1.4; }
+.pb-lane-line.pass { color: var(--pass); margin-top: 9px; }
+.pb-lane-line.residual { color: var(--fail); }
+.pb-blockers-head {
+  display: flex; justify-content: space-between; padding: 10px 16px;
+  background: var(--surface-2); border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px;
+  letter-spacing: 0.14em; color: var(--text-3);
+}
+.pb-blockers-head b { color: var(--fail); }
+.pb-blocker {
+  display: grid; grid-template-columns: 205px 1fr 210px; gap: 14px;
+  padding: 9px 16px; border-bottom: 1px solid var(--border); align-items: baseline;
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px;
+}
+.pb-blocker:last-child { border-bottom: none; }
+.pb-blocker-id { color: var(--fail); font-weight: 700; overflow-wrap: anywhere; }
+.pb-blocker-title { color: var(--text-2); }
+.pb-blocker-title small { display: block; color: var(--text-3); margin-top: 3px; }
+.pb-blocker-blocks { color: var(--warn); text-align: right; overflow-wrap: anywhere; }
+@media (max-width: 1050px) {
+  .pb-waves, .pb-contracts { grid-template-columns: 1fr; }
+  .pb-blocker { grid-template-columns: 1fr; gap: 4px; }
+  .pb-blocker-blocks { text-align: left; }
+}
+
 /* BOTTOM BAR */
 .botbar {
   grid-column: span 12;
@@ -3078,6 +3375,16 @@ a.frontier-tile:hover { background: var(--surface-2); }
         <span class="wval">{e(watchdog_str)}</span>
       </div>
     </div>
+  </div>
+
+  <!-- 3b. PIPELINE BOOKS PROGRAMME -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Pipeline Books // DXZ + FTMO Programme</span>
+      <span class="section-aux">W0–W8 // Hash-Bound Source // No Runtime Authority</span>
+    </div>
+    {programme_html}
   </div>
 
   <!-- 4. COMPANY FRONTIER -->

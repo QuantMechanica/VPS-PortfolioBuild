@@ -118,6 +118,36 @@ bool AssertMarginCapForSide(const string label,
    return true;
   }
 
+bool AssertDirectionalLossForSide(const string label,
+                                  const ENUM_ORDER_TYPE order_type,
+                                  const double entry_price,
+                                  const QM_SymbolRiskSnapshot &snapshot)
+  {
+   const double sl_points = 100.0;
+   double loss_per_lot = 0.0;
+   QM_RiskSizerResetProfitFallback();
+   if(!AssertCondition(label + "_exact_directional_loss",
+                       QM_RiskSizerExactDirectionalLossPerLot(_Symbol,
+                                                              order_type,
+                                                              entry_price,
+                                                              sl_points,
+                                                              snapshot,
+                                                              loss_per_lot) &&
+                       loss_per_lot > 0.0 &&
+                       !g_qm_risk_profit_fallback_flag))
+      return false;
+
+   const double risk_money = 1000.0;
+   const double lots = QM_LotsForRiskAtEntryDirectional(_Symbol,
+                                                         sl_points,
+                                                         risk_money,
+                                                         order_type,
+                                                         entry_price,
+                                                         snapshot);
+   return AssertCondition(label + "_directional_lots",
+                          lots > 0.0 && !g_qm_risk_profit_fallback_flag);
+  }
+
 int OnInit()
   {
    QM_SymbolRiskSnapshot snap;
@@ -346,6 +376,14 @@ int OnInit()
       !AssertCondition("margin_atomic_quote",
                        SymbolInfoTick(_Symbol, margin_quote) &&
                        margin_quote.ask > 0.0 && margin_quote.bid > 0.0) ||
+      !AssertDirectionalLossForSide("buy",
+                                    ORDER_TYPE_BUY,
+                                    margin_quote.ask,
+                                    margin_snapshot) ||
+      !AssertDirectionalLossForSide("sell",
+                                    ORDER_TYPE_SELL,
+                                    margin_quote.bid,
+                                    margin_snapshot) ||
       !AssertMarginCapForSide("buy",
                               ORDER_TYPE_BUY,
                               margin_quote.ask,

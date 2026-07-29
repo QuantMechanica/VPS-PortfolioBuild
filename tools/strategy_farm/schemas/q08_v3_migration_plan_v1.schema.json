@@ -1,0 +1,379 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "qm/q08-v3-migration-plan/v1",
+  "title": "Q08 v3 advisory migration plan v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tool_version",
+    "plan_mode",
+    "owner_authorization",
+    "runtime_action",
+    "apply_supported",
+    "source",
+    "shadow_bindings",
+    "unresolved_bindings",
+    "proposals",
+    "summary",
+    "plan_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "qm.q08-v3-migration-plan/v1"},
+    "tool_version": {"const": "q08_v3_migration_plan/1.0.0"},
+    "plan_mode": {"const": "DRY_RUN_ONLY"},
+    "owner_authorization": {"const": "NONE"},
+    "runtime_action": {"const": "NONE"},
+    "apply_supported": {"const": false},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inventory_sha256",
+        "inventory_row_count",
+        "shadow_bindings_sha256",
+        "shadow_binding_count",
+        "resolved_binding_count",
+        "unresolved_binding_count",
+        "q08_policy_binding"
+      ],
+      "properties": {
+        "inventory_sha256": {"$ref": "#/$defs/sha256"},
+        "inventory_row_count": {"type": "integer", "minimum": 0},
+        "shadow_bindings_sha256": {"$ref": "#/$defs/sha256"},
+        "shadow_binding_count": {"type": "integer", "minimum": 0},
+        "resolved_binding_count": {"type": "integer", "minimum": 0},
+        "unresolved_binding_count": {"type": "integer", "minimum": 0},
+        "q08_policy_binding": {"$ref": "#/$defs/policyBinding"}
+      }
+    },
+    "shadow_bindings": {"$ref": "#/$defs/shadowBindings"},
+    "unresolved_bindings": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/unresolvedBinding"}
+    },
+    "proposals": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/proposal"}
+    },
+    "summary": {"$ref": "#/$defs/summary"},
+    "plan_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "policyBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "file_sha256", "canonical_sha256", "policy_version"],
+      "properties": {
+        "path": {"const": "framework/scripts/q08_v3_shadow/archetype_policy_v1.json"},
+        "file_sha256": {"$ref": "#/$defs/sha256"},
+        "canonical_sha256": {"$ref": "#/$defs/sha256"},
+        "policy_version": {"type": "string", "minLength": 1}
+      }
+    },
+    "subtestResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["test_id", "status", "detail"],
+      "properties": {
+        "test_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "status": {
+          "enum": ["PASS", "FAIL", "INSUFFICIENT", "NOT_APPLICABLE", "INVALID"]
+        },
+        "detail": {"type": "string"}
+      }
+    },
+    "shadowDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "policy_version",
+        "policy_sha256",
+        "verdict",
+        "route",
+        "archetype_requested",
+        "archetype_resolved",
+        "required_test_ids",
+        "supported_test_ids",
+        "conditional_test_ids",
+        "insufficient_test_ids",
+        "contradicted_test_ids",
+        "invalid_test_ids",
+        "missing_test_ids",
+        "diagnostic_test_ids",
+        "ignored_test_ids",
+        "reasons"
+      ],
+      "properties": {
+        "schema_version": {"const": "q08_shadow_decision/v1"},
+        "policy_version": {"type": "string", "minLength": 1},
+        "policy_sha256": {"$ref": "#/$defs/sha256"},
+        "verdict": {
+          "enum": ["SUPPORTED", "CONDITIONAL", "INSUFFICIENT", "CONTRADICTED", "INVALID"]
+        },
+        "route": {
+          "enum": [
+            "PORTFOLIO_EVALUATION",
+            "PORTFOLIO_EVALUATION_CONDITIONAL",
+            "SHADOW_EVIDENCE",
+            "REJECT",
+            "RETRY"
+          ]
+        },
+        "archetype_requested": {"type": "string"},
+        "archetype_resolved": {"type": ["string", "null"]},
+        "required_test_ids": {"$ref": "#/$defs/stringSet"},
+        "supported_test_ids": {"$ref": "#/$defs/stringSet"},
+        "conditional_test_ids": {"$ref": "#/$defs/stringSet"},
+        "insufficient_test_ids": {"$ref": "#/$defs/stringSet"},
+        "contradicted_test_ids": {"$ref": "#/$defs/stringSet"},
+        "invalid_test_ids": {"$ref": "#/$defs/stringSet"},
+        "missing_test_ids": {"$ref": "#/$defs/stringSet"},
+        "diagnostic_test_ids": {"$ref": "#/$defs/stringSet"},
+        "ignored_test_ids": {"$ref": "#/$defs/stringSet"},
+        "reasons": {"$ref": "#/$defs/stringSet"}
+      }
+    },
+    "shadowBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selector_type", "selector", "subtest_results", "decision"],
+      "properties": {
+        "selector_type": {"enum": ["WORK_ITEM_ID", "ALIAS", "LINEAGE_KEY"]},
+        "selector": {"type": "string", "minLength": 1},
+        "subtest_results": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/subtestResult"}
+        },
+        "decision": {"$ref": "#/$defs/shadowDecision"}
+      }
+    },
+    "shadowBindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "policy_binding", "bindings"],
+      "properties": {
+        "schema_version": {"const": "qm.q08-v3-shadow-bindings/v1"},
+        "policy_binding": {"$ref": "#/$defs/policyBinding"},
+        "bindings": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/shadowBinding"}
+        }
+      }
+    },
+    "stringSet": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "unresolvedBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding_sha256",
+        "selector_type",
+        "selector",
+        "resolution",
+        "candidate_work_item_ids"
+      ],
+      "properties": {
+        "binding_sha256": {"$ref": "#/$defs/sha256"},
+        "selector_type": {"enum": ["WORK_ITEM_ID", "ALIAS", "LINEAGE_KEY"]},
+        "selector": {"type": "string", "minLength": 1},
+        "resolution": {"enum": ["NO_MATCH", "AMBIGUOUS_MATCH", "MULTIPLE_BINDINGS"]},
+        "candidate_work_item_ids": {"$ref": "#/$defs/stringSet"}
+      }
+    },
+    "shadow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["binding_state", "binding_sha256", "decision_sha256", "verdict", "route"],
+      "properties": {
+        "binding_state": {"enum": ["MATCHED", "NOT_PROVIDED", "UNRESOLVED"]},
+        "binding_sha256": {
+          "anyOf": [
+            {"$ref": "#/$defs/sha256"},
+            {"type": "null"}
+          ]
+        },
+        "decision_sha256": {
+          "anyOf": [
+            {"$ref": "#/$defs/sha256"},
+            {"type": "null"}
+          ]
+        },
+        "verdict": {
+          "type": ["string", "null"],
+          "enum": ["SUPPORTED", "CONDITIONAL", "INSUFFICIENT", "CONTRADICTED", "INVALID", null]
+        },
+        "route": {
+          "type": ["string", "null"],
+          "enum": [
+            "PORTFOLIO_EVALUATION",
+            "PORTFOLIO_EVALUATION_CONDITIONAL",
+            "SHADOW_EVIDENCE",
+            "REJECT",
+            "RETRY",
+            null
+          ]
+        }
+      }
+    },
+    "proposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "work_item_id",
+        "lineage_key",
+        "legacy_verdict",
+        "inventory_disposition",
+        "inventory_priority",
+        "targets",
+        "shadow",
+        "discordance",
+        "proposed_overlay_state",
+        "owner_authorization",
+        "runtime_action",
+        "reason_codes",
+        "proposal_id"
+      ],
+      "properties": {
+        "work_item_id": {"type": "string", "minLength": 1},
+        "lineage_key": {"type": "string", "minLength": 1},
+        "legacy_verdict": {"type": ["string", "null"]},
+        "inventory_disposition": {
+          "enum": [
+            "CURRENT",
+            "LEGACY_UNVERIFIED",
+            "ELIGIBLE_REEVALUATION",
+            "INVALID",
+            "SUPERSEDED"
+          ]
+        },
+        "inventory_priority": {
+          "enum": [
+            "P0_CURRENT_TARGET",
+            "P1_V2_PASS",
+            "P2_V2_FAIL_SOFT",
+            "P3_LEGACY",
+            "HOLD_INVALID",
+            "HOLD_SUPERSEDED"
+          ]
+        },
+        "targets": {
+          "type": "array",
+          "items": {"enum": ["DXZ", "FTMO"]},
+          "uniqueItems": true
+        },
+        "shadow": {"$ref": "#/$defs/shadow"},
+        "discordance": {
+          "enum": [
+            "AGREEMENT",
+            "UPGRADE_CANDIDATE",
+            "DOWNGRADE_REVIEW",
+            "REVERSAL_REVIEW",
+            "EVIDENCE_GAP",
+            "INFRA_RESOLVED_REVIEW",
+            "NO_V3_RESULT",
+            "NOT_ELIGIBLE",
+            "INVALID_BINDING"
+          ]
+        },
+        "proposed_overlay_state": {
+          "enum": [
+            "SUPPORTED_CANDIDATE",
+            "CONDITIONAL_CANDIDATE",
+            "INSUFFICIENT_HOLD",
+            "CONTRADICTED_HOLD",
+            "INVALID_HOLD",
+            "NO_RESULT",
+            "NOT_ELIGIBLE",
+            "COLLISION_HOLD"
+          ]
+        },
+        "owner_authorization": {"const": "NONE"},
+        "runtime_action": {"const": "NONE"},
+        "reason_codes": {"$ref": "#/$defs/stringSet"},
+        "proposal_id": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "discordanceCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "AGREEMENT",
+        "UPGRADE_CANDIDATE",
+        "DOWNGRADE_REVIEW",
+        "REVERSAL_REVIEW",
+        "EVIDENCE_GAP",
+        "INFRA_RESOLVED_REVIEW",
+        "NO_V3_RESULT",
+        "NOT_ELIGIBLE",
+        "INVALID_BINDING"
+      ],
+      "properties": {
+        "AGREEMENT": {"type": "integer", "minimum": 0},
+        "UPGRADE_CANDIDATE": {"type": "integer", "minimum": 0},
+        "DOWNGRADE_REVIEW": {"type": "integer", "minimum": 0},
+        "REVERSAL_REVIEW": {"type": "integer", "minimum": 0},
+        "EVIDENCE_GAP": {"type": "integer", "minimum": 0},
+        "INFRA_RESOLVED_REVIEW": {"type": "integer", "minimum": 0},
+        "NO_V3_RESULT": {"type": "integer", "minimum": 0},
+        "NOT_ELIGIBLE": {"type": "integer", "minimum": 0},
+        "INVALID_BINDING": {"type": "integer", "minimum": 0}
+      }
+    },
+    "overlayCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "SUPPORTED_CANDIDATE",
+        "CONDITIONAL_CANDIDATE",
+        "INSUFFICIENT_HOLD",
+        "CONTRADICTED_HOLD",
+        "INVALID_HOLD",
+        "NO_RESULT",
+        "NOT_ELIGIBLE",
+        "COLLISION_HOLD"
+      ],
+      "properties": {
+        "SUPPORTED_CANDIDATE": {"type": "integer", "minimum": 0},
+        "CONDITIONAL_CANDIDATE": {"type": "integer", "minimum": 0},
+        "INSUFFICIENT_HOLD": {"type": "integer", "minimum": 0},
+        "CONTRADICTED_HOLD": {"type": "integer", "minimum": 0},
+        "INVALID_HOLD": {"type": "integer", "minimum": 0},
+        "NO_RESULT": {"type": "integer", "minimum": 0},
+        "NOT_ELIGIBLE": {"type": "integer", "minimum": 0},
+        "COLLISION_HOLD": {"type": "integer", "minimum": 0}
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proposal_count",
+        "discordance_counts",
+        "overlay_state_counts",
+        "matched_work_item_ids",
+        "no_result_work_item_ids",
+        "collision_blocked_work_item_ids"
+      ],
+      "properties": {
+        "proposal_count": {"type": "integer", "minimum": 0},
+        "discordance_counts": {"$ref": "#/$defs/discordanceCounts"},
+        "overlay_state_counts": {"$ref": "#/$defs/overlayCounts"},
+        "matched_work_item_ids": {"$ref": "#/$defs/stringSet"},
+        "no_result_work_item_ids": {"$ref": "#/$defs/stringSet"},
+        "collision_blocked_work_item_ids": {"$ref": "#/$defs/stringSet"}
+      }
+    }
+  }
+}

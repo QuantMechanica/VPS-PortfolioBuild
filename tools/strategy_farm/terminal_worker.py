@@ -3106,6 +3106,14 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
     payload.update({
         "started_at_iso": now,
         "pid": spawn["pid"],
+        "process_creation_key": spawn.get("process_creation_key"),
+        "process_image_path": spawn.get("process_image_path"),
+        "process_started_at_epoch": spawn.get("process_started_at_epoch"),
+        "job_object_assigned": spawn.get("job_object_assigned"),
+        "job_object_mode": spawn.get("job_object_mode"),
+        "job_object_registry_key": spawn.get("job_object_registry_key"),
+        "process_started_suspended": spawn.get("process_started_suspended"),
+        "primary_thread_resumed": spawn.get("primary_thread_resumed"),
         "log_path": spawn["log_path"],
         "report_root": spawn["report_root"],
         "phase_evidence_path": spawn.get("phase_evidence_path"),
@@ -3218,6 +3226,14 @@ def _trigger_disk_purge() -> None:
 
 
 def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
+    """Run the resident production owner for this terminal's runner Jobs.
+
+    Each contained child Job handle lives in farmctl's in-process registry.
+    Keeping this daemon alive until the complete child tree exits is therefore
+    part of the containment contract; orderly worker exit intentionally closes
+    those handles and kills any still-running descendants.
+    """
+
     signal.signal(signal.SIGINT, _handle_stop)
     signal.signal(signal.SIGTERM, _handle_stop)
     released = release_stale_claims_for_terminal(root, terminal)

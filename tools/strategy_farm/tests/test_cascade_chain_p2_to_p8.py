@@ -12,7 +12,26 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 import farmctl  # noqa: E402
 
 
+def _fake_job_binding(proc, capture_identity, **_kwargs) -> dict:
+    identity = capture_identity(proc)
+    return {
+        **identity,
+        "job_object_assigned": True,
+        "job_object_mode": "KILL_ON_JOB_CLOSE",
+        "job_object_registry_key": f"{proc.pid}|{identity['process_creation_key']}",
+        "process_started_suspended": True,
+        "primary_thread_resumed": True,
+    }
+
+
 class CascadeChainP2ToP8Tests(unittest.TestCase):
+    def setUp(self) -> None:
+        old_binding = farmctl.bind_spawned_process_to_kill_job
+        self.addCleanup(
+            setattr, farmctl, "bind_spawned_process_to_kill_job", old_binding
+        )
+        farmctl.bind_spawned_process_to_kill_job = _fake_job_binding
+
     def _insert_work_item(self, root: Path, *, item_id: str, ea_id: str, phase: str, symbol: str = "EURUSD.DWX") -> None:
         farmctl.init_db(root)
         now = farmctl.utc_now()

@@ -1,0 +1,270 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "qm://strategy-farm/pipeline-books-program-status/v1",
+  "title": "Pipeline Books dashboard programme status v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "program_id",
+    "as_of_utc",
+    "freshness_max_age_hours",
+    "authority",
+    "safety",
+    "bindings",
+    "work_packages",
+    "q08_v3",
+    "target_lanes",
+    "verification_lanes",
+    "owner_blockers"
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "fileBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "file_sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "file_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "contentBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "file_sha256", "canonical_sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "file_sha256": {"$ref": "#/$defs/sha256"},
+        "canonical_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "rulepackBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rulepack_id", "path", "file_sha256", "canonical_sha256"],
+      "properties": {
+        "rulepack_id": {
+          "enum": ["DXZ_BETTER_BOOK_V1", "FTMO_2S_100K_SWING_V1"]
+        },
+        "path": {"type": "string", "minLength": 1},
+        "file_sha256": {"$ref": "#/$defs/sha256"},
+        "canonical_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  },
+  "properties": {
+    "schema_version": {"const": "qm.pipeline-books-dashboard-status/v1"},
+    "program_id": {"const": "PIPELINE_BOOKS_DXZ_FTMO_2026_07"},
+    "as_of_utc": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "freshness_max_age_hours": {"type": "integer", "minimum": 1, "maximum": 720},
+    "authority": {"const": "SOURCE_STATUS_ONLY_NO_RUNTIME_AUTHORITY"},
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "factory_state",
+        "factory_action_authorized",
+        "scheduler_action_authorized",
+        "mt5_action_authorized",
+        "autotrading_action_authorized",
+        "deployment_authorized",
+        "statement"
+      ],
+      "properties": {
+        "factory_state": {"const": "INTENTIONALLY_OFF"},
+        "factory_action_authorized": {"const": false},
+        "scheduler_action_authorized": {"const": false},
+        "mt5_action_authorized": {"const": false},
+        "autotrading_action_authorized": {"const": false},
+        "deployment_authorized": {"const": false},
+        "statement": {"type": "string", "minLength": 1}
+      }
+    },
+    "bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plan", "evidence", "q08_policy", "test_lanes", "rulepacks"],
+      "properties": {
+        "plan": {"$ref": "#/$defs/fileBinding"},
+        "evidence": {"$ref": "#/$defs/fileBinding"},
+        "q08_policy": {"$ref": "#/$defs/contentBinding"},
+        "test_lanes": {"$ref": "#/$defs/fileBinding"},
+        "rulepacks": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {"$ref": "#/$defs/rulepackBinding"}
+        }
+      }
+    },
+    "work_packages": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 9,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "status",
+          "source_status",
+          "runtime_status",
+          "authority_status",
+          "next_action"
+        ],
+        "properties": {
+          "id": {"pattern": "^W[0-8]$"},
+          "title": {"type": "string", "minLength": 1},
+          "status": {"type": "string", "minLength": 1},
+          "source_status": {"type": "string", "minLength": 1},
+          "runtime_status": {"type": "string", "minLength": 1},
+          "authority_status": {"const": "NO_RUNTIME_AUTHORITY"},
+          "next_action": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "q08_v3": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lifecycle",
+        "promotion_state",
+        "canonical_q08_unchanged",
+        "policy_canonical_sha256",
+        "verdict_states",
+        "evidence_semantics"
+      ],
+      "properties": {
+        "lifecycle": {"const": "SHADOW_ONLY"},
+        "promotion_state": {"const": "NOT_OWNER_APPROVED"},
+        "canonical_q08_unchanged": {"const": true},
+        "policy_canonical_sha256": {"$ref": "#/$defs/sha256"},
+        "verdict_states": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "SUPPORTED"},
+            {"const": "CONDITIONAL"},
+            {"const": "INSUFFICIENT"},
+            {"const": "CONTRADICTED"},
+            {"const": "INVALID"}
+          ],
+          "items": false
+        },
+        "evidence_semantics": {"type": "string", "minLength": 1}
+      }
+    },
+    "target_lanes": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lane_id",
+          "label",
+          "state",
+          "rulepack_id",
+          "rulepack_canonical_sha256",
+          "eligibility",
+          "deployment_authority",
+          "next_action"
+        ],
+        "properties": {
+          "lane_id": {"enum": ["DXZ_BETTER_BOOK", "FTMO_2S_100K_SWING"]},
+          "label": {"type": "string", "minLength": 1},
+          "state": {
+            "enum": [
+              "RESEARCH_RULEPACK_ONLY",
+              "RESEARCH_EVALUATOR_SOURCE_IMPLEMENTED"
+            ]
+          },
+          "rulepack_id": {
+            "enum": ["DXZ_BETTER_BOOK_V1", "FTMO_2S_100K_SWING_V1"]
+          },
+          "rulepack_canonical_sha256": {"$ref": "#/$defs/sha256"},
+          "eligibility": {"const": "NOT_EVALUATED"},
+          "deployment_authority": {"const": "NONE"},
+          "next_action": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "verification_lanes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["green", "external_residual"],
+      "properties": {
+        "green": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "passed", "skipped", "deselected", "subtests_passed", "statement"],
+          "properties": {
+            "state": {"const": "PASS"},
+            "passed": {"type": "integer", "minimum": 0},
+            "skipped": {"type": "integer", "minimum": 0},
+            "deselected": {"type": "integer", "minimum": 0},
+            "subtests_passed": {"type": "integer", "minimum": 0},
+            "statement": {"type": "string", "minLength": 1}
+          }
+        },
+        "external_residual": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "expected_count", "items", "exit_condition"],
+          "properties": {
+            "state": {"const": "EXPECTED_FAIL_CLOSED"},
+            "expected_count": {"const": 5},
+            "items": {
+              "type": "array",
+              "minItems": 5,
+              "maxItems": 5,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["node_id", "label", "owner_items"],
+                "properties": {
+                  "node_id": {"type": "string", "minLength": 1},
+                  "label": {"type": "string", "minLength": 1},
+                  "owner_items": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {"type": "string", "minLength": 1}
+                  }
+                }
+              }
+            },
+            "exit_condition": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "owner_blockers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "state", "safe_default", "blocks"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "title": {"type": "string", "minLength": 1},
+          "state": {"const": "OPEN_OWNER_DECISION"},
+          "safe_default": {"type": "string", "minLength": 1},
+          "blocks": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    }
+  }
+}

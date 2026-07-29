@@ -56,6 +56,57 @@ def utc_now_iso() -> str:
     return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()
 
 
+def _connect_readonly(database: Path) -> sqlite3.Connection:
+    """Open a dashboard source without creating or mutating SQLite state."""
+
+    resolved = database.resolve()
+    connection = sqlite3.connect(resolved.as_uri() + "?mode=ro", uri=True)
+    try:
+        connection.execute("PRAGMA query_only=ON")
+        enabled = connection.execute("PRAGMA query_only").fetchone()
+        if enabled is None or int(enabled[0]) != 1:
+            raise sqlite3.OperationalError("SQLite query_only could not be asserted")
+    except BaseException:
+        connection.close()
+        raise
+    return connection
+
+
+def _factory_off_asserted(root: Path) -> bool:
+    """Fail closed for ancillary DB refreshes when OFF state is unreadable."""
+
+    flag = root / "state" / "FACTORY_OFF.flag"
+    try:
+        return flag.exists()
+    except OSError:
+        return True
+
+
+def _refresh_ea_metrics_for_render(root: Path) -> dict[str, Any]:
+    """Refresh derived metrics only when the Factory is affirmatively ON."""
+
+    if _factory_off_asserted(root):
+        print("INFO: FACTORY_OFF asserted; ea_metrics DB refresh skipped", file=sys.stderr)
+        return {"refreshed": False, "reason": "FACTORY_OFF"}
+    try:
+        from tools.strategy_farm import ea_metrics as _ea_metrics
+
+        db_for_metrics = root / "state" / "farm_state.sqlite"
+        if not db_for_metrics.exists():
+            return {"refreshed": False, "reason": "DB_MISSING"}
+        with sqlite3.connect(db_for_metrics) as connection:
+            result = _ea_metrics.build(connection, full=False)
+        print(
+            f"ea_metrics refreshed: {result.get('upserts')} upserts, "
+            f"{result.get('skipped')} unchanged",
+            file=sys.stderr,
+        )
+        return {"refreshed": True, **result}
+    except Exception as exc:  # noqa: BLE001 — never block the render
+        print(f"WARN: ea_metrics refresh skipped: {exc!r}", file=sys.stderr)
+        return {"refreshed": False, "reason": "REFRESH_ERROR", "error": repr(exc)}
+
+
 def e(s: Any) -> str:
     return html.escape(str(s)) if s is not None else ""
 
@@ -292,7 +343,7 @@ def collect_farm_state(root: Path) -> dict[str, Any]:
     if not db.exists():
         return {"sources": [], "tasks": [], "events": [], "db_missing": True, "_root": root}
 
-    with sqlite3.connect(db) as conn:
+    with _connect_readonly(db) as conn:
         conn.row_factory = sqlite3.Row
         sources = [dict(r) for r in conn.execute(
             "SELECT * FROM sources ORDER BY priority, created_at"
@@ -537,7 +588,7 @@ def derive_ea_candidates(tasks: list[dict], root: Path | None = None) -> list[di
         if db.exists():
             pass_verdicts = {"PASS", "AUTO_PASS", "MODE_SELECTED", "MULTI_SEED_PASS"}
             try:
-                with sqlite3.connect(db) as conn:
+                with _connect_readonly(db) as conn:
                     conn.row_factory = sqlite3.Row
                     rows = conn.execute(
                         "SELECT ea_id, phase, status, verdict, updated_at FROM work_items"
@@ -856,7 +907,7 @@ def collect_cockpit_data(root: Path, eas: list[dict]) -> dict[str, Any]:
     if not db.exists():
         return out
     out["db_missing"] = False
-    with sqlite3.connect(db) as conn:
+    with _connect_readonly(db) as conn:
         conn.row_factory = sqlite3.Row
         wi = [dict(r) for r in conn.execute(
             "SELECT id,phase,ea_id,symbol,status,verdict,claimed_by,evidence_path,"
@@ -2039,7 +2090,7 @@ def collect_q08_portfolio_rescue_for_ea(ea_id: str, root: Path) -> list[dict[str
     db = root / "state" / "farm_state.sqlite"
     if not db.exists():
         return []
-    with sqlite3.connect(db) as conn:
+    with _connect_readonly(db) as conn:
         conn.row_factory = sqlite3.Row
         q08_rows = [dict(r) for r in conn.execute(
             """
@@ -2145,7 +2196,7 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
     if not db.exists():
         return out
     placeholders = ",".join("?" for _ in ea_ids)
-    with sqlite3.connect(db) as conn:
+    with _connect_readonly(db) as conn:
         conn.row_factory = sqlite3.Row
         rows = list(conn.execute(
             f"SELECT ea_id, phase, symbol, status, verdict, payload_json, evidence_path, updated_at "
@@ -2197,7 +2248,7 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
     # PASS run. Ablation perturbations are excluded from "best" by design.
     mx: dict[str, dict[str, Any]] = {}
     try:
-        with sqlite3.connect(db) as conn2:
+        with _connect_readonly(db) as conn2:
             conn2.row_factory = sqlite3.Row
             mrows = conn2.execute(
                 f"SELECT ea_id, phase, symbol, net_profit, trades, drawdown_money "
@@ -2306,6 +2357,20 @@ def _phase_base(phase: Any) -> str:
     return PHASE_QID.get(s, s)  # legacy P-key → Qxx (PHASE_QID = LEGACY_P_TO_Q)
 
 
+def _archive_verdict_text(phase: Any, verdict: Any) -> str:
+    """Label the existing Q08 work-item dimension without implying Q08-v3.
+
+    Q08-v3 evidence strength is an orthogonal, shadow-only record.  Values in
+    ``work_items.verdict`` remain the canonical pre-v3 gate dimension and must
+    therefore stay visibly distinct even when their token is simply ``PASS``.
+    """
+
+    text = qxx_text(str(verdict or ""))
+    if text and _phase_base(phase) == "Q08":
+        return f"LEGACY {text}"
+    return text
+
+
 def _verdict_family(v: str | None) -> str:
     if not v:
         return "other"
@@ -2405,7 +2470,7 @@ def collect_archive_v2(root: Path, slug_map: dict[str, str]) -> dict[str, Any]:
     open_map: dict[tuple, dict] = {}
     pass_map: dict[tuple, dict] = {}
 
-    with sqlite3.connect(db) as conn:  # SELECT only — DB is read-only for this tool
+    with _connect_readonly(db) as conn:
         cur = conn.execute(
             "SELECT ea_id, phase, symbol, status, verdict, updated_at FROM work_items")
         for ea_id, phase, symbol, status, verdict, updated_at in cur:
@@ -2422,6 +2487,7 @@ def collect_archive_v2(root: Path, slug_map: dict[str, str]) -> dict[str, Any]:
             a = ea_agg.get(ea_id)
             if a is None:
                 a = ea_agg[ea_id] = {"last_upd": "", "last_verdict": None,
+                                     "last_phase": None,
                                      "hp_idx": -1, "hp": None, "adv_idx": -1,
                                      "adv": None, "n": 0, "n_pass": 0}
             a["n"] += 1
@@ -2432,7 +2498,9 @@ def collect_archive_v2(root: Path, slug_map: dict[str, str]) -> dict[str, Any]:
             if fam == "pass" and bidx > a["hp_idx"]:
                 a["hp_idx"], a["hp"] = bidx, base
             if not future and upd > a["last_upd"]:
-                a["last_upd"], a["last_verdict"] = upd, (v or None)
+                a["last_upd"], a["last_verdict"], a["last_phase"] = (
+                    upd, (v or None), (base or None)
+                )
 
             if symbol and not future:
                 ck = (ea_id, symbol)
@@ -2498,6 +2566,220 @@ def _idx_status(ea_id: str, a: dict, live_ids: set[str]) -> tuple[str, str, str]
     return "—", "s-card", "other"
 
 
+def collect_pipeline_books_program_status(repo_root: Path = REPO_ROOT) -> dict[str, Any]:
+    """Return the strict W0--W8 programme snapshot used by operator surfaces.
+
+    Import and validation failures are converted to an explicit INVALID model so
+    an optional status projection can never prevent the historical archive from
+    rendering.  The shared helper remains the sole authority for validation and
+    freshness; this renderer does not reconstruct programme claims from legacy
+    work-item rows.
+    """
+
+    try:
+        from tools.strategy_farm.pipeline_books_dashboard_status import (
+            DEFAULT_CONFIG,
+            program_status_snapshot,
+        )
+
+        return program_status_snapshot(DEFAULT_CONFIG, repo_root=repo_root)
+    except Exception as exc:  # noqa: BLE001 - dashboard must expose, not hide, failure
+        return {
+            "state": "INVALID",
+            "valid": False,
+            "error": f"programme status helper failed: {exc}",
+            "generated_at_utc": utc_now_iso(),
+            "config_as_of_utc": None,
+            "age_hours": None,
+            "safety": {},
+            "bindings": {},
+            "work_packages": [],
+            "q08_v3": {},
+            "target_lanes": [],
+            "verification_lanes": {},
+            "owner_blockers": [],
+        }
+
+
+def _programme_tone(value: Any) -> str:
+    token = str(value or "").upper()
+    if any(part in token for part in ("INVALID", "MISSING", "BLOCKED", "CONTRADICTED")):
+        return "bad"
+    if token.startswith("NOT_") or token in {"NONE", "OPEN_OWNER_DECISION"}:
+        return "bad"
+    if any(part in token for part in ("STALE", "PARTIAL", "SHADOW", "FOUNDATION", "RESIDUAL", "CONDITIONAL", "INSUFFICIENT", "RESEARCH_")):
+        return "warn"
+    if any(part in token for part in ("FRESH", "PASS", "SUPPORTED", "IMPLEMENTED", "COMPLETE")):
+        return "good"
+    return "neutral"
+
+
+def _short_sha(value: Any) -> str:
+    text = str(value or "")
+    return text[:12] + "…" if len(text) == 64 else text
+
+
+def render_pipeline_books_program_status(snapshot: dict[str, Any]) -> str:
+    """Render the source-only pipeline/books programme projection.
+
+    MISSING and INVALID snapshots intentionally render no programme claims.
+    STALE snapshots retain their last validated values but carry an unmistakable
+    warning.  Historical work-item verdicts are never promoted into Q08-v3 or
+    target-eligibility claims here.
+    """
+
+    state = str(snapshot.get("state") or "INVALID").upper()
+    state_tone = _programme_tone(state)
+    age = snapshot.get("age_hours")
+    age_text = f" · age {age}h" if isinstance(age, (int, float)) else ""
+    as_of = snapshot.get("config_as_of_utc") or "—"
+    state_html = (
+        f'<span class="pbs-state {state_tone}">{e(state)}</span>'
+        f'<span class="pbs-asof">source {e(as_of)}{e(age_text)}</span>'
+    )
+
+    if state in {"MISSING", "INVALID"}:
+        error = snapshot.get("error") or "programme source unavailable"
+        return f"""
+<section class="arch2-sec pbs-programme">
+  <div class="sec-head"><span class="sec-kicker">Programme</span><h2>Better Books · DXZ + FTMO</h2><span class="sec-meta">{state_html}</span></div>
+  <div class="pbs-failclosed"><strong>{e(state)}</strong> — {e(error)}<br>
+  No Q08-v3 evidence, target eligibility, execution identity, promotion status, or
+  completion claim is inferred from the legacy archive.</div>
+</section>"""
+
+    safety = snapshot.get("safety") if isinstance(snapshot.get("safety"), dict) else {}
+    q08 = snapshot.get("q08_v3") if isinstance(snapshot.get("q08_v3"), dict) else {}
+    work_packages = snapshot.get("work_packages") if isinstance(snapshot.get("work_packages"), list) else []
+    target_lanes = snapshot.get("target_lanes") if isinstance(snapshot.get("target_lanes"), list) else []
+    verification = snapshot.get("verification_lanes") if isinstance(snapshot.get("verification_lanes"), dict) else {}
+    blockers = snapshot.get("owner_blockers") if isinstance(snapshot.get("owner_blockers"), list) else []
+    bindings = snapshot.get("bindings") if isinstance(snapshot.get("bindings"), dict) else {}
+
+    warning_html = ""
+    if state == "STALE":
+        warning_html = (
+            f'<div class="pbs-warning"><strong>STALE SOURCE:</strong> {e(snapshot.get("error") or "freshness limit exceeded")}. '
+            "Values below are the last strictly validated source snapshot, not current runtime truth.</div>"
+        )
+
+    dimensions = (
+        ("Execution status", "Did the bound run complete? Never substitutes for evidence."),
+        ("Evidence strength", "Q08 v3 measures support, insufficiency and contradiction."),
+        ("Economic merit", "Return/cost merit remains separate from execution and evidence."),
+        ("Target eligibility", "DXZ and FTMO are evaluated independently under bound rulepacks."),
+        ("Promotion decision", "OWNER-only; no pipeline or dashboard verdict grants authority."),
+    )
+    dimensions_html = "".join(
+        f'<div class="pbs-dimension"><div class="pbs-dim-name">{e(name)}</div>'
+        f'<div class="pbs-dim-body">{e(body)}</div></div>'
+        for name, body in dimensions
+    )
+
+    verdicts_html = "".join(
+        f'<span class="pbs-token {_programme_tone(verdict)}">{e(verdict)}</span>'
+        for verdict in (q08.get("verdict_states") or [])
+    ) or '<span class="pbs-token bad">NOT DECLARED</span>'
+    q08_html = f"""
+<div class="pbs-card">
+  <div class="pbs-card-kicker">Q08 v3 · evidence dossier</div>
+  <div class="pbs-card-title">{e(q08.get("lifecycle") or "MISSING")} · {e(q08.get("promotion_state") or "MISSING")}</div>
+  <div class="pbs-token-row">{verdicts_html}</div>
+  <div class="pbs-card-body">{e(q08.get("evidence_semantics") or "No evidence semantics available.")}</div>
+  <div class="pbs-card-meta">Canonical Q08 unchanged: {e(q08.get("canonical_q08_unchanged"))} · policy <code title="{e(q08.get('policy_canonical_sha256') or '')}">{e(_short_sha(q08.get('policy_canonical_sha256')))}</code></div>
+</div>"""
+
+    targets_html = ""
+    for lane in target_lanes:
+        if not isinstance(lane, dict):
+            continue
+        targets_html += f"""
+<div class="pbs-card">
+  <div class="pbs-card-kicker">Target lane · {e(lane.get("lane_id"))}</div>
+  <div class="pbs-card-title">{e(lane.get("label"))}</div>
+  <div class="pbs-token-row">
+    <span class="pbs-token {_programme_tone(lane.get('state'))}">{e(lane.get("state"))}</span>
+    <span class="pbs-token {_programme_tone(lane.get('eligibility'))}">eligibility {e(lane.get("eligibility"))}</span>
+    <span class="pbs-token bad">deploy {e(lane.get("deployment_authority"))}</span>
+  </div>
+  <div class="pbs-card-body">Next: {e(lane.get("next_action"))}</div>
+  <div class="pbs-card-meta">{e(lane.get("rulepack_id"))} · <code title="{e(lane.get('rulepack_canonical_sha256') or '')}">{e(_short_sha(lane.get('rulepack_canonical_sha256')))}</code></div>
+</div>"""
+    if not targets_html:
+        targets_html = '<div class="pbs-failclosed">No target-lane declarations available.</div>'
+
+    wp_rows = ""
+    for row in work_packages:
+        if not isinstance(row, dict):
+            continue
+        wp_rows += (
+            f'<tr><td><code>{e(row.get("id"))}</code></td><td>{e(row.get("title"))}</td>'
+            f'<td><span class="pbs-token {_programme_tone(row.get("source_status"))}">{e(row.get("source_status"))}</span></td>'
+            f'<td><span class="pbs-token {_programme_tone(row.get("runtime_status"))}">{e(row.get("runtime_status"))}</span></td>'
+            f'<td>{e(row.get("next_action"))}</td></tr>'
+        )
+    if not wp_rows:
+        wp_rows = '<tr><td colspan="5" class="arch2-empty">No work-package status available.</td></tr>'
+
+    green = verification.get("green") if isinstance(verification.get("green"), dict) else {}
+    residual = verification.get("external_residual") if isinstance(verification.get("external_residual"), dict) else {}
+    residual_items = residual.get("items") if isinstance(residual.get("items"), list) else []
+    residual_html = "".join(
+        f'<li><code>{e(item.get("node_id"))}</code><span>{e(item.get("label"))}</span>'
+        f'<small>OWNER: {e(", ".join(str(v) for v in (item.get("owner_items") or [])))}</small></li>'
+        for item in residual_items if isinstance(item, dict)
+    ) or '<li><span>No residual declaration available.</span></li>'
+
+    blocker_html = "".join(
+        f'<li><strong>{e(row.get("id"))} · {e(row.get("title"))}</strong>'
+        f'<span>{e(row.get("safe_default"))}</span>'
+        f'<small>Blocks: {e(", ".join(str(v) for v in (row.get("blocks") or [])))}</small></li>'
+        for row in blockers if isinstance(row, dict)
+    ) or '<li><span>No OWNER-blocker declaration available.</span></li>'
+
+    binding_rows: list[str] = []
+    for key in ("plan", "evidence", "test_lanes"):
+        binding = bindings.get(key)
+        if isinstance(binding, dict):
+            binding_rows.append(
+                f'<span>{e(key)} <code title="{e(binding.get("file_sha256") or "")}">{e(_short_sha(binding.get("file_sha256")))}</code></span>'
+            )
+    policy_binding = bindings.get("q08_policy")
+    if isinstance(policy_binding, dict):
+        binding_rows.append(
+            f'<span>q08 policy <code title="{e(policy_binding.get("canonical_sha256") or "")}">{e(_short_sha(policy_binding.get("canonical_sha256")))}</code></span>'
+        )
+    bindings_html = "".join(binding_rows) or '<span>bindings unavailable</span>'
+
+    return f"""
+<section class="arch2-sec pbs-programme">
+  <div class="sec-head"><span class="sec-kicker">Programme</span><h2>Better Books · DXZ + FTMO</h2><span class="sec-meta">{state_html}</span></div>
+  <p class="sec-note">Source-only programme projection. It describes implementation and evidence contracts; it does not authorize Factory, scheduler, MT5, deployment, challenge purchase, money, or AutoTrading actions.</p>
+  {warning_html}
+  <div class="pbs-safety"><strong>{e(safety.get("factory_state") or "UNKNOWN")}</strong><span>{e(safety.get("statement") or "Safety statement unavailable.")}</span></div>
+  <div class="pbs-dimensions">{dimensions_html}</div>
+  <div class="pbs-cards">{q08_html}{targets_html}</div>
+  <div class="pbs-subhead">W0–W8 implementation status</div>
+  <div class="archive-table-wrap pbs-table-wrap"><table class="archive-table pbs-table">
+    <thead><tr><th>Wave</th><th>Scope</th><th>Source</th><th>Runtime</th><th>Next controlled action</th></tr></thead>
+    <tbody>{wp_rows}</tbody>
+  </table></div>
+  <div class="pbs-split">
+    <div><div class="pbs-subhead">Verification</div>
+      <div class="pbs-verification"><span class="pbs-token {_programme_tone(green.get('state'))}">green {e(green.get("state") or "MISSING")}</span>
+      <span>{e(green.get("passed") if green.get("passed") is not None else "—")} passed · {e(green.get("skipped") if green.get("skipped") is not None else "—")} skipped · {e(green.get("deselected") if green.get("deselected") is not None else "—")} deselected · {e(green.get("subtests_passed") if green.get("subtests_passed") is not None else "—")} subtests</span></div>
+      <div class="pbs-verification"><span class="pbs-token warn">external residual {e(residual.get("state") or "MISSING")}</span>
+      <span>{e(residual.get("expected_count") if residual.get("expected_count") is not None else len(residual_items))} explicit fail-closed items</span></div>
+      <ul class="pbs-list residual">{residual_html}</ul>
+      <div class="pbs-exit">Exit: {e(residual.get("exit_condition") or "not declared")}</div>
+    </div>
+    <div><div class="pbs-subhead">Open OWNER decisions</div><ul class="pbs-list">{blocker_html}</ul></div>
+  </div>
+  <div class="pbs-bindings"><strong>Hash-bound sources</strong>{bindings_html}</div>
+  <div class="pbs-legacy"><strong>Archive boundary:</strong> rows below are historical/canonical work-item records. Legacy Q08 <code>FAIL_SOFT</code>/<code>FAIL_HARD</code> is not reinterpreted as a Q08-v3 verdict, and no per-EA target eligibility is inferred until canonical wiring and migration exist.</div>
+</section>"""
+
+
 ARCHIVE_V2_CSS = """
 .arch2-top{max-width:1400px;margin:0 auto;padding:34px 36px 20px;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
 .arch2-top h1{font-size:clamp(24px,3.4vw,36px);font-weight:600;letter-spacing:-0.03em;line-height:1.05;margin:0 0 8px}
@@ -2546,6 +2828,31 @@ ARCHIVE_V2_CSS = """
 .idx-controls .row-count strong{color:var(--signal);font-weight:700}
 .archive-table td.idx-link{color:var(--signal);text-align:center;font-weight:700}
 .arch2-foot{margin:44px auto 56px;max-width:1400px;padding:0 36px;font-family:var(--font-mono);font-size:11px;color:var(--text-3);text-align:center;line-height:1.7;letter-spacing:0.05em}
+.pbs-programme{border-top:3px solid var(--signal);padding-top:24px}
+.pbs-state{display:inline-block;padding:3px 8px;border:1px solid var(--border-2);font-family:var(--font-mono);font-size:9px;font-weight:800;letter-spacing:.12em}
+.pbs-state.good,.pbs-token.good{color:var(--pass);border-color:rgba(26,143,76,.45);background:rgba(26,143,76,.09)}
+.pbs-state.warn,.pbs-token.warn{color:var(--warn);border-color:rgba(184,114,10,.45);background:rgba(184,114,10,.09)}
+.pbs-state.bad,.pbs-token.bad{color:var(--fail);border-color:rgba(209,52,56,.45);background:rgba(209,52,56,.08)}
+.pbs-state.neutral,.pbs-token.neutral{color:var(--text-3);background:var(--surface-2)}
+.pbs-asof{margin-left:8px;color:var(--text-4);font-size:9px}
+.pbs-failclosed,.pbs-warning{padding:14px 16px;border:1px solid rgba(209,52,56,.45);background:rgba(209,52,56,.07);font-family:var(--font-mono);font-size:11px;color:var(--text-2);line-height:1.6}
+.pbs-warning{border-color:rgba(184,114,10,.45);background:rgba(184,114,10,.08);margin-bottom:12px}
+.pbs-safety{display:flex;gap:12px;align-items:flex-start;padding:11px 14px;border:1px solid var(--border-2);background:var(--surface-1);font-family:var(--font-mono);font-size:10.5px;line-height:1.5;margin-bottom:12px}
+.pbs-safety strong{color:var(--warn);white-space:nowrap}.pbs-safety span{color:var(--text-3)}
+.pbs-dimensions{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:12px 0}
+.pbs-dimension{border:1px solid var(--border);background:var(--surface-1);padding:11px 12px}.pbs-dim-name{font-family:var(--font-mono);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--signal)}
+.pbs-dim-body{font-size:10.5px;color:var(--text-3);line-height:1.45;margin-top:6px}
+.pbs-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0 18px}.pbs-card{border:1px solid var(--border-2);background:var(--surface-1);padding:14px}
+.pbs-card-kicker,.pbs-subhead{font-family:var(--font-mono);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--text-4)}
+.pbs-card-title{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);margin:7px 0}.pbs-card-body{font-size:10.5px;color:var(--text-3);line-height:1.5;margin-top:8px}.pbs-card-meta{font-family:var(--font-mono);font-size:9px;color:var(--text-4);margin-top:10px;overflow-wrap:anywhere}
+.pbs-token-row{display:flex;gap:5px;flex-wrap:wrap}.pbs-token{display:inline-block;padding:3px 6px;border:1px solid var(--border);font-family:var(--font-mono);font-size:8.5px;font-weight:700;letter-spacing:.04em;white-space:normal}
+.pbs-subhead{color:var(--text-2);margin:16px 0 8px}.pbs-table-wrap{padding:0}.pbs-table td{vertical-align:top;font-size:10.5px}.pbs-table td:last-child{min-width:260px;color:var(--text-3)}
+.pbs-split{display:grid;grid-template-columns:1fr 1fr;gap:18px}.pbs-verification{display:flex;gap:8px;align-items:center;font-family:var(--font-mono);font-size:10px;color:var(--text-3)}
+.pbs-list{list-style:none;margin:8px 0 0;padding:0;border:1px solid var(--border)}.pbs-list li{display:grid;gap:4px;padding:9px 11px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-2)}.pbs-list li:last-child{border-bottom:none}.pbs-list code{font-size:8px;overflow-wrap:anywhere}.pbs-list small{color:var(--text-4);font-family:var(--font-mono);font-size:8.5px}.pbs-exit{font-size:9px;color:var(--text-4);margin-top:7px;line-height:1.45}
+.pbs-bindings{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;font-family:var(--font-mono);font-size:9px;color:var(--text-4)}.pbs-bindings strong{color:var(--text-2)}
+.pbs-legacy{padding:11px 14px;margin-top:12px;border-left:3px solid var(--warn);background:rgba(184,114,10,.06);font-size:10.5px;color:var(--text-3);line-height:1.55}
+@media(max-width:1000px){.pbs-dimensions{grid-template-columns:repeat(2,minmax(0,1fr))}.pbs-cards{grid-template-columns:1fr}.pbs-split{grid-template-columns:1fr}}
+@media(max-width:620px){.pbs-dimensions{grid-template-columns:1fr}.pbs-safety{display:block}.pbs-safety span{display:block;margin-top:5px}}
 """
 
 
@@ -2606,6 +2913,9 @@ def render_strategies(state: dict, root: Path) -> str:
     data = collect_archive_v2(root, slug_map)
     ea_agg = data["ea"]
     cell_latest = data["cell_latest"]
+    programme_html = render_pipeline_books_program_status(
+        collect_pipeline_books_program_status(REPO_ROOT)
+    )
 
     # ── LIVE BOOK — 24 deployed sleeves ──────────────────────────
     presets = _parse_live_presets(LIVE_PRESETS_DIR)
@@ -2627,7 +2937,8 @@ def render_strategies(state: dict, root: Path) -> str:
             return cl
         a = ea_agg.get(ea_str)
         if a and a.get("last_verdict"):
-            return {"verdict": a["last_verdict"], "phase": a.get("adv") or a.get("hp") or "",
+            return {"verdict": a["last_verdict"],
+                    "phase": a.get("last_phase") or a.get("adv") or a.get("hp") or "",
                     "status": "", "ea_level": True}
         return None
 
@@ -2670,7 +2981,7 @@ def render_strategies(state: dict, root: Path) -> str:
             vf = _verdict_family(cl["verdict"])
             phase_txt = f'{e(phase_label(cl["phase"]))} · ' if cl.get("phase") else ''
             vhtml = (f'<span class="{_VCLS[vf]}">{phase_txt}'
-                     f'{e(qxx_text(cl["verdict"]))}</span>{ea_note}')
+                     f'{e(_archive_verdict_text(cl.get("phase"), cl["verdict"]))}</span>{ea_note}')
         elif cl and cl.get("status") in _OPEN_STATUSES:
             vhtml = (f'<span class="v-pending">{e(phase_label(cl["phase"]))} · '
                      f'{e(cl["status"])}</span>')
@@ -2731,7 +3042,7 @@ def render_strategies(state: dict, root: Path) -> str:
             f'<td class="td-slug">{e(slug_map.get(ea, ""))}</td>'
             f'<td>{e(r["symbol"])}</td>'
             f'<td>{e(phase_label(r["phase"]))}</td>'
-            f'<td><span class="v-pass">{e(qxx_text(r["verdict"]))}</span></td>'
+            f'<td><span class="v-pass">{e(_archive_verdict_text(r["phase"], r["verdict"]))}</span></td>'
             f'<td>{e((r["upd"] or "")[:19].replace("T", " "))}</td>'
             f'</tr>'
         )
@@ -2752,7 +3063,7 @@ def render_strategies(state: dict, root: Path) -> str:
         rv_tot["infra"] += rb["infra"]
         rv_tot["total"] += rb["total"]
         rv_cells += (
-            f'<div class="rv-cell"><div class="rv-phase">{e(phase_label(base))}</div>'
+            f'<div class="rv-cell"><div class="rv-phase">{e(phase_label(base))}{" legacy" if base == "Q08" else ""}</div>'
             f'<div class="rv-nums"><span class="v-pass">{rb["pass"]}</span>/'
             f'<span class="v-fail">{rb["fail"]}</span>/'
             f'<span class="v-infra">{rb["infra"]}</span></div>'
@@ -2791,7 +3102,7 @@ def render_strategies(state: dict, root: Path) -> str:
         best = phase_label(hp) if hp else "—"
         lv = a.get("last_verdict") or ""
         lvcls = _VCLS.get(_verdict_family(lv), "v-other")
-        lv_disp = qxx_text(lv) if lv else "—"
+        lv_disp = _archive_verdict_text(a.get("last_phase"), lv) if lv else "—"
         upd = a.get("last_upd") or ""
         upd_disp = upd[:19].replace("T", " ") if upd else "—"
         try:
@@ -2832,6 +3143,8 @@ def render_strategies(state: dict, root: Path) -> str:
   <div class="a2chip"><div class="a2chip-num">{n_pass}</div><div class="a2chip-label">With a PASS</div></div>
   <div class="a2chip c-fail"><div class="a2chip-num">{n_fail}</div><div class="a2chip-label">Failed</div></div>
 </div>
+
+{programme_html}
 
 <section class="arch2-sec">
   <div class="sec-head"><span class="sec-kicker">Live Book</span><h2><a class="jrnl-link" href="dxz_journal.html">DXZ · deployed sleeves</a></h2><span class="sec-meta">{book_meta}</span></div>
@@ -2901,7 +3214,8 @@ def render_strategies(state: dict, root: Path) -> str:
 
 <div class="arch2-foot">
   QuantMechanica V5 · Strategy Archive v2 · regenerated hourly from the live pipeline database ·
-  every metric parsed from native MetaTrader 5 backtest reports — no hand-edited results.
+  every metric parsed from native MetaTrader 5 backtest reports — no hand-edited results ·
+  programme status is a separate hash-bound source projection and never a runtime authorization.
 </div>
 {ARCHIVE_V2_JS}
 {RENDER_BADGE_JS}
@@ -2934,7 +3248,7 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
     }
     db = root / "state" / "farm_state.sqlite"
     if db.exists():
-        with sqlite3.connect(db) as conn:
+        with _connect_readonly(db) as conn:
             conn.row_factory = sqlite3.Row
             rows = [dict(r) for r in conn.execute(
                 "SELECT * FROM work_items WHERE ea_id = ? ORDER BY phase, symbol, updated_at DESC",
@@ -3279,15 +3593,14 @@ def _detail_decision(ea: dict, highest_pass: str | None, most_advanced: str | No
             "next": "Triage the failure class: strategy-fail kills the EA; infra or zero-trade routes "
                     "to zero-trade recovery and a requeue.",
         }
-    if highest_pass == "P8":
+    if highest_pass == "Q13":
         return {
-            "verdict": "Q11 real PASS reached",
+            "verdict": "Q13 real PASS reached",
             "cls": "ds-good",
-            "why": "The EA cleared the hardest automated gate (real MT5 news replay) — a genuine "
-                   "portfolio candidate.",
-            "risk": "Q11 PASS is necessary, not sufficient: correlation with existing candidates and "
-                    "live symbol routability still gate Q12.",
-            "next": "OWNER / Board Q12 portfolio review.",
+            "why": "The EA has recorded evidence through the canonical Q13 live burn-in gate.",
+            "risk": "A gate PASS is not a target-eligibility, deployment, challenge-purchase, money, "
+                    "or AutoTrading authorization.",
+            "next": "Apply the separately versioned target rulepack and obtain the required OWNER decision.",
         }
     if highest_pass:
         return {
@@ -4103,7 +4416,8 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
 """
     # Availability strip — the archive's external promise (OWNER 2026-06-11:
     # visitors should profit from the research and later download/license the
-    # EAs). Honest by construction: nothing is offered before Q14.
+    # EAs). Honest by construction: no gate or archive row is a target-specific
+    # eligibility, deployment, money, or AutoTrading authorization.
     pc_states = {str(r.get("candidate_state") or "") for r in (detail.get("q08_portfolio_rescue") or [])}
     if ea.get("live"):
         avail_cls, avail_label = "av-live", "LIVE — trading on our own account"
@@ -4117,13 +4431,14 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
                       "We publish failures so you can see what does NOT work — that is the point of the archive.")
     elif "first_sleeve" in pc_states or any("Q12" in s for s in pc_states):
         avail_cls, avail_label = "av-cand", "PORTFOLIO CANDIDATE — final review"
-        avail_body = ("This strategy passed portfolio admission and is in final human review (Q12-Q14). "
+        avail_body = ("This strategy has historical portfolio-admission evidence and is in final human "
+                      "review (Q12-Q13). DXZ/FTMO eligibility remains a separate rulepack decision. "
                       "If it goes live, licensing/download options will appear here.")
     else:
         avail_cls, avail_label = "av-flow", "IN VALIDATION — not yet available"
-        avail_body = ("Still inside the 15-gate evidence pipeline (Q00-Q14: walk-forward, Monte-Carlo, "
-                      "stress, cost-cushion, portfolio fit). Strategies that survive every gate "
-                      "become available for download/licensing here.")
+        avail_body = ("Still inside the 14-gate evidence pipeline (Q00-Q13: walk-forward, Monte-Carlo, "
+                      "stress, cost-cushion, portfolio fit). Gate progress does not establish Q08-v3 "
+                      "evidence strength or DXZ/FTMO eligibility until those bound records exist.")
     availability_html = (
         f'<div class="availability {avail_cls}"><span class="av-label">{e(avail_label)}</span>'
         f'<span class="av-body">{e(avail_body)}</span></div>'
@@ -4165,13 +4480,13 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
             )
         rescue_html = f"""
 <div class="rescue-detail">
-  <div class="rescue-detail-title">Portfolio admission · Q08 standalone &rarr; Q09 portfolio</div>
-  <div class="rescue-detail-note">A strategy that narrowly fails standalone admission (Q08) can still earn a
-  portfolio slot (Q09) if it is weakly correlated to the existing book and improves portfolio Sharpe/drawdown —
-  diversification is the win mechanism.</div>
+  <div class="rescue-detail-title">Historical portfolio admission · legacy Q08 &rarr; Q09</div>
+  <div class="rescue-detail-note">These are retained legacy FAIL_SOFT/FAIL_HARD and portfolio-rescue records.
+  They are not Q08-v3 SUPPORTED/CONDITIONAL verdicts and do not establish current DXZ or FTMO eligibility.
+  A current claim requires an immutable Q08-v3 dossier, execution bundle, and target rulepack evaluation.</div>
   <table class="wi-table rescue-detail-table">
     <thead><tr>
-      <th>Symbol</th><th>Standalone Q08 Result</th><th class="col-num">Trades</th>
+      <th>Symbol</th><th>Legacy Q08 Result</th><th class="col-num">Trades</th>
       <th>Q09 Portfolio</th><th class="col-num">Corr</th>
       <th class="col-num">Sharpe Delta</th><th class="col-num">MaxDD Delta</th>
       <th class="col-num">PF</th><th>Flag</th>
@@ -4662,6 +4977,14 @@ def main() -> int:
     parser.add_argument("--root", default=str(DEFAULT_ROOT))
     parser.add_argument("--full", action="store_true",
                         help="Re-render every EA detail page (ignore the incremental watermark).")
+    parser.add_argument(
+        "--strategies-only",
+        action="store_true",
+        help=(
+            "render only dashboards/strategies.html; do not refresh metrics, "
+            "portfolio artifacts, journal pages, detail pages, CSS or watermarks"
+        ),
+    )
     args = parser.parse_args()
 
     set_render_stamp()  # one RENDERED-badge timestamp for the whole run
@@ -4670,19 +4993,22 @@ def main() -> int:
     dashboards_dir = root / "dashboards"
     dashboards_dir.mkdir(parents=True, exist_ok=True)
 
-    # Refresh the normalized metric layer before rendering so the Strategy Archive
-    # surfaces (strategies.html + ea_<id>.html) read current numbers. Incremental
-    # (mtime-gated) so it is cheap; a failure here must never block rendering.
-    try:
-        from tools.strategy_farm import ea_metrics as _ea_metrics
-        db_for_metrics = root / "state" / "farm_state.sqlite"
-        if db_for_metrics.exists():
-            with sqlite3.connect(db_for_metrics) as _mcon:
-                _mres = _ea_metrics.build(_mcon, full=False)
-            print(f"ea_metrics refreshed: {_mres.get('upserts')} upserts, "
-                  f"{_mres.get('skipped')} unchanged", file=sys.stderr)
-    except Exception as _exc:  # noqa: BLE001 — never block the render
-        print(f"WARN: ea_metrics refresh skipped: {_exc!r}", file=sys.stderr)
+    # Explicit narrow regeneration path for maintenance/source releases. The
+    # regular hourly renderer performs several intentional cache/DB writes;
+    # this mode is limited to the one requested HTML artifact and keeps every
+    # other runtime surface byte-identical.
+    if args.strategies_only:
+        state = collect_farm_state(root)
+        strategies_path = dashboards_dir / "strategies.html"
+        strategies_path.write_text(render_strategies(state, root), encoding="utf-8")
+        print(f"strategies written: {strategies_path}")
+        return 0
+
+    # Refresh the normalized metric layer only while the Factory is ON. The
+    # hourly renderer is intentionally ALWAYS_ON, so performing DB upserts here
+    # while FACTORY_OFF is asserted would violate quiescence even though HTML
+    # publication itself remains safe. An unreadable OFF state is treated as OFF.
+    _refresh_ea_metrics_for_render(root)
 
     # FUND_SCORE is historical screening metadata only. Refreshing its cache here
     # gives every dashboard cycle automatic coverage without changing a gate row.
@@ -4734,7 +5060,7 @@ def main() -> int:
     wi_watermark: dict[str, str] = {}
     if db_path.exists():
         try:
-            with sqlite3.connect(db_path) as _conn:
+            with _connect_readonly(db_path) as _conn:
                 for _eid, _mx in _conn.execute(
                         "SELECT ea_id, MAX(updated_at) FROM work_items "
                         "WHERE ea_id IS NOT NULL GROUP BY ea_id"):

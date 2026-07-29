@@ -13,6 +13,18 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 import farmctl  # noqa: E402
 
 
+def _fake_job_binding(proc, capture_identity, **_kwargs) -> dict:
+    identity = capture_identity(proc)
+    return {
+        **identity,
+        "job_object_assigned": True,
+        "job_object_mode": "KILL_ON_JOB_CLOSE",
+        "job_object_registry_key": f"{proc.pid}|{identity['process_creation_key']}",
+        "process_started_suspended": True,
+        "primary_thread_resumed": True,
+    }
+
+
 class CascadeRealPhaseRunnerTests(unittest.TestCase):
     def _install_spawn_identity_fixture(self) -> None:
         old_process_identity = farmctl.get_process_identity
@@ -24,6 +36,14 @@ class CascadeRealPhaseRunnerTests(unittest.TestCase):
             "image_path": sys.executable,
             "started_at_epoch": 1.0,
         }
+        old_job_binding = farmctl.bind_spawned_process_to_kill_job
+        self.addCleanup(
+            setattr,
+            farmctl,
+            "bind_spawned_process_to_kill_job",
+            old_job_binding,
+        )
+        farmctl.bind_spawned_process_to_kill_job = _fake_job_binding
 
     def _insert_work_item(self, root: Path, *, item_id: str, phase: str,
                           symbol: str = "EURUSD.DWX",

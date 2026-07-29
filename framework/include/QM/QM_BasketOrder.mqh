@@ -10,6 +10,8 @@
 #include "QM_Logger.mqh"
 #include "QM_SeedRNG.mqh"   // WP-9: central seeded RNG for the stress-rejection hook
 #include "QM_Entry.mqh"     // WP-9: shared stress-reject probability (g_qm_entry_stress_reject_prob, set by QM_EntryConfigure)
+#include "QM_RuntimeExecutionContract.mqh"
+#include "QM_FTMOGovernorClient.mqh"
 
 struct QM_BasketOrderRequest
 {
@@ -111,9 +113,34 @@ bool QM_BasketOpenPosition(const int ea_id,
 {
    out_ticket = 0;
 
+   if(!QM_RuntimeExecutionEntryAllowed())
+   {
+      QM_BasketLogReject(req, "QM_BASKET_REJECTED_CONTRACT",
+                         g_qm_runtime_execution_block_reason);
+      return false;
+   }
+
    if(req.symbol == "")
    {
       QM_BasketLogReject(req, "QM_BASKET_REJECTED_SYMBOL", "blank_symbol");
+      return false;
+   }
+
+   const bool v3_execution =
+      (g_qm_runtime_execution_state == QM_RUNTIME_EXECUTION_READY);
+   if(v3_execution && ea_id != g_qm_runtime_execution_contract.ea_id)
+   {
+      QM_BasketLogReject(req, "QM_BASKET_REJECTED_CONTRACT",
+                         "v3_ea_id_not_contract_bound");
+      return false;
+   }
+   if(v3_execution && req.symbol != g_qm_runtime_execution_contract.symbol)
+   {
+      // V3 currently has a single host identity. Multi-symbol baskets require
+      // a future explicit symbol/magic-set contract; implicit expansion is a
+      // fail-open identity bypass and is therefore rejected here.
+      QM_BasketLogReject(req, "QM_BASKET_REJECTED_CONTRACT",
+                         "v3_symbol_not_contract_bound");
       return false;
    }
 
@@ -139,6 +166,12 @@ bool QM_BasketOpenPosition(const int ea_id,
    if(magic <= 0)
    {
       QM_BasketLogReject(req, "QM_BASKET_REJECTED_BROKER", "magic_resolution_failed");
+      return false;
+   }
+   if(v3_execution && magic != g_qm_runtime_execution_contract.magic)
+   {
+      QM_BasketLogReject(req, "QM_BASKET_REJECTED_CONTRACT",
+                         "v3_magic_not_contract_bound");
       return false;
    }
 
@@ -236,14 +269,109 @@ bool QM_BasketOpenPosition(const int ea_id,
       return false;
    }
 
-   double lots = req.lots;
-   if(lots <= 0.0)
+   double lots = 0.0;
+   if(v3_execution)
    {
+      // Card-v3 baskets use the same side/price-aware account-currency loss and
+      // exact broker margin rails as QM_Entry. A caller-supplied lot amount is
+      // only a request: it may reduce the risk-sized maximum, never exceed it.
       const double sl_points = QM_BasketSLPoints(req.symbol, entry_price, req.sl);
-      lots = QM_LotsForRisk(req.symbol, sl_points);
+      const ENUM_ORDER_TYPE margin_order_type = QM_OrderTypeIsBuy(req.type)
+                                                ? ORDER_TYPE_BUY
+                                                : ORDER_TYPE_SELL;
+      if(sl_points <= 0.0 ||
+         (margin_order_type == ORDER_TYPE_BUY && req.sl >= entry_price) ||
+         (margin_order_type == ORDER_TYPE_SELL && req.sl <= entry_price))
+      {
+         QM_BasketLogReject(req, "QM_BASKET_REJECTED_RISK", "invalid_stop_direction");
+         return false;
+      }
+
+      g_qm_risk_clamp_flag = false;
+      QM_RiskSizerResetProfitFallback();
+      const double risk_lots = QM_LotsForRiskAtEntry(req.symbol,
+                                                      sl_points,
+                                                      margin_order_type,
+                                                      entry_price);
+      if(req.lots > 0.0)
+      {
+         const double explicit_lots = QM_BasketNormalizeLots(req.symbol, req.lots);
+         if(explicit_lots > risk_lots && risk_lots > 0.0)
+            QM_RiskSizerNoteClamp("basket_explicit_risk_cap", explicit_lots, risk_lots);
+         lots = QM_BasketNormalizeLots(req.symbol, MathMin(explicit_lots, risk_lots));
+      }
+      else
+         lots = risk_lots;
+
+      if(QM_RuntimeExecutionGovernorRequired())
+      {
+         double governor_scale = 0.0;
+         string governor_reason = "GOVERNOR_UNKNOWN";
+         if(!QM_FTMO_ReadGovernorScale(
+               g_qm_runtime_execution_contract.governor_policy_id,
+               g_qm_runtime_execution_contract.challenge_instance_id,
+               g_qm_runtime_execution_contract.governor_heartbeat_max_age_seconds,
+               governor_scale,
+               governor_reason))
+         {
+            QM_BasketLogReject(req, "QM_BASKET_REJECTED_GOVERNOR", governor_reason);
+            return false;
+         }
+         QM_SymbolRiskSnapshot governor_snapshot;
+         if(!QM_RiskSizerReadSymbolSnapshot(req.symbol, governor_snapshot))
+         {
+            QM_BasketLogReject(req, "QM_BASKET_REJECTED_GOVERNOR",
+                               "GOVERNOR_SYMBOL_SNAPSHOT_INVALID");
+            return false;
+         }
+         lots = QM_RiskSizerQuantizeLots(lots * governor_scale,
+                                          governor_snapshot.volume_min,
+                                          governor_snapshot.volume_max,
+                                          governor_snapshot.volume_step);
+         if(lots <= 0.0)
+         {
+            QM_BasketLogReject(req, "QM_BASKET_REJECTED_GOVERNOR",
+                               "GOVERNOR_SCALE_ZERO_LOTS");
+            return false;
+         }
+      }
+
+      if(g_qm_risk_profit_fallback_flag)
+      {
+         QM_LogEvent(QM_WARN, "RISK_LOSS_CALC_FALLBACK",
+                     StringFormat("{\"method\":\"snapshot\",\"reason\":\"%s\",\"error\":%d,\"symbol\":\"%s\",\"magic\":%d,\"path\":\"basket\"}",
+                                  QM_LoggerEscapeJson(g_qm_risk_profit_fallback_reason),
+                                  g_qm_risk_profit_fallback_error,
+                                  QM_LoggerEscapeJson(req.symbol),
+                                  magic));
+         QM_RiskSizerResetProfitFallback();
+      }
+      if(g_qm_risk_clamp_flag)
+      {
+         QM_LogEvent(QM_INFO, "RISK_CLAMP",
+                     StringFormat("{\"kind\":\"%s\",\"from\":%.2f,\"to\":%.2f,\"lots\":%.8f,\"symbol\":\"%s\",\"magic\":%d,\"path\":\"basket\"}",
+                                  QM_LoggerEscapeJson(g_qm_risk_clamp_kind),
+                                  g_qm_risk_clamp_from,
+                                  g_qm_risk_clamp_to,
+                                  lots,
+                                  QM_LoggerEscapeJson(req.symbol),
+                                  magic));
+         g_qm_risk_clamp_flag = false;
+      }
    }
-   if(lots > 0.0)
-      lots = QM_BasketNormalizeLots(req.symbol, lots);
+   else
+   {
+      // Preserve the pre-v3 fleet's historical basket sizing until each EA is
+      // migrated with an explicit stop-bearing Card-v3 execution contract.
+      lots = req.lots;
+      if(lots <= 0.0)
+      {
+         const double sl_points = QM_BasketSLPoints(req.symbol, entry_price, req.sl);
+         lots = QM_LotsForRisk(req.symbol, sl_points);
+      }
+      if(lots > 0.0)
+         lots = QM_BasketNormalizeLots(req.symbol, lots);
+   }
    if(lots <= 0.0)
    {
       QM_BasketLogReject(req, "QM_BASKET_REJECTED_RISK", "lots_for_risk_zero");

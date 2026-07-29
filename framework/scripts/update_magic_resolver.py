@@ -30,6 +30,7 @@ USAGE
     python framework/scripts/update_magic_resolver.py
     python framework/scripts/update_magic_resolver.py --dry-run
     python framework/scripts/update_magic_resolver.py --keep-obsolete
+    python framework/scripts/update_magic_resolver.py --allow-dropped
 
 Idempotent: running twice produces identical output. Safe for Codex to call
 on every build — no merge logic, no row preservation needed by the caller.
@@ -342,8 +343,17 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true", help="print result, do not write")
     ap.add_argument("--keep-obsolete", action="store_true",
                     help="include rows whose EA dir is under _obsolete_* (default: skip)")
-    ap.add_argument("--strict", action="store_true",
-                    help="exit 2 if any active-magic rows were dropped because their EA dir is missing")
+    ap.add_argument(
+        "--allow-dropped",
+        action="store_true",
+        help=(
+            "OWNER/recovery escape hatch: allow active registry rows to be omitted "
+            "when their EA directory is missing (default: fail closed before writing)"
+        ),
+    )
+    # Kept as a compatibility no-op for existing automation. Strict behaviour is
+    # now the default; callers must opt out explicitly with --allow-dropped.
+    ap.add_argument("--strict", action="store_true", help=argparse.SUPPRESS)
     args = ap.parse_args()
 
     rows, dropped = load_rows(keep_obsolete=args.keep_obsolete)
@@ -363,24 +373,27 @@ def main() -> int:
             file=sys.stderr,
         )
 
+    strict = not args.allow_dropped
+    if dropped and strict:
+        sys.stderr.write(
+            f"[strict-default] {len(dropped)} active ea_id(s) would be dropped; "
+            "refusing to generate or replace QM_MagicResolver.mqh. "
+            "Use --allow-dropped only for an explicitly reviewed recovery.\n"
+        )
+        return 2
+
     content = render_mqh(rows)
 
     if args.dry_run:
         sys.stdout.write(content)
         sys.stderr.write(f"\n[dry-run] {len(rows)} rows kept, {len(dropped)} dropped, "
                          f"sha={csv_sha256_upper()[:16]}...\n")
-        if args.strict and dropped:
-            sys.stderr.write(f"[strict] {len(dropped)} rows dropped — exit 2\n")
-            return 2
         return 0
 
     RESOLVER_MQH.write_text(content, encoding="utf-8", newline="\n")
     print(f"[OK] wrote {RESOLVER_MQH.relative_to(REPO_ROOT)} — "
           f"{len(rows)} rows kept, {len(dropped)} dropped, sha={csv_sha256_upper()[:16]}...")
 
-    if args.strict and dropped:
-        print(f"[strict] {len(dropped)} ea_id(s) dropped — exit 2", file=sys.stderr)
-        return 2
     return 0
 
 

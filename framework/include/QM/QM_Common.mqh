@@ -13,6 +13,7 @@
 #include "QM_SymbolGuard.mqh"
 #include "QM_KillSwitch.mqh"
 #include "QM_KillSwitchKS.mqh"
+#include "QM_RuntimeExecutionContract.mqh"
 #include "QM_Entry.mqh"
 #include "QM_Exit.mqh"
 #include "QM_StopRules.mqh"
@@ -113,23 +114,35 @@ bool QM_FrameworkValidateRiskInputs(const double risk_percent, const double risk
    return true;
   }
 
-bool QM_FrameworkInit(const int ea_id,
-                      const int magic_slot_offset,
-                      const double risk_percent,
-                      const double risk_fixed,
-                      const double portfolio_weight,
-                      const QM_NewsMode news_mode,
-                      const bool friday_close_enabled = true,
-                      const int friday_close_hour_broker = 21,
-                      const int news_pause_before_minutes = 30,
-                      const int news_pause_after_minutes = 30,
-                      const int news_stale_max_hours = 24 * 14,
-                      const string news_min_impact = "high",
-                      const uint rng_seed = 42,
-                      const double stress_reject_probability = 0.0,
-                      const QM_NewsTemporalMode news_temporal = QM_NEWS_TEMPORAL_OFF,
-                      const QM_NewsComplianceProfile news_compliance = QM_NEWS_COMPLIANCE_NONE)
+// Internal common initializer. Callers must use QM_FrameworkInit or
+// QM_FrameworkInitV3; the runtime state must already be armed by one of them.
+bool QM_FrameworkInitCoreAfterRuntimeStateArmed(const int ea_id,
+                                                const int magic_slot_offset,
+                                                const double risk_percent,
+                                                const double risk_fixed,
+                                                const double portfolio_weight,
+                                                const QM_NewsMode news_mode,
+                                                const bool friday_close_enabled,
+                                                const int friday_close_hour_broker,
+                                                const int news_pause_before_minutes,
+                                                const int news_pause_after_minutes,
+                                                const int news_stale_max_hours,
+                                                const string news_min_impact,
+                                                const uint rng_seed,
+                                                const double stress_reject_probability,
+                                                const QM_NewsTemporalMode news_temporal,
+                                                const QM_NewsComplianceProfile news_compliance)
   {
+   const bool legacy_armed = (g_qm_runtime_execution_initialization_started &&
+                              g_qm_runtime_execution_state == QM_RUNTIME_EXECUTION_LEGACY_UNDECLARED);
+   const bool v3_armed = (g_qm_runtime_execution_initialization_started &&
+                          g_qm_runtime_execution_state == QM_RUNTIME_EXECUTION_REQUIRED_BLOCKED &&
+                          g_qm_runtime_execution_block_reason == "CONTRACT_BIND_PENDING");
+   if(!legacy_armed && !v3_armed)
+     {
+      QM_RuntimeExecutionBlock("FRAMEWORK_CORE_WITHOUT_ARM_REFUSED");
+      return false;
+     }
    if(ea_id <= 0)
       return false;
    // FW3 2026-05-23: central seeded RNG must initialize before any module
@@ -237,6 +250,122 @@ bool QM_FrameworkInit(const int ea_id,
 
    g_qm_fw_initialized = true;
    QM_LogEvent(QM_INFO, "INIT", StringFormat("{\"magic\":%d,\"symbol\":\"%s\"}", g_qm_fw_magic, QM_LoggerEscapeJson(_Symbol)));
+   return true;
+  }
+
+// Legacy initializer. It is intentionally unable to downgrade an armed or
+// READY V3 execution contract back to the permissive legacy state.
+bool QM_FrameworkInit(const int ea_id,
+                      const int magic_slot_offset,
+                      const double risk_percent,
+                      const double risk_fixed,
+                      const double portfolio_weight,
+                      const QM_NewsMode news_mode,
+                      const bool friday_close_enabled = true,
+                      const int friday_close_hour_broker = 21,
+                      const int news_pause_before_minutes = 30,
+                      const int news_pause_after_minutes = 30,
+                      const int news_stale_max_hours = 24 * 14,
+                      const string news_min_impact = "high",
+                      const uint rng_seed = 42,
+                      const double stress_reject_probability = 0.0,
+                      const QM_NewsTemporalMode news_temporal = QM_NEWS_TEMPORAL_OFF,
+                      const QM_NewsComplianceProfile news_compliance = QM_NEWS_COMPLIANCE_NONE)
+  {
+   if(!QM_RuntimeExecutionBeginLegacyInitialization())
+      return false;
+   return QM_FrameworkInitCoreAfterRuntimeStateArmed(ea_id,
+                                                      magic_slot_offset,
+                                                      risk_percent,
+                                                      risk_fixed,
+                                                      portfolio_weight,
+                                                      news_mode,
+                                                      friday_close_enabled,
+                                                      friday_close_hour_broker,
+                                                      news_pause_before_minutes,
+                                                      news_pause_after_minutes,
+                                                      news_stale_max_hours,
+                                                      news_min_impact,
+                                                      rng_seed,
+                                                      stress_reject_probability,
+                                                      news_temporal,
+                                                      news_compliance);
+  }
+
+// Card-v3 cohort initializer. Unlike the legacy initializer, this function
+// cannot return success unless one immutable execution bundle matches the
+// actual account/server/symbol/timeframe/magic identity. FTMO contracts also
+// require the account-wide governor; standard and basket entry paths check its
+// fresh snapshot on every attempted entry and apply only a reducing scale.
+bool QM_FrameworkInitV3(const QM_RuntimeExecutionContract &execution_contract,
+                        const long expected_source_generation,
+                        const int ea_id,
+                        const int magic_slot_offset,
+                        const double risk_percent,
+                        const double risk_fixed,
+                        const double portfolio_weight,
+                        const QM_NewsMode news_mode,
+                        const bool friday_close_enabled = true,
+                        const int friday_close_hour_broker = 21,
+                        const int news_pause_before_minutes = 30,
+                        const int news_pause_after_minutes = 30,
+                        const int news_stale_max_hours = 24 * 14,
+                        const string news_min_impact = "high",
+                        const uint rng_seed = 42,
+                        const double stress_reject_probability = 0.0,
+                        const QM_NewsTemporalMode news_temporal = QM_NEWS_TEMPORAL_OFF,
+                        const QM_NewsComplianceProfile news_compliance = QM_NEWS_COMPLIANCE_NONE)
+  {
+   if(!QM_RuntimeExecutionBeginRequiredInitialization())
+      return false;
+
+   if(!QM_FrameworkInitCoreAfterRuntimeStateArmed(ea_id,
+                                                  magic_slot_offset,
+                                                  risk_percent,
+                                                  risk_fixed,
+                                                  portfolio_weight,
+                                                  news_mode,
+                                                  friday_close_enabled,
+                                                  friday_close_hour_broker,
+                                                  news_pause_before_minutes,
+                                                  news_pause_after_minutes,
+                                                  news_stale_max_hours,
+                                                  news_min_impact,
+                                                  rng_seed,
+                                                  stress_reject_probability,
+                                                  news_temporal,
+                                                  news_compliance))
+     {
+      QM_RuntimeExecutionBlock("FRAMEWORK_INITIALIZATION_FAILED");
+      return false;
+     }
+
+   if(!QM_RuntimeExecutionBindRequired(execution_contract,
+                                       expected_source_generation,
+                                       g_qm_fw_ea_id,
+                                       g_qm_fw_magic,
+                                       _Symbol,
+                                       (ENUM_TIMEFRAMES)_Period,
+                                       AccountInfoInteger(ACCOUNT_LOGIN),
+                                       AccountInfoString(ACCOUNT_SERVER),
+                                       QM_MagicRegistryHash()))
+     {
+      QM_LogEvent(QM_ERROR,
+                  "RUNTIME_EXECUTION_CONTRACT_BLOCKED",
+                  StringFormat("{\"contract_id\":\"%s\",\"reason\":\"%s\"}",
+                               QM_LoggerEscapeJson(execution_contract.contract_id),
+                               QM_LoggerEscapeJson(g_qm_runtime_execution_block_reason)));
+      return false;
+     }
+
+   QM_LogEvent(QM_INFO,
+               "RUNTIME_EXECUTION_CONTRACT_READY",
+               StringFormat("{\"contract_id\":\"%s\",\"generation\":%I64d,\"bundle_sha256\":\"%s\",\"rulepack_sha256\":\"%s\",\"target\":\"%s\"}",
+                            QM_LoggerEscapeJson(execution_contract.contract_id),
+                            execution_contract.generation,
+                            execution_contract.execution_bundle_sha256,
+                            execution_contract.target_rulepack_sha256,
+                            execution_contract.target));
    return true;
   }
 

@@ -41,6 +41,13 @@ bool        g_qm_risk_clamp_flag            = false;
 string      g_qm_risk_clamp_kind            = "";
 double      g_qm_risk_clamp_from            = 0.0;
 double      g_qm_risk_clamp_to              = 0.0;
+// Entry sizing prefers the broker/tester's directional account-currency loss
+// calculation. A snapshot fallback remains available for symbols/calculation
+// modes where OrderCalcProfit is unavailable, but it must be observable by the
+// caller so evidence never silently mixes the two sizing methods.
+bool        g_qm_risk_profit_fallback_flag  = false;
+int         g_qm_risk_profit_fallback_error = 0;
+string      g_qm_risk_profit_fallback_reason = "";
 
 bool QM_RiskSizerConfigure(const QM_RiskMode mode,
                            const double risk_percent,
@@ -76,6 +83,20 @@ void QM_RiskSizerNoteClamp(const string kind, const double from_value, const dou
    g_qm_risk_clamp_kind = kind;
    g_qm_risk_clamp_from = from_value;
    g_qm_risk_clamp_to   = to_value;
+  }
+
+void QM_RiskSizerResetProfitFallback()
+  {
+   g_qm_risk_profit_fallback_flag = false;
+   g_qm_risk_profit_fallback_error = 0;
+   g_qm_risk_profit_fallback_reason = "";
+  }
+
+void QM_RiskSizerNoteProfitFallback(const string reason, const int error_code)
+  {
+   g_qm_risk_profit_fallback_flag = true;
+   g_qm_risk_profit_fallback_error = error_code;
+   g_qm_risk_profit_fallback_reason = reason;
   }
 
 // Effective per-trade cap for percent-style sizing: live-following percentage
@@ -561,6 +582,91 @@ double QM_LotsForRisk(const string symbol,
 // approximation with the broker/tester's symbol calculation mode.
 const double QM_RISK_SIZER_MARGIN_HEADROOM = 0.90;
 
+bool QM_RiskSizerExactDirectionalLossPerLot(const string symbol,
+                                             const ENUM_ORDER_TYPE order_type,
+                                             const double entry_price,
+                                             const double sl_points,
+                                             const QM_SymbolRiskSnapshot &snapshot,
+                                             double &loss_per_lot)
+  {
+   loss_per_lot = 0.0;
+   if(StringLen(symbol) <= 0 ||
+      (order_type != ORDER_TYPE_BUY && order_type != ORDER_TYPE_SELL) ||
+      entry_price <= 0.0 || sl_points <= 0.0 || snapshot.point <= 0.0)
+      return false;
+
+   const double stop_distance = sl_points * snapshot.point;
+   const double stop_price = (order_type == ORDER_TYPE_BUY)
+                             ? entry_price - stop_distance
+                             : entry_price + stop_distance;
+   if(stop_price <= 0.0 ||
+      (order_type == ORDER_TYPE_BUY && stop_price >= entry_price) ||
+      (order_type == ORDER_TYPE_SELL && stop_price <= entry_price))
+      return false;
+
+   // Use a legal reference volume and normalise back to one lot. Some symbols
+   // do not accept 1.0 as a valid volume even though OrderCalcProfit otherwise
+   // supports their broker calculation mode.
+   const double reference_lots = QM_RiskSizerQuantizeLots(
+      MathMax(snapshot.volume_min, MathMin(1.0, snapshot.volume_max)),
+      snapshot.volume_min,
+      snapshot.volume_max,
+      snapshot.volume_step);
+   if(reference_lots <= 0.0)
+      return false;
+
+   double directional_profit = 0.0;
+   ResetLastError();
+   if(!OrderCalcProfit(order_type,
+                       symbol,
+                       reference_lots,
+                       entry_price,
+                       stop_price,
+                       directional_profit))
+     {
+      QM_RiskSizerNoteProfitFallback("order_calc_profit_unavailable", GetLastError());
+      return false;
+     }
+   if(directional_profit >= 0.0)
+     {
+      QM_RiskSizerNoteProfitFallback("order_calc_profit_not_loss", GetLastError());
+      return false;
+     }
+
+   loss_per_lot = (-directional_profit) / reference_lots;
+   return (loss_per_lot > 0.0);
+  }
+
+double QM_LotsForRiskAtEntryDirectional(const string symbol,
+                                         const double sl_points,
+                                         const double risk_money,
+                                         const ENUM_ORDER_TYPE order_type,
+                                         const double entry_price,
+                                         const QM_SymbolRiskSnapshot &snapshot)
+  {
+   double loss_per_lot = 0.0;
+   if(QM_RiskSizerExactDirectionalLossPerLot(symbol,
+                                             order_type,
+                                             entry_price,
+                                             sl_points,
+                                             snapshot,
+                                             loss_per_lot))
+     {
+      const double raw_lots = risk_money / loss_per_lot;
+      return QM_RiskSizerQuantizeLots(raw_lots,
+                                      snapshot.volume_min,
+                                      snapshot.volume_max,
+                                      snapshot.volume_step);
+     }
+
+   // Compatibility fallback for calculation modes that cannot service
+   // OrderCalcProfit. QM_Entry emits the recorded reason/error for this sizing
+   // pass; a supported exact calculation is therefore never replaced silently.
+   if(!g_qm_risk_profit_fallback_flag)
+      QM_RiskSizerNoteProfitFallback("directional_inputs_invalid", GetLastError());
+   return QM_LotsForRiskFromSnapshot(snapshot, risk_money, sl_points);
+  }
+
 double QM_RiskSizerCapLotsByOrderMargin(const string symbol,
                                         const ENUM_ORDER_TYPE order_type,
                                         const double entry_price,
@@ -661,7 +767,12 @@ double QM_LotsForRiskAtEntryFromMoney(const string symbol,
    if(!QM_RiskSizerReadSymbolSnapshot(symbol, snapshot))
       return 0.0;
 
-   const double requested_lots = QM_LotsForRiskFromSnapshot(snapshot, risk_money, sl_points);
+   const double requested_lots = QM_LotsForRiskAtEntryDirectional(symbol,
+                                                                   sl_points,
+                                                                   risk_money,
+                                                                   order_type,
+                                                                   entry_price,
+                                                                   snapshot);
    if(requested_lots <= 0.0)
       return 0.0;
 

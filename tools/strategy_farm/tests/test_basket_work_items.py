@@ -25,7 +25,27 @@ def _fake_running_process_identity(pid: int) -> dict:
     }
 
 
+def _fake_job_binding(proc, capture_identity, **_kwargs) -> dict:
+    """Containment double for FakeProc instances without real Windows handles."""
+    identity = capture_identity(proc)
+    return {
+        **identity,
+        "job_object_assigned": True,
+        "job_object_mode": "KILL_ON_JOB_CLOSE",
+        "job_object_registry_key": f"{proc.pid}|{identity['process_creation_key']}",
+        "process_started_suspended": True,
+        "primary_thread_resumed": True,
+    }
+
+
 class BasketWorkItemsTests(unittest.TestCase):
+    def setUp(self) -> None:
+        old_binding = farmctl.bind_spawned_process_to_kill_job
+        self.addCleanup(
+            setattr, farmctl, "bind_spawned_process_to_kill_job", old_binding
+        )
+        farmctl.bind_spawned_process_to_kill_job = _fake_job_binding
+
     def _insert_active_basket_q02(self, root: Path, *, item_id: str, age_minutes: int) -> None:
         farmctl.init_db(root)
         updated = (
