@@ -242,6 +242,10 @@ def test_publication_and_manifest_happen_only_after_four_passes() -> None:
     assert "canonical_compile_logs" in source
     assert "FileMode]::CreateNew" in source
     assert "canonical_publication_after_four_pass = $true" in source
+    # Do not pass a generic List[object] directly to @(...). PowerShell 7.5's
+    # dynamic binder raises "Argument types do not match" for that expression.
+    assert "results = @($manifestResults | ForEach-Object { $_ })" in source
+    assert "results = @($manifestResults)" not in source
     for manifest_field in (
         "source_commit",
         "source_mq5_sha256",

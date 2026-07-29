@@ -853,7 +853,11 @@ $manifest = [ordered]@{
         isolated_merged_after = $mergedIncludeDigestAfter
     }
     compile_order = @($eaSpecs | ForEach-Object { $_.name })
-    results = @($manifestResults)
+    # PowerShell 7.5 can throw "Argument types do not match" when the array
+    # subexpression binder receives a generic List[object] directly.  Force
+    # enumeration through the pipeline so the create-only manifest is a plain
+    # object array on every supported PowerShell version.
+    results = @($manifestResults | ForEach-Object { $_ })
     publication = [ordered]@{
         staged_ex5_tree = Get-TreeDigest -Root $canonicalEx5
         compile_logs_tree = Get-TreeDigest -Root $canonicalLogs
