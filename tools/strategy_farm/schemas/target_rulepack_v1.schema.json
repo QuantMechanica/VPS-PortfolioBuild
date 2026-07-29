@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.local/schemas/target_rulepack_v1.schema.json",
+  "title": "QuantMechanica Target Rulepack v1",
+  "description": "Research-only, canonical target contract. Provider-published rules and internal QuantMechanica guardrails are intentionally separate collections.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "schema_ref",
+    "rulepack_id",
+    "profile_version",
+    "target",
+    "account_or_program",
+    "as_of",
+    "lifecycle_status",
+    "canonicalization",
+    "official_sources",
+    "official_rules",
+    "internal_guardrails",
+    "q08_evidence_policy",
+    "evaluation_profile",
+    "deployment_boundary"
+  ],
+  "properties": {
+    "schema_version": {"const": "target-rulepack/v1"},
+    "schema_ref": {"const": "tools/strategy_farm/schemas/target_rulepack_v1.schema.json"},
+    "rulepack_id": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,95}_V[1-9][0-9]*$"},
+    "profile_version": {"type": "integer", "minimum": 1},
+    "target": {"enum": ["DARWINEX_ZERO", "FTMO"]},
+    "account_or_program": {"type": "string", "minLength": 1},
+    "as_of": {"type": "string", "format": "date"},
+    "lifecycle_status": {"const": "RESEARCH_CONTRACT_ONLY"},
+    "canonicalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "hash_algorithm", "numeric_encoding"],
+      "properties": {
+        "algorithm": {"const": "QM_CANONICAL_JSON_V1"},
+        "hash_algorithm": {"const": "SHA-256"},
+        "numeric_encoding": {"const": "NON_INTEGRAL_AS_DECIMAL_STRING"}
+      }
+    },
+    "official_sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/officialSource"}
+    },
+    "official_rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/officialRule"}
+    },
+    "internal_guardrails": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/internalGuardrail"}
+    },
+    "q08_evidence_policy": {"$ref": "#/$defs/q08EvidencePolicy"},
+    "evaluation_profile": {"$ref": "#/$defs/evaluationProfile"},
+    "deployment_boundary": {"$ref": "#/$defs/deploymentBoundary"}
+  },
+  "$defs": {
+    "identifier": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,95}$"},
+    "nonEmptyStringArray": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "canonicalValue": {
+      "oneOf": [
+        {"type": "string"},
+        {"type": "integer"},
+        {"type": "boolean"},
+        {"type": "null"},
+        {"type": "array", "items": {"$ref": "#/$defs/canonicalValue"}},
+        {"type": "object", "additionalProperties": {"$ref": "#/$defs/canonicalValue"}}
+      ]
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/canonicalValue"}
+    },
+    "officialSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "title", "url", "authority", "retrieved_on"],
+      "properties": {
+        "source_id": {"$ref": "#/$defs/identifier"},
+        "title": {"type": "string", "minLength": 1},
+        "url": {"type": "string", "format": "uri", "pattern": "^https://"},
+        "authority": {"const": "OFFICIAL_PROVIDER"},
+        "retrieved_on": {"type": "string", "format": "date"}
+      }
+    },
+    "officialRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rule_id", "category", "description", "scope", "parameters", "source_ids"],
+      "properties": {
+        "rule_id": {"$ref": "#/$defs/identifier"},
+        "category": {"enum": ["OBJECTIVE", "RISK_LIMIT", "RISK_ENGINE", "ELIGIBILITY", "TRADING_CONDITION", "OPERATIONAL_LIMIT"]},
+        "description": {"type": "string", "minLength": 1},
+        "scope": {"$ref": "#/$defs/nonEmptyStringArray"},
+        "parameters": {"$ref": "#/$defs/parameters"},
+        "source_ids": {"$ref": "#/$defs/nonEmptyStringArray"}
+      }
+    },
+    "internalGuardrail": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["guardrail_id", "classification", "status", "description", "scope", "parameters", "rationale", "decision_refs"],
+      "properties": {
+        "guardrail_id": {"$ref": "#/$defs/identifier"},
+        "classification": {"const": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE"},
+        "status": {"enum": ["OWNER_RATIFIED", "PROPOSED_FOR_CALIBRATION"]},
+        "description": {"type": "string", "minLength": 1},
+        "scope": {"$ref": "#/$defs/nonEmptyStringArray"},
+        "parameters": {"$ref": "#/$defs/parameters"},
+        "rationale": {"type": "string", "minLength": 1},
+        "decision_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "q08EvidencePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy_id", "hard_block_dimensions", "soft_evidence_debt_dimensions", "not_applicable_requires_declared_archetype", "soft_admission_status", "compensation_requirements"],
+      "properties": {
+        "policy_id": {"$ref": "#/$defs/identifier"},
+        "hard_block_dimensions": {"$ref": "#/$defs/nonEmptyStringArray"},
+        "soft_evidence_debt_dimensions": {"$ref": "#/$defs/nonEmptyStringArray"},
+        "not_applicable_requires_declared_archetype": {"const": true},
+        "soft_admission_status": {"const": "TARGET_ELIGIBLE_WITH_EVIDENCE_DEBT"},
+        "compensation_requirements": {"$ref": "#/$defs/nonEmptyStringArray"}
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metric_id", "direction", "description", "parameters"],
+      "properties": {
+        "metric_id": {"$ref": "#/$defs/identifier"},
+        "direction": {"enum": ["MAXIMIZE", "MINIMIZE", "TARGET_RANGE", "CONSTRAINT"]},
+        "description": {"type": "string", "minLength": 1},
+        "parameters": {"$ref": "#/$defs/parameters"}
+      }
+    },
+    "goCriterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["criterion_id", "classification", "description", "parameters"],
+      "properties": {
+        "criterion_id": {"$ref": "#/$defs/identifier"},
+        "classification": {"const": "INTERNAL_DECISION_CRITERION"},
+        "description": {"type": "string", "minLength": 1},
+        "parameters": {"$ref": "#/$defs/parameters"}
+      }
+    },
+    "evaluationProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["objective", "metrics", "go_criteria"],
+      "properties": {
+        "objective": {"type": "string", "minLength": 1},
+        "metrics": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/metric"}},
+        "go_criteria": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/goCriterion"}}
+      }
+    },
+    "deploymentBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime_integration", "deploy_authorization", "factory_action_authorized", "mt5_action_authorized", "notes"],
+      "properties": {
+        "runtime_integration": {"const": "NOT_IMPLEMENTED"},
+        "deploy_authorization": {"const": "OWNER_ONLY"},
+        "factory_action_authorized": {"const": false},
+        "mt5_action_authorized": {"const": false},
+        "notes": {"$ref": "#/$defs/nonEmptyStringArray"}
+      }
+    }
+  }
+}

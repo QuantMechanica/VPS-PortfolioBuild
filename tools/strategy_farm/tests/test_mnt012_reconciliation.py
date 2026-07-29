@@ -154,11 +154,15 @@ def test_forecast_binds_diagnostic_source_hash(tmp_path: Path) -> None:
     )
 
 
-def test_apply_is_hashbound_snapshotted_and_cas_guarded(tmp_path: Path) -> None:
+def test_apply_is_hashbound_snapshotted_and_cas_guarded(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     db, factory_off, card, manifest_path, _ = _fixture(tmp_path)
     loaded = reconciliation.load_manifest(manifest_path)
     snapshot = tmp_path / "snapshots" / "pre.sqlite"
     card_sha = reconciliation.sha256_file(card)
+    apply_wallclock = "2030-01-02T03:04:05+00:00"
+    monkeypatch.setattr(reconciliation, "utc_now", lambda: apply_wallclock)
 
     with pytest.raises(reconciliation.ReconciliationError, match="manifest SHA-256 mismatch"):
         reconciliation.apply_reconciliation(
@@ -191,16 +195,25 @@ def test_apply_is_hashbound_snapshotted_and_cas_guarded(tmp_path: Path) -> None:
         conn.row_factory = sqlite3.Row
         row = conn.execute("SELECT status, payload_json FROM tasks WHERE id='task-1'").fetchone()
         event = conn.execute(
-            "SELECT event, entity_id FROM events WHERE entity_id='task-1'"
+            "SELECT event, entity_id, ts, detail_json FROM events WHERE entity_id='task-1'"
+        ).fetchone()
+        ledger = conn.execute(
+            "SELECT ts, detail_json FROM build_task_reconciliation_ledger WHERE task_id='task-1'"
         ).fetchone()
     stored = json.loads(row["payload_json"])
     assert row["status"] == "blocked"
     assert stored["blocked_reason"] == "r3_missing"
     assert stored["mnt012_reconciliation"]["run_id"] == "MNT012-TEST-01"
-    assert dict(event) == {
-        "event": "mnt012_build_task_reconciled",
-        "entity_id": "task-1",
-    }
+    assert event["event"] == "mnt012_build_task_reconciled"
+    assert event["entity_id"] == "task-1"
+    assert event["ts"] == apply_wallclock
+    assert ledger["ts"] == apply_wallclock
+    assert json.loads(event["detail_json"])["manifest_target_updated_at"] == (
+        "2026-07-29T11:30:00+00:00"
+    )
+    assert json.loads(ledger["detail_json"])["manifest_target_updated_at"] == (
+        "2026-07-29T11:30:00+00:00"
+    )
     db_before_second = reconciliation.sha256_file(db)
     second = reconciliation.apply_reconciliation(
         db,

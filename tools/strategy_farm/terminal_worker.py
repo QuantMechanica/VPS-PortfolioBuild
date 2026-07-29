@@ -28,9 +28,12 @@ from typing import Any
 
 import farmctl
 from framework.scripts._phase_utils import cold_cache_summary_signature
+from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
 
 
 POLL_SLEEP_SECONDS = 2.0
+FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS = 5.0
+FACTORY_ADMISSION_LOCK_POLL_SECONDS = 0.01
 NEWS_CALENDAR_GUARD_SLEEP_SECONDS = 30.0
 MAX_WORK_ITEM_RETRIES = 3
 # Disk circuit-breaker (2026-06-19 incident): if free space on the runtime drive
@@ -1013,6 +1016,35 @@ def _detect_history_lock_storm(
     return None
 
 
+def _claim_queue_may_need_mutation(root: Path, terminal: str) -> bool:
+    """Avoid an fsynced global lock when the claim queue is plainly empty.
+
+    A false negative only delays a concurrently inserted item until the next
+    worker poll: the real claim still performs complete transactional selection.
+    Any DB, schema, or probe ambiguity returns ``True`` and takes the locked
+    fail-closed path.
+    """
+
+    db_path = root / farmctl.DB_REL
+    if not db_path.is_file():
+        return True
+    try:
+        uri = f"file:{db_path.as_posix()}?mode=ro"
+        with sqlite3.connect(uri, uri=True, timeout=1) as conn:
+            row = conn.execute(
+                """
+                SELECT 1
+                FROM work_items
+                WHERE status='pending' OR (status='active' AND claimed_by=?)
+                LIMIT 1
+                """,
+                (terminal,),
+            ).fetchone()
+        return row is not None
+    except (OSError, sqlite3.Error):
+        return True
+
+
 def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     """Atomically claim one pending work_item for a terminal.
 
@@ -1024,9 +1056,36 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     additionally require higher commit and physical-RAM headroom than ordinary
     single-symbol jobs to avoid process-start and allocator failures.
     """
+    factory_off_flag = root / "state" / "FACTORY_OFF.flag"
+    try:
+        if factory_off_flag.exists():
+            return {
+                "claimed": False,
+                "reason": "factory_off",
+                "flag": str(factory_off_flag),
+            }
+    except OSError as exc:
+        return {
+            "claimed": False,
+            "reason": "factory_admission_interlock_error",
+            "flag": str(factory_off_flag),
+            "error": str(exc),
+        }
+
     # Read before opening the claim transaction. Cached stat-bound results keep
     # idle worker polling cheap; every actual spawn performs an uncached re-read.
     calendar_preflight = farmctl._news_calendar_preflight(use_cache=True)
+    if calendar_preflight.get("ok") and not _claim_queue_may_need_mutation(root, terminal):
+        return {
+            "claimed": False,
+            "reason": "no_pending_claimable",
+            "history_skipped": [],
+            "launch_cooldown_skipped": [],
+            "multisymbol_ram_skipped": [],
+            "multisymbol_commit_skipped": [],
+            "terminal_avoid_skipped": [],
+            "recovery_capped": [],
+        }
 
     def _claim() -> dict[str, Any]:
         farmctl.init_db(root)
@@ -1338,12 +1397,77 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 conn.rollback()
                 raise
 
+    # The shared mutation lock closes the OFF-during-claim race. Factory_OFF
+    # asserts its flag first and then waits for this lock to drain. A claim that
+    # acquired the lock before that assertion is an admitted bounded unit; after
+    # acquisition we re-read the flag so no later claimant can cross the fence.
+    mutation_lock_path = path_for_factory_flag(factory_off_flag)
+    admission_deadline = time.monotonic() + FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS
+    while True:
+        mutation_lock = FactoryMutationLock(
+            mutation_lock_path,
+            owner=f"terminal_worker.claim_atomic:{terminal}",
+        )
+        try:
+            mutation_lock.__enter__()
+            break
+        except RuntimeError:
+            # Contending workers serialize here. Re-probe OFF on every retry so
+            # an asserted interlock wins immediately instead of waiting for the
+            # admission timeout.
+            try:
+                if factory_off_flag.exists():
+                    return {
+                        "claimed": False,
+                        "reason": "factory_off",
+                        "flag": str(factory_off_flag),
+                    }
+            except OSError as exc:
+                return {
+                    "claimed": False,
+                    "reason": "factory_admission_interlock_error",
+                    "flag": str(factory_off_flag),
+                    "error": str(exc),
+                }
+            if time.monotonic() >= admission_deadline:
+                return {
+                    "claimed": False,
+                    "reason": "factory_mutation_lock_busy",
+                    "lock": str(mutation_lock_path),
+                }
+            time.sleep(FACTORY_ADMISSION_LOCK_POLL_SECONDS)
+        except OSError as exc:
+            return {
+                "claimed": False,
+                "reason": "factory_admission_interlock_error",
+                "lock": str(mutation_lock_path),
+                "error": str(exc),
+            }
+
     try:
-        return _with_sqlite_retry(_claim)
-    except sqlite3.OperationalError as exc:
-        if not _is_sqlite_locked(exc):
-            raise
-        return {"claimed": False, "reason": "sqlite_locked"}
+        try:
+            if factory_off_flag.exists():
+                return {
+                    "claimed": False,
+                    "reason": "factory_off",
+                    "flag": str(factory_off_flag),
+                }
+        except OSError as exc:
+            return {
+                "claimed": False,
+                "reason": "factory_admission_interlock_error",
+                "flag": str(factory_off_flag),
+                "error": str(exc),
+            }
+
+        try:
+            return _with_sqlite_retry(_claim)
+        except sqlite3.OperationalError as exc:
+            if not _is_sqlite_locked(exc):
+                raise
+            return {"claimed": False, "reason": "sqlite_locked"}
+    finally:
+        mutation_lock.__exit__(None, None, None)
 
 
 def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, Any]:

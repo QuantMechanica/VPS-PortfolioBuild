@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qm.local/schemas/g0_decision_v1.schema.json",
+  "title": "QM append-only G0 decision v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision_id",
+    "card_id",
+    "card_sha256",
+    "source_authorization_id",
+    "source_sha256",
+    "decision",
+    "authority",
+    "agent_identity",
+    "owner_identity",
+    "decided_at_utc",
+    "rationale",
+    "record_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "qm.g0-decision/v1"},
+    "decision_id": {"$ref": "#/$defs/identifier"},
+    "card_id": {"$ref": "#/$defs/identifier"},
+    "card_sha256": {"$ref": "#/$defs/sha256"},
+    "source_authorization_id": {"$ref": "#/$defs/identifier"},
+    "source_sha256": {"$ref": "#/$defs/sha256"},
+    "decision": {
+      "enum": [
+        "RECOMMEND_APPROVE",
+        "RECOMMEND_REJECT",
+        "RECOMMEND_CHANGES_REQUIRED",
+        "APPROVED",
+        "REJECTED"
+      ]
+    },
+    "authority": {"enum": ["AGENT", "OWNER"]},
+    "agent_identity": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
+    "owner_identity": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
+    "decided_at_utc": {"$ref": "#/$defs/utc"},
+    "rationale": {"type": "string", "minLength": 1, "maxLength": 4096},
+    "record_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "authority": {"const": "AGENT"},
+        "decision": {
+          "enum": [
+            "RECOMMEND_APPROVE",
+            "RECOMMEND_REJECT",
+            "RECOMMEND_CHANGES_REQUIRED"
+          ]
+        },
+        "agent_identity": {"type": "string", "minLength": 1, "maxLength": 128},
+        "owner_identity": {"type": "null"}
+      }
+    },
+    {
+      "properties": {
+        "authority": {"const": "OWNER"},
+        "decision": {"enum": ["APPROVED", "REJECTED"]},
+        "agent_identity": {"type": "null"},
+        "owner_identity": {"type": "string", "minLength": 1, "maxLength": 128}
+      }
+    }
+  ],
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$"
+    },
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "utc": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$"
+    }
+  }
+}

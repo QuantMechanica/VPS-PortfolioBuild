@@ -16,6 +16,11 @@ import datetime as dt
 from pathlib import Path
 
 try:
+    from factory_mutation_lock import FactoryMutationLock
+except ModuleNotFoundError:
+    from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+
+try:
     from managed_codex import (
         is_managed_codex_pid_live,
         list_live_managed_codex_processes,
@@ -117,51 +122,28 @@ def _write_state(state: dict[str, object], *, dry_run: bool) -> None:
     STATE.write_text(json.dumps(state, indent=2), encoding="utf-8")
 
 
-def _acquire_spawn_lock() -> int | None:
+def _acquire_spawn_lock() -> FactoryMutationLock | None:
     """Join the Factory OFF writer handover for the spawn/register window."""
-    FACTORY_MUTATION_LOCK.parent.mkdir(parents=True, exist_ok=True)
+    lock = FactoryMutationLock(
+        FACTORY_MUTATION_LOCK,
+        owner="codex_fleet_pacer_spawn",
+    )
     try:
-        fd = os.open(
-            str(FACTORY_MUTATION_LOCK),
-            os.O_CREAT | os.O_EXCL | os.O_WRONLY,
-        )
-    except FileExistsError:
+        lock.__enter__()
+    except RuntimeError:
         _log(f"spawn_skip factory_mutation_lock_busy={FACTORY_MUTATION_LOCK}")
         return None
-    try:
-        record = {
-            "pid": os.getpid(),
-            "owner": "codex_fleet_pacer_spawn",
-            "created_at": _now().replace(microsecond=0).isoformat(),
-        }
-        os.write(fd, json.dumps(record, sort_keys=True).encode("utf-8"))
-        os.fsync(fd)
-    except Exception:
-        os.close(fd)
-        try:
-            FACTORY_MUTATION_LOCK.unlink(missing_ok=True)
-        except OSError:
-            pass
-        raise
     if FACTORY_OFF_FLAG.exists():
-        os.close(fd)
-        try:
-            FACTORY_MUTATION_LOCK.unlink(missing_ok=True)
-        except OSError:
-            pass
+        lock.__exit__(None, None, None)
         _log("spawn_skip factory_off_after_lock")
         return None
-    return fd
+    return lock
 
 
-def _release_spawn_lock(fd: int | None) -> None:
-    if fd is None:
+def _release_spawn_lock(lock: FactoryMutationLock | None) -> None:
+    if lock is None:
         return
-    os.close(fd)
-    try:
-        FACTORY_MUTATION_LOCK.unlink(missing_ok=True)
-    except OSError:
-        pass
+    lock.__exit__(None, None, None)
 
 
 def _spawn_agent(prompt_name: str) -> int | None:

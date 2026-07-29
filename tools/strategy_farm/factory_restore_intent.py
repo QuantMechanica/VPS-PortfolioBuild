@@ -23,6 +23,8 @@ SCHEMA_VERSION = "qm.factory-restore-intent/v1"
 DECISION = "RESTORE_EXACT_PRE_OFF_TASK_INTENT"
 SCOPE = "QM_QUIESCENCE_TASKS_RESTORE_INTENT"
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+MAX_AUTHORIZATION_AGE = dt.timedelta(hours=24)
+MAX_FUTURE_CLOCK_SKEW = dt.timedelta(minutes=5)
 
 
 class RestoreIntentError(ValueError):
@@ -89,6 +91,16 @@ def _require_timestamp(value: Any, label: str) -> str:
     return raw
 
 
+def _parse_utc_timestamp(value: str, label: str) -> dt.datetime:
+    try:
+        parsed = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:  # pragma: no cover - guarded by _require_timestamp
+        raise RestoreIntentError(f"{label} must be an ISO-8601 timestamp") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() != dt.timedelta(0):
+        raise RestoreIntentError(f"{label} must be UTC (offset 00:00 or Z)")
+    return parsed.astimezone(dt.UTC)
+
+
 def _same_path(left: Path, right: Path) -> bool:
     return os.path.normcase(str(left.resolve())) == os.path.normcase(str(right.resolve()))
 
@@ -97,6 +109,9 @@ def validate_restore_intent(
     manifest_path: Path,
     legacy_flag_path: Path,
     expected_tasks: list[str],
+    *,
+    now_utc: dt.datetime | None = None,
+    max_authorization_age: dt.timedelta = MAX_AUTHORIZATION_AGE,
 ) -> dict[str, Any]:
     manifest_path = Path(manifest_path)
     legacy_flag_path = Path(legacy_flag_path)
@@ -178,6 +193,23 @@ def validate_restore_intent(
     authorized_at = _require_timestamp(
         authorization["authorized_at_utc"], "owner_authorization.authorized_at_utc"
     )
+    authorization_time = _parse_utc_timestamp(
+        authorized_at, "owner_authorization.authorized_at_utc"
+    )
+    validation_time = now_utc or dt.datetime.now(dt.UTC)
+    if validation_time.tzinfo is None:
+        raise RestoreIntentError("validation time must be timezone-aware UTC")
+    validation_time = validation_time.astimezone(dt.UTC)
+    if max_authorization_age <= dt.timedelta(0):
+        raise RestoreIntentError("max authorization age must be positive")
+    if authorization_time > validation_time + MAX_FUTURE_CLOCK_SKEW:
+        raise RestoreIntentError(
+            "owner_authorization.authorized_at_utc is in the future beyond allowed clock skew"
+        )
+    if validation_time - authorization_time > max_authorization_age:
+        raise RestoreIntentError(
+            "owner_authorization has expired; obtain a fresh OWNER restore-intent decision"
+        )
     decision_ref = _require_nonplaceholder_string(
         authorization["decision_ref"], "owner_authorization.decision_ref"
     )
@@ -209,6 +241,7 @@ def validate_restore_intent(
             "decision": DECISION,
             "decision_ref": decision_ref,
             "scope": SCOPE,
+            "maximum_age_seconds": int(max_authorization_age.total_seconds()),
         },
         "task_enabled_before": normalized_state,
     }

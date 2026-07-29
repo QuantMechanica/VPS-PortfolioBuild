@@ -80,7 +80,10 @@ foreach ($case in $rejectedImages) {
 $acceptedWorkers = @(
     'pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T1 --root D:\QM\strategy_farm',
     '"C:\Program Files\Python311\python.exe" "C:\QM\repo\tools\strategy_farm\terminal_worker.py" --root "D:\QM\strategy_farm" --terminal T10',
-    'PYTHON.EXE -u C:\QM\REPO\tools\strategy_farm\terminal_worker.py --terminal t7 --root d:\qm\strategy_farm'
+    'PYTHON.EXE -u C:\QM\REPO\tools\strategy_farm\terminal_worker.py --terminal t7 --root d:\qm\strategy_farm',
+    'python.exe -X utf8 C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T2 --root D:\QM\strategy_farm',
+    'pythonw.exe -Xutf8 -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T9 --root D:\QM\strategy_farm',
+    'python.exe -u -X utf8 C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T10 --root D:\QM\strategy_farm'
 )
 foreach ($commandLine in $acceptedWorkers) {
     Assert-QmTrue -Condition (Test-QmFactoryWorkerCommandLine -CommandLine $commandLine) `
@@ -100,6 +103,13 @@ $rejectedWorkers = @(
     'pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T1 --terminal T2 --root D:\QM\strategy_farm',
     'pythonw.exe inspect.py C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T1 --root D:\QM\strategy_farm',
     'pythonw.exe -c "print(''C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T1 --root D:\QM\strategy_farm'')"',
+    'pythonw.exe -O C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T1 --root D:\QM\strategy_farm',
+    'pythonw.exe -X dev C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T1 --root D:\QM\strategy_farm',
+    'pythonw.exe -Xutf8=1 C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T1 --root D:\QM\strategy_farm',
+    'pythonw.exe -u -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T1 --root D:\QM\strategy_farm',
+    'pythonw.exe -Xutf8 -X utf8 C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T1 --root D:\QM\strategy_farm',
+    'pythonw.exe -X C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T1 --root D:\QM\strategy_farm',
+    'pythonw.exe -U C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T1 --root D:\QM\strategy_farm',
     'pwsh.exe C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T1 --root D:\QM\strategy_farm',
     '',
     $null
@@ -185,9 +195,15 @@ foreach ($entry in @($allowlist.entries)) {
         -Name "bind work-item UUID for $($entry.phase)"
 }
 
-$worktreeRunner = 'pythonw.exe -u C:\QM\worktrees\mnt-20260729-integration\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T10'
-Assert-QmTrue -Condition (Test-QmFactoryPhaseRunnerCommandLine -CommandLine $worktreeRunner) `
-    -Name 'accept exact allowlisted runner from one direct QM worktree'
+$worktreeRunners = @(
+    'pythonw.exe -u C:\QM\worktrees\mnt-20260729-integration\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T10',
+    'pythonw.exe -X utf8 C:\QM\worktrees\mnt-20260729-integration\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T10',
+    'python.exe -u -Xutf8 C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T1'
+)
+foreach ($worktreeRunner in $worktreeRunners) {
+    Assert-QmTrue -Condition (Test-QmFactoryPhaseRunnerCommandLine -CommandLine $worktreeRunner) `
+        -Name "accept exact allowlisted runner with bounded Python prefix: $worktreeRunner"
+}
 
 $runnerNegativeCases = @(
     @{ Name='basename only'; Command='python.exe q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T1'; Review=$true },
@@ -201,6 +217,9 @@ $runnerNegativeCases = @(
     @{ Name='non UUID'; Command='python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\not-a-guid --terminal T1'; Review=$true },
     @{ Name='nested below UUID'; Command='python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b\nested --terminal T1'; Review=$true },
     @{ Name='relative script'; Command='python.exe framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T1'; Review=$true },
+    @{ Name='unknown interpreter optimization flag'; Command='python.exe -O C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T1'; Review=$true },
+    @{ Name='unknown X option'; Command='python.exe -X dev C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T1'; Review=$true },
+    @{ Name='duplicate utf8 option'; Command='python.exe -Xutf8 -X utf8 C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T1'; Review=$true },
     @{ Name='wrong interpreter'; Command='pwsh.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T1'; Review=$false }
 )
 foreach ($case in $runnerNegativeCases) {
@@ -292,6 +311,8 @@ Assert-QmFalse -Condition (Test-QmStableFactoryNullScans -Scans @($zeroScanA,$no
 $acceptedPumps = @(
     'pythonw.exe C:\QM\repo\tools\strategy_farm\run_pump_task.py',
     'python.exe -u "C:\QM\repo\tools\strategy_farm\run_pump_task.py"',
+    'python.exe -X utf8 "C:\QM\repo\tools\strategy_farm\run_pump_task.py"',
+    'pythonw.exe -Xutf8 -u tools/strategy_farm/run_pump_task.py',
     'pythonw.exe tools/strategy_farm/run_pump_task.py'
 )
 foreach ($commandLine in $acceptedPumps) {
@@ -305,6 +326,10 @@ $rejectedPumps = @(
     'pythonw.exe tools\strategy_farm\run_pump_task.py.bak',
     'pythonw.exe inspect.py C:\QM\repo\tools\strategy_farm\run_pump_task.py',
     'pythonw.exe -c "print(''run_pump_task.py'')"',
+    'pythonw.exe -O C:\QM\repo\tools\strategy_farm\run_pump_task.py',
+    'pythonw.exe -X dev C:\QM\repo\tools\strategy_farm\run_pump_task.py',
+    'pythonw.exe -Xutf8=1 C:\QM\repo\tools\strategy_farm\run_pump_task.py',
+    'pythonw.exe -u -u C:\QM\repo\tools\strategy_farm\run_pump_task.py',
     'pwsh.exe C:\QM\repo\tools\strategy_farm\run_pump_task.py',
     '',
     $null

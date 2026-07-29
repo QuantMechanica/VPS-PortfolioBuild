@@ -99,6 +99,88 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(rows[0][0], "active")
             self.assertIn(rows[0][1], {"T1", "T2"})
 
+    def test_normal_claim_refuses_existing_factory_off_without_db_mutation(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            flag = root / "state" / "FACTORY_OFF.flag"
+            flag.parent.mkdir(parents=True, exist_ok=True)
+            flag.write_text("{}", encoding="ascii")
+
+            result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "factory_off")
+            self.assertFalse((root / farmctl.DB_REL).exists())
+            self.assertFalse((root / "state" / "FACTORY_MUTATION.lock").exists())
+
+    def test_empty_queue_fast_path_does_not_churn_global_lock(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            farmctl.init_db(root)
+
+            with patch.object(
+                terminal_worker,
+                "FactoryMutationLock",
+                side_effect=AssertionError("empty queue must not acquire mutation lock"),
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            self.assertFalse((root / "state" / "FACTORY_MUTATION.lock").exists())
+
+    def test_off_asserted_after_lock_acquisition_blocks_claim(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-off-race", "EURUSD.DWX", phase="P3")
+            flag = root / "state" / "FACTORY_OFF.flag"
+
+            class _AssertOffOnEnter:
+                def __enter__(self):
+                    flag.write_text("{}", encoding="ascii")
+                    return self
+
+                def __exit__(self, exc_type, exc, traceback):
+                    return None
+
+            with patch.object(
+                terminal_worker,
+                "FactoryMutationLock",
+                return_value=_AssertOffOnEnter(),
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "factory_off")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, claimed_by FROM work_items WHERE id='wi-off-race'"
+                ).fetchone()
+            self.assertEqual(row, ("pending", None))
+
+    def test_claim_admitted_before_off_may_finish_bounded_transaction(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-pre-admitted", "EURUSD.DWX", phase="P3")
+            flag = root / "state" / "FACTORY_OFF.flag"
+            original_retry = terminal_worker._with_sqlite_retry
+
+            def _assert_off_after_admission(fn):
+                flag.write_text("{}", encoding="ascii")
+                return original_retry(fn)
+
+            with patch.object(
+                terminal_worker,
+                "_with_sqlite_retry",
+                side_effect=_assert_off_after_admission,
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "wi-pre-admitted")
+            self.assertTrue(flag.exists())
+            self.assertFalse((root / "state" / "FACTORY_MUTATION.lock").exists())
+
     def test_live_terminal_reservation_declines_claim_and_logs(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"

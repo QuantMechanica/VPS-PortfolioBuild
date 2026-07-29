@@ -51,9 +51,11 @@ Diese Folgearbeit ist MNT-049/MNT-052 zugeordnet.
 ### 3. MNT-043/044-Dateien im kanonischen Checkout
 
 Sechs ungetrackte Scanner-, Schema-, Test- und Evidenzdateien liegen sowohl
-im kanonischen als auch im Integrations-Worktree. SHA-256-Vergleich aller
-sechs Dateien ist bytegleich. Die Integrationskopie ist die maßgebliche
-Maintenance-Änderung.
+im kanonischen als auch im Integrations-Worktree. Fünf der sechs Dateien sind
+bytegleich. Die kanonische Kopie von `MNT043_044_CLOSURE_DRIFT_SCANNER.md`
+weicht ausschließlich durch eine zusätzliche abschließende Newline ab
+(6.541 statt 6.540 Bytes); die Integrationskopie ist für alle sechs Dateien
+die maßgebliche Maintenance-Änderung.
 
 Disposition: Im kanonischen Checkout vorerst nichts löschen. Erst nachdem
 die Integrationsänderung dauerhaft gesichert und übernommen wurde, darf die
@@ -67,6 +69,7 @@ ist ein MNT-031-Integrationspunkt und keine zweite fachliche Implementierung.
 2. MNT-049/MNT-052: den ungültigen Public-Snapshot-Drift nicht übernehmen;
    nach Quellenbereinigung kontrolliert neu generieren und OFF-Guard sowie
    Output-Hashes belegen.
-3. MNT-031: Integrationsbranch sichern/übernehmen; erst danach die
-   bytegleichen ungetrackten MNT-043/044-Duplikate im kanonischen Checkout
+3. MNT-031: Integrationsbranch sichern/übernehmen; erst danach die fünf
+   bytegleichen ungetrackten MNT-043/044-Duplikate und die nur um eine
+   Trailing-Newline abweichende Scanner-MD-Kopie im kanonischen Checkout
    gezielt bereinigen.

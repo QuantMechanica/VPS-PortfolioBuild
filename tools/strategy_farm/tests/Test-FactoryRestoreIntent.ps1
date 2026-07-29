@@ -123,7 +123,7 @@ try {
         owner_authorization = [ordered]@{
             authority = 'OWNER'
             authorized_by = 'powershell-test-owner'
-            authorized_at_utc = '2026-07-29T12:00:00Z'
+            authorized_at_utc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
             decision = 'RESTORE_EXACT_PRE_OFF_TASK_INTENT'
             decision_ref = 'OWNER-PS-TEST-DECISION-01'
             scope = 'QM_QUIESCENCE_TASKS_RESTORE_INTENT'

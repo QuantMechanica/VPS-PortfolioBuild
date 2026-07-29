@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.local/schemas/q08_shadow_decision_v1.schema.json",
+  "title": "Q08 v3 Shadow Decision v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "policy_version",
+    "policy_sha256",
+    "verdict",
+    "route",
+    "archetype_requested",
+    "archetype_resolved",
+    "required_test_ids",
+    "supported_test_ids",
+    "conditional_test_ids",
+    "insufficient_test_ids",
+    "contradicted_test_ids",
+    "invalid_test_ids",
+    "missing_test_ids",
+    "diagnostic_test_ids",
+    "ignored_test_ids",
+    "reasons"
+  ],
+  "properties": {
+    "schema_version": {"const": "q08_shadow_decision/v1"},
+    "policy_version": {"type": "string", "minLength": 1},
+    "policy_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "verdict": {
+      "enum": ["SUPPORTED", "CONDITIONAL", "INSUFFICIENT", "CONTRADICTED", "INVALID"]
+    },
+    "route": {
+      "enum": [
+        "PORTFOLIO_EVALUATION",
+        "PORTFOLIO_EVALUATION_CONDITIONAL",
+        "SHADOW_EVIDENCE",
+        "REJECT",
+        "RETRY"
+      ]
+    },
+    "archetype_requested": {"type": "string"},
+    "archetype_resolved": {"type": ["string", "null"]},
+    "required_test_ids": {"$ref": "#/$defs/stringSet"},
+    "supported_test_ids": {"$ref": "#/$defs/stringSet"},
+    "conditional_test_ids": {"$ref": "#/$defs/stringSet"},
+    "insufficient_test_ids": {"$ref": "#/$defs/stringSet"},
+    "contradicted_test_ids": {"$ref": "#/$defs/stringSet"},
+    "invalid_test_ids": {"$ref": "#/$defs/stringSet"},
+    "missing_test_ids": {"$ref": "#/$defs/stringSet"},
+    "diagnostic_test_ids": {"$ref": "#/$defs/stringSet"},
+    "ignored_test_ids": {"$ref": "#/$defs/stringSet"},
+    "reasons": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {
+    "stringSet": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    }
+  }
+}

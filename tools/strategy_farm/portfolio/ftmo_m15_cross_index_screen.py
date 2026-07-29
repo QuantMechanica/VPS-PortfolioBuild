@@ -19,9 +19,11 @@ import numpy as np
 import pandas as pd
 
 try:
+    from . import _frame_identity_cache as frame_cache
     from . import ftmo_intraday_candidate_screen as base
     from . import ftmo_m15_causal_strategy_screen as m15
 except ImportError:  # pragma: no cover - direct execution
+    import _frame_identity_cache as frame_cache  # type: ignore
     import ftmo_intraday_candidate_screen as base  # type: ignore
     import ftmo_m15_causal_strategy_screen as m15  # type: ignore
 
@@ -32,12 +34,19 @@ SESSION_START_MINUTE = 9 * 60 + 30
 SESSION_END_MINUTE = 16 * 60
 EVIDENCE_END_YEAR = 2025
 
-_ARRAY_CACHE: dict[int, dict[str, np.ndarray]] = {}
-_SESSION_DAY_CACHE: dict[int, list[list[int]]] = {}
+_ARRAY_CACHE: dict[
+    int, frame_cache.FrameCacheEntry[dict[str, np.ndarray]]
+] = {}
+_SESSION_DAY_CACHE: dict[
+    int, frame_cache.FrameCacheEntry[list[list[int]]]
+] = {}
 
 
 def _values(panel: pd.DataFrame, column: str) -> np.ndarray:
-    arrays = _ARRAY_CACHE.setdefault(id(panel), {})
+    panel_id = id(panel)
+    arrays = frame_cache.get_for_frame(_ARRAY_CACHE, panel_id, panel)
+    if arrays is None:
+        arrays = frame_cache.store_for_frame(_ARRAY_CACHE, panel_id, panel, {})
     if column not in arrays:
         arrays[column] = panel[column].to_numpy()
     return arrays[column]
@@ -73,7 +82,8 @@ def load_panel(root: Path) -> pd.DataFrame:
 
 
 def session_days(panel: pd.DataFrame) -> list[list[int]]:
-    cached = _SESSION_DAY_CACHE.get(id(panel))
+    panel_id = id(panel)
+    cached = frame_cache.get_for_frame(_SESSION_DAY_CACHE, panel_id, panel)
     if cached is not None:
         return cached
     weekdays = panel[panel["weekday"] < 5]
@@ -87,8 +97,7 @@ def session_days(panel: pd.DataFrame) -> list[list[int]]:
         ]
         if indices and int(minutes[indices[0]]) == SESSION_START_MINUTE:
             days.append(indices)
-    _SESSION_DAY_CACHE[id(panel)] = days
-    return days
+    return frame_cache.store_for_frame(_SESSION_DAY_CACHE, panel_id, panel, days)
 
 
 def simulate_leg(

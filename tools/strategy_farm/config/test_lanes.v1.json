@@ -1,0 +1,37 @@
+{
+  "schema_version": "qm.test-lanes/v1",
+  "suite_roots": [
+    "tools/strategy_farm/tests",
+    "framework/scripts/tests"
+  ],
+  "green_lane": {
+    "policy": "RUN_ALL_EXCEPT_DECLARED_EXTERNAL_RESIDUALS",
+    "residual_handling": "DESELECT_ONLY_NEVER_SKIP_OR_XFAIL"
+  },
+  "external_residual_lane": {
+    "policy": "FAIL_CLOSED_UNTIL_BOUND_EXTERNAL_STATE_IS_RECONCILED",
+    "tests": [
+      {
+        "node_id": "tools/strategy_farm/tests/test_dxz_10939_repair_packet.py::test_real_spec_hash_bindings_pass",
+        "owner_items": ["MNT-021", "MNT-043"]
+      },
+      {
+        "node_id": "tools/strategy_farm/tests/test_dxz_12567_xau_repair_packet.py::test_spec_is_hash_bound_blocked_and_xau_not_xng",
+        "owner_items": ["MNT-021", "MNT-043"]
+      },
+      {
+        "node_id": "tools/strategy_farm/tests/test_execution_contract_lint.py::test_dxz23_registry_is_source_bound_and_structurally_clean",
+        "owner_items": ["MNT-021", "MNT-043"]
+      },
+      {
+        "node_id": "tools/strategy_farm/tests/test_execution_contract_lint.py::test_density_execution_contracts_are_source_and_runtime_binding_clean",
+        "owner_items": ["MNT-021", "MNT-043"]
+      },
+      {
+        "node_id": "tools/strategy_farm/tests/test_execution_contract_lint.py::test_20009_ftmo_news_calendar_is_exact_and_evidence_bound",
+        "owner_items": ["MNT-045"]
+      }
+    ],
+    "exit_condition": "All five node IDs PASS without skip, xfail, assertion weakening or silent rebinding."
+  }
+}

@@ -175,6 +175,91 @@ function Test-QmCommandLineExecutableName {
     return $false
 }
 
+function Get-QmPythonLaunchTarget {
+    [CmdletBinding()]
+    param(
+        [AllowEmptyCollection()]
+        [string[]]$Arguments
+    )
+
+    # Keep this deliberately smaller than Python's complete command-line
+    # surface.  These are the only interpreter flags used by a supported
+    # Factory launcher.  A new flag therefore requires an explicit code and
+    # test change instead of silently moving the script-token boundary.
+    $index = 1
+    $seenUnbuffered = $false
+    $seenUtf8 = $false
+    $acceptedFlags = New-Object System.Collections.Generic.List[string]
+
+    while ($null -ne $Arguments -and $index -lt $Arguments.Count) {
+        $token = [string]$Arguments[$index]
+        if ($token -ceq '-u') {
+            if ($seenUnbuffered) {
+                return [pscustomobject][ordered]@{
+                    Valid = $false; TargetIndex = -1; Reason = 'python_flag_duplicate_u'; Flags = @($acceptedFlags)
+                }
+            }
+            $seenUnbuffered = $true
+            [void]$acceptedFlags.Add('-u')
+            $index++
+            continue
+        }
+        if ($token -ceq '-X') {
+            if ($seenUtf8) {
+                return [pscustomobject][ordered]@{
+                    Valid = $false; TargetIndex = -1; Reason = 'python_flag_duplicate_x_utf8'; Flags = @($acceptedFlags)
+                }
+            }
+            $valueIndex = $index + 1
+            if ($valueIndex -ge $Arguments.Count -or ([string]$Arguments[$valueIndex] -cne 'utf8')) {
+                return [pscustomobject][ordered]@{
+                    Valid = $false; TargetIndex = -1; Reason = 'python_x_option_not_allowlisted'; Flags = @($acceptedFlags)
+                }
+            }
+            $seenUtf8 = $true
+            [void]$acceptedFlags.Add('-X utf8')
+            $index += 2
+            continue
+        }
+        if ($token -ceq '-Xutf8') {
+            if ($seenUtf8) {
+                return [pscustomobject][ordered]@{
+                    Valid = $false; TargetIndex = -1; Reason = 'python_flag_duplicate_x_utf8'; Flags = @($acceptedFlags)
+                }
+            }
+            $seenUtf8 = $true
+            [void]$acceptedFlags.Add('-Xutf8')
+            $index++
+            continue
+        }
+
+        # -m is a launch target rather than a prefix flag.  It remains visible
+        # here so the existing, tightly-scoped legacy-module review path can
+        # classify it.  Every other leading-dash token is fail-closed.
+        if ($token -ceq '-m') { break }
+        if ([string]::IsNullOrWhiteSpace($token)) {
+            return [pscustomobject][ordered]@{
+                Valid = $false; TargetIndex = -1; Reason = 'python_launch_target_empty'; Flags = @($acceptedFlags)
+            }
+        }
+        if ($token.StartsWith('-', [System.StringComparison]::Ordinal)) {
+            return [pscustomobject][ordered]@{
+                Valid = $false; TargetIndex = -1; Reason = 'python_interpreter_flag_not_allowlisted'; Flags = @($acceptedFlags)
+            }
+        }
+        break
+    }
+
+    if ($null -eq $Arguments -or $index -ge $Arguments.Count) {
+        return [pscustomobject][ordered]@{
+            Valid = $false; TargetIndex = -1; Reason = 'python_launch_target_missing'; Flags = @($acceptedFlags)
+        }
+    }
+    return [pscustomobject][ordered]@{
+        Valid = $true; TargetIndex = $index; Reason = 'python_interpreter_prefix_allowlisted'; Flags = @($acceptedFlags)
+    }
+}
+
 function Test-QmFactoryMt5ImagePath {
     [CmdletBinding()]
     param(
@@ -207,11 +292,9 @@ function Test-QmFactoryWorkerCommandLine {
         return $false
     }
 
-    $scriptIndex = 1
-    if ($arguments.Count -gt 1 -and [string]::Equals($arguments[1], '-u', [System.StringComparison]::OrdinalIgnoreCase)) {
-        $scriptIndex = 2
-    }
-    if ($arguments.Count -le $scriptIndex) { return $false }
+    $launchTarget = Get-QmPythonLaunchTarget -Arguments $arguments
+    if (-not $launchTarget.Valid) { return $false }
+    $scriptIndex = [int]$launchTarget.TargetIndex
 
     $workerPath = ConvertTo-QmCanonicalProcessPath -Path $arguments[$scriptIndex]
     if (-not [string]::Equals($workerPath, $script:QmFactoryWorkerPath, [System.StringComparison]::OrdinalIgnoreCase)) {
@@ -290,10 +373,9 @@ function Test-QmFactoryPumpCommandLine {
         return $false
     }
 
-    $scriptIndex = 1
-    if ($arguments.Count -gt 1 -and [string]::Equals($arguments[1], '-u', [System.StringComparison]::OrdinalIgnoreCase)) {
-        $scriptIndex = 2
-    }
+    $launchTarget = Get-QmPythonLaunchTarget -Arguments $arguments
+    if (-not $launchTarget.Valid) { return $false }
+    $scriptIndex = [int]$launchTarget.TargetIndex
     if ($arguments.Count -ne ($scriptIndex + 1)) { return $false }
 
     $scriptToken = ([string]$arguments[$scriptIndex]).Replace('/', '\')
@@ -467,15 +549,13 @@ function Get-QmFactoryPhaseRunnerClassification {
         -CommandLine $CommandLine -Arguments $arguments
     $reviewDisposition = $(if ($referencesWorkItems) { 'REVIEW_REQUIRED' } else { 'NOT_FACTORY' })
 
-    $scriptIndex = 1
-    if ($arguments.Count -gt 1 -and [string]::Equals($arguments[1], '-u', [System.StringComparison]::OrdinalIgnoreCase)) {
-        $scriptIndex = 2
-    }
-    if ($arguments.Count -le $scriptIndex) {
+    $launchTarget = Get-QmPythonLaunchTarget -Arguments $arguments
+    if (-not $launchTarget.Valid) {
         return New-QmFactoryPhaseRunnerClassification -Disposition $reviewDisposition `
-            -MatcherReason 'runner_script_missing' -Phase $null -ScriptPath $null `
+            -MatcherReason $launchTarget.Reason -Phase $null -ScriptPath $null `
             -WorkItemRoot $null -WorkItemId $null -Terminal $null
     }
+    $scriptIndex = [int]$launchTarget.TargetIndex
     if ([string]::Equals($arguments[$scriptIndex], '-m', [System.StringComparison]::OrdinalIgnoreCase)) {
         $moduleIndex = $scriptIndex + 1
         $moduleName = $(if ($moduleIndex -lt $arguments.Count) { [string]$arguments[$moduleIndex] } else { '' })

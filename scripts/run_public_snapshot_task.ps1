@@ -20,6 +20,7 @@ New-Item -ItemType Directory -Path (Split-Path -Parent $LogPath) -Force | Out-Nu
 Write-TaskLog "public_snapshot_task start"
 
 $mutationLockStream = $null
+$mutationLockBytesBase64 = $null
 $locationPushed = $false
 try {
     # MNT-052: the public exporter writes tracked files.  FACTORY_OFF therefore
@@ -27,6 +28,18 @@ try {
     if (Test-Path -LiteralPath $FactoryOffFlagPath) {
         Write-TaskLog "public_snapshot_task skipped=FACTORY_OFF.flag"
         return
+    }
+
+    $mutationLockProtocolPath = Join-Path $RepoRoot `
+        'tools\strategy_farm\factory_mutation_lock.ps1'
+    if (-not (Test-Path -LiteralPath $mutationLockProtocolPath -PathType Leaf)) {
+        throw "Mutation-lock protocol missing: $mutationLockProtocolPath"
+    }
+    . $mutationLockProtocolPath
+    if ($script:QmFactoryMutationLockProtocolVersion -ne 2 -or
+        -not (Get-Command -Name 'Remove-QmFactoryMutationLockIfUnchanged' `
+            -CommandType Function -ErrorAction SilentlyContinue)) {
+        throw 'Mutation-lock protocol version/function mismatch.'
     }
 
     $lockParent = Split-Path -Parent $FactoryMutationLockPath
@@ -41,9 +54,11 @@ try {
         $lockRecord = [ordered]@{
             pid = $PID
             owner = 'public_snapshot'
+            nonce = [guid]::NewGuid().ToString('N')
             created_at = [datetime]::UtcNow.ToString('o')
         } | ConvertTo-Json -Compress
         $lockBytes = [System.Text.Encoding]::UTF8.GetBytes($lockRecord)
+        $mutationLockBytesBase64 = [Convert]::ToBase64String($lockBytes)
         $mutationLockStream.Write($lockBytes, 0, $lockBytes.Length)
         $mutationLockStream.Flush($true)
     }
@@ -97,6 +112,12 @@ finally {
     }
     if ($null -ne $mutationLockStream) {
         $mutationLockStream.Dispose()
-        Remove-Item -LiteralPath $FactoryMutationLockPath -Force -ErrorAction SilentlyContinue
+        $releasedExactLock = Remove-QmFactoryMutationLockIfUnchanged `
+            -Path $FactoryMutationLockPath `
+            -ExpectedRawBytesBase64 $mutationLockBytesBase64
+        if (-not $releasedExactLock) {
+            Write-TaskLog `
+                'public_snapshot_task mutation_lock_release=retained_fail_closed'
+        }
     }
 }

@@ -61,3 +61,22 @@ complete.
 
 MNT-010 is `COMPLETED_RUNTIME` for the observed zombie corpus. No Factory_ON,
 canary restart, T_Live change, or AutoTrading change was performed.
+
+## Post-audit schema clarification
+
+This clarification was added after the independent audit; it documents the
+original guarded apply and is not a second apply or a new runtime mutation.
+In addition to the row-level reconciliation above, the apply installed durable,
+database-global invariants from `reconcile_terminal_work_items.py::SCHEMA_SQL`:
+
+- `work_item_transition_ledger`, protected by no-update and no-delete triggers;
+- `parent_task_transition_ledger`, likewise protected by no-update and no-delete
+  triggers; and
+- insert and update triggers on `work_items` that reject a terminal
+  `done`/`failed` row with a NULL verdict.
+
+These schema objects remain active for all writers after the reconciliation
+transaction. They are therefore a separate forward-hardening deliverable, not
+merely an implementation detail of the 832/987/43 row changes. Their matching
+definitions in `farmctl.py::init_db` keep fresh or repaired databases on the
+same invariant. No schema command was executed to add this clarification.

@@ -98,7 +98,7 @@
       "status": "SOURCE_IMPLEMENTED",
       "delivered": "The legacy Q02 reaper is progress-aware and source-tested.",
       "remaining": "Observe after restart that progressing runs are never reaped.",
-      "evidence": []
+      "evidence": ["tools/strategy_farm/tests/test_progress_aware_reaper.py"]
     },
     {
       "id": "MNT-006",
@@ -124,7 +124,7 @@
       "priority": "P1",
       "status": "CONTRACT_ONLY",
       "delivered": "Invariant-based NO_HISTORY disposition is converged.",
-      "remaining": "Resolve the legacy-P2-inclusive residual population; never route valid zero as infra retry.",
+      "remaining": "Resolve the 35-item legacy-P2-inclusive residual population; never route valid zero as infra retry.",
       "evidence": ["docs/ops/MNT_CONVERGENCE_LEDGER.md"]
     },
     {
@@ -448,7 +448,7 @@
       "priority": "P0",
       "status": "PARTIAL",
       "delivered": "Append-only adjudication overlay and read-only scanner exist; live always yields HOLD_OWNER_REVIEW.",
-      "remaining": "Review 580 legacy adjudications, rerun rebuilt offenders and integrate the overlay into readers.",
+      "remaining": "Review 580 legacy adjudications (573 unverified and 7 vintage stale), rerun rebuilt offenders and integrate the overlay into readers.",
       "evidence": ["docs/ops/MNT043_044_CLOSURE_DRIFT_SCANNER.md", "docs/ops/evidence/2026-07-29_mnt043_044_scanner_canary.json"]
     },
     {

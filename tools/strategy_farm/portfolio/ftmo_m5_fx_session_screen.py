@@ -19,14 +19,20 @@ import numpy as np
 import pandas as pd
 
 try:
+    from . import _frame_identity_cache as frame_cache
     from . import ftmo_intraday_candidate_screen as base
 except ImportError:  # pragma: no cover - direct script execution
+    import _frame_identity_cache as frame_cache  # type: ignore
     import ftmo_intraday_candidate_screen as base  # type: ignore
 
 
 EVIDENCE_END_YEAR = 2025
-_ARRAY_CACHE: dict[int, dict[str, np.ndarray]] = {}
-_SESSION_CACHE: dict[tuple[int, str, int, int], list[list[int]]] = {}
+_ARRAY_CACHE: dict[
+    int, frame_cache.FrameCacheEntry[dict[str, np.ndarray]]
+] = {}
+_SESSION_CACHE: dict[
+    tuple[int, str, int, int], frame_cache.FrameCacheEntry[list[list[int]]]
+] = {}
 
 
 @dataclass(frozen=True)
@@ -45,7 +51,10 @@ class SessionSpec:
 
 
 def _values(frame: pd.DataFrame, column: str) -> np.ndarray:
-    arrays = _ARRAY_CACHE.setdefault(id(frame), {})
+    frame_id = id(frame)
+    arrays = frame_cache.get_for_frame(_ARRAY_CACHE, frame_id, frame)
+    if arrays is None:
+        arrays = frame_cache.store_for_frame(_ARRAY_CACHE, frame_id, frame, {})
     if column not in arrays:
         arrays[column] = frame[column].to_numpy()
     return arrays[column]
@@ -70,8 +79,9 @@ def load_bars(instrument: Instrument) -> pd.DataFrame:
 
 def session_days(frame: pd.DataFrame, spec: SessionSpec) -> list[list[int]]:
     key = (id(frame), spec.timezone, spec.entry_minute, spec.exit_minute)
-    if key in _SESSION_CACHE:
-        return _SESSION_CACHE[key]
+    cached = frame_cache.get_for_frame(_SESSION_CACHE, key, frame)
+    if cached is not None:
+        return cached
 
     local = frame["utc"].dt.tz_convert(spec.timezone)
     minute = local.dt.hour * 60 + local.dt.minute
@@ -97,8 +107,7 @@ def session_days(frame: pd.DataFrame, spec: SessionSpec) -> list[list[int]]:
         if int(eligible.at[indices[-1], "minute"]) != expected_last:
             continue
         days.append(indices)
-    _SESSION_CACHE[key] = days
-    return days
+    return frame_cache.store_for_frame(_SESSION_CACHE, key, frame, days)
 
 
 def fixed_session_trades(

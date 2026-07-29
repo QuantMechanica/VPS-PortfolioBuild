@@ -42,6 +42,23 @@ try {
 } catch {
     throw "FACTORY ON ABORTED before mutation: process-scope guard failed: $($_.Exception.Message)"
 }
+$mutationLockProtocolPath = Join-Path $PSScriptRoot 'factory_mutation_lock.ps1'
+try {
+    $script:QmFactoryMutationLockProtocolVersion = $null
+    if (-not (Test-Path -LiteralPath $mutationLockProtocolPath -PathType Leaf)) {
+        throw "Required mutation-lock protocol is missing: $mutationLockProtocolPath"
+    }
+    . $mutationLockProtocolPath
+    if ($script:QmFactoryMutationLockProtocolVersion -ne 2) {
+        throw 'Mutation-lock protocol version mismatch.'
+    }
+    if (-not (Get-Command -Name 'Remove-QmFactoryMutationLockIfUnchanged' `
+        -CommandType Function -ErrorAction SilentlyContinue)) {
+        throw 'Mutation-lock protocol lacks exact-identity release.'
+    }
+} catch {
+    throw "FACTORY ON ABORTED before mutation: mutation-lock protocol failed: $($_.Exception.Message)"
+}
 . (Join-Path $PSScriptRoot 'qm_tasks.manifest.ps1')
 
 $factoryOffFlagPath = 'D:\QM\strategy_farm\state\FACTORY_OFF.flag'
@@ -192,13 +209,20 @@ function Enter-FactoryMutationLock([string]$Owner) {
             created_at = [datetime]::UtcNow.ToString('o')
         } | ConvertTo-Json -Compress
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($record)
+        $script:factoryMutationLockRecordBytesBase64 = [Convert]::ToBase64String($bytes)
         $lockStream.Write($bytes, 0, $bytes.Length)
         $lockStream.Flush($true)
         return $lockStream
     } catch {
         if ($null -ne $lockStream) {
             $lockStream.Dispose()
-            Remove-Item -LiteralPath $factoryMutationLockPath -Force -ErrorAction SilentlyContinue
+            if (-not [string]::IsNullOrWhiteSpace(
+                [string]$script:factoryMutationLockRecordBytesBase64
+            )) {
+                Remove-QmFactoryMutationLockIfUnchanged `
+                    -Path $factoryMutationLockPath `
+                    -ExpectedRawBytesBase64 $script:factoryMutationLockRecordBytesBase64 | Out-Null
+            }
         }
         throw
     }
@@ -207,8 +231,16 @@ function Enter-FactoryMutationLock([string]$Owner) {
 function Exit-FactoryMutationLock([object]$LockStream) {
     if ($null -ne $LockStream) {
         $LockStream.Dispose()
-        Remove-Item -LiteralPath $factoryMutationLockPath -Force -ErrorAction SilentlyContinue
+        $releasedExactLock = Remove-QmFactoryMutationLockIfUnchanged `
+            -Path $factoryMutationLockPath `
+            -ExpectedRawBytesBase64 $script:factoryMutationLockRecordBytesBase64
+        if (-not $releasedExactLock) {
+            Write-Warning `
+                'Factory mutation lock release retained a changed/unreadable record fail-closed.'
+        }
+        return $releasedExactLock
     }
+    return $true
 }
 
 function Invoke-RepairWithMutationLock {
@@ -328,6 +360,7 @@ if (Test-Path -LiteralPath $factoryMutationLockPath) {
 }
 
 $script:factoryRestartMutationLock = Enter-FactoryMutationLock -Owner 'factory_on_restart_window'
+$released = $false
 try {
     # Preflight and stale factory-process drain occur while the interlock remains
     # asserted and while the same lock used by maintenance one-shots is held.
@@ -356,7 +389,6 @@ $codexParallelRestored = ''
 if ($null -ne $offRecord.codex_parallel_before) {
     $codexParallelRestored = [string]$offRecord.codex_parallel_before
 }
-$released = $false
 try {
     # Release point.  All schedulers/workers were absent up to this line; all
     # contractually enabled components are restored in this bounded block.
@@ -450,9 +482,24 @@ try {
         throw "FACTORY ON FAILED CLOSED: $failure"
     }
 } finally {
-    Exit-FactoryMutationLock -LockStream $script:factoryRestartMutationLock
+    $script:factoryRestartMutationLockReleased = `
+        Exit-FactoryMutationLock -LockStream $script:factoryRestartMutationLock
     $script:factoryRestartMutationLock = $null
     $script:factoryMutationLockNonce = $null
+    $script:factoryMutationLockRecordBytesBase64 = $null
+    if (-not $script:factoryRestartMutationLockReleased) {
+        $releaseFailure = `
+            'exact mutation-lock identity release failed; retained lock requires OWNER inspection'
+        if ($released) {
+            try {
+                Invoke-FailClosedRollback -Reason $releaseFailure -PriorOffRecord $offRecord
+            } catch {
+                throw ("FACTORY ON FAILED CLOSED: {0}; rollback also failed: {1}" -f `
+                    $releaseFailure,$_.Exception.Message)
+            }
+        }
+        throw "FACTORY ON FAILED CLOSED: $releaseFailure"
+    }
 }
 
 if (Test-Path -LiteralPath $disabledTerminalsPath) {

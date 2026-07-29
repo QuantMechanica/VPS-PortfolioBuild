@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import gc
+import weakref
 from datetime import date
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -74,3 +77,42 @@ def test_winner_selection_is_deterministic() -> None:
     winner = screen.select_winner([row("momentum"), row("mean_reversion")])
     assert winner is not None
     assert winner["parameters"]["direction"] == "mean_reversion"
+
+
+def test_array_cache_rejects_a_stale_entry_for_a_reused_identity() -> None:
+    frame = pd.DataFrame({"open": [1.0, 2.0]})
+    stale_frame = pd.DataFrame({"open": [-1.0]})
+    frame_id = id(frame)
+    screen.frame_cache.store_for_frame(
+        screen._ARRAY_CACHE,
+        frame_id,
+        stale_frame,
+        {"open": np.array([-999.0])},
+    )
+
+    try:
+        np.testing.assert_array_equal(
+            screen._values(frame, "open"), np.array([1.0, 2.0])
+        )
+
+        del stale_frame
+        gc.collect()
+
+        assert screen._ARRAY_CACHE[frame_id][0]() is frame
+    finally:
+        screen._ARRAY_CACHE.clear()
+
+
+def test_array_cache_releases_entry_when_frame_is_collected() -> None:
+    frame = pd.DataFrame({"open": [1.0, 2.0]})
+    frame_id = id(frame)
+    frame_ref = weakref.ref(frame)
+
+    screen._values(frame, "open")
+    assert frame_id in screen._ARRAY_CACHE
+
+    del frame
+    gc.collect()
+
+    assert frame_ref() is None
+    assert frame_id not in screen._ARRAY_CACHE

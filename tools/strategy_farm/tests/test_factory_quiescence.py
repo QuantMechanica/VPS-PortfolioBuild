@@ -335,3 +335,19 @@ def test_hourly_monitor_cannot_reenable_tasks_while_factory_is_off() -> None:
 
     assert interlock < health < enable
     assert "exit 0" in source[interlock:health]
+
+
+def test_off_force_disables_permanent_hazards_while_monitor_is_inert() -> None:
+    source = FACTORY_OFF.read_text(encoding="utf-8-sig")
+    manifest = (STRATEGY_FARM / "qm_tasks.manifest.ps1").read_text(encoding="utf-8-sig")
+    enforce_disabled = _ps_array(manifest, "QM_ENFORCE_DISABLED_TASKS")
+
+    assert len(enforce_disabled) == 5
+    assert "$offDisableTasks = @($managedTasks + $QM_ENFORCE_DISABLED_TASKS" in source
+    assert "foreach ($taskName in $offDisableTasks)" in source
+    assert "$taskDrift = @($offDisableTasks | Where-Object" in source
+    assert "task_enabled_before = $taskEnabledBefore" in source
+    assert "$taskEnabledBefore[$taskName]" in source
+    assert "$QM_ENFORCE_DISABLED_TASKS" not in source[
+        source.index("$taskEnabledBefore ="):source.index("$offAt =")
+    ]

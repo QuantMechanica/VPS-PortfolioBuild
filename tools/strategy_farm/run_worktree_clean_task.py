@@ -17,6 +17,11 @@ import sys
 import time
 from pathlib import Path
 
+try:
+    from factory_mutation_lock import FactoryMutationLock
+except ModuleNotFoundError:
+    from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+
 
 REPO_ROOT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
 FARM_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
@@ -63,40 +68,23 @@ def _acquire_lock() -> int | None:
             return None
 
 
-def _acquire_factory_mutation_lock() -> int | None:
+def _acquire_factory_mutation_lock() -> FactoryMutationLock | None:
     """Serialize autonomous repo/DB writers across the Factory OFF boundary."""
-    FACTORY_MUTATION_LOCK.parent.mkdir(parents=True, exist_ok=True)
+    lock = FactoryMutationLock(FACTORY_MUTATION_LOCK, owner="worktree_clean")
     try:
-        fd = os.open(
-            str(FACTORY_MUTATION_LOCK),
-            os.O_CREAT | os.O_EXCL | os.O_WRONLY,
-        )
-    except FileExistsError:
+        lock.__enter__()
+    except RuntimeError:
         return None
-    record = {
-        "pid": os.getpid(),
-        "owner": "worktree_clean",
-        "created_at": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat(),
-    }
-    os.write(fd, json.dumps(record, sort_keys=True).encode("utf-8"))
     if FACTORY_OFF_FLAG.exists():
-        os.close(fd)
-        try:
-            FACTORY_MUTATION_LOCK.unlink()
-        except OSError:
-            pass
+        lock.__exit__(None, None, None)
         return None
-    return fd
+    return lock
 
 
-def _release_factory_mutation_lock(fd: int | None) -> None:
-    if fd is None:
+def _release_factory_mutation_lock(lock: FactoryMutationLock | None) -> None:
+    if lock is None:
         return
-    os.close(fd)
-    try:
-        FACTORY_MUTATION_LOCK.unlink()
-    except OSError:
-        pass
+    lock.__exit__(None, None, None)
 
 
 def _write_result_log(log_path: Path, payload: dict) -> None:
@@ -230,7 +218,7 @@ def main() -> int:
     fd = _acquire_lock()
     if fd is None:
         return 0
-    mutation_fd: int | None = None
+    mutation_lock: FactoryMutationLock | None = None
     try:
         os.write(fd, str(os.getpid()).encode("ascii"))
         if FACTORY_OFF_FLAG.exists():
@@ -242,8 +230,8 @@ def main() -> int:
             _write_result_log(log_path, payload)
             print(json.dumps(payload, indent=2, sort_keys=True))
             return 0
-        mutation_fd = _acquire_factory_mutation_lock()
-        if mutation_fd is None:
+        mutation_lock = _acquire_factory_mutation_lock()
+        if mutation_lock is None:
             payload = {
                 "checked_at": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat(),
                 "skipped": (
@@ -285,7 +273,7 @@ def main() -> int:
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
     finally:
-        _release_factory_mutation_lock(mutation_fd)
+        _release_factory_mutation_lock(mutation_lock)
         os.close(fd)
         try:
             LOCK_PATH.unlink()

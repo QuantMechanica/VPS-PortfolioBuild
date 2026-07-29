@@ -11,7 +11,7 @@
 #                   overrides this category for autonomous repo/DB writers.
 #                   Read-only live/health paths remain outside that override.
 #    ENFORCE_DISABLED - unsafe paths and OWNER-disabled channels that must stay OFF.
-#                   ON: force-disable if drifted on | OFF: leave disabled.
+#                   ON and OFF: force-disable if drifted on; never restore.
 #
 #  DECOMMISSIONED_REFERENCE is documentation only — obsolete orchestration / superseded
 #  / intentionally-paused tasks. ON/OFF do NOT toggle these (revival intent is
@@ -71,7 +71,7 @@ $QM_ALWAYSON_TASKS = @(
 #  Repair now runs ONCE inline in Factory_ON; workers spawn in the user
 #  session. The tscon task can tear down the interactive desktop, while the
 #  legacy hygiene task can force-reboot healthy live MT5 without the new live
-#  recovery guards. If any drifts back to Enabled, ON force-disables it.
+#  recovery guards. If any drifts back to Enabled, both ON and OFF force-disable it.
 $QM_ENFORCE_DISABLED_TASKS = @(
     'QM_StrategyFarm_Repair_Hourly',
     'QM_StrategyFarm_TerminalWorkers_AT_STARTUP',

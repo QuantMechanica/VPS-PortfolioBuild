@@ -1,0 +1,200 @@
+{
+  "schema_version": "q08_archetype_policy/v1",
+  "policy_version": "q08-v3-shadow/1.0.0",
+  "unknown_archetype_verdict": "INSUFFICIENT",
+  "portfolio_only_tests": [
+    "portfolio_correlation",
+    "portfolio_tail_dependence",
+    "portfolio_marginal_contribution"
+  ],
+  "universal_tests": [
+    {
+      "test_id": "identity_lineage",
+      "requirement": "REQUIRED",
+      "fail_verdict": "INVALID",
+      "description": "Exact source, binary, set, history, calendar and cost lineage is bound."
+    },
+    {
+      "test_id": "cost_adjusted_edge",
+      "requirement": "REQUIRED",
+      "fail_verdict": "CONTRADICTED",
+      "description": "The locked evidence has positive edge after the applicable base costs."
+    },
+    {
+      "test_id": "independent_sample_coverage",
+      "requirement": "REQUIRED",
+      "fail_verdict": "INVALID",
+      "description": "Independent event, period, day or package clusters are measurable."
+    },
+    {
+      "test_id": "selection_bias_control",
+      "requirement": "REQUIRED",
+      "fail_verdict": "CONTRADICTED",
+      "description": "Global family and campaign trials are included in selection-bias control."
+    },
+    {
+      "test_id": "temporal_stability",
+      "requirement": "REQUIRED",
+      "fail_verdict": "CONDITIONAL",
+      "description": "Temporal decay and leave-period-out evidence do not contradict the edge."
+    },
+    {
+      "test_id": "execution_tail_risk",
+      "requirement": "REQUIRED",
+      "fail_verdict": "CONTRADICTED",
+      "description": "Execution-aware tail and drawdown paths remain inside the evidence policy."
+    }
+  ],
+  "archetypes": {
+    "trend_breakout": {
+      "aliases": ["trend", "breakout", "momentum", "trend-following", "volatility-expansion"],
+      "cluster_unit": "trend_episode",
+      "tests": [
+        {
+          "test_id": "trend_episode_robustness",
+          "requirement": "REQUIRED",
+          "fail_verdict": "CONDITIONAL",
+          "description": "The edge is not confined to one trend episode."
+        },
+        {
+          "test_id": "missed_best_trade_execution_stress",
+          "requirement": "REQUIRED",
+          "fail_verdict": "CONDITIONAL",
+          "description": "Realistic missed-entry paths preserve acceptable trend capture."
+        },
+        {
+          "test_id": "whipsaw_tail_risk",
+          "requirement": "DIAGNOSTIC",
+          "fail_verdict": "CONDITIONAL",
+          "description": "Whipsaw clusters are surfaced for downstream book construction."
+        }
+      ]
+    },
+    "mean_reversion": {
+      "aliases": ["reversion", "mean-revert", "fade", "pullback"],
+      "cluster_unit": "volatility_episode",
+      "tests": [
+        {
+          "test_id": "tail_loss_amplification",
+          "requirement": "REQUIRED",
+          "fail_verdict": "CONTRADICTED",
+          "description": "Gap and volatility shocks do not create catastrophic tail-loss amplification."
+        },
+        {
+          "test_id": "recovery_time_stability",
+          "requirement": "REQUIRED",
+          "fail_verdict": "CONDITIONAL",
+          "description": "Recovery time remains stable across volatility episodes."
+        },
+        {
+          "test_id": "losing_streak_stress",
+          "requirement": "DIAGNOSTIC",
+          "fail_verdict": "CONDITIONAL",
+          "description": "Clustered losing streaks are measured for portfolio sizing."
+        }
+      ]
+    },
+    "seasonal_event": {
+      "aliases": ["seasonal", "calendar", "event", "event-driven", "day-of-week", "month-of-year"],
+      "cluster_unit": "event_or_calendar_year",
+      "tests": [
+        {
+          "test_id": "leave_one_event_period_out",
+          "requirement": "REQUIRED",
+          "fail_verdict": "CONDITIONAL",
+          "description": "The hypothesis survives leave-one-event or leave-one-year-out evaluation."
+        },
+        {
+          "test_id": "calendar_timing_integrity",
+          "requirement": "REQUIRED",
+          "fail_verdict": "INVALID",
+          "description": "Calendar, timezone and DST translations are exact and reproducible."
+        },
+        {
+          "test_id": "adverse_event_tail",
+          "requirement": "DIAGNOSTIC",
+          "fail_verdict": "CONDITIONAL",
+          "description": "Adverse event tails are surfaced without requiring all months to profit."
+        }
+      ]
+    },
+    "intraday": {
+      "aliases": ["day-trading", "session", "scalping", "opening-range"],
+      "cluster_unit": "trading_day",
+      "tests": [
+        {
+          "test_id": "session_dst_stability",
+          "requirement": "REQUIRED",
+          "fail_verdict": "CONDITIONAL",
+          "description": "Session and DST translations remain stable."
+        },
+        {
+          "test_id": "latency_spread_stress",
+          "requirement": "REQUIRED",
+          "fail_verdict": "CONTRADICTED",
+          "description": "Latency and spread stress do not erase the edge."
+        },
+        {
+          "test_id": "news_proximity_tail",
+          "requirement": "DIAGNOSTIC",
+          "fail_verdict": "CONDITIONAL",
+          "description": "News-proximity losses are measured for policy overlays."
+        }
+      ]
+    },
+    "carry_overnight": {
+      "aliases": ["carry", "overnight", "weekend", "roll"],
+      "cluster_unit": "holding_period",
+      "tests": [
+        {
+          "test_id": "financing_roll_stress",
+          "requirement": "REQUIRED",
+          "fail_verdict": "CONTRADICTED",
+          "description": "Venue financing, swap and roll costs do not erase the edge."
+        },
+        {
+          "test_id": "gap_weekend_stress",
+          "requirement": "REQUIRED",
+          "fail_verdict": "CONTRADICTED",
+          "description": "Overnight and weekend gaps remain inside the tail-risk policy."
+        },
+        {
+          "test_id": "venue_swap_coverage",
+          "requirement": "REQUIRED",
+          "fail_verdict": "INVALID",
+          "description": "The tested venue has complete and bound swap evidence."
+        }
+      ]
+    },
+    "basket_cointegration": {
+      "aliases": ["basket", "cointegration", "pairs", "relative-value", "market-neutral"],
+      "cluster_unit": "position_package",
+      "tests": [
+        {
+          "test_id": "package_return_integrity",
+          "requirement": "REQUIRED",
+          "fail_verdict": "INVALID",
+          "description": "Evidence is aggregated by complete package rather than individual legs."
+        },
+        {
+          "test_id": "hedge_ratio_stability",
+          "requirement": "REQUIRED",
+          "fail_verdict": "CONTRADICTED",
+          "description": "Hedge ratio and residual behavior remain stable."
+        },
+        {
+          "test_id": "leg_execution_stress",
+          "requirement": "REQUIRED",
+          "fail_verdict": "CONTRADICTED",
+          "description": "Partial-fill, latency and leg-asymmetry stress remain admissible."
+        },
+        {
+          "test_id": "residual_stationarity",
+          "requirement": "DIAGNOSTIC",
+          "fail_verdict": "CONDITIONAL",
+          "description": "Residual stationarity weakness is surfaced for book admission."
+        }
+      ]
+    }
+  }
+}

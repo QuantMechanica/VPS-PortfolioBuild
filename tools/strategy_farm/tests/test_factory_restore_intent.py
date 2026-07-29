@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import datetime as dt
 import hashlib
 import json
 import re
@@ -49,7 +50,7 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, dict]:
         "owner_authorization": {
             "authority": "OWNER",
             "authorized_by": "test-owner",
-            "authorized_at_utc": "2026-07-29T12:00:00Z",
+            "authorized_at_utc": dt.datetime.now(dt.UTC).isoformat().replace("+00:00", "Z"),
             "decision": restore_intent.DECISION,
             "decision_ref": "OWNER-TEST-DECISION-01",
             "scope": restore_intent.SCOPE,
@@ -65,13 +66,22 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, dict]:
 
 def test_valid_manifest_is_exactly_bound_and_normalized(tmp_path: Path) -> None:
     flag, path, manifest = _fixture(tmp_path)
+    authorized_at = dt.datetime.fromisoformat(
+        manifest["owner_authorization"]["authorized_at_utc"].replace("Z", "+00:00")
+    )
 
-    result = restore_intent.validate_restore_intent(path, flag, _tasks())
+    result = restore_intent.validate_restore_intent(
+        path,
+        flag,
+        _tasks(),
+        now_utc=authorized_at + dt.timedelta(minutes=30),
+    )
 
     assert result["validated"] is True
     assert result["legacy_flag_sha256"] == hashlib.sha256(flag.read_bytes()).hexdigest()
     assert result["manifest_sha256"] == hashlib.sha256(path.read_bytes()).hexdigest()
     assert result["task_enabled_before"] == manifest["task_enabled_before"]
+    assert result["owner_authorization"]["maximum_age_seconds"] == 24 * 60 * 60
 
 
 @pytest.mark.parametrize("defect", ["missing", "extra", "non_boolean"])
@@ -124,6 +134,37 @@ def test_authorization_timestamp_must_be_utc_not_merely_timezone_aware(tmp_path:
 
     with pytest.raises(restore_intent.RestoreIntentError, match="must be UTC"):
         restore_intent.validate_restore_intent(path, flag, _tasks())
+
+
+def test_authorization_expiry_and_future_skew_fail_closed(tmp_path: Path) -> None:
+    flag, path, manifest = _fixture(tmp_path)
+    now = dt.datetime(2026, 7, 30, 12, 0, 1, tzinfo=dt.UTC)
+    manifest["owner_authorization"]["authorized_at_utc"] = "2026-07-29T12:00:00Z"
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    with pytest.raises(restore_intent.RestoreIntentError, match="has expired"):
+        restore_intent.validate_restore_intent(path, flag, _tasks(), now_utc=now)
+
+    manifest["owner_authorization"]["authorized_at_utc"] = "2026-07-30T12:05:01Z"
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    restore_intent.validate_restore_intent(path, flag, _tasks(), now_utc=now)
+
+    manifest["owner_authorization"]["authorized_at_utc"] = "2026-07-30T12:05:02Z"
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(restore_intent.RestoreIntentError, match="in the future"):
+        restore_intent.validate_restore_intent(path, flag, _tasks(), now_utc=now)
+
+
+def test_validation_clock_must_be_timezone_aware(tmp_path: Path) -> None:
+    flag, path, _ = _fixture(tmp_path)
+
+    with pytest.raises(restore_intent.RestoreIntentError, match="timezone-aware UTC"):
+        restore_intent.validate_restore_intent(
+            path,
+            flag,
+            _tasks(),
+            now_utc=dt.datetime(2026, 7, 29, 12, 30),
+        )
 
 
 def test_nonlegacy_or_already_upgraded_flag_is_rejected(tmp_path: Path) -> None:

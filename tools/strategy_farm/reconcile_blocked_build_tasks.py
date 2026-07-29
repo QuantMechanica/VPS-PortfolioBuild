@@ -11,6 +11,7 @@ It never edits Strategy Cards.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import hashlib
 import json
 import sqlite3
@@ -67,6 +68,10 @@ LEDGER_SCHEMA_STATEMENTS = (
 
 class ReconciliationError(RuntimeError):
     pass
+
+
+def utc_now() -> str:
+    return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()
 
 
 def sha256_file(path: Path) -> str:
@@ -577,6 +582,7 @@ def apply_reconciliation(
                 "forecast preconditions failed: " + canonical_json(before)
             )
         snapshot_sha = sqlite_snapshot(db, snapshot_path)
+        apply_wallclock = utc_now()
         applied: list[dict[str, Any]] = []
         with connect_rw(db) as conn:
             conn.execute("BEGIN IMMEDIATE")
@@ -635,6 +641,7 @@ def apply_reconciliation(
                     event_detail = {
                         "run_id": manifest["run_id"],
                         "manifest_sha256": manifest_sha,
+                        "manifest_target_updated_at": operation["target"]["updated_at"],
                         "from_status": operation["expected"]["status"],
                         "to_status": operation["target"]["status"],
                         "reason": operation["target"]["payload_patch"]["blocked_reason"],
@@ -647,7 +654,7 @@ def apply_reconciliation(
                         VALUES (?, 'task', ?, 'mnt012_build_task_reconciled', ?)
                         """,
                         (
-                            operation["target"]["updated_at"],
+                            apply_wallclock,
                             operation["task_id"],
                             canonical_json(event_detail),
                         ),
@@ -671,7 +678,7 @@ def apply_reconciliation(
                         """,
                         (
                             _idempotency_key(manifest, operation),
-                            operation["target"]["updated_at"],
+                            apply_wallclock,
                             operation["task_id"],
                             manifest["run_id"],
                             manifest_sha,

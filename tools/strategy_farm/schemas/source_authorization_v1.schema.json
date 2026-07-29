@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qm.local/schemas/source_authorization_v1.schema.json",
+  "title": "QM append-only source authorization v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "authorization_id",
+    "source_ref",
+    "source_sha256",
+    "decision",
+    "authority",
+    "owner_identity",
+    "decided_at_utc",
+    "rationale",
+    "record_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "qm.source-authorization/v1"},
+    "authorization_id": {"$ref": "#/$defs/identifier"},
+    "source_ref": {"type": "string", "minLength": 1, "maxLength": 2048},
+    "source_sha256": {"$ref": "#/$defs/sha256"},
+    "decision": {"enum": ["AUTHORIZED", "REJECTED"]},
+    "authority": {"const": "OWNER"},
+    "owner_identity": {"type": "string", "minLength": 1, "maxLength": 128},
+    "decided_at_utc": {"$ref": "#/$defs/utc"},
+    "rationale": {"type": "string", "minLength": 1, "maxLength": 4096},
+    "record_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$"
+    },
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "utc": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$"
+    }
+  }
+}

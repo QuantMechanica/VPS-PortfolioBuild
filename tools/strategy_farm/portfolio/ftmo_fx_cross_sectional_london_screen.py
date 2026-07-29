@@ -15,8 +15,10 @@ import numpy as np
 import pandas as pd
 
 try:
+    from . import _frame_identity_cache as frame_cache
     from . import ftmo_intraday_candidate_screen as base
 except ImportError:  # pragma: no cover - direct script execution
+    import _frame_identity_cache as frame_cache  # type: ignore
     import ftmo_intraday_candidate_screen as base  # type: ignore
 
 
@@ -46,11 +48,16 @@ class Opportunity:
     signal: float
 
 
-_ARRAY_CACHE: dict[int, dict[str, np.ndarray]] = {}
+_ARRAY_CACHE: dict[
+    int, frame_cache.FrameCacheEntry[dict[str, np.ndarray]]
+] = {}
 
 
 def _values(frame: pd.DataFrame, column: str) -> np.ndarray:
-    cache = _ARRAY_CACHE.setdefault(id(frame), {})
+    frame_id = id(frame)
+    cache = frame_cache.get_for_frame(_ARRAY_CACHE, frame_id, frame)
+    if cache is None:
+        cache = frame_cache.store_for_frame(_ARRAY_CACHE, frame_id, frame, {})
     if column not in cache:
         cache[column] = frame[column].to_numpy()
     return cache[column]

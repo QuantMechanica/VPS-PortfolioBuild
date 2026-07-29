@@ -72,6 +72,29 @@ try {
 } catch {
     throw "FACTORY OFF ABORTED before mutation: process-scope guard failed: $($_.Exception.Message)"
 }
+$mutationLockProtocolPath = Join-Path $PSScriptRoot 'factory_mutation_lock.ps1'
+try {
+    $script:QmFactoryMutationLockProtocolVersion = $null
+    if (-not (Test-Path -LiteralPath $mutationLockProtocolPath -PathType Leaf)) {
+        throw "Required mutation-lock protocol is missing: $mutationLockProtocolPath"
+    }
+    . $mutationLockProtocolPath
+    if ($script:QmFactoryMutationLockProtocolVersion -ne 2) {
+        throw 'Mutation-lock protocol version mismatch.'
+    }
+    foreach ($requiredFunction in @(
+        'Read-QmFactoryMutationLockSnapshot',
+        'Get-QmFactoryMutationLockOwnerState',
+        'Remove-QmFactoryMutationLockIfUnchanged',
+        'Wait-QmFactoryMutationLockDrain'
+    )) {
+        if (-not (Get-Command -Name $requiredFunction -CommandType Function -ErrorAction SilentlyContinue)) {
+            throw "Mutation-lock protocol lacks required function: $requiredFunction"
+        }
+    }
+} catch {
+    throw "FACTORY OFF ABORTED before mutation: mutation-lock protocol failed: $($_.Exception.Message)"
+}
 . (Join-Path $PSScriptRoot 'qm_tasks.manifest.ps1')
 
 $factoryOffFlagPath = 'D:\QM\strategy_farm\state\FACTORY_OFF.flag'
@@ -120,6 +143,11 @@ $QM_QUIESCENCE_TASKS = @(
 
 $managedTasks = @($QM_FACTORY_TASKS + $QM_AI_TASKS + $QM_RESPAWN_TASKS + $QM_QUIESCENCE_TASKS |
     Sort-Object -Unique)
+# The hourly monitor deliberately exits while FACTORY_OFF is asserted, so it
+# cannot enforce the permanently-disabled hazard set during the OFF window.
+# Include those tasks in every OFF disable/drift pass, but never persist them in
+# task_enabled_before: Factory_ON must not restore an unsafe task.
+$offDisableTasks = @($managedTasks + $QM_ENFORCE_DISABLED_TASKS | Sort-Object -Unique)
 
 function Write-FactoryOffRecord([System.Collections.IDictionary]$Record) {
     $parent = Split-Path -Parent $factoryOffFlagPath
@@ -164,31 +192,9 @@ function ConvertTo-ExactTaskEnabledState {
 }
 
 function Wait-FactoryMutationDrain([int]$TimeoutSeconds = 60) {
-    $deadline = [datetime]::UtcNow.AddSeconds($TimeoutSeconds)
-    while (Test-Path -LiteralPath $factoryMutationLockPath) {
-        $ownerPid = 0
-        $lockReadable = $false
-        try {
-            $lockRecord = Get-Content -LiteralPath $factoryMutationLockPath -Raw -ErrorAction Stop | ConvertFrom-Json
-            $ownerPid = [int]$lockRecord.pid
-            $lockReadable = ($ownerPid -gt 0)
-        } catch {}
-        $ownerAlive = $false
-        if ($lockReadable) {
-            $ownerAlive = $null -ne (Get-Process -Id $ownerPid -ErrorAction SilentlyContinue)
-        }
-        # A just-created lock may be momentarily unreadable while its owner writes
-        # the JSON record (and the PowerShell writer deliberately denies sharing).
-        # Never classify that state as stale immediately.  A readable dead-owner
-        # lock is safe to reap; an unreadable lock remains fail-closed.
-        if ($lockReadable -and -not $ownerAlive) {
-            Remove-Item -LiteralPath $factoryMutationLockPath -Force -ErrorAction SilentlyContinue
-            if (-not (Test-Path -LiteralPath $factoryMutationLockPath)) { return $true }
-        }
-        if ([datetime]::UtcNow -ge $deadline) { return $false }
-        Start-Sleep -Milliseconds 500
-    }
-    return $true
+    return Wait-QmFactoryMutationLockDrain `
+        -Path $factoryMutationLockPath `
+        -TimeoutSeconds $TimeoutSeconds
 }
 
 function Wait-QuiescenceTaskDrain([int]$TimeoutSeconds = 600) {
@@ -519,7 +525,7 @@ Write-Host ("  interlock asserted : {0}" -f $factoryOffFlagPath)
 Write-Host ("  codex_parallel     : {0} -> 0" -f $codexParallelBefore)
 
 $taskResults = @()
-foreach ($taskName in $managedTasks) {
+foreach ($taskName in $offDisableTasks) {
     $task = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
     if ($null -eq $task) {
         $taskResults += [ordered]@{ name=$taskName; present=$false; state='Missing' }
@@ -589,7 +595,7 @@ $leftWrappers = @($finalProcessScan.smoke_wrappers).Count
 $leftTerms = @($finalProcessScan.terminal64).Count
 $leftMeta = @($finalProcessScan.metatester64).Count
 $reviewRequiredCount = @($finalProcessScan.review_required).Count
-$taskDrift = @($managedTasks | Where-Object {
+$taskDrift = @($offDisableTasks | Where-Object {
     $task = Get-ScheduledTask -TaskName $_ -ErrorAction SilentlyContinue
     $null -ne $task -and $task.State -ne 'Disabled'
 })

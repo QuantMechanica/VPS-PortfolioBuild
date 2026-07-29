@@ -108,6 +108,20 @@ The exact retained checks are:
 - `test_execution_contract_lint.py::test_density_execution_contracts_are_source_and_runtime_binding_clean`;
 - `test_execution_contract_lint.py::test_20009_ftmo_news_calendar_is_exact_and_evidence_bound`.
 
+The versioned machine-readable lane manifest is
+`tools/strategy_farm/config/test_lanes.v1.json`. It does not mark any check as
+skip or xfail. The explicit commands are:
+
+```powershell
+python tools/strategy_farm/test_lanes.py green
+python tools/strategy_farm/test_lanes.py external-residual
+```
+
+The first command deselects only the five exact node IDs from the broad merge
+lane; the second executes those five unchanged fail-closed assertions. A plain
+repository-wide `pytest` remains intentionally red until the external bindings
+are reconciled.
+
 1. Keep Factory OFF and preserve the current five fail-closed checks.
 2. Obtain the versioned DXZ packet amendments and setfile provenance decisions.
 3. Complete the MNT-045 calendar validation/publish contract.

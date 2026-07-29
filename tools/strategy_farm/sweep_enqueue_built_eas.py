@@ -37,6 +37,11 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
+try:
+    from factory_mutation_lock import FactoryMutationLock
+except ModuleNotFoundError:
+    from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+
 FARM_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 REPO_ROOT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
 REPORT_ROOT = Path(os.environ.get("QM_REPORT_ROOT", r"D:\QM\reports"))
@@ -55,39 +60,29 @@ APPLY = "--apply" in sys.argv
 
 
 def _release_mutation_lock() -> None:
-    global _MUTATION_LOCK_FD
-    if _MUTATION_LOCK_FD is None:
+    global _MUTATION_LOCK
+    if _MUTATION_LOCK is None:
         return
-    os.close(_MUTATION_LOCK_FD)
-    _MUTATION_LOCK_FD = None
-    try:
-        _FACTORY_MUTATION_LOCK.unlink()
-    except OSError:
-        pass
+    _MUTATION_LOCK.__exit__(None, None, None)
+    _MUTATION_LOCK = None
 
 
-def _acquire_mutation_lock() -> int | None:
-    _FACTORY_MUTATION_LOCK.parent.mkdir(parents=True, exist_ok=True)
+def _acquire_mutation_lock() -> FactoryMutationLock | None:
+    lock = FactoryMutationLock(
+        _FACTORY_MUTATION_LOCK,
+        owner="sweep_enqueue_built_eas",
+    )
     try:
-        fd = os.open(
-            str(_FACTORY_MUTATION_LOCK),
-            os.O_CREAT | os.O_EXCL | os.O_WRONLY,
-        )
-    except FileExistsError:
+        lock.__enter__()
+    except RuntimeError:
         return None
-    record = {
-        "pid": os.getpid(),
-        "owner": "sweep_enqueue_built_eas",
-        "created_at": datetime.now(timezone.utc).isoformat(),
-    }
-    os.write(fd, json.dumps(record, sort_keys=True).encode("utf-8"))
-    return fd
+    return lock
 
 
-_MUTATION_LOCK_FD: int | None = None
+_MUTATION_LOCK: FactoryMutationLock | None = None
 if APPLY:
-    _MUTATION_LOCK_FD = _acquire_mutation_lock()
-    if _MUTATION_LOCK_FD is None:
+    _MUTATION_LOCK = _acquire_mutation_lock()
+    if _MUTATION_LOCK is None:
         print(json.dumps({
             "skipped": "factory mutation lock busy",
             "lock": str(_FACTORY_MUTATION_LOCK),
