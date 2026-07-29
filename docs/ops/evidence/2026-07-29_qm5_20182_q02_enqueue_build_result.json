@@ -1,0 +1,22 @@
+{
+  "task_id": "3c6339bd-59c7-479f-891f-085483113394",
+  "ea_id": "QM5_20182",
+  "ea_dir": "framework/EAs/QM5_20182_wti-sum-bull",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20182_wti-sum-bull\\QM5_20182_wti-sum-bull.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20182_wti-sum-bull\\QM5_20182_wti-sum-bull.ex5",
+  "magic_base": 201820000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_20182_wti-sum-bull\\sets\\QM5_20182_wti-sum-bull_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20182_wti-sum-bull\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Q02 trade generation is delegated to the paced factory; no manual tester was launched",
+  "blocked_reason": null,
+  "open_questions": []
+}
