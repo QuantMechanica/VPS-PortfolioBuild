@@ -860,19 +860,66 @@ def check_live_uptime() -> list[dict]:
 
     dxz_running = state.get("dxz_running") is True
     ftmo_running = state.get("ftmo_running") is True
+    expected_dxz_state = str(state.get("expected_dxz_state") or "RUNNING").upper()
+    expected_ftmo_state = str(state.get("expected_ftmo_state") or "RUNNING").upper()
+    valid_expected_states = {"RUNNING", "PARKED", "MAINTENANCE"}
+    invalid_expected = [
+        name
+        for name, expected_state in {
+            "DXZ": expected_dxz_state,
+            "FTMO": expected_ftmo_state,
+        }.items()
+        if expected_state not in valid_expected_states
+    ]
+    if invalid_expected:
+        return [finding(
+            "live_mt5_expected_state", FAIL,
+            f"invalid live expected-state contract for: {', '.join(invalid_expected)}",
+            hint="Correct the OWNER-approved RUNNING/PARKED/MAINTENANCE contract; do not infer a live state.",
+            evidence=ev,
+        )]
+    if state.get("expected_state_review_expired") is True:
+        return [finding(
+            "live_mt5_expected_state", FAIL,
+            f"live expected-state review expired at {state.get('expected_state_review_expires_utc')}",
+            hint="OWNER must review and renew the RUNNING/PARKED contract; do not infer a new live state.",
+            evidence=ev,
+        )]
+    if (
+        state.get("maintenance") is True
+        or expected_dxz_state == "MAINTENANCE"
+        or expected_ftmo_state == "MAINTENANCE"
+    ):
+        return [finding(
+            "live_mt5_uptime", WARN,
+            f"live recovery is in MAINTENANCE; DXZ running={dxz_running}, FTMO running={ftmo_running}",
+            hint="Remove LIVE_UPTIME_MAINTENANCE.flag after the maintenance window.", evidence=ev,
+        )]
     if state.get("process_probe_ok") is not True:
         return [finding(
             "live_mt5_uptime", FAIL,
             "live process inventory failed; watchdog correctly refused destructive recovery, but uptime is unknown",
             hint="Repair CIM/WMI process enumeration; verify both exact terminal paths manually.", evidence=ev,
         )]
-    if not dxz_running or not ftmo_running:
-        missing = [name for name, running in (("DXZ", dxz_running), ("FTMO", ftmo_running)) if not running]
+
+    actual = {"DXZ": dxz_running, "FTMO": ftmo_running}
+    expected = {"DXZ": expected_dxz_state, "FTMO": expected_ftmo_state}
+    missing = [name for name in actual if expected[name] == "RUNNING" and not actual[name]]
+    unexpected = [name for name in actual if expected[name] == "PARKED" and actual[name]]
+    if missing:
         return [finding(
             "live_mt5_uptime", FAIL,
             f"live MT5 down: {', '.join(missing)}; watchdog status={state.get('status') or state.get('last_status')}",
             value=len(missing), threshold=0,
             hint="Inspect live_uptime_watchdog.jsonl; recovery should relaunch or reboot after confirmation.",
+            evidence=ev,
+        )]
+    if unexpected:
+        return [finding(
+            "live_mt5_expected_state", FAIL,
+            f"expected PARKED target is running: {', '.join(unexpected)}",
+            value=len(unexpected), threshold=0,
+            hint="Escalate for OWNER disposition; monitors must not stop a live process automatically.",
             evidence=ev,
         )]
 
@@ -883,13 +930,6 @@ def check_live_uptime() -> list[dict]:
             f"FTMO sessions={state.get('ftmo_session_ids')}, target={state.get('target_session_id')}",
             hint="Do not accept a session-0 GUI process as recovered; inspect the InteractiveToken tasks.",
             evidence=ev,
-        )]
-
-    if state.get("maintenance") is True:
-        return [finding(
-            "live_mt5_uptime", WARN,
-            "both live MT5 processes run, but automatic recovery is suppressed by the maintenance flag",
-            hint="Remove LIVE_UPTIME_MAINTENANCE.flag after the maintenance window.", evidence=ev,
         )]
 
     if state.get("session_supervisor_ready") is not True:
@@ -904,7 +944,9 @@ def check_live_uptime() -> list[dict]:
     ftmo_profile = state.get("ftmo_profile")
     expected_dxz = state.get("expected_dxz_profile")
     expected_ftmo = state.get("expected_ftmo_profile")
-    if dxz_profile != expected_dxz or ftmo_profile != expected_ftmo:
+    dxz_profile_bad = expected_dxz_state == "RUNNING" and dxz_profile != expected_dxz
+    ftmo_profile_bad = expected_ftmo_state == "RUNNING" and ftmo_profile != expected_ftmo
+    if dxz_profile_bad or ftmo_profile_bad:
         return [finding(
             "live_mt5_profile", FAIL,
             f"live profile drift: DXZ={dxz_profile!r} expected={expected_dxz!r}; "
@@ -913,10 +955,12 @@ def check_live_uptime() -> list[dict]:
             evidence=ev,
         )]
 
-    if state.get("dxz_experts_enabled") != 1 or state.get("ftmo_experts_enabled") != 1:
+    dxz_experts_bad = expected_dxz_state == "RUNNING" and state.get("dxz_experts_enabled") != 1
+    ftmo_experts_bad = expected_ftmo_state == "RUNNING" and state.get("ftmo_experts_enabled") != 1
+    if dxz_experts_bad or ftmo_experts_bad:
         return [finding(
             "live_mt5_autotrading_config", FAIL,
-            f"[Experts] Enabled is not 1 for both terminals: DXZ={state.get('dxz_experts_enabled')}, "
+            f"[Experts] Enabled is not 1 for every RUNNING target: DXZ={state.get('dxz_experts_enabled')}, "
             f"FTMO={state.get('ftmo_experts_enabled')}",
             hint="Inspect the approved live state and common.ini; do not toggle AutoTrading without OWNER authority.",
             evidence=ev,
@@ -932,13 +976,15 @@ def check_live_uptime() -> list[dict]:
     if state.get("autologon_ready") is not True:
         return [finding(
             "live_mt5_recovery_ready", FAIL,
-            f"both terminals run, but reboot recovery is blocked (LSA probe={state.get('autologon_secret_probe')})",
+            f"expected live state is satisfied, but reboot recovery is blocked "
+            f"(LSA probe={state.get('autologon_secret_probe')})",
             hint="Repair qm-admin Sysinternals Autologon before relying on unattended recovery.", evidence=ev,
         )]
 
     return [finding(
         "live_mt5_uptime", OK,
-        f"DXZ + FTMO running; session={state.get('target_session_id')} "
+        f"expected state satisfied (DXZ={expected_dxz_state}, FTMO={expected_ftmo_state}); "
+        f"session={state.get('target_session_id')} "
         f"({state.get('target_session_state')}); recovery ready; state age={age:.1f}min",
         value=0, threshold=CONFIG["live_watchdog_warn_stale_min"], evidence=ev,
     )]

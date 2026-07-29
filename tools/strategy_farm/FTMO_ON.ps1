@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Start the FTMO challenge/trial terminal and ensure it resumes the deployed EA book.
+  State-gated FTMO challenge/trial terminal launcher.
 
 .DESCRIPTION
   The FTMO Global Markets MT5 terminal is a NON-portable install: binaries under
@@ -10,7 +10,12 @@
   QM_StrategyFarm_FactoryON_AtLogon - the FTMO terminal had no such path (it was
   started manually on 2026-07-05). This closes that gap, mirroring T_Live_ON.ps1.
 
-  Idempotent: if an FTMO terminal64 is already running it no-ops. When NOT running it
+  OWNER parked the FTMO campaign on 2026-07-26. The baked expected-state
+  contract therefore returns without launching while state=PARKED. It expires
+  fail-closed for review on 2026-08-25; expiry is never permission to launch.
+
+  If a future reviewed source change sets state=RUNNING, the legacy launcher is
+  idempotent: if an FTMO terminal64 is already running it no-ops. When NOT running it
   (1) pins ProfileLast + Experts Enabled=1 in the data-dir config\common.ini so the
   deployed 12-leg Round25 book (profile 'Default', account 1513845506) reloads and
   trades after a cold reboot, then (2) launches terminal64.exe (no /portable - the
@@ -35,6 +40,8 @@ $profile = 'Default'
 $profileDir = Join-Path $dataDir "MQL5\Profiles\Charts\$profile"
 $contractVerifier = 'C:\QM\repo\tools\strategy_farm\verify_ftmo_round25_live_contract.ps1'
 $maintenanceFlag = 'D:\QM\reports\state\LIVE_UPTIME_MAINTENANCE.flag'
+$expectedFtmoState = 'PARKED'
+$expectedStateReviewExpiresUtc = '2026-08-25T00:00:00Z'
 $launchMutexName = 'Global\QM.LiveMT5.Launch.FTMO'
 $launchMutex = $null
 $launchMutexOwned = $false
@@ -66,6 +73,29 @@ function Get-FtmoProcessState {
 if ($Force.IsPresent) {
     Write-Error 'ERROR: -Force is intentionally unsupported for a live terminal; duplicates are unsafe'
     exit 2
+}
+if ($expectedFtmoState -notin @('RUNNING', 'PARKED', 'MAINTENANCE')) {
+    Write-Error "ERROR: invalid baked FTMO expected state: $expectedFtmoState"
+    exit 3
+}
+try {
+    $expectedStateReviewExpiry = [DateTime]::ParseExact(
+        $expectedStateReviewExpiresUtc,
+        'yyyy-MM-ddTHH:mm:ssZ',
+        [Globalization.CultureInfo]::InvariantCulture,
+        ([Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
+    )
+} catch {
+    Write-Error 'ERROR: invalid FTMO expected-state review expiry; refusing launch'
+    exit 3
+}
+if ($expectedFtmoState -ne 'RUNNING') {
+    if ([DateTime]::UtcNow -ge $expectedStateReviewExpiry) {
+        Write-Error "ERROR: FTMO expected-state review expired at $expectedStateReviewExpiresUtc; refusing launch"
+        exit 3
+    }
+    Write-Host "FTMO launch suppressed by baked expected state $expectedFtmoState until review expiry $expectedStateReviewExpiresUtc"
+    exit 0
 }
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent().Name
 $sessionId = (Get-Process -Id $PID).SessionId

@@ -15,10 +15,37 @@ import shutil
 import subprocess
 import sys
 import time
+import traceback
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
+
+
+def _pythonw_excepthook(exc_type: type[BaseException], exc: BaseException, tb: Any) -> None:
+    """Persist otherwise invisible top-level pythonw failures."""
+    try:
+        crash_log = globals().get(
+            "PYTHONW_CRASH_LOG",
+            Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
+            / "logs"
+            / "agent_orchestration_pythonw_crash.log",
+        )
+        crash_log.parent.mkdir(parents=True, exist_ok=True)
+        stamp = dt.datetime.now(dt.UTC).replace(microsecond=0).strftime("%Y%m%dT%H%M%SZ")
+        with crash_log.open("a", encoding="utf-8") as handle:
+            handle.write(f"\n[{stamp}] uncaught top-level exception\n")
+            traceback.print_exception(exc_type, exc, tb, file=handle)
+    except Exception:
+        # An exception hook must never mask the original failure.
+        pass
+
+
+if __name__ == "__main__":
+    # Install before project-local imports so pythonw import/startup failures are
+    # durable even when the normal per-run log has not been created.
+    sys.excepthook = _pythonw_excepthook
+
 
 try:
     from managed_codex import (
@@ -43,6 +70,7 @@ REPO_ROOT = Path(r"C:\QM\repo")
 WORKTREE_ROOT = Path(os.environ.get("QM_AGENT_WORKTREE_ROOT", r"C:\QM\worktrees"))
 FARM_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 LOG_DIR = FARM_ROOT / "logs"
+PYTHONW_CRASH_LOG = LOG_DIR / "agent_orchestration_pythonw_crash.log"
 LOCK_DIR = FARM_ROOT / "locks"
 PYTHON_EXE = Path(r"C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe")
 CODEX_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\codex.cmd")

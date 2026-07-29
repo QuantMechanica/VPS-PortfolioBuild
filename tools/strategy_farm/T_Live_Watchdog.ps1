@@ -71,7 +71,14 @@ $ftmoPath = 'C:\Program Files\FTMO Global Markets MT5 Terminal\terminal64.exe'
 $dxzCommon = 'C:\QM\mt5\T_Live\MT5_Base\config\common.ini'
 $ftmoCommon = 'C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\81A933A9AFC5DE3C23B15CAB19C63850\config\common.ini'
 $expectedDxzProfile = 'DarwinexZero_V2_LiveOps'
-$expectedFtmoProfile = 'Default'
+$expectedFtmoProfile = $null
+
+# OWNER state contract (2026-07-26). FTMO is intentionally parked after trial
+# #2; this watchdog must neither relaunch nor silently forget that disposition.
+$expectedDxzState = 'RUNNING'
+$expectedFtmoState = 'PARKED'
+$expectedStateReviewExpiresUtc = '2026-08-25T00:00:00Z'
+$alarmEscalationCycles = 3
 
 function Get-UtcStamp {
     return [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
@@ -88,6 +95,22 @@ function ConvertFrom-UtcStamp {
             ([Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
         )
     } catch { return $null }
+}
+
+function Test-ExpectedStateReviewExpired {
+    $expiry = ConvertFrom-UtcStamp $expectedStateReviewExpiresUtc
+    # An invalid expiry is unsafe and therefore treated as already expired.
+    return ($null -eq $expiry) -or ([DateTime]::UtcNow -ge $expiry)
+}
+
+function Test-ProcessMatchesExpectedState {
+    param(
+        [bool]$Running,
+        [ValidateSet('RUNNING', 'PARKED', 'MAINTENANCE')][string]$ExpectedState
+    )
+    if ($ExpectedState -eq 'MAINTENANCE') { return $true }
+    if ($ExpectedState -eq 'PARKED') { return -not $Running }
+    return $Running
 }
 
 function Test-MaintenanceRequested {
@@ -401,7 +424,11 @@ function Get-RecoveryTaskContractState {
 }
 
 function Get-SessionSupervisorState {
-    param($TargetSession)
+    param(
+        $TargetSession,
+        [ValidateSet('RUNNING', 'PARKED', 'MAINTENANCE')][string]$ExpectedDxzState,
+        [ValidateSet('RUNNING', 'PARKED', 'MAINTENANCE')][string]$ExpectedFtmoState
+    )
     if (-not $TargetSession.exists) {
         return [pscustomobject]@{ ready = $false; heartbeat_ready = $false; scheduler_owned = $false; engine_pid = $null; age_seconds = $null; reason = 'target_session_absent'; session_id = $null }
     }
@@ -416,7 +443,8 @@ function Get-SessionSupervisorState {
         $identityOk = ([string]$value.identity).Split('\')[-1] -ieq $targetUser
         $sessionOk = ([int]$value.session_id -eq [int]$TargetSession.id)
         $healthy = ($value.process_probe_ok -eq $true) -and
-            ($value.dxz_running -eq $true) -and ($value.ftmo_running -eq $true)
+            (Test-ProcessMatchesExpectedState ([bool]$value.dxz_running) $ExpectedDxzState) -and
+            (Test-ProcessMatchesExpectedState ([bool]$value.ftmo_running) $ExpectedFtmoState)
         $fresh = ($age -ge -5 -and $age -le 60)
         $heartbeatReady = $fresh -and $identityOk -and $sessionOk
         $schedulerOwned = $false
@@ -530,15 +558,25 @@ $stamp = Get-UtcStamp
 $state = Read-State
 $proc = Get-LiveProcessState
 $session = Get-TargetSession
-$sessionSupervisor = Get-SessionSupervisorState -TargetSession $session
+$expectedStateReviewExpired = Test-ExpectedStateReviewExpired
+$sessionSupervisor = Get-SessionSupervisorState -TargetSession $session `
+    -ExpectedDxzState $expectedDxzState -ExpectedFtmoState $expectedFtmoState
 $autologon = Get-AutologonState
 $recoveryTasks = Get-RecoveryTaskContractState
 $dxzProfile = Get-ProfileLast -Path $dxzCommon
 $ftmoProfile = Get-ProfileLast -Path $ftmoCommon
-$profileOk = ($dxzProfile -eq $expectedDxzProfile) -and ($ftmoProfile -eq $expectedFtmoProfile)
+$dxzProfileOk = ($expectedDxzState -ne 'RUNNING') -or ($dxzProfile -eq $expectedDxzProfile)
+$ftmoProfileOk = ($expectedFtmoState -ne 'RUNNING') -or ($ftmoProfile -eq $expectedFtmoProfile)
+$profileOk = $dxzProfileOk -and $ftmoProfileOk
 $dxzExpertsEnabled = Get-ExpertsEnabled -Path $dxzCommon
 $ftmoExpertsEnabled = Get-ExpertsEnabled -Path $ftmoCommon
-$expertsEnabledOk = ($dxzExpertsEnabled -eq 1) -and ($ftmoExpertsEnabled -eq 1)
+$dxzExpertsEnabledOk = ($expectedDxzState -ne 'RUNNING') -or ($dxzExpertsEnabled -eq 1)
+$ftmoExpertsEnabledOk = ($expectedFtmoState -ne 'RUNNING') -or ($ftmoExpertsEnabled -eq 1)
+$expertsEnabledOk = $dxzExpertsEnabledOk -and $ftmoExpertsEnabledOk
+$dxzContractOk = $proc.probe_ok -and
+    (Test-ProcessMatchesExpectedState ([bool]$proc.dxz_running) $expectedDxzState)
+$ftmoContractOk = $proc.probe_ok -and
+    (Test-ProcessMatchesExpectedState ([bool]$proc.ftmo_running) $expectedFtmoState)
 $sessionPlacementOk = $session.exists -and
     (@($proc.dxz | Where-Object { $_.SessionId -ne $session.id }).Count -eq 0) -and
     (@($proc.ftmo | Where-Object { $_.SessionId -ne $session.id }).Count -eq 0)
@@ -559,7 +597,16 @@ if (-not $DryRun.IsPresent) {
 }
 
 $maintenance = Test-MaintenanceRequested
-if ($maintenance) {
+if ($expectedStateReviewExpired) {
+    # Contract review expiry outranks MAINTENANCE and probe uncertainty.  It
+    # still performs no recovery action, but it must stay visibly fail-closed
+    # until OWNER renews the baked RUNNING/PARKED decision.
+    $status = 'critical'
+    $state.consecutive_both_down = 0
+    $state.consecutive_relaunch_failed = 0
+    $actions.Add('noop_expected_state_review_expired')
+    $errors.Add("expected_state_review_expired:$expectedStateReviewExpiresUtc")
+} elseif ($maintenance) {
     $status = 'maintenance'
     # A maintenance observation must never count toward a later destructive
     # action. Removing the flag always starts a fresh confirmation sequence.
@@ -592,7 +639,8 @@ if ($maintenance) {
             $starterExit = $LASTEXITCODE
             if ($starterExit -eq 0) {
                 $actions.Add('session_supervisor_started_or_verified_via_runex')
-                $sessionSupervisor = Get-SessionSupervisorState -TargetSession $session
+                $sessionSupervisor = Get-SessionSupervisorState -TargetSession $session `
+                    -ExpectedDxzState $expectedDxzState -ExpectedFtmoState $expectedFtmoState
             } else {
                 $detail = (($starterOutput | ForEach-Object { [string]$_ }) -join ' ').Trim()
                 if ($detail.Length -gt 300) { $detail = $detail.Substring(0, 300) }
@@ -602,8 +650,18 @@ if ($maintenance) {
     }
 
     $missingNames = [Collections.Generic.List[string]]::new()
-    if (-not $proc.dxz_running) { $missingNames.Add('DXZ') }
-    if (-not $proc.ftmo_running) { $missingNames.Add('FTMO') }
+    if ($expectedDxzState -eq 'RUNNING' -and -not $proc.dxz_running) { $missingNames.Add('DXZ') }
+    if ($expectedFtmoState -eq 'RUNNING' -and -not $proc.ftmo_running) { $missingNames.Add('FTMO') }
+    if ($expectedDxzState -eq 'PARKED' -and $proc.dxz_running) {
+        $actions.Add('alarm_expected_parked_but_running:DXZ')
+        $errors.Add('expected_parked_but_running:DXZ')
+    }
+    if ($expectedFtmoState -eq 'PARKED' -and $proc.ftmo_running) {
+        $actions.Add('alarm_expected_parked_but_running:FTMO')
+        $errors.Add('expected_parked_but_running:FTMO')
+    }
+    if ($expectedDxzState -eq 'PARKED' -and -not $proc.dxz_running) { $actions.Add('parked_no_relaunch:DXZ') }
+    if ($expectedFtmoState -eq 'PARKED' -and -not $proc.ftmo_running) { $actions.Add('parked_no_relaunch:FTMO') }
 
     if ($missingNames.Count -gt 0 -and $session.exists) {
         if ($sessionSupervisor.heartbeat_ready) {
@@ -635,32 +693,52 @@ if ($maintenance) {
         $actions.Add('noop_post_relaunch_process_probe_failed')
         $errors.Add("process_probe_failed:$($proc.probe_error)")
     } else {
-        $bothDown = (-not $proc.dxz_running) -and (-not $proc.ftmo_running)
-        $oneDown = (-not $proc.dxz_running) -xor (-not $proc.ftmo_running)
+        $dxzContractOk = Test-ProcessMatchesExpectedState ([bool]$proc.dxz_running) $expectedDxzState
+        $ftmoContractOk = Test-ProcessMatchesExpectedState ([bool]$proc.ftmo_running) $expectedFtmoState
+        $requiredMissingCount = @(
+            if ($expectedDxzState -eq 'RUNNING' -and -not $proc.dxz_running) { 'DXZ' }
+            if ($expectedFtmoState -eq 'RUNNING' -and -not $proc.ftmo_running) { 'FTMO' }
+        ).Count
+        $unexpectedRunningCount = @(
+            if ($expectedDxzState -eq 'PARKED' -and $proc.dxz_running) { 'DXZ' }
+            if ($expectedFtmoState -eq 'PARKED' -and $proc.ftmo_running) { 'FTMO' }
+        ).Count
+        # Retain the name used by the proven reboot guard, but count only a
+        # missing RUNNING target and require every actual live process to be off.
+        $bothDown = ($requiredMissingCount -gt 0) -and
+            (-not $proc.dxz_running) -and (-not $proc.ftmo_running)
+        $oneDown = ($requiredMissingCount -gt 0) -and (-not $bothDown)
 
         if ($bothDown) {
-        $state.consecutive_both_down = [int]$state.consecutive_both_down + 1
-        $state.consecutive_relaunch_failed = [int]$state.consecutive_relaunch_failed + 1
-        if (-not $state.last_incident_utc) { $state.last_incident_utc = $stamp }
-        $status = 'critical'
+            $state.consecutive_both_down = [int]$state.consecutive_both_down + 1
+            $state.consecutive_relaunch_failed = [int]$state.consecutive_relaunch_failed + 1
+            if (-not $state.last_incident_utc) { $state.last_incident_utc = $stamp }
+            $status = 'critical'
         } elseif ($oneDown) {
-        $state.consecutive_both_down = 0
-        $state.consecutive_relaunch_failed = [int]$state.consecutive_relaunch_failed + 1
-        if (-not $state.last_incident_utc) { $state.last_incident_utc = $stamp }
-        $status = 'degraded'
+            $state.consecutive_both_down = 0
+            $state.consecutive_relaunch_failed = [int]$state.consecutive_relaunch_failed + 1
+            if (-not $state.last_incident_utc) { $state.last_incident_utc = $stamp }
+            $status = 'degraded'
+        } elseif ($unexpectedRunningCount -gt 0) {
+            # Observational alarm only. Never stop a process automatically.
+            $state.consecutive_both_down = 0
+            $state.consecutive_relaunch_failed = 0
+            if (-not $state.last_incident_utc) { $state.last_incident_utc = $stamp }
+            $status = 'degraded'
         } else {
-        if ($state.last_incident_utc) { $state.last_recovery_utc = $stamp }
-        $state.consecutive_both_down = 0
-        $state.consecutive_relaunch_failed = 0
-        $state.last_incident_utc = $null
-        $status = if ($profileOk -and $expertsEnabledOk -and $sessionPlacementOk -and $sessionSupervisor.ready -and
-            $autologon.ready -and $recoveryTasks.ready) { 'healthy' } else { 'degraded' }
-        if (-not $profileOk) { $errors.Add("profile_mismatch:dxz=$dxzProfile,ftmo=$ftmoProfile") }
-        if (-not $expertsEnabledOk) { $errors.Add("experts_disabled_or_unknown:dxz=$dxzExpertsEnabled,ftmo=$ftmoExpertsEnabled") }
-        if (-not $sessionPlacementOk) { $errors.Add("live_process_session_mismatch:target=$($session.id)") }
-        if (-not $sessionSupervisor.ready) { $errors.Add("session_supervisor_not_ready:$($sessionSupervisor.reason)") }
-        if (-not $autologon.ready) { $errors.Add("autologon_not_ready:$($autologon.secret_probe)") }
-        if (-not $recoveryTasks.ready) { $errors.Add("recovery_task_contract_drift:$($recoveryTasks.reasons -join '|')") }
+            if ($state.last_incident_utc) { $state.last_recovery_utc = $stamp }
+            $state.consecutive_both_down = 0
+            $state.consecutive_relaunch_failed = 0
+            $state.last_incident_utc = $null
+            $status = if ((-not $expectedStateReviewExpired) -and $dxzContractOk -and $ftmoContractOk -and
+                $profileOk -and $expertsEnabledOk -and $sessionPlacementOk -and $sessionSupervisor.ready -and
+                $autologon.ready -and $recoveryTasks.ready) { 'healthy' } else { 'degraded' }
+            if (-not $profileOk) { $errors.Add("profile_mismatch:dxz=$dxzProfile,ftmo=$ftmoProfile") }
+            if (-not $expertsEnabledOk) { $errors.Add("experts_disabled_or_unknown:dxz=$dxzExpertsEnabled,ftmo=$ftmoExpertsEnabled") }
+            if (-not $sessionPlacementOk) { $errors.Add("live_process_session_mismatch:target=$($session.id)") }
+            if (-not $sessionSupervisor.ready) { $errors.Add("session_supervisor_not_ready:$($sessionSupervisor.reason)") }
+            if (-not $autologon.ready) { $errors.Add("autologon_not_ready:$($autologon.secret_probe)") }
+            if (-not $recoveryTasks.ready) { $errors.Add("recovery_task_contract_drift:$($recoveryTasks.reasons -join '|')") }
         }
 
         if ($bothDown -and [int]$state.consecutive_both_down -ge $ConfirmCycles) {
@@ -728,11 +806,17 @@ $record = [ordered]@{
     ts = $stamp
     status = $status
     maintenance = $maintenance
+    expected_state_review_expires_utc = $expectedStateReviewExpiresUtc
+    expected_state_review_expired = [bool]$expectedStateReviewExpired
     process_probe_ok = [bool]$proc.probe_ok
     dxz_running = [bool]$proc.dxz_running
+    expected_dxz_state = $expectedDxzState
+    dxz_contract_ok = [bool]$dxzContractOk
     dxz_pids = @($proc.dxz | ForEach-Object { $_.ProcessId })
     dxz_session_ids = @($proc.dxz | ForEach-Object { $_.SessionId })
     ftmo_running = [bool]$proc.ftmo_running
+    expected_ftmo_state = $expectedFtmoState
+    ftmo_contract_ok = [bool]$ftmoContractOk
     ftmo_pids = @($proc.ftmo | ForEach-Object { $_.ProcessId })
     ftmo_session_ids = @($proc.ftmo | ForEach-Object { $_.SessionId })
     target_session_exists = [bool]$session.exists
@@ -780,17 +864,21 @@ if ($alarmHelperLoaded) {
         $supervisorAlarmFacts = Get-SupervisorAlarmFacts -StateFilePath $sessionSupervisorStateFile -NowUtc $nowUtc
         $dxzPlacementOk = (-not $session.exists) -or (@($proc.dxz | Where-Object { $_.SessionId -ne $session.id }).Count -eq 0)
         $ftmoPlacementOk = (-not $session.exists) -or (@($proc.ftmo | Where-Object { $_.SessionId -ne $session.id }).Count -eq 0)
-        $tliveAlarmCondition = Get-LiveAlarmCondition -Maintenance $maintenance -ProbeOk $proc.probe_ok `
+        $tliveAlarmCondition = Get-LiveAlarmCondition -ExpectedState $expectedDxzState `
+            -ReviewExpired $expectedStateReviewExpired -Maintenance $maintenance -ProbeOk $proc.probe_ok `
             -Running $proc.dxz_running -ProcessCount @($proc.dxz).Count -SessionExists $session.exists `
             -PlacementOk $dxzPlacementOk -SupervisorHeartbeatReady $sessionSupervisor.heartbeat_ready `
             -SupervisorReason $sessionSupervisor.reason -SupervisorLaunchFailed ($supervisorAlarmFacts.fresh -and $supervisorAlarmFacts.dxz_launch_failed)
-        $ftmoAlarmCondition = Get-LiveAlarmCondition -Maintenance $maintenance -ProbeOk $proc.probe_ok `
+        $ftmoAlarmCondition = Get-LiveAlarmCondition -ExpectedState $expectedFtmoState `
+            -ReviewExpired $expectedStateReviewExpired -Maintenance $maintenance -ProbeOk $proc.probe_ok `
             -Running $proc.ftmo_running -ProcessCount @($proc.ftmo).Count -SessionExists $session.exists `
             -PlacementOk $ftmoPlacementOk -SupervisorHeartbeatReady $sessionSupervisor.heartbeat_ready `
             -SupervisorReason $sessionSupervisor.reason -SupervisorLaunchFailed ($supervisorAlarmFacts.fresh -and $supervisorAlarmFacts.ftmo_launch_failed)
         Write-LiveAlarmState -AlarmFilePath $alarmStateFile -NowStamp $stamp -WatchdogStatus $status `
             -Maintenance $maintenance -RebootSuppressed $rebootSuppressed `
-            -Sessions @{ T_LIVE = $tliveAlarmCondition; FTMO = $ftmoAlarmCondition } -DryRun:$DryRun.IsPresent | Out-Null
+            -Sessions @{ T_LIVE = $tliveAlarmCondition; FTMO = $ftmoAlarmCondition } `
+            -ExpectedStates @{ T_LIVE = $expectedDxzState; FTMO = $expectedFtmoState } `
+            -EscalationThreshold $alarmEscalationCycles -DryRun:$DryRun.IsPresent | Out-Null
     } catch {
         Write-Warning "Live alarm state emission failed (non-fatal): $($_.Exception.Message)"
     }
@@ -879,5 +967,5 @@ if ($actions -contains 'controlled_reboot_requested') {
 
 if ($status -eq 'critical') { exit 2 }
 if ($status -eq 'maintenance') { exit 0 }
-if ((-not $proc.dxz_running) -or (-not $proc.ftmo_running)) { exit 1 }
+if ($status -eq 'degraded') { exit 1 }
 exit 0

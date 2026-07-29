@@ -11,7 +11,7 @@
   - every applicable parameter from the SHA-pinned deployment preset;
   - both the deployed and recovery-package .ex5 SHA-256 values; and
   - the read-only QM_AccountMonitor telemetry chart (chart13, OWNER-approved
-    2026-07-25 — mirrors the T_Live LiveOps pattern; zero trade calls).
+    2026-07-25 - mirrors the T_Live LiveOps pattern; zero trade calls).
 
   Chart window geometry and graphical objects are deliberately excluded: MT5 may
   save those fields during normal operation. The trading contract is not excluded.

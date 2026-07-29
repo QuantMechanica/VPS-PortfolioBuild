@@ -1,12 +1,14 @@
 <#
 .SYNOPSIS
-  Keep both live MT5 terminals running inside the qm-admin desktop session.
+  Enforce the baked live MT5 expected states inside the qm-admin desktop session.
 
 .DESCRIPTION
   InteractiveToken tasks can be queued instead of executed while an RDP session
   is disconnected. This resident process starts at qm-admin logon and remains in
-  that session, so it can safely invoke the hardened live launchers after RDP
-  disconnects. A target must be absent in two consecutive independent probes.
+  that session, so it can safely invoke the hardened live launcher for a RUNNING
+  target after RDP disconnects. A RUNNING target must be absent in two
+  consecutive independent probes. A PARKED target is observed but never launched
+  or stopped.
 
   The supervisor never stops a process, never reboots Windows, and never edits
   trading state directly. Any process-inventory uncertainty, duplicate, wrong
@@ -33,8 +35,39 @@ $ftmoPath = 'C:\Program Files\FTMO Global Markets MT5 Terminal\terminal64.exe'
 $dxzLauncher = 'C:\QM\repo\tools\strategy_farm\T_Live_ON.ps1'
 $ftmoLauncher = 'C:\QM\repo\tools\strategy_farm\FTMO_ON.ps1'
 
+# OWNER state contract (2026-07-26): DXZ remains live; the FTMO campaign is
+# parked. The expiry is an alarm/review edge, never permission to relaunch FTMO.
+$expectedDxzState = 'RUNNING'
+$expectedFtmoState = 'PARKED'
+$expectedStateReviewExpiresUtc = '2026-08-25T00:00:00Z'
+
 function Get-UtcStamp {
     return [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
+}
+
+function Test-ExpectedStateReviewExpired {
+    try {
+        $expiry = [DateTime]::ParseExact(
+            $expectedStateReviewExpiresUtc,
+            'yyyy-MM-ddTHH:mm:ssZ',
+            [Globalization.CultureInfo]::InvariantCulture,
+            ([Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
+        )
+        return [DateTime]::UtcNow -ge $expiry
+    } catch {
+        # An unreadable expiry is expired/unsafe, never an indefinite approval.
+        return $true
+    }
+}
+
+function Test-TargetMatchesExpectedState {
+    param(
+        [string]$TargetState,
+        [ValidateSet('RUNNING', 'PARKED', 'MAINTENANCE')][string]$ExpectedState
+    )
+    if ($ExpectedState -eq 'MAINTENANCE') { return $true }
+    if ($ExpectedState -eq 'PARKED') { return $TargetState -eq 'confidently_missing' }
+    return $TargetState -eq 'healthy'
 }
 
 function Compare-ProcessIds {
@@ -218,6 +251,7 @@ try {
         }
 
         $maintenance = Test-Path -LiteralPath $maintenanceFlag -PathType Leaf
+        $reviewExpired = Test-ExpectedStateReviewExpired
         $before = Get-ExactProcessState
         $dxzState = if ($before.probe_ok) { Get-TargetState @($before.dxz) $sessionId } else { 'unknown' }
         $ftmoState = if ($before.probe_ok) { Get-TargetState @($before.ftmo) $sessionId } else { 'unknown' }
@@ -233,14 +267,26 @@ try {
         } else {
             foreach ($name in @('DXZ', 'FTMO')) {
                 $targetState = if ($name -eq 'DXZ') { $dxzState } else { $ftmoState }
-                if ($targetState -eq 'confidently_missing') { $misses[$name] = [int]$misses[$name] + 1 }
-                else { $misses[$name] = 0 }
-                if ($targetState -in @('duplicate', 'wrong_session')) { $errors.Add("target_${name}:$targetState") }
+                $expectedState = if ($name -eq 'DXZ') { $expectedDxzState } else { $expectedFtmoState }
+                if ($expectedState -eq 'RUNNING' -and $targetState -eq 'confidently_missing') {
+                    $misses[$name] = [int]$misses[$name] + 1
+                } else {
+                    $misses[$name] = 0
+                }
+                if ($expectedState -eq 'PARKED') {
+                    if ($targetState -eq 'confidently_missing') {
+                        $actions.Add("parked_no_relaunch:$name")
+                    } else {
+                        $errors.Add("expected_parked_but_running:${name}:$targetState")
+                    }
+                } elseif ($targetState -in @('duplicate', 'wrong_session')) {
+                    $errors.Add("target_${name}:$targetState")
+                }
             }
-            if ($misses.DXZ -ge $MissingConfirmCycles) {
+            if ($expectedDxzState -eq 'RUNNING' -and $misses.DXZ -ge $MissingConfirmCycles) {
                 Start-LauncherChild 'DXZ' $dxzLauncher $sessionId $pending $lastAttempt $actions $errors
             }
-            if ($misses.FTMO -ge $MissingConfirmCycles) {
+            if ($expectedFtmoState -eq 'RUNNING' -and $misses.FTMO -ge $MissingConfirmCycles) {
                 Start-LauncherChild 'FTMO' $ftmoLauncher $sessionId $pending $lastAttempt $actions $errors
             }
         }
@@ -249,12 +295,15 @@ try {
         $dxzAfter = if ($after.probe_ok) { Get-TargetState @($after.dxz) $sessionId } else { 'unknown' }
         $ftmoAfter = if ($after.probe_ok) { Get-TargetState @($after.ftmo) $sessionId } else { 'unknown' }
         if (-not $after.probe_ok) { $errors.Add("post_probe_failed:$($after.error)") }
+        if ($reviewExpired) { $errors.Add("expected_state_review_expired:$expectedStateReviewExpiresUtc") }
+        $dxzContractOk = $after.probe_ok -and (Test-TargetMatchesExpectedState $dxzAfter $expectedDxzState)
+        $ftmoContractOk = $after.probe_ok -and (Test-TargetMatchesExpectedState $ftmoAfter $expectedFtmoState)
         $status = if ($maintenance) { 'maintenance' }
-            elseif ($after.probe_ok -and $dxzAfter -eq 'healthy' -and $ftmoAfter -eq 'healthy' -and $errors.Count -eq 0) { 'healthy' }
+            elseif ($dxzContractOk -and $ftmoContractOk -and $errors.Count -eq 0) { 'healthy' }
             elseif ($after.probe_ok) { 'degraded' }
             else { 'unknown' }
         $record = [ordered]@{
-            schema_version = 1
+            schema_version = 2
             last_checked_utc = Get-UtcStamp
             status = $status
             identity = $identity
@@ -263,14 +312,20 @@ try {
             supervisor_pid = $PID
             interval_seconds = $IntervalSeconds
             maintenance = [bool]$maintenance
+            expected_state_review_expires_utc = $expectedStateReviewExpiresUtc
+            expected_state_review_expired = [bool]$reviewExpired
             process_probe_ok = [bool]$after.probe_ok
             process_probe_error = $after.error
             dxz_state = $dxzAfter
+            dxz_expected_state = $expectedDxzState
+            dxz_contract_ok = [bool]$dxzContractOk
             dxz_running = [bool]($dxzAfter -eq 'healthy')
             dxz_pids = @($after.dxz | ForEach-Object { $_.ProcessId })
             dxz_session_ids = @($after.dxz | ForEach-Object { $_.SessionId })
             dxz_consecutive_missing = [int]$misses.DXZ
             ftmo_state = $ftmoAfter
+            ftmo_expected_state = $expectedFtmoState
+            ftmo_contract_ok = [bool]$ftmoContractOk
             ftmo_running = [bool]($ftmoAfter -eq 'healthy')
             ftmo_pids = @($after.ftmo | ForEach-Object { $_.ProcessId })
             ftmo_session_ids = @($after.ftmo | ForEach-Object { $_.SessionId })
