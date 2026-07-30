@@ -1,0 +1,40 @@
+;==========================================================
+; FTMO Book-3 event-complete standalone diagnostic only
+; ea_id: 9936
+; symbol: USDJPY.DWX
+; timeframe: H1
+; native_standalone: true
+; joint_ea: false
+; admission_authority: none
+; template_requires_content_addressed_materialization: true
+; materialized_manifest_window: exact raw broker-wall tester dates; Prague boundary days preserved; producer transform NONE
+;==========================================================
+qm_ea_id=9936
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_ftmo_event_complete_enabled=true
+qm_ftmo_event_complete_run_id=FTMO_EVENT_COMPLETE_UNIQUE_RUN_ID_REQUIRED
+qm_ftmo_event_complete_expected_broker_wall_start_msc=0
+qm_ftmo_event_complete_expected_broker_wall_end_msc=0
+qm_ftmo_event_complete_expected_model=4
+qm_ftmo_event_complete_expected_account_currency=USD
+qm_ftmo_event_complete_expected_account_margin_mode=2
+qm_ftmo_event_complete_expected_account_leverage=100
+qm_ftmo_event_complete_manifest_path=QM\ftmo_event_complete\contracts\EXECUTION_MANIFEST_REQUIRED.json
+qm_ftmo_event_complete_manifest_sha256=FTMO_EXECUTION_MANIFEST_SHA256_REQUIRED
+qm_ftmo_event_complete_prague_proof_path=QM\ftmo_event_complete\contracts\PRAGUE_MIDNIGHT_PROOF_REQUIRED.json
+qm_ftmo_event_complete_prague_proof_sha256=FTMO_PRAGUE_MIDNIGHT_PROOF_SHA256_REQUIRED
+qm_rng_seed=42
+qm_friday_close_enabled=true
+qm_stress_reject_probability=0
+strategy_atr_period=14
+strategy_max_range_atr_mult=2.5
+strategy_min_range_atr_mult=0.4
+strategy_order_cancel_hour_gmt3=13
+strategy_range_end_hour_gmt3=6
+strategy_range_scan_bars=36
+strategy_range_start_hour_gmt3=1
+strategy_session_close_hour_gmt3=20
+strategy_trail_trigger_r=1.0

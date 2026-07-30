@@ -1,0 +1,364 @@
+{
+  "schema": "qm.post-restart-target-queue-plan/v1",
+  "generated_at_utc": "2026-07-30T13:41:56.947Z",
+  "source_commit": "0dead3ff978b2c7b9790c4e6988c39e9a8fece46",
+  "mode": "SOURCE_ONLY_CONDITIONAL_PLAN",
+  "runtime_execution": "NONE",
+  "factory_on_authorization": false,
+  "book_ready_claim": false,
+  "production_snapshot": {
+    "database_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "database_sha256": "98286548cc6bd2745c842d4eb6c6d8bd71d6cbc5010574989361afbb3f134394",
+    "database_last_write_utc": "2026-07-30T13:14:02.7017523Z",
+    "factory_off_flag_sha256": "09cc4f83e8d5f384f03bc51306beff2cdd165108559a00dbf665097c60b47f1c",
+    "staleness_rule": "Re-read and receipt-bind all mutable state before any later operation; this snapshot grants no mutation authority."
+  },
+  "queue_boundaries": {
+    "ftmo_target_lane": {
+      "current_pending_target": false,
+      "status": "NO_CURRENT_PENDING_FTMO_TARGET",
+      "contract": "A dedicated one-item, identity-preserving target receipt is required after independently authorized and stable Factory_ON."
+    },
+    "normal_factory_lane": {
+      "separate_from_ftmo_target": true,
+      "eligible_at_snapshot_including_three_unheld_cascade_rows": 2175,
+      "eligible_after_mandatory_three_cascade_holds": 2172,
+      "eligible_after_then_releasing_exactly_seven_restart_holds_if_no_other_drift": 2179,
+      "forbidden_simulation_releasing_seven_without_first_holding_three_cascade_rows": 2182,
+      "diagnostic_raw_selector_head_from_forbidden_2182_simulation": [
+        {
+          "work_item_id": "da441d49-ccac-477e-9bab-fa13a44a5e96",
+          "ea_id": "QM5_12871",
+          "phase": "Q02",
+          "symbol": "XBRUSD.DWX"
+        },
+        {
+          "work_item_id": "b837731f-9786-4aa8-b320-e5f6a5ac6666",
+          "ea_id": "QM5_13079",
+          "phase": "Q02",
+          "symbol": "basket"
+        },
+        {
+          "work_item_id": "07c52869-1318-47fa-9833-c39c28c06205",
+          "ea_id": "QM5_12577",
+          "phase": "Q02",
+          "symbol": "basket"
+        },
+        {
+          "work_item_id": "69f6fe8b-3d49-4099-ab8f-450b84dddc3d",
+          "ea_id": "QM5_12724",
+          "phase": "Q02",
+          "symbol": "basket"
+        },
+        {
+          "work_item_id": "3420d430-38e9-45b0-8039-37ba71daf8b7",
+          "ea_id": "QM5_20060",
+          "phase": "Q02",
+          "symbol": "basket"
+        },
+        {
+          "work_item_id": "fd355b32-2fd1-482d-b61a-120052630711",
+          "ea_id": "QM5_13082",
+          "phase": "Q02",
+          "symbol": "basket"
+        },
+        {
+          "work_item_id": "384157b4-709e-4fab-bcce-fc27c4cf4800",
+          "ea_id": "QM5_13086",
+          "phase": "Q02",
+          "symbol": "basket"
+        },
+        {
+          "work_item_id": "36bfac85-63e2-46a7-9f35-8ae583252d2f",
+          "ea_id": "QM5_20062",
+          "phase": "Q02",
+          "symbol": "EURUSD.DWX"
+        },
+        {
+          "work_item_id": "943f6510-98ea-4552-b228-86e4fd151bc8",
+          "ea_id": "QM5_1173",
+          "phase": "Q02",
+          "symbol": "GDAXI.DWX"
+        }
+      ],
+      "ordering_caveat": "The listed head is retained only as the audited raw diagnostic from the forbidden 2182 simulation; it is not the planned post-ON order. The lawful drift-free sequence is 2175 -> 2172 after the three mandatory cascade holds -> 2179 after the exact seven restart holds are later released. Terminal capacity, history readiness, active-symbol exclusion and the one-multisymbol-item limit still determine the actual claim batch. This is not an FTMO target queue."
+    },
+    "dxz_requalification_lane": {
+      "separate_from_ftmo_target": true,
+      "priority_head": [
+        "QM5_11422",
+        "QM5_11421"
+      ],
+      "priority_tail_contract": "Continue only in the order of a current sealed DXZ requalification receipt or ledger. If no exact durable tail exists, stop and produce one; never infer the tail from the FTMO or normal Factory queue.",
+      "qm5_11422_note": "Current head: the only observed complete Q02-Q08 PASS plus Q09_PORTFOLIO/Q10 PASS candidate; Q09_NEWS is still missing and Q08-v3 lineage is shadow/count-only.",
+      "ftmo_admission_effect": "NONE"
+    }
+  },
+  "ftmo_target_plan": {
+    "candidate": {
+      "ea_id": "QM5_20039",
+      "symbol": "NDX.DWX",
+      "phase": "Q06",
+      "work_item_id": "4381a4bc-a8bd-4e58-862f-83dd05cda5ce",
+      "action": "EXACT_IDENTITY_PRESERVING_SINGLE_INFRA_RETRY",
+      "existing_verdict": "INFRA_FAIL",
+      "existing_failure_reason": "invalid_summary:BARS_ZERO,EMPTY_EXPERT,EMPTY_SYMBOL,HISTORY_CONTEXT_INVALID,INCOMPLETE_RUNS,M0_1970_PERIOD,NO_HISTORY,RUN_STATUS_INVALID",
+      "parent_q05_work_item_id": "2a3c9631-88a8-4b93-86b5-d1d841b1ff37",
+      "passed_lineage": [
+        {
+          "phase": "Q02",
+          "work_item_id": "4a5a1dbd-938e-49f7-b3dc-6d65e7923105",
+          "verdict": "PASS"
+        },
+        {
+          "phase": "Q03",
+          "work_item_id": "45634cb7-de3d-4fce-be2c-1935a0e15b0a",
+          "verdict": "PASS"
+        },
+        {
+          "phase": "Q04",
+          "work_item_id": "9ebe99ec-b150-4efa-8fa6-3caa83f5f9d0",
+          "verdict": "PASS"
+        },
+        {
+          "phase": "Q05",
+          "work_item_id": "2a3c9631-88a8-4b93-86b5-d1d841b1ff37",
+          "verdict": "PASS"
+        }
+      ],
+      "identity": {
+        "runtime_root": "C:\\QM\\repo",
+        "hash_scope": "CANONICAL_PHYSICAL_BYTES_AT_SNAPSHOT",
+        "ex5_path": "framework/EAs/QM5_20039_onr-mid-brk/QM5_20039_onr-mid-brk.ex5",
+        "ex5_sha256": "05a6bb8a2417db92c9400e17aacdfc4ec8687c7e0809f11277db1734bafe77b1",
+        "mq5_path": "framework/EAs/QM5_20039_onr-mid-brk/QM5_20039_onr-mid-brk.mq5",
+        "mq5_sha256": "99958c1a93e26abb3617136bbf10d767cef997c21310f8510abbfa8a1e08ad50",
+        "mq5_isolated_plan_worktree_raw_sha256": "f688281e24cbb1f1b0cd1f2eb899caf66995a81ff303af467cd8601f7dc7fbc4",
+        "mq5_checkout_note": "The canonical runtime checkout and this isolated plan checkout are Git-content-equivalent but have different raw EOL bytes. The later retry must re-bind the exact canonical runtime bytes instead of silently substituting a checkout hash.",
+        "set_path": "framework/EAs/QM5_20039_onr-mid-brk/sets/QM5_20039_onr-mid-brk_NDX.DWX_M5_backtest.set",
+        "set_sha256": "319eacdd42002033928ff66a32340b4da4c0dc0a92cfeed033c37eb38be1e8ca"
+      },
+      "terminal_contract": {
+        "preferred": "T6",
+        "prohibited": [
+          "T4"
+        ],
+        "reason": "Q03 previously passed on T6; the failing Q06 attempt was associated with T4/history-context failure.",
+        "fallback": "STOP_AND_REPLAN_IF_T6_IS_NOT_READY"
+      },
+      "resource_contract": {
+        "memory_gib": 8,
+        "timeout_minutes": 120,
+        "expected_runtime_minutes": "13-20",
+        "prior_runtime_minutes": 17.9
+      },
+      "retry_limit": 1,
+      "success_criteria": {
+        "verdict": "PASS",
+        "profit_factor_gt": 1.0,
+        "max_drawdown_percent_lte": 25.0,
+        "trades_gte": 20,
+        "required_evidence": "Complete, valid and identity/history/report-bound MT5 evidence"
+      },
+      "stop_rules": [
+        "If the same infrastructure signature recurs, stop for diagnosis; do not create a third attempt.",
+        "If the strategy verdict is FAIL, stop the FTMO target chain.",
+        "If any identity hash, parent lineage, terminal or history binding differs, refuse the retry.",
+        "Do not manufacture or predeclare a downstream work_item_id."
+      ]
+    },
+    "downstream": {
+      "id_rule": "Q07/Q08/Q09/Q10 work_item_ids must be taken only from successful apply/pump receipts. No such FTMO target ids currently exist.",
+      "q07": {
+        "seeds": [
+          42,
+          17,
+          99,
+          7,
+          2026
+        ],
+        "trades_per_seed_gte": 20,
+        "minimum_seed_profit_factor_gte": 1.0,
+        "variance_pass_rule": "variance < 20%, or variance < 40% with minimum seed PF >= 1.10",
+        "resource_memory_gib": 8,
+        "expected_runtime_minutes": 56,
+        "observed_timeout_cap_minutes": 120
+      },
+      "q08": {
+        "strict_progression_verdict": "PASS",
+        "fail_hard_action": "STOP",
+        "invalid_action": "SETUP_REPAIR_ONLY",
+        "fail_soft_action": "WEIGHTED_RESEARCH_ONLY_NO_STRICT_FTMO_PROMOTION",
+        "resource_memory_gib": 8,
+        "timeout_minutes": 368,
+        "cohort_runtime_median_minutes": 39,
+        "cohort_runtime_p75_minutes": 65
+      },
+      "estimated_elapsed_through_q08": "approximately 1.5-3 hours, bounded by configured per-phase timeouts"
+    }
+  },
+  "held_ftmo_rows": [
+    {
+      "label": "BOOK3_V2_R2",
+      "work_item_id": "034a2bcd-1a69-5437-9654-6e4b3e9b0ff9",
+      "ea_id": "QM5_13108",
+      "phase": "Q02",
+      "observed_active_hold": true,
+      "required_state": "HELD",
+      "release_on_restart": false
+    },
+    {
+      "label": "BOOK3_V2_J2",
+      "work_item_id": "e98e8b96-2e92-59a2-aa8e-15f4140c1289",
+      "ea_id": "QM5_20181",
+      "phase": "Q02",
+      "observed_active_hold": true,
+      "required_state": "HELD",
+      "release_on_restart": false
+    },
+    {
+      "label": "QM5_20181_CASCADE_Q03_REPLAY",
+      "work_item_id": "f8a90af2-a21e-40a0-883d-8d4446831b62",
+      "ea_id": "QM5_20181",
+      "phase": "Q03",
+      "observed_active_hold": false,
+      "required_state": "ACTIVE_HOLD_BEFORE_FACTORY_ON",
+      "release_on_restart": false
+    },
+    {
+      "label": "QM5_20181_CASCADE_Q03_BOOK2",
+      "work_item_id": "50ada76a-321d-4749-a4ec-c3ad424bc9e6",
+      "ea_id": "QM5_20181",
+      "phase": "Q03",
+      "observed_active_hold": false,
+      "required_state": "ACTIVE_HOLD_BEFORE_FACTORY_ON",
+      "release_on_restart": false
+    },
+    {
+      "label": "QM5_20181_CASCADE_Q04_BOOK2",
+      "work_item_id": "9ca73d45-b0b3-4074-b9ed-b773b22858d1",
+      "ea_id": "QM5_20181",
+      "phase": "Q04",
+      "observed_active_hold": false,
+      "required_state": "ACTIVE_HOLD_BEFORE_FACTORY_ON",
+      "release_on_restart": false
+    }
+  ],
+  "held_row_evidence": {
+    "snapshot_gate": "BLOCKED_UNTIL_THREE_CASCADE_HOLDS_HAVE_A_SEPARATELY_AUTHORIZED_APPLY_RECEIPT",
+    "stage1_closeout": {
+      "path": "docs/ops/evidence/2026-07-30_ftmo_book3_v2_stage1_setup_blocked.md",
+      "stage1_receipt_sha256": "b3fa3b23f973e22925bab1a6c035bcbddefee3faf84021eec3d50c2a06e3bc43"
+    },
+    "cascade_hold_manifest": {
+      "path": "docs/ops/evidence/2026-07-30_qm5_20181_cascade_hold_manifest.json",
+      "sha256": "3d9170a2a8dd9264211a66e530ff79bd811fb54481624e4a517b248a3ae3e3f0",
+      "hash_scope": "CANONICAL_PHYSICAL_BYTES_AT_SNAPSHOT",
+      "isolated_plan_worktree_raw_sha256": "b7eecb4a469fc77ff6dd0b014ad2013c1d590c9e25c641fc72abe374fb0c9783",
+      "checkout_note": "The raw hash difference is EOL-only; any later apply remains bound to the already authorized canonical raw-byte hash.",
+      "apply_authorized_by_this_plan": false
+    },
+    "all_other_ftmo_holds": "UNCHANGED_NON_RELEASING"
+  },
+  "candidate_dispositions": {
+    "QM5_13036_GDAXI.DWX": {
+      "action": "DO_NOT_BYPASS_Q03",
+      "latest_q02_work_item_id": "8bac496f-128f-4cea-a2bc-2465b00581ce",
+      "latest_q02_metrics": {
+        "verdict": "PASS_BY_TRADE_COUNT_GATE",
+        "profit_factor": 0.92,
+        "net_profit": -4600.96,
+        "trades": 647,
+        "max_drawdown_percent": 7.82,
+        "window": "2018-07-02/2022-12-31"
+      },
+      "blocker": "The promoter correctly requires positive net profit and therefore did not create Q03. Later positive full-horizon evidence does not authorize a manual Q03 or selection-gate bypass.",
+      "disposition": "RESEARCH_OR_SHADOW_ONLY_UNTIL_PROSPECTIVE_SEALED_EVIDENCE"
+    },
+    "QM5_12969_USDJPY.DWX": {
+      "action": "HOLD_UNTIL_TARGET_AWARE_Q08_V3",
+      "q08_work_item_id": "74a089c5-194d-466f-ba0f-0536fdf32641",
+      "q08_verdict": "FAIL_SOFT",
+      "q08_failures": [
+        "seasonality: 10 profitable months, below threshold 12",
+        "PBO 42.857%, above threshold 40%"
+      ],
+      "additional_blocker": "Q02-Q07 evidence predates the current EX5 identity.",
+      "rerun_policy": "Do not repeat the deterministic current gate. Once target-aware Q08-v3 selector/admission is active, refresh serially under that new contract; never requeue all phases simultaneously."
+    }
+  },
+  "q09_news": {
+    "runtime_status": "MNT_050_RUNTIME_DEFERRED",
+    "execution_allowed_now": false,
+    "required_plan_status_before_execution": "CONFIG_LOCKED",
+    "cell_count": 40,
+    "seeds": [
+      42,
+      17,
+      99,
+      7,
+      2026
+    ],
+    "cells": {
+      "control_off": {
+        "count": 5,
+        "policy": "CONTROL_OFF",
+        "mode": "OFF",
+        "target": "NONE"
+      },
+      "policy_on_ftmo": {
+        "count": 35,
+        "policy": "POLICY_ON",
+        "target": "FTMO",
+        "modes": [
+          "OFF",
+          "PRE30",
+          "PRE60",
+          "PRE30_POST30",
+          "PRE60_POST60",
+          "SKIP_DAY",
+          "CLOSE_ALL_PRE"
+        ]
+      }
+    },
+    "sha_bound_prerequisites": [
+      "exact Q08 evidence",
+      "EX5",
+      "setfile",
+      "include closure",
+      "calendar manifest and Common copy",
+      "full, selection and holdout windows with complete months",
+      "tester model",
+      "cost profile",
+      "output root"
+    ],
+    "q10_prerequisite": "Authenticated Q09_NEWS plus the required Q09_PORTFOLIO sibling/dependencies",
+    "q10_success_criteria": {
+      "profit_factor_gt": 1.0,
+      "max_drawdown_percent_lte": 25.0,
+      "trades_gte": 20,
+      "chosen_q09_mode_and_hash_exact": true
+    }
+  },
+  "ftmo_money_gate": {
+    "status": "NOT_READY",
+    "requirements": [
+      "Fresh official rule snapshot no older than seven days, using official sources",
+      "Zero unadjudicated execution-fidelity mismatches",
+      "Event/tick-complete mark-to-market with Prague anchors and pending-order, margin, cost and swap state; closed-PnL proxies are forbidden",
+      "Phase-1 point estimate >= 80% and lower 95% confidence bound >= 70%",
+      "Official-breach upper 95% confidence bound <= 10%",
+      "Conditional Phase-2 success >= 85% and joint two-phase success >= 65%",
+      "At least one exact-profile free trial or shadow run with zero operational defects",
+      "Separate OWNER signature before any paid Challenge"
+    ]
+  },
+  "prohibited_actions": [
+    "Do not turn Factory ON from this plan.",
+    "Do not mutate the production database from this plan.",
+    "Do not release R2, J2, the three QM5_20181 cascade rows or any other FTMO hold from this plan.",
+    "Do not bypass QM5_13036 Q03 or force-promote QM5_12969 FAIL_SOFT.",
+    "Do not predeclare downstream FTMO work_item_ids.",
+    "Do not claim FTMO book readiness, paid-Challenge readiness, deployment approval or live-trading authority."
+  ]
+}

@@ -169,7 +169,7 @@ def test_normalize_requires_source_fingerprint_and_fixed_provenance_bases(
         engine.normalize_trace(envelope)
 
 
-def test_normalize_requires_tick_complete_interval_minimum_and_zero_anchor_opens() -> None:
+def test_normalize_requires_tick_complete_interval_minimum_and_accepts_anchor_interval_opens() -> None:
     missing = make_envelope()
     missing["rows"][5].pop("interval_min_equity")
     with pytest.raises(engine.TraceValidationError, match="interval_min_equity:5_invalid"):
@@ -191,10 +191,9 @@ def test_normalize_requires_tick_complete_interval_minimum_and_zero_anchor_opens
 
     anchor_open = make_envelope()
     anchor_open["rows"][24]["opened_positions"] = 1
-    with pytest.raises(
-        engine.TraceValidationError, match="opened_positions_at_day_anchor_forbidden:24"
-    ):
-        engine.normalize_trace(anchor_open)
+    trace = engine.normalize_trace(anchor_open)
+    assert trace.points[24].day_anchor is True
+    assert trace.points[24].opened_positions == 1
 
 
 @pytest.mark.parametrize(
@@ -222,14 +221,6 @@ def test_normalize_requires_tick_complete_interval_minimum_and_zero_anchor_opens
             lambda env: env["rows"][10].__setitem__("day_anchor", True),
             "day_anchor_not_midnight",
         ),
-        (
-            lambda env: env["rows"].pop(0),
-            "trace_start_eod_anchor_missing",
-        ),
-        (
-            lambda env: env["rows"].pop(),
-            "trace_end_eod_anchor_missing",
-        ),
     ],
 )
 def test_normalize_fails_closed_on_order_grid_and_anchor_attacks(mutator, reason) -> None:
@@ -238,6 +229,58 @@ def test_normalize_fails_closed_on_order_grid_and_anchor_attacks(mutator, reason
 
     with pytest.raises(engine.TraceValidationError, match=reason):
         engine.normalize_trace(envelope)
+
+
+def test_normalize_accepts_partial_first_and_last_prague_days() -> None:
+    partial = make_envelope(days=3)
+    partial["rows"] = partial["rows"][1:-1]
+    trace = engine.normalize_trace(partial, minimum_complete_days=1)
+
+    assert trace.points[0].day_anchor is False
+    assert trace.points[-1].day_anchor is False
+    assert sum(point.day_anchor for point in trace.points) == 2
+
+    result = engine.evaluate_one_step(
+        trace, initial_balance="100000.00", assumptions=HOURLY
+    )
+    assert result["status"] == "NOT_PASSED"
+
+
+def test_anchor_interval_opens_count_for_preceding_prague_risk_day() -> None:
+    envelope = make_envelope(days=2)
+    envelope["rows"][24]["opened_positions"] = 1
+    envelope["rows"][25]["opened_positions"] = 1
+    trace = engine.normalize_trace(envelope)
+
+    result = engine.evaluate_two_step_phase(
+        trace,
+        phase="PHASE1",
+        initial_balance="100000.00",
+        assumptions=HOURLY,
+    )
+    assert result["trading_days"] == 2
+
+
+def test_combine_accepts_partial_overlap_and_clears_first_interval_opens() -> None:
+    first = normalized(
+        trace_id="partial-a",
+        days=3,
+        events={(0, 1, 0): {"opened_positions": 1}},
+    )
+    second_full = normalized(
+        trace_id="partial-b", days=3, source_fingerprint_sha256="b" * 64
+    )
+    second = replace(second_full, points=second_full.points[1:-1])
+
+    joint = engine.combine_synchronized_traces(
+        {"a": first, "b": second},
+        starting_balance="100000.00",
+        minimum_overlap_days=1,
+    )
+
+    assert joint.points[0].day_anchor is False
+    assert joint.points[-1].day_anchor is False
+    assert joint.points[0].opened_positions == 0
 
 
 def test_normalize_rejects_closed_pnl_only_equity_substitute() -> None:

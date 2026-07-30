@@ -3,6 +3,7 @@
 #property description "QM5_10145 Rolling Mean Return Time-Series Momentum"
 
 #include <QM/QM_Common.mqh>
+#include <QM/modules/QM_Mod_FtmoStandaloneEventComplete.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -71,6 +72,20 @@ input group "Stress"
 // deterministic per qm_rng_seed). MED slip/spread/commission live in the
 // tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
+
+input group "FTMO Standalone Event-Complete Diagnostic"
+input bool   qm_ftmo_event_complete_enabled = false;
+input string qm_ftmo_event_complete_run_id  = "FTMO_EVENT_COMPLETE_RUN_ID_REQUIRED";
+input long   qm_ftmo_event_complete_expected_broker_wall_start_msc = 0;
+input long   qm_ftmo_event_complete_expected_broker_wall_end_msc   = 0;
+input int    qm_ftmo_event_complete_expected_model     = 4;
+input string qm_ftmo_event_complete_expected_account_currency = "USD";
+input int    qm_ftmo_event_complete_expected_account_margin_mode = 2;
+input int    qm_ftmo_event_complete_expected_account_leverage = 100;
+input string qm_ftmo_event_complete_manifest_path = "FTMO_EXECUTION_MANIFEST_REQUIRED";
+input string qm_ftmo_event_complete_manifest_sha256 = "FTMO_EXECUTION_MANIFEST_SHA256_REQUIRED";
+input string qm_ftmo_event_complete_prague_proof_path = "FTMO_PRAGUE_MIDNIGHT_PROOF_REQUIRED";
+input string qm_ftmo_event_complete_prague_proof_sha256 = "FTMO_PRAGUE_MIDNIGHT_PROOF_SHA256_REQUIRED";
 
 input group "Strategy"
 input int    strategy_lookback_n        = 15;
@@ -237,18 +252,41 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
+   if(!QM_FTMOEC_Init(qm_ftmo_event_complete_enabled,
+                      qm_ftmo_event_complete_run_id,
+                      qm_ea_id,
+                      (long)QM_FrameworkMagic(),
+                      RISK_FIXED,
+                      RISK_PERCENT,
+                      qm_ftmo_event_complete_expected_broker_wall_start_msc,
+                      qm_ftmo_event_complete_expected_broker_wall_end_msc,
+                      qm_ftmo_event_complete_expected_model,
+                      qm_ftmo_event_complete_expected_account_currency,
+                      qm_ftmo_event_complete_expected_account_margin_mode,
+                      qm_ftmo_event_complete_expected_account_leverage,
+                      qm_ftmo_event_complete_manifest_path,
+                      qm_ftmo_event_complete_manifest_sha256,
+                      qm_ftmo_event_complete_prague_proof_path,
+                      qm_ftmo_event_complete_prague_proof_sha256))
+     {
+      QM_FrameworkShutdown();
+      return INIT_FAILED;
+     }
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 
 void OnDeinit(const int reason)
   {
+   QM_FTMOEC_Shutdown(reason);
    QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
    QM_FrameworkShutdown();
   }
 
 void OnTick()
   {
+   QM_FTMOEC_OnTick();
    if(!QM_KillSwitchCheck())
       return;
 
@@ -308,6 +346,7 @@ void OnTick()
 
 void OnTimer()
   {
+   QM_FTMOEC_OnTimer();
    QM_FrameworkOnTimer();
   }
 
@@ -318,10 +357,13 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
    // FW4: feeds closing-deal net-profits to the KS kill-switch.
    // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
+   QM_FTMOEC_OnTradeTransaction(trans, request, result);
   }
 
 double OnTester()
   {
    QM_ChartUI_Refresh();
-   return QM_DefaultObjective();
+   const double objective = QM_DefaultObjective();
+   QM_FTMOEC_OnTester();
+   return objective;
   }

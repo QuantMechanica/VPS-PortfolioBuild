@@ -35,14 +35,13 @@ Input contract
         }, ...]
     }
 
-Rows are instantaneous observations on one regular UTC grid.  The trace starts
-and ends at exact 00:00 Europe/Prague boundaries.  ``day_anchor`` is required
-and must be true exactly at every such boundary, including CET/CEST changes.
-The last row closes the preceding complete Prague day.  ``opened_positions``
-counts reconciled position first-open events in ``(previous_ts, ts]``.  Such a
-count is credited to the endpoint's Prague date; anchor rows must therefore
-carry zero opens so an interval never ambiguously crosses a day boundary.  The
-first row has no preceding interval and must also carry zero opens.
+Rows are instantaneous observations on one regular UTC grid.  First and last
+rows may be partial Prague risk days (as happens with date-bounded MT5 broker
+windows); every interior 00:00 Europe/Prague boundary is still an exact
+``day_anchor``, including CET/CEST changes.  ``opened_positions`` counts
+reconciled first-open events in ``(previous_ts, ts]``.  On an anchor row that
+interval, and its opens, belong to the Prague risk day that just ended.  The
+first row has no preceding interval and must carry zero opens.
 
 ``interval_min_equity`` is the tick/event-complete minimum over the interval,
 including both endpoints.  On the first row it must equal endpoint equity.  At
@@ -314,7 +313,7 @@ def _is_prague_midnight(timestamp: dt.datetime) -> bool:
 def _validate_normalized(trace: NormalizedTrace, *, minimum_complete_days: int) -> None:
     if not isinstance(trace, NormalizedTrace):
         raise TraceValidationError("trace_not_normalized")
-    _require_int(minimum_complete_days, "minimum_complete_days", minimum=1)
+    _require_int(minimum_complete_days, "minimum_complete_days", minimum=0)
     if not isinstance(trace.trace_id, str) or not trace.trace_id:
         raise TraceValidationError("normalized_trace_id_invalid")
     if not isinstance(trace.currency, str) or not _CURRENCY_RE.fullmatch(trace.currency):
@@ -386,11 +385,11 @@ def _validate_normalized(trace: NormalizedTrace, *, minimum_complete_days: int) 
         )
         if point.open_positions == 0 and point.balance != point.equity:
             raise TraceValidationError(f"normalized_flat_book_mismatch:{index}")
-        if point.day_anchor and point.opened_positions != 0:
-            raise TraceValidationError(
-                f"normalized_opened_positions_at_day_anchor_forbidden:{index}"
-            )
         if index == 0:
+            if point.opened_positions != 0:
+                raise TraceValidationError(
+                    "normalized_first_opened_positions_must_be_zero"
+                )
             if point.interval_min_equity != point.equity:
                 raise TraceValidationError(
                     "normalized_first_interval_min_equity_must_equal_equity"
@@ -404,13 +403,8 @@ def _validate_normalized(trace: NormalizedTrace, *, minimum_complete_days: int) 
                 f"normalized_interval_min_equity_exceeds_endpoint:{index}"
             )
         previous_equity = point.equity
-    if not trace.points[0].day_anchor:
-        raise TraceValidationError("trace_start_eod_anchor_missing")
-    if not trace.points[-1].day_anchor:
-        raise TraceValidationError("trace_end_eod_anchor_missing")
-    start_local = trace.points[0].ts_utc.astimezone(PRAGUE)
-    end_local = trace.points[-1].ts_utc.astimezone(PRAGUE)
-    complete_days = (end_local.date() - start_local.date()).days
+    anchor_count = sum(point.day_anchor for point in trace.points)
+    complete_days = max(0, anchor_count - 1)
     if complete_days < minimum_complete_days:
         raise TraceValidationError(
             f"insufficient_complete_days:{complete_days}<{minimum_complete_days}"
@@ -565,10 +559,6 @@ def normalize_trace(
         )
         if open_positions == 0 and equity != balance:
             raise TraceValidationError(f"flat_book_equity_balance_mismatch:{index}")
-        if day_anchor and opened_positions != 0:
-            raise TraceValidationError(
-                f"opened_positions_at_day_anchor_forbidden:{index}"
-            )
         if index == 0:
             if interval_min_equity != equity:
                 raise TraceValidationError(
@@ -625,8 +615,8 @@ def combine_synchronized_traces(
 ) -> NormalizedTrace:
     """Combine absolute sleeve paths over their exact common grid.
 
-    Every active sleeve is rebased to zero PnL at the first common Prague
-    midnight.  It must be flat there.  No forward-fill is allowed.  Scaling is
+    Every active sleeve is rebased to zero PnL at the first common grid point,
+    which must be flat.  No forward-fill is allowed.  Scaling is
     applied to each sleeve's balance/equity delta and rounded toward negative
     infinity to the common money precision.  Sleeve interval minima are summed;
     this is conservative even when individual minima occurred at different
@@ -635,7 +625,7 @@ def combine_synchronized_traces(
 
     if not isinstance(traces, Mapping) or not traces:
         raise TraceValidationError("sleeve_traces_empty")
-    _require_int(minimum_overlap_days, "minimum_overlap_days", minimum=1)
+    _require_int(minimum_overlap_days, "minimum_overlap_days", minimum=0)
     if not isinstance(joint_trace_id, str) or not joint_trace_id.strip():
         raise TraceValidationError("joint_trace_id_invalid")
 
@@ -694,12 +684,16 @@ def combine_synchronized_traces(
     overlap_end = min(trace.points[-1].ts_utc for trace in traces.values())
     if overlap_end <= overlap_start:
         raise TraceValidationError("sleeve_overlap_empty")
-    if not _is_prague_midnight(overlap_start) or not _is_prague_midnight(overlap_end):
-        raise TraceValidationError("sleeve_overlap_eod_anchors_incomplete")
-    overlap_days = (
-        overlap_end.astimezone(PRAGUE).date()
-        - overlap_start.astimezone(PRAGUE).date()
-    ).days
+    reference_trace = traces[sleeve_ids[0]]
+    overlap_days = max(
+        0,
+        sum(
+            _is_prague_midnight(point.ts_utc)
+            for point in reference_trace.points
+            if overlap_start <= point.ts_utc <= overlap_end
+        )
+        - 1,
+    )
     if overlap_days < minimum_overlap_days:
         raise TraceValidationError(
             f"insufficient_overlap_days:{overlap_days}<{minimum_overlap_days}"
@@ -765,6 +759,7 @@ def combine_synchronized_traces(
             # The rebased joint trace starts here; its first row has no preceding
             # interval even when the source sleeves have earlier history.
             interval_min_equity = equity
+            opened_positions = 0
         if open_positions == 0 and balance != equity:
             raise TraceValidationError(f"joint_flat_book_equity_balance_mismatch:{index}")
         output.append(
@@ -976,7 +971,16 @@ def evaluate_trace(
     for index, point in enumerate(trace.points):
         local_day = point.ts_utc.astimezone(PRAGUE).date()
         if point.opened_positions > 0:
-            trading_days.add(local_day)
+            # The count belongs to (previous_ts, ts].  At midnight that
+            # interval is part of the risk day that just ended.
+            trading_day = (
+                (point.ts_utc - dt.timedelta(microseconds=1))
+                .astimezone(PRAGUE)
+                .date()
+                if point.day_anchor and index > 0
+                else local_day
+            )
+            trading_days.add(trading_day)
 
         if index > 0:
             # This interval ends at the current point.  At a Prague boundary it

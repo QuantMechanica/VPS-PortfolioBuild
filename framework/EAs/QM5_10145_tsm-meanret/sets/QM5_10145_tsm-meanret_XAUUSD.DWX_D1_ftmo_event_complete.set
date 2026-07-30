@@ -1,0 +1,38 @@
+;==========================================================
+; FTMO Book-3 event-complete standalone diagnostic only
+; ea_id: 10145
+; symbol: XAUUSD.DWX
+; timeframe: D1
+; native_standalone: true
+; joint_ea: false
+; admission_authority: none
+; template_requires_content_addressed_materialization: true
+; materialized_manifest_window: exact raw broker-wall tester dates; Prague boundary days preserved; producer transform NONE
+;==========================================================
+qm_ea_id=10145
+qm_magic_slot_offset=34
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_ftmo_event_complete_enabled=true
+qm_ftmo_event_complete_run_id=FTMO_EVENT_COMPLETE_UNIQUE_RUN_ID_REQUIRED
+qm_ftmo_event_complete_expected_broker_wall_start_msc=0
+qm_ftmo_event_complete_expected_broker_wall_end_msc=0
+qm_ftmo_event_complete_expected_model=4
+qm_ftmo_event_complete_expected_account_currency=USD
+qm_ftmo_event_complete_expected_account_margin_mode=2
+qm_ftmo_event_complete_expected_account_leverage=100
+qm_ftmo_event_complete_manifest_path=QM\ftmo_event_complete\contracts\EXECUTION_MANIFEST_REQUIRED.json
+qm_ftmo_event_complete_manifest_sha256=FTMO_EXECUTION_MANIFEST_SHA256_REQUIRED
+qm_ftmo_event_complete_prague_proof_path=QM\ftmo_event_complete\contracts\PRAGUE_MIDNIGHT_PROOF_REQUIRED.json
+qm_ftmo_event_complete_prague_proof_sha256=FTMO_PRAGUE_MIDNIGHT_PROOF_SHA256_REQUIRED
+qm_rng_seed=42
+qm_friday_close_enabled=true
+qm_stress_reject_probability=0
+qm_news_temporal=3
+qm_news_compliance=1
+strategy_lookback_n=15
+strategy_shorts_enabled=false
+strategy_atr_period=14
+strategy_atr_stop_mult=3.0
+strategy_min_abs_mean_return=0.0

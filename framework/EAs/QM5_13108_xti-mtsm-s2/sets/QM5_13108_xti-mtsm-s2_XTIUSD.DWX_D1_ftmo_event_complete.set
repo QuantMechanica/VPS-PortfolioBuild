@@ -1,0 +1,39 @@
+;==========================================================
+; FTMO Book-3 event-complete standalone diagnostic only
+; ea_id: 13108
+; symbol: XTIUSD.DWX
+; timeframe: D1
+; native_standalone: true
+; joint_ea: false
+; admission_authority: none
+; template_requires_content_addressed_materialization: true
+; materialized_manifest_window: exact raw broker-wall tester dates; Prague boundary days preserved; producer transform NONE
+;==========================================================
+qm_ea_id=13108
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_ftmo_event_complete_enabled=true
+qm_ftmo_event_complete_run_id=FTMO_EVENT_COMPLETE_UNIQUE_RUN_ID_REQUIRED
+qm_ftmo_event_complete_expected_broker_wall_start_msc=0
+qm_ftmo_event_complete_expected_broker_wall_end_msc=0
+qm_ftmo_event_complete_expected_model=4
+qm_ftmo_event_complete_expected_account_currency=USD
+qm_ftmo_event_complete_expected_account_margin_mode=2
+qm_ftmo_event_complete_expected_account_leverage=100
+qm_ftmo_event_complete_manifest_path=QM\ftmo_event_complete\contracts\EXECUTION_MANIFEST_REQUIRED.json
+qm_ftmo_event_complete_manifest_sha256=FTMO_EXECUTION_MANIFEST_SHA256_REQUIRED
+qm_ftmo_event_complete_prague_proof_path=QM\ftmo_event_complete\contracts\PRAGUE_MIDNIGHT_PROOF_REQUIRED.json
+qm_ftmo_event_complete_prague_proof_sha256=FTMO_PRAGUE_MIDNIGHT_PROOF_SHA256_REQUIRED
+qm_rng_seed=42
+qm_friday_close_enabled=true
+qm_stress_reject_probability=0
+strategy_momentum_days=30
+strategy_partial_moment_days=5
+strategy_percentile_history=252
+strategy_tail_percentile=80.0
+strategy_atr_period=20
+strategy_atr_sl_mult=3.0
+strategy_max_hold_days=8
+strategy_max_spread_points=1500
