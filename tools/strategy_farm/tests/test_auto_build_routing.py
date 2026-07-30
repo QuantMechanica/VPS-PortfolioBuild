@@ -134,6 +134,69 @@ class RGateBuildReadinessTests(unittest.TestCase):
 
 
 class ArtifactAutoCommitTests(unittest.TestCase):
+    def test_shared_plan_classifies_every_allowlisted_artifact_class(self) -> None:
+        entries = [
+            " M framework/EAs/QM5_9936_demo/QM5_9936_demo.ex5",
+            " M framework/EAs/QM5_9936_demo/sets/QM5_9936_demo.set",
+            " M framework/registry/magic_numbers.csv",
+            " M public-data/public-snapshot.json",
+            "?? artifacts/build_results/QM5_9936.json",
+            " M docs/ops/MNT043_044_CLOSURE_DRIFT_SCANNER.md",
+        ]
+
+        plan = farmctl._plan_artifact_auto_commit(entries, active_eas=set())
+
+        self.assertTrue(plan["valid"])
+        self.assertFalse(plan["clean"])
+        self.assertEqual(plan["dirty_count"], 6)
+        self.assertEqual(plan["candidate_count"], 5)
+        self.assertEqual(
+            plan["rejected_dirty_paths"],
+            ["docs/ops/MNT043_044_CLOSURE_DRIFT_SCANNER.md"],
+        )
+
+    def test_uncommittable_document_remains_a_dirty_checkout_refusal(self) -> None:
+        plan = farmctl._plan_artifact_auto_commit(
+            [" M docs/ops/MNT043_044_CLOSURE_DRIFT_SCANNER.md"],
+            active_eas=set(),
+        )
+
+        self.assertTrue(plan["valid"])
+        self.assertFalse(plan["clean"])
+        self.assertEqual(plan["candidate_count"], 0)
+        self.assertEqual(plan["dirty_count"], 1)
+        self.assertEqual(
+            plan["rejected_dirty_paths"],
+            ["docs/ops/MNT043_044_CLOSURE_DRIFT_SCANNER.md"],
+        )
+
+    def test_read_only_plan_fails_closed_when_runtime_db_cannot_be_read(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            status_result = mock.Mock(
+                returncode=0,
+                stdout=" M framework/EAs/QM5_9936_demo/QM5_9936_demo.ex5\n",
+                stderr="",
+            )
+            with mock.patch.object(
+                farmctl.subprocess, "run", return_value=status_result
+            ):
+                plan = farmctl.inspect_artifact_auto_commit_plan(
+                    Path(tmp) / "missing-farm",
+                    repo_root=Path(tmp) / "repo",
+                )
+
+        self.assertFalse(plan["valid"])
+        self.assertFalse(plan["clean"])
+        self.assertEqual(plan["error_code"], "active_build_read_failed")
+        self.assertEqual(plan["candidate_count"], 0)
+
+    def test_read_only_plan_fails_closed_on_malformed_porcelain(self) -> None:
+        plan = farmctl._plan_artifact_auto_commit(["bad"], active_eas=set())
+
+        self.assertFalse(plan["valid"])
+        self.assertFalse(plan["clean"])
+        self.assertEqual(plan["error_code"], "invalid_git_status")
+
     def test_force_adds_allowlisted_tracked_resolver_under_ignored_include_dir(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "farm"

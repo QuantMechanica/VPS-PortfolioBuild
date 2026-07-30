@@ -330,6 +330,74 @@ def test_on_requires_verified_off_and_repairs_only_after_release() -> None:
     assert "T_Live/FTMO task state, live terminals and AutoTrading were not touched" in source
 
 
+def test_on_requires_clean_checkout_and_rechecks_immediately_before_release() -> None:
+    source = FACTORY_ON.read_text(encoding="utf-8-sig")
+    main = source.index("Assert-CanonicalFactoryOnHostProcess")
+    initial = source.index(
+        "Assert-CleanFactoryCheckout -Context 'initial read-only preflight'", main
+    )
+    lock = source.index("Enter-FactoryMutationLock -Owner 'factory_on_restart_window'")
+    locked = source.index(
+        "Assert-CleanFactoryCheckout -Context 'locked preflight'", lock
+    )
+    drain = source.index("Stop-FactoryProcesses", locked)
+    final = source.index(
+        "Assert-CleanFactoryCheckout -Context 'immediately before OFF release'", drain
+    )
+    release = source.index("Remove-BoundFactoryOffRecord", final)
+
+    assert initial < lock < locked < drain < final < release
+    assert "artifact-autocommit-plan" in source
+    assert "$plan.valid -isnot [bool] -or -not [bool]$plan.valid" in source
+    assert "$plan.clean -isnot [bool]" in source
+    assert "canonical checkout is dirty" in source
+
+
+def test_on_binds_public_snapshot_task_action_at_each_release_boundary() -> None:
+    source = FACTORY_ON.read_text(encoding="utf-8-sig")
+    main = source.index("Assert-CanonicalFactoryOnHostProcess")
+    initial = source.index(
+        "Assert-CanonicalPublicSnapshotTaskAction -Context 'initial read-only preflight'",
+        main,
+    )
+    lock = source.index("Enter-FactoryMutationLock -Owner 'factory_on_restart_window'")
+    locked = source.index(
+        "Assert-CanonicalPublicSnapshotTaskAction -Context 'locked preflight'", lock
+    )
+    final = source.index(
+        "Assert-CanonicalPublicSnapshotTaskAction -Context 'immediately before OFF release'",
+        locked,
+    )
+    release = source.index("Remove-BoundFactoryOffRecord", final)
+
+    assert initial < lock < locked < final < release
+    assert "MSFT_TaskExecAction" in source
+    assert "$actions.Count -ne 1" in source
+    assert "Get-QmCommandLineArguments" in source
+    assert "$arguments.Count -ne $expectedArguments.Count" in source
+    assert "C:\\QM\\repo\\scripts\\run_public_snapshot_task.ps1" in source
+    assert "$legacyPublicSnapshotTaskName = 'QM_PublicSnapshot_Export_Hourly'" in source
+    assert "legacy direct-export public-snapshot task exists" in source
+    assert "[string]$_.TaskName -ieq $legacyPublicSnapshotTaskName" in source
+
+
+def test_infra_registrar_removes_legacy_snapshot_bypass_without_reprovisioning() -> None:
+    source = (REPO / "infra" / "tasks" / "Register-QMInfraTasks.ps1").read_text(
+        encoding="utf-8-sig"
+    )
+    installer = (
+        REPO / "scripts" / "install_public_snapshot_scheduled_task.ps1"
+    ).read_text(encoding="utf-8-sig")
+
+    assert "QM_PublicSnapshot_Export_Hourly" in source
+    assert "Unregister-ScheduledTask" in source
+    assert "[string]$_.TaskName -ieq 'QM_PublicSnapshot_Export_Hourly'" in source
+    assert "scripts\\export_public_snapshot.ps1" not in source
+    assert "name = 'QM_Public_Snapshot_Hourly'" not in source
+    assert 'TaskName = "QM_Public_Snapshot_Hourly"' in installer
+    assert "scripts\\run_public_snapshot_task.ps1" in installer
+
+
 def test_hourly_monitor_cannot_reenable_tasks_while_factory_is_off() -> None:
     source = (STRATEGY_FARM / "hourly_monitor.ps1").read_text(encoding="utf-8-sig")
     interlock = source.index("Test-Path -LiteralPath $factoryOffFlag")

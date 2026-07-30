@@ -912,7 +912,11 @@ def pending_claim_order_sql() -> str:
             WHEN w.payload_json LIKE '%"recovery_class":%' THEN 1
             ELSE 0 END AS _recovery_rank,
           CASE
-            WHEN w.payload_json LIKE '%"priority_track": true%' THEN 0
+            WHEN json_valid(w.payload_json) = 1 THEN
+              CASE
+                WHEN json_type(w.payload_json, '$.priority_track') = 'true' THEN 0
+                ELSE 1
+              END
             ELSE 1 END AS _priority_track_rank,
           MAX(0, CAST(COALESCE(julianday('now') - julianday(w.created_at), 0) / 7 AS INTEGER))
             AS _age_weeks,
@@ -12309,6 +12313,185 @@ def _is_generated_factory_artifact(path: str) -> bool:
     return False
 
 
+def _artifact_path_from_porcelain_line(line: str) -> str:
+    """Extract one repository-relative path from ``git status --porcelain=v1``.
+
+    The planner treats anything it cannot parse as invalid instead of silently
+    dropping a dirty path.  Rename records use the destination path, matching the
+    historical auto-commit behavior.
+    """
+    if len(line) < 4 or line[2] != " ":
+        raise ValueError(f"malformed porcelain-v1 entry: {line!r}")
+    path = line[3:]
+    if " -> " in path:
+        path = path.split(" -> ", 1)[1]
+    path = path.strip().strip('"').replace("\\", "/")
+    if not path or "\x00" in path or Path(path).is_absolute() or ".." in Path(path).parts:
+        raise ValueError(f"unsafe porcelain-v1 path: {path!r}")
+    return path
+
+
+def _plan_artifact_auto_commit(
+    entries: list[str], active_eas: set[str]
+) -> dict[str, Any]:
+    """Pure classification shared by the pump and Factory_ON preflight."""
+    commit_set: set[str] = set()
+    skipped_active: list[str] = []
+    rejected_dirty: list[str] = []
+    dirty_paths: list[str] = []
+    try:
+        for line in entries:
+            path = _artifact_path_from_porcelain_line(line)
+            dirty_paths.append(path)
+            if not _is_generated_factory_artifact(path):
+                rejected_dirty.append(path)
+                continue
+            ea_match = re.match(r"framework/EAs/(QM5_\d+)_[^/]+/", path)
+            if ea_match and ea_match.group(1) in active_eas:
+                skipped_active.append(path)
+                continue
+            commit_set.add(path)
+    except (TypeError, ValueError) as exc:
+        return {
+            "schema_version": "qm-artifact-auto-commit-plan/v1",
+            "valid": False,
+            "clean": False,
+            "error_code": "invalid_git_status",
+            "error": str(exc),
+            "dirty_count": len(entries),
+            "dirty_paths": sorted(set(dirty_paths))[:100],
+            "candidate_count": 0,
+            "commit_paths": [],
+            "skipped_active_paths": [],
+            "rejected_dirty_paths": [],
+        }
+
+    commit_paths = sorted(commit_set)
+    return {
+        "schema_version": "qm-artifact-auto-commit-plan/v1",
+        "valid": True,
+        "clean": not entries,
+        "dirty_count": len(entries),
+        "dirty_paths": sorted(set(dirty_paths))[:100],
+        "dirty_paths_truncated": len(set(dirty_paths)) > 100,
+        "candidate_count": len(commit_paths),
+        "commit_paths": commit_paths,
+        "skipped_active_paths": sorted(set(skipped_active)),
+        "rejected_dirty_paths": sorted(set(rejected_dirty)),
+    }
+
+
+def _active_build_eas_for_artifact_plan(
+    root: Path, within_sec: int = 90
+) -> set[str]:
+    """Read active build identities without creating or mutating the runtime DB."""
+    database = db_path(root).resolve()
+    uri = database.as_uri() + "?mode=ro"
+    conn = sqlite3.connect(uri, uri=True, timeout=30)
+    conn.row_factory = sqlite3.Row
+    try:
+        conn.execute("PRAGMA query_only=ON")
+        rows = conn.execute(
+            "SELECT id, card_id, payload_json FROM tasks "
+            "WHERE kind='build_ea' AND status IN ('pending','done')"
+        ).fetchall()
+    finally:
+        conn.close()
+
+    now = time.time()
+    active_eas: set[str] = set()
+    for row in rows:
+        task_id = str(row["id"] or "").strip()
+        if not task_id:
+            raise ValueError("build task has an empty id")
+        for prefix in ("codex_build_", "claude_build_", "gemini_build_"):
+            live_log = root / "logs" / f"{prefix}{task_id}.live.log"
+            if not live_log.exists():
+                continue
+            age_seconds = now - live_log.stat().st_mtime
+            if age_seconds >= within_sec:
+                continue
+            payload = json.loads(row["payload_json"] or "{}")
+            if not isinstance(payload, dict):
+                raise ValueError(f"build task {task_id!r} payload_json is not an object")
+            ea_id = str(payload.get("ea_id") or row["card_id"] or "").strip()
+            if not re.fullmatch(r"QM5_\d+", ea_id):
+                raise ValueError(f"build task {task_id!r} has invalid ea_id {ea_id!r}")
+            active_eas.add(ea_id)
+    return active_eas
+
+
+def inspect_artifact_auto_commit_plan(
+    root: Path,
+    *,
+    repo_root: Path | None = None,
+    within_sec: int = 90,
+) -> dict[str, Any]:
+    """Return the exact read-only plan the next pump auto-commit would use.
+
+    This deliberately ignores ``QM_ALLOW_DIRTY_REPO_BUILDS``.  Factory_ON uses
+    the result as a no-waiver clean-checkout gate, while the pump consumes the
+    same candidate classification when it is already running.
+    """
+    checkout = Path(repo_root) if repo_root is not None else REPO_ROOT
+    flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    try:
+        status = subprocess.run(
+            [
+                "git",
+                "-C",
+                str(checkout),
+                "status",
+                "--porcelain=v1",
+                "--untracked-files=all",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            creationflags=flags,
+        )
+    except Exception as exc:
+        return {
+            "schema_version": "qm-artifact-auto-commit-plan/v1",
+            "valid": False,
+            "clean": False,
+            "error_code": "git_status_failed",
+            "error": repr(exc),
+            "dirty_count": 0,
+            "candidate_count": 0,
+            "commit_paths": [],
+            "rejected_dirty_paths": [],
+        }
+    entries = [line for line in (status.stdout or "").splitlines() if line.strip()]
+    if status.returncode != 0:
+        return {
+            "schema_version": "qm-artifact-auto-commit-plan/v1",
+            "valid": False,
+            "clean": False,
+            "error_code": "git_status_failed",
+            "error": (status.stderr or status.stdout or "").strip()[:500],
+            "dirty_count": len(entries),
+            "candidate_count": 0,
+            "commit_paths": [],
+            "rejected_dirty_paths": [],
+        }
+    try:
+        active_eas = _active_build_eas_for_artifact_plan(root, within_sec=within_sec)
+    except Exception as exc:
+        return {
+            "schema_version": "qm-artifact-auto-commit-plan/v1",
+            "valid": False,
+            "clean": False,
+            "error_code": "active_build_read_failed",
+            "error": repr(exc),
+            "dirty_count": len(entries),
+            "candidate_count": 0,
+            "commit_paths": [],
+            "rejected_dirty_paths": [],
+        }
+    return _plan_artifact_auto_commit(entries, active_eas)
+
+
 def _auto_commit_build_artifacts(root: Path, within_sec: int = 90) -> dict[str, Any]:
     """Commit completed factory artifacts so repo_dirty_build_guard does not
     deadlock the build lane.
@@ -12332,70 +12515,18 @@ def _auto_commit_build_artifacts(root: Path, within_sec: int = 90) -> dict[str, 
     if os.environ.get(DIRTY_REPO_BUILD_GUARD_ENV) == "1":
         return {"committed": False, "reason": "guard_overridden"}
     flags = _sp.CREATE_NO_WINDOW if sys.platform == "win32" else 0  # type: ignore[attr-defined]
-    try:
-        proc = _sp.run(
-            ["git", "-C", str(REPO_ROOT), "status", "--porcelain=v1", "--untracked-files=all"],
-            capture_output=True, text=True, timeout=30, creationflags=flags,
-        )
-    except Exception as exc:
-        return {"committed": False, "reason": f"status_failed:{exc!r}"}
-    if proc.returncode != 0:
-        return {"committed": False, "reason": "status_rc", "stderr": (proc.stderr or "")[:200]}
-    entries = [ln for ln in (proc.stdout or "").splitlines() if ln.strip()]
-    if not entries:
+    plan = inspect_artifact_auto_commit_plan(root, within_sec=within_sec)
+    if not plan.get("valid"):
+        return {"committed": False, "reason": "plan_failed", "plan": plan}
+    if plan.get("clean"):
         return {"committed": False, "reason": "clean"}
-
-    now = time.time()
-    # EAs whose build is actively writing (any agent) -> skip their dirs.
-    active_eas: set[str] = set()
-    try:
-        with connect(root) as conn:
-            build_rows = conn.execute(
-                "SELECT id, card_id, payload_json FROM tasks "
-                "WHERE kind='build_ea' AND status IN ('pending','done')"
-            ).fetchall()
-    except Exception:
-        build_rows = []
-    for r in build_rows:
-        for prefix in ("codex_build_", "claude_build_", "gemini_build_"):
-            lg = root / "logs" / f"{prefix}{r['id']}.live.log"
-            try:
-                if lg.exists() and now - lg.stat().st_mtime < within_sec:
-                    pl = json.loads(r["payload_json"] or "{}")
-                    active_eas.add(pl.get("ea_id") or r["card_id"])
-            except OSError:
-                continue
-
-    def _path_of(line: str) -> str:
-        p = line[3:] if len(line) > 3 else line
-        if " -> " in p:  # rename
-            p = p.split(" -> ", 1)[1]
-        return p.strip().strip('"')
-
-    commit_set: set[str] = set()
-    skipped_active: list[str] = []
-    rejected_dirty: list[str] = []
-    for line in entries:
-        p = _path_of(line)
-        pu = p.replace("\\", "/")
-        if not _is_generated_factory_artifact(pu):
-            rejected_dirty.append(pu)
-            continue
-        m = re.match(r"(framework/EAs/(QM5_\d+)_[^/]+)/", pu)
-        if m:
-            if m.group(2) in active_eas:
-                skipped_active.append(pu)
-                continue
-            commit_set.add(pu)
-        else:
-            commit_set.add(pu)
-    commit_paths = sorted(commit_set)
+    commit_paths = list(plan["commit_paths"])
     if not commit_paths:
         return {
             "committed": False,
             "reason": "nothing_committable",
-            "skipped_active": skipped_active,
-            "rejected_dirty_paths": sorted(set(rejected_dirty))[:100],
+            "skipped_active": plan["skipped_active_paths"],
+            "rejected_dirty_paths": plan["rejected_dirty_paths"][:100],
         }
 
     try:
@@ -12427,8 +12558,8 @@ def _auto_commit_build_artifacts(root: Path, within_sec: int = 90) -> dict[str, 
         "committed": True,
         "n_paths": len(commit_paths),
         "paths": commit_paths[:25],
-        "skipped_active_build_eas": sorted(set(skipped_active))[:25],
-        "rejected_dirty_paths": sorted(set(rejected_dirty))[:100],
+        "skipped_active_build_eas": plan["skipped_active_paths"][:25],
+        "rejected_dirty_paths": plan["rejected_dirty_paths"][:100],
     }
 
 
@@ -18037,6 +18168,13 @@ def build_parser() -> argparse.ArgumentParser:
     seed.add_argument("--force", action="store_true", help="Replace current sources/tasks before seeding")
 
     sub.add_parser("status", help="Show source/task state")
+    sub.add_parser(
+        "artifact-autocommit-plan",
+        help=(
+            "Read-only exact Git dirty/auto-commit plan used by the Factory_ON "
+            "clean-checkout preflight"
+        ),
+    )
     sub.add_parser("pipeline", help="Per-EA lifecycle view (where does each EA stand?)")
     sub.add_parser("pump", help="Continuous deterministic worker: dispatch MT5 + auto-spawn Codex + record builds. Run every 5 min.")
     sub.add_parser("health", help="Run 10 pipeline invariants; write state/health.json + alarms log. Cockpit reads health.json for top banner.")
@@ -18293,6 +18431,12 @@ def main(argv: list[str] | None = None) -> int:
         print_json(seed_sources(root, force=args.force))
     elif args.command == "status":
         print_json(status(root))
+    elif args.command == "artifact-autocommit-plan":
+        plan = inspect_artifact_auto_commit_plan(root)
+        # Keep the final stdout record single-line so PowerShell can parse it
+        # independently of any native-runtime diagnostics emitted on stderr.
+        print(json.dumps(plan, sort_keys=True, separators=(",", ":")))
+        return 0 if plan.get("valid") else 2
     elif args.command == "pipeline":
         print_json(pipeline_view(root))
     elif args.command == "pump":

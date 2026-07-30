@@ -367,7 +367,7 @@ foreach ($forbiddenCommand in @(
 # must not retain any historical broad path/sub-string process classifier.
 $staticCases = @(
     @($factoryOffPath, 'FACTORY OFF ABORTED before mutation', 'Stop-ScheduledTask'),
-    @($factoryOnPath, 'FACTORY ON ABORTED before mutation', 'Remove-Item -LiteralPath $factoryOffFlagPath'),
+    @($factoryOnPath, 'FACTORY ON ABORTED before mutation', "`n    Stop-FactoryProcesses"),
     @($testWindowOffPath, 'TEST WINDOW OFF ABORTED before mutation', "& (Join-Path `$PSScriptRoot 'Factory_OFF.ps1')")
 )
 foreach ($case in $staticCases) {

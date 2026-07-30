@@ -100,6 +100,18 @@
       "sha256": "REPLACE_AFTER_FINAL_SOURCE_COMMIT",
       "git_commit": "REPLACE_AFTER_FINAL_SOURCE_COMMIT",
       "git_blob": "REPLACE_AFTER_FINAL_SOURCE_COMMIT"
+    },
+    "public_snapshot_task_wrapper": {
+      "relative_path": "scripts/run_public_snapshot_task.ps1",
+      "sha256": "REPLACE_AFTER_FINAL_SOURCE_COMMIT",
+      "git_commit": "REPLACE_AFTER_FINAL_SOURCE_COMMIT",
+      "git_blob": "REPLACE_AFTER_FINAL_SOURCE_COMMIT"
+    },
+    "public_snapshot_incident_guard": {
+      "relative_path": "tools/strategy_farm/public_snapshot_incident_guard.py",
+      "sha256": "REPLACE_AFTER_FINAL_SOURCE_COMMIT",
+      "git_commit": "REPLACE_AFTER_FINAL_SOURCE_COMMIT",
+      "git_blob": "REPLACE_AFTER_FINAL_SOURCE_COMMIT"
     }
   }
 }

@@ -321,6 +321,12 @@ def test_schema_and_template_pin_exact_restart_and_source_contracts() -> None:
         fra.SOURCE_BINDING_PATHS
     )
     assert set(template["source_bindings"]) == set(fra.SOURCE_BINDING_PATHS)
+    assert fra.SOURCE_BINDING_PATHS["public_snapshot_task_wrapper"] == Path(
+        "scripts/run_public_snapshot_task.ps1"
+    )
+    assert fra.SOURCE_BINDING_PATHS["public_snapshot_incident_guard"] == Path(
+        "tools/strategy_farm/public_snapshot_incident_guard.py"
+    )
     assert properties["restore_intent"]["properties"][
         "task_enabled_before_sha256"
     ]["const"] == template["restore_intent"]["task_enabled_before_sha256"]

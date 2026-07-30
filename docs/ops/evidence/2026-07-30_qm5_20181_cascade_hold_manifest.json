@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "run_id": "ftmo-20181-cascade-adjudication-hold-20260730-v1",
+  "description": "Hold exactly three pre-existing QM5_20181 Q03/Q04 cascade rows outside the general Factory queue pending explicit FTMO Book3 target-lane adjudication. Preserve pending payload and lineage; never release on restart; change no other work item or parent task.",
+  "operations": [
+    {
+      "work_item_id": "f8a90af2-a21e-40a0-883d-8d4446831b62",
+      "action": "hold",
+      "hold_code": "FTMO_BOOK3_CASCADE_ADJUDICATION_REQUIRED",
+      "reason": "Replay-runner Q03 was spawned from an isolated QM5_20181 diagnostic stream and is not authorized for general Factory execution; preserve it pending explicit FTMO Book3 target-lane adjudication.",
+      "expected": {
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "phase": "Q03",
+        "ea_id": "QM5_20181",
+        "symbol": "USDJPY.DWX"
+      },
+      "to_status": "pending",
+      "to_verdict": null,
+      "release_on_restart": false,
+      "idempotency_key": "ftmo-20181-cascade-adjudication-hold-20260730-v1:000:f8a90af2-a21e-40a0-883d-8d4446831b62:hold"
+    },
+    {
+      "work_item_id": "50ada76a-321d-4749-a4ec-c3ad424bc9e6",
+      "action": "hold",
+      "hold_code": "FTMO_BOOK3_CASCADE_ADJUDICATION_REQUIRED",
+      "reason": "Book2 9936+10145 Q03 was spawned from an isolated QM5_20181 diagnostic stream and is not authorized for general Factory execution; preserve it pending explicit FTMO Book3 target-lane adjudication.",
+      "expected": {
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "phase": "Q03",
+        "ea_id": "QM5_20181",
+        "symbol": "USDJPY.DWX"
+      },
+      "to_status": "pending",
+      "to_verdict": null,
+      "release_on_restart": false,
+      "idempotency_key": "ftmo-20181-cascade-adjudication-hold-20260730-v1:001:50ada76a-321d-4749-a4ec-c3ad424bc9e6:hold"
+    },
+    {
+      "work_item_id": "9ca73d45-b0b3-4074-b9ed-b773b22858d1",
+      "action": "hold",
+      "hold_code": "FTMO_BOOK3_CASCADE_ADJUDICATION_REQUIRED",
+      "reason": "Book2 9936+10145 Q04 early probe escaped the isolated QM5_20181 diagnostic lane and is not authorized for general Factory execution; preserve it pending explicit FTMO Book3 target-lane adjudication.",
+      "expected": {
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "phase": "Q04",
+        "ea_id": "QM5_20181",
+        "symbol": "USDJPY.DWX"
+      },
+      "to_status": "pending",
+      "to_verdict": null,
+      "release_on_restart": false,
+      "idempotency_key": "ftmo-20181-cascade-adjudication-hold-20260730-v1:002:9ca73d45-b0b3-4074-b9ed-b773b22858d1:hold"
+    }
+  ]
+}

@@ -55,6 +55,10 @@ SOURCE_BINDING_PATHS = {
     "task_manifest": Path("tools/strategy_farm/qm_tasks.manifest.ps1"),
     "worker_launcher": Path("tools/strategy_farm/start_terminal_workers.py"),
     "farmctl": Path("tools/strategy_farm/farmctl.py"),
+    "public_snapshot_task_wrapper": Path("scripts/run_public_snapshot_task.ps1"),
+    "public_snapshot_incident_guard": Path(
+        "tools/strategy_farm/public_snapshot_incident_guard.py"
+    ),
 }
 RESTART_HOLD_IDS = (
     "3746e558-6eff-436b-9365-cfec9b7f1a63",

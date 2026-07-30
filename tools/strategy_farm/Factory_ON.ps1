@@ -112,6 +112,12 @@ $pythonExe = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pyt
 $pacerScript = Join-Path $PSScriptRoot 'codex_fleet_pacer.py'
 $maintenanceControlScript = Join-Path $PSScriptRoot 'maintenance_control.py'
 $runtimeActivationValidatorScript = Join-Path $PSScriptRoot 'factory_runtime_activation.py'
+$farmctlScript = Join-Path $PSScriptRoot 'farmctl.py'
+$publicSnapshotTaskName = 'QM_Public_Snapshot_Hourly'
+$legacyPublicSnapshotTaskName = 'QM_PublicSnapshot_Export_Hourly'
+$publicSnapshotTaskExecute = 'powershell.exe'
+$publicSnapshotTaskWrapper = 'C:\QM\repo\scripts\run_public_snapshot_task.ps1'
+$publicSnapshotTaskWorkingDirectory = 'C:\QM\repo'
 $canonicalFactoryOnPath = 'C:\QM\repo\tools\strategy_farm\Factory_ON.ps1'
 $canonicalFactoryOnProcessImage = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
 $canonicalOwnerDecisionPath = 'C:\QM\repo\docs\ops\evidence\2026-07-30_factory_preparation_owner_decision.json'
@@ -395,6 +401,153 @@ function Get-CanonicalRuntimeActivationAuthorization {
         throw 'runtime-activation validator did not return authorized=true'
     }
     return $authorization
+}
+
+function Assert-CanonicalPublicSnapshotTaskAction {
+    param([Parameter(Mandatory = $true)][string]$Context)
+
+    $legacyTasks = @(Get-ScheduledTask -ErrorAction Stop | Where-Object {
+        [string]$_.TaskName -ieq $legacyPublicSnapshotTaskName
+    })
+    if ($legacyTasks.Count -ne 0) {
+        $legacyPaths = @($legacyTasks | ForEach-Object {
+            "{0}{1}" -f ([string]$_.TaskPath),([string]$_.TaskName)
+        })
+        throw ("legacy direct-export public-snapshot task exists during ${Context}: " +
+            "[$($legacyPaths -join ',')]")
+    }
+    if (-not (Test-Path -LiteralPath $publicSnapshotTaskWrapper -PathType Leaf)) {
+        throw "canonical public-snapshot wrapper is missing: $publicSnapshotTaskWrapper"
+    }
+    $tasks = @(Get-ScheduledTask -TaskName $publicSnapshotTaskName -ErrorAction Stop)
+    if ($tasks.Count -ne 1) {
+        throw ("public-snapshot task registration cardinality is not exactly one " +
+            "during ${Context}: observed=$($tasks.Count)")
+    }
+    $actions = @($tasks[0].Actions)
+    if ($actions.Count -ne 1) {
+        throw ("public-snapshot task action cardinality is not exactly one " +
+            "during ${Context}: observed=$($actions.Count)")
+    }
+    $action = $actions[0]
+    if ($null -eq $action.CimClass -or
+        [string]$action.CimClass.CimClassName -cne 'MSFT_TaskExecAction') {
+        throw "public-snapshot task action is not an exact Exec action during $Context"
+    }
+    if (-not [string]::Equals(
+            [string]$action.Execute,
+            $publicSnapshotTaskExecute,
+            [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw ("public-snapshot task executable mismatch during ${Context}: " +
+            "actual='$($action.Execute)' expected='$publicSnapshotTaskExecute'")
+    }
+    $workingDirectory = [string]$action.WorkingDirectory
+    if (-not [System.IO.Path]::IsPathRooted($workingDirectory)) {
+        throw "public-snapshot task working directory is not rooted during $Context"
+    }
+    try {
+        $normalizedWorkingDirectory = [System.IO.Path]::GetFullPath($workingDirectory)
+    } catch {
+        throw "public-snapshot task working directory is invalid during ${Context}: $($_.Exception.Message)"
+    }
+    if (-not [string]::Equals(
+            $normalizedWorkingDirectory,
+            $publicSnapshotTaskWorkingDirectory,
+            [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw ("public-snapshot task working-directory mismatch during ${Context}: " +
+            "actual='$normalizedWorkingDirectory' expected='$publicSnapshotTaskWorkingDirectory'")
+    }
+    $arguments = @(Get-QmCommandLineArguments -CommandLine (
+        $publicSnapshotTaskExecute + ' ' + [string]$action.Arguments
+    ))
+    $expectedArguments = @(
+        $publicSnapshotTaskExecute,
+        '-NoProfile',
+        '-ExecutionPolicy',
+        'Bypass',
+        '-WindowStyle',
+        'Hidden',
+        '-File',
+        $publicSnapshotTaskWrapper
+    )
+    if ($arguments.Count -ne $expectedArguments.Count) {
+        throw ("public-snapshot task argv cardinality mismatch during ${Context}: " +
+            "actual=$($arguments.Count) expected=$($expectedArguments.Count)")
+    }
+    for ($index = 0; $index -lt $expectedArguments.Count; $index++) {
+        if (-not [string]::Equals(
+                [string]$arguments[$index],
+                [string]$expectedArguments[$index],
+                [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw ("public-snapshot task argv mismatch during ${Context} at index ${index}: " +
+                "actual='$($arguments[$index])' expected='$($expectedArguments[$index])'")
+        }
+    }
+}
+
+function Assert-CleanFactoryCheckout {
+    param([Parameter(Mandatory = $true)][string]$Context)
+
+    if (-not (Test-Path -LiteralPath $farmctlScript -PathType Leaf)) {
+        throw "farmctl dirty-checkout planner is missing: $farmctlScript"
+    }
+    $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $startInfo.FileName = $pythonExe
+    $startInfo.Arguments = ('"{0}" --root "{1}" artifact-autocommit-plan' -f `
+        $farmctlScript,'D:\QM\strategy_farm')
+    $startInfo.UseShellExecute = $false
+    $startInfo.CreateNoWindow = $true
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) {
+            throw 'artifact auto-commit planner process could not be started'
+        }
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        if (-not $process.WaitForExit(30000)) {
+            try { $process.Kill() } catch {}
+            throw 'artifact auto-commit planner timed out'
+        }
+        $stdout = $stdoutTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
+        if ($process.ExitCode -ne 0) {
+            throw ("artifact auto-commit planner failed rc={0}: {1} {2}" -f `
+                $process.ExitCode,$stdout.Trim(),$stderr.Trim())
+        }
+    } finally {
+        $process.Dispose()
+    }
+    $jsonLine = @($stdout -split "`r?`n" | Where-Object {
+        -not [string]::IsNullOrWhiteSpace([string]$_)
+    } | Select-Object -Last 1)
+    if ($jsonLine.Count -ne 1) {
+        throw 'artifact auto-commit planner returned no JSON record'
+    }
+    try {
+        $plan = [string]$jsonLine[0] | ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        throw "artifact auto-commit planner returned invalid JSON: $($_.Exception.Message)"
+    }
+    if ([string]$plan.schema_version -cne 'qm-artifact-auto-commit-plan/v1' -or
+        $plan.valid -isnot [bool] -or -not [bool]$plan.valid -or
+        $plan.clean -isnot [bool] -or $null -eq $plan.dirty_count) {
+        throw 'artifact auto-commit planner returned an invalid or unsuccessful contract'
+    }
+    $dirtyCount = 0
+    if (-not [int]::TryParse([string]$plan.dirty_count, [ref]$dirtyCount) -or
+        $dirtyCount -lt 0) {
+        throw 'artifact auto-commit planner returned an invalid dirty_count'
+    }
+    if (-not [bool]$plan.clean -or $dirtyCount -ne 0) {
+        $paths = @($plan.dirty_paths | ForEach-Object { [string]$_ })
+        throw ("canonical checkout is dirty during {0}; Factory_ON refuses before " +
+            "release/first pump (dirty_count={1}, paths=[{2}])" -f `
+            $Context,$dirtyCount,($paths -join ', '))
+    }
+    return $plan
 }
 
 function Test-ExactFactoryTaskContract {
@@ -903,6 +1056,8 @@ try {
     }
     Assert-CanonicalFactoryOnHostProcess
     Assert-CanonicalOwnerRestartDecision
+    Assert-CanonicalPublicSnapshotTaskAction -Context 'initial read-only preflight'
+    Assert-CleanFactoryCheckout -Context 'initial read-only preflight' | Out-Null
     Assert-NoPendingFactoryOffRequest -Context 'runtime authorization preflight'
     $script:runtimeAuthorization = Get-CanonicalRuntimeActivationAuthorization
     $disabledTerminalPolicy = Get-CanonicalDisabledTerminalPolicySnapshot
@@ -1053,6 +1208,8 @@ try {
     Assert-DisabledTerminalPolicyUnchanged `
         -ExpectedSha256 $script:disabledTerminalPolicySha256 `
         -Context 'locked preflight' | Out-Null
+    Assert-CanonicalPublicSnapshotTaskAction -Context 'locked preflight'
+    Assert-CleanFactoryCheckout -Context 'locked preflight' | Out-Null
     Stop-FactoryProcesses
     Start-Sleep -Seconds 2
     $afterDrain = Get-FactoryProcessSnapshot
@@ -1070,6 +1227,8 @@ if ($null -ne $offRecord.codex_parallel_before) {
 try {
     # Release point.  All schedulers/workers were absent up to this line; all
     # contractually enabled components are restored in this bounded block.
+    Assert-CanonicalPublicSnapshotTaskAction -Context 'immediately before OFF release'
+    Assert-CleanFactoryCheckout -Context 'immediately before OFF release' | Out-Null
     Remove-BoundFactoryOffRecord
     $released = $true
 

@@ -62,15 +62,6 @@ function Register-DesiredTask {
 
 $specs = @(
     @{
-        name = 'QM_PublicSnapshot_Export_Hourly'
-        target = (Join-Path $RepoRoot 'scripts\export_public_snapshot.ps1')
-        execute = 'powershell.exe'
-        arguments = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$(Join-Path $RepoRoot 'scripts\export_public_snapshot.ps1')`""
-        cadence = 'hourly'
-        minute = 7
-        description = 'Exports the public strategy-farm snapshot.'
-    },
-    @{
         name = 'QM_DWX_HourlyCheck'
         target = (Join-Path $RepoRoot 'infra\scripts\Invoke-DwxHourlyCheck.ps1')
         execute = 'powershell.exe'
@@ -158,6 +149,20 @@ if ($missing.Count -gt 0) {
 if ($PreviewOnly.IsPresent) {
     @($specs | ForEach-Object { [pscustomobject]$_ }) | ConvertTo-Json -Depth 5
     exit 0
+}
+
+$legacySnapshotTasks = @(Get-ScheduledTask -ErrorAction Stop | Where-Object {
+    [string]$_.TaskName -ieq 'QM_PublicSnapshot_Export_Hourly'
+})
+foreach ($legacyTask in $legacySnapshotTasks) {
+    Stop-ScheduledTask -TaskName ([string]$legacyTask.TaskName) `
+        -TaskPath ([string]$legacyTask.TaskPath) -ErrorAction SilentlyContinue
+    Disable-ScheduledTask -TaskName ([string]$legacyTask.TaskName) `
+        -TaskPath ([string]$legacyTask.TaskPath) -ErrorAction Stop | Out-Null
+    Unregister-ScheduledTask -TaskName ([string]$legacyTask.TaskName) `
+        -TaskPath ([string]$legacyTask.TaskPath) -Confirm:$false -ErrorAction Stop
+    Write-Host ("Removed legacy direct-export task: {0}{1}" -f `
+        ([string]$legacyTask.TaskPath),([string]$legacyTask.TaskName))
 }
 
 foreach ($spec in $specs) {

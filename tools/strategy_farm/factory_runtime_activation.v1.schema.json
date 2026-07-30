@@ -92,7 +92,7 @@
     "source_bindings": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["factory_on", "factory_off", "maintenance_control", "runtime_activation_validator", "restart_health", "process_scope", "mutation_lock_protocol", "task_manifest", "worker_launcher", "farmctl"],
+      "required": ["factory_on", "factory_off", "maintenance_control", "runtime_activation_validator", "restart_health", "process_scope", "mutation_lock_protocol", "task_manifest", "worker_launcher", "farmctl", "public_snapshot_task_wrapper", "public_snapshot_incident_guard"],
       "properties": {
         "factory_on": { "$ref": "#/$defs/fileBinding" },
         "factory_off": { "$ref": "#/$defs/fileBinding" },
@@ -103,7 +103,9 @@
         "mutation_lock_protocol": { "$ref": "#/$defs/fileBinding" },
         "task_manifest": { "$ref": "#/$defs/fileBinding" },
         "worker_launcher": { "$ref": "#/$defs/fileBinding" },
-        "farmctl": { "$ref": "#/$defs/fileBinding" }
+        "farmctl": { "$ref": "#/$defs/fileBinding" },
+        "public_snapshot_task_wrapper": { "$ref": "#/$defs/fileBinding" },
+        "public_snapshot_incident_guard": { "$ref": "#/$defs/fileBinding" }
       }
     }
   },

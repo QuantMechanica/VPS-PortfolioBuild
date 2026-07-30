@@ -58,19 +58,22 @@ class _FarmDB:
 
     def insert(self, wid: str, phase: str, symbol: str, *, status: str = "pending",
                recovery: str | None = None, priority_track: bool = False,
-               claimed_by: str | None = None, ea_id: str | None = None) -> None:
+               claimed_by: str | None = None, ea_id: str | None = None,
+               raw_payload_json: str | None = None) -> None:
         payload: dict = {}
         if recovery:
             payload["recovery_class"] = recovery
         if priority_track:
             payload["priority_track"] = True
+        payload_json = raw_payload_json if raw_payload_json is not None else json.dumps(
+            payload, sort_keys=True)
         with closing(self.conn()) as c:
             c.execute(
                 "INSERT INTO work_items (id, kind, phase, ea_id, symbol, setfile_path, "
                 "status, verdict, attempt_count, payload_json, created_at, updated_at) "
                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                 (wid, "backtest", phase, ea_id or f"QM5_{wid}", symbol, f"{wid}.set",
-                 status, None, 0, json.dumps(payload, sort_keys=True),
+                 status, None, 0, payload_json,
                  "2026-07-26T00:00:00+00:00", "2026-07-26T00:00:00+00:00"),
             )
             c.commit()
@@ -185,6 +188,35 @@ class SharedOrderingTests(unittest.TestCase):
         db.insert("c", "Q02", "CCC", priority_track=True)
         # Zero recovery tags -> every _recovery_rank is 0 -> prior contract exactly.
         self.assertEqual(db.order_ids(), ["c", "b", "a"])
+
+    def _assert_payload_priority(self, payload_json: str, *, expected: bool) -> None:
+        db = _FarmDB()
+        self.addCleanup(db.close)
+        db.insert("q10plain", "Q10", "AAA")
+        db.insert("q02candidate", "Q02", "BBB", raw_payload_json=payload_json)
+        order = db.order_ids()
+        self.assertEqual(order[0] == "q02candidate", expected)
+
+    def test_priority_track_compact_json_is_prioritized(self) -> None:
+        self._assert_payload_priority('{"priority_track":true}', expected=True)
+
+    def test_priority_track_pretty_spaced_json_is_prioritized(self) -> None:
+        self._assert_payload_priority('{\n  "priority_track" : true\n}', expected=True)
+
+    def test_priority_track_false_is_not_prioritized(self) -> None:
+        self._assert_payload_priority('{"priority_track": false}', expected=False)
+
+    def test_priority_track_numeric_one_is_not_prioritized(self) -> None:
+        self._assert_payload_priority('{"priority_track": 1}', expected=False)
+
+    def test_priority_track_float_one_is_not_prioritized(self) -> None:
+        self._assert_payload_priority('{"priority_track": 1.0}', expected=False)
+
+    def test_priority_track_missing_is_not_prioritized(self) -> None:
+        self._assert_payload_priority('{"other": true}', expected=False)
+
+    def test_priority_track_invalid_json_fails_closed_without_error(self) -> None:
+        self._assert_payload_priority('{"priority_track": true', expected=False)
 
 
 class RecoveryCapPrimitiveTests(unittest.TestCase):
