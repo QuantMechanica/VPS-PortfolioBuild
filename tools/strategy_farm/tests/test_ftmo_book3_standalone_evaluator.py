@@ -392,7 +392,7 @@ def _receipt(
         "post_runtime_sources": {"valid": True},
         "post_compile_binding": {"valid": True},
         "post_fidelity_receipt": {
-            "requested": False,
+            "requested": diagnostic,
             "required": False,
             "valid": True,
             "errors": [],
@@ -963,7 +963,19 @@ def test_r2_receipt_rejects_v2_rung_field_even_when_rehashed(
     [
         (lambda receipt: receipt.update(worker_exit_code=1), "envelope_contract_invalid"),
         (
-            lambda receipt: receipt["post_fidelity_receipt"].update(requested=True),
+            lambda receipt: receipt["post_fidelity_receipt"].update(requested=False),
+            "diagnostic_post_fidelity_invalid",
+        ),
+        (
+            lambda receipt: receipt["post_fidelity_receipt"].pop("required"),
+            "diagnostic_post_fidelity_invalid",
+        ),
+        (
+            lambda receipt: receipt["post_fidelity_receipt"].update(unexpected=True),
+            "diagnostic_post_fidelity_invalid",
+        ),
+        (
+            lambda receipt: receipt["post_fidelity_receipt"].update(prohibited=True),
             "diagnostic_post_fidelity_invalid",
         ),
         (

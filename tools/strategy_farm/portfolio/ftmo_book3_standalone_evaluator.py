@@ -2276,8 +2276,10 @@ def _validate_runner_receipt(
         ):
             raise StandaloneEvaluationError(f"{prefix}:diagnostic_fidelity_contract_invalid")
         if (
-            post_fidelity.get("required") is not False
-            or post_fidelity.get("requested") is not False
+            set(post_fidelity) != {"requested", "required", "valid", "errors"}
+            or post_fidelity.get("requested") is not True
+            or post_fidelity.get("required") is not False
+            or post_fidelity.get("valid") is not True
             or post_fidelity.get("errors") != []
         ):
             raise StandaloneEvaluationError(f"{prefix}:diagnostic_post_fidelity_invalid")
