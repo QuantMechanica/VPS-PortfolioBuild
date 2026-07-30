@@ -114,6 +114,34 @@ def test_unix_utc_timestamp_is_not_shifted() -> None:
     assert normalized == timestamp
 
 
+def test_ftmo_server_wall_round_trip_tracks_us_dst_transition() -> None:
+    before = pd.Timestamp("2026-03-08T06:59:00Z")
+    after = pd.Timestamp("2026-03-08T07:00:00Z")
+
+    assert joint.us_dst_broker_wall_offset_hours(before) == 2
+    assert joint.us_dst_broker_wall_offset_hours(after) == 3
+    encoded = pd.Series(
+        [
+            int(joint.utc_to_us_dst_broker_wall(before).timestamp()),
+            int(joint.utc_to_us_dst_broker_wall(after).timestamp()),
+        ],
+        dtype="int64",
+    )
+    decoded = joint.broker_wall_seconds_to_utc(encoded)
+    assert decoded.tolist() == [before, after]
+
+
+def test_ftmo_rollover_schedule_handles_fall_back_repeated_wall_hour() -> None:
+    entry = pd.Timestamp("2026-11-01T05:45:00Z")
+    exit_ = pd.Timestamp("2026-11-01T06:15:00Z")
+
+    assert joint.us_dst_broker_wall_offset_hours(entry) == 3
+    assert joint.us_dst_broker_wall_offset_hours(exit_) == 2
+    assert joint.us_dst_broker_rollover_schedule(
+        entry, exit_, triple_weekday=2
+    ) == []
+
+
 def test_build_components_caps_partial_bar_at_measured_q08_mae() -> None:
     timestamp = pd.Timestamp("2024-01-02T10:00:00Z")
     grid = pd.DatetimeIndex([timestamp])
@@ -154,6 +182,7 @@ def test_build_components_caps_partial_bar_at_measured_q08_mae() -> None:
             "source_contract_size": 100.0,
             "profit_currency_to_account_rate": 1.0,
             "digits": 2,
+            "rollover_timezone": "US_DST_GMT_PLUS_2_PLUS_3",
         },
     }
 
@@ -168,6 +197,73 @@ def test_build_components_caps_partial_bar_at_measured_q08_mae() -> None:
     assert component.q08_mae_capped_trades == 1
     assert component.q08_mae_capped_bars == 1
     assert component.max_q08_cap_adjustment == 950.0
+
+
+def test_percent_commission_is_booked_price_exact_across_prague_midnight() -> None:
+    grid = pd.DatetimeIndex(
+        ["2024-01-01T22:45:00Z", "2024-01-01T23:00:00Z"]
+    ).tz_convert("UTC")
+    trade = RoundTrip(
+        entry_time=dt.datetime(2024, 1, 1, 22, 59, tzinfo=dt.UTC),
+        exit_time=dt.datetime(2024, 1, 1, 23, 1, tzinfo=dt.UTC),
+        symbol="TEST",
+        side="buy",
+        volume=1.0,
+        entry_price=100.0,
+        exit_price=1000.0,
+        profit=900.0,
+        native_swap=0.0,
+        native_commission=0.0,
+    )
+    bars = pd.DataFrame(
+        {
+            "open": [100.0, 1000.0],
+            "high": [101.0, 1001.0],
+            "low": [99.0, 999.0],
+            "close": [100.0, 1000.0],
+        },
+        index=grid,
+    )
+    case = {
+        "ea_id": 1,
+        "symbol": "TEST",
+        "base_risk_fixed": 1000.0,
+        "trades": [trade],
+        "q08_rows": [
+            {
+                "entry_time": int(trade.entry_time.timestamp()),
+                "time": int(trade.exit_time.timestamp()),
+                "mae_acct": -1.0,
+            }
+        ],
+        "cost": {
+            "commission_percent_per_side": 1.0,
+            "flat_round_trip_commission_per_lot": 4.0,
+            "swap_long_points": 0.0,
+            "swap_short_points": 0.0,
+            "contract_size": 1.0,
+            "source_contract_size": 1.0,
+            "profit_currency_to_account_rate": 1.0,
+            "digits": 2,
+            "rollover_timezone": "US_DST_GMT_PLUS_2_PLUS_3",
+        },
+    }
+
+    component = joint.build_sleeve_components(
+        case,
+        grid=grid,
+        aligned_bars=bars,
+        observed_bar_timestamps=set(grid),
+    )
+
+    assert component.pre_low_balance_events.tolist() == [-3.0, 0.0]
+    assert component.post_low_balance_events.tolist() == [0.0, 888.0]
+    days, pairs = joint.components_to_daily(
+        grid, [component], weights={component.key: 1.0}, multiplier=1.0
+    )
+    assert days == [dt.date(2024, 1, 1), dt.date(2024, 1, 2)]
+    assert pairs[0][0] == -3.0
+    assert pairs[1][0] == 888.0
 
 
 def test_components_to_daily_preserves_joint_offsets() -> None:

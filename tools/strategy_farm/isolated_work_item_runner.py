@@ -32,6 +32,26 @@ from typing import Any
 
 from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
 
+try:
+    from process_identity import get_process_identity
+except ModuleNotFoundError:
+    from tools.strategy_farm.process_identity import get_process_identity
+
+try:
+    from windows_job_object import (
+        GLOBAL_JOB_REGISTRY,
+        bind_spawned_process_to_kill_job,
+        reap_finished_job_objects,
+        suspended_runner_creation_flags,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.windows_job_object import (
+        GLOBAL_JOB_REGISTRY,
+        bind_spawned_process_to_kill_job,
+        reap_finished_job_objects,
+        suspended_runner_creation_flags,
+    )
+
 
 DEFAULT_ROOT = Path(r"D:\QM\strategy_farm")
 DEFAULT_DB_REL = Path("state") / "farm_state.sqlite"
@@ -48,7 +68,14 @@ ALLOWED_TERMINALS = frozenset({"T1", "T2", "T3", "T4", "T6", "T7", "T8", "T9", "
 FTMO_BOOK3_MEASUREMENT_CONTRACT = (
     "FTMO_BOOK3_FIDELITY_LADDER_V2_FULL_LIFECYCLE_NET"
 )
+FTMO_BOOK3_DIAGNOSTIC_CONTRACT = "FTMO_BOOK3_STANDALONE_DIAGNOSTIC_V1"
 FTMO_BOOK3_EVIDENCE_VINTAGE = "FTMO_BOOK3_20260729_V2"
+FTMO_BOOK3_DIAGNOSTIC_EVIDENCE_VINTAGE = (
+    "FTMO_BOOK3_20260730_R2_STANDALONE_DIAGNOSTIC_V1"
+)
+FTMO_BOOK3_DIAGNOSTIC_COMPILE_POLICY = (
+    "MANIFEST_PINNED_STAGED_EX5_NO_RECOMPILE_V1"
+)
 FTMO_BOOK3_MONEY_BASIS = "FULL_POSITION_LIFECYCLE_ACTUAL_V1"
 FTMO_BOOK3_FIDELITY_ALGORITHM = (
     "maximum_bipartite_exact_time_side_price_full_lifecycle_money_volume/v3"
@@ -87,6 +114,44 @@ FTMO_BOOK3_CALENDAR_FILES = (
 FTMO_BOOK3_HOLD_CODE = "FTMO_BOOK3_Q02_ISOLATED_ONLY"
 FTMO_BOOK3_HOLD_REASON = (
     "OWNER-preregistered FTMO Book-3 Q02 fidelity ladder; isolated T10 execution only"
+)
+FTMO_BOOK3_DIAGNOSTIC_HOLD_CODE = (
+    "FTMO_BOOK3_STANDALONE_DIAGNOSTIC_ISOLATED_ONLY"
+)
+FTMO_BOOK3_DIAGNOSTIC_HOLD_REASON = (
+    "OWNER-authorized FTMO Book-3 QM5_13108 standalone diagnostic; "
+    "isolated T10 execution only; no ladder progression or release authority"
+)
+FTMO_BOOK3_DIAGNOSTIC_PREREGISTRATION_REL = Path(
+    "docs/ops/evidence/2026-07-30_ftmo_book3_r2_standalone_diagnostic_preregistration_v1.md"
+)
+FTMO_BOOK3_DIAGNOSTIC_PREPARATION_REL = Path(
+    "tools/strategy_farm/prepare_ftmo_book3_standalone_diagnostic.py"
+)
+FTMO_BOOK3_DIAGNOSTIC_WORK_CORE: dict[str, Any] = {
+    "diagnostic_code": "D13108",
+    "ea_id": "QM5_13108",
+    "symbol": "XTIUSD.DWX",
+    "period": "D1",
+    "ea_dir_name": "QM5_13108_xti-mtsm-s2",
+    "set_name": "QM5_13108_xti-mtsm-s2_XTIUSD.DWX_D1_backtest.set",
+}
+FTMO_V2_R2_WORK_ITEM_PREIMAGE_COLUMNS = (
+    "id",
+    "kind",
+    "phase",
+    "ea_id",
+    "symbol",
+    "setfile_path",
+    "status",
+    "verdict",
+    "attempt_count",
+    "parent_task_id",
+    "evidence_path",
+    "claimed_by",
+    "payload_json",
+    "created_at",
+    "updated_at",
 )
 FTMO_BOOK3_WORK_CORE: dict[str, dict[str, Any]] = {
     "R0": {
@@ -152,7 +217,24 @@ FTMO_RUNTIME_SOURCE_ROLES = (
     "factory_process_scope",
     "fidelity_gate",
 )
+FTMO_DIAGNOSTIC_EXTRA_RUNTIME_SOURCE_ROLES = (
+    "base_preparation_controller",
+    "cache_audit",
+    "phase_ids",
+    "managed_codex",
+    "process_identity",
+    "phase_runner_allowlist",
+    "q09_news_contract",
+    "q09_news_schema",
+    "tester_defaults",
+    "news_calendar_gate",
+    "windows_job_object",
+)
 MAX_PAYLOAD_BYTES = 1_048_576
+FTMO_DIAGNOSTIC_Q08_MAX_BYTES = 256 * 1024 * 1024
+FTMO_DIAGNOSTIC_Q08_MAX_LINE_BYTES = 1024 * 1024
+FTMO_DIAGNOSTIC_Q08_MAX_LINES = 2_000_000
+FTMO_DIAGNOSTIC_Q08_MAX_CLOSED_ROWS = 1_000_000
 MIN_TIMEOUT_MINUTES = 0.01
 MAX_TIMEOUT_MINUTES = 360.0
 FTMO_ALLOWED_RUNTIME_PAYLOAD_KEYS = frozenset(
@@ -256,7 +338,22 @@ DEFAULT_NEWS_CALENDAR_ROOT = Path(r"D:\QM\data\news_calendar")
 DEFAULT_COMMON_FILES_ROOT = Path(
     r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files"
 )
+FTMO_DIAGNOSTIC_ALLOWED_OUTPUT_ROOTS = (
+    DEFAULT_ROOT / "artifacts",
+    DEFAULT_REPORTS_WORK_ITEMS,
+)
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _is_ftmo_governed_contract(payload: dict[str, Any]) -> bool:
+    return payload.get("measurement_contract") in {
+        FTMO_BOOK3_MEASUREMENT_CONTRACT,
+        FTMO_BOOK3_DIAGNOSTIC_CONTRACT,
+    }
+
+
+def _is_ftmo_diagnostic_contract(payload: dict[str, Any]) -> bool:
+    return payload.get("measurement_contract") == FTMO_BOOK3_DIAGNOSTIC_CONTRACT
 
 
 def utc_now() -> str:
@@ -319,9 +416,61 @@ def sqlite_state_sha256(db: Path) -> str:
         return hashlib.sha256(conn.serialize()).hexdigest()
 
 
-def sqlite_snapshot(source: Path, target: Path, *, reserved: bool = False) -> str:
+def _file_identity_from_stat(value: os.stat_result) -> dict[str, int]:
+    return {
+        "device": int(value.st_dev),
+        "inode": int(value.st_ino),
+        "ctime_ns": int(value.st_ctime_ns),
+        "nlink": int(value.st_nlink),
+    }
+
+
+def _path_file_identity(path: Path) -> dict[str, int] | None:
+    try:
+        if path.is_symlink() or not path.is_file():
+            return None
+        return _file_identity_from_stat(path.stat())
+    except OSError:
+        return None
+
+
+def _reserved_file_matches(
+    path: Path,
+    expected_identity: dict[str, int],
+    *,
+    require_empty: bool,
+) -> bool:
+    current = _path_file_identity(path)
+    if current != expected_identity:
+        return False
+    if require_empty:
+        try:
+            return path.stat().st_size == 0
+        except OSError:
+            return False
+    return True
+
+
+def _reserved_file_object_matches(
+    path: Path, expected_identity: dict[str, int]
+) -> bool:
+    current = _path_file_identity(path)
+    return current is not None and all(
+        current[key] == expected_identity[key] for key in ("device", "inode")
+    )
+
+
+def sqlite_snapshot(
+    source: Path,
+    target: Path,
+    *,
+    reserved: bool = False,
+    reservation_identity: dict[str, int] | None = None,
+) -> str:
     if reserved:
-        if not target.is_file() or target.stat().st_size != 0:
+        if reservation_identity is None or not _reserved_file_matches(
+            target, reservation_identity, require_empty=True
+        ):
             raise RuntimeError(f"snapshot reservation is missing or changed: {target}")
     elif target.exists():
         raise FileExistsError(f"snapshot target already exists: {target}")
@@ -329,11 +478,62 @@ def sqlite_snapshot(source: Path, target: Path, *, reserved: bool = False) -> st
     src = sqlite3.connect(source, timeout=30)
     dst = sqlite3.connect(target)
     try:
+        if reserved and not _reserved_file_matches(
+            target, reservation_identity or {}, require_empty=True
+        ):
+            raise RuntimeError(
+                f"snapshot reservation changed while it was opened: {target}"
+            )
         src.backup(dst)
     finally:
         dst.close()
         src.close()
+    if reserved and not _reserved_file_object_matches(
+        target, reservation_identity or {}
+    ):
+        raise RuntimeError(f"snapshot reservation path was replaced: {target}")
     return sha256_file(target)
+
+
+def _open_snapshot_guard(
+    path: Path,
+    *,
+    reservation_identity: dict[str, int],
+    expected_sha256: str,
+) -> Any:
+    handle = path.open("rb")
+    try:
+        _revalidate_snapshot_guard(
+            handle,
+            path=path,
+            reservation_identity=reservation_identity,
+            expected_sha256=expected_sha256,
+            checkpoint="when opened",
+        )
+        return handle
+    except BaseException:
+        handle.close()
+        raise
+
+
+def _revalidate_snapshot_guard(
+    handle: Any,
+    *,
+    path: Path,
+    reservation_identity: dict[str, int],
+    expected_sha256: str,
+    checkpoint: str,
+) -> None:
+    opened = _file_identity_from_stat(os.fstat(handle.fileno()))
+    if any(
+        opened[key] != reservation_identity[key] for key in ("device", "inode")
+    ) or not _reserved_file_object_matches(path, reservation_identity):
+        raise RuntimeError(f"snapshot identity changed {checkpoint}")
+    observed = _fingerprint_open_binary_handle(handle)
+    if observed["sha256"] != expected_sha256 or not _reserved_file_object_matches(
+        path, reservation_identity
+    ):
+        raise RuntimeError(f"snapshot hash/path binding changed {checkpoint}")
 
 
 def checkpoint_wal(db: Path) -> dict[str, int]:
@@ -429,14 +629,14 @@ def _execution_input_plan(
 
     raw = payload.get("execution_input_artifacts")
     requested = raw is not None
-    if payload.get("measurement_contract") != FTMO_BOOK3_MEASUREMENT_CONTRACT:
+    if not _is_ftmo_governed_contract(payload):
         if requested:
             return {
                 "requested": True,
                 "valid": False,
                 "errors": [
-                    "execution_input_artifacts are only supported for the exact "
-                    f"{FTMO_BOOK3_MEASUREMENT_CONTRACT} contract"
+                    "execution_input_artifacts are only supported for an exact "
+                    "governed FTMO Book-3 contract"
                 ],
                 "artifacts": [],
             }
@@ -694,7 +894,7 @@ def _content_uuid(content_sha256: str) -> str | None:
 def _payload_contract_plan(
     payload: dict[str, Any], *, payload_text: str
 ) -> dict[str, Any]:
-    requested = payload.get("measurement_contract") == FTMO_BOOK3_MEASUREMENT_CONTRACT
+    requested = _is_ftmo_governed_contract(payload)
     if not requested:
         return {"requested": False, "valid": True, "errors": []}
     key_hashes = {
@@ -770,11 +970,18 @@ def _revalidate_payload_contract(
 
 
 def _ftmo_runtime_source_paths(
-    repo_root: Path, *, worker_script: Path
+    repo_root: Path, *, worker_script: Path,
+    measurement_contract: str = FTMO_BOOK3_MEASUREMENT_CONTRACT,
 ) -> dict[str, Path]:
-    return {
+    diagnostic = measurement_contract == FTMO_BOOK3_DIAGNOSTIC_CONTRACT
+    paths = {
         "preparation_controller": (
-            repo_root / "tools/strategy_farm/prepare_ftmo_book3_q02.py"
+            repo_root
+            / (
+                FTMO_BOOK3_DIAGNOSTIC_PREPARATION_REL
+                if diagnostic
+                else Path("tools/strategy_farm/prepare_ftmo_book3_q02.py")
+            )
         ).resolve(),
         "isolated_runner": Path(__file__).resolve(),
         "terminal_worker": worker_script.resolve(),
@@ -789,7 +996,13 @@ def _ftmo_runtime_source_paths(
         ).resolve(),
         "preregistration": (
             repo_root
-            / "docs/ops/evidence/2026-07-29_ftmo_book3_execution_preregistration_v2.md"
+            / (
+                FTMO_BOOK3_DIAGNOSTIC_PREREGISTRATION_REL
+                if diagnostic
+                else Path(
+                    "docs/ops/evidence/2026-07-29_ftmo_book3_execution_preregistration_v2.md"
+                )
+            )
         ).resolve(),
         "qm_tasks_manifest": (
             repo_root / "tools/strategy_farm/qm_tasks.manifest.ps1"
@@ -801,6 +1014,48 @@ def _ftmo_runtime_source_paths(
             repo_root / "tools/strategy_farm/ftmo_book3_fidelity_gate.py"
         ).resolve(),
     }
+    if diagnostic:
+        paths.pop("fidelity_comparator")
+        paths.pop("fidelity_gate")
+        paths.update(
+            {
+                "base_preparation_controller": (
+                    repo_root / "tools/strategy_farm/prepare_ftmo_book3_q02.py"
+                ).resolve(),
+                "cache_audit": (
+                    repo_root / "tools/strategy_farm/cache_audit.py"
+                ).resolve(),
+                "phase_ids": (
+                    repo_root / "tools/strategy_farm/phase_ids.py"
+                ).resolve(),
+                "managed_codex": (
+                    repo_root / "tools/strategy_farm/managed_codex.py"
+                ).resolve(),
+                "process_identity": (
+                    repo_root / "tools/strategy_farm/process_identity.py"
+                ).resolve(),
+                "phase_runner_allowlist": (
+                    repo_root
+                    / "tools/strategy_farm/phase_runner_allowlist.v1.json"
+                ).resolve(),
+                "q09_news_contract": (
+                    repo_root / "tools/strategy_farm/q09_news_contract.py"
+                ).resolve(),
+                "q09_news_schema": (
+                    repo_root / "tools/strategy_farm/q09_news_schema.py"
+                ).resolve(),
+                "tester_defaults": (
+                    repo_root / "framework/registry/tester_defaults.json"
+                ).resolve(),
+                "news_calendar_gate": (
+                    repo_root / "tools/strategy_farm/news_calendar_gate.py"
+                ).resolve(),
+                "windows_job_object": (
+                    repo_root / "tools/strategy_farm/windows_job_object.py"
+                ).resolve(),
+            }
+        )
+    return paths
 
 
 def _ftmo_runtime_source_plan(
@@ -817,8 +1072,22 @@ def _ftmo_runtime_source_plan(
             "errors": ["runtime_source_artifacts must be an array"],
             "artifacts": [],
         }
-    expected = _ftmo_runtime_source_paths(repo_root, worker_script=worker_script)
-    if set(expected) != set(FTMO_RUNTIME_SOURCE_ROLES):
+    measurement_contract = str(payload.get("measurement_contract") or "")
+    expected = _ftmo_runtime_source_paths(
+        repo_root,
+        worker_script=worker_script,
+        measurement_contract=measurement_contract,
+    )
+    expected_roles = (
+        (
+            set(FTMO_RUNTIME_SOURCE_ROLES)
+            - {"fidelity_comparator", "fidelity_gate"}
+            | set(FTMO_DIAGNOSTIC_EXTRA_RUNTIME_SOURCE_ROLES)
+        )
+        if measurement_contract == FTMO_BOOK3_DIAGNOSTIC_CONTRACT
+        else set(FTMO_RUNTIME_SOURCE_ROLES)
+    )
+    if set(expected) != expected_roles:
         errors.append("internal runtime source role contract is inconsistent")
     if len(raw) != len(expected):
         errors.append(
@@ -988,42 +1257,62 @@ def _ftmo_source_binding_plan(
     payload: dict[str, Any], *, repo_root: Path, worker_script: Path,
     setfile_path: Path,
 ) -> dict[str, Any]:
-    if payload.get("measurement_contract") != FTMO_BOOK3_MEASUREMENT_CONTRACT:
+    if not _is_ftmo_governed_contract(payload):
         return {"requested": False, "valid": True, "errors": []}
 
     errors: list[str] = []
+    diagnostic = _is_ftmo_diagnostic_contract(payload)
     rung = payload.get("measurement_rung")
     sequence = payload.get("measurement_sequence")
     evidence_run_id = payload.get("evidence_run_id")
-    expected_rung = FTMO_BOOK3_RUNGS.get(str(rung))
-    if expected_rung is None:
-        errors.append(f"FTMO Book-3 measurement rung is invalid: {rung!r}")
+    if diagnostic:
+        if any(
+            key in payload
+            for key in (
+                "measurement_rung",
+                "measurement_sequence",
+                "evidence_run_id",
+                "required_fidelity_stage",
+            )
+        ):
+            errors.append(
+                "FTMO standalone diagnostic must not carry V2 ladder or fidelity fields"
+            )
+        if payload.get("diagnostic_code") != FTMO_BOOK3_DIAGNOSTIC_WORK_CORE[
+            "diagnostic_code"
+        ]:
+            errors.append("FTMO standalone diagnostic code mismatch")
     else:
-        expected_sequence, expected_evidence_run_id = expected_rung
-        if sequence != expected_sequence:
-            errors.append(
-                "FTMO Book-3 measurement sequence mismatch: "
-                f"expected={expected_sequence} actual={sequence}"
-            )
-        if evidence_run_id != expected_evidence_run_id:
-            errors.append(
-                "FTMO Book-3 evidence_run_id mismatch: "
-                f"expected={expected_evidence_run_id!r} actual={evidence_run_id!r}"
-            )
-        if expected_evidence_run_id is not None:
-            try:
-                set_evidence_run_id = _set_values(setfile_path).get(
-                    "qm_evidence_run_id"
-                )
-            except Exception as exc:
-                set_evidence_run_id = None
-                errors.append(f"FTMO Book-3 setfile cannot be parsed: {exc}")
-            if set_evidence_run_id != expected_evidence_run_id:
+        expected_rung = FTMO_BOOK3_RUNGS.get(str(rung))
+        if expected_rung is None:
+            errors.append(f"FTMO Book-3 measurement rung is invalid: {rung!r}")
+        else:
+            expected_sequence, expected_evidence_run_id = expected_rung
+            if sequence != expected_sequence:
                 errors.append(
-                    "FTMO Book-3 setfile evidence_run_id mismatch: "
-                    f"expected={expected_evidence_run_id!r} "
-                    f"actual={set_evidence_run_id!r}"
+                    "FTMO Book-3 measurement sequence mismatch: "
+                    f"expected={expected_sequence} actual={sequence}"
                 )
+            if evidence_run_id != expected_evidence_run_id:
+                errors.append(
+                    "FTMO Book-3 evidence_run_id mismatch: "
+                    f"expected={expected_evidence_run_id!r} "
+                    f"actual={evidence_run_id!r}"
+                )
+            if expected_evidence_run_id is not None:
+                try:
+                    set_evidence_run_id = _set_values(setfile_path).get(
+                        "qm_evidence_run_id"
+                    )
+                except Exception as exc:
+                    set_evidence_run_id = None
+                    errors.append(f"FTMO Book-3 setfile cannot be parsed: {exc}")
+                if set_evidence_run_id != expected_evidence_run_id:
+                    errors.append(
+                        "FTMO Book-3 setfile evidence_run_id mismatch: "
+                        f"expected={expected_evidence_run_id!r} "
+                        f"actual={set_evidence_run_id!r}"
+                    )
     expected_source_commit = payload.get("authoritative_source_commit")
     expected_controller_commit = payload.get("controller_head_commit")
     for label, value in (
@@ -1067,10 +1356,12 @@ def _ftmo_source_binding_plan(
             f"expected={expected_tree_sha} actual={actual_tree_sha}"
         )
 
-    preregistration = (
-        repo_root
-        / "docs/ops/evidence/2026-07-29_ftmo_book3_execution_preregistration_v2.md"
+    runtime_paths = _ftmo_runtime_source_paths(
+        repo_root,
+        worker_script=worker_script,
+        measurement_contract=str(payload.get("measurement_contract") or ""),
     )
+    preregistration = runtime_paths["preregistration"]
     expected_prereg_sha = payload.get("preregistration_sha256")
     actual_prereg_sha = sha256_file(preregistration) if preregistration.is_file() else None
     if (
@@ -1123,9 +1414,7 @@ def _ftmo_source_binding_plan(
             f"expected={expected_worker_sha} actual={actual_worker_sha}"
         )
 
-    preparation_controller = (
-        repo_root / "tools/strategy_farm/prepare_ftmo_book3_q02.py"
-    ).resolve()
+    preparation_controller = runtime_paths["preparation_controller"]
     declared_preparation_path = Path(
         str(payload.get("preparation_controller_path") or "")
     )
@@ -1164,6 +1453,8 @@ def _ftmo_source_binding_plan(
         "authoritative_source_commit": expected_source_commit,
         "controller_head_commit": expected_controller_commit,
         "actual_head_commit": actual_head,
+        "measurement_contract": payload.get("measurement_contract"),
+        "diagnostic_code": payload.get("diagnostic_code"),
         "measurement_rung": rung,
         "measurement_sequence": sequence,
         "evidence_run_id": evidence_run_id,
@@ -1197,6 +1488,244 @@ def _ftmo_source_binding_plan(
     }
 
 
+def _ftmo_compile_binding_plan(
+    payload: dict[str, Any], *, repo_root: Path, factory_off_flag: Path,
+    expected_factory_off_sha256: str,
+) -> dict[str, Any]:
+    """Re-parse and re-hash the exact portable compile provenance."""
+
+    if not _is_ftmo_governed_contract(payload):
+        return {"requested": False, "valid": True, "errors": []}
+    errors: list[str] = []
+    manifest_text = payload.get("compile_manifest_path")
+    expected_manifest_sha = payload.get("compile_manifest_sha256")
+    expected_manifest_bytes = payload.get("compile_manifest_bytes")
+    manifest_path = Path(str(manifest_text or ""))
+    if not isinstance(manifest_text, str) or not manifest_path.is_absolute():
+        errors.append("compile manifest path is not absolute")
+    if not isinstance(expected_manifest_sha, str) or not _SHA256_RE.fullmatch(
+        expected_manifest_sha
+    ):
+        errors.append("compile manifest SHA-256 is not canonical lower-hex")
+    if (
+        isinstance(expected_manifest_bytes, bool)
+        or not isinstance(expected_manifest_bytes, int)
+        or expected_manifest_bytes <= 0
+    ):
+        errors.append("compile manifest byte count is invalid")
+    document: dict[str, Any] = {}
+    manifest_observation: dict[str, Any] = {
+        "path": str(manifest_path),
+        "expected_sha256": expected_manifest_sha,
+        "expected_bytes": expected_manifest_bytes,
+    }
+    if not errors:
+        try:
+            observation = _bound_file_observation(manifest_path)
+            manifest_observation.update(observation)
+            raw = manifest_path.read_bytes()
+            if observation["sha256"] != expected_manifest_sha:
+                errors.append("compile manifest SHA-256 mismatch")
+            if observation["bytes"] != expected_manifest_bytes:
+                errors.append("compile manifest byte count mismatch")
+            if hashlib.sha256(raw).hexdigest() != observation["sha256"]:
+                errors.append("compile manifest changed between bound reads")
+            document = _strict_json_object(raw, label="portable compile manifest")
+        except Exception as exc:
+            errors.append(f"compile manifest cannot be authenticated: {exc}")
+
+    fixed = {
+        "schema_version": 2,
+        "contract": "FTMO_BOOK3_PORTABLE_COMPILE_V2",
+        "result": "PASS",
+        "create_only": True,
+        "serial_compile": True,
+        "canonical_publication_after_four_pass": True,
+        "terminals_started": [],
+        "terminals_modified": [],
+    }
+    for key, expected in fixed.items():
+        if document.get(key) != expected or type(document.get(key)) is not type(expected):
+            errors.append(f"compile manifest has invalid {key}")
+    artifact_root = Path(str(document.get("artifact_root") or ""))
+    if not artifact_root.is_absolute() or (
+        manifest_path.is_absolute()
+        and _lexical_path_identity(manifest_path.parent)
+        != _lexical_path_identity(artifact_root)
+    ):
+        errors.append("compile manifest artifact_root/path topology mismatch")
+    compile_source_commit = document.get("source_commit")
+    if (
+        not isinstance(compile_source_commit, str)
+        or not re.fullmatch(r"[0-9a-f]{40}", compile_source_commit)
+        or compile_source_commit != payload.get("compile_source_commit")
+    ):
+        errors.append("compile manifest source_commit binding mismatch")
+
+    factory = document.get("factory_off")
+    if not isinstance(factory, dict):
+        errors.append("compile manifest FACTORY_OFF binding is missing")
+    else:
+        if _lexical_path_identity(Path(str(factory.get("path") or ""))) != _lexical_path_identity(
+            factory_off_flag
+        ):
+            errors.append("compile manifest FACTORY_OFF path mismatch")
+        if factory.get("sha256") != expected_factory_off_sha256:
+            errors.append("compile manifest FACTORY_OFF SHA-256 mismatch")
+    mutation = document.get("mutation_lock")
+    if not isinstance(mutation, dict) or mutation.get("required_absent") is not True:
+        errors.append("compile manifest mutation-lock contract is invalid")
+    elif _lexical_path_identity(Path(str(mutation.get("path") or ""))) != _lexical_path_identity(
+        path_for_factory_flag(factory_off_flag)
+    ):
+        errors.append("compile manifest mutation-lock path mismatch")
+
+    expected_controller = (
+        repo_root / "tools/strategy_farm/compile_ftmo_book3_v2.ps1"
+    ).resolve()
+    declared_controller = Path(str(payload.get("compile_controller_path") or ""))
+    expected_controller_sha = payload.get("compile_controller_sha256")
+    tool = document.get("tool")
+    if (
+        not declared_controller.is_absolute()
+        or _lexical_path_identity(declared_controller)
+        != _lexical_path_identity(expected_controller)
+    ):
+        errors.append("compile controller path binding mismatch")
+    if not isinstance(expected_controller_sha, str) or not _SHA256_RE.fullmatch(
+        expected_controller_sha
+    ):
+        errors.append("compile controller SHA-256 is not canonical lower-hex")
+    controller_observation: dict[str, Any] = {
+        "path": str(expected_controller),
+        "expected_sha256": expected_controller_sha,
+    }
+    try:
+        observed_controller = _bound_file_observation(expected_controller)
+        controller_observation.update(observed_controller)
+        if observed_controller["sha256"] != expected_controller_sha:
+            errors.append("compile controller SHA-256 mismatch")
+    except Exception as exc:
+        errors.append(f"compile controller cannot be authenticated: {exc}")
+    if not isinstance(tool, dict):
+        errors.append("compile manifest tool binding is missing")
+    elif (
+        _lexical_path_identity(Path(str(tool.get("path") or "")))
+        != _lexical_path_identity(expected_controller)
+        or tool.get("sha256") != expected_controller_sha
+    ):
+        errors.append("compile manifest tool binding mismatch")
+
+    expected_results = (
+        (9936, "QM5_9936_ff-range-breakout-gmt3-h1"),
+        (10145, "QM5_10145_tsm-meanret"),
+        (13108, "QM5_13108_xti-mtsm-s2"),
+        (20181, "QM5_20181_ftmo-joint-multisym-timer"),
+    )
+    results = document.get("results")
+    normalized_results: list[dict[str, Any]] = []
+    if not isinstance(results, list) or len(results) != len(expected_results):
+        errors.append("compile manifest must contain the exact four ordered results")
+        results = []
+    for index, (ea_id, name) in enumerate(expected_results):
+        if index >= len(results) or not isinstance(results[index], dict):
+            errors.append(f"compile result is missing or invalid: {name}")
+            continue
+        result = results[index]
+        if (
+            result.get("ea_id") != ea_id
+            or type(result.get("ea_id")) is not int
+            or result.get("name") != name
+            or result.get("result") != "PASS"
+            or result.get("errors") != 0
+            or type(result.get("errors")) is not int
+            or result.get("warnings") != 0
+            or type(result.get("warnings")) is not int
+            or type(result.get("metaeditor_exit_code")) is not int
+            or result.get("metaeditor_exit_code") not in {0, 1}
+        ):
+            errors.append(f"compile result is not an exact strict PASS: {name}")
+        expected_mq5 = repo_root / "framework/EAs" / name / f"{name}.mq5"
+        expected_ex5 = artifact_root / "canonical_staged_ex5" / f"{name}.ex5"
+        expected_log = artifact_root / "canonical_compile_logs" / f"{name}.compile.log"
+        observations: dict[str, Any] = {"ea_id": ea_id, "name": name}
+        for label, path_key, hash_key, expected_path in (
+            ("source MQ5", "source_mq5_path", "source_mq5_sha256", expected_mq5),
+            ("staged EX5", "ex5_path", "ex5_sha256", expected_ex5),
+            ("compile log", "compile_log_path", "compile_log_sha256", expected_log),
+        ):
+            declared = Path(str(result.get(path_key) or ""))
+            expected_hash = result.get(hash_key)
+            if (
+                not declared.is_absolute()
+                or _lexical_path_identity(declared)
+                != _lexical_path_identity(expected_path)
+            ):
+                errors.append(f"compile result {label} path mismatch: {name}")
+                continue
+            if not isinstance(expected_hash, str) or not _SHA256_RE.fullmatch(expected_hash):
+                errors.append(f"compile result {label} SHA-256 is invalid: {name}")
+                continue
+            try:
+                observed = _bound_file_observation(expected_path)
+                observations[label] = observed
+                if observed["sha256"] != expected_hash:
+                    errors.append(f"compile result {label} SHA-256 mismatch: {name}")
+            except Exception as exc:
+                errors.append(f"compile result {label} cannot be authenticated: {name}: {exc}")
+        normalized_results.append(observations)
+
+    ea_dir = str(payload.get("ea_dir_name") or "")
+    selected = next(
+        (
+            result
+            for result in results
+            if isinstance(result, dict) and result.get("name") == ea_dir
+        ),
+        None,
+    )
+    if selected is None:
+        errors.append("compile manifest has no result for the requested EA")
+    else:
+        if _lexical_path_identity(Path(str(selected.get("ex5_path") or ""))) != _lexical_path_identity(
+            Path(str(payload.get("staged_ex5_path") or ""))
+        ):
+            errors.append("requested staged EX5 path differs from compile result")
+        if selected.get("ex5_sha256") != payload.get("staged_ex5_sha256"):
+            errors.append("requested staged EX5 SHA-256 differs from compile result")
+        if selected.get("source_mq5_sha256") != payload.get("expected_mq5_sha256"):
+            errors.append("requested MQ5 SHA-256 differs from compile result")
+
+    payload_binding = {
+        key: payload.get(key)
+        for key in (
+            "measurement_contract",
+            "compile_manifest_path",
+            "compile_manifest_sha256",
+            "compile_manifest_bytes",
+            "compile_source_commit",
+            "compile_controller_path",
+            "compile_controller_sha256",
+            "ea_dir_name",
+            "staged_ex5_path",
+            "staged_ex5_sha256",
+            "expected_mq5_sha256",
+        )
+    }
+    return {
+        "requested": True,
+        "valid": not errors,
+        "errors": errors,
+        "payload_binding": payload_binding,
+        "factory_off_flag": str(factory_off_flag),
+        "factory_off_sha256": expected_factory_off_sha256,
+        "manifest": manifest_observation,
+        "controller": controller_observation,
+        "compile_source_commit": compile_source_commit,
+        "results": normalized_results,
+    }
+
+
 def _line_count(path: Path) -> int:
     with path.open("rb") as handle:
         return sum(1 for _ in handle)
@@ -1220,10 +1749,54 @@ def _path_identity(path: Path) -> str:
     return os.path.normcase(str(path.resolve()))
 
 
+def _is_relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
 def _allowed_file_common_stream_roots() -> dict[str, Path]:
     return {
         "q08_trades": DEFAULT_FILE_COMMON_Q08,
         "q08_equity": DEFAULT_FILE_COMMON_Q08_EQUITY,
+    }
+
+
+def _fingerprint_open_binary_handle(
+    handle: Any, *, sync_writes: bool = False
+) -> dict[str, Any]:
+    """Fingerprint the exact open file object without reopening its path."""
+
+    if sync_writes:
+        handle.flush()
+        os.fsync(handle.fileno())
+    before = os.fstat(handle.fileno())
+    handle.seek(0)
+    digest = hashlib.sha256()
+    size = 0
+    while True:
+        chunk = handle.read(1024 * 1024)
+        if not chunk:
+            break
+        digest.update(chunk)
+        size += len(chunk)
+    handle.seek(0)
+    lines = sum(1 for _ in handle)
+    after = os.fstat(handle.fileno())
+    if (before.st_dev, before.st_ino, before.st_size) != (
+        after.st_dev,
+        after.st_ino,
+        after.st_size,
+    ) or size != after.st_size:
+        raise RuntimeError("open evidence file object changed while fingerprinted")
+    return {
+        "exists": True,
+        "sha256": digest.hexdigest(),
+        "bytes": size,
+        "lines": lines,
+        "mtime_ns": int(after.st_mtime_ns),
     }
 
 
@@ -1282,6 +1855,7 @@ def _single_post_run_stream_plan(
     report_root: Path,
     expected_report_root: Path,
     pre_capture: dict[str, Any],
+    require_report_root_absent: bool = False,
 ) -> dict[str, Any]:
     source_text = str(source_value or "").strip()
     source = Path(source_text)
@@ -1321,6 +1895,11 @@ def _single_post_run_stream_plan(
         errors.append(f"post-run evidence target cannot be resolved: {exc}")
     if target.exists():
         errors.append(f"post-run evidence target already exists: {target}")
+    if require_report_root_absent and expected_report_root.exists():
+        errors.append(
+            "standalone diagnostic governed report_root must be wholly absent "
+            f"before execution: {expected_report_root}"
+        )
 
     return {
         "requested": True,
@@ -1344,8 +1923,13 @@ def _post_run_stream_plan(payload: dict[str, Any], work_item_id: str) -> dict[st
     are derived, never caller-selected, beneath the exact work-item report root.
     """
     source_value = str(payload.get("post_run_file_common_source") or "").strip()
-    report_root = Path(str(payload.get("report_root") or ""))
     expected_report_root = DEFAULT_REPORTS_WORK_ITEMS / work_item_id
+    diagnostic = _is_ftmo_diagnostic_contract(payload)
+    report_root = (
+        expected_report_root
+        if diagnostic
+        else Path(str(payload.get("report_root") or ""))
+    )
     legacy: dict[str, Any] | None = None
     if source_value:
         legacy = _single_post_run_stream_plan(
@@ -1353,6 +1937,7 @@ def _post_run_stream_plan(payload: dict[str, Any], work_item_id: str) -> dict[st
             stream_type="q08_trades",
             report_root=report_root,
             expected_report_root=expected_report_root,
+            require_report_root_absent=diagnostic,
             pre_capture={
                 "path": payload.get("pre_v2_file_common_capture_path"),
                 "sha256": str(payload.get("pre_v2_file_common_capture_sha256") or "").lower(),
@@ -1395,6 +1980,7 @@ def _post_run_stream_plan(payload: dict[str, Any], work_item_id: str) -> dict[st
             stream_type=stream_type,
             report_root=report_root,
             expected_report_root=expected_report_root,
+            require_report_root_absent=diagnostic,
             pre_capture={
                 "path": item.get("pre_capture_path"),
                 "sha256": str(item.get("pre_capture_sha256") or "").lower(),
@@ -1569,9 +2155,10 @@ def _publication_receipt(
     published = published or []
     published_before_rollback = published_before_rollback or []
     return {
-        "per_target_publish": "atomic_os_replace",
+        "per_target_publish": "atomic_hard_link_no_replace",
         "physically_atomic_across_targets": False,
-        "rollback_on_caught_baseexception": True,
+        "rollback_on_caught_baseexception": False,
+        "cleanup_policy": "RETAIN_FAIL_CLOSED_RESIDUE_NO_PATH_UNLINK",
         "process_crash_policy": (
             "FAIL_CLOSED: a process/power crash can leave a published subset; any existing "
             "governed target blocks retry and recovery pending operator review"
@@ -1591,9 +2178,10 @@ def _harvest_post_run_stream(
     Legacy single-stream contracts keep their historical result shape.  A
     multi-stream contract uses a two-phase stage/verify/publish sequence and
     rolls back every published target on a caught ``BaseException``.  Each
-    ``os.replace`` is atomic, but multiple targets are not physically atomic
-    across a process/power crash.  Crash residue therefore blocks all retries
-    fail-closed until an operator adjudicates it; the receipt states this bound.
+    Each same-directory hard-link publication is atomic and no-replace, but
+    multiple targets are not physically atomic. Any caught failure or process
+    crash retains immutable temp/target residue because path cleanup has an
+    unavoidable ABA gap; residue blocks retries until operator adjudication.
     """
     if not contract.get("requested"):
         return {"requested": False, "valid": True}
@@ -1610,6 +2198,198 @@ def _harvest_post_run_stream(
         single["publication"] = batch["publication"]
         return single
     return batch
+
+
+def _ftmo_diagnostic_q08_plan(
+    payload: dict[str, Any], harvest: dict[str, Any]
+) -> dict[str, Any]:
+    """Authenticate the fresh standalone R2 lifecycle stream after harvest."""
+
+    if not _is_ftmo_diagnostic_contract(payload):
+        return {"requested": False, "valid": True, "errors": []}
+    errors: list[str] = []
+    if harvest.get("valid") is not True:
+        return {
+            "requested": True,
+            "valid": False,
+            "errors": ["fresh standalone diagnostic Q08 harvest is invalid"],
+            "selected_trade_count": 0,
+        }
+    target = Path(str(harvest.get("target") or ""))
+    selected_trade_count = 0
+    try:
+        resolved_before = target.resolve(strict=True)
+        with target.open("rb") as handle:
+            opened = os.fstat(handle.fileno())
+            if opened.st_size > FTMO_DIAGNOSTIC_Q08_MAX_BYTES:
+                raise RuntimeError(
+                    "harvested Q08 exceeds byte limit: "
+                    f"{opened.st_size}>{FTMO_DIAGNOSTIC_Q08_MAX_BYTES}"
+                )
+            raw_bytes = handle.read()
+        resolved_after = target.resolve(strict=True)
+        after = target.stat()
+        if (
+            _lexical_path_identity(resolved_before)
+            != _lexical_path_identity(resolved_after)
+            or (opened.st_dev, opened.st_ino) != (after.st_dev, after.st_ino)
+            or len(raw_bytes) != opened.st_size
+            or after.st_size != opened.st_size
+        ):
+            raise RuntimeError("harvested Q08 changed identity while read")
+        observed_fingerprint = {
+            "sha256": hashlib.sha256(raw_bytes).hexdigest(),
+            "bytes": len(raw_bytes),
+            "lines": len(raw_bytes.splitlines()),
+        }
+        harvested_fingerprint = harvest.get("harvested")
+        if not isinstance(harvested_fingerprint, dict):
+            raise RuntimeError("harvested Q08 fingerprint is missing")
+        for key, value in observed_fingerprint.items():
+            if harvested_fingerprint.get(key) != value:
+                raise RuntimeError(
+                    "harvested Q08 fingerprint mismatch: "
+                    f"{key} expected={harvested_fingerprint.get(key)!r} actual={value!r}"
+                )
+        raw_byte_lines = raw_bytes.splitlines()
+        if len(raw_byte_lines) > FTMO_DIAGNOSTIC_Q08_MAX_LINES:
+            raise RuntimeError(
+                "harvested Q08 exceeds line-count limit: "
+                f"{len(raw_byte_lines)}>{FTMO_DIAGNOSTIC_Q08_MAX_LINES}"
+            )
+        oversized_line = next(
+            (
+                index
+                for index, raw_line in enumerate(raw_byte_lines, start=1)
+                if len(raw_line) > FTMO_DIAGNOSTIC_Q08_MAX_LINE_BYTES
+            ),
+            None,
+        )
+        if oversized_line is not None:
+            raise RuntimeError(
+                "harvested Q08 line exceeds byte limit: "
+                f"line={oversized_line} limit={FTMO_DIAGNOSTIC_Q08_MAX_LINE_BYTES}"
+            )
+        raw_lines = [line.decode("utf-8", errors="strict") for line in raw_byte_lines]
+    except Exception as exc:
+        return {
+            "requested": True,
+            "valid": False,
+            "errors": [f"harvested standalone diagnostic Q08 is unreadable: {exc}"],
+            "target": str(target),
+            "selected_trade_count": 0,
+        }
+    for line_number, raw in enumerate(raw_lines, start=1):
+        if not raw.strip():
+            continue
+        try:
+            row = _strict_json_object(
+                raw.encode("utf-8"),
+                label=f"standalone diagnostic Q08 line {line_number}",
+            )
+        except (TypeError, ValueError, RuntimeError) as exc:
+            errors.append(str(exc))
+            continue
+        if row.get("event") != "TRADE_CLOSED":
+            continue
+        selected_trade_count += 1
+        if selected_trade_count > FTMO_DIAGNOSTIC_Q08_MAX_CLOSED_ROWS:
+            errors.append(
+                "standalone diagnostic Q08 closed-trade row count exceeds limit: "
+                f"{selected_trade_count}>{FTMO_DIAGNOSTIC_Q08_MAX_CLOSED_ROWS}"
+            )
+            break
+        label = f"standalone diagnostic Q08 trade {selected_trade_count}"
+        if row.get("money_basis") != FTMO_BOOK3_MONEY_BASIS:
+            errors.append(f"{label} money_basis mismatch")
+        if type(row.get("magic")) is not int or row.get("magic") != 131080000:
+            errors.append(
+                f"{label} magic mismatch (must be the exact integer 131080000)"
+            )
+        if str(row.get("symbol") or "").upper() != "XTIUSD.DWX":
+            errors.append(f"{label} symbol mismatch")
+        if row.get("side") not in {"BUY", "SELL"}:
+            errors.append(f"{label} side is not canonical")
+        for key in ("entry_time", "time"):
+            value = row.get(key)
+            if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+                errors.append(f"{label} {key} is not a positive integer")
+        if (
+            type(row.get("entry_time")) is int
+            and type(row.get("time")) is int
+            and row["time"] <= row["entry_time"]
+        ):
+            errors.append(f"{label} lifecycle time order is invalid")
+        numbers: dict[str, float] = {}
+        for key in (
+            "entry_price",
+            "exit_price",
+            "profit",
+            "swap",
+            "fee",
+            "entry_commission",
+            "exit_commission",
+            "commission",
+            "net",
+            "volume",
+            "mae_acct",
+        ):
+            value = row.get(key)
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                errors.append(f"{label} {key} is not a JSON number")
+                continue
+            parsed = float(value)
+            if not math.isfinite(parsed):
+                errors.append(f"{label} {key} is not finite")
+                continue
+            numbers[key] = parsed
+        for key in ("entry_price", "exit_price", "volume"):
+            if key in numbers and numbers[key] <= 0.0:
+                errors.append(f"{label} {key} must be positive")
+        if "mae_acct" in numbers and numbers["mae_acct"] > 0.0:
+            errors.append(f"{label} mae_acct must be non-positive")
+        if all(
+            key in numbers
+            for key in ("commission", "entry_commission", "exit_commission")
+        ) and abs(
+            numbers["commission"]
+            - numbers["entry_commission"]
+            - numbers["exit_commission"]
+        ) > FTMO_BOOK3_MONEY_TOLERANCE:
+            errors.append(f"{label} commission components do not reconcile")
+        if all(
+            key in numbers
+            for key in ("net", "profit", "swap", "commission", "fee")
+        ) and abs(
+            numbers["net"]
+            - numbers["profit"]
+            - numbers["swap"]
+            - numbers["commission"]
+            - numbers["fee"]
+        ) > FTMO_BOOK3_MONEY_TOLERANCE:
+            errors.append(f"{label} full-lifecycle net does not reconcile")
+    if not selected_trade_count:
+        errors.append(
+            "standalone diagnostic Q08 contains no QM5_13108 full-lifecycle closed trades"
+        )
+    return {
+        "requested": True,
+        "valid": not errors,
+        "errors": errors,
+        "target": str(target),
+        "target_sha256": observed_fingerprint["sha256"],
+        "target_bytes": observed_fingerprint["bytes"],
+        "target_lines": observed_fingerprint["lines"],
+        "money_basis": FTMO_BOOK3_MONEY_BASIS,
+        "magic": 131080000,
+        "symbol": "XTIUSD.DWX",
+        "selected_trade_count": selected_trade_count,
+        "downstream_evaluator_gate": {
+            "field": "selected_trade_count",
+            "required_exact_stream_recount": True,
+            "count": selected_trade_count,
+        },
+    }
 
 
 def _inspect_post_run_stream(
@@ -1726,8 +2506,9 @@ def _harvest_post_run_stream_batch(
             "publication": _publication_receipt(),
         }
 
-    staged: list[tuple[Path, Path]] = []
-    publish_attempted: list[tuple[Path, str]] = []
+    staged: list[tuple[Path, Path, Any, dict[str, int], dict[str, Any]]] = []
+    publish_attempted: list[tuple[Path, Path, dict[str, int], str]] = []
+    published_owned: list[Path] = []
     published_before_rollback: list[Path] = []
     rollback_attempted = False
     rollback_complete: bool | None = None
@@ -1738,12 +2519,17 @@ def _harvest_post_run_stream_batch(
             tmp = target.with_name(
                 f"{target.name}.{os.getpid()}.{active_index}.{time.time_ns()}.tmp"
             )
-            staged.append((tmp, target))
-            with source.open("rb") as source_handle, tmp.open("xb") as target_handle:
+            target_handle = tmp.open("x+b")
+            temp_identity = _file_identity_from_stat(os.fstat(target_handle.fileno()))
+            staged.append((tmp, target, target_handle, temp_identity, {}))
+            with source.open("rb") as source_handle:
                 shutil.copyfileobj(source_handle, target_handle, length=1024 * 1024)
-                target_handle.flush()
-                os.fsync(target_handle.fileno())
-            staged_fingerprint = _stream_fingerprint(tmp)
+            staged_fingerprint = _fingerprint_open_binary_handle(
+                target_handle, sync_writes=True
+            )
+            staged[-1] = (tmp, target, target_handle, temp_identity, staged_fingerprint)
+            if not _reserved_file_object_matches(tmp, temp_identity):
+                raise RuntimeError("evidence staging temp path changed after copy")
             result["staged"] = staged_fingerprint
             if staged_fingerprint.get("sha256") != result["post_run_source"].get("sha256"):
                 raise RuntimeError("FILE_COMMON source changed during evidence staging")
@@ -1756,17 +2542,59 @@ def _harvest_post_run_stream_batch(
             if post_stage != result["post_run_source"]:
                 raise RuntimeError("FILE_COMMON source changed during coordinated batch staging")
 
-        for active_index, (tmp, target) in enumerate(staged):
+        for active_index, (tmp, target, handle, temp_identity, staged_fingerprint) in enumerate(staged):
             if target.exists():
                 raise FileExistsError(f"post-run evidence target appeared during staging: {target}")
             expected_sha = str(results[active_index]["post_run_source"].get("sha256") or "")
-            # Record the intent before replace: a BaseException can be raised
-            # after the OS completed the rename but before Python returns.
-            publish_attempted.append((target, expected_sha))
-            os.replace(tmp, target)
+            # A same-directory hard link is an atomic no-replace publication.
+            # Record the staged inode before the syscall so rollback can prove
+            # ownership with samefile; an incumbent target is never removed,
+            # even when its bytes happen to be identical.
+            if (
+                any(
+                    _file_identity_from_stat(os.fstat(handle.fileno()))[key]
+                    != temp_identity[key]
+                    for key in ("device", "inode")
+                )
+                or not _reserved_file_object_matches(tmp, temp_identity)
+            ):
+                raise RuntimeError("evidence staging temp changed before publication")
+            publish_attempted.append((tmp, target, temp_identity, expected_sha))
+            os.link(tmp, target)
+            target_identity = _path_file_identity(target)
+            if target_identity is None or any(
+                target_identity[key] != temp_identity[key]
+                for key in ("device", "inode")
+            ):
+                raise RuntimeError("published evidence target is not the staged object")
+            with target.open("rb") as published_handle:
+                opened_identity = _file_identity_from_stat(
+                    os.fstat(published_handle.fileno())
+                )
+                if any(
+                    opened_identity[key] != temp_identity[key]
+                    for key in ("device", "inode")
+                ):
+                    raise RuntimeError(
+                        "published evidence target changed before verification"
+                    )
+                published_fingerprint = _fingerprint_open_binary_handle(
+                    published_handle
+                )
+            if (
+                published_fingerprint["sha256"] != expected_sha
+                or published_fingerprint["bytes"] != staged_fingerprint["bytes"]
+            ):
+                raise RuntimeError("published evidence hash/bytes differ from staged object")
+            if not _reserved_file_object_matches(target, temp_identity):
+                raise RuntimeError("published evidence target changed after verification")
+            published_owned.append(target)
 
         for active_index, ((_source, target), result) in enumerate(zip(resolved, results)):
-            harvested = _stream_fingerprint(target)
+            _tmp, _target, _handle, temp_identity, staged_fingerprint = staged[active_index]
+            if not _reserved_file_object_matches(target, temp_identity):
+                raise RuntimeError("published evidence target changed before receipt")
+            harvested = dict(staged_fingerprint)
             if harvested.get("sha256") != result["post_run_source"].get("sha256"):
                 raise RuntimeError("published evidence hash differs from FILE_COMMON source")
             result.update({"valid": True, "harvested": harvested})
@@ -1775,61 +2603,37 @@ def _harvest_post_run_stream_batch(
         batch_errors.append(failure)
         if 0 <= active_index < len(results):
             results[active_index]["error"] = failure
-        rollback_attempted = True
-        rollback_errors: list[str] = []
-        for target, _expected_sha in publish_attempted:
-            try:
-                if target.exists():
-                    published_before_rollback.append(target)
-            except BaseException as inspect_exc:
-                rollback_errors.append(
-                    f"cannot inspect {target}: {type(inspect_exc).__name__}: {inspect_exc}"
-                )
-        for target, expected_sha in reversed(publish_attempted):
-            try:
-                if not target.exists():
-                    continue
-                actual_sha = sha256_file(target)
-                if actual_sha != expected_sha:
-                    rollback_errors.append(
-                        f"refusing to delete unexpected target content {target}: "
-                        f"expected={expected_sha} actual={actual_sha}"
-                    )
-                    continue
-                target.unlink()
-            except BaseException as rollback_exc:
-                rollback_errors.append(
-                    f"{target}: {type(rollback_exc).__name__}: {rollback_exc}"
-                )
-        remaining_published: list[Path] = []
-        for target, _expected_sha in publish_attempted:
-            try:
-                if target.exists():
-                    remaining_published.append(target)
-            except BaseException as inspect_exc:
-                rollback_errors.append(
-                    f"cannot inspect {target}: {type(inspect_exc).__name__}: {inspect_exc}"
-                )
-        rollback_complete = not rollback_errors and not remaining_published
-        if rollback_errors:
-            batch_errors.extend(f"rollback failed: {error}" for error in rollback_errors)
+        rollback_attempted = False
+        rollback_complete = False
+        for _tmp, target, identity, _expected_sha in publish_attempted:
+            if _reserved_file_object_matches(target, identity):
+                published_before_rollback.append(target)
+                if target not in published_owned:
+                    published_owned.append(target)
+        if published_before_rollback:
+            batch_errors.append(
+                "fail-closed publication residue retained; automatic path cleanup is "
+                "forbidden because it would introduce a check/unlink ABA race"
+            )
         for result in results:
             result["valid"] = False
             result.pop("harvested", None)
-            result.setdefault("error", "coordinated batch publication rolled back")
+            result.setdefault("error", "coordinated batch publication failed closed")
     finally:
-        cleanup_errors: list[str] = []
-        for tmp, _target in staged:
+        close_errors: list[str] = []
+        for tmp, _target, handle, _identity, _fingerprint in staged:
             try:
-                tmp.unlink(missing_ok=True)
-            except BaseException as cleanup_exc:
-                cleanup_errors.append(
-                    f"{tmp}: {type(cleanup_exc).__name__}: {cleanup_exc}"
+                handle.close()
+            except BaseException as close_exc:
+                close_errors.append(
+                    f"{tmp}: {type(close_exc).__name__}: {close_exc}"
                 )
-        batch_errors.extend(f"temporary cleanup failed: {error}" for error in cleanup_errors)
+        batch_errors.extend(f"staging handle close failed: {error}" for error in close_errors)
+        # Temp names are intentionally retained as immutable audit residue.
+        # A path-based unlink cannot be made ABA-safe in portable Python.
 
     remaining_published = []
-    for target, _expected_sha in publish_attempted:
+    for target in published_owned:
         try:
             if target.exists():
                 remaining_published.append(target)
@@ -1876,7 +2680,9 @@ def recover_harvest_from_receipt(
     _require_equal(
         "source receipt SHA-256", expected_source_receipt_sha256, source_receipt_sha
     )
-    receipt = json.loads(source_receipt_path.read_text(encoding="utf-8"))
+    receipt = _strict_json_object(
+        source_receipt_path.read_bytes(), label="source isolated-run receipt"
+    )
     post_item = receipt.get("post_work_item") or {}
     failed_harvest = receipt.get("post_run_stream") or {}
     if receipt.get("mode") != "apply" or int(receipt.get("worker_exit_code", -1)) != 0:
@@ -1885,6 +2691,17 @@ def recover_harvest_from_receipt(
         raise RuntimeError("source receipt does not bind a done/PASS work item")
     if not failed_harvest.get("requested") or failed_harvest.get("valid") is not False:
         raise RuntimeError("source receipt is not an eligible failed harvest")
+    measurement_contract = str(
+        ((receipt.get("preflight") or {}).get("work_item") or {}).get(
+            "measurement_contract"
+        )
+        or ""
+    )
+    if measurement_contract == FTMO_BOOK3_DIAGNOSTIC_CONTRACT:
+        raise RuntimeError(
+            "standalone diagnostic harvest recovery is forbidden; retain the "
+            "failed receipt and create a new diagnostic work item"
+        )
     serialized_contract = (receipt.get("preflight") or {}).get("post_run_stream") or {}
     try:
         contract = _revalidate_serialized_post_run_stream_contract(
@@ -1899,6 +2716,37 @@ def recover_harvest_from_receipt(
 
     flag = root / "state" / "FACTORY_OFF.flag"
     db = root / DEFAULT_DB_REL
+    if not recovery_receipt_path.is_absolute():
+        raise RuntimeError("recovery receipt path must be absolute")
+    recovery_identities = {
+        _path_identity(recovery_receipt_path),
+        _path_identity(_receipt_reservation_path(recovery_receipt_path)),
+    }
+    if len(recovery_identities) != 2:
+        raise RuntimeError("recovery receipt and reservation paths alias")
+    protected_paths = [source_receipt_path, flag, db]
+    contract_streams_for_identity = (
+        list(contract.get("streams") or [])
+        if isinstance(contract.get("streams"), list)
+        else [contract]
+    )
+    protected_paths.extend(
+        Path(str(stream[key]))
+        for stream in contract_streams_for_identity
+        for key in ("source", "target")
+        if stream.get(key)
+    )
+    if any(
+        _path_identity(path) in recovery_identities for path in protected_paths
+    ):
+        raise RuntimeError(
+            "recovery receipt path aliases a source receipt, database, Factory-OFF "
+            "flag, or governed evidence path"
+        )
+    if recovery_receipt_path.exists():
+        raise FileExistsError(
+            f"recovery receipt target already exists: {recovery_receipt_path}"
+        )
     lock_path = path_for_factory_flag(flag)
     with FactoryMutationLock(
         lock_path, owner=f"isolated_harvest_recovery:{post_item.get('id')}"
@@ -1955,6 +2803,18 @@ def recover_harvest_from_receipt(
                 raise RuntimeError(
                     f"source receipt stream {index} changed after the original harvest"
                 )
+        # Reserve and authenticate the final receipt target before publishing
+        # any recovered evidence.  A pre-existing/racing collision therefore
+        # fails with zero evidence publication.
+        receipt_reservation = _reserve_receipt_output(
+            recovery_receipt_path,
+            intent={
+                "mode": "harvest_recovery",
+                "source_receipt_path": str(source_receipt_path),
+                "source_receipt_sha256": source_receipt_sha,
+                "work_item_id": post_item.get("id"),
+            },
+        )
         harvest = _harvest_post_run_stream(
             contract, worker_started_wall_ns=started_ns
         )
@@ -1976,18 +2836,92 @@ def recover_harvest_from_receipt(
             "live_scope_touched": False,
             "autotrading_touched": False,
         }
-        _write_receipt(recovery_receipt_path, result)
+        _publish_reserved_receipt(
+            recovery_receipt_path,
+            reservation_id=receipt_reservation["reservation_id"],
+            reservation_identity=receipt_reservation["reservation_identity"],
+            payload=result,
+        )
         return result
 
 
-def _factory_processes() -> list[dict[str, Any]]:
+_FACTORY_PROCESS_CLASSES = (
+    "worker_daemons",
+    "phase_runners",
+    "smoke_wrappers",
+    "terminal64",
+    "metatester64",
+    "review_required",
+)
+
+
+def _factory_process_scan() -> dict[str, Any]:
+    """Run the bound PowerShell classifier over every Factory process class."""
+
     if os.name != "nt":
-        return []
-    command = (
-        "$rows=Get-CimInstance Win32_Process -Filter \"Name='terminal64.exe' OR Name='metatester64.exe'\" "
-        "| Select-Object Name,ProcessId,ExecutablePath,CommandLine; "
-        "$rows | ConvertTo-Json -Compress"
-    )
+        return {
+            "scanned_at": utc_now(),
+            **{name: [] for name in _FACTORY_PROCESS_CLASSES},
+        }
+    scope_path = Path(__file__).resolve().with_name("factory_process_scope.ps1")
+    if not scope_path.is_file():
+        raise RuntimeError(f"factory process scope module is missing: {scope_path}")
+    quoted_scope = str(scope_path).replace("'", "''")
+    command = rf"""
+$ErrorActionPreference = 'Stop'
+. '{quoted_scope}'
+function New-QmReadOnlyEvidenceRow {{
+    param($Process, [string]$Class, [string]$Reason, $Classification)
+    [ordered]@{{
+        process_class = $Class
+        pid = [int]$Process.ProcessId
+        parent_pid = [int]$Process.ParentProcessId
+        image_name = [string]$Process.Name
+        executable_path = [string]$Process.ExecutablePath
+        command_line_sha256 = Get-QmCommandLineSha256 -CommandLine ([string]$Process.CommandLine)
+        matcher_reason = $Reason
+        phase = $(if ($null -ne $Classification) {{ [string]$Classification.Phase }} else {{ $null }})
+        work_item_id = $(if ($null -ne $Classification) {{ [string]$Classification.WorkItemId }} else {{ $null }})
+        terminal = $(if ($null -ne $Classification) {{ [string]$Classification.Terminal }} else {{ $null }})
+    }}
+}}
+$scan = [ordered]@{{
+    scanned_at = [datetime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+    worker_daemons = @()
+    phase_runners = @()
+    smoke_wrappers = @()
+    terminal64 = @()
+    metatester64 = @()
+    review_required = @()
+}}
+foreach ($process in @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction Stop)) {{
+    if (Test-QmFactoryWorkerCommandLine -CommandLine $process.CommandLine) {{
+        $scan.worker_daemons += New-QmReadOnlyEvidenceRow $process 'worker_daemon' 'exact_terminal_worker_path_terminal_and_farm_root' $null
+    }}
+    $classification = Get-QmFactoryPhaseRunnerClassification -CommandLine $process.CommandLine
+    if ($classification.Disposition -eq 'FACTORY_OWNED') {{
+        $scan.phase_runners += New-QmReadOnlyEvidenceRow $process 'phase_runner' $classification.MatcherReason $classification
+    }} elseif ($classification.Disposition -eq 'REVIEW_REQUIRED') {{
+        $scan.review_required += New-QmReadOnlyEvidenceRow $process 'review_required' $classification.MatcherReason $classification
+    }}
+}}
+foreach ($process in @(Get-CimInstance Win32_Process -Filter "Name='pwsh.exe' OR Name='powershell.exe'" -ErrorAction Stop)) {{
+    if (Test-QmFactoryRunSmokeCommandLine -CommandLine $process.CommandLine) {{
+        $scan.smoke_wrappers += New-QmReadOnlyEvidenceRow $process 'smoke_wrapper' 'exact_run_smoke_path_and_factory_selector' $null
+    }}
+}}
+foreach ($process in @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction Stop)) {{
+    if (Test-QmFactoryMt5ImagePath -Path $process.ExecutablePath -ImageName 'terminal64.exe') {{
+        $scan.terminal64 += New-QmReadOnlyEvidenceRow $process 'terminal64' 'exact_factory_mt5_image_path' $null
+    }}
+}}
+foreach ($process in @(Get-CimInstance Win32_Process -Filter "Name='metatester64.exe'" -ErrorAction Stop)) {{
+    if (Test-QmFactoryMt5ImagePath -Path $process.ExecutablePath -ImageName 'metatester64.exe') {{
+        $scan.metatester64 += New-QmReadOnlyEvidenceRow $process 'metatester64' 'exact_factory_mt5_image_path' $null
+    }}
+}}
+[pscustomobject]$scan | ConvertTo-Json -Compress -Depth 6
+"""
     proc = subprocess.run(
         ["powershell.exe", "-NoProfile", "-Command", command],
         capture_output=True,
@@ -1997,21 +2931,36 @@ def _factory_processes() -> list[dict[str, Any]]:
     )
     if proc.returncode != 0:
         raise RuntimeError(f"factory process probe failed: {proc.stderr.strip()}")
-    raw = proc.stdout.strip()
-    if not raw:
-        return []
-    parsed = json.loads(raw)
-    rows = parsed if isinstance(parsed, list) else [parsed]
-    found: list[dict[str, Any]] = []
-    for row in rows:
-        if str(row.get("Name") or "").lower() == "metatester64.exe":
-            found.append(row)
-            continue
-        haystack = str(row.get("ExecutablePath") or row.get("CommandLine") or "")
-        normalized = haystack.replace("/", "\\").upper()
-        if any(f"\\MT5\\T{i}\\" in normalized or f"\\MT5\\T{i}_" in normalized for i in range(1, 11)):
-            found.append(row)
-    return found
+    try:
+        parsed = json.loads(proc.stdout.strip())
+    except (TypeError, json.JSONDecodeError) as exc:
+        raise RuntimeError("factory process probe returned invalid JSON") from exc
+    if not isinstance(parsed, dict) or not isinstance(parsed.get("scanned_at"), str):
+        raise RuntimeError("factory process probe returned an invalid census object")
+    normalized: dict[str, Any] = {"scanned_at": parsed["scanned_at"]}
+    for name in _FACTORY_PROCESS_CLASSES:
+        raw = parsed.get(name)
+        if raw is None:
+            raise RuntimeError(f"factory process census omitted {name}")
+        if isinstance(raw, dict):
+            rows = [raw]
+        elif isinstance(raw, list):
+            rows = raw
+        else:
+            raise RuntimeError(f"factory process census {name} is not an array")
+        if not all(isinstance(row, dict) for row in rows):
+            raise RuntimeError(f"factory process census {name} contains a non-object")
+        normalized[name] = rows
+    return normalized
+
+
+def _factory_processes() -> list[dict[str, Any]]:
+    scan = _factory_process_scan()
+    return [
+        {**row, "census_bucket": name, "scanned_at": scan["scanned_at"]}
+        for name in _FACTORY_PROCESS_CLASSES
+        for row in scan[name]
+    ]
 
 
 def _ftmo_work_core_plan(
@@ -2023,6 +2972,162 @@ def _ftmo_work_core_plan(
     terminal: str,
     requested_timeout_minutes: float | None,
 ) -> dict[str, Any]:
+    if _is_ftmo_diagnostic_contract(payload):
+        errors: list[str] = []
+        core = FTMO_BOOK3_DIAGNOSTIC_WORK_CORE
+        exact = {
+            "payload schema": (
+                payload.get("schema"),
+                "qm.ftmo-book3-standalone-diagnostic-work-item-payload/v1",
+            ),
+            "evidence vintage": (
+                payload.get("evidence_vintage"),
+                FTMO_BOOK3_DIAGNOSTIC_EVIDENCE_VINTAGE,
+            ),
+            "money basis": (payload.get("money_basis"), FTMO_BOOK3_MONEY_BASIS),
+            "diagnostic code": (
+                payload.get("diagnostic_code"),
+                core["diagnostic_code"],
+            ),
+            "diagnostic purpose": (
+                payload.get("diagnostic_purpose"),
+                "portfolio_component_evaluation",
+            ),
+            "compile policy": (
+                payload.get("compile_policy"),
+                FTMO_BOOK3_DIAGNOSTIC_COMPILE_POLICY,
+            ),
+            "no ladder progression": (
+                payload.get("no_ladder_progression"), True,
+            ),
+            "no joint admission": (payload.get("no_joint_admission"), True),
+            "no release authority": (payload.get("no_release_authority"), True),
+            "supersedes work item": (payload.get("supersedes_work_item_id"), None),
+            "terminal": (terminal, "T10"),
+            "payload terminal": (str(payload.get("terminal") or "").upper(), "T10"),
+            "phase": (row["phase"], "Q02"),
+            "EA": (row["ea_id"], core["ea_id"]),
+            "symbol": (row["symbol"], core["symbol"]),
+            "host timeframe": (payload.get("host_timeframe"), core["period"]),
+            "EA directory": (payload.get("ea_dir_name"), core["ea_dir_name"]),
+            "setfile basename": (
+                Path(str(row["setfile_path"] or "")).name,
+                core["set_name"],
+            ),
+            "from date": (payload.get("from_date"), "2018.07.02"),
+            "to date": (payload.get("to_date"), "2025.12.31"),
+            "tester model": (payload.get("model"), 4),
+            "tester currency": (payload.get("tester_currency"), "USD"),
+            "tester deposit": (payload.get("tester_deposit"), 100000),
+            "risk mode": (payload.get("risk_mode"), "RISK_FIXED"),
+            "fixed risk": (payload.get("risk_fixed"), 1000),
+            "percent risk": (payload.get("risk_percent"), 0),
+            "Q08 expected magic": (payload.get("q08_expected_magic"), 131080000),
+            "Q08 expected symbol": (
+                payload.get("q08_expected_symbol"), "XTIUSD.DWX"
+            ),
+            "Q08 expected money basis": (
+                payload.get("q08_expected_money_basis"),
+                FTMO_BOOK3_MONEY_BASIS,
+            ),
+            "isolated_only": (payload.get("isolated_only"), True),
+            "auto_enqueue": (payload.get("auto_enqueue"), False),
+            "auto_promote": (payload.get("auto_promote"), False),
+            "next_phase": (payload.get("next_phase"), None),
+            "factory_on_authorized": (payload.get("factory_on_authorized"), False),
+        }
+        for label, (actual, expected) in exact.items():
+            if actual != expected:
+                errors.append(
+                    "FTMO standalone diagnostic "
+                    f"{label} mismatch: expected={expected!r} actual={actual!r}"
+                )
+        forbidden_ladder_keys = sorted(
+            key
+            for key in (
+                "measurement_rung",
+                "measurement_sequence",
+                "evidence_run_id",
+                "required_fidelity_stage",
+            )
+            if key in payload
+        )
+        if forbidden_ladder_keys:
+            errors.append(
+                "FTMO standalone diagnostic carries forbidden V2 ladder fields: "
+                f"{forbidden_ladder_keys}"
+            )
+        if "report_root" in payload:
+            errors.append(
+                "FTMO standalone diagnostic report_root must be absent; "
+                "the runner derives the governed work-item evidence directory"
+            )
+        excluded_hold_sha = payload.get("excluded_v2_r2_hold_sha256")
+        if (
+            not isinstance(excluded_hold_sha, str)
+            or not _SHA256_RE.fullmatch(excluded_hold_sha)
+        ):
+            errors.append(
+                "FTMO standalone diagnostic excluded V2-R2 hold SHA-256 is invalid"
+            )
+        excluded_row_sha = payload.get("excluded_v2_r2_row_sha256")
+        if (
+            not isinstance(excluded_row_sha, str)
+            or not _SHA256_RE.fullmatch(excluded_row_sha)
+        ):
+            errors.append(
+                "FTMO standalone diagnostic excluded V2-R2 row SHA-256 is invalid"
+            )
+        avoid = [str(value).upper() for value in (payload.get("avoid_terminals") or [])]
+        expected_avoid = [
+            "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T_LIVE"
+        ]
+        if avoid != expected_avoid:
+            errors.append(
+                "FTMO standalone diagnostic avoid_terminals is not the exact ordered deny-list"
+            )
+        execution_sha = payload.get("execution_bundle_sha256")
+        expected_work_id = _content_uuid(execution_sha)
+        if expected_work_id is None or work_item_id != expected_work_id:
+            errors.append(
+                "FTMO standalone diagnostic work-item ID is not content-addressed "
+                "to execution_bundle_sha256"
+            )
+        if hold is None:
+            errors.append("FTMO standalone diagnostic exact maintenance hold is missing")
+        else:
+            if hold["hold_code"] != FTMO_BOOK3_DIAGNOSTIC_HOLD_CODE:
+                errors.append("FTMO standalone diagnostic hold_code mismatch")
+            if hold["reason"] != FTMO_BOOK3_DIAGNOSTIC_HOLD_REASON:
+                errors.append("FTMO standalone diagnostic hold reason mismatch")
+            if int(hold["active"] or 0) != 1:
+                errors.append("FTMO standalone diagnostic hold is not active")
+            if int(hold["release_on_restart"] or 0) != 0:
+                errors.append("FTMO standalone diagnostic hold is releasing on restart")
+        payload_timeout = payload.get("timeout_min")
+        if payload_timeout != 240:
+            errors.append(
+                "FTMO standalone diagnostic payload timeout mismatch: "
+                f"expected=240 actual={payload_timeout!r}"
+            )
+        if (
+            requested_timeout_minutes is not None
+            and float(requested_timeout_minutes) != 240.0
+        ):
+            errors.append(
+                "FTMO standalone diagnostic requested timeout is not exactly "
+                "the payload-bound 240 minutes"
+            )
+        return {
+            "requested": True,
+            "diagnostic": True,
+            "valid": not errors,
+            "errors": errors,
+            "diagnostic_code": core["diagnostic_code"],
+            "core": core,
+            "payload_timeout_minutes": payload_timeout,
+            "requested_timeout_minutes": requested_timeout_minutes,
+        }
     if payload.get("measurement_contract") != FTMO_BOOK3_MEASUREMENT_CONTRACT:
         return {"requested": False, "valid": True, "errors": []}
     errors: list[str] = []
@@ -2137,6 +3242,174 @@ def _ftmo_work_core_plan(
 def _ftmo_ladder_order_plan(
     conn: sqlite3.Connection, *, current_work_item_id: str, payload: dict[str, Any]
 ) -> dict[str, Any]:
+    if _is_ftmo_diagnostic_contract(payload):
+        errors: list[str] = []
+        excluded_id = payload.get("excluded_v2_r2_work_item_id")
+        expected_payload_sha = payload.get("excluded_v2_r2_payload_sha256")
+        expected_hold_sha = payload.get("excluded_v2_r2_hold_sha256")
+        expected_row_sha = payload.get("excluded_v2_r2_row_sha256")
+        if not isinstance(excluded_id, str) or not excluded_id:
+            errors.append("FTMO standalone diagnostic excluded V2-R2 ID is invalid")
+        if excluded_id == current_work_item_id:
+            errors.append("FTMO standalone diagnostic aliases the excluded V2-R2 row")
+        if (
+            not isinstance(expected_payload_sha, str)
+            or not _SHA256_RE.fullmatch(expected_payload_sha)
+        ):
+            errors.append(
+                "FTMO standalone diagnostic excluded V2-R2 payload SHA-256 is invalid"
+            )
+        if (
+            not isinstance(expected_hold_sha, str)
+            or not _SHA256_RE.fullmatch(expected_hold_sha)
+        ):
+            errors.append(
+                "FTMO standalone diagnostic excluded V2-R2 hold SHA-256 is invalid"
+            )
+        if (
+            not isinstance(expected_row_sha, str)
+            or not _SHA256_RE.fullmatch(expected_row_sha)
+        ):
+            errors.append(
+                "FTMO standalone diagnostic excluded V2-R2 row SHA-256 is invalid"
+            )
+        excluded = None
+        if isinstance(excluded_id, str) and excluded_id:
+            excluded = conn.execute(
+                "SELECT * FROM work_items WHERE id=?",
+                (excluded_id,),
+            ).fetchone()
+        if excluded is None:
+            errors.append("FTMO standalone diagnostic excluded V2-R2 row is missing")
+            excluded_summary = None
+        else:
+            excluded_map = dict(excluded)
+            excluded_keys = set(excluded_map)
+            missing_columns = sorted(
+                set(FTMO_V2_R2_WORK_ITEM_PREIMAGE_COLUMNS) - excluded_keys
+            )
+            if missing_columns:
+                errors.append(
+                    "FTMO standalone diagnostic excluded V2-R2 full row preimage "
+                    f"is unavailable: {missing_columns}"
+                )
+                row_summary = None
+                actual_row_sha = None
+            else:
+                row_summary = {
+                    key: excluded_map[key]
+                    for key in FTMO_V2_R2_WORK_ITEM_PREIMAGE_COLUMNS
+                }
+                actual_row_sha = canonical_sha256(row_summary)
+                if actual_row_sha != expected_row_sha:
+                    errors.append(
+                        "FTMO standalone diagnostic excluded V2-R2 row SHA-256 drift: "
+                        f"expected={expected_row_sha} actual={actual_row_sha}"
+                    )
+            raw = str(excluded_map.get("payload_json") or "{}")
+            actual_payload_sha = sha256_text(raw)
+            try:
+                excluded_payload = _strict_json_object(
+                    raw.encode("utf-8"), label="excluded V2-R2 payload_json"
+                )
+            except (TypeError, ValueError, RuntimeError) as exc:
+                excluded_payload = {}
+                errors.append(f"excluded V2-R2 payload is invalid: {exc}")
+            exact = {
+                "phase": (excluded_map.get("phase"), "Q02"),
+                "kind": (excluded_map.get("kind"), "backtest"),
+                "EA": (excluded_map.get("ea_id"), "QM5_13108"),
+                "symbol": (excluded_map.get("symbol"), "XTIUSD.DWX"),
+                "status": (excluded_map.get("status"), "pending"),
+                "verdict": (excluded_map.get("verdict"), None),
+                "claimed_by": (excluded_map.get("claimed_by"), None),
+                "evidence_path": (excluded_map.get("evidence_path"), None),
+                "attempt_count": (excluded_map.get("attempt_count"), 0),
+                "parent_task_id": (excluded_map.get("parent_task_id"), None),
+                "measurement contract": (
+                    excluded_payload.get("measurement_contract"),
+                    FTMO_BOOK3_MEASUREMENT_CONTRACT,
+                ),
+                "rung": (excluded_payload.get("measurement_rung"), "R2"),
+                "sequence": (excluded_payload.get("measurement_sequence"), 4),
+                "terminal": (
+                    str(excluded_payload.get("terminal") or "").upper(),
+                    "T10",
+                ),
+            }
+            for label, (actual, expected) in exact.items():
+                if actual != expected:
+                    errors.append(
+                        "FTMO standalone diagnostic excluded V2-R2 "
+                        f"{label} mismatch: expected={expected!r} actual={actual!r}"
+                    )
+            if actual_payload_sha != expected_payload_sha:
+                errors.append(
+                    "FTMO standalone diagnostic excluded V2-R2 payload SHA-256 drift: "
+                    f"expected={expected_payload_sha} actual={actual_payload_sha}"
+                )
+            hold_row = conn.execute(
+                "SELECT work_item_id,hold_code,reason,active,release_on_restart,created_at,"
+                "updated_at,released_at,release_note FROM work_item_holds WHERE work_item_id=?",
+                (excluded_id,),
+            ).fetchone()
+            hold_summary = dict(hold_row) if hold_row is not None else None
+            if hold_summary is None:
+                errors.append(
+                    "FTMO standalone diagnostic excluded V2-R2 hold is missing"
+                )
+                actual_hold_sha = None
+            else:
+                hold_exact = {
+                    "hold_code": (
+                        hold_summary.get("hold_code"),
+                        FTMO_BOOK3_HOLD_CODE,
+                    ),
+                    "reason": (
+                        hold_summary.get("reason"),
+                        FTMO_BOOK3_HOLD_REASON,
+                    ),
+                    "active": (hold_summary.get("active"), 1),
+                    "release_on_restart": (
+                        hold_summary.get("release_on_restart"),
+                        0,
+                    ),
+                    "released_at": (hold_summary.get("released_at"), None),
+                    "release_note": (hold_summary.get("release_note"), None),
+                }
+                for label, (actual, expected) in hold_exact.items():
+                    if actual != expected:
+                        errors.append(
+                            "FTMO standalone diagnostic excluded V2-R2 hold "
+                            f"{label} mismatch: expected={expected!r} actual={actual!r}"
+                        )
+                actual_hold_sha = canonical_sha256(hold_summary)
+                if actual_hold_sha != expected_hold_sha:
+                    errors.append(
+                        "FTMO standalone diagnostic excluded V2-R2 hold SHA-256 drift: "
+                        f"expected={expected_hold_sha} actual={actual_hold_sha}"
+                    )
+            excluded_summary = {
+                "id": excluded_map.get("id"),
+                "status": excluded_map.get("status"),
+                "verdict": excluded_map.get("verdict"),
+                "claimed_by": excluded_map.get("claimed_by"),
+                "evidence_path": excluded_map.get("evidence_path"),
+                "payload_sha256": actual_payload_sha,
+                "row": row_summary,
+                "row_sha256": actual_row_sha,
+                "hold": hold_summary,
+                "hold_sha256": actual_hold_sha,
+            }
+        return {
+            "requested": True,
+            "diagnostic": True,
+            "valid": not errors,
+            "errors": errors,
+            "rungs": [],
+            "no_ladder_progression": True,
+            "excluded_v2_r2": excluded_summary,
+        }
     if payload.get("measurement_contract") != FTMO_BOOK3_MEASUREMENT_CONTRACT:
         return {"requested": False, "valid": True, "errors": [], "rungs": []}
     errors: list[str] = []
@@ -2655,6 +3928,21 @@ def _ftmo_fidelity_receipt_plan(
     expected_receipt_sha256: str | None,
     expected_factory_off_sha256: str | None,
 ) -> dict[str, Any]:
+    if _is_ftmo_diagnostic_contract(payload):
+        supplied = receipt_path is not None or expected_receipt_sha256 is not None
+        return {
+            "requested": True,
+            "required": False,
+            "prohibited": True,
+            "valid": not supplied,
+            "errors": (
+                [
+                    "FTMO standalone diagnostic must not consume a V2 fidelity receipt"
+                ]
+                if supplied
+                else []
+            ),
+        }
     if payload.get("measurement_contract") != FTMO_BOOK3_MEASUREMENT_CONTRACT:
         if receipt_path is not None or expected_receipt_sha256 is not None:
             return {
@@ -3245,6 +4533,13 @@ def build_plan(
         setfile_path=Path(str(row["setfile_path"])),
     )
     errors.extend(source_binding.get("errors") or [])
+    compile_binding = _ftmo_compile_binding_plan(
+        payload,
+        repo_root=repo_root,
+        factory_off_flag=flag,
+        expected_factory_off_sha256=sha256_file(flag),
+    )
+    errors.extend(compile_binding.get("errors") or [])
     post_run_stream = _post_run_stream_plan(payload, work_item_id)
     errors.extend(post_run_stream.get("errors") or [])
     processes = _factory_processes()
@@ -3269,6 +4564,8 @@ def build_plan(
             "phase": row["phase"],
             "status": row["status"],
             "claimed_by": row["claimed_by"],
+            "measurement_contract": payload.get("measurement_contract"),
+            "diagnostic_code": payload.get("diagnostic_code"),
             "measurement_rung": payload.get("measurement_rung"),
             "measurement_sequence": payload.get("measurement_sequence"),
             "evidence_run_id": payload.get("evidence_run_id"),
@@ -3284,6 +4581,7 @@ def build_plan(
         "artifacts": artifacts,
         "execution_inputs": execution_inputs,
         "source_binding": source_binding,
+        "compile_binding": compile_binding,
         "post_run_stream": post_run_stream,
         "worker_script": str(worker_script),
         "worker_sha256": sha256_file(worker_script),
@@ -3294,18 +4592,6 @@ def build_plan(
 def _require_equal(label: str, expected: str, actual: str) -> None:
     if expected.strip().lower() != actual.strip().lower():
         raise RuntimeError(f"{label} mismatch: expected={expected} actual={actual}")
-
-
-def _write_receipt(path: Path, payload: dict[str, Any]) -> None:
-    if path.exists():
-        raise FileExistsError(f"receipt target already exists: {path}")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
-    try:
-        tmp.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        os.replace(tmp, path)
-    finally:
-        tmp.unlink(missing_ok=True)
 
 
 def _fsync_file(handle: Any) -> None:
@@ -3319,8 +4605,9 @@ def _reserve_execution_outputs(
     receipt_path: Path,
     worker_log_path: Path,
     intent: dict[str, Any],
-) -> str:
-    paths = [snapshot_path, receipt_path, worker_log_path]
+) -> dict[str, Any]:
+    reservation_path = _receipt_reservation_path(receipt_path)
+    paths = [snapshot_path, receipt_path, worker_log_path, reservation_path]
     identities = [_lexical_path_identity(path) for path in paths]
     if len(set(identities)) != len(identities):
         raise RuntimeError("snapshot, receipt and worker log paths must be distinct")
@@ -3328,14 +4615,20 @@ def _reserve_execution_outputs(
     if existing:
         raise FileExistsError(f"isolated-run output target already exists: {existing}")
     reservation_id = str(uuid.uuid4())
-    created: list[Path] = []
+    created: list[tuple[Path, dict[str, int]]] = []
+    output_identities: dict[str, dict[str, int]] = {}
     try:
-        for path in (snapshot_path, worker_log_path):
+        for role, path in (
+            ("snapshot", snapshot_path),
+            ("worker_log", worker_log_path),
+        ):
             path.parent.mkdir(parents=True, exist_ok=True)
             with path.open("xb") as handle:
                 _fsync_file(handle)
-            created.append(path)
-        receipt_path.parent.mkdir(parents=True, exist_ok=True)
+                identity = _file_identity_from_stat(os.fstat(handle.fileno()))
+            output_identities[role] = identity
+            created.append((path, identity))
+        reservation_path.parent.mkdir(parents=True, exist_ok=True)
         reservation = {
             "schema_version": 2,
             "mode": "apply",
@@ -3343,86 +4636,367 @@ def _reserve_execution_outputs(
             "reservation_id": reservation_id,
             "reserved_at_utc": utc_now(),
             "snapshot_path": str(snapshot_path),
+            "snapshot_identity": output_identities["snapshot"],
             "worker_log_path": str(worker_log_path),
+            "worker_log_identity": output_identities["worker_log"],
+            "final_receipt_path": str(receipt_path),
             **intent,
         }
-        with receipt_path.open("x", encoding="utf-8", newline="\n") as handle:
+        with reservation_path.open("x", encoding="utf-8", newline="\n") as handle:
             handle.write(json.dumps(reservation, indent=2, sort_keys=True) + "\n")
             _fsync_file(handle)
-        created.append(receipt_path)
+            reservation_file_identity = _file_identity_from_stat(
+                os.fstat(handle.fileno())
+            )
+        created.append((reservation_path, reservation_file_identity))
     except BaseException:
-        for path in reversed(created):
-            path.unlink(missing_ok=True)
+        # Deliberately preserve every successfully created placeholder/intent.
+        # A check-then-unlink cleanup has an unavoidable ABA window in which a
+        # racing replacement could be deleted.  Durable partial reservations
+        # are safer audit residue and make every retry fail closed.
         raise
-    return reservation_id
+    return {
+        "reservation_id": reservation_id,
+        "snapshot_identity": output_identities["snapshot"],
+        "worker_log_identity": output_identities["worker_log"],
+        "receipt_reservation_identity": reservation_file_identity,
+    }
+
+
+def _validate_diagnostic_output_paths(
+    *,
+    snapshot_path: Path,
+    receipt_path: Path,
+    worker_log_path: Path,
+    protected_paths: list[Path],
+    allowed_roots: tuple[Path, ...] | None = None,
+) -> None:
+    """Reject output aliases and anything outside governed evidence roots."""
+
+    roots = tuple(allowed_roots or FTMO_DIAGNOSTIC_ALLOWED_OUTPUT_ROOTS)
+    if not roots or any(not root.is_absolute() for root in roots):
+        raise RuntimeError("diagnostic output root contract is invalid")
+    resolved_roots = tuple(root.resolve(strict=False) for root in roots)
+    outputs = {
+        "snapshot": snapshot_path,
+        "receipt": receipt_path,
+        "worker_log": worker_log_path,
+        "receipt_reservation": _receipt_reservation_path(receipt_path),
+    }
+    output_identities: dict[str, str] = {}
+    for role, path in outputs.items():
+        if not path.is_absolute():
+            raise RuntimeError(f"diagnostic {role} path must be absolute: {path}")
+        resolved = path.resolve(strict=False)
+        if _lexical_path_identity(path) != _lexical_path_identity(resolved):
+            raise RuntimeError(
+                f"diagnostic {role} path uses an alias, symlink, or traversal: {path}"
+            )
+        if not any(
+            resolved != root and _is_relative_to(resolved, root)
+            for root in resolved_roots
+        ):
+            raise RuntimeError(
+                f"diagnostic {role} path is outside governed evidence/artifact roots: {path}"
+            )
+        identity = _lexical_path_identity(resolved)
+        if identity in output_identities.values():
+            raise RuntimeError("diagnostic output paths must be distinct")
+        output_identities[role] = identity
+
+    protected_identities = {
+        _lexical_path_identity(path.resolve(strict=False))
+        for path in protected_paths
+        if path.is_absolute()
+    }
+    collisions = sorted(
+        role
+        for role, identity in output_identities.items()
+        if identity in protected_identities
+    )
+    if collisions:
+        raise RuntimeError(
+            "diagnostic output path aliases a governed source/input: "
+            f"{collisions}"
+        )
+
+
+def _diagnostic_protected_paths(plan: dict[str, Any]) -> list[Path]:
+    paths = [
+        Path(str(plan.get("factory_off_flag") or "")),
+        Path(str(plan.get("db") or "")),
+        Path(str(plan.get("worker_script") or "")),
+    ]
+    for item in plan.get("artifacts") or []:
+        if isinstance(item, dict) and item.get("path"):
+            paths.append(Path(str(item["path"])))
+    for group in (
+        plan.get("execution_inputs") or {},
+        ((plan.get("source_binding") or {}).get("runtime_sources") or {}),
+    ):
+        for item in group.get("artifacts") or []:
+            if isinstance(item, dict) and item.get("path"):
+                paths.append(Path(str(item["path"])))
+    compile_binding = plan.get("compile_binding") or {}
+    for item in (compile_binding.get("manifest"), compile_binding.get("controller")):
+        if isinstance(item, dict) and item.get("path"):
+            paths.append(Path(str(item["path"])))
+    stream = plan.get("post_run_stream") or {}
+    stream_rows = stream.get("streams") if isinstance(stream.get("streams"), list) else [stream]
+    for item in stream_rows:
+        if isinstance(item, dict) and item.get("source"):
+            paths.append(Path(str(item["source"])))
+    return paths
+
+
+def _require_diagnostic_report_root_absent(
+    work_item_id: str, *, output_paths: tuple[Path, ...] = ()
+) -> Path:
+    report_root = _governed_recovery_report_root(work_item_id)
+    resolved_root = report_root.resolve(strict=False)
+    for path in output_paths:
+        resolved = path.resolve(strict=False)
+        if resolved == resolved_root or _is_relative_to(resolved, resolved_root):
+            raise RuntimeError(
+                "diagnostic controller output cannot reserve the governed report_root"
+            )
+    if report_root.exists():
+        raise RuntimeError(
+            "standalone diagnostic governed report_root is not wholly absent: "
+            f"{report_root}"
+        )
+    return report_root
+
+
+def _receipt_reservation_path(path: Path) -> Path:
+    return path.with_name(path.name + ".reservation.json")
+
+
+def _reserve_receipt_output(path: Path, *, intent: dict[str, Any]) -> dict[str, Any]:
+    """Atomically reserve one create-only receipt before its governed action."""
+
+    if not path.is_absolute():
+        raise RuntimeError("receipt path must be absolute")
+    reservation_path = _receipt_reservation_path(path)
+    if path.exists():
+        raise FileExistsError(f"receipt target already exists: {path}")
+    reservation_path.parent.mkdir(parents=True, exist_ok=True)
+    reservation_id = str(uuid.uuid4())
+    reservation = {
+        "schema_version": 2,
+        "state": "intent_reserved",
+        "reservation_id": reservation_id,
+        "reserved_at_utc": utc_now(),
+        "final_receipt_path": str(path),
+        **intent,
+    }
+    with reservation_path.open("x", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(reservation, indent=2, sort_keys=True) + "\n")
+        _fsync_file(handle)
+        reservation_identity = _file_identity_from_stat(os.fstat(handle.fileno()))
+    if path.exists():
+        raise FileExistsError(f"receipt target appeared during reservation: {path}")
+    return {
+        "reservation_id": reservation_id,
+        "reservation_identity": reservation_identity,
+    }
 
 
 def _publish_reserved_receipt(
-    path: Path, *, reservation_id: str, payload: dict[str, Any]
+    path: Path,
+    *,
+    reservation_id: str,
+    reservation_identity: dict[str, int],
+    payload: dict[str, Any],
 ) -> None:
+    reservation_path = _receipt_reservation_path(path)
     try:
-        current = json.loads(path.read_text(encoding="utf-8"))
+        with reservation_path.open("rb") as reservation_handle:
+            if (
+                _file_identity_from_stat(os.fstat(reservation_handle.fileno()))
+                != reservation_identity
+                or not _reserved_file_matches(
+                    reservation_path, reservation_identity, require_empty=False
+                )
+            ):
+                raise RuntimeError("receipt reservation file identity changed")
+            reservation_bytes = reservation_handle.read()
+            if not _reserved_file_matches(
+                reservation_path, reservation_identity, require_empty=False
+            ):
+                raise RuntimeError("receipt reservation changed while read")
+            current = _strict_json_object(
+                reservation_bytes, label="reserved isolated-run receipt intent"
+            )
     except Exception as exc:
         raise RuntimeError(f"reserved receipt cannot be authenticated: {exc}") from exc
     if current.get("reservation_id") != reservation_id:
         raise RuntimeError("reserved receipt reservation_id changed")
+    if _lexical_path_identity(Path(str(current.get("final_receipt_path") or ""))) != (
+        _lexical_path_identity(path)
+    ):
+        raise RuntimeError("reserved receipt final path changed")
     tmp = path.with_name(f"{path.name}.{reservation_id}.tmp")
     rendered = {
         **payload,
         "reservation_id": reservation_id,
     }
-    try:
-        with tmp.open("x", encoding="utf-8", newline="\n") as handle:
-            handle.write(json.dumps(rendered, indent=2, sort_keys=True) + "\n")
-            _fsync_file(handle)
-        os.replace(tmp, path)
-    finally:
-        tmp.unlink(missing_ok=True)
+    rendered_bytes = (
+        json.dumps(rendered, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+    with tmp.open("xb") as handle:
+        handle.write(rendered_bytes)
+        _fsync_file(handle)
+        temp_identity = _file_identity_from_stat(os.fstat(handle.fileno()))
+        if not _reserved_file_object_matches(tmp, temp_identity):
+            raise RuntimeError("receipt publication temp path changed before link")
+        if not _reserved_file_matches(
+            reservation_path, reservation_identity, require_empty=False
+        ):
+            raise RuntimeError("receipt reservation changed before publication")
+        try:
+            os.link(tmp, path)
+        except FileExistsError as exc:
+            raise RuntimeError(
+                f"final receipt target collision; incumbent was not overwritten: {path}"
+            ) from exc
+        target_identity = _path_file_identity(path)
+        if target_identity is None or any(
+            target_identity[key] != temp_identity[key]
+            for key in ("device", "inode")
+        ):
+            raise RuntimeError("final receipt target is not the linked temp object")
+        with path.open("rb") as target_handle:
+            opened_target = _file_identity_from_stat(os.fstat(target_handle.fileno()))
+            if any(
+                opened_target[key] != temp_identity[key]
+                for key in ("device", "inode")
+            ):
+                raise RuntimeError("final receipt target changed before verification")
+            target_bytes = target_handle.read()
+        if target_bytes != rendered_bytes:
+            raise RuntimeError("final receipt hash/byte verification failed")
+        if not _reserved_file_object_matches(path, temp_identity):
+            raise RuntimeError("final receipt target changed after verification")
+        if not _reserved_file_matches(
+            reservation_path, reservation_identity, require_empty=False
+        ):
+            raise RuntimeError("receipt reservation changed after publication")
+    # Deliberately retain the hard-linked temp name as immutable publication
+    # evidence. Any path-based cleanup would reintroduce a check/unlink ABA gap.
 
 
-def _terminate_pid_tree(pid: int) -> dict[str, Any]:
-    result: dict[str, Any] = {"pid": int(pid), "attempted": True, "errors": []}
-    if os.name == "nt":
-        process = subprocess.run(
-            ["taskkill.exe", "/PID", str(pid), "/T", "/F"],
-            capture_output=True,
-            text=True,
-            timeout=30,
-            check=False,
-        )
-        result.update(
-            {
-                "returncode": process.returncode,
-                "stdout": process.stdout.strip(),
-                "stderr": process.stderr.strip(),
-            }
-        )
-        return result
-    try:
-        os.killpg(pid, signal.SIGTERM)
-    except ProcessLookupError:
-        pass
-    except Exception as exc:  # pragma: no cover - platform-specific containment
-        result["errors"].append(f"{type(exc).__name__}: {exc}")
-    return result
+def _hash_reserved_open_log(
+    handle: Any, *, path: Path, expected_identity: dict[str, int]
+) -> dict[str, Any]:
+    """Hash the exact still-open reserved log object after its child exits."""
+
+    handle.flush()
+    os.fsync(handle.fileno())
+    handle_identity = _file_identity_from_stat(os.fstat(handle.fileno()))
+    if any(
+        handle_identity[key] != expected_identity[key]
+        for key in ("device", "inode")
+    ) or not _reserved_file_object_matches(path, expected_identity):
+        raise RuntimeError("worker log reservation was replaced during execution")
+    binary = handle.buffer
+    binary.seek(0)
+    digest = hashlib.sha256()
+    size = 0
+    while True:
+        chunk = binary.read(1024 * 1024)
+        if not chunk:
+            break
+        digest.update(chunk)
+        size += len(chunk)
+    if not _reserved_file_object_matches(path, expected_identity):
+        raise RuntimeError("worker log reservation was replaced while hashing")
+    return {
+        "sha256": digest.hexdigest(),
+        "bytes": size,
+        "identity": handle_identity,
+    }
 
 
-def _contain_worker_process_tree(process: subprocess.Popen[Any] | None) -> dict[str, Any]:
+def _capture_spawned_process_identity(
+    process: subprocess.Popen[Any],
+) -> dict[str, Any]:
+    """Capture the immutable creation identity of the retained Popen handle."""
+
+    identity = get_process_identity(int(process.pid))
+    if identity is None or identity.get("is_running") is not True:
+        raise RuntimeError("isolated worker exited before identity capture")
+    creation_key = str(identity.get("creation_key") or "")
+    if not creation_key:
+        raise RuntimeError("isolated worker has no process creation identity")
+    return {
+        "process_creation_key": creation_key,
+        "process_image_path": str(identity.get("image_path") or ""),
+        "process_started_at_epoch": float(identity["started_at_epoch"]),
+    }
+
+
+def _contain_worker_process_tree(
+    process: subprocess.Popen[Any] | None,
+    process_identity: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Contain only the exact retained process/job; never signal a reopened PID."""
+
     if process is None:
         return {"attempted": False, "valid": True, "actions": []}
     actions: list[dict[str, Any]] = []
-    if process.poll() is None:
-        actions.append(_terminate_pid_tree(process.pid))
+    if sys.platform == "win32":
+        identity = process_identity or {}
+        creation_key = str(identity.get("process_creation_key") or "")
+        registry_key = str(identity.get("job_object_registry_key") or "")
+        if identity.get("job_object_assigned") is not True or not creation_key:
+            return {
+                "attempted": True,
+                "valid": False,
+                "worker_pid": process.pid,
+                "actions": [],
+                "error": "exact Windows Job Object identity is unavailable",
+            }
         try:
+            aborted = GLOBAL_JOB_REGISTRY.abort_retained(process.pid, creation_key)
+            actions.append(
+                {
+                    "mode": "retained_job_handle_close",
+                    "registry_key": registry_key,
+                    "aborted": aborted,
+                }
+            )
             process.wait(timeout=30)
         except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait(timeout=30)
+            return {
+                "attempted": True,
+                "valid": False,
+                "worker_pid": process.pid,
+                "actions": actions,
+                "error": "retained Job close did not stop worker within deadline",
+            }
+        except Exception as exc:
+            return {
+                "attempted": True,
+                "valid": False,
+                "worker_pid": process.pid,
+                "actions": actions,
+                "error": f"retained Job containment failed: {exc}",
+            }
+        reap_finished_job_objects()
     else:
-        # Never target an already-exited PID: immediate PID reuse could make a
-        # late taskkill/killpg hit an unrelated process.  Factory descendants
-        # are handled by the authoritative post-run factory census below.
-        actions.append({"pid": process.pid, "attempted": False, "parent_exited": True})
+        if process.poll() is None:
+            process.terminate()
+            try:
+                process.wait(timeout=30)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=30)
+            actions.append({"mode": "retained_popen_handle", "terminated": True})
+        else:
+            actions.append(
+                {"mode": "retained_popen_handle", "parent_exited": True}
+            )
     return {
         "attempted": True,
         "valid": process.poll() is not None,
@@ -3432,21 +5006,25 @@ def _contain_worker_process_tree(process: subprocess.Popen[Any] | None) -> dict[
 
 
 def _post_run_quiescence() -> dict[str, Any]:
+    """Observe global Factory quiescence without targeting foreign processes.
+
+    The controller may contain only the exact worker process tree it spawned;
+    that happens in ``_contain_worker_process_tree``.  A terminal/tester found
+    here has no authenticated lineage to that worker, so it is observed and
+    blocks success but is never terminated (including T5 and T_Live).
+    """
+
     before = _factory_processes()
-    actions: list[dict[str, Any]] = []
-    for row in before:
-        pid = row.get("ProcessId")
-        if isinstance(pid, int) or (isinstance(pid, str) and pid.isdigit()):
-            actions.append(_terminate_pid_tree(int(pid)))
     deadline = time.monotonic() + 30.0
-    after = _factory_processes()
+    after = before
     while after and time.monotonic() < deadline:
         time.sleep(0.25)
         after = _factory_processes()
     return {
         "valid": not after,
         "before": before,
-        "termination_actions": actions,
+        "termination_actions": [],
+        "foreign_process_policy": "OBSERVE_AND_FAIL_NEVER_TERMINATE",
         "after": after,
     }
 
@@ -3467,7 +5045,10 @@ def _revalidate_execution_inputs(
         for item in prior.get("artifacts") or []
     ]
     payload = {
-        "measurement_contract": FTMO_BOOK3_MEASUREMENT_CONTRACT,
+        "measurement_contract": (
+            preflight.get("work_item", {}).get("measurement_contract")
+            or FTMO_BOOK3_MEASUREMENT_CONTRACT
+        ),
         "terminal": "T10",
         "execution_input_artifacts": rows,
         "execution_input_artifacts_sha256": canonical_sha256(rows),
@@ -3498,6 +5079,10 @@ def _revalidate_runtime_sources(
         for item in prior.get("artifacts") or []
     ]
     payload = {
+        "measurement_contract": (
+            preflight.get("work_item", {}).get("measurement_contract")
+            or FTMO_BOOK3_MEASUREMENT_CONTRACT
+        ),
         "runtime_source_artifacts": rows,
         "runtime_source_artifacts_sha256": canonical_sha256(rows),
     }
@@ -3510,6 +5095,110 @@ def _revalidate_runtime_sources(
     current["errors"] = errors
     current["valid"] = not errors
     return current
+
+
+def _revalidate_compile_binding(
+    preflight: dict[str, Any], *, repo_root: Path
+) -> dict[str, Any]:
+    prior = preflight.get("compile_binding") or {}
+    if not prior.get("requested"):
+        return {"requested": False, "valid": True, "errors": []}
+    payload = dict(prior.get("payload_binding") or {})
+    current = _ftmo_compile_binding_plan(
+        payload,
+        repo_root=repo_root,
+        factory_off_flag=Path(str(preflight.get("factory_off_flag") or "")),
+        expected_factory_off_sha256=str(
+            preflight.get("factory_off_sha256") or ""
+        ),
+    )
+    errors = list(current.get("errors") or [])
+    for key in ("manifest", "controller", "compile_source_commit", "results"):
+        if current.get(key) != prior.get(key):
+            errors.append(f"compile binding {key} changed during isolated run")
+    current["errors"] = errors
+    current["valid"] = not errors
+    return current
+
+
+def _revalidate_diagnostic_isolation(
+    preflight: dict[str, Any], *, db: Path
+) -> dict[str, Any]:
+    prior = preflight.get("ladder_order") or {}
+    if prior.get("diagnostic") is not True:
+        return {"requested": False, "valid": True, "errors": []}
+    excluded = prior.get("excluded_v2_r2") or {}
+    payload = {
+        "measurement_contract": FTMO_BOOK3_DIAGNOSTIC_CONTRACT,
+        "excluded_v2_r2_work_item_id": excluded.get("id"),
+        "excluded_v2_r2_payload_sha256": excluded.get("payload_sha256"),
+        "excluded_v2_r2_row_sha256": excluded.get("row_sha256"),
+        "excluded_v2_r2_hold_sha256": excluded.get("hold_sha256"),
+    }
+    with connect_ro(db) as conn:
+        current = _ftmo_ladder_order_plan(
+            conn,
+            current_work_item_id=str(preflight.get("work_item_id") or ""),
+            payload=payload,
+        )
+    errors = list(current.get("errors") or [])
+    if current.get("excluded_v2_r2") != excluded:
+        errors.append("excluded V2-R2 row changed during standalone diagnostic run")
+    current["errors"] = errors
+    current["valid"] = not errors
+    current["pre_excluded_v2_r2"] = excluded
+    return current
+
+
+def _revalidate_diagnostic_hold(
+    preflight: dict[str, Any], *, db: Path, work_item_id: str
+) -> dict[str, Any]:
+    if preflight.get("work_item", {}).get(
+        "measurement_contract"
+    ) != FTMO_BOOK3_DIAGNOSTIC_CONTRACT:
+        return {"requested": False, "valid": True, "errors": []}
+    prior = preflight.get("hold")
+    errors: list[str] = []
+    with connect_ro(db) as conn:
+        row = conn.execute(
+            "SELECT work_item_id,hold_code,reason,active,release_on_restart,created_at,"
+            "updated_at,released_at,release_note FROM work_item_holds WHERE work_item_id=?",
+            (work_item_id,),
+        ).fetchone()
+    current = dict(row) if row is not None else None
+    if current is None:
+        errors.append("standalone diagnostic hold disappeared during isolated run")
+    else:
+        exact = {
+            "work_item_id": (current.get("work_item_id"), work_item_id),
+            "hold_code": (
+                current.get("hold_code"),
+                FTMO_BOOK3_DIAGNOSTIC_HOLD_CODE,
+            ),
+            "reason": (
+                current.get("reason"),
+                FTMO_BOOK3_DIAGNOSTIC_HOLD_REASON,
+            ),
+            "active": (current.get("active"), 1),
+            "release_on_restart": (current.get("release_on_restart"), 0),
+            "released_at": (current.get("released_at"), None),
+            "release_note": (current.get("release_note"), None),
+        }
+        for label, (actual, expected) in exact.items():
+            if actual != expected:
+                errors.append(
+                    "standalone diagnostic hold "
+                    f"{label} mismatch: expected={expected!r} actual={actual!r}"
+                )
+        if not isinstance(prior, dict) or current != prior:
+            errors.append("standalone diagnostic hold changed during isolated run")
+    return {
+        "requested": True,
+        "valid": not errors,
+        "errors": errors,
+        "pre_hold": prior,
+        "post_hold": current,
+    }
 
 
 def _post_evidence_plan(post: sqlite3.Row, preflight: dict[str, Any]) -> dict[str, Any]:
@@ -3586,7 +5275,25 @@ def execute(
         _require_equal("logical DB state SHA-256", expected_db_state_sha256, plan["db_state_sha256"])
         _require_equal("work-item payload SHA-256", expected_payload_sha256, plan["work_item"]["payload_sha256"])
         _require_equal("worker SHA-256", expected_worker_sha256, plan["worker_sha256"])
-        reservation_id = _reserve_execution_outputs(
+        if plan.get("work_item", {}).get(
+            "measurement_contract"
+        ) == FTMO_BOOK3_DIAGNOSTIC_CONTRACT:
+            _validate_diagnostic_output_paths(
+                snapshot_path=snapshot_path,
+                receipt_path=receipt_path,
+                worker_log_path=worker_log_path,
+                protected_paths=_diagnostic_protected_paths(plan),
+            )
+            _require_diagnostic_report_root_absent(
+                work_item_id,
+                output_paths=(
+                    snapshot_path,
+                    receipt_path,
+                    worker_log_path,
+                    _receipt_reservation_path(receipt_path),
+                ),
+            )
+        output_reservation = _reserve_execution_outputs(
             snapshot_path=snapshot_path,
             receipt_path=receipt_path,
             worker_log_path=worker_log_path,
@@ -3600,11 +5307,22 @@ def execute(
         )
         started_at = utc_now()
         process: subprocess.Popen[Any] | None = None
+        snapshot_guard: Any | None = None
+        worker_process_identity: dict[str, Any] | None = None
+        worker_log_observation: dict[str, Any] | None = None
         containment: dict[str, Any] = {"attempted": False, "valid": True, "actions": []}
         quiescence: dict[str, Any] = {"valid": False, "before": [], "after": []}
         try:
             snapshot_sha = sqlite_snapshot(
-                Path(plan["db"]), snapshot_path, reserved=True
+                Path(plan["db"]),
+                snapshot_path,
+                reserved=True,
+                reservation_identity=output_reservation["snapshot_identity"],
+            )
+            snapshot_guard = _open_snapshot_guard(
+                snapshot_path,
+                reservation_identity=output_reservation["snapshot_identity"],
+                expected_sha256=snapshot_sha,
             )
             command = [
                 sys.executable,
@@ -3624,15 +5342,42 @@ def execute(
             # subprocess bytecode from dirtying that source vintage.
             worker_env["PYTHONPATH"] = str(repo_root)
             worker_env["PYTHONDONTWRITEBYTECODE"] = "1"
-            if worker_log_path.stat().st_size != 0:
+            worker_log_identity = output_reservation["worker_log_identity"]
+            if not _reserved_file_matches(
+                worker_log_path, worker_log_identity, require_empty=True
+            ):
                 raise RuntimeError("worker log reservation changed before launch")
             popen_kwargs: dict[str, Any] = {}
-            if os.name == "nt":
-                popen_kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+            creationflags = suspended_runner_creation_flags()
+            if creationflags:
+                popen_kwargs["creationflags"] = creationflags
             else:
                 popen_kwargs["start_new_session"] = True
             try:
                 with worker_log_path.open("r+", encoding="utf-8") as log_handle:
+                    if (
+                        _file_identity_from_stat(os.fstat(log_handle.fileno()))
+                        != worker_log_identity
+                        or not _reserved_file_matches(
+                            worker_log_path,
+                            worker_log_identity,
+                            require_empty=True,
+                        )
+                    ):
+                        raise RuntimeError(
+                            "worker log reservation changed while it was opened"
+                        )
+                    if plan.get("work_item", {}).get(
+                        "measurement_contract"
+                    ) == FTMO_BOOK3_DIAGNOSTIC_CONTRACT:
+                        _require_diagnostic_report_root_absent(work_item_id)
+                    _revalidate_snapshot_guard(
+                        snapshot_guard,
+                        path=snapshot_path,
+                        reservation_identity=output_reservation["snapshot_identity"],
+                        expected_sha256=snapshot_sha,
+                        checkpoint="immediately before worker launch",
+                    )
                     process = subprocess.Popen(
                         command,
                         cwd=str(repo_root),
@@ -3641,6 +5386,11 @@ def execute(
                         stderr=subprocess.STDOUT,
                         text=True,
                         **popen_kwargs,
+                    )
+                    worker_process_identity = bind_spawned_process_to_kill_job(
+                        process,
+                        _capture_spawned_process_identity,
+                        process_created_suspended=(sys.platform == "win32"),
                     )
                     hard_deadline = time.monotonic() + timeout_minutes * 60.0 + 60.0
                     next_heartbeat = time.monotonic()
@@ -3670,13 +5420,27 @@ def execute(
                             next_heartbeat = now + 30.0
                         time.sleep(2.0)
                     worker_exit_code = int(process.returncode)
+                    worker_log_observation = _hash_reserved_open_log(
+                        log_handle,
+                        path=worker_log_path,
+                        expected_identity=worker_log_identity,
+                    )
             finally:
-                containment = _contain_worker_process_tree(process)
+                containment = _contain_worker_process_tree(
+                    process, worker_process_identity
+                )
                 quiescence = _post_run_quiescence()
             if not containment.get("valid") or not quiescence.get("valid"):
                 raise RuntimeError("isolated worker process tree did not become quiescent")
             if sha256_file(flag) != plan["factory_off_sha256"]:
                 raise RuntimeError("FACTORY_OFF flag changed during isolated run")
+            _revalidate_snapshot_guard(
+                snapshot_guard,
+                path=snapshot_path,
+                reservation_identity=output_reservation["snapshot_identity"],
+                expected_sha256=snapshot_sha,
+                checkpoint="immediately after isolated worker execution",
+            )
 
             post_execution_inputs = _revalidate_execution_inputs(
                 plan, repo_root=repo_root
@@ -3684,12 +5448,27 @@ def execute(
             post_runtime_sources = _revalidate_runtime_sources(
                 plan, repo_root=repo_root, worker_script=worker_script
             )
+            post_compile_binding = _revalidate_compile_binding(
+                plan, repo_root=repo_root
+            )
             post_fidelity_receipt = _revalidate_fidelity_receipt(plan)
             post_run_stream = _harvest_post_run_stream(
                 plan["post_run_stream"], worker_started_wall_ns=worker_started_wall_ns
             )
+            diagnostic_q08 = _ftmo_diagnostic_q08_plan(
+                {
+                    "measurement_contract": plan.get("work_item", {}).get(
+                        "measurement_contract"
+                    )
+                },
+                post_run_stream,
+            )
             db = Path(plan["db"])
             wal_checkpoint = checkpoint_wal(db)
+            diagnostic_isolation = _revalidate_diagnostic_isolation(plan, db=db)
+            diagnostic_hold = _revalidate_diagnostic_hold(
+                plan, db=db, work_item_id=work_item_id
+            )
             with connect_ro(db) as conn:
                 post = conn.execute(
                     "SELECT id,status,verdict,claimed_by,evidence_path,updated_at,payload_json "
@@ -3711,7 +5490,10 @@ def execute(
                 "work_item_evidence_valid": evidence.get("valid") is True,
                 "post_run_stream_valid": post_run_stream.get("valid") is True,
                 "execution_inputs_unchanged": post_execution_inputs.get("valid") is True,
-                "runtime_sources_unchanged": post_runtime_sources.get("valid") is True,
+                "runtime_sources_unchanged": (
+                    post_runtime_sources.get("valid") is True
+                    and post_compile_binding.get("valid") is True
+                ),
                 "payload_contract_revalidated": (
                     payload_contract_revalidation.get("valid") is True
                 ),
@@ -3720,6 +5502,20 @@ def execute(
                 ),
                 "process_tree_quiescent": quiescence.get("valid") is True,
             }
+            if plan.get("work_item", {}).get(
+                "measurement_contract"
+            ) == FTMO_BOOK3_DIAGNOSTIC_CONTRACT:
+                success_checks.update(
+                    {
+                        "diagnostic_q08_valid": diagnostic_q08.get("valid") is True,
+                        "diagnostic_v2_r2_unchanged": (
+                            diagnostic_isolation.get("valid") is True
+                        ),
+                        "diagnostic_hold_unchanged": (
+                            diagnostic_hold.get("valid") is True
+                        ),
+                    }
+                )
             result = {
                 "schema_version": 1,
                 "mode": "apply",
@@ -3733,16 +5529,23 @@ def execute(
                 "preflight": plan,
                 "snapshot_path": str(snapshot_path),
                 "snapshot_sha256": snapshot_sha,
+                "output_reservation": output_reservation,
                 "worker_log_path": str(worker_log_path),
-                "worker_log_sha256": sha256_file(worker_log_path),
+                "worker_log_sha256": (worker_log_observation or {})["sha256"],
+                "worker_log_bytes": (worker_log_observation or {})["bytes"],
+                "worker_process_identity": worker_process_identity,
                 "worker_exit_code": worker_exit_code,
                 "process_tree_containment": containment,
                 "post_run_quiescence": quiescence,
                 "post_execution_inputs": post_execution_inputs,
                 "post_runtime_sources": post_runtime_sources,
+                "post_compile_binding": post_compile_binding,
                 "post_fidelity_receipt": post_fidelity_receipt,
                 "payload_contract_revalidation": payload_contract_revalidation,
                 "post_run_stream": post_run_stream,
+                "diagnostic_q08": diagnostic_q08,
+                "diagnostic_isolation": diagnostic_isolation,
+                "diagnostic_hold": diagnostic_hold,
                 "post_evidence": evidence,
                 "post_work_item": {
                     key: post[key]
@@ -3764,13 +5567,27 @@ def execute(
                 "live_scope_touched": False,
                 "autotrading_touched": False,
             }
+            _revalidate_snapshot_guard(
+                snapshot_guard,
+                path=snapshot_path,
+                reservation_identity=output_reservation["snapshot_identity"],
+                expected_sha256=snapshot_sha,
+                checkpoint="immediately before final receipt publication",
+            )
             _publish_reserved_receipt(
-                receipt_path, reservation_id=reservation_id, payload=result
+                receipt_path,
+                reservation_id=output_reservation["reservation_id"],
+                reservation_identity=output_reservation[
+                    "receipt_reservation_identity"
+                ],
+                payload=result,
             )
             return result
         except BaseException as exc:
             try:
-                containment = _contain_worker_process_tree(process)
+                containment = _contain_worker_process_tree(
+                    process, worker_process_identity
+                )
                 quiescence = _post_run_quiescence()
             except BaseException as cleanup_exc:
                 quiescence = {
@@ -3786,6 +5603,7 @@ def execute(
                 "completed_at_utc": utc_now(),
                 "terminal": terminal.upper(),
                 "work_item_id": work_item_id,
+                "output_reservation": output_reservation,
                 "error_type": type(exc).__name__,
                 "error": str(exc),
                 "process_tree_containment": containment,
@@ -3796,11 +5614,19 @@ def execute(
             }
             try:
                 _publish_reserved_receipt(
-                    receipt_path, reservation_id=reservation_id, payload=failure
+                    receipt_path,
+                    reservation_id=output_reservation["reservation_id"],
+                    reservation_identity=output_reservation[
+                        "receipt_reservation_identity"
+                    ],
+                    payload=failure,
                 )
             except BaseException as receipt_exc:
                 exc.add_note(f"failure receipt publication also failed: {receipt_exc}")
             raise
+        finally:
+            if snapshot_guard is not None:
+                snapshot_guard.close()
 
 
 def build_parser() -> argparse.ArgumentParser:

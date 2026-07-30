@@ -1,5 +1,6 @@
 import json
 import sys
+import datetime as dt
 from pathlib import Path
 
 
@@ -7,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
 from tools.strategy_farm.portfolio import ftmo_stream_reconciliation as reconciliation  # noqa: E402
+from tools.strategy_farm.portfolio.ftmo_report_cost_reconcile import RoundTrip  # noqa: E402
 
 
 def _write_summary(path: Path, *, trades: int, net: float) -> None:
@@ -177,3 +179,78 @@ def test_missing_mae_fails_even_when_net_matches(tmp_path: Path) -> None:
 
     assert result["status"] == "FAIL"
     assert result["reasons"] == ["stream_missing_mae_rows:1"]
+
+
+def test_jsonl_duplicate_key_and_numeric_overflow_fail_closed(tmp_path: Path) -> None:
+    stream = tmp_path / "stream.jsonl"
+    stream.write_text(
+        '{"event":"TRADE_CLOSED","net":1,"net":2,"entry_time":1,"mae_acct":1e999}\n',
+        encoding="utf-8",
+    )
+    summary = tmp_path / "summary.json"
+    _write_summary(summary, trades=1, net=1.0)
+
+    result = reconciliation.reconcile_case(9001, "NDX.DWX", summary, stream_path=stream)
+
+    assert result["status"] == "FAIL"
+    assert "stream_invalid_rows:1" in result["reasons"]
+
+
+def test_lifecycle_reconciliation_checks_identity_money_and_ambiguity() -> None:
+    entry = dt.datetime(2024, 1, 1, 10, 0, tzinfo=dt.UTC)
+    exit_ = dt.datetime(2024, 1, 1, 11, 0, tzinfo=dt.UTC)
+    trade = RoundTrip(
+        entry_time=entry,
+        exit_time=exit_,
+        symbol="NDX.DWX",
+        side="buy",
+        volume=1.0,
+        entry_price=100.0,
+        exit_price=101.0,
+        profit=10.0,
+        native_swap=-1.0,
+        native_commission=-2.0,
+        native_entry_commission=-0.75,
+        native_exit_commission=-1.25,
+    )
+    row = {
+        "entry_time": int(entry.timestamp()),
+        "time": int(exit_.timestamp()),
+        "symbol": "NDX.DWX",
+        "side": "BUY",
+        "volume": 1.0,
+        "entry_price": 100.0,
+        "exit_price": 101.0,
+        "profit": 10.0,
+        "swap": -1.0,
+        "commission": -2.0,
+        "entry_commission": -0.75,
+        "exit_commission": -1.25,
+        "fee": 0.0,
+        "net": 7.0,
+    }
+
+    passed, reasons = reconciliation._lifecycle_reconciliation([trade], [row])
+    assert passed["status"] == "PASS"
+    assert reasons == []
+
+    bad = dict(row, side="SELL", profit=9.0, net=6.0)
+    failed, reasons = reconciliation._lifecycle_reconciliation(
+        [trade, trade], [row, bad]
+    )
+    assert failed["status"] == "FAIL"
+    assert any("ambiguous_duplicate_lifecycle_identity" in value for value in reasons)
+    assert any("identity_mismatch" in value for value in reasons)
+    assert any("profit_mismatch" in value for value in reasons)
+
+    swapped_sides = dict(
+        row,
+        entry_commission=-1.25,
+        exit_commission=-0.75,
+    )
+    side_failed, side_reasons = reconciliation._lifecycle_reconciliation(
+        [trade], [swapped_sides]
+    )
+    assert side_failed["status"] == "FAIL"
+    assert any("entry_commission_mismatch" in value for value in side_reasons)
+    assert any("exit_commission_mismatch" in value for value in side_reasons)

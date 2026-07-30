@@ -17,7 +17,7 @@ import datetime as dt
 import json
 import math
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 from zoneinfo import ZoneInfo
@@ -31,14 +31,24 @@ try:
     from .ftmo_report_cost_reconcile import (
         RoundTrip,
         extract_round_trips,
+        ftmo_trade_commission_sides,
         ftmo_trade_net,
     )
+    from .ftmo_stream_reconciliation import load_q08_trade_rows as strict_q08_trade_rows
     from .ftmo_stream_reconciliation import reconcile_case
 except ImportError:  # pragma: no cover - direct script execution
     from ftmo_intraday_candidate_screen import broker_wall_seconds_to_utc  # type: ignore
     from ftmo_phase1_mae import START, TARGET, bootstrap, evaluate_window, parse_number_list  # type: ignore
-    from ftmo_report_cost_reconcile import RoundTrip, extract_round_trips, ftmo_trade_net  # type: ignore
-    from ftmo_stream_reconciliation import reconcile_case  # type: ignore
+    from ftmo_report_cost_reconcile import (  # type: ignore
+        RoundTrip,
+        extract_round_trips,
+        ftmo_trade_commission_sides,
+        ftmo_trade_net,
+    )
+    from ftmo_stream_reconciliation import (  # type: ignore
+        load_q08_trade_rows as strict_q08_trade_rows,
+        reconcile_case,
+    )
 
 
 PRAGUE = ZoneInfo("Europe/Prague")
@@ -129,6 +139,66 @@ def normalize_timestamp(value: dt.datetime | pd.Timestamp, timestamp_basis: str)
     return pd.Timestamp(broker_wall_seconds_to_utc(seconds).iloc[0])
 
 
+def us_dst_broker_wall_offset_hours(value: dt.datetime | pd.Timestamp) -> int:
+    """Return the FTMO/Darwinex server offset: GMT+3 in US DST, else GMT+2."""
+
+    timestamp = pd.Timestamp(value)
+    if timestamp.tzinfo is None:
+        timestamp = timestamp.tz_localize("UTC")
+    else:
+        timestamp = timestamp.tz_convert("UTC")
+    new_york = timestamp.tz_convert("America/New_York")
+    return 3 if new_york.dst() not in {None, dt.timedelta(0)} else 2
+
+
+def utc_to_us_dst_broker_wall(value: dt.datetime | pd.Timestamp) -> pd.Timestamp:
+    """Encode a real UTC instant as the MT5 GMT+2/+3 wall-clock epoch."""
+
+    timestamp = pd.Timestamp(value)
+    if timestamp.tzinfo is None:
+        timestamp = timestamp.tz_localize("UTC")
+    else:
+        timestamp = timestamp.tz_convert("UTC")
+    return timestamp + pd.Timedelta(hours=us_dst_broker_wall_offset_hours(timestamp))
+
+
+def us_dst_broker_rollover_schedule(
+    entry_utc: dt.datetime | pd.Timestamp,
+    exit_utc: dt.datetime | pd.Timestamp,
+    *,
+    triple_weekday: int,
+) -> list[tuple[pd.Timestamp, int]]:
+    """Return actual UTC rollover instants for the GMT+2/+3 US-DST server."""
+
+    entry = pd.Timestamp(entry_utc)
+    exit_ = pd.Timestamp(exit_utc)
+    entry = entry.tz_localize("UTC") if entry.tzinfo is None else entry.tz_convert("UTC")
+    exit_ = exit_.tz_localize("UTC") if exit_.tzinfo is None else exit_.tz_convert("UTC")
+    if exit_ < entry:
+        raise ValueError("exit precedes entry")
+    entry_wall_date = utc_to_us_dst_broker_wall(entry).date()
+    exit_wall_date = utc_to_us_dst_broker_wall(exit_).date()
+    cursor = entry_wall_date + dt.timedelta(days=1)
+    output: list[tuple[pd.Timestamp, int]] = []
+    while cursor <= exit_wall_date:
+        encoded_midnight = pd.Timestamp(
+            dt.datetime.combine(cursor, dt.time.min, tzinfo=dt.UTC)
+        )
+        actual_midnight = normalize_timestamp(
+            encoded_midnight, TIMESTAMP_BASIS_DARWINEX_WALL
+        )
+        session_day = cursor - dt.timedelta(days=1)
+        if entry < actual_midnight <= exit_ and session_day.weekday() < 5:
+            output.append(
+                (
+                    actual_midnight,
+                    3 if session_day.weekday() == triple_weekday else 1,
+                )
+            )
+        cursor += dt.timedelta(days=1)
+    return output
+
+
 def normalize_schedule(
     schedule: Sequence[tuple[pd.Timestamp, int]],
     timestamp_basis: str,
@@ -163,24 +233,14 @@ def load_resampled_bars(
 
 
 def load_q08_trade_rows(path: Path) -> list[dict[str, Any]]:
-    rows: list[dict[str, Any]] = []
-    with path.open(encoding="utf-8", errors="replace") as handle:
-        for line_number, line in enumerate(handle, 1):
-            if not line.strip():
-                continue
-            try:
-                row = json.loads(line)
-            except json.JSONDecodeError as exc:
-                raise ValueError(f"{path}:{line_number}: invalid JSON") from exc
-            if str(row.get("event") or "TRADE_CLOSED") != "TRADE_CLOSED":
-                continue
-            for field in ("time", "entry_time", "mae_acct"):
-                if field not in row:
-                    raise ValueError(f"{path}:{line_number}: missing {field}")
-            mae = float(row["mae_acct"])
-            if not math.isfinite(mae) or mae > EPSILON:
-                raise ValueError(f"{path}:{line_number}: invalid mae_acct {mae}")
-            rows.append(dict(row))
+    rows = strict_q08_trade_rows(path)
+    for line_number, row in enumerate(rows, 1):
+        for field in ("time", "entry_time", "mae_acct"):
+            if field not in row:
+                raise ValueError(f"{path}:{line_number}: missing {field}")
+        mae = float(row["mae_acct"])
+        if not math.isfinite(mae) or mae > EPSILON:
+            raise ValueError(f"{path}:{line_number}: invalid mae_acct {mae}")
     if not rows:
         raise ValueError(f"{path}: no Q08 trade rows")
     return rows
@@ -189,17 +249,26 @@ def load_q08_trade_rows(path: Path) -> list[dict[str, Any]]:
 def _report_path(case: Mapping[str, Any]) -> tuple[Path, dict[str, Any]]:
     ea_id = int(case["ea_id"])
     symbol = str(case["symbol"]).upper()
-    reconciliation = reconcile_case(
-        ea_id,
-        symbol,
-        Path(str(case["summary_path"])),
-        stream_path=Path(str(case["stream_path"])),
-    )
+    prevalidated = case.get("reconciliation")
+    if isinstance(prevalidated, Mapping):
+        reconciliation = dict(prevalidated)
+    else:
+        reconciliation = reconcile_case(
+            ea_id,
+            symbol,
+            Path(str(case["summary_path"])),
+            stream_path=Path(str(case["stream_path"])),
+            report_path=(
+                Path(str(case["report_path"])) if case.get("report_path") else None
+            ),
+        )
     if reconciliation["status"] != "PASS":
         raise ValueError(
             f"{sleeve_key(ea_id, symbol)} reconciliation failed: "
             + ",".join(reconciliation["reasons"])
         )
+    if case.get("report_path"):
+        return Path(str(case["report_path"])), reconciliation
     return Path(str(reconciliation["report"]["report_canonical_path"])), reconciliation
 
 
@@ -458,6 +527,11 @@ def build_sleeve_components(
     digits = int(cost["digits"])
     derive_rate = bool(cost.get("derive_profit_currency_rate_from_pnl", False))
     triple_weekday = int(cost.get("triple_weekday", 2))
+    rollover_timezone = str(cost.get("rollover_timezone") or "")
+    if rollover_timezone != "US_DST_GMT_PLUS_2_PLUS_3":
+        raise ValueError(
+            "rollover_timezone must be the bound US-DST GMT+2/+3 server-wall contract"
+        )
     timestamp_basis = str(case.get("timestamp_basis") or TIMESTAMP_BASIS_UNIX_UTC)
 
     size = len(grid)
@@ -482,6 +556,16 @@ def build_sleeve_components(
     for trade_number, (trade, q08_row) in enumerate(zip(trades, q08_rows), 1):
         normalized_entry = normalize_timestamp(trade.entry_time, timestamp_basis)
         normalized_exit = normalize_timestamp(trade.exit_time, timestamp_basis)
+        cost_trade = replace(
+            trade,
+            entry_time=utc_to_us_dst_broker_wall(normalized_entry).to_pydatetime(),
+            exit_time=utc_to_us_dst_broker_wall(normalized_exit).to_pydatetime(),
+        )
+        schedule = us_dst_broker_rollover_schedule(
+            normalized_entry,
+            normalized_exit,
+            triple_weekday=triple_weekday,
+        )
         span_years = set(range(normalized_entry.year, normalized_exit.year + 1))
         if span_years & (excluded_years or set()):
             excluded_trades += 1
@@ -502,7 +586,7 @@ def build_sleeve_components(
             raise ValueError(f"{sleeve_key(ea_id, symbol)} trade {trade_number}: invalid grid span")
 
         net, commission, swap, _ = ftmo_trade_net(
-            trade,
+            cost_trade,
             commission_rate_per_side=commission_rate,
             flat_round_trip_commission_per_lot=flat_commission,
             swap_long_points=swap_long,
@@ -513,6 +597,7 @@ def build_sleeve_components(
             derive_profit_currency_rate_from_pnl=derive_rate,
             digits=digits,
             triple_weekday=triple_weekday,
+            rollover_units_override=sum(units for _timestamp, units in schedule),
         )
         point_value, used_fallback = trade_point_value(
             trade,
@@ -520,8 +605,22 @@ def build_sleeve_components(
             fallback_account_rate=account_rate,
         )
         fallbacks += int(used_fallback)
-        entry_commission = commission / 2.0
-        exit_commission = commission - entry_commission
+        entry_commission, exit_commission = ftmo_trade_commission_sides(
+            cost_trade,
+            commission_rate_per_side=commission_rate,
+            flat_round_trip_commission_per_lot=flat_commission,
+            contract_size=contract_size,
+            source_contract_size=source_size,
+            profit_currency_to_account_rate=account_rate,
+            derive_profit_currency_rate_from_pnl=derive_rate,
+        )
+        if not math.isclose(
+            entry_commission + exit_commission,
+            commission,
+            rel_tol=0.0,
+            abs_tol=1e-9,
+        ):
+            raise ValueError("FTMO commission-side decomposition mismatch")
         pre[start] -= entry_commission
         post[end] += trade.profit + swap - exit_commission
         opens[start] += 1
@@ -544,19 +643,15 @@ def build_sleeve_components(
         adverse_price = bars["low"].to_numpy() if side > 0 else bars["high"].to_numpy()
         price_adverse = side * (adverse_price - trade.entry_price) * point_value
         price_close = side * (bars["close"].to_numpy() - trade.entry_price) * point_value
-        schedule = normalize_schedule(
+        native_schedule = normalize_schedule(
             rollover_schedule(
-                trade.entry_time,
-                trade.exit_time,
-                triple_weekday=triple_weekday,
+                trade.entry_time, trade.exit_time, triple_weekday=triple_weekday
             ),
             timestamp_basis,
         )
         cumulative_swap = cumulative_swap_for_slice(timestamps, schedule, total_swap=swap)
         native_cumulative_swap = cumulative_swap_for_slice(
-            timestamps,
-            schedule,
-            total_swap=trade.native_swap,
+            timestamps, native_schedule, total_swap=trade.native_swap
         )
         q08_mae = min(0.0, float(q08_row["mae_acct"]))
         lifetime_floor = q08_mae + np.minimum(

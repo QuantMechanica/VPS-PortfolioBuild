@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hashlib
+import html
 import json
+import math
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,7 +16,6 @@ try:
         _extract_report_stats,
         _normalize_cell,
         _parse_report_datetime,
-        _parse_report_number,
         _report_rows,
     )
 except ImportError:  # pragma: no cover - direct script execution
@@ -22,7 +23,6 @@ except ImportError:  # pragma: no cover - direct script execution
         _extract_report_stats,
         _normalize_cell,
         _parse_report_datetime,
-        _parse_report_number,
         _report_rows,
     )
 
@@ -43,6 +43,8 @@ class RoundTrip:
     profit: float
     native_swap: float
     native_commission: float
+    native_entry_commission: float = 0.0
+    native_exit_commission: float = 0.0
 
 
 def file_sha256(path: Path) -> str:
@@ -89,9 +91,9 @@ def extract_round_trips(
             "symbol": symbol,
             "volume": _required_number(deal.get("Volume"), "Volume"),
             "price": _required_number(deal.get("Price"), "Price"),
-            "commission": _parse_report_number(str(deal.get("Commission") or "0")) or 0.0,
-            "swap": _parse_report_number(str(deal.get("Swap") or "0")) or 0.0,
-            "profit": _parse_report_number(str(deal.get("Profit") or "0")) or 0.0,
+            "commission": _report_money_number(deal.get("Commission"), "Commission"),
+            "swap": _report_money_number(deal.get("Swap"), "Swap"),
+            "profit": _report_money_number(deal.get("Profit"), "Profit"),
         }
 
         if direction == "in":
@@ -148,6 +150,8 @@ def _consume_exit_deal(
         exit_share = matched_volume / exit_volume
 
         entry_share = matched_volume / float(entry["volume"])
+        native_entry_commission = float(entry["commission"]) * entry_share
+        native_exit_commission = float(exit_deal["commission"]) * exit_share
         entry["remaining_volume"] = entry_remaining - matched_volume
         remaining_exit -= matched_volume
         completed.append(
@@ -168,9 +172,10 @@ def _consume_exit_deal(
                     + float(exit_deal["swap"]) * exit_share
                 ),
                 native_commission=(
-                    float(entry["commission"]) * entry_share
-                    + float(exit_deal["commission"]) * exit_share
+                    native_entry_commission + native_exit_commission
                 ),
+                native_entry_commission=native_entry_commission,
+                native_exit_commission=native_exit_commission,
             )
         )
         if float(entry["remaining_volume"]) <= tolerance:
@@ -178,11 +183,41 @@ def _consume_exit_deal(
     return completed
 
 
-def _required_number(raw: Any, label: str) -> float:
-    value = _parse_report_number(str(raw or ""))
-    if value is None:
+_FULL_REPORT_NUMBER_RE = re.compile(
+    r"[+-]?(?:(?:\d{1,3}(?: \d{3})+|\d+)(?:[.,]\d+)?|"
+    r"\d{1,3}(?:,\d{3})+(?:\.\d+)?)"
+)
+
+
+def _full_report_number(raw: Any, label: str, *, allow_blank: bool) -> float:
+    token = html.unescape("" if raw is None else str(raw))
+    token = token.replace("\xa0", " ").replace("\u202f", " ").strip()
+    if not token:
+        if allow_blank:
+            return 0.0
         raise ValueError(f"missing numeric deal field {label}: {raw!r}")
-    return float(value)
+    if _FULL_REPORT_NUMBER_RE.fullmatch(token) is None:
+        raise ValueError(f"invalid numeric deal field {label}: {raw!r}")
+    normalized = token.replace(" ", "")
+    if "," in normalized and "." in normalized:
+        normalized = normalized.replace(",", "")
+    elif "," in normalized:
+        normalized = normalized.replace(",", ".")
+    try:
+        number = float(normalized)
+    except ValueError as exc:  # pragma: no cover - guarded by fullmatch
+        raise ValueError(f"invalid numeric deal field {label}: {raw!r}") from exc
+    if not math.isfinite(number):
+        raise ValueError(f"nonfinite numeric deal field {label}: {raw!r}")
+    return number
+
+
+def _required_number(raw: Any, label: str) -> float:
+    return _full_report_number(raw, label, allow_blank=False)
+
+
+def _report_money_number(raw: Any, label: str) -> float:
+    return _full_report_number(raw, label, allow_blank=True)
 
 
 def swap_rollover_units(entry_time: dt.datetime, exit_time: dt.datetime, triple_weekday: int = 2) -> int:
@@ -223,6 +258,7 @@ def ftmo_trade_net(
     profit_currency_to_account_rate: float = 1.0,
     derive_profit_currency_rate_from_pnl: bool = False,
     triple_weekday: int = 2,
+    rollover_units_override: int | None = None,
 ) -> tuple[float, float, float, int]:
     source_size = contract_size if source_contract_size is None else source_contract_size
     target_volume = trade.volume * source_size / contract_size
@@ -233,14 +269,28 @@ def ftmo_trade_net(
         derive_from_pnl=derive_profit_currency_rate_from_pnl,
     )
     point_value_per_lot = contract_size * (10.0 ** -digits)
-    rollover_units = swap_rollover_units(trade.entry_time, trade.exit_time, triple_weekday)
-    commission = (
-        (trade.entry_price + trade.exit_price)
-        * contract_size
-        * target_volume
-        * commission_rate_per_side
-        * account_rate
-    ) + flat_round_trip_commission_per_lot * target_volume
+    if rollover_units_override is None:
+        rollover_units = swap_rollover_units(
+            trade.entry_time, trade.exit_time, triple_weekday
+        )
+    elif (
+        isinstance(rollover_units_override, bool)
+        or not isinstance(rollover_units_override, int)
+        or rollover_units_override < 0
+    ):
+        raise ValueError("rollover_units_override must be a non-negative integer")
+    else:
+        rollover_units = rollover_units_override
+    entry_commission, exit_commission = ftmo_trade_commission_sides(
+        trade,
+        commission_rate_per_side=commission_rate_per_side,
+        contract_size=contract_size,
+        flat_round_trip_commission_per_lot=flat_round_trip_commission_per_lot,
+        source_contract_size=source_contract_size,
+        profit_currency_to_account_rate=profit_currency_to_account_rate,
+        derive_profit_currency_rate_from_pnl=derive_profit_currency_rate_from_pnl,
+    )
+    commission = entry_commission + exit_commission
     selected_swap_points = (
         swap_long_points
         if trade.side == "buy"
@@ -248,6 +298,49 @@ def ftmo_trade_net(
     )
     swap = selected_swap_points * point_value_per_lot * target_volume * rollover_units * account_rate
     return trade.profit + swap - commission, commission, swap, rollover_units
+
+
+def ftmo_trade_commission_sides(
+    trade: RoundTrip,
+    *,
+    commission_rate_per_side: float,
+    contract_size: float,
+    flat_round_trip_commission_per_lot: float = 0.0,
+    source_contract_size: float | None = None,
+    profit_currency_to_account_rate: float = 1.0,
+    derive_profit_currency_rate_from_pnl: bool = False,
+) -> tuple[float, float]:
+    """Return exact entry/exit charges on their temporal booking sides.
+
+    Percent commission uses the price of the corresponding deal.  A flat
+    round-trip charge has no provider-side timing detail, so only that component
+    is allocated 50/50.
+    """
+
+    source_size = contract_size if source_contract_size is None else source_contract_size
+    target_volume = trade.volume * source_size / contract_size
+    account_rate = _profit_currency_rate(
+        trade,
+        source_contract_size=source_size,
+        fallback_rate=profit_currency_to_account_rate,
+        derive_from_pnl=derive_profit_currency_rate_from_pnl,
+    )
+    flat_half = flat_round_trip_commission_per_lot * target_volume / 2.0
+    entry = (
+        trade.entry_price
+        * contract_size
+        * target_volume
+        * commission_rate_per_side
+        * account_rate
+    ) + flat_half
+    exit = (
+        trade.exit_price
+        * contract_size
+        * target_volume
+        * commission_rate_per_side
+        * account_rate
+    ) + flat_half
+    return entry, exit
 
 
 def conservative_trade_net(

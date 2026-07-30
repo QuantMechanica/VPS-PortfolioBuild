@@ -295,6 +295,42 @@ def sqlite_state_sha256(db: Path) -> str:
         return hashlib.sha256(conn.serialize()).hexdigest()
 
 
+def _open_file_identity(handle: Any) -> tuple[int, int]:
+    stat = os.fstat(handle.fileno())
+    return (int(stat.st_dev), int(stat.st_ino))
+
+
+def _path_matches_open_file(path: Path, identity: tuple[int, int]) -> bool:
+    try:
+        if path.is_symlink() or not path.is_file():
+            return False
+        stat = path.stat()
+    except OSError:
+        return False
+    return (int(stat.st_dev), int(stat.st_ino)) == identity
+
+
+def _hash_open_binary_file(handle: Any) -> tuple[str, int]:
+    before = os.fstat(handle.fileno())
+    handle.seek(0)
+    digest = hashlib.sha256()
+    size = 0
+    while True:
+        chunk = handle.read(1024 * 1024)
+        if not chunk:
+            break
+        digest.update(chunk)
+        size += len(chunk)
+    after = os.fstat(handle.fileno())
+    if (before.st_dev, before.st_ino, before.st_size) != (
+        after.st_dev,
+        after.st_ino,
+        after.st_size,
+    ) or size != after.st_size:
+        raise ContractError("open publication object changed while hashed")
+    return digest.hexdigest(), size
+
+
 def sqlite_snapshot(source: Path, target: Path) -> str:
     if target.exists():
         raise ContractError(f"snapshot target already exists: {target}")
@@ -303,22 +339,44 @@ def sqlite_snapshot(source: Path, target: Path) -> str:
     # Create the backing inode exclusively, populate it, then publish with a
     # no-replace hard link.  Unlike os.replace, this can never overwrite a path
     # that appears after the initial preflight.
-    with temporary.open("xb"):
-        pass
-    source_conn = sqlite3.connect(source, timeout=30)
-    target_conn = sqlite3.connect(temporary)
-    try:
-        source_conn.backup(target_conn)
-    finally:
-        target_conn.close()
-        source_conn.close()
-    try:
-        os.link(temporary, target)
-        return sha256_file(target)
-    except FileExistsError as exc:
-        raise ContractError(f"snapshot target appeared during publication: {target}") from exc
-    finally:
-        temporary.unlink(missing_ok=True)
+    with temporary.open("x+b") as temporary_handle:
+        temporary_identity = _open_file_identity(temporary_handle)
+        source_conn = sqlite3.connect(source, timeout=30)
+        target_conn = sqlite3.connect(temporary)
+        try:
+            source_conn.backup(target_conn)
+        finally:
+            target_conn.close()
+            source_conn.close()
+        temporary_handle.flush()
+        os.fsync(temporary_handle.fileno())
+        snapshot_sha, snapshot_bytes = _hash_open_binary_file(temporary_handle)
+        if not _path_matches_open_file(temporary, temporary_identity):
+            raise ContractError("snapshot temporary path changed before publication")
+        try:
+            os.link(temporary, target)
+        except FileExistsError as exc:
+            raise ContractError(
+                f"snapshot target appeared during publication: {target}"
+            ) from exc
+        try:
+            with target.open("rb") as published_handle:
+                if _open_file_identity(published_handle) != temporary_identity:
+                    raise ContractError("snapshot target is not the staged file object")
+                published_sha, published_bytes = _hash_open_binary_file(
+                    published_handle
+                )
+        except FileNotFoundError as exc:
+            raise ContractError("snapshot target disappeared during verification") from exc
+        if (
+            published_sha != snapshot_sha
+            or published_bytes != snapshot_bytes
+            or not _path_matches_open_file(target, temporary_identity)
+        ):
+            raise ContractError("snapshot target hash/identity verification failed")
+        # Keep the hard-linked temp name as immutable audit residue; portable
+        # path unlink cannot close a check/unlink ABA race.
+        return snapshot_sha
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -1664,18 +1722,33 @@ def _validate_manifest_topology(manifest: dict[str, Any]) -> None:
 def _write_new_json(path: Path, value: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp")
-    try:
-        with temporary.open("x", encoding="utf-8", newline="\n") as handle:
-            json.dump(value, handle, indent=2, ensure_ascii=False, sort_keys=True)
-            handle.write("\n")
-            handle.flush()
-            os.fsync(handle.fileno())
+    rendered = (
+        json.dumps(value, indent=2, ensure_ascii=False, sort_keys=True) + "\n"
+    ).encode("utf-8")
+    with temporary.open("x+b") as handle:
+        handle.write(rendered)
+        handle.flush()
+        os.fsync(handle.fileno())
+        temporary_identity = _open_file_identity(handle)
+        if not _path_matches_open_file(temporary, temporary_identity):
+            raise ContractError("JSON temporary path changed before publication")
         try:
             os.link(temporary, path)
         except FileExistsError as exc:
             raise ContractError(f"JSON target already exists: {path}") from exc
-    finally:
-        temporary.unlink(missing_ok=True)
+        try:
+            with path.open("rb") as published_handle:
+                if _open_file_identity(published_handle) != temporary_identity:
+                    raise ContractError("JSON target is not the staged file object")
+                published = published_handle.read()
+        except FileNotFoundError as exc:
+            raise ContractError("JSON target disappeared during verification") from exc
+        if published != rendered or not _path_matches_open_file(
+            path, temporary_identity
+        ):
+            raise ContractError("JSON target hash/identity verification failed")
+        # The temp hard link is retained as immutable audit evidence. Deleting
+        # it by path would permit a check/unlink ABA attack.
 
 
 def _intent_path(receipt_path: Path) -> Path:

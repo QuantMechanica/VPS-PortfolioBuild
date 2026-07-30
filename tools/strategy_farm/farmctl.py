@@ -3906,6 +3906,12 @@ Q02_SKIP_PRESCREEN_PERIODS: set[str] = {"D1", "W1", "MN1"}  # full run is cheap 
 FTMO_BOOK3_FIDELITY_MEASUREMENT_CONTRACT = (
     "FTMO_BOOK3_FIDELITY_LADDER_V2_FULL_LIFECYCLE_NET"
 )
+FTMO_BOOK3_STANDALONE_DIAGNOSTIC_CONTRACT = (
+    "FTMO_BOOK3_STANDALONE_DIAGNOSTIC_V1"
+)
+FTMO_BOOK3_STANDALONE_DIAGNOSTIC_COMPILE_POLICY = (
+    "MANIFEST_PINNED_STAGED_EX5_NO_RECOMPILE_V1"
+)
 # 2026-06-10 OWNER gate-acceleration #1 — frequency-aware prescreen guard:
 # cards expecting fewer than this many trades/year/symbol skip the 6-month
 # prescreen entirely (a seasonal/swing card can legitimately have 0 trades in
@@ -3921,7 +3927,10 @@ def _ftmo_book3_q02_exact_window(
     if (
         phase != "Q02"
         or payload.get("measurement_contract")
-        != FTMO_BOOK3_FIDELITY_MEASUREMENT_CONTRACT
+        not in {
+            FTMO_BOOK3_FIDELITY_MEASUREMENT_CONTRACT,
+            FTMO_BOOK3_STANDALONE_DIAGNOSTIC_CONTRACT,
+        }
     ):
         return None
 
@@ -4450,6 +4459,106 @@ def _compile_gate_check(ea_dir_name: str) -> dict[str, Any]:
                 "source": "subprocess", "error": repr(exc)[:200]}
 
 
+def _compile_path_identity(path: Path) -> str:
+    return os.path.normcase(os.path.abspath(str(path)))
+
+
+def _manifest_pinned_staged_ex5_gate(
+    ea_dir_name: str, payload: dict[str, Any]
+) -> dict[str, Any] | None:
+    """Validate the no-recompile diagnostic path, or return None when unrelated."""
+
+    if (
+        payload.get("measurement_contract")
+        != FTMO_BOOK3_STANDALONE_DIAGNOSTIC_CONTRACT
+    ):
+        return None
+    errors: list[str] = []
+    if payload.get("compile_policy") != FTMO_BOOK3_STANDALONE_DIAGNOSTIC_COMPILE_POLICY:
+        errors.append("compile_policy_mismatch")
+    if payload.get("ea_dir_name") != ea_dir_name:
+        errors.append("ea_dir_name_mismatch")
+    staged_path_raw = payload.get("staged_ex5_path")
+    staged_sha = str(payload.get("staged_ex5_sha256") or "").strip().lower()
+    staged_path = Path(str(staged_path_raw or ""))
+    if not isinstance(staged_path_raw, str) or not staged_path.is_absolute():
+        errors.append("staged_ex5_path_not_absolute")
+    if not re.fullmatch(r"[0-9a-f]{64}", staged_sha):
+        errors.append("staged_ex5_sha256_invalid")
+    if not staged_path.is_file():
+        errors.append("staged_ex5_missing")
+    elif re.fullmatch(r"[0-9a-f]{64}", staged_sha):
+        if _sha256_file(staged_path) != staged_sha:
+            errors.append("staged_ex5_source_sha256_mismatch")
+
+    manifest_raw = payload.get("compile_manifest_path")
+    manifest_path = Path(str(manifest_raw or ""))
+    manifest_sha = str(payload.get("compile_manifest_sha256") or "").strip().lower()
+    manifest_bytes = payload.get("compile_manifest_bytes")
+    if not isinstance(manifest_raw, str) or not manifest_path.is_absolute():
+        errors.append("compile_manifest_path_not_absolute")
+    if not re.fullmatch(r"[0-9a-f]{64}", manifest_sha):
+        errors.append("compile_manifest_sha256_invalid")
+    if isinstance(manifest_bytes, bool) or not isinstance(manifest_bytes, int) or manifest_bytes <= 0:
+        errors.append("compile_manifest_bytes_invalid")
+    if not manifest_path.is_file():
+        errors.append("compile_manifest_missing")
+    else:
+        if re.fullmatch(r"[0-9a-f]{64}", manifest_sha) and _sha256_file(manifest_path) != manifest_sha:
+            errors.append("compile_manifest_sha256_mismatch")
+        if isinstance(manifest_bytes, int) and not isinstance(manifest_bytes, bool):
+            if manifest_path.stat().st_size != manifest_bytes:
+                errors.append("compile_manifest_bytes_mismatch")
+
+    staging = payload.get("staged_ex5")
+    if not isinstance(staging, dict):
+        errors.append("worker_staged_ex5_binding_missing")
+    else:
+        source_path = Path(str(staging.get("source_path") or ""))
+        destination_path = Path(str(staging.get("destination_path") or ""))
+        if _compile_path_identity(source_path) != _compile_path_identity(staged_path):
+            errors.append("worker_staged_ex5_source_path_mismatch")
+        if str(staging.get("required_sha256") or "").lower() != staged_sha:
+            errors.append("worker_staged_ex5_required_sha256_mismatch")
+        if str(staging.get("pre_run_sha256") or "").lower() != staged_sha:
+            errors.append("worker_staged_ex5_pre_run_sha256_mismatch")
+        if not destination_path.is_file():
+            errors.append("worker_staged_ex5_destination_missing")
+        elif re.fullmatch(r"[0-9a-f]{64}", staged_sha):
+            if _sha256_file(destination_path) != staged_sha:
+                errors.append("worker_staged_ex5_destination_sha256_mismatch")
+    return {
+        "allowed": not errors,
+        "verdict": (
+            "MANIFEST_PINNED_STAGED_EX5"
+            if not errors
+            else "MANIFEST_PINNED_STAGED_EX5_INVALID"
+        ),
+        "source": "manifest_pinned_staged_ex5_no_recompile",
+        "generic_compile_fallback_allowed": False,
+        "errors": errors,
+        "staged_ex5_path": str(staged_path),
+        "staged_ex5_sha256": staged_sha,
+        "compile_manifest_path": str(manifest_path),
+        "compile_manifest_sha256": manifest_sha,
+    }
+
+
+def _work_item_compile_gate(
+    phase: str, ea_dir_name: str, payload: dict[str, Any]
+) -> dict[str, Any]:
+    diagnostic = _manifest_pinned_staged_ex5_gate(ea_dir_name, payload)
+    if diagnostic is not None:
+        return diagnostic
+    if phase in ("Q02", "P2"):
+        return _compile_gate_check(ea_dir_name)
+    return {
+        "allowed": True,
+        "verdict": "NOT_REQUIRED",
+        "source": "phase",
+    }
+
+
 def _ea_dir_from_setfile_path(setfile_path: str | os.PathLike[str] | None,
                               ea_id: str) -> Path | None:
     """Resolve the exact EA dir anchored by a work_item setfile path."""
@@ -4655,14 +4764,27 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     # ex5_missing class (QM5_10005-style: build never ran) and the
     # SYMBOL_SCOPE_LEAK class structurally.
     if phase in ("Q02", "P2"):
-        gate = _compile_gate_check(ea_dir_name)
+        gate = _work_item_compile_gate(phase, ea_dir_name, item_payload)
         if not gate["allowed"]:
             return {"spawned": False, "reason": f"compile_gate:{gate['verdict']}",
                     "compile_gate": gate}
 
     # Per-work-item report root keeps summaries discoverable
     report_root = Path(r"D:\QM\reports\work_items") / item_row["id"]
-    report_root.mkdir(parents=True, exist_ok=True)
+    if (
+        item_payload.get("measurement_contract")
+        == FTMO_BOOK3_STANDALONE_DIAGNOSTIC_CONTRACT
+    ):
+        try:
+            report_root.mkdir(parents=False, exist_ok=False)
+        except FileExistsError:
+            return {
+                "spawned": False,
+                "reason": "standalone_diagnostic_report_root_not_absent",
+                "report_root": str(report_root),
+            }
+    else:
+        report_root.mkdir(parents=True, exist_ok=True)
     log_path = root / "logs" / f"work_item_{item_row['id']}.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
 

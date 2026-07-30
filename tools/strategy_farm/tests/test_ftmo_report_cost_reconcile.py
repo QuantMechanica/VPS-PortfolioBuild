@@ -6,6 +6,9 @@ import unittest
 from tools.strategy_farm.portfolio.ftmo_report_cost_reconcile import (
     RoundTrip,
     _consume_exit_deal,
+    _report_money_number,
+    _required_number,
+    ftmo_trade_commission_sides,
     ftmo_trade_net,
     report_period_years,
     summarize_nets,
@@ -14,6 +17,30 @@ from tools.strategy_farm.portfolio.ftmo_report_cost_reconcile import (
 
 
 class FtmoReportCostReconcileTests(unittest.TestCase):
+    def test_percent_commission_uses_each_side_price_and_flat_rt_stays_half(self) -> None:
+        trade = RoundTrip(
+            entry_time=dt.datetime(2026, 7, 7, 22, 59, tzinfo=dt.UTC),
+            exit_time=dt.datetime(2026, 7, 7, 23, 1, tzinfo=dt.UTC),
+            symbol="TEST",
+            side="buy",
+            volume=1.0,
+            entry_price=100.0,
+            exit_price=1000.0,
+            profit=900.0,
+            native_swap=0.0,
+            native_commission=0.0,
+        )
+
+        entry, exit_ = ftmo_trade_commission_sides(
+            trade,
+            commission_rate_per_side=0.01,
+            flat_round_trip_commission_per_lot=4.0,
+            contract_size=1.0,
+        )
+
+        self.assertEqual(entry, 3.0)
+        self.assertEqual(exit_, 12.0)
+
     def test_wednesday_rollover_is_triple(self) -> None:
         entry = dt.datetime(2026, 7, 8, 23, 0)
         exit_ = dt.datetime(2026, 7, 9, 16, 0)
@@ -106,6 +133,27 @@ class FtmoReportCostReconcileTests(unittest.TestCase):
             first[0].native_commission + second[0].native_commission,
             -4.0,
         )
+        self.assertAlmostEqual(
+            first[0].native_entry_commission
+            + second[0].native_entry_commission,
+            -2.0,
+        )
+        self.assertAlmostEqual(
+            first[0].native_exit_commission + second[0].native_exit_commission,
+            -2.0,
+        )
+
+    def test_money_parser_accepts_only_blank_or_full_numeric_token(self) -> None:
+        self.assertEqual(_report_money_number("", "Commission"), 0.0)
+        self.assertEqual(_report_money_number("\xa0", "Commission"), 0.0)
+        self.assertEqual(_report_money_number("1 536.96", "Profit"), 1536.96)
+        self.assertEqual(_required_number("-10.60", "Price"), -10.60)
+        for token in ("NaN", "Infinity", "garbage", "12abc", "x12"):
+            with self.subTest(token=token):
+                with self.assertRaises(ValueError):
+                    _report_money_number(token, "Profit")
+        with self.assertRaises(ValueError):
+            _required_number("", "Volume")
 
     def test_profit_factor_and_close_drawdown(self) -> None:
         metrics = summarize_nets([100.0, -50.0, 25.0, -100.0])
