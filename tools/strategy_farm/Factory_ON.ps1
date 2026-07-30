@@ -33,7 +33,9 @@ try {
         'Test-QmFactoryRunSmokeCommandLine',
         'Test-QmFactoryPhaseRunnerCommandLine',
         'Get-QmFactoryPhaseRunnerClassification',
-        'Get-QmCommandLineSha256'
+        'Get-QmCommandLineSha256',
+        'Get-QmCommandLineArguments',
+        'Get-QmUniqueCommandLineOptionValue'
     )) {
         if (-not (Get-Command -Name $requiredFunction -CommandType Function -ErrorAction SilentlyContinue)) {
             throw "Process-scope guard lacks required function: $requiredFunction"
@@ -41,6 +43,29 @@ try {
     }
 } catch {
     throw "FACTORY ON ABORTED before mutation: process-scope guard failed: $($_.Exception.Message)"
+}
+$restartHealthPath = Join-Path $PSScriptRoot 'factory_restart_health.ps1'
+try {
+    $script:QmFactoryRestartHealthProtocolVersion = $null
+    if (-not (Test-Path -LiteralPath $restartHealthPath -PathType Leaf)) {
+        throw "Required post-start health gate is missing: $restartHealthPath"
+    }
+    . $restartHealthPath
+    if ($script:QmFactoryRestartHealthProtocolVersion -ne 1) {
+        throw 'Post-start health-gate protocol version mismatch.'
+    }
+    foreach ($requiredFunction in @(
+        'Add-QmExpectedTaskEnabledState',
+        'Get-QmFactoryPostStartSnapshot',
+        'Test-QmFactoryPostStartHealth',
+        'Wait-QmFactoryPostStartHealth'
+    )) {
+        if (-not (Get-Command -Name $requiredFunction -CommandType Function -ErrorAction SilentlyContinue)) {
+            throw "Post-start health gate lacks required function: $requiredFunction"
+        }
+    }
+} catch {
+    throw "FACTORY ON ABORTED before mutation: post-start health gate failed: $($_.Exception.Message)"
 }
 $mutationLockProtocolPath = Join-Path $PSScriptRoot 'factory_mutation_lock.ps1'
 try {
@@ -69,6 +94,7 @@ $disabledTerminalsPath = 'D:\QM\strategy_farm\state\disabled_terminals.txt'
 $pythonExe = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe'
 $pacerScript = Join-Path $PSScriptRoot 'codex_fleet_pacer.py'
 $maintenanceControlScript = Join-Path $PSScriptRoot 'maintenance_control.py'
+$factoryPostStartHealthTimeoutSeconds = 300
 
 $QM_RESPAWN_TASKS = @(
     'QM_StrategyFarm_FactoryWatchdog_15min',
@@ -106,6 +132,11 @@ $QM_LIVE_TASKS = @(
     'QM_StrategyFarm_LiveBookPulse',
     'QM_FTMO_TrialPulse',
     'QM_StrategyFarm_LsmHealthProbe'
+)
+$QM_CRITICAL_POST_START_TASKS = @(
+    'QM_StrategyFarm_QuotaPull',
+    'QM_StrategyFarm_AgentRouter_5min',
+    'QM_StrategyFarm_Pump_5min'
 )
 $managedTasks = @($QM_FACTORY_TASKS + $QM_AI_TASKS + $QM_RESPAWN_TASKS + $QM_QUIESCENCE_TASKS |
     Sort-Object -Unique)
@@ -306,13 +337,30 @@ function Invoke-FailClosedRollback([string]$Reason, [object]$PriorOffRecord) {
     }
 }
 
-$disabledCount = 0
+$disabledTerminals = @()
 if (Test-Path -LiteralPath $disabledTerminalsPath) {
-    $disabledCount = @(Get-Content -LiteralPath $disabledTerminalsPath -ErrorAction SilentlyContinue |
+    $disabledTerminalRows = @(Get-Content -LiteralPath $disabledTerminalsPath -ErrorAction Stop |
         ForEach-Object { $_.Trim() } |
-        Where-Object { $_ -match '^T(?:[1-9]|10)$' }).Count
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    $invalidDisabledTerminals = @($disabledTerminalRows |
+        Where-Object { $_ -notmatch '(?i)^T(?:[1-9]|10)$' })
+    if ($invalidDisabledTerminals.Count -ne 0) {
+        throw "FACTORY ON ABORTED before mutation: invalid disabled-terminal rows: $($invalidDisabledTerminals -join ', ')"
+    }
+    $disabledTerminals = @($disabledTerminalRows |
+        ForEach-Object { $_.ToUpperInvariant() })
+    $duplicateDisabledTerminals = @($disabledTerminals | Group-Object |
+        Where-Object { $_.Count -ne 1 } | ForEach-Object { $_.Name })
+    if ($duplicateDisabledTerminals.Count -ne 0) {
+        throw "FACTORY ON ABORTED before mutation: duplicate disabled terminals: $($duplicateDisabledTerminals -join ', ')"
+    }
 }
-$expectWorkers = [math]::Max(1, 10 - $disabledCount)
+$expectedWorkerTerminals = @(1..10 | ForEach-Object { "T$_" } |
+    Where-Object { $_ -notin $disabledTerminals })
+$expectWorkers = $expectedWorkerTerminals.Count
+if ($expectWorkers -lt 1) {
+    throw 'FACTORY ON ABORTED before mutation: no Factory worker terminal is enabled.'
+}
 $mySession = (Get-Process -Id $PID).SessionId
 
 Write-Host ''
@@ -355,6 +403,36 @@ $taskEnabledBefore = ConvertTo-ExactTaskEnabledState `
     -State $offRecord.task_enabled_before `
     -ExpectedTasks $QM_QUIESCENCE_TASKS `
     -SourceLabel 'schema-v2 FACTORY_OFF.flag'
+
+$expectedTaskEnabledState = [ordered]@{}
+foreach ($taskName in @($QM_FACTORY_TASKS + $QM_AI_TASKS + $QM_RESPAWN_TASKS |
+    Sort-Object -Unique)) {
+    Add-QmExpectedTaskEnabledState -TaskMap $expectedTaskEnabledState `
+        -TaskName $taskName -Enabled $true
+}
+foreach ($taskName in $QM_QUIESCENCE_TASKS) {
+    Add-QmExpectedTaskEnabledState -TaskMap $expectedTaskEnabledState `
+        -TaskName $taskName -Enabled ([bool]$taskEnabledBefore[$taskName])
+}
+foreach ($taskName in $QM_ENFORCE_DISABLED_TASKS) {
+    Add-QmExpectedTaskEnabledState -TaskMap $expectedTaskEnabledState `
+        -TaskName $taskName -Enabled $false
+}
+foreach ($taskName in $QM_ALWAYSON_TASKS) {
+    if ($taskName -in $QM_LIVE_TASKS -or $taskName -in $QM_QUIESCENCE_TASKS) { continue }
+    Add-QmExpectedTaskEnabledState -TaskMap $expectedTaskEnabledState `
+        -TaskName $taskName -Enabled $true
+}
+$invalidExpectedTaskRegistrations = @(@($expectedTaskEnabledState.Keys) | Where-Object {
+    @(Get-ScheduledTask -TaskName ([string]$_) -ErrorAction SilentlyContinue).Count -ne 1
+})
+if ($invalidExpectedTaskRegistrations.Count -gt 0) {
+    throw ("FACTORY ON ABORTED before mutation: expected scheduled-task registration " +
+        "cardinality is not exactly one: $($invalidExpectedTaskRegistrations -join ', ')")
+}
+if (-not (Test-Path -LiteralPath $pythonExe -PathType Leaf)) {
+    throw "FACTORY ON ABORTED before mutation: Python executable missing: $pythonExe"
+}
 if (Test-Path -LiteralPath $factoryMutationLockPath) {
     throw "FACTORY ON ABORTED: autonomous mutation lock still exists: $factoryMutationLockPath"
 }
@@ -374,16 +452,6 @@ try {
         throw ("FACTORY ON ABORTED: stale factory processes remain daemons={0} phase_runners={1} wrappers={2} terminals={3} testers={4} review_required={5}" -f `
             $afterDrain.daemons.Count,$afterDrain.phase_runners.Count,$afterDrain.wrappers.Count,$afterDrain.terminals.Count,$afterDrain.testers.Count,$afterDrain.review_required.Count)
     }
-
-$missingRequiredTasks = @(@($QM_FACTORY_TASKS + $QM_AI_TASKS + $QM_RESPAWN_TASKS) | Where-Object {
-    $null -eq (Get-ScheduledTask -TaskName $_ -ErrorAction SilentlyContinue)
-})
-if ($missingRequiredTasks.Count -gt 0) {
-    throw "FACTORY ON ABORTED: required scheduled tasks missing: $($missingRequiredTasks -join ', ')"
-}
-if (-not (Test-Path -LiteralPath $pythonExe -PathType Leaf)) {
-    throw "FACTORY ON ABORTED: Python executable missing: $pythonExe"
-}
 
 $codexParallelRestored = ''
 if ($null -ne $offRecord.codex_parallel_before) {
@@ -434,6 +502,21 @@ try {
         throw "only $($inMySession.Count)/$expectWorkers worker daemons started in interactive session $mySession"
     }
 
+    $criticalTaskBaselines = [ordered]@{}
+    foreach ($taskName in $QM_CRITICAL_POST_START_TASKS) {
+        $taskMatches = @(Get-ScheduledTask -TaskName $taskName -ErrorAction Stop)
+        if ($taskMatches.Count -ne 1) {
+            throw "Critical task '$taskName' registration cardinality changed during restart."
+        }
+        $taskInfo = Get-ScheduledTaskInfo -InputObject $taskMatches[0] -ErrorAction Stop
+        $baselineLastRunUtc = [datetimeoffset]::MinValue
+        if ($null -ne $taskInfo.LastRunTime) {
+            $baselineLastRunUtc = [datetimeoffset]$taskInfo.LastRunTime.ToUniversalTime()
+        }
+        $criticalTaskBaselines[$taskName] = $baselineLastRunUtc.ToString('o')
+    }
+    $criticalTasksStartedAtUtc = [datetimeoffset]::UtcNow
+
     foreach ($taskName in @(@($QM_FACTORY_TASKS + $QM_AI_TASKS + $QM_RESPAWN_TASKS) | Sort-Object -Unique)) {
         Enable-ScheduledTask -TaskName $taskName -ErrorAction Stop | Out-Null
     }
@@ -461,9 +544,20 @@ try {
         }
     }
 
-    Start-ScheduledTask -TaskName 'QM_StrategyFarm_QuotaPull' -ErrorAction SilentlyContinue
+    Start-ScheduledTask -TaskName 'QM_StrategyFarm_QuotaPull' -ErrorAction Stop
     Start-ScheduledTask -TaskName 'QM_StrategyFarm_AgentRouter_5min' -ErrorAction Stop
     Start-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction Stop
+
+    $postStartHealth = Wait-QmFactoryPostStartHealth `
+        -ExpectedTaskEnabledState $expectedTaskEnabledState `
+        -CriticalTaskBaselines $criticalTaskBaselines `
+        -CriticalTaskNames $QM_CRITICAL_POST_START_TASKS `
+        -ExpectedWorkerTerminals $expectedWorkerTerminals `
+        -ExpectedSessionId $mySession `
+        -FreshNotBeforeUtc $criticalTasksStartedAtUtc `
+        -TimeoutSeconds $factoryPostStartHealthTimeoutSeconds
+    Write-Host ("  post-start health gate passed: {0} tasks, {1} workers." -f `
+        $postStartHealth.observed_task_count,$postStartHealth.observed_worker_count)
 
     # The held cohort is released only after every contractually enabled
     # worker/task is healthy.  Non-release quarantine holds remain active; the

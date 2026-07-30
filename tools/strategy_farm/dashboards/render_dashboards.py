@@ -2596,6 +2596,7 @@ def collect_pipeline_books_program_status(repo_root: Path = REPO_ROOT) -> dict[s
             "work_packages": [],
             "q08_v3": {},
             "target_lanes": [],
+            "ftmo_book3_runtime_evaluation": {},
             "verification_lanes": {},
             "owner_blockers": [],
         }
@@ -2652,6 +2653,11 @@ def render_pipeline_books_program_status(snapshot: dict[str, Any]) -> str:
     q08 = snapshot.get("q08_v3") if isinstance(snapshot.get("q08_v3"), dict) else {}
     work_packages = snapshot.get("work_packages") if isinstance(snapshot.get("work_packages"), list) else []
     target_lanes = snapshot.get("target_lanes") if isinstance(snapshot.get("target_lanes"), list) else []
+    ftmo_runtime = (
+        snapshot.get("ftmo_book3_runtime_evaluation")
+        if isinstance(snapshot.get("ftmo_book3_runtime_evaluation"), dict)
+        else {}
+    )
     verification = snapshot.get("verification_lanes") if isinstance(snapshot.get("verification_lanes"), dict) else {}
     blockers = snapshot.get("owner_blockers") if isinstance(snapshot.get("owner_blockers"), list) else []
     bindings = snapshot.get("bindings") if isinstance(snapshot.get("bindings"), dict) else {}
@@ -2708,6 +2714,59 @@ def render_pipeline_books_program_status(snapshot: dict[str, Any]) -> str:
     if not targets_html:
         targets_html = '<div class="pbs-failclosed">No target-lane declarations available.</div>'
 
+    ftmo_readiness = (
+        ftmo_runtime.get("readiness")
+        if isinstance(ftmo_runtime.get("readiness"), dict)
+        else {}
+    )
+    ftmo_policy = (
+        ftmo_runtime.get("policy_bootstrap")
+        if isinstance(ftmo_runtime.get("policy_bootstrap"), dict)
+        else {}
+    )
+    ftmo_holdout = (
+        ftmo_runtime.get("temporal_holdout_diagnostic")
+        if isinstance(ftmo_runtime.get("temporal_holdout_diagnostic"), dict)
+        else {}
+    )
+    ftmo_native_rows = (
+        ftmo_runtime.get("native_runs")
+        if isinstance(ftmo_runtime.get("native_runs"), list)
+        else []
+    )
+    ftmo_native_html = "".join(
+        '<li><strong>'
+        f'{e(row.get("rung"))} · QM5_{e(row.get("ea_id"))} · {e(row.get("symbol"))}'
+        '</strong><span>'
+        f'{e(row.get("trades"))} native trades · '
+        f'{e(row.get("lifecycle_mismatches"))} lifecycle mismatches · '
+        f'{e(row.get("reconciliation"))}'
+        '</span></li>'
+        for row in ftmo_native_rows
+        if isinstance(row, dict)
+    ) or '<li><span>No native-run projection available.</span></li>'
+    ftmo_runtime_html = f"""
+<div class="pbs-card pbs-ftmo-runtime">
+  <div class="pbs-card-kicker">FTMO Book 3 · hash-bound recorded research projection</div>
+  <div class="pbs-card-title">{e(ftmo_runtime.get("status") or "MISSING")}</div>
+  <div class="pbs-token-row">
+    <span class="pbs-token {_programme_tone(ftmo_readiness.get('input_integrity'))}">input {e(ftmo_readiness.get("input_integrity") or "MISSING")}</span>
+    <span class="pbs-token {_programme_tone(ftmo_readiness.get('native_stream_reconciliation'))}">native {e(ftmo_readiness.get("native_stream_reconciliation") or "MISSING")}</span>
+    <span class="pbs-token warn">shared model {e(ftmo_readiness.get("shared_account_model") or "MISSING")}</span>
+    <span class="pbs-token bad">strict {e(ftmo_readiness.get("strict_qualification") or "MISSING")}</span>
+    <span class="pbs-token bad">money {e(ftmo_readiness.get("money_gate") or "MISSING")}</span>
+    <span class="pbs-token bad">paid {e(ftmo_readiness.get("paid_challenge") or "MISSING")}</span>
+  </div>
+  <ul class="pbs-list">{ftmo_native_html}</ul>
+  <div class="pbs-runtime-metrics">
+    <div><strong>Policy bootstrap · NON-GATE-ELIGIBLE</strong><span>IS / EOD surrogate · {e(ftmo_policy.get("paths") or "—")} paths</span><span>P1 {e(ftmo_policy.get("phase1_pass_percent") or "—")} · two-phase {e(ftmo_policy.get("two_phase_pass_percent") or "—")} · breach {e(ftmo_policy.get("official_breach_percent") or "—")}</span></div>
+    <div><strong>Temporal holdout diagnostic · NON-GATE-ELIGIBLE</strong><span>NOT SELECTION-SEALED · {e(ftmo_holdout.get("starts") or "—")} starts</span><span>P1 {e(ftmo_holdout.get("phase1_pass_percent") or "—")} · two-phase {e(ftmo_holdout.get("two_phase_pass_percent") or "—")} · breach {e(ftmo_holdout.get("official_breach_percent") or "—")}</span></div>
+  </div>
+  <div class="pbs-failclosed"><strong>NO AUTHORITY:</strong> Factory, restart, deployment, money gate and paid challenge remain false. Research results are not purchase- or deploy-eligible.</div>
+  <div class="pbs-card-body"><strong>PROVENANCE:</strong> External artifact hashes are recorded evidence; this dashboard does not revalidate D: runtime files.</div>
+  <div class="pbs-card-meta">manifest <code title="{e(ftmo_runtime.get('source_manifest_sha256') or '')}">{e(_short_sha(ftmo_runtime.get('source_manifest_sha256')))}</code> · receipt <code title="{e(ftmo_runtime.get('source_receipt_sha256') or '')}">{e(_short_sha(ftmo_runtime.get('source_receipt_sha256')))}</code></div>
+</div>"""
+
     wp_rows = ""
     for row in work_packages:
         if not isinstance(row, dict):
@@ -2758,7 +2817,7 @@ def render_pipeline_books_program_status(snapshot: dict[str, Any]) -> str:
   {warning_html}
   <div class="pbs-safety"><strong>{e(safety.get("factory_state") or "UNKNOWN")}</strong><span>{e(safety.get("statement") or "Safety statement unavailable.")}</span></div>
   <div class="pbs-dimensions">{dimensions_html}</div>
-  <div class="pbs-cards">{q08_html}{targets_html}</div>
+  <div class="pbs-cards">{q08_html}{targets_html}{ftmo_runtime_html}</div>
   <div class="pbs-subhead">W0–W8 implementation status</div>
   <div class="archive-table-wrap pbs-table-wrap"><table class="archive-table pbs-table">
     <thead><tr><th>Wave</th><th>Scope</th><th>Source</th><th>Runtime</th><th>Next controlled action</th></tr></thead>
@@ -2845,13 +2904,14 @@ ARCHIVE_V2_CSS = """
 .pbs-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0 18px}.pbs-card{border:1px solid var(--border-2);background:var(--surface-1);padding:14px}
 .pbs-card-kicker,.pbs-subhead{font-family:var(--font-mono);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--text-4)}
 .pbs-card-title{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text);margin:7px 0}.pbs-card-body{font-size:10.5px;color:var(--text-3);line-height:1.5;margin-top:8px}.pbs-card-meta{font-family:var(--font-mono);font-size:9px;color:var(--text-4);margin-top:10px;overflow-wrap:anywhere}
+.pbs-ftmo-runtime{grid-column:1/-1;border-left:3px solid var(--warn)}.pbs-runtime-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.pbs-runtime-metrics>div{display:grid;gap:4px;padding:10px;border:1px solid var(--border);background:var(--surface-2);font-family:var(--font-mono);font-size:9.5px;color:var(--text-3)}.pbs-runtime-metrics strong{color:var(--warn)}
 .pbs-token-row{display:flex;gap:5px;flex-wrap:wrap}.pbs-token{display:inline-block;padding:3px 6px;border:1px solid var(--border);font-family:var(--font-mono);font-size:8.5px;font-weight:700;letter-spacing:.04em;white-space:normal}
 .pbs-subhead{color:var(--text-2);margin:16px 0 8px}.pbs-table-wrap{padding:0}.pbs-table td{vertical-align:top;font-size:10.5px}.pbs-table td:last-child{min-width:260px;color:var(--text-3)}
 .pbs-split{display:grid;grid-template-columns:1fr 1fr;gap:18px}.pbs-verification{display:flex;gap:8px;align-items:center;font-family:var(--font-mono);font-size:10px;color:var(--text-3)}
 .pbs-list{list-style:none;margin:8px 0 0;padding:0;border:1px solid var(--border)}.pbs-list li{display:grid;gap:4px;padding:9px 11px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-2)}.pbs-list li:last-child{border-bottom:none}.pbs-list code{font-size:8px;overflow-wrap:anywhere}.pbs-list small{color:var(--text-4);font-family:var(--font-mono);font-size:8.5px}.pbs-exit{font-size:9px;color:var(--text-4);margin-top:7px;line-height:1.45}
 .pbs-bindings{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;font-family:var(--font-mono);font-size:9px;color:var(--text-4)}.pbs-bindings strong{color:var(--text-2)}
 .pbs-legacy{padding:11px 14px;margin-top:12px;border-left:3px solid var(--warn);background:rgba(184,114,10,.06);font-size:10.5px;color:var(--text-3);line-height:1.55}
-@media(max-width:1000px){.pbs-dimensions{grid-template-columns:repeat(2,minmax(0,1fr))}.pbs-cards{grid-template-columns:1fr}.pbs-split{grid-template-columns:1fr}}
+@media(max-width:1000px){.pbs-dimensions{grid-template-columns:repeat(2,minmax(0,1fr))}.pbs-cards{grid-template-columns:1fr}.pbs-split{grid-template-columns:1fr}.pbs-runtime-metrics{grid-template-columns:1fr}}
 @media(max-width:620px){.pbs-dimensions{grid-template-columns:1fr}.pbs-safety{display:block}.pbs-safety span{display:block;margin-top:5px}}
 """
 

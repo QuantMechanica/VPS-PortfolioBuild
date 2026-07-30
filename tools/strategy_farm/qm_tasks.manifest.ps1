@@ -41,7 +41,6 @@ $QM_ALWAYSON_TASKS = @(
     'QM_StrategyFarm_Dashboard_Hourly',       # current/strategies/EA-detail pages
     'QM_StrategyFarm_Health_15min',           # farmctl health
     'QM_MorningBriefing_Vault',               # morning brief (vault) 06:00
-    'QM_StrategyFarm_UnreadableLinks_Friday', # OWNER source-access backlog mail Friday 06:30
     'QM_StrategyFarm_MailboxSourceIntake_Daily', # info@ source extraction + authenticated triage 06:07
     'QM_StrategyFarm_RebootDiagnostic_AtStartup', # one deduplicated cause/recovery mail per Windows boot
     # NOTE: duplicate QM_StrategyFarm_MorningBrief_0700 was deleted. The retained
@@ -77,7 +76,8 @@ $QM_ENFORCE_DISABLED_TASKS = @(
     'QM_StrategyFarm_TerminalWorkers_AT_STARTUP',
     'QM_TSCon_Console_OnDisconnect',           # proven session-teardown race (2026-07-21)
     'QM_StrategyFarm_HygieneReboot',           # unguarded reboot path; keep OFF until hardened
-    'QM_StrategyFarm_GmailAlarm_Hourly'        # OWNER 2026-07-23: no separate PIPELINE FAIL/OK mail; morning brief remains
+    'QM_StrategyFarm_GmailAlarm_Hourly',       # OWNER 2026-07-23: no separate PIPELINE FAIL/OK mail; morning brief remains
+    'QM_StrategyFarm_UnreadableLinks_Friday'   # preserve observed Disabled state pending explicit OWNER decision
 )
 
 # --- decommissioned: DELETED 2026-06-01 (OWNER-approved) ------------

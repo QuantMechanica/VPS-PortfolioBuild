@@ -569,8 +569,8 @@ def test_scheduler_and_manifest_contracts() -> None:
     enforce_disabled = manifest.split(
         "$QM_ENFORCE_DISABLED_TASKS = @(", 1
     )[1].split("\n)", 1)[0]
-    assert "QM_StrategyFarm_UnreadableLinks_Friday" in always_on
-    assert "QM_StrategyFarm_UnreadableLinks_Friday" not in enforce_disabled
+    assert "QM_StrategyFarm_UnreadableLinks_Friday" not in always_on
+    assert "QM_StrategyFarm_UnreadableLinks_Friday" in enforce_disabled
     assert "QM_StrategyFarm_GmailAlarm_Hourly" in enforce_disabled
     assert "Friday 06:30" in inventory
 

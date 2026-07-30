@@ -876,7 +876,7 @@ def render_pipeline_books_program(snapshot: dict) -> str:
         source_detail += f" // {error}"
 
     work_packages = snapshot.get("work_packages") or []
-    if not work_packages:
+    if state in {"MISSING", "INVALID"} or not work_packages:
         return (
             f'<div class="pb-program pb-program-{state_cls}">'
             '<div class="pb-source">'
@@ -952,6 +952,53 @@ def render_pipeline_books_program(snapshot: dict) -> str:
             '</div>'
         )
 
+    ftmo = snapshot.get("ftmo_book3_runtime_evaluation") or {}
+    readiness = ftmo.get("readiness") or {}
+    native_rows = ftmo.get("native_runs") or []
+    native_text = " · ".join(
+        f'{row.get("rung", "?")} QM5_{row.get("ea_id", "?")} '
+        f'{row.get("symbol", "?")} {row.get("trades", "?")} trades / '
+        f'{row.get("lifecycle_mismatches", "?")} lifecycle mismatches'
+        for row in native_rows
+        if isinstance(row, dict)
+    )
+    policy = ftmo.get("policy_bootstrap") or {}
+    holdout = ftmo.get("temporal_holdout_diagnostic") or {}
+    manifest_hash = str(ftmo.get("source_manifest_sha256") or "")
+    receipt_hash = str(ftmo.get("source_receipt_sha256") or "")
+    projection_hash = str(
+        (bindings.get("ftmo_book3_runtime_projection") or {}).get("file_sha256") or ""
+    )
+    ftmo_runtime_html = (
+        '<div class="pb-contract pb-ftmo-runtime">'
+        '<div class="pb-contract-lbl">FTMO BOOK 3 // HASH-BOUND RECORDED RESEARCH PROJECTION</div>'
+        f'<div class="pb-contract-val">{e(ftmo.get("status", "MISSING"))}</div>'
+        '<div class="pb-lane-line pass"><b>INPUT / NATIVE</b> '
+        f'{e(readiness.get("input_integrity", "MISSING"))} / '
+        f'{e(readiness.get("native_stream_reconciliation", "MISSING"))}</div>'
+        '<div class="pb-lane-line residual"><b>STRICT / MONEY / PAID</b> '
+        f'{e(readiness.get("strict_qualification", "MISSING"))} / '
+        f'{e(readiness.get("money_gate", "MISSING"))} / '
+        f'{e(readiness.get("paid_challenge", "MISSING"))}</div>'
+        f'<div class="pb-contract-note">{e(native_text)}</div>'
+        '<div class="pb-contract-note"><b>POLICY BOOTSTRAP · NON-GATE-ELIGIBLE</b> '
+        f'P1 {e(policy.get("phase1_pass_percent", "?"))} · two-phase '
+        f'{e(policy.get("two_phase_pass_percent", "?"))} · breach '
+        f'{e(policy.get("official_breach_percent", "?"))}</div>'
+        '<div class="pb-contract-note"><b>TEMPORAL HOLDOUT DIAGNOSTIC · '
+        'NOT SELECTION-SEALED · NON-GATE-ELIGIBLE</b> '
+        f'P1 {e(holdout.get("phase1_pass_percent", "?"))} · two-phase '
+        f'{e(holdout.get("two_phase_pass_percent", "?"))} · breach '
+        f'{e(holdout.get("official_breach_percent", "?"))}</div>'
+        '<div class="pb-contract-note"><b>AUTHORITY</b> FACTORY / RESTART / MONEY / '
+        'PURCHASE / DEPLOY = FALSE</div>'
+        '<div class="pb-contract-note"><b>PROVENANCE</b> External artifact hashes are '
+        'recorded evidence; this dashboard does not revalidate D: runtime files.</div>'
+        f'<div class="pb-contract-sub">manifest {e(manifest_hash[:12])} // '
+        f'receipt {e(receipt_hash[:12])} // projection {e(projection_hash[:12])}</div>'
+        '</div>'
+    )
+
     verification = snapshot.get("verification_lanes") or {}
     green = verification.get("green") or {}
     residual = verification.get("external_residual") or {}
@@ -990,7 +1037,7 @@ def render_pipeline_books_program(snapshot: dict) -> str:
         '</div>'
         f'{safety_html}'
         f'<div class="pb-waves">{"".join(wave_rows)}</div>'
-        f'<div class="pb-contracts">{q08_html}{"".join(lane_cards)}{verification_html}</div>'
+        f'<div class="pb-contracts">{q08_html}{"".join(lane_cards)}{ftmo_runtime_html}{verification_html}</div>'
         '<div class="pb-blockers-head">'
         f'<span>OWNER BLOCKERS</span><b>{len(blockers):02d} OPEN</b>'
         '</div>'
@@ -3109,6 +3156,7 @@ a.frontier-tile:hover { background: var(--surface-2); }
   gap: 1px; background: var(--border); border-bottom: 1px solid var(--border);
 }
 .pb-contract { background: var(--surface-1); padding: 14px 16px; min-height: 124px; }
+.pb-ftmo-runtime { grid-column: 1 / -1; border-left: 3px solid var(--warn); }
 .pb-contract-lbl {
   font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px;
   font-weight: 700; letter-spacing: 0.13em; color: var(--text-3); text-transform: uppercase;

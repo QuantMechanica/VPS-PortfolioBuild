@@ -6,7 +6,7 @@ from pathlib import Path
 from tools.strategy_farm import render_cockpit
 
 
-NOW = dt.datetime(2026, 7, 29, 18, 0, tzinfo=dt.UTC)
+NOW = dt.datetime(2026, 7, 30, 5, 30, tzinfo=dt.UTC)
 
 
 def test_cockpit_programme_snapshot_uses_source_repo_and_is_fresh() -> None:
@@ -24,7 +24,7 @@ def test_programme_panel_renders_all_required_contracts() -> None:
     assert "PROGRAM SOURCE FRESH" in page
     assert "W0" in page and "W8" in page
     assert "SOURCE_IMPLEMENTED_WITH_OWNER_RESIDUALS" in page
-    assert "SHADOW_EVALUATOR_SOURCE_IMPLEMENTED_NO_GO" in page
+    assert "FTMO_RESEARCH_RUNTIME_EVALUATED_STRICT_UNVERIFIED_NO_GO" in page
     assert "FACTORY</b> INTENTIONALLY_OFF" in page
     assert "NO ACTION AUTHORIZED" in page
     assert "Q08 V3 // EVIDENCE" in page
@@ -38,6 +38,31 @@ def test_programme_panel_renders_all_required_contracts() -> None:
     assert "OWNER BLOCKERS" in page
     assert "06 OPEN" in page
     assert "OWNER-FTMO-GOVERNOR-MONEY" in page
+    assert "FTMO BOOK 3 // HASH-BOUND RECORDED RESEARCH PROJECTION" in page
+    assert "RESEARCH_MODEL_COMPLETE_STRICT_QUALIFICATION_UNVERIFIED" in page
+    assert "R0 QM5_9936 USDJPY.DWX 1143 trades / 0 lifecycle mismatches" in page
+    assert "R1 QM5_10145 XAUUSD.DWX 291 trades / 0 lifecycle mismatches" in page
+    assert "R2 QM5_13108 XTIUSD.DWX 548 trades / 0 lifecycle mismatches" in page
+    assert "POLICY BOOTSTRAP · NON-GATE-ELIGIBLE" in page
+    assert "67.240%" in page and "44.896%" in page and "33.456%" in page
+    assert "NOT SELECTION-SEALED · NON-GATE-ELIGIBLE" in page
+    assert "84.31%" in page and "81.37%" in page and "3.92%" in page
+    assert "FACTORY / RESTART / MONEY / PURCHASE / DEPLOY = FALSE" in page
+    assert "this dashboard does not revalidate D: runtime files" in page
+
+
+def test_invalid_snapshot_with_residual_payload_still_renders_fail_closed() -> None:
+    snapshot = render_cockpit.pipeline_books_program_snapshot(now_utc=NOW)
+    snapshot["state"] = "INVALID"
+    snapshot["valid"] = False
+    snapshot["error"] = "synthetic validation failure"
+    snapshot["work_packages"][0]["status"] = "CHALLENGE_READY"
+
+    page = render_cockpit.render_pipeline_books_program(snapshot)
+
+    assert "NO TRUSTED W0–W8 STATUS AVAILABLE" in page
+    assert "synthetic validation failure" in page
+    assert "CHALLENGE_READY" not in page
 
 
 def test_missing_or_invalid_programme_never_renders_clear_or_pass() -> None:
@@ -68,7 +93,9 @@ def test_stale_programme_is_visibly_non_fresh_but_keeps_verified_detail() -> Non
     assert snapshot["state"] == "STALE"
     assert "PROGRAM SOURCE STALE" in page
     assert "programme status is" in page
-    assert "W0" in page and "W8" in page
+    assert "DXZ_BETTER_BOOK_V1" in page
+    assert "RESEARCH_MODEL_COMPLETE_STRICT_QUALIFICATION_UNVERIFIED" in page
+    assert "NO TRUSTED W0–W8 STATUS AVAILABLE" not in page
 
 
 def test_owner_surface_contains_all_verified_programme_blockers() -> None:

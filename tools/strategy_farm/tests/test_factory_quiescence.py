@@ -342,7 +342,8 @@ def test_off_force_disables_permanent_hazards_while_monitor_is_inert() -> None:
     manifest = (STRATEGY_FARM / "qm_tasks.manifest.ps1").read_text(encoding="utf-8-sig")
     enforce_disabled = _ps_array(manifest, "QM_ENFORCE_DISABLED_TASKS")
 
-    assert len(enforce_disabled) == 5
+    assert len(enforce_disabled) == 6
+    assert "QM_StrategyFarm_UnreadableLinks_Friday" in enforce_disabled
     assert "$offDisableTasks = @($managedTasks + $QM_ENFORCE_DISABLED_TASKS" in source
     assert "foreach ($taskName in $offDisableTasks)" in source
     assert "$taskDrift = @($offDisableTasks | Where-Object" in source

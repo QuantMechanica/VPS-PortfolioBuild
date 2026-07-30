@@ -1,7 +1,7 @@
 {
   "schema_version": "qm.pipeline-books-dashboard-status/v1",
   "program_id": "PIPELINE_BOOKS_DXZ_FTMO_2026_07",
-  "as_of_utc": "2026-07-29T17:23:36Z",
+  "as_of_utc": "2026-07-30T05:14:27Z",
   "freshness_max_age_hours": 168,
   "authority": "SOURCE_STATUS_ONLY_NO_RUNTIME_AUTHORITY",
   "binding_hash_contract": "TEXT_BYTES_CRLF_TO_LF_SHA256_V1",
@@ -22,6 +22,10 @@
     "evidence": {
       "path": "docs/ops/evidence/2026-07-29_pipeline_books_w6_w8_dashboard_wave.md",
       "file_sha256": "49fb9710babfeddd13acdaba6be1e26b3cb96036bb532de244aa1d3965a7c6ae"
+    },
+    "ftmo_book3_runtime_projection": {
+      "path": "docs/ops/evidence/2026-07-30_ftmo_book3_research_only_runtime_projection.json",
+      "file_sha256": "edd27325e7597cc6df730b91addc9937ca33d4bdc2b8121aa662abc936547352"
     },
     "q08_policy": {
       "path": "framework/scripts/q08_v3_shadow/archetype_policy_v1.json",
@@ -123,11 +127,11 @@
     {
       "id": "W8",
       "title": "DXZ and FTMO outcome lanes",
-      "status": "SHADOW_EVALUATOR_SOURCE_IMPLEMENTED_NO_GO",
-      "source_status": "SHADOW_EVALUATOR_IMPLEMENTED",
-      "runtime_status": "NO_TARGET_EVALUATION",
+      "status": "FTMO_RESEARCH_RUNTIME_EVALUATED_STRICT_UNVERIFIED_NO_GO",
+      "source_status": "EVALUATOR_IMPLEMENTED",
+      "runtime_status": "RESEARCH_MODEL_COMPLETE_STRICT_QUALIFICATION_UNVERIFIED",
       "authority_status": "NO_RUNTIME_AUTHORITY",
-      "next_action": "Seal exact DXZ and FTMO book evidence, run prospective shadow/probation, clear fidelity and obtain separate signed deploy and money decisions."
+      "next_action": "Close event-complete governor and shared-equity evidence, then run a separately preregistered exact-profile free trial before any money decision."
     }
   ],
   "q08_v3": {
@@ -158,21 +162,91 @@
     {
       "lane_id": "FTMO_2S_100K_SWING",
       "label": "FTMO two-step 100K swing",
-      "state": "RESEARCH_EVALUATOR_SOURCE_IMPLEMENTED",
+      "state": "RESEARCH_RUNTIME_EVALUATED_STRICT_UNVERIFIED",
       "rulepack_id": "FTMO_2S_100K_SWING_V1",
       "rulepack_canonical_sha256": "e65f58fc7dc43becbfc5e671bc4f3c526af998b086a787994be8694780b62d59",
-      "eligibility": "NOT_EVALUATED",
+      "eligibility": "STRICT_QUALIFICATION_UNVERIFIED",
       "deployment_authority": "NONE",
-      "next_action": "Feed the implemented dossier with the exact governor, frozen three-sleeve book and free-trial shadow before any money gate."
+      "next_action": "Treat the completed native model as research only; close missing setup data and pass a separately preregistered exact-profile free trial before any money gate."
     }
   ],
+  "ftmo_book3_runtime_evaluation": {
+    "evidence_class": "RESEARCH_ONLY_RUNTIME_PROJECTION",
+    "book_id": "FTMO_BOOK3_STANDALONE_R0_R1_R2",
+    "status": "RESEARCH_MODEL_COMPLETE_STRICT_QUALIFICATION_UNVERIFIED",
+    "source_manifest_sha256": "fdd26cc9d794c8420ab2f2914aa147f60dc3bdc3a7c4df8bd3c05d2ad91081ab",
+    "source_receipt_sha256": "303857750a452c538cfad41ea1026b78b717f92d949cc4abc8594c4a1ddb5b38",
+    "readiness": {
+      "input_integrity": "PASS",
+      "native_stream_reconciliation": "PASS",
+      "shared_account_model": "COMPLETE_RESEARCH_ONLY",
+      "strict_qualification": "UNVERIFIED",
+      "money_gate": "SETUP_DATA_MISSING",
+      "paid_challenge": "NO_GO"
+    },
+    "native_runs": [
+      {
+        "rung": "R0",
+        "ea_id": 9936,
+        "symbol": "USDJPY.DWX",
+        "trades": 1143,
+        "lifecycle_mismatches": 0,
+        "reconciliation": "PASS"
+      },
+      {
+        "rung": "R1",
+        "ea_id": 10145,
+        "symbol": "XAUUSD.DWX",
+        "trades": 291,
+        "lifecycle_mismatches": 0,
+        "reconciliation": "PASS"
+      },
+      {
+        "rung": "R2",
+        "ea_id": 13108,
+        "symbol": "XTIUSD.DWX",
+        "trades": 548,
+        "lifecycle_mismatches": 0,
+        "reconciliation": "PASS"
+      }
+    ],
+    "policy_bootstrap": {
+      "label": "IN_SAMPLE_INTERNAL_POLICY_EOD_SURROGATE",
+      "paths": 25000,
+      "phase1_pass_percent": "67.240%",
+      "two_phase_pass_percent": "44.896%",
+      "official_breach_percent": "33.456%",
+      "gate_eligible": false
+    },
+    "temporal_holdout_diagnostic": {
+      "label": "TEMPORAL_HOLDOUT_DIAGNOSTIC_NOT_SELECTION_SEALED",
+      "starts": 102,
+      "phase1_pass_percent": "84.31%",
+      "two_phase_pass_percent": "81.37%",
+      "official_breach_percent": "3.92%",
+      "gate_eligible": false
+    },
+    "authorization": {
+      "factory_action_authorized": false,
+      "factory_restart_authorized": false,
+      "money_gate_authorized": false,
+      "paid_challenge_purchase_authorized": false,
+      "deployment_allowed": false
+    },
+    "limitations": [
+      "The policy bootstrap uses in-sample evidence and an end-of-day governor surrogate; it is not gate-eligible.",
+      "The temporal holdout is diagnostic because strategy selection was not sealed before the 2018-2025 vintage was observed.",
+      "Event-complete shared-equity, target-crossing, pending-order and forced-flatten traces are missing, so strict qualification and the money gate remain blocked.",
+      "This projection grants no Factory, restart, deployment, paid-challenge, money or trading authority."
+    ]
+  },
   "verification_lanes": {
     "green": {
       "state": "PASS",
-      "passed": 3010,
+      "passed": 3399,
       "skipped": 1,
       "deselected": 5,
-      "subtests_passed": 34,
+      "subtests_passed": 49,
       "statement": "All tests except the five exact declared external residual node IDs passed without weakening."
     },
     "external_residual": {

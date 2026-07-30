@@ -79,6 +79,59 @@ def _fresh_snapshot() -> dict:
                 "next_action": "Run a prospective free-trial shadow.",
             },
         ],
+        "ftmo_book3_runtime_evaluation": {
+            "evidence_class": "RESEARCH_ONLY_RUNTIME_PROJECTION",
+            "book_id": "FTMO_BOOK3_STANDALONE_R0_R1_R2",
+            "status": "RESEARCH_MODEL_COMPLETE_STRICT_QUALIFICATION_UNVERIFIED",
+            "source_manifest_sha256": SHA_A,
+            "source_receipt_sha256": SHA_B,
+            "readiness": {
+                "input_integrity": "PASS",
+                "native_stream_reconciliation": "PASS",
+                "shared_account_model": "COMPLETE_RESEARCH_ONLY",
+                "strict_qualification": "UNVERIFIED",
+                "money_gate": "SETUP_DATA_MISSING",
+                "paid_challenge": "NO_GO",
+            },
+            "native_runs": [
+                {
+                    "rung": "R0",
+                    "ea_id": 9936,
+                    "symbol": "USDJPY.DWX",
+                    "trades": 1143,
+                    "lifecycle_mismatches": 0,
+                    "reconciliation": "PASS",
+                },
+                {
+                    "rung": "R1",
+                    "ea_id": 10145,
+                    "symbol": "XAUUSD.DWX",
+                    "trades": 291,
+                    "lifecycle_mismatches": 0,
+                    "reconciliation": "PASS",
+                },
+                {
+                    "rung": "R2",
+                    "ea_id": 13108,
+                    "symbol": "XTIUSD.DWX",
+                    "trades": 548,
+                    "lifecycle_mismatches": 0,
+                    "reconciliation": "PASS",
+                },
+            ],
+            "policy_bootstrap": {
+                "paths": 25000,
+                "phase1_pass_percent": "67.240%",
+                "two_phase_pass_percent": "44.896%",
+                "official_breach_percent": "33.456%",
+            },
+            "temporal_holdout_diagnostic": {
+                "starts": 102,
+                "phase1_pass_percent": "84.31%",
+                "two_phase_pass_percent": "81.37%",
+                "official_breach_percent": "3.92%",
+            },
+        },
         "verification_lanes": {
             "green": {
                 "state": "PASS",
@@ -136,6 +189,18 @@ def test_fresh_programme_renders_orthogonal_status_without_promotion_claim() -> 
     assert "deploy NONE" in page
     assert "Canonical contracts and execution identity" in page
     assert "Strategy Card V3 and experiment ledger" in page
+    assert "FTMO Book 3 · hash-bound recorded research projection" in page
+    assert "RESEARCH_MODEL_COMPLETE_STRICT_QUALIFICATION_UNVERIFIED" in page
+    assert "QM5_9936" in page and "1143 native trades" in page
+    assert "QM5_10145" in page and "291 native trades" in page
+    assert "QM5_13108" in page and "548 native trades" in page
+    assert page.count("0 lifecycle mismatches") == 3
+    assert "Policy bootstrap · NON-GATE-ELIGIBLE" in page
+    assert "67.240%" in page and "44.896%" in page and "33.456%" in page
+    assert "Temporal holdout diagnostic · NON-GATE-ELIGIBLE" in page
+    assert "84.31%" in page and "81.37%" in page and "3.92%" in page
+    assert "Research results are not purchase- or deploy-eligible" in page
+    assert "this dashboard does not revalidate D: runtime files" in page
     assert "external residual EXPECTED_FAIL_CLOSED" in page
     assert "DXZ10939 binding" in page
     assert "Legacy Q08" in page

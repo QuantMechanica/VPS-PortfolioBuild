@@ -18,7 +18,7 @@ from tools.strategy_farm.pipeline_books_dashboard_status import (
 )
 
 
-NOW = dt.datetime(2026, 7, 29, 18, 0, tzinfo=dt.UTC)
+NOW = dt.datetime(2026, 7, 30, 5, 30, tzinfo=dt.UTC)
 
 
 def _payload() -> dict:
@@ -29,7 +29,13 @@ def _materialize(tmp_path: Path, payload: dict | None = None) -> tuple[Path, Pat
     value = copy.deepcopy(payload or _payload())
     root = tmp_path / "repo"
     bindings = value["bindings"]
-    rows = [bindings["plan"], bindings["evidence"], bindings["q08_policy"], bindings["test_lanes"]]
+    rows = [
+        bindings["plan"],
+        bindings["evidence"],
+        bindings["ftmo_book3_runtime_projection"],
+        bindings["q08_policy"],
+        bindings["test_lanes"],
+    ]
     rows.extend(bindings["rulepacks"])
     for binding in rows:
         rel = Path(binding["path"])
@@ -54,6 +60,14 @@ def test_canonical_status_is_hash_bound_and_complete() -> None:
         "INVALID",
     ]
     assert status["q08_v3"]["lifecycle"] == "SHADOW_ONLY"
+    ftmo = status["ftmo_book3_runtime_evaluation"]
+    assert ftmo["status"] == "RESEARCH_MODEL_COMPLETE_STRICT_QUALIFICATION_UNVERIFIED"
+    assert ftmo["readiness"]["paid_challenge"] == "NO_GO"
+    assert [row["trades"] for row in ftmo["native_runs"]] == [1143, 291, 548]
+    assert all(row["lifecycle_mismatches"] == 0 for row in ftmo["native_runs"])
+    assert ftmo["policy_bootstrap"]["gate_eligible"] is False
+    assert ftmo["temporal_holdout_diagnostic"]["gate_eligible"] is False
+    assert not any(ftmo["authorization"].values())
     assert len(status["verification_lanes"]["external_residual"]["items"]) == 5
     assert len(status["owner_blockers"]) == 6
 
@@ -64,17 +78,19 @@ def test_snapshot_reports_fresh_with_orthogonal_status_fields() -> None:
     assert snapshot["state"] == "FRESH"
     assert snapshot["valid"] is True
     assert snapshot["error"] == ""
-    assert snapshot["generated_at_utc"] == "2026-07-29T18:00:00Z"
+    assert snapshot["generated_at_utc"] == "2026-07-30T05:30:00Z"
     assert snapshot["config_as_of_utc"] <= snapshot["generated_at_utc"]
     assert snapshot["work_packages"][6]["source_status"] == "PARTIAL_IMPLEMENTED"
     assert snapshot["work_packages"][6]["runtime_status"] == "MIGRATION_NOT_APPLIED"
     assert snapshot["work_packages"][7]["source_status"] == "DRY_RUN_IMPLEMENTED"
     assert snapshot["work_packages"][7]["runtime_status"] == "NOT_APPLIED"
-    assert snapshot["work_packages"][8]["source_status"] == "SHADOW_EVALUATOR_IMPLEMENTED"
-    assert snapshot["work_packages"][8]["runtime_status"] == "NO_TARGET_EVALUATION"
-    assert all(
-        row["state"] == "RESEARCH_EVALUATOR_SOURCE_IMPLEMENTED"
-        for row in snapshot["target_lanes"]
+    assert snapshot["work_packages"][8]["source_status"] == "EVALUATOR_IMPLEMENTED"
+    assert snapshot["work_packages"][8]["runtime_status"] == (
+        "RESEARCH_MODEL_COMPLETE_STRICT_QUALIFICATION_UNVERIFIED"
+    )
+    assert snapshot["target_lanes"][0]["eligibility"] == "NOT_EVALUATED"
+    assert snapshot["target_lanes"][1]["eligibility"] == (
+        "STRICT_QUALIFICATION_UNVERIFIED"
     )
 
 
@@ -125,7 +141,13 @@ def test_bound_plan_byte_drift_is_invalid(tmp_path: Path) -> None:
 def test_bound_text_hash_is_portable_across_lf_and_crlf_checkouts(tmp_path: Path) -> None:
     config, root, value = _materialize(tmp_path)
     bindings = value["bindings"]
-    rows = [bindings["plan"], bindings["evidence"], bindings["q08_policy"], bindings["test_lanes"]]
+    rows = [
+        bindings["plan"],
+        bindings["evidence"],
+        bindings["ftmo_book3_runtime_projection"],
+        bindings["q08_policy"],
+        bindings["test_lanes"],
+    ]
     rows.extend(bindings["rulepacks"])
 
     for binding in rows:
@@ -188,6 +210,57 @@ def test_rulepack_canonical_hash_must_match_lane_and_artifact(tmp_path: Path) ->
     config, root, _ = _materialize(tmp_path, payload)
 
     with pytest.raises(ProgramStatusError, match="lane hash"):
+        load_program_status(config, repo_root=root)
+
+
+def test_ftmo_runtime_projection_is_bound_to_repo_evidence_record(tmp_path: Path) -> None:
+    config, root, value = _materialize(tmp_path)
+    evidence = root / value["bindings"]["ftmo_book3_runtime_projection"]["path"]
+    evidence.write_bytes(evidence.read_bytes() + b"\n")
+
+    with pytest.raises(ProgramStatusError, match="file hash mismatch"):
+        load_program_status(config, repo_root=root)
+
+
+def test_ftmo_runtime_projection_cannot_grant_authority(tmp_path: Path) -> None:
+    payload = _payload()
+    payload["ftmo_book3_runtime_evaluation"]["authorization"][
+        "paid_challenge_purchase_authorized"
+    ] = True
+    config, root, _ = _materialize(tmp_path, payload)
+
+    with pytest.raises(ProgramStatusError, match="grants no authority"):
+        load_program_status(config, repo_root=root)
+
+
+def test_ftmo_research_statistics_cannot_be_marked_gate_eligible(tmp_path: Path) -> None:
+    payload = _payload()
+    payload["ftmo_book3_runtime_evaluation"]["temporal_holdout_diagnostic"][
+        "gate_eligible"
+    ] = True
+    config, root, _ = _materialize(tmp_path, payload)
+
+    with pytest.raises(ProgramStatusError, match="must be false"):
+        load_program_status(config, repo_root=root)
+
+
+def test_ftmo_percentages_cannot_exceed_one_hundred(tmp_path: Path) -> None:
+    payload = _payload()
+    payload["ftmo_book3_runtime_evaluation"]["policy_bootstrap"][
+        "phase1_pass_percent"
+    ] = "100.999%"
+    config, root, _ = _materialize(tmp_path, payload)
+
+    with pytest.raises(ProgramStatusError, match="explicit percentage"):
+        load_program_status(config, repo_root=root)
+
+
+def test_config_freshness_cannot_move_past_bound_projection_record(tmp_path: Path) -> None:
+    payload = _payload()
+    payload["as_of_utc"] = "2026-07-30T05:00:00Z"
+    config, root, _ = _materialize(tmp_path, payload)
+
+    with pytest.raises(ProgramStatusError, match="must equal the hash-bound FTMO projection"):
         load_program_status(config, repo_root=root)
 
 

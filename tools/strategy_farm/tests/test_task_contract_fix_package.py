@@ -63,7 +63,64 @@ def test_auth_bound_after_contracts_use_qm_admin_console_wrapper() -> None:
         assert int(wait_match.group(1)) <= _duration_seconds(execution_limit)
 
 
-def test_package_warns_that_xml_force_registration_can_reenable_tasks() -> None:
+def test_package_documents_enabled_state_preservation_and_split_scopes() -> None:
     readme = (PACKAGE / "README.md").read_text(encoding="utf-8")
-    assert "default enabled state" in readme
-    assert "deliberately disabled task" in readme
+    assert "There is no transient default-enable window" in readme
+    assert "-TaskScope Factory" in readme
+    assert "-TaskScope Live" in readme
+
+
+def test_apply_script_ignores_enabled_only_for_identity_and_preserves_it_on_write() -> None:
+    script = (PACKAGE / "Apply-TaskContractFix.ps1").read_text(encoding="utf-8-sig")
+    assert "//t:Settings/t:Enabled" in script
+    assert "Set-TaskXmlEnabledState" in script
+    assert "$enabled = Get-TaskXmlEnabledState -XmlText $liveXml" in script
+    assert "-Enabled $enabled" in script
+    assert "Operational State=Running/Ready is deliberately" in script
+    assert "$currentFingerprint -ne $Entry.live_contract_sha256" in script
+    assert "$currentEnabled -ne $Entry.enabled_before" in script
+    assert "Get-ScheduledTask" not in script
+    assert "Enable-ScheduledTask" not in script
+    assert "Disable-ScheduledTask" not in script
+    assert "Start-ScheduledTask" not in script
+    assert "Stop-ScheduledTask" not in script
+
+
+def test_mutation_requires_one_explicit_factory_or_live_scope() -> None:
+    script = (PACKAGE / "Apply-TaskContractFix.ps1").read_text(encoding="utf-8-sig")
+    assert "[ValidateSet('Factory', 'Live')]" in script
+    assert "$selected = if ($Scope -eq 'Factory')" in script
+    assert "Live task contracts are plan-only" in script
+    assert "$factoryTaskNames" in script
+    assert "$liveTaskNames" in script
+
+
+def test_mutation_is_off_hash_plan_lock_receipt_and_compensation_bound() -> None:
+    script = (PACKAGE / "Apply-TaskContractFix.ps1").read_text(encoding="utf-8-sig")
+    assert "ExpectedFactoryOffSha256" in script
+    assert "ExpectedPlanId" in script
+    assert "OwnerDecisionRef" in script
+    assert "OwnerAuthorizedBy" in script
+    assert "OwnerAuthorizedAtUtc" in script
+    assert "ReceiptPath" in script
+    assert "QmFactoryMutationLockProtocolVersion -ne 2" in script
+    assert "FileMode]::CreateNew" in script
+    assert "Assert-FactoryOffHash" in script
+    assert "New-TaskContractPlan" in script
+    assert "Assert-PlanApplicable" in script
+    assert "Restore-AttemptedTasks" in script
+    assert "compensation=PASS" in script
+    assert "Remove-QmFactoryMutationLockIfUnchanged" in script
+    assert "WHATIF_VALIDATED" in script
+    assert "preimage_xml_base64" in script
+    assert "FAILED_COMPENSATED" in script
+    assert "FAILED_UNCOMPENSATED_LOCK_RETAINED" in script
+    assert "RETAINED_FAIL_CLOSED" in script
+    assert "APPLIED_VERIFIED" in script
+    assert "ROLLED_BACK_VERIFIED" in script
+
+    owner_check = script.index("$normalizedOwnerAuthorizedAtUtc = Assert-OwnerAuthorization")
+    lock_enter = script.index("$lock = Enter-TaskContractMutationLock")
+    receipt_reserve = script.index("-CreateOnly", lock_enter)
+    task_loop = script.index("foreach ($entry in $plan.entries)", receipt_reserve)
+    assert owner_check < lock_enter < receipt_reserve < task_loop

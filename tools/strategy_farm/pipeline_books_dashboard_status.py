@@ -32,6 +32,8 @@ DEFAULT_CONFIG = (
 DEFAULT_REPO_ROOT = Path(__file__).resolve().parents[2]
 
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+GIT_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
+PERCENT_RE = re.compile(r"^(?:100\.0{2,3}|(?:0|[1-9][0-9]?)\.[0-9]{2,3})%$")
 WORK_PACKAGE_IDS = tuple(f"W{i}" for i in range(9))
 Q08_VERDICT_STATES = (
     "SUPPORTED",
@@ -44,6 +46,7 @@ TARGET_LANE_IDS = ("DXZ_BETTER_BOOK", "FTMO_2S_100K_SWING")
 TARGET_LANE_STATES = (
     "RESEARCH_RULEPACK_ONLY",
     "RESEARCH_EVALUATOR_SOURCE_IMPLEMENTED",
+    "RESEARCH_RUNTIME_EVALUATED_STRICT_UNVERIFIED",
 )
 TOP_LEVEL_KEYS = {
     "schema_version",
@@ -57,6 +60,7 @@ TOP_LEVEL_KEYS = {
     "work_packages",
     "q08_v3",
     "target_lanes",
+    "ftmo_book3_runtime_evaluation",
     "verification_lanes",
     "owner_blockers",
 }
@@ -226,11 +230,23 @@ def _validate_bindings(value: Any, repo_root: Path) -> None:
         _fail("$.bindings", "must be an object")
     _exact_keys(
         value,
-        {"plan", "evidence", "q08_policy", "test_lanes", "rulepacks"},
+        {
+            "plan",
+            "evidence",
+            "ftmo_book3_runtime_projection",
+            "q08_policy",
+            "test_lanes",
+            "rulepacks",
+        },
         "$.bindings",
     )
     _verify_file_binding(value["plan"], repo_root, "$.bindings.plan")
     _verify_file_binding(value["evidence"], repo_root, "$.bindings.evidence")
+    _verify_file_binding(
+        value["ftmo_book3_runtime_projection"],
+        repo_root,
+        "$.bindings.ftmo_book3_runtime_projection",
+    )
     _verify_file_binding(value["test_lanes"], repo_root, "$.bindings.test_lanes")
 
     policy = value["q08_policy"]
@@ -390,8 +406,14 @@ def _validate_target_lanes(value: Any, bindings: Mapping[str, Any]) -> None:
                 f"{path}.state",
                 f"must be one of {', '.join(TARGET_LANE_STATES)}",
             )
-        if row["eligibility"] != "NOT_EVALUATED":
-            _fail(f"{path}.eligibility", "must be NOT_EVALUATED")
+        if row["eligibility"] not in {
+            "NOT_EVALUATED",
+            "STRICT_QUALIFICATION_UNVERIFIED",
+        }:
+            _fail(
+                f"{path}.eligibility",
+                "must be NOT_EVALUATED or STRICT_QUALIFICATION_UNVERIFIED",
+            )
         if row["deployment_authority"] != "NONE":
             _fail(f"{path}.deployment_authority", "must be NONE")
         rulepack_id = row["rulepack_id"]
@@ -402,6 +424,289 @@ def _validate_target_lanes(value: Any, bindings: Mapping[str, Any]) -> None:
         )
         if expected != bound[rulepack_id]["canonical_sha256"]:
             _fail(path, "lane hash does not match rulepack binding")
+
+    dxz, ftmo = value
+    if dxz["eligibility"] != "NOT_EVALUATED":
+        _fail("$.target_lanes[0].eligibility", "DXZ lane has no bound runtime evaluation")
+    if ftmo["state"] != "RESEARCH_RUNTIME_EVALUATED_STRICT_UNVERIFIED":
+        _fail("$.target_lanes[1].state", "must project the bound FTMO runtime evaluation")
+    if ftmo["eligibility"] != "STRICT_QUALIFICATION_UNVERIFIED":
+        _fail(
+            "$.target_lanes[1].eligibility",
+            "must remain STRICT_QUALIFICATION_UNVERIFIED",
+        )
+
+
+def _percent(value: Any, path: str) -> str:
+    text = _string(value, path)
+    if not PERCENT_RE.fullmatch(text):
+        _fail(path, "must be an explicit percentage with two or three decimal places")
+    return text
+
+
+def _non_negative_int(value: Any, path: str) -> int:
+    if type(value) is not int or value < 0:
+        _fail(path, "must be a non-negative integer")
+    return value
+
+
+def _validate_ftmo_runtime_projection(value: Any, path: str) -> None:
+    if not isinstance(value, dict):
+        _fail(path, "must be an object")
+    _exact_keys(
+        value,
+        {
+            "evidence_class",
+            "book_id",
+            "status",
+            "source_manifest_sha256",
+            "source_receipt_sha256",
+            "readiness",
+            "native_runs",
+            "policy_bootstrap",
+            "temporal_holdout_diagnostic",
+            "authorization",
+            "limitations",
+        },
+        path,
+    )
+    if value["evidence_class"] != "RESEARCH_ONLY_RUNTIME_PROJECTION":
+        _fail(f"{path}.evidence_class", "must remain research-only")
+    if value["book_id"] != "FTMO_BOOK3_STANDALONE_R0_R1_R2":
+        _fail(f"{path}.book_id", "unexpected FTMO Book3 identity")
+    if value["status"] != "RESEARCH_MODEL_COMPLETE_STRICT_QUALIFICATION_UNVERIFIED":
+        _fail(f"{path}.status", "must remain strict-qualification UNVERIFIED")
+    _sha(value["source_manifest_sha256"], f"{path}.source_manifest_sha256")
+    _sha(value["source_receipt_sha256"], f"{path}.source_receipt_sha256")
+
+    readiness = value["readiness"]
+    if not isinstance(readiness, dict):
+        _fail(f"{path}.readiness", "must be an object")
+    _exact_keys(
+        readiness,
+        {
+            "input_integrity",
+            "native_stream_reconciliation",
+            "shared_account_model",
+            "strict_qualification",
+            "money_gate",
+            "paid_challenge",
+        },
+        f"{path}.readiness",
+    )
+    expected_readiness = {
+        "input_integrity": "PASS",
+        "native_stream_reconciliation": "PASS",
+        "shared_account_model": "COMPLETE_RESEARCH_ONLY",
+        "strict_qualification": "UNVERIFIED",
+        "money_gate": "SETUP_DATA_MISSING",
+        "paid_challenge": "NO_GO",
+    }
+    if readiness != expected_readiness:
+        _fail(f"{path}.readiness", "does not match the fail-closed Book3 result")
+
+    native_runs = value["native_runs"]
+    if not isinstance(native_runs, list) or len(native_runs) != 3:
+        _fail(f"{path}.native_runs", "must contain exactly R0, R1 and R2")
+    expected_runs = (
+        ("R0", 9936, "USDJPY.DWX"),
+        ("R1", 10145, "XAUUSD.DWX"),
+        ("R2", 13108, "XTIUSD.DWX"),
+    )
+    for index, (row, expected) in enumerate(zip(native_runs, expected_runs)):
+        row_path = f"{path}.native_runs[{index}]"
+        if not isinstance(row, dict):
+            _fail(row_path, "must be an object")
+        _exact_keys(
+            row,
+            {
+                "rung",
+                "ea_id",
+                "symbol",
+                "trades",
+                "lifecycle_mismatches",
+                "reconciliation",
+            },
+            row_path,
+        )
+        if (row["rung"], row["ea_id"], row["symbol"]) != expected:
+            _fail(row_path, "unexpected rung, EA or symbol identity")
+        if _non_negative_int(row["trades"], f"{row_path}.trades") == 0:
+            _fail(f"{row_path}.trades", "must be positive")
+        if _non_negative_int(
+            row["lifecycle_mismatches"], f"{row_path}.lifecycle_mismatches"
+        ) != 0:
+            _fail(f"{row_path}.lifecycle_mismatches", "must be zero")
+        if row["reconciliation"] != "PASS":
+            _fail(f"{row_path}.reconciliation", "must be PASS")
+
+    policy = value["policy_bootstrap"]
+    if not isinstance(policy, dict):
+        _fail(f"{path}.policy_bootstrap", "must be an object")
+    _exact_keys(
+        policy,
+        {
+            "label",
+            "paths",
+            "phase1_pass_percent",
+            "two_phase_pass_percent",
+            "official_breach_percent",
+            "gate_eligible",
+        },
+        f"{path}.policy_bootstrap",
+    )
+    if policy["label"] != "IN_SAMPLE_INTERNAL_POLICY_EOD_SURROGATE":
+        _fail(f"{path}.policy_bootstrap.label", "must disclose IS surrogate scope")
+    if _non_negative_int(policy["paths"], f"{path}.policy_bootstrap.paths") == 0:
+        _fail(f"{path}.policy_bootstrap.paths", "must be positive")
+    for key in (
+        "phase1_pass_percent",
+        "two_phase_pass_percent",
+        "official_breach_percent",
+    ):
+        _percent(policy[key], f"{path}.policy_bootstrap.{key}")
+    if _bool(policy["gate_eligible"], f"{path}.policy_bootstrap.gate_eligible"):
+        _fail(f"{path}.policy_bootstrap.gate_eligible", "must be false")
+
+    holdout = value["temporal_holdout_diagnostic"]
+    if not isinstance(holdout, dict):
+        _fail(f"{path}.temporal_holdout_diagnostic", "must be an object")
+    _exact_keys(
+        holdout,
+        {
+            "label",
+            "starts",
+            "phase1_pass_percent",
+            "two_phase_pass_percent",
+            "official_breach_percent",
+            "gate_eligible",
+        },
+        f"{path}.temporal_holdout_diagnostic",
+    )
+    if holdout["label"] != "TEMPORAL_HOLDOUT_DIAGNOSTIC_NOT_SELECTION_SEALED":
+        _fail(
+            f"{path}.temporal_holdout_diagnostic.label",
+            "must disclose the unsealed diagnostic scope",
+        )
+    if _non_negative_int(
+        holdout["starts"], f"{path}.temporal_holdout_diagnostic.starts"
+    ) == 0:
+        _fail(f"{path}.temporal_holdout_diagnostic.starts", "must be positive")
+    for key in (
+        "phase1_pass_percent",
+        "two_phase_pass_percent",
+        "official_breach_percent",
+    ):
+        _percent(holdout[key], f"{path}.temporal_holdout_diagnostic.{key}")
+    if _bool(
+        holdout["gate_eligible"],
+        f"{path}.temporal_holdout_diagnostic.gate_eligible",
+    ):
+        _fail(f"{path}.temporal_holdout_diagnostic.gate_eligible", "must be false")
+
+    authorization = value["authorization"]
+    if not isinstance(authorization, dict):
+        _fail(f"{path}.authorization", "must be an object")
+    authorization_keys = {
+        "factory_action_authorized",
+        "factory_restart_authorized",
+        "money_gate_authorized",
+        "paid_challenge_purchase_authorized",
+        "deployment_allowed",
+    }
+    _exact_keys(authorization, authorization_keys, f"{path}.authorization")
+    for key in authorization_keys:
+        if _bool(authorization[key], f"{path}.authorization.{key}"):
+            _fail(f"{path}.authorization.{key}", "research projection grants no authority")
+
+    limitations = value["limitations"]
+    if not isinstance(limitations, list) or len(limitations) < 4:
+        _fail(f"{path}.limitations", "must disclose at least four limitations")
+    for index, limitation in enumerate(limitations):
+        _string(limitation, f"{path}.limitations[{index}]")
+
+
+def _validate_ftmo_runtime_evaluation(
+    value: Any,
+    bindings: Mapping[str, Any],
+    repo_root: Path,
+    config_as_of_utc: str,
+) -> None:
+    projection_path = "$.ftmo_book3_runtime_evaluation"
+    _validate_ftmo_runtime_projection(value, projection_path)
+
+    binding = bindings["ftmo_book3_runtime_projection"]
+    record_path = _repo_path(
+        repo_root,
+        binding["path"],
+        "$.bindings.ftmo_book3_runtime_projection.path",
+    )
+    record = _parse_json(record_path)
+    _exact_keys(
+        record,
+        {
+            "schema_version",
+            "projection_kind",
+            "recorded_at_utc",
+            "source_commit",
+            "external_artifact_verification",
+            "external_bindings",
+            "projection",
+        },
+        "$.ftmo_runtime_evidence_record",
+    )
+    if record["schema_version"] != "qm.ftmo-book3-runtime-dashboard-projection/v1":
+        _fail("$.ftmo_runtime_evidence_record.schema_version", "unsupported value")
+    if record["projection_kind"] != "RESEARCH_ONLY_RUNTIME_EVALUATION":
+        _fail("$.ftmo_runtime_evidence_record.projection_kind", "must remain research-only")
+    _utc(record["recorded_at_utc"], "$.ftmo_runtime_evidence_record.recorded_at_utc")
+    if record["recorded_at_utc"] != config_as_of_utc:
+        _fail(
+            "$.as_of_utc",
+            "must equal the hash-bound FTMO projection recorded_at_utc",
+        )
+    source_commit = _string(
+        record["source_commit"], "$.ftmo_runtime_evidence_record.source_commit"
+    )
+    if not GIT_COMMIT_RE.fullmatch(source_commit):
+        _fail("$.ftmo_runtime_evidence_record.source_commit", "must be a full Git commit")
+    if (
+        record["external_artifact_verification"]
+        != "RECORDED_HASHES_NOT_REVALIDATED_BY_DASHBOARD"
+    ):
+        _fail(
+            "$.ftmo_runtime_evidence_record.external_artifact_verification",
+            "dashboard must not imply live external-artifact revalidation",
+        )
+
+    external = record["external_bindings"]
+    if not isinstance(external, dict):
+        _fail("$.ftmo_runtime_evidence_record.external_bindings", "must be an object")
+    _exact_keys(
+        external,
+        {"evaluation_manifest", "evaluation_receipt"},
+        "$.ftmo_runtime_evidence_record.external_bindings",
+    )
+    for key in ("evaluation_manifest", "evaluation_receipt"):
+        row = external[key]
+        row_path = f"$.ftmo_runtime_evidence_record.external_bindings.{key}"
+        if not isinstance(row, dict):
+            _fail(row_path, "must be an object")
+        _exact_keys(row, {"path", "sha256"}, row_path)
+        external_path = _string(row["path"], f"{row_path}.path")
+        if not re.fullmatch(r"[A-Za-z]:\\.+", external_path):
+            _fail(f"{row_path}.path", "must be an explicit absolute Windows evidence path")
+        _sha(row["sha256"], f"{row_path}.sha256")
+
+    _validate_ftmo_runtime_projection(
+        record["projection"], "$.ftmo_runtime_evidence_record.projection"
+    )
+    if record["projection"] != value:
+        _fail(projection_path, "does not match the hash-bound repo evidence record")
+    if external["evaluation_manifest"]["sha256"] != value["source_manifest_sha256"]:
+        _fail(projection_path, "manifest SHA does not match the evidence record")
+    if external["evaluation_receipt"]["sha256"] != value["source_receipt_sha256"]:
+        _fail(projection_path, "receipt SHA does not match the evidence record")
 
 
 def _test_lane_node_ids(test_lanes_path: Path) -> tuple[str, ...]:
@@ -529,6 +834,12 @@ def load_program_status(
     _validate_work_packages(value["work_packages"])
     _validate_q08(value["q08_v3"], value["bindings"])
     _validate_target_lanes(value["target_lanes"], value["bindings"])
+    _validate_ftmo_runtime_evaluation(
+        value["ftmo_book3_runtime_evaluation"],
+        value["bindings"],
+        root,
+        value["as_of_utc"],
+    )
     _validate_verification_lanes(value["verification_lanes"], root, value["bindings"])
     _validate_owner_blockers(value["owner_blockers"])
     return json.loads(json.dumps(value))
@@ -565,6 +876,7 @@ def program_status_snapshot(
         "work_packages": [],
         "q08_v3": {},
         "target_lanes": [],
+        "ftmo_book3_runtime_evaluation": {},
         "verification_lanes": {},
         "owner_blockers": [],
     }
