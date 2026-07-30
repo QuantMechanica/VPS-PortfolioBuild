@@ -344,6 +344,22 @@ def test_terminate_revalidates_creation_identity_before_stop(tmp_path, monkeypat
 def test_windows_job_supervisor_preserves_redirected_stdio(tmp_path) -> None:
     prompt = tmp_path / "prompt.txt"
     output = tmp_path / "output.txt"
+    release = tmp_path / "release"
+    child_script = "\n".join(
+        [
+            "from pathlib import Path",
+            "import sys",
+            "import time",
+            "sys.stdout.buffer.write(sys.stdin.buffer.read())",
+            "sys.stdout.buffer.flush()",
+            "release = Path(sys.argv[1])",
+            "deadline = time.monotonic() + 30.0",
+            "while not release.exists():",
+            "    if time.monotonic() >= deadline:",
+            "        raise TimeoutError('release file was not created')",
+            "    time.sleep(0.01)",
+        ]
+    )
     prompt.write_text("managed-stdio-ok\n", encoding="ascii")
     proc = None
     lease = None
@@ -351,7 +367,7 @@ def test_windows_job_supervisor_preserves_redirected_stdio(tmp_path) -> None:
         with prompt.open("rb") as stdin_f, output.open("wb") as stdout_f:
             proc, lease = managed_codex.spawn_managed_codex(
                 tmp_path,
-                ["cmd.exe", "/d", "/s", "/c", "sort"],
+                [sys.executable, "-c", child_script, str(release)],
                 purpose="windows_stdio_test",
                 dedupe_key="test:windows-stdio",
                 cwd=REPO,
@@ -362,6 +378,7 @@ def test_windows_job_supervisor_preserves_redirected_stdio(tmp_path) -> None:
                 creationflags=subprocess.CREATE_NO_WINDOW,
                 close_fds=True,
             )
+            release.touch()
         assert proc.wait(timeout=10) == 0
         assert lease.get("windows_job_name", "").startswith(
             r"Global\QMStrategyFarmCodex_"
