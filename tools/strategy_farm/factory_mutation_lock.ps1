@@ -243,7 +243,7 @@ public static class QmFactoryMutationLockNative
     }
 }
 
-function Remove-QmFactoryMutationLockIfUnchanged {
+function Remove-QmFileIfContentMatches {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
         [Parameter(Mandatory = $true)][string]$ExpectedRawBytesBase64
@@ -264,6 +264,15 @@ function Remove-QmFactoryMutationLockIfUnchanged {
     } catch {
         return $false
     }
+}
+
+function Remove-QmFactoryMutationLockIfUnchanged {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$ExpectedRawBytesBase64
+    )
+    return Remove-QmFileIfContentMatches `
+        -Path $Path -ExpectedRawBytesBase64 $ExpectedRawBytesBase64
 }
 
 function Wait-QmFactoryMutationLockDrain {

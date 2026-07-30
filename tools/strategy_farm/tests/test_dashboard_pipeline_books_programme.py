@@ -206,6 +206,25 @@ def test_fresh_programme_renders_orthogonal_status_without_promotion_claim() -> 
     assert "Legacy Q08" in page
 
 
+def test_resolved_external_lane_renders_pass_count_not_fail_closed_copy() -> None:
+    snapshot = _fresh_snapshot()
+    snapshot["verification_lanes"]["green"]["deselected"] = 0
+    residual = snapshot["verification_lanes"]["external_residual"]
+    residual["state"] = "RESOLVED_PASS"
+    residual["expected_count"] = 5
+    residual["pass_count"] = 5
+    snapshot["bindings"]["external_residual_exit_receipt"] = {
+        "file_sha256": "d" * 64
+    }
+
+    page = dashboard.render_pipeline_books_program_status(snapshot)
+
+    assert '<span class="pbs-token good">external residual RESOLVED_PASS</span>' in page
+    assert "5/5 sentinels passed" in page
+    assert "external_residual_exit_receipt" in page
+    assert "explicit fail-closed items" not in page
+
+
 def test_invalid_programme_fails_closed_and_suppresses_untrusted_claims() -> None:
     page = dashboard.render_pipeline_books_program_status(
         {

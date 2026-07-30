@@ -646,6 +646,190 @@ def test_density_execution_contracts_are_source_and_runtime_binding_clean() -> N
     assert issues == []
 
 
+def test_density_setfiles_are_permanently_raw_byte_bound() -> None:
+    density_ids = {
+        20030,
+        20031,
+        20032,
+        20033,
+        20034,
+        20037,
+        20038,
+        20039,
+        20040,
+        20041,
+        20043,
+        20044,
+        20045,
+    }
+    contracts = [item for item in _contracts() if item["ea_id"] in density_ids]
+    setfiles = [item["runtime_binding"]["setfile"] for item in contracts]
+
+    assert len(setfiles) == len(set(setfiles)) == 28
+    completed = subprocess.run(
+        ["git", "check-attr", "text", "--", *setfiles],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    attribute_lines = completed.stdout.splitlines()
+    assert len(attribute_lines) == 28
+    assert all(line.endswith(": text: unset") for line in attribute_lines)
+    for contract in contracts:
+        runtime = contract["runtime_binding"]
+        raw = (ROOT / runtime["setfile"]).read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == runtime["setfile_sha256"]
+
+
+def test_density_setfile_repository_blobs_match_runtime_bindings() -> None:
+    density_ids = {
+        20030,
+        20031,
+        20032,
+        20033,
+        20034,
+        20037,
+        20038,
+        20039,
+        20040,
+        20041,
+        20043,
+        20044,
+        20045,
+    }
+    contracts = [item for item in _contracts() if item["ea_id"] in density_ids]
+
+    assert len(contracts) == 28
+    for contract in contracts:
+        runtime = contract["runtime_binding"]
+        relative_path = runtime["setfile"]
+        completed = subprocess.run(
+            ["git", "show", f":{relative_path}"],
+            cwd=ROOT,
+            capture_output=True,
+        )
+        if completed.returncode != 0:
+            completed = subprocess.run(
+                ["git", "show", f"HEAD:{relative_path}"],
+                cwd=ROOT,
+                capture_output=True,
+            )
+        assert completed.returncode == 0, completed.stderr.decode(
+            "utf-8", errors="replace"
+        )
+        assert (
+            hashlib.sha256(completed.stdout).hexdigest()
+            == runtime["setfile_sha256"]
+        )
+
+
+def test_20030_20032_bindings_follow_deployed_calendar_but_remain_blocked() -> None:
+    expected_hashes = {
+        (20030, "USDCAD.DWX", "M5"): (
+            "0f0dc3e774216bbaaf3ff6f45eb8ff51e1a02f12ecfa08b59ad2e947f7162437"
+        ),
+        (20032, "GDAXI.DWX", "M5"): (
+            "6a26283ee244e4e8c742bf4b0a2b2d91b7544afa52a57340a5475078c40d36a0"
+        ),
+        (20032, "SP500.DWX", "M5"): (
+            "6e91206ba32f51ad2a7e1a69f37974e9a6a2cb02bf6b1e1ae68d36735bb15f3f"
+        ),
+    }
+    contracts = [
+        item
+        for item in _contracts()
+        if (item["ea_id"], item["symbol"], item["timeframe"]) in expected_hashes
+    ]
+    assert len(contracts) == 3
+
+    for contract in contracts:
+        identity = (contract["ea_id"], contract["symbol"], contract["timeframe"])
+        assert contract["runtime_binding"]["setfile_sha256"] == expected_hashes[identity]
+        calendars = [
+            item for item in contract["data_dependencies"] if item["type"] == "calendar"
+        ]
+        deployed = [
+            item
+            for item in calendars
+            if item["dependency_id"] == "deployed_framework_news_calendar"
+        ]
+        assert len(deployed) == 1
+        dependency = deployed[0]
+        assert dependency == {
+            **dependency,
+            "qualification_status": "BLOCKED",
+            "block_reason": "deployed_framework_news_calendar_bundle_reconciliation_pending",
+            "source_ref": "QM_NEWS_CALENDAR_PAIR_V1_ACTIVE_PRIMARY",
+            "calendar_policy": "DEPLOYED_FRAMEWORK_EVENT_ROWS_FAIL_CLOSED",
+            "stale_behavior": "ENTRY_FAIL_CLOSED",
+            "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
+            "sha256": "16d95a7ca00de57accbb2bf7ad63418873c7c1afbffd58b8ec35136abb057ece",
+            "coverage_start": "2015-01-01",
+            "coverage_end": "2026-07-31",
+        }
+        assert contract["card_binding"]["status"] == "DRAFT"
+        assert contract["card_binding"]["execution_contract_status"] == "DRAFT"
+        assert contract["promotion"]["status"] == "BLOCKED"
+        assert (
+            "deployed_framework_news_calendar_bundle_reconciliation_pending"
+            in contract["promotion"]["block_reasons"]
+        )
+
+    registry_text = REGISTRY.read_text(encoding="utf-8")
+    assert "api_historical_timestamp_ledger_missing" not in registry_text
+    assert "issuer_calendar_missing_nine_card_event_families_and_2025_coverage" not in registry_text
+    for ea_id in (20030, 20032):
+        source = next(item for item in contracts if item["ea_id"] == ea_id)["source"]
+        source_text = (ROOT / source).read_text(encoding="utf-8")
+        assert r"D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv" in source_text
+        assert "strategy_max_cost_r" not in source_text
+
+
+def test_density_reconciliation_evidence_keeps_runtime_apply_pending() -> None:
+    evidence_path = (
+        ROOT
+        / "docs"
+        / "ops"
+        / "evidence"
+        / "2026-07-30_density_execution_contract_reconciliation.json"
+    )
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    assert evidence["status"] == "SOURCE_RECONCILED_RUNTIME_PUBLICATION_PENDING"
+    assert evidence["boundaries"]["repair_without_waiver"] is True
+    assert evidence["boundaries"]["runtime_calendar_publication_executed"] is False
+    assert evidence["boundaries"]["factory_activation_authorized"] is False
+    owner = evidence["owner_decision_binding"]
+    assert owner["sha256"] == hashlib.sha256(
+        (ROOT / owner["path"]).read_bytes()
+    ).hexdigest()
+    assert owner["commit"] == "7b36ff27f83f024bf1c43bb5537cc747f52b887a"
+    assert owner["git_blob"] == "6d36cf6682e317324a35bc8388042402b0f3e540"
+    assert evidence["byte_exact_setfile_policy"]["exact_path_count"] == 28
+    assert evidence["byte_exact_setfile_policy"]["post_reconciliation_current_worktree_hash_matches"] == 28
+    ftmo = evidence["ftmo_20009_calendar_binding_amendment"]
+    assert ftmo["contract_count"] == 4
+    assert ftmo["silent_rebinding"] is False
+    assert ftmo["runtime_copy_state"] == "PENDING_MULTI_PRINCIPAL_PUBLICATION"
+    calendar = evidence["deployed_framework_calendar_binding"]
+    assert calendar["primary"]["sha256"] == (
+        "16d95a7ca00de57accbb2bf7ad63418873c7c1afbffd58b8ec35136abb057ece"
+    )
+    assert calendar["one_time_reconciliation"] == (
+        "PRE_HARDENING_PLAN_SUPERSEDED_REGENERATE_AFTER_FINAL_SOURCE_COMMIT"
+    )
+    read_only_plan = calendar["last_superseded_read_only_plan"]
+    assert read_only_plan["status"] == (
+        "SUPERSEDED_BY_PRODUCTION_POLICY_AND_JOURNAL_HARDENING"
+    )
+    assert len(read_only_plan["plan_sha256"]) == 64
+    assert read_only_plan["requires_regeneration_after_final_source_commit"] is True
+    assert read_only_plan["provenance_sha256"] != hashlib.sha256(
+        (ROOT / read_only_plan["provenance_path"]).read_bytes()
+    ).hexdigest()
+    assert read_only_plan["apply_executed"] is False
+
+
 def test_dxz23_registry_is_valid_against_execution_contract_schema() -> None:
     assert _schema_valid(REGISTRY)
 
@@ -1014,10 +1198,10 @@ def test_20009_multimode_runtime_declarations_are_exactly_registered() -> None:
 def test_20009_ftmo_news_calendar_is_exact_and_evidence_bound() -> None:
     contracts = [item for item in _contracts() if item["ea_id"] == 20009]
     expected_hashes = {
-        "SHARED_PRIMARY": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d",
-        "SHARED_SECONDARY": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1",
-        "QMDEV1_COMMON_PRIMARY": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d",
-        "QMDEV1_COMMON_SECONDARY": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1",
+        "SHARED_PRIMARY": "16d95a7ca00de57accbb2bf7ad63418873c7c1afbffd58b8ec35136abb057ece",
+        "SHARED_SECONDARY": "e54a18bc317657260edb01a57eb29e97d7c1e3c451a2befc60dbc636d9286338",
+        "QMDEV1_COMMON_PRIMARY": "16d95a7ca00de57accbb2bf7ad63418873c7c1afbffd58b8ec35136abb057ece",
+        "QMDEV1_COMMON_SECONDARY": "e54a18bc317657260edb01a57eb29e97d7c1e3c451a2befc60dbc636d9286338",
     }
     expected_paths = {
         "SHARED_PRIMARY": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
@@ -1050,7 +1234,7 @@ def test_20009_ftmo_news_calendar_is_exact_and_evidence_bound() -> None:
         assert {
             (item["coverage_start"], item["coverage_end"])
             for item in calendar["sources"]
-        } == {("2015-01-01", "2026-07-24")}
+        } == {("2015-01-01", "2026-07-31")}
 
         codes = {
             issue.code
@@ -1089,7 +1273,7 @@ def test_20009_ftmo_news_calendar_expires_fail_closed() -> None:
 
     codes = {
         issue.code
-        for issue in lint.lint_contract(contract, repo_root=ROOT, as_of=date(2026, 7, 25))
+        for issue in lint.lint_contract(contract, repo_root=ROOT, as_of=date(2026, 8, 1))
     }
     assert "calendar_news_expired" in codes
 

@@ -197,7 +197,9 @@ def test_schema_and_non_authorizing_template_track_exact_task_contract() -> None
 def test_factory_scripts_gate_legacy_upgrade_before_every_mutation() -> None:
     off = FACTORY_OFF.read_text(encoding="utf-8-sig")
     on = FACTORY_ON.read_text(encoding="utf-8-sig")
-    legacy_branch = off.index("} elseif ($null -ne $existingOff) {")
+    legacy_branch = off.index(
+        "} elseif ($null -ne $existingOff -and -not $isEmergencyRequestState) {"
+    )
     missing_manifest = off.index("legacy-v1 FACTORY_OFF.flag requires", legacy_branch)
     validator = off.index("$validatorOutput = @(& $pythonExe @validatorArgs", legacy_branch)
     hash_recheck = off.index("legacy FACTORY_OFF.flag changed after", validator)
@@ -216,7 +218,7 @@ def test_factory_scripts_gate_legacy_upgrade_before_every_mutation() -> None:
     assert "Current task state must not be inferred as pre-OFF intent" in on
     on_validation = on.index("$taskEnabledBefore = ConvertTo-ExactTaskEnabledState")
     on_lock = on.index("$script:factoryRestartMutationLock = Enter-FactoryMutationLock")
-    on_release = on.index("Remove-Item -LiteralPath $factoryOffFlagPath", on_lock)
+    on_release = on.index("Remove-BoundFactoryOffRecord", on_lock)
     assert on_validation < on_lock < on_release
 
 

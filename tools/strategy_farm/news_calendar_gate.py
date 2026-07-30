@@ -5,12 +5,14 @@ files, writes logs, or opens the farm database.  It validates the two calendar
 files used by ``QM_NewsFilter`` for the executing Windows principal and keeps
 the legacy ``run_smoke.ps1`` status taxonomy.
 
-Publishing is a separate, explicit mutation path.  It is guarded by the exact
-SHA-256 of an existing ``FACTORY_OFF.flag`` and the shared factory mutation
-lock.  Each publication first creates immutable version directories, then
-atomically replaces the active files, with the manifest replaced last.  A
-reader can therefore see an old bundle or a fail-closed mixed-bundle diagnosis,
-but never accepts a partially published pair.
+Publishing is a separate, explicit mutation path.  Maintenance publication is
+guarded by the exact SHA-256 of an existing ``FACTORY_OFF.flag``.  The routine
+multi-principal publisher may also run while the Factory is ON, but only while
+the OFF flag remains absent.  Both modes hold the shared factory mutation lock
+and revalidate their Factory generation throughout the operation.  Immutable
+version directories are installed first; active files are replaced per root
+with the manifest last and the shared source root last.  Readers therefore see
+one valid generation or fail closed during a cross-root transition.
 """
 
 from __future__ import annotations
@@ -47,7 +49,31 @@ BUNDLE_DIRECTORY_NAME = ".news_calendar_bundles"
 MAX_AGE_HOURS = 24 * 14
 MANIFEST_SCHEMA = "qm-news-calendar-pair/v1"
 PLAN_SCHEMA = "qm-news-calendar-publication-plan/v1"
+MULTI_PLAN_SCHEMA = "qm-news-calendar-multi-principal-publication-plan/v1"
+JOURNAL_SCHEMA = "qm-news-calendar-publication-journal/v1"
 DEFAULT_SOURCE_DIR = Path(r"D:\QM\data\news_calendar")
+PRODUCTION_COMMON_DIRS = (
+    Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files"),
+    Path(
+        r"C:\Windows\System32\config\systemprofile\AppData\Roaming\MetaQuotes"
+        r"\Terminal\Common\Files"
+    ),
+    Path(r"C:\Users\QMDev1\AppData\Roaming\MetaQuotes\Terminal\Common\Files"),
+)
+PRODUCTION_FACTORY_OFF_FLAG = Path(r"D:\QM\strategy_farm\state\FACTORY_OFF.flag")
+PRODUCTION_EVIDENCE_DIR = Path(r"D:\QM\reports\state")
+PRODUCTION_GATE_SCRIPT = Path(r"C:\QM\repo\tools\strategy_farm\news_calendar_gate.py")
+PRODUCTION_REFRESH_SCRIPT = Path(
+    r"C:\QM\repo\tools\strategy_farm\refresh_news_calendar.ps1"
+)
+PRODUCTION_PROVENANCE_KIND = "scheduled-refresh-script"
+PRODUCTION_PROTECTED_ROOTS = (
+    Path(r"C:\QM\repo"),
+    Path(r"D:\QM\strategy_farm\state"),
+    Path(r"D:\QM\reports\state"),
+    Path(r"D:\QM\mt5"),
+)
+_PRODUCTION_STAGING_RE = re.compile(r"^news-calendar-staging-[0-9a-f]{32}$")
 
 STATUS_OK = "OK"
 STATUS_MISSING_SOURCE = "MISSING_SOURCE"
@@ -73,6 +99,52 @@ class CalendarParseError(NewsCalendarError):
 
 class InjectedPublishFailure(NewsCalendarError):
     """Deterministic fault used only by interrupted-publication tests."""
+
+
+@dataclass(frozen=True)
+class _PublicationPolicy:
+    source_dir: Path
+    common_dirs: tuple[Path, ...]
+    factory_off_flag: Path
+    refresh_script: Path
+    provenance_kind: str
+    evidence_dir: Path
+    protected_roots: tuple[Path, ...]
+    test_injected: bool = False
+
+
+_PRODUCTION_POLICY = _PublicationPolicy(
+    source_dir=DEFAULT_SOURCE_DIR,
+    common_dirs=PRODUCTION_COMMON_DIRS,
+    factory_off_flag=PRODUCTION_FACTORY_OFF_FLAG,
+    refresh_script=PRODUCTION_REFRESH_SCRIPT,
+    provenance_kind=PRODUCTION_PROVENANCE_KIND,
+    evidence_dir=PRODUCTION_EVIDENCE_DIR,
+    protected_roots=PRODUCTION_PROTECTED_ROOTS,
+)
+
+
+def _test_publication_policy(
+    *,
+    source_dir: Path | str,
+    common_dirs: Sequence[Path | str],
+    factory_off_flag: Path | str,
+    refresh_script: Path | str,
+    evidence_dir: Path | str,
+    protected_roots: Sequence[Path | str] = (),
+) -> _PublicationPolicy:
+    """Construct an explicitly test-injected authority unavailable to the CLI."""
+
+    return _PublicationPolicy(
+        source_dir=Path(source_dir),
+        common_dirs=tuple(Path(path) for path in common_dirs),
+        factory_off_flag=Path(factory_off_flag),
+        refresh_script=Path(refresh_script),
+        provenance_kind="test-injected-refresh-script",
+        evidence_dir=Path(evidence_dir),
+        protected_roots=tuple(Path(path) for path in protected_roots),
+        test_injected=True,
+    )
 
 
 @dataclass(frozen=True)
@@ -140,6 +212,19 @@ def _canonical_json_bytes(value: Any) -> bytes:
         sort_keys=True,
         separators=(",", ":"),
     ).encode("utf-8")
+
+
+def _json_object_without_duplicates(pairs: Sequence[tuple[str, Any]]) -> dict[str, Any]:
+    value: dict[str, Any] = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError(f"duplicate JSON key: {key}")
+        value[key] = item
+    return value
+
+
+def _json_loads_without_duplicates(raw: str) -> Any:
+    return json.loads(raw, object_pairs_hook=_json_object_without_duplicates)
 
 
 def _sha256_bytes(raw: bytes) -> str:
@@ -319,6 +404,9 @@ def _validate_manifest(manifest: Any, *, path: Path) -> dict[str, Any]:
     missing = sorted(required - set(manifest))
     if missing:
         raise CalendarParseError(f"{path}: missing manifest fields {','.join(missing)}")
+    extra = sorted(set(manifest) - required)
+    if extra:
+        raise CalendarParseError(f"{path}: unexpected manifest fields {','.join(extra)}")
     if manifest.get("schema") != MANIFEST_SCHEMA:
         raise CalendarParseError(f"{path}: unsupported manifest schema")
     bundle_id = str(manifest.get("bundle_id") or "")
@@ -385,8 +473,8 @@ def _validate_manifest(manifest: Any, *, path: Path) -> dict[str, Any]:
 def _load_manifest(path: Path) -> tuple[dict[str, Any], bytes]:
     try:
         raw = path.read_bytes()
-        parsed = json.loads(raw.decode("utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        parsed = _json_loads_without_duplicates(raw.decode("utf-8"))
+    except (OSError, UnicodeDecodeError, ValueError) as exc:
         raise CalendarParseError(f"{path}: invalid manifest: {exc}") from exc
     return _validate_manifest(parsed, path=path), raw
 
@@ -763,14 +851,20 @@ def build_publication_plan(
     }
 
 
-def _validate_plan(plan: Mapping[str, Any]) -> tuple[dict[str, Any], dict[str, _ParsedCalendar]]:
-    if plan.get("schema") != PLAN_SCHEMA:
+def _validate_plan_hash(plan: Mapping[str, Any], *, schema: str) -> str:
+    if plan.get("schema") != schema:
         raise NewsCalendarError("unsupported calendar publication plan schema")
     plan_without_hash = dict(plan)
     expected_plan_sha = str(plan_without_hash.pop("plan_sha256", ""))
     actual_plan_sha = _sha256_bytes(_canonical_json_bytes(plan_without_hash))
     if not expected_plan_sha or expected_plan_sha != actual_plan_sha:
         raise NewsCalendarError("calendar publication plan SHA-256 mismatch")
+    return expected_plan_sha
+
+
+def _validate_plan_material(
+    plan: Mapping[str, Any],
+) -> tuple[dict[str, Any], dict[str, _ParsedCalendar]]:
     manifest = _validate_manifest(
         plan.get("manifest"), path=Path("<publication-plan-manifest>")
     )
@@ -781,6 +875,8 @@ def _validate_plan(plan: Mapping[str, Any]) -> tuple[dict[str, Any], dict[str, _
     for expected_name, entry in zip(CALENDAR_NAMES, candidates):
         if not isinstance(entry, dict) or str(entry.get("name")) != expected_name:
             raise NewsCalendarError("publication candidate order/names are invalid")
+        if set(entry) != {"name", "path", "sha256", "size_bytes"}:
+            raise NewsCalendarError("publication candidate fields are invalid")
         path = Path(str(entry.get("path") or ""))
         calendar = _parse_calendar_file(path, expected_name)
         if calendar.sha256 != str(entry.get("sha256") or ""):
@@ -792,6 +888,314 @@ def _validate_plan(plan: Mapping[str, Any]) -> tuple[dict[str, Any], dict[str, _
         manifest, parsed, path=Path("<publication-plan-manifest>")
     )
     return manifest, parsed
+
+
+def _validate_plan(plan: Mapping[str, Any]) -> tuple[dict[str, Any], dict[str, _ParsedCalendar]]:
+    _validate_plan_hash(plan, schema=PLAN_SCHEMA)
+    return _validate_plan_material(plan)
+
+
+def _absolute_lexical_path(path: Path | str) -> Path:
+    candidate = Path(path).expanduser()
+    if not candidate.is_absolute():
+        candidate = Path.cwd() / candidate
+    return Path(os.path.abspath(candidate))
+
+
+def _is_link_or_reparse(path: Path) -> bool:
+    try:
+        stat = path.lstat()
+    except FileNotFoundError:
+        return False
+    except OSError as exc:
+        raise NewsCalendarError(f"cannot inspect path for link/reparse state: {path}: {exc}") from exc
+    return path.is_symlink() or bool(getattr(stat, "st_file_attributes", 0) & 0x400)
+
+
+def _reject_link_components(path: Path | str, *, label: str) -> Path:
+    absolute = _absolute_lexical_path(path)
+    current = Path(absolute.anchor)
+    for part in absolute.parts[1:]:
+        current /= part
+        if os.path.lexists(current) and _is_link_or_reparse(current):
+            raise NewsCalendarError(f"{label} contains a symlink/reparse component: {current}")
+    return absolute
+
+
+def _canonical_target(path: Path | str, *, label: str = "path") -> Path:
+    lexical = _reject_link_components(path, label=label)
+    return lexical.resolve(strict=False)
+
+
+def _path_identity(path: Path) -> str:
+    return os.path.normcase(os.path.normpath(str(path))).casefold()
+
+
+def _paths_overlap(first: Path, second: Path) -> bool:
+    try:
+        common = Path(os.path.commonpath((str(first), str(second))))
+    except ValueError:
+        return False
+    identity = _path_identity(common)
+    return identity in {_path_identity(first), _path_identity(second)}
+
+
+def _validated_policy(policy: _PublicationPolicy) -> _PublicationPolicy:
+    source = _canonical_target(policy.source_dir, label="publication source root")
+    commons = tuple(
+        _canonical_target(path, label=f"publication Common root[{index}]")
+        for index, path in enumerate(policy.common_dirs)
+    )
+    flag = _canonical_target(policy.factory_off_flag, label="FACTORY_OFF flag")
+    refresh = _canonical_target(policy.refresh_script, label="refresh provenance")
+    evidence = _canonical_target(policy.evidence_dir, label="publication evidence root")
+    protected = tuple(
+        _canonical_target(path, label=f"protected root[{index}]")
+        for index, path in enumerate(policy.protected_roots)
+    )
+    if not policy.test_injected:
+        running_gate = _canonical_target(Path(__file__), label="production gate script")
+        expected_gate = _canonical_target(
+            PRODUCTION_GATE_SCRIPT, label="canonical production gate script"
+        )
+        expected_source = _canonical_target(
+            DEFAULT_SOURCE_DIR, label="canonical production source root"
+        )
+        expected_commons = tuple(
+            _canonical_target(path, label=f"canonical Common root[{index}]")
+            for index, path in enumerate(PRODUCTION_COMMON_DIRS)
+        )
+        expected_flag = _canonical_target(
+            PRODUCTION_FACTORY_OFF_FLAG, label="canonical FACTORY_OFF flag"
+        )
+        expected_refresh = _canonical_target(
+            PRODUCTION_REFRESH_SCRIPT, label="canonical refresh provenance"
+        )
+        expected_evidence = _canonical_target(
+            PRODUCTION_EVIDENCE_DIR, label="canonical publication evidence root"
+        )
+        expected_protected = tuple(
+            _canonical_target(path, label=f"canonical protected root[{index}]")
+            for index, path in enumerate(PRODUCTION_PROTECTED_ROOTS)
+        )
+        if _path_identity(running_gate) != _path_identity(expected_gate):
+            raise NewsCalendarError(
+                "production CLI is not the canonical C:\\QM\\repo news-calendar gate"
+            )
+        if (
+            source != expected_source
+            or commons != expected_commons
+            or flag != expected_flag
+            or refresh != expected_refresh
+            or evidence != expected_evidence
+            or protected != expected_protected
+            or policy.provenance_kind != PRODUCTION_PROVENANCE_KIND
+        ):
+            raise NewsCalendarError(
+                "non-test publication policy differs from canonical production authority"
+            )
+    if not commons:
+        raise NewsCalendarError("publication policy requires Common roots")
+    if not refresh.is_file():
+        raise NewsCalendarError(f"refresh provenance is missing: {refresh}")
+    publication_roots = (source, *commons)
+    authority_roots = (*publication_roots, flag.parent, evidence)
+    for index, root in enumerate(authority_roots):
+        for other in authority_roots[index + 1 :]:
+            if _paths_overlap(root, other):
+                raise NewsCalendarError(
+                    f"publication authority roots overlap by equality/ancestry: {root} | {other}"
+                )
+    for root in publication_roots:
+        for protected_root in protected:
+            if _paths_overlap(root, protected_root):
+                raise NewsCalendarError(
+                    f"publication authority root overlaps protected root: {root} | {protected_root}"
+                )
+        if _paths_overlap(root, refresh):
+            raise NewsCalendarError(
+                f"publication authority root overlaps refresh provenance: {root} | {refresh}"
+            )
+    return _PublicationPolicy(
+        source_dir=source,
+        common_dirs=commons,
+        factory_off_flag=flag,
+        refresh_script=refresh,
+        provenance_kind=policy.provenance_kind,
+        evidence_dir=evidence,
+        protected_roots=protected,
+        test_injected=policy.test_injected,
+    )
+
+
+def _policy_provenance(policy: _PublicationPolicy) -> dict[str, str]:
+    return {
+        "kind": policy.provenance_kind,
+        "path": str(policy.refresh_script),
+        "sha256": _sha256_file(policy.refresh_script),
+    }
+
+
+def _validate_candidate_pair(
+    primary_candidate: Path | str,
+    secondary_candidate: Path | str,
+    policy: _PublicationPolicy,
+) -> tuple[Path, Path]:
+    primary = _canonical_target(primary_candidate, label="primary candidate")
+    secondary = _canonical_target(secondary_candidate, label="secondary candidate")
+    if primary.name != PRIMARY_NAME or secondary.name != SECONDARY_NAME:
+        raise NewsCalendarError("calendar candidate filenames are not canonical")
+    if primary.parent != secondary.parent:
+        raise NewsCalendarError("calendar candidates must share one directory")
+    if not policy.test_injected:
+        parent = primary.parent
+        is_active_source = parent == policy.source_dir
+        is_staging = (
+            parent.parent == policy.evidence_dir
+            and _PRODUCTION_STAGING_RE.fullmatch(parent.name) is not None
+        )
+        if not (is_active_source or is_staging):
+            raise NewsCalendarError(
+                "production candidates must be the exact D source pair or one canonical state staging pair"
+            )
+    return primary, secondary
+
+
+def _validate_evidence_output(
+    path: Path | str,
+    policy: _PublicationPolicy,
+    *,
+    kind: str,
+) -> Path:
+    target = _canonical_target(path, label=f"{kind} output")
+    if target.parent != policy.evidence_dir:
+        raise NewsCalendarError(f"{kind} output must be a direct child of {policy.evidence_dir}")
+    patterns = {
+        "plan": r"^news_calendar_publication_plan_[0-9TZ-]+[0-9a-f]{32}\.json$",
+        "journal": r"^news_calendar_publication_journal_[0-9TZ-]+[0-9a-f]{32}\.json$",
+        "receipt": r"^news_calendar_publication_receipt_[0-9TZ-]+[0-9a-f]{32}\.json$",
+    }
+    if re.fullmatch(patterns[kind], target.name) is None:
+        raise NewsCalendarError(f"{kind} output filename is not canonical: {target.name}")
+    return target
+
+
+def build_multi_principal_publication_plan(
+    primary_candidate: Path | str,
+    secondary_candidate: Path | str,
+    *,
+    generated_at: dt.datetime | str | None = None,
+    _policy: _PublicationPolicy | None = None,
+) -> dict[str, Any]:
+    """Build a read-only plan under production or explicit test authority."""
+
+    policy = _validated_policy(_policy or _PRODUCTION_POLICY)
+    primary, secondary = _validate_candidate_pair(
+        primary_candidate,
+        secondary_candidate,
+        policy,
+    )
+    base = build_publication_plan(
+        primary,
+        secondary,
+        generated_at=generated_at,
+    )
+
+    plan_without_hash = {
+        "schema": MULTI_PLAN_SCHEMA,
+        "created_at": base["created_at"],
+        "candidates": base["candidates"],
+        "manifest": base["manifest"],
+        "targets": [
+            {"role": "source", "path": str(policy.source_dir)},
+            *({"role": "common", "path": str(path)} for path in policy.common_dirs),
+        ],
+        "provenance": _policy_provenance(policy),
+    }
+    return {
+        **plan_without_hash,
+        "plan_sha256": _sha256_bytes(_canonical_json_bytes(plan_without_hash)),
+    }
+
+
+def _validate_multi_plan(
+    plan: Mapping[str, Any],
+    policy: _PublicationPolicy,
+) -> tuple[
+    dict[str, Any],
+    dict[str, _ParsedCalendar],
+    Path,
+    list[Path],
+]:
+    if set(plan) != {
+        "schema",
+        "created_at",
+        "candidates",
+        "manifest",
+        "targets",
+        "provenance",
+        "plan_sha256",
+    }:
+        raise NewsCalendarError("multi-principal plan fields are invalid")
+    _validate_plan_hash(plan, schema=MULTI_PLAN_SCHEMA)
+    candidate_entries = plan.get("candidates")
+    if (
+        not isinstance(candidate_entries, list)
+        or len(candidate_entries) != 2
+        or not all(isinstance(entry, dict) for entry in candidate_entries)
+    ):
+        raise NewsCalendarError("multi-principal candidate list is invalid")
+    _validate_candidate_pair(
+        str(candidate_entries[0].get("path") or ""),
+        str(candidate_entries[1].get("path") or ""),
+        policy,
+    )
+    manifest, parsed = _validate_plan_material(plan)
+    targets = plan.get("targets")
+    if not isinstance(targets, list) or len(targets) < 2:
+        raise NewsCalendarError("multi-principal plan must bind one source and Common roots")
+    expected_roles = ["source", *("common" for _ in targets[1:])]
+    roles = [str(entry.get("role") or "") for entry in targets if isinstance(entry, dict)]
+    if roles != expected_roles or len(roles) != len(targets):
+        raise NewsCalendarError("multi-principal target order/roles are invalid")
+    paths: list[Path] = []
+    for entry in targets:
+        if set(entry) != {"role", "path"}:
+            raise NewsCalendarError("multi-principal target fields are invalid")
+        raw_path = str(entry.get("path") or "")
+        path = Path(raw_path)
+        if (
+            not raw_path
+            or not path.is_absolute()
+            or _canonical_target(path, label="planned publication root") != path
+        ):
+            raise NewsCalendarError("multi-principal targets must be canonical absolute paths")
+        paths.append(path)
+    identities = [_path_identity(path) for path in paths]
+    if len(set(identities)) != len(identities):
+        raise NewsCalendarError("multi-principal publication roots must be distinct")
+    if paths[0] != policy.source_dir or tuple(paths[1:]) != policy.common_dirs:
+        raise NewsCalendarError("publication plan targets differ from pinned authority")
+    provenance = plan.get("provenance")
+    if not isinstance(provenance, dict):
+        raise NewsCalendarError("multi-principal provenance must be an object")
+    if provenance != _policy_provenance(policy):
+        raise NewsCalendarError("multi-principal provenance differs from pinned authority")
+    return manifest, parsed, paths[0], paths[1:]
+
+
+def _require_expected_plan_sha256(
+    plan: Mapping[str, Any], expected_plan_sha256: str,
+) -> str:
+    expected = str(expected_plan_sha256 or "").strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", expected):
+        raise NewsCalendarError("expected_plan_sha256 must be an exact lowercase SHA-256")
+    declared = str(plan.get("plan_sha256") or "")
+    if declared != expected:
+        raise NewsCalendarError(
+            f"publication plan differs from independently expected SHA-256 {expected}"
+        )
+    return expected
 
 
 def _write_fsynced(path: Path, raw: bytes) -> None:
@@ -883,17 +1287,25 @@ def _install_immutable_bundle(
         raise
 
 
-def _replace_active_file(root: Path, name: str, raw: bytes) -> None:
+def _replace_active_file(root: Path, name: str, raw: bytes) -> bool:
+    root = _canonical_target(root, label="active publication root")
     root.mkdir(parents=True, exist_ok=True)
+    destination = root / name
+    if destination.is_symlink() or _is_link_or_reparse(destination):
+        raise NewsCalendarError(f"active publication target is a link/reparse point: {destination}")
+    if destination.is_file() and _sha256_file(destination) == _sha256_bytes(raw):
+        # Byte-identical refreshes must not advance CSV mtime freshness.
+        return False
     temp = root / f".{name}.{uuid.uuid4().hex}.tmp"
     try:
         _write_fsynced(temp, raw)
         if _sha256_file(temp) != _sha256_bytes(raw):
             raise NewsCalendarError(f"temporary publication hash mismatch: {temp}")
-        os.replace(temp, root / name)
+        os.replace(temp, destination)
         _fsync_directory(root)
     finally:
         temp.unlink(missing_ok=True)
+    return True
 
 
 def _inject_fault(fault_after: str | None, stage: str) -> None:
@@ -901,100 +1313,518 @@ def _inject_fault(fault_after: str | None, stage: str) -> None:
         raise InjectedPublishFailure(f"injected calendar publication failure after {stage}")
 
 
-def publish_calendar_bundle(
-    plan: Mapping[str, Any],
+def _publication_factory_mode(
+    flag: Path,
     *,
-    source_dir: Path | str,
-    common_dir: Path | str,
-    factory_off_flag: Path | str,
-    expected_factory_off_sha256: str,
-    fault_after: str | None = None,
-) -> dict[str, Any]:
-    """Apply a planned publication under a hash-bound FACTORY_OFF interlock."""
-    source = Path(source_dir)
-    common = Path(common_dir)
-    flag = Path(factory_off_flag)
-    expected_flag_sha = str(expected_factory_off_sha256 or "").strip().lower()
-    if not re.fullmatch(r"[0-9a-f]{64}", expected_flag_sha):
-        raise NewsCalendarError("expected_factory_off_sha256 must be an exact lowercase SHA-256")
-
-    # Parse and hash both candidates before taking the mutation lock or creating
-    # publication directories.
-    manifest, parsed = _validate_plan(plan)
-    manifest_raw = _canonical_json_bytes(manifest) + b"\n"
+    expected_factory_off_sha256: str | None,
+    allow_factory_on: bool,
+) -> tuple[str, str | None]:
+    expected = str(expected_factory_off_sha256 or "").strip().lower()
+    if allow_factory_on and expected:
+        raise NewsCalendarError(
+            "allow_factory_on and expected_factory_off_sha256 are mutually exclusive"
+        )
+    if allow_factory_on:
+        if flag.exists():
+            raise NewsCalendarError(
+                f"Factory ON publication requires an absent FACTORY_OFF flag: {flag}"
+            )
+        return "ON_ABSENT_FLAG", None
+    if not re.fullmatch(r"[0-9a-f]{64}", expected):
+        raise NewsCalendarError(
+            "OFF publication requires an exact lowercase expected_factory_off_sha256"
+        )
     if not flag.is_file():
         raise NewsCalendarError(f"FACTORY_OFF flag missing: {flag}")
-    actual_flag_sha = _sha256_file(flag)
-    if actual_flag_sha != expected_flag_sha:
+    actual = _sha256_file(flag)
+    if actual != expected:
         raise NewsCalendarError(
-            f"FACTORY_OFF SHA-256 mismatch: expected {expected_flag_sha}, actual {actual_flag_sha}"
+            f"FACTORY_OFF SHA-256 mismatch: expected {expected}, actual {actual}"
         )
+    return "OFF_HASH_BOUND", expected
 
-    lock_path = path_for_factory_flag(flag)
-    with FactoryMutationLock(
-        lock_path,
-        owner=f"news_calendar_publish:{manifest['bundle_id']}",
-    ):
-        if not flag.is_file() or _sha256_file(flag) != expected_flag_sha:
-            raise NewsCalendarError("FACTORY_OFF flag changed before calendar publication")
 
-        source_bundle = _install_immutable_bundle(source, manifest, parsed, manifest_raw)
-        _inject_fault(fault_after, "SOURCE_BUNDLE_INSTALLED")
-        common_bundle = _install_immutable_bundle(common, manifest, parsed, manifest_raw)
-        _inject_fault(fault_after, "COMMON_BUNDLE_INSTALLED")
-
-        _replace_active_file(source, PRIMARY_NAME, parsed[PRIMARY_NAME].raw)
-        _inject_fault(fault_after, "SOURCE_PRIMARY_REPLACED")
-        _replace_active_file(source, SECONDARY_NAME, parsed[SECONDARY_NAME].raw)
-        _inject_fault(fault_after, "SOURCE_SECONDARY_REPLACED")
-        _replace_active_file(source, ACTIVE_MANIFEST_NAME, manifest_raw)
-        _inject_fault(fault_after, "SOURCE_MANIFEST_REPLACED")
-
-        _replace_active_file(common, PRIMARY_NAME, parsed[PRIMARY_NAME].raw)
-        _inject_fault(fault_after, "COMMON_PRIMARY_REPLACED")
-        _replace_active_file(common, SECONDARY_NAME, parsed[SECONDARY_NAME].raw)
-        _inject_fault(fault_after, "COMMON_SECONDARY_REPLACED")
-        _replace_active_file(common, ACTIVE_MANIFEST_NAME, manifest_raw)
-        _inject_fault(fault_after, "COMMON_MANIFEST_REPLACED")
-
-        if not flag.is_file() or _sha256_file(flag) != expected_flag_sha:
-            raise NewsCalendarError("FACTORY_OFF flag changed during calendar publication")
-        verification = preflight_news_calendar(
-            source,
-            common,
-            max_age_hours=MAX_AGE_HOURS,
-            use_cache=False,
-        )
-        if not verification.ok:
+def _assert_factory_generation(
+    flag: Path,
+    *,
+    mode: str,
+    expected_factory_off_sha256: str | None,
+    stage: str,
+) -> None:
+    if mode == "ON_ABSENT_FLAG":
+        if flag.exists():
             raise NewsCalendarError(
-                f"published calendar failed verification: {verification.status}: {verification.detail}"
+                f"FACTORY_OFF flag appeared during calendar publication ({stage})"
+            )
+        return
+    if not flag.is_file():
+        raise NewsCalendarError(
+            f"FACTORY_OFF flag disappeared during calendar publication ({stage})"
+        )
+    actual = _sha256_file(flag)
+    if actual != expected_factory_off_sha256:
+        raise NewsCalendarError(
+            f"FACTORY_OFF flag changed during calendar publication ({stage})"
+        )
+
+
+def validate_multi_principal_publication(
+    plan: Mapping[str, Any],
+    *,
+    expected_plan_sha256: str,
+    expected_factory_off_sha256: str | None = None,
+    allow_factory_on: bool = False,
+    _policy: _PublicationPolicy | None = None,
+) -> dict[str, Any]:
+    """Read-only validation used by CLI WhatIf and operator reconciliation."""
+
+    policy = _validated_policy(_policy or _PRODUCTION_POLICY)
+    expected_plan_sha = _require_expected_plan_sha256(plan, expected_plan_sha256)
+    manifest, _parsed, source, commons = _validate_multi_plan(plan, policy)
+    flag = policy.factory_off_flag
+    mode, expected = _publication_factory_mode(
+        flag,
+        expected_factory_off_sha256=expected_factory_off_sha256,
+        allow_factory_on=allow_factory_on,
+    )
+    return {
+        "published": False,
+        "what_if": True,
+        "plan_sha256": expected_plan_sha,
+        "bundle_id": manifest["bundle_id"],
+        "source_dir": str(source),
+        "common_dirs": [str(path) for path in commons],
+        "factory_mode": mode,
+        "factory_off_flag": str(flag),
+        "factory_off_sha256": expected,
+    }
+
+
+def publish_calendar_bundle_multi(
+    plan: Mapping[str, Any],
+    *,
+    expected_plan_sha256: str,
+    expected_factory_off_sha256: str | None = None,
+    allow_factory_on: bool = False,
+    fault_after: str | None = None,
+    _policy: _PublicationPolicy | None = None,
+) -> dict[str, Any]:
+    """Atomically publish one plan to the source and every bound Common root."""
+
+    policy = _validated_policy(_policy or _PRODUCTION_POLICY)
+    # Parse/hash candidates and validate all target identities before the lock or
+    # any target-directory creation.
+    expected_plan_sha = _require_expected_plan_sha256(plan, expected_plan_sha256)
+    manifest, parsed, source, commons = _validate_multi_plan(plan, policy)
+    flag = policy.factory_off_flag
+    mode, expected = _publication_factory_mode(
+        flag,
+        expected_factory_off_sha256=expected_factory_off_sha256,
+        allow_factory_on=allow_factory_on,
+    )
+    manifest_raw = _canonical_json_bytes(manifest) + b"\n"
+    lock = FactoryMutationLock(
+        path_for_factory_flag(flag),
+        owner=f"news_calendar_multi_publish:{manifest['bundle_id']}",
+    )
+    bundle_dirs: dict[str, str] = {}
+    verifications: list[dict[str, Any]] = []
+
+    with lock:
+        _assert_factory_generation(
+            flag,
+            mode=mode,
+            expected_factory_off_sha256=expected,
+            stage="LOCK_ACQUIRED",
+        )
+
+        # Install every immutable generation before any active pointer changes.
+        for index, root in enumerate([source, *commons]):
+            bundle = _install_immutable_bundle(root, manifest, parsed, manifest_raw)
+            bundle_dirs[str(root)] = str(bundle)
+            role = "SOURCE" if index == 0 else f"COMMON_{index - 1}"
+            _inject_fault(fault_after, f"{role}_BUNDLE_INSTALLED")
+            _assert_factory_generation(
+                flag,
+                mode=mode,
+                expected_factory_off_sha256=expected,
+                stage=f"{role}_BUNDLE_INSTALLED",
             )
 
+        # Common generations move first. The source generation moves last, so a
+        # partial transition can never look globally accepted to preflight.
+        for index, common in enumerate(commons):
+            prefix = f"COMMON_{index}"
+            for name, label, raw in (
+                (PRIMARY_NAME, "PRIMARY", parsed[PRIMARY_NAME].raw),
+                (SECONDARY_NAME, "SECONDARY", parsed[SECONDARY_NAME].raw),
+                (ACTIVE_MANIFEST_NAME, "MANIFEST", manifest_raw),
+            ):
+                _replace_active_file(common, name, raw)
+                stage = f"{prefix}_{label}_REPLACED"
+                _inject_fault(fault_after, stage)
+                _assert_factory_generation(
+                    flag,
+                    mode=mode,
+                    expected_factory_off_sha256=expected,
+                    stage=stage,
+                )
+
+        for name, label, raw in (
+            (PRIMARY_NAME, "PRIMARY", parsed[PRIMARY_NAME].raw),
+            (SECONDARY_NAME, "SECONDARY", parsed[SECONDARY_NAME].raw),
+            (ACTIVE_MANIFEST_NAME, "MANIFEST", manifest_raw),
+        ):
+            _replace_active_file(source, name, raw)
+            stage = f"SOURCE_{label}_REPLACED"
+            _inject_fault(fault_after, stage)
+            _assert_factory_generation(
+                flag,
+                mode=mode,
+                expected_factory_off_sha256=expected,
+                stage=stage,
+            )
+
+        for common in commons:
+            verification = preflight_news_calendar(
+                source,
+                common,
+                max_age_hours=MAX_AGE_HOURS,
+                use_cache=False,
+            )
+            verifications.append(verification.as_dict())
+            if not verification.ok:
+                raise NewsCalendarError(
+                    "published multi-principal calendar failed verification for "
+                    f"{common}: {verification.status}: {verification.detail}"
+                )
+        _assert_factory_generation(
+            flag,
+            mode=mode,
+            expected_factory_off_sha256=expected,
+            stage="VERIFIED",
+        )
+
     clear_preflight_cache()
+    lock_ok = lock.release_succeeded
+    status = "committed" if lock_ok else "committed_lock_retained"
     return {
+        "ok": lock_ok,
+        "status": status,
+        "committed": True,
         "published": True,
+        "plan_sha256": expected_plan_sha,
         "bundle_id": manifest["bundle_id"],
         "bundle_identity_sha256": manifest["bundle_identity_sha256"],
         "manifest_sha256": manifest["manifest_sha256"],
         "generated_at": manifest["generated_at"],
         "source_dir": str(source),
-        "common_dir": str(common),
-        "source_bundle_dir": str(source_bundle),
-        "common_bundle_dir": str(common_bundle),
+        "common_dirs": [str(path) for path in commons],
+        "bundle_dirs": bundle_dirs,
+        "factory_mode": mode,
         "factory_off_flag": str(flag),
-        "factory_off_sha256": expected_flag_sha,
-        "preflight": verification.as_dict(),
+        "factory_off_sha256": expected,
+        "preflights": verifications,
+        "lock_release_status": lock.release_status,
+        "lock_release_succeeded": lock_ok,
     }
 
 
 def _read_plan(path: Path) -> dict[str, Any]:
     try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        value = _json_loads_without_duplicates(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
         raise NewsCalendarError(f"cannot read publication plan {path}: {exc}") from exc
     if not isinstance(value, dict):
         raise NewsCalendarError("publication plan must be a JSON object")
     return value
+
+
+def _write_json_atomic_output(path: Path | str, payload: Mapping[str, Any]) -> Path:
+    """Persist an explicitly requested plan/receipt without shell redirection."""
+
+    target = _canonical_target(path, label="JSON evidence output")
+    raw = _pretty_json_bytes(payload)
+    if target.is_symlink():
+        raise NewsCalendarError(f"JSON output target must not be a symbolic link: {target}")
+    if target.exists():
+        if not target.is_file():
+            raise NewsCalendarError(f"JSON output target is not a file: {target}")
+        if target.read_bytes() == raw:
+            return target
+        raise NewsCalendarError(f"refusing to overwrite differing JSON evidence: {target}")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary = target.parent / f".{target.name}.{uuid.uuid4().hex}.tmp"
+    try:
+        _write_fsynced(temporary, raw)
+        try:
+            # A same-volume hard link publishes the already-fsynced bytes with
+            # create-only semantics. A concurrent differing artifact wins and
+            # is never overwritten.
+            os.link(temporary, target)
+        except FileExistsError:
+            if target.is_file() and not target.is_symlink() and target.read_bytes() == raw:
+                return target
+            raise NewsCalendarError(
+                f"refusing to overwrite concurrent differing JSON evidence: {target}"
+            )
+        _fsync_directory(target.parent)
+        if target.read_bytes() != raw:
+            raise NewsCalendarError(f"atomic JSON output verification failed: {target}")
+    finally:
+        temporary.unlink(missing_ok=True)
+    return target
+
+
+def _pretty_json_bytes(payload: Mapping[str, Any]) -> bytes:
+    return (
+        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8")
+        + b"\n"
+    )
+
+
+def _replace_json_atomic_expected(
+    path: Path,
+    payload: Mapping[str, Any],
+    *,
+    expected_raw: bytes,
+) -> bytes:
+    target = _canonical_target(path, label="publication journal")
+    if target.is_symlink() or _is_link_or_reparse(target):
+        raise NewsCalendarError(f"publication journal is a link/reparse point: {target}")
+    try:
+        actual = target.read_bytes()
+    except OSError as exc:
+        raise NewsCalendarError(f"cannot read pre-reserved publication journal: {exc}") from exc
+    if actual != expected_raw:
+        raise NewsCalendarError("publication journal changed outside the operation")
+    raw = _pretty_json_bytes(payload)
+    temporary = target.parent / f".{target.name}.{uuid.uuid4().hex}.tmp"
+    try:
+        _write_fsynced(temporary, raw)
+        if target.read_bytes() != expected_raw:
+            raise NewsCalendarError("publication journal changed before state transition")
+        os.replace(temporary, target)
+        _fsync_directory(target.parent)
+        if target.read_bytes() != raw:
+            raise NewsCalendarError("publication journal transition verification failed")
+    finally:
+        temporary.unlink(missing_ok=True)
+    return raw
+
+
+def _journal_record(
+    *,
+    state: str,
+    operation_id: str,
+    plan: Mapping[str, Any],
+    policy: _PublicationPolicy,
+    receipt_path: Path,
+    committed: bool,
+    detail: Mapping[str, Any] | None = None,
+    prepared_at: str,
+) -> dict[str, Any]:
+    return {
+        "schema": JOURNAL_SCHEMA,
+        "operation_id": operation_id,
+        "state": state,
+        "committed": committed,
+        "prepared_at": prepared_at,
+        "updated_at": _iso_utc(_utc_now()),
+        "plan_sha256": plan["plan_sha256"],
+        "bundle_id": plan["manifest"]["bundle_id"],
+        "source_dir": str(policy.source_dir),
+        "common_dirs": [str(path) for path in policy.common_dirs],
+        "factory_off_flag": str(policy.factory_off_flag),
+        "lock_path": str(path_for_factory_flag(policy.factory_off_flag)),
+        "provenance": _policy_provenance(policy),
+        "receipt_path": str(receipt_path),
+        "detail": dict(detail or {}),
+    }
+
+
+def execute_multi_principal_publication(
+    plan: Mapping[str, Any],
+    *,
+    expected_plan_sha256: str,
+    expected_factory_off_sha256: str | None = None,
+    allow_factory_on: bool = False,
+    journal_output: Path | str,
+    receipt_output: Path | str,
+    _policy: _PublicationPolicy | None = None,
+    _fault_after: str | None = None,
+) -> dict[str, Any]:
+    """Execute a journaled publication and return an unambiguous outcome."""
+
+    policy = _validated_policy(_policy or _PRODUCTION_POLICY)
+    journal_path = _validate_evidence_output(journal_output, policy, kind="journal")
+    receipt_path = _validate_evidence_output(receipt_output, policy, kind="receipt")
+    if journal_path == receipt_path:
+        raise NewsCalendarError("journal and receipt outputs must be distinct")
+    what_if = validate_multi_principal_publication(
+        plan,
+        expected_plan_sha256=expected_plan_sha256,
+        expected_factory_off_sha256=expected_factory_off_sha256,
+        allow_factory_on=allow_factory_on,
+        _policy=policy,
+    )
+    prepared_at = _iso_utc(_utc_now())
+    operation_material = {
+        "plan_sha256": expected_plan_sha256,
+        "journal_path": str(journal_path),
+        "receipt_path": str(receipt_path),
+        "factory_mode": what_if["factory_mode"],
+    }
+    operation_id = _sha256_bytes(_canonical_json_bytes(operation_material))
+    prepared = _journal_record(
+        state="PREPARED",
+        operation_id=operation_id,
+        plan=plan,
+        policy=policy,
+        receipt_path=receipt_path,
+        committed=False,
+        detail={"factory_mode": what_if["factory_mode"]},
+        prepared_at=prepared_at,
+    )
+    _write_json_atomic_output(journal_path, prepared)
+    journal_raw = _pretty_json_bytes(prepared)
+    try:
+        result = publish_calendar_bundle_multi(
+            plan,
+            expected_plan_sha256=expected_plan_sha256,
+            expected_factory_off_sha256=expected_factory_off_sha256,
+            allow_factory_on=allow_factory_on,
+            fault_after=_fault_after,
+            _policy=policy,
+        )
+    except BaseException as exc:
+        failed = _journal_record(
+            state="FAILED_FAIL_CLOSED_MUTATION_POSSIBLE",
+            operation_id=operation_id,
+            plan=plan,
+            policy=policy,
+            receipt_path=receipt_path,
+            committed=False,
+            detail={"error": str(exc), "mutation_possible": True},
+            prepared_at=prepared_at,
+        )
+        _replace_json_atomic_expected(journal_path, failed, expected_raw=journal_raw)
+        raise
+
+    pending_state = (
+        "COMMITTED_PENDING_RECEIPT"
+        if result["lock_release_succeeded"]
+        else "COMMITTED_LOCK_RETAINED_PENDING_RECEIPT"
+    )
+    pending = _journal_record(
+        state=pending_state,
+        operation_id=operation_id,
+        plan=plan,
+        policy=policy,
+        receipt_path=receipt_path,
+        committed=True,
+        detail={"publication": result},
+        prepared_at=prepared_at,
+    )
+    try:
+        journal_raw = _replace_json_atomic_expected(
+            journal_path,
+            pending,
+            expected_raw=journal_raw,
+        )
+    except BaseException as exc:
+        return {
+            **result,
+            "ok": False,
+            "status": "committed_journal_failed",
+            "committed": True,
+            "journal_path": str(journal_path),
+            "receipt_path": str(receipt_path),
+            "journal_error": str(exc),
+        }
+
+    receipt = {
+        **result,
+        "journal_path": str(journal_path),
+        "receipt_path": str(receipt_path),
+        "operation_id": operation_id,
+    }
+    try:
+        _write_json_atomic_output(receipt_path, receipt)
+    except BaseException as exc:
+        failure = {
+            **receipt,
+            "ok": False,
+            "status": "committed_receipt_failed",
+            "committed": True,
+            "receipt_error": str(exc),
+        }
+        failed_record = _journal_record(
+            state="COMMITTED_RECEIPT_FAILED",
+            operation_id=operation_id,
+            plan=plan,
+            policy=policy,
+            receipt_path=receipt_path,
+            committed=True,
+            detail={"outcome": failure},
+            prepared_at=prepared_at,
+        )
+        try:
+            _replace_json_atomic_expected(
+                journal_path,
+                failed_record,
+                expected_raw=journal_raw,
+            )
+        except BaseException as journal_exc:
+            # Mutation is already committed.  Never let a secondary evidence
+            # failure collapse this into a generic, apparently-unapplied error.
+            failure["journal_error"] = str(journal_exc)
+        return failure
+
+    final_state = (
+        "COMMITTED_RECEIPTED"
+        if result["lock_release_succeeded"]
+        else "COMMITTED_LOCK_RETAINED_RECEIPTED"
+    )
+    final_record = _journal_record(
+        state=final_state,
+        operation_id=operation_id,
+        plan=plan,
+        policy=policy,
+        receipt_path=receipt_path,
+        committed=True,
+        detail={"outcome": receipt},
+        prepared_at=prepared_at,
+    )
+    try:
+        _replace_json_atomic_expected(
+            journal_path,
+            final_record,
+            expected_raw=journal_raw,
+        )
+    except BaseException as exc:
+        return {
+            **receipt,
+            "ok": False,
+            "status": "committed_journal_finalize_failed",
+            "committed": True,
+            "journal_error": str(exc),
+        }
+    return receipt
+
+
+def _publication_outcome_exit_code(result: Mapping[str, Any]) -> int:
+    """Map committed outcomes to stable CLI status without hiding success hazards."""
+
+    status = str(result.get("status") or "")
+    if status == "committed" and result.get("ok") is True:
+        return 0
+    return {
+        "committed_lock_retained": 3,
+        "committed_receipt_failed": 4,
+        "committed_journal_failed": 5,
+        "committed_journal_finalize_failed": 5,
+    }.get(status, 2)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -1011,13 +1841,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     plan_parser.add_argument("--secondary-candidate", type=Path, required=True)
     plan_parser.add_argument("--generated-at")
 
-    publish = subparsers.add_parser("publish")
-    publish.add_argument("--plan", type=Path, required=True)
-    publish.add_argument("--source-dir", type=Path, required=True)
-    publish.add_argument("--common-dir", type=Path, required=True)
-    publish.add_argument("--factory-off-flag", type=Path, required=True)
-    publish.add_argument("--expected-factory-off-sha256", required=True)
-    publish.add_argument("--apply", action="store_true")
+    multi_plan = subparsers.add_parser("multi-plan")
+    multi_plan.add_argument("--primary-candidate", type=Path, required=True)
+    multi_plan.add_argument("--secondary-candidate", type=Path, required=True)
+    multi_plan.add_argument("--generated-at")
+    multi_plan.add_argument("--output", type=Path)
+
+    multi_publish = subparsers.add_parser("multi-publish")
+    multi_publish.add_argument("--plan", type=Path, required=True)
+    multi_publish.add_argument("--expected-plan-sha256", required=True)
+    generation = multi_publish.add_mutually_exclusive_group(required=True)
+    generation.add_argument("--expected-factory-off-sha256")
+    generation.add_argument("--allow-factory-on", action="store_true")
+    multi_publish.add_argument("--apply", action="store_true")
+    multi_publish.add_argument("--journal-output", type=Path)
+    multi_publish.add_argument("--receipt-output", type=Path)
 
     args = parser.parse_args(argv)
     try:
@@ -1037,34 +1875,55 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             print(json.dumps(result, indent=2, sort_keys=True))
             return 0
-
-        plan = _read_plan(args.plan)
-        if not args.apply:
-            print(
-                json.dumps(
-                    {
-                        "published": False,
-                        "what_if": True,
-                        "plan_sha256": plan.get("plan_sha256"),
-                        "source_dir": str(args.source_dir),
-                        "common_dir": str(args.common_dir),
-                        "factory_off_flag": str(args.factory_off_flag),
-                    },
-                    indent=2,
-                    sort_keys=True,
-                )
+        if args.command == "multi-plan":
+            policy = _validated_policy(_PRODUCTION_POLICY)
+            result = build_multi_principal_publication_plan(
+                args.primary_candidate,
+                args.secondary_candidate,
+                generated_at=args.generated_at,
+                _policy=policy,
             )
+            if args.output is not None:
+                output = _validate_evidence_output(args.output, policy, kind="plan")
+                _write_json_atomic_output(output, result)
+            print(json.dumps(result, indent=2, sort_keys=True))
             return 0
-        result = publish_calendar_bundle(
-            plan,
-            source_dir=args.source_dir,
-            common_dir=args.common_dir,
-            factory_off_flag=args.factory_off_flag,
-            expected_factory_off_sha256=args.expected_factory_off_sha256,
-        )
-        print(json.dumps(result, indent=2, sort_keys=True))
-        return 0
-    except (NewsCalendarError, OSError, ValueError) as exc:
+
+        if args.command == "multi-publish":
+            policy = _validated_policy(_PRODUCTION_POLICY)
+            plan_path = _validate_evidence_output(args.plan, policy, kind="plan")
+            plan = _read_plan(plan_path)
+            if not args.apply:
+                if args.journal_output is not None or args.receipt_output is not None:
+                    raise NewsCalendarError(
+                        "journal/receipt outputs require --apply; WhatIf remains read-only"
+                    )
+                result = validate_multi_principal_publication(
+                    plan,
+                    expected_plan_sha256=args.expected_plan_sha256,
+                    expected_factory_off_sha256=args.expected_factory_off_sha256,
+                    allow_factory_on=args.allow_factory_on,
+                    _policy=policy,
+                )
+                print(json.dumps(result, indent=2, sort_keys=True))
+                return 0
+            else:
+                if args.journal_output is None or args.receipt_output is None:
+                    raise NewsCalendarError(
+                        "--apply requires both --journal-output and --receipt-output"
+                    )
+                result = execute_multi_principal_publication(
+                    plan,
+                    expected_plan_sha256=args.expected_plan_sha256,
+                    expected_factory_off_sha256=args.expected_factory_off_sha256,
+                    allow_factory_on=args.allow_factory_on,
+                    journal_output=args.journal_output,
+                    receipt_output=args.receipt_output,
+                    _policy=policy,
+                )
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return _publication_outcome_exit_code(result)
+    except (NewsCalendarError, OSError, RuntimeError, ValueError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}, sort_keys=True))
         return 2
 

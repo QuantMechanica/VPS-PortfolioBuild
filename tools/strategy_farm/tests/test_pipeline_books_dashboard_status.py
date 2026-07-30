@@ -47,6 +47,137 @@ def _materialize(tmp_path: Path, payload: dict | None = None) -> tuple[Path, Pat
     return config, root, value
 
 
+def _text_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def _write_json(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _materialize_resolved_v2(
+    tmp_path: Path,
+) -> tuple[Path, Path, dict, Path, dict]:
+    config, root, value = _materialize(tmp_path)
+    v1_manifest_path = root / value["bindings"]["test_lanes"]["path"]
+    manifest = json.loads(v1_manifest_path.read_text(encoding="utf-8"))
+    manifest["schema_version"] = "qm.test-lanes/v2"
+    manifest["green_lane"] = {
+        "policy": "RUN_ALL_INCLUDING_RESOLVED_EXTERNAL_REGRESSIONS"
+    }
+    manifest["external_residual_lane"]["state"] = "RESOLVED_PASS"
+    manifest["external_residual_lane"]["policy"] = "RESOLVED_PASS"
+    manifest["external_residual_lane"]["exit_condition"] = (
+        "All five node IDs PASS without skip, xfail, assertion weakening or silent rebinding."
+    )
+    manifest_rel = Path("tools/strategy_farm/config/test_lanes.v2.fixture.json")
+    manifest_path = root / manifest_rel
+    _write_json(manifest_path, manifest)
+    value["bindings"]["test_lanes"] = {
+        "path": manifest_rel.as_posix(),
+        "file_sha256": _text_sha256(manifest_path),
+    }
+
+    value["as_of_utc"] = "2026-07-30T06:00:00Z"
+    green = value["verification_lanes"]["green"]
+    green["deselected"] = 0
+    green["statement"] = (
+        "All tests, including the exact five resolved external sentinels, passed."
+    )
+    residual = value["verification_lanes"]["external_residual"]
+    residual["state"] = "RESOLVED_PASS"
+    residual["pass_count"] = 5
+    residual["exit_condition"] = manifest["external_residual_lane"]["exit_condition"]
+    value["owner_blockers"] = value["owner_blockers"][:4]
+
+    node_ids = [row["node_id"] for row in residual["items"]]
+    receipt = {
+        "schema_version": "qm.external-residual-exit-receipt/v1",
+        "status": "RESOLVED_PASS",
+        "recorded_at_utc": "2026-07-30T05:55:00Z",
+        "test_lanes_binding": {
+            **value["bindings"]["test_lanes"],
+            "schema_version": "qm.test-lanes/v2",
+            "sentinel_node_ids": node_ids,
+        },
+        "publication_plan": {
+            "schema": "qm-news-calendar-multi-principal-publication-plan/v1",
+            "plan_sha256": "1" * 64,
+            "target_count": 4,
+        },
+        "calendar_publication": {
+            "status": "PUBLISHED_VERIFIED",
+            "plan_sha256": "1" * 64,
+            "receipt_sha256": "2" * 64,
+            "bundle_id": "news-calendar-" + "3" * 64,
+            "target_count": 4,
+            "verified_target_count": 4,
+            "source_verified": True,
+            "common_targets_verified": True,
+            "factory_mode": "OFF_HASH_BOUND",
+            "lock_release_succeeded": True,
+        },
+        "test_results": {
+            "green": {
+                key: green[key]
+                for key in (
+                    "state",
+                    "passed",
+                    "skipped",
+                    "deselected",
+                    "subtests_passed",
+                )
+            },
+            "external_residual": {
+                "state": "RESOLVED_PASS",
+                "expected_count": 5,
+                "pass_count": 5,
+                "failed": 0,
+                "skipped": 0,
+                "xfailed": 0,
+                "deselected": 0,
+                "node_ids": node_ids,
+            },
+        },
+        "safety": {
+            "factory_off_flag_unchanged": True,
+            "factory_mutation_lock_absent_after": True,
+            "factory_activation_authorized": False,
+            "scheduler_action_authorized": False,
+            "mt5_action_authorized": False,
+            "autotrading_action_authorized": False,
+            "deployment_authorized": False,
+            "paid_challenge_purchase_authorized": False,
+        },
+    }
+    receipt_rel = Path("docs/ops/evidence/external_residual_exit_receipt.fixture.json")
+    receipt_path = root / receipt_rel
+    _write_json(receipt_path, receipt)
+    value["bindings"]["external_residual_exit_receipt"] = {
+        "path": receipt_rel.as_posix(),
+        "file_sha256": _text_sha256(receipt_path),
+    }
+    _write_json(config, value)
+    return config, root, value, receipt_path, receipt
+
+
+def _rewrite_bound_receipt(
+    config: Path,
+    value: dict,
+    receipt_path: Path,
+    receipt: dict,
+) -> None:
+    _write_json(receipt_path, receipt)
+    value["bindings"]["external_residual_exit_receipt"]["file_sha256"] = (
+        _text_sha256(receipt_path)
+    )
+    _write_json(config, value)
+
+
 def test_canonical_status_is_hash_bound_and_complete() -> None:
     status = load_program_status()
 
@@ -255,13 +386,23 @@ def test_ftmo_percentages_cannot_exceed_one_hundred(tmp_path: Path) -> None:
         load_program_status(config, repo_root=root)
 
 
-def test_config_freshness_cannot_move_past_bound_projection_record(tmp_path: Path) -> None:
+def test_config_freshness_cannot_predate_bound_projection_record(tmp_path: Path) -> None:
     payload = _payload()
     payload["as_of_utc"] = "2026-07-30T05:00:00Z"
     config, root, _ = _materialize(tmp_path, payload)
 
-    with pytest.raises(ProgramStatusError, match="must equal the hash-bound FTMO projection"):
+    with pytest.raises(ProgramStatusError, match="must not predate the hash-bound FTMO projection"):
         load_program_status(config, repo_root=root)
+
+
+def test_config_freshness_may_follow_bound_projection_record(tmp_path: Path) -> None:
+    payload = _payload()
+    payload["as_of_utc"] = "2026-07-30T05:30:00Z"
+    config, root, _ = _materialize(tmp_path, payload)
+
+    assert load_program_status(config, repo_root=root)["as_of_utc"] == (
+        "2026-07-30T05:30:00Z"
+    )
 
 
 def test_exact_residual_node_set_is_bound_to_test_lane_artifact(tmp_path: Path) -> None:
@@ -270,6 +411,133 @@ def test_exact_residual_node_set_is_bound_to_test_lane_artifact(tmp_path: Path) 
     config, root, _ = _materialize(tmp_path, payload)
 
     with pytest.raises(ProgramStatusError, match="test-lane order"):
+        load_program_status(config, repo_root=root)
+
+
+def test_resolved_v2_requires_and_accepts_strict_bound_exit_receipt(
+    tmp_path: Path,
+) -> None:
+    config, root, _value, _receipt_path, _receipt = _materialize_resolved_v2(
+        tmp_path
+    )
+
+    status = load_program_status(config, repo_root=root)
+
+    assert status["bindings"]["test_lanes"]["path"].endswith(
+        "test_lanes.v2.fixture.json"
+    )
+    assert "external_residual_exit_receipt" in status["bindings"]
+    assert status["verification_lanes"]["green"]["deselected"] == 0
+    assert status["verification_lanes"]["external_residual"]["state"] == (
+        "RESOLVED_PASS"
+    )
+    assert status["verification_lanes"]["external_residual"]["pass_count"] == 5
+    assert len(status["owner_blockers"]) == 4
+    assert not any(status["safety"][key] for key in (
+        "factory_action_authorized",
+        "scheduler_action_authorized",
+        "mt5_action_authorized",
+        "autotrading_action_authorized",
+        "deployment_authorized",
+    ))
+    assert not any(status["ftmo_book3_runtime_evaluation"]["authorization"].values())
+
+
+def test_fake_resolved_v2_without_exit_receipt_fails_closed(tmp_path: Path) -> None:
+    config, root, value, _receipt_path, _receipt = _materialize_resolved_v2(
+        tmp_path
+    )
+    value["bindings"].pop("external_residual_exit_receipt")
+    _write_json(config, value)
+
+    with pytest.raises(ProgramStatusError, match="is required for a V2 RESOLVED_PASS"):
+        load_program_status(config, repo_root=root)
+
+
+def test_resolved_v2_rejects_wrong_exit_receipt_hash(tmp_path: Path) -> None:
+    config, root, value, _receipt_path, _receipt = _materialize_resolved_v2(
+        tmp_path
+    )
+    value["bindings"]["external_residual_exit_receipt"]["file_sha256"] = "0" * 64
+    _write_json(config, value)
+
+    with pytest.raises(ProgramStatusError, match="file hash mismatch"):
+        load_program_status(config, repo_root=root)
+
+
+def test_resolved_v2_status_timestamp_cannot_predate_exit_receipt(
+    tmp_path: Path,
+) -> None:
+    config, root, value, _receipt_path, _receipt = _materialize_resolved_v2(
+        tmp_path
+    )
+    value["as_of_utc"] = "2026-07-30T05:50:00Z"
+    _write_json(config, value)
+
+    with pytest.raises(ProgramStatusError, match="must not predate the bound exit receipt"):
+        load_program_status(config, repo_root=root)
+
+
+@pytest.mark.parametrize(
+    ("field", "bad_value", "message"),
+    [
+        ("green_deselected", 5, "must be exactly 0"),
+        ("residual_expected_count", 4, "must be exactly 5"),
+        ("residual_pass_count", 4, "must be exactly 5"),
+    ],
+)
+def test_resolved_v2_rejects_count_or_deselection_mismatch(
+    tmp_path: Path,
+    field: str,
+    bad_value: int,
+    message: str,
+) -> None:
+    config, root, value, _receipt_path, _receipt = _materialize_resolved_v2(
+        tmp_path
+    )
+    if field == "green_deselected":
+        value["verification_lanes"]["green"]["deselected"] = bad_value
+    elif field == "residual_expected_count":
+        value["verification_lanes"]["external_residual"]["expected_count"] = bad_value
+    else:
+        value["verification_lanes"]["external_residual"]["pass_count"] = bad_value
+    _write_json(config, value)
+
+    with pytest.raises(ProgramStatusError, match=message):
+        load_program_status(config, repo_root=root)
+
+
+@pytest.mark.parametrize(
+    ("claim", "message"),
+    [
+        ("schema", "unsupported exit-receipt schema"),
+        ("plan", "does not match publication_plan"),
+        ("calendar", "must be true"),
+        ("test_result", "must match the status at exactly 5"),
+        ("authority", "must not grant authority"),
+    ],
+)
+def test_resolved_v2_rejects_false_exit_receipt_claims(
+    tmp_path: Path,
+    claim: str,
+    message: str,
+) -> None:
+    config, root, value, receipt_path, receipt = _materialize_resolved_v2(
+        tmp_path
+    )
+    if claim == "schema":
+        receipt["schema_version"] = "qm.external-residual-exit-receipt/v0"
+    elif claim == "plan":
+        receipt["calendar_publication"]["plan_sha256"] = "4" * 64
+    elif claim == "calendar":
+        receipt["calendar_publication"]["source_verified"] = False
+    elif claim == "test_result":
+        receipt["test_results"]["external_residual"]["pass_count"] = 4
+    else:
+        receipt["safety"]["factory_activation_authorized"] = True
+    _rewrite_bound_receipt(config, value, receipt_path, receipt)
+
+    with pytest.raises(ProgramStatusError, match=message):
         load_program_status(config, repo_root=root)
 
 

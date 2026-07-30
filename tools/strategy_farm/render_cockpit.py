@@ -1002,6 +1002,24 @@ def render_pipeline_books_program(snapshot: dict) -> str:
     verification = snapshot.get("verification_lanes") or {}
     green = verification.get("green") or {}
     residual = verification.get("external_residual") or {}
+    residual_state = str(residual.get("state") or "UNKNOWN")
+    residual_resolved = residual_state == "RESOLVED_PASS"
+    residual_line_class = "pass" if residual_resolved else "residual"
+    residual_expected = residual.get("expected_count", 0)
+    residual_count = (
+        f'{residual.get("pass_count", 0)}/{residual_expected} sentinels passed'
+        if residual_resolved
+        else f"{residual_expected} exact fail-closed sentinels"
+    )
+    exit_receipt_hash = str(
+        (bindings.get("external_residual_exit_receipt") or {}).get("file_sha256")
+        or ""
+    )
+    exit_receipt_note = (
+        f'<div class="pb-contract-sub">exit receipt {e(exit_receipt_hash[:12])}</div>'
+        if residual_resolved
+        else ""
+    )
     residual_labels = " // ".join(
         str(item.get("label") or "") for item in (residual.get("items") or [])
     )
@@ -1012,9 +1030,10 @@ def render_pipeline_books_program(snapshot: dict) -> str:
         f'{e(green.get("passed", 0))} passed · {e(green.get("skipped", 0))} skipped · '
         f'{e(green.get("deselected", 0))} exact deselected · '
         f'{e(green.get("subtests_passed", 0))} subtests</div>'
-        f'<div class="pb-lane-line residual"><b>EXTERNAL RESIDUAL '
-        f'{e(residual.get("state", "UNKNOWN"))}</b> · {e(residual.get("expected_count", 0))} exact</div>'
+        f'<div class="pb-lane-line {residual_line_class}"><b>EXTERNAL RESIDUAL '
+        f'{e(residual_state)}</b> · {e(residual_count)}</div>'
         f'<div class="pb-contract-note">{e(residual_labels)}</div>'
+        f'{exit_receipt_note}'
         '</div>'
     )
 

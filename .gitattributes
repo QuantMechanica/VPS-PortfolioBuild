@@ -4,3 +4,35 @@ infra/backups/weekly/*.sqlite filter=lfs diff=lfs merge=lfs -text
 # Public-source evidence must retain its original CRLF bytes and SHA-256.
 framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/primary_source_pine_v1.pine -text
 framework/EAs/QM5_20023_idx-macro-announce-day/data/*.csv -text
+
+# Execution-contract SET files are raw-byte evidence.  Keep the exact bytes
+# committed by the provenance amendment; global core.autocrlf must not rewrite
+# them in a fresh worktree.
+framework/EAs/QM5_20030_eia-cad/sets/QM5_20030_eia-cad_USDCAD.DWX_M5_backtest.set -text
+framework/EAs/QM5_20031_asia-fx-fade/sets/QM5_20031_asia-fx-fade_EURUSD.DWX_M15_backtest.set -text
+framework/EAs/QM5_20031_asia-fx-fade/sets/QM5_20031_asia-fx-fade_GBPUSD.DWX_M15_backtest.set -text
+framework/EAs/QM5_20032_macro0830-brk/sets/QM5_20032_macro0830-brk_GDAXI.DWX_M5_backtest.set -text
+framework/EAs/QM5_20032_macro0830-brk/sets/QM5_20032_macro0830-brk_SP500.DWX_M5_backtest.set -text
+framework/EAs/QM5_20033_moc-imom/sets/QM5_20033_moc-imom_GDAXI.DWX_M30_backtest.set -text
+framework/EAs/QM5_20033_moc-imom/sets/QM5_20033_moc-imom_NDX.DWX_M30_backtest.set -text
+framework/EAs/QM5_20033_moc-imom/sets/QM5_20033_moc-imom_SP500.DWX_M30_backtest.set -text
+framework/EAs/QM5_20033_moc-imom/sets/QM5_20033_moc-imom_WS30.DWX_M30_backtest.set -text
+framework/EAs/QM5_20034_wmr-postfix/sets/QM5_20034_wmr-postfix_EURUSD.DWX_M5_backtest.set -text
+framework/EAs/QM5_20034_wmr-postfix/sets/QM5_20034_wmr-postfix_GBPUSD.DWX_M5_backtest.set -text
+framework/EAs/QM5_20037_lbma-pm-brk/sets/QM5_20037_lbma-pm-brk_XAUUSD.DWX_M5_backtest.set -text
+framework/EAs/QM5_20038_vwap2s-revert/sets/QM5_20038_vwap2s-revert_SP500.DWX_M5_backtest.set -text
+framework/EAs/QM5_20038_vwap2s-revert/sets/QM5_20038_vwap2s-revert_XAUUSD.DWX_M5_backtest.set -text
+framework/EAs/QM5_20039_onr-mid-brk/sets/QM5_20039_onr-mid-brk_NDX.DWX_M5_backtest.set -text
+framework/EAs/QM5_20039_onr-mid-brk/sets/QM5_20039_onr-mid-brk_SP500.DWX_M5_backtest.set -text
+framework/EAs/QM5_20040_b3-relvol-brk/sets/QM5_20040_b3-relvol-brk_NDX.DWX_M15_backtest.set -text
+framework/EAs/QM5_20040_b3-relvol-brk/sets/QM5_20040_b3-relvol-brk_SP500.DWX_M15_backtest.set -text
+framework/EAs/QM5_20040_b3-relvol-brk/sets/QM5_20040_b3-relvol-brk_WS30.DWX_M15_backtest.set -text
+framework/EAs/QM5_20041_postclose-cont/sets/QM5_20041_postclose-cont_GDAXI.DWX_M15_backtest.set -text
+framework/EAs/QM5_20041_postclose-cont/sets/QM5_20041_postclose-cont_UK100.DWX_M15_backtest.set -text
+framework/EAs/QM5_20043_tpo-va80-rot/sets/QM5_20043_tpo-va80-rot_NDX.DWX_M30_backtest.set -text
+framework/EAs/QM5_20043_tpo-va80-rot/sets/QM5_20043_tpo-va80-rot_SP500.DWX_M30_backtest.set -text
+framework/EAs/QM5_20043_tpo-va80-rot/sets/QM5_20043_tpo-va80-rot_WS30.DWX_M30_backtest.set -text
+framework/EAs/QM5_20044_gap-hilo-fade/sets/QM5_20044_gap-hilo-fade_SP500.DWX_M30_backtest.set -text
+framework/EAs/QM5_20044_gap-hilo-fade/sets/QM5_20044_gap-hilo-fade_WS30.DWX_M30_backtest.set -text
+framework/EAs/QM5_20045_london-box/sets/QM5_20045_london-box_EURGBP.DWX_M15_backtest.set -text
+framework/EAs/QM5_20045_london-box/sets/QM5_20045_london-box_GBPUSD.DWX_M15_backtest.set -text

@@ -10,21 +10,67 @@ before/after transition is recorded in an append-only ledger and in ``events``.
 from __future__ import annotations
 
 import argparse
-import contextlib
 import datetime as dt
 import hashlib
 import json
+import os
 import re
 import sqlite3
+import subprocess
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
+from factory_runtime_activation import (
+    RuntimeActivationError,
+    validate_runtime_activation_decision,
+)
 
 
 DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 DEFAULT_FACTORY_OFF = Path(r"D:\QM\strategy_farm\state\FACTORY_OFF.flag")
+DEFAULT_FACTORY_OFF_REQUEST = Path(
+    r"D:\QM\strategy_farm\state\FACTORY_OFF_REQUEST.flag"
+)
+DEFAULT_MUTATION_LOCK = Path(r"D:\QM\strategy_farm\state\FACTORY_MUTATION.lock")
+DEFAULT_DISABLED_TERMINALS = Path(
+    r"D:\QM\strategy_farm\state\disabled_terminals.txt"
+)
+
+CANONICAL_FACTORY_ON_PATH = Path(r"C:\QM\repo\tools\strategy_farm\Factory_ON.ps1")
+CANONICAL_OWNER_DECISION_RELATIVE_PATH = Path(
+    "docs/ops/evidence/2026-07-30_factory_preparation_owner_decision.json"
+)
+CANONICAL_OWNER_DECISION_SHA256 = (
+    "af8479fdc73163250f966014eca5c53224a4ae159426a07cf96c80a379c6edb2"
+)
+CANONICAL_OWNER_DECISION_COMMIT = "7b36ff27f83f024bf1c43bb5537cc747f52b887a"
+CANONICAL_OWNER_DECISION_BLOB = "6d36cf6682e317324a35bc8388042402b0f3e540"
+CANONICAL_RESTART_HOLD_IDS = (
+    "3746e558-6eff-436b-9365-cfec9b7f1a63",
+    "ded31f32-92fb-45a7-b318-aa00c2f3f41c",
+    "4bd848eb-d744-4f97-9a30-8323f0925394",
+    "5c788bbb-cf26-4f6d-ac86-35bd869c5893",
+    "d3c2c5ad-9455-4241-b30c-a9cb9260a4b5",
+    "36bfac85-63e2-46a7-9f35-8ae583252d2f",
+    "ad1aaca6-e639-4680-94c7-5108902438d2",
+)
+CANONICAL_WORKER_TERMINALS = (
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T6",
+    "T7",
+    "T8",
+    "T9",
+    "T10",
+)
+FACTORY_ON_LOCK_OWNER = "factory_on_restart_window"
+CANONICAL_FACTORY_ON_PROCESS_IMAGE = Path(
+    r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+)
 
 ALLOWED_ACTIONS = {"hold", "requeue_hold", "quarantine"}
 ALLOWED_STATUSES = {"pending", "active", "done", "failed"}
@@ -302,32 +348,546 @@ def inspect_manifest(db: Path, manifest: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _validate_held_mutation_lock(
+def _reject_duplicate_json_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise RuntimeError(f"duplicate JSON key in guarded record: {key}")
+        result[key] = value
+    return result
+
+
+def _canonical_repo_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
+def _validate_canonical_restart_owner_decision() -> dict[str, Any]:
+    """Verify immutable OWNER provenance and return the pinned decision payload."""
+
+    repo_root = _canonical_repo_root()
+    decision_path = repo_root / CANONICAL_OWNER_DECISION_RELATIVE_PATH
+    try:
+        raw = decision_path.read_bytes()
+    except OSError as exc:
+        raise RuntimeError(
+            f"canonical OWNER decision cannot be read: {decision_path}: {exc}"
+        ) from exc
+    actual_sha256 = hashlib.sha256(raw).hexdigest()
+    if actual_sha256 != CANONICAL_OWNER_DECISION_SHA256:
+        raise RuntimeError(
+            "canonical OWNER decision SHA-256 mismatch: "
+            f"expected={CANONICAL_OWNER_DECISION_SHA256} actual={actual_sha256}"
+        )
+    actual_blob = hashlib.sha1(
+        f"blob {len(raw)}\0".encode("ascii") + raw,
+        usedforsecurity=False,
+    ).hexdigest()
+    if actual_blob != CANONICAL_OWNER_DECISION_BLOB:
+        raise RuntimeError(
+            "canonical OWNER decision Git blob mismatch: "
+            f"expected={CANONICAL_OWNER_DECISION_BLOB} actual={actual_blob}"
+        )
+    try:
+        payload = json.loads(
+            raw.decode("utf-8"), object_pairs_hook=_reject_duplicate_json_keys
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError, RuntimeError) as exc:
+        raise RuntimeError(f"canonical OWNER decision is invalid: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError("canonical OWNER decision must be a JSON object")
+
+    expected_scalar = {
+        "decision_id": "FACTORY_PREPARATION_20260730_REPAIR_NO_WAIVER",
+        "authority": "OWNER",
+        "status": "APPROVED_WITH_EXPLICIT_BOUNDARIES",
+    }
+    actual_scalar = {key: payload.get(key) for key in expected_scalar}
+    if actual_scalar != expected_scalar:
+        raise RuntimeError(
+            "canonical OWNER decision identity mismatch: "
+            f"expected={expected_scalar!r} actual={actual_scalar!r}"
+        )
+    restart_holds = payload.get("restart_holds")
+    worker_policy = payload.get("worker_policy")
+    if not isinstance(restart_holds, dict) or not isinstance(worker_policy, dict):
+        raise RuntimeError("canonical OWNER decision lacks restart_holds/worker_policy")
+    if (
+        restart_holds.get("authorized_work_item_ids")
+        != list(CANONICAL_RESTART_HOLD_IDS)
+        or restart_holds.get("authorized_release_count") != len(CANONICAL_RESTART_HOLD_IDS)
+        or restart_holds.get("release_policy")
+        != "ONLY_AFTER_POST_START_HEALTH_GATE_PASS"
+    ):
+        raise RuntimeError("canonical OWNER restart-hold authorization mismatch")
+    if (
+        worker_policy.get("t5_quarantine_ratified") is not True
+        or worker_policy.get("expected_terminals") != list(CANONICAL_WORKER_TERMINALS)
+        or worker_policy.get("expected_worker_count") != len(CANONICAL_WORKER_TERMINALS)
+    ):
+        raise RuntimeError("canonical OWNER worker policy mismatch")
+    if (
+        payload.get("restore_intent", {}).get("factory_on_authorized") is not False
+        or payload.get("restore_intent", {}).get("runtime_flag_upgrade_authorized")
+        is not False
+        or payload.get("explicit_exclusions", {}).get("hold_release_now") is not False
+    ):
+        raise RuntimeError(
+            "preparation decision semantics changed; it must remain non-runtime authority"
+        )
+
+    commit_spec = f"{CANONICAL_OWNER_DECISION_COMMIT}^{{commit}}"
+    blob_spec = (
+        f"{CANONICAL_OWNER_DECISION_COMMIT}:"
+        f"{CANONICAL_OWNER_DECISION_RELATIVE_PATH.as_posix()}"
+    )
+    try:
+        provenance = subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", commit_spec, blob_spec],
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+            timeout=15,
+        )
+    except (OSError, subprocess.SubprocessError, UnicodeError) as exc:
+        raise RuntimeError(f"canonical OWNER Git provenance cannot be verified: {exc}") from exc
+    resolved = [line.strip().lower() for line in provenance.stdout.splitlines() if line.strip()]
+    expected_provenance = [
+        CANONICAL_OWNER_DECISION_COMMIT,
+        CANONICAL_OWNER_DECISION_BLOB,
+    ]
+    if provenance.returncode != 0 or resolved != expected_provenance:
+        raise RuntimeError(
+            "canonical OWNER Git provenance mismatch: "
+            f"expected={expected_provenance!r} actual={resolved!r} "
+            f"stderr={provenance.stderr.strip()!r}"
+        )
+    return payload
+
+
+def _same_path(left: Path, right: Path) -> bool:
+    return os.path.normcase(str(left.resolve(strict=False))) == os.path.normcase(
+        str(right.resolve(strict=False))
+    )
+
+
+def _require_canonical_restart_release_paths(
+    db: Path, factory_off_flag: Path, lock_path: Path
+) -> None:
+    mismatches: list[str] = []
+    for label, actual, expected in (
+        ("db", db, DEFAULT_DB),
+        ("factory_off_flag", factory_off_flag, DEFAULT_FACTORY_OFF),
+        ("mutation_lock", lock_path, DEFAULT_MUTATION_LOCK),
+    ):
+        if not _same_path(Path(actual), expected):
+            mismatches.append(f"{label}={actual!s} expected={expected!s}")
+    if mismatches:
+        raise RuntimeError(
+            "release-on-restart apply is restricted to canonical production paths: "
+            + "; ".join(mismatches)
+        )
+
+
+def _is_lock_actively_held(lock_path: Path) -> bool:
+    """Prove another process still owns a non-write-sharing Windows handle."""
+
+    if os.name != "nt":
+        return False
+    import ctypes
+    from ctypes import wintypes
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    create_file = kernel32.CreateFileW
+    create_file.argtypes = (
+        wintypes.LPCWSTR,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.LPVOID,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.HANDLE,
+    )
+    create_file.restype = wintypes.HANDLE
+    handle = create_file(
+        str(lock_path),
+        0x40000000,  # GENERIC_WRITE: conflicts with Factory_ON's FileShare.Read
+        0x00000001 | 0x00000002 | 0x00000004,
+        None,
+        3,  # OPEN_EXISTING
+        0x00000080,
+        None,
+    )
+    invalid_handle = ctypes.c_void_p(-1).value
+    if handle == invalid_handle:
+        error = ctypes.get_last_error()
+        if error == 32:  # ERROR_SHARING_VIOLATION
+            return True
+        raise RuntimeError(
+            f"canonical Factory_ON lock liveness probe failed: winerror={error}"
+        )
+    close_handle = kernel32.CloseHandle
+    close_handle.argtypes = (wintypes.HANDLE,)
+    close_handle.restype = wintypes.BOOL
+    close_handle(handle)
+    return False
+
+
+def _windows_command_line_args(command_line: str) -> list[str]:
+    if os.name != "nt" or not command_line.strip():
+        raise RuntimeError("canonical Factory_ON parent command line is unavailable")
+    import ctypes
+    from ctypes import wintypes
+
+    shell32 = ctypes.WinDLL("shell32", use_last_error=True)
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    command_line_to_argv = shell32.CommandLineToArgvW
+    command_line_to_argv.argtypes = (
+        wintypes.LPCWSTR,
+        ctypes.POINTER(ctypes.c_int),
+    )
+    command_line_to_argv.restype = ctypes.POINTER(wintypes.LPWSTR)
+    local_free = kernel32.LocalFree
+    local_free.argtypes = (wintypes.HLOCAL,)
+    local_free.restype = wintypes.HLOCAL
+    argc = ctypes.c_int()
+    argv = command_line_to_argv(command_line, ctypes.byref(argc))
+    if not argv:
+        raise RuntimeError("canonical Factory_ON parent command line cannot be tokenized")
+    try:
+        return [argv[index] for index in range(argc.value)]
+    finally:
+        local_free(argv)
+
+
+def _query_windows_process_identity(pid: int) -> dict[str, Any]:
+    if os.name != "nt" or pid <= 0:
+        raise RuntimeError("canonical Factory_ON parent identity requires Windows and a live PID")
+    probe = (
+        "$ErrorActionPreference='Stop';"
+        f"$c=Get-CimInstance Win32_Process -Filter \"ProcessId={pid}\";"
+        "if($null -eq $c){throw 'missing process'};"
+        f"$p=Get-Process -Id {pid} -ErrorAction Stop;"
+        "[ordered]@{"
+        "process_id=[int64]$c.ProcessId;"
+        "executable_path=[string]$c.ExecutablePath;"
+        "command_line=[string]$c.CommandLine;"
+        "session_id=[int]$c.SessionId;"
+        "process_started_at_utc=$p.StartTime.ToUniversalTime().ToString('o')"
+        "}|ConvertTo-Json -Compress"
+    )
+    try:
+        result = subprocess.run(
+            (
+                str(CANONICAL_FACTORY_ON_PROCESS_IMAGE),
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                probe,
+            ),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+            timeout=20,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError, UnicodeError) as exc:
+        raise RuntimeError(f"canonical Factory_ON parent process probe failed: {exc}") from exc
+    if result.returncode != 0:
+        raise RuntimeError(
+            "canonical Factory_ON parent process probe failed: "
+            f"{result.stderr.strip()}"
+        )
+    try:
+        identity = json.loads(result.stdout)
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise RuntimeError("canonical Factory_ON parent process probe returned invalid JSON") from exc
+    if not isinstance(identity, dict):
+        raise RuntimeError("canonical Factory_ON parent process identity is not an object")
+    return identity
+
+
+def _parse_lock_utc(value: Any, *, label: str) -> dt.datetime:
+    if not isinstance(value, str):
+        raise RuntimeError(f"canonical Factory_ON {label} is missing")
+    try:
+        parsed = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise RuntimeError(f"canonical Factory_ON {label} is invalid") from exc
+    if parsed.tzinfo is None:
+        raise RuntimeError(f"canonical Factory_ON {label} is not timezone-aware")
+    return parsed.astimezone(dt.UTC)
+
+
+def _windows_process_session_id(pid: int) -> int:
+    if os.name != "nt":
+        raise RuntimeError("Windows session validation is unavailable")
+    import ctypes
+    from ctypes import wintypes
+
+    session_id = wintypes.DWORD()
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    process_id_to_session = kernel32.ProcessIdToSessionId
+    process_id_to_session.argtypes = (wintypes.DWORD, ctypes.POINTER(wintypes.DWORD))
+    process_id_to_session.restype = wintypes.BOOL
+    if not process_id_to_session(int(pid), ctypes.byref(session_id)):
+        raise RuntimeError(f"cannot resolve Windows session for PID {pid}")
+    return int(session_id.value)
+
+
+def _parent_handle_targets_lock(
+    parent_pid: int, parent_handle_value: int, lock_path: Path
+) -> bool:
+    """Duplicate the claimed parent handle and compare its Windows file ID."""
+
+    if os.name != "nt" or parent_pid <= 0 or parent_handle_value <= 0:
+        return False
+    import ctypes
+    from ctypes import wintypes
+
+    class ByHandleFileInformation(ctypes.Structure):
+        _fields_ = [
+            ("file_attributes", wintypes.DWORD),
+            ("creation_time", wintypes.FILETIME),
+            ("last_access_time", wintypes.FILETIME),
+            ("last_write_time", wintypes.FILETIME),
+            ("volume_serial_number", wintypes.DWORD),
+            ("file_size_high", wintypes.DWORD),
+            ("file_size_low", wintypes.DWORD),
+            ("number_of_links", wintypes.DWORD),
+            ("file_index_high", wintypes.DWORD),
+            ("file_index_low", wintypes.DWORD),
+        ]
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    open_process = kernel32.OpenProcess
+    open_process.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD)
+    open_process.restype = wintypes.HANDLE
+    duplicate_handle = kernel32.DuplicateHandle
+    duplicate_handle.argtypes = (
+        wintypes.HANDLE,
+        wintypes.HANDLE,
+        wintypes.HANDLE,
+        ctypes.POINTER(wintypes.HANDLE),
+        wintypes.DWORD,
+        wintypes.BOOL,
+        wintypes.DWORD,
+    )
+    duplicate_handle.restype = wintypes.BOOL
+    get_current_process = kernel32.GetCurrentProcess
+    get_current_process.argtypes = ()
+    get_current_process.restype = wintypes.HANDLE
+    get_file_information = kernel32.GetFileInformationByHandle
+    get_file_information.argtypes = (
+        wintypes.HANDLE,
+        ctypes.POINTER(ByHandleFileInformation),
+    )
+    get_file_information.restype = wintypes.BOOL
+    close_handle = kernel32.CloseHandle
+    close_handle.argtypes = (wintypes.HANDLE,)
+    close_handle.restype = wintypes.BOOL
+    process = open_process(0x0040, False, int(parent_pid))  # PROCESS_DUP_HANDLE
+    if not process:
+        return False
+    duplicated = wintypes.HANDLE()
+    path_handle = wintypes.HANDLE()
+    try:
+        if not duplicate_handle(
+            process,
+            wintypes.HANDLE(parent_handle_value),
+            get_current_process(),
+            ctypes.byref(duplicated),
+            0,
+            False,
+            0x00000002,  # DUPLICATE_SAME_ACCESS
+        ):
+            return False
+        create_file = kernel32.CreateFileW
+        create_file.argtypes = (
+            wintypes.LPCWSTR,
+            wintypes.DWORD,
+            wintypes.DWORD,
+            wintypes.LPVOID,
+            wintypes.DWORD,
+            wintypes.DWORD,
+            wintypes.HANDLE,
+        )
+        create_file.restype = wintypes.HANDLE
+        path_handle = create_file(
+            str(lock_path),
+            0x80000000,
+            0x00000001 | 0x00000002 | 0x00000004,
+            None,
+            3,
+            0x00000080,
+            None,
+        )
+        if path_handle == ctypes.c_void_p(-1).value:
+            return False
+        duplicated_info = ByHandleFileInformation()
+        path_info = ByHandleFileInformation()
+        if not get_file_information(
+            duplicated, ctypes.byref(duplicated_info)
+        ) or not get_file_information(
+            path_handle, ctypes.byref(path_info)
+        ):
+            return False
+        return (
+            duplicated_info.volume_serial_number,
+            duplicated_info.file_index_high,
+            duplicated_info.file_index_low,
+        ) == (
+            path_info.volume_serial_number,
+            path_info.file_index_high,
+            path_info.file_index_low,
+        )
+    finally:
+        if duplicated:
+            close_handle(duplicated)
+        if path_handle and path_handle != ctypes.c_void_p(-1).value:
+            close_handle(path_handle)
+        close_handle(process)
+
+
+def _validate_canonical_factory_on_lock(
     lock_path: Path,
     *,
-    expected_owner_pid: int,
-    expected_owner: str,
     expected_nonce: str,
+    runtime_authorization: dict[str, Any],
 ) -> dict[str, Any]:
-    """Authenticate a live lock held by the coordinating Factory_ON process.
+    """Authenticate the live parent-held lock created by canonical Factory_ON."""
 
-    Factory_ON opens the lock with read sharing only.  The nonce prevents this
-    narrowly scoped bypass from turning into a generic `--ignore-lock` switch.
-    """
-    if expected_owner_pid <= 0 or not expected_owner.strip() or not expected_nonce.strip():
-        raise RuntimeError("held mutation lock identity is incomplete")
+    if not expected_nonce.strip():
+        raise RuntimeError("canonical Factory_ON lock nonce is missing")
     try:
-        payload = json.loads(lock_path.read_text(encoding="utf-8-sig"))
+        payload = json.loads(
+            lock_path.read_text(encoding="utf-8-sig"),
+            object_pairs_hook=_reject_duplicate_json_keys,
+        )
     except Exception as exc:
-        raise RuntimeError(f"held mutation lock cannot be authenticated: {lock_path}: {exc}") from exc
+        raise RuntimeError(
+            f"canonical Factory_ON lock cannot be authenticated: {lock_path}: {exc}"
+        ) from exc
+    factory_source = runtime_authorization.get("source_bindings", {}).get("factory_on", {})
     expected = {
-        "pid": int(expected_owner_pid),
-        "owner": expected_owner,
+        "pid": os.getppid(),
+        "owner": FACTORY_ON_LOCK_OWNER,
         "nonce": expected_nonce,
+        "process_image": str(CANONICAL_FACTORY_ON_PROCESS_IMAGE),
+        "factory_on_path": str(CANONICAL_FACTORY_ON_PATH),
+        "owner_decision_sha256": CANONICAL_OWNER_DECISION_SHA256,
+        "owner_decision_commit": CANONICAL_OWNER_DECISION_COMMIT,
+        "owner_decision_blob": CANONICAL_OWNER_DECISION_BLOB,
+        "restart_hold_ids": list(CANONICAL_RESTART_HOLD_IDS),
+        "runtime_decision_id": runtime_authorization.get("decision_id"),
+        "runtime_activation_nonce": runtime_authorization.get("activation_nonce"),
+        "runtime_decision_sha256": runtime_authorization.get("decision_sha256"),
+        "runtime_decision_commit": runtime_authorization.get("decision_git_commit"),
+        "runtime_decision_blob": runtime_authorization.get("decision_git_blob"),
+        "factory_on_source_sha256": factory_source.get("sha256"),
+        "factory_on_source_commit": factory_source.get("git_commit"),
+        "factory_on_source_blob": factory_source.get("git_blob"),
+        "factory_off_flag_sha256": runtime_authorization.get(
+            "factory_off_flag_sha256"
+        ),
+        "factory_off_request_path": str(DEFAULT_FACTORY_OFF_REQUEST),
+        "task_enabled_before_sha256": runtime_authorization.get(
+            "task_enabled_before_sha256"
+        ),
     }
     actual = {key: payload.get(key) for key in expected}
     if actual != expected:
-        raise RuntimeError(f"held mutation lock identity mismatch: expected={expected!r} actual={actual!r}")
+        raise RuntimeError(
+            "canonical Factory_ON lock identity mismatch: "
+            f"expected={expected!r} actual={actual!r}"
+        )
+    parent_pid = os.getppid()
+    identity = _query_windows_process_identity(parent_pid)
+    if int(identity.get("process_id", -1)) != parent_pid:
+        raise RuntimeError("canonical Factory_ON live parent PID mismatch")
+    actual_image = Path(str(identity.get("executable_path") or ""))
+    if not _same_path(actual_image, CANONICAL_FACTORY_ON_PROCESS_IMAGE):
+        raise RuntimeError(
+            "canonical Factory_ON parent image mismatch: "
+            f"actual={actual_image} expected={CANONICAL_FACTORY_ON_PROCESS_IMAGE}"
+        )
+    argv = _windows_command_line_args(str(identity.get("command_line") or ""))
+    canonical_argv = [
+        str(CANONICAL_FACTORY_ON_PROCESS_IMAGE),
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        str(CANONICAL_FACTORY_ON_PATH),
+        "-CanonicalRuntimeHost",
+    ]
+    allowed_argv = (canonical_argv, canonical_argv + ["-NoPause"])
+    folded_argv = [item.casefold() for item in argv]
+    if folded_argv not in ([item.casefold() for item in allowed] for allowed in allowed_argv):
+        raise RuntimeError(
+            "canonical Factory_ON parent argv mismatch; exact -File host required and "
+            "-Command/-EncodedCommand/extras are forbidden"
+        )
+    session_id = identity.get("session_id")
+    if (
+        not isinstance(payload.get("session_id"), int)
+        or int(session_id) != payload["session_id"]
+        or _windows_process_session_id(os.getpid()) != payload["session_id"]
+    ):
+        raise RuntimeError("canonical Factory_ON parent/child session identity mismatch")
+    process_started = _parse_lock_utc(
+        identity.get("process_started_at_utc"), label="live parent start time"
+    )
+    recorded_process_started = _parse_lock_utc(
+        payload.get("process_started_at_utc"), label="recorded parent start time"
+    )
+    lock_created = _parse_lock_utc(payload.get("created_at"), label="lock creation time")
+    now = dt.datetime.now(dt.UTC)
+    if abs((process_started - recorded_process_started).total_seconds()) > 1:
+        raise RuntimeError("canonical Factory_ON recorded parent start time mismatch")
+    if lock_created < process_started or lock_created > now + dt.timedelta(seconds=5):
+        raise RuntimeError("canonical Factory_ON lock creation time is inconsistent")
+    if now - lock_created > dt.timedelta(minutes=30):
+        raise RuntimeError("canonical Factory_ON lock is stale")
+    if not _is_lock_actively_held(lock_path):
+        raise RuntimeError(
+            "canonical Factory_ON lock is not actively held by the parent process"
+        )
+    handle_value = payload.get("lock_handle_value")
+    if (
+        not isinstance(handle_value, int)
+        or not _parent_handle_targets_lock(parent_pid, handle_value, lock_path)
+    ):
+        raise RuntimeError(
+            "canonical Factory_ON parent handle does not identify the mutation-lock file"
+        )
+    expected_disabled_sha = payload.get("disabled_terminals_sha256")
+    if (
+        not isinstance(expected_disabled_sha, str)
+        or re.fullmatch(r"[0-9a-f]{64}", expected_disabled_sha) is None
+    ):
+        raise RuntimeError("canonical Factory_ON lock lacks disabled-terminal SHA-256")
+    try:
+        disabled_raw = DEFAULT_DISABLED_TERMINALS.read_bytes()
+        disabled_text = disabled_raw.decode("utf-8-sig")
+    except (OSError, UnicodeError) as exc:
+        raise RuntimeError(
+            f"canonical disabled-terminal policy cannot be verified: {exc}"
+        ) from exc
+    actual_disabled_sha = hashlib.sha256(disabled_raw).hexdigest()
+    disabled_rows = tuple(
+        line.strip().upper()
+        for line in disabled_text.splitlines()
+        if line.strip()
+    )
+    if actual_disabled_sha != expected_disabled_sha or disabled_rows != ("T5",):
+        raise RuntimeError(
+            "canonical disabled-terminal policy changed under Factory_ON lock: "
+            f"expected_sha={expected_disabled_sha} actual_sha={actual_disabled_sha} "
+            f"rows={disabled_rows!r}"
+        )
     return payload
 
 
@@ -551,6 +1111,182 @@ def apply_manifest(
         }
 
 
+def _active_restart_hold_rows(conn: sqlite3.Connection) -> list[sqlite3.Row]:
+    try:
+        return conn.execute(
+            "SELECT * FROM work_item_holds "
+            "WHERE active=1 AND release_on_restart=1 ORDER BY work_item_id"
+        ).fetchall()
+    except sqlite3.OperationalError as exc:
+        raise RuntimeError("active release-on-restart holds cannot be read") from exc
+
+
+def _require_no_factory_off_intent(
+    factory_off_flag: Path, factory_off_request: Path
+) -> None:
+    present: list[str] = []
+    for label, path in (
+        ("FACTORY_OFF.flag", factory_off_flag),
+        ("FACTORY_OFF_REQUEST.flag", factory_off_request),
+    ):
+        try:
+            os.lstat(path)
+        except FileNotFoundError:
+            continue
+        except OSError as exc:
+            raise RuntimeError(f"{label} absence cannot be proven: {exc}") from exc
+        present.append(str(path))
+    if present:
+        raise RuntimeError(
+            "OFF wins: restart-hold release refused because a Factory OFF intent "
+            f"is present: {present!r}"
+        )
+
+
+def _require_exact_restart_hold_set(
+    rows: Sequence[sqlite3.Row], expected_work_item_ids: Sequence[str]
+) -> None:
+    actual_work_item_ids = tuple(str(row["work_item_id"]) for row in rows)
+    actual_set = set(actual_work_item_ids)
+    expected_set = set(expected_work_item_ids)
+    missing = sorted(expected_set - actual_set)
+    extra = sorted(actual_set - expected_set)
+    if (
+        missing
+        or extra
+        or len(actual_work_item_ids) != len(actual_set)
+        or len(actual_work_item_ids) != len(expected_work_item_ids)
+    ):
+        raise RuntimeError(
+            "release-on-restart exact-set mismatch: "
+            f"missing=[{','.join(missing)}] extra=[{','.join(extra)}]"
+        )
+
+
+def _apply_restart_hold_release_transaction(
+    db: Path,
+    *,
+    release_note: str,
+    runtime_authorization: dict[str, Any],
+    factory_off_flag: Path | None = None,
+    factory_off_request: Path | None = None,
+) -> dict[str, Any]:
+    expected_ids = tuple(sorted(CANONICAL_RESTART_HOLD_IDS))
+    activation_nonce = runtime_authorization.get("activation_nonce")
+    decision_id = runtime_authorization.get("decision_id")
+    decision_sha256 = runtime_authorization.get("decision_sha256")
+    if not all(isinstance(value, str) and value for value in (
+        activation_nonce,
+        decision_id,
+        decision_sha256,
+    )):
+        raise RuntimeError("runtime activation consumption identity is incomplete")
+    with connect_rw(db) as conn:
+        try:
+            if factory_off_flag is not None and factory_off_request is not None:
+                _require_no_factory_off_intent(
+                    factory_off_flag, factory_off_request
+                )
+            conn.execute("BEGIN IMMEDIATE")
+            if factory_off_flag is not None and factory_off_request is not None:
+                _require_no_factory_off_intent(
+                    factory_off_flag, factory_off_request
+                )
+            rows = _active_restart_hold_rows(conn)
+            _require_exact_restart_hold_set(rows, expected_ids)
+            now = utc_now()
+            conn.execute(
+                """CREATE TABLE IF NOT EXISTS factory_runtime_activation_consumptions (
+                    activation_nonce TEXT PRIMARY KEY,
+                    decision_id TEXT NOT NULL,
+                    decision_sha256 TEXT NOT NULL,
+                    consumed_at_utc TEXT NOT NULL,
+                    released_hold_count INTEGER NOT NULL CHECK(released_hold_count=7)
+                )"""
+            )
+            conn.execute(
+                """CREATE TRIGGER IF NOT EXISTS trg_factory_runtime_activation_no_update
+                BEFORE UPDATE ON factory_runtime_activation_consumptions
+                BEGIN SELECT RAISE(ABORT, 'factory runtime activation consumption is append-only'); END"""
+            )
+            conn.execute(
+                """CREATE TRIGGER IF NOT EXISTS trg_factory_runtime_activation_no_delete
+                BEFORE DELETE ON factory_runtime_activation_consumptions
+                BEGIN SELECT RAISE(ABORT, 'factory runtime activation consumption is append-only'); END
+                """
+            )
+            conn.execute(
+                """
+                INSERT INTO factory_runtime_activation_consumptions(
+                    activation_nonce, decision_id, decision_sha256,
+                    consumed_at_utc, released_hold_count
+                ) VALUES (?, ?, ?, ?, 7)
+                """,
+                (activation_nonce, decision_id, decision_sha256, now),
+            )
+            for row in rows:
+                key = f"restart-release:{row['work_item_id']}:{row['created_at']}"
+                cursor = conn.execute(
+                    "UPDATE work_item_holds "
+                    "SET active=0, updated_at=?, released_at=?, release_note=? "
+                    "WHERE work_item_id=? AND active=1 AND release_on_restart=1",
+                    (now, now, release_note, row["work_item_id"]),
+                )
+                if cursor.rowcount != 1:
+                    raise RuntimeError(
+                        "release-on-restart CAS failed for "
+                        f"work item {row['work_item_id']}: rowcount={cursor.rowcount}"
+                    )
+                conn.execute(
+                    """
+                    INSERT INTO work_item_transition_ledger(
+                        idempotency_key, ts, work_item_id, action, reason, run_id, detail_json
+                    ) VALUES (?, ?, ?, 'release_hold', ?, 'coordinated_restart', '{}')
+                    """,
+                    (key, now, row["work_item_id"], release_note),
+                )
+                conn.execute(
+                    "INSERT INTO events(ts, entity_type, entity_id, event, detail_json) "
+                    "VALUES (?, 'work_item', ?, 'maintenance_hold_released', ?)",
+                    (
+                        now,
+                        row["work_item_id"],
+                        json.dumps({"release_note": release_note}),
+                    ),
+                )
+            conn.commit()
+        except BaseException:
+            conn.rollback()
+            raise
+    return {
+        "mutation_committed": True,
+        "committed_at_utc": now,
+        "runtime_activation_nonce_consumed": activation_nonce,
+        "released": [row["work_item_id"] for row in rows],
+    }
+
+
+def _collect_restart_release_post_commit_evidence(db: Path) -> dict[str, Any]:
+    """Collect best-effort evidence without turning a commit into a false failure."""
+
+    evidence: dict[str, Any] = {}
+    errors: list[str] = []
+    probes = (
+        ("wal_checkpoint", lambda: checkpoint_wal(db)),
+        ("post_db_sha256", lambda: sha256_file(db)),
+        ("post_db_state_sha256", lambda: sqlite_state_sha256(db)),
+    )
+    for label, probe in probes:
+        try:
+            evidence[label] = probe()
+        except BaseException as exc:
+            evidence[label] = None
+            errors.append(f"{label}: {type(exc).__name__}: {exc}")
+    evidence["status"] = "PASS" if not errors else "FAILED_AFTER_COMMIT"
+    evidence["errors"] = errors
+    return evidence
+
+
 def release_restart_holds(
     db: Path,
     *,
@@ -558,88 +1294,71 @@ def release_restart_holds(
     expected_db_sha256: str | None,
     apply: bool,
     release_note: str,
-    mutation_lock_path: Path | None = None,
-    held_lock_owner_pid: int | None = None,
-    held_lock_owner: str | None = None,
-    held_lock_nonce: str | None = None,
+    factory_on_lock_nonce: str | None = None,
 ) -> dict[str, Any]:
-    lock_path = mutation_lock_path or path_for_factory_flag(factory_off_flag)
+    _validate_canonical_restart_owner_decision()
+    expected_ids = tuple(sorted(CANONICAL_RESTART_HOLD_IDS))
+    lock_path = path_for_factory_flag(factory_off_flag)
     if not apply:
-        if factory_off_flag.exists():
-            raise RuntimeError("release-on-restart is forbidden while FACTORY_OFF.flag exists")
+        _require_no_factory_off_intent(
+            factory_off_flag, DEFAULT_FACTORY_OFF_REQUEST
+        )
         if expected_db_sha256 and sha256_file(db).lower() != expected_db_sha256.lower():
             raise RuntimeError("DB SHA-256 mismatch")
         with connect_ro(db) as conn:
-            try:
-                rows = conn.execute(
-                    "SELECT * FROM work_item_holds WHERE active=1 AND release_on_restart=1 ORDER BY work_item_id"
-                ).fetchall()
-            except sqlite3.OperationalError:
-                rows = []
+            rows = _active_restart_hold_rows(conn)
+            _require_exact_restart_hold_set(rows, expected_ids)
         return {
             "mode": "dry_run",
             "release_count": len(rows),
             "work_item_ids": [row["work_item_id"] for row in rows],
+            "expected_work_item_ids": list(expected_ids),
+            "owner_decision_sha256": CANONICAL_OWNER_DECISION_SHA256,
+            "owner_decision_commit": CANONICAL_OWNER_DECISION_COMMIT,
+            "owner_decision_blob": CANONICAL_OWNER_DECISION_BLOB,
         }
 
-    if held_lock_owner_pid is None:
-        lock_context: Any = FactoryMutationLock(
-            lock_path, owner="maintenance_control.release_restart_holds"
-        )
-        lock_mode = "acquired"
-    else:
-        _validate_held_mutation_lock(
-            lock_path,
-            expected_owner_pid=held_lock_owner_pid,
-            expected_owner=held_lock_owner or "",
-            expected_nonce=held_lock_nonce or "",
-        )
-        lock_context = contextlib.nullcontext()
-        lock_mode = "authenticated_factory_on_lock"
+    try:
+        runtime_authorization = validate_runtime_activation_decision()
+    except RuntimeActivationError as exc:
+        raise RuntimeError(
+            f"release-on-restart lacks fresh canonical OWNER runtime authority: {exc}"
+        ) from exc
+    _require_canonical_restart_release_paths(db, factory_off_flag, lock_path)
+    _validate_canonical_factory_on_lock(
+        lock_path,
+        expected_nonce=factory_on_lock_nonce or "",
+        runtime_authorization=runtime_authorization,
+    )
+    _require_no_factory_off_intent(
+        factory_off_flag, DEFAULT_FACTORY_OFF_REQUEST
+    )
+    if expected_db_sha256 and sha256_file(db).lower() != expected_db_sha256.lower():
+        raise RuntimeError("DB SHA-256 mismatch")
 
-    with lock_context:
-        if factory_off_flag.exists():
-            raise RuntimeError("release-on-restart is forbidden while FACTORY_OFF.flag exists")
-        if expected_db_sha256 and sha256_file(db).lower() != expected_db_sha256.lower():
-            raise RuntimeError("DB SHA-256 mismatch")
-        with connect_rw(db) as conn:
-            try:
-                rows = conn.execute(
-                    "SELECT * FROM work_item_holds WHERE active=1 AND release_on_restart=1 ORDER BY work_item_id"
-                ).fetchall()
-            except sqlite3.OperationalError:
-                rows = []
-            now = utc_now()
-            conn.execute("BEGIN IMMEDIATE")
-            for row in rows:
-                key = f"restart-release:{row['work_item_id']}:{row['created_at']}"
-                conn.execute(
-                    "UPDATE work_item_holds SET active=0, updated_at=?, released_at=?, release_note=? WHERE work_item_id=? AND active=1",
-                    (now, now, release_note, row["work_item_id"]),
-                )
-                conn.execute(
-                    """
-                    INSERT OR IGNORE INTO work_item_transition_ledger(
-                        idempotency_key, ts, work_item_id, action, reason, run_id, detail_json
-                    ) VALUES (?, ?, ?, 'release_hold', ?, 'coordinated_restart', '{}')
-                    """,
-                    (key, now, row["work_item_id"], release_note),
-                )
-                conn.execute(
-                    "INSERT INTO events(ts, entity_type, entity_id, event, detail_json) VALUES (?, 'work_item', ?, 'maintenance_hold_released', ?)",
-                    (now, row["work_item_id"], json.dumps({"release_note": release_note})),
-                )
-            conn.commit()
-        wal_checkpoint = checkpoint_wal(db)
-        return {
-            "mode": "apply",
-            "released": [row["work_item_id"] for row in rows],
-            "post_db_sha256": sha256_file(db),
-            "post_db_state_sha256": sqlite_state_sha256(db),
-            "wal_checkpoint": wal_checkpoint,
-            "mutation_lock_path": str(lock_path),
-            "mutation_lock_mode": lock_mode,
-        }
+    committed = _apply_restart_hold_release_transaction(
+        db,
+        release_note=release_note,
+        runtime_authorization=runtime_authorization,
+        factory_off_flag=factory_off_flag,
+        factory_off_request=DEFAULT_FACTORY_OFF_REQUEST,
+    )
+    post_commit_evidence = _collect_restart_release_post_commit_evidence(db)
+    return {
+        "mode": "apply",
+        **committed,
+        "expected_work_item_ids": list(expected_ids),
+        "owner_decision_sha256": CANONICAL_OWNER_DECISION_SHA256,
+        "owner_decision_commit": CANONICAL_OWNER_DECISION_COMMIT,
+        "owner_decision_blob": CANONICAL_OWNER_DECISION_BLOB,
+        "runtime_decision_id": runtime_authorization["decision_id"],
+        "runtime_decision_sha256": runtime_authorization["decision_sha256"],
+        "runtime_decision_commit": runtime_authorization["decision_git_commit"],
+        "runtime_decision_blob": runtime_authorization["decision_git_blob"],
+        "post_commit_evidence": post_commit_evidence,
+        "mutation_lock_path": str(lock_path),
+        "mutation_lock_mode": "authenticated_live_factory_on_parent_lock",
+    }
 
 
 def release_completed_hold(
@@ -994,11 +1713,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     release = sub.add_parser("release-on-restart", help="Release only holds explicitly marked release_on_restart")
     release.add_argument("--apply", action="store_true")
+    release.add_argument(
+        "--factory-on-lock-nonce",
+        required=False,
+        help="Nonce of the live parent-held canonical Factory_ON mutation lock",
+    )
     release.add_argument("--expected-db-sha256")
     release.add_argument("--release-note", default="coordinated factory restart gate passed")
-    release.add_argument("--held-lock-owner-pid", type=int)
-    release.add_argument("--held-lock-owner")
-    release.add_argument("--held-lock-nonce")
 
     completed = sub.add_parser(
         "release-completed-hold",
@@ -1052,9 +1773,7 @@ def main(argv: list[str] | None = None) -> int:
             expected_db_sha256=args.expected_db_sha256,
             apply=args.apply,
             release_note=args.release_note,
-            held_lock_owner_pid=args.held_lock_owner_pid,
-            held_lock_owner=args.held_lock_owner,
-            held_lock_nonce=args.held_lock_nonce,
+            factory_on_lock_nonce=args.factory_on_lock_nonce,
         )
     elif args.command == "release-completed-hold":
         result = release_completed_hold(

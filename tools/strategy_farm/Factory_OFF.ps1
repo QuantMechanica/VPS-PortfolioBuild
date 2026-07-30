@@ -85,6 +85,7 @@ try {
     foreach ($requiredFunction in @(
         'Read-QmFactoryMutationLockSnapshot',
         'Get-QmFactoryMutationLockOwnerState',
+        'Remove-QmFileIfContentMatches',
         'Remove-QmFactoryMutationLockIfUnchanged',
         'Wait-QmFactoryMutationLockDrain'
     )) {
@@ -98,6 +99,7 @@ try {
 . (Join-Path $PSScriptRoot 'qm_tasks.manifest.ps1')
 
 $factoryOffFlagPath = 'D:\QM\strategy_farm\state\FACTORY_OFF.flag'
+$factoryOffRequestPath = 'D:\QM\strategy_farm\state\FACTORY_OFF_REQUEST.flag'
 $factoryMutationLockPath = 'D:\QM\strategy_farm\state\FACTORY_MUTATION.lock'
 $codexParallelPath = 'D:\QM\strategy_farm\state\codex_parallel.txt'
 $pythonExe = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe'
@@ -195,6 +197,152 @@ function Wait-FactoryMutationDrain([int]$TimeoutSeconds = 60) {
     return Wait-QmFactoryMutationLockDrain `
         -Path $factoryMutationLockPath `
         -TimeoutSeconds $TimeoutSeconds
+}
+
+function Write-QmFileCreateNew {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][byte[]]$Bytes
+    )
+    $parent = Split-Path -Parent $Path
+    New-Item -ItemType Directory -Path $parent -Force | Out-Null
+    $stream = $null
+    try {
+        $stream = [IO.File]::Open(
+            $Path, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::Read
+        )
+        $stream.Write($Bytes, 0, $Bytes.Length)
+        $stream.Flush($true)
+        return $true
+    } catch [IO.IOException] {
+        return $false
+    } finally {
+        if ($null -ne $stream) { $stream.Dispose() }
+    }
+}
+
+function Assert-EmergencyFactoryOffIntent {
+    # OFF-first cancellation is deliberately outside the shared mutation lock:
+    # even an invalid/fake/live stale lock may never prevent emergency OFF.
+    if ([string]::IsNullOrWhiteSpace([string]$script:factoryOffRequestNonce)) {
+        $script:factoryOffRequestNonce = [guid]::NewGuid().ToString('N')
+    }
+    $requestedAt = [datetime]::UtcNow.ToString('o')
+    $requestRecord = [ordered]@{
+        schema_version = 'qm.factory-off-request/v1'
+        state = 'OFF_REQUESTED'
+        request_nonce = $script:factoryOffRequestNonce
+        requested_at_utc = $requestedAt
+        pid = $PID
+    } | ConvertTo-Json -Compress
+    [byte[]]$requestBytes = [Text.Encoding]::UTF8.GetBytes($requestRecord)
+    [void](Write-QmFileCreateNew -Path $factoryOffRequestPath -Bytes $requestBytes)
+
+    if (-not (Test-Path -LiteralPath $factoryOffRequestPath -PathType Leaf)) {
+        throw 'FACTORY OFF emergency request marker could not be asserted before lock wait'
+    }
+    [byte[]]$actualRequestBytes = [IO.File]::ReadAllBytes($factoryOffRequestPath)
+    $script:factoryOffRequestRawBytesBase64 = [Convert]::ToBase64String($actualRequestBytes)
+
+    if (-not (Test-Path -LiteralPath $factoryOffFlagPath -PathType Leaf)) {
+        $minimalRecord = [ordered]@{
+            schema_version = 2
+            state = 'OFF_REQUESTED'
+            off_at = [datetime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
+            updated_at = [datetime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
+            request_nonce = $script:factoryOffRequestNonce
+        } | ConvertTo-Json -Depth 4
+        [byte[]]$minimalBytes = [Text.Encoding]::UTF8.GetBytes($minimalRecord)
+        [void](Write-QmFileCreateNew -Path $factoryOffFlagPath -Bytes $minimalBytes)
+    }
+    if (-not (Test-Path -LiteralPath $factoryOffFlagPath -PathType Leaf)) {
+        throw 'FACTORY OFF emergency main interlock could not be asserted before lock wait'
+    }
+}
+
+function Enter-FactoryOffSerializationLock([int]$TimeoutSeconds = 600) {
+    $deadline = [datetime]::UtcNow.AddSeconds($TimeoutSeconds)
+    while ($true) {
+        $lockStream = $null
+        try {
+            $lockStream = [System.IO.File]::Open(
+                $factoryMutationLockPath,
+                [System.IO.FileMode]::CreateNew,
+                [System.IO.FileAccess]::ReadWrite,
+                [System.IO.FileShare]::Read
+            )
+            $script:factoryOffSerializationLockNonce = [guid]::NewGuid().ToString('N')
+            $record = [ordered]@{
+                pid = $PID
+                owner = 'factory_off_transition'
+                nonce = $script:factoryOffSerializationLockNonce
+                created_at = [datetime]::UtcNow.ToString('o')
+                contract = 'off_wins_serialized_flag_publish/v1'
+            } | ConvertTo-Json -Compress
+            [byte[]]$bytes = [Text.Encoding]::UTF8.GetBytes($record)
+            $script:factoryOffSerializationLockRecordBytesBase64 = `
+                [Convert]::ToBase64String($bytes)
+            $lockStream.Write($bytes, 0, $bytes.Length)
+            $lockStream.Flush($true)
+            return $lockStream
+        } catch [System.IO.IOException] {
+            if ($null -ne $lockStream) { $lockStream.Dispose() }
+            if ([datetime]::UtcNow -ge $deadline) {
+                throw ("FACTORY OFF ABORTED: timed out waiting for the shared mutation lock; " +
+                    'the emergency OFF intent remains asserted')
+            }
+            [void](Wait-QmFactoryMutationLockDrain `
+                -Path $factoryMutationLockPath -TimeoutSeconds 1 -PollMilliseconds 100)
+        } catch {
+            if ($null -ne $lockStream) { $lockStream.Dispose() }
+            throw
+        }
+    }
+}
+
+function Assert-FactoryOffSerializationLockHeld([string]$Context) {
+    if ($null -eq $script:factoryOffSerializationLock -or
+        [string]::IsNullOrWhiteSpace([string]$script:factoryOffSerializationLockNonce) -or
+        -not (Test-Path -LiteralPath $factoryMutationLockPath -PathType Leaf)) {
+        throw "FACTORY OFF serialization lock is not held at $Context"
+    }
+    return $true
+}
+
+function Exit-FactoryOffSerializationLock([object]$LockStream) {
+    if ($null -eq $LockStream) { return $true }
+    $LockStream.Dispose()
+    return Remove-QmFactoryMutationLockIfUnchanged `
+        -Path $factoryMutationLockPath `
+        -ExpectedRawBytesBase64 $script:factoryOffSerializationLockRecordBytesBase64
+}
+
+function Assert-PublishedFactoryOffRecord {
+    param([Parameter(Mandatory = $true)][System.Collections.IDictionary]$ExpectedRecord)
+    if (-not (Test-Path -LiteralPath $factoryOffFlagPath -PathType Leaf)) {
+        throw 'published FACTORY_OFF.flag disappeared while Factory_OFF held the serialization lock'
+    }
+    try {
+        [byte[]]$raw = [IO.File]::ReadAllBytes($factoryOffFlagPath)
+        $record = ([Text.UTF8Encoding]::new($false, $true)).GetString($raw) |
+            ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        throw "published FACTORY_OFF.flag cannot be verified: $($_.Exception.Message)"
+    }
+    if ([int]$record.schema_version -ne 2 -or
+        [string]$record.state -cne [string]$ExpectedRecord.state) {
+        throw 'published FACTORY_OFF.flag schema/state differs from the serialized OFF intent'
+    }
+    $actualMap = ConvertTo-ExactTaskEnabledState `
+        -State $record.task_enabled_before `
+        -ExpectedTasks $QM_QUIESCENCE_TASKS `
+        -SourceLabel 'published FACTORY_OFF.flag'
+    foreach ($taskName in $QM_QUIESCENCE_TASKS) {
+        if ([bool]$actualMap[$taskName] -ne [bool]$ExpectedRecord.task_enabled_before[$taskName]) {
+            throw "published FACTORY_OFF.flag task map drifted at '$taskName'"
+        }
+    }
+    return Get-QmFileSha256 -Path $factoryOffFlagPath
 }
 
 function Wait-QuiescenceTaskDrain([int]$TimeoutSeconds = 600) {
@@ -382,6 +530,12 @@ function Write-Mnt046Evidence([System.Collections.IDictionary]$Evidence) {
     }
 }
 
+Assert-EmergencyFactoryOffIntent
+$script:factoryOffSerializationLock = Enter-FactoryOffSerializationLock -TimeoutSeconds 600
+$script:factoryOffSerializationLockIntentPublished = $false
+$script:factoryOffSerializationLockSafeToRelease = $false
+try {
+Assert-EmergencyFactoryOffIntent
 $existingOff = $null
 if (Test-Path -LiteralPath $factoryOffFlagPath) {
     try {
@@ -399,6 +553,12 @@ if ($null -ne $existingOff -and $null -ne $existingOff.codex_parallel_before) {
 }
 
 $taskEnabledBefore = [ordered]@{}
+$isEmergencyRequestState = (
+    $null -ne $existingOff -and
+    [int]$existingOff.schema_version -eq 2 -and
+    [string]$existingOff.state -ceq 'OFF_REQUESTED' -and
+    $null -eq $existingOff.task_enabled_before
+)
 $hasSavedTaskState = ($null -ne $existingOff -and $null -ne $existingOff.task_enabled_before)
 $restoreIntentAudit = $null
 if ($hasSavedTaskState) {
@@ -409,7 +569,7 @@ if ($hasSavedTaskState) {
         -State $existingOff.task_enabled_before `
         -ExpectedTasks $QM_QUIESCENCE_TASKS `
         -SourceLabel 'existing schema-v2 FACTORY_OFF.flag'
-} elseif ($null -ne $existingOff) {
+} elseif ($null -ne $existingOff -and -not $isEmergencyRequestState) {
     # Current Scheduled Task state is already post-OFF and cannot reconstruct
     # OWNER's pre-OFF enablement intent.  Legacy upgrade is therefore authorized
     # only by an exact, hash-bound OWNER manifest; otherwise stop before the
@@ -497,8 +657,9 @@ Write-Host '  QuantMechanica  -  FACTORY OFF' -ForegroundColor Yellow
 Write-Host '=====================================================' -ForegroundColor Yellow
 Write-Host ''
 
-# Interlock FIRST: every participating mutator checks this before acquiring the
-# global mutation lock.  OFF becomes final only after tasks/processes/lock drain.
+# The shared lock was acquired before task-state capture and is held through the
+# verified final OFF record.  Thus Factory_ON cannot delete an OFF intent that
+# this invocation publishes, and admitted writers drained before publication.
 if ($null -ne $restoreIntentAudit) {
     $currentLegacyFlagSha = Get-QmFileSha256 -Path $factoryOffFlagPath
     if (-not [string]::Equals(
@@ -520,6 +681,7 @@ if ($null -ne $restoreIntentAudit) {
     }
 }
 Write-FactoryOffRecord $offRecord
+$script:factoryOffSerializationLockIntentPublished = $true
 Set-Content -LiteralPath $codexParallelPath -Value '0' -Encoding ASCII
 Write-Host ("  interlock asserted : {0}" -f $factoryOffFlagPath)
 Write-Host ("  codex_parallel     : {0} -> 0" -f $codexParallelBefore)
@@ -544,7 +706,8 @@ foreach ($taskName in $offDisableTasks) {
 }
 
 Write-Host '  waiting for admitted autonomous writers/tasks to drain ...'
-$mutationDrainedBeforeCleanup = Wait-FactoryMutationDrain -TimeoutSeconds 600
+$mutationDrainedBeforeCleanup = Assert-FactoryOffSerializationLockHeld `
+    -Context 'pre-cleanup drain proof'
 $taskDrain = Wait-QuiescenceTaskDrain -TimeoutSeconds 600
 if (-not $mutationDrainedBeforeCleanup -or -not $taskDrain.drained) {
     Write-Host ("  quiescence drain incomplete: writer_lock={0} running_or_enabled=[{1}]" -f `
@@ -584,7 +747,8 @@ Start-Sleep -Seconds 2
 $terminalReap = @(Stop-EvidencedFactoryProcesses -EvidenceRecords $beforeProcessScan.terminal64 -ProcessClass terminal64)
 $testerReap = @(Stop-EvidencedFactoryProcesses -EvidenceRecords $beforeProcessScan.metatester64 -ProcessClass metatester64)
 
-$mutationDrained = Wait-FactoryMutationDrain -TimeoutSeconds 60
+$mutationDrained = Assert-FactoryOffSerializationLockHeld `
+    -Context 'final quiescence proof'
 # Bounded settling precedes the two distinct, consecutive null scans.
 Start-Sleep -Seconds 2
 $stableScanResult = Wait-FactoryStableNullScans -TimeoutSeconds 20 -IntervalSeconds 2
@@ -660,6 +824,15 @@ $offRecord['verification'] = [ordered]@{
     pacer_cleanup_output = $pacerCleanupOutput
 }
 Write-FactoryOffRecord $offRecord
+$finalFactoryOffSha256 = Assert-PublishedFactoryOffRecord -ExpectedRecord $offRecord
+$script:factoryOffSerializationLockSafeToRelease = $true
+$requestRemoved = Remove-QmFileIfContentMatches `
+    -Path $factoryOffRequestPath `
+    -ExpectedRawBytesBase64 $script:factoryOffRequestRawBytesBase64
+if (-not $requestRemoved -or (Test-Path -LiteralPath $factoryOffRequestPath)) {
+    throw ('FACTORY OFF final record is asserted, but the exact emergency request marker ' +
+        'could not be retired; marker remains fail-closed')
+}
 
 Write-Host ''
 if ($offSucceeded) {
@@ -677,3 +850,26 @@ Write-Host ''
 
 if (-not $NoPause) { Read-Host 'Press Enter to close' }
 if (-not $offSucceeded) { exit 1 }
+} finally {
+    $releaseSerializationLock = (
+        -not $script:factoryOffSerializationLockIntentPublished -or
+        $script:factoryOffSerializationLockSafeToRelease
+    )
+    if ($releaseSerializationLock) {
+        $releasedExactLock = Exit-FactoryOffSerializationLock `
+            -LockStream $script:factoryOffSerializationLock
+        if (-not $releasedExactLock) {
+            throw ('FACTORY OFF failed closed: exact serialization-lock release failed; ' +
+                'the lock is retained for OWNER inspection')
+        }
+    } elseif ($null -ne $script:factoryOffSerializationLock) {
+        # The OFF flag was published but could not be verified to completion.
+        # Close only our handle and retain the lock file fail-closed.
+        $script:factoryOffSerializationLock.Dispose()
+    }
+    $script:factoryOffSerializationLock = $null
+    $script:factoryOffSerializationLockNonce = $null
+    $script:factoryOffSerializationLockRecordBytesBase64 = $null
+    $script:factoryOffRequestNonce = $null
+    $script:factoryOffRequestRawBytesBase64 = $null
+}

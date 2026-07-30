@@ -299,7 +299,7 @@ def test_off_asserts_interlock_before_scheduler_or_process_mutation() -> None:
     main_start = source.index("Write-Host ''", source.index("$offRecord ="))
     interlock = source.index("Write-FactoryOffRecord $offRecord", main_start)
     disable_task = source.index("Disable-ScheduledTask", interlock)
-    drain = source.index("Wait-FactoryMutationDrain -TimeoutSeconds 600", disable_task)
+    drain = source.index("Assert-FactoryOffSerializationLockHeld", disable_task)
     stop_process = source.index(
         "Stop-EvidencedFactoryProcesses -EvidenceRecords $beforeProcessScan.phase_runners",
         interlock,
@@ -313,7 +313,7 @@ def test_off_asserts_interlock_before_scheduler_or_process_mutation() -> None:
 
 def test_on_requires_verified_off_and_repairs_only_after_release() -> None:
     source = FACTORY_ON.read_text(encoding="utf-8-sig")
-    release = source.index("Remove-Item -LiteralPath $factoryOffFlagPath")
+    release = source.index("Remove-BoundFactoryOffRecord")
     repair = source.index("    Invoke-RepairWithMutationLock", release)
     spawn = source.index("start_terminal_workers.py", repair)
     enable = source.index("Enable-ScheduledTask", repair)
@@ -323,7 +323,10 @@ def test_on_requires_verified_off_and_repairs_only_after_release() -> None:
     assert "OFF_RECOVERY_REQUIRED" in source
     assert "if ($taskName -in $QM_LIVE_TASKS" in source
     assert "Invoke-RestartHoldReleaseWithMutationLock" in source
-    assert "--held-lock-nonce $script:factoryMutationLockNonce" in source
+    assert "--factory-on-lock-nonce', $script:factoryMutationLockNonce" in source
+    assert "--held-lock-owner-pid" not in source
+    assert "--held-lock-owner" not in source
+    assert "--held-lock-nonce" not in source
     assert "T_Live/FTMO task state, live terminals and AutoTrading were not touched" in source
 
 

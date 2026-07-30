@@ -1,0 +1,131 @@
+{
+  "schema_version": "qm.dxz-repair-spec-binding-amendment/v1",
+  "artifact_type": "DXZ_12567_XAUUSD_D1_REPAIR_SPEC_BINDING_AMENDMENT",
+  "amendment_id": "DXZ-12567-BINDINGS-20260730-A1",
+  "packet_id": "DXZ-12567-XAUUSD-DWX-D1-20260716",
+  "scope": {
+    "ea_id": 12567,
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1"
+  },
+  "disposition": "BINDING_RECONCILIATION_ONLY",
+  "qualification_effect": "NONE_REMAINS_BLOCKED",
+  "runtime_mutation_performed": false,
+  "silent_rebinding": false,
+  "recorded_at_utc": "2026-07-30T07:02:23Z",
+  "supersedes": {
+    "path": "C:/QM/repo/docs/ops/evidence/dxz_12567_xauusd_d1_repair_spec_20260716.json",
+    "sha256": "214244ba32cb28b8ae3ef03777c05e4c8c703768e8fc4aa0df5d15a363826e32",
+    "bytes": 28045,
+    "git_commit": "7b36ff27f83f024bf1c43bb5537cc747f52b887a",
+    "git_blob_sha1": "ce23bfc68f9836aea46e5a45ed3bbc0fa615fda7"
+  },
+  "owner_decision": {
+    "path": "C:/QM/repo/docs/ops/evidence/2026-07-30_factory_preparation_owner_decision.json",
+    "sha256": "af8479fdc73163250f966014eca5c53224a4ae159426a07cf96c80a379c6edb2",
+    "bytes": 5484,
+    "decision_id": "FACTORY_PREPARATION_20260730_REPAIR_NO_WAIVER",
+    "git_commit": "7b36ff27f83f024bf1c43bb5537cc747f52b887a",
+    "git_blob_sha1": "6d36cf6682e317324a35bc8388042402b0f3e540"
+  },
+  "binding_changes": [
+    {
+      "id": "repo_ex5",
+      "reason": "Record the later repository pump build as an explicitly unqualified current observation without altering the immutable dated baseline.",
+      "before": {
+        "id": "repo_ex5",
+        "role": "UNQUALIFIED_REPOSITORY_BINARY",
+        "path": "C:/QM/repo/framework/EAs/QM5_12567_cum-rsi2-commodity/QM5_12567_cum-rsi2-commodity.ex5",
+        "sha256": "17e7faa9ef1800b204344b349e57024e3afb74d2cde494f07e63175ae9a7b870",
+        "bytes": 322806
+      },
+      "after": {
+        "id": "repo_ex5",
+        "role": "UNQUALIFIED_REPOSITORY_BINARY_CURRENT_OBSERVATION",
+        "path": "C:/QM/repo/framework/EAs/QM5_12567_cum-rsi2-commodity/QM5_12567_cum-rsi2-commodity.ex5",
+        "sha256": "353dddbb93c393dc4135d03f84ba203b6f8ab657ce5ebb5b14cb9f6d44893c85",
+        "bytes": 340748
+      }
+    },
+    {
+      "id": "repo_live_preset",
+      "reason": "Record the later build-metadata-bearing live preset while retaining its unqualified stale-risk role and the historical hash in before.",
+      "before": {
+        "id": "repo_live_preset",
+        "role": "UNQUALIFIED_STALE_RISK_ALTERNATIVE",
+        "path": "C:/QM/repo/framework/EAs/QM5_12567_cum-rsi2-commodity/sets/QM5_12567_cum-rsi2-commodity_XAUUSD.DWX_D1_live.set",
+        "sha256": "28fb3b1ee3a15c2b0c625703dbddcd94115ac05407eebff7e7232f50fb6e0ce1",
+        "bytes": 1468
+      },
+      "after": {
+        "id": "repo_live_preset",
+        "role": "UNQUALIFIED_STALE_RISK_ALTERNATIVE_CURRENT_OBSERVATION",
+        "path": "C:/QM/repo/framework/EAs/QM5_12567_cum-rsi2-commodity/sets/QM5_12567_cum-rsi2-commodity_XAUUSD.DWX_D1_live.set",
+        "sha256": "9c86a54d8b160e08b9e38e9996079dd389917943d4d458f9a7c52dc6f7a9b759",
+        "bytes": 1468
+      }
+    },
+    {
+      "id": "repo_backtest_preset",
+      "reason": "Record the later build-metadata-bearing fixed-risk preset as a non-qualifying diagnostic; the historical bytes remain in before.",
+      "before": {
+        "id": "repo_backtest_preset",
+        "role": "HISTORICAL_FIXED_RISK_DIAGNOSTIC",
+        "path": "C:/QM/repo/framework/EAs/QM5_12567_cum-rsi2-commodity/sets/QM5_12567_cum-rsi2-commodity_XAUUSD.DWX_D1_backtest.set",
+        "sha256": "0d6da981da6d4a6060232109bd8cad975af81824329092d05a3a7580766ccc3a",
+        "bytes": 951
+      },
+      "after": {
+        "id": "repo_backtest_preset",
+        "role": "HISTORICAL_FIXED_RISK_DIAGNOSTIC_CURRENT_OBSERVATION",
+        "path": "C:/QM/repo/framework/EAs/QM5_12567_cum-rsi2-commodity/sets/QM5_12567_cum-rsi2-commodity_XAUUSD.DWX_D1_backtest.set",
+        "sha256": "5e826eb3aa6d585f81dd36e6706f39131d0931b9e1963164c251ef5ed424dd97",
+        "bytes": 1040
+      }
+    },
+    {
+      "id": "deployed_preset_read_only",
+      "reason": "The active T_Live preset is intentionally absent; bind the byte-identical historical input in the read-only archive and perform no restore or deployment.",
+      "before": {
+        "id": "deployed_preset_read_only",
+        "role": "BASELINE_PRESET_READ_ONLY",
+        "path": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/slot3_XAUUSD_D1_QM5_12567_cum-rsi2-commodity_magic125670003_dxz23_live.set",
+        "sha256": "2936790068d32b8a930cb4a0402b1ee084ee5135155c8ef3089d65cc733b94ec",
+        "bytes": 1425
+      },
+      "after": {
+        "id": "deployed_preset_read_only",
+        "role": "HISTORICAL_ARCHIVED_BASELINE_PRESET_READ_ONLY",
+        "path": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/_archiv_alte_setfiles/slot3_XAUUSD_D1_QM5_12567_cum-rsi2-commodity_magic125670003_dxz23_live.set",
+        "sha256": "2936790068d32b8a930cb4a0402b1ee084ee5135155c8ef3089d65cc733b94ec",
+        "bytes": 1425
+      }
+    },
+    {
+      "id": "risk_sizer",
+      "reason": "Retain legitimate later W6 framework hardening and record its current bytes without treating the changed include closure as qualification evidence.",
+      "before": {
+        "id": "risk_sizer",
+        "role": "RISK_CONTRACT",
+        "path": "C:/QM/repo/framework/include/QM/QM_RiskSizer.mqh",
+        "sha256": "e75d7aaa48f3eae0d298ac67ba0db4404089f9b1abc7ea361fee7662c342fbed",
+        "bytes": 17737
+      },
+      "after": {
+        "id": "risk_sizer",
+        "role": "UNQUALIFIED_CURRENT_RISK_CONTRACT_OBSERVATION",
+        "path": "C:/QM/repo/framework/include/QM/QM_RiskSizer.mqh",
+        "sha256": "32c6eebb8ffc58656854bd0a34f2124d1d713c91525ac47f3ac62f68532a7575",
+        "bytes": 32938
+      }
+    }
+  ],
+  "open_strategy_decisions": [
+    "SOURCE_SEMANTICS_AND_CARD_V2",
+    "NEWS_POLICY",
+    "AS_LIVE_RISK_CONTRACT",
+    "SOURCE_OF_RECORD_BUILD",
+    "OUT_OF_BAND_OWNER_TRUST_ANCHOR"
+  ],
+  "amendment_payload_sha256": "671f679622cb1c76f2f9ccd159820ecca4d49c215f8e1524359513863e0d203b"
+}

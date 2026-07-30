@@ -29,6 +29,7 @@ except ImportError:  # pragma: no cover - qualification must fail closed
     Ed25519PublicKey = None  # type: ignore[assignment,misc]
 
 try:
+    from .dxz_binding_amendment import load_binding_amendment
     from .dxz_as_live_requal import (
         RequalError,
         load_execution_cost_evidence_manifest,
@@ -42,6 +43,7 @@ try:
     )
 except ImportError:  # pragma: no cover - direct script execution
     try:
+        from dxz_binding_amendment import load_binding_amendment  # type: ignore
         from dxz_as_live_requal import (  # type: ignore
             RequalError,
             load_execution_cost_evidence_manifest,
@@ -64,6 +66,58 @@ except ImportError:  # pragma: no cover - direct script execution
 
 
 SPEC_ARTIFACT = "DXZ_12567_XAUUSD_D1_REPAIR_SPEC"
+SPEC_AMENDMENT_ARTIFACT = "DXZ_12567_XAUUSD_D1_REPAIR_SPEC_BINDING_AMENDMENT"
+BINDING_AMENDMENT_AFTER = {
+    "repo_ex5": {
+        "id": "repo_ex5",
+        "role": "UNQUALIFIED_REPOSITORY_BINARY_CURRENT_OBSERVATION",
+        "path": "C:/QM/repo/framework/EAs/QM5_12567_cum-rsi2-commodity/QM5_12567_cum-rsi2-commodity.ex5",
+        "sha256": "353dddbb93c393dc4135d03f84ba203b6f8ab657ce5ebb5b14cb9f6d44893c85",
+        "bytes": 340748,
+    },
+    "repo_live_preset": {
+        "id": "repo_live_preset",
+        "role": "UNQUALIFIED_STALE_RISK_ALTERNATIVE_CURRENT_OBSERVATION",
+        "path": "C:/QM/repo/framework/EAs/QM5_12567_cum-rsi2-commodity/sets/QM5_12567_cum-rsi2-commodity_XAUUSD.DWX_D1_live.set",
+        "sha256": "9c86a54d8b160e08b9e38e9996079dd389917943d4d458f9a7c52dc6f7a9b759",
+        "bytes": 1468,
+    },
+    "repo_backtest_preset": {
+        "id": "repo_backtest_preset",
+        "role": "HISTORICAL_FIXED_RISK_DIAGNOSTIC_CURRENT_OBSERVATION",
+        "path": "C:/QM/repo/framework/EAs/QM5_12567_cum-rsi2-commodity/sets/QM5_12567_cum-rsi2-commodity_XAUUSD.DWX_D1_backtest.set",
+        "sha256": "5e826eb3aa6d585f81dd36e6706f39131d0931b9e1963164c251ef5ed424dd97",
+        "bytes": 1040,
+    },
+    "deployed_preset_read_only": {
+        "id": "deployed_preset_read_only",
+        "role": "HISTORICAL_ARCHIVED_BASELINE_PRESET_READ_ONLY",
+        "path": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/_archiv_alte_setfiles/slot3_XAUUSD_D1_QM5_12567_cum-rsi2-commodity_magic125670003_dxz23_live.set",
+        "sha256": "2936790068d32b8a930cb4a0402b1ee084ee5135155c8ef3089d65cc733b94ec",
+        "bytes": 1425,
+    },
+    "risk_sizer": {
+        "id": "risk_sizer",
+        "role": "UNQUALIFIED_CURRENT_RISK_CONTRACT_OBSERVATION",
+        "path": "C:/QM/repo/framework/include/QM/QM_RiskSizer.mqh",
+        "sha256": "32c6eebb8ffc58656854bd0a34f2124d1d713c91525ac47f3ac62f68532a7575",
+        "bytes": 32938,
+    },
+}
+BINDING_AMENDMENT_BASE = {
+    "path": "C:/QM/repo/docs/ops/evidence/dxz_12567_xauusd_d1_repair_spec_20260716.json",
+    "sha256": "214244ba32cb28b8ae3ef03777c05e4c8c703768e8fc4aa0df5d15a363826e32",
+    "bytes": 28045,
+    "git_commit": "7b36ff27f83f024bf1c43bb5537cc747f52b887a",
+    "git_blob_sha1": "ce23bfc68f9836aea46e5a45ed3bbc0fa615fda7",
+}
+BINDING_AMENDMENT_OPEN_DECISIONS = {
+    "SOURCE_SEMANTICS_AND_CARD_V2",
+    "NEWS_POLICY",
+    "AS_LIVE_RISK_CONTRACT",
+    "SOURCE_OF_RECORD_BUILD",
+    "OUT_OF_BAND_OWNER_TRUST_ANCHOR",
+}
 BUNDLE_ARTIFACT = "DXZ_12567_XAUUSD_D1_REQUAL_BUNDLE"
 RECEIPT_ARTIFACT = "DXZ_12567_XAUUSD_D1_SEGMENTED_RUN_RECEIPT"
 SEAL_ARTIFACT = "DXZ_12567_XAUUSD_D1_OWNER_SEAL"
@@ -675,13 +729,47 @@ def _validate_spec_payload(
 
 def validate_spec(spec_path: Path, *, verify_anchors: bool = True) -> dict[str, Any]:
     checks = Checks()
+    amendment: dict[str, Any] | None = None
     try:
         spec = _load_object(spec_path)
+        if spec.get("artifact_type") == SPEC_AMENDMENT_ARTIFACT:
+            spec, amendment = load_binding_amendment(
+                spec_path,
+                amendment_artifact_type=SPEC_AMENDMENT_ARTIFACT,
+                amendment_id="DXZ-12567-BINDINGS-20260730-A1",
+                base_artifact_type=SPEC_ARTIFACT,
+                packet_id=PACKET_ID,
+                binding_container=("anchor_files",),
+                required_change_ids={
+                    "repo_ex5",
+                    "repo_live_preset",
+                    "repo_backtest_preset",
+                    "deployed_preset_read_only",
+                    "risk_sizer",
+                },
+                expected_base_binding=BINDING_AMENDMENT_BASE,
+                expected_after_bindings=BINDING_AMENDMENT_AFTER,
+                expected_open_strategy_decisions=BINDING_AMENDMENT_OPEN_DECISIONS,
+                expected_scope={
+                    "ea_id": 12567,
+                    "symbol": "XAUUSD.DWX",
+                    "timeframe": "D1",
+                },
+            )
     except ValueError as exc:
         checks.errors.append(f"SPEC_READ_ERROR: {exc}")
         return checks.report(spec_path=str(spec_path.resolve()))
     _validate_spec_payload(spec, spec_path, checks, verify_anchors=verify_anchors)
-    report = checks.report(spec_path=str(spec_path.resolve()), spec_sha256=sha256_file(spec_path))
+    report = checks.report(
+        spec_path=str(spec_path.resolve()),
+        spec_sha256=sha256_file(spec_path),
+        amendment_id=amendment.get("amendment_id") if amendment else None,
+        amended_binding_ids=(
+            [str(row.get("id")) for row in amendment.get("binding_changes") or []]
+            if amendment
+            else []
+        ),
+    )
     if report["status"] == "PASS":
         report["status"] = "BLOCKED_OWNER_AND_NEW_EVIDENCE"
         report["qualification_ready"] = False

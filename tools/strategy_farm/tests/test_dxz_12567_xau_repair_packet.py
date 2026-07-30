@@ -18,6 +18,13 @@ from tools.strategy_farm.dxz_cost_evidence import extract_round_trips
 
 REPO = Path(__file__).resolve().parents[3]
 SPEC = REPO / "docs" / "ops" / "evidence" / "dxz_12567_xauusd_d1_repair_spec_20260716.json"
+AMENDED_SPEC = (
+    REPO
+    / "docs"
+    / "ops"
+    / "evidence"
+    / "dxz_12567_xauusd_d1_repair_spec_binding_amendment_20260730.json"
+)
 NATIVE_REPORT = Path(
     r"D:\QM\reports\portfolio\dxz23_as_live_requal_20260716_effective_d1_staged_serial"
     r"\20260716T080201Z\runs\16_12567_XAUUSD_DWX\report.htm"
@@ -89,14 +96,41 @@ def _instrument_properties(symbol: str) -> dict:
 
 
 def test_spec_is_hash_bound_blocked_and_xau_not_xng() -> None:
-    result = subject.validate_spec(SPEC)
+    legacy = subject.validate_spec(SPEC)
+    assert legacy["status"] == "FAIL"
+    assert any("BINDING_HASH_MISMATCH: spec.anchor.repo_ex5" in error for error in legacy["errors"])
+    assert any("BINDING_MISSING: spec.anchor.deployed_preset_read_only" in error for error in legacy["errors"])
+
+    result = subject.validate_spec(AMENDED_SPEC)
     assert result["status"] == "BLOCKED_OWNER_AND_NEW_EVIDENCE"
     assert result["error_count"] == 0
+    assert result["amendment_id"] == "DXZ-12567-BINDINGS-20260730-A1"
+    assert set(result["amended_binding_ids"]) == {
+        "repo_ex5",
+        "repo_live_preset",
+        "repo_backtest_preset",
+        "deployed_preset_read_only",
+        "risk_sizer",
+    }
     payload = json.loads(SPEC.read_text(encoding="utf-8"))
     payload["scope"]["symbol"] = "XNGUSD.DWX"
     checks = subject.Checks()
     subject._validate_spec_payload(payload, SPEC, checks, verify_anchors=False)
     assert any(error.startswith("SPEC_SCOPE_INVALID") for error in checks.errors)
+
+
+def test_binding_amendment_owner_decision_is_hash_bound(tmp_path: Path) -> None:
+    payload = json.loads(AMENDED_SPEC.read_text(encoding="utf-8"))
+    payload["owner_decision"]["sha256"] = "0" * 64
+    unsigned = dict(payload)
+    unsigned.pop("amendment_payload_sha256", None)
+    payload["amendment_payload_sha256"] = subject.canonical_json_sha(unsigned)
+    path = tmp_path / "amendment.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = subject.validate_spec(path)
+    assert result["status"] == "FAIL"
+    assert any("AMENDMENT_OWNER_DECISION_BINDING_HASH_MISMATCH" in error for error in result["errors"])
 
 
 def test_pending_owner_trust_can_never_produce_bundle_pass(tmp_path: Path) -> None:

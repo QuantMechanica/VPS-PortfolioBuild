@@ -15,6 +15,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 from tools.strategy_farm import dxz_10939_repair_packet as packet
 from tools.strategy_farm import dxz_as_live_requal as hardened_requal
+from tools.strategy_farm import dxz_binding_amendment as amendment_resolver
 from tools.strategy_farm.tests.test_dxz_cost_manifest_security import (
     _axis_payload as _security_axis_payload,
     _write_bound_json as _security_write_bound_json,
@@ -28,6 +29,13 @@ REAL_SPEC = (
     / "ops"
     / "evidence"
     / "dxz_10939_gbpusd_h4_repair_spec_20260716.json"
+)
+AMENDED_REAL_SPEC = (
+    REPO_ROOT
+    / "docs"
+    / "ops"
+    / "evidence"
+    / "dxz_10939_gbpusd_h4_repair_spec_binding_amendment_20260730.json"
 )
 
 
@@ -903,9 +911,170 @@ def _validate_bundle(spec_path: Path, bundle_path: Path, trust_anchor: dict[str,
 
 
 def test_real_spec_hash_bindings_pass() -> None:
-    result = packet.validate_spec(REAL_SPEC)
+    legacy = packet.validate_spec(REAL_SPEC)
+    assert legacy["status"] == "FAIL"
+    assert any("BINDING_HASH_MISMATCH: spec.baseline.repo_ex5" in error for error in legacy["errors"])
+    assert any("BINDING_MISSING: spec.baseline.deployed_preset_read_only" in error for error in legacy["errors"])
+
+    result = packet.validate_spec(AMENDED_REAL_SPEC)
     assert result["status"] == "BLOCKED_OWNER_TRUST_UNREGISTERED", result
     assert result["verified_bindings"] == 16
+    assert result["amendment_id"] == "DXZ-10939-BINDINGS-20260730-A1"
+    assert set(result["amended_binding_ids"]) == {
+        "repo_ex5",
+        "deployed_preset_read_only",
+    }
+
+
+def test_binding_amendment_cannot_grant_qualification(tmp_path: Path) -> None:
+    payload = json.loads(AMENDED_REAL_SPEC.read_text(encoding="utf-8"))
+    payload["qualification_effect"] = "QUALIFIED"
+    unsigned = dict(payload)
+    unsigned.pop("amendment_payload_sha256", None)
+    payload["amendment_payload_sha256"] = packet.canonical_json_sha(unsigned)
+    path = tmp_path / "amendment.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = packet.validate_spec(path)
+    assert result["status"] == "FAIL"
+    assert any("AMENDMENT_QUALIFICATION_SCOPE_INVALID" in error for error in result["errors"])
+
+
+def test_binding_amendment_rejects_duplicate_json_keys(tmp_path: Path) -> None:
+    raw = AMENDED_REAL_SPEC.read_text(encoding="utf-8")
+    raw = raw.replace('  "scope": {', '  "scope": {},\n  "scope": {', 1)
+    path = tmp_path / "duplicate-key-amendment.json"
+    path.write_text(raw, encoding="utf-8")
+
+    result = packet.validate_spec(path)
+    assert result["status"] == "FAIL"
+    assert any("DUPLICATE_JSON_KEY: scope" in error for error in result["errors"])
+
+
+def test_binding_amendment_enforces_owner_exclusions(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    payload = json.loads(AMENDED_REAL_SPEC.read_text(encoding="utf-8"))
+    owner_source = (
+        REPO_ROOT
+        / "docs"
+        / "ops"
+        / "evidence"
+        / "2026-07-30_factory_preparation_owner_decision.json"
+    )
+    owner = json.loads(owner_source.read_text(encoding="utf-8"))
+    owner["explicit_exclusions"]["factory_on"] = True
+    owner_path = tmp_path / "owner.json"
+    owner_path.write_text(json.dumps(owner), encoding="utf-8")
+    tampered_blob = amendment_resolver._git_blob_sha1_file(owner_path)
+    monkeypatch.setattr(amendment_resolver, "OWNER_DECISION_BLOB_SHA1", tampered_blob)
+    monkeypatch.setattr(
+        amendment_resolver, "OWNER_DECISION_PATH", str(owner_path.resolve())
+    )
+
+    payload["owner_decision"].update(
+        {
+            "path": str(owner_path.resolve()),
+            "sha256": packet.sha256_file(owner_path),
+            "bytes": owner_path.stat().st_size,
+            "git_blob_sha1": tampered_blob,
+        }
+    )
+    unsigned = dict(payload)
+    unsigned.pop("amendment_payload_sha256", None)
+    payload["amendment_payload_sha256"] = packet.canonical_json_sha(unsigned)
+    path = tmp_path / "amendment.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = packet.validate_spec(path)
+    assert result["status"] == "FAIL"
+    assert any("AMENDMENT_OWNER_DECISION_SCOPE_INVALID" in error for error in result["errors"])
+
+
+@pytest.mark.parametrize("tamper", ["qualified_role", "arbitrary_path"])
+def test_binding_amendment_rejects_unapproved_after_transition(
+    tmp_path: Path, tamper: str
+) -> None:
+    payload = json.loads(AMENDED_REAL_SPEC.read_text(encoding="utf-8"))
+    owner_path = (
+        REPO_ROOT
+        / "docs"
+        / "ops"
+        / "evidence"
+        / "2026-07-30_factory_preparation_owner_decision.json"
+    )
+    changed = next(row for row in payload["binding_changes"] if row["id"] == "repo_ex5")
+    if tamper == "qualified_role":
+        changed["after"]["role"] = "QUALIFIED_REPOSITORY_BINARY"
+    else:
+        changed["after"].update(
+            {
+                "path": str(owner_path.resolve()),
+                "sha256": packet.sha256_file(owner_path),
+                "bytes": owner_path.stat().st_size,
+            }
+        )
+    unsigned = dict(payload)
+    unsigned.pop("amendment_payload_sha256", None)
+    payload["amendment_payload_sha256"] = packet.canonical_json_sha(unsigned)
+    path = tmp_path / "amendment.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = packet.validate_spec(path)
+    assert result["status"] == "FAIL"
+    assert any(
+        "AMENDMENT_AFTER_BINDING_POLICY_MISMATCH: repo_ex5" in error
+        for error in result["errors"]
+    )
+
+
+def test_binding_amendment_rejects_forged_same_identity_base(tmp_path: Path) -> None:
+    payload = json.loads(AMENDED_REAL_SPEC.read_text(encoding="utf-8"))
+    forged = json.loads(REAL_SPEC.read_text(encoding="utf-8"))
+    forged["forged_lineage"] = True
+    forged_path = tmp_path / "forged-base.json"
+    forged_path.write_text(json.dumps(forged), encoding="utf-8")
+    forged_raw = forged_path.read_bytes()
+    payload["supersedes"].update(
+        {
+            "path": str(forged_path.resolve()),
+            "sha256": packet.sha256_file(forged_path),
+            "bytes": len(forged_raw),
+            "git_blob_sha1": amendment_resolver._git_blob_sha1_bytes(forged_raw),
+        }
+    )
+    unsigned = dict(payload)
+    unsigned.pop("amendment_payload_sha256", None)
+    payload["amendment_payload_sha256"] = packet.canonical_json_sha(unsigned)
+    path = tmp_path / "amendment.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = packet.validate_spec(path)
+    assert result["status"] == "FAIL"
+    assert any(
+        "AMENDMENT_BASE_SPEC_BINDING_POLICY_MISMATCH" in error
+        for error in result["errors"]
+    )
+
+
+def test_binding_amendment_rejects_owner_copy_at_another_path(tmp_path: Path) -> None:
+    payload = json.loads(AMENDED_REAL_SPEC.read_text(encoding="utf-8"))
+    owner_source = Path(amendment_resolver.OWNER_DECISION_PATH)
+    owner_copy = tmp_path / owner_source.name
+    owner_copy.write_bytes(owner_source.read_bytes())
+    payload["owner_decision"]["path"] = str(owner_copy.resolve())
+    unsigned = dict(payload)
+    unsigned.pop("amendment_payload_sha256", None)
+    payload["amendment_payload_sha256"] = packet.canonical_json_sha(unsigned)
+    path = tmp_path / "amendment.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = packet.validate_spec(path)
+    assert result["status"] == "FAIL"
+    assert any(
+        "AMENDMENT_OWNER_DECISION_GIT_BINDING_INVALID" in error
+        for error in result["errors"]
+    )
 
 
 def test_complete_three_group_bundle_passes(tmp_path: Path) -> None:

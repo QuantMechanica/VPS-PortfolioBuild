@@ -26,6 +26,26 @@ except ModuleNotFoundError:  # direct ``python tools/strategy_farm/*.py`` execut
 
 SCHEMA_VERSION = "qm.pipeline-books-dashboard-status/v1"
 TEXT_HASH_CONTRACT = "TEXT_BYTES_CRLF_TO_LF_SHA256_V1"
+TEST_LANES_SCHEMA_V1 = "qm.test-lanes/v1"
+TEST_LANES_SCHEMA_V2 = "qm.test-lanes/v2"
+EXIT_RECEIPT_SCHEMA = "qm.external-residual-exit-receipt/v1"
+V1_GREEN_POLICY = "RUN_ALL_EXCEPT_DECLARED_EXTERNAL_RESIDUALS"
+V2_GREEN_POLICY = "RUN_ALL_INCLUDING_RESOLVED_EXTERNAL_REGRESSIONS"
+RESOLVED_PASS = "RESOLVED_PASS"
+RESOLVED_EXIT_CONDITION = (
+    "All five node IDs PASS without skip, xfail, assertion weakening or silent rebinding."
+)
+TEST_LANE_SUITE_ROOTS = (
+    "tools/strategy_farm/tests",
+    "framework/scripts/tests",
+)
+EXTERNAL_SENTINEL_NODE_IDS = (
+    "tools/strategy_farm/tests/test_dxz_10939_repair_packet.py::test_real_spec_hash_bindings_pass",
+    "tools/strategy_farm/tests/test_dxz_12567_xau_repair_packet.py::test_spec_is_hash_bound_blocked_and_xau_not_xng",
+    "tools/strategy_farm/tests/test_execution_contract_lint.py::test_dxz23_registry_is_source_bound_and_structurally_clean",
+    "tools/strategy_farm/tests/test_execution_contract_lint.py::test_density_execution_contracts_are_source_and_runtime_binding_clean",
+    "tools/strategy_farm/tests/test_execution_contract_lint.py::test_20009_ftmo_news_calendar_is_exact_and_evidence_bound",
+)
 DEFAULT_CONFIG = (
     Path(__file__).resolve().parent / "config" / "pipeline_books_program_status.v1.json"
 )
@@ -63,6 +83,14 @@ TOP_LEVEL_KEYS = {
     "ftmo_book3_runtime_evaluation",
     "verification_lanes",
     "owner_blockers",
+}
+BASE_BINDING_KEYS = {
+    "plan",
+    "evidence",
+    "ftmo_book3_runtime_projection",
+    "q08_policy",
+    "test_lanes",
+    "rulepacks",
 }
 
 
@@ -228,18 +256,15 @@ def _validate_safety(value: Any) -> None:
 def _validate_bindings(value: Any, repo_root: Path) -> None:
     if not isinstance(value, dict):
         _fail("$.bindings", "must be an object")
-    _exact_keys(
-        value,
-        {
-            "plan",
-            "evidence",
-            "ftmo_book3_runtime_projection",
-            "q08_policy",
-            "test_lanes",
-            "rulepacks",
-        },
-        "$.bindings",
+    binding_keys = set(value)
+    allowed_keysets = (
+        BASE_BINDING_KEYS,
+        BASE_BINDING_KEYS | {"external_residual_exit_receipt"},
     )
+    if binding_keys not in allowed_keysets:
+        missing = sorted(BASE_BINDING_KEYS - binding_keys)
+        extra = sorted(binding_keys - (BASE_BINDING_KEYS | {"external_residual_exit_receipt"}))
+        _fail("$.bindings", f"key set mismatch; missing={missing}, extra={extra}")
     _verify_file_binding(value["plan"], repo_root, "$.bindings.plan")
     _verify_file_binding(value["evidence"], repo_root, "$.bindings.evidence")
     _verify_file_binding(
@@ -248,6 +273,12 @@ def _validate_bindings(value: Any, repo_root: Path) -> None:
         "$.bindings.ftmo_book3_runtime_projection",
     )
     _verify_file_binding(value["test_lanes"], repo_root, "$.bindings.test_lanes")
+    if "external_residual_exit_receipt" in value:
+        _verify_file_binding(
+            value["external_residual_exit_receipt"],
+            repo_root,
+            "$.bindings.external_residual_exit_receipt",
+        )
 
     policy = value["q08_policy"]
     if not isinstance(policy, dict):
@@ -659,11 +690,15 @@ def _validate_ftmo_runtime_evaluation(
         _fail("$.ftmo_runtime_evidence_record.schema_version", "unsupported value")
     if record["projection_kind"] != "RESEARCH_ONLY_RUNTIME_EVALUATION":
         _fail("$.ftmo_runtime_evidence_record.projection_kind", "must remain research-only")
-    _utc(record["recorded_at_utc"], "$.ftmo_runtime_evidence_record.recorded_at_utc")
-    if record["recorded_at_utc"] != config_as_of_utc:
+    projection_recorded_at = _utc(
+        record["recorded_at_utc"],
+        "$.ftmo_runtime_evidence_record.recorded_at_utc",
+    )
+    status_as_of = _utc(config_as_of_utc, "$.as_of_utc")
+    if status_as_of < projection_recorded_at:
         _fail(
             "$.as_of_utc",
-            "must equal the hash-bound FTMO projection recorded_at_utc",
+            "must not predate the hash-bound FTMO projection recorded_at_utc",
         )
     source_commit = _string(
         record["source_commit"], "$.ftmo_runtime_evidence_record.source_commit"
@@ -709,19 +744,274 @@ def _validate_ftmo_runtime_evaluation(
         _fail(projection_path, "receipt SHA does not match the evidence record")
 
 
-def _test_lane_node_ids(test_lanes_path: Path) -> tuple[str, ...]:
+def _validate_test_lane_manifest(test_lanes_path: Path) -> tuple[str, tuple[str, ...]]:
     payload = _parse_json(test_lanes_path)
-    try:
-        rows = payload["external_residual_lane"]["tests"]
-        values = tuple(row["node_id"] for row in rows)
-    except (KeyError, TypeError) as exc:
-        raise ProgramStatusError("bound test-lane artifact lacks residual node IDs") from exc
-    if not all(isinstance(value, str) for value in values):
-        _fail("test_lanes", "residual node IDs must be strings")
-    return values
+    _exact_keys(
+        payload,
+        {"schema_version", "suite_roots", "green_lane", "external_residual_lane"},
+        "$.bound_test_lanes",
+    )
+    schema = payload["schema_version"]
+    if schema not in {TEST_LANES_SCHEMA_V1, TEST_LANES_SCHEMA_V2}:
+        _fail("$.bound_test_lanes.schema_version", "unsupported test-lane schema")
+    roots = payload["suite_roots"]
+    if not isinstance(roots, list) or tuple(roots) != TEST_LANE_SUITE_ROOTS:
+        _fail("$.bound_test_lanes.suite_roots", "must preserve the exact suite roots/order")
+
+    green = payload["green_lane"]
+    expected_green = (
+        {
+            "policy": V1_GREEN_POLICY,
+            "residual_handling": "DESELECT_ONLY_NEVER_SKIP_OR_XFAIL",
+        }
+        if schema == TEST_LANES_SCHEMA_V1
+        else {"policy": V2_GREEN_POLICY}
+    )
+    if green != expected_green:
+        _fail("$.bound_test_lanes.green_lane", "policy/key set mismatch")
+
+    residual = payload["external_residual_lane"]
+    if not isinstance(residual, dict):
+        _fail("$.bound_test_lanes.external_residual_lane", "must be an object")
+    expected_residual_keys = {"policy", "tests", "exit_condition"}
+    if schema == TEST_LANES_SCHEMA_V2:
+        expected_residual_keys.add("state")
+    _exact_keys(
+        residual,
+        expected_residual_keys,
+        "$.bound_test_lanes.external_residual_lane",
+    )
+    if schema == TEST_LANES_SCHEMA_V1:
+        if residual["policy"] != "FAIL_CLOSED_UNTIL_BOUND_EXTERNAL_STATE_IS_RECONCILED":
+            _fail("$.bound_test_lanes.external_residual_lane.policy", "was weakened")
+    elif residual["state"] != RESOLVED_PASS or residual["policy"] != RESOLVED_PASS:
+        _fail(
+            "$.bound_test_lanes.external_residual_lane",
+            "V2 state/policy must both be RESOLVED_PASS",
+        )
+
+    rows = residual["tests"]
+    if not isinstance(rows, list) or len(rows) != 5:
+        _fail("$.bound_test_lanes.external_residual_lane.tests", "must contain exactly five tests")
+    node_ids: list[str] = []
+    for index, row in enumerate(rows):
+        path = f"$.bound_test_lanes.external_residual_lane.tests[{index}]"
+        if not isinstance(row, dict):
+            _fail(path, "must be an object")
+        _exact_keys(row, {"node_id", "owner_items"}, path)
+        node_ids.append(_string(row["node_id"], f"{path}.node_id"))
+        owners = row["owner_items"]
+        if not isinstance(owners, list) or not owners:
+            _fail(f"{path}.owner_items", "must be a non-empty array")
+        for owner_index, owner in enumerate(owners):
+            owner_id = _string(owner, f"{path}.owner_items[{owner_index}]")
+            if re.fullmatch(r"MNT-[0-9]{3}", owner_id) is None:
+                _fail(f"{path}.owner_items[{owner_index}]", "must be an MNT-NNN ID")
+    values = tuple(node_ids)
+    if len(set(values)) != 5:
+        _fail("$.bound_test_lanes.external_residual_lane.tests", "node IDs must be unique")
+    exit_condition = _string(
+        residual["exit_condition"],
+        "$.bound_test_lanes.external_residual_lane.exit_condition",
+    )
+    if schema == TEST_LANES_SCHEMA_V2:
+        if values != EXTERNAL_SENTINEL_NODE_IDS:
+            _fail(
+                "$.bound_test_lanes.external_residual_lane.tests",
+                "must preserve the exact five V2 sentinel node IDs/order",
+            )
+        if exit_condition != RESOLVED_EXIT_CONDITION:
+            _fail(
+                "$.bound_test_lanes.external_residual_lane.exit_condition",
+                "resolved exit condition mismatch",
+            )
+    return schema, values
 
 
-def _validate_verification_lanes(value: Any, repo_root: Path, bindings: Mapping[str, Any]) -> None:
+def _validate_external_residual_exit_receipt(
+    binding: Any,
+    *,
+    repo_root: Path,
+    test_lanes_binding: Mapping[str, Any],
+    status_as_of_utc: str,
+    green: Mapping[str, Any],
+    residual: Mapping[str, Any],
+    node_ids: tuple[str, ...],
+) -> None:
+    receipt_path = _verify_file_binding(
+        binding,
+        repo_root,
+        "$.bindings.external_residual_exit_receipt",
+    )
+    receipt = _parse_json(receipt_path)
+    receipt_path_label = "$.external_residual_exit_receipt"
+    _exact_keys(
+        receipt,
+        {
+            "schema_version",
+            "status",
+            "recorded_at_utc",
+            "test_lanes_binding",
+            "publication_plan",
+            "calendar_publication",
+            "test_results",
+            "safety",
+        },
+        receipt_path_label,
+    )
+    if receipt["schema_version"] != EXIT_RECEIPT_SCHEMA:
+        _fail(f"{receipt_path_label}.schema_version", "unsupported exit-receipt schema")
+    if receipt["status"] != RESOLVED_PASS:
+        _fail(f"{receipt_path_label}.status", "must be RESOLVED_PASS")
+    receipt_recorded = _utc(
+        receipt["recorded_at_utc"], f"{receipt_path_label}.recorded_at_utc"
+    )
+    if receipt_recorded > _utc(status_as_of_utc, "$.as_of_utc"):
+        _fail("$.as_of_utc", "must not predate the bound exit receipt")
+
+    lanes = receipt["test_lanes_binding"]
+    lanes_path = f"{receipt_path_label}.test_lanes_binding"
+    if not isinstance(lanes, dict):
+        _fail(lanes_path, "must be an object")
+    _exact_keys(
+        lanes,
+        {"path", "file_sha256", "schema_version", "sentinel_node_ids"},
+        lanes_path,
+    )
+    if lanes["path"] != test_lanes_binding["path"]:
+        _fail(f"{lanes_path}.path", "does not match the status test-lane binding")
+    if _sha(lanes["file_sha256"], f"{lanes_path}.file_sha256") != test_lanes_binding["file_sha256"]:
+        _fail(f"{lanes_path}.file_sha256", "does not match the status test-lane binding")
+    if lanes["schema_version"] != TEST_LANES_SCHEMA_V2:
+        _fail(f"{lanes_path}.schema_version", "must bind qm.test-lanes/v2")
+    receipt_sentinels = lanes["sentinel_node_ids"]
+    if (
+        not isinstance(receipt_sentinels, list)
+        or tuple(receipt_sentinels) != EXTERNAL_SENTINEL_NODE_IDS
+    ):
+        _fail(f"{lanes_path}.sentinel_node_ids", "must bind the exact five sentinels")
+
+    plan = receipt["publication_plan"]
+    plan_path = f"{receipt_path_label}.publication_plan"
+    if not isinstance(plan, dict):
+        _fail(plan_path, "must be an object")
+    _exact_keys(plan, {"schema", "plan_sha256", "target_count"}, plan_path)
+    if plan["schema"] != "qm-news-calendar-multi-principal-publication-plan/v1":
+        _fail(f"{plan_path}.schema", "unexpected publication-plan schema")
+    plan_sha = _sha(plan["plan_sha256"], f"{plan_path}.plan_sha256")
+    if _non_negative_int(plan["target_count"], f"{plan_path}.target_count") != 4:
+        _fail(f"{plan_path}.target_count", "must cover source plus three Common roots")
+
+    publication = receipt["calendar_publication"]
+    publication_path = f"{receipt_path_label}.calendar_publication"
+    if not isinstance(publication, dict):
+        _fail(publication_path, "must be an object")
+    _exact_keys(
+        publication,
+        {
+            "status",
+            "plan_sha256",
+            "receipt_sha256",
+            "bundle_id",
+            "target_count",
+            "verified_target_count",
+            "source_verified",
+            "common_targets_verified",
+            "factory_mode",
+            "lock_release_succeeded",
+        },
+        publication_path,
+    )
+    if publication["status"] != "PUBLISHED_VERIFIED":
+        _fail(f"{publication_path}.status", "must be PUBLISHED_VERIFIED")
+    if _sha(publication["plan_sha256"], f"{publication_path}.plan_sha256") != plan_sha:
+        _fail(f"{publication_path}.plan_sha256", "does not match publication_plan")
+    _sha(publication["receipt_sha256"], f"{publication_path}.receipt_sha256")
+    bundle_id = _string(publication["bundle_id"], f"{publication_path}.bundle_id")
+    if re.fullmatch(r"news-calendar-[0-9a-f]{64}", bundle_id) is None:
+        _fail(f"{publication_path}.bundle_id", "must be a content-addressed calendar bundle")
+    for key in ("target_count", "verified_target_count"):
+        if _non_negative_int(publication[key], f"{publication_path}.{key}") != 4:
+            _fail(f"{publication_path}.{key}", "must be exactly four")
+    for key in ("source_verified", "common_targets_verified", "lock_release_succeeded"):
+        if not _bool(publication[key], f"{publication_path}.{key}"):
+            _fail(f"{publication_path}.{key}", "must be true")
+    if publication["factory_mode"] != "OFF_HASH_BOUND":
+        _fail(f"{publication_path}.factory_mode", "must be OFF_HASH_BOUND")
+
+    results = receipt["test_results"]
+    results_path = f"{receipt_path_label}.test_results"
+    if not isinstance(results, dict):
+        _fail(results_path, "must be an object")
+    _exact_keys(results, {"green", "external_residual"}, results_path)
+    receipt_green = results["green"]
+    green_path = f"{results_path}.green"
+    if not isinstance(receipt_green, dict):
+        _fail(green_path, "must be an object")
+    green_keys = {"state", "passed", "skipped", "deselected", "subtests_passed"}
+    _exact_keys(receipt_green, green_keys, green_path)
+    for key in green_keys:
+        if receipt_green[key] != green[key]:
+            _fail(f"{green_path}.{key}", "does not match programme status")
+
+    receipt_residual = results["external_residual"]
+    residual_path = f"{results_path}.external_residual"
+    if not isinstance(receipt_residual, dict):
+        _fail(residual_path, "must be an object")
+    _exact_keys(
+        receipt_residual,
+        {
+            "state",
+            "expected_count",
+            "pass_count",
+            "failed",
+            "skipped",
+            "xfailed",
+            "deselected",
+            "node_ids",
+        },
+        residual_path,
+    )
+    if receipt_residual["state"] != RESOLVED_PASS:
+        _fail(f"{residual_path}.state", "must be RESOLVED_PASS")
+    for key in ("expected_count", "pass_count"):
+        if receipt_residual[key] != residual[key] or receipt_residual[key] != 5:
+            _fail(f"{residual_path}.{key}", "must match the status at exactly 5")
+    for key in ("failed", "skipped", "xfailed", "deselected"):
+        if _non_negative_int(receipt_residual[key], f"{residual_path}.{key}") != 0:
+            _fail(f"{residual_path}.{key}", "must be zero")
+    receipt_node_ids = receipt_residual["node_ids"]
+    if not isinstance(receipt_node_ids, list) or tuple(receipt_node_ids) != node_ids:
+        _fail(f"{residual_path}.node_ids", "does not match the exact sentinel order")
+
+    safety = receipt["safety"]
+    safety_path = f"{receipt_path_label}.safety"
+    if not isinstance(safety, dict):
+        _fail(safety_path, "must be an object")
+    positive_safety = {"factory_off_flag_unchanged", "factory_mutation_lock_absent_after"}
+    authority_safety = {
+        "factory_activation_authorized",
+        "scheduler_action_authorized",
+        "mt5_action_authorized",
+        "autotrading_action_authorized",
+        "deployment_authorized",
+        "paid_challenge_purchase_authorized",
+    }
+    _exact_keys(safety, positive_safety | authority_safety, safety_path)
+    for key in positive_safety:
+        if not _bool(safety[key], f"{safety_path}.{key}"):
+            _fail(f"{safety_path}.{key}", "must be true")
+    for key in authority_safety:
+        if _bool(safety[key], f"{safety_path}.{key}"):
+            _fail(f"{safety_path}.{key}", "exit receipt must not grant authority")
+
+
+def _validate_verification_lanes(
+    value: Any,
+    repo_root: Path,
+    bindings: Mapping[str, Any],
+    status_as_of_utc: str,
+) -> None:
     if not isinstance(value, dict):
         _fail("$.verification_lanes", "must be an object")
     _exact_keys(value, {"green", "external_residual"}, "$.verification_lanes")
@@ -740,18 +1030,37 @@ def _validate_verification_lanes(value: Any, repo_root: Path, bindings: Mapping[
             _fail(f"$.verification_lanes.green.{key}", "must be a non-negative integer")
     _string(green["statement"], "$.verification_lanes.green.statement")
 
+    test_lanes_path = _repo_path(
+        repo_root,
+        bindings["test_lanes"]["path"],
+        "$.bindings.test_lanes.path",
+    )
+    test_lanes_schema, lane_node_ids = _validate_test_lane_manifest(test_lanes_path)
+    resolved = test_lanes_schema == TEST_LANES_SCHEMA_V2
+    expected_deselected = 0 if resolved else 5
+    if green["deselected"] != expected_deselected:
+        _fail(
+            "$.verification_lanes.green.deselected",
+            f"must be exactly {expected_deselected} for {test_lanes_schema}",
+        )
+
     residual = value["external_residual"]
     if not isinstance(residual, dict):
         _fail("$.verification_lanes.external_residual", "must be an object")
-    _exact_keys(
-        residual,
-        {"state", "expected_count", "items", "exit_condition"},
-        "$.verification_lanes.external_residual",
-    )
-    if residual["state"] != "EXPECTED_FAIL_CLOSED":
-        _fail("$.verification_lanes.external_residual.state", "must be EXPECTED_FAIL_CLOSED")
+    residual_keys = {"state", "expected_count", "items", "exit_condition"}
+    if resolved:
+        residual_keys.add("pass_count")
+    _exact_keys(residual, residual_keys, "$.verification_lanes.external_residual")
+    expected_state = RESOLVED_PASS if resolved else "EXPECTED_FAIL_CLOSED"
+    if residual["state"] != expected_state:
+        _fail(
+            "$.verification_lanes.external_residual.state",
+            f"must be {expected_state} for {test_lanes_schema}",
+        )
     if residual["expected_count"] != 5:
         _fail("$.verification_lanes.external_residual.expected_count", "must be exactly 5")
+    if resolved and residual["pass_count"] != 5:
+        _fail("$.verification_lanes.external_residual.pass_count", "must be exactly 5")
     items = residual["items"]
     if not isinstance(items, list) or len(items) != 5:
         _fail("$.verification_lanes.external_residual.items", "must contain exactly five items")
@@ -770,10 +1079,39 @@ def _validate_verification_lanes(value: Any, repo_root: Path, bindings: Mapping[
             _string(owner_item, f"{path}.owner_items[{owner_index}]")
     if len(set(node_ids)) != 5:
         _fail("$.verification_lanes.external_residual.items", "node IDs must be unique")
-    test_lanes_path = _repo_path(repo_root, bindings["test_lanes"]["path"], "$.bindings.test_lanes.path")
-    if tuple(node_ids) != _test_lane_node_ids(test_lanes_path):
+    if tuple(node_ids) != lane_node_ids:
         _fail("$.verification_lanes.external_residual.items", "does not match bound test-lane order")
-    _string(residual["exit_condition"], "$.verification_lanes.external_residual.exit_condition")
+    exit_condition = _string(
+        residual["exit_condition"],
+        "$.verification_lanes.external_residual.exit_condition",
+    )
+    receipt_binding = bindings.get("external_residual_exit_receipt")
+    if not resolved:
+        if receipt_binding is not None:
+            _fail(
+                "$.bindings.external_residual_exit_receipt",
+                "is not allowed while the V1 residual remains EXPECTED_FAIL_CLOSED",
+            )
+        return
+    if exit_condition != RESOLVED_EXIT_CONDITION:
+        _fail(
+            "$.verification_lanes.external_residual.exit_condition",
+            "resolved exit condition mismatch",
+        )
+    if receipt_binding is None:
+        _fail(
+            "$.bindings.external_residual_exit_receipt",
+            "is required for a V2 RESOLVED_PASS claim",
+        )
+    _validate_external_residual_exit_receipt(
+        receipt_binding,
+        repo_root=repo_root,
+        test_lanes_binding=bindings["test_lanes"],
+        status_as_of_utc=status_as_of_utc,
+        green=green,
+        residual=residual,
+        node_ids=tuple(node_ids),
+    )
 
 
 def _validate_owner_blockers(value: Any) -> None:
@@ -840,7 +1178,12 @@ def load_program_status(
         root,
         value["as_of_utc"],
     )
-    _validate_verification_lanes(value["verification_lanes"], root, value["bindings"])
+    _validate_verification_lanes(
+        value["verification_lanes"],
+        root,
+        value["bindings"],
+        value["as_of_utc"],
+    )
     _validate_owner_blockers(value["owner_blockers"])
     return json.loads(json.dumps(value))
 

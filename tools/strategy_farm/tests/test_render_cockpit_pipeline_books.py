@@ -51,6 +51,27 @@ def test_programme_panel_renders_all_required_contracts() -> None:
     assert "this dashboard does not revalidate D: runtime files" in page
 
 
+def test_programme_panel_renders_v2_resolved_residual_as_bound_pass() -> None:
+    snapshot = render_cockpit.pipeline_books_program_snapshot(now_utc=NOW)
+    snapshot["verification_lanes"]["green"]["deselected"] = 0
+    residual = snapshot["verification_lanes"]["external_residual"]
+    residual["state"] = "RESOLVED_PASS"
+    residual["pass_count"] = 5
+    snapshot["bindings"]["external_residual_exit_receipt"] = {
+        "file_sha256": "d" * 64
+    }
+    snapshot["owner_blockers"] = snapshot["owner_blockers"][:4]
+
+    page = render_cockpit.render_pipeline_books_program(snapshot)
+
+    assert "EXTERNAL RESIDUAL RESOLVED_PASS" in page
+    assert "5/5 sentinels passed" in page
+    assert '<div class="pb-lane-line pass"><b>EXTERNAL RESIDUAL' in page
+    assert "exit receipt dddddddddddd" in page
+    assert "5 exact fail-closed sentinels" not in page
+    assert "04 OPEN" in page
+
+
 def test_invalid_snapshot_with_residual_payload_still_renders_fail_closed() -> None:
     snapshot = render_cockpit.pipeline_books_program_snapshot(now_utc=NOW)
     snapshot["state"] = "INVALID"

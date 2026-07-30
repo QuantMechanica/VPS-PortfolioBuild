@@ -2783,6 +2783,16 @@ def render_pipeline_books_program_status(snapshot: dict[str, Any]) -> str:
     green = verification.get("green") if isinstance(verification.get("green"), dict) else {}
     residual = verification.get("external_residual") if isinstance(verification.get("external_residual"), dict) else {}
     residual_items = residual.get("items") if isinstance(residual.get("items"), list) else []
+    residual_state = str(residual.get("state") or "MISSING")
+    residual_resolved = residual_state == "RESOLVED_PASS"
+    residual_count = residual.get("expected_count")
+    if residual_count is None:
+        residual_count = len(residual_items)
+    residual_summary = (
+        f'{residual.get("pass_count")}/{residual_count} sentinels passed'
+        if residual_resolved
+        else f"{residual_count} explicit fail-closed items"
+    )
     residual_html = "".join(
         f'<li><code>{e(item.get("node_id"))}</code><span>{e(item.get("label"))}</span>'
         f'<small>OWNER: {e(", ".join(str(v) for v in (item.get("owner_items") or [])))}</small></li>'
@@ -2797,7 +2807,7 @@ def render_pipeline_books_program_status(snapshot: dict[str, Any]) -> str:
     ) or '<li><span>No OWNER-blocker declaration available.</span></li>'
 
     binding_rows: list[str] = []
-    for key in ("plan", "evidence", "test_lanes"):
+    for key in ("plan", "evidence", "test_lanes", "external_residual_exit_receipt"):
         binding = bindings.get(key)
         if isinstance(binding, dict):
             binding_rows.append(
@@ -2827,8 +2837,8 @@ def render_pipeline_books_program_status(snapshot: dict[str, Any]) -> str:
     <div><div class="pbs-subhead">Verification</div>
       <div class="pbs-verification"><span class="pbs-token {_programme_tone(green.get('state'))}">green {e(green.get("state") or "MISSING")}</span>
       <span>{e(green.get("passed") if green.get("passed") is not None else "—")} passed · {e(green.get("skipped") if green.get("skipped") is not None else "—")} skipped · {e(green.get("deselected") if green.get("deselected") is not None else "—")} deselected · {e(green.get("subtests_passed") if green.get("subtests_passed") is not None else "—")} subtests</span></div>
-      <div class="pbs-verification"><span class="pbs-token warn">external residual {e(residual.get("state") or "MISSING")}</span>
-      <span>{e(residual.get("expected_count") if residual.get("expected_count") is not None else len(residual_items))} explicit fail-closed items</span></div>
+      <div class="pbs-verification"><span class="pbs-token {_programme_tone(residual_state)}">external residual {e(residual_state)}</span>
+      <span>{e(residual_summary)}</span></div>
       <ul class="pbs-list residual">{residual_html}</ul>
       <div class="pbs-exit">Exit: {e(residual.get("exit_condition") or "not declared")}</div>
     </div>

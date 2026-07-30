@@ -1,0 +1,77 @@
+{
+  "schema_version": "qm.dxz-repair-spec-binding-amendment/v1",
+  "artifact_type": "DXZ_10939_GBPUSD_H4_REPAIR_SPEC_BINDING_AMENDMENT",
+  "amendment_id": "DXZ-10939-BINDINGS-20260730-A1",
+  "packet_id": "DXZ-10939-GBPUSD-DWX-H4-20260716",
+  "scope": {
+    "ea_id": 10939,
+    "symbol": "GBPUSD.DWX",
+    "timeframe": "H4"
+  },
+  "disposition": "BINDING_RECONCILIATION_ONLY",
+  "qualification_effect": "NONE_REMAINS_BLOCKED",
+  "runtime_mutation_performed": false,
+  "silent_rebinding": false,
+  "recorded_at_utc": "2026-07-30T07:02:23Z",
+  "supersedes": {
+    "path": "C:/QM/repo/docs/ops/evidence/dxz_10939_gbpusd_h4_repair_spec_20260716.json",
+    "sha256": "ac981ac579cafbcaf54e83280b98857ab0c295edc5379d18ae9f9ffa095898f6",
+    "bytes": 28171,
+    "git_commit": "7b36ff27f83f024bf1c43bb5537cc747f52b887a",
+    "git_blob_sha1": "0f56f64246ece056a0032ca73ae7bebdf9042f0a"
+  },
+  "owner_decision": {
+    "path": "C:/QM/repo/docs/ops/evidence/2026-07-30_factory_preparation_owner_decision.json",
+    "sha256": "af8479fdc73163250f966014eca5c53224a4ae159426a07cf96c80a379c6edb2",
+    "bytes": 5484,
+    "decision_id": "FACTORY_PREPARATION_20260730_REPAIR_NO_WAIVER",
+    "git_commit": "7b36ff27f83f024bf1c43bb5537cc747f52b887a",
+    "git_blob_sha1": "6d36cf6682e317324a35bc8388042402b0f3e540"
+  },
+  "binding_changes": [
+    {
+      "id": "repo_ex5",
+      "reason": "The dated spec remains immutable; this amendment records the later repository pump build as an explicitly unqualified current observation and preserves the superseded hash in before.",
+      "before": {
+        "id": "repo_ex5",
+        "role": "unqualified_repository_binary",
+        "path": "C:/QM/repo/framework/EAs/QM5_10939_grimes-context-pb/QM5_10939_grimes-context-pb.ex5",
+        "sha256": "8fb85437bd67a51c2a0b050246632fc316b938b4992653479a83a573cb691e77",
+        "bytes": 328894
+      },
+      "after": {
+        "id": "repo_ex5",
+        "role": "unqualified_repository_binary_current_observation",
+        "path": "C:/QM/repo/framework/EAs/QM5_10939_grimes-context-pb/QM5_10939_grimes-context-pb.ex5",
+        "sha256": "0c1278f5d44d0c88db90f632d0cefacda79b6c8853bde9540676c4c95296edd0",
+        "bytes": 354232
+      }
+    },
+    {
+      "id": "deployed_preset_read_only",
+      "reason": "The active T_Live preset is intentionally absent; bind the byte-identical historical input in the read-only archive instead of restoring or deploying it.",
+      "before": {
+        "id": "deployed_preset_read_only",
+        "role": "E4_preset_input_read_only",
+        "path": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/slot1_GBPUSD_H4_QM5_10939_grimes-context-pb_magic109390001_dxz23_live.set",
+        "sha256": "8cbed5104814da856484317e7f06add7d0e17aeb033cebe424b457b43c683206",
+        "bytes": 1733
+      },
+      "after": {
+        "id": "deployed_preset_read_only",
+        "role": "historical_archived_E4_preset_input_read_only",
+        "path": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/_archiv_alte_setfiles/slot1_GBPUSD_H4_QM5_10939_grimes-context-pb_magic109390001_dxz23_live.set",
+        "sha256": "8cbed5104814da856484317e7f06add7d0e17aeb033cebe424b457b43c683206",
+        "bytes": 1733
+      }
+    }
+  ],
+  "open_strategy_decisions": [
+    "CARD_V2_SEMANTICS",
+    "NEWS_POLICY",
+    "AS_LIVE_RISK_CONTRACT",
+    "SOURCE_OF_RECORD",
+    "OUT_OF_BAND_OWNER_TRUST_ANCHOR"
+  ],
+  "amendment_payload_sha256": "3ac2379b842a907b7fa0c9901327fbcff998c527742545861ea1a8d9fdd8b3e1"
+}

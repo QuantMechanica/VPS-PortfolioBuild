@@ -4,34 +4,77 @@
 
 .DESCRIPTION
   Fetches the Forex Factory weekly JSON feed, converts events into both
-  production CSV layouts, appends only unseen events, and synchronizes the
-  seeds to MetaTrader Common\Files. A content-coverage flag is maintained
-  separately from file mtime freshness.
+  production CSV layouts, appends only unseen events in an isolated staging
+  directory, and publishes one manifest/hash-bound generation to the shared
+  source plus every configured MetaTrader Common\Files root. The publisher
+  holds the global Factory mutation lock and is safe in both Factory OFF and
+  Factory ON generations.
 
-  Network failures are fail-soft: existing valid seeds are retained and
-  synchronized. Missing or malformed seed headers are never synthesized or
-  appended to. Output stays ASCII, CRLF, and BOM-free for MT5 FILE_ANSI reads.
+  Network/parse failures are fail-soft and non-publishing: existing valid seeds
+  and their mtimes are retained byte-for-byte. Missing or malformed seed
+  headers are never synthesized or appended to. Output stays ASCII, CRLF, and
+  BOM-free for MT5 FILE_ANSI reads.
 #>
 [CmdletBinding()]
 param(
-  [string]$Base = 'D:\QM\data\news_calendar',
-  [string]$Common = 'C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files',
   [string]$FeedUrl = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json',
   [string]$FeedPath = '',
-  [string]$StateDir = 'D:\QM\reports\state',
   [int]$CoverageDays = 2,
-  [datetime]$NowUtc = [DateTime]::UtcNow
+  [datetime]$NowUtc = [DateTime]::UtcNow,
+  [switch]$ReconciliationPlanOnly
 )
 
-$ErrorActionPreference = 'Continue'
+$ErrorActionPreference = 'Stop'
+$base = 'D:\QM\data\news_calendar'
+$stateDir = 'D:\QM\reports\state'
+$pythonExe = 'C:\Python311\python.exe'
+$factoryOffFlag = 'D:\QM\strategy_farm\state\FACTORY_OFF.flag'
 $nowUtcValue = $NowUtc.ToUniversalTime()
 $nowLocal = $nowUtcValue.ToLocalTime()
-$primaryPath = Join-Path $Base 'news_calendar_2015_2025.csv'
-$secondaryPath = Join-Path $Base 'forex_factory_calendar_clean.csv'
+$activePrimaryPath = Join-Path $Base 'news_calendar_2015_2025.csv'
+$activeSecondaryPath = Join-Path $Base 'forex_factory_calendar_clean.csv'
 $staleFlag = Join-Path $StateDir 'news_calendar_stale.flag'
+$gateScript = Join-Path $PSScriptRoot 'news_calendar_gate.py'
+$commonTargets = @(
+  'C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files',
+  'C:\Windows\System32\config\systemprofile\AppData\Roaming\MetaQuotes\Terminal\Common\Files',
+  'C:\Users\QMDev1\AppData\Roaming\MetaQuotes\Terminal\Common\Files'
+)
 $primaryHeader = 'datetime,currency,event_name,impact,actual,forecast,previous,impact_numeric,is_high_impact,is_nfp,is_fomc,is_ecb,is_boe,is_gdp,is_cpi,is_pmi,day_of_week,hour,day,is_first_friday'
 $secondaryHeader = 'Date,DateTime_UTC,DateTime_EET,Currency,Impact,Event,Actual,Forecast,Previous'
 $asciiNoBom = New-Object System.Text.ASCIIEncoding
+
+if (-not [IO.Path]::IsPathRooted($PythonExe) -or -not (Test-Path -LiteralPath $PythonExe -PathType Leaf)) {
+  throw "absolute Python interpreter is missing: $PythonExe"
+}
+if (-not (Test-Path -LiteralPath $gateScript -PathType Leaf)) {
+  throw "news-calendar gate script is missing: $gateScript"
+}
+
+function Invoke-NewsCalendarGate([string[]]$Arguments) {
+  $output = @(& $PythonExe $gateScript @Arguments 2>&1)
+  $exitCode = $LASTEXITCODE
+  $text = (@($output | ForEach-Object { [string]$_ }) -join [Environment]::NewLine)
+  if ($exitCode -ne 0) {
+    throw "news-calendar gate failed (exit=$exitCode): $text"
+  }
+  return $text
+}
+
+function New-MultiPlanArguments(
+  [string]$PrimaryCandidate,
+  [string]$SecondaryCandidate
+) {
+  $arguments = New-Object 'System.Collections.Generic.List[string]'
+  foreach ($value in @(
+      'multi-plan',
+      '--primary-candidate', $PrimaryCandidate,
+      '--secondary-candidate', $SecondaryCandidate,
+      '--generated-at', $nowUtcValue.ToString('yyyy-MM-ddTHH:mm:ssZ'))) {
+    $arguments.Add([string]$value)
+  }
+  return @($arguments.ToArray())
+}
 
 function Read-Rows([string]$Path) {
   if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return @() }
@@ -115,10 +158,22 @@ function Get-MondayZeroDay([datetime]$Date) {
   return (([int]$Date.DayOfWeek + 6) % 7)
 }
 
-$primaryValid = Test-SeedHeader $primaryPath $primaryHeader
-$secondaryValid = Test-SeedHeader $secondaryPath $secondaryHeader
+if ($ReconciliationPlanOnly) {
+  $planArguments = New-MultiPlanArguments $activePrimaryPath $activeSecondaryPath
+  $planJson = Invoke-NewsCalendarGate $planArguments
+  Write-Output $planJson
+  return
+}
+
+$primaryValid = Test-SeedHeader $activePrimaryPath $primaryHeader
+$secondaryValid = Test-SeedHeader $activeSecondaryPath $secondaryHeader
 $seedsValid = $primaryValid -and $secondaryValid
 $events = @()
+
+if (-not $seedsValid) {
+  Write-Warning 'calendar refresh skipped because both active seed headers are not valid'
+  return
+}
 
 if ($seedsValid) {
   try {
@@ -137,14 +192,25 @@ if ($seedsValid) {
     Write-Host "feed OK: $($events.Count) events"
   }
   catch {
-    Write-Warning "feed fetch failed ($_) -- falling back to mtime-only refresh"
-    $events = @()
+    Write-Warning "feed fetch/parse failed ($_) -- no publication; source/Common bytes and mtimes retained"
+    return
   }
 }
 else {
   Write-Warning 'calendar append skipped because both seed headers are not valid'
 }
 
+if (-not (Test-Path -LiteralPath $StateDir -PathType Container)) {
+  New-Item -ItemType Directory -Path $StateDir -Force | Out-Null
+}
+$stagingDir = Join-Path $StateDir ('news-calendar-staging-' + [Guid]::NewGuid().ToString('N'))
+$primaryPath = Join-Path $stagingDir 'news_calendar_2015_2025.csv'
+$secondaryPath = Join-Path $stagingDir 'forex_factory_calendar_clean.csv'
+
+try {
+New-Item -ItemType Directory -Path $stagingDir -ErrorAction Stop | Out-Null
+[IO.File]::WriteAllBytes($primaryPath, [IO.File]::ReadAllBytes($activePrimaryPath))
+[IO.File]::WriteAllBytes($secondaryPath, [IO.File]::ReadAllBytes($activeSecondaryPath))
 $appendedPrimary = 0
 $appendedSecondary = 0
 if ($seedsValid -and $events.Count -gt 0) {
@@ -241,47 +307,82 @@ if ($seedsValid -and $events.Count -gt 0) {
   Write-Host "appended: primary +$appendedPrimary, secondary +$appendedSecondary"
 }
 
-$copyFailures = New-Object 'System.Collections.Generic.List[string]'
-if (-not (Test-Path -LiteralPath $Common -PathType Container)) {
-  New-Item -ItemType Directory -Path $Common -Force | Out-Null
+$operationStamp = $nowUtcValue.ToString('yyyyMMddTHHmmssZ') + '-' + [Guid]::NewGuid().ToString('N')
+$planPath = Join-Path $StateDir ("news_calendar_publication_plan_$operationStamp.json")
+$planArguments = New-Object 'System.Collections.Generic.List[string]'
+foreach ($argument in @(New-MultiPlanArguments $primaryPath $secondaryPath)) {
+  $planArguments.Add([string]$argument)
 }
-foreach ($pair in @(
-    @{ Seed = $primaryPath; Name = 'news_calendar_2015_2025.csv' },
-    @{ Seed = $secondaryPath; Name = 'forex_factory_calendar_clean.csv' })) {
-  if (Test-Path -LiteralPath $pair.Seed -PathType Leaf) {
-    try {
-      (Get-Item -LiteralPath $pair.Seed).LastWriteTime = $nowLocal
-    }
-    catch {
-      Write-Warning "touch seed failed: $($pair.Seed): $_"
-    }
-    $destination = Join-Path $Common $pair.Name
-    try {
-      Copy-Item -LiteralPath $pair.Seed -Destination $destination -Force -ErrorAction Stop
-    }
-    catch {
-      $copyFailure = "Common copy FAILED: source='$($pair.Seed)' destination='$destination' error='$_'"
-      $copyFailures.Add($copyFailure)
-      Write-Error $copyFailure
-    }
-    if (Test-Path -LiteralPath $destination) {
-      try {
-        (Get-Item -LiteralPath $destination).LastWriteTime = $nowLocal
-      }
-      catch {
-        Write-Warning "touch Common failed: $destination : $_"
-      }
-    }
-  }
-  else {
-    Write-Warning "seed MISSING: $($pair.Seed)"
-  }
+$planArguments.Add('--output')
+$planArguments.Add($planPath)
+$planJson = Invoke-NewsCalendarGate @($planArguments.ToArray())
+$planObject = ConvertFrom-Json -InputObject $planJson -ErrorAction Stop
+$planSha = [string]$planObject.plan_sha256
+if ($planSha -notmatch '^[0-9a-f]{64}$') {
+  throw 'news-calendar multi-plan did not return a valid plan_sha256'
 }
-if ($copyFailures.Count -gt 0) {
-  throw "news-calendar refresh failed: $($copyFailures.Count) Common copy operation(s) failed"
+if (-not (Test-Path -LiteralPath $planPath -PathType Leaf)) {
+  throw "news-calendar multi-plan output is missing: $planPath"
+}
+$persistedPlan = ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($planPath)) -ErrorAction Stop
+if ([string]$persistedPlan.plan_sha256 -cne $planSha) {
+  throw 'persisted news-calendar plan does not match stdout plan_sha256'
 }
 
-$primaryRowsForCoverage = @(Read-Rows $primaryPath)
+$publishArguments = New-Object 'System.Collections.Generic.List[string]'
+$journalPath = Join-Path $StateDir ("news_calendar_publication_journal_$operationStamp.json")
+$receiptPath = Join-Path $StateDir ("news_calendar_publication_receipt_$operationStamp.json")
+foreach ($value in @(
+    'multi-publish', '--plan', $planPath,
+    '--expected-plan-sha256', $planSha,
+    '--apply', '--journal-output', $journalPath,
+    '--receipt-output', $receiptPath)) {
+  $publishArguments.Add([string]$value)
+}
+if (Test-Path -LiteralPath $factoryOffFlag -PathType Leaf) {
+  $flagHash = (Get-FileHash -LiteralPath $factoryOffFlag -Algorithm SHA256).Hash.ToLowerInvariant()
+  $publishArguments.Add('--expected-factory-off-sha256')
+  $publishArguments.Add($flagHash)
+}
+elseif (Test-Path -LiteralPath $factoryOffFlag) {
+  throw "FACTORY_OFF path exists but is not a file: $factoryOffFlag"
+}
+else {
+  $publishArguments.Add('--allow-factory-on')
+}
+
+$receiptJson = Invoke-NewsCalendarGate @($publishArguments.ToArray())
+$receiptObject = ConvertFrom-Json -InputObject $receiptJson -ErrorAction Stop
+if (
+  -not $receiptObject.ok -or
+  [string]$receiptObject.status -cne 'committed' -or
+  -not $receiptObject.published -or
+  [string]$receiptObject.plan_sha256 -cne $planSha
+) {
+  throw 'news-calendar publication receipt is not bound to the planned apply'
+}
+if (-not (Test-Path -LiteralPath $journalPath -PathType Leaf)) {
+  throw "news-calendar publication journal output is missing: $journalPath"
+}
+if (-not (Test-Path -LiteralPath $receiptPath -PathType Leaf)) {
+  throw "news-calendar publication receipt output is missing: $receiptPath"
+}
+$persistedReceipt = ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($receiptPath)) -ErrorAction Stop
+if (
+  -not $persistedReceipt.ok -or
+  [string]$persistedReceipt.status -cne 'committed' -or
+  -not $persistedReceipt.published -or
+  [string]$persistedReceipt.plan_sha256 -cne $planSha
+) {
+  throw 'persisted news-calendar receipt is not bound to the planned apply'
+}
+$persistedJournal = ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($journalPath)) -ErrorAction Stop
+if (-not $persistedJournal.committed -or [string]$persistedJournal.state -cne 'COMMITTED_RECEIPTED') {
+  throw 'persisted news-calendar journal does not record a receipted commit'
+}
+Write-Host "publication OK: plan=$planSha targets=$($commonTargets.Count) journal=$journalPath receipt=$receiptPath"
+
+$primaryRowsForCoverage = @(Read-Rows $activePrimaryPath)
 $newest = [DateTime]::MinValue
 foreach ($row in @($primaryRowsForCoverage | Select-Object -Skip 1)) {
   $firstColumn = ($row -split ',')[0]
@@ -313,3 +414,14 @@ else {
 }
 
 Write-Host "news-calendar refresh v2 done @ $nowLocal (primary +$appendedPrimary, secondary +$appendedSecondary)"
+}
+finally {
+  foreach ($knownPath in @($primaryPath, $secondaryPath)) {
+    if (Test-Path -LiteralPath $knownPath -PathType Leaf) {
+      Remove-Item -LiteralPath $knownPath -Force -ErrorAction SilentlyContinue
+    }
+  }
+  if (Test-Path -LiteralPath $stagingDir -PathType Container) {
+    Remove-Item -LiteralPath $stagingDir -Force -ErrorAction SilentlyContinue
+  }
+}

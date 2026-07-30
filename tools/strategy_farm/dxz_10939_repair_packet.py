@@ -30,6 +30,7 @@ except ImportError:  # fail closed when qualification trust support is unavailab
     Ed25519PublicKey = None  # type: ignore[assignment,misc]
 
 try:
+    from tools.strategy_farm.dxz_binding_amendment import load_binding_amendment
     from tools.strategy_farm import dxz_as_live_requal as hardened_requal
     from tools.strategy_farm.portfolio.ftmo_report_cost_reconcile import (
         extract_round_trips,
@@ -40,6 +41,7 @@ try:
         _report_rows,
     )
 except ModuleNotFoundError:  # direct ``python path/to/script.py`` invocation
+    from dxz_binding_amendment import load_binding_amendment
     import dxz_as_live_requal as hardened_requal
     from portfolio.ftmo_report_cost_reconcile import extract_round_trips
     from portfolio.prop_challenge_optimizer import (
@@ -50,6 +52,37 @@ except ModuleNotFoundError:  # direct ``python path/to/script.py`` invocation
 
 
 SPEC_ARTIFACT = "DXZ_10939_GBPUSD_H4_REPAIR_SPEC"
+SPEC_AMENDMENT_ARTIFACT = "DXZ_10939_GBPUSD_H4_REPAIR_SPEC_BINDING_AMENDMENT"
+BINDING_AMENDMENT_AFTER = {
+    "repo_ex5": {
+        "id": "repo_ex5",
+        "role": "unqualified_repository_binary_current_observation",
+        "path": "C:/QM/repo/framework/EAs/QM5_10939_grimes-context-pb/QM5_10939_grimes-context-pb.ex5",
+        "sha256": "0c1278f5d44d0c88db90f632d0cefacda79b6c8853bde9540676c4c95296edd0",
+        "bytes": 354232,
+    },
+    "deployed_preset_read_only": {
+        "id": "deployed_preset_read_only",
+        "role": "historical_archived_E4_preset_input_read_only",
+        "path": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/_archiv_alte_setfiles/slot1_GBPUSD_H4_QM5_10939_grimes-context-pb_magic109390001_dxz23_live.set",
+        "sha256": "8cbed5104814da856484317e7f06add7d0e17aeb033cebe424b457b43c683206",
+        "bytes": 1733,
+    },
+}
+BINDING_AMENDMENT_BASE = {
+    "path": "C:/QM/repo/docs/ops/evidence/dxz_10939_gbpusd_h4_repair_spec_20260716.json",
+    "sha256": "ac981ac579cafbcaf54e83280b98857ab0c295edc5379d18ae9f9ffa095898f6",
+    "bytes": 28171,
+    "git_commit": "7b36ff27f83f024bf1c43bb5537cc747f52b887a",
+    "git_blob_sha1": "0f56f64246ece056a0032ca73ae7bebdf9042f0a",
+}
+BINDING_AMENDMENT_OPEN_DECISIONS = {
+    "CARD_V2_SEMANTICS",
+    "NEWS_POLICY",
+    "AS_LIVE_RISK_CONTRACT",
+    "SOURCE_OF_RECORD",
+    "OUT_OF_BAND_OWNER_TRUST_ANCHOR",
+}
 BUNDLE_ARTIFACT = "DXZ_10939_GBPUSD_H4_REQUAL_BUNDLE"
 PACKET_ID = "DXZ-10939-GBPUSD-DWX-H4-20260716"
 SHA_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -485,14 +518,40 @@ def _validate_spec_payload(
 
 def validate_spec(spec_path: Path, *, verify_files: bool = True) -> dict[str, Any]:
     checks = Checks()
+    amendment: dict[str, Any] | None = None
     try:
         spec = _load_object(spec_path)
+        if spec.get("artifact_type") == SPEC_AMENDMENT_ARTIFACT:
+            spec, amendment = load_binding_amendment(
+                spec_path,
+                amendment_artifact_type=SPEC_AMENDMENT_ARTIFACT,
+                amendment_id="DXZ-10939-BINDINGS-20260730-A1",
+                base_artifact_type=SPEC_ARTIFACT,
+                packet_id=PACKET_ID,
+                binding_container=("baseline", "hash_bindings"),
+                required_change_ids={"repo_ex5", "deployed_preset_read_only"},
+                expected_base_binding=BINDING_AMENDMENT_BASE,
+                expected_after_bindings=BINDING_AMENDMENT_AFTER,
+                expected_open_strategy_decisions=BINDING_AMENDMENT_OPEN_DECISIONS,
+                expected_scope={
+                    "ea_id": 10939,
+                    "symbol": "GBPUSD.DWX",
+                    "timeframe": "H4",
+                },
+            )
     except ValueError as exc:
         checks.errors.append(f"SPEC_READ_ERROR: {exc}")
         return checks.report(spec_path=str(spec_path.resolve()))
     _validate_spec_payload(spec, spec_path, checks, verify_files=verify_files)
     result = checks.report(
-        spec_path=str(spec_path.resolve()), spec_sha256=sha256_file(spec_path)
+        spec_path=str(spec_path.resolve()),
+        spec_sha256=sha256_file(spec_path),
+        amendment_id=amendment.get("amendment_id") if amendment else None,
+        amended_binding_ids=(
+            [str(row.get("id")) for row in amendment.get("binding_changes") or []]
+            if amendment
+            else []
+        ),
     )
     if result["status"] == "PASS":
         result["status"] = "BLOCKED_OWNER_TRUST_UNREGISTERED"

@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import datetime as dt
 import json
 import hashlib
+import os
 import sqlite3
+import subprocess
 import sys
 from pathlib import Path
 
@@ -14,6 +17,34 @@ sys.path.insert(0, str(HERE.parent))
 
 import farmctl  # noqa: E402
 import maintenance_control as mc  # noqa: E402
+
+
+RESTART_HOLD_IDS = mc.CANONICAL_RESTART_HOLD_IDS
+
+
+def _runtime_authorization() -> dict:
+    return {
+        "authorized": True,
+        "decision_id": "unit-runtime-decision",
+        "activation_nonce": "a" * 32,
+        "decision_sha256": "b" * 64,
+        "decision_git_commit": "c" * 40,
+        "decision_git_blob": "d" * 40,
+        "factory_off_flag_sha256": "e" * 64,
+        "task_enabled_before_sha256": "f" * 64,
+        "source_bindings": {
+            "factory_on": {
+                "sha256": "1" * 64,
+                "git_commit": "2" * 40,
+                "git_blob": "3" * 40,
+            },
+            "maintenance_control": {
+                "sha256": "4" * 64,
+                "git_commit": "5" * 40,
+                "git_blob": "6" * 40,
+            },
+        },
+    }
 
 
 def _seed(root: Path) -> Path:
@@ -84,6 +115,128 @@ def _manifest() -> dict:
 def _write_and_load_manifest(path: Path) -> dict:
     path.write_text(json.dumps(_manifest()), encoding="utf-8")
     return mc.load_manifest(path)
+
+
+def _prepare_restart_holds(tmp_path: Path) -> tuple[Path, Path, Path]:
+    root = tmp_path / "farm"
+    db = _seed(root)
+    manifest = _write_and_load_manifest(tmp_path / "manifest.json")
+    flag = root / "state" / "FACTORY_OFF.flag"
+    flag.write_text("intentional\n", encoding="utf-8")
+    mc.apply_manifest(
+        db,
+        manifest,
+        factory_off_flag=flag,
+        expected_db_sha256=mc.sha256_file(db),
+        expected_db_state_sha256=mc.sqlite_state_sha256(db),
+        expected_factory_off_sha256=mc.sha256_file(flag),
+        snapshot_path=tmp_path / "restart-hold-snapshot.sqlite",
+    )
+    with sqlite3.connect(db) as conn:
+        conn.execute("DELETE FROM work_item_holds WHERE release_on_restart=1")
+        now = mc.utc_now()
+        conn.executemany(
+            """
+            INSERT INTO work_item_holds(
+                work_item_id, hold_code, reason, active, release_on_restart,
+                created_at, updated_at
+            ) VALUES (?, 'FACTORY_OFF', 'resume after restart', 1, 1, ?, ?)
+            """,
+            [(work_item_id, now, now) for work_item_id in RESTART_HOLD_IDS],
+        )
+        conn.commit()
+    flag.unlink()
+    return root, db, flag
+
+
+def _allow_test_factory_on_context(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        mc, "_require_canonical_restart_release_paths", lambda *args, **kwargs: None
+    )
+    monkeypatch.setattr(
+        mc,
+        "_validate_canonical_factory_on_lock",
+        lambda *args, **kwargs: {"validated_test_context": True},
+    )
+    monkeypatch.setattr(
+        mc,
+        "validate_runtime_activation_decision",
+        lambda *args, **kwargs: _runtime_authorization(),
+    )
+
+
+def _factory_on_lock_record(
+    *, nonce: str, pid: int | None = None, runtime_authorization: dict | None = None
+) -> dict:
+    runtime = runtime_authorization or _runtime_authorization()
+    now = dt.datetime.now(dt.UTC)
+    return {
+        "pid": os.getppid() if pid is None else pid,
+        "owner": mc.FACTORY_ON_LOCK_OWNER,
+        "nonce": nonce,
+        "process_image": str(mc.CANONICAL_FACTORY_ON_PROCESS_IMAGE),
+        "process_started_at_utc": (now - dt.timedelta(minutes=1)).isoformat(),
+        "created_at": now.isoformat(),
+        "lock_handle_value": 12345,
+        "session_id": 7,
+        "factory_on_path": str(mc.CANONICAL_FACTORY_ON_PATH),
+        "owner_decision_sha256": mc.CANONICAL_OWNER_DECISION_SHA256,
+        "owner_decision_commit": mc.CANONICAL_OWNER_DECISION_COMMIT,
+        "owner_decision_blob": mc.CANONICAL_OWNER_DECISION_BLOB,
+        "restart_hold_ids": list(RESTART_HOLD_IDS),
+        "disabled_terminals_sha256": "0" * 64,
+        "runtime_decision_id": runtime["decision_id"],
+        "runtime_activation_nonce": runtime["activation_nonce"],
+        "runtime_decision_sha256": runtime["decision_sha256"],
+        "runtime_decision_commit": runtime["decision_git_commit"],
+        "runtime_decision_blob": runtime["decision_git_blob"],
+        "factory_on_source_sha256": runtime["source_bindings"]["factory_on"]["sha256"],
+        "factory_on_source_commit": runtime["source_bindings"]["factory_on"]["git_commit"],
+        "factory_on_source_blob": runtime["source_bindings"]["factory_on"]["git_blob"],
+        "factory_off_flag_sha256": runtime["factory_off_flag_sha256"],
+        "factory_off_request_path": str(mc.DEFAULT_FACTORY_OFF_REQUEST),
+        "task_enabled_before_sha256": runtime["task_enabled_before_sha256"],
+    }
+
+
+def _mock_valid_factory_parent(
+    monkeypatch: pytest.MonkeyPatch,
+    record: dict,
+    *,
+    actively_held: bool = True,
+    handle_matches: bool = True,
+) -> None:
+    monkeypatch.setattr(
+        mc,
+        "_query_windows_process_identity",
+        lambda pid: {
+            "process_id": pid,
+            "executable_path": str(mc.CANONICAL_FACTORY_ON_PROCESS_IMAGE),
+            "command_line": "canonical-test-command-line",
+            "session_id": record["session_id"],
+            "process_started_at_utc": record["process_started_at_utc"],
+        },
+    )
+    monkeypatch.setattr(
+        mc,
+        "_windows_command_line_args",
+        lambda command_line: [
+            str(mc.CANONICAL_FACTORY_ON_PROCESS_IMAGE),
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(mc.CANONICAL_FACTORY_ON_PATH),
+            "-CanonicalRuntimeHost",
+        ],
+    )
+    monkeypatch.setattr(mc, "_windows_process_session_id", lambda pid: record["session_id"])
+    monkeypatch.setattr(mc, "_is_lock_actively_held", lambda path: actively_held)
+    monkeypatch.setattr(
+        mc,
+        "_parent_handle_targets_lock",
+        lambda parent_pid, handle_value, lock_path: handle_matches,
+    )
 
 
 def test_dry_run_is_read_only_and_reports_exact_prestate(tmp_path: Path) -> None:
@@ -206,28 +359,20 @@ def test_transition_ledger_cannot_be_updated_or_deleted(tmp_path: Path) -> None:
             conn.execute("UPDATE work_item_transition_ledger SET reason='tampered'")
 
 
-def test_restart_release_requires_factory_on(tmp_path: Path) -> None:
-    root = tmp_path / "farm"
-    db = _seed(root)
-    manifest = _write_and_load_manifest(tmp_path / "manifest.json")
-    flag = root / "state" / "FACTORY_OFF.flag"
+def test_restart_release_requires_factory_on(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _, db, flag = _prepare_restart_holds(tmp_path)
+    _allow_test_factory_on_context(monkeypatch)
     flag.write_text("intentional\n", encoding="utf-8")
-    mc.apply_manifest(
-        db,
-        manifest,
-        factory_off_flag=flag,
-        expected_db_sha256=mc.sha256_file(db),
-        expected_db_state_sha256=mc.sqlite_state_sha256(db),
-        expected_factory_off_sha256=mc.sha256_file(flag),
-        snapshot_path=tmp_path / "snapshot.sqlite",
-    )
-    with pytest.raises(RuntimeError, match="forbidden"):
+    with pytest.raises(RuntimeError, match="OFF wins"):
         mc.release_restart_holds(
             db,
             factory_off_flag=flag,
             expected_db_sha256=None,
             apply=True,
             release_note="test",
+            factory_on_lock_nonce="unit-test-nonce",
         )
     flag.unlink()
     dry = mc.release_restart_holds(
@@ -237,57 +382,479 @@ def test_restart_release_requires_factory_on(tmp_path: Path) -> None:
         apply=False,
         release_note="test",
     )
-    assert dry["work_item_ids"] == ["stale-active", "valid-pending"]
+    assert dry["work_item_ids"] == sorted(RESTART_HOLD_IDS)
 
-    lock_path = root / "state" / "FACTORY_MUTATION.lock"
-    lock_record = {
-        "pid": 4242,
-        "owner": "factory_on_restart_window",
-        "nonce": "unit-test-nonce",
-    }
-    lock_path.write_text(json.dumps(lock_record), encoding="utf-8")
     released = mc.release_restart_holds(
         db,
         factory_off_flag=flag,
         expected_db_sha256=None,
         apply=True,
         release_note="all components healthy",
-        held_lock_owner_pid=4242,
-        held_lock_owner="factory_on_restart_window",
-        held_lock_nonce="unit-test-nonce",
+        factory_on_lock_nonce="unit-test-nonce",
     )
-    assert released["released"] == ["stale-active", "valid-pending"]
-    assert released["mutation_lock_mode"] == "authenticated_factory_on_lock"
-    assert released["post_db_sha256"] == released["post_db_state_sha256"]
+    assert released["released"] == sorted(RESTART_HOLD_IDS)
+    assert released["mutation_committed"] is True
+    assert released["mutation_lock_mode"] == "authenticated_live_factory_on_parent_lock"
+    assert released["post_commit_evidence"]["status"] == "PASS"
     with sqlite3.connect(db) as conn:
         assert conn.execute(
             "SELECT COUNT(*) FROM work_item_holds WHERE active=1 AND release_on_restart=1"
         ).fetchone()[0] == 0
 
 
-def test_restart_release_rejects_wrong_held_lock_nonce(tmp_path: Path) -> None:
-    root = tmp_path / "farm"
-    db = _seed(root)
-    lock_path = root / "state" / "FACTORY_MUTATION.lock"
-    lock_path.write_text(
-        json.dumps({
-            "pid": 4242,
-            "owner": "factory_on_restart_window",
-            "nonce": "real-nonce",
-        }),
+def test_restart_release_rejects_wrong_factory_on_lock_nonce(tmp_path: Path) -> None:
+    lock_path = tmp_path / "FACTORY_MUTATION.lock"
+    lock_path.write_text(json.dumps(_factory_on_lock_record(nonce="real-nonce")), encoding="utf-8")
+    with pytest.raises(RuntimeError, match="identity mismatch"):
+        mc._validate_canonical_factory_on_lock(
+            lock_path,
+            expected_nonce="wrong-nonce",
+            runtime_authorization=_runtime_authorization(),
+        )
+
+
+def test_restart_release_rejects_matching_but_unheld_fake_lock(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runtime = _runtime_authorization()
+    record = _factory_on_lock_record(nonce="known-nonce", runtime_authorization=runtime)
+    lock_path = tmp_path / "FACTORY_MUTATION.lock"
+    lock_path.write_text(json.dumps(record), encoding="utf-8")
+    _mock_valid_factory_parent(monkeypatch, record, actively_held=False)
+
+    with pytest.raises(RuntimeError, match="not actively held"):
+        mc._validate_canonical_factory_on_lock(
+            lock_path,
+            expected_nonce="known-nonce",
+            runtime_authorization=runtime,
+        )
+
+
+def test_restart_release_rejects_parent_handle_for_another_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runtime = _runtime_authorization()
+    record = _factory_on_lock_record(nonce="known-nonce", runtime_authorization=runtime)
+    lock_path = tmp_path / "FACTORY_MUTATION.lock"
+    lock_path.write_text(json.dumps(record), encoding="utf-8")
+    _mock_valid_factory_parent(monkeypatch, record, handle_matches=False)
+
+    with pytest.raises(RuntimeError, match="handle does not identify"):
+        mc._validate_canonical_factory_on_lock(
+            lock_path,
+            expected_nonce="known-nonce",
+            runtime_authorization=runtime,
+        )
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows handle-duplication contract")
+def test_parent_handle_file_identity_probe_uses_concrete_live_parent_handle(
+    tmp_path: Path,
+) -> None:
+    lock_path = tmp_path / "FACTORY_MUTATION.lock"
+    other_path = tmp_path / "other.lock"
+    lock_path.write_text("lock\n", encoding="utf-8")
+    other_path.write_text("other\n", encoding="utf-8")
+    helper = tmp_path / "probe_parent_handle.py"
+    helper.write_text(
+        "\n".join(
+            (
+                "import json, os, sys",
+                f"sys.path.insert(0, {str(HERE.parent)!r})",
+                "import maintenance_control as mc",
+                "lock_handle = int(sys.argv[1])",
+                "other_handle = int(sys.argv[2])",
+                "lock_path = mc.Path(sys.argv[3])",
+                "print(json.dumps({",
+                "  'matching': mc._parent_handle_targets_lock(os.getppid(), lock_handle, lock_path),",
+                "  'other': mc._parent_handle_targets_lock(os.getppid(), other_handle, lock_path),",
+                "}))",
+            )
+        )
+        + "\n",
         encoding="utf-8",
     )
-    with pytest.raises(RuntimeError, match="identity mismatch"):
-        mc.release_restart_holds(
-            db,
-            factory_off_flag=root / "state" / "FACTORY_OFF.flag",
-            expected_db_sha256=None,
-            apply=True,
-            release_note="test",
-            held_lock_owner_pid=4242,
-            held_lock_owner="factory_on_restart_window",
-            held_lock_nonce="wrong-nonce",
+    def ps_literal(value: Path | str) -> str:
+        return "'" + str(value).replace("'", "''") + "'"
+
+    script = f"""
+$ErrorActionPreference = 'Stop'
+$lock = [System.IO.File]::Open({ps_literal(lock_path)}, 'Open', 'ReadWrite', 'Read')
+$other = [System.IO.File]::Open({ps_literal(other_path)}, 'Open', 'ReadWrite', 'Read')
+try {{
+    & {ps_literal(sys.executable)} {ps_literal(helper)} `
+        $lock.SafeFileHandle.DangerousGetHandle().ToInt64() `
+        $other.SafeFileHandle.DangerousGetHandle().ToInt64() {ps_literal(lock_path)}
+    if ($LASTEXITCODE -ne 0) {{ exit $LASTEXITCODE }}
+}} finally {{
+    $other.Dispose()
+    $lock.Dispose()
+}}
+"""
+    result = subprocess.run(
+        (
+            str(mc.CANONICAL_FACTORY_ON_PROCESS_IMAGE),
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            script,
+        ),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=30,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    probe = json.loads(result.stdout)
+    assert probe == {"matching": True, "other": False}
+
+
+def test_restart_release_rejects_non_factory_parent_with_matching_claimed_lock(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runtime = _runtime_authorization()
+    record = _factory_on_lock_record(nonce="known-nonce", runtime_authorization=runtime)
+    lock_path = tmp_path / "FACTORY_MUTATION.lock"
+    lock_path.write_text(json.dumps(record), encoding="utf-8")
+    monkeypatch.setattr(
+        mc,
+        "_query_windows_process_identity",
+        lambda pid: {
+            "process_id": pid,
+            "executable_path": sys.executable,
+            "command_line": f'"{sys.executable}" fake_parent.py',
+            "session_id": 7,
+            "process_started_at_utc": record["process_started_at_utc"],
+        },
+    )
+
+    with pytest.raises(RuntimeError, match="parent image mismatch"):
+        mc._validate_canonical_factory_on_lock(
+            lock_path,
+            expected_nonce="known-nonce",
+            runtime_authorization=runtime,
         )
+
+
+def test_restart_release_rejects_disabled_terminal_drift_under_live_lock(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    disabled = tmp_path / "disabled_terminals.txt"
+    disabled.write_text("T5\n", encoding="utf-8")
+    record = _factory_on_lock_record(nonce="known-nonce")
+    record["disabled_terminals_sha256"] = mc.sha256_file(disabled)
+    lock_path = tmp_path / "FACTORY_MUTATION.lock"
+    lock_path.write_text(json.dumps(record), encoding="utf-8")
+    disabled.write_text("T6\n", encoding="utf-8")
+    monkeypatch.setattr(mc, "DEFAULT_DISABLED_TERMINALS", disabled)
+    _mock_valid_factory_parent(monkeypatch, record)
+
+    with pytest.raises(RuntimeError, match="changed under Factory_ON lock"):
+        mc._validate_canonical_factory_on_lock(
+            lock_path,
+            expected_nonce="known-nonce",
+            runtime_authorization=_runtime_authorization(),
+        )
+
+
+def test_restart_release_apply_rejects_noncanonical_paths(tmp_path: Path) -> None:
+    with pytest.raises(RuntimeError, match="canonical production paths"):
+        mc._require_canonical_restart_release_paths(
+            tmp_path / "farm.sqlite",
+            tmp_path / "FACTORY_OFF.flag",
+            tmp_path / "FACTORY_MUTATION.lock",
+        )
+
+
+@pytest.mark.parametrize("drift", ["missing", "extra"])
+def test_restart_release_rejects_missing_or_extra_ids_before_writes(
+    tmp_path: Path, drift: str
+) -> None:
+    _, db, _ = _prepare_restart_holds(tmp_path)
+    with sqlite3.connect(db) as conn:
+        if drift == "missing":
+            conn.execute(
+                "DELETE FROM work_item_holds WHERE work_item_id=?",
+                (RESTART_HOLD_IDS[0],),
+            )
+        else:
+            now = mc.utc_now()
+            conn.execute(
+                """
+                INSERT INTO work_item_holds(
+                    work_item_id, hold_code, reason, active, release_on_restart,
+                    created_at, updated_at
+                ) VALUES ('unexpected-owner-id', 'FACTORY_OFF', 'not approved', 1, 1, ?, ?)
+                """,
+                (now, now),
+            )
+        conn.commit()
+
+    with pytest.raises(RuntimeError, match="exact-set mismatch") as exc_info:
+        mc._apply_restart_hold_release_transaction(
+            db,
+            release_note="must not apply",
+            runtime_authorization=_runtime_authorization(),
+        )
+
+    if drift == "missing":
+        assert RESTART_HOLD_IDS[0] in str(exc_info.value)
+    else:
+        assert "unexpected-owner-id" in str(exc_info.value)
+    with sqlite3.connect(db) as conn:
+        expected_active = 6 if drift == "missing" else 8
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_holds WHERE active=1 AND release_on_restart=1"
+        ).fetchone()[0] == expected_active
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_transition_ledger "
+            "WHERE action='release_hold'"
+        ).fetchone()[0] == 0
+        assert conn.execute(
+            "SELECT COUNT(*) FROM events WHERE event='maintenance_hold_released'"
+        ).fetchone()[0] == 0
+        assert conn.execute(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
+            "AND name='factory_runtime_activation_consumptions'"
+        ).fetchone()[0] == 0
+
+
+def test_restart_release_ids_are_unique_and_bound_to_canonical_owner_decision() -> None:
+    decision = mc._validate_canonical_restart_owner_decision()
+    assert len(RESTART_HOLD_IDS) == len(set(RESTART_HOLD_IDS)) == 7
+    assert decision["restart_holds"]["authorized_work_item_ids"] == list(
+        RESTART_HOLD_IDS
+    )
+
+
+def test_restart_release_rejects_tampered_owner_decision(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    decision_path = tmp_path / "decision.json"
+    decision_path.write_text('{"authority":"OWNER","tampered":true}', encoding="utf-8")
+    monkeypatch.setattr(mc, "_canonical_repo_root", lambda: tmp_path)
+    monkeypatch.setattr(
+        mc, "CANONICAL_OWNER_DECISION_RELATIVE_PATH", Path("decision.json")
+    )
+    with pytest.raises(RuntimeError, match="SHA-256 mismatch"):
+        mc._validate_canonical_restart_owner_decision()
+
+
+def test_restart_release_cas_failure_rolls_back_every_write(tmp_path: Path) -> None:
+    _, db, _ = _prepare_restart_holds(tmp_path)
+    cas_target = sorted(RESTART_HOLD_IDS)[2]
+    with sqlite3.connect(db) as conn:
+        conn.executescript(
+            f"""
+            CREATE TRIGGER ignore_one_restart_release
+            BEFORE UPDATE OF active ON work_item_holds
+            WHEN OLD.work_item_id='{cas_target}'
+            BEGIN
+                SELECT RAISE(IGNORE);
+            END;
+            """
+        )
+
+    with pytest.raises(RuntimeError, match=f"CAS failed.*{cas_target}"):
+        mc._apply_restart_hold_release_transaction(
+            db,
+            release_note="must roll back",
+            runtime_authorization=_runtime_authorization(),
+        )
+
+    with sqlite3.connect(db) as conn:
+        placeholders = ",".join("?" for _ in RESTART_HOLD_IDS)
+        rows = conn.execute(
+            "SELECT work_item_id, active, released_at, release_note "
+            f"FROM work_item_holds WHERE work_item_id IN ({placeholders}) ORDER BY work_item_id",
+            RESTART_HOLD_IDS,
+        ).fetchall()
+        assert rows == [(work_item_id, 1, None, None) for work_item_id in sorted(RESTART_HOLD_IDS)]
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_transition_ledger "
+            "WHERE action='release_hold'"
+        ).fetchone()[0] == 0
+        assert conn.execute(
+            "SELECT COUNT(*) FROM events WHERE event='maintenance_hold_released'"
+        ).fetchone()[0] == 0
+
+
+def test_restart_release_ledger_collision_rolls_back_instead_of_ignoring(
+    tmp_path: Path,
+) -> None:
+    _, db, _ = _prepare_restart_holds(tmp_path)
+    collision_id = sorted(RESTART_HOLD_IDS)[0]
+    with sqlite3.connect(db) as conn:
+        created_at = conn.execute(
+            "SELECT created_at FROM work_item_holds WHERE work_item_id=?",
+            (collision_id,),
+        ).fetchone()[0]
+        conn.execute(
+            """
+            INSERT INTO work_item_transition_ledger(
+                idempotency_key, ts, work_item_id, action, reason, run_id, detail_json
+            ) VALUES (?, ?, ?, 'preexisting_collision', 'test', 'test', '{}')
+            """,
+            (
+                f"restart-release:{collision_id}:{created_at}",
+                mc.utc_now(),
+                collision_id,
+            ),
+        )
+        conn.commit()
+
+    with pytest.raises(sqlite3.IntegrityError, match="UNIQUE constraint failed"):
+        mc._apply_restart_hold_release_transaction(
+            db,
+            release_note="must roll back on ledger collision",
+            runtime_authorization=_runtime_authorization(),
+        )
+
+    with sqlite3.connect(db) as conn:
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_holds WHERE active=1 AND release_on_restart=1"
+        ).fetchone()[0] == 7
+        assert conn.execute(
+            "SELECT COUNT(*) FROM events WHERE event='maintenance_hold_released'"
+        ).fetchone()[0] == 0
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_transition_ledger WHERE action='release_hold'"
+        ).fetchone()[0] == 0
+        assert conn.execute(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
+            "AND name='factory_runtime_activation_consumptions'"
+        ).fetchone()[0] == 0
+
+
+def test_restart_release_consumes_runtime_nonce_once_in_same_transaction(
+    tmp_path: Path,
+) -> None:
+    _, db, _ = _prepare_restart_holds(tmp_path)
+    runtime = _runtime_authorization()
+    first = mc._apply_restart_hold_release_transaction(
+        db,
+        release_note="consume one-time OWNER activation",
+        runtime_authorization=runtime,
+    )
+    assert first["runtime_activation_nonce_consumed"] == runtime["activation_nonce"]
+
+    with sqlite3.connect(db) as conn:
+        consumption = conn.execute(
+            "SELECT activation_nonce, decision_id, decision_sha256, released_hold_count "
+            "FROM factory_runtime_activation_consumptions"
+        ).fetchall()
+        assert consumption == [
+            (
+                runtime["activation_nonce"],
+                runtime["decision_id"],
+                runtime["decision_sha256"],
+                7,
+            )
+        ]
+        conn.execute(
+            "UPDATE work_item_holds SET active=1, released_at=NULL, release_note=NULL "
+            "WHERE release_on_restart=1"
+        )
+        conn.commit()
+
+    with pytest.raises(sqlite3.IntegrityError, match="UNIQUE constraint failed"):
+        mc._apply_restart_hold_release_transaction(
+            db,
+            release_note="nonce replay must abort",
+            runtime_authorization=runtime,
+        )
+
+    with sqlite3.connect(db) as conn:
+        assert conn.execute(
+            "SELECT COUNT(*) FROM factory_runtime_activation_consumptions"
+        ).fetchone()[0] == 1
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_holds WHERE active=1 AND release_on_restart=1"
+        ).fetchone()[0] == 7
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_transition_ledger WHERE action='release_hold'"
+        ).fetchone()[0] == 7
+
+
+@pytest.mark.parametrize("intent_kind", ["main_flag", "request_marker"])
+def test_restart_release_rechecks_off_intent_inside_begin_immediate_window(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    intent_kind: str,
+) -> None:
+    _, db, _ = _prepare_restart_holds(tmp_path)
+    flag = tmp_path / "FACTORY_OFF.flag"
+    request = tmp_path / "FACTORY_OFF_REQUEST.flag"
+    appeared = flag if intent_kind == "main_flag" else request
+    real_check = mc._require_no_factory_off_intent
+    checks = 0
+
+    def inject_between_precheck_and_transaction(
+        factory_off_flag: Path, factory_off_request: Path
+    ) -> None:
+        nonlocal checks
+        checks += 1
+        real_check(factory_off_flag, factory_off_request)
+        if checks == 1:
+            appeared.write_text("new emergency OFF intent\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        mc, "_require_no_factory_off_intent", inject_between_precheck_and_transaction
+    )
+    with pytest.raises(RuntimeError, match="OFF wins"):
+        mc._apply_restart_hold_release_transaction(
+            db,
+            release_note="must abort for emergency OFF",
+            runtime_authorization=_runtime_authorization(),
+            factory_off_flag=flag,
+            factory_off_request=request,
+        )
+
+    assert checks == 2
+    assert appeared.exists()
+    with sqlite3.connect(db) as conn:
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_holds WHERE active=1 AND release_on_restart=1"
+        ).fetchone()[0] == 7
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_transition_ledger WHERE action='release_hold'"
+        ).fetchone()[0] == 0
+        assert conn.execute(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
+            "AND name='factory_runtime_activation_consumptions'"
+        ).fetchone()[0] == 0
+
+
+def test_post_commit_evidence_failure_reports_committed_without_raising(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _, db, flag = _prepare_restart_holds(tmp_path)
+    _allow_test_factory_on_context(monkeypatch)
+
+    def fail_checkpoint(path: Path) -> dict[str, int]:
+        raise RuntimeError(f"simulated evidence failure for {path}")
+
+    monkeypatch.setattr(mc, "checkpoint_wal", fail_checkpoint)
+    result = mc.release_restart_holds(
+        db,
+        factory_off_flag=flag,
+        expected_db_sha256=None,
+        apply=True,
+        release_note="commit remains authoritative",
+        factory_on_lock_nonce="unit-test-nonce",
+    )
+
+    assert result["mutation_committed"] is True
+    assert result["post_commit_evidence"]["status"] == "FAILED_AFTER_COMMIT"
+    assert "simulated evidence failure" in result["post_commit_evidence"]["errors"][0]
+    with sqlite3.connect(db) as conn:
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_holds WHERE active=1 AND release_on_restart=1"
+        ).fetchone()[0] == 0
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_transition_ledger WHERE action='release_hold'"
+        ).fetchone()[0] == 7
 
 
 def test_completed_hold_release_is_exact_hash_bound_and_keeps_factory_off(tmp_path: Path) -> None:
