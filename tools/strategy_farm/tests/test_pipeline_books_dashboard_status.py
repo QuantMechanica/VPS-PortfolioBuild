@@ -18,7 +18,7 @@ from tools.strategy_farm.pipeline_books_dashboard_status import (
 )
 
 
-NOW = dt.datetime(2026, 7, 30, 5, 30, tzinfo=dt.UTC)
+NOW = dt.datetime(2026, 7, 30, 10, 0, tzinfo=dt.UTC)
 
 
 def _payload() -> dict:
@@ -36,6 +36,8 @@ def _materialize(tmp_path: Path, payload: dict | None = None) -> tuple[Path, Pat
         bindings["q08_policy"],
         bindings["test_lanes"],
     ]
+    if "external_residual_exit_receipt" in bindings:
+        rows.append(bindings["external_residual_exit_receipt"])
     rows.extend(bindings["rulepacks"])
     for binding in rows:
         rel = Path(binding["path"])
@@ -200,7 +202,7 @@ def test_canonical_status_is_hash_bound_and_complete() -> None:
     assert ftmo["temporal_holdout_diagnostic"]["gate_eligible"] is False
     assert not any(ftmo["authorization"].values())
     assert len(status["verification_lanes"]["external_residual"]["items"]) == 5
-    assert len(status["owner_blockers"]) == 6
+    assert len(status["owner_blockers"]) == 4
 
 
 def test_snapshot_reports_fresh_with_orthogonal_status_fields() -> None:
@@ -209,7 +211,7 @@ def test_snapshot_reports_fresh_with_orthogonal_status_fields() -> None:
     assert snapshot["state"] == "FRESH"
     assert snapshot["valid"] is True
     assert snapshot["error"] == ""
-    assert snapshot["generated_at_utc"] == "2026-07-30T05:30:00Z"
+    assert snapshot["generated_at_utc"] == "2026-07-30T10:00:00Z"
     assert snapshot["config_as_of_utc"] <= snapshot["generated_at_utc"]
     assert snapshot["work_packages"][6]["source_status"] == "PARTIAL_IMPLEMENTED"
     assert snapshot["work_packages"][6]["runtime_status"] == "MIGRATION_NOT_APPLIED"
@@ -279,6 +281,8 @@ def test_bound_text_hash_is_portable_across_lf_and_crlf_checkouts(tmp_path: Path
         bindings["q08_policy"],
         bindings["test_lanes"],
     ]
+    if "external_residual_exit_receipt" in bindings:
+        rows.append(bindings["external_residual_exit_receipt"])
     rows.extend(bindings["rulepacks"])
 
     for binding in rows:
@@ -397,11 +401,11 @@ def test_config_freshness_cannot_predate_bound_projection_record(tmp_path: Path)
 
 def test_config_freshness_may_follow_bound_projection_record(tmp_path: Path) -> None:
     payload = _payload()
-    payload["as_of_utc"] = "2026-07-30T05:30:00Z"
+    payload["as_of_utc"] = "2026-07-30T10:00:00Z"
     config, root, _ = _materialize(tmp_path, payload)
 
     assert load_program_status(config, repo_root=root)["as_of_utc"] == (
-        "2026-07-30T05:30:00Z"
+        "2026-07-30T10:00:00Z"
     )
 
 

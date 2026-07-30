@@ -13,6 +13,9 @@ sys.path.insert(0, str(HERE.parent))
 import test_lanes  # noqa: E402
 
 
+V1_MANIFEST = HERE.parent / "config" / "test_lanes.v1.json"
+
+
 def _v2_payload() -> dict:
     payload = json.loads(test_lanes.DEFAULT_MANIFEST.read_text(encoding="utf-8"))
     payload["schema_version"] = test_lanes.SCHEMA_VERSION_V2
@@ -33,25 +36,38 @@ def _write_payload(path: Path, payload: dict) -> Path:
 def test_manifest_binds_exact_five_existing_residual_tests() -> None:
     manifest = test_lanes.load_manifest()
 
-    assert test_lanes.DEFAULT_MANIFEST.name == "test_lanes.v1.json"
-    assert manifest.schema_version == test_lanes.SCHEMA_VERSION
-    assert manifest.green_policy == test_lanes.V1_GREEN_POLICY
+    assert test_lanes.DEFAULT_MANIFEST.name == "test_lanes.v2.json"
+    assert manifest.schema_version == test_lanes.SCHEMA_VERSION_V2
+    assert manifest.green_policy == test_lanes.V2_GREEN_POLICY
+    assert manifest.external_state == test_lanes.RESOLVED_PASS
+    assert manifest.external_policy == test_lanes.RESOLVED_PASS
     assert len(manifest.residual_node_ids) == 5
     assert len(set(manifest.residual_node_ids)) == 5
     assert all(node_id.startswith("tools/strategy_farm/tests/") for node_id in manifest.residual_node_ids)
     assert "without skip, xfail" in manifest.exit_condition
 
 
-def test_green_lane_deselects_only_declared_residuals() -> None:
+def test_default_green_lane_runs_all_resolved_tests() -> None:
     manifest = test_lanes.load_manifest()
     command = test_lanes.pytest_command("green", manifest)
 
     assert command[:4] == [sys.executable, "-m", "pytest", "-q"]
-    assert all(root in command for root in manifest.suite_roots)
-    deselected = [command[index + 1] for index, value in enumerate(command[:-1]) if value == "--deselect"]
+    assert tuple(command[4:]) == manifest.suite_roots
+    assert not any(value in command for value in ("--deselect", "--skip", "--xfail"))
+
+
+def test_historical_v1_green_lane_deselects_only_declared_residuals() -> None:
+    manifest = test_lanes.load_manifest(V1_MANIFEST)
+    command = test_lanes.pytest_command("green", manifest)
+
+    deselected = [
+        command[index + 1]
+        for index, value in enumerate(command[:-1])
+        if value == "--deselect"
+    ]
+    assert manifest.schema_version == test_lanes.SCHEMA_VERSION
     assert tuple(deselected) == manifest.residual_node_ids
-    assert "--skip" not in command
-    assert "--xfail" not in command
+    assert not any(value in command for value in ("--skip", "--xfail"))
 
 
 def test_residual_lane_runs_exact_nodes_without_weakening() -> None:
@@ -83,10 +99,10 @@ def test_unknown_lane_is_rejected() -> None:
 
 def test_v2_green_runs_all_including_resolved_external_regressions(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    manifest = test_lanes.load_manifest(
-        _write_payload(tmp_path / "resolved-v2.json", _v2_payload())
-    )
+    manifest_path = _write_payload(tmp_path / "resolved-v2.json", _v2_payload())
+    manifest = test_lanes.load_manifest(manifest_path)
     command = test_lanes.pytest_command("green", manifest)
 
     assert manifest.schema_version == test_lanes.SCHEMA_VERSION_V2
@@ -98,12 +114,23 @@ def test_v2_green_runs_all_including_resolved_external_regressions(
     assert tuple(command[4:]) == manifest.suite_roots
     assert "--deselect" not in command
     assert not any(node_id in command for node_id in manifest.residual_node_ids)
-    with pytest.raises(test_lanes.TestLaneError, match="must not accept --deselect"):
-        test_lanes.pytest_command(
-            "green",
-            manifest,
-            extra_args=("--deselect", manifest.residual_node_ids[0]),
-        )
+    forbidden_extra_args = (
+        ("--deselect", manifest.residual_node_ids[0]),
+        ("-k", "not external_residual"),
+        ("--ignore", "tools/strategy_farm/tests"),
+    )
+    for lane in ("green", "external-residual"):
+        for extra_args in forbidden_extra_args:
+            with pytest.raises(
+                test_lanes.TestLaneError,
+                match="must not accept free pytest arguments",
+            ):
+                test_lanes.pytest_command(lane, manifest, extra_args=extra_args)
+
+    monkeypatch.setenv("PYTEST_ADDOPTS", "-k not_external_residual")
+    assert test_lanes.main(
+        ["green", "--manifest", str(manifest_path), "--print-command"]
+    ) == 2
 
 
 def test_v2_targeted_external_residual_lane_stays_exact(tmp_path: Path) -> None:

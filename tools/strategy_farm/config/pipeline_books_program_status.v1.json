@@ -1,7 +1,7 @@
 {
   "schema_version": "qm.pipeline-books-dashboard-status/v1",
   "program_id": "PIPELINE_BOOKS_DXZ_FTMO_2026_07",
-  "as_of_utc": "2026-07-30T05:14:27Z",
+  "as_of_utc": "2026-07-30T09:56:00Z",
   "freshness_max_age_hours": 168,
   "authority": "SOURCE_STATUS_ONLY_NO_RUNTIME_AUTHORITY",
   "binding_hash_contract": "TEXT_BYTES_CRLF_TO_LF_SHA256_V1",
@@ -33,8 +33,12 @@
       "canonical_sha256": "8c8930beb9966467abd68fc657ed440acb79ef8870ecc0d5de5952956f82e52b"
     },
     "test_lanes": {
-      "path": "tools/strategy_farm/config/test_lanes.v1.json",
-      "file_sha256": "aeea6b8d8f0856f54e0e3acd5955729f9a6a518c7bb5fe520ef559b2131caced"
+      "path": "tools/strategy_farm/config/test_lanes.v2.json",
+      "file_sha256": "b10c9e59a2a9ee419adfb3dcfd006ec022f6ddb132de9b01369c02338dfcdecd"
+    },
+    "external_residual_exit_receipt": {
+      "path": "docs/ops/evidence/2026-07-30_external_residual_exit_receipt.json",
+      "file_sha256": "ab923cbd13334a23227c73cacb31043d5c45ed70d453e39635c6723df41f4ecd"
     },
     "rulepacks": [
       {
@@ -243,15 +247,16 @@
   "verification_lanes": {
     "green": {
       "state": "PASS",
-      "passed": 3399,
+      "passed": 3511,
       "skipped": 1,
-      "deselected": 5,
+      "deselected": 0,
       "subtests_passed": 49,
-      "statement": "All tests except the five exact declared external residual node IDs passed without weakening."
+      "statement": "All five external sentinels passed without skip, xfail, deselection or weakening; full suite: 3511 passed, 1 skipped, 49 subtests passed."
     },
     "external_residual": {
-      "state": "EXPECTED_FAIL_CLOSED",
+      "state": "RESOLVED_PASS",
       "expected_count": 5,
+      "pass_count": 5,
       "items": [
         {
           "node_id": "tools/strategy_farm/tests/test_dxz_10939_repair_packet.py::test_real_spec_hash_bindings_pass",
@@ -279,7 +284,7 @@
           "owner_items": ["MNT-045"]
         }
       ],
-      "exit_condition": "All five exact node IDs PASS without skip, xfail, assertion weakening or silent rebinding."
+      "exit_condition": "All five node IDs PASS without skip, xfail, assertion weakening or silent rebinding."
     }
   },
   "owner_blockers": [
@@ -303,20 +308,6 @@
       "state": "OPEN_OWNER_DECISION",
       "safe_default": "Do not run an undersized tail or apply a migration.",
       "blocks": ["W7", "MNT-007", "MNT-050"]
-    },
-    {
-      "id": "OWNER-HEALTH-QUARANTINE",
-      "title": "Ratify the health-quarantine list and minimum-worker sensitivity",
-      "state": "OPEN_OWNER_DECISION",
-      "safe_default": "Retain the current fail-closed floor.",
-      "blocks": ["W0", "FACTORY_RESTART_READINESS"]
-    },
-    {
-      "id": "OWNER-EXTERNAL-BINDINGS",
-      "title": "Decide DXZ10939/DXZ12567 amendments and ratify the QM20009 calendar",
-      "state": "OPEN_OWNER_DECISION",
-      "safe_default": "Keep all five mismatches visible in the external-residual lane.",
-      "blocks": ["W7", "W8", "MNT-021", "MNT-043", "MNT-045"]
     },
     {
       "id": "OWNER-FTMO-GOVERNOR-MONEY",

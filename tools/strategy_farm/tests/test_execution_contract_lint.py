@@ -736,6 +736,26 @@ def test_20030_20032_bindings_follow_deployed_calendar_but_remain_blocked() -> N
             "6e91206ba32f51ad2a7e1a69f37974e9a6a2cb02bf6b1e1ae68d36735bb15f3f"
         ),
     }
+    expected_promotion_blocks = {
+        (20030, "USDCAD.DWX", "M5"): [
+            "card_status_draft_not_approved",
+            "card_execution_contract_status_draft_not_approved",
+            "deployed_framework_news_calendar_semantic_requalification_required",
+        ],
+        (20032, "GDAXI.DWX", "M5"): [
+            "card_status_draft_not_approved",
+            "card_execution_contract_status_draft_not_approved",
+            "deployed_framework_news_calendar_semantic_requalification_required",
+            "card_to_runtime_symbol_alias_map_not_qualified",
+        ],
+        (20032, "SP500.DWX", "M5"): [
+            "card_status_draft_not_approved",
+            "card_execution_contract_status_draft_not_approved",
+            "deployed_framework_news_calendar_semantic_requalification_required",
+            "card_to_runtime_symbol_alias_map_not_qualified",
+            "sp500_dwx_to_sp500_alias_full_requalification_required",
+        ],
+    }
     contracts = [
         item
         for item in _contracts()
@@ -759,7 +779,7 @@ def test_20030_20032_bindings_follow_deployed_calendar_but_remain_blocked() -> N
         assert dependency == {
             **dependency,
             "qualification_status": "BLOCKED",
-            "block_reason": "deployed_framework_news_calendar_bundle_reconciliation_pending",
+            "block_reason": "deployed_framework_news_calendar_semantic_requalification_required",
             "source_ref": "QM_NEWS_CALENDAR_PAIR_V1_ACTIVE_PRIMARY",
             "calendar_policy": "DEPLOYED_FRAMEWORK_EVENT_ROWS_FAIL_CLOSED",
             "stale_behavior": "ENTRY_FAIL_CLOSED",
@@ -771,12 +791,10 @@ def test_20030_20032_bindings_follow_deployed_calendar_but_remain_blocked() -> N
         assert contract["card_binding"]["status"] == "DRAFT"
         assert contract["card_binding"]["execution_contract_status"] == "DRAFT"
         assert contract["promotion"]["status"] == "BLOCKED"
-        assert (
-            "deployed_framework_news_calendar_bundle_reconciliation_pending"
-            in contract["promotion"]["block_reasons"]
-        )
+        assert contract["promotion"]["block_reasons"] == expected_promotion_blocks[identity]
 
     registry_text = REGISTRY.read_text(encoding="utf-8")
+    assert "deployed_framework_news_calendar_bundle_reconciliation_pending" not in registry_text
     assert "api_historical_timestamp_ledger_missing" not in registry_text
     assert "issuer_calendar_missing_nine_card_event_families_and_2025_coverage" not in registry_text
     for ea_id in (20030, 20032):
@@ -786,7 +804,7 @@ def test_20030_20032_bindings_follow_deployed_calendar_but_remain_blocked() -> N
         assert "strategy_max_cost_r" not in source_text
 
 
-def test_density_reconciliation_evidence_keeps_runtime_apply_pending() -> None:
+def test_density_reconciliation_evidence_records_runtime_without_promotion() -> None:
     evidence_path = (
         ROOT
         / "docs"
@@ -795,10 +813,14 @@ def test_density_reconciliation_evidence_keeps_runtime_apply_pending() -> None:
         / "2026-07-30_density_execution_contract_reconciliation.json"
     )
     evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
-    assert evidence["status"] == "SOURCE_RECONCILED_RUNTIME_PUBLICATION_PENDING"
+    assert evidence["status"] == (
+        "SOURCE_AND_RUNTIME_RECONCILED_SEMANTIC_REQUALIFICATION_REQUIRED"
+    )
     assert evidence["boundaries"]["repair_without_waiver"] is True
-    assert evidence["boundaries"]["runtime_calendar_publication_executed"] is False
+    assert evidence["boundaries"]["runtime_calendar_publication_executed"] is True
     assert evidence["boundaries"]["factory_activation_authorized"] is False
+    assert evidence["boundaries"]["resulting_card_status"] == "DRAFT"
+    assert evidence["boundaries"]["resulting_promotion_status"] == "BLOCKED"
     owner = evidence["owner_decision_binding"]
     assert owner["sha256"] == hashlib.sha256(
         (ROOT / owner["path"]).read_bytes()
@@ -810,14 +832,17 @@ def test_density_reconciliation_evidence_keeps_runtime_apply_pending() -> None:
     ftmo = evidence["ftmo_20009_calendar_binding_amendment"]
     assert ftmo["contract_count"] == 4
     assert ftmo["silent_rebinding"] is False
-    assert ftmo["runtime_copy_state"] == "PENDING_MULTI_PRINCIPAL_PUBLICATION"
+    assert ftmo["runtime_copy_state"] == "MULTI_PRINCIPAL_PUBLICATION_VERIFIED"
+    assert ftmo["promotion_status"] == "BLOCKED"
     calendar = evidence["deployed_framework_calendar_binding"]
     assert calendar["primary"]["sha256"] == (
         "16d95a7ca00de57accbb2bf7ad63418873c7c1afbffd58b8ec35136abb057ece"
     )
-    assert calendar["one_time_reconciliation"] == (
-        "PRE_HARDENING_PLAN_SUPERSEDED_REGENERATE_AFTER_FINAL_SOURCE_COMMIT"
+    assert calendar["qualification_status"] == "BLOCKED"
+    assert calendar["block_reason"] == (
+        "deployed_framework_news_calendar_semantic_requalification_required"
     )
+    assert calendar["one_time_reconciliation"] == "COMPLETED_RUNTIME"
     read_only_plan = calendar["last_superseded_read_only_plan"]
     assert read_only_plan["status"] == (
         "SUPERSEDED_BY_PRODUCTION_POLICY_AND_JOURNAL_HARDENING"
@@ -828,6 +853,24 @@ def test_density_reconciliation_evidence_keeps_runtime_apply_pending() -> None:
         (ROOT / read_only_plan["provenance_path"]).read_bytes()
     ).hexdigest()
     assert read_only_plan["apply_executed"] is False
+    completed = calendar["completed_runtime_publication"]
+    assert completed["source_commit"] == "b2800e226ac10ec0d737e30d6e86920b1b0abba4"
+    assert completed["plan_sha256"] == (
+        "5e324ac201131b6500ab8c77a5544ecca0050d7dffbacb48239b0fd4a66f4fcb"
+    )
+    assert completed["plan_file_sha256"] == hashlib.sha256(
+        Path(completed["plan_path"]).read_bytes()
+    ).hexdigest()
+    assert completed["receipt_file_sha256"] == hashlib.sha256(
+        Path(completed["receipt_path"]).read_bytes()
+    ).hexdigest()
+    assert completed["journal_file_sha256"] == hashlib.sha256(
+        Path(completed["journal_path"]).read_bytes()
+    ).hexdigest()
+    assert completed["receipt_status"] == "committed"
+    assert completed["journal_state"] == "COMMITTED_RECEIPTED"
+    assert completed["lock_release_succeeded"] is True
+    assert completed["verified_common_count"] == 3
 
 
 def test_dxz23_registry_is_valid_against_execution_contract_schema() -> None:

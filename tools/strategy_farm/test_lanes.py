@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """Run the green merge lane or the explicit external-residual lane.
 
-The five residual checks remain ordinary failing tests. They are never marked
-skip or xfail; the green command deselects only the exact versioned node IDs,
-while the residual command executes those IDs directly. A future resolved V2
-manifest may put the same sentinels back into the green run, but the default
-manifest remains the historical fail-closed V1 contract.
+The five former residual checks remain ordinary tests and are never marked
+skip or xfail. The resolved V2 default runs them as part of green and retains
+the targeted residual command as a separately measurable sentinel lane. The
+historical V1 manifest remains available for audit reproduction only.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -23,7 +23,7 @@ from typing import Any, Sequence
 SCHEMA_VERSION = "qm.test-lanes/v1"
 SCHEMA_VERSION_V2 = "qm.test-lanes/v2"
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_MANIFEST = Path(__file__).resolve().parent / "config" / "test_lanes.v1.json"
+DEFAULT_MANIFEST = Path(__file__).resolve().parent / "config" / "test_lanes.v2.json"
 V1_GREEN_POLICY = "RUN_ALL_EXCEPT_DECLARED_EXTERNAL_RESIDUALS"
 V2_GREEN_POLICY = "RUN_ALL_INCLUDING_RESOLVED_EXTERNAL_REGRESSIONS"
 RESOLVED_PASS = "RESOLVED_PASS"
@@ -205,11 +205,10 @@ def pytest_command(
     extra_args: Sequence[str] = (),
 ) -> list[str]:
     _validate_command_manifest(manifest)
-    if manifest.schema_version == SCHEMA_VERSION_V2 and any(
-        argument == "--deselect" or argument.startswith("--deselect=")
-        for argument in extra_args
-    ):
-        raise TestLaneError("V2 green/residual commands must not accept --deselect")
+    if manifest.schema_version == SCHEMA_VERSION_V2 and extra_args:
+        raise TestLaneError(
+            "V2 green/residual commands must not accept free pytest arguments"
+        )
     command = [sys.executable, "-m", "pytest", "-q"]
     if lane == "green":
         command.extend(manifest.suite_roots)
@@ -247,6 +246,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     args, extra = parser.parse_known_args(argv)
     try:
         manifest = load_manifest(args.manifest)
+        if (
+            manifest.schema_version == SCHEMA_VERSION_V2
+            and os.environ.get("PYTEST_ADDOPTS", "").strip()
+        ):
+            raise TestLaneError("V2 commands require PYTEST_ADDOPTS to be empty")
         command = pytest_command(
             args.lane,
             manifest,

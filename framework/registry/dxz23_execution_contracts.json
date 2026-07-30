@@ -457,7 +457,7 @@
             "ENTRY",
             "PROMOTION"
           ],
-          "block_reason": "deployed_framework_news_calendar_bundle_reconciliation_pending",
+          "block_reason": "deployed_framework_news_calendar_semantic_requalification_required",
           "source_ref": "QM_NEWS_CALENDAR_PAIR_V1_ACTIVE_PRIMARY",
           "calendar_policy": "DEPLOYED_FRAMEWORK_EVENT_ROWS_FAIL_CLOSED",
           "stale_behavior": "ENTRY_FAIL_CLOSED",
@@ -496,7 +496,7 @@
         "block_reasons": [
           "card_status_draft_not_approved",
           "card_execution_contract_status_draft_not_approved",
-          "deployed_framework_news_calendar_bundle_reconciliation_pending"
+          "deployed_framework_news_calendar_semantic_requalification_required"
         ]
       }
     },
@@ -687,7 +687,7 @@
             "EXIT",
             "PROMOTION"
           ],
-          "block_reason": "deployed_framework_news_calendar_bundle_reconciliation_pending",
+          "block_reason": "deployed_framework_news_calendar_semantic_requalification_required",
           "source_ref": "QM_NEWS_CALENDAR_PAIR_V1_ACTIVE_PRIMARY",
           "calendar_policy": "DEPLOYED_FRAMEWORK_EVENT_ROWS_FAIL_CLOSED",
           "stale_behavior": "ENTRY_FAIL_CLOSED",
@@ -739,7 +739,7 @@
         "block_reasons": [
           "card_status_draft_not_approved",
           "card_execution_contract_status_draft_not_approved",
-          "deployed_framework_news_calendar_bundle_reconciliation_pending",
+          "deployed_framework_news_calendar_semantic_requalification_required",
           "card_to_runtime_symbol_alias_map_not_qualified"
         ]
       }
@@ -779,7 +779,7 @@
             "EXIT",
             "PROMOTION"
           ],
-          "block_reason": "deployed_framework_news_calendar_bundle_reconciliation_pending",
+          "block_reason": "deployed_framework_news_calendar_semantic_requalification_required",
           "source_ref": "QM_NEWS_CALENDAR_PAIR_V1_ACTIVE_PRIMARY",
           "calendar_policy": "DEPLOYED_FRAMEWORK_EVENT_ROWS_FAIL_CLOSED",
           "stale_behavior": "ENTRY_FAIL_CLOSED",
@@ -817,7 +817,7 @@
         "block_reasons": [
           "card_status_draft_not_approved",
           "card_execution_contract_status_draft_not_approved",
-          "deployed_framework_news_calendar_bundle_reconciliation_pending",
+          "deployed_framework_news_calendar_semantic_requalification_required",
           "card_to_runtime_symbol_alias_map_not_qualified",
           "sp500_dwx_to_sp500_alias_full_requalification_required"
         ]

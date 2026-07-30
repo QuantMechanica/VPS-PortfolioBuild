@@ -6,7 +6,7 @@ from pathlib import Path
 from tools.strategy_farm import render_cockpit
 
 
-NOW = dt.datetime(2026, 7, 30, 5, 30, tzinfo=dt.UTC)
+NOW = dt.datetime(2026, 7, 30, 10, 0, tzinfo=dt.UTC)
 
 
 def test_cockpit_programme_snapshot_uses_source_repo_and_is_fresh() -> None:
@@ -33,10 +33,11 @@ def test_programme_panel_renders_all_required_contracts() -> None:
     assert "FTMO_2S_100K_SWING_V1" in page
     assert "GREEN PASS" in page
     assert f'{snapshot["verification_lanes"]["green"]["passed"]} passed' in page
-    assert "EXTERNAL RESIDUAL EXPECTED_FAIL_CLOSED" in page
+    assert "EXTERNAL RESIDUAL RESOLVED_PASS" in page
+    assert "5/5 sentinels passed" in page
     assert "DXZ10939 real spec binding" in page
     assert "OWNER BLOCKERS" in page
-    assert "06 OPEN" in page
+    assert "04 OPEN" in page
     assert "OWNER-FTMO-GOVERNOR-MONEY" in page
     assert "FTMO BOOK 3 // HASH-BOUND RECORDED RESEARCH PROJECTION" in page
     assert "RESEARCH_MODEL_COMPLETE_STRICT_QUALIFICATION_UNVERIFIED" in page
@@ -123,7 +124,7 @@ def test_owner_surface_contains_all_verified_programme_blockers() -> None:
     snapshot = render_cockpit.pipeline_books_program_snapshot(now_utc=NOW)
     rows = render_cockpit.pipeline_books_owner_decision_rows(snapshot)
 
-    assert len(rows) == 6
+    assert len(rows) == 4
     assert all(row["cat"] == "PROGRAM" for row in rows)
     assert all(row["alert"] is True for row in rows)
     assert any("FTMO" in row["title"] for row in rows)
