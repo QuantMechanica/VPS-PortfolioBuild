@@ -1,7 +1,17 @@
 # Scheduled-task contract correction package — 2026-07-28
 
-Status: **UNEXECUTED**. Codex created and verified this package read-only. No
-scheduled task was registered, started, stopped, enabled, or disabled.
+Status: **CORRECTED PACKAGE UNEXECUTED**. The original content-bound Factory
+plan `720d17a050c84023da17b8557efcbc277e6bd9239530dd6203c95ee80dab288f`
+was attempted on 2026-07-30. Windows rejected the first
+target XML before it could persist; the already-journaled attempt was restored
+to its exact preimage and verified, and the orphaned exact-identity mutation
+lock was recovered after its owner process exited. All five tasks replanned as
+`BEFORE` and remained disabled. The failed plan must not be retried. See
+`docs/ops/evidence/2026-07-30_mnt003_failed_apply_lock_recovery.json`.
+
+The corrected package has not registered, started, stopped, enabled, or
+disabled a scheduled task. It requires a new post-fix plan and fresh OWNER
+authorization before any Apply.
 
 The package contains exact semantic exports of the seven `0x800710E0` tasks
 plus `QM_FTMO_AtLogon`, which is part of the same parked-terminal recovery
@@ -65,6 +75,13 @@ target XML, then verifies both the target contract and unchanged Enabled state.
 There is no transient default-enable window for deliberately disabled tasks.
 It contains no `Start-ScheduledTask`, `Stop-ScheduledTask`, process control,
 terminal launch, AutoTrading change, or task enable/disable command.
+
+Before it creates the mutation lock, the script serializes every desired and
+compensation payload as the UTF-16-declared Unicode string required by the
+Task Scheduler API and parses it through `Schedule.Service.NewTask(0).XmlText`
+without registration. This catches host-specific Task Scheduler XML/schema
+errors read-only. LocalSystem contracts use SID `S-1-5-18`; their XML omits
+`LogonType`, which Windows resolves to service-account logon.
 
 For Factory mutation, the plan binds the exact repository commit, apply-script
 hash, aggregate package hashes, raw OFF-flag hash, live contract preimages,

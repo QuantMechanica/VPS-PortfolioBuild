@@ -66,6 +66,28 @@ $factoryMutationLockPath = 'D:\QM\strategy_farm\state\FACTORY_MUTATION.lock'
 $receiptRoot = [IO.Path]::GetFullPath('D:\QM\strategy_farm\artifacts\task_contract_fix_2026-07-28')
 $mutationProtocolPath = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\strategy_farm\factory_mutation_lock.ps1'))
 
+function Assert-TaskContractMutationProtocolAvailable {
+    if ($script:QmFactoryMutationLockProtocolVersion -ne 2) {
+        throw 'Mutation-lock protocol version mismatch'
+    }
+    foreach ($functionName in @('Remove-QmFactoryMutationLockIfUnchanged')) {
+        $command = Get-Command -Name $functionName -CommandType Function -ErrorAction SilentlyContinue
+        if ($null -eq $command) {
+            throw "Mutation-lock protocol function missing: $functionName"
+        }
+    }
+}
+
+# Import the function-only protocol in script scope. Dot-sourcing it from inside
+# Enter-TaskContractMutationLock would discard its helper functions when that
+# function returns, making exact-identity cleanup unavailable in finally.
+if (-not (Test-Path -LiteralPath $mutationProtocolPath -PathType Leaf)) {
+    throw "Mutation-lock protocol missing: $mutationProtocolPath"
+}
+$script:QmFactoryMutationLockProtocolVersion = $null
+. $mutationProtocolPath
+Assert-TaskContractMutationProtocolAvailable
+
 $factoryTaskNames = @(
     'QM_StrategyFarm_AgyGovernor',
     'QM_StrategyFarm_CodexFleetPacer',
@@ -151,6 +173,65 @@ function Get-TaskXmlEnabledState {
     throw "Task XML has invalid Enabled value '$text'"
 }
 
+function ConvertTo-TaskSchedulerXmlString {
+    param([xml]$Document)
+
+    # Register-ScheduledTask passes -Xml to the Task Scheduler COM API as a
+    # Unicode BSTR. A retained encoding="UTF-8" declaration therefore makes
+    # the XML parser attempt an impossible encoding switch. Serialize through
+    # a StringBuilder-backed XmlWriter so the declaration truthfully says
+    # utf-16 while the runnable XML contract remains unchanged.
+    $settings = [Xml.XmlWriterSettings]::new()
+    $settings.Encoding = [Text.Encoding]::Unicode
+    $settings.Indent = $false
+    $settings.OmitXmlDeclaration = $false
+    $settings.NewLineHandling = [Xml.NewLineHandling]::None
+    $builder = [Text.StringBuilder]::new()
+    $writer = [Xml.XmlWriter]::Create($builder, $settings)
+    try {
+        $Document.Save($writer)
+    } finally {
+        $writer.Dispose()
+    }
+    [string]$serialized = $builder.ToString()
+    if ($serialized -notmatch '^<\?xml\s+version="1\.0"\s+encoding="utf-16"\?>') {
+        throw 'Task Scheduler XML serialization did not produce a UTF-16 declaration.'
+    }
+    return $serialized
+}
+
+function Assert-TaskSchedulerXmlRegistrationPayload {
+    param(
+        [string]$XmlText,
+        [string]$TaskLabel
+    )
+
+    # NewTask(0) plus XmlText assignment invokes the same Task Scheduler COM
+    # schema parser used by registration, but creates no registered task and
+    # changes no scheduler state.
+    $taskService = $null
+    $taskDefinition = $null
+    try {
+        $taskService = New-Object -ComObject 'Schedule.Service'
+        [void]$taskService.Connect()
+        $taskDefinition = $taskService.NewTask(0)
+        $taskDefinition.XmlText = $XmlText
+    } catch {
+        throw "Task Scheduler COM parser rejected $TaskLabel registration XML: $($_.Exception.Message)"
+    } finally {
+        if ($null -ne $taskDefinition) {
+            try {
+                [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($taskDefinition)
+            } catch {}
+        }
+        if ($null -ne $taskService) {
+            try {
+                [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($taskService)
+            } catch {}
+        }
+    }
+}
+
 function Set-TaskXmlEnabledState {
     param([string]$XmlText, [bool]$Enabled)
     [xml]$document = $XmlText
@@ -165,7 +246,12 @@ function Set-TaskXmlEnabledState {
         [void]$settings.AppendChild($enabledNode)
     }
     $enabledNode.InnerText = if ($Enabled) { 'true' } else { 'false' }
-    return $document.OuterXml
+    [string]$serialized = ConvertTo-TaskSchedulerXmlString -Document $document
+    if ((Get-TaskContractFingerprint -XmlText $serialized) -ne
+        (Get-TaskContractFingerprint -XmlText $XmlText)) {
+        throw 'Enabled-state serialization changed the runnable task contract.'
+    }
+    return $serialized
 }
 
 function Get-LiveTaskXml {
@@ -277,6 +363,7 @@ function New-TaskContractPlan {
             live_contract_sha256 = $liveFingerprint
             target_contract_sha256 = $row.target_contract_sha256
             original_xml = $liveXml
+            original_registration_xml = ConvertTo-TaskSchedulerXmlString -Document ([xml]$liveXml)
             desired_xml = Set-TaskXmlEnabledState -XmlText $desiredContractXml -Enabled $enabled
         })
     }
@@ -328,15 +415,23 @@ function Assert-PlanApplicable {
     }
 }
 
+function Assert-TaskContractRegistrationPayloads {
+    param($Plan)
+
+    foreach ($entry in $Plan.entries) {
+        Assert-TaskSchedulerXmlRegistrationPayload `
+            -XmlText $entry.desired_xml `
+            -TaskLabel "$($entry.task) desired"
+        Assert-TaskSchedulerXmlRegistrationPayload `
+            -XmlText $entry.original_registration_xml `
+            -TaskLabel "$($entry.task) compensation"
+    }
+}
+
 function Enter-TaskContractMutationLock {
-    if (-not (Test-Path -LiteralPath $mutationProtocolPath -PathType Leaf)) {
-        throw "Mutation-lock protocol missing: $mutationProtocolPath"
-    }
-    $script:QmFactoryMutationLockProtocolVersion = $null
-    . $mutationProtocolPath
-    if ($script:QmFactoryMutationLockProtocolVersion -ne 2) {
-        throw 'Mutation-lock protocol version mismatch'
-    }
+    # Repeat the side-effect-free prerequisite assertion immediately before
+    # CreateNew. Any missing protocol helper must fail before a lock exists.
+    Assert-TaskContractMutationProtocolAvailable
     $stream = $null
     try {
         $stream = [IO.File]::Open(
@@ -394,7 +489,7 @@ function Restore-AttemptedTasks {
     foreach ($entry in $Attempted) {
         try {
             Register-ScheduledTask -TaskPath '\' -TaskName $entry.task `
-                -Xml $entry.original_xml -Force -ErrorAction Stop | Out-Null
+                -Xml $entry.original_registration_xml -Force -ErrorAction Stop | Out-Null
             $restoredXml = Get-LiveTaskXml $entry.task
             if ((Get-TaskContractFingerprint $restoredXml) -ne $entry.live_contract_sha256 -or
                 (Get-TaskXmlEnabledState $restoredXml) -ne $entry.enabled_before) {
@@ -434,6 +529,13 @@ function Resolve-TaskContractReceiptPath {
     $parent = Split-Path -Parent $fullPath
     [IO.Directory]::CreateDirectory($parent) | Out-Null
     return $fullPath
+}
+
+function Join-TaskContractErrorMessage {
+    param([string]$Primary, [string]$Additional)
+    if ([string]::IsNullOrWhiteSpace($Primary)) { return $Additional }
+    if ([string]::IsNullOrWhiteSpace($Additional)) { return $Primary }
+    return "$Primary; $Additional"
 }
 
 function New-TaskContractReceiptDocument {
@@ -498,6 +600,10 @@ function New-TaskContractReceiptDocument {
             autotrading = $false
             deployment = $false
         }
+        failure = [ordered]@{
+            primary_error = $null
+            cleanup_error = $null
+        }
         status = 'IN_PROGRESS'
     }
 }
@@ -541,6 +647,7 @@ $operationMode = if ($mode -eq 'PLAN') { $PlanMode.ToUpperInvariant() } else { $
 if ($mode -eq 'PLAN') {
     $offSha = Get-FactoryOffSha256
     $plan = New-TaskContractPlan -OperationMode $operationMode -Scope $TaskScope -FactoryOffSha256 $offSha
+    Assert-TaskContractRegistrationPayloads -Plan $plan
     if ($Json.IsPresent) {
         $plan.document | ConvertTo-Json -Depth 8
     } else {
@@ -569,12 +676,24 @@ if ($WhatIfPreference) {
         throw "ExpectedPlanId mismatch: expected=$expectedPlan actual=$($preview.plan_id)"
     }
     Assert-PlanApplicable -Plan $preview
+    Assert-TaskContractRegistrationPayloads -Plan $preview
     foreach ($entry in $preview.entries) {
         [void]$PSCmdlet.ShouldProcess($entry.task, "Register scheduled-task contract $($preview.document.tasks[0].target_state)")
     }
     Write-Output "WHATIF_VALIDATED PLAN_ID $($preview.plan_id)"
     exit 0
 }
+
+# Perform the complete read-only plan/applicability/serialization preflight
+# before acquiring the global mutation lock. The same checks are repeated
+# under the lock below to preserve the original CAS and plan binding.
+$preflight = New-TaskContractPlan -OperationMode $operationMode -Scope $TaskScope -FactoryOffSha256 $expectedOffSha
+if ($preflight.plan_id -ne $expectedPlan) {
+    throw "ExpectedPlanId mismatch: expected=$expectedPlan actual=$($preflight.plan_id)"
+}
+Assert-PlanApplicable -Plan $preflight
+Assert-TaskContractRegistrationPayloads -Plan $preflight
+Assert-TaskContractMutationProtocolAvailable
 
 $lock = $null
 $attempted = [Collections.Generic.List[object]]::new()
@@ -593,6 +712,7 @@ try {
         throw "ExpectedPlanId mismatch: expected=$expectedPlan actual=$($plan.plan_id)"
     }
     Assert-PlanApplicable -Plan $plan
+    Assert-TaskContractRegistrationPayloads -Plan $plan
     $fullReceiptPath = Resolve-TaskContractReceiptPath -Path $ReceiptPath
     $receiptDocument = New-TaskContractReceiptDocument `
         -Plan $plan `
@@ -655,6 +775,23 @@ try {
     $mutationSucceeded = $true
 } catch {
     $failure = $_.Exception.Message
+    if ($receiptOwned -and $null -ne $receiptDocument) {
+        $receiptDocument.failure.primary_error = [ordered]@{
+            captured_at_utc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+            exception_type = $_.Exception.GetType().FullName
+            fully_qualified_error_id = $_.FullyQualifiedErrorId
+            message = $failure
+        }
+        try {
+            $receiptInfo = Write-TaskContractReceiptState `
+                -Document $receiptDocument `
+                -Path $fullReceiptPath
+        } catch {
+            $failure = Join-TaskContractErrorMessage `
+                -Primary $failure `
+                -Additional "failure receipt update failed: $($_.Exception.Message)"
+        }
+    }
     $recovery = Restore-AttemptedTasks -Attempted @($attempted)
     if ($receiptOwned -and $null -ne $receiptDocument) {
         $receiptDocument.compensation.attempted = ($attempted.Count -gt 0)
@@ -682,7 +819,24 @@ try {
 } finally {
     if ($null -ne $lock) {
         if ($retainLock) {
-            $lock.stream.Dispose()
+            try {
+                $lock.stream.Dispose()
+            } catch {
+                $retainDisposeError = $_
+                $retainDisposeMessage = "Retained mutation-lock handle disposal failed: $($retainDisposeError.Exception.Message)"
+                $deferredError = Join-TaskContractErrorMessage `
+                    -Primary $deferredError `
+                    -Additional $retainDisposeMessage
+                if ($receiptOwned -and $null -ne $receiptDocument) {
+                    $receiptDocument.failure.cleanup_error = [ordered]@{
+                        captured_at_utc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+                        code = 'RETAINED_LOCK_DISPOSE_EXCEPTION'
+                        exception_type = $retainDisposeError.Exception.GetType().FullName
+                        fully_qualified_error_id = $retainDisposeError.FullyQualifiedErrorId
+                        message = $retainDisposeError.Exception.Message
+                    }
+                }
+            }
             if ($receiptOwned -and $null -ne $receiptDocument) {
                 $receiptDocument.lock.release_status = 'RETAINED_FAIL_CLOSED'
                 try {
@@ -692,10 +846,24 @@ try {
                 } catch {}
             }
         } else {
-            $released = Exit-TaskContractMutationLock -Lock $lock
-            if (-not $released) {
+            $released = $false
+            $releaseThrew = $false
+            try {
+                $released = Exit-TaskContractMutationLock -Lock $lock
+            } catch {
+                $releaseThrew = $true
+                $releaseError = $_
+                try { $lock.stream.Dispose() } catch {}
+                $cleanupMessage = "LOCK_CLEANUP_FAILED: $($releaseError.Exception.Message)"
                 if ($receiptOwned -and $null -ne $receiptDocument) {
-                    $receiptDocument.lock.release_status = 'RETAINED_IDENTITY_RELEASE_FAILED'
+                    $receiptDocument.lock.release_status = 'RETAINED_CLEANUP_ERROR'
+                    $receiptDocument.failure.cleanup_error = [ordered]@{
+                        captured_at_utc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+                        code = 'LOCK_RELEASE_EXCEPTION'
+                        exception_type = $releaseError.Exception.GetType().FullName
+                        fully_qualified_error_id = $releaseError.FullyQualifiedErrorId
+                        message = $releaseError.Exception.Message
+                    }
                     if ($mutationSucceeded) {
                         $receiptDocument.status = "$($receiptDocument.status)_LOCK_RETAINED"
                     }
@@ -703,17 +871,56 @@ try {
                         $receiptInfo = Write-TaskContractReceiptState `
                             -Document $receiptDocument `
                             -Path $fullReceiptPath
-                    } catch {}
+                    } catch {
+                        $cleanupMessage = Join-TaskContractErrorMessage `
+                            -Primary $cleanupMessage `
+                            -Additional "cleanup receipt update failed: $($_.Exception.Message)"
+                    }
                 }
-                $deferredError = 'Task-contract mutation lock identity release failed; retained fail-closed for OWNER inspection.'
-            } elseif ($receiptOwned -and $null -ne $receiptDocument) {
-                $receiptDocument.lock.release_status = 'RELEASED_EXACT_IDENTITY'
-                try {
-                    $receiptInfo = Write-TaskContractReceiptState `
-                        -Document $receiptDocument `
-                        -Path $fullReceiptPath
-                } catch {
-                    $deferredError = "Task-contract receipt finalization failed after safe lock release: $($_.Exception.Message)"
+                $deferredError = Join-TaskContractErrorMessage `
+                    -Primary $deferredError `
+                    -Additional $cleanupMessage
+            }
+            if (-not $releaseThrew) {
+                if (-not $released) {
+                    $cleanupMessage = 'Task-contract mutation lock identity release failed; retained fail-closed for OWNER inspection.'
+                    if ($receiptOwned -and $null -ne $receiptDocument) {
+                        $receiptDocument.lock.release_status = 'RETAINED_IDENTITY_RELEASE_FAILED'
+                        $receiptDocument.failure.cleanup_error = [ordered]@{
+                            captured_at_utc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+                            code = 'IDENTITY_RELEASE_FAILED'
+                            exception_type = $null
+                            fully_qualified_error_id = $null
+                            message = $cleanupMessage
+                        }
+                        if ($mutationSucceeded) {
+                            $receiptDocument.status = "$($receiptDocument.status)_LOCK_RETAINED"
+                        }
+                        try {
+                            $receiptInfo = Write-TaskContractReceiptState `
+                                -Document $receiptDocument `
+                                -Path $fullReceiptPath
+                        } catch {
+                            $cleanupMessage = Join-TaskContractErrorMessage `
+                                -Primary $cleanupMessage `
+                                -Additional "cleanup receipt update failed: $($_.Exception.Message)"
+                        }
+                    }
+                    $deferredError = Join-TaskContractErrorMessage `
+                        -Primary $deferredError `
+                        -Additional $cleanupMessage
+                } elseif ($receiptOwned -and $null -ne $receiptDocument) {
+                    $receiptDocument.lock.release_status = 'RELEASED_EXACT_IDENTITY'
+                    try {
+                        $receiptInfo = Write-TaskContractReceiptState `
+                            -Document $receiptDocument `
+                            -Path $fullReceiptPath
+                    } catch {
+                        $receiptFinalizeError = "Task-contract receipt finalization failed after safe lock release: $($_.Exception.Message)"
+                        $deferredError = Join-TaskContractErrorMessage `
+                            -Primary $deferredError `
+                            -Additional $receiptFinalizeError
+                    }
                 }
             }
         }
