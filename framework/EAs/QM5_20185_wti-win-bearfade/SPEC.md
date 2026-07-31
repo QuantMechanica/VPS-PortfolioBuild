@@ -76,3 +76,4 @@ manifest, portfolio admission, or portfolio-gate change.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-31 | Initial build from approved G0 card | Q01 PASS |
+| v1-q02 | 2026-07-31 | Canonical build record | Q02 work item `7639ee30-e765-4211-b276-97a779730a90` active |

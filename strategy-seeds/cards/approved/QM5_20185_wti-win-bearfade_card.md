@@ -57,7 +57,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
-q01_status: PENDING
+q01_status: PASS
 q02_status: PENDING
 review_focus: "Falsify whether Burakov's WTI November-May long survives specifically in a negative 252-D1 state and adds direct crude-oil exposure distinct from the certified XAU/SP500/NDX/XNG book."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -262,6 +262,7 @@ correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-31 | source-backed winter negative-state counterfade card | G0 | APPROVED |
+| v1-q02 | 2026-07-31 | strict build recorded and paced baseline enqueued | Q02 | ACTIVE |
 
 ## Pipeline phase status
 
@@ -269,4 +270,4 @@ correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-07-31 | APPROVED | this card and governed source packet |
 | Q01 Build Validation | 2026-07-31 | PASS | `D:/QM/reports/framework/21/build_check_20260731_121933.json` |
-| Q02 Baseline Screening | 2026-07-31 | PENDING | enqueue only after Q01 PASS |
+| Q02 Baseline Screening | 2026-07-31 | ACTIVE | work item `7639ee30-e765-4211-b276-97a779730a90` |
