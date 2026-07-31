@@ -391,8 +391,17 @@ function Get-CanonicalRuntimeActivationAuthorization {
         throw ("fresh OWNER runtime activation decision validation failed: " +
             ($output -join [Environment]::NewLine))
     }
+    # The validator emits exactly one compact JSON line as its final stdout;
+    # the 2>&1 merge may interleave interpreter stderr noise (e.g. the
+    # platform-libraries prefix warning), so bind the last non-empty line.
+    $jsonLine = @($output | ForEach-Object { [string]$_ } | Where-Object {
+        -not [string]::IsNullOrWhiteSpace($_)
+    } | Select-Object -Last 1)
+    if ($jsonLine.Count -ne 1) {
+        throw 'runtime-activation validator returned no output'
+    }
     try {
-        $authorization = ($output -join [Environment]::NewLine) |
+        $authorization = [string]$jsonLine[0] |
             ConvertFrom-Json -ErrorAction Stop
     } catch {
         throw "runtime-activation validator returned invalid JSON: $($_.Exception.Message)"

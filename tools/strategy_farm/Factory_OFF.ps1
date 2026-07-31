@@ -613,8 +613,17 @@ if ($hasSavedTaskState) {
         throw ("FACTORY OFF ABORTED before mutation: restore-intent validation failed: " +
             ($validatorOutput -join [Environment]::NewLine))
     }
+    # The validator emits exactly one compact JSON line as its final stdout;
+    # the 2>&1 merge may interleave interpreter stderr noise (e.g. the
+    # platform-libraries prefix warning), so bind the last non-empty line.
+    $validatorJsonLine = @($validatorOutput | ForEach-Object { [string]$_ } | Where-Object {
+        -not [string]::IsNullOrWhiteSpace($_)
+    } | Select-Object -Last 1)
+    if ($validatorJsonLine.Count -ne 1) {
+        throw 'FACTORY OFF ABORTED before mutation: restore-intent validator returned no output.'
+    }
     try {
-        $validatedRestoreIntent = ($validatorOutput -join [Environment]::NewLine) | ConvertFrom-Json
+        $validatedRestoreIntent = [string]$validatorJsonLine[0] | ConvertFrom-Json
     } catch {
         throw "FACTORY OFF ABORTED before mutation: validator returned invalid JSON: $($_.Exception.Message)"
     }
