@@ -1,0 +1,384 @@
+{
+  "bootstrap": {
+    "alpha": 0.05,
+    "bootstrap_path_length": "AT_LEAST_ORIGINAL_DAYS_NO_OPEN_POSITION_TRUNCATION",
+    "hac_bandwidth": 57,
+    "is_autocorrelation_rule": "LAST_ABS_RHO_AT_OR_ABOVE_1P96_OVER_SQRT_N",
+    "is_freeze": {
+      "calendar_day_count": 1803,
+      "first_prague_day": "2017-10-09",
+      "holdout_metrics_read": false,
+      "last_prague_day": "2022-09-15",
+      "pessimistic_low_rule": {
+        "N": 1803,
+        "candidate_days": 57,
+        "max_lag_evaluated": 60,
+        "rho": [
+          0.45224527526659214,
+          0.15161391407396935,
+          0.09962910400509062,
+          0.049321131710269556,
+          0.070850871721154,
+          0.2959039744544841,
+          0.5242611176721883,
+          0.2963690423880996,
+          0.03502967543999691,
+          0.017207861515009644,
+          0.0015113723493766925,
+          0.034120550474871274,
+          0.2733988678325227,
+          0.47959111812820815,
+          0.2559333982698273,
+          0.02165808657126678,
+          0.004665848309536262,
+          0.00027236841275173616,
+          0.01836729993150911,
+          0.2636908449829716,
+          0.45510645658897286,
+          0.23194547597784163,
+          0.0070472778672018245,
+          -0.02764617311021416,
+          -0.019021224051195655,
+          -5.065875417977984e-05,
+          0.24696686274155755,
+          0.48436017058548747,
+          0.2657385855712996,
+          0.024298834945092,
+          -0.018761286352499643,
+          -0.018928580307228132,
+          0.018566427765566208,
+          0.24224820034179656,
+          0.44735899550815444,
+          0.21948667920005344,
+          -0.010268507244403067,
+          -0.02301343389025709,
+          -0.025088770714075125,
+          0.011854672805751514,
+          0.2392407698260286,
+          0.42494859733221163,
+          0.21820747047777472,
+          -0.023779404863255367,
+          -0.038782260878908695,
+          -0.0090643271021058,
+          0.0403405252037078,
+          0.2729864407144244,
+          0.4716702275104279,
+          0.26219607355846514,
+          0.026034025138777617,
+          -0.011177178285150309,
+          -0.006046431359231696,
+          0.02494162871680838,
+          0.24949430751228865,
+          0.43801557737858965,
+          0.24314981307561928,
+          0.01243247519474144,
+          -0.03550973716578537,
+          -0.028505285255516072
+        ],
+        "significant_lags": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          13,
+          14,
+          15,
+          20,
+          21,
+          22,
+          27,
+          28,
+          29,
+          34,
+          35,
+          36,
+          41,
+          42,
+          43,
+          48,
+          49,
+          50,
+          55,
+          56,
+          57
+        ],
+        "threshold": 0.046159193057461786
+      },
+      "realized_pnl_rule": {
+        "N": 1803,
+        "candidate_days": 50,
+        "max_lag_evaluated": 60,
+        "rho": [
+          -0.023131166283619876,
+          -0.0014969175711503082,
+          0.03685367898005737,
+          -0.005638073421422606,
+          -0.0005184620307459706,
+          -0.03977650721925465,
+          -0.03701018343285569,
+          -0.020678850414389868,
+          -0.029374226520851334,
+          -0.03463703336635015,
+          -0.02211249398640783,
+          -0.010054260374080349,
+          0.011890108290036065,
+          -0.00437026175674082,
+          0.0029898699493534453,
+          -0.017671835169359506,
+          0.008981276328493928,
+          0.004266420577744597,
+          0.011512282004016744,
+          -0.0319074114520097,
+          -0.0012703179238017122,
+          0.03188966675955713,
+          -0.01604826268819606,
+          -0.052685892651209536,
+          -0.013099055009152543,
+          -0.008414247199357405,
+          -0.003625316109206611,
+          0.014061237202479836,
+          -0.05346257495035188,
+          0.021005771443428224,
+          -0.009824642775086592,
+          -0.016081974427234007,
+          0.004171795576593673,
+          -0.019721311980535193,
+          0.08678105922215153,
+          0.0102607113262764,
+          0.0014908182277802108,
+          0.05770588952868007,
+          0.016735867166158252,
+          0.025271875818273257,
+          -0.04277096634201344,
+          0.021936501688515873,
+          -0.022479313882864834,
+          -0.014023154157352486,
+          -0.008423810786737469,
+          -0.023118520727118102,
+          -0.03043081640694704,
+          -0.00664208476406796,
+          -0.014811369824183285,
+          0.05963051599918695,
+          0.0008759521751367499,
+          0.025815321855940838,
+          0.01138990408339889,
+          0.036951165262792005,
+          -0.04346260644671155,
+          0.023213821286462506,
+          0.034610147861721105,
+          -0.015622074403596576,
+          -0.005910014489863172,
+          -0.02698866987902578
+        ],
+        "significant_lags": [
+          24,
+          29,
+          35,
+          38,
+          50
+        ],
+        "threshold": 0.046159193057461786
+      },
+      "window_end_utc": "2022-09-15T21:59:59Z",
+      "window_start_utc": "2017-10-08T22:00:00Z"
+    },
+    "isolated_significant_lag": "INCLUDED",
+    "max_lag_days": 60,
+    "minimum_block_days": 20,
+    "reference_lower_bound": 0.8,
+    "reference_status": "SUPPLEMENTAL_UNRATIFIED_NOT_A_GATE_REDEFINITION",
+    "replicates": 2000,
+    "seed": 20260731,
+    "sensitivity_days": [
+      28,
+      114
+    ],
+    "target_days": 57,
+    "tie_rule": "LARGEST_LAG"
+  },
+  "claim": {
+    "label": "HISTORICAL_DIAGNOSTIC_NOT_SELECTION_SEALED",
+    "n_trials": "UNKNOWN_LOWER_BOUND_165",
+    "paid_challenge": "NO_GO",
+    "prospective_route": "OWNER_AUTHORIZED_EXACT_PROFILE_TRIAL_OR_SHADOW_BYTES_POST_SEAL",
+    "selection_sealed": false,
+    "strict_qualification": "UNVERIFIED",
+    "trace_label": "CONSERVATIVE_LIFETIME_MAE_BOUND"
+  },
+  "cost_contract": "FIXED_CURRENT_TERMS_COUNTERFACTUAL_NOT_HISTORICAL_REALIZED_SWAP",
+  "inputs": {
+    "cost_snapshot": {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-30_ftmo_book3_symbol_cost_snapshot.json",
+      "sha256": "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280"
+    },
+    "is_streams": [
+      {
+        "derivation": "IS_ONLY_ENTRY_AND_CLOSE_WITHIN_WINDOW",
+        "expected_rows": 654,
+        "parent_stream_sha256": "1593ee930e1550236f1c851805d3a71ccdb4c2a244de6994b3dbbf4bf450f7ff",
+        "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-31_book3_r3_is_9936_usdjpy.jsonl",
+        "sha256": "23da92262b8034ed235c669c82f0d0e527053a2563559b65fd732fcabcda4b7a",
+        "sleeve_id": "9936",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "derivation": "IS_ONLY_ENTRY_AND_CLOSE_WITHIN_WINDOW",
+        "expected_rows": 150,
+        "parent_stream_sha256": "cba8eac2aab23b68c6846ac7848e7da818cc4608912a9dd83e4f89e75d4af425",
+        "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-31_book3_r3_is_10145_xauusd.jsonl",
+        "sha256": "48ec554bca0de0f1ab3e82253053587635e61d9b711031551a9d406d66741c95",
+        "sleeve_id": "10145",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "derivation": "IS_ONLY_ENTRY_AND_CLOSE_WITHIN_WINDOW",
+        "expected_rows": 298,
+        "parent_stream_sha256": "136cc04da36b766572843cd496a3770aca694d2eb279f389be4cc2d36ca72179",
+        "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-31_book3_r3_is_13108_xtiusd.jsonl",
+        "sha256": "eec5e17dd582a07531a193a7442bb6128c2dea91926672ca6fa69dc81990433c",
+        "sleeve_id": "13108",
+        "symbol": "XTIUSD.DWX"
+      }
+    ],
+    "streams": [
+      {
+        "expected_rows": 1143,
+        "lineage": [
+          {
+            "path": "D:\\QM\\reports\\work_items\\1e9a2b35-e92b-585f-9bf4-b8dee0a95c27\\QM5_9936\\20260729_234738\\summary.json",
+            "role": "summary",
+            "sha256": "d7109154486d5ec7ce8b7fb11a19b2a809bd9c3332868278c2dddc8093b97717"
+          },
+          {
+            "path": "D:\\QM\\reports\\work_items\\1e9a2b35-e92b-585f-9bf4-b8dee0a95c27\\QM5_9936\\20260729_234738\\raw\\run_01\\report.htm",
+            "role": "report",
+            "sha256": "fab231b70a53bf41173dccc8f4a1dd46cf46a2302cc0f06d28c54905abeb9253"
+          },
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\ftmo_book3_v2_full_lifecycle_20260730_a02\\runtime\\r0_40573cd720d5_runner_receipt.json",
+            "role": "receipt",
+            "sha256": "4c8a19073504728c4531ef9139a08badfd77308f18729c8d27a10ba48a28e768"
+          },
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\ftmo_book3_v2_full_lifecycle_20260730_a02\\standalone_diagnostic_f8593cd4b\\evaluation_manifest.json",
+            "role": "evaluation_manifest",
+            "sha256": "fdd26cc9d794c8420ab2f2914aa147f60dc3bdc3a7c4df8bd3c05d2ad91081ab"
+          }
+        ],
+        "path": "D:\\QM\\reports\\work_items\\1e9a2b35-e92b-585f-9bf4-b8dee0a95c27\\q08_trades_9936_USDJPY_DWX.timer_v2.jsonl",
+        "sha256": "1593ee930e1550236f1c851805d3a71ccdb4c2a244de6994b3dbbf4bf450f7ff",
+        "sleeve_id": "9936",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "expected_rows": 291,
+        "lineage": [
+          {
+            "path": "D:\\QM\\reports\\work_items\\298079e0-d162-5a86-ab2f-530b3f319f22\\QM5_10145\\20260730_001007\\summary.json",
+            "role": "summary",
+            "sha256": "2bea34250474f6f31912158c781c7d85de87c4f7894297089c669b30f85c9620"
+          },
+          {
+            "path": "D:\\QM\\reports\\work_items\\298079e0-d162-5a86-ab2f-530b3f319f22\\QM5_10145\\20260730_001007\\raw\\run_01\\report.htm",
+            "role": "report",
+            "sha256": "325467c2d139a04966ae9a2dcf775bb98b80ca19c8c77d0a4e8030e2d2547daf"
+          },
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\ftmo_book3_v2_full_lifecycle_20260730_a02\\runtime\\r1_40573cd720d5_runner_receipt.json",
+            "role": "receipt",
+            "sha256": "caadc31ea7e4603b000af3206868279c68d49c960fa7b4c14667bb0cfb42b3cf"
+          },
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\ftmo_book3_v2_full_lifecycle_20260730_a02\\standalone_diagnostic_f8593cd4b\\evaluation_manifest.json",
+            "role": "evaluation_manifest",
+            "sha256": "fdd26cc9d794c8420ab2f2914aa147f60dc3bdc3a7c4df8bd3c05d2ad91081ab"
+          }
+        ],
+        "path": "D:\\QM\\reports\\work_items\\298079e0-d162-5a86-ab2f-530b3f319f22\\q08_trades_10145_XAUUSD_DWX.timer_v2.jsonl",
+        "sha256": "cba8eac2aab23b68c6846ac7848e7da818cc4608912a9dd83e4f89e75d4af425",
+        "sleeve_id": "10145",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "expected_rows": 548,
+        "lineage": [
+          {
+            "path": "D:\\QM\\reports\\work_items\\2c92e30e-df68-51fe-b1f8-d90901f43dc8\\QM5_13108\\20260730_041526\\summary.json",
+            "role": "summary",
+            "sha256": "adc7785eb438d9b74912917e18fa5fb905958fec17856629cd032537ce6670ad"
+          },
+          {
+            "path": "D:\\QM\\reports\\work_items\\2c92e30e-df68-51fe-b1f8-d90901f43dc8\\QM5_13108\\20260730_041526\\raw\\run_01\\report.htm",
+            "role": "report",
+            "sha256": "6656847def8114a8e50efc6ac2792ec165154307da163d4c98f66097b4279974"
+          },
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\ftmo_book3_v2_full_lifecycle_20260730_a02\\standalone_diagnostic_f8593cd4b\\run_receipt.json",
+            "role": "receipt",
+            "sha256": "742a86159c25c03ca9f9722740301bf4b4c1881be0a331570a7a22f5f7415c68"
+          },
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\ftmo_book3_v2_full_lifecycle_20260730_a02\\standalone_diagnostic_f8593cd4b\\evaluation_manifest.json",
+            "role": "evaluation_manifest",
+            "sha256": "fdd26cc9d794c8420ab2f2914aa147f60dc3bdc3a7c4df8bd3c05d2ad91081ab"
+          }
+        ],
+        "path": "D:\\QM\\reports\\work_items\\2c92e30e-df68-51fe-b1f8-d90901f43dc8\\q08_trades_13108_XTIUSD_DWX.timer_v2.jsonl",
+        "sha256": "136cc04da36b766572843cd496a3770aca694d2eb279f389be4cc2d36ca72179",
+        "sleeve_id": "13108",
+        "symbol": "XTIUSD.DWX"
+      }
+    ]
+  },
+  "prepared_at_utc": "2026-07-31T14:25:00Z",
+  "rules": {
+    "breach_operator": "STRICTLY_BELOW",
+    "censoring": "RIGHT_CENSORED_IS_NON_PASS",
+    "daily_floor": "MIDNIGHT_BALANCE_MINUS_FIXED_INITIAL_CAPITAL_AMOUNT",
+    "equal_timestamp_order": [
+      "DAY_BOUNDARY",
+      "CLOSE",
+      "OPEN"
+    ],
+    "initial_capital": 100000.0,
+    "lifetime_interval": "HALF_OPEN_ENTRY_INCLUSIVE_CLOSE_EXCLUSIVE",
+    "maximum_daily_loss_fraction": 0.05,
+    "maximum_total_loss_fraction": 0.1,
+    "minimum_trading_days_per_phase": 4,
+    "phase_transition": "RESET_TO_INITIAL_CAPITAL_NEXT_PRAGUE_DAY_AFTER_FLAT_PASS",
+    "start_eligibility": "SIMULTANEOUS_ACCOUNT_FLAT_PRAGUE_DAY_WITH_NEW_POSITION",
+    "target_operator": "AT_OR_ABOVE_WHILE_FLAT",
+    "timezone": "Europe/Prague",
+    "total_floor": "INITIAL_CAPITAL_TIMES_0P90",
+    "trading_day": "PRAGUE_DAY_WITH_POSITION_OPENED"
+  },
+  "scenarios": [
+    {
+      "claim_scope": "OFFICIAL_RAW_TARGETS",
+      "id": "official_raw_1x",
+      "phase1_risk_multiplier": 1.0,
+      "phase1_target_fraction": 0.1,
+      "phase2_risk_multiplier": 1.0,
+      "phase2_target_fraction": 0.05
+    },
+    {
+      "claim_scope": "INTERNAL_POLICY_SCENARIO_NOT_OFFICIAL_RAW",
+      "id": "internal_policy_phase2_0p75",
+      "phase1_risk_multiplier": 1.0,
+      "phase1_target_fraction": 0.1,
+      "phase2_risk_multiplier": 0.75,
+      "phase2_target_fraction": 0.05
+    }
+  ],
+  "schema_version": "qm.book3-conservative-bound-config/v1",
+  "windows": {
+    "evaluation_end_utc": "2025-12-30T22:59:59Z",
+    "evaluation_start_utc": "2022-09-15T22:00:00Z",
+    "is_end_utc": "2022-09-15T21:59:59Z",
+    "is_start_utc": "2017-10-08T22:00:00Z"
+  }
+}
