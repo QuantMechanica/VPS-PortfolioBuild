@@ -246,6 +246,17 @@
     ],
     "streams": [
       {
+        "coverage_authority": {
+          "instant_utc": "2025-12-30T09:46:58Z",
+          "kind": "STREAM_LAST_CLOSE_FALLBACK",
+          "lineage_reviewed": {
+            "report_sha256": "fab231b70a53bf41173dccc8f4a1dd46cf46a2302cc0f06d28c54905abeb9253",
+            "summary_sha256": "d7109154486d5ec7ce8b7fb11a19b2a809bd9c3332868278c2dddc8093b97717"
+          },
+          "reason": "The hash-bound summary and report record only the inclusive requested date 2025.12.31, not an exact coverage-end instant. The stream's maximum close instant is therefore authoritative; the hash-bound report's final deal independently matches it.",
+          "stream_field": "time",
+          "stream_last_close_utc": "2025-12-30T09:46:58Z"
+        },
         "expected_rows": 1143,
         "lineage": [
           {
@@ -275,6 +286,15 @@
         "symbol": "USDJPY.DWX"
       },
       {
+        "coverage_authority": {
+          "instant_utc": "2025-12-30T23:58:59Z",
+          "kind": "HASH_BOUND_REPORT_END_OF_TEST",
+          "lineage_role": "report",
+          "lineage_sha256": "325467c2d139a04966ae9a2dcf775bb98b80ca19c8c77d0a4e8030e2d2547daf",
+          "reason": "The hash-bound report records the exact end-of-test close instant, and the stream's maximum close instant matches it.",
+          "report_marker": "end of test",
+          "stream_last_close_utc": "2025-12-30T23:58:59Z"
+        },
         "expected_rows": 291,
         "lineage": [
           {
@@ -304,6 +324,15 @@
         "symbol": "XAUUSD.DWX"
       },
       {
+        "coverage_authority": {
+          "instant_utc": "2025-12-30T23:59:42Z",
+          "kind": "HASH_BOUND_REPORT_END_OF_TEST",
+          "lineage_role": "report",
+          "lineage_sha256": "6656847def8114a8e50efc6ac2792ec165154307da163d4c98f66097b4279974",
+          "reason": "The hash-bound report records the exact end-of-test close instant, and the stream's maximum close instant matches it.",
+          "report_marker": "end of test",
+          "stream_last_close_utc": "2025-12-30T23:59:42Z"
+        },
         "expected_rows": 548,
         "lineage": [
           {
@@ -376,7 +405,7 @@
   ],
   "schema_version": "qm.book3-conservative-bound-config/v1",
   "windows": {
-    "evaluation_end_utc": "2025-12-30T22:59:59Z",
+    "evaluation_end_utc": "2025-12-30T09:46:58Z",
     "evaluation_start_utc": "2022-09-15T22:00:00Z",
     "is_end_utc": "2022-09-15T21:59:59Z",
     "is_start_utc": "2017-10-08T22:00:00Z"
