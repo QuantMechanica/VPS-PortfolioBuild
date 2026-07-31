@@ -323,15 +323,68 @@ def _copy_claim_order_tables(source: sqlite3.Connection, destination: sqlite3.Co
         if not columns:
             raise PriorityTrackError(f"canonical claim-order table has no columns: {table}")
         column_sql = ",".join(_quote_identifier(column) for column in columns)
+        has_rowid = "WITHOUT ROWID" not in str(schema_row[0]).upper()
+        select_columns = f"rowid,{column_sql}" if has_rowid else column_sql
         rows = source.execute(
-            f"SELECT {column_sql} FROM {_quote_identifier(table)}"
+            f"SELECT {select_columns} FROM {_quote_identifier(table)}"
         ).fetchall()
         if rows:
-            placeholders = ",".join("?" for _column in columns)
+            insert_columns = f"rowid,{column_sql}" if has_rowid else column_sql
+            placeholders = ",".join("?" for _value in rows[0])
             destination.executemany(
-                f"INSERT INTO {_quote_identifier(table)} ({column_sql}) VALUES ({placeholders})",
+                f"INSERT INTO {_quote_identifier(table)} ({insert_columns}) "
+                f"VALUES ({placeholders})",
                 (tuple(row) for row in rows),
             )
+
+
+def _summarize_claim_order_delta(
+    before: Sequence[sqlite3.Row],
+    after: Sequence[sqlite3.Row],
+    target_ids: Sequence[str],
+    *,
+    method: str,
+) -> dict[str, Any]:
+    before_pos = {str(row["id"]): index + 1 for index, row in enumerate(before)}
+    after_pos = {str(row["id"]): index + 1 for index, row in enumerate(after)}
+    by_id = {str(row["id"]): row for row in before}
+    target_set = set(target_ids)
+    targets = {
+        work_item_id: {
+            "before_rank": before_pos.get(work_item_id),
+            "after_rank": after_pos.get(work_item_id),
+            "rank_improvement": (
+                before_pos[work_item_id] - after_pos[work_item_id]
+                if work_item_id in before_pos and work_item_id in after_pos
+                else None
+            ),
+        }
+        for work_item_id in target_ids
+    }
+    if any(row["before_rank"] is None or row["after_rank"] is None for row in targets.values()):
+        raise PriorityTrackError("target is absent from canonical pending claim order")
+    displaced = [
+        work_item_id
+        for work_item_id, position in before_pos.items()
+        if work_item_id not in target_set and after_pos.get(work_item_id, position) > position
+    ]
+    displaced_rows = [by_id[work_item_id] for work_item_id in displaced]
+    digest = sha256_bytes("\n".join(sorted(displaced)).encode("utf-8"))
+    return {
+        "targets": targets,
+        "displaced_rows": len(displaced),
+        "displaced_ids_sha256": digest,
+        "displaced_q04_plus": sum(
+            str(row["phase"]) in DOWNSTREAM_PHASES for row in displaced_rows
+        ),
+        "displaced_metal": sum(
+            str(row["symbol"]).upper().startswith(("XAU", "XAG", "XPT", "XCU"))
+            for row in displaced_rows
+        ),
+        "pending_rows_before": len(before),
+        "pending_rows_after": len(after),
+        "method": method,
+    }
 
 
 def claim_order_delta(
@@ -353,43 +406,12 @@ def claim_order_delta(
         after = _ordered_rows(memory)
     finally:
         memory.close()
-    before_pos = {str(row["id"]): index + 1 for index, row in enumerate(before)}
-    after_pos = {str(row["id"]): index + 1 for index, row in enumerate(after)}
-    by_id = {str(row["id"]): row for row in before}
-    targets = {
-        work_item_id: {
-            "before_rank": before_pos.get(work_item_id),
-            "after_rank": after_pos.get(work_item_id),
-            "rank_improvement": (
-                before_pos[work_item_id] - after_pos[work_item_id]
-                if work_item_id in before_pos and work_item_id in after_pos
-                else None
-            ),
-        }
-        for work_item_id in proposed_payloads
-    }
-    if any(row["before_rank"] is None or row["after_rank"] is None for row in targets.values()):
-        raise PriorityTrackError("target is absent from canonical pending claim order")
-    displaced = [
-        work_item_id
-        for work_item_id, position in before_pos.items()
-        if work_item_id not in proposed_payloads and after_pos.get(work_item_id, position) > position
-    ]
-    displaced_rows = [by_id[work_item_id] for work_item_id in displaced]
-    digest = sha256_bytes("\n".join(sorted(displaced)).encode("utf-8"))
-    return {
-        "targets": targets,
-        "displaced_rows": len(displaced),
-        "displaced_ids_sha256": digest,
-        "displaced_q04_plus": sum(str(row["phase"]) in DOWNSTREAM_PHASES for row in displaced_rows),
-        "displaced_metal": sum(
-            str(row["symbol"]).upper().startswith(("XAU", "XAG", "XPT", "XCU"))
-            for row in displaced_rows
-        ),
-        "pending_rows_before": len(before),
-        "pending_rows_after": len(after),
-        "method": "CANONICAL_SQL_ON_TRANSACTION_TABLE_SNAPSHOT_IN_MEMORY_COPY",
-    }
+    return _summarize_claim_order_delta(
+        before,
+        after,
+        tuple(proposed_payloads),
+        method="CANONICAL_SQL_ON_TRANSACTION_TABLE_SNAPSHOT_IN_MEMORY_COPY",
+    )
 
 
 def build_plan(
@@ -537,6 +559,10 @@ def apply_plan(
 
     with FactoryMutationLock(lock_path, owner="set_priority_track.apply"):
         conn = connect_rw(db)
+        journal: dict[str, Any] | None = None
+        event_ids: list[int] = []
+        actual_displacement: dict[str, Any] | None = None
+        db_committed = False
         try:
             conn.execute("BEGIN IMMEDIATE")
             provenance = _git_provenance(repo, registry_path)
@@ -579,8 +605,9 @@ def apply_plan(
                     "post_payload_sha256": payload_sha256(post["payload_json"]),
                 }
                 proposed[work_item_id] = post_payload
+            before_apply_order = _ordered_rows(conn)
             displacement = claim_order_delta(conn, proposed)
-            journal: dict[str, Any] = {
+            journal = {
                 "schema_version": JOURNAL_SCHEMA,
                 "state": "planned",
                 "planned_at_utc": now,
@@ -597,7 +624,6 @@ def apply_plan(
             }
             write_json_atomic(journal_path, journal, require_absent=True)
 
-            event_ids = []
             changed = 0
             for work_item_id, entry in entries.items():
                 pre = entry["pre_apply"]
@@ -642,18 +668,37 @@ def apply_plan(
             if changed != len(ids):
                 raise PriorityTrackError(f"exact rowcount assertion failed: {changed} != {len(ids)}")
             actual_after = _ordered_rows(conn)
-            after_positions = {str(row["id"]): index + 1 for index, row in enumerate(actual_after)}
-            for work_item_id in ids:
-                expected_after = displacement["targets"][work_item_id]["after_rank"]
-                if after_positions.get(work_item_id) != expected_after:
-                    raise PriorityTrackError("post-update claim rank differs from in-memory simulation")
+            actual_displacement = _summarize_claim_order_delta(
+                before_apply_order,
+                actual_after,
+                ids,
+                method="CANONICAL_SQL_ON_LIVE_TRANSACTION_BEFORE_AFTER",
+            )
+            if any(
+                row["rank_improvement"] is None or row["rank_improvement"] < 0
+                for row in actual_displacement["targets"].values()
+            ):
+                raise PriorityTrackError("post-update canonical rank regressed")
+            journal["claim_order_displacement_actual"] = actual_displacement
             conn.commit()
-        except BaseException:
-            conn.rollback()
+            db_committed = True
+        except BaseException as exc:
+            if not db_committed:
+                conn.rollback()
+                if journal is not None:
+                    journal["state"] = "rolled_back"
+                    journal["rolled_back_at_utc"] = utc_now()
+                    journal["failure"] = {
+                        "type": type(exc).__name__,
+                        "message": str(exc),
+                        "database_mutation_committed": False,
+                    }
+                    write_json_atomic(journal_path, journal, require_absent=False)
             raise
         finally:
             conn.close()
 
+        assert journal is not None and actual_displacement is not None
         journal["state"] = "committed"
         journal["committed_at_utc"] = now
         journal["events"] = event_ids
@@ -664,7 +709,8 @@ def apply_plan(
             "exact_ids": list(ids),
             "journal_path": str(journal_path),
             "journal_sha256": final_sha,
-            "claim_order_displacement": displacement,
+            "claim_order_displacement": actual_displacement,
+            "claim_order_displacement_planned": displacement,
             "event_ids": event_ids,
             "pipeline_verdict_changed": False,
         }

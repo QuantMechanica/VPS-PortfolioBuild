@@ -269,6 +269,14 @@ def test_apply_journals_exact_cas_event_and_guarded_revert(
     journal, journal_sha = controller.load_json(fixture["journal"], "journal")
     assert journal["state"] == "committed"
     assert journal_sha == applied["journal_sha256"]
+    assert journal["claim_order_displacement_actual"]["targets"][TARGET_ID] == {
+        "before_rank": 4,
+        "after_rank": 1,
+        "rank_improvement": 3,
+    }
+    assert applied["claim_order_displacement"]["method"] == (
+        "CANONICAL_SQL_ON_LIVE_TRANSACTION_BEFORE_AFTER"
+    )
     with sqlite3.connect(fixture["db"]) as conn:
         conn.row_factory = sqlite3.Row
         row = conn.execute("SELECT * FROM work_items WHERE id=?", (TARGET_ID,)).fetchone()
@@ -297,6 +305,89 @@ def test_apply_journals_exact_cas_event_and_guarded_revert(
         "priority_track_backfill_applied",
         "priority_track_backfill_reverted",
     ]
+
+
+def test_apply_records_live_rank_when_simulated_tie_rank_differs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    fixture = _fixture(tmp_path)
+    monkeypatch.setattr(controller, "_git_provenance", lambda *_args: fixture["provenance"])
+    original_delta = controller.claim_order_delta
+
+    def skewed_delta(
+        conn: sqlite3.Connection, proposed: dict[str, str]
+    ) -> dict[str, Any]:
+        result = original_delta(conn, proposed)
+        result["targets"][TARGET_ID]["after_rank"] += 1
+        result["targets"][TARGET_ID]["rank_improvement"] -= 1
+        return result
+
+    monkeypatch.setattr(controller, "claim_order_delta", skewed_delta)
+
+    applied = controller.apply_plan(
+        fixture["db"],
+        (TARGET_ID,),
+        fixture["expectations"],
+        fixture["expectations_path"],
+        fixture["expectations_sha"],
+        fixture["expectations_sha"],
+        fixture["repo"],
+        fixture["registry"],
+        controller.normalized_text_sha256(fixture["registry"]),
+        fixture["lock"],
+        fixture["journal"],
+    )
+
+    planned = applied["claim_order_displacement_planned"]["targets"][TARGET_ID]
+    actual = applied["claim_order_displacement"]["targets"][TARGET_ID]
+    assert planned["after_rank"] == 2
+    assert actual["after_rank"] == 1
+    assert actual["rank_improvement"] == 3
+
+
+def test_failed_apply_rolls_back_database_and_finalizes_journal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    fixture = _fixture(tmp_path)
+    monkeypatch.setattr(controller, "_git_provenance", lambda *_args: fixture["provenance"])
+
+    def refuse_event(*_args: object, **_kwargs: object) -> int:
+        raise controller.PriorityTrackError("injected event refusal")
+
+    monkeypatch.setattr(controller, "_insert_event", refuse_event)
+
+    with pytest.raises(controller.PriorityTrackError, match="injected event refusal"):
+        controller.apply_plan(
+            fixture["db"],
+            (TARGET_ID,),
+            fixture["expectations"],
+            fixture["expectations_path"],
+            fixture["expectations_sha"],
+            fixture["expectations_sha"],
+            fixture["repo"],
+            fixture["registry"],
+            controller.normalized_text_sha256(fixture["registry"]),
+            fixture["lock"],
+            fixture["journal"],
+        )
+
+    journal, _digest = controller.load_json(fixture["journal"], "journal")
+    assert journal["state"] == "rolled_back"
+    assert journal["failure"] == {
+        "type": "PriorityTrackError",
+        "message": "injected event refusal",
+        "database_mutation_committed": False,
+    }
+    with sqlite3.connect(fixture["db"]) as conn:
+        row = conn.execute(
+            "SELECT payload_json, updated_at FROM work_items WHERE id=?", (TARGET_ID,)
+        ).fetchone()
+        events = conn.execute(
+            "SELECT event FROM events WHERE entity_id=?", (TARGET_ID,)
+        ).fetchall()
+    assert row == ("{}", "2026-07-31T12:00:00Z")
+    assert events == []
+    assert not fixture["lock"].exists()
 
 
 def test_guarded_revert_refuses_post_apply_drift(
