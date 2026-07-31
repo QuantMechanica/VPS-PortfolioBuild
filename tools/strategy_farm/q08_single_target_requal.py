@@ -39,6 +39,11 @@ CONTRACT_SCHEMA = "qm.q08-single-target-requal-exception/v1"
 PLAN_SCHEMA = "qm.q08-single-target-requal-plan/v1"
 JOURNAL_SCHEMA = "qm.q08-single-target-requal-journal/v1"
 OWNER_REFERENCE = "OWNER_DECISION_2026-07-31_Q08_SINGLE_TARGET_REQUAL"
+OWNER_DECISION_RELATIVE_PATH = Path(
+    "docs/ops/CODEX_BRIEF_2026-07-31_q08_single_target_requal.md"
+)
+OWNER_DECISION_SHA256 = "2a5bc603e4eb7cd0e1ab56501286ff28256588948214f029cb350b65637afc71"
+OWNER_DECISION_COMMIT = "31475d9f1c476c9ca43d94fef58cc13b933c1337"
 REASON_CLASS = "MARKERLESS_STRATEGY_ASSIGNMENTS_PARSER_DEFECT"
 PARSER_FIX_COMMIT = "12629f50717461e0a66c3af5b466f1d8fcc11e59"
 GLOBAL_INVARIANT = "MNT-007_Q08_INVALID_REPORT_NON_RETRYABLE_UNCHANGED"
@@ -276,6 +281,7 @@ def verify_git_provenance(
     head = str(_run_git(paths.repo, "rev-parse", "HEAD")).strip().lower()
     _normal_commit(head, "git HEAD")
     _run_git(paths.repo, "merge-base", "--is-ancestor", commit, head)
+    _run_git(paths.repo, "merge-base", "--is-ancestor", OWNER_DECISION_COMMIT, head)
 
     parser_path = Path(str(artifacts["parser_source"]["path"])).resolve()
     controller_path = Path(str(artifacts["controller_source"]["path"])).resolve()
@@ -294,6 +300,15 @@ def verify_git_provenance(
         fix.get("file_sha256_at_fix_commit"), "parser_fix.file_sha256_at_fix_commit"
     ):
         raise RequalError("parser file at fix commit does not match exception contract")
+    owner_bytes = _run_git(
+        paths.repo,
+        "show",
+        f"{OWNER_DECISION_COMMIT}:{OWNER_DECISION_RELATIVE_PATH.as_posix()}",
+        binary=True,
+    )
+    assert isinstance(owner_bytes, bytes)
+    if sha256_bytes(owner_bytes) != OWNER_DECISION_SHA256:
+        raise RequalError("committed OWNER decision source digest mismatch")
     status = str(
         _run_git(paths.repo, "status", "--porcelain", "--", parser_rel, controller_rel)
     ).strip()
@@ -338,6 +353,20 @@ def validate_contract(contract: Mapping[str, Any], paths: RuntimePaths) -> dict[
     for key, expected in expected_authorization.items():
         if authorization.get(key) != expected:
             raise RequalError(f"authorization mismatch: {key}")
+    decision_source = authorization.get("decision_source")
+    expected_decision_path = (paths.repo / OWNER_DECISION_RELATIVE_PATH).resolve()
+    if not isinstance(decision_source, Mapping):
+        raise RequalError("authorization decision_source binding missing")
+    if (
+        not _same_path(Path(str(decision_source.get("path") or "")), expected_decision_path)
+        or _normal_sha(decision_source.get("sha256"), "decision_source.sha256")
+        != OWNER_DECISION_SHA256
+        or _normal_commit(decision_source.get("commit_sha"), "decision_source.commit_sha")
+        != OWNER_DECISION_COMMIT
+        or not expected_decision_path.is_file()
+        or sha256_file(expected_decision_path) != OWNER_DECISION_SHA256
+    ):
+        raise RequalError("authorization decision_source identity mismatch")
 
     target = contract.get("target")
     if not isinstance(target, Mapping):

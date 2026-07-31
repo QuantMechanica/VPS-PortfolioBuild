@@ -120,6 +120,13 @@ def _fixture(
     state = tmp_path / "state"
     repo.mkdir(parents=True)
     state.mkdir(parents=True)
+    decision_source = _write(
+        repo / requal.OWNER_DECISION_RELATIVE_PATH,
+        "OWNER approves exact fixture target\n",
+    )
+    monkeypatch.setattr(
+        requal, "OWNER_DECISION_SHA256", requal.sha256_file(decision_source)
+    )
 
     parser_source = _write(
         repo / "framework" / "scripts" / "q08_5_neighborhood_runner.py",
@@ -197,6 +204,11 @@ def parse_setfile_assignments(path):
             "scope": "EXACT_ONE_ROW_Q08_REQUALIFICATION_CONTROLLER",
             "global_invariant": requal.GLOBAL_INVARIANT,
             "global_invariant_weakened": False,
+            "decision_source": {
+                "path": str(decision_source.resolve()),
+                "sha256": requal.sha256_file(decision_source),
+                "commit_sha": requal.OWNER_DECISION_COMMIT,
+            },
         },
         "target": {
             **requal.AUTHORIZED_TARGET,
