@@ -30,6 +30,36 @@ The Obsidian vault may be used as an exchange document.
 | E | New motors 20183 / 20184 / 11592 (Q02) | — | — | watch only (20184 active on T8; 11592 GBPUSD Q04 merit-FAIL; EURUSD self-healed) | — |
 | — | MNT-003 (predates ledger): apply v1 failed 0x80070002 -> exact rollback; R2 root cause = literal apostrophes in raw -Arguments (H1 env-block refuted with evidence) | Codex diagnosis | Claude | apply-v2 ticket dispatched (plan v2 WhatIf 5/5) | R2 diagnosis APPROVED |
 
+## Round log (continued, 2026-07-31 afternoon)
+
+- **A CLOSED** (92 %, e4d31aed3, Claude re-verified).
+- **B:** Phase 1 executed (Claude) + Codex-verified PASS 5/5 (`d6fea536`).
+  OWNER restart 13:06Z armed 14/24; remaining 9 = binary vintage (builds
+  <= 07-04, pre-KillSwitch-fix) -> recompile plan ticket `5690506f` running;
+  **OWNER standing approval granted 2026-07-31 for the recompile-deploy plan**
+  (Claude reviews, approves, records decision on arrival).
+- **C:** v2 design 92 % -> evaluator implemented (`d6d2a8dfc`) + Claude-reviewed;
+  R3 IS-config prepared (config `0581c74b`); Claude's evaluate run refused
+  fail-closed (window end exceeds 9936 stream coverage — guard working);
+  R3b config fix queued (`78d4d826`).
+- **D:** parser fallback + last-wins ablation precedence landed (`12629f507`,
+  `ba13af972`; ablations parse 6/6 override values, setfile bytes untouched);
+  single-target requal controller landed + Claude-approved (`527228e3`);
+  exception-contract rebind + fresh dry-run queued (`0debec3a`). Remaining
+  blockers by design: Sunday Factory-OFF/zero-active window.
+- **MNT-003:** apply-v2 ticket re-queued behind full Codex slots (`8b4f791a`).
+- **Hygiene:** items 2/3/4 approved; pump-gate clamp reverted to 1800
+  (`7bd303931`); Rule-11 kill-recorder amendment restored out of the ratified
+  doc into `docs/ops/proposals/2026-07-31_rule11_kill_recorder_amendment.md` —
+  **pending OWNER ratification**.
+- **Rebind note:** commits `7122eaf2b`/`c817f5a74`/`7bd303931` touch
+  runtime-decision-bound files — decision rebind is MANDATORY before the next
+  Factory ON (builder: `tools/strategy_farm/build_runtime_activation_decision.py`).
+- **OWNER decisions recorded 2026-07-31:** (1) YES NDX priority_track incl.
+  displacement; (2) YES single-target Q08 requal controller; (3) YES Sunday
+  session (reminder set); (4) standing YES to approve the recompile-deploy
+  plan on arrival.
+
 ## Round log
 
 - 2026-07-31: Ledger opened. Topics A and C authored by Claude and dispatched to
