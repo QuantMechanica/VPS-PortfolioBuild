@@ -1,8 +1,11 @@
 # QM5_20161 Q02 identity-bound PASS recovery
 
-**Date:** 2026-07-31  
-**Branch:** `agents/board-advisor`  
-**Outcome:** `Q02_PASS_RECOVERED_AND_Q04_ENQUEUED`  
+**Date:** 2026-07-31
+
+**Branch:** `agents/board-advisor`
+
+**Outcome:** `Q02_PASS_RECOVERED_AND_Q04_ENQUEUED`
+
 **Agent task:** `497232d2-c60a-4d7a-830f-9346f7b14961`
 
 ## Diversity-first selection
