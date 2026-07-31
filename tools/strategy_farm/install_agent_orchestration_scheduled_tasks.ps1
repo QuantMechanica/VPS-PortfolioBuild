@@ -10,11 +10,17 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $wrapper = Join-Path $RepoRoot "tools\strategy_farm\run_agent_orchestration_task.py"
+$helper = Join-Path $RepoRoot "tools\strategy_farm\run_in_console_session.ps1"
+$powerShellExe = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+$targetUser = "qm-admin"
 if (-not (Test-Path -LiteralPath $PythonwExe)) {
     throw "pythonw.exe not found: $PythonwExe"
 }
 if (-not (Test-Path -LiteralPath $wrapper)) {
     throw "Wrapper not found: $wrapper"
+}
+if (-not (Test-Path -LiteralPath $helper)) {
+    throw "Console-session helper not found: $helper"
 }
 
 # MaxSessions = concurrent headless sessions per orchestration run, per agent.
@@ -59,11 +65,30 @@ foreach ($definition in $definitions) {
     $trigger = New-ScheduledTaskTrigger -Once -At $startBoundary `
         -RepetitionInterval (New-TimeSpan -Minutes $everyMin) `
         -RepetitionDuration (New-TimeSpan -Days 3650)
-    $arguments = "`"$wrapper`" --agent $agent --max-sessions $maxSessions"
-    $action = New-ScheduledTaskAction `
-        -Execute $PythonwExe `
-        -Argument $arguments `
-        -WorkingDirectory $RepoRoot
+    if ($taskName -eq 'QM_StrategyFarm_GeminiOrchestration_15min') {
+        # MNT-003 v2: one outer double-quoted -Arguments value. Literal
+        # apostrophe wrappers become child pathname bytes and are forbidden.
+        $childArguments = "$wrapper --agent $agent --max-sessions $maxSessions"
+        $arguments = (
+            '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "{0}" -Exe "{1}" -Arguments "{2}" -WorkDir "{3}" -TargetUser "{4}" -WaitSeconds 14100' -f `
+                $helper, $PythonwExe, $childArguments, $RepoRoot, $targetUser
+        )
+        if ($arguments.Contains("'")) {
+            throw 'MNT-003 v2 action must not contain literal apostrophe wrappers.'
+        }
+        $action = New-ScheduledTaskAction `
+            -Execute $powerShellExe `
+            -Argument $arguments `
+            -WorkingDirectory $RepoRoot
+    } else {
+        # Preserve the existing installer contract for orchestration tasks that
+        # are outside this five-task MNT-003 change.
+        $arguments = "`"$wrapper`" --agent $agent --max-sessions $maxSessions"
+        $action = New-ScheduledTaskAction `
+            -Execute $PythonwExe `
+            -Argument $arguments `
+            -WorkingDirectory $RepoRoot
+    }
 
     Register-ScheduledTask `
         -TaskName $taskName `

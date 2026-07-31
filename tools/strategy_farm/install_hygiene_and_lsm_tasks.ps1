@@ -20,11 +20,10 @@
 #    lsm_health_history.jsonl under D:\QM\reports\state\.
 #
 #  QM_StrategyFarm_WorkerDedupe
-#    On-demand only (no trigger), qm-admin INTERACTIVE principal, Highest.
-#    Runs start_terminal_workers.py --dedupe: fills only missing worker
-#    slots without killing in-flight terminals. Started by the SYSTEM
-#    watchdog via Start-ScheduledTask (a SYSTEM child spawn would produce
-#    session-0 workers whose terminal64 dies 0xC0000142 -- 2026-06-24 class).
+#    On-demand only (no trigger), SYSTEM/ServiceAccount/Highest root.
+#    The console-session helper launches start_terminal_workers.py --dedupe
+#    with the logged-on qm-admin token in session 1, filling only missing
+#    worker slots without killing in-flight terminals.
 #
 #  Usage:
 #    # From an elevated PowerShell prompt after a clean boot:
@@ -194,27 +193,44 @@ Enable-ScheduledTask -TaskName $lsmTask | Out-Null
 Write-Host "Registered: $lsmTask (every ${LsmEveryHours}h, SYSTEM)"
 
 # ---------------------------------------------------------------------------
-# Task 3 -- QM_StrategyFarm_WorkerDedupe  (on-demand, interactive qm-admin)
+# Task 3 -- QM_StrategyFarm_WorkerDedupe  (on-demand, SYSTEM -> qm-admin bridge)
 # ---------------------------------------------------------------------------
 $dedupeTask   = 'QM_StrategyFarm_WorkerDedupe'
 $dedupeScript = Join-Path $RepoRoot 'tools\strategy_farm\start_terminal_workers.py'
-$pyExe        = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe'
+$helperScript = Join-Path $RepoRoot 'tools\strategy_farm\run_in_console_session.ps1'
+$pyExe        = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe'
+$powerShellExe = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+$targetUser   = 'qm-admin'
 
 if (-not (Test-Path -LiteralPath $dedupeScript)) {
     throw "start_terminal_workers.py not found: $dedupeScript"
 }
+if (-not (Test-Path -LiteralPath $helperScript)) {
+    throw "console-session helper not found: $helperScript"
+}
+if (-not (Test-Path -LiteralPath $pyExe)) {
+    throw "pythonw.exe not found: $pyExe"
+}
 
-# Interactive qm-admin principal -- mirrors QM_StrategyFarm_FactoryON_AtLogon.
-# The watchdog (SYSTEM) starts this task on demand; the spawn then happens
-# inside the interactive session so terminal64 children are viable.
+# SYSTEM owns the scheduled root. The helper performs the only child spawn and
+# binds it to the logged-on qm-admin token/session so terminal children remain
+# viable; a direct SYSTEM child spawn is forbidden.
 $dedupePrincipal = New-ScheduledTaskPrincipal `
-    -UserId 'qm-admin' `
-    -LogonType Interactive `
+    -UserId 'SYSTEM' `
+    -LogonType ServiceAccount `
     -RunLevel Highest
 
+$dedupeChildArguments = "$dedupeScript --repo-root $RepoRoot --farm-root D:\QM\strategy_farm --dedupe"
+$dedupeActionArguments = (
+    '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "{0}" -Exe "{1}" -Arguments "{2}" -WorkDir "{3}" -TargetUser "{4}" -WaitSeconds 540' -f `
+        $helperScript, $pyExe, $dedupeChildArguments, $RepoRoot, $targetUser
+)
+if ($dedupeActionArguments.Contains("'")) {
+    throw 'MNT-003 v2 action must not contain literal apostrophe wrappers.'
+}
 $dedupeAction = New-ScheduledTaskAction `
-    -Execute $pyExe `
-    -Argument "`"$dedupeScript`" --repo-root `"$RepoRoot`" --farm-root D:\QM\strategy_farm --dedupe" `
+    -Execute $powerShellExe `
+    -Argument $dedupeActionArguments `
     -WorkingDirectory $RepoRoot
 
 if (Get-ScheduledTask -TaskName $dedupeTask -ErrorAction SilentlyContinue) {
@@ -228,11 +244,11 @@ Register-ScheduledTask `
     -Settings $commonSettings `
     -Principal $dedupePrincipal `
     -Force `
-    -Description "On-demand surgical worker heal (no trigger; started by the SYSTEM watchdog via Start-ScheduledTask). Runs start_terminal_workers.py --dedupe in the INTERACTIVE qm-admin session so spawned workers can launch visible terminal64. Never kills in-flight terminals. Direct SYSTEM spawns are forbidden: session-0 workers die 0xC0000142 (2026-06-24 broken-respawn class)." `
+    -Description "On-demand surgical worker heal (no trigger). SYSTEM root uses run_in_console_session.ps1 to launch start_terminal_workers.py --dedupe with the logged-on qm-admin token in session 1. Never kills in-flight terminals; direct SYSTEM child spawns are forbidden." `
     | Out-Null
 
 Enable-ScheduledTask -TaskName $dedupeTask | Out-Null
-Write-Host "Registered: $dedupeTask (on-demand, qm-admin Interactive)"
+Write-Host "Registered: $dedupeTask (on-demand, SYSTEM -> qm-admin session bridge)"
 
 # ---------------------------------------------------------------------------
 # Optional immediate smoke run of the LSM probe
