@@ -1,0 +1,4945 @@
+{
+  "schema": "qm.mnt003.minimal-task-contract-plan/v1",
+  "generated_at_utc": "2026-07-31T06:21:29.1191166Z",
+  "disposition": "PLAN_AND_WHATIF_ONLY",
+  "scheduler_mutated": false,
+  "observation": {
+    "requested_window_hours": 2,
+    "window_start_local": "2026-07-31T06:21:29.1191166+02:00",
+    "window_end_local": "2026-07-31T08:21:29.1191166+02:00",
+    "task_scheduler_log": {
+      "name": "Microsoft-Windows-TaskScheduler/Operational",
+      "enabled": true,
+      "record_count": 18357,
+      "oldest_record_number": 306061,
+      "maximum_size_bytes": 10485760
+    },
+    "session_query_raw": " SESSIONNAME       USERNAME                 ID  STATE   TYPE        DEVICE \r\n>services                                    0  Disc                        \r\n                   qm-admin                  1  Disc                        \r\n console                                     2  Conn                        \r\n rdp-tcp                                 65536  Listen",
+    "task_snapshots": [
+      {
+        "name": "QM_StrategyFarm_AgyGovernor",
+        "state": "Ready",
+        "enabled": true,
+        "principal": {
+          "user_id": "qm-admin",
+          "logon_type": "Interactive",
+          "run_level": "Highest"
+        },
+        "actions": [
+          {
+            "execute": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe",
+            "arguments": "\"C:\\QM\\repo\\tools\\strategy_farm\\agy_governor.py\"",
+            "working_directory": "C:\\QM\\repo"
+          }
+        ],
+        "triggers": [
+          {
+            "xml_element": "TimeTrigger",
+            "enabled": true,
+            "start_boundary": "2026-06-30T00:00:00+02:00",
+            "end_boundary": "",
+            "repetition_interval": "PT10M",
+            "repetition_duration": "P3650D"
+          }
+        ],
+        "info": {
+          "last_run_time": "2026-07-31T08:20:20+02:00",
+          "last_task_result_decimal": 0,
+          "last_task_result_hex": "0x00000000",
+          "next_run_time": "2026-07-31T08:30:30+02:00",
+          "missed_runs": 0
+        }
+      },
+      {
+        "name": "QM_StrategyFarm_CodexFleetPacer",
+        "state": "Ready",
+        "enabled": true,
+        "principal": {
+          "user_id": "qm-admin",
+          "logon_type": "Interactive",
+          "run_level": "Highest"
+        },
+        "actions": [
+          {
+            "execute": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+            "arguments": "tools\\strategy_farm\\codex_fleet_pacer.py",
+            "working_directory": "C:\\QM\\repo"
+          }
+        ],
+        "triggers": [
+          {
+            "xml_element": "TimeTrigger",
+            "enabled": true,
+            "start_boundary": "2026-06-26T11:58:48+02:00",
+            "end_boundary": "",
+            "repetition_interval": "PT15M",
+            "repetition_duration": "P3650D"
+          }
+        ],
+        "info": {
+          "last_run_time": "2026-07-31T08:13:13+02:00",
+          "last_task_result_decimal": 0,
+          "last_task_result_hex": "0x00000000",
+          "next_run_time": "2026-07-31T08:28:28+02:00",
+          "missed_runs": 0
+        }
+      },
+      {
+        "name": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "state": "Ready",
+        "enabled": true,
+        "principal": {
+          "user_id": "qm-admin",
+          "logon_type": "Interactive",
+          "run_level": "Highest"
+        },
+        "actions": [
+          {
+            "execute": "cmd.exe",
+            "arguments": "/c \"\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\" \"C:\\QM\\repo\\tools\\strategy_farm\\run_agent_orchestration_task.py\" --agent gemini --max-sessions 1 >> \"D:\\QM\\strategy_farm\\logs\\gemini_orch_task.out.log\" 2>&1\"",
+            "working_directory": ""
+          }
+        ],
+        "triggers": [
+          {
+            "xml_element": "TimeTrigger",
+            "enabled": true,
+            "start_boundary": "2026-06-09T00:00:00+02:00",
+            "end_boundary": "",
+            "repetition_interval": "PT15M",
+            "repetition_duration": "P3650D"
+          }
+        ],
+        "info": {
+          "last_run_time": "2026-07-31T08:15:15+02:00",
+          "last_task_result_decimal": 0,
+          "last_task_result_hex": "0x00000000",
+          "next_run_time": "2026-07-31T08:30:30+02:00",
+          "missed_runs": 0
+        }
+      },
+      {
+        "name": "QM_StrategyFarm_MailboxSourceIntake_Daily",
+        "state": "Ready",
+        "enabled": true,
+        "principal": {
+          "user_id": "qm-admin",
+          "logon_type": "Interactive",
+          "run_level": "Highest"
+        },
+        "actions": [
+          {
+            "execute": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe",
+            "arguments": "\"C:\\QM\\repo\\tools\\strategy_farm\\mailbox_source_intake.py\"",
+            "working_directory": "C:\\QM\\repo"
+          }
+        ],
+        "triggers": [
+          {
+            "xml_element": "CalendarTrigger",
+            "enabled": true,
+            "start_boundary": "2026-07-23T06:07:00+02:00",
+            "end_boundary": "",
+            "repetition_interval": "",
+            "repetition_duration": ""
+          }
+        ],
+        "info": {
+          "last_run_time": "2026-07-29T06:07:07+02:00",
+          "last_task_result_decimal": 2147946720,
+          "last_task_result_hex": "0x800710E0",
+          "next_run_time": "2026-08-01T06:07:07+02:00",
+          "missed_runs": 2
+        }
+      },
+      {
+        "name": "QM_StrategyFarm_WorkerDedupe",
+        "state": "Ready",
+        "enabled": true,
+        "principal": {
+          "user_id": "qm-admin",
+          "logon_type": "Interactive",
+          "run_level": "Highest"
+        },
+        "actions": [
+          {
+            "execute": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+            "arguments": "\"C:\\QM\\repo\\tools\\strategy_farm\\start_terminal_workers.py\" --repo-root \"C:\\QM\\repo\" --farm-root D:\\QM\\strategy_farm --dedupe",
+            "working_directory": "C:\\QM\\repo"
+          }
+        ],
+        "triggers": [],
+        "info": {
+          "last_run_time": "2026-07-26T20:00:00+02:00",
+          "last_task_result_decimal": 2147946720,
+          "last_task_result_hex": "0x800710E0",
+          "next_run_time": null,
+          "missed_runs": 0
+        }
+      },
+      {
+        "name": "QM_StrategyFarm_TesterCachePurge",
+        "state": "Ready",
+        "enabled": true,
+        "principal": {
+          "user_id": "SYSTEM",
+          "logon_type": "ServiceAccount",
+          "run_level": "Highest"
+        },
+        "actions": [
+          {
+            "execute": "powershell.exe",
+            "arguments": "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\tester_cache_purge.ps1\"",
+            "working_directory": "C:\\QM\\repo"
+          }
+        ],
+        "triggers": [
+          {
+            "xml_element": "TimeTrigger",
+            "enabled": true,
+            "start_boundary": "2026-07-22T00:00:00+02:00",
+            "end_boundary": "",
+            "repetition_interval": "PT10M",
+            "repetition_duration": "P3650D"
+          }
+        ],
+        "info": {
+          "last_run_time": "2026-07-31T08:20:20+02:00",
+          "last_task_result_decimal": 0,
+          "last_task_result_hex": "0x00000000",
+          "next_run_time": "2026-07-31T08:30:30+02:00",
+          "missed_runs": 0
+        }
+      },
+      {
+        "name": "QM_StrategyFarm_Pump_5min",
+        "state": "Ready",
+        "enabled": true,
+        "principal": {
+          "user_id": "SYSTEM",
+          "logon_type": "ServiceAccount",
+          "run_level": "Highest"
+        },
+        "actions": [
+          {
+            "execute": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe",
+            "arguments": "\"C:\\QM\\repo\\tools\\strategy_farm\\run_pump_task.py\"",
+            "working_directory": ""
+          }
+        ],
+        "triggers": [
+          {
+            "xml_element": "TimeTrigger",
+            "enabled": true,
+            "start_boundary": "2026-05-22T00:03:00+02:00",
+            "end_boundary": "",
+            "repetition_interval": "PT5M",
+            "repetition_duration": "P3650D"
+          }
+        ],
+        "info": {
+          "last_run_time": "2026-07-31T08:18:18+02:00",
+          "last_task_result_decimal": 0,
+          "last_task_result_hex": "0x00000000",
+          "next_run_time": "2026-07-31T08:23:23+02:00",
+          "missed_runs": 0
+        }
+      }
+    ],
+    "interactive_qm_task_comparison": [
+      {
+        "name": "QM_BalkeMinute_WF",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-15T18:56:56+02:00",
+        "last_task_result_hex": "0x00000000",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_StrategyFarm_UnreadableLinks_Friday",
+        "state": "Disabled",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-24T06:30:30+02:00",
+        "last_task_result_hex": "0x00000000",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_StrategyFarm_MailboxSourceIntake_Daily",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-29T06:07:07+02:00",
+        "last_task_result_hex": "0x800710E0",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-31T08:15:15+02:00",
+        "last_task_result_hex": "0x00000000",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_StrategyFarm_FactoryON_AtLogon",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-31T07:35:35+02:00",
+        "last_task_result_hex": "0x00000001",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_StrategyFarm_CodexFleetPacer",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-31T08:13:13+02:00",
+        "last_task_result_hex": "0x00000000",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_StrategyFarm_AgyGovernor",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-31T08:20:20+02:00",
+        "last_task_result_hex": "0x00000000",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_Rebuild_Wave",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-14T22:29:29+02:00",
+        "last_task_result_hex": "0x00000000",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_Q08_Neighborhood",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-15T06:32:32+02:00",
+        "last_task_result_hex": "0x00000000",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_NDX_Convert",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-16T23:58:58+02:00",
+        "last_task_result_hex": "0x00000000",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_Live_MT5_SessionSupervisor",
+        "state": "Running",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-31T08:15:15+02:00",
+        "last_task_result_hex": "0x800710E0",
+        "trigger_count": 2
+      },
+      {
+        "name": "QM_GoogleDrive_AtLogon",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-29T09:25:25+02:00",
+        "last_task_result_hex": "0x00000000",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_FTMO_AtLogon",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-29T09:25:25+02:00",
+        "last_task_result_hex": "0x00000002",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_Balke_Walkforward",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-14T10:11:11+02:00",
+        "last_task_result_hex": "0x00000000",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_Balke_Manual_NB3",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-19T02:06:06+02:00",
+        "last_task_result_hex": "0x00000001",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_Balke_Diagnostic",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-15T06:30:30+02:00",
+        "last_task_result_hex": "0x00000000",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_StrategyFarm_WorkerDedupe",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-26T20:00:00+02:00",
+        "last_task_result_hex": "0x800710E0",
+        "trigger_count": 1
+      },
+      {
+        "name": "QM_T_Live_AtLogon",
+        "state": "Ready",
+        "user_id": "qm-admin",
+        "logon_type": "Interactive",
+        "last_run_time": "2026-07-29T09:25:25+02:00",
+        "last_task_result_hex": "0x00000000",
+        "trigger_count": 1
+      }
+    ],
+    "event_summary": [
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "event_count": 27,
+        "oldest": "2026-07-31T07:30:39.2843179+02:00",
+        "newest": "2026-07-31T08:20:02.9039605+02:00",
+        "event_ids": [
+          {
+            "id": 100,
+            "count": 4
+          },
+          {
+            "id": 102,
+            "count": 4
+          },
+          {
+            "id": 107,
+            "count": 4
+          },
+          {
+            "id": 129,
+            "count": 4
+          },
+          {
+            "id": 140,
+            "count": 2
+          },
+          {
+            "id": 142,
+            "count": 1
+          },
+          {
+            "id": 200,
+            "count": 4
+          },
+          {
+            "id": 201,
+            "count": 4
+          }
+        ],
+        "result_codes": [
+          {
+            "value": "0",
+            "count": 4
+          }
+        ],
+        "error_0x800710e0_count": 0
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "event_count": 21,
+        "oldest": "2026-07-31T07:30:39.6473755+02:00",
+        "newest": "2026-07-31T08:13:54.4944355+02:00",
+        "event_ids": [
+          {
+            "id": 100,
+            "count": 3
+          },
+          {
+            "id": 102,
+            "count": 3
+          },
+          {
+            "id": 107,
+            "count": 3
+          },
+          {
+            "id": 129,
+            "count": 3
+          },
+          {
+            "id": 140,
+            "count": 2
+          },
+          {
+            "id": 142,
+            "count": 1
+          },
+          {
+            "id": 200,
+            "count": 3
+          },
+          {
+            "id": 201,
+            "count": 3
+          }
+        ],
+        "result_codes": [
+          {
+            "value": "0",
+            "count": 3
+          }
+        ],
+        "error_0x800710e0_count": 0
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "event_count": 23,
+        "oldest": "2026-07-31T07:25:05.7295184+02:00",
+        "newest": "2026-07-31T08:15:04.3887857+02:00",
+        "event_ids": [
+          {
+            "id": 100,
+            "count": 3
+          },
+          {
+            "id": 102,
+            "count": 3
+          },
+          {
+            "id": 107,
+            "count": 3
+          },
+          {
+            "id": 129,
+            "count": 3
+          },
+          {
+            "id": 140,
+            "count": 3
+          },
+          {
+            "id": 142,
+            "count": 2
+          },
+          {
+            "id": 200,
+            "count": 3
+          },
+          {
+            "id": 201,
+            "count": 3
+          }
+        ],
+        "result_codes": [
+          {
+            "value": "0",
+            "count": 3
+          }
+        ],
+        "error_0x800710e0_count": 0
+      },
+      {
+        "task": "QM_StrategyFarm_MailboxSourceIntake_Daily",
+        "event_count": 3,
+        "oldest": "2026-07-31T07:30:40.8511110+02:00",
+        "newest": "2026-07-31T07:41:29.1217768+02:00",
+        "event_ids": [
+          {
+            "id": 140,
+            "count": 2
+          },
+          {
+            "id": 142,
+            "count": 1
+          }
+        ],
+        "result_codes": [],
+        "error_0x800710e0_count": 0
+      },
+      {
+        "task": "QM_StrategyFarm_WorkerDedupe",
+        "event_count": 3,
+        "oldest": "2026-07-31T07:30:44.6180786+02:00",
+        "newest": "2026-07-31T07:41:34.1049035+02:00",
+        "event_ids": [
+          {
+            "id": 140,
+            "count": 2
+          },
+          {
+            "id": 142,
+            "count": 1
+          }
+        ],
+        "result_codes": [],
+        "error_0x800710e0_count": 0
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "event_count": 27,
+        "oldest": "2026-07-31T07:30:44.0650446+02:00",
+        "newest": "2026-07-31T08:20:04.9525728+02:00",
+        "event_ids": [
+          {
+            "id": 100,
+            "count": 4
+          },
+          {
+            "id": 102,
+            "count": 4
+          },
+          {
+            "id": 107,
+            "count": 4
+          },
+          {
+            "id": 129,
+            "count": 4
+          },
+          {
+            "id": 140,
+            "count": 2
+          },
+          {
+            "id": 142,
+            "count": 1
+          },
+          {
+            "id": 200,
+            "count": 4
+          },
+          {
+            "id": 201,
+            "count": 4
+          }
+        ],
+        "result_codes": [
+          {
+            "value": "0",
+            "count": 4
+          }
+        ],
+        "error_0x800710e0_count": 0
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "event_count": 70,
+        "oldest": "2026-07-31T07:25:05.7496183+02:00",
+        "newest": "2026-07-31T08:18:01.6668287+02:00",
+        "event_ids": [
+          {
+            "id": 100,
+            "count": 10
+          },
+          {
+            "id": 102,
+            "count": 10
+          },
+          {
+            "id": 107,
+            "count": 8
+          },
+          {
+            "id": 110,
+            "count": 2
+          },
+          {
+            "id": 111,
+            "count": 1
+          },
+          {
+            "id": 129,
+            "count": 10
+          },
+          {
+            "id": 140,
+            "count": 3
+          },
+          {
+            "id": 142,
+            "count": 2
+          },
+          {
+            "id": 200,
+            "count": 10
+          },
+          {
+            "id": 201,
+            "count": 10
+          },
+          {
+            "id": 322,
+            "count": 1
+          },
+          {
+            "id": 325,
+            "count": 2
+          },
+          {
+            "id": 330,
+            "count": 1
+          }
+        ],
+        "result_codes": [
+          {
+            "value": "0",
+            "count": 9
+          },
+          {
+            "value": "2147943691",
+            "count": 1
+          }
+        ],
+        "error_0x800710e0_count": 0
+      }
+    ],
+    "events": [
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T07:25:05.7295184+02:00",
+        "record_id": 323012,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  updated Task Scheduler task \"\\QM_StrategyFarm_GeminiOrchestration_15min\""
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:25:05.7496183+02:00",
+        "record_id": 323013,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserName",
+            "value": "System"
+          }
+        ],
+        "message": "User \"System\"  updated Task Scheduler task \"\\QM_StrategyFarm_Pump_5min\""
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T07:25:06.5304795+02:00",
+        "record_id": 323025,
+        "event_id": 142,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  disabled Task Scheduler task \"\\QM_StrategyFarm_GeminiOrchestration_15min\""
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:25:06.6136287+02:00",
+        "record_id": 323026,
+        "event_id": 142,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserName",
+            "value": "System"
+          }
+        ],
+        "message": "User \"System\"  disabled Task Scheduler task \"\\QM_StrategyFarm_Pump_5min\""
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T07:30:37.1867139+02:00",
+        "record_id": 323125,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  updated Task Scheduler task \"\\QM_StrategyFarm_GeminiOrchestration_15min\""
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:30:37.2042648+02:00",
+        "record_id": 323126,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserName",
+            "value": "System"
+          }
+        ],
+        "message": "User \"System\"  updated Task Scheduler task \"\\QM_StrategyFarm_Pump_5min\""
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T07:30:39.2843179+02:00",
+        "record_id": 323139,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  updated Task Scheduler task \"\\QM_StrategyFarm_AgyGovernor\""
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T07:30:39.6473755+02:00",
+        "record_id": 323140,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  updated Task Scheduler task \"\\QM_StrategyFarm_CodexFleetPacer\""
+      },
+      {
+        "task": "QM_StrategyFarm_MailboxSourceIntake_Daily",
+        "time_created": "2026-07-31T07:30:40.8511110+02:00",
+        "record_id": 323142,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_MailboxSourceIntake_Daily"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  updated Task Scheduler task \"\\QM_StrategyFarm_MailboxSourceIntake_Daily\""
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T07:30:44.0650446+02:00",
+        "record_id": 323149,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "UserName",
+            "value": "System"
+          }
+        ],
+        "message": "User \"System\"  updated Task Scheduler task \"\\QM_StrategyFarm_TesterCachePurge\""
+      },
+      {
+        "task": "QM_StrategyFarm_WorkerDedupe",
+        "time_created": "2026-07-31T07:30:44.6180786+02:00",
+        "record_id": 323150,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_WorkerDedupe"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  updated Task Scheduler task \"\\QM_StrategyFarm_WorkerDedupe\""
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:30:50.3327873+02:00",
+        "record_id": 323165,
+        "event_id": 325,
+        "level": "Warning",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "QueuedTaskInstanceId",
+            "value": "{467a03ef-deb8-4d09-ab86-569ef7c9b680}"
+          }
+        ],
+        "message": "Task Scheduler queued instance \"{467a03ef-deb8-4d09-ab86-569ef7c9b680}\"  of task \"\\QM_StrategyFarm_Pump_5min\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:30:50.3400096+02:00",
+        "record_id": 323169,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "4296"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_Pump_5min\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\"  with process ID 4296."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:30:50.3401902+02:00",
+        "record_id": 323170,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{467a03ef-deb8-4d09-ab86-569ef7c9b680}"
+          }
+        ],
+        "message": "Task Scheduler started \"{467a03ef-deb8-4d09-ab86-569ef7c9b680}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:30:50.3401921+02:00",
+        "record_id": 323171,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{467a03ef-deb8-4d09-ab86-569ef7c9b680}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "4296"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" in instance \"{467a03ef-deb8-4d09-ab86-569ef7c9b680}\" of task \"\\QM_StrategyFarm_Pump_5min\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:30:50.3403527+02:00",
+        "record_id": 323172,
+        "event_id": 110,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{467a03ef-deb8-4d09-ab86-569ef7c9b680}"
+          },
+          {
+            "name": "UserContext",
+            "value": "System"
+          }
+        ],
+        "message": "Task Scheduler launched \"{467a03ef-deb8-4d09-ab86-569ef7c9b680}\"  instance of task \"\\QM_StrategyFarm_Pump_5min\"  for user \"System\" ."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:33:01.2124267+02:00",
+        "record_id": 323217,
+        "event_id": 322,
+        "level": "Warning",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{467a03ef-deb8-4d09-ab86-569ef7c9b680}"
+          }
+        ],
+        "message": "Task Scheduler did not launch task \"\\QM_StrategyFarm_Pump_5min\"  because instance \"{467a03ef-deb8-4d09-ab86-569ef7c9b680}\"  of the same task is already running."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T07:36:09.1359456+02:00",
+        "record_id": 323308,
+        "event_id": 142,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  disabled Task Scheduler task \"\\QM_StrategyFarm_AgyGovernor\""
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T07:36:09.1839829+02:00",
+        "record_id": 323310,
+        "event_id": 142,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  disabled Task Scheduler task \"\\QM_StrategyFarm_CodexFleetPacer\""
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T07:36:09.2869146+02:00",
+        "record_id": 323314,
+        "event_id": 142,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  disabled Task Scheduler task \"\\QM_StrategyFarm_GeminiOrchestration_15min\""
+      },
+      {
+        "task": "QM_StrategyFarm_MailboxSourceIntake_Daily",
+        "time_created": "2026-07-31T07:36:09.3528289+02:00",
+        "record_id": 323317,
+        "event_id": 142,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_MailboxSourceIntake_Daily"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  disabled Task Scheduler task \"\\QM_StrategyFarm_MailboxSourceIntake_Daily\""
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:36:09.3838519+02:00",
+        "record_id": 323319,
+        "event_id": 330,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{467a03ef-deb8-4d09-ab86-569ef7c9b680}"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          }
+        ],
+        "message": "Task Scheduler stopped instance \"{467a03ef-deb8-4d09-ab86-569ef7c9b680}\"  of task \"\\QM_StrategyFarm_Pump_5min\"  as request by user \"WIN-B95G5LPSJ1O\\qm-admin\" ."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:36:09.3876790+02:00",
+        "record_id": 323321,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{467a03ef-deb8-4d09-ab86-569ef7c9b680}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "2147943691"
+          },
+          {
+            "name": "EnginePID",
+            "value": "4296"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_Pump_5min\" , instance \"{467a03ef-deb8-4d09-ab86-569ef7c9b680}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" with return code 2147943691."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:36:09.3877945+02:00",
+        "record_id": 323322,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{467a03ef-deb8-4d09-ab86-569ef7c9b680}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{467a03ef-deb8-4d09-ab86-569ef7c9b680}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:36:09.3878047+02:00",
+        "record_id": 323323,
+        "event_id": 111,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{467a03ef-deb8-4d09-ab86-569ef7c9b680}"
+          }
+        ],
+        "message": "Task Scheduler terminated \"{467a03ef-deb8-4d09-ab86-569ef7c9b680}\"  instance of the \"\\QM_StrategyFarm_Pump_5min\"  task."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:36:09.4020291+02:00",
+        "record_id": 323324,
+        "event_id": 142,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserName",
+            "value": "System"
+          }
+        ],
+        "message": "User \"System\"  disabled Task Scheduler task \"\\QM_StrategyFarm_Pump_5min\""
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T07:36:09.5480084+02:00",
+        "record_id": 323330,
+        "event_id": 142,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "UserName",
+            "value": "System"
+          }
+        ],
+        "message": "User \"System\"  disabled Task Scheduler task \"\\QM_StrategyFarm_TesterCachePurge\""
+      },
+      {
+        "task": "QM_StrategyFarm_WorkerDedupe",
+        "time_created": "2026-07-31T07:36:09.5904506+02:00",
+        "record_id": 323332,
+        "event_id": 142,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_WorkerDedupe"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  disabled Task Scheduler task \"\\QM_StrategyFarm_WorkerDedupe\""
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T07:41:24.5832315+02:00",
+        "record_id": 323410,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  updated Task Scheduler task \"\\QM_StrategyFarm_GeminiOrchestration_15min\""
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:41:24.6022189+02:00",
+        "record_id": 323411,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserName",
+            "value": "System"
+          }
+        ],
+        "message": "User \"System\"  updated Task Scheduler task \"\\QM_StrategyFarm_Pump_5min\""
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T07:41:27.0497761+02:00",
+        "record_id": 323424,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  updated Task Scheduler task \"\\QM_StrategyFarm_AgyGovernor\""
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T07:41:27.5773399+02:00",
+        "record_id": 323425,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  updated Task Scheduler task \"\\QM_StrategyFarm_CodexFleetPacer\""
+      },
+      {
+        "task": "QM_StrategyFarm_MailboxSourceIntake_Daily",
+        "time_created": "2026-07-31T07:41:29.1217768+02:00",
+        "record_id": 323427,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_MailboxSourceIntake_Daily"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  updated Task Scheduler task \"\\QM_StrategyFarm_MailboxSourceIntake_Daily\""
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T07:41:33.5033553+02:00",
+        "record_id": 323434,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "UserName",
+            "value": "System"
+          }
+        ],
+        "message": "User \"System\"  updated Task Scheduler task \"\\QM_StrategyFarm_TesterCachePurge\""
+      },
+      {
+        "task": "QM_StrategyFarm_WorkerDedupe",
+        "time_created": "2026-07-31T07:41:34.1049035+02:00",
+        "record_id": 323435,
+        "event_id": 140,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_WorkerDedupe"
+          },
+          {
+            "name": "UserName",
+            "value": "qm-admin"
+          }
+        ],
+        "message": "User \"qm-admin\"  updated Task Scheduler task \"\\QM_StrategyFarm_WorkerDedupe\""
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:41:39.2195170+02:00",
+        "record_id": 323451,
+        "event_id": 325,
+        "level": "Warning",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "QueuedTaskInstanceId",
+            "value": "{a8941a73-87d1-4a1f-8c27-956b2d898606}"
+          }
+        ],
+        "message": "Task Scheduler queued instance \"{a8941a73-87d1-4a1f-8c27-956b2d898606}\"  of task \"\\QM_StrategyFarm_Pump_5min\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:41:39.2196879+02:00",
+        "record_id": 323452,
+        "event_id": 110,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{a8941a73-87d1-4a1f-8c27-956b2d898606}"
+          },
+          {
+            "name": "UserContext",
+            "value": "System"
+          }
+        ],
+        "message": "Task Scheduler launched \"{a8941a73-87d1-4a1f-8c27-956b2d898606}\"  instance of task \"\\QM_StrategyFarm_Pump_5min\"  for user \"System\" ."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:41:39.2224992+02:00",
+        "record_id": 323453,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "12100"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_Pump_5min\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\"  with process ID 12100."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:41:39.2231260+02:00",
+        "record_id": 323454,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{a8941a73-87d1-4a1f-8c27-956b2d898606}"
+          }
+        ],
+        "message": "Task Scheduler started \"{a8941a73-87d1-4a1f-8c27-956b2d898606}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:41:39.2231288+02:00",
+        "record_id": 323455,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{a8941a73-87d1-4a1f-8c27-956b2d898606}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "12100"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" in instance \"{a8941a73-87d1-4a1f-8c27-956b2d898606}\" of task \"\\QM_StrategyFarm_Pump_5min\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:41:39.3101604+02:00",
+        "record_id": 323456,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{a8941a73-87d1-4a1f-8c27-956b2d898606}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "12100"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_Pump_5min\" , instance \"{a8941a73-87d1-4a1f-8c27-956b2d898606}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:41:39.3103239+02:00",
+        "record_id": 323457,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{a8941a73-87d1-4a1f-8c27-956b2d898606}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{a8941a73-87d1-4a1f-8c27-956b2d898606}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:43:01.6010391+02:00",
+        "record_id": 323484,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{706b4252-0385-44f9-bc91-8e95d69abc20}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{706b4252-0385-44f9-bc91-8e95d69abc20}\"  instance of task \"\\QM_StrategyFarm_Pump_5min\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:43:01.6040252+02:00",
+        "record_id": 323485,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "7488"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_Pump_5min\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\"  with process ID 7488."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:43:01.6042169+02:00",
+        "record_id": 323486,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{706b4252-0385-44f9-bc91-8e95d69abc20}"
+          }
+        ],
+        "message": "Task Scheduler started \"{706b4252-0385-44f9-bc91-8e95d69abc20}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:43:01.6042197+02:00",
+        "record_id": 323487,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{706b4252-0385-44f9-bc91-8e95d69abc20}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "7488"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" in instance \"{706b4252-0385-44f9-bc91-8e95d69abc20}\" of task \"\\QM_StrategyFarm_Pump_5min\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:43:01.6872584+02:00",
+        "record_id": 323488,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{706b4252-0385-44f9-bc91-8e95d69abc20}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "7488"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_Pump_5min\" , instance \"{706b4252-0385-44f9-bc91-8e95d69abc20}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:43:01.6874764+02:00",
+        "record_id": 323489,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{706b4252-0385-44f9-bc91-8e95d69abc20}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{706b4252-0385-44f9-bc91-8e95d69abc20}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T07:43:49.5776237+02:00",
+        "record_id": 323496,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{f376bdf5-e5d2-4191-87fe-48333ab48a80}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{f376bdf5-e5d2-4191-87fe-48333ab48a80}\"  instance of task \"\\QM_StrategyFarm_CodexFleetPacer\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T07:43:49.5869103+02:00",
+        "record_id": 323497,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "9928"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_CodexFleetPacer\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\"  with process ID 9928."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T07:43:49.5872332+02:00",
+        "record_id": 323498,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{f376bdf5-e5d2-4191-87fe-48333ab48a80}"
+          }
+        ],
+        "message": "Task Scheduler started \"{f376bdf5-e5d2-4191-87fe-48333ab48a80}\" instance of the \"\\QM_StrategyFarm_CodexFleetPacer\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T07:43:49.5872368+02:00",
+        "record_id": 323499,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{f376bdf5-e5d2-4191-87fe-48333ab48a80}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "9928"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\" in instance \"{f376bdf5-e5d2-4191-87fe-48333ab48a80}\" of task \"\\QM_StrategyFarm_CodexFleetPacer\"."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T07:43:49.8187967+02:00",
+        "record_id": 323500,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{f376bdf5-e5d2-4191-87fe-48333ab48a80}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "9928"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_CodexFleetPacer\" , instance \"{f376bdf5-e5d2-4191-87fe-48333ab48a80}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T07:43:49.8192181+02:00",
+        "record_id": 323501,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{f376bdf5-e5d2-4191-87fe-48333ab48a80}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{f376bdf5-e5d2-4191-87fe-48333ab48a80}\" instance of the \"\\QM_StrategyFarm_CodexFleetPacer\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T07:45:01.5798625+02:00",
+        "record_id": 323538,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{dc82f9d2-ed16-4ef6-a8aa-4f38867a3c78}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{dc82f9d2-ed16-4ef6-a8aa-4f38867a3c78}\"  instance of task \"\\QM_StrategyFarm_GeminiOrchestration_15min\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T07:45:01.5974619+02:00",
+        "record_id": 323539,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "Path",
+            "value": "cmd.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "592"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_GeminiOrchestration_15min\" , instance \"cmd.exe\"  with process ID 592."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T07:45:01.5976842+02:00",
+        "record_id": 323540,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{dc82f9d2-ed16-4ef6-a8aa-4f38867a3c78}"
+          }
+        ],
+        "message": "Task Scheduler started \"{dc82f9d2-ed16-4ef6-a8aa-4f38867a3c78}\" instance of the \"\\QM_StrategyFarm_GeminiOrchestration_15min\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T07:45:01.5976864+02:00",
+        "record_id": 323541,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "ActionName",
+            "value": "cmd.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{dc82f9d2-ed16-4ef6-a8aa-4f38867a3c78}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "592"
+          }
+        ],
+        "message": "Task Scheduler launched action \"cmd.exe\" in instance \"{dc82f9d2-ed16-4ef6-a8aa-4f38867a3c78}\" of task \"\\QM_StrategyFarm_GeminiOrchestration_15min\"."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T07:47:53.4685766+02:00",
+        "record_id": 323602,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{dc82f9d2-ed16-4ef6-a8aa-4f38867a3c78}"
+          },
+          {
+            "name": "ActionName",
+            "value": "cmd.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "592"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_GeminiOrchestration_15min\" , instance \"{dc82f9d2-ed16-4ef6-a8aa-4f38867a3c78}\" , action \"cmd.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T07:47:53.4688801+02:00",
+        "record_id": 323603,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{dc82f9d2-ed16-4ef6-a8aa-4f38867a3c78}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{dc82f9d2-ed16-4ef6-a8aa-4f38867a3c78}\" instance of the \"\\QM_StrategyFarm_GeminiOrchestration_15min\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:48:01.6012145+02:00",
+        "record_id": 323606,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{df49454c-4301-47c1-822a-c2c9a0224eab}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{df49454c-4301-47c1-822a-c2c9a0224eab}\"  instance of task \"\\QM_StrategyFarm_Pump_5min\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:48:01.6044031+02:00",
+        "record_id": 323607,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "15428"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_Pump_5min\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\"  with process ID 15428."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:48:01.6045732+02:00",
+        "record_id": 323608,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{df49454c-4301-47c1-822a-c2c9a0224eab}"
+          }
+        ],
+        "message": "Task Scheduler started \"{df49454c-4301-47c1-822a-c2c9a0224eab}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:48:01.6045752+02:00",
+        "record_id": 323609,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{df49454c-4301-47c1-822a-c2c9a0224eab}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "15428"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" in instance \"{df49454c-4301-47c1-822a-c2c9a0224eab}\" of task \"\\QM_StrategyFarm_Pump_5min\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:48:01.6744673+02:00",
+        "record_id": 323610,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{df49454c-4301-47c1-822a-c2c9a0224eab}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "15428"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_Pump_5min\" , instance \"{df49454c-4301-47c1-822a-c2c9a0224eab}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:48:01.6746959+02:00",
+        "record_id": 323611,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{df49454c-4301-47c1-822a-c2c9a0224eab}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{df49454c-4301-47c1-822a-c2c9a0224eab}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T07:50:01.0469728+02:00",
+        "record_id": 323637,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{f73129ca-a113-48bb-8ce7-0aaed348068f}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{f73129ca-a113-48bb-8ce7-0aaed348068f}\"  instance of task \"\\QM_StrategyFarm_AgyGovernor\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T07:50:01.0595951+02:00",
+        "record_id": 323638,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "16284"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_AgyGovernor\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\"  with process ID 16284."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T07:50:01.0598847+02:00",
+        "record_id": 323639,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{f73129ca-a113-48bb-8ce7-0aaed348068f}"
+          }
+        ],
+        "message": "Task Scheduler started \"{f73129ca-a113-48bb-8ce7-0aaed348068f}\" instance of the \"\\QM_StrategyFarm_AgyGovernor\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T07:50:01.0598880+02:00",
+        "record_id": 323640,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{f73129ca-a113-48bb-8ce7-0aaed348068f}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "16284"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" in instance \"{f73129ca-a113-48bb-8ce7-0aaed348068f}\" of task \"\\QM_StrategyFarm_AgyGovernor\"."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T07:50:01.5029424+02:00",
+        "record_id": 323642,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{dc0fa101-d5d9-4a7e-92ec-010cfc86bf75}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{dc0fa101-d5d9-4a7e-92ec-010cfc86bf75}\"  instance of task \"\\QM_StrategyFarm_TesterCachePurge\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T07:50:01.5201152+02:00",
+        "record_id": 323650,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "Path",
+            "value": "powershell.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "15876"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_TesterCachePurge\" , instance \"powershell.exe\"  with process ID 15876."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T07:50:01.5202237+02:00",
+        "record_id": 323651,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{dc0fa101-d5d9-4a7e-92ec-010cfc86bf75}"
+          }
+        ],
+        "message": "Task Scheduler started \"{dc0fa101-d5d9-4a7e-92ec-010cfc86bf75}\" instance of the \"\\QM_StrategyFarm_TesterCachePurge\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T07:50:01.5202249+02:00",
+        "record_id": 323652,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "ActionName",
+            "value": "powershell.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{dc0fa101-d5d9-4a7e-92ec-010cfc86bf75}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "15876"
+          }
+        ],
+        "message": "Task Scheduler launched action \"powershell.exe\" in instance \"{dc0fa101-d5d9-4a7e-92ec-010cfc86bf75}\" of task \"\\QM_StrategyFarm_TesterCachePurge\"."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T07:50:03.3911372+02:00",
+        "record_id": 323657,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{f73129ca-a113-48bb-8ce7-0aaed348068f}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "16284"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_AgyGovernor\" , instance \"{f73129ca-a113-48bb-8ce7-0aaed348068f}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T07:50:03.3913353+02:00",
+        "record_id": 323658,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{f73129ca-a113-48bb-8ce7-0aaed348068f}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{f73129ca-a113-48bb-8ce7-0aaed348068f}\" instance of the \"\\QM_StrategyFarm_AgyGovernor\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T07:50:03.9277568+02:00",
+        "record_id": 323661,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{dc0fa101-d5d9-4a7e-92ec-010cfc86bf75}"
+          },
+          {
+            "name": "ActionName",
+            "value": "powershell.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "15876"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_TesterCachePurge\" , instance \"{dc0fa101-d5d9-4a7e-92ec-010cfc86bf75}\" , action \"powershell.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T07:50:03.9279077+02:00",
+        "record_id": 323662,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{dc0fa101-d5d9-4a7e-92ec-010cfc86bf75}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{dc0fa101-d5d9-4a7e-92ec-010cfc86bf75}\" instance of the \"\\QM_StrategyFarm_TesterCachePurge\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:53:01.6011961+02:00",
+        "record_id": 323725,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{71c29bff-955e-46f5-afc4-10cf3446861f}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{71c29bff-955e-46f5-afc4-10cf3446861f}\"  instance of task \"\\QM_StrategyFarm_Pump_5min\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:53:01.6033868+02:00",
+        "record_id": 323726,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "13664"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_Pump_5min\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\"  with process ID 13664."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:53:01.6035306+02:00",
+        "record_id": 323727,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{71c29bff-955e-46f5-afc4-10cf3446861f}"
+          }
+        ],
+        "message": "Task Scheduler started \"{71c29bff-955e-46f5-afc4-10cf3446861f}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:53:01.6035325+02:00",
+        "record_id": 323728,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{71c29bff-955e-46f5-afc4-10cf3446861f}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "13664"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" in instance \"{71c29bff-955e-46f5-afc4-10cf3446861f}\" of task \"\\QM_StrategyFarm_Pump_5min\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:53:01.6661509+02:00",
+        "record_id": 323729,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{71c29bff-955e-46f5-afc4-10cf3446861f}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "13664"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_Pump_5min\" , instance \"{71c29bff-955e-46f5-afc4-10cf3446861f}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:53:01.6663279+02:00",
+        "record_id": 323730,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{71c29bff-955e-46f5-afc4-10cf3446861f}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{71c29bff-955e-46f5-afc4-10cf3446861f}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:58:01.6013649+02:00",
+        "record_id": 323823,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{e00db566-467f-4443-b677-be5ba3320fb7}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{e00db566-467f-4443-b677-be5ba3320fb7}\"  instance of task \"\\QM_StrategyFarm_Pump_5min\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:58:01.6043139+02:00",
+        "record_id": 323824,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "7856"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_Pump_5min\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\"  with process ID 7856."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:58:01.6045003+02:00",
+        "record_id": 323825,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{e00db566-467f-4443-b677-be5ba3320fb7}"
+          }
+        ],
+        "message": "Task Scheduler started \"{e00db566-467f-4443-b677-be5ba3320fb7}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:58:01.6045029+02:00",
+        "record_id": 323826,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{e00db566-467f-4443-b677-be5ba3320fb7}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "7856"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" in instance \"{e00db566-467f-4443-b677-be5ba3320fb7}\" of task \"\\QM_StrategyFarm_Pump_5min\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:58:01.6784869+02:00",
+        "record_id": 323827,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{e00db566-467f-4443-b677-be5ba3320fb7}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "7856"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_Pump_5min\" , instance \"{e00db566-467f-4443-b677-be5ba3320fb7}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T07:58:01.6787027+02:00",
+        "record_id": 323828,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{e00db566-467f-4443-b677-be5ba3320fb7}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{e00db566-467f-4443-b677-be5ba3320fb7}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T07:58:49.5784030+02:00",
+        "record_id": 323837,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{30cdbd26-9cf4-4630-bec0-5a441544bb55}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{30cdbd26-9cf4-4630-bec0-5a441544bb55}\"  instance of task \"\\QM_StrategyFarm_CodexFleetPacer\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T07:58:49.5826944+02:00",
+        "record_id": 323838,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "5152"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_CodexFleetPacer\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\"  with process ID 5152."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T07:58:49.5829923+02:00",
+        "record_id": 323839,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{30cdbd26-9cf4-4630-bec0-5a441544bb55}"
+          }
+        ],
+        "message": "Task Scheduler started \"{30cdbd26-9cf4-4630-bec0-5a441544bb55}\" instance of the \"\\QM_StrategyFarm_CodexFleetPacer\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T07:58:49.5829951+02:00",
+        "record_id": 323840,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{30cdbd26-9cf4-4630-bec0-5a441544bb55}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "5152"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\" in instance \"{30cdbd26-9cf4-4630-bec0-5a441544bb55}\" of task \"\\QM_StrategyFarm_CodexFleetPacer\"."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T07:58:49.8053123+02:00",
+        "record_id": 323841,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{30cdbd26-9cf4-4630-bec0-5a441544bb55}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "5152"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_CodexFleetPacer\" , instance \"{30cdbd26-9cf4-4630-bec0-5a441544bb55}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T07:58:49.8055565+02:00",
+        "record_id": 323842,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{30cdbd26-9cf4-4630-bec0-5a441544bb55}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{30cdbd26-9cf4-4630-bec0-5a441544bb55}\" instance of the \"\\QM_StrategyFarm_CodexFleetPacer\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:00:01.0476285+02:00",
+        "record_id": 323880,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{362fc7e6-dfbb-4c2d-9021-65e6b099e89a}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{362fc7e6-dfbb-4c2d-9021-65e6b099e89a}\"  instance of task \"\\QM_StrategyFarm_AgyGovernor\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:00:01.0504411+02:00",
+        "record_id": 323881,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "2032"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_AgyGovernor\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\"  with process ID 2032."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:00:01.0506448+02:00",
+        "record_id": 323882,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{362fc7e6-dfbb-4c2d-9021-65e6b099e89a}"
+          }
+        ],
+        "message": "Task Scheduler started \"{362fc7e6-dfbb-4c2d-9021-65e6b099e89a}\" instance of the \"\\QM_StrategyFarm_AgyGovernor\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:00:01.0506467+02:00",
+        "record_id": 323883,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{362fc7e6-dfbb-4c2d-9021-65e6b099e89a}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "2032"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" in instance \"{362fc7e6-dfbb-4c2d-9021-65e6b099e89a}\" of task \"\\QM_StrategyFarm_AgyGovernor\"."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:00:01.5034451+02:00",
+        "record_id": 323898,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{bf1e4edf-0e78-43de-b48d-dd5f6e34316f}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{bf1e4edf-0e78-43de-b48d-dd5f6e34316f}\"  instance of task \"\\QM_StrategyFarm_TesterCachePurge\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:00:01.5061055+02:00",
+        "record_id": 323899,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "Path",
+            "value": "powershell.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "10120"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_TesterCachePurge\" , instance \"powershell.exe\"  with process ID 10120."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:00:01.5062412+02:00",
+        "record_id": 323900,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{bf1e4edf-0e78-43de-b48d-dd5f6e34316f}"
+          }
+        ],
+        "message": "Task Scheduler started \"{bf1e4edf-0e78-43de-b48d-dd5f6e34316f}\" instance of the \"\\QM_StrategyFarm_TesterCachePurge\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:00:01.5062428+02:00",
+        "record_id": 323901,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "ActionName",
+            "value": "powershell.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{bf1e4edf-0e78-43de-b48d-dd5f6e34316f}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "10120"
+          }
+        ],
+        "message": "Task Scheduler launched action \"powershell.exe\" in instance \"{bf1e4edf-0e78-43de-b48d-dd5f6e34316f}\" of task \"\\QM_StrategyFarm_TesterCachePurge\"."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T08:00:01.5806046+02:00",
+        "record_id": 323925,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{c72b156b-81fb-47a7-b0d2-c14b057e4829}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{c72b156b-81fb-47a7-b0d2-c14b057e4829}\"  instance of task \"\\QM_StrategyFarm_GeminiOrchestration_15min\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T08:00:01.5831634+02:00",
+        "record_id": 323926,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "Path",
+            "value": "cmd.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "9184"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_GeminiOrchestration_15min\" , instance \"cmd.exe\"  with process ID 9184."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T08:00:01.5833726+02:00",
+        "record_id": 323927,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{c72b156b-81fb-47a7-b0d2-c14b057e4829}"
+          }
+        ],
+        "message": "Task Scheduler started \"{c72b156b-81fb-47a7-b0d2-c14b057e4829}\" instance of the \"\\QM_StrategyFarm_GeminiOrchestration_15min\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T08:00:01.5833746+02:00",
+        "record_id": 323928,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "ActionName",
+            "value": "cmd.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{c72b156b-81fb-47a7-b0d2-c14b057e4829}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "9184"
+          }
+        ],
+        "message": "Task Scheduler launched action \"cmd.exe\" in instance \"{c72b156b-81fb-47a7-b0d2-c14b057e4829}\" of task \"\\QM_StrategyFarm_GeminiOrchestration_15min\"."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T08:00:02.1947575+02:00",
+        "record_id": 323942,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{c72b156b-81fb-47a7-b0d2-c14b057e4829}"
+          },
+          {
+            "name": "ActionName",
+            "value": "cmd.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "9184"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_GeminiOrchestration_15min\" , instance \"{c72b156b-81fb-47a7-b0d2-c14b057e4829}\" , action \"cmd.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T08:00:02.1950350+02:00",
+        "record_id": 323943,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{c72b156b-81fb-47a7-b0d2-c14b057e4829}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{c72b156b-81fb-47a7-b0d2-c14b057e4829}\" instance of the \"\\QM_StrategyFarm_GeminiOrchestration_15min\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:00:03.5091151+02:00",
+        "record_id": 323945,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{362fc7e6-dfbb-4c2d-9021-65e6b099e89a}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "2032"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_AgyGovernor\" , instance \"{362fc7e6-dfbb-4c2d-9021-65e6b099e89a}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:00:03.5093433+02:00",
+        "record_id": 323946,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{362fc7e6-dfbb-4c2d-9021-65e6b099e89a}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{362fc7e6-dfbb-4c2d-9021-65e6b099e89a}\" instance of the \"\\QM_StrategyFarm_AgyGovernor\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:00:04.7785294+02:00",
+        "record_id": 323949,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{bf1e4edf-0e78-43de-b48d-dd5f6e34316f}"
+          },
+          {
+            "name": "ActionName",
+            "value": "powershell.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "10120"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_TesterCachePurge\" , instance \"{bf1e4edf-0e78-43de-b48d-dd5f6e34316f}\" , action \"powershell.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:00:04.7787054+02:00",
+        "record_id": 323950,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{bf1e4edf-0e78-43de-b48d-dd5f6e34316f}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{bf1e4edf-0e78-43de-b48d-dd5f6e34316f}\" instance of the \"\\QM_StrategyFarm_TesterCachePurge\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:03:01.6022711+02:00",
+        "record_id": 324022,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{887ac3b4-337e-4a51-a589-695e426acb53}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{887ac3b4-337e-4a51-a589-695e426acb53}\"  instance of task \"\\QM_StrategyFarm_Pump_5min\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:03:01.6044095+02:00",
+        "record_id": 324023,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "1208"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_Pump_5min\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\"  with process ID 1208."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:03:01.6045639+02:00",
+        "record_id": 324024,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{887ac3b4-337e-4a51-a589-695e426acb53}"
+          }
+        ],
+        "message": "Task Scheduler started \"{887ac3b4-337e-4a51-a589-695e426acb53}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:03:01.6045657+02:00",
+        "record_id": 324025,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{887ac3b4-337e-4a51-a589-695e426acb53}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "1208"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" in instance \"{887ac3b4-337e-4a51-a589-695e426acb53}\" of task \"\\QM_StrategyFarm_Pump_5min\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:03:01.6924787+02:00",
+        "record_id": 324026,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{887ac3b4-337e-4a51-a589-695e426acb53}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "1208"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_Pump_5min\" , instance \"{887ac3b4-337e-4a51-a589-695e426acb53}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:03:01.6926613+02:00",
+        "record_id": 324027,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{887ac3b4-337e-4a51-a589-695e426acb53}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{887ac3b4-337e-4a51-a589-695e426acb53}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:08:01.6027716+02:00",
+        "record_id": 324112,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{7ee90b68-3427-40e1-bb59-02a587954f6b}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{7ee90b68-3427-40e1-bb59-02a587954f6b}\"  instance of task \"\\QM_StrategyFarm_Pump_5min\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:08:01.6049849+02:00",
+        "record_id": 324113,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "15544"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_Pump_5min\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\"  with process ID 15544."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:08:01.6051418+02:00",
+        "record_id": 324114,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{7ee90b68-3427-40e1-bb59-02a587954f6b}"
+          }
+        ],
+        "message": "Task Scheduler started \"{7ee90b68-3427-40e1-bb59-02a587954f6b}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:08:01.6051437+02:00",
+        "record_id": 324115,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{7ee90b68-3427-40e1-bb59-02a587954f6b}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "15544"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" in instance \"{7ee90b68-3427-40e1-bb59-02a587954f6b}\" of task \"\\QM_StrategyFarm_Pump_5min\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:08:01.7185817+02:00",
+        "record_id": 324116,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{7ee90b68-3427-40e1-bb59-02a587954f6b}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "15544"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_Pump_5min\" , instance \"{7ee90b68-3427-40e1-bb59-02a587954f6b}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:08:01.7186715+02:00",
+        "record_id": 324117,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{7ee90b68-3427-40e1-bb59-02a587954f6b}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{7ee90b68-3427-40e1-bb59-02a587954f6b}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:10:01.0479730+02:00",
+        "record_id": 324144,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{b17f24dc-b66e-450c-b684-e3d81a6288db}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{b17f24dc-b66e-450c-b684-e3d81a6288db}\"  instance of task \"\\QM_StrategyFarm_AgyGovernor\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:10:01.0579872+02:00",
+        "record_id": 324145,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "11988"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_AgyGovernor\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\"  with process ID 11988."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:10:01.0582642+02:00",
+        "record_id": 324146,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{b17f24dc-b66e-450c-b684-e3d81a6288db}"
+          }
+        ],
+        "message": "Task Scheduler started \"{b17f24dc-b66e-450c-b684-e3d81a6288db}\" instance of the \"\\QM_StrategyFarm_AgyGovernor\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:10:01.0582676+02:00",
+        "record_id": 324147,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{b17f24dc-b66e-450c-b684-e3d81a6288db}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "11988"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" in instance \"{b17f24dc-b66e-450c-b684-e3d81a6288db}\" of task \"\\QM_StrategyFarm_AgyGovernor\"."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:10:01.5084966+02:00",
+        "record_id": 324149,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{5b955bac-afbd-451c-82ac-0f0c79b5164f}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{5b955bac-afbd-451c-82ac-0f0c79b5164f}\"  instance of task \"\\QM_StrategyFarm_TesterCachePurge\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:10:01.5253460+02:00",
+        "record_id": 324154,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "Path",
+            "value": "powershell.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "15760"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_TesterCachePurge\" , instance \"powershell.exe\"  with process ID 15760."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:10:01.5255009+02:00",
+        "record_id": 324155,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{5b955bac-afbd-451c-82ac-0f0c79b5164f}"
+          }
+        ],
+        "message": "Task Scheduler started \"{5b955bac-afbd-451c-82ac-0f0c79b5164f}\" instance of the \"\\QM_StrategyFarm_TesterCachePurge\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:10:01.5255026+02:00",
+        "record_id": 324156,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "ActionName",
+            "value": "powershell.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{5b955bac-afbd-451c-82ac-0f0c79b5164f}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "15760"
+          }
+        ],
+        "message": "Task Scheduler launched action \"powershell.exe\" in instance \"{5b955bac-afbd-451c-82ac-0f0c79b5164f}\" of task \"\\QM_StrategyFarm_TesterCachePurge\"."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:10:03.4375708+02:00",
+        "record_id": 324164,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{b17f24dc-b66e-450c-b684-e3d81a6288db}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "11988"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_AgyGovernor\" , instance \"{b17f24dc-b66e-450c-b684-e3d81a6288db}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:10:03.4378466+02:00",
+        "record_id": 324165,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{b17f24dc-b66e-450c-b684-e3d81a6288db}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{b17f24dc-b66e-450c-b684-e3d81a6288db}\" instance of the \"\\QM_StrategyFarm_AgyGovernor\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:10:04.1131752+02:00",
+        "record_id": 324168,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{5b955bac-afbd-451c-82ac-0f0c79b5164f}"
+          },
+          {
+            "name": "ActionName",
+            "value": "powershell.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "15760"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_TesterCachePurge\" , instance \"{5b955bac-afbd-451c-82ac-0f0c79b5164f}\" , action \"powershell.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:10:04.1133545+02:00",
+        "record_id": 324169,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{5b955bac-afbd-451c-82ac-0f0c79b5164f}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{5b955bac-afbd-451c-82ac-0f0c79b5164f}\" instance of the \"\\QM_StrategyFarm_TesterCachePurge\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:13:01.6032376+02:00",
+        "record_id": 324220,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{db87f99d-6af5-48a2-9faf-e49187432959}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{db87f99d-6af5-48a2-9faf-e49187432959}\"  instance of task \"\\QM_StrategyFarm_Pump_5min\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:13:01.6107086+02:00",
+        "record_id": 324221,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "17268"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_Pump_5min\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\"  with process ID 17268."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:13:01.6108985+02:00",
+        "record_id": 324222,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{db87f99d-6af5-48a2-9faf-e49187432959}"
+          }
+        ],
+        "message": "Task Scheduler started \"{db87f99d-6af5-48a2-9faf-e49187432959}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:13:01.6109005+02:00",
+        "record_id": 324223,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{db87f99d-6af5-48a2-9faf-e49187432959}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "17268"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" in instance \"{db87f99d-6af5-48a2-9faf-e49187432959}\" of task \"\\QM_StrategyFarm_Pump_5min\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:13:01.6811193+02:00",
+        "record_id": 324224,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{db87f99d-6af5-48a2-9faf-e49187432959}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "17268"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_Pump_5min\" , instance \"{db87f99d-6af5-48a2-9faf-e49187432959}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:13:01.6813112+02:00",
+        "record_id": 324225,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{db87f99d-6af5-48a2-9faf-e49187432959}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{db87f99d-6af5-48a2-9faf-e49187432959}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T08:13:49.5822251+02:00",
+        "record_id": 324233,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{35e26795-d39f-4494-a3e2-083dd9adb1ec}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{35e26795-d39f-4494-a3e2-083dd9adb1ec}\"  instance of task \"\\QM_StrategyFarm_CodexFleetPacer\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T08:13:49.5960670+02:00",
+        "record_id": 324234,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "17448"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_CodexFleetPacer\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\"  with process ID 17448."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T08:13:49.5971959+02:00",
+        "record_id": 324235,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{35e26795-d39f-4494-a3e2-083dd9adb1ec}"
+          }
+        ],
+        "message": "Task Scheduler started \"{35e26795-d39f-4494-a3e2-083dd9adb1ec}\" instance of the \"\\QM_StrategyFarm_CodexFleetPacer\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T08:13:49.5971987+02:00",
+        "record_id": 324236,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{35e26795-d39f-4494-a3e2-083dd9adb1ec}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "17448"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\" in instance \"{35e26795-d39f-4494-a3e2-083dd9adb1ec}\" of task \"\\QM_StrategyFarm_CodexFleetPacer\"."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T08:13:54.4933507+02:00",
+        "record_id": 324237,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{35e26795-d39f-4494-a3e2-083dd9adb1ec}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "17448"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_CodexFleetPacer\" , instance \"{35e26795-d39f-4494-a3e2-083dd9adb1ec}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_CodexFleetPacer",
+        "time_created": "2026-07-31T08:13:54.4944355+02:00",
+        "record_id": 324238,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_CodexFleetPacer"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{35e26795-d39f-4494-a3e2-083dd9adb1ec}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{35e26795-d39f-4494-a3e2-083dd9adb1ec}\" instance of the \"\\QM_StrategyFarm_CodexFleetPacer\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T08:15:01.5806996+02:00",
+        "record_id": 324278,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{a8df1a9e-23dd-4dab-a6b8-a4dd1f05ff9e}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{a8df1a9e-23dd-4dab-a6b8-a4dd1f05ff9e}\"  instance of task \"\\QM_StrategyFarm_GeminiOrchestration_15min\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T08:15:01.5979018+02:00",
+        "record_id": 324279,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "Path",
+            "value": "cmd.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "17808"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_GeminiOrchestration_15min\" , instance \"cmd.exe\"  with process ID 17808."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T08:15:01.5981386+02:00",
+        "record_id": 324280,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{a8df1a9e-23dd-4dab-a6b8-a4dd1f05ff9e}"
+          }
+        ],
+        "message": "Task Scheduler started \"{a8df1a9e-23dd-4dab-a6b8-a4dd1f05ff9e}\" instance of the \"\\QM_StrategyFarm_GeminiOrchestration_15min\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T08:15:01.5981413+02:00",
+        "record_id": 324281,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "ActionName",
+            "value": "cmd.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{a8df1a9e-23dd-4dab-a6b8-a4dd1f05ff9e}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "17808"
+          }
+        ],
+        "message": "Task Scheduler launched action \"cmd.exe\" in instance \"{a8df1a9e-23dd-4dab-a6b8-a4dd1f05ff9e}\" of task \"\\QM_StrategyFarm_GeminiOrchestration_15min\"."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T08:15:04.3885100+02:00",
+        "record_id": 324285,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{a8df1a9e-23dd-4dab-a6b8-a4dd1f05ff9e}"
+          },
+          {
+            "name": "ActionName",
+            "value": "cmd.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "17808"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_GeminiOrchestration_15min\" , instance \"{a8df1a9e-23dd-4dab-a6b8-a4dd1f05ff9e}\" , action \"cmd.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+        "time_created": "2026-07-31T08:15:04.3887857+02:00",
+        "record_id": 324286,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_GeminiOrchestration_15min"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{a8df1a9e-23dd-4dab-a6b8-a4dd1f05ff9e}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{a8df1a9e-23dd-4dab-a6b8-a4dd1f05ff9e}\" instance of the \"\\QM_StrategyFarm_GeminiOrchestration_15min\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:18:01.6038474+02:00",
+        "record_id": 324338,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{60983a2a-2945-46cf-87cf-82fb38badc46}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{60983a2a-2945-46cf-87cf-82fb38badc46}\"  instance of task \"\\QM_StrategyFarm_Pump_5min\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:18:01.6059471+02:00",
+        "record_id": 324339,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "15552"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_Pump_5min\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\"  with process ID 15552."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:18:01.6060762+02:00",
+        "record_id": 324340,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{60983a2a-2945-46cf-87cf-82fb38badc46}"
+          }
+        ],
+        "message": "Task Scheduler started \"{60983a2a-2945-46cf-87cf-82fb38badc46}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:18:01.6060778+02:00",
+        "record_id": 324341,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{60983a2a-2945-46cf-87cf-82fb38badc46}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "15552"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" in instance \"{60983a2a-2945-46cf-87cf-82fb38badc46}\" of task \"\\QM_StrategyFarm_Pump_5min\"."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:18:01.6666639+02:00",
+        "record_id": 324342,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{60983a2a-2945-46cf-87cf-82fb38badc46}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "15552"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_Pump_5min\" , instance \"{60983a2a-2945-46cf-87cf-82fb38badc46}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_Pump_5min",
+        "time_created": "2026-07-31T08:18:01.6668287+02:00",
+        "record_id": 324343,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_Pump_5min"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{60983a2a-2945-46cf-87cf-82fb38badc46}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{60983a2a-2945-46cf-87cf-82fb38badc46}\" instance of the \"\\QM_StrategyFarm_Pump_5min\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:20:01.0480003+02:00",
+        "record_id": 324363,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{c4c6661d-bd05-4e30-afb6-41ba01e11cc6}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{c4c6661d-bd05-4e30-afb6-41ba01e11cc6}\"  instance of task \"\\QM_StrategyFarm_AgyGovernor\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:20:01.0508642+02:00",
+        "record_id": 324364,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "Path",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "17936"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_AgyGovernor\" , instance \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\"  with process ID 17936."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:20:01.0510484+02:00",
+        "record_id": 324365,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{c4c6661d-bd05-4e30-afb6-41ba01e11cc6}"
+          }
+        ],
+        "message": "Task Scheduler started \"{c4c6661d-bd05-4e30-afb6-41ba01e11cc6}\" instance of the \"\\QM_StrategyFarm_AgyGovernor\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:20:01.0510506+02:00",
+        "record_id": 324366,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{c4c6661d-bd05-4e30-afb6-41ba01e11cc6}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "17936"
+          }
+        ],
+        "message": "Task Scheduler launched action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" in instance \"{c4c6661d-bd05-4e30-afb6-41ba01e11cc6}\" of task \"\\QM_StrategyFarm_AgyGovernor\"."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:20:01.5079563+02:00",
+        "record_id": 324368,
+        "event_id": 107,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{5b8bb2af-e4ce-4022-bb11-e13821f520fe}"
+          }
+        ],
+        "message": "Task Scheduler launched \"{5b8bb2af-e4ce-4022-bb11-e13821f520fe}\"  instance of task \"\\QM_StrategyFarm_TesterCachePurge\" due to a time trigger condition."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:20:01.5102413+02:00",
+        "record_id": 324369,
+        "event_id": 129,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "Path",
+            "value": "powershell.exe"
+          },
+          {
+            "name": "ProcessID",
+            "value": "15436"
+          },
+          {
+            "name": "Priority",
+            "value": "16384"
+          }
+        ],
+        "message": "Task Scheduler launch task \"\\QM_StrategyFarm_TesterCachePurge\" , instance \"powershell.exe\"  with process ID 15436."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:20:01.5103776+02:00",
+        "record_id": 324370,
+        "event_id": 100,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{5b8bb2af-e4ce-4022-bb11-e13821f520fe}"
+          }
+        ],
+        "message": "Task Scheduler started \"{5b8bb2af-e4ce-4022-bb11-e13821f520fe}\" instance of the \"\\QM_StrategyFarm_TesterCachePurge\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:20:01.5103792+02:00",
+        "record_id": 324371,
+        "event_id": 200,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "ActionName",
+            "value": "powershell.exe"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{5b8bb2af-e4ce-4022-bb11-e13821f520fe}"
+          },
+          {
+            "name": "EnginePID",
+            "value": "15436"
+          }
+        ],
+        "message": "Task Scheduler launched action \"powershell.exe\" in instance \"{5b8bb2af-e4ce-4022-bb11-e13821f520fe}\" of task \"\\QM_StrategyFarm_TesterCachePurge\"."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:20:02.9036583+02:00",
+        "record_id": 324383,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{c4c6661d-bd05-4e30-afb6-41ba01e11cc6}"
+          },
+          {
+            "name": "ActionName",
+            "value": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "17936"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_AgyGovernor\" , instance \"{c4c6661d-bd05-4e30-afb6-41ba01e11cc6}\" , action \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_AgyGovernor",
+        "time_created": "2026-07-31T08:20:02.9039605+02:00",
+        "record_id": 324384,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_AgyGovernor"
+          },
+          {
+            "name": "UserContext",
+            "value": "WIN-B95G5LPSJ1O\\qm-admin"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{c4c6661d-bd05-4e30-afb6-41ba01e11cc6}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{c4c6661d-bd05-4e30-afb6-41ba01e11cc6}\" instance of the \"\\QM_StrategyFarm_AgyGovernor\" task for user \"WIN-B95G5LPSJ1O\\qm-admin\"."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:20:04.9523998+02:00",
+        "record_id": 324387,
+        "event_id": 201,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "TaskInstanceId",
+            "value": "{5b8bb2af-e4ce-4022-bb11-e13821f520fe}"
+          },
+          {
+            "name": "ActionName",
+            "value": "powershell.exe"
+          },
+          {
+            "name": "ResultCode",
+            "value": "0"
+          },
+          {
+            "name": "EnginePID",
+            "value": "15436"
+          }
+        ],
+        "message": "Task Scheduler successfully completed task \"\\QM_StrategyFarm_TesterCachePurge\" , instance \"{5b8bb2af-e4ce-4022-bb11-e13821f520fe}\" , action \"powershell.exe\" with return code 0."
+      },
+      {
+        "task": "QM_StrategyFarm_TesterCachePurge",
+        "time_created": "2026-07-31T08:20:04.9525728+02:00",
+        "record_id": 324388,
+        "event_id": 102,
+        "level": "Information",
+        "event_data": [
+          {
+            "name": "TaskName",
+            "value": "\\QM_StrategyFarm_TesterCachePurge"
+          },
+          {
+            "name": "UserContext",
+            "value": "NT AUTHORITY\\SYSTEM"
+          },
+          {
+            "name": "InstanceId",
+            "value": "{5b8bb2af-e4ce-4022-bb11-e13821f520fe}"
+          }
+        ],
+        "message": "Task Scheduler successfully finished \"{5b8bb2af-e4ce-4022-bb11-e13821f520fe}\" instance of the \"\\QM_StrategyFarm_TesterCachePurge\" task for user \"NT AUTHORITY\\SYSTEM\"."
+      }
+    ],
+    "limitations": [
+      "The two-hour live query contains no 0x800710E0 event rows for the five targets.",
+      "TaskInfo still retains 0x800710E0 for MailboxSourceIntake and WorkerDedupe.",
+      "AgyGovernor, CodexFleetPacer and GeminiOrchestration completed with rc=0 while qm-admin session 1 was Disconnected; disconnect alone is therefore not sufficient.",
+      "No task was demand-started and no session state was changed, so token-unavailable reproduction was intentionally not attempted.",
+      "Operational log rollover removed the 2026-07-26/29 failure events; the retained LastTaskResult values are the available live evidence."
+    ]
+  },
+  "reference_contracts": {
+    "tester_cache_purge": "SYSTEM/ServiceAccount, direct hidden PowerShell action; current rc=0",
+    "pump_5min": "SYSTEM/ServiceAccount, direct pythonw action; current rc=0",
+    "conclusion": "Pump_5min is not an interactive counterexample. SYSTEM owns both reliable reference schedules; user-bound children are delegated explicitly."
+  },
+  "tasks": [
+    {
+      "name": "QM_StrategyFarm_AgyGovernor",
+      "before": {
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_AgyGovernor.xml",
+        "file_sha256": "9fa935070254bf698db5fecabe83b96720637cf3894179b04482a828158df1e6",
+        "normalized_xml_sha256": "d6fda9988bd670b66cee6d2d9ce2e94c6591617367c533bb33ba8ba7464458c1",
+        "principal": {
+          "user_id": "qm-admin",
+          "logon_type": "Interactive",
+          "run_level": "Highest"
+        },
+        "action": {
+          "execute": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe",
+          "arguments": "\"C:\\QM\\repo\\tools\\strategy_farm\\agy_governor.py\"",
+          "working_directory": "C:\\QM\\repo"
+        }
+      },
+      "after": {
+        "principal": {
+          "user_id": "SYSTEM",
+          "logon_type": "ServiceAccount",
+          "run_level": "Highest"
+        },
+        "action": {
+          "execute": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+          "arguments": "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\run_in_console_session.ps1\" -Exe \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" -Arguments '\"C:\\QM\\repo\\tools\\strategy_farm\\agy_governor.py\"' -WorkDir \"C:\\QM\\repo\" -TargetUser \"qm-admin\" -WaitSeconds 240",
+          "working_directory": "C:\\QM\\repo"
+        },
+        "preserved": [
+          "registration_info",
+          "triggers",
+          "settings",
+          "enabled_state"
+        ]
+      },
+      "root_cause_verdict": "CONFIRMED CONTRACT RISK; disconnect alone refuted. InteractiveToken requires a logged-on qm-admin token at launch; the child also requires qm-admin DPAPI Credential Manager. Current disconnected-but-logged-on session succeeds, so lock/disconnect is not by itself sufficient.",
+      "rollback": {
+        "method": "Register-ScheduledTask exact before XML",
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_AgyGovernor.xml",
+        "expected_file_sha256": "9fa935070254bf698db5fecabe83b96720637cf3894179b04482a828158df1e6"
+      }
+    },
+    {
+      "name": "QM_StrategyFarm_CodexFleetPacer",
+      "before": {
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_CodexFleetPacer.xml",
+        "file_sha256": "d34d0ef9ca742e69c40f5e6492f8abc1a5f402d92b5ab59e063fae18b0cbd97e",
+        "normalized_xml_sha256": "de6cfcd1d1ca18a56b42e9539ddc429ab370cd3d72ee4928aaeabbef5dcda4bc",
+        "principal": {
+          "user_id": "qm-admin",
+          "logon_type": "Interactive",
+          "run_level": "Highest"
+        },
+        "action": {
+          "execute": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+          "arguments": "tools\\strategy_farm\\codex_fleet_pacer.py",
+          "working_directory": "C:\\QM\\repo"
+        }
+      },
+      "after": {
+        "principal": {
+          "user_id": "SYSTEM",
+          "logon_type": "ServiceAccount",
+          "run_level": "Highest"
+        },
+        "action": {
+          "execute": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+          "arguments": "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\run_in_console_session.ps1\" -Exe \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" -Arguments '\"C:\\QM\\repo\\tools\\strategy_farm\\codex_fleet_pacer.py\"' -WorkDir \"C:\\QM\\repo\" -TargetUser \"qm-admin\" -WaitSeconds 300",
+          "working_directory": "C:\\QM\\repo"
+        },
+        "preserved": [
+          "registration_info",
+          "triggers",
+          "settings",
+          "enabled_state"
+        ]
+      },
+      "root_cause_verdict": "CONFIRMED CONTRACT RISK; disconnect alone refuted. The scheduler dependency is InteractiveToken availability. The child inherits qm-admin PATH/CODEX_HOME and can spawn managed Codex descendants, so direct LocalSystem is not evidence-equivalent.",
+      "rollback": {
+        "method": "Register-ScheduledTask exact before XML",
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_CodexFleetPacer.xml",
+        "expected_file_sha256": "d34d0ef9ca742e69c40f5e6492f8abc1a5f402d92b5ab59e063fae18b0cbd97e"
+      }
+    },
+    {
+      "name": "QM_StrategyFarm_GeminiOrchestration_15min",
+      "before": {
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_GeminiOrchestration_15min.xml",
+        "file_sha256": "e653dff21f874a233a30da1038880fedda6dc0c8a799dd47b9b82ce1980cad86",
+        "normalized_xml_sha256": "4a5f5184b380c12cf3452ddc17bea93b8c6570c9ead64b743f10e04540eb909a",
+        "principal": {
+          "user_id": "qm-admin",
+          "logon_type": "Interactive",
+          "run_level": "Highest"
+        },
+        "action": {
+          "execute": "cmd.exe",
+          "arguments": "/c \"\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\" \"C:\\QM\\repo\\tools\\strategy_farm\\run_agent_orchestration_task.py\" --agent gemini --max-sessions 1 >> \"D:\\QM\\strategy_farm\\logs\\gemini_orch_task.out.log\" 2>&1\"",
+          "working_directory": ""
+        }
+      },
+      "after": {
+        "principal": {
+          "user_id": "SYSTEM",
+          "logon_type": "ServiceAccount",
+          "run_level": "Highest"
+        },
+        "action": {
+          "execute": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+          "arguments": "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\run_in_console_session.ps1\" -Exe \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" -Arguments '\"C:\\QM\\repo\\tools\\strategy_farm\\run_agent_orchestration_task.py\" --agent gemini --max-sessions 1' -WorkDir \"C:\\QM\\repo\" -TargetUser \"qm-admin\" -WaitSeconds 14100",
+          "working_directory": "C:\\QM\\repo"
+        },
+        "preserved": [
+          "registration_info",
+          "triggers",
+          "settings",
+          "enabled_state"
+        ]
+      },
+      "root_cause_verdict": "CONFIRMED CONTRACT RISK; disconnect alone refuted. agy authentication is stored in qm-admin Windows Credential Manager; changing USERPROFILE under LocalSystem cannot substitute for the user token.",
+      "rollback": {
+        "method": "Register-ScheduledTask exact before XML",
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_GeminiOrchestration_15min.xml",
+        "expected_file_sha256": "e653dff21f874a233a30da1038880fedda6dc0c8a799dd47b9b82ce1980cad86"
+      }
+    },
+    {
+      "name": "QM_StrategyFarm_MailboxSourceIntake_Daily",
+      "before": {
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_MailboxSourceIntake_Daily.xml",
+        "file_sha256": "8bea6cd8c9a12ad5e53365d7838e4adac359ddd52298bddb1bae9ba1108caf9e",
+        "normalized_xml_sha256": "1febc9055735b0be19ac812dedf9c492c4a957ce50152ccf6942f46cf7415200",
+        "principal": {
+          "user_id": "qm-admin",
+          "logon_type": "Interactive",
+          "run_level": "Highest"
+        },
+        "action": {
+          "execute": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe",
+          "arguments": "\"C:\\QM\\repo\\tools\\strategy_farm\\mailbox_source_intake.py\"",
+          "working_directory": "C:\\QM\\repo"
+        }
+      },
+      "after": {
+        "principal": {
+          "user_id": "SYSTEM",
+          "logon_type": "ServiceAccount",
+          "run_level": "Highest"
+        },
+        "action": {
+          "execute": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+          "arguments": "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\run_in_console_session.ps1\" -Exe \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" -Arguments '\"C:\\QM\\repo\\tools\\strategy_farm\\mailbox_source_intake.py\"' -WorkDir \"C:\\QM\\repo\" -TargetUser \"qm-admin\" -WaitSeconds 2640",
+          "working_directory": "C:\\QM\\repo"
+        },
+        "preserved": [
+          "registration_info",
+          "triggers",
+          "settings",
+          "enabled_state"
+        ]
+      },
+      "root_cause_verdict": "HISTORICALLY CONFIRMED, NOT REPRODUCED IN WINDOW. TaskInfo retains 0x800710E0 from 2026-07-29; its daily trigger did not fire in the two-hour query. Keep the authenticated qm-admin Codex profile by launching the child through the user token.",
+      "rollback": {
+        "method": "Register-ScheduledTask exact before XML",
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_MailboxSourceIntake_Daily.xml",
+        "expected_file_sha256": "8bea6cd8c9a12ad5e53365d7838e4adac359ddd52298bddb1bae9ba1108caf9e"
+      }
+    },
+    {
+      "name": "QM_StrategyFarm_WorkerDedupe",
+      "before": {
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_WorkerDedupe.xml",
+        "file_sha256": "c5f6b2df23fea6729bd79ba15f7ba7b09a4b1ea4ade4c548e40cc3e417e2d840",
+        "normalized_xml_sha256": "36e5d43de5ebda249c374990fa29b55b3e90753b24b4d3a50b2520b6f7066fc5",
+        "principal": {
+          "user_id": "qm-admin",
+          "logon_type": "Interactive",
+          "run_level": "Highest"
+        },
+        "action": {
+          "execute": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+          "arguments": "\"C:\\QM\\repo\\tools\\strategy_farm\\start_terminal_workers.py\" --repo-root \"C:\\QM\\repo\" --farm-root D:\\QM\\strategy_farm --dedupe",
+          "working_directory": "C:\\QM\\repo"
+        }
+      },
+      "after": {
+        "principal": {
+          "user_id": "SYSTEM",
+          "logon_type": "ServiceAccount",
+          "run_level": "Highest"
+        },
+        "action": {
+          "execute": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+          "arguments": "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\run_in_console_session.ps1\" -Exe \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" -Arguments '\"C:\\QM\\repo\\tools\\strategy_farm\\start_terminal_workers.py\" --repo-root \"C:\\QM\\repo\" --farm-root \"D:\\QM\\strategy_farm\" --dedupe' -WorkDir \"C:\\QM\\repo\" -TargetUser \"qm-admin\" -WaitSeconds 540",
+          "working_directory": "C:\\QM\\repo"
+        },
+        "preserved": [
+          "registration_info",
+          "triggers",
+          "settings",
+          "enabled_state"
+        ]
+      },
+      "root_cause_verdict": "HISTORICALLY CONFIRMED, NOT DEMAND-TESTED. TaskInfo retains 0x800710E0 from 2026-07-26 and the task has no trigger. A direct LocalSystem child is forbidden because terminal64 descendants in session 0 reproduce 0xC0000142.",
+      "rollback": {
+        "method": "Register-ScheduledTask exact before XML",
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_WorkerDedupe.xml",
+        "expected_file_sha256": "c5f6b2df23fea6729bd79ba15f7ba7b09a4b1ea4ade4c548e40cc3e417e2d840"
+      }
+    }
+  ]
+}
