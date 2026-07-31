@@ -352,7 +352,7 @@ function Assert-CanonicalFactoryOnHostProcess {
         '-CanonicalRuntimeHost'
     )
     $allowed = @(
-        ,$baseArguments,
+        ,$baseArguments
         ,@($baseArguments + '-NoPause')
     )
     $matches = $false
