@@ -1,0 +1,167 @@
+{
+  "schema": "qm.mnt003.minimal-task-contract-plan/v1",
+  "generated_at_utc": "2026-07-31T11:02:00Z",
+  "disposition": "PLAN_V2_AND_WHATIF_ONLY",
+  "scheduler_mutated": false,
+  "predecessor_task": "4ac50dcd-48a5-42bc-8f7a-16d3c39f6686",
+  "diagnosis_task": "c913effd-55db-4840-820d-3c51bae4ea8f",
+  "proven_root_cause": "The raw Task Scheduler action used apostrophes as if an outer PowerShell parser would remove them. powershell.exe -File instead bound those apostrophes into the helper's Arguments value; CreateProcessAsUser launched pythonw with a literal apostrophe-wrapped script path, and Python exited 2 (ERROR_FILE_NOT_FOUND).",
+  "minimal_v2_change": "Keep SYSTEM/ServiceAccount/Highest, helper, executable, workdir, target user, timeouts, triggers, settings, registration metadata, enabled state, and rollback unchanged. Replace only each raw -Arguments apostrophe wrapper with one outer double-quoted value whose repo paths require no embedded quoting.",
+  "tasks": [
+    {
+      "name": "QM_StrategyFarm_AgyGovernor",
+      "before": {
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_AgyGovernor.xml",
+        "file_sha256": "9fa935070254bf698db5fecabe83b96720637cf3894179b04482a828158df1e6",
+        "normalized_xml_sha256": "d6fda9988bd670b66cee6d2d9ce2e94c6591617367c533bb33ba8ba7464458c1"
+      },
+      "after": {
+        "principal": {
+          "user_id": "SYSTEM",
+          "logon_type": "ServiceAccount",
+          "run_level": "Highest"
+        },
+        "action": {
+          "execute": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+          "arguments": "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\run_in_console_session.ps1\" -Exe \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" -Arguments \"C:\\QM\\repo\\tools\\strategy_farm\\agy_governor.py\" -WorkDir \"C:\\QM\\repo\" -TargetUser \"qm-admin\" -WaitSeconds 240",
+          "working_directory": "C:\\QM\\repo"
+        },
+        "preserved": [
+          "registration_info",
+          "triggers",
+          "settings",
+          "enabled_state"
+        ]
+      },
+      "rollback": {
+        "method": "Register-ScheduledTask exact before XML",
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_AgyGovernor.xml",
+        "expected_file_sha256": "9fa935070254bf698db5fecabe83b96720637cf3894179b04482a828158df1e6"
+      }
+    },
+    {
+      "name": "QM_StrategyFarm_CodexFleetPacer",
+      "before": {
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_CodexFleetPacer.xml",
+        "file_sha256": "d34d0ef9ca742e69c40f5e6492f8abc1a5f402d92b5ab59e063fae18b0cbd97e",
+        "normalized_xml_sha256": "de6cfcd1d1ca18a56b42e9539ddc429ab370cd3d72ee4928aaeabbef5dcda4bc"
+      },
+      "after": {
+        "principal": {
+          "user_id": "SYSTEM",
+          "logon_type": "ServiceAccount",
+          "run_level": "Highest"
+        },
+        "action": {
+          "execute": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+          "arguments": "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\run_in_console_session.ps1\" -Exe \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" -Arguments \"C:\\QM\\repo\\tools\\strategy_farm\\codex_fleet_pacer.py\" -WorkDir \"C:\\QM\\repo\" -TargetUser \"qm-admin\" -WaitSeconds 300",
+          "working_directory": "C:\\QM\\repo"
+        },
+        "preserved": [
+          "registration_info",
+          "triggers",
+          "settings",
+          "enabled_state"
+        ]
+      },
+      "rollback": {
+        "method": "Register-ScheduledTask exact before XML",
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_CodexFleetPacer.xml",
+        "expected_file_sha256": "d34d0ef9ca742e69c40f5e6492f8abc1a5f402d92b5ab59e063fae18b0cbd97e"
+      }
+    },
+    {
+      "name": "QM_StrategyFarm_GeminiOrchestration_15min",
+      "before": {
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_GeminiOrchestration_15min.xml",
+        "file_sha256": "e653dff21f874a233a30da1038880fedda6dc0c8a799dd47b9b82ce1980cad86",
+        "normalized_xml_sha256": "4a5f5184b380c12cf3452ddc17bea93b8c6570c9ead64b743f10e04540eb909a"
+      },
+      "after": {
+        "principal": {
+          "user_id": "SYSTEM",
+          "logon_type": "ServiceAccount",
+          "run_level": "Highest"
+        },
+        "action": {
+          "execute": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+          "arguments": "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\run_in_console_session.ps1\" -Exe \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" -Arguments \"C:\\QM\\repo\\tools\\strategy_farm\\run_agent_orchestration_task.py --agent gemini --max-sessions 1\" -WorkDir \"C:\\QM\\repo\" -TargetUser \"qm-admin\" -WaitSeconds 14100",
+          "working_directory": "C:\\QM\\repo"
+        },
+        "preserved": [
+          "registration_info",
+          "triggers",
+          "settings",
+          "enabled_state"
+        ]
+      },
+      "rollback": {
+        "method": "Register-ScheduledTask exact before XML",
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_GeminiOrchestration_15min.xml",
+        "expected_file_sha256": "e653dff21f874a233a30da1038880fedda6dc0c8a799dd47b9b82ce1980cad86"
+      }
+    },
+    {
+      "name": "QM_StrategyFarm_MailboxSourceIntake_Daily",
+      "before": {
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_MailboxSourceIntake_Daily.xml",
+        "file_sha256": "8bea6cd8c9a12ad5e53365d7838e4adac359ddd52298bddb1bae9ba1108caf9e",
+        "normalized_xml_sha256": "1febc9055735b0be19ac812dedf9c492c4a957ce50152ccf6942f46cf7415200"
+      },
+      "after": {
+        "principal": {
+          "user_id": "SYSTEM",
+          "logon_type": "ServiceAccount",
+          "run_level": "Highest"
+        },
+        "action": {
+          "execute": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+          "arguments": "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\run_in_console_session.ps1\" -Exe \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" -Arguments \"C:\\QM\\repo\\tools\\strategy_farm\\mailbox_source_intake.py\" -WorkDir \"C:\\QM\\repo\" -TargetUser \"qm-admin\" -WaitSeconds 2640",
+          "working_directory": "C:\\QM\\repo"
+        },
+        "preserved": [
+          "registration_info",
+          "triggers",
+          "settings",
+          "enabled_state"
+        ]
+      },
+      "rollback": {
+        "method": "Register-ScheduledTask exact before XML",
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_MailboxSourceIntake_Daily.xml",
+        "expected_file_sha256": "8bea6cd8c9a12ad5e53365d7838e4adac359ddd52298bddb1bae9ba1108caf9e"
+      }
+    },
+    {
+      "name": "QM_StrategyFarm_WorkerDedupe",
+      "before": {
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_WorkerDedupe.xml",
+        "file_sha256": "c5f6b2df23fea6729bd79ba15f7ba7b09a4b1ea4ade4c548e40cc3e417e2d840",
+        "normalized_xml_sha256": "36e5d43de5ebda249c374990fa29b55b3e90753b24b4d3a50b2520b6f7066fc5"
+      },
+      "after": {
+        "principal": {
+          "user_id": "SYSTEM",
+          "logon_type": "ServiceAccount",
+          "run_level": "Highest"
+        },
+        "action": {
+          "execute": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+          "arguments": "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\run_in_console_session.ps1\" -Exe \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" -Arguments \"C:\\QM\\repo\\tools\\strategy_farm\\start_terminal_workers.py --repo-root C:\\QM\\repo --farm-root D:\\QM\\strategy_farm --dedupe\" -WorkDir \"C:\\QM\\repo\" -TargetUser \"qm-admin\" -WaitSeconds 540",
+          "working_directory": "C:\\QM\\repo"
+        },
+        "preserved": [
+          "registration_info",
+          "triggers",
+          "settings",
+          "enabled_state"
+        ]
+      },
+      "rollback": {
+        "method": "Register-ScheduledTask exact before XML",
+        "xml_path": "docs/ops/evidence/2026-07-31_mnt003_before_QM_StrategyFarm_WorkerDedupe.xml",
+        "expected_file_sha256": "c5f6b2df23fea6729bd79ba15f7ba7b09a4b1ea4ade4c548e40cc3e417e2d840"
+      }
+    }
+  ]
+}
