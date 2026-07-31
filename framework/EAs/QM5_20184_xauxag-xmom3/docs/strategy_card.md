@@ -52,7 +52,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: PENDING
 review_focus: "Falsify the source-defined intermediate three-month XAU/XAG relative-momentum horizon as a two-CFD basket; profitability, neutrality, and book decorrelation are not imported."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
