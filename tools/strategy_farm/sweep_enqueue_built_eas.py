@@ -401,6 +401,13 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
         eligible_parsed.append((sf, symbol, tf, payload_extra))
     parsed = eligible_parsed
     stage1, deferred = farmctl._stage_q02_setfiles(parsed)
+    # Resolve once before any stage-1 row is inserted. Otherwise the first
+    # insert would make later symbols in the same fresh-EA cohort look like
+    # non-first Q02s and only part of the cohort would receive the marker.
+    priority_track = (
+        ea_id in PRIORITY_EAS
+        or farmctl._q02_priority_track_required(con, REPO_ROOT, ea_id)
+    )
     if deferred and APPLY:
         # Defer the sidecar write until the same final interlock check as the DB
         # commit.  Otherwise OFF racing this sweep could roll back SQLite while
@@ -424,7 +431,10 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
                    "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
                    "enqueued_at_utc": NOW}
         payload.update(payload_extra)
-        if ea_id in PRIORITY_EAS:
+        # Keep this legacy sweep aligned with every other Q02 creator. Basket
+        # rows are especially easy to strand because their logical symbol does
+        # not receive an asset-class tie-break from the physical host.
+        if priority_track:
             payload["priority_track"] = True
         if not insert_wi(
             "Q02",
@@ -438,7 +448,7 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
         budget_left -= 1
         report["part1_never_tested"]["enqueued"].append(
             {"ea_id": ea_id, "symbol": symbol, "setfile": sf.name,
-             "priority_track": ea_id in PRIORITY_EAS})
+             "priority_track": priority_track})
 
 # ---------- Part 2: stranded INFRA_FAIL at Q02/Q03/Q08 ----------
 part2_count = 0

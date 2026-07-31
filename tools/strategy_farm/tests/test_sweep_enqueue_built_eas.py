@@ -97,6 +97,7 @@ def test_never_tested_sweep_enqueues_one_logical_basket_item(
     assert payload["portfolio_scope"] == "basket"
     assert payload["basket_manifest"] == str(manifest_path.resolve())
     assert payload["tester_currency"] == "USD"
+    assert payload["priority_track"] is True
 
     report = json.loads(
         (report_root / "state" / "claude_sweep_enqueue_2026-06-10.json")
@@ -106,10 +107,67 @@ def test_never_tested_sweep_enqueues_one_logical_basket_item(
         "ea_id": ea_id,
         "symbol": logical_symbol,
         "setfile": logical_setfile.name,
-        "priority_track": False,
+        "priority_track": True,
     }]
     assert any(
         row.get("reason") == "basket_manifest_logical_setfile_preferred"
         and row.get("setfile") == physical_setfile.name
         for row in report["part1_never_tested"]["skipped"]
     )
+
+
+def test_never_tested_sweep_prioritizes_every_first_q02_row(
+    tmp_path: Path,
+) -> None:
+    farm_root = tmp_path / "farm"
+    repo_root = tmp_path / "repo"
+    report_root = tmp_path / "reports"
+    ea_id = "QM5_9002"
+    ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_multisym"
+    sets_dir = ea_dir / "sets"
+    registry = repo_root / "framework" / "registry" / "ea_id_registry.csv"
+    sets_dir.mkdir(parents=True)
+    registry.parent.mkdir(parents=True)
+    report_root.joinpath("state").mkdir(parents=True)
+
+    (ea_dir / f"{ea_dir.name}.ex5").write_text("compiled\n", encoding="utf-8")
+    for symbol in ("EURUSD.DWX", "GBPUSD.DWX"):
+        (sets_dir / f"{ea_dir.name}_{symbol}_H1_backtest.set").write_text(
+            "; first Q02 cohort\n",
+            encoding="utf-8",
+        )
+
+    with registry.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["ea_id", "slug", "status"])
+        writer.writeheader()
+        writer.writerow({"ea_id": "9002", "slug": "multisym", "status": "active"})
+
+    farmctl.init_db(farm_root)
+    env = os.environ.copy()
+    env.update({
+        "QM_STRATEGY_FARM_ROOT": str(farm_root),
+        "QM_CANONICAL_REPO_ROOT": str(repo_root),
+        "QM_REPORT_ROOT": str(report_root),
+    })
+    result = subprocess.run(
+        [sys.executable, str(SWEEP), "--apply", "--ea", ea_id],
+        cwd=REPO,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        payloads = [
+            json.loads(row[0])
+            for row in conn.execute(
+                "SELECT payload_json FROM work_items WHERE ea_id=? AND phase='Q02'",
+                (ea_id,),
+            ).fetchall()
+        ]
+
+    assert len(payloads) == 2
+    assert all(payload["priority_track"] is True for payload in payloads)
