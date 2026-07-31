@@ -1,0 +1,98 @@
+{
+  "schema_version": "qm.q08-single-target-requal-exception/v1",
+  "authorization": {
+    "authority": "OWNER",
+    "owner_reference": "OWNER_DECISION_2026-07-31_Q08_SINGLE_TARGET_REQUAL",
+    "decision_date": "2026-07-31",
+    "scope": "EXACT_ONE_ROW_Q08_REQUALIFICATION_CONTROLLER",
+    "global_invariant": "MNT-007_Q08_INVALID_REPORT_NON_RETRYABLE_UNCHANGED",
+    "global_invariant_weakened": false,
+    "apply_authorized_before_implementation_review": false,
+    "decision_source": {
+      "path": "C:\\QM\\repo\\docs\\ops\\CODEX_BRIEF_2026-07-31_q08_single_target_requal.md",
+      "sha256": "2a5bc603e4eb7cd0e1ab56501286ff28256588948214f029cb350b65637afc71",
+      "commit_sha": "31475d9f1c476c9ca43d94fef58cc13b933c1337"
+    }
+  },
+  "target": {
+    "work_item_id": "95015420-11d0-4c11-bb98-25fa2a361048",
+    "ea_id": "QM5_10582",
+    "symbol": "XAUUSD.DWX",
+    "phase": "Q08",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_00.set",
+    "reason_class": "MARKERLESS_STRATEGY_ASSIGNMENTS_PARSER_DEFECT",
+    "expected_state": {
+      "status": "done",
+      "phase": "Q08",
+      "verdict": "INFRA_FAIL",
+      "payload_sha256": "b8b503e258034b65466fcb42e275dfb7eff60624447479b78eda85416ed0ce92",
+      "payload_sha256_basis": "RAW_UTF8_PAYLOAD_JSON"
+    }
+  },
+  "parser_fix": {
+    "defect_class": "STRATEGY_LINES_WITHOUT_SECTION_MARKER",
+    "commit_sha": "12629f50717461e0a66c3af5b466f1d8fcc11e59",
+    "file_sha256_at_fix_commit": "7580245a3065a7b143d7d07f8949ce6bc3b9de5dd89cd3f3b3bc4d670f0fef52"
+  },
+  "artifact_bindings": [
+    {
+      "role": "controller_source",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\q08_single_target_requal.py",
+      "sha256": "1c632ef818f6883a5af954f4088fa9022e64b7094443f163deb95175876585e0",
+      "bytes": 46575
+    },
+    {
+      "role": "parser_source",
+      "path": "C:\\QM\\repo\\framework\\scripts\\q08_5_neighborhood_runner.py",
+      "sha256": "35a58983a3269f8821bb0b17f0ee6cc67109526bc68533fbdd08e077cf64bb48",
+      "bytes": 48232
+    },
+    {
+      "role": "mq5",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\QM5_10582_mql5-ema-pred.mq5",
+      "sha256": "a7cbabb034a788e483bb882d5e6160e33cddf20f558ca91f6bbac3ca030314d9",
+      "bytes": 13012
+    },
+    {
+      "role": "ex5",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\QM5_10582_mql5-ema-pred.ex5",
+      "sha256": "ed764f69df58b0e58f45b6d56825e453127e803b98b2f4ba778924faf90b8603",
+      "bytes": 322308
+    },
+    {
+      "role": "setfile_base",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest.set",
+      "sha256": "082028275fbb0870d5e0665f5c3131d2d360bb8ff36597aada955c3692eb9d04",
+      "bytes": 770
+    },
+    {
+      "role": "setfile_ablation_00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_00.set",
+      "sha256": "8d47c4cc8191e067af31920bceb3cdcb1af2ebea63b4ddb8df954b9a975cb4f3",
+      "bytes": 1008
+    },
+    {
+      "role": "setfile_ablation_01",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_01.set",
+      "sha256": "f2bf459a3255c09eaf4b2333d870eb1a7d06462132c18e0d85dc3a06ac73d5d6",
+      "bytes": 1008
+    },
+    {
+      "role": "setfile_ablation_02",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_02.set",
+      "sha256": "477bc9142a10fc09e590d32aad14e056af0710d520f35882525313e4babc6cf1",
+      "bytes": 1008
+    }
+  ],
+  "evidence_archive": {
+    "policy": "MOVE_WHOLE_WORK_ITEM_ROOT_NO_DELETE_NO_OVERWRITE",
+    "root": "D:\\QM\\reports\\work_items\\_requal_archive"
+  },
+  "implementation_review": {
+    "status": "PENDING",
+    "reviewer": "Claude",
+    "verdict": null,
+    "reviewed_controller_commit": null,
+    "receipt": null
+  }
+}
