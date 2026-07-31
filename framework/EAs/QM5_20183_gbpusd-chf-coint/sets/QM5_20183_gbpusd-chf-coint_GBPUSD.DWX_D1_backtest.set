@@ -1,0 +1,30 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        20183
+; ea_slug:      gbpusd-chf-coint
+; ea_version:   v5.0
+; set_version:  s20260731-001
+; symbol:       GBPUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   79bea2ee29d7e56720228e94d86ec7aef6b0f2ebca933d30177d222dd0b82f52
+; author:       Development
+; date:         2026-07-31
+;==========================================================
+qm_ea_id=20183
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\gbpusd-chf-coint_card.md
+strategy_z_lookback_d1=60
+strategy_beta=-0.651268047
+strategy_entry_z=2.0
+strategy_exit_z=0.5
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=2.0
+strategy_deviation_points=20

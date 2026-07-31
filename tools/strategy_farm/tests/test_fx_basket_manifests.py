@@ -273,6 +273,33 @@ def test_qm5_12978_zscore_uses_strictly_prior_calibration_window() -> None:
     assert "g_spread_z = (spreads[0] - g_spread_mean) / g_spread_sd;" in source
 
 
+def test_qm5_20183_manifest_and_risk_fixed_logical_setfile() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_20183_gbpusd-chf-coint"
+    source = (ea_dir / "QM5_20183_gbpusd-chf-coint.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    logical = manifest["logical_symbol"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_D1_backtest.set"
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+    source_symbols = set(re.findall(r'"([A-Z]{6}\.DWX)"', source))
+
+    assert logical == "QM5_20183_GBPUSD_USDCHF_COINTEGRATION_D1"
+    assert manifest["host_symbol"] == "GBPUSD.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["tester_currency"] == "USD"
+    assert declared == {"GBPUSD.DWX", "USDCHF.DWX"}
+    assert source_symbols <= declared
+    assert logical_setfile.exists()
+    assert "; host_symbol:  GBPUSD.DWX" in set_text
+    assert "RISK_FIXED=1000" in set_text
+    assert "RISK_PERCENT=0" in set_text
+    assert "const int history_count = lookback + 1;" in source
+    assert source.count("PERIOD_D1, 1, history_count") == 4
+    assert source.count("for(int i = 1; i < history_count; ++i)") == 2
+
+
 def test_qm5_1224_is_one_atomic_fx7_cross_sectional_package() -> None:
     ea_dir = REPO / "framework" / "EAs" / "QM5_1224_white-okunev-fx-xmom"
     manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
