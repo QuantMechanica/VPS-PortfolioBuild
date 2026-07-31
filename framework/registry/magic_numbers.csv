@@ -11425,8 +11425,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11591,robo-ao-macd574-h4,3,USDCHF.DWX,115910003,2026-06-18,Claude,reserved
 11591,robo-ao-macd574-h4,4,AUDUSD.DWX,115910004,2026-06-18,Claude,reserved
 11591,robo-ao-macd574-h4,5,NZDUSD.DWX,115910005,2026-06-18,Claude,reserved
-11592,robo-3candle-fade-h4,0,EURUSD.DWX,115920000,2026-06-18,Claude,reserved
-11592,robo-3candle-fade-h4,1,GBPUSD.DWX,115920001,2026-06-18,Claude,reserved
+11592,robo-3candle-fade-h4,0,EURUSD.DWX,115920000,2026-06-18,Claude,active
+11592,robo-3candle-fade-h4,1,GBPUSD.DWX,115920001,2026-06-18,Claude,active
 11593,robo-midnight-hammer-adx-d1,0,EURUSD.DWX,115930000,2026-06-18,Claude,reserved
 11593,robo-midnight-hammer-adx-d1,1,GBPUSD.DWX,115930001,2026-06-18,Claude,reserved
 11593,robo-midnight-hammer-adx-d1,2,AUDUSD.DWX,115930002,2026-06-18,Claude,reserved
