@@ -35,6 +35,7 @@ def _insert_work_item(
     attempt_count: int = 0,
     payload: dict | None = None,
     ea_id: str = "QM5_9999",
+    evidence_path: str | None = None,
 ) -> None:
     farmctl.init_db(root)
     now = farmctl.utc_now()
@@ -46,7 +47,7 @@ def _insert_work_item(
                attempt_count, parent_task_id, evidence_path, claimed_by,
                payload_json, created_at, updated_at)
             VALUES
-              (?, 'backtest', ?, ?, ?, 'dummy.set', ?, ?, ?, NULL, NULL, ?, ?, ?, ?)
+              (?, 'backtest', ?, ?, ?, 'dummy.set', ?, ?, ?, NULL, ?, ?, ?, ?, ?)
             """,
             (
                 item_id,
@@ -56,6 +57,7 @@ def _insert_work_item(
                 status,
                 verdict,
                 attempt_count,
+                evidence_path,
                 claimed_by,
                 json.dumps(payload or {}),
                 now,
@@ -68,6 +70,133 @@ def _insert_work_item(
 class HistoryLockStormTransientRetryTests(unittest.TestCase):
     def _root(self) -> tempfile.TemporaryDirectory:
         return tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+
+    def test_identity_bound_persisted_pass_wins_after_later_history_lock(self) -> None:
+        """A later claim must not hide and downgrade an exact durable PASS."""
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            report_root = root / "reports" / "wi-persisted-pass"
+            summary_path = report_root / "QM5_9999" / "20200101_000000" / "summary.json"
+            summary_path.parent.mkdir(parents=True)
+            ex5_sha = "1" * 64
+            setfile_sha = "2" * 64
+            mq5_sha = "3" * 64
+            ini_sha = "4" * 64
+            summary = {
+                "evidence_schema": "run_smoke/v2",
+                "run_tag": "20200101_000000",
+                "result": "PASS",
+                "model4_log_marker_detected": True,
+                "from_date": "2018.01.01",
+                "to_date": "2022.12.31",
+                "symbol": "XAUUSD.DWX",
+                "period": "D1",
+                "expert": r"QM\QM5_9999_pair",
+                "min_trades_required": 25,
+                "runs": [{"total_trades": 99}],
+                "test_window": {
+                    "from_date": "2018.01.01",
+                    "to_date": "2022.12.31",
+                    "source": "generated_tester_ini",
+                    "tester_ini_files": [{
+                        "sha256": ini_sha,
+                        "from_date": "2018.01.01",
+                        "to_date": "2022.12.31",
+                        "symbol": "XAUUSD.DWX",
+                        "period": "D1",
+                        "expert": r"QM\QM5_9999_pair",
+                    }],
+                },
+                "execution_identity": {
+                    "stable_during_run": True,
+                    "expert_binary": {
+                        "deployed": {"sha256": ex5_sha},
+                        "stable_during_run": True,
+                    },
+                    "setfile": {
+                        "source": {"sha256": setfile_sha},
+                        "stable_during_run": True,
+                    },
+                    "mq5_source": {"sha256": mq5_sha},
+                },
+            }
+            summary_path.write_text(json.dumps(summary), encoding="utf-8")
+            claim_iso = datetime.now(timezone.utc).isoformat()
+            payload = {
+                "report_root": str(report_root),
+                "claimed_at_iso": claim_iso,
+                "started_at_iso": claim_iso,
+                "effective_min_trades": 25,
+                "evidence_binding_required": True,
+                "expected_from_date": "2018.01.01",
+                "expected_to_date": "2022.12.31",
+                "expected_symbol": "XAUUSD.DWX",
+                "expected_period": "D1",
+                "expected_expert": r"QM\QM5_9999_pair",
+                "expected_ex5_sha256": ex5_sha,
+                "expected_setfile_sha256": setfile_sha,
+                "expected_mq5_sha256": mq5_sha,
+                "transient_infra_attempts": 3,
+            }
+            _insert_work_item(
+                root,
+                "wi-persisted-pass",
+                "QM5_9999_XAUUSD_XAGUSD_PAIR_D1",
+                claimed_by="T9",
+                payload=payload,
+            )
+
+            # The old summary is correctly rejected as claim-fresh. Its exact
+            # v2 execution binding is the only reason it may be reused.
+            self.assertIsNone(terminal_worker._load_fresh_summary(summary_path, payload))
+            with farmctl.connect(root) as conn:
+                inserted = conn.execute(
+                    "SELECT * FROM work_items WHERE id='wi-persisted-pass'"
+                ).fetchone()
+            tampered_payload = dict(payload)
+            tampered_payload["expected_ex5_sha256"] = "f" * 64
+            self.assertIsNone(
+                terminal_worker._find_bound_persisted_pass_summary_data(
+                    inserted, tampered_payload
+                )
+            )
+            summary["runs"] = [{"total_trades": 3}]
+            summary_path.write_text(json.dumps(summary), encoding="utf-8")
+            self.assertIsNone(
+                terminal_worker._find_bound_persisted_pass_summary_data(
+                    inserted, payload
+                )
+            )
+            summary["runs"] = [{"total_trades": 99}]
+            summary_path.write_text(json.dumps(summary), encoding="utf-8")
+
+            old_default = terminal_worker.farmctl.DEFAULT_ROOT
+            old_detect = terminal_worker._detect_history_lock_storm
+            try:
+                terminal_worker.farmctl.DEFAULT_ROOT = root
+                terminal_worker._detect_history_lock_storm = lambda *_a, **_k: {
+                    "terminal": "T9",
+                    "token": "some error after pass finished",
+                    "log_path": "x",
+                }
+                result = terminal_worker._finish_work_item(
+                    root, "wi-persisted-pass", exit_code=0
+                )
+            finally:
+                terminal_worker.farmctl.DEFAULT_ROOT = old_default
+                terminal_worker._detect_history_lock_storm = old_detect
+
+            self.assertEqual(result["status"], "done")
+            self.assertEqual(result["verdict"], "PASS")
+            self.assertNotIn("transient_infra", result)
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, evidence_path, payload_json "
+                    "FROM work_items WHERE id='wi-persisted-pass'"
+                ).fetchone()
+            self.assertEqual(row[:3], ("done", "PASS", str(summary_path)))
+            persisted_payload = json.loads(row[3])
+            self.assertEqual(persisted_payload["transient_infra_attempts"], 3)
 
     # (a) storm signature auto-requeues, accumulates the sick terminal, and does NOT
     #     consume the strategy retry budget (attempt_count untouched).

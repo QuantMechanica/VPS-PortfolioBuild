@@ -1788,6 +1788,77 @@ def _load_fresh_summary(path: Path, payload: dict[str, Any]) -> dict[str, Any] |
     return summary if farmctl._summary_matches_expected_evidence(summary, payload) else None
 
 
+def _find_bound_persisted_pass_summary_data(
+    item: sqlite3.Row,
+    payload: dict[str, Any],
+) -> tuple[Path, dict[str, Any]] | None:
+    """Recover a durable Q02/Q03 PASS that predates the current claim.
+
+    Normal ``report_root`` discovery is intentionally claim-fresh.  A worker
+    restart or a later shared-history-lock retry can nevertheless leave an
+    exact PASS in that item-isolated tree (or in its durable ``evidence_path``)
+    which freshness filtering hides.  Reuse is fail-closed: only v2
+    identity-bound smoke evidence whose window, expert, MQ5, EX5, and setfile
+    still match may bypass claim freshness, and only a derived PASS is
+    latched.  A persisted failure can never suppress a deliberate recovery
+    run.
+    """
+    phase = str(item["phase"] or "").upper()
+    if phase not in {"P2", "P3", "Q02", "Q03"}:
+        return None
+    if not payload.get("evidence_binding_required"):
+        return None
+    candidates: list[Path] = []
+    raw_path = item["evidence_path"]
+    if raw_path:
+        candidates.append(Path(str(raw_path)))
+    report_root = payload.get("report_root")
+    if report_root:
+        root = Path(str(report_root))
+        try:
+            if root.is_dir():
+                candidates.extend(sorted(
+                    root.rglob("summary.json"),
+                    key=lambda path: path.stat().st_mtime,
+                    reverse=True,
+                ))
+        except OSError:
+            pass
+
+    seen: set[str] = set()
+    for path in candidates:
+        key = str(path).casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        try:
+            summary = json.loads(path.read_text(encoding="utf-8-sig"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(summary, dict):
+            continue
+        if not farmctl._summary_matches_expected_evidence(summary, payload):
+            continue
+        if cold_cache_summary_signature(summary):
+            continue
+        effective_min_trades = int(
+            payload.get("effective_min_trades")
+            or summary.get("min_trades_required")
+            or 5
+        )
+        verdict, _ = farmctl._derive_verdict_from_summary(
+            summary,
+            min_trades=effective_min_trades,
+            phase=phase,
+        )
+        if verdict == "PASS":
+            return path, summary
+        # The newest (or explicitly DB-bound) exact outcome is authoritative.
+        # Do not skip a persisted failure and hunt for an older PASS.
+        return None
+    return None
+
+
 def _find_summary(report_root: str | None, payload: dict[str, Any] | None = None) -> Path | None:
     if not report_root:
         return None
@@ -1930,12 +2001,11 @@ def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> 
             return canonical_summary_path, summary
         return farmctl._phase_artifact_summary(item)
     summary_path = _find_summary(payload.get("report_root"), payload)
-    if not summary_path:
-        return None
-    summary = _load_fresh_summary(summary_path, payload)
-    if summary is None:
-        return None
-    return summary_path, summary
+    if summary_path:
+        summary = _load_fresh_summary(summary_path, payload)
+        if summary is not None:
+            return summary_path, summary
+    return _find_bound_persisted_pass_summary_data(item, payload)
 
 
 def _work_item_has_summary_data(root: Path, item_id: str) -> bool:
