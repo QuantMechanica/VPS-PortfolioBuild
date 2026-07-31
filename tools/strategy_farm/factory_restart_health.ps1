@@ -315,10 +315,10 @@ function Wait-QmFactoryPostStartHealth {
         [Parameter(Mandatory = $true)]
         [datetimeoffset]$FreshNotBeforeUtc,
 
-        # One QM_StrategyFarm_Pump_5min attempt is hard-capped at PT10M by
-        # Task Scheduler.  Do not let a caller retain the restart window across
-        # multiple attempts.
-        [ValidateRange(1, 600)]
+        # Pump attempts are hard-capped at PT10M, and five of 13 measured runs
+        # reached that ceiling. Permit the guarded caller to span multiple
+        # 5-minute retries; the wait still exits immediately on fresh success.
+        [ValidateRange(1, 1800)]
         [int]$TimeoutSeconds = 300,
 
         [ValidateRange(1, 60)]
