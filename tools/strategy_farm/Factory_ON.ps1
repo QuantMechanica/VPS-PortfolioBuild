@@ -125,11 +125,12 @@ $canonicalOwnerDecisionRelativePath = 'docs/ops/evidence/2026-07-30_factory_prep
 $QM_OWNER_DECISION_SHA256 = 'af8479fdc73163250f966014eca5c53224a4ae159426a07cf96c80a379c6edb2'
 $QM_OWNER_DECISION_COMMIT = '7b36ff27f83f024bf1c43bb5537cc747f52b887a'
 $QM_OWNER_DECISION_BLOB = '6d36cf6682e317324a35bc8388042402b0f3e540'
-# 1800s: the pre-OFF warm pump run measured ~257s (log 20260729T071513Z ->
-# last write 07:19:30Z) and a cold-start pump over a multi-thousand-item
-# backlog exceeds 300s by design. The gate still requires a fresh successful
-# completion and exits as soon as every critical task has one.
-$factoryPostStartHealthTimeoutSeconds = 1800
+# The Pump task is scheduler-bounded by PT10M.  TaskScheduler start/finish
+# evidence sampled on 2026-07-31 found 13 substantive runs: p50=550.203s,
+# p75=599.982s, and five reached the 600s ceiling.  A longer health wait cannot
+# make one Pump attempt succeed; it only spans later attempts while retaining
+# the guarded restart window.  Bind the gate to exactly one scheduled attempt.
+$factoryPostStartHealthTimeoutSeconds = 600
 $QM_OWNER_APPROVED_DISABLED_TERMINALS = @(
     'T5'
 )
