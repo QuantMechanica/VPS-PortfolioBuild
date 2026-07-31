@@ -102,6 +102,34 @@ def _clear_flag(reason: str, dry: bool) -> None:
     _log(f"RELEASE agy: {reason} -> removed {FLAG.name}")
 
 
+def _pull_failure_class(res: dict) -> str:
+    error = str(res.get("error") or "").lower()
+    if res.get("token_expired") is True:
+        return "token_expired"
+    if "401" in error or "unauthenticated" in error:
+        return "authentication_failed"
+    if "credential_unavailable" in error:
+        return "credential_unavailable"
+    return "quota_pull_failed"
+
+
+def _set_unknown_flag(failure_class: str, dry: bool) -> None:
+    if dry:
+        _log(f"[dry-run] would GATE agy (quota unknown: {failure_class})")
+        return
+    ROOT.mkdir(parents=True, exist_ok=True)
+    FLAG.write_text(json.dumps({
+        "owner": "agy_governor",
+        "reason": "quota_unknown",
+        "failure_class": failure_class,
+        "release_condition": "successful_authenticated_quota_pull_at_or_above_floor",
+        "release_floor_pct": FLOOR_PCT,
+        "set_at": _now().isoformat(),
+    }, indent=2), encoding="utf-8")
+    _save_owned(True, {"reason": "quota_unknown", "failure_class": failure_class})
+    _log(f"GATE agy: quota unknown ({failure_class}) -> {FLAG.name}")
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--dry-run", action="store_true")
@@ -138,21 +166,17 @@ def main(argv=None) -> int:
                 _log(f"agy ok: {rem}% remaining (reset {reset}); no gate")
         return 0
 
-    # pull failed — usually a stale access_token while agy is idle (refreshes on next agy run)
-    err = str(res.get("error"))[:120]
+    # Unknown quota is not spare quota.  Authentication/transport failure must
+    # pause new agy work until a successful pull proves recovery; a prior reset
+    # timestamp cannot establish current consumption and therefore cannot clear
+    # the gate.
+    failure_class = _pull_failure_class(res)
     if flag_exists and owned:
-        fl = {}
-        try:
-            fl = json.loads(FLAG.read_text(encoding="utf-8"))
-        except Exception:
-            pass
-        reset = _parse_iso(fl.get("reset"))
-        if reset and _now() >= reset:
-            _clear_flag(f"window reset passed ({fl.get('reset')}); stale-token pull, auto-clear", args.dry_run)
-        else:
-            _log(f"agy pull failed ({err}); keeping owned gate until reset {fl.get('reset')}")
+        _log(f"agy pull failed ({failure_class}); keeping owned gate until authenticated recovery")
+    elif flag_exists:
+        _log(f"agy pull failed ({failure_class}); existing unowned gate remains in force")
     else:
-        _log(f"agy pull failed ({err}); no owned gate -> no action (agy likely idle/token stale)")
+        _set_unknown_flag(failure_class, args.dry_run)
     return 0
 
 

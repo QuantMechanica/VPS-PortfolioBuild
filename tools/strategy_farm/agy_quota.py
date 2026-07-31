@@ -77,7 +77,16 @@ def _post(base: str, path: str, token: str, body: dict) -> dict:
 
 
 def pull() -> dict:
-    cred = read_credential()
+    try:
+        cred = read_credential()
+    except Exception as exc:  # noqa: BLE001 - report metadata only, never credential bytes
+        return {
+            "ok": False,
+            "error": f"credential_unavailable:{exc}",
+            "credential_target": CRED_TARGET,
+            "token_expiry": None,
+            "token_expired": None,
+        }
     tok = cred.get("token", {})
     access = tok.get("access_token")
     expiry = tok.get("expiry")
@@ -117,6 +126,7 @@ def pull() -> dict:
             quotas.sort(key=lambda q: q["remaining_pct"])
             return {
                 "ok": True, "base": base, "tier": tier, "project": proj,
+                "credential_target": CRED_TARGET,
                 "token_expiry": expiry, "token_expired": expired,
                 "models": quotas,
                 "binding_remaining_pct": quotas[0]["remaining_pct"] if quotas else None,
@@ -132,7 +142,13 @@ def pull() -> dict:
             last_err = f"{base}: HTTP {e.code} {body}"
         except Exception as e:  # noqa: BLE001
             last_err = f"{base}: {e!r}"
-    return {"ok": False, "error": last_err, "token_expiry": expiry, "token_expired": expired}
+    return {
+        "ok": False,
+        "error": last_err,
+        "credential_target": CRED_TARGET,
+        "token_expiry": expiry,
+        "token_expired": expired,
+    }
 
 
 def main(argv=None) -> int:
