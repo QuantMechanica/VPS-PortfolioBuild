@@ -15383,3 +15383,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12433,ea31337-ichi,2,GDAXI.DWX,124330002,2026-07-31,Codex,active
 12433,ea31337-ichi,3,NDX.DWX,124330003,2026-07-31,Codex,active
 12433,ea31337-ichi,4,XAUUSD.DWX,124330004,2026-07-31,Codex,active
+20183,gbpusd-chf-coint,0,GBPUSD.DWX,201830000,2026-07-31,Codex,active
+20183,gbpusd-chf-coint,1,USDCHF.DWX,201830001,2026-07-31,Codex,active
