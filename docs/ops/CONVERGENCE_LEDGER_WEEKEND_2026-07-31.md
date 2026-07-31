@@ -35,6 +35,17 @@ The Obsidian vault may be used as an exchange document.
   Codex for adversarial R1 review. Topics B and D awaiting read-only recon
   results (workflow: KS mechanism + frontier blocking causes) before the plan
   artifacts are authored.
+- 2026-07-31 (recon complete): Read-only recon landed with two corrections:
+  (1) 10582 is NOT the backfill class — its setfiles carry strategy_* lines but
+  lack the `; strategy-specific params` section header that
+  `q08_5_neighborhood_runner.parse_setfile_assignments` requires (likely a new
+  sub-class among the 158 undiagnosed Q08 INFRA_FAILs); (2) the pulse "dormant"
+  count is soft (4MB log-tail; 10706 is actually armed) and KS baselines are
+  read exactly once at OnInit — file drops never arm running EAs, only a
+  T_Live re-init does (OWNER+Claude, Sunday market-closed window). Plans B and
+  D authored (`CODEX_BRIEF_2026-07-31_ks_baseline_gap_plan_review.md`,
+  `CODEX_BRIEF_2026-07-31_q08_frontier_steering_review.md`) and dispatched to
+  Codex for R1.
 
 ## Standing constraints (bind every topic)
 
