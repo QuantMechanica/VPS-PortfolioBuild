@@ -68,6 +68,21 @@ string g_universe_symbols[10] =
   };
 int g_universe_slots[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
+// Weekly strategy state. The only non-trivial basket/indicator work is done
+// when QM_CalendarPeriodKey(PERIOD_W1) advances; per-tick hooks read these
+// cached values only.
+int    g_last_week_key          = 0;
+int    g_last_entry_week_key    = 0;
+int    g_last_trail_week_key    = 0;
+int    g_cached_active_count    = 0;
+int    g_cached_self_rank       = -1;
+double g_cached_self_roc        = 0.0;
+double g_cached_d1_atr          = 0.0;
+bool   g_cached_rank_ready      = false;
+bool   g_cached_exit_due        = false;
+ulong  g_tracked_position       = 0;
+double g_initial_r_distance     = 0.0;
+
 int Strategy_CurrentSymbolIndex()
   {
    for(int i = 0; i < STRATEGY_UNIVERSE_SIZE; ++i)
@@ -82,6 +97,27 @@ int Strategy_CurrentSymbolSlot()
    if(idx < 0)
       return qm_magic_slot_offset;
    return g_universe_slots[idx];
+  }
+
+bool Strategy_InputsValid()
+  {
+   if(strategy_roc_lookback_w1 <= 0)
+      return false;
+   if(strategy_entry_percentile <= 0.0 || strategy_entry_percentile > 0.50)
+      return false;
+   if(strategy_exit_percentile < strategy_entry_percentile || strategy_exit_percentile > 1.0)
+      return false;
+   if(strategy_time_exit_w1_bars <= 0)
+      return false;
+   if(strategy_min_active_symbols < 2 || strategy_min_active_symbols > STRATEGY_UNIVERSE_SIZE)
+      return false;
+   if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
+      return false;
+   if(strategy_trail_atr_mult <= 0.0 || strategy_trail_trigger_r < 0.0)
+      return false;
+   if(strategy_spread_atr_cap < 0.0)
+      return false;
+   return true;
   }
 
 // 13-week rate-of-change on the closed W1 bar. Returns false if either close
@@ -150,8 +186,9 @@ int Strategy_BuildRanking(double &out_self_roc, int &out_self_rank)
    return count;
   }
 
-bool Strategy_HasOpenPosition()
+bool Strategy_SelectOpenPosition(ulong &out_ticket)
   {
+   out_ticket = 0;
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -162,66 +199,107 @@ bool Strategy_HasOpenPosition()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+      out_ticket = ticket;
       return true;
      }
    return false;
   }
 
+bool Strategy_HasOpenPosition()
+  {
+   ulong ticket = 0;
+   return Strategy_SelectOpenPosition(ticket);
+  }
+
 // Direction of the current open position (+1 long, -1 short, 0 none).
 int Strategy_OpenPositionDirection()
   {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      return (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY) ? 1 : -1;
-     }
-   return 0;
+   ulong ticket = 0;
+   if(!Strategy_SelectOpenPosition(ticket))
+      return 0;
+   return (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY) ? 1 : -1;
   }
 
-// Number of completed W1 bars elapsed since the position opened.
+// Number of W1 bars elapsed since the position opened. This O(1) lookup is
+// called only by the once-per-week state advance.
 int Strategy_OpenPositionWeeksHeld()
   {
-   const int magic = QM_FrameworkMagic();
-   datetime open_time = 0;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      break;
-     }
-   if(open_time <= 0)
+   ulong ticket = 0;
+   if(!Strategy_SelectOpenPosition(ticket))
       return 0;
 
-   int weeks = 0;
-   for(int shift = 1; shift <= strategy_time_exit_w1_bars + 2; ++shift)
-     {
-      const datetime bar_open = iTime(_Symbol, PERIOD_W1, shift); // perf-allowed: weekly hold-count, called only after framework new-bar gate.
-      if(bar_open <= 0)
-         break;
-      if(bar_open >= open_time)
-         weeks = shift;        // this closed W1 bar started at/after entry
-      else
-         break;                // bars are time-ordered; older bars precede entry
-     }
-   return weeks;
+   const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+   if(open_time <= 0)
+      return 0;
+   const int shift = iBarShift(_Symbol, PERIOD_W1, open_time, false); // perf-allowed: O(1) weekly time-stop age lookup, called once per week.
+   return (shift > 0) ? shift : 0;
   }
 
-double Strategy_D1ATR()
+// Preserve the original entry-risk distance during this EA process so the
+// +1.5R trail trigger is not distorted after the stop has already moved.
+bool Strategy_SyncPositionRisk(ulong &out_ticket)
   {
-   return QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(!Strategy_SelectOpenPosition(out_ticket))
+     {
+      g_tracked_position = 0;
+      g_initial_r_distance = 0.0;
+      return false;
+     }
+
+   if(out_ticket != g_tracked_position)
+     {
+      g_tracked_position = out_ticket;
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double initial_sl = PositionGetDouble(POSITION_SL);
+      g_initial_r_distance = (open_price > 0.0 && initial_sl > 0.0)
+                             ? MathAbs(open_price - initial_sl)
+                             : 0.0;
+      g_last_trail_week_key = 0;
+     }
+   return true;
+  }
+
+// Compute cross-sectional state once per W1 calendar rollover. This is called
+// from the management hook before exit/entry evaluation, so every later hook
+// remains O(1) while still acting on the latest completed weekly bar.
+void Strategy_AdvanceWeeklyState()
+  {
+   const int week_key = QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
+   if(week_key <= 0 || week_key == g_last_week_key)
+      return;
+
+   g_last_week_key = week_key;
+   g_cached_self_roc = 0.0;
+   g_cached_self_rank = -1;
+   g_cached_active_count = Strategy_BuildRanking(g_cached_self_roc, g_cached_self_rank);
+   g_cached_rank_ready = (g_cached_active_count >= strategy_min_active_symbols &&
+                          g_cached_self_rank >= 0);
+   g_cached_d1_atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   g_cached_exit_due = false;
+
+   const int direction = Strategy_OpenPositionDirection();
+   if(direction == 0)
+      return;
+
+   if(strategy_time_exit_w1_bars > 0 &&
+      Strategy_OpenPositionWeeksHeld() >= strategy_time_exit_w1_bars)
+     {
+      g_cached_exit_due = true;
+      return;
+     }
+
+   if(!g_cached_rank_ready)
+      return;
+
+   int exit_band = (int)MathFloor(g_cached_active_count * strategy_exit_percentile);
+   if(exit_band < 1)
+      exit_band = 1;
+
+   if(direction > 0)
+      g_cached_exit_due = (g_cached_self_rank >= exit_band || g_cached_self_roc < 0.0);
+   else
+      g_cached_exit_due = (g_cached_self_rank < g_cached_active_count - exit_band ||
+                           g_cached_self_roc > 0.0);
   }
 
 bool Strategy_SpreadAllowsEntry()
@@ -236,19 +314,21 @@ bool Strategy_SpreadAllowsEntry()
    if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
       return true; // zero/invalid modeled spread -> allow
 
-   const double atr = Strategy_D1ATR();
-   if(atr <= 0.0)
+   if(g_cached_d1_atr <= 0.0)
       return true; // cannot scale -> do not block
 
    const double spread = ask - bid;
-   return (spread <= atr * strategy_spread_atr_cap);
+   return (spread <= g_cached_d1_atr * strategy_spread_atr_cap);
   }
 
 bool Strategy_NoTradeFilter()
   {
    if(_Period != PERIOD_W1)
       return true;
-   if(Strategy_CurrentSymbolIndex() < 0)
+   const int symbol_index = Strategy_CurrentSymbolIndex();
+   if(symbol_index < 0)
+      return true;
+   if(qm_magic_slot_offset != g_universe_slots[symbol_index])
       return true;
    return false;
   }
@@ -263,26 +343,27 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = Strategy_CurrentSymbolSlot();
    req.expiration_seconds = 0;
 
+   if(g_last_week_key <= 0 || g_last_entry_week_key == g_last_week_key)
+      return false;
+   g_last_entry_week_key = g_last_week_key;
+
    if(Strategy_HasOpenPosition())
       return false;
-
-   double self_roc = 0.0;
-   int    self_rank = -1;
-   const int count = Strategy_BuildRanking(self_roc, self_rank);
-   if(count < strategy_min_active_symbols)
-      return false;           // basket too thin
-   if(self_rank < 0)
-      return false;           // chart symbol has no valid ROC this bar
+   if(g_cached_exit_due)
+      return false; // a rank/time exit suppresses same-week re-entry
+   if(!g_cached_rank_ready || g_cached_d1_atr <= 0.0)
+      return false;
 
    // Rank thresholds (count of symbols in each entry band; >=1).
-   int entry_band = (int)MathFloor(count * strategy_entry_percentile);
+   int entry_band = (int)MathFloor(g_cached_active_count * strategy_entry_percentile);
    if(entry_band < 1)
       entry_band = 1;
 
    int direction = 0;
-   if(self_rank < entry_band && self_roc > 0.0)
+   if(g_cached_self_rank < entry_band && g_cached_self_roc > 0.0)
       direction = 1;                                  // top band, positive own ROC -> long
-   else if(self_rank >= count - entry_band && self_roc < 0.0)
+   else if(g_cached_self_rank >= g_cached_active_count - entry_band &&
+           g_cached_self_roc < 0.0)
       direction = -1;                                 // bottom band, negative own ROC -> short
    if(direction == 0)
       return false;
@@ -291,17 +372,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.type = (direction > 0) ? QM_BUY : QM_SELL;
-   const double entry = (direction > 0) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double entry = QM_EntryMarketPrice(req.type);
    if(entry <= 0.0)
       return false;
 
-   const double atr = Strategy_D1ATR();
-   if(atr <= 0.0)
-      return false;
-
-   const double sl_distance = atr * strategy_atr_sl_mult;
-   req.sl = QM_StopRulesStopFromDistance(_Symbol, req.type, entry, sl_distance);
+   req.sl = QM_StopATRFromValue(_Symbol,
+                                req.type,
+                                entry,
+                                g_cached_d1_atr,
+                                strategy_atr_sl_mult);
    if(req.sl <= 0.0)
       return false;
    if(req.type == QM_BUY && req.sl >= entry)
@@ -315,96 +394,57 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
-   if(strategy_trail_atr_mult <= 0.0)
+   Strategy_AdvanceWeeklyState();
+
+   if(g_cached_exit_due || g_cached_d1_atr <= 0.0)
       return;
 
-   const double atr = Strategy_D1ATR();
-   if(atr <= 0.0)
+   ulong ticket = 0;
+   if(!Strategy_SyncPositionRisk(ticket))
       return;
-   const double trail_distance = atr * strategy_trail_atr_mult;
+   if(g_last_week_key <= 0 || g_last_trail_week_key == g_last_week_key)
+      return;
+   g_last_trail_week_key = g_last_week_key;
 
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
+   const bool   is_buy     = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
+   const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+   const double current_sl = PositionGetDouble(POSITION_SL);
+   const double market     = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                    : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(open_price <= 0.0 || current_sl <= 0.0 || market <= 0.0 ||
+      g_initial_r_distance <= 0.0)
+      return;
 
-      const bool   is_buy     = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
-      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
-      const double init_sl    = PositionGetDouble(POSITION_SL);
-      const double market     = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
-                                       : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(open_price <= 0.0 || init_sl <= 0.0 || market <= 0.0)
-         continue;
+   const double open_profit = is_buy ? (market - open_price) : (open_price - market);
+   if(open_profit < g_initial_r_distance * strategy_trail_trigger_r)
+      return;
 
-      // R distance = original stop distance from entry. Only trail after the
-      // position is +trail_trigger_r in open profit.
-      const double r_distance = MathAbs(open_price - init_sl);
-      if(r_distance <= 0.0)
-         continue;
-      const double open_profit = is_buy ? (market - open_price) : (open_price - market);
-      if(open_profit < r_distance * strategy_trail_trigger_r)
-         continue;
+   const QM_OrderType side = is_buy ? QM_BUY : QM_SELL;
+   const double trail_distance = g_cached_d1_atr * strategy_trail_atr_mult;
+   const double target_sl = QM_StopRulesStopFromDistance(_Symbol,
+                                                         side,
+                                                         market,
+                                                         trail_distance);
+   if(target_sl <= 0.0)
+      return;
 
-      const double raw_sl    = is_buy ? (market - trail_distance) : (market + trail_distance);
-      const double target_sl = QM_StopRulesNormalizePrice(_Symbol, raw_sl);
-      if(target_sl <= 0.0)
-         continue;
+   // Improve-only (monotonic) — never loosen the stop.
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const bool improves = is_buy ? (target_sl > current_sl + point * 0.5)
+                                : (target_sl < current_sl - point * 0.5);
+   if(!improves)
+      return;
 
-      // Improve-only (monotonic) — never loosen the stop.
-      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-      const bool improves = is_buy ? (target_sl > init_sl + point * 0.5)
-                                   : (target_sl < init_sl - point * 0.5);
-      if(!improves)
-         continue;
-
-      QM_TM_MoveSL(ticket, target_sl, StringFormat("QM5_10305_TRAIL atr_mult=%.2f after_%.2fR",
-                                                   strategy_trail_atr_mult, strategy_trail_trigger_r));
-     }
+   QM_TM_MoveSL(ticket,
+                target_sl,
+                StringFormat("QM5_10305_TRAIL %.2fATR_AFTER_%.2fR",
+                             strategy_trail_atr_mult,
+                             strategy_trail_trigger_r));
   }
 
 bool Strategy_ExitSignal()
   {
-   if(_Period != PERIOD_W1)
-      return false;
-
-   const int dir = Strategy_OpenPositionDirection();
-   if(dir == 0)
-      return false;
-
-   // Time exit: close after N completed W1 bars regardless of rank.
-   if(strategy_time_exit_w1_bars > 0 &&
-      Strategy_OpenPositionWeeksHeld() >= strategy_time_exit_w1_bars)
-      return true;
-
-   double self_roc = 0.0;
-   int    self_rank = -1;
-   const int count = Strategy_BuildRanking(self_roc, self_rank);
-   if(count <= 0 || self_rank < 0)
-      return false;            // no ranking info this bar -> hold
-
-   int exit_band = (int)MathFloor(count * strategy_exit_percentile);
-   if(exit_band < 1)
-      exit_band = 1;
-
-   if(dir > 0)
-     {
-      // Long exits when it leaves the top exit-band OR its ROC turns negative.
-      if(self_rank >= exit_band || self_roc < 0.0)
-         return true;
-     }
-   else
-     {
-      // Short exits when it leaves the bottom exit-band OR its ROC turns positive.
-      if(self_rank < count - exit_band || self_roc > 0.0)
-         return true;
-     }
-   return false;
+   return g_cached_exit_due;
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
@@ -436,10 +476,30 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   if(!Strategy_InputsValid())
+     {
+      QM_LogEvent(QM_ERROR, "SETUP_CONFIG_INVALID", "{\"component\":\"strategy_inputs\"}");
+      return INIT_PARAMETERS_INCORRECT;
+     }
+
+   const int symbol_index = Strategy_CurrentSymbolIndex();
+   if(_Period != PERIOD_W1 || symbol_index < 0 ||
+      qm_magic_slot_offset != g_universe_slots[symbol_index])
+     {
+      QM_LogEvent(QM_ERROR,
+                  "SETUP_SYMBOL_SLOT_MISMATCH",
+                  StringFormat("{\"symbol\":\"%s\",\"period\":%d,\"slot\":%d}",
+                               _Symbol,
+                               (int)_Period,
+                               qm_magic_slot_offset));
+      return INIT_PARAMETERS_INCORRECT;
+     }
+
    // Basket EA: register the universe and pre-load W1 history so foreign-symbol
    // iClose returns real data in the tester (FW7/FW9).
    QM_SymbolGuardInit(g_universe_symbols);
    QM_BasketWarmupHistory(g_universe_symbols, PERIOD_W1, strategy_roc_lookback_w1 + 5);
+   QM_BasketWarmupHistory(g_universe_symbols, PERIOD_D1, strategy_atr_period + 10);
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10305\",\"ea\":\"narang-xmom\"}");
    return INIT_SUCCEEDED;
@@ -453,19 +513,15 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any per-tick guard can
+   // return. QM_KillSwitchCheck retains a compatibility fallback.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
-      return;
-
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -481,7 +537,9 @@ void OnTick()
       for(int i = PositionsTotal() - 1; i >= 0; --i)
         {
          const ulong ticket = PositionGetTicket(i);
-         if(!PositionSelectByTicket(ticket))
+         if(ticket == 0 || !PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
@@ -489,12 +547,23 @@ void OnTick()
         }
      }
 
+   // News filters gate new entries only; management and exits above continue
+   // through blackout windows.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
