@@ -118,9 +118,10 @@ single carrier recreates an existing family.
   market structure.
 - R2: PASS. Calendar endpoints, ten-year bounded estimator, five-pair floor,
   direction, attempt state, shared risk, hard stops, and exits are fixed.
-- R3: PASS. Native `XTIUSD.DWX` and `XBRUSD.DWX` D1 routes are already used
-  by local V5 builds; Q02 remains responsible for synchronized-history and
-  fill sufficiency.
+- R3: FAIL after Q02. `XTIUSD.DWX` is established, but `XBRUSD.DWX` is absent
+  from `dwx_symbol_matrix.csv`, `dwx_symbol_history_ranges.csv`, the DXZ venue
+  cost route, and the executing tester symbol universe. Legacy local builds
+  did not establish current data or live tradability.
 - R4: PASS. Runtime uses deterministic OHLC, ATR, calendar, symbol, deal,
   position, and framework state only; no trained model, external signal,
   grid, martingale, scale-in, or pyramid is used.
@@ -138,3 +139,9 @@ magic rows, one V5 build, one logical-basket `RISK_FIXED` setfile, one basket
 manifest, and one paced Q02 enqueue. It does not authorize a live setfile,
 AutoTrading, `T_Live`, a deploy or T_Live manifest, portfolio admission, a
 portfolio-gate change, or a correlation waiver.
+
+Q02 work item `ec5fd9b7-8923-498f-a9fd-0a29d8a31d4c` subsequently produced a
+valid zero-trade report after basket warm-up loaded only WTI and the tester
+reported that `XBRUSD.DWX` did not exist. That is a setup/data-route failure,
+not evidence about the source hypothesis. No rerun is valid until a tradable,
+validated Brent route and cost contract exist.

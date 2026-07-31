@@ -20,9 +20,10 @@ benchmark, and shorts the weaker benchmark.
 This is a two-leg directional-neutral construction, not a claim of dollar,
 beta, volatility, portfolio, or certified neutrality. Q01 is `PASS`. Q02 has
 exactly one work item, `ec5fd9b7-8923-498f-a9fd-0a29d8a31d4c`. It was
-initially `pending`, attempt 0, and unclaimed; a later read-only check found
-the paced fleet had claimed it on `T9`, still with no verdict. No manual
-backtest or downstream result is claimed.
+initially `pending`, attempt 0, and unclaimed, then the paced fleet claimed it
+on `T9`. The completed database verdict was `ZERO_TRADES`; bounded recovery
+classified the run `SETUP_DATA_MISSING` because Brent was absent from the
+tester and canonical DXZ route. This is not a strategy result or certification.
 
 ## Source And Approval Boundary
 
@@ -144,11 +145,11 @@ evidence.
 |---|---|
 | MQ5 | `7701a1179ffa12ad0914493bcdea8297f33b35fe929a33b201372aeda22dc1ba` |
 | EX5 | `9c6fc99b43cd92f51733692d15a42f25c5aa0cb44399dd23965fd0c212cccbe9` |
-| SPEC | `22903a613fb5497abda862707602b1c0e5e80b8fb9304a4f29dd01b9e05ca930` |
+| SPEC | `f63b520971c2062f0558a9aa2151275d780505589136822170df9f577e1f6b1d` |
 | backtest setfile | `d7427282e21cd669e99c2b22c66574c48171a7fd04470a61caec46c03bd04977` |
 | basket manifest | `6ac3c5d64df1550eaf76cb964a9a0c9b8e1131f54f472bfbe139de21e082f103` |
-| canonical/approved/EA-local card | `75ef2dffb04eb6ac1cb0b2e8ececbe3ec337f7545e2811a67931c7ca71eb8603` |
-| composite source packet | `ac92a03a45d47d6fb55ff81214db0e0bfd0a7941c1da927c06cfb524842b23d8` |
+| canonical/approved/EA-local card | `f1b002dd9ad9ec8b36675ce65c49655fa21294a82c3cfd87a2e9e3d877002914` |
+| composite source packet | `232fbb2d3a70b6eabe3409003934676f939448c9b459a3941816f4d28b364baa` |
 | source-router record | `abdf0027038283001220658556b7f6fe086605e16501c276617c6a6c71fcfb0b` |
 
 All three card copies are byte-identical.
@@ -167,8 +168,8 @@ the lock and inserted exactly one row:
 - setfile:
   `QM5_20190_oilbench-cal_QM5_20190_WTI_BRENT_CAL_D1_D1_backtest.set`;
 - created: `2026-07-31T23:34:45+00:00`;
-- status at enqueue confirmation: `pending`, attempt 0, unclaimed; a later
-  read-only check found `active`, claimed by `T9`, with no verdict;
+- status at enqueue confirmation: `pending`, attempt 0, unclaimed; the paced
+  fleet later completed it with database verdict `ZERO_TRADES`;
 - queue at apply: 2,134 pending against the 7,000-row queue ceiling.
 
 The immediate capacity scan found five non-live factory terminal processes,
@@ -176,11 +177,17 @@ below the seven-process tester ceiling. The separate
 `C:/QM/mt5/T_Live/MT5_Base/terminal64.exe` process was excluded. This work did
 not launch a tester or terminal.
 
+The completed run is classified in
+`docs/ops/evidence/2026-08-01_qm5_20190_zero_trades_setup_investigation.md`.
+The tester reported `symbol XBRUSD.DWX does not exist`, and the framework log
+showed basket warm-up requested two symbols but loaded one. The run therefore
+stops at the setup layer and does not evaluate entry logic or economics.
+
 ## Safety And Next Gate
 
 No live setfile, AutoTrading toggle, `T_Live` mutation, deploy manifest,
 T_Live manifest, portfolio-gate change, portfolio admission, or correlation
-waiver was created. Q02 must now falsify density, combined two-leg economics,
-costs, deterministic execution, shared-risk sizing, and package integrity.
-Later unchanged gates must independently establish realized book decorrelation
-before the candidate can be called certified or added to the portfolio.
+waiver was created. No rerun or mechanics change was made. Further testing is
+blocked until an OWNER-authorized venue-tradable Brent route, validated history,
+and cost contract exist; changing the carrier is a new card variant. The
+candidate is not certified and cannot be added to the portfolio.

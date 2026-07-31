@@ -109,4 +109,4 @@ change, `T_Live` mutation, or AutoTrading action.
 
 | version | date | reason | next phase |
 |---|---|---|---|
-| v1 | 2026-08-01 | initial WTI/Brent same-calendar relative basket | Q02 work item `ec5fd9b7-8923-498f-a9fd-0a29d8a31d4c` queued |
+| v1 | 2026-08-01 | initial WTI/Brent same-calendar relative basket | Q02 `INFRA_FAIL`: `XBRUSD.DWX` setup data missing; no rerun |

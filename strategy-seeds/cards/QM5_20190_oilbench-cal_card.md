@@ -59,17 +59,21 @@ risk_class: high
 ml_required: false
 r1_track_record: PASS
 r2_mechanical: PASS
-r3_data_available: PASS
+r3_data_available: FAIL
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: QUEUED
+q02_status: INFRA_FAIL
 q02_work_item_id: ec5fd9b7-8923-498f-a9fd-0a29d8a31d4c
+q02_observed_verdict: ZERO_TRADES
+q02_recovery_classification: SETUP_DATA_MISSING
+q02_recovery_evidence: docs/ops/evidence/2026-08-01_qm5_20190_zero_trades_setup_investigation.md
+post_q02_blocker: "XBRUSD.DWX is absent from the DXZ symbol matrix, history-range registry, and tester symbol universe; no same-lineage rerun is valid until an OWNER-authorized tradable Brent route, history, and cost contract exist."
 review_focus: "Falsify a recurring WTI-versus-Brent calendar-risk-premium spread that adds regional crude-benchmark exposure rather than another index, metal, or XNG directional carrier; profitability, neutrality, and decorrelation are not imported."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 hard_rules_at_risk: [basket_atomicity, synchronized_history, aggregate_fixed_risk, restart_attempt_state, magic_schema, cfd_futures_basis, regional_basis_break, narrow_cross_section, portfolio_correlation]
-g0_approval_reasoning: "OWNER commodity/energy sleeve mission 2026-08-01: R1 peer-reviewed same-calendar method plus target-market and exchange/agency spread evidence; R2 locked synchronized calendar estimator, relative rank, shared risk, stops, attempt state, monthly exit, and repair; R3 established XTI/XBR D1 V5 routes; R4 native deterministic arithmetic only. Deterministic dedup CLEAN and nearest WTI/Brent systems manually distinct."
+g0_approval_reasoning: "OWNER commodity/energy sleeve mission 2026-08-01: R1 peer-reviewed same-calendar method plus target-market and exchange/agency spread evidence; R2 locked synchronized calendar estimator, relative rank, shared risk, stops, attempt state, monthly exit, and repair; R3 was initially inferred from local XTI/XBR builds but Q02 subsequently invalidated the XBR route and blocks further testing; R4 native deterministic arithmetic only. Deterministic dedup CLEAN and nearest WTI/Brent systems manually distinct."
 ---
 
 # QM5_20190 WTI/Brent Same-Calendar Relative Seasonality
@@ -258,13 +262,27 @@ binding risks.
   evidence, with exchange and agency support for the spread structure.
 - [x] R2: fixed synchronized estimator, relative rank, direction, shared
   risk, stops, attempt state, monthly exit, and repair rules.
-- [x] R3: established `XTIUSD.DWX` and `XBRUSD.DWX` D1 V5 routes; Q02 tests
-  current synchronized history and fills.
+- [ ] R3: FAIL after Q02. `XTIUSD.DWX` is established, but `XBRUSD.DWX` is
+  absent from the DXZ symbol matrix, history-range registry, and T9 tester
+  universe. Local legacy builds did not prove an executable Brent route.
 - [x] R4: deterministic native price/calendar arithmetic only; no banned
   indicator, trained model, external runtime feed, grid, martingale, or
   pyramiding.
 - [x] Dedup: deterministic verdict `CLEAN`; three WTI/Brent spread families
   and the XTI/XNG same-calendar sibling were manually resolved.
+
+## Post-Q02 Setup Block
+
+Work item `ec5fd9b7-8923-498f-a9fd-0a29d8a31d4c` produced a valid Model 4
+report with zero trades, but the tester log records `symbol XBRUSD.DWX does
+not exist` and basket warm-up loaded one of two symbols. The run is classified
+`SETUP_DATA_MISSING`, not a strategy-economic result. No entry or order-path
+event was observable.
+
+No same-lineage repair or rerun was applied. A valid recovery requires an
+OWNER-authorized, venue-tradable Brent route with validated history and costs;
+changing to an XTI-only or different-carrier mechanic requires a new approved
+card variant.
 
 ## Framework Alignment
 
@@ -290,11 +308,12 @@ correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-01 | initial WTI/Brent same-calendar relative basket | G0 | APPROVED |
 | v1-q02 | 2026-08-01 | strict build recorded and logical basket enqueued | Q02 | QUEUED |
+| v1-q02-result | 2026-08-01 | zero-trade run stopped at missing Brent setup layer | Q02 | INFRA_FAIL / SETUP_DATA_MISSING |
 
 ## Pipeline Phase Status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
-| G0 Research Intake | 2026-08-01 | APPROVED; R1-R4 PASS | this card and governed source packet |
+| G0 Research Intake | 2026-08-01 | APPROVED at intake; R3 later invalidated | this card, governed source packet, and Q02 setup evidence |
 | Q01 Build Validation | 2026-08-01 | PASS | `D:/QM/reports/framework/21/build_check_20260731_233323.json`; strict compile `D:/QM/reports/compile/20260731_233639/summary.csv` |
-| Q02 Baseline Screening | 2026-08-01 | QUEUED | work item `ec5fd9b7-8923-498f-a9fd-0a29d8a31d4c` |
+| Q02 Baseline Screening | 2026-08-01 | INFRA_FAIL (`ZERO_TRADES` observed) | `D:/QM/reports/work_items/ec5fd9b7-8923-498f-a9fd-0a29d8a31d4c/QM5_20190/20260731_233806/summary.json`; recovery record `docs/ops/evidence/2026-08-01_qm5_20190_zero_trades_setup_investigation.md` |
