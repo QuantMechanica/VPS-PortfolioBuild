@@ -15376,3 +15376,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20072,4h-box-frankfurt-london-r1-recovery,3,EURJPY.DWX,200720003,2026-07-31,Codex,active
 11364,robo-gbpjpy-night-range,0,GBPJPY.DWX,113640000,2026-07-31,Codex,active
 20092,pricebob-refbar-breakout-correlated-metal-xagusd,0,XAGUSD.DWX,200920000,2026-07-31,Codex,active
+20069,pricebob-eodflat-session-breakout-xtiusd,0,XTIUSD.DWX,200690000,2026-07-31,Codex,active
+20068,pricebob-bounded-fixedr-intraday-ws30,0,WS30.DWX,200680000,2026-07-31,Codex,active
+12433,ea31337-ichi,0,EURJPY.DWX,124330000,2026-07-31,Codex,active
+12433,ea31337-ichi,1,GBPJPY.DWX,124330001,2026-07-31,Codex,active
+12433,ea31337-ichi,2,GDAXI.DWX,124330002,2026-07-31,Codex,active
+12433,ea31337-ichi,3,NDX.DWX,124330003,2026-07-31,Codex,active
+12433,ea31337-ichi,4,XAUUSD.DWX,124330004,2026-07-31,Codex,active
