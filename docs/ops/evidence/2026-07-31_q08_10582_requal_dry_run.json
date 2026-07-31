@@ -5,25 +5,25 @@
     "parser_all_four_setfiles: setfile_ablation_02: ValueError: duplicate strategy parameter strategy_fast_ema_period: C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_02.set",
     "implementation_review: Claude implementation review is not APPROVED in the exception contract",
     "apply_window: FACTORY_OFF flag missing",
-    "apply_window: active work-item count is 4, expected 0"
+    "apply_window: active work-item count is 6, expected 0"
   ],
   "exception_contract": {
     "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-31_q08_10582_requal_exception.json",
-    "sha256": "ef4567965985722290a5a417ca12281b5c43124b405cddc4c56cb4363d0dc4b6"
+    "sha256": "fe1cb63aa5c39028007d0072af1b7532991c6215a5f2502446616b1ba6885ef8"
   },
   "gates": {
     "apply_window": {
-      "active_work_items": 4,
+      "active_work_items": 6,
       "blockers": [
         "FACTORY_OFF flag missing",
-        "active work-item count is 4, expected 0"
+        "active work-item count is 6, expected 0"
       ],
       "factory_off": null,
       "status": "BLOCKED"
     },
     "archive_required": {
       "blockers": [],
-      "destination": "D:\\QM\\reports\\work_items\\_requal_archive\\95015420-11d0-4c11-bb98-25fa2a361048\\exception_ef45679659857222",
+      "destination": "D:\\QM\\reports\\work_items\\_requal_archive\\95015420-11d0-4c11-bb98-25fa2a361048\\exception_fe1cb63aa5c39028",
       "old_invalid_aggregate": {
         "bytes": 12886,
         "path": "D:\\QM\\reports\\work_items\\95015420-11d0-4c11-bb98-25fa2a361048\\QM5_10582\\Q08\\XAUUSD_DWX\\aggregate.json",
@@ -36,52 +36,60 @@
     "artifact_bindings": {
       "artifacts": [
         {
-          "bytes": 46575,
+          "bytes": 47927,
           "path": "C:\\QM\\repo\\tools\\strategy_farm\\q08_single_target_requal.py",
           "role": "controller_source",
-          "sha256": "1c632ef818f6883a5af954f4088fa9022e64b7094443f163deb95175876585e0"
+          "sha256": "440bf6e555e7e4b0a35d7bcb7250bc6dd3e52915d3f6c231cb9845701383fd9c",
+          "sha256_basis": "UTF8_TEXT_LF_NORMALIZED"
         },
         {
-          "bytes": 48232,
+          "bytes": 47186,
           "path": "C:\\QM\\repo\\framework\\scripts\\q08_5_neighborhood_runner.py",
           "role": "parser_source",
-          "sha256": "35a58983a3269f8821bb0b17f0ee6cc67109526bc68533fbdd08e077cf64bb48"
+          "sha256": "7580245a3065a7b143d7d07f8949ce6bc3b9de5dd89cd3f3b3bc4d670f0fef52",
+          "sha256_basis": "UTF8_TEXT_LF_NORMALIZED"
         },
         {
           "bytes": 13012,
           "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\QM5_10582_mql5-ema-pred.mq5",
           "role": "mq5",
-          "sha256": "a7cbabb034a788e483bb882d5e6160e33cddf20f558ca91f6bbac3ca030314d9"
+          "sha256": "a7cbabb034a788e483bb882d5e6160e33cddf20f558ca91f6bbac3ca030314d9",
+          "sha256_basis": "RAW_BYTES"
         },
         {
           "bytes": 322308,
           "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\QM5_10582_mql5-ema-pred.ex5",
           "role": "ex5",
-          "sha256": "ed764f69df58b0e58f45b6d56825e453127e803b98b2f4ba778924faf90b8603"
+          "sha256": "ed764f69df58b0e58f45b6d56825e453127e803b98b2f4ba778924faf90b8603",
+          "sha256_basis": "RAW_BYTES"
         },
         {
           "bytes": 770,
           "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest.set",
           "role": "setfile_base",
-          "sha256": "082028275fbb0870d5e0665f5c3131d2d360bb8ff36597aada955c3692eb9d04"
+          "sha256": "082028275fbb0870d5e0665f5c3131d2d360bb8ff36597aada955c3692eb9d04",
+          "sha256_basis": "RAW_BYTES"
         },
         {
           "bytes": 1008,
           "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_00.set",
           "role": "setfile_ablation_00",
-          "sha256": "8d47c4cc8191e067af31920bceb3cdcb1af2ebea63b4ddb8df954b9a975cb4f3"
+          "sha256": "8d47c4cc8191e067af31920bceb3cdcb1af2ebea63b4ddb8df954b9a975cb4f3",
+          "sha256_basis": "RAW_BYTES"
         },
         {
           "bytes": 1008,
           "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_01.set",
           "role": "setfile_ablation_01",
-          "sha256": "f2bf459a3255c09eaf4b2333d870eb1a7d06462132c18e0d85dc3a06ac73d5d6"
+          "sha256": "f2bf459a3255c09eaf4b2333d870eb1a7d06462132c18e0d85dc3a06ac73d5d6",
+          "sha256_basis": "RAW_BYTES"
         },
         {
           "bytes": 1008,
           "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_02.set",
           "role": "setfile_ablation_02",
-          "sha256": "477bc9142a10fc09e590d32aad14e056af0710d520f35882525313e4babc6cf1"
+          "sha256": "477bc9142a10fc09e590d32aad14e056af0710d520f35882525313e4babc6cf1",
+          "sha256_basis": "RAW_BYTES"
         }
       ],
       "blockers": [],
@@ -89,7 +97,7 @@
     },
     "git_provenance": {
       "blockers": [],
-      "head_commit": "9c6db6bc2b53eca381e90b197cd44ac02daa38f2",
+      "head_commit": "2aa9a704b79f4934a56bd70199fffc8a763c60ab",
       "parser_file_sha256_at_fix_commit": "7580245a3065a7b143d7d07f8949ce6bc3b9de5dd89cd3f3b3bc4d670f0fef52",
       "parser_fix_commit": "12629f50717461e0a66c3af5b466f1d8fcc11e59",
       "reviewed_controller_commit": null,
@@ -172,7 +180,7 @@
       "status": "PASS"
     }
   },
-  "generated_at_utc": "2026-07-31T13:57:01Z",
+  "generated_at_utc": "2026-07-31T13:59:37Z",
   "global_invariant": {
     "global_recovery_tool_modified": false,
     "name": "MNT-007_Q08_INVALID_REPORT_NON_RETRYABLE_UNCHANGED",
