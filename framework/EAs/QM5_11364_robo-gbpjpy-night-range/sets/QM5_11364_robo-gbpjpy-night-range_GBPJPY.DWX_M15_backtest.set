@@ -1,0 +1,36 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11364
+; ea_slug:      robo-gbpjpy-night-range
+; ea_version:   v5.0
+; set_version:  s20260731-001
+; symbol:       GBPJPY.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-31
+;==========================================================
+qm_ea_id=11364
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11364_robo-gbpjpy-night-range.md
+strategy_session_start_hour=22
+strategy_session_end_hour=7
+strategy_close_hour=17
+strategy_buffer_pips=5
+strategy_range_cap_pips=70
+strategy_tp_multiplier=1.0
+strategy_tp_min_pips=20
+strategy_tp_max_pips=60
+strategy_sl_cap_pips=50
+strategy_cancel_hours=4
+strategy_spread_cap_pips=30
+strategy_skip_monday=true
+strategy_news_window_minutes=120
