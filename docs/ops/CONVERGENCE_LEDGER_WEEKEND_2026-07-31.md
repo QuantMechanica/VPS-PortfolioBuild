@@ -23,11 +23,12 @@ The Obsidian vault may be used as an exchange document.
 
 | # | Topic | Author (R1) | Reviewer (R1) | State | Rounds / agreement |
 |---|---|---|---|---|---|
-| A | Gate-taxonomy single-source: cockpit -> phase_ids, add Q00, purge stale Q14 (farmctl + state_name_adapter), wire `gate_manifest.v1.json` as validated single source | Claude (spec: `CODEX_BRIEF_2026-07-31_gate_taxonomy_singlesource.md`) | Codex | R1 dispatched | — |
-| B | Live-book kill-switch baselines 10/24 (pulse ALARM): mechanism, gap plan, safe window, apply | Claude (plan after recon) | Codex | recon running (read-only workflow) | — |
-| C | FTMO Book3 selection-sealed OOS + event-complete shared-equity trace (`FTMO_BOOK3_SEALED_VALIDATION_DESIGN_2026-07-31.md`) | Claude (design) | Codex | R1 dispatched | — |
-| D | Q08 frontier queue steering: 10582 (setfile strategy_*), 20039 Q06 INFRA_FAIL, 20007 Q02 GDAXI/NDX | Claude (steering plan after recon) | Codex | recon running | — |
-| E | New motors 20183 / 20184 / 11592 (Q02) | — | — | watch only | — |
+| A | Gate-taxonomy single-source: cockpit -> phase_ids, add Q00, purge stale Q14 (farmctl + state_name_adapter), wire `gate_manifest.v1.json` as validated single source | Claude (spec: `CODEX_BRIEF_2026-07-31_gate_taxonomy_singlesource.md`) | Codex | **CLOSED** — implemented `e4d31aed3`, Claude re-verified (40 tests, Q00 rendered, Q14 gone) | R1: **92 %** |
+| B | Live-book kill-switch baselines 10/24 (pulse ALARM): mechanism, gap plan, safe window, apply | Claude (plan after recon) | Codex | Phase 1 **EXECUTED** by Claude (divergence 20->0, +2 deploys, backup 54 files); Codex verification ticket open; Phase 2 = Sunday OWNER+Claude arming | R1: **94 %** |
+| C | FTMO Book3 conservative-bound diagnostic (v1 "sealed validation" retitled after R1: seen holdout cannot be retro-sealed, n_trials>=165) | Claude (design v2: `FTMO_BOOK3_CONSERVATIVE_BOUND_DESIGN_V2_2026-07-31.md`) | Codex | R2 dispatched | R1: **62 %** |
+| D | Q08 frontier queue steering: 10582 (parser fallback, NOT byte edits), 20039 Q06 (wave blocked 4/5), 20007 (priority stale; only NDX actionable) | Claude | Codex | R1 rejected the plan (correctly); parser-fallback implementation ticket dispatched; 3 OWNER decisions pending (NDX flag displacement, single-target Q08 requal mechanism, Sunday Factory-OFF window) | R1: **28 %** |
+| E | New motors 20183 / 20184 / 11592 (Q02) | — | — | watch only (20184 active on T8; 11592 GBPUSD Q04 merit-FAIL; EURUSD self-healed) | — |
+| — | MNT-003 (predates ledger): apply v1 failed 0x80070002 -> exact rollback; R2 root cause = literal apostrophes in raw -Arguments (H1 env-block refuted with evidence) | Codex diagnosis | Claude | apply-v2 ticket dispatched (plan v2 WhatIf 5/5) | R2 diagnosis APPROVED |
 
 ## Round log
 
