@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        11174
 ; ea_slug:      weiss-7rev
@@ -10,7 +10,7 @@
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   d977d32654d498a7361cc99d062451b3f3e858df287e0b123d76f084d8399d3c
 ; author:       Development
 ; date:         2026-06-07
 ;==========================================================
