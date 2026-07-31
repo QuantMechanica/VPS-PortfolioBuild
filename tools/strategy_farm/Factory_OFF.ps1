@@ -324,7 +324,13 @@ function Assert-PublishedFactoryOffRecord {
     }
     try {
         [byte[]]$raw = [IO.File]::ReadAllBytes($factoryOffFlagPath)
-        $record = ([Text.UTF8Encoding]::new($false, $true)).GetString($raw) |
+        $offset = 0
+        if ($raw.Length -ge 3 -and $raw[0] -eq 0xef -and
+            $raw[1] -eq 0xbb -and $raw[2] -eq 0xbf) {
+            $offset = 3
+        }
+        $record = ([Text.UTF8Encoding]::new($false, $true)).GetString(
+            $raw, $offset, $raw.Length - $offset) |
             ConvertFrom-Json -ErrorAction Stop
     } catch {
         throw "published FACTORY_OFF.flag cannot be verified: $($_.Exception.Message)"
