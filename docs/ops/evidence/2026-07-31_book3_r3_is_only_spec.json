@@ -1,0 +1,140 @@
+{
+  "windows": {
+    "is_start_utc": "2017-10-08T22:00:00Z",
+    "is_end_utc": "2022-09-15T21:59:59Z",
+    "evaluation_start_utc": "2022-09-15T22:00:00Z",
+    "evaluation_end_utc": "2025-12-30T22:59:59Z"
+  },
+  "inputs": {
+    "streams": [
+      {
+        "path": "D:\\QM\\reports\\work_items\\1e9a2b35-e92b-585f-9bf4-b8dee0a95c27\\q08_trades_9936_USDJPY_DWX.timer_v2.jsonl",
+        "sha256": "1593ee930e1550236f1c851805d3a71ccdb4c2a244de6994b3dbbf4bf450f7ff",
+        "sleeve_id": "9936",
+        "symbol": "USDJPY.DWX",
+        "expected_rows": 1143,
+        "lineage": [
+          {
+            "role": "summary",
+            "path": "D:\\QM\\reports\\work_items\\1e9a2b35-e92b-585f-9bf4-b8dee0a95c27\\QM5_9936\\20260729_234738\\summary.json",
+            "sha256": "d7109154486d5ec7ce8b7fb11a19b2a809bd9c3332868278c2dddc8093b97717"
+          },
+          {
+            "role": "report",
+            "path": "D:\\QM\\reports\\work_items\\1e9a2b35-e92b-585f-9bf4-b8dee0a95c27\\QM5_9936\\20260729_234738\\raw\\run_01\\report.htm",
+            "sha256": "fab231b70a53bf41173dccc8f4a1dd46cf46a2302cc0f06d28c54905abeb9253"
+          },
+          {
+            "role": "receipt",
+            "path": "D:\\QM\\strategy_farm\\artifacts\\ftmo_book3_v2_full_lifecycle_20260730_a02\\runtime\\r0_40573cd720d5_runner_receipt.json",
+            "sha256": "4c8a19073504728c4531ef9139a08badfd77308f18729c8d27a10ba48a28e768"
+          },
+          {
+            "role": "evaluation_manifest",
+            "path": "D:\\QM\\strategy_farm\\artifacts\\ftmo_book3_v2_full_lifecycle_20260730_a02\\standalone_diagnostic_f8593cd4b\\evaluation_manifest.json",
+            "sha256": "fdd26cc9d794c8420ab2f2914aa147f60dc3bdc3a7c4df8bd3c05d2ad91081ab"
+          }
+        ]
+      },
+      {
+        "path": "D:\\QM\\reports\\work_items\\298079e0-d162-5a86-ab2f-530b3f319f22\\q08_trades_10145_XAUUSD_DWX.timer_v2.jsonl",
+        "sha256": "cba8eac2aab23b68c6846ac7848e7da818cc4608912a9dd83e4f89e75d4af425",
+        "sleeve_id": "10145",
+        "symbol": "XAUUSD.DWX",
+        "expected_rows": 291,
+        "lineage": [
+          {
+            "role": "summary",
+            "path": "D:\\QM\\reports\\work_items\\298079e0-d162-5a86-ab2f-530b3f319f22\\QM5_10145\\20260730_001007\\summary.json",
+            "sha256": "2bea34250474f6f31912158c781c7d85de87c4f7894297089c669b30f85c9620"
+          },
+          {
+            "role": "report",
+            "path": "D:\\QM\\reports\\work_items\\298079e0-d162-5a86-ab2f-530b3f319f22\\QM5_10145\\20260730_001007\\raw\\run_01\\report.htm",
+            "sha256": "325467c2d139a04966ae9a2dcf775bb98b80ca19c8c77d0a4e8030e2d2547daf"
+          },
+          {
+            "role": "receipt",
+            "path": "D:\\QM\\strategy_farm\\artifacts\\ftmo_book3_v2_full_lifecycle_20260730_a02\\runtime\\r1_40573cd720d5_runner_receipt.json",
+            "sha256": "caadc31ea7e4603b000af3206868279c68d49c960fa7b4c14667bb0cfb42b3cf"
+          },
+          {
+            "role": "evaluation_manifest",
+            "path": "D:\\QM\\strategy_farm\\artifacts\\ftmo_book3_v2_full_lifecycle_20260730_a02\\standalone_diagnostic_f8593cd4b\\evaluation_manifest.json",
+            "sha256": "fdd26cc9d794c8420ab2f2914aa147f60dc3bdc3a7c4df8bd3c05d2ad91081ab"
+          }
+        ]
+      },
+      {
+        "path": "D:\\QM\\reports\\work_items\\2c92e30e-df68-51fe-b1f8-d90901f43dc8\\q08_trades_13108_XTIUSD_DWX.timer_v2.jsonl",
+        "sha256": "136cc04da36b766572843cd496a3770aca694d2eb279f389be4cc2d36ca72179",
+        "sleeve_id": "13108",
+        "symbol": "XTIUSD.DWX",
+        "expected_rows": 548,
+        "lineage": [
+          {
+            "role": "summary",
+            "path": "D:\\QM\\reports\\work_items\\2c92e30e-df68-51fe-b1f8-d90901f43dc8\\QM5_13108\\20260730_041526\\summary.json",
+            "sha256": "adc7785eb438d9b74912917e18fa5fb905958fec17856629cd032537ce6670ad"
+          },
+          {
+            "role": "report",
+            "path": "D:\\QM\\reports\\work_items\\2c92e30e-df68-51fe-b1f8-d90901f43dc8\\QM5_13108\\20260730_041526\\raw\\run_01\\report.htm",
+            "sha256": "6656847def8114a8e50efc6ac2792ec165154307da163d4c98f66097b4279974"
+          },
+          {
+            "role": "receipt",
+            "path": "D:\\QM\\strategy_farm\\artifacts\\ftmo_book3_v2_full_lifecycle_20260730_a02\\standalone_diagnostic_f8593cd4b\\run_receipt.json",
+            "sha256": "742a86159c25c03ca9f9722740301bf4b4c1881be0a331570a7a22f5f7415c68"
+          },
+          {
+            "role": "evaluation_manifest",
+            "path": "D:\\QM\\strategy_farm\\artifacts\\ftmo_book3_v2_full_lifecycle_20260730_a02\\standalone_diagnostic_f8593cd4b\\evaluation_manifest.json",
+            "sha256": "fdd26cc9d794c8420ab2f2914aa147f60dc3bdc3a7c4df8bd3c05d2ad91081ab"
+          }
+        ]
+      }
+    ],
+    "is_streams": [
+      {
+        "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-31_book3_r3_is_9936_usdjpy.jsonl",
+        "sha256": "23da92262b8034ed235c669c82f0d0e527053a2563559b65fd732fcabcda4b7a",
+        "sleeve_id": "9936",
+        "symbol": "USDJPY.DWX",
+        "expected_rows": 654,
+        "parent_stream_sha256": "1593ee930e1550236f1c851805d3a71ccdb4c2a244de6994b3dbbf4bf450f7ff",
+        "derivation": "IS_ONLY_ENTRY_AND_CLOSE_WITHIN_WINDOW"
+      },
+      {
+        "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-31_book3_r3_is_10145_xauusd.jsonl",
+        "sha256": "48ec554bca0de0f1ab3e82253053587635e61d9b711031551a9d406d66741c95",
+        "sleeve_id": "10145",
+        "symbol": "XAUUSD.DWX",
+        "expected_rows": 150,
+        "parent_stream_sha256": "cba8eac2aab23b68c6846ac7848e7da818cc4608912a9dd83e4f89e75d4af425",
+        "derivation": "IS_ONLY_ENTRY_AND_CLOSE_WITHIN_WINDOW"
+      },
+      {
+        "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-31_book3_r3_is_13108_xtiusd.jsonl",
+        "sha256": "eec5e17dd582a07531a193a7442bb6128c2dea91926672ca6fa69dc81990433c",
+        "sleeve_id": "13108",
+        "symbol": "XTIUSD.DWX",
+        "expected_rows": 298,
+        "parent_stream_sha256": "136cc04da36b766572843cd496a3770aca694d2eb279f389be4cc2d36ca72179",
+        "derivation": "IS_ONLY_ENTRY_AND_CLOSE_WITHIN_WINDOW"
+      }
+    ],
+    "cost_snapshot": {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-30_ftmo_book3_symbol_cost_snapshot.json",
+      "sha256": "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280"
+    }
+  },
+  "bootstrap": {
+    "replicates": 2000,
+    "seed": 20260731,
+    "alpha": 0.05,
+    "minimum_block_days": 20,
+    "max_lag_days": 60
+  },
+  "prepared_at_utc": "2026-07-31T14:25:00Z"
+}
