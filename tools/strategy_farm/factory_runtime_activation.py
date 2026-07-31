@@ -236,17 +236,22 @@ def _require_runtime_authorizations(payload: dict[str, Any]) -> None:
         )
 
 
-def validate_runtime_activation_decision(
+def _validate_runtime_activation_artifacts(
     *,
     repo_root: Path = REPO_ROOT,
     decision_relative_path: Path = DECISION_RELATIVE_PATH,
     digest_relative_path: Path = DIGEST_RELATIVE_PATH,
     factory_off_flag: Path | None = None,
     now_utc: dt.datetime | None = None,
+    require_artifact_provenance: bool,
 ) -> dict[str, Any]:
     repo_root = Path(repo_root).resolve()
-    decision_path = repo_root / decision_relative_path
-    digest_path = repo_root / digest_relative_path
+    decision_path = Path(decision_relative_path)
+    digest_path = Path(digest_relative_path)
+    if not decision_path.is_absolute():
+        decision_path = repo_root / decision_path
+    if not digest_path.is_absolute():
+        digest_path = repo_root / digest_path
     if not decision_path.is_file() or not digest_path.is_file():
         raise RuntimeActivationError(
             "Factory runtime activation remains hard-blocked: canonical fresh OWNER "
@@ -258,7 +263,7 @@ def validate_runtime_activation_decision(
     except (OSError, UnicodeError) as exc:
         raise RuntimeActivationError(f"runtime decision binding cannot be read: {exc}") from exc
     decision_sha256 = _sha256(decision_raw)
-    expected_sidecar = f"{decision_sha256}  {decision_relative_path.name}\n"
+    expected_sidecar = f"{decision_sha256}  {decision_path.name}\n"
     if digest_text != expected_sidecar:
         raise RuntimeActivationError("runtime decision SHA-256 sidecar mismatch")
     payload = _load_json(decision_raw, label="runtime activation decision")
@@ -394,7 +399,10 @@ def validate_runtime_activation_decision(
             raise RuntimeActivationError(f"bound FACTORY_OFF record cannot be read: {exc}") from exc
         if _sha256(flag_raw) != expected_flag_sha:
             raise RuntimeActivationError("bound FACTORY_OFF record SHA-256 mismatch")
-        flag_payload = _load_json(flag_raw.lstrip(b"\xef\xbb\xbf"), label="FACTORY_OFF record")
+        flag_payload = _load_json(
+            flag_raw.removeprefix(b"\xef\xbb\xbf"),
+            label="FACTORY_OFF record",
+        )
         if (
             flag_payload.get("schema_version") != 2
             or flag_payload.get("state") != "OFF"
@@ -430,20 +438,13 @@ def validate_runtime_activation_decision(
             expected_blob=binding["git_blob"],
         )
 
-    decision_provenance = _verify_committed_file(
-        repo_root, decision_relative_path, expected_sha256=decision_sha256
-    )
-    digest_provenance = _verify_committed_file(repo_root, digest_relative_path)
-    return {
+    result = {
         "authorized": True,
         "decision_id": decision_id,
         "activation_nonce": activation_nonce,
         "authorized_at_utc": payload["authorized_at_utc"],
         "expires_at_utc": payload["expires_at_utc"],
         "decision_sha256": decision_sha256,
-        "decision_git_commit": decision_provenance["git_commit"],
-        "decision_git_blob": decision_provenance["git_blob"],
-        "digest_sha256": digest_provenance["sha256"],
         "factory_off_flag_sha256": expected_flag_sha,
         "task_enabled_before_sha256": task_map_sha256,
         "task_enabled_before": task_enabled_before,
@@ -452,6 +453,72 @@ def validate_runtime_activation_decision(
         "restart_hold_ids": list(RESTART_HOLD_IDS),
         "worker_terminals": list(WORKER_TERMINALS),
     }
+    if require_artifact_provenance:
+        decision_provenance = _verify_committed_file(
+            repo_root, decision_relative_path, expected_sha256=decision_sha256
+        )
+        digest_provenance = _verify_committed_file(repo_root, digest_relative_path)
+        result.update(
+            {
+                "decision_git_commit": decision_provenance["git_commit"],
+                "decision_git_blob": decision_provenance["git_blob"],
+                "digest_sha256": digest_provenance["sha256"],
+            }
+        )
+    else:
+        result.update(
+            {
+                "candidate_validated": True,
+                "digest_sha256": _sha256(digest_text.encode("ascii")),
+            }
+        )
+    return result
+
+
+def validate_runtime_activation_decision(
+    *,
+    repo_root: Path = REPO_ROOT,
+    decision_relative_path: Path = DECISION_RELATIVE_PATH,
+    digest_relative_path: Path = DIGEST_RELATIVE_PATH,
+    factory_off_flag: Path | None = None,
+    now_utc: dt.datetime | None = None,
+) -> dict[str, Any]:
+    """Validate canonical, committed runtime authority for production consumers."""
+
+    return _validate_runtime_activation_artifacts(
+        repo_root=repo_root,
+        decision_relative_path=decision_relative_path,
+        digest_relative_path=digest_relative_path,
+        factory_off_flag=factory_off_flag,
+        now_utc=now_utc,
+        require_artifact_provenance=True,
+    )
+
+
+def validate_runtime_activation_candidate(
+    *,
+    repo_root: Path = REPO_ROOT,
+    decision_path: Path,
+    digest_path: Path,
+    factory_off_flag: Path | None = None,
+    now_utc: dt.datetime | None = None,
+) -> dict[str, Any]:
+    """Validate a builder candidate before publication.
+
+    Candidate artifacts cannot have commit provenance yet.  Every authorization,
+    time, preparation, flag, task-map, and source-binding guard is still applied;
+    only provenance of the two not-yet-published candidate files is deferred.
+    Production callers must use :func:`validate_runtime_activation_decision`.
+    """
+
+    return _validate_runtime_activation_artifacts(
+        repo_root=repo_root,
+        decision_relative_path=decision_path,
+        digest_relative_path=digest_path,
+        factory_off_flag=factory_off_flag,
+        now_utc=now_utc,
+        require_artifact_provenance=False,
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:

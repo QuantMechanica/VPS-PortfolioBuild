@@ -58,7 +58,7 @@ def test_factory_on_health_gate_precedes_restart_hold_release() -> None:
 
     assert load_gate < remove_off
     assert quota_start < router_start < pump_start < health_wait < release_hold
-    assert "factoryPostStartHealthTimeoutSeconds = 300" in source
+    assert "factoryPostStartHealthTimeoutSeconds = 1800" in source
     assert "Invoke-FailClosedRollbackWithLockRetention" in source[health_wait:]
 
 

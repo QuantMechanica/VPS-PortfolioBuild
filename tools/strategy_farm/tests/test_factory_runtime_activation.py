@@ -205,11 +205,21 @@ def test_missing_runtime_decision_hard_blocks(tmp_path: Path) -> None:
         fra.validate_runtime_activation_decision(repo_root=tmp_path, now_utc=NOW)
 
 
-def test_canonical_repository_has_no_runtime_activation_decision_yet() -> None:
-    assert not (ROOT / fra.DECISION_RELATIVE_PATH).exists()
-    assert not (ROOT / fra.DIGEST_RELATIVE_PATH).exists()
-    with pytest.raises(fra.RuntimeActivationError, match="remains hard-blocked"):
-        fra.validate_runtime_activation_decision(repo_root=ROOT, now_utc=NOW)
+def test_consumed_canonical_runtime_decision_expires_fail_closed() -> None:
+    decision_path = ROOT / fra.DECISION_RELATIVE_PATH
+    digest_path = ROOT / fra.DIGEST_RELATIVE_PATH
+    decision_raw = decision_path.read_bytes()
+    decision = json.loads(decision_raw.decode("utf-8"))
+    digest = digest_path.read_text(encoding="ascii")
+    assert digest == f"{_sha256(decision_raw)}  {decision_path.name}\n"
+    expires_at = dt.datetime.fromisoformat(
+        decision["expires_at_utc"].replace("Z", "+00:00")
+    )
+    with pytest.raises(fra.RuntimeActivationError, match="expired"):
+        fra.validate_runtime_activation_decision(
+            repo_root=ROOT,
+            now_utc=expires_at,
+        )
 
 
 def test_preparation_decision_is_never_runtime_authority() -> None:
