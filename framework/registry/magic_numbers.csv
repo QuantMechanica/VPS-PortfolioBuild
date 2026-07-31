@@ -15394,3 +15394,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20188,ff-rb-tue-off,0,USDJPY.DWX,201880000,2026-07-31T15:28:00Z,OWNER+Codex,active
 20188,ff-rb-tue-off,1,GBPUSD.DWX,201880001,2026-07-31T15:28:00Z,OWNER+Codex,active
 20188,ff-rb-tue-off,2,NDX.DWX,201880002,2026-07-31T15:28:00Z,OWNER+Codex,active
+20189,xauxag-calmom1,0,XAUUSD.DWX,201890000,2026-07-31T17:41:24Z,Codex,active
+20189,xauxag-calmom1,1,XAGUSD.DWX,201890001,2026-07-31T17:41:24Z,Codex,active
