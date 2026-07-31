@@ -1,0 +1,72 @@
+{
+  "blockers": [],
+  "claim_order_displacement": {
+    "displaced_ids_sha256": "4e3d53992940b9be00975cb9954092b81c8b2b15b8a75283b53fa6dc5545e987",
+    "displaced_metal": 210,
+    "displaced_q04_plus": 50,
+    "displaced_rows": 545,
+    "method": "CANONICAL_SQL_ON_TRANSACTION_TABLE_SNAPSHOT_IN_MEMORY_COPY",
+    "pending_rows_after": 2187,
+    "pending_rows_before": 2187,
+    "targets": {
+      "6dce5d90-4a59-4753-9830-9eebdaeed397": {
+        "after_rank": 7,
+        "before_rank": 552,
+        "rank_improvement": 545
+      }
+    }
+  },
+  "exact_ids": [
+    "6dce5d90-4a59-4753-9830-9eebdaeed397"
+  ],
+  "expectations": {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-31_priority_track_expectations.json",
+    "sha256": "9b5aeeb278691d187588d70ace1ff006a7b6e39b954a808afdac943fa905595f"
+  },
+  "generated_at_utc": "2026-07-31T14:39:34Z",
+  "git_provenance": {
+    "controller": {
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\set_priority_track.py",
+      "sha256": "915617ccb404d69be20da663d2b3dd92814b3a92996590ccfb91d03a0ce8c0f9",
+      "sha256_basis": "UTF8_TEXT_LF_NORMALIZED"
+    },
+    "head_commit": "ee8f1ea25e0f881b3e49bd10c143219d7b022665",
+    "registry": {
+      "path": "C:\\QM\\repo\\framework\\registry\\owner_priority_tracks.json",
+      "sha256": "6f30720bafbb152225e0c256c1aa058a6a4519cff81999945b0cbddaef39d056",
+      "sha256_basis": "UTF8_TEXT_LF_NORMALIZED"
+    },
+    "source_scope_clean": true,
+    "status": "PASS"
+  },
+  "mode": "DRY_RUN",
+  "mutation_performed": false,
+  "owner_registry": {
+    "entries": 1,
+    "kind": "owner_priority_tracks",
+    "load_status": "loaded",
+    "path": "C:\\QM\\repo\\framework\\registry\\owner_priority_tracks.json",
+    "sha256": "6f30720bafbb152225e0c256c1aa058a6a4519cff81999945b0cbddaef39d056"
+  },
+  "pipeline_verdict_changed": false,
+  "rows": [
+    {
+      "blockers": [],
+      "ea_id": "QM5_20007",
+      "payload_sha256": "d62742d555f23e60f2209fbf376daf8abe01ed62c96673465b8c73a81cc722e0",
+      "state": {
+        "claimed_by": null,
+        "payload_json": "{\"host_symbol\": \"NDX.DWX\", \"enqueued_by\": \"claude_sweep_enqueue_2026-06-10.stranded_infra_fail\", \"enqueued_at_utc\": \"2026-07-31T07:52:58+00:00\"}",
+        "phase": "Q02",
+        "status": "pending",
+        "updated_at": "2026-07-31T07:52:58+00:00",
+        "verdict": null
+      },
+      "status": "PASS",
+      "symbol": "NDX.DWX",
+      "work_item_id": "6dce5d90-4a59-4753-9830-9eebdaeed397"
+    }
+  ],
+  "schema_version": "qm.priority-track-plan/v1",
+  "status": "READY_FOR_APPLY"
+}
