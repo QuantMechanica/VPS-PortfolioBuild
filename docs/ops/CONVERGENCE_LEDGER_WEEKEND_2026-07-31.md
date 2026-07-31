@@ -91,6 +91,15 @@ source is updated to the 10-terminal cohort and (b) a fresh OWNER runtime
 decision authorizes it. Both fold into the already-mandatory Sunday rebind;
 needs explicit OWNER authorization of the 10-worker policy.
 
+## OWNER SIGNATURE (2026-07-31 evening): KS recompile deploy SIGNED
+
+OWNER wording: "passt alles, Sonntagsfenster bestätigt!" — recorded in the
+signature packet (`2026-07-31_ks_recompile_signature_packet.md`) covering the
+7-file deploy, all behavioral riders (incl. 10911 1.0 % cap), the registry
+exact-baseline exception at `6fbebcd2d`, and the revised canary gate. Approved
+window: Sunday 2026-08-02, market-closed until broker reopen. Rollback still
+requires a separate written OWNER authorization if invoked.
+
 ## OWNER approvals batch (2026-07-31, "alle Freigaben erteilt")
 
 1. **Rule-11 amendment RATIFIED:** the kill-recorder duty is merged back into

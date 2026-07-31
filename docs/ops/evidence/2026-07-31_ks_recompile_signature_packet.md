@@ -585,13 +585,19 @@ SHA-256 at review `80dd4a3971095df0e0b87b2e86f4658966b42048769ad27797c8a97ffd112
 
 **Claude review date/time:** 2026-07-31T19:02Z
 
-**OWNER decision wording:**
+**OWNER decision wording:** „passt alles, Sonntagsfenster bestätigt!"
+(Chat, 2026-07-31 — Antwort auf die vollständige Paket-Vorlage inkl.
+Verhaltens-Mitfahrer, Registry-Ausnahme mit 6fbebcd2d-Baseline und
+Gate-Revision; transkribiert durch Claude, Referenz: Session-Verlauf +
+Ledger docs/ops/CONVERGENCE_LEDGER_WEEKEND_2026-07-31.md)
 
-**OWNER name/signature:**
+**OWNER name/signature:** OWNER (Chat-Signatur 2026-07-31)
 
-**OWNER date/time:**
+**OWNER date/time:** 2026-07-31, ~21:15 lokal (19:15Z)
 
-**Approved Sunday window:**
+**Approved Sunday window:** 2026-08-02, marktgeschlossenes Fenster bis
+Broker-Reopen (~22:00–01:00 UTC): Deploy per Runbook §1, danach
+OWNER-kontrollierter T_Live-Re-Init, dann Verifikation §2 (9/9-Gate).
 
 **Separate OWNER rollback authorization wording (leave empty unless invoked):**
 
