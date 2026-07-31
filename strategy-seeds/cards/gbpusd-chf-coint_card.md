@@ -38,7 +38,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02_READY
+pipeline_phase: Q02_QUEUED
 g0_approval_reasoning: "R1 PASS single durable in-house scan lineage with OWNER-approved Chan SRC02 method; R2 PASS fixed-beta closed-D1 two-leg mechanics and explicit exits/stops; R3 PASS GBPUSD.DWX and USDCHF.DWX factory data; R4 PASS deterministic ML-free one-position-per-magic-slot basket."
 ---
 
@@ -283,3 +283,4 @@ data_requirements: standard
 |---|---|---|---|---|
 | v1 | 2026-07-31 | initial next-unbuilt FX cointegration basket | G0 | APPROVED |
 | v1 | 2026-07-31 | V5 basket build, manifest, RISK_FIXED sets, strict compile | BUILD | PASS |
+| v1 | 2026-07-31 | paced logical-basket enqueue after capacity cleared | Q02 | PENDING |

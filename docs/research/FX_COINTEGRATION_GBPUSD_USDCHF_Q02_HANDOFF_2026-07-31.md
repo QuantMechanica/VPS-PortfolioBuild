@@ -4,7 +4,8 @@ Date: 2026-07-31
 
 Branch: `agents/board-advisor`
 
-State: `Q02_READY` (not enqueued because the factory was above its CPU ceiling)
+State: `Q02_QUEUED` (logical-basket work item
+`564a8012-bb2b-4edf-a9f1-acd04b177d64`)
 
 ## Selection
 
@@ -81,3 +82,25 @@ The documented ceiling is seven factory backtests. No Q02 work item, smoke
 test, backtest, terminal launch, T_Live change, portfolio-gate change, or live
 manifest change was made. Enqueue the single logical-basket Q02 only after
 active factory load is below the ceiling.
+
+## Q02 Enqueue
+
+At `2026-07-31T11:24:14+02:00`, a fresh path-aware scan found five factory
+terminals (`T1`, `T2`, `T6`, `T8`, and `T10`) against the seven-terminal
+ceiling. The separate pre-existing T_Live process was excluded, and
+`FACTORY_OFF.flag` was absent. The canonical farm still had zero work items
+for `QM5_20183`.
+
+The targeted governed sweep then created exactly one Q02 work item:
+
+- Work item: `564a8012-bb2b-4edf-a9f1-acd04b177d64`
+- Symbol: `QM5_20183_GBPUSD_USDCHF_COINTEGRATION_D1`
+- Setfile:
+  `QM5_20183_gbpusd-chf-coint_QM5_20183_GBPUSD_USDCHF_COINTEGRATION_D1_D1_backtest.set`
+- Immediate status: `pending`, attempt 0, unclaimed
+- Enqueued at: `2026-07-31T11:24:26+02:00`
+
+The manifest host remains `GBPUSD.DWX` D1 with `USDCHF.DWX` as the companion
+leg, USD tester currency, USD 100,000 deposit, and `RISK_FIXED=1000`.
+The legacy physical-host setfile was explicitly skipped. No tester was
+manually launched and no Q02 verdict is claimed.
