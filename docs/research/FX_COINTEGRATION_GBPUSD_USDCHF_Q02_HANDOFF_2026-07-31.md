@@ -4,8 +4,9 @@ Date: 2026-07-31
 
 Branch: `agents/board-advisor`
 
-State: `Q02_QUEUED` (logical-basket work item
-`564a8012-bb2b-4edf-a9f1-acd04b177d64`)
+State: `Q02_FAIL_TERMINAL` (logical-basket work item
+`564a8012-bb2b-4edf-a9f1-acd04b177d64`; retirement evidence:
+`docs/ops/evidence/2026-07-31_qm5_20183_q02_terminal_retirement.md`)
 
 ## Selection
 
@@ -104,3 +105,13 @@ The manifest host remains `GBPUSD.DWX` D1 with `USDCHF.DWX` as the companion
 leg, USD tester currency, USD 100,000 deposit, and `RISK_FIXED=1000`.
 The legacy physical-host setfile was explicitly skipped. No tester was
 manually launched and no Q02 verdict is claimed.
+
+## Q02 Terminal Verdict
+
+The paced worker subsequently completed the single logical-basket row with a
+terminal `FAIL`. The report recorded 8 trades, profit factor 0.82, net profit
+-243.26, and `MIN_TRADES_NOT_MET` across 2018-07-02 through 2022-12-31. It
+recorded no `ONINIT` failure and no history/setup reason class. Per the card's
+predeclared retirement rule, the sleeve is retired without a refit, filter, or
+Q02 requeue. The full reconciliation is recorded in
+`docs/ops/evidence/2026-07-31_qm5_20183_q02_terminal_retirement.md`.
