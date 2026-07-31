@@ -1,0 +1,173 @@
+{
+  "schema_version": "qm.ks_vintage_recompile.addendum.10513.unsigned.v1",
+  "status": "UNSIGNED_NO_DEPLOY_AUTHORITY",
+  "created_utc": "2026-07-31T22:33:39Z",
+  "router_task_id": "626f0d57-ceac-40c4-8687-c8192c625650",
+  "reviewer_required": "Claude",
+  "authority": {
+    "purpose": "One-EA addendum to the Stage-3 Sunday packet for the already-built canonical QM5_10513 binary and reviewed Q10 baseline pair.",
+    "not_authorized": [
+      "write to the T_Live tree",
+      "copy a baseline into the terminal-local T_Live sandbox",
+      "terminal or chart re-init",
+      "manual terminal64.exe start",
+      "AutoTrading change",
+      "rebuild or recompile",
+      "pipeline verdict"
+    ]
+  },
+  "base_packet": {
+    "signature_packet": "C:/QM/repo/docs/ops/evidence/2026-07-31_ks_recompile_signature_packet.md",
+    "signature_packet_sha256": "054b47bc3080110d6d103585923a1563ec0b505c86bba45f0a278793f2280fb8",
+    "stage2_manifest": "C:/QM/repo/docs/ops/evidence/2026-07-31_ks_vintage_recompile_manifest_STAGE2_UNSIGNED.json",
+    "stage2_manifest_sha256": "ee12f5097816e60de68d6ff30b60cbc8a401062f7b471c8052a875c5c0950fcc",
+    "extension": {
+      "binary_targets_before": 7,
+      "binary_targets_after": 8,
+      "sleeve_identities_before": 9,
+      "sleeve_identities_after": 10,
+      "ks_baseline_loaded_gate_before": "9/9",
+      "ks_baseline_loaded_gate_after": "10/10"
+    }
+  },
+  "overall_gates": {
+    "canonical_binary_identity": "PASS",
+    "q10_binary_binding": "PASS",
+    "live_preimage": "PASS_DIFFERENT_AND_CAPTURED",
+    "target_registry_identity": "PASS_UNIQUE",
+    "seed_and_common_baseline_pair": "PASS_4_OF_4",
+    "terminal_local_baseline_pair": "DEFERRED_TO_SIGNED_SUNDAY_STEP_0_OF_2",
+    "position_rider": "ROUTER_OPEN_CLAIM_SUPERSEDED_BY_FRIDAY_CLOSE; MANDATORY_PREDEPLOY_RECHECK",
+    "deploy": "NOT_AUTHORIZED_NOT_RUN"
+  },
+  "binary": {
+    "ea_id": 10513,
+    "label": "QM5_10513_mql5-ichimoku",
+    "source_ex5": "C:/QM/repo/framework/EAs/QM5_10513_mql5-ichimoku/QM5_10513_mql5-ichimoku.ex5",
+    "source_ex5_sha256": "04b62af28c6466e01741aacaa915d9a68714cd7c23288ae277615ae068d63898",
+    "source_ex5_size_bytes": 324966,
+    "source_ex5_mtime_utc": "2026-07-13T04:46:37.5273357Z",
+    "binary_commit": "cf2264bb09f1761b5340381647b0c5bb0144235b",
+    "binary_commit_subject": "build: true rebuilds of all 20 DXZ-23 book EA binaries (post no-op-compile fix)",
+    "binary_commit_blob_sha256_reproduced": true,
+    "rebuild_requested": false,
+    "rebuild_performed": false,
+    "q10_binding": {
+      "work_item_id": "297c0127-7a8e-4bcd-bbbb-c4a57e823477",
+      "aggregate": "D:/QM/reports/pipeline/QM5_10513/Q10/XAUUSD_DWX/aggregate.json",
+      "aggregate_sha256": "166704e04b11bb8023a7760a8e9d8d395281494c03c3654596d84fe8af798def",
+      "native_summary": "D:/QM/reports/pipeline/QM5_10513/20260725_163009/summary.json",
+      "native_summary_sha256": "7e8a4f97417220a7ad5d29531a090a5fc9d7b165d7f6a388b30ee89386b8425a",
+      "observed_ex5_sha256": "04b62af28c6466e01741aacaa915d9a68714cd7c23288ae277615ae068d63898",
+      "verdict": "PASS"
+    },
+    "source_provenance_caveat": {
+      "build_commit_mq5_sha256": "bd400ee29f6c63a593e880cda31591238b898cb5317d7ba4f614d08ee9cfa53c",
+      "current_mq5_sha256": "b8508e053bf0a335dcea67c8315e635b168649b14e0b7bca906242cc811dfc99",
+      "claim": "This no-rebuild addendum authorizes only the exact existing EX5 bytes. It does not claim that the later current MQ5 or current include closure produced them."
+    },
+    "live_target": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Experts/Live EAs/QM5_10513_mql5-ichimoku.ex5",
+    "live_preimage_sha256": "518a9b37503e0932b2dff6efbd67458484dbef74ab045c0181f85bee583b6d2f",
+    "live_preimage_size_bytes": 286118,
+    "live_preimage_mtime_utc": "2026-06-28T07:11:02.1757354Z"
+  },
+  "sleeve": {
+    "ea_id": 10513,
+    "symbol": "XAUUSD",
+    "registry_symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "magic_slot": 3,
+    "magic": 105130003,
+    "ea_registry_rows": 1,
+    "active_magic_rows_for_identity": 1,
+    "chart": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Profiles/Charts/DarwinexZero_V2_LiveOps/chart15.chr",
+    "chart_sha256": "cb9054320b093e6a0816ed76abfc6f8918c5fd69b447ba8b32a1c1fcb4b8c4d8",
+    "preset": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/19_XAUUSD_D1_QM5_10513_mql5-ichimoku.set",
+    "preset_sha256": "7d15a3491465b916e7e5a0f2ef36212f76f43fde6fc186586cde542431080408",
+    "baselines": [
+      {
+        "filename": "QM5_10513_XAUUSD_DWX.json",
+        "file_sha256": "edf01c12b79642f1277326f0977c77e25df5c5a63747501044875055cce1317e",
+        "internal_distribution_sha256": "5588dca1f62283a0ca4b32daccd5ec27a09acf4a949fd880446e9adfe5fdff9b",
+        "seed": "PRESENT_MATCH",
+        "file_common": "PRESENT_MATCH",
+        "terminal_local": "ABSENT_DEFERRED"
+      },
+      {
+        "filename": "QM5_10513_XAUUSD.json",
+        "file_sha256": "edf01c12b79642f1277326f0977c77e25df5c5a63747501044875055cce1317e",
+        "internal_distribution_sha256": "5588dca1f62283a0ca4b32daccd5ec27a09acf4a949fd880446e9adfe5fdff9b",
+        "seed": "PRESENT_MATCH",
+        "file_common": "PRESENT_MATCH",
+        "terminal_local": "ABSENT_DEFERRED"
+      }
+    ],
+    "baseline_fileside_receipt": "D:/QM/reports/state/10513_baseline_fileside_deploy_20260731.json",
+    "baseline_fileside_receipt_sha256": "b5f9c2f2f1e15135113289361f9750fc6853c3b96865a68714528d37d0767eb8"
+  },
+  "position_rider": {
+    "router_payload_claim": "QM5_10513 holds an OPEN live position; flag explicitly for OWNER.",
+    "historical_open": {
+      "ticket": 3169829687,
+      "entry_event_utc": "2026-07-29T22:01:00.765Z",
+      "duplicate_position_rejection_utc": "2026-07-31T13:09:48.656Z"
+    },
+    "superseding_read_only_evidence": {
+      "ea_friday_close_event_utc": "2026-07-31T17:59:56.781Z",
+      "ea_friday_close_count": 1,
+      "live_book_pulse_generated_utc": "2026-07-31T22:00:01Z",
+      "live_book_pulse_sha256": "c4a5a9b04e59fe1a4f3cbb3e32a11d2075871dbb08b56723b583d28ce33ded95",
+      "pulse_current_position_count": 0,
+      "pulse_position_exposed": false,
+      "later_terminal_sync_utc": "2026-07-31T22:01:21.124Z",
+      "later_terminal_sync_positions": 0,
+      "later_terminal_sync_orders_account_wide": 4
+    },
+    "status_at_manifest": "NO_OPEN_POSITION_OBSERVED",
+    "owner_condition": "Re-read the authoritative account position/order state immediately before copy. Any QM5_10513 position or order consequence must be explicitly accepted; otherwise abort."
+  },
+  "behavioral_riders": {
+    "not_ks_only": true,
+    "comparison": "The intended swap is the June-28 live preimage to the July-13 full-framework binary, not a one-line baseline-path patch.",
+    "shared_framework_change_summary": "Between the June-28 binary-wave commit and cf2264bb, 20 framework include files changed (2192 insertions, 84 deletions).",
+    "classes_requiring_owner_acceptance": [
+      "kill-switch baseline path, persistence, and halt behavior",
+      "news calendar mapping, freshness, and entry gating",
+      "risk sizing, risk caps, stop rules, and order hardening",
+      "trade context, telemetry, and equity-stream behavior",
+      "init-time fail-closed behavior present in the pinned binary"
+    ],
+    "execution_contract_event_caveat": "The cf2264bb EA source did not call QM_FrameworkDeclareExecutionContract. No rebuild is authorized, so the 10513 row extends the KS_BASELINE_LOADED cardinality gate but must not fabricate an EXECUTION_CONTRACT event."
+  },
+  "sunday_runbook_extension": {
+    "predeploy": [
+      "Verify this addendum's own SHA after Claude review and OWNER signature wording is filled in the Markdown packet.",
+      "Reproduce canonical EX5, live preimage, preset, registry, chart, seed baseline, and FILE_COMMON baseline hashes.",
+      "Require both terminal-local baseline aliases to remain absent before first copy; unexpected presence is drift and blocks deployment.",
+      "Recheck QM5_10513 account position/order exposure and obtain explicit OWNER acceptance or abort.",
+      "Back up and verify the live EX5 preimage before any overwrite."
+    ],
+    "copy_order": [
+      "Copy and verify both baseline aliases from seed to the terminal-local baseline directory.",
+      "Copy and verify the canonical EX5 to the exact T_Live target.",
+      "Stop for the standing OWNER-controlled T_Live re-init; never start terminal64.exe manually and never toggle AutoTrading."
+    ],
+    "postdeploy_gate": "Run the base packet's nine rows unchanged, add QM5_10513/XAUUSD/D1/magic 105130003, and require KS_BASELINE_LOADED=10/10, zero new KS_BASELINE_ABSENT, INIT_OK, NEWS_CALENDAR_LOADED, exact internal baseline hash, exact destination EX5 SHA, and unchanged preset/seed/Common hashes.",
+    "rollback": "Under separate written OWNER authority, restore the verified EX5 preimage and remove only the two newly created terminal-local baseline aliases after verifying they still match edf01c12...; seed and FILE_COMMON copies remain untouched."
+  },
+  "rollback": {
+    "status": "PREIMAGE_RECORDED_NO_ACTION_AUTHORIZED",
+    "suggested_directory": "C:/QM/deploy/KSRecompile_20260802_386151841/preimages_addendum_10513",
+    "required_ex5_sha256": "518a9b37503e0932b2dff6efbd67458484dbef74ab045c0181f85bee583b6d2f",
+    "terminal_local_baseline_preimage": "ABSENT_FOR_BOTH_ALIASES"
+  },
+  "owner_signature": "",
+  "owner_signature_status": "EMPTY_AS_REQUIRED",
+  "deployment_receipt": {
+    "status": "NOT_AUTHORIZED_NOT_RUN",
+    "t_live_write_performed": false,
+    "terminal_local_baseline_write_performed": false,
+    "terminal_reinit_performed": false,
+    "autotrading_changed": false
+  }
+}
