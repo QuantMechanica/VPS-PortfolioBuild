@@ -142,6 +142,29 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def normalized_lf_bytes(path: Path) -> bytes:
+    try:
+        raw = path.read_bytes()
+    except OSError as exc:
+        raise RequalError(f"cannot read text artifact {path}: {exc}") from exc
+    if raw.startswith(b"\xef\xbb\xbf"):
+        raw = raw[3:]
+    return raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+def artifact_identity(path: Path, basis: str) -> tuple[str, int]:
+    if basis == "RAW_BYTES":
+        return sha256_file(path), path.stat().st_size
+    if basis == "UTF8_TEXT_LF_NORMALIZED":
+        raw = normalized_lf_bytes(path)
+        try:
+            raw.decode("utf-8", errors="strict")
+        except UnicodeDecodeError as exc:
+            raise RequalError(f"normalized text artifact is not UTF-8: {path}: {exc}") from exc
+        return sha256_bytes(raw), len(raw)
+    raise RequalError(f"unsupported artifact SHA-256 basis: {basis}")
+
+
 def payload_sha256(raw: Any) -> str:
     if not isinstance(raw, str):
         raise RequalError("payload_json is not text")
@@ -364,7 +387,8 @@ def validate_contract(contract: Mapping[str, Any], paths: RuntimePaths) -> dict[
         or _normal_commit(decision_source.get("commit_sha"), "decision_source.commit_sha")
         != OWNER_DECISION_COMMIT
         or not expected_decision_path.is_file()
-        or sha256_file(expected_decision_path) != OWNER_DECISION_SHA256
+        or artifact_identity(expected_decision_path, "UTF8_TEXT_LF_NORMALIZED")[0]
+        != OWNER_DECISION_SHA256
     ):
         raise RequalError("authorization decision_source identity mismatch")
 
@@ -409,20 +433,22 @@ def validate_contract(contract: Mapping[str, Any], paths: RuntimePaths) -> dict[
             raise RequalError(f"duplicate/empty artifact role: {role}")
         path = Path(str(raw.get("path") or "")).resolve()
         expected_sha = _normal_sha(raw.get("sha256"), f"artifact {role} sha256")
+        basis = str(raw.get("sha256_basis") or "")
         if not path.is_file():
             raise RequalError(f"artifact missing: {role}: {path}")
-        actual_sha = sha256_file(path)
+        actual_sha, actual_bytes = artifact_identity(path, basis)
         if actual_sha != expected_sha:
             raise RequalError(f"artifact digest mismatch: {role}: {path}")
         expected_bytes = raw.get("bytes")
         if isinstance(expected_bytes, bool) or not isinstance(expected_bytes, int):
             raise RequalError(f"artifact byte count missing: {role}")
-        if path.stat().st_size != expected_bytes:
+        if actual_bytes != expected_bytes:
             raise RequalError(f"artifact byte count mismatch: {role}")
         artifacts[role] = {
             "role": role,
             "path": str(path),
             "sha256": actual_sha,
+            "sha256_basis": basis,
             "bytes": expected_bytes,
         }
     if set(artifacts) != set(REQUIRED_ARTIFACT_ROLES):
@@ -430,6 +456,14 @@ def validate_contract(contract: Mapping[str, Any], paths: RuntimePaths) -> dict[
             f"artifact roles must be exact: expected={sorted(REQUIRED_ARTIFACT_ROLES)} "
             f"actual={sorted(artifacts)}"
         )
+    for role, artifact in artifacts.items():
+        expected_basis = (
+            "UTF8_TEXT_LF_NORMALIZED"
+            if role in {"controller_source", "parser_source"}
+            else "RAW_BYTES"
+        )
+        if artifact["sha256_basis"] != expected_basis:
+            raise RequalError(f"artifact hash basis mismatch: {role}")
     for role, expected_sha in TARGET_SETFILE_SHA256.items():
         if artifacts[role]["sha256"] != expected_sha:
             raise RequalError(f"setfile bytes changed from OWNER-approved vintage: {role}")

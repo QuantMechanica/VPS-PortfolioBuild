@@ -11,11 +11,18 @@ from tools.strategy_farm import q08_single_target_requal as requal
 
 
 def _binding(path: Path, role: str) -> dict[str, Any]:
+    basis = (
+        "UTF8_TEXT_LF_NORMALIZED"
+        if role in {"controller_source", "parser_source"}
+        else "RAW_BYTES"
+    )
+    digest, size = requal.artifact_identity(path, basis)
     return {
         "role": role,
         "path": str(path.resolve()),
-        "sha256": requal.sha256_file(path),
-        "bytes": path.stat().st_size,
+        "sha256": digest,
+        "sha256_basis": basis,
+        "bytes": size,
     }
 
 
@@ -125,7 +132,9 @@ def _fixture(
         "OWNER approves exact fixture target\n",
     )
     monkeypatch.setattr(
-        requal, "OWNER_DECISION_SHA256", requal.sha256_file(decision_source)
+        requal,
+        "OWNER_DECISION_SHA256",
+        requal.artifact_identity(decision_source, "UTF8_TEXT_LF_NORMALIZED")[0],
     )
 
     parser_source = _write(
@@ -206,7 +215,9 @@ def parse_setfile_assignments(path):
             "global_invariant_weakened": False,
             "decision_source": {
                 "path": str(decision_source.resolve()),
-                "sha256": requal.sha256_file(decision_source),
+                "sha256": requal.artifact_identity(
+                    decision_source, "UTF8_TEXT_LF_NORMALIZED"
+                )[0],
                 "commit_sha": requal.OWNER_DECISION_COMMIT,
             },
         },
