@@ -386,8 +386,18 @@ function Get-CanonicalRuntimeActivationAuthorization {
     if (Test-Path -LiteralPath $factoryOffFlagPath -PathType Leaf) {
         $arguments += @('--factory-off-flag', $factoryOffFlagPath)
     }
-    $output = @(& $pythonExe $runtimeActivationValidatorScript @arguments 2>&1)
-    if ($LASTEXITCODE -ne 0) {
+    # EAP=Continue: under Stop, PS5.1 turns interpreter stderr noise in the
+    # 2>&1 merge into a terminating NativeCommandError before the exit code
+    # can be evaluated.
+    $priorValidatorErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $output = @(& $pythonExe $runtimeActivationValidatorScript @arguments 2>&1)
+        $validatorExitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $priorValidatorErrorActionPreference
+    }
+    if ($validatorExitCode -ne 0) {
         throw ("fresh OWNER runtime activation decision validation failed: " +
             ($output -join [Environment]::NewLine))
     }
@@ -1055,7 +1065,15 @@ function Invoke-FailClosedRollback([string]$Reason, [object]$PriorOffRecord) {
     }
     Stop-FactoryProcesses
     if ((Test-Path -LiteralPath $pythonExe -PathType Leaf) -and (Test-Path -LiteralPath $pacerScript -PathType Leaf)) {
-        & $pythonExe $pacerScript 2>&1 | Out-Null
+        # EAP=Continue: interpreter stderr noise must never abort the
+        # fail-closed rollback path via a PS5.1 NativeCommandError.
+        $priorRollbackErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        try {
+            & $pythonExe $pacerScript 2>&1 | Out-Null
+        } finally {
+            $ErrorActionPreference = $priorRollbackErrorActionPreference
+        }
     }
 }
 

@@ -738,12 +738,19 @@ if (-not $mutationDrainedBeforeCleanup -or -not $taskDrain.drained) {
     $pacerCleanupOk = $false
     $pacerCleanupOutput = 'autonomous writer/task drain incomplete; managed Codex cleanup deferred'
 } elseif ((Test-Path -LiteralPath $pythonExe -PathType Leaf) -and (Test-Path -LiteralPath $pacerScript -PathType Leaf)) {
+    # EAP=Continue: under Stop, PS5.1 turns interpreter stderr noise in the
+    # 2>&1 merge into a terminating NativeCommandError (see the restore-intent
+    # validator call above for the same pattern).
+    $priorPacerErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
     try {
         $pacerCleanupOutput = (& $pythonExe $pacerScript 2>&1 | Out-String).Trim()
         $pacerCleanupOk = ($LASTEXITCODE -eq 0)
     } catch {
         $pacerCleanupOk = $false
         $pacerCleanupOutput = $_.Exception.Message
+    } finally {
+        $ErrorActionPreference = $priorPacerErrorActionPreference
     }
 } else {
     $pacerCleanupOk = $false
