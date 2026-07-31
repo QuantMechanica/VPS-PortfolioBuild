@@ -1,0 +1,325 @@
+{
+  "schema_version": "qm.ks_vintage_recompile_manifest.draft.v1",
+  "status": "DRAFT_NOT_OWNER_SIGNED_NO_BUILD_OR_DEPLOY_AUTHORIZED",
+  "created_utc": "2026-07-31T15:17:53.8093083Z",
+  "router_task_id": "5690506f-88ed-4796-bb9c-1f5642755a6a",
+  "purpose": "OWNER-gated proposal to rebuild seven pre-fix EAs for nine live sleeves; this draft is evidence and planning only.",
+  "prohibitions": [
+    "NO_COMPILE_WAS_RUN_BY_THIS_TASK",
+    "NO_FILE_WAS_WRITTEN_TO_T_LIVE",
+    "NO_TERMINAL_OR_CHART_ACTION_WAS_TAKEN",
+    "NO_AUTOTRADING_OR_T_LIVE_TOGGLE_IS_AUTHORIZED",
+    "NO_PIPELINE_VERDICT_IS_CREATED_BY_A_BUILD"
+  ],
+  "source_pin": {
+    "repository": "C:/QM/repo",
+    "branch_at_draft": "agents/board-advisor",
+    "commit_at_draft": "629582b6aa9a06ab12ea00812226bfac883041ea",
+    "bound_scope_worktree_state": "CLEAN at the 2026-07-31T15:17:53.8093083Z capture; later concurrent working-tree registry/resolver drift is not incorporated",
+    "verification_source": "Raw canonical-checkout bytes observed at capture; unchanged members remain hash-verifiable in place, and the later-drifted generated resolver is verified from the immutable commit_at_draft blob. Final build must hash its own clean materialization.",
+    "ks_path_fix": {
+      "commit": "d8b741d02febfc6fea4d33d3bcb7729611cc8eba",
+      "authored_at": "2026-07-06T12:18:03+02:00",
+      "file": "framework/include/QM/QM_KillSwitchKS.mqh",
+      "old_literal": "D:\\QM\\data\\baselines\\QM5_%d_%s.json",
+      "new_literal": "QM\\baselines\\QM5_%d_%s.json",
+      "mechanism": "MQL5 FileOpen is sandboxed. The old drive-letter path failed both the default and FILE_COMMON opens; the sandbox-relative path can resolve first in terminal MQL5/Files and then in Common/Files.",
+      "next_hardening_commit_not_the_path_fix": "841449513e63449a2dcd3d5c9c2950af91ccd1ed"
+    },
+    "closure_resolver": "RECURSIVE_MQL5_INCLUDE_CLOSURE",
+    "shared_closure_members": [
+      {"path": "framework/include/news_rules/5ers.mqh", "sha256": "3642116b0bfc2390982ac96ebe418630255f37ee2e18f846afcf0f6c8948b66c"},
+      {"path": "framework/include/news_rules/ftmo.mqh", "sha256": "c2f8dd2821774ec90ea7c4196b951c6f5b84b84a3eea41d9793a5296e8ee00ea"},
+      {"path": "framework/include/QM/QM_ChartUI.mqh", "sha256": "5d597102945cb562ced4a69181bae10115ebac49b067f96b839c097df07b9efd"},
+      {"path": "framework/include/QM/QM_Common.mqh", "sha256": "300cd9dc2b89dfda660af109941919299ea8a8f7bbc91f82492a6187581414fb"},
+      {"path": "framework/include/QM/QM_DSTAware.mqh", "sha256": "e5a78c1097ff3622f9066acc25fac41228f049853bca31b19c599e92dc61472f"},
+      {"path": "framework/include/QM/QM_Entry.mqh", "sha256": "f182a4c07917520e065bbb44c12b667330d204e9596822df01618040701de135"},
+      {"path": "framework/include/QM/QM_EquityStream.mqh", "sha256": "535da9dc1a0fd016fddeea0ee2c49c14ff01af99288ff9d2f2603548ce01a7ce"},
+      {"path": "framework/include/QM/QM_Errors.mqh", "sha256": "9d250781aedd31bcfe0065cb01f845a15bcdc7e5cbe957f9daeea6e8dcd77402"},
+      {"path": "framework/include/QM/QM_Exit.mqh", "sha256": "2386682cd648a6c77a0b4200992a21ce3c736ace6cbc39106e28422535e3c4a0"},
+      {"path": "framework/include/QM/QM_FTMOGovernorClient.mqh", "sha256": "c5bfa6db027ea4d9cdc98a5f3fd0f04c266ccc80b2febe8c84fd32c2a6592da0"},
+      {"path": "framework/include/QM/QM_FTMOGovernorPolicy.mqh", "sha256": "7c7fd56095f9a37b60ba446b3e437fe257a9a0d98f743b0a1845a3b4dc8e0856"},
+      {"path": "framework/include/QM/QM_Indicators.mqh", "sha256": "c63d9299ee574e312dbd93b7ed921c47d5a260d8dc27acb6b0ee27035fb1d377"},
+      {"path": "framework/include/QM/QM_KillSwitch.mqh", "sha256": "f5675dbc9e7fbe99c73d8635c3a859e40fb49edf1f7fca1a79941acb2d84ba92"},
+      {"path": "framework/include/QM/QM_KillSwitchKS.mqh", "sha256": "72e876b06e40fbe741590eb78e87c43a7da285901bfd06980b3ab64515262351"},
+      {"path": "framework/include/QM/QM_Logger.mqh", "sha256": "dc2d2bcc3100967aee629a9da2e62672cb4c373a800133dea4627b2cb1366dac"},
+      {"path": "framework/include/QM/QM_MagicResolver.mqh", "sha256": "ea91f1dcba2330f0cd297c32f011c0324ff948278cefd525eb48aade738c612c"},
+      {"path": "framework/include/QM/QM_NewsFilter.mqh", "sha256": "1a447b1263bada9c7c0389fdefaf7a39986ec9669419ee79ca3b0acaaa71acff"},
+      {"path": "framework/include/QM/QM_OrderTypes.mqh", "sha256": "78a73c201dae0cd9cc6150850effb80f6341c04f33daa7d64b52f91dafe91545"},
+      {"path": "framework/include/QM/QM_RiskSizer.mqh", "sha256": "32c6eebb8ffc58656854bd0a34f2124d1d713c91525ac47f3ac62f68532a7575"},
+      {"path": "framework/include/QM/QM_RuntimeExecutionContract.mqh", "sha256": "ce4aee37ccdb22bbc26fc7e0d3439993d41b6245c26f0de27ae3d0176d420eba"},
+      {"path": "framework/include/QM/QM_SeedRNG.mqh", "sha256": "b05c75dfa09937f6c09a863ec82f0a0d92109f05dfec6e3b95537dff64d79f67"},
+      {"path": "framework/include/QM/QM_Signals.mqh", "sha256": "e1ed249a2d0ffdd94490a1796fbbf9820b93929faaee47c1cbd6439535dedce8"},
+      {"path": "framework/include/QM/QM_StopRules.mqh", "sha256": "aa707e093fc5219a9e8f62fc4b403b85fd71563160f7851b5d8d52f1d95bc0e9"},
+      {"path": "framework/include/QM/QM_SymbolGuard.mqh", "sha256": "91fd7b4299e1515488645b4322d2b5a336cf3facd3fc21fe966c4e2fdcb969e7"},
+      {"path": "framework/include/QM/QM_TM_Grid.mqh", "sha256": "d3c9b41a4fd8e984b5c5f652a541551c5f135077b0aa7283909edc24d379fc98"},
+      {"path": "framework/include/QM/QM_TradeContext.mqh", "sha256": "33ba1f2fef1d9e62256324051c276afd0d658ddffa43a82183d270d939fd5c8d"},
+      {"path": "framework/include/QM/QM_TradeManagement.mqh", "sha256": "fd872ede5f0ddae2fc392b96cabc3a10b62b810a63c810c23331cb7010621d28"},
+      {"path": "framework/include/QM_Branding.mqh", "sha256": "acadbb5f7b087ddb36103f08edabad8fcc9ac10753dbb8c0a8b9284863e16845"}
+    ],
+    "external_platform_includes": ["Trade/Trade.mqh"],
+    "unresolved_repo_includes": [],
+    "eas": [
+      {
+        "ea_id": 10911,
+        "slug": "grimes-complex-pb",
+        "source": "framework/EAs/QM5_10911_grimes-complex-pb/QM5_10911_grimes-complex-pb.mq5",
+        "mq5_sha256": "2dfa0988d40166d564e386d3ea44cb224f516e873a9bf8cb3a8d2d7eb813a5e4",
+        "closure_member_count": 29,
+        "closure_aggregate_sha256": "cc7c7d164bf85a82acc0d04eabc14498c95c9505f638af8de045c8427a6cfe38",
+        "comparison_base_near_live_mtime_not_binary_provenance": "4ea02837bcf5d97bbbe29150229ca585492719e1",
+        "source_delta_to_draft": {"added_lines": 10, "deleted_lines": 1, "behavior": ["declare H1 execution contract", "bind new-bar gate to H1", "add 1.0 percent per-trade risk cap input"]},
+        "historical_repo_compile": {"commit": "e6849950650b847536e758f66f8abe9d5a730abc", "ex5_sha256": "2a1760492156fba9557ee3844131bf01dbe3c446b9c420fd0be7e2fbb4a34cd8"},
+        "live_preimage": {"sha256": "99e774ec0e03dd12474023fb212976119d20a851e8fe593e627b44e8e8c9ddc9", "mtime_utc": "2026-06-28T07:11:28.2450244Z"}
+      },
+      {
+        "ea_id": 10919,
+        "slug": "grimes-overshoot",
+        "source": "framework/EAs/QM5_10919_grimes-overshoot/QM5_10919_grimes-overshoot.mq5",
+        "mq5_sha256": "91cb71322cea53a2977855be6ede2f2eddbaf1280244a1eb070163e16b4d455e",
+        "closure_member_count": 29,
+        "closure_aggregate_sha256": "37e53386697a594d52d359bf6bdfa3a4b4e61dec118087fb286c922ef14852a6",
+        "comparison_base_near_live_mtime_not_binary_provenance": "37b765144f423f7773468f329d5d68be522086c6",
+        "source_delta_to_draft": {"added_lines": 6, "deleted_lines": 1, "behavior": ["declare H4 execution contract", "bind new-bar gate to H4"]},
+        "historical_repo_compile": {"commit": "a181f57c286fb3992d1e07fccec95c7a66be7b87", "ex5_sha256": "9258fe631ec29d8af9b63d9aceb5306b3164608481ad67a3f00e52aa2d7c7e31"},
+        "live_preimage": {"sha256": "873e377197f456b10b38f4f554696eb86f467e2d7db13d798d43e0342e0d7508", "mtime_utc": "2026-07-03T22:18:32.4398672Z"}
+      },
+      {
+        "ea_id": 10939,
+        "slug": "grimes-context-pb",
+        "source": "framework/EAs/QM5_10939_grimes-context-pb/QM5_10939_grimes-context-pb.mq5",
+        "mq5_sha256": "2ad956417a71486a46f5bd4eab079475e1b9a43abbb17ea3db2e455b9d021461",
+        "closure_member_count": 29,
+        "closure_aggregate_sha256": "415046a656e2ae7c667f43d76a71b58a30a52ee3b13306a58a8ac4f0919f0970",
+        "comparison_base_near_live_mtime_not_binary_provenance": "4ea02837bcf5d97bbbe29150229ca585492719e1",
+        "source_delta_to_draft": {"added_lines": 7, "deleted_lines": 2, "behavior": ["declare H4 execution contract", "bind entry and retrace-exit new-bar gates to H4"]},
+        "historical_repo_compile": {"commit": "a181f57c286fb3992d1e07fccec95c7a66be7b87", "ex5_sha256": "0c1278f5d44d0c88db90f632d0cefacda79b6c8853bde9540676c4c95296edd0"},
+        "live_preimage": {"sha256": "ed64e912ab95c803cb4bbbdeb0001091bf49efe15f5358fae616804ae136bda3", "mtime_utc": "2026-06-28T07:11:37.1979257Z"}
+      },
+      {
+        "ea_id": 11132,
+        "slug": "tm-cum-rsi2",
+        "source": "framework/EAs/QM5_11132_tm-cum-rsi2/QM5_11132_tm-cum-rsi2.mq5",
+        "mq5_sha256": "79f86dbe6ad1f7b866213b0679063573f990e2610a0e227176afe84627a577b3",
+        "closure_member_count": 29,
+        "closure_aggregate_sha256": "326f1d4773c4da8a095b69b75509b4035c70f08998e2166f820599a24154a550",
+        "comparison_base_near_live_mtime_not_binary_provenance": "4ea02837bcf5d97bbbe29150229ca585492719e1",
+        "source_delta_to_draft": {"added_lines": 6, "deleted_lines": 1, "behavior": ["declare D1 execution contract", "bind new-bar gate to D1"]},
+        "historical_repo_compile": {"commit": "e6849950650b847536e758f66f8abe9d5a730abc", "ex5_sha256": "7fe65d4c86d8cf0fc6ff17f9dc9d3b7dc794802d8457dab96e40d4df34383555"},
+        "live_preimage": {"sha256": "d5cbddaaa988bea46959bd7ba5044d6a3128824683614596878cc4b1d63f8bd7", "mtime_utc": "2026-06-28T07:11:55.1212276Z"}
+      },
+      {
+        "ea_id": 11421,
+        "slug": "ohlc-daily-squeeze-reversal-d1",
+        "source": "framework/EAs/QM5_11421_ohlc-daily-squeeze-reversal-d1/QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+        "mq5_sha256": "184b0df165ab7273441b82928b293a947b7899fff9444218b6c139590b6d5700",
+        "closure_member_count": 29,
+        "closure_aggregate_sha256": "802883cc5bb028bd560d956f8ff20bda9e7d5491a59f47846f3190f324db3d4b",
+        "comparison_base_near_live_mtime_not_binary_provenance": "4ea02837bcf5d97bbbe29150229ca585492719e1",
+        "source_delta_to_draft": {"added_lines": 6, "deleted_lines": 1, "behavior": ["declare D1 execution contract", "bind new-bar gate to D1"]},
+        "historical_repo_compile": {"commit": "e6849950650b847536e758f66f8abe9d5a730abc", "ex5_sha256": "03455d533ffbf1cc35482dc8de487b04d997bea328ee8505d0f5bb0d591a7415"},
+        "live_preimage": {"sha256": "db7ca15097c9a696b58d9ea2cd355050cc6aea7c280a7882f7aab02b86b8279e", "mtime_utc": "2026-06-28T07:12:13.4279753Z"}
+      },
+      {
+        "ea_id": 12567,
+        "slug": "cum-rsi2-commodity",
+        "source": "framework/EAs/QM5_12567_cum-rsi2-commodity/QM5_12567_cum-rsi2-commodity.mq5",
+        "mq5_sha256": "e40bea7e231ca7366feaa7e4ce0e9f6cc823a39cd6640535a157fe8747bb4025",
+        "closure_member_count": 29,
+        "closure_aggregate_sha256": "6a8cc6b954ac461d2bc0f7a7c77600a81d63087a79d434536699d9042eeec3ca",
+        "comparison_base_near_live_mtime_not_binary_provenance": "4ea02837bcf5d97bbbe29150229ca585492719e1",
+        "source_delta_to_draft": {"added_lines": 6, "deleted_lines": 1, "behavior": ["declare D1 execution contract", "bind new-bar gate to D1"]},
+        "historical_repo_compile": {"commit": "e6849950650b847536e758f66f8abe9d5a730abc", "ex5_sha256": "353dddbb93c393dc4135d03f84ba203b6f8ab657ce5ebb5b14cb9f6d44893c85"},
+        "live_preimage": {"sha256": "086eee8a6fe3ad0f962417f45017c39f490058ac45c5db06eb673a33f9f5e7a1", "mtime_utc": "2026-06-28T07:12:22.7881889Z"}
+      },
+      {
+        "ea_id": 12989,
+        "slug": "grimes-nested-pb-v2",
+        "source": "framework/EAs/QM5_12989_grimes-nested-pb-v2/QM5_12989_grimes-nested-pb-v2.mq5",
+        "mq5_sha256": "2b84813c4e11eccf2e5815d2717113d114a5871607c73ecbe6bf30c73792a95c",
+        "closure_member_count": 29,
+        "closure_aggregate_sha256": "650640a5b6a5ff3fe2e77f6956b3d7df7c5d7dd9df546c7376a302cf1c7f4ea0",
+        "comparison_base_near_live_mtime_not_binary_provenance": "37b765144f423f7773468f329d5d68be522086c6",
+        "source_delta_to_draft": {"added_lines": 6, "deleted_lines": 1, "behavior": ["declare H4 execution contract", "bind new-bar gate to H4"]},
+        "historical_repo_compile": {"commit": "e6849950650b847536e758f66f8abe9d5a730abc", "ex5_sha256": "27b9dc294fd6b0d25825bcf91e4ef08f832cc79fe7414ce84e215570c5d26e1e"},
+        "live_preimage": {"sha256": "43cc9a91e6041e71ff28c19081e4d91529a5035f458774c186bf2a77591ae092", "mtime_utc": "2026-07-03T22:18:32.8168478Z"}
+      }
+    ],
+    "compile_assessment": "EA-local sources have historical 2026-07-24 compile artifacts after their local deltas. The exact draft closure is NOT compile-proven because shared includes changed later. In addition, the current build guardrail is FAIL for 10919 and 10939, so the cohort is not build-ready."
+  },
+  "static_guardrail_observation": {
+    "checked_at_utc": "2026-07-31T15:24:43.160256Z",
+    "command": "python tools/strategy_farm/validate_build_guardrails.py <seven MQ5 paths>",
+    "max_news_stale_hours": 336,
+    "verdict": "FAIL",
+    "pass_ea_ids": [10911, 11132, 11421, 12567, 12989],
+    "failures": [
+      {
+        "ea_id": 10919,
+        "kind": "time_sensitive_strategy_params_missing",
+        "required_any": ["strategy_time_exit_bars"],
+        "setfiles": [
+          "framework/EAs/QM5_10919_grimes-overshoot/sets/QM5_10919_grimes-overshoot_NDX.DWX_H4_backtest.set",
+          "framework/EAs/QM5_10919_grimes-overshoot/sets/QM5_10919_grimes-overshoot_SP500.DWX_H4_backtest.set",
+          "framework/EAs/QM5_10919_grimes-overshoot/sets/QM5_10919_grimes-overshoot_XAUUSD.DWX_H4_backtest.set"
+        ]
+      },
+      {
+        "ea_id": 10939,
+        "kind": "time_sensitive_strategy_params_missing",
+        "required_any": ["strategy_time_exit_h4_bars"],
+        "setfiles": [
+          "framework/EAs/QM5_10939_grimes-context-pb/sets/QM5_10939_grimes-context-pb_EURUSD.DWX_H4_backtest.set",
+          "framework/EAs/QM5_10939_grimes-context-pb/sets/QM5_10939_grimes-context-pb_GDAXI.DWX_H4_backtest.set",
+          "framework/EAs/QM5_10939_grimes-context-pb/sets/QM5_10939_grimes-context-pb_USDJPY.DWX_H4_backtest.set",
+          "framework/EAs/QM5_10939_grimes-context-pb/sets/QM5_10939_grimes-context-pb_XAUUSD.DWX_H4_backtest.set"
+        ]
+      }
+    ],
+    "consequence": "Do not invoke compile_ea for this cohort until these setfile findings are repaired and the same validator returns PASS. Do not weaken or bypass the guardrail."
+  },
+  "active_profile_observation": {
+    "profile": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Profiles/Charts/DarwinexZero_V2_LiveOps",
+    "observed_terminal_pid": 11088,
+    "terminal_start_utc": "2026-07-31T13:06:20Z",
+    "chart_count": 25,
+    "target_chart_count": 9,
+    "canonical_inventory_sha256": "dad21a0a396abecc450b4761a1bd8a69d638b22fbf2be4fdbe77d99d07499c76",
+    "legacy_ids_checked": [10476, 10692, 10715, 10940],
+    "legacy_profile_hits": 0,
+    "interaction": "READ_ONLY"
+  },
+  "sleeves": [
+    {
+      "ea_id": 10911, "symbol": "GDAXI", "timeframe": "H1", "magic_slot": 3, "magic": 109110003,
+      "chart": "chart09.chr", "chart_sha256": "1a34a56caab403e91eba5025f6362f616b1acef044f54dbac03c3d81b094d3f7",
+      "preset": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/13_GDAXI_H1_QM5_10911_grimes-complex-pb.set", "preset_sha256": "6a503e2b60328bda8fdc9ed2900f14270e8a20c28302060ba6c012cccdbce8ec",
+      "baseline": {"filename": "QM5_10911_GDAXI.json", "sha256": "dbfb9a54fe8f231285efc43dd9fa037074f3a2968a0accc2f5f1c0e37c35ea5c", "n": 331, "all_three_copies_byte_identical": true},
+      "latest_absent": {"ts_utc": "2026-07-31T13:10:48.625Z", "expected_path": "D:\\QM\\data\\baselines\\QM5_10911_GDAXI.json"}
+    },
+    {
+      "ea_id": 10919, "symbol": "XTIUSD", "timeframe": "H4", "magic_slot": 1, "magic": 109190001,
+      "chart": "chart20.chr", "chart_sha256": "a33b7d2714fc763bca6254289ce8bfc0a27b3e97e8cb7bdf014b971d932bcb25",
+      "preset": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/04_XTIUSD_H4_QM5_10919_grimes-overshoot.set", "preset_sha256": "10cbf478dcb6e4900325b2fc24ece2a0ce61878f8908384b0fe96e0ea11f9199",
+      "baseline": {"filename": "QM5_10919_XTIUSD.json", "sha256": "ea0dd3d63872b5a717b00beb067258f38e24214a9c34a16bb0c42087fc1da84c", "n": 30, "all_three_copies_byte_identical": true},
+      "latest_absent": {"ts_utc": "2026-07-31T13:09:45.093Z", "expected_path": "D:\\QM\\data\\baselines\\QM5_10919_XTIUSD.json"}
+    },
+    {
+      "ea_id": 10939, "symbol": "GBPUSD", "timeframe": "H4", "magic_slot": 1, "magic": 109390001,
+      "chart": "chart08.chr", "chart_sha256": "07eddf0e4bfb53eb65bb73409797da578a9eb1be8acc2904cd78a28e84463c50",
+      "preset": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/12_GBPUSD_H4_QM5_10939_grimes-context-pb.set", "preset_sha256": "4869e29a3a6d217d45ebb23be2e406a41780ad0c71c6588502e3f7507390e90a",
+      "baseline": {"filename": "QM5_10939_GBPUSD.json", "sha256": "b07a39d01cec4b9a1b40a8314425b5b6546e31bfd34982ad2a52edcf3e26e5e2", "n": 92, "all_three_copies_byte_identical": true},
+      "latest_absent": {"ts_utc": "2026-07-31T13:10:56.046Z", "expected_path": "D:\\QM\\data\\baselines\\QM5_10939_GBPUSD.json"}
+    },
+    {
+      "ea_id": 11132, "symbol": "SP500", "timeframe": "D1", "magic_slot": 0, "magic": 111320000,
+      "chart": "chart12.chr", "chart_sha256": "9cf32cf788517b6e2cda6fe73b77603a09f1da83c341070206e5ea1dbfe0ba6c",
+      "preset": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/16_SP500_D1_QM5_11132_tm-cum-rsi2.set", "preset_sha256": "76a984f06f69c750e1bae264bb4854a263eda7cddffbf8a2ec95065dd092f94d",
+      "baseline": {"filename": "QM5_11132_SP500.json", "sha256": "77b7056176d210729705f146ca88886257ec7c630cb85df028c456e005fc2646", "n": 73, "all_three_copies_byte_identical": true},
+      "latest_absent": {"ts_utc": "2026-07-31T13:10:56.921Z", "expected_path": "D:\\QM\\data\\baselines\\QM5_11132_SP500.json"}
+    },
+    {
+      "ea_id": 11421, "symbol": "EURUSD", "timeframe": "D1", "magic_slot": 0, "magic": 114210000,
+      "chart": "chart05.chr", "chart_sha256": "7a998712da47e3d61647ec9d6f32317ee701db0dfafdbc7c9218d84a92796139",
+      "preset": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/09_EURUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1.set", "preset_sha256": "92735cc37d6b60473eedbd5c009e561944ddf4f4a465f0e66d3b1bd3cb339d70",
+      "baseline": {"filename": "QM5_11421_EURUSD.json", "sha256": "9e0c37ce68b243cd37aa9355b61372804228f0f0fb75df3d7ef56b76fb415958", "n": 92, "all_three_copies_byte_identical": true},
+      "latest_absent": {"ts_utc": "2026-07-31T13:09:45.359Z", "expected_path": "D:\\QM\\data\\baselines\\QM5_11421_EURUSD.json"}
+    },
+    {
+      "ea_id": 11421, "symbol": "AUDUSD", "timeframe": "D1", "magic_slot": 3, "magic": 114210003,
+      "chart": "chart03.chr", "chart_sha256": "c01e9a904083fd208f52e6b4523a014559b8a2f511db9d649c28577693d1f7a4",
+      "preset": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/07_AUDUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1.set", "preset_sha256": "35253aba58f16d6f79cec385efa00cfbccb41f58506fc64745657c48d91e1d20",
+      "baseline": {"filename": "QM5_11421_AUDUSD.json", "sha256": "c9435880a1c20b77ea292268b98a81ee9b227ff5df14195804396a998fe02f30", "n": 90, "all_three_copies_byte_identical": true},
+      "latest_absent": {"ts_utc": "2026-07-31T13:10:47.015Z", "expected_path": "D:\\QM\\data\\baselines\\QM5_11421_AUDUSD.json"}
+    },
+    {
+      "ea_id": 12567, "symbol": "XAUUSD", "timeframe": "D1", "magic_slot": 3, "magic": 125670003,
+      "chart": "chart16.chr", "chart_sha256": "d5d5219bab3954d68c6060c755be03ec4336fa372c244e6319fd2ab497d01e77",
+      "preset": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/20_XAUUSD_D1_QM5_12567_cum-rsi2-commodity.set", "preset_sha256": "b75574e3bf3fb20ec63e8ad94854bc18e542324256f861733adbcd2f8cccf256",
+      "baseline": {"filename": "QM5_12567_XAUUSD.json", "sha256": "c7184fce94dd1a68cae50f51c52310a10df647e02c4fef653951e4112fd2b3d1", "n": 73, "all_three_copies_byte_identical": true},
+      "latest_absent": {"ts_utc": "2026-07-31T13:09:45.359Z", "expected_path": "D:\\QM\\data\\baselines\\QM5_12567_XAUUSD.json"}
+    },
+    {
+      "ea_id": 12567, "symbol": "XNGUSD", "timeframe": "D1", "magic_slot": 2, "magic": 125670002,
+      "chart": "chart19.chr", "chart_sha256": "29de391cf17e517eb498c3d3c76ee37a55a23099d082a5ede4d6d24237c6fcd0",
+      "preset": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/23_XNGUSD_D1_QM5_12567_cum-rsi2-commodity.set", "preset_sha256": "c7a3d43ff6c8fc6e84f5495e627aa584a1f4cccc85fc8feb97e96e7c67711551",
+      "baseline": {"filename": "QM5_12567_XNGUSD.json", "sha256": "806994cd24e1c368f2858990404a305e9ce36aa0608d14906f6d7669ac9825f9", "n": 58, "all_three_copies_byte_identical": true},
+      "latest_absent": {"ts_utc": "2026-07-31T13:10:48.265Z", "expected_path": "D:\\QM\\data\\baselines\\QM5_12567_XNGUSD.json"}
+    },
+    {
+      "ea_id": 12989, "symbol": "XAUUSD", "timeframe": "H4", "magic_slot": 3, "magic": 129890003,
+      "chart": "chart17.chr", "chart_sha256": "bb9e9f733db55cdbd9d88214bb023a6ee330f79937c2379c2f5d928e9f796fb2",
+      "preset": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/21_XAUUSD_H4_QM5_12989_grimes-nested-pb-v2.set", "preset_sha256": "a04013c587a5967fb28eb807d36e4b3d5897cdbe0a20e96310570825696bdeb8",
+      "baseline": {"filename": "QM5_12989_XAUUSD.json", "sha256": "432ba8bb1e7f76a0106ce35b83ce1dd93fb8ebeb755fcd5529e770ec50bd26be", "n": 51, "all_three_copies_byte_identical": true},
+      "latest_absent": {"ts_utc": "2026-07-31T13:09:45.171Z", "expected_path": "D:\\QM\\data\\baselines\\QM5_12989_XAUUSD.json"}
+    }
+  ],
+  "baseline_copy_roots": [
+    "D:/QM/data/baselines",
+    "C:/QM/mt5/T_Live/MT5_Base/MQL5/Files/QM/baselines",
+    "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/Common/Files/QM/baselines"
+  ],
+  "registry_gate": {
+    "target_identity_consistent": true,
+    "target_strict_unique_rows": false,
+    "resolver_rows_observed": 15360,
+    "mapping_counts": {
+      "10911/GDAXI/3/109110003": {"active_ea_rows": 1, "active_magic_rows": 1, "resolver_matches": 1},
+      "10919/XTIUSD/1/109190001": {"active_ea_rows": 1, "active_magic_rows": 1, "resolver_matches": 1},
+      "10939/GBPUSD/1/109390001": {"active_ea_rows": 1, "active_magic_rows": 1, "resolver_matches": 1},
+      "11132/SP500/0/111320000": {"active_ea_rows": 1, "active_magic_rows": 1, "resolver_matches": 1},
+      "11421/EURUSD/0/114210000": {"active_ea_rows": 1, "active_magic_rows": 1, "resolver_matches": 1},
+      "11421/AUDUSD/3/114210003": {"active_ea_rows": 1, "active_magic_rows": 1, "resolver_matches": 1},
+      "12567/XNGUSD/2/125670002": {"active_ea_rows": 2, "active_magic_rows": 1, "resolver_matches": 1},
+      "12567/XAUUSD/3/125670003": {"active_ea_rows": 2, "active_magic_rows": 1, "resolver_matches": 1},
+      "12989/XAUUSD/3/129890003": {"active_ea_rows": 1, "active_magic_rows": 1, "resolver_matches": 1}
+    },
+    "caveat": "EA 12567 has two physically duplicated, identity-consistent active EA registry rows. This makes the target strict-uniqueness result fail even though both magic mappings and resolver rows are unique.",
+    "global_validate_registries_observation": {"status": "FAIL_PREEXISTING_BACKLOG", "ea_rows": 4244, "magic_rows": 15391},
+    "required_before_signature": "Obtain a clean global validation result, or an OWNER-signed exact-baseline exception plus explicit disposition of the 12567 duplicate. Never infer a deploy PASS from the target-only check."
+  },
+  "vintage_consequence": {
+    "doctrine": "Any EX5 change makes historical binary-bound Q evidence EVIDENCE_VINTAGE_STALE by append-only adjudication overlay; raw evidence and raw verdicts remain unchanged.",
+    "current_read_only_scan": {"observed_local": "2026-07-31T17:08:27+02:00", "fingerprint": "41ae931be8df7cdd55ba660c8b08e9dbac32c2247b24e2208d902be54726b6be", "adjudications": 581, "evidence_vintage_stale": 7, "provenance_unverified": 574, "p0_live": 75},
+    "affected_current_disposition": "The affected Q06/Q07 live-symbol rows are already PROVENANCE_UNVERIFIED / HOLD_OWNER_REVIEW. A new build adds binary-vintage drift and cannot inherit admission status.",
+    "required_after_build": "After OWNER approval, append a new overlay event for each affected evidence identity and rerun admission-relevant Q gates against the new EX5 SHA and closure."
+  },
+  "staged_build_receipt": {
+    "status": "NOT_BUILT",
+    "compiler_version": null,
+    "factory_root": null,
+    "compile_logs": null,
+    "ex5_sha256_by_ea": null,
+    "closure_recheck": null,
+    "canary_evidence": null
+  },
+  "build_gates_proposed": [
+    "Use an immutable clean source checkout pinned to source_pin.commit_at_draft; re-hash every closure member immediately before build.",
+    "Repair the documented 10919/10939 time-sensitive setfile findings, then require validate_build_guardrails.py PASS and all EA-specific static checks. Never set qm_news_stale_max_hours above 336. Any backtest/canary set must use RISK_FIXED > 0 and RISK_PERCENT = 0.",
+    "Compile the seven EAs serially in the registered Factory context to immutable staging outside T_Live and outside active T1-T10 runs; record compiler version and zero-error/zero-warning logs.",
+    "Record a new recursive closure manifest, the platform Trade/Trade.mqh/compiler environment, staged EX5 hashes, source hashes, and build timestamps.",
+    "Require the exact nine magic mappings, generated resolver matches, registry disposition, and no unexplained registry drift.",
+    "Canary in a non-live tester/demo only: prove KS_BASELINE_LOADED for all nine sleeve identities and prove the halt-channel event chain. Never experiment with halt on T_Live.",
+    "Review the execution-contract, fixed-timeframe, news-gating, kill-switch, and risk-sizing changes; compare signal/order behavior against an approved reference before requesting deploy signature.",
+    "Apply the MNT-043/MNT-044 append-only vintage overlay and schedule fresh admission-relevant Q evidence. Build evidence alone creates no pipeline verdict."
+  ],
+  "deploy_plan_proposed": [
+    "Promote this draft to a final manifest only after Claude review and OWNER signature; fill every currently null build field and bind preimage/staged/destination SHA256 values.",
+    "Perform a read-only Sunday preflight of the active profile, open-position implications, baseline copies, news-calendar freshness, presets, magic mappings, and T_Live destination preimages. OWNER decides the swap/re-init window.",
+    "Use only the approved file-side deployment workflow. Do not manually start terminal64.exe, do not toggle AutoTrading, and do not interrupt active T1-T10 backtests.",
+    "For each EA, verify Factory SHA256 equals immutable-stage SHA256 equals T_Live destination SHA256 before re-init.",
+    "OWNER performs the controlled Sunday T_Live re-init through the standing procedure. Agent verification remains read-only.",
+    "Require nine fresh KS_BASELINE_LOADED events, zero KS_BASELINE_ABSENT events for these sleeves, INIT_OK for every chart, exact magic/symbol/timeframe identity, and unchanged preset hashes.",
+    "If stale-news INIT failure occurs, refresh D:/QM/data/news_calendar and its FILE_COMMON copy; never weaken the fail-closed limit or raise qm_news_stale_max_hours above 336.",
+    "On any hash, init, identity, baseline, or canary mismatch, stop. OWNER may restore the recorded preimage EX5s under a separately signed rollback action and repeat read-only verification."
+  ],
+  "owner_approval": {
+    "decision": null,
+    "signed_by": null,
+    "signed_at_utc": null,
+    "approved_source_commit": null,
+    "approved_staged_ex5_hashes": null,
+    "approved_window": null
+  },
+  "deployment_receipt": null
+}
