@@ -1,8 +1,11 @@
 # Book3 R3 — IS streams and prepared diagnostic config
 
-Date: 2026-07-31  
-Router task: `d9c409f7-f372-4eac-a7cb-52af0314dccf`  
-Implementation approval reviewed: task `cca77792-d675-4212-ade5-038b208f232e`  
+Date: 2026-07-31
+
+Router task: `d9c409f7-f372-4eac-a7cb-52af0314dccf`
+
+Implementation approval reviewed: task `cca77792-d675-4212-ade5-038b208f232e`
+
 Mode: artifact preparation only; **no `evaluate` invocation and no diagnostic result**
 
 ## Result
@@ -35,11 +38,11 @@ the spec and were checked by `prepare-config`.
 
 - IS-only spec:
   `docs/ops/evidence/2026-07-31_book3_r3_is_only_spec.json`
-  
+
   SHA-256: `8de74a43737f9b347bbc6912596269997d29f63f095b88eef4b2603ab4eb6424`
 - Prepared config:
   `docs/ops/evidence/2026-07-31_book3_r3_prepared_config.json`
-  
+
   SHA-256: `0581c74b7537a309973dc1c8b0893875920ff5e49fa5b04fadc4cdd22b9930eb`
 
 The prepared config freezes a 1,803-Prague-day IS series, target moving-block
