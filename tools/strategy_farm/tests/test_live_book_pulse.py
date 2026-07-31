@@ -397,14 +397,24 @@ def test_parse_ea_logs_exposes_latest_ks_baseline_event(tmp_path: Path) -> None:
     qm_dir = root / "MQL5" / "Files" / "QM"
     qm_dir.mkdir(parents=True)
     log = qm_dir / "QM5_10440_ea-104400003.log"
-    log.write_text(
-        json.dumps({
+    records = [
+        {
             "ts_utc": "2026-07-28T10:00:00Z",
             "ea_id": "QM5_10440",
             "symbol": "NDX.DWX",
             "event": "KS_BASELINE_LOADED",
             "payload": {"hash": "EXPECTED", "path": "terminal-local"},
-        }) + "\n",
+        },
+        {
+            "ts_utc": "2026-07-28T10:00:01Z",
+            "ea_id": "QM5_10440",
+            "symbol": "NDX.DWX",
+            "event": "INIT_OK",
+            "payload": {},
+        },
+    ]
+    log.write_text(
+        "".join(json.dumps(record) + "\n" for record in records),
         encoding="utf-8",
     )
 
@@ -415,5 +425,56 @@ def test_parse_ea_logs_exposes_latest_ks_baseline_event(tmp_path: Path) -> None:
         "ts_utc": "2026-07-28T10:00:00Z",
         "hash": "EXPECTED",
         "path": "terminal-local",
+        "source_file": str(log),
+    }
+
+
+def test_parse_ea_logs_streams_full_log_for_ks_event_before_latest_init(tmp_path: Path) -> None:
+    root = tmp_path / "terminal"
+    qm_dir = root / "MQL5" / "Files" / "QM"
+    qm_dir.mkdir(parents=True)
+    log = qm_dir / "QM5_10706_ea-10706.log"
+    lifecycle = [
+        {
+            "ts_utc": "2026-07-31T20:56:08Z",
+            "ea_id": 10706,
+            "symbol": "GBPUSD",
+            "magic": 107060001,
+            "event": "KS_BASELINE_LOADED",
+            "payload": {"hash": "ARMED", "path": "QM/baselines/QM5_10706_GBPUSD.json"},
+        },
+        {
+            "ts_utc": "2026-07-31T20:56:09Z",
+            "ea_id": 10706,
+            "symbol": "GBPUSD",
+            "magic": 107060001,
+            "event": "INIT_OK",
+            "payload": {},
+        },
+    ]
+    noise = {
+        "ts_utc": "2026-07-31T21:00:00Z",
+        "ea_id": 10706,
+        "symbol": "GBPUSD",
+        "magic": 107060001,
+        "event": "NOISY_HEARTBEAT",
+        "payload": {"padding": "x" * 1024},
+    }
+    with log.open("w", encoding="utf-8") as handle:
+        for record in lifecycle:
+            handle.write(json.dumps(record) + "\n")
+        for _ in range(4_500):
+            handle.write(json.dumps(noise) + "\n")
+
+    assert log.stat().st_size > live_book_pulse.DEFAULT_TAIL_BYTES
+    result = live_book_pulse.parse_ea_logs(
+        [root], {}, tail_bytes=live_book_pulse.DEFAULT_TAIL_BYTES
+    )
+
+    assert result["latest_ks_baseline_events"]["10706|GBPUSD"] == {
+        "event": "KS_BASELINE_LOADED",
+        "ts_utc": "2026-07-31T20:56:08Z",
+        "hash": "ARMED",
+        "path": "QM/baselines/QM5_10706_GBPUSD.json",
         "source_file": str(log),
     }

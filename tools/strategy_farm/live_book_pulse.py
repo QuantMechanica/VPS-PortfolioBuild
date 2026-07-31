@@ -959,6 +959,76 @@ def parse_terminal_journals(
     }
 
 
+def _event_sleeve_key(event: dict[str, Any]) -> str | None:
+    payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
+    try:
+        raw_ea = event.get("ea_id")
+        ea_id = int(str(raw_ea).replace("QM5_", ""))
+    except (TypeError, ValueError):
+        try:
+            ea_id = int(event.get("magic") or payload.get("magic") or 0) // 10000
+        except (TypeError, ValueError):
+            ea_id = 0
+    symbol_norm = normalize_symbol(event.get("symbol") or payload.get("symbol"))
+    return f"{ea_id}|{symbol_norm}" if ea_id and symbol_norm else None
+
+
+def scan_latest_ks_baseline_events(ea_log_files: list[Path]) -> dict[str, dict[str, Any]]:
+    """Stream complete EA logs and bind KS state to successful startup epochs.
+
+    Kill-switch baseline loading happens immediately before ``INIT_OK``.  A
+    noisy long-running EA can push both records out of the normal monitoring
+    tail, so baseline state cannot be inferred from the tail.  Pending loader
+    outcomes are committed only when the same sleeve subsequently emits
+    ``INIT_OK``; a failed initialization must not replace the last known-good
+    running state.
+    """
+    latest: dict[str, dict[str, Any]] = {}
+    latest_order: dict[str, tuple[str, int, int]] = {}
+
+    for file_index, path in enumerate(ea_log_files):
+        pending: dict[str, dict[str, Any]] = {}
+        try:
+            with path.open("r", encoding="utf-8-sig", errors="replace") as handle:
+                for line_number, line in enumerate(handle, 1):
+                    try:
+                        event = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    event_name = str(event.get("event") or "")
+                    if event_name not in {"KS_BASELINE_LOADED", "KS_BASELINE_ABSENT", "INIT_OK"}:
+                        continue
+                    key = _event_sleeve_key(event)
+                    if not key:
+                        continue
+                    if event_name != "INIT_OK":
+                        payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
+                        pending[key] = {
+                            "event": event_name,
+                            "ts_utc": str(event.get("ts_utc") or "") or None,
+                            "hash": payload.get("hash"),
+                            "path": payload.get("path") or payload.get("expected_path"),
+                            "source_file": str(path),
+                        }
+                        continue
+
+                    observed = pending.pop(key, None)
+                    if observed is None:
+                        continue
+                    init_ts = str(event.get("ts_utc") or "")
+                    order = (init_ts, file_index, line_number)
+                    if key not in latest_order or order >= latest_order[key]:
+                        latest[key] = observed
+                        latest_order[key] = order
+        except OSError:
+            # The tail parser reports read errors through the existing warning
+            # channel.  Baseline status stays unknown/dormant if the full scan
+            # cannot establish a successful startup epoch.
+            continue
+
+    return latest
+
+
 def parse_ea_logs(
     terminal_roots: list[Path], magic_registry: dict[int, dict[str, Any]], tail_bytes: int
 ) -> dict[str, Any]:
@@ -975,7 +1045,7 @@ def parse_ea_logs(
     warning_samples: list[dict[str, Any]] = []
     parse_errors = 0
     latest_equity: dict[str, Any] | None = None
-    latest_ks_events: dict[str, dict[str, Any]] = {}
+    latest_ks_events = scan_latest_ks_baseline_events(ea_log_files)
 
     for path in ea_log_files:
         try:
@@ -997,28 +1067,6 @@ def parse_ea_logs(
             event_name = str(event.get("event") or "")
             event_counts[event_name] += 1
             payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
-            if event_name in {"KS_BASELINE_LOADED", "KS_BASELINE_ABSENT"}:
-                try:
-                    raw_ea = event.get("ea_id")
-                    ea_id = int(str(raw_ea).replace("QM5_", ""))
-                except (TypeError, ValueError):
-                    try:
-                        ea_id = int(event.get("magic") or 0) // 10000
-                    except (TypeError, ValueError):
-                        ea_id = 0
-                symbol_norm = normalize_symbol(event.get("symbol") or payload.get("symbol"))
-                if ea_id and symbol_norm:
-                    key = f"{ea_id}|{symbol_norm}"
-                    ts = str(event.get("ts_utc") or "")
-                    previous = latest_ks_events.get(key)
-                    if previous is None or ts >= str(previous.get("ts_utc") or ""):
-                        latest_ks_events[key] = {
-                            "event": event_name,
-                            "ts_utc": ts or None,
-                            "hash": payload.get("hash"),
-                            "path": payload.get("path") or payload.get("expected_path"),
-                            "source_file": str(path),
-                        }
             if event_name == "EQUITY_SNAPSHOT":
                 # Account-level equity is the same across all sleeve EAs; keep the
                 # newest snapshot so the cockpit can show the DXZ book's live value.
