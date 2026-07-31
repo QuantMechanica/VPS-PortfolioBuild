@@ -67,12 +67,15 @@ EA build guard are internally consistent.
 
 ## CPU Ceiling
 
-At the final capacity check, the canonical farm database reported:
+At the pre-commit capacity check, the canonical farm database reported:
 
 - `active=9`
 - `pending=2230`
 - eight factory `terminal64.exe` processes on T1/T2/T4/T6/T7/T8/T9/T10
 - T_Live present but untouched and excluded from factory capacity
+
+A post-commit read-only confirmation reported `active=8`. Both observations
+were above the ceiling.
 
 The documented ceiling is seven factory backtests. No Q02 work item, smoke
 test, backtest, terminal launch, T_Live change, portfolio-gate change, or live
