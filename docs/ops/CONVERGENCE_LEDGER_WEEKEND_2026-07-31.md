@@ -91,6 +91,21 @@ source is updated to the 10-terminal cohort and (b) a fresh OWNER runtime
 decision authorizes it. Both fold into the already-mandatory Sunday rebind;
 needs explicit OWNER authorization of the 10-worker policy.
 
+## OWNER approvals batch (2026-07-31, "alle Freigaben erteilt")
+
+1. **Rule-11 amendment RATIFIED:** the kill-recorder duty is merged back into
+   `docs/ops/OPERATING_RULES_2026-07-03.md` Rule 11 with a ratification note;
+   the proposal doc is marked RATIFIED.
+2. **10-worker policy AUTHORIZED:** source update dispatched to Codex
+   (`CODEX_BRIEF_2026-07-31_ten_worker_policy_source.md`); the fresh OWNER
+   runtime decision itself is minted in the Sunday rebind.
+3. **GDAXI priority option OBSOLETE BY EXECUTION:** row `05652c88` was already
+   ACTIVE on T5 at execution time (re-census by Claude) — it is running now;
+   successor rows inherit priority via `owner_priority_tracks.json`. No
+   mutation performed (controller CAS would also have refused an active row).
+4. Recompile-deploy plan standing approval unchanged (awaiting ticket
+   `5690506f`).
+
 ## Standing constraints (bind every topic)
 
 - Factory keeps running; no Factory_OFF/ON as part of any topic; never T5, never

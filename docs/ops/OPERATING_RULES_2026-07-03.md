@@ -49,7 +49,16 @@ im Vault; bei Konflikt gelten Vault-Hard-Rules zuerst.
     Regenerator droppt Zeilen ohne EA-Verzeichnis stillschweigend.
 11. **Terminal-Prozess-Selektion IMMER pfadverankert** (`\mt5\T<n>\`) UND explizit
     `-notmatch 'T_Live'`. Nie bare `T<n>`-Substrings (Case-Insensitive-Match auf 'mt5'
-    killte T_Live am 07-02).
+    killte T_Live am 07-02). Vor jedem OWNER-genehmigten manuellen Terminal-/Worker-
+    Kill MUSS ein non-destruktiver Identitäts-Snapshot geschrieben werden:
+    `python tools/strategy_farm/manual_process_kill_evidence.py --pid <PID>
+    --target-type terminal|worker --actor <wer> --reason <warum>
+    --authority-ref <OWNER-/Task-Beleg>`. Exit 0 und die zurückgegebene `event_id`
+    sind im Operationsbeleg zu zitieren. Der Recorder killt keinen Prozess, lehnt
+    `T_Live` sowie nicht kanonisch pfadverankerte Ziele ab und appendet nach
+    `D:\QM\reports\state\manual_process_kills.jsonl`.
+    *(Zusatz OWNER-ratifiziert 2026-07-31, siehe
+    docs/ops/CONVERGENCE_LEDGER_WEEKEND_2026-07-31.md.)*
 12. **Dedizierte Testfenster** erfordern: Factory_OFF + Watchdog/FactoryON/Reconciler
     disabled + codex_parallel=0 + Kill aller Streu-run_smoke-Wrapper. Der post-run-
     Pump-Hook jedes run_smoke-Laufs reaktiviert sonst die Factory (Resurrection-Kette

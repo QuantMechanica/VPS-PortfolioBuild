@@ -2,7 +2,7 @@
 
 Date: 2026-07-31
 
-Status: **AWAITING OWNER RATIFICATION — NOT OPERATING-RULE AUTHORITY**
+Status: **RATIFIED BY OWNER 2026-07-31 — merged into OPERATING_RULES_2026-07-03.md Rule 11**
 
 The recorder implementation and tests remain available, but the following
 amendment is not part of the ratified Operating Rules unless OWNER explicitly
