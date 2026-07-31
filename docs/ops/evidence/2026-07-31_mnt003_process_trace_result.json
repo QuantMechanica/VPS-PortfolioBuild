@@ -1,0 +1,83 @@
+{
+  "schema": "qm.mnt003.process-trace-result/v1",
+  "status": "PASS_3_OF_3_CHILDREN_QM_ADMIN_SESSION_1_NO_APOSTROPHE",
+  "captured_at_local_window": "2026-07-31T20:20:01+02:00/2026-07-31T20:30:05+02:00",
+  "collector": "docs/ops/evidence/2026-07-31_mnt003_process_trace.ps1",
+  "authority": {
+    "root_identity": "Task Scheduler Operational event 100",
+    "root_pid_and_executable": "Task Scheduler Operational event 129",
+    "root_result": "Task Scheduler Operational event 201",
+    "child_identity": "Win32_Process.GetOwner captured while child was live",
+    "child_session_and_command_line": "Win32_Process CIM snapshot captured while child was live"
+  },
+  "targets": [
+    {
+      "task": "QM_StrategyFarm_AgyGovernor",
+      "root": {
+        "pid": 11984,
+        "session_id": 0,
+        "owner": "NT AUTHORITY\\SYSTEM",
+        "event_129_record_id": 341469,
+        "event_100_record_id": 341470,
+        "event_201_record_id": 341476,
+        "result": 0,
+        "command_line": "\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\run_in_console_session.ps1\" -Exe \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" -Arguments \"C:\\QM\\repo\\tools\\strategy_farm\\agy_governor.py\" -WorkDir \"C:\\QM\\repo\" -TargetUser \"qm-admin\" -WaitSeconds 240"
+      },
+      "child": {
+        "pid": 8920,
+        "parent_pid": 11984,
+        "session_id": 1,
+        "owner": "WIN-B95G5LPSJ1O\\qm-admin",
+        "image": "pythonw.exe",
+        "command_line": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" C:\\QM\\repo\\tools\\strategy_farm\\agy_governor.py",
+        "contains_apostrophe": false
+      }
+    },
+    {
+      "task": "QM_StrategyFarm_CodexFleetPacer",
+      "root": {
+        "pid": 16128,
+        "session_id": 0,
+        "owner": "NT AUTHORITY\\SYSTEM",
+        "event_129_record_id": 341650,
+        "event_100_record_id": 341651,
+        "event_201_record_id": 341653,
+        "result": 0,
+        "command_line": "\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\run_in_console_session.ps1\" -Exe \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" -Arguments \"C:\\QM\\repo\\tools\\strategy_farm\\codex_fleet_pacer.py\" -WorkDir \"C:\\QM\\repo\" -TargetUser \"qm-admin\" -WaitSeconds 300"
+      },
+      "child": {
+        "pid": 17860,
+        "parent_pid": 16128,
+        "session_id": 1,
+        "owner": "WIN-B95G5LPSJ1O\\qm-admin",
+        "image": "pythonw.exe",
+        "command_line": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" C:\\QM\\repo\\tools\\strategy_farm\\codex_fleet_pacer.py",
+        "contains_apostrophe": false
+      }
+    },
+    {
+      "task": "QM_StrategyFarm_GeminiOrchestration_15min",
+      "root": {
+        "pid": 12488,
+        "session_id": 0,
+        "owner": "NT AUTHORITY\\SYSTEM",
+        "event_129_record_id": 341712,
+        "event_100_record_id": 341713,
+        "event_201_record_id": 341721,
+        "result": 0,
+        "command_line": "\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\run_in_console_session.ps1\" -Exe \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" -Arguments \"C:\\QM\\repo\\tools\\strategy_farm\\run_agent_orchestration_task.py --agent gemini --max-sessions 1\" -WorkDir \"C:\\QM\\repo\" -TargetUser \"qm-admin\" -WaitSeconds 14100"
+      },
+      "child": {
+        "pid": 14368,
+        "parent_pid": 12488,
+        "session_id": 1,
+        "owner": "WIN-B95G5LPSJ1O\\qm-admin",
+        "image": "pythonw.exe",
+        "command_line": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" C:\\QM\\repo\\tools\\strategy_farm\\run_agent_orchestration_task.py --agent gemini --max-sessions 1",
+        "contains_apostrophe": false
+      }
+    }
+  ],
+  "production_task_mutation_by_collector": false,
+  "task_start_stop_enable_disable_by_collector": false
+}
