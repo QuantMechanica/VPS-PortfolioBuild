@@ -188,3 +188,42 @@ def test_existing_scored_priority_is_preserved_for_later_phases(
 
     assert skipped == []
     assert created[0]["payload"]["priority_track"] is True
+
+
+def test_existing_owner_registry_priority_is_inherited_by_future_q02(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    monkeypatch.setattr(farmctl, "_card_requests_force_build", lambda _root, _ea_id: False)
+    fake_scores = type(
+        "Scores",
+        (),
+        {
+            "compute_scores": staticmethod(
+                lambda: {
+                    "QM5_20007": {
+                        "priority_track": True,
+                        "priority_track_source": "owner_priority_registry",
+                    }
+                }
+            )
+        },
+    )
+    monkeypatch.setitem(sys.modules, "strategy_priority", fake_scores)
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            """
+            INSERT INTO work_items(
+                id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
+                attempt_count, payload_json, created_at, updated_at
+            ) VALUES (
+                'prior-20007', 'backtest', 'Q02', 'QM5_20007', 'GDAXI.DWX',
+                'prior.set', 'failed', 'INFRA_FAIL', 0, '{}',
+                '2026-07-30T00:00:00+00:00', '2026-07-30T00:00:00+00:00'
+            )
+            """
+        )
+        conn.commit()
+        assert farmctl._q02_priority_track_required(conn, root, "QM5_20007") is True

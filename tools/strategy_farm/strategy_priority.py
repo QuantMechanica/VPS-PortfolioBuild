@@ -48,6 +48,9 @@ DEFAULT_CARDS_DIR = Path(r"D:\QM\strategy_farm\artifacts\cards_approved")
 DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_VENUE_COST_MODEL = REPO_ROOT / "framework" / "registry" / "venue_cost_model.json"
+DEFAULT_OWNER_PRIORITY_REGISTRY = (
+    REPO_ROOT / "framework" / "registry" / "owner_priority_tracks.json"
+)
 # Follow the same explicit manifest pointer as live_book_pulse. The reviewed
 # 2026-07-19 book remains the fallback; a new book is never selected merely
 # because a newer-looking file appeared in the report directory.
@@ -249,6 +252,129 @@ def load_venue_cost_model(path: Path = DEFAULT_VENUE_COST_MODEL) -> tuple[dict |
     provenance["generated"] = model.get("generated")
     provenance["artifact"] = model.get("_artifact")
     return model, provenance
+
+
+def load_owner_priority_registry(
+    path: Path = DEFAULT_OWNER_PRIORITY_REGISTRY,
+) -> tuple[dict[str, dict], dict]:
+    """Load explicit OWNER ordering overrides; malformed input yields no overrides."""
+
+    provenance = {
+        "kind": "owner_priority_tracks",
+        "path": str(Path(path)),
+        "sha256": None,
+        "load_status": "unavailable",
+    }
+    try:
+        raw = Path(path).read_bytes()
+        provenance["sha256"] = hashlib.sha256(raw).hexdigest()
+
+        def no_duplicates(pairs: list[tuple[str, object]]) -> dict:
+            value: dict = {}
+            for key, item in pairs:
+                if key in value:
+                    raise ValueError(f"duplicate key: {key}")
+                value[key] = item
+            return value
+
+        document = json.loads(raw.decode("utf-8-sig"), object_pairs_hook=no_duplicates)
+        if not isinstance(document, dict):
+            raise ValueError("root_not_object")
+        if document.get("schema_version") != "qm.owner-priority-tracks/v1":
+            raise ValueError("schema_mismatch")
+        if document.get("policy") != "EXPLICIT_OWNER_ORDERING_PRIOR_NOT_PIPELINE_EVIDENCE":
+            raise ValueError("policy_mismatch")
+        raw_entries = document.get("entries")
+        if not isinstance(raw_entries, list):
+            raise ValueError("entries_not_list")
+        entries: dict[str, dict] = {}
+        for index, entry in enumerate(raw_entries):
+            if not isinstance(entry, dict):
+                raise ValueError(f"entry_{index}_not_object")
+            ea_id = str(entry.get("ea_id") or "").strip()
+            if not re.fullmatch(r"QM5_[1-9][0-9]*", ea_id) or ea_id in entries:
+                raise ValueError(f"entry_{index}_ea_id_invalid_or_duplicate")
+            if entry.get("priority_track") is not True:
+                raise ValueError(f"entry_{index}_priority_track_not_true")
+            asset = str(entry.get("asset_class") or "").strip()
+            timeframe = str(entry.get("timeframe") or "").strip().upper()
+            if asset.casefold() in {"", "unknown", "na", "n/a"}:
+                raise ValueError(f"entry_{index}_asset_unresolved")
+            if timeframe.casefold() in {"", "unknown", "na", "n/a"}:
+                raise ValueError(f"entry_{index}_timeframe_unresolved")
+            targets = entry.get("target_symbols")
+            excluded = entry.get("excluded_symbols")
+            if not isinstance(targets, list) or not targets or not isinstance(excluded, list):
+                raise ValueError(f"entry_{index}_symbol_contract_invalid")
+            target_symbols = [str(value).strip().upper() for value in targets]
+            excluded_symbols = [str(value).strip().upper() for value in excluded]
+            if (
+                any(not value.endswith(".DWX") for value in target_symbols + excluded_symbols)
+                or len(set(target_symbols)) != len(target_symbols)
+                or len(set(excluded_symbols)) != len(excluded_symbols)
+                or set(target_symbols) & set(excluded_symbols)
+            ):
+                raise ValueError(f"entry_{index}_symbol_contract_invalid")
+            if not str(entry.get("owner_reference") or "").startswith("OWNER_DECISION_"):
+                raise ValueError(f"entry_{index}_owner_reference_invalid")
+            if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", str(entry.get("decision_date") or "")):
+                raise ValueError(f"entry_{index}_decision_date_invalid")
+            source = entry.get("decision_source")
+            if not isinstance(source, dict):
+                raise ValueError(f"entry_{index}_decision_source_missing")
+            if not re.fullmatch(r"[0-9a-fA-F]{64}", str(source.get("sha256") or "")):
+                raise ValueError(f"entry_{index}_decision_source_sha_invalid")
+            if not re.fullmatch(r"[0-9a-fA-F]{40}", str(source.get("commit_sha") or "")):
+                raise ValueError(f"entry_{index}_decision_source_commit_invalid")
+            entries[ea_id] = {
+                **entry,
+                "ea_id": ea_id,
+                "asset_class": asset,
+                "timeframe": timeframe,
+                "target_symbols": target_symbols,
+                "excluded_symbols": excluded_symbols,
+            }
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+        provenance["load_status"] = "invalid" if provenance["sha256"] else "unavailable"
+        provenance["error"] = str(exc)
+        return {}, provenance
+    provenance["load_status"] = "loaded"
+    provenance["entries"] = len(entries)
+    return entries, provenance
+
+
+def apply_owner_priority_overrides(
+    scores: dict[str, dict],
+    entries: dict[str, dict],
+    provenance: dict,
+    *,
+    built_eas: set | None = None,
+) -> dict[str, dict]:
+    """Overlay committed OWNER ordering priors without changing any gate result."""
+
+    result = {key: dict(value) for key, value in scores.items()}
+    built = built_eas or set()
+    for ea_id, entry in sorted(entries.items()):
+        row = result.get(ea_id, {
+            "ea_id": ea_id,
+            "slug": "owner-priority-registry",
+            "mechanism": "other",
+            "built": ea_id in built,
+            "score": 0.0,
+        })
+        row.update({
+            "priority_track": True,
+            "priority_track_source": "owner_priority_registry",
+            "asset": entry["asset_class"],
+            "tf": entry["timeframe"],
+            "owner_priority_target_symbols": list(entry["target_symbols"]),
+            "owner_priority_excluded_symbols": list(entry["excluded_symbols"]),
+            "owner_priority_reference": entry["owner_reference"],
+            "owner_priority_registry_provenance": dict(provenance),
+            "pipeline_verdict_changed": False,
+        })
+        result[ea_id] = row
+    return result
 
 
 def normalize_symbol(symbol: str, venue_model: dict | None = None) -> str:
@@ -668,7 +794,8 @@ def _file_cache_token(path: Path) -> tuple:
 def compute_scores(cards_dir=DEFAULT_CARDS_DIR, db=DEFAULT_DB,
                    w_div: float = W_DIV_DEFAULT, w_met: float = W_MET_DEFAULT,
                    venue_cost_model_path=DEFAULT_VENUE_COST_MODEL,
-                   live_book_manifest_path=DEFAULT_LIVE_BOOK_MANIFEST) -> dict:
+                   live_book_manifest_path=DEFAULT_LIVE_BOOK_MANIFEST,
+                   owner_priority_registry_path=DEFAULT_OWNER_PRIORITY_REGISTRY) -> dict:
     """Entrypoint for farmctl. Returns {ea_id: score_dict}. Memoized per process
     (farmctl runs are short-lived). Fully guarded: any failure returns {} so the
     caller falls back to its existing ordering - the pump must never break on a
@@ -678,6 +805,7 @@ def compute_scores(cards_dir=DEFAULT_CARDS_DIR, db=DEFAULT_DB,
             str(cards_dir), str(db), round(w_div, 4), round(w_met, 4),
             _file_cache_token(Path(venue_cost_model_path)),
             _file_cache_token(Path(live_book_manifest_path)),
+            _file_cache_token(Path(owner_priority_registry_path)),
         )
     except Exception:
         return {}
@@ -700,6 +828,15 @@ def compute_scores(cards_dir=DEFAULT_CARDS_DIR, db=DEFAULT_DB,
             book_provenance=book_provenance,
         )
         result = {s["ea_id"]: s for s in scored if s["ea_id"]}
+        owner_entries, owner_provenance = load_owner_priority_registry(
+            Path(owner_priority_registry_path)
+        )
+        result = apply_owner_priority_overrides(
+            result,
+            owner_entries,
+            owner_provenance,
+            built_eas=built,
+        )
     except Exception:
         result = {}
     _SCORE_CACHE[key] = result
@@ -728,6 +865,11 @@ def main() -> int:
     ap.add_argument("--w-met", type=float, default=W_MET_DEFAULT)
     ap.add_argument("--venue-cost-model", type=Path, default=DEFAULT_VENUE_COST_MODEL)
     ap.add_argument("--live-book-manifest", type=Path, default=DEFAULT_LIVE_BOOK_MANIFEST)
+    ap.add_argument(
+        "--owner-priority-registry",
+        type=Path,
+        default=DEFAULT_OWNER_PRIORITY_REGISTRY,
+    )
     ap.add_argument("--dry-run", action="store_true", help="print ranking only (no writes)")
     args = ap.parse_args()
 
@@ -753,6 +895,17 @@ def main() -> int:
         book_symbol_counts=book_counts,
         cost_provenance=cost_provenance,
         book_provenance=book_provenance,
+    )
+    owner_entries, owner_provenance = load_owner_priority_registry(
+        args.owner_priority_registry
+    )
+    scored = list(
+        apply_owner_priority_overrides(
+            {row["ea_id"]: row for row in scored if row["ea_id"]},
+            owner_entries,
+            owner_provenance,
+            built_eas=built_eas,
+        ).values()
     )
     candidates = [s for s in scored if not s["built"]]
     candidates.sort(key=lambda s: (-s["score"], s["ea_id"]))
