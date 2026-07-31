@@ -1335,7 +1335,7 @@ try {
         # Missing state is fail-closed: a task introduced after OFF must not be
         # silently enabled by ON without an explicit captured operator state.
         $shouldEnable = $false
-        if ($taskEnabledBefore.ContainsKey($taskName)) { $shouldEnable = [bool]$taskEnabledBefore[$taskName] }
+        if ($taskEnabledBefore.Contains($taskName)) { $shouldEnable = [bool]$taskEnabledBefore[$taskName] }
         if ($shouldEnable) {
             Assert-NoFactoryOffIntent -Context "before enabling quiescence task '$taskName'"
             Enable-ScheduledTask -TaskName $taskName -ErrorAction Stop | Out-Null
