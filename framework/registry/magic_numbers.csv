@@ -15370,3 +15370,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20181,ftmo-joint-multisym-timer,1,XAUUSD.DWX,201810001,2026-07-27T00:00:00Z,Claude,active
 20181,ftmo-joint-multisym-timer,2,XTIUSD.DWX,201810002,2026-07-29T00:00:00Z,OWNER-delegated Codex,active
 20182,wti-sum-bull,0,XTIUSD.DWX,201820000,2026-07-29T08:25:41Z,Codex,active
+20072,4h-box-frankfurt-london-r1-recovery,0,EURUSD.DWX,200720000,2026-07-31,Codex,active
+20072,4h-box-frankfurt-london-r1-recovery,1,GBPUSD.DWX,200720001,2026-07-31,Codex,active
+20072,4h-box-frankfurt-london-r1-recovery,2,EURGBP.DWX,200720002,2026-07-31,Codex,active
+20072,4h-box-frankfurt-london-r1-recovery,3,EURJPY.DWX,200720003,2026-07-31,Codex,active
+11364,robo-gbpjpy-night-range,0,GBPJPY.DWX,113640000,2026-07-31,Codex,active
+20092,pricebob-refbar-breakout-correlated-metal-xagusd,0,XAGUSD.DWX,200920000,2026-07-31,Codex,active
