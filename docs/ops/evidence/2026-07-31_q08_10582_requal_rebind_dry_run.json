@@ -1,0 +1,192 @@
+{
+  "blockers": [
+    "apply_window: FACTORY_OFF flag missing",
+    "apply_window: active work-item count is 4, expected 0"
+  ],
+  "exception_contract": {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-31_q08_10582_requal_exception.json",
+    "sha256": "717bdea188c3829093f3c9517eacadd4a62fd2213f61cd7b675a3d808a1ba4b2"
+  },
+  "gates": {
+    "apply_window": {
+      "active_work_items": 4,
+      "blockers": [
+        "FACTORY_OFF flag missing",
+        "active work-item count is 4, expected 0"
+      ],
+      "factory_off": null,
+      "status": "BLOCKED"
+    },
+    "archive_required": {
+      "blockers": [],
+      "destination": "D:\\QM\\reports\\work_items\\_requal_archive\\95015420-11d0-4c11-bb98-25fa2a361048\\exception_717bdea188c38290",
+      "old_invalid_aggregate": {
+        "bytes": 12886,
+        "path": "D:\\QM\\reports\\work_items\\95015420-11d0-4c11-bb98-25fa2a361048\\QM5_10582\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "sha256": "42feb4cff28643710464871583f8ebadcaa14134764b4f8fbabcad2a5ed68af6"
+      },
+      "policy": "MOVE_WHOLE_WORK_ITEM_ROOT_NO_DELETE_NO_OVERWRITE",
+      "source": "D:\\QM\\reports\\work_items\\95015420-11d0-4c11-bb98-25fa2a361048",
+      "status": "PASS"
+    },
+    "artifact_bindings": {
+      "artifacts": [
+        {
+          "bytes": 47927,
+          "path": "C:\\QM\\repo\\tools\\strategy_farm\\q08_single_target_requal.py",
+          "role": "controller_source",
+          "sha256": "440bf6e555e7e4b0a35d7bcb7250bc6dd3e52915d3f6c231cb9845701383fd9c",
+          "sha256_basis": "UTF8_TEXT_LF_NORMALIZED"
+        },
+        {
+          "bytes": 50055,
+          "path": "C:\\QM\\repo\\framework\\scripts\\q08_5_neighborhood_runner.py",
+          "role": "parser_source",
+          "sha256": "6890b1ce1b99d2fc0be6cfb1ba3a4f0dd5a76c233448d10f4c5f1c039e5311d6",
+          "sha256_basis": "UTF8_TEXT_LF_NORMALIZED"
+        },
+        {
+          "bytes": 13012,
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\QM5_10582_mql5-ema-pred.mq5",
+          "role": "mq5",
+          "sha256": "a7cbabb034a788e483bb882d5e6160e33cddf20f558ca91f6bbac3ca030314d9",
+          "sha256_basis": "RAW_BYTES"
+        },
+        {
+          "bytes": 322308,
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\QM5_10582_mql5-ema-pred.ex5",
+          "role": "ex5",
+          "sha256": "ed764f69df58b0e58f45b6d56825e453127e803b98b2f4ba778924faf90b8603",
+          "sha256_basis": "RAW_BYTES"
+        },
+        {
+          "bytes": 770,
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest.set",
+          "role": "setfile_base",
+          "sha256": "082028275fbb0870d5e0665f5c3131d2d360bb8ff36597aada955c3692eb9d04",
+          "sha256_basis": "RAW_BYTES"
+        },
+        {
+          "bytes": 1008,
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_00.set",
+          "role": "setfile_ablation_00",
+          "sha256": "8d47c4cc8191e067af31920bceb3cdcb1af2ebea63b4ddb8df954b9a975cb4f3",
+          "sha256_basis": "RAW_BYTES"
+        },
+        {
+          "bytes": 1008,
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_01.set",
+          "role": "setfile_ablation_01",
+          "sha256": "f2bf459a3255c09eaf4b2333d870eb1a7d06462132c18e0d85dc3a06ac73d5d6",
+          "sha256_basis": "RAW_BYTES"
+        },
+        {
+          "bytes": 1008,
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_02.set",
+          "role": "setfile_ablation_02",
+          "sha256": "477bc9142a10fc09e590d32aad14e056af0710d520f35882525313e4babc6cf1",
+          "sha256_basis": "RAW_BYTES"
+        }
+      ],
+      "blockers": [],
+      "status": "PASS"
+    },
+    "git_provenance": {
+      "blockers": [],
+      "head_commit": "cc78228b5688581d946c4500ca94180be46b8a55",
+      "parser_file_sha256_at_fix_commit": "7580245a3065a7b143d7d07f8949ce6bc3b9de5dd89cd3f3b3bc4d670f0fef52",
+      "parser_fix_commit": "12629f50717461e0a66c3af5b466f1d8fcc11e59",
+      "reviewed_controller_commit": "197892c0a6b7bd146eeb38aa3f84987b9eb3c381",
+      "source_scope_clean": true,
+      "status": "PASS"
+    },
+    "implementation_review": {
+      "blockers": [],
+      "review": {
+        "receipt": {
+          "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-31_q08_10582_implementation_review_receipt.json",
+          "sha256": "f716bbd24c579ac130af48771bb1323799b5a0c5fc2dcf77160df9e8ea4353f4"
+        },
+        "reviewed_controller_commit": "197892c0a6b7bd146eeb38aa3f84987b9eb3c381",
+        "reviewer": "Claude",
+        "status": "APPROVED",
+        "verdict": "APPROVED"
+      },
+      "status": "PASS"
+    },
+    "parser_all_four_setfiles": {
+      "blockers": [],
+      "setfiles": [
+        {
+          "assignment_count": 6,
+          "error": null,
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest.set",
+          "role": "setfile_base",
+          "sha256": "082028275fbb0870d5e0665f5c3131d2d360bb8ff36597aada955c3692eb9d04"
+        },
+        {
+          "assignment_count": 6,
+          "error": null,
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_00.set",
+          "role": "setfile_ablation_00",
+          "sha256": "8d47c4cc8191e067af31920bceb3cdcb1af2ebea63b4ddb8df954b9a975cb4f3"
+        },
+        {
+          "assignment_count": 6,
+          "error": null,
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_01.set",
+          "role": "setfile_ablation_01",
+          "sha256": "f2bf459a3255c09eaf4b2333d870eb1a7d06462132c18e0d85dc3a06ac73d5d6"
+        },
+        {
+          "assignment_count": 6,
+          "error": null,
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_02.set",
+          "role": "setfile_ablation_02",
+          "sha256": "477bc9142a10fc09e590d32aad14e056af0710d520f35882525313e4babc6cf1"
+        }
+      ],
+      "status": "PASS"
+    },
+    "row_cas": {
+      "mismatches": [],
+      "row": {
+        "ea_id": "QM5_10582",
+        "evidence_path": "D:\\QM\\reports\\work_items\\95015420-11d0-4c11-bb98-25fa2a361048\\QM5_10582\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "id": "95015420-11d0-4c11-bb98-25fa2a361048",
+        "payload_sha256": "b8b503e258034b65466fcb42e275dfb7eff60624447479b78eda85416ed0ce92",
+        "phase": "Q08",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_00.set",
+        "state": {
+          "attempt_count": 0,
+          "claimed_by": null,
+          "evidence_path": "D:\\QM\\reports\\work_items\\95015420-11d0-4c11-bb98-25fa2a361048\\QM5_10582\\Q08\\XAUUSD_DWX\\aggregate.json",
+          "payload_json": "{\"archived_report_root_on_requeue\": \"D:\\\\QM\\\\reports\\\\work_items\\\\95015420-11d0-4c11-bb98-25fa2a361048.requeued_20260727T0341290000\", \"claimed_at_iso\": \"2026-07-27T03:49:44+00:00\", \"claimed_by_worker_pid\": 13672, \"commit_reservation_gb\": 8.0, \"commit_reservation_until_utc\": \"2026-07-27T03:54:44+00:00\", \"ea_dir_name\": \"QM5_10582_mql5-ema-pred\", \"effective_min_trades\": 5, \"evidence_binding_required\": null, \"evidence_provenance\": \"phase_runner\", \"expected_ex5_sha256\": null, \"expected_expert\": null, \"expected_from_date\": null, \"expected_mq5_sha256\": null, \"expected_period\": null, \"expected_setfile_sha256\": null, \"expected_symbol\": null, \"expected_to_date\": null, \"expected_trades_per_year_per_symbol\": null, \"from_date\": null, \"log_path\": \"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_95015420-11d0-4c11-bb98-25fa2a361048.log\", \"p2_run_stage\": null, \"phase_evidence_path\": null, \"phase_runner\": \"C:\\\\QM\\\\repo\\\\framework\\\\scripts\\\\q08_davey\\\\aggregate.py\", \"pid\": 11188, \"promoted_from_phase\": \"Q07\", \"promoted_from_work_item\": \"ec6090aa-f087-4df7-9b01-8bef195b60e6\", \"promotion_source\": \"farmctl_enqueue_backtest_ea\", \"report_root\": \"D:\\\\QM\\\\reports\\\\work_items\\\\95015420-11d0-4c11-bb98-25fa2a361048\", \"requeued_at\": \"2026-07-27T03:41:29+00:00\", \"run_smoke_exit_code\": 0, \"smoke_year_count\": null, \"started_at_iso\": \"2026-07-27T03:49:44+00:00\", \"terminal\": \"T7\", \"timeout_min\": 368, \"to_date\": null, \"verdict_reason\": \"q08_8.5_neighborhood:neighborhood_evidence_lineage_invalid:baseline_setfile_defect:empty_strategy_params\", \"verdict_taxonomy\": \"infra\"}",
+          "status": "done",
+          "updated_at": "2026-07-27T04:36:23+00:00",
+          "verdict": "INFRA_FAIL"
+        },
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "verdict": "INFRA_FAIL"
+      },
+      "status": "PASS"
+    }
+  },
+  "generated_at_utc": "2026-07-31T16:48:35Z",
+  "global_invariant": {
+    "global_recovery_tool_modified": false,
+    "name": "MNT-007_Q08_INVALID_REPORT_NON_RETRYABLE_UNCHANGED",
+    "weakened": false
+  },
+  "mode": "DRY_RUN",
+  "mutation_performed": false,
+  "schema_version": "qm.q08-single-target-requal-plan/v1",
+  "status": "BLOCKED",
+  "target": {
+    "ea_id": "QM5_10582",
+    "phase": "Q08",
+    "symbol": "XAUUSD.DWX",
+    "work_item_id": "95015420-11d0-4c11-bb98-25fa2a361048"
+  }
+}
