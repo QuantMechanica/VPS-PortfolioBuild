@@ -183,9 +183,16 @@ Restore the verified `518a9b...b6d2f` EX5 preimage from `preimages_addendum_1051
 
 ## Empty review and signature fields
 
-**Claude review wording:**
+**Claude review wording:** APPROVED. Independently verified: addendum JSON SHA
+`9ae687d6…`, canonical EX5 == exact `cf2264bb` git blob (`04b62af2…`), live
+preset hash match. The two honest caveats are accepted as stated: (1) EX5-only
+executable provenance (Q10-run-bound), no invented compile lineage; (2) no
+EXECUTION_CONTRACT event for this pin — the tenth gate row correctly omits it.
+Behavioral riders (full June-28→July-13 framework delta) and the mandatory
+fresh position/order preflight are properly OWNER-facing. Deploy authority
+arises only with the OWNER signature below.
 
-**Claude reviewer/date:**
+**Claude reviewer/date:** Claude, 2026-07-31 ~22:45Z
 
 **OWNER decision wording:**
 
