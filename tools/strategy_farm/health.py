@@ -2139,9 +2139,13 @@ def _extract_hash(ev: dict | None, aliases: tuple[str, ...]) -> str | None:
 # WSF2: ea=set=ex5=report="x" previously returned AUTHENTICATED). Uppercase, short,
 # long, or non-hex all fail with reason code `malformed_hash`.
 _SHA256_HEX_RE = re.compile(r"^[0-9a-f]{64}$")
-# Facets that pin the *deployment identity* (must be identical across paired runs);
-# the report facet is the per-run artifact (must differ across paired runs).
-_PROV_IDENTITY_FACETS = ("ea", "set", "binary")
+# Facets that pin the *deployment identity* (must be identical across paired runs).
+# The generated set is intentionally per-run identity: Q05 carries rejection=0.0,
+# Q06 carries rejection=0.1, and Q07 changes the seed.  Requiring equal set hashes
+# made every correctly stressed pair impossible to authenticate.  Each set hash is
+# still mandatory and syntactically validated below; only EA source and binary must
+# remain identical.  Native reports likewise must differ across paired runs.
+_PROV_IDENTITY_FACETS = ("ea", "binary")
 
 
 def _valid_sha256(h) -> bool:
@@ -2161,8 +2165,9 @@ def _provenance_tier(
       (1) each facet hash (EA source, set-file, compiled binary, native report) on
           every backing payload is a valid 64-hex lowercase sha256 — a present but
           non-conforming value is `malformed_hash`; an absent one is `<facet>_hash`;
-      (2) when >=2 paired runs back the finding (the Q05/Q06 pair), they bind the SAME
-          EA/set/binary identity tuple — divergence is `identity_mismatch`;
+      (2) when >=2 paired runs back the finding, they bind the SAME EA/binary identity
+          tuple — generated stress/seed set hashes are each mandatory but are expected
+          to differ by phase;
       (3) those paired runs carry DISTINCT report hashes — an identical report hash is
           one run re-read, not a genuine pair, and is `report_hash_not_distinct`;
       (4) the caller confirms UNROUNDED KPIs were compared (`unrounded_kpis`) and the
@@ -2195,7 +2200,8 @@ def _provenance_tier(
 
     # (2)+(3) Paired-run identity binding only applies when >=2 runs back the finding.
     if len(payloads) >= 2:
-        # (2) EA/set/binary identity must be IDENTICAL across the paired runs.
+        # (2) EA/binary identity must be IDENTICAL across the paired runs.  The
+        # generated set is phase/seed-specific and therefore must not be equal-gated.
         for facet in _PROV_IDENTITY_FACETS:
             vals = facet_hashes[facet]
             if all(v is not None for v in vals) and len(set(vals)) != 1:

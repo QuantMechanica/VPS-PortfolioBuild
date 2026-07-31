@@ -19,6 +19,7 @@ setfile differs from baseline only in headers + qm_stress_reject_probability=0.
 from __future__ import annotations
 
 import argparse
+import hashlib
 from html import unescape
 import json
 import re
@@ -93,6 +94,74 @@ def _load_summary(summary_path: Path) -> dict | None:
         return json.loads(summary_path.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError):
         return None
+
+
+def _sha256_path(path: Path | None) -> str | None:
+    if path is None:
+        return None
+    try:
+        digest = hashlib.sha256()
+        with path.open("rb") as fh:
+            for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+                digest.update(chunk)
+        return digest.hexdigest()
+    except OSError:
+        return None
+
+
+def _summary_report_path(summary: dict | None) -> Path | None:
+    if not isinstance(summary, dict):
+        return None
+    runs = summary.get("runs") or []
+    if not runs or not isinstance(runs[-1], dict):
+        return None
+    raw = runs[-1].get("report_canonical_path") or runs[-1].get("report_source_path")
+    return Path(raw) if raw else None
+
+
+def _summary_provenance(summary_path: Path | None, setfile: Path | None = None) -> dict[str, str]:
+    """Copy run_smoke's hash-bound identity into the durable phase aggregate.
+
+    Older summaries may lack execution_identity.  In that case this helper does
+    not infer an EA/binary identity after the fact; it only binds artifacts that
+    are still part of the just-finished runner transaction (the generated set
+    and native report).  That keeps legacy evidence explicitly partial.
+    """
+    summary = _load_summary(summary_path) if summary_path else None
+    identity = summary.get("execution_identity") if isinstance(summary, dict) else None
+    identity = identity if isinstance(identity, dict) else {}
+    binary = identity.get("expert_binary") if isinstance(identity.get("expert_binary"), dict) else {}
+    binary_source = binary.get("source") if isinstance(binary.get("source"), dict) else {}
+    mq5 = identity.get("mq5_source") if isinstance(identity.get("mq5_source"), dict) else {}
+    set_identity = identity.get("setfile") if isinstance(identity.get("setfile"), dict) else {}
+    set_source = set_identity.get("source") if isinstance(set_identity.get("source"), dict) else {}
+    runs = (summary.get("runs") or []) if isinstance(summary, dict) else []
+    run = runs[-1] if runs and isinstance(runs[-1], dict) else {}
+    report_path = _summary_report_path(summary)
+
+    values = {
+        "ea_sha256": mq5.get("sha256"),
+        "ex5_sha256": binary_source.get("sha256"),
+        "set_sha256": set_source.get("sha256") or _sha256_path(setfile),
+        "report_sha256": run.get("report_sha256") or _sha256_path(report_path),
+    }
+    return {key: str(value) for key, value in values.items() if value}
+
+
+def _report_input_value(report_path: Path | None, key: str) -> tuple[bool, str | None]:
+    """Return (report_readable, effective tester input value)."""
+    if report_path is None:
+        return False, None
+    try:
+        html = report_path.read_text(encoding="utf-16", errors="replace")
+    except OSError:
+        return False, None
+    match = re.search(
+        rf"<b>\s*{re.escape(key)}\s*=\s*([^<]*)</b>",
+        html,
+        re.IGNORECASE,
+    )
+    return True, unescape(match.group(1)).strip() if match else None
 
 
 def summary_invalid_reason(summary_path: Path) -> str | None:
@@ -489,6 +558,7 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     else:
         pf, dd_money, trades = None, None, 0
     dd_pct = (dd_money / STARTING_EQUITY * 100.0) if dd_money is not None else None
+    provenance = _summary_provenance(summary, setfile)
 
     if summary is None and report_metrics is None:
         if timed_out:
@@ -550,6 +620,7 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "latest_full_year": latest_full_year,
         "full_history_from_override": full_history_from,
         "generated_at_utc": utc_now_iso(),
+        **provenance,
     }
 
 

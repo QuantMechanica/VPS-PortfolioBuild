@@ -33,7 +33,8 @@ from framework.scripts.q05_stress_medium import (
     _latest_report_metrics, _parse_pf_dd_trades, _select_run_summary,
     _text_from_completed_process, summary_invalid_reason, MIN_TRADES, PF_FLOOR,
     DD_PCT_MAX, STARTING_EQUITY, DEFAULT_TIMEOUT_SEC, RUNNER_HEADROOM_SEC,
-    _basket_tester_overrides,
+    _basket_tester_overrides, _load_summary, _summary_report_path,
+    _summary_provenance, _report_input_value,
 )
 from framework.scripts.gen_stress_setfile import stress_setfile_text
 
@@ -157,6 +158,24 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     else:
         pf, dd_money, trades = None, None, 0
     dd_pct = (dd_money / STARTING_EQUITY * 100.0) if dd_money is not None else None
+    summary_data = _load_summary(summary) if summary else None
+    report_path = _summary_report_path(summary_data)
+    if report_path is None and report_metrics and report_metrics.get("report_path"):
+        report_path = Path(report_metrics["report_path"])
+    report_readable, stress_input_raw = _report_input_value(
+        report_path,
+        "qm_stress_reject_probability",
+    )
+    try:
+        stress_input_value = float(stress_input_raw) if stress_input_raw is not None else None
+    except ValueError:
+        stress_input_value = None
+    stress_input_authenticated = (
+        report_readable
+        and stress_input_value is not None
+        and abs(stress_input_value - 0.10) <= 1e-12
+    )
+    provenance = _summary_provenance(summary, setfile)
 
     if summary is None and report_metrics is None:
         if timed_out:
@@ -166,6 +185,12 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
             verdict, reason = "INVALID", "summary_missing"
     elif invalid_reason:
         verdict, reason = "INVALID", invalid_reason
+    elif not report_readable:
+        verdict, reason = "INVALID", "stress_input_evidence_missing:native_report_unreadable"
+    elif not stress_input_authenticated:
+        observed = "missing" if stress_input_raw is None else stress_input_raw
+        verdict = "INVALID"
+        reason = f"stress_input_not_effective:expected=0.1000:observed={observed}"
     elif trades < MIN_TRADES:
         verdict, reason = "FAIL", f"trades_below_floor:trades={trades}:floor={MIN_TRADES}"
     elif pf is None:
@@ -186,6 +211,8 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "runner_symbol": symbol,
         "stress_level": LEVEL,
         "rejection_probability": 0.10,
+        "stress_input_value": stress_input_value,
+        "stress_input_authenticated": stress_input_authenticated,
         "verdict": verdict,
         "reason": reason,
         "pf": pf,
@@ -206,6 +233,7 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "latest_full_year": latest_full_year,
         "full_history_from_override": full_history_from,
         "generated_at_utc": utc_now_iso(),
+        **provenance,
     }
 
 

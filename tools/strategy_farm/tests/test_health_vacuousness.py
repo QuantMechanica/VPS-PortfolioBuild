@@ -107,11 +107,12 @@ def _sha(tag: str) -> str:
     return hashlib.sha256(tag.encode("utf-8")).hexdigest()
 
 
-# One deployed identity (EA source, set-file, compiled binary) shared by a genuine
-# Q05/Q06 pair; each run carries its OWN distinct native report hash. These are the
-# realistic distinct 64-hex values the reachability fixtures use.
+# One deployed EA/binary identity shared by a genuine Q05/Q06 pair.  Each phase
+# carries its own generated set and native report hash: Q05 and Q06 set bytes must
+# differ because the effective stress input changes from 0.0 to 0.1.
 _ID_EA = _sha("QM5_9301-ea-source-v1")
 _ID_SET = _sha("QM5_9301-setfile-v1")
+_ID_SET_Q06 = _sha("QM5_9301-setfile-q06-v1")
 _ID_EX5 = _sha("QM5_9301-ex5-binary-v1")
 _RPT_Q05 = _sha("QM5_9301-q05-native-report")
 _RPT_Q06 = _sha("QM5_9301-q06-native-report")
@@ -159,6 +160,16 @@ class ProvenanceTierTest(unittest.TestCase):
     def test_authenticated_when_full_tuple_bound_nested(self):
         ev = dict(_FULL_HASHES_NESTED, pf=1.2)
         tier, missing = health._provenance_tier(ev, unrounded_ok=True, telemetry_ok=True)
+        self.assertEqual(tier, health.TIER_AUTHENTICATED, missing)
+
+    def test_paired_generated_sets_may_differ(self):
+        q05 = dict(_FULL_HASHES_FLAT)
+        q06 = dict(_FULL_HASHES_FLAT, set_sha256=_ID_SET_Q06, report_sha256=_RPT_Q06)
+        tier, missing = health._provenance_tier(
+            (q05, q06),
+            unrounded_ok=True,
+            telemetry_ok=True,
+        )
         self.assertEqual(tier, health.TIER_AUTHENTICATED, missing)
 
     def test_missing_unrounded_or_telemetry_downgrades(self):
@@ -321,14 +332,15 @@ class Q05Q06StressIdentityTest(unittest.TestCase):
         self.assertEqual(res2["status"], "FAIL")
 
     def test_authenticated_tier_when_hashes_bound(self):
-        # A vacuous pair whose evidence binds the SAME EA/set/binary identity across both
-        # runs AND a DISTINCT native report hash for each is promoted to AUTHENTICATED —
+        # A vacuous pair whose evidence binds the SAME EA/binary identity, each phase's
+        # generated set, and a DISTINCT native report hash is promoted to AUTHENTICATED —
         # proving the two-tier split is real, and reachable ONLY via valid provenance.
         tmp = Path(self.enterContext(_tmpdir()))
         db = tmp / "farm.sqlite"
 
         def ev(name, report_hash, rp=None):
-            obj = {"ea_sha256": _ID_EA, "set_sha256": _ID_SET, "ex5_sha256": _ID_EX5,
+            set_hash = _ID_SET_Q06 if rp is not None else _ID_SET
+            obj = {"ea_sha256": _ID_EA, "set_sha256": set_hash, "ex5_sha256": _ID_EX5,
                    "report_sha256": report_hash, "pf": 1.23, "dd_money": 5000.0, "trades": 200,
                    "summary_path": f"D:/x/{name}/summary.json"}
             if rp is not None:

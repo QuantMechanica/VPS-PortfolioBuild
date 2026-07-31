@@ -535,9 +535,76 @@ class Q05Q07VerdictTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             summary = root / "QM5_12969" / "20260713_072000" / "summary.json"
+            report = summary.parent / "raw" / "run_01" / "report.htm"
+            setfile = root / "12969.set"
+            setfile.write_text("qm_stress_reject_probability=0.1000\n", encoding="utf-8")
 
             def fake_run(_args, **_kwargs):
                 summary.parent.mkdir(parents=True)
+                report.parent.mkdir(parents=True)
+                report.write_text(
+                    "<html><b>qm_stress_reject_probability=0.1000</b></html>",
+                    encoding="utf-16",
+                )
+                summary.write_text(
+                    json.dumps({
+                        "result": "PASS",
+                        "ea_id": 12969,
+                        "expert": r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                        "symbol": "USDJPY.DWX",
+                        "period": "M30",
+                        "terminal": "T1",
+                        "execution_identity": {
+                            "expert_binary": {"source": {"sha256": "b" * 64}},
+                            "mq5_source": {"sha256": "a" * 64},
+                            "setfile": {"source": {"sha256": "c" * 64}},
+                        },
+                        "runs": [{
+                            "profit_factor": 1.3,
+                            "drawdown": 1800.0,
+                            "total_trades": 300,
+                            "report_canonical_path": str(report),
+                            "report_sha256": "d" * 64,
+                        }],
+                    }),
+                    encoding="utf-8",
+                )
+                return SimpleNamespace(
+                    returncode=0,
+                    stdout=f"run_smoke.summary={summary}\n",
+                    stderr="",
+                )
+
+            with patch.object(q06.subprocess, "run", side_effect=fake_run):
+                result = q06.run_harsh_backtest(
+                    ea_id=12969,
+                    ea_expert=r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                    symbol="USDJPY.DWX",
+                    setfile=setfile,
+                    terminal="T1",
+                    period="M30",
+                    report_root=root,
+                )
+
+        self.assertEqual(result["summary_path"], str(summary))
+        self.assertEqual(result["metric_source"], "summary_json")
+        self.assertEqual(result["verdict"], "PASS")
+        self.assertTrue(result["stress_input_authenticated"])
+        self.assertEqual(result["stress_input_value"], 0.1)
+        self.assertEqual(result["ea_sha256"], "a" * 64)
+        self.assertEqual(result["ex5_sha256"], "b" * 64)
+        self.assertEqual(result["set_sha256"], "c" * 64)
+        self.assertEqual(result["report_sha256"], "d" * 64)
+
+    def test_q06_rejects_report_when_stress_input_is_not_effective(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            summary = root / "QM5_12969" / "20260713_072000" / "summary.json"
+            report = summary.parent / "raw" / "run_01" / "report.htm"
+
+            def fake_run(_args, **_kwargs):
+                report.parent.mkdir(parents=True)
+                report.write_text("<html><b>qm_ea_id=12969</b></html>", encoding="utf-16")
                 summary.write_text(
                     json.dumps({
                         "result": "PASS",
@@ -550,6 +617,7 @@ class Q05Q07VerdictTests(unittest.TestCase):
                             "profit_factor": 1.3,
                             "drawdown": 1800.0,
                             "total_trades": 300,
+                            "report_canonical_path": str(report),
                         }],
                     }),
                     encoding="utf-8",
@@ -571,9 +639,9 @@ class Q05Q07VerdictTests(unittest.TestCase):
                     report_root=root,
                 )
 
-        self.assertEqual(result["summary_path"], str(summary))
-        self.assertEqual(result["metric_source"], "summary_json")
-        self.assertEqual(result["verdict"], "PASS")
+        self.assertEqual(result["verdict"], "INVALID")
+        self.assertFalse(result["stress_input_authenticated"])
+        self.assertIn("stress_input_not_effective", result["reason"])
 
     def test_q05_passes_basket_manifest_tester_overrides(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
