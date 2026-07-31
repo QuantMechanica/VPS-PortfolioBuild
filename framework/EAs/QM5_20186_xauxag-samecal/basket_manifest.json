@@ -1,0 +1,10 @@
+{
+  "logical_symbol": "QM5_20186_XAU_XAG_SAMECAL_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "traded_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "notes": [
+    "One logical two-leg XAU/XAG monthly same-calendar relative-seasonality basket. For the decision calendar month, inspect ten prior years and retain at least five synchronized paired returns; buy the metal with the higher historical average, short the other, and evaluate combined package PnL and costs at Q02."
+  ]
+}

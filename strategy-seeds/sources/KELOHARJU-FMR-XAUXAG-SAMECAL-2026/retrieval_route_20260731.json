@@ -1,0 +1,23 @@
+{
+  "checked_at": "2026-07-31",
+  "reader": "qm-read-trading-source deterministic router",
+  "results": [
+    {
+      "url": "https://www.nber.org/system/files/working_papers/w20815/w20815.pdf",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter": "generic",
+      "adapter_state": "ROUTER_ONLY",
+      "retrieved_at": null
+    },
+    {
+      "url": "https://openaccess.city.ac.uk/id/eprint/6416/1/Fuertes_Miffre_Rallis_JBF2010%28CRO%29.pdf",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter": "generic",
+      "adapter_state": "ROUTER_ONLY",
+      "retrieved_at": null
+    }
+  ],
+  "evidence_boundary": "No fresh generic-source text was retrieved or used. The card relies on the pre-existing OWNER-approved complete repository packets KELOHARJU-RETSEAS-2016 and FMR-MOMTS-2010."
+}
