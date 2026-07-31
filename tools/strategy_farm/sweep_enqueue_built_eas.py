@@ -221,7 +221,15 @@ def pending_active_exists(ea_id, symbol, phase):
         "AND status IN ('pending','active') LIMIT 1", (ea_id, symbol, phase)
     ).fetchone() is not None
 
-def insert_wi(phase, ea_id, symbol, setfile, payload):
+def insert_wi(
+    phase,
+    ea_id,
+    symbol,
+    setfile,
+    payload,
+    *,
+    allow_logical_basket=False,
+):
     if phase in {"Q02", "P2"} and farmctl.is_q02_requeue_excluded(ea_id, REQUEUE_EXCLUDED_EAS):
         report.setdefault("requeue_excluded_refused", []).append({
             "ea_id": ea_id,
@@ -234,7 +242,10 @@ def insert_wi(phase, ea_id, symbol, setfile, payload):
     # broker symbols have no local history -> the tester fails history sync with
     # "file opening or reading error [32]" and the item INFRA_FAILs without ever
     # producing a result. Refuse non-.DWX outright.
-    if not str(symbol).upper().endswith(".DWX"):
+    if (
+        not str(symbol).upper().endswith(".DWX")
+        and not allow_logical_basket
+    ):
         report.setdefault("non_dwx_refused", []).append({"ea_id": ea_id, "symbol": symbol})
         return False
     if APPLY:
@@ -292,30 +303,115 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
         report["part1_never_tested"]["skipped"].append(
             {"ea_id": ea_id, "reason": "no_setfiles", "dir": pick.name})
         continue
-    parsed = []
-    for sf in sets:
-        m = SETFILE_RE.search(sf.name)
-        if not m:
+    manifest_path = pick / "basket_manifest.json"
+    basket_manifest = None
+    if manifest_path.exists():
+        try:
+            basket_manifest = json.loads(
+                manifest_path.read_text(encoding="utf-8-sig")
+            )
+        except (OSError, json.JSONDecodeError):
+            basket_manifest = None
+        required_manifest_fields = (
+            "logical_symbol",
+            "host_symbol",
+            "host_timeframe",
+        )
+        if (
+            not isinstance(basket_manifest, dict)
+            or any(
+                not str(basket_manifest.get(field) or "").strip()
+                for field in required_manifest_fields
+            )
+        ):
             report["part1_never_tested"]["skipped"].append(
-                {"ea_id": ea_id, "reason": "setfile_parse_failed", "setfile": sf.name})
+                {
+                    "ea_id": ea_id,
+                    "reason": "basket_manifest_invalid",
+                    "manifest": str(manifest_path),
+                })
             continue
-        symbol = m.group(1)
-        reason = farmctl._q02_symbol_skip_reason(symbol, allow_logical_basket=True)
+        basket_manifest["manifest_path"] = str(manifest_path.resolve())
+    parsed = []
+    if basket_manifest:
+        logical_symbol = str(basket_manifest["logical_symbol"])
+        host_timeframe = str(basket_manifest["host_timeframe"])
+        expected_logical_path = (
+            pick
+            / "sets"
+            / f"{pick.name}_{logical_symbol}_{host_timeframe}_backtest.set"
+        )
+        logical_matches = (
+            [expected_logical_path]
+            if expected_logical_path.exists()
+            else sorted(
+                (pick / "sets").glob(
+                    f"*_{logical_symbol}_{host_timeframe}_backtest.set"
+                )
+            )
+        )
+        if not logical_matches:
+            report["part1_never_tested"]["skipped"].append(
+                {
+                    "ea_id": ea_id,
+                    "reason": "basket_manifest_missing_logical_setfile",
+                    "dir": pick.name,
+                })
+            continue
+        logical_path = logical_matches[0].resolve()
+        payload_extra = farmctl._basket_q02_payload(basket_manifest)
+        parsed.append((
+            logical_path,
+            logical_symbol,
+            host_timeframe,
+            payload_extra,
+        ))
+        for sf in sets:
+            if sf.resolve() != logical_path.resolve():
+                report["part1_never_tested"]["skipped"].append(
+                    {
+                        "ea_id": ea_id,
+                        "reason": "basket_manifest_logical_setfile_preferred",
+                        "setfile": sf.name,
+                    })
+    else:
+        for sf in sets:
+            m = SETFILE_RE.search(sf.name)
+            if not m:
+                report["part1_never_tested"]["skipped"].append(
+                    {"ea_id": ea_id, "reason": "setfile_parse_failed", "setfile": sf.name})
+                continue
+            symbol = m.group(1)
+            reason = farmctl._q02_symbol_skip_reason(symbol)
+            if reason:
+                report["part1_never_tested"]["skipped"].append(
+                    {"ea_id": ea_id, "symbol": symbol, "reason": reason, "setfile": sf.name})
+                continue
+            parsed.append((sf, symbol, m.group(2), {}))
+    eligible_parsed = []
+    for sf, symbol, tf, payload_extra in parsed:
+        reason = farmctl._q02_symbol_skip_reason(
+            symbol,
+            allow_logical_basket=bool(basket_manifest),
+        )
         if reason:
             report["part1_never_tested"]["skipped"].append(
                 {"ea_id": ea_id, "symbol": symbol, "reason": reason, "setfile": sf.name})
             continue
-        parsed.append((sf, symbol, m.group(2)))
+        eligible_parsed.append((sf, symbol, tf, payload_extra))
+    parsed = eligible_parsed
     stage1, deferred = farmctl._stage_q02_setfiles(parsed)
     if deferred and APPLY:
         # Defer the sidecar write until the same final interlock check as the DB
         # commit.  Otherwise OFF racing this sweep could roll back SQLite while
         # leaving a promoted/deferred file mutation behind.
         deferred_records.append((ea_id, deferred, "sweep_enqueue"))
-    for _sf, _sym, _tf in deferred:
+    for deferred_item in deferred:
+        _sf, _sym, _tf = deferred_item[:3]
         report["part1_never_tested"]["skipped"].append(
             {"ea_id": ea_id, "symbol": _sym, "reason": "staged_deferred_symbol"})
-    for sf, symbol, tf in stage1:
+    for stage1_item in stage1:
+        sf, symbol, tf, payload_extra = stage1_item
         if TARGET_SYMBOLS and symbol not in TARGET_SYMBOLS:
             report["part1_never_tested"]["skipped"].append(
                 {"ea_id": ea_id, "symbol": symbol, "reason": "target_symbol_filter"})
@@ -327,9 +423,17 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
         payload = {"host_symbol": symbol, "host_timeframe": tf,
                    "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
                    "enqueued_at_utc": NOW}
+        payload.update(payload_extra)
         if ea_id in PRIORITY_EAS:
             payload["priority_track"] = True
-        if not insert_wi("Q02", ea_id, symbol, sf, payload):
+        if not insert_wi(
+            "Q02",
+            ea_id,
+            symbol,
+            sf,
+            payload,
+            allow_logical_basket=bool(payload_extra.get("basket_manifest")),
+        ):
             continue
         budget_left -= 1
         report["part1_never_tested"]["enqueued"].append(
