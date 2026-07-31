@@ -42,6 +42,18 @@ try:
     import agent_router
 except ModuleNotFoundError:
     from tools.strategy_farm import agent_router
+try:
+    from factory_mutation_lock import (
+        DEFAULT_PATH as FACTORY_MUTATION_LOCK_PATH,
+        DEFAULT_STALE_REAP_SECONDS as FACTORY_MUTATION_LOCK_DEAD_FAIL_SECONDS,
+        inspect_factory_mutation_lock,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.factory_mutation_lock import (
+        DEFAULT_PATH as FACTORY_MUTATION_LOCK_PATH,
+        DEFAULT_STALE_REAP_SECONDS as FACTORY_MUTATION_LOCK_DEAD_FAIL_SECONDS,
+        inspect_factory_mutation_lock,
+    )
 
 ROOT = Path(r"D:\QM\strategy_farm")
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -64,6 +76,7 @@ MT5_SATURATION_MIN_WORKERS = 7
 # failure floor, but it must not erase missing design capacity: a complete
 # enabled subset is WARN whenever fewer than all ten installed slots are usable.
 DISABLED_TERMINALS_FILE = ROOT / "state" / "disabled_terminals.txt"
+FACTORY_MUTATION_LOCK_LIVE_WARN_SECONDS = 10 * 60.0
 
 # --- WS-F standing vacuousness audit (ULTRACODE 2026-07-26) ------------------
 # Detectors that authenticate provenance before flagging a gate as vacuous. Every
@@ -770,6 +783,109 @@ def chk_pump_task_health() -> dict:
                           "If FAIL: verify no pump is running, then delete "
                           "D:\\QM\\strategy_farm\\logs\\pump_task.lock")
     return _check("pump_task_lastresult", "OK", 0, 0, "last run exit 0", "")
+
+
+def chk_factory_mutation_lock() -> dict:
+    """Alarm on a stale global mutation lock without mutating farm state."""
+
+    snapshot = inspect_factory_mutation_lock(FACTORY_MUTATION_LOCK_PATH)
+    state = str(snapshot.get("status") or "unknown")
+    age_value = snapshot.get("age_seconds")
+    age_known = isinstance(age_value, (int, float))
+    age_seconds = float(age_value) if age_known else 0.0
+    record = snapshot.get("record") if isinstance(snapshot.get("record"), dict) else {}
+    pid = record.get("pid", "?")
+    owner = record.get("owner", "?")
+    value = f"{state}:pid={pid}:age={int(age_seconds)}s"
+
+    if state == "absent":
+        return _check(
+            "factory_mutation_lock",
+            "OK",
+            "absent",
+            int(FACTORY_MUTATION_LOCK_DEAD_FAIL_SECONDS),
+            "global mutation lock absent",
+            "",
+        )
+
+    if state in {"dead", "reused"}:
+        severity = (
+            "FAIL"
+            if age_seconds >= FACTORY_MUTATION_LOCK_DEAD_FAIL_SECONDS
+            else "WARN"
+        )
+        return _check(
+            "factory_mutation_lock",
+            severity,
+            value,
+            int(FACTORY_MUTATION_LOCK_DEAD_FAIL_SECONDS),
+            f"mutation lock owner {owner!r} PID {pid} is {state}; "
+            f"record age {int(age_seconds)}s",
+            "Let the next normal mutator perform the audited content-CAS reap; "
+            "then inspect D:\\QM\\reports\\state\\mutation_lock_reaps.jsonl. "
+            "Do not delete a live or unreadable lock.",
+        )
+
+    if state == "invalid":
+        severity = (
+            "FAIL"
+            if age_seconds >= FACTORY_MUTATION_LOCK_DEAD_FAIL_SECONDS
+            else "WARN"
+        )
+        return _check(
+            "factory_mutation_lock",
+            severity,
+            value,
+            int(FACTORY_MUTATION_LOCK_DEAD_FAIL_SECONDS),
+            f"readable mutation lock has an invalid record, age {int(age_seconds)}s: "
+            f"{snapshot.get('error', 'unknown parse error')}",
+            "Inspect the record and owner identity; automatic reap deliberately "
+            "fails closed for invalid content.",
+        )
+
+    # A currently held Windows lock is deliberately unreadable because its live
+    # owner denies sharing. Prolonged live/unreadable ownership warns, but is
+    # never reaped or promoted to dead-holder FAIL without positive PID proof.
+    if state in {"live", "unreadable", "unknown"}:
+        severity = (
+            "WARN"
+            if (
+                not age_known
+                or age_seconds >= FACTORY_MUTATION_LOCK_LIVE_WARN_SECONDS
+            )
+            else "OK"
+        )
+        detail = (
+            f"mutation lock state={state}, owner={owner!r}, PID={pid}, "
+            f"age={int(age_seconds)}s"
+        )
+        if state == "unreadable":
+            detail += "; no-sharing handle may be held by a live mutator"
+            if not age_known:
+                detail += "; lock age could not be inspected"
+        return _check(
+            "factory_mutation_lock",
+            severity,
+            value,
+            int(FACTORY_MUTATION_LOCK_LIVE_WARN_SECONDS),
+            detail,
+            (
+                "If the age keeps rising, identify the owning mutator and wait for "
+                "its guarded operation; never reap without a readable record and "
+                "positive dead-PID proof."
+                if severity == "WARN"
+                else ""
+            ),
+        )
+
+    return _check(
+        "factory_mutation_lock",
+        "WARN",
+        value,
+        int(FACTORY_MUTATION_LOCK_LIVE_WARN_SECONDS),
+        f"unexpected mutation lock inspection state: {state}",
+        "Inspect FACTORY_MUTATION.lock and health check implementation.",
+    )
 
 
 def chk_p2_pass_no_p3(con) -> dict:
@@ -2827,6 +2943,7 @@ ALL_CHECKS = [
     ("codex_review_fail_rate", chk_codex_review_fail_rate, True),  # needs con
     ("cards_ready_stagnation", chk_cards_ready_stagnation, True),
     ("pump_task_health",       chk_pump_task_health,       False),
+    ("factory_mutation_lock",  chk_factory_mutation_lock,  False),
     ("work_items_timestamp_sanity", chk_work_items_timestamp_sanity, True),
     ("p2_pass_no_p3",          chk_p2_pass_no_p3,          True),
     ("ea_metrics_fresh",       chk_ea_metrics_fresh,       True),
