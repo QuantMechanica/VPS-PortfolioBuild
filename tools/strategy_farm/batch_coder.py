@@ -1,13 +1,15 @@
 import os
 import re
-import json
-import sqlite3
-import uuid
-import datetime
+from pathlib import Path
+
+try:
+    from tools.strategy_farm import agent_router
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    import agent_router  # type: ignore
 
 cards_dir = "D:/QM/strategy_farm/artifacts/cards_approved"
 ea_base_dir = "C:/QM/repo/framework/EAs"
-db_path = "D:/QM/strategy_farm/state/farm_state.sqlite"
+strategy_farm_root = Path("D:/QM/strategy_farm")
 
 def parse_frontmatter(content):
     match = re.search(r'^---\s*\n(.*?)\n---\s*\n', content, re.DOTALL)
@@ -185,10 +187,23 @@ double OnTester()
 """
     return template
 
+
+def enqueue_generated_build(ea_id, slug, mq5_path):
+    """Queue a generated skeleton through the canonical router contract."""
+
+    return agent_router.enqueue_task(
+        strategy_farm_root,
+        "build_ea",
+        state="BACKLOG",
+        artifact_path=mq5_path.replace("\\", "/"),
+        payload={
+            "ea_id": ea_id.removeprefix("QM5_"),
+            "slug": slug,
+            "target_agent_profile": "codex",
+        },
+    )
+
 def main():
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    
     count = 0
     files = os.listdir(cards_dir)
     print(f"Found {len(files)} files in {cards_dir}")
@@ -237,23 +252,12 @@ def main():
         # no longer existed anywhere in the tree or on origin/main, and every one
         # then sat in the review queue as if a build had happened. Nothing may
         # write a verdict it did not earn.
-        task_id = str(uuid.uuid4())
-        now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        payload = json.dumps({"ea_id": ea_id.replace('QM5_', ''), "slug": slug, "target_agent_profile": "codex"})
-        artifact = mq5_path.replace('\\', '/')
-
-        cursor.execute('''
-            INSERT INTO agent_tasks (id, task_type, state, payload_json, assigned_agent, created_at, updated_at, artifact_path, verdict, required_capabilities_json)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (task_id, 'build_ea', 'BACKLOG', payload, None, now_iso, now_iso, artifact, None, '[]'))
+        enqueue_generated_build(ea_id, slug, mq5_path)
         
         count += 1
         if count % 100 == 0:
             print(f"Processed {count} EAs...")
-            conn.commit()
-            
-    conn.commit()
-    conn.close()
+
     print(f"Successfully generated {count} new EA structures.")
 
 if __name__ == "__main__":
