@@ -33,7 +33,7 @@ r4_ml_forbidden: PASS
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 hard_rules_at_risk: [risk_mode, friday_close_hold_semantics, restart_safe_attempt, source_to_cfd_basis, q02_frequency_floor]
 target_modules: [QM_Common, QM_MagicResolver, QM_TradeManager, QM_NoTrade]
-pipeline_phase: Q01
+pipeline_phase: Q02
 review_focus: "Adds directional WTI trend exposure to the XAU/SP500/NDX/XNG book using the missing source-declared one-month horizon. Q02 must falsify the futures-to-CFD translation and Q09 remains authoritative for realized correlation."
 g0_approval_reasoning: "APPROVED under the OWNER 2026-07-31 commodity/energy sleeve mission: R1 complete 23-page peer-reviewed JFE source read with DOI and author-hosted PDF hash; R2 locked consecutive completed-month return sign, one-month hold, persisted attempt, fixed-risk ATR stop, and lifecycle guards; R3 registered native XTIUSD.DWX D1 carrier; R4 deterministic native arithmetic only. Exact dedup clean; source-horizon siblings and one-month cross-sectional reversal are manually distinct."
 ---
@@ -221,7 +221,7 @@ waiver.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-31 | initial source-backed one-month WTI TSMOM candidate | Q01 | PASS: strict compile and V5 build check, 0 errors/warnings |
+| v1 | 2026-07-31 | initial source-backed one-month WTI TSMOM candidate | Q02 | Q01 PASS; Q02 ENQUEUED, baseline pending |
 
 ## Pipeline Phase Status
 
@@ -229,4 +229,4 @@ waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-07-31 | APPROVED under OWNER commodity/energy sleeve mission | this card |
 | Q01 Build Validation | 2026-07-31 | PASS: strict compile and V5 build check, 0 errors/warnings | `D:/QM/reports/framework/21/build_check_20260731_153245.json` |
-| Q02 Baseline Screening | pending | not enqueued | pending |
+| Q02 Baseline Screening | 2026-07-31 | ENQUEUED; baseline pending | work item `402dc257-b6bc-4ad5-b359-2156441513f0` |

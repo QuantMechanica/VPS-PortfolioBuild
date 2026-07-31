@@ -79,3 +79,4 @@ authorization, deploy manifest, portfolio admission, or portfolio-gate change.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-31 | Initial build from approved G0 card | Q01 PASS: strict compile and V5 build check, 0 errors/warnings |
+| v2 | 2026-07-31 | Paced pipeline handoff | Q02 work item `402dc257-b6bc-4ad5-b359-2156441513f0` enqueued; baseline pending |
