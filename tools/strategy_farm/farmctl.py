@@ -3323,6 +3323,10 @@ def _derive_p5plus_metric_verdict(runs: list[dict[str, Any]]) -> tuple[str, str]
     return "PASS", ""
 
 
+# Internal compatibility map for retired runner generations. This is NOT an
+# operator-facing/display taxonomy and is deliberately not the inverse of the
+# collapsed gate manifest: callers below branch on historical runner semantics
+# such as P3.5/P5b/P5c. New storage still uses canonical Qxx keys.
 PHASE_NOMENCLATURE = {
     "Q00": "G0",
     "Q01": "P1",
@@ -3340,12 +3344,11 @@ PHASE_NOMENCLATURE = {
     "Q11": "P8",
     "Q12": "P9",
     "Q13": "P9b",
-    "Q14": "P10",
 }
 
 
 def _normalize_phase(phase: str | None) -> str:
-    """Map Q-series to P-series or return as-is."""
+    """Map canonical Q-series to retired runner semantics or return as-is."""
     p = str(phase or "").strip().upper()
     if p == "P5B":
         return "P5b"

@@ -1954,7 +1954,8 @@ def _is_pass_reason(reason: str) -> bool:
 # to its canonical Q-id. Long keys first so e.g. "P5b" wins over "P5".
 _P_TO_Q_TOKENS = sorted(PHASE_QID.items(), key=lambda kv: -len(kv[0]))
 _P_TOKEN_RE = _re_mt5.compile(
-    r"\b(" + "|".join(_re_mt5.escape(k) for k, _ in _P_TO_Q_TOKENS) + r")\b"
+    r"\b(" + "|".join(_re_mt5.escape(k) for k, _ in _P_TO_Q_TOKENS) + r")\b",
+    _re_mt5.IGNORECASE,
 )
 
 
@@ -2016,7 +2017,7 @@ def qxx_text(s: str | None) -> str:
     """
     if not s:
         return s or ""
-    return _P_TOKEN_RE.sub(lambda m: PHASE_QID.get(m.group(1), m.group(1)), s)
+    return _P_TOKEN_RE.sub(lambda m: phase_label(m.group(1)), s)
 
 
 def _json_from_file(path_value: str | None) -> dict[str, Any]:
@@ -2354,7 +2355,7 @@ def _phase_base(phase: Any) -> str:
     m = _QBASE_RE.match(s)
     if m:
         return m.group(1)
-    return PHASE_QID.get(s, s)  # legacy P-key → Qxx (PHASE_QID = LEGACY_P_TO_Q)
+    return phase_label(s)
 
 
 def _archive_verdict_text(phase: Any, verdict: Any) -> str:

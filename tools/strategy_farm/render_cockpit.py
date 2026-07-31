@@ -41,6 +41,15 @@ try:  # package import in tests and module consumers
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit.py``
     from pipeline_books_dashboard_status import program_status_snapshot
 
+try:  # package import in tests and module consumers
+    from tools.strategy_farm.phase_ids import (
+        PHASE_ORDER as Q_DISPLAY_ORDER,
+        Q_TO_LEGACY_ALIASES,
+        phase_label,
+    )
+except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit.py``
+    from phase_ids import PHASE_ORDER as Q_DISPLAY_ORDER, Q_TO_LEGACY_ALIASES, phase_label
+
 ROOT = Path(r"D:\QM\strategy_farm")
 REPO = Path(r"C:\QM\repo")
 DB = ROOT / "state" / "farm_state.sqlite"
@@ -89,30 +98,6 @@ FTMO_MONITOR_DIR = Path(
 )
 FTMO_DEALS_CSV = FTMO_MONITOR_DIR / "live_deals_normalized.csv"
 LIVE_BOOK_SLEEVES = 24  # current live book size (label denominator only)
-
-PHASE_DISPLAY = {
-    "Q01": "Q01",
-    "Q02": "Q02",
-    "Q03": "Q03",
-    "Q04": "Q04",
-    "Q05": "Q05",
-    "Q06": "Q06",
-    "Q07": "Q07",
-    "Q08": "Q08",
-    "Q09": "Q09",
-    "Q10": "Q10",
-    "Q11": "Q11",
-    "P2": "Q02",
-    "P3": "Q03",
-    "P3.5": "Q04",
-    "P4": "Q05",
-    "P5": "Q06",
-    "P5b": "Q07",
-    "P5c": "Q08",
-    "P6": "Q09",
-    "P7": "Q10",
-    "P8": "Q11",
-}
 
 
 
@@ -755,7 +740,7 @@ def frontier_next_book_snapshot(since_iso: str = "2026-07-19T18:00", limit: int 
         out["fresh_pass"].append({
             "ea_id": r.get("ea_id"),
             "symbol": str(r.get("symbol") or "").replace(".DWX", ""),
-            "phase": PHASE_DISPLAY.get(str(r.get("phase")), str(r.get("phase"))),
+            "phase": phase_label(r.get("phase")),
             "when": str(r.get("updated_at") or "")[:16].replace("T", " "),
         })
     out["fresh_count"] = len(out["fresh_pass"])
@@ -1812,7 +1797,7 @@ def main() -> int:
                 if verdict == "WAITING_INPUT":
                     bucket["waiting_input"] += 1
             if status in {"done", "failed"}:
-                key = f"{PHASE_DISPLAY.get(phase, phase)} {verdict or status}"
+                key = f"{phase_label(phase)} {verdict or status}"
                 by_phase[key] = by_phase.get(key, {"count": 0})
                 by_phase[key]["count"] += 1
             terminal = payload.get("terminal") or row.get("claimed_by")
@@ -2338,22 +2323,30 @@ def main() -> int:
         ph = ",".join(f"'{p}'" for p in phases)
         rows_ = db_rows(
             "SELECT COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items "
-            f"WHERE verdict='PASS' AND phase IN ({ph})"
+            f"WHERE verdict='PASS' AND UPPER(phase) IN ({ph})"
         )
         return int(rows_[0]["c"] or 0) if rows_ else 0
+
+    def _phase_read_keys(qid: str) -> tuple[str, ...]:
+        """Canonical key plus every manifest-declared legacy read alias."""
+
+        return (qid, *Q_TO_LEGACY_ALIASES.get(qid, ()))
 
     q02_pass_pairs = _pass_pairs(("Q02", "P2"))
     # ROBUST Q05-Q07: deduped across the band (an EA that reached Q07 also has
     # Q05+Q06 PASS rows — summing per-phase counts triple-counts it).
-    _p_to_q = {"P4": "Q05", "P5": "Q06", "P5b": "Q07"}
+    robust_phase_keys = tuple(
+        key for qid in ("Q05", "Q06", "Q07") for key in _phase_read_keys(qid)
+    )
+    robust_phase_sql = ",".join(f"'{phase}'" for phase in robust_phase_keys)
     robust_by_q: dict[str, int] = {}
     for r in db_rows(
         "SELECT phase, COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items "
-        "WHERE verdict='PASS' AND phase IN ('Q05','Q06','Q07','P4','P5','P5b') GROUP BY phase"
+        f"WHERE verdict='PASS' AND UPPER(phase) IN ({robust_phase_sql}) GROUP BY phase"
     ):
-        qk = _p_to_q.get(str(r.get("phase")), str(r.get("phase")))
+        qk = phase_label(r.get("phase"))
         robust_by_q[qk] = robust_by_q.get(qk, 0) + int(r.get("c") or 0)
-    robust_pairs = _pass_pairs(("Q05", "Q06", "Q07", "P4", "P5", "P5b"))
+    robust_pairs = _pass_pairs(robust_phase_keys)
     q05_pairs = robust_by_q.get("Q05", 0)
     robust_meta = " // ".join(
         f"{k}:{robust_by_q[k]}" for k in ("Q05", "Q06", "Q07") if k in robust_by_q
@@ -2459,20 +2452,17 @@ def main() -> int:
     # Per-phase progress: distinct (ea_id, symbol) pairs that reached each Qxx
     # with a PASS verdict (or — for phases that don't write per-symbol PASS
     # rows — distinct ea_id count). Reads Qxx-keyed rows directly; legacy
-    # P-keys map via phase_ids.LEGACY_P_TO_Q for any orphan rows.
-    Q_DISPLAY_ORDER = ["Q01", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07",
-                       "Q08", "Q09", "Q10", "Q11", "Q12", "Q13"]
+    # P-keys map via the complete manifest alias inverse for any orphan rows.
     q_counts: dict[str, int] = {q: 0 for q in Q_DISPLAY_ORDER}
+    # Q00 = cards admitted to research intake.
+    q_counts["Q00"] = cards_total
     # Q01 = EAs built (registry intersection w/ disk)
     q_counts["Q01"] = eas_built
     # Q02..Q10 = distinct (ea_id, symbol) PASS pairs at each Qxx. Each Q is
-    # counted over the UNION of its Qxx + legacy P key — summing the two key
+    # counted over the UNION of its Qxx + every declared legacy P key — summing
     # spaces double-counts pairs that exist under both (audit 2026-07-25).
-    _q_with_legacy = {"Q02": "P2", "Q03": "P3", "Q04": "P3.5", "Q05": "P4",
-                      "Q06": "P5", "Q07": "P5b", "Q08": "P5c",
-                      "Q09": "P6", "Q10": "P7", "Q11": "P8"}
-    for qid, legacy in _q_with_legacy.items():
-        q_counts[qid] = _pass_pairs((qid, legacy))
+    for qid in Q_DISPLAY_ORDER[2:11]:
+        q_counts[qid] = _pass_pairs(_phase_read_keys(qid))
     # Q11..Q13 are OWNER-only phases (no work_items yet) — leave at 0 until
     # the agent_tasks table tracks them. Future iteration.
 
@@ -2502,7 +2492,8 @@ def main() -> int:
       )}
     </div>
     <div class="prog-foot">
-      Q01 = EAs with .ex5 on disk &middot; Q02..Q10 = distinct (EA, symbol) PASS pairs &middot;
+      Q00 = strategy cards &middot; Q01 = EAs with .ex5 on disk &middot;
+      Q02..Q10 = distinct (EA, symbol) PASS pairs &middot;
       Q11..Q13 = OWNER phases (live count pending)
     </div>
   </div>
