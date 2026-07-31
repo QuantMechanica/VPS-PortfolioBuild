@@ -1,0 +1,185 @@
+{
+  "schema_version": "qm.mnt043_044.recompile_vintage_bill.proposed.v1",
+  "status": "PREPARED_NOT_APPENDED_PENDING_CLAUDE_REVIEW_AND_STAGED_BINARY_ADOPTION",
+  "created_utc": "2026-07-31T17:31:17.5819810Z",
+  "router_task_id": "45da1fa0-585a-4f8c-a202-5224811b0af6",
+  "source_commit": "386151841013afbaf01fe10b23e6cf7538480b71",
+  "doctrine": "MNT-043/MNT-044: a new EX5 cannot inherit historical binary-bound Q evidence; raw work-item rows remain unchanged and effective state is append-only overlay evidence.",
+  "activation_condition": "Claude approves this concrete bill and the corresponding staged EX5 becomes the binary under admission/requalification. This proposal alone changes no effective state.",
+  "read_only_scan": {
+    "path": "D:/QM/strategy_farm/artifacts/ks_vintage_recompile_stage2_20260731_386151841/receipts/mnt043_044_read_only_scan.json",
+    "file_sha256": "72e42276e3a8455a3b016dffbe9c20208986668d3c22408a14a2ccf12029b3cf",
+    "scan_fingerprint_sha256": "6ae7ed1da2d27b9aa28ede6cd7846b82fb69b1ce75112a593b1af37b61ffb64c",
+    "total_adjudications": 581,
+    "target_historical_pass_rows": 26,
+    "target_p0_admission_rows": 22,
+    "target_p1_history_rows": 4
+  },
+  "binary_replacements": [
+    {"ea_id": "QM5_10911", "new_ex5_sha256": "a815c73da991736d25a02c027bbcfb23f68615adb66b7325cc2efcdc52344158", "historical_repo_ex5_reference_sha256": "2a1760492156fba9557ee3844131bf01dbe3c446b9c420fd0be7e2fbb4a34cd8", "historical_hash_authority": "planning reference; historical rows lack complete binary identity binding"},
+    {"ea_id": "QM5_10919", "new_ex5_sha256": "57e0db8401616a5fb10c68557c24e8b7a7e98254cb8ddf57245fc178aa3a4691", "historical_repo_ex5_reference_sha256": "9258fe631ec29d8af9b63d9aceb5306b3164608481ad67a3f00e52aa2d7c7e31", "historical_hash_authority": "planning reference; historical rows lack complete binary identity binding"},
+    {"ea_id": "QM5_10939", "new_ex5_sha256": "308604a3546c44fc8bfb40ecff36801e5479bf33887847b8b6e5650943312aac", "historical_repo_ex5_reference_sha256": "0c1278f5d44d0c88db90f632d0cefacda79b6c8853bde9540676c4c95296edd0", "historical_hash_authority": "planning reference; historical rows lack complete binary identity binding"},
+    {"ea_id": "QM5_11132", "new_ex5_sha256": "25b68c44d9724d9915298ad6b632e9c4db77133526e8c441fa82adc2a0474152", "historical_repo_ex5_reference_sha256": "7fe65d4c86d8cf0fc6ff17f9dc9d3b7dc794802d8457dab96e40d4df34383555", "historical_hash_authority": "planning reference; historical rows lack complete binary identity binding"},
+    {"ea_id": "QM5_11421", "new_ex5_sha256": "0f7c8ff9ad91c43f275aacbfb366f06f17aeda0f1d567c83936af7d8dca69ca7", "historical_repo_ex5_reference_sha256": "03455d533ffbf1cc35482dc8de487b04d997bea328ee8505d0f5bb0d591a7415", "historical_hash_authority": "planning reference; historical rows lack complete binary identity binding"},
+    {"ea_id": "QM5_12567", "new_ex5_sha256": "5d5be334288e76a582349dac8351a95700222b91bbd28e1921e9d4aa6e3b10f9", "historical_repo_ex5_reference_sha256": "353dddbb93c393dc4135d03f84ba203b6f8ab657ce5ebb5b14cb9f6d44893c85", "historical_hash_authority": "historical evidence observes this EX5 reference, but scanner still reports incomplete identity binding"},
+    {"ea_id": "QM5_12989", "new_ex5_sha256": "7f2c298f4a8b4395480e47f20f9cefb8d5c53083bd63f7ea9ef1db067f52c4d2", "historical_repo_ex5_reference_sha256": "27b9dc294fd6b0d25825bcf91e4ef08f832cc79fe7414ce84e215570c5d26e1e", "historical_hash_authority": "planning reference; historical rows lack complete binary identity binding"}
+  ],
+  "proposed_effective_status": "EVIDENCE_VINTAGE_STALE",
+  "proposed_reason_class": "BINARY_VINTAGE_MISMATCH",
+  "events": [
+    {
+      "ea_id": "QM5_10911", "symbol": "GDAXI.DWX", "phase": "Q06", "work_item_id": "88966987-8485-468b-bd17-9e358e42eb95", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "a7d6b57aa8fec1dc8a3a9423d1611767eebec45ef1f2f208666222b5d588dbf7", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "a815c73da991736d25a02c027bbcfb23f68615adb66b7325cc2efcdc52344158", "required_rerun": "Q06"
+    },
+    {
+      "ea_id": "QM5_10911", "symbol": "GDAXI.DWX", "phase": "Q07", "work_item_id": "ba34fb1f-2b3b-4ab4-b511-096000fbb8a8", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "2c38e2b3fc868d148f0d8055e395453ac3d34d16d10b810111f99098856cea11", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "a815c73da991736d25a02c027bbcfb23f68615adb66b7325cc2efcdc52344158", "required_rerun": "Q07"
+    },
+    {
+      "ea_id": "QM5_10919", "symbol": "XTIUSD.DWX", "phase": "Q06", "work_item_id": "96bdad0e-ebec-4d4d-9375-14597ec509ec", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "7361e19244ce51f56a40385a25204d48851bd348607fc29c0727cfb7cb29f9fb", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "57e0db8401616a5fb10c68557c24e8b7a7e98254cb8ddf57245fc178aa3a4691", "required_rerun": "Q06"
+    },
+    {
+      "ea_id": "QM5_10919", "symbol": "XTIUSD.DWX", "phase": "Q07", "work_item_id": "b0a43323-8520-4afd-b4b3-c59503645dee", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "1ac18a9d49496d51e072e239ab0ba65f4dd28d189efa60b6e64b9cf0dfba2bf9", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "57e0db8401616a5fb10c68557c24e8b7a7e98254cb8ddf57245fc178aa3a4691", "required_rerun": "Q07"
+    },
+    {
+      "ea_id": "QM5_10939", "symbol": "GBPUSD.DWX", "phase": "Q06", "work_item_id": "8ebd89ef-566b-45f8-8bc3-61cc6c7e6a9c", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "7e5d910e959a33a1a9a5cd4e4320c1c0a82c0741ba42969f282a33009972d91a", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "308604a3546c44fc8bfb40ecff36801e5479bf33887847b8b6e5650943312aac", "required_rerun": "Q06"
+    },
+    {
+      "ea_id": "QM5_10939", "symbol": "GBPUSD.DWX", "phase": "Q07", "work_item_id": "2a77e549-58c7-4b18-b502-40f64f73e1fb", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "fd0c3db4762ef19b252dfc15f8ba3fa5dc43cb8805c0ffcae7b9c23e7ad61409", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "308604a3546c44fc8bfb40ecff36801e5479bf33887847b8b6e5650943312aac", "required_rerun": "Q07"
+    },
+    {
+      "ea_id": "QM5_10939", "symbol": "XAUUSD.DWX", "phase": "Q06", "work_item_id": "8924596d-e3d6-4801-bc6d-6bf73599f315", "priority": "P1_HISTORY",
+      "raw_row_sha256": "50ccb8387561caac9860bab5f775e65887bd7455cc4ebb3881faf27baa0b1288", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "308604a3546c44fc8bfb40ecff36801e5479bf33887847b8b6e5650943312aac", "required_rerun": "Q06_IF_HISTORY_REQUALIFIED"
+    },
+    {
+      "ea_id": "QM5_10939", "symbol": "XAUUSD.DWX", "phase": "Q07", "work_item_id": "3a4a9c20-7378-4822-a1f6-089f9ef9c2cd", "priority": "P1_HISTORY",
+      "raw_row_sha256": "0f6be1a6728ee46ad21d3cb457992334303df160d00d82a3560d959fd8d727de", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "308604a3546c44fc8bfb40ecff36801e5479bf33887847b8b6e5650943312aac", "required_rerun": "Q07_IF_HISTORY_REQUALIFIED"
+    },
+    {
+      "ea_id": "QM5_11132", "symbol": "NDX.DWX", "phase": "Q06", "work_item_id": "fedb56a2-1a79-457d-b3ac-2c474b86fb64", "priority": "P1_HISTORY",
+      "raw_row_sha256": "31cc43f47056ab2b8fb8e358b5d0fde7cd51c2723d2c66ff0100e84ce8ea041f", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "25b68c44d9724d9915298ad6b632e9c4db77133526e8c441fa82adc2a0474152", "required_rerun": "Q06_IF_HISTORY_REQUALIFIED"
+    },
+    {
+      "ea_id": "QM5_11132", "symbol": "NDX.DWX", "phase": "Q07", "work_item_id": "9275f769-2c6d-4cfd-a598-40cf68921c0d", "priority": "P1_HISTORY",
+      "raw_row_sha256": "ec0b8c395929bdf361656b2c53718934992a8286330970812df15b46b5d8684f", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "25b68c44d9724d9915298ad6b632e9c4db77133526e8c441fa82adc2a0474152", "required_rerun": "Q07_IF_HISTORY_REQUALIFIED"
+    },
+    {
+      "ea_id": "QM5_11132", "symbol": "SP500.DWX", "phase": "Q06", "work_item_id": "8e3aa6c8-32de-4ede-9dd2-ee535e6f97a6", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "2db3c9dee6876a48ae0e73c0d9202d9babfacfbee4064f6dd8523b69facc8ce6", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "25b68c44d9724d9915298ad6b632e9c4db77133526e8c441fa82adc2a0474152", "required_rerun": "Q06"
+    },
+    {
+      "ea_id": "QM5_11132", "symbol": "SP500.DWX", "phase": "Q06", "work_item_id": "b3615375-d509-409b-82b3-0ec6e5799673", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "37ab54d69068c2f1a75b18ffe494b0c112b607b7038a2804614eef9c19addb34", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "25b68c44d9724d9915298ad6b632e9c4db77133526e8c441fa82adc2a0474152", "required_rerun": "Q06"
+    },
+    {
+      "ea_id": "QM5_11132", "symbol": "SP500.DWX", "phase": "Q06", "work_item_id": "eb23ab22-d01b-441b-addf-ffdf6d12293b", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "a8dadefe51e20c0fa4cf4928f1df70561633cc3c03cd822de5d732e28478fe39", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "25b68c44d9724d9915298ad6b632e9c4db77133526e8c441fa82adc2a0474152", "required_rerun": "Q06"
+    },
+    {
+      "ea_id": "QM5_11132", "symbol": "SP500.DWX", "phase": "Q07", "work_item_id": "6aadeed9-d64b-4ee3-aabe-0c0e74232218", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "7a80905a02ab72831f1d308a9792731c3add2cc7f5544fba742f58dacb080477", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "25b68c44d9724d9915298ad6b632e9c4db77133526e8c441fa82adc2a0474152", "required_rerun": "Q07"
+    },
+    {
+      "ea_id": "QM5_11132", "symbol": "SP500.DWX", "phase": "Q07", "work_item_id": "c481ff0c-195e-4ef1-af41-221ce09dc8cf", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "23e5f47cb473310376edf9fc6a2835e24203de3454fd145e7772868fdabf49fa", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "25b68c44d9724d9915298ad6b632e9c4db77133526e8c441fa82adc2a0474152", "required_rerun": "Q07"
+    },
+    {
+      "ea_id": "QM5_11132", "symbol": "SP500.DWX", "phase": "Q07", "work_item_id": "cbb145d8-4341-4f00-b0f8-13d9ca162109", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "1b42c0b82787743f26f190233acdb484059cf3b2e5429fa227f383cbdc482b92", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "25b68c44d9724d9915298ad6b632e9c4db77133526e8c441fa82adc2a0474152", "required_rerun": "Q07"
+    },
+    {
+      "ea_id": "QM5_11421", "symbol": "AUDUSD.DWX", "phase": "Q06", "work_item_id": "50854095-d2b7-44e3-ab6a-80ddd996283e", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "f703213ba1dcf07d3866e6968143b9a86e206333d162b41167f1de4c92e4b19a", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "0f7c8ff9ad91c43f275aacbfb366f06f17aeda0f1d567c83936af7d8dca69ca7", "required_rerun": "Q06"
+    },
+    {
+      "ea_id": "QM5_11421", "symbol": "AUDUSD.DWX", "phase": "Q07", "work_item_id": "b77d915a-d9be-4a51-bdf4-c6c186caded9", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "0bdf0a3f4ab95e0bc471cd48526674183a29733a1e5c93c8073423b0002b9e66", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "0f7c8ff9ad91c43f275aacbfb366f06f17aeda0f1d567c83936af7d8dca69ca7", "required_rerun": "Q07"
+    },
+    {
+      "ea_id": "QM5_11421", "symbol": "EURUSD.DWX", "phase": "Q06", "work_item_id": "84caa901-4c50-4553-b427-d6ee48a0ca18", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "3fdd3fc1bff4dc0f942af2d08fed8465c5b46cf60ac295be43b9f8b5f5cbe8f4", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["EVIDENCE_VERDICT_MISMATCH", "NULL_KPI", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "0f7c8ff9ad91c43f275aacbfb366f06f17aeda0f1d567c83936af7d8dca69ca7", "required_rerun": "Q06"
+    },
+    {
+      "ea_id": "QM5_11421", "symbol": "EURUSD.DWX", "phase": "Q07", "work_item_id": "0d1cb1a3-7a0f-497a-bfb2-4640d37a7962", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "7a6de592d1bfbbec7d1a4e1337ee1daaea83b1cdda402e6d0b46c37ea719c20d", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["EVIDENCE_VERDICT_MISMATCH", "NULL_KPI", "SEED_AUTH_MISSING", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "0f7c8ff9ad91c43f275aacbfb366f06f17aeda0f1d567c83936af7d8dca69ca7", "required_rerun": "Q07"
+    },
+    {
+      "ea_id": "QM5_12567", "symbol": "XAUUSD.DWX", "phase": "Q06", "work_item_id": "5cdcd811-723f-4a98-a0f1-2a02bea2bff5", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "03a1d0ade55307680d9635e2d3dec230f494f7ea6550b2d313f2f4d01ba7cf7c", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "5d5be334288e76a582349dac8351a95700222b91bbd28e1921e9d4aa6e3b10f9", "required_rerun": "Q06"
+    },
+    {
+      "ea_id": "QM5_12567", "symbol": "XAUUSD.DWX", "phase": "Q07", "work_item_id": "3cc839c7-ec92-4050-8193-8a5b8f457f69", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "977a1c0a6416678a0b5e9803ae126152f96035fe95d67ae1e8f8ce49025423d4", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["SEED_AUTH_MISSING", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "5d5be334288e76a582349dac8351a95700222b91bbd28e1921e9d4aa6e3b10f9", "required_rerun": "Q07"
+    },
+    {
+      "ea_id": "QM5_12567", "symbol": "XNGUSD.DWX", "phase": "Q06", "work_item_id": "5c3b1d27-3d69-4863-843d-5182b3e8983d", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "672c068a97e071d175630340642006213714996e524169efef986b8c94e3c456", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "5d5be334288e76a582349dac8351a95700222b91bbd28e1921e9d4aa6e3b10f9", "required_rerun": "Q06"
+    },
+    {
+      "ea_id": "QM5_12567", "symbol": "XNGUSD.DWX", "phase": "Q07", "work_item_id": "f9452af6-d356-4856-afdb-d45cf863c625", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "65d4a9ad94c80373ecdc944a7970aee3d2dad1dcdbe0e3a1c13ef085e2570445", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "5d5be334288e76a582349dac8351a95700222b91bbd28e1921e9d4aa6e3b10f9", "required_rerun": "Q07"
+    },
+    {
+      "ea_id": "QM5_12989", "symbol": "XAUUSD.DWX", "phase": "Q06", "work_item_id": "209795ab-859f-4aaf-a426-97627e317f6e", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "acfc2cf41707b4f405f76c8ecb3fca488107df428aa46768294f719fcfa34bd7", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "7f2c298f4a8b4395480e47f20f9cefb8d5c53083bd63f7ea9ef1db067f52c4d2", "required_rerun": "Q06"
+    },
+    {
+      "ea_id": "QM5_12989", "symbol": "XAUUSD.DWX", "phase": "Q07", "work_item_id": "377350fb-2b57-4f72-9372-fef9c94c6f62", "priority": "P0_ADMISSION",
+      "raw_row_sha256": "c3164713c1d34c1eacb407461dd1c464add23aeb87c9b08e8fec1de57266a5f7", "original_verdict": "PASS", "current_effective_status": "PROVENANCE_UNVERIFIED", "current_reason_classes": ["MISSING_FILE", "IDENTITY_HASH_MISSING"],
+      "new_ex5_sha256": "7f2c298f4a8b4395480e47f20f9cefb8d5c53083bd63f7ea9ef1db067f52c4d2", "required_rerun": "Q07"
+    }
+  ],
+  "admission_rerun_identities": [
+    "QM5_10911/GDAXI.DWX/Q06",
+    "QM5_10911/GDAXI.DWX/Q07",
+    "QM5_10919/XTIUSD.DWX/Q06",
+    "QM5_10919/XTIUSD.DWX/Q07",
+    "QM5_10939/GBPUSD.DWX/Q06",
+    "QM5_10939/GBPUSD.DWX/Q07",
+    "QM5_11132/SP500.DWX/Q06 (three historical rows; create one new identity-bound rerun, not three duplicate runs)",
+    "QM5_11132/SP500.DWX/Q07 (three historical rows; create one new identity-bound rerun, not three duplicate runs)",
+    "QM5_11421/AUDUSD.DWX/Q06",
+    "QM5_11421/AUDUSD.DWX/Q07",
+    "QM5_11421/EURUSD.DWX/Q06",
+    "QM5_11421/EURUSD.DWX/Q07",
+    "QM5_12567/XAUUSD.DWX/Q06",
+    "QM5_12567/XAUUSD.DWX/Q07",
+    "QM5_12567/XNGUSD.DWX/Q06",
+    "QM5_12567/XNGUSD.DWX/Q07",
+    "QM5_12989/XAUUSD.DWX/Q06",
+    "QM5_12989/XAUUSD.DWX/Q07"
+  ],
+  "append_only_overlay_write_performed": false,
+  "work_item_rows_modified": false,
+  "pipeline_verdict_created": false,
+  "live_action_performed": false
+}
