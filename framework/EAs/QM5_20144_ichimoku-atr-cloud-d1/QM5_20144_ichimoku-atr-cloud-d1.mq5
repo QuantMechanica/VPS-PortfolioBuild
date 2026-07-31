@@ -93,6 +93,8 @@ bool     g_str118_long_locked = false;
 bool     g_str118_short_locked = false;
 bool     g_str118_long_reset_seen = false;
 bool     g_str118_short_reset_seen = false;
+bool     g_str118_cloud_self_test_passed = false;
+bool     g_str118_cloud_self_test_failed = false;
 
 struct STR118_SNAPSHOT
   {
@@ -240,14 +242,16 @@ bool Strategy118_CloudSelfTest()
    if(!Strategy118_HandlesReady())
       return false;
 
-   // The cloud displayed on closed bar 1 was calculated kijun bars earlier:
-   // source index = 1 + displacement = 27 for the 9/26/65 baseline.
+   // The native Senkou buffers are forward-displaced: shift 1 is the cloud
+   // displayed under closed bar 1, calculated kijun bars earlier.  Cross-check
+   // it against the manual source index 1 + displacement = 27.
+   const int display_shift = 1;
    const int source_shift =
-      1 + strategy_kijun;
+      display_shift + strategy_kijun;
    double native_a[1];
    double native_b[1];
-   native_a[0] = QM_IndicatorReadBuffer(g_str118_ichimoku_handle, 2, source_shift);
-   native_b[0] = QM_IndicatorReadBuffer(g_str118_ichimoku_handle, 3, source_shift);
+   native_a[0] = QM_IndicatorReadBuffer(g_str118_ichimoku_handle, 2, display_shift);
+   native_b[0] = QM_IndicatorReadBuffer(g_str118_ichimoku_handle, 3, display_shift);
    if(native_a[0] <= 0.0 || native_b[0] <= 0.0)
       return false;
 
@@ -284,27 +288,45 @@ bool Strategy118_CloudSelfTest()
       MathAbs(native_a[0] - manual_a) <= tolerance &&
       MathAbs(native_b[0] - manual_b) <= tolerance;
    if(!pass)
+     {
+      g_str118_cloud_self_test_failed = true;
       QM_LogEvent(
          QM_ERROR,
          "SETUP_CONFIG_INVALID",
          StringFormat(
-            "{\"strategy\":\"STR-118\",\"reason\":\"ichimoku_causal_self_test\",\"source_shift\":%d,\"native_a\":%.10f,\"manual_a\":%.10f,\"native_b\":%.10f,\"manual_b\":%.10f,\"tolerance\":%.10f}",
+            "{\"strategy\":\"STR-118\",\"reason\":\"ichimoku_causal_self_test\",\"display_shift\":%d,\"source_shift\":%d,\"native_a\":%.10f,\"manual_a\":%.10f,\"native_b\":%.10f,\"manual_b\":%.10f,\"tolerance\":%.10f}",
+            display_shift,
             source_shift,
             native_a[0],
             manual_a,
             native_b[0],
             manual_b,
             tolerance));
+     }
    return pass;
+  }
+
+bool Strategy118_SelfTestReady()
+  {
+   if(g_str118_cloud_self_test_passed)
+      return true;
+   if(g_str118_cloud_self_test_failed)
+      return false;
+   if(!Strategy118_CloudSelfTest())
+      return false;
+   g_str118_cloud_self_test_passed = true;
+   return true;
   }
 
 bool Strategy118_Init()
   {
    if(_Period != PERIOD_D1 ||
-      !Strategy118_ConfigValid() ||
-      !Strategy118_HandlesReady())
+      !Strategy118_ConfigValid())
       return false;
-   return Strategy118_CloudSelfTest();
+   // Indicator handles are valid during OnInit, but their tester buffers are
+   // not guaranteed to be calculated yet.  Defer the causal cloud self-test
+   // until Strategy_NoTradeFilter observes the required D1 warmup.
+   return Strategy118_EnsureHandles();
   }
 
 bool Strategy118_ReadLine(const int buffer,
@@ -341,8 +363,6 @@ bool Strategy118_ReadSnapshot(const int display_shift,
                   bar)) // perf-allowed: one closed D1 record, bounded once per forming D1 bar
       return false;
 
-   const int cloud_source_shift =
-      display_shift + strategy_kijun;
    double tenkan = 0.0;
    double kijun = 0.0;
    double span_a = 0.0;
@@ -354,10 +374,10 @@ bool Strategy118_ReadSnapshot(const int display_shift,
                             display_shift,
                             kijun) ||
       !Strategy118_ReadLine(2,
-                            cloud_source_shift,
+                            display_shift,
                             span_a) ||
       !Strategy118_ReadLine(3,
-                            cloud_source_shift,
+                            display_shift,
                             span_b))
       return false;
 
@@ -618,7 +638,9 @@ bool Strategy_NoTradeFilter()
                         SERIES_BARS_COUNT); // perf-allowed: O(1) D1 warmup gate
    if(bars_available < Strategy118_WarmupBars())
       return true;
-   return !Strategy118_HandlesReady();
+   if(!Strategy118_HandlesReady())
+      return true;
+   return !Strategy118_SelfTestReady();
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
@@ -640,7 +662,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(_Period != PERIOD_D1 ||
       !Strategy118_ConfigValid() ||
       Strategy118_HasOwnPosition() ||
-      !Strategy118_HandlesReady())
+      !Strategy118_HandlesReady() ||
+      !Strategy118_SelfTestReady())
       return false;
 
    STR118_SNAPSHOT signal;
