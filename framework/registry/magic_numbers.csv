@@ -15387,3 +15387,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20183,gbpusd-chf-coint,1,USDCHF.DWX,201830001,2026-07-31,Codex,active
 20184,xauxag-xmom3,0,XAUUSD.DWX,201840000,2026-07-31T08:41:29Z,Codex,active
 20184,xauxag-xmom3,1,XAGUSD.DWX,201840001,2026-07-31T08:41:29Z,Codex,active
+20185,wti-win-bearfade,0,XTIUSD.DWX,201850000,2026-07-31T12:14:30Z,Codex,active
