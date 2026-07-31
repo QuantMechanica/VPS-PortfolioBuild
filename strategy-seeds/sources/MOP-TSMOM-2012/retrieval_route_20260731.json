@@ -1,0 +1,15 @@
+{
+  "source_id": "MOP-TSMOM-2012",
+  "retrieved_at_utc": "2026-07-31T15:21:38Z",
+  "url": "https://pages.stern.nyu.edu/~lpederse/papers/TimeSeriesMomentum.pdf",
+  "host": "pages.stern.nyu.edu",
+  "owner": "Lasse Heje Pedersen faculty site",
+  "document": "Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104(2), 228-250",
+  "doi": "10.1016/j.jfineco.2011.11.003",
+  "http_result": "FETCHED",
+  "bytes": 976459,
+  "sha256": "7682F8E97EB4B77591DC85E36731FF51ED031970CDDE81678108734DB9478379",
+  "page_count": 23,
+  "read_scope": "complete published paper, pages 228-250 including appendices and references",
+  "committed_pdf": false
+}

@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        20187
 ; ea_slug:      wti-tsmom1m
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   529e5729e51d23dd9e4fc102776600c722992becc0a97ca949a8cf158a8f5f02
 ; author:       Development
 ; date:         2026-07-31
 ;==========================================================
