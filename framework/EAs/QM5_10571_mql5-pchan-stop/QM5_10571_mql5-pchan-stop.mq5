@@ -7,6 +7,7 @@
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10571;
 input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
 input double RISK_PERCENT               = 0.0;
@@ -23,6 +24,9 @@ input string qm_news_min_impact           = "high";
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_H4;
@@ -66,7 +70,9 @@ int OnInit()
                         qm_news_pause_before_minutes,
                         qm_news_pause_after_minutes,
                         qm_news_stale_max_hours,
-                        qm_news_min_impact))
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
