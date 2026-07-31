@@ -78,6 +78,19 @@ The Obsidian vault may be used as an exchange document.
   `CODEX_BRIEF_2026-07-31_q08_frontier_steering_review.md`) and dispatched to
   Codex for R1.
 
+## T5 reactivation note (2026-07-31 ~13:43Z, Codex lane)
+
+T5 left quarantine after a controlled Model-4 positive control
+(`docs/ops/evidence/2026-07-31_t5_reactivation.md`: 11912/AUDUSD PASS, 16
+trades, SHA-stable; the 07-27 "T5 fault" isolation was invalid — 11144 was no
+positive control). `disabled_terminals.txt` removed with dated backup; fleet
+now 10/10, T5 verified claiming work (Claude DB check). **Sunday consequence:**
+the runtime-activation contract still encodes the 9-worker/T5-quarantine
+policy — any Factory_OFF/ON will FAIL CLOSED until (a) the worker-policy
+source is updated to the 10-terminal cohort and (b) a fresh OWNER runtime
+decision authorizes it. Both fold into the already-mandatory Sunday rebind;
+needs explicit OWNER authorization of the 10-worker policy.
+
 ## Standing constraints (bind every topic)
 
 - Factory keeps running; no Factory_OFF/ON as part of any topic; never T5, never
