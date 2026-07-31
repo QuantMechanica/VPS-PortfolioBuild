@@ -128,23 +128,38 @@ def parse_setfile_assignments(setfile_path: Path) -> dict[str, dict[str, Any]]:
 
     MT5 setfiles may encode ``value||start||step||stop||Y/N``.  Q08 uses the
     first cell as the active value and the third cell as the lattice/stepsize.
-    Duplicate or empty strategy assignments are rejected fail-closed.
+    Duplicate or empty strategy assignments are rejected fail-closed.  Legacy
+    files without the strategy-section marker are supported narrowly: only
+    exact, column-zero ``strategy_[A-Za-z0-9_]+=`` assignments are harvested.
+    If a marker exists, the established marker-path semantics remain binding.
     """
     if not setfile_path.exists():
         raise FileNotFoundError(f"baseline setfile missing: {setfile_path}")
     text = setfile_path.read_text(encoding="utf-8-sig", errors="replace")
+    lines = text.splitlines()
+    has_strategy_marker = any(
+        raw.strip().casefold().startswith("; strategy-specific params")
+        for raw in lines
+    )
     in_strategy_block = False
     assignments: dict[str, dict[str, Any]] = {}
-    for line_number, raw in enumerate(text.splitlines(), start=1):
+    for line_number, raw in enumerate(lines, start=1):
         line = raw.strip()
         if line.casefold().startswith("; strategy-specific params"):
             in_strategy_block = True
             continue
-        if not in_strategy_block or not line or line.startswith(";") or "=" not in line:
-            continue
-        key, rhs = line.split("=", 1)
-        key = key.strip()
-        rhs = rhs.strip()
+        if has_strategy_marker:
+            if not in_strategy_block or not line or line.startswith(";") or "=" not in line:
+                continue
+            key, rhs = line.split("=", 1)
+            key = key.strip()
+            rhs = rhs.strip()
+        else:
+            legacy_match = re.match(r"^(strategy_[A-Za-z0-9_]+)=(.*)$", raw)
+            if legacy_match is None:
+                continue
+            key = legacy_match.group(1)
+            rhs = legacy_match.group(2).strip()
         if not key or _is_framework_param(key):
             continue
         if key in assignments:
