@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 
 import pytest
 
 from framework.scripts import q08_5_neighborhood_runner as runner
+
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+EA_10582_SETS = REPO_ROOT / "framework" / "EAs" / "QM5_10582_mql5-ema-pred" / "sets"
 
 
 def _setfile(tmp_path: Path, content: str) -> Path:
@@ -120,4 +125,100 @@ def test_markerless_empty_strategy_value_fails_closed(tmp_path: Path) -> None:
     path = _setfile(tmp_path, "strategy_alpha=   \n")
 
     with pytest.raises(ValueError, match="empty strategy parameter strategy_alpha"):
+        runner.parse_setfile_assignments(path)
+
+
+@pytest.mark.parametrize(
+    ("child", "sha256", "expected_values"),
+    (
+        (
+            "00",
+            "8d47c4cc8191e067af31920bceb3cdcb1af2ebea63b4ddb8df954b9a975cb4f3",
+            [1, 2, 16, 2.086268, 1.408344, 96],
+        ),
+        (
+            "01",
+            "f2bf459a3255c09eaf4b2333d870eb1a7d06462132c18e0d85dc3a06ac73d5d6",
+            [1, 2, 14, 1.947944, 1.550112, 73],
+        ),
+        (
+            "02",
+            "477bc9142a10fc09e590d32aad14e056af0710d520f35882525313e4babc6cf1",
+            [1, 2, 15, 1.946532, 1.303297, 67],
+        ),
+    ),
+)
+def test_real_10582_markerless_ablation_uses_override_block(
+    child: str, sha256: str, expected_values: list[object]
+) -> None:
+    path = EA_10582_SETS / (
+        f"QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_{child}.set"
+    )
+
+    assignments = runner.parse_setfile_assignments(path)
+
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == sha256
+    assert list(assignments) == [
+        "strategy_fast_ema_period",
+        "strategy_slow_ema_period",
+        "strategy_atr_period",
+        "strategy_atr_sl_mult",
+        "strategy_take_profit_rr",
+        "strategy_max_spread_points",
+    ]
+    assert [row["value"] for row in assignments.values()] == expected_values
+    assert all(row["line_number"] >= 28 for row in assignments.values())
+
+
+@pytest.mark.parametrize(
+    ("content", "message"),
+    (
+        (
+            "strategy_alpha=1\nstrategy_beta=2\n"
+            "; --- ablation child 00 of fixture (perturb=±25%) ---\n"
+            "strategy_alpha=3\n",
+            "key sets differ",
+        ),
+        (
+            "strategy_alpha=1\n"
+            "; --- ablation child 00 of fixture (perturb=±25%) ---\n"
+            "strategy_alpha=2\n"
+            "; --- ablation child 01 of fixture (perturb=±25%) ---\n"
+            "strategy_alpha=3\n",
+            "exactly two contiguous blocks",
+        ),
+        (
+            "strategy_alpha=1\nstrategy_alpha=2\n"
+            "; --- ablation child 00 of fixture (perturb=±25%) ---\n"
+            "strategy_alpha=3\n",
+            "inside markerless block",
+        ),
+        (
+            "strategy_alpha=1\n; unrelated separator\nstrategy_alpha=2\n",
+            "exact ablation-child separator",
+        ),
+        (
+            "strategy_alpha=1\nstrategy_beta=2\n"
+            "; --- ablation child 00 of fixture (perturb=±25%) ---\n"
+            "strategy_alpha=3\n; nested split\nstrategy_beta=4\n",
+            "exactly two contiguous blocks",
+        ),
+    ),
+)
+def test_markerless_noncanonical_duplicate_shapes_fail_closed(
+    tmp_path: Path, content: str, message: str
+) -> None:
+    path = _setfile(tmp_path, content)
+
+    with pytest.raises(ValueError, match=message):
+        runner.parse_setfile_assignments(path)
+
+
+def test_marked_file_duplicate_remains_fail_closed(tmp_path: Path) -> None:
+    path = _setfile(
+        tmp_path,
+        "; strategy-specific params\nstrategy_alpha=1\nstrategy_alpha=2\n",
+    )
+
+    with pytest.raises(ValueError, match="duplicate strategy parameter strategy_alpha"):
         runner.parse_setfile_assignments(path)

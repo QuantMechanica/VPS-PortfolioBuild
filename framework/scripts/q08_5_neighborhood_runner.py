@@ -123,15 +123,47 @@ def _parse_scalar(raw: str) -> bool | int | float | None:
     return value if math.isfinite(value) else None
 
 
-def parse_setfile_assignments(setfile_path: Path) -> dict[str, dict[str, Any]]:
-    """Parse the strategy block, including MT5 optimiser step metadata.
+def _assignment_metadata(
+    key: str,
+    rhs: str,
+    line_number: int,
+    setfile_path: Path,
+) -> dict[str, Any]:
+    if not rhs:
+        raise ValueError(f"empty strategy parameter {key}: {setfile_path}")
+    cells = [cell.strip() for cell in rhs.split("||")]
+    active = _parse_scalar(cells[0])
+    step = _parse_scalar(cells[2]) if len(cells) >= 4 else None
+    minimum = _parse_scalar(cells[1]) if len(cells) >= 4 else None
+    maximum = _parse_scalar(cells[3]) if len(cells) >= 4 else None
+    return {
+        "value": active,
+        "raw_rhs": rhs,
+        "cells": cells,
+        "step": step if isinstance(step, (int, float)) and not isinstance(step, bool) else None,
+        "minimum": (
+            minimum
+            if isinstance(minimum, (int, float)) and not isinstance(minimum, bool)
+            else None
+        ),
+        "maximum": (
+            maximum
+            if isinstance(maximum, (int, float)) and not isinstance(maximum, bool)
+            else None
+        ),
+        "line_number": line_number,
+    }
 
-    MT5 setfiles may encode ``value||start||step||stop||Y/N``.  Q08 uses the
-    first cell as the active value and the third cell as the lattice/stepsize.
-    Duplicate or empty strategy assignments are rejected fail-closed.  Legacy
-    files without the strategy-section marker are supported narrowly: only
-    exact, column-zero ``strategy_[A-Za-z0-9_]+=`` assignments are harvested.
-    If a marker exists, the established marker-path semantics remain binding.
+
+def parse_setfile_assignments(setfile_path: Path) -> dict[str, dict[str, Any]]:
+    """Parse strategy assignments and MT5 optimiser step metadata.
+
+    Markerless legacy files narrowly harvest exact, column-zero
+    ``strategy_[A-Za-z0-9_]+=`` rows.  Their sole duplicate exception is the
+    generated ablation-child shape: one contiguous base block, its exact child
+    separator, and one contiguous override block with the identical key set.
+    That shape follows MT5 last-value-wins semantics.  Marker-based parsing
+    retains its established behavior and never receives this exception.
     """
     if not setfile_path.exists():
         raise FileNotFoundError(f"baseline setfile missing: {setfile_path}")
@@ -141,45 +173,91 @@ def parse_setfile_assignments(setfile_path: Path) -> dict[str, dict[str, Any]]:
         raw.strip().casefold().startswith("; strategy-specific params")
         for raw in lines
     )
-    in_strategy_block = False
     assignments: dict[str, dict[str, Any]] = {}
-    for line_number, raw in enumerate(lines, start=1):
-        line = raw.strip()
-        if line.casefold().startswith("; strategy-specific params"):
-            in_strategy_block = True
-            continue
-        if has_strategy_marker:
+    if has_strategy_marker:
+        in_strategy_block = False
+        for line_number, raw in enumerate(lines, start=1):
+            line = raw.strip()
+            if line.casefold().startswith("; strategy-specific params"):
+                in_strategy_block = True
+                continue
             if not in_strategy_block or not line or line.startswith(";") or "=" not in line:
                 continue
             key, rhs = line.split("=", 1)
             key = key.strip()
             rhs = rhs.strip()
-        else:
-            legacy_match = re.match(r"^(strategy_[A-Za-z0-9_]+)=(.*)$", raw)
-            if legacy_match is None:
+            if not key or _is_framework_param(key):
                 continue
-            key = legacy_match.group(1)
-            rhs = legacy_match.group(2).strip()
-        if not key or _is_framework_param(key):
+            if key in assignments:
+                raise ValueError(f"duplicate strategy parameter {key}: {setfile_path}")
+            assignments[key] = _assignment_metadata(key, rhs, line_number, setfile_path)
+        return assignments
+
+    # Block structure is consulted only when duplicates exist. Unique legacy
+    # files retain the previous behavior even when unrelated lines separate
+    # their exact strategy assignments.
+    blocks: list[list[tuple[int, str, str]]] = []
+    rows: list[tuple[int, str, str]] = []
+    previous_line_number: int | None = None
+    for line_number, raw in enumerate(lines, start=1):
+        legacy_match = re.match(r"^(strategy_[A-Za-z0-9_]+)=(.*)$", raw)
+        if legacy_match is None:
+            previous_line_number = None
             continue
-        if key in assignments:
-            raise ValueError(f"duplicate strategy parameter {key}: {setfile_path}")
-        if not rhs:
-            raise ValueError(f"empty strategy parameter {key}: {setfile_path}")
-        cells = [cell.strip() for cell in rhs.split("||")]
-        active = _parse_scalar(cells[0])
-        step = _parse_scalar(cells[2]) if len(cells) >= 4 else None
-        minimum = _parse_scalar(cells[1]) if len(cells) >= 4 else None
-        maximum = _parse_scalar(cells[3]) if len(cells) >= 4 else None
-        assignments[key] = {
-            "value": active,
-            "raw_rhs": rhs,
-            "cells": cells,
-            "step": step if isinstance(step, (int, float)) and not isinstance(step, bool) else None,
-            "minimum": minimum if isinstance(minimum, (int, float)) and not isinstance(minimum, bool) else None,
-            "maximum": maximum if isinstance(maximum, (int, float)) and not isinstance(maximum, bool) else None,
-            "line_number": line_number,
-        }
+        key = legacy_match.group(1)
+        rhs = legacy_match.group(2).strip()
+        row = (line_number, key, rhs)
+        rows.append(row)
+        if previous_line_number is None or line_number != previous_line_number + 1:
+            blocks.append([])
+        blocks[-1].append(row)
+        previous_line_number = line_number
+
+    keys = [key for _line_number, key, _rhs in rows]
+    if len(keys) == len(set(keys)):
+        for line_number, key, rhs in rows:
+            assignments[key] = _assignment_metadata(key, rhs, line_number, setfile_path)
+        return assignments
+
+    for block in blocks:
+        block_keys = [key for _line_number, key, _rhs in block]
+        if len(block_keys) != len(set(block_keys)):
+            duplicate = next(key for key in block_keys if block_keys.count(key) > 1)
+            raise ValueError(
+                f"duplicate strategy parameter {duplicate} inside markerless block: "
+                f"{setfile_path}"
+            )
+    if len(blocks) != 2:
+        raise ValueError(
+            "markerless duplicate strategy parameters require exactly two contiguous "
+            f"blocks: {setfile_path}"
+        )
+    base_block, override_block = blocks
+    base_keys = [key for _line_number, key, _rhs in base_block]
+    override_keys = [key for _line_number, key, _rhs in override_block]
+    if set(base_keys) != set(override_keys):
+        raise ValueError(
+            f"markerless ablation base/override key sets differ: {setfile_path}"
+        )
+    separator = [
+        raw.strip()
+        for raw in lines[base_block[-1][0] : override_block[0][0] - 1]
+        if raw.strip()
+    ]
+    ablation_separator = re.compile(
+        r"^;\s*---\s+ablation child [0-9]{2} of .+ "
+        r"\(perturb=.+\)\s+---\s*$",
+        flags=re.IGNORECASE,
+    )
+    if len(separator) != 1 or ablation_separator.fullmatch(separator[0]) is None:
+        raise ValueError(
+            f"markerless duplicate blocks lack the exact ablation-child separator: {setfile_path}"
+        )
+
+    override_by_key = {key: (line_number, rhs) for line_number, key, rhs in override_block}
+    for _base_line, key, _base_rhs in base_block:
+        line_number, rhs = override_by_key[key]
+        assignments[key] = _assignment_metadata(key, rhs, line_number, setfile_path)
     return assignments
 
 
