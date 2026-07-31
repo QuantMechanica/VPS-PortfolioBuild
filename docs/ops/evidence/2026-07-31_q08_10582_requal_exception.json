@@ -38,49 +38,57 @@
     {
       "role": "controller_source",
       "path": "C:\\QM\\repo\\tools\\strategy_farm\\q08_single_target_requal.py",
-      "sha256": "1c632ef818f6883a5af954f4088fa9022e64b7094443f163deb95175876585e0",
-      "bytes": 46575
+      "sha256": "440bf6e555e7e4b0a35d7bcb7250bc6dd3e52915d3f6c231cb9845701383fd9c",
+      "sha256_basis": "UTF8_TEXT_LF_NORMALIZED",
+      "bytes": 47927
     },
     {
       "role": "parser_source",
       "path": "C:\\QM\\repo\\framework\\scripts\\q08_5_neighborhood_runner.py",
-      "sha256": "35a58983a3269f8821bb0b17f0ee6cc67109526bc68533fbdd08e077cf64bb48",
-      "bytes": 48232
+      "sha256": "7580245a3065a7b143d7d07f8949ce6bc3b9de5dd89cd3f3b3bc4d670f0fef52",
+      "sha256_basis": "UTF8_TEXT_LF_NORMALIZED",
+      "bytes": 47186
     },
     {
       "role": "mq5",
       "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\QM5_10582_mql5-ema-pred.mq5",
       "sha256": "a7cbabb034a788e483bb882d5e6160e33cddf20f558ca91f6bbac3ca030314d9",
+      "sha256_basis": "RAW_BYTES",
       "bytes": 13012
     },
     {
       "role": "ex5",
       "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\QM5_10582_mql5-ema-pred.ex5",
       "sha256": "ed764f69df58b0e58f45b6d56825e453127e803b98b2f4ba778924faf90b8603",
+      "sha256_basis": "RAW_BYTES",
       "bytes": 322308
     },
     {
       "role": "setfile_base",
       "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest.set",
       "sha256": "082028275fbb0870d5e0665f5c3131d2d360bb8ff36597aada955c3692eb9d04",
+      "sha256_basis": "RAW_BYTES",
       "bytes": 770
     },
     {
       "role": "setfile_ablation_00",
       "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_00.set",
       "sha256": "8d47c4cc8191e067af31920bceb3cdcb1af2ebea63b4ddb8df954b9a975cb4f3",
+      "sha256_basis": "RAW_BYTES",
       "bytes": 1008
     },
     {
       "role": "setfile_ablation_01",
       "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_01.set",
       "sha256": "f2bf459a3255c09eaf4b2333d870eb1a7d06462132c18e0d85dc3a06ac73d5d6",
+      "sha256_basis": "RAW_BYTES",
       "bytes": 1008
     },
     {
       "role": "setfile_ablation_02",
       "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10582_mql5-ema-pred\\sets\\QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_02.set",
       "sha256": "477bc9142a10fc09e590d32aad14e056af0710d520f35882525313e4babc6cf1",
+      "sha256_basis": "RAW_BYTES",
       "bytes": 1008
     }
   ],
