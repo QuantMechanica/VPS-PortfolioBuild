@@ -340,3 +340,25 @@ def test_schema_and_template_pin_exact_restart_and_source_contracts() -> None:
     assert properties["restore_intent"]["properties"][
         "task_enabled_before_sha256"
     ]["const"] == template["restore_intent"]["task_enabled_before_sha256"]
+
+
+def test_cli_emits_exactly_one_versioned_framed_record(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(
+        fra,
+        "validate_runtime_activation_decision",
+        lambda **_kwargs: {"authorized": True, "decision_id": "TEST"},
+    )
+
+    assert fra.main(["--repo-root", str(tmp_path)]) == 0
+
+    captured = capsys.readouterr()
+    lines = captured.out.splitlines()
+    assert captured.err == ""
+    assert len(lines) == 1
+    assert lines[0].startswith(fra.RUNTIME_ACTIVATION_RECORD_PREFIX)
+    payload = lines[0][len(fra.RUNTIME_ACTIVATION_RECORD_PREFIX) :]
+    assert json.loads(payload) == {"authorized": True, "decision_id": "TEST"}

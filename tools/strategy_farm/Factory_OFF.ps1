@@ -613,17 +613,21 @@ if ($hasSavedTaskState) {
         throw ("FACTORY OFF ABORTED before mutation: restore-intent validation failed: " +
             ($validatorOutput -join [Environment]::NewLine))
     }
-    # The validator emits exactly one compact JSON line as its final stdout;
-    # the 2>&1 merge may interleave interpreter stderr noise (e.g. the
-    # platform-libraries prefix warning), so bind the last non-empty line.
-    $validatorJsonLine = @($validatorOutput | ForEach-Object { [string]$_ } | Where-Object {
-        -not [string]::IsNullOrWhiteSpace($_)
-    } | Select-Object -Last 1)
-    if ($validatorJsonLine.Count -ne 1) {
-        throw 'FACTORY OFF ABORTED before mutation: restore-intent validator returned no output.'
+    # stdout/stderr are merged for Windows PowerShell 5.1 compatibility, so
+    # select one explicitly framed stdout record rather than relying on output
+    # position.  Unframed native noise may occur before or after the record;
+    # zero or duplicate records fail closed.
+    $recordPrefix = 'QM_FACTORY_RESTORE_INTENT_V1:'
+    $validatorRecords = @($validatorOutput | ForEach-Object { [string]$_ } | Where-Object {
+        $_.StartsWith($recordPrefix, [System.StringComparison]::Ordinal)
+    })
+    if ($validatorRecords.Count -ne 1) {
+        throw ("FACTORY OFF ABORTED before mutation: restore-intent validator returned " +
+            "$($validatorRecords.Count) framed records; expected exactly one.")
     }
+    $validatorJson = $validatorRecords[0].Substring($recordPrefix.Length)
     try {
-        $validatedRestoreIntent = [string]$validatorJsonLine[0] | ConvertFrom-Json
+        $validatedRestoreIntent = $validatorJson | ConvertFrom-Json -ErrorAction Stop
     } catch {
         throw "FACTORY OFF ABORTED before mutation: validator returned invalid JSON: $($_.Exception.Message)"
     }

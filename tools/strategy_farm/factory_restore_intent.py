@@ -19,6 +19,9 @@ from pathlib import Path
 from typing import Any
 
 
+RESTORE_INTENT_RECORD_PREFIX = "QM_FACTORY_RESTORE_INTENT_V1:"
+
+
 SCHEMA_VERSION = "qm.factory-restore-intent/v1"
 DECISION = "RESTORE_EXACT_PRE_OFF_TASK_INTENT"
 SCOPE = "QM_QUIESCENCE_TASKS_RESTORE_INTENT"
@@ -268,7 +271,8 @@ def main(argv: list[str] | None = None) -> int:
     except RestoreIntentError as exc:
         print(json.dumps({"validated": False, "error": str(exc)}), file=sys.stderr)
         return 2
-    print(json.dumps(result, ensure_ascii=False, sort_keys=True))
+    payload = json.dumps(result, ensure_ascii=False, sort_keys=True)
+    print(f"{RESTORE_INTENT_RECORD_PREFIX}{payload}")
     return 0
 
 

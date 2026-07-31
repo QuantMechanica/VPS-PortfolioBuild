@@ -136,7 +136,12 @@ try {
     foreach ($task in $tasks) { $args += @('--expected-task',$task) }
     $output = @(& $python @args 2>&1)
     Assert-True ($LASTEXITCODE -eq 0) ("valid manifest rejected: " + ($output -join "`n"))
-    $result = ($output -join "`n") | ConvertFrom-Json
+    $recordPrefix = 'QM_FACTORY_RESTORE_INTENT_V1:'
+    $records = @($output | ForEach-Object { [string]$_ } | Where-Object {
+        $_.StartsWith($recordPrefix, [System.StringComparison]::Ordinal)
+    })
+    Assert-True ($records.Count -eq 1) 'validator did not emit exactly one framed record'
+    $result = $records[0].Substring($recordPrefix.Length) | ConvertFrom-Json
     Assert-True ($result.validated -eq $true) 'validator attestation missing'
     Assert-True ($result.legacy_flag_sha256 -eq $flagSha) 'legacy flag hash not bound'
 

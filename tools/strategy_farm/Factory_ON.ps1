@@ -406,18 +406,20 @@ function Get-CanonicalRuntimeActivationAuthorization {
         throw ("fresh OWNER runtime activation decision validation failed: " +
             ($output -join [Environment]::NewLine))
     }
-    # The validator emits exactly one compact JSON line as its final stdout;
-    # the 2>&1 merge may interleave interpreter stderr noise (e.g. the
-    # platform-libraries prefix warning), so bind the last non-empty line.
-    $jsonLine = @($output | ForEach-Object { [string]$_ } | Where-Object {
-        -not [string]::IsNullOrWhiteSpace($_)
-    } | Select-Object -Last 1)
-    if ($jsonLine.Count -ne 1) {
-        throw 'runtime-activation validator returned no output'
+    # stdout/stderr are merged for Windows PowerShell 5.1 compatibility, so
+    # select one explicitly framed stdout record rather than relying on output
+    # position.  Unframed native noise may occur before or after the record;
+    # zero or duplicate records fail closed.
+    $recordPrefix = 'QM_FACTORY_RUNTIME_ACTIVATION_V1:'
+    $records = @($output | ForEach-Object { [string]$_ } | Where-Object {
+        $_.StartsWith($recordPrefix, [System.StringComparison]::Ordinal)
+    })
+    if ($records.Count -ne 1) {
+        throw "runtime-activation validator returned $($records.Count) framed records; expected exactly one"
     }
+    $jsonPayload = $records[0].Substring($recordPrefix.Length)
     try {
-        $authorization = [string]$jsonLine[0] |
-            ConvertFrom-Json -ErrorAction Stop
+        $authorization = $jsonPayload | ConvertFrom-Json -ErrorAction Stop
     } catch {
         throw "runtime-activation validator returned invalid JSON: $($_.Exception.Message)"
     }

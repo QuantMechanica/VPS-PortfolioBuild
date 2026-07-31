@@ -93,16 +93,19 @@ def _write_native_helper(
     path: Path,
     *,
     exit_code: int = 0,
-    noise_after_json: bool = False,
+    noise_after_record: bool = False,
+    record_prefix: str = "QM_FACTORY_RUNTIME_ACTIVATION_V1:",
+    record_count: int = 1,
 ) -> None:
     noise = (
         "sys.stderr.write('native-prefix-noise\\n')\n"
         "sys.stderr.flush()\n"
     )
-    json_line = "print('{\"authorized\":true,\"validated\":true}', flush=True)\n"
+    framed = record_prefix + '{"authorized":true,"validated":true}'
+    json_line = f"print({framed!r}, flush=True)\n" * record_count
     ordered_output = (
         json_line + "time.sleep(0.1)\n" + noise
-        if noise_after_json
+        if noise_after_record
         else noise + "time.sleep(0.1)\n" + json_line
     )
     path.write_text(
@@ -285,7 +288,7 @@ Write-Output 'PASS bom-and-bomless-byte-exact'
 
 
 @pytest.mark.parametrize("shell", POWERSHELLS)
-def test_both_validator_paths_execute_last_json_line_with_native_stderr(
+def test_both_validator_paths_execute_one_framed_record_with_native_noise(
     tmp_path: Path,
     shell: Path,
 ) -> None:
@@ -307,23 +310,30 @@ def test_both_validator_paths_execute_last_json_line_with_native_stderr(
         + textwrap.indent(off_block, "    ")
         + "\n    return $validatedRestoreIntent\n}\n"
     )
-    helper = tmp_path / "native-json-helper.py"
+    runtime_helper = tmp_path / "native-runtime-helper.py"
+    restore_helper = tmp_path / "native-restore-helper.py"
     failing_helper = tmp_path / "native-failure-helper.py"
     trailing_noise_helper = tmp_path / "native-trailing-noise-helper.py"
-    _write_native_helper(helper)
+    duplicate_helper = tmp_path / "native-duplicate-record-helper.py"
+    _write_native_helper(runtime_helper)
+    _write_native_helper(
+        restore_helper,
+        record_prefix="QM_FACTORY_RESTORE_INTENT_V1:",
+    )
     _write_native_helper(failing_helper, exit_code=7)
-    _write_native_helper(trailing_noise_helper, noise_after_json=True)
+    _write_native_helper(trailing_noise_helper, noise_after_record=True)
+    _write_native_helper(duplicate_helper, record_count=2)
     missing_flag = tmp_path / "missing-FACTORY_OFF.flag"
     harness = f"""
 $ErrorActionPreference = 'Stop'
 $pythonExe = {_ps_literal(Path(sys.executable))}
-$runtimeActivationValidatorScript = {_ps_literal(helper)}
+$runtimeActivationValidatorScript = {_ps_literal(runtime_helper)}
 $factoryOffFlagPath = {_ps_literal(missing_flag)}
 $authorization = Get-CanonicalRuntimeActivationAuthorization
 if ($authorization.authorized -ne $true) {{ exit 31 }}
 if ($ErrorActionPreference -cne 'Stop') {{ exit 32 }}
 
-$restoreIntentValidatorPath = {_ps_literal(helper)}
+$restoreIntentValidatorPath = {_ps_literal(restore_helper)}
 $RestoreIntentManifest = {_ps_literal(tmp_path / "manifest.json")}
 $QM_QUIESCENCE_TASKS = @()
 $validated = Invoke-ExtractedFactoryOffRestoreValidator
@@ -338,12 +348,16 @@ try {{ Get-CanonicalRuntimeActivationAuthorization | Out-Null }} catch {{
 if (-not $failedClosed -or $ErrorActionPreference -cne 'Stop') {{ exit 35 }}
 
 $runtimeActivationValidatorScript = {_ps_literal(trailing_noise_helper)}
-$trailingNoiseRejected = $false
+$trailing = Get-CanonicalRuntimeActivationAuthorization
+if ($trailing.authorized -ne $true -or $ErrorActionPreference -cne 'Stop') {{ exit 36 }}
+
+$runtimeActivationValidatorScript = {_ps_literal(duplicate_helper)}
+$duplicateRejected = $false
 try {{ Get-CanonicalRuntimeActivationAuthorization | Out-Null }} catch {{
-    $trailingNoiseRejected = $_.Exception.Message -match 'invalid JSON'
+    $duplicateRejected = $_.Exception.Message -match '2 framed records'
 }}
-if (-not $trailingNoiseRejected -or $ErrorActionPreference -cne 'Stop') {{ exit 36 }}
-Write-Output 'PASS noisy-validator-last-line-and-eap'
+if (-not $duplicateRejected -or $ErrorActionPreference -cne 'Stop') {{ exit 37 }}
+Write-Output 'PASS framed-validator-noise-and-eap'
 """
     result = _run_extracted(
         tmp_path,
@@ -352,7 +366,7 @@ Write-Output 'PASS noisy-validator-last-line-and-eap'
         harness=harness,
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "PASS noisy-validator-last-line-and-eap" in result.stdout
+    assert "PASS framed-validator-noise-and-eap" in result.stdout
 
 
 @pytest.mark.parametrize("shell", POWERSHELLS)

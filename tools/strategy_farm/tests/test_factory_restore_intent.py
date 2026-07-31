@@ -234,3 +234,35 @@ def test_powershell_contract_suite() -> None:
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert "Factory restore-intent tests passed" in result.stdout
+
+
+def test_cli_emits_exactly_one_versioned_framed_record(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(
+        restore_intent,
+        "validate_restore_intent",
+        lambda *_args, **_kwargs: {"validated": True, "manifest_id": "TEST"},
+    )
+
+    assert restore_intent.main(
+        [
+            "validate",
+            "--manifest",
+            str(tmp_path / "manifest.json"),
+            "--legacy-flag",
+            str(tmp_path / "FACTORY_OFF.flag"),
+            "--expected-task",
+            "QM_Test",
+        ]
+    ) == 0
+
+    captured = capsys.readouterr()
+    lines = captured.out.splitlines()
+    assert captured.err == ""
+    assert len(lines) == 1
+    assert lines[0].startswith(restore_intent.RESTORE_INTENT_RECORD_PREFIX)
+    payload = lines[0][len(restore_intent.RESTORE_INTENT_RECORD_PREFIX) :]
+    assert json.loads(payload) == {"manifest_id": "TEST", "validated": True}

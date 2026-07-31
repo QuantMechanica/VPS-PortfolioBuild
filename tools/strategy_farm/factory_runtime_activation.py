@@ -20,6 +20,9 @@ from pathlib import Path
 from typing import Any
 
 
+RUNTIME_ACTIVATION_RECORD_PREFIX = "QM_FACTORY_RUNTIME_ACTIVATION_V1:"
+
+
 SCHEMA_VERSION = "qm.factory-runtime-activation-owner-decision/v1"
 REPO_ROOT = Path(r"C:\QM\repo")
 DECISION_RELATIVE_PATH = Path(
@@ -549,7 +552,8 @@ def main(argv: list[str] | None = None) -> int:
         digest_relative_path=digest_relative,
         factory_off_flag=args.factory_off_flag,
     )
-    print(json.dumps(result, sort_keys=True, separators=(",", ":")))
+    payload = json.dumps(result, sort_keys=True, separators=(",", ":"))
+    print(f"{RUNTIME_ACTIVATION_RECORD_PREFIX}{payload}")
     return 0
 
 
