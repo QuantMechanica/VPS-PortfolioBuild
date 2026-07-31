@@ -4,7 +4,7 @@
 **Slug:** `nekritin-peters-kangaroo-tail-d1`
 **Source:** `7f773fbb-884e-54c9-a5d8-3f4087497622` (see `sources/nekritin-peters-naked-forex-wiley`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-11
+**Last revised:** 2026-07-31
 
 ---
 
@@ -98,3 +98,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | cefdba8c-70ab-426a-87c3-a900f8d2f62c |
+| v2 | 2026-07-31 | Framework-corset Q01 repair | Added current MAE sampling, entry-only news ordering, deterministic request initialization, canonical setfiles, and strict rebuild under task 138d65c7-0988-4499-ad16-10fd34810973. |
