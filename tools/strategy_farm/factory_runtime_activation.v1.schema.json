@@ -69,10 +69,10 @@
       "additionalProperties": false,
       "required": ["disabled_terminals", "expected_worker_count", "expected_terminals"],
       "properties": {
-        "disabled_terminals": { "const": ["T5"] },
-        "expected_worker_count": { "const": 9 },
+        "disabled_terminals": { "const": [] },
+        "expected_worker_count": { "const": 10 },
         "expected_terminals": {
-          "const": ["T1", "T2", "T3", "T4", "T6", "T7", "T8", "T9", "T10"]
+          "const": ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10"]
         }
       }
     },

@@ -144,8 +144,8 @@ def _build_repo(
             "authorized_work_item_ids": list(fra.RESTART_HOLD_IDS),
         },
         "worker_policy": {
-            "disabled_terminals": ["T5"],
-            "expected_worker_count": 9,
+            "disabled_terminals": [],
+            "expected_worker_count": 10,
             "expected_terminals": list(fra.WORKER_TERMINALS),
         },
         "restore_intent": {
@@ -198,6 +198,45 @@ def test_strict_committed_runtime_activation_decision_passes(
     assert result["worker_terminals"] == list(fra.WORKER_TERMINALS)
     assert set(result["source_bindings"]) == set(fra.SOURCE_BINDING_PATHS)
     assert len(result["task_enabled_before"]) == 21
+
+
+@pytest.mark.parametrize(
+    "worker_policy",
+    [
+        {
+            "disabled_terminals": ["T5"],
+            "expected_worker_count": 9,
+            "expected_terminals": [
+                "T1", "T2", "T3", "T4", "T6", "T7", "T8", "T9", "T10"
+            ],
+        },
+        {
+            "disabled_terminals": ["T5"],
+            "expected_worker_count": 10,
+            "expected_terminals": list(fra.WORKER_TERMINALS),
+        },
+        {
+            "disabled_terminals": [],
+            "expected_worker_count": 10,
+            "expected_terminals": list(fra.WORKER_TERMINALS[:-1]),
+        },
+    ],
+)
+def test_runtime_decision_rejects_non_exact_ten_worker_policy(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    worker_policy: dict,
+) -> None:
+    def replace_policy(decision: dict) -> None:
+        decision["worker_policy"] = worker_policy
+
+    repo, flag_path, _ = _build_repo(
+        tmp_path,
+        monkeypatch,
+        mutate_decision=replace_policy,
+    )
+    with pytest.raises(fra.RuntimeActivationError, match="worker policy mismatch"):
+        _validate(repo, flag_path)
 
 
 def test_missing_runtime_decision_hard_blocks(tmp_path: Path) -> None:
@@ -323,10 +362,18 @@ def test_schema_and_template_pin_exact_restart_and_source_contracts() -> None:
     ]["const"] == list(fra.RESTART_HOLD_IDS)
     assert properties["worker_policy"]["properties"]["disabled_terminals"][
         "const"
-    ] == ["T5"]
+    ] == []
+    assert properties["worker_policy"]["properties"]["expected_worker_count"][
+        "const"
+    ] == 10
     assert properties["worker_policy"]["properties"]["expected_terminals"][
         "const"
     ] == list(fra.WORKER_TERMINALS)
+    assert template["worker_policy"] == {
+        "disabled_terminals": [],
+        "expected_worker_count": 10,
+        "expected_terminals": list(fra.WORKER_TERMINALS),
+    }
     assert set(properties["source_bindings"]["required"]) == set(
         fra.SOURCE_BINDING_PATHS
     )

@@ -220,6 +220,11 @@ def test_builder_self_verifies_candidate_and_preserves_crlf_normalization(
     ).read_bytes() == b"synthetic source binding: factory_on\n"
     decision = json.loads(decision_path.read_text(encoding="utf-8"))
     assert decision["decision_id"] == "OWNER_GO_001"
+    assert decision["worker_policy"] == {
+        "disabled_terminals": [],
+        "expected_worker_count": 10,
+        "expected_terminals": list(fra.WORKER_TERMINALS),
+    }
     assert decision["restore_intent"]["factory_off_flag_sha256"] == _sha256(
         flag_path.read_bytes()
     )

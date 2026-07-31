@@ -131,11 +131,13 @@ $QM_OWNER_DECISION_BLOB = '6d36cf6682e317324a35bc8388042402b0f3e540'
 # therefore unreliable under load. Span the 5-minute retry cadence while
 # retaining the guarded restart window; early success exits without waiting.
 $factoryPostStartHealthTimeoutSeconds = 1800
+$QM_PREPARATION_DECISION_WORKER_TERMINALS = @(
+    'T1','T2','T3','T4','T6','T7','T8','T9','T10'
+)
 $QM_OWNER_APPROVED_DISABLED_TERMINALS = @(
-    'T5'
 )
 $QM_OWNER_APPROVED_WORKER_TERMINALS = @(
-    'T1','T2','T3','T4','T6','T7','T8','T9','T10'
+    'T1','T2','T3','T4','T5','T6','T7','T8','T9','T10'
 )
 $QM_OWNER_APPROVED_RESTART_HOLD_IDS = @(
     '3746e558-6eff-436b-9365-cfec9b7f1a63',
@@ -227,15 +229,22 @@ function Get-QmSha256Hex([byte[]]$Bytes) {
 }
 
 function Get-CanonicalDisabledTerminalPolicySnapshot {
-    if (-not (Test-Path -LiteralPath $disabledTerminalsPath -PathType Leaf)) {
-        throw "disabled-terminal policy file is missing: $disabledTerminalsPath"
-    }
-    try {
-        $bytes = [System.IO.File]::ReadAllBytes($disabledTerminalsPath)
-        $strictUtf8 = New-Object System.Text.UTF8Encoding($false, $true)
-        $text = $strictUtf8.GetString($bytes).TrimStart([char]0xFEFF)
-    } catch {
-        throw "disabled-terminal policy cannot be read as exact UTF-8 bytes: $($_.Exception.Message)"
+    if (Test-Path -LiteralPath $disabledTerminalsPath) {
+        if (-not (Test-Path -LiteralPath $disabledTerminalsPath -PathType Leaf)) {
+            throw "disabled-terminal policy path is not a file: $disabledTerminalsPath"
+        }
+        try {
+            $bytes = [System.IO.File]::ReadAllBytes($disabledTerminalsPath)
+            $strictUtf8 = New-Object System.Text.UTF8Encoding($false, $true)
+            $text = $strictUtf8.GetString($bytes).TrimStart([char]0xFEFF)
+        } catch {
+            throw "disabled-terminal policy cannot be read as exact UTF-8 bytes: $($_.Exception.Message)"
+        }
+    } else {
+        # OWNER-approved ten-worker policy: an absent cap file is the canonical
+        # empty disabled set, matching start_terminal_workers.py semantics.
+        $bytes = [byte[]]::new(0)
+        $text = ''
     }
     $rows = @([regex]::Split($text, '\r\n|\n|\r') |
         ForEach-Object { $_.Trim() } |
@@ -318,11 +327,11 @@ function Assert-CanonicalOwnerRestartDecision {
     if ([int]$decision.worker_policy.expected_worker_count -ne 9 -or
         $decision.worker_policy.t5_quarantine_ratified -isnot [bool] -or
         -not [bool]$decision.worker_policy.t5_quarantine_ratified -or
-        $decisionWorkerTerminals.Count -ne $QM_OWNER_APPROVED_WORKER_TERMINALS.Count) {
+        $decisionWorkerTerminals.Count -ne $QM_PREPARATION_DECISION_WORKER_TERMINALS.Count) {
         throw 'canonical OWNER worker-policy metadata mismatch'
     }
-    for ($index = 0; $index -lt $QM_OWNER_APPROVED_WORKER_TERMINALS.Count; $index++) {
-        if ($decisionWorkerTerminals[$index] -cne $QM_OWNER_APPROVED_WORKER_TERMINALS[$index]) {
+    for ($index = 0; $index -lt $QM_PREPARATION_DECISION_WORKER_TERMINALS.Count; $index++) {
+        if ($decisionWorkerTerminals[$index] -cne $QM_PREPARATION_DECISION_WORKER_TERMINALS[$index]) {
             throw "canonical OWNER worker terminal mismatch at index $index"
         }
     }
@@ -1107,14 +1116,14 @@ $missingWorkerTerminals = @($QM_OWNER_APPROVED_WORKER_TERMINALS |
 $extraWorkerTerminals = @($derivedWorkerTerminals |
     Where-Object { $_ -notin $QM_OWNER_APPROVED_WORKER_TERMINALS })
 if ($missingWorkerTerminals.Count -ne 0 -or $extraWorkerTerminals.Count -ne 0 -or
-    $derivedWorkerTerminals.Count -ne 9) {
+    $derivedWorkerTerminals.Count -ne 10) {
     throw ("FACTORY ON ABORTED before mutation: worker-terminal exact-set mismatch: " +
         "missing=[$($missingWorkerTerminals -join ',')] extra=[$($extraWorkerTerminals -join ',')]")
 }
 $expectedWorkerTerminals = @($QM_OWNER_APPROVED_WORKER_TERMINALS)
 $expectWorkers = $expectedWorkerTerminals.Count
-if ($expectWorkers -ne 9) {
-    throw 'FACTORY ON ABORTED before mutation: OWNER-approved worker count is not exactly nine.'
+if ($expectWorkers -ne 10) {
+    throw 'FACTORY ON ABORTED before mutation: OWNER-approved worker count is not exactly ten.'
 }
 $mySession = (Get-Process -Id $PID).SessionId
 $approvedTaskEnabledBefore = ConvertTo-ExactTaskEnabledState `
@@ -1185,7 +1194,7 @@ if (Test-Path -LiteralPath $factoryOffFlagPath) {
     $alreadyOnTasks = Test-ExactFactoryTaskContract `
         -TaskRows $alreadyOnTaskSnapshot.tasks `
         -ExpectedState $expectedTaskEnabledState
-    if ($alreadyOnWorkers.healthy -and $alreadyOnWorkers.observed_count -eq 9 -and
+    if ($alreadyOnWorkers.healthy -and $alreadyOnWorkers.observed_count -eq $expectWorkers -and
         $alreadyOnTasks.healthy -and
         $alreadyOnTasks.observed_count -eq $expectedTaskEnabledState.Count) {
         Assert-NoFactoryOffIntent -Context 'already-ON final no-op verification'
@@ -1200,7 +1209,7 @@ if (Test-Path -LiteralPath $factoryOffFlagPath) {
     throw ("FACTORY ON ABORTED: interlock absent but factory is not verifiably ON " +
         "(worker_errors=[$($alreadyOnWorkers.errors -join '; ')] " +
         "task_errors=[$($alreadyOnTasks.errors -join '; ')]). " +
-        "T5 must be absent and exactly T1-T4/T6-T10 must be present in this session. " +
+        "Exactly T1-T10 must be present in this session. " +
         "Run Factory_OFF first to establish a clean restart contract.")
 }
 
@@ -1310,7 +1319,7 @@ try {
         -WorkerRows $startedWorkerRows `
         -ExpectedTerminals $expectedWorkerTerminals `
         -ExpectedSessionId $mySession
-    if (-not $startedWorkers.healthy -or $startedWorkers.observed_count -ne 9) {
+    if (-not $startedWorkers.healthy -or $startedWorkers.observed_count -ne $expectWorkers) {
         throw ("exact worker cohort did not start: " +
             "$($startedWorkers.errors -join '; ')")
     }
@@ -1456,7 +1465,7 @@ try {
     }
 }
 
-Write-Host '  OWNER worker policy enforced: T5 quarantined; exact T1-T4/T6-T10 cohort healthy.'
+Write-Host '  OWNER worker policy enforced: disabled=[]; exact T1-T10 cohort healthy.'
 Write-Host '  T_Live/FTMO task state, live terminals and AutoTrading were not touched.'
 Write-Host '  RDP disconnect is safe; explicit LOGOFF still terminates interactive factory workers.'
 Write-Host ''

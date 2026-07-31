@@ -83,16 +83,22 @@ def test_factory_on_builds_exact_non_live_task_and_worker_expectations() -> None
     worker_terminals = _single_quoted_values(
         _ps_array(source, "QM_OWNER_APPROVED_WORKER_TERMINALS")
     )
+    preparation_terminals = _single_quoted_values(
+        _ps_array(source, "QM_PREPARATION_DECISION_WORKER_TERMINALS")
+    )
     assert owner_decision["worker_policy"]["t5_quarantine_ratified"] is True
-    assert disabled_terminals == ["T5"]
-    assert worker_terminals == owner_decision["worker_policy"]["expected_terminals"]
-    assert len(worker_terminals) == owner_decision["worker_policy"]["expected_worker_count"] == 9
+    assert preparation_terminals == owner_decision["worker_policy"]["expected_terminals"]
+    assert len(preparation_terminals) == owner_decision["worker_policy"]["expected_worker_count"] == 9
+    assert disabled_terminals == []
+    assert worker_terminals == [f"T{index}" for index in range(1, 11)]
+    assert len(worker_terminals) == 10
     assert "invalid disabled-terminal rows" in source
     assert "duplicate disabled terminals" in source
     assert "disabled-terminal exact-set mismatch" in source
+    assert "an absent cap file is the canonical" in source
     assert "worker-terminal exact-set mismatch" in source
     assert "$expectedWorkerTerminals = @($QM_OWNER_APPROVED_WORKER_TERMINALS)" in source
-    assert "$expectWorkers -ne 9" in source
+    assert "$expectWorkers -ne 10" in source
     assert "WARNING: non-standard disabled terminals" not in source
     assert "-ExpectedWorkerTerminals $expectedWorkerTerminals" in source
     assert "-ExpectedSessionId $mySession" in source
@@ -103,8 +109,10 @@ def test_factory_on_builds_exact_non_live_task_and_worker_expectations() -> None
     already_on_exit = source.index("FACTORY ALREADY ON")
     assert already_on < already_on_exit
     assert "$alreadyOnWorkers.healthy" in source[already_on:already_on_exit]
-    assert "$alreadyOnWorkers.observed_count -eq 9" in source[already_on:already_on_exit]
-    assert "T5 must be absent" in source
+    assert "$alreadyOnWorkers.observed_count -eq $expectWorkers" in source[
+        already_on:already_on_exit
+    ]
+    assert "Exactly T1-T10 must be present" in source
 
 
 def test_factory_on_passes_only_the_seven_owner_approved_restart_hold_ids() -> None:
@@ -171,6 +179,44 @@ def test_disabled_terminal_hash_is_revalidated_under_lock_before_launch_and_rele
     assert launch_check > lock
     assert release_check > health
     assert "$script:disabledTerminalPolicySha256" in source[lock:release]
+
+
+def test_absent_disabled_terminal_file_is_exact_empty_policy_and_t5_is_rejected(
+    tmp_path: Path,
+) -> None:
+    source = FACTORY_ON.read_text(encoding="utf-8-sig")
+    helpers = "\n".join(
+        (
+            _ps_function(source, "Get-QmSha256Hex"),
+            _ps_function(source, "Get-CanonicalDisabledTerminalPolicySnapshot"),
+        )
+    )
+    policy_path = str(tmp_path / "disabled_terminals.txt").replace("'", "''")
+    harness = f"""
+$disabledTerminalsPath = '{policy_path}'
+$QM_OWNER_APPROVED_DISABLED_TERMINALS = @()
+{helpers}
+$empty = Get-CanonicalDisabledTerminalPolicySnapshot
+if (@($empty.terminals).Count -ne 0) {{ exit 30 }}
+if ($empty.sha256 -cne 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855') {{ exit 31 }}
+[System.IO.File]::WriteAllText($disabledTerminalsPath, "T5`n", (New-Object System.Text.UTF8Encoding($false)))
+$rejected = $false
+try {{ Get-CanonicalDisabledTerminalPolicySnapshot | Out-Null }} catch {{
+    $rejected = $_.Exception.Message -match 'disabled-terminal exact-set mismatch'
+}}
+if (-not $rejected) {{ exit 32 }}
+Write-Output 'PASS exact-empty-disabled-policy'
+"""
+    result = subprocess.run(
+        ("powershell.exe", "-NoProfile", "-NonInteractive", "-Command", harness),
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "PASS exact-empty-disabled-policy" in result.stdout
 
 
 def test_runtime_authority_is_separate_fresh_and_precedes_every_mutation() -> None:
@@ -329,20 +375,20 @@ Write-Output 'PASS retained-lock'
     assert "PASS retained-lock" in result.stdout
 
 
-def test_exact_worker_cohort_rejects_t5_missing_and_wrong_session() -> None:
+def test_exact_worker_cohort_rejects_duplicate_missing_and_wrong_session() -> None:
     source = FACTORY_ON.read_text(encoding="utf-8-sig")
     helper = _ps_function(source, "Test-ExactFactoryWorkerCohort")
     harness = helper + r'''
-$expected = @('T1','T2','T3','T4','T6','T7','T8','T9','T10')
+$expected = @('T1','T2','T3','T4','T5','T6','T7','T8','T9','T10')
 $rows = @($expected | ForEach-Object { [pscustomobject]@{process_id=100;session_id=7;terminal=$_} })
 $healthy = Test-ExactFactoryWorkerCohort -WorkerRows $rows -ExpectedTerminals $expected -ExpectedSessionId 7
-if (-not $healthy.healthy -or $healthy.observed_count -ne 9) { exit 10 }
+if (-not $healthy.healthy -or $healthy.observed_count -ne 10) { exit 10 }
 $withT5 = @($rows + [pscustomobject]@{process_id=200;session_id=7;terminal='T5'})
 $badT5 = Test-ExactFactoryWorkerCohort -WorkerRows $withT5 -ExpectedTerminals $expected -ExpectedSessionId 7
-if ($badT5.healthy -or -not (@($badT5.errors | Where-Object { $_ -match "Unexpected worker terminal 'T5'" }).Count)) { exit 11 }
-$missing = @($rows | Where-Object { $_.terminal -ne 'T9' })
+if ($badT5.healthy -or -not (@($badT5.errors | Where-Object { $_ -match "Worker terminal 'T5' is duplicated" }).Count)) { exit 11 }
+$missing = @($rows | Where-Object { $_.terminal -ne 'T5' })
 $badMissing = Test-ExactFactoryWorkerCohort -WorkerRows $missing -ExpectedTerminals $expected -ExpectedSessionId 7
-if ($badMissing.healthy -or -not (@($badMissing.errors | Where-Object { $_ -match "Expected worker terminal 'T9'.*not visible" }).Count)) { exit 12 }
+if ($badMissing.healthy -or -not (@($badMissing.errors | Where-Object { $_ -match "Expected worker terminal 'T5'.*not visible" }).Count)) { exit 12 }
 $wrongSession = @($expected | ForEach-Object { [pscustomobject]@{process_id=300;session_id=8;terminal=$_} })
 $badSession = Test-ExactFactoryWorkerCohort -WorkerRows $wrongSession -ExpectedTerminals $expected -ExpectedSessionId 7
 if ($badSession.healthy -or -not (@($badSession.errors | Where-Object { $_ -match 'not in interactive session 7' }).Count)) { exit 13 }

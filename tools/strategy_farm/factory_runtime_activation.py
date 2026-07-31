@@ -77,6 +77,7 @@ WORKER_TERMINALS = (
     "T2",
     "T3",
     "T4",
+    "T5",
     "T6",
     "T7",
     "T8",
@@ -365,8 +366,8 @@ def _validate_runtime_activation_artifacts(
         raise RuntimeActivationError("runtime decision restart-hold set mismatch")
     worker_policy = payload.get("worker_policy")
     if not isinstance(worker_policy, dict) or worker_policy != {
-        "disabled_terminals": ["T5"],
-        "expected_worker_count": 9,
+        "disabled_terminals": [],
+        "expected_worker_count": 10,
         "expected_terminals": list(WORKER_TERMINALS),
     }:
         raise RuntimeActivationError("runtime decision worker policy mismatch")
