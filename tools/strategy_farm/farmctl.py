@@ -15546,12 +15546,27 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
     }
 
 
-def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[str, Any]:
+def enqueue_cascade_backtest_for_ea(
+    root: Path,
+    ea_id: str,
+    phase: str,
+    *,
+    predecessor_work_item_id: str | None = None,
+    append_only_rerun_of: str | None = None,
+    rerun_reason: str | None = None,
+) -> dict[str, Any]:
     """Requeue or create a cascade work_item from the prior PASS phase.
 
     Q04+ phases are consumed by the work_item dispatcher/pump cascade, not the
     older review-task enqueue path. This keeps the operator-facing command
     idempotent and avoids duplicate EA/symbol/phase rows.
+
+    ``predecessor_work_item_id`` narrows the operation to one exact predecessor.
+    When ``append_only_rerun_of`` is also supplied, the cited terminal phase row
+    is preserved and a new pending row is inserted instead of using the legacy
+    in-place requeue branch. This is the governed path for evidence-invalid
+    historical verdicts: raw pipeline facts remain immutable until a separately
+    reviewed adjudication overlay supersedes them.
     """
     if str(phase or "").strip().upper() == "Q09":
         return {
@@ -15563,6 +15578,20 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
         return {
             "enqueued": False,
             "reason": f"Phase {phase} is not a cascade phase. Supported cascade phases: {CASCADE_BACKTEST_PHASES}",
+        }
+    if append_only_rerun_of and not predecessor_work_item_id:
+        return {
+            "enqueued": False,
+            "reason": "append_only_rerun_requires_exact_predecessor_work_item_id",
+            "ea_id": ea_id,
+            "phase": phase,
+        }
+    if append_only_rerun_of and not str(rerun_reason or "").strip():
+        return {
+            "enqueued": False,
+            "reason": "append_only_rerun_requires_reason",
+            "ea_id": ea_id,
+            "phase": phase,
         }
     artifact_failure = _ea_build_artifact_failure(str(ea_id))
     if artifact_failure:
@@ -15618,13 +15647,18 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
     requeued: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
     with connect(root) as conn:
+        predecessor_filter = " AND id=?" if predecessor_work_item_id else ""
+        predecessor_args: tuple[Any, ...] = (
+            (str(predecessor_work_item_id),) if predecessor_work_item_id else ()
+        )
         prev_rows = conn.execute(
             f"""
             SELECT * FROM work_items
             WHERE ea_id=? AND phase=? AND status='done' AND verdict in ({placeholders})
+              {predecessor_filter}
             ORDER BY updated_at DESC
             """,
-            (ea_id, prev_phase, *verdicts),
+            (ea_id, prev_phase, *verdicts, *predecessor_args),
         ).fetchall()
         for prev in prev_rows:
             if not _setfile_path_exists(prev["setfile_path"]):
@@ -15706,6 +15740,100 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                 """,
                 (ea_id, phase, prev["symbol"], prev["setfile_path"]),
             ).fetchone()
+            if append_only_rerun_of:
+                rerun_target = conn.execute(
+                    "SELECT * FROM work_items WHERE id=?",
+                    (str(append_only_rerun_of),),
+                ).fetchone()
+                target_matches = bool(
+                    rerun_target
+                    and rerun_target["ea_id"] == ea_id
+                    and rerun_target["phase"] == phase
+                    and rerun_target["symbol"] == prev["symbol"]
+                    and rerun_target["setfile_path"] == prev["setfile_path"]
+                    and rerun_target["status"] in {"done", "failed"}
+                    and rerun_target["verdict"] is not None
+                )
+                if not target_matches:
+                    skipped.append({
+                        "id": str(append_only_rerun_of),
+                        "symbol": prev["symbol"],
+                        "reason": "append_only_rerun_target_mismatch_or_not_terminal",
+                    })
+                    continue
+                prior_rerun = conn.execute(
+                    """
+                    SELECT id, status, verdict FROM work_items
+                    WHERE ea_id=? AND phase=? AND symbol=? AND setfile_path=?
+                      AND json_extract(payload_json, '$.append_only_rerun_of_work_item')=?
+                    ORDER BY created_at ASC LIMIT 1
+                    """,
+                    (
+                        ea_id,
+                        phase,
+                        prev["symbol"],
+                        prev["setfile_path"],
+                        str(append_only_rerun_of),
+                    ),
+                ).fetchone()
+                if prior_rerun:
+                    skipped.append({
+                        "id": prior_rerun["id"],
+                        "symbol": prev["symbol"],
+                        "status": prior_rerun["status"],
+                        "verdict": prior_rerun["verdict"],
+                        "reason": "append_only_rerun_already_exists",
+                    })
+                    continue
+                open_row = conn.execute(
+                    """
+                    SELECT id, status FROM work_items
+                    WHERE ea_id=? AND phase=? AND symbol=? AND setfile_path=?
+                      AND status IN ('pending','active')
+                    ORDER BY created_at ASC LIMIT 1
+                    """,
+                    (ea_id, phase, prev["symbol"], prev["setfile_path"]),
+                ).fetchone()
+                if open_row:
+                    skipped.append({
+                        "id": open_row["id"],
+                        "symbol": prev["symbol"],
+                        "status": open_row["status"],
+                        "reason": "already_pending_or_active",
+                    })
+                    continue
+                payload.update({
+                    "append_only_rerun": True,
+                    "append_only_rerun_of_work_item": str(append_only_rerun_of),
+                    "rerun_reason": str(rerun_reason).strip(),
+                    "historical_work_item_preserved": True,
+                })
+                wid = str(uuid.uuid4())
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status,
+                       attempt_count, parent_task_id, payload_json, created_at, updated_at)
+                    VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, NULL, ?, ?, ?)
+                    """,
+                    (
+                        wid,
+                        phase,
+                        ea_id,
+                        prev["symbol"],
+                        prev["setfile_path"],
+                        json.dumps(payload, sort_keys=True),
+                        now,
+                        now,
+                    ),
+                )
+                created.append({
+                    "id": wid,
+                    "symbol": prev["symbol"],
+                    "setfile_path": prev["setfile_path"],
+                    "rerun_of_work_item_id": str(append_only_rerun_of),
+                })
+                continue
             if existing:
                 if phase == "Q10":
                     try:
@@ -15817,7 +15945,13 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
             "enqueued": False,
             "ea_id": ea_id,
             "phase": phase,
-            "reason": f"No done {prev_phase} PASS work_items found for {ea_id}",
+            "reason": (
+                f"No done {prev_phase} PASS work_items found for {ea_id}"
+                + (
+                    f" matching predecessor {predecessor_work_item_id}"
+                    if predecessor_work_item_id else ""
+                )
+            ),
         }
     return {
         "enqueued": bool(created or requeued or skipped),
@@ -18263,6 +18397,18 @@ def build_parser() -> argparse.ArgumentParser:
     enqueue_bt.add_argument("--review-task-id")
     enqueue_bt.add_argument("--ea", help="EA label for Q05+ cascade requeue, e.g. QM5_1056")
     enqueue_bt.add_argument("--phase", default="Q02", choices=list(SUPPORTED_BACKTEST_PHASES + CASCADE_BACKTEST_PHASES))
+    enqueue_bt.add_argument(
+        "--from-work-item-id",
+        help="narrow a cascade enqueue to one exact predecessor work item",
+    )
+    enqueue_bt.add_argument(
+        "--append-only-rerun-of",
+        help="preserve this terminal phase row and create a new pending rerun row",
+    )
+    enqueue_bt.add_argument(
+        "--rerun-reason",
+        help="required audit reason for --append-only-rerun-of",
+    )
 
     dispatch = sub.add_parser(
         "dispatch-tick",
@@ -18547,7 +18693,14 @@ def main(argv: list[str] | None = None) -> int:
         print_json(reconcile_mt5_slots(root, fix_workers=args.fix_workers, fix_orphan_terminals=args.fix_orphan_terminals))
     elif args.command == "enqueue-backtest":
         if args.ea:
-            print_json(enqueue_cascade_backtest_for_ea(root, args.ea, args.phase))
+            print_json(enqueue_cascade_backtest_for_ea(
+                root,
+                args.ea,
+                args.phase,
+                predecessor_work_item_id=args.from_work_item_id,
+                append_only_rerun_of=args.append_only_rerun_of,
+                rerun_reason=args.rerun_reason,
+            ))
         elif args.review_task_id:
             print_json(enqueue_backtest(root, args.review_task_id, args.phase))
         else:

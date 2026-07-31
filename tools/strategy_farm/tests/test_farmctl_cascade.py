@@ -1003,5 +1003,109 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertNotIn("--setfile", cmd)
 
 
+class AppendOnlyCascadeRerunTests(unittest.TestCase):
+    def test_exact_rerun_creates_one_row_and_preserves_historical_verdict(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            repo_root = Path(tmp) / "repo"
+            ea_id = "QM5_9991"
+            ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_demo"
+            sets_dir = ea_dir / "sets"
+            sets_dir.mkdir(parents=True)
+            (ea_dir / f"{ea_dir.name}.ex5").write_bytes(b"compiled")
+            setfile = sets_dir / f"{ea_dir.name}_EURUSD.DWX_H1_backtest.set"
+            setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status,
+                       verdict, attempt_count, evidence_path, payload_json, created_at, updated_at)
+                    VALUES
+                      ('q05-source', 'backtest', 'Q05', ?, 'EURUSD.DWX', ?,
+                       'done', 'PASS', 0, 'q05-evidence.json', ?, ?, ?),
+                      ('q06-historical', 'backtest', 'Q06', ?, 'EURUSD.DWX', ?,
+                       'done', 'PASS', 0, 'q06-evidence.json', ?, ?, ?)
+                    """,
+                    (
+                        ea_id,
+                        str(setfile),
+                        json.dumps({"verdict_reason": "q05-pass"}, sort_keys=True),
+                        now,
+                        now,
+                        ea_id,
+                        str(setfile),
+                        json.dumps({"verdict_reason": "historical-stress-pass"}, sort_keys=True),
+                        now,
+                        now,
+                    ),
+                )
+                conn.commit()
+                before = conn.execute(
+                    "SELECT status, verdict, evidence_path, payload_json, updated_at "
+                    "FROM work_items WHERE id='q06-historical'"
+                ).fetchone()
+
+            old_repo_root = farmctl.REPO_ROOT
+            try:
+                farmctl.REPO_ROOT = repo_root
+                result = farmctl.enqueue_cascade_backtest_for_ea(
+                    root,
+                    ea_id,
+                    "Q06",
+                    predecessor_work_item_id="q05-source",
+                    append_only_rerun_of="q06-historical",
+                    rerun_reason="authenticated stress wiring repair",
+                )
+                repeat = farmctl.enqueue_cascade_backtest_for_ea(
+                    root,
+                    ea_id,
+                    "Q06",
+                    predecessor_work_item_id="q05-source",
+                    append_only_rerun_of="q06-historical",
+                    rerun_reason="authenticated stress wiring repair",
+                )
+            finally:
+                farmctl.REPO_ROOT = old_repo_root
+
+            self.assertTrue(result["enqueued"])
+            self.assertEqual(result["requeued"], [])
+            self.assertEqual(len(result["created"]), 1)
+            self.assertEqual(
+                result["created"][0]["rerun_of_work_item_id"], "q06-historical"
+            )
+            self.assertEqual(repeat["created"], [])
+            self.assertEqual(
+                repeat["skipped"][0]["reason"], "append_only_rerun_already_exists"
+            )
+
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                after = conn.execute(
+                    "SELECT status, verdict, evidence_path, payload_json, updated_at "
+                    "FROM work_items WHERE id='q06-historical'"
+                ).fetchone()
+                rerun = conn.execute(
+                    "SELECT status, verdict, evidence_path, payload_json FROM work_items "
+                    "WHERE id=?",
+                    (result["created"][0]["id"],),
+                ).fetchone()
+                phase_count = conn.execute(
+                    "SELECT COUNT(*) FROM work_items WHERE phase='Q06'"
+                ).fetchone()[0]
+            self.assertEqual(after, before)
+            self.assertEqual(phase_count, 2)
+            self.assertEqual(rerun[0:3], ("pending", None, None))
+            payload = json.loads(rerun[3])
+            self.assertTrue(payload["append_only_rerun"])
+            self.assertTrue(payload["historical_work_item_preserved"])
+            self.assertEqual(
+                payload["append_only_rerun_of_work_item"], "q06-historical"
+            )
+            self.assertEqual(payload["promoted_from_work_item"], "q05-source")
+
+
 if __name__ == "__main__":
     unittest.main()
