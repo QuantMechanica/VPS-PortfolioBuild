@@ -34,6 +34,13 @@
     "commit_sha": "12629f50717461e0a66c3af5b466f1d8fcc11e59",
     "file_sha256_at_fix_commit": "7580245a3065a7b143d7d07f8949ce6bc3b9de5dd89cd3f3b3bc4d670f0fef52"
   },
+  "parser_precedence_revision": {
+    "defect_class": "MARKERLESS_ABLATION_BASE_THEN_OVERRIDE",
+    "commit_sha": "ba13af9720e49e18aac719cfebe1fad593dec683",
+    "file_sha256_at_commit": "6890b1ce1b99d2fc0be6cfb1ba3a4f0dd5a76c233448d10f4c5f1c039e5311d6",
+    "sha256_basis": "UTF8_TEXT_LF_NORMALIZED",
+    "review_task_id": "90b16af2-8573-4245-ac77-429bd24a21de"
+  },
   "artifact_bindings": [
     {
       "role": "controller_source",
@@ -45,9 +52,9 @@
     {
       "role": "parser_source",
       "path": "C:\\QM\\repo\\framework\\scripts\\q08_5_neighborhood_runner.py",
-      "sha256": "7580245a3065a7b143d7d07f8949ce6bc3b9de5dd89cd3f3b3bc4d670f0fef52",
+      "sha256": "6890b1ce1b99d2fc0be6cfb1ba3a4f0dd5a76c233448d10f4c5f1c039e5311d6",
       "sha256_basis": "UTF8_TEXT_LF_NORMALIZED",
-      "bytes": 47186
+      "bytes": 50055
     },
     {
       "role": "mq5",
@@ -97,10 +104,13 @@
     "root": "D:\\QM\\reports\\work_items\\_requal_archive"
   },
   "implementation_review": {
-    "status": "PENDING",
+    "status": "APPROVED",
     "reviewer": "Claude",
-    "verdict": null,
-    "reviewed_controller_commit": null,
-    "receipt": null
+    "verdict": "APPROVED",
+    "reviewed_controller_commit": "197892c0a6b7bd146eeb38aa3f84987b9eb3c381",
+    "receipt": {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-31_q08_10582_implementation_review_receipt.json",
+      "sha256": "f716bbd24c579ac130af48771bb1323799b5a0c5fc2dcf77160df9e8ea4353f4"
+    }
   }
 }

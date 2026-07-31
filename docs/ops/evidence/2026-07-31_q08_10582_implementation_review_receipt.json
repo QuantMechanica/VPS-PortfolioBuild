@@ -1,0 +1,52 @@
+{
+  "schema_version": "qm.agent-task-close-review-receipt/v1",
+  "captured_at_utc": "2026-07-31T16:46:47Z",
+  "source": {
+    "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "table": "agent_tasks",
+    "read_mode": "SQLITE_READ_ONLY",
+    "identity_fields": [
+      "id",
+      "state",
+      "assigned_agent",
+      "artifact_path",
+      "verdict",
+      "updated_at",
+      "payload_json.review_close_state",
+      "payload_json.review_close_verdict",
+      "payload_json.review_closed_at"
+    ]
+  },
+  "reviews": [
+    {
+      "scope": "Q08_SINGLE_TARGET_REQUAL_CONTROLLER",
+      "task_id": "527228e3-971d-47e9-89a5-a62fa818205b",
+      "state": "APPROVED",
+      "assigned_agent": "codex",
+      "reviewer": "Claude",
+      "artifact_path": "docs/ops/evidence/2026-07-31_q08_single_target_requal.md",
+      "review_close_state": "APPROVED",
+      "review_closed_at": "2026-07-31T14:03:47+00:00",
+      "review_close_verdict": "APPROVED (Claude implementation review). Independently re-ran 44 tests green; source-verified: implementation_review gate requires reviewer=Claude + verdict=APPROVED (q08_single_target_requal.py:487-491), apply/revert demand FACTORY_OFF flag + zero active work_items (:633-645), single hard-bound target, no-overwrite archive with compensation, BEGIN IMMEDIATE CAS, guarded revert. Dry-run BLOCKED state is the correct current answer. Apply chain stands: (1) ablation precedence contract lands (ticket 90b16af2 implements the approved last-wins resolution - ablations must then parse 6 with override values), (2) exception contract updated to implementation_review=APPROVED with hash-bound receipt referencing THIS close-review + rebound contract SHA, (3) Sunday Factory-OFF/zero-active window: fresh dry-run PASS then apply. OWNER authorization 2026-07-31 recorded in contract. MNT-007 global invariant untouched - confirmed."
+    },
+    {
+      "scope": "Q08_ABLATION_PRECEDENCE",
+      "task_id": "90b16af2-8573-4245-ac77-429bd24a21de",
+      "state": "APPROVED",
+      "assigned_agent": "codex",
+      "reviewer": "Claude",
+      "artifact_path": "docs/ops/evidence/2026-07-31_r2_parser_precedence_and_pump_gate.md",
+      "review_close_state": "APPROVED",
+      "review_closed_at": "2026-07-31T14:39:52+00:00",
+      "review_close_verdict": "APPROVED - all three items independently verified by Claude: (1) ablation precedence exactly per the approved contract - three real 10582 ablations parse 6/6 with OVERRIDE values (atr 16/14/15), negative fixtures refused, setfile SHAs unchanged, 20 tests green; (2) pump gate restored 1800/ValidateRange(1,1800) with the measurement retained as multi-attempt justification; (3) OPERATING_RULES restored to ratified blob 9fe3b2fef (verified via git hash-object), amendment parked in docs/ops/proposals pending OWNER ratification, recorder tool untouched. Correct restraint: the requal exception contract still binds the superseded parser identity - rebind is the next chain step, not this tickets scope."
+    }
+  ],
+  "aggregate": {
+    "status": "APPROVED",
+    "reviewer": "Claude",
+    "controller_commit": "197892c0a6b7bd146eeb38aa3f84987b9eb3c381",
+    "controller_source_sha256_lf_normalized": "440bf6e555e7e4b0a35d7bcb7250bc6dd3e52915d3f6c231cb9845701383fd9c",
+    "parser_precedence_commit": "ba13af9720e49e18aac719cfebe1fad593dec683",
+    "parser_source_sha256_lf_normalized": "6890b1ce1b99d2fc0be6cfb1ba3a4f0dd5a76c233448d10f4c5f1c039e5311d6"
+  }
+}
