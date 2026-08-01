@@ -1,0 +1,92 @@
+{
+  "schema": "qm_fx_cointegration_build_q02_handoff/v1",
+  "timestamp_utc": "2026-08-01T20:15:57Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20200",
+  "slug": "audjpy-euraud",
+  "pair": [
+    "AUDJPY.DWX",
+    "EURAUD.DWX"
+  ],
+  "logical_symbol": "QM5_20200_AUDJPY_EURAUD_COINTEGRATION_D1",
+  "selection": {
+    "scan_size": 66,
+    "sign_aware_rank": 17,
+    "dev_net_sharpe": 0.8086911482688997,
+    "oos_net_sharpe": 0.6407981757272343,
+    "oos_return_pct": 10.433803964376573,
+    "oos_state_changes": 21,
+    "fixed_dev_beta": -2.0732893667481473,
+    "half_life_d1_bars": 27.702389254741803,
+    "dedicated_fixed_d1_pair_previously_built": false,
+    "known_overlap": "No dedicated AUDJPY/EURAUD fixed-beta D1 card, EA, registry allocation, or logical basket manifest was found before allocation."
+  },
+  "anchors": {
+    "QM5_12532": "Q02_PASS_THEN_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_THEN_Q04_FAIL"
+  },
+  "build": {
+    "card_schema_lint": "PASS",
+    "build_guard": "PASS",
+    "build_check_passed": true,
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "spec_validation": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "basket_regression": "PASS",
+    "magic_resolver_rows_kept": 15387,
+    "magic_resolver_rows_dropped": 0,
+    "ex5_sha256": "eecc397d999a4d56cce10e51f7e04d808ec9669fdf39c9496cf3a712c3038743",
+    "build_report": "D:\\QM\\reports\\framework\\21\\build_check_20260801_201048.json",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260801_201132\\summary.csv",
+    "manual_smoke_run": false
+  },
+  "basket_manifest": {
+    "host_symbol": "AUDJPY.DWX",
+    "host_timeframe": "D1",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "basket_symbols": [
+      "AUDJPY.DWX",
+      "EURAUD.DWX",
+      "USDJPY.DWX",
+      "AUDUSD.DWX",
+      "EURUSD.DWX"
+    ],
+    "traded_symbols": [
+      "AUDJPY.DWX",
+      "EURAUD.DWX"
+    ],
+    "conversion_only_symbols": [
+      "USDJPY.DWX",
+      "AUDUSD.DWX",
+      "EURUSD.DWX"
+    ]
+  },
+  "risk": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "q02": {
+    "work_item_id": "47fc8c32-fe57-4f98-828e-d8cb8d0f4a25",
+    "status_at_handoff": "pending",
+    "attempt_count_at_handoff": 0,
+    "logical_setfile_enqueued": true,
+    "physical_host_setfile_skipped": true,
+    "skip_reason": "basket_manifest_logical_setfile_preferred",
+    "priority_track": true,
+    "timeout_min": 450,
+    "cpu_ceiling": 7,
+    "factory_terminals_at_precheck": 3,
+    "factory_terminal_names": [
+      "T4",
+      "T9",
+      "T10"
+    ],
+    "t_live_excluded": true
+  },
+  "prohibited_surfaces_touched": []
+}
