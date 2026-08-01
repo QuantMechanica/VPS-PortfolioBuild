@@ -51,8 +51,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: NOT_STARTED
+pipeline_phase: Q02
+q01_status: PASS
 q02_status: NOT_STARTED
 review_focus: "Falsify whether XNG's positive Tuesday sample direction survives costs specifically in a negative slow-return regime and diversifies the certified book."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -208,5 +208,5 @@ or live-manifest edit.
 | Phase | Date | Verdict | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-01 | APPROVED | `decisions/2026-08-01_qm5_20198_xng_tue_bear_g0.md` |
-| Q01 Build Validation | 2026-08-01 | NOT_STARTED | pending build |
+| Q01 Build Validation | 2026-08-01 | PASS: strict compile and V5 build check, 0 errors/warnings | `D:/QM/reports/framework/21/build_check_20260801_171928.json` |
 | Q02 Baseline Screening | 2026-08-01 | NOT_STARTED | enqueue only after Q01 PASS and capacity check |
