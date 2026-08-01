@@ -357,6 +357,37 @@ def test_qm5_20193_manifest_and_risk_fixed_logical_setfile() -> None:
     assert source.count("for(int i = 1; i < history_count; ++i)") == 2
 
 
+def test_qm5_20195_manifest_conversion_history_and_fixed_risk_setfile() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_20195_nzd-eurgbp-coint"
+    source = (ea_dir / "QM5_20195_nzd-eurgbp-coint.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    logical = manifest["logical_symbol"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_D1_backtest.set"
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+    source_symbols = set(re.findall(r'"([A-Z]{6}\.DWX)"', source))
+
+    assert logical == "QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1"
+    assert manifest["host_symbol"] == "NZDUSD.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["tester_currency"] == "USD"
+    assert manifest["tester_deposit"] == 100000
+    assert declared == {"NZDUSD.DWX", "EURGBP.DWX", "GBPUSD.DWX"}
+    assert source_symbols <= declared
+    assert logical_setfile.exists()
+    assert "; host_symbol:  NZDUSD.DWX" in set_text
+    assert "RISK_FIXED=1000" in set_text
+    assert "RISK_PERCENT=0" in set_text
+    assert "strategy_beta=-0.101296029" in set_text
+    assert "const int history_count = lookback + 1;" in source
+    assert source.count("PERIOD_D1, 1, history_count") == 4
+    assert source.count("for(int i = 1; i < history_count; ++i)") == 2
+    assert 'string allowed[3] = {"NZDUSD.DWX", "EURGBP.DWX", "GBPUSD.DWX"};' in source
+    assert "if(nzdusd_lots <= 0.0 || eurgbp_lots <= 0.0)" in source
+
+
 def test_qm5_1224_is_one_atomic_fx7_cross_sectional_package() -> None:
     ea_dir = REPO / "framework" / "EAs" / "QM5_1224_white-okunev-fx-xmom"
     manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
