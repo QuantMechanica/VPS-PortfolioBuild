@@ -3,7 +3,7 @@
 ; ea_id:        10571
 ; ea_slug:      mql5-pchan-stop
 ; ea_version:   v5.0
-; set_version:  s20260728-stress-med
+; set_version:  s20260801-stress-med
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H4
 ; environment:  q05_stress_medium
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   81caf525b52fe998185795e34ec37cd7297be200246b733a32708799bc74acd0
 ; author:       Development
-; date:         2026-07-28
+; date:         2026-08-01
 ;==========================================================
 qm_ea_id=10571
 qm_magic_slot_offset=3
