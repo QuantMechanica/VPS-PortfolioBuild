@@ -15546,6 +15546,389 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
     }
 
 
+_Q02_APPEND_ONLY_STABLE_PAYLOAD_KEYS = {
+    "basket_manifest",
+    "basket_symbol_count",
+    "basket_symbols",
+    "card_path",
+    "conversion_symbols",
+    "from_date",
+    "from_year",
+    "history_adjusted",
+    "history_adjustment_message",
+    "history_adjustment_source",
+    "history_first_year",
+    "history_last_year",
+    "host_symbol",
+    "host_timeframe",
+    "logical_symbol",
+    "p2_prescreen_done",
+    "portfolio_scope",
+    "portfolio_weight",
+    "priority_track",
+    "requested_from_year",
+    "requested_to_year",
+    "risk_fixed",
+    "risk_mode",
+    "risk_percent",
+    "scan_ranking",
+    "strategy_type_flags",
+    "tester_currency",
+    "tester_deposit",
+    "to_date",
+    "to_year",
+    "traded_symbols",
+}
+
+
+def _q02_fixed_risk_contract(setfile_path: str) -> tuple[bool, dict[str, Any]]:
+    """Fail closed unless a Q02 rerun setfile uses the fixed-risk contract."""
+    path = Path(setfile_path)
+    if not path.is_file():
+        return False, {"reason": "missing_setfile", "setfile_path": str(path)}
+    try:
+        text = path.read_text(encoding="utf-8-sig", errors="strict")
+    except (OSError, UnicodeError) as exc:
+        return False, {
+            "reason": "setfile_unreadable",
+            "setfile_path": str(path),
+            "detail": str(exc),
+        }
+    values: dict[str, str] = {}
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith(";") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        values[key.strip().upper()] = value.strip()
+    try:
+        risk_fixed = float(values["RISK_FIXED"])
+        risk_percent = float(values["RISK_PERCENT"])
+    except (KeyError, ValueError) as exc:
+        return False, {
+            "reason": "fixed_risk_contract_missing_or_invalid",
+            "setfile_path": str(path),
+            "detail": str(exc),
+        }
+    if risk_fixed <= 0 or risk_percent != 0:
+        return False, {
+            "reason": "fixed_risk_contract_violation",
+            "setfile_path": str(path),
+            "risk_fixed": risk_fixed,
+            "risk_percent": risk_percent,
+        }
+    return True, {
+        "setfile_path": str(path),
+        "risk_fixed": risk_fixed,
+        "risk_percent": risk_percent,
+    }
+
+
+def _q02_exact_artifact_bindings(
+    target: sqlite3.Row, payload: dict[str, Any]
+) -> tuple[bool, dict[str, Any]]:
+    """Authenticate the historical row's exact source/binary/setfile binding."""
+    ea_id = str(target["ea_id"])
+    setfile_path = Path(str(target["setfile_path"]))
+    ea_dir = _ea_dir_from_setfile_path(setfile_path, ea_id)
+    if ea_dir is None:
+        return False, {
+            "reason": "setfile_not_bound_to_exact_ea_directory",
+            "setfile_path": str(setfile_path),
+        }
+    paths = {
+        "expected_mq5_sha256": ea_dir / f"{ea_dir.name}.mq5",
+        "expected_ex5_sha256": ea_dir / f"{ea_dir.name}.ex5",
+        "expected_setfile_sha256": setfile_path,
+    }
+    actual: dict[str, str] = {}
+    for key, path in paths.items():
+        expected = str(payload.get(key) or "").strip().lower()
+        if not re.fullmatch(r"[0-9a-f]{64}", expected):
+            return False, {
+                "reason": "historical_artifact_binding_missing_or_invalid",
+                "binding": key,
+                "value": expected,
+            }
+        if not path.is_file():
+            return False, {
+                "reason": "historical_artifact_missing",
+                "binding": key,
+                "path": str(path),
+            }
+        digest = _sha256_file(path)
+        actual[key] = digest
+        if digest != expected:
+            return False, {
+                "reason": "historical_artifact_binding_mismatch",
+                "binding": key,
+                "path": str(path),
+                "expected_sha256": expected,
+                "actual_sha256": digest,
+            }
+    identity_checks = {
+        "expected_symbol": str(target["symbol"]),
+        "expected_period": _detect_ea_period(ea_id, setfile_path),
+        "expected_expert": f"QM\\{ea_dir.name}",
+    }
+    for key, expected in identity_checks.items():
+        if str(payload.get(key) or "") != expected:
+            return False, {
+                "reason": "historical_execution_identity_mismatch",
+                "binding": key,
+                "expected": expected,
+                "actual": payload.get(key),
+            }
+    return True, {
+        "ea_dir": str(ea_dir),
+        "artifact_sha256": actual,
+        **identity_checks,
+    }
+
+
+def _enqueue_q02_append_only_exact_row_rerun(
+    root: Path,
+    ea_id: str,
+    predecessor_work_item_id: str | None,
+    append_only_rerun_of: str | None,
+    rerun_reason: str | None,
+) -> dict[str, Any]:
+    """Insert one authenticated Q02 rerun while preserving its terminal source row."""
+    phase = "Q02"
+    source_id = str(predecessor_work_item_id or "").strip()
+    rerun_of = str(append_only_rerun_of or "").strip()
+    reason = str(rerun_reason or "").strip()
+    if not source_id or not rerun_of or source_id != rerun_of:
+        return {
+            "enqueued": False,
+            "ea_id": ea_id,
+            "phase": phase,
+            "reason": "q02_append_only_rerun_requires_same_exact_source_and_rerun_row",
+        }
+    if not reason:
+        return {
+            "enqueued": False,
+            "ea_id": ea_id,
+            "phase": phase,
+            "reason": "append_only_rerun_requires_reason",
+        }
+    artifact_failure = _ea_build_artifact_failure(str(ea_id))
+    if artifact_failure:
+        return {
+            "enqueued": False,
+            "ea_id": ea_id,
+            "phase": phase,
+            "reason": artifact_failure["reason"],
+            "detail": artifact_failure["detail"],
+        }
+
+    init_db(root)
+    now = utc_now()
+    with connect(root) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        target = conn.execute(
+            "SELECT * FROM work_items WHERE id=?", (source_id,)
+        ).fetchone()
+        target_matches = bool(
+            target
+            and target["kind"] == "backtest"
+            and target["ea_id"] == ea_id
+            and target["phase"] == phase
+            and target["status"] in {"done", "failed"}
+            and target["verdict"] == "INFRA_FAIL"
+            and not target["claimed_by"]
+            and str(target["evidence_path"] or "").strip()
+        )
+        if not target_matches:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "q02_rerun_target_mismatch_or_not_terminal_infra_fail",
+                "source_work_item_id": source_id,
+            }
+        evidence_path = Path(str(target["evidence_path"]))
+        if not evidence_path.is_file():
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "q02_rerun_source_evidence_missing",
+                "source_work_item_id": source_id,
+                "evidence_path": str(evidence_path),
+            }
+        try:
+            source_payload = json.loads(target["payload_json"] or "{}")
+        except json.JSONDecodeError:
+            source_payload = None
+        if not isinstance(source_payload, dict):
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "q02_rerun_source_payload_invalid",
+                "source_work_item_id": source_id,
+            }
+
+        risk_ok, risk_detail = _q02_fixed_risk_contract(str(target["setfile_path"]))
+        if not risk_ok:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "source_work_item_id": source_id,
+                **risk_detail,
+            }
+        bindings_ok, bindings = _q02_exact_artifact_bindings(target, source_payload)
+        if not bindings_ok:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "source_work_item_id": source_id,
+                **bindings,
+            }
+
+        prior_rerun = conn.execute(
+            """
+            SELECT id, status, verdict FROM work_items
+            WHERE ea_id=? AND phase IN ('Q02','P2') AND symbol=?
+              AND json_extract(payload_json, '$.append_only_rerun_of_work_item')=?
+            ORDER BY created_at ASC LIMIT 1
+            """,
+            (ea_id, target["symbol"], source_id),
+        ).fetchone()
+        if prior_rerun:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "created": [],
+                "requeued": [],
+                "skipped": [{
+                    "id": prior_rerun["id"],
+                    "symbol": target["symbol"],
+                    "status": prior_rerun["status"],
+                    "verdict": prior_rerun["verdict"],
+                    "reason": "append_only_rerun_already_exists",
+                }],
+            }
+        open_row = conn.execute(
+            """
+            SELECT id, status FROM work_items
+            WHERE ea_id=? AND phase IN ('Q02','P2') AND symbol=?
+              AND status IN ('pending','active')
+            ORDER BY created_at ASC LIMIT 1
+            """,
+            (ea_id, target["symbol"]),
+        ).fetchone()
+        if open_row:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "already_pending_or_active",
+                "existing_work_item_id": open_row["id"],
+                "existing_status": open_row["status"],
+            }
+        noninfra_row = conn.execute(
+            """
+            SELECT id, status, verdict FROM work_items
+            WHERE ea_id=? AND phase IN ('Q02','P2') AND symbol=? AND id<>?
+              AND status IN ('done','failed')
+              AND COALESCE(verdict, '') <> 'INFRA_FAIL'
+            ORDER BY updated_at DESC LIMIT 1
+            """,
+            (ea_id, target["symbol"], source_id),
+        ).fetchone()
+        if noninfra_row:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "q02_pair_already_has_noninfra_terminal_result",
+                "existing_work_item_id": noninfra_row["id"],
+                "existing_status": noninfra_row["status"],
+                "existing_verdict": noninfra_row["verdict"],
+            }
+
+        payload = {
+            key: source_payload[key]
+            for key in _Q02_APPEND_ONLY_STABLE_PAYLOAD_KEYS
+            if key in source_payload
+        }
+        payload.update({
+            "append_only_rerun": True,
+            "append_only_rerun_of_work_item": source_id,
+            "enqueued_at_utc": now,
+            "enqueued_by": "farmctl.append_only_exact_row_rerun",
+            "historical_work_item_preserved": True,
+            "rerun_reason": reason,
+            "rerun_source_evidence_path": str(evidence_path),
+            "rerun_source_payload_sha256": hashlib.sha256(
+                str(target["payload_json"] or "{}").encode("utf-8")
+            ).hexdigest(),
+            "rerun_source_status": target["status"],
+            "rerun_source_updated_at": target["updated_at"],
+            "rerun_source_verdict": target["verdict"],
+            "risk_fixed": risk_detail["risk_fixed"],
+            "risk_percent": risk_detail["risk_percent"],
+            **bindings["artifact_sha256"],
+            "expected_expert": bindings["expected_expert"],
+            "expected_period": bindings["expected_period"],
+            "expected_symbol": bindings["expected_symbol"],
+        })
+        wid = str(uuid.uuid4())
+        conn.execute(
+            """
+            INSERT INTO work_items
+              (id, kind, phase, ea_id, symbol, setfile_path, status,
+               attempt_count, parent_task_id, payload_json, created_at, updated_at)
+            VALUES (?, 'backtest', 'Q02', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?)
+            """,
+            (
+                wid,
+                ea_id,
+                target["symbol"],
+                target["setfile_path"],
+                json.dumps(payload, sort_keys=True),
+                now,
+                now,
+            ),
+        )
+        created = [{
+            "id": wid,
+            "symbol": target["symbol"],
+            "setfile_path": target["setfile_path"],
+            "rerun_of_work_item_id": source_id,
+        }]
+        event(
+            conn,
+            "work_items",
+            phase,
+            "q02_append_only_exact_row_rerun_enqueued",
+            {
+                "ea_id": ea_id,
+                "created": created,
+                "rerun_reason": reason,
+                "source_evidence_path": str(evidence_path),
+                "source_payload_sha256": payload["rerun_source_payload_sha256"],
+            },
+        )
+        conn.commit()
+    return {
+        "enqueued": True,
+        "ea_id": ea_id,
+        "phase": phase,
+        "previous_phase": phase,
+        "created": created,
+        "requeued": [],
+        "skipped": [],
+        "skipped_count": 0,
+        "next_action_hint": "Pump/dispatch-tick will claim the pending work_item.",
+    }
+
+
 def enqueue_cascade_backtest_for_ea(
     root: Path,
     ea_id: str,
@@ -15568,12 +15951,21 @@ def enqueue_cascade_backtest_for_ea(
     historical verdicts: raw pipeline facts remain immutable until a separately
     reviewed adjudication overlay supersedes them.
     """
-    if str(phase or "").strip().upper() == "Q09":
+    phase_token = str(phase or "").strip().upper()
+    if phase_token == "Q09":
         return {
             "enqueued": False,
             "phase": "Q09",
             "reason": "historical Q09 alias is read-only; use Q09_NEWS",
         }
+    if phase_token == "Q02" and (append_only_rerun_of or predecessor_work_item_id):
+        return _enqueue_q02_append_only_exact_row_rerun(
+            root,
+            ea_id,
+            predecessor_work_item_id,
+            append_only_rerun_of,
+            rerun_reason,
+        )
     if phase not in CASCADE_BACKTEST_PHASES:
         return {
             "enqueued": False,
