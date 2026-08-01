@@ -194,13 +194,16 @@ arises only with the OWNER signature below.
 
 **Claude reviewer/date:** Claude, 2026-07-31 ~22:45Z
 
-**OWNER decision wording:**
+**OWNER decision wording:** „klar akzeptier ich das, somit freigegeben"
+(Chat, 2026-08-01 vormittags — nach Vorlage der Mitfahrer, der EX5-only-
+Provenienz-Fußnote und des Positions-Preflights; transkribiert durch Claude)
 
-**OWNER name/signature:**
+**OWNER name/signature:** OWNER (Chat-Signatur 2026-08-01)
 
-**OWNER date/time:**
+**OWNER date/time:** 2026-08-01, ~09:50 lokal
 
-**Approved Sunday window:**
+**Approved Sunday window:** identisch mit dem Basis-Paket — 2026-08-02,
+marktgeschlossenes Fenster; Deploy als 8. Datei im §1-Ablauf, Gate 10/10.
 
 **Separate OWNER rollback authorization wording:**
 
