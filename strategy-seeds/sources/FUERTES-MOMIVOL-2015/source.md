@@ -6,13 +6,22 @@
   new structural commodity/energy sleeve for Q02.
 - Reopen basis: OWNER commodity/energy sleeve mission dated 2026-07-11 approved
   extraction and build of one additional non-duplicate structural edge.
+- Second reopen basis: OWNER commodity/energy sleeve mission dated 2026-08-01
+  approved one new structural, low-frequency, non-duplicate commodity sleeve,
+  branch-only build, and paced Q02 enqueue. This durable record authorizes the
+  `S03` XAU/XAG carrier below; it does not broaden the source method.
 - Extraction scope: the momentum plus idiosyncratic-volatility double screen
   (`S01`) and the source's standalone idiosyncratic-volatility strategy (`S02`).
-  The term-structure leg remains excluded because the Darwinex `.DWX` runtime
-  does not expose a futures curve.
+  `S03` applies the same standalone IVol rule to the XAU/XAG traded pair while
+  retaining the four-proxy commodity factor. The term-structure leg remains
+  excluded because the Darwinex `.DWX` runtime does not expose a futures curve.
 - Source review: complete open accepted manuscript, including tables and
   appendices, reviewed on 2026-07-10 and read again end-to-end for the bounded
   `S02` extraction on 2026-07-11.
+- Retrieval note: a 2026-08-01 generic-PDF refresh request returned
+  `DEFERRED:SOURCE_POLICY` from the deterministic source router. No fresh page
+  text or uncited claim is used for `S03`; the previously completed governed
+  review and the bounded findings in this packet remain the extraction basis.
 
 ## Primary Citation
 
@@ -81,3 +90,28 @@ or `QM5_12567` cumulative RSI2.
 No source return, Sharpe ratio, constituent frequency, futures-roll behavior,
 or correlation statistic is imported as a QM expectation. Q02 must falsify the
 two-CFD carrier and Q09 alone may establish realized portfolio orthogonality.
+
+### S03 — Pure XAU/XAG Idiosyncratic Volatility
+
+The standalone source rule also permits a one-top/one-bottom implementation
+and explicitly includes gold and silver in its broad commodity universe.
+`S03` keeps the `S02` estimator unchanged: 252 completed D1 returns, separate
+OLS residual-volatility estimates against the equal-weight XTI/XNG/XAU/XAG
+return factor, low-IVol long, high-IVol short, monthly formation, and one-month
+hold. It changes only the traded cross-section to XAU and XAG; XTI and XNG are
+read-only factor members.
+
+This is a carrier-specific falsification, not a replication of the paper's
+27-contract portfolio and not a parameter variant of a metal-ratio system.
+The existing XAU/XAG EAs use log-ratio or OLS-level convergence, conditional
+quantiles, calendar differentials, return shocks, or momentum ranks. None
+ranks the metals by factor-residual volatility. The deterministic pre-allocation
+checker returned only the expected same-source `energy-ivol` and
+`energy-mom-ivol` fuzzy matches; manual review resolves them because both trade
+XTI/XNG, while `S03` trades XAU/XAG and has no momentum gate.
+
+`S03` targets relative residual-risk exposure, not outright precious-metal
+direction. It does not establish dollar, beta, volatility, or portfolio
+neutrality. Q02 must retire it below five completed packages/year or on failed
+economics, execution, determinism, risk, or basket-accounting criteria; Q09
+alone may establish book orthogonality.

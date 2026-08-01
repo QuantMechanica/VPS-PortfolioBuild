@@ -15400,3 +15400,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20190,oilbench-cal,1,XBRUSD.DWX,201900001,2026-07-31T23:26:25Z,Codex,active
 20191,eurusd-chf-coint,0,EURUSD.DWX,201910000,2026-08-01,Codex,active
 20191,eurusd-chf-coint,1,USDCHF.DWX,201910001,2026-08-01,Codex,active
+20192,xauxag-ivol,0,XAUUSD.DWX,201920000,2026-08-01T08:24:24Z,Codex,active
+20192,xauxag-ivol,1,XAGUSD.DWX,201920001,2026-08-01T08:24:24Z,Codex,active
