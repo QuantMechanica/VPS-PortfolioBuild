@@ -374,7 +374,7 @@ def test_qm5_20195_manifest_conversion_history_and_fixed_risk_setfile() -> None:
     assert manifest["host_timeframe"] == "D1"
     assert manifest["tester_currency"] == "USD"
     assert manifest["tester_deposit"] == 100000
-    assert declared == {"NZDUSD.DWX", "EURGBP.DWX", "GBPUSD.DWX"}
+    assert declared == {"NZDUSD.DWX", "EURGBP.DWX", "GBPUSD.DWX", "EURUSD.DWX"}
     assert source_symbols <= declared
     assert logical_setfile.exists()
     assert "; host_symbol:  NZDUSD.DWX" in set_text
@@ -384,7 +384,10 @@ def test_qm5_20195_manifest_conversion_history_and_fixed_risk_setfile() -> None:
     assert "const int history_count = lookback + 1;" in source
     assert source.count("PERIOD_D1, 1, history_count") == 4
     assert source.count("for(int i = 1; i < history_count; ++i)") == 2
-    assert 'string allowed[3] = {"NZDUSD.DWX", "EURGBP.DWX", "GBPUSD.DWX"};' in source
+    assert (
+        'string allowed[4] = {"NZDUSD.DWX", "EURGBP.DWX", "GBPUSD.DWX", "EURUSD.DWX"};'
+        in source
+    )
     assert "if(nzdusd_lots <= 0.0 || eurgbp_lots <= 0.0)" in source
 
 

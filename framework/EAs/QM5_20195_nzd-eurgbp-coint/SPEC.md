@@ -43,8 +43,9 @@ The fitted beta is structural and is not an arbitrary Q03 neighborhood axis.
 
 - `NZDUSD.DWX` — fixed tester host and first traded leg.
 - `EURGBP.DWX` — fixed companion and second traded leg.
-- `GBPUSD.DWX` — conversion-history dependency for USD-account EURGBP P/L;
-  it is order-free and has no magic slot.
+- `GBPUSD.DWX` and `EURUSD.DWX` — conversion-history dependencies observed by
+  the USD-account tester for EURGBP P/L; both are order-free and have no magic
+  slot.
 
 **Explicitly not for:**
 

@@ -55,6 +55,7 @@ input int    strategy_deviation_points  = 20;
 string   g_leg_nzdusd = "NZDUSD.DWX";
 string   g_leg_eurgbp = "EURGBP.DWX";
 string   g_conversion_gbpusd = "GBPUSD.DWX";
+string   g_conversion_eurusd = "EURUSD.DWX";
 bool     g_basket_scope_ready = false;
 double   g_spread_z = 0.0;
 double   g_spread_mean = 0.0;
@@ -90,8 +91,8 @@ bool Strategy_EnsureBasketScope()
    if(g_basket_scope_ready)
       return true;
 
-   string allowed[3] = {"NZDUSD.DWX", "EURGBP.DWX", "GBPUSD.DWX"};
-   for(int i = 0; i < 3; ++i)
+   string allowed[4] = {"NZDUSD.DWX", "EURGBP.DWX", "GBPUSD.DWX", "EURUSD.DWX"};
+   for(int i = 0; i < 4; ++i)
       SymbolSelect(allowed[i], true);
 
    QM_SymbolGuardInit(allowed);
@@ -140,7 +141,8 @@ bool Strategy_RefreshSpreadState()
       return false;
    if(!QM_SymbolAssertOrLog(g_leg_nzdusd) ||
       !QM_SymbolAssertOrLog(g_leg_eurgbp) ||
-      !QM_SymbolAssertOrLog(g_conversion_gbpusd))
+      !QM_SymbolAssertOrLog(g_conversion_gbpusd) ||
+      !QM_SymbolAssertOrLog(g_conversion_eurusd))
       return false;
 
    double nzdusd[];
@@ -426,6 +428,7 @@ int OnInit()
    SymbolSelect(g_leg_nzdusd, true);
    SymbolSelect(g_leg_eurgbp, true);
    SymbolSelect(g_conversion_gbpusd, true);
+   SymbolSelect(g_conversion_eurusd, true);
 
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
