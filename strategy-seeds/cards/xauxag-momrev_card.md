@@ -53,7 +53,8 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: PENDING
+q02_status: ENQUEUED
+q02_work_item_id: b8ce6d6b-6b21-43ca-95f3-9f6baa46ed7e
 review_focus: "Falsify a relative XAU/XAG 12-month momentum / 18-month reversal-disagreement package whose return driver differs from directional XAU and the existing ratio, convergence, calendar, IVol, and pure-momentum baskets; neutrality and book decorrelation are not imported."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -284,6 +285,7 @@ KPIs, a correlation waiver, or a manual tester launch.
 |---|---|---|---|---|
 | v1 | 2026-08-01 | initial XAU/XAG 12/18 momentum-reversal carrier | G0 | APPROVED |
 | v1-build | 2026-08-01 | registry-clean implementation and strict compile | Q01 | PASS |
+| v1-q02 | 2026-08-01 | logical basket handed to the paced fleet | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -291,4 +293,4 @@ KPIs, a correlation waiver, or a manual tester launch.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-01 | APPROVED | OWNER decision, governed source packet, and this card |
 | Q01 Build Validation | 2026-08-01 | PASS: 0 errors, 0 warnings, all static checks PASS | `D:/QM/reports/compile/20260801_102443/summary.csv`; `D:/QM/reports/framework/21/build_check_20260801_102502.json` |
-| Q02 Baseline Screening | pending | PENDING | not enqueued before Q01 PASS |
+| Q02 Baseline Screening | 2026-08-01 | ENQUEUED; no result claimed | work item `b8ce6d6b-6b21-43ca-95f3-9f6baa46ed7e`, pending/attempt 0/unclaimed at confirmation |
