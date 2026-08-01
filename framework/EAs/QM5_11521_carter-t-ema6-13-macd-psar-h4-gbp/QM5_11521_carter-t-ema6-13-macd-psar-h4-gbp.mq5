@@ -256,22 +256,7 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
-      return;
-
-   if(Strategy_NoTradeFilter())
       return;
 
    // Per-tick: trade management can adjust SL/TP on open positions.
@@ -302,7 +287,27 @@ void OnTick()
    // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
+   // This strategy has fixed broker-side exits and no intrabar management.
+   // Keep entry-only calendar and spread work behind the H4 new-bar edge so
+   // Model-4 tests do not repeat those lookups for every real tick. Consuming
+   // the edge first also prevents a news/Friday block from creating a delayed
+   // mid-bar signal when trading becomes eligible again.
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(Strategy_NoTradeFilter())
+      return;
+
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

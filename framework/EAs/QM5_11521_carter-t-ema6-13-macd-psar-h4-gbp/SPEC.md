@@ -4,7 +4,7 @@
 **Slug:** carter-t-ema6-13-macd-psar-h4-gbp
 **Source:** 8794b680-f6f4-5142-b12c-e5e0057e7bcf (see `sources/carter-thomas-20-forex-trend-following-systems`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-20
+**Last revised:** 2026-08-01
 
 ---
 
@@ -97,3 +97,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-20 | Initial build from card | 8ad841cd-7554-42ed-9c8d-7cd14cc44fbe |
+| v2 | 2026-08-01 | Q02 active-timeout repair | Consume the H4 new-bar edge before entry-only news and spread gates; keep kill-switch and Friday-close protection per tick. Strategy mechanics and RISK_FIXED setfiles are unchanged. |
