@@ -1,0 +1,572 @@
+{
+  "authority": {
+    "approved_predecessor": {
+      "id": "27086064-a384-4e30-b04a-2043c4edeecf",
+      "payload_sha256": "7b0b6bc83a7c9120eb6d61d682468b11958e69c336df8db90c6fc5a0445d5a89",
+      "state": "APPROVED",
+      "updated_at": "2026-08-01T01:16:18+00:00"
+    },
+    "authority_task": {
+      "assigned_agent": "codex",
+      "id": "f9b2b014-deca-4fd5-ba95-ea5e8ce83e9f",
+      "payload_sha256": "60251d6aa3f9eecb9515f61fcd54ba9f4d1acef375ada3e5393b75b842a4156b",
+      "state": "IN_PROGRESS",
+      "updated_at": "2026-08-01T01:16:46+00:00"
+    },
+    "canonical_plan": {
+      "authority_required": "separate APPROVED exact-plan task",
+      "operation": "ROW_BOUND_PASS_DISPOSITION_MISMATCH_TO_PASS",
+      "rows": [
+        {
+          "claimed_by": null,
+          "ea_id": "QM5_1910",
+          "evidence_path": "D:\\QM\\reports\\work_items\\e78b1e33-179f-44ea-aa9b-57b5181f7299\\QM5_1910\\20260720_224804\\summary.json",
+          "evidence_sha256": "37e6cc21c01786ebc4ee50439d6e1ad794ba18b98cbd01fef8976bbe11ebd336",
+          "id": "e78b1e33-179f-44ea-aa9b-57b5181f7299",
+          "ok_runs": 1,
+          "payload_sha256": "a788afed1b9cebe58886c01278b5bff3011f1d2b353036e53484bf819b3e20ee",
+          "phase": "Q02",
+          "status": "failed",
+          "summary_result": "PASS",
+          "symbol": "EURUSD.DWX",
+          "total_trades": 25,
+          "updated_at": "2026-07-29T12:18:03+00:00",
+          "verdict": "INFRA_FAIL"
+        },
+        {
+          "claimed_by": null,
+          "ea_id": "QM5_9351",
+          "evidence_path": "D:\\QM\\reports\\work_items\\49a7c514-5aa0-43c1-a00b-94d0acc7b07b\\QM5_9351\\20260721_224259\\summary.json",
+          "evidence_sha256": "b0c53dd68314bc64f309469cdfc6ea2936e1483ee346f3adeadfeee749674ce6",
+          "id": "49a7c514-5aa0-43c1-a00b-94d0acc7b07b",
+          "ok_runs": 1,
+          "payload_sha256": "7f7f81e6f0b7346c09397ae577fbc00c2e741788f34f69466474239d5075eae5",
+          "phase": "Q02",
+          "status": "failed",
+          "summary_result": "PASS",
+          "symbol": "EURUSD.DWX",
+          "total_trades": 18,
+          "updated_at": "2026-07-29T12:18:03+00:00",
+          "verdict": "INFRA_FAIL"
+        },
+        {
+          "claimed_by": null,
+          "ea_id": "QM5_9940",
+          "evidence_path": "D:\\QM\\reports\\work_items\\fc0e5325-67da-4659-848c-abc9d0580b11\\QM5_9940\\20260722_194620\\summary.json",
+          "evidence_sha256": "e0fd141e3b8d53f596e9246cb1be9bf443cc5cb918638886e7ab8ce04261e172",
+          "id": "fc0e5325-67da-4659-848c-abc9d0580b11",
+          "ok_runs": 1,
+          "payload_sha256": "40c6ad834ac0ae4320078edd3d67727dc81c99cd32195378d9e0d3413788e6db",
+          "phase": "Q02",
+          "status": "failed",
+          "summary_result": "PASS",
+          "symbol": "SP500.DWX",
+          "total_trades": 26,
+          "updated_at": "2026-07-29T12:18:03+00:00",
+          "verdict": "INFRA_FAIL"
+        },
+        {
+          "claimed_by": null,
+          "ea_id": "QM5_10098",
+          "evidence_path": "D:\\QM\\reports\\work_items\\e8f476da-a7e5-48ba-aa94-285b2cdb8b8f\\QM5_10098\\20260728_024658\\summary.json",
+          "evidence_sha256": "49540b17041f887396563956d20edfac2d93a64719b1c5bd9af3180357831d8a",
+          "id": "e8f476da-a7e5-48ba-aa94-285b2cdb8b8f",
+          "ok_runs": 1,
+          "payload_sha256": "7f4859ff38d9e5191404005e2a0825ad6b6bd16b980ff6edb277ecbb9392a0d5",
+          "phase": "Q02",
+          "status": "failed",
+          "summary_result": "PASS",
+          "symbol": "GBPUSD.DWX",
+          "total_trades": 42,
+          "updated_at": "2026-07-29T12:18:03+00:00",
+          "verdict": "INFRA_FAIL"
+        },
+        {
+          "claimed_by": null,
+          "ea_id": "QM5_10485",
+          "evidence_path": "D:\\QM\\reports\\work_items\\e346032c-5762-4941-b0eb-7a7496bbd649\\QM5_10485\\20260721_032348\\summary.json",
+          "evidence_sha256": "d9f6352e0f4fd9cb1ace5b7689ba73a81bcb7dff243351cb750df271ff449045",
+          "id": "e346032c-5762-4941-b0eb-7a7496bbd649",
+          "ok_runs": 1,
+          "payload_sha256": "e3178cd19e24af3deb3af1a0c0440bbc2f7918d90c68cfa291020d0ebef74ed2",
+          "phase": "Q02",
+          "status": "failed",
+          "summary_result": "PASS",
+          "symbol": "USDJPY.DWX",
+          "total_trades": 621,
+          "updated_at": "2026-07-29T12:18:03+00:00",
+          "verdict": "INFRA_FAIL"
+        },
+        {
+          "claimed_by": null,
+          "ea_id": "QM5_10503",
+          "evidence_path": "D:\\QM\\reports\\work_items\\9f7d6e83-dc82-4fbd-9e13-128b71704db7\\QM5_10503\\20260709_145853\\summary.json",
+          "evidence_sha256": "f43644204fb3299649395302840482577bce9e847425e84a5a18063d4847220c",
+          "id": "9f7d6e83-dc82-4fbd-9e13-128b71704db7",
+          "ok_runs": 1,
+          "payload_sha256": "11f6a83cdde47b8187e3faf052ad6cc277dfc2b24915a540b54214f3e0cde498",
+          "phase": "Q02",
+          "status": "failed",
+          "summary_result": "PASS",
+          "symbol": "EURUSD.DWX",
+          "total_trades": 153,
+          "updated_at": "2026-07-29T12:18:03+00:00",
+          "verdict": "INFRA_FAIL"
+        },
+        {
+          "claimed_by": null,
+          "ea_id": "QM5_10593",
+          "evidence_path": "D:\\QM\\reports\\work_items\\677c9a45-b30b-4e97-a028-987f80430a94\\QM5_10593\\20260728_180009\\summary.json",
+          "evidence_sha256": "fba8bf81fb2b7126f38748889f398edfe33af28183938c95f5dd3a52f6fc4a42",
+          "id": "677c9a45-b30b-4e97-a028-987f80430a94",
+          "ok_runs": 1,
+          "payload_sha256": "783911567a10ffe3a160bdafa9989306f1f413e09a5f5083229e6395eb9602a9",
+          "phase": "Q02",
+          "status": "failed",
+          "summary_result": "PASS",
+          "symbol": "XAUUSD.DWX",
+          "total_trades": 105,
+          "updated_at": "2026-07-29T12:18:03+00:00",
+          "verdict": "INFRA_FAIL"
+        },
+        {
+          "claimed_by": null,
+          "ea_id": "QM5_10752",
+          "evidence_path": "D:\\QM\\reports\\work_items\\7916bcf9-f1d1-4ea2-94e2-9156044d4caf\\QM5_10752\\20260710_065149\\summary.json",
+          "evidence_sha256": "687679881749b3926e10ab9622c99f24cf07732b0a0d056b169cc911bdb23eea",
+          "id": "7916bcf9-f1d1-4ea2-94e2-9156044d4caf",
+          "ok_runs": 1,
+          "payload_sha256": "e4deda286df5416353bd6250ae500d5791bc8ec652a94a3765993be8a33c10c5",
+          "phase": "Q02",
+          "status": "failed",
+          "summary_result": "PASS",
+          "symbol": "EURUSD.DWX",
+          "total_trades": 127,
+          "updated_at": "2026-07-29T12:18:03+00:00",
+          "verdict": "INFRA_FAIL"
+        },
+        {
+          "claimed_by": null,
+          "ea_id": "QM5_11112",
+          "evidence_path": "D:\\QM\\reports\\work_items\\5f08fb95-cf8b-4378-b8eb-6aec56005367\\QM5_11112\\20260729_014048\\summary.json",
+          "evidence_sha256": "d4e86b10aa63b63550f9f928ed487cfa72b80e9751c01cb61de6dd03400d5087",
+          "id": "5f08fb95-cf8b-4378-b8eb-6aec56005367",
+          "ok_runs": 1,
+          "payload_sha256": "8b8072feb3dcf228ab56d342ef1138fdf4826f1379ee2fae4c19a0760e5a2176",
+          "phase": "Q02",
+          "status": "failed",
+          "summary_result": "PASS",
+          "symbol": "EURUSD.DWX",
+          "total_trades": 69,
+          "updated_at": "2026-07-29T12:18:03+00:00",
+          "verdict": "INFRA_FAIL"
+        },
+        {
+          "claimed_by": null,
+          "ea_id": "QM5_12535",
+          "evidence_path": "D:\\QM\\reports\\work_items\\ce645ca9-26c9-414f-996f-4036cecb61d1\\QM5_12535\\20260714_131314\\summary.json",
+          "evidence_sha256": "509c9b634a8f8b499a45408561d163ca671b4d81926dbad7f0d97cf6b6f8eb10",
+          "id": "ce645ca9-26c9-414f-996f-4036cecb61d1",
+          "ok_runs": 1,
+          "payload_sha256": "8bb377e8f63a096e551eb2c4a2703fbd870eff372c01c1de15b460f7e18d261a",
+          "phase": "Q02",
+          "status": "failed",
+          "summary_result": "PASS",
+          "symbol": "GDAXI.DWX",
+          "total_trades": 25,
+          "updated_at": "2026-07-29T12:18:03+00:00",
+          "verdict": "INFRA_FAIL"
+        }
+      ],
+      "schema": "qm-q02-disposition-repair-plan/v1"
+    },
+    "canonical_plan_bytes": 5676,
+    "canonical_plan_sha256": "5abc62608f1fc5ebce7ee226490c261132aa592a1d5569601bf74cb35666a25d",
+    "legacy_summary_bindings_explicitly_accepted": true
+  },
+  "controller": {
+    "git_head": "7d7488a824e3966b0a268fff7876e76a8a34b09c",
+    "path": "C:\\QM\\repo\\tools\\strategy_farm\\q02_disposition_repair.py",
+    "sha256": "ebbf563e7765c75b584b19a2b2ff998cbbe66b02f589a704cee2aee58cdfe5c9"
+  },
+  "database": {
+    "path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "quick_check": "ok"
+  },
+  "generated_at_utc": "2026-08-01T01:54:45Z",
+  "mutation_performed": false,
+  "operation": "ROW_BOUND_PASS_DISPOSITION_MISMATCH_TO_PASS",
+  "schema_version": "qm-q02-disposition-repair-execution-plan/v1",
+  "targets": [
+    {
+      "evidence": {
+        "bytes": 2582,
+        "evidence_schema": null,
+        "legacy_binding_explicitly_accepted": true,
+        "ok_runs": 1,
+        "path": "D:\\QM\\reports\\work_items\\e78b1e33-179f-44ea-aa9b-57b5181f7299\\QM5_1910\\20260720_224804\\summary.json",
+        "run_count": 1,
+        "sha256": "37e6cc21c01786ebc4ee50439d6e1ad794ba18b98cbd01fef8976bbe11ebd336",
+        "summary_result": "PASS",
+        "total_trades": 25
+      },
+      "full_preimage": {
+        "attempt_count": 2,
+        "claimed_by": null,
+        "created_at": "2026-07-20T20:52:58+00:00",
+        "ea_id": "QM5_1910",
+        "evidence_path": "D:\\QM\\reports\\work_items\\e78b1e33-179f-44ea-aa9b-57b5181f7299\\QM5_1910\\20260720_224804\\summary.json",
+        "id": "e78b1e33-179f-44ea-aa9b-57b5181f7299",
+        "kind": "backtest",
+        "parent_task_id": null,
+        "payload_json": "{\"claimed_at_iso\": \"2026-07-20T23:10:22+00:00\", \"claimed_by_worker_pid\": 5912, \"ea_dir_name\": \"QM5_1910_chande-stochastic-rsi-pop-h4\", \"effective_min_trades\": 25, \"enqueued_at_utc\": \"2026-07-20T20:52:58+00:00\", \"enqueued_by\": \"claude_sweep_enqueue_2026-06-10.stranded_infra_fail\", \"evidence_provenance\": \"real_mt5\", \"expected_trades_per_year_per_symbol\": 100, \"failure_class\": \"IN_FLIGHT\", \"failure_class_evidence\": \"historical_reclassify:db_join\", \"failure_subclass\": \"pair_open\", \"final_failure\": \"summary_missing_retries_exhausted\", \"from_date\": \"2018.07.02\", \"from_year\": 2017, \"history_first_year\": 2017, \"history_last_year\": 2026, \"host_symbol\": \"EURUSD.DWX\", \"log_path\": \"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_e78b1e33-179f-44ea-aa9b-57b5181f7299.log\", \"p2_prescreen_done\": true, \"p2_prescreen_evidence_path\": \"D:\\\\QM\\\\reports\\\\work_items\\\\e78b1e33-179f-44ea-aa9b-57b5181f7299\\\\QM5_1910\\\\20260720_224804\\\\summary.json\", \"p2_prescreen_from_date\": \"2022.07.01\", \"p2_prescreen_reason\": \"\", \"p2_prescreen_to_date\": \"2022.12.31\", \"p2_prescreen_verdict\": \"PASS\", \"p2_run_stage\": \"full\", \"phase_runner\": null, \"pid\": 19800, \"prior_failure\": \"summary_missing\", \"report_root\": \"D:\\\\QM\\\\reports\\\\work_items\\\\e78b1e33-179f-44ea-aa9b-57b5181f7299\", \"requested_from_year\": 2017, \"requested_to_year\": 2022, \"run_smoke_exit_code\": 0, \"smoke_year_count\": 5, \"started_at_iso\": \"2026-07-20T23:10:22+00:00\", \"terminal\": \"T7\", \"terminal_stopped_on_release\": true, \"to_date\": \"2022.12.31\", \"to_year\": 2022, \"verdict_reason\": \"summary_missing_retries_exhausted\", \"verdict_taxonomy\": \"strategy\"}",
+        "phase": "Q02",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1910_chande-stochastic-rsi-pop-h4\\sets\\QM5_1910_chande-stochastic-rsi-pop-h4_EURUSD.DWX_H4_backtest.set",
+        "status": "failed",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-07-29T12:18:03+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      "full_preimage_sha256": "ee493e781d992b579c6a7346878fcea3c2d4269a5fe2950463dc38130585018d",
+      "pair_gate": {
+        "open_q02_rows": 0,
+        "other_noninfra_terminal_q02_rows": 0
+      },
+      "payload_sha256": "a788afed1b9cebe58886c01278b5bff3011f1d2b353036e53484bf819b3e20ee",
+      "work_item_id": "e78b1e33-179f-44ea-aa9b-57b5181f7299"
+    },
+    {
+      "evidence": {
+        "bytes": 2591,
+        "evidence_schema": null,
+        "legacy_binding_explicitly_accepted": true,
+        "ok_runs": 1,
+        "path": "D:\\QM\\reports\\work_items\\49a7c514-5aa0-43c1-a00b-94d0acc7b07b\\QM5_9351\\20260721_224259\\summary.json",
+        "run_count": 1,
+        "sha256": "b0c53dd68314bc64f309469cdfc6ea2936e1483ee346f3adeadfeee749674ce6",
+        "summary_result": "PASS",
+        "total_trades": 18
+      },
+      "full_preimage": {
+        "attempt_count": 0,
+        "claimed_by": null,
+        "created_at": "2026-07-21T21:52:58+00:00",
+        "ea_id": "QM5_9351",
+        "evidence_path": "D:\\QM\\reports\\work_items\\49a7c514-5aa0-43c1-a00b-94d0acc7b07b\\QM5_9351\\20260721_224259\\summary.json",
+        "id": "49a7c514-5aa0-43c1-a00b-94d0acc7b07b",
+        "kind": "backtest",
+        "parent_task_id": null,
+        "payload_json": "{\"avoid_terminals\": [\"T10\", \"T2\", \"T3\", \"T4\", \"T6\", \"T7\", \"T9\"], \"ea_dir_name\": \"QM5_9351_demark-td-demand-line-active-h4\", \"effective_min_trades\": 25, \"enqueued_at_utc\": \"2026-07-21T21:52:58+00:00\", \"enqueued_by\": \"claude_sweep_enqueue_2026-06-10.stranded_infra_fail\", \"evidence_provenance\": \"real_mt5\", \"expected_trades_per_year_per_symbol\": 60, \"final_failure\": \"shared_bases_history_lock_transient_cap_exhausted\", \"from_date\": \"2018.07.02\", \"from_year\": 2017, \"history_first_year\": 2017, \"history_last_year\": 2026, \"host_symbol\": \"EURUSD.DWX\", \"launch_not_before_utc\": \"2026-07-22T00:03:28.726774+00:00\", \"p2_prescreen_done\": true, \"p2_prescreen_evidence_path\": \"D:\\\\QM\\\\reports\\\\work_items\\\\49a7c514-5aa0-43c1-a00b-94d0acc7b07b\\\\QM5_9351\\\\20260721_224259\\\\summary.json\", \"p2_prescreen_from_date\": \"2022.07.01\", \"p2_prescreen_reason\": \"\", \"p2_prescreen_to_date\": \"2022.12.31\", \"p2_prescreen_verdict\": \"PASS\", \"p2_run_stage\": \"full\", \"phase_runner\": null, \"prior_failure\": \"shared_bases_history_lock_storm\", \"report_root\": \"D:\\\\QM\\\\reports\\\\work_items\\\\49a7c514-5aa0-43c1-a00b-94d0acc7b07b\", \"requested_from_year\": 2017, \"requested_to_year\": 2022, \"run_smoke_exit_code\": 0, \"smoke_year_count\": 5, \"terminal_stopped_on_release\": true, \"to_date\": \"2022.12.31\", \"to_year\": 2022, \"transient_infra_attempts\": 7, \"transient_infra_evidence_path\": \"D:\\\\QM\\\\mt5\\\\T9\\\\logs\\\\20260722.log\", \"transient_infra_signature\": \"some error after pass finished\", \"verdict_reason\": \"shared_bases_history_lock_transient_cap_exhausted\", \"verdict_taxonomy\": \"strategy\"}",
+        "phase": "Q02",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\sets\\QM5_9351_demark-td-demand-line-active-h4_EURUSD.DWX_H4_backtest.set",
+        "status": "failed",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-07-29T12:18:03+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      "full_preimage_sha256": "72822739a4e1f354ddc0fad712e4d600eb44bd4f4a61015b315974ad2f484a89",
+      "pair_gate": {
+        "open_q02_rows": 0,
+        "other_noninfra_terminal_q02_rows": 0
+      },
+      "payload_sha256": "7f7f81e6f0b7346c09397ae577fbc00c2e741788f34f69466474239d5075eae5",
+      "work_item_id": "49a7c514-5aa0-43c1-a00b-94d0acc7b07b"
+    },
+    {
+      "evidence": {
+        "bytes": 6595,
+        "evidence_schema": "run_smoke/v2",
+        "legacy_binding_explicitly_accepted": false,
+        "ok_runs": 1,
+        "path": "D:\\QM\\reports\\work_items\\fc0e5325-67da-4659-848c-abc9d0580b11\\QM5_9940\\20260722_194620\\summary.json",
+        "run_count": 1,
+        "sha256": "e0fd141e3b8d53f596e9246cb1be9bf443cc5cb918638886e7ab8ce04261e172",
+        "summary_result": "PASS",
+        "total_trades": 26
+      },
+      "full_preimage": {
+        "attempt_count": 0,
+        "claimed_by": null,
+        "created_at": "2026-07-22T18:52:58+00:00",
+        "ea_id": "QM5_9940",
+        "evidence_path": "D:\\QM\\reports\\work_items\\fc0e5325-67da-4659-848c-abc9d0580b11\\QM5_9940\\20260722_194620\\summary.json",
+        "id": "fc0e5325-67da-4659-848c-abc9d0580b11",
+        "kind": "backtest",
+        "parent_task_id": null,
+        "payload_json": "{\"active_age_min\": 46.26, \"claimed_at_iso\": \"2026-07-22T20:14:41+00:00\", \"claimed_by_worker_pid\": 4460, \"ea_dir_name\": \"QM5_9940_ff-ha-ma-fractal-h1\", \"effective_min_trades\": 25, \"enqueued_at_utc\": \"2026-07-22T18:52:58+00:00\", \"enqueued_by\": \"claude_sweep_enqueue_2026-06-10.stranded_infra_fail\", \"evidence_provenance\": \"real_mt5\", \"expected_trades_per_year_per_symbol\": 14, \"from_date\": \"2018.07.02\", \"from_year\": 2018, \"history_adjusted\": true, \"history_adjustment_source\": \"terminal_worker_claim\", \"history_first_year\": 2018, \"history_last_year\": 2026, \"host_symbol\": \"SP500.DWX\", \"killed_at\": \"2026-07-22T21:00:59+00:00\", \"log_path\": \"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_fc0e5325-67da-4659-848c-abc9d0580b11.log\", \"p2_prescreen_done\": true, \"p2_prescreen_evidence_path\": \"D:\\\\QM\\\\reports\\\\work_items\\\\fc0e5325-67da-4659-848c-abc9d0580b11\\\\QM5_9940\\\\20260722_194620\\\\summary.json\", \"p2_prescreen_from_date\": \"2022.07.01\", \"p2_prescreen_reason\": \"\", \"p2_prescreen_to_date\": \"2022.12.31\", \"p2_prescreen_verdict\": \"PASS\", \"p2_run_stage\": \"full\", \"phase_runner\": null, \"pid\": 772, \"reason_classes\": [\"ACTIVE_TIMEOUT\"], \"report_root\": \"D:\\\\QM\\\\reports\\\\work_items\\\\fc0e5325-67da-4659-848c-abc9d0580b11\", \"requested_from_year\": 2018, \"requested_to_year\": 2022, \"run_smoke_exit_code\": 0, \"smoke_year_count\": 5, \"started_at_iso\": \"2026-07-22T20:14:44+00:00\", \"terminal\": \"T3\", \"terminal_stopped\": true, \"timeout_min\": 45, \"to_date\": \"2022.12.31\", \"to_year\": 2022, \"verdict_reason\": \"ACTIVE_TIMEOUT\", \"verdict_taxonomy\": \"strategy\", \"worker_pid\": 772, \"worker_stopped\": false}",
+        "phase": "Q02",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9940_ff-ha-ma-fractal-h1\\sets\\QM5_9940_ff-ha-ma-fractal-h1_SP500.DWX_H1_backtest.set",
+        "status": "failed",
+        "symbol": "SP500.DWX",
+        "updated_at": "2026-07-29T12:18:03+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      "full_preimage_sha256": "7d929edb1a2b2413cd4719aa7e7cd5e04596134c9ec9f2a6080d199606569217",
+      "pair_gate": {
+        "open_q02_rows": 0,
+        "other_noninfra_terminal_q02_rows": 0
+      },
+      "payload_sha256": "40c6ad834ac0ae4320078edd3d67727dc81c99cd32195378d9e0d3413788e6db",
+      "work_item_id": "fc0e5325-67da-4659-848c-abc9d0580b11"
+    },
+    {
+      "evidence": {
+        "bytes": 6805,
+        "evidence_schema": "run_smoke/v2",
+        "legacy_binding_explicitly_accepted": false,
+        "ok_runs": 1,
+        "path": "D:\\QM\\reports\\work_items\\e8f476da-a7e5-48ba-aa94-285b2cdb8b8f\\QM5_10098\\20260728_024658\\summary.json",
+        "run_count": 1,
+        "sha256": "49540b17041f887396563956d20edfac2d93a64719b1c5bd9af3180357831d8a",
+        "summary_result": "PASS",
+        "total_trades": 42
+      },
+      "full_preimage": {
+        "attempt_count": 0,
+        "claimed_by": null,
+        "created_at": "2026-06-20T02:52:58+00:00",
+        "ea_id": "QM5_10098",
+        "evidence_path": "D:\\QM\\reports\\work_items\\e8f476da-a7e5-48ba-aa94-285b2cdb8b8f\\QM5_10098\\20260728_024658\\summary.json",
+        "id": "e8f476da-a7e5-48ba-aa94-285b2cdb8b8f",
+        "kind": "backtest",
+        "parent_task_id": null,
+        "payload_json": "{\"absolute_ceiling_min\": 45, \"active_age_min\": 22.95, \"claimed_at_iso\": \"2026-07-28T02:46:56+00:00\", \"claimed_by_worker_pid\": 7028, \"commit_reservation_gb\": 8.0, \"commit_reservation_until_utc\": \"2026-07-28T02:51:56+00:00\", \"ea_dir_name\": \"QM5_10098_mql5-memory\", \"effective_min_trades\": 5, \"enqueued_at_utc\": \"2026-06-20T02:52:58+00:00\", \"enqueued_by\": \"claude_sweep_enqueue_2026-06-10.stranded_infra_fail\", \"evidence_binding_required\": true, \"expected_ex5_sha256\": \"5b4db312d0a382aaad56a3bd2c189cefd608119f9b771dfcb2c6a453411f0131\", \"expected_expert\": \"QM\\\\QM5_10098_mql5-memory\", \"expected_from_date\": \"2022.07.01\", \"expected_mq5_sha256\": \"49e5553e969ebaa9ac61fa2cac66ae04378f7691bf5c67b0fca674dac1cc655c\", \"expected_period\": \"M15\", \"expected_setfile_sha256\": \"72d8143daa3f47cc17d21fbc00883fa09d3e6799fbbbac433b3a655d78e51ed9\", \"expected_symbol\": \"GBPUSD.DWX\", \"expected_to_date\": \"2022.12.31\", \"expected_trades_per_year_per_symbol\": 70, \"failure_class\": \"DETERMINISTIC_NO_SUMMARY\", \"failure_class_evidence\": \"historical_reclassify:db_join\", \"failure_subclass\": \"never_worked\", \"final_failure\": \"summary_missing_retries_exhausted\", \"from_date\": \"2022.07.01\", \"from_year\": 2017, \"history_first_year\": 2017, \"history_last_year\": 2026, \"host_symbol\": \"GBPUSD.DWX\", \"inner_budget_min\": 0, \"killed_at\": \"2026-07-28T03:09:53+00:00\", \"log_path\": \"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_e8f476da-a7e5-48ba-aa94-285b2cdb8b8f.log\", \"p2_run_stage\": \"prescreen\", \"phase_evidence_path\": null, \"phase_runner\": null, \"pid\": 16920, \"prior_failure\": \"summary_missing\", \"progress_evidence\": {\"determined\": true, \"log_path\": \"D:\\\\QM\\\\mt5\\\\T7\\\\logs\\\\20260728.log\", \"progress_at\": \"2026-07-28T02:46:57+00:00\", \"progress_pct\": 0, \"reason\": \"work_item_bound_progress\", \"stalled_min\": 22.95}, \"reap_reason\": \"NO_FORWARD_PROGRESS\", \"reason_classes\": [\"ACTIVE_TIMEOUT\"], \"report_root\": \"D:\\\\QM\\\\reports\\\\work_items\\\\e8f476da-a7e5-48ba-aa94-285b2cdb8b8f\", \"requested_from_year\": 2017, \"requested_to_year\": 2022, \"requeue_prior_verdict\": \"INFRA_FAIL\", \"requeue_prior_verdict_reason\": \"summary_missing_retries_exhausted\", \"requeue_reason\": \"q02_above_sweep_cap\", \"requeued_at_utc\": \"2026-07-27T18:35:03+00:00\", \"requeued_by\": \"requeue_stranded_infra\", \"run_smoke_exit_code\": 0, \"smoke_year_count\": 1, \"started_at_iso\": \"2026-07-28T02:46:57+00:00\", \"terminal\": \"T7\", \"terminal_stopped\": true, \"terminal_stopped_on_release\": false, \"timeout_min\": 45, \"to_date\": \"2022.12.31\", \"to_year\": 2022, \"verdict_reason\": \"ACTIVE_TIMEOUT\", \"worker_pid\": 16920, \"worker_stopped\": false}",
+        "phase": "Q02",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10098_mql5-memory\\sets\\QM5_10098_mql5-memory_GBPUSD.DWX_M15_backtest.set",
+        "status": "failed",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-07-29T12:18:03+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      "full_preimage_sha256": "7fb66e10daa58df6a8e833105bb75079b35edd5d83aa6ef56d7510f72ab3977b",
+      "pair_gate": {
+        "open_q02_rows": 0,
+        "other_noninfra_terminal_q02_rows": 0
+      },
+      "payload_sha256": "7f4859ff38d9e5191404005e2a0825ad6b6bd16b980ff6edb277ecbb9392a0d5",
+      "work_item_id": "e8f476da-a7e5-48ba-aa94-285b2cdb8b8f"
+    },
+    {
+      "evidence": {
+        "bytes": 2587,
+        "evidence_schema": null,
+        "legacy_binding_explicitly_accepted": true,
+        "ok_runs": 1,
+        "path": "D:\\QM\\reports\\work_items\\e346032c-5762-4941-b0eb-7a7496bbd649\\QM5_10485\\20260721_032348\\summary.json",
+        "run_count": 1,
+        "sha256": "d9f6352e0f4fd9cb1ace5b7689ba73a81bcb7dff243351cb750df271ff449045",
+        "summary_result": "PASS",
+        "total_trades": 621
+      },
+      "full_preimage": {
+        "attempt_count": 0,
+        "claimed_by": null,
+        "created_at": "2026-07-21T02:52:58+00:00",
+        "ea_id": "QM5_10485",
+        "evidence_path": "D:\\QM\\reports\\work_items\\e346032c-5762-4941-b0eb-7a7496bbd649\\QM5_10485\\20260721_032348\\summary.json",
+        "id": "e346032c-5762-4941-b0eb-7a7496bbd649",
+        "kind": "backtest",
+        "parent_task_id": null,
+        "payload_json": "{\"active_age_min\": 46.78, \"claimed_at_iso\": \"2026-07-21T03:48:39+00:00\", \"claimed_by_worker_pid\": 9980, \"ea_dir_name\": \"QM5_10485_mql5-exec-ac\", \"effective_min_trades\": 25, \"enqueued_at_utc\": \"2026-07-21T02:52:58+00:00\", \"enqueued_by\": \"claude_sweep_enqueue_2026-06-10.stranded_infra_fail\", \"evidence_provenance\": \"real_mt5\", \"expected_trades_per_year_per_symbol\": 15, \"from_date\": \"2018.07.02\", \"from_year\": 2017, \"history_first_year\": 2017, \"history_last_year\": 2026, \"host_symbol\": \"USDJPY.DWX\", \"killed_at\": \"2026-07-21T04:35:29+00:00\", \"log_path\": \"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_e346032c-5762-4941-b0eb-7a7496bbd649.log\", \"p2_prescreen_done\": true, \"p2_prescreen_evidence_path\": \"D:\\\\QM\\\\reports\\\\work_items\\\\e346032c-5762-4941-b0eb-7a7496bbd649\\\\QM5_10485\\\\20260721_032348\\\\summary.json\", \"p2_prescreen_from_date\": \"2022.07.01\", \"p2_prescreen_reason\": \"\", \"p2_prescreen_to_date\": \"2022.12.31\", \"p2_prescreen_verdict\": \"PASS\", \"p2_run_stage\": \"full\", \"phase_runner\": null, \"pid\": 18124, \"reason_classes\": [\"ACTIVE_TIMEOUT\"], \"report_root\": \"D:\\\\QM\\\\reports\\\\work_items\\\\e346032c-5762-4941-b0eb-7a7496bbd649\", \"requested_from_year\": 2017, \"requested_to_year\": 2022, \"run_smoke_exit_code\": 0, \"smoke_year_count\": 5, \"started_at_iso\": \"2026-07-21T03:48:43+00:00\", \"terminal\": \"T4\", \"terminal_stopped\": true, \"timeout_min\": 45, \"to_date\": \"2022.12.31\", \"to_year\": 2022, \"verdict_reason\": \"ACTIVE_TIMEOUT\", \"verdict_taxonomy\": \"strategy\", \"worker_pid\": 18124, \"worker_stopped\": false}",
+        "phase": "Q02",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10485_mql5-exec-ac\\sets\\QM5_10485_mql5-exec-ac_USDJPY.DWX_H1_backtest.set",
+        "status": "failed",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-07-29T12:18:03+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      "full_preimage_sha256": "9b244cf592f959d21513a360679058e2be80633997af72b6b13798803b5f8559",
+      "pair_gate": {
+        "open_q02_rows": 0,
+        "other_noninfra_terminal_q02_rows": 0
+      },
+      "payload_sha256": "e3178cd19e24af3deb3af1a0c0440bbc2f7918d90c68cfa291020d0ebef74ed2",
+      "work_item_id": "e346032c-5762-4941-b0eb-7a7496bbd649"
+    },
+    {
+      "evidence": {
+        "bytes": 2053,
+        "evidence_schema": null,
+        "legacy_binding_explicitly_accepted": true,
+        "ok_runs": 1,
+        "path": "D:\\QM\\reports\\work_items\\9f7d6e83-dc82-4fbd-9e13-128b71704db7\\QM5_10503\\20260709_145853\\summary.json",
+        "run_count": 1,
+        "sha256": "f43644204fb3299649395302840482577bce9e847425e84a5a18063d4847220c",
+        "summary_result": "PASS",
+        "total_trades": 153
+      },
+      "full_preimage": {
+        "attempt_count": 2,
+        "claimed_by": null,
+        "created_at": "2026-06-27T17:52:58+00:00",
+        "ea_id": "QM5_10503",
+        "evidence_path": "D:\\QM\\reports\\work_items\\9f7d6e83-dc82-4fbd-9e13-128b71704db7\\QM5_10503\\20260709_145853\\summary.json",
+        "id": "9f7d6e83-dc82-4fbd-9e13-128b71704db7",
+        "kind": "backtest",
+        "parent_task_id": null,
+        "payload_json": "{\"active_age_min\": 47.28, \"adopted_active_child_at_iso\": \"2026-07-08T13:33:32+00:00\", \"claimed_at_iso\": \"2026-07-19T06:28:31+00:00\", \"claimed_by_worker_pid\": 15820, \"cleared_stale_preflight_at\": \"2026-07-03T12:33:34.631444Z\", \"cleared_stale_preflight_reason\": \"ea_dir_missing\", \"ea_dir_name\": \"QM5_10503_mql5-candlebw\", \"effective_min_trades\": 25, \"enqueued_at_utc\": \"2026-06-27T17:52:58+00:00\", \"enqueued_by\": \"claude_sweep_enqueue_2026-06-10.stranded_infra_fail\", \"evidence_provenance\": \"real_mt5\", \"expected_trades_per_year_per_symbol\": 13, \"failure_class\": \"IN_FLIGHT\", \"failure_class_evidence\": \"historical_reclassify:db_join\", \"failure_subclass\": \"pair_open\", \"final_failure\": \"summary_missing_retries_exhausted\", \"from_date\": \"2018.07.02\", \"from_year\": 2017, \"history_first_year\": 2017, \"history_last_year\": 2026, \"host_symbol\": \"EURUSD.DWX\", \"killed_at\": \"2026-07-14T18:07:38+00:00\", \"last_launch_fault_at\": \"2026-07-05T15:08:43+00:00\", \"last_launch_fault_child_tail\": \"\", \"last_launch_fault_pid\": 6428, \"last_launch_fault_seconds\": 0.08, \"last_launch_fault_terminal\": \"T3\", \"launch_fault_count\": 2, \"launch_fault_defer_seconds\": 600.0, \"launch_not_before_utc\": \"2026-07-05T15:18:43+00:00\", \"log_path\": \"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_9f7d6e83-dc82-4fbd-9e13-128b71704db7.log\", \"p2_prescreen_done\": true, \"p2_prescreen_evidence_path\": \"D:\\\\QM\\\\reports\\\\work_items\\\\9f7d6e83-dc82-4fbd-9e13-128b71704db7\\\\QM5_10503\\\\20260709_145853\\\\summary.json\", \"p2_prescreen_from_date\": \"2022.07.01\", \"p2_prescreen_reason\": \"\", \"p2_prescreen_to_date\": \"2022.12.31\", \"p2_prescreen_verdict\": \"PASS\", \"p2_run_stage\": \"full\", \"phase_runner\": null, \"pid\": 4188, \"prior_failure\": \"launch_fault\", \"reason_classes\": [\"ACTIVE_TIMEOUT\"], \"report_root\": \"D:\\\\QM\\\\reports\\\\work_items\\\\9f7d6e83-dc82-4fbd-9e13-128b71704db7\", \"requested_from_year\": 2017, \"requested_to_year\": 2022, \"run_smoke_exit_code\": 0, \"smoke_year_count\": 5, \"stale_preflight_repair_handler\": \"R17_clear_stale_preflight_work_item\", \"started_at_iso\": \"2026-07-19T06:28:35+00:00\", \"terminal\": \"T9\", \"terminal_stopped\": true, \"terminal_stopped_on_release\": true, \"timeout_min\": 45, \"to_date\": \"2022.12.31\", \"to_year\": 2022, \"verdict_reason\": \"ACTIVE_TIMEOUT\", \"verdict_taxonomy\": \"strategy\", \"worker_pid\": 15072, \"worker_stopped\": true}",
+        "phase": "Q02",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10503_mql5-candlebw\\sets\\QM5_10503_mql5-candlebw_EURUSD.DWX_H4_backtest.set",
+        "status": "failed",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-07-29T12:18:03+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      "full_preimage_sha256": "da608ab1414dcf95d4692c92f064dcddfaca66ffecef3b4a7616d66d51bca3d8",
+      "pair_gate": {
+        "open_q02_rows": 0,
+        "other_noninfra_terminal_q02_rows": 0
+      },
+      "payload_sha256": "11f6a83cdde47b8187e3faf052ad6cc277dfc2b24915a540b54214f3e0cde498",
+      "work_item_id": "9f7d6e83-dc82-4fbd-9e13-128b71704db7"
+    },
+    {
+      "evidence": {
+        "bytes": 6803,
+        "evidence_schema": "run_smoke/v2",
+        "legacy_binding_explicitly_accepted": false,
+        "ok_runs": 1,
+        "path": "D:\\QM\\reports\\work_items\\677c9a45-b30b-4e97-a028-987f80430a94\\QM5_10593\\20260728_180009\\summary.json",
+        "run_count": 1,
+        "sha256": "fba8bf81fb2b7126f38748889f398edfe33af28183938c95f5dd3a52f6fc4a42",
+        "summary_result": "PASS",
+        "total_trades": 105
+      },
+      "full_preimage": {
+        "attempt_count": 0,
+        "claimed_by": null,
+        "created_at": "2026-06-23T16:52:58+00:00",
+        "ea_id": "QM5_10593",
+        "evidence_path": "D:\\QM\\reports\\work_items\\677c9a45-b30b-4e97-a028-987f80430a94\\QM5_10593\\20260728_180009\\summary.json",
+        "id": "677c9a45-b30b-4e97-a028-987f80430a94",
+        "kind": "backtest",
+        "parent_task_id": null,
+        "payload_json": "{\"absolute_ceiling_min\": 45, \"active_age_min\": 48.56, \"claimed_at_iso\": \"2026-07-28T21:34:13+00:00\", \"claimed_by_worker_pid\": 2708, \"commit_reservation_gb\": 8.0, \"commit_reservation_until_utc\": \"2026-07-28T21:39:13+00:00\", \"ea_dir_name\": \"QM5_10593_mql5-adxhull\", \"effective_min_trades\": 25, \"enqueued_at_utc\": \"2026-06-23T16:52:58+00:00\", \"enqueued_by\": \"claude_sweep_enqueue_2026-06-10.stranded_infra_fail\", \"evidence_binding_required\": true, \"evidence_provenance\": \"real_mt5\", \"expected_ex5_sha256\": \"257654bdd298e392e9c41b94bf69f36b2ca09e7c7bb59f8567dc4f809e4f613d\", \"expected_expert\": \"QM\\\\QM5_10593_mql5-adxhull\", \"expected_from_date\": \"2018.07.02\", \"expected_mq5_sha256\": \"5cc4aadee69a9cbb0127bf3a0ded875ebb57f5cf93cf9368f21645ffb8670ee8\", \"expected_period\": \"H4\", \"expected_setfile_sha256\": \"ba26730f4afb18a61024866d7ef2886ef01402a5ffdf170f7ec599fc3825cdf6\", \"expected_symbol\": \"XAUUSD.DWX\", \"expected_to_date\": \"2022.12.31\", \"expected_trades_per_year_per_symbol\": 70, \"failure_class\": \"DETERMINISTIC_NO_SUMMARY\", \"failure_class_evidence\": \"historical_reclassify:db_join\", \"failure_subclass\": \"never_worked\", \"final_failure\": \"summary_missing_retries_exhausted\", \"from_date\": \"2018.07.02\", \"from_year\": 2017, \"history_first_year\": 2017, \"history_last_year\": 2025, \"host_symbol\": \"XAUUSD.DWX\", \"inner_budget_min\": 0, \"killed_at\": \"2026-07-28T22:22:46+00:00\", \"log_path\": \"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_677c9a45-b30b-4e97-a028-987f80430a94.log\", \"p2_prescreen_done\": true, \"p2_prescreen_evidence_path\": \"D:\\\\QM\\\\reports\\\\work_items\\\\677c9a45-b30b-4e97-a028-987f80430a94\\\\QM5_10593\\\\20260728_180009\\\\summary.json\", \"p2_prescreen_from_date\": \"2022.07.01\", \"p2_prescreen_reason\": \"\", \"p2_prescreen_to_date\": \"2022.12.31\", \"p2_prescreen_verdict\": \"PASS\", \"p2_run_stage\": \"full\", \"phase_evidence_path\": null, \"phase_runner\": null, \"pid\": 10880, \"prior_failure\": \"summary_missing\", \"progress_evidence\": {\"determined\": true, \"log_path\": \"D:\\\\QM\\\\mt5\\\\T1\\\\logs\\\\20260728.log\", \"progress_at\": \"2026-07-28T21:55:06+00:00\", \"progress_pct\": 25, \"reason\": \"work_item_bound_progress\", \"stalled_min\": 27.67}, \"reap_reason\": \"NO_FORWARD_PROGRESS\", \"reason_classes\": [\"ACTIVE_TIMEOUT\"], \"report_root\": \"D:\\\\QM\\\\reports\\\\work_items\\\\677c9a45-b30b-4e97-a028-987f80430a94\", \"requested_from_year\": 2017, \"requested_to_year\": 2022, \"requeue_prior_verdict\": \"INFRA_FAIL\", \"requeue_prior_verdict_reason\": \"summary_missing_retries_exhausted\", \"requeue_reason\": \"q02_above_sweep_cap\", \"requeued_at_utc\": \"2026-07-27T18:35:03+00:00\", \"requeued_by\": \"requeue_stranded_infra\", \"run_smoke_exit_code\": 0, \"smoke_year_count\": 5, \"started_at_iso\": \"2026-07-28T21:34:13+00:00\", \"terminal\": \"T1\", \"terminal_stopped\": true, \"terminal_stopped_on_release\": false, \"timeout_min\": 45, \"to_date\": \"2022.12.31\", \"to_year\": 2022, \"verdict_reason\": \"ACTIVE_TIMEOUT\", \"verdict_taxonomy\": \"strategy\", \"worker_pid\": 10880, \"worker_stopped\": false}",
+        "phase": "Q02",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10593_mql5-adxhull\\sets\\QM5_10593_mql5-adxhull_XAUUSD.DWX_H4_backtest.set",
+        "status": "failed",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-07-29T12:18:03+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      "full_preimage_sha256": "cea223f10572d15c1776c908c6fd862c64961d83f0e69f3688dad3556f374406",
+      "pair_gate": {
+        "open_q02_rows": 0,
+        "other_noninfra_terminal_q02_rows": 0
+      },
+      "payload_sha256": "783911567a10ffe3a160bdafa9989306f1f413e09a5f5083229e6395eb9602a9",
+      "work_item_id": "677c9a45-b30b-4e97-a028-987f80430a94"
+    },
+    {
+      "evidence": {
+        "bytes": 2053,
+        "evidence_schema": null,
+        "legacy_binding_explicitly_accepted": true,
+        "ok_runs": 1,
+        "path": "D:\\QM\\reports\\work_items\\7916bcf9-f1d1-4ea2-94e2-9156044d4caf\\QM5_10752\\20260710_065149\\summary.json",
+        "run_count": 1,
+        "sha256": "687679881749b3926e10ab9622c99f24cf07732b0a0d056b169cc911bdb23eea",
+        "summary_result": "PASS",
+        "total_trades": 127
+      },
+      "full_preimage": {
+        "attempt_count": 0,
+        "claimed_by": null,
+        "created_at": "2026-06-27T18:52:58+00:00",
+        "ea_id": "QM5_10752",
+        "evidence_path": "D:\\QM\\reports\\work_items\\7916bcf9-f1d1-4ea2-94e2-9156044d4caf\\QM5_10752\\20260710_065149\\summary.json",
+        "id": "7916bcf9-f1d1-4ea2-94e2-9156044d4caf",
+        "kind": "backtest",
+        "parent_task_id": null,
+        "payload_json": "{\"active_age_min\": 45.01, \"claimed_at_iso\": \"2026-07-10T06:57:41+00:00\", \"claimed_by_worker_pid\": 9724, \"cleared_stale_preflight_at\": \"2026-07-03T12:33:34.631444Z\", \"cleared_stale_preflight_reason\": \"ea_dir_missing\", \"ea_dir_name\": \"QM5_10752_tv-nq-vwap-orb\", \"effective_min_trades\": 25, \"enqueued_at_utc\": \"2026-06-27T18:52:58+00:00\", \"enqueued_by\": \"claude_sweep_enqueue_2026-06-10.stranded_infra_fail\", \"evidence_provenance\": \"real_mt5\", \"expected_trades_per_year_per_symbol\": 25, \"from_date\": \"2018.07.02\", \"from_year\": 2017, \"history_first_year\": 2017, \"history_last_year\": 2026, \"host_symbol\": \"EURUSD.DWX\", \"killed_at\": \"2026-07-10T07:42:41+00:00\", \"log_path\": \"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_7916bcf9-f1d1-4ea2-94e2-9156044d4caf.log\", \"p2_prescreen_done\": true, \"p2_prescreen_evidence_path\": \"D:\\\\QM\\\\reports\\\\work_items\\\\7916bcf9-f1d1-4ea2-94e2-9156044d4caf\\\\QM5_10752\\\\20260710_065149\\\\summary.json\", \"p2_prescreen_from_date\": \"2022.07.01\", \"p2_prescreen_reason\": \"\", \"p2_prescreen_to_date\": \"2022.12.31\", \"p2_prescreen_verdict\": \"PASS\", \"p2_run_stage\": \"full\", \"phase_runner\": null, \"pid\": 15176, \"priority_track\": true, \"reason_classes\": [\"ACTIVE_TIMEOUT\"], \"report_root\": \"D:\\\\QM\\\\reports\\\\work_items\\\\7916bcf9-f1d1-4ea2-94e2-9156044d4caf\", \"requested_from_year\": 2017, \"requested_to_year\": 2022, \"run_smoke_exit_code\": 0, \"smoke_year_count\": 5, \"stale_preflight_repair_handler\": \"R17_clear_stale_preflight_work_item\", \"started_at_iso\": \"2026-07-10T06:57:41+00:00\", \"terminal\": \"T8\", \"terminal_stopped\": true, \"timeout_min\": 45, \"to_date\": \"2022.12.31\", \"to_year\": 2022, \"verdict_reason\": \"ACTIVE_TIMEOUT\", \"verdict_taxonomy\": \"strategy\", \"worker_pid\": 15176, \"worker_stopped\": false}",
+        "phase": "Q02",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10752_tv-nq-vwap-orb\\sets\\QM5_10752_tv-nq-vwap-orb_EURUSD.DWX_M5_backtest.set",
+        "status": "failed",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-07-29T12:18:03+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      "full_preimage_sha256": "2776efc7060570744eabb3619d78da4ddd44e29e693aa9221503cf29552f068d",
+      "pair_gate": {
+        "open_q02_rows": 0,
+        "other_noninfra_terminal_q02_rows": 0
+      },
+      "payload_sha256": "e4deda286df5416353bd6250ae500d5791bc8ec652a94a3765993be8a33c10c5",
+      "work_item_id": "7916bcf9-f1d1-4ea2-94e2-9156044d4caf"
+    },
+    {
+      "evidence": {
+        "bytes": 6825,
+        "evidence_schema": "run_smoke/v2",
+        "legacy_binding_explicitly_accepted": false,
+        "ok_runs": 1,
+        "path": "D:\\QM\\reports\\work_items\\5f08fb95-cf8b-4378-b8eb-6aec56005367\\QM5_11112\\20260729_014048\\summary.json",
+        "run_count": 1,
+        "sha256": "d4e86b10aa63b63550f9f928ed487cfa72b80e9751c01cb61de6dd03400d5087",
+        "summary_result": "PASS",
+        "total_trades": 69
+      },
+      "full_preimage": {
+        "attempt_count": 0,
+        "claimed_by": null,
+        "created_at": "2026-07-11T10:11:38.613960+00:00",
+        "ea_id": "QM5_11112",
+        "evidence_path": "D:\\QM\\reports\\work_items\\5f08fb95-cf8b-4378-b8eb-6aec56005367\\QM5_11112\\20260729_014048\\summary.json",
+        "id": "5f08fb95-cf8b-4378-b8eb-6aec56005367",
+        "kind": "backtest",
+        "parent_task_id": null,
+        "payload_json": "{\"absolute_ceiling_min\": 45, \"active_age_min\": 25.47, \"avoid_terminals\": [\"T4\"], \"claimed_at_iso\": \"2026-07-29T03:45:15+00:00\", \"claimed_by_worker_pid\": 8792, \"commit_reservation_gb\": 8.0, \"commit_reservation_until_utc\": \"2026-07-29T03:50:15+00:00\", \"ea_dir_name\": \"QM5_11112_sr-lines-fade\", \"effective_min_trades\": 25, \"enqueued_at_utc\": \"2026-07-11T10:11:38.613960+00:00\", \"enqueued_by\": \"codex_board_advisor_qm5_11112_stale_binary_repair_2026-07-11\", \"evidence_binding_required\": true, \"evidence_provenance\": \"real_mt5\", \"ex5_sha256\": \"93FD99666C7D803ABE026381DAD41D1DFC0FB14AD029CBF0264408F4606F8120\", \"expected_ex5_sha256\": \"93fd99666c7d803abe026381dad41d1dfc0fb14ad029cbf0264408f4606f8120\", \"expected_expert\": \"QM\\\\QM5_11112_sr-lines-fade\", \"expected_from_date\": \"2018.07.02\", \"expected_mq5_sha256\": \"1fc704d37c56ab045d1916e0a830a425d5ee97895371e619be255076e11a0bb3\", \"expected_period\": \"H1\", \"expected_setfile_sha256\": \"7966f118ab43ad75c6cee77a0b322531bec87d15c82e82a14d295760de60a7b7\", \"expected_symbol\": \"EURUSD.DWX\", \"expected_to_date\": \"2022.12.31\", \"expected_trades_per_year_per_symbol\": 12, \"factory_off_at_enqueue\": true, \"from_date\": \"2018.07.02\", \"from_year\": 2017, \"history_first_year\": 2017, \"history_last_year\": 2026, \"host_symbol\": \"EURUSD.DWX\", \"host_timeframe\": \"H1\", \"inner_budget_min\": 0, \"killed_at\": \"2026-07-29T04:11:12+00:00\", \"launch_not_before_utc\": \"2026-07-26T18:34:54.818015+00:00\", \"log_path\": \"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_5f08fb95-cf8b-4378-b8eb-6aec56005367.log\", \"mq5_sha256\": \"1FC704D37C56AB045D1916E0A830A425D5EE97895371E619BE255076E11A0BB3\", \"p2_prescreen_done\": true, \"p2_prescreen_evidence_path\": \"D:\\\\QM\\\\reports\\\\work_items\\\\5f08fb95-cf8b-4378-b8eb-6aec56005367\\\\QM5_11112\\\\20260729_014048\\\\summary.json\", \"p2_prescreen_from_date\": \"2022.07.01\", \"p2_prescreen_reason\": \"\", \"p2_prescreen_to_date\": \"2022.12.31\", \"p2_prescreen_verdict\": \"PASS\", \"p2_run_stage\": \"full\", \"phase_evidence_path\": null, \"phase_runner\": null, \"pid\": 18472, \"prior_failure\": \"shared_bases_history_lock_storm\", \"priority_reason\": \"diverse structural H1 sleeve: EURUSD first carrier of 3 FX + XAU approved basket; one-row guarded handoff\", \"progress_evidence\": {\"determined\": true, \"log_path\": \"D:\\\\QM\\\\mt5\\\\T2\\\\logs\\\\20260729.log\", \"progress_at\": \"2026-07-29T03:45:44+00:00\", \"progress_pct\": 0, \"reason\": \"work_item_bound_progress\", \"stalled_min\": 25.47}, \"reap_reason\": \"NO_FORWARD_PROGRESS\", \"reason_classes\": [\"ACTIVE_TIMEOUT\"], \"report_root\": \"D:\\\\QM\\\\reports\\\\work_items\\\\5f08fb95-cf8b-4378-b8eb-6aec56005367\", \"requested_from_year\": 2017, \"requested_to_year\": 2022, \"requeue_reason\": \"q02_stale_ex5_entry_request_init_and_entry_blackout_repair\", \"run_smoke_exit_code\": 0, \"setfile_sha256\": \"7966F118AB43AD75C6CEE77A0B322531BEC87D15C82E82A14D295760DE60A7B7\", \"smoke_summary\": \"D:\\\\QM\\\\reports\\\\smoke\\\\QM5_11112\\\\20260711_100916\\\\summary.json\", \"smoke_year_count\": 5, \"source_agent_task\": \"66870ba5-b818-4507-b727-7ed41e61a532\", \"started_at_iso\": \"2026-07-29T03:45:44+00:00\", \"terminal\": \"T2\", \"terminal_stopped\": true, \"terminal_stopped_on_release\": true, \"timeout_min\": 45, \"to_date\": \"2022.12.31\", \"to_year\": 2022, \"transient_infra_attempts\": 1, \"transient_infra_evidence_path\": \"D:\\\\QM\\\\mt5\\\\T4\\\\logs\\\\20260726.log\", \"transient_infra_signature\": \"some error after pass finished\", \"verdict_reason\": \"ACTIVE_TIMEOUT\", \"verdict_taxonomy\": \"strategy\", \"worker_pid\": 18472, \"worker_stopped\": false}",
+        "phase": "Q02",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11112_sr-lines-fade\\sets\\QM5_11112_sr-lines-fade_EURUSD.DWX_H1_backtest.set",
+        "status": "failed",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-07-29T12:18:03+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      "full_preimage_sha256": "f30abd6efde8980d37c818a2760ce221c1f619187372600daedb3bfdf44640b4",
+      "pair_gate": {
+        "open_q02_rows": 0,
+        "other_noninfra_terminal_q02_rows": 0
+      },
+      "payload_sha256": "8b8072feb3dcf228ab56d342ef1138fdf4826f1379ee2fae4c19a0760e5a2176",
+      "work_item_id": "5f08fb95-cf8b-4378-b8eb-6aec56005367"
+    },
+    {
+      "evidence": {
+        "bytes": 2049,
+        "evidence_schema": null,
+        "legacy_binding_explicitly_accepted": true,
+        "ok_runs": 1,
+        "path": "D:\\QM\\reports\\work_items\\ce645ca9-26c9-414f-996f-4036cecb61d1\\QM5_12535\\20260714_131314\\summary.json",
+        "run_count": 1,
+        "sha256": "509c9b634a8f8b499a45408561d163ca671b4d81926dbad7f0d97cf6b6f8eb10",
+        "summary_result": "PASS",
+        "total_trades": 25
+      },
+      "full_preimage": {
+        "attempt_count": 2,
+        "claimed_by": null,
+        "created_at": "2026-07-10T08:52:58+00:00",
+        "ea_id": "QM5_12535",
+        "evidence_path": "D:\\QM\\reports\\work_items\\ce645ca9-26c9-414f-996f-4036cecb61d1\\QM5_12535\\20260714_131314\\summary.json",
+        "id": "ce645ca9-26c9-414f-996f-4036cecb61d1",
+        "kind": "backtest",
+        "parent_task_id": null,
+        "payload_json": "{\"claimed_at_iso\": \"2026-07-20T03:06:29+00:00\", \"claimed_by_worker_pid\": 9148, \"ea_dir_name\": \"QM5_12535_ict-killzone-sweep-idx\", \"effective_min_trades\": 25, \"enqueued_at_utc\": \"2026-07-10T08:52:58+00:00\", \"enqueued_by\": \"claude_sweep_enqueue_2026-06-10.stranded_infra_fail\", \"evidence_provenance\": \"real_mt5\", \"expected_trades_per_year_per_symbol\": 22, \"failure_class\": \"IN_FLIGHT\", \"failure_class_evidence\": \"historical_reclassify:db_join\", \"failure_subclass\": \"pair_open\", \"final_failure\": \"summary_missing_retries_exhausted\", \"from_date\": \"2018.07.02\", \"from_year\": 2018, \"history_adjusted\": true, \"history_adjustment_source\": \"terminal_worker_claim\", \"history_first_year\": 2018, \"history_last_year\": 2026, \"host_symbol\": \"GDAXI.DWX\", \"log_path\": \"D:\\\\QM\\\\strategy_farm\\\\logs\\\\work_item_ce645ca9-26c9-414f-996f-4036cecb61d1.log\", \"p2_prescreen_done\": true, \"p2_prescreen_evidence_path\": \"D:\\\\QM\\\\reports\\\\work_items\\\\ce645ca9-26c9-414f-996f-4036cecb61d1\\\\QM5_12535\\\\20260714_131314\\\\summary.json\", \"p2_prescreen_from_date\": \"2022.07.01\", \"p2_prescreen_reason\": \"\", \"p2_prescreen_to_date\": \"2022.12.31\", \"p2_prescreen_verdict\": \"PASS\", \"p2_run_stage\": \"full\", \"phase_runner\": null, \"pid\": 6264, \"prior_failure\": \"summary_missing\", \"report_root\": \"D:\\\\QM\\\\reports\\\\work_items\\\\ce645ca9-26c9-414f-996f-4036cecb61d1\", \"requested_from_year\": 2018, \"requested_to_year\": 2022, \"run_smoke_exit_code\": 0, \"smoke_year_count\": 5, \"started_at_iso\": \"2026-07-20T03:06:30+00:00\", \"terminal\": \"T9\", \"terminal_stopped_on_release\": true, \"to_date\": \"2022.12.31\", \"to_year\": 2022, \"verdict_reason\": \"summary_missing_retries_exhausted\", \"verdict_taxonomy\": \"strategy\"}",
+        "phase": "Q02",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12535_ict-killzone-sweep-idx\\sets\\QM5_12535_ict-killzone-sweep-idx_GDAXI.DWX_M15_backtest.set",
+        "status": "failed",
+        "symbol": "GDAXI.DWX",
+        "updated_at": "2026-07-29T12:18:03+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      "full_preimage_sha256": "a8595ad38ac13d0c5cbd914f461cd5cc754ab68b2e9b1985231111edb9f046d9",
+      "pair_gate": {
+        "open_q02_rows": 0,
+        "other_noninfra_terminal_q02_rows": 0
+      },
+      "payload_sha256": "8bb377e8f63a096e551eb2c4a2703fbd870eff372c01c1de15b460f7e18d261a",
+      "work_item_id": "ce645ca9-26c9-414f-996f-4036cecb61d1"
+    }
+  ]
+}
