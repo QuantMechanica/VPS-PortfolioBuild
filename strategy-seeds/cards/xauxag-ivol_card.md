@@ -55,7 +55,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: PENDING
+q02_status: ENQUEUED
 review_focus: "Falsify a relative precious-metals residual-risk premium whose signal is factor-idiosyncratic volatility rather than ratio level, price residual, calendar return, or momentum; neutrality, profitability, and book decorrelation are not imported."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -367,4 +367,4 @@ change, portfolio KPI claim, or a correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-01 | APPROVED | this card and governed source packet |
 | Q01 Build Validation | 2026-08-01 | PASS | strict build check `D:/QM/reports/framework/21/build_check_20260801_083647.json`; zero failures and zero warnings |
-| Q02 Baseline Screening | 2026-08-01 | PENDING | not yet enqueued |
+| Q02 Baseline Screening | 2026-08-01 | ENQUEUED | work item `37be7fda-97c5-403a-9e99-4dfc22594621`; pending and unclaimed at confirmation |

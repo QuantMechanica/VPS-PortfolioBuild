@@ -26,7 +26,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: PENDING
+q02_status: ENQUEUED
 copy_of: strategy-seeds/cards/xauxag-ivol_card.md
 ---
 
