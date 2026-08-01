@@ -42,6 +42,7 @@ import re
 import sqlite3
 import subprocess
 import sys
+import time
 import traceback
 from pathlib import Path
 
@@ -111,6 +112,13 @@ RETRYABLE_STATUS_PREFIXES = (
     "DEFERRED:ACCESS_BLOCKED",
 )
 MAX_MANAGED_CODEX = 3
+ANALYST_CHUNK_SIZE = 10
+ANALYST_CHUNK_TIMEOUT_SECONDS = 360
+# Task Scheduler kills the outer task at 45 minutes and the console-session
+# bridge waits 44 minutes. Stop launching work at 40 minutes and retain a
+# reconciliation/cleanup margin rather than letting the scheduler kill a child.
+RUN_BUDGET_SECONDS = 40 * 60
+SHUTDOWN_GRACE_SECONDS = 2 * 60
 
 
 class LeadStateError(RuntimeError):
@@ -317,13 +325,32 @@ def build_prompt(leads: list[dict]) -> str | None:
     )
 
 
-def dispatch_analyst(prompt: str) -> dict:
+def _chunk_leads(
+    leads: list[dict], chunk_size: int | None = None
+) -> list[list[dict]]:
+    """Return stable, bounded analyst batches without dropping or duplicating rows."""
+    if chunk_size is None:
+        chunk_size = ANALYST_CHUNK_SIZE
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be positive")
+    return [leads[start : start + chunk_size] for start in range(0, len(leads), chunk_size)]
+
+
+def dispatch_analyst(
+    prompt: str,
+    timeout_seconds: int | None = None,
+) -> dict:
     """Run one ownership-tracked Codex analyst synchronously.
 
-    Runs blocking so the scheduled task's lifetime covers the analysis (task ExecutionTimeLimit=45min;
-    Codex timeout below is 30min). Managed-process registration makes the normal farm capacity checks
-    see this analyst; when the current disk-backed capacity is already full, Task Scheduler retries.
+    Each invocation owns one bounded lead chunk. Runs blocking so the scheduled
+    task's lifetime covers the analysis; the caller enforces the outer run budget.
+    Managed-process registration makes the normal farm capacity checks see this
+    analyst; when disk-backed capacity is full, Task Scheduler retries later.
     """
+    if timeout_seconds is None:
+        timeout_seconds = ANALYST_CHUNK_TIMEOUT_SECONDS
+    if timeout_seconds <= 0:
+        raise ValueError("timeout_seconds must be positive")
     if not Path(CODEX_CMD).exists():
         return {"dispatched": False, "ok": False, "reason": "codex.cmd not found"}
     try:
@@ -345,7 +372,7 @@ def dispatch_analyst(prompt: str) -> dict:
             ),
         }
     PROMPT_OUT_DIR.mkdir(parents=True, exist_ok=True)
-    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d_%H%M%S")
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
     prompt_path = PROMPT_OUT_DIR / f"analyst_{stamp}.md"
     log_path = PROMPT_OUT_DIR / f"analyst_{stamp}.log"
     proc = None
@@ -376,9 +403,13 @@ def dispatch_analyst(prompt: str) -> dict:
                 command,
                 purpose="mailbox_source_intake",
                 cwd=REPO_ROOT,
-                max_age_minutes=35,
+                max_age_minutes=max(10, (timeout_seconds + 119) // 60),
                 dedupe_key="mailbox_source_intake",
-                metadata={"prompt": str(prompt_path), "live_log": str(log_path)},
+                metadata={
+                    "prompt": str(prompt_path),
+                    "live_log": str(log_path),
+                    "timeout_seconds": timeout_seconds,
+                },
                 stdin=stdin_f,
                 stdout=stdout_f,
                 stderr=subprocess.STDOUT,
@@ -387,7 +418,7 @@ def dispatch_analyst(prompt: str) -> dict:
                 creationflags=CREATE_NO_WINDOW,
                 close_fds=True,
             )
-        returncode = proc.wait(timeout=1800)
+        returncode = proc.wait(timeout=timeout_seconds)
         release_managed_codex_process(FARM_ROOT, lease_id=str(lease["lease_id"]))
         has_log = log_path.exists() and log_path.stat().st_size > 0
         ok = returncode == 0 and has_log
@@ -398,6 +429,7 @@ def dispatch_analyst(prompt: str) -> dict:
             "prompt": str(prompt_path),
             "log": str(log_path),
             "lease_id": lease["lease_id"],
+            "timeout_seconds": timeout_seconds,
         }
         if not ok:
             out["reason"] = (
@@ -410,9 +442,13 @@ def dispatch_analyst(prompt: str) -> dict:
             "dispatched": True,
             "ok": False,
             "returncode": 124,
-            "reason": "codex timed out at 1800s; any partial leads remain retryable",
+            "reason": (
+                f"codex chunk timed out at {timeout_seconds}s; "
+                "unfinished leads remain retryable"
+            ),
             "prompt": str(prompt_path),
             "log": str(log_path),
+            "timeout_seconds": timeout_seconds,
             "termination": stopped,
         }
     except Exception as exc:
@@ -459,7 +495,42 @@ def _terminate_and_confirm(proc: subprocess.Popen | None) -> dict | None:
     return result
 
 
+def _reconcile_leads(
+    leads: list[dict],
+) -> tuple[set[str], dict[str, str], set[str], list[str], dict[str, str]]:
+    """Resolve current canonical handoff state for exactly these lead rows."""
+    lead_urls = {
+        str(row.get("url") or "").strip()
+        for row in leads
+        if str(row.get("url") or "").strip()
+    }
+    statuses = load_lead_statuses(lead_urls)
+    handoff_checks = {
+        url: _terminal_handoff_ok(url, statuses.get(url)) for url in lead_urls
+    }
+    completed = {url for url, (ok, _reason) in handoff_checks.items() if ok}
+    remaining = sorted(lead_urls - completed)
+    errors = {
+        url: reason
+        for url, (ok, reason) in sorted(handoff_checks.items())
+        if not ok and reason
+    }
+    return lead_urls, statuses, completed, remaining, errors
+
+
+def _refresh_triage_audit() -> int:
+    """Checkpoint terminal CSV state after a chunk; leads.csv remains canonical."""
+    all_statuses = load_lead_statuses()
+    terminal_urls = {
+        url for url, status in all_statuses.items() if _is_terminal_status(status)
+    }
+    _save_triaged(terminal_urls)
+    return len(terminal_urls)
+
+
 def main() -> int:
+    run_started = time.monotonic()
+    run_deadline = run_started + RUN_BUDGET_SECONDS
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true", help="sweep in dry-run; do not dispatch analyst")
     ap.add_argument("--no-dispatch", action="store_true", help="extract + report new leads but do not dispatch the analyst")
@@ -496,66 +567,173 @@ def main() -> int:
         print(json.dumps(rec, ensure_ascii=False, indent=1))
         return 0 if sweep.get("ok") else 1
 
-    prompt = build_prompt(leads)
-    if not prompt:
-        rec["action"] = "prompt template missing — leads left NEW for next run"
-        _log_run(rec)
-        print(json.dumps(rec, ensure_ascii=False))
-        return 2
+    chunks = _chunk_leads(leads)
+    rec["dispatch_policy"] = {
+        "chunk_size": ANALYST_CHUNK_SIZE,
+        "chunk_timeout_seconds": ANALYST_CHUNK_TIMEOUT_SECONDS,
+        "run_budget_seconds": RUN_BUDGET_SECONDS,
+        "shutdown_grace_seconds": SHUTDOWN_GRACE_SECONDS,
+        "chunks_total": len(chunks),
+    }
+    rec["chunks"] = []
+    fatal_error: str | None = None
 
-    disp = dispatch_analyst(prompt)
-    rec["dispatch"] = disp
-    lead_urls = {r.get("url") for r in leads if r.get("url")}
+    for chunk_index, chunk in enumerate(chunks, 1):
+        seconds_left = max(0.0, run_deadline - time.monotonic())
+        required_seconds = ANALYST_CHUNK_TIMEOUT_SECONDS + SHUTDOWN_GRACE_SECONDS
+        if seconds_left < required_seconds:
+            rec["early_stop"] = {
+                "reason": "insufficient budget for another full analyst chunk",
+                "next_chunk": chunk_index,
+                "chunks_remaining": len(chunks) - chunk_index + 1,
+                "seconds_left": round(seconds_left, 3),
+                "required_seconds": required_seconds,
+            }
+            _log_run(
+                {
+                    "ts": _now_iso(),
+                    "event": "analyst_early_stop",
+                    "run_ts": rec["ts"],
+                    **rec["early_stop"],
+                }
+            )
+            break
+
+        prompt = build_prompt(chunk)
+        if not prompt:
+            fatal_error = "prompt template missing — unattempted leads left retryable"
+            rec["early_stop"] = {
+                "reason": fatal_error,
+                "next_chunk": chunk_index,
+                "chunks_remaining": len(chunks) - chunk_index + 1,
+            }
+            break
+
+        disp = dispatch_analyst(prompt)
+        try:
+            chunk_urls, chunk_statuses, chunk_completed, chunk_remaining, chunk_errors = (
+                _reconcile_leads(chunk)
+            )
+            terminal_audit_count = _refresh_triage_audit()
+        except LeadStateError as exc:
+            fatal_error = str(exc)
+            rec["early_stop"] = {
+                "reason": fatal_error,
+                "next_chunk": chunk_index + 1,
+                "chunks_remaining": len(chunks) - chunk_index,
+            }
+            break
+
+        chunk_rec = {
+            "chunk_index": chunk_index,
+            "lead_count": len(chunk),
+            "dispatch": disp,
+            "lead_statuses": {
+                url: chunk_statuses.get(url, "MISSING") for url in sorted(chunk_urls)
+            },
+            "handoff_errors": chunk_errors,
+            "completed_leads": len(chunk_completed),
+            "remaining_retryable_or_missing": len(chunk_remaining),
+            "terminal_audit_count": terminal_audit_count,
+        }
+        rec["chunks"].append(chunk_rec)
+        # A per-chunk durable checkpoint makes partial progress visible even if
+        # a later chunk times out or the outer task exits early.
+        _log_run(
+            {
+                "ts": _now_iso(),
+                "event": "analyst_chunk_complete",
+                "run_ts": rec["ts"],
+                **chunk_rec,
+            }
+        )
+
+        # Capacity/unexpected spawn failures are systemic for this run; walking
+        # the remaining chunks would only repeat the same failure. A confirmed
+        # per-chunk timeout is safe to continue after its exact child is gone.
+        if not disp.get("dispatched"):
+            rec["early_stop"] = {
+                "reason": disp.get("reason", "analyst dispatch unavailable"),
+                "next_chunk": chunk_index + 1,
+                "chunks_remaining": len(chunks) - chunk_index,
+            }
+            break
+        if disp.get("returncode") == 124 and not (
+            disp.get("termination") or {}
+        ).get("exit_confirmed"):
+            rec["early_stop"] = {
+                "reason": "timed-out analyst process exit was not confirmed",
+                "next_chunk": chunk_index + 1,
+                "chunks_remaining": len(chunks) - chunk_index,
+            }
+            break
+
     try:
-        statuses = load_lead_statuses(lead_urls)
+        lead_urls, statuses, completed, remaining, handoff_errors = _reconcile_leads(leads)
+        _refresh_triage_audit()
     except LeadStateError as exc:
         rec["action"] = str(exc)
         _log_run(rec)
         print(json.dumps(rec, ensure_ascii=False))
         return 2
-    handoff_checks = {url: _terminal_handoff_ok(url, statuses.get(url)) for url in lead_urls}
-    completed = {url for url, (ok, _reason) in handoff_checks.items() if ok}
-    remaining = sorted(lead_urls - completed)
-    rec["lead_statuses"] = {url: statuses.get(url, "MISSING") for url in sorted(lead_urls)}
-    rec["handoff_errors"] = {
-        url: reason for url, (ok, reason) in sorted(handoff_checks.items()) if not ok and reason
+
+    rec["lead_statuses"] = {
+        url: statuses.get(url, "MISSING") for url in sorted(lead_urls)
     }
+    rec["handoff_errors"] = handoff_errors
     rec["completed_leads"] = len(completed)
     rec["remaining_new_leads"] = len(remaining)
-
-    # Keep the legacy file only as an audit of terminal CSV state. Rebuilding it
-    # removes stale entries such as a URL that was once dispatched but stayed NEW.
-    try:
-        all_statuses = load_lead_statuses()
-    except LeadStateError as exc:
-        rec["action"] = str(exc)
-        _log_run(rec)
-        print(json.dumps(rec, ensure_ascii=False))
-        return 2
-    _save_triaged({url for url, status in all_statuses.items() if _is_terminal_status(status)})
+    rec["dispatch"] = {
+        "chunks_attempted": len(rec["chunks"]),
+        "chunks_total": len(chunks),
+        "process_warnings": [
+            {
+                "chunk_index": chunk["chunk_index"],
+                "returncode": chunk["dispatch"].get("returncode"),
+                "reason": chunk["dispatch"].get("reason"),
+            }
+            for chunk in rec["chunks"]
+            if not chunk["dispatch"].get("ok")
+        ],
+    }
 
     # The canonical postcondition is stronger than the CLI return code: every URL
     # that was retryable at dispatch must now have a verified terminal handoff. Codex
     # may return 1 after a nonessential tool command times out even though its
     # final status edits completed; retain that rc as a warning, but do not turn
     # verified work red. Conversely, rc=0 with any NEW/missing URL is a failure.
-    analysis_ok = not remaining
+    analysis_ok = not remaining and fatal_error is None
     run_ok = bool(sweep.get("ok")) and analysis_ok
     if run_ok:
-        process_note = "" if disp.get("ok") else f"; analyst rc warning={disp.get('returncode', 'unknown')}"
-        rec["action"] = f"analyst completed {len(completed)} lead(s); all terminal{process_note}"
+        warning_count = len(rec["dispatch"]["process_warnings"])
+        process_note = (
+            "" if warning_count == 0 else f"; process warnings in {warning_count} chunk(s)"
+        )
+        rec["action"] = (
+            f"analyst completed {len(completed)} lead(s) across "
+            f"{len(rec['chunks'])} chunk(s); all terminal{process_note}"
+        )
     else:
         reasons: list[str] = []
         if not sweep.get("ok"):
             reasons.append("sweep failed")
-        if not disp.get("ok"):
-            reasons.append("analyst process failed")
+        if fatal_error:
+            reasons.append(fatal_error)
+        if rec.get("early_stop"):
+            reasons.append(f"early stop: {rec['early_stop']['reason']}")
+        if rec["dispatch"]["process_warnings"]:
+            reasons.append(
+                f"analyst process warning/failure in "
+                f"{len(rec['dispatch']['process_warnings'])} chunk(s)"
+            )
         if remaining:
             reasons.append(f"{len(remaining)} lead(s) remain retryable/missing")
         rec["action"] = "; ".join(reasons) or "intake incomplete"
     _log_run(rec)
     print(json.dumps(rec, ensure_ascii=False))
-    return 0 if run_ok else 1
+    if run_ok:
+        return 0
+    return 2 if fatal_error else 1
 
 
 if __name__ == "__main__":

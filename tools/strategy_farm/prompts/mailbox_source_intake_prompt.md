@@ -25,6 +25,11 @@ pipeline. Draft sources/cards flow through the normal **G0 (R1–R4) review** wh
 ## The new sources
 {{LEADS}}
 
+This invocation is one bounded backlog chunk. Process only the listed leads, in order. After deciding
+each lead, immediately persist that exact row's terminal or retryable status in `leads.csv` before
+starting the next lead; do not hold all CSV updates until the end of the invocation. This is what makes
+completed work survive a timeout on a later lead.
+
 ## How to read each source
 - **github.com** → the sweep already resolved repo full_name + description; open the repo/README via the
   GitHub REST API or a plain read to see the actual strategy logic.

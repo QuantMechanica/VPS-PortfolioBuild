@@ -159,7 +159,7 @@ def test_large_error_log_does_not_turn_nonzero_codex_green(tmp_path, monkeypatch
 
         @staticmethod
         def wait(timeout):
-            assert timeout == 1800
+            assert timeout == mailbox.ANALYST_CHUNK_TIMEOUT_SECONDS
             return 1
 
         @staticmethod
@@ -200,7 +200,7 @@ def test_timeout_is_failure(tmp_path, monkeypatch) -> None:
 
         @classmethod
         def wait(cls, timeout):
-            if timeout == 1800:
+            if timeout == mailbox.ANALYST_CHUNK_TIMEOUT_SECONDS:
                 raise subprocess.TimeoutExpired(cmd=["codex"], timeout=timeout)
             cls.exited = True
             return -9
@@ -279,7 +279,7 @@ def test_unexpected_wait_error_terminates_live_managed_process(tmp_path, monkeyp
 
         @classmethod
         def wait(cls, timeout):
-            if timeout == 1800:
+            if timeout == mailbox.ANALYST_CHUNK_TIMEOUT_SECONDS:
                 raise OSError("wait failed")
             cls.exited = True
             return -9
@@ -348,6 +348,91 @@ def test_handoff_failure_status_remains_retryable(tmp_path, monkeypatch) -> None
         "https://example.com/1",
         "https://example.com/3",
     ]
+
+
+def test_56_lead_backlog_chunks_into_five_tens_and_six() -> None:
+    leads = [{"url": f"https://example.com/{index}"} for index in range(56)]
+
+    chunks = mailbox._chunk_leads(leads)
+
+    assert [len(chunk) for chunk in chunks] == [10, 10, 10, 10, 10, 6]
+    assert [row for chunk in chunks for row in chunk] == leads
+
+
+def test_sequential_chunks_checkpoint_terminal_progress(tmp_path, monkeypatch) -> None:
+    leads = tmp_path / "leads.csv"
+    rows = _rows(*(["NEW"] * 12))
+    _write_leads(leads, rows)
+    built_chunks: list[list[dict[str, str]]] = []
+    dispatched_urls: list[list[str]] = []
+    audit_snapshots: list[set[str]] = []
+    monkeypatch.setattr(mailbox, "LEADS_CSV", leads)
+    monkeypatch.setattr(mailbox, "run_sweep", lambda dry: {"ok": True, "returncode": 0})
+    monkeypatch.setattr(mailbox.time, "monotonic", lambda: 0.0)
+    monkeypatch.setattr(mailbox, "_save_triaged", lambda urls: audit_snapshots.append(set(urls)))
+    monkeypatch.setattr(mailbox, "_log_run", lambda rec: None)
+    monkeypatch.setattr(sys, "argv", ["mailbox_source_intake.py"])
+
+    def fake_build_prompt(current: list[dict]) -> str:
+        built_chunks.append(list(current))
+        return f"chunk-{len(built_chunks)}"
+
+    def fake_dispatch(prompt: str) -> dict:
+        chunk = built_chunks[len(dispatched_urls)]
+        urls = [row["url"] for row in chunk]
+        dispatched_urls.append(urls)
+        for row in rows:
+            if row["url"] in urls:
+                row["status"] = "REJECTED:no mechanical rules"
+        _write_leads(leads, rows)
+        return {"dispatched": True, "ok": True, "returncode": 0, "prompt": prompt}
+
+    monkeypatch.setattr(mailbox, "build_prompt", fake_build_prompt)
+    monkeypatch.setattr(mailbox, "dispatch_analyst", fake_dispatch)
+
+    assert mailbox.main() == 0
+    assert [len(urls) for urls in dispatched_urls] == [10, 2]
+    assert audit_snapshots[0] == set(dispatched_urls[0])
+    assert audit_snapshots[1] == set(dispatched_urls[0] + dispatched_urls[1])
+    assert mailbox.load_new_leads() == []
+
+
+def test_runtime_early_stop_leaves_unattempted_chunk_retryable(tmp_path, monkeypatch) -> None:
+    leads = tmp_path / "leads.csv"
+    rows = _rows(*(["NEW"] * 12))
+    _write_leads(leads, rows)
+    clock = iter([0.0, 0.0, 100.0])
+    dispatch_calls: list[str] = []
+    logged: list[dict] = []
+    monkeypatch.setattr(mailbox, "LEADS_CSV", leads)
+    monkeypatch.setattr(mailbox, "RUN_BUDGET_SECONDS", 200)
+    monkeypatch.setattr(mailbox, "ANALYST_CHUNK_TIMEOUT_SECONDS", 100)
+    monkeypatch.setattr(mailbox, "SHUTDOWN_GRACE_SECONDS", 50)
+    monkeypatch.setattr(mailbox.time, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(mailbox, "run_sweep", lambda dry: {"ok": True, "returncode": 0})
+    monkeypatch.setattr(mailbox, "build_prompt", lambda current: "prompt")
+    monkeypatch.setattr(mailbox, "_save_triaged", lambda urls: None)
+    monkeypatch.setattr(mailbox, "_log_run", lambda rec: logged.append(dict(rec)))
+    monkeypatch.setattr(sys, "argv", ["mailbox_source_intake.py"])
+
+    def fake_dispatch(prompt: str) -> dict:
+        dispatch_calls.append(prompt)
+        for row in rows[:10]:
+            row["status"] = "REJECTED:no mechanical rules"
+        _write_leads(leads, rows)
+        return {"dispatched": True, "ok": True, "returncode": 0}
+
+    monkeypatch.setattr(mailbox, "dispatch_analyst", fake_dispatch)
+
+    assert mailbox.main() == 1
+    assert len(dispatch_calls) == 1
+    assert [row["url"] for row in mailbox.load_new_leads()] == [
+        "https://example.com/11",
+        "https://example.com/12",
+    ]
+    early_stop = [entry for entry in logged if entry.get("event") == "analyst_early_stop"]
+    assert early_stop[-1]["next_chunk"] == 2
+    assert early_stop[-1]["chunks_remaining"] == 1
 
 
 def test_partial_analyst_result_keeps_new_lead_retryable(tmp_path, monkeypatch) -> None:
@@ -455,15 +540,18 @@ def test_pythonw_excepthook_persists_uncaught_traceback(tmp_path, monkeypatch) -
     assert "RuntimeError: mailbox-hook-probe" in text
 
 
-def test_task_contract_is_interactive_retrying_and_always_on() -> None:
+def test_task_contract_uses_mnt003_console_bridge_and_stays_retrying() -> None:
     repo = MODULE_PATH.parents[2]
     installer = (repo / "tools" / "strategy_farm" / "install_mailbox_source_intake_task.ps1").read_text(
         encoding="utf-8"
     )
     manifest = (repo / "tools" / "strategy_farm" / "qm_tasks.manifest.ps1").read_text(encoding="utf-8")
 
-    assert "-LogonType Interactive" in installer
+    assert "New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount" in installer
     assert "[string]$UserId = 'qm-admin'" in installer
+    assert "run_in_console_session.ps1" in installer
+    assert '-TargetUser "{4}"' in installer
+    assert "-WaitSeconds 2640" in installer
     assert "-RestartCount 4" in installer
     assert "-ExecutionTimeLimit (New-TimeSpan -Minutes 45)" in installer
     assert "-At 06:07" in installer
