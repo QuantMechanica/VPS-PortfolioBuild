@@ -38,7 +38,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01_BUILD
+pipeline_phase: Q02_QUEUED
 g0_approval_reasoning: "R1 PASS: OWNER-requested fixed scan plus CEO-ratified Tier-A Chan SRC02; R2 PASS: fixed two-leg D1 beta/z/ATR mechanics and explicit package exits; R3 PASS: EURUSD.DWX and USDCAD.DWX native history; R4 PASS: deterministic, structural, ML-free."
 ---
 
@@ -290,3 +290,6 @@ data_requirements: standard
 | Version | Date | Rebuild reason | Phase reached | Verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-01 | next-ranked non-duplicate fixed-scan FX basket | G0 | APPROVED |
+| v1 | 2026-08-01 | V5 basket implementation and strict compile/build validation | Q01 | PASS |
+| v1 | 2026-08-01 | deterministic two-run host-symbol smoke | Q01 | PASS |
+| v1 | 2026-08-01 | one logical-basket work item auto-enqueued by governed build recorder | Q02 | PENDING |
