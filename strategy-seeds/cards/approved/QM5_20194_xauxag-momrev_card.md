@@ -51,8 +51,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING
+pipeline_phase: Q02
+q01_status: PASS
 q02_status: PENDING
 review_focus: "Falsify a relative XAU/XAG 12-month momentum / 18-month reversal-disagreement package whose return driver differs from directional XAU and the existing ratio, convergence, calendar, IVol, and pure-momentum baskets; neutrality and book decorrelation are not imported."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -283,12 +283,12 @@ KPIs, a correlation waiver, or a manual tester launch.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-01 | initial XAU/XAG 12/18 momentum-reversal carrier | G0 | APPROVED |
+| v1-build | 2026-08-01 | registry-clean implementation and strict compile | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-01 | APPROVED | OWNER decision, governed source packet, and this card |
-| Q01 Build Validation | pending | PENDING | strict build not yet run |
+| Q01 Build Validation | 2026-08-01 | PASS: 0 errors, 0 warnings, all static checks PASS | `D:/QM/reports/compile/20260801_102443/summary.csv`; `D:/QM/reports/framework/21/build_check_20260801_102502.json` |
 | Q02 Baseline Screening | pending | PENDING | not enqueued before Q01 PASS |
-
