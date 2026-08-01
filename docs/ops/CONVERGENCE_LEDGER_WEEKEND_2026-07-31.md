@@ -129,7 +129,11 @@ requires a separate written OWNER authorization if invoked.
 5. **Decision rebind** via `build_runtime_activation_decision.py` — MUST bind
    the 10-worker policy sources (Factory_ON blob `85bd0a82`,
    runtime_activation blob `78fbca9c`) + all later commits to bound files
-   (pump-gate revert, framed records). Fresh OWNER runtime decision.
+   (pump-gate revert, framed records, **worker-identity fix c4dc83a84:
+   start_terminal_workers.py blob `bcf0833b`**). Fresh OWNER runtime decision.
+   Also in the OFF window: re-run the DL-065 orphan-cascade query (READY PASS
+   parents without successor) as the authoritative sweep for anything the five
+   pre-fix workers dropped before their natural churn.
 6. Factory_ON (10-worker cohort now required by the contract).
 
 **T_Live window (after ON, still market-closed):**
