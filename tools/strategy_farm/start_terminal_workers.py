@@ -147,6 +147,11 @@ def _load_existing(pid_file: Path) -> dict[str, int]:
 
 
 def main() -> int:
+    # DL-065: spawned terminal workers inherit this env. The spawner and the
+    # workers are deterministic factory machinery (trusted base 'controller');
+    # a spawn context without QM_AGENT_ID must not produce 'unknown' workers
+    # whose cascade enqueues die fail-closed (fleet churn 2026-08-01).
+    os.environ.setdefault("QM_AGENT_ID", "controller")
     parser = argparse.ArgumentParser(description="Start strategy-farm terminal workers.")
     parser.add_argument("--repo-root", default=r"C:\QM\repo")
     parser.add_argument("--farm-root", default=r"D:\QM\strategy_farm")

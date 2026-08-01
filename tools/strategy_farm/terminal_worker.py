@@ -26,6 +26,15 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+# ``terminal_worker.py`` is launched by absolute path from the long-running
+# worker starter.  In that execution mode Python adds this file's directory to
+# ``sys.path``, but not the repository root, so imports from ``framework`` fail
+# unless the parent process happens to provide PYTHONPATH.  Make the documented
+# direct entry point self-contained before importing repository packages.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
 import farmctl
 from framework.scripts._phase_utils import cold_cache_summary_signature
 from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
@@ -3461,6 +3470,12 @@ def _install_exit_tracer(terminal: str) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # DL-065: the terminal worker is deterministic factory machinery (trusted
+    # base), not a spawned agent. Without this, a spawn chain that does not
+    # export QM_AGENT_ID leaves the worker as 'unknown' and every post-PASS
+    # cascade enqueue dies fail-closed in agent_scopes.guard (fleet churn
+    # 2026-08-01). setdefault keeps explicit spawned identities intact.
+    os.environ.setdefault("QM_AGENT_ID", "controller")
     parser = argparse.ArgumentParser()
     parser.add_argument("--terminal", required=True, choices=farmctl.MT5_TERMINALS)
     parser.add_argument("--root", type=Path, default=farmctl.DEFAULT_ROOT)
