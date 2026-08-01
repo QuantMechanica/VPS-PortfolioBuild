@@ -4,11 +4,12 @@ title: Combining Momentum with Reversal in Commodity Futures
 publisher: Journal of Banking and Finance
 source_type: peer_reviewed_paper_with_open_accepted_manuscript
 status: cards_ready
-approval_basis: OWNER mission directive 2026-07-10
+approval_basis: OWNER mission directives 2026-07-10 and 2026-08-01
 created: 2026-07-10
 created_by: Codex
 cards_extracted:
   - energy-momrev
+  - xauxag-momrev
 ---
 
 # Bianchi-Drew-Fan Commodity Momentum-Reversal Source Packet
@@ -51,6 +52,27 @@ energy rank is therefore a constrained, falsifiable translation rather than a
 replication. Other ranking/holding combinations in the paper are robustness
 variants of the same double-sort family and are not extracted for this
 one-edge mission.
+
+### 2026-08-01 XAU/XAG Carrier Extraction
+
+Decision `decisions/2026-08-01_qm5_20194_xauxag_momrev_g0.md` authorizes a
+second bounded carrier without changing the source method. Gold and silver are
+members of the source commodity universe. `xauxag-momrev` applies the same
+overlapping 12-month momentum and 18-month reversal ranks to those two metals:
+buy the 12-month winner only when it is the 18-month loser, short the other
+metal, and hold the package for one broker month.
+
+This is a carrier translation, not a replication of the paper's broad
+double-sort portfolios. It does not inherit source returns, statistical
+significance, correlation, or diversification. The narrow two-metal package,
+Darwinex CFD basis, equal stop-risk legs, ATR stops, execution atomicity, and
+monthly restart state are QM hypotheses that Q02 and later gates must falsify.
+
+The extraction is mechanically separate from registered XAU/XAG ratio,
+rolling-residual, conditional-quantile, same-calendar, pure-momentum, and
+idiosyncratic-volatility baskets. `energy-momrev` remains the expected fuzzy
+source-method sibling; the carrier pair and associated physical/factor risks
+are different, while the 12/18 source parameters remain locked.
 
 ## QM Translation
 
@@ -121,4 +143,3 @@ one-edge mission.
 - R3: PASS. Registered XTIUSD.DWX and XNGUSD.DWX D1 data only.
 - R4: PASS. Deterministic price arithmetic; no banned indicator, ML, external
   runtime data, grid, martingale, pyramiding, or adaptive fitting.
-
