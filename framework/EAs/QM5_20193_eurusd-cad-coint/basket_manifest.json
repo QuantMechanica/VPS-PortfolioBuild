@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_20193_EURUSD_USDCAD_COINTEGRATION_D1",
+  "host_symbol": "EURUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "notes": [
+    "Dedicated two-leg EURUSD/USDCAD D1 cointegration sleeve selected after QM5_20191 as rank 11 in the fixed sign-aware 66-pair scan; broad-basket and conversion-history overlaps are not this fixed-pair logical package.",
+    "DEV Sharpe 0.007 and OOS Sharpe 0.734 are adverse evidence; Q02 is a one-shot retirement gate with no refit. The fixed beta is negative, so long spread buys both legs and short spread sells both legs. Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget."
+  ]
+}
