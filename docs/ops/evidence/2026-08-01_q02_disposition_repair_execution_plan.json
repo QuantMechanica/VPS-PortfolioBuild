@@ -185,15 +185,15 @@
     "legacy_summary_bindings_explicitly_accepted": true
   },
   "controller": {
-    "git_head": "7d7488a824e3966b0a268fff7876e76a8a34b09c",
+    "git_head": "6c8e7aa8f96ff4cabd1cc2c3e58b4e987a542656",
     "path": "C:\\QM\\repo\\tools\\strategy_farm\\q02_disposition_repair.py",
-    "sha256": "ebbf563e7765c75b584b19a2b2ff998cbbe66b02f589a704cee2aee58cdfe5c9"
+    "sha256": "f504b125106007bdfc881816cc77d79f98948f5fd74654255890567e3c59aa48"
   },
   "database": {
     "path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
     "quick_check": "ok"
   },
-  "generated_at_utc": "2026-08-01T01:54:45Z",
+  "generated_at_utc": "2026-08-01T01:59:30Z",
   "mutation_performed": false,
   "operation": "ROW_BOUND_PASS_DISPOSITION_MISMATCH_TO_PASS",
   "schema_version": "qm-q02-disposition-repair-execution-plan/v1",

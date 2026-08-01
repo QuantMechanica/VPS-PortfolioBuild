@@ -11,15 +11,16 @@
 
 ## Outcome
 
-The guarded controller and its focused tests are committed in canonical commit
-`7d7488a824e3966b0a268fff7876e76a8a34b09c`. The live database dry-run is
+The guarded controller and its focused tests are committed in canonical commits
+`7d7488a824e3966b0a268fff7876e76a8a34b09c` and
+`6c8e7aa8f96ff4cabd1cc2c3e58b4e987a542656`. The live database dry-run is
 `READY_FOR_AUTHORIZED_WINDOW` for the exact ten approved Q02 rows. No row was
 changed.
 
 The apply did **not** run on 2026-08-01. The task contract permits mutation only
 on Sunday 2026-08-02 in Europe/Berlin while Factory is OFF and the active
 work-item count is zero. At dry-run time it was Saturday, the Factory-OFF flag
-was absent, and five work items were active. The controller rejects apply before
+was absent, and four work items were active. The controller rejects apply before
 acquiring the mutation lock or creating a backup when the date gate is closed.
 
 Accordingly, `docs/ops/evidence/2026-08-02_q02_disposition_repair_apply.md` does
@@ -30,10 +31,10 @@ post-commit evidence; creating it now would falsely claim execution.
 
 | Artifact | Identity |
 |---|---|
-| Controller | `tools/strategy_farm/q02_disposition_repair.py`; SHA-256 `ebbf563e7765c75b584b19a2b2ff998cbbe66b02f589a704cee2aee58cdfe5c9` |
+| Controller | `tools/strategy_farm/q02_disposition_repair.py`; SHA-256 `f504b125106007bdfc881816cc77d79f98948f5fd74654255890567e3c59aa48` |
 | Focused tests | `tools/strategy_farm/tests/test_q02_disposition_repair.py` |
-| Immutable execution plan | `docs/ops/evidence/2026-08-01_q02_disposition_repair_execution_plan.json`; raw SHA-256 `69602d1daa89d5e6b86ea0484edd3063103d3c5dc6df20e5200a4b7f434b9752` |
-| Dry-run receipt | `docs/ops/evidence/2026-08-01_q02_disposition_repair_dry_run.json`; raw SHA-256 `ac4bf67533b6556a809e71845fa060402b40024cbb32fd570b9aa83b67e44ab6` |
+| Immutable execution plan | `docs/ops/evidence/2026-08-01_q02_disposition_repair_execution_plan.json`; raw SHA-256 `764a23d001a2fa3a7f952a170db97eebbc5d3e50c416ab581d4d4188ce366fd8` |
+| Dry-run receipt | `docs/ops/evidence/2026-08-01_q02_disposition_repair_dry_run.json`; raw SHA-256 `fbcb1b9c498c3f89397a131b0553ea89e95dbaa37cb304e4e6c0ae72bc255075` |
 
 The execution plan is an immutable envelope around the reviewed canonical plan.
 For every target it additionally binds all 15 `work_items` columns including the
@@ -41,6 +42,10 @@ exact historical `payload_json` bytes, a canonical full-preimage hash, evidence
 path/bytes/SHA-256, PASS facts, and zero open/other-non-infrastructure pair
 counts. The controller re-reads both plan layers inside the single mutation
 transaction.
+
+The canonical checkout uses the established `factory_mutation_lock.py`. A stale
+worktree that lacks that shared dependency may still inspect the read-only plan,
+but the controller refuses apply/revert rather than substituting a weaker lock.
 
 Six pre-`run_smoke/v2` summaries are not treated as schema-equivalent. They have
 an explicit allowlist of the evidence SHA-256, OK-run count, and positive trade
@@ -77,7 +82,7 @@ PASS
 
 python -m pytest -q tools/strategy_farm/tests/test_q02_disposition_repair.py
 .........                                                                [100%]
-9 passed in 2.10s
+9 passed
 
 live read-only execution-plan build
 authority plan SHA-256: 5abc62608f1fc5ebce7ee226490c261132aa592a1d5569601bf74cb35666a25d
@@ -85,12 +90,12 @@ canonical bytes: 5676
 targets: 10
 database quick_check: ok
 
-live dry-run, 2026-08-01T01:54:46Z
+live dry-run, 2026-08-01T01:59:31Z
 status: READY_FOR_AUTHORIZED_WINDOW
 mutation_performed: false
 date_gate_open: false
 Factory-OFF flag: absent
-active work items: 5
+active work items: 4
 ```
 
 The tests cover exact ten-row apply and revert, full-preimage preservation,
@@ -107,7 +112,7 @@ run the controller with the immutable plan and a new journal/receipt path:
 ```powershell
 python tools/strategy_farm/q02_disposition_repair.py apply `
   --plan C:/QM/repo/docs/ops/evidence/2026-08-01_q02_disposition_repair_execution_plan.json `
-  --expected-execution-plan-sha256 69602d1daa89d5e6b86ea0484edd3063103d3c5dc6df20e5200a4b7f434b9752 `
+  --expected-execution-plan-sha256 764a23d001a2fa3a7f952a170db97eebbc5d3e50c416ab581d4d4188ce366fd8 `
   --expected-authority-plan-sha256 5abc62608f1fc5ebce7ee226490c261132aa592a1d5569601bf74cb35666a25d `
   --expected-factory-off-sha256 <current-FACTORY_OFF-sha256> `
   --journal-out D:/QM/strategy_farm/state/q02_disposition_repair_20260802_journal.json `
