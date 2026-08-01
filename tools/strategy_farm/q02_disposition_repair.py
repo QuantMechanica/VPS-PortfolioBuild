@@ -31,7 +31,32 @@ _HERE = Path(__file__).resolve().parent
 if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
 
-from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag  # noqa: E402
+try:
+    from factory_mutation_lock import (  # type: ignore[import-not-found]  # noqa: E402
+        FactoryMutationLock,
+        path_for_factory_flag,
+    )
+except ModuleNotFoundError as _mutation_lock_import_error:
+    # Some stale registered worktrees do not yet contain the shared lock module.
+    # Read-only dry-run remains useful there; every mutation stays fail-closed.
+    _MUTATION_LOCK_IMPORT_DETAIL = repr(_mutation_lock_import_error)
+
+    def path_for_factory_flag(factory_off_flag: Path) -> Path:
+        return Path(factory_off_flag).with_name("FACTORY_MUTATION.lock")
+
+    class FactoryMutationLock:  # type: ignore[no-redef]
+        def __init__(self, path: Path, *, owner: str) -> None:
+            self.path = Path(path)
+            self.owner = owner
+
+        def __enter__(self) -> "FactoryMutationLock":
+            raise RuntimeError(
+                "global factory_mutation_lock dependency is unavailable; "
+                f"mutation refused ({_MUTATION_LOCK_IMPORT_DETAIL})"
+            )
+
+        def __exit__(self, exc_type: object, exc: object, traceback: object) -> None:
+            return None
 
 
 AUTHORITY_PLAN_SCHEMA = "qm-q02-disposition-repair-plan/v1"
