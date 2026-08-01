@@ -122,11 +122,12 @@ logical_symbol: QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1
 tester_currency: USD
 conversion_only_symbols:
   - GBPUSD.DWX
+  - EURUSD.DWX
 ```
 
 The tester host is `NZDUSD.DWX` D1. `EURGBP.DWX` is the companion traded leg.
-`GBPUSD.DWX` is conversion-only history for EURGBP profit accounting in the
-USD tester account and must never receive a strategy order.
+`GBPUSD.DWX` and `EURUSD.DWX` are conversion-only histories observed by the
+USD tester for EURGBP profit accounting and must never receive strategy orders.
 
 ## 4. Entry Rules
 
@@ -252,7 +253,7 @@ conversion history, and minimum volume are material risks.
 |---|---|---|
 | R1 | PASS | Durable OWNER-requested scan lineage plus OWNER-ratified Tier-A Chan SRC02 method evidence. |
 | R2 | PASS | Fixed symbols, beta, closed-D1 z-score entry/exit, ATR stops, package sizing, and orphan cleanup are deterministic. |
-| R3 | PASS | NZDUSD.DWX, EURGBP.DWX, and GBPUSD.DWX are native factory symbols represented in the fixed export/manifest lineage. |
+| R3 | PASS | NZDUSD.DWX, EURGBP.DWX, GBPUSD.DWX, and EURUSD.DWX are native factory symbols represented in the fixed export/manifest lineage. |
 | R4 | PASS | No learned component, online refit, banned indicator, grid, martingale, or randomness is used. |
 
 ## 12. Framework Alignment
@@ -288,13 +289,13 @@ at_risk_explanation: |
 
 ```yaml
 target_modules:
-  no_trade: "Select and warm NZDUSD.DWX/EURGBP.DWX plus GBPUSD.DWX conversion history; reject wrong host, timeframe, slot, unaligned history, or invalid normalized leg volume."
+  no_trade: "Select and warm NZDUSD.DWX/EURGBP.DWX plus GBPUSD.DWX/EURUSD.DWX conversion histories; reject wrong host, timeframe, slot, unaligned history, or invalid normalized leg volume."
   entry: "Use the strictly prior 60-bar residual window and sign-aware two-leg QM_BasketOrder requests."
   management: "Rollback partial entry and flatten any orphan traded leg."
   close: "Close both registered legs at abs(z)<0.5 or framework Friday close."
 estimated_complexity: medium
 estimated_test_runtime: "one low-frequency logical-basket D1 Q02 run"
-data_requirements: "NZDUSD.DWX and EURGBP.DWX D1 plus GBPUSD.DWX account-conversion history"
+data_requirements: "NZDUSD.DWX and EURGBP.DWX D1 plus GBPUSD.DWX and EURUSD.DWX account-conversion histories"
 ```
 
 ## 14. Pipeline History

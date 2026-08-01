@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12405
 ; ea_slug:      stock-cycle12
@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   583457cf17114955dd304aa23798a7fc3a538df0d4efaf48932a7d0a0e8592ba
 ; author:       Development
 ; date:         2026-06-18
 ;==========================================================
