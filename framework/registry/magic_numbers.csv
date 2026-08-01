@@ -15398,3 +15398,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20189,xauxag-calmom1,1,XAGUSD.DWX,201890001,2026-07-31T17:41:24Z,Codex,active
 20190,oilbench-cal,0,XTIUSD.DWX,201900000,2026-07-31T23:26:25Z,Codex,active
 20190,oilbench-cal,1,XBRUSD.DWX,201900001,2026-07-31T23:26:25Z,Codex,active
+20191,eurusd-chf-coint,0,EURUSD.DWX,201910000,2026-08-01,Codex,active
+20191,eurusd-chf-coint,1,USDCHF.DWX,201910001,2026-08-01,Codex,active

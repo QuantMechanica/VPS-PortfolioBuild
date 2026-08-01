@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_20191_EURUSD_USDCHF_COINTEGRATION_D1",
+  "host_symbol": "EURUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "USDCHF.DWX"
+  ],
+  "notes": [
+    "Two-leg EURUSD/USDCHF D1 cointegration sleeve selected as the next OOS-ranked non-duplicate pair after QM5_20183 retired at Q02; it ranks tenth in the sign-aware 66-pair scan and has no dedicated D1 cointegration build.",
+    "DEV Sharpe -0.311 and OOS Sharpe 0.751 are adverse evidence; Q02 is a one-shot retirement gate with no refit. The fixed beta is negative, so long spread buys both legs and short spread sells both legs. Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget."
+  ]
+}
