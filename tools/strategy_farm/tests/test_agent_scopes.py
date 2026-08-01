@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -97,6 +99,88 @@ def test_require_unknown_identity_defaults_fail_closed(monkeypatch):
     with pytest.raises(sc.ScopeDenied):
         sc.require(None, "ea.compile", tool="compile", conn=object())
     assert calls[0][1] == "unknown" and calls[0][3]["decision"] == "DENY"
+
+
+def _file_audit_db(tmp_path: Path) -> tuple[Path, sqlite3.Connection]:
+    db = tmp_path / "farm.db"
+    conn = sqlite3.connect(db)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.executescript(
+        """
+        CREATE TABLE events (
+            ts TEXT NOT NULL,
+            entity_type TEXT NOT NULL,
+            entity_id TEXT NOT NULL,
+            event TEXT NOT NULL,
+            detail_json TEXT NOT NULL
+        );
+        CREATE TABLE caller_effects (value TEXT NOT NULL);
+        """
+    )
+    conn.commit()
+    return db, conn
+
+
+def _audit_rows(db: Path) -> list[sqlite3.Row]:
+    with sqlite3.connect(db) as conn:
+        conn.row_factory = sqlite3.Row
+        return conn.execute(
+            "SELECT entity_id, event, detail_json FROM events "
+            "WHERE entity_type='agent_audit' ORDER BY rowid"
+        ).fetchall()
+
+
+def test_deny_audit_survives_caller_transaction_rollback(tmp_path):
+    db, conn = _file_audit_db(tmp_path)
+    try:
+        conn.execute("BEGIN")
+        assert conn.in_transaction is True
+        with pytest.raises(sc.ScopeDenied):
+            sc.require(
+                "codex",
+                "git.push.main",
+                tool="git_push",
+                args_summary="HEAD:main",
+                conn=conn,
+            )
+        # Authorization must not end the caller transaction.  Roll it back just
+        # as the enqueue_backtest ScopeDenied path does.
+        assert conn.in_transaction is True
+        conn.rollback()
+    finally:
+        conn.close()
+
+    rows = _audit_rows(db)
+    assert len(rows) == 1
+    assert rows[0]["entity_id"] == "codex"
+    assert rows[0]["event"] == "git.push.main"
+    assert json.loads(rows[0]["detail_json"])["decision"] == "DENY"
+
+
+def test_allow_audit_commits_once_without_ending_caller_transaction(tmp_path):
+    db, conn = _file_audit_db(tmp_path)
+    try:
+        conn.execute("BEGIN")
+        sc.require(
+            "claude",
+            "git.push.main",
+            tool="git_push",
+            args_summary="HEAD:main",
+            conn=conn,
+        )
+        assert conn.in_transaction is True
+        conn.execute("INSERT INTO caller_effects(value) VALUES ('committed')")
+        conn.commit()
+    finally:
+        conn.close()
+
+    rows = _audit_rows(db)
+    assert len(rows) == 1
+    assert rows[0]["entity_id"] == "claude"
+    assert rows[0]["event"] == "git.push.main"
+    assert json.loads(rows[0]["detail_json"])["decision"] == "ALLOW"
+    with sqlite3.connect(db) as verify:
+        assert verify.execute("SELECT value FROM caller_effects").fetchall() == [("committed",)]
 
 
 # ---- guard(): controller-safe choke point ---------------------------------

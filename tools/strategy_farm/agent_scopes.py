@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import os
+import sqlite3
 from pathlib import Path
 from typing import Any
 
@@ -82,10 +83,45 @@ def is_allowed(agent_id: str, scope: str, policy: Policy | None = None) -> bool:
     return scope in grants
 
 
+def _file_backed_audit_connection(conn: Any) -> sqlite3.Connection | None:
+    """Open an autonomous connection to ``conn``'s main database when possible.
+
+    A scope denial normally raises through the caller's transaction.  Writing
+    the audit event on that same connection would therefore roll the DENY row
+    back with the rejected operation.  A separate file-backed connection gives
+    the audit event its own commit without committing any caller work.
+
+    Mock connections and private in-memory databases have no reopenable main
+    database.  They retain the legacy same-connection behavior, which is useful
+    for isolated unit tests and never applies to the production farm database.
+    """
+    try:
+        rows = conn.execute("PRAGMA database_list").fetchall()
+    except Exception:
+        return None
+    for row in rows:
+        try:
+            name, filename = str(row[1]), str(row[2])
+        except (IndexError, KeyError, TypeError):
+            continue
+        if name != "main" or not filename:
+            continue
+        durable = sqlite3.connect(filename, timeout=30)
+        durable.row_factory = sqlite3.Row
+        durable.execute("PRAGMA busy_timeout=30000")
+        return durable
+    return None
+
+
 def _audit(agent_id: str, scope: str, *, tool: str, args_summary: str,
            decision: str, conn: Any | None = None) -> None:
-    """Append one `agent_audit` event via the farmctl primitive. Imported lazily
-    to avoid an import cycle. Audit failures never block the caller's decision."""
+    """Append one durable ``agent_audit`` event via the farmctl primitive.
+
+    File-backed caller connections are never used as the audit transaction:
+    the event is written and committed through an autonomous connection so a
+    subsequent caller rollback cannot erase a DENY.  Imported lazily to avoid
+    an import cycle.  Audit failures never block the authorization decision.
+    """
     detail = {"tool": tool, "args_summary": args_summary, "decision": decision}
     try:
         import farmctl  # type: ignore
@@ -93,7 +129,15 @@ def _audit(agent_id: str, scope: str, *, tool: str, args_summary: str,
         from tools.strategy_farm import farmctl  # type: ignore
     try:
         if conn is not None:
-            farmctl.event(conn, "agent_audit", agent_id, scope, detail)
+            durable = _file_backed_audit_connection(conn)
+            if durable is None:
+                farmctl.event(conn, "agent_audit", agent_id, scope, detail)
+                return
+            try:
+                farmctl.event(durable, "agent_audit", agent_id, scope, detail)
+                durable.commit()
+            finally:
+                durable.close()
             return
         own = farmctl.connect(farmctl.DEFAULT_ROOT)
         try:
