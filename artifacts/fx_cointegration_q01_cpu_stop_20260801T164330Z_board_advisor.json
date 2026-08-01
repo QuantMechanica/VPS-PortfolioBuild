@@ -1,0 +1,27 @@
+{
+  "schema_version": "qm-fx-cointegration-q01-cpu-stop/v1",
+  "captured_at_utc": "2026-08-01T16:43:30Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20197",
+  "pair": ["EURJPY.DWX", "EURGBP.DWX"],
+  "logical_symbol": "QM5_20197_EURJPY_EURGBP_COINTEGRATION_D1",
+  "q01": {
+    "status": "PASS",
+    "build_report": "D:/QM/reports/framework/21/build_check_20260801_164231.json",
+    "compile_summary": "D:/QM/reports/compile/20260801_164231/summary.csv",
+    "ex5_sha256": "25178a6c76f7d390570a9cde63d87afb8029cdfa6e623ea727b6cf8b3746d426"
+  },
+  "capacity": {
+    "source_command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "factory_terminal_ceiling": 7,
+    "running_factory_terminals": ["T1", "T2", "T4", "T5", "T7", "T9", "T10"],
+    "running_factory_terminal_count": 7,
+    "t_live_observed_separately": true,
+    "t_live_excluded_from_factory_count": true
+  },
+  "q02": {
+    "status": "NOT_QUEUED_CPU_CEILING",
+    "work_item_count_at_stop": 0,
+    "manual_dispatch_attempted": false
+  }
+}
