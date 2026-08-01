@@ -1,0 +1,22 @@
+{
+  "authority_plan_sha256": "5abc62608f1fc5ebce7ee226490c261132aa592a1d5569601bf74cb35666a25d",
+  "database_quick_check": "ok",
+  "execution_plan": {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-08-01_q02_disposition_repair_execution_plan.json",
+    "sha256": "69602d1daa89d5e6b86ea0484edd3063103d3c5dc6df20e5200a4b7f434b9752"
+  },
+  "generated_at_utc": "2026-08-01T01:54:46Z",
+  "mutation_performed": false,
+  "schema_version": "qm-q02-disposition-repair-dry-run/v1",
+  "status": "READY_FOR_AUTHORIZED_WINDOW",
+  "target_count": 10,
+  "window_snapshot": {
+    "active_work_items": 5,
+    "authorized_local_date": "2026-08-02",
+    "checked_at_europe_berlin": "2026-08-01T03:54:46.515723+02:00",
+    "checked_at_utc": "2026-08-01T01:54:46Z",
+    "date_gate_open": false,
+    "factory_off": null,
+    "mutation_lock_path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock"
+  }
+}
