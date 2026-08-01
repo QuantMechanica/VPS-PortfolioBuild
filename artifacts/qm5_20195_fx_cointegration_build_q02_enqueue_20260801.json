@@ -1,0 +1,72 @@
+{
+  "schema": "qm_fx_cointegration_build_q02_handoff/v1",
+  "timestamp_utc": "2026-08-01T12:22:36Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20195",
+  "slug": "nzd-eurgbp-coint",
+  "pair": [
+    "NZDUSD.DWX",
+    "EURGBP.DWX"
+  ],
+  "logical_symbol": "QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1",
+  "selection": {
+    "scan_size": 66,
+    "sign_aware_rank": 12,
+    "dev_net_sharpe": -0.082879,
+    "oos_net_sharpe": 0.720866,
+    "oos_return_pct": 8.085125,
+    "oos_state_changes": 21,
+    "fixed_dev_beta": -0.101296029,
+    "half_life_d1_bars": 116.313,
+    "exact_pair_previously_built": false
+  },
+  "build": {
+    "task_id": "19bb5e5c-eca4-4cfe-bd92-317fa91add5f",
+    "status": "done",
+    "build_check_passed": true,
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "ex5_sha256": "9530f40978fb9a86477ee5ff337d1767979b7a3db6948e797ebf867d9cf6b2c9",
+    "smoke_result": "deferred_p2_smoke",
+    "smoke_summary": "D:\\QM\\reports\\smoke\\QM5_20195\\20260801_121732\\summary.json",
+    "smoke_summary_sha256": "b2ced211095c7b4f3597b83520ea0892cdfbbbb5e3abb25e372deda23dd75ea7",
+    "smoke_infrastructure_condition": "EURUSD.DWX history synchronization error before tester execution on T6 and T7; no ONINIT failure",
+    "needs_p2_smoke_via_pump": true
+  },
+  "basket_manifest": {
+    "host_symbol": "NZDUSD.DWX",
+    "host_timeframe": "D1",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "basket_symbols": [
+      "NZDUSD.DWX",
+      "EURGBP.DWX",
+      "GBPUSD.DWX",
+      "EURUSD.DWX"
+    ],
+    "traded_symbols": [
+      "NZDUSD.DWX",
+      "EURGBP.DWX"
+    ],
+    "conversion_only_symbols": [
+      "GBPUSD.DWX",
+      "EURUSD.DWX"
+    ]
+  },
+  "risk": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "q02": {
+    "work_item_id": "bb538363-c4c2-4899-8b65-ceda04be813b",
+    "status_at_handoff": "pending",
+    "attempt_count_at_handoff": 0,
+    "logical_setfile_enqueued": true,
+    "physical_host_setfile_skipped": true,
+    "skip_reason": "basket_manifest_logical_setfile_preferred"
+  },
+  "prohibited_surfaces_touched": []
+}
