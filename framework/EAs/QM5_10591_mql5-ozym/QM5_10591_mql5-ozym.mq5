@@ -81,6 +81,11 @@ input double strategy_rr_target         = 1.5;
 input bool   strategy_use_atr_floor     = false;
 input double strategy_min_atr_points    = 0.0;
 
+// Ozymandias is a closed-bar state machine. OnTick refreshes this value once
+// after the framework new-bar gate so entry and adverse-signal exit share the
+// same deterministic result without rebuilding the 240-bar state on each tick.
+int g_ozymandias_closed_bar_signal = 0;
+
 double OzymandiasHighestHigh(const int shift, const int length)
   {
    double highest = 0.0;
@@ -207,7 +212,7 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   const int signal = OzymandiasColorChange();
+   const int signal = g_ozymandias_closed_bar_signal;
    if(signal == 0)
       return false;
 
@@ -239,7 +244,7 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int signal = OzymandiasColorChange();
+   const int signal = g_ozymandias_closed_bar_signal;
    if(signal == 0)
       return false;
 
@@ -331,7 +336,15 @@ void OnTick()
    // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   // Both the source entry and its adverse-signal exit are closed-bar rules.
+   // The prior wiring rebuilt two 240-bar Ozymandias states on every tick,
+   // causing full-window Q02 runs to advance only ~2% in 45 minutes.
+   if(!QM_IsNewBar())
+      return;
+
+   g_ozymandias_closed_bar_signal = OzymandiasColorChange();
+
+   // Per-closed-bar: source adverse-signal exit. Separate from hard SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -345,12 +358,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
-   if(!QM_IsNewBar())
-      return;
 
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
    // since last tick. Cheap: most calls early-return on same-day check.
