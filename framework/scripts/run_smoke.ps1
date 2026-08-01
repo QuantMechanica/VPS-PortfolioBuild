@@ -1541,6 +1541,70 @@ function Test-TesterJournalBomb {
     return $null
 }
 
+function Remove-TesterJournalBombArtifacts {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$ScanDirs,
+        [Parameter(Mandatory = $true)]
+        [string]$PrimaryPath,
+        [int]$RetryCount = 3,
+        [int]$RetryDelayMilliseconds = 2000
+    )
+
+    # A tester run writes the same journal stream to both the dispatcher log
+    # and an Agent-* log. Deleting only the first path detected leaves the
+    # oversized sibling behind, so the next innocent run on that terminal is
+    # killed immediately by the absolute cap and misclassified as LOG_BOMB.
+    # Once the terminal and metatester processes have stopped, reclaim the
+    # detected file plus every other over-cap tester journal in this terminal
+    # root. Smaller journals remain available as diagnostic evidence.
+    $targets = @{}
+    foreach ($dir in $ScanDirs) {
+        if (-not (Test-Path -LiteralPath $dir -PathType Container)) {
+            continue
+        }
+        $logs = @(Get-ChildItem -LiteralPath $dir -Recurse -Filter *.log -File -ErrorAction SilentlyContinue)
+        foreach ($log in $logs) {
+            if ([double]$log.Length -gt $script:LogBombHardCeilBytes) {
+                $targets[$log.FullName] = [long]$log.Length
+            }
+        }
+    }
+
+    if (Test-Path -LiteralPath $PrimaryPath -PathType Leaf) {
+        $primary = Get-Item -LiteralPath $PrimaryPath -ErrorAction SilentlyContinue
+        if ($null -ne $primary) {
+            $targets[$primary.FullName] = [long]$primary.Length
+        }
+    }
+
+    $results = @()
+    foreach ($target in @($targets.GetEnumerator() | Sort-Object Name)) {
+        $removed = $false
+        $lastError = $null
+        for ($attempt = 1; $attempt -le [Math]::Max($RetryCount, 1); $attempt++) {
+            try {
+                Remove-Item -LiteralPath $target.Key -Force -ErrorAction Stop
+                $removed = $true
+                $lastError = $null
+                break
+            } catch {
+                $lastError = $_.Exception.Message
+                if ($attempt -lt [Math]::Max($RetryCount, 1) -and $RetryDelayMilliseconds -gt 0) {
+                    Start-Sleep -Milliseconds $RetryDelayMilliseconds
+                }
+            }
+        }
+        $results += [pscustomobject]@{
+            path = [string]$target.Key
+            size_bytes = [long]$target.Value
+            removed = $removed
+            error = $lastError
+        }
+    }
+    return @($results)
+}
+
 function Start-TesterRun {
     param(
         [Parameter(Mandatory = $true)]
@@ -1603,16 +1667,15 @@ function Start-TesterRun {
                     } catch {
                     }
                 }
-                # Reclaim the disk immediately; the journal is spam, not evidence
-                # (the stage line above records path/size/reason). May be briefly
-                # locked while metatester dies -> short retry, then fail-open.
-                for ($delAttempt = 1; $delAttempt -le 3; $delAttempt++) {
-                    try {
-                        Remove-Item -LiteralPath $logBombHit.path -Force -ErrorAction Stop
-                        break
-                    } catch {
-                        Start-Sleep -Seconds 2
-                    }
+                # Reclaim every oversized copy of the tester journal. MT5 mirrors
+                # the stream into dispatcher and Agent-* logs; leaving one copy
+                # behind gives the next EA a false absolute-cap LOG_BOMB verdict.
+                $reclaimedJournals = @(Remove-TesterJournalBombArtifacts `
+                    -ScanDirs $logBombScanDirs `
+                    -PrimaryPath $logBombHit.path)
+                foreach ($journal in $reclaimedJournals) {
+                    Write-Host ("run_smoke.stage=log_bomb_reclaim journal='{0}' size_bytes={1} removed={2} error='{3}'" -f `
+                        $journal.path, $journal.size_bytes, $journal.removed, [string]$journal.error)
                 }
                 break
             }
