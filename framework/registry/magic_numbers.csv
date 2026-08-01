@@ -15408,3 +15408,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20194,xauxag-momrev,1,XAGUSD.DWX,201940001,2026-08-01T10:13:41Z,Codex,active
 20195,nzd-eurgbp-coint,0,NZDUSD.DWX,201950000,2026-08-01T11:40:49Z,Codex,active
 20195,nzd-eurgbp-coint,1,EURGBP.DWX,201950001,2026-08-01T11:40:49Z,Codex,active
+20196,eurusd-jpy-coint,0,EURUSD.DWX,201960000,2026-08-01T14:54:27Z,Codex,active
+20196,eurusd-jpy-coint,1,USDJPY.DWX,201960001,2026-08-01T14:54:27Z,Codex,active
