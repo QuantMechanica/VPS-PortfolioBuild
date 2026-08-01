@@ -290,4 +290,3 @@ data_requirements: standard
 | Version | Date | Rebuild reason | Phase reached | Verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-01 | next-ranked non-duplicate fixed-scan FX basket | G0 | APPROVED |
-
