@@ -115,6 +115,35 @@ requires a separate written OWNER authorization if invoked.
 4. Recompile-deploy plan standing approval unchanged (awaiting ticket
    `5690506f`).
 
+## SUNDAY 2026-08-02 CONSOLIDATED AGENDA (work from here)
+
+**OFF window (market closed, before broker reopen):**
+1. Factory_OFF (no manifest) → wait zero active → bind fresh `FACTORY_OFF` SHA.
+2. **10582 Q08 requal apply** (`q08_single_target_requal.py --apply`, contract
+   `717bdea1…`, fresh dry-run must show zero blockers first).
+3. **Q02 disposition repair apply** (`q02_disposition_repair.py apply`, plan
+   `764a23d0…` / authority `5abc6260…`, date-gated to 08-02) — 10 rows
+   failed/INFRA_FAIL → done/PASS incl. the hidden 621-trade case.
+4. Q06 wave-1 requeue ONLY if a legitimate 5th eligible row exists
+   (`requeue_stranded_infra.py --phases Q06 --wave 1` dry-run first).
+5. **Decision rebind** via `build_runtime_activation_decision.py` — MUST bind
+   the 10-worker policy sources (Factory_ON blob `85bd0a82`,
+   runtime_activation blob `78fbca9c`) + all later commits to bound files
+   (pump-gate revert, framed records). Fresh OWNER runtime decision.
+6. Factory_ON (10-worker cohort now required by the contract).
+
+**T_Live window (after ON, still market-closed):**
+7. Signed 7-file deploy per signature packet §1 (+ **10513 addendum §runbook if
+   OWNER signs it**), preimage backups verified before any overwrite.
+8. OWNER-controlled T_Live re-init.
+9. §2 verification: 9/9 (or 10/10 with addendum) `KS_BASELINE_LOADED`,
+   payload-hash==baseline-hash, INIT_OK/NEWS per identity, SHA equalities.
+10. Swap-rate capture. 11. Post-window: pulse re-run (expect KS OK except
+    10440 [+10513 if unsigned]); MNT-043 vintage overlay append for the 7
+    deployed EAs + admission Q06/Q07 rerun enqueues per the bill.
+
+Open OWNER items: 10513 addendum signature (optional), Agy OAuth refresh.
+
 ## Standing constraints (bind every topic)
 
 - Factory keeps running; no Factory_OFF/ON as part of any topic; never T5, never
