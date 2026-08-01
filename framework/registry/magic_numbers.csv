@@ -15417,3 +15417,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20199,eurjpy-euraud,1,EURAUD.DWX,201990001,2026-08-01T19:20:00Z,Codex,active
 20200,audjpy-euraud,0,AUDJPY.DWX,202000000,2026-08-01T20:08:28Z,Codex,active
 20200,audjpy-euraud,1,EURAUD.DWX,202000001,2026-08-01T20:08:28Z,Codex,active
+20201,gbpjpy-eurgbp,0,GBPJPY.DWX,202010000,2026-08-01T20:30:00Z,Codex,active
+20201,gbpjpy-eurgbp,1,EURGBP.DWX,202010001,2026-08-01T20:30:00Z,Codex,active
