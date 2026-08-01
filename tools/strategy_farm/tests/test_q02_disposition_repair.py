@@ -12,6 +12,18 @@ import pytest
 from tools.strategy_farm import q02_disposition_repair as repair
 
 
+class _FixtureMutationLock:
+    def __init__(self, path: Path, *, owner: str) -> None:
+        self.path = Path(path)
+        self.owner = owner
+
+    def __enter__(self) -> "_FixtureMutationLock":
+        return self
+
+    def __exit__(self, exc_type: object, exc: object, traceback: object) -> None:
+        return None
+
+
 def _write_json(path: Path, value: Any) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
@@ -65,6 +77,7 @@ def _fixture(
     *,
     active_rows: int = 0,
 ) -> dict[str, Any]:
+    monkeypatch.setattr(repair, "FactoryMutationLock", _FixtureMutationLock)
     repo = tmp_path / "repo"
     state = tmp_path / "state"
     reports = tmp_path / "reports"
