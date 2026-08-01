@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20199
+; ea_slug:      eurjpy-euraud
+; ea_version:   v5.0
+; set_version:  s20260801-001
+; symbol:       EURJPY.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   b6c0577ff71bd361f76908f7369e892a09539107ba841d7aa4246d62ac7a76bf
+; author:       Development
+; date:         2026-08-01
+;==========================================================
+qm_ea_id=20199
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific defaults from the approved card
+strategy_z_lookback_d1=60
+strategy_beta=-1.073345776
+strategy_entry_z=2.0
+strategy_exit_z=0.5
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=2.0
+strategy_deviation_points=20
