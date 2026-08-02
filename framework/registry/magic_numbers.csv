@@ -10976,11 +10976,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11448,crue-ichimoku-5line-rank-d1,2,USDJPY.DWX,114480002,2026-06-18,Claude,reserved
 11448,crue-ichimoku-5line-rank-d1,3,AUDUSD.DWX,114480003,2026-06-18,Claude,reserved
 11448,crue-ichimoku-5line-rank-d1,4,USDCAD.DWX,114480004,2026-06-18,Claude,reserved
-11449,macd-psar-atr-trend-h4,0,EURUSD.DWX,114490000,2026-06-18,Claude,reserved
-11449,macd-psar-atr-trend-h4,1,GBPUSD.DWX,114490001,2026-06-18,Claude,reserved
-11449,macd-psar-atr-trend-h4,2,USDJPY.DWX,114490002,2026-06-18,Claude,reserved
-11449,macd-psar-atr-trend-h4,3,AUDUSD.DWX,114490003,2026-06-18,Claude,reserved
-11449,macd-psar-atr-trend-h4,4,USDCAD.DWX,114490004,2026-06-18,Claude,reserved
+11449,macd-psar-atr-trend-h4,0,EURUSD.DWX,114490000,2026-06-18,Claude,active
+11449,macd-psar-atr-trend-h4,1,GBPUSD.DWX,114490001,2026-06-18,Claude,active
+11449,macd-psar-atr-trend-h4,2,USDJPY.DWX,114490002,2026-06-18,Claude,active
+11449,macd-psar-atr-trend-h4,3,AUDUSD.DWX,114490003,2026-06-18,Claude,active
+11449,macd-psar-atr-trend-h4,4,USDCAD.DWX,114490004,2026-06-18,Claude,active
 11450,london-breakfast-asian-range-m15,0,EURUSD.DWX,114500000,2026-06-18,Development,active
 11450,london-breakfast-asian-range-m15,1,GBPUSD.DWX,114500001,2026-06-18,Development,active
 11450,london-breakfast-asian-range-m15,2,USDJPY.DWX,114500002,2026-06-18,Development,active
@@ -11295,8 +11295,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11512,carter-t-ema2-4-stoch-d1,2,USDJPY.DWX,115120002,2026-06-26,Development,active
 11513,carter-t-ema4-11-adx13-d1,0,EURUSD.DWX,115130000,2026-06-18,Claude,reserved
 11513,carter-t-ema4-11-adx13-d1,1,GBPUSD.DWX,115130001,2026-06-18,Claude,reserved
-11514,carter-t-macd3916-adx16-d1,0,EURUSD.DWX,115140000,2026-06-18,Claude,reserved
-11514,carter-t-macd3916-adx16-d1,1,GBPUSD.DWX,115140001,2026-06-18,Claude,reserved
+11514,carter-t-macd3916-adx16-d1,0,EURUSD.DWX,115140000,2026-06-18,Claude,active
+11514,carter-t-macd3916-adx16-d1,1,GBPUSD.DWX,115140001,2026-06-18,Claude,active
 11515,carter-t-adx14-prev-day-range-h1,0,EURUSD.DWX,115150000,2026-06-18,Claude,reserved
 11515,carter-t-adx14-prev-day-range-h1,1,GBPUSD.DWX,115150001,2026-06-18,Claude,reserved
 11515,carter-t-adx14-prev-day-range-h1,2,AUDUSD.DWX,115150002,2026-06-18,Claude,reserved
@@ -15433,3 +15433,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20202,xauxag-rev18,1,XAGUSD.DWX,202020001,2026-08-02T12:40:02Z,Codex,active
 20203,eurusd-audjpy,0,EURUSD.DWX,202030000,2026-08-02T13:20:00Z,Codex,active
 20203,eurusd-audjpy,1,AUDJPY.DWX,202030001,2026-08-02T13:20:00Z,Codex,active
+9973,bandy-ibs-extreme-mr-index,0,SP500.DWX,99730000,2026-08-02T16:26:59Z,Codex,active
+9973,bandy-ibs-extreme-mr-index,1,NDX.DWX,99730001,2026-08-02T16:26:59Z,Codex,active
+9973,bandy-ibs-extreme-mr-index,2,WS30.DWX,99730002,2026-08-02T16:26:59Z,Codex,active
