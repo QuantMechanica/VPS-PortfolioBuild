@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Strict OWNER authorization contract for a real Factory activation.
 
-The 2026-07-30 preparation decision is deliberately *not* runtime authority.
+The 2026-08-02 preparation decision is deliberately *not* runtime authority.
 Factory_ON and restart-hold release call this validator independently.  A
 canonical runtime decision and its SHA-256 sidecar must exist, be committed,
 be unmodified, be fresh, and bind the exact preparation decision, OFF record,
@@ -32,13 +32,13 @@ DIGEST_RELATIVE_PATH = Path(
     "docs/ops/evidence/FACTORY_RUNTIME_ACTIVATION_OWNER_DECISION.sha256"
 )
 PREPARATION_DECISION_RELATIVE_PATH = Path(
-    "docs/ops/evidence/2026-07-30_factory_preparation_owner_decision.json"
+    "docs/ops/evidence/2026-08-02_factory_preparation_owner_decision.json"
 )
 PREPARATION_DECISION_SHA256 = (
-    "af8479fdc73163250f966014eca5c53224a4ae159426a07cf96c80a379c6edb2"
+    "c3c7fc0907ae2963d48cf778900023e99875b3130a81f741ba591c21f9ef3fb3"
 )
-PREPARATION_DECISION_COMMIT = "7b36ff27f83f024bf1c43bb5537cc747f52b887a"
-PREPARATION_DECISION_BLOB = "6d36cf6682e317324a35bc8388042402b0f3e540"
+PREPARATION_DECISION_COMMIT = "8f8b77b06fed799322536fd60c32f259843b8c69"
+PREPARATION_DECISION_BLOB = "ab804df2de1a4662bd7439ac3094ee7c5dcb6494"
 FACTORY_ON_RELATIVE_PATH = Path("tools/strategy_farm/Factory_ON.ps1")
 MAINTENANCE_CONTROL_RELATIVE_PATH = Path(
     "tools/strategy_farm/maintenance_control.py"
@@ -63,15 +63,6 @@ SOURCE_BINDING_PATHS = {
         "tools/strategy_farm/public_snapshot_incident_guard.py"
     ),
 }
-RESTART_HOLD_IDS = (
-    "3746e558-6eff-436b-9365-cfec9b7f1a63",
-    "ded31f32-92fb-45a7-b318-aa00c2f3f41c",
-    "4bd848eb-d744-4f97-9a30-8323f0925394",
-    "5c788bbb-cf26-4f6d-ac86-35bd869c5893",
-    "d3c2c5ad-9455-4241-b30c-a9cb9260a4b5",
-    "36bfac85-63e2-46a7-9f35-8ae583252d2f",
-    "ad1aaca6-e639-4680-94c7-5108902438d2",
-)
 WORKER_TERMINALS = (
     "T1",
     "T2",
@@ -86,6 +77,7 @@ WORKER_TERMINALS = (
 )
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
 GIT_OID_RE = re.compile(r"[0-9a-f]{40}")
+WORK_ITEM_ID_RE = re.compile(r"[0-9a-fA-F-]{36}")
 
 
 class RuntimeActivationError(RuntimeError):
@@ -164,6 +156,42 @@ def _require_exact_keys(value: dict[str, Any], expected: set[str], *, label: str
         )
 
 
+def _validated_restart_hold_plan(
+    payload: dict[str, Any], *, label: str
+) -> list[str]:
+    restart_holds = payload.get("restart_holds")
+    if not isinstance(restart_holds, dict):
+        raise RuntimeActivationError(f"{label} restart_holds must be an object")
+    work_item_ids = restart_holds.get("authorized_work_item_ids")
+    authorized_release_count = restart_holds.get("authorized_release_count")
+    if not isinstance(work_item_ids, list):
+        raise RuntimeActivationError(
+            f"{label} authorized_work_item_ids must be a list"
+        )
+    if type(authorized_release_count) is not int:
+        raise RuntimeActivationError(
+            f"{label} authorized_release_count must be an integer"
+        )
+    if any(
+        not isinstance(work_item_id, str)
+        or not work_item_id
+        or WORK_ITEM_ID_RE.fullmatch(work_item_id) is None
+        for work_item_id in work_item_ids
+    ):
+        raise RuntimeActivationError(
+            f"{label} authorized_work_item_ids must contain UUID-shaped strings"
+        )
+    if len(work_item_ids) != len(set(work_item_ids)):
+        raise RuntimeActivationError(
+            f"{label} authorized_work_item_ids must be unique"
+        )
+    if authorized_release_count != len(work_item_ids):
+        raise RuntimeActivationError(
+            f"{label} authorized_release_count does not equal the declared plan length"
+        )
+    return list(work_item_ids)
+
+
 def _verify_committed_file(
     repo_root: Path,
     relative_path: Path,
@@ -225,15 +253,17 @@ def _require_runtime_authorizations(payload: dict[str, Any]) -> None:
         authorizations,
         {
             "factory_on",
-            "release_seven_restart_holds",
+            "release_declared_restart_holds",
             "runtime_flag_upgrade_authorized",
         },
         label="authorizations",
     )
     if authorizations.get("factory_on") is not True:
         raise RuntimeActivationError("runtime decision does not authorize Factory_ON")
-    if authorizations.get("release_seven_restart_holds") is not True:
-        raise RuntimeActivationError("runtime decision does not authorize seven-hold release")
+    if authorizations.get("release_declared_restart_holds") is not True:
+        raise RuntimeActivationError(
+            "runtime decision does not authorize its declared restart-hold plan"
+        )
     if authorizations.get("runtime_flag_upgrade_authorized") is not False:
         raise RuntimeActivationError(
             "Factory_ON never upgrades OFF flags; runtime_flag_upgrade_authorized must be false"
@@ -335,6 +365,9 @@ def _validate_runtime_activation_artifacts(
         (repo_root / PREPARATION_DECISION_RELATIVE_PATH).read_bytes(),
         label="preparation decision",
     )
+    prep_plan = _validated_restart_hold_plan(
+        prep_payload, label="preparation decision"
+    )
     if (
         prep_payload.get("restore_intent", {}).get("factory_on_authorized") is not False
         or prep_payload.get("restore_intent", {}).get("runtime_flag_upgrade_authorized")
@@ -359,10 +392,18 @@ def _validate_runtime_activation_artifacts(
     task_map_sha256 = _sha256(task_map_bytes)
 
     restart_holds = payload.get("restart_holds")
-    if not isinstance(restart_holds, dict) or restart_holds != {
-        "authorized_release_count": 7,
-        "authorized_work_item_ids": list(RESTART_HOLD_IDS),
-    }:
+    runtime_plan = _validated_restart_hold_plan(
+        payload, label="runtime decision"
+    )
+    expected_restart_holds = {
+        "authorized_release_count": len(prep_plan),
+        "authorized_work_item_ids": prep_plan,
+    }
+    if (
+        not isinstance(restart_holds, dict)
+        or restart_holds != expected_restart_holds
+        or runtime_plan != prep_plan
+    ):
         raise RuntimeActivationError("runtime decision restart-hold set mismatch")
     worker_policy = payload.get("worker_policy")
     if not isinstance(worker_policy, dict) or worker_policy != {
@@ -454,7 +495,7 @@ def _validate_runtime_activation_artifacts(
         "task_enabled_before": task_enabled_before,
         "preparation": prep_provenance,
         "source_bindings": verified_sources,
-        "restart_hold_ids": list(RESTART_HOLD_IDS),
+        "restart_hold_ids": prep_plan,
         "worker_terminals": list(WORKER_TERMINALS),
     }
     if require_artifact_provenance:

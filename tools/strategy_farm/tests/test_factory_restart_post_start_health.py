@@ -19,7 +19,7 @@ OWNER_DECISION = (
     / "docs"
     / "ops"
     / "evidence"
-    / "2026-07-30_factory_preparation_owner_decision.json"
+    / "2026-08-02_factory_preparation_owner_decision.json"
 )
 
 
@@ -86,9 +86,10 @@ def test_factory_on_builds_exact_non_live_task_and_worker_expectations() -> None
     preparation_terminals = _single_quoted_values(
         _ps_array(source, "QM_PREPARATION_DECISION_WORKER_TERMINALS")
     )
-    assert owner_decision["worker_policy"]["t5_quarantine_ratified"] is True
+    assert owner_decision["worker_policy"]["t5_quarantine_ratified"] is False
+    assert owner_decision["worker_policy"]["t5_quarantine_lifted"] is True
     assert preparation_terminals == owner_decision["worker_policy"]["expected_terminals"]
-    assert len(preparation_terminals) == owner_decision["worker_policy"]["expected_worker_count"] == 9
+    assert len(preparation_terminals) == owner_decision["worker_policy"]["expected_worker_count"] == 10
     assert disabled_terminals == []
     assert worker_terminals == [f"T{index}" for index in range(1, 11)]
     assert len(worker_terminals) == 10
@@ -115,15 +116,26 @@ def test_factory_on_builds_exact_non_live_task_and_worker_expectations() -> None
     assert "Exactly T1-T10 must be present" in source
 
 
-def test_factory_on_passes_only_the_seven_owner_approved_restart_hold_ids() -> None:
+def test_factory_on_reads_and_preserves_the_runtime_restart_hold_plan() -> None:
     source = FACTORY_ON.read_text(encoding="utf-8-sig")
     owner_decision = json.loads(OWNER_DECISION.read_text(encoding="utf-8"))
-    approved = _single_quoted_values(
-        _ps_array(source, "QM_OWNER_APPROVED_RESTART_HOLD_IDS")
-    )
 
-    assert approved == owner_decision["restart_holds"]["authorized_work_item_ids"]
-    assert len(set(approved)) == owner_decision["restart_holds"]["authorized_release_count"] == 7
+    assert owner_decision["restart_holds"]["authorized_work_item_ids"] == []
+    assert owner_decision["restart_holds"]["authorized_release_count"] == 0
+    assert "QM_OWNER_APPROVED_RESTART_HOLD_IDS" not in source
+    assert "[string[]]$decisionHoldIds" in source
+    assert "$script:approvedRestartHoldIds = [string[]]@($decisionHoldIds)" in source
+    assert "[string[]]$runtimeRestartHoldIds = @($script:runtimeAuthorization.restart_hold_ids" in source
+    assert "runtime restart-hold plan mismatch at index" in source
+    lock_helper = _ps_function(source, "Enter-FactoryMutationLock")
+    assert "[string[]]$lockRestartHoldIds" in lock_helper
+    assert "$script:runtimeAuthorization.restart_hold_ids" in lock_helper
+    assert "restart_hold_ids = $lockRestartHoldIds" in lock_helper
+    assert "$record | ConvertFrom-Json -ErrorAction Stop" in lock_helper
+    assert "$record.Contains('\"restart_hold_ids\":[]')" in lock_helper
+    assert "did not serialize as JSON []" in lock_helper
+    assert "$releasedIds = @($result.released | ForEach-Object { [string]$_ })" in source
+    assert "-ne 7" not in source
     assert "--expected-work-item-id" not in source
     assert "--held-lock-owner-pid" not in source
     assert "--held-lock-owner" not in source

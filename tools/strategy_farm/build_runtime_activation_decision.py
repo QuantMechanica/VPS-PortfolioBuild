@@ -325,6 +325,16 @@ def build_runtime_activation_decision(
         repo_root / fra.PREPARATION_DECISION_RELATIVE_PATH,
         label="preparation decision",
     )
+    try:
+        restart_hold_ids = fra._validated_restart_hold_plan(
+            preparation, label="preparation decision"
+        )
+    except fra.RuntimeActivationError as exc:
+        raise DecisionBuildError(
+            str(exc),
+            exit_code=EXIT_PRECONDITION,
+            category="PRECONDITION",
+        ) from exc
     _verify_preparation_window(preparation, now_utc=now)
 
     _, template = _load_json(
@@ -415,6 +425,10 @@ def build_runtime_activation_decision(
     payload["expires_at_utc"] = (now + dt.timedelta(hours=24)).strftime(
         "%Y-%m-%dT%H:%M:%SZ"
     )
+    payload["restart_holds"] = {
+        "authorized_release_count": len(restart_hold_ids),
+        "authorized_work_item_ids": restart_hold_ids,
+    }
     payload["restore_intent"]["factory_off_flag_sha256"] = flag_sha256
     payload["restore_intent"]["task_enabled_before_sha256"] = task_map_sha256
     payload["source_bindings"] = source_bindings

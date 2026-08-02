@@ -21,6 +21,10 @@ NOW = dt.datetime(2026, 7, 30, 12, 0, tzinfo=dt.UTC)
 ROOT = Path(__file__).resolve().parents[3]
 SCHEMA_PATH = HERE.parent / "factory_runtime_activation.v1.schema.json"
 TEMPLATE_PATH = HERE.parent / "factory_runtime_activation.v1.template.json"
+TEST_RESTART_HOLD_IDS = (
+    "3746e558-6eff-436b-9365-cfec9b7f1a63",
+    "ded31f32-92fb-45a7-b318-aa00c2f3f41c",
+)
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -55,6 +59,7 @@ def _build_repo(
     *,
     authorized_at: dt.datetime = NOW - dt.timedelta(minutes=1),
     expires_at: dt.datetime = NOW + dt.timedelta(hours=1),
+    restart_hold_ids: tuple[str, ...] = TEST_RESTART_HOLD_IDS,
     mutate_decision: Callable[[dict], None] | None = None,
     mutate_flag: Callable[[dict], None] | None = None,
     raw_decision_factory: Callable[[dict], bytes] | None = None,
@@ -73,6 +78,10 @@ def _build_repo(
             "factory_on_authorized": False,
             "runtime_flag_upgrade_authorized": False,
             "task_enabled_before": task_map,
+        },
+        "restart_holds": {
+            "authorized_release_count": len(restart_hold_ids),
+            "authorized_work_item_ids": list(restart_hold_ids),
         },
         "explicit_exclusions": {"hold_release_now": False},
     }
@@ -136,12 +145,12 @@ def _build_repo(
         },
         "authorizations": {
             "factory_on": True,
-            "release_seven_restart_holds": True,
+            "release_declared_restart_holds": True,
             "runtime_flag_upgrade_authorized": False,
         },
         "restart_holds": {
-            "authorized_release_count": 7,
-            "authorized_work_item_ids": list(fra.RESTART_HOLD_IDS),
+            "authorized_release_count": len(restart_hold_ids),
+            "authorized_work_item_ids": list(restart_hold_ids),
         },
         "worker_policy": {
             "disabled_terminals": [],
@@ -194,10 +203,75 @@ def test_strict_committed_runtime_activation_decision_passes(
     assert result["authorized"] is True
     assert result["decision_id"] == decision["decision_id"]
     assert result["activation_nonce"] == "a" * 32
-    assert result["restart_hold_ids"] == list(fra.RESTART_HOLD_IDS)
+    assert result["restart_hold_ids"] == list(TEST_RESTART_HOLD_IDS)
     assert result["worker_terminals"] == list(fra.WORKER_TERMINALS)
     assert set(result["source_bindings"]) == set(fra.SOURCE_BINDING_PATHS)
     assert len(result["task_enabled_before"]) == 21
+
+
+def test_runtime_plan_must_equal_preparation_plan(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def reverse_runtime_plan(decision: dict) -> None:
+        decision["restart_holds"]["authorized_work_item_ids"] = list(
+            reversed(TEST_RESTART_HOLD_IDS)
+        )
+
+    repo, flag_path, _ = _build_repo(
+        tmp_path,
+        monkeypatch,
+        mutate_decision=reverse_runtime_plan,
+    )
+
+    with pytest.raises(fra.RuntimeActivationError, match="restart-hold set mismatch"):
+        _validate(repo, flag_path)
+
+
+def test_accepts_empty_declared_plan(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo, flag_path, _ = _build_repo(
+        tmp_path,
+        monkeypatch,
+        restart_hold_ids=(),
+    )
+
+    result = _validate(repo, flag_path)
+
+    assert result["restart_hold_ids"] == []
+
+
+def test_empty_declared_plan_rejects_boolean_runtime_count(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def replace_count_with_boolean(decision: dict) -> None:
+        decision["restart_holds"]["authorized_release_count"] = False
+
+    repo, flag_path, _ = _build_repo(
+        tmp_path,
+        monkeypatch,
+        restart_hold_ids=(),
+        mutate_decision=replace_count_with_boolean,
+    )
+
+    with pytest.raises(fra.RuntimeActivationError, match="must be an integer"):
+        _validate(repo, flag_path)
+
+
+def test_rejects_missing_release_authorization_key(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def remove_release_authorization(decision: dict) -> None:
+        decision["authorizations"].pop("release_declared_restart_holds")
+
+    repo, flag_path, _ = _build_repo(
+        tmp_path,
+        monkeypatch,
+        mutate_decision=remove_release_authorization,
+    )
+
+    with pytest.raises(fra.RuntimeActivationError, match="key-set mismatch"):
+        _validate(repo, flag_path)
 
 
 @pytest.mark.parametrize(
@@ -244,20 +318,18 @@ def test_missing_runtime_decision_hard_blocks(tmp_path: Path) -> None:
         fra.validate_runtime_activation_decision(repo_root=tmp_path, now_utc=NOW)
 
 
-def test_consumed_canonical_runtime_decision_expires_fail_closed() -> None:
+def test_consumed_legacy_runtime_decision_is_rejected_fail_closed() -> None:
     decision_path = ROOT / fra.DECISION_RELATIVE_PATH
     digest_path = ROOT / fra.DIGEST_RELATIVE_PATH
     decision_raw = decision_path.read_bytes()
     decision = json.loads(decision_raw.decode("utf-8"))
     digest = digest_path.read_text(encoding="ascii")
     assert digest == f"{_sha256(decision_raw)}  {decision_path.name}\n"
-    expires_at = dt.datetime.fromisoformat(
-        decision["expires_at_utc"].replace("Z", "+00:00")
-    )
-    with pytest.raises(fra.RuntimeActivationError, match="expired"):
+    assert "release_seven_restart_holds" in decision["authorizations"]
+    with pytest.raises(fra.RuntimeActivationError, match="authorizations key-set mismatch"):
         fra.validate_runtime_activation_decision(
             repo_root=ROOT,
-            now_utc=expires_at,
+            now_utc=NOW,
         )
 
 
@@ -349,17 +421,43 @@ def test_runtime_decision_rejects_duplicate_json_key(
         _validate(repo, flag_path)
 
 
-def test_schema_and_template_pin_exact_restart_and_source_contracts() -> None:
+def test_schema_and_template_pin_structural_restart_and_source_contracts() -> None:
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     template = json.loads(TEMPLATE_PATH.read_text(encoding="utf-8"))
     properties = schema["properties"]
 
-    assert properties["preparation_decision"]["const"] == template[
-        "preparation_decision"
-    ]
-    assert properties["restart_holds"]["properties"][
-        "authorized_work_item_ids"
-    ]["const"] == list(fra.RESTART_HOLD_IDS)
+    expected_preparation = {
+        "relative_path": fra.PREPARATION_DECISION_RELATIVE_PATH.as_posix(),
+        "sha256": fra.PREPARATION_DECISION_SHA256,
+        "git_commit": fra.PREPARATION_DECISION_COMMIT,
+        "git_blob": fra.PREPARATION_DECISION_BLOB,
+    }
+    assert properties["preparation_decision"]["const"] == expected_preparation
+    assert template["preparation_decision"] == expected_preparation
+    assert template["authorizations"]["release_declared_restart_holds"] is True
+    assert "release_seven_restart_holds" not in template["authorizations"]
+    assert set(properties["authorizations"]["required"]) == {
+        "factory_on",
+        "release_declared_restart_holds",
+        "runtime_flag_upgrade_authorized",
+    }
+    restart_properties = properties["restart_holds"]["properties"]
+    assert restart_properties["authorized_release_count"] == {
+        "type": "integer",
+        "minimum": 0,
+    }
+    assert restart_properties["authorized_work_item_ids"] == {
+        "type": "array",
+        "uniqueItems": True,
+        "items": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{36}$",
+        },
+    }
+    assert template["restart_holds"] == {
+        "authorized_release_count": 0,
+        "authorized_work_item_ids": [],
+    }
     assert properties["worker_policy"]["properties"]["disabled_terminals"][
         "const"
     ] == []
@@ -387,6 +485,17 @@ def test_schema_and_template_pin_exact_restart_and_source_contracts() -> None:
     assert properties["restore_intent"]["properties"][
         "task_enabled_before_sha256"
     ]["const"] == template["restore_intent"]["task_enabled_before_sha256"]
+    preparation = json.loads(
+        (ROOT / fra.PREPARATION_DECISION_RELATIVE_PATH).read_text(encoding="utf-8")
+    )
+    task_map = preparation["restore_intent"]["task_enabled_before"]
+    task_map_sha256 = _sha256(
+        json.dumps(task_map, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    )
+    assert len(task_map) == 21
+    assert task_map_sha256 == template["restore_intent"][
+        "task_enabled_before_sha256"
+    ]
 
 
 def test_cli_emits_exactly_one_versioned_framed_record(

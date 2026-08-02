@@ -19,6 +19,10 @@ import factory_runtime_activation as fra  # noqa: E402
 
 NOW = dt.datetime(2026, 7, 30, 12, 0, tzinfo=dt.UTC)
 TEMPLATE_PATH = HERE.parent / "factory_runtime_activation.v1.template.json"
+TEST_RESTART_HOLD_IDS = (
+    "3746e558-6eff-436b-9365-cfec9b7f1a63",
+    "ded31f32-92fb-45a7-b318-aa00c2f3f41c",
+)
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -49,6 +53,7 @@ def _seed_repo(
     *,
     expires_at: dt.datetime = NOW + dt.timedelta(hours=1),
     crlf_smudge_source: bool = False,
+    restart_hold_ids: tuple[str, ...] = TEST_RESTART_HOLD_IDS,
 ) -> tuple[Path, Path]:
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -79,6 +84,10 @@ def _seed_repo(
             "runtime_flag_upgrade_authorized": False,
             "manifest_creation_authorized_after_prerequisites": True,
             "task_enabled_before": task_map,
+        },
+        "restart_holds": {
+            "authorized_release_count": len(restart_hold_ids),
+            "authorized_work_item_ids": list(restart_hold_ids),
         },
         "explicit_exclusions": {"hold_release_now": False},
     }
@@ -225,6 +234,10 @@ def test_builder_self_verifies_candidate_and_preserves_crlf_normalization(
         "expected_worker_count": 10,
         "expected_terminals": list(fra.WORKER_TERMINALS),
     }
+    assert decision["restart_holds"] == {
+        "authorized_release_count": len(TEST_RESTART_HOLD_IDS),
+        "authorized_work_item_ids": list(TEST_RESTART_HOLD_IDS),
+    }
     assert decision["restore_intent"]["factory_off_flag_sha256"] == _sha256(
         flag_path.read_bytes()
     )
@@ -241,6 +254,32 @@ def test_builder_self_verifies_candidate_and_preserves_crlf_normalization(
             factory_off_flag=flag_path,
             now_utc=NOW,
         )
+
+
+def test_builder_carries_empty_declared_plan_forward(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo, flag_path = _seed_repo(
+        tmp_path,
+        monkeypatch,
+        restart_hold_ids=(),
+    )
+
+    builder.build_runtime_activation_decision(
+        repo_root=repo,
+        flag_path=flag_path,
+        decision_id="OWNER_GO_EMPTY_PLAN",
+        now_utc=NOW,
+    )
+
+    decision = json.loads(
+        (repo / fra.DECISION_RELATIVE_PATH).read_text(encoding="utf-8")
+    )
+    assert decision["restart_holds"] == {
+        "authorized_release_count": 0,
+        "authorized_work_item_ids": [],
+    }
 
 
 def test_builder_rejects_dirty_repository_before_writing_artifacts(

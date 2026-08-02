@@ -120,11 +120,11 @@ $publicSnapshotTaskWrapper = 'C:\QM\repo\scripts\run_public_snapshot_task.ps1'
 $publicSnapshotTaskWorkingDirectory = 'C:\QM\repo'
 $canonicalFactoryOnPath = 'C:\QM\repo\tools\strategy_farm\Factory_ON.ps1'
 $canonicalFactoryOnProcessImage = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-$canonicalOwnerDecisionPath = 'C:\QM\repo\docs\ops\evidence\2026-07-30_factory_preparation_owner_decision.json'
-$canonicalOwnerDecisionRelativePath = 'docs/ops/evidence/2026-07-30_factory_preparation_owner_decision.json'
-$QM_OWNER_DECISION_SHA256 = 'af8479fdc73163250f966014eca5c53224a4ae159426a07cf96c80a379c6edb2'
-$QM_OWNER_DECISION_COMMIT = '7b36ff27f83f024bf1c43bb5537cc747f52b887a'
-$QM_OWNER_DECISION_BLOB = '6d36cf6682e317324a35bc8388042402b0f3e540'
+$canonicalOwnerDecisionPath = 'C:\QM\repo\docs\ops\evidence\2026-08-02_factory_preparation_owner_decision.json'
+$canonicalOwnerDecisionRelativePath = 'docs/ops/evidence/2026-08-02_factory_preparation_owner_decision.json'
+$QM_OWNER_DECISION_SHA256 = 'c3c7fc0907ae2963d48cf778900023e99875b3130a81f741ba591c21f9ef3fb3'
+$QM_OWNER_DECISION_COMMIT = '8f8b77b06fed799322536fd60c32f259843b8c69'
+$QM_OWNER_DECISION_BLOB = 'ab804df2de1a4662bd7439ac3094ee7c5dcb6494'
 # The Pump task is scheduler-bounded by PT10M. TaskScheduler start/finish
 # evidence sampled on 2026-07-31 found 13 substantive runs: p50=550.203s,
 # p75=599.982s, and five reached the 600s ceiling. First-attempt success is
@@ -132,23 +132,13 @@ $QM_OWNER_DECISION_BLOB = '6d36cf6682e317324a35bc8388042402b0f3e540'
 # retaining the guarded restart window; early success exits without waiting.
 $factoryPostStartHealthTimeoutSeconds = 1800
 $QM_PREPARATION_DECISION_WORKER_TERMINALS = @(
-    'T1','T2','T3','T4','T6','T7','T8','T9','T10'
+    'T1','T2','T3','T4','T5','T6','T7','T8','T9','T10'
 )
 $QM_OWNER_APPROVED_DISABLED_TERMINALS = @(
 )
 $QM_OWNER_APPROVED_WORKER_TERMINALS = @(
     'T1','T2','T3','T4','T5','T6','T7','T8','T9','T10'
 )
-$QM_OWNER_APPROVED_RESTART_HOLD_IDS = @(
-    '3746e558-6eff-436b-9365-cfec9b7f1a63',
-    'ded31f32-92fb-45a7-b318-aa00c2f3f41c',
-    '4bd848eb-d744-4f97-9a30-8323f0925394',
-    '5c788bbb-cf26-4f6d-ac86-35bd869c5893',
-    'd3c2c5ad-9455-4241-b30c-a9cb9260a4b5',
-    '36bfac85-63e2-46a7-9f35-8ae583252d2f',
-    'ad1aaca6-e639-4680-94c7-5108902438d2'
-)
-
 $QM_RESPAWN_TASKS = @(
     'QM_StrategyFarm_FactoryWatchdog_15min',
     'QM_StrategyFarm_FactoryON_AtLogon',
@@ -307,26 +297,37 @@ function Assert-CanonicalOwnerRestartDecision {
     } catch {
         throw "canonical OWNER decision JSON is invalid: $($_.Exception.Message)"
     }
-    if ([string]$decision.decision_id -cne 'FACTORY_PREPARATION_20260730_REPAIR_NO_WAIVER' -or
+    if ([string]$decision.decision_id -cne 'FACTORY_PREPARATION_20260802_TEN_WORKER_ZERO_HOLD' -or
         [string]$decision.authority -cne 'OWNER' -or
-        [string]$decision.status -cne 'APPROVED_WITH_EXPLICIT_BOUNDARIES') {
+        [string]$decision.status -cne 'APPROVED') {
         throw 'canonical OWNER decision identity mismatch'
     }
-    $decisionHoldIds = @($decision.restart_holds.authorized_work_item_ids |
+    [string[]]$decisionHoldIds = @($decision.restart_holds.authorized_work_item_ids |
         ForEach-Object { [string]$_ })
-    if ($decisionHoldIds.Count -ne $QM_OWNER_APPROVED_RESTART_HOLD_IDS.Count) {
-        throw 'canonical OWNER restart-hold count mismatch'
+    if ($decision.restart_holds.authorized_release_count -isnot [int] -or
+        [int]$decision.restart_holds.authorized_release_count -ne $decisionHoldIds.Count -or
+        [string]$decision.restart_holds.release_policy -cne 'ONLY_AFTER_POST_START_HEALTH_GATE_PASS') {
+        throw 'canonical OWNER restart-hold metadata mismatch'
     }
-    for ($index = 0; $index -lt $QM_OWNER_APPROVED_RESTART_HOLD_IDS.Count; $index++) {
-        if ($decisionHoldIds[$index] -cne $QM_OWNER_APPROVED_RESTART_HOLD_IDS[$index]) {
-            throw "canonical OWNER restart-hold ID mismatch at index $index"
+    for ($index = 0; $index -lt $decisionHoldIds.Count; $index++) {
+        if ([string]::IsNullOrWhiteSpace($decisionHoldIds[$index]) -or
+            $decisionHoldIds[$index] -cnotmatch '^[0-9a-fA-F-]{36}$') {
+            throw "canonical OWNER restart-hold ID is malformed at index $index"
+        }
+        for ($priorIndex = 0; $priorIndex -lt $index; $priorIndex++) {
+            if ($decisionHoldIds[$priorIndex] -ceq $decisionHoldIds[$index]) {
+                throw "canonical OWNER restart-hold ID is duplicated at index $index"
+            }
         }
     }
+    $script:approvedRestartHoldIds = [string[]]@($decisionHoldIds)
     $decisionWorkerTerminals = @($decision.worker_policy.expected_terminals |
         ForEach-Object { [string]$_ })
-    if ([int]$decision.worker_policy.expected_worker_count -ne 9 -or
+    if ([int]$decision.worker_policy.expected_worker_count -ne 10 -or
         $decision.worker_policy.t5_quarantine_ratified -isnot [bool] -or
-        -not [bool]$decision.worker_policy.t5_quarantine_ratified -or
+        [bool]$decision.worker_policy.t5_quarantine_ratified -or
+        $decision.worker_policy.t5_quarantine_lifted -isnot [bool] -or
+        -not [bool]$decision.worker_policy.t5_quarantine_lifted -or
         $decisionWorkerTerminals.Count -ne $QM_PREPARATION_DECISION_WORKER_TERMINALS.Count) {
         throw 'canonical OWNER worker-policy metadata mismatch'
     }
@@ -874,7 +875,11 @@ function Enter-FactoryMutationLock([string]$Owner) {
         }
         $script:factoryMutationLockNonce = [guid]::NewGuid().ToString('N')
         $lockHandleValue = $lockStream.SafeFileHandle.DangerousGetHandle().ToInt64()
-        $record = [ordered]@{
+        [string[]]$lockRestartHoldIds = @(
+            $script:runtimeAuthorization.restart_hold_ids |
+            ForEach-Object { [string]$_ }
+        )
+        $recordPayload = [ordered]@{
             pid = $PID
             owner = $Owner
             nonce = $script:factoryMutationLockNonce
@@ -886,7 +891,7 @@ function Enter-FactoryMutationLock([string]$Owner) {
             owner_decision_sha256 = $QM_OWNER_DECISION_SHA256
             owner_decision_commit = $QM_OWNER_DECISION_COMMIT
             owner_decision_blob = $QM_OWNER_DECISION_BLOB
-            restart_hold_ids = @($QM_OWNER_APPROVED_RESTART_HOLD_IDS)
+            restart_hold_ids = $lockRestartHoldIds
             disabled_terminals_sha256 = [string]$script:disabledTerminalPolicySha256
             session_id = [int]$mySession
             runtime_decision_id = [string]$script:runtimeAuthorization.decision_id
@@ -900,7 +905,28 @@ function Enter-FactoryMutationLock([string]$Owner) {
             factory_off_flag_sha256 = [string]$script:runtimeAuthorization.factory_off_flag_sha256
             factory_off_request_path = $factoryOffRequestPath
             task_enabled_before_sha256 = [string]$script:runtimeAuthorization.task_enabled_before_sha256
-        } | ConvertTo-Json -Compress
+        }
+        $record = $recordPayload | ConvertTo-Json -Compress
+        try {
+            $roundTripRecord = $record | ConvertFrom-Json -ErrorAction Stop
+        } catch {
+            throw "factory mutation lock JSON round-trip failed: $($_.Exception.Message)"
+        }
+        [string[]]$roundTripRestartHoldIds = @(
+            $roundTripRecord.restart_hold_ids | ForEach-Object { [string]$_ }
+        )
+        if ($roundTripRestartHoldIds.Count -ne $lockRestartHoldIds.Count) {
+            throw 'factory mutation lock restart_hold_ids changed during JSON round-trip'
+        }
+        for ($index = 0; $index -lt $lockRestartHoldIds.Count; $index++) {
+            if ($roundTripRestartHoldIds[$index] -cne $lockRestartHoldIds[$index]) {
+                throw "factory mutation lock restart_hold_ids mismatch at index $index"
+            }
+        }
+        if ($lockRestartHoldIds.Count -eq 0 -and
+            -not $record.Contains('"restart_hold_ids":[]')) {
+            throw 'factory mutation lock empty restart_hold_ids did not serialize as JSON []'
+        }
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($record)
         $script:factoryMutationLockRecordBytesBase64 = [Convert]::ToBase64String($bytes)
         $lockStream.Write($bytes, 0, $bytes.Length)
@@ -999,11 +1025,12 @@ function Invoke-RestartHoldReleaseWithMutationLock {
         throw 'release helper exited successfully without mutation_committed=true; lock retained'
     }
     $releasedIds = @($result.released | ForEach-Object { [string]$_ })
-    $missingIds = @($QM_OWNER_APPROVED_RESTART_HOLD_IDS |
+    $missingIds = @($script:approvedRestartHoldIds |
         Where-Object { $_ -notin $releasedIds })
     $extraIds = @($releasedIds |
-        Where-Object { $_ -notin $QM_OWNER_APPROVED_RESTART_HOLD_IDS })
-    if ($missingIds.Count -ne 0 -or $extraIds.Count -ne 0 -or $releasedIds.Count -ne 7) {
+        Where-Object { $_ -notin $script:approvedRestartHoldIds })
+    if ($missingIds.Count -ne 0 -or $extraIds.Count -ne 0 -or
+        $releasedIds.Count -ne $script:approvedRestartHoldIds.Count) {
         $script:retainFactoryMutationLock = $true
         throw ("committed restart-hold result has an invalid exact set; lock retained: " +
             "missing=[$($missingIds -join ',')] extra=[$($extraIds -join ',')]")
@@ -1016,7 +1043,7 @@ function Invoke-RestartHoldReleaseWithMutationLock {
     if ([string]$result.post_commit_evidence.status -cne 'PASS') {
         $script:retainFactoryMutationLock = $true
         $script:restartHoldEvidenceFailedAfterCommit = $true
-        throw ("RESTART_HOLDS_COMMITTED_EVIDENCE_FAILED: seven holds were committed, " +
+        throw ("RESTART_HOLDS_COMMITTED_EVIDENCE_FAILED: the declared hold plan was committed, " +
             "post-commit evidence is degraded, OFF recovery will be asserted and the lock retained: " +
             (@($result.post_commit_evidence.errors) -join '; '))
     }
@@ -1103,6 +1130,16 @@ try {
     Assert-CleanFactoryCheckout -Context 'initial read-only preflight' | Out-Null
     Assert-NoPendingFactoryOffRequest -Context 'runtime authorization preflight'
     $script:runtimeAuthorization = Get-CanonicalRuntimeActivationAuthorization
+    [string[]]$runtimeRestartHoldIds = @($script:runtimeAuthorization.restart_hold_ids |
+        ForEach-Object { [string]$_ })
+    if ($runtimeRestartHoldIds.Count -ne $script:approvedRestartHoldIds.Count) {
+        throw 'runtime restart-hold plan count does not match the preparation decision'
+    }
+    for ($index = 0; $index -lt $script:approvedRestartHoldIds.Count; $index++) {
+        if ($runtimeRestartHoldIds[$index] -cne $script:approvedRestartHoldIds[$index]) {
+            throw "runtime restart-hold plan mismatch at index $index"
+        }
+    }
     $disabledTerminalPolicy = Get-CanonicalDisabledTerminalPolicySnapshot
 } catch {
     throw "FACTORY ON ABORTED before mutation: $($_.Exception.Message)"

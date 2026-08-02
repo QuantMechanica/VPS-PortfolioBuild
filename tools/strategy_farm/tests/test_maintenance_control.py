@@ -19,10 +19,20 @@ import farmctl  # noqa: E402
 import maintenance_control as mc  # noqa: E402
 
 
-RESTART_HOLD_IDS = mc.CANONICAL_RESTART_HOLD_IDS
+RESTART_HOLD_IDS = (
+    "3746e558-6eff-436b-9365-cfec9b7f1a63",
+    "ded31f32-92fb-45a7-b318-aa00c2f3f41c",
+    "4bd848eb-d744-4f97-9a30-8323f0925394",
+    "5c788bbb-cf26-4f6d-ac86-35bd869c5893",
+    "d3c2c5ad-9455-4241-b30c-a9cb9260a4b5",
+    "36bfac85-63e2-46a7-9f35-8ae583252d2f",
+    "ad1aaca6-e639-4680-94c7-5108902438d2",
+)
 
 
-def _runtime_authorization() -> dict:
+def _runtime_authorization(
+    restart_hold_ids: tuple[str, ...] = RESTART_HOLD_IDS,
+) -> dict:
     return {
         "authorized": True,
         "decision_id": "unit-runtime-decision",
@@ -32,6 +42,7 @@ def _runtime_authorization() -> dict:
         "decision_git_blob": "d" * 40,
         "factory_off_flag_sha256": "e" * 64,
         "task_enabled_before_sha256": "f" * 64,
+        "restart_hold_ids": list(restart_hold_ids),
         "source_bindings": {
             "factory_on": {
                 "sha256": "1" * 64,
@@ -44,6 +55,18 @@ def _runtime_authorization() -> dict:
                 "git_blob": "6" * 40,
             },
         },
+    }
+
+
+def _owner_decision(
+    restart_hold_ids: tuple[str, ...] = RESTART_HOLD_IDS,
+) -> dict:
+    return {
+        "restart_holds": {
+            "release_policy": "ONLY_AFTER_POST_START_HEALTH_GATE_PASS",
+            "authorized_release_count": len(restart_hold_ids),
+            "authorized_work_item_ids": list(restart_hold_ids),
+        }
     }
 
 
@@ -117,7 +140,10 @@ def _write_and_load_manifest(path: Path) -> dict:
     return mc.load_manifest(path)
 
 
-def _prepare_restart_holds(tmp_path: Path) -> tuple[Path, Path, Path]:
+def _prepare_restart_holds(
+    tmp_path: Path,
+    restart_hold_ids: tuple[str, ...] = RESTART_HOLD_IDS,
+) -> tuple[Path, Path, Path]:
     root = tmp_path / "farm"
     db = _seed(root)
     manifest = _write_and_load_manifest(tmp_path / "manifest.json")
@@ -142,14 +168,23 @@ def _prepare_restart_holds(tmp_path: Path) -> tuple[Path, Path, Path]:
                 created_at, updated_at
             ) VALUES (?, 'FACTORY_OFF', 'resume after restart', 1, 1, ?, ?)
             """,
-            [(work_item_id, now, now) for work_item_id in RESTART_HOLD_IDS],
+            [(work_item_id, now, now) for work_item_id in restart_hold_ids],
         )
         conn.commit()
     flag.unlink()
     return root, db, flag
 
 
-def _allow_test_factory_on_context(monkeypatch: pytest.MonkeyPatch) -> None:
+def _allow_test_factory_on_context(
+    monkeypatch: pytest.MonkeyPatch,
+    restart_hold_ids: tuple[str, ...] = RESTART_HOLD_IDS,
+) -> None:
+    runtime_authorization = _runtime_authorization(restart_hold_ids)
+    monkeypatch.setattr(
+        mc,
+        "_validate_canonical_restart_owner_decision",
+        lambda: _owner_decision(restart_hold_ids),
+    )
     monkeypatch.setattr(
         mc, "_require_canonical_restart_release_paths", lambda *args, **kwargs: None
     )
@@ -161,7 +196,7 @@ def _allow_test_factory_on_context(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         mc,
         "validate_runtime_activation_decision",
-        lambda *args, **kwargs: _runtime_authorization(),
+        lambda *args, **kwargs: runtime_authorization,
     )
 
 
@@ -183,7 +218,7 @@ def _factory_on_lock_record(
         "owner_decision_sha256": mc.CANONICAL_OWNER_DECISION_SHA256,
         "owner_decision_commit": mc.CANONICAL_OWNER_DECISION_COMMIT,
         "owner_decision_blob": mc.CANONICAL_OWNER_DECISION_BLOB,
-        "restart_hold_ids": list(RESTART_HOLD_IDS),
+        "restart_hold_ids": list(runtime["restart_hold_ids"]),
         "disabled_terminals_sha256": "0" * 64,
         "runtime_decision_id": runtime["decision_id"],
         "runtime_activation_nonce": runtime["activation_nonce"],
@@ -616,16 +651,119 @@ def test_restart_release_rejects_missing_or_extra_ids_before_writes(
         ).fetchone()[0] == 0
         assert conn.execute(
             "SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
-            "AND name='factory_runtime_activation_consumptions'"
+            "AND name='factory_runtime_activation_consumptions_v2'"
+        ).fetchone()[0] == 0
+
+
+def test_empty_plan_verifies_zero_holds_and_consumes_nonce(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _, db, flag = _prepare_restart_holds(tmp_path, ())
+    runtime = _runtime_authorization(())
+    _allow_test_factory_on_context(monkeypatch, ())
+
+    result = mc.release_restart_holds(
+        db,
+        factory_off_flag=flag,
+        expected_db_sha256=None,
+        apply=True,
+        release_note="verified empty restart-hold plan",
+        factory_on_lock_nonce="unit-test-nonce",
+    )
+
+    assert result["expected_work_item_ids"] == []
+    assert result["released"] == []
+    assert result["runtime_activation_nonce_consumed"] == runtime["activation_nonce"]
+    with sqlite3.connect(db) as conn:
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_holds "
+            "WHERE active=1 AND release_on_restart=1"
+        ).fetchone()[0] == 0
+        assert conn.execute(
+            "SELECT activation_nonce, released_hold_count "
+            "FROM factory_runtime_activation_consumptions_v2"
+        ).fetchall() == [(runtime["activation_nonce"], 0)]
+
+
+def test_empty_plan_fails_closed_on_any_active_release_hold(tmp_path: Path) -> None:
+    active_id = (RESTART_HOLD_IDS[0],)
+    _, db, _ = _prepare_restart_holds(tmp_path, active_id)
+
+    with pytest.raises(RuntimeError, match="exact-set mismatch"):
+        mc._apply_restart_hold_release_transaction(
+            db,
+            release_note="must not release an undeclared hold",
+            runtime_authorization=_runtime_authorization(()),
+        )
+
+    with sqlite3.connect(db) as conn:
+        assert conn.execute(
+            "SELECT active FROM work_item_holds WHERE work_item_id=?",
+            active_id,
+        ).fetchone() == (1,)
+        assert conn.execute(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
+            "AND name='factory_runtime_activation_consumptions_v2'"
+        ).fetchone()[0] == 0
+
+
+def test_restart_release_derives_plan_from_runtime_authorization(tmp_path: Path) -> None:
+    declared_ids = RESTART_HOLD_IDS[:2]
+    _, db, _ = _prepare_restart_holds(tmp_path, declared_ids)
+
+    result = mc._apply_restart_hold_release_transaction(
+        db,
+        release_note="release the runtime-declared two-ID plan",
+        runtime_authorization=_runtime_authorization(declared_ids),
+    )
+
+    assert result["released"] == sorted(declared_ids)
+    with sqlite3.connect(db) as conn:
+        assert conn.execute(
+            "SELECT released_hold_count "
+            "FROM factory_runtime_activation_consumptions_v2"
+        ).fetchone() == (2,)
+
+
+def test_missing_plan_in_runtime_authorization_fails_closed(tmp_path: Path) -> None:
+    _, db, _ = _prepare_restart_holds(tmp_path)
+    runtime = _runtime_authorization()
+    runtime.pop("restart_hold_ids")
+
+    with pytest.raises(RuntimeError, match="restart_hold_ids must be a list"):
+        mc._apply_restart_hold_release_transaction(
+            db,
+            release_note="must reject missing plan",
+            runtime_authorization=runtime,
+        )
+
+    with sqlite3.connect(db) as conn:
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_holds "
+            "WHERE active=1 AND release_on_restart=1"
+        ).fetchone()[0] == len(RESTART_HOLD_IDS)
+        assert conn.execute(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
+            "AND name='factory_runtime_activation_consumptions_v2'"
         ).fetchone()[0] == 0
 
 
 def test_restart_release_ids_are_unique_and_bound_to_canonical_owner_decision() -> None:
     decision = mc._validate_canonical_restart_owner_decision()
-    assert len(RESTART_HOLD_IDS) == len(set(RESTART_HOLD_IDS)) == 7
-    assert decision["restart_holds"]["authorized_work_item_ids"] == list(
-        RESTART_HOLD_IDS
+    restart_holds = decision["restart_holds"]
+    work_item_ids = restart_holds["authorized_work_item_ids"]
+
+    assert isinstance(work_item_ids, list)
+    assert len(work_item_ids) == len(set(work_item_ids))
+    assert all(
+        isinstance(work_item_id, str)
+        and mc.WORK_ITEM_ID_RE.fullmatch(work_item_id) is not None
+        for work_item_id in work_item_ids
     )
+    assert type(restart_holds["authorized_release_count"]) is int
+    assert restart_holds["authorized_release_count"] == len(work_item_ids)
+    assert restart_holds["release_policy"] == "ONLY_AFTER_POST_START_HEALTH_GATE_PASS"
+    assert not hasattr(mc, "CANONICAL_RESTART_HOLD_IDS")
 
 
 def test_restart_release_rejects_tampered_owner_decision(
@@ -723,7 +861,7 @@ def test_restart_release_ledger_collision_rolls_back_instead_of_ignoring(
         ).fetchone()[0] == 0
         assert conn.execute(
             "SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
-            "AND name='factory_runtime_activation_consumptions'"
+            "AND name='factory_runtime_activation_consumptions_v2'"
         ).fetchone()[0] == 0
 
 
@@ -742,7 +880,7 @@ def test_restart_release_consumes_runtime_nonce_once_in_same_transaction(
     with sqlite3.connect(db) as conn:
         consumption = conn.execute(
             "SELECT activation_nonce, decision_id, decision_sha256, released_hold_count "
-            "FROM factory_runtime_activation_consumptions"
+            "FROM factory_runtime_activation_consumptions_v2"
         ).fetchall()
         assert consumption == [
             (
@@ -758,7 +896,7 @@ def test_restart_release_consumes_runtime_nonce_once_in_same_transaction(
         )
         conn.commit()
 
-    with pytest.raises(sqlite3.IntegrityError, match="UNIQUE constraint failed"):
+    with pytest.raises(RuntimeError, match="already consumed"):
         mc._apply_restart_hold_release_transaction(
             db,
             release_note="nonce replay must abort",
@@ -767,7 +905,7 @@ def test_restart_release_consumes_runtime_nonce_once_in_same_transaction(
 
     with sqlite3.connect(db) as conn:
         assert conn.execute(
-            "SELECT COUNT(*) FROM factory_runtime_activation_consumptions"
+            "SELECT COUNT(*) FROM factory_runtime_activation_consumptions_v2"
         ).fetchone()[0] == 1
         assert conn.execute(
             "SELECT COUNT(*) FROM work_item_holds WHERE active=1 AND release_on_restart=1"
@@ -775,6 +913,80 @@ def test_restart_release_consumes_runtime_nonce_once_in_same_transaction(
         assert conn.execute(
             "SELECT COUNT(*) FROM work_item_transition_ledger WHERE action='release_hold'"
         ).fetchone()[0] == 7
+
+
+def test_v2_check_allows_zero_and_is_append_only(tmp_path: Path) -> None:
+    _, db, _ = _prepare_restart_holds(tmp_path, ())
+    runtime = _runtime_authorization(())
+    mc._apply_restart_hold_release_transaction(
+        db,
+        release_note="record zero-count consumption",
+        runtime_authorization=runtime,
+    )
+
+    with sqlite3.connect(db) as conn:
+        table_sql = conn.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' "
+            "AND name='factory_runtime_activation_consumptions_v2'"
+        ).fetchone()[0]
+        assert "CHECK(released_hold_count>=0)" in "".join(table_sql.split())
+        assert conn.execute(
+            "SELECT released_hold_count "
+            "FROM factory_runtime_activation_consumptions_v2"
+        ).fetchone() == (0,)
+        with pytest.raises(sqlite3.IntegrityError, match="append-only"):
+            conn.execute(
+                "UPDATE factory_runtime_activation_consumptions_v2 "
+                "SET decision_id='tampered'"
+            )
+        with pytest.raises(sqlite3.IntegrityError, match="append-only"):
+            conn.execute("DELETE FROM factory_runtime_activation_consumptions_v2")
+
+
+def test_nonce_single_use_across_v1_and_v2_rejects_legacy_v1_nonce(
+    tmp_path: Path,
+) -> None:
+    _, db, _ = _prepare_restart_holds(tmp_path)
+    runtime = _runtime_authorization()
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            """CREATE TABLE factory_runtime_activation_consumptions (
+                activation_nonce TEXT PRIMARY KEY,
+                decision_id TEXT NOT NULL,
+                decision_sha256 TEXT NOT NULL,
+                consumed_at_utc TEXT NOT NULL,
+                released_hold_count INTEGER NOT NULL CHECK(released_hold_count=7)
+            )"""
+        )
+        conn.execute(
+            """INSERT INTO factory_runtime_activation_consumptions(
+                activation_nonce, decision_id, decision_sha256,
+                consumed_at_utc, released_hold_count
+            ) VALUES (?, 'legacy-decision', ?, ?, 7)""",
+            (runtime["activation_nonce"], "9" * 64, mc.utc_now()),
+        )
+        conn.commit()
+
+    with pytest.raises(RuntimeError, match="already consumed.*consumptions"):
+        mc._apply_restart_hold_release_transaction(
+            db,
+            release_note="legacy nonce replay must abort",
+            runtime_authorization=runtime,
+        )
+
+    with sqlite3.connect(db) as conn:
+        assert conn.execute(
+            "SELECT activation_nonce, released_hold_count "
+            "FROM factory_runtime_activation_consumptions"
+        ).fetchall() == [(runtime["activation_nonce"], 7)]
+        assert conn.execute(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
+            "AND name='factory_runtime_activation_consumptions_v2'"
+        ).fetchone()[0] == 0
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_holds "
+            "WHERE active=1 AND release_on_restart=1"
+        ).fetchone()[0] == len(RESTART_HOLD_IDS)
 
 
 @pytest.mark.parametrize("intent_kind", ["main_flag", "request_marker"])
@@ -822,7 +1034,7 @@ def test_restart_release_rechecks_off_intent_inside_begin_immediate_window(
         ).fetchone()[0] == 0
         assert conn.execute(
             "SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
-            "AND name='factory_runtime_activation_consumptions'"
+            "AND name='factory_runtime_activation_consumptions_v2'"
         ).fetchone()[0] == 0
 
 

@@ -40,27 +40,19 @@ DEFAULT_DISABLED_TERMINALS = Path(
 
 CANONICAL_FACTORY_ON_PATH = Path(r"C:\QM\repo\tools\strategy_farm\Factory_ON.ps1")
 CANONICAL_OWNER_DECISION_RELATIVE_PATH = Path(
-    "docs/ops/evidence/2026-07-30_factory_preparation_owner_decision.json"
+    "docs/ops/evidence/2026-08-02_factory_preparation_owner_decision.json"
 )
 CANONICAL_OWNER_DECISION_SHA256 = (
-    "af8479fdc73163250f966014eca5c53224a4ae159426a07cf96c80a379c6edb2"
+    "c3c7fc0907ae2963d48cf778900023e99875b3130a81f741ba591c21f9ef3fb3"
 )
-CANONICAL_OWNER_DECISION_COMMIT = "7b36ff27f83f024bf1c43bb5537cc747f52b887a"
-CANONICAL_OWNER_DECISION_BLOB = "6d36cf6682e317324a35bc8388042402b0f3e540"
-CANONICAL_RESTART_HOLD_IDS = (
-    "3746e558-6eff-436b-9365-cfec9b7f1a63",
-    "ded31f32-92fb-45a7-b318-aa00c2f3f41c",
-    "4bd848eb-d744-4f97-9a30-8323f0925394",
-    "5c788bbb-cf26-4f6d-ac86-35bd869c5893",
-    "d3c2c5ad-9455-4241-b30c-a9cb9260a4b5",
-    "36bfac85-63e2-46a7-9f35-8ae583252d2f",
-    "ad1aaca6-e639-4680-94c7-5108902438d2",
-)
+CANONICAL_OWNER_DECISION_COMMIT = "8f8b77b06fed799322536fd60c32f259843b8c69"
+CANONICAL_OWNER_DECISION_BLOB = "ab804df2de1a4662bd7439ac3094ee7c5dcb6494"
 CANONICAL_WORKER_TERMINALS = (
     "T1",
     "T2",
     "T3",
     "T4",
+    "T5",
     "T6",
     "T7",
     "T8",
@@ -74,6 +66,7 @@ CANONICAL_FACTORY_ON_PROCESS_IMAGE = Path(
 
 ALLOWED_ACTIONS = {"hold", "requeue_hold", "quarantine"}
 ALLOWED_STATUSES = {"pending", "active", "done", "failed"}
+WORK_ITEM_ID_RE = re.compile(r"[0-9a-fA-F-]{36}")
 
 
 def utc_now() -> str:
@@ -361,6 +354,28 @@ def _canonical_repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+def _validated_restart_hold_ids(value: Any, *, label: str) -> list[str]:
+    if not isinstance(value, list):
+        raise RuntimeError(f"{label} must be a list")
+    if any(
+        not isinstance(work_item_id, str)
+        or not work_item_id
+        or WORK_ITEM_ID_RE.fullmatch(work_item_id) is None
+        for work_item_id in value
+    ):
+        raise RuntimeError(f"{label} must contain UUID-shaped strings")
+    if len(value) != len(set(value)):
+        raise RuntimeError(f"{label} must contain unique strings")
+    return list(value)
+
+
+def _runtime_restart_hold_ids(runtime_authorization: dict[str, Any]) -> list[str]:
+    return _validated_restart_hold_ids(
+        runtime_authorization.get("restart_hold_ids"),
+        label="runtime authorization restart_hold_ids",
+    )
+
+
 def _validate_canonical_restart_owner_decision() -> dict[str, Any]:
     """Verify immutable OWNER provenance and return the pinned decision payload."""
 
@@ -397,9 +412,9 @@ def _validate_canonical_restart_owner_decision() -> dict[str, Any]:
         raise RuntimeError("canonical OWNER decision must be a JSON object")
 
     expected_scalar = {
-        "decision_id": "FACTORY_PREPARATION_20260730_REPAIR_NO_WAIVER",
+        "decision_id": "FACTORY_PREPARATION_20260802_TEN_WORKER_ZERO_HOLD",
         "authority": "OWNER",
-        "status": "APPROVED_WITH_EXPLICIT_BOUNDARIES",
+        "status": "APPROVED",
     }
     actual_scalar = {key: payload.get(key) for key in expected_scalar}
     if actual_scalar != expected_scalar:
@@ -411,16 +426,20 @@ def _validate_canonical_restart_owner_decision() -> dict[str, Any]:
     worker_policy = payload.get("worker_policy")
     if not isinstance(restart_holds, dict) or not isinstance(worker_policy, dict):
         raise RuntimeError("canonical OWNER decision lacks restart_holds/worker_policy")
+    restart_hold_ids = _validated_restart_hold_ids(
+        restart_holds.get("authorized_work_item_ids"),
+        label="canonical OWNER authorized_work_item_ids",
+    )
     if (
-        restart_holds.get("authorized_work_item_ids")
-        != list(CANONICAL_RESTART_HOLD_IDS)
-        or restart_holds.get("authorized_release_count") != len(CANONICAL_RESTART_HOLD_IDS)
+        type(restart_holds.get("authorized_release_count")) is not int
+        or restart_holds.get("authorized_release_count") != len(restart_hold_ids)
         or restart_holds.get("release_policy")
         != "ONLY_AFTER_POST_START_HEALTH_GATE_PASS"
     ):
         raise RuntimeError("canonical OWNER restart-hold authorization mismatch")
     if (
-        worker_policy.get("t5_quarantine_ratified") is not True
+        worker_policy.get("t5_quarantine_ratified") is not False
+        or worker_policy.get("t5_quarantine_lifted") is not True
         or worker_policy.get("expected_terminals") != list(CANONICAL_WORKER_TERMINALS)
         or worker_policy.get("expected_worker_count") != len(CANONICAL_WORKER_TERMINALS)
     ):
@@ -770,6 +789,7 @@ def _validate_canonical_factory_on_lock(
         raise RuntimeError(
             f"canonical Factory_ON lock cannot be authenticated: {lock_path}: {exc}"
         ) from exc
+    restart_hold_ids = _runtime_restart_hold_ids(runtime_authorization)
     factory_source = runtime_authorization.get("source_bindings", {}).get("factory_on", {})
     expected = {
         "pid": os.getppid(),
@@ -780,7 +800,7 @@ def _validate_canonical_factory_on_lock(
         "owner_decision_sha256": CANONICAL_OWNER_DECISION_SHA256,
         "owner_decision_commit": CANONICAL_OWNER_DECISION_COMMIT,
         "owner_decision_blob": CANONICAL_OWNER_DECISION_BLOB,
-        "restart_hold_ids": list(CANONICAL_RESTART_HOLD_IDS),
+        "restart_hold_ids": restart_hold_ids,
         "runtime_decision_id": runtime_authorization.get("decision_id"),
         "runtime_activation_nonce": runtime_authorization.get("activation_nonce"),
         "runtime_decision_sha256": runtime_authorization.get("decision_sha256"),
@@ -1171,7 +1191,7 @@ def _apply_restart_hold_release_transaction(
     factory_off_flag: Path | None = None,
     factory_off_request: Path | None = None,
 ) -> dict[str, Any]:
-    expected_ids = tuple(sorted(CANONICAL_RESTART_HOLD_IDS))
+    expected_ids = tuple(sorted(_runtime_restart_hold_ids(runtime_authorization)))
     activation_nonce = runtime_authorization.get("activation_nonce")
     decision_id = runtime_authorization.get("decision_id")
     decision_sha256 = runtime_authorization.get("decision_sha256")
@@ -1196,33 +1216,67 @@ def _apply_restart_hold_release_transaction(
             _require_exact_restart_hold_set(rows, expected_ids)
             now = utc_now()
             conn.execute(
-                """CREATE TABLE IF NOT EXISTS factory_runtime_activation_consumptions (
+                """CREATE TABLE IF NOT EXISTS factory_runtime_activation_consumptions_v2 (
                     activation_nonce TEXT PRIMARY KEY,
                     decision_id TEXT NOT NULL,
                     decision_sha256 TEXT NOT NULL,
                     consumed_at_utc TEXT NOT NULL,
-                    released_hold_count INTEGER NOT NULL CHECK(released_hold_count=7)
+                    released_hold_count INTEGER NOT NULL CHECK(released_hold_count>=0)
                 )"""
             )
             conn.execute(
-                """CREATE TRIGGER IF NOT EXISTS trg_factory_runtime_activation_no_update
-                BEFORE UPDATE ON factory_runtime_activation_consumptions
+                """CREATE TRIGGER IF NOT EXISTS trg_factory_runtime_activation_v2_no_update
+                BEFORE UPDATE ON factory_runtime_activation_consumptions_v2
                 BEGIN SELECT RAISE(ABORT, 'factory runtime activation consumption is append-only'); END"""
             )
             conn.execute(
-                """CREATE TRIGGER IF NOT EXISTS trg_factory_runtime_activation_no_delete
-                BEFORE DELETE ON factory_runtime_activation_consumptions
+                """CREATE TRIGGER IF NOT EXISTS trg_factory_runtime_activation_v2_no_delete
+                BEFORE DELETE ON factory_runtime_activation_consumptions_v2
                 BEGIN SELECT RAISE(ABORT, 'factory runtime activation consumption is append-only'); END
                 """
             )
+            legacy_table_exists = conn.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' "
+                "AND name='factory_runtime_activation_consumptions'"
+            ).fetchone()
+            consumed_in_v1 = (
+                legacy_table_exists is not None
+                and conn.execute(
+                    "SELECT 1 FROM factory_runtime_activation_consumptions "
+                    "WHERE activation_nonce=?",
+                    (activation_nonce,),
+                ).fetchone()
+                is not None
+            )
+            consumed_in_v2 = conn.execute(
+                "SELECT 1 FROM factory_runtime_activation_consumptions_v2 "
+                "WHERE activation_nonce=?",
+                (activation_nonce,),
+            ).fetchone()
+            if consumed_in_v1 or consumed_in_v2 is not None:
+                consumed_table = (
+                    "factory_runtime_activation_consumptions"
+                    if consumed_in_v1
+                    else "factory_runtime_activation_consumptions_v2"
+                )
+                raise RuntimeError(
+                    "runtime activation nonce was already consumed in "
+                    f"{consumed_table}"
+                )
             conn.execute(
                 """
-                INSERT INTO factory_runtime_activation_consumptions(
+                INSERT INTO factory_runtime_activation_consumptions_v2(
                     activation_nonce, decision_id, decision_sha256,
                     consumed_at_utc, released_hold_count
-                ) VALUES (?, ?, ?, ?, 7)
+                ) VALUES (?, ?, ?, ?, ?)
                 """,
-                (activation_nonce, decision_id, decision_sha256, now),
+                (
+                    activation_nonce,
+                    decision_id,
+                    decision_sha256,
+                    now,
+                    len(rows),
+                ),
             )
             for row in rows:
                 key = f"restart-release:{row['work_item_id']}:{row['created_at']}"
@@ -1296,8 +1350,12 @@ def release_restart_holds(
     release_note: str,
     factory_on_lock_nonce: str | None = None,
 ) -> dict[str, Any]:
-    _validate_canonical_restart_owner_decision()
-    expected_ids = tuple(sorted(CANONICAL_RESTART_HOLD_IDS))
+    owner_decision = _validate_canonical_restart_owner_decision()
+    preparation_plan = _validated_restart_hold_ids(
+        owner_decision["restart_holds"]["authorized_work_item_ids"],
+        label="canonical OWNER authorized_work_item_ids",
+    )
+    expected_ids = tuple(sorted(preparation_plan))
     lock_path = path_for_factory_flag(factory_off_flag)
     if not apply:
         _require_no_factory_off_intent(
@@ -1324,6 +1382,12 @@ def release_restart_holds(
         raise RuntimeError(
             f"release-on-restart lacks fresh canonical OWNER runtime authority: {exc}"
         ) from exc
+    runtime_plan = _runtime_restart_hold_ids(runtime_authorization)
+    if runtime_plan != preparation_plan:
+        raise RuntimeError(
+            "runtime restart-hold plan does not equal the canonical preparation plan"
+        )
+    expected_ids = tuple(sorted(runtime_plan))
     _require_canonical_restart_release_paths(db, factory_off_flag, lock_path)
     _validate_canonical_factory_on_lock(
         lock_path,
