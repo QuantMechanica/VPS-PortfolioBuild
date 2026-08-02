@@ -254,6 +254,62 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         with self.assertRaisesRegex(runner.RunnerError, "RISK_FIXED > 0 and RISK_PERCENT = 0"):
             runner._validate_cell_setfile(percent_plan["cells"][0], percent_manifest)
 
+    def test_executor_fixture_report_consumes_sealed_calendar_bundle_inputs(self) -> None:
+        plan = self.build(output="effective-calendar-inputs")
+        _, manifest = runner.load_authenticated_plan(Path(plan["plan_path"]))
+        spec = plan["cells"][0]
+        report = self.root / "effective-inputs.htm"
+        effective = {
+            "qm_rng_seed": str(spec["seed"]),
+            "qm_news_temporal": str(contract.TEMPORAL_MODE_IDS[spec["temporal_mode"]]),
+            "qm_news_compliance": str(runner.COMPLIANCE_MODE_IDS[spec["compliance_mode"]]),
+            "qm_news_calendar_bundle_id": manifest["calendar_bundle"]["bundle_id"],
+            "qm_news_calendar_expected_sha256": manifest["calendar_bundle"][
+                "content_sha256"
+            ],
+            "qm_news_calendar_common_relative_path": manifest["calendar_bundle"][
+                "common_relative_path"
+            ],
+            "RISK_FIXED": "1000",
+            "RISK_PERCENT": "0",
+            "qm_news_stale_max_hours": "336",
+        }
+
+        def write_report(values: dict[str, str]) -> None:
+            rendered = "".join(f"<b>{key}={value}</b>" for key, value in values.items())
+            report.write_text(
+                "<html><table><tr><td colspan=\"3\">Inputs:</td>"
+                f"<td>{rendered}</td></tr></table></html>",
+                encoding="utf-8",
+            )
+
+        write_report(effective)
+        parsed = runner._validate_report_effective_inputs(
+            report,
+            spec=spec,
+            input_manifest=manifest,
+            risk_fixed=1000.0,
+        )
+        for field in (
+            "qm_news_calendar_bundle_id",
+            "qm_news_calendar_expected_sha256",
+            "qm_news_calendar_common_relative_path",
+        ):
+            self.assertEqual(parsed[field], effective[field])
+
+        del effective["qm_news_calendar_expected_sha256"]
+        write_report(effective)
+        with self.assertRaisesRegex(
+            runner.RunnerError,
+            "effective input qm_news_calendar_expected_sha256 mismatch",
+        ):
+            runner._validate_report_effective_inputs(
+                report,
+                spec=spec,
+                input_manifest=manifest,
+                risk_fixed=1000.0,
+            )
+
     def test_collector_authenticates_artifacts_and_locks_robust_policy(self) -> None:
         plan = self.build()
         self.write_receipts(plan)

@@ -223,9 +223,15 @@ bool QM_FrameworkInitCoreAfterRuntimeStateArmed(const int ea_id,
    // call hit a linear scan over the loaded array. Now we skip the entire
    // calendar load when news is off across all three axes; the per-tick hook
    // takes its early-return path (g_qm_news_active=false) instantly.
+   // A sealed Q09 bundle is an effective tester input even for CONTROL_OFF
+   // cells.  Authenticate it during init while preserving the legacy lazy-load
+   // fast path for empty inputs and every live attach.
+   const bool tester_bundle_requested =
+      (MQLInfoInteger(MQL_TESTER) != 0 && QM_NewsTesterBundleInputsRequested());
    const bool any_news_active = (news_mode != QM_NEWS_OFF) ||
                                  (news_temporal != QM_NEWS_TEMPORAL_OFF) ||
-                                 (news_compliance != QM_NEWS_COMPLIANCE_NONE);
+                                 (news_compliance != QM_NEWS_COMPLIANCE_NONE) ||
+                                 tester_bundle_requested;
    g_qm_news_active = any_news_active;
    if(any_news_active)
      {

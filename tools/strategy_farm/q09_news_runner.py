@@ -1052,6 +1052,41 @@ def _report_inputs(path: Path) -> dict[str, str]:
     return values
 
 
+def _validate_report_effective_inputs(
+    path: Path,
+    *,
+    spec: Mapping[str, Any],
+    input_manifest: Mapping[str, Any],
+    risk_fixed: float,
+) -> dict[str, str]:
+    """Authenticate the EA inputs MT5 says were effective for one Q09 cell."""
+
+    effective = _report_inputs(path)
+    expected_inputs = {
+        "qm_rng_seed": str(spec["seed"]),
+        "qm_news_temporal": str(contract.TEMPORAL_MODE_IDS[str(spec["temporal_mode"])]),
+        "qm_news_compliance": str(COMPLIANCE_MODE_IDS[str(spec["compliance_mode"])]),
+        "qm_news_calendar_bundle_id": str(input_manifest["calendar_bundle"]["bundle_id"]),
+        "qm_news_calendar_expected_sha256": str(
+            input_manifest["calendar_bundle"]["content_sha256"]
+        ),
+        "qm_news_calendar_common_relative_path": str(
+            input_manifest["calendar_bundle"]["common_relative_path"]
+        ),
+    }
+    for key, expected in expected_inputs.items():
+        if effective.get(key.casefold()) != expected:
+            raise RunnerError(f"MT5 report effective input {key} mismatch")
+    if _required_float(effective, "RISK_FIXED") != risk_fixed:
+        raise RunnerError("MT5 report effective RISK_FIXED mismatch")
+    if _required_float(effective, "RISK_PERCENT") != 0:
+        raise RunnerError("MT5 report effective RISK_PERCENT is not zero")
+    stale = effective.get("qm_news_stale_max_hours")
+    if stale is not None and _required_float(effective, "qm_news_stale_max_hours") > 336:
+        raise RunnerError("MT5 report weakens the 336-hour stale-news guard")
+    return effective
+
+
 def _report_cell_after(path: Path, label: str) -> str:
     report_html = _read_report_html(path)
     for row_match in re.finditer(r"<tr\b.*?</tr>", report_html, re.IGNORECASE | re.DOTALL):
@@ -1199,29 +1234,12 @@ def _validate_window_summary(
     report_sha = contract.sha256_file(report_path)
     if run.get("report_sha256") != report_sha:
         raise RunnerError("run_smoke report SHA-256 mismatch")
-    effective = _report_inputs(report_path)
-    expected_inputs = {
-        "qm_rng_seed": str(spec["seed"]),
-        "qm_news_temporal": str(contract.TEMPORAL_MODE_IDS[str(spec["temporal_mode"])]),
-        "qm_news_compliance": str(COMPLIANCE_MODE_IDS[str(spec["compliance_mode"])]),
-        "qm_news_calendar_bundle_id": str(input_manifest["calendar_bundle"]["bundle_id"]),
-        "qm_news_calendar_expected_sha256": str(
-            input_manifest["calendar_bundle"]["content_sha256"]
-        ),
-        "qm_news_calendar_common_relative_path": str(
-            input_manifest["calendar_bundle"]["common_relative_path"]
-        ),
-    }
-    for key, expected in expected_inputs.items():
-        if effective.get(key.casefold()) != expected:
-            raise RunnerError(f"MT5 report effective input {key} mismatch")
-    if _required_float(effective, "RISK_FIXED") != risk_fixed:
-        raise RunnerError("MT5 report effective RISK_FIXED mismatch")
-    if _required_float(effective, "RISK_PERCENT") != 0:
-        raise RunnerError("MT5 report effective RISK_PERCENT is not zero")
-    stale = effective.get("qm_news_stale_max_hours")
-    if stale is not None and _required_float(effective, "qm_news_stale_max_hours") > 336:
-        raise RunnerError("MT5 report weakens the 336-hour stale-news guard")
+    _validate_report_effective_inputs(
+        report_path,
+        spec=spec,
+        input_manifest=input_manifest,
+        risk_fixed=risk_fixed,
+    )
     logger_path = Path(str(summary.get("logger_sample_path") or ""))
     logger_meta = summary.get("logger_sample") or {}
     if (

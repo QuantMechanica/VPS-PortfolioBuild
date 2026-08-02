@@ -66,6 +66,14 @@ enum QM_NewsMode
    QM_NEWS_NEWS_ONLY
   };
 
+// Q09 reproducible tester-calendar binding.  These are deliberately plain
+// EA inputs so MT5 records their effective values in the report Inputs region.
+// They are consumed only by the Strategy Tester; live news decisions continue
+// to use the native MT5 calendar and never consult this bundle path.
+input string qm_news_calendar_bundle_id = "";
+input string qm_news_calendar_expected_sha256 = "";
+input string qm_news_calendar_common_relative_path = "";
+
 // Legacy → 2-axis translation. Stored as two parallel arrays so the
 // translation is data-driven and visible at a glance.
 QM_NewsTemporalMode QM_NewsLegacyTemporal(const QM_NewsMode mode)
@@ -152,6 +160,82 @@ string QM_NewsUpper(const string value)
    string out = value;
    StringToUpper(out);
    return out;
+  }
+
+bool QM_NewsTesterBundleInputsRequested()
+  {
+   return (StringLen(QM_NewsTrim(qm_news_calendar_bundle_id)) > 0 ||
+           StringLen(QM_NewsTrim(qm_news_calendar_expected_sha256)) > 0 ||
+           StringLen(QM_NewsTrim(qm_news_calendar_common_relative_path)) > 0);
+  }
+
+bool QM_NewsTesterBundleInputsComplete()
+  {
+   return (StringLen(QM_NewsTrim(qm_news_calendar_bundle_id)) > 0 &&
+           StringLen(QM_NewsTrim(qm_news_calendar_expected_sha256)) > 0 &&
+           StringLen(QM_NewsTrim(qm_news_calendar_common_relative_path)) > 0);
+  }
+
+bool QM_NewsNormalizeExpectedSha256(const string value, string &normalized)
+  {
+   normalized = QM_NewsUpper(QM_NewsTrim(value));
+   if(StringLen(normalized) != 64)
+      return false;
+
+   for(int i = 0; i < 64; i++)
+     {
+      const ushort ch = StringGetCharacter(normalized, i);
+      const bool decimal = (ch >= '0' && ch <= '9');
+      const bool hex_alpha = (ch >= 'A' && ch <= 'F');
+      if(!decimal && !hex_alpha)
+         return false;
+     }
+   return true;
+  }
+
+bool QM_NewsBundleIdValid(const string value)
+  {
+   const string bundle_id = QM_NewsUpper(QM_NewsTrim(value));
+   if(StringLen(bundle_id) <= 7 || StringFind(bundle_id, "Q09CAL-") != 0)
+      return false;
+
+   for(int i = 0; i < StringLen(bundle_id); i++)
+     {
+      const ushort ch = StringGetCharacter(bundle_id, i);
+      const bool decimal = (ch >= '0' && ch <= '9');
+      const bool alpha = (ch >= 'A' && ch <= 'Z');
+      if(!decimal && !alpha && ch != '-')
+         return false;
+     }
+   return true;
+  }
+
+bool QM_NewsNormalizeCommonRelativePath(const string value, string &normalized)
+  {
+   normalized = QM_NewsTrim(value);
+   if(StringLen(normalized) == 0 || StringFind(normalized, ":") >= 0)
+      return false;
+
+   const ushort first = StringGetCharacter(normalized, 0);
+   if(first == '\\' || first == '/')
+      return false;
+
+   StringReplace(normalized, "/", "\\");
+   if(StringFind(normalized, "\\\\") >= 0)
+      return false;
+
+   string segments[];
+   const int count = StringSplit(normalized, '\\', segments);
+   if(count <= 0)
+      return false;
+   for(int i = 0; i < count; i++)
+     {
+      const string segment = QM_NewsTrim(segments[i]);
+      if(StringLen(segment) == 0 || segment == "." || segment == ".." ||
+         segment != segments[i])
+         return false;
+     }
+   return true;
   }
 
 string QM_NewsStripQuotes(const string value)
@@ -312,6 +396,31 @@ bool QM_NewsReadFileBytes(const string path, uchar &bytes[], datetime &modified_
       FileReadArray(handle, bytes, 0, size);
    FileClose(handle);
    return true;
+  }
+
+// Strict Q09 path: exactly the sealed Common\Files relative path, with no
+// terminal-local lookup and no legacy basename fallback.
+bool QM_NewsReadCommonFileBytes(const string common_relative_path,
+                                uchar &bytes[],
+                                datetime &modified_utc)
+  {
+   const int handle = FileOpen(common_relative_path,
+                               FILE_READ | FILE_BIN | FILE_SHARE_READ | FILE_COMMON);
+   if(handle == INVALID_HANDLE)
+      return false;
+
+   modified_utc = (datetime)FileGetInteger(handle, FILE_MODIFY_DATE);
+   const int size = (int)FileSize(handle);
+   if(size < 0)
+     {
+      FileClose(handle);
+      return false;
+     }
+
+   ArrayResize(bytes, size);
+   const uint read = (size > 0 ? FileReadArray(handle, bytes, 0, size) : 0);
+   FileClose(handle);
+   return (read == (uint)size);
   }
 
 string QM_NewsIndexCurrencies(const string normalized_symbol)
@@ -483,18 +592,29 @@ bool QM_NewsPushEvent(const datetime event_utc, const string currency, const str
    return true;
   }
 
-bool QM_NewsLoadCsv(const string path, int &rows_added)
+bool QM_NewsLoadCsv(const string path,
+                    int &rows_added,
+                    const bool common_only = false)
   {
    rows_added = 0;
-   int handle = FileOpen(path, FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ);
-   if(handle == INVALID_HANDLE)
-      handle = FileOpen(path, FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON);
-   if(handle == INVALID_HANDLE)
+   int handle = INVALID_HANDLE;
+   if(common_only)
+      handle = FileOpen(path,
+                        FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON);
+   else
      {
-      // MT5 5833+ rejects absolute paths with err 5002. Fallback: basename in Common\Files.
-      const string base = QM_NewsBasename(path);
-      if(StringLen(base) > 0 && base != path)
-         handle = FileOpen(base, FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON);
+      handle = FileOpen(path, FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ);
+      if(handle == INVALID_HANDLE)
+         handle = FileOpen(path,
+                           FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON);
+      if(handle == INVALID_HANDLE)
+        {
+         // MT5 5833+ rejects absolute paths with err 5002. Fallback: basename in Common\Files.
+         const string base = QM_NewsBasename(path);
+         if(StringLen(base) > 0 && base != path)
+            handle = FileOpen(base,
+                              FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON);
+        }
      }
    if(handle == INVALID_HANDLE)
       return false;
@@ -621,6 +741,105 @@ void QM_NewsLogSetupMissing(const string reason)
    QM_LogEvent(QM_ERROR, SETUP_DATA_MISSING, payload);
   }
 
+bool QM_NewsInitTesterBundle()
+  {
+   string common_relative_path = "";
+   string expected_sha256 = "";
+   if(!QM_NewsBundleIdValid(qm_news_calendar_bundle_id))
+     {
+      QM_NewsLogSetupMissing("calendar_bundle_id_invalid");
+      return false;
+     }
+   if(!QM_NewsNormalizeExpectedSha256(qm_news_calendar_expected_sha256,
+                                      expected_sha256))
+     {
+      QM_NewsLogSetupMissing("calendar_bundle_expected_sha256_invalid");
+      return false;
+     }
+   if(!QM_NewsNormalizeCommonRelativePath(qm_news_calendar_common_relative_path,
+                                          common_relative_path))
+     {
+      QM_NewsLogSetupMissing("calendar_bundle_common_path_invalid");
+      return false;
+     }
+
+   g_qm_news_calendar_path_primary = common_relative_path;
+   g_qm_news_calendar_path_secondary = "";
+
+   uchar verified_bytes[];
+   datetime modified_before = 0;
+   if(!QM_NewsReadCommonFileBytes(common_relative_path,
+                                  verified_bytes,
+                                  modified_before))
+     {
+      QM_NewsLogSetupMissing("calendar_bundle_missing_or_unreadable");
+      return false;
+     }
+
+   string actual_sha256 = "";
+   if(!QM_NewsHashBytes(verified_bytes, actual_sha256))
+     {
+      QM_NewsLogSetupMissing("calendar_bundle_hash_failed");
+      return false;
+     }
+   if(QM_NewsUpper(actual_sha256) != expected_sha256)
+     {
+      QM_NewsLogSetupMissing("calendar_bundle_sha256_mismatch");
+      return false;
+     }
+
+   // Hash authentication is deliberately complete before the first parser
+   // call.  The strict post-parse read below closes the replacement race and
+   // refuses initialization if the immutable Common file changed in between.
+   int rows_bundle = 0;
+   if(!QM_NewsLoadCsv(common_relative_path, rows_bundle, true))
+     {
+      QM_NewsLogSetupMissing("calendar_bundle_csv_parse_failed");
+      return false;
+     }
+
+   uchar post_parse_bytes[];
+   datetime modified_after = 0;
+   string post_parse_sha256 = "";
+   if(!QM_NewsReadCommonFileBytes(common_relative_path,
+                                  post_parse_bytes,
+                                  modified_after) ||
+      !QM_NewsHashBytes(post_parse_bytes, post_parse_sha256) ||
+      QM_NewsUpper(post_parse_sha256) != expected_sha256 ||
+      QM_NewsUpper(post_parse_sha256) != QM_NewsUpper(actual_sha256))
+     {
+      ArrayResize(g_qm_news_events, 0);
+      QM_NewsLogSetupMissing("calendar_bundle_changed_during_parse");
+      return false;
+     }
+
+   g_qm_news_rows_loaded = rows_bundle;
+   g_qm_news_hash = QM_NewsUpper(actual_sha256);
+   g_qm_news_latest_modified_utc = modified_before;
+   if(modified_after > g_qm_news_latest_modified_utc)
+      g_qm_news_latest_modified_utc = modified_after;
+   if(g_qm_news_rows_loaded <= 0)
+     {
+      QM_NewsLogSetupMissing("calendar_bundle_zero_rows_parsed");
+      return false;
+     }
+   if(!QM_NewsTesterCalendarSelfTest(_Symbol))
+      return false;
+
+   QM_NewsBuildUtcIndex();
+   g_qm_news_available = true;
+   QM_LogEvent(
+      QM_INFO,
+      "NEWS_CALENDAR_BUNDLE_LOADED",
+      StringFormat(
+         "{\"bundle_id\":\"%s\",\"sha256\":\"%s\",\"rows\":%d,\"common_relative_path\":\"%s\"}",
+         QM_LoggerEscapeJson(QM_NewsTrim(qm_news_calendar_bundle_id)),
+         g_qm_news_hash,
+         g_qm_news_rows_loaded,
+         QM_LoggerEscapeJson(common_relative_path)));
+   return true;
+  }
+
 bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
                  const int stale_max_hours = 24 * 14,
                  const int pause_before_minutes = 30,
@@ -644,6 +863,19 @@ bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
    g_qm_news_loaded = true;
    g_qm_news_available = false;
    g_qm_news_events_sorted = false; // FW8: re-sort after fresh load
+
+   // Q09 bundles are tester-only.  Any partial declaration is a setup defect;
+   // live initialization never enters this branch and retains the established
+   // native-calendar decision path plus legacy CSV diagnostics unchanged.
+   if(MQLInfoInteger(MQL_TESTER) != 0 && QM_NewsTesterBundleInputsRequested())
+     {
+      if(!QM_NewsTesterBundleInputsComplete())
+        {
+         QM_NewsLogSetupMissing("calendar_bundle_inputs_partial");
+         return false;
+        }
+      return QM_NewsInitTesterBundle();
+     }
 
    uchar bytes_primary[];
    uchar bytes_secondary[];

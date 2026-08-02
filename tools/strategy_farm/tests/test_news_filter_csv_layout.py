@@ -35,4 +35,7 @@ def test_live_content_coverage_gap_is_warn_only() -> None:
     warning = 'QM_LogEvent(QM_WARN, "NEWS_CALENDAR_COVERAGE_GAP"'
     assert warning in source
     assert 'QM_NewsLogSetupMissing("calendar_content_coverage_gap")' not in source
-    assert source.index(warning) < source.index("g_qm_news_available = true;")
+    # The bundle loader has its own earlier success assignment.  This assertion
+    # concerns the legacy/live diagnostic path, whose success assignment is the
+    # final occurrence in QM_NewsInit.
+    assert source.index(warning) < source.rindex("g_qm_news_available = true;")
