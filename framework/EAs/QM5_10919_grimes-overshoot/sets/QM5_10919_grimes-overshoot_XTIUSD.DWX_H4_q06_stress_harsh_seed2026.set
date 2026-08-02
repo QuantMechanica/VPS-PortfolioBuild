@@ -3,7 +3,7 @@
 ; ea_id:        10919
 ; ea_slug:      grimes-overshoot
 ; ea_version:   v5.0
-; set_version:  s20260725-stress-harsh
+; set_version:  s20260802-stress-harsh
 ; symbol:       XTIUSD.DWX
 ; timeframe:    H4
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   a9bcdeef997b8c87b7488d812ee7cdbaa7b4f38023d5a27d234272d2c65b5461
 ; author:       Development
-; date:         2026-07-25
+; date:         2026-08-02
 ;==========================================================
 qm_magic_slot_offset=1
 qm_rng_seed=2026
