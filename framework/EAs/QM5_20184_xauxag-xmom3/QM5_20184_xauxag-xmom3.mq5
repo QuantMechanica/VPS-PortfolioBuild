@@ -318,8 +318,8 @@ bool Strategy_AverageReturnFromEnds(const double &month_closes[],
    return MathIsValidNumber(average_return);
   }
 
-bool Strategy_LoadSignalState(const datetime decision_bar_time,
-                              int &pair_direction)
+bool Strategy_LoadSignalState(const int decision_month_key,
+                               int &pair_direction)
   {
    pair_direction = 0;
    g_cache_xau_avg_return = 0.0;
@@ -328,7 +328,7 @@ bool Strategy_LoadSignalState(const datetime decision_bar_time,
    g_cache_xau_observations = 0;
    g_cache_xag_observations = 0;
 
-   if(decision_bar_time <= 0)
+   if(decision_month_key <= 0)
       return false;
 
    double xau_closes[];
@@ -426,17 +426,22 @@ void Strategy_AdvanceSignal_OnNewBar()
    g_monthly_rebalance_bar = false;
    g_cache_signal_valid = false;
    g_cache_pair_direction = 0;
-   const datetime decision_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cached timestamp on the D1 new-bar path.
-   const datetime prior_bar_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: exact first-tradable-bar monthly transition check.
-   const int current_month_key = Strategy_MonthKeyForTime(decision_bar_time);
-   const int prior_month_key = Strategy_MonthKeyForTime(prior_bar_time);
-   if(current_month_key <= 0 || prior_month_key <= 0 ||
+   const bool calendar_period_changed = QM_IsNewCalendarPeriod(PERIOD_MN1);
+   const int current_month_key = QM_CalendarPeriodKey(PERIOD_MN1,
+                                                       _Symbol,
+                                                       0);
+   const int prior_month_key = QM_CalendarPeriodKey(PERIOD_MN1,
+                                                     _Symbol,
+                                                     1);
+   if(!calendar_period_changed ||
+      current_month_key <= 0 || prior_month_key <= 0 ||
       current_month_key == prior_month_key ||
       !Strategy_IsRebalanceMonth(current_month_key))
       return;
 
    g_monthly_rebalance_bar = true;
-   g_cache_period_key = Strategy_PeriodKeyForTime(decision_bar_time);
+   g_cache_period_key = (current_month_key / 100) * 12 +
+                        (current_month_key % 100);
    g_cache_decision_month_key = current_month_key;
   }
 
@@ -511,8 +516,34 @@ bool Strategy_PrepareLeg(const string symbol,
    return true;
   }
 
-bool Strategy_SubmitLeg(QM_BasketOrderRequest &req)
+bool Strategy_SubmitHostLeg(const QM_BasketOrderRequest &req)
   {
+   if(req.symbol != _Symbol || req.symbol_slot != qm_magic_slot_offset)
+      return false;
+
+   QM_EntryRequest host_req;
+   ZeroMemory(host_req);
+   host_req.type = req.type;
+   host_req.price = req.price;
+   host_req.sl = req.sl;
+   host_req.tp = req.tp;
+   host_req.reason = req.reason;
+   host_req.symbol_slot = req.symbol_slot;
+   host_req.expiration_seconds = req.expiration_seconds;
+
+   ulong ticket = 0;
+   return QM_TM_OpenPosition(host_req,
+                             ticket,
+                             0,
+                             QM_RISK_MODE_FIXED,
+                             RISK_FIXED / 2.0,
+                             QM_TRADE_SEND_RETRY_TRANSIENT);
+  }
+
+bool Strategy_SubmitOffChartLeg(const QM_BasketOrderRequest &req)
+  {
+   if(req.symbol == _Symbol)
+      return false;
    ulong ticket = 0;
    return QM_BasketOpenPosition(qm_ea_id,
                                 qm_news_mode_legacy,
@@ -551,9 +582,9 @@ bool Strategy_OpenPair(const int pair_direction)
                            xag_req))
       return false;
 
-   if(!Strategy_SubmitLeg(xau_req))
+   if(!Strategy_SubmitHostLeg(xau_req))
       return false;
-   if(Strategy_SubmitLeg(xag_req) &&
+   if(Strategy_SubmitOffChartLeg(xag_req) &&
       Strategy_OpenPairLegCount() == 2 &&
       Strategy_PairCompositionValid(pair_direction))
      {
@@ -606,9 +637,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    if(!Strategy_NewsAllowsEntry(TimeCurrent()))
       return false;
-   const datetime decision_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: monthly D1 decision path only.
-   g_cache_signal_valid = Strategy_LoadSignalState(decision_bar_time,
-                                                   g_cache_pair_direction);
+   g_cache_signal_valid = Strategy_LoadSignalState(g_cache_decision_month_key,
+                                                    g_cache_pair_direction);
    if(!g_cache_signal_valid || g_cache_pair_direction == 0)
       return false;
 
