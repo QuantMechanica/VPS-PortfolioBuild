@@ -6,7 +6,7 @@ authors: Tobias J. Moskowitz, Yao Hua Ooi, Lasse Heje Pedersen
 publication: Journal of Financial Economics, 2012
 url: https://www.aqr.com/Insights/Research/Journal-Article/Time-Series-Momentum
 status: approved_source_complete
-approval_basis: OWNER commodity/energy sleeve mission 2026-07-31
+approval_basis: OWNER commodity/energy sleeve missions 2026-07-31 and 2026-08-02
 created: 2026-06-27
 created_by: Codex
 last_reviewed: 2026-07-31
@@ -75,6 +75,13 @@ only MT5 D1 price history and broker calendar state at runtime.
   explicitly tests `k=1`, `h=1`; the OWNER 2026-07-31 mission authorizes the
   new structural commodity card and build. This is not a post-result rescue
   horizon.
+- Extracted strategy: monthly natural-gas one-completed-calendar-month
+  return-sign package with a one-month hold (`MOP-TSMOM-2012_XNG_S11`). This
+  is the natural-gas carrier of the paper's source-declared `k=1`, `h=1`
+  commodity rule, not an oscillator, a contrarian sign flip, or a parameter
+  rescue of the existing three- and twelve-month XNG cards. The OWNER
+  2026-08-02 commodity/energy sleeve mission authorizes its card and non-live
+  build.
 - Extracted strategy: monthly Brent 12-month return-sign momentum package on
   `XBRUSD.DWX`, kept separate from WTI TSMOM and Brent/WTI spread baskets.
 - Runtime data deliberately excludes futures curves, open interest, inventory
@@ -111,3 +118,28 @@ or portfolio-correlation claim transfers.
 - R4: PASS. Native price, calendar, ATR, position, deal-history, and framework
   state only; no trained model, banned indicator, grid, martingale, scale-in,
   or pyramiding.
+
+## One-month XNG mechanization boundary and reputable-source criteria
+
+The S11 carrier applies the same source-declared one-month formation and hold
+to `XNGUSD.DWX`. It evaluates only on the first tradable D1 bar of a new
+broker month, reconstructs the latest two consecutive completed month-end
+closes, buys after a positive log return, shorts after a negative log return,
+and renews at the next month boundary. Equality or invalid history consumes
+the month without an entry. The baseline keeps the S10 risk and lifecycle
+contract locked except for a carrier-specific 3,000-point XNG spread ceiling:
+`RISK_FIXED=1000`, `RISK_PERCENT=0`, a frozen `3.5 * ATR(20,D1)` hard stop,
+no take-profit, a forty-day stale guard, both news axes off, and Friday close
+off.
+
+- R1: PASS. Peer-reviewed *Journal of Financial Economics* paper with DOI,
+  author-hosted complete text, durable retrieval hash, and natural gas in the
+  paper's commodity universe.
+- R2: PASS. Consecutive completed-month endpoints, same-sign direction,
+  monthly renewal, persisted attempt, hard stop, spread cap, and stale exit
+  are fixed before testing.
+- R3: PASS. `XNGUSD.DWX` D1 is a registered, already exercised factory route;
+  runtime requires no external data.
+- R4: PASS. Native OHLC, calendar, ATR, quote, position, deal-history, and
+  framework state only; no trained output, grid, martingale, scale-in, or
+  pyramiding.
