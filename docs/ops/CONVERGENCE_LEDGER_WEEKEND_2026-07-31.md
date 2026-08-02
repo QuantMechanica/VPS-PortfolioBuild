@@ -115,6 +115,39 @@ requires a separate written OWNER authorization if invoked.
 4. Recompile-deploy plan standing approval unchanged (awaiting ticket
    `5690506f`).
 
+## SUNDAY 2026-08-02 EXECUTION LOG (agenda below is historical)
+
+**OFF window (executed 07:21Z–):** Factory_OFF quiescent (MNT-046 evidence
+`…20260802T072113Z_8676.json`, 2 stable null scans, phase runner reaped); two
+claim-orphan rows released via a documented one-shot R5 invocation (evidence
+line in `reconcile_orphans.jsonl`) → zero active; OFF SHA `908ec1dd…` bound.
+**10582 requal APPLIED** (event 340695, journal `fabb35a3…`, row fresh
+Q08/pending). **Q02 disposition repair APPLIED** (10 rows done/PASS incl.
+12535 GDAXI 621-trade + 9940 SP500; backup + receipt `9fa981ac…`, commit
+c7fbc7a2b-adjacent). **Q06 wave-1 requeued** (exact 5 incl. 20039 NDX,
+journal `q06_wave1_requeue_snapshot_20260802T0733Z.json`).
+
+**T_Live window (executed ~08:15–08:35Z):** signed 8-file deploy executed
+(bash-pipe output loss + independent verification; registry-drift fresh
+review append-only-clean), OWNER re-init 08:24:21Z, **§2 gate 10/10 PASS**,
+pulse `loaded_ok=23/24; dormant=0`. Evidence
+`2026-08-02_ks_deploy_execution.md` + decision record
+`decisions/2026-08-02_t_live_ks_recompile_deploy.md`. Topic B CLOSED.
+
+**Blocker found at rebind:** the activation contract requires releasing
+exactly the seven July restart holds, which were consumed 2026-07-31 (nonce
+ledger, 1 row) — a full Factory_ON now fails closed at its final gate; the
+prep window had also expired. Fresh OWNER preparation decision minted from
+the in-session package authorization (10 workers, empty hold plan):
+`2026-08-02_factory_preparation_owner_decision.json` (commit 8f8b77b06).
+
+| # | Topic | Author | Reviewer/Implementer | State |
+|---|---|---|---|---|
+| F | Generation-aware restart-hold release contract (unblocks Factory_ON) | Claude (brief `CODEX_BRIEF_2026-08-02_factory_on_hold_contract_evolution.md`) | Codex Sol max (adversarial review ≥90 % then implement in-session) | R1 dispatched |
+| G | MNT-043 bill apply: staged-binary adoption + bill-bound overlay tool (`apply_ks_vintage_bill.py`) + 17 rerun enqueue prep; recon found repo-tree EX5s still old + generic scanner cannot reproduce the 26-row bill + 10911/GDAXI Q06 lacks a Q05 PASS predecessor | Claude (rulings) | Codex Sol max builds; Claude runs the mutating apply + enqueues | R1 dispatched |
+| H | Mailbox analyst chunk tuning 5/600 s with env overrides | Claude (spec) | Codex implemented, Claude re-tested (24 passed) | **CLOSED** (64125d64b; natural verification 2026-08-03 06:07) |
+| I | 20007 GDAXI/NDX Q02 INFRA_FAIL diagnosis (read-only) | Claude (spec) | Codex Sol max | R1 dispatched |
+
 ## SUNDAY 2026-08-02 CONSOLIDATED AGENDA (work from here)
 
 **OFF window (market closed, before broker reopen):**
