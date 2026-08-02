@@ -62,43 +62,27 @@ bool Strategy_IsWtiD1()
    return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
-int Strategy_WeekKey(const datetime value)
+int Strategy_CalendarWeekKeyAt(const datetime value)
   {
    if(value <= 0)
       return 0;
 
-   MqlDateTime parts;
-   ZeroMemory(parts);
-   if(!TimeToStruct(value, parts))
+   const int shift =
+      iBarShift(_Symbol, PERIOD_D1, value, false);
+   if(shift < 0)
       return 0;
-
-   const int days_since_monday =
-      (parts.day_of_week + 6) % 7;
-   parts.hour = 12;
-   parts.min = 0;
-   parts.sec = 0;
-   const datetime monday_noon =
-      (datetime)(StructToTime(parts) - (long)days_since_monday * 86400);
-   if(monday_noon <= 0)
-      return 0;
-
-   MqlDateTime monday;
-   ZeroMemory(monday);
-   if(!TimeToStruct(monday_noon, monday))
-      return 0;
-   return monday.year * 1000 + monday.day_of_year;
+   return QM_CalendarPeriodKey(PERIOD_W1, _Symbol, shift);
   }
 
 bool Strategy_IsWeeklyBoundaryBar()
   {
-   const datetime current_bar =
-      iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: weekly D1 calendar gate.
-   const datetime prior_bar =
-      iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: prior completed D1 calendar gate.
-   if(current_bar <= 0 || prior_bar <= 0)
+   const int current_week_key =
+      QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
+   const int prior_week_key =
+      QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 1);
+   if(current_week_key <= 0 || prior_week_key <= 0)
       return false;
-   return Strategy_WeekKey(current_bar) !=
-          Strategy_WeekKey(prior_bar);
+   return current_week_key != prior_week_key;
   }
 
 bool Strategy_InActiveSeason(const datetime value)
@@ -148,7 +132,7 @@ bool Strategy_WeekAlreadyEntered(const int week_key,
          continue;
       const datetime opened =
          (datetime)PositionGetInteger(POSITION_TIME);
-      if(Strategy_WeekKey(opened) == week_key)
+      if(Strategy_CalendarWeekKeyAt(opened) == week_key)
          return true;
      }
 
@@ -177,13 +161,13 @@ bool Strategy_WeekAlreadyEntered(const int week_key,
          continue;
       const datetime deal_time =
          (datetime)HistoryDealGetInteger(deal_ticket, DEAL_TIME);
-      if(Strategy_WeekKey(deal_time) == week_key)
+      if(Strategy_CalendarWeekKeyAt(deal_time) == week_key)
          return true;
      }
    return false;
   }
 
-void Strategy_LoadAttemptState(const datetime reference_time)
+void Strategy_LoadAttemptState()
   {
    g_last_attempt_week_key = 0;
    if(g_attempt_state_key == "" ||
@@ -191,7 +175,7 @@ void Strategy_LoadAttemptState(const datetime reference_time)
       return;
 
    const int current_week_key =
-      Strategy_WeekKey(reference_time);
+      QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
    const double stored =
       GlobalVariableGet(g_attempt_state_key);
    const int stored_week_key =
@@ -263,13 +247,13 @@ bool Strategy_LoadMomentum(double &momentum,
 
 void Strategy_CloseExpiredPositions()
   {
-   const datetime current_bar =
-      iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: weekly D1 lifecycle gate.
-   if(current_bar <= 0)
+   MqlRates current_d1;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, current_d1))
       return;
+   const datetime current_bar = current_d1.time;
 
    const int current_week_key =
-      Strategy_WeekKey(current_bar);
+      QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
    const bool in_active_season =
       Strategy_InActiveSeason(current_bar);
    const datetime now = TimeCurrent();
@@ -286,7 +270,7 @@ void Strategy_CloseExpiredPositions()
       const datetime opened =
          (datetime)PositionGetInteger(POSITION_TIME);
       const int opened_week_key =
-         Strategy_WeekKey(opened);
+         Strategy_CalendarWeekKeyAt(opened);
       const long position_type =
          PositionGetInteger(POSITION_TYPE);
       bool should_close =
@@ -346,14 +330,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_IsWeeklyBoundaryBar())
       return false;
 
-   const datetime current_bar =
-      iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: weekly D1 entry calendar.
+   MqlRates current_d1;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, current_d1))
+      return false;
+   const datetime current_bar = current_d1.time;
    if(current_bar <= 0 ||
-      !Strategy_InActiveSeason(current_bar))
+       !Strategy_InActiveSeason(current_bar))
       return false;
 
    const int week_key =
-      Strategy_WeekKey(current_bar);
+      QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
    if(week_key <= 0 ||
       week_key == g_last_attempt_week_key)
       return false;
@@ -449,7 +435,7 @@ int OnInit()
    g_attempt_state_key =
       StringFormat("QM5_20182_WEEK_ATTEMPT_%d",
                    QM_FrameworkMagic());
-   Strategy_LoadAttemptState(TimeCurrent());
+   Strategy_LoadAttemptState();
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",

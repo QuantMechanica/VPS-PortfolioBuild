@@ -1,6 +1,7 @@
 import json
 import os
 import sqlite3
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -16,6 +17,24 @@ import terminal_worker  # noqa: E402
 
 
 class TerminalWorkerAdoptionTests(unittest.TestCase):
+    def test_direct_entrypoint_bootstraps_repo_root_without_pythonpath(self) -> None:
+        worker = REPO / "tools" / "strategy_farm" / "terminal_worker.py"
+        env = os.environ.copy()
+        env.pop("PYTHONPATH", None)
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            result = subprocess.run(
+                [sys.executable, str(worker), "--help"],
+                cwd=tmp,
+                env=env,
+                capture_output=True,
+                text=True,
+                errors="replace",
+                timeout=30,
+            )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("--terminal", result.stdout)
+
     def test_q08_monitor_uses_phase_scaled_timeout(self) -> None:
         payload = {"timeout_min": 120, "host_timeframe": "M5"}
         expected_min = farmctl._active_timeout_min_for_work_item(
