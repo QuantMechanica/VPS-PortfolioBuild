@@ -9,10 +9,17 @@ from pathlib import Path
 
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "mailbox_source_intake.py"
-SPEC = importlib.util.spec_from_file_location("mailbox_source_intake_under_test", MODULE_PATH)
-assert SPEC and SPEC.loader
-mailbox = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(mailbox)
+
+
+def _load_mailbox_module(name: str):
+    spec = importlib.util.spec_from_file_location(name, MODULE_PATH)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+mailbox = _load_mailbox_module("mailbox_source_intake_under_test")
 
 
 FIELDS = [
@@ -350,12 +357,28 @@ def test_handoff_failure_status_remains_retryable(tmp_path, monkeypatch) -> None
     ]
 
 
-def test_56_lead_backlog_chunks_into_five_tens_and_six() -> None:
+def test_analyst_chunk_defaults_and_environment_overrides(monkeypatch) -> None:
+    monkeypatch.delenv("ANALYST_CHUNK_SIZE", raising=False)
+    monkeypatch.delenv("ANALYST_CHUNK_TIMEOUT_SECONDS", raising=False)
+    defaults = _load_mailbox_module("mailbox_source_intake_default_settings")
+
+    assert defaults.ANALYST_CHUNK_SIZE == 5
+    assert defaults.ANALYST_CHUNK_TIMEOUT_SECONDS == 600
+
+    monkeypatch.setenv("ANALYST_CHUNK_SIZE", "7")
+    monkeypatch.setenv("ANALYST_CHUNK_TIMEOUT_SECONDS", "900")
+    overridden = _load_mailbox_module("mailbox_source_intake_overridden_settings")
+
+    assert overridden.ANALYST_CHUNK_SIZE == 7
+    assert overridden.ANALYST_CHUNK_TIMEOUT_SECONDS == 900
+
+
+def test_56_lead_backlog_chunks_into_eleven_fives_and_one() -> None:
     leads = [{"url": f"https://example.com/{index}"} for index in range(56)]
 
     chunks = mailbox._chunk_leads(leads)
 
-    assert [len(chunk) for chunk in chunks] == [10, 10, 10, 10, 10, 6]
+    assert [len(chunk) for chunk in chunks] == [5] * 11 + [1]
     assert [row for chunk in chunks for row in chunk] == leads
 
 
@@ -391,9 +414,12 @@ def test_sequential_chunks_checkpoint_terminal_progress(tmp_path, monkeypatch) -
     monkeypatch.setattr(mailbox, "dispatch_analyst", fake_dispatch)
 
     assert mailbox.main() == 0
-    assert [len(urls) for urls in dispatched_urls] == [10, 2]
+    assert [len(urls) for urls in dispatched_urls] == [5, 5, 2]
     assert audit_snapshots[0] == set(dispatched_urls[0])
     assert audit_snapshots[1] == set(dispatched_urls[0] + dispatched_urls[1])
+    assert audit_snapshots[2] == set(
+        dispatched_urls[0] + dispatched_urls[1] + dispatched_urls[2]
+    )
     assert mailbox.load_new_leads() == []
 
 
@@ -417,7 +443,7 @@ def test_runtime_early_stop_leaves_unattempted_chunk_retryable(tmp_path, monkeyp
 
     def fake_dispatch(prompt: str) -> dict:
         dispatch_calls.append(prompt)
-        for row in rows[:10]:
+        for row in rows[:5]:
             row["status"] = "REJECTED:no mechanical rules"
         _write_leads(leads, rows)
         return {"dispatched": True, "ok": True, "returncode": 0}
@@ -427,12 +453,11 @@ def test_runtime_early_stop_leaves_unattempted_chunk_retryable(tmp_path, monkeyp
     assert mailbox.main() == 1
     assert len(dispatch_calls) == 1
     assert [row["url"] for row in mailbox.load_new_leads()] == [
-        "https://example.com/11",
-        "https://example.com/12",
+        f"https://example.com/{index}" for index in range(6, 13)
     ]
     early_stop = [entry for entry in logged if entry.get("event") == "analyst_early_stop"]
     assert early_stop[-1]["next_chunk"] == 2
-    assert early_stop[-1]["chunks_remaining"] == 1
+    assert early_stop[-1]["chunks_remaining"] == 2
 
 
 def test_partial_analyst_result_keeps_new_lead_retryable(tmp_path, monkeypatch) -> None:

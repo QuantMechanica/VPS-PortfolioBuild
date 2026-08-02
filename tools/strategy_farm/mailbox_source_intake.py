@@ -112,8 +112,10 @@ RETRYABLE_STATUS_PREFIXES = (
     "DEFERRED:ACCESS_BLOCKED",
 )
 MAX_MANAGED_CODEX = 3
-ANALYST_CHUNK_SIZE = 10
-ANALYST_CHUNK_TIMEOUT_SECONDS = 360
+ANALYST_CHUNK_SIZE = int(os.environ.get("ANALYST_CHUNK_SIZE", "5"))
+ANALYST_CHUNK_TIMEOUT_SECONDS = int(
+    os.environ.get("ANALYST_CHUNK_TIMEOUT_SECONDS", "600")
+)
 # Task Scheduler kills the outer task at 45 minutes and the console-session
 # bridge waits 44 minutes. Stop launching work at 40 minutes and retain a
 # reconciliation/cleanup margin rather than letting the scheduler kill a child.
