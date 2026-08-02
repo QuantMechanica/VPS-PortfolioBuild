@@ -2041,6 +2041,39 @@ def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> 
     return _find_bound_persisted_pass_summary_data(item, payload)
 
 
+def _q09_sidecar_matches(
+    root: Path,
+    item: sqlite3.Row,
+    aggregate_path: Path,
+    aggregate: dict[str, Any],
+) -> bool:
+    """Require the append-only Q09 sidecar before accepting its aggregate."""
+
+    if str(item["phase"] or "").upper() != "Q09_NEWS":
+        return True
+    try:
+        aggregate_sha256 = _sha256_file(aggregate_path)
+        connection = farmctl.connect(root)
+        try:
+            row = connection.execute(
+                """
+                SELECT verdict,aggregate_path,aggregate_sha256
+                FROM q09_news_tests WHERE work_item_id=?
+                """,
+                (str(item["id"]),),
+            ).fetchone()
+        finally:
+            connection.close()
+        return bool(
+            row is not None
+            and str(row["verdict"]) == str(aggregate.get("verdict") or "")
+            and Path(str(row["aggregate_path"])).resolve() == aggregate_path.resolve()
+            and str(row["aggregate_sha256"]) == aggregate_sha256
+        )
+    except (OSError, sqlite3.Error, ValueError):
+        return False
+
+
 def _work_item_has_summary_data(root: Path, item_id: str) -> bool:
     try:
         with farmctl.connect(root) as conn:
@@ -2208,6 +2241,11 @@ def _finish_work_item(
             if runtime_payload_updates:
                 payload.update(runtime_payload_updates)
             summary_data = _find_work_item_summary_data(item, payload)
+            if summary_data and not _q09_sidecar_matches(
+                root, item, summary_data[0], summary_data[1]
+            ):
+                payload["q09_sidecar_verification"] = "missing_or_mismatched"
+                summary_data = None
             if summary_data:
                 summary_path, summary = summary_data
                 cold_signature = (

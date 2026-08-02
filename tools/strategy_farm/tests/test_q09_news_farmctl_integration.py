@@ -12,6 +12,7 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
 import farmctl  # noqa: E402
 import q09_news_schema as schema  # noqa: E402
+import terminal_worker  # noqa: E402
 
 
 def _sha(path: Path) -> str:
@@ -275,3 +276,98 @@ def test_q09_news_verdict_taxonomy_is_preserved() -> None:
             {"verdict": verdict}, phase="Q09_NEWS"
         )
         assert actual == verdict
+
+
+def test_terminal_worker_requires_matching_q09_sidecar(tmp_path: Path) -> None:
+    farmctl.init_db(tmp_path)
+    setfile = tmp_path / "base.set"
+    q08_path = tmp_path / "q08.json"
+    q09_path = tmp_path / "q09.json"
+    setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+    q08_path.write_text('{"verdict":"PASS"}\n', encoding="utf-8")
+    q09_path.write_text('{"verdict":"CONFIG_LOCKED"}\n', encoding="utf-8")
+    connection = farmctl.connect(tmp_path)
+    try:
+        _insert_work_item(
+            connection, item_id="q08", phase="Q08", verdict="PASS",
+            evidence_path=q08_path, setfile_path=setfile,
+        )
+        _insert_work_item(
+            connection, item_id="q09n", phase="Q09_NEWS", verdict="CONFIG_LOCKED",
+            evidence_path=q09_path, setfile_path=setfile,
+        )
+        schema.add_dependency(
+            connection,
+            child_work_item_id="q09n",
+            dependency_role="Q08_INPUT",
+            parent_work_item_id="q08",
+            parent_evidence_sha256=_sha(q08_path),
+            required_verdicts=["PASS"],
+        )
+        _insert_locked_q09(connection, q09_path)
+        connection.commit()
+        item = connection.execute(
+            "SELECT * FROM work_items WHERE id='q09n'"
+        ).fetchone()
+    finally:
+        connection.close()
+
+    aggregate = json.loads(q09_path.read_text(encoding="utf-8"))
+    assert terminal_worker._q09_sidecar_matches(tmp_path, item, q09_path, aggregate)
+    q09_path.write_text('{"verdict":"REVIEW_REQUIRED"}\n', encoding="utf-8")
+    assert not terminal_worker._q09_sidecar_matches(
+        tmp_path,
+        item,
+        q09_path,
+        json.loads(q09_path.read_text(encoding="utf-8")),
+    )
+
+
+def test_q09_phase_builder_executes_bound_plan_in_reserved_slot(tmp_path: Path) -> None:
+    farmctl.init_db(tmp_path)
+    setfile = tmp_path / "base.set"
+    plan = tmp_path / "run_plan.json"
+    setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+    plan.write_text("{}\n", encoding="utf-8")
+    payload = {
+        "q09_run_plan_path": str(plan),
+        "q09_run_plan_file_sha256": _sha(plan),
+        "q09_dispatch_binding_sha256": "a" * 64,
+    }
+    connection = farmctl.connect(tmp_path)
+    try:
+        now = farmctl.utc_now()
+        connection.execute(
+            """
+            INSERT INTO work_items(
+                id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
+                payload_json,created_at,updated_at
+            ) VALUES('q09-exec', 'backtest', 'Q09_NEWS', 'QM5_9999',
+                     'EURUSD.DWX', ?, 'active', 0, ?, ?, ?)
+            """,
+            (str(setfile), json.dumps(payload), now, now),
+        )
+        connection.commit()
+        row = connection.execute(
+            "SELECT * FROM work_items WHERE id='q09-exec'"
+        ).fetchone()
+    finally:
+        connection.close()
+    report_root = tmp_path / "reports"
+    command = farmctl._phase_runner_cmd_for_work_item(
+        tmp_path, row, report_root, "T3", REPO
+    )
+    assert command is not None
+    assert command[2] == "execute"
+    assert "collect" not in command
+    assert command[command.index("--terminal") + 1] == "T3"
+    assert command[command.index("--work-item-id") + 1] == "q09-exec"
+    assert command[command.index("--work-item-symbol") + 1] == "EURUSD.DWX"
+    assert command[command.index("--expert") + 1] == r"QM\QM5_9999"
+    assert command[command.index("--expected-plan-file-sha256") + 1] == _sha(plan)
+    assert Path(command[command.index("--output-root") + 1]) == (
+        report_root / "QM5_9999" / "Q09_NEWS" / "EURUSD_DWX"
+    )
+    assert farmctl._phase_runner_cmd_for_work_item(
+        tmp_path, row, report_root, None, REPO
+    ) is None

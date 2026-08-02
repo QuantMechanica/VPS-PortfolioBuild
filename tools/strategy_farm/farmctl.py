@@ -206,6 +206,11 @@ def _normalise_ea_label(ea_id: Any) -> str:
     return f"QM5_{int(match.group(1))}"
 
 
+def _ea_numeric_id(ea_id: Any) -> int | None:
+    match = re.fullmatch(r"QM5_(\d+)", _normalise_ea_label(ea_id))
+    return int(match.group(1)) if match else None
+
+
 def load_requeue_excluded_eas(path: Path = REQUEUE_EXCLUDED_EAS_FILE) -> set[str]:
     """EA IDs excluded from new Q02 enqueue waves."""
     try:
@@ -5710,22 +5715,47 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--neighborhood-max-params", str(Q08_NEIGHBORHOOD_MAX_PARAMS),
         ]
     elif phase == "Q09_NEWS":
-        # The v2 runner only collects an immutable, externally executed paired
-        # run plan.  Missing plans stay fail-closed as PENDING_RUNNER.
+        # Q09 executes its immutable cell plan inside this already-reserved
+        # factory slot. Binding is content-addressed and performed separately;
+        # an unbound historical placeholder remains fail-closed.
+        if not terminal:
+            return None
         raw_plan_path = str(payload.get("q09_run_plan_path") or "").strip()
-        if not raw_plan_path:
+        plan_file_sha256 = str(payload.get("q09_run_plan_file_sha256") or "").strip()
+        binding_sha256 = str(payload.get("q09_dispatch_binding_sha256") or "").strip()
+        if not raw_plan_path or not plan_file_sha256 or not binding_sha256:
             return None
         plan_path = Path(raw_plan_path)
         if not plan_path.is_absolute():
             plan_path = runner_repo_root / plan_path
         if not plan_path.is_file():
             return None
+        ea_num = _ea_numeric_id(ea_id)
+        if ea_num is None:
+            return None
+        q09_output_root = (
+            report_root
+            / f"QM5_{ea_num}"
+            / "Q09_NEWS"
+            / str(symbol).replace(".", "_")
+        )
         cmd = [
             _console_python_executable(),
             str(script_path),
-            "collect",
+            "execute",
             "--plan", str(plan_path),
-            "--output-root", str(report_root),
+            "--expected-plan-file-sha256", plan_file_sha256,
+            "--output-root", str(q09_output_root),
+            "--farm-root", str(root.resolve()),
+            "--work-item-id", str(item_row["id"]),
+            "--terminal", terminal,
+            "--ea-id", str(ea_num),
+            "--expert", f"QM\\{ea_label}",
+            "--symbol", runner_symbol,
+            "--work-item-symbol", symbol,
+            "--period", runner_period,
+            "--repo-root", str(runner_repo_root.resolve()),
+            "--common-root", str(news_calendar_gate.resolve_common_dir()),
         ]
     elif phase == "Q09_PORTFOLIO":
         payload = json.loads(item_row["payload_json"] or "{}")
@@ -5849,6 +5879,19 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
         )
     finally:
         log_fh.close()
+    phase_evidence_path: str | None = None
+    if phase == "Q04":
+        phase_evidence_path = str(_q04_durable_aggregate_path(item_row))
+    elif phase == "Q09_NEWS":
+        ea_num = _ea_numeric_id(item_row["ea_id"])
+        if ea_num is not None:
+            phase_evidence_path = str(
+                report_root
+                / f"QM5_{ea_num}"
+                / "Q09_NEWS"
+                / str(item_row["symbol"] or "").replace(".", "_")
+                / "aggregate.json"
+            )
     return {
         "spawned": True,
         "pid": proc.pid,
@@ -5858,11 +5901,7 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
         "ea_dir_name": ea_dir_name,
         "phase_runner": cmd[1],
         "effective_min_trades": 5,
-        "phase_evidence_path": (
-            str(_q04_durable_aggregate_path(item_row))
-            if phase == "Q04"
-            else None
-        ),
+        "phase_evidence_path": phase_evidence_path,
     }
 
 
@@ -16926,6 +16965,30 @@ def enqueue_cascade_backtest_for_ea(
     }
 
 
+def bind_q09_run_plan(
+    root: Path,
+    *,
+    work_item_id: str,
+    plan_path: str | os.PathLike[str],
+    expected_plan_file_sha256: str,
+    cell_timeout_sec: int = 3600,
+) -> dict[str, Any]:
+    """Bind an authenticated Q09 plan without creating or requeueing work."""
+
+    init_db(root)
+    try:
+        import q09_news_runner as q09_runner
+    except ModuleNotFoundError:
+        from tools.strategy_farm import q09_news_runner as q09_runner
+    return q09_runner.bind_plan_to_work_item(
+        root,
+        work_item_id=str(work_item_id),
+        plan_path=Path(plan_path),
+        expected_plan_file_sha256=str(expected_plan_file_sha256),
+        cell_timeout_sec=int(cell_timeout_sec),
+    )
+
+
 def _resolve_report(payload: dict[str, Any]) -> Path | None:
     """Resolve the report.csv path for a backtest task — direct path or glob."""
     direct = payload.get("expected_report_path")
@@ -19373,6 +19436,18 @@ def build_parser() -> argparse.ArgumentParser:
             "candidate-specific Q03"
         ),
     )
+    bind_q09 = sub.add_parser(
+        "bind-q09-plan",
+        help="Hash-bind a sealed Q09_NEWS plan to one exact pending work item",
+    )
+    bind_q09.add_argument("--work-item-id", required=True)
+    bind_q09.add_argument("--plan", required=True)
+    bind_q09.add_argument("--plan-file-sha256", required=True)
+    bind_q09.add_argument(
+        "--cell-timeout-sec",
+        type=int,
+        default=3600,
+    )
 
     dispatch = sub.add_parser(
         "dispatch-tick",
@@ -19473,7 +19548,7 @@ def build_parser() -> argparse.ArgumentParser:
 _CANONICAL_CHECKOUT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
 _STATE_MUTATING_COMMANDS = frozenset({
     "init", "pump", "repair", "dispatch-tick", "tick", "backfill-work-items",
-    "enqueue-backtest", "approve-card", "reidentify-recovery-card",
+    "enqueue-backtest", "bind-q09-plan", "approve-card", "reidentify-recovery-card",
     "reject-card", "seed-sources", "record-build", "record-review",
     "claude-prompt", "build-ea", "claude-review-prompt", "claim-source", "set-source-status",
     "reserve-ea-ids", "reserve-terminal", "release-terminal",
@@ -19673,6 +19748,14 @@ def main(argv: list[str] | None = None) -> int:
                 "enqueued": False,
                 "reason": "Provide --review-task-id for the review-task path or --ea for an exact/cascade Q-phase path.",
             })
+    elif args.command == "bind-q09-plan":
+        print_json(bind_q09_run_plan(
+            root,
+            work_item_id=args.work_item_id,
+            plan_path=args.plan,
+            expected_plan_file_sha256=args.plan_file_sha256,
+            cell_timeout_sec=args.cell_timeout_sec,
+        ))
     elif args.command == "dispatch-tick":
         print_json(dispatch_tick(root, timeout_hours=args.timeout_hours))
     elif args.command == "tick":
