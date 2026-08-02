@@ -105,23 +105,13 @@ LAUNCH_FAULT_BACKOFF_SECONDS = 30.0
 # on that same slot deterministically burn the row's retry budget.  Give the
 # profile time to release its handles and route the retry to another slot.
 SUMMARY_MISSING_RETRY_COOLDOWN_SECONDS = 30.0
-# Shared-bases history-lock STORM (2026-07-21 diagnosis,
-# docs/ops/evidence/2026-07-21_qm20004_infra_diagnosis.md). T2-T10 `bases` are NTFS
-# junctions to ONE T1 store that ALSO holds the raw Darwinex-Live history. Every
-# transient tester spawn logs into the live account and writes live quotes into that
-# one store, so concurrent spawns collide with sharing-violations. A FINISHED — often
-# profitable — pass whose deposit-currency conversion symbol (raw EURUSD for EUR-quoted
-# indices, or the test symbol itself) is locked at pass-end re-sync gets its report
-# DISCARDED ("history synchronization error [Not found]" / terminal "some error after
-# pass finished ... in 0:00:00.000") -> no summary latched -> summary_missing. Measured
-# storm: GDAXI 126 INFRA vs 58 PASS, NDX 68 vs 23 — 2/3 of index-symbol gate attempts
-# burned. The EA is innocent, so this signature auto-heals as a SEPARATE transient-retry
-# class that (a) steers off the sick terminal via avoid_terminals and (b) does NOT
-# consume the strategy MAX_WORK_ITEM_RETRIES budget. The STRUCTURAL cure (de-junction /
-# remap conversion to .DWX) needs a factory-OFF window and is deferred; this is the
-# factory-ON mitigation. Tokens are matched case-insensitively against the tail of the
-# terminal's own MT5 logs; they are specific to this class and never appear for a
-# genuine 0-trade / PF-fail run (which produces a real summary and never reaches here).
+# History-lock STORM (2026-07-21 diagnosis, refined by the QM5_20007 diagnosis on
+# 2026-08-02). A FINISHED pass can lose its report when the terminal profile hits a
+# history sharing violation during pass-end re-sync. This is a separate transient
+# retry class, but it is safe only when the token is bound to the CURRENT work item.
+# Every run_smoke launch writes the exact work-item UUID in its tester.ini path to the
+# terminal log. Detection below requires that marker and scans only text after its
+# last occurrence; absent binding fails open to ordinary summary-missing handling.
 HISTORY_LOCK_STORM_TOKENS = (
     "history synchronization error",
     "some error after pass finished",
@@ -162,7 +152,11 @@ LOG_BOMB_JOURNAL_CAP_BYTES = LOG_BOMB_HARD_CEIL_BYTES  # back-compat alias (kill
 LOG_BOMB_CHECK_EVERY_ITERS = 5                # ~every 10s (loop sleeps 2s)
 SQLITE_WRITE_RETRIES = 12
 SQLITE_WRITE_RETRY_SLEEP_SECONDS = 1.5
-SMOKE_TERMINAL_EXIT_GRACE_SECONDS = 60.0
+# run_smoke can spend up to 240 seconds publishing a report after terminal_exit.
+# The outer worker therefore waits through that complete contract plus 60 seconds
+# of margin before treating the wrapper as stalled. A 60-second ceiling destroyed
+# valid GDAXI handoffs before summary.json could be published (2026-08-02 diagnosis).
+SMOKE_TERMINAL_EXIT_GRACE_SECONDS = 300.0
 DETACHED_TERMINAL_POLL_SECONDS = 2.0
 SQLITE_LOCK_BACKOFF_SECONDS = 10.0
 STALLDUMP_REQUEST_PATH = Path("D:/QM/reports/state/STALLDUMP_REQUEST")
@@ -973,16 +967,21 @@ def _decode_log_tail(raw: bytes) -> str:
 def _detect_history_lock_storm(
     terminal: str | None,
     mt5_root: Path | None = None,
+    *,
+    work_item_id: str | None = None,
+    started_at_iso: str | None = None,
 ) -> dict[str, Any] | None:
-    """Return storm-signature evidence if the terminal's recent MT5 logs show the
-    shared-bases history-lock class, else None.
+    """Return current-run history-lock evidence, else ``None``.
 
-    Scans only the TAIL of the most recently-written terminal / tester / agent logs
-    (bounded by HISTORY_LOCK_SCAN_TAIL_BYTES and HISTORY_LOCK_SCAN_MAX_FILES) so a
-    multi-GB storm log can never be read whole. Fail-open (returns None on any error).
+    The exact work-item UUID in the terminal's tester.ini launch marker is the
+    evidence boundary. Only text after the marker's last occurrence is eligible;
+    a prior run or prior-day tail can never classify the current claim. The scan
+    remains bounded so a multi-GB storm log is never read whole. Any missing or
+    unreadable binding fails open to ordinary summary-missing handling.
     """
     name = str(terminal or "").strip().upper()
-    if not name:
+    marker = str(work_item_id or "").strip().lower()
+    if not name or not marker:
         return None
     root = mt5_root or farmctl.MT5_ROOT
     term_dir = root / name
@@ -1014,14 +1013,39 @@ def _detect_history_lock_storm(
         except OSError:
             return 0.0
 
+    started_at = _parse_utc_iso(started_at_iso)
+    started_epoch = started_at.timestamp() - 2.0 if started_at is not None else None
     candidates.sort(key=_mtime, reverse=True)
     for path in candidates[:HISTORY_LOCK_SCAN_MAX_FILES]:
-        text = _decode_log_tail(_read_tail_bytes(path, HISTORY_LOCK_SCAN_TAIL_BYTES)).lower()
-        if not text:
+        mtime = _mtime(path)
+        if started_epoch is not None and mtime < started_epoch:
             continue
+        decoded = _decode_log_tail(_read_tail_bytes(path, HISTORY_LOCK_SCAN_TAIL_BYTES))
+        text = decoded.lower()
+        marker_at = text.rfind(marker)
+        if marker_at < 0:
+            continue
+        current_run_text = text[marker_at:]
         for token in HISTORY_LOCK_STORM_TOKENS:
-            if token in text:
-                return {"terminal": name, "token": token, "log_path": str(path)}
+            token_at = current_run_text.find(token)
+            if token_at < 0:
+                continue
+            absolute_at = marker_at + token_at
+            line_start = decoded.rfind("\n", marker_at, absolute_at) + 1
+            line_end = decoded.find("\n", absolute_at)
+            if line_end < 0:
+                line_end = len(decoded)
+            matched_line = decoded[line_start:line_end].strip()
+            return {
+                "terminal": name,
+                "token": token,
+                "log_path": str(path),
+                "matched_line": matched_line,
+                "log_mtime_utc": datetime.fromtimestamp(
+                    mtime, tz=timezone.utc
+                ).isoformat(),
+                "work_item_id": str(work_item_id),
+            }
     return None
 
 
@@ -2168,7 +2192,12 @@ def _work_item_ownership(root: Path, item_id: str, terminal: str) -> dict[str, A
     return {"owned": True, "status": status, "claimed_by": claimed_by}
 
 
-def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[str, Any]:
+def _finish_work_item(
+    root: Path,
+    item_id: str,
+    exit_code: int | None,
+    runtime_payload_updates: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     def _finish() -> dict[str, Any]:
         now = farmctl.utc_now()
         with farmctl.connect(root) as conn:
@@ -2176,6 +2205,8 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
             if not item:
                 return {"finished": False, "reason": "missing_item"}
             payload = _json_loads(item["payload_json"])
+            if runtime_payload_updates:
+                payload.update(runtime_payload_updates)
             summary_data = _find_work_item_summary_data(item, payload)
             if summary_data:
                 summary_path, summary = summary_data
@@ -2362,7 +2393,14 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
             storm = None
             try:
                 if root.resolve() == farmctl.DEFAULT_ROOT.resolve():
-                    storm = _detect_history_lock_storm(failed_terminal)
+                    storm = _detect_history_lock_storm(
+                        failed_terminal,
+                        work_item_id=item_id,
+                        started_at_iso=(
+                            payload.get("started_at_iso")
+                            or payload.get("claimed_at_iso")
+                        ),
+                    )
             except Exception:
                 storm = None
 
@@ -2377,6 +2415,8 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
                 payload["prior_failure"] = "shared_bases_history_lock_storm"
                 payload["transient_infra_signature"] = storm.get("token")
                 payload["transient_infra_evidence_path"] = storm.get("log_path")
+                payload["transient_infra_evidence_line"] = storm.get("matched_line")
+                payload["transient_infra_evidence_mtime_utc"] = storm.get("log_mtime_utc")
                 _accumulate_avoid_terminal(payload, failed_terminal)
                 payload["launch_not_before_utc"] = (
                     datetime.now(timezone.utc)
@@ -2802,6 +2842,7 @@ def _monitor_spawned_work_item(
     _lb_iter = 0
     _lb_sizes: dict = {}
     _lb_bomb: tuple | None = None
+    post_exit_watchdog: dict[str, Any] | None = None
     child_alive = True
     terminal_alive_after_child_exit = False
     while time.monotonic() < deadline:
@@ -2824,6 +2865,12 @@ def _monitor_spawned_work_item(
                 **ownership,
             }
         if _smoke_terminal_exit_stalled(item, payload):
+            post_exit_watchdog = {
+                "post_exit_watchdog_killed": True,
+                "post_exit_watchdog_killed_at_utc": farmctl.utc_now(),
+                "post_exit_watchdog_grace_seconds": SMOKE_TERMINAL_EXIT_GRACE_SECONDS,
+                "post_exit_watchdog_reason": "terminal_exit_without_summary_after_handoff_grace",
+            }
             farmctl._stop_pid_tree(pid)
             _stop_terminal_slot_for_release(root, terminal)
             break
@@ -2927,7 +2974,11 @@ def _monitor_spawned_work_item(
     ran_seconds = time.monotonic() - spawn_started
     child_alive = farmctl._pid_tree_exists(pid)
     terminal_alive_after_child_exit = (not child_alive) and _terminal_slot_running(root, terminal)
-    if child_alive or terminal_alive_after_child_exit:
+    if post_exit_watchdog is not None:
+        # The wrapper was explicitly killed by this worker; its real return code
+        # is unknown and must never be rewritten as success.
+        exit_code = None
+    elif child_alive or terminal_alive_after_child_exit:
         # Timed out - kill the wrapper and the detached terminal slot, then
         # treat as no-result. MT5 can outlive run_smoke.ps1; stopping only the
         # parent can leave the tester writing a late summary after the DB row
@@ -2993,7 +3044,16 @@ def _monitor_spawned_work_item(
                 {"reason": "staged_ex5_post_run_sha256_mismatch", "detail": str(exc)},
             ),
         }
-    return {"action": "finished", "item_id": item["id"], **_finish_work_item(root, item["id"], exit_code)}
+    if post_exit_watchdog is None:
+        finish_result = _finish_work_item(root, item["id"], exit_code)
+    else:
+        finish_result = _finish_work_item(
+            root,
+            item["id"],
+            exit_code,
+            runtime_payload_updates=post_exit_watchdog,
+        )
+    return {"action": "finished", "item_id": item["id"], **finish_result}
 
 
 def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_seconds: int) -> dict[str, Any]:

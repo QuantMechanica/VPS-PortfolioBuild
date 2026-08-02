@@ -335,9 +335,51 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 //=============================================================================
 // Strategy_ManageOpenPosition
-// Called per-tick; reads only cached state and framework helpers — O(1).
+// Called per-tick; momentum VWAP modification is gated to one attempt per bar.
 //=============================================================================
-void Strategy_ManageOpenPosition()
+bool QM20007_VwapStopIsBrokerValid(const ENUM_POSITION_TYPE ptype,
+                                   const double target,
+                                   const double current_sl)
+  {
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0 || target <= 0.0)
+      return false;
+
+   // A raw VWAP value can differ while digit normalization resolves to the
+   // existing SL. Require a full point of directional improvement first.
+   const double tolerance = point * 1e-6;
+   if(current_sl > 0.0)
+     {
+      if(ptype == POSITION_TYPE_BUY && (target - current_sl) < (point - tolerance))
+         return false;
+      if(ptype == POSITION_TYPE_SELL && (current_sl - target) < (point - tolerance))
+         return false;
+     }
+
+   // Modification validity is governed by the stricter of stops/freeze level.
+   // Keep at least one point from market even when the broker reports zero.
+   long distance_points = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   const long freeze_points = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_FREEZE_LEVEL);
+   if(freeze_points > distance_points)
+      distance_points = freeze_points;
+   if(distance_points < 1)
+      distance_points = 1;
+   const double min_distance = (double)distance_points * point;
+
+   if(ptype == POSITION_TYPE_BUY)
+     {
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      return (bid > 0.0 && (bid - target) >= (min_distance - tolerance));
+     }
+   if(ptype == POSITION_TYPE_SELL)
+     {
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      return (ask > 0.0 && (target - ask) >= (min_distance - tolerance));
+     }
+   return false;
+  }
+
+void Strategy_ManageOpenPosition(const bool is_new_bar)
   {
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -348,20 +390,24 @@ void Strategy_ManageOpenPosition()
 
       if(intraday_lane == LANE_MOMENTUM_BAND && mb_vwap_trail && g_session_vwap > 0.0)
         {
+         // g_session_vwap/g_mb_atr change only in AdvanceState_OnNewBar(). One
+         // attempt per bar bounds any residual broker rejection logging.
+         if(!is_new_bar)
+            continue;
          const ENUM_POSITION_TYPE ptype  = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
          const double             cur_sl = PositionGetDouble(POSITION_SL);
          const double atr_half = 0.5 * g_mb_atr; // cached once/bar (was per-tick QM_ATR at shift 1)
 
          if(ptype == POSITION_TYPE_BUY)
            {
-            const double vwap_sl = g_session_vwap - atr_half;
-            if(cur_sl <= 0.0 || vwap_sl > cur_sl)
+            const double vwap_sl = QM_TM_NormalizePrice(_Symbol, g_session_vwap - atr_half);
+            if(QM20007_VwapStopIsBrokerValid(ptype, vwap_sl, cur_sl))
                QM_TM_MoveSL(ticket, vwap_sl, "VWAP_trail_L");
            }
          else if(ptype == POSITION_TYPE_SELL)
            {
-            const double vwap_sl = g_session_vwap + atr_half;
-            if(cur_sl <= 0.0 || vwap_sl < cur_sl)
+            const double vwap_sl = QM_TM_NormalizePrice(_Symbol, g_session_vwap + atr_half);
+            if(QM20007_VwapStopIsBrokerValid(ptype, vwap_sl, cur_sl))
                QM_TM_MoveSL(ticket, vwap_sl, "VWAP_trail_S");
            }
         }
@@ -473,8 +519,8 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
-   // Per-tick: manage open position (VWAP trail, BE shift, ATR trail)
-   Strategy_ManageOpenPosition();
+   // ORB/gold management stays per-tick; cached VWAP trailing is once/new-bar.
+   Strategy_ManageOpenPosition(is_new_bar);
 
    // News blackout gates entries only. Position management and the time exit
    // above continue to run during news windows.

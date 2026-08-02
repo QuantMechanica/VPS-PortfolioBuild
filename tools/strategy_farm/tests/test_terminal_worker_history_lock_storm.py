@@ -198,6 +198,40 @@ class HistoryLockStormTransientRetryTests(unittest.TestCase):
             persisted_payload = json.loads(row[3])
             self.assertEqual(persisted_payload["transient_infra_attempts"], 3)
 
+    def test_post_exit_watchdog_kill_is_persisted_with_unknown_exit_code(self) -> None:
+        """A worker kill must never be rewritten as wrapper exit_code=0."""
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            _insert_work_item(
+                root,
+                "wi-watchdog",
+                "GDAXI.DWX",
+                claimed_by="T1",
+                payload={"report_root": str(root / "missing-report")},
+            )
+            watchdog = {
+                "post_exit_watchdog_killed": True,
+                "post_exit_watchdog_killed_at_utc": "2026-08-02T12:00:00+00:00",
+                "post_exit_watchdog_grace_seconds": 300.0,
+                "post_exit_watchdog_reason": "terminal_exit_without_summary_after_handoff_grace",
+            }
+
+            result = terminal_worker._finish_work_item(
+                root,
+                "wi-watchdog",
+                exit_code=None,
+                runtime_payload_updates=watchdog,
+            )
+
+            self.assertEqual(result["status"], "pending")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                payload = json.loads(conn.execute(
+                    "SELECT payload_json FROM work_items WHERE id='wi-watchdog'"
+                ).fetchone()[0])
+            self.assertIsNone(payload["run_smoke_exit_code"])
+            self.assertTrue(payload["post_exit_watchdog_killed"])
+            self.assertEqual(payload["post_exit_watchdog_grace_seconds"], 300.0)
+
     # (a) storm signature auto-requeues, accumulates the sick terminal, and does NOT
     #     consume the strategy retry budget (attempt_count untouched).
     def test_storm_signature_requeues_transient_without_consuming_retry_budget(self) -> None:
@@ -450,26 +484,40 @@ class HistoryLockStormDetectionTests(unittest.TestCase):
             logs.mkdir(parents=True)
             log = logs / "20260721.log"
             body = (
+                "18:50:00 Startup initialized from D:\\QM\\reports\\work_items\\"
+                "wi-current\\QM5_9999\\raw\\run_01\\tester.ini\r\n"
                 "18:51:21 Tester OnTester result 1.58\r\n"
                 "18:51:22 Tester last test passed with result "
                 "\"some error after pass finished\" in 0:00:00.000\r\n"
             )
             log.write_bytes(body.encode("utf-16-le"))
 
-            evidence = terminal_worker._detect_history_lock_storm("T9", mt5_root=mt5_root)
+            evidence = terminal_worker._detect_history_lock_storm(
+                "T9",
+                mt5_root=mt5_root,
+                work_item_id="wi-current",
+            )
             self.assertIsNotNone(evidence)
             self.assertEqual(evidence["terminal"], "T9")
             self.assertEqual(evidence["token"], "some error after pass finished")
+            self.assertEqual(evidence["work_item_id"], "wi-current")
+            self.assertIn("some error after pass finished", evidence["matched_line"])
 
     def test_detects_sync_error_in_agent_log(self) -> None:
         with self._root() as tmp:
             mt5_root = Path(tmp) / "mt5"
             logs = mt5_root / "T4" / "Tester" / "Agent-127.0.0.1-3004" / "logs"
             logs.mkdir(parents=True)
-            (logs / "20260721.log").write_bytes(
-                "History NDX.DWX: history synchronization error [Not found]\r\n".encode("utf-8")
+            (logs / "20260721.log").write_bytes((
+                "Startup initialized from D:\\QM\\reports\\work_items\\wi-agent-current\\"
+                "QM5_9999\\raw\\run_01\\tester.ini\r\n"
+                "History NDX.DWX: history synchronization error [Not found]\r\n"
+            ).encode("utf-8"))
+            evidence = terminal_worker._detect_history_lock_storm(
+                "T4",
+                mt5_root=mt5_root,
+                work_item_id="wi-agent-current",
             )
-            evidence = terminal_worker._detect_history_lock_storm("T4", mt5_root=mt5_root)
             self.assertIsNotNone(evidence)
             self.assertEqual(evidence["token"], "history synchronization error")
 
@@ -481,13 +529,70 @@ class HistoryLockStormDetectionTests(unittest.TestCase):
             (logs / "20260721.log").write_bytes(
                 "Tester final balance 101535 USD\r\nTester test passed\r\n".encode("utf-16-le")
             )
-            self.assertIsNone(terminal_worker._detect_history_lock_storm("T1", mt5_root=mt5_root))
+            self.assertIsNone(terminal_worker._detect_history_lock_storm(
+                "T1",
+                mt5_root=mt5_root,
+                work_item_id="wi-clean",
+            ))
 
     def test_missing_terminal_dir_returns_none(self) -> None:
         with self._root() as tmp:
             mt5_root = Path(tmp) / "mt5"
             mt5_root.mkdir(parents=True)
-            self.assertIsNone(terminal_worker._detect_history_lock_storm("T9", mt5_root=mt5_root))
+            self.assertIsNone(terminal_worker._detect_history_lock_storm(
+                "T9",
+                mt5_root=mt5_root,
+                work_item_id="wi-missing",
+            ))
+
+    def test_stale_token_before_current_work_item_marker_is_rejected(self) -> None:
+        with self._root() as tmp:
+            mt5_root = Path(tmp) / "mt5"
+            logs = mt5_root / "T9" / "logs"
+            logs.mkdir(parents=True)
+            log = logs / "20260801.log"
+            log.write_bytes((
+                "Tester last test passed with result \"some error after pass finished\"\r\n"
+                "Startup successfully initialized from start config "
+                "\"D:\\QM\\reports\\work_items\\wi-current\\QM5_20007\\raw\\run_01\\tester.ini\"\r\n"
+                "Tester last test passed with result \"successfully finished\"\r\n"
+            ).encode("utf-16-le"))
+
+            self.assertIsNone(terminal_worker._detect_history_lock_storm(
+                "T9",
+                mt5_root=mt5_root,
+                work_item_id="wi-current",
+            ))
+
+    def test_token_for_different_work_item_is_rejected(self) -> None:
+        with self._root() as tmp:
+            mt5_root = Path(tmp) / "mt5"
+            logs = mt5_root / "T2" / "logs"
+            logs.mkdir(parents=True)
+            (logs / "20260802.log").write_text(
+                "Startup D:\\QM\\reports\\work_items\\wi-previous\\raw\\tester.ini\n"
+                "Tester some error after pass finished\n",
+                encoding="utf-8",
+            )
+
+            self.assertIsNone(terminal_worker._detect_history_lock_storm(
+                "T2",
+                mt5_root=mt5_root,
+                work_item_id="wi-current",
+            ))
+
+    def test_unbound_detection_fails_open(self) -> None:
+        with self._root() as tmp:
+            mt5_root = Path(tmp) / "mt5"
+            logs = mt5_root / "T2" / "logs"
+            logs.mkdir(parents=True)
+            (logs / "20260802.log").write_text(
+                "Tester some error after pass finished\n",
+                encoding="utf-8",
+            )
+            self.assertIsNone(
+                terminal_worker._detect_history_lock_storm("T2", mt5_root=mt5_root)
+            )
 
     def test_backoff_is_exponential_and_capped(self) -> None:
         base = terminal_worker.TRANSIENT_INFRA_BACKOFF_BASE_SECONDS

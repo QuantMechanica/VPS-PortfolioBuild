@@ -70,6 +70,9 @@ ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
 PHASE_ACTIVE_TIMEOUT_MIN = dict(farmctl.PHASE_ACTIVE_TIMEOUT_MIN)
 FACTORY_TERMINALS = tuple(f"T{i}" for i in range(1, 11))
+MT5_ROOT = Path(os.environ.get("QM_MT5_ROOT", r"D:\QM\mt5"))
+TERMINAL_PROFILE_LOG_TAIL_BYTES = 256 * 1024
+ACCOUNT_NOT_SPECIFIED_TOKEN = "tester not started because the account is not specified"
 MT5_SATURATION_MIN_WORKERS = 7
 # Operator safety/quarantine list — terminals here are intentionally offline
 # (mirrors start_terminal_workers._disabled_terminals).  It lowers the urgent
@@ -1189,6 +1192,146 @@ def chk_mt5_worker_saturation(con) -> dict:
             "Enabled workers are healthy, but design capacity is reduced; resolve or explicitly ratify each quarantined terminal.",
         )
     return _check("mt5_worker_saturation", "OK", count, design_expected, detail, "")
+
+
+def _bounded_log_tail_text(path: Path, max_bytes: int = TERMINAL_PROFILE_LOG_TAIL_BYTES) -> str:
+    """Read a bounded UTF-8/UTF-16 MT5 log tail; failures return empty text."""
+    try:
+        size = path.stat().st_size
+        with path.open("rb") as handle:
+            if size > max_bytes:
+                start = size - max_bytes
+                if start % 2:
+                    start += 1
+                handle.seek(start)
+            raw = handle.read()
+    except OSError:
+        return ""
+    if not raw:
+        return ""
+    sample = raw[:512]
+    if sample.count(0) > len(sample) // 4:
+        return raw.decode("utf-16-le", errors="ignore")
+    return raw.decode("utf-8-sig", errors="ignore")
+
+
+def chk_terminal_account_profiles(
+    mt5_root: Path | None = None,
+    terminals: tuple[str, ...] | None = None,
+    disabled: set[str] | None = None,
+) -> dict:
+    """Read-only detection of missing portable-terminal account profiles.
+
+    Each enabled T1-T10 slot must have its account/server files and explicit
+    Login/Server keys. Runtime truth comes from the latest terminal log: only an
+    ACCOUNT_NOT_SPECIFIED token after the latest tester.ini launch marker is
+    actionable, so stale failures from an earlier run cannot poison the probe.
+    T_Live is structurally outside ``FACTORY_TERMINALS``.
+    """
+    root = mt5_root or MT5_ROOT
+    selected = terminals or FACTORY_TERMINALS
+    disabled_set = _disabled_terminals() if disabled is None else disabled
+    enabled = [str(t).upper() for t in selected if str(t).upper() not in disabled_set]
+    runtime_failures: list[str] = []
+    runtime_pending: list[str] = []
+    config_gaps: list[str] = []
+    inspected_logs = 0
+
+    for terminal in enabled:
+        terminal_root = root / terminal
+        config_root = terminal_root / "Config"
+        accounts = config_root / "accounts.dat"
+        servers = config_root / "servers.dat"
+        common = config_root / "common.ini"
+        for label, path in (("accounts.dat", accounts), ("servers.dat", servers)):
+            try:
+                if not path.is_file() or path.stat().st_size <= 0:
+                    config_gaps.append(f"{terminal}:{label}_missing_or_empty")
+            except OSError:
+                config_gaps.append(f"{terminal}:{label}_unreadable")
+        try:
+            common_text = common.read_text(encoding="utf-8-sig", errors="ignore")
+        except OSError:
+            common_text = ""
+        if not re.search(r"(?mi)^Login=\d+\s*$", common_text):
+            config_gaps.append(f"{terminal}:common.ini_Login_missing")
+        if not re.search(r"(?mi)^Server=\S+\s*$", common_text):
+            config_gaps.append(f"{terminal}:common.ini_Server_missing")
+
+        logs_dir = terminal_root / "logs"
+        try:
+            candidates = [p for p in logs_dir.glob("*.log") if p.is_file()]
+            latest = max(candidates, key=lambda p: p.stat().st_mtime) if candidates else None
+        except OSError:
+            latest = None
+        if latest is None:
+            config_gaps.append(f"{terminal}:terminal_log_missing")
+            continue
+        text = _bounded_log_tail_text(latest).lower()
+        if not text:
+            config_gaps.append(f"{terminal}:{latest.name}_tail_unreadable")
+            continue
+        inspected_logs += 1
+        launch_at = max(
+            text.rfind("successfully initialized from start config"),
+            text.rfind("launched with"),
+        )
+        failure_at = text.rfind(ACCOUNT_NOT_SPECIFIED_TOKEN)
+        if launch_at < 0:
+            runtime_pending.append(f"{terminal}:{latest.name}:no_tester_launch_marker")
+        elif failure_at > launch_at:
+            runtime_failures.append(f"{terminal}:{latest.name}")
+        else:
+            current_launch = text[launch_at:]
+            ready = any(token in current_launch for token in (
+                "authorized on ",
+                "automatic testing started",
+                "last test passed with result",
+            ))
+            if not ready:
+                runtime_pending.append(f"{terminal}:{latest.name}")
+
+    hint = (
+        "Quarantine each affected factory slot, then repair its portable account "
+        "profile only in an OWNER-approved stopped-state window; health must never "
+        "stop/start terminals or touch AutoTrading."
+    )
+    if runtime_failures:
+        return _check(
+            "terminal_account_profiles",
+            "FAIL",
+            len(runtime_failures),
+            0,
+            "latest launch is account-unconfigured on " + ", ".join(runtime_failures),
+            hint,
+        )
+    if config_gaps:
+        return _check(
+            "terminal_account_profiles",
+            "WARN",
+            len(config_gaps),
+            0,
+            "profile preflight gaps: " + ", ".join(config_gaps),
+            hint,
+        )
+    if runtime_pending:
+        return _check(
+            "terminal_account_profiles",
+            "WARN",
+            len(runtime_pending),
+            0,
+            "latest launch has not yet proved account readiness on "
+            + ", ".join(runtime_pending),
+            hint,
+        )
+    return _check(
+        "terminal_account_profiles",
+        "OK",
+        inspected_logs,
+        len(enabled),
+        f"{inspected_logs}/{len(enabled)} enabled T1-T10 profiles have config and no current-launch account fault",
+        "",
+    )
 
 
 def _parse_utc_datetime(value: str | None) -> dt.datetime | None:
@@ -2951,6 +3094,7 @@ ALL_CHECKS = [
     ("claude_review_starved",  chk_claude_review_starved,  True),
     ("mt5_dispatch_idle",      chk_mt5_dispatch_idle,      True),
     ("mt5_worker_saturation",  chk_mt5_worker_saturation,  True),
+    ("terminal_account_profiles", chk_terminal_account_profiles, False),
     ("active_row_age",         chk_active_row_age,         True),
     ("codex_zero_activity",    chk_codex_zero_activity,    True),
     ("source_pool",            chk_source_pool,            True),
