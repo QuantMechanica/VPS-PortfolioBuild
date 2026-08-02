@@ -10,6 +10,7 @@ created_by: Codex
 cards_extracted:
   - energy-momrev
   - xauxag-momrev
+  - xauxag-rev18
 ---
 
 # Bianchi-Drew-Fan Commodity Momentum-Reversal Source Packet
@@ -73,6 +74,24 @@ rolling-residual, conditional-quantile, same-calendar, pure-momentum, and
 idiosyncratic-volatility baskets. `energy-momrev` remains the expected fuzzy
 source-method sibling; the carrier pair and associated physical/factor risks
 are different, while the 12/18 source parameters remain locked.
+
+### 2026-08-02 XAU/XAG Pure Reversal Extraction
+
+Decision `decisions/2026-08-02_qm5_20202_xauxag_rev18_g0.md` authorizes one
+additional bounded source variant. The paper's post-formation analysis finds
+that commodity momentum profits reverse over the 12-to-30-month horizon and
+uses an 18-month reversal rank in its preferred double sort. The S03 carrier
+isolates that reversal information object: at each broker-month boundary it
+ranks synchronized XAU and XAG completed 18-month log returns, buys the
+long-horizon loser, shorts the winner, and holds the pair for one month.
+
+This is a two-metal carrier falsification, not a replication of the source's
+broad tercile portfolios. It does not inherit source performance,
+significance, diversification, or neutrality. Equal stop-risk legs, Darwinex
+CFD basis, ATR stops, paired execution, and restart state are QM translations.
+The pure 18-month reversal rank is mechanically distinct from the S02 strict
+12/18 disagreement gate: S03 does not read a 12-month state and trades every
+non-tied monthly reversal rank, including months when S02 must remain flat.
 
 ## QM Translation
 
