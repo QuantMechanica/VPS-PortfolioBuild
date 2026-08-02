@@ -1,0 +1,81 @@
+{
+  "inventory_path": "D:/QM/strategy_farm/artifacts/portfolio/ftmo_qualification_20260802.json",
+  "fund_scores_path": "D:/QM/strategy_farm/artifacts/portfolio/fund_scores.json",
+  "ftmo_cost_snapshot_path": "C:/QM/repo/artifacts/ftmo_symbol_snapshot_2026-07-11.json",
+  "streams": [
+    {
+      "sleeve_id": "13301:GDAXI",
+      "symbol": "GDAXI",
+      "ftmo_code": "GER40.cash",
+      "stream_schema": "DXZ_Q08_TRADES_V1",
+      "path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/13301_GDAXI_DWX.jsonl"
+    },
+    {
+      "sleeve_id": "10145:XAUUSD",
+      "symbol": "XAUUSD",
+      "ftmo_code": "XAU/USD",
+      "stream_schema": "DXZ_Q08_TRADES_V1",
+      "path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/10145_XAUUSD_DWX.jsonl"
+    },
+    {
+      "sleeve_id": "10183:XAUUSD",
+      "symbol": "XAUUSD",
+      "ftmo_code": "XAU/USD",
+      "stream_schema": "DXZ_Q08_TRADES_V1",
+      "path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/10183_XAUUSD_DWX.jsonl"
+    },
+    {
+      "sleeve_id": "13036:GDAXI",
+      "symbol": "GDAXI",
+      "ftmo_code": "GER40.cash",
+      "stream_schema": "DXZ_Q08_TRADES_V1",
+      "path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/13036_GDAXI_DWX.jsonl"
+    },
+    {
+      "sleeve_id": "10128:XAUUSD",
+      "symbol": "XAUUSD",
+      "ftmo_code": "XAU/USD",
+      "stream_schema": "DXZ_Q08_TRADES_V1",
+      "path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/10128_XAUUSD_DWX.jsonl"
+    }
+  ],
+  "compositions": [
+    {
+      "id": "fund_score_top_1",
+      "sleeves": [
+        {"sleeve_id": "13301:GDAXI", "weight": 1.0}
+      ]
+    },
+    {
+      "id": "fund_score_top_2_equal_weight",
+      "sleeves": [
+        {"sleeve_id": "13301:GDAXI", "weight": 0.5},
+        {"sleeve_id": "10145:XAUUSD", "weight": 0.5}
+      ]
+    },
+    {
+      "id": "fund_score_top_3_equal_weight",
+      "sleeves": [
+        {"sleeve_id": "13301:GDAXI", "weight": 0.3333333333333333},
+        {"sleeve_id": "10145:XAUUSD", "weight": 0.3333333333333333},
+        {"sleeve_id": "10183:XAUUSD", "weight": 0.3333333333333333}
+      ]
+    },
+    {
+      "id": "fund_score_top_5_equal_weight",
+      "sleeves": [
+        {"sleeve_id": "13301:GDAXI", "weight": 0.2},
+        {"sleeve_id": "10145:XAUUSD", "weight": 0.2},
+        {"sleeve_id": "10183:XAUUSD", "weight": 0.2},
+        {"sleeve_id": "13036:GDAXI", "weight": 0.2},
+        {"sleeve_id": "10128:XAUUSD", "weight": 0.2}
+      ]
+    },
+    {
+      "id": "challenge_ready_singleton_10128",
+      "sleeves": [
+        {"sleeve_id": "10128:XAUUSD", "weight": 1.0}
+      ]
+    }
+  ]
+}
