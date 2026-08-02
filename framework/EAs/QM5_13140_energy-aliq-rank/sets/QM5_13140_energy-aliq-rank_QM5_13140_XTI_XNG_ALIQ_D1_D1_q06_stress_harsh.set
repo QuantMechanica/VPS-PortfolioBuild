@@ -3,7 +3,7 @@
 ; ea_id:        13140
 ; ea_slug:      energy-aliq-rank
 ; ea_version:   v5.0
-; set_version:  s20260719-stress-harsh
+; set_version:  s20260802-stress-harsh
 ; symbol:       QM5_13140_XTI_XNG_ALIQ_D1
 ; host_symbol:  XTIUSD.DWX
 ; timeframe:    D1
@@ -13,7 +13,7 @@
 ; portfolio_weight: 1
 ; build_hash:   aae0e65eff3eaf72eacf1cd2d3be41cec38426ad725e95eadb653b13fff60de3
 ; author:       Development
-; date:         2026-07-19
+; date:         2026-08-02
 ;==========================================================
 qm_ea_id=13140
 qm_magic_slot_offset=0
