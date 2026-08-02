@@ -59,10 +59,12 @@ string g_leg_xag = "XAGUSD.DWX";
 
 bool     g_month_boundary = false;
 bool     g_signal_ready = false;
+bool     g_pair_state_dirty = true;
 int      g_signal_month_key = 0;
 int      g_signal_pair_direction = 0; // +1 long residual; -1 short residual.
 double   g_signal_residual = 0.0;
 double   g_signal_delta = 0.0;
+datetime g_signal_decision_time = 0;
 datetime g_pair_entry_time = 0;
 int      g_last_attempt_month_key = 0;
 string   g_attempt_state_key = "";
@@ -298,7 +300,8 @@ bool Strategy_PairMonthExpired()
    if(entry_time <= 0)
       entry_time = Strategy_CurrentPairEntryTime();
    const int opened_month = Strategy_MonthKey(entry_time);
-   const int current_month = Strategy_MonthKey(TimeCurrent());
+   const int current_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xau, 0);
    return (opened_month > 0 && current_month > 0 &&
            opened_month != current_month);
   }
@@ -308,11 +311,10 @@ string Strategy_AttemptStateKey()
    return StringFormat("QM5_%d_XAUXAG_CMTAR_ATTEMPT_MONTH", qm_ea_id);
   }
 
-void Strategy_LoadAttemptState(const datetime reference_time)
+void Strategy_LoadAttemptState(const int current_month)
   {
    g_attempt_state_key = Strategy_AttemptStateKey();
    g_last_attempt_month_key = 0;
-   const int current_month = Strategy_MonthKey(reference_time);
    if(current_month <= 0 || !GlobalVariableCheck(g_attempt_state_key))
       return;
    const int stored_month = (int)GlobalVariableGet(g_attempt_state_key);
@@ -481,10 +483,12 @@ bool Strategy_LoadMonthlyResiduals(const datetime decision_time,
 bool Strategy_LoadSignal(const datetime decision_time)
   {
    g_signal_ready = false;
-   g_signal_month_key = Strategy_MonthKey(decision_time);
+   g_signal_month_key =
+      QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xau, 0);
    g_signal_pair_direction = 0;
    g_signal_residual = 0.0;
    g_signal_delta = 0.0;
+   g_signal_decision_time = 0;
    if(g_signal_month_key <= 0)
       return false;
 
@@ -505,6 +509,7 @@ bool Strategy_LoadSignal(const datetime decision_time)
    g_signal_residual = latest_residual;
    g_signal_delta = delta_residual;
    g_signal_pair_direction = (latest_residual < 0.0 ? 1 : -1);
+   g_signal_decision_time = decision_time;
    g_signal_ready = true;
    return true;
   }
@@ -713,7 +718,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       g_signal_month_key <= 0 || g_signal_pair_direction == 0 ||
       Strategy_OpenPairLegCount() > 0)
       return false;
-   const datetime decision_time = iTime(g_leg_xau, PERIOD_D1, 0); // perf-allowed: current monthly decision anchor.
+   const datetime decision_time = g_signal_decision_time;
    if(decision_time <= 0 ||
       Strategy_MonthAlreadyEntered(g_signal_month_key, decision_time))
       return false;
@@ -805,9 +810,11 @@ int OnInit()
    QM_SymbolGuardInit(basket_symbols);
    QM_BasketWarmupHistory(basket_symbols, PERIOD_D1,
                           MathMax(160, strategy_history_bars));
-   const datetime current_bar_time = iTime(g_leg_xau, PERIOD_D1, 0); // perf-allowed: restart state anchor.
-   Strategy_LoadAttemptState(current_bar_time);
+   const int current_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, g_leg_xau, 0);
+   Strategy_LoadAttemptState(current_month);
    g_pair_entry_time = Strategy_CurrentPairEntryTime();
+   g_pair_state_dirty = true;
    QM_LogEvent(QM_INFO, "INIT_OK",
                "{\"card\":\"QM5_20012\",\"ea\":\"xauxag-cmtar\"}");
    return INIT_SUCCEEDED;
@@ -828,7 +835,6 @@ void OnTick()
       return;
 
    const bool new_bar = QM_IsNewBar();
-   const bool entry_blocked = Strategy_NoTradeFilter();
    g_month_boundary = false;
    g_signal_ready = false;
    if(new_bar)
@@ -837,9 +843,22 @@ void OnTick()
       g_month_boundary = Strategy_IsMonthlyBoundary();
      }
 
-   // Composition, month-renewal and time-stop management precede every entry
-   // filter so invalid inputs or news cannot strand an owned foreign leg.
-   Strategy_ManageOpenPosition();
+   // Broker-side stops remain active on every tick. The expensive two-leg
+   // composition/hedge scan is needed only after a trade transaction or on a
+   // completed D1 bar, when month and time-stop lifecycle can change. This
+   // preserves next-tick orphan repair without scanning both symbols across
+   // every real XAU tick in the multi-year tester window.
+   if(g_pair_state_dirty || new_bar)
+     {
+      g_pair_state_dirty = false;
+      Strategy_ManageOpenPosition();
+     }
+   if(!new_bar)
+      return;
+
+   // Entry-only input validation follows lifecycle repair so invalid inputs
+   // cannot strand an already-owned foreign leg.
+   const bool entry_blocked = Strategy_NoTradeFilter();
    if(Strategy_ExitSignal())
      {
       Strategy_ClosePair(QM_EXIT_STRATEGY);
@@ -850,10 +869,13 @@ void OnTick()
    if(new_bar && g_month_boundary && !entry_blocked &&
       Strategy_OpenPairLegCount() == 0)
      {
-      const datetime decision_time = iTime(g_leg_xau, PERIOD_D1, 0); // perf-allowed: monthly signal anchor.
+      // Use the exact D1 bar-open timestamp as the strict history cutoff. The
+      // period identity itself is supplied centrally by
+      // QM_CalendarPeriodKey inside Strategy_LoadSignal.
+      const datetime decision_time = iTime(g_leg_xau, PERIOD_D1, 0); // perf-allowed: one monthly cutoff lookup.
       Strategy_LoadSignal(decision_time);
      }
-   if(entry_blocked || !new_bar || !g_month_boundary ||
+   if(entry_blocked || !g_month_boundary ||
       Strategy_NewsFilterHook(broker_now))
       return;
 
@@ -876,6 +898,10 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeResult &result)
   {
    QM_FrameworkOnTradeTransaction(trans, request, result);
+   // Re-validate basket composition on the next host tick after any fill,
+   // close, stop, or external repair. Deferring avoids treating the first leg
+   // of an in-flight two-order package as an orphan inside the callback.
+   g_pair_state_dirty = true;
   }
 
 double OnTester()

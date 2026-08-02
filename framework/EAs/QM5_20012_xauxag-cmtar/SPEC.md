@@ -135,9 +135,11 @@ AutoTrading action, portfolio-gate change, or deploy manifest.
 - **Entry:** signed residual fade, opposite XAU/XAG orders, fixed elasticity
   notionals, combined fixed-risk sizing, rounded-hedge validation, frozen ATR
   stops, and partial-package rollback.
-- **Management:** every-tick orphan/composition/actual-hedge repair, retrying
-  month renewal, forty-day stale guard, persisted attempt recovery, and
-  foreign-magic kill-switch ownership.
+- **Management:** trade-state-change or completed-D1-bar
+  orphan/composition/actual-hedge repair, retrying month renewal, forty-day
+  stale guard, persisted attempt recovery, and foreign-magic kill-switch
+  ownership. Broker hard stops and the framework kill switch remain active on
+  every tick.
 - **Close:** framework position close plus broker-side hard stops.
 
 ## Revision History
@@ -145,3 +147,4 @@ AutoTrading action, portfolio-gate change, or deploy manifest.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-20 | Initial approved build | OWNER commodity-sleeve mission; Q02 only |
+| v1.1 | 2026-08-02 | Q02 infrastructure recovery | Signal and risk rules unchanged; framework calendar key plus event/new-bar basket integrity scheduling removes redundant per-tick multi-leg scans. |
