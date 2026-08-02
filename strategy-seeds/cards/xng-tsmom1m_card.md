@@ -45,7 +45,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: PENDING
+q01_status: PASS
 q02_status: NOT_QUEUED
 review_focus: "Falsify a slow symmetric XNG trend carrier whose completed-month sign and month-long hold differ from the certified QM5_12567 two-day RSI pullback; unchanged Q09 alone decides realized book correlation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -246,12 +246,12 @@ correlation waiver, manual backtest, or certification is authorized.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-08-02 | initial source-backed XNG one-month TSMOM card | G0 | APPROVED |
+| v1 | 2026-08-02 | initial source-backed XNG one-month TSMOM card | Q01 | PASS; Q02 stopped at the 7/7 CPU ceiling |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-02 | APPROVED; R1-R4 PASS | `decisions/2026-08-02_qm5_20204_xng_tsmom1m_g0.md` |
-| Q01 Build Validation | - | PENDING | `framework/EAs/QM5_20204_xng-tsmom1m/` |
-| Q02 Baseline Screening | - | NOT_QUEUED | `XNGUSD.DWX` |
+| Q01 Build Validation | 2026-08-02 | PASS; strict compile/build check, zero errors and warnings | `docs/ops/evidence/2026-08-02_qm5_20204_xng_tsmom1m_build_q02_handoff.md` |
+| Q02 Baseline Screening | 2026-08-02 | NOT_QUEUED; stopped before mutation when the path-anchored tester count reached the 7/7 CPU ceiling | `docs/ops/evidence/2026-08-02_qm5_20204_xng_tsmom1m_build_q02_handoff.md` |
