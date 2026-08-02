@@ -318,19 +318,28 @@ def test_missing_runtime_decision_hard_blocks(tmp_path: Path) -> None:
         fra.validate_runtime_activation_decision(repo_root=tmp_path, now_utc=NOW)
 
 
-def test_consumed_legacy_runtime_decision_is_rejected_fail_closed() -> None:
-    decision_path = ROOT / fra.DECISION_RELATIVE_PATH
-    digest_path = ROOT / fra.DIGEST_RELATIVE_PATH
-    decision_raw = decision_path.read_bytes()
-    decision = json.loads(decision_raw.decode("utf-8"))
-    digest = digest_path.read_text(encoding="ascii")
-    assert digest == f"{_sha256(decision_raw)}  {decision_path.name}\n"
-    assert "release_seven_restart_holds" in decision["authorizations"]
-    with pytest.raises(fra.RuntimeActivationError, match="authorizations key-set mismatch"):
-        fra.validate_runtime_activation_decision(
-            repo_root=ROOT,
-            now_utc=NOW,
+def test_consumed_legacy_runtime_decision_is_rejected_fail_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The 2026-07-31 generation's artifact carried the obsolete
+    # release_seven_restart_holds key; any decision with that legacy
+    # authorization shape must fail closed under the renamed contract.
+    # (Originally asserted against the live repo artifact; since the
+    # 2026-08-02 generation minted renamed-contract decisions, the legacy
+    # shape is reconstructed as a fixture instead.)
+    def make_legacy(decision: dict) -> None:
+        authorizations = decision["authorizations"]
+        authorizations["release_seven_restart_holds"] = authorizations.pop(
+            "release_declared_restart_holds"
         )
+
+    repo, flag_path, _ = _build_repo(
+        tmp_path,
+        monkeypatch,
+        mutate_decision=make_legacy,
+    )
+    with pytest.raises(fra.RuntimeActivationError, match="authorizations key-set mismatch"):
+        _validate(repo, flag_path)
 
 
 def test_preparation_decision_is_never_runtime_authority() -> None:

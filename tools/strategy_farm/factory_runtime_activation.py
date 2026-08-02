@@ -497,6 +497,9 @@ def _validate_runtime_activation_artifacts(
         "source_bindings": verified_sources,
         "restart_hold_ids": prep_plan,
         "worker_terminals": list(WORKER_TERMINALS),
+        "worker_policy_disabled_terminals": list(
+            worker_policy["disabled_terminals"]
+        ),
     }
     if require_artifact_provenance:
         decision_provenance = _verify_committed_file(

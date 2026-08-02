@@ -902,7 +902,26 @@ def _validate_canonical_factory_on_lock(
         for line in disabled_text.splitlines()
         if line.strip()
     )
-    if actual_disabled_sha != expected_disabled_sha or disabled_rows != ("T5",):
+    # The expected disabled set is generation content and comes from the
+    # validated runtime decision's worker policy — never a code literal
+    # (nine-worker leftover ("T5",) blocked the 2026-08-02 zero-disabled
+    # activation with expected_sha == actual_sha).
+    authorized_disabled = runtime_authorization.get(
+        "worker_policy_disabled_terminals"
+    )
+    if not isinstance(authorized_disabled, list) or not all(
+        isinstance(item, str) and item.strip() for item in authorized_disabled
+    ):
+        raise RuntimeError(
+            "runtime authorization lacks the worker-policy disabled-terminal list"
+        )
+    expected_disabled_rows = tuple(
+        item.strip().upper() for item in authorized_disabled
+    )
+    if (
+        actual_disabled_sha != expected_disabled_sha
+        or disabled_rows != expected_disabled_rows
+    ):
         raise RuntimeError(
             "canonical disabled-terminal policy changed under Factory_ON lock: "
             f"expected_sha={expected_disabled_sha} actual_sha={actual_disabled_sha} "

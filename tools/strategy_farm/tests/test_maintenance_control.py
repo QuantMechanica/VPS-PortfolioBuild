@@ -32,6 +32,7 @@ RESTART_HOLD_IDS = (
 
 def _runtime_authorization(
     restart_hold_ids: tuple[str, ...] = RESTART_HOLD_IDS,
+    disabled_terminals: tuple[str, ...] = ("T5",),
 ) -> dict:
     return {
         "authorized": True,
@@ -43,6 +44,7 @@ def _runtime_authorization(
         "factory_off_flag_sha256": "e" * 64,
         "task_enabled_before_sha256": "f" * 64,
         "restart_hold_ids": list(restart_hold_ids),
+        "worker_policy_disabled_terminals": list(disabled_terminals),
         "source_bindings": {
             "factory_on": {
                 "sha256": "1" * 64,
@@ -590,6 +592,49 @@ def test_restart_release_rejects_disabled_terminal_drift_under_live_lock(
             lock_path,
             expected_nonce="known-nonce",
             runtime_authorization=_runtime_authorization(),
+        )
+
+
+def test_restart_release_accepts_empty_disabled_policy_matching_declared_empty_set(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    disabled = tmp_path / "disabled_terminals.txt"
+    disabled.write_bytes(b"")
+    runtime = _runtime_authorization(disabled_terminals=())
+    record = _factory_on_lock_record(nonce="known-nonce", runtime_authorization=runtime)
+    record["disabled_terminals_sha256"] = mc.sha256_file(disabled)
+    lock_path = tmp_path / "FACTORY_MUTATION.lock"
+    lock_path.write_text(json.dumps(record), encoding="utf-8")
+    monkeypatch.setattr(mc, "DEFAULT_DISABLED_TERMINALS", disabled)
+    _mock_valid_factory_parent(monkeypatch, record)
+
+    payload = mc._validate_canonical_factory_on_lock(
+        lock_path,
+        expected_nonce="known-nonce",
+        runtime_authorization=runtime,
+    )
+    assert payload["disabled_terminals_sha256"] == mc.sha256_file(disabled)
+
+
+def test_restart_release_fails_closed_without_declared_disabled_terminal_list(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    disabled = tmp_path / "disabled_terminals.txt"
+    disabled.write_bytes(b"")
+    runtime = _runtime_authorization(disabled_terminals=())
+    record = _factory_on_lock_record(nonce="known-nonce", runtime_authorization=runtime)
+    record["disabled_terminals_sha256"] = mc.sha256_file(disabled)
+    lock_path = tmp_path / "FACTORY_MUTATION.lock"
+    lock_path.write_text(json.dumps(record), encoding="utf-8")
+    monkeypatch.setattr(mc, "DEFAULT_DISABLED_TERMINALS", disabled)
+    _mock_valid_factory_parent(monkeypatch, record)
+    del runtime["worker_policy_disabled_terminals"]
+
+    with pytest.raises(RuntimeError, match="lacks the worker-policy disabled-terminal"):
+        mc._validate_canonical_factory_on_lock(
+            lock_path,
+            expected_nonce="known-nonce",
+            runtime_authorization=runtime,
         )
 
 
