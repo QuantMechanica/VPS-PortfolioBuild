@@ -15419,3 +15419,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20200,audjpy-euraud,1,EURAUD.DWX,202000001,2026-08-01T20:08:28Z,Codex,active
 20201,gbpjpy-eurgbp,0,GBPJPY.DWX,202010000,2026-08-01T20:30:00Z,Codex,active
 20201,gbpjpy-eurgbp,1,EURGBP.DWX,202010001,2026-08-01T20:30:00Z,Codex,active
+9578,bandy-percentb-bb-mr-index,0,SP500.DWX,95780000,2026-08-02T10:09:59Z,Codex,active
+9578,bandy-percentb-bb-mr-index,1,NDX.DWX,95780001,2026-08-02T10:09:59Z,Codex,active
+9578,bandy-percentb-bb-mr-index,2,WS30.DWX,95780002,2026-08-02T10:09:59Z,Codex,active
+9642,bandy-williams-r-reversal-mr-index,0,SP500.DWX,96420000,2026-08-02T10:10:29Z,Codex,active
+9642,bandy-williams-r-reversal-mr-index,1,NDX.DWX,96420001,2026-08-02T10:10:29Z,Codex,active
+9642,bandy-williams-r-reversal-mr-index,2,WS30.DWX,96420002,2026-08-02T10:10:29Z,Codex,active
+9576,bandy-zscore-mr-index,0,SP500.DWX,95760000,2026-08-02T10:13:50Z,Codex,active
+9576,bandy-zscore-mr-index,1,NDX.DWX,95760001,2026-08-02T10:13:50Z,Codex,active
+9576,bandy-zscore-mr-index,2,WS30.DWX,95760002,2026-08-02T10:13:50Z,Codex,active
