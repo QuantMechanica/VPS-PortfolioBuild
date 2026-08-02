@@ -143,10 +143,21 @@ the in-session package authorization (10 workers, empty hold plan):
 
 | # | Topic | Author | Reviewer/Implementer | State |
 |---|---|---|---|---|
-| F | Generation-aware restart-hold release contract (unblocks Factory_ON) | Claude (brief `CODEX_BRIEF_2026-08-02_factory_on_hold_contract_evolution.md`) | Codex Sol max (adversarial review ≥90 % then implement in-session) | R1 dispatched |
-| G | MNT-043 bill apply: staged-binary adoption + bill-bound overlay tool (`apply_ks_vintage_bill.py`) + 17 rerun enqueue prep; recon found repo-tree EX5s still old + generic scanner cannot reproduce the 26-row bill + 10911/GDAXI Q06 lacks a Q05 PASS predecessor | Claude (rulings) | Codex Sol max builds; Claude runs the mutating apply + enqueues | R1 dispatched |
+| F | Generation-aware restart-hold release contract (unblocks Factory_ON) | Claude (brief `CODEX_BRIEF_2026-08-02_factory_on_hold_contract_evolution.md`) | Codex Sol max (review 96 %, implemented e944dbb61); Claude re-verified (78 tests) + fixed two review-found defects (81d53e459: nine-worker `("T5",)` literal in the live-lock check; legacy-artifact regression refixtured) | **CLOSED** — Factory_ON R4 succeeded 11:32Z: 10/10 workers, zero-hold release committed (v2 ledger row count 0, nonce e421d0b2), v1 audit untouched |
+| G | MNT-043 bill apply: staged-binary adoption + bill-bound overlay tool (`apply_ks_vintage_bill.py`) + 17 rerun enqueue prep; recon found repo-tree EX5s still old + generic scanner cannot reproduce the 26-row bill + 10911/GDAXI Q06 lacks a Q05 PASS predecessor | Claude (rulings) | Codex Sol max built (310a0bb12/a6e89abf6, 7 tests); Claude applied: overlay 13→39 events (26× EVIDENCE_VINTAGE_STALE, chain valid, receipt 0932Z) + 17/17 rerun rows pending | **CLOSED** except the 10911/GDAXI Q06 predecessor (OWNER decision pending: append-only Q05 rerun from Q04 PASS 538405f6 first) |
 | H | Mailbox analyst chunk tuning 5/600 s with env overrides | Claude (spec) | Codex implemented, Claude re-tested (24 passed) | **CLOSED** (64125d64b; natural verification 2026-08-03 06:07) |
-| I | 20007 GDAXI/NDX Q02 INFRA_FAIL diagnosis (read-only) | Claude (spec) | Codex Sol max | R1 dispatched |
+| I | 20007 GDAXI/NDX Q02 INFRA_FAIL diagnosis (read-only) | Claude (spec) | Codex Sol max | **CLOSED** (f459fc5f4): root cause = 60 s runner watchdog + unscoped stale-tail classifier (GDAXI) and EA per-tick stop-modify log-bomb (NDX); T3 account fault + handle-[32] secondary. Fix package ≈2 working days — follow-up ticket after ON; bare requeue rejected |
+
+**Factory_ON R1–R3 failure ledger (all root-caused):** R1 detached-host output loss
+(clean-checkout: pump-archived 11032 build_result rename) → adopted d352717aa;
+R2 `disabled_terminals.txt` absent (PS-tolerant/python-strict asymmetry) → empty
+policy file restored; R3 nine-worker `("T5",)` literal in
+`_validate_canonical_factory_on_lock` (expected_sha == actual_sha, rows=()) →
+generation-derived comparison 81d53e459. Each attempt's rollback rewrote the OFF
+record (recovery states) → three OFF reasserts + decision remints R2–R4;
+build-lane products of the R2/R3 task windows adopted (91edfd511/3dffd7eff/04247a527).
+`.gitattributes` now pins the 12 bound sources `-text` (9d92873cd) against the
+builder-normalization phantom-dirty class.
 
 ## SUNDAY 2026-08-02 CONSOLIDATED AGENDA (work from here)
 
