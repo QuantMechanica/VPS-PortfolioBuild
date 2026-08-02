@@ -4,7 +4,7 @@
 **Slug:** ft-hour
 **Source:** 1580128f-e465-5454-bb97-a7572a6cfd6d
 **Author of this spec:** Codex
-**Last revised:** 2026-06-08
+**Last revised:** 2026-08-02
 
 ---
 
@@ -98,3 +98,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-08 | Initial build from card | 24f9f1b7-b4db-4a63-84cd-eb04e5ab0aac |
+| v2 | 2026-08-02 | Strict build/runtime repair | Cached ATR spread state, `.DWX` zero-spread handling, and entry-only news gating; task 87446b52-301b-4136-a1d9-cabf057248c5 |
