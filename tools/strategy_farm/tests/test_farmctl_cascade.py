@@ -1135,7 +1135,10 @@ class AppendOnlyCascadeRerunTests(unittest.TestCase):
             ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_demo"
             sets_dir = ea_dir / "sets"
             sets_dir.mkdir(parents=True)
-            (ea_dir / f"{ea_dir.name}.ex5").write_bytes(b"compiled")
+            (ea_dir / f"{ea_dir.name}.mq5").write_text("// source\n", encoding="utf-8")
+            ex5 = ea_dir / f"{ea_dir.name}.ex5"
+            ex5.write_bytes(b"compiled")
+            current_ex5_sha256 = farmctl._sha256_file(ex5)
             setfile = sets_dir / f"{ea_dir.name}_EURUSD.DWX_H1_backtest.set"
             setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
 
@@ -1182,6 +1185,7 @@ class AppendOnlyCascadeRerunTests(unittest.TestCase):
                     predecessor_work_item_id="q05-source",
                     append_only_rerun_of="q06-historical",
                     rerun_reason="authenticated stress wiring repair",
+                    expected_current_ex5_sha256=current_ex5_sha256,
                 )
                 repeat = farmctl.enqueue_cascade_backtest_for_ea(
                     root,
@@ -1190,6 +1194,7 @@ class AppendOnlyCascadeRerunTests(unittest.TestCase):
                     predecessor_work_item_id="q05-source",
                     append_only_rerun_of="q06-historical",
                     rerun_reason="authenticated stress wiring repair",
+                    expected_current_ex5_sha256=current_ex5_sha256,
                 )
             finally:
                 farmctl.REPO_ROOT = old_repo_root
