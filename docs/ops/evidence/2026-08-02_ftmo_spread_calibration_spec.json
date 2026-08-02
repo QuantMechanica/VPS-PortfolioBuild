@@ -1,0 +1,55 @@
+{
+  "schema": "qm.ftmo-spread-calibration-spec/v1",
+  "session_bucket_minutes": 60,
+  "conservative_quantile": 0.9,
+  "minimum_matched_minutes": 60,
+  "minimum_bucket_minutes": 20,
+  "pairs": [
+    {
+      "evaluator_symbol": "XAUUSD",
+      "ftmo": {
+        "symbol": "XAUUSD",
+        "venue": "FTMO",
+        "point_size": 0.01,
+        "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/XAUUSD_FTMO_M1.jsonl",
+        "source_hcc_paths": [
+          "D:/QM/mt5/FTMO_STREAM1/Bases/FTMO-Demo/History/XAUUSD/2026.hcc"
+        ],
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"
+      },
+      "dxz": {
+        "symbol": "XAUUSD.DWX",
+        "venue": "DXZ",
+        "point_size": 0.01,
+        "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/XAUUSD_DWX_M1.jsonl",
+        "source_hcc_paths": [
+          "D:/QM/mt5/T1/Bases/Custom/history/XAUUSD.DWX/2026.hcc"
+        ],
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"
+      }
+    },
+    {
+      "evaluator_symbol": "GDAXI",
+      "ftmo": {
+        "symbol": "GER40.cash",
+        "venue": "FTMO",
+        "point_size": 0.01,
+        "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/GER40_cash_FTMO_M1.jsonl",
+        "source_hcc_paths": [
+          "D:/QM/mt5/FTMO_STREAM2/Bases/FTMO-Demo/History/GER40.cash/2026.hcc"
+        ],
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"
+      },
+      "dxz": {
+        "symbol": "GDAXI.DWX",
+        "venue": "DXZ",
+        "point_size": 0.01,
+        "m1_spread_path": "D:/QM/reports/ftmo_spread_calibration/GDAXI_DWX_M1.jsonl",
+        "source_hcc_paths": [
+          "D:/QM/mt5/T1/Bases/Custom/history/GDAXI.DWX/2026.hcc"
+        ],
+        "extraction_method": "MQL5_COPYRATES_PERIOD_M1_SPREAD"
+      }
+    }
+  ]
+}

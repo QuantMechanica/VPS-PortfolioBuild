@@ -77,6 +77,60 @@ def _daily_rows(
     ]
 
 
+def _cost_adjusted_rows(
+    sleeve_id: str,
+    cost_sha: str,
+    count: int,
+    *,
+    pre_spread_cash: float = 250.0,
+    spread_charge_cash: float = 50.0,
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    balance = 100_000.0
+    calibration_sha = "a" * 64
+    for index in range(count):
+        adjusted = pre_spread_cash - spread_charge_cash
+        rows.append(
+            {
+                "schema": ftmo.COST_ADJUSTED_STREAM_SCHEMA,
+                "evidence_class": ftmo.COST_ADJUSTED_STREAM_SCHEMA,
+                "sleeve_id": sleeve_id,
+                "symbol": "XAUUSD",
+                "date": (dt.date(2024, 1, 1) + dt.timedelta(days=index)).isoformat(),
+                "initial_equity": 100_000.0,
+                "pre_spread_net_cash": pre_spread_cash,
+                "calibrated_spread_charge_cash": spread_charge_cash,
+                "intraday_candidates": [
+                    {
+                        "pre_spread_cash": 0.0,
+                        "calibrated_spread_charge_cash": spread_charge_cash,
+                    }
+                ],
+                "net_return": adjusted / balance,
+                "intraday_low_return": -spread_charge_cash / balance,
+                "trade_count": 1,
+                "eligible_start": True,
+                "flat_at_end": True,
+                "cost_snapshot_sha256": cost_sha,
+                "calibration_sha256": calibration_sha,
+                "cost_decomposition": {
+                    "source_profit_cash": pre_spread_cash,
+                    "source_fee_cash": 0.0,
+                    "source_commission_removed_cash": 0.0,
+                    "source_swap_removed_cash": 0.0,
+                    "ftmo_entry_commission_cash": 0.0,
+                    "ftmo_exit_commission_cash": 0.0,
+                    "ftmo_swap_cash": 0.0,
+                    "pre_spread_net_cash": pre_spread_cash,
+                    "calibrated_spread_delta_cash": -spread_charge_cash,
+                    "adjusted_net_cash": adjusted,
+                },
+            }
+        )
+        balance += adjusted
+    return rows
+
+
 def _spec(
     tmp_path: Path,
     streams: list[dict[str, object]],
@@ -351,3 +405,69 @@ def test_dl083_refuses_nonidentical_shared_calendar_before_vector_math() -> None
     result = ftmo.correlation_diagnostic(streams, ["left", "right"])
     assert result["status"] == "REFUSED"
     assert result["label"] == ftmo.REFUSED_CALENDAR
+
+
+def test_cost_adjusted_stream_is_refused_without_explicit_owner_class(tmp_path: Path) -> None:
+    costs = tmp_path / "costs.json"
+    cost_sha = _cost(costs)
+    stream = tmp_path / "adjusted.jsonl"
+    _jsonl(stream, _cost_adjusted_rows("10128:XAUUSD", cost_sha, 140))
+    spec = _spec(
+        tmp_path,
+        [
+            {
+                "sleeve_id": "10128:XAUUSD",
+                "symbol": "XAUUSD",
+                "ftmo_code": "XAU/USD",
+                "stream_schema": ftmo.COST_ADJUSTED_STREAM_SCHEMA,
+                "path": str(stream),
+            }
+        ],
+        _single_comp(),
+    )
+    config = ftmo.prepare_config(spec)
+    result = ftmo.evaluate_config(config, _config_sha(config))
+
+    assert result["status"] == "NO_ADMISSIBLE_COMPOSITION"
+    assert result["sleeve_refusals"] == {
+        "10128:XAUUSD": ftmo.REFUSED_COST_ADJUSTED_DECLARATION
+    }
+    assert result["decision"]["best_bootstrap_lower_bound_p1"] is None
+
+
+def test_explicit_cost_adjusted_class_propagates_and_decides_on_pessimistic_band(
+    tmp_path: Path,
+) -> None:
+    costs = tmp_path / "costs.json"
+    cost_sha = _cost(costs)
+    stream = tmp_path / "adjusted.jsonl"
+    _jsonl(stream, _cost_adjusted_rows("10128:XAUUSD", cost_sha, 140))
+    spec = _spec(
+        tmp_path,
+        [
+            {
+                "sleeve_id": "10128:XAUUSD",
+                "symbol": "XAUUSD",
+                "ftmo_code": "XAU/USD",
+                "stream_schema": ftmo.COST_ADJUSTED_STREAM_SCHEMA,
+                "path": str(stream),
+            }
+        ],
+        _single_comp(),
+    )
+    spec["evidence_class"] = dict(ftmo.DEFAULT_COST_ADJUSTED_DECLARATION)
+    config = ftmo.prepare_config(spec)
+    result = ftmo.evaluate_config(config, _config_sha(config))
+    comp = result["compositions"][0]
+    band = comp["sensitivity_band"]
+    lowers = [point["statistics"]["p1_bootstrap"]["lower"] for point in band]
+
+    assert result["status"] == "EVALUATED"
+    assert result["evidence_class"] == ftmo.COST_ADJUSTED_STREAM_SCHEMA
+    assert comp["evidence_class"] == ftmo.COST_ADJUSTED_STREAM_SCHEMA
+    assert [point["spread_charge_multiplier"] for point in band] == [1.0, 1.5, 2.0]
+    assert all(point["evidence_class"] == ftmo.COST_ADJUSTED_STREAM_SCHEMA for point in band)
+    assert lowers == sorted(lowers, reverse=True)
+    assert result["decision"]["best_bootstrap_lower_bound_p1"] == min(lowers)
+    assert result["decision"]["decision_spread_charge_multiplier"] == 2.0
+    assert result["input_sha256"]["calibrations"] == {"10128:XAUUSD": "a" * 64}

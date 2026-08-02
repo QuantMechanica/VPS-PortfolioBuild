@@ -34,6 +34,7 @@ CONFIG_SCHEMA = "qm.ftmo-timebox-config/v1"
 RESULT_SCHEMA = "qm.ftmo-timebox-result/v1"
 DAILY_STREAM_SCHEMA = "FTMO_DAILY_NET_V1"
 DXZ_STREAM_SCHEMA = "DXZ_Q08_TRADES_V1"
+COST_ADJUSTED_STREAM_SCHEMA = "DXZ_EXECUTION_FTMO_COST_ADJUSTED_V1"
 CLAIM_LABEL = "HISTORICAL_DIAGNOSTIC_NOT_SELECTION_SEALED"
 DECISION_LABEL = "MOVING_BLOCK_BOOTSTRAP_P1_LOWER_BOUND"
 NO_CREDIT_LABEL = "NO_EVIDENCE_CREDIT_NOT_ESTIMATED_PROBABILITY"
@@ -44,6 +45,8 @@ REFUSED_CORRELATION = "REFUSED_DL083_CORRELATION_AT_OR_ABOVE_0P40"
 REFUSED_UNDEFINED_CORRELATION = "REFUSED_DL083_UNDEFINED_CORRELATION"
 REFUSED_REGIME_COVERAGE = "REFUSED_FEWER_THAN_20_SHARED_CALENDAR_DAYS"
 REFUSED_CALENDAR = "REFUSED_NONIDENTICAL_OR_NONCONTIGUOUS_SHARED_CALENDAR"
+REFUSED_COST_ADJUSTED_DECLARATION = "REFUSED_MISSING_EXPLICIT_COST_ADJUSTED_CLASS"
+REFUSED_SENSITIVITY = "REFUSED_SPREAD_SENSITIVITY_NON_MONOTONIC"
 PRAGUE = ZoneInfo("Europe/Prague")
 SHA_RE = re.compile(r"^[0-9a-f]{64}$")
 
@@ -81,6 +84,11 @@ DEFAULT_CORRELATION: dict[str, Any] = {
     "high_volatility_quantile": 0.75,
     "minimum_shared_calendar_days": 20,
     "effective_correlation": "MAX_FULL_AND_HIGH_VOL_PAIRWISE_ABSOLUTE_PEARSON",
+}
+
+DEFAULT_COST_ADJUSTED_DECLARATION: dict[str, Any] = {
+    "accepted_class": COST_ADJUSTED_STREAM_SCHEMA,
+    "spread_charge_multipliers": [1.0, 1.5, 2.0],
 }
 
 
@@ -283,7 +291,11 @@ def _validate_stream_entry(entry: Any, index: int) -> None:
     for field in ("sleeve_id", "symbol", "ftmo_code"):
         if not isinstance(entry[field], str) or not entry[field].strip():
             raise TimeboxEvaluationError(f"{label}.{field}: expected non-empty string")
-    if entry["stream_schema"] not in {DAILY_STREAM_SCHEMA, DXZ_STREAM_SCHEMA}:
+    if entry["stream_schema"] not in {
+        DAILY_STREAM_SCHEMA,
+        DXZ_STREAM_SCHEMA,
+        COST_ADJUSTED_STREAM_SCHEMA,
+    }:
         raise TimeboxEvaluationError(f"{label}.stream_schema: unsupported schema")
     binding = entry["binding"]
     if not isinstance(binding, Mapping) or set(binding) != {"path", "sha256"}:
@@ -334,7 +346,8 @@ def validate_config(config: Any) -> None:
         "inputs",
         "compositions",
     }
-    if set(config) != expected:
+    optional = {"evidence_class"}
+    if not expected.issubset(config) or not set(config).issubset(expected | optional):
         raise TimeboxEvaluationError("config: unexpected fields")
     if config["schema"] != CONFIG_SCHEMA:
         raise TimeboxEvaluationError("config.schema: unsupported schema")
@@ -343,6 +356,11 @@ def validate_config(config: Any) -> None:
     _validate_rules(config["rules"])
     _validate_bootstrap(config["bootstrap"])
     _validate_correlation(config["correlation"])
+    if "evidence_class" in config:
+        if config["evidence_class"] != DEFAULT_COST_ADJUSTED_DECLARATION:
+            raise TimeboxEvaluationError(
+                "evidence_class: declaration differs from OWNER-authorized contract"
+            )
     inputs = config["inputs"]
     if not isinstance(inputs, Mapping) or set(inputs) != {
         "inventory",
@@ -388,7 +406,7 @@ def prepare_config(spec: Any) -> dict[str, Any]:
         "streams",
         "compositions",
     }
-    optional = {"bootstrap"}
+    optional = {"bootstrap", "evidence_class"}
     if not expected.issubset(spec) or not set(spec).issubset(expected | optional):
         raise TimeboxEvaluationError("spec: unexpected or missing fields")
     streams_value = spec["streams"]
@@ -432,6 +450,15 @@ def prepare_config(spec: Any) -> dict[str, Any]:
         },
         "compositions": spec["compositions"],
     }
+    if "evidence_class" in spec:
+        if spec["evidence_class"] != DEFAULT_COST_ADJUSTED_DECLARATION:
+            raise TimeboxEvaluationError(
+                "spec.evidence_class: declaration differs from OWNER-authorized contract"
+            )
+        config["evidence_class"] = {
+            "accepted_class": COST_ADJUSTED_STREAM_SCHEMA,
+            "spread_charge_multipliers": [1.0, 1.5, 2.0],
+        }
     validate_config(config)
     return config
 
@@ -550,6 +577,172 @@ def load_daily_stream(
             )
         )
     return points
+
+
+def load_cost_adjusted_stream(
+    entry: Mapping[str, Any],
+    path: Path,
+    cost_sha256: str,
+    spread_charge_multiplier: float,
+) -> tuple[list[DailyPoint], str]:
+    """Load the explicit OWNER-authorized class at one sensitivity point."""
+
+    multiplier = _finite(spread_charge_multiplier, "spread_charge_multiplier")
+    if multiplier not in {1.0, 1.5, 2.0}:
+        raise TimeboxEvaluationError("spread_charge_multiplier: unsupported sensitivity point")
+    rows = _load_jsonl(path, f"stream[{entry['sleeve_id']}]")
+    required = {
+        "schema",
+        "evidence_class",
+        "sleeve_id",
+        "symbol",
+        "date",
+        "initial_equity",
+        "pre_spread_net_cash",
+        "calibrated_spread_charge_cash",
+        "intraday_candidates",
+        "net_return",
+        "intraday_low_return",
+        "trade_count",
+        "eligible_start",
+        "flat_at_end",
+        "cost_snapshot_sha256",
+        "calibration_sha256",
+        "cost_decomposition",
+    }
+    decomposition_fields = {
+        "source_profit_cash",
+        "source_fee_cash",
+        "source_commission_removed_cash",
+        "source_swap_removed_cash",
+        "ftmo_entry_commission_cash",
+        "ftmo_exit_commission_cash",
+        "ftmo_swap_cash",
+        "pre_spread_net_cash",
+        "calibrated_spread_delta_cash",
+        "adjusted_net_cash",
+    }
+    points: list[DailyPoint] = []
+    previous_day: dt.date | None = None
+    running_balance: float | None = None
+    initial_equity: float | None = None
+    calibration_sha: str | None = None
+    for index, row in enumerate(rows):
+        label = f"stream[{entry['sleeve_id']}][{index}]"
+        if set(row) != required:
+            raise TimeboxEvaluationError(f"{label}: unexpected fields")
+        if (
+            row["schema"] != COST_ADJUSTED_STREAM_SCHEMA
+            or row["evidence_class"] != COST_ADJUSTED_STREAM_SCHEMA
+        ):
+            raise TimeboxEvaluationError(f"{label}: wrong evidence class")
+        if row["sleeve_id"] != entry["sleeve_id"] or row["symbol"] != entry["symbol"]:
+            raise TimeboxEvaluationError(f"{label}: sleeve identity mismatch")
+        if str(row["cost_snapshot_sha256"]).lower() != cost_sha256:
+            raise TimeboxEvaluationError(f"{label}: {REFUSED_COST_ATTESTATION}")
+        row_calibration_sha = _normalized_sha(
+            row["calibration_sha256"], f"{label}.calibration_sha256"
+        )
+        if calibration_sha is None:
+            calibration_sha = row_calibration_sha
+        elif row_calibration_sha != calibration_sha:
+            raise TimeboxEvaluationError(f"{label}: calibration digest changes within stream")
+        day = _parse_day(row["date"], f"{label}.date")
+        if previous_day is not None and day != previous_day + dt.timedelta(days=1):
+            raise TimeboxEvaluationError(f"{label}: {REFUSED_CALENDAR}")
+        previous_day = day
+        row_initial = _finite(row["initial_equity"], f"{label}.initial_equity")
+        if row_initial <= 0.0:
+            raise TimeboxEvaluationError(f"{label}.initial_equity: expected positive")
+        if initial_equity is None:
+            initial_equity = row_initial
+            running_balance = row_initial
+        elif not math.isclose(row_initial, initial_equity, rel_tol=0.0, abs_tol=1e-9):
+            raise TimeboxEvaluationError(f"{label}: initial equity changes within stream")
+        assert running_balance is not None
+        pre_spread = _finite(row["pre_spread_net_cash"], f"{label}.pre_spread_net_cash")
+        spread_charge = _finite(
+            row["calibrated_spread_charge_cash"],
+            f"{label}.calibrated_spread_charge_cash",
+        )
+        if spread_charge < 0.0:
+            raise TimeboxEvaluationError(f"{label}: spread charge must be non-negative")
+        candidates = row["intraday_candidates"]
+        if not isinstance(candidates, list) or not candidates:
+            raise TimeboxEvaluationError(f"{label}.intraday_candidates: expected non-empty list")
+        candidate_lows: list[float] = []
+        for candidate_index, candidate in enumerate(candidates):
+            candidate_label = f"{label}.intraday_candidates[{candidate_index}]"
+            if not isinstance(candidate, Mapping) or set(candidate) != {
+                "pre_spread_cash",
+                "calibrated_spread_charge_cash",
+            }:
+                raise TimeboxEvaluationError(f"{candidate_label}: unexpected fields")
+            candidate_pre = _finite(candidate["pre_spread_cash"], f"{candidate_label}.pre")
+            candidate_charge = _finite(
+                candidate["calibrated_spread_charge_cash"],
+                f"{candidate_label}.charge",
+            )
+            if candidate_charge < 0.0:
+                raise TimeboxEvaluationError(f"{candidate_label}: charge must be non-negative")
+            candidate_lows.append(candidate_pre - multiplier * candidate_charge)
+        decomposition = row["cost_decomposition"]
+        if not isinstance(decomposition, Mapping) or set(decomposition) != decomposition_fields:
+            raise TimeboxEvaluationError(f"{label}.cost_decomposition: unexpected fields")
+        for field in decomposition_fields:
+            _finite(decomposition[field], f"{label}.cost_decomposition.{field}")
+        if not math.isclose(
+            float(decomposition["pre_spread_net_cash"]),
+            pre_spread,
+            rel_tol=0.0,
+            abs_tol=1e-8,
+        ) or not math.isclose(
+            float(decomposition["calibrated_spread_delta_cash"]),
+            -spread_charge,
+            rel_tol=0.0,
+            abs_tol=1e-8,
+        ):
+            raise TimeboxEvaluationError(f"{label}: cost decomposition does not reconcile")
+        base_adjusted = pre_spread - spread_charge
+        if not math.isclose(
+            float(decomposition["adjusted_net_cash"]),
+            base_adjusted,
+            rel_tol=0.0,
+            abs_tol=1e-8,
+        ):
+            raise TimeboxEvaluationError(f"{label}: adjusted net decomposition mismatch")
+
+        net_cash = pre_spread - multiplier * spread_charge
+        low_cash = min(0.0, net_cash, *candidate_lows)
+        net_return = net_cash / running_balance
+        low_return = low_cash / running_balance
+        if net_return <= -1.0 or low_return <= -1.0:
+            raise TimeboxEvaluationError(f"{label}: sensitivity path leaves evaluator domain")
+        if multiplier == 1.0:
+            provided_net = _finite(row["net_return"], f"{label}.net_return")
+            provided_low = _finite(row["intraday_low_return"], f"{label}.intraday_low_return")
+            if not math.isclose(provided_net, net_return, rel_tol=0.0, abs_tol=2e-10):
+                raise TimeboxEvaluationError(f"{label}: calibrated net return does not reconcile")
+            if not math.isclose(provided_low, low_return, rel_tol=0.0, abs_tol=2e-10):
+                raise TimeboxEvaluationError(f"{label}: calibrated intraday low does not reconcile")
+        trade_count = row["trade_count"]
+        if isinstance(trade_count, bool) or not isinstance(trade_count, int) or trade_count < 0:
+            raise TimeboxEvaluationError(f"{label}.trade_count: expected non-negative integer")
+        points.append(
+            DailyPoint(
+                day=day,
+                net_return=net_return,
+                intraday_low_return=low_return,
+                trade_count=trade_count,
+                eligible_start=_parse_bool(row["eligible_start"], f"{label}.eligible_start"),
+                flat_at_end=_parse_bool(row["flat_at_end"], f"{label}.flat_at_end"),
+            )
+        )
+        running_balance += net_cash
+        if running_balance <= 0.0:
+            raise TimeboxEvaluationError(f"{label}: non-positive adjusted balance")
+    assert calibration_sha is not None
+    return points, calibration_sha
 
 
 def combine_streams(
@@ -911,7 +1104,21 @@ def evaluate_config(config: Mapping[str, Any], config_sha256: str) -> dict[str, 
         entries[sleeve_id] = entry
     cost_terms = _load_ftmo_terms(cost_path)
     cost_sha = str(inputs["ftmo_cost_snapshot"]["sha256"])
-    loaded: dict[str, list[DailyPoint]] = {}
+    declaration = config.get("evidence_class")
+    declared_class = (
+        str(declaration["accepted_class"])
+        if isinstance(declaration, Mapping)
+        else None
+    )
+    multipliers = (
+        [float(value) for value in declaration["spread_charge_multipliers"]]
+        if isinstance(declaration, Mapping)
+        else [1.0]
+    )
+    loaded_by_multiplier: dict[float, dict[str, list[DailyPoint]]] = {
+        multiplier: {} for multiplier in multipliers
+    }
+    calibration_sha256: dict[str, str] = {}
     refusal: dict[str, str] = {}
     for sleeve_id, entry in entries.items():
         term = cost_terms.get(str(entry["ftmo_code"]).upper())
@@ -922,8 +1129,39 @@ def evaluate_config(config: Mapping[str, Any], config_sha256: str) -> dict[str, 
         if entry["stream_schema"] == DXZ_STREAM_SCHEMA:
             refusal[sleeve_id] = REFUSED_DXZ_SPREAD
             continue
+        if entry["stream_schema"] == COST_ADJUSTED_STREAM_SCHEMA:
+            if declared_class != COST_ADJUSTED_STREAM_SCHEMA:
+                refusal[sleeve_id] = REFUSED_COST_ADJUSTED_DECLARATION
+                continue
+            try:
+                for multiplier in multipliers:
+                    points, calibration_sha = load_cost_adjusted_stream(
+                        entry,
+                        stream_paths[sleeve_id],
+                        cost_sha,
+                        multiplier,
+                    )
+                    loaded_by_multiplier[multiplier][sleeve_id] = points
+                    previous_sha = calibration_sha256.setdefault(sleeve_id, calibration_sha)
+                    if previous_sha != calibration_sha:
+                        raise TimeboxEvaluationError(
+                            f"stream[{sleeve_id}]: calibration digest changes across sensitivity"
+                        )
+            except TimeboxEvaluationError as exc:
+                if REFUSED_COST_ATTESTATION in str(exc):
+                    refusal[sleeve_id] = REFUSED_COST_ATTESTATION
+                elif REFUSED_CALENDAR in str(exc):
+                    refusal[sleeve_id] = REFUSED_CALENDAR
+                else:
+                    raise
+            continue
+        if declared_class is not None:
+            refusal[sleeve_id] = REFUSED_COST_ADJUSTED_DECLARATION
+            continue
         try:
-            loaded[sleeve_id] = load_daily_stream(entry, stream_paths[sleeve_id], cost_sha)
+            loaded_by_multiplier[1.0][sleeve_id] = load_daily_stream(
+                entry, stream_paths[sleeve_id], cost_sha
+            )
         except TimeboxEvaluationError as exc:
             if REFUSED_COST_ATTESTATION in str(exc):
                 refusal[sleeve_id] = REFUSED_COST_ATTESTATION
@@ -939,30 +1177,78 @@ def evaluate_config(config: Mapping[str, Any], config_sha256: str) -> dict[str, 
             "id": comp["id"],
             "sleeves": comp["sleeves"],
             "refusal_labels": labels,
+            "evidence_class": declared_class or "FTMO_VENUE_EXECUTION",
         }
         if labels:
             base["status"] = "REFUSED"
             composition_results.append(base)
             continue
-        correlation = correlation_diagnostic(loaded, sleeve_ids)
-        base["correlation"] = correlation
-        if correlation["status"] == "REFUSED":
-            base["status"] = "REFUSED"
-            base["refusal_labels"] = [correlation["label"]]
-            composition_results.append(base)
-            continue
         weights = {item["sleeve_id"]: float(item["weight"]) for item in comp["sleeves"]}
-        try:
-            days = combine_streams(loaded, weights)
-        except TimeboxEvaluationError as exc:
-            if REFUSED_CALENDAR not in str(exc):
-                raise
+        sensitivity_band: list[dict[str, Any]] = []
+        sensitivity_refusal: str | None = None
+        for multiplier in multipliers:
+            loaded = loaded_by_multiplier[multiplier]
+            correlation = correlation_diagnostic(loaded, sleeve_ids)
+            point: dict[str, Any] = {
+                "spread_charge_multiplier": multiplier,
+                "correlation": correlation,
+                "evidence_class": declared_class or "FTMO_VENUE_EXECUTION",
+            }
+            if correlation["status"] == "REFUSED":
+                point["status"] = "REFUSED"
+                point["refusal_labels"] = [correlation["label"]]
+                sensitivity_band.append(point)
+                base["correlation"] = correlation
+                sensitivity_refusal = str(correlation["label"])
+                break
+            try:
+                days = combine_streams(loaded, weights)
+            except TimeboxEvaluationError as exc:
+                if REFUSED_CALENDAR not in str(exc):
+                    raise
+                point["status"] = "REFUSED"
+                point["refusal_labels"] = [REFUSED_CALENDAR]
+                sensitivity_band.append(point)
+                sensitivity_refusal = REFUSED_CALENDAR
+                break
+            point["status"] = "EVALUATED"
+            point["statistics"] = summarize(days, config["bootstrap"])
+            sensitivity_band.append(point)
+        if sensitivity_refusal is not None:
             base["status"] = "REFUSED"
-            base["refusal_labels"] = [REFUSED_CALENDAR]
+            base["refusal_labels"] = [sensitivity_refusal]
+            if declared_class is not None:
+                base["sensitivity_band"] = sensitivity_band
             composition_results.append(base)
             continue
+        lowers = [
+            float(point["statistics"]["p1_bootstrap"]["lower"])
+            for point in sensitivity_band
+        ]
+        if any(later > earlier + 1e-12 for earlier, later in zip(lowers, lowers[1:])):
+            base["status"] = "REFUSED"
+            base["refusal_labels"] = [REFUSED_SENSITIVITY]
+            base["sensitivity_band"] = sensitivity_band
+            composition_results.append(base)
+            continue
+        pessimistic = min(
+            sensitivity_band,
+            key=lambda point: (
+                float(point["statistics"]["p1_bootstrap"]["lower"]),
+                -float(point["spread_charge_multiplier"]),
+            ),
+        )
         base["status"] = "EVALUATED"
-        base["statistics"] = summarize(days, config["bootstrap"])
+        base["correlation"] = pessimistic["correlation"]
+        base["statistics"] = pessimistic["statistics"]
+        if declared_class is not None:
+            base["sensitivity_band"] = sensitivity_band
+            base["decision_spread_charge_multiplier"] = pessimistic[
+                "spread_charge_multiplier"
+            ]
+            base["pessimistic_bootstrap_lower_bound_p1"] = pessimistic[
+                "statistics"
+            ]["p1_bootstrap"]["lower"]
         composition_results.append(base)
     evaluated = [row for row in composition_results if row["status"] == "EVALUATED"]
     if evaluated:
@@ -970,17 +1256,20 @@ def evaluate_config(config: Mapping[str, Any], config_sha256: str) -> dict[str, 
         lower: float | None = best["statistics"]["p1_bootstrap"]["lower"]
         credited = float(lower)
         best_id: str | None = best["id"]
+        decision_multiplier: float | None = best.get("decision_spread_charge_multiplier")
         status = "EVALUATED"
         credit_label = DECISION_LABEL
     else:
         lower = None
         credited = 0.0
         best_id = None
+        decision_multiplier = None
         status = "NO_ADMISSIBLE_COMPOSITION"
         credit_label = NO_CREDIT_LABEL
     result = {
         "schema": RESULT_SCHEMA,
         "claim_label": CLAIM_LABEL,
+        "evidence_class": declared_class or "DEFAULT_FTMO_VENUE_EXECUTION_ONLY",
         "config_sha256": _normalized_sha(config_sha256, "config_sha256"),
         "status": status,
         "rules": config["rules"],
@@ -992,6 +1281,7 @@ def evaluate_config(config: Mapping[str, Any], config_sha256: str) -> dict[str, 
             "streams": {
                 entry["sleeve_id"]: entry["binding"]["sha256"] for entry in inputs["streams"]
             },
+            "calibrations": calibration_sha256,
         },
         "sleeve_refusals": refusal,
         "compositions": composition_results,
@@ -999,6 +1289,7 @@ def evaluate_config(config: Mapping[str, Any], config_sha256: str) -> dict[str, 
             "label": credit_label,
             "best_composition_id": best_id,
             "best_bootstrap_lower_bound_p1": lower,
+            "decision_spread_charge_multiplier": decision_multiplier,
             "evidence_credited_lower_bound_p1": credited,
             "design_bar_p1": 0.80,
             "gap_to_design_bar": max(0.0, 0.80 - credited),
