@@ -11267,9 +11267,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11501,langer-engulfing-d1-swing,2,USDJPY.DWX,115010002,2026-06-18,Development,active
 11501,langer-engulfing-d1-swing,3,AUDUSD.DWX,115010003,2026-06-18,Development,active
 11501,langer-engulfing-d1-swing,4,USDCAD.DWX,115010004,2026-06-18,Development,active
-11503,goodwin-outside-daily-bar-d1,0,EURUSD.DWX,115030000,2026-06-18,Claude,reserved
-11503,goodwin-outside-daily-bar-d1,1,GBPUSD.DWX,115030001,2026-06-18,Claude,reserved
-11503,goodwin-outside-daily-bar-d1,2,AUDUSD.DWX,115030002,2026-06-18,Claude,reserved
+11503,goodwin-outside-daily-bar-d1,0,EURUSD.DWX,115030000,2026-06-18,Claude,active
+11503,goodwin-outside-daily-bar-d1,1,GBPUSD.DWX,115030001,2026-06-18,Claude,active
+11503,goodwin-outside-daily-bar-d1,2,AUDUSD.DWX,115030002,2026-06-18,Claude,active
 11504,goodwin-kangaroo-tail-d1,0,USDJPY.DWX,115040000,2026-06-18,Claude,reserved
 11504,goodwin-kangaroo-tail-d1,1,EURUSD.DWX,115040001,2026-06-18,Claude,reserved
 11504,goodwin-kangaroo-tail-d1,2,GBPUSD.DWX,115040002,2026-06-18,Claude,reserved
@@ -15436,3 +15436,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9973,bandy-ibs-extreme-mr-index,0,SP500.DWX,99730000,2026-08-02T16:26:59Z,Codex,active
 9973,bandy-ibs-extreme-mr-index,1,NDX.DWX,99730001,2026-08-02T16:26:59Z,Codex,active
 9973,bandy-ibs-extreme-mr-index,2,WS30.DWX,99730002,2026-08-02T16:26:59Z,Codex,active
+9645,bandy-stochastic-extreme-mr-index,0,SP500.DWX,96450000,2026-08-02T22:15:46Z,Codex,active
+9645,bandy-stochastic-extreme-mr-index,1,NDX.DWX,96450001,2026-08-02T22:15:46Z,Codex,active
+9645,bandy-stochastic-extreme-mr-index,2,WS30.DWX,96450002,2026-08-02T22:15:46Z,Codex,active
+20204,xng-tsmom1m,0,XNGUSD.DWX,202040000,2026-08-02T22:25:00Z,Codex,active
