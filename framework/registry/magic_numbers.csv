@@ -15429,3 +15429,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9576,bandy-zscore-mr-index,1,NDX.DWX,95760001,2026-08-02T10:13:50Z,Codex,active
 9576,bandy-zscore-mr-index,2,WS30.DWX,95760002,2026-08-02T10:13:50Z,Codex,active
 20091,pricebob-extreme-reversal-fade-gdaxi,0,GDAXI.DWX,200910000,2026-08-02,Codex,active
+20202,xauxag-rev18,0,XAUUSD.DWX,202020000,2026-08-02T12:40:02Z,Codex,active
+20202,xauxag-rev18,1,XAGUSD.DWX,202020001,2026-08-02T12:40:02Z,Codex,active
