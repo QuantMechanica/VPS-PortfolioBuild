@@ -1,0 +1,98 @@
+{
+  "schema": "qm_fx_cointegration_build_q02_handoff/v1",
+  "timestamp_utc": "2026-08-02T13:28:15Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20203",
+  "slug": "eurusd-audjpy",
+  "pair": [
+    "EURUSD.DWX",
+    "AUDJPY.DWX"
+  ],
+  "logical_symbol": "QM5_20203_EURUSD_AUDJPY_COINTEGRATION_D1",
+  "selection": {
+    "scan_size": 66,
+    "sign_aware_rank": 21,
+    "dev_net_sharpe": 0.215987,
+    "oos_net_sharpe": 0.588463,
+    "oos_return_pct": 4.556684,
+    "oos_state_changes": 21,
+    "fixed_dev_beta": -0.160071209,
+    "half_life_d1_bars": 152.384019,
+    "dedicated_fixed_d1_pair_previously_built": false,
+    "known_overlap": "Ranks 19 and 20 are already represented by QM5_12712 and QM5_12728; no dedicated EURUSD/AUDJPY fixed-beta D1 card, EA, allocation, or logical basket manifest was found before QM5_20203."
+  },
+  "anchors": {
+    "QM5_12532": "Q02_PASS_THEN_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_THEN_Q04_FAIL"
+  },
+  "build": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "build_check_passed": true,
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "spec_validation": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "basket_regression": "PASS",
+    "magic_resolver_rows_kept": 15403,
+    "magic_resolver_rows_dropped": 0,
+    "mq5_sha256": "d75788d24eadcff9c699a2f8964ab2cfd5ad924296b34df0b1d4a0a6853365cb",
+    "ex5_sha256": "4d57f2bc03a14ce0be3f7f18245adfff280955287cda5af1119d502d33d96270",
+    "logical_setfile_sha256": "dcac19dcd0882c24ba0c772b36e47c816c582d3f612b35445ce909bfc8e846d8",
+    "build_report": "D:\\QM\\reports\\framework\\21\\build_check_20260802_132127.json",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260802_132128\\summary.csv",
+    "manual_smoke_run": false
+  },
+  "basket_manifest": {
+    "host_symbol": "EURUSD.DWX",
+    "host_timeframe": "D1",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "basket_symbols": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX",
+      "AUDUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "traded_symbols": [
+      "EURUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "conversion_only_symbols": [
+      "AUDUSD.DWX",
+      "USDJPY.DWX"
+    ]
+  },
+  "risk": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "q02": {
+    "work_item_id": "803cfaaa-d1e4-4d5c-a599-4d33b536ea9f",
+    "status_at_handoff": "pending",
+    "attempt_count_at_handoff": 0,
+    "claimed_by_at_handoff": null,
+    "logical_setfile_enqueued": true,
+    "physical_host_setfile_skipped": true,
+    "skip_reason": "basket_manifest_logical_setfile_preferred",
+    "priority_track": true,
+    "timeout_min": 450,
+    "cpu_ceiling": 7,
+    "factory_terminals_at_precheck": 5,
+    "factory_terminal_names": [
+      "T1",
+      "T5",
+      "T6",
+      "T8",
+      "T9"
+    ],
+    "terminal64_total_at_precheck": 6,
+    "t_live_excluded": true,
+    "canonical_mutation_lock_wait_seconds": 13.828,
+    "canonical_mutation_lock_released": true
+  },
+  "prohibited_surfaces_touched": []
+}
