@@ -35,6 +35,8 @@ Top-level fields (all required unless marked optional):
 | `smoke_report_path`   | string or null    | Where the smoke summary.json lives if smoke ran.         |
 | `blocked_reason`      | string (optional) | Present + non-empty = build is blocked; reason text.     |
 | `open_questions`      | list[string] (optional) | Unresolved decisions Codex deferred to reviewer.   |
+| `build_generation`    | int (optional)     | Required for a bounded review retry; immutable retry generation. |
+| `build_attempt_token` | string (UUID, optional) | Required for a bounded review retry; immutable attempt identity. |
 
 `smoke_result: "deferred_p2_smoke"` (added 2026-07-20 — sanctioned per
 2026-07-19 review-inconsistency resolution): build_check and compile both
