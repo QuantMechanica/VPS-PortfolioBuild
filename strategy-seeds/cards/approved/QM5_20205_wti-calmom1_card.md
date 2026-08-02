@@ -57,7 +57,8 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
+q02_work_item_id: 54e53b5e-aa92-4040-97c9-044bdb5cb1c8
 review_focus: "Falsify the agreement of recurring WTI calendar-month seasonality and the exact immediately completed one-month own-return continuation state; profitability and book decorrelation are not imported."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -287,7 +288,7 @@ waiver.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-08-03 | initial WTI calendar / exact one-month agreement candidate | Q01 | PASS; Q02 handoff pending |
+| v1 | 2026-08-03 | initial WTI calendar / exact one-month agreement candidate | Q02 | Q01 PASS; Q02 ENQUEUED as work item `54e53b5e-aa92-4040-97c9-044bdb5cb1c8` |
 
 ## Pipeline Phase Status
 
@@ -295,4 +296,4 @@ waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-03 | APPROVED; R1-R4 PASS | this card, governed source packet, and durable decision |
 | Q01 Build Validation | 2026-08-03 | PASS; strict compile and V5 build check, 0 errors/warnings | `D:/QM/reports/framework/21/build_check_20260802_233303.json` |
-| Q02 Baseline Screening | TBD | NOT ENQUEUED | TBD |
+| Q02 Baseline Screening | 2026-08-03 | ENQUEUED; paced worker had claimed the item at handoff | `docs/ops/evidence/2026-08-03_qm5_20205_wti_calmom1_build_q02_enqueue.md`; work item `54e53b5e-aa92-4040-97c9-044bdb5cb1c8` |
