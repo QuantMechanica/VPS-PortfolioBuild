@@ -34,10 +34,23 @@ lane must never take more than 2 concurrent slots' worth of host resources.
    (max 2 lanes, ≥8 of 10 normal factory slots stay free). Receipts must NOT
    contain secrets. Where a claim cannot be proven yet (native history), the
    receipt must say so explicitly rather than assert it.
-2. **History bootstrap:** the roots have no `Bases`. Design and implement the
-   first-run history acquisition for native `XAUUSD` and `GER40.cash` covering
-   the campaign window, then extend the receipt with per-symbol coverage
-   evidence (first/last tick date, bar counts, real-tick availability).
+2. **History bootstrap — PREMISE CORRECTED 2026-08-02 (OWNER finding, verified).**
+   FTMO serves **real ticks only for roughly the last week**; deeper history is
+   M1 bars. Verified read-only in the installation's data directory: **zero
+   `.tkc` tick caches**, but per-year `.hcc` M1 history (2024/2025/2026 present
+   after first connect). **Model-4 (real-tick) multi-year campaign runs are
+   therefore impossible on FTMO** — do not attempt them, and do not let the
+   runner silently fall back to a different model.
+   Consequences you must implement:
+   - the receipt must record, per symbol, the actual real-tick coverage window
+     and the M1 coverage window **separately**, and must never assert real-tick
+     coverage it cannot prove;
+   - the runner takes an explicit execution-model parameter and stamps it into
+     every artifact; an M1-modelled run must carry an unambiguous evidence
+     class (e.g. `FTMO_M1_MODELLED`) that is **never** presented as tick-level
+     venue execution;
+   - the exporter/evaluator contract must refuse to merge the two classes into
+     one stream without disclosure.
    **Serialize the bootstrap across the two lanes** — both are logged into the
    same demo account, so simultaneous first connections can disconnect each
    other. Document that constraint in the runner.
