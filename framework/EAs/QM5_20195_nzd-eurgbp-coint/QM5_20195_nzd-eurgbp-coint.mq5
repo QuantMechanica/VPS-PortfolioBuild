@@ -61,6 +61,17 @@ double   g_spread_z = 0.0;
 double   g_spread_mean = 0.0;
 double   g_spread_sd = 0.0;
 bool     g_state_ready = false;
+bool     g_companion_entry_ready = false;
+QM_OrderType g_companion_entry_type = QM_BUY;
+double   g_companion_entry_lots = 0.0;
+
+double Strategy_HostRiskShare()
+  {
+   const double weight_sum = 1.0 + MathAbs(strategy_beta);
+   if(weight_sum <= 0.0)
+      return 0.0;
+   return 1.0 / weight_sum;
+  }
 
 int Strategy_SlotForSymbol(const string symbol)
   {
@@ -237,7 +248,9 @@ bool Strategy_OpenLeg(const string symbol,
                       const string reason)
   {
    const int slot = Strategy_SlotForSymbol(symbol);
-   if(slot < 0)
+   // The basket helper is reserved for the off-chart companion. The host leg
+   // must flow through the framework QM_TM_OpenPosition path in OnTick.
+   if(slot < 0 || symbol == _Symbol)
       return false;
 
    const double entry =
@@ -248,8 +261,6 @@ bool Strategy_OpenLeg(const string symbol,
    if(entry <= 0.0 || atr <= 0.0)
       return false;
 
-   const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
-   const double stop_dist = strategy_atr_sl_mult * atr;
    if(lots <= 0.0)
       return false;
 
@@ -257,9 +268,11 @@ bool Strategy_OpenLeg(const string symbol,
    req.symbol = symbol;
    req.type = type;
    req.price = 0.0;
-   req.sl = QM_OrderTypeIsBuy(type)
-            ? NormalizeDouble(entry - stop_dist, digits)
-            : NormalizeDouble(entry + stop_dist, digits);
+   req.sl = QM_StopATRFromValue(symbol,
+                                type,
+                                entry,
+                                atr,
+                                strategy_atr_sl_mult);
    req.tp = 0.0;
    req.lots = lots;
    req.reason = reason;
@@ -274,8 +287,12 @@ bool Strategy_OpenLeg(const string symbol,
                                 ticket);
   }
 
-bool Strategy_OpenPair(const int spread_direction)
+bool Strategy_PreparePair(const int spread_direction,
+                          QM_EntryRequest &host_req)
   {
+   g_companion_entry_ready = false;
+   g_companion_entry_lots = 0.0;
+
    if(spread_direction == 0 || Strategy_OpenPairLegCount() > 0)
       return false;
 
@@ -288,10 +305,13 @@ bool Strategy_OpenPair(const int spread_direction)
    // Preflight both normalized legs before sending either order. A small
    // companion weight that falls below broker minimum volume rejects the
    // complete package instead of leaving a directional orphan.
+   // QM_FrameworkInit configures the framework at the normalized host share.
+   // Relative-to-host weights below therefore preflight exactly one complete
+   // package budget: host risk + abs(beta) companion risk.
    const double nzdusd_lots =
-      Strategy_LotsForLeg(g_leg_nzdusd, nzdusd_weight, weight_sum);
+      Strategy_LotsForLeg(g_leg_nzdusd, nzdusd_weight, nzdusd_weight);
    const double eurgbp_lots =
-      Strategy_LotsForLeg(g_leg_eurgbp, eurgbp_weight, weight_sum);
+      Strategy_LotsForLeg(g_leg_eurgbp, eurgbp_weight, nzdusd_weight);
    if(nzdusd_lots <= 0.0 || eurgbp_lots <= 0.0)
       return false;
 
@@ -305,21 +325,33 @@ bool Strategy_OpenPair(const int spread_direction)
       long_spread ? "QM5_20195_LONG_SPREAD_Z_LT_NEG_ENTRY"
                   : "QM5_20195_SHORT_SPREAD_Z_GT_POS_ENTRY";
 
-   const bool nzdusd_ok =
-      Strategy_OpenLeg(g_leg_nzdusd,
-                       nzdusd_type,
-                       nzdusd_lots,
-                       reason);
-   const bool eurgbp_ok =
-      Strategy_OpenLeg(g_leg_eurgbp,
-                       eurgbp_type,
-                       eurgbp_lots,
-                       reason);
-   if(nzdusd_ok && eurgbp_ok)
-      return true;
+   const double host_entry =
+      QM_OrderTypeIsBuy(nzdusd_type)
+      ? SymbolInfoDouble(g_leg_nzdusd, SYMBOL_ASK)
+      : SymbolInfoDouble(g_leg_nzdusd, SYMBOL_BID);
+   const double host_atr =
+      QM_ATR(g_leg_nzdusd, PERIOD_D1, strategy_atr_period_d1, 1);
+   if(host_entry <= 0.0 || host_atr <= 0.0)
+      return false;
 
-   Strategy_ClosePair(QM_EXIT_STRATEGY);
-   return false;
+   host_req.type = nzdusd_type;
+   host_req.price = 0.0;
+   host_req.sl = QM_StopATRFromValue(g_leg_nzdusd,
+                                     nzdusd_type,
+                                     host_entry,
+                                     host_atr,
+                                     strategy_atr_sl_mult);
+   host_req.tp = 0.0;
+   host_req.reason = reason;
+   host_req.symbol_slot = qm_magic_slot_offset;
+   host_req.expiration_seconds = 0;
+   if(host_req.sl <= 0.0)
+      return false;
+
+   g_companion_entry_type = eurgbp_type;
+   g_companion_entry_lots = eurgbp_lots;
+   g_companion_entry_ready = true;
+   return true;
   }
 
 // -----------------------------------------------------------------------------
@@ -356,12 +388,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    if(g_spread_z > strategy_entry_z)
-      Strategy_OpenPair(-1);
-   else if(g_spread_z < -strategy_entry_z)
-      Strategy_OpenPair(1);
+      return Strategy_PreparePair(-1, req);
+   if(g_spread_z < -strategy_entry_z)
+      return Strategy_PreparePair(1, req);
 
-   // Basket orders are opened explicitly, so the framework host-order path
-   // must remain disabled.
    return false;
   }
 
@@ -430,11 +460,18 @@ int OnInit()
    SymbolSelect(g_conversion_gbpusd, true);
    SymbolSelect(g_conversion_eurusd, true);
 
+   const double host_risk_share = Strategy_HostRiskShare();
+   if(host_risk_share <= 0.0)
+      return INIT_FAILED;
+
+   // PORTFOLIO_WEIGHT describes the complete package. Configure the standard
+   // host order at its normalized 1.0 / (1.0 + abs(beta)) share; the off-chart
+   // companion receives the remaining abs(beta) share in Strategy_PreparePair.
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
                         RISK_FIXED,
-                        PORTFOLIO_WEIGHT,
+                        PORTFOLIO_WEIGHT * host_risk_share,
                         qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
@@ -518,7 +555,20 @@ void OnTick()
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      const bool host_opened = QM_TM_OpenPosition(req, out_ticket);
+      if(host_opened)
+        {
+         const bool companion_opened =
+            g_companion_entry_ready &&
+            Strategy_OpenLeg(g_leg_eurgbp,
+                             g_companion_entry_type,
+                             g_companion_entry_lots,
+                             req.reason);
+         if(!companion_opened)
+            Strategy_ClosePair(QM_EXIT_STRATEGY);
+        }
+      g_companion_entry_ready = false;
+      g_companion_entry_lots = 0.0;
      }
   }
 
