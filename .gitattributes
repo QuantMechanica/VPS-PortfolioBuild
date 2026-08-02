@@ -1,6 +1,23 @@
 # Weekly DB snapshots are designed for Git LFS tracking.
 infra/backups/weekly/*.sqlite filter=lfs diff=lfs merge=lfs -text
 
+# Runtime-activation source bindings are raw-byte contracts: the decision
+# builder hashes and normalizes their on-disk bytes to the committed blob, so
+# core.autocrlf must never re-smudge them (otherwise the checkout goes
+# phantom-dirty and Factory_ON's clean-checkout gate blocks, 2026-08-02).
+tools/strategy_farm/Factory_ON.ps1 -text
+tools/strategy_farm/Factory_OFF.ps1 -text
+tools/strategy_farm/factory_restart_health.ps1 -text
+tools/strategy_farm/factory_process_scope.ps1 -text
+tools/strategy_farm/factory_mutation_lock.ps1 -text
+tools/strategy_farm/qm_tasks.manifest.ps1 -text
+tools/strategy_farm/maintenance_control.py -text
+tools/strategy_farm/factory_runtime_activation.py -text
+tools/strategy_farm/farmctl.py -text
+tools/strategy_farm/start_terminal_workers.py -text
+tools/strategy_farm/public_snapshot_incident_guard.py -text
+scripts/run_public_snapshot_task.ps1 -text
+
 # Public-source evidence must retain its original CRLF bytes and SHA-256.
 framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/primary_source_pine_v1.pine -text
 framework/EAs/QM5_20023_idx-macro-announce-day/data/*.csv -text
