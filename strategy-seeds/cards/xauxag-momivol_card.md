@@ -56,7 +56,8 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: PENDING
+q02_status: ENQUEUED
+q02_work_item_id: 46fef851-87fd-4e85-adef-554ed0022088
 review_focus: "Falsify a relative precious-metal momentum/IVol intersection rather than outright XAU direction: only the 63-D1 momentum winner that is also the lower factor-residual-volatility metal is held against the other leg; Q09 alone may establish book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -272,7 +273,7 @@ portfolio-gate change, or a correlation waiver.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-08-03 | initial XAU/XAG momentum-IVol agreement basket | Q01 | PASS; strict compile and build check |
+| v1 | 2026-08-03 | initial XAU/XAG momentum-IVol agreement basket | Q02 | ENQUEUED as work item `46fef851-87fd-4e85-adef-554ed0022088` |
 
 ## Pipeline Phase Status
 
@@ -280,4 +281,4 @@ portfolio-gate change, or a correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-03 | APPROVED; R1-R4 PASS | this card, governed source packet, and durable decision |
 | Q01 Build Validation | 2026-08-03 | PASS; 0 errors, 0 warnings, 0 build-check failures | `D:/QM/reports/framework/21/build_check_20260803_011438.json` |
-| Q02 Baseline Screening | 2026-08-03 | PENDING | not yet enqueued |
+| Q02 Baseline Screening | 2026-08-03 | ENQUEUED; pending, attempt 0, unclaimed at confirmation | work item `46fef851-87fd-4e85-adef-554ed0022088` |
