@@ -4571,6 +4571,73 @@ def _work_item_compile_gate(
     }
 
 
+def _fresh_q02_seed_spawn_binding_failure(
+    payload: dict[str, Any],
+    *,
+    ex5_sha256: str,
+    mq5_sha256: str | None,
+    setfile_path: Path,
+    setfile_sha256: str,
+    symbol: str,
+    period: str,
+    expert: str,
+) -> dict[str, Any] | None:
+    """Fail closed if a fresh-Q02 seed drifted after its enqueue seal."""
+    if payload.get("fresh_q02_seed") is not True:
+        return None
+    observed = {
+        "expected_current_ex5_sha256": ex5_sha256,
+        "expected_ex5_sha256": ex5_sha256,
+        "expected_mq5_sha256": mq5_sha256,
+        "expected_setfile_sha256": setfile_sha256,
+        "expected_symbol": symbol,
+        "expected_period": period,
+        "expected_expert": expert,
+    }
+    for key, expected in observed.items():
+        seeded = payload.get(key)
+        if not isinstance(seeded, str) or seeded.strip().lower() != str(
+            expected or ""
+        ).strip().lower():
+            return {
+                "spawned": False,
+                "reason": "fresh_q02_seed_binding_mismatch_before_spawn",
+                "binding": key,
+                "seeded": seeded,
+                "observed": expected,
+            }
+    sealed_setfile = payload.get("requalification_setfile_identity")
+    if not isinstance(sealed_setfile, dict):
+        return {
+            "spawned": False,
+            "reason": "fresh_q02_seed_setfile_identity_missing_before_spawn",
+        }
+    try:
+        seeded_path = Path(str(sealed_setfile.get("path") or "")).resolve()
+        observed_path = setfile_path.resolve()
+    except OSError as exc:
+        return {
+            "spawned": False,
+            "reason": "fresh_q02_seed_setfile_identity_unresolvable_before_spawn",
+            "detail": str(exc),
+        }
+    if os.path.normcase(str(seeded_path)) != os.path.normcase(str(observed_path)):
+        return {
+            "spawned": False,
+            "reason": "fresh_q02_seed_setfile_path_mismatch_before_spawn",
+            "seeded": str(seeded_path),
+            "observed": str(observed_path),
+        }
+    if str(sealed_setfile.get("sha256") or "").strip().lower() != setfile_sha256:
+        return {
+            "spawned": False,
+            "reason": "fresh_q02_seed_setfile_hash_mismatch_before_spawn",
+            "seeded": sealed_setfile.get("sha256"),
+            "observed": setfile_sha256,
+        }
+    return None
+
+
 def _ea_dir_from_setfile_path(setfile_path: str | os.PathLike[str] | None,
                               ea_id: str) -> Path | None:
     """Resolve the exact EA dir anchored by a work_item setfile path."""
@@ -4966,6 +5033,18 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     expected_setfile_sha256 = _sha256_file(expected_setfile_path)
     expected_mq5_sha256 = _sha256_file(expected_mq5_path) if expected_mq5_path.is_file() else None
     expected_expert = f"QM\\{ea_dir_name}"
+    fresh_seed_failure = _fresh_q02_seed_spawn_binding_failure(
+        item_payload,
+        ex5_sha256=expected_ex5_sha256,
+        mq5_sha256=expected_mq5_sha256,
+        setfile_path=expected_setfile_path,
+        setfile_sha256=expected_setfile_sha256,
+        symbol=runner_symbol,
+        period=period,
+        expert=expected_expert,
+    )
+    if fresh_seed_failure:
+        return fresh_seed_failure
 
     cmd = [
         "pwsh.exe", "-NoProfile", "-File",
@@ -8132,6 +8211,10 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                             "recovery_tagged_at_utc", "recovery_pre_image_sha256"):
                     if _rk in item_payload:
                         new_payload[_rk] = item_payload[_rk]
+            if item_payload.get("fresh_q02_seed") is True:
+                for key in _FRESH_Q02_SEED_PROVENANCE_KEYS:
+                    if key in item_payload:
+                        new_payload[key] = item_payload[key]
             with connect(root) as conn2:
                 # We already own the row via the CAS claim above; enrich in place
                 # (ownership-guarded) rather than re-racing the pending -> active edge.
@@ -15619,6 +15702,33 @@ _Q02_APPEND_ONLY_STABLE_PAYLOAD_KEYS = {
     "traded_symbols",
 }
 
+_Q02_EXECUTION_BINDING_KEYS = (
+    "expected_mq5_sha256",
+    "expected_ex5_sha256",
+    "expected_setfile_sha256",
+    "expected_symbol",
+    "expected_period",
+    "expected_expert",
+)
+
+_FRESH_Q02_SEED_PROVENANCE_KEYS = (
+    "enqueued_at_utc",
+    "enqueued_by",
+    "expected_current_ex5_sha256",
+    "fresh_q02_seed",
+    "historical_work_item_preserved",
+    "pre_binding_source_verified",
+    "requalification_old_payload_sha256",
+    "requalification_old_status",
+    "requalification_old_updated_at",
+    "requalification_old_verdict",
+    "requalification_old_work_item_id",
+    "requalification_reason",
+    "requalification_setfile_identity",
+    "risk_fixed",
+    "risk_percent",
+)
+
 
 def _q02_fixed_risk_contract(setfile_path: str) -> tuple[bool, dict[str, Any]]:
     """Fail closed unless a Q02 rerun setfile uses the fixed-risk contract."""
@@ -15744,6 +15854,16 @@ def _expected_current_execution_bindings(
             "reason": "setfile_not_bound_to_exact_ea_directory",
             "setfile_path": str(setfile_path),
         }
+    canonical_ea_dir = _preferred_ea_dir(ea_id)
+    if canonical_ea_dir is None or os.path.normcase(str(ea_dir.resolve())) != os.path.normcase(
+        str(canonical_ea_dir.resolve())
+    ):
+        return False, {
+            "reason": "current_execution_binding_not_in_canonical_ea_directory",
+            "setfile_path": str(setfile_path),
+            "resolved_ea_dir": str(ea_dir),
+            "canonical_ea_dir": str(canonical_ea_dir) if canonical_ea_dir else None,
+        }
     paths = {
         "expected_mq5_sha256": ea_dir / f"{ea_dir.name}.mq5",
         "expected_ex5_sha256": ea_dir / f"{ea_dir.name}.ex5",
@@ -15814,6 +15934,296 @@ def _stale_pass_source_binding(
     return True, {
         "source_expected_ex5_sha256": source_ex5,
         "current_ex5_sha256": current_ex5,
+    }
+
+
+def enqueue_fresh_q02_seed(
+    root: Path,
+    ea_id: str,
+    *,
+    old_work_item_id: str | None,
+    requal_reason: str | None,
+    expected_current_ex5_sha256: str | None,
+) -> dict[str, Any]:
+    """Append one current-binary Q02 seed from a terminal pre-binding row.
+
+    This path is deliberately narrower than the ordinary Q02 rerun path.  It
+    exists only for rows created before execution-binding capture, so a row
+    carrying any execution-binding field must use the existing authenticated
+    append-only rerun instead.  The old row supplies the exact EA, symbol and
+    setfile identity; it is never updated.
+    """
+    phase = "Q02"
+    source_id = str(old_work_item_id or "").strip()
+    reason = str(requal_reason or "").strip()
+    expected_ex5 = str(expected_current_ex5_sha256 or "").strip().lower()
+    if not source_id:
+        return {
+            "enqueued": False,
+            "ea_id": ea_id,
+            "phase": phase,
+            "reason": "fresh_q02_seed_requires_old_work_item_id",
+        }
+    if not reason:
+        return {
+            "enqueued": False,
+            "ea_id": ea_id,
+            "phase": phase,
+            "reason": "fresh_q02_seed_requires_requal_reason",
+        }
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_ex5):
+        return {
+            "enqueued": False,
+            "ea_id": ea_id,
+            "phase": phase,
+            "reason": "expected_current_ex5_sha256_required_or_invalid",
+            "expected_current_ex5_sha256": expected_ex5,
+        }
+    artifact_failure = _ea_build_artifact_failure(str(ea_id))
+    if artifact_failure:
+        return {
+            "enqueued": False,
+            "ea_id": ea_id,
+            "phase": phase,
+            "reason": artifact_failure["reason"],
+            "detail": artifact_failure["detail"],
+        }
+
+    init_db(root)
+    now = utc_now()
+    with connect(root) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        source = conn.execute(
+            "SELECT * FROM work_items WHERE id=?", (source_id,)
+        ).fetchone()
+        source_matches = bool(
+            source
+            and source["kind"] == "backtest"
+            and source["ea_id"] == ea_id
+            and source["phase"] in {"Q02", "P2"}
+            and source["status"] in {"done", "failed"}
+            and source["verdict"] is not None
+            and not source["claimed_by"]
+        )
+        if not source_matches:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "fresh_q02_seed_source_mismatch_or_not_terminal",
+                "old_work_item_id": source_id,
+            }
+        try:
+            source_payload = json.loads(source["payload_json"] or "{}")
+        except json.JSONDecodeError:
+            source_payload = None
+        if not isinstance(source_payload, dict):
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "fresh_q02_seed_source_payload_invalid",
+                "old_work_item_id": source_id,
+            }
+        present_bindings = [
+            key
+            for key in _Q02_EXECUTION_BINDING_KEYS
+            if str(source_payload.get(key) or "").strip()
+        ]
+        if present_bindings:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "fresh_q02_seed_requires_pre_binding_source",
+                "old_work_item_id": source_id,
+                "present_execution_bindings": present_bindings,
+                "next_action_hint": (
+                    "Use enqueue-backtest --phase Q02 with the guarded "
+                    "append-only stale-PASS path."
+                ),
+            }
+
+        risk_ok, risk_detail = _q02_fixed_risk_contract(
+            str(source["setfile_path"])
+        )
+        if not risk_ok:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "old_work_item_id": source_id,
+                **risk_detail,
+            }
+        bindings_ok, bindings = _expected_current_execution_bindings(
+            source, expected_ex5
+        )
+        if not bindings_ok:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "old_work_item_id": source_id,
+                **bindings,
+            }
+
+        open_row = conn.execute(
+            """
+            SELECT id,status,setfile_path FROM work_items
+            WHERE ea_id=? AND phase IN ('Q02','P2') AND symbol=?
+              AND status IN ('pending','active')
+            ORDER BY created_at ASC LIMIT 1
+            """,
+            (ea_id, source["symbol"]),
+        ).fetchone()
+        if open_row:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "fresh_q02_seed_open_row_exists",
+                "old_work_item_id": source_id,
+                "existing_work_item_id": open_row["id"],
+                "existing_status": open_row["status"],
+                "existing_setfile_path": open_row["setfile_path"],
+            }
+
+        current_terminal = conn.execute(
+            """
+            SELECT id,status,verdict FROM work_items
+            WHERE ea_id=? AND phase IN ('Q02','P2') AND symbol=? AND id<>?
+              AND status IN ('done','failed')
+              AND lower(COALESCE(
+                json_extract(payload_json, '$.expected_ex5_sha256'), ''
+              ))=?
+            ORDER BY updated_at DESC LIMIT 1
+            """,
+            (
+                ea_id,
+                source["symbol"],
+                source_id,
+                bindings["artifact_sha256"]["expected_ex5_sha256"],
+            ),
+        ).fetchone()
+        if current_terminal:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "q02_pair_already_has_current_binary_terminal_result",
+                "old_work_item_id": source_id,
+                "existing_work_item_id": current_terminal["id"],
+                "existing_status": current_terminal["status"],
+                "existing_verdict": current_terminal["verdict"],
+            }
+
+        prior_seed = conn.execute(
+            """
+            SELECT id,status,verdict FROM work_items
+            WHERE ea_id=? AND phase IN ('Q02','P2') AND symbol=?
+              AND json_extract(
+                payload_json, '$.requalification_old_work_item_id'
+              )=?
+            ORDER BY created_at ASC LIMIT 1
+            """,
+            (ea_id, source["symbol"], source_id),
+        ).fetchone()
+        if prior_seed:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "fresh_q02_seed_already_exists",
+                "old_work_item_id": source_id,
+                "existing_work_item_id": prior_seed["id"],
+                "existing_status": prior_seed["status"],
+                "existing_verdict": prior_seed["verdict"],
+            }
+
+        old_payload_raw = str(source["payload_json"] or "{}")
+        payload = {
+            key: source_payload[key]
+            for key in _Q02_APPEND_ONLY_STABLE_PAYLOAD_KEYS
+            if key in source_payload
+        }
+        payload.update({
+            "enqueued_at_utc": now,
+            "enqueued_by": "farmctl.seed-fresh-q02",
+            "expected_current_ex5_sha256": bindings["artifact_sha256"][
+                "expected_ex5_sha256"
+            ],
+            "fresh_q02_seed": True,
+            "historical_work_item_preserved": True,
+            "pre_binding_source_verified": True,
+            "requalification_old_payload_sha256": hashlib.sha256(
+                old_payload_raw.encode("utf-8")
+            ).hexdigest(),
+            "requalification_old_status": source["status"],
+            "requalification_old_updated_at": source["updated_at"],
+            "requalification_old_verdict": source["verdict"],
+            "requalification_old_work_item_id": source_id,
+            "requalification_reason": reason,
+            "requalification_setfile_identity": {
+                "path": str(source["setfile_path"]),
+                "sha256": bindings["artifact_sha256"][
+                    "expected_setfile_sha256"
+                ],
+            },
+            "risk_fixed": risk_detail["risk_fixed"],
+            "risk_percent": risk_detail["risk_percent"],
+            **bindings["artifact_sha256"],
+            "expected_expert": bindings["expected_expert"],
+            "expected_period": bindings["expected_period"],
+            "expected_symbol": bindings["expected_symbol"],
+        })
+        wid = str(uuid.uuid4())
+        conn.execute(
+            """
+            INSERT INTO work_items
+              (id, kind, phase, ea_id, symbol, setfile_path, status,
+               attempt_count, parent_task_id, payload_json, created_at, updated_at)
+            VALUES (?, 'backtest', 'Q02', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?)
+            """,
+            (
+                wid,
+                ea_id,
+                source["symbol"],
+                source["setfile_path"],
+                json.dumps(payload, sort_keys=True),
+                now,
+                now,
+            ),
+        )
+        created = [{
+            "id": wid,
+            "symbol": source["symbol"],
+            "setfile_path": source["setfile_path"],
+            "old_work_item_id": source_id,
+            "expected_ex5_sha256": payload["expected_ex5_sha256"],
+            "expected_setfile_sha256": payload["expected_setfile_sha256"],
+        }]
+        event(
+            conn,
+            "work_items",
+            phase,
+            "fresh_q02_pre_binding_seed_enqueued",
+            {
+                "ea_id": ea_id,
+                "created": created,
+                "requalification_reason": reason,
+                "old_work_item_id": source_id,
+            },
+        )
+        conn.commit()
+    return {
+        "enqueued": True,
+        "ea_id": ea_id,
+        "phase": phase,
+        "created": created,
+        "requeued": [],
+        "skipped": [],
+        "skipped_count": 0,
+        "next_action_hint": "Pump/dispatch-tick will claim the pending work_item.",
     }
 
 
@@ -19436,6 +19846,29 @@ def build_parser() -> argparse.ArgumentParser:
             "candidate-specific Q03"
         ),
     )
+    seed_fresh_q02 = sub.add_parser(
+        "seed-fresh-q02",
+        help=(
+            "Append one current-binary Q02 seed from an exact terminal "
+            "pre-execution-binding row"
+        ),
+    )
+    seed_fresh_q02.add_argument("--ea", required=True)
+    seed_fresh_q02.add_argument(
+        "--old-work-item-id",
+        required=True,
+        help="Exact terminal pre-binding Q02 row that supplies symbol and setfile identity",
+    )
+    seed_fresh_q02.add_argument(
+        "--requal-reason",
+        required=True,
+        help="Durable reason stamped into the append-only requalification seed",
+    )
+    seed_fresh_q02.add_argument(
+        "--expected-current-ex5-sha256",
+        required=True,
+        help="Exact SHA-256 required to match the current canonical repo EX5 bytes",
+    )
     bind_q09 = sub.add_parser(
         "bind-q09-plan",
         help="Hash-bind a sealed Q09_NEWS plan to one exact pending work item",
@@ -19548,7 +19981,7 @@ def build_parser() -> argparse.ArgumentParser:
 _CANONICAL_CHECKOUT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
 _STATE_MUTATING_COMMANDS = frozenset({
     "init", "pump", "repair", "dispatch-tick", "tick", "backfill-work-items",
-    "enqueue-backtest", "bind-q09-plan", "approve-card", "reidentify-recovery-card",
+    "enqueue-backtest", "seed-fresh-q02", "bind-q09-plan", "approve-card", "reidentify-recovery-card",
     "reject-card", "seed-sources", "record-build", "record-review",
     "claude-prompt", "build-ea", "claude-review-prompt", "claim-source", "set-source-status",
     "reserve-ea-ids", "reserve-terminal", "release-terminal",
@@ -19748,6 +20181,14 @@ def main(argv: list[str] | None = None) -> int:
                 "enqueued": False,
                 "reason": "Provide --review-task-id for the review-task path or --ea for an exact/cascade Q-phase path.",
             })
+    elif args.command == "seed-fresh-q02":
+        print_json(enqueue_fresh_q02_seed(
+            root,
+            args.ea,
+            old_work_item_id=args.old_work_item_id,
+            requal_reason=args.requal_reason,
+            expected_current_ex5_sha256=args.expected_current_ex5_sha256,
+        ))
     elif args.command == "bind-q09-plan":
         print_json(bind_q09_run_plan(
             root,
