@@ -402,7 +402,13 @@ def command_for(
             FARM_ROOT / "artifacts" / "cards_review",   # artifact write target
             Path(r"G:\My Drive"),                        # shared Drive (spec outputs)
         ):
-            if extra.exists():
+            try:
+                available = extra.exists()
+            except OSError:
+                # Google Drive is per-user and can return Access Denied under
+                # the SYSTEM scheduled-task token even for a read-only probe.
+                available = False
+            if available:
                 extra_dirs.append(str(extra))
         add_dir_flags: list[str] = []
         for d in extra_dirs:
