@@ -16,6 +16,7 @@ $script:QmFactoryFarmRoot = 'D:\QM\strategy_farm'
 $script:QmFactoryWorkItemReportRoot = 'D:\QM\reports\work_items'
 $script:QmFactoryCanonicalRepoRoot = 'C:\QM\repo'
 $script:QmFactoryWorktreeRoot = 'C:\QM\worktrees'
+$script:QmFactoryDisabledTerminalsPath = 'D:\QM\strategy_farm\state\disabled_terminals.txt'
 $script:QmFactoryPhaseRunnerAllowlistPath = Join-Path $PSScriptRoot 'phase_runner_allowlist.v1.json'
 $script:QmFactoryPhaseRunnerAllowlistSchema = 'qm-phase-runner-allowlist/v1'
 # Historical direct-parent runners that existed before the Q-phase rewrite.
@@ -26,6 +27,40 @@ $script:QmFactoryLegacyPhaseRunnerReviewOnly = @(
     [pscustomobject]@{ Phase='P4'; RepoRelativePath='framework\scripts\p4_walk_forward.py' },
     [pscustomobject]@{ Phase='Q09_LEGACY'; RepoRelativePath='framework\scripts\q09_news_mode.py' }
 )
+
+function Get-QmFactoryWorkerPolicyTerminals {
+    [CmdletBinding()]
+    param()
+
+    $factoryTerminals = @(1..10 | ForEach-Object { "T$_" })
+    $disabled = @{}
+    try {
+        if (Test-Path -LiteralPath $script:QmFactoryDisabledTerminalsPath -PathType Leaf) {
+            foreach ($line in @(Get-Content -LiteralPath $script:QmFactoryDisabledTerminalsPath `
+                    -Encoding UTF8 -ErrorAction Stop)) {
+                $terminal = ([string]$line).Trim().ToUpperInvariant()
+                if ($terminal -match '(?i)\AT(?:[1-9]|10)\z') {
+                    $disabled[$terminal] = $true
+                }
+            }
+        }
+    } catch {
+        # Match the worker launcher's established unreadable-policy behavior:
+        # an unreadable/missing cap means no terminals are disabled.
+        $disabled = @{}
+    }
+    return @($factoryTerminals | Where-Object { -not $disabled.ContainsKey($_) })
+}
+
+function Get-QmFactoryWorkerPolicyTerminalPattern {
+    [CmdletBinding()]
+    param()
+
+    $terminals = @(Get-QmFactoryWorkerPolicyTerminals)
+    if ($terminals.Count -eq 0) { return '(?!)' }
+    $escaped = @($terminals | ForEach-Object { [regex]::Escape($_) })
+    return '(?i)\A(?:' + ($escaped -join '|') + ')\z'
+}
 
 function Import-QmFactoryPhaseRunnerAllowlist {
     [CmdletBinding()]
@@ -622,9 +657,11 @@ function Get-QmFactoryPhaseRunnerClassification {
     if ($terminalIndexes.Count -eq 1) {
         $terminalValueIndex = [int]$terminalIndexes[0] + 1
         if ($terminalValueIndex -lt $arguments.Count) { $terminal = [string]$arguments[$terminalValueIndex] }
-        # T5 is intentionally disabled/isolated and T_Live is never in Factory
-        # scope.  Both therefore fail closed to REVIEW_REQUIRED, never reap.
-        if ($terminal -notmatch '(?i)\AT(?:[1-4]|[6-9]|10)\z') {
+        # Reap ownership must match the live terminal-worker policy. A terminal
+        # named in disabled_terminals.txt and every non-factory selector remain
+        # REVIEW_REQUIRED, never reap-owned.
+        $workerPolicyTerminalPattern = Get-QmFactoryWorkerPolicyTerminalPattern
+        if ($terminal -notmatch $workerPolicyTerminalPattern) {
             return New-QmFactoryPhaseRunnerClassification -Disposition REVIEW_REQUIRED `
                 -MatcherReason 'terminal_selector_outside_factory_scope' -Phase $entry.Phase -ScriptPath $scriptPath `
                 -WorkItemRoot $canonicalOutPrefix -WorkItemId $workItemId -Terminal $terminal

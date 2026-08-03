@@ -124,6 +124,7 @@ class CascadeChainP2ToP8Tests(unittest.TestCase):
             old_popen = farmctl.subprocess.Popen
             old_process_identity = farmctl.get_process_identity
             old_terminals = farmctl.MT5_TERMINALS
+            old_disabled_terminals_file = farmctl.DISABLED_TERMINALS_FILE
             old_running = farmctl._running_mt5_terminals
             old_active = farmctl.active_mt5_terminals
             try:
@@ -137,9 +138,13 @@ class CascadeChainP2ToP8Tests(unittest.TestCase):
                     "image_path": sys.executable,
                     "started_at_epoch": 1.0,
                 }
-                # MNT046 deliberately excludes T5 from real phase-runner scope.
-                phase_terminals = ("T1", "T2", "T3", "T4", "T6", "T7")
+                disabled_terminals_file = root / "disabled_terminals.txt"
+                disabled_terminals_file.write_text("", encoding="utf-8")
+                farmctl.DISABLED_TERMINALS_FILE = disabled_terminals_file
+                phase_terminals = tuple(f"T{i}" for i in range(1, 7))
                 farmctl.MT5_TERMINALS = phase_terminals
+                self.assertEqual(farmctl.phase_runner_terminals(), phase_terminals)
+                self.assertIn("T5", farmctl.phase_runner_terminals())
                 farmctl._running_mt5_terminals = lambda: set()
                 farmctl.active_mt5_terminals = lambda: list(phase_terminals)
                 for idx, phase in enumerate(phases, start=1):
@@ -151,6 +156,7 @@ class CascadeChainP2ToP8Tests(unittest.TestCase):
                 farmctl.subprocess.Popen = old_popen
                 farmctl.get_process_identity = old_process_identity
                 farmctl.MT5_TERMINALS = old_terminals
+                farmctl.DISABLED_TERMINALS_FILE = old_disabled_terminals_file
                 farmctl._running_mt5_terminals = old_running
                 farmctl.active_mt5_terminals = old_active
 

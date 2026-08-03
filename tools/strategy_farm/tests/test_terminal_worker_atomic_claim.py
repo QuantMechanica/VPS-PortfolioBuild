@@ -1382,6 +1382,70 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(payload["launch_fault_defer_seconds"], terminal_worker.LAUNCH_FAULT_DEFER_SECONDS)
             self.assertIn("launch_not_before_utc", payload)
 
+    def test_spawn_refusal_persists_reason_and_event_before_releasing_claim(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            self._insert_work_item(
+                root,
+                "wi-spawn-refused",
+                "NDX.DWX",
+                phase="Q07",
+                status="active",
+                claimed_by="T5",
+                payload={"retained": True},
+            )
+
+            with (
+                patch.object(terminal_worker, "_work_item_preflight_failure", return_value=None),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(terminal_worker, "_prepare_staged_ex5", return_value=None),
+                patch.object(terminal_worker, "_acquire_launch_slot", return_value=None),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_spawn_work_item_runner",
+                    return_value={
+                        "spawned": False,
+                        "phase_runner_scope_blocked": True,
+                        "reason": "test_policy_scope_refusal",
+                    },
+                ),
+            ):
+                result = terminal_worker._run_claimed_item(
+                    root,
+                    {"id": "wi-spawn-refused"},
+                    "T5",
+                    timeout_seconds=30,
+                )
+
+            self.assertEqual(result["action"], "spawn_failed")
+            self.assertEqual(
+                result["refusal_evidence"]["event"],
+                "runner_spawn_refused",
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, claimed_by, payload_json "
+                    "FROM work_items WHERE id='wi-spawn-refused'"
+                ).fetchone()
+                event_row = conn.execute(
+                    "SELECT event, detail_json FROM events "
+                    "WHERE entity_type='work_item' "
+                    "AND entity_id='wi-spawn-refused'"
+                ).fetchone()
+            self.assertEqual(row[:3], ("failed", "INFRA_FAIL", None))
+            payload = json.loads(row[3])
+            self.assertTrue(payload["retained"])
+            self.assertEqual(payload["verdict_reason"], "test_policy_scope_refusal")
+            self.assertEqual(event_row[0], "runner_spawn_refused")
+            self.assertEqual(
+                json.loads(event_row[1])["reason"],
+                "test_policy_scope_refusal",
+            )
+
     def test_fast_phase_runner_with_host_keyed_aggregate_finishes_item(self) -> None:
         with self._root() as tmp:
             root = (Path(tmp) / "farm").resolve()

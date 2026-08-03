@@ -3270,13 +3270,19 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
                 "reason": spawn.get("reason"),
                 "aggregate": _aggregate_finished_parent(root, row["parent_task_id"]),
             }
-        with farmctl.connect(root) as conn:
-            conn.execute(
-                "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL, updated_at=? WHERE id=?",
-                (now, item["id"]),
-            )
-            conn.commit()
-        return {"action": "spawn_failed", "item_id": item["id"], "reason": spawn.get("reason")}
+        refusal_evidence = farmctl.record_work_item_spawn_refusal(
+            root,
+            row,
+            terminal,
+            spawn,
+            failed_at=now,
+        )
+        return {
+            "action": "spawn_failed",
+            "item_id": item["id"],
+            "reason": spawn.get("reason"),
+            "refusal_evidence": refusal_evidence,
+        }
 
     payload = _json_loads(row["payload_json"])
     expected_from_date, expected_to_date = _resolved_evidence_window(spawn)
