@@ -87,3 +87,4 @@ change.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-03 | Initial build from approved G0 card | Q01 PASS: strict compile and V5 build check, 0 errors/warnings |
+| v2 | 2026-08-03 | Paced pipeline handoff | Q02 work item `337d21e1-0ff0-4934-be26-bee74d3dda82` enqueued; baseline pending |
