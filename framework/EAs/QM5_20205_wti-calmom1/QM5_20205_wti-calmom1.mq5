@@ -367,6 +367,58 @@ bool Strategy_LoadMomentumSignal(const datetime decision_bar_time,
    return true;
   }
 
+void Strategy_LogMonthlyAttempt(const int month_key,
+                                const datetime decision_bar_time,
+                                const bool seasonal_valid,
+                                const int seasonal_direction,
+                                const bool momentum_valid,
+                                const int momentum_direction)
+  {
+   string outcome = "agreement_signal";
+   if(!seasonal_valid)
+      outcome = "seasonal_history_invalid";
+   else if(!momentum_valid)
+      outcome = "momentum_history_invalid";
+   else if(seasonal_direction == 0)
+      outcome = "seasonal_zero";
+   else if(momentum_direction == 0)
+      outcome = "momentum_zero";
+   else if(seasonal_direction != momentum_direction)
+      outcome = "sign_disagreement";
+
+   QM_LogEvent(QM_INFO,
+               "STRATEGY_STATE",
+               StringFormat("{\"month_key\":%d,"
+                            "\"decision_bar_time\":%I64d,"
+                            "\"seasonal_valid\":%d,"
+                            "\"seasonal_samples\":%d,"
+                            "\"seasonal_score\":%.10f,"
+                            "\"seasonal_direction\":%d,"
+                            "\"momentum_valid\":%d,"
+                            "\"momentum_score\":%.10f,"
+                            "\"momentum_direction\":%d,"
+                            "\"outcome\":\"%s\"}",
+                            month_key,
+                            (long)decision_bar_time,
+                            seasonal_valid ? 1 : 0,
+                            g_signal_sample_count,
+                            g_seasonal_score,
+                            seasonal_direction,
+                            momentum_valid ? 1 : 0,
+                            g_momentum_score,
+                            momentum_direction,
+                            outcome));
+  }
+
+void Strategy_LogEntryReject(const string reason)
+  {
+   QM_LogEvent(QM_INFO,
+               "ENTRY_BLOCK",
+               StringFormat("{\"month_key\":%d,\"reason\":\"%s\"}",
+                            g_signal_month_key,
+                            reason));
+  }
+
 void Strategy_AdvanceMonthlyState()
   {
    g_monthly_boundary = false;
@@ -414,6 +466,12 @@ void Strategy_AdvanceMonthlyState()
                                   g_momentum_score,
                                   momentum_direction);
    g_signal_valid = seasonal_valid && momentum_valid;
+   Strategy_LogMonthlyAttempt(month_key,
+                              decision_bar_time,
+                              seasonal_valid,
+                              seasonal_direction,
+                              momentum_valid,
+                              momentum_direction);
    if(g_signal_valid &&
       seasonal_direction != 0 &&
       momentum_direction != 0 &&
@@ -504,17 +562,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
    if(spread_points < 0 ||
       spread_points > strategy_max_spread_points)
+     {
+      Strategy_LogEntryReject("spread");
       return false;
+     }
 
    const double atr_last =
       QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(atr_last <= 0.0 || !MathIsValidNumber(atr_last))
+     {
+      Strategy_LogEntryReject("atr");
       return false;
+     }
 
    req.type = (g_signal_direction > 0) ? QM_BUY : QM_SELL;
    const double entry_price = QM_EntryMarketPrice(req.type);
    if(entry_price <= 0.0 || !MathIsValidNumber(entry_price))
+     {
+      Strategy_LogEntryReject("entry_price");
       return false;
+     }
 
    req.sl = QM_StopATRFromValue(_Symbol,
                                 req.type,
@@ -523,11 +590,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                                 strategy_atr_sl_mult);
    req.sl = QM_StopRulesNormalizePrice(_Symbol, req.sl);
    if(req.sl <= 0.0 || !MathIsValidNumber(req.sl))
+     {
+      Strategy_LogEntryReject("stop_invalid");
       return false;
+     }
    if(req.type == QM_BUY && req.sl >= entry_price)
+     {
+      Strategy_LogEntryReject("buy_stop_geometry");
       return false;
+     }
    if(req.type == QM_SELL && req.sl <= entry_price)
+     {
+      Strategy_LogEntryReject("sell_stop_geometry");
       return false;
+     }
 
    req.reason =
       (g_signal_direction > 0) ?
@@ -587,7 +663,24 @@ int OnInit()
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               "{\"card\":\"QM5_20205\",\"ea\":\"wti-calmom1\"}");
+               StringFormat("{\"card\":\"QM5_20205\","
+                            "\"ea\":\"wti-calmom1\","
+                            "\"history_years\":%d,"
+                            "\"min_history_years\":%d,"
+                            "\"history_bars\":%d,"
+                            "\"min_abs_return_pct\":%.4f,"
+                            "\"atr_period\":%d,"
+                            "\"atr_sl_mult\":%.4f,"
+                            "\"max_hold_days\":%d,"
+                            "\"max_spread_points\":%d}",
+                            strategy_history_years,
+                            strategy_min_history_years,
+                            strategy_history_bars,
+                            strategy_min_abs_return_pct,
+                            strategy_atr_period,
+                            strategy_atr_sl_mult,
+                            strategy_max_hold_days,
+                            strategy_max_spread_points));
    return INIT_SUCCEEDED;
   }
 
@@ -650,6 +743,16 @@ void OnTick()
    ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
+      QM_LogEvent(QM_INFO,
+                  "ENTRY_SIGNAL_FIRE",
+                  StringFormat("{\"month_key\":%d,"
+                               "\"direction\":%d,"
+                               "\"request_price\":%.8f,"
+                               "\"stop_price\":%.8f}",
+                               g_signal_month_key,
+                               g_signal_direction,
+                               req.price,
+                               req.sl));
       ulong out_ticket = 0;
       QM_TM_OpenPosition(req, out_ticket);
      }
