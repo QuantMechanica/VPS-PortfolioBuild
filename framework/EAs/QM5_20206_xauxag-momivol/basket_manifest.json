@@ -1,0 +1,22 @@
+{
+  "logical_symbol": "QM5_20206_XAU_XAG_MOMIVOL_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX",
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "read_only_factor_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XAU/XAG momentum-idiosyncratic-volatility basket from approved card FUERTES-MOMIVOL-2015_XAU_XAG_S04. Run on XAUUSD.DWX D1 and evaluate the paired package rather than standalone legs. At each genuine broker-month transition, align 64 completed XTI/XNG/XAU/XAG D1 closes, form 63 returns, regress XAU and XAG on their equal-weight factor, and trade only when the higher-momentum metal is also the lower-IVol metal. Reject rank disagreement and excessive post-rounding dollar-notional mismatch. XTI and XNG are read-only factor members. Q02 is a strict two-CFD carrier falsification; no source performance, neutrality, decorrelation, or portfolio admission is claimed."
+  ]
+}
