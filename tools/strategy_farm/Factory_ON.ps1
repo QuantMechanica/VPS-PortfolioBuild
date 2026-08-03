@@ -120,11 +120,11 @@ $publicSnapshotTaskWrapper = 'C:\QM\repo\scripts\run_public_snapshot_task.ps1'
 $publicSnapshotTaskWorkingDirectory = 'C:\QM\repo'
 $canonicalFactoryOnPath = 'C:\QM\repo\tools\strategy_farm\Factory_ON.ps1'
 $canonicalFactoryOnProcessImage = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-$canonicalOwnerDecisionPath = 'C:\QM\repo\docs\ops\evidence\2026-08-02_factory_preparation_owner_decision.json'
-$canonicalOwnerDecisionRelativePath = 'docs/ops/evidence/2026-08-02_factory_preparation_owner_decision.json'
-$QM_OWNER_DECISION_SHA256 = 'c3c7fc0907ae2963d48cf778900023e99875b3130a81f741ba591c21f9ef3fb3'
-$QM_OWNER_DECISION_COMMIT = '8f8b77b06fed799322536fd60c32f259843b8c69'
-$QM_OWNER_DECISION_BLOB = 'ab804df2de1a4662bd7439ac3094ee7c5dcb6494'
+$canonicalOwnerDecisionPath = 'C:\QM\repo\docs\ops\evidence\2026-08-03_factory_preparation_owner_decision.json'
+$canonicalOwnerDecisionRelativePath = 'docs/ops/evidence/2026-08-03_factory_preparation_owner_decision.json'
+$QM_OWNER_DECISION_SHA256 = 'e3e3c4794f4e680080eb8032be13fdd25457485749a9a62d0d1eeb31811c8d34'
+$QM_OWNER_DECISION_COMMIT = '1ec04dc9eff37cabc0582718047a4d3cabe3a1c2'
+$QM_OWNER_DECISION_BLOB = '30b4845d06a0944ef419448bacfa2fb394504b92'
 # The Pump task is scheduler-bounded by PT10M. TaskScheduler start/finish
 # evidence sampled on 2026-07-31 found 13 substantive runs: p50=550.203s,
 # p75=599.982s, and five reached the 600s ceiling. First-attempt success is

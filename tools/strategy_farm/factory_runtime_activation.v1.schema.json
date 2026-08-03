@@ -29,10 +29,10 @@
     "expires_at_utc": { "type": "string", "format": "date-time", "pattern": "Z$" },
     "preparation_decision": {
       "const": {
-        "relative_path": "docs/ops/evidence/2026-08-02_factory_preparation_owner_decision.json",
-        "sha256": "c3c7fc0907ae2963d48cf778900023e99875b3130a81f741ba591c21f9ef3fb3",
-        "git_commit": "8f8b77b06fed799322536fd60c32f259843b8c69",
-        "git_blob": "ab804df2de1a4662bd7439ac3094ee7c5dcb6494"
+        "relative_path": "docs/ops/evidence/2026-08-03_factory_preparation_owner_decision.json",
+        "sha256": "e3e3c4794f4e680080eb8032be13fdd25457485749a9a62d0d1eeb31811c8d34",
+        "git_commit": "1ec04dc9eff37cabc0582718047a4d3cabe3a1c2",
+        "git_blob": "30b4845d06a0944ef419448bacfa2fb394504b92"
       }
     },
     "authorizations": {
