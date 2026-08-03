@@ -15494,3 +15494,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12552,ema-stretch-mr-bounded-grid,4009,NDX.DWX,125524009,2026-08-03,Development,active
 12552,ema-stretch-mr-bounded-grid,4010,WS30.DWX,125524010,2026-08-03,Development,active
 12552,ema-stretch-mr-bounded-grid,4011,GDAXI.DWX,125524011,2026-08-03,Development,active
+20207,usdcad-audusd,0,USDCAD.DWX,202070000,2026-08-03T12:38:03Z,Codex,active
+20207,usdcad-audusd,1,AUDUSD.DWX,202070001,2026-08-03T12:38:03Z,Codex,active
