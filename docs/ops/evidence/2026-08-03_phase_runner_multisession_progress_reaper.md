@@ -4,6 +4,8 @@ Date: 2026-08-03
 Router task: `90f6e5e7-cb67-4227-a951-4ec123ae978f`  
 Canonical runtime branch: `agents/board-advisor`  
 Code commit: `840dcbcd3eddad323092fdebee72e8e701514111`  
+Canonical evidence commit: `acb5de147`  
+Registered `main` publication commit: `4ab55bec8`  
 Verdict: **FIXED; 23 focused tests PASS; both required serial Q07 reruns PASS**
 
 ## Result
