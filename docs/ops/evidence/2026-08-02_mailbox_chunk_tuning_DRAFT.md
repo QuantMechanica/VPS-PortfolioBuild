@@ -107,3 +107,10 @@ python -m py_compile tools/strategy_farm/mailbox_source_intake.py
 ```
 
 Verbatim result: no stdout or stderr; exit code `0`.
+
+## Nachtrag 2026-08-03 (OWNER-Freigabe)
+
+Zweiter Tageslauf eingerichtet: zusaetzlicher 18:00-Trigger am bestehenden Task
+QM_StrategyFarm_MailboxSourceIntake_Daily (Aktion/Principal/Contract unveraendert;
+Manifest pinnt nur Task-Namen). Rueckstand drainiert damit ~35-40 Leads/Tag statt ~17-20.
+Erster 18:00-Lauf: 2026-08-03.
