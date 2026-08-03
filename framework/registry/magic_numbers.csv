@@ -15441,3 +15441,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9645,bandy-stochastic-extreme-mr-index,2,WS30.DWX,96450002,2026-08-02T22:15:46Z,Codex,active
 20204,xng-tsmom1m,0,XNGUSD.DWX,202040000,2026-08-02T22:25:00Z,Codex,active
 20205,wti-calmom1,0,XTIUSD.DWX,202050000,2026-08-02T23:28:51Z,Codex,active
+20206,xauxag-momivol,0,XAUUSD.DWX,202060000,2026-08-03T01:09:19Z,Codex,active
+20206,xauxag-momivol,1,XAGUSD.DWX,202060001,2026-08-03T01:09:19Z,Codex,active
