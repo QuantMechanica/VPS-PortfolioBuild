@@ -43,6 +43,37 @@ cheap weekly limit), so Claude can build the card backlog while Codex rests WITH
 burning the Opus weekly budget. Documented in farmctl.py (`_cl_par`, "programmier du"
 boost pattern, OWNER 2026-06-09).
 
+### Pre-spawn task gate (5x-plan era, 2026-08-03)
+
+The coarse flags above remain the weekly governor's emergency levers. A second,
+fine-grained gate now runs before `agent_router` assigns a Codex/Claude task and
+again before the 15-minute orchestration wrapper launches either CLI:
+
+- implementation: `tools/strategy_farm/quota_spawn_gate.py`
+- policy: `tools/strategy_farm/config/agent_quota_gate.v1.json`
+- input: `D:/QM/reports/state/quota_governor_state.json`
+- cockpit/briefing contract:
+  `D:/QM/reports/state/quota_headroom_summary.json` (single-line JSON)
+
+The policy file owns every quota threshold. Research is the earliest lane to
+pause, EA builds pause next, and ops/review continuity has the widest band.
+Priority `>=70` is the explicit OWNER-priority bypass, but never at hard
+exhaustion. Missing/stale metrics fail open for ops/review and fail closed for
+ordinary research/build work. The governor state carries weekly-used,
+weekly-window-elapsed, and five-hour-used percentages when the provider reports
+the five-hour window.
+
+The gate controls LLM **spawn volume only**. `backtest*` and deterministic task
+classes bypass it before state/config reads. Model depth is independently chosen
+from the OWNER-approved 2026-08-03 matrix in that same JSON policy: Codex uses
+`max` for contracts/fail-closed/runtime-decision/root-cause/adjudication work,
+`high` for ordinary tested code/EA builds/evidence tooling, and `medium` for
+mechanical/report/doc-mirror work. Claude defaults to Sonnet; Opus requires a
+deliberate task-level selection. The router records the chosen invocation profile
+and the wrapper passes it to the CLI. Quota pressure may defer the task, but may
+not lower its selected tier. Binding source:
+`docs/ops/CODEX_BRIEF_2026-08-03_effort_model_matrix.md`.
+
 ## 2. Tester-cache purge (disk) — cadence tightened
 
 - **Script:** `tools/strategy_farm/tester_cache_purge.ps1` (no-op SKIP while D: >= 80GB;

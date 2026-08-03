@@ -30,6 +30,11 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
     import agent_scopes  # type: ignore
 
+try:
+    from tools.strategy_farm import quota_spawn_gate
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    import quota_spawn_gate  # type: ignore
+
 
 DEFAULT_ROOT = farmctl.DEFAULT_ROOT
 CLAUDE_DISABLED_FLAG = Path(r"D:\QM\strategy_farm\CLAUDE_DISABLED.flag")
@@ -588,7 +593,50 @@ def _eligible_agents(conn: sqlite3.Connection, required: set[str], root: Path = 
     return eligible
 
 
-def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG) -> RouteDecision:
+def _quota_gate_decision(
+    root: Path,
+    task: sqlite3.Row,
+    agent_id: str,
+    *,
+    enabled: bool | None,
+    config_path: Path | None,
+    state_path: Path | None,
+    summary_path: Path | None,
+) -> dict[str, Any]:
+    enforce = (Path(root) == Path(DEFAULT_ROOT)) if enabled is None else bool(enabled)
+    if agent_id not in quota_spawn_gate.GATED_AGENTS or not enforce:
+        return {
+            "allowed": True,
+            "agent": agent_id,
+            "reason": "quota_gate_not_applicable",
+            "enforced": False,
+        }
+    try:
+        task_payload = json.loads(task["payload_json"] or "{}")
+    except (TypeError, json.JSONDecodeError):
+        task_payload = {}
+    decision = quota_spawn_gate.evaluate_spawn(
+        agent_id,
+        str(task["task_type"]),
+        int(task["priority"]),
+        config_path=config_path,
+        state_path=state_path,
+        summary_path=summary_path,
+        payload=task_payload,
+    )
+    decision["enforced"] = True
+    return decision
+
+
+def route_once(
+    root: Path = DEFAULT_ROOT,
+    *,
+    claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG,
+    quota_gate_enabled: bool | None = None,
+    quota_config_path: Path | None = None,
+    quota_state_path: Path | None = None,
+    quota_summary_path: Path | None = None,
+) -> RouteDecision:
     sync_default_registry(root, claude_disabled_flag=claude_disabled_flag)
     release_stale_in_progress(root)
     now_dt = dt.datetime.now(dt.UTC).replace(microsecond=0)
@@ -600,7 +648,6 @@ def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE
             SELECT * FROM agent_tasks
             WHERE state IN ('BACKLOG', 'TODO')
             ORDER BY priority DESC, updated_at ASC, created_at ASC
-            LIMIT 25
             """
         ).fetchall()
         if not tasks:
@@ -608,7 +655,8 @@ def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE
             return RouteDecision("", "", None, "no_routable_task")
         declared_caps = _declared_registry_capabilities(conn)
         skipped: list[str] = []
-        selected: tuple[sqlite3.Row, sqlite3.Row, set[str]] | None = None
+        selected: tuple[sqlite3.Row, sqlite3.Row, set[str], dict[str, Any]] | None = None
+        quota_blocked: list[dict[str, Any]] = []
         for task in tasks:
             required = set(json.loads(task["required_capabilities_json"] or "[]"))
             # required_skills gate routing too — but only skills some agent
@@ -625,19 +673,48 @@ def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE
             if not agents:
                 skipped.append(task["id"])
                 continue
-            if not _acquire_task_lease(conn, task["id"], agents[0]["agent_id"], now_dt):
+            chosen_agent: sqlite3.Row | None = None
+            chosen_gate: dict[str, Any] | None = None
+            for agent in agents:
+                gate = _quota_gate_decision(
+                    root,
+                    task,
+                    str(agent["agent_id"]),
+                    enabled=quota_gate_enabled,
+                    config_path=quota_config_path,
+                    state_path=quota_state_path,
+                    summary_path=quota_summary_path,
+                )
+                if gate.get("allowed"):
+                    chosen_agent = agent
+                    chosen_gate = gate
+                    break
+                quota_blocked.append({"task_id": task["id"], **gate})
+                _record_lease_event(
+                    conn,
+                    task["id"],
+                    "quota_gate_blocked",
+                    {key: value for key, value in gate.items() if key != "metrics"},
+                )
+            if chosen_agent is None or chosen_gate is None:
                 skipped.append(task["id"])
                 continue
-            selected = (task, agents[0], required)
+            if not _acquire_task_lease(conn, task["id"], chosen_agent["agent_id"], now_dt):
+                skipped.append(task["id"])
+                continue
+            selected = (task, chosen_agent, required, chosen_gate)
             break
         if selected is None:
             conn.commit()
             first = tasks[0]
-            return RouteDecision(first["id"], first["task_type"], None, "no_available_agent")
-        task, agent, required = selected
+            reason = "quota_gate_blocked" if quota_blocked else "no_available_agent"
+            return RouteDecision(first["id"], first["task_type"], None, reason)
+        task, agent, required, gate = selected
         payload = json.loads(task["payload_json"] or "{}")
         payload["routed_at"] = now
         payload["required_capabilities"] = sorted(required)
+        if gate.get("enforced"):
+            payload["quota_gate"] = gate
         if skipped:
             payload["router_skipped_blocked_task_count"] = len(skipped)
         conn.execute(
@@ -657,6 +734,10 @@ def route_many(
     *,
     max_routes: int = 5,
     claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG,
+    quota_gate_enabled: bool | None = None,
+    quota_config_path: Path | None = None,
+    quota_state_path: Path | None = None,
+    quota_summary_path: Path | None = None,
 ) -> list[dict[str, Any]]:
     """Route up to `max_routes` waiting tickets.
 
@@ -666,7 +747,14 @@ def route_many(
     """
     decisions: list[dict[str, Any]] = []
     for _ in range(max(0, max_routes)):
-        decision = route_once(root, claude_disabled_flag=claude_disabled_flag)
+        decision = route_once(
+            root,
+            claude_disabled_flag=claude_disabled_flag,
+            quota_gate_enabled=quota_gate_enabled,
+            quota_config_path=quota_config_path,
+            quota_state_path=quota_state_path,
+            quota_summary_path=quota_summary_path,
+        )
         decisions.append(decision.__dict__)
         if decision.reason != "assigned":
             break
@@ -920,7 +1008,11 @@ def status(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE_DIS
                 """
             ).fetchall()
         ]
-    return {"agents": agents, "tasks": tasks}
+    return {
+        "agents": agents,
+        "tasks": tasks,
+        "quota_headroom": quota_spawn_gate.read_headroom_summary(),
+    }
 
 
 def list_tasks(root: Path = DEFAULT_ROOT, agent_id: str | None = None, state: str | None = None) -> list[dict[str, Any]]:

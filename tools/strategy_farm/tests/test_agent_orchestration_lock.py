@@ -91,3 +91,52 @@ def test_pythonw_excepthook_persists_uncaught_traceback(tmp_path, monkeypatch) -
     text = crash_log.read_text(encoding="utf-8")
     assert "uncaught top-level exception" in text
     assert "RuntimeError: orchestration-hook-probe" in text
+
+
+def test_quota_gate_blocks_before_any_codex_slot_spawn(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(orchestration, "FARM_ROOT", tmp_path)
+    monkeypatch.setattr(orchestration, "CLAUDE_DISABLED_FLAG", tmp_path / "claude.disabled")
+    monkeypatch.setattr(orchestration, "_write_lane_heartbeat", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        orchestration,
+        "_agent_tasks_work_available",
+        lambda _agent: {"any_work": True},
+    )
+    monkeypatch.setattr(
+        orchestration,
+        "_quota_lane_check",
+        lambda _agent: {"allowed": False, "reason": "all_candidate_tasks_quota_blocked"},
+    )
+
+    def fail_if_spawned(*_args, **_kwargs):
+        raise AssertionError("run_agent_slot must not be called when quota gate denies")
+
+    monkeypatch.setattr(orchestration, "run_agent_slot", fail_if_spawned)
+    result = orchestration.run_agent(
+        "codex",
+        dry_run=False,
+        stale_minutes=250,
+        timeout_minutes=225,
+        max_sessions=1,
+    )
+    assert result["skipped"] is True
+    assert result["reason"] == "quota_gate_blocked"
+
+
+def test_headless_model_contract_applies_selected_matrix_tier(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(orchestration, "resolve_cli", lambda agent: f"{agent}.cmd")
+    monkeypatch.setattr(orchestration, "_CODEX_MODEL_ENV_OVERRIDE", "")
+    monkeypatch.setattr(orchestration, "_CLAUDE_MODEL_ENV_OVERRIDE", "")
+    selected = orchestration.quota_spawn_gate.invocation_profile(
+        "codex",
+        "ops_issue",
+        {"acceptance": "change fail-closed quota gate decision-bound logic"},
+    )
+
+    codex = orchestration.command_for("codex", tmp_path, model_contract=selected)
+    claude = orchestration.command_for("claude", tmp_path)
+
+    assert 'model_reasoning_effort="max"' in codex
+    assert codex[codex.index("-m") + 1] == "gpt-5.6-sol"
+    assert claude[claude.index("--model") + 1] == "sonnet"
+    assert orchestration.headless_model_contract("codex", selected)["reasoning_effort"] == "max"

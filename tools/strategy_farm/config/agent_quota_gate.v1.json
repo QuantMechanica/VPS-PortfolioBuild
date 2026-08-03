@@ -1,0 +1,133 @@
+{
+  "schema": "qm.agent_quota_gate.v1",
+  "policy_context": {
+    "codex_5x_effective": "2026-08-08",
+    "claude_5x_effective": "2026-08-15",
+    "owner_decision_date": "2026-08-03"
+  },
+  "state_max_age_minutes": 30,
+  "owner_priority_min": 70,
+  "hard_exhaustion": {
+    "weekly_used_pct": 98,
+    "five_hour_used_pct": 95
+  },
+  "model_matrix": {
+    "codex": {
+      "model": "gpt-5.6-sol",
+      "default_reasoning_effort": "high",
+      "allowed_reasoning_efforts": [
+        "medium",
+        "high",
+        "max"
+      ],
+      "explicit_payload_field": "codex_reasoning_effort",
+      "max": {
+        "description": "contracts / fail-closed logic, ANY change to runtime-decision-bound files, root-cause forensics, adjudications",
+        "task_types": [
+          "review_ea",
+          "review_strategy",
+          "card_review",
+          "triage_failure"
+        ],
+        "payload_boolean_fields": [
+          "runtime_decision_bound",
+          "fail_closed_logic",
+          "root_cause_forensics",
+          "adjudication"
+        ],
+        "payload_markers": [
+          "contract",
+          "fail-closed",
+          "fail_closed",
+          "decision-bound",
+          "decision_bound",
+          "root-cause",
+          "root cause",
+          "adjudication",
+          "quota gate",
+          "quota_gate"
+        ]
+      },
+      "high": {
+        "description": "ordinary code with tests, EA builds (guardrails + compiler catch defects), evidence tooling"
+      },
+      "medium": {
+        "description": "mechanical edits, census/report scripts, doc mirroring",
+        "payload_boolean_fields": [
+          "mechanical_only",
+          "doc_mirroring"
+        ],
+        "payload_markers": [
+          "mechanical edit",
+          "census",
+          "report script",
+          "doc mirror",
+          "documentation mirror"
+        ]
+      }
+    },
+    "claude": {
+      "default_model": "sonnet",
+      "allowed_models": [
+        "sonnet",
+        "opus"
+      ],
+      "explicit_payload_field": "claude_headless_model",
+      "sonnet": {
+        "description": "build lane, templated/spec-driven work, small fully-specified tasks"
+      },
+      "opus": {
+        "description": "genuine weighing headless: strategy critique, synthesis, gate-design prework; deliberate per-task choice, never a default"
+      }
+    }
+  },
+  "never_gate_task_types": [
+    "backtest",
+    "deterministic",
+    "pipeline_deterministic"
+  ],
+  "never_gate_task_type_prefixes": [
+    "backtest_",
+    "deterministic_"
+  ],
+  "task_classes": {
+    "research": {
+      "task_types": [
+        "research_strategy",
+        "agent_learn"
+      ],
+      "max_weekly_used_pct": 65,
+      "max_pace_ahead_points": -5,
+      "max_five_hour_used_pct": 50,
+      "allow_on_pace_surplus": false,
+      "missing_or_stale_state": "deny"
+    },
+    "build": {
+      "task_types": [
+        "build_ea"
+      ],
+      "max_weekly_used_pct": 78,
+      "max_pace_ahead_points": 0,
+      "max_five_hour_used_pct": 65,
+      "allow_on_pace_surplus": false,
+      "missing_or_stale_state": "deny"
+    },
+    "ops_review": {
+      "task_types": [
+        "ops_issue",
+        "review_ea",
+        "review_strategy",
+        "card_review",
+        "triage_failure",
+        "q02_infra_repair",
+        "q08_infra_repair"
+      ],
+      "max_weekly_used_pct": 95,
+      "max_pace_ahead_points": 15,
+      "max_five_hour_used_pct": 90,
+      "allow_on_pace_surplus": true,
+      "missing_or_stale_state": "allow"
+    }
+  },
+  "default_task_class": "build"
+}

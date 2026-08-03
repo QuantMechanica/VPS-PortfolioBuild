@@ -65,6 +65,11 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm.process_identity import get_process_identity
 
+try:
+    import quota_spawn_gate
+except ModuleNotFoundError:
+    from tools.strategy_farm import quota_spawn_gate
+
 
 REPO_ROOT = Path(r"C:\QM\repo")
 WORKTREE_ROOT = Path(os.environ.get("QM_AGENT_WORKTREE_ROOT", r"C:\QM\worktrees"))
@@ -102,9 +107,21 @@ CLAUDE_BUDGET_POLICY = FARM_ROOT / "CLAUDE_BUDGET_POLICY.json"
 # Interactive sessions (e.g. the senior agent) are unaffected — they ignore
 # these vars. Empty string => omit the flag (use the CLI/account default).
 #   $env:QM_CLAUDE_HEADLESS_MODEL = 'opus'   # bump a cycle back to Opus
-#   $env:QM_CODEX_HEADLESS_MODEL  = 'gpt-5-codex'  # cheaper Codex tier
-CLAUDE_HEADLESS_MODEL = os.environ.get("QM_CLAUDE_HEADLESS_MODEL", "sonnet").strip()
-CODEX_HEADLESS_MODEL = os.environ.get("QM_CODEX_HEADLESS_MODEL", "").strip()
+#   $env:QM_CODEX_HEADLESS_MODEL  = 'gpt-5-codex'  # explicit model override
+# OWNER-approved 2026-08-03 5x-plan matrix: task class sets Codex effort
+# (max/high/medium), Claude remains Sonnet unless a task deliberately selects
+# Opus, and quota pressure may defer volume but never lower the selected tier.
+_DEFAULT_CODEX_INVOCATION = quota_spawn_gate.invocation_profile("codex", "build_ea") or {}
+_DEFAULT_CLAUDE_INVOCATION = quota_spawn_gate.invocation_profile("claude", "build_ea") or {}
+_CODEX_MODEL_ENV_OVERRIDE = os.environ.get("QM_CODEX_HEADLESS_MODEL", "").strip()
+_CLAUDE_MODEL_ENV_OVERRIDE = os.environ.get("QM_CLAUDE_HEADLESS_MODEL", "").strip()
+CLAUDE_HEADLESS_MODEL = _CLAUDE_MODEL_ENV_OVERRIDE or str(
+    _DEFAULT_CLAUDE_INVOCATION.get("model") or "sonnet"
+)
+CODEX_HEADLESS_MODEL = _CODEX_MODEL_ENV_OVERRIDE or str(
+    _DEFAULT_CODEX_INVOCATION.get("model") or ""
+)
+CODEX_HEADLESS_EFFORT = str(_DEFAULT_CODEX_INVOCATION.get("reasoning_effort") or "high")
 GEMINI_HEADLESS_MODEL = os.environ.get("QM_GEMINI_HEADLESS_MODEL", "").strip()
 
 
@@ -345,14 +362,24 @@ def release_lock(lock_info: dict[str, Any]) -> None:
         pass
 
 
-def command_for(agent: str, cwd: Path, prompt_path: Path | None = None) -> list[str]:
+def command_for(
+    agent: str,
+    cwd: Path,
+    prompt_path: Path | None = None,
+    model_contract: dict[str, Any] | None = None,
+) -> list[str]:
     cli = resolve_cli(agent)
     if agent == "codex":
-        model_args = ["-m", CODEX_HEADLESS_MODEL] if CODEX_HEADLESS_MODEL else []
+        contract = headless_model_contract(agent, model_contract)
+        model = str(contract.get("model") or "")
+        effort = str(contract.get("reasoning_effort") or CODEX_HEADLESS_EFFORT)
+        model_args = ["-m", model] if model else []
         return [
             cli,
             "exec",
             *model_args,
+            "-c",
+            f'model_reasoning_effort="{effort}"',
             "--dangerously-bypass-approvals-and-sandbox",
             "--cd",
             str(cwd),
@@ -399,7 +426,9 @@ def command_for(agent: str, cwd: Path, prompt_path: Path | None = None) -> list[
             pointer,
         ]
     if agent == "claude":
-        model_args = ["--model", CLAUDE_HEADLESS_MODEL] if CLAUDE_HEADLESS_MODEL else []
+        contract = headless_model_contract(agent, model_contract)
+        model = str(contract.get("model") or "")
+        model_args = ["--model", model] if model else []
         return [
             cli,
             "-p",
@@ -409,6 +438,26 @@ def command_for(agent: str, cwd: Path, prompt_path: Path | None = None) -> list[
             str(cwd),
         ]
     raise ValueError(f"unsupported agent: {agent}")
+
+
+def headless_model_contract(
+    agent: str,
+    selected: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Observable enforcement point: quota pacing changes volume, not depth."""
+    if agent == "codex":
+        contract = dict(selected or _DEFAULT_CODEX_INVOCATION)
+        if _CODEX_MODEL_ENV_OVERRIDE:
+            contract["model"] = _CODEX_MODEL_ENV_OVERRIDE
+            contract["model_override_source"] = "QM_CODEX_HEADLESS_MODEL"
+        return contract
+    if agent == "claude":
+        contract = dict(selected or _DEFAULT_CLAUDE_INVOCATION)
+        if _CLAUDE_MODEL_ENV_OVERRIDE:
+            contract["model"] = _CLAUDE_MODEL_ENV_OVERRIDE
+            contract["model_override_source"] = "QM_CLAUDE_HEADLESS_MODEL"
+        return contract
+    return {"model": GEMINI_HEADLESS_MODEL or None, "reasoning_effort": None}
 
 
 def worktree_path(agent: str, slot: int) -> Path:
@@ -525,7 +574,14 @@ def ensure_worktree(agent: str, slot: int) -> dict[str, Any]:
     }
 
 
-def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, timeout_minutes: int) -> dict[str, Any]:
+def run_agent_slot(
+    agent: str,
+    slot: int,
+    dry_run: bool,
+    stale_minutes: int,
+    timeout_minutes: int,
+    invocation_profile: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     stamp = utc_stamp()
     if agent == "gemini":
@@ -576,10 +632,12 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
     # BEFORE the empty-spawn guards — see _write_lane_heartbeat).
     _write_lane_heartbeat(agent, slot=slot)
 
-    cmd = command_for(agent, cwd, prompt_path)
+    model_contract = headless_model_contract(agent, invocation_profile)
+    cmd = command_for(agent, cwd, prompt_path, model_contract)
     payload: dict[str, Any] = {
         "agent": agent,
         "execution_backend": "agy" if agent == "gemini" else agent,
+        "model_contract": model_contract,
         "slot": slot,
         "dry_run": dry_run,
         "prompt_path": str(prompt_path),
@@ -874,6 +932,133 @@ def _agent_tasks_work_available(agent: str) -> dict[str, Any]:
         return {"any_work": True, "reason": f"work_check_error:{exc!r}"}
 
 
+def _quota_lane_candidates(agent: str) -> tuple[list[dict[str, Any]], str]:
+    """Return assigned or capability-compatible unrouted work for one lane."""
+    import sqlite3 as _sqlite3
+
+    db = FARM_ROOT / "state" / "farm_state.sqlite"
+    if not db.exists():
+        return [], "db_missing"
+    try:
+        con = _sqlite3.connect(db)
+        con.row_factory = _sqlite3.Row
+        registry = con.execute(
+            "SELECT capabilities_json FROM agent_registry WHERE agent_id=?",
+            (agent,),
+        ).fetchone()
+        capabilities = None
+        if registry is not None:
+            capabilities = set(json.loads(registry["capabilities_json"] or "[]"))
+        rows = con.execute(
+            """
+            SELECT id, task_type, priority, assigned_agent, required_capabilities_json, payload_json
+            FROM agent_tasks
+            WHERE (assigned_agent=? AND state IN ('TODO','IN_PROGRESS'))
+               OR (state IN ('BACKLOG','TODO') AND (assigned_agent IS NULL OR assigned_agent=''))
+            ORDER BY priority DESC, updated_at ASC
+            LIMIT 100
+            """,
+            (agent,),
+        ).fetchall()
+        con.close()
+        candidates: list[dict[str, Any]] = []
+        for row in rows:
+            required = set(json.loads(row["required_capabilities_json"] or "[]"))
+            assigned = str(row["assigned_agent"] or "")
+            if not assigned and capabilities is not None and not required.issubset(capabilities):
+                continue
+            candidates.append(
+                {
+                    "task_id": row["id"],
+                    "task_type": row["task_type"],
+                    "priority": int(row["priority"]),
+                    "assigned": bool(assigned),
+                    "payload": json.loads(row["payload_json"] or "{}"),
+                }
+            )
+        return candidates, "ok"
+    except Exception as exc:
+        return [], f"db_error:{exc!r}"
+
+
+def _quota_lane_check(
+    agent: str,
+    *,
+    config_path: Path | None = None,
+    state_path: Path | None = None,
+    summary_path: Path | None = None,
+) -> dict[str, Any]:
+    """Gate a 15-minute lane before any Codex/Claude CLI process is spawned."""
+    if agent not in quota_spawn_gate.GATED_AGENTS:
+        return {"allowed": True, "reason": "agent_not_quota_gated", "allowed_task_count": 1}
+
+    candidates, candidate_status = _quota_lane_candidates(agent)
+    if candidate_status != "ok":
+        # DB visibility is an operations incident. Preserve the explicit
+        # ops/review fail-open contract while still recording a gate decision.
+        decision = quota_spawn_gate.evaluate_spawn(
+            agent,
+            "ops_issue",
+            70,
+            config_path=config_path,
+            state_path=state_path,
+            summary_path=summary_path,
+        )
+        return {
+            "allowed": bool(decision.get("allowed")),
+            "reason": "lane_db_unavailable_ops_continuity",
+            "candidate_status": candidate_status,
+            "allowed_task_count": 1 if decision.get("allowed") else 0,
+            "selected_decision": decision,
+        }
+    if not candidates:
+        return {
+            "allowed": False,
+            "reason": "no_quota_eligible_agent_tasks",
+            "candidate_status": candidate_status,
+            "allowed_task_count": 0,
+        }
+
+    allowed: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    denied: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    for candidate in candidates:
+        decision = quota_spawn_gate.evaluate_spawn(
+            agent,
+            str(candidate["task_type"]),
+            int(candidate["priority"]),
+            config_path=config_path,
+            state_path=state_path,
+            summary_path=summary_path,
+            payload=dict(candidate.get("payload") or {}),
+            write_summary=False,
+        )
+        (allowed if decision.get("allowed") else denied).append((candidate, decision))
+
+    selected_pair = allowed[0] if allowed else denied[0]
+    quota_spawn_gate.record_gate_decision(
+        selected_pair[1],
+        state_path=state_path,
+        summary_path=summary_path,
+    )
+    return {
+        "allowed": bool(allowed),
+        "reason": "quota_eligible_work_available" if allowed else "all_candidate_tasks_quota_blocked",
+        "candidate_status": candidate_status,
+        "candidate_count": len(candidates),
+        "allowed_task_count": len(allowed),
+        "blocked_task_count": len(denied),
+        "selected_task": {
+            key: value for key, value in selected_pair[0].items() if key != "payload"
+        },
+        "selected_decision": selected_pair[1],
+        "allowed_invocations": [
+            decision.get("invocation")
+            for _candidate, decision in allowed
+            if decision.get("invocation")
+        ],
+    }
+
+
 def _write_lane_heartbeat(agent: str, slot: int = 0) -> None:
     """Lane heartbeat = 'this lane's scheduled infrastructure is alive', NOT
     'this lane is busy'. The router skips lanes whose heartbeat is older than
@@ -938,15 +1123,54 @@ def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: in
                 "reason": "no_actionable_work",
                 "work_available_check": wa,
             }
+    quota_check: dict[str, Any] | None = None
+    if agent in quota_spawn_gate.GATED_AGENTS and not dry_run:
+        quota_check = _quota_lane_check(agent)
+        if not quota_check.get("allowed"):
+            return {
+                "agent": agent,
+                "ok": True,
+                "skipped": True,
+                "reason": "quota_gate_blocked",
+                "quota_gate_check": quota_check,
+            }
+        max_sessions = min(
+            max_sessions,
+            max(1, int(quota_check.get("allowed_task_count") or 1)),
+        )
     session_count = max(1, max_sessions)
     if agent != "claude":
         session_count = 1
+    slot_invocations = list((quota_check or {}).get("allowed_invocations") or [])
+
+    def slot_invocation(slot_index: int) -> dict[str, Any] | None:
+        if not slot_invocations:
+            return None
+        return dict(slot_invocations[min(slot_index, len(slot_invocations) - 1)] or {})
+
     if session_count == 1:
-        results = [run_agent_slot(agent, 1, dry_run, stale_minutes, timeout_minutes)]
+        results = [
+            run_agent_slot(
+                agent,
+                1,
+                dry_run,
+                stale_minutes,
+                timeout_minutes,
+                slot_invocation(0),
+            )
+        ]
     else:
         with ThreadPoolExecutor(max_workers=session_count) as executor:
             futures = [
-                executor.submit(run_agent_slot, agent, slot, dry_run, stale_minutes, timeout_minutes)
+                executor.submit(
+                    run_agent_slot,
+                    agent,
+                    slot,
+                    dry_run,
+                    stale_minutes,
+                    timeout_minutes,
+                    slot_invocation(slot - 1),
+                )
                 for slot in range(1, session_count + 1)
             ]
             results = [future.result() for future in futures]
@@ -956,6 +1180,7 @@ def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: in
         "ok": ok,
         "returncode": 0 if ok else 1,
         "max_sessions": session_count,
+        "quota_gate_check": quota_check,
         "results": results,
     }
 

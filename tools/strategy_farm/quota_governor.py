@@ -39,6 +39,11 @@ import datetime as dt
 import json
 from pathlib import Path
 
+try:
+    from tools.strategy_farm import quota_spawn_gate
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    import quota_spawn_gate  # type: ignore
+
 ROOT = Path(r"D:/QM/strategy_farm")
 SNAPSHOT = ROOT / "state" / "quota_snapshot.json"
 STATE = Path(r"D:/QM/reports/state/quota_governor_state.json")
@@ -118,7 +123,7 @@ def _codex_weekly_window(rl: dict) -> dict:
 
 
 def _agent_metrics(snap: dict, agent: str) -> dict | None:
-    """Return {used_pct, elapsed_pct, diff, projected, week_reset} or None."""
+    """Return weekly pace plus the five-hour utilization when reported."""
     node = (snap.get(agent) or {}).get("data") or {}
     structured = node.get("structured") or {}
     raw = node.get("raw") or {}
@@ -129,6 +134,13 @@ def _agent_metrics(snap: dict, agent: str) -> dict | None:
     if used is None:
         return None
     used = float(used)
+    five_hour_raw = structured.get("hour_pct")
+    if five_hour_raw is None:
+        five_hour_raw = node.get("hour_pct")
+    try:
+        five_hour_used_pct = None if five_hour_raw is None else float(five_hour_raw)
+    except (TypeError, ValueError):
+        five_hour_used_pct = None
 
     # precise weekly reset time: prefer raw epoch/iso, fall back to structured string
     reset_dt: dt.datetime | None = None
@@ -162,6 +174,7 @@ def _agent_metrics(snap: dict, agent: str) -> dict | None:
         "diff": round(diff, 1),
         "projected_eow_pct": round(projected, 0),
         "week_reset": reset_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "five_hour_used_pct": five_hour_used_pct,
     }
 
 
@@ -298,6 +311,10 @@ def main() -> int:
             STATE.write_text(json.dumps(out, indent=2), encoding="utf-8")
         except Exception as e:
             _log(f"state write failed: {e}")
+        try:
+            quota_spawn_gate.write_headroom_summary(out, None)
+        except Exception as e:
+            _log(f"headroom summary write failed: {e}")
     return 0
 
 
