@@ -3,7 +3,7 @@
 ; ea_id:        11422
 ; ea_slug:      williams-18ma-outside-bar-entry-d1
 ; ea_version:   v5.0
-; set_version:  s20260724-stress-med
+; set_version:  s20260803-stress-med
 ; symbol:       USDCAD.DWX
 ; timeframe:    D1
 ; environment:  q05_stress_medium
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   3c2a199e64147a254708f26f609c759b5a777ce372dcba16f20e781b2284db9d
 ; author:       Development
-; date:         2026-07-24
+; date:         2026-08-03
 ;==========================================================
 qm_ea_id=11422
 qm_magic_slot_offset=4
