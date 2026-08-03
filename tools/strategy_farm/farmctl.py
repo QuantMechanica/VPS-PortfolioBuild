@@ -343,6 +343,11 @@ _MT5_PROGRESS_RE = re.compile(
     r"\b(?P<time>\d{2}:\d{2}:\d{2}(?:\.\d+)?)\s+AutoTesting\s+processing\s+(?P<pct>\d{1,3})\s*%",
     re.IGNORECASE,
 )
+_MT5_LOG_TIME_RE = re.compile(r"\b(?P<time>\d{2}:\d{2}:\d{2}(?:\.\d+)?)\b")
+_PHASE_RUNNER_REPORT_DIR_RE = re.compile(r"^\d{8}_\d{6}$")
+_PHASE_RUNNER_PROGRESS_ARTIFACTS = frozenset(
+    {"tester.ini", "report.htm", "summary.json", "aggregate.json"}
+)
 # Baskets pay a one-time N-symbol cold tick-sync (a 28-symbol basket like T-WIN
 # needs ~3-5h just to sync member ticks over the full window) that single-symbol
 # EAs never incur, so the 45-min Q02 budget starved them into INFRA_FAIL. This is
@@ -6524,6 +6529,9 @@ def _terminal_progress_evidence(
         return {"determined": False, "reason": "terminal_log_missing"}
 
     marker_found = False
+    marker_count = 0
+    latest_marker_at: dt.datetime | None = None
+    latest_marker_path: Path | None = None
     latest_pct = 0
     latest_at = claimed_at
     source_path: Path | None = None
@@ -6538,6 +6546,25 @@ def _terminal_progress_evidence(
             continue
         marker_found = True
         source_path = path
+        for marker_index in marker_indexes:
+            marker_match = _MT5_LOG_TIME_RE.search(lines[marker_index])
+            if not marker_match:
+                continue
+            try:
+                marker_clock = dt.time.fromisoformat(marker_match.group("time"))
+                marker_local = dt.datetime.combine(
+                    dt.datetime.strptime(path.stem, "%Y%m%d").date(),
+                    marker_clock,
+                ).astimezone()
+                marker_stamp = marker_local.astimezone(dt.UTC)
+            except ValueError:
+                continue
+            if marker_stamp < claimed_at:
+                continue
+            marker_count += 1
+            if latest_marker_at is None or marker_stamp > latest_marker_at:
+                latest_marker_at = marker_stamp
+                latest_marker_path = path
         for line in lines[marker_indexes[-1] + 1:]:
             match = _MT5_PROGRESS_RE.search(line)
             if not match:
@@ -6566,7 +6593,154 @@ def _terminal_progress_evidence(
         "progress_at": latest_at.replace(microsecond=0).isoformat(),
         "stalled_min": round(max(0.0, (now_dt - latest_at).total_seconds() / 60.0), 2),
         "log_path": str(source_path) if source_path else None,
+        # Additive evidence only.  Single-session reaper decisions continue to
+        # use progress_at/stalled_min above; phase runners aggregate these
+        # work-item-bound session launches in _phase_runner_progress_evidence.
+        "session_marker_count": marker_count,
+        "latest_session_at": (
+            latest_marker_at.replace(microsecond=0).isoformat()
+            if latest_marker_at is not None
+            else None
+        ),
+        "latest_session_log_path": (
+            str(latest_marker_path) if latest_marker_path is not None else None
+        ),
     }
+
+
+def _phase_runner_report_progress(
+    report_root: Path | None,
+    claimed_at: dt.datetime,
+    *,
+    now_dt: dt.datetime,
+) -> dict[str, Any]:
+    """Return bounded artifact-growth evidence for a multi-session runner.
+
+    Phase runners create a timestamped report directory for every tester
+    session.  Q07, for example, creates five successive seed directories, and
+    its short sessions can finish before MT5 emits a periodic percentage line.
+    Only canonical tester/evidence artifacts and timestamped run directories
+    count here; arbitrary growing logs do not keep a genuinely hung runner
+    alive.
+    """
+    if report_root is None:
+        return {"determined": False, "reason": "phase_runner_report_root_missing"}
+    try:
+        if not report_root.is_dir():
+            return {"determined": False, "reason": "phase_runner_report_root_missing"}
+    except OSError:
+        return {"determined": False, "reason": "phase_runner_report_root_unreadable"}
+
+    latest_at: dt.datetime | None = None
+    latest_path: Path | None = None
+    artifact_count = 0
+    session_dir_count = 0
+    future_tolerance = now_dt + dt.timedelta(minutes=1)
+    try:
+        paths = report_root.rglob("*")
+        for path in paths:
+            try:
+                is_session_dir = (
+                    path.is_dir()
+                    and bool(_PHASE_RUNNER_REPORT_DIR_RE.fullmatch(path.name))
+                )
+                is_artifact = (
+                    path.is_file()
+                    and path.name.casefold() in _PHASE_RUNNER_PROGRESS_ARTIFACTS
+                )
+                if not is_session_dir and not is_artifact:
+                    continue
+                observed_at = dt.datetime.fromtimestamp(path.stat().st_mtime, dt.UTC)
+            except OSError:
+                continue
+            if observed_at < claimed_at or observed_at > future_tolerance:
+                continue
+            artifact_count += 1
+            if is_session_dir:
+                session_dir_count += 1
+            if latest_at is None or observed_at > latest_at:
+                latest_at = observed_at
+                latest_path = path
+    except OSError:
+        return {"determined": False, "reason": "phase_runner_report_root_unreadable"}
+
+    if latest_at is None:
+        return {
+            "determined": False,
+            "reason": "phase_runner_report_artifacts_missing",
+            "report_root": str(report_root),
+        }
+    return {
+        "determined": True,
+        "reason": "phase_runner_report_growth",
+        "progress_at": latest_at.replace(microsecond=0).isoformat(),
+        "stalled_min": round(max(0.0, (now_dt - latest_at).total_seconds() / 60.0), 2),
+        "report_root": str(report_root),
+        "latest_artifact_path": str(latest_path) if latest_path is not None else None,
+        "artifact_count": artifact_count,
+        "session_dir_count": session_dir_count,
+    }
+
+
+def _phase_runner_progress_evidence(
+    terminal_progress: dict[str, Any],
+    claimed_at: dt.datetime,
+    *,
+    report_root: Path | None,
+    now_dt: dt.datetime,
+) -> dict[str, Any]:
+    """Aggregate successive tester sessions for REAL_PHASE_RUNNER_PHASES only."""
+    report_progress = _phase_runner_report_progress(
+        report_root,
+        claimed_at,
+        now_dt=now_dt,
+    )
+    observations: list[tuple[dt.datetime, str]] = []
+
+    if terminal_progress.get("determined"):
+        progress_at = _parse_utc_datetime(terminal_progress.get("progress_at"))
+        if progress_at is not None:
+            observations.append((progress_at, "mt5_percentage"))
+        latest_session_at = _parse_utc_datetime(
+            terminal_progress.get("latest_session_at")
+        )
+        if latest_session_at is not None:
+            observations.append((latest_session_at, "mt5_session_launch"))
+    if report_progress.get("determined"):
+        artifact_at = _parse_utc_datetime(report_progress.get("progress_at"))
+        if artifact_at is not None:
+            observations.append((artifact_at, "report_artifact"))
+
+    if not observations:
+        combined = dict(terminal_progress)
+        combined.update({
+            "determined": True,
+            "reason": "phase_runner_no_activity_since_claim",
+            "progress_contract": "phase_runner_multisession_v1",
+            "phase_runner_aggregate": True,
+            "activity_source": "work_item_claim",
+            "progress_at": claimed_at.replace(microsecond=0).isoformat(),
+            "stalled_min": round(
+                max(0.0, (now_dt - claimed_at).total_seconds() / 60.0),
+                2,
+            ),
+            "report_progress": report_progress,
+        })
+        return combined
+
+    latest_at, activity_source = max(observations, key=lambda item: item[0])
+    combined = dict(terminal_progress)
+    combined.update({
+        "determined": True,
+        "reason": "phase_runner_aggregate_progress",
+        "progress_contract": "phase_runner_multisession_v1",
+        "phase_runner_aggregate": True,
+        "activity_source": activity_source,
+        "progress_at": latest_at.replace(microsecond=0).isoformat(),
+        "stalled_min": round(max(0.0, (now_dt - latest_at).total_seconds() / 60.0), 2),
+        "report_progress": report_progress,
+    })
+    return combined
 
 
 def _detect_active_age_timeout(
@@ -6611,6 +6785,19 @@ def _detect_active_age_timeout(
             now_dt=now_dt,
             mt5_root=mt5_root,
         )
+        if phase in REAL_PHASE_RUNNER_PHASES:
+            raw_report_root = payload.get("report_root")
+            report_root = (
+                Path(str(raw_report_root))
+                if raw_report_root
+                else Path(r"D:\QM\reports\work_items") / str(r["id"])
+            )
+            progress = _phase_runner_progress_evidence(
+                progress,
+                updated,
+                report_root=report_root,
+                now_dt=now_dt,
+            )
         progress_stalled = (
             bool(progress.get("determined"))
             and float(progress.get("stalled_min") or 0) >= ACTIVE_PROGRESS_STALL_MIN
