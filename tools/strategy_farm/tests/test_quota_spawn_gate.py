@@ -180,6 +180,93 @@ def test_owner_model_matrix_selects_max_high_medium_and_deliberate_opus() -> Non
     assert claude_opus is not None and claude_opus["model"] == "opus"
 
 
+def test_recycle_escalates_exactly_one_tier_and_records_headroom(tmp_path: Path) -> None:
+    now = dt.datetime(2026, 8, 3, 12, 0, tzinfo=dt.UTC)
+    state_path = tmp_path / "governor.json"
+    summary_path = tmp_path / "headroom.json"
+    _write_state(state_path, _state(now, used=20, elapsed=30, five_hour=10))
+    payload = {
+        "brief": "mechanical edit to a census report script",
+        "recycle_count": 1,
+        "quota_gate": {"invocation": {"model": "gpt-5.6-sol", "reasoning_effort": "medium"}},
+    }
+
+    decision = quota_spawn_gate.evaluate_spawn(
+        "codex",
+        "ops_issue",
+        50,
+        state_path=state_path,
+        summary_path=summary_path,
+        payload=payload,
+        now=now,
+    )
+
+    assert decision["invocation"]["reasoning_effort"] == "high"
+    assert decision["tier_escalation"]["prior_run_tier"] == "medium"
+    assert decision["tier_escalation"]["selected_tier"] == "high"
+    assert decision["tier_escalation"]["disposition"] == "escalated_exactly_one"
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    assert summary["last_gate"]["tier_escalation"] == decision["tier_escalation"]
+
+
+def test_second_recycle_stays_capped_and_non_recycled_task_is_unchanged(tmp_path: Path) -> None:
+    now = dt.datetime(2026, 8, 3, 12, 0, tzinfo=dt.UTC)
+    state_path = tmp_path / "governor.json"
+    _write_state(state_path, _state(now, used=20, elapsed=30, five_hour=10))
+    recycled_payload = {
+        "brief": "mechanical edit to a census report script",
+        "recycle_count": 2,
+        "quota_gate": {"invocation": {"model": "gpt-5.6-sol", "reasoning_effort": "max"}},
+        "quota_tier_escalation": {"recycle_count": 1},
+    }
+
+    recycled = quota_spawn_gate.evaluate_spawn(
+        "codex",
+        "ops_issue",
+        50,
+        state_path=state_path,
+        summary_path=tmp_path / "recycled-summary.json",
+        payload=recycled_payload,
+        now=now,
+    )
+    ordinary = quota_spawn_gate.evaluate_spawn(
+        "codex",
+        "ops_issue",
+        50,
+        state_path=state_path,
+        summary_path=tmp_path / "ordinary-summary.json",
+        payload={"brief": "mechanical edit to a census report script"},
+        now=now,
+    )
+
+    assert recycled["invocation"]["reasoning_effort"] == "max"
+    assert recycled["tier_escalation"]["disposition"] == "stayed_capped"
+    assert recycled["tier_escalation"]["recycle_count"] == 2
+    assert ordinary["invocation"]["reasoning_effort"] == "medium"
+    assert ordinary["tier_escalation"] is None
+
+
+def test_claude_recycle_escalates_sonnet_to_opus(tmp_path: Path) -> None:
+    now = dt.datetime(2026, 8, 3, 12, 0, tzinfo=dt.UTC)
+    state_path = tmp_path / "governor.json"
+    _write_state(state_path, _state(now, used=20, elapsed=30, five_hour=10))
+    decision = quota_spawn_gate.evaluate_spawn(
+        "claude",
+        "build_ea",
+        50,
+        state_path=state_path,
+        summary_path=tmp_path / "summary.json",
+        payload={
+            "recycle_count": 1,
+            "quota_gate": {"invocation": {"model": "sonnet", "reasoning_effort": None}},
+        },
+        now=now,
+    )
+    assert decision["invocation"]["model"] == "opus"
+    assert decision["tier_escalation"]["prior_run_tier"] == "sonnet"
+    assert decision["tier_escalation"]["selected_tier"] == "opus"
+
+
 def test_quota_governor_carries_reported_five_hour_usage(monkeypatch) -> None:
     now = dt.datetime(2026, 8, 3, 12, 0, tzinfo=dt.UTC)
     reset = now + dt.timedelta(days=4)
@@ -268,3 +355,39 @@ def test_router_scans_past_quota_blocked_research_for_ops_continuity(tmp_path: P
     )
     assert routed.reason == "assigned"
     assert routed.task_id == ops["task_id"]
+
+
+def test_router_persists_recycle_escalation_in_task_payload(tmp_path: Path) -> None:
+    now = dt.datetime.now(dt.UTC).replace(microsecond=0)
+    state_path = tmp_path / "governor.json"
+    summary_path = tmp_path / "summary.json"
+    _write_state(state_path, _state(now, used=20, elapsed=30, five_hour=10))
+    task = agent_router.enqueue_task(
+        tmp_path,
+        "ops_issue",
+        state="TODO",
+        priority=50,
+        required_capabilities=["ops", "code"],
+        payload={
+            "brief": "mechanical edit to a census report script",
+            "recycle_count": 1,
+            "quota_gate": {
+                "invocation": {"model": "gpt-5.6-sol", "reasoning_effort": "medium"}
+            },
+        },
+    )
+
+    routed = agent_router.route_once(
+        tmp_path,
+        claude_disabled_flag=tmp_path / "missing.flag",
+        quota_gate_enabled=True,
+        quota_state_path=state_path,
+        quota_summary_path=summary_path,
+    )
+
+    assert routed.task_id == task["task_id"]
+    assigned = agent_router.list_tasks(tmp_path, agent_id="codex", state="IN_PROGRESS")[0]
+    escalation = assigned["payload"]["quota_tier_escalation"]
+    assert escalation["prior_run_tier"] == "medium"
+    assert escalation["selected_tier"] == "high"
+    assert assigned["payload"]["quota_gate"]["tier_escalation"] == escalation

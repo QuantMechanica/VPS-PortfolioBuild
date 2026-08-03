@@ -154,6 +154,28 @@ class ReconcileExitsTests(unittest.TestCase):
             self.assertEqual(_state_of(root, tid), "TODO")
             self.assertEqual(_payload_of(root, tid)["recycle_count"], 1)
 
+    def test_close_review_records_recycle_once_before_requeue(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            tid = _insert_task(root, task_type="ops_issue", state="REVIEW")
+            closed = agent_router.close_review_task(
+                root,
+                tid,
+                close_state="RECYCLE",
+                verdict="one bounded delta remains",
+            )
+            self.assertTrue(closed["closed"])
+            review_payload = _payload_of(root, tid)
+            self.assertEqual(review_payload["recycle_count"], 1)
+            self.assertEqual(
+                review_payload["recycle_count_recorded_at_review"],
+                review_payload["review_closed_at"],
+            )
+
+            agent_router.reconcile_task_exits(root, apply=True)
+            self.assertEqual(_state_of(root, tid), "TODO")
+            self.assertEqual(_payload_of(root, tid)["recycle_count"], 1)
+
     def test_recycle_blocks_after_max_attempts(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)

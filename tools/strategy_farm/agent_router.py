@@ -715,6 +715,8 @@ def route_once(
         payload["required_capabilities"] = sorted(required)
         if gate.get("enforced"):
             payload["quota_gate"] = gate
+            if gate.get("tier_escalation"):
+                payload["quota_tier_escalation"] = gate["tier_escalation"]
         if skipped:
             payload["router_skipped_blocked_task_count"] = len(skipped)
         conn.execute(
@@ -1334,6 +1336,13 @@ def close_review_task(
         payload["review_closed_at"] = now
         payload["review_close_state"] = close_state
         payload["review_close_verdict"] = verdict
+        if close_state == "RECYCLE":
+            try:
+                prior_recycle_count = max(0, int(payload.get("recycle_count") or 0))
+            except (TypeError, ValueError):
+                prior_recycle_count = 0
+            payload["recycle_count"] = prior_recycle_count + 1
+            payload["recycle_count_recorded_at_review"] = now
         if note:
             payload["review_close_note"] = note
         conn.execute(
@@ -1452,9 +1461,17 @@ def _compute_task_exit(
 
     if state == "RECYCLE":
         recycle_count = int(payload.get("recycle_count") or 0)
-        if recycle_count >= RECYCLE_MAX_ATTEMPTS:
+        counted_at_review = (
+            payload.get("recycle_count_recorded_at_review")
+            and payload.get("recycle_count_recorded_at_review") == payload.get("review_closed_at")
+        )
+        if recycle_count > RECYCLE_MAX_ATTEMPTS or (
+            recycle_count >= RECYCLE_MAX_ATTEMPTS and not counted_at_review
+        ):
             # Bounded: a permanently unbuildable card cannot loop forever.
             return "BLOCKED", "recycle_attempts_exhausted", {}
+        if counted_at_review:
+            return "TODO", "recycle_requeue", {}
         return "TODO", "recycle_requeue", {"recycle_count": recycle_count + 1}
 
     return None, "not_a_limbo_state", {}

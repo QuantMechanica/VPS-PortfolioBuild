@@ -230,7 +230,15 @@ def invocation_profile(
         explicit_field = str(codex["explicit_payload_field"])
         explicit = str(task_payload.get(explicit_field) or "").strip().lower()
         normalized_type = str(task_type or "").strip().lower()
-        payload_text = json.dumps(task_payload, sort_keys=True, default=str).lower()
+        # Router-owned audit records describe the previous decision and must not
+        # themselves turn every recycled task into a max-class task merely
+        # because the key is named ``quota_gate``.
+        classification_payload = {
+            key: value
+            for key, value in task_payload.items()
+            if key not in {"quota_gate", "quota_tier_escalation"}
+        }
+        payload_text = json.dumps(classification_payload, sort_keys=True, default=str).lower()
         if explicit in allowed:
             effort = explicit
             reason = f"explicit_payload:{explicit_field}"
@@ -267,6 +275,107 @@ def invocation_profile(
     return None
 
 
+def _nonnegative_int(value: Any) -> int:
+    try:
+        return max(0, int(value))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _prior_invocation(payload: dict[str, Any]) -> dict[str, Any]:
+    gate = payload.get("quota_gate")
+    if not isinstance(gate, dict):
+        return {}
+    invocation = gate.get("invocation")
+    return dict(invocation) if isinstance(invocation, dict) else {}
+
+
+def _prior_escalation(payload: dict[str, Any]) -> dict[str, Any]:
+    direct = payload.get("quota_tier_escalation")
+    if isinstance(direct, dict):
+        return dict(direct)
+    gate = payload.get("quota_gate")
+    if isinstance(gate, dict) and isinstance(gate.get("tier_escalation"), dict):
+        return dict(gate["tier_escalation"])
+    return {}
+
+
+def _apply_recycle_escalation(
+    agent: str,
+    payload: dict[str, Any],
+    invocation: dict[str, Any] | None,
+    policy: dict[str, Any],
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    """Raise a rejected run exactly one configured tier, once per recycle.
+
+    ``recycle_count`` is advanced by the router's bounded RECYCLE -> TODO
+    transition. ``quota_tier_escalation.recycle_count`` records the last count
+    already consumed, preventing a stale-lease reroute from escalating twice.
+    """
+    if invocation is None:
+        return None, None
+    recycle_count = _nonnegative_int(payload.get("recycle_count"))
+    if recycle_count <= 0:
+        return invocation, None
+
+    normalized_agent = str(agent or "").strip().lower()
+    matrix = policy["model_matrix"]
+    if normalized_agent == "codex":
+        tiers = [str(item).lower() for item in matrix["codex"]["allowed_reasoning_efforts"]]
+        field = "reasoning_effort"
+    elif normalized_agent == "claude":
+        tiers = [str(item).lower() for item in matrix["claude"]["allowed_models"]]
+        field = "model"
+    else:
+        return invocation, None
+    if not tiers:
+        return invocation, None
+
+    base_tier = str(invocation.get(field) or "").strip().lower()
+    prior = _prior_invocation(payload)
+    prior_tier = str(prior.get(field) or base_tier).strip().lower()
+    if base_tier not in tiers:
+        base_tier = tiers[0]
+    if prior_tier not in tiers:
+        prior_tier = base_tier
+
+    previous_escalation = _prior_escalation(payload)
+    handled_count = _nonnegative_int(previous_escalation.get("recycle_count"))
+    is_new_recycle = recycle_count > handled_count
+    base_index = tiers.index(base_tier)
+    prior_index = tiers.index(prior_tier)
+    if is_new_recycle:
+        selected_index = max(base_index, min(prior_index + 1, len(tiers) - 1))
+        disposition = "escalated_exactly_one" if prior_index < len(tiers) - 1 else "stayed_capped"
+    else:
+        # A lease-expiry reroute is still the same attempt. Preserve its selected
+        # depth, but do not consume another tier without another review reject.
+        selected_index = max(base_index, prior_index)
+        disposition = "preserved_already_applied"
+    selected_tier = tiers[selected_index]
+
+    adjusted = dict(invocation)
+    adjusted[field] = selected_tier
+    if is_new_recycle:
+        adjusted["selection_reason"] = (
+            f"recycle_{disposition}:{prior_tier}_to_{selected_tier};"
+            f"base={base_tier};{invocation.get('selection_reason') or 'class_policy'}"
+        )
+    escalation = {
+        "schema": "qm.quota_tier_escalation.v1",
+        "agent": normalized_agent,
+        "recycle_count": recycle_count,
+        "previous_handled_recycle_count": handled_count,
+        "new_recycle": is_new_recycle,
+        "base_tier": base_tier,
+        "prior_run_tier": prior_tier,
+        "selected_tier": selected_tier,
+        "disposition": disposition,
+        "capped": selected_index == len(tiers) - 1,
+    }
+    return adjusted, escalation
+
+
 def _decision(
     *,
     allowed: bool,
@@ -281,6 +390,7 @@ def _decision(
     hard_exhaustion: bool = False,
     policy_schema: str | None = None,
     invocation: dict[str, Any] | None = None,
+    tier_escalation: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     return {
         "allowed": allowed,
@@ -295,6 +405,7 @@ def _decision(
         "violations": violations or [],
         "policy_schema": policy_schema,
         "invocation": invocation,
+        "tier_escalation": tier_escalation,
         "decided_at": _utc_now().replace(microsecond=0).isoformat(),
     }
 
@@ -382,7 +493,14 @@ def evaluate_spawn(
         return result
 
     task_class, class_policy = _classify(task_type, policy)
-    invocation = invocation_profile(normalized_agent, task_type, payload, policy=policy)
+    task_payload = payload or {}
+    invocation = invocation_profile(normalized_agent, task_type, task_payload, policy=policy)
+    invocation, tier_escalation = _apply_recycle_escalation(
+        normalized_agent,
+        task_payload,
+        invocation,
+        policy,
+    )
     max_age = float(policy["state_max_age_minutes"])
     state, state_status = load_governor_state(state_path, max_age_minutes=max_age, now=now)
     metrics = _metrics(state, normalized_agent)
@@ -409,6 +527,7 @@ def evaluate_spawn(
             metrics=metrics,
             policy_schema=schema,
             invocation=invocation,
+            tier_escalation=tier_escalation,
         )
         if write_summary:
             record_gate_decision(result, state_path=state_path, summary_path=summary_path)
@@ -438,6 +557,7 @@ def evaluate_spawn(
             hard_exhaustion=True,
             policy_schema=schema,
             invocation=invocation,
+            tier_escalation=tier_escalation,
         )
         if write_summary:
             record_gate_decision(result, state_path=state_path, summary_path=summary_path)
@@ -455,6 +575,7 @@ def evaluate_spawn(
             metrics=metrics,
             policy_schema=schema,
             invocation=invocation,
+            tier_escalation=tier_escalation,
         )
         if write_summary:
             record_gate_decision(result, state_path=state_path, summary_path=summary_path)
@@ -472,6 +593,7 @@ def evaluate_spawn(
             metrics=metrics,
             policy_schema=schema,
             invocation=invocation,
+            tier_escalation=tier_escalation,
         )
         if write_summary:
             record_gate_decision(result, state_path=state_path, summary_path=summary_path)
@@ -497,6 +619,7 @@ def evaluate_spawn(
         violations=violations,
         policy_schema=schema,
         invocation=invocation,
+        tier_escalation=tier_escalation,
     )
     if write_summary:
         record_gate_decision(result, state_path=state_path, summary_path=summary_path)
@@ -567,6 +690,7 @@ def record_gate_decision(
             "reason",
             "hard_exhaustion",
             "invocation",
+            "tier_escalation",
             "decided_at",
         )
     }
