@@ -182,11 +182,16 @@ void OnDeinit(const int reason){ QM_LogEvent(QM_INFO,"DEINIT",StringFormat("{\"r
 void OnTick()
   {
    if(!QM_KillSwitchCheck()) return;
+   // Keep safety/close handling tick-responsive, but bound D1 strategy and
+   // news evaluation to one pass per bar.  This prevents an every-tick log
+   // path from producing another tester-journal bomb.
+   if(QM_FrameworkHandleFridayClose() || Strategy_NoTradeFilter()) return;
+   if(!QM_IsNewBar()) return;
    datetime now=TimeCurrent(); if(Strategy_NewsFilterHook(now)) return;
    bool news_allows=(qm_news_temporal!=QM_NEWS_TEMPORAL_OFF || qm_news_compliance!=QM_NEWS_COMPLIANCE_NONE)
       ? QM_NewsAllowsTrade2(_Symbol,now,qm_news_temporal,qm_news_compliance)
       : QM_NewsAllowsTrade(_Symbol,now,qm_news_mode_legacy);
-   if(!news_allows || QM_FrameworkHandleFridayClose() || Strategy_NoTradeFilter() || !QM_IsNewBar()) return;
+   if(!news_allows) return;
    QM_EquityStreamOnNewBar(); Strategy_ManageOpenPosition();
    QM_EntryRequest req; if(Strategy_EntrySignal(req)){ ulong ticket=0; QM_TM_OpenPosition(req,ticket); }
   }
