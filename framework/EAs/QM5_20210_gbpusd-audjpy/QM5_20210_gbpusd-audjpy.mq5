@@ -1,0 +1,591 @@
+#property strict
+#property version   "5.0"
+#property description "QM5_20210 GBPUSD AUDJPY Cointegration"
+
+#include <QM/QM_Common.mqh>
+#include <QM/QM_BasketOrder.mqh>
+
+// =============================================================================
+// QuantMechanica V5 two-leg basket EA.
+//
+// Card:
+//   strategy-seeds/cards/approved/QM5_20210_gbpusd-audjpy_card.md
+//
+// Fixed spread:
+//   ln(GBPUSD.DWX) - beta * ln(AUDJPY.DWX)
+//
+// A negative beta makes the leg directions sign-aware: a long spread buys
+// both pairs and a short spread sells both pairs. The small fitted companion
+// weight is regression-neutral only; the card preserves that risk caveat.
+// =============================================================================
+
+input group "QuantMechanica V5 Framework"
+input int    qm_ea_id                   = 20210;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
+
+input group "Risk"
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
+
+input group "News"
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
+
+input group "Friday Close"
+input bool   qm_friday_close_enabled     = true;
+input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
+
+input group "Strategy"
+input int    strategy_z_lookback_d1     = 60;
+input double strategy_beta              = -0.038239845;
+input double strategy_entry_z           = 2.0;
+input double strategy_exit_z            = 0.5;
+input int    strategy_atr_period_d1     = 20;
+input double strategy_atr_sl_mult       = 2.0;
+input int    strategy_deviation_points  = 20;
+
+string   g_leg_gbpusd = "GBPUSD.DWX";
+string   g_leg_audjpy = "AUDJPY.DWX";
+string   g_conversion_audusd = "AUDUSD.DWX";
+string   g_conversion_usdjpy = "USDJPY.DWX";
+bool     g_basket_scope_ready = false;
+double   g_spread_z = 0.0;
+double   g_spread_mean = 0.0;
+double   g_spread_sd = 0.0;
+bool     g_state_ready = false;
+bool     g_companion_entry_ready = false;
+QM_OrderType g_companion_entry_type = QM_BUY;
+double   g_companion_entry_lots = 0.0;
+
+double Strategy_HostRiskShare()
+  {
+   const double weight_sum = 1.0 + MathAbs(strategy_beta);
+   if(weight_sum <= 0.0)
+      return 0.0;
+   return 1.0 / weight_sum;
+  }
+
+int Strategy_SlotForSymbol(const string symbol)
+  {
+   if(symbol == g_leg_gbpusd)
+      return 0;
+   if(symbol == g_leg_audjpy)
+      return 1;
+   return -1;
+  }
+
+bool Strategy_IsHostSymbol()
+  {
+   return (_Symbol == g_leg_gbpusd);
+  }
+
+bool Strategy_IsPairPosition()
+  {
+   const string symbol = PositionGetString(POSITION_SYMBOL);
+   const int slot = Strategy_SlotForSymbol(symbol);
+   if(slot < 0)
+      return false;
+   return ((int)PositionGetInteger(POSITION_MAGIC) ==
+           QM_MagicChecked(qm_ea_id, slot, symbol));
+  }
+
+bool Strategy_EnsureBasketScope()
+  {
+   if(g_basket_scope_ready)
+      return true;
+
+   string allowed[4] = {"GBPUSD.DWX", "AUDJPY.DWX", "AUDUSD.DWX", "USDJPY.DWX"};
+   for(int i = 0; i < 4; ++i)
+      SymbolSelect(allowed[i], true);
+
+   QM_SymbolGuardInit(allowed);
+   QM_BasketWarmupHistory(allowed,
+                          PERIOD_D1,
+                          MathMax(300,
+                                  strategy_z_lookback_d1 +
+                                  strategy_atr_period_d1 + 10));
+   g_basket_scope_ready = true;
+   return true;
+  }
+
+int Strategy_OpenPairLegCount()
+  {
+   int count = 0;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(Strategy_IsPairPosition())
+         ++count;
+     }
+   return count;
+  }
+
+void Strategy_ClosePair(const QM_ExitReason reason)
+  {
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(Strategy_IsPairPosition())
+         QM_TM_ClosePosition(ticket, reason);
+     }
+  }
+
+bool Strategy_RefreshSpreadState()
+  {
+   g_state_ready = false;
+   const int lookback = MathMax(20, strategy_z_lookback_d1);
+   const int history_count = lookback + 1;
+
+   if(!Strategy_EnsureBasketScope())
+      return false;
+   if(!QM_SymbolAssertOrLog(g_leg_gbpusd) ||
+      !QM_SymbolAssertOrLog(g_leg_audjpy) ||
+      !QM_SymbolAssertOrLog(g_conversion_audusd) ||
+      !QM_SymbolAssertOrLog(g_conversion_usdjpy))
+      return false;
+
+   double gbpusd[];
+   double audjpy[];
+   datetime gbpusd_time[];
+   datetime audjpy_time[];
+   ArraySetAsSeries(gbpusd, true);
+   ArraySetAsSeries(audjpy, true);
+   ArraySetAsSeries(gbpusd_time, true);
+   ArraySetAsSeries(audjpy_time, true);
+
+   if(CopyClose(g_leg_gbpusd, PERIOD_D1, 1, history_count, gbpusd) != // perf-allowed: called only by the gated spread refresh.
+      history_count)
+      return false;
+   if(CopyClose(g_leg_audjpy, PERIOD_D1, 1, history_count, audjpy) != // perf-allowed: called only by the gated spread refresh.
+      history_count)
+      return false;
+   if(CopyTime(g_leg_gbpusd, PERIOD_D1, 1, history_count, gbpusd_time) != // perf-allowed: called only by the gated spread refresh.
+      history_count)
+      return false;
+   if(CopyTime(g_leg_audjpy, PERIOD_D1, 1, history_count, audjpy_time) != // perf-allowed: called only by the gated spread refresh.
+      history_count)
+      return false;
+
+   double spreads[];
+   ArrayResize(spreads, history_count);
+   for(int i = 0; i < history_count; ++i)
+     {
+      if(gbpusd_time[i] <= 0 || gbpusd_time[i] != audjpy_time[i])
+         return false;
+      if(gbpusd[i] <= 0.0 || audjpy[i] <= 0.0)
+         return false;
+
+      spreads[i] =
+         MathLog(gbpusd[i]) - strategy_beta * MathLog(audjpy[i]);
+      if(!MathIsValidNumber(spreads[i]))
+         return false;
+     }
+
+   // Match analyze_cross_asset_v3.py: score spreads[0] against strictly prior
+   // spreads[1..lookback] using sample standard deviation.
+   double sum = 0.0;
+   for(int i = 1; i < history_count; ++i)
+      sum += spreads[i];
+
+   g_spread_mean = sum / (double)lookback;
+   double var_sum = 0.0;
+   for(int i = 1; i < history_count; ++i)
+     {
+      const double d = spreads[i] - g_spread_mean;
+      var_sum += d * d;
+     }
+
+   g_spread_sd = MathSqrt(var_sum / (double)MathMax(1, lookback - 1));
+   if(g_spread_sd <= 0.0 || !MathIsValidNumber(g_spread_sd))
+      return false;
+
+   g_spread_z = (spreads[0] - g_spread_mean) / g_spread_sd;
+   g_state_ready = MathIsValidNumber(g_spread_z);
+   return g_state_ready;
+  }
+
+double Strategy_LotsForLeg(const string symbol,
+                           const double risk_weight,
+                           const double risk_weight_sum)
+  {
+   const double atr =
+      QM_ATR(symbol, PERIOD_D1, strategy_atr_period_d1, 1);
+   const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
+   if(atr <= 0.0 || point <= 0.0 ||
+      risk_weight <= 0.0 || risk_weight_sum <= 0.0)
+      return 0.0;
+
+   const double sl_points = strategy_atr_sl_mult * atr / point;
+   double lots =
+      QM_LotsForRisk(symbol, sl_points) * risk_weight / risk_weight_sum;
+   const double min_lot = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MIN);
+   const double max_lot = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MAX);
+   const double step = SymbolInfoDouble(symbol, SYMBOL_VOLUME_STEP);
+   if(lots <= 0.0 || min_lot <= 0.0 || max_lot <= 0.0 || step <= 0.0)
+      return 0.0;
+
+   lots = MathFloor(lots / step) * step;
+   if(lots < min_lot)
+      return 0.0;
+   return MathMin(max_lot, NormalizeDouble(lots, 8));
+  }
+
+bool Strategy_OpenLeg(const string symbol,
+                      const QM_OrderType type,
+                      const double lots,
+                      const string reason)
+  {
+   const int slot = Strategy_SlotForSymbol(symbol);
+   // The basket helper is reserved for the off-chart companion. The host leg
+   // must flow through the framework QM_TM_OpenPosition path in OnTick.
+   if(slot < 0 || symbol == _Symbol)
+      return false;
+
+   const double entry =
+      QM_OrderTypeIsBuy(type) ? SymbolInfoDouble(symbol, SYMBOL_ASK)
+                              : SymbolInfoDouble(symbol, SYMBOL_BID);
+   const double atr =
+      QM_ATR(symbol, PERIOD_D1, strategy_atr_period_d1, 1);
+   if(entry <= 0.0 || atr <= 0.0)
+      return false;
+
+   if(lots <= 0.0)
+      return false;
+
+   QM_BasketOrderRequest req;
+   req.symbol = symbol;
+   req.type = type;
+   req.price = 0.0;
+   req.sl = QM_StopATRFromValue(symbol,
+                                type,
+                                entry,
+                                atr,
+                                strategy_atr_sl_mult);
+   req.tp = 0.0;
+   req.lots = lots;
+   req.reason = reason;
+   req.symbol_slot = slot;
+   req.expiration_seconds = 0;
+
+   ulong ticket = 0;
+   return QM_BasketOpenPosition(qm_ea_id,
+                                qm_news_mode_legacy,
+                                strategy_deviation_points,
+                                req,
+                                ticket);
+  }
+
+bool Strategy_PreparePair(const int spread_direction,
+                          QM_EntryRequest &host_req)
+  {
+   g_companion_entry_ready = false;
+   g_companion_entry_lots = 0.0;
+
+   if(spread_direction == 0 || Strategy_OpenPairLegCount() > 0)
+      return false;
+
+   const double gbpusd_weight = 1.0;
+   const double audjpy_weight = MathAbs(strategy_beta);
+   const double weight_sum = gbpusd_weight + audjpy_weight;
+   if(weight_sum <= 0.0)
+      return false;
+
+   // Preflight both normalized legs before sending either order. A small
+   // companion weight that falls below broker minimum volume rejects the
+   // complete package instead of leaving a directional orphan.
+   // QM_FrameworkInit configures the framework at the normalized host share.
+   // Relative-to-host weights below therefore preflight exactly one complete
+   // package budget: host risk + abs(beta) companion risk.
+   const double gbpusd_lots =
+      Strategy_LotsForLeg(g_leg_gbpusd, gbpusd_weight, gbpusd_weight);
+   const double audjpy_lots =
+      Strategy_LotsForLeg(g_leg_audjpy, audjpy_weight, gbpusd_weight);
+   if(gbpusd_lots <= 0.0 || audjpy_lots <= 0.0)
+      return false;
+
+   const bool long_spread = (spread_direction > 0);
+   const QM_OrderType gbpusd_type = long_spread ? QM_BUY : QM_SELL;
+   const QM_OrderType audjpy_type =
+      long_spread
+      ? (strategy_beta >= 0.0 ? QM_SELL : QM_BUY)
+      : (strategy_beta >= 0.0 ? QM_BUY : QM_SELL);
+   const string reason =
+      long_spread ? "QM5_20210_LONG_SPREAD_Z_LT_NEG_ENTRY"
+                  : "QM5_20210_SHORT_SPREAD_Z_GT_POS_ENTRY";
+
+   const double host_entry =
+      QM_OrderTypeIsBuy(gbpusd_type)
+      ? SymbolInfoDouble(g_leg_gbpusd, SYMBOL_ASK)
+      : SymbolInfoDouble(g_leg_gbpusd, SYMBOL_BID);
+   const double host_atr =
+      QM_ATR(g_leg_gbpusd, PERIOD_D1, strategy_atr_period_d1, 1);
+   if(host_entry <= 0.0 || host_atr <= 0.0)
+      return false;
+
+   host_req.type = gbpusd_type;
+   host_req.price = 0.0;
+   host_req.sl = QM_StopATRFromValue(g_leg_gbpusd,
+                                     gbpusd_type,
+                                     host_entry,
+                                     host_atr,
+                                     strategy_atr_sl_mult);
+   host_req.tp = 0.0;
+   host_req.reason = reason;
+   host_req.symbol_slot = qm_magic_slot_offset;
+   host_req.expiration_seconds = 0;
+   if(host_req.sl <= 0.0)
+      return false;
+
+   g_companion_entry_type = audjpy_type;
+   g_companion_entry_lots = audjpy_lots;
+   g_companion_entry_ready = true;
+   return true;
+  }
+
+// -----------------------------------------------------------------------------
+// Strategy hooks
+// -----------------------------------------------------------------------------
+
+bool Strategy_NoTradeFilter()
+  {
+   Strategy_EnsureBasketScope();
+
+   if(!Strategy_IsHostSymbol())
+      return true;
+   if(Strategy_SlotForSymbol(_Symbol) != qm_magic_slot_offset)
+      return true;
+   const ENUM_TIMEFRAMES chart_tf = (ENUM_TIMEFRAMES)_Period;
+   if(chart_tf != PERIOD_H1 && chart_tf != PERIOD_D1)
+      return true;
+   return false;
+  }
+
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "QM5_20210_PAIR_HOST";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(!g_state_ready)
+      return false;
+   if(Strategy_OpenPairLegCount() > 0)
+      return false;
+
+   if(g_spread_z > strategy_entry_z)
+      return Strategy_PreparePair(-1, req);
+   if(g_spread_z < -strategy_entry_z)
+      return Strategy_PreparePair(1, req);
+
+   return false;
+  }
+
+void Strategy_ManageOpenPosition()
+  {
+   // No trailing, break-even, partial close, grid, or averaging.
+  }
+
+bool Strategy_ExitSignal()
+  {
+   const int open_legs = Strategy_OpenPairLegCount();
+   if(open_legs <= 0)
+      return false;
+   if(open_legs != 2)
+     {
+      Strategy_ClosePair(QM_EXIT_STRATEGY);
+      return false;
+     }
+
+   if(g_state_ready && MathAbs(g_spread_z) < strategy_exit_z)
+     {
+      Strategy_ClosePair(QM_EXIT_STRATEGY);
+      return false;
+     }
+   return false;
+  }
+
+bool Strategy_NewsFilterHook(const datetime broker_time)
+  {
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+     {
+      if(!QM_NewsAllowsTrade2(g_leg_gbpusd,
+                              broker_time,
+                              qm_news_temporal,
+                              qm_news_compliance))
+         return true;
+      if(!QM_NewsAllowsTrade2(g_leg_audjpy,
+                              broker_time,
+                              qm_news_temporal,
+                              qm_news_compliance))
+         return true;
+     }
+   else
+     {
+      if(!QM_NewsAllowsTrade(g_leg_gbpusd,
+                             broker_time,
+                             qm_news_mode_legacy))
+         return true;
+      if(!QM_NewsAllowsTrade(g_leg_audjpy,
+                             broker_time,
+                             qm_news_mode_legacy))
+         return true;
+     }
+   return false;
+  }
+
+// -----------------------------------------------------------------------------
+// Framework wiring
+// -----------------------------------------------------------------------------
+
+int OnInit()
+  {
+   SymbolSelect(g_leg_gbpusd, true);
+   SymbolSelect(g_leg_audjpy, true);
+   SymbolSelect(g_conversion_audusd, true);
+   SymbolSelect(g_conversion_usdjpy, true);
+
+   const double host_risk_share = Strategy_HostRiskShare();
+   if(host_risk_share <= 0.0)
+      return INIT_FAILED;
+
+   // PORTFOLIO_WEIGHT describes the complete package. Configure the standard
+   // host order at its normalized 1.0 / (1.0 + abs(beta)) share; the off-chart
+   // companion receives the remaining abs(beta) share in Strategy_PreparePair.
+   if(!QM_FrameworkInit(qm_ea_id,
+                        qm_magic_slot_offset,
+                        RISK_PERCENT,
+                        RISK_FIXED,
+                        PORTFOLIO_WEIGHT * host_risk_share,
+                        qm_news_mode_legacy,
+                        qm_friday_close_enabled,
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
+      return INIT_FAILED;
+
+   Strategy_EnsureBasketScope();
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   return INIT_SUCCEEDED;
+  }
+
+void OnDeinit(const int reason)
+  {
+   QM_LogEvent(QM_INFO,
+               "DEINIT",
+               StringFormat("{\"reason\":%d}", reason));
+   QM_FrameworkShutdown();
+  }
+
+void OnTick()
+  {
+   // Q08 lifecycle sampling must precede every early-return guard.
+   QM_FrameworkTrackOpenPositionMae();
+
+   if(!QM_KillSwitchCheck())
+      return;
+
+   const datetime broker_now = TimeCurrent();
+   if(QM_FrameworkFridayCloseNow(broker_now))
+     {
+      Strategy_ClosePair(QM_EXIT_FRIDAY_CLOSE);
+      QM_FrameworkHandleFridayClose();
+      return;
+     }
+   if(QM_FrameworkHandleFridayClose())
+      return;
+   if(Strategy_NoTradeFilter())
+      return;
+
+   // Consume the closed-D1 gate exactly once. Refreshing the cached pair
+   // state before management lets mean-reach exits run through news windows.
+   const bool is_new_signal_bar =
+      QM_IsNewBar(g_leg_gbpusd, PERIOD_D1);
+   if(is_new_signal_bar)
+      Strategy_RefreshSpreadState();
+
+   Strategy_ManageOpenPosition();
+   if(Strategy_ExitSignal())
+     {
+      const int magic = QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+        }
+     }
+
+   // News suppression gates entries only; package management and exits above
+   // remain active during blackout windows.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
+   if(!is_new_signal_bar)
+      return;
+
+   QM_EquityStreamOnNewBar();
+
+   QM_EntryRequest req;
+   ZeroMemory(req);
+   if(Strategy_EntrySignal(req))
+     {
+      ulong out_ticket = 0;
+      const bool host_opened = QM_TM_OpenPosition(req, out_ticket);
+      if(host_opened)
+        {
+         const bool companion_opened =
+            g_companion_entry_ready &&
+            Strategy_OpenLeg(g_leg_audjpy,
+                             g_companion_entry_type,
+                             g_companion_entry_lots,
+                             req.reason);
+         if(!companion_opened)
+            Strategy_ClosePair(QM_EXIT_STRATEGY);
+        }
+      g_companion_entry_ready = false;
+      g_companion_entry_lots = 0.0;
+     }
+  }
+
+void OnTimer()
+  {
+   QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
+  }
+
+double OnTester()
+  {
+   QM_ChartUI_Refresh();
+   return QM_DefaultObjective();
+  }
