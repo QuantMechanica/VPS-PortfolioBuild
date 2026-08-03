@@ -12,10 +12,22 @@ execution_contract_ref: strategy-seeds/cards/approved/QM5_20162_xng-winter-dualt
 execution_contract_status: DRAFT
 created: 2026-07-26
 created_by: Research+Development
-last_updated: 2026-07-26
+last_updated: 2026-08-03
 source_citation: "U.S. EIA (2015), Natural gas use features two seasonal peaks per year; Moskowitz, Ooi and Pedersen (2012), Time Series Momentum, JFE 104(2)."
+source_citations:
+  - type: official_government_source
+    citation: "U.S. Energy Information Administration (2015), Natural gas use features two seasonal peaks per year."
+    location: "Complete governed extraction at strategy-seeds/sources/706222b7-2d60-5fdb-8dab-d722d3c96f92/source.md; https://www.eia.gov/todayinenergy/detail.php?id=22892"
+    quality_tier: A
+    role: winter_seasonal_state
+  - type: peer_reviewed_paper
+    citation: "Moskowitz, T. J., Ooi, Y. H., and Pedersen, L. H. (2012), Time Series Momentum, Journal of Financial Economics 104(2), 228-250."
+    location: "Complete 23-page governed review at strategy-seeds/sources/MOP-TSMOM-2012/source.md; DOI 10.1016/j.jfineco.2011.11.003"
+    quality_tier: A
+    role: trend_state
 sources:
   - "[[sources/EIA-MOP-XNG-WINTER-DUALTREND-2026]]"
+strategy_mechanic: november-march-xng-long-only-rising-21-84-d1-sma-stack-with-positive-five-day-slopes
 strategy_type_flags: [natural-gas, winter-seasonality, dual-trend, long-only, atr-hard-stop, low-frequency]
 target_symbols: [XNGUSD.DWX]
 primary_target_symbols: [XNGUSD.DWX]
@@ -37,7 +49,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: PENDING
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Adds winter heating-demand trend exposure distinct from the incumbent XNG RSI pullback. The Nov-Mar window plus rising 21/84-D1 trend stack are jointly load-bearing; Q09 alone may establish realized orthogonality."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -62,25 +74,60 @@ official EIA seasonality lineage and peer-reviewed time-series-momentum lineage.
 The exact moving-average and risk parameters are QM hypotheses, not source
 claims. No return, correlation, or profitability claim is imported.
 
-## Entry rules
+## Rules
 
-- Exact carrier `XNGUSD.DWX`, D1, magic slot 0.
-- Evaluate once per new D1 bar during November through March.
+The entry, exit, filter, sizing, and lifecycle rules below are the complete
+frozen Q02 baseline. The EA uses completed D1 prices only. It does not use an
+oscillator, external calendar, inventory series, weather feed, trained model,
+grid, martingale, scale-in, or parameter sweep.
+
+## 4. Entry Rules
+
+- Exact carrier `XNGUSD.DWX`, D1, EA ID `20162`, magic slot 0.
+- Evaluate once per genuine new D1 bar. Persist the current D1 bar timestamp
+  before position, season, history, signal, spread, quote, stop, news, or order
+  checks; a blocked, rejected, stopped, or restarted bar cannot retry.
+- Require November through March broker-calendar months.
 - Require completed close above SMA(21), SMA(21) above SMA(84), SMA(21) above
   its value five completed bars earlier, and SMA(84) above its value five
   completed bars earlier.
-- Require spread no greater than 1000 points and valid ATR(20).
+- Require a non-negative spread no greater than 1000 points, valid executable
+  quote, completed ATR(20), normalized stop, and registered magic.
 - BUY with a frozen `3.5 * ATR(20)` hard stop and no take profit.
-- One position per magic and one entry attempt per broker D1 bar. Friday close
-  remains enabled, so a still-valid trend may form a new weekly package.
+- One position per magic. Friday close remains enabled at 21:00 broker time,
+  so a still-valid trend may form a new package on a later D1 bar.
 
-## Exit rules
+## 5. Exit Rules
 
 - Close outside November-March.
 - Close if completed close is at or below SMA(21), SMA(21) is at or below
   SMA(84), or either five-day SMA slope is non-positive.
 - Close after 35 calendar days as a stale safety override.
+- Close an owned wrong-side position or any position whose completed trend
+  state cannot be validated; lifecycle exits remain retryable on later ticks.
 - Framework Friday close and kill switch remain authoritative.
+
+## 6. Filters (No-Trade Module)
+
+- Fail closed outside exact `XNGUSD.DWX` D1, EA ID `20162`, slot 0, and the
+  locked baseline inputs.
+- Both news axes and the legacy news mode are OFF for Q02. The signal has no
+  external-calendar dependency.
+- Reject non-winter entries, missing completed history, invalid SMA/ATR/quote
+  values, negative or excessive spread, a consumed D1 attempt, a same-bar
+  entry deal, or an owned position.
+- No EIA release, storage, volume, open-interest, weather, CSV, API, or other
+  external runtime input is permitted.
+
+## 7. Trade Management Rules
+
+- Maintain at most one long `XNGUSD.DWX` position under magic `201620000`.
+- Re-evaluate season, completed 21/84-D1 trend state, and the 35-day stale
+  guard every tick; close through the framework when any state is invalid.
+- Preserve the server-side hard stop. Do not trail, move to break-even,
+  partially close, average, hedge, pyramid, scale in, grid, or martingale.
+- The terminal-persistent D1 attempt marker plus owned deal history prevents
+  restart-driven same-bar re-entry.
 
 ## Parameters to test
 
@@ -108,7 +155,7 @@ or exit logic is a new card, not a rescue sweep.
 - Existing XNG freeze, storage, expiry, LNG, weekday and breakout cards use
   different event clocks or triggers.
 
-## Risk, acceptance and kill criteria
+## Risk
 
 Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1`. Retire below five completed trades/year at Q02. Fail on
@@ -129,3 +176,16 @@ This authorizes card, build, strict compile, one RISK_FIXED setfile and Q02
 enqueue only. It does not authorize a live setfile, T_Live access,
 AutoTrading, deploy manifest, portfolio gate or portfolio manifest change.
 
+## Pipeline History
+
+| version | date | rebuild reason | phase reached | verdict |
+|---|---|---|---|---|
+| v1 | 2026-08-03 | finish the committed but unbuilt winter dual-trend scaffold under the renewed OWNER commodity/energy mission | Q01 | PASS |
+
+## Pipeline Phase Status
+
+| phase | date | verdict | evidence |
+|---|---|---|---|
+| G0 Research Intake | 2026-07-26 / reaffirmed 2026-08-03 | APPROVED; R1-R4 PASS | this card, governed source packet, and `decisions/2026-08-03_qm5_20162_xng_winter_dualtrend_build_resume.md` |
+| Q01 Build Validation | 2026-08-03 | PASS; strict compile and build check, 0 errors, 0 warnings, 0 failures | `D:/QM/reports/framework/21/build_check_20260803_102721.json` |
+| Q02 Baseline Screening | — | NOT_ENQUEUED | paced enqueue pending |
