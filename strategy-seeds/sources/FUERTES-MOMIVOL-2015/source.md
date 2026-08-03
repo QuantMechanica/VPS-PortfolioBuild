@@ -10,11 +10,19 @@
   approved one new structural, low-frequency, non-duplicate commodity sleeve,
   branch-only build, and paced Q02 enqueue. This durable record authorizes the
   `S03` XAU/XAG carrier below; it does not broaden the source method.
+- Third reopen basis: OWNER commodity/energy sleeve mission dated 2026-08-03
+  approved one new structural, low-frequency, non-duplicate commodity sleeve,
+  branch-only build, and paced Q02 enqueue. This durable record authorizes the
+  `S04` XAU/XAG momentum-IVol double screen below; it does not broaden the
+  source method or import source performance.
 - Extraction scope: the momentum plus idiosyncratic-volatility double screen
   (`S01`) and the source's standalone idiosyncratic-volatility strategy (`S02`).
   `S03` applies the same standalone IVol rule to the XAU/XAG traded pair while
-  retaining the four-proxy commodity factor. The term-structure leg remains
-  excluded because the Darwinex `.DWX` runtime does not expose a futures curve.
+  retaining the four-proxy commodity factor. `S04` applies the source's
+  3-month momentum-IVol double screen to the XAU/XAG traded pair, retaining the
+  same four-proxy factor and trading only when the two ranks agree. The
+  term-structure leg remains excluded because the Darwinex `.DWX` runtime does
+  not expose a futures curve.
 - Source review: complete open accepted manuscript, including tables and
   appendices, reviewed on 2026-07-10 and read again end-to-end for the bounded
   `S02` extraction on 2026-07-11.
@@ -115,3 +123,41 @@ direction. It does not establish dollar, beta, volatility, or portfolio
 neutrality. Q02 must retire it below five completed packages/year or on failed
 economics, execution, determinism, risk, or basket-accounting criteria; Q09
 alone may establish book orthogonality.
+
+### S04 — XAU/XAG Momentum–Idiosyncratic-Volatility Double Screen
+
+The source's double-screen robustness portfolio first identifies momentum
+winners and losers, then retains the high-momentum/low-IVol long side and the
+low-momentum/high-IVol short side. Table 7 reports the 3-month momentum-IVol
+double screen, and the source sensitivity analysis permits a one-top/one-bottom
+implementation. Gold and silver are explicit constituents of the source
+commodity universe.
+
+`S04` freezes that information intersection on a two-metal carrier. At the
+first tradable XAU D1 bar of each broker month, it aligns 64 completed D1 closes
+for XTI, XNG, XAU, and XAG. It forms 63 equal-weight commodity-factor returns,
+fits separate intercept-plus-factor OLS regressions for XAU and XAG, and ranks
+the two metals by both their 63-D1 return and residual standard deviation. It
+buys the higher-momentum metal and shorts the lower-momentum metal only when the
+winner is also the lower-IVol metal. Rank disagreement or a tie stays flat for
+the consumed month.
+
+This is a narrow carrier falsification, not a replication of the source's
+broad futures portfolio. It imports no paper return, Sharpe ratio, significance,
+correlation, or constituent-frequency result. The four-CFD factor, equal
+notional risk translation, Darwinex CFD basis, paired execution, ATR stops, and
+restart-safe attempt state are QM implementation hypotheses.
+
+The exact pre-allocation check found no duplicate and returned only the expected
+same-source fuzzy neighbors. `QM5_13113_energy-mom-ivol` trades XTI/XNG while
+XAU/XAG are read-only factor members. `QM5_20192_xauxag-ivol` trades XAU/XAG
+from a 252-D1 pure-IVol rank and has no momentum gate. `QM5_20184_xauxag-xmom3`
+trades the 63-D1 momentum rank every month and has no residual-volatility gate.
+The S04 factor estimator, 63-D1 momentum rank, 63-D1 IVol rank, strict agreement
+gate, and traded XAU/XAG carrier are jointly load-bearing.
+
+`S04` seeks a relative precious-metal factor rather than outright XAU beta, but
+it does not assert market, dollar, beta, volatility, or portfolio neutrality.
+Q02 must retire it below five completed packages per year or on failed
+economics, execution, determinism, risk, or basket accounting; Q09 alone may
+establish realized portfolio orthogonality.
