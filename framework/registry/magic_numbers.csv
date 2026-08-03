@@ -15498,3 +15498,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20207,usdcad-audusd,1,AUDUSD.DWX,202070001,2026-08-03T12:38:03Z,Codex,active
 20208,nzdusd-euraud,0,NZDUSD.DWX,202080000,2026-08-03T15:23:19Z,Codex,active
 20208,nzdusd-euraud,1,EURAUD.DWX,202080001,2026-08-03T15:23:19Z,Codex,active
+20209,wti-winter-mom1,0,XTIUSD.DWX,202090000,2026-08-03T15:41:03Z,Codex,active
