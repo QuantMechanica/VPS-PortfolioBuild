@@ -4,7 +4,7 @@ Date: 2026-08-03
 
 Router task: `9dd1f1f8-cd92-42e6-87de-b030a73f8ac6`
 
-Verdict: **READY_FOR_REVIEW**
+Verdict: **READY_FOR_REVIEW — RECYCLE ESCALATION DELTA COMPLETE**
 
 ## Outcome
 
@@ -19,6 +19,9 @@ Implementation commits on canonical `agents/board-advisor`:
   model/effort selection, tests, and runbook.
 - `30da53056` — guarded the existing `G:/My Drive` availability probe so the
   SYSTEM orchestration lane cannot fail before command construction.
+- `24eeac2cc` — binds review rejection to exactly one higher configured model/
+  effort tier, persists the escalation audit, and prevents duplicate escalation
+  on a stale-lease reroute.
 
 The scheduled tasks `QM_StrategyFarm_AgentRouter_5min`,
 `QM_StrategyFarm_{Codex,Claude}Orchestration_15min`, and
@@ -50,6 +53,28 @@ fail-closed and decision-bound quota-gate work. The actual command slice was:
 
 Utilization can allow or defer a task, but never lowers the already selected
 model/effort tier.
+
+## Recycle escalation binding
+
+The review rejection identified one missing binding principle: a rejected run
+must retry exactly one tier higher. That path is now deterministic and uses the
+existing bounded `recycle_count` written by `close_review_task` and preserved by
+the `RECYCLE -> TODO` transition.
+
+- Codex tier order is read from policy (`medium -> high -> max`). The retry is
+  `max(class_tier, prior_run_tier + 1)`, capped at `max`.
+- Claude tier order is read from policy (`sonnet -> opus`), so a rejected
+  Sonnet run retries on Opus and then remains capped.
+- `quota_tier_escalation` records recycle count, base tier, prior run tier,
+  selected tier, cap state, and disposition in the task payload. The same
+  object is exposed under `last_gate.tier_escalation` in the one-line headroom
+  contract.
+- The handled recycle count prevents a lease-expiry reroute of the same attempt
+  from consuming a second tier. Non-recycled tasks retain their class-selected
+  tier unchanged.
+- Router-owned `quota_gate` audit text is excluded from class marker matching;
+  otherwise the field name itself would incorrectly make every recycled Codex
+  task `max` before the escalation rule was evaluated.
 
 ## Gate policy
 
@@ -124,7 +149,7 @@ Documentation/tests changed alongside them:
 
 ## Verification
 
-Final focused command:
+Original focused command:
 
 ```powershell
 python -m pytest -q `
@@ -137,6 +162,26 @@ python -m pytest -q `
 ```
 
 Result: `48 passed in 37.91s`.
+
+Recycle-delta focused command:
+
+```powershell
+python -m pytest -q `
+  tools/strategy_farm/tests/test_antigravity_backend_contract.py `
+  tools/strategy_farm/tests/test_strategy_farm_package_imports.py `
+  tools/strategy_farm/tests/test_quota_spawn_gate.py `
+  tools/strategy_farm/tests/test_agent_orchestration_lock.py `
+  tools/strategy_farm/tests/test_agent_router.py `
+  tools/strategy_farm/tests/test_agent_router_state_exits.py `
+  tools/strategy_farm/tests/test_quota_window_consumers.py
+```
+
+Result: `73 passed in 11.17s`.
+
+The added regressions prove first recycle `medium -> high`, second recycle
+remaining capped at `max`, Claude `sonnet -> opus`, non-recycled tier stability,
+task-payload persistence, headroom persistence, and single-count close-review
+reconciliation.
 
 Also passed:
 
