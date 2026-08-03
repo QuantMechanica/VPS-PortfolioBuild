@@ -2463,8 +2463,40 @@ def main() -> int:
     # spaces double-counts pairs that exist under both (audit 2026-07-25).
     for qid in Q_DISPLAY_ORDER[2:11]:
         q_counts[qid] = _pass_pairs(_phase_read_keys(qid))
-    # Q11..Q13 are OWNER-only phases (no work_items yet) — leave at 0 until
-    # the agent_tasks table tracks them. Future iteration.
+    # Q09 stores per-lane sub-keys (Q09_NEWS / Q09_PORTFOLIO) whose PASS
+    # verdicts are lane-specific (CONFIG_LOCKED / PASS_PORTFOLIO) — the generic
+    # PASS-pair filter above never matches them (audit 2026-08-03: chip showed
+    # 0 against 33 real portfolio passes). PENDING_RUNNER placeholders are
+    # sealed plans, not passes, and stay excluded.
+    q09_rows = db_rows(
+        "SELECT COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items "
+        "WHERE (UPPER(phase)='Q09_PORTFOLIO' AND verdict='PASS_PORTFOLIO') "
+        "   OR (UPPER(phase)='Q09_NEWS' AND verdict='CONFIG_LOCKED') "
+        "   OR (UPPER(phase)='Q09' AND verdict='PASS')"
+    )
+    q_counts["Q09"] = int(q09_rows[0]["c"] or 0) if q09_rows else 0
+    # Q11 has no tracked rows yet (truthfully 0). Q12 = EAs sitting in the
+    # OWNER review pool; Q13 = sleeves live on T_Live, from the read-only
+    # pulse projection (evidence chain: terminal logs → live_book_pulse.py).
+    # A missing/unchecked pulse leaves the chip at 0 — never invent a live count.
+    q12_rows = db_rows(
+        "SELECT COUNT(DISTINCT ea_id) AS c FROM portfolio_candidates "
+        "WHERE state='Q12_REVIEW_READY'"
+    )
+    q_counts["Q12"] = int(q12_rows[0]["c"] or 0) if q12_rows else 0
+    try:
+        _pulse_reconcile = (
+            json.loads(LIVE_BOOK_PULSE.read_text(encoding="utf-8"))
+            .get("manifest_reconcile") or {}
+        )
+        if _pulse_reconcile.get("checked"):
+            q_counts["Q13"] = max(
+                0,
+                int(_pulse_reconcile.get("expected_count") or 0)
+                - int(_pulse_reconcile.get("missing_loaded") or 0),
+            )
+    except (OSError, json.JSONDecodeError, TypeError, ValueError):
+        pass
 
     # Build the progress HTML — top-line counters + per-Q chip strip.
     progress_html = f"""
@@ -2493,8 +2525,10 @@ def main() -> int:
     </div>
     <div class="prog-foot">
       Q00 = strategy cards &middot; Q01 = EAs with .ex5 on disk &middot;
-      Q02..Q10 = distinct (EA, symbol) PASS pairs &middot;
-      Q11..Q13 = OWNER phases (live count pending)
+      Q02..Q10 = distinct (EA, symbol) PASS pairs, cumulative across gate-regime
+      eras (Q03/Q08 entered mid-history &mdash; adjacent chips are not one
+      regime's funnel) &middot; Q09 = news/portfolio sub-gate passes &middot;
+      Q12 = EAs in OWNER review pool &middot; Q13 = sleeves live on T_Live (pulse)
     </div>
   </div>
 """
