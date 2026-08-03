@@ -61,6 +61,7 @@ from framework.scripts.q08_7_pbo_runner import (
     ENGINE_VERSION as PBO_ENGINE_VERSION,
     SCORES_SCHEMA_VERSION as PBO_SCHEMA_VERSION,
 )
+from tools.strategy_farm.q08_recovery_lineage import validate_q08_recovery_lineage
 # Execution order matches the Vault Q08 spec numbering.
 SUB_GATES = [
     ("8.1",  sub_8_1_correlation),
@@ -111,6 +112,45 @@ NEIGHBORHOOD_RUN_HEADROOM_SEC = 120
 # a thin cost cushion, a non-low-sample INVALID) is a real standalone concern and
 # routes the EA to the Q09 portfolio track as FAIL_SOFT.
 ALLOWANCE_SOFT_GATES = ("8.4", "8.6", "8.10", "8.11")
+
+
+def _load_recovery_lineage_manifest(
+    manifest_path: Path | None,
+    expected_sha256: str | None,
+) -> dict | None:
+    """Authenticate the carried recovery contract before any tester work."""
+    if manifest_path is None and not expected_sha256:
+        return None
+    if manifest_path is None or not expected_sha256:
+        raise ValueError("recovery lineage path and expected SHA256 must be paired")
+    expected = str(expected_sha256).strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", expected):
+        raise ValueError("expected recovery lineage SHA256 is invalid")
+    try:
+        manifest_bytes = Path(manifest_path).read_bytes()
+    except OSError as exc:
+        raise ValueError(
+            f"recovery lineage manifest unreadable:{type(exc).__name__}"
+        ) from exc
+    actual = hashlib.sha256(manifest_bytes).hexdigest()
+    if actual != expected:
+        raise ValueError("recovery lineage manifest SHA256 mismatch")
+    try:
+        payload = json.loads(manifest_bytes.decode("utf-8-sig"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("recovery lineage manifest JSON invalid") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("recovery lineage manifest must be an object")
+    ok, reason, normalized = validate_q08_recovery_lineage(payload)
+    if not ok or normalized is None:
+        raise ValueError(f"recovery lineage bindings invalid:{reason}")
+    return {
+        **normalized,
+        "manifest_path": str(Path(manifest_path).resolve()),
+        "manifest_sha256": actual,
+        "validation_status": "PASS",
+        "validation_reason": reason,
+    }
 
 
 def _label_within_pass_allowance(gate_name: str, label: str) -> bool:
@@ -1612,7 +1652,8 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             out_dir: Path | None = None,
             terminal: str | None = None,
             baseline_setfile: Path | None = None,
-            neighborhood_max_params: int | None = None) -> dict:
+            neighborhood_max_params: int | None = None,
+            recovery_lineage: dict | None = None) -> dict:
     log_path = Path(log_path)
     # EQUITY_SNAPSHOT account values are tagged with the physical chart symbol,
     # which differs from the logical work-item symbol for basket EAs. Resolve
@@ -1811,6 +1852,8 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             ),
         },
     }
+    if recovery_lineage is not None:
+        aggregate["recovery_lineage"] = recovery_lineage
     if mc_shuffle_dd:
         aggregate["mc_shuffle_dd"] = mc_shuffle_dd
         aggregate["mc_maxdd_p95"] = mc_shuffle_dd.get("mc_maxdd_p95")
@@ -1866,6 +1909,10 @@ def main() -> int:
                     help="explicit baseline setfile for Q08 baseline and neighborhood support runs")
     ap.add_argument("--neighborhood-max-params", type=int,
                     help="override Q08.5 perturbation parameter cap for bounded reruns")
+    ap.add_argument("--recovery-lineage-manifest", type=Path,
+                    help="append-only retry artifact bindings written by farmctl")
+    ap.add_argument("--expected-recovery-lineage-sha256",
+                    help="required SHA256 pin for --recovery-lineage-manifest")
     ap.add_argument("--discover", action="store_true",
                     help="walk Q07-PASS pairs in farm DB and run Q08 on each (TODO)")
     args = ap.parse_args()
@@ -1878,6 +1925,15 @@ def main() -> int:
         ap.print_usage(sys.stderr)
         return 2
 
+    try:
+        recovery_lineage = _load_recovery_lineage_manifest(
+            args.recovery_lineage_manifest,
+            args.expected_recovery_lineage_sha256,
+        )
+    except ValueError as exc:
+        print(f"Q08 recovery lineage refused: {exc}", file=sys.stderr)
+        return 2
+
     agg = run_all(
         args.ea_id,
         args.symbol,
@@ -1886,6 +1942,7 @@ def main() -> int:
         terminal=args.terminal,
         baseline_setfile=args.baseline_setfile,
         neighborhood_max_params=args.neighborhood_max_params,
+        recovery_lineage=recovery_lineage,
     )
     _print_summary(agg)
     return 0 if agg["verdict"] == "PASS" else (1 if agg["verdict"] == "FAIL" else 3)

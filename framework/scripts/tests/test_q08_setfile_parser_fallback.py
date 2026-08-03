@@ -170,6 +170,29 @@ def test_real_10582_markerless_ablation_uses_override_block(
     assert all(row["line_number"] >= 28 for row in assignments.values())
 
 
+def test_real_10582_ablation_materializes_only_effective_override_block(
+    tmp_path: Path,
+) -> None:
+    source = EA_10582_SETS / (
+        "QM5_10582_mql5-ema-pred_XAUUSD.DWX_H6_backtest_ablation_00.set"
+    )
+    source_sha = hashlib.sha256(source.read_bytes()).hexdigest()
+    generated = tmp_path / "nominal.set"
+
+    identity = runner.materialize_setfile(
+        source,
+        {"strategy_atr_period": 17},
+        generated,
+    )
+
+    lines = generated.read_text(encoding="utf-8").splitlines()
+    assert lines[22] == "strategy_atr_period=14"
+    assert lines[29] == "strategy_atr_period=17"
+    assert runner.parse_setfile_assignments(generated)["strategy_atr_period"]["value"] == 17
+    assert identity["strategy_param_count"] == 6
+    assert hashlib.sha256(source.read_bytes()).hexdigest() == source_sha
+
+
 @pytest.mark.parametrize(
     ("content", "message"),
     (

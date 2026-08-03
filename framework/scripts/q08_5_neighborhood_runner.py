@@ -524,6 +524,7 @@ def materialize_setfile(source_set: Path, overrides: dict[str, Any], out_path: P
     if missing:
         raise ValueError(f"setfile override parameters missing from baseline: {','.join(missing)}")
     text = source_set.read_text(encoding="utf-8-sig", errors="replace")
+    lines = text.splitlines(keepends=True)
     for key, value in overrides.items():
         original = source_assignments[key]
         cells = list(original["cells"])
@@ -531,10 +532,22 @@ def materialize_setfile(source_set: Path, overrides: dict[str, Any], out_path: P
         if len(cells) >= 5:
             cells[4] = "N"
         replacement = f"{key}={'||'.join(cells)}"
-        pattern = re.compile(rf"^{re.escape(key)}\s*=.*$", flags=re.MULTILINE)
-        text, count = pattern.subn(lambda _match: replacement, text)
-        if count != 1:
-            raise ValueError(f"setfile override count for {key}: got={count}:need=1")
+        try:
+            line_index = int(original["line_number"]) - 1
+            source_line = lines[line_index]
+        except (IndexError, KeyError, TypeError, ValueError) as exc:
+            raise ValueError(f"setfile effective line missing for {key}") from exc
+        if re.match(rf"^{re.escape(key)}\s*=", source_line.rstrip("\r\n")) is None:
+            raise ValueError(f"setfile effective line mismatch for {key}")
+        line_ending = "\r\n" if source_line.endswith("\r\n") else (
+            "\n" if source_line.endswith("\n") else ""
+        )
+        # Canonical markerless ablation children contain a base block followed
+        # by one override block.  parse_setfile_assignments has already proved
+        # that narrow shape and records the effective (last-value-wins) line;
+        # edit only that line so the base block remains immutable.
+        lines[line_index] = replacement + line_ending
+    text = "".join(lines)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(text, encoding="utf-8")
 

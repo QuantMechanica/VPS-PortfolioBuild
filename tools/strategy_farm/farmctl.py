@@ -34,6 +34,11 @@ except ModuleNotFoundError:
     from tools.strategy_farm.phase_ids import LEGACY_P_TO_Q, PHASE_ORDER, phase_label, phase_qid
 
 try:
+    from q08_recovery_lineage import validate_q08_recovery_lineage
+except ModuleNotFoundError:
+    from tools.strategy_farm.q08_recovery_lineage import validate_q08_recovery_lineage
+
+try:
     from managed_codex import (
         ManagedCodexError,
         count_live_managed_codex_processes,
@@ -5524,6 +5529,37 @@ def _q04_durable_aggregate_path(item_row: sqlite3.Row) -> Path:
     return PIPELINE_REPORT_ROOT / f"QM5_{ea_num}" / "Q04" / leaf / "aggregate.json"
 
 
+def _materialize_q08_recovery_lineage_manifest(
+    report_root: Path,
+    payload: dict[str, Any],
+) -> tuple[Path | None, str | None, str | None]:
+    """Revalidate and publish an immutable-per-work-item recovery manifest."""
+    raw_lineage = payload.get("q08_recovery_lineage")
+    if raw_lineage is None:
+        return None, None, None
+    if not isinstance(raw_lineage, dict):
+        return None, None, "q08_recovery_lineage_not_object"
+    ok, reason, normalized = validate_q08_recovery_lineage(raw_lineage)
+    if not ok or normalized is None:
+        return None, None, f"q08_recovery_lineage_invalid:{reason}"
+    manifest = dict(normalized)
+    manifest["dispatch_validation"] = {
+        "status": "PASS",
+        "reason": reason,
+        "validated_at_utc": utc_now(),
+    }
+    manifest_bytes = (
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+    manifest_path = report_root / "q08_recovery_lineage.json"
+    try:
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        manifest_path.write_bytes(manifest_bytes)
+    except OSError as exc:
+        return None, None, f"q08_recovery_lineage_write_failed:{type(exc).__name__}"
+    return manifest_path, hashlib.sha256(manifest_bytes).hexdigest(), None
+
+
 def _phase_runner_timeout_sec_from_payload(payload: dict[str, Any]) -> int | None:
     """Convert a work-item timeout_min payload into a child runner budget."""
     try:
@@ -5779,6 +5815,11 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
     elif phase == "Q08":
         # Q08 aggregator reads the EA's structured JSON-lines log directly.
         # Worker-passed --setfile/--period not needed; we rebuild the cmd.
+        lineage_manifest, lineage_manifest_sha, lineage_error = (
+            _materialize_q08_recovery_lineage_manifest(report_root, payload)
+        )
+        if lineage_error:
+            return None
         log_path = (Path(r"D:\QM\mt5") / (terminal or "T1") /
                     "MQL5" / "Logs" / "QM" / f"{ea_id}.log")
         cmd = [
@@ -5793,6 +5834,11 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--baseline-setfile", str(item_row["setfile_path"] or ""),
             "--neighborhood-max-params", str(Q08_NEIGHBORHOOD_MAX_PARAMS),
         ]
+        if lineage_manifest is not None and lineage_manifest_sha is not None:
+            cmd.extend([
+                "--recovery-lineage-manifest", str(lineage_manifest),
+                "--expected-recovery-lineage-sha256", lineage_manifest_sha,
+            ])
     elif phase == "Q09_NEWS":
         # Q09 executes its immutable cell plan inside this already-reserved
         # factory slot. Binding is content-addressed and performed separately;
@@ -8215,6 +8261,10 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 for key in _FRESH_Q02_SEED_PROVENANCE_KEYS:
                     if key in item_payload:
                         new_payload[key] = item_payload[key]
+            if "q08_recovery_lineage" in item_payload:
+                new_payload["q08_recovery_lineage"] = item_payload[
+                    "q08_recovery_lineage"
+                ]
             with connect(root) as conn2:
                 # We already own the row via the CAS claim above; enrich in place
                 # (ownership-guarded) rather than re-racing the pending -> active edge.

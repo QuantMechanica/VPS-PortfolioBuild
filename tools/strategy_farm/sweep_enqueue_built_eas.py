@@ -126,15 +126,15 @@ NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
 
 sys.path.insert(0, str(REPO_ROOT / "tools" / "strategy_farm"))
 import farmctl  # staging helpers (_stage_q02_setfiles, _record_q02_deferral)
+from q08_recovery_lineage import build_q08_recovery_lineage
 REQUEUE_EXCLUDED_EAS = farmctl.load_requeue_excluded_eas()
 
 # 2026-07-19 (Q08 INFRA_FAIL storm RCA): a deterministic setgen defect in the
-# baseline setfile (zero strategy params, empty value, or a duplicate strategy
-# assignment) makes the Q08.5 neighborhood runner raise a hard ValueError on
-# EVERY run — re-enqueuing that (ea,symbol,setfile) can never succeed until the
-# setfile is regenerated, yet the blunt MAX_INFRA_ATTEMPTS counter still burns
-# up to 12 full Q08 baseline backtests per pair. Pre-validate with the runner's
-# OWN parser (single source of truth) and refuse the doomed re-enqueue.
+# baseline setfile (zero strategy params, empty value, or a noncanonical
+# duplicate shape) makes the Q08.5 neighborhood runner raise a hard ValueError
+# on EVERY run. Canonical markerless ablation base+override blocks are accepted
+# with MT5 last-value-wins semantics. Pre-validate with the runner's OWN parser
+# (single source of truth) and refuse only the doomed re-enqueue.
 # framework/scripts has no __init__.py -> module import via sys.path, appended
 # (not inserted) so it can never shadow tools/strategy_farm modules.
 try:
@@ -237,7 +237,7 @@ def insert_wi(
             "symbol": symbol,
             "setfile": Path(setfile).name,
         })
-        return False
+        return None
     # OWNER directive 2026-06-20: only ever enqueue .DWX custom symbols. Bare
     # broker symbols have no local history -> the tester fails history sync with
     # "file opening or reading error [32]" and the item INFRA_FAILs without ever
@@ -247,15 +247,16 @@ def insert_wi(
         and not allow_logical_basket
     ):
         report.setdefault("non_dwx_refused", []).append({"ea_id": ea_id, "symbol": symbol})
-        return False
+        return None
+    work_item_id = str(uuid.uuid4())
     if APPLY:
         cur.execute(
             "INSERT INTO work_items (id, kind, phase, ea_id, symbol, setfile_path, "
             "status, attempt_count, payload_json, created_at, updated_at) "
             "VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, ?, ?, ?)",
-            (str(uuid.uuid4()), phase, ea_id, symbol, str(setfile),
+            (work_item_id, phase, ea_id, symbol, str(setfile),
              json.dumps(payload), NOW, NOW))
-    return True
+    return work_item_id
 
 # ---------- Part 1: built, never tested ----------
 ea_dirs = {}
@@ -544,11 +545,30 @@ for phase in ("Q02", "Q03", "Q08"):
         payload = {"host_symbol": symbol,
                    "enqueued_by": "claude_sweep_enqueue_2026-06-10.stranded_infra_fail",
                    "enqueued_at_utc": NOW}
-        if not insert_wi(phase, ea_id, symbol, setfile, payload):
+        if phase == "Q08":
+            recovery_lineage, lineage_error = build_q08_recovery_lineage(
+                con,
+                REPORT_ROOT,
+                ea_id=ea_id,
+                symbol=symbol,
+                setfile_path=setfile,
+            )
+            if lineage_error:
+                report["part2_stranded"]["skipped"].append(
+                    {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                     "reason": "q08_recovery_lineage_invalid",
+                     "detail": lineage_error,
+                     "setfile": Path(setfile).name})
+                continue
+            if recovery_lineage is not None:
+                payload["q08_recovery_lineage"] = recovery_lineage
+        new_work_item_id = insert_wi(phase, ea_id, symbol, setfile, payload)
+        if not new_work_item_id:
             continue
         report["part2_stranded"]["enqueued"].append(
             {"ea_id": ea_id, "phase": phase, "symbol": symbol,
-             "setfile": Path(setfile).name})
+             "setfile": Path(setfile).name,
+             "work_item_id": new_work_item_id})
         part2_count += 1
         if part2_count >= MAX_PART2_PER_RUN:
             report["part2_stranded"]["rate_limited"] = True
