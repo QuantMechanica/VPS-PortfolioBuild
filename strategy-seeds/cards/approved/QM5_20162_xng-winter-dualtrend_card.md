@@ -48,9 +48,11 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: FAIL
+q02_work_item_id: 8ef419db-6ccf-4804-894a-7a4da78fa2bc
+q02_reason: MIN_TRADES_NOT_MET
 review_focus: "Adds winter heating-demand trend exposure distinct from the incumbent XNG RSI pullback. The Nov-Mar window plus rising 21/84-D1 trend stack are jointly load-bearing; Q09 alone may establish realized orthogonality."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -180,7 +182,7 @@ AutoTrading, deploy manifest, portfolio gate or portfolio manifest change.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-08-03 | finish the committed but unbuilt winter dual-trend scaffold under the renewed OWNER commodity/energy mission | Q01 | PASS |
+| v1 | 2026-08-03 | finish the committed but unbuilt winter dual-trend scaffold under the renewed OWNER commodity/energy mission | Q02 | FAIL — 11 trades did not meet the governed minimum of 25 |
 
 ## Pipeline Phase Status
 
@@ -188,4 +190,4 @@ AutoTrading, deploy manifest, portfolio gate or portfolio manifest change.
 |---|---|---|---|
 | G0 Research Intake | 2026-07-26 / reaffirmed 2026-08-03 | APPROVED; R1-R4 PASS | this card, governed source packet, and `decisions/2026-08-03_qm5_20162_xng_winter_dualtrend_build_resume.md` |
 | Q01 Build Validation | 2026-08-03 | PASS; strict compile and build check, 0 errors, 0 warnings, 0 failures | `D:/QM/reports/framework/21/build_check_20260803_102721.json` |
-| Q02 Baseline Screening | — | NOT_ENQUEUED | paced enqueue pending |
+| Q02 Baseline Screening | 2026-08-03 | FAIL — `MIN_TRADES_NOT_MET`; 11 trades versus 25 required | work item `8ef419db-6ccf-4804-894a-7a4da78fa2bc`; `D:/QM/reports/work_items/8ef419db-6ccf-4804-894a-7a4da78fa2bc/QM5_20162/20260803_104740/summary.json` |
