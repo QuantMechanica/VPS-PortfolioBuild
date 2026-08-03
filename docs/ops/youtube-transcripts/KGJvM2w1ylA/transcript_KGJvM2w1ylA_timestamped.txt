@@ -1,0 +1,395 @@
+[00:00:00] The question is, can we build a strategy
+[00:00:01] that is super effective for prop firms
+[00:00:04] and then not for the challenges because
+[00:00:05] that was covered in last week's episode,
+[00:00:08] but can it be very effective for if you
+[00:00:10] are a funded prop firm trader and what's
+[00:00:12] important, what to look at and how to
+[00:00:15] even build it in Perfectus AI. It will
+[00:00:17] be a beginner tutorial on how to build a
+[00:00:19] strategy for prop firms. This one super
+[00:00:23] high strike rate, super consistent in
+[00:00:25] the sense of what it does every single
+[00:00:28] month. And yeah, I think it's a nice
+[00:00:30] template to use. Of course, no financial
+[00:00:32] advice and let's dive into Perfectus and
+[00:00:35] let me show you the trades, the report
+[00:00:37] and how to build it. Okay, super excited
+[00:00:39] to dive into this strategy. It is made
+[00:00:42] not for a personal account. It is made
+[00:00:44] for just prop firm accounts and the
+[00:00:46] reason for it is it is super consistent,
+[00:00:48] but it has some big risks, okay? And
+[00:00:52] therefore on a prop firm account, it is
+[00:00:54] demo money and the payouts are real. So,
+[00:00:57] that is a different way and therefore I
+[00:01:00] play this a statistical game. It's like
+[00:01:01] how many payouts can I get without
+[00:01:04] [snorts] losing my account? If I can get
+[00:01:06] 10 payouts and then lose my account,
+[00:01:08] I've made in those 10 payouts enough
+[00:01:11] that I can purchase a lot of new
+[00:01:13] challenge accounts, okay? That's the
+[00:01:14] statistical game I play with prop firms
+[00:01:17] and therefore maybe the strategy looks
+[00:01:19] epic to run on a personal private
+[00:01:21] account as well, but I don't recommend
+[00:01:24] to do that because there are some risk
+[00:01:26] with it and we're going to dive into it.
+[00:01:28] But besides that, you will have a
+[00:01:30] beautiful thing here. Let's dive into
+[00:01:33] the overall platform. So, if you are
+[00:01:34] new, what you can do is go to the link
+[00:01:37] in the bio of this video or in
+[00:01:40] description. Click on it, this strategy
+[00:01:43] opens. If you are new, just make a free
+[00:01:45] account and it opens up and you can
+[00:01:47] yeah, test and play around with it with
+[00:01:50] me. So, how does does this work? We put
+[00:01:53] everything of all the code we put in
+[00:01:56] blocks and therefore we built a drag and
+[00:01:58] drop platform. Why do we put it in
+[00:02:01] blocks? Because the code is pre-written,
+[00:02:03] it's consistent, it's always the same,
+[00:02:05] it's reliable, and that's what you want
+[00:02:07] with financial algorithms, right? And by
+[00:02:09] connecting these blocks with yes and no
+[00:02:11] answers, you can build a billion
+[00:02:13] different strategies. Like we have
+[00:02:15] automated all types of strategies. I'll
+[00:02:17] show you some here, and you can see all
+[00:02:19] trading styles are already automated. We
+[00:02:21] have been building so many strategies
+[00:02:23] and yeah, you can uh just find your
+[00:02:26] trading style. But first, let's focus on
+[00:02:28] prop firms now because that is the
+[00:02:30] current season.
+[00:02:31] This strategy, we have the blocks on the
+[00:02:33] canvas. Let me quickly explain
+[00:02:35] everything on this canvas runs every
+[00:02:38] single time the price moves. So, imagine
+[00:02:41] here seeing run per candle.
+[00:02:44] Run per candle just means every
+[00:02:45] candlestick close, the algorithm is
+[00:02:47] checking the next thing below and below
+[00:02:50] and below. It's like a decision tree.
+[00:02:52] If you run this algorithm, let's say
+[00:02:54] it's on the 15-minute time frame on Kiwi
+[00:02:57] Swiss, then I will keep it on the
+[00:03:00] 15-minute time frame because then run
+[00:03:02] per candle means every 15 minutes, we're
+[00:03:04] going to check the next thing. What is
+[00:03:06] the next thing? Are we in a certain time
+[00:03:10] session? And this time session is using
+[00:03:12] inputs, but you can also just uh use
+[00:03:15] text, but let's uh do an input. An input
+[00:03:17] is a setting in your MetaTrader. If you
+[00:03:19] download this algorithm and not test in
+[00:03:21] the platform, but on your own terminal
+[00:03:23] in MetaTrader 5, then you want to adjust
+[00:03:26] settings when you upload it. And if you
+[00:03:29] have any questions, by the way, use the
+[00:03:30] question mark down below, uh and you can
+[00:03:33] ask anything to our AI because this
+[00:03:35] trained on all everything we build, our
+[00:03:38] documentation, our teachings, okay? With
+[00:03:41] that said, we have here running session
+[00:03:43] means start time is set at 2:00 at
+[00:03:46] night, and end time is set at uh 8:00 in
+[00:03:49] the evening. So, what that means is
+[00:03:51] every single 15-minute close,
+[00:03:55] we going to check are we within
+[00:03:57] 2:00 in the morning or 2:00 at night and
+[00:04:00] 8:00 in the evening. Okay, are we within
+[00:04:02] that timeframe? So, this algorithm
+[00:04:04] doesn't do anything before 2:00 and
+[00:04:06] after 8:00. So, are we in the session?
+[00:04:09] Yes. You can also maybe see it as like a
+[00:04:12] are we in the London session or Asian
+[00:04:14] session? Like you can build it all. And
+[00:04:16] you can even adjust options like are we
+[00:04:18] in a certain month or in a certain
+[00:04:20] weekday, but not relevant for now.
+[00:04:23] If that's true, if we
+[00:04:25] at the 15-minute close are within the
+[00:04:26] session, we going to check if the candle
+[00:04:28] close is above the upper band of the
+[00:04:30] Bollinger. If that is true, then we
+[00:04:33] going to check if the relative strength
+[00:04:35] index is also above the value 70. If
+[00:04:38] that is true, we going to check some
+[00:04:40] higher timeframe confluence. If that is
+[00:04:43] also set at one and I will explain what
+[00:04:45] this block does. These two are quite
+[00:04:47] simple, just simple price action, a
+[00:04:49] little bit more trends. And if you
+[00:04:51] watched last week's episode about
+[00:04:53] creating a prop firm challenge
+[00:04:55] algorithm, then you might already
+[00:04:57] recognize a little bit of this strategy,
+[00:04:59] but it is different. So,
+[00:05:01] stay with me. We have count trades. Do
+[00:05:03] we have any trades open? Yes or no? So,
+[00:05:06] is the trade count zero or is the order
+[00:05:08] count zero? This is also something if
+[00:05:10] you open your MetaTrader before you take
+[00:05:11] a trade, probably you remind
+[00:05:14] you know it out of your head like do I
+[00:05:16] have trades open today? And this
+[00:05:18] strategy doesn't want to have more
+[00:05:20] trades open every day. So, therefore we
+[00:05:23] check do we have zero trades? Yes, we
+[00:05:26] have zero orders also placed, no buy
+[00:05:28] limits or anything or sell orders in
+[00:05:31] this case. If that's true, we going to
+[00:05:32] place a sell pending order on a certain
+[00:05:35] price and that's the candle close of the
+[00:05:37] last 15-minute candle with a price price
+[00:05:40] offset of two pips or two pips away of
+[00:05:42] that closing price on the 15-minute
+[00:05:45] candle. One means last closed candle.
+[00:05:48] The if you want to place it on the
+[00:05:49] candle before, you can do candle uh two,
+[00:05:52] but Okay, let me quickly repeat. We have
+[00:05:54] Every 15 minutes, we're going to check
+[00:05:56] if we are in a session. If we are in a
+[00:05:58] session, we're going to see if the last
+[00:06:00] candle closed
+[00:06:02] on the 15-minute time frame is above the
+[00:06:04] Bollinger Band upper band. You have
+[00:06:06] three bands. And then, we also check if
+[00:06:09] the Relative Strength Index is above 70.
+[00:06:12] If that's also true, then we check one
+[00:06:15] more thing, more on that later, and then
+[00:06:17] count trades. If you have zero trades,
+[00:06:18] we're going to place a sell pending
+[00:06:20] order at the candle close with that
+[00:06:22] offset with a fixed volume, so a fixed
+[00:06:25] lot size. You can change that. It is an
+[00:06:27] input. Again, it is a setting that you
+[00:06:30] can use and create. Here, you can see
+[00:06:32] all the standard settings.
+[00:06:34] Then, we have stop loss. We have a stop
+[00:06:36] loss of pips. So, how many pips we are
+[00:06:40] using
+[00:06:41] a huge stop loss. So, we don't really
+[00:06:44] have a stop loss, and therefore, never
+[00:06:46] run this on a private account. It's like
+[00:06:48] super risky. It has a huge strike rate
+[00:06:51] because you
+[00:06:52] have a small target, so you reach your
+[00:06:54] target quickly. But then, if you're in
+[00:06:56] drawdown, you can be in deep drawdown
+[00:06:58] lose lose it all, right? So, never never
+[00:07:01] run this on a private account. It's way
+[00:07:04] too risky. Then, custom price level.
+[00:07:08] We're going to have a take profit at the
+[00:07:10] middle line. So, you have three
+[00:07:11] Bollingers. We're going to target the
+[00:07:14] mid line. We delete the order after 15
+[00:07:17] minutes. Quite similar to the strategy
+[00:07:19] of the last week's episode. By the way,
+[00:07:22] this we do a whole season about the
+[00:07:24] trading style. So, this is the prop firm
+[00:07:25] season. So, also check the last, I
+[00:07:28] think, three videos before this one.
+[00:07:31] We have here running session. So, we're
+[00:07:33] going to check between two and what was
+[00:07:35] it? Two and eight, we're going to check
+[00:07:38] something. What do we check? If the
+[00:07:40] candle high
+[00:07:42] of the 1-hour time frame
+[00:07:44] is currently above the upper band. If
+[00:07:47] that is true, we change a variable. So,
+[00:07:49] a variable is normally, if you create a
+[00:07:52] variable, let's go to inputs and
+[00:07:54] variables.
+[00:07:55] Uh you have inputs, settings, and
+[00:07:58] variables are things you write down or
+[00:08:00] the algorithm remembers, right? It's a
+[00:08:01] memory. So, like I said, if you want to
+[00:08:05] uh save something that your algorithm
+[00:08:07] knows, like what we do here, it uh you
+[00:08:10] want your algorithm to know is the
+[00:08:12] candle high above the Bollinger Band?
+[00:08:14] Yes. Maybe you want to store that
+[00:08:17] information for a while, okay? So, then
+[00:08:19] you can use a modified variable, and we
+[00:08:21] create that variable,
+[00:08:24] and we change the value of the variable.
+[00:08:26] Normally, a variable is set at zero, the
+[00:08:28] value is zero. You can name it however
+[00:08:31] you want. But, then we want to change
+[00:08:35] this variable to one. Or if the answer
+[00:08:37] is no, if the candle high is not above
+[00:08:40] the upper band, maybe you want to change
+[00:08:42] the variable back to zero. So, if it is
+[00:08:44] one, you know we are above the Bollinger
+[00:08:46] Band. If it's no, we are not above the
+[00:08:48] Bollinger Band. Okay?
+[00:08:50] Then,
+[00:08:51] we have here a lot of things. We have a
+[00:08:53] lot of sell orders, and this is where it
+[00:08:56] becomes very
+[00:08:59] crazy. We have running sessions, so
+[00:09:01] within that time frame, well, we we just
+[00:09:04] shared it. We want to select the trades,
+[00:09:07] so check if we have open trades.
+[00:09:10] Sells only.
+[00:09:11] And this is a sell pending order. And
+[00:09:13] we're going to use group numbers now.
+[00:09:14] So, you can tag every trade that an
+[00:09:17] algorithm stakes, you can tag it and
+[00:09:19] then use it for um yeah, to do an
+[00:09:23] action. So, let's say you have three
+[00:09:24] trades open. Maybe the middle trade, if
+[00:09:26] that reaches profit or stop loss, you
+[00:09:29] want to take another action or
+[00:09:30] something. Like you can tag with numbers
+[00:09:33] your trades. So, we're We're to do that.
+[00:09:35] Here, the sell pending, if this sell
+[00:09:37] pending order is triggered, it has the
+[00:09:39] tag one. Okay, so we always know or the
+[00:09:42] algorithm knows like we are not doing
+[00:09:43] anything. The algorithm does it. Uh the
+[00:09:45] algorithm knows, okay, I have a sell
+[00:09:47] pending order with group number one and
+[00:09:49] that tag just stays to it. So if
+[00:09:52] triggers, we have a sell trade with the
+[00:09:54] tag one.
+[00:09:56] Then we can select this trade. So we're
+[00:09:57] going to select the open trade with
+[00:10:00] group number one and it is a sell trade.
+[00:10:02] So now we select, we grab that trade and
+[00:10:05] we're going to do something with it.
+[00:10:06] We're going to check, okay, how much do
+[00:10:10] we float? So check profit loss.
+[00:10:13] We check if we have a floating amount is
+[00:10:16] bigger than or equal to and it is
+[00:10:18] losing, so the trade is negative.
+[00:10:22] Floating loss, let's see how bad do we
+[00:10:23] need to float?
+[00:10:25] We are floating negative 150, so euros
+[00:10:28] or dollars, depending on your account.
+[00:10:30] So we are floating minus 150 with this
+[00:10:34] first trade. If that is true,
+[00:10:38] then we
+[00:10:40] going to check if we don't have a a
+[00:10:42] number two trade, number three, four,
+[00:10:44] five, and six trade already open. So
+[00:10:47] we're going to check all if there are
+[00:10:48] more trades and if they are tagged.
+[00:10:51] Uh if that is
+[00:10:53] no, so we have zero.
+[00:10:56] So that's true. Then we're going to
+[00:10:57] place a sell now order. Well, this sell
+[00:11:00] now has a lot size two. It's a slightly
+[00:11:03] bigger lot size. We execute this trade.
+[00:11:05] We have a stop loss in pips, which is
+[00:11:07] still that insane big stop loss, but you
+[00:11:10] need the stop loss following the rules
+[00:11:12] of prop firms. And then the most
+[00:11:15] important, we now name this one group
+[00:11:17] two. So now we have a group one floating
+[00:11:19] negative and because we are floating
+[00:11:21] negative, we're going to add a second
+[00:11:23] position. We give it a tag number two.
+[00:11:25] That's super important. Okay? Now we
+[00:11:28] have a number two trade open. So the
+[00:11:31] next millisecond the algorithm runs this
+[00:11:33] again within the session at least. And
+[00:11:36] then it's going to select the open trade
+[00:11:38] number two. And then again, same story
+[00:11:41] true. If that number two is also
+[00:11:42] floating negative, we want to count if
+[00:11:45] we don't have
+[00:11:46] three, four, five, and six trades
+[00:11:48] already open. If not, we going to take
+[00:11:50] this trade other lot size again. We
+[00:11:52] going to stack trade. And we name it
+[00:11:55] group number three. Well, now you know
+[00:11:57] the deal. We going to select group
+[00:11:58] number three here again. Check the
+[00:12:00] floating profit if that is also floating
+[00:12:02] negative. We going to add another
+[00:12:04] position, okay? And if you keep doing
+[00:12:06] that, you have like every time price
+[00:12:08] goes against you, you stack. And that is
+[00:12:10] called a Martingale. And a Martingale
+[00:12:12] never run that on a private account,
+[00:12:14] right?
+[00:12:15] Um you know that now. I've said it a
+[00:12:17] billion times, but still let me remind
+[00:12:19] you. Uh because one day it just doesn't
+[00:12:23] come back and then you uh it loses a lot
+[00:12:26] of money. And that is why we are playing
+[00:12:28] with prop firms a statistical game of
+[00:12:31] trading where you want where you know,
+[00:12:34] okay, Martingale always blows up. I've
+[00:12:36] been seeing it over 10 years. The most
+[00:12:38] beautiful track records, every month
+[00:12:39] profit, then you know it's a Martingale.
+[00:12:41] The equity curve literally looks like
+[00:12:44] like this. The monthly returns look like
+[00:12:46] this. And then you have a minus 100
+[00:12:48] month. And it's all gone. I've Like I
+[00:12:50] said, I've seen it countless of times.
+[00:12:52] And it's ridiculous that people promote
+[00:12:55] those strategies to run on private money
+[00:12:58] because it looks so good and then it's
+[00:13:00] all gone. Yeah? But with prop firms it
+[00:13:02] is a different story because this is
+[00:13:04] demo money and you can get all these
+[00:13:06] payouts. And then it blows up, then you
+[00:13:09] are in profits, okay? Then you are in
+[00:13:12] profits.
+[00:13:13] So, that is my approach, just my
+[00:13:15] opinion. So, that is the strategy in a
+[00:13:18] nutshell. So, what do we have here? We
+[00:13:20] forgot one piece and that is select
+[00:13:22] trades. And then we close trades as as
+[00:13:25] So, we have all these trades open. We
+[00:13:27] don't have a target, right? We can
+[00:13:29] check, but we
+[00:13:30] Do we have a target with all these
+[00:13:32] scalings? No. So, what we are doing here
+[00:13:35] is we going to select all the trades.
+[00:13:37] Make sure you select it because if you
+[00:13:39] don't, then you're selecting zero
+[00:13:42] trades. So, select all the trades with
+[00:13:43] the tags.
+[00:13:45] They are just sells. We are only
+[00:13:47] selling.
+[00:13:48] You're calculating floating profit. So,
+[00:13:51] that is your equity minus your balance.
+[00:13:53] So, those are just things you can uh
+[00:13:55] find no no variables or anything. Uh
+[00:13:57] just a variable floating profit uh you
+[00:14:00] create.
+[00:14:02] And then you Yeah. You use it in a
+[00:14:04] formula.
+[00:14:06] Then you have floating profit is above
+[00:14:08] profit float. What's profit float?
+[00:14:11] Profit float is 150. So, if we are
+[00:14:13] floating 150 in profit, then we want to
+[00:14:17] do something. If that is true,
+[00:14:20] then we're going to select the trades,
+[00:14:21] all of them,
+[00:14:22] and we're going to close the trades.
+[00:14:24] So, thank you for watching. Click on the
+[00:14:26] descrip uh link in the description below
+[00:14:28] to get this template. Feel free to test
+[00:14:31] it around. Uh feel free to make it your
+[00:14:33] own and do something with it.
+[00:14:37] You know the risks. You know now how
+[00:14:40] prop firms work. You know how to how I
+[00:14:42] approach prop firm challenges, and you
+[00:14:44] now know how I also uh when you uh have
+[00:14:47] funded accounts, how I approach that.
+[00:14:49] It's all based on our experience. Thank
+[00:14:51] you for watching. See you in the next
+[00:14:53] one. Subscribe below. Join the Discord
+[00:14:55] as well. We have a free community for
+[00:14:57] prop traders. If you have questions,
+[00:14:59] comment below, and I see you in next
+[00:15:01] week's episode.

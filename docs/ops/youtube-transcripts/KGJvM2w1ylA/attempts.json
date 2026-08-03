@@ -1,0 +1,116 @@
+{
+  "source_stats": [
+    {
+      "url": "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt",
+      "status": 200,
+      "count": 3035
+    },
+    {
+      "url": "https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt",
+      "status": 200,
+      "count": 150
+    },
+    {
+      "url": "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt",
+      "status": 200,
+      "count": 592
+    },
+    {
+      "url": "https://raw.githubusercontent.com/zloi-user/hideip.me/main/http.txt",
+      "status": 200,
+      "count": 56
+    },
+    {
+      "url": "https://api.proxyscrape.com/v2/?request=getproxies&protocol=http&timeout=6000&country=all&ssl=all&anonymity=all",
+      "status": 200,
+      "count": 555
+    }
+  ],
+  "candidate_count": 4057,
+  "attempted": 11,
+  "success": {
+    "proxy": "http://101.255.208.18:8090",
+    "ok": true,
+    "elapsed": 7.13,
+    "rows": 395
+  },
+  "sample_attempts": [
+    {
+      "proxy": null,
+      "ok": false,
+      "elapsed": 1.33,
+      "error_type": "RequestBlocked",
+      "error": "\nCould not retrieve a transcript for the video https://www.youtube.com/watch?v=KGJvM2w1ylA! This is most likely caused by:\n\nYouTube is blocking requests from your IP. This usually is due to one of the following reasons:\n- You have done too many requests and your IP has been blocked by YouTube\n- You are doing requests from an IP belonging to a cloud provider (like AWS, Google Cloud Platform, Azure, etc.). Unfortunately, most IPs from cloud providers are blocked by YouTube.\n\nThere are two things you can do to work around this:\n1. Use proxies to hide your IP address, as explained in the \"Working around IP bans\" section of the README (https://github.com/jdepoix/youtube-transcript-api?tab=readme-ov-file#working-around-ip-bans-requestblocked-or-ipblocked-exception).\n2. (NOT RECOMMENDED) If you authenticate your requests using cookies, you will be able to continue doing requests for a while. However, YouTube will eventually permanently ban the account that you have used to authenticate with! So only do this if you don't mind your account being banned!\n\nIf you are sure that the described cause is not responsible for this error and that a transcript should be retrievable, please create an issue at https://github.com/jdepoix/youtube-transcript-api/issues. Please add which version of youtube_transcript_api you are using and provide the information needed to replicate the error. Also make sure that there are no open issues which already describe your problem!"
+    },
+    {
+      "proxy": "http://0.0.0.0:80",
+      "ok": false,
+      "elapsed": 0.0,
+      "error_type": "ProxyError",
+      "error": "HTTPSConnectionPool(host='www.youtube.com', port=443): Max retries exceeded with url: /watch?v=KGJvM2w1ylA (Caused by ProxyError('Unable to connect to proxy', NewConnectionError(\"HTTPSConnection(host='0.0.0.0', port=80): Failed to establish a new connection: [WinError 10049] The requested address is not valid in its context\")))"
+    },
+    {
+      "proxy": "http://1.10.141.115:8080",
+      "ok": false,
+      "elapsed": 21.0,
+      "error_type": "ProxyError",
+      "error": "HTTPSConnectionPool(host='www.youtube.com', port=443): Max retries exceeded with url: /watch?v=KGJvM2w1ylA (Caused by ProxyError('Unable to connect to proxy', ConnectTimeoutError(<HTTPSConnection(host='1.10.141.115', port=8080) at 0x2956a470b90>, 'Connection to 1.10.141.115 timed out. (connect timeout=None)')))"
+    },
+    {
+      "proxy": "http://1.179.148.9:55636",
+      "ok": false,
+      "elapsed": 21.0,
+      "error_type": "ProxyError",
+      "error": "HTTPSConnectionPool(host='www.youtube.com', port=443): Max retries exceeded with url: /watch?v=KGJvM2w1ylA (Caused by ProxyError('Unable to connect to proxy', ConnectTimeoutError(<HTTPSConnection(host='1.179.148.9', port=55636) at 0x2956a47ea50>, 'Connection to 1.179.148.9 timed out. (connect timeout=None)')))"
+    },
+    {
+      "proxy": "http://1.179.151.165:31948",
+      "ok": false,
+      "elapsed": 21.0,
+      "error_type": "ProxyError",
+      "error": "HTTPSConnectionPool(host='www.youtube.com', port=443): Max retries exceeded with url: /watch?v=KGJvM2w1ylA (Caused by ProxyError('Unable to connect to proxy', ConnectTimeoutError(<HTTPSConnection(host='1.179.151.165', port=31948) at 0x2956a4808d0>, 'Connection to 1.179.151.165 timed out. (connect timeout=None)')))"
+    },
+    {
+      "proxy": "http://1.20.169.178:8080",
+      "ok": false,
+      "elapsed": 21.0,
+      "error_type": "ProxyError",
+      "error": "HTTPSConnectionPool(host='www.youtube.com', port=443): Max retries exceeded with url: /watch?v=KGJvM2w1ylA (Caused by ProxyError('Unable to connect to proxy', ConnectTimeoutError(<HTTPSConnection(host='1.20.169.178', port=8080) at 0x2956a482790>, 'Connection to 1.20.169.178 timed out. (connect timeout=None)')))"
+    },
+    {
+      "proxy": "http://1.231.81.166:3128",
+      "ok": false,
+      "elapsed": 0.58,
+      "error_type": "ProxyError",
+      "error": "HTTPSConnectionPool(host='www.youtube.com', port=443): Max retries exceeded with url: /watch?v=KGJvM2w1ylA (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')))"
+    },
+    {
+      "proxy": "http://1.4.214.178:8080",
+      "ok": false,
+      "elapsed": 21.0,
+      "error_type": "ProxyError",
+      "error": "HTTPSConnectionPool(host='www.youtube.com', port=443): Max retries exceeded with url: /watch?v=KGJvM2w1ylA (Caused by ProxyError('Unable to connect to proxy', ConnectTimeoutError(<HTTPSConnection(host='1.4.214.178', port=8080) at 0x2956a481f10>, 'Connection to 1.4.214.178 timed out. (connect timeout=None)')))"
+    },
+    {
+      "proxy": "http://101.255.150.238:1080",
+      "ok": false,
+      "elapsed": 21.11,
+      "error_type": "ProxyError",
+      "error": "HTTPSConnectionPool(host='www.youtube.com', port=443): Max retries exceeded with url: /watch?v=KGJvM2w1ylA (Caused by ProxyError('Unable to connect to proxy', ConnectTimeoutError(<HTTPSConnection(host='101.255.150.238', port=1080) at 0x2956a4800d0>, 'Connection to 101.255.150.238 timed out. (connect timeout=None)')))"
+    },
+    {
+      "proxy": "http://101.255.151.205:8181",
+      "ok": false,
+      "elapsed": 21.0,
+      "error_type": "ProxyError",
+      "error": "HTTPSConnectionPool(host='www.youtube.com', port=443): Max retries exceeded with url: /watch?v=KGJvM2w1ylA (Caused by ProxyError('Unable to connect to proxy', ConnectTimeoutError(<HTTPSConnection(host='101.255.151.205', port=8181) at 0x2956a47c290>, 'Connection to 101.255.151.205 timed out. (connect timeout=None)')))"
+    },
+    {
+      "proxy": "http://101.255.164.214:8090",
+      "ok": false,
+      "elapsed": 21.0,
+      "error_type": "ProxyError",
+      "error": "HTTPSConnectionPool(host='www.youtube.com', port=443): Max retries exceeded with url: /watch?v=KGJvM2w1ylA (Caused by ProxyError('Unable to connect to proxy', ConnectTimeoutError(<HTTPSConnection(host='101.255.164.214', port=8090) at 0x2956a47c490>, 'Connection to 101.255.164.214 timed out. (connect timeout=None)')))"
+    }
+  ]
+}
