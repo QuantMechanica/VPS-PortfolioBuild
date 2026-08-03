@@ -36,7 +36,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11503;
+input int    qm_ea_id                   = 9645;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -74,13 +74,17 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_sl_pips              = 200;
-input int    strategy_tp_pips              = 400;
-input bool   strategy_next_bar_exit        = false;
-input int    strategy_max_hold_bars        = 5;
-input bool   strategy_require_body_engulf  = false;
-input bool   strategy_use_sma200_filter    = false;
-input int    strategy_spread_cap_pips      = 30;
+input int    strategy_k_period              = 14;
+input int    strategy_smoothing             = 3;
+input double strategy_entry_k_max            = 20.0;
+input double strategy_entry_d_max            = 25.0;
+input double strategy_exit_k_min             = 50.0;
+input int    strategy_regime_sma_period      = 200;
+input int    strategy_atr_period             = 14;
+input double strategy_atr_sl_mult            = 2.2;
+input int    strategy_max_hold_days          = 8;
+input int    strategy_volatility_lookback    = 252;
+input double strategy_volatility_percentile  = 99.0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -90,18 +94,8 @@ input int    strategy_spread_cap_pips      = 30;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(strategy_spread_cap_pips <= 0)
-      return false;
-
-   if(ask > 0.0 && bid > 0.0 && ask > bid)
-     {
-      const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
-      if(cap > 0.0 && (ask - bid) > cap)
-         return true;
-     }
-
+   // The card has no session or spread restriction. Its closed-D1 regime and
+   // volatility gates belong in Strategy_EntrySignal, after QM_IsNewBar().
    return false;
   }
 
@@ -110,87 +104,79 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   if((ENUM_TIMEFRAMES)_Period != PERIOD_D1)
-      return false;
-   if(strategy_sl_pips <= 0 || strategy_tp_pips <= 0 || strategy_max_hold_bars < 0)
-      return false;
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
-      return false;
-
-   MqlDateTime broker_bar;
-   TimeToStruct(TimeCurrent(), broker_bar);
-   if(broker_bar.day_of_week == 5)
-      return false;
-
-   // perf-allowed: the card's two-bar outside pattern is bespoke structural
-   // OHLC logic, and this hook is called only after the framework D1 bar gate.
-   const double high1  = iHigh(_Symbol, PERIOD_D1, 1);  // perf-allowed
-   const double low1   = iLow(_Symbol, PERIOD_D1, 1);   // perf-allowed
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed
-   const double high2  = iHigh(_Symbol, PERIOD_D1, 2);  // perf-allowed
-   const double low2   = iLow(_Symbol, PERIOD_D1, 2);   // perf-allowed
-   if(high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || high2 <= 0.0 || low2 <= 0.0)
-      return false;
-
-   const bool outside_bar = (high1 > high2 && low1 < low2);
-   if(!outside_bar)
-      return false;
-
-   bool long_signal  = (close1 < low2);
-   bool short_signal = (close1 > high2);
-
-   if(strategy_require_body_engulf)
-     {
-      // perf-allowed: fixed closed-bar reads for the card-authorized P3 body
-      // engulf variant; the long condition mirrors the card's stated short rule.
-      const double open1  = iOpen(_Symbol, PERIOD_D1, 1);  // perf-allowed
-      const double open2  = iOpen(_Symbol, PERIOD_D1, 2);  // perf-allowed
-      const double close2 = iClose(_Symbol, PERIOD_D1, 2); // perf-allowed
-      if(open1 <= 0.0 || open2 <= 0.0 || close2 <= 0.0)
-         return false;
-      long_signal  = long_signal  && (open1 > close2 && close1 < open2);
-      short_signal = short_signal && (open1 < close2 && close1 > open2);
-     }
-
-   if(strategy_use_sma200_filter)
-     {
-      const double sma200 = QM_SMA(_Symbol, PERIOD_D1, 200, 1);
-      if(sma200 <= 0.0)
-         return false;
-      long_signal  = long_signal  && (close1 > sma200);
-      short_signal = short_signal && (close1 < sma200);
-     }
-
-   if(!long_signal && !short_signal)
-      return false;
-
-   const QM_OrderType side = long_signal ? QM_BUY : QM_SELL;
-   const double entry = (side == QM_BUY)
-                        ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
-
-   const double stop = QM_StopFixedPips(_Symbol, side, entry, strategy_sl_pips);
-   if(stop <= 0.0)
-      return false;
-
-   double take = 0.0;
-   if(!strategy_next_bar_exit)
-     {
-      const double take_rr = (double)strategy_tp_pips / (double)strategy_sl_pips;
-      take = QM_TakeRR(_Symbol, side, entry, stop, take_rr);
-      if(take <= 0.0)
-         return false;
-     }
-
-   req.type               = side;
-   req.price              = 0.0;
-   req.sl                 = stop;
-   req.tp                 = take;
-   req.reason             = long_signal ? "goodwin_outside_long" : "goodwin_outside_short";
-   req.symbol_slot        = qm_magic_slot_offset;
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
+
+   if(strategy_k_period < 1 || strategy_smoothing < 1 ||
+      strategy_regime_sma_period < 1 || strategy_atr_period < 1 ||
+      strategy_atr_sl_mult <= 0.0 || strategy_volatility_lookback < 2 ||
+      strategy_volatility_percentile <= 0.0 || strategy_volatility_percentile >= 100.0)
+      return false;
+
+   const double stoch_k = QM_Stoch_K(_Symbol, PERIOD_D1,
+                                      strategy_k_period, strategy_smoothing,
+                                      strategy_smoothing, 1);
+   const double stoch_d = QM_Stoch_D(_Symbol, PERIOD_D1,
+                                      strategy_k_period, strategy_smoothing,
+                                      strategy_smoothing, 1);
+   const double close_last = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
+   const double regime_sma = QM_SMA(_Symbol, PERIOD_D1,
+                                     strategy_regime_sma_period, 1, PRICE_CLOSE);
+   const double atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(close_last <= 0.0 || regime_sma <= 0.0 || atr_last <= 0.0)
+      return false;
+
+   if(stoch_k > strategy_entry_k_max ||
+      stoch_d > strategy_entry_d_max ||
+      close_last <= regime_sma)
+      return false;
+
+   // Card filter: reject a new entry when the current ATR/close ratio is in
+   // the top 1% of its 252-closed-bar distribution. The nearest-rank 99th
+   // percentile is deterministic and the loop runs only after the D1 bar gate.
+   double volatility_ratios[];
+   ArrayResize(volatility_ratios, strategy_volatility_lookback);
+   int valid_ratios = 0;
+   for(int shift = 1; shift <= strategy_volatility_lookback; ++shift)
+     {
+      const double atr_value = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, shift);
+      const double close_value = QM_SMA(_Symbol, PERIOD_D1, 1, shift, PRICE_CLOSE);
+      if(atr_value <= 0.0 || close_value <= 0.0)
+         continue;
+      volatility_ratios[valid_ratios] = atr_value / close_value;
+      valid_ratios++;
+     }
+   if(valid_ratios != strategy_volatility_lookback)
+      return false;
+
+   ArraySort(volatility_ratios);
+   const int nearest_rank = (int)MathCeil((strategy_volatility_percentile / 100.0) * valid_ratios);
+   const int threshold_index = nearest_rank - 1;
+   const double volatility_cutoff = volatility_ratios[threshold_index];
+   const double current_volatility = atr_last / close_last;
+   if(current_volatility >= volatility_cutoff)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 && bid <= 0.0)
+      return false;
+   const double entry_price = (ask > 0.0) ? ask : bid;
+   const double stop_price = QM_StopATRFromValue(_Symbol, QM_BUY, entry_price,
+                                                 atr_last, strategy_atr_sl_mult);
+   if(stop_price <= 0.0 || stop_price >= entry_price)
+      return false;
+
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = stop_price;
+   req.tp = 0.0;
+   req.reason = "STOCH_EXTREME_LONG";
    return true;
   }
 
@@ -198,7 +184,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // The card specifies no trailing, break-even, partial-close, or scale-in rule.
+   // The card authorizes no trailing, break-even, partial close, or pyramiding.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
@@ -206,18 +192,17 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
+   if(magic <= 0 || QM_TM_OpenPositionCount(magic) <= 0)
       return false;
 
-   const int held_bars = QM_TM_HeldPeriodsForMagic((long)magic, _Symbol, PERIOD_D1);
-   if(held_bars < 0)
-      return false;
+   const double stoch_k = QM_Stoch_K(_Symbol, PERIOD_D1,
+                                      strategy_k_period, strategy_smoothing,
+                                      strategy_smoothing, 1);
+   if(stoch_k >= strategy_exit_k_min)
+      return true;
 
-   if(strategy_next_bar_exit && held_bars >= 1)
-      return true;
-   if(strategy_max_hold_bars > 0 && held_bars >= strategy_max_hold_bars)
-      return true;
-   return false;
+   const int held_days = QM_TM_HeldPeriodsForMagic((long)magic, _Symbol, PERIOD_D1);
+   return (strategy_max_hold_days > 0 && held_days >= strategy_max_hold_days);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
@@ -225,7 +210,8 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   // The central high-impact PRE30/POST30 mode exactly implements the card.
+   return false;
   }
 
 // -----------------------------------------------------------------------------
@@ -353,3 +339,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
+
