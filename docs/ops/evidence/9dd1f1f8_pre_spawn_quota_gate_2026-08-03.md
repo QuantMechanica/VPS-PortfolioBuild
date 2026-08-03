@@ -1,7 +1,9 @@
 # Pre-spawn quota gate — task 9dd1f1f8
 
-Date: 2026-08-03  
-Router task: `9dd1f1f8-cd92-42e6-87de-b030a73f8ac6`  
+Date: 2026-08-03
+
+Router task: `9dd1f1f8-cd92-42e6-87de-b030a73f8ac6`
+
 Verdict: **READY_FOR_REVIEW**
 
 ## Outcome
