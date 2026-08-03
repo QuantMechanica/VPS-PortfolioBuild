@@ -52,7 +52,14 @@ class ProgressAwareReaperTests(unittest.TestCase):
     def _log(self, root: Path, item_id: str, entries: list[tuple[str, int]]):
         path = root / "T1" / "logs" / self.now.astimezone().strftime("%Y%m%d.log")
         path.parent.mkdir(parents=True)
-        lines = [f"AA 0 18:00:00.000 Terminal launched with D:\\\\reports\\\\{item_id}\\\\tester.ini"]
+        first_clock = dt.time.fromisoformat(entries[0][0])
+        marker_at = dt.datetime.combine(
+            self.now.astimezone().date(), first_clock
+        ) - dt.timedelta(minutes=1)
+        lines = [
+            f"AA 0 {marker_at.strftime('%H:%M:%S.000')} "
+            f"Terminal launched with D:\\\\reports\\\\{item_id}\\\\tester.ini"
+        ]
         lines.extend(f"AA 0 {clock} AutoTesting processing {pct} %" for clock, pct in entries)
         path.write_text("\n".join(lines), encoding="utf-16")
 
@@ -172,6 +179,107 @@ class ProgressAwareReaperTests(unittest.TestCase):
                     conn, now_dt=self.now, mt5_root=root
                 )
             self.assertEqual(flagged, [])
+
+    @mock.patch.object(farmctl, "_stop_pid", return_value=False)
+    @mock.patch.object(farmctl, "_stop_terminal_slot", return_value=False)
+    def test_q08_canonical_neighborhood_artifact_counts_as_progress(self, *_):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            pipeline_root = root / "pipeline"
+            setfile = (
+                pipeline_root
+                / "QM5_1"
+                / "Q08"
+                / "neighborhood"
+                / "EURUSD_DWX"
+                / "setfiles"
+                / "x_neighborhood_nominal_perturb_strategy_period_14.set"
+            )
+            setfile.parent.mkdir(parents=True)
+            setfile.write_text("strategy_period=14", encoding="utf-8")
+            recent_epoch = (self.now - dt.timedelta(minutes=5)).timestamp()
+            os.utime(setfile, (recent_epoch, recent_epoch))
+            self._active(root, item_id="q08_external", age_min=45, phase="Q08")
+
+            with mock.patch.object(farmctl, "PIPELINE_REPORT_ROOT", pipeline_root):
+                with farmctl.connect(root) as conn:
+                    flagged = farmctl._detect_active_age_timeout(
+                        conn, now_dt=self.now, mt5_root=root
+                    )
+                    status = conn.execute(
+                        "SELECT status FROM work_items WHERE id='q08_external'"
+                    ).fetchone()[0]
+            self.assertEqual(flagged, [])
+            self.assertEqual(status, "active")
+
+    @mock.patch.object(farmctl, "_stop_pid", return_value=False)
+    @mock.patch.object(farmctl, "_stop_terminal_slot", return_value=False)
+    def test_q08_canonical_session_binds_terminal_percentage_progress(self, *_):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            pipeline_root = root / "pipeline"
+            session_name = (self.now - dt.timedelta(minutes=30)).strftime("%Y%m%d_%H%M%S")
+            tester_ini = (
+                pipeline_root
+                / "QM5_1"
+                / "Q08"
+                / "_baseline"
+                / "QM5_1"
+                / session_name
+                / "raw"
+                / "run_01"
+                / "tester.ini"
+            )
+            tester_ini.parent.mkdir(parents=True)
+            tester_ini.write_text(
+                "[Tester]\nExpert=QM\\QM5_1_example\nSymbol=EURUSD.DWX\n"
+                "ExpertParameters=x.set\n",
+                encoding="utf-8",
+            )
+            old_epoch = (self.now - dt.timedelta(minutes=30)).timestamp()
+            os.utime(tester_ini, (old_epoch, old_epoch))
+            log_path = root / "T1" / "logs" / self.now.astimezone().strftime("%Y%m%d.log")
+            log_path.parent.mkdir(parents=True)
+            marker_clock = (self.now.astimezone() - dt.timedelta(minutes=30)).strftime(
+                "%H:%M:%S.000"
+            )
+            progress_clock = (self.now.astimezone() - dt.timedelta(minutes=5)).strftime(
+                "%H:%M:%S.000"
+            )
+            log_path.write_text(
+                f"AA 0 {marker_clock} Terminal launched with {tester_ini}\n"
+                f"AA 0 {progress_clock} AutoTesting processing 55 %",
+                encoding="utf-16",
+            )
+            self._active(root, item_id="q08_session", age_min=45, phase="Q08")
+
+            with mock.patch.object(farmctl, "PIPELINE_REPORT_ROOT", pipeline_root):
+                with farmctl.connect(root) as conn:
+                    flagged = farmctl._detect_active_age_timeout(
+                        conn, now_dt=self.now, mt5_root=root
+                    )
+                    status = conn.execute(
+                        "SELECT status FROM work_items WHERE id='q08_session'"
+                    ).fetchone()[0]
+            self.assertEqual(flagged, [])
+            self.assertEqual(status, "active")
+
+    @mock.patch.object(farmctl, "_stop_pid", return_value=False)
+    @mock.patch.object(farmctl, "_stop_terminal_slot", return_value=False)
+    def test_hung_q08_without_canonical_artifacts_is_still_reaped(self, *_):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            pipeline_root = root / "empty_pipeline"
+            self._active(root, item_id="q08_hung", age_min=45, phase="Q08")
+            with mock.patch.object(farmctl, "PIPELINE_REPORT_ROOT", pipeline_root):
+                with farmctl.connect(root) as conn:
+                    flagged = farmctl._detect_active_age_timeout(
+                        conn, now_dt=self.now, mt5_root=root
+                    )
+            self.assertEqual(flagged[0]["reap_reason"], "NO_FORWARD_PROGRESS")
+            external = flagged[0]["progress_evidence"]["external_report_progress"]
+            self.assertFalse(external["determined"])
+            self.assertEqual(external["reason"], "phase_runner_external_artifacts_missing")
 
     @mock.patch.object(farmctl, "_stop_pid", return_value=False)
     @mock.patch.object(farmctl, "_stop_terminal_slot", return_value=False)

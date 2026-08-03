@@ -6504,6 +6504,7 @@ def _terminal_progress_evidence(
     *,
     now_dt: dt.datetime | None = None,
     mt5_root: Path | None = None,
+    additional_marker_paths: list[str] | None = None,
 ) -> dict[str, Any]:
     """Return work-item-bound MT5 progress evidence.
 
@@ -6528,7 +6529,14 @@ def _terminal_progress_evidence(
     if not candidates:
         return {"determined": False, "reason": "terminal_log_missing"}
 
+    marker_tokens = [("work_item_id", str(item_id).casefold())]
+    marker_tokens.extend(
+        ("canonical_phase_artifact", str(path).casefold())
+        for path in (additional_marker_paths or [])
+        if str(path).strip()
+    )
     marker_found = False
+    marker_bindings: set[str] = set()
     marker_count = 0
     latest_marker_at: dt.datetime | None = None
     latest_marker_path: Path | None = None
@@ -6541,11 +6549,17 @@ def _terminal_progress_evidence(
             lines = path.read_text(encoding="utf-16", errors="replace").splitlines()
         except OSError:
             continue
-        marker_indexes = [i for i, line in enumerate(lines) if item_id.lower() in line.lower()]
+        marker_indexes: list[int] = []
+        for index, line in enumerate(lines):
+            folded_line = line.casefold()
+            matched = [label for label, token in marker_tokens if token in folded_line]
+            if not matched:
+                continue
+            marker_indexes.append(index)
+            marker_bindings.update(matched)
         if not marker_indexes:
             continue
-        marker_found = True
-        source_path = path
+        eligible_marker_indexes: list[int] = []
         for marker_index in marker_indexes:
             marker_match = _MT5_LOG_TIME_RE.search(lines[marker_index])
             if not marker_match:
@@ -6559,13 +6573,18 @@ def _terminal_progress_evidence(
                 marker_stamp = marker_local.astimezone(dt.UTC)
             except ValueError:
                 continue
-            if marker_stamp < claimed_at:
+            if marker_stamp < claimed_at or marker_stamp > now_dt + dt.timedelta(minutes=1):
                 continue
+            eligible_marker_indexes.append(marker_index)
             marker_count += 1
             if latest_marker_at is None or marker_stamp > latest_marker_at:
                 latest_marker_at = marker_stamp
                 latest_marker_path = path
-        for line in lines[marker_indexes[-1] + 1:]:
+        if not eligible_marker_indexes:
+            continue
+        marker_found = True
+        source_path = path
+        for line in lines[eligible_marker_indexes[-1] + 1:]:
             match = _MT5_PROGRESS_RE.search(line)
             if not match:
                 continue
@@ -6580,7 +6599,7 @@ def _terminal_progress_evidence(
                 stamp = local_stamp.astimezone(dt.UTC)
             except ValueError:
                 continue
-            if stamp >= claimed_at and pct > latest_pct:
+            if claimed_at <= stamp <= now_dt + dt.timedelta(minutes=1) and pct > latest_pct:
                 latest_pct = pct
                 latest_at = stamp
 
@@ -6605,6 +6624,7 @@ def _terminal_progress_evidence(
         "latest_session_log_path": (
             str(latest_marker_path) if latest_marker_path is not None else None
         ),
+        "marker_bindings": sorted(marker_bindings),
     }
 
 
@@ -6682,12 +6702,189 @@ def _phase_runner_report_progress(
     }
 
 
+def _q08_tester_ini_matches_contract(
+    tester_ini: Path,
+    *,
+    ea_id: str,
+    symbol: str,
+    setfile_path: str | None,
+) -> bool:
+    """Bind a canonical Q08 child session to this EA/symbol/set variant."""
+    try:
+        text = tester_ini.read_text(encoding="utf-8-sig", errors="replace")
+    except OSError:
+        return False
+    values: dict[str, str] = {}
+    for raw_line in text.splitlines():
+        if "=" not in raw_line:
+            continue
+        key, value = raw_line.split("=", 1)
+        values[key.strip().casefold()] = value.strip()
+    if values.get("symbol", "").casefold() != str(symbol or "").casefold():
+        return False
+    ea_num = _ea_numeric_id(ea_id)
+    if ea_num is None or f"qm5_{ea_num}" not in values.get("expert", "").casefold():
+        return False
+    expected_stem = Path(str(setfile_path or "")).stem.casefold()
+    actual_stem = Path(values.get("expertparameters", "")).stem.casefold()
+    if not expected_stem:
+        return False
+    return actual_stem == expected_stem or actual_stem.startswith(
+        f"{expected_stem}_neighborhood_"
+    )
+
+
+def _phase_runner_external_report_progress(
+    phase: str,
+    ea_id: str,
+    symbol: str,
+    item_id: str,
+    setfile_path: str | None,
+    claimed_at: dt.datetime,
+    *,
+    now_dt: dt.datetime,
+) -> dict[str, Any]:
+    """Read only runner-contract paths that intentionally live outside a row root.
+
+    Q04 publishes fold summaries to its item-keyed canonical directory. Q08's
+    baseline and neighborhood support runners publish tester sessions, bounded
+    generated setfiles, perturbations, and PBO scores under the canonical
+    pipeline EA root. No generic log or arbitrary file growth is accepted.
+    """
+    phase_upper = str(phase or "").upper()
+    if phase_upper not in {"Q04", "Q08"}:
+        return {
+            "determined": False,
+            "reason": "phase_runner_external_progress_not_applicable",
+        }
+    ea_num = _ea_numeric_id(ea_id)
+    if ea_num is None:
+        return {"determined": False, "reason": "external_progress_ea_id_invalid"}
+    normalized_ea = f"QM5_{ea_num}"
+    symbol_clean = str(symbol or "").replace(".", "_")
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", symbol_clean):
+        return {"determined": False, "reason": "external_progress_symbol_invalid"}
+
+    future_tolerance = now_dt + dt.timedelta(minutes=1)
+    observations: list[tuple[dt.datetime, Path, str]] = []
+    terminal_marker_paths: list[str] = []
+    roots: list[str] = []
+
+    def observe(path: Path, source: str) -> None:
+        try:
+            if not path.is_file():
+                return
+            observed_at = dt.datetime.fromtimestamp(path.stat().st_mtime, dt.UTC)
+        except OSError:
+            return
+        if claimed_at <= observed_at <= future_tolerance:
+            observations.append((observed_at, path, source))
+
+    if phase_upper == "Q04":
+        leaf = _q04_evidence_leaf(symbol, item_id)
+        q04_root = PIPELINE_REPORT_ROOT / normalized_ea / "Q04" / leaf
+        roots.append(str(q04_root))
+        observe(q04_root / "aggregate.json", "q04_canonical_aggregate")
+        try:
+            fold_summaries = list((q04_root / "folds").glob("F*/summary.json"))[:16]
+        except OSError:
+            fold_summaries = []
+        for path in fold_summaries:
+            observe(path, "q04_canonical_fold_summary")
+
+    if phase_upper == "Q08":
+        ea_root = PIPELINE_REPORT_ROOT / normalized_ea
+        session_roots = (
+            ea_root,
+            ea_root / "Q08" / "_baseline" / normalized_ea,
+        )
+        for session_root in session_roots:
+            roots.append(str(session_root))
+            try:
+                session_dirs = sorted(
+                    (
+                        path
+                        for path in session_root.glob("????????_??????")
+                        if path.is_dir() and _PHASE_RUNNER_REPORT_DIR_RE.fullmatch(path.name)
+                    ),
+                    key=lambda path: path.name,
+                    reverse=True,
+                )[:64]
+            except OSError:
+                session_dirs = []
+            for session_dir in session_dirs:
+                try:
+                    session_at = dt.datetime.strptime(
+                        session_dir.name, "%Y%m%d_%H%M%S"
+                    ).replace(tzinfo=dt.UTC)
+                except ValueError:
+                    continue
+                if session_at < claimed_at - dt.timedelta(minutes=1) or session_at > future_tolerance:
+                    continue
+                try:
+                    tester_inis = list(session_dir.glob("raw/run_*/tester.ini"))[:8]
+                except OSError:
+                    tester_inis = []
+                for tester_ini in tester_inis:
+                    if not _q08_tester_ini_matches_contract(
+                        tester_ini,
+                        ea_id=normalized_ea,
+                        symbol=symbol,
+                        setfile_path=setfile_path,
+                    ):
+                        continue
+                    terminal_marker_paths.append(str(tester_ini))
+                    observe(tester_ini, "q08_canonical_tester_session")
+                    observe(tester_ini.parent / "report.htm", "q08_canonical_tester_report")
+                    observe(session_dir / "summary.json", "q08_canonical_tester_summary")
+
+        neighborhood_root = ea_root / "Q08" / "neighborhood" / symbol_clean
+        roots.append(str(neighborhood_root))
+        expected_stem = Path(str(setfile_path or "")).stem.casefold()
+        try:
+            generated_sets = list((neighborhood_root / "setfiles").glob("*.set"))[:64]
+        except OSError:
+            generated_sets = []
+        for path in generated_sets:
+            if expected_stem and path.stem.casefold().startswith(
+                f"{expected_stem}_neighborhood_"
+            ):
+                observe(path, "q08_neighborhood_setfile")
+        observe(neighborhood_root / "perturbations.json", "q08_neighborhood_result")
+
+        pbo_root = ea_root / "Q08" / "pbo" / symbol_clean
+        roots.append(str(pbo_root))
+        observe(pbo_root / "scores.csv", "q08_pbo_scores")
+        observe(pbo_root / "scores_meta.json", "q08_pbo_scores_meta")
+
+    if not observations:
+        return {
+            "determined": False,
+            "reason": "phase_runner_external_artifacts_missing",
+            "contract_roots": roots,
+            "terminal_marker_paths": terminal_marker_paths,
+        }
+    latest_at, latest_path, activity_source = max(observations, key=lambda item: item[0])
+    return {
+        "determined": True,
+        "reason": "phase_runner_external_artifact_growth",
+        "progress_at": latest_at.replace(microsecond=0).isoformat(),
+        "stalled_min": round(max(0.0, (now_dt - latest_at).total_seconds() / 60.0), 2),
+        "activity_source": activity_source,
+        "latest_artifact_path": str(latest_path),
+        "artifact_count": len(observations),
+        "contract_roots": roots,
+        "terminal_marker_paths": terminal_marker_paths,
+    }
+
+
 def _phase_runner_progress_evidence(
     terminal_progress: dict[str, Any],
     claimed_at: dt.datetime,
     *,
     report_root: Path | None,
     now_dt: dt.datetime,
+    external_report_progress: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Aggregate successive tester sessions for REAL_PHASE_RUNNER_PHASES only."""
     report_progress = _phase_runner_report_progress(
@@ -6710,6 +6907,17 @@ def _phase_runner_progress_evidence(
         artifact_at = _parse_utc_datetime(report_progress.get("progress_at"))
         if artifact_at is not None:
             observations.append((artifact_at, "report_artifact"))
+    external_progress = external_report_progress or {
+        "determined": False,
+        "reason": "phase_runner_external_progress_not_applicable",
+    }
+    if external_progress.get("determined"):
+        artifact_at = _parse_utc_datetime(external_progress.get("progress_at"))
+        if artifact_at is not None:
+            observations.append((
+                artifact_at,
+                str(external_progress.get("activity_source") or "external_report_artifact"),
+            ))
 
     if not observations:
         combined = dict(terminal_progress)
@@ -6725,6 +6933,7 @@ def _phase_runner_progress_evidence(
                 2,
             ),
             "report_progress": report_progress,
+            "external_report_progress": external_progress,
         })
         return combined
 
@@ -6739,6 +6948,7 @@ def _phase_runner_progress_evidence(
         "progress_at": latest_at.replace(microsecond=0).isoformat(),
         "stalled_min": round(max(0.0, (now_dt - latest_at).total_seconds() / 60.0), 2),
         "report_progress": report_progress,
+        "external_report_progress": external_progress,
     })
     return combined
 
@@ -6753,7 +6963,7 @@ def _detect_active_age_timeout(
     now = now_dt.replace(microsecond=0).isoformat()
     rows = con.execute(
         """
-        SELECT id, phase, ea_id, symbol, claimed_by, payload_json, updated_at
+        SELECT id, phase, ea_id, symbol, setfile_path, claimed_by, payload_json, updated_at
         FROM work_items
         WHERE status='active'
         """
@@ -6778,12 +6988,27 @@ def _detect_active_age_timeout(
             int(timeout_min),
             inner_budget_min + ACTIVE_OUTER_HEADROOM_MIN,
         )
+        external_progress = {
+            "determined": False,
+            "reason": "phase_runner_external_progress_not_applicable",
+        }
+        if phase in REAL_PHASE_RUNNER_PHASES:
+            external_progress = _phase_runner_external_report_progress(
+                phase,
+                str(r["ea_id"]),
+                str(r["symbol"]),
+                str(r["id"]),
+                str(r["setfile_path"] or ""),
+                updated,
+                now_dt=now_dt,
+            )
         progress = _terminal_progress_evidence(
             str(r["id"]),
             r["claimed_by"],
             updated,
             now_dt=now_dt,
             mt5_root=mt5_root,
+            additional_marker_paths=list(external_progress.get("terminal_marker_paths") or []),
         )
         if phase in REAL_PHASE_RUNNER_PHASES:
             raw_report_root = payload.get("report_root")
@@ -6797,6 +7022,7 @@ def _detect_active_age_timeout(
                 updated,
                 report_root=report_root,
                 now_dt=now_dt,
+                external_report_progress=external_progress,
             )
         progress_stalled = (
             bool(progress.get("determined"))
