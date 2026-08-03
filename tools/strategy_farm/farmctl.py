@@ -287,11 +287,9 @@ P5PLUS_MIN_SHARPE = 0.6
 FACTORY_TERMINAL_PATTERN = re.compile(r"^T(?:[1-9]|10)$", re.IGNORECASE)
 LIVE_TERMINAL_NAMES = {"T_LIVE", "T6_LIVE"}
 MT5_TERMINALS = tuple(f"T{i}" for i in range(1, 11))  # factory fleet, T_Live is never a factory slot
-# MNT-046: autonomous phase-runner parents are reap-eligible only with the
-# same structurally non-live selector set enforced by factory_process_scope.
-# T5 remains available to unrelated legacy/run_smoke workflows, but no phase
-# runner may be launched there.  T_Live is already outside MT5_TERMINALS.
-PHASE_RUNNER_TERMINALS = tuple(t for t in MT5_TERMINALS if t != "T5")
+# MNT-046: autonomous phase-runner parents must use the same live worker-policy
+# cohort as terminal workers and factory_process_scope. Eligibility is derived
+# below from disabled_terminals.txt; T_Live is outside MT5_TERMINALS by design.
 MT5_WORK_ITEM_FEED_MULTIPLIER = 2
 MT5_WORK_ITEM_MIN_FEED_DEPTH = 20
 BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT = 8000  # OWNER 2026-06-05 today-boost: keep building (EA count growing); accept deeper backtest queue. Revert to 1000/3000 when restrictions resume.
@@ -389,7 +387,7 @@ def is_factory_terminal_name(value: Any) -> bool:
 
 
 def is_phase_runner_terminal_name(value: Any) -> bool:
-    return str(value or "").upper() in PHASE_RUNNER_TERMINALS
+    return str(value or "").upper() in phase_runner_terminals()
 
 
 def available_mt5_terminals(mt5_root: Path | None = None) -> tuple[str, ...]:
@@ -417,6 +415,21 @@ def disabled_mt5_terminals() -> set[str]:
         if is_factory_terminal_name(terminal):
             disabled.add(terminal)
     return disabled
+
+
+def worker_policy_terminals() -> tuple[str, ...]:
+    """Return the current T1-T10 worker cohort after the live disabled policy."""
+    disabled = disabled_mt5_terminals()
+    return tuple(
+        terminal
+        for terminal in MT5_TERMINALS
+        if is_factory_terminal_name(terminal) and terminal not in disabled
+    )
+
+
+def phase_runner_terminals() -> tuple[str, ...]:
+    """Keep phase-runner spawn/reap eligibility identical to worker policy."""
+    return worker_policy_terminals()
 
 
 def terminal_reservations(root: Path | None = None, now: dt.datetime | None = None) -> dict[str, dict[str, Any]]:
@@ -503,8 +516,12 @@ def release_terminal_reservation(root: Path, terminal: str) -> dict[str, Any]:
 
 def active_mt5_terminals(mt5_root: Path | None = None) -> tuple[str, ...]:
     installed = available_mt5_terminals(mt5_root)
-    disabled = disabled_mt5_terminals()
-    active = tuple(t for t in (installed if installed else MT5_TERMINALS) if is_factory_terminal_name(t) and t not in disabled)
+    policy_terminals = set(worker_policy_terminals())
+    active = tuple(
+        terminal
+        for terminal in (installed if installed else MT5_TERMINALS)
+        if terminal in policy_terminals
+    )
     return active
 
 
@@ -6062,6 +6079,84 @@ def _news_calendar_preflight(*, use_cache: bool) -> dict[str, Any]:
         }
 
 
+def record_work_item_spawn_refusal(
+    root: Path,
+    item_row: sqlite3.Row | dict[str, Any],
+    terminal: str,
+    spawn: dict[str, Any],
+    *,
+    failed_at: str | None = None,
+) -> dict[str, Any]:
+    """Atomically fail a claimed row with durable refusal payload and event."""
+    work_item_id = str(item_row["id"])
+    reason = str(spawn.get("reason") or "runner_spawn_refused_without_reason")
+    now = failed_at or utc_now()
+    with connect(root) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        current = conn.execute(
+            "SELECT phase,status,claimed_by,payload_json FROM work_items WHERE id=?",
+            (work_item_id,),
+        ).fetchone()
+        if (
+            current is None
+            or current["status"] != "active"
+            or str(current["claimed_by"] or "").upper() != str(terminal).upper()
+        ):
+            conn.rollback()
+            raise RuntimeError(
+                "spawn refusal evidence requires the caller's active claim: "
+                f"work_item={work_item_id} terminal={terminal}"
+            )
+        try:
+            payload = json.loads(current["payload_json"] or "{}")
+        except (TypeError, json.JSONDecodeError):
+            payload = {}
+        if not isinstance(payload, dict):
+            payload = {}
+        refusal = {
+            "failed_at_utc": now,
+            "phase": str(current["phase"]),
+            "reason": reason,
+            "terminal": str(terminal).upper(),
+            "phase_runner_scope_blocked": bool(
+                spawn.get("phase_runner_scope_blocked")
+            ),
+        }
+        payload.update({
+            "verdict_reason": reason,
+            "spawn_refusal": refusal,
+        })
+        cur = conn.execute(
+            """
+            UPDATE work_items
+            SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL,
+                payload_json=?, updated_at=?
+            WHERE id=? AND status='active' AND upper(claimed_by)=upper(?)
+            """,
+            (json.dumps(payload, sort_keys=True), now, work_item_id, terminal),
+        )
+        if cur.rowcount != 1:
+            conn.rollback()
+            raise RuntimeError(
+                f"spawn refusal claim changed before evidence commit: {work_item_id}"
+            )
+        event(
+            conn,
+            "work_item",
+            work_item_id,
+            "runner_spawn_refused",
+            refusal,
+        )
+        conn.commit()
+    return {
+        "work_item_id": work_item_id,
+        "verdict": "INFRA_FAIL",
+        "verdict_reason": reason,
+        "event": "runner_spawn_refused",
+        "recorded_at_utc": now,
+    }
+
+
 def _spawn_work_item_runner(root: Path, item_row: sqlite3.Row,
                             terminal: str) -> dict[str, Any]:
     if (
@@ -8206,14 +8301,21 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                     actions.append({"action": "pending_runner", "item_id": item["id"], "phase": item["phase"], "reason": spawn.get("reason")})
                     free_terminals.insert(0, terminal)
                     continue
-                # Spawn impossible — we own the row, so mark it failed and release.
-                with connect(root) as conn2:
-                    conn2.execute(
-                        "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL, updated_at=? WHERE id=?",
-                        (started_iso, item["id"]),
-                    )
-                    conn2.commit()
-                actions.append({"action": "spawn_failed", "item_id": item["id"], "reason": spawn.get("reason")})
+                # Spawn impossible — atomically persist the exact reason and an
+                # event before releasing the claim. No traceless INFRA_FAILs.
+                refusal_evidence = record_work_item_spawn_refusal(
+                    root,
+                    item,
+                    terminal,
+                    spawn,
+                    failed_at=started_iso,
+                )
+                actions.append({
+                    "action": "spawn_failed",
+                    "item_id": item["id"],
+                    "reason": spawn.get("reason"),
+                    "refusal_evidence": refusal_evidence,
+                })
                 free_terminals.insert(0, terminal)  # give terminal back
                 continue
             new_payload = {

@@ -177,6 +177,13 @@ Assert-QmEqual -Expected 16 -Actual @($allowlist.entries).Count `
 Assert-QmTrue -Condition ([System.IO.File]::ReadAllText($farmctlPath).Contains('phase_runner_allowlist.v1.json')) `
     -Name 'farmctl consumes the shared phase-runner allowlist'
 
+$originalDisabledTerminalsPath = $script:QmFactoryDisabledTerminalsPath
+$workerPolicyFixture = [System.IO.Path]::GetTempFileName()
+[System.IO.File]::WriteAllText($workerPolicyFixture, '')
+$script:QmFactoryDisabledTerminalsPath = $workerPolicyFixture
+Assert-QmEqual -Expected 10 -Actual @(Get-QmFactoryWorkerPolicyTerminals).Count `
+    -Name 'zero-disabled worker policy exposes all ten phase-runner terminals'
+
 $runnerRoot = 'D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b'
 foreach ($entry in @($allowlist.entries)) {
     $scriptPath = 'C:\QM\repo\' + ([string]$entry.repo_relative_path).Replace('/', '\')
@@ -204,12 +211,15 @@ foreach ($worktreeRunner in $worktreeRunners) {
     Assert-QmTrue -Condition (Test-QmFactoryPhaseRunnerCommandLine -CommandLine $worktreeRunner) `
         -Name "accept exact allowlisted runner with bounded Python prefix: $worktreeRunner"
 }
+$t5PolicyEnabled = Get-QmFactoryPhaseRunnerClassification -CommandLine `
+    "python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix $runnerRoot --terminal T5"
+Assert-QmEqual -Expected 'FACTORY_OWNED' -Actual $t5PolicyEnabled.Disposition `
+    -Name 'T5 phase runner is factory-owned when live worker policy enables T5'
 
 $runnerNegativeCases = @(
     @{ Name='basename only'; Command='python.exe q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T1'; Review=$true },
     @{ Name='foreign root'; Command='python.exe C:\Temp\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T1'; Review=$true },
     @{ Name='T_Live selector'; Command='python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T_Live'; Review=$true },
-    @{ Name='intentional T5 selector'; Command='python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T5'; Review=$true },
     @{ Name='duplicate out-prefix'; Command='python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --out-prefix D:\QM\reports\work_items\100034e8-7161-430b-be4f-e140cb99789b --terminal T1'; Review=$true },
     @{ Name='duplicate terminal'; Command='python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b --terminal T1 --terminal T2'; Review=$true },
     @{ Name='required terminal missing'; Command='python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix D:\QM\reports\work_items\000034e8-7161-430b-be4f-e140cb99789b'; Review=$true },
@@ -230,6 +240,13 @@ foreach ($case in $runnerNegativeCases) {
     Assert-QmEqual -Expected $expectedDisposition -Actual $classification.Disposition `
         -Name "near-match disposition: $($case.Name)"
 }
+[System.IO.File]::WriteAllText($workerPolicyFixture, "T5`n")
+$t5PolicyDisabled = Get-QmFactoryPhaseRunnerClassification -CommandLine `
+    "python.exe C:\QM\repo\framework\scripts\q07_multiseed.py --out-prefix $runnerRoot --terminal T5"
+Assert-QmEqual -Expected 'REVIEW_REQUIRED' -Actual $t5PolicyDisabled.Disposition `
+    -Name 'T5 phase runner is outside reap scope when live worker policy disables T5'
+$script:QmFactoryDisabledTerminalsPath = $originalDisabledTerminalsPath
+Remove-Item -LiteralPath $workerPolicyFixture -Force -ErrorAction SilentlyContinue
 
 # Pre-deploy legacy runners with an exact known identity must never disappear
 # from OFF verification merely because they predate the UUID marker. They are

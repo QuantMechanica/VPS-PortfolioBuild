@@ -306,12 +306,38 @@ def test_legacy_dispatch_source_has_no_direct_runner_spawn_callsite() -> None:
     assert '"action": "legacy_direct_spawn_blocked"' in dispatch_body
 
 
-def test_phase_runner_terminal_scope_excludes_t5_live_and_all_before_preflight(
+def test_phase_runner_terminal_scope_follows_live_worker_policy(
     monkeypatch,
+    tmp_path: Path,
 ) -> None:
-    assert farmctl.PHASE_RUNNER_TERMINALS == (
-        "T1", "T2", "T3", "T4", "T6", "T7", "T8", "T9", "T10"
+    disabled = tmp_path / "disabled_terminals.txt"
+    disabled.write_text("", encoding="utf-8")
+    monkeypatch.setattr(farmctl, "DISABLED_TERMINALS_FILE", disabled)
+
+    assert farmctl.worker_policy_terminals() == farmctl.MT5_TERMINALS
+    assert farmctl.phase_runner_terminals() == farmctl.MT5_TERMINALS
+    assert "T5" in farmctl.phase_runner_terminals()
+    monkeypatch.setattr(
+        farmctl,
+        "_news_calendar_preflight",
+        lambda **_kwargs: {"ok": True, "status": "VALID"},
     )
+    monkeypatch.setattr(
+        farmctl,
+        "_spawn_phase_runner_for_work_item",
+        lambda _root, _item, terminal: {
+            "spawned": True,
+            "terminal": terminal,
+        },
+    )
+    allowed = farmctl._spawn_work_item_runner(
+        tmp_path / "farm",
+        _row("Q07"),
+        "T5",
+    )
+    assert allowed == {"spawned": True, "terminal": "T5"}
+
+    disabled.write_text("T5\n", encoding="utf-8")
     monkeypatch.setattr(
         farmctl,
         "_news_calendar_preflight",
@@ -328,7 +354,7 @@ def test_phase_runner_terminal_scope_excludes_t5_live_and_all_before_preflight(
         assert terminal in result["reason"]
 
 
-def test_work_item_dispatch_does_not_claim_real_phase_runner_on_t5(
+def test_work_item_dispatch_claims_real_phase_runner_on_policy_enabled_t5(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
@@ -352,26 +378,108 @@ def test_work_item_dispatch_does_not_claim_real_phase_runner_on_t5(
     monkeypatch.setattr(farmctl, "_running_mt5_terminals", lambda: set())
     monkeypatch.setattr(
         farmctl,
+        "is_phase_runner_terminal_name",
+        lambda terminal: terminal == "T5",
+    )
+    monkeypatch.setattr(
+        farmctl,
         "_news_calendar_preflight",
         lambda **_kwargs: {"ok": True, "status": "VALID"},
     )
     monkeypatch.setattr(
-        farmctl.subprocess,
-        "Popen",
-        lambda *_args, **_kwargs: pytest.fail("Q07 must not spawn on T5"),
+        farmctl,
+        "_spawn_work_item_runner",
+        lambda _root, _item, terminal: {
+            "spawned": True,
+            "pid": 4242,
+            "process_creation_key": "test:4242",
+            "log_path": str(tmp_path / "q07.log"),
+            "report_root": str(tmp_path / "report"),
+            "ea_dir_name": "QM5_9999_test",
+            "phase_runner": "q07_multiseed.py",
+            "terminal": terminal,
+        },
     )
 
     result = farmctl.dispatch_work_items(root, timeout_minutes=8)
 
-    deferred = [
+    claimed = [
         action for action in result["actions"]
-        if action.get("action") == "phase_runner_terminal_scope_deferred"
+        if action.get("action") == "claimed"
     ]
-    assert len(deferred) == 1
-    assert deferred[0]["excluded_terminals"] == ["T5"]
+    assert len(claimed) == 1
+    assert claimed[0]["terminal"] == "T5"
     with sqlite3.connect(root / "state" / "farm_state.sqlite") as conn:
         row = conn.execute(
             "SELECT status, claimed_by FROM work_items WHERE id=?",
             (WORK_ITEM_ID,),
         ).fetchone()
-    assert row == ("pending", None)
+    assert row == ("active", "T5")
+
+
+def test_dispatch_spawn_refusal_records_reason_and_event(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = farmctl.utc_now()
+    with sqlite3.connect(root / "state" / "farm_state.sqlite") as conn:
+        conn.execute(
+            """
+            INSERT INTO work_items
+              (id, kind, phase, ea_id, symbol, setfile_path, status,
+               attempt_count, payload_json, created_at, updated_at)
+            VALUES (?, 'backtest', 'Q07', 'QM5_9999', 'EURUSD.DWX',
+                    'dummy.set', 'pending', 0, '{"retained": true}', ?, ?)
+            """,
+            (WORK_ITEM_ID, now, now),
+        )
+        conn.commit()
+
+    monkeypatch.setattr(farmctl, "active_mt5_terminals", lambda: ("T5",))
+    monkeypatch.setattr(farmctl, "_running_mt5_terminals", lambda: set())
+    monkeypatch.setattr(
+        farmctl,
+        "is_phase_runner_terminal_name",
+        lambda terminal: terminal == "T5",
+    )
+    monkeypatch.setattr(
+        farmctl,
+        "_news_calendar_preflight",
+        lambda **_kwargs: {"ok": True, "status": "VALID"},
+    )
+    monkeypatch.setattr(
+        farmctl,
+        "_spawn_work_item_runner",
+        lambda *_args, **_kwargs: {
+            "spawned": False,
+            "reason": "test_spawn_refused",
+        },
+    )
+
+    result = farmctl.dispatch_work_items(root, timeout_minutes=8)
+
+    failed = [
+        action for action in result["actions"]
+        if action.get("action") == "spawn_failed"
+    ]
+    assert len(failed) == 1
+    assert failed[0]["refusal_evidence"]["event"] == "runner_spawn_refused"
+    with sqlite3.connect(root / "state" / "farm_state.sqlite") as conn:
+        row = conn.execute(
+            "SELECT status, verdict, claimed_by, payload_json "
+            "FROM work_items WHERE id=?",
+            (WORK_ITEM_ID,),
+        ).fetchone()
+        event = conn.execute(
+            "SELECT event, detail_json FROM events "
+            "WHERE entity_type='work_item' AND entity_id=?",
+            (WORK_ITEM_ID,),
+        ).fetchone()
+    assert row[:3] == ("failed", "INFRA_FAIL", None)
+    payload = json.loads(row[3])
+    assert payload["retained"] is True
+    assert payload["verdict_reason"] == "test_spawn_refused"
+    assert event[0] == "runner_spawn_refused"
+    assert json.loads(event[1])["reason"] == "test_spawn_refused"
