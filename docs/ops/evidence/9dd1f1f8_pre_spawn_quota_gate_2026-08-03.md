@@ -23,6 +23,8 @@ Implementation commits on canonical `agents/board-advisor`:
   effort tier, persists the escalation audit, and prevents duplicate escalation
   on a stale-lease reroute.
 
+Registered `main` evidence publication: `847df630a`.
+
 The scheduled tasks `QM_StrategyFarm_AgentRouter_5min`,
 `QM_StrategyFarm_{Codex,Claude}Orchestration_15min`, and
 `QM_StrategyFarm_QuotaGovernor` all execute the canonical `C:/QM/repo` files, so
