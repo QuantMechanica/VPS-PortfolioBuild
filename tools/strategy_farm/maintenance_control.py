@@ -412,7 +412,7 @@ def _validate_canonical_restart_owner_decision() -> dict[str, Any]:
         raise RuntimeError("canonical OWNER decision must be a JSON object")
 
     expected_scalar = {
-        "decision_id": "FACTORY_PREPARATION_20260802_TEN_WORKER_ZERO_HOLD",
+        "decision_id": "FACTORY_PREPARATION_20260803_TEN_WORKER_ZERO_HOLD",
         "authority": "OWNER",
         "status": "APPROVED",
     }
