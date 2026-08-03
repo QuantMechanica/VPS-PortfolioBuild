@@ -3,10 +3,12 @@
 Date: 2026-08-03  
 Router task: `90f6e5e7-cb67-4227-a951-4ec123ae978f`  
 Canonical runtime branch: `agents/board-advisor`  
-Code commit: `840dcbcd3eddad323092fdebee72e8e701514111`  
-Canonical evidence commit: `acb5de147`  
-Registered `main` publication commit: `4ab55bec8`  
-Verdict: **FIXED; 23 focused tests PASS; both required serial Q07 reruns PASS**
+Q07 code commit: `840dcbcd3eddad323092fdebee72e8e701514111`
+Q08 canonical-progress commit: `874ca33ca950d46c9cff96f5b68f5be0ed975bda`
+Q07 canonical evidence commit: `acb5de147`
+Q07 registered `main` publication commit: `4ab55bec8`
+Verdict: **FIXED; 26 focused tests PASS; serial Q07 reruns PASS; serial Q08
+canaries complete without ACTIVE_TIMEOUT**
 
 ## Result
 
@@ -219,3 +221,133 @@ record `active_timeouts: []` while the governed target sequences were active.
 
 Pipeline verdicts above come only from the two Q07 aggregate artifacts and the
 corresponding terminal work-item rows.
+
+## Recycled-task Q08 closure
+
+The router recycled this task after accepting the Q07 repair because Q08's
+support runners publish required progress outside the work-item report root.
+In particular, Q08.5 creates canonical tester sessions, bounded neighborhood
+setfiles, `perturbations.json`, and PBO inputs below
+`D:\QM\reports\pipeline\<EA>\Q08\...`. A healthy Q08 row could therefore still
+appear idle after its row-root baseline evidence stopped changing.
+
+Commit `874ca33ca950d46c9cff96f5b68f5be0ed975bda` extends the same
+`phase_runner_multisession_v1` contract to those canonical Q08 artifacts. The
+probe is deliberately bounded to:
+
+- the normalized EA's canonical pipeline root;
+- Q08 baseline tester sessions whose `tester.ini` binds the target EA, symbol,
+  and governed setfile;
+- the target symbol's Q08 neighborhood setfiles and `perturbations.json`; and
+- the target symbol's Q08 PBO score artifacts.
+
+Matching canonical `tester.ini` paths are also supplied as terminal-log binding
+markers, so their subsequent MT5 percentage lines count for the correct row.
+Generic log growth and unrelated pipeline files remain ineligible.
+
+### Q08-focused verification
+
+```text
+python -m pytest tools/strategy_farm/tests/test_progress_aware_reaper.py -q
+11 passed
+
+python -m pytest \
+  tools/strategy_farm/tests/test_progress_aware_reaper.py \
+  tools/strategy_farm/tests/test_basket_work_items.py -q
+26 passed in 2.82s
+
+python -m py_compile tools/strategy_farm/farmctl.py \
+  tools/strategy_farm/tests/test_progress_aware_reaper.py
+PASS
+
+git diff --check 840dcbcd3eddad323092fdebee72e8e701514111 \
+  874ca33ca950d46c9cff96f5b68f5be0ed975bda -- \
+  tools/strategy_farm/farmctl.py \
+  tools/strategy_farm/tests/test_progress_aware_reaper.py
+PASS
+```
+
+The new regressions prove that a canonical Q08 neighborhood artifact is
+accepted, a canonical Q08 tester session binds its later percentage progress,
+and a hung Q08 row with no eligible canonical artifact is still reaped with
+`NO_FORWARD_PROGRESS`.
+
+Q08 source identities:
+
+- farmctl Git blob: `6e2c6cf81b091164ec826cd170c8b6f6fe14f72d`
+- farmctl SHA-256:
+  `4878c393944affa93ba8b3d04ea95d028b382f29895e1545765badc0112697b9`
+
+### Required serial Q08 canaries
+
+Both canaries were governed Q08 work items. The second was enqueued only after
+the first had reached a terminal state; neither historical failure row was
+rewritten.
+
+| Order | EA / symbol | Required lineage | New Q08 row | Terminal interval | Pipeline verdict | Pipeline evidence |
+|---:|---|---|---|---|---|---|
+| 1 | `QM5_10582` / `XAUUSD.DWX` | recovery from `e196d30b-e4d4-40b6-961a-4e5391eae918`; lineage source `95015420-11d0-4c11-bb98-25fa2a361048` | `4b890848-fa36-4f5a-8a39-14dfb30ba065` | active 17:42:28Z; done 21:41:19Z | **INFRA_FAIL** | `D:\QM\reports\work_items\4b890848-fa36-4f5a-8a39-14dfb30ba065\QM5_10582\Q08\XAUUSD_DWX\aggregate.json` |
+| 2 | `QM5_10145` / `XAUUSD.DWX` | Q07 PASS `096bfd3b-9f67-4d86-bf91-197bf983f64d`; append-only rerun of `d4895758-2910-4cdf-ba6a-f944088e7633` | `eace82bf-c01d-4d14-b0ed-e2bf1f669f21` | active 22:04:51Z; done 23:15:22Z | **PASS** | `D:\QM\reports\work_items\eace82bf-c01d-4d14-b0ed-e2bf1f669f21\QM5_10145\Q08\XAUUSD_DWX\aggregate.json` |
+
+Artifact SHA-256:
+
+- 10582 aggregate:
+  `ec2d83a32c82e929bb08bc7d079f1b9c6bfe6ff51bbcaa0f6fe958372564530f`
+- 10145 aggregate:
+  `b88bca8fb94d506ddebe1151e8fb6b775fe75a7bdce914142b7a0d502bbbb0ac`
+
+The first verdict is pipeline-derived and is not an `ACTIVE_TIMEOUT`. Its
+aggregate records 5 PASS, 4 FAIL, and 2 INVALID subgates. In particular, Q08.5
+is INVALID with
+`neighborhood_evidence_lineage_invalid:evidence_status_missing_or_invalid`,
+and Q08.7 is INVALID with
+`insufficient_distinct_configs:got=0:need>=2`. This task did not reinterpret or
+repair those separate pipeline findings.
+
+The second row was created at `21:42:47Z`, after the first completed at
+`21:41:19Z`. An unrelated active XAUUSD work item legitimately held the symbol
+lock until `22:04:41Z`; it was not interrupted or bypassed. The Q08 canary was
+then claimed on T5 at `22:04:51Z`. Production observations included:
+
+- baseline progress at 31% (`22:10:00Z`) and 81% (`22:15:00Z`);
+- canonical Q08 neighborhood setfile creation at `22:17:05Z`;
+- neighborhood session launches at `22:17:08Z`, `22:28:32Z`, `22:40:19Z`,
+  `22:52:19Z`, and `23:03:38Z`; and
+- bound neighborhood percentage progress at 32% (`22:22:13Z`) and 88%
+  (`22:27:13Z`).
+
+The row remained active for more than 70 minutes, crossed all six tester
+sessions with 12 bound launch markers, and reached `done/PASS` without an
+`ACTIVE_TIMEOUT`. Its aggregate was generated at `23:15:11Z` and records 9
+PASS, 2 FAIL, and 0 INVALID raw subgate statuses. The aggregate's governed
+classification maps Q08.4 and Q08.6 to `EDGE_SOFT`; all four Q08.5
+perturbations pass the plateau check and Q08.7 passes with PBO 28.571% across
+35 splits. The `PASS` reported here is the artifact and work-item verdict, not
+an orchestration reinterpretation.
+
+Both dispatches were pinned to their current EX5 SHA-256 values. The 10145
+append-only row used EX5
+`c3f5476eff34ce65b25acf8bd967b5d0b349ce8e05bd492f82316f899a38db86`
+and governed setfile
+`3623ea13d65d96dc2676405080beb783958edc006041a1f7cfa023c81714ae52`.
+The target setfiles retained `RISK_FIXED=1000` and `RISK_PERCENT=0`. No
+`T_Live` path or AutoTrading setting was changed, no terminal was started
+manually, and no active backtest was interrupted.
+
+### Runtime activation binding after Q08 repair
+
+Read-only runtime-decision validation correctly failed closed because the
+signed activation decision still expects farmctl SHA-256
+`739dd0afe996f2ad7cff14d4f11dd03d7ad013f05f2ab6294995f1c1bd4e97f3`,
+while the Q08 repair's runtime source is
+`4878c393944affa93ba8b3d04ea95d028b382f29895e1545765badc0112697b9`.
+A fresh OWNER runtime-decision rebind remains mandatory before any future
+Factory_ON or restart-hold release. This cycle did not perform either action.
+
+The active-timeout detector is evaluated by a fresh scheduled pump process, so
+the committed repair became effective on the next pump tick without reloading
+a worker. Production pump records repeatedly reported `active_timeouts: []`
+while both Q08 canaries advanced across their canonical tester sessions.
+
+The Q08 verdicts above come only from the terminal work-item rows and their
+aggregate artifacts.
