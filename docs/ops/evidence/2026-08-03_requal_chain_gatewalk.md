@@ -56,3 +56,27 @@ wi 1c52bfca) — LOG_BOMB is a deliberate poison sentinel; diagnosis ticket
 chains must be pushed manually with the table's invocation pattern (predecessor
 = fresh prior-phase PASS row, rerun-of = newest old same-phase row, SHA pinned).
 Claude watches and advances them as verdicts arrive.
+
+## Addendum 10:50Z — two systemic findings from the wave
+
+**(1) MNT-046 T5 phase-runner scope is stale → traceless deep-phase kills.**
+`farmctl.py` `PHASE_RUNNER_TERMINALS` (hard literal `!= "T5"`) and
+`factory_process_scope.ps1` (regex `T(?:[1-4]|[6-9]|10)`) still carry the
+disabled-era carve-out although T5 was OWNER-reactivated 2026-07-31 and the R6
+activation runs zero-disabled. Every Q04+ row T5 claims dies instantly via
+`spawn_failed: phase runner terminal outside MNT-046 scope: T5` — with no
+verdict_reason, no events row, no ledger entry, no report root. Census: **55
+victims** in `terminal_worker_T5.log` (incl. wave rows 4de120bb 13013-Q07,
+ebdf4812 20048-Q06). Codex ticket **a090a635** (prio 75, branch-only, both
+files decision-bound); fix needs a worker reload to take effect in the
+long-running T5 process.
+
+**(2) Deep-phase concurrency under commit pressure trips the progress-stall
+reaper.** Wave rows 3c5caa40 (11422-Q07, T4) and 47db3c85 (13036-Q07, T7) were
+externally failed `ACTIVE_TIMEOUT` after ~35 min (phase budget 120 min): the
+`ACTIVE_PROGRESS_STALL_MIN=20` path fired because the testers stalled while
+T8/T9 sat in `commit_headroom_low_pause` with six stacked reservations
+(effective headroom 18.3 GB < 24 GB threshold; concurrent XAU job measured
+11.49 GB). The reaper behaved as designed; the load did not. **Operating rule
+for requal waves: advance at most ONE deep-phase (Q05+) chain step at a time**
+and retry stalled gates on a quiet system (canary precedent 2026-08-02 NDX).
