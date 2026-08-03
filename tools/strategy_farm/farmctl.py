@@ -4587,8 +4587,13 @@ def _fresh_q02_seed_spawn_binding_failure(
     period: str,
     expert: str,
 ) -> dict[str, Any] | None:
-    """Fail closed if a fresh-Q02 seed drifted after its enqueue seal."""
-    if payload.get("fresh_q02_seed") is not True:
+    """Fail closed if a fresh Q02/Q03 seed drifted after its enqueue seal."""
+    seed_kind = None
+    if payload.get("fresh_q02_seed") is True:
+        seed_kind = "q02"
+    elif payload.get("fresh_q03_purged_evidence_fallback") is True:
+        seed_kind = "q03"
+    if seed_kind is None:
         return None
     observed = {
         "expected_current_ex5_sha256": ex5_sha256,
@@ -4606,7 +4611,7 @@ def _fresh_q02_seed_spawn_binding_failure(
         ).strip().lower():
             return {
                 "spawned": False,
-                "reason": "fresh_q02_seed_binding_mismatch_before_spawn",
+                "reason": f"fresh_{seed_kind}_seed_binding_mismatch_before_spawn",
                 "binding": key,
                 "seeded": seeded,
                 "observed": expected,
@@ -4615,7 +4620,7 @@ def _fresh_q02_seed_spawn_binding_failure(
     if not isinstance(sealed_setfile, dict):
         return {
             "spawned": False,
-            "reason": "fresh_q02_seed_setfile_identity_missing_before_spawn",
+            "reason": f"fresh_{seed_kind}_seed_setfile_identity_missing_before_spawn",
         }
     try:
         seeded_path = Path(str(sealed_setfile.get("path") or "")).resolve()
@@ -4623,20 +4628,20 @@ def _fresh_q02_seed_spawn_binding_failure(
     except OSError as exc:
         return {
             "spawned": False,
-            "reason": "fresh_q02_seed_setfile_identity_unresolvable_before_spawn",
+            "reason": f"fresh_{seed_kind}_seed_setfile_identity_unresolvable_before_spawn",
             "detail": str(exc),
         }
     if os.path.normcase(str(seeded_path)) != os.path.normcase(str(observed_path)):
         return {
             "spawned": False,
-            "reason": "fresh_q02_seed_setfile_path_mismatch_before_spawn",
+            "reason": f"fresh_{seed_kind}_seed_setfile_path_mismatch_before_spawn",
             "seeded": str(seeded_path),
             "observed": str(observed_path),
         }
     if str(sealed_setfile.get("sha256") or "").strip().lower() != setfile_sha256:
         return {
             "spawned": False,
-            "reason": "fresh_q02_seed_setfile_hash_mismatch_before_spawn",
+            "reason": f"fresh_{seed_kind}_seed_setfile_hash_mismatch_before_spawn",
             "seeded": sealed_setfile.get("sha256"),
             "observed": setfile_sha256,
         }
@@ -16731,6 +16736,8 @@ def _enqueue_q03_exact_identity(
             }
 
         rerun_target = None
+        purged_evidence_fallback = False
+        purged_identity_row_ids: list[str] = []
         if rerun_of:
             rerun_target = conn.execute(
                 "SELECT * FROM work_items WHERE id=?", (rerun_of,)
@@ -16758,14 +16765,78 @@ def _enqueue_q03_exact_identity(
                 }
             rerun_evidence = Path(str(rerun_target["evidence_path"]))
             if not rerun_evidence.is_file():
-                return {
-                    "enqueued": False,
-                    "ea_id": ea_id,
-                    "phase": phase,
-                    "reason": "q03_rerun_source_evidence_missing",
-                    "append_only_rerun_of_work_item": rerun_of,
-                    "evidence_path": str(rerun_evidence),
+                try:
+                    rerun_target_payload = json.loads(
+                        rerun_target["payload_json"] or "{}"
+                    )
+                except json.JSONDecodeError:
+                    rerun_target_payload = None
+                if not isinstance(rerun_target_payload, dict):
+                    return {
+                        "enqueued": False,
+                        "ea_id": ea_id,
+                        "phase": phase,
+                        "reason": "q03_purged_evidence_source_payload_invalid",
+                        "append_only_rerun_of_work_item": rerun_of,
+                    }
+                current_ex5 = bindings["artifact_sha256"]["expected_ex5_sha256"]
+                target_ex5_values = {
+                    str(rerun_target_payload.get(key) or "").strip().lower()
+                    for key in (
+                        "expected_current_ex5_sha256",
+                        "expected_ex5_sha256",
+                    )
                 }
+                if current_ex5 in target_ex5_values:
+                    return {
+                        "enqueued": False,
+                        "ea_id": ea_id,
+                        "phase": phase,
+                        "reason": (
+                            "q03_exact_identity_already_has_current_binary_"
+                            "terminal_result"
+                        ),
+                        "existing_work_item_id": rerun_target["id"],
+                        "existing_status": rerun_target["status"],
+                        "existing_verdict": rerun_target["verdict"],
+                    }
+                identity_rows = conn.execute(
+                    """
+                    SELECT id,evidence_path FROM work_items
+                    WHERE ea_id=? AND phase IN ('Q03','P3') AND symbol=?
+                      AND setfile_path=? AND status IN ('done','failed')
+                      AND verdict IS NOT NULL
+                    ORDER BY created_at ASC, id ASC
+                    """,
+                    (
+                        ea_id,
+                        predecessor["symbol"],
+                        predecessor["setfile_path"],
+                    ),
+                ).fetchall()
+                retained_evidence = []
+                for identity_row in identity_rows:
+                    evidence_raw = str(identity_row["evidence_path"] or "").strip()
+                    if evidence_raw and Path(evidence_raw).is_file():
+                        retained_evidence.append({
+                            "id": identity_row["id"],
+                            "evidence_path": evidence_raw,
+                        })
+                if retained_evidence:
+                    return {
+                        "enqueued": False,
+                        "ea_id": ea_id,
+                        "phase": phase,
+                        "reason": (
+                            "q03_purged_evidence_fallback_refused_"
+                            "retained_identity_evidence_exists"
+                        ),
+                        "append_only_rerun_of_work_item": rerun_of,
+                        "evidence_path": str(rerun_evidence),
+                        "retained_identity_evidence": retained_evidence,
+                    }
+                purged_evidence_fallback = True
+                purged_identity_row_ids = [row["id"] for row in identity_rows]
             prior_rerun = conn.execute(
                 """
                 SELECT id,status,verdict FROM work_items
@@ -16863,10 +16934,25 @@ def _enqueue_q03_exact_identity(
                 "append_only_rerun_of_work_item": rerun_of,
                 "rerun_reason": reason,
                 "rerun_source_evidence_path": str(rerun_target["evidence_path"]),
+                "rerun_source_evidence_purged_at_enqueue": purged_evidence_fallback,
+                "rerun_source_payload_sha256": hashlib.sha256(
+                    str(rerun_target["payload_json"] or "{}").encode("utf-8")
+                ).hexdigest(),
                 "rerun_source_status": rerun_target["status"],
                 "rerun_source_updated_at": rerun_target["updated_at"],
                 "rerun_source_verdict": rerun_target["verdict"],
             })
+            if purged_evidence_fallback:
+                payload.update({
+                    "fresh_q03_purged_evidence_fallback": True,
+                    "purged_identity_rows_verified": purged_identity_row_ids,
+                    "requalification_setfile_identity": {
+                        "path": str(predecessor["setfile_path"]),
+                        "sha256": bindings["artifact_sha256"][
+                            "expected_setfile_sha256"
+                        ],
+                    },
+                })
         wid = str(uuid.uuid4())
         conn.execute(
             """
@@ -16891,13 +16977,23 @@ def _enqueue_q03_exact_identity(
             "setfile_path": predecessor["setfile_path"],
             "predecessor_work_item_id": predecessor_id,
             **({"rerun_of_work_item_id": rerun_of} if rerun_of else {}),
+            **(
+                {"fresh_q03_purged_evidence_fallback": True}
+                if purged_evidence_fallback
+                else {}
+            ),
         }]
         event(
             conn,
             "work_items",
             phase,
             "q03_exact_identity_enqueued",
-            {"ea_id": ea_id, "created": created, "rerun_reason": reason or None},
+            {
+                "ea_id": ea_id,
+                "created": created,
+                "rerun_reason": reason or None,
+                "fresh_q03_purged_evidence_fallback": purged_evidence_fallback,
+            },
         )
         conn.commit()
     return {

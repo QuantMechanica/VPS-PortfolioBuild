@@ -395,6 +395,58 @@ def test_fresh_q02_seed_spawn_guard_refuses_setfile_drift(
     assert drift["binding"] == "expected_setfile_sha256"
 
 
+def test_fresh_q03_purged_seed_spawn_guard_refuses_binary_drift(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    setfile = art["setfile"]
+    mq5 = art["mq5"]
+    assert isinstance(setfile, Path)
+    assert isinstance(mq5, Path)
+    setfile_sha = farmctl._sha256_file(setfile)
+    mq5_sha = farmctl._sha256_file(mq5)
+    payload = {
+        "expected_current_ex5_sha256": art["current_ex5"],
+        "expected_ex5_sha256": art["current_ex5"],
+        "expected_expert": "QM\\QM5_9901_candidate",
+        "expected_mq5_sha256": mq5_sha,
+        "expected_period": "H1",
+        "expected_setfile_sha256": setfile_sha,
+        "expected_symbol": "EURUSD.DWX",
+        "fresh_q03_purged_evidence_fallback": True,
+        "requalification_setfile_identity": {
+            "path": str(setfile),
+            "sha256": setfile_sha,
+        },
+    }
+
+    valid = farmctl._fresh_q02_seed_spawn_binding_failure(
+        payload,
+        ex5_sha256=art["current_ex5"],
+        mq5_sha256=mq5_sha,
+        setfile_path=setfile,
+        setfile_sha256=setfile_sha,
+        symbol="EURUSD.DWX",
+        period="H1",
+        expert="QM\\QM5_9901_candidate",
+    )
+    drift = farmctl._fresh_q02_seed_spawn_binding_failure(
+        payload,
+        ex5_sha256="f" * 64,
+        mq5_sha256=mq5_sha,
+        setfile_path=setfile,
+        setfile_sha256=setfile_sha,
+        symbol="EURUSD.DWX",
+        period="H1",
+        expert="QM\\QM5_9901_candidate",
+    )
+
+    assert valid is None
+    assert drift is not None
+    assert drift["reason"] == "fresh_q03_seed_binding_mismatch_before_spawn"
+    assert drift["binding"] == "expected_current_ex5_sha256"
+
+
 def test_fresh_q02_seed_refuses_noncanonical_ea_directory(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -533,7 +585,7 @@ def test_q03_append_only_refuses_nonmatching_target_identity(
         verdict="PASS",
         payload=current_payload,
     )
-    _insert_work_item(
+    evidence = _insert_work_item(
         art,
         item_id="q03-other-symbol",
         phase="Q03",
@@ -542,6 +594,7 @@ def test_q03_append_only_refuses_nonmatching_target_identity(
         payload=current_payload,
         symbol="GBPUSD.DWX",
     )
+    evidence.unlink()
 
     result = farmctl.enqueue_cascade_backtest_for_ea(
         art["root"],
@@ -556,6 +609,165 @@ def test_q03_append_only_refuses_nonmatching_target_identity(
     assert not result["enqueued"]
     assert result["reason"] == "q03_append_only_target_identity_mismatch_or_not_terminal"
     assert _work_item_count(art) == 2
+
+
+def test_q03_purged_evidence_fallback_is_sealed_append_only(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-current",
+        phase="Q02",
+        status="done",
+        verdict="PASS",
+        payload=_payload(art, stale=False),
+    )
+    evidence = _insert_work_item(
+        art,
+        item_id="q03-purged",
+        phase="Q03",
+        status="done",
+        verdict="PASS",
+        payload=_prebinding_payload(),
+    )
+    evidence.unlink()
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        historical_before = conn.execute(
+            "SELECT * FROM work_items WHERE id='q03-purged'"
+        ).fetchone()
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        root,
+        art["ea_id"],
+        "Q03",
+        predecessor_work_item_id="q02-current",
+        append_only_rerun_of="q03-purged",
+        rerun_reason="owner-directed current-binary requalification",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    assert result["created"][0]["fresh_q03_purged_evidence_fallback"] is True
+    assert _work_item_count(art) == 3
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        historical_after = conn.execute(
+            "SELECT * FROM work_items WHERE id='q03-purged'"
+        ).fetchone()
+        created = conn.execute(
+            "SELECT status,payload_json FROM work_items WHERE id=?",
+            (result["created"][0]["id"],),
+        ).fetchone()
+    assert historical_after == historical_before
+    assert created is not None and created[0] == "pending"
+    payload = json.loads(created[1])
+    assert payload["fresh_q03_purged_evidence_fallback"] is True
+    assert payload["rerun_source_evidence_purged_at_enqueue"] is True
+    assert payload["purged_identity_rows_verified"] == ["q03-purged"]
+    assert payload["append_only_rerun_of_work_item"] == "q03-purged"
+    assert payload["promoted_from_work_item"] == "q02-current"
+    assert payload["expected_current_ex5_sha256"] == art["current_ex5"]
+    assert payload["expected_ex5_sha256"] == art["current_ex5"]
+    assert payload["requalification_setfile_identity"] == {
+        "path": str(art["setfile"]),
+        "sha256": farmctl._sha256_file(art["setfile"]),
+    }
+    assert payload["risk_fixed"] == 1000.0
+    assert payload["risk_percent"] == 0.0
+
+
+def test_q03_purged_fallback_refuses_current_binary_terminal_target(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    current_payload = _payload(art, stale=False)
+    _insert_work_item(
+        art,
+        item_id="q02-current",
+        phase="Q02",
+        status="done",
+        verdict="PASS",
+        payload=current_payload,
+    )
+    evidence = _insert_work_item(
+        art,
+        item_id="q03-current",
+        phase="Q03",
+        status="done",
+        verdict="PASS",
+        payload=current_payload,
+    )
+    evidence.unlink()
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q03",
+        predecessor_work_item_id="q02-current",
+        append_only_rerun_of="q03-current",
+        rerun_reason="must dedupe current binary",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == (
+        "q03_exact_identity_already_has_current_binary_terminal_result"
+    )
+    assert result["existing_work_item_id"] == "q03-current"
+    assert _work_item_count(art) == 2
+
+
+def test_q03_purged_fallback_refuses_retained_exact_identity_evidence(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-current",
+        phase="Q02",
+        status="done",
+        verdict="PASS",
+        payload=_payload(art, stale=False),
+    )
+    purged = _insert_work_item(
+        art,
+        item_id="q03-purged",
+        phase="Q03",
+        status="done",
+        verdict="PASS",
+        payload=_prebinding_payload(),
+    )
+    purged.unlink()
+    retained = _insert_work_item(
+        art,
+        item_id="q03-retained",
+        phase="Q03",
+        status="done",
+        verdict="PASS",
+        payload=_payload(art, stale=True),
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q03",
+        predecessor_work_item_id="q02-current",
+        append_only_rerun_of="q03-purged",
+        rerun_reason="must not ignore retained evidence",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == (
+        "q03_purged_evidence_fallback_refused_retained_identity_evidence_exists"
+    )
+    assert result["retained_identity_evidence"] == [{
+        "id": "q03-retained",
+        "evidence_path": str(retained),
+    }]
+    assert _work_item_count(art) == 3
 
 
 def test_q03_exact_identity_creates_only_one_bound_row(tmp_path: Path, monkeypatch) -> None:
