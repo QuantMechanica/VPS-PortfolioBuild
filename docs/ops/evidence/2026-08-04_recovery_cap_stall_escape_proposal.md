@@ -6,10 +6,19 @@ Date: 2026-08-04 ~12:55Z · Author: Claude · Status: **RATIFIED 2026-08-04 ~13:
 > proposal): **"Go"**
 
 Applied 2026-08-04 ~13:05Z as a normal reviewed commit (farmctl.py +
-test_ultracode_wsa_claim.py, 26/26 passing against the repo tree). Activation:
-pump subprocess picks the new claim logic up on its next 10-min tick; resident
-terminal workers adopt at the next OFF/ON ceremony (farmctl.py is source-bound,
-next mint covers the new SHA).
+test_ultracode_wsa_claim.py, 26/26 passing against the repo tree).
+
+**Activation correction (~13:30Z, supersedes the paragraph below and the
+original §"Activation path"):** the pump does NOT dispatch work items —
+`farmctl pump` reports `dispatch_work_items: {disabled: true, reason:
+"per-terminal worker daemons own work_item dispatch"}` (farmctl.py ~13514),
+and the worker daemons run an endless `run_loop` with no self-reload (process
+scan 13:2xZ: all 10 daemons alive since the 10:15Z Factory_ON). The amendment
+is therefore INERT until the terminal workers are restarted — i.e. until the
+next OFF/ON ceremony (farmctl.py is source-bound; the next mint covers the new
+SHA). Same resident-worker-inertness class as the Q09 --period executor fix
+(e21136822). The original activation claim ("pump picks it up within ~10 min")
+was wrong and is retracted here.
 
 ## Symptom
 
