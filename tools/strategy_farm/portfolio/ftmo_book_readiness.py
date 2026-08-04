@@ -14,8 +14,10 @@ from typing import Any, Mapping
 
 try:
     from .ftmo_phase1_mae import load_ftmo_book
+    from .ftmo_q09_admission import EVIDENCE_MISSING
 except ImportError:  # pragma: no cover - direct script execution
     from ftmo_phase1_mae import load_ftmo_book  # type: ignore
+    from ftmo_q09_admission import EVIDENCE_MISSING  # type: ignore
 
 
 def _numeric_ea(value: Any) -> int:
@@ -93,10 +95,18 @@ def build_readiness(
         qrow = qmap.get(key)
         rrow = rmap.get(key)
         blockers: list[str] = []
+        q09_admission = qrow.get("ftmo_q09_admission") if qrow else None
+        q09_reason = (
+            str(q09_admission.get("reason_code") or EVIDENCE_MISSING)
+            if isinstance(q09_admission, Mapping)
+            else EVIDENCE_MISSING
+        )
         if qrow is None:
             blockers.append("qualification_evidence_missing")
         elif qrow.get("challenge_ready") is not True:
             blockers.append(f"qualification_not_ready:{qrow.get('state') or 'UNKNOWN'}")
+        if not isinstance(q09_admission, Mapping) or q09_admission.get("admitted") is not True:
+            blockers.append(q09_reason)
         if rrow is None:
             blockers.append("stream_reconciliation_missing")
         elif rrow.get("status") != "PASS":
@@ -110,6 +120,17 @@ def build_readiness(
             "blockers": blockers,
             "qualification_state": qrow.get("state") if qrow else None,
             "qualification_blockers": qrow.get("blockers") if qrow else None,
+            "ftmo_q09_admitted": (
+                q09_admission.get("admitted") is True
+                if isinstance(q09_admission, Mapping)
+                else False
+            ),
+            "ftmo_q09_reason_code": q09_reason,
+            "ftmo_q09_chosen_temporal": (
+                q09_admission.get("chosen_temporal")
+                if isinstance(q09_admission, Mapping)
+                else None
+            ),
             "reconciliation_status": rrow.get("status") if rrow else None,
             "reconciliation_reasons": rrow.get("reasons") if rrow else None,
         })
@@ -119,6 +140,8 @@ def build_readiness(
         "status": "READY" if sleeves and ready_count == len(sleeves) else "NO_GO",
         "contract": {
             "all_sleeves_strictly_qualified": True,
+            "all_sleeves_ftmo_q09_admitted": True,
+            "q09_absence_is_exclusion": True,
             "all_streams_report_reconciled": True,
             "partial_book_approval": False,
         },
@@ -128,6 +151,7 @@ def build_readiness(
         "qualification_ready_count": sum(
             row["qualification_state"] == "CHALLENGE_READY" for row in sleeves
         ),
+        "ftmo_q09_admitted_count": sum(row["ftmo_q09_admitted"] for row in sleeves),
         "reconciliation_pass_count": sum(
             row["reconciliation_status"] == "PASS" for row in sleeves
         ),

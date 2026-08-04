@@ -29,6 +29,11 @@ from statistics import median
 from typing import Any, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
+try:
+    from .ftmo_q09_admission import ADMITTED_REASON, EVIDENCE_MISSING
+except ImportError:  # pragma: no cover - direct script execution
+    from ftmo_q09_admission import ADMITTED_REASON, EVIDENCE_MISSING  # type: ignore
+
 
 CONFIG_SCHEMA = "qm.ftmo-timebox-config/v1"
 RESULT_SCHEMA = "qm.ftmo-timebox-result/v1"
@@ -47,6 +52,8 @@ REFUSED_REGIME_COVERAGE = "REFUSED_FEWER_THAN_20_SHARED_CALENDAR_DAYS"
 REFUSED_CALENDAR = "REFUSED_NONIDENTICAL_OR_NONCONTIGUOUS_SHARED_CALENDAR"
 REFUSED_COST_ADJUSTED_DECLARATION = "REFUSED_MISSING_EXPLICIT_COST_ADJUSTED_CLASS"
 REFUSED_SENSITIVITY = "REFUSED_SPREAD_SENSITIVITY_NON_MONOTONIC"
+REFUSED_QUALIFICATION_MISSING = "FTMO_QUALIFICATION_EVIDENCE_MISSING"
+REFUSED_QUALIFICATION_NOT_READY = "FTMO_QUALIFICATION_NOT_CHALLENGE_READY"
 PRAGUE = ZoneInfo("Europe/Prague")
 SHA_RE = re.compile(r"^[0-9a-f]{64}$")
 
@@ -1087,14 +1094,79 @@ def _binding_dimension(results: Sequence[Mapping[str, Any]]) -> str:
     return "DENSITY"
 
 
+def _inventory_admission_map(inventory: Any) -> dict[str, dict[str, Any]]:
+    """Normalize frozen qualification rows into fail-closed sleeve decisions."""
+
+    if not isinstance(inventory, Mapping):
+        raise TimeboxEvaluationError("inventory: expected object")
+    candidates = inventory.get("candidates")
+    if not isinstance(candidates, list):
+        return {}
+    decisions: dict[str, dict[str, Any]] = {}
+    for index, row in enumerate(candidates):
+        if not isinstance(row, Mapping):
+            raise TimeboxEvaluationError(f"inventory.candidates[{index}]: expected object")
+        try:
+            ea_id = int(str(row.get("ea_id") or "").upper().removeprefix("QM5_"))
+        except ValueError as exc:
+            raise TimeboxEvaluationError(
+                f"inventory.candidates[{index}].ea_id: invalid"
+            ) from exc
+        symbol = str(row.get("symbol") or "").strip().upper()
+        if symbol.endswith(".DWX"):
+            symbol = symbol[:-4]
+        if not symbol:
+            raise TimeboxEvaluationError(f"inventory.candidates[{index}].symbol: missing")
+        sleeve_id = f"{ea_id}:{symbol}"
+        if sleeve_id in decisions:
+            raise TimeboxEvaluationError(f"inventory: duplicate sleeve {sleeve_id}")
+        admission = row.get("ftmo_q09_admission")
+        q09_admitted = (
+            isinstance(admission, Mapping)
+            and admission.get("admitted") is True
+            and admission.get("reason_code") == ADMITTED_REASON
+        )
+        if not q09_admitted:
+            reason = (
+                str(admission.get("reason_code") or EVIDENCE_MISSING)
+                if isinstance(admission, Mapping)
+                else EVIDENCE_MISSING
+            )
+        elif row.get("challenge_ready") is not True:
+            reason = REFUSED_QUALIFICATION_NOT_READY
+        else:
+            reason = ADMITTED_REASON
+        decisions[sleeve_id] = {
+            "admitted": q09_admitted and row.get("challenge_ready") is True,
+            "reason_code": reason,
+            "qualification_state": row.get("state"),
+            "q09_news_work_item_id": (
+                admission.get("q09_news_work_item_id")
+                if isinstance(admission, Mapping)
+                else None
+            ),
+            "chosen_temporal": (
+                admission.get("chosen_temporal")
+                if isinstance(admission, Mapping)
+                else None
+            ),
+            "deployment_compliance": (
+                admission.get("deployment_compliance")
+                if isinstance(admission, Mapping)
+                else None
+            ),
+        }
+    return decisions
+
+
 def evaluate_config(config: Mapping[str, Any], config_sha256: str) -> dict[str, Any]:
     validate_config(config)
     inputs = config["inputs"]
     inventory_path = verify_binding(inputs["inventory"], "inputs.inventory")
     fund_path = verify_binding(inputs["fund_scores"], "inputs.fund_scores")
     cost_path = verify_binding(inputs["ftmo_cost_snapshot"], "inputs.ftmo_cost_snapshot")
-    # These evidence bindings are intentionally parsed only enough to reject corrupt JSON.
-    load_json(inventory_path, "inventory")
+    inventory = load_json(inventory_path, "inventory")
+    admission_map = _inventory_admission_map(inventory)
     load_json(fund_path, "fund_scores")
     stream_paths: dict[str, Path] = {}
     entries: dict[str, Mapping[str, Any]] = {}
@@ -1120,7 +1192,23 @@ def evaluate_config(config: Mapping[str, Any], config_sha256: str) -> dict[str, 
     }
     calibration_sha256: dict[str, str] = {}
     refusal: dict[str, str] = {}
+    sleeve_admission: dict[str, dict[str, Any]] = {}
     for sleeve_id, entry in entries.items():
+        admission = admission_map.get(
+            sleeve_id,
+            {
+                "admitted": False,
+                "reason_code": REFUSED_QUALIFICATION_MISSING,
+                "qualification_state": None,
+                "q09_news_work_item_id": None,
+                "chosen_temporal": None,
+                "deployment_compliance": None,
+            },
+        )
+        sleeve_admission[sleeve_id] = admission
+        if admission["admitted"] is not True:
+            refusal[sleeve_id] = str(admission["reason_code"])
+            continue
         term = cost_terms.get(str(entry["ftmo_code"]).upper())
         cost_reason = _cost_refusal(term)
         if cost_reason is not None:
@@ -1284,6 +1372,7 @@ def evaluate_config(config: Mapping[str, Any], config_sha256: str) -> dict[str, 
             "calibrations": calibration_sha256,
         },
         "sleeve_refusals": refusal,
+        "sleeve_admission": sleeve_admission,
         "compositions": composition_results,
         "decision": {
             "label": credit_label,

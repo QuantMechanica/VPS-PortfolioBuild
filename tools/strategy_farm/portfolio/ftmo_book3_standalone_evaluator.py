@@ -38,9 +38,11 @@ import pandas as pd
 try:
     from . import ftmo_bar_joint_book_sim as joint
     from . import ftmo_stream_reconciliation as reconciliation
+    from .ftmo_q09_admission import ADMITTED_REASON, EVIDENCE_MISSING
 except ImportError:  # pragma: no cover - direct script execution
     import ftmo_bar_joint_book_sim as joint  # type: ignore
     import ftmo_stream_reconciliation as reconciliation  # type: ignore
+    from ftmo_q09_admission import ADMITTED_REASON, EVIDENCE_MISSING  # type: ignore
 
 reconcile_case = reconciliation.reconcile_case
 
@@ -126,6 +128,7 @@ EVALUATOR_SOURCE_PATHS = {
     "prop_challenge_optimizer": Path(__file__).with_name("prop_challenge_optimizer.py").resolve(),
     "commission": Path(__file__).with_name("commission.py").resolve(),
     "portfolio_common": Path(__file__).with_name("portfolio_common.py").resolve(),
+    "ftmo_q09_admission": Path(__file__).with_name("ftmo_q09_admission.py").resolve(),
     "prop_challenge_sim": Path(__file__).with_name("prop_challenge_sim.py").resolve(),
     "portfolio_package": Path(__file__).with_name("__init__.py").resolve(),
 }
@@ -1805,6 +1808,17 @@ def _qualification_status(
     for rung, (ea_id, symbol, _provider) in expected.items():
         row = rows.get((ea_id, symbol))
         assert row is not None
+        raw_admission = row.get("ftmo_q09_admission")
+        q09_admitted = (
+            isinstance(raw_admission, Mapping)
+            and raw_admission.get("admitted") is True
+            and raw_admission.get("reason_code") == ADMITTED_REASON
+        )
+        q09_reason = (
+            str(raw_admission.get("reason_code") or EVIDENCE_MISSING)
+            if isinstance(raw_admission, Mapping)
+            else EVIDENCE_MISSING
+        )
         sleeves.append(
             {
                 "rung": rung,
@@ -1814,6 +1828,13 @@ def _qualification_status(
                 "state": row["state"],
                 "blockers": list(row["blockers"]),
                 "q08_verdict": row["q08_verdict"],
+                "ftmo_q09_admitted": q09_admitted,
+                "ftmo_q09_reason_code": q09_reason,
+                "ftmo_q09_chosen_temporal": (
+                    raw_admission.get("chosen_temporal")
+                    if isinstance(raw_admission, Mapping)
+                    else None
+                ),
             }
         )
     return {
@@ -1824,6 +1845,12 @@ def _qualification_status(
         "global_blockers": list(global_blockers),
         "partial_book_approval": False,
         "reported_ready_count": 0,
+        "ftmo_q09_admitted_count": sum(
+            sleeve["ftmo_q09_admitted"] for sleeve in sleeves
+        ),
+        "ftmo_q09_reason_codes": sorted(
+            {sleeve["ftmo_q09_reason_code"] for sleeve in sleeves}
+        ),
         "sleeve_count": len(sleeves),
         "sleeves": sleeves,
         "simulation_cannot_override": True,
@@ -3435,6 +3462,7 @@ def evaluate_manifest(
         }
     )
     qualification_status = bindings["qualification"]["status"]
+    q09_admitted_count = bindings["qualification"]["ftmo_q09_admitted_count"]
     return {
         "schema": RECEIPT_SCHEMA,
         "evaluation_id": evaluation_id,
@@ -3452,6 +3480,14 @@ def evaluate_manifest(
             "native_stream_reconciliation": "PASS",
             "shared_account_model": "COMPLETE_RESEARCH_ONLY",
             "strict_qualification": qualification_status,
+            "ftmo_q09_admission": (
+                "PASS"
+                if q09_admitted_count == bindings["qualification"]["sleeve_count"]
+                else "EXCLUDED"
+            ),
+            "ftmo_q09_reason_codes": bindings["qualification"][
+                "ftmo_q09_reason_codes"
+            ],
             "internal_policy_capture_fidelity": "SETUP_DATA_MISSING",
             "internal_policy_capture_fidelity_reason": (
                 "event_complete_target_crossing_pending_order_and_forced_flatten_trace_missing"

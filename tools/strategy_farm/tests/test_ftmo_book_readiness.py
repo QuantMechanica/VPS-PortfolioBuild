@@ -9,6 +9,15 @@ sys.path.insert(0, str(ROOT))
 from tools.strategy_farm.portfolio import ftmo_book_readiness as readiness  # noqa: E402
 
 
+def _q09_admission() -> dict[str, object]:
+    return {
+        "admitted": True,
+        "reason_code": "FTMO_Q09_ADMITTED",
+        "chosen_temporal": "PRE30",
+        "deployment_compliance": "FTMO",
+    }
+
+
 def test_book_requires_both_contracts_for_every_sleeve() -> None:
     book = {
         (1001, "NDX.DWX"): {"risk_fixed": 500, "tf": "H1"},
@@ -16,7 +25,7 @@ def test_book_requires_both_contracts_for_every_sleeve() -> None:
     }
     qualification = {
         "candidates": [
-            {"ea_id": "QM5_1001", "symbol": "NDX.DWX", "challenge_ready": True, "state": "CHALLENGE_READY", "blockers": []},
+            {"ea_id": "QM5_1001", "symbol": "NDX.DWX", "challenge_ready": True, "state": "CHALLENGE_READY", "blockers": [], "ftmo_q09_admission": _q09_admission()},
             {"ea_id": "QM5_1002", "symbol": "GBPUSD.DWX", "challenge_ready": False, "state": "NOT_QUALIFIED", "blockers": ["q08_not_pass"]},
         ],
     }
@@ -45,6 +54,7 @@ def test_missing_reconciliation_is_fail_closed() -> None:
             "challenge_ready": True,
             "state": "CHALLENGE_READY",
             "blockers": [],
+            "ftmo_q09_admission": _q09_admission(),
         }],
     }
 
@@ -63,6 +73,7 @@ def test_complete_book_is_ready() -> None:
             "challenge_ready": True,
             "state": "CHALLENGE_READY",
             "blockers": [],
+            "ftmo_q09_admission": _q09_admission(),
         }],
     }
     reconciliation = {
@@ -118,6 +129,28 @@ def test_empty_candidate_manifest_remains_fail_closed(tmp_path: Path) -> None:
     assert result["status"] == "NO_GO"
     assert result["sleeve_count"] == 0
     assert result["ready_count"] == 0
+
+
+def test_stale_qualification_without_q09_is_explicitly_excluded() -> None:
+    book = {(1001, "NDX.DWX"): {"risk_fixed": 500, "tf": "H1"}}
+    qualification = {
+        "candidates": [{
+            "ea_id": "QM5_1001",
+            "symbol": "NDX.DWX",
+            "challenge_ready": True,
+            "state": "CHALLENGE_READY",
+            "blockers": [],
+        }],
+    }
+    reconciliation = {
+        "results": [{"ea_id": 1001, "symbol": "NDX.DWX", "status": "PASS", "reasons": []}],
+    }
+
+    result = readiness.build_readiness(book, qualification, reconciliation)
+
+    assert result["status"] == "NO_GO"
+    assert result["sleeves"][0]["ftmo_q09_reason_code"] == "FTMO_Q09_EVIDENCE_MISSING"
+    assert "FTMO_Q09_EVIDENCE_MISSING" in result["sleeves"][0]["blockers"]
 
 
 def test_candidate_manifest_rejects_duplicate_sleeves(tmp_path: Path) -> None:

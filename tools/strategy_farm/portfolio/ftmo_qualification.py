@@ -19,8 +19,10 @@ from typing import Any, Iterable
 
 try:
     from .portfolio_common import DEFAULT_CANDIDATES_DB, DEFAULT_COMMON_DIR
+    from .ftmo_q09_admission import evaluate_ftmo_q09_admission
 except ImportError:  # pragma: no cover - direct script execution
     from portfolio_common import DEFAULT_CANDIDATES_DB, DEFAULT_COMMON_DIR  # type: ignore
+    from ftmo_q09_admission import evaluate_ftmo_q09_admission  # type: ignore
 
 
 DEFAULT_REPO_ROOT = Path(r"C:\QM\repo")
@@ -316,6 +318,12 @@ def evaluate_candidate(
     if not registry_ok:
         blockers.append(registry_reason or "active_magic_missing")
 
+    ftmo_q09_admission = evaluate_ftmo_q09_admission(conn, ea_id, symbol)
+    if ftmo_q09_admission["admitted"] is not True:
+        blockers.append(
+            f"ftmo_q09_admission:{ftmo_q09_admission['reason_code']}"
+        )
+
     q08_verdict = None
     q08_evidence_path: Path | None = None
     for phase in STRICT_PHASES:
@@ -382,7 +390,9 @@ def evaluate_candidate(
     if not ready and q08_verdict in RESEARCH_LEAD_Q08_VERDICTS:
         non_research_blockers = [
             blocker for blocker in blockers
-            if not blocker.startswith("q08_not_pass:") and not blocker.startswith("q10_pass_missing")
+            if not blocker.startswith("q08_not_pass:")
+            and not blocker.startswith("q10_pass_missing")
+            and not blocker.startswith("ftmo_q09_admission:")
         ]
         if not non_research_blockers:
             state = "RESEARCH_LEAD"
@@ -399,6 +409,7 @@ def evaluate_candidate(
             "modified_at_utc": _mtime_utc(Path(build_detail)) if build_ok and build_detail else None,
         },
         "active_magic_registered": registry_ok,
+        "ftmo_q09_admission": ftmo_q09_admission,
         "phases": phases,
         "stream": stream,
     }
@@ -439,6 +450,9 @@ def build_inventory(
             "requires_fresh_entry_time_and_mae_acct": True,
             "requires_q08_linked_durable_baseline_stream": True,
             "requires_evidence_not_older_than_binary": True,
+            "requires_ftmo_q09_config_locked_admission": True,
+            "ftmo_q09_absence_is_exclusion": True,
+            "ftmo_q09_chosen_temporal_is_deployment_binding": True,
             "read_only": True,
         },
         "counts": counts,

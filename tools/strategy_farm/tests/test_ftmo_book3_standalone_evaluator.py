@@ -796,6 +796,7 @@ def test_output_relevant_source_closure_is_complete() -> None:
         "prop_challenge_optimizer",
         "commission",
         "portfolio_common",
+        "ftmo_q09_admission",
         "prop_challenge_sim",
         "portfolio_package",
     } == set(evaluator.EVALUATOR_SOURCE_PATHS)

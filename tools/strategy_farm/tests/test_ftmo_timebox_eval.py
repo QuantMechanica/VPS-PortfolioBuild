@@ -37,6 +37,29 @@ def _jsonl(path: Path, rows: list[dict[str, object]]) -> None:
     path.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows), encoding="utf-8")
 
 
+def _admitted_inventory(*sleeve_ids: str) -> dict[str, object]:
+    candidates = []
+    for sleeve_id in sleeve_ids:
+        ea_id, symbol = sleeve_id.split(":", 1)
+        candidates.append(
+            {
+                "ea_id": f"QM5_{int(ea_id)}",
+                "symbol": f"{symbol}.DWX",
+                "state": "CHALLENGE_READY",
+                "challenge_ready": True,
+                "blockers": [],
+                "ftmo_q09_admission": {
+                    "admitted": True,
+                    "reason_code": "FTMO_Q09_ADMITTED",
+                    "q09_news_work_item_id": f"q09-{ea_id}-{symbol}",
+                    "chosen_temporal": "PRE30",
+                    "deployment_compliance": "FTMO",
+                },
+            }
+        )
+    return {"schema_version": 1, "candidates": candidates}
+
+
 def _cost(path: Path, *, missing_swap: bool = False) -> str:
     value: dict[str, object] = {
         "code": "XAU/USD",
@@ -141,7 +164,10 @@ def _spec(
     inventory = tmp_path / "inventory.json"
     scores = tmp_path / "scores.json"
     costs = tmp_path / "costs.json"
-    _json(inventory, {"inventory": "frozen"})
+    _json(
+        inventory,
+        _admitted_inventory(*(str(stream["sleeve_id"]) for stream in streams)),
+    )
     _json(scores, {"metric": "FUND_SCORE", "rows": []})
     _cost(costs, missing_swap=missing_swap)
     return {
@@ -276,7 +302,7 @@ def test_valid_ftmo_attested_stream_is_evaluated(tmp_path: Path) -> None:
     _jsonl(stream, _daily_rows("10128:XAUUSD", cost_sha, 140))
     inventory = tmp_path / "inventory.json"
     scores = tmp_path / "scores.json"
-    _json(inventory, {})
+    _json(inventory, _admitted_inventory("10128:XAUUSD"))
     _json(scores, {})
     spec = {
         "inventory_path": str(inventory),
@@ -313,7 +339,7 @@ def test_cost_attestation_mismatch_is_refused_not_silently_degraded(tmp_path: Pa
     _jsonl(stream, _daily_rows("10128:XAUUSD", "0" * 64, 30))
     inventory = tmp_path / "inventory.json"
     scores = tmp_path / "scores.json"
-    _json(inventory, {})
+    _json(inventory, _admitted_inventory("10128:XAUUSD"))
     _json(scores, {})
     spec = {
         "inventory_path": str(inventory),
@@ -341,11 +367,11 @@ def test_dl083_rejects_identical_multi_sleeve_book(tmp_path: Path) -> None:
     cost_sha = _cost(costs)
     inventory = tmp_path / "inventory.json"
     scores = tmp_path / "scores.json"
-    _json(inventory, {})
+    _json(inventory, _admitted_inventory("1:XAUUSD", "2:XAUUSD"))
     _json(scores, {})
     streams: list[dict[str, object]] = []
-    for sleeve_id in ("a", "b"):
-        path = tmp_path / f"{sleeve_id}.jsonl"
+    for sleeve_id in ("1:XAUUSD", "2:XAUUSD"):
+        path = tmp_path / f"{sleeve_id.replace(':', '_')}.jsonl"
         rows = _daily_rows(sleeve_id, cost_sha, 40)
         # Non-constant but identical paths have correlation one.
         for index, row in enumerate(rows):
@@ -371,8 +397,8 @@ def test_dl083_rejects_identical_multi_sleeve_book(tmp_path: Path) -> None:
             {
                 "id": "identical_pair",
                 "sleeves": [
-                    {"sleeve_id": "a", "weight": 0.5},
-                    {"sleeve_id": "b", "weight": 0.5},
+                    {"sleeve_id": "1:XAUUSD", "weight": 0.5},
+                    {"sleeve_id": "2:XAUUSD", "weight": 0.5},
                 ],
             }
         ],
@@ -385,6 +411,35 @@ def test_dl083_rejects_identical_multi_sleeve_book(tmp_path: Path) -> None:
     assert comp["correlation"]["effective_correlation"] == pytest.approx(1.0)
     assert comp["refusal_labels"] == [ftmo.REFUSED_CORRELATION]
     assert result["decision"]["binding_dimension"] == "CORRELATION"
+
+
+def test_composition_without_q09_admission_is_refused_with_reason_code(tmp_path: Path) -> None:
+    costs = tmp_path / "costs.json"
+    cost_sha = _cost(costs)
+    stream = tmp_path / "daily.jsonl"
+    _jsonl(stream, _daily_rows("10128:XAUUSD", cost_sha, 30))
+    spec = _spec(
+        tmp_path,
+        [{
+            "sleeve_id": "10128:XAUUSD",
+            "symbol": "XAUUSD",
+            "ftmo_code": "XAU/USD",
+            "stream_schema": ftmo.DAILY_STREAM_SCHEMA,
+            "path": str(stream),
+        }],
+        _single_comp(),
+    )
+    _json(Path(str(spec["inventory_path"])), {"schema_version": 1, "candidates": []})
+    config = ftmo.prepare_config(spec)
+    result = ftmo.evaluate_config(config, _config_sha(config))
+
+    assert result["status"] == "NO_ADMISSIBLE_COMPOSITION"
+    assert result["sleeve_refusals"] == {
+        "10128:XAUUSD": ftmo.REFUSED_QUALIFICATION_MISSING
+    }
+    assert result["compositions"][0]["refusal_labels"] == [
+        ftmo.REFUSED_QUALIFICATION_MISSING
+    ]
 
 
 def test_dl083_refuses_undefined_pairwise_correlation() -> None:

@@ -11,9 +11,16 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tools" / "strategy_farm"))
 
 from portfolio import ftmo_qualification  # noqa: E402
+import q09_news_contract  # noqa: E402
 
 
-def _fixture(tmp_path: Path, *, q08_verdict: str = "PASS", fresh_mae: bool = True):
+def _fixture(
+    tmp_path: Path,
+    *,
+    q08_verdict: str = "PASS",
+    fresh_mae: bool = True,
+    with_ftmo_q09: bool = True,
+):
     repo = tmp_path / "repo"
     common = tmp_path / "common"
     db = tmp_path / "farm.sqlite"
@@ -45,6 +52,25 @@ def _fixture(tmp_path: Path, *, q08_verdict: str = "PASS", fresh_mae: bool = Tru
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE q09_news_tests (
+                work_item_id TEXT, verdict TEXT, target_compliance TEXT,
+                matrix_scope TEXT, chosen_temporal TEXT, chosen_compliance TEXT,
+                aggregate_path TEXT, aggregate_sha256 TEXT
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE q09_news_cells (
+                q09_news_work_item_id TEXT, arm TEXT, temporal_mode TEXT,
+                compliance_mode TEXT, seed INTEGER, selection_metrics_json TEXT,
+                q07_seed_stability_pass INTEGER,
+                flat_at_event_receipt_sha256 TEXT
+            )
+            """
+        )
         for phase in ftmo_qualification.STRICT_PHASES:
             evidence = tmp_path / f"{phase}.json"
             payload = {}
@@ -62,6 +88,56 @@ def _fixture(tmp_path: Path, *, q08_verdict: str = "PASS", fresh_mae: bool = Tru
                     verdict, str(evidence), "2026-01-01", "2026-01-01",
                 ),
             )
+        if with_ftmo_q09:
+            q09_path = tmp_path / "Q09_NEWS.json"
+            adjudication = {
+                "schema_version": q09_news_contract.ADJUDICATION_SCHEMA_VERSION,
+                "verdict": "CONFIG_LOCKED",
+                "reason_codes": ["off_fallback_no_robust_improvement"],
+                "work_item_id": "wi-Q09_NEWS",
+                "deployment_target": "FTMO",
+                "target_compliance": "FTMO",
+                "chosen_config": {
+                    "temporal_mode": "PRE30",
+                    "temporal_mode_id": 1,
+                    "compliance_mode": "FTMO",
+                    "setfile_sha256s": ["a" * 64],
+                },
+                "locked_arms": [],
+                "ranking": [],
+                "matrix_scope": "7x1_target_compliance",
+            }
+            adjudication["adjudication_sha256"] = q09_news_contract.sha256_bytes(
+                q09_news_contract.canonical_json_bytes(adjudication)
+            )
+            q09_path.write_bytes(q09_news_contract.canonical_json_bytes(adjudication))
+            q09_sha = q09_news_contract.sha256_file(q09_path)
+            conn.execute(
+                "INSERT INTO work_items VALUES (?,?,?,?,?,?,?,?,?)",
+                (
+                    "wi-Q09_NEWS", "Q09_NEWS", "QM5_9001", "NDX.DWX", "done",
+                    "CONFIG_LOCKED", str(q09_path), "2026-01-02", "2026-01-02",
+                ),
+            )
+            conn.execute(
+                "INSERT INTO q09_news_tests VALUES (?,?,?,?,?,?,?,?)",
+                (
+                    "wi-Q09_NEWS", "CONFIG_LOCKED", "FTMO",
+                    "7x1_target_compliance", "PRE30", "FTMO",
+                    str(q09_path), q09_sha,
+                ),
+            )
+            metrics = json.dumps(
+                {"trades": 30, "profit_factor": 1.2, "drawdown_pct": 5.0}
+            )
+            for seed in q09_news_contract.SEEDS:
+                conn.execute(
+                    "INSERT INTO q09_news_cells VALUES (?,?,?,?,?,?,?,?)",
+                    (
+                        "wi-Q09_NEWS", "POLICY_ON", "PRE30", "FTMO", seed,
+                        metrics, 1, None,
+                    ),
+                )
         conn.commit()
 
     # Deliberately invalid volatile output proves qualification uses the
@@ -101,6 +177,22 @@ def test_q08_soft_fail_never_becomes_challenge_ready(tmp_path: Path) -> None:
     assert candidate["challenge_ready"] is False
     assert candidate["state"] == "RESEARCH_LEAD"
     assert "q08_not_pass:FAIL_SOFT" in candidate["blockers"]
+
+
+def test_missing_q09_ftmo_evidence_is_explicitly_excluded(tmp_path: Path) -> None:
+    repo, common, db = _fixture(tmp_path, with_ftmo_q09=False)
+
+    artifact = ftmo_qualification.build_inventory(
+        db,
+        keys=[("QM5_9001", "NDX.DWX")],
+        repo_root=repo,
+        common_dir=common,
+    )
+
+    candidate = artifact["candidates"][0]
+    assert candidate["challenge_ready"] is False
+    assert candidate["ftmo_q09_admission"]["reason_code"] == "FTMO_Q09_EVIDENCE_MISSING"
+    assert "ftmo_q09_admission:FTMO_Q09_EVIDENCE_MISSING" in candidate["blockers"]
 
 
 def test_missing_intraday_mae_blocks_candidate(tmp_path: Path) -> None:
