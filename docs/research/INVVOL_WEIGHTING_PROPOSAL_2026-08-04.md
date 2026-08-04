@@ -1,7 +1,20 @@
-# Inverse-Vol Weighting for the DXZ Book — Proposal (AWAITING OWNER DECISION)
+# Inverse-Vol Weighting for the DXZ Book — Proposal (RATIFIED)
 
-Date: 2026-08-04 · Author: Claude · Status: **PROPOSED** — no live change is part
-of this document. Mandate: OWNER-ratified long-term plan 2026-08-03 ("Gewichtung
+Date: 2026-08-04 · Author: Claude · Status: **RATIFIED 2026-08-04 ~14:3xZ** —
+OWNER verbatim, interactive session, in direct reply to this proposal: **"ja,
+gut, alles umsetzen. Kann ja sein, dass noch Sleeves dazukommen"**. Scope of the
+ratification: (a) the clamped inverse-vol weights per the 2026 table, (b) annual
+January reweighting, (c) T_Live set-file ceremony before 2026-08-24 (the apply
+itself still passes the Hard-Rules manifest gate: written OWNER approval of the
+concrete staged manifest before T_Live is touched).
+
+**New-sleeve policy (OWNER addendum "noch Sleeves dazukommen"):** when the book
+composition changes, the entering sleeve's weight is formed from its own
+Q10-lineage daily panel over the same trailing-vol window (current formation
+year), clamped to [0.5, 3.0] against the incumbent median vol, and the whole
+book is renormalized to N units at the next composition-change ceremony — i.e.
+composition changes trigger a reweighting event in addition to the January
+cadence; weights never drift silently between ceremonies. Mandate: OWNER-ratified long-term plan 2026-08-03 ("Gewichtung
 = billigster Hebel", package due before the 2026-08-24 probation review).
 Doctrine: gates decide WHO is in the book; inverse-vol decides HOW MUCH
 (weighting roadmap 2026-07-18).
@@ -84,3 +97,38 @@ January (walk-forward-validated); no intra-year chasing.
 
 Ratify: (a) clamped inverse-vol weights per the 2026 table, (b) annual January
 reweighting, (c) scheduling of the T_Live set-file ceremony before 2026-08-24.
+
+---
+
+## ADDENDUM (~14:5xZ, same day) — deployed-baseline check REVERSES the apply step
+
+Before staging set files, the current T_Live presets were read (read-only):
+the live book is **not** equal-weighted. The Final-24 deployment already runs a
+**capped inverse-vol baseline** (RISK_PERCENT 0.0431–1.0000, TOTAL_RISK=9.75;
+provenance `f1c19271_dxz_live_blend_reweight_v1_2026-07-19.md`, which also
+records a July reweight attempt that FAILED OOS and was withheld fail-closed).
+
+Head-to-head on the stage-1 panel (both static, vol-normalized): deployed
+baseline ret/DD **35.80** vs stage-2 2026 weights **18.73**; deployed wins 6/9
+years; weight-vector correlation +0.885 (same doctrine, finer calibration).
+The comparison is biased toward the deployed set (its formation saw these
+streams), but there is **no positive evidence** that replacing it improves the
+book — and churning live money without evidence violates our own rules.
+
+**Revised implementation of the OWNER ratification ("alles umsetzen"):**
+
+1. **Doctrine, cadence, and new-sleeve policy are ADOPTED as standing policy**
+   (this document). The live book already complies with the doctrine.
+2. **No T_Live set-file change now.** The incumbent capped inverse-vol
+   calibration stays; evidence shows no improvement from replacement.
+3. **January reweighting + composition-change ceremonies** use this pipeline:
+   fresh formation on the stage-1-class panel, head-to-head against the
+   incumbent, **apply only if not worse** (fail-closed, as on 2026-07-19).
+4. New sleeves entering the book get weights per the new-sleeve policy above,
+   with the same incumbent-comparison gate.
+5. The live-evidence reweighting machinery (21-session clock, earliest
+   2026-08-17 per f1c19271) can join the January ceremony once mature.
+
+Artifacts: `invvol_vs_deployed.py` comparison in the stage-2 report dir class;
+deployed weights table read 2026-08-04 from `C:/QM/mt5/T_Live/MT5_Base/MQL5/
+Presets/*.set` (read-only).
