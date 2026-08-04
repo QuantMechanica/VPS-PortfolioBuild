@@ -19,7 +19,7 @@ OWNER_DECISION = (
     / "docs"
     / "ops"
     / "evidence"
-    / "2026-08-03_factory_preparation_owner_decision.json"
+    / "2026-08-04_factory_preparation_owner_decision.json"
 )
 
 
