@@ -15507,3 +15507,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20212,gbpusd-eurjpy,1,EURJPY.DWX,202120001,2026-08-04T09:38:56Z,Codex,active
 20213,wti-summer-mom1,0,XTIUSD.DWX,202130000,2026-08-04T13:10:46Z,Codex,active
 20214,wti-sum-rev1,0,XTIUSD.DWX,202140000,2026-08-04T18:39:00Z,Codex,active
+9912,bandy-zscore-returns-5d-mr-index,0,SP500.DWX,99120000,2026-08-04,Codex,active
+9912,bandy-zscore-returns-5d-mr-index,1,NDX.DWX,99120001,2026-08-04,Codex,active
+9912,bandy-zscore-returns-5d-mr-index,2,WS30.DWX,99120002,2026-08-04,Codex,active
