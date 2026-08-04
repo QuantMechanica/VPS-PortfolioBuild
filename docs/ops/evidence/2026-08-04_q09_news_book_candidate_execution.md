@@ -428,3 +428,37 @@ not a pipeline verdict. Therefore no fresh Q09_PORTFOLIO row, Q10 append-only
 rerun, or QM5_13036/GDAXI.DWX row was created. Those actions remain strictly
 gated on a genuine `CONFIG_LOCKED`, then a fresh same-Q08 `PASS_PORTFOLIO`,
 and the serial-chain stop rules stated above.
+
+### Round-5 terminal stop captured at cycle exit
+
+After the active handoff capture, the first CONTROL_OFF seed-42 selection run
+completed and published authenticated artifacts, but the immediately following
+holdout child refused at `run_smoke.ps1:2258`:
+
+```text
+Terminal instance is already running for D:\QM\mt5\T1. Stop it first or pass -AllowRunningTerminal.
+```
+
+Neither prohibited response was taken: the running terminal was not stopped,
+and `-AllowRunningTerminal` was not added. The executor wrote immutable
+`q09-news-cell-failure/v1` evidence for run identity
+`97832746b7c45318588ea7ee41e4a43303e951c796164b8a6b50f0e5deb4ac16`,
+binding ten available artifacts. The cell-failure SHA-256 is
+`9f02e7c4f6ad94e3b85124df2cc5d3313ab5365fde043755fdf19294df698a2d`.
+
+The row terminalized at `2026-08-04T20:19:01Z` as
+`done/REVIEW_REQUIRED`, reason `cell_execution_failed`: zero authenticated
+cells, one failed cell, and 39 unattempted cells. The immutable result
+identities are:
+
+| Artifact | SHA-256 |
+|---|---|
+| Aggregate | `b640d8d1fc281a99c26af4ab788fc00867e59d61b81dede605d70df4bff4a6eb` |
+| Q09 evidence | `b63fcab431d6be508a6043c815b5b9d440d45db6c019fe470133db4ef638bcb4` |
+| Execution failure | `60562a8b8403b12fe3675c6f14bac0ad165104d06dc3358a131968e031e05203` |
+
+The final Q09 summary sidecar persisted successfully as `RECORDED`; no
+`q09_news_cells` row was inserted for this work item. This is a genuine
+`REVIEW_REQUIRED` machinery refusal and therefore Claude review input, not a
+retry authorization. The sequence stops here: no Q09_PORTFOLIO row, Q10 row,
+or QM5_13036/GDAXI.DWX row was created.
