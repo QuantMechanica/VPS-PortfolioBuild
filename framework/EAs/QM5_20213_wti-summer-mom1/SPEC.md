@@ -87,3 +87,4 @@ change.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-04 | Initial build from approved G0 card | Q01 PASS: strict compile and V5 build check, 0 errors/warnings |
+| v2 | 2026-08-04 | Paced pipeline handoff | Q02 work item `c8ece439-4efe-43e2-a09e-18fae81c162d` enqueued and claimed by T2; no verdict claimed |

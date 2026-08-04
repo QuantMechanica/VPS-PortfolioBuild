@@ -56,8 +56,10 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02_READY
+pipeline_phase: Q02
 q01_status: PASS
+q02_status: ENQUEUED
+q02_work_item_id: c8ece439-4efe-43e2-a09e-18fae81c162d
 review_focus: "Falsify whether the source-backed June-October WTI regime changes the payoff of the exact prior-month continuation state enough to add direct crude exposure; Q09 alone may establish book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -259,6 +261,7 @@ waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-04 | initial WTI summer / exact one-month momentum candidate | G0 | APPROVED; build pending |
 | v2 | 2026-08-04 | initial framework implementation | Q01 | PASS; strict compile and build checks |
+| v3 | 2026-08-04 | paced priority-track baseline handoff | Q02 | ENQUEUED; later claimed by T2 |
 
 ## Pipeline Phase Status
 
@@ -266,3 +269,4 @@ waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-04 | APPROVED; R1-R4 PASS | this card, governed source packet, and durable decision |
 | Q01 Build Validation | 2026-08-04 | PASS; 0 errors, 0 warnings, 0 build-check failures | `D:/QM/reports/framework/21/build_check_20260804_131632.json`; `D:/QM/reports/compile/20260804_131527/summary.csv` |
+| Q02 Baseline Screening | 2026-08-04 | ENQUEUED; active on T2 at final observation, attempt 0 | work item `c8ece439-4efe-43e2-a09e-18fae81c162d` |
