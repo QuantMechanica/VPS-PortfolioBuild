@@ -15512,3 +15512,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9912,bandy-zscore-returns-5d-mr-index,2,WS30.DWX,99120002,2026-08-04,Codex,active
 13302,profactus-bb-limitmr,0,AUDCAD.DWX,133020000,2026-08-04T19:53:47Z,Codex,active
 13302,profactus-bb-limitmr,1,NZDCHF.DWX,133020001,2026-08-04T19:53:47Z,Codex,active
+20215,wti-dom-trend,0,XTIUSD.DWX,202150000,2026-08-04T20:05:21Z,Codex,active
