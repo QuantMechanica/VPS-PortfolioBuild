@@ -295,3 +295,60 @@ Q09 sidecar, Q09_PORTFOLIO successor, Q10 rerun, or QM5_13036 Q09 row is
 claimed or created in this cycle. The chain remains fail-closed until this row
 produces a genuine `CONFIG_LOCKED`; then a fresh same-Q08 `PASS_PORTFOLIO` is
 still required before Q10. The historical verdicts are not reinterpreted.
+
+## Round 4 append-only governed resume — 2026-08-04 12:57Z
+
+Router task `177ac748-059e-4d74-bea4-afdc9b440c70` authorized a new
+append-only attempt after the OWNER factory-reload window. The round-3 row
+`fd88398c-7288-4f6d-b3b0-4847487e35a8` remains terminal
+`done/REVIEW_REQUIRED`; it was not rewritten or retried in place.
+
+| Identity | Value |
+|---|---|
+| New Q09_NEWS work item | `6a305d8a-81ef-49a3-94bb-2fd1aaeb822e` |
+| Append-only rerun of | `fd88398c-7288-4f6d-b3b0-4847487e35a8` |
+| Exact Q08 predecessor | `9fe3eb5f-ab0d-4c84-82fe-d6748c3aa270` |
+| Candidate-lineage key | `c963164be8b0677f76ec6cc812f40b0f7f5a9149eb493c31735a85a38c298a7b` |
+| Logical plan SHA-256 | `7f6853822f81f7657ea9738c5b250c181e794e30282c2ba3ff7f2ec53311ddc5` |
+| Exact plan-file SHA-256 | `319727ee2fc9107467d33e7a8658414e7ee4a10ef6e5efca6a810c2d28e0edb3` |
+| Input-manifest SHA-256 | `9be7e12377ecddc7a0255a47c5d93c8ff843aa99c2dd49377daa80ab39d7b326` |
+| Dispatch-binding SHA-256 | `98ccf9ae73e5d2e317555d0834a52fcfafcb4cd99a09ac79c3aa9549b61472e9` |
+
+### Preflight and plan verification
+
+- The Q08 aggregate, baseline setfile, current EX5, recursive include closure,
+  and OWNER-approved calendar manifest still match the sealed SHA-256 values
+  recorded above: `c611ae3b...`, `715bce2f...`, `2b98e9e9...`,
+  `a3fbf052...`, and `b204d1ab...`, respectively.
+- The new plan contains 40 cells and retains the exact ordered tuple of
+  `(run identity, setfile SHA-256, arm, compliance mode, temporal mode, seed)`
+  from round 3. The work-item-specific plan and manifest hashes change because
+  their paths and row binding are new; the experiment identities do not.
+- All 40 generated setfiles have `RISK_FIXED>0`, `RISK_PERCENT=0`, and no
+  `qm_news_stale_max_hours` value above 336. The input manifest retains
+  `REAL_TICKS`, `DXZ_CANONICAL_REAL_TICKS_V1`, the same full/selection/holdout
+  windows, and the same content-addressed calendar bundle.
+- `bind-q09-plan` authenticated the exact plan-file hash, wrote the dispatch
+  binding, and released the activation hold as `RUNNABLE_BOUND` with a
+  3,600-second per-cell timeout.
+
+### Ordinary-worker activation and fail-closed handoff
+
+T3 claimed the row at `2026-08-04T12:53:17Z`. Its row-bound log proves that
+the ordinary worker, not a manual terminal launch, spawned
+`q09_news_runner.py execute` with the exact plan hash, `--period D1`, the
+reserved `T3` slot, and the canonical output root. At the `12:57:13Z` capture,
+the executor was running the first CONTROL_OFF seed-42 cell and its holdout
+child carried `-RequireFreshLoggerSample`; there were zero failure sidecars,
+zero published receipts, and no aggregate yet.
+
+This is active pipeline execution, not a verdict. Therefore no fresh
+Q09_PORTFOLIO row, Q10 rerun, or QM5_13036 Q09_NEWS row was created in this
+single scheduler pass. The continuation contract remains unchanged:
+
+1. only a genuine round-4 `CONFIG_LOCKED` may open a fresh same-Q08
+   Q09_PORTFOLIO row;
+2. only a genuine `PASS_PORTFOLIO` may open the append-only Q10 rerun;
+3. only after the QM5_11422 chain closes may QM5_13036 begin; and
+4. any refusal, non-good verdict, or genuine `REVIEW_REQUIRED` stops the chain
+   for review rather than creating a retry loop.
