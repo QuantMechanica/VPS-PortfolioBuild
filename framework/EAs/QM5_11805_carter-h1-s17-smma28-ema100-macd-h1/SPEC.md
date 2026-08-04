@@ -4,7 +4,7 @@
 **Slug:** carter-h1-s17-smma28-ema100-macd-h1
 **Source:** 529382f8-fbd1-5c17-ba62-fbe56990ebcd (see `strategy-seeds/sources/529382f8-fbd1-5c17-ba62-fbe56990ebcd/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-11
+**Last revised:** 2026-08-04
 
 ---
 
@@ -94,3 +94,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 320ab944-616f-4dbc-8660-5c9db4a37ff5 |
+| v1.1 | 2026-08-04 | Q01 compile recovery and current V5 wiring refresh | Signal, ATR stop/target, and SMMA/EMA reversal mechanics unchanged; task generation 1 |
