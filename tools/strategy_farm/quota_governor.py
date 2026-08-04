@@ -236,6 +236,16 @@ def main() -> int:
             continue
         flag_exists = flag.exists()
         owned = bool((prev.get("agents", {}).get(agent, {}) or {}).get("owned", False))
+        if flag_exists and not owned:
+            # Ownership lives only in the state JSON; a state reset while a flag
+            # exists orphans the governor's OWN flag forever (perpetual
+            # "leave-external", seen 2026-07-23..08-04 on CLAUDE_DISABLED.flag).
+            # The flag body is the durable provenance record — reclaim iff its
+            # first line is our marker.
+            try:
+                owned = flag.read_text(encoding="utf-8").splitlines()[0].strip() == "MANAGED_BY=quota_governor"
+            except Exception:
+                pass
         want, why = _decide(m["used_pct"], m["diff"], flag_exists)
 
         action = "noop"
