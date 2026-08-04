@@ -564,6 +564,133 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
                 2,
             )
 
+    def test_persistence_resume_reuses_matching_prior_round_cells(self) -> None:
+        plan = self.build(output="resume-prior-cells")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        self.write_receipts(plan)
+        result = runner.collect_run_plan_status(
+            Path(plan["plan_path"]),
+            output_root=self.root / "resume-prior-output",
+            expected_plan_file_sha256=plan_hash,
+        )
+        evidence = json.loads(Path(result["evidence_path"]).read_text(encoding="utf-8"))
+        adjudication = json.loads(
+            Path(result["aggregate_path"]).read_text(encoding="utf-8")
+        )
+        prior_evidence = dict(evidence)
+        prior_evidence["work_item_id"] = "q09-news-prior"
+        prior_evidence["cells"] = evidence["cells"][:5]
+
+        with closing(farmctl.connect(farm_root)) as connection:
+            connection.execute(
+                """
+                INSERT INTO work_items(
+                    id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                    attempt_count,parent_task_id,evidence_path,claimed_by,
+                    payload_json,created_at,updated_at
+                )
+                SELECT 'q09-news-prior',kind,phase,ea_id,symbol,setfile_path,
+                       'done','REVIEW_REQUIRED',0,NULL,NULL,NULL,'{}',created_at,updated_at
+                FROM work_items WHERE id='q09-news-1'
+                """
+            )
+            schema.add_dependency(
+                connection,
+                child_work_item_id="q09-news-prior",
+                dependency_role="Q08_INPUT",
+                parent_work_item_id="q08-1",
+                parent_evidence_sha256=contract.sha256_file(self.q08),
+                required_verdicts=["PASS"],
+            )
+            connection.commit()
+            schema.record_q09_adjudication(
+                connection,
+                evidence_payload=prior_evidence,
+                adjudication=adjudication,
+                aggregate_path=result["aggregate_path"],
+                aggregate_sha256=result["aggregate_sha256"],
+            )
+
+        resumed = runner._persist_q09_result(
+            farm_root,
+            work_item_id="q09-news-1",
+            terminal="T1",
+            plan_path=Path(plan["plan_path"]),
+            expected_plan_file_sha256=plan_hash,
+            result=result,
+        )
+        self.assertEqual(resumed["status"], "RECORDED")
+        with closing(farmctl.connect(farm_root)) as connection:
+            self.assertEqual(
+                connection.execute("SELECT count(*) FROM q09_news_cells").fetchone()[0],
+                40,
+            )
+            self.assertEqual(
+                connection.execute(
+                    """
+                    SELECT count(*) FROM q09_news_cells
+                    WHERE q09_news_work_item_id='q09-news-prior'
+                    """
+                ).fetchone()[0],
+                5,
+            )
+            self.assertEqual(
+                connection.execute(
+                    """
+                    SELECT count(*) FROM q09_news_cells
+                    WHERE q09_news_work_item_id='q09-news-1'
+                    """
+                ).fetchone()[0],
+                35,
+            )
+
+    def test_persistence_resume_fails_closed_on_divergent_cell_content(self) -> None:
+        plan = self.build(output="resume-divergence")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        self.write_receipts(plan)
+        result = runner.collect_run_plan_status(
+            Path(plan["plan_path"]),
+            output_root=self.root / "resume-divergence-output",
+            expected_plan_file_sha256=plan_hash,
+        )
+        evidence = json.loads(Path(result["evidence_path"]).read_text(encoding="utf-8"))
+        adjudication = json.loads(
+            Path(result["aggregate_path"]).read_text(encoding="utf-8")
+        )
+        partial_evidence = dict(evidence)
+        divergent_cell = dict(evidence["cells"][0])
+        divergent_cell["evidence_sha256"] = "0" * 64
+        partial_evidence["cells"] = [divergent_cell]
+        run_identity = divergent_cell["run_identity_sha256"]
+
+        with closing(farmctl.connect(farm_root)) as connection:
+            schema.record_q09_adjudication(
+                connection,
+                evidence_payload=partial_evidence,
+                adjudication=adjudication,
+                aggregate_path=result["aggregate_path"],
+                aggregate_sha256=result["aggregate_sha256"],
+            )
+
+        with self.assertRaises(schema.SchemaError) as raised:
+            runner._persist_q09_result(
+                farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                plan_path=Path(plan["plan_path"]),
+                expected_plan_file_sha256=plan_hash,
+                result=result,
+            )
+        report = str(raised.exception)
+        self.assertIn("Q09 persistence divergence", report)
+        self.assertIn(run_identity, report)
+        self.assertIn("evidence_sha256", report)
+        with closing(farmctl.connect(farm_root)) as connection:
+            self.assertEqual(
+                connection.execute("SELECT count(*) FROM q09_news_cells").fetchone()[0],
+                1,
+            )
+
     def test_executor_refuses_period_that_contradicts_sealed_q08(self) -> None:
         plan = self.build(output="period-contradiction")
         _, manifest = runner.load_authenticated_plan(Path(plan["plan_path"]))

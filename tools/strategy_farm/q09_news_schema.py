@@ -850,6 +850,31 @@ def _verify_adjudication_hash(adjudication: Mapping[str, Any]) -> str:
     return actual
 
 
+def _assert_persistence_match(
+    existing: sqlite3.Row,
+    expected: Mapping[str, Any],
+    *,
+    row_kind: str,
+    identity: str,
+) -> None:
+    """Fail closed when an append-only resume contradicts stored content."""
+
+    divergent_fields = sorted(
+        field for field, value in expected.items() if existing[field] != value
+    )
+    if not divergent_fields:
+        return
+    report = {
+        "row_kind": row_kind,
+        "identity": identity,
+        "divergent_fields": divergent_fields,
+    }
+    raise SchemaError(
+        "Q09 persistence divergence: "
+        + json.dumps(report, sort_keys=True, separators=(",", ":"))
+    )
+
+
 def record_q09_adjudication(
     conn: sqlite3.Connection,
     *,
@@ -857,8 +882,15 @@ def record_q09_adjudication(
     adjudication: Mapping[str, Any],
     aggregate_path: str,
     aggregate_sha256: str,
-) -> None:
-    """Persist a final Q09 result and its immutable cells in one transaction."""
+) -> bool:
+    """Persist or authenticate-resume a Q09 result in one transaction.
+
+    Returns ``True`` when the summary row was new and ``False`` when an
+    identical summary already existed. Cell run identities are global sealed
+    experiment identities, so an append-only work-item rerun may legitimately
+    encounter a cell stored by an earlier work item. Such a cell is reused
+    only after every verdict-relevant content field matches exactly.
+    """
 
     if adjudication.get("schema_version") != ADJUDICATION_SCHEMA_VERSION:
         raise SchemaError("unsupported adjudication schema")
@@ -880,44 +912,103 @@ def record_q09_adjudication(
     verdict = str(adjudication["verdict"])
     if verdict not in CANONICAL_VERDICTS:
         raise SchemaError("non-canonical Q09 verdict")
+    created_at = utc_now()
+    summary_content = {
+        "work_item_id": work_item_id,
+        "contract_version": CONTRACT_VERSION,
+        "deployment_target": evidence_payload["deployment_target"],
+        "target_compliance": (
+            adjudication.get("target_compliance")
+            or chosen.get("compliance_mode")
+            or "NONE"
+        ),
+        "q08_work_item_id": identities["q08_work_item_id"],
+        "calendar_bundle_id": calendar["bundle_id"],
+        "paired_base_identity_sha256": identities["paired_base_identity_sha256"],
+        "baseline_setfile_sha256": identities["baseline_setfile_sha256"],
+        "ex5_sha256": identities["ex5_sha256"],
+        "include_closure_sha256": identities["include_closure_sha256"],
+        "selection_from_utc": windows["selection_from_utc"],
+        "selection_to_utc": windows["selection_to_utc"],
+        "holdout_from_utc": windows["holdout_from_utc"],
+        "holdout_to_utc": windows["holdout_to_utc"],
+        "complete_months": int(windows["complete_months"]),
+        "holdout_complete_months": int(windows["holdout_complete_months"]),
+        "matrix_scope": adjudication.get("matrix_scope", "7x1_target_compliance"),
+        "verdict": verdict,
+        "chosen_temporal": (
+            chosen.get("temporal_mode") if verdict == "CONFIG_LOCKED" else None
+        ),
+        "chosen_compliance": (
+            chosen.get("compliance_mode") if verdict == "CONFIG_LOCKED" else None
+        ),
+        "aggregate_path": str(aggregate_path),
+        "aggregate_sha256": aggregate_sha256,
+    }
     with immediate_transaction(conn):
-        conn.execute(
-            """
-            INSERT INTO q09_news_tests(
-                work_item_id,contract_version,deployment_target,target_compliance,q08_work_item_id,
-                calendar_bundle_id,paired_base_identity_sha256,baseline_setfile_sha256,ex5_sha256,
-                include_closure_sha256,selection_from_utc,selection_to_utc,holdout_from_utc,
-                holdout_to_utc,complete_months,holdout_complete_months,matrix_scope,verdict,
-                chosen_temporal,chosen_compliance,aggregate_path,aggregate_sha256,created_at
-            ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-            """,
-            (
-                work_item_id,
-                CONTRACT_VERSION,
-                evidence_payload["deployment_target"],
-                adjudication.get("target_compliance") or chosen.get("compliance_mode") or "NONE",
-                identities["q08_work_item_id"],
-                calendar["bundle_id"],
-                identities["paired_base_identity_sha256"],
-                identities["baseline_setfile_sha256"],
-                identities["ex5_sha256"],
-                identities["include_closure_sha256"],
-                windows["selection_from_utc"],
-                windows["selection_to_utc"],
-                windows["holdout_from_utc"],
-                windows["holdout_to_utc"],
-                int(windows["complete_months"]),
-                int(windows["holdout_complete_months"]),
-                adjudication.get("matrix_scope", "7x1_target_compliance"),
-                verdict,
-                chosen.get("temporal_mode") if verdict == "CONFIG_LOCKED" else None,
-                chosen.get("compliance_mode") if verdict == "CONFIG_LOCKED" else None,
-                aggregate_path,
-                aggregate_sha256,
-                utc_now(),
-            ),
-        )
+        existing_summary = conn.execute(
+            "SELECT * FROM q09_news_tests WHERE work_item_id=?",
+            (work_item_id,),
+        ).fetchone()
+        summary_inserted = existing_summary is None
+        if existing_summary is not None:
+            _assert_persistence_match(
+                existing_summary,
+                summary_content,
+                row_kind="q09_news_tests",
+                identity=work_item_id,
+            )
+        else:
+            conn.execute(
+                """
+                INSERT INTO q09_news_tests(
+                    work_item_id,contract_version,deployment_target,target_compliance,q08_work_item_id,
+                    calendar_bundle_id,paired_base_identity_sha256,baseline_setfile_sha256,ex5_sha256,
+                    include_closure_sha256,selection_from_utc,selection_to_utc,holdout_from_utc,
+                    holdout_to_utc,complete_months,holdout_complete_months,matrix_scope,verdict,
+                    chosen_temporal,chosen_compliance,aggregate_path,aggregate_sha256,created_at
+                ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                """,
+                tuple(summary_content.values()) + (created_at,),
+            )
         for raw in evidence_payload["cells"]:
+            cell_content = {
+                "arm": raw["arm"],
+                "temporal_mode": raw["temporal_mode"],
+                "compliance_mode": raw["compliance_mode"],
+                "seed": int(raw["seed"]),
+                "requested_seed": int(raw["requested_seed"]),
+                "effective_seed": int(raw["effective_seed"]),
+                "paired_base_identity_sha256": raw["paired_base_identity_sha256"],
+                "run_identity_sha256": raw["run_identity_sha256"],
+                "setfile_sha256": raw["setfile_sha256"],
+                "evidence_sha256": raw["evidence_sha256"],
+                "report_sha256": raw["report_sha256"],
+                "selection_metrics_json": json.dumps(
+                    raw["selection"], sort_keys=True, separators=(",", ":")
+                ),
+                "holdout_metrics_json": json.dumps(
+                    raw["holdout"], sort_keys=True, separators=(",", ":")
+                ),
+                "full_metrics_json": json.dumps(
+                    raw["full"], sort_keys=True, separators=(",", ":")
+                ),
+                "q07_seed_stability_pass": int(bool(raw["q07_seed_stability_pass"])),
+                "flat_at_event_receipt_sha256": raw.get("flat_at_event_receipt_sha256"),
+            }
+            run_identity = str(cell_content["run_identity_sha256"])
+            existing_cell = conn.execute(
+                "SELECT * FROM q09_news_cells WHERE run_identity_sha256=?",
+                (run_identity,),
+            ).fetchone()
+            if existing_cell is not None:
+                _assert_persistence_match(
+                    existing_cell,
+                    cell_content,
+                    row_kind="q09_news_cells",
+                    identity=run_identity,
+                )
+                continue
             conn.execute(
                 """
                 INSERT INTO q09_news_cells(
@@ -927,28 +1018,36 @@ def record_q09_adjudication(
                     full_metrics_json,q07_seed_stability_pass,flat_at_event_receipt_sha256,created_at
                 ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 """,
-                (
-                    work_item_id,
-                    raw["arm"],
-                    raw["temporal_mode"],
-                    raw["compliance_mode"],
-                    int(raw["seed"]),
-                    int(raw["requested_seed"]),
-                    int(raw["effective_seed"]),
-                    raw["paired_base_identity_sha256"],
-                    raw["run_identity_sha256"],
-                    raw["setfile_sha256"],
-                    raw["evidence_sha256"],
-                    raw["report_sha256"],
-                    json.dumps(raw["selection"], sort_keys=True, separators=(",", ":")),
-                    json.dumps(raw["holdout"], sort_keys=True, separators=(",", ":")),
-                    json.dumps(raw["full"], sort_keys=True, separators=(",", ":")),
-                    int(bool(raw["q07_seed_stability_pass"])),
-                    raw.get("flat_at_event_receipt_sha256"),
-                    utc_now(),
-                ),
+                (work_item_id,) + tuple(cell_content.values()) + (created_at,),
             )
         for arm in adjudication.get("locked_arms", []):
+            arm_content = {
+                "arm": arm["arm"],
+                "temporal_mode": arm["temporal_mode"],
+                "compliance_mode": arm["compliance_mode"],
+                "seed_set_json": json.dumps(arm["seed_set"], separators=(",", ":")),
+                "setfile_hashes_json": json.dumps(
+                    arm["setfile_sha256_by_seed"], sort_keys=True, separators=(",", ":")
+                ),
+                "evidence_hashes_json": json.dumps(
+                    arm["evidence_sha256_by_seed"], sort_keys=True, separators=(",", ":")
+                ),
+            }
+            existing_arm = conn.execute(
+                """
+                SELECT * FROM q09_news_arms
+                WHERE q09_news_work_item_id=? AND arm=?
+                """,
+                (work_item_id, arm_content["arm"]),
+            ).fetchone()
+            if existing_arm is not None:
+                _assert_persistence_match(
+                    existing_arm,
+                    arm_content,
+                    row_kind="q09_news_arms",
+                    identity=f"{work_item_id}:{arm_content['arm']}",
+                )
+                continue
             conn.execute(
                 """
                 INSERT INTO q09_news_arms(
@@ -956,16 +1055,7 @@ def record_q09_adjudication(
                     setfile_hashes_json,evidence_hashes_json,created_at
                 ) VALUES(?,?,?,?,?,?,?,?)
                 """,
-                (
-                    work_item_id,
-                    arm["arm"],
-                    arm["temporal_mode"],
-                    arm["compliance_mode"],
-                    json.dumps(arm["seed_set"], separators=(",", ":")),
-                    json.dumps(arm["setfile_sha256_by_seed"], sort_keys=True, separators=(",", ":")),
-                    json.dumps(arm["evidence_sha256_by_seed"], sort_keys=True, separators=(",", ":")),
-                    utc_now(),
-                ),
+                (work_item_id,) + tuple(arm_content.values()) + (created_at,),
             )
         if verdict == "CONFIG_LOCKED":
             arms = conn.execute(
@@ -976,6 +1066,7 @@ def record_q09_adjudication(
                 raise SchemaError("CONFIG_LOCKED requires exactly two bound arms")
             if any(set(json.loads(row[3])) != set(SEEDS) for row in arms):
                 raise SchemaError("locked arms do not bind all five canonical seeds")
+    return summary_inserted
 
 
 @dataclass(frozen=True)

@@ -1665,20 +1665,7 @@ def _persist_q09_result(
     connection = sqlite3.connect(str(database), timeout=30)
     connection.row_factory = sqlite3.Row
     try:
-        existing = connection.execute(
-            "SELECT verdict,aggregate_path,aggregate_sha256 FROM q09_news_tests WHERE work_item_id=?",
-            (str(work_item_id),),
-        ).fetchone()
-        if existing is not None:
-            if (
-                existing["verdict"] != result["verdict"]
-                or Path(str(existing["aggregate_path"])).resolve()
-                != Path(str(result["aggregate_path"])).resolve()
-                or existing["aggregate_sha256"] != result["aggregate_sha256"]
-            ):
-                raise RunnerError("existing immutable Q09 adjudication contradicts executor result")
-            return {"status": "ALREADY_RECORDED", "verdict": existing["verdict"]}
-        news_schema.record_q09_adjudication(
+        summary_inserted = news_schema.record_q09_adjudication(
             connection,
             evidence_payload=evidence_payload,
             adjudication=adjudication,
@@ -1691,7 +1678,10 @@ def _persist_q09_result(
         ).fetchone()
         if recorded is None or recorded["aggregate_sha256"] != result["aggregate_sha256"]:
             raise RunnerError("Q09 adjudication sidecar verification failed")
-        return {"status": "RECORDED", "verdict": recorded["verdict"]}
+        return {
+            "status": "RECORDED" if summary_inserted else "ALREADY_RECORDED",
+            "verdict": recorded["verdict"],
+        }
     finally:
         connection.close()
 
