@@ -410,6 +410,55 @@ def load_authenticated_plan(
     return plan, input_manifest
 
 
+VALID_TESTER_PERIODS = frozenset(
+    {"M1", "M5", "M15", "M30", "H1", "H4", "H6", "H8", "D1", "W1", "MN1"}
+)
+
+
+def sealed_plan_period(input_manifest: Mapping[str, Any]) -> str:
+    """Resolve the tester period from the hash-bound Q08 evidence.
+
+    The Q08 evidence path and SHA-256 are part of the authenticated Q09 input
+    manifest, so its baseline period is a sealed input.  Re-authenticate the
+    baseline identities here to prevent a caller from supplying a period that
+    merely happens to be syntactically valid.
+    """
+
+    try:
+        source_paths = input_manifest["source_paths"]
+        identities = input_manifest["identities"]
+        q08_evidence = _load_json(Path(str(source_paths["q08_evidence"])), "Q08 evidence")
+        baseline = q08_evidence["baseline_run"]
+        period = str(baseline["period"]).strip().upper()
+        baseline_setfile = Path(str(baseline["baseline_setfile_path"])).resolve()
+        sealed_setfile = Path(str(source_paths["baseline_setfile"])).resolve()
+    except (KeyError, TypeError, ValueError) as exc:
+        raise RunnerError(f"Q09 sealed tester period is missing or malformed: {exc}") from exc
+    if period not in VALID_TESTER_PERIODS:
+        raise RunnerError(f"Q09 sealed tester period is unsupported: {period or '<empty>'}")
+    if baseline_setfile != sealed_setfile:
+        raise RunnerError("Q09 sealed tester period comes from a different baseline setfile")
+    if baseline.get("baseline_setfile_sha256") != identities.get("baseline_setfile_sha256"):
+        raise RunnerError("Q09 Q08 baseline setfile identity contradicts the sealed plan")
+    if baseline.get("baseline_ex5_sha256") != identities.get("ex5_sha256"):
+        raise RunnerError("Q09 Q08 baseline EX5 identity contradicts the sealed plan")
+    return period
+
+
+def resolve_execution_period(
+    input_manifest: Mapping[str, Any], supplied_period: str | None
+) -> str:
+    """Use the sealed period and fail closed on an optional CLI contradiction."""
+
+    sealed_period = sealed_plan_period(input_manifest)
+    supplied = str(supplied_period or "").strip().upper()
+    if supplied and supplied != sealed_period:
+        raise RunnerError(
+            f"executor --period {supplied} contradicts sealed Q09 period {sealed_period}"
+        )
+    return sealed_period
+
+
 def required_factory_timeout_min(
     cell_count: int,
     *,
@@ -1524,7 +1573,7 @@ def execute_run_plan(
     expert: str,
     symbol: str,
     work_item_symbol: str | None,
-    period: str,
+    period: str | None,
     repo_root: Path,
     common_root: Path,
     dispatch_cell: Callable[[Mapping[str, Any], Mapping[str, Any]], None] | None = None,
@@ -1536,6 +1585,7 @@ def execute_run_plan(
         plan_path,
         expected_file_sha256=expected_plan_file_sha256,
     )
+    execution_period = resolve_execution_period(input_manifest, period)
     if str(plan["work_item_id"]) != str(work_item_id):
         raise RunnerError("executor work_item_id differs from sealed run plan")
     capacity = assert_factory_capacity(
@@ -1583,7 +1633,7 @@ def execute_run_plan(
         "ea_id": int(ea_id),
         "expert": str(expert),
         "symbol": str(symbol),
-        "period": str(period),
+        "period": execution_period,
         "repo_root": str(repo_root.resolve()),
         "run_smoke_path": str((repo_root / "framework" / "scripts" / "run_smoke.ps1").resolve()),
         "cell_timeout_sec": int(payload["q09_cell_timeout_sec"]),
@@ -1712,7 +1762,10 @@ def build_parser() -> argparse.ArgumentParser:
     execute.add_argument("--expert", required=True)
     execute.add_argument("--symbol", required=True)
     execute.add_argument("--work-item-symbol")
-    execute.add_argument("--period", required=True)
+    execute.add_argument(
+        "--period",
+        help="Optional explicit period; when present it must match the sealed Q08 baseline",
+    )
     execute.add_argument("--repo-root", required=True, type=Path)
     execute.add_argument("--common-root", required=True, type=Path)
     execute.add_argument("--out-prefix", type=Path, help=argparse.SUPPRESS)

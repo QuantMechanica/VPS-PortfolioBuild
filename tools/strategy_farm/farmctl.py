@@ -5952,16 +5952,15 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         if payload:
             cmd.extend(["--lineage-payload-json", json.dumps(payload, sort_keys=True)])
     # PT3 bridge (2026-05-29): the rewritten Qxx runners (q04-q10) use
-    # --report-root, not the P-era --out-prefix, and reject --period. The
-    # generic base cmd above always injects --out-prefix/--period, which the
-    # Q-runners abort on at argparse (exit 2) -> no summary.json ->
-    # summary_missing -> INFRA_FAIL. Translate once for every Q-phase. (Q08
-    # rebuilds cmd from scratch above, so these flags are already absent and
-    # this is a no-op for it.) Carry the --out-prefix value into --report-root;
+    # --report-root, not the P-era --out-prefix, and generally reject --period.
+    # Q09_NEWS is the exception: its executor uses the period as an authenticated
+    # tester input and accepts-and-validates this explicit value against the
+    # sealed plan. Carry --out-prefix into --report-root for every Q phase;
     # --report-root otherwise defaults to the shared pipeline tree and breaks
     # per-work-item evidence isolation.
     if phase in {"Q04", "Q05", "Q06", "Q07", "Q08", "Q09_NEWS", "Q09_PORTFOLIO", "Q10"}:
-        _remove_cmd_arg(cmd, "--period")
+        if phase != "Q09_NEWS":
+            _remove_cmd_arg(cmd, "--period")
         if "--out-prefix" in cmd:
             cmd[cmd.index("--out-prefix")] = "--report-root"
     # MNT-046 process-lineage marker.  Every Factory-owned phase-runner process

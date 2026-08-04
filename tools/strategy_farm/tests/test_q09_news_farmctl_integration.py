@@ -11,6 +11,7 @@ REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
 import farmctl  # noqa: E402
+import q09_news_runner  # noqa: E402
 import q09_news_schema as schema  # noqa: E402
 import terminal_worker  # noqa: E402
 
@@ -413,7 +414,7 @@ def test_terminal_worker_requires_matching_q09_sidecar(tmp_path: Path) -> None:
 
 def test_q09_phase_builder_executes_bound_plan_in_reserved_slot(tmp_path: Path) -> None:
     farmctl.init_db(tmp_path)
-    setfile = tmp_path / "base.set"
+    setfile = tmp_path / "QM5_9999_demo_EURUSD.DWX_H1_backtest.set"
     plan = tmp_path / "run_plan.json"
     setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
     plan.write_text("{}\n", encoding="utf-8")
@@ -453,6 +454,10 @@ def test_q09_phase_builder_executes_bound_plan_in_reserved_slot(tmp_path: Path) 
     assert command[command.index("--work-item-symbol") + 1] == "EURUSD.DWX"
     assert command[command.index("--expert") + 1] == r"QM\QM5_9999"
     assert command[command.index("--expected-plan-file-sha256") + 1] == _sha(plan)
+    assert command[command.index("--period") + 1] == "H1"
+    parsed = q09_news_runner.build_parser().parse_args(command[2:])
+    assert parsed.command == "execute"
+    assert parsed.period == "H1"
     assert Path(command[command.index("--output-root") + 1]) == (
         report_root / "QM5_9999" / "Q09_NEWS" / "EURUSD_DWX"
     )

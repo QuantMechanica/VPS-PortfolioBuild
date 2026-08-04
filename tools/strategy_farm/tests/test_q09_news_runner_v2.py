@@ -34,7 +34,6 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.root = Path(self.temporary.name)
         self.q08 = self.root / "q08.json"
-        self.q08.write_text('{"verdict":"PASS"}\n', encoding="utf-8")
         self.setfile = self.root / "baseline.set"
         self.setfile.write_bytes(
             b"qm_rng_seed=42\r\nqm_news_temporal=3\r\nqm_news_compliance=1\r\n"
@@ -42,6 +41,21 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         )
         self.ex5 = self.root / "ea.ex5"
         self.ex5.write_bytes(b"compiled")
+        self.q08.write_text(
+            json.dumps(
+                {
+                    "verdict": "PASS",
+                    "baseline_run": {
+                        "period": "H1",
+                        "baseline_setfile_path": str(self.setfile.resolve()),
+                        "baseline_setfile_sha256": contract.sha256_file(self.setfile),
+                        "baseline_ex5_sha256": contract.sha256_file(self.ex5),
+                    },
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
         self.includes = self.root / "includes.json"
         self.includes.write_text('{"closure":"sealed"}\n', encoding="utf-8")
         calendar_source = self.root / "calendar.csv"
@@ -404,7 +418,8 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         plan = self.build(output="end-to-end")
         farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
 
-        def fixture_dispatch(spec: dict, _context: dict) -> None:
+        def fixture_dispatch(spec: dict, context: dict) -> None:
+            self.assertEqual(context["period"], "H1")
             self.write_receipt(spec)
 
         result = runner.execute_run_plan(
@@ -418,7 +433,7 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             expert="QM5_9999_demo",
             symbol="EURUSD.DWX",
             work_item_symbol="EURUSD.DWX",
-            period="H1",
+            period=None,
             repo_root=REPO,
             common_root=self.root / "common-end-to-end",
             dispatch_cell=fixture_dispatch,
@@ -444,6 +459,17 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
                 ).fetchone()[0],
                 2,
             )
+
+    def test_executor_refuses_period_that_contradicts_sealed_q08(self) -> None:
+        plan = self.build(output="period-contradiction")
+        _, manifest = runner.load_authenticated_plan(Path(plan["plan_path"]))
+        self.assertEqual(runner.resolve_execution_period(manifest, None), "H1")
+        self.assertEqual(runner.resolve_execution_period(manifest, "h1"), "H1")
+        with self.assertRaisesRegex(
+            runner.RunnerError,
+            "--period M15 contradicts sealed Q09 period H1",
+        ):
+            runner.resolve_execution_period(manifest, "M15")
 
 
 if __name__ == "__main__":
