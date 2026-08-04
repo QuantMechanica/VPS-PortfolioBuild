@@ -84,7 +84,31 @@ MULTISYMBOL_RAM_MIN_FREE_GB = 12.0
 # Observed multi-symbol working sets range from 20-44GB.  Keep that worst case
 # plus a small system margin available before admitting another heavy job.
 MULTISYMBOL_COMMIT_MIN_FREE_GB = 48.0
+# Commit reservations are calibrated from per-run maxima in the worker's
+# decaying reservation telemetry (2026-07-26 through 2026-08-04). Exact
+# two-symbol FX pairs observed p95/max 7.36GB; 3-9-symbol FX baskets observed
+# p95 24.81GB and max 28.23GB. Unknown, 10+-symbol, and non-FX baskets stay in
+# the 44GB fail-safe class (observed p95 34.99GB, max 38.52GB).
+MULTISYMBOL_TWO_LEG_FX_COMMIT_RESERVATION_GB = 8.0
+MULTISYMBOL_MULTI_LEG_FX_COMMIT_RESERVATION_GB = 32.0
 MULTISYMBOL_COMMIT_RESERVATION_GB = 44.0
+MULTISYMBOL_COMMIT_CLASS_ORDINARY = "ordinary"
+MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX = "two_leg_fx_pair"
+MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX = "multi_leg_fx_basket"
+MULTISYMBOL_COMMIT_CLASS_HEAVY = "heavy_or_unknown_multisymbol"
+MULTISYMBOL_HEAVY_SYMBOL_COUNT = 10
+# Legacy source-scanned EAs do not carry basket_symbols in their old work-item
+# payloads. Keep this narrow and host-specific: the audited QM5_11240 FX hosts
+# each exercise one two-leg FX sleeve; its metal/index hosts remain heavy.
+_AUDITED_LEGACY_TWO_LEG_FX_HOSTS: dict[str, frozenset[str]] = {
+    "QM5_11240": frozenset({
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "NZDUSD.DWX",
+    }),
+}
+_FX_CURRENCIES = frozenset({"AUD", "CAD", "CHF", "EUR", "GBP", "JPY", "NZD", "USD"})
 # A multisymbol loader materializes its working set over tens of minutes, so the
 # ordinary 300s window expires long before it stops growing and other jobs get
 # admitted into the balloon phase (2026-07-26 17:45 pagefile storm). Holding the
@@ -535,6 +559,68 @@ def _work_item_is_multisymbol(
         return False
 
 
+def _is_fx_symbol(symbol: Any) -> bool:
+    canonical = str(symbol or "").strip().upper().split(".", 1)[0]
+    return (
+        len(canonical) == 6
+        and canonical[:3] in _FX_CURRENCIES
+        and canonical[3:] in _FX_CURRENCIES
+    )
+
+
+def _multisymbol_commit_class(
+    item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+    multisymbol: bool,
+) -> str:
+    """Return the measured reservation class, defaulting unknowns to heavy.
+
+    Only a complete, internally consistent ``basket_symbols`` list can lower a
+    multisymbol reservation. A bare count or malformed list is not enough: an
+    unclassified item must retain the historical 44GB fail-safe reservation.
+    """
+
+    if not multisymbol:
+        return MULTISYMBOL_COMMIT_CLASS_ORDINARY
+
+    raw_symbols = payload.get("basket_symbols")
+    if isinstance(raw_symbols, list):
+        symbols = tuple(str(value or "").strip().upper() for value in raw_symbols)
+        if symbols and all(symbols):
+            try:
+                declared_count = int(payload.get("basket_symbol_count") or len(symbols))
+            except (TypeError, ValueError):
+                declared_count = -1
+            if declared_count != len(symbols):
+                return MULTISYMBOL_COMMIT_CLASS_HEAVY
+            if len(symbols) == 2 and all(_is_fx_symbol(symbol) for symbol in symbols):
+                return MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX
+            if (
+                3 <= len(symbols) < MULTISYMBOL_HEAVY_SYMBOL_COUNT
+                and all(_is_fx_symbol(symbol) for symbol in symbols)
+            ):
+                return MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX
+            return MULTISYMBOL_COMMIT_CLASS_HEAVY
+
+    ea_id = str(_work_item_value(item, "ea_id", "") or "").strip().upper()
+    host_symbol = str(
+        _work_item_value(item, "symbol", "") or payload.get("host_symbol") or ""
+    ).strip().upper()
+    if host_symbol in _AUDITED_LEGACY_TWO_LEG_FX_HOSTS.get(ea_id, frozenset()):
+        return MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX
+    return MULTISYMBOL_COMMIT_CLASS_HEAVY
+
+
+def _commit_reservation_gb(commit_class: str) -> float:
+    if commit_class == MULTISYMBOL_COMMIT_CLASS_ORDINARY:
+        return ORDINARY_COMMIT_RESERVATION_GB
+    if commit_class == MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX:
+        return MULTISYMBOL_TWO_LEG_FX_COMMIT_RESERVATION_GB
+    if commit_class == MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX:
+        return MULTISYMBOL_MULTI_LEG_FX_COMMIT_RESERVATION_GB
+    return MULTISYMBOL_COMMIT_RESERVATION_GB
+
+
 _PROCESS_SNAPSHOT_TTL_SECONDS = 3.0
 _process_snapshot_cache: dict[str, Any] = {
     "at": -1e9, "children": {}, "private": {}, "alive": set(),
@@ -743,11 +829,8 @@ def _commit_admission_snapshot(
             until = claimed_at + timedelta(seconds=window_seconds)
         if until is None or until <= now_dt:
             continue
-        default_reservation = (
-            MULTISYMBOL_COMMIT_RESERVATION_GB
-            if item_is_multisym
-            else ORDINARY_COMMIT_RESERVATION_GB
-        )
+        commit_class = _multisymbol_commit_class(row, payload, item_is_multisym)
+        default_reservation = _commit_reservation_gb(commit_class)
         try:
             expected_peak_gb = max(
                 0.0,
@@ -770,6 +853,7 @@ def _commit_admission_snapshot(
             "ea_id": row["ea_id"],
             "reservation_gb": round(reservation_gb, 2),
             "expected_peak_gb": expected_peak_gb,
+            "reservation_class": commit_class,
             "measured_gb": (
                 None
                 if measured_gb is None or math.isinf(measured_gb)
@@ -791,13 +875,17 @@ def _set_commit_reservation(
     *,
     claimed_at_iso: str,
     multisymbol: bool,
+    commit_class: str | None = None,
 ) -> None:
     claimed_at = _parse_utc_iso(claimed_at_iso) or datetime.now(timezone.utc)
-    payload["commit_reservation_gb"] = (
-        MULTISYMBOL_COMMIT_RESERVATION_GB
-        if multisymbol
-        else ORDINARY_COMMIT_RESERVATION_GB
-    )
+    if commit_class is None:
+        commit_class = (
+            MULTISYMBOL_COMMIT_CLASS_HEAVY
+            if multisymbol
+            else MULTISYMBOL_COMMIT_CLASS_ORDINARY
+        )
+    payload["commit_reservation_class"] = commit_class
+    payload["commit_reservation_gb"] = _commit_reservation_gb(commit_class)
     payload["commit_reservation_until_utc"] = (
         claimed_at
         + timedelta(
@@ -834,6 +922,7 @@ _STALE_RUNTIME_PAYLOAD_KEYS = (
     "claimed_at_iso",
     "claimed_by_worker_pid",
     "commit_reservation_gb",
+    "commit_reservation_class",
     "commit_reservation_until_utc",
     "terminal",
 )
@@ -1390,6 +1479,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         payload,
                         claimed_at_iso=now,
                         multisymbol=item_is_multisym,
+                        commit_class=_multisymbol_commit_class(item, payload, item_is_multisym),
                     )
                     cur = conn.execute(
                         """
@@ -1716,6 +1806,7 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                     payload,
                     claimed_at_iso=now,
                     multisymbol=item_is_multisym,
+                    commit_class=_multisymbol_commit_class(item, payload, item_is_multisym),
                 )
                 cur = conn.execute(
                     """
