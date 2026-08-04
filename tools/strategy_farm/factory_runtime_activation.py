@@ -32,13 +32,13 @@ DIGEST_RELATIVE_PATH = Path(
     "docs/ops/evidence/FACTORY_RUNTIME_ACTIVATION_OWNER_DECISION.sha256"
 )
 PREPARATION_DECISION_RELATIVE_PATH = Path(
-    "docs/ops/evidence/2026-08-04_factory_preparation_owner_decision.json"
+    "docs/ops/evidence/2026-08-04_factory_preparation_owner_decision_evening.json"
 )
 PREPARATION_DECISION_SHA256 = (
-    "834e8ef5fada6ae49d13d31781ebb64a594d3c8aa451f4b51d301fa27b67a26d"
+    "9443119ec3ae3bf7ac75a244594ce7baba558400ec686796ee9f1f3347734396"
 )
-PREPARATION_DECISION_COMMIT = "80c657899ba65b3545fa671a735277b8b0a850f8"
-PREPARATION_DECISION_BLOB = "afb0c34229c3fd0feedd305e0d51c05a16104edc"
+PREPARATION_DECISION_COMMIT = "d76c9225c62f50e9c3dc78b592e2111b96f36275"
+PREPARATION_DECISION_BLOB = "415cede6845b9525fed714b61f5a2c42c7fe81a3"
 FACTORY_ON_RELATIVE_PATH = Path("tools/strategy_farm/Factory_ON.ps1")
 MAINTENANCE_CONTROL_RELATIVE_PATH = Path(
     "tools/strategy_farm/maintenance_control.py"

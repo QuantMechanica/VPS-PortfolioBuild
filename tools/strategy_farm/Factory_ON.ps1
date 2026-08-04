@@ -120,11 +120,11 @@ $publicSnapshotTaskWrapper = 'C:\QM\repo\scripts\run_public_snapshot_task.ps1'
 $publicSnapshotTaskWorkingDirectory = 'C:\QM\repo'
 $canonicalFactoryOnPath = 'C:\QM\repo\tools\strategy_farm\Factory_ON.ps1'
 $canonicalFactoryOnProcessImage = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-$canonicalOwnerDecisionPath = 'C:\QM\repo\docs\ops\evidence\2026-08-04_factory_preparation_owner_decision.json'
-$canonicalOwnerDecisionRelativePath = 'docs/ops/evidence/2026-08-04_factory_preparation_owner_decision.json'
-$QM_OWNER_DECISION_SHA256 = '834e8ef5fada6ae49d13d31781ebb64a594d3c8aa451f4b51d301fa27b67a26d'
-$QM_OWNER_DECISION_COMMIT = '80c657899ba65b3545fa671a735277b8b0a850f8'
-$QM_OWNER_DECISION_BLOB = 'afb0c34229c3fd0feedd305e0d51c05a16104edc'
+$canonicalOwnerDecisionPath = 'C:\QM\repo\docs\ops\evidence\2026-08-04_factory_preparation_owner_decision_evening.json'
+$canonicalOwnerDecisionRelativePath = 'docs/ops/evidence/2026-08-04_factory_preparation_owner_decision_evening.json'
+$QM_OWNER_DECISION_SHA256 = '9443119ec3ae3bf7ac75a244594ce7baba558400ec686796ee9f1f3347734396'
+$QM_OWNER_DECISION_COMMIT = 'd76c9225c62f50e9c3dc78b592e2111b96f36275'
+$QM_OWNER_DECISION_BLOB = '415cede6845b9525fed714b61f5a2c42c7fe81a3'
 # The Pump task is scheduler-bounded by PT10M. TaskScheduler start/finish
 # evidence sampled on 2026-07-31 found 13 substantive runs: p50=550.203s,
 # p75=599.982s, and five reached the 600s ceiling. First-attempt success is
@@ -297,7 +297,7 @@ function Assert-CanonicalOwnerRestartDecision {
     } catch {
         throw "canonical OWNER decision JSON is invalid: $($_.Exception.Message)"
     }
-    if ([string]$decision.decision_id -cne 'FACTORY_PREPARATION_20260804_TEN_WORKER_ZERO_HOLD' -or
+    if ([string]$decision.decision_id -cne 'FACTORY_PREPARATION_20260804_EVENING_TEN_WORKER_ZERO_HOLD' -or
         [string]$decision.authority -cne 'OWNER' -or
         [string]$decision.status -cne 'APPROVED') {
         throw 'canonical OWNER decision identity mismatch'
