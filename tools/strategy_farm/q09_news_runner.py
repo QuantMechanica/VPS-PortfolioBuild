@@ -35,6 +35,7 @@ except ModuleNotFoundError:
 PLAN_SCHEMA = "q09-news-run-plan/v2"
 CELL_RECEIPT_SCHEMA = "q09-news-cell-receipt/v2"
 CELL_EVIDENCE_SCHEMA = "q09-news-cell-evidence/v2"
+CELL_FAILURE_SCHEMA = "q09-news-cell-failure/v1"
 COMPLIANCE_MODE_IDS = {"NONE": 0, "DXZ": 1, "FTMO": 2, "5ERS": 3}
 DEFAULT_CELL_TIMEOUT_SEC = 3600
 CELL_TIMEOUT_HEADROOM_SEC = 600
@@ -768,6 +769,112 @@ def _receipt_to_cell(spec: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _cell_failure_path(spec: Mapping[str, Any]) -> Path:
+    return Path(str(spec["receipt_path"])).with_name("cell_failure.json")
+
+
+def _failure_artifacts(cell_dir: Path) -> list[dict[str, Any]]:
+    """Hash every artifact available when a cell aborts.
+
+    The failure sidecar is written only after the child process has stopped, so
+    these identities turn a terse exception into durable row-bound evidence.
+    Planned inputs are intentionally included; the failure sidecar itself is
+    excluded to avoid a recursive identity.
+    """
+
+    artifacts: list[dict[str, Any]] = []
+    for path in sorted(cell_dir.rglob("*")):
+        if not path.is_file() or path.name in {"cell_failure.json", "cell_receipt.json"}:
+            continue
+        artifacts.append(
+            {
+                "path": str(path.resolve()),
+                "relative_path": path.relative_to(cell_dir).as_posix(),
+                "size_bytes": path.stat().st_size,
+                "sha256": contract.sha256_file(path),
+            }
+        )
+    return artifacts
+
+
+def _write_cell_failure(
+    spec: Mapping[str, Any],
+    *,
+    work_item_id: str,
+    exc: Exception,
+) -> Path:
+    path = _cell_failure_path(spec)
+    payload = {
+        "schema_version": CELL_FAILURE_SCHEMA,
+        "work_item_id": str(work_item_id),
+        "run_identity_sha256": spec["run_identity_sha256"],
+        "paired_base_identity_sha256": spec["paired_base_identity_sha256"],
+        "arm": spec["arm"],
+        "temporal_mode": spec["temporal_mode"],
+        "compliance_mode": spec["compliance_mode"],
+        "seed": spec["seed"],
+        "error_type": type(exc).__name__,
+        "error": str(exc),
+        "artifacts": _failure_artifacts(path.parent),
+    }
+    _write_immutable(path, contract.canonical_json_bytes(payload))
+    return path
+
+
+def _authenticated_cell_failure(
+    spec: Mapping[str, Any], *, work_item_id: str
+) -> dict[str, Any] | None:
+    path = _cell_failure_path(spec)
+    if not path.is_file():
+        return None
+    failure = _load_json(path, f"cell failure {path}")
+    expected = {
+        "schema_version": CELL_FAILURE_SCHEMA,
+        "work_item_id": str(work_item_id),
+        "run_identity_sha256": spec["run_identity_sha256"],
+        "paired_base_identity_sha256": spec["paired_base_identity_sha256"],
+        "arm": spec["arm"],
+        "temporal_mode": spec["temporal_mode"],
+        "compliance_mode": spec["compliance_mode"],
+        "seed": spec["seed"],
+    }
+    for field, value in expected.items():
+        if failure.get(field) != value:
+            raise RunnerError(f"cell failure {field} mismatch: {path}")
+    if not str(failure.get("error_type") or "").strip() or not str(
+        failure.get("error") or ""
+    ).strip():
+        raise RunnerError(f"cell failure lacks an explicit error: {path}")
+    artifacts = failure.get("artifacts")
+    if not isinstance(artifacts, list):
+        raise RunnerError(f"cell failure artifact manifest is missing: {path}")
+    cell_dir = path.parent.resolve()
+    seen: set[str] = set()
+    for artifact in artifacts:
+        if not isinstance(artifact, Mapping):
+            raise RunnerError(f"cell failure artifact row is malformed: {path}")
+        artifact_path = Path(str(artifact.get("path") or "")).resolve()
+        try:
+            artifact_path.relative_to(cell_dir)
+        except ValueError as exc:
+            raise RunnerError(f"cell failure artifact escapes its cell directory: {path}") from exc
+        relative_path = artifact_path.relative_to(cell_dir).as_posix()
+        if artifact.get("relative_path") != relative_path or relative_path in seen:
+            raise RunnerError(f"cell failure artifact path is contradictory: {path}")
+        seen.add(relative_path)
+        _verify_hash(artifact_path, str(artifact.get("sha256") or ""), "cell failure artifact")
+        if artifact.get("size_bytes") != artifact_path.stat().st_size:
+            raise RunnerError(f"cell failure artifact size mismatch: {artifact_path}")
+    return {
+        "run_identity_sha256": spec["run_identity_sha256"],
+        "error_type": str(failure["error_type"]),
+        "error": str(failure["error"]),
+        "failure_path": str(path.resolve()),
+        "failure_sha256": contract.sha256_file(path),
+        "artifact_count": len(artifacts),
+    }
+
+
 def _evidence_payload(
     input_manifest: Mapping[str, Any],
     cells: Sequence[Mapping[str, Any]],
@@ -869,12 +976,23 @@ def collect_run_plan_status(
     )
     cells: list[dict[str, Any]] = []
     missing: list[str] = []
+    failed: list[dict[str, Any]] = []
     invalid: list[dict[str, str]] = []
     for spec in plan["cells"]:
         receipt_path = Path(str(spec["receipt_path"]))
         cell_id = str(spec["run_identity_sha256"])
         if not receipt_path.is_file():
-            missing.append(cell_id)
+            try:
+                failure = _authenticated_cell_failure(
+                    spec, work_item_id=str(plan["work_item_id"])
+                )
+            except RunnerError as exc:
+                invalid.append({"run_identity_sha256": cell_id, "error": str(exc)})
+                continue
+            if failure is None:
+                missing.append(cell_id)
+            else:
+                failed.append(failure)
             continue
         try:
             cells.append(_receipt_to_cell(spec))
@@ -889,8 +1007,23 @@ def collect_run_plan_status(
             details={
                 "planned_cell_count": int(plan["cell_count"]),
                 "authenticated_cell_count": len(cells),
+                "failed_cell_count": len(failed),
                 "missing_cell_count": len(missing),
                 "invalid_cells": invalid,
+            },
+        )
+    elif failed:
+        adjudication = _nonlocking_adjudication(
+            verdict="REVIEW_REQUIRED",
+            reason_code="cell_execution_failed",
+            input_manifest=input_manifest,
+            details={
+                "planned_cell_count": int(plan["cell_count"]),
+                "authenticated_cell_count": len(cells),
+                "failed_cell_count": len(failed),
+                "missing_cell_count": len(missing),
+                "failed_cells": failed,
+                "missing_run_identity_sha256": missing,
             },
         )
     elif missing:
@@ -915,6 +1048,7 @@ def collect_run_plan_status(
     result.update({
         "planned_cell_count": int(plan["cell_count"]),
         "authenticated_cell_count": len(cells),
+        "failed_cell_count": len(failed),
         "missing_cell_count": len(missing),
         "invalid_cell_count": len(invalid),
     })
@@ -1408,6 +1542,7 @@ def _production_dispatch_cell(
             "-SetFile", str(spec["setfile_path"]), "-ReportRoot", str(run_root),
             "-DispatchPhase", "Q09_NEWS", "-DispatchVersion", "q09_news_executor_v1",
             "-DispatchSubGateHash", f"{str(spec['run_identity_sha256'])[:16]}_{window_name}",
+            "-RequireFreshLoggerSample",
         ]
         started_at = datetime.now(timezone.utc).timestamp()
         creationflags = 0x08000000 if sys.platform == "win32" else 0
@@ -1676,6 +1811,11 @@ def execute_run_plan(
         except CapacityError:
             raise
         except Exception as exc:
+            cell_failure_path = _write_cell_failure(
+                spec,
+                work_item_id=str(work_item_id),
+                exc=exc,
+            )
             failure_path = output_root.resolve() / "execution_failure.json"
             _atomic_write(
                 failure_path,
@@ -1685,6 +1825,8 @@ def execute_run_plan(
                     "run_identity_sha256": spec["run_identity_sha256"],
                     "error_type": type(exc).__name__,
                     "error": str(exc),
+                    "cell_failure_path": str(cell_failure_path.resolve()),
+                    "cell_failure_sha256": contract.sha256_file(cell_failure_path),
                 }),
             )
             result = collect_run_plan_status(

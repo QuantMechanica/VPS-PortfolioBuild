@@ -38,7 +38,12 @@ if ($parseErrors.Count -gt 0) {
     throw "run_smoke.ps1 failed to parse: $($parseErrors[0])"
 }
 
-$requiredFunctions = @("Get-FilePrefixSha256", "Get-QmLoggerFileState", "Save-QmLoggerDelta")
+$requiredFunctions = @(
+    "Get-FilePrefixSha256",
+    "Get-QmLoggerFileState",
+    "Move-QmLoggerFilesForFreshCapture",
+    "Save-QmLoggerDelta"
+)
 $functionAsts = @($scriptAst.FindAll({
     param($node)
     $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -118,6 +123,35 @@ try {
     Assert-True `
         -Condition ($capture.source_offset_end_exclusive -eq ($baselineBytes.Length + $deltaBytes.Length)) `
         -Message "Unexpected source end offset."
+
+    # Back-to-back Q09 windows recreate the tester FILE sandbox. Preserve the
+    # previous window, prove the source is empty, then authenticate the new
+    # shorter file from offset zero instead of misclassifying it as a delta.
+    $freshArchiveRoot = Join-Path $tempRoot "evidence\pre_run_logger_archive"
+    $freshState = Get-QmLoggerFileState -TerminalRoot $tempRoot -EAIdValue $eaId
+    $archive = Move-QmLoggerFilesForFreshCapture `
+        -BeforeState $freshState `
+        -TerminalRoot $tempRoot `
+        -EAIdValue $eaId `
+        -ArchiveRoot $freshArchiveRoot
+    Assert-True -Condition ($archive.archived_file_count -eq 1) -Message "Expected one preserved prior-window logger."
+    Assert-True -Condition (Test-Path -LiteralPath $archive.manifest_path -PathType Leaf) -Message "Fresh logger archive manifest is missing."
+    $emptyState = Get-QmLoggerFileState -TerminalRoot $tempRoot -EAIdValue $eaId
+    Assert-True -Condition ($emptyState.Count -eq 0) -Message "Fresh logger isolation left a stale source behind."
+    $shorterBytes = $utf8.GetBytes((New-LoggerRow -EAId $eaId -Event "NEXT_WINDOW") + "`r`n")
+    [System.IO.File]::WriteAllBytes($loggerPath, $shorterBytes)
+    $freshSamplePath = Join-Path $tempRoot "evidence\fresh_logger_sample.jsonl"
+    $freshCapture = Save-QmLoggerDelta `
+        -BeforeState $emptyState `
+        -TerminalRoot $tempRoot `
+        -EAIdValue $eaId `
+        -DestinationPath $freshSamplePath
+    Assert-True -Condition ($null -ne $freshCapture) -Message "Expected a fresh reset logger capture."
+    Assert-True -Condition ($freshCapture.source_offset_start -eq 0) -Message "Fresh logger capture must start at offset zero."
+    Assert-True -Condition ($freshCapture.event_count -eq 1) -Message "Expected one fresh-window event."
+    Assert-True `
+        -Condition ([System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($freshSamplePath)) -ceq [System.Convert]::ToBase64String($shorterBytes)) `
+        -Message "Fresh-window logger sample is not byte-identical."
 
     $rejectRoot = Join-Path $tempRoot "wrong-ea"
     $rejectDir = Join-Path $rejectRoot "Tester\Agent-127.0.0.1-3002\MQL5\Logs\QM"

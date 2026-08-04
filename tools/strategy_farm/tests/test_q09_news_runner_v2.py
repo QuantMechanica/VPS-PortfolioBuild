@@ -4,6 +4,8 @@ import tempfile
 import unittest
 from contextlib import closing
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -378,6 +380,108 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         self.assertEqual(tampered_result["verdict"], "INVALID_EVIDENCE")
         self.assertEqual(tampered_result["invalid_cell_count"], 1)
         self.assertEqual(tampered_result["adjudication"]["locked_arms"], [])
+
+    def test_executor_surfaces_a_failed_cell_instead_of_reporting_every_cell_missing(self) -> None:
+        plan = self.build(output="failed-cell")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+
+        def fail_first_cell(spec: dict, _context: dict) -> None:
+            raise runner.RunnerError(
+                f"fixture tester failure for {spec['run_identity_sha256']}"
+            )
+
+        result = runner.execute_run_plan(
+            Path(plan["plan_path"]),
+            output_root=self.root / "failed-cell-output",
+            farm_root=farm_root,
+            work_item_id="q09-news-1",
+            terminal="T1",
+            expected_plan_file_sha256=plan_hash,
+            ea_id=9999,
+            expert="QM5_9999_demo",
+            symbol="EURUSD.DWX",
+            work_item_symbol="EURUSD.DWX",
+            period=None,
+            repo_root=REPO,
+            common_root=self.root / "common-failed-cell",
+            dispatch_cell=fail_first_cell,
+        )
+        self.assertEqual(result["verdict"], "REVIEW_REQUIRED")
+        self.assertEqual(result["adjudication"]["reason_codes"], ["cell_execution_failed"])
+        self.assertEqual(result["failed_cell_count"], 1)
+        self.assertEqual(result["missing_cell_count"], 39)
+        failed = result["adjudication"]["details"]["failed_cells"]
+        self.assertEqual(len(failed), 1)
+        self.assertIn("fixture tester failure", failed[0]["error"])
+        failure_path = Path(failed[0]["failure_path"])
+        self.assertTrue(failure_path.is_file())
+        self.assertEqual(contract.sha256_file(failure_path), failed[0]["failure_sha256"])
+        top_level_failure = json.loads(
+            Path(result["execution_failure_path"]).read_text(encoding="utf-8")
+        )
+        self.assertEqual(top_level_failure["cell_failure_path"], str(failure_path))
+
+    def test_production_multi_cell_execute_writes_receipts_and_collects(self) -> None:
+        plan = self.build(output="production-multi-cell")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        commands: list[list[str]] = []
+
+        def fake_run(command: list[str], **_kwargs: object) -> SimpleNamespace:
+            commands.append(command)
+            self.assertIn("-RequireFreshLoggerSample", command)
+            report_root = Path(command[command.index("-ReportRoot") + 1])
+            summary = report_root / "QM5_9999" / "fixture" / "summary.json"
+            summary.parent.mkdir(parents=True, exist_ok=True)
+            summary.write_text("{}\n", encoding="utf-8")
+            return SimpleNamespace(returncode=0, stdout="fixture PASS\n", stderr="")
+
+        def fake_validate(summary_path: Path, **kwargs: object) -> tuple[dict, dict]:
+            spec = kwargs["spec"]
+            self.assertIsInstance(spec, dict)
+            window = next(name for name in runner.WINDOW_NAMES if name in summary_path.parts)
+            seed_index = contract.SEEDS.index(spec["seed"])
+            selection = 0.50 + seed_index * 0.01
+            holdout = 0.40 + seed_index * 0.01
+            values = {
+                "selection": selection,
+                "holdout": holdout,
+                "full": (selection + holdout) / 2,
+            }
+            delta = (
+                0.10
+                if spec["arm"] == "POLICY_ON" and spec["temporal_mode"] == "PRE30"
+                else 0.0
+            )
+            return metrics(values[window] + delta), {
+                "cost_execution_identity_sha256": "c" * 64,
+            }
+
+        with (
+            patch.object(runner.subprocess, "run", side_effect=fake_run),
+            patch.object(runner, "_validate_window_summary", side_effect=fake_validate),
+        ):
+            result = runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=self.root / "production-multi-cell-output",
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / "common-production-multi-cell",
+            )
+        self.assertEqual(result["verdict"], "CONFIG_LOCKED")
+        self.assertEqual(result["authenticated_cell_count"], 40)
+        self.assertEqual(len(commands), 40 * len(runner.WINDOW_NAMES))
+        self.assertEqual(
+            len(list((self.root / "production-multi-cell").rglob("cell_receipt.json"))),
+            40,
+        )
 
     def test_plan_binding_refuses_file_hash_drift(self) -> None:
         plan = self.build(output="binding-drift")

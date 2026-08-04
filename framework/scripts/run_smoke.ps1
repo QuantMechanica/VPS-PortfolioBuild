@@ -34,6 +34,11 @@ param(
     [switch]$SkipExpertDeploy,
     [switch]$AllowRunningTerminal,
     [switch]$AllowMissingRealTicksLogMarker,
+    # Q09_NEWS authenticates the structured entry stream for every independent
+    # window. Tester agents recreate the FILE sandbox between back-to-back
+    # runs, so preserve any prior EA logger before launch and require a fresh,
+    # exact-byte sample from this run. Default smoke behavior is unchanged.
+    [switch]$RequireFreshLoggerSample,
     # Q04 commission gate: round-trip USD/lot to apply via the tester groups file.
     # 0 (default) = restore the canonical real Darwinex schedule unchanged (Q02/Q03).
     [ValidateRange(0, 1000)]
@@ -66,6 +71,9 @@ if (($Terminal -ieq "DEV1") -and $AllowRunningTerminal.IsPresent) {
 }
 if (($Terminal -ieq "DEV2") -and $AllowRunningTerminal.IsPresent) {
     throw "Refusing -Terminal DEV2 with -AllowRunningTerminal. DEV2 smoke runs require an idle terminal."
+}
+if ($RequireFreshLoggerSample.IsPresent -and $AllowRunningTerminal.IsPresent) {
+    throw "Refusing -RequireFreshLoggerSample with -AllowRunningTerminal. Fresh logger authentication requires an exclusive tester."
 }
 
 if ($Terminal -ieq "DEV1") {
@@ -1211,6 +1219,73 @@ function Get-QmLoggerFileState {
     }
 
     return ,$state
+}
+
+function Move-QmLoggerFilesForFreshCapture {
+    param(
+        [Parameter(Mandatory = $true)]
+        [hashtable]$BeforeState,
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot,
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(1, [int]::MaxValue)]
+        [int]$EAIdValue,
+        [Parameter(Mandatory = $true)]
+        [string]$ArchiveRoot
+    )
+
+    New-Item -ItemType Directory -Path $ArchiveRoot -Force | Out-Null
+    $rows = New-Object System.Collections.Generic.List[object]
+    $index = 0
+    foreach ($sourcePath in @($BeforeState.Keys | Sort-Object)) {
+        if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
+            throw "Fresh logger isolation lost a pre-run source: '$sourcePath'."
+        }
+        $sourceItem = Get-Item -LiteralPath $sourcePath -ErrorAction Stop
+        $expectedLength = [long]$BeforeState[$sourcePath].length
+        $expectedHash = [string]$BeforeState[$sourcePath].prefix_sha256
+        if ([long]$sourceItem.Length -ne $expectedLength -or
+            (Get-FilePrefixSha256 -Path $sourcePath -Length $expectedLength) -cne $expectedHash) {
+            throw "Fresh logger isolation detected a changing pre-run source: '$sourcePath'."
+        }
+        $archiveName = "{0:d3}_{1}" -f $index, [System.IO.Path]::GetFileName($sourcePath)
+        $archivePath = Join-Path $ArchiveRoot $archiveName
+        if (Test-Path -LiteralPath $archivePath) {
+            throw "Fresh logger isolation archive already exists: '$archivePath'."
+        }
+        [System.IO.File]::Move($sourcePath, $archivePath)
+        $archivedLength = (Get-Item -LiteralPath $archivePath -ErrorAction Stop).Length
+        $archivedHash = Get-FilePrefixSha256 -Path $archivePath -Length ([long]$archivedLength)
+        if ([long]$archivedLength -ne $expectedLength -or $archivedHash -cne $expectedHash) {
+            throw "Fresh logger isolation archive identity mismatch: '$archivePath'."
+        }
+        $rows.Add([pscustomobject]@{
+            source_path = [System.IO.Path]::GetFullPath($sourcePath)
+            archive_path = [System.IO.Path]::GetFullPath($archivePath)
+            size_bytes = [long]$archivedLength
+            sha256 = $archivedHash
+        })
+        $index++
+    }
+
+    $remaining = Get-QmLoggerFileState -TerminalRoot $TerminalRoot -EAIdValue $EAIdValue
+    if ($remaining.Count -ne 0) {
+        throw "Fresh logger isolation left $($remaining.Count) matching pre-run file(s)."
+    }
+    $manifestPath = Join-Path $ArchiveRoot "manifest.json"
+    $manifest = [ordered]@{
+        schema_version = "run-smoke-pre-run-logger-archive/v1"
+        ea_id = $EAIdValue
+        archived_file_count = $rows.Count
+        archived_files = $rows.ToArray()
+    }
+    $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath -Encoding utf8NoBOM
+    $manifestLength = (Get-Item -LiteralPath $manifestPath -ErrorAction Stop).Length
+    return [pscustomobject]@{
+        manifest_path = [System.IO.Path]::GetFullPath($manifestPath)
+        manifest_sha256 = Get-FilePrefixSha256 -Path $manifestPath -Length ([long]$manifestLength)
+        archived_file_count = $rows.Count
+    }
 }
 
 function Save-QmLoggerDelta {
@@ -2376,8 +2451,24 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
     }
     Write-Host ("run_smoke.stage=start_terminal terminal={0} run={1} ini='{2}'" -f $effectiveTerminal, $runName, $iniPath)
     $loggerStateBefore = $null
+    $preRunLoggerArchive = $null
     if (-not $AllowRunningTerminal.IsPresent) {
+        if ($RequireFreshLoggerSample.IsPresent) {
+            if (-not (Wait-ForMetaTesterQuiescence -TerminalRoot $terminalRoot)) {
+                throw "Fresh logger isolation could not prove tester-writer quiescence for terminal '$effectiveTerminal'."
+            }
+            $loggerStateToArchive = Get-QmLoggerFileState -TerminalRoot $terminalRoot -EAIdValue $EAId
+            $preRunLoggerArchive = Move-QmLoggerFilesForFreshCapture `
+                -BeforeState $loggerStateToArchive `
+                -TerminalRoot $terminalRoot `
+                -EAIdValue $EAId `
+                -ArchiveRoot (Join-Path $runDir "pre_run_logger_archive")
+            Write-Host ("run_smoke.logger_pre_run_archived run={0} files={1} manifest='{2}' sha256={3}" -f $runName, $preRunLoggerArchive.archived_file_count, $preRunLoggerArchive.manifest_path, $preRunLoggerArchive.manifest_sha256)
+        }
         $loggerStateBefore = Get-QmLoggerFileState -TerminalRoot $terminalRoot -EAIdValue $EAId
+        if ($RequireFreshLoggerSample.IsPresent -and $loggerStateBefore.Count -ne 0) {
+            throw "Fresh logger isolation did not produce an empty pre-run state."
+        }
     } else {
         Write-Host ("run_smoke.logger_sample_skipped run={0} reason=allow_running_terminal" -f $runName)
     }
@@ -2445,6 +2536,7 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
     # if that bounded quiescence check cannot be proven.
     $testerWritersQuiescent = $false
     if ($null -ne $loggerStateBefore) {
+        $loggerCapture = $null
         $testerWritersQuiescent = Wait-ForMetaTesterQuiescence -TerminalRoot $terminalRoot
         if ($testerWritersQuiescent) {
             $runLoggerSamplePath = Join-Path $runDir "logger_sample.jsonl"
@@ -2455,11 +2547,17 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
                 -DestinationPath $runLoggerSamplePath
             if ($null -ne $loggerCapture) {
                 $loggerCapture | Add-Member -NotePropertyName run -NotePropertyValue $runName
+                $loggerCapture | Add-Member -NotePropertyName capture_mode -NotePropertyValue $(if ($RequireFreshLoggerSample.IsPresent) { "fresh_required" } else { "delta" })
+                $loggerCapture | Add-Member -NotePropertyName pre_run_archive_manifest_path -NotePropertyValue $(if ($null -ne $preRunLoggerArchive) { $preRunLoggerArchive.manifest_path } else { $null })
+                $loggerCapture | Add-Member -NotePropertyName pre_run_archive_manifest_sha256 -NotePropertyValue $(if ($null -ne $preRunLoggerArchive) { $preRunLoggerArchive.manifest_sha256 } else { $null })
                 $loggerSampleCaptures.Add($loggerCapture)
                 Write-Host ("run_smoke.logger_sample_captured run={0} path='{1}' events={2} bytes={3} sha256={4}" -f $runName, $loggerCapture.path, $loggerCapture.event_count, $loggerCapture.size_bytes, $loggerCapture.sha256)
             }
         } else {
             Write-Warning ("Structured logger capture skipped: metatester writer still active for terminal '{0}'." -f $effectiveTerminal)
+        }
+        if ($RequireFreshLoggerSample.IsPresent -and $null -eq $loggerCapture) {
+            throw "Required fresh structured logger sample was not authenticated for run '$runName'."
         }
     }
 
@@ -2833,6 +2931,7 @@ if ($loggerSampleCaptures.Count -gt 0) {
         $loggerSamplePath = [System.IO.Path]::GetFullPath($candidateLoggerSamplePath)
         $loggerSampleEvidence = [ordered]@{
             run = $selectedLoggerCapture.run
+            capture_mode = $selectedLoggerCapture.capture_mode
             path = $loggerSamplePath
             source_path = $selectedLoggerCapture.source_path
             source_offset_start = $selectedLoggerCapture.source_offset_start
@@ -2842,6 +2941,8 @@ if ($loggerSampleCaptures.Count -gt 0) {
             sha256 = $selectedLoggerCapture.sha256
             event_count = $selectedLoggerCapture.event_count
             exact_byte_copy = $true
+            pre_run_archive_manifest_path = $selectedLoggerCapture.pre_run_archive_manifest_path
+            pre_run_archive_manifest_sha256 = $selectedLoggerCapture.pre_run_archive_manifest_sha256
         }
     } catch {
         Write-Warning ("Structured logger sample publish skipped: {0}" -f $_.Exception.Message)
