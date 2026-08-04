@@ -1,0 +1,121 @@
+{
+  "schema": "qm_fx_cointegration_build_q02_handoff/v1",
+  "timestamp_utc": "2026-08-04T09:55:45Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20212",
+  "slug": "gbpusd-eurjpy",
+  "pair": [
+    "GBPUSD.DWX",
+    "EURJPY.DWX"
+  ],
+  "logical_symbol": "QM5_20212_GBPUSD_EURJPY_COINTEGRATION_D1",
+  "selection": {
+    "scan_size": 66,
+    "sign_aware_rank": 32,
+    "dev_net_sharpe": -0.21593256497244406,
+    "oos_net_sharpe": 0.22110802317724323,
+    "oos_return_pct": 2.0972806441184315,
+    "oos_state_changes": 17,
+    "fixed_dev_beta": -0.08073228776698295,
+    "half_life_d1_bars": 103.753155411,
+    "dedicated_fixed_d1_pair_previously_built": false,
+    "known_overlap": "Rank 31 GBPJPY/EURAUD is already QM5_20211; exact strategy/slug/card/registry searches and unordered traded-symbol manifest reconciliation found no fixed-beta D1 GBPUSD/EURJPY sleeve before QM5_20212."
+  },
+  "source": {
+    "primary": "Chan, Ernest P. (2009), Quantitative Trading, Examples 3.6, 7.2, 7.3, and 7.5",
+    "quality_tier": "A",
+    "durable_approval": "strategy-seeds/sources/SRC02/source.md (ceo_ratified_2026-04-28)",
+    "bounded_extraction": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "pair_selection_evidence": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md; framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges"
+  },
+  "anchors": {
+    "QM5_12532": "Q02_PASS_THEN_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_THEN_Q04_FAIL"
+  },
+  "build": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "build_authorization_guard": "PASS",
+    "build_check_passed": true,
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "spec_validation": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "basket_regression_passed": 36,
+    "magic_resolver_tests_passed": 5,
+    "magic_resolver_rows_kept": 15475,
+    "magic_resolver_rows_dropped": 0,
+    "targeted_registry_checks": "PASS",
+    "repo_wide_registry_validator": "PREEXISTING_LEGACY_FAIL_NO_QM5_20212_HIT",
+    "magic_registry_sha256": "00c29d7eb920f9e7f8e39aae7cce1dde59f4d360dd9a78bfd86db027131f3bff",
+    "card_sha256": "aed5d910b99c8919496b8753bb486800303ee2b85a12b1d145d41ab63c4c36fb",
+    "mq5_sha256": "d441265712b3a6a74620a126a672b394685d6cbb4c31016c96dc8a568b6838f8",
+    "ex5_sha256": "d8f40d241a62f3c5abd96614d010136ac6cc875f6fa249efe60e238d6b8cb73b",
+    "spec_sha256": "14ef7e860b56163edde0fbb2c3f63aaf589606cb095435155d4bab757e00c821",
+    "basket_manifest_sha256": "4814beb5b8ee81baa444a538a14d6367eec6f42e74e2ba21be233f29ebca5e13",
+    "logical_setfile_sha256": "18d7a8c77486845c67ab91f721e9ec479a31d91f99dc698a5251dd6867d64f92",
+    "build_report": "D:\\QM\\reports\\framework\\21\\build_check_20260804_094332.json",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260804_094332\\summary.csv",
+    "manual_smoke_run": false
+  },
+  "basket_manifest": {
+    "host_symbol": "GBPUSD.DWX",
+    "host_timeframe": "D1",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "basket_symbols": [
+      "GBPUSD.DWX",
+      "EURJPY.DWX",
+      "EURUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "traded_symbols": [
+      "GBPUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "conversion_only_symbols": [
+      "EURUSD.DWX",
+      "USDJPY.DWX"
+    ]
+  },
+  "risk": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "q02": {
+    "work_item_id": "d87a25e0-c67b-48d4-a5ca-effe04cdd009",
+    "created_at_utc": "2026-08-04T09:52:20+00:00",
+    "status_at_handoff": "pending",
+    "attempt_count_at_handoff": 0,
+    "claimed_by_at_handoff": null,
+    "logical_setfile_enqueued": true,
+    "physical_host_setfile_skipped": true,
+    "skip_reason": "basket_manifest_logical_setfile_preferred",
+    "priority_track": true,
+    "timeout_min": 450,
+    "cpu_ceiling": 7,
+    "factory_terminals_at_precheck": 3,
+    "factory_terminal_names_at_precheck": [
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "factory_terminals_at_final_observation": 4,
+    "factory_terminal_names_at_final_observation": [
+      "T3",
+      "T5",
+      "T7",
+      "T8"
+    ],
+    "t_live_excluded": true,
+    "initial_lock_busy_observed_without_mutation": true,
+    "canonical_lock_wait_seconds": 4.9,
+    "canonical_mutation_lock_released": true
+  },
+  "prohibited_surfaces_touched": []
+}

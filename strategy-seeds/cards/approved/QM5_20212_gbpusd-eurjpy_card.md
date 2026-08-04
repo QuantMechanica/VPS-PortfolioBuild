@@ -39,7 +39,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02_READY
+pipeline_phase: Q02_PENDING
 g0_approval_reasoning: "R1 PASS: OWNER-requested fixed FX scan plus OWNER-ratified Tier-A Chan SRC02; R2 PASS: fixed low-frequency two-leg D1 beta/z/ATR package; R3 PASS: traded and conversion histories are Darwinex-native; R4 PASS: structural, deterministic, and learned-model-free."
 ---
 
@@ -308,6 +308,7 @@ data_requirements: "GBPUSD.DWX, EURJPY.DWX, EURUSD.DWX, and USDJPY.DWX D1 histor
 |---|---|---|---|---|
 | v1 | 2026-08-04 | next-ranked non-duplicate fixed-scan FX basket | G0 | APPROVED |
 | v2 | 2026-08-04 | initial sign-aware two-leg implementation | Q01 | PASS |
+| v3 | 2026-08-04 | logical basket priority-track enqueue | Q02 | PENDING |
 
 ## 15. Pipeline Phase Status
 
@@ -315,6 +316,7 @@ data_requirements: "GBPUSD.DWX, EURJPY.DWX, EURUSD.DWX, and USDJPY.DWX D1 histor
 |---|---|---|---|
 | G0 Research Intake | 2026-08-04 | APPROVED | this card |
 | Q01 Build Validation | 2026-08-04 | PASS | `D:\QM\reports\framework\21\build_check_20260804_094332.json` |
+| Q02 Baseline Screening | 2026-08-04 | PENDING | work item `d87a25e0-c67b-48d4-a5ca-effe04cdd009` |
 
 ## 16. Lessons Captured
 
