@@ -128,6 +128,13 @@ book — and churning live money without evidence violates our own rules.
    with the same incumbent-comparison gate.
 5. The live-evidence reweighting machinery (21-session clock, earliest
    2026-08-17 per f1c19271) can join the January ceremony once mature.
+6. **First composition ceremony: Sunday 2026-08-09** (OWNER verbatim
+   2026-08-04: "berechne das Buch erst am Sonntag, dann wissen wir, wieviele
+   neue Sleeves bis dahin relevant werden"). Scope: refresh the stage-1 panel
+   including every sleeve that reaches Q10 PASS by then (candidates in flight:
+   QM5_11422/USDCAD, QM5_13036/GDAXI), form weights per the new-sleeve policy,
+   run the incumbent head-to-head, and deliver the OWNER package — any T_Live
+   apply remains behind the written manifest gate in a market-closed window.
 
 Artifacts: `invvol_vs_deployed.py` comparison in the stage-2 report dir class;
 deployed weights table read 2026-08-04 from `C:/QM/mt5/T_Live/MT5_Base/MQL5/
