@@ -62,17 +62,23 @@ except ModuleNotFoundError:
 
 try:
     from q09_news_schema import (
+        ACTIVATION_HOLD_CODE as Q09_ACTIVATION_HOLD_CODE,
+        ACTIVATION_STATE_AWAITING as Q09_ACTIVATION_AWAITING_PLAN,
         SchemaError as Q09NewsSchemaError,
         add_dependency as add_q09_dependency,
         assert_q10_dependency_gate,
         ensure_schema as ensure_q09_news_schema,
+        hold_until_plan_bound as hold_q09_until_plan_bound,
     )
 except ModuleNotFoundError:
     from tools.strategy_farm.q09_news_schema import (
+        ACTIVATION_HOLD_CODE as Q09_ACTIVATION_HOLD_CODE,
+        ACTIVATION_STATE_AWAITING as Q09_ACTIVATION_AWAITING_PLAN,
         SchemaError as Q09NewsSchemaError,
         add_dependency as add_q09_dependency,
         assert_q10_dependency_gate,
         ensure_schema as ensure_q09_news_schema,
+        hold_until_plan_bound as hold_q09_until_plan_bound,
     )
 
 try:
@@ -250,6 +256,7 @@ REAL_PHASE_RUNNER_PHASES = (
     "P5", "P5b", "P5c", "P6", "P7", "P8",
 )
 Q09_PORTFOLIO_MIN_TRADES = 20
+Q09_NEWS_SUCCESS_VERDICTS = frozenset({"CONFIG_LOCKED"})
 Q08_NEIGHBORHOOD_MAX_PARAMS = 2
 # Keep these budgets aligned with q08_davey.aggregate and
 # q08_5_neighborhood_runner.  The phase process runs a canonical baseline,
@@ -1006,6 +1013,20 @@ def pending_claim_order_sql() -> str:
           -- Historical Q09 is an inspection-only alias.  New work is Q09_NEWS
           -- and legacy rows must never be claimed/re-executed under a new contract.
           AND w.phase<>'Q09'
+          -- A Q09_NEWS row becomes executable only after bind-q09-plan writes
+          -- the complete self-hashed dispatch binding. New enqueue paths also
+          -- install a database hold so already-running workers enforce this
+          -- boundary before they are restarted onto this selector version.
+          AND (
+            w.phase<>'Q09_NEWS'
+            OR (
+              json_valid(w.payload_json)=1
+              AND json_extract(w.payload_json, '$.q09_binding_version')='q09-news-dispatch-binding/v1'
+              AND json_extract(w.payload_json, '$.q09_run_plan_path') IS NOT NULL
+              AND json_extract(w.payload_json, '$.q09_run_plan_file_sha256') IS NOT NULL
+              AND json_extract(w.payload_json, '$.q09_dispatch_binding_sha256') IS NOT NULL
+            )
+          )
           AND NOT EXISTS (
             SELECT 1 FROM work_item_holds h
             WHERE h.work_item_id=w.id AND h.active=1
@@ -12670,6 +12691,27 @@ def _add_q08_input_dependency(
     )
 
 
+def _mark_q09_awaiting_sealed_plan(
+    conn: sqlite3.Connection,
+    *,
+    work_item_id: str,
+    payload: dict[str, Any],
+    now: str,
+) -> None:
+    """Make Q09 activation explicit and atomically unclaimable."""
+
+    payload.update({
+        "q09_activation_state": Q09_ACTIVATION_AWAITING_PLAN,
+        "q09_activation_hold_code": Q09_ACTIVATION_HOLD_CODE,
+        "q09_activation_next_action": "create and hash-bind a sealed Q09 run plan",
+    })
+    conn.execute(
+        "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
+        (json.dumps(payload, sort_keys=True), now, str(work_item_id)),
+    )
+    hold_q09_until_plan_bound(conn, str(work_item_id), now=now)
+
+
 def _q10_dependency_context(
     conn: sqlite3.Connection,
     q09_news_work_item: sqlite3.Row,
@@ -14691,7 +14733,7 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
         "Q06": {"PASS"},
         "Q07": {"PASS"},
         "Q08": {"PASS"},
-        "Q09_NEWS": {"CONFIG_LOCKED"},
+        "Q09_NEWS": Q09_NEWS_SUCCESS_VERDICTS,
         # Pre-rewrite keys retained inert for any orphan reads against the
         # empty post-wipe DB. These will never match new rows.
         "P3": {"PASS"},
@@ -14817,6 +14859,12 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                                 child_work_item_id=new_id,
                                 q08_work_item=wi,
                                 evidence_sha256=str(q08_evidence_sha256),
+                            )
+                            _mark_q09_awaiting_sealed_plan(
+                                conn,
+                                work_item_id=new_id,
+                                payload=payload,
+                                now=now,
                             )
                         else:
                             _bind_q10_dependencies(
@@ -17628,7 +17676,7 @@ def enqueue_cascade_backtest_for_ea(
         "Q08": {"PASS", "MULTI_SEED_PASS"},  # Q07 = multi-seed phase
         "Q09_NEWS": {"PASS"},
         "Q09_PORTFOLIO": {"PASS", "FAIL_SOFT"},
-        "Q10": {"CONFIG_LOCKED"},
+        "Q10": Q09_NEWS_SUCCESS_VERDICTS,
         "P5": {"PASS"},
         "P5b": {"PASS"},
         "P5c": {"PASS"},
@@ -17871,6 +17919,13 @@ def enqueue_cascade_backtest_for_ea(
                                 q08_work_item=prev,
                                 evidence_sha256=str(q08_evidence_sha256),
                             )
+                            if phase == "Q09_NEWS":
+                                _mark_q09_awaiting_sealed_plan(
+                                    conn,
+                                    work_item_id=wid,
+                                    payload=payload,
+                                    now=now,
+                                )
                         else:
                             _bind_q10_dependencies(
                                 conn,
@@ -17929,6 +17984,13 @@ def enqueue_cascade_backtest_for_ea(
                     """,
                     (json.dumps(payload, sort_keys=True), now, existing["id"]),
                 )
+                if phase == "Q09_NEWS":
+                    _mark_q09_awaiting_sealed_plan(
+                        conn,
+                        work_item_id=str(existing["id"]),
+                        payload=payload,
+                        now=now,
+                    )
                 requeued.append({"id": existing["id"], "symbol": existing["symbol"]})
                 continue
             wid = str(uuid.uuid4())
@@ -17962,6 +18024,13 @@ def enqueue_cascade_backtest_for_ea(
                             q08_work_item=prev,
                             evidence_sha256=str(q08_evidence_sha256),
                         )
+                        if phase == "Q09_NEWS":
+                            _mark_q09_awaiting_sealed_plan(
+                                conn,
+                                work_item_id=wid,
+                                payload=payload,
+                                now=now,
+                            )
                     else:
                         _bind_q10_dependencies(
                             conn,
@@ -18003,12 +18072,13 @@ def enqueue_cascade_backtest_for_ea(
             )
         conn.commit()
     if not prev_rows:
+        expected_verdicts = "/".join(verdicts)
         return {
             "enqueued": False,
             "ea_id": ea_id,
             "phase": phase,
             "reason": (
-                f"No done {'/'.join(prev_phases)} PASS work_items found for {ea_id}"
+                f"No done {'/'.join(prev_phases)} {expected_verdicts} work_items found for {ea_id}"
                 + (
                     f" matching predecessor {predecessor_work_item_id}"
                     if predecessor_work_item_id else ""

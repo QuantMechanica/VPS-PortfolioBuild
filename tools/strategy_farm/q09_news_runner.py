@@ -595,6 +595,7 @@ def bind_plan_to_work_item(
             raise RunnerError("Q09 work-item payload is invalid JSON") from exc
         binding_updates = {
             "q09_binding_version": "q09-news-dispatch-binding/v1",
+            "q09_activation_state": news_schema.ACTIVATION_STATE_RUNNABLE,
             "q09_run_plan_path": str(plan_path),
             "q09_run_plan_file_sha256": contract.sha256_file(plan_path),
             "q09_run_plan_sha256": plan["plan_sha256"],
@@ -610,14 +611,20 @@ def bind_plan_to_work_item(
         payload.update(binding_updates)
         payload["q09_dispatch_binding_sha256"] = _dispatch_binding_sha256(payload)
         payload["timeout_min"] = max(int(payload.get("timeout_min") or 0), timeout_min)
-        payload["q09_plan_bound_at"] = datetime.now(timezone.utc).isoformat()
+        bound_at = datetime.now(timezone.utc).isoformat()
+        payload["q09_plan_bound_at"] = bound_at
         connection.execute(
             "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
             (
                 json.dumps(payload, sort_keys=True),
-                datetime.now(timezone.utc).isoformat(),
+                bound_at,
                 str(work_item_id),
             ),
+        )
+        activation_hold_released = news_schema.release_plan_bound_hold(
+            connection,
+            str(work_item_id),
+            now=bound_at,
         )
         connection.commit()
     except BaseException:
@@ -635,6 +642,8 @@ def bind_plan_to_work_item(
         "cell_timeout_sec": timeout_sec,
         "timeout_min": timeout_min,
         "dispatch_binding_sha256": payload["q09_dispatch_binding_sha256"],
+        "activation_state": payload["q09_activation_state"],
+        "activation_hold_released": activation_hold_released,
         "next_action": "ordinary factory pump/terminal worker may now claim this pending Q09_NEWS row",
     }
 

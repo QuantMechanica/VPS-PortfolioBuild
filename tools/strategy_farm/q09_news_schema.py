@@ -41,6 +41,12 @@ except ModuleNotFoundError:
 
 SCHEMA_VERSION = 2
 CONTRACT_VERSION = "Q09_NEWS_V2"
+ACTIVATION_HOLD_CODE = "Q09_AWAITING_SEALED_PLAN"
+ACTIVATION_HOLD_REASON = (
+    "Q09_NEWS is not claimable until a sealed run plan is hash-bound"
+)
+ACTIVATION_STATE_AWAITING = "AWAITING_SEALED_PLAN"
+ACTIVATION_STATE_RUNNABLE = "RUNNABLE_BOUND"
 
 
 class SchemaError(RuntimeError):
@@ -49,6 +55,95 @@ class SchemaError(RuntimeError):
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def hold_until_plan_bound(
+    conn: sqlite3.Connection,
+    work_item_id: str,
+    *,
+    now: str | None = None,
+) -> None:
+    """Keep a pending Q09 row out of every ordinary claimant until binding.
+
+    ``work_item_holds`` is already consumed by both fresh pump processes and
+    resident terminal workers. Using that existing database contract closes
+    the enqueue-to-bind race without requiring a worker restart. A different
+    active hold is never overwritten.
+    """
+
+    item = conn.execute(
+        "SELECT phase,status,claimed_by FROM work_items WHERE id=?",
+        (str(work_item_id),),
+    ).fetchone()
+    if item is None or item[0] != "Q09_NEWS":
+        raise SchemaError("Q09 activation hold requires a canonical Q09_NEWS row")
+    if item[1] != "pending" or str(item[2] or "").strip():
+        raise SchemaError("Q09 activation hold requires an unclaimed pending row")
+    existing = conn.execute(
+        "SELECT hold_code,active FROM work_item_holds WHERE work_item_id=?",
+        (str(work_item_id),),
+    ).fetchone()
+    if existing is not None and int(existing[1]) == 1 and existing[0] != ACTIVATION_HOLD_CODE:
+        raise SchemaError("Q09 activation cannot replace a different active work-item hold")
+    stamp = now or utc_now()
+    conn.execute(
+        """
+        INSERT INTO work_item_holds(
+            work_item_id,hold_code,reason,active,release_on_restart,
+            created_at,updated_at,released_at,release_note
+        ) VALUES(?,?,?,1,0,?,?,NULL,NULL)
+        ON CONFLICT(work_item_id) DO UPDATE SET
+            hold_code=excluded.hold_code,
+            reason=excluded.reason,
+            active=1,
+            release_on_restart=0,
+            updated_at=excluded.updated_at,
+            released_at=NULL,
+            release_note=NULL
+        """,
+        (
+            str(work_item_id),
+            ACTIVATION_HOLD_CODE,
+            ACTIVATION_HOLD_REASON,
+            stamp,
+            stamp,
+        ),
+    )
+
+
+def release_plan_bound_hold(
+    conn: sqlite3.Connection,
+    work_item_id: str,
+    *,
+    now: str | None = None,
+) -> bool:
+    """Release only this contract's hold after binding succeeds atomically."""
+
+    existing = conn.execute(
+        "SELECT hold_code,active FROM work_item_holds WHERE work_item_id=?",
+        (str(work_item_id),),
+    ).fetchone()
+    if existing is None:
+        return False  # Backward-compatible for pre-hold pending rows.
+    if existing[0] != ACTIVATION_HOLD_CODE:
+        if int(existing[1]) == 1:
+            raise SchemaError("Q09 binding cannot release a different active work-item hold")
+        return False
+    if int(existing[1]) != 1:
+        return False
+    stamp = now or utc_now()
+    cursor = conn.execute(
+        """
+        UPDATE work_item_holds
+        SET active=0,updated_at=?,released_at=?,
+            release_note='sealed Q09 run plan bound; ordinary worker claim enabled'
+        WHERE work_item_id=? AND hold_code=? AND active=1
+        """,
+        (stamp, stamp, str(work_item_id), ACTIVATION_HOLD_CODE),
+    )
+    if cursor.rowcount != 1:
+        raise SchemaError("Q09 activation hold changed during plan binding")
+    return True
 
 
 def _table_exists(conn: sqlite3.Connection, name: str) -> bool:

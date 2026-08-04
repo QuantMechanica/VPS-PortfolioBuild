@@ -162,8 +162,66 @@ def test_q09_news_is_writable_canonical_phase_and_q09_alias_is_read_only(tmp_pat
                 status="pending",
             )
         claimable = {row["id"] for row in conn.execute(farmctl.pending_claim_order_sql()).fetchall()}
-    assert "canonical-q09" in claimable
+        bound_payload = {
+            "q09_binding_version": "q09-news-dispatch-binding/v1",
+            "q09_run_plan_path": str(tmp_path / "run_plan.json"),
+            "q09_run_plan_file_sha256": "a" * 64,
+            "q09_dispatch_binding_sha256": "b" * 64,
+        }
+        conn.execute(
+            "UPDATE work_items SET payload_json=? WHERE id='canonical-q09'",
+            (json.dumps(bound_payload),),
+        )
+        bound_claimable = {
+            row["id"] for row in conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+        }
+    assert "canonical-q09" not in claimable
+    assert "canonical-q09" in bound_claimable
     assert "legacy-q09" not in claimable
+
+
+def test_q09_enqueue_installs_explicit_plan_hold_before_row_is_claimable(tmp_path: Path) -> None:
+    farmctl.init_db(tmp_path)
+    setfile = tmp_path / "base.set"
+    q08_path = tmp_path / "q08.json"
+    setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+    q08_path.write_text('{"verdict":"PASS"}\n', encoding="utf-8")
+    with farmctl.connect(tmp_path) as conn:
+        _insert_work_item(
+            conn,
+            item_id="q08",
+            phase="Q08",
+            verdict="PASS",
+            evidence_path=q08_path,
+            setfile_path=setfile,
+        )
+        conn.commit()
+
+    with mock.patch.object(farmctl, "_ea_build_artifact_failure", return_value=None):
+        result = farmctl.enqueue_cascade_backtest_for_ea(
+            tmp_path,
+            "QM5_9999",
+            "Q09_NEWS",
+            predecessor_work_item_id="q08",
+        )
+
+    assert len(result["created"]) == 1
+    q09_id = result["created"][0]["id"]
+    with farmctl.connect(tmp_path) as conn:
+        row = conn.execute(
+            "SELECT payload_json FROM work_items WHERE id=?", (q09_id,)
+        ).fetchone()
+        hold = conn.execute(
+            "SELECT hold_code,active,release_on_restart FROM work_item_holds WHERE work_item_id=?",
+            (q09_id,),
+        ).fetchone()
+        claimable = {
+            item["id"] for item in conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+        }
+    payload = json.loads(row[0])
+    assert payload["q09_activation_state"] == farmctl.Q09_ACTIVATION_AWAITING_PLAN
+    assert tuple(hold) == (schema.ACTIVATION_HOLD_CODE, 1, 0)
+    assert q09_id not in claimable
 
 
 def test_repair_activates_schema_before_running_repair(tmp_path: Path) -> None:
@@ -268,6 +326,36 @@ def test_q10_enqueue_requires_and_binds_both_q09_dependencies(tmp_path: Path) ->
         gate = schema.assert_q10_dependency_gate(conn, q10_id)
         assert gate.q09_news_work_item_id == "q09n"
         assert gate.q09_portfolio_work_item_id == "q09p"
+
+
+def test_q10_rejects_plain_news_pass_and_names_exact_governed_verdict(tmp_path: Path) -> None:
+    farmctl.init_db(tmp_path)
+    setfile = tmp_path / "base.set"
+    q09_path = tmp_path / "q09.json"
+    setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+    q09_path.write_text('{"verdict":"PASS"}\n', encoding="utf-8")
+    with farmctl.connect(tmp_path) as conn:
+        _insert_work_item(
+            conn,
+            item_id="plain-pass",
+            phase="Q09_NEWS",
+            verdict="PASS",
+            evidence_path=q09_path,
+            setfile_path=setfile,
+        )
+        conn.commit()
+
+    with mock.patch.object(farmctl, "_ea_build_artifact_failure", return_value=None):
+        result = farmctl.enqueue_cascade_backtest_for_ea(
+            tmp_path,
+            "QM5_9999",
+            "Q10",
+            predecessor_work_item_id="plain-pass",
+        )
+
+    assert farmctl.Q09_NEWS_SUCCESS_VERDICTS == frozenset({"CONFIG_LOCKED"})
+    assert not result["enqueued"]
+    assert "Q09_NEWS CONFIG_LOCKED" in result["reason"]
 
 
 def test_q09_news_verdict_taxonomy_is_preserved() -> None:

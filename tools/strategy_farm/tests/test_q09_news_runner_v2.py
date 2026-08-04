@@ -194,15 +194,30 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
                 parent_evidence_sha256=contract.sha256_file(self.q08),
                 required_verdicts=["PASS"],
             )
+            schema.hold_until_plan_bound(connection, "q09-news-1", now=now)
             connection.commit()
         plan_hash = contract.sha256_file(Path(plan["plan_path"]))
-        runner.bind_plan_to_work_item(
+        binding = runner.bind_plan_to_work_item(
             farm_root,
             work_item_id="q09-news-1",
             plan_path=Path(plan["plan_path"]),
             expected_plan_file_sha256=plan_hash,
             cell_timeout_sec=60,
         )
+        self.assertTrue(binding["activation_hold_released"])
+        self.assertEqual(binding["activation_state"], "RUNNABLE_BOUND")
+        with closing(farmctl.connect(farm_root)) as connection:
+            hold = connection.execute(
+                "SELECT active,release_note FROM work_item_holds WHERE work_item_id='q09-news-1'"
+            ).fetchone()
+            payload = json.loads(
+                connection.execute(
+                    "SELECT payload_json FROM work_items WHERE id='q09-news-1'"
+                ).fetchone()[0]
+            )
+        self.assertEqual(hold[0], 0)
+        self.assertIn("sealed Q09 run plan bound", hold[1])
+        self.assertEqual(payload["q09_activation_state"], "RUNNABLE_BOUND")
         if activate:
             with closing(farmctl.connect(farm_root)) as connection:
                 connection.execute(
