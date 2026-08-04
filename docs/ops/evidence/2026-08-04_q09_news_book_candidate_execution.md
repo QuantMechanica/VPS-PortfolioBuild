@@ -171,3 +171,127 @@ remains open. No Q09_PORTFOLIO row, Q10 rerun, or QM5_13036 Q09 row has been
 created. Those steps remain gated on a genuine `CONFIG_LOCKED` result and then
 a fresh same-lineage `PASS_PORTFOLIO`; nothing in this repair reinterprets or
 predicts either verdict.
+
+## Recycle round 2 — logger reset diagnosis and receipt repair
+
+The resumed row terminalized at `2026-08-04T06:18:59Z` as
+`done/REVIEW_REQUIRED`. Its aggregate is
+`D:/QM/reports/work_items/33df999d-aa4f-4e66-9c2f-44bdcd3e7852/QM5_11422/Q09_NEWS/USDCAD_DWX/aggregate.json`,
+SHA-256 `1d742e7407f8d83b1f926c714b18c439e5319594b1a9d0478fcc29b31ca91437`.
+It truthfully reported `partial_cell_execution`, zero authenticated cells, and
+40 missing cells. The executor failure artifact has SHA-256
+`045ca86a4dd15eba0f1f0e5944f513cbc019011acc0247ce6fe0fb07b24cfc49`
+and says `run_smoke logger sample authentication failed`.
+
+### Exact T3 mechanism
+
+This was not a 4.5-minute matrix budget or a silent child exit. The first
+CONTROL_OFF seed-42 selection tester completed `PASS` and captured an exact
+918,574-byte structured logger from source offset zero. The immediately
+following holdout tester also completed `PASS`, but its `run_smoke.log`
+records:
+
+```text
+WARNING: Structured logger capture skipped: a pre-run logger file was truncated:
+'D:\QM\mt5\T3\Tester\Agent-127.0.0.1-3001\MQL5\Files\QM\QM5_11422_ea-11422.log'.
+```
+
+The tester agent recreates the EA's FILE-sandbox logger between independent
+tester processes. `run_smoke.ps1` had snapshotted the 918,574-byte selection
+file before the holdout launch, then observed the shorter newly-created
+holdout file. `Save-QmLoggerDelta` correctly refused to treat a rewritten file
+as an append-only delta. Consequently the holdout summary carried
+`logger_sample_path=null`; `_validate_window_summary` refused it before the
+cell could write `cell_receipt.json`; and the partial collector could only see
+40 absent receipts. The child failure was present in `execution_failure.json`,
+but not represented as a row-bound failed cell.
+
+### Additive fail-closed repair
+
+Commit `744d6111f` (`Fix Q09 multi-window receipt execution`) adds two narrow
+contracts while leaving default smoke behavior unchanged:
+
+1. Q09 production dispatch passes `-RequireFreshLoggerSample`. Before each
+   child launch, `run_smoke.ps1` proves metatester-writer quiescence, hashes and
+   moves every matching prior EA logger into that run's
+   `pre_run_logger_archive`, verifies the original paths are empty, and then
+   requires an exact fresh logger sample. The archive manifest and its hash
+   are embedded in `run_smoke/v2`. Isolation or capture uncertainty throws;
+   it cannot silently publish a Q09-usable summary.
+2. An executor exception writes immutable `q09-news-cell-failure/v1` evidence
+   beside the intended receipt. It binds work item, run identity, paired base,
+   arm/config/seed, explicit error, and hashes of every artifact available at
+   failure. `collect_run_plan_status` authenticates this sidecar and emits
+   `cell_execution_failed` with a failed-cell count. A genuine first-cell
+   failure is therefore `1 failed + 39 unattempted`, not `0/40 missing`.
+
+Relevant implementation anchors are
+`framework/scripts/run_smoke.ps1:41,1224,2456-2560` and
+`tools/strategy_farm/q09_news_runner.py:38,800-894,1018,1545` at this commit.
+No stale-news threshold, tester model, verdict threshold, EA source, EX5,
+setfile risk value, T_Live setting, or AutoTrading state changed.
+
+### Focused verification
+
+- Python syntax compilation: PASS.
+- `Test-RunSmokeLoggerSample.ps1`: PASS, including the exact shorter-file
+  selection-to-holdout reset case.
+- Q09 runner unit suite: 12/12 PASS. The new production-path regression runs
+  all 40 cells x 3 windows through the real dispatcher command shape, writes
+  receipts, and reaches fixture `CONFIG_LOCKED`; every one of the 120 child
+  commands carries `-RequireFreshLoggerSample`.
+- Q09 runner/contract/farmctl plus Q10 suite: `34 passed in 15.95s`.
+- Failure regression proves an injected tester exception produces one
+  authenticated failed-cell sidecar plus 39 genuinely unattempted cells.
+- `git diff --check` on all four implementation/test paths: PASS.
+
+## New append-only governed resume
+
+The terminal `33df999d-aa4f-4e66-9c2f-44bdcd3e7852` row was preserved. A new
+same-Q08 append-only Q09_NEWS row was created:
+
+| Identity | Value |
+|---|---|
+| New work item | `fd88398c-7288-4f6d-b3b0-4847487e35a8` |
+| Rerun of | `33df999d-aa4f-4e66-9c2f-44bdcd3e7852` |
+| Q08 predecessor | `9fe3eb5f-ab0d-4c84-82fe-d6748c3aa270` |
+| Candidate lineage key | `c963164be8b0677f76ec6cc812f40b0f7f5a9149eb493c31735a85a38c298a7b` |
+| Logical plan SHA-256 | `e5d7e271936467bb69f293c1c0c3b044149b8f6d24dd96de01455b08d6f61ede` |
+| Exact plan-file SHA-256 | `e8fefa85befbe0ffbb0cd9b1215287bf32b5170b37bc93e6f7ab861f9872a7ea` |
+| Input-manifest SHA-256 | `cfa8750a8f865ad09e93f3be0dca5e525b93b37895c082d38208ebbf9ad1af37` |
+| Dispatch-binding SHA-256 | `b02bc9a698438a59d2f6271b093869a6b06748e31c9438c9bbebd7abb2c56950` |
+
+All 40 regenerated setfiles retain `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
+`qm_news_stale_max_hours<=336`. Their ordered run identities and setfile
+SHA-256 values exactly equal the previous experiment. `bind-q09-plan`
+authenticated the exact plan hash and released the activation hold as
+`RUNNABLE_BOUND`.
+
+### Production proof on T8
+
+The ordinary factory claimed the row on T8 at `2026-08-04T06:51:40Z`; no
+manual terminal start occurred. The command contains the sealed D1 period and
+`-RequireFreshLoggerSample`. The first CONTROL_OFF seed-42 cell completed all
+three windows and published the first real receipt:
+
+| Artifact | Evidence |
+|---|---|
+| Cell run identity | `97832746b7c45318588ea7ee41e4a43303e951c796164b8a6b50f0e5deb4ac16` |
+| Cell receipt SHA-256 | `1e0639073d8bc18b11f374c60071e8b67aa270e949ec70d3dc45c532d3f234c3` |
+| Selection summary | `PASS`; logger 918,574 bytes; fresh offset 0; SHA-256 `7ab6ccfd5cec2468bdef61ad1c0a84cd2923ceab7095fcb16b2259a3d4f8af23` |
+| Holdout summary | `PASS`; archived the 918,574-byte selection logger; fresh logger 348,712 bytes from offset 0; SHA-256 `fa852778e62cc462f1b83645879bc5f7bc6a2bfc470044ad7c843559dc4e386e` |
+| Full summary | `PASS`; fresh offset 0; logger SHA-256 `9ae72e68290753a9e20c119f0f7412a9685699282c6d8e42ddd8f9a8f748941a` |
+
+The receipt's report-manifest and cell-evidence hashes verify, and its metrics
+equal the hash-bound evidence metrics. This is production proof that the exact
+selection-to-holdout truncation mechanism is repaired and that the complete
+execute-to-receipt path works. At cycle close the row remains `active` on T8,
+has advanced to the next cell, carries no pipeline verdict, and has no
+cell-failure sidecar.
+
+The matrix is deliberately serial and the first cell took about nine minutes;
+40 cells are therefore a multi-hour ordinary-factory operation. No aggregate,
+Q09 sidecar, Q09_PORTFOLIO successor, Q10 rerun, or QM5_13036 Q09 row is
+claimed or created in this cycle. The chain remains fail-closed until this row
+produces a genuine `CONFIG_LOCKED`; then a fresh same-Q08 `PASS_PORTFOLIO` is
+still required before Q10. The historical verdicts are not reinterpreted.
