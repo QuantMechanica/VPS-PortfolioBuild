@@ -56,8 +56,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING
+pipeline_phase: Q02
+q01_status: PASS
 q02_status: PENDING
 review_focus: "Falsify whether exact one-month reversal inside the fixed June-October WTI regime adds direct crude exposure with a return driver opposite the summer-continuation sibling; Q09 alone may establish book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -264,5 +264,5 @@ waiver.
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-04 | APPROVED; R1-R4 PASS | this card, governed source packet, and durable decision |
-| Q01 Build Validation | - | PENDING | `framework/EAs/QM5_20214_wti-sum-rev1/` |
-| Q02 Baseline Screening | - | PENDING | paced fleet handoff after Q01 PASS |
+| Q01 Build Validation | 2026-08-04 | PASS | strict build report `D:/QM/reports/framework/21/build_check_20260804_184912.json`; 0 failures, 0 warnings |
+| Q02 Baseline Screening | - | PENDING | paced fleet handoff authorized after Q01 PASS |
