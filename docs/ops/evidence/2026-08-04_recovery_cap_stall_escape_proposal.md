@@ -1,6 +1,15 @@
-# Recovery-Cap Stall Escape — Amendment Proposal (AWAITING OWNER RATIFICATION)
+# Recovery-Cap Stall Escape — Amendment (RATIFIED + APPLIED)
 
-Date: 2026-08-04 ~12:55Z · Author: Claude · Status: **PROPOSED, not applied**
+Date: 2026-08-04 ~12:55Z · Author: Claude · Status: **RATIFIED 2026-08-04 ~13:0xZ**
+
+> OWNER ratification (verbatim, interactive session, in direct reply to this
+> proposal): **"Go"**
+
+Applied 2026-08-04 ~13:05Z as a normal reviewed commit (farmctl.py +
+test_ultracode_wsa_claim.py, 26/26 passing against the repo tree). Activation:
+pump subprocess picks the new claim logic up on its next 10-min tick; resident
+terminal workers adopt at the next OFF/ON ceremony (farmctl.py is source-bound,
+next mint covers the new SHA).
 
 ## Symptom
 

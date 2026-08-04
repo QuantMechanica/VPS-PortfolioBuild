@@ -900,6 +900,13 @@ RECOVERY_MARKER_LIKE = '%"recovery_class":%'
 #     the last (WINDOW-1) rows and continues.
 CLAIM_RECOVERY_WINDOW = 5
 CLAIM_RECOVERY_MAX_IN_WINDOW = 1
+# Stall escape: if no PRIORITY claim was recorded fleet-wide within this horizon
+# while frontier rows exist, the priority lane is stalled (rows pending but
+# unclaimable) and recovery may drain freely until the next priority claim lands.
+# Healthy claim cadence is seconds-to-minutes; hours-long freezes are stalls.
+# OWNER-ratified amendment 2026-08-04 ("Go"), evidence:
+# docs/ops/evidence/2026-08-04_recovery_cap_stall_escape_proposal.md
+CLAIM_RECOVERY_STALL_ESCAPE_MINUTES = 15.0
 # Keep the ledger bounded: retain a tail far larger than the window and prune older
 # rows inside the same claim transaction. Only the last (WINDOW-1) rows are ever read.
 CLAIM_LEDGER_RETAIN = 64
@@ -1076,7 +1083,33 @@ def recovery_claim_allowed(conn: sqlite3.Connection) -> bool:
         (CLAIM_RECOVERY_WINDOW - 1,),
     ).fetchall()
     recent_recovery = sum(1 for r in rows if str(r[0]) == "recovery")
-    return recent_recovery < CLAIM_RECOVERY_MAX_IN_WINDOW
+    if recent_recovery < CLAIM_RECOVERY_MAX_IN_WINDOW:
+        return True
+    # Priority-lane stall escape (OWNER amendment 2026-08-04): the rolling window
+    # assumes priority claims keep advancing the ledger. When every frontier row
+    # is pending-but-unclaimable (symbol locks, multisym serialization, missing
+    # history), no priority claim ever lands, the window freezes with a recovery
+    # entry in it, and the whole fleet idles against a deep recovery queue — the
+    # 2026-08-04 starvation (8 idle workers, 1435 recovery rows, 242 unclaimable
+    # frontier rows). Ordering already guarantees a recovery row is only REACHED
+    # after every priority row was claimed or skipped for this claimant, so a
+    # fleet-wide priority claim this recent is the only signal that the frontier
+    # is actually flowing. If none landed within the stall horizon, recovery
+    # drains freely; the first priority claim that lands re-arms the cap.
+    row = conn.execute(
+        "SELECT claimed_at_utc FROM claim_class_ledger "
+        "WHERE claim_class='priority' ORDER BY seq DESC LIMIT 1",
+    ).fetchone()
+    if row is None:
+        return True  # retained tail holds no priority claim at all -> lane stalled
+    try:
+        last_priority = dt.datetime.fromisoformat(str(row[0]))
+        if last_priority.tzinfo is None:
+            last_priority = last_priority.replace(tzinfo=dt.timezone.utc)
+    except ValueError:
+        return False  # unparseable timestamp: keep the conservative cap
+    age_min = (dt.datetime.now(dt.timezone.utc) - last_priority).total_seconds() / 60.0
+    return age_min >= CLAIM_RECOVERY_STALL_ESCAPE_MINUTES
 
 
 def record_claim_ledger(
