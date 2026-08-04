@@ -73,6 +73,12 @@ pipeline verdict is claimed.
   argument.
 - Mutable worker log SHA-256 at the fail-closed capture (`05:38:15Z`):
   `bddaf889f22f89f800a46c077a112b69a00c102ee5471d71b23e54c2ba72d585`.
+- The generic retry policy claimed the same row again at `05:43:15Z`. The
+  ordinary worker spawned the same malformed command at `05:43:26Z`, received
+  the same `--period` refusal, and returned the row to `pending` at
+  `05:43:37Z` with `launch_fault_count=2` and
+  `launch_not_before_utc=2026-08-04T05:53:37Z`. Worker-log SHA-256 at cycle
+  close: `fe4c0c0265d99c52b3020ccd288df44c7634ebac79c89946aef88bd4e8792d08`.
 - Result inventory at capture: zero `cell_receipt.json` files; Q09 output root
   absent; zero `q09_news_tests` rows for this work item; no aggregate or
   evidence path.
