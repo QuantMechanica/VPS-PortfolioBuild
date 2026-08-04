@@ -4,7 +4,7 @@
 **Slug:** ft-adx-smas
 **Source:** 1580128f-e465-5454-bb97-a7572a6cfd6d
 **Author of this spec:** Codex
-**Last revised:** 2026-06-08
+**Last revised:** 2026-08-05
 
 ---
 
@@ -92,3 +92,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-08 | Initial build from card | 090cdc98-ea8f-47a7-8b4e-19d85f2c1a9e |
+| v2 | 2026-08-05 | Compile repair and current-framework Q02 handoff | Removed the obsolete void-cast, restored management-before-news ordering, added deterministic request initialization and the Q08 MAE hook. Strategy mechanics are unchanged. Build task `2ca4e54f-6977-4672-bd56-da7a393715cc`. |
