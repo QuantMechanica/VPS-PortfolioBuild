@@ -108,9 +108,66 @@ Q09_PORTFOLIO row, or Q10 rerun of
   interaction that removes Q09's required `--period`; the real ordinary-worker
   invocation exposed that missing integration case.
 
-## Required follow-up (not executed in this task)
+## Required follow-up at first-pass close
 
-Repair the factory command-composition contract so Q09_NEWS retains its sealed
+The first pass closed with this required follow-up: repair the factory
+command-composition contract so Q09_NEWS retains its sealed
 period, add a production-command regression test, then create a separately
 authorized append-only rerun. Do not manually invoke `execute`, rewrite this
 pending row, weaken the gate, or create downstream rows from the refusal.
+
+## Recycle repair and governed resume — 2026-08-04 06:14Z
+
+Router task `82bd766f-a520-46e7-b069-7636d901b401` was recycled with an
+explicit repair-and-resume delta. Commit `e21136822` (`Fix Q09 sealed period
+dispatch`) implements both required layers:
+
+1. `q09_news_runner.py execute` now derives its tester period from the
+   authenticated Q08 `baseline_run.period` inside the sealed Q09 input
+   manifest. The executor re-authenticates the baseline setfile and EX5
+   identities, accepts an optional explicit `--period`, and fails closed if
+   that value contradicts the sealed period.
+2. The `farmctl.py` Q-phase bridge no longer strips `--period` from
+   `Q09_NEWS`. This is the clean command contract for the next worker load;
+   other Q runners retain the existing strip behavior.
+
+This ordering makes the executor-side layer effective immediately because the
+Q09 executor is a fresh process on every claim. No resident terminal worker
+was restarted, and no Factory OFF/ON action was taken.
+
+### Focused verification
+
+- Python syntax compilation: PASS for the two implementation files and two
+  changed test files.
+- Q09 runner/contract/farmctl plus Q10 confirmation suite: `32 passed in
+  13.07s`.
+- The production regression test builds the command through
+  `farmctl._phase_runner_cmd_for_work_item`, proves Q09 retains the detected
+  period, and parses the resulting real executor argument vector with the
+  executor parser.
+- Executor tests prove omitted-period derivation and refusal of an explicit
+  period that contradicts the hash-bound Q08 baseline.
+- `git diff --check` on the scoped implementation and test paths: PASS.
+
+### Ordinary-worker runtime proof
+
+The same pending row `33df999d-aa4f-4e66-9c2f-44bdcd3e7852` remained the only
+Q09 row used; no replacement row was created. Its governed retry time was
+`2026-08-04T06:14:20Z`.
+
+- T3 reclaimed the row at exactly `06:14:20Z` and spawned the Q09 executor at
+  `06:14:32Z` as PID `18596`.
+- The resident worker's logged executor command still omitted `--period`, as
+  expected from its pre-repair loaded `farmctl.py`.
+- The fresh executor crossed the former argparse refusal and spawned governed
+  `run_smoke.ps1` as its child with `-Period D1`, derived from the sealed Q08
+  evidence, for the first CONTROL_OFF selection cell.
+- At the `06:16:14Z` capture the work item remained `active`, claimed by T3,
+  with `verdict=NULL`, `evidence_path=NULL`, and `launch_fault_count=3`
+  unchanged. This is pipeline work in progress, not a pipeline verdict.
+
+No cell receipt or aggregate existed at capture, so the serial chain correctly
+remains open. No Q09_PORTFOLIO row, Q10 rerun, or QM5_13036 Q09 row has been
+created. Those steps remain gated on a genuine `CONFIG_LOCKED` result and then
+a fresh same-lineage `PASS_PORTFOLIO`; nothing in this repair reinterprets or
+predicts either verdict.
