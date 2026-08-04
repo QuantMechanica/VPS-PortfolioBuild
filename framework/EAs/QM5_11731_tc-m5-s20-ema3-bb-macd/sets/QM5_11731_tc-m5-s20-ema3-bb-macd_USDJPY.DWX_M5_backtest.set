@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11731
+; ea_slug:      tc-m5-s20-ema3-bb-macd
+; ea_version:   v5.0
+; set_version:  s20260804-001
+; symbol:       USDJPY.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-04
+;==========================================================
+qm_ea_id=11731
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11731_tc-m5-s20-ema3-bb-macd.md
+strategy_ema_period=3
+strategy_bb_period=20
+strategy_bb_deviation=3.0
+strategy_macd_fast=12
+strategy_macd_slow=26
+strategy_macd_signal=9
+strategy_macd_zero_window=3
+strategy_sl_pips=12
+strategy_tp_pips=12

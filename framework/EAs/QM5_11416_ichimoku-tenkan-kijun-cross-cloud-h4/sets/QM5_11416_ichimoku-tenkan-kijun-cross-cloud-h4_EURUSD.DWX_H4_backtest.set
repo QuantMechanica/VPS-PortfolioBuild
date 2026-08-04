@@ -1,0 +1,28 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11416
+; ea_slug:      ichimoku-tenkan-kijun-cross-cloud-h4
+; ea_version:   v5.0
+; set_version:  s20260804-001
+; symbol:       EURUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-04
+;==========================================================
+qm_ea_id=11416
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11416_ichimoku-tenkan-kijun-cross-cloud-h4.md
+strategy_tenkan_period=9
+strategy_kijun_period=26
+strategy_senkou_period=52
+strategy_sl_cap_pips=60
+strategy_spread_cap_pips=20
