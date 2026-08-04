@@ -15505,3 +15505,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20211,gbpjpy-euraud,1,EURAUD.DWX,202110001,2026-08-04T02:25:20Z,Codex,active
 20212,gbpusd-eurjpy,0,GBPUSD.DWX,202120000,2026-08-04T09:38:56Z,Codex,active
 20212,gbpusd-eurjpy,1,EURJPY.DWX,202120001,2026-08-04T09:38:56Z,Codex,active
+20213,wti-summer-mom1,0,XTIUSD.DWX,202130000,2026-08-04T13:10:46Z,Codex,active
