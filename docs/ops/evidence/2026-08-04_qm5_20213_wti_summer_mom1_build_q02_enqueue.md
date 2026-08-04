@@ -170,6 +170,24 @@ terminal process had not yet appeared in the final process scan. `T_Live` and
 FTMO were observed separately and excluded from the factory count. This
 session did not manually launch, reserve, stop, or alter any terminal.
 
+## Post-Handoff Raw Runner Observation
+
+After the handoff snapshot, the paced T2 worker recompiled the unchanged MQ5
+and completed its raw runner. The execution-identity receipt binds the
+source and deployed EX5 to SHA-256
+`869d2aa9a1d4d094bf1466405df944fbbec28f52c1ec0a0fa59c9fea778c5c37`,
+records an unchanged MQ5 SHA-256
+`85423d584797089460eba674930b985e7216e0f390f7f48b1854ca10020bcfce`,
+and confirms the binary was stable during the run.
+
+The raw runner result is `FAIL / MIN_TRADES_NOT_MET`: 23 trades, PF 0.64,
+net `-3323.04`, and 5.21% drawdown for 2018-07-02 through 2022-12-31 against
+the runner's 25-trade minimum. Evidence:
+`D:/QM/reports/work_items/c8ece439-4efe-43e2-a09e-18fae81c162d/QM5_20213/20260804_132104/summary.json`.
+At the final DB read the work item remained `active`, attempt 0, with no formal
+verdict, so this document does not claim a classified Q02 verdict. The adverse
+economics are reported without a requeue, parameter change, or rescue build.
+
 ## Safety Boundary
 
 - No manual backtest or downstream phase was launched; the paced fleet owns
