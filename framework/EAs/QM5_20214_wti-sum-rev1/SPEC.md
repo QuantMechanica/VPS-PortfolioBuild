@@ -86,3 +86,4 @@ change.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-04 | Initial build from approved G0 card | Q01 strict build PASS; 0 compile errors/warnings and build hash frozen |
+| v2 | 2026-08-04 | Paced pipeline handoff | Q02 work item `7a5d5ea4-a472-48d0-8a79-35a0c564d9c3` enqueued pending; no verdict claimed |
