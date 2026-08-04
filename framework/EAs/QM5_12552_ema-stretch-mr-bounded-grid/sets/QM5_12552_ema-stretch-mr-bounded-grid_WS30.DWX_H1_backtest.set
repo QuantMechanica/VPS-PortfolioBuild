@@ -1,0 +1,43 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12552
+; ea_slug:      ema-stretch-mr-bounded-grid
+; ea_version:   v5.0
+; set_version:  s20260804-001
+; symbol:       WS30.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   10
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-04
+;==========================================================
+qm_ea_id=12552
+qm_magic_slot_offset=10
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12552_ema-stretch-mr-bounded-grid.md
+M_entry=10.0
+rsi_offset=15
+ema_period=200
+rsi_period=14
+atr_long_period=100
+atr_short_period=14
+grid_levels=5
+lot_mult=1.15
+grid_base_atr_mult=1.0
+grid_min_pips=5
+grid_min_bars=1
+stop_span_atr=14.0
+risk_budget_pct=1.0
+tp_mode=TP_SLOW_MA
+vwap_target_pips=20
+vwap_atr_mult=1.0
+max_hold_hours=0
+use_trailing=false
+trail_step_pips=10
+max_spread_pips=8
