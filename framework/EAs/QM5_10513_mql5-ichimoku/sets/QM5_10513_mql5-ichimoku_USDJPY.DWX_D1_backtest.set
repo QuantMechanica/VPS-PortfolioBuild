@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f734ebac6684326309fb539802d9b06ab9e5616fdf6ad62b09dcfa3d714b6a79
+; build_hash:   cf9cd2d473e298473193c975c5b38429297b878e62b174e5a205881cff1002da
 ; author:       Development
 ; date:         2026-05-28
 ;==========================================================
@@ -32,3 +32,7 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+; explicit EA-default session contract; filter remains disabled
+strategy_session_enabled=0
+strategy_session_start_hhmm=0
+strategy_session_end_hhmm=2359

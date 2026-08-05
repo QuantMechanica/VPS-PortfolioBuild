@@ -4,7 +4,7 @@
 **Slug:** `et-turtle20x`
 **Source:** `d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe` (see approved card)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-25
+**Last revised:** 2026-08-05
 
 ---
 
@@ -96,3 +96,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-25 | Initial build from card | 6c8b060c-144c-4ff3-8ea7-b4209cb4f5fb |
+| v1.1 | 2026-08-05 | Evidence instrumentation and reviewer-authorized performance annotations | Claude's `b84011f2-7a2e-463e-a296-df4b20546013` close verdict (`APPROVED with corrections`) explicitly authorized `// perf-allowed` on the original bounded raw-series Donchian survivor logic under the 2026-07-23 per-tick calibration doctrine. Added the framework Q08 MAE lifecycle hook as the first `OnTick` statement. The annotations are comment-only and the strategy mechanics are otherwise unchanged. |

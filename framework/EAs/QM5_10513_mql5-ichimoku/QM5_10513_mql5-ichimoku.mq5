@@ -103,8 +103,8 @@ bool Strategy_Midpoint(const ENUM_TIMEFRAMES tf,
    if(hi_shift < 0 || lo_shift < 0)
       return false;
 
-   const double high = iHigh(_Symbol, tf, hi_shift);
-   const double low = iLow(_Symbol, tf, lo_shift);
+   const double high = iHigh(_Symbol, tf, hi_shift); // perf-allowed: reviewer-authorized original bounded Ichimoku survivor read; per-tick exit mechanics preserved.
+   const double low = iLow(_Symbol, tf, lo_shift); // perf-allowed: reviewer-authorized original bounded Ichimoku survivor read; per-tick exit mechanics preserved.
    if(high <= 0.0 || low <= 0.0 || high < low)
       return false;
 
@@ -137,7 +137,7 @@ bool Strategy_IchimokuSnapshot(const int card_shift,
    if(!Strategy_Midpoint(tf, strategy_senkou_b_period, mt5_shift, span_b))
       return false;
 
-   close_price = iClose(_Symbol, tf, mt5_shift);
+   close_price = iClose(_Symbol, tf, mt5_shift); // perf-allowed: reviewer-authorized original closed-bar Ichimoku survivor read; per-tick exit mechanics preserved.
    return (close_price > 0.0);
   }
 
@@ -323,6 +323,9 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample open-position MAE before any early return.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 

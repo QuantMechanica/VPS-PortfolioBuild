@@ -4,7 +4,7 @@
 **Slug:** `mql5-ichimoku`
 **Source:** `b8b5125a-c67f-5bbc-baff-33456e08f5b2` (see `strategy-seeds/sources/b8b5125a-c67f-5bbc-baff-33456e08f5b2/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-28
+**Last revised:** 2026-08-05
 
 ---
 
@@ -95,3 +95,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-28 | Initial build from card | 3233f292-8df5-4146-b7db-093a7d57f998 |
+| v1.1 | 2026-08-05 | Evidence instrumentation and reviewer-authorized performance annotations | Claude's `b84011f2-7a2e-463e-a296-df4b20546013` close verdict (`APPROVED with corrections`) explicitly authorized `// perf-allowed` on the original bounded raw-series Ichimoku survivor logic under the 2026-07-23 per-tick calibration doctrine. Added the framework Q08 MAE lifecycle hook as the first `OnTick` statement. The four baseline backtest presets now state the EA-default disabled session contract (`0` / `0` / `2359`) explicitly for strict build provenance. The annotations are comment-only, the explicit preset values equal the compiled defaults, and the strategy mechanics are otherwise unchanged. |
