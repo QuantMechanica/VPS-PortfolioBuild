@@ -15536,3 +15536,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20229,wti-seas-rev1,0,XTIUSD.DWX,202290000,2026-08-05T18:09:57Z,Codex,active
 20230,wti-seas-gap,0,XTIUSD.DWX,202300000,2026-08-05T19:29:44Z,Codex,active
 20231,wti-seas-mom12,0,XTIUSD.DWX,202310000,2026-08-05T20:24:30Z,Codex,active
+20232,usdchf-nzdusd,0,USDCHF.DWX,202320000,2026-08-05T22:09:23Z,Codex,active
+20232,usdchf-nzdusd,1,NZDUSD.DWX,202320001,2026-08-05T22:09:23Z,Codex,active
