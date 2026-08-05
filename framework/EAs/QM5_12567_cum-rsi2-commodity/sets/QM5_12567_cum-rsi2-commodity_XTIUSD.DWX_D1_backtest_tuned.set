@@ -10,6 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
+; build_hash:   50f3654102a6161681c378fc266b41a4c3dfe88d041bd559b26dcb774f653ffb
 ; author:       Claude
 ; date:         2026-06-28
 ; note: oil-gap tune. D1 default (cum_rsi_entry=35, max_hold=5) traded only ~4x/3yr OOS
