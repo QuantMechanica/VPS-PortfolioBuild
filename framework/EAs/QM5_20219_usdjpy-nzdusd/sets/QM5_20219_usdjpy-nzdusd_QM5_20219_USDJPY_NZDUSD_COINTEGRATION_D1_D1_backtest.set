@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        20219
 ; ea_slug:      usdjpy-nzdusd
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   aaec362a6888db7d1388bac4045889971c54a6501407c1a1b841f7a31c8fe00b
 ; author:       Development
 ; date:         2026-08-05
 ;==========================================================
