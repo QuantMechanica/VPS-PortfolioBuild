@@ -658,3 +658,51 @@ checks. The reconciliation tests prove both comment-only acceptance and
 parameter-drift refusal. All new Q09 and Q02 rows remain pending/active work
 whose eventual verdicts come only from their own Q evidence. The deliverable
 is `REVIEW_REQUIRED`; no self-approval or pipeline verdict is claimed.
+
+### Q09 generation-3 rank-5 follow-through — 2026-08-05
+
+Router task `2979bc02-956e-4ca0-a282-4aff35cef1e4` authorized the final
+pre-cutover rank-5 follow-through for QM5_11165/AUDCAD. The generation-2
+predecessor `cc754e65-54be-50d4-9379-f32d4d9e4497` remains unchanged at
+`done/REVIEW_REQUIRED`, has no claim, and has zero canonical
+`q09_news_tests` rows.
+
+The predecessor exposed a narrower false-terminal mechanism than the earlier
+code-1/no-receipt victims. Its hash-bound holdout `run_smoke/v2` summary
+(`cdea5249ee24c824a97d622966b56fd752d2a74ce9c1db24453a81f902b333cf`)
+records overall `PASS`, one invalid `BARS_ZERO` startup attempt, and then one
+authenticated `OK` attempt with 34 trades. The Q09 validator nevertheless
+required the entire `runs` array to have length one and terminalized after
+three authenticated cells plus that false failure. Commit `6518d767a` now
+selects exactly one `OK` attempt while still refusing zero or multiple `OK`
+attempts. The generation-rerun proof accepts this path only when the summary
+is inside the failed cell, its SHA-256 matches the sealed failure artifact,
+the summary is `PASS`, it contains multiple attempts, and exactly one attempt
+is `OK`.
+
+The append-only generation-3 row is
+`da59e191-9621-503d-a3ea-e78b4eae1e2a`, rerun-of `cc754e65...`, avoiding
+its predecessor terminal T4. It reuses predecessor anchor SHA-256
+`a031b4f4ed28b333d1bd457e09640c1b6a829c453172cd196bf9a6ef2ea5ffa3`.
+Its plan-file SHA-256 is
+`cf5d301bda9da07aff5392c9dc3764f076b9a326308dba1623ad9994967c8c4e`
+and enqueue-receipt SHA-256 is
+`dae339e7cc7f7be0ef46f30bad70d0294a506a2a64d6eeab2c5a6f2e3f2a71cc`.
+A fresh database-and-plan audit found 40/40 cells and exact ordered equality
+of run identity, setfile hash, arm, compliance, temporal mode, seed, and
+paired-base identity. The new row is diagnostic non-admission, pending/NULL,
+unclaimed, and has zero canonical Q09 rows.
+
+At the `2026-08-05T20:00Z` reconciliation, the diagnostic fleet was exactly
+at its governed 5/5 cap on T1-T5, so the new rank-5 row remained pending and
+no active test was interrupted. Rank-14 QM5_10939/GBPUSD row
+`debf9533-f319-5b05-8c89-9747bba7e6bc` also remained pending/NULL with zero
+canonical rows after its fixed-runner transient requeue. Its persisted
+`transient_infra_attempts=1` and T3 avoidance retain the retry lineage; it is
+eligible for a fresh claim when the cap releases and needs **no** generation-3
+duplicate. A post-requeue claim was not yet observable at the cap and is not
+invented here.
+
+Focused verification was Python compilation plus both Q09 runner/diagnostic
+suites: 35 tests PASS. This follow-through remains `REVIEW_REQUIRED`; no
+admission, economic conclusion, or pipeline verdict is claimed.
