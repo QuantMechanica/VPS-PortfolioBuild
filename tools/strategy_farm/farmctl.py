@@ -16489,6 +16489,49 @@ def _q02_fixed_risk_contract(setfile_path: str) -> tuple[bool, dict[str, Any]]:
     }
 
 
+def _q02_execution_symbol_binding(
+    target: sqlite3.Row, payload: dict[str, Any]
+) -> tuple[bool, dict[str, Any]]:
+    """Resolve the MT5 host symbol without confusing it with a basket identity."""
+    row_symbol = str(target["symbol"] or "").strip()
+    logical_symbol = str(payload.get("logical_symbol") or "").strip()
+    host_symbol = str(payload.get("host_symbol") or "").strip()
+    portfolio_scope = str(payload.get("portfolio_scope") or "").strip().lower()
+    is_basket = bool(
+        portfolio_scope == "basket"
+        or payload.get("basket_manifest")
+        or payload.get("basket_symbol_count")
+        or logical_symbol
+    )
+    if not is_basket:
+        return True, {"expected_symbol": row_symbol}
+    if not logical_symbol:
+        return False, {
+            "reason": "historical_execution_identity_missing",
+            "binding": "logical_symbol",
+            "expected": row_symbol,
+            "actual": logical_symbol,
+        }
+    if logical_symbol != row_symbol:
+        return False, {
+            "reason": "historical_execution_identity_mismatch",
+            "binding": "logical_symbol",
+            "expected": row_symbol,
+            "actual": logical_symbol,
+        }
+    if not host_symbol:
+        return False, {
+            "reason": "historical_execution_identity_missing",
+            "binding": "host_symbol",
+            "expected": "non-empty MT5 host symbol",
+            "actual": host_symbol,
+        }
+    return True, {
+        "expected_symbol": host_symbol,
+        "logical_symbol": logical_symbol,
+    }
+
+
 def _q02_exact_artifact_bindings(
     target: sqlite3.Row, payload: dict[str, Any]
 ) -> tuple[bool, dict[str, Any]]:
@@ -16531,8 +16574,11 @@ def _q02_exact_artifact_bindings(
                 "expected_sha256": expected,
                 "actual_sha256": digest,
             }
+    symbol_ok, symbol_binding = _q02_execution_symbol_binding(target, payload)
+    if not symbol_ok:
+        return False, symbol_binding
     identity_checks = {
-        "expected_symbol": str(target["symbol"]),
+        "expected_symbol": symbol_binding["expected_symbol"],
         "expected_period": _detect_ea_period(ea_id, setfile_path),
         "expected_expert": f"QM\\{ea_dir.name}",
     }
@@ -16601,10 +16647,19 @@ def _expected_current_execution_bindings(
             "expected_sha256": expected_ex5,
             "actual_sha256": actual["expected_ex5_sha256"],
         }
+    try:
+        payload = json.loads(target["payload_json"] or "{}")
+    except json.JSONDecodeError:
+        payload = None
+    if not isinstance(payload, dict):
+        return False, {"reason": "current_execution_payload_invalid"}
+    symbol_ok, symbol_binding = _q02_execution_symbol_binding(target, payload)
+    if not symbol_ok:
+        return False, symbol_binding
     return True, {
         "ea_dir": str(ea_dir),
         "artifact_sha256": actual,
-        "expected_symbol": str(target["symbol"]),
+        "expected_symbol": symbol_binding["expected_symbol"],
         "expected_period": _detect_ea_period(ea_id, setfile_path),
         "expected_expert": f"QM\\{ea_dir.name}",
     }
