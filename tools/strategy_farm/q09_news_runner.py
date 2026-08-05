@@ -807,10 +807,12 @@ def bind_diagnostic_plan_to_work_item(
             raise RunnerError("Q09 diagnostic payload is invalid JSON") from exc
         anchor_work_item_id = str(anchor.get("work_item_id") or "")
         direct_anchor = anchor_work_item_id == str(work_item_id)
+        rerun_parent_id = str(payload.get("rerun_of") or "")
         sealed_identity_rerun = (
             payload.get("sealed_identity_rerun") is True
             and int(payload.get("diagnostic_generation") or 0) >= 3
-            and str(payload.get("rerun_of") or "") == anchor_work_item_id
+            and bool(rerun_parent_id)
+            and rerun_parent_id == str(item["parent_task_id"] or "")
             and str(payload.get("sealed_identity_anchor_work_item_id") or "")
             == anchor_work_item_id
             and str(payload.get("sealed_identity_anchor_sha256") or "").lower()

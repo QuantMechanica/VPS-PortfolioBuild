@@ -594,6 +594,76 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
         self.assertNotIn("launch_not_before_utc", rerun_payload)
         self.assertEqual(canonical_count, 0)
 
+        # A later generation must continue to authenticate the original sealed
+        # anchor rather than demand that immutable anchor name the immediate
+        # generation-3 predecessor.
+        generation_three_cell = Path(rerun_plan["cells"][0]["receipt_path"]).parent
+        generation_three_cell.mkdir(parents=True, exist_ok=True)
+        (generation_three_cell / "cell_failure.json").write_text(
+            json.dumps({
+                "error_type": "TransientCellError",
+                "error": (
+                    "Q09 selection run_smoke exited with code 1 without a fresh "
+                    "run_smoke summary or cell receipt"
+                ),
+            }),
+            encoding="utf-8",
+        )
+        generation_three_summary = self.root / "generation-three-summary.json"
+        generation_three_summary.write_text(
+            json.dumps({
+                "schema_version": "q09-live-news-diagnostic-summary/v1",
+                "diagnostic_non_admission": True,
+                "diagnostic_contract": runner.DIAGNOSTIC_CONTRACT,
+                "work_item_id": expected_id,
+            }),
+            encoding="utf-8",
+        )
+        with farmctl.connect(self.farm) as connection:
+            row = connection.execute(
+                "SELECT payload_json FROM work_items WHERE id=?", (expected_id,)
+            ).fetchone()
+            generation_three_payload = json.loads(row["payload_json"])
+            generation_three_payload["terminal"] = "T2"
+            connection.execute(
+                "UPDATE work_items SET status='done',verdict='REVIEW_REQUIRED',"
+                "evidence_path=?,payload_json=? WHERE id=?",
+                (
+                    str(generation_three_summary),
+                    json.dumps(generation_three_payload, sort_keys=True),
+                    expected_id,
+                ),
+            )
+            connection.commit()
+
+        generation_four_task_id = "router-transient-generation-2"
+        with (
+            mock.patch.object(backfill, "ARTIFACT_ROOT", artifact_root),
+            mock.patch.object(backfill, "FARM_ROOT", self.farm),
+        ):
+            generation_four = backfill.enqueue_append_only_rerun(
+                task_id=generation_four_task_id,
+                predecessor_id=expected_id,
+                avoid_terminal="T2",
+            )
+
+        self.assertEqual(generation_four["diagnostic_generation"], 4)
+        self.assertEqual(generation_four["rerun_of"], expected_id)
+        self.assertEqual(
+            generation_four["sealed_identity_anchor_work_item_id"],
+            self.work_item_id,
+        )
+        with farmctl.connect(self.farm) as connection:
+            generation_four_row = connection.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (generation_four["work_item_id"],),
+            ).fetchone()
+        generation_four_payload = json.loads(generation_four_row["payload_json"])
+        self.assertEqual(
+            generation_four_payload["sealed_identity_anchor_work_item_id"],
+            self.work_item_id,
+        )
+
     def test_generation_rerun_proof_accepts_one_ok_after_invalid_startup(self) -> None:
         cell_root = self.root / "retry-then-ok-cell"
         run_summary_path = cell_root / "runs" / "holdout" / "fixture" / "summary.json"

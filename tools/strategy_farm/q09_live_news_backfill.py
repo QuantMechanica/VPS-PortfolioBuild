@@ -860,12 +860,20 @@ def enqueue_transient_generation_rerun(
         payload.get("diagnostic_anchor_sha256") or ""
     ).lower():
         raise BackfillError("generation rerun predecessor anchor hash changed")
+    sealed_anchor_work_item_id = str(
+        payload.get("sealed_identity_anchor_work_item_id") or predecessor_id
+    )
+    if (
+        int(payload.get("diagnostic_generation") or 0) > FRESH_BUILD_GENERATION
+        and payload.get("sealed_identity_rerun") is not True
+    ):
+        raise BackfillError("later-generation rerun lacks sealed anchor lineage")
     anchor = json.loads(source_anchor_path.read_text(encoding="utf-8-sig"))
     if (
         anchor.get("schema_version") != q09.DIAGNOSTIC_ANCHOR_SCHEMA
         or anchor.get("diagnostic_contract") != q09.DIAGNOSTIC_CONTRACT
         or anchor.get("diagnostic_non_admission") is not True
-        or str(anchor.get("work_item_id") or "") != predecessor_id
+        or str(anchor.get("work_item_id") or "") != sealed_anchor_work_item_id
     ):
         raise BackfillError("generation rerun predecessor anchor is contradictory")
 
@@ -939,7 +947,7 @@ def enqueue_transient_generation_rerun(
         "rerun_of": predecessor_id,
         "rerun_avoid_terminal": avoid_terminal,
         "sealed_identity_rerun": True,
-        "sealed_identity_anchor_work_item_id": predecessor_id,
+        "sealed_identity_anchor_work_item_id": sealed_anchor_work_item_id,
         "sealed_identity_anchor_sha256": sha256_file(source_anchor_path),
         "transient_predecessor_failures": failures,
         # Prevent a claim between the binder commit and retry steering update.
@@ -1032,6 +1040,7 @@ def enqueue_transient_generation_rerun(
         "input_manifest_sha256": rerun_plan["input_manifest_sha256"],
         "anchor_path": str(source_anchor_path),
         "anchor_sha256": sha256_file(source_anchor_path),
+        "sealed_identity_anchor_work_item_id": sealed_anchor_work_item_id,
         "transient_predecessor_failures": failures,
         "binding": bound,
         "enqueued_at_utc": now_iso,
