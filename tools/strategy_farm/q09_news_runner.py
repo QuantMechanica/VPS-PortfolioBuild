@@ -816,12 +816,21 @@ def bind_diagnostic_plan_to_work_item(
             "Q09 diagnostic baseline setfile",
         )
 
+        fresh_build = anchor.get("fresh_build_ex5") or {}
         deployed = anchor.get("deployed_ex5") or {}
-        staged_path = Path(str(deployed.get("path") or "")).resolve()
-        staged_hash = str(deployed.get("sha256") or "").lower()
-        _verify_hash(staged_path, staged_hash, "Q09 exact deployed live EX5")
+        staged_identity = fresh_build or deployed
+        if fresh_build and int(anchor.get("diagnostic_generation") or 0) != 2:
+            raise RunnerError("Q09 fresh-build diagnostic lacks generation-2 identity")
+        staged_path = Path(str(staged_identity.get("path") or "")).resolve()
+        staged_hash = str(staged_identity.get("sha256") or "").lower()
+        staged_role = (
+            "Q09 exact fresh current-build EX5"
+            if fresh_build
+            else "Q09 exact deployed live EX5"
+        )
+        _verify_hash(staged_path, staged_hash, staged_role)
         if staged_hash != identities.get("ex5_sha256"):
-            raise RunnerError("Q09 diagnostic deployed EX5 differs from sealed plan")
+            raise RunnerError("Q09 diagnostic staged EX5 differs from sealed plan")
 
         q07 = anchor.get("q07_seed_stability") or {}
         q07_id = str(q07.get("work_item_id") or "")

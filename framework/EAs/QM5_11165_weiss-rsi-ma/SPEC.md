@@ -98,3 +98,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-07 | Initial build from card | 7bde6536-d1e7-4af2-9087-e86b9e15a78e |
+| v1.1 | 2026-08-05 | Current-V5 instrumentation refresh | Added the explicit pre-guard Q08 MAE sampler and verified the current two-axis news interface; strategy mechanics unchanged. Router task `b84011f2-7a2e-463e-a296-df4b20546013`. |

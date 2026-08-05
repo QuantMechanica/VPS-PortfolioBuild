@@ -322,3 +322,205 @@ Tests and an enqueue receipt are implementation evidence, not pipeline
 verdicts. Only authenticated per-cell and aggregate artifacts may populate the
 rolling metric table, and this diagnostic remains non-admitting even after all
 680 cells complete.
+
+## Full current-build refresh addendum — router task `b84011f2`
+
+**Execution window:** 2026-08-05 16:39-17:21 UTC
+
+**Disposition:** **REVIEW_REQUIRED — PARTIAL BY GUARDED REFUSAL**
+
+This addendum records the OWNER-directed current-build refresh, append-only
+generation-2 news reruns, and ordinary missing-gate requalification. It does
+not change a live deployment and does not confer a pipeline verdict. Of the 14
+unique target sources, 12 passed the strict build gate and compiler; two were
+restored byte-for-byte after the strict performance gate refused them. Those
+12 builds cover 15 of the 17 target sleeves. Twenty ordinary live-book
+requalification rows were also enqueued; three sleeves were refused rather
+than seeded unsafely, and the one exact current-generation Q08 PASS was kept.
+
+No T_Live file, live preset, profile, chart, terminal, or AutoTrading setting
+was changed. No `terminal64.exe` was started manually. Existing T1-T10 tests
+were not stopped. Phase names below are Q-only, and all reported outcomes come
+from the governing build or queue artifacts rather than inferred pipeline
+results.
+
+### Phase A — source refresh and serial rebuild
+
+The source baseline is canonical commit
+`c8e412c5a643b072616f980a0e0dab3c7b5ce3a0`, immediately before the first
+task-scoped pump artifact commit. MQ5 hashes below are SHA-256 after LF
+normalization so checkout EOL conversion cannot masquerade as a mechanics
+change; EX5 hashes are over exact bytes. The accepted MQ5 delta is the explicit
+first-statement `QM_FrameworkTrackOpenPositionMae()` call in `OnTick`, its
+explanatory comment, and SPEC v1.1. QM5_10939, QM5_11132, and QM5_12989 also
+received a declaration-only supported-surface comment. No strategy condition,
+indicator, entry, exit, stop, target, sizing rule, or trading schedule changed.
+
+Strict build reports share root `D:\QM\reports\framework\21`; compiler logs
+share root `C:\QM\repo\framework\build\compile`. Every accepted compiler log
+ends `Result: 0 errors, 0 warnings`.
+
+| EA | MQ5 SHA-256, old -> new (LF-normalized) | EX5 SHA-256, old -> new | Strict build / compile |
+|---|---|---|---|
+| QM5_12567 | `e40bea7e231ca7366feaa7e4ce0e9f6cc823a39cd6640535a157fe8747bb4025` -> `8a5dc80942f867936ab18f6b98243437761aba55330024b18e5a050757ad60fc` | `5d5be334288e76a582349dac8351a95700222b91bbd28e1921e9d4aa6e3b10f9` -> `8d901924fe7dd2cd00c61dac6db78871fdfe34f73e0f003393196992d5143e04` | PASS `build_check_20260805_163911.json`; `20260805_163936` 0/0 |
+| QM5_10919 | `91cb71322cea53a2977855be6ede2f2eddbaf1280244a1eb070163e16b4d455e` -> `b8440e637c3c6114e45ccc3f0a3c4922cdff4e2d0dc2102aacfdd32d20dcb158` | `57e0db8401616a5fb10c68557c24e8b7a7e98254cb8ddf57245fc178aa3a4691` -> `bff488fabe6416a0c70719538aa4ee21336eab389f32e1a86eb75cf6fffa6e65` | PASS `build_check_20260805_164040.json`; `20260805_164106` 0/0 |
+| QM5_1556 | `eb21c1d5e71288e24985802081200a15ed1fbc6a70534efbae95a0ec11d8499a` -> `3b44aa66f7ff4665d15b3e580dc42ea73add6548448b83258d2b510f151769ac` | `9d95921e82c6d810731c8b5ba7fc58109f3f858194b62d87188a2d51171a3c84` -> `0962ca65776fd05e76f7ab5f27e838a72cb79a7359a029e2f47ef61a9ae7c88e` | PASS `build_check_20260805_164152.json`; `20260805_164219` 0/0 |
+| QM5_11165 | `13b723caa96a04b25b09b159cc49c5035bbe22fe774512217a10d93026b7a0e1` -> `7daca3b50d87b7fb404d7e21ddf5bd5556691cec6705830daa8258fd7bc92a14` | `5987d174fe00c9944a1128557b51e4c1702a51834908b8cd878ab2c5b98839ff` -> `b109a902f98f305b7436b9ec1c02105a57b497c67db297ffb6232372f5088281` | PASS `build_check_20260805_164243.json`; `20260805_164311` 0/0 |
+| QM5_11708 | `111826909d2e7127ef5fcfb611f001a56c48d402a999db4667f236cf518a90c4` -> `9b4c843be029d1e151322d1beb2465fb45d3bd6f5f1e3ab30a3eb78de4469043` | `7930a220014f69714882ad60a5791b018323fc27f76ef17127eaf7df2a22cc4f` -> `baff181fe3c9b5abf404231603f8117f4d2cf9d792c69de7014732a3b6e96d25` | PASS `build_check_20260805_164349.json`; `20260805_164417` 0/0 |
+| QM5_11132 | `900e6ddc411945542341cfc59f899cc814ae984932f89f73f3c7659a0545134e` -> `590e520cf255bfd14abf01348ce23f8bf6dc08560161858912bd260afaaa32f7` | `25b68c44d9724d9915298ad6b632e9c4db77133526e8c441fa82adc2a0474152` -> `e3dea054cce04aba5aec82ceb9a8a0a530acc43c6b4d3783ee5f70d89064a66e` | PASS `build_check_20260805_164540.json`; `20260805_164609` 0/0 |
+| QM5_11421 | `184b0df165ab7273441b82928b293a947b7899fff9444218b6c139590b6d5700` -> `b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15` | `0f7c8ff9ad91c43f275aacbfb366f06f17aeda0f1d567c83936af7d8dca69ca7` -> `9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b` | PASS `build_check_20260805_164653.json`; `20260805_164723` 0/0 |
+| QM5_10513 | `d6afb9b298dd0a5d702105d02055c36ed54271c3e5ef9bdd3b0d4fd0ce4182f3` -> same | `04b62af28c6466e01741aacaa915d9a68714cd7c23288ae277615ae068d63898` -> same | **REFUSED**, `build_check_20260805_164754.json`: three raw-series calls in per-tick helpers |
+| QM5_12989 | `fc9ef50ce6ae32c6482ba24570b7cfdbb231573aa9f0897851a8e975c6bd73a6` -> `4e75310f84fb762576a406c46944ac3df899a72906f7671695c2e5900618df0e` | `7f2c298f4a8b4395480e47f20f9cefb8d5c53083bd63f7ea9ef1db067f52c4d2` -> `77d3c5fda5ef2dfd0c138e6520f76d450a04fe812fcefabac07e2673fcd2e425` | PASS `build_check_20260805_164955.json`; `20260805_165026` 0/0 |
+| QM5_10403 | `69d96c886374e6bba4fdd6293e2100b5f312fcc57e574f448164a321b44c676a` -> same | `34432f7377469db04e9ac851f70c3a8bd64e9dab701c49d3564b8aecbaec57d2` -> same | **REFUSED**, `build_check_20260805_165052.json`: two raw-series channel calls per tick |
+| QM5_10939 | `08f02c5f2d15a476295c19c15f341be7634f9c3ca2f69186b0dd0c552c0b4f4f` -> `999e8805d38a8de1ba31702a262c538318ec041d7effea745567ec54567e1ae4` | `308604a3546c44fc8bfb40ecff36801e5479bf33887847b8b6e5650943312aac` -> `812fc52a90f0dba0282aa2fecb3a0b3640c18386ac3e2ab7e3b80765a3970278` | PASS `build_check_20260805_165628.json`; final `20260805_171020` 0/0 |
+| QM5_10911 | `2dfa0988d40166d564e386d3ea44cb224f516e873a9bf8cb3a8d2d7eb813a5e4` -> `122d1a4e32480fabf3f0b0363f49d7a8589681c64cd5850da313d1503135f920` | `a815c73da991736d25a02c027bbcfb23f68615adb66b7325cc2efcdc52344158` -> `1644fcbbab3a3c83e3d43923eed204daf4c3b477472c88eb68669985de4652ae` | PASS `build_check_20260805_165858.json`; `20260805_165942` 0/0 |
+| QM5_10706 | `fbb632c78461abc858218207768a53b50fa56a4cb63d1fa237d60de99318c5f6` -> `ad2ec966f9c2c6decc6010518e3fdedf76606a345abc07a0dd85c0b3dd97689f` | `fac91bc4422e5cf7a991d065d8dd682657372bfc001036c72f5c6ab4fe4a74fc` -> `7b287687119ea75a70782ea29569696ab0ab889835b3caa73d5e539d0ff72d72` | PASS `build_check_20260805_170043.json`; `20260805_170122` 0/0 |
+| QM5_10440 | `0f22973a0e89166d76c39a5ef3bdaede5f6063ca37166ab9e18c69179a4d513b` -> `0895a8e80a4477baa86e86d95f61312ed42ad0b248f99688f812b022cdb9f6c7` | `d9e7d5cdc1998aadf649287af6a5c13a854e42cddbda28c5732d03b34b8b70db` -> `81d796709dc83b2a4b5d2e8c4030a751876a8df34dc45cafd2d720dfae10278b` | PASS `build_check_20260805_170206.json`; `20260805_170250` 0/0 |
+
+The rejected QM5_10513 and QM5_10403 refreshes were not annotated
+`perf-allowed`: doing so would require reviewer authorization and would hide a
+known per-tick cost. Their transient source, SPEC, EX5, and generated-set
+changes were restored to the pre-cycle canonical bytes. No generation-2 news
+row or ordinary Phase-C row was created for either EA.
+
+The strict build lane also exposed provenance-only defects in three auxiliary
+QM5_12567 presets, one QM5_11132 preset, and two QM5_10911 variant presets.
+Only their required metadata headers were completed; parameter values were
+not changed. A final scan covered 341 accepted-build `*backtest*.set` files:
+all have `RISK_FIXED > 0` and `RISK_PERCENT = 0`. A separate scan of 496 MQ5
+and set files found zero `qm_news_stale_max_hours` values above 336.
+
+### Phase B — append-only generation-2 news diagnostics
+
+`q09_live_news_backfill.py refresh` now creates immutable generation-2 rows
+only after validating the current source, exact fresh EX5, live-preset
+strategy parameters, fixed-risk settings, stale ceiling, campaign identity,
+and v1 parent. `q09_news_runner.py` selects the receipt-bound fresh build for
+generation 2. The operation preserves campaign
+`q09-live-news-backfill-20260805-v1`, bundle
+`q09cal-20150101-20260809-0bb19b5bb9790b76`, five seeds, 40 cells per sleeve,
+the seven-by-one DXZ temporal scope, and diagnostic non-admission.
+
+Batch receipts are under
+`D:\QM\strategy_farm\artifacts\q09_live_news_backfill_20260805\refresh_v2\b84011f2-7a2e-463e-a296-df4b20546013`.
+Fifteen rows were appended for the 12 accepted builds; v1 rows are immutable.
+The snapshot at `2026-08-05T17:20:57Z` was 2 done/REVIEW_REQUIRED, 4 active,
+and 9 pending, with zero canonical `q09_news_tests` rows. All four active rows
+were on T1-T5, below the cap of five; no row could claim T6-T10.
+
+| Source rank | Fresh-build sleeve | Generation-2 work item | Fresh EX5 SHA-256 | Snapshot | Operating target |
+|---:|---|---|---|---|---|
+| 1 | QM5_12567/XNGUSD | `3f409823-e2c0-50a8-850f-864e33faab94` | `8d901924fe7dd2cd00c61dac8351a95700222b91bbd28e1921e9d4aa6e3b10f9` | active T5 | Fri Aug 7, 20:00 CEST |
+| 2 | QM5_10919/XTIUSD | `4fd8d9b2-c4e2-5627-a799-90caee71af07` | `bff488fabe6416a0c70719538aa4ee21336eab389f32e1a86eb75cf6fffa6e65` | done, REVIEW_REQUIRED | completed |
+| 3 | QM5_12567/XAUUSD | `4f80a8cf-2cf9-53dd-b59c-414674f24f16` | `8d901924fe7dd2cd00c61dac8351a95700222b91bbd28e1921e9d4aa6e3b10f9` | pending | Fri Aug 7, 20:00 CEST |
+| 4 | QM5_1556/XAUUSD | `a122a2e9-8c21-5dc0-97d3-96567bf3825e` | `0962ca65776fd05e76f7ab5f27e838a72cb79a7359a029e2f47ef61a9ae7c88e` | pending | Fri Aug 7, 20:00 CEST |
+| 5 | QM5_11165/AUDCAD | `cc754e65-54be-50d4-9379-f32d4d9e4497` | `b109a902f98f305b7436b9ec1c02105a57b497c67db297ffb6232372f5088281` | active T4 | Sat Aug 8 evening |
+| 6 | QM5_11708/EURUSD | `7a496c8b-4a4a-57c4-b049-04fb9fbbc150` | `baff181fe3c9b5abf404231603f8117f4d2cf9d792c69de7014732a3b6e96d25` | pending | Fri Aug 7, 20:00 CEST |
+| 7 | QM5_11132/SP500 | `13fdb5a5-5b91-54f4-ba76-e4e70fbe73c6` | `e3dea054cce04aba5aec82ceb9a8a0a530acc43c6b4d3783ee5f70d89064a66e` | done, REVIEW_REQUIRED | completed |
+| 8 | QM5_11165/EURUSD | `1a16c66c-8ae8-5a30-a2ef-9db348e82694` | `b109a902f98f305b7436b9ec1c02105a57b497c67db297ffb6232372f5088281` | pending | Sat Aug 8 evening |
+| 9 | QM5_11421/AUDUSD | `8b3332c9-5023-5656-bff6-e8d937cbdc3d` | `9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b` | active T1 | Fri Aug 7, 20:00 CEST |
+| 10 | QM5_11421/EURUSD | `13860911-0db4-56fc-b82f-00746bf2cfd7` | `9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b` | pending | Fri Aug 7, 20:00 CEST |
+| 12 | QM5_12989/XAUUSD | `5c382e2d-55ff-5a49-bd20-9a2b5f35191d` | `77d3c5fda5ef2dfd0c138e6520f76d450a04fe812fcefabac07e2673fcd2e425` | pending | Sat Aug 8, 14:00 CEST |
+| 14 | QM5_10939/GBPUSD | `debf9533-f319-5b05-8c89-9747bba7e6bc` | `486b1690c74ce2ef07b9983b4e19eb4c3caf165b9369fcef7e31b9f00e07720b` | active T3 | Sat Aug 8, 14:00 CEST |
+| 15 | QM5_10911/GDAXI | `f6d2536f-5992-57e8-be64-b390ecd4d161` | `1644fcbbab3a3c83e3d43923eed204daf4c3b477472c88eb68669985de4652ae` | pending | Sat Aug 8 evening |
+| 16 | QM5_10706/GBPUSD | `831d40fb-9602-5f05-9e44-0f535560b39b` | `7b287687119ea75a70782ea29569696ab0ab889835b3caa73d5e539d0ff72d72` | pending | Sat Aug 8 evening |
+| 17 | QM5_10440/NDX | `8f2a0a29-f8fd-57ad-a180-2b732a418eb9` | `81d796709dc83b2a4b5d2e8c4030a751876a8df34dc45cafd2d720dfae10278b` | pending | Sat Aug 8 evening |
+
+The two completed rows authenticated their staged binaries before and after
+execution. QM5_10919 aggregate SHA-256 is
+`b75da5ade64c9f20b0457eabbe789e8b9fc5397ad445c45ff92508190abf8379`;
+QM5_11132 aggregate SHA-256 is
+`9a0f7b4fd40db5211a77af21d38c23aed14ba6090de813ef2e139a610b873357`.
+Both remain `REVIEW_REQUIRED`; no admission or economic claim is inferred.
+
+QM5_10939 needs an explicit byte-identity note. Its generation-2 receipt and
+active T3 staging bind the first 0/0 current-source build,
+`486b1690c74ce2ef07b9983b4e19eb4c3caf165b9369fcef7e31b9f00e07720b`.
+After a concurrent pump restored the canonical file, the same refreshed MQ5
+was restored and recompiled 0/0; MetaEditor emitted canonical EX5
+`812fc52a90f0dba0282aa2fecb3a0b3640c18386ac3e2ab7e3b80765a3970278`.
+The diagnostic continues with its immutable, already-authenticated first
+build; Phase C binds the later canonical bytes. Neither binding is rewritten.
+
+The targets above are scheduling estimates, not completion promises. A
+fail-closed evidence, calendar, capacity, or binary refusal supersedes them.
+
+### Phase C — current-generation Q02-to-Q08 requalification
+
+The 24-sleeve live manifest was reconciled by exact EA, logical symbol, and
+current canonical EX5. Receipt:
+`D:\QM\strategy_farm\artifacts\live_book_full_refresh_20260805\b84011f2-7a2e-463e-a296-df4b20546013\phase_c_enqueue_receipt.json`,
+SHA-256
+`c1360693b46957f8fddd5ee4f16faacf2d86f22134dbf2c335f802b4f32bceb8`.
+The source manifest is
+`D:\QM\reports\portfolio\portfolio_manifest_live_24sleeve_20260724.json`,
+SHA-256
+`8c719b080e18d30d83432f0999d694f699f2859cef72c0ce7738631fb084eab6`.
+
+Only QM5_13301/GDAXI had an exact current-build Q08 PASS and was preserved.
+Nineteen append-only Q02 rows were created, and QM5_13128 resumed its current
+chain at the first missing phase, Q07. At `2026-08-05T17:21Z`, all 19 Q02 rows
+and the one Q07 row remained pending; no verdict is claimed. Each enqueued row
+has an expected EX5 hash equal to the canonical EX5 recorded in the receipt.
+
+| Rank | Sleeve | Gate generation | Action / work item |
+|---:|---|---|---|
+| 1 | QM5_13301/GDAXI | exact current Q08 PASS | kept; no enqueue (`4dcaab4d-06ad-4b23-ace8-ddc557e034b8`) |
+| 2 | QM5_13213/USDJPY | Q08 PASS absent | Q02 `6d58f343-d5b6-44f8-a35a-9a76990a87ca` |
+| 3 | QM5_1567/EURUSD | Q08 PASS absent | Q02 `e460e02b-e940-49fa-ace0-e2b9c853e7d6` |
+| 4 | QM5_10919/XTIUSD | Q08 PASS absent | Q02 `5dfddaa3-577a-472f-a1cf-86a144b0d694` |
+| 5 | QM5_11165/AUDCAD | Q08 PASS absent | Q02 `d8d1bd76-b9a1-444b-b6d9-3c51ffadd290` |
+| 6 | QM5_12778/AUDUSD-EURJPY basket | Q08 PASS absent | Q02 `462e2f78-8589-48eb-8bca-25c804b67bf8` |
+| 7 | QM5_11421/AUDUSD | Q08 PASS absent | Q02 `c39df27f-a9c1-409d-a898-5a9350197d5f` |
+| 8 | QM5_11165/EURUSD | Q08 PASS absent | Q02 `3a7550e9-4e09-4b9d-a652-fc3f7a4bfcb8` |
+| 9 | QM5_11421/EURUSD | pre-refresh Q08 PASS | Q02 `eb8c046b-19ca-4867-8d85-f88aacd08a13` |
+| 10 | QM5_11708/EURUSD | Q08 PASS absent | Q02 `8ebdc710-e2b3-4bed-a4b5-4fd9da6a4470` |
+| 11 | QM5_10706/GBPUSD | Q08 PASS absent | Q02 `89ab3816-8428-4233-9446-36be8bf31251` |
+| 12 | QM5_10939/GBPUSD | Q08 PASS absent | Q02 `ef8c152b-eb5b-4a3a-9801-ece65e833b1f` |
+| 13 | QM5_10911/GDAXI | pre-refresh Q08 PASS | Q02 `893458b6-e143-4ef8-8550-903599ee32e5` |
+| 14 | QM5_13128/NDX | current Q06, Q08 PASS absent | resume Q07 `e823ce10-dffe-48bd-b895-e96fce43d856` |
+| 15 | QM5_10440/NDX | Q08 PASS absent | Q02 `81266750-d7d7-446f-91e1-6eb95bb0e62f` |
+| 16 | QM5_11132/SP500 | Q08 PASS absent | Q02 `4bbb2c32-08da-4696-9063-e6e8332607fb` |
+| 17 | QM5_12969/USDJPY | Q08 PASS absent | Q02 `27a43902-90b1-4581-8c91-a911332cf4a8` |
+| 18 | QM5_10403/XAUUSD | Q08 PASS absent | **refused: Phase-A raw-series build gate** |
+| 19 | QM5_10513/XAUUSD | Q08 PASS absent | **refused: Phase-A raw-series build gate** |
+| 20 | QM5_12567/XAUUSD | pre-refresh Q08 PASS | Q02 `0a88a559-17a5-4a22-a195-7a8d534e1fa1` |
+| 21 | QM5_12989/XAUUSD | Q08 PASS absent | **refused: source row resolves to noncanonical agent worktree** |
+| 22 | QM5_1556/XAUUSD | Q08 PASS absent | Q02 `37d54224-d182-4082-ba60-b32a2086e5c1` |
+| 23 | QM5_12567/XNGUSD | Q08 PASS absent | Q02 `46885308-0ea5-4408-90c9-2f716c37f433` |
+| 24 | QM5_13117/EURGBP-AUDJPY basket | Q08 PASS absent | Q02 `f56d3034-abfe-4337-a103-1a85a50ad208` |
+
+QM5_12989's guarded seeder refused source work item
+`e5ef7795-d116-4f34-9841-4c6f012f3cc2` because its execution binding resolves
+to `C:\QM\worktrees\codex-orchestration-1`, not canonical
+`C:\QM\repo`. The binding was not bypassed and the database was not manually
+rewritten. The row can be seeded only after the governing source lineage is
+reconciled to the canonical directory.
+
+Protected QM5_11422 and QM5_13036 work was not altered or displaced. At the
+closing check neither EA had an active row; their preceding work remained in
+its own durable terminal state. Phase C rows are ordinary append-only pipeline
+work and may honestly pass, fail, or refuse as their Q evidence warrants.
+
+### Addendum verification and review boundary
+
+- Final target-source diff: 12 accepted instrumentation/SPEC refreshes; two
+  refused MQ5 and EX5 files exactly equal the pre-cycle canonical hashes.
+- Strict build gate: 12 PASS, two explicit performance refusals; all 12
+  accepted MetaEditor logs report 0 errors and 0 warnings.
+- Q09 implementation check: `py_compile` PASS and **9 focused tests passed**.
+  The integration case proves append-only v2 lineage, fresh-build preference,
+  immutable/idempotent enqueue behavior, cap/terminal restrictions, risk and
+  stale guardrails, and zero canonical Q09 rows.
+- Generation-2 snapshot: 15 rows, 600 sealed cells, 2 done/REVIEW_REQUIRED,
+  4 active, 9 pending, 0 canonical Q09 rows.
+- Phase-C receipt: 24 sleeves reconciled; 20 ordinary rows enqueued, one exact
+  current Q08 PASS retained, two build refusals, one noncanonical-source
+  refusal.
+- Safety receipt: append-only; T_Live not mutated; AutoTrading not toggled;
+  no manual terminal launch; no protected test interrupted.
+
+The implementation and enqueue work is complete to the limits of the guarded
+build and source-lineage contracts. Claude review is required before any
+acceptance decision; ongoing Q09 diagnostics and Q02-to-Q08 cascades retain
+their own evidence-derived terminal states.

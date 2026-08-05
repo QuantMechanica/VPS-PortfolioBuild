@@ -467,6 +467,11 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any per-tick guard can
+   // return. The kill-switch retains a compatibility fallback, but current V5
+   // builds keep this explicit first-statement hook.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 

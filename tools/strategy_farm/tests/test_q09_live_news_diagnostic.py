@@ -481,6 +481,156 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
         self.assertNotIn("launch_not_before_utc", rerun_payload)
         self.assertEqual(canonical_count, 0)
 
+    def test_fresh_build_rerun_is_append_only_hash_bound_and_idempotent(self) -> None:
+        artifact_root = self.root / "campaign"
+        source_anchor = json.loads(self.anchor.read_text(encoding="utf-8"))
+        source_anchor.update({
+            "diagnostic_include_assessment": {
+                "path": str(self.includes.resolve()),
+                "sha256": contract.sha256_file(self.includes),
+            },
+            "live_source_preset": {
+                "path": str(self.setfile.resolve()),
+                "sha256": contract.sha256_file(self.setfile),
+                "read_only": True,
+            },
+            "derived_baseline": {
+                "source_path": str(self.setfile.resolve()),
+                "source_sha256": contract.sha256_file(self.setfile),
+                "derived_path": str(self.setfile.resolve()),
+                "derived_sha256": contract.sha256_file(self.setfile),
+            },
+        })
+        self.anchor.write_bytes(contract.canonical_json_bytes(source_anchor))
+        campaign = {
+            "schema_version": "q09-live-news-backfill-plan/v1",
+            "campaign_id": backfill.CAMPAIGN_ID,
+            "diagnostic_non_admission": True,
+            "sleeves": [{
+                "rank": 1,
+                "ea_id": "QM5_9999",
+                "symbol": "EURUSD.DWX",
+                "period": "H1",
+                "weight": 0.75,
+                "work_item_id": self.work_item_id,
+                "anchor_path": str(self.anchor.resolve()),
+                "anchor_sha256": contract.sha256_file(self.anchor),
+                "baseline_setfile_path": str(self.setfile.resolve()),
+                "baseline_setfile_sha256": contract.sha256_file(self.setfile),
+                "deployed_ex5_path": str(self.ex5.resolve()),
+                "deployed_ex5_sha256": contract.sha256_file(self.ex5),
+            }],
+        }
+        artifact_root.mkdir(parents=True)
+        (artifact_root / "campaign_plan.json").write_bytes(
+            contract.canonical_json_bytes(campaign)
+        )
+        with farmctl.connect(self.farm) as connection:
+            row = connection.execute(
+                "SELECT payload_json FROM work_items WHERE id=?", (self.work_item_id,)
+            ).fetchone()
+            payload = json.loads(row["payload_json"])
+            payload.update({
+                "diagnostic_campaign_id": backfill.CAMPAIGN_ID,
+                "diagnostic_non_admission": True,
+            })
+            connection.execute(
+                "UPDATE work_items SET status='done',verdict='REVIEW_REQUIRED',payload_json=? "
+                "WHERE id=?",
+                (json.dumps(payload, sort_keys=True), self.work_item_id),
+            )
+            connection.commit()
+
+        repo = self.root / "repo"
+        ea_dir = repo / "framework" / "EAs" / "QM5_9999_live"
+        include_dir = repo / "framework" / "include" / "QM"
+        ea_dir.mkdir(parents=True)
+        include_dir.mkdir(parents=True)
+        fresh_ex5 = ea_dir / "QM5_9999_live.ex5"
+        fresh_ex5.write_bytes(b"fresh-current-build")
+        fresh_mq5 = ea_dir / "QM5_9999_live.mq5"
+        fresh_mq5.write_text(
+            "input QM_NewsTemporalMode qm_news_temporal = QM_NEWS_TEMPORAL_PRE30_POST30;\n"
+            "input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;\n"
+            "input int qm_news_stale_max_hours = 336;\n"
+            "input string qm_news_min_impact = \"high\";\n"
+            "void OnTick()\n{\n"
+            "  // current V5 evidence hook\n"
+            "  QM_FrameworkTrackOpenPositionMae();\n"
+            "  if(!QM_KillSwitchCheck()) return;\n"
+            "}\n",
+            encoding="utf-8",
+        )
+        (include_dir / "QM_Common.mqh").write_text("// common\n", encoding="utf-8")
+        (include_dir / "QM_NewsFilter.mqh").write_text("// news\n", encoding="utf-8")
+
+        task_id = "router-fresh-build-1"
+        fresh_hash = contract.sha256_file(fresh_ex5)
+        patches = (
+            mock.patch.object(backfill, "ARTIFACT_ROOT", artifact_root),
+            mock.patch.object(backfill, "FARM_ROOT", self.farm),
+            mock.patch.object(backfill, "CALENDAR_MANIFEST", self.calendar_manifest),
+            mock.patch.object(
+                backfill, "CALENDAR_COMMON_PATH", "QM/q09_news/test/events.csv"
+            ),
+            mock.patch.object(backfill, "REPO_ROOT", repo),
+        )
+        with patches[0], patches[1], patches[2], patches[3], patches[4]:
+            receipt = backfill.enqueue_fresh_build_reruns(
+                task_id=task_id,
+                ea_id="QM5_9999",
+                fresh_ex5_path=fresh_ex5,
+                expected_fresh_ex5_sha256=fresh_hash,
+            )
+            repeated = backfill.enqueue_fresh_build_reruns(
+                task_id=task_id,
+                ea_id="QM5_9999",
+                fresh_ex5_path=fresh_ex5,
+                expected_fresh_ex5_sha256=fresh_hash,
+            )
+
+        self.assertEqual(receipt["sleeve_count"], 1)
+        self.assertEqual(receipt["fresh_ex5_sha256"], fresh_hash)
+        self.assertTrue(repeated["idempotent"])
+        expected_id = backfill.fresh_build_rerun_id(
+            self.work_item_id, task_id, fresh_hash
+        )
+        self.assertEqual(receipt["work_item_ids"], [expected_id])
+        with farmctl.connect(self.farm) as connection:
+            predecessor = connection.execute(
+                "SELECT status,verdict FROM work_items WHERE id=?", (self.work_item_id,)
+            ).fetchone()
+            reruns = connection.execute(
+                "SELECT id,status,parent_task_id,payload_json FROM work_items WHERE id=?",
+                (expected_id,),
+            ).fetchall()
+            canonical_count = connection.execute(
+                "SELECT count(*) FROM q09_news_tests WHERE work_item_id IN (?,?)",
+                (self.work_item_id, expected_id),
+            ).fetchone()[0]
+        self.assertEqual((predecessor["status"], predecessor["verdict"]),
+                         ("done", "REVIEW_REQUIRED"))
+        self.assertEqual(len(reruns), 1)
+        self.assertEqual(reruns[0]["status"], "pending")
+        self.assertEqual(reruns[0]["parent_task_id"], self.work_item_id)
+        rerun_payload = json.loads(reruns[0]["payload_json"])
+        self.assertEqual(rerun_payload["diagnostic_generation"], 2)
+        self.assertEqual(rerun_payload["diagnostic_queue_rank"], -99)
+        self.assertEqual(rerun_payload["staged_ex5_sha256"], fresh_hash)
+        self.assertEqual(rerun_payload["rerun_of"], self.work_item_id)
+        self.assertEqual(
+            set(rerun_payload["avoid_terminals"]),
+            {"T6", "T7", "T8", "T9", "T10"},
+        )
+        anchor_path = Path(rerun_payload["diagnostic_anchor_path"])
+        fresh_anchor = json.loads(anchor_path.read_text(encoding="utf-8"))
+        self.assertEqual(fresh_anchor["fresh_build_ex5"]["sha256"], fresh_hash)
+        self.assertEqual(
+            fresh_anchor["deployed_ex5"]["sha256"], contract.sha256_file(self.ex5)
+        )
+        self.assertEqual(fresh_anchor["baseline_run"]["baseline_ex5_sha256"], fresh_hash)
+        self.assertEqual(canonical_count, 0)
+
 
 if __name__ == "__main__":
     unittest.main()

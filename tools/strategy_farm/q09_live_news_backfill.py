@@ -3,8 +3,9 @@
 
 This lane deliberately reuses the sealed Q09 7x1 execution machinery while
 remaining outside canonical Q09 admission storage.  It reads T_Live artifacts,
-never modifies them, stages the exact deployed EX5 through the resident terminal
-worker, and constrains execution to T1-T5.
+never modifies them, stages either the exact deployed EX5 or an explicitly
+hash-bound current rebuild through the resident terminal worker, and constrains
+execution to T1-T5.
 """
 
 from __future__ import annotations
@@ -52,6 +53,8 @@ AVOID_TERMINALS = ("T6", "T7", "T8", "T9", "T10")
 INDEX_SYMBOLS = frozenset({"NDX", "SP500", "GDAXI"})
 NEWS_SCOPING_FIX_UTC = datetime(2026, 7, 5, 11, 43, tzinfo=timezone.utc)
 SYMBOL_SLOT_CONSTRUCTOR_FIX_UTC = datetime(2026, 7, 6, 12, 7, tzinfo=timezone.utc)
+FRESH_BUILD_GENERATION = 2
+FRESH_BUILD_QUEUE_OFFSET = -100
 
 
 @dataclass(frozen=True)
@@ -849,6 +852,518 @@ def enqueue_append_only_rerun(
     }
 
 
+def fresh_build_rerun_id(
+    predecessor_id: str,
+    task_id: str,
+    fresh_ex5_sha256: str,
+) -> str:
+    """Return the stable identity for one generation-2 fresh-build diagnostic."""
+
+    return str(uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        (
+            f"quantmechanica:{CAMPAIGN_ID}:fresh-v2:{predecessor_id}:"
+            f"{task_id}:{fresh_ex5_sha256.lower()}"
+        ),
+    ))
+
+
+def _fresh_build_source_assessment(ex5_path: Path, ea_id: str) -> dict[str, Any]:
+    """Authenticate the narrow current-V5 source refresh behind a fresh EX5."""
+
+    if not ex5_path.is_file() or ex5_path.suffix.lower() != ".ex5":
+        raise BackfillError(f"fresh EX5 is missing: {ex5_path}")
+    if not ex5_path.stem.startswith(f"{ea_id}_"):
+        raise BackfillError(
+            f"fresh EX5 label {ex5_path.stem!r} does not match {ea_id}"
+        )
+    mq5_path = ea_source_for(ex5_path)
+    text = mq5_path.read_text(encoding="utf-8-sig", errors="strict")
+    first_statement = re.search(
+        r"void\s+OnTick\s*\(\s*\)\s*\{\s*"
+        r"(?:(?://[^\r\n]*(?:\r?\n|$))\s*)*"
+        r"QM_FrameworkTrackOpenPositionMae\s*\(\s*\)\s*;",
+        text,
+    )
+    if first_statement is None:
+        raise BackfillError(
+            f"{ea_id}: QM_FrameworkTrackOpenPositionMae is not the first OnTick statement"
+        )
+    if len(re.findall(r"QM_FrameworkTrackOpenPositionMae\s*\(", text)) != 1:
+        raise BackfillError(f"{ea_id}: Q08 MAE hook count is not exactly one")
+    for declaration in (
+        r"input\s+QM_NewsTemporalMode\s+qm_news_temporal\b",
+        r"input\s+QM_NewsComplianceProfile\s+qm_news_compliance\b",
+        r"input\s+string\s+qm_news_min_impact\b",
+    ):
+        if re.search(declaration, text) is None:
+            raise BackfillError(f"{ea_id}: current two-axis news interface is incomplete")
+    stale_match = re.search(
+        r"input\s+int\s+qm_news_stale_max_hours\s*=\s*(\d+)\s*;",
+        text,
+    )
+    if stale_match is None:
+        raise BackfillError(f"{ea_id}: fail-closed news stale ceiling is missing")
+    stale_hours = int(stale_match.group(1))
+    if stale_hours < 1 or stale_hours > 336:
+        raise BackfillError(f"{ea_id}: news stale ceiling violates the 336-hour guardrail")
+    return {
+        "mq5_path": str(mq5_path),
+        "mq5_sha256": sha256_file(mq5_path),
+        "ex5_path": str(ex5_path.resolve()),
+        "ex5_sha256": sha256_file(ex5_path),
+        "ex5_mtime_utc": datetime.fromtimestamp(
+            ex5_path.stat().st_mtime, timezone.utc
+        ).isoformat(),
+        "q08_mae_first_statement": True,
+        "q08_mae_hook_count": 1,
+        "news_temporal_input": True,
+        "news_compliance_input": True,
+        "news_stale_max_hours": stale_hours,
+        "strategy_mechanics_change": "NONE; instrumentation-only source delta",
+    }
+
+
+def _verify_refresh_source_contract(source: dict[str, Any]) -> tuple[dict[str, Any], Path]:
+    source_anchor_path = Path(str(source["anchor_path"])).resolve()
+    if sha256_file(source_anchor_path) != str(source["anchor_sha256"]).lower():
+        raise BackfillError("generation-1 diagnostic anchor hash changed")
+    anchor = json.loads(source_anchor_path.read_text(encoding="utf-8"))
+    predecessor_id = str(source["work_item_id"])
+    if (
+        anchor.get("schema_version") != q09.DIAGNOSTIC_ANCHOR_SCHEMA
+        or anchor.get("diagnostic_contract") != q09.DIAGNOSTIC_CONTRACT
+        or anchor.get("diagnostic_non_admission") is not True
+        or str(anchor.get("work_item_id")) != predecessor_id
+    ):
+        raise BackfillError("generation-1 diagnostic anchor is contradictory")
+
+    baseline_path = Path(str(source["baseline_setfile_path"])).resolve()
+    if sha256_file(baseline_path) != str(source["baseline_setfile_sha256"]).lower():
+        raise BackfillError("sealed live-derived diagnostic baseline changed")
+    baseline_values = q09._setfile_values(baseline_path)
+    try:
+        risk_fixed = float(baseline_values.get("risk_fixed", "nan"))
+        risk_percent = float(baseline_values.get("risk_percent", "nan"))
+        stale_hours = int(baseline_values.get("qm_news_stale_max_hours", "-1"))
+    except ValueError as exc:
+        raise BackfillError("sealed diagnostic baseline has invalid guardrail values") from exc
+    if risk_fixed <= 0 or risk_percent != 0 or not 1 <= stale_hours <= 336:
+        raise BackfillError("sealed diagnostic baseline violates risk/news guardrails")
+    if (
+        baseline_values.get("qm_filter_news_enabled") != "0"
+        or baseline_values.get("qm_filter_news_mode") != "0"
+    ):
+        raise BackfillError("sealed diagnostic control does not neutralize legacy news inputs")
+
+    live_preset = anchor.get("live_source_preset") or {}
+    live_preset_path = Path(str(live_preset.get("path") or "")).resolve()
+    live_preset_hash = str(live_preset.get("sha256") or "").lower()
+    if not live_preset.get("read_only") or sha256_file(live_preset_path) != live_preset_hash:
+        raise BackfillError("read-only live-preset identity changed")
+    derived = anchor.get("derived_baseline") or {}
+    if (
+        Path(str(derived.get("source_path") or "")).resolve() != live_preset_path
+        or str(derived.get("source_sha256") or "").lower() != live_preset_hash
+        or Path(str(derived.get("derived_path") or "")).resolve() != baseline_path
+        or str(derived.get("derived_sha256") or "").lower()
+        != sha256_file(baseline_path)
+    ):
+        raise BackfillError("live-preset to diagnostic-baseline lineage is contradictory")
+    return anchor, baseline_path
+
+
+def _enqueue_fresh_build_rerun(
+    *,
+    task_id: str,
+    source: dict[str, Any],
+    fresh_ex5_path: Path,
+    source_assessment: dict[str, Any],
+) -> dict[str, Any]:
+    predecessor_id = str(source["work_item_id"])
+    fresh_ex5_sha256 = str(source_assessment["ex5_sha256"])
+    new_id = fresh_build_rerun_id(predecessor_id, task_id, fresh_ex5_sha256)
+    rerun_root = ARTIFACT_ROOT / "refresh_v2" / new_id
+    receipt_path = rerun_root / "enqueue_receipt.json"
+    if receipt_path.is_file():
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        if (
+            receipt.get("work_item_id") != new_id
+            or receipt.get("rerun_of") != predecessor_id
+            or receipt.get("fresh_ex5_sha256") != fresh_ex5_sha256
+        ):
+            raise BackfillError(f"fresh-build receipt contradicts request: {receipt_path}")
+        return {
+            **receipt,
+            "receipt_path": str(receipt_path.resolve()),
+            "receipt_sha256": sha256_file(receipt_path),
+            "idempotent": True,
+        }
+
+    source_anchor, baseline_path = _verify_refresh_source_contract(source)
+    source_anchor_path = Path(str(source["anchor_path"])).resolve()
+    include_path = REPO_ROOT / "framework" / "include" / "QM" / "QM_NewsFilter.mqh"
+    common_path = REPO_ROOT / "framework" / "include" / "QM" / "QM_Common.mqh"
+    if not include_path.is_file() or not common_path.is_file():
+        raise BackfillError("current framework include closure is incomplete")
+
+    closure_path = rerun_root / "diagnostic_include_assessment.json"
+    closure = {
+        "schema_version": "q09-live-news-diagnostic-include-assessment/v2",
+        "diagnostic_non_admission": True,
+        "diagnostic_generation": FRESH_BUILD_GENERATION,
+        "ea_id": source["ea_id"],
+        "symbol": source["symbol"],
+        "fresh_build_ex5": {
+            "path": str(fresh_ex5_path.resolve()),
+            "sha256": fresh_ex5_sha256,
+        },
+        "current_ea_source": {
+            "path": source_assessment["mq5_path"],
+            "sha256": source_assessment["mq5_sha256"],
+        },
+        "framework_common": {
+            "path": str(common_path.resolve()),
+            "sha256": sha256_file(common_path),
+        },
+        "framework_news_filter": {
+            "path": str(include_path.resolve()),
+            "sha256": sha256_file(include_path),
+            "index_scoping_fix_commit": "89963ff75",
+        },
+        "source_anchor": {
+            "path": str(source_anchor_path),
+            "sha256": sha256_file(source_anchor_path),
+        },
+        "source_assessment": source_assessment,
+    }
+    write_immutable(closure_path, canonical_bytes(closure))
+
+    anchor = json.loads(json.dumps(source_anchor))
+    anchor_id = (
+        f"diagnostic-anchor:{CAMPAIGN_ID}:fresh-v2:"
+        f"{source['ea_id']}/{str(source['symbol']).split('.', 1)[0]}:"
+        f"{fresh_ex5_sha256[:16]}"
+    )
+    anchor.update({
+        "router_task_id": task_id,
+        "anchor_id": anchor_id,
+        "work_item_id": new_id,
+        "rerun_of": predecessor_id,
+        "diagnostic_generation": FRESH_BUILD_GENERATION,
+        "queue_rank": int(source["rank"]),
+        "fresh_build_ex5": {
+            "path": str(fresh_ex5_path.resolve()),
+            "sha256": fresh_ex5_sha256,
+            "role": "current framework rebuild; not a live deployment mutation",
+        },
+        "source_anchor": {
+            "path": str(source_anchor_path),
+            "sha256": sha256_file(source_anchor_path),
+        },
+        "source_assessment": source_assessment,
+        "loaded_chart_evidence_status": (
+            "NOT_RUNTIME_AUTHORITY; live-preset bytes supply strategy parameters "
+            "and the fresh canonical EX5 supplies executable identity"
+        ),
+        "diagnostic_include_assessment": {
+            "path": str(closure_path.resolve()),
+            "sha256": sha256_file(closure_path),
+        },
+    })
+    anchor["baseline_run"]["baseline_ex5_sha256"] = fresh_ex5_sha256
+    anchor_path = rerun_root / "diagnostic_anchor.json"
+    write_immutable(anchor_path, canonical_bytes(anchor))
+
+    plan = q09.build_run_plan(
+        work_item_id=new_id,
+        candidate_lineage_key=sha256_file(anchor_path),
+        deployment_target="DXZ",
+        q08_work_item_id=anchor_id,
+        q08_evidence_path=anchor_path,
+        baseline_setfile_path=baseline_path,
+        ex5_path=fresh_ex5_path,
+        include_closure_path=closure_path,
+        calendar_manifest_path=CALENDAR_MANIFEST,
+        calendar_common_relative_path=CALENDAR_COMMON_PATH,
+        full_from_utc="2019-01-01T00:00:00Z",
+        full_to_utc="2025-12-31T23:59:59Z",
+        selection_from_utc="2019-01-01T00:00:00Z",
+        selection_to_utc="2023-12-31T23:59:59Z",
+        holdout_from_utc="2024-01-01T00:00:00Z",
+        holdout_to_utc="2025-12-31T23:59:59Z",
+        complete_months=60,
+        holdout_complete_months=24,
+        tester_model="REAL_TICKS",
+        cost_profile="DXZ_CANONICAL_REAL_TICKS_V1",
+        output_root=rerun_root / "q09_plan",
+    )
+    if int(plan.get("cell_count") or 0) != 40:
+        raise BackfillError("fresh-build rerun plan is not the sealed 40-cell matrix")
+    plan_path = Path(str(plan["plan_path"])).resolve()
+    plan_file_sha256 = sha256_file(plan_path)
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    payload = {
+        "diagnostic_non_admission": True,
+        "diagnostic_contract": q09.DIAGNOSTIC_CONTRACT,
+        "diagnostic_campaign_id": CAMPAIGN_ID,
+        "diagnostic_generation": FRESH_BUILD_GENERATION,
+        "diagnostic_queue_rank": int(source["rank"]) + FRESH_BUILD_QUEUE_OFFSET,
+        "diagnostic_source_rank": int(source["rank"]),
+        "diagnostic_live_weight": source.get("weight"),
+        "diagnostic_anchor_path": str(anchor_path),
+        "diagnostic_anchor_sha256": sha256_file(anchor_path),
+        "diagnostic_control": "legacy_and_two_axis_news_inputs_neutralized",
+        "priority_track": True,
+        "host_symbol": source["symbol"],
+        "host_timeframe": source["period"],
+        "risk_fixed": 1000.0,
+        "risk_percent": 0.0,
+        "staged_ex5_path": str(fresh_ex5_path.resolve()),
+        "staged_ex5_sha256": fresh_ex5_sha256,
+        "fresh_build_source_path": source_assessment["mq5_path"],
+        "fresh_build_source_sha256": source_assessment["mq5_sha256"],
+        "avoid_terminals": list(AVOID_TERMINALS),
+        "diagnostic_allowed_terminals": list(ALLOWED_TERMINALS),
+        "diagnostic_concurrency_cap": 5,
+        "protected_chain_exclusion": [
+            "9fabcddb-8c2e-4b01-9295-4ef4dbb6892d", "Q09_PORTFOLIO", "Q10"
+        ],
+        "router_task_id": task_id,
+        "rerun_of": predecessor_id,
+    }
+    inserted = False
+    with farmctl.connect(FARM_ROOT) as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        predecessor = connection.execute(
+            "SELECT ea_id,symbol,status,verdict,payload_json FROM work_items WHERE id=?",
+            (predecessor_id,),
+        ).fetchone()
+        if predecessor is None:
+            raise BackfillError("fresh-build predecessor does not exist")
+        predecessor_payload = json.loads(predecessor["payload_json"] or "{}")
+        if (
+            predecessor["ea_id"] != source["ea_id"]
+            or predecessor["symbol"] != source["symbol"]
+            or predecessor_payload.get("diagnostic_campaign_id") != CAMPAIGN_ID
+            or predecessor_payload.get("diagnostic_non_admission") is not True
+        ):
+            raise BackfillError("fresh-build predecessor is not the sealed campaign sleeve")
+        if connection.execute(
+            "SELECT 1 FROM q09_news_tests WHERE work_item_id IN (?,?) LIMIT 1",
+            (predecessor_id, new_id),
+        ).fetchone() is not None:
+            raise BackfillError("fresh-build diagnostic conflicts with canonical Q09 evidence")
+        existing = connection.execute(
+            "SELECT status,claimed_by,payload_json,created_at FROM work_items WHERE id=?",
+            (new_id,),
+        ).fetchone()
+        if existing is None:
+            connection.execute(
+                """
+                INSERT INTO work_items(
+                    id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                    attempt_count,parent_task_id,evidence_path,claimed_by,
+                    payload_json,created_at,updated_at
+                ) VALUES(?, 'backtest', 'Q09_NEWS', ?, ?, ?, 'pending', NULL,
+                         0, ?, NULL, NULL, ?, ?, ?)
+                """,
+                (
+                    new_id, source["ea_id"], source["symbol"], str(baseline_path),
+                    predecessor_id, json.dumps(payload, sort_keys=True), now_iso, now_iso,
+                ),
+            )
+            created_at = now_iso
+            row_status = "pending"
+            row_payload = payload
+            inserted = True
+        else:
+            row_payload = json.loads(existing["payload_json"] or "{}")
+            if (
+                row_payload.get("diagnostic_generation") != FRESH_BUILD_GENERATION
+                or row_payload.get("rerun_of") != predecessor_id
+                or row_payload.get("staged_ex5_sha256") != fresh_ex5_sha256
+            ):
+                raise BackfillError("existing fresh-build row contradicts sealed identities")
+            created_at = str(existing["created_at"])
+            row_status = str(existing["status"])
+        connection.commit()
+
+    if row_status == "pending" and not row_payload.get("q09_binding_version"):
+        bound = q09.bind_diagnostic_plan_to_work_item(
+            FARM_ROOT,
+            work_item_id=new_id,
+            plan_path=plan_path,
+            expected_plan_file_sha256=plan_file_sha256,
+            cell_timeout_sec=q09.DEFAULT_CELL_TIMEOUT_SEC,
+        )
+    elif row_payload.get("q09_binding_version"):
+        bound = {
+            "bound": True,
+            "work_item_id": new_id,
+            "plan_path": row_payload.get("q09_run_plan_path"),
+            "plan_file_sha256": row_payload.get("q09_run_plan_file_sha256"),
+            "plan_sha256": row_payload.get("q09_run_plan_sha256"),
+            "cell_count": row_payload.get("q09_cell_count"),
+            "dispatch_binding_sha256": row_payload.get("q09_dispatch_binding_sha256"),
+            "idempotent": True,
+        }
+    else:
+        raise BackfillError(
+            f"existing fresh-build row is {row_status} without a dispatch binding"
+        )
+
+    receipt = {
+        "schema_version": "q09-live-news-fresh-build-rerun-receipt/v2",
+        "campaign_id": CAMPAIGN_ID,
+        "diagnostic_non_admission": True,
+        "diagnostic_generation": FRESH_BUILD_GENERATION,
+        "router_task_id": task_id,
+        "work_item_id": new_id,
+        "rerun_of": predecessor_id,
+        "status": row_status,
+        "inserted": inserted,
+        "source_rank": int(source["rank"]),
+        "queue_rank": int(source["rank"]) + FRESH_BUILD_QUEUE_OFFSET,
+        "allowed_terminals": list(ALLOWED_TERMINALS),
+        "avoided_terminals": list(AVOID_TERMINALS),
+        "baseline_setfile_path": str(baseline_path),
+        "baseline_setfile_sha256": sha256_file(baseline_path),
+        "live_preset_path": str((source_anchor.get("live_source_preset") or {})["path"]),
+        "live_preset_sha256": str((source_anchor.get("live_source_preset") or {})["sha256"]),
+        "fresh_ex5_path": str(fresh_ex5_path.resolve()),
+        "fresh_ex5_sha256": fresh_ex5_sha256,
+        "fresh_mq5_path": source_assessment["mq5_path"],
+        "fresh_mq5_sha256": source_assessment["mq5_sha256"],
+        "calendar_manifest_path": str(CALENDAR_MANIFEST.resolve()),
+        "calendar_manifest_sha256": sha256_file(CALENDAR_MANIFEST),
+        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "source_anchor_path": str(source_anchor_path),
+        "source_anchor_sha256": sha256_file(source_anchor_path),
+        "anchor_path": str(anchor_path),
+        "anchor_sha256": sha256_file(anchor_path),
+        "plan_path": str(plan_path),
+        "plan_file_sha256": plan_file_sha256,
+        "plan_sha256": plan["plan_sha256"],
+        "input_manifest_sha256": plan["input_manifest_sha256"],
+        "cell_count": 40,
+        "seeds": list(contract.SEEDS),
+        "enqueued_at_utc": created_at,
+        "binding": bound,
+    }
+    write_immutable(receipt_path, canonical_bytes(receipt))
+    return {
+        **receipt,
+        "receipt_path": str(receipt_path.resolve()),
+        "receipt_sha256": sha256_file(receipt_path),
+    }
+
+
+def enqueue_fresh_build_reruns(
+    *,
+    task_id: str,
+    ea_id: str,
+    fresh_ex5_path: str | Path,
+    expected_fresh_ex5_sha256: str,
+) -> dict[str, Any]:
+    """Append generation-2 diagnostics for every campaign sleeve of one rebuilt EA."""
+
+    task_id = task_id.strip()
+    ea_id = ea_id.strip().upper()
+    expected_hash = expected_fresh_ex5_sha256.strip().lower()
+    if not task_id or not re.fullmatch(r"QM5_\d+", ea_id):
+        raise BackfillError("router task id and canonical QM5 EA id are required")
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_hash):
+        raise BackfillError("expected fresh EX5 SHA-256 is invalid")
+    ex5_path = Path(fresh_ex5_path).resolve()
+    actual_hash = sha256_file(ex5_path)
+    if actual_hash != expected_hash:
+        raise BackfillError(
+            f"fresh EX5 SHA-256 mismatch: expected {expected_hash}, got {actual_hash}"
+        )
+    source_assessment = _fresh_build_source_assessment(ex5_path, ea_id)
+
+    campaign_path = ARTIFACT_ROOT / "campaign_plan.json"
+    if not campaign_path.is_file():
+        raise BackfillError(f"campaign plan is missing: {campaign_path}")
+    campaign = json.loads(campaign_path.read_text(encoding="utf-8"))
+    if (
+        campaign.get("schema_version") != "q09-live-news-backfill-plan/v1"
+        or campaign.get("campaign_id") != CAMPAIGN_ID
+        or campaign.get("diagnostic_non_admission") is not True
+    ):
+        raise BackfillError("campaign plan contract is missing or contradictory")
+    sources = sorted(
+        [row for row in campaign.get("sleeves", []) if row.get("ea_id") == ea_id],
+        key=lambda row: int(row["rank"]),
+    )
+    if not sources:
+        raise BackfillError(f"{ea_id} is not a sealed live-book diagnostic source")
+
+    batch_receipt_path = ARTIFACT_ROOT / "refresh_v2" / task_id / ea_id / "enqueue_receipt.json"
+    if batch_receipt_path.is_file():
+        receipt = json.loads(batch_receipt_path.read_text(encoding="utf-8"))
+        if (
+            receipt.get("ea_id") != ea_id
+            or receipt.get("fresh_ex5_sha256") != expected_hash
+            or receipt.get("router_task_id") != task_id
+        ):
+            raise BackfillError(f"fresh-build batch receipt contradicts request: {batch_receipt_path}")
+        return {
+            **receipt,
+            "receipt_path": str(batch_receipt_path.resolve()),
+            "receipt_sha256": sha256_file(batch_receipt_path),
+            "idempotent": True,
+        }
+
+    rows = [
+        _enqueue_fresh_build_rerun(
+            task_id=task_id,
+            source=source,
+            fresh_ex5_path=ex5_path,
+            source_assessment=source_assessment,
+        )
+        for source in sources
+    ]
+    receipt = {
+        "schema_version": "q09-live-news-fresh-build-batch-receipt/v2",
+        "campaign_id": CAMPAIGN_ID,
+        "diagnostic_non_admission": True,
+        "diagnostic_generation": FRESH_BUILD_GENERATION,
+        "router_task_id": task_id,
+        "ea_id": ea_id,
+        "fresh_ex5_path": str(ex5_path),
+        "fresh_ex5_sha256": expected_hash,
+        "fresh_mq5_path": source_assessment["mq5_path"],
+        "fresh_mq5_sha256": source_assessment["mq5_sha256"],
+        "sleeve_count": len(rows),
+        "work_item_ids": [row["work_item_id"] for row in rows],
+        "rerun_of": [row["rerun_of"] for row in rows],
+        "source_ranks": [row["source_rank"] for row in rows],
+        "cell_count_per_sleeve": 40,
+        "seeds": list(contract.SEEDS),
+        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "allowed_terminals": list(ALLOWED_TERMINALS),
+        "avoided_terminals": list(AVOID_TERMINALS),
+        "max_simultaneous_diagnostics": 5,
+        "receipts": [
+            {key: row[key] for key in (
+                "work_item_id", "rerun_of", "source_rank", "queue_rank",
+                "receipt_path", "receipt_sha256",
+            )}
+            for row in rows
+        ],
+        "enqueued_at_utc": datetime.now(timezone.utc).isoformat(),
+    }
+    write_immutable(batch_receipt_path, canonical_bytes(receipt))
+    return {
+        **receipt,
+        "receipt_path": str(batch_receipt_path.resolve()),
+        "receipt_sha256": sha256_file(batch_receipt_path),
+    }
+
+
 def campaign_status() -> dict[str, Any]:
     ids = [sleeve.work_item_id for sleeve in SLEEVES]
     with farmctl.connect(FARM_ROOT) as connection:
@@ -857,10 +1372,18 @@ def campaign_status() -> dict[str, Any]:
             "FROM work_items WHERE id IN (%s)" % ",".join("?" for _ in ids),
             tuple(ids),
         ).fetchall()
+        refresh_rows = connection.execute(
+            "SELECT id,ea_id,symbol,status,verdict,claimed_by,evidence_path,payload_json,updated_at "
+            "FROM work_items WHERE json_valid(payload_json)=1 "
+            "AND json_extract(payload_json,'$.diagnostic_campaign_id')=? "
+            "AND json_extract(payload_json,'$.diagnostic_generation')=?",
+            (CAMPAIGN_ID, FRESH_BUILD_GENERATION),
+        ).fetchall()
+        all_ids = ids + [str(row["id"]) for row in refresh_rows]
         canonical_rows = connection.execute(
             "SELECT work_item_id FROM q09_news_tests WHERE work_item_id IN (%s)"
-            % ",".join("?" for _ in ids),
-            tuple(ids),
+            % ",".join("?" for _ in all_ids),
+            tuple(all_ids),
         ).fetchall()
     if canonical_rows:
         raise BackfillError("diagnostic campaign polluted canonical q09_news_tests")
@@ -885,7 +1408,33 @@ def campaign_status() -> dict[str, Any]:
             "updated_at": row["updated_at"] if row else None,
         })
     active = [item for item in detail if item["status"] == "active"]
-    if len(active) > 5 or any(item["claimed_by"] not in ALLOWED_TERMINALS for item in active):
+    refresh_detail: list[dict[str, Any]] = []
+    refresh_counts: dict[str, int] = {}
+    for row in refresh_rows:
+        payload = json.loads(row["payload_json"] or "{}")
+        state = str(row["status"])
+        refresh_counts[state] = refresh_counts.get(state, 0) + 1
+        refresh_detail.append({
+            "source_rank": int(payload.get("diagnostic_source_rank") or 0),
+            "queue_rank": int(payload.get("diagnostic_queue_rank") or 0),
+            "ea_id": row["ea_id"],
+            "symbol": row["symbol"],
+            "period": payload.get("host_timeframe"),
+            "work_item_id": row["id"],
+            "rerun_of": payload.get("rerun_of"),
+            "fresh_ex5_sha256": payload.get("staged_ex5_sha256"),
+            "status": state,
+            "verdict": row["verdict"],
+            "claimed_by": row["claimed_by"],
+            "evidence_path": row["evidence_path"],
+            "updated_at": row["updated_at"],
+        })
+    refresh_detail.sort(key=lambda item: (item["source_rank"], item["work_item_id"]))
+    refresh_active = [item for item in refresh_detail if item["status"] == "active"]
+    all_active = active + refresh_active
+    if len(all_active) > 5 or any(
+        item["claimed_by"] not in ALLOWED_TERMINALS for item in all_active
+    ):
         raise BackfillError("diagnostic concurrency/terminal cap violated")
     status = {
         "schema_version": "q09-live-news-backfill-status/v1",
@@ -893,9 +1442,11 @@ def campaign_status() -> dict[str, Any]:
         "diagnostic_non_admission": True,
         "canonical_q09_rows": 0,
         "counts": counts,
-        "active_count": len(active),
+        "active_count": len(all_active),
         "max_simultaneous_diagnostics": 5,
         "sleeves": detail,
+        "refresh_v2_counts": refresh_counts,
+        "refresh_v2_sleeves": refresh_detail,
         "observed_at_utc": datetime.now(timezone.utc).isoformat(),
     }
     write_status(ARTIFACT_ROOT / "campaign_status.json", status)
@@ -913,6 +1464,11 @@ def build_parser() -> argparse.ArgumentParser:
     rerun.add_argument("--task-id", required=True)
     rerun.add_argument("--predecessor-id", required=True)
     rerun.add_argument("--avoid-terminal", required=True, choices=list(ALLOWED_TERMINALS))
+    refresh = sub.add_parser("refresh")
+    refresh.add_argument("--task-id", required=True)
+    refresh.add_argument("--ea", required=True)
+    refresh.add_argument("--fresh-ex5", required=True)
+    refresh.add_argument("--expected-fresh-ex5-sha256", required=True)
     sub.add_parser("status")
     return parser
 
@@ -926,6 +1482,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             task_id=args.task_id,
             predecessor_id=args.predecessor_id,
             avoid_terminal=args.avoid_terminal,
+        )
+    elif args.command == "refresh":
+        result = enqueue_fresh_build_reruns(
+            task_id=args.task_id,
+            ea_id=args.ea,
+            fresh_ex5_path=args.fresh_ex5,
+            expected_fresh_ex5_sha256=args.expected_fresh_ex5_sha256,
         )
     else:
         campaign = prepare_campaign(args.task_id)
