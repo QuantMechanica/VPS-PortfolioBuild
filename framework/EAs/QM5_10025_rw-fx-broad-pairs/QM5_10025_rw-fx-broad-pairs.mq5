@@ -57,6 +57,7 @@ double  g_current_z = 0.0;
 double  g_current_sigma = 0.0;
 double  g_entry_abs_z = 0.0;
 datetime g_entry_bar_time = 0;
+datetime g_state_bar_time = 0;
 bool    g_state_ready = false;
 
 int Strategy_SymbolIndex(const string symbol)
@@ -85,13 +86,16 @@ bool Strategy_FinalH4BeforeWeekend(const datetime broker_time)
 
 bool Strategy_SpreadsNormal()
   {
-   for(int i = 0; i < STRATEGY_SYMBOL_COUNT; ++i)
-     {
-      const long spread_points = SymbolInfoInteger(g_symbols[i], SYMBOL_SPREAD);
-      if(strategy_max_spread_points > 0 && spread_points > strategy_max_spread_points)
-         return false;
-     }
-   return true;
+   const int host_index = Strategy_SymbolIndex(_Symbol);
+   if(host_index < 0 || g_selected_partner < 0)
+      return false;
+
+   const long host_spread = SymbolInfoInteger(g_symbols[host_index], SYMBOL_SPREAD);
+   const long partner_spread = SymbolInfoInteger(g_symbols[g_selected_partner], SYMBOL_SPREAD);
+   if(strategy_max_spread_points <= 0)
+      return true;
+   return (host_spread <= strategy_max_spread_points &&
+           partner_spread <= strategy_max_spread_points);
   }
 
 bool Strategy_ReadLogs(const string sym_a,
@@ -110,9 +114,9 @@ bool Strategy_ReadLogs(const string sym_a,
    ArraySetAsSeries(log_a, true);
    ArraySetAsSeries(log_b, true);
 
-   if(CopyClose(sym_a, PERIOD_H4, 1, bars, closes_a) != bars)
+   if(CopyClose(sym_a, PERIOD_H4, 1, bars, closes_a) != bars) // perf-allowed: bespoke pair window, H4-gated in OnTick
       return false;
-   if(CopyClose(sym_b, PERIOD_H4, 1, bars, closes_b) != bars)
+   if(CopyClose(sym_b, PERIOD_H4, 1, bars, closes_b) != bars) // perf-allowed: bespoke pair window, H4-gated in OnTick
       return false;
 
    ArrayResize(log_a, bars);
@@ -281,13 +285,16 @@ bool Strategy_SpreadStats(const int host_index,
 
 bool Strategy_SelectMonthlyPair(const int host_index)
   {
-   const datetime bar_time = iTime(_Symbol, PERIOD_H4, 1);
+   const datetime bar_time = iTime(_Symbol, PERIOD_H4, 1); // perf-allowed: closed H4 rebalance key after new-bar gate
    if(bar_time <= 0)
       return false;
 
    const int month_key = Strategy_MonthKey(bar_time);
-   if(month_key == g_selected_month_key && g_selected_partner >= 0)
-      return true;
+   // Pair selection is monthly. A month with no qualifying partner is also a
+   // completed selection result; do not rescan six 252-bar relationships on
+   // every H4 bar until the calendar month changes.
+   if(month_key == g_selected_month_key)
+      return (g_selected_partner >= 0);
 
    int best_partner = -1;
    double best_corr = -DBL_MAX;
@@ -326,6 +333,21 @@ bool Strategy_RefreshState()
       g_state_ready = false;
       return false;
      }
+
+   const datetime closed_bar_time = iTime(_Symbol, PERIOD_H4, 1); // perf-allowed: closed H4 cache key after new-bar gate
+   if(closed_bar_time <= 0)
+     {
+      g_state_ready = false;
+      return false;
+     }
+   if(closed_bar_time == g_state_bar_time)
+      return g_state_ready;
+
+   // Exit and entry both consume the same closed H4 observation. Cache even a
+   // failed refresh so missing secondary history cannot trigger duplicate
+   // multi-symbol CopyClose work on the same bar.
+   g_state_bar_time = closed_bar_time;
+   g_state_ready = false;
 
    for(int i = 0; i < STRATEGY_SYMBOL_COUNT; ++i)
       SymbolSelect(g_symbols[i], true);
@@ -447,18 +469,26 @@ bool Strategy_OpenPair(const int spread_direction)
    const string reason = (spread_direction > 0) ? "QM5_10025_LONG_SPREAD_Z_LT_NEG2"
                                                 : "QM5_10025_SHORT_SPREAD_Z_GT_POS2";
 
-   bool opened = false;
-   if(Strategy_OpenLeg(host_index, buy_host, host_weight, weight_sum, reason))
-      opened = true;
-   if(Strategy_OpenLeg(partner_index, buy_partner, partner_weight, weight_sum, reason))
-      opened = true;
+   const bool host_opened =
+      Strategy_OpenLeg(host_index, buy_host, host_weight, weight_sum, reason);
+   const bool partner_opened =
+      Strategy_OpenLeg(partner_index, buy_partner, partner_weight, weight_sum, reason);
 
-   if(opened)
+   if(host_opened != partner_opened)
+     {
+      // A spread is atomic. Never leave a directional orphan after a partial
+      // fill; close whichever registered leg opened and reject the package.
+      Strategy_ClosePair(host_index, partner_index, QM_EXIT_STRATEGY);
+      return false;
+     }
+
+   if(host_opened && partner_opened)
      {
       g_entry_abs_z = MathAbs(g_current_z);
-      g_entry_bar_time = iTime(_Symbol, PERIOD_H4, 1);
+      g_entry_bar_time = iTime(_Symbol, PERIOD_H4, 1); // perf-allowed: closed H4 entry timestamp after new-bar gate
+      return true;
      }
-   return opened;
+   return false;
   }
 
 int Strategy_BarsHeld()
@@ -495,6 +525,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    if(!Strategy_RefreshState())
+      return false;
+   if(Strategy_NoTradeFilter())
+      return false;
+   if(Strategy_NewsFilterHook(TimeCurrent()))
       return false;
 
    int spread_direction = 0;
@@ -547,14 +581,31 @@ bool Strategy_ExitSignal()
 // News Filter Hook
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   for(int i = 0; i < STRATEGY_SYMBOL_COUNT; ++i)
+   const int host_index = Strategy_SymbolIndex(_Symbol);
+   if(host_index < 0 || g_selected_partner < 0)
+      return true;
+
+   const string host_symbol = g_symbols[host_index];
+   const string partner_symbol = g_symbols[g_selected_partner];
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
      {
-      if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-        {
-         if(!QM_NewsAllowsTrade2(g_symbols[i], broker_time, qm_news_temporal, qm_news_compliance))
-            return true;
-        }
-      else if(!QM_NewsAllowsTrade(g_symbols[i], broker_time, qm_news_mode_legacy))
+      if(!QM_NewsAllowsTrade2(host_symbol,
+                              broker_time,
+                              qm_news_temporal,
+                              qm_news_compliance))
+         return true;
+      if(!QM_NewsAllowsTrade2(partner_symbol,
+                              broker_time,
+                              qm_news_temporal,
+                              qm_news_compliance))
+         return true;
+     }
+   else
+     {
+      if(!QM_NewsAllowsTrade(host_symbol, broker_time, qm_news_mode_legacy))
+         return true;
+      if(!QM_NewsAllowsTrade(partner_symbol, broker_time, qm_news_mode_legacy))
          return true;
      }
    return false;
@@ -595,29 +646,36 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 lifecycle sampling must precede every early-return guard.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
+   // Reject stale broad-fanout tester jobs before any cross-symbol or news
+   // work. The approved card permits only the seven registered FX hosts.
+   if((ENUM_TIMEFRAMES)_Period != PERIOD_H4 ||
+      Strategy_SymbolIndex(_Symbol) < 0)
+      return;
+
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
+   if(QM_FrameworkFridayCloseNow(broker_now))
+     {
+      const int host_index = Strategy_SymbolIndex(_Symbol);
+      if(host_index >= 0 && g_selected_partner >= 0)
+         Strategy_ClosePair(host_index, g_selected_partner, QM_EXIT_FRIDAY_CLOSE);
+      QM_FrameworkHandleFridayClose();
       return;
-
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+     }
    if(QM_FrameworkHandleFridayClose())
-      return;
-
-   if(Strategy_NoTradeFilter())
       return;
 
    if(!QM_IsNewBar(_Symbol, PERIOD_H4))
       return;
 
+   // All multi-symbol history, spread and news work now executes at most once
+   // per closed H4 bar. Exits remain available through news blackouts; the
+   // entry hook applies the two-leg news gate after selecting the partner.
    QM_EquityStreamOnNewBar();
    Strategy_ManageOpenPosition();
    Strategy_ExitSignal();

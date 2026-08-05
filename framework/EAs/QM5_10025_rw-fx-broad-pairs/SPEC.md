@@ -1,6 +1,11 @@
-# QM5_10025 rw-fx-broad-pairs
+# QM5_10025 rw-fx-broad-pairs - Strategy Spec
 
-## Strategy Logic
+**EA ID:** QM5_10025
+**Slug:** `rw-fx-broad-pairs`
+**Source:** `dcbac84f-6ecf-5d21-9630-50faa69306ec`
+**Last revised:** 2026-08-05
+
+## 1. Strategy Logic
 
 Robot Wealth FX Broad Pairs Trading is a broad FX mean-reversion pairs strategy. Each H4 chart symbol is treated as the host leg. At monthly rebalance, the EA compares the host symbol against the approved FX universe, estimates a rolling OLS hedge ratio over 252 H4 bars, and keeps the highest-correlation partner that passes the mechanical filters.
 
@@ -12,7 +17,7 @@ The EA computes a z-score over 120 closed H4 bars. If z-score is above `+2.0`, i
 
 Exit occurs when absolute z-score reaches the configured exit band, when the spread reaches the hard stop band, or when the 15-bar time stop has elapsed without at least 25 percent z-score improvement. The framework Friday close can also close positions.
 
-## Parameters
+## 2. Parameters
 
 | Input | Default | Range | Meaning |
 |---|---:|---|---|
@@ -42,7 +47,7 @@ Exit occurs when absolute z-score reaches the configured exit band, when the spr
 | `strategy_min_improve_frac` | `0.25` | `0.0..1.0` | Required z-score improvement by time stop. |
 | `strategy_max_spread_points` | `50` | positive int | Maximum broker spread in points for each basket symbol. |
 
-## Symbol Universe
+## 3. Symbol Universe
 
 The approved P2 basket is:
 
@@ -50,23 +55,25 @@ The approved P2 basket is:
 
 The EA explicitly does not trade non-card symbols. Other DWX FX crosses, indices, metals, and energy symbols are outside this card's R3 basket.
 
-## Timeframe
+## 4. Timeframe
 
 Base timeframe is H4. All formation, z-score, ATR stop, monthly rebalance, entry, and exit logic uses closed H4 bars. The smoke and P2 setfiles are generated on H4.
 
-## Expected Behaviour
+## 5. Expected Behaviour
 
-Expected trade frequency from the card is about 45 trades per year per pair-symbol. Typical holds are mean-reversion holds up to 15 H4 bars unless the z-score exits sooner. The strategy prefers correlated, stationary FX pair regimes and is expected to degrade when correlation falls below 0.50.
+Expected trade frequency from the approved card is about 6 completed round trips per year per host symbol. Typical holds are mean-reversion holds up to 15 H4 bars unless the z-score exits sooner. The strategy prefers correlated, stationary FX pair regimes and is expected to degrade when correlation falls below 0.50.
 
-## Source Citation
+All multi-symbol history reads, spread checks, partner selection, and package-news checks are H4-bar gated. News checks cover only the selected host/partner package, not every member of the formation universe on every tick. This keeps the structural monthly/H4 logic unchanged while preventing pathological real-tick tester runtime.
+
+## 6. Source Citation
 
 Source ID: `dcbac84f-6ecf-5d21-9630-50faa69306ec`
 
 Citation: Robot Wealth, "Index of Strategies", FX Broad Pairs Trading section, https://robotwealth.com/index-of-strategies/
 
-## Risk Model
+## 7. Risk Model
 
-Backtests use fixed risk with `RISK_FIXED = 1000.0` and `RISK_PERCENT = 0.0` per HR4. Live promotion uses percent risk via deploy manifest with `RISK_PERCENT = 0.5` and `RISK_FIXED = 0.0`. Position sizing is delegated to the V5 framework risk helpers.
+Backtests use fixed risk with `RISK_FIXED = 1000.0` and `RISK_PERCENT = 0.0` per H4 host. Live promotion uses percent risk via deploy manifest with `RISK_PERCENT = 0.5` and `RISK_FIXED = 0.0`. Position sizing is delegated to the V5 framework risk helpers.
 
 ## Implementation Notes
 

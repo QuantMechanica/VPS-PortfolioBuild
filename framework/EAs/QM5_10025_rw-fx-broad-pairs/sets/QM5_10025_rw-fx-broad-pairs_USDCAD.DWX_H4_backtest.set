@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        10025
 ; ea_slug:      rw-fx-broad-pairs
@@ -10,7 +10,7 @@
 ; magic_slot:   5
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   819f16729df8a978ef90a846d5d53dc5a895ec20a341a8a16ab8d3085e36365b
 ; author:       Development
 ; date:         2026-07-03
 ;==========================================================
