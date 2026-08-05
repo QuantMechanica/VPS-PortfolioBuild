@@ -60,7 +60,9 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_STARTED
+q02_status: ENQUEUED
+q02_work_item_id: aeb35f94-4dfd-4ffc-9d68-76166e601ec7
+q02_enqueued_at_utc: 2026-08-05T20:32:24Z
 review_focus: "Falsify whether fixed WTI physical-season direction confirmed by the exact completed twelve-calendar-month cumulative return adds direct crude exposure and a slow structural clock absent from the certified XAU/SP500/NDX/XNG book; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -281,6 +283,7 @@ a correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-05 | initial WTI physical-season / twelve-month momentum concordance | G0 | APPROVED |
 | v2 | 2026-08-05 | initial V5 framework implementation | Q01 | PASS; strict compile and build checks |
+| v3 | 2026-08-05 | paced baseline handoff | Q02 | ENQUEUED as priority work item `aeb35f94-4dfd-4ffc-9d68-76166e601ec7` |
 
 ## Pipeline Phase Status
 
@@ -288,4 +291,4 @@ a correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-05 | APPROVED | `decisions/2026-08-05_qm5_20231_wti_seas_mom12_g0.md` |
 | Q01 Compile / Static Validation | 2026-08-05 | PASS | `framework/build/compile/20260805_202746/QM5_20231_wti-seas-mom12.compile.log`; `D:/QM/reports/framework/21/build_check_20260805_202828.json` |
-| Q02 Baseline Screening | - | NOT_STARTED | - |
+| Q02 Baseline Screening | 2026-08-05 | ENQUEUED | priority work item `aeb35f94-4dfd-4ffc-9d68-76166e601ec7`; no manual dispatch |
