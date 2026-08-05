@@ -15529,3 +15529,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20224,eurusd-eurjpy,1,EURJPY.DWX,202240001,2026-08-05T14:29:17Z,Codex,active
 20225,eurusd-gbpjpy,0,EURUSD.DWX,202250000,2026-08-05T15:50:51Z,Codex,active
 20225,eurusd-gbpjpy,1,GBPJPY.DWX,202250001,2026-08-05T15:50:51Z,Codex,active
+20226,wti-seas-dow,0,XTIUSD.DWX,202260000,2026-08-05T15:58:44Z,Codex,active
