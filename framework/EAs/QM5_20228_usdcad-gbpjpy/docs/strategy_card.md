@@ -39,7 +39,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01_PASS
+pipeline_phase: Q02_PENDING
 g0_approval_reasoning: "R1 PASS: OWNER-requested fixed FX scan plus OWNER-ratified Tier-A Chan SRC02; R2 PASS: fixed low-frequency two-leg D1 beta/z/ATR package; R3 PASS: traded and conversion histories are Darwinex-native; R4 PASS: structural, deterministic, and learned-model-free."
 ---
 
@@ -258,6 +258,7 @@ data_requirements: "USDCAD.DWX, GBPJPY.DWX, and USDJPY.DWX D1 histories"
 |---|---|---|---|---|
 | v1 | 2026-08-05 | next-ranked non-duplicate fixed-scan FX basket | G0 | APPROVED |
 | v2 | 2026-08-05 | initial deterministic basket implementation | Q01 | PASS |
+| v3 | 2026-08-05 | logical-basket baseline queue handoff | Q02 | PENDING |
 
 ## 15. Pipeline Phase Status
 
@@ -265,10 +266,15 @@ data_requirements: "USDCAD.DWX, GBPJPY.DWX, and USDJPY.DWX D1 histories"
 |---|---|---|---|
 | G0 Research Intake | 2026-08-05 | APPROVED | `decisions/2026-08-05_usdcad_gbpjpy_cointegration_g0.md` |
 | Q01 Build Validation | 2026-08-05 | PASS | `D:\QM\reports\framework\21\build_check_20260805_175800.json` |
-| Q02 Baseline Screening | - | PENDING | - |
+| Q02 Baseline Screening | 2026-08-05 | PENDING | `D:\QM\reports\state\claude_sweep_enqueue_2026-06-10.json`; work item `41722d88-1113-4e08-ac39-832b4708ee2d` |
 
 ## 16. Lessons Captured
 
 - 2026-08-05: Rank 50 is OOS-negative and below the expected Q02 cadence
   floor; it is admitted only as the explicitly requested next-best one-shot
   sleeve, with retirement rather than rescue after economic failure.
+- 2026-08-05: Q01 strict compile and build validation passed with zero errors
+  and zero warnings; basket and magic-registry regressions also passed.
+- 2026-08-05: Q02 selected the logical basket preset and skipped the physical
+  host preset with `basket_manifest_logical_setfile_preferred`, preventing a
+  duplicate representation of the same two-leg package.
