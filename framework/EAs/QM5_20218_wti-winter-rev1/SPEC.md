@@ -87,3 +87,4 @@ portfolio-gate change.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-05 | Initial build from approved G0 card | Q01 strict build PASS; 0 compile errors/warnings and 0 build failures/warnings |
+| v2 | 2026-08-05 | Paced pipeline handoff | Q02 work item `0838049f-0a49-48ca-8b4b-5a33bdcd0606` enqueued pending; no verdict claimed |

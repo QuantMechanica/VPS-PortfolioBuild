@@ -58,7 +58,8 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
+q02_work_item_id: 0838049f-0a49-48ca-8b4b-5a33bdcd0606
 review_focus: "Falsify whether exact one-month reversal inside the fixed November-May WTI regime adds direct crude exposure with a price-conditioned return driver absent from the certified XAU/SP500/NDX/XNG book; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -262,6 +263,7 @@ correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-05 | initial WTI winter / exact one-month reversal candidate | G0 | APPROVED; build pending |
 | v2 | 2026-08-05 | initial framework implementation | Q01 | PASS; strict compile and build checks |
+| v3 | 2026-08-05 | paced priority-track baseline handoff | Q02 | ENQUEUED; pending at confirmation |
 
 ## Pipeline Phase Status
 
@@ -269,4 +271,4 @@ correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-05 | APPROVED; R1-R4 PASS | this card, governed source packet, and durable decision |
 | Q01 Build Validation | 2026-08-05 | PASS | strict build report `D:/QM/reports/framework/21/build_check_20260805_033247.json`; 0 failures, 0 warnings |
-| Q02 Baseline Screening | 2026-08-05 | NOT ENQUEUED | paced handoff pending |
+| Q02 Baseline Screening | 2026-08-05 | ENQUEUED; pending, attempt 0, unclaimed at confirmation | work item `0838049f-0a49-48ca-8b4b-5a33bdcd0606` |

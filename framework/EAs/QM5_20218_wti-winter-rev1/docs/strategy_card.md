@@ -11,7 +11,8 @@ logical_symbol: XTIUSD.DWX
 period: D1
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
+q02_work_item_id: 0838049f-0a49-48ca-8b4b-5a33bdcd0606
 ---
 
 # Build-Time Card Reference
