@@ -540,3 +540,21 @@ remains fail-closed: only a genuine `CONFIG_LOCKED` may open the fresh
 same-Q08 Q09_PORTFOLIO row; only its `PASS_PORTFOLIO` may open the append-only
 Q10 rerun; and any refusal, non-good verdict, or genuine `REVIEW_REQUIRED`
 stops the sequence for review.
+
+## Round-6 cross-round persistence repair and governed stop — 2026-08-05
+
+Router task `c0b64a33-94e5-4a6e-a615-7070f7275524` repaired the persistence
+contract in canonical commit `2a0a0186f`: deterministic cell identities and
+economics remain exact-match fail-closed, while per-execution evidence/report
+hashes and paths are recorded in an append-only occurrence ledger. The full
+evidence, focused verification, runtime counts, and SHA-256 identities are in
+`docs/ops/evidence/2026-08-05_q09_cross_round_provenance_and_round6_stop.md`.
+
+The ordinary worker reclaimed row `4984cca7-e1a3-49a8-a066-066ac51eb063` on
+T3, used all 40 authenticated receipts without new tester work, and persisted
+`REVIEW_REQUIRED` with reason `expanded_7x4_matrix_required`. Persistence
+itself is `RECORDED`; all 40 work-item occurrences are queryable and 19 retain
+physical provenance different from the untouched canonical cell bytes.
+
+This is a genuine adjudication stop. No fresh Q09_PORTFOLIO row, Q10 rerun, or
+QM5_13036 row was enqueued.
