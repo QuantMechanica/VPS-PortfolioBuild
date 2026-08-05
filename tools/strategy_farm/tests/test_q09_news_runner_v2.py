@@ -832,6 +832,8 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         def fake_run(command: list[str], **_kwargs: object) -> SimpleNamespace:
             commands.append(command)
             self.assertIn("-RequireFreshLoggerSample", command)
+            self.assertIn("-SmokeMode", command)
+            self.assertEqual(command[command.index("-MinTrades") + 1], "0")
             report_root = Path(command[command.index("-ReportRoot") + 1])
             summary = report_root / "QM5_9999" / "fixture" / "summary.json"
             summary.parent.mkdir(parents=True, exist_ok=True)

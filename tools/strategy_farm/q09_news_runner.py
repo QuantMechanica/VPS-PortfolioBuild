@@ -2044,7 +2044,12 @@ def _production_dispatch_cell(
             "-Symbol", str(context["symbol"]), "-Year", to_date[:4],
             "-FromDate", from_date, "-ToDate", to_date,
             "-Terminal", str(context["terminal"]), "-Period", str(context["period"]),
-            "-Runs", "1", "-MinTrades", "0", "-Model", "4",
+            # Q09 measures the policy-induced entry delta in each independent
+            # window.  It is diagnostic non-admission work, so the Q02
+            # five-trades-per-year floor must not replace this explicit zero.
+            # SmokeMode is run_smoke's opt-in for honoring the caller's floor;
+            # admission callers retain the default fail-closed Q02 behavior.
+            "-Runs", "1", "-MinTrades", "0", "-SmokeMode", "-Model", "4",
             "-TimeoutSeconds", str(context["cell_timeout_sec"]),
             "-SetFile", str(spec["setfile_path"]), "-ReportRoot", str(run_root),
             "-DispatchPhase", "Q09_NEWS", "-DispatchVersion", "q09_news_executor_v1",
