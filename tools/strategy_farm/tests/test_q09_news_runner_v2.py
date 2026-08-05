@@ -16,6 +16,7 @@ import q09_news_calendar as calendar_bundle  # noqa: E402
 import q09_news_runner as runner  # noqa: E402
 import q09_news_schema as schema  # noqa: E402
 import farmctl  # noqa: E402
+import terminal_worker  # noqa: E402
 
 
 def metrics(sharpe: float) -> dict:
@@ -168,7 +169,13 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         for spec in plan["cells"]:
             self.write_receipt(spec)
 
-    def setup_bound_farm(self, plan: dict, *, activate: bool) -> tuple[Path, str]:
+    def setup_bound_farm(
+        self,
+        plan: dict,
+        *,
+        activate: bool,
+        attempt_count: int = 0,
+    ) -> tuple[Path, str]:
         farm_root = self.root / "farm"
         farmctl.init_db(farm_root)
         q07_evidence = self.root / "q07.json"
@@ -234,6 +241,12 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         self.assertEqual(hold[0], 0)
         self.assertIn("sealed Q09 run plan bound", hold[1])
         self.assertEqual(payload["q09_activation_state"], "RUNNABLE_BOUND")
+        with closing(farmctl.connect(farm_root)) as connection:
+            connection.execute(
+                "UPDATE work_items SET attempt_count=? WHERE id='q09-news-1'",
+                (int(attempt_count),),
+            )
+            connection.commit()
         if activate:
             with closing(farmctl.connect(farm_root)) as connection:
                 connection.execute(
@@ -618,6 +631,136 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             Path(result["execution_failure_path"]).read_text(encoding="utf-8")
         )
         self.assertEqual(top_level_failure["cell_failure_path"], str(failure_path))
+
+    def test_transient_cell_retry_succeeds_inside_same_attempt(self) -> None:
+        plan = self.build(output="transient-retry-succeeds")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        dispatch_count = 0
+
+        def transient_then_success(spec: dict, _context: dict) -> None:
+            nonlocal dispatch_count
+            dispatch_count += 1
+            if dispatch_count == 1:
+                raise runner.TransientCellError("fixture child exit 1 without receipt")
+            self.write_receipt(spec)
+
+        with patch.object(runner, "_wait_for_claimed_terminal_exit") as wait_for_exit:
+            result = runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=self.root / "transient-retry-succeeds-output",
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / "common-transient-retry-succeeds",
+                dispatch_cell=transient_then_success,
+            )
+
+        self.assertEqual(result["verdict"], "CONFIG_LOCKED")
+        self.assertEqual(result["authenticated_cell_count"], 40)
+        self.assertEqual(dispatch_count, 41)
+        wait_for_exit.assert_called_once()
+        first_cell = Path(plan["cells"][0]["receipt_path"]).parent
+        self.assertTrue((first_cell / "cell_failure.json").is_file())
+        self.assertTrue((first_cell / "cell_receipt.json").is_file())
+
+    def test_transient_cell_twice_requeues_without_adjudication(self) -> None:
+        plan = self.build(output="transient-twice-requeue")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        self.assertEqual(
+            runner.WORK_ITEM_ATTEMPT_CEILING,
+            terminal_worker.MAX_WORK_ITEM_RETRIES,
+        )
+
+        with (
+            patch.object(
+                runner.subprocess,
+                "run",
+                return_value=SimpleNamespace(returncode=1, stdout="", stderr=""),
+            ) as smoke_run,
+            patch.object(runner, "_wait_for_claimed_terminal_exit"),
+            self.assertRaisesRegex(
+                runner.CapacityError,
+                "transient cell exhausted.*requeue work item",
+            ),
+        ):
+            runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=self.root / "transient-twice-requeue-output",
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / "common-transient-twice-requeue",
+            )
+
+        self.assertEqual(smoke_run.call_count, 2)
+        self.assertFalse(
+            list((self.root / "transient-twice-requeue-output").rglob("aggregate.json"))
+        )
+        first_cell = Path(plan["cells"][0]["receipt_path"]).parent
+        self.assertTrue((first_cell / "cell_failure.json").is_file())
+        self.assertTrue((first_cell / "cell_failure_2.json").is_file())
+        self.assertFalse((first_cell / "cell_receipt.json").exists())
+
+        finished = terminal_worker._finish_work_item(farm_root, "q09-news-1", 1)
+        self.assertEqual(finished["status"], "pending")
+        self.assertEqual(finished["attempt"], 1)
+        with closing(farmctl.connect(farm_root)) as connection:
+            row = connection.execute(
+                "SELECT status,verdict,attempt_count,evidence_path "
+                "FROM work_items WHERE id='q09-news-1'"
+            ).fetchone()
+        self.assertEqual(tuple(row), ("pending", None, 1, None))
+
+    def test_transient_cell_attempt_ceiling_adjudicates(self) -> None:
+        plan = self.build(output="transient-attempt-ceiling")
+        farm_root, plan_hash = self.setup_bound_farm(
+            plan,
+            activate=True,
+            attempt_count=runner.WORK_ITEM_ATTEMPT_CEILING - 1,
+        )
+
+        def always_transient(_spec: dict, _context: dict) -> None:
+            raise runner.TransientCellError("fixture child exit 1 without receipt")
+
+        with patch.object(runner, "_wait_for_claimed_terminal_exit"):
+            result = runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=self.root / "transient-attempt-ceiling-output",
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / "common-transient-attempt-ceiling",
+                dispatch_cell=always_transient,
+            )
+
+        self.assertEqual(result["verdict"], "REVIEW_REQUIRED")
+        self.assertEqual(result["failed_cell_count"], 1)
+        self.assertEqual(result["missing_cell_count"], 39)
+        first_cell = Path(plan["cells"][0]["receipt_path"]).parent
+        self.assertTrue((first_cell / "cell_failure.json").is_file())
+        self.assertTrue((first_cell / "cell_failure_2.json").is_file())
+        self.assertTrue(Path(result["aggregate_path"]).is_file())
 
     def test_production_multi_cell_execute_writes_receipts_and_collects(self) -> None:
         plan = self.build(output="production-multi-cell")

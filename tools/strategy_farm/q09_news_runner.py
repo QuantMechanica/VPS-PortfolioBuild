@@ -58,6 +58,10 @@ DEFAULT_CELL_TIMEOUT_SEC = 3600
 CELL_TIMEOUT_HEADROOM_SEC = 600
 TERMINAL_EXIT_WAIT_SEC = 180
 TERMINAL_EXIT_POLL_SEC = 2.0
+# This is the same terminal-worker attempt ceiling.  A transient cell may
+# force the work item back through that existing retry lane, but must not
+# create a second, unbounded retry budget inside the Q09 runner.
+WORK_ITEM_ATTEMPT_CEILING = 3
 WINDOW_NAMES = ("selection", "holdout", "full")
 FACTORY_DB_RELATIVE_PATH = Path("state") / "farm_state.sqlite"
 FACTORY_MT5_ROOT = Path(r"D:\QM\mt5")
@@ -69,6 +73,10 @@ class RunnerError(RuntimeError):
 
 class CapacityError(RunnerError):
     """Raised when execution is outside the active factory terminal claim."""
+
+
+class TransientCellError(RunnerError):
+    """Raised for a child exit-1 that produced no fresh tester receipt."""
 
 
 def _safe_common_path(value: str) -> str:
@@ -2041,6 +2049,14 @@ def _production_dispatch_cell(
             ((completed.stdout or "") + (completed.stderr or "")).encode("utf-8", errors="replace"),
         )
         if completed.returncode != 0:
+            if completed.returncode == 1:
+                try:
+                    _latest_summary(run_root, started_at)
+                except RunnerError as summary_error:
+                    raise TransientCellError(
+                        f"Q09 {window_name} run_smoke exited with code 1 "
+                        "without a fresh run_smoke summary or cell receipt"
+                    ) from summary_error
             raise RunnerError(
                 f"Q09 {window_name} run_smoke exited with code {completed.returncode}"
             )
@@ -2288,6 +2304,42 @@ def execute_run_plan(
         "diagnostic_expert_stage": diagnostic_expert_stage,
     }
     dispatcher = dispatch_cell or _production_dispatch_cell
+
+    def adjudicate_cell_failure(
+        spec: Mapping[str, Any],
+        exc: Exception,
+        cell_failure_path: Path,
+    ) -> dict[str, Any]:
+        failure_path = output_root.resolve() / "execution_failure.json"
+        _atomic_write(
+            failure_path,
+            contract.canonical_json_bytes({
+                "schema_version": "q09-news-execution-failure/v1",
+                "work_item_id": str(work_item_id),
+                "run_identity_sha256": spec["run_identity_sha256"],
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+                "cell_failure_path": str(cell_failure_path.resolve()),
+                "cell_failure_sha256": contract.sha256_file(cell_failure_path),
+            }),
+        )
+        result = collect_run_plan_status(
+            plan_path,
+            output_root=output_root,
+            expected_plan_file_sha256=expected_plan_file_sha256,
+        )
+        result["execution_failure_path"] = str(failure_path)
+        result["execution_failure_sha256"] = contract.sha256_file(failure_path)
+        result["sidecar"] = _persist_q09_result(
+            farm_root,
+            work_item_id=work_item_id,
+            terminal=terminal,
+            plan_path=plan_path,
+            expected_plan_file_sha256=expected_plan_file_sha256,
+            result=result,
+        )
+        return result
+
     for spec in plan["cells"]:
         receipt_path = Path(str(spec["receipt_path"]))
         if receipt_path.is_file():
@@ -2327,41 +2379,68 @@ def execute_run_plan(
             _receipt_to_cell(spec)
         except CapacityError:
             raise
+        except TransientCellError as first_error:
+            _write_cell_failure(
+                spec,
+                work_item_id=str(work_item_id),
+                exc=first_error,
+            )
+            try:
+                # A child can exit before its terminal process fully releases
+                # the claimed profile.  The single in-attempt retry is allowed
+                # only after that exact terminal root is clear and the claim is
+                # still ours.
+                _wait_for_claimed_terminal_exit(Path(str(context["terminal_root"])))
+                assert_factory_capacity(
+                    farm_root,
+                    work_item_id=work_item_id,
+                    terminal=terminal,
+                    plan_path=plan_path,
+                    expected_plan_file_sha256=expected_plan_file_sha256,
+                )
+                if diagnostic_expert_stage is not None:
+                    _verify_hash(
+                        Path(diagnostic_expert_stage["destination_path"]),
+                        diagnostic_expert_stage["sha256"],
+                        "effective Q09 diagnostic expert EX5",
+                    )
+                dispatcher(spec, context)
+                _receipt_to_cell(spec)
+            except CapacityError:
+                raise
+            except TransientCellError as second_error:
+                second_failure_path = _write_cell_failure(
+                    spec,
+                    work_item_id=str(work_item_id),
+                    exc=second_error,
+                )
+                attempt_count = int(row["attempt_count"] or 0)
+                if attempt_count + 1 < WORK_ITEM_ATTEMPT_CEILING:
+                    raise CapacityError(
+                        "Q09 transient cell exhausted its bounded in-attempt retry; "
+                        f"requeue work item at attempt {attempt_count + 1}/"
+                        f"{WORK_ITEM_ATTEMPT_CEILING}"
+                    ) from second_error
+                return adjudicate_cell_failure(
+                    spec, second_error, second_failure_path
+                )
+            except Exception as retry_error:
+                retry_failure_path = _write_cell_failure(
+                    spec,
+                    work_item_id=str(work_item_id),
+                    exc=retry_error,
+                )
+                return adjudicate_cell_failure(
+                    spec, retry_error, retry_failure_path
+                )
+            continue
         except Exception as exc:
             cell_failure_path = _write_cell_failure(
                 spec,
                 work_item_id=str(work_item_id),
                 exc=exc,
             )
-            failure_path = output_root.resolve() / "execution_failure.json"
-            _atomic_write(
-                failure_path,
-                contract.canonical_json_bytes({
-                    "schema_version": "q09-news-execution-failure/v1",
-                    "work_item_id": str(work_item_id),
-                    "run_identity_sha256": spec["run_identity_sha256"],
-                    "error_type": type(exc).__name__,
-                    "error": str(exc),
-                    "cell_failure_path": str(cell_failure_path.resolve()),
-                    "cell_failure_sha256": contract.sha256_file(cell_failure_path),
-                }),
-            )
-            result = collect_run_plan_status(
-                plan_path,
-                output_root=output_root,
-                expected_plan_file_sha256=expected_plan_file_sha256,
-            )
-            result["execution_failure_path"] = str(failure_path)
-            result["execution_failure_sha256"] = contract.sha256_file(failure_path)
-            result["sidecar"] = _persist_q09_result(
-                farm_root,
-                work_item_id=work_item_id,
-                terminal=terminal,
-                plan_path=plan_path,
-                expected_plan_file_sha256=expected_plan_file_sha256,
-                result=result,
-            )
-            return result
+            return adjudicate_cell_failure(spec, exc, cell_failure_path)
     result = collect_run_plan_status(
         plan_path,
         output_root=output_root,
