@@ -559,3 +559,102 @@ had terminalized `REVIEW_REQUIRED` at `17:45:04Z`; that outcome is retained as
 its own evidence and is not rewritten. No canonical Q09 admission row was
 created, no protected T6-T10 test was displaced, and no T_Live, AutoTrading,
 or manual terminal action occurred.
+
+### Q09 generation-3 transient follow-through — 2026-08-05
+
+Router task `0c467a61-e52c-4395-b5ea-4da066399be7` appended generation-3
+diagnostics for every generation-2 row that had terminalized under the old
+code-1/no-receipt semantics by the `2026-08-05T18:34Z` reconciliation. This
+includes the requested QM5_10919/XTIUSD and QM5_11132/SP500 rows plus two
+additional victims that completed while the follow-through was active:
+QM5_11421/AUDUSD and QM5_12567/XNGUSD.
+
+The generation rerun implementation is commit `6bed121bb`. A generation-3
+row reuses the exact generation-2 diagnostic anchor because that anchor hash
+is part of every cell identity. Append-only rerun lineage is authenticated in
+the new work-item payload instead of rewriting the anchor and silently
+defining a different experiment. The binder accepts that reuse only when the
+new row identifies its predecessor, generation is at least 3, and the sealed
+anchor path and hash match. A provisional plan under
+`refresh_v3\1f15021e-1f00-5687-b830-5000f5d9dec7` was stopped before queue
+insertion when this identity check first detected a changed anchor hash; no
+work-item row has that ID and it is not execution evidence.
+
+| Sleeve | Generation-2 predecessor / failure terminal | Generation-3 row | Plan-file SHA-256 | Enqueue-receipt SHA-256 | `18:34Z` state |
+|---|---|---|---|---|---|
+| QM5_12567/XNGUSD | `3f409823-e2c0-50a8-850f-864e33faab94` / T5 | `341299de-5575-5e60-850f-9aab9f04c34c` | `7c48140088be8f8c0add6adfaad9f6137b463c5369c2f2486fd9b472214ba198` | `c4fe4866fbb01273d11bbafd8361fdf2d109947127358f697badb4f8834698d6` | active T1 |
+| QM5_10919/XTIUSD | `4fd8d9b2-c4e2-5627-a799-90caee71af07` / T4 | `fb3460bb-d6ca-5047-9a01-b1b599be844e` | `ecc4894b2c18e36c044885e7db02a94e5014439f4a98f40dcdb8a1be72f1fba5` | `a430673674534223dd82536706c61d5afc1d1297c5ca41a605741739c3450c4b` | pending |
+| QM5_11132/SP500 | `13fdb5a5-5b91-54f4-ba76-e4e70fbe73c6` / T3 | `7a3a2f4c-b5dc-5b0e-b0b1-39b252a53955` | `127f833828af8a21fe2b2ad31f28c0eda14c6744b95471309860fd4dfb064dc2` | `ec72eb007c3c1bc2a918f6b04c3cda1b9251a68b973f56919dbc7e2b98e31741` | pending |
+| QM5_11421/AUDUSD | `8b3332c9-5023-5656-bff6-e8d937cbdc3d` / T1 | `d381e949-d3ae-56cf-b749-79fb8a57afb5` | `0d5fe88e1a787d589929b3031c380a6ccb36cf8f1a4801ececf566ce357b9c41` | `b027fa9d08b3341c927044634ef525fe3c5a535a1f2dd437f9eb838e559b6419` | pending |
+
+For all four rows, a fresh database-and-plan audit found 40 cells, exact
+ordered equality of `run_identity_sha256`, setfile hash, arm, compliance,
+temporal mode, seed, and paired-base identity, and zero canonical
+`q09_news_tests` rows. All remain diagnostic non-admission work.
+
+The active generation-3 runner for `341299de...` was created at
+`2026-08-05T18:20:24Z` as PID 16624 from
+`C:\QM\repo\tools\strategy_farm\q09_news_runner.py`, after both transient
+fix commits. Its command line binds the receipt plan hash above. This is a
+fresh-spawn proof that the fixed runner is live. Generation-2 ranks 6, 8, and
+17 separately demonstrate the fixed behavior through persisted
+`TransientCellError` sidecars and pending/no-verdict requeue state. Ranks 5
+and 14 remain active processes launched before the cutover; they were not
+interrupted. Any later pending claim starts a new process from the current
+canonical runner. No other terminal generation-2 row had an authenticated
+code-1/no-receipt transient failure at the reconciliation cutoff.
+
+### Reviewer-authorized QM5_10403 and QM5_10513 refresh
+
+Claude's close verdict for `b84011f2-7a2e-463e-a296-df4b20546013`
+(`APPROVED with corrections`) explicitly authorized `// perf-allowed` on the
+original bounded raw-series survivor logic under the 2026-07-23 per-tick
+calibration doctrine. The MQ5 changes are those inline comments plus the Q08
+MAE lifecycle call as the first `OnTick` statement. SPEC v1.1 in each EA cites
+the authorization. Strategy conditions, lookbacks, entries, exits, stops,
+targets, sizing, and schedules were not changed.
+
+| EA | Current MQ5 SHA-256 | Current EX5 SHA-256 | Strict build | Generation-2 Q09 | Q02 requalification |
+|---|---|---|---|---|---|
+| QM5_10403 | `b38cfd471fd31811bb23a5447c430cc1bfcc1f370eb816236c99bb88be55d251` | `2e77dc2d9593afdb3267a8e3e029f5d8d437ee8fbdfd1ab4cba0c139babed89e` | PASS `build_check_20260805_181856.json`, 0 errors / 0 warnings | `e525cbb6-136c-5eaf-9b06-ac62229ae0f3`, rank 13, pending; batch receipt SHA-256 `7515c0033c89578ba730168bdb73192d804bd65e15bb5aa7abebd228bd1c5972` | `adcddab6-b1b9-46e2-9922-595e542aa3a3`, pending, source `f81854dd-a44a-42dc-932a-42bc234747ca` |
+| QM5_10513 | `dfccacd6fe901831eed363d296201e64a853bc5d5e3fc6dc30b9f235d8e8ee14` | `30e4920348c30363c2dbb5b488650bdba7560ce601767c37799d882d766462d6` | PASS `build_check_20260805_182356.json`, 0 errors / 0 warnings | `75f9a966-c7fe-5c48-a5cb-97f1bf77c07d`, rank 11, pending; batch receipt SHA-256 `200944d875857b834e68f5135b4ff9529a2262caad9ae2b329378cd3d23aa403` | `8ec6e886-95cf-48e7-bcb7-92b0f3c5d95e`, pending, source `54dc5091-8869-4ca8-ba9b-dd99ae2cb538` |
+
+QM5_10513's strict preflight additionally required its four baseline
+backtest presets to state the already-compiled disabled-session defaults
+explicitly: enabled `0`, start `0`, end `2359`. These values equal the EA
+defaults and do not change execution mechanics. The task-scoped guardrail
+scan at `18:34Z` returned PASS with no findings for QM5_10403, QM5_10513, and
+QM5_12989, including the 336-hour maximum stale-news rule. The two Q02 seeds
+bind `RISK_FIXED > 0`, `RISK_PERCENT = 0`, their exact canonical setfile
+hashes, and the EX5 hashes above. Build artifacts are commit `196fda53b`.
+
+### QM5_12989 canonical Q02 lineage reconciliation
+
+Commit `b21e9d062` adds an opt-in
+`seed-fresh-q02 --reconcile-noncanonical-setfile` path. The default behavior
+still refuses a noncanonical source. Opt-in reconciliation is restricted to
+the same EA directory and setfile name under a `worktrees` path, requires the
+canonical file to exist, compares every executable key/value parameter, and
+records both paths and hashes. Any parameter drift refuses the seed. The
+historical row is never updated.
+
+For source row `e5ef7795-d116-4f34-9841-4c6f012f3cc2`, the worktree preset
+SHA-256 is
+`6e5f9d98f2be63e0c3e5346ea98ed1402e8d78d4e47decd7101f97bea5a36148`
+and the canonical preset SHA-256 is
+`8ff8cc9b2fbd0a6455dc0987c10d97c7c4f859303a534ed9080ae586ba739459`.
+All 20 executable parameters are equal; differences are limited to comments,
+BOM/whitespace, or line endings. The source row remains done/PASS with its
+original `C:\QM\worktrees\codex-orchestration-1` path. New Q02 row
+`b0bad5d4-29a1-4b86-873a-38a43112b25a` is pending with canonical
+`C:\QM\repo` setfile path, canonical EX5 SHA-256
+`77d3c5fda5ef2dfd0c138e6520f76d450a04fe812fcefabac07e2673fcd2e425`,
+fixed-risk bindings, and the complete reconciliation object in its payload.
+No manual database rewrite occurred.
+
+Focused verification for this follow-through was 33 Q09 diagnostic/runner
+tests and 21 Q02 enqueue tests, all PASS, plus Python compilation and diff
+checks. The reconciliation tests prove both comment-only acceptance and
+parameter-drift refusal. All new Q09 and Q02 rows remain pending/active work
+whose eventual verdicts come only from their own Q evidence. The deliverable
+is `REVIEW_REQUIRED`; no self-approval or pipeline verdict is claimed.
