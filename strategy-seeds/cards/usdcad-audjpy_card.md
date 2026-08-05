@@ -39,7 +39,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0_APPROVED
+pipeline_phase: Q01_PASS
 g0_approval_reasoning: "R1 PASS: OWNER-requested fixed FX scan plus OWNER-ratified Tier-A Chan SRC02; R2 PASS: fixed low-frequency two-leg D1 beta/z/ATR package; R3 PASS: traded and conversion histories are Darwinex-native; R4 PASS: structural, deterministic, and learned-model-free."
 ---
 
@@ -303,17 +303,21 @@ data_requirements: "USDCAD.DWX, AUDJPY.DWX, AUDUSD.DWX, and USDJPY.DWX D1 histor
 | Version | Date | Rebuild reason | Phase reached | Verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-05 | next-ranked non-duplicate fixed-scan FX basket | G0 | APPROVED |
+| v2 | 2026-08-05 | initial deterministic basket implementation | Q01 | PASS |
 
 ## 15. Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-05 | APPROVED | this card |
-| Q01 Build Validation | TBD | PENDING | deterministic build not started |
-| Q02 Baseline Screening | TBD | NOT_ENQUEUED | requires Q01 PASS |
+| Q01 Build Validation | 2026-08-05 | PASS | `D:\QM\reports\framework\21\build_check_20260805_072937.json` |
+| Q02 Baseline Screening | 2026-08-05 | NOT_ENQUEUED_CPU_CEILING | `docs/research/FX_COINTEGRATION_USDCAD_AUDJPY_Q01_CPU_STOP_2026-08-05.md` |
 
 ## 16. Lessons Captured
 
 - 2026-08-05: Rank 42 is OOS-negative and below the expected Q02 cadence
   floor; it is admitted only as the explicitly requested next-best one-shot
   sleeve, with retirement rather than rescue after economic failure.
+- 2026-08-05: Q01 passed, but Q02 was deliberately not enqueued because the
+  sampled factory load was 9 running terminals against the 7-terminal CPU
+  ceiling.

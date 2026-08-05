@@ -1,0 +1,81 @@
+{
+  "schema_version": "qm.fx_cointegration_q01_cpu_stop.v1",
+  "generated_at_utc": "2026-08-05T07:31:35Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20220",
+  "ea_label": "QM5_20220_usdcad-audjpy",
+  "strategy_id": "AI-CODEX-FX-COINT66-20260609-USDCAD-AUDJPY",
+  "logical_symbol": "QM5_20220_USDCAD_AUDJPY_COINTEGRATION_D1",
+  "timeframe": "D1",
+  "selection": {
+    "scan_rank": 42,
+    "scan_size": 66,
+    "leg_a": "USDCAD.DWX",
+    "leg_b": "AUDJPY.DWX",
+    "beta": -0.186232670359,
+    "dev_net_sharpe": 0.285291116943,
+    "oos_net_sharpe": -0.060279270158,
+    "oos_return_pct": -0.374458523080,
+    "oos_state_changes": 15,
+    "half_life_d1_bars": 73.379978960418,
+    "dedup_result": "CLEAN"
+  },
+  "q01": {
+    "status": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_failures": 0,
+    "build_warnings": 0,
+    "build_report": "D:\\QM\\reports\\framework\\21\\build_check_20260805_072937.json",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260805_072724\\summary.csv",
+    "basket_manifest_tests_passed": 39,
+    "magic_resolver_tests_passed": 5,
+    "hashes_sha256": {
+      "mq5": "7F5C593178F99F667B9318DC7AFD962CA02613B69AEB9F64177F3A5AB884F67D",
+      "ex5": "464B198B76C21106A5CC89B61802855C3DEAE4F3D3D12FA77A8A0EFAF83690CA",
+      "basket_manifest": "F018B19DAAD14C135618C09D23B4F3186E5FF103C904AFA8C15B12976FB65203",
+      "logical_setfile": "EBCE89CFEB15844170F6B7AC558786E7C0D4312543767A4EB8305C6EAC39EC09",
+      "physical_setfile": "5DF5C5B08E036EFFB87A4385AC5CD9739D4AE0348CC70E54D66F36898E43C546"
+    }
+  },
+  "q02": {
+    "status": "NOT_ENQUEUED_CPU_CEILING",
+    "apply_executed": false,
+    "target_work_item_count": 0,
+    "dry_run_generated_at_utc": "2026-08-05T07:31:05Z",
+    "dry_run_evidence": "D:\\QM\\reports\\state\\claude_sweep_enqueue_2026-06-10.json",
+    "would_enqueue_count": 1,
+    "logical_setfile_selected": true,
+    "physical_setfile_skip_reason": "basket_manifest_logical_setfile_preferred"
+  },
+  "capacity_stop": {
+    "sampled_at_utc": "2026-08-05T07:31:35Z",
+    "running_factory_terminal_count": 9,
+    "cpu_ceiling": 7,
+    "running_factory_terminals": [
+      "T1",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "queue_pending_count": 1576,
+    "queue_active_count": 10
+  },
+  "safety": {
+    "risk_model": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "backtest_started": false,
+    "dispatch_tick_run": false,
+    "terminal_started_or_stopped": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
