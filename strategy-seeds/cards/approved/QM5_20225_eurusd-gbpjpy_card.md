@@ -3,7 +3,7 @@ strategy_id: AI-CODEX-FX-COINT66-20260609-EURUSD-GBPJPY
 ea_id: QM5_20225
 slug: eurusd-gbpjpy
 type: strategy
-status: APPROVED
+status: IN_PIPELINE
 g0_status: APPROVED
 force_build: true
 created: 2026-08-05
@@ -39,11 +39,11 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01_PASS
+pipeline_phase: Q02_PENDING
 g0_approval_reasoning: "R1 PASS: OWNER-requested fixed FX scan plus CEO-ratified Tier-A Chan SRC02; R2 PASS: fixed low-frequency two-leg D1 beta/z/ATR package; R3 PASS: traded and conversion histories are Darwinex-native; R4 PASS: structural, deterministic, and learned-model-free."
 ---
 
-# QM5_TBD EURUSD/GBPJPY D1 Cointegration Basket
+# QM5_20225 EURUSD/GBPJPY D1 Cointegration Basket
 
 ## 1. Source
 
@@ -305,6 +305,7 @@ data_requirements: "EURUSD.DWX, GBPJPY.DWX, and USDJPY.DWX D1 histories"
 |---|---|---|---|---|
 | v1 | 2026-08-05 | next-ranked non-duplicate fixed-scan FX basket | G0 | APPROVED |
 | v2 | 2026-08-05 | initial deterministic basket implementation | Q01 | PASS |
+| v3 | 2026-08-05 | logical-basket baseline queue handoff | Q02 | PENDING |
 
 ## 15. Pipeline Phase Status
 
@@ -312,7 +313,7 @@ data_requirements: "EURUSD.DWX, GBPJPY.DWX, and USDJPY.DWX D1 histories"
 |---|---|---|---|
 | G0 Research Intake | 2026-08-05 | APPROVED | `decisions/2026-08-05_eurusd_gbpjpy_cointegration_g0.md` |
 | Q01 Build Validation | 2026-08-05 | PASS | `D:\QM\reports\framework\21\build_check_20260805_155613.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-05 | PENDING | `D:\QM\reports\state\claude_sweep_enqueue_2026-06-10.json`; work item `27b74f69-0e65-4c0e-b283-0be2c004ffc5` |
 
 ## 16. Lessons Captured
 
@@ -321,3 +322,6 @@ data_requirements: "EURUSD.DWX, GBPJPY.DWX, and USDJPY.DWX D1 histories"
   sleeve, with retirement rather than rescue after economic failure.
 - 2026-08-05: Q01 strict compile and build validation passed with zero errors
   and zero warnings; basket and magic-registry regressions also passed.
+- 2026-08-05: Q02 selected the logical basket preset and skipped the physical
+  host preset with `basket_manifest_logical_setfile_preferred`, preventing a
+  duplicate representation of the same two-leg package.
