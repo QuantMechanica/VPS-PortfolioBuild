@@ -558,3 +558,89 @@ physical provenance different from the untouched canonical cell bytes.
 
 This is a genuine adjudication stop. No fresh Q09_PORTFOLIO row, Q10 rerun, or
 QM5_13036 row was enqueued.
+
+## Round 8 bounded transient recovery and governed handoff — 2026-08-05
+
+Router task `698332ca-7cab-4301-9aca-3bc3a2aa472d` repaired the interaction
+that terminalized round 7 after one self-healing child failure. Round-7 work
+item `9fabcddb-8c2e-4b01-9295-4ef4dbb6892d` remains unchanged at
+`done/REVIEW_REQUIRED`; its aggregate records 18 authenticated, one failed,
+and 126 missing cells. No pipeline verdict was reinterpreted.
+
+### Bounded execution semantics
+
+Canonical commits `a20ded0c4` and `aabb9f244` implement the following
+fail-closed contract in `q09_news_runner.py`:
+
+- a production child exit code 1 without a fresh run-smoke summary or receipt
+  is a transient cell failure;
+- the first occurrence writes its immutable failure sidecar, waits for the
+  exact claimed terminal root to exit, reauthenticates the factory claim and
+  sealed plan, and permits exactly one same-attempt retry;
+- a second transient below the three-attempt ceiling raises a
+  `CapacityError` without collecting or persisting an aggregate, allowing the
+  ordinary worker to return the work item to pending while existing receipts
+  remain resumable;
+- both the worker's generic `attempt_count` and its separately persisted
+  history-lock `transient_infra_attempts` count toward the same Q09 ceiling,
+  including a mixed retry sequence; and
+- a permanent cell failure, or a repeated transient at the ceiling, follows
+  the existing immutable sidecar, occurrence-persistence, collection, and
+  adjudication path.
+
+Focused verification passed 42 tests: 23 Q09 runner tests and 19 adjacent
+farm-control and diagnostic integration tests. The regressions cover a
+same-attempt recovery, a twice-transient requeue with no aggregate, permanent
+failure adjudication, generic-attempt ceiling adjudication, and the production
+history-lock counter contributing to that ceiling. Python syntax compilation
+and scoped diff checks also passed.
+
+### Append-only round-8 row
+
+The governed cascade path preserved round 7 and created one new ordinary
+Q09_NEWS row. The canonical expanded-matrix planner regenerated the plan; no
+cell or setfile was hand-edited.
+
+| Identity | Value |
+|---|---|
+| New Q09_NEWS work item | `c9ae1683-5bd9-4595-974e-7cd9df444b9e` |
+| Append-only rerun of | `9fabcddb-8c2e-4b01-9295-4ef4dbb6892d` |
+| Exact Q08 predecessor | `9fe3eb5f-ab0d-4c84-82fe-d6748c3aa270` |
+| Candidate-lineage key | `c963164be8b0677f76ec6cc812f40b0f7f5a9149eb493c31735a85a38c298a7b` |
+| Matrix / cells | `7x4 / 145` |
+| Logical plan SHA-256 | `bb57082f1928bc83af2934a27ab1bbce91af03290467db3db709811ee5be41ef` |
+| Exact plan-file SHA-256 | `08897bd887292cec1de895f758f09bdf69a33472e5943eef88f236d5c575d6c3` |
+| Input-manifest SHA-256 | `59f29a114a2e6849df6825c5ff4d56949fe0a151ce5a57f4ce6ef0e7c88e056f` |
+| Dispatch-binding SHA-256 | `085fd9df70b0552ae6f435e5bea46b408daeae64c3bf99e39c65b7d5f2a7e412` |
+
+All 145 ordered tuples of run identity, setfile SHA-256, arm, compliance mode,
+temporal mode, seed, and paired-base identity compare exactly equal to round
+7. Every generated setfile uses `RISK_FIXED>0` and `RISK_PERCENT=0`; none has
+`qm_news_stale_max_hours` above 336. Binding released the row as
+`RUNNABLE_BOUND` with a 3,600-second cell timeout. At the
+`2026-08-05T17:43:41Z` capture it was pending, unclaimed, with no verdict or
+evidence path. This is queue state, not a pipeline result.
+
+### Serial continuation and Sunday feasibility
+
+No downstream row was created. The continuation remains strictly conditional:
+
+1. only a genuine round-8 `CONFIG_LOCKED` may create a fresh Q09_PORTFOLIO
+   row from Q08 `9fe3eb5f-ab0d-4c84-82fe-d6748c3aa270`;
+2. only a fresh same-lineage `PASS_PORTFOLIO` may create a Q10 append-only
+   rerun of `6f9400fa-9ca2-4835-9fcf-e1087289f9b1`;
+3. only after the QM5_11422 sequence closes may QM5_13036 begin from fresh Q08
+   `fb3f0e20-1982-4f51-9e4b-52da2629a5ac`; and
+4. QM5_13036 historical Q09_NEWS row
+   `7efd8e39-4d1c-4b6d-8cfd-637122aad25f` is only a `PENDING_RUNNER`
+   placeholder. It cannot satisfy the news gate and requires its own real,
+   sealed Q09_NEWS append-only row before any portfolio or Q10 continuation.
+
+Round 7's 19 attempted cells consumed about 3h22m, implying roughly 26 hours
+for a cold 145-cell round at the observed rate. A first 40-cell QM5_13036 run
+adds roughly eight hours; a material-effect expansion can add another
+approximately 25 hours, before queue delay, bounded retries, portfolio work,
+and Q10. Completion by Sunday is therefore operationally possible only if
+ordinary capacity is available promptly and every serial evidence gate passes
+without another review stop. It is not a reliable commitment. Any refusal,
+non-good verdict, or `REVIEW_REQUIRED` stops the chain honestly.
