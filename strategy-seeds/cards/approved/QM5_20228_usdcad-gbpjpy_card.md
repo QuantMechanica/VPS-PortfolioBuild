@@ -264,7 +264,7 @@ data_requirements: "USDCAD.DWX, GBPJPY.DWX, and USDJPY.DWX D1 histories"
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-05 | APPROVED | `decisions/2026-08-05_usdcad_gbpjpy_cointegration_g0.md` |
-| Q01 Build Validation | 2026-08-05 | PASS | `D:\QM\reports\framework\21\build_check_20260805_175547.json` |
+| Q01 Build Validation | 2026-08-05 | PASS | `D:\QM\reports\framework\21\build_check_20260805_175800.json` |
 | Q02 Baseline Screening | - | PENDING | - |
 
 ## 16. Lessons Captured
