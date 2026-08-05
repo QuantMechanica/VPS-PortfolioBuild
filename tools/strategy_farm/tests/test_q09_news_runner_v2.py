@@ -381,6 +381,72 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         self.assertEqual(tampered_result["invalid_cell_count"], 1)
         self.assertEqual(tampered_result["adjudication"]["locked_arms"], [])
 
+    def test_failure_retries_append_and_receipt_precedes_stale_sidecars(self) -> None:
+        plan = self.build(output="retry-stable-failure")
+        spec = plan["cells"][0]
+        cell_dir = Path(spec["receipt_path"]).parent
+        first_artifact = cell_dir / "attempt-1.log"
+        first_artifact.write_text("first attempt\n", encoding="utf-8")
+
+        first_path = runner._write_cell_failure(
+            spec,
+            work_item_id="q09-news-1",
+            exc=runner.RunnerError("first transient failure"),
+        )
+        original_bytes = first_path.read_bytes()
+        first_payload = json.loads(original_bytes)
+
+        second_artifact = cell_dir / "attempt-2.log"
+        second_artifact.write_text("second attempt\n", encoding="utf-8")
+        second_path = runner._write_cell_failure(
+            spec,
+            work_item_id="q09-news-1",
+            exc=runner.RunnerError("second transient failure"),
+        )
+        second_payload = json.loads(second_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(first_path.name, "cell_failure.json")
+        self.assertEqual(second_path.name, "cell_failure_2.json")
+        self.assertEqual(first_path.read_bytes(), original_bytes)
+        self.assertNotEqual(first_payload["error"], second_payload["error"])
+        self.assertNotEqual(first_payload["artifacts"], second_payload["artifacts"])
+        self.assertFalse(
+            any(
+                artifact["relative_path"].startswith("cell_failure")
+                for artifact in second_payload["artifacts"]
+            )
+        )
+        for field in runner.CELL_FAILURE_STABLE_FIELDS:
+            self.assertEqual(first_payload[field], second_payload[field])
+
+        self.write_receipts(plan)
+        result = runner.collect_run_plan_status(Path(plan["plan_path"]))
+        self.assertEqual(result["verdict"], "CONFIG_LOCKED")
+        self.assertEqual(result["authenticated_cell_count"], 40)
+        self.assertEqual(result["failed_cell_count"], 0)
+        self.assertEqual(first_path.read_bytes(), original_bytes)
+        self.assertTrue(second_path.is_file())
+
+    def test_failure_retry_keeps_stable_identity_mismatch_fail_closed(self) -> None:
+        plan = self.build(output="failure-identity-mismatch")
+        spec = plan["cells"][0]
+        first_path = runner._write_cell_failure(
+            spec,
+            work_item_id="q09-news-1",
+            exc=runner.RunnerError("first transient failure"),
+        )
+        contradictory = json.loads(first_path.read_text(encoding="utf-8"))
+        contradictory["seed"] = int(contradictory["seed"]) + 1
+        first_path.write_bytes(contract.canonical_json_bytes(contradictory))
+
+        with self.assertRaisesRegex(runner.RunnerError, "cell failure seed mismatch"):
+            runner._write_cell_failure(
+                spec,
+                work_item_id="q09-news-1",
+                exc=runner.RunnerError("second transient failure"),
+            )
+        self.assertFalse(first_path.with_name("cell_failure_2.json").exists())
+
     def test_claimed_terminal_wait_blocks_until_only_that_terminal_exits(self) -> None:
         terminal_root = self.root / "mt5" / "T1"
         terminal_root.mkdir(parents=True)

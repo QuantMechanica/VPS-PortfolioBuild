@@ -38,6 +38,17 @@ PLAN_SCHEMA = "q09-news-run-plan/v2"
 CELL_RECEIPT_SCHEMA = "q09-news-cell-receipt/v2"
 CELL_EVIDENCE_SCHEMA = "q09-news-cell-evidence/v2"
 CELL_FAILURE_SCHEMA = "q09-news-cell-failure/v1"
+CELL_FAILURE_STABLE_FIELDS = (
+    "schema_version",
+    "work_item_id",
+    "run_identity_sha256",
+    "paired_base_identity_sha256",
+    "arm",
+    "temporal_mode",
+    "compliance_mode",
+    "seed",
+)
+CELL_FAILURE_SIDECAR_RE = re.compile(r"^cell_failure(?:_[1-9][0-9]*)?\.json$")
 COMPLIANCE_MODE_IDS = {"NONE": 0, "DXZ": 1, "FTMO": 2, "5ERS": 3}
 DEFAULT_CELL_TIMEOUT_SEC = 3600
 CELL_TIMEOUT_HEADROOM_SEC = 600
@@ -778,6 +789,31 @@ def _cell_failure_path(spec: Mapping[str, Any]) -> Path:
     return Path(str(spec["receipt_path"])).with_name("cell_failure.json")
 
 
+def _cell_failure_identity(
+    spec: Mapping[str, Any], *, work_item_id: str
+) -> dict[str, Any]:
+    return {
+        "schema_version": CELL_FAILURE_SCHEMA,
+        "work_item_id": str(work_item_id),
+        "run_identity_sha256": spec["run_identity_sha256"],
+        "paired_base_identity_sha256": spec["paired_base_identity_sha256"],
+        "arm": spec["arm"],
+        "temporal_mode": spec["temporal_mode"],
+        "compliance_mode": spec["compliance_mode"],
+        "seed": spec["seed"],
+    }
+
+
+def _assert_cell_failure_identity(
+    failure: Mapping[str, Any],
+    expected: Mapping[str, Any],
+    path: Path,
+) -> None:
+    for field in CELL_FAILURE_STABLE_FIELDS:
+        if failure.get(field) != expected[field]:
+            raise RunnerError(f"cell failure {field} mismatch: {path}")
+
+
 def _failure_artifacts(cell_dir: Path) -> list[dict[str, Any]]:
     """Hash every artifact available when a cell aborts.
 
@@ -789,7 +825,11 @@ def _failure_artifacts(cell_dir: Path) -> list[dict[str, Any]]:
 
     artifacts: list[dict[str, Any]] = []
     for path in sorted(cell_dir.rglob("*")):
-        if not path.is_file() or path.name in {"cell_failure.json", "cell_receipt.json"}:
+        if (
+            not path.is_file()
+            or path.name == "cell_receipt.json"
+            or CELL_FAILURE_SIDECAR_RE.fullmatch(path.name)
+        ):
             continue
         artifacts.append(
             {
@@ -809,21 +849,29 @@ def _write_cell_failure(
     exc: Exception,
 ) -> Path:
     path = _cell_failure_path(spec)
+    identity = _cell_failure_identity(spec, work_item_id=work_item_id)
     payload = {
-        "schema_version": CELL_FAILURE_SCHEMA,
-        "work_item_id": str(work_item_id),
-        "run_identity_sha256": spec["run_identity_sha256"],
-        "paired_base_identity_sha256": spec["paired_base_identity_sha256"],
-        "arm": spec["arm"],
-        "temporal_mode": spec["temporal_mode"],
-        "compliance_mode": spec["compliance_mode"],
-        "seed": spec["seed"],
+        **identity,
         "error_type": type(exc).__name__,
         "error": str(exc),
         "artifacts": _failure_artifacts(path.parent),
     }
-    _write_immutable(path, contract.canonical_json_bytes(payload))
-    return path
+    data = contract.canonical_json_bytes(payload)
+    if not path.exists():
+        _write_immutable(path, data)
+        return path
+
+    original = _load_json(path, f"cell failure {path}")
+    _assert_cell_failure_identity(original, identity, path)
+    occurrence = 2
+    while True:
+        occurrence_path = path.with_name(f"{path.stem}_{occurrence}{path.suffix}")
+        if not occurrence_path.exists():
+            _write_immutable(occurrence_path, data)
+            return occurrence_path
+        prior = _load_json(occurrence_path, f"cell failure {occurrence_path}")
+        _assert_cell_failure_identity(prior, identity, occurrence_path)
+        occurrence += 1
 
 
 def _authenticated_cell_failure(
@@ -833,19 +881,8 @@ def _authenticated_cell_failure(
     if not path.is_file():
         return None
     failure = _load_json(path, f"cell failure {path}")
-    expected = {
-        "schema_version": CELL_FAILURE_SCHEMA,
-        "work_item_id": str(work_item_id),
-        "run_identity_sha256": spec["run_identity_sha256"],
-        "paired_base_identity_sha256": spec["paired_base_identity_sha256"],
-        "arm": spec["arm"],
-        "temporal_mode": spec["temporal_mode"],
-        "compliance_mode": spec["compliance_mode"],
-        "seed": spec["seed"],
-    }
-    for field, value in expected.items():
-        if failure.get(field) != value:
-            raise RunnerError(f"cell failure {field} mismatch: {path}")
+    expected = _cell_failure_identity(spec, work_item_id=work_item_id)
+    _assert_cell_failure_identity(failure, expected, path)
     if not str(failure.get("error_type") or "").strip() or not str(
         failure.get("error") or ""
     ).strip():
