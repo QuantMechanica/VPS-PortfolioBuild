@@ -15525,3 +15525,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20222,wti-seas-sign,0,XTIUSD.DWX,202220000,2026-08-05T08:39:50Z,Codex,active
 20223,gbpusd-eurgbp,0,GBPUSD.DWX,202230000,2026-08-05T09:23:13Z,Codex,active
 20223,gbpusd-eurgbp,1,EURGBP.DWX,202230001,2026-08-05T09:23:13Z,Codex,active
+20224,eurusd-eurjpy,0,EURUSD.DWX,202240000,2026-08-05T14:29:17Z,Codex,active
+20224,eurusd-eurjpy,1,EURJPY.DWX,202240001,2026-08-05T14:29:17Z,Codex,active
