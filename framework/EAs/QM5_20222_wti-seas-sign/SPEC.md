@@ -92,3 +92,4 @@ portfolio-gate change.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-05 | Initial build from approved G0 card | Q01 strict compile/build PASS; 0 errors, warnings, failures, or build warnings |
+| v2 | 2026-08-05 | Paced baseline handoff | Q02 priority work item `92ed552b-bf16-4f8d-bb72-58eda1b554df` enqueued |
