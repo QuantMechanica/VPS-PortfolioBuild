@@ -240,6 +240,22 @@ def is_q02_requeue_excluded(ea_id: Any, excluded: set[str] | None = None) -> boo
     excluded = load_requeue_excluded_eas() if excluded is None else excluded
     return _normalise_ea_label(ea_id) in excluded
 
+
+_FX_CURRENCY_CODES = frozenset({"AUD", "CAD", "CHF", "EUR", "GBP", "JPY", "NZD", "USD"})
+
+
+def _is_fx_currency_pair(symbol: str) -> bool:
+    """Return whether a normalized DWX symbol is a supported fiat FX pair."""
+    base = str(symbol or "").strip().upper()
+    if base.endswith(".DWX"):
+        base = base[:-4]
+    return (
+        len(base) == 6
+        and base[:3] in _FX_CURRENCY_CODES
+        and base[3:] in _FX_CURRENCY_CODES
+        and base[:3] != base[3:]
+    )
+
 # 2026-05-23 OR3 — post-pipeline-rewrite Qxx canonical phase set.
 # Vault: 03 Pipeline/Pipeline Overview.md
 # Wipe (DL-063 + PIPELINE_REWRITE_PROPOSAL_2026-05-23) cleared all legacy
@@ -2409,6 +2425,7 @@ def _build_task_claim_guard(
     task_row: Any,
     *,
     require_card: bool = True,
+    allow_q02_excluded: bool = False,
 ) -> dict[str, Any]:
     """Read-only eligibility guard shared by every build dispatch lane.
 
@@ -2465,6 +2482,20 @@ def _build_task_claim_guard(
             "reason": "eligible_payload_only",
             "task_id": task_id,
             "ea_id": ea_id,
+        }
+
+    exclusion_sources: list[str] = []
+    if is_q02_requeue_excluded(ea_id):
+        exclusion_sources.append("requeue_excluded_eas")
+    if exclusion_sources and not allow_q02_excluded:
+        return {
+            "claimable": False,
+            "code": "Q02_EXCLUDED",
+            "reason": "Q02_EXCLUDED:" + ",".join(exclusion_sources),
+            "task_id": task_id,
+            "ea_id": ea_id,
+            "q02_exclusion_sources": exclusion_sources,
+            "override_allowed": True,
         }
 
     card_path: Path | None = None
@@ -2530,14 +2561,49 @@ def _build_task_claim_guard(
             "card_path": str(card_path),
             "r_gate": consistency,
         }
+
+    try:
+        expected_trades = int(str(fm.get("expected_trades_per_year_per_symbol") or "").strip())
+    except (TypeError, ValueError):
+        expected_trades = 0
+    try:
+        card_text = card_path.read_text(encoding="utf-8-sig", errors="ignore")
+    except OSError:
+        card_text = ""
+    declared_symbols = _card_universe_symbols(
+        f"Target symbols: {fm.get('target_symbols') or ''}"
+    )
+    if not declared_symbols:
+        declared_symbols = _card_universe_symbols(card_text)
+    fx_only_high_frequency = (
+        expected_trades > 100
+        and bool(declared_symbols)
+        and all(_is_fx_currency_pair(symbol) for symbol in declared_symbols)
+    )
+    if fx_only_high_frequency:
+        exclusion_sources.append("fx_only_expected_trades_gt_100")
+    if exclusion_sources and not allow_q02_excluded:
+        return {
+            "claimable": False,
+            "code": "Q02_EXCLUDED",
+            "reason": "Q02_EXCLUDED:" + ",".join(exclusion_sources),
+            "task_id": task_id,
+            "ea_id": ea_id,
+            "card_path": str(card_path),
+            "q02_exclusion_sources": exclusion_sources,
+            "expected_trades_per_year_per_symbol": expected_trades,
+            "declared_symbols": sorted(declared_symbols),
+            "override_allowed": True,
+        }
     return {
         "claimable": True,
-        "code": "eligible",
-        "reason": "eligible",
+        "code": "eligible_q02_exclusion_override" if exclusion_sources else "eligible",
+        "reason": "eligible_q02_exclusion_override" if exclusion_sources else "eligible",
         "task_id": task_id,
         "ea_id": ea_id,
         "card_path": str(card_path),
         "r_gate": consistency,
+        **({"q02_exclusion_sources": exclusion_sources} if exclusion_sources else {}),
     }
 
 
