@@ -665,14 +665,73 @@ def _transient_generation_failure_proof(
             error = str(failure.get("error") or "")
             proof_kind = ""
             supporting_summary: dict[str, str] | None = None
+            exit_one_match = re.match(
+                r"^Q09 (selection|holdout|full) run_smoke exited with code 1(?:\b| )",
+                error,
+            )
             if (
                 error_type in {"RunnerError", "TransientCellError"}
-                and re.search(
-                    r"Q09 (?:selection|holdout|full) run_smoke exited with code 1(?:\b| )",
-                    error,
-                )
+                and exit_one_match is not None
             ):
-                proof_kind = "child_exit_1_without_receipt"
+                failed_window = exit_one_match.group(1)
+                declared_summaries: list[dict[str, Any]] = []
+                authenticated_summaries: list[tuple[Path, str, dict[str, Any]]] = []
+                for artifact in failure.get("artifacts", []):
+                    if not isinstance(artifact, dict):
+                        continue
+                    relative_path = str(artifact.get("relative_path") or "").replace("\\", "/")
+                    if (
+                        f"runs/{failed_window}/" not in relative_path
+                        or not relative_path.endswith("/summary.json")
+                    ):
+                        continue
+                    declared_summaries.append(artifact)
+                    summary_path = Path(str(artifact.get("path") or "")).resolve()
+                    try:
+                        summary_path.relative_to(cell_root)
+                    except ValueError:
+                        continue
+                    expected_summary_hash = str(artifact.get("sha256") or "").lower()
+                    if (
+                        not summary_path.is_file()
+                        or sha256_file(summary_path) != expected_summary_hash
+                    ):
+                        continue
+                    authenticated_summaries.append((
+                        summary_path,
+                        expected_summary_hash,
+                        json.loads(summary_path.read_text(encoding="utf-8-sig")),
+                    ))
+
+                if not declared_summaries:
+                    proof_kind = "child_exit_1_without_receipt"
+                elif len(authenticated_summaries) == 1:
+                    summary_path, expected_summary_hash, run_summary = authenticated_summaries[0]
+                    try:
+                        ok_run = q09._single_ok_run(run_summary)
+                        min_trades = int(run_summary.get("min_trades_required"))
+                        actual_trades = int(ok_run.get("total_trades"))
+                    except (q09.RunnerError, TypeError, ValueError):
+                        pass
+                    else:
+                        identity = run_summary.get("execution_identity")
+                        if (
+                            run_summary.get("result") == "FAIL"
+                            and run_summary.get("reason_classes") == ["MIN_TRADES_NOT_MET"]
+                            and run_summary.get("requested_runs") == 1
+                            and run_summary.get("deterministic") is True
+                            and run_summary.get("oninit_failure_detected") is False
+                            and isinstance(identity, dict)
+                            and identity.get("stable_during_run") is True
+                            and min_trades > actual_trades >= 0
+                        ):
+                            proof_kind = "diagnostic_min_trades_floor_misapplied"
+                            supporting_summary = {
+                                "supporting_summary_path": str(summary_path),
+                                "supporting_summary_sha256": expected_summary_hash,
+                                "min_trades_required": str(min_trades),
+                                "actual_trades": str(actual_trades),
+                            }
             elif (
                 error_type == "RunnerError"
                 and error == "run_smoke did not publish exactly one authenticated OK run"

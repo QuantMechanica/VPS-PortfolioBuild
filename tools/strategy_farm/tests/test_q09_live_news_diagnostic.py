@@ -661,6 +661,141 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
             contract.sha256_file(run_summary_path),
         )
 
+    def test_generation_rerun_proof_accepts_misapplied_diagnostic_trade_floor(self) -> None:
+        cell_root = self.root / "diagnostic-min-trades-cell"
+        run_summary_path = cell_root / "runs" / "selection" / "fixture" / "summary.json"
+        run_summary_path.parent.mkdir(parents=True)
+        run_summary_path.write_text(
+            json.dumps({
+                "result": "FAIL",
+                "reason_classes": ["MIN_TRADES_NOT_MET"],
+                "requested_runs": 1,
+                "deterministic": True,
+                "oninit_failure_detected": False,
+                "min_trades_required": 25,
+                "execution_identity": {"stable_during_run": True},
+                "runs": [{
+                    "run": "run_01",
+                    "status": "OK",
+                    "total_trades": 24,
+                }],
+            }),
+            encoding="utf-8",
+        )
+        failure_path = cell_root / "cell_failure.json"
+        failure_path.write_text(
+            json.dumps({
+                "error_type": "RunnerError",
+                "error": "Q09 selection run_smoke exited with code 1",
+                "artifacts": [{
+                    "path": str(run_summary_path.resolve()),
+                    "relative_path": "runs/selection/fixture/summary.json",
+                    "sha256": contract.sha256_file(run_summary_path),
+                }],
+            }),
+            encoding="utf-8",
+        )
+        diagnostic_summary = self.root / "diagnostic-min-trades-summary.json"
+        diagnostic_summary.write_text(
+            json.dumps({
+                "schema_version": "q09-live-news-diagnostic-summary/v1",
+                "diagnostic_non_admission": True,
+                "diagnostic_contract": runner.DIAGNOSTIC_CONTRACT,
+                "work_item_id": self.work_item_id,
+            }),
+            encoding="utf-8",
+        )
+        predecessor = {
+            "id": self.work_item_id,
+            "status": "done",
+            "verdict": "REVIEW_REQUIRED",
+            "evidence_path": str(diagnostic_summary),
+        }
+        payload = {
+            "diagnostic_non_admission": True,
+            "diagnostic_campaign_id": backfill.CAMPAIGN_ID,
+            "diagnostic_generation": 3,
+        }
+        plan = {"cells": [{
+            "receipt_path": str(cell_root / "cell_receipt.json"),
+            "run_identity_sha256": "b" * 64,
+        }]}
+
+        proof = backfill._transient_generation_failure_proof(
+            predecessor, payload, plan
+        )
+
+        self.assertEqual(len(proof), 1)
+        self.assertEqual(
+            proof[0]["proof_kind"],
+            "diagnostic_min_trades_floor_misapplied",
+        )
+        self.assertEqual(proof[0]["min_trades_required"], "25")
+        self.assertEqual(proof[0]["actual_trades"], "24")
+
+    def test_generation_rerun_proof_refuses_other_fresh_code_one_summary(self) -> None:
+        cell_root = self.root / "diagnostic-other-code-one-cell"
+        run_summary_path = cell_root / "runs" / "selection" / "fixture" / "summary.json"
+        run_summary_path.parent.mkdir(parents=True)
+        run_summary_path.write_text(
+            json.dumps({
+                "result": "FAIL",
+                "reason_classes": ["TIMEOUT"],
+                "requested_runs": 1,
+                "deterministic": False,
+                "oninit_failure_detected": False,
+                "min_trades_required": 25,
+                "execution_identity": {"stable_during_run": True},
+                "runs": [],
+            }),
+            encoding="utf-8",
+        )
+        failure_path = cell_root / "cell_failure.json"
+        failure_path.write_text(
+            json.dumps({
+                "error_type": "RunnerError",
+                "error": "Q09 selection run_smoke exited with code 1",
+                "artifacts": [{
+                    "path": str(run_summary_path.resolve()),
+                    "relative_path": "runs/selection/fixture/summary.json",
+                    "sha256": contract.sha256_file(run_summary_path),
+                }],
+            }),
+            encoding="utf-8",
+        )
+        diagnostic_summary = self.root / "diagnostic-other-code-one-summary.json"
+        diagnostic_summary.write_text(
+            json.dumps({
+                "schema_version": "q09-live-news-diagnostic-summary/v1",
+                "diagnostic_non_admission": True,
+                "diagnostic_contract": runner.DIAGNOSTIC_CONTRACT,
+                "work_item_id": self.work_item_id,
+            }),
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(
+            backfill.BackfillError,
+            "no authenticated transient/no-receipt failure",
+        ):
+            backfill._transient_generation_failure_proof(
+                {
+                    "id": self.work_item_id,
+                    "status": "done",
+                    "verdict": "REVIEW_REQUIRED",
+                    "evidence_path": str(diagnostic_summary),
+                },
+                {
+                    "diagnostic_non_admission": True,
+                    "diagnostic_campaign_id": backfill.CAMPAIGN_ID,
+                    "diagnostic_generation": 3,
+                },
+                {"cells": [{
+                    "receipt_path": str(cell_root / "cell_receipt.json"),
+                    "run_identity_sha256": "c" * 64,
+                }]},
+            )
+
     def test_fresh_build_rerun_is_append_only_hash_bound_and_idempotent(self) -> None:
         artifact_root = self.root / "campaign"
         source_anchor = json.loads(self.anchor.read_text(encoding="utf-8"))
