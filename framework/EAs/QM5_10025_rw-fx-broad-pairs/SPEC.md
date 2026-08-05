@@ -3,7 +3,7 @@
 **EA ID:** QM5_10025
 **Slug:** `rw-fx-broad-pairs`
 **Source:** `dcbac84f-6ecf-5d21-9630-50faa69306ec`
-**Last revised:** 2026-08-05
+**Last revised:** 2026-08-06
 
 ## 1. Strategy Logic
 
@@ -73,8 +73,8 @@ Citation: Robot Wealth, "Index of Strategies", FX Broad Pairs Trading section, h
 
 ## 7. Risk Model
 
-Backtests use fixed risk with `RISK_FIXED = 1000.0` and `RISK_PERCENT = 0.0` per H4 host. Live promotion uses percent risk via deploy manifest with `RISK_PERCENT = 0.5` and `RISK_FIXED = 0.0`. Position sizing is delegated to the V5 framework risk helpers.
+Backtests use fixed package risk with `RISK_FIXED = 1000.0` and `RISK_PERCENT = 0.0` per H4 host. The package risk is split between host and partner in proportion to the absolute OLS weights. Live promotion uses percent risk via deploy manifest with `RISK_PERCENT = 0.5` and `RISK_FIXED = 0.0`. Position sizing is delegated to the V5 framework risk helpers.
 
 ## Implementation Notes
 
-The Strategy Card requires true two-leg spread execution. The EA uses the local V5 basket order helper for the partner leg while retaining the five strategy hooks and framework guards. The card calls for ADF p-value `< 0.10`; the EA implements a deterministic ADF-style t-statistic proxy because there is no framework ADF helper.
+The Strategy Card requires true two-leg spread execution. The foreign partner opens first through the local V5 basket order helper; the host leg then opens through `QM_TM_OpenPosition`, with immediate partner rollback if the host is rejected. The seven-symbol dependency set is declared in `basket_manifest.json`, registered through `QM_SymbolGuardInit`, and warmed once at initialization. The card calls for ADF p-value `< 0.10`; the EA implements a deterministic ADF-style t-statistic proxy because there is no framework ADF helper.

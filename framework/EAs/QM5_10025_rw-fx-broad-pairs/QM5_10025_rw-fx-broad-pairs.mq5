@@ -57,7 +57,6 @@ double  g_current_z = 0.0;
 double  g_current_sigma = 0.0;
 double  g_entry_abs_z = 0.0;
 datetime g_entry_bar_time = 0;
-datetime g_state_bar_time = 0;
 bool    g_state_ready = false;
 
 int Strategy_SymbolIndex(const string symbol)
@@ -68,13 +67,6 @@ int Strategy_SymbolIndex(const string symbol)
          return i;
      }
    return -1;
-  }
-
-int Strategy_MonthKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 100 + dt.mon;
   }
 
 bool Strategy_FinalH4BeforeWeekend(const datetime broker_time)
@@ -99,12 +91,14 @@ bool Strategy_SpreadsNormal()
   }
 
 bool Strategy_ReadLogs(const string sym_a,
-                       const string sym_b,
+                        const string sym_b,
                        const int bars,
                        double &log_a[],
                        double &log_b[])
   {
    if(bars < 3)
+      return false;
+   if(!QM_SymbolAssertOrLog(sym_a) || !QM_SymbolAssertOrLog(sym_b))
       return false;
 
    double closes_a[];
@@ -285,11 +279,10 @@ bool Strategy_SpreadStats(const int host_index,
 
 bool Strategy_SelectMonthlyPair(const int host_index)
   {
-   const datetime bar_time = iTime(_Symbol, PERIOD_H4, 1); // perf-allowed: closed H4 rebalance key after new-bar gate
-   if(bar_time <= 0)
+   const int month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   if(month_key <= 0)
       return false;
 
-   const int month_key = Strategy_MonthKey(bar_time);
    // Pair selection is monthly. A month with no qualifying partner is also a
    // completed selection result; do not rescan six 252-bar relationships on
    // every H4 bar until the calendar month changes.
@@ -327,27 +320,13 @@ bool Strategy_SelectMonthlyPair(const int host_index)
 
 bool Strategy_RefreshState()
   {
+   // OnTick calls this exactly once after the framework's H4 new-bar gate.
+   // Exit and entry hooks consume the resulting closed-bar snapshot.
+   g_state_ready = false;
+
    const int host_index = Strategy_SymbolIndex(_Symbol);
    if(host_index < 0)
-     {
-      g_state_ready = false;
       return false;
-     }
-
-   const datetime closed_bar_time = iTime(_Symbol, PERIOD_H4, 1); // perf-allowed: closed H4 cache key after new-bar gate
-   if(closed_bar_time <= 0)
-     {
-      g_state_ready = false;
-      return false;
-     }
-   if(closed_bar_time == g_state_bar_time)
-      return g_state_ready;
-
-   // Exit and entry both consume the same closed H4 observation. Cache even a
-   // failed refresh so missing secondary history cannot trigger duplicate
-   // multi-symbol CopyClose work on the same bar.
-   g_state_bar_time = closed_bar_time;
-   g_state_ready = false;
 
    for(int i = 0; i < STRATEGY_SYMBOL_COUNT; ++i)
       SymbolSelect(g_symbols[i], true);
@@ -420,15 +399,46 @@ double Strategy_StopDistance(const string symbol)
    return atr * strategy_atr_sl_mult;
   }
 
-bool Strategy_OpenLeg(const int symbol_index,
-                      const bool buy_leg,
-                      const double weight,
-                      const double weight_sum,
-                      const string reason)
+bool Strategy_RiskForWeight(const double weight,
+                            const double weight_sum,
+                            QM_RiskMode &mode,
+                            double &value)
+  {
+   mode = QM_RISK_MODE_UNSET;
+   value = 0.0;
+   if(weight_sum <= 0.0 || MathAbs(weight) <= 0.0)
+      return false;
+
+   const double fraction = MathAbs(weight) / weight_sum;
+   if(RISK_FIXED > 0.0 && RISK_PERCENT <= 0.0)
+     {
+      mode = QM_RISK_MODE_FIXED;
+      value = RISK_FIXED * fraction;
+      return (value > 0.0);
+     }
+   if(RISK_PERCENT > 0.0 && RISK_FIXED <= 0.0)
+     {
+      mode = QM_RISK_MODE_PERCENT;
+      value = RISK_PERCENT * fraction;
+      return (value > 0.0);
+     }
+   return false;
+  }
+
+// Foreign partner leg only. The host leg is returned as QM_EntryRequest and
+// opened by QM_TM_OpenPosition in OnTick.
+bool Strategy_OpenPartnerLeg(const int symbol_index,
+                             const bool buy_leg,
+                             const double weight,
+                             const double weight_sum,
+                             const string reason)
   {
    const string symbol = g_symbols[symbol_index];
+   if(symbol == _Symbol || !QM_SymbolAssertOrLog(symbol))
+      return false;
+
    const double entry = buy_leg ? SymbolInfoDouble(symbol, SYMBOL_ASK)
-                                : SymbolInfoDouble(symbol, SYMBOL_BID);
+                                 : SymbolInfoDouble(symbol, SYMBOL_BID);
    const double stop_dist = Strategy_StopDistance(symbol);
    const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
    if(entry <= 0.0 || stop_dist <= 0.0 || point <= 0.0 || weight_sum <= 0.0)
@@ -444,14 +454,21 @@ bool Strategy_OpenLeg(const int symbol_index,
    breq.expiration_seconds = 0;
    breq.reason = reason;
 
+   QM_RiskMode risk_mode;
+   double risk_value;
+   if(!Strategy_RiskForWeight(weight, weight_sum, risk_mode, risk_value))
+      return false;
+
    const double sl_points = stop_dist / point;
-   breq.lots = QM_LotsForRisk(symbol, sl_points) * MathAbs(weight) / weight_sum;
+   breq.lots = QM_LotsForRisk(symbol, sl_points, risk_mode, risk_value);
+   if(breq.lots <= 0.0)
+      return false;
 
    ulong ticket = 0;
    return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, breq, ticket);
   }
 
-bool Strategy_OpenPair(const int spread_direction)
+bool Strategy_PreparePair(const int spread_direction, QM_EntryRequest &host_req)
   {
    const int host_index = Strategy_SymbolIndex(_Symbol);
    const int partner_index = g_selected_partner;
@@ -469,26 +486,29 @@ bool Strategy_OpenPair(const int spread_direction)
    const string reason = (spread_direction > 0) ? "QM5_10025_LONG_SPREAD_Z_LT_NEG2"
                                                 : "QM5_10025_SHORT_SPREAD_Z_GT_POS2";
 
-   const bool host_opened =
-      Strategy_OpenLeg(host_index, buy_host, host_weight, weight_sum, reason);
-   const bool partner_opened =
-      Strategy_OpenLeg(partner_index, buy_partner, partner_weight, weight_sum, reason);
-
-   if(host_opened != partner_opened)
-     {
-      // A spread is atomic. Never leave a directional orphan after a partial
-      // fill; close whichever registered leg opened and reject the package.
-      Strategy_ClosePair(host_index, partner_index, QM_EXIT_STRATEGY);
+   const double host_entry = buy_host ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                      : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double host_stop_dist = Strategy_StopDistance(_Symbol);
+   const int host_digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   if(host_entry <= 0.0 || host_stop_dist <= 0.0)
       return false;
-     }
 
-   if(host_opened && partner_opened)
-     {
-      g_entry_abs_z = MathAbs(g_current_z);
-      g_entry_bar_time = iTime(_Symbol, PERIOD_H4, 1); // perf-allowed: closed H4 entry timestamp after new-bar gate
-      return true;
-     }
-   return false;
+   // Prepare the host before opening the partner so a local data defect cannot
+   // leave an orphan. The partner is sent first; a failed partner aborts.
+   host_req.type = buy_host ? QM_BUY : QM_SELL;
+   host_req.price = 0.0;
+   host_req.sl = buy_host ? NormalizeDouble(host_entry - host_stop_dist, host_digits)
+                          : NormalizeDouble(host_entry + host_stop_dist, host_digits);
+   host_req.tp = 0.0;
+   host_req.reason = reason;
+   host_req.symbol_slot = g_slots[host_index];
+   host_req.expiration_seconds = 0;
+
+   return Strategy_OpenPartnerLeg(partner_index,
+                                  buy_partner,
+                                  partner_weight,
+                                  weight_sum,
+                                  reason);
   }
 
 int Strategy_BarsHeld()
@@ -524,7 +544,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_RefreshState())
+   if(!g_state_ready)
       return false;
    if(Strategy_NoTradeFilter())
       return false;
@@ -539,8 +559,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    else
       return false;
 
-   Strategy_OpenPair(spread_direction);
-   return false;
+   return Strategy_PreparePair(spread_direction, req);
   }
 
 // Trade Management
@@ -557,7 +576,7 @@ bool Strategy_ExitSignal()
    if(host_index < 0 || partner_index < 0 || !Strategy_HasPairPosition(host_index, partner_index))
       return false;
 
-   if(!Strategy_RefreshState())
+   if(!g_state_ready)
       return false;
 
    bool should_close = false;
@@ -613,9 +632,6 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   for(int i = 0; i < STRATEGY_SYMBOL_COUNT; ++i)
-      SymbolSelect(g_symbols[i], true);
-
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -633,6 +649,12 @@ int OnInit()
                         qm_news_temporal,
                         qm_news_compliance))
       return INIT_FAILED;
+
+   QM_SymbolGuardInit(g_symbols);
+   QM_BasketWarmupHistory(g_symbols,
+                          PERIOD_H4,
+                          MathMax(strategy_formation_bars + 1,
+                                  strategy_zscore_bars + 1));
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10025\",\"ea\":\"rw-fx-broad-pairs\"}");
    return INIT_SUCCEEDED;
@@ -676,12 +698,43 @@ void OnTick()
    // All multi-symbol history, spread and news work now executes at most once
    // per closed H4 bar. Exits remain available through news blackouts; the
    // entry hook applies the two-leg news gate after selecting the partner.
+   Strategy_RefreshState();
    QM_EquityStreamOnNewBar();
    Strategy_ManageOpenPosition();
    Strategy_ExitSignal();
 
    QM_EntryRequest req;
-   Strategy_EntrySignal(req);
+   if(Strategy_EntrySignal(req))
+     {
+      const int host_index = Strategy_SymbolIndex(_Symbol);
+      const int partner_index = g_selected_partner;
+      const double weight_sum = 1.0 + MathAbs(g_selected_beta);
+      QM_RiskMode host_risk_mode;
+      double host_risk_value;
+      ulong out_ticket = 0;
+      const bool risk_ok = Strategy_RiskForWeight(1.0,
+                                                  weight_sum,
+                                                  host_risk_mode,
+                                                  host_risk_value);
+      const bool host_opened = risk_ok &&
+         QM_TM_OpenPosition(req,
+                            out_ticket,
+                            0,
+                            host_risk_mode,
+                            host_risk_value);
+      if(!host_opened)
+        {
+         // Partner was opened first. Roll it back immediately when the
+         // framework rejects the host leg so directional exposure is bounded.
+         if(host_index >= 0 && partner_index >= 0)
+            Strategy_ClosePair(host_index, partner_index, QM_EXIT_STRATEGY);
+        }
+      else
+        {
+         g_entry_abs_z = MathAbs(g_current_z);
+         g_entry_bar_time = iTime(_Symbol, PERIOD_H4, 1); // perf-allowed: closed H4 entry timestamp after new-bar gate
+        }
+     }
   }
 
 void OnTimer()
