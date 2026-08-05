@@ -60,6 +60,10 @@ int      g_cache_period_key = 0;
 int      g_cache_decision_month_key = 0;
 int      g_last_entry_period_key = 0;
 datetime g_pair_entry_time = 0;
+int      g_pair_open_leg_count = 0;
+bool     g_pair_composition_valid = false;
+int      g_magic_xti = -1;
+int      g_magic_xng = -1;
 double   g_cache_xti_avg_return = 0.0;
 double   g_cache_xng_avg_return = 0.0;
 double   g_cache_return_difference = 0.0;
@@ -95,39 +99,64 @@ bool Strategy_SpreadAllowed(const string symbol)
 bool Strategy_IsPairPosition()
   {
    const string symbol = PositionGetString(POSITION_SYMBOL);
-   const int slot = Strategy_SlotForSymbol(symbol);
-   if(slot < 0)
-      return false;
-   return ((int)PositionGetInteger(POSITION_MAGIC) == QM_MagicChecked(qm_ea_id, slot, symbol));
+   const long magic = PositionGetInteger(POSITION_MAGIC);
+   if(symbol == g_leg_xti)
+      return (g_magic_xti > 0 && magic == g_magic_xti);
+   if(symbol == g_leg_xng)
+      return (g_magic_xng > 0 && magic == g_magic_xng);
+   return false;
   }
 
-int Strategy_OpenPairLegCount()
+void Strategy_RefreshPairState()
   {
-   int count = 0;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(Strategy_IsPairPosition())
-         ++count;
-     }
-   return count;
-  }
-
-datetime Strategy_CurrentPairEntryTime()
-  {
+   int xti_direction = 0;
+   int xng_direction = 0;
+   int xti_count = 0;
+   int xng_count = 0;
+   int open_leg_count = 0;
    datetime earliest = 0;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
       if(ticket == 0 || !PositionSelectByTicket(ticket) || !Strategy_IsPairPosition())
          continue;
+
+      ++open_leg_count;
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
       if(opened > 0 && (earliest == 0 || opened < earliest))
          earliest = opened;
+
+      const string symbol = PositionGetString(POSITION_SYMBOL);
+      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const int direction = (position_type == POSITION_TYPE_BUY) ? 1 : -1;
+      if(symbol == g_leg_xti)
+        {
+         xti_direction = direction;
+         ++xti_count;
+        }
+      else if(symbol == g_leg_xng)
+        {
+         xng_direction = direction;
+         ++xng_count;
+        }
      }
-   return earliest;
+
+   g_pair_open_leg_count = open_leg_count;
+   g_pair_composition_valid = (xti_count == 1 &&
+                               xng_count == 1 &&
+                               xti_direction == -xng_direction);
+   g_pair_entry_time = earliest;
+  }
+
+int Strategy_OpenPairLegCount()
+  {
+   return g_pair_open_leg_count;
+  }
+
+datetime Strategy_CurrentPairEntryTime()
+  {
+   return g_pair_entry_time;
   }
 
 int Strategy_MonthKeyForTime(const datetime value)
@@ -162,30 +191,7 @@ bool Strategy_IsRebalanceMonth(const int month_key)
 
 bool Strategy_PairCompositionValid()
   {
-   int xti_direction = 0;
-   int xng_direction = 0;
-   int xti_count = 0;
-   int xng_count = 0;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket) || !Strategy_IsPairPosition())
-         continue;
-      const string symbol = PositionGetString(POSITION_SYMBOL);
-      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const int direction = (position_type == POSITION_TYPE_BUY) ? 1 : -1;
-      if(symbol == g_leg_xti)
-        {
-         xti_direction = direction;
-         ++xti_count;
-        }
-      else if(symbol == g_leg_xng)
-        {
-         xng_direction = direction;
-         ++xng_count;
-        }
-     }
-   return (xti_count == 1 && xng_count == 1 && xti_direction == -xng_direction);
+   return g_pair_composition_valid;
   }
 
 void Strategy_ClosePair(const QM_ExitReason reason)
@@ -198,7 +204,7 @@ void Strategy_ClosePair(const QM_ExitReason reason)
       if(Strategy_IsPairPosition())
          QM_TM_ClosePosition(ticket, reason);
      }
-   g_pair_entry_time = 0;
+   Strategy_RefreshPairState();
   }
 
 bool Strategy_AverageReturn(const string symbol,
@@ -304,9 +310,8 @@ bool Strategy_LoadSignalState(const datetime decision_bar_time,
 
 bool Strategy_IsPairMagic(const long magic)
   {
-   const int xti_magic = QM_MagicChecked(qm_ea_id, 0, g_leg_xti);
-   const int xng_magic = QM_MagicChecked(qm_ea_id, 1, g_leg_xng);
-   return (magic == xti_magic || magic == xng_magic);
+   return ((g_magic_xti > 0 && magic == g_magic_xti) ||
+           (g_magic_xng > 0 && magic == g_magic_xng));
   }
 
 bool Strategy_PeriodAlreadyEntered(const int period_key,
@@ -468,7 +473,9 @@ bool Strategy_OpenPair(const int pair_direction)
       return false;
    if(Strategy_OpenLeg(g_leg_xng, xng_type, 1.0, weight_sum, reason))
      {
-      g_pair_entry_time = TimeCurrent();
+      Strategy_RefreshPairState();
+      if(g_pair_entry_time <= 0)
+         g_pair_entry_time = TimeCurrent();
       return true;
      }
 
@@ -604,11 +611,17 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   g_magic_xti = QM_MagicChecked(qm_ea_id, 0, g_leg_xti);
+   g_magic_xng = QM_MagicChecked(qm_ea_id, 1, g_leg_xng);
+   if(g_magic_xti <= 0 || g_magic_xng <= 0)
+      return INIT_FAILED;
+
    string basket_symbols[2] = {g_leg_xti, g_leg_xng};
    QM_SymbolGuardInit(basket_symbols);
    QM_BasketWarmupHistory(basket_symbols,
                           PERIOD_D1,
                           MathMax(1200, strategy_history_bars));
+   Strategy_RefreshPairState();
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_20057\",\"ea\":\"xauxag-xmom1\"}");
    return INIT_SUCCEEDED;
@@ -625,7 +638,6 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
    if(QM_FrameworkHandleFridayClose())
       return;
    if(Strategy_NoTradeFilter())
@@ -643,9 +655,11 @@ void OnTick()
       return;
      }
 
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
    if(!new_bar)
+      return;
+
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
       return;
 
    QM_EquityStreamOnNewBar();
@@ -669,6 +683,7 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeResult &result)
   {
    QM_FrameworkOnTradeTransaction(trans, request, result);
+   Strategy_RefreshPairState();
   }
 
 double OnTester()
