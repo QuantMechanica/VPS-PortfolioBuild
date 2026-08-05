@@ -1,9 +1,13 @@
 # Q09 cross-round persistence divergence — Codex forensics
 
-Date: 2026-08-05  
-Scope: QM5_11422 / USDCAD.DWX / Q09_NEWS  
-Primary affected work item: `4984cca7-e1a3-49a8-a066-066ac51eb063`  
-Repair under review: `2a0a0186f` (`Fix Q09 cross-round provenance persistence`)  
+Date: 2026-08-05
+
+Scope: QM5_11422 / USDCAD.DWX / Q09_NEWS
+
+Primary affected work item: `4984cca7-e1a3-49a8-a066-066ac51eb063`
+
+Repair under review: `2a0a0186f` (`Fix Q09 cross-round provenance persistence`)
+
 Disposition: **root cause confirmed; repair is correct for the current trusted-writer path; no evidence loss found**
 
 ## Phase A — independent analysis
@@ -219,3 +223,64 @@ Combined result: **52 passed**.
 Q09 combined globally deterministic economic identity with round-local physical provenance in one uniqueness record. Restart hardening then compared both categories as though they shared the same determinism scope. Cross-round reuse correctly reproduced every input and economic metric but necessarily produced new report/evidence hashes, causing a deterministic persistence rejection. Schema v3 fixes the category error by retaining one canonical economic cell and appending per-work-item physical occurrences, then presenting the correct occurrence through a work-item view.
 
 **Phase A independence seal:** the analysis above was completed before opening the Claude report. Cross-review follows only after this document is committed as a standalone Phase A artifact.
+
+## Phase B — Claude/Codex cross-review
+
+Phase A was sealed before this cross-review in canonical commit `3088212a0` and merged to `main` as `91b1da416`. Only then was the Claude report opened:
+
+`docs/ops/evidence/2026-08-05_q09_persist_divergence_claude_forensics.md`
+
+### Point-by-point disposition
+
+| Claude finding or question | Codex disposition | Cross-review result |
+|---|---|---|
+| `c8ee2dabe` passed the complete cell dict, including evidence/report hashes, into strict resume comparison. | Confirmed directly from the historical source. The pre-fix dict contains 16 compared fields; the table row has the owner work-item id plus those fields and `created_at`. | Agreement on mechanism; Claude's “17-field dict” is harmless shorthand for the stored cell content, but the compared mapping itself has 16 keys. |
+| Cross-round physical artifacts necessarily differ although the sealed run identity is stable. | Confirmed across all 40 identities, not only the example cell. Stable fields and all three metric payloads match; every evidence and report hash differs. | Full agreement. |
+| The example cell evidence differs at exactly `report_sha256`, and its report manifest has 27 provenance-only leaf differences. | Accepted. Claude's deep file-level diff adds useful precision beyond the Codex aggregate/receipt comparison. Paths, timestamp-bearing file hashes, and calendar `age_hours` explain the physical hash difference without an economic change. | Claude adds detail; no contradiction. |
+| T10's failure after the repair appeared in Git does not disprove the repair. | Confirmed. T10 spawned at `10:27:16Z`; `2a0a0186f` was committed at `12:31:50Z` (`14:31:50+02:00`). The long-lived process retained the old module. T3 spawned at `12:39:50Z` and succeeded. | Full agreement. |
+| `2a0a0186f` makes the deterministic/provenance split correctly. | Confirmed by source review, live migration probe, production recovery, view/reader audit, trigger audit, and 52 focused tests. | Full agreement. |
+| Transient MT5 exit `1` failures are a separate class. | Confirmed. The three immutable historical failure sidecars remain, and later receipts authenticate. `d22dfee9e` fixed retry-sidecar naming/precedence; it did not claim to eliminate tester exit `1`. | Agreement. Underlying transport cause remains outside this schema ticket. |
+| `POLICY_ON/OFF/DXZ` equals control and therefore “DXZ minimum enforcement is a no-op for this EA.” | The equality is real, but the conclusion needs narrower wording. It proves the `temporal_mode=OFF` negative-control slice is inert, because there is no temporal blackout for the compliance profile to constrain. | Partial agreement. It does not prove that active DXZ temporal modes are globally a no-op. |
+| Migration idempotency and reader migration still needed confirmation. | Closed by Codex Phase A: two consecutive live `ensure_schema` calls left all fingerprinted rows, counts, SQL objects, and metadata unchanged. Qualification, Q10, FTMO admission, and the live qualification trigger use the by-work-item view. | Question resolved; no unmigrated production work-item reader found. |
+| Attempt-ceiling interaction still needed confirmation. | Closed by Codex Phase A: generic ceiling is 3, history-lock transient ceiling is 6, and the recovered row ended at generic attempt 1 / transient-infra attempt 4. | Question resolved; bounded retry, no hidden infinite loop. |
+
+### Factual corrections to the Claude narrative
+
+These corrections do not change Claude's root-cause verdict.
+
+1. **The `6a305d8a...` round did not partially persist Q09 database cells.** Live state has no Q09 test, canonical cell, or occurrence row owned by `6a305d8a-81ef-49a3-94bb-2fd1aaeb822e`; that work item is `failed / INFRA_FAIL`. The current canonical ownership of the shared identity set is 19 cells from the earlier successful work item `fd88398c-7288-4f6d-b3b0-4847487e35a8` and 21 inserted by repaired work item `4984cca7-e1a3-49a8-a066-066ac51eb063`. `BEGIN IMMEDIATE` rolled back the failed `6a305d8a...` registration atomically while leaving its physical report tree intact. The reused rows that triggered the divergence therefore predated `6a305d8a...`; they were not a partial commit from it.
+2. **The immutable sidecar collision belongs to the T5 spawn at `08:21:47Z`.** The T8 spawn at `04:46:36Z` encountered a transient holdout failure and then the two-field persistence divergence. Claude's compressed T8 description blends two retry episodes.
+3. **The repair timestamp should be expressed as either `12:31:50Z` or `14:31:50+02:00`.** “`12:31:50Z +0200`” mixes UTC and offset notation.
+4. **Metric units differ between the reports, not the economics.** Claude quoted cash-like net values (`8997.81`, `8793.84`, `17791.65`); Phase A quoted normalized net R (`8.99781`, `8.79384`, `17.79165`). Both representations agree after the expected scale conversion.
+
+### What each investigation added
+
+Claude contributed the clearest single-cell file-level proof: one divergent leaf in `cell_evidence.json`, 27 provenance-only leaves in `report_manifest.json`, and concrete examples including absolute work-item paths, timestamp-bearing output hashes, and calendar age. Claude also explicitly framed the fail-closed guard as sound behavior applied to the wrong determinism scope.
+
+Codex contributed the matrix-wide and live-system closure:
+
+- all 40 identities and all metric payloads compared across both artifact trees;
+- byte-identical aggregate proof;
+- current canonical ownership and occurrence distribution (`19 + 21`, with 40 round-6 occurrences);
+- atomic rollback/evidence-damage reconciliation;
+- two-call live migration idempotency;
+- production-reader and live-trigger migration audit;
+- append-only trigger coverage and trusted-writer boundary;
+- generic versus transient retry ceilings and actual counters;
+- the separate `d22dfee9e` sidecar fix;
+- the precise negative-control interpretation; and
+- SQLite integrity plus Q09-specific foreign-key verification.
+
+Claude did not close its four residual questions; Codex Phase A closes three and classifies the remaining MT5 exit `1` cause as a separate, bounded infrastructure investigation. Codex Phase A did not enumerate Claude's 27 report-manifest leaf differences or explicitly identify `news_calendar.age_hours`; those details are adopted here.
+
+### Joint root-cause statement
+
+Commit `c8ee2dabe` strengthened restart idempotency by applying one strict equality scope to a canonical Q09 cell. That cell combined two categories with different lifetimes: globally deterministic experiment identity/economics and work-item-local physical provenance. An append-only rerun correctly reproduced the former but necessarily generated new report/evidence bytes for the latter. Existing canonical identities—19 of the final shared set were owned by the earlier successful `fd88398c...` work item—therefore caused a deterministic rejection on the first reuse. The transaction rolled back database registration while preserving already-written evidence, making every unchanged retry hit the same wall.
+
+Commit `2a0a0186f` resolves the category error by retaining one fail-closed canonical economic cell, appending each work item's physical provenance to an immutable occurrence ledger, and routing work-item consumers through the occurrence-aware view. Economic drift still fails closed; legitimate cross-round provenance no longer does. The repair is live-migration idempotent, reader-complete for current production code, bounded by existing retry ceilings, production-proven by the T3 recovery, and covered by the focused test suite.
+
+### Joint verdict
+
+**ROOT CAUSE CONFIRMED / FIX COMPLETE FOR CURRENT TRUSTED PATH / NO EVIDENCE DAMAGE / NO FURTHER CODE CHANGE AUTHORIZED BY THIS TASK.**
+
+The transient MT5 exit `1` remains a separate operational question. The `POLICY_ON/OFF/DXZ == CONTROL_OFF/OFF/NONE` result is a valid negative-control invariant, not proof of active-policy benefit or global policy ineffectiveness.
