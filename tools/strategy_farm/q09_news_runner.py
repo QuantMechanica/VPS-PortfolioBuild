@@ -1747,6 +1747,21 @@ def _latest_summary(report_root: Path, started_at: float) -> Path:
     return max(candidates, key=lambda path: path.stat().st_mtime)
 
 
+def _single_ok_run(summary: Mapping[str, Any]) -> Mapping[str, Any]:
+    """Return the sole successful attempt from a run_smoke summary."""
+
+    runs = summary.get("runs")
+    if not isinstance(runs, list):
+        raise RunnerError("run_smoke did not publish exactly one authenticated OK run")
+    ok_runs = [
+        run for run in runs
+        if isinstance(run, Mapping) and run.get("status") == "OK"
+    ]
+    if len(ok_runs) != 1:
+        raise RunnerError("run_smoke did not publish exactly one authenticated OK run")
+    return ok_runs[0]
+
+
 def _validate_window_summary(
     summary_path: Path,
     *,
@@ -1798,10 +1813,7 @@ def _validate_window_summary(
         or source_set.get("sha256") != spec["setfile_sha256"]
     ):
         raise RunnerError("run_smoke EX5/setfile identity authentication failed")
-    runs = summary.get("runs")
-    if not isinstance(runs, list) or len(runs) != 1 or runs[0].get("status") != "OK":
-        raise RunnerError("run_smoke did not publish exactly one authenticated OK run")
-    run = runs[0]
+    run = _single_ok_run(summary)
     report_path = Path(str(run.get("report_canonical_path") or ""))
     if not report_path.is_file():
         raise RunnerError("run_smoke canonical MT5 report is missing")

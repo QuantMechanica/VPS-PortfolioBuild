@@ -630,7 +630,7 @@ def _transient_generation_failure_proof(
     payload: dict[str, Any],
     plan: dict[str, Any],
 ) -> list[dict[str, str]]:
-    """Authenticate a terminal pre-fix code-1/no-receipt diagnostic stop."""
+    """Authenticate a terminal pre-fix transient/no-receipt diagnostic stop."""
 
     if (
         predecessor["status"] != "done"
@@ -663,6 +663,8 @@ def _transient_generation_failure_proof(
             failure = json.loads(failure_path.read_text(encoding="utf-8-sig"))
             error_type = str(failure.get("error_type") or "")
             error = str(failure.get("error") or "")
+            proof_kind = ""
+            supporting_summary: dict[str, str] | None = None
             if (
                 error_type in {"RunnerError", "TransientCellError"}
                 and re.search(
@@ -670,16 +672,60 @@ def _transient_generation_failure_proof(
                     error,
                 )
             ):
+                proof_kind = "child_exit_1_without_receipt"
+            elif (
+                error_type == "RunnerError"
+                and error == "run_smoke did not publish exactly one authenticated OK run"
+            ):
+                for artifact in failure.get("artifacts", []):
+                    if not isinstance(artifact, dict):
+                        continue
+                    relative_path = str(artifact.get("relative_path") or "")
+                    if not relative_path.replace("\\", "/").endswith("/summary.json"):
+                        continue
+                    summary_path = Path(str(artifact.get("path") or "")).resolve()
+                    try:
+                        summary_path.relative_to(cell_root)
+                    except ValueError:
+                        continue
+                    expected_summary_hash = str(artifact.get("sha256") or "").lower()
+                    if (
+                        not summary_path.is_file()
+                        or sha256_file(summary_path) != expected_summary_hash
+                    ):
+                        continue
+                    run_summary = json.loads(
+                        summary_path.read_text(encoding="utf-8-sig")
+                    )
+                    runs = run_summary.get("runs")
+                    if (
+                        run_summary.get("result") == "PASS"
+                        and isinstance(runs, list)
+                        and len(runs) > 1
+                    ):
+                        try:
+                            q09._single_ok_run(run_summary)
+                        except q09.RunnerError:
+                            continue
+                        proof_kind = "one_ok_after_invalid_startup_attempt"
+                        supporting_summary = {
+                            "supporting_summary_path": str(summary_path),
+                            "supporting_summary_sha256": expected_summary_hash,
+                        }
+                        break
+            if proof_kind:
                 failures.append({
                     "path": str(failure_path),
                     "sha256": sha256_file(failure_path),
                     "error_type": error_type,
                     "error": error,
                     "run_identity_sha256": str(cell.get("run_identity_sha256") or ""),
+                    "proof_kind": proof_kind,
+                    **(supporting_summary or {}),
                 })
     if not failures:
         raise BackfillError(
-            "generation rerun predecessor has no authenticated code-1/no-receipt failure"
+            "generation rerun predecessor has no authenticated transient/no-receipt failure"
         )
     return failures
 

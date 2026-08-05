@@ -90,6 +90,24 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temporary.cleanup()
 
+    def test_single_ok_run_accepts_invalid_startup_attempt_then_success(self) -> None:
+        invalid = {"run": "run_01", "status": "INVALID", "failure": "BARS_ZERO"}
+        successful = {"run": "run_02", "status": "OK", "total_trades": 34}
+
+        self.assertIs(
+            runner._single_ok_run({"runs": [invalid, successful]}),
+            successful,
+        )
+        for runs in (
+            [invalid],
+            [successful, {"run": "run_03", "status": "OK"}],
+        ):
+            with self.assertRaisesRegex(
+                runner.RunnerError,
+                "exactly one authenticated OK run",
+            ):
+                runner._single_ok_run({"runs": runs})
+
     def build(self, *, target: str = "DXZ", output: str = "experiment", news: bool = False) -> dict:
         return runner.build_run_plan(
             work_item_id="q09-news-1",
