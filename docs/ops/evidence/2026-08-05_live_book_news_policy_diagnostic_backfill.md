@@ -4,6 +4,8 @@
 
 **Router task:** `3260d15d-4977-4472-8eac-270b260a7842`
 
+**Follow-through router task:** `cf052f4c-ded1-4386-99f9-5868199c4b0b`
+
 **Campaign:** `q09-live-news-backfill-20260805-v1`
 
 **Disposition:** **ENQUEUED — DIAGNOSTIC NON-ADMISSION — REVIEW_REQUIRED**
@@ -18,30 +20,52 @@ No T_Live preset, profile, binary, chart, AutoTrading setting, or live terminal
 was changed. The optional standard three-pair path was not used; all 17 sleeves
 use the same explicitly non-admitting diagnostic contract.
 
-## Actual runtime policy represented by the live presets
+## Runtime policy basis — corrected after review
 
-The 17 source presets contain the historical fields
-`qm_filter_news_enabled=1` and `qm_filter_news_mode=3`. Those fields do **not**
-describe the running policy of these binaries: none of the 14 unique target EA
-sources declares either `qm_filter_news_*` input, while all 14 declare the
-current two-axis inputs. MT5 therefore has no target EA input to which those
-legacy preset lines can bind.
+The earlier revision said that loaded T_Live chart inputs were the authority
+for `qm_news_temporal=3` and `qm_news_compliance=1`. That mechanism claim is
+withdrawn. It came from `q09_live_news_backfill.py:41,157-201`, where
+`PROFILE_ROOT` points to
+`C:\QM\mt5\T_Live\MT5_Base\MQL5\Profiles\Charts\DarwinexZero_V2_LiveOps`
+and `chart_snapshot()` treats matching files there as loaded charts. That
+nested `MQL5\Profiles` directory is not the chart directory resolved from the
+running terminal process and is not runtime authority.
 
-The loaded T_Live chart inputs are the authoritative runtime values for every
-target sleeve:
+The read-only, process-anchored check established the following at
+`2026-08-05T15:43Z`:
 
-- `qm_news_temporal=3` = `PRE30_POST30`: no new entry from 30 minutes before
-  through 30 minutes after an applicable event.
-- `qm_news_compliance=1` = `DXZ`. The current framework labels this profile a
-  placeholder and adds no separate firm-specific window; the temporal window
-  remains effective.
-- `qm_news_min_impact=high`: only events meeting the HIGH threshold are gated.
-- `qm_news_stale_max_hours=336`: the fail-closed ceiling is unchanged.
+- PID `17008` was the T_Live process, with image
+  `C:\QM\mt5\T_Live\MT5_Base\terminal64.exe` and command line
+  `"...\terminal64.exe" /portable`. Its data root is therefore the executable
+  directory, `C:\QM\mt5\T_Live\MT5_Base`.
+- `Config\common.ini` records
+  `ProfileLast=DarwinexZero_V2_LiveOps`, but the process-root directory
+  `Profiles\Charts\DarwinexZero_V2_LiveOps` does not exist.
+- The process-root `Profiles\Charts` contains 16 `.chr` files under four other
+  profiles. A byte-level UTF-8/UTF-16/ASCII scan found zero occurrences of
+  `qm_news_temporal`, `qm_news_compliance`, `qm_news_min_impact`,
+  `qm_news_stale_max_hours`, `qm_filter_news_enabled`, or
+  `qm_filter_news_mode` in all 16. The running process's in-memory chart input
+  state is therefore **NOT ESTABLISHED** from durable chart bytes.
 
-The nearest sealed Q09 temporal policy is therefore an **exact**, not
-approximate, match: `PRE30_POST30/DXZ` (mode ids `3/1`). The diagnostic also
-tests `OFF`, `PRE30`, `PRE60`, `PRE60_POST60`, `SKIP_DAY`, and
-`CLOSE_ALL_PRE`, always against the separate `CONTROL_OFF/OFF/NONE` arm.
+The verified deployment mechanism is preset omission plus compiled-default
+inheritance. All 17 source presets contain the historical no-op lines
+`qm_filter_news_enabled=1` and `qm_filter_news_mode=3`, and 0/17 pins any of
+the four current `qm_news_*` inputs. All 14 unique target EA sources declare
+the same defaults: `PRE30_POST30`, `DXZ`, `high`, and a fail-closed stale
+ceiling of `336` hours (including QM5_11132 lines 55-58 and QM5_10403 lines
+55-58). Under that preset-loading contract the policy represented by the live
+deployment is `PRE30_POST30/DXZ/HIGH/336`; the process-anchored disk check does
+not independently recover an in-memory override.
+
+This creates a governance defect even though the mapped policy is unchanged:
+the policy is compile-default-inherited rather than preset-pinned. The Sunday
+consumption ceremony must explicitly set `qm_news_temporal=3` and
+`qm_news_compliance=1` in every live preset before any OWNER-authorized live
+preset change. This ticket made no T_Live write. The diagnostic's nearest
+sealed temporal policy remains the exact `PRE30_POST30/DXZ` cell (mode ids
+`3/1`), alongside `OFF`, `PRE30`, `PRE60`, `PRE60_POST60`, `SKIP_DAY`, and
+`CLOSE_ALL_PRE`, each paired with `CONTROL_OFF/OFF/NONE`.
 
 Event scoping in the post-`89963ff75` framework is mechanical:
 
@@ -152,12 +176,58 @@ At `2026-08-05T15:15:15Z`, four rows were active on T1-T4 and 13 were
 pending. The compatibility stage had materialized the numeric-label aliases
 from the hash-bound deployed binaries; every observed active alias matched its
 required SHA-256 and the testers started normally. The resident T1-T4 worker
-daemons themselves were born at 14:35 local time, before the diagnostic review-
-sidecar completion patch was loaded. They must be recycled only after their
-current terminal slots become idle; interrupting these active tests is
-forbidden. Until that orderly reload, a completed diagnostic may be requeued
-fail-closed by the old completion handler, but it still cannot be admitted or
-promoted.
+daemons themselves were born at 14:35 local time, before commit `dff3a30a0`
+loaded the diagnostic review-sidecar completion handler at 17:20:14 CEST.
+
+The follow-through recycled only worker daemons, one terminal at a time, under
+the terminal-reservation interlock. Each stop was permitted only after both the
+SQLite active-claim check and path-anchored `terminal64.exe` check returned
+empty. The first T1 attempt refused because it had already claimed a row; T1
+was not touched until that test ended. T4 was handled the same way. T6-T10,
+all terminal processes, T_Live, and AutoTrading were untouched.
+
+| Worker | Old state/PID | New PID | New process born (CEST) |
+|---|---|---:|---|
+| T1 | pre-patch `13888` | `9000` | 2026-08-05 17:56:41 |
+| T2 | pre-patch `21772` | `14916` | 2026-08-05 17:49:33 |
+| T3 | pre-patch `20624` | `21416` | 2026-08-05 17:50:03 |
+| T4 | pre-patch `3188` | `15148` | 2026-08-05 17:57:19 |
+| T5 | stale PID-file entry `20384`; no live process | `17216` | 2026-08-05 17:50:32 |
+
+All five new processes resolve to Python 3.11 `pythonw.exe`, the exact
+`C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal Tn --root
+D:\QM\strategy_farm` handler, and handler SHA-256
+`7466ab0660e37873c0876b723a70c53e15fb01778ed42326b5a4965b36ef3df6`.
+The reconciled PID registry contains exactly those five identities.
+
+### QM5_10919/XTIUSD append-only rerun
+
+Predecessor `4b593310-684d-5242-8c52-309469aef5ab` remains untouched as
+`failed/INFRA_FAIL`. Its durable payload and T3 worker log identify T3 as the
+launch-faulting terminal. Commit `589e170f9` added a tested append-only rerun
+operation; it created successor `3196f708-c62d-5a2d-ad3c-0eaef931a442`, with
+`parent_task_id` and `rerun_of` bound to the predecessor and T3 added to the
+T6-T10 exclusion set.
+
+The successor preserved the sealed baseline, deployed EX5, calendar bundle,
+date windows, five seeds, REAL_TICKS model, 40-cell matrix, Q07 reference, risk
+values (`RISK_FIXED=1000`, `RISK_PERCENT=0`), and stale ceiling (`336`). Its
+enqueue receipt is
+`D:\QM\strategy_farm\artifacts\q09_live_news_backfill_20260805\reruns\3196f708-c62d-5a2d-ad3c-0eaef931a442\enqueue_receipt.json`,
+SHA-256 `418facd2947c4e6d910306122b21fda35127269581251fb5028fde5569c063ee`.
+
+Fresh T2 claimed the successor. It reached `terminal_start`, proving the prior
+pre-start launch fault did not recur, and verified the staged EX5 before and
+after the run. The first selection cell then refused because no fresh
+structured logger sample/report was authenticated. Final diagnostic state is
+`done/REVIEW_REQUIRED`: 0 authenticated cells, 1 failed cell, and 39 missing
+cells. Aggregate SHA-256 is
+`9fea4c381789c9e11068211eddd7d6b1e9c1a5b0dcff3f01c8c61c5f8f121dee`;
+summary SHA-256 is
+`ece3ea1b850d84eb15cda5678874e794370cb959c35bff13cfbd33213c066add`.
+There are still zero canonical `q09_news_tests` rows for either predecessor or
+successor. This is an infrastructure refusal and Claude review input, not a
+pipeline verdict; no further rerun was invented.
 
 ETA values below are operating targets, not fabricated completion promises.
 They assume normal REAL_TICKS availability and the five-slot cap: D1 by Friday
@@ -197,7 +267,7 @@ seeds; seed-level selection, holdout, and full metrics remain in each sleeve's
 | Sleeve | Control | OFF/DXZ | PRE30 | PRE60 | PRE30_POST30 | PRE60_POST60 | SKIP_DAY | CLOSE_ALL_PRE |
 |---|---|---|---|---|---|---|---|---|
 | QM5_12567/XNGUSD | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
-| QM5_10919/XTIUSD | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
+| QM5_10919/XTIUSD | REFUSED (0 auth) | REFUSED (0 auth) | REFUSED (0 auth) | REFUSED (0 auth) | REFUSED (0 auth) | REFUSED (0 auth) | REFUSED (0 auth) | REFUSED (0 auth) |
 | QM5_12567/XAUUSD | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
 | QM5_1556/XAUUSD | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
 | QM5_11165/AUDCAD | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
@@ -222,6 +292,14 @@ python tools/strategy_farm/q09_live_news_backfill.py status
 ```
 
 ## Verification
+
+- Follow-through append-only rerun suite: **8 passed**; module compile check:
+  PASS. The integration case proves predecessor immutability, successor
+  lineage, post-bind T3 steering, 40-cell binding, and zero canonical Q09 rows.
+- All rerun receipt-bound baseline, EX5, calendar, source-anchor, rerun-anchor,
+  and run-plan SHA-256 values were recomputed from disk and matched.
+- T1-T5 process census after the orderly recycle: exactly five path-anchored
+  worker daemons, all born after the completion patch; no duplicate worker.
 
 - Focused Q09 runner, farm integration, diagnostic binding, deployed-filename,
   retry-steering, compatibility staging, and non-admission sidecar suites:
