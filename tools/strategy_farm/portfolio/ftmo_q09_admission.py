@@ -79,6 +79,16 @@ def _tables_present(conn: sqlite3.Connection, names: set[str]) -> bool:
     return {str(row[0]) for row in rows} == names
 
 
+def _cell_relation(conn: sqlite3.Connection) -> str:
+    occurrence_view = conn.execute(
+        """
+        SELECT 1 FROM sqlite_master
+        WHERE type='view' AND name='q09_news_cells_by_work_item'
+        """
+    ).fetchone()
+    return "q09_news_cells_by_work_item" if occurrence_view else "q09_news_cells"
+
+
 def _sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -200,6 +210,8 @@ def evaluate_ftmo_q09_admission(
     if row is None or row["test_verdict"] is None:
         return result
 
+    cell_relation = _cell_relation(conn)
+
     result.update(
         {
             "q09_news_work_item_id": row["work_item_id"],
@@ -232,8 +244,8 @@ def evaluate_ftmo_q09_admission(
     elif scope == "7x4":
         try:
             coverage = conn.execute(
-                """
-                SELECT temporal_mode,seed FROM q09_news_cells
+                f"""
+                SELECT temporal_mode,seed FROM {cell_relation}
                 WHERE q09_news_work_item_id=? AND arm='POLICY_ON'
                   AND compliance_mode='FTMO'
                 """,
@@ -256,10 +268,10 @@ def evaluate_ftmo_q09_admission(
 
     try:
         chosen_cells = conn.execute(
-            """
+            f"""
             SELECT seed,selection_metrics_json,q07_seed_stability_pass,
                    flat_at_event_receipt_sha256
-            FROM q09_news_cells
+            FROM {cell_relation}
             WHERE q09_news_work_item_id=? AND arm='POLICY_ON'
               AND compliance_mode='FTMO' AND temporal_mode=?
             ORDER BY seed

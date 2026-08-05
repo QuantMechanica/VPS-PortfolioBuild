@@ -39,7 +39,7 @@ except ModuleNotFoundError:
     )
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 CONTRACT_VERSION = "Q09_NEWS_V2"
 ACTIVATION_HOLD_CODE = "Q09_AWAITING_SEALED_PLAN"
 ACTIVATION_HOLD_REASON = (
@@ -309,6 +309,65 @@ CREATE TABLE IF NOT EXISTS q09_news_cells (
     )
 );
 
+CREATE TABLE IF NOT EXISTS q09_news_cell_occurrences (
+    occurrence_identity_sha256 TEXT PRIMARY KEY CHECK (
+        length(occurrence_identity_sha256)=64 AND
+        occurrence_identity_sha256 NOT GLOB '*[^0-9a-f]*'
+    ),
+    q09_news_work_item_id TEXT NOT NULL,
+    run_identity_sha256 TEXT NOT NULL CHECK (
+        length(run_identity_sha256)=64 AND run_identity_sha256 NOT GLOB '*[^0-9a-f]*'
+    ),
+    evidence_sha256 TEXT NOT NULL CHECK (
+        length(evidence_sha256)=64 AND evidence_sha256 NOT GLOB '*[^0-9a-f]*'
+    ),
+    report_sha256 TEXT NOT NULL CHECK (
+        length(report_sha256)=64 AND report_sha256 NOT GLOB '*[^0-9a-f]*'
+    ),
+    evidence_path TEXT NOT NULL,
+    report_path TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE (
+        q09_news_work_item_id,run_identity_sha256,evidence_sha256,report_sha256,
+        evidence_path,report_path
+    )
+);
+
+CREATE VIEW IF NOT EXISTS q09_news_cells_by_work_item AS
+SELECT
+    o.q09_news_work_item_id,
+    c.arm,c.temporal_mode,c.compliance_mode,c.seed,c.requested_seed,c.effective_seed,
+    c.paired_base_identity_sha256,c.run_identity_sha256,c.setfile_sha256,
+    o.evidence_sha256,o.report_sha256,
+    c.selection_metrics_json,c.holdout_metrics_json,c.full_metrics_json,
+    c.q07_seed_stability_pass,c.flat_at_event_receipt_sha256,o.created_at
+FROM q09_news_cell_occurrences o
+JOIN q09_news_cells c ON c.run_identity_sha256=o.run_identity_sha256
+WHERE NOT EXISTS (
+    SELECT 1 FROM q09_news_cell_occurrences newer
+    WHERE newer.q09_news_work_item_id=o.q09_news_work_item_id
+      AND newer.run_identity_sha256=o.run_identity_sha256
+      AND (
+          newer.created_at>o.created_at OR
+          (newer.created_at=o.created_at AND
+           newer.occurrence_identity_sha256>o.occurrence_identity_sha256)
+      )
+)
+UNION ALL
+SELECT
+    c.q09_news_work_item_id,
+    c.arm,c.temporal_mode,c.compliance_mode,c.seed,c.requested_seed,c.effective_seed,
+    c.paired_base_identity_sha256,c.run_identity_sha256,c.setfile_sha256,
+    c.evidence_sha256,c.report_sha256,
+    c.selection_metrics_json,c.holdout_metrics_json,c.full_metrics_json,
+    c.q07_seed_stability_pass,c.flat_at_event_receipt_sha256,c.created_at
+FROM q09_news_cells c
+WHERE NOT EXISTS (
+    SELECT 1 FROM q09_news_cell_occurrences o
+    WHERE o.q09_news_work_item_id=c.q09_news_work_item_id
+      AND o.run_identity_sha256=c.run_identity_sha256
+);
+
 CREATE TABLE IF NOT EXISTS q09_news_arms (
     q09_news_work_item_id TEXT NOT NULL,
     arm TEXT NOT NULL CHECK (arm IN ('CONTROL_OFF','POLICY_ON')),
@@ -484,6 +543,19 @@ BEGIN
     ) THEN RAISE(ABORT, 'q09 cell base identity mismatch') END;
 END;
 
+CREATE TRIGGER IF NOT EXISTS trg_q09_cell_occurrence_validate_insert
+BEFORE INSERT ON q09_news_cell_occurrences
+BEGIN
+    SELECT CASE WHEN NOT EXISTS (
+        SELECT 1 FROM q09_news_tests t
+        WHERE t.work_item_id=NEW.q09_news_work_item_id
+    ) THEN RAISE(ABORT, 'q09 occurrence test header missing') END;
+    SELECT CASE WHEN NOT EXISTS (
+        SELECT 1 FROM q09_news_cells c
+        WHERE c.run_identity_sha256=NEW.run_identity_sha256
+    ) THEN RAISE(ABORT, 'q09 occurrence canonical cell missing') END;
+END;
+
 CREATE TRIGGER IF NOT EXISTS trg_q09_arm_validate_insert
 BEFORE INSERT ON q09_news_arms
 BEGIN
@@ -545,13 +617,13 @@ BEGIN
     SELECT CASE WHEN NEW.state='QUALIFIED' AND NOT EXISTS (
         SELECT 1 FROM q09_news_tests t
         WHERE t.work_item_id=NEW.q09_news_work_item_id
-          AND (SELECT count(DISTINCT seed) FROM q09_news_cells c
+          AND (SELECT count(DISTINCT seed) FROM q09_news_cells_by_work_item c
                WHERE c.q09_news_work_item_id=t.work_item_id
-                 AND c.arm='CONTROL_OFF' AND c.temporal_mode='OFF' AND c.compliance_mode='NONE')=5
-          AND (SELECT count(DISTINCT seed) FROM q09_news_cells c
+                  AND c.arm='CONTROL_OFF' AND c.temporal_mode='OFF' AND c.compliance_mode='NONE')=5
+          AND (SELECT count(DISTINCT seed) FROM q09_news_cells_by_work_item c
                WHERE c.q09_news_work_item_id=t.work_item_id
-                 AND c.arm='POLICY_ON' AND c.temporal_mode=t.chosen_temporal
-                 AND c.compliance_mode=t.chosen_compliance)=5
+                  AND c.arm='POLICY_ON' AND c.temporal_mode=t.chosen_temporal
+                  AND c.compliance_mode=t.chosen_compliance)=5
     ) THEN RAISE(ABORT, 'QUALIFIED q09 paired five-seed cells missing') END;
     SELECT CASE WHEN NEW.state='QUALIFIED' AND NOT EXISTS (
         SELECT 1 FROM q09_news_tests t
@@ -604,6 +676,10 @@ CREATE TRIGGER IF NOT EXISTS trg_q09c_no_update BEFORE UPDATE ON q09_news_cells
 BEGIN SELECT RAISE(ABORT, 'q09_news_cells is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS trg_q09c_no_delete BEFORE DELETE ON q09_news_cells
 BEGIN SELECT RAISE(ABORT, 'q09_news_cells is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS trg_q09co_no_update BEFORE UPDATE ON q09_news_cell_occurrences
+BEGIN SELECT RAISE(ABORT, 'q09_news_cell_occurrences is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS trg_q09co_no_delete BEFORE DELETE ON q09_news_cell_occurrences
+BEGIN SELECT RAISE(ABORT, 'q09_news_cell_occurrences is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS trg_q09a_no_update BEFORE UPDATE ON q09_news_arms
 BEGIN SELECT RAISE(ABORT, 'q09_news_arms is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS trg_q09a_no_delete BEFORE DELETE ON q09_news_arms
@@ -689,6 +765,7 @@ def ensure_schema(conn: sqlite3.Connection, *, commit: bool = True) -> None:
         "BEGIN IMMEDIATE;\n"
         + DDL
         + "\n"
+        + "\nDROP TRIGGER IF EXISTS trg_cq_validate_insert;\n"
         + TRIGGERS
         + "\nDROP VIEW IF EXISTS portfolio_candidates_eligible;\n"
         + ELIGIBILITY_VIEW
@@ -875,6 +952,68 @@ def _assert_persistence_match(
     )
 
 
+_CELL_DETERMINISTIC_FIELDS = (
+    "arm",
+    "temporal_mode",
+    "compliance_mode",
+    "seed",
+    "requested_seed",
+    "effective_seed",
+    "paired_base_identity_sha256",
+    "run_identity_sha256",
+    "setfile_sha256",
+    "selection_metrics_json",
+    "holdout_metrics_json",
+    "full_metrics_json",
+    "q07_seed_stability_pass",
+    "flat_at_event_receipt_sha256",
+)
+
+
+def _record_cell_occurrence(
+    conn: sqlite3.Connection,
+    *,
+    work_item_id: str,
+    raw: Mapping[str, Any],
+    created_at: str,
+) -> None:
+    """Append one execution's provenance without rewriting canonical cell bytes."""
+
+    provenance = {
+        "q09_news_work_item_id": work_item_id,
+        "run_identity_sha256": str(raw["run_identity_sha256"]),
+        "evidence_sha256": str(raw["evidence_sha256"]),
+        "report_sha256": str(raw["report_sha256"]),
+        "evidence_path": str(raw.get("evidence_path") or ""),
+        "report_path": str(raw.get("report_path") or ""),
+    }
+    occurrence_identity = hashlib.sha256(canonical_json_bytes(provenance)).hexdigest()
+    existing = conn.execute(
+        """
+        SELECT * FROM q09_news_cell_occurrences
+        WHERE occurrence_identity_sha256=?
+        """,
+        (occurrence_identity,),
+    ).fetchone()
+    if existing is not None:
+        _assert_persistence_match(
+            existing,
+            provenance,
+            row_kind="q09_news_cell_occurrences",
+            identity=occurrence_identity,
+        )
+        return
+    conn.execute(
+        """
+        INSERT INTO q09_news_cell_occurrences(
+            occurrence_identity_sha256,q09_news_work_item_id,run_identity_sha256,
+            evidence_sha256,report_sha256,evidence_path,report_path,created_at
+        ) VALUES(?,?,?,?,?,?,?,?)
+        """,
+        (occurrence_identity,) + tuple(provenance.values()) + (created_at,),
+    )
+
+
 def record_q09_adjudication(
     conn: sqlite3.Connection,
     *,
@@ -889,7 +1028,9 @@ def record_q09_adjudication(
     identical summary already existed. Cell run identities are global sealed
     experiment identities, so an append-only work-item rerun may legitimately
     encounter a cell stored by an earlier work item. Such a cell is reused
-    only after every verdict-relevant content field matches exactly.
+    only after every deterministic, verdict-relevant field matches exactly.
+    Execution-local artifact hashes and paths are recorded in an append-only
+    occurrence ledger and never rewrite the canonical cell row.
     """
 
     if adjudication.get("schema_version") != ADJUDICATION_SCHEMA_VERSION:
@@ -997,6 +1138,9 @@ def record_q09_adjudication(
                 "flat_at_event_receipt_sha256": raw.get("flat_at_event_receipt_sha256"),
             }
             run_identity = str(cell_content["run_identity_sha256"])
+            deterministic_cell_content = {
+                field: cell_content[field] for field in _CELL_DETERMINISTIC_FIELDS
+            }
             existing_cell = conn.execute(
                 "SELECT * FROM q09_news_cells WHERE run_identity_sha256=?",
                 (run_identity,),
@@ -1004,21 +1148,27 @@ def record_q09_adjudication(
             if existing_cell is not None:
                 _assert_persistence_match(
                     existing_cell,
-                    cell_content,
+                    deterministic_cell_content,
                     row_kind="q09_news_cells",
                     identity=run_identity,
                 )
-                continue
-            conn.execute(
-                """
-                INSERT INTO q09_news_cells(
-                    q09_news_work_item_id,arm,temporal_mode,compliance_mode,seed,requested_seed,
-                    effective_seed,paired_base_identity_sha256,run_identity_sha256,setfile_sha256,
-                    evidence_sha256,report_sha256,selection_metrics_json,holdout_metrics_json,
-                    full_metrics_json,q07_seed_stability_pass,flat_at_event_receipt_sha256,created_at
-                ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                """,
-                (work_item_id,) + tuple(cell_content.values()) + (created_at,),
+            else:
+                conn.execute(
+                    """
+                    INSERT INTO q09_news_cells(
+                        q09_news_work_item_id,arm,temporal_mode,compliance_mode,seed,requested_seed,
+                        effective_seed,paired_base_identity_sha256,run_identity_sha256,setfile_sha256,
+                        evidence_sha256,report_sha256,selection_metrics_json,holdout_metrics_json,
+                        full_metrics_json,q07_seed_stability_pass,flat_at_event_receipt_sha256,created_at
+                    ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (work_item_id,) + tuple(cell_content.values()) + (created_at,),
+                )
+            _record_cell_occurrence(
+                conn,
+                work_item_id=work_item_id,
+                raw=raw,
+                created_at=created_at,
             )
         for arm in adjudication.get("locked_arms", []):
             arm_content = {
@@ -1124,7 +1274,7 @@ def assert_q10_dependency_gate(conn: sqlite3.Connection, q10_work_item_id: str) 
         raise SchemaError("Q09_NEWS two-arm lock is incomplete")
     control_seed_count = conn.execute(
         """
-        SELECT count(DISTINCT seed) FROM q09_news_cells
+        SELECT count(DISTINCT seed) FROM q09_news_cells_by_work_item
         WHERE q09_news_work_item_id=? AND arm='CONTROL_OFF'
           AND temporal_mode='OFF' AND compliance_mode='NONE'
         """,
@@ -1132,7 +1282,7 @@ def assert_q10_dependency_gate(conn: sqlite3.Connection, q10_work_item_id: str) 
     ).fetchone()[0]
     policy_seed_count = conn.execute(
         """
-        SELECT count(DISTINCT seed) FROM q09_news_cells
+        SELECT count(DISTINCT seed) FROM q09_news_cells_by_work_item
         WHERE q09_news_work_item_id=? AND arm='POLICY_ON'
           AND temporal_mode=? AND compliance_mode=?
         """,

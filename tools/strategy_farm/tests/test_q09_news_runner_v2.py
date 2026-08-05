@@ -746,6 +746,15 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         self.assertEqual(result["verdict"], "CONFIG_LOCKED")
         self.assertEqual(result["authenticated_cell_count"], 40)
         self.assertEqual(result["sidecar"]["status"], "RECORDED")
+        resumed = runner._persist_q09_result(
+            farm_root,
+            work_item_id="q09-news-1",
+            terminal="T1",
+            plan_path=Path(plan["plan_path"]),
+            expected_plan_file_sha256=plan_hash,
+            result=result,
+        )
+        self.assertEqual(resumed["status"], "ALREADY_RECORDED")
         with closing(farmctl.connect(farm_root)) as connection:
             test = connection.execute(
                 "SELECT verdict,aggregate_sha256 FROM q09_news_tests WHERE work_item_id='q09-news-1'"
@@ -764,8 +773,14 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
                 ).fetchone()[0],
                 2,
             )
+            self.assertEqual(
+                connection.execute(
+                    "SELECT count(*) FROM q09_news_cell_occurrences"
+                ).fetchone()[0],
+                40,
+            )
 
-    def test_persistence_resume_reuses_matching_prior_round_cells(self) -> None:
+    def test_cross_round_resume_records_new_provenance_without_rewriting_cells(self) -> None:
         plan = self.build(output="resume-prior-cells")
         farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
         self.write_receipts(plan)
@@ -780,7 +795,21 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         )
         prior_evidence = dict(evidence)
         prior_evidence["work_item_id"] = "q09-news-prior"
-        prior_evidence["cells"] = evidence["cells"][:5]
+        prior_cells = []
+        for cell in evidence["cells"][:5]:
+            prior = dict(cell)
+            run_identity = prior["run_identity_sha256"]
+            prior["evidence_sha256"] = contract.sha256_bytes(
+                f"prior-evidence:{run_identity}".encode("utf-8")
+            )
+            prior["report_sha256"] = contract.sha256_bytes(
+                f"prior-report:{run_identity}".encode("utf-8")
+            )
+            prior["evidence_path"] = f"D:/prior/{run_identity}/summary.json"
+            prior["report_path"] = f"D:/prior/{run_identity}/report.htm"
+            prior_cells.append(prior)
+        prior_evidence["cells"] = prior_cells
+        shared_identity = prior_cells[0]["run_identity_sha256"]
 
         with closing(farmctl.connect(farm_root)) as connection:
             connection.execute(
@@ -844,6 +873,51 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
                 ).fetchone()[0],
                 35,
             )
+            self.assertEqual(
+                connection.execute(
+                    """
+                    SELECT count(*) FROM q09_news_cells_by_work_item
+                    WHERE q09_news_work_item_id='q09-news-1'
+                    """
+                ).fetchone()[0],
+                40,
+            )
+            self.assertEqual(
+                connection.execute(
+                    "SELECT count(*) FROM q09_news_cell_occurrences"
+                ).fetchone()[0],
+                45,
+            )
+            canonical = connection.execute(
+                """
+                SELECT evidence_sha256,report_sha256 FROM q09_news_cells
+                WHERE run_identity_sha256=?
+                """,
+                (shared_identity,),
+            ).fetchone()
+            self.assertEqual(canonical["evidence_sha256"], prior_cells[0]["evidence_sha256"])
+            occurrences = connection.execute(
+                """
+                SELECT q09_news_work_item_id,evidence_sha256,report_sha256,
+                       evidence_path,report_path
+                FROM q09_news_cell_occurrences
+                WHERE run_identity_sha256=?
+                ORDER BY q09_news_work_item_id
+                """,
+                (shared_identity,),
+            ).fetchall()
+            self.assertEqual(len(occurrences), 2)
+            current = next(
+                row for row in occurrences if row["q09_news_work_item_id"] == "q09-news-1"
+            )
+            current_cell = next(
+                cell for cell in evidence["cells"]
+                if cell["run_identity_sha256"] == shared_identity
+            )
+            self.assertEqual(current["evidence_sha256"], current_cell["evidence_sha256"])
+            self.assertEqual(current["report_sha256"], current_cell["report_sha256"])
+            self.assertEqual(current["evidence_path"], current_cell["evidence_path"])
+            self.assertEqual(current["report_path"], current_cell["report_path"])
 
     def test_persistence_resume_fails_closed_on_divergent_cell_content(self) -> None:
         plan = self.build(output="resume-divergence")
@@ -860,7 +934,9 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         )
         partial_evidence = dict(evidence)
         divergent_cell = dict(evidence["cells"][0])
-        divergent_cell["evidence_sha256"] = "0" * 64
+        divergent_selection = dict(divergent_cell["selection"])
+        divergent_selection["trades"] += 1
+        divergent_cell["selection"] = divergent_selection
         partial_evidence["cells"] = [divergent_cell]
         run_identity = divergent_cell["run_identity_sha256"]
 
@@ -885,7 +961,7 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         report = str(raised.exception)
         self.assertIn("Q09 persistence divergence", report)
         self.assertIn(run_identity, report)
-        self.assertIn("evidence_sha256", report)
+        self.assertIn("selection_metrics_json", report)
         with closing(farmctl.connect(farm_root)) as connection:
             self.assertEqual(
                 connection.execute("SELECT count(*) FROM q09_news_cells").fetchone()[0],

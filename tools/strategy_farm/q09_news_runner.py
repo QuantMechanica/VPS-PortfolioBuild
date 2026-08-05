@@ -777,6 +777,8 @@ def _receipt_to_cell(spec: Mapping[str, Any]) -> dict[str, Any]:
         "setfile_sha256": spec["setfile_sha256"],
         "evidence_sha256": artifact_hashes["evidence_sha256"],
         "report_sha256": artifact_hashes["report_sha256"],
+        "evidence_path": str(artifact_paths["evidence"].resolve()),
+        "report_path": str(artifact_paths["report"].resolve()),
         "selection": metrics["selection"],
         "holdout": metrics["holdout"],
         "full": metrics["full"],
