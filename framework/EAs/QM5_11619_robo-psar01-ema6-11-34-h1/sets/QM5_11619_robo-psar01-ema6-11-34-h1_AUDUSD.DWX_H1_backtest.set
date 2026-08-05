@@ -10,7 +10,7 @@
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   fccb027baef4ec9483554cfae7c06ed0b9fccd752caee1c95b278ae526732aa1
 ; author:       Development
 ; date:         2026-07-23
 ;==========================================================
@@ -19,6 +19,12 @@ qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; Q02 structural baseline: keep every news axis off and skip calendar init.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11619_robo-psar01-ema6-11-34-h1.md
 strategy_ema_fast_period=6
