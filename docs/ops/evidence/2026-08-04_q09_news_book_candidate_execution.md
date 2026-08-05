@@ -352,3 +352,295 @@ single scheduler pass. The continuation contract remains unchanged:
 3. only after the QM5_11422 chain closes may QM5_13036 begin; and
 4. any refusal, non-good verdict, or genuine `REVIEW_REQUIRED` stops the chain
    for review rather than creating a retry loop.
+
+## Round 5 restart-idempotence repair and governed activation — 2026-08-04 20:14Z
+
+Router task `a652b078-1bdd-43ff-a4c9-feaa76e06f7f` authorized the persistence
+repair and a new append-only round. The round-4 row
+`6a305d8a-81ef-49a3-94bb-2fd1aaeb822e` remains terminal
+`failed/INFRA_FAIL`; its 40 immutable receipts and failed-row history were not
+rewritten.
+
+### Restart-idempotent persistence repair
+
+Canonical-checkout commit `c8ee2dabe` (`Fix Q09 restart-idempotent
+persistence`) changes the final Q09 sidecar transaction as follows:
+
+- an existing `q09_news_tests` summary is accepted only after every immutable
+  content field matches the newly authenticated result;
+- each existing global cell `run_identity_sha256` is compared across all
+  stored authenticated and verdict-relevant fields, including setfile,
+  evidence, report, window metrics, seed stability, and flat-at-event receipt
+  identities;
+- an identical row is an explicit no-op, allowing persistence to resume;
+- any contradiction raises a structured fail-closed error containing the row
+  kind, exact identity, and divergent field names; there is no overwrite,
+  `INSERT OR REPLACE`, or mutable reconciliation path; and
+- locked-arm rows receive the same exact-match/no-op treatment. The runner no
+  longer returns early after checking only verdict and aggregate SHA-256.
+
+Focused verification passed 30 tests: five schema tests, the existing fresh
+40-cell persistence test, two new restart/divergence regressions, eight Q09
+contract tests, ten farm-control integration tests, and four Q10 dependency
+tests. Python syntax compilation and scoped `git diff --check` also passed.
+The new regressions prove both matching partial-state completion and a
+divergent cell refusal whose error names the exact run identity and
+`evidence_sha256` field.
+
+### Round-5 append-only row and sealed plan
+
+The Q08 aggregate, baseline setfile, current EX5, recursive include closure,
+and calendar manifest re-authenticated at the same recorded SHA-256 values:
+`c611ae3b...`, `715bce2f...`, `2b98e9e9...`, `a3fbf052...`, and
+`b204d1ab...`. No Q09_NEWS row for this candidate was pending or active before
+the enqueue.
+
+| Identity | Value |
+|---|---|
+| New Q09_NEWS work item | `3c1fea0e-3a81-40fb-809a-a9b19156887e` |
+| Append-only rerun of | `6a305d8a-81ef-49a3-94bb-2fd1aaeb822e` |
+| Exact Q08 predecessor | `9fe3eb5f-ab0d-4c84-82fe-d6748c3aa270` |
+| Candidate-lineage key | `c963164be8b0677f76ec6cc812f40b0f7f5a9149eb493c31735a85a38c298a7b` |
+| Logical plan SHA-256 | `58edeec64aa7f5d41a97b1f273d6607ddfc6b09a6f55afd0133327991960d642` |
+| Exact plan-file SHA-256 | `6ff5dfc14257fd688dc09b4144821c8fbf8db59f09a20de29777b584cb9afa3f` |
+| Input-manifest SHA-256 | `6b4eaa4aa6ccf58ffbceb904a0a57fc0709102123b537acce26c4baa14bf1d93` |
+| Dispatch-binding SHA-256 | `c73c8b9847acc0bda1650feba41f206d77837214a7976dbf371055b260b62fdc` |
+
+The new plan has 40 cells. Its ordered tuples of run identity, setfile
+SHA-256, arm, compliance mode, temporal mode, and seed exactly match round 4.
+All 40 setfiles use `RISK_FIXED=1000` and `RISK_PERCENT=0`; none sets
+`qm_news_stale_max_hours` above 336. `bind-q09-plan` authenticated the exact
+file hash and released the activation hold as `RUNNABLE_BOUND` with a
+3,600-second per-cell timeout.
+
+### Ordinary-worker handoff
+
+T1 claimed the row through the ordinary factory at
+`2026-08-04T20:14:32Z` and spawned PID `21792`. The row-bound command uses the
+exact plan-file hash, sealed `--period D1`, canonical Q09 output root, and the
+fresh-process executor at `C:/QM/repo/tools/strategy_farm/q09_news_runner.py`.
+No terminal was started manually and no active T1-T10 job was interrupted.
+
+At the cycle capture the row is `active` on T1 with `verdict=NULL` and
+`evidence_path=NULL`. It has zero published cell receipts, zero cell-failure
+sidecars, and no `q09_news_tests` summary. This is active pipeline execution,
+not a pipeline verdict. Therefore no fresh Q09_PORTFOLIO row, Q10 append-only
+rerun, or QM5_13036/GDAXI.DWX row was created. Those actions remain strictly
+gated on a genuine `CONFIG_LOCKED`, then a fresh same-Q08 `PASS_PORTFOLIO`,
+and the serial-chain stop rules stated above.
+
+### Round-5 terminal stop captured at cycle exit
+
+After the active handoff capture, the first CONTROL_OFF seed-42 selection run
+completed and published authenticated artifacts, but the immediately following
+holdout child refused at `run_smoke.ps1:2258`:
+
+```text
+Terminal instance is already running for D:\QM\mt5\T1. Stop it first or pass -AllowRunningTerminal.
+```
+
+Neither prohibited response was taken: the running terminal was not stopped,
+and `-AllowRunningTerminal` was not added. The executor wrote immutable
+`q09-news-cell-failure/v1` evidence for run identity
+`97832746b7c45318588ea7ee41e4a43303e951c796164b8a6b50f0e5deb4ac16`,
+binding ten available artifacts. The cell-failure SHA-256 is
+`9f02e7c4f6ad94e3b85124df2cc5d3313ab5365fde043755fdf19294df698a2d`.
+
+The row terminalized at `2026-08-04T20:19:01Z` as
+`done/REVIEW_REQUIRED`, reason `cell_execution_failed`: zero authenticated
+cells, one failed cell, and 39 unattempted cells. The immutable result
+identities are:
+
+| Artifact | SHA-256 |
+|---|---|
+| Aggregate | `b640d8d1fc281a99c26af4ab788fc00867e59d61b81dede605d70df4bff4a6eb` |
+| Q09 evidence | `b63fcab431d6be508a6043c815b5b9d440d45db6c019fe470133db4ef638bcb4` |
+| Execution failure | `60562a8b8403b12fe3675c6f14bac0ad165104d06dc3358a131968e031e05203` |
+
+The final Q09 summary sidecar persisted successfully as `RECORDED`; no
+`q09_news_cells` row was inserted for this work item. This is a genuine
+`REVIEW_REQUIRED` machinery refusal and therefore Claude review input, not a
+retry authorization. The sequence stops here: no Q09_PORTFOLIO row, Q10 row,
+or QM5_13036/GDAXI.DWX row was created.
+
+## Round 6 same-terminal succession gate and governed activation — 2026-08-05
+
+Router task `0805ad16-7e92-4301-888b-51b3df9e0ec5` authorized a bounded
+same-terminal exit gate after Claude classified round 5 as a transient
+window-succession race, followed by one new append-only round. The terminal
+round-5 row `3c1fea0e-3a81-40fb-809a-a9b19156887e` was preserved unchanged.
+
+### Executor hardening
+
+Canonical-checkout commit
+`a51d4faaeaa44cf11c8fa860fd25df45bacf210e` (`Fix Q09 same-terminal window
+succession`) adds a read-only gate immediately before every Q09 `run_smoke`
+child launch:
+
+- only `terminal64.exe` processes whose CIM `ExecutablePath` is path-anchored
+  below the exact claimed `D:\QM\mt5\T1..T10` directory are considered;
+- sibling factory terminals, `T_Live`, and FTMO paths do not delay the claimed
+  terminal;
+- the gate waits at most 180 seconds and polls at two-second intervals;
+- it never stops a process and the child command still does not contain
+  `-AllowRunningTerminal`; and
+- a timeout raises through the existing executor exception path, producing the
+  immutable `q09-news-cell-failure/v1` sidecar and a fail-closed cell result.
+
+Focused verification passed `44` tests across the Q09 runner, schema,
+contract, factory-command integration, and Q10 dependency suites. Regressions
+cover running-then-exits, bounded never-exits, sibling/live/FTMO exclusion,
+pre-spawn ordering, absence of `-AllowRunningTerminal`, and timeout conversion
+to the standard cell-failure sidecar without a smoke child. Python syntax
+compilation, scoped `git diff --check`, and a read-only production CIM scan
+also passed.
+
+### Round-6 append-only row and sealed plan
+
+Preflight re-authenticated the exact Q08 aggregate, baseline setfile, current
+EX5, recursive include closure, and approved calendar manifest at their prior
+SHA-256 identities: `c611ae3b...`, `715bce2f...`, `2b98e9e9...`,
+`a3fbf052...`, and `b204d1ab...` respectively. The baseline retains
+`RISK_FIXED=1000` and `RISK_PERCENT=0`.
+
+| Identity | Value |
+|---|---|
+| New Q09_NEWS work item | `4984cca7-e1a3-49a8-a066-066ac51eb063` |
+| Append-only rerun of | `3c1fea0e-3a81-40fb-809a-a9b19156887e` |
+| Exact Q08 predecessor | `9fe3eb5f-ab0d-4c84-82fe-d6748c3aa270` |
+| Candidate-lineage key | `c963164be8b0677f76ec6cc812f40b0f7f5a9149eb493c31735a85a38c298a7b` |
+| Logical plan SHA-256 | `92de747c68742786d209e74d7690717340a45e7f4a27c3ec34f009882257b008` |
+| Exact plan-file SHA-256 | `75fe706331131c6aa0d30ea4498c7a597ec37310263c33688fb739f2e877f9c0` |
+| Input-manifest SHA-256 | `6b67fdfd48477bea961b4992d5f781781246cc5c4d63baa9dd4118e718be03e7` |
+| Dispatch-binding SHA-256 | `0d01bdc1661e019a3d4df9d29fb72cabaeced94480b352213ce6731603dfaac3` |
+
+The new plan has 40 cells and preserves the exact ordered tuple of run
+identity, setfile SHA-256, arm, compliance mode, temporal mode, and seed from
+round 4. All 40 generated setfiles have `RISK_FIXED>0`, `RISK_PERCENT=0`, and
+no `qm_news_stale_max_hours` value above 336. The input manifest retains the
+same `REAL_TICKS` / `DXZ_CANONICAL_REAL_TICKS_V1` model and cost profile,
+DXZ target, five seeds, sealed windows, and calendar bundle
+`q09cal-20150101-20260809-0bb19b5bb9790b76`. `bind-q09-plan` authenticated
+the exact plan-file hash and released the row as `RUNNABLE_BOUND` with a
+3,600-second per-cell timeout.
+
+### Ordinary-worker handoff
+
+The ordinary factory claimed the row on T8 at `2026-08-05T04:46:36Z` and
+spawned the fresh canonical executor from `C:/QM/repo`. Its first child is the
+CONTROL_OFF seed-42 selection window with sealed period D1,
+`-RequireFreshLoggerSample`, and no running-terminal override. At the
+`2026-08-05T04:47:23Z` capture the row is `active`, `verdict=NULL`, and
+`evidence_path=NULL`; the selection `terminal64.exe` is path-anchored to
+`D:\QM\mt5\T8` and remains an ordinary-worker descendant.
+
+This is active pipeline execution, not a verdict. No Q09_PORTFOLIO row, Q10
+rerun, or QM5_13036/GDAXI.DWX row has been created. The serial continuation
+remains fail-closed: only a genuine `CONFIG_LOCKED` may open the fresh
+same-Q08 Q09_PORTFOLIO row; only its `PASS_PORTFOLIO` may open the append-only
+Q10 rerun; and any refusal, non-good verdict, or genuine `REVIEW_REQUIRED`
+stops the sequence for review.
+
+## Round-6 cross-round persistence repair and governed stop — 2026-08-05
+
+Router task `c0b64a33-94e5-4a6e-a615-7070f7275524` repaired the persistence
+contract in canonical commit `2a0a0186f`: deterministic cell identities and
+economics remain exact-match fail-closed, while per-execution evidence/report
+hashes and paths are recorded in an append-only occurrence ledger. The full
+evidence, focused verification, runtime counts, and SHA-256 identities are in
+`docs/ops/evidence/2026-08-05_q09_cross_round_provenance_and_round6_stop.md`.
+
+The ordinary worker reclaimed row `4984cca7-e1a3-49a8-a066-066ac51eb063` on
+T3, used all 40 authenticated receipts without new tester work, and persisted
+`REVIEW_REQUIRED` with reason `expanded_7x4_matrix_required`. Persistence
+itself is `RECORDED`; all 40 work-item occurrences are queryable and 19 retain
+physical provenance different from the untouched canonical cell bytes.
+
+This is a genuine adjudication stop. No fresh Q09_PORTFOLIO row, Q10 rerun, or
+QM5_13036 row was enqueued.
+
+## Round 8 bounded transient recovery and governed handoff — 2026-08-05
+
+Router task `698332ca-7cab-4301-9aca-3bc3a2aa472d` repaired the interaction
+that terminalized round 7 after one self-healing child failure. Round-7 work
+item `9fabcddb-8c2e-4b01-9295-4ef4dbb6892d` remains unchanged at
+`done/REVIEW_REQUIRED`; its aggregate records 18 authenticated, one failed,
+and 126 missing cells. No pipeline verdict was reinterpreted.
+
+### Bounded execution semantics
+
+Canonical commits `a20ded0c4` and `aabb9f244` implement the following
+fail-closed contract in `q09_news_runner.py`:
+
+- a production child exit code 1 without a fresh run-smoke summary or receipt
+  is a transient cell failure;
+- the first occurrence writes its immutable failure sidecar, waits for the
+  exact claimed terminal root to exit, reauthenticates the factory claim and
+  sealed plan, and permits exactly one same-attempt retry;
+- a second transient below the three-attempt ceiling raises a
+  `CapacityError` without collecting or persisting an aggregate, allowing the
+  ordinary worker to return the work item to pending while existing receipts
+  remain resumable;
+- both the worker's generic `attempt_count` and its separately persisted
+  history-lock `transient_infra_attempts` count toward the same Q09 ceiling,
+  including a mixed retry sequence; and
+- a permanent cell failure, or a repeated transient at the ceiling, follows
+  the existing immutable sidecar, occurrence-persistence, collection, and
+  adjudication path.
+
+Focused verification passed 42 tests: 23 Q09 runner tests and 19 adjacent
+farm-control and diagnostic integration tests. The regressions cover a
+same-attempt recovery, a twice-transient requeue with no aggregate, permanent
+failure adjudication, generic-attempt ceiling adjudication, and the production
+history-lock counter contributing to that ceiling. Python syntax compilation
+and scoped diff checks also passed.
+
+### Append-only round-8 row
+
+The governed cascade path preserved round 7 and created one new ordinary
+Q09_NEWS row. The canonical expanded-matrix planner regenerated the plan; no
+cell or setfile was hand-edited.
+
+| Identity | Value |
+|---|---|
+| New Q09_NEWS work item | `c9ae1683-5bd9-4595-974e-7cd9df444b9e` |
+| Append-only rerun of | `9fabcddb-8c2e-4b01-9295-4ef4dbb6892d` |
+| Exact Q08 predecessor | `9fe3eb5f-ab0d-4c84-82fe-d6748c3aa270` |
+| Candidate-lineage key | `c963164be8b0677f76ec6cc812f40b0f7f5a9149eb493c31735a85a38c298a7b` |
+| Matrix / cells | `7x4 / 145` |
+| Logical plan SHA-256 | `bb57082f1928bc83af2934a27ab1bbce91af03290467db3db709811ee5be41ef` |
+| Exact plan-file SHA-256 | `08897bd887292cec1de895f758f09bdf69a33472e5943eef88f236d5c575d6c3` |
+| Input-manifest SHA-256 | `59f29a114a2e6849df6825c5ff4d56949fe0a151ce5a57f4ce6ef0e7c88e056f` |
+| Dispatch-binding SHA-256 | `085fd9df70b0552ae6f435e5bea46b408daeae64c3bf99e39c65b7d5f2a7e412` |
+
+All 145 ordered tuples of run identity, setfile SHA-256, arm, compliance mode,
+temporal mode, seed, and paired-base identity compare exactly equal to round
+7. Every generated setfile uses `RISK_FIXED>0` and `RISK_PERCENT=0`; none has
+`qm_news_stale_max_hours` above 336. Binding released the row as
+`RUNNABLE_BOUND` with a 3,600-second cell timeout. At the
+`2026-08-05T17:43:41Z` capture it was pending, unclaimed, with no verdict or
+evidence path. This is queue state, not a pipeline result.
+
+### Serial continuation and Sunday feasibility
+
+No downstream row was created. The continuation remains strictly conditional:
+
+1. only a genuine round-8 `CONFIG_LOCKED` may create a fresh Q09_PORTFOLIO
+   row from Q08 `9fe3eb5f-ab0d-4c84-82fe-d6748c3aa270`;
+2. only a fresh same-lineage `PASS_PORTFOLIO` may create a Q10 append-only
+   rerun of `6f9400fa-9ca2-4835-9fcf-e1087289f9b1`;
+3. only after the QM5_11422 sequence closes may QM5_13036 begin from fresh Q08
+   `fb3f0e20-1982-4f51-9e4b-52da2629a5ac`; and
+4. QM5_13036 historical Q09_NEWS row
+   `7efd8e39-4d1c-4b6d-8cfd-637122aad25f` is only a `PENDING_RUNNER`
+   placeholder. It cannot satisfy the news gate and requires its own real,
+   sealed Q09_NEWS append-only row before any portfolio or Q10 continuation.
+
+Round 7's 19 attempted cells consumed about 3h22m, implying roughly 26 hours
+for a cold 145-cell round at the observed rate. A first 40-cell QM5_13036 run
+adds roughly eight hours; a material-effect expansion can add another
+approximately 25 hours, before queue delay, bounded retries, portfolio work,
+and Q10. Completion by Sunday is therefore operationally possible only if
+ordinary capacity is available promptly and every serial evidence gate passes
+without another review stop. It is not a reliable commitment. Any refusal,
+non-good verdict, or `REVIEW_REQUIRED` stops the chain honestly.
