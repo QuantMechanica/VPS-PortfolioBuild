@@ -706,3 +706,77 @@ invented here.
 Focused verification was Python compilation plus both Q09 runner/diagnostic
 suites: 35 tests PASS. This follow-through remains `REVIEW_REQUIRED`; no
 admission, economic conclusion, or pipeline verdict is claimed.
+
+### Q09 diagnostic minimum-trade floor class and generation-4 recovery — 2026-08-05
+
+Router task `f61dbed0-3a85-475d-82b1-b833f9380ce9` investigated the
+generation-3 QM5_12567/XNGUSD terminal row
+`341299de-5575-5e60-850f-9aab9f04c34c`. Primary artifacts classify the
+failure as **structural in the diagnostic caller**, not symbol/history data,
+not a duplicate-run authentication failure, and not a transient process
+failure.
+
+The failed POLICY_ON/PRE60/seed-42 selection cell has cell-failure SHA-256
+`16088f249db80889a620d174380493f3c1260154108a114581b500a12d269738`.
+Its `run_smoke.log` SHA-256 is
+`3ae11ceb0de0454de0ed69718ebf4f11637b752cb032ba3217b9e8963ae50c36`;
+the log records a fresh calendar at age 74 hours against the unchanged
+336-hour maximum, a valid report latch, one logger sample, and the sole
+reason class `MIN_TRADES_NOT_MET`. The hash-bound `run_smoke/v2` summary
+SHA-256
+`33c404731feee92cadd95da46ec298609eea977dc411808faf4c7e355b6e1ee2`
+contains exactly one authenticated `OK` attempt, 24 trades, deterministic
+execution, no OnInit failure, and stable EX5/setfile identities. Q09 had
+explicitly passed `-MinTrades 0`, but without `-SmokeMode` the shared smoke
+runner replaced zero with the Q02 five-trades-per-year floor: 25 across the
+five-year selection window. The diagnostic therefore rejected valid policy
+measurement evidence for missing an admission-frequency threshold that Q09
+does not judge.
+
+The cc754e65/da59e191 lineage is a different class. Predecessor
+`cc754e65-54be-50d4-9379-f32d4d9e4497` has a PASS holdout summary SHA-256
+`cdea5249ee24c824a97d622966b56fd752d2a74ce9c1db24453a81f902b333cf`
+with one `BARS_ZERO` startup attempt followed by one authenticated `OK`
+attempt with 34 trades; commit `6518d767a` already fixed that exact-one-OK
+selection defect. Its append-only successor
+`da59e191-9621-503d-a3ea-e78b4eae1e2a` remained active on T1 at the
+`2026-08-05T21:11Z` reconciliation and was not interrupted.
+
+A campaign-wide scan of terminal diagnostic sidecars found the same sealed
+minimum-trade signature in generation-2 rows `3f409823...` (24/25) and
+`4fd8d9b2...` (20/25), and again in their already-superseding generation-3
+rows `341299de...` and `fb3460bb...`. The generation-2 rows stay immutable
+and receive no duplicate successor. No other terminal row had the exact
+authenticated `FAIL` + sole `MIN_TRADES_NOT_MET` + one-OK-run signature;
+for example, generation-3 `d381e949...` records timeout/incomplete/model-marker
+classes and is deliberately refused by this rerun proof.
+
+Commit `08bb5c7d4` adds the existing `-SmokeMode` opt-in to Q09's command only,
+so the explicit diagnostic floor of zero is honored. The default smoke/Q02
+path, report authentication, deterministic/identity checks, fresh logger
+requirement, real-tick marker, terminal exclusion, and news-calendar
+fail-closed validation are unchanged. Commit `f83bb4fcb` requires a sealed
+fresh summary to prove exactly this structural floor class before a
+generation rerun may be appended; unrelated fresh code-1 summaries fail
+closed. The first generation-4 enqueue then exposed a lineage check that
+incorrectly required the immutable generation-2 anchor to name its immediate
+generation-3 predecessor. It failed before inserting a row. Commit
+`d1945a21b` now authenticates the immediate parent independently and carries
+the original sealed-anchor work-item ID through generation 3 to generation
+4. The generation-3-to-4 regression is covered directly.
+
+| Sleeve | Generation-3 predecessor / failed terminal | Generation-4 row | Plan-file SHA-256 | Enqueue-receipt SHA-256 | `21:11Z` state |
+|---|---|---|---|---|---|
+| QM5_12567/XNGUSD | `341299de-5575-5e60-850f-9aab9f04c34c` / T1 | `8b8a7819-2b78-5708-a503-9995c41befbb` | `c60ea0ed98179a673de7310ae64c261b02cdede6ae642e1d15e4649ace5114c0` | `f0ef4e7b957f59fdb22438698a0770c08d219db33fb8024b990273745823f576` | pending/NULL, unclaimed, avoids T1 |
+| QM5_10919/XTIUSD | `fb3460bb-d6ca-5047-9a01-b1b599be844e` / T3 | `fcf04081-3d3a-51a7-b947-0c3b304021eb` | `36be699fe42781f3428a74d95b349f08ba6e254776a37f759d491f08506f6adc` | `cc63c99b0ff8da2e2b3958d88fd82f472c4ea462826963fb383fbb8176900f19` | pending/NULL, unclaimed, avoids T3 |
+
+Both generation-4 rows are bound diagnostic non-admission work with 40/40
+cells, exact ordered equality of run identity, setfile hash, arm, compliance,
+temporal mode, seed, and paired-base identity against their immediate
+predecessors. Each binds `RISK_FIXED=1000`, `RISK_PERCENT=0`, preserves the
+original sealed anchor, allows only T1-T5, and has zero canonical
+`q09_news_tests` rows. Focused verification was Python compilation, diff
+checks, and both Q09 diagnostic/runner suites: 37 tests PASS. No T_Live or
+AutoTrading setting was changed, no terminal was started manually, and no
+active test was interrupted. The rows remain pending evidence work; no Q09
+or pipeline verdict is inferred.
