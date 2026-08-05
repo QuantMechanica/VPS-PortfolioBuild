@@ -107,3 +107,26 @@ has not cleared. Per the mission stop rule, this continuation made no Card or
 source change, ID or magic allocation, compile, queue mutation, dispatch,
 tester launch, terminal-control action, AutoTrading action, live artifact, or
 portfolio-gate change.
+
+## 21:02Z paced-fleet continuation audit
+
+A fresh `farmctl.py mt5-slots` sample at `2026-08-05T21:02:28Z` found all ten
+factory terminals running from their exact `D:/QM/mt5/T<n>/terminal64.exe`
+paths:
+
+```text
+T1, T2, T3, T4, T5, T6, T7, T8, T9, T10
+```
+
+Ten exceeds the binding seven-terminal backtest ceiling. The process inventory
+also observed `C:/QM/mt5/T_Live/MT5_Base/terminal64.exe` and the unrelated FTMO
+terminal, but classified both outside the factory set; neither was controlled.
+No new FX cointegration commit appeared after the 20:04Z duplicate audit, and
+the repository still has no dedicated Card, EA directory, EA-registry row, or
+two-leg basket manifest for `USDCHF.DWX` / `NZDUSD.DWX`.
+
+The rank-55 pair remains the first non-duplicate build gap, but the mission's
+CPU-ceiling rule requires an immediate stop. This audit made no Card or source
+change, ID or magic allocation, compile, queue mutation, dispatch, tester
+launch, terminal-control action, AutoTrading action, live artifact, or
+portfolio-gate change.
