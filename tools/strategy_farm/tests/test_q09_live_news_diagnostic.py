@@ -391,6 +391,96 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
         self.assertEqual(backfill.ALLOWED_TERMINALS, ("T1", "T2", "T3", "T4", "T5"))
         self.assertEqual(backfill.AVOID_TERMINALS, ("T6", "T7", "T8", "T9", "T10"))
 
+    def test_append_only_rerun_preserves_predecessor_and_steers_launch_fault(self) -> None:
+        artifact_root = self.root / "campaign"
+        source_anchor = json.loads(self.anchor.read_text(encoding="utf-8"))
+        source_anchor["diagnostic_include_assessment"] = {
+            "path": str(self.includes.resolve()),
+            "sha256": contract.sha256_file(self.includes),
+        }
+        self.anchor.write_bytes(contract.canonical_json_bytes(source_anchor))
+        campaign = {
+            "schema_version": "q09-live-news-backfill-plan/v1",
+            "campaign_id": backfill.CAMPAIGN_ID,
+            "diagnostic_non_admission": True,
+            "sleeves": [{
+                "rank": 2,
+                "ea_id": "QM5_9999",
+                "symbol": "EURUSD.DWX",
+                "period": "H1",
+                "weight": 0.92,
+                "work_item_id": self.work_item_id,
+                "anchor_path": str(self.anchor.resolve()),
+                "anchor_sha256": contract.sha256_file(self.anchor),
+                "baseline_setfile_path": str(self.setfile.resolve()),
+                "baseline_setfile_sha256": contract.sha256_file(self.setfile),
+                "deployed_ex5_path": str(self.ex5.resolve()),
+                "deployed_ex5_sha256": contract.sha256_file(self.ex5),
+            }],
+        }
+        artifact_root.mkdir(parents=True)
+        (artifact_root / "campaign_plan.json").write_bytes(
+            contract.canonical_json_bytes(campaign)
+        )
+        with farmctl.connect(self.farm) as connection:
+            row = connection.execute(
+                "SELECT payload_json FROM work_items WHERE id=?", (self.work_item_id,)
+            ).fetchone()
+            payload = json.loads(row["payload_json"])
+            payload.update({
+                "diagnostic_campaign_id": backfill.CAMPAIGN_ID,
+                "last_launch_fault_terminal": "T3",
+            })
+            connection.execute(
+                "UPDATE work_items SET status='failed',verdict='INFRA_FAIL',payload_json=? "
+                "WHERE id=?",
+                (json.dumps(payload, sort_keys=True), self.work_item_id),
+            )
+            connection.commit()
+
+        task_id = "router-follow-up-1"
+        with (
+            mock.patch.object(backfill, "ARTIFACT_ROOT", artifact_root),
+            mock.patch.object(backfill, "FARM_ROOT", self.farm),
+            mock.patch.object(backfill, "CALENDAR_MANIFEST", self.calendar_manifest),
+            mock.patch.object(
+                backfill, "CALENDAR_COMMON_PATH", "QM/q09_news/test/events.csv"
+            ),
+        ):
+            receipt = backfill.enqueue_append_only_rerun(
+                task_id=task_id,
+                predecessor_id=self.work_item_id,
+                avoid_terminal="T3",
+            )
+
+        expected_id = backfill.append_only_rerun_id(self.work_item_id, task_id)
+        self.assertEqual(receipt["work_item_id"], expected_id)
+        self.assertEqual(receipt["rerun_of"], self.work_item_id)
+        self.assertEqual(receipt["cell_count"], 40)
+        with farmctl.connect(self.farm) as connection:
+            predecessor = connection.execute(
+                "SELECT status,verdict FROM work_items WHERE id=?", (self.work_item_id,)
+            ).fetchone()
+            rerun = connection.execute(
+                "SELECT status,verdict,parent_task_id,payload_json FROM work_items WHERE id=?",
+                (expected_id,),
+            ).fetchone()
+            canonical_count = connection.execute(
+                "SELECT count(*) FROM q09_news_tests WHERE work_item_id IN (?,?)",
+                (self.work_item_id, expected_id),
+            ).fetchone()[0]
+        self.assertEqual((predecessor["status"], predecessor["verdict"]), ("failed", "INFRA_FAIL"))
+        self.assertEqual((rerun["status"], rerun["verdict"]), ("pending", None))
+        self.assertEqual(rerun["parent_task_id"], self.work_item_id)
+        rerun_payload = json.loads(rerun["payload_json"])
+        self.assertEqual(rerun_payload["rerun_of"], self.work_item_id)
+        self.assertEqual(
+            set(rerun_payload["avoid_terminals"]),
+            {"T3", "T6", "T7", "T8", "T9", "T10"},
+        )
+        self.assertNotIn("launch_not_before_utc", rerun_payload)
+        self.assertEqual(canonical_count, 0)
+
 
 if __name__ == "__main__":
     unittest.main()

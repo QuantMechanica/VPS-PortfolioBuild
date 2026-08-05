@@ -17,7 +17,7 @@ import sqlite3
 import sys
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -601,6 +601,254 @@ def enqueue_campaign(campaign: dict[str, Any]) -> dict[str, Any]:
     return receipt
 
 
+def append_only_rerun_id(predecessor_id: str, task_id: str) -> str:
+    """Return the stable identity for one router-authorized diagnostic rerun."""
+
+    return str(uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        f"quantmechanica:{CAMPAIGN_ID}:rerun:{predecessor_id}:{task_id}",
+    ))
+
+
+def enqueue_append_only_rerun(
+    *,
+    task_id: str,
+    predecessor_id: str,
+    avoid_terminal: str,
+) -> dict[str, Any]:
+    """Append a fresh diagnostic row while leaving its failed predecessor intact."""
+
+    task_id = task_id.strip()
+    predecessor_id = predecessor_id.strip()
+    avoid_terminal = avoid_terminal.strip().upper()
+    if not task_id or not predecessor_id:
+        raise BackfillError("router task id and predecessor id are required")
+    if avoid_terminal not in ALLOWED_TERMINALS:
+        raise BackfillError("rerun avoidance must name one of T1-T5")
+
+    campaign_path = ARTIFACT_ROOT / "campaign_plan.json"
+    if not campaign_path.is_file():
+        raise BackfillError(f"campaign plan is missing: {campaign_path}")
+    campaign = json.loads(campaign_path.read_text(encoding="utf-8"))
+    if (
+        campaign.get("schema_version") != "q09-live-news-backfill-plan/v1"
+        or campaign.get("campaign_id") != CAMPAIGN_ID
+        or campaign.get("diagnostic_non_admission") is not True
+    ):
+        raise BackfillError("campaign plan contract is missing or contradictory")
+    matches = [
+        row for row in campaign.get("sleeves", [])
+        if str(row.get("work_item_id")) == predecessor_id
+    ]
+    if len(matches) != 1:
+        raise BackfillError("predecessor is not exactly one sealed campaign sleeve")
+    source = matches[0]
+    new_id = append_only_rerun_id(predecessor_id, task_id)
+    rerun_root = ARTIFACT_ROOT / "reruns" / new_id
+
+    source_anchor_path = Path(str(source["anchor_path"])).resolve()
+    if sha256_file(source_anchor_path) != str(source["anchor_sha256"]).lower():
+        raise BackfillError("predecessor diagnostic anchor hash changed")
+    anchor = json.loads(source_anchor_path.read_text(encoding="utf-8"))
+    if (
+        anchor.get("schema_version") != q09.DIAGNOSTIC_ANCHOR_SCHEMA
+        or anchor.get("diagnostic_contract") != q09.DIAGNOSTIC_CONTRACT
+        or anchor.get("diagnostic_non_admission") is not True
+        or str(anchor.get("work_item_id")) != predecessor_id
+    ):
+        raise BackfillError("predecessor diagnostic anchor is contradictory")
+    anchor["work_item_id"] = new_id
+    anchor["router_task_id"] = task_id
+    anchor["rerun_of"] = predecessor_id
+    anchor["source_anchor"] = {
+        "path": str(source_anchor_path),
+        "sha256": sha256_file(source_anchor_path),
+    }
+    anchor["loaded_chart_evidence_status"] = (
+        "NON_PROCESS_ANCHORED_NOT_AUTHORITATIVE; runtime policy basis is "
+        "live-preset omission plus compiled source defaults"
+    )
+    rerun_anchor_path = rerun_root / "diagnostic_anchor.json"
+    write_immutable(rerun_anchor_path, canonical_bytes(anchor))
+
+    baseline_path = Path(str(source["baseline_setfile_path"])).resolve()
+    ex5_path = Path(str(source["deployed_ex5_path"])).resolve()
+    if sha256_file(baseline_path) != str(source["baseline_setfile_sha256"]).lower():
+        raise BackfillError("sealed diagnostic baseline changed")
+    if sha256_file(ex5_path) != str(source["deployed_ex5_sha256"]).lower():
+        raise BackfillError("deployed live EX5 changed")
+    include_path = Path(str(
+        (anchor.get("diagnostic_include_assessment") or {}).get("path") or ""
+    )).resolve()
+    if not include_path.is_file():
+        raise BackfillError("diagnostic include assessment is missing")
+
+    plan = q09.build_run_plan(
+        work_item_id=new_id,
+        candidate_lineage_key=sha256_file(rerun_anchor_path),
+        deployment_target="DXZ",
+        q08_work_item_id=str(anchor["anchor_id"]),
+        q08_evidence_path=rerun_anchor_path,
+        baseline_setfile_path=baseline_path,
+        ex5_path=ex5_path,
+        include_closure_path=include_path,
+        calendar_manifest_path=CALENDAR_MANIFEST,
+        calendar_common_relative_path=CALENDAR_COMMON_PATH,
+        full_from_utc="2019-01-01T00:00:00Z",
+        full_to_utc="2025-12-31T23:59:59Z",
+        selection_from_utc="2019-01-01T00:00:00Z",
+        selection_to_utc="2023-12-31T23:59:59Z",
+        holdout_from_utc="2024-01-01T00:00:00Z",
+        holdout_to_utc="2025-12-31T23:59:59Z",
+        complete_months=60,
+        holdout_complete_months=24,
+        tester_model="REAL_TICKS",
+        cost_profile="DXZ_CANONICAL_REAL_TICKS_V1",
+        output_root=rerun_root / "q09_plan",
+    )
+    if int(plan.get("cell_count") or 0) != 40:
+        raise BackfillError("rerun plan is not the sealed 40-cell matrix")
+    plan_path = Path(str(plan["plan_path"])).resolve()
+    plan_file_sha256 = sha256_file(plan_path)
+
+    now = datetime.now(timezone.utc)
+    now_iso = now.isoformat()
+    launch_hold = (now + timedelta(minutes=5)).isoformat()
+    payload = {
+        "diagnostic_non_admission": True,
+        "diagnostic_contract": q09.DIAGNOSTIC_CONTRACT,
+        "diagnostic_campaign_id": CAMPAIGN_ID,
+        "diagnostic_queue_rank": int(source["rank"]),
+        "diagnostic_live_weight": source.get("weight"),
+        "diagnostic_anchor_path": str(rerun_anchor_path.resolve()),
+        "diagnostic_anchor_sha256": sha256_file(rerun_anchor_path),
+        "diagnostic_control": "legacy_and_two_axis_news_inputs_neutralized",
+        "priority_track": True,
+        "host_symbol": source["symbol"],
+        "host_timeframe": source["period"],
+        "risk_fixed": 1000.0,
+        "risk_percent": 0.0,
+        "staged_ex5_path": str(ex5_path),
+        "staged_ex5_sha256": sha256_file(ex5_path),
+        "avoid_terminals": list(AVOID_TERMINALS),
+        "diagnostic_allowed_terminals": list(ALLOWED_TERMINALS),
+        "diagnostic_concurrency_cap": 5,
+        "protected_chain_exclusion": [
+            "9fabcddb-8c2e-4b01-9295-4ef4dbb6892d", "Q09_PORTFOLIO", "Q10"
+        ],
+        "router_task_id": task_id,
+        "rerun_of": predecessor_id,
+        "rerun_avoid_terminal": avoid_terminal,
+        # Prevent a worker from claiming in the narrow interval between the
+        # binder's commit and the post-bind dynamic retry-steering update.
+        "launch_not_before_utc": launch_hold,
+    }
+    with farmctl.connect(FARM_ROOT) as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        predecessor = connection.execute(
+            "SELECT status,verdict,payload_json FROM work_items WHERE id=?",
+            (predecessor_id,),
+        ).fetchone()
+        if predecessor is None:
+            raise BackfillError("rerun predecessor does not exist")
+        predecessor_payload = json.loads(predecessor["payload_json"] or "{}")
+        if (
+            predecessor["status"] != "failed"
+            or predecessor["verdict"] != "INFRA_FAIL"
+            or predecessor_payload.get("diagnostic_campaign_id") != CAMPAIGN_ID
+        ):
+            raise BackfillError("rerun predecessor is not the failed campaign diagnostic")
+        if str(predecessor_payload.get("last_launch_fault_terminal") or "").upper() != avoid_terminal:
+            raise BackfillError("requested avoidance does not match predecessor launch-fault evidence")
+        if connection.execute(
+            "SELECT 1 FROM q09_news_tests WHERE work_item_id IN (?,?) LIMIT 1",
+            (predecessor_id, new_id),
+        ).fetchone() is not None:
+            raise BackfillError("diagnostic rerun would conflict with canonical Q09 evidence")
+        if connection.execute(
+            "SELECT 1 FROM work_items WHERE id=?", (new_id,)
+        ).fetchone() is not None:
+            raise BackfillError(f"append-only rerun already exists: {new_id}")
+        connection.execute(
+            """
+            INSERT INTO work_items(
+                id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                attempt_count,parent_task_id,evidence_path,claimed_by,
+                payload_json,created_at,updated_at
+            ) VALUES(?, 'backtest', 'Q09_NEWS', ?, ?, ?, 'pending', NULL,
+                     0, ?, NULL, NULL, ?, ?, ?)
+            """,
+            (
+                new_id, source["ea_id"], source["symbol"], str(baseline_path),
+                predecessor_id, json.dumps(payload, sort_keys=True), now_iso, now_iso,
+            ),
+        )
+        connection.commit()
+
+    bound = q09.bind_diagnostic_plan_to_work_item(
+        FARM_ROOT,
+        work_item_id=new_id,
+        plan_path=plan_path,
+        expected_plan_file_sha256=plan_file_sha256,
+        cell_timeout_sec=q09.DEFAULT_CELL_TIMEOUT_SEC,
+    )
+    with farmctl.connect(FARM_ROOT) as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        row = connection.execute(
+            "SELECT status,claimed_by,payload_json FROM work_items WHERE id=?", (new_id,)
+        ).fetchone()
+        if row is None or row["status"] != "pending" or str(row["claimed_by"] or "").strip():
+            raise BackfillError("rerun was claimed before retry steering completed")
+        bound_payload = json.loads(row["payload_json"] or "{}")
+        avoided = {str(value).upper() for value in bound_payload.get("avoid_terminals", [])}
+        avoided.add(avoid_terminal)
+        bound_payload["avoid_terminals"] = sorted(avoided)
+        bound_payload.pop("launch_not_before_utc", None)
+        bound_payload["rerun_steered_at_utc"] = datetime.now(timezone.utc).isoformat()
+        connection.execute(
+            "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
+            (json.dumps(bound_payload, sort_keys=True), now_iso, new_id),
+        )
+        connection.commit()
+
+    receipt = {
+        "schema_version": "q09-live-news-append-only-rerun-receipt/v1",
+        "campaign_id": CAMPAIGN_ID,
+        "diagnostic_non_admission": True,
+        "router_task_id": task_id,
+        "work_item_id": new_id,
+        "rerun_of": predecessor_id,
+        "status": "pending",
+        "avoid_terminal": avoid_terminal,
+        "allowed_terminals": list(ALLOWED_TERMINALS),
+        "baseline_setfile_path": str(baseline_path),
+        "baseline_setfile_sha256": sha256_file(baseline_path),
+        "deployed_ex5_path": str(ex5_path),
+        "deployed_ex5_sha256": sha256_file(ex5_path),
+        "calendar_manifest_path": str(CALENDAR_MANIFEST.resolve()),
+        "calendar_manifest_sha256": sha256_file(CALENDAR_MANIFEST),
+        "source_anchor_path": str(source_anchor_path),
+        "source_anchor_sha256": sha256_file(source_anchor_path),
+        "rerun_anchor_path": str(rerun_anchor_path.resolve()),
+        "rerun_anchor_sha256": sha256_file(rerun_anchor_path),
+        "plan_path": str(plan_path),
+        "plan_file_sha256": plan_file_sha256,
+        "plan_sha256": plan["plan_sha256"],
+        "input_manifest_sha256": plan["input_manifest_sha256"],
+        "cell_count": 40,
+        "seeds": list(contract.SEEDS),
+        "enqueued_at_utc": now_iso,
+        "binding": bound,
+    }
+    receipt_path = rerun_root / "enqueue_receipt.json"
+    write_immutable(receipt_path, canonical_bytes(receipt))
+    return {
+        **receipt,
+        "receipt_path": str(receipt_path.resolve()),
+        "receipt_sha256": sha256_file(receipt_path),
+    }
+
+
 def campaign_status() -> dict[str, Any]:
     ids = [sleeve.work_item_id for sleeve in SLEEVES]
     with farmctl.connect(FARM_ROOT) as connection:
@@ -661,6 +909,10 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--task-id", required=True)
     apply = sub.add_parser("apply")
     apply.add_argument("--task-id", required=True)
+    rerun = sub.add_parser("rerun")
+    rerun.add_argument("--task-id", required=True)
+    rerun.add_argument("--predecessor-id", required=True)
+    rerun.add_argument("--avoid-terminal", required=True, choices=list(ALLOWED_TERMINALS))
     sub.add_parser("status")
     return parser
 
@@ -669,6 +921,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "status":
         result = campaign_status()
+    elif args.command == "rerun":
+        result = enqueue_append_only_rerun(
+            task_id=args.task_id,
+            predecessor_id=args.predecessor_id,
+            avoid_terminal=args.avoid_terminal,
+        )
     else:
         campaign = prepare_campaign(args.task_id)
         result = campaign if args.command == "plan" else {
