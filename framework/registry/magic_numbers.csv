@@ -15515,3 +15515,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20215,wti-dom-trend,0,XTIUSD.DWX,202150000,2026-08-04T20:05:21Z,Codex,active
 20216,audusd-euraud,0,AUDUSD.DWX,202160000,2026-08-04T22:43:37Z,Codex,active
 20216,audusd-euraud,1,EURAUD.DWX,202160001,2026-08-04T22:43:37Z,Codex,active
+20217,wti-wkend-mom,0,XTIUSD.DWX,202170000,2026-08-04T23:59:07Z,Codex,active
