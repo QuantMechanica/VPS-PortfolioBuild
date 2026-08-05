@@ -15522,3 +15522,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20220,usdcad-audjpy,0,USDCAD.DWX,202200000,2026-08-05T07:23:17Z,Codex,active
 20220,usdcad-audjpy,1,AUDJPY.DWX,202200001,2026-08-05T07:23:17Z,Codex,active
 20221,wti-win-signmom,0,XTIUSD.DWX,202210000,2026-08-05T07:41:12Z,Codex,active
+20222,wti-seas-sign,0,XTIUSD.DWX,202220000,2026-08-05T08:39:50Z,Codex,active
