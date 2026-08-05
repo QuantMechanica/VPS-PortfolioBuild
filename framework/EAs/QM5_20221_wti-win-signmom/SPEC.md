@@ -89,3 +89,4 @@ portfolio-gate change.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-05 | Initial build from approved G0 card | Q01 strict build PASS; 0 compile errors/warnings and 0 build failures/warnings |
+| v2 | 2026-08-05 | Paced Q02 handoff attempted | Not enqueued: eight running factory terminals exceeded the seven-terminal CPU ceiling |

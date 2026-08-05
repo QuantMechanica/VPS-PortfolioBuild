@@ -58,7 +58,8 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
+q02_blocker_ref: docs/ops/evidence/2026-08-05_qm5_20221_wti_win_signmom_q01_cpu_stop.md
 review_focus: "Falsify whether a fixed November-May WTI regime applied to twelve-month return-sign persistence adds direct crude exposure with an information clock absent from the certified XAU/SP500/NDX/XNG book; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -263,6 +264,7 @@ correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-05 | initial WTI winter return-sign momentum candidate | G0 | APPROVED; build pending |
 | v2 | 2026-08-05 | initial framework implementation | Q01 | PASS; strict compile and build checks |
+| v3 | 2026-08-05 | paced Q02 handoff attempted | Q01 | NOT_ENQUEUED_CPU_CEILING; eight factory terminals exceeded the seven-terminal ceiling |
 
 ## Pipeline Phase Status
 
@@ -270,4 +272,4 @@ correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-05 | APPROVED; R1-R4 PASS | this card, governed source packet, and durable decision |
 | Q01 Build Validation | 2026-08-05 | PASS | strict report `D:/QM/reports/framework/21/build_check_20260805_074444.json`; 0 failures, 0 warnings |
-| Q02 Baseline Screening | - | NOT ENQUEUED | paced handoff pending |
+| Q02 Baseline Screening | 2026-08-05 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-05_qm5_20221_wti_win_signmom_q01_cpu_stop.md` |

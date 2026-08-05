@@ -11,7 +11,8 @@ logical_symbol: XTIUSD.DWX
 period: D1
 pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
+q02_blocker_ref: docs/ops/evidence/2026-08-05_qm5_20221_wti_win_signmom_q01_cpu_stop.md
 ---
 
 # Build-Time Card Reference
@@ -27,3 +28,7 @@ or portfolio artifact is authorized.
 
 Q01 evidence: `D:/QM/reports/framework/21/build_check_20260805_074444.json`
 (PASS; zero failures and zero warnings).
+
+Q02 was deliberately not enqueued after the immediate apply guard observed
+eight running factory terminals against the binding seven-terminal CPU
+ceiling. No apply-mode queue mutation or tester launch occurred.
