@@ -524,3 +524,38 @@ The implementation and enqueue work is complete to the limits of the guarded
 build and source-lineage contracts. Claude review is required before any
 acceptance decision; ongoing Q09 diagnostics and Q02-to-Q08 cascades retain
 their own evidence-derived terminal states.
+
+### Phase-B transient-recovery cutover — 2026-08-05
+
+Follow-on router task `698332ca-7cab-4301-9aca-3bc3a2aa472d` repaired the Q09
+child-exit-1 semantics in canonical commits `a20ded0c4` and `aabb9f244`. The
+core retry/requeue implementation was committed at `2026-08-05T17:37:56Z`;
+the mixed generic/history-lock attempt-ceiling binding was committed at
+`2026-08-05T17:53:17Z`. Fresh Q09 runner processes spawned from the canonical
+checkout after those cutovers load the corresponding code without a worker or
+terminal restart.
+
+The requested assertion that all Phase-B execution started only after the fix
+cannot be made truthfully. Phase B had already started before this task was
+routed at `2026-08-05T16:51:28Z`. Six generation-2 runner processes began
+before the core cutover: ranks 1, 2, 5, 7, 9, and 14 at `16:40:20Z`,
+`16:41:53Z`, `16:45:40Z`, `16:47:25Z`, `16:53:35Z`, and `16:58:17Z`.
+Those processes cannot reload Python code. They were neither stopped nor
+restarted because doing so would interrupt active T1-T5 tests.
+
+The first proven post-core-cutover runner was rank 6, work item
+`7a496c8b-4a4a-57c4-b049-04fb9fbbc150`, freshly spawned on T2 at
+`2026-08-05T17:41:05Z`. It exercised the new behavior in production: after
+the bounded retry exhausted, the runner raised the explicit transient
+`CapacityError`; the work item returned to pending at `17:44:48Z` with
+`verdict=NULL`, `evidence_path=NULL`, zero canonical Q09 rows, and its
+transient retry persisted. It was not prematurely adjudicated. Rank 8 then
+fresh-spawned on T2 at `17:47:27Z`. Any re-claim after the second cutover loads
+the mixed-counter ceiling fix as a new runner process.
+
+At the `2026-08-05T17:49Z` reconciliation, generation 2 held 3 done rows, 4
+active rows, 8 pending rows, and 0 failed rows. The pre-cutover rank-9 process
+had terminalized `REVIEW_REQUIRED` at `17:45:04Z`; that outcome is retained as
+its own evidence and is not rewritten. No canonical Q09 admission row was
+created, no protected T6-T10 test was displaced, and no T_Live, AutoTrading,
+or manual terminal action occurred.
