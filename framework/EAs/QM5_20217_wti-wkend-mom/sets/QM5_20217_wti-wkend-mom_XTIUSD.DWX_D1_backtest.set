@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        20217
 ; ea_slug:      wti-wkend-mom
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   39b7763e8abadda8c03620d04a69376a53e0bc951d2078c52db4e2976e3214ba
 ; author:       Development
 ; date:         2026-08-05
 ;==========================================================
