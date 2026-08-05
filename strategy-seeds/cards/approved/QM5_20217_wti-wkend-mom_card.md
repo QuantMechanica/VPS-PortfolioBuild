@@ -55,9 +55,10 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_STARTED
+q02_status: ENQUEUED
+q02_work_item_id: 4eaf26f4-d7e7-4915-9e3f-9f0c4213d157
 review_focus: "Falsify whether weekend-only WTI opening-gap continuation survives the FSTX/GBPUSD source-to-WTI substitution, D1 attachment, CFD roll/basis, gaps, costs, and realized correlation while adding a crude-oil clock absent from the certified XAU/SP500/NDX/XNG book."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -286,6 +287,7 @@ correlation waiver, or downstream promotion.
 |---|---|---|---|---|
 | v1 | 2026-08-05 | initial WTI weekend opening-gap momentum card | G0 | APPROVED; build pending |
 | v2 | 2026-08-05 | initial framework implementation | Q01 | PASS; strict compile and build checks |
+| v3 | 2026-08-05 | paced baseline handoff | Q02 | ENQUEUED; screening pending |
 
 ## Pipeline Phase Status
 
@@ -293,4 +295,4 @@ correlation waiver, or downstream promotion.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-05 | APPROVED; R1-R4 PASS | this card, governed source packet, and durable decision |
 | Q01 Build Validation | 2026-08-05 | PASS; 0 compile errors/warnings and 0 build failures/warnings | D:/QM/reports/framework/21/build_check_20260805_000513.json |
-| Q02 Baseline Screening | - | NOT STARTED | - |
+| Q02 Baseline Screening | 2026-08-05 | ENQUEUED; no screening verdict claimed | work item 4eaf26f4-d7e7-4915-9e3f-9f0c4213d157 |

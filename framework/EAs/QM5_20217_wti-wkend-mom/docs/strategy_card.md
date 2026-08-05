@@ -9,9 +9,10 @@ g0_status: APPROVED
 target_symbols: [XTIUSD.DWX]
 logical_symbol: XTIUSD.DWX
 period: D1
-pipeline_phase: Q01
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_STARTED
+q02_status: ENQUEUED
+q02_work_item_id: 4eaf26f4-d7e7-4915-9e3f-9f0c4213d157
 ---
 
 # Build-Time Card Reference
