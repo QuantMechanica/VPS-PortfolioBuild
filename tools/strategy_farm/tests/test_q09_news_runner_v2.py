@@ -381,6 +381,138 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         self.assertEqual(tampered_result["invalid_cell_count"], 1)
         self.assertEqual(tampered_result["adjudication"]["locked_arms"], [])
 
+    def test_claimed_terminal_wait_blocks_until_only_that_terminal_exits(self) -> None:
+        terminal_root = self.root / "mt5" / "T1"
+        terminal_root.mkdir(parents=True)
+        snapshots = [
+            [
+                {
+                    "ProcessId": 101,
+                    "ExecutablePath": str(terminal_root / "terminal64.exe"),
+                },
+                {
+                    "ProcessId": 202,
+                    "ExecutablePath": str(
+                        terminal_root.parent / "T2" / "terminal64.exe"
+                    ),
+                },
+                {
+                    "ProcessId": 303,
+                    "ExecutablePath": str(
+                        terminal_root.parent / "T_Live" / "terminal64.exe"
+                    ),
+                },
+                {
+                    "ProcessId": 404,
+                    "ExecutablePath": str(
+                        self.root / "FTMO Global Markets MT5 Terminal" / "terminal64.exe"
+                    ),
+                },
+            ],
+            [
+                {
+                    "ProcessId": 202,
+                    "ExecutablePath": str(
+                        terminal_root.parent / "T2" / "terminal64.exe"
+                    ),
+                },
+                {
+                    "ProcessId": 303,
+                    "ExecutablePath": str(
+                        terminal_root.parent / "T_Live" / "terminal64.exe"
+                    ),
+                },
+            ],
+        ]
+        now = [0.0]
+        sleeps: list[float] = []
+
+        def scan() -> list[dict]:
+            return snapshots.pop(0)
+
+        def sleep(seconds: float) -> None:
+            sleeps.append(seconds)
+            now[0] += seconds
+
+        runner._wait_for_claimed_terminal_exit(
+            terminal_root,
+            process_scan=scan,
+            monotonic=lambda: now[0],
+            sleeper=sleep,
+        )
+
+        self.assertEqual(sleeps, [runner.TERMINAL_EXIT_POLL_SEC])
+        self.assertEqual(snapshots, [])
+
+    def test_claimed_terminal_wait_is_bounded_when_process_never_exits(self) -> None:
+        terminal_root = self.root / "mt5" / "T1"
+        process = {
+            "ProcessId": 101,
+            "ExecutablePath": str(terminal_root / "terminal64.exe"),
+        }
+        now = [0.0]
+        sleeps: list[float] = []
+
+        def sleep(seconds: float) -> None:
+            sleeps.append(seconds)
+            now[0] += seconds
+
+        with self.assertRaisesRegex(
+            runner.RunnerError,
+            "claimed-terminal exit wait timed out after 5s.*101",
+        ):
+            runner._wait_for_claimed_terminal_exit(
+                terminal_root,
+                timeout_sec=5,
+                poll_sec=2,
+                process_scan=lambda: [process],
+                monotonic=lambda: now[0],
+                sleeper=sleep,
+            )
+
+        self.assertEqual(sleeps, [2.0, 2.0, 1.0])
+        self.assertEqual(sum(sleeps), 5.0)
+
+    def test_terminal_wait_timeout_fails_cell_closed_without_spawning_smoke(self) -> None:
+        plan = self.build(output="terminal-wait-timeout")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+
+        with (
+            patch.object(
+                runner,
+                "_wait_for_claimed_terminal_exit",
+                side_effect=runner.RunnerError(
+                    "Q09 claimed-terminal exit wait timed out after 180s for T1"
+                ),
+            ),
+            patch.object(runner.subprocess, "run") as smoke_run,
+        ):
+            result = runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=self.root / "terminal-wait-timeout-output",
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / "common-terminal-wait-timeout",
+            )
+
+        smoke_run.assert_not_called()
+        self.assertEqual(result["verdict"], "REVIEW_REQUIRED")
+        self.assertEqual(result["failed_cell_count"], 1)
+        failure = json.loads(
+            Path(result["adjudication"]["details"]["failed_cells"][0]["failure_path"])
+            .read_text(encoding="utf-8")
+        )
+        self.assertEqual(failure["schema_version"], runner.CELL_FAILURE_SCHEMA)
+        self.assertIn("claimed-terminal exit wait timed out", failure["error"])
+
     def test_executor_surfaces_a_failed_cell_instead_of_reporting_every_cell_missing(self) -> None:
         plan = self.build(output="failed-cell")
         farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
@@ -458,6 +590,7 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
 
         with (
             patch.object(runner.subprocess, "run", side_effect=fake_run),
+            patch.object(runner, "_wait_for_claimed_terminal_exit") as wait_for_exit,
             patch.object(runner, "_validate_window_summary", side_effect=fake_validate),
         ):
             result = runner.execute_run_plan(
@@ -478,6 +611,8 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         self.assertEqual(result["verdict"], "CONFIG_LOCKED")
         self.assertEqual(result["authenticated_cell_count"], 40)
         self.assertEqual(len(commands), 40 * len(runner.WINDOW_NAMES))
+        self.assertEqual(wait_for_exit.call_count, 40 * len(runner.WINDOW_NAMES))
+        self.assertTrue(all("-AllowRunningTerminal" not in command for command in commands))
         self.assertEqual(
             len(list((self.root / "production-multi-cell").rglob("cell_receipt.json"))),
             40,

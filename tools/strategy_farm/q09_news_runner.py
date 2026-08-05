@@ -14,10 +14,12 @@ import hashlib
 import html
 import json
 import math
+import os
 import re
 import sqlite3
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable, Mapping, Sequence
@@ -39,8 +41,11 @@ CELL_FAILURE_SCHEMA = "q09-news-cell-failure/v1"
 COMPLIANCE_MODE_IDS = {"NONE": 0, "DXZ": 1, "FTMO": 2, "5ERS": 3}
 DEFAULT_CELL_TIMEOUT_SEC = 3600
 CELL_TIMEOUT_HEADROOM_SEC = 600
+TERMINAL_EXIT_WAIT_SEC = 180
+TERMINAL_EXIT_POLL_SEC = 2.0
 WINDOW_NAMES = ("selection", "holdout", "full")
 FACTORY_DB_RELATIVE_PATH = Path("state") / "farm_state.sqlite"
+FACTORY_MT5_ROOT = Path(r"D:\QM\mt5")
 
 
 class RunnerError(RuntimeError):
@@ -1502,6 +1507,119 @@ def _validate_window_summary(
     return metrics, artifacts
 
 
+def _claimed_factory_terminal_root(terminal: str) -> Path:
+    terminal_name = str(terminal).upper()
+    if re.fullmatch(r"T(?:[1-9]|10)", terminal_name) is None:
+        raise CapacityError(
+            f"Q09 terminal exit gate refused non-factory terminal {terminal!r}"
+        )
+    return (FACTORY_MT5_ROOT / terminal_name).resolve()
+
+
+def _path_is_under_root(path: str, root: Path) -> bool:
+    if not str(path).strip():
+        return False
+    try:
+        candidate = os.path.normcase(os.path.realpath(os.path.abspath(str(path))))
+        anchor = os.path.normcase(os.path.realpath(os.path.abspath(str(root))))
+        return os.path.commonpath((candidate, anchor)) == anchor
+    except (OSError, ValueError):
+        return False
+
+
+def _scan_terminal64_processes() -> list[dict[str, Any]]:
+    command = [
+        "pwsh.exe",
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        (
+            "$ErrorActionPreference='Stop'; "
+            "@(Get-CimInstance Win32_Process -Filter \"Name='terminal64.exe'\" "
+            "| Select-Object ProcessId,ExecutablePath) "
+            "| ConvertTo-Json -Compress -Depth 3"
+        ),
+    ]
+    creationflags = 0x08000000 if sys.platform == "win32" else 0
+    try:
+        completed = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            creationflags=creationflags,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise RunnerError(f"Q09 terminal process scan failed: {exc}") from exc
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout or "").strip()
+        raise RunnerError(
+            f"Q09 terminal process scan exited with code {completed.returncode}: {detail}"
+        )
+    raw = (completed.stdout or "").strip()
+    if not raw:
+        return []
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise RunnerError("Q09 terminal process scan returned invalid JSON") from exc
+    rows = payload if isinstance(payload, list) else [payload]
+    if not all(isinstance(row, dict) for row in rows):
+        raise RunnerError("Q09 terminal process scan returned an invalid row set")
+    return rows
+
+
+def _claimed_terminal_processes(
+    processes: Sequence[Mapping[str, Any]],
+    terminal_root: Path,
+) -> list[dict[str, Any]]:
+    matches: list[dict[str, Any]] = []
+    for process in processes:
+        executable_path = str(process.get("ExecutablePath") or "")
+        if Path(executable_path).name.lower() != "terminal64.exe":
+            continue
+        if not _path_is_under_root(executable_path, terminal_root):
+            continue
+        matches.append(dict(process))
+    return matches
+
+
+def _wait_for_claimed_terminal_exit(
+    terminal_root: Path,
+    *,
+    timeout_sec: float = TERMINAL_EXIT_WAIT_SEC,
+    poll_sec: float = TERMINAL_EXIT_POLL_SEC,
+    process_scan: Callable[[], Sequence[Mapping[str, Any]]] | None = None,
+    monotonic: Callable[[], float] | None = None,
+    sleeper: Callable[[float], None] | None = None,
+) -> None:
+    """Wait for terminal64 processes under one claimed factory root to exit."""
+
+    if timeout_sec <= 0 or poll_sec <= 0:
+        raise RunnerError("Q09 terminal exit wait requires positive timeout and poll values")
+    scan = process_scan or _scan_terminal64_processes
+    clock = monotonic or time.monotonic
+    sleep = sleeper or time.sleep
+    started = clock()
+    deadline = started + float(timeout_sec)
+    while True:
+        matching = _claimed_terminal_processes(scan(), terminal_root)
+        if not matching:
+            return
+        remaining = deadline - clock()
+        if remaining <= 0:
+            pids = sorted(
+                str(process.get("ProcessId") or "unknown") for process in matching
+            )
+            raise RunnerError(
+                "Q09 claimed-terminal exit wait timed out after "
+                f"{float(timeout_sec):g}s for {terminal_root}; "
+                f"terminal64.exe pids still active: {','.join(pids)}"
+            )
+        sleep(min(float(poll_sec), remaining))
+
+
 def _production_dispatch_cell(
     spec: Mapping[str, Any],
     context: Mapping[str, Any],
@@ -1544,6 +1662,7 @@ def _production_dispatch_cell(
             "-DispatchSubGateHash", f"{str(spec['run_identity_sha256'])[:16]}_{window_name}",
             "-RequireFreshLoggerSample",
         ]
+        _wait_for_claimed_terminal_exit(Path(str(context["terminal_root"])))
         started_at = datetime.now(timezone.utc).timestamp()
         creationflags = 0x08000000 if sys.platform == "win32" else 0
         try:
@@ -1755,6 +1874,7 @@ def execute_run_plan(
         "farm_root": str(farm_root.resolve()),
         "work_item_id": str(work_item_id),
         "terminal": str(terminal),
+        "terminal_root": str(_claimed_factory_terminal_root(terminal)),
         "ea_id": int(ea_id),
         "expert": str(expert),
         "symbol": str(symbol),
