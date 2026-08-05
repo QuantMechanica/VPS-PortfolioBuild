@@ -277,4 +277,4 @@ portfolio-gate change; or a correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_qm5_20234_xauxag_rsj_g0.md` |
 | Q01 Compile / Static Validation | 2026-08-06 | PASS | `framework/build/compile/20260805_233838/QM5_20234_xauxag-rsj.compile.log`; `D:/QM/reports/framework/21/build_check_20260805_233838.json` (0 errors, 0 warnings, 0 gate failures) |
-| Q02 Baseline Screening | 2026-08-06 | NOT ENQUEUED | pending paced capacity check |
+| Q02 Baseline Screening | 2026-08-06 | NOT ENQUEUED — CPU CEILING | targeted dry run selected one priority item; apply withheld because 10 factory terminals were active against the ceiling of 7 |

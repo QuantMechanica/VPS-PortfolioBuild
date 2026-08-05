@@ -1,0 +1,90 @@
+{
+  "schema": "qm_commodity_build_q02_handoff/v1",
+  "timestamp_utc": "2026-08-05T23:41:01.5551480Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20234",
+  "slug": "xauxag-rsj",
+  "logical_symbol": "QM5_20234_XAU_XAG_RSJ_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "timeframe": "D1",
+  "strategy_id": "KISS-RSJ-2025_XAU_XAG_S02",
+  "mechanic": "monthly long-low-RSJ short-high-RSJ rank across synchronized prior-complete-month XAU and XAG D1 returns",
+  "source": {
+    "primary": "Kiss and Ferreira Batista Martins (2025), Finance Research Letters 86 Part D, article 108656",
+    "doi": "10.1016/j.frl.2025.108656",
+    "durable_approval": "decisions/2026-08-06_qm5_20234_xauxag_rsj_g0.md",
+    "source_packet": "strategy-seeds/sources/KISS-RSJ-2025/source.md",
+    "metal_carrier_tested_by_source": false,
+    "efficacy_transfer_claimed": false
+  },
+  "dedup": {
+    "exact_duplicate": false,
+    "registry_rows_scanned": 4291,
+    "cards_scanned": 407,
+    "fuzzy_family_matches": ["cme-xauxag-brk", "energy-rsj", "xauxag-rev18"],
+    "manual_resolution": "normalized signed-semivariance rank is distinct from ratio breakout, prior energy RSJ carrier, and fixed-horizon price-ratio reversion mechanics"
+  },
+  "build": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "spec_validation": "PASS",
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_passed": true,
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "magic_resolver_rows_kept": 15512,
+    "magic_resolver_rows_dropped": 0,
+    "magics": {
+      "XAUUSD.DWX": 202340000,
+      "XAGUSD.DWX": 202340001
+    },
+    "source_packet_sha256": "87679A706DA34734A845C5BC932DEB75603B3B9B03D56BC88A8CFEC779ACACC8",
+    "g0_decision_sha256": "0B96F94EA3C6F10FE37290C4DED32E8388F41F8F3CBE824FE30D7352A79BF544",
+    "card_sha256": "2962ED925CA70C2B6620D767DA81FD124832B0E91A0D6DE7D2B765A1EE50696D",
+    "mq5_sha256": "8FBD109B8E96F7657F120C64BB41DADDAA1EB969FF5E3A1F397017DC1A1E1055",
+    "ex5_sha256": "FA35D44BBDC1DD80E5F0D6146D4637CA1223B5A01F925DECCBA9558C0AE2B48F",
+    "spec_sha256": "AFDDB93BC69178BEA084C47F309D34CEB6339A309F8323704E6258F988E31105",
+    "basket_manifest_sha256": "4C1B93113D7F59C23BFDCDC78ADBD4C1CBBC6794BBA906C100864C2FCA43079D",
+    "setfile_sha256": "F94BE16A6399C9CAE94003F435F6125B3BC0DBF769B79346E636DDB05B2A0637",
+    "build_hash": "5960ce7cc374d5934fc30355e0783f19da6a21cecaae7d7992e677dd8ad62353",
+    "build_report": "D:\\QM\\reports\\framework\\21\\build_check_20260805_233838.json",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260805_233838\\QM5_20234_xauxag-rsj.compile.log",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260805_233838\\summary.csv",
+    "manual_smoke_or_backtest": false
+  },
+  "risk": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "package_risk_split": "equal stop-risk halves",
+    "live_setfile_created": false
+  },
+  "q02": {
+    "targeted_dry_run_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --ea QM5_20234 --symbols QM5_20234_XAU_XAG_RSJ_D1 --max-part2-per-run 0",
+    "dry_run_selected_items": 1,
+    "dry_run_priority_track_items": 1,
+    "apply_performed": false,
+    "work_item_id": null,
+    "existing_work_items_at_precheck": 0,
+    "status_at_handoff": "not_enqueued_cpu_ceiling",
+    "queue_pending_at_precheck": 1517,
+    "queue_ceiling": 7000,
+    "cpu_ceiling": 7,
+    "cpu_ceiling_reached": true,
+    "factory_terminals_at_precheck": 10,
+    "factory_terminal_names_at_precheck": ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10"],
+    "t_live_excluded": true,
+    "manual_dispatch": false,
+    "stop_reason": "binding factory-terminal CPU ceiling exceeded before apply"
+  },
+  "commits": {
+    "source_and_g0": "1269f26c04f786f51d447f29d04bfd0e6bdabf7d",
+    "card_and_ea_id": "f4169cf7014f3d816a6f1cc8fa392181da072103",
+    "build": "9e6be25cf4289f111a19b92a59be46398e21bbf6"
+  },
+  "prohibited_surfaces_touched": []
+}
