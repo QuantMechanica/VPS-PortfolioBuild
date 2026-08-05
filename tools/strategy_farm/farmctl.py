@@ -16480,6 +16480,8 @@ _FRESH_Q02_SEED_PROVENANCE_KEYS = (
     "requalification_old_work_item_id",
     "requalification_reason",
     "requalification_setfile_identity",
+    "requalification_source_setfile_identity",
+    "setfile_reconciliation",
     "risk_fixed",
     "risk_percent",
 )
@@ -16525,6 +16527,77 @@ def _q02_fixed_risk_contract(setfile_path: str) -> tuple[bool, dict[str, Any]]:
         "setfile_path": str(path),
         "risk_fixed": risk_fixed,
         "risk_percent": risk_percent,
+    }
+
+
+def _setfile_semantic_parameters(path: Path) -> dict[str, str]:
+    """Return the executable key/value contract, excluding comments and layout."""
+
+    text = path.read_text(encoding="utf-8-sig", errors="strict")
+    values: dict[str, str] = {}
+    for line_number, raw_line in enumerate(text.splitlines(), start=1):
+        line = raw_line.strip()
+        if not line or line.startswith(";"):
+            continue
+        if "=" not in line:
+            raise ValueError(f"non-comment line {line_number} has no '=' delimiter")
+        key, value = line.split("=", 1)
+        normalized_key = key.strip().casefold()
+        if not normalized_key:
+            raise ValueError(f"line {line_number} has an empty parameter name")
+        if normalized_key in values:
+            raise ValueError(f"duplicate parameter {key.strip()!r} at line {line_number}")
+        values[normalized_key] = value.strip()
+    return values
+
+
+def _noncanonical_setfile_reconciliation(
+    source_path: Path,
+    canonical_path: Path,
+) -> tuple[bool, dict[str, Any]]:
+    """Prove that a worktree preset and canonical preset execute identically."""
+
+    if not source_path.is_file() or not canonical_path.is_file():
+        return False, {
+            "reason": "noncanonical_setfile_reconciliation_artifact_missing",
+            "source_path": str(source_path),
+            "canonical_path": str(canonical_path),
+        }
+    try:
+        source_values = _setfile_semantic_parameters(source_path)
+        canonical_values = _setfile_semantic_parameters(canonical_path)
+    except (OSError, UnicodeError, ValueError) as exc:
+        return False, {
+            "reason": "noncanonical_setfile_reconciliation_unreadable",
+            "source_path": str(source_path),
+            "canonical_path": str(canonical_path),
+            "detail": str(exc),
+        }
+    source_sha256 = _sha256_file(source_path)
+    canonical_sha256 = _sha256_file(canonical_path)
+    if source_values != canonical_values:
+        differing_keys = sorted(
+            key
+            for key in set(source_values) | set(canonical_values)
+            if source_values.get(key) != canonical_values.get(key)
+        )
+        return False, {
+            "reason": "noncanonical_setfile_semantic_mismatch",
+            "source_path": str(source_path),
+            "source_sha256": source_sha256,
+            "canonical_path": str(canonical_path),
+            "canonical_sha256": canonical_sha256,
+            "differing_parameter_keys": differing_keys,
+        }
+    return True, {
+        "schema_version": "qm-q02-setfile-reconciliation/v1",
+        "source_path": str(source_path),
+        "source_sha256": source_sha256,
+        "canonical_path": str(canonical_path),
+        "canonical_sha256": canonical_sha256,
+        "semantic_parameters_equal": True,
+        "semantic_parameter_count": len(source_values),
+        "permitted_difference_scope": "comments_bom_whitespace_and_line_endings_only",
     }
 
 
@@ -16639,6 +16712,8 @@ def _q02_exact_artifact_bindings(
 def _expected_current_execution_bindings(
     target: sqlite3.Row,
     expected_current_ex5_sha256: str | None,
+    *,
+    allow_noncanonical_setfile_reconciliation: bool = False,
 ) -> tuple[bool, dict[str, Any]]:
     """Authenticate one row identity against an operator-bound current EX5."""
     expected_ex5 = str(expected_current_ex5_sha256 or "").strip().lower()
@@ -16648,23 +16723,56 @@ def _expected_current_execution_bindings(
             "expected_current_ex5_sha256": expected_ex5,
         }
     ea_id = str(target["ea_id"])
-    setfile_path = Path(str(target["setfile_path"]))
-    ea_dir = _ea_dir_from_setfile_path(setfile_path, ea_id)
+    source_setfile_path = Path(str(target["setfile_path"])).resolve()
+    ea_dir = _ea_dir_from_setfile_path(source_setfile_path, ea_id)
     if ea_dir is None:
         return False, {
             "reason": "setfile_not_bound_to_exact_ea_directory",
-            "setfile_path": str(setfile_path),
+            "setfile_path": str(source_setfile_path),
         }
     canonical_ea_dir = _preferred_ea_dir(ea_id)
-    if canonical_ea_dir is None or os.path.normcase(str(ea_dir.resolve())) != os.path.normcase(
-        str(canonical_ea_dir.resolve())
-    ):
-        return False, {
+    reconciliation: dict[str, Any] | None = None
+    canonical_match = bool(
+        canonical_ea_dir is not None
+        and os.path.normcase(str(ea_dir.resolve()))
+        == os.path.normcase(str(canonical_ea_dir.resolve()))
+    )
+    if not canonical_match:
+        refusal = {
             "reason": "current_execution_binding_not_in_canonical_ea_directory",
-            "setfile_path": str(setfile_path),
+            "setfile_path": str(source_setfile_path),
             "resolved_ea_dir": str(ea_dir),
             "canonical_ea_dir": str(canonical_ea_dir) if canonical_ea_dir else None,
         }
+        source_is_worktree = any(
+            part.casefold() == "worktrees" for part in source_setfile_path.parts
+        )
+        same_ea_directory_name = bool(
+            canonical_ea_dir is not None and ea_dir.name == canonical_ea_dir.name
+        )
+        if (
+            not allow_noncanonical_setfile_reconciliation
+            or not source_is_worktree
+            or not same_ea_directory_name
+        ):
+            return False, refusal
+        canonical_setfile_path = (
+            canonical_ea_dir / "sets" / source_setfile_path.name
+        ).resolve()
+        reconciled, reconciliation_detail = _noncanonical_setfile_reconciliation(
+            source_setfile_path, canonical_setfile_path
+        )
+        if not reconciled:
+            return False, {
+                **refusal,
+                **reconciliation_detail,
+                "reconciliation_requested": True,
+            }
+        reconciliation = reconciliation_detail
+        ea_dir = canonical_ea_dir
+        setfile_path = canonical_setfile_path
+    else:
+        setfile_path = source_setfile_path
     paths = {
         "expected_mq5_sha256": ea_dir / f"{ea_dir.name}.mq5",
         "expected_ex5_sha256": ea_dir / f"{ea_dir.name}.ex5",
@@ -16697,10 +16805,12 @@ def _expected_current_execution_bindings(
         return False, symbol_binding
     return True, {
         "ea_dir": str(ea_dir),
+        "effective_setfile_path": str(setfile_path),
         "artifact_sha256": actual,
         "expected_symbol": symbol_binding["expected_symbol"],
         "expected_period": _detect_ea_period(ea_id, setfile_path),
         "expected_expert": f"QM\\{ea_dir.name}",
+        "setfile_reconciliation": reconciliation,
     }
 
 
@@ -16754,6 +16864,7 @@ def enqueue_fresh_q02_seed(
     old_work_item_id: str | None,
     requal_reason: str | None,
     expected_current_ex5_sha256: str | None,
+    reconcile_noncanonical_setfile: bool = False,
 ) -> dict[str, Any]:
     """Append one current-binary Q02 seed from a terminal pre-binding row.
 
@@ -16854,19 +16965,12 @@ def enqueue_fresh_q02_seed(
                 ),
             }
 
-        risk_ok, risk_detail = _q02_fixed_risk_contract(
-            str(source["setfile_path"])
-        )
-        if not risk_ok:
-            return {
-                "enqueued": False,
-                "ea_id": ea_id,
-                "phase": phase,
-                "old_work_item_id": source_id,
-                **risk_detail,
-            }
         bindings_ok, bindings = _expected_current_execution_bindings(
-            source, expected_ex5
+            source,
+            expected_ex5,
+            allow_noncanonical_setfile_reconciliation=(
+                reconcile_noncanonical_setfile
+            ),
         )
         if not bindings_ok:
             return {
@@ -16875,6 +16979,16 @@ def enqueue_fresh_q02_seed(
                 "phase": phase,
                 "old_work_item_id": source_id,
                 **bindings,
+            }
+        effective_setfile_path = str(bindings["effective_setfile_path"])
+        risk_ok, risk_detail = _q02_fixed_risk_contract(effective_setfile_path)
+        if not risk_ok:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "old_work_item_id": source_id,
+                **risk_detail,
             }
 
         open_row = conn.execute(
@@ -16974,7 +17088,7 @@ def enqueue_fresh_q02_seed(
             "requalification_old_work_item_id": source_id,
             "requalification_reason": reason,
             "requalification_setfile_identity": {
-                "path": str(source["setfile_path"]),
+                "path": effective_setfile_path,
                 "sha256": bindings["artifact_sha256"][
                     "expected_setfile_sha256"
                 ],
@@ -16986,6 +17100,15 @@ def enqueue_fresh_q02_seed(
             "expected_period": bindings["expected_period"],
             "expected_symbol": bindings["expected_symbol"],
         })
+        reconciliation = bindings.get("setfile_reconciliation")
+        if isinstance(reconciliation, dict):
+            payload.update({
+                "requalification_source_setfile_identity": {
+                    "path": reconciliation["source_path"],
+                    "sha256": reconciliation["source_sha256"],
+                },
+                "setfile_reconciliation": reconciliation,
+            })
         wid = str(uuid.uuid4())
         conn.execute(
             """
@@ -16998,7 +17121,7 @@ def enqueue_fresh_q02_seed(
                 wid,
                 ea_id,
                 source["symbol"],
-                source["setfile_path"],
+                effective_setfile_path,
                 json.dumps(payload, sort_keys=True),
                 now,
                 now,
@@ -17007,7 +17130,7 @@ def enqueue_fresh_q02_seed(
         created = [{
             "id": wid,
             "symbol": source["symbol"],
-            "setfile_path": source["setfile_path"],
+            "setfile_path": effective_setfile_path,
             "old_work_item_id": source_id,
             "expected_ex5_sha256": payload["expected_ex5_sha256"],
             "expected_setfile_sha256": payload["expected_setfile_sha256"],
@@ -17022,6 +17145,7 @@ def enqueue_fresh_q02_seed(
                 "created": created,
                 "requalification_reason": reason,
                 "old_work_item_id": source_id,
+                "setfile_reconciliation": reconciliation,
             },
         )
         conn.commit()
@@ -20792,6 +20916,14 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         help="Exact SHA-256 required to match the current canonical repo EX5 bytes",
     )
+    seed_fresh_q02.add_argument(
+        "--reconcile-noncanonical-setfile",
+        action="store_true",
+        help=(
+            "Opt in to hash-recorded worktree-to-canonical setfile reconciliation; "
+            "executable key/value parameters must be identical"
+        ),
+    )
     bind_q09 = sub.add_parser(
         "bind-q09-plan",
         help="Hash-bind a sealed Q09_NEWS plan to one exact pending work item",
@@ -21111,6 +21243,7 @@ def main(argv: list[str] | None = None) -> int:
             old_work_item_id=args.old_work_item_id,
             requal_reason=args.requal_reason,
             expected_current_ex5_sha256=args.expected_current_ex5_sha256,
+            reconcile_noncanonical_setfile=args.reconcile_noncanonical_setfile,
         ))
     elif args.command == "bind-q09-plan":
         print_json(bind_q09_run_plan(

@@ -485,6 +485,107 @@ def test_fresh_q02_seed_refuses_noncanonical_ea_directory(
     assert _work_item_count(art) == 1
 
 
+def test_fresh_q02_seed_reconciles_semantically_equal_worktree_setfile(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    canonical_ea = art["ea_dir"]
+    canonical_setfile = art["setfile"]
+    assert isinstance(canonical_ea, Path)
+    assert isinstance(canonical_setfile, Path)
+    worktree_ea = tmp_path / "worktrees" / "agent-1" / canonical_ea.name
+    worktree_sets = worktree_ea / "sets"
+    worktree_sets.mkdir(parents=True)
+    worktree_setfile = worktree_sets / canonical_setfile.name
+    worktree_setfile.write_text(
+        "; stale build_hash comment only\nRISK_FIXED=1000\nRISK_PERCENT=0\n",
+        encoding="utf-8",
+    )
+    _insert_work_item(
+        art,
+        item_id="q02-prebinding-worktree",
+        phase="Q02",
+        status="done",
+        verdict="PASS",
+        payload=_prebinding_payload(),
+        setfile=worktree_setfile,
+    )
+
+    result = farmctl.enqueue_fresh_q02_seed(
+        art["root"],
+        art["ea_id"],
+        old_work_item_id="q02-prebinding-worktree",
+        requal_reason="governed worktree-to-canonical reconciliation",
+        expected_current_ex5_sha256=art["current_ex5"],
+        reconcile_noncanonical_setfile=True,
+    )
+
+    assert result["enqueued"]
+    new_id = result["created"][0]["id"]
+    with sqlite3.connect(art["root"] / farmctl.DB_REL) as conn:
+        conn.row_factory = sqlite3.Row
+        source = conn.execute(
+            "SELECT setfile_path FROM work_items WHERE id='q02-prebinding-worktree'"
+        ).fetchone()
+        created = conn.execute(
+            "SELECT setfile_path,payload_json FROM work_items WHERE id=?", (new_id,)
+        ).fetchone()
+    payload = json.loads(created["payload_json"])
+    assert Path(source["setfile_path"]) == worktree_setfile
+    assert Path(created["setfile_path"]) == canonical_setfile.resolve()
+    assert payload["setfile_reconciliation"]["schema_version"] == (
+        "qm-q02-setfile-reconciliation/v1"
+    )
+    assert payload["setfile_reconciliation"]["semantic_parameters_equal"] is True
+    assert payload["requalification_source_setfile_identity"]["sha256"] == (
+        farmctl._sha256_file(worktree_setfile)
+    )
+    assert payload["requalification_setfile_identity"]["sha256"] == (
+        farmctl._sha256_file(canonical_setfile)
+    )
+    assert _work_item_count(art) == 2
+
+
+def test_fresh_q02_seed_reconciliation_refuses_parameter_drift(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    canonical_ea = art["ea_dir"]
+    canonical_setfile = art["setfile"]
+    assert isinstance(canonical_ea, Path)
+    assert isinstance(canonical_setfile, Path)
+    worktree_ea = tmp_path / "worktrees" / "agent-1" / canonical_ea.name
+    worktree_sets = worktree_ea / "sets"
+    worktree_sets.mkdir(parents=True)
+    worktree_setfile = worktree_sets / canonical_setfile.name
+    worktree_setfile.write_text(
+        "RISK_FIXED=500\nRISK_PERCENT=0\n", encoding="utf-8"
+    )
+    _insert_work_item(
+        art,
+        item_id="q02-prebinding-worktree-drift",
+        phase="Q02",
+        status="done",
+        verdict="PASS",
+        payload=_prebinding_payload(),
+        setfile=worktree_setfile,
+    )
+
+    result = farmctl.enqueue_fresh_q02_seed(
+        art["root"],
+        art["ea_id"],
+        old_work_item_id="q02-prebinding-worktree-drift",
+        requal_reason="must refuse executable parameter drift",
+        expected_current_ex5_sha256=art["current_ex5"],
+        reconcile_noncanonical_setfile=True,
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "noncanonical_setfile_semantic_mismatch"
+    assert result["differing_parameter_keys"] == ["risk_fixed"]
+    assert _work_item_count(art) == 1
+
+
 def test_fresh_q02_seed_refuses_any_binding_era_source(
     tmp_path: Path, monkeypatch
 ) -> None:
