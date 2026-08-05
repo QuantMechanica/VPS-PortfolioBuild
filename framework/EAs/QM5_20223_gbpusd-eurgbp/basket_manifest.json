@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_20223_GBPUSD_EURGBP_COINTEGRATION_D1",
+  "host_symbol": "GBPUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "GBPUSD.DWX",
+    "EURGBP.DWX"
+  ],
+  "traded_symbols": [
+    "GBPUSD.DWX",
+    "EURGBP.DWX"
+  ],
+  "notes": [
+    "Dedicated fixed-beta GBPUSD/EURGBP D1 cointegration sleeve selected as rank 44 in the frozen sign-aware 66-pair scan. Both declared histories are traded; GBPUSD also provides the GBP-to-USD conversion path, so no order-free conversion symbol or magic slot is used.",
+    "DEV Sharpe -0.079, OOS Sharpe -0.099, fixed beta -0.399228065, and 149.505-D1-bar half-life are adverse frontier evidence. Q02 is a one-shot retirement gate with no refit; the USD 100000 tester uses canonical RISK_FIXED=1000."
+  ]
+}

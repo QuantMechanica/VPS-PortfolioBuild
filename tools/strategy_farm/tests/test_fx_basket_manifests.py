@@ -961,6 +961,42 @@ def test_qm5_20220_manifest_conversion_history_and_fixed_risk_setfile() -> None:
     assert "if(!companion_opened)" in source
 
 
+def test_qm5_20223_manifest_and_fixed_risk_setfile() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_20223_gbpusd-eurgbp"
+    source = (ea_dir / "QM5_20223_gbpusd-eurgbp.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    logical = manifest["logical_symbol"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_D1_backtest.set"
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+    source_symbols = set(re.findall(r'"([A-Z]{6}\.DWX)"', source))
+
+    assert logical == "QM5_20223_GBPUSD_EURGBP_COINTEGRATION_D1"
+    assert manifest["host_symbol"] == "GBPUSD.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["tester_currency"] == "USD"
+    assert manifest["tester_deposit"] == 100000
+    assert manifest["traded_symbols"] == ["GBPUSD.DWX", "EURGBP.DWX"]
+    assert declared == {"GBPUSD.DWX", "EURGBP.DWX"}
+    assert source_symbols == declared
+    assert logical_setfile.exists()
+    assert "; host_symbol:  GBPUSD.DWX" in set_text
+    assert "qm_ea_id=20223" in set_text
+    assert "RISK_FIXED=1000" in set_text
+    assert "RISK_PERCENT=0" in set_text
+    assert "PORTFOLIO_WEIGHT=1" in set_text
+    assert "strategy_beta=-0.399228065" in set_text
+    assert "const int history_count = lookback + 1;" in source
+    assert source.count("PERIOD_D1, 1, history_count") == 4
+    assert source.count("for(int i = 1; i < history_count; ++i)") == 2
+    assert 'string allowed[2] = {"GBPUSD.DWX", "EURGBP.DWX"};' in source
+    assert "if(gbpusd_lots <= 0.0 || eurgbp_lots <= 0.0)" in source
+    assert "g_companion_entry_ready &&" in source
+    assert "if(!companion_opened)" in source
+
+
 def test_qm5_1224_is_one_atomic_fx7_cross_sectional_package() -> None:
     ea_dir = REPO / "framework" / "EAs" / "QM5_1224_white-okunev-fx-xmom"
     manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
