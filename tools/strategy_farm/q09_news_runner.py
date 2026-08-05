@@ -779,7 +779,6 @@ def bind_diagnostic_plan_to_work_item(
         anchor.get("schema_version") != DIAGNOSTIC_ANCHOR_SCHEMA
         or anchor.get("diagnostic_non_admission") is not True
         or anchor.get("diagnostic_contract") != DIAGNOSTIC_CONTRACT
-        or str(anchor.get("work_item_id")) != str(work_item_id)
     ):
         raise RunnerError("Q09 diagnostic anchor contract is missing or contradictory")
 
@@ -802,6 +801,23 @@ def bind_diagnostic_plan_to_work_item(
             raise RunnerError("Q09 diagnostic work item does not exist")
         if item["phase"] != "Q09_NEWS" or item["status"] != "pending" or str(item["claimed_by"] or "").strip():
             raise RunnerError("Q09 diagnostic plan requires an unclaimed pending Q09_NEWS row")
+        try:
+            payload = json.loads(str(item["payload_json"] or "{}"))
+        except json.JSONDecodeError as exc:
+            raise RunnerError("Q09 diagnostic payload is invalid JSON") from exc
+        anchor_work_item_id = str(anchor.get("work_item_id") or "")
+        direct_anchor = anchor_work_item_id == str(work_item_id)
+        sealed_identity_rerun = (
+            payload.get("sealed_identity_rerun") is True
+            and int(payload.get("diagnostic_generation") or 0) >= 3
+            and str(payload.get("rerun_of") or "") == anchor_work_item_id
+            and str(payload.get("sealed_identity_anchor_work_item_id") or "")
+            == anchor_work_item_id
+            and str(payload.get("sealed_identity_anchor_sha256") or "").lower()
+            == contract.sha256_file(anchor_path)
+        )
+        if not direct_anchor and not sealed_identity_rerun:
+            raise RunnerError("Q09 diagnostic anchor work-item lineage is contradictory")
         if str(item["ea_id"]) != str(anchor.get("ea_id")) or str(item["symbol"]) != str(anchor.get("symbol")):
             raise RunnerError("Q09 diagnostic anchor differs from work-item EA/symbol")
         if connection.execute(
@@ -892,10 +908,6 @@ def bind_diagnostic_plan_to_work_item(
         ):
             raise RunnerError("registered calendar bundle contradicts diagnostic plan")
 
-        try:
-            payload = json.loads(str(item["payload_json"] or "{}"))
-        except json.JSONDecodeError as exc:
-            raise RunnerError("Q09 diagnostic payload is invalid JSON") from exc
         avoided = {str(value).upper() for value in payload.get("avoid_terminals", [])}
         if (
             payload.get("diagnostic_non_admission") is not True

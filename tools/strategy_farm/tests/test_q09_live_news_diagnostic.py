@@ -481,6 +481,119 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
         self.assertNotIn("launch_not_before_utc", rerun_payload)
         self.assertEqual(canonical_count, 0)
 
+    def test_generation_rerun_reuses_sealed_anchor_and_preserves_cell_identities(self) -> None:
+        artifact_root = self.root / "campaign"
+        plan_path = Path(self.plan["plan_path"])
+        plan_hash = contract.sha256_file(plan_path)
+        with (
+            mock.patch.object(backfill, "ARTIFACT_ROOT", artifact_root),
+            mock.patch.object(backfill, "FARM_ROOT", self.farm),
+        ):
+            runner.bind_diagnostic_plan_to_work_item(
+                self.farm,
+                work_item_id=self.work_item_id,
+                plan_path=plan_path,
+                expected_plan_file_sha256=plan_hash,
+                cell_timeout_sec=60,
+            )
+
+            failed_cell_root = Path(self.plan["cells"][0]["receipt_path"]).parent
+            failed_cell_root.mkdir(parents=True, exist_ok=True)
+            (failed_cell_root / "cell_failure.json").write_text(
+                json.dumps({
+                    "error_type": "RunnerError",
+                    "error": "Q09 selection run_smoke exited with code 1",
+                }),
+                encoding="utf-8",
+            )
+            summary_path = self.root / "summary.json"
+            summary_path.write_text(
+                json.dumps({
+                    "schema_version": "q09-live-news-diagnostic-summary/v1",
+                    "diagnostic_non_admission": True,
+                    "diagnostic_contract": runner.DIAGNOSTIC_CONTRACT,
+                    "work_item_id": self.work_item_id,
+                }),
+                encoding="utf-8",
+            )
+            with farmctl.connect(self.farm) as connection:
+                row = connection.execute(
+                    "SELECT payload_json FROM work_items WHERE id=?",
+                    (self.work_item_id,),
+                ).fetchone()
+                payload = json.loads(row["payload_json"])
+                payload.update({
+                    "diagnostic_campaign_id": backfill.CAMPAIGN_ID,
+                    "diagnostic_generation": 2,
+                    "diagnostic_queue_rank": -98,
+                    "diagnostic_source_rank": 2,
+                    "diagnostic_live_weight": 0.92,
+                    "diagnostic_control": "test-neutralized",
+                    "host_symbol": "EURUSD.DWX",
+                    "host_timeframe": "H1",
+                    "terminal": "T4",
+                    "protected_chain_exclusion": ["round7", "Q09_PORTFOLIO", "Q10"],
+                })
+                connection.execute(
+                    "UPDATE work_items SET status='done',verdict='REVIEW_REQUIRED',"
+                    "evidence_path=?,payload_json=? WHERE id=?",
+                    (str(summary_path), json.dumps(payload, sort_keys=True), self.work_item_id),
+                )
+                connection.commit()
+
+            task_id = "router-transient-generation-1"
+            receipt = backfill.enqueue_append_only_rerun(
+                task_id=task_id,
+                predecessor_id=self.work_item_id,
+                avoid_terminal="T4",
+            )
+            repeated = backfill.enqueue_append_only_rerun(
+                task_id=task_id,
+                predecessor_id=self.work_item_id,
+                avoid_terminal="T4",
+            )
+
+        expected_id = backfill.transient_generation_rerun_id(
+            self.work_item_id, task_id
+        )
+        self.assertEqual(receipt["work_item_id"], expected_id)
+        self.assertTrue(receipt["ordered_cell_identities_equal"])
+        self.assertTrue(repeated["idempotent"])
+        rerun_plan = json.loads(
+            Path(receipt["plan_path"]).read_text(encoding="utf-8")
+        )
+        identity_keys = (
+            "run_identity_sha256", "setfile_sha256", "arm", "compliance_mode",
+            "temporal_mode", "seed", "paired_base_identity_sha256",
+        )
+        self.assertEqual(
+            [tuple(cell.get(key) for key in identity_keys) for cell in self.plan["cells"]],
+            [tuple(cell.get(key) for key in identity_keys) for cell in rerun_plan["cells"]],
+        )
+        with farmctl.connect(self.farm) as connection:
+            rerun = connection.execute(
+                "SELECT status,parent_task_id,payload_json FROM work_items WHERE id=?",
+                (expected_id,),
+            ).fetchone()
+            canonical_count = connection.execute(
+                "SELECT count(*) FROM q09_news_tests WHERE work_item_id IN (?,?)",
+                (self.work_item_id, expected_id),
+            ).fetchone()[0]
+        rerun_payload = json.loads(rerun["payload_json"])
+        self.assertEqual(rerun["status"], "pending")
+        self.assertEqual(rerun["parent_task_id"], self.work_item_id)
+        self.assertEqual(rerun_payload["diagnostic_generation"], 3)
+        self.assertTrue(rerun_payload["sealed_identity_rerun"])
+        self.assertEqual(
+            Path(rerun_payload["diagnostic_anchor_path"]), self.anchor.resolve()
+        )
+        self.assertEqual(
+            set(rerun_payload["avoid_terminals"]),
+            {"T4", "T6", "T7", "T8", "T9", "T10"},
+        )
+        self.assertNotIn("launch_not_before_utc", rerun_payload)
+        self.assertEqual(canonical_count, 0)
+
     def test_fresh_build_rerun_is_append_only_hash_bound_and_idempotent(self) -> None:
         artifact_root = self.root / "campaign"
         source_anchor = json.loads(self.anchor.read_text(encoding="utf-8"))

@@ -613,6 +613,332 @@ def append_only_rerun_id(predecessor_id: str, task_id: str) -> str:
     ))
 
 
+def transient_generation_rerun_id(predecessor_id: str, task_id: str) -> str:
+    """Return the stable identity for a sealed-identity generation rerun."""
+
+    return str(uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        (
+            f"quantmechanica:{CAMPAIGN_ID}:transient-generation-rerun/v1:"
+            f"{predecessor_id}:{task_id}"
+        ),
+    ))
+
+
+def _transient_generation_failure_proof(
+    predecessor: sqlite3.Row,
+    payload: dict[str, Any],
+    plan: dict[str, Any],
+) -> list[dict[str, str]]:
+    """Authenticate a terminal pre-fix code-1/no-receipt diagnostic stop."""
+
+    if (
+        predecessor["status"] != "done"
+        or predecessor["verdict"] != "REVIEW_REQUIRED"
+        or payload.get("diagnostic_non_admission") is not True
+        or payload.get("diagnostic_campaign_id") != CAMPAIGN_ID
+        or int(payload.get("diagnostic_generation") or 0) < FRESH_BUILD_GENERATION
+    ):
+        raise BackfillError(
+            "generation rerun predecessor is not a terminal generation-2+ diagnostic"
+        )
+    evidence_path = Path(str(predecessor["evidence_path"] or ""))
+    if not evidence_path.is_file():
+        raise BackfillError("generation rerun predecessor summary is missing")
+    summary = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+    if (
+        summary.get("schema_version") != "q09-live-news-diagnostic-summary/v1"
+        or summary.get("diagnostic_non_admission") is not True
+        or summary.get("diagnostic_contract") != q09.DIAGNOSTIC_CONTRACT
+        or str(summary.get("work_item_id") or "") != str(predecessor["id"])
+    ):
+        raise BackfillError("generation rerun predecessor summary is contradictory")
+
+    failures: list[dict[str, str]] = []
+    for cell in plan.get("cells", []):
+        cell_root = Path(str(cell.get("receipt_path") or "")).resolve().parent
+        if (cell_root / "cell_receipt.json").is_file():
+            continue
+        for failure_path in sorted(cell_root.glob("cell_failure*.json")):
+            failure = json.loads(failure_path.read_text(encoding="utf-8-sig"))
+            error_type = str(failure.get("error_type") or "")
+            error = str(failure.get("error") or "")
+            if (
+                error_type in {"RunnerError", "TransientCellError"}
+                and re.search(
+                    r"Q09 (?:selection|holdout|full) run_smoke exited with code 1(?:\b| )",
+                    error,
+                )
+            ):
+                failures.append({
+                    "path": str(failure_path),
+                    "sha256": sha256_file(failure_path),
+                    "error_type": error_type,
+                    "error": error,
+                    "run_identity_sha256": str(cell.get("run_identity_sha256") or ""),
+                })
+    if not failures:
+        raise BackfillError(
+            "generation rerun predecessor has no authenticated code-1/no-receipt failure"
+        )
+    return failures
+
+
+def _cell_identity_tuple(cell: dict[str, Any]) -> tuple[Any, ...]:
+    return tuple(cell.get(key) for key in (
+        "run_identity_sha256",
+        "setfile_sha256",
+        "arm",
+        "compliance_mode",
+        "temporal_mode",
+        "seed",
+        "paired_base_identity_sha256",
+    ))
+
+
+def enqueue_transient_generation_rerun(
+    *,
+    task_id: str,
+    predecessor_id: str,
+    avoid_terminal: str,
+) -> dict[str, Any]:
+    """Append a generation-3+ rerun of a pre-fix transient diagnostic stop."""
+
+    new_id = transient_generation_rerun_id(predecessor_id, task_id)
+    with farmctl.connect(FARM_ROOT) as connection:
+        predecessor = connection.execute(
+            "SELECT * FROM work_items WHERE id=?", (predecessor_id,)
+        ).fetchone()
+    if predecessor is None:
+        raise BackfillError("generation rerun predecessor does not exist")
+    payload = json.loads(predecessor["payload_json"] or "{}")
+    predecessor_terminal = str(payload.get("terminal") or "").upper()
+    if predecessor_terminal != avoid_terminal:
+        raise BackfillError(
+            "generation rerun avoidance does not match predecessor terminal evidence"
+        )
+    plan_path = Path(str(payload.get("q09_run_plan_path") or "")).resolve()
+    expected_plan_hash = str(payload.get("q09_run_plan_file_sha256") or "").lower()
+    plan, input_manifest = q09.load_authenticated_plan(
+        plan_path, expected_file_sha256=expected_plan_hash
+    )
+    failures = _transient_generation_failure_proof(
+        predecessor, payload, plan
+    )
+    if int(plan.get("cell_count") or 0) != 40:
+        raise BackfillError("generation rerun predecessor is not the sealed 40-cell matrix")
+    if predecessor["claimed_by"]:
+        raise BackfillError("generation rerun predecessor still has an active claim")
+
+    generation = int(payload["diagnostic_generation"]) + 1
+    rerun_root = ARTIFACT_ROOT / f"refresh_v{generation}" / new_id
+    receipt_path = rerun_root / "enqueue_receipt.json"
+    if receipt_path.is_file():
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        if (
+            receipt.get("work_item_id") != new_id
+            or receipt.get("rerun_of") != predecessor_id
+            or int(receipt.get("diagnostic_generation") or 0) != generation
+        ):
+            raise BackfillError(
+                f"generation rerun receipt contradicts request: {receipt_path}"
+            )
+        return {
+            **receipt,
+            "receipt_path": str(receipt_path.resolve()),
+            "receipt_sha256": sha256_file(receipt_path),
+            "idempotent": True,
+        }
+
+    source_anchor_path = Path(str(payload.get("diagnostic_anchor_path") or "")).resolve()
+    if sha256_file(source_anchor_path) != str(
+        payload.get("diagnostic_anchor_sha256") or ""
+    ).lower():
+        raise BackfillError("generation rerun predecessor anchor hash changed")
+    anchor = json.loads(source_anchor_path.read_text(encoding="utf-8-sig"))
+    if (
+        anchor.get("schema_version") != q09.DIAGNOSTIC_ANCHOR_SCHEMA
+        or anchor.get("diagnostic_contract") != q09.DIAGNOSTIC_CONTRACT
+        or anchor.get("diagnostic_non_admission") is not True
+        or str(anchor.get("work_item_id") or "") != predecessor_id
+    ):
+        raise BackfillError("generation rerun predecessor anchor is contradictory")
+
+    sources = input_manifest["source_paths"]
+    windows = input_manifest["windows"]
+    rerun_plan = q09.build_run_plan(
+        work_item_id=new_id,
+        candidate_lineage_key=str(plan["candidate_lineage_key"]),
+        deployment_target=str(input_manifest["target_compliance"]),
+        q08_work_item_id=str(input_manifest["identities"]["q08_work_item_id"]),
+        # The anchor hash is part of every sealed cell identity.  Reuse the
+        # exact predecessor anchor and carry append-only lineage in the new
+        # work-item payload; rewriting the anchor would define a new matrix.
+        q08_evidence_path=source_anchor_path,
+        baseline_setfile_path=Path(str(sources["baseline_setfile"])),
+        ex5_path=Path(str(sources["ex5"])),
+        include_closure_path=Path(str(sources["include_closure"])),
+        calendar_manifest_path=Path(str(sources["calendar_manifest"])),
+        calendar_common_relative_path=str(
+            input_manifest["calendar_bundle"]["common_relative_path"]
+        ),
+        full_from_utc=str(windows["full_from_utc"]),
+        full_to_utc=str(windows["full_to_utc"]),
+        selection_from_utc=str(windows["selection_from_utc"]),
+        selection_to_utc=str(windows["selection_to_utc"]),
+        holdout_from_utc=str(windows["holdout_from_utc"]),
+        holdout_to_utc=str(windows["holdout_to_utc"]),
+        complete_months=int(windows["complete_months"]),
+        holdout_complete_months=int(windows["holdout_complete_months"]),
+        tester_model=str(input_manifest["tester_model"]),
+        cost_profile=str(input_manifest["cost_profile"]),
+        output_root=rerun_root / "q09_plan",
+        news_or_event_strategy=bool(input_manifest.get("news_or_event_strategy")),
+        force_expanded_matrix=str(plan.get("matrix_scope")) == "7x4",
+    )
+    predecessor_identities = [_cell_identity_tuple(cell) for cell in plan["cells"]]
+    rerun_identities = [_cell_identity_tuple(cell) for cell in rerun_plan["cells"]]
+    if rerun_identities != predecessor_identities:
+        raise BackfillError("generation rerun changed sealed ordered cell identities")
+    rerun_plan_path = Path(str(rerun_plan["plan_path"])).resolve()
+    rerun_plan_file_sha256 = sha256_file(rerun_plan_path)
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    launch_hold = (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
+    rerun_payload = {
+        "diagnostic_non_admission": True,
+        "diagnostic_contract": q09.DIAGNOSTIC_CONTRACT,
+        "diagnostic_campaign_id": CAMPAIGN_ID,
+        "diagnostic_generation": generation,
+        "diagnostic_queue_rank": int(payload["diagnostic_queue_rank"])
+        + FRESH_BUILD_QUEUE_OFFSET,
+        "diagnostic_source_rank": int(payload["diagnostic_source_rank"]),
+        "diagnostic_live_weight": payload.get("diagnostic_live_weight"),
+        "diagnostic_anchor_path": str(source_anchor_path),
+        "diagnostic_anchor_sha256": sha256_file(source_anchor_path),
+        "diagnostic_control": str(payload["diagnostic_control"]),
+        "priority_track": True,
+        "host_symbol": str(payload["host_symbol"]),
+        "host_timeframe": str(payload["host_timeframe"]),
+        "risk_fixed": 1000.0,
+        "risk_percent": 0.0,
+        "staged_ex5_path": str(Path(str(payload["staged_ex5_path"])).resolve()),
+        "staged_ex5_sha256": str(payload["staged_ex5_sha256"]),
+        "fresh_build_source_path": payload.get("fresh_build_source_path"),
+        "fresh_build_source_sha256": payload.get("fresh_build_source_sha256"),
+        "avoid_terminals": list(AVOID_TERMINALS),
+        "diagnostic_allowed_terminals": list(ALLOWED_TERMINALS),
+        "diagnostic_concurrency_cap": 5,
+        "protected_chain_exclusion": list(payload["protected_chain_exclusion"]),
+        "router_task_id": task_id,
+        "rerun_of": predecessor_id,
+        "rerun_avoid_terminal": avoid_terminal,
+        "sealed_identity_rerun": True,
+        "sealed_identity_anchor_work_item_id": predecessor_id,
+        "sealed_identity_anchor_sha256": sha256_file(source_anchor_path),
+        "transient_predecessor_failures": failures,
+        # Prevent a claim between the binder commit and retry steering update.
+        "launch_not_before_utc": launch_hold,
+    }
+    with farmctl.connect(FARM_ROOT) as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        if connection.execute(
+            "SELECT 1 FROM q09_news_tests WHERE work_item_id IN (?,?) LIMIT 1",
+            (predecessor_id, new_id),
+        ).fetchone() is not None:
+            raise BackfillError("generation rerun conflicts with canonical Q09 evidence")
+        existing = connection.execute(
+            "SELECT status,payload_json FROM work_items WHERE id=?", (new_id,)
+        ).fetchone()
+        if existing is None:
+            connection.execute(
+                """
+                INSERT INTO work_items(
+                    id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                    attempt_count,parent_task_id,evidence_path,claimed_by,
+                    payload_json,created_at,updated_at
+                ) VALUES(?, 'backtest', 'Q09_NEWS', ?, ?, ?, 'pending', NULL,
+                         0, ?, NULL, NULL, ?, ?, ?)
+                """,
+                (
+                    new_id,
+                    predecessor["ea_id"],
+                    predecessor["symbol"],
+                    predecessor["setfile_path"],
+                    predecessor_id,
+                    json.dumps(rerun_payload, sort_keys=True),
+                    now_iso,
+                    now_iso,
+                ),
+            )
+        else:
+            existing_payload = json.loads(existing["payload_json"] or "{}")
+            if (
+                existing_payload.get("rerun_of") != predecessor_id
+                or int(existing_payload.get("diagnostic_generation") or 0) != generation
+            ):
+                raise BackfillError("existing generation rerun row is contradictory")
+        connection.commit()
+
+    bound = q09.bind_diagnostic_plan_to_work_item(
+        FARM_ROOT,
+        work_item_id=new_id,
+        plan_path=rerun_plan_path,
+        expected_plan_file_sha256=rerun_plan_file_sha256,
+        cell_timeout_sec=q09.DEFAULT_CELL_TIMEOUT_SEC,
+    )
+    with farmctl.connect(FARM_ROOT) as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        row = connection.execute(
+            "SELECT status,claimed_by,payload_json FROM work_items WHERE id=?",
+            (new_id,),
+        ).fetchone()
+        if row is None or row["status"] != "pending" or str(row["claimed_by"] or "").strip():
+            raise BackfillError("generation rerun was claimed before retry steering completed")
+        bound_payload = json.loads(row["payload_json"] or "{}")
+        avoided = {str(value).upper() for value in bound_payload.get("avoid_terminals", [])}
+        avoided.add(avoid_terminal)
+        bound_payload["avoid_terminals"] = sorted(avoided)
+        bound_payload.pop("launch_not_before_utc", None)
+        bound_payload["rerun_steered_at_utc"] = datetime.now(timezone.utc).isoformat()
+        connection.execute(
+            "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
+            (json.dumps(bound_payload, sort_keys=True), now_iso, new_id),
+        )
+        connection.commit()
+    receipt = {
+        "schema_version": "q09-live-news-transient-generation-rerun-receipt/v1",
+        "campaign_id": CAMPAIGN_ID,
+        "diagnostic_non_admission": True,
+        "diagnostic_generation": generation,
+        "router_task_id": task_id,
+        "work_item_id": new_id,
+        "rerun_of": predecessor_id,
+        "status": "pending",
+        "avoid_terminal": avoid_terminal,
+        "allowed_terminals": list(ALLOWED_TERMINALS),
+        "ordered_cell_identities_equal": True,
+        "cell_count": len(rerun_identities),
+        "predecessor_plan_path": str(plan_path),
+        "predecessor_plan_file_sha256": expected_plan_hash,
+        "plan_path": str(rerun_plan_path),
+        "plan_file_sha256": rerun_plan_file_sha256,
+        "plan_sha256": rerun_plan["plan_sha256"],
+        "input_manifest_sha256": rerun_plan["input_manifest_sha256"],
+        "anchor_path": str(source_anchor_path),
+        "anchor_sha256": sha256_file(source_anchor_path),
+        "transient_predecessor_failures": failures,
+        "binding": bound,
+        "enqueued_at_utc": now_iso,
+    }
+    write_immutable(receipt_path, canonical_bytes(receipt))
+    return {
+        **receipt,
+        "receipt_path": str(receipt_path.resolve()),
+        "receipt_sha256": sha256_file(receipt_path),
+    }
+
+
 def enqueue_append_only_rerun(
     *,
     task_id: str,
@@ -628,6 +954,19 @@ def enqueue_append_only_rerun(
         raise BackfillError("router task id and predecessor id are required")
     if avoid_terminal not in ALLOWED_TERMINALS:
         raise BackfillError("rerun avoidance must name one of T1-T5")
+
+    with farmctl.connect(FARM_ROOT) as connection:
+        generation_row = connection.execute(
+            "SELECT payload_json FROM work_items WHERE id=?", (predecessor_id,)
+        ).fetchone()
+    if generation_row is not None:
+        generation_payload = json.loads(generation_row["payload_json"] or "{}")
+        if int(generation_payload.get("diagnostic_generation") or 0) >= 2:
+            return enqueue_transient_generation_rerun(
+                task_id=task_id,
+                predecessor_id=predecessor_id,
+                avoid_terminal=avoid_terminal,
+            )
 
     campaign_path = ARTIFACT_ROOT / "campaign_plan.json"
     if not campaign_path.is_file():
