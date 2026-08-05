@@ -916,6 +916,51 @@ def test_qm5_20219_manifest_and_fixed_risk_setfile() -> None:
     assert "if(!companion_opened)" in source
 
 
+def test_qm5_20220_manifest_conversion_history_and_fixed_risk_setfile() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_20220_usdcad-audjpy"
+    source = (ea_dir / "QM5_20220_usdcad-audjpy.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    logical = manifest["logical_symbol"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_D1_backtest.set"
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+    source_symbols = set(re.findall(r'"([A-Z]{6}\.DWX)"', source))
+
+    assert logical == "QM5_20220_USDCAD_AUDJPY_COINTEGRATION_D1"
+    assert manifest["host_symbol"] == "USDCAD.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["tester_currency"] == "USD"
+    assert manifest["tester_deposit"] == 100000
+    assert manifest["traded_symbols"] == ["USDCAD.DWX", "AUDJPY.DWX"]
+    assert declared == {
+        "USDCAD.DWX",
+        "AUDJPY.DWX",
+        "AUDUSD.DWX",
+        "USDJPY.DWX",
+    }
+    assert source_symbols == declared
+    assert logical_setfile.exists()
+    assert "; host_symbol:  USDCAD.DWX" in set_text
+    assert "qm_ea_id=20220" in set_text
+    assert "RISK_FIXED=1000" in set_text
+    assert "RISK_PERCENT=0" in set_text
+    assert "PORTFOLIO_WEIGHT=1" in set_text
+    assert "strategy_beta=-0.186232670" in set_text
+    assert "const int history_count = lookback + 1;" in source
+    assert source.count("PERIOD_D1, 1, history_count") == 4
+    assert source.count("for(int i = 1; i < history_count; ++i)") == 2
+    assert (
+        'string allowed[4] = {"USDCAD.DWX", "AUDJPY.DWX", '
+        '"AUDUSD.DWX", "USDJPY.DWX"};'
+        in source
+    )
+    assert "if(usdcad_lots <= 0.0 || audjpy_lots <= 0.0)" in source
+    assert "g_companion_entry_ready &&" in source
+    assert "if(!companion_opened)" in source
+
+
 def test_qm5_1224_is_one_atomic_fx7_cross_sectional_package() -> None:
     ea_dir = REPO / "framework" / "EAs" / "QM5_1224_white-okunev-fx-xmom"
     manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))

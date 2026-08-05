@@ -317,3 +317,4 @@ data_requirements: "USDCAD.DWX, AUDJPY.DWX, AUDUSD.DWX, and USDJPY.DWX D1 histor
 - 2026-08-05: Rank 42 is OOS-negative and below the expected Q02 cadence
   floor; it is admitted only as the explicitly requested next-best one-shot
   sleeve, with retirement rather than rescue after economic failure.
+

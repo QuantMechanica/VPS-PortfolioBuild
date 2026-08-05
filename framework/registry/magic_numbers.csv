@@ -15519,3 +15519,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20218,wti-winter-rev1,0,XTIUSD.DWX,202180000,2026-08-05T03:24:41Z,Codex,active
 20219,usdjpy-nzdusd,0,USDJPY.DWX,202190000,2026-08-05T05:54:47Z,Codex,active
 20219,usdjpy-nzdusd,1,NZDUSD.DWX,202190001,2026-08-05T05:54:47Z,Codex,active
+20220,usdcad-audjpy,0,USDCAD.DWX,202200000,2026-08-05T07:23:17Z,Codex,active
+20220,usdcad-audjpy,1,AUDJPY.DWX,202200001,2026-08-05T07:23:17Z,Codex,active
