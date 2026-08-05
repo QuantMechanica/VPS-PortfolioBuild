@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_20219_USDJPY_NZDUSD_COINTEGRATION_D1",
+  "host_symbol": "USDJPY.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "USDJPY.DWX",
+    "NZDUSD.DWX"
+  ],
+  "traded_symbols": [
+    "USDJPY.DWX",
+    "NZDUSD.DWX"
+  ],
+  "notes": [
+    "Dedicated fixed-beta USDJPY/NZDUSD D1 cointegration sleeve selected as rank 40 in the frozen sign-aware 66-pair scan. Both declared histories are traded; no order-free conversion symbol or magic slot is used.",
+    "DEV Sharpe 0.122, OOS Sharpe 0.051, fixed beta -0.782302979, and 206.281-D1-bar half-life are adverse frontier evidence. Q02 is a one-shot retirement gate with no refit; the USD 100000 tester uses canonical RISK_FIXED=1000."
+  ]
+}
