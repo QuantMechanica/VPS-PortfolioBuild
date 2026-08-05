@@ -15540,3 +15540,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20232,usdchf-nzdusd,1,NZDUSD.DWX,202320001,2026-08-05T22:09:23Z,Codex,active
 20233,xauxag-skew-rank,0,XAUUSD.DWX,202330000,2026-08-06T00:00:00Z,Codex,active
 20233,xauxag-skew-rank,1,XAGUSD.DWX,202330001,2026-08-06T00:00:00Z,Codex,active
+20234,xauxag-rsj,0,XAUUSD.DWX,202340000,2026-08-06T00:00:00Z,Codex,active
+20234,xauxag-rsj,1,XAGUSD.DWX,202340001,2026-08-06T00:00:00Z,Codex,active

@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_20234_XAU_XAG_RSJ_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XAU/XAG relative-signed-jump basket from approved card KISS-RSJ-2025_XAU_XAG_S02. Run on XAUUSD.DWX D1 and evaluate the paired package, never standalone legs. At each genuine broker-month transition, calculate synchronized simple returns inside the immediately preceding complete broker month, buy the lower-RSJ metal, short the higher-RSJ metal, and close or renew at the next month. Equal fixed-risk halves do not assert dollar, beta, volatility, or portfolio neutrality."
+  ]
+}
