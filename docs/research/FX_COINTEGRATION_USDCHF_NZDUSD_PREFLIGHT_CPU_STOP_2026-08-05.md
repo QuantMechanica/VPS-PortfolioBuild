@@ -86,3 +86,24 @@ ID, register only the two traded magic slots, build a fixed-beta D1 basket with
 and enqueue exactly one logical-basket Q02 row. Do not launch a manual tester.
 
 No portfolio admission/contribution path or `T_Live` manifest was changed.
+
+## 20:04Z paced-fleet continuation audit
+
+A fresh path-anchored process sample at `2026-08-05T20:04:29Z` found seven
+factory terminals running:
+
+```text
+T1, T2, T3, T4, T5, T8, T9
+```
+
+Seven equals the binding seven-terminal backtest ceiling. `T_Live` and other
+non-factory terminals were excluded from the count and were not controlled.
+A repeated exact duplicate guard still found zero matching EA directories,
+Strategy Cards, EA-registry rows, or two-leg basket manifests for
+`USDCHF.DWX` / `NZDUSD.DWX`.
+
+The rank-55 candidate therefore remains the next unbuilt pair, but capacity
+has not cleared. Per the mission stop rule, this continuation made no Card or
+source change, ID or magic allocation, compile, queue mutation, dispatch,
+tester launch, terminal-control action, AutoTrading action, live artifact, or
+portfolio-gate change.
