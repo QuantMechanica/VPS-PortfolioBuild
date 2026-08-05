@@ -462,3 +462,81 @@ The final Q09 summary sidecar persisted successfully as `RECORDED`; no
 `REVIEW_REQUIRED` machinery refusal and therefore Claude review input, not a
 retry authorization. The sequence stops here: no Q09_PORTFOLIO row, Q10 row,
 or QM5_13036/GDAXI.DWX row was created.
+
+## Round 6 same-terminal succession gate and governed activation — 2026-08-05
+
+Router task `0805ad16-7e92-4301-888b-51b3df9e0ec5` authorized a bounded
+same-terminal exit gate after Claude classified round 5 as a transient
+window-succession race, followed by one new append-only round. The terminal
+round-5 row `3c1fea0e-3a81-40fb-809a-a9b19156887e` was preserved unchanged.
+
+### Executor hardening
+
+Canonical-checkout commit
+`a51d4faaeaa44cf11c8fa860fd25df45bacf210e` (`Fix Q09 same-terminal window
+succession`) adds a read-only gate immediately before every Q09 `run_smoke`
+child launch:
+
+- only `terminal64.exe` processes whose CIM `ExecutablePath` is path-anchored
+  below the exact claimed `D:\QM\mt5\T1..T10` directory are considered;
+- sibling factory terminals, `T_Live`, and FTMO paths do not delay the claimed
+  terminal;
+- the gate waits at most 180 seconds and polls at two-second intervals;
+- it never stops a process and the child command still does not contain
+  `-AllowRunningTerminal`; and
+- a timeout raises through the existing executor exception path, producing the
+  immutable `q09-news-cell-failure/v1` sidecar and a fail-closed cell result.
+
+Focused verification passed `44` tests across the Q09 runner, schema,
+contract, factory-command integration, and Q10 dependency suites. Regressions
+cover running-then-exits, bounded never-exits, sibling/live/FTMO exclusion,
+pre-spawn ordering, absence of `-AllowRunningTerminal`, and timeout conversion
+to the standard cell-failure sidecar without a smoke child. Python syntax
+compilation, scoped `git diff --check`, and a read-only production CIM scan
+also passed.
+
+### Round-6 append-only row and sealed plan
+
+Preflight re-authenticated the exact Q08 aggregate, baseline setfile, current
+EX5, recursive include closure, and approved calendar manifest at their prior
+SHA-256 identities: `c611ae3b...`, `715bce2f...`, `2b98e9e9...`,
+`a3fbf052...`, and `b204d1ab...` respectively. The baseline retains
+`RISK_FIXED=1000` and `RISK_PERCENT=0`.
+
+| Identity | Value |
+|---|---|
+| New Q09_NEWS work item | `4984cca7-e1a3-49a8-a066-066ac51eb063` |
+| Append-only rerun of | `3c1fea0e-3a81-40fb-809a-a9b19156887e` |
+| Exact Q08 predecessor | `9fe3eb5f-ab0d-4c84-82fe-d6748c3aa270` |
+| Candidate-lineage key | `c963164be8b0677f76ec6cc812f40b0f7f5a9149eb493c31735a85a38c298a7b` |
+| Logical plan SHA-256 | `92de747c68742786d209e74d7690717340a45e7f4a27c3ec34f009882257b008` |
+| Exact plan-file SHA-256 | `75fe706331131c6aa0d30ea4498c7a597ec37310263c33688fb739f2e877f9c0` |
+| Input-manifest SHA-256 | `6b67fdfd48477bea961b4992d5f781781246cc5c4d63baa9dd4118e718be03e7` |
+| Dispatch-binding SHA-256 | `0d01bdc1661e019a3d4df9d29fb72cabaeced94480b352213ce6731603dfaac3` |
+
+The new plan has 40 cells and preserves the exact ordered tuple of run
+identity, setfile SHA-256, arm, compliance mode, temporal mode, and seed from
+round 4. All 40 generated setfiles have `RISK_FIXED>0`, `RISK_PERCENT=0`, and
+no `qm_news_stale_max_hours` value above 336. The input manifest retains the
+same `REAL_TICKS` / `DXZ_CANONICAL_REAL_TICKS_V1` model and cost profile,
+DXZ target, five seeds, sealed windows, and calendar bundle
+`q09cal-20150101-20260809-0bb19b5bb9790b76`. `bind-q09-plan` authenticated
+the exact plan-file hash and released the row as `RUNNABLE_BOUND` with a
+3,600-second per-cell timeout.
+
+### Ordinary-worker handoff
+
+The ordinary factory claimed the row on T8 at `2026-08-05T04:46:36Z` and
+spawned the fresh canonical executor from `C:/QM/repo`. Its first child is the
+CONTROL_OFF seed-42 selection window with sealed period D1,
+`-RequireFreshLoggerSample`, and no running-terminal override. At the
+`2026-08-05T04:47:23Z` capture the row is `active`, `verdict=NULL`, and
+`evidence_path=NULL`; the selection `terminal64.exe` is path-anchored to
+`D:\QM\mt5\T8` and remains an ordinary-worker descendant.
+
+This is active pipeline execution, not a verdict. No Q09_PORTFOLIO row, Q10
+rerun, or QM5_13036/GDAXI.DWX row has been created. The serial continuation
+remains fail-closed: only a genuine `CONFIG_LOCKED` may open the fresh
+same-Q08 Q09_PORTFOLIO row; only its `PASS_PORTFOLIO` may open the append-only
+Q10 rerun; and any refusal, non-good verdict, or genuine `REVIEW_REQUIRED`
+stops the sequence for review.
