@@ -912,6 +912,10 @@ def _payload_avoid_terminals(payload: dict[str, Any]) -> set[str]:
         terminal = str(value or "").strip().upper()
         if farmctl.is_factory_terminal_name(terminal):
             terminals.add(terminal)
+    if payload.get("diagnostic_non_admission") is True:
+        allowed_raw = payload.get("diagnostic_allowed_terminals", [])
+        allowed = {str(value or "").strip().upper() for value in allowed_raw}
+        terminals.update({f"T{index}" for index in range(1, 11)} - allowed)
     return terminals
 
 
@@ -1004,6 +1008,15 @@ def _accumulate_avoid_terminal(payload: dict[str, Any], failed_terminal: str | N
     except Exception:
         enabled = set()
     if enabled and enabled.issubset(avoid):
+        if payload.get("diagnostic_non_admission") is True:
+            allowed_raw = payload.get("diagnostic_allowed_terminals", [])
+            allowed = {str(value or "").strip().upper() for value in allowed_raw}
+            avoid = {f"T{index}" for index in range(1, 11)} - allowed
+            payload["avoid_terminals"] = sorted(avoid)
+            payload["avoid_terminals_cleared_reason"] = (
+                "diagnostic_retry_hints_would_exclude_allowed_fleet"
+            )
+            return payload["avoid_terminals"]
         payload.pop("avoid_terminals", None)
         payload["avoid_terminals_cleared_reason"] = "would_exclude_whole_fleet"
         print(json.dumps({
@@ -2138,12 +2151,13 @@ def _q09_sidecar_matches(
     aggregate_path: Path,
     aggregate: dict[str, Any],
 ) -> bool:
-    """Require the append-only Q09 sidecar before accepting its aggregate."""
+    """Require the appropriate sealed Q09 sidecar before accepting an aggregate."""
 
     if str(item["phase"] or "").upper() != "Q09_NEWS":
         return True
     try:
         aggregate_sha256 = _sha256_file(aggregate_path)
+        payload = _json_loads(item["payload_json"])
         connection = farmctl.connect(root)
         try:
             row = connection.execute(
@@ -2155,6 +2169,40 @@ def _q09_sidecar_matches(
             ).fetchone()
         finally:
             connection.close()
+        if payload.get("diagnostic_non_admission") is True:
+            # Diagnostic results must stay outside q09_news_tests.  Their
+            # sibling summary is the fail-closed sidecar and forces the worker
+            # verdict to REVIEW_REQUIRED even when the underlying Q09
+            # adjudication happens to find a lockable arm.
+            if row is not None:
+                return False
+            diagnostic_path = aggregate_path.resolve().parent / "summary.json"
+            diagnostic = json.loads(
+                diagnostic_path.read_text(encoding="utf-8-sig")
+            )
+            evidence_path = Path(str(diagnostic.get("evidence_path") or ""))
+            return bool(
+                diagnostic.get("schema_version")
+                == "q09-live-news-diagnostic-summary/v1"
+                and diagnostic.get("diagnostic_non_admission") is True
+                and diagnostic.get("diagnostic_contract")
+                == "q09-live-news-backfill/v1"
+                and str(diagnostic.get("work_item_id") or "") == str(item["id"])
+                and str(diagnostic.get("verdict") or "") == "REVIEW_REQUIRED"
+                and str(diagnostic.get("underlying_q09_verdict") or "")
+                == str(aggregate.get("verdict") or "")
+                and Path(str(diagnostic.get("aggregate_path") or "")).resolve()
+                == aggregate_path.resolve()
+                and str(diagnostic.get("aggregate_sha256") or "")
+                == aggregate_sha256
+                and evidence_path.is_file()
+                and str(diagnostic.get("evidence_sha256") or "")
+                == _sha256_file(evidence_path)
+                and diagnostic.get("diagnostic_anchor_path")
+                == payload.get("diagnostic_anchor_path")
+                and diagnostic.get("diagnostic_anchor_sha256")
+                == payload.get("diagnostic_anchor_sha256")
+            )
         return bool(
             row is not None
             and str(row["verdict"]) == str(aggregate.get("verdict") or "")
@@ -2337,6 +2385,8 @@ def _finish_work_item(
             ):
                 payload["q09_sidecar_verification"] = "missing_or_mismatched"
                 summary_data = None
+            elif summary_data and payload.get("diagnostic_non_admission") is True:
+                payload["q09_sidecar_verification"] = "diagnostic_summary_matched"
             if summary_data:
                 summary_path, summary = summary_data
                 cold_signature = (
@@ -2438,20 +2488,32 @@ def _finish_work_item(
                             root, item["parent_task_id"]
                         ),
                     }
-                effective_min_trades = int(
-                    payload.get("effective_min_trades")
-                    or summary.get("min_trades_required")
-                    or 5
-                )
-                verdict, reason = farmctl._derive_verdict_from_summary(
-                    summary,
-                    min_trades=effective_min_trades,
-                    phase=item["phase"],
-                )
-                _mirror_real_phase_artifacts(item, summary_path, verdict)
+                if payload.get("diagnostic_non_admission") is True:
+                    diagnostic_summary_path = summary_path.resolve().parent / "summary.json"
+                    diagnostic_summary = json.loads(
+                        diagnostic_summary_path.read_text(encoding="utf-8-sig")
+                    )
+                    payload["diagnostic_underlying_q09_verdict"] = summary.get("verdict")
+                    summary_path = diagnostic_summary_path
+                    summary = diagnostic_summary
+                    verdict, reason = "REVIEW_REQUIRED", "diagnostic_non_admission"
+                    payload["evidence_provenance"] = "phase_runner_diagnostic_non_admission"
+                    payload["verdict_taxonomy"] = "review"
+                else:
+                    effective_min_trades = int(
+                        payload.get("effective_min_trades")
+                        or summary.get("min_trades_required")
+                        or 5
+                    )
+                    verdict, reason = farmctl._derive_verdict_from_summary(
+                        summary,
+                        min_trades=effective_min_trades,
+                        phase=item["phase"],
+                    )
+                    _mirror_real_phase_artifacts(item, summary_path, verdict)
+                    payload["evidence_provenance"] = "phase_runner" if item["phase"] in farmctl.REAL_PHASE_RUNNER_PHASES else "real_mt5"
+                    payload["verdict_taxonomy"] = "infra" if verdict == "INFRA_FAIL" else "strategy"
                 payload["verdict_reason"] = reason
-                payload["evidence_provenance"] = "phase_runner" if item["phase"] in farmctl.REAL_PHASE_RUNNER_PHASES else "real_mt5"
-                payload["verdict_taxonomy"] = "infra" if verdict == "INFRA_FAIL" else "strategy"
                 payload["run_smoke_exit_code"] = exit_code
                 # 2026-06-10 — two-stage prescreen, worker path (mirrors the
                 # farmctl dispatch classification): a prescreen PASS is NOT a

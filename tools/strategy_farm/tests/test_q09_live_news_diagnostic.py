@@ -1,0 +1,396 @@
+import json
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+from unittest import mock
+
+
+REPO = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
+
+import farmctl  # noqa: E402
+import q09_live_news_backfill as backfill  # noqa: E402
+import q09_news_calendar as calendar  # noqa: E402
+import q09_news_contract as contract  # noqa: E402
+import q09_news_runner as runner  # noqa: E402
+import terminal_worker  # noqa: E402
+
+
+class Q09LiveNewsDiagnosticTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+        self.root = Path(self.temporary.name)
+        self.farm = self.root / "farm"
+        farmctl.init_db(self.farm)
+        self.setfile = self.root / "baseline.set"
+        self.setfile.write_text(
+            "RISK_FIXED=1000\nRISK_PERCENT=0\nqm_filter_news_enabled=0\n"
+            "qm_filter_news_mode=0\nqm_news_temporal=0\nqm_news_compliance=0\n"
+            "qm_news_stale_max_hours=336\n",
+            encoding="utf-8",
+        )
+        self.ex5 = self.root / "live.ex5"
+        self.ex5.write_bytes(b"exact-live-binary")
+        self.includes = self.root / "include_assessment.json"
+        self.includes.write_text('{"diagnostic":true}\n', encoding="utf-8")
+        self.q07 = self.root / "q07.json"
+        self.q07.write_text(
+            json.dumps({
+                "phase": "Q07", "ea_id": 9999, "symbol": "EURUSD.DWX", "verdict": "PASS"
+            }) + "\n",
+            encoding="utf-8",
+        )
+        source = self.root / "calendar.csv"
+        source.write_text(
+            "datetime,currency,event_name,impact\n2024-01-10 13:30:00,USD,CPI,high\n",
+            encoding="utf-8",
+        )
+        receipt = self.root / "calendar_receipt.json"
+        receipt.write_text(
+            json.dumps({
+                "approved_by": "OWNER",
+                "approved_at": "2026-08-05T00:00:00Z",
+                "reason": "diagnostic test",
+            }),
+            encoding="utf-8",
+        )
+        calendar_plan = calendar.build_bundle_plan(
+            source_csv=source,
+            receipt_path=receipt,
+            coverage_from_utc="2019-01-01T00:00:00Z",
+            coverage_to_utc="2026-08-09T00:00:00Z",
+            publication_reason="INITIAL",
+        )
+        published = calendar.publish_bundle(calendar_plan, self.root / "calendar")
+        self.calendar_manifest = Path(published["manifest_path"])
+        self.work_item_id = "diagnostic-q09-1"
+        self.anchor = self.root / "anchor.json"
+        anchor = {
+            "schema_version": runner.DIAGNOSTIC_ANCHOR_SCHEMA,
+            "diagnostic_contract": runner.DIAGNOSTIC_CONTRACT,
+            "diagnostic_non_admission": True,
+            "anchor_id": "diagnostic-anchor-1",
+            "work_item_id": self.work_item_id,
+            "ea_id": "QM5_9999",
+            "symbol": "EURUSD.DWX",
+            "baseline_run": {
+                "period": "H1",
+                "baseline_setfile_path": str(self.setfile.resolve()),
+                "baseline_setfile_sha256": contract.sha256_file(self.setfile),
+                "baseline_ex5_sha256": contract.sha256_file(self.ex5),
+            },
+            "deployed_ex5": {
+                "path": str(self.ex5.resolve()),
+                "sha256": contract.sha256_file(self.ex5),
+            },
+            "q07_seed_stability": {
+                "work_item_id": "q07-1",
+                "evidence_path": str(self.q07.resolve()),
+                "evidence_sha256": contract.sha256_file(self.q07),
+            },
+        }
+        self.anchor.write_bytes(contract.canonical_json_bytes(anchor))
+        self.plan = runner.build_run_plan(
+            work_item_id=self.work_item_id,
+            candidate_lineage_key=contract.sha256_file(self.anchor),
+            deployment_target="DXZ",
+            q08_work_item_id="diagnostic-anchor-1",
+            q08_evidence_path=self.anchor,
+            baseline_setfile_path=self.setfile,
+            ex5_path=self.ex5,
+            include_closure_path=self.includes,
+            calendar_manifest_path=self.calendar_manifest,
+            calendar_common_relative_path="QM/q09_news/test/events.csv",
+            full_from_utc="2019-01-01T00:00:00Z",
+            full_to_utc="2025-12-31T23:59:59Z",
+            selection_from_utc="2019-01-01T00:00:00Z",
+            selection_to_utc="2023-12-31T23:59:59Z",
+            holdout_from_utc="2024-01-01T00:00:00Z",
+            holdout_to_utc="2025-12-31T23:59:59Z",
+            complete_months=60,
+            holdout_complete_months=24,
+            tester_model="REAL_TICKS",
+            cost_profile="DXZ_CANONICAL_REAL_TICKS_V1",
+            output_root=self.root / "plan",
+        )
+        payload = {
+            "diagnostic_non_admission": True,
+            "diagnostic_contract": runner.DIAGNOSTIC_CONTRACT,
+            "diagnostic_campaign_id": "test",
+            "diagnostic_queue_rank": 1,
+            "diagnostic_anchor_path": str(self.anchor.resolve()),
+            "diagnostic_anchor_sha256": contract.sha256_file(self.anchor),
+            "avoid_terminals": ["T6", "T7", "T8", "T9", "T10"],
+            "staged_ex5_path": str(self.ex5.resolve()),
+            "staged_ex5_sha256": contract.sha256_file(self.ex5),
+        }
+        now = "2026-08-05T00:00:00+00:00"
+        with farmctl.connect(self.farm) as connection:
+            connection.execute(
+                """
+                INSERT INTO work_items(
+                    id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                    attempt_count,parent_task_id,evidence_path,claimed_by,payload_json,created_at,updated_at
+                ) VALUES('q07-1','backtest','Q07','QM5_9999','EURUSD.DWX',?,'done','PASS',
+                         0,NULL,?,NULL,'{}',?,?)
+                """,
+                (str(self.setfile), str(self.q07), now, now),
+            )
+            connection.execute(
+                """
+                INSERT INTO work_items(
+                    id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                    attempt_count,parent_task_id,evidence_path,claimed_by,payload_json,created_at,updated_at
+                ) VALUES(?, 'backtest','Q09_NEWS','QM5_9999','EURUSD.DWX',?,'pending',NULL,
+                         0,NULL,NULL,NULL,?,?,?)
+                """,
+                (self.work_item_id, str(self.setfile), json.dumps(payload), now, now),
+            )
+            connection.commit()
+
+    def tearDown(self) -> None:
+        self.temporary.cleanup()
+
+    def bind_and_activate(self) -> str:
+        plan_path = Path(self.plan["plan_path"])
+        plan_hash = contract.sha256_file(plan_path)
+        bound = runner.bind_diagnostic_plan_to_work_item(
+            self.farm,
+            work_item_id=self.work_item_id,
+            plan_path=plan_path,
+            expected_plan_file_sha256=plan_hash,
+            cell_timeout_sec=60,
+        )
+        self.assertTrue(bound["diagnostic_non_admission"])
+        staged = self.root / "terminal" / "ea.ex5"
+        staged.parent.mkdir(parents=True)
+        staged.write_bytes(self.ex5.read_bytes())
+        with farmctl.connect(self.farm) as connection:
+            row = connection.execute(
+                "SELECT payload_json FROM work_items WHERE id=?", (self.work_item_id,)
+            ).fetchone()
+            payload = json.loads(row["payload_json"])
+            binding_before = payload["q09_dispatch_binding_sha256"]
+            payload["staged_ex5"] = {
+                "destination_path": str(staged.resolve()),
+                "required_sha256": contract.sha256_file(staged),
+                "pre_run_sha256": contract.sha256_file(staged),
+            }
+            self.assertEqual(binding_before, runner._dispatch_binding_sha256(payload))
+            connection.execute(
+                "UPDATE work_items SET status='active',claimed_by='T1',payload_json=? WHERE id=?",
+                (json.dumps(payload, sort_keys=True), self.work_item_id),
+            )
+            connection.commit()
+        return plan_hash
+
+    def test_diagnostic_binding_is_claimable_and_capacity_is_t1_to_t5_only(self) -> None:
+        plan_hash = self.bind_and_activate()
+        capacity = runner.assert_factory_capacity(
+            self.farm,
+            work_item_id=self.work_item_id,
+            terminal="T1",
+            plan_path=Path(self.plan["plan_path"]),
+            expected_plan_file_sha256=plan_hash,
+        )
+        self.assertTrue(capacity["payload"]["diagnostic_non_admission"])
+        with self.assertRaisesRegex(runner.CapacityError, "active terminal claim|cap violated"):
+            runner.assert_factory_capacity(
+                self.farm,
+                work_item_id=self.work_item_id,
+                terminal="T6",
+                plan_path=Path(self.plan["plan_path"]),
+                expected_plan_file_sha256=plan_hash,
+            )
+
+    def test_diagnostic_binding_allows_only_dynamic_t1_to_t5_retry_avoidance(self) -> None:
+        plan_hash = self.bind_and_activate()
+        with farmctl.connect(self.farm) as connection:
+            row = connection.execute(
+                "SELECT payload_json FROM work_items WHERE id=?", (self.work_item_id,)
+            ).fetchone()
+            payload = json.loads(row["payload_json"])
+            payload["avoid_terminals"].append("T2")
+            connection.execute(
+                "UPDATE work_items SET payload_json=? WHERE id=?",
+                (json.dumps(payload, sort_keys=True), self.work_item_id),
+            )
+            connection.commit()
+        capacity = runner.assert_factory_capacity(
+            self.farm,
+            work_item_id=self.work_item_id,
+            terminal="T1",
+            plan_path=Path(self.plan["plan_path"]),
+            expected_plan_file_sha256=plan_hash,
+        )
+        self.assertIn("T2", capacity["payload"]["avoid_terminals"])
+        self.assertTrue(
+            {"T6", "T7", "T8", "T9", "T10"}.issubset(
+                terminal_worker._payload_avoid_terminals({
+                    "diagnostic_non_admission": True,
+                    "diagnostic_allowed_terminals": ["T1", "T2", "T3", "T4", "T5"],
+                    "avoid_terminals": [],
+                })
+            )
+        )
+
+    def test_diagnostic_runner_stages_exact_binary_for_legacy_worker_label(self) -> None:
+        payload = {
+            "staged_ex5_path": str(self.ex5.resolve()),
+            "staged_ex5_sha256": contract.sha256_file(self.ex5),
+        }
+        terminal_root = self.root / "T1"
+        with mock.patch.object(
+            runner, "_claimed_factory_terminal_root", return_value=terminal_root
+        ):
+            staged = runner._stage_diagnostic_expert_binary(
+                payload, terminal="T1", expert=r"QM\QM5_9999"
+            )
+        destination = terminal_root / "MQL5" / "Experts" / "QM" / "QM5_9999.ex5"
+        self.assertEqual(Path(staged["destination_path"]), destination.resolve())
+        self.assertEqual(destination.read_bytes(), self.ex5.read_bytes())
+        self.assertEqual(staged["sha256"], contract.sha256_file(self.ex5))
+
+    def test_diagnostic_persistence_writes_review_summary_not_canonical_q09(self) -> None:
+        plan_hash = self.bind_and_activate()
+        output = self.root / "result"
+        output.mkdir()
+        evidence = output / "evidence.json"
+        aggregate = output / "aggregate.json"
+        evidence.write_text('{"cells":[]}\n', encoding="utf-8")
+        aggregate.write_text('{"verdict":"CONFIG_LOCKED"}\n', encoding="utf-8")
+        result = {
+            "evidence_path": str(evidence),
+            "aggregate_path": str(aggregate),
+            "aggregate_sha256": contract.sha256_file(aggregate),
+        }
+        sidecar = runner._persist_q09_result(
+            self.farm,
+            work_item_id=self.work_item_id,
+            terminal="T1",
+            plan_path=Path(self.plan["plan_path"]),
+            expected_plan_file_sha256=plan_hash,
+            result=result,
+        )
+        self.assertEqual(sidecar["status"], "DIAGNOSTIC_RECORDED")
+        summary = json.loads((output / "summary.json").read_text(encoding="utf-8"))
+        self.assertEqual(summary["verdict"], "REVIEW_REQUIRED")
+        self.assertTrue(summary["diagnostic_non_admission"])
+        with farmctl.connect(self.farm) as connection:
+            self.assertEqual(
+                connection.execute(
+                    "SELECT count(*) FROM q09_news_tests WHERE work_item_id=?",
+                    (self.work_item_id,),
+                ).fetchone()[0],
+                0,
+            )
+
+    def test_diagnostic_uses_deployed_ex5_name_and_worker_accepts_only_review_sidecar(self) -> None:
+        self.bind_and_activate()
+        output = self.root / "reports" / "QM5_9999" / "Q09_NEWS" / "EURUSD_DWX"
+        output.mkdir(parents=True)
+        evidence = output / "q09_news_evidence.json"
+        aggregate = output / "aggregate.json"
+        evidence.write_text('{"cells":[]}\n', encoding="utf-8")
+        aggregate.write_text('{"verdict":"CONFIG_LOCKED"}\n', encoding="utf-8")
+        summary = {
+            "schema_version": runner.DIAGNOSTIC_SUMMARY_SCHEMA,
+            "phase": "Q09_NEWS",
+            "verdict": "REVIEW_REQUIRED",
+            "reason": "diagnostic_non_admission",
+            "reason_codes": ["diagnostic_non_admission", "owner_review_required"],
+            "diagnostic_non_admission": True,
+            "diagnostic_contract": runner.DIAGNOSTIC_CONTRACT,
+            "work_item_id": self.work_item_id,
+            "underlying_q09_verdict": "CONFIG_LOCKED",
+            "aggregate_path": str(aggregate.resolve()),
+            "aggregate_sha256": contract.sha256_file(aggregate),
+            "evidence_path": str(evidence.resolve()),
+            "evidence_sha256": contract.sha256_file(evidence),
+            "diagnostic_anchor_path": str(self.anchor.resolve()),
+            "diagnostic_anchor_sha256": contract.sha256_file(self.anchor),
+        }
+        (output / "summary.json").write_bytes(contract.canonical_json_bytes(summary))
+        with farmctl.connect(self.farm) as connection:
+            row = connection.execute(
+                "SELECT * FROM work_items WHERE id=?", (self.work_item_id,)
+            ).fetchone()
+            payload = json.loads(row["payload_json"])
+            payload.update({
+                "phase_evidence_path": str(aggregate.resolve()),
+                "report_root": str((self.root / "reports").resolve()),
+            })
+            connection.execute(
+                "UPDATE work_items SET payload_json=? WHERE id=?",
+                (json.dumps(payload, sort_keys=True), self.work_item_id),
+            )
+            connection.commit()
+            row = connection.execute(
+                "SELECT * FROM work_items WHERE id=?", (self.work_item_id,)
+            ).fetchone()
+
+        command = farmctl._phase_runner_cmd_for_work_item(
+            self.farm, row, self.root / "reports", "T1", REPO
+        )
+        self.assertIsNotNone(command)
+        self.assertEqual(command[command.index("--expert") + 1], r"QM\live")
+        aggregate_data = json.loads(aggregate.read_text(encoding="utf-8"))
+        self.assertTrue(
+            terminal_worker._q09_sidecar_matches(
+                self.farm, row, aggregate, aggregate_data
+            )
+        )
+        result = terminal_worker._finish_work_item(self.farm, self.work_item_id, 0)
+        self.assertEqual(result["status"], "done")
+        self.assertEqual(result["verdict"], "REVIEW_REQUIRED")
+        with farmctl.connect(self.farm) as connection:
+            finished = connection.execute(
+                "SELECT verdict,evidence_path,payload_json FROM work_items WHERE id=?",
+                (self.work_item_id,),
+            ).fetchone()
+        self.assertEqual(finished["verdict"], "REVIEW_REQUIRED")
+        self.assertEqual(Path(finished["evidence_path"]), output / "summary.json")
+        finished_payload = json.loads(finished["payload_json"])
+        self.assertEqual(
+            finished_payload["q09_sidecar_verification"],
+            "diagnostic_summary_matched",
+        )
+        self.assertEqual(
+            finished_payload["diagnostic_underlying_q09_verdict"],
+            "CONFIG_LOCKED",
+        )
+
+    def test_live_baseline_derivation_neutralizes_control_and_preserves_source(self) -> None:
+        source = self.root / "live.set"
+        source.write_text(
+            "RISK_FIXED=0\nRISK_PERCENT=0.75\nqm_filter_news_enabled=1\n"
+            "qm_filter_news_mode=3\nqm_news_stale_max_hours=336\n",
+            encoding="utf-8",
+        )
+        before = source.read_bytes()
+        derived = self.root / "derived.set"
+        receipt = backfill.derived_baseline(source, derived)
+        self.assertEqual(source.read_bytes(), before)
+        values = runner._setfile_values(derived)
+        self.assertEqual(values["risk_fixed"], "1000")
+        self.assertEqual(values["risk_percent"], "0")
+        self.assertEqual(values["qm_filter_news_enabled"], "0")
+        self.assertEqual(values["qm_filter_news_mode"], "0")
+        self.assertLessEqual(int(values["qm_news_stale_max_hours"]), 336)
+        self.assertTrue(receipt["legacy_control_neutralized"])
+
+    def test_campaign_order_and_terminal_cap_are_exact(self) -> None:
+        self.assertEqual(len(backfill.SLEEVES), 17)
+        self.assertEqual([s.rank for s in backfill.SLEEVES], list(range(1, 18)))
+        self.assertEqual(
+            [(s.ea_id, s.symbol, s.weight) for s in backfill.SLEEVES[:4]],
+            [(12567, "XNGUSD", 0.98), (10919, "XTIUSD", 0.92),
+             (12567, "XAUUSD", 0.75), (1556, "XAUUSD", 0.60)],
+        )
+        self.assertEqual(backfill.ALLOWED_TERMINALS, ("T1", "T2", "T3", "T4", "T5"))
+        self.assertEqual(backfill.AVOID_TERMINALS, ("T6", "T7", "T8", "T9", "T10"))
+
+
+if __name__ == "__main__":
+    unittest.main()

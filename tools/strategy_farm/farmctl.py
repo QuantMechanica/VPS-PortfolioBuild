@@ -1010,6 +1010,14 @@ def pending_claim_order_sql() -> str:
           CASE
             WHEN w.phase='Q02' AND w.payload_json LIKE '%"portfolio_scope": "basket"%' THEN 0
             ELSE 1 END AS _basket_q02_rank,
+          CASE
+            -- Within an otherwise-equal downstream tier, preserve ordinary
+            -- admission/round-chain work ahead of live-book diagnostics.  The
+            -- latter carry an explicit owner weight order in their sealed payload.
+            WHEN json_valid(w.payload_json)=1
+             AND json_extract(w.payload_json, '$.diagnostic_non_admission')=1
+            THEN COALESCE(json_extract(w.payload_json, '$.diagnostic_queue_rank'), 9999) + 1
+            ELSE 0 END AS _diagnostic_queue_rank,
           CASE WHEN EXISTS (
             SELECT 1 FROM work_items wp
             WHERE wp.ea_id=w.ea_id AND wp.status='done' AND wp.verdict='PASS'
@@ -1061,7 +1069,8 @@ def pending_claim_order_sql() -> str:
           )
         ORDER BY _recovery_rank ASC,
                  (_priority_track_rank * 10 + _phase_rank - _age_weeks) ASC,
-                 _basket_q02_rank ASC, _winner_rank ASC, _asset_rank ASC,
+                 _basket_q02_rank ASC, _diagnostic_queue_rank ASC,
+                 _winner_rank ASC, _asset_rank ASC,
                  w.updated_at ASC, w.created_at ASC
     """
 
@@ -6005,6 +6014,20 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         ea_num = _ea_numeric_id(ea_id)
         if ea_num is None:
             return None
+        q09_expert = f"QM\\{ea_label}"
+        if payload.get("diagnostic_non_admission") is True:
+            # The live-book diagnostic stages the exact deployed binary under
+            # its deployed filename.  The ordinary EA label can be only the
+            # numeric id for these synthetic rows, which would make MT5 look
+            # for a different EX5 and fail before OnInit.
+            staged_ex5_path = Path(str(payload.get("staged_ex5_path") or ""))
+            if (
+                not staged_ex5_path.is_absolute()
+                or staged_ex5_path.suffix.lower() != ".ex5"
+                or not staged_ex5_path.is_file()
+            ):
+                return None
+            q09_expert = f"QM\\{staged_ex5_path.stem}"
         q09_output_root = (
             report_root
             / f"QM5_{ea_num}"
@@ -6022,7 +6045,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--work-item-id", str(item_row["id"]),
             "--terminal", terminal,
             "--ea-id", str(ea_num),
-            "--expert", f"QM\\{ea_label}",
+            "--expert", q09_expert,
             "--symbol", runner_symbol,
             "--work-item-symbol", symbol,
             "--period", runner_period,
@@ -8663,6 +8686,17 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             except (TypeError, ValueError):
                 item_payload = {}
             item_is_recovery = is_recovery_payload(item_payload)
+            if item_payload.get("diagnostic_non_admission") is True:
+                # The resident terminal worker owns manifest-pinned EX5 staging
+                # and enforces avoid_terminals.  This older secondary claimant
+                # has neither primitive, so it must never claim a diagnostic row.
+                actions.append({
+                    "action": "diagnostic_deferred_to_terminal_worker",
+                    "reason": "exact_live_ex5_staging_and_five_terminal_cap",
+                    "item_id": item["id"],
+                    "ea_id": item["ea_id"],
+                })
+                continue
             item_symbol = item["symbol"]
             item_symbol_key = str(item_symbol or "").upper()
             if item_symbol_key and item_symbol_key in claimed_symbol_keys:
@@ -14853,6 +14887,11 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                 f"""
                 SELECT w.* FROM work_items w
                 WHERE w.status='done' AND w.phase=? AND w.verdict in ({placeholders})
+                  AND NOT (
+                    w.phase='Q09_NEWS'
+                    AND json_valid(w.payload_json)=1
+                    AND json_extract(w.payload_json, '$.diagnostic_non_admission')=1
+                  )
                   AND NOT EXISTS (
                     -- DL-074 2026-06-10: block on ANY existing next-phase row
                     -- for the same (ea, symbol, setfile), regardless of which

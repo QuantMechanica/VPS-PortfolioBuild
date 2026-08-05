@@ -38,6 +38,10 @@ PLAN_SCHEMA = "q09-news-run-plan/v2"
 CELL_RECEIPT_SCHEMA = "q09-news-cell-receipt/v2"
 CELL_EVIDENCE_SCHEMA = "q09-news-cell-evidence/v2"
 CELL_FAILURE_SCHEMA = "q09-news-cell-failure/v1"
+DIAGNOSTIC_ANCHOR_SCHEMA = "q09-live-news-diagnostic-anchor/v1"
+DIAGNOSTIC_SUMMARY_SCHEMA = "q09-live-news-diagnostic-summary/v1"
+DIAGNOSTIC_CONTRACT = "q09-live-news-backfill/v1"
+DIAGNOSTIC_ALLOWED_TERMINALS = frozenset({"T1", "T2", "T3", "T4", "T5"})
 CELL_FAILURE_STABLE_FIELDS = (
     "schema_version",
     "work_item_id",
@@ -506,7 +510,24 @@ def _dispatch_binding_material(payload: Mapping[str, Any]) -> dict[str, Any]:
         "q09_cell_count",
         "q09_cell_timeout_sec",
     )
-    return {field: payload.get(field) for field in fields}
+    material = {field: payload.get(field) for field in fields}
+    # Standard Q09 bindings predate the live-book diagnostic lane.  Keep their
+    # hash material byte-for-byte stable (including an already-active round-7
+    # row), while binding every non-admission control that makes the diagnostic
+    # lane safe when that explicit marker is present.
+    if payload.get("diagnostic_non_admission") is True:
+        material.update({
+            "diagnostic_non_admission": True,
+            "diagnostic_contract": payload.get("diagnostic_contract"),
+            "diagnostic_anchor_path": payload.get("diagnostic_anchor_path"),
+            "diagnostic_anchor_sha256": payload.get("diagnostic_anchor_sha256"),
+            "diagnostic_campaign_id": payload.get("diagnostic_campaign_id"),
+            "diagnostic_queue_rank": payload.get("diagnostic_queue_rank"),
+            "avoid_terminals": payload.get("avoid_terminals"),
+            "staged_ex5_path": payload.get("staged_ex5_path"),
+            "staged_ex5_sha256": payload.get("staged_ex5_sha256"),
+        })
+    return material
 
 
 def _dispatch_binding_sha256(payload: Mapping[str, Any]) -> str:
@@ -711,6 +732,205 @@ def bind_plan_to_work_item(
         "activation_state": payload["q09_activation_state"],
         "activation_hold_released": activation_hold_released,
         "next_action": "ordinary factory pump/terminal worker may now claim this pending Q09_NEWS row",
+    }
+
+
+def bind_diagnostic_plan_to_work_item(
+    farm_root: Path,
+    *,
+    work_item_id: str,
+    plan_path: Path,
+    expected_plan_file_sha256: str,
+    cell_timeout_sec: int = DEFAULT_CELL_TIMEOUT_SEC,
+) -> dict[str, Any]:
+    """Bind a live-book Q09 diagnostic without manufacturing pipeline lineage.
+
+    The anchor is carried in the plan's historical ``q08_evidence`` identity
+    slot only so the sealed v2 plan/collector format remains reusable.  This
+    binder proves that it is an explicit non-admission anchor, authenticates a
+    real completed Q07 seed-stability row, and never creates a Q08 dependency.
+    Diagnostic persistence is consequently kept out of ``q09_news_tests``.
+    """
+
+    plan_path = plan_path.resolve()
+    plan, manifest = load_authenticated_plan(
+        plan_path, expected_file_sha256=expected_plan_file_sha256
+    )
+    if str(plan.get("work_item_id")) != str(work_item_id):
+        raise RunnerError("Q09 diagnostic plan is bound to a different work_item_id")
+    if str(manifest.get("tester_model") or "").strip().upper() not in {
+        "REAL_TICKS", "MODEL4_REAL_TICKS",
+    }:
+        raise RunnerError("Q09 diagnostic execution requires sealed REAL_TICKS")
+    if int(plan.get("cell_count") or 0) != 40 or manifest.get("matrix_scope") != "7x1_target_compliance":
+        raise RunnerError("Q09 live-book diagnostic requires the canonical 7x1 / 40-cell matrix")
+
+    anchor_path = Path(str((manifest.get("source_paths") or {}).get("q08_evidence", ""))).resolve()
+    anchor = _load_json(anchor_path, "Q09 live-book diagnostic anchor")
+    if (
+        anchor.get("schema_version") != DIAGNOSTIC_ANCHOR_SCHEMA
+        or anchor.get("diagnostic_non_admission") is not True
+        or anchor.get("diagnostic_contract") != DIAGNOSTIC_CONTRACT
+        or str(anchor.get("work_item_id")) != str(work_item_id)
+    ):
+        raise RunnerError("Q09 diagnostic anchor contract is missing or contradictory")
+
+    timeout_sec = int(cell_timeout_sec)
+    timeout_min = required_factory_timeout_min(
+        int(plan["cell_count"]), cell_timeout_sec=timeout_sec
+    )
+    database = _farm_db_path(farm_root)
+    if not database.is_file():
+        raise RunnerError(f"strategy-farm database missing: {database}")
+
+    connection = sqlite3.connect(str(database), timeout=30)
+    connection.row_factory = sqlite3.Row
+    try:
+        connection.execute("BEGIN IMMEDIATE")
+        item = connection.execute(
+            "SELECT * FROM work_items WHERE id=?", (str(work_item_id),)
+        ).fetchone()
+        if item is None:
+            raise RunnerError("Q09 diagnostic work item does not exist")
+        if item["phase"] != "Q09_NEWS" or item["status"] != "pending" or str(item["claimed_by"] or "").strip():
+            raise RunnerError("Q09 diagnostic plan requires an unclaimed pending Q09_NEWS row")
+        if str(item["ea_id"]) != str(anchor.get("ea_id")) or str(item["symbol"]) != str(anchor.get("symbol")):
+            raise RunnerError("Q09 diagnostic anchor differs from work-item EA/symbol")
+        if connection.execute(
+            "SELECT 1 FROM q09_news_tests WHERE work_item_id=?", (str(work_item_id),)
+        ).fetchone() is not None:
+            raise RunnerError("diagnostic work item must not have canonical Q09 admission evidence")
+
+        identities = manifest.get("identities") or {}
+        if identities.get("q08_evidence_sha256") != contract.sha256_file(anchor_path):
+            raise RunnerError("Q09 diagnostic anchor hash differs from sealed plan")
+        if identities.get("q08_work_item_id") != str(anchor.get("anchor_id")):
+            raise RunnerError("Q09 diagnostic anchor identity differs from sealed plan")
+        setfile_path = Path(str(item["setfile_path"] or "")).resolve()
+        source_baseline = Path(str((manifest.get("source_paths") or {}).get("baseline_setfile", ""))).resolve()
+        if setfile_path != source_baseline:
+            raise RunnerError("Q09 diagnostic baseline differs from work-item setfile")
+        _verify_hash(
+            setfile_path,
+            str(identities.get("baseline_setfile_sha256") or ""),
+            "Q09 diagnostic baseline setfile",
+        )
+
+        deployed = anchor.get("deployed_ex5") or {}
+        staged_path = Path(str(deployed.get("path") or "")).resolve()
+        staged_hash = str(deployed.get("sha256") or "").lower()
+        _verify_hash(staged_path, staged_hash, "Q09 exact deployed live EX5")
+        if staged_hash != identities.get("ex5_sha256"):
+            raise RunnerError("Q09 diagnostic deployed EX5 differs from sealed plan")
+
+        q07 = anchor.get("q07_seed_stability") or {}
+        q07_id = str(q07.get("work_item_id") or "")
+        q07_path = Path(str(q07.get("evidence_path") or "")).resolve()
+        q07_hash = str(q07.get("evidence_sha256") or "").lower()
+        q07_row = connection.execute(
+            "SELECT phase,status,verdict,evidence_path FROM work_items WHERE id=?",
+            (q07_id,),
+        ).fetchone()
+        exact_work_item_evidence = (
+            q07_row is not None
+            and Path(str(q07_row["evidence_path"] or "")).resolve() == q07_path
+        )
+        durable_fallback = str(q07.get("evidence_source") or "") == "DURABLE_PIPELINE_FALLBACK"
+        if (
+            q07_row is None
+            or q07_row["phase"] != "Q07"
+            or q07_row["status"] != "done"
+            or q07_row["verdict"] not in {"PASS", "MULTI_SEED_PASS"}
+            or (not exact_work_item_evidence and not durable_fallback)
+        ):
+            raise RunnerError("Q09 diagnostic Q07 seed-stability reference is not a completed PASS")
+        _verify_hash(q07_path, q07_hash, "Q09 diagnostic Q07 seed-stability evidence")
+        if durable_fallback:
+            fallback_document = _load_json(q07_path, "durable Q07 fallback evidence")
+            if (
+                str(fallback_document.get("phase") or "").upper() != "Q07"
+                or str(fallback_document.get("verdict") or "").upper()
+                not in {"PASS", "MULTI_SEED_PASS"}
+                or str(fallback_document.get("symbol") or fallback_document.get("runner_symbol") or "")
+                != str(item["symbol"])
+            ):
+                raise RunnerError("durable Q07 fallback does not match the diagnostic sleeve")
+
+        calendar_manifest = Path(str((manifest.get("source_paths") or {}).get("calendar_manifest", "")))
+        try:
+            verified_calendar = calendar_bundle.verify_bundle(calendar_manifest.parent)
+        except calendar_bundle.CalendarBundleError as exc:
+            raise RunnerError(f"calendar bundle verification failed during diagnostic binding: {exc}") from exc
+        registered = connection.execute(
+            "SELECT manifest_sha256,content_sha256 FROM news_calendar_bundles WHERE bundle_id=?",
+            (str(verified_calendar["bundle_id"]),),
+        ).fetchone()
+        if registered is None:
+            news_schema.record_calendar_bundle(
+                connection, verified_calendar, str(calendar_manifest.resolve())
+            )
+        elif (
+            registered["manifest_sha256"] != verified_calendar["manifest_sha256"]
+            or registered["content_sha256"] != verified_calendar["content_sha256"]
+        ):
+            raise RunnerError("registered calendar bundle contradicts diagnostic plan")
+
+        try:
+            payload = json.loads(str(item["payload_json"] or "{}"))
+        except json.JSONDecodeError as exc:
+            raise RunnerError("Q09 diagnostic payload is invalid JSON") from exc
+        avoided = {str(value).upper() for value in payload.get("avoid_terminals", [])}
+        if (
+            payload.get("diagnostic_non_admission") is not True
+            or payload.get("diagnostic_contract") != DIAGNOSTIC_CONTRACT
+            or avoided != {"T6", "T7", "T8", "T9", "T10"}
+            or Path(str(payload.get("staged_ex5_path") or "")).resolve() != staged_path
+            or str(payload.get("staged_ex5_sha256") or "").lower() != staged_hash
+        ):
+            raise RunnerError("Q09 diagnostic payload lacks the non-admission/cap/exact-EX5 controls")
+
+        payload.update({
+            "q09_binding_version": "q09-news-dispatch-binding/v1",
+            "q09_activation_state": news_schema.ACTIVATION_STATE_RUNNABLE,
+            "q09_run_plan_path": str(plan_path),
+            "q09_run_plan_file_sha256": contract.sha256_file(plan_path),
+            "q09_run_plan_sha256": plan["plan_sha256"],
+            "q09_input_manifest_sha256": plan["input_manifest_sha256"],
+            "q09_q08_work_item_id": str(anchor["anchor_id"]),
+            "q09_q08_evidence_sha256": contract.sha256_file(anchor_path),
+            "q09_q07_work_item_id": q07_id,
+            "q09_q07_evidence_path": str(q07_path),
+            "q09_q07_evidence_sha256": q07_hash,
+            "q09_cell_count": 40,
+            "q09_cell_timeout_sec": timeout_sec,
+            "diagnostic_anchor_path": str(anchor_path),
+            "diagnostic_anchor_sha256": contract.sha256_file(anchor_path),
+        })
+        payload["q09_dispatch_binding_sha256"] = _dispatch_binding_sha256(payload)
+        payload["timeout_min"] = max(int(payload.get("timeout_min") or 0), timeout_min)
+        bound_at = datetime.now(timezone.utc).isoformat()
+        payload["q09_plan_bound_at"] = bound_at
+        connection.execute(
+            "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
+            (json.dumps(payload, sort_keys=True), bound_at, str(work_item_id)),
+        )
+        connection.commit()
+    except BaseException:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+    return {
+        "bound": True,
+        "diagnostic_non_admission": True,
+        "work_item_id": str(work_item_id),
+        "plan_path": str(plan_path),
+        "plan_file_sha256": contract.sha256_file(plan_path),
+        "cell_count": 40,
+        "cell_timeout_sec": timeout_sec,
+        "timeout_min": timeout_min,
+        "dispatch_binding_sha256": payload["q09_dispatch_binding_sha256"],
+        "allowed_terminals": sorted(DIAGNOSTIC_ALLOWED_TERMINALS),
     }
 
 
@@ -1134,6 +1354,30 @@ def assert_factory_capacity(
         raise CapacityError("Q09 factory capacity refused: payload is invalid JSON") from exc
     if payload.get("q09_binding_version") != "q09-news-dispatch-binding/v1":
         raise CapacityError("Q09 factory capacity refused: sealed dispatch binding missing")
+    if payload.get("diagnostic_non_admission") is True:
+        if payload.get("diagnostic_contract") != DIAGNOSTIC_CONTRACT:
+            raise CapacityError("Q09 diagnostic capacity refused: contract marker missing")
+        if str(terminal).upper() not in DIAGNOSTIC_ALLOWED_TERMINALS:
+            raise CapacityError("Q09 diagnostic capacity refused: five-terminal cap violated")
+        anchor_path = Path(str(payload.get("diagnostic_anchor_path") or ""))
+        _verify_hash(
+            anchor_path,
+            str(payload.get("diagnostic_anchor_sha256") or ""),
+            "bound Q09 diagnostic anchor",
+        )
+        staging = payload.get("staged_ex5") or {}
+        required_ex5 = str(payload.get("staged_ex5_sha256") or "").lower()
+        if (
+            not isinstance(staging, Mapping)
+            or staging.get("required_sha256") != required_ex5
+            or staging.get("pre_run_sha256") != required_ex5
+        ):
+            raise CapacityError("Q09 diagnostic capacity refused: exact live EX5 was not staged")
+        _verify_hash(
+            Path(str(staging.get("destination_path") or "")),
+            required_ex5,
+            "staged Q09 diagnostic live EX5",
+        )
     bound_path = Path(str(payload.get("q09_run_plan_path") or ""))
     if bound_path.resolve() != plan_path.resolve():
         raise CapacityError("Q09 factory capacity refused: run-plan path differs from binding")
@@ -1142,6 +1386,16 @@ def assert_factory_capacity(
         raise CapacityError("Q09 factory capacity refused: run-plan hash differs from binding")
     _verify_hash(plan_path.resolve(), expected, "bound Q09 run-plan")
     actual_binding = _dispatch_binding_sha256(payload)
+    if (
+        payload.get("diagnostic_non_admission") is True
+        and payload.get("q09_dispatch_binding_sha256") != actual_binding
+    ):
+        # Retry steering may add a failed T1-T5 slot to avoid_terminals.  The
+        # sealed diagnostic binding authenticates the permanent T6-T10
+        # exclusion, not that mutable in-fleet retry hint.
+        stable_payload = dict(payload)
+        stable_payload["avoid_terminals"] = ["T6", "T7", "T8", "T9", "T10"]
+        actual_binding = _dispatch_binding_sha256(stable_payload)
     if payload.get("q09_dispatch_binding_sha256") != actual_binding:
         raise CapacityError("Q09 factory capacity refused: dispatch binding hash mismatch")
     q07_path = Path(str(payload.get("q09_q07_evidence_path") or ""))
@@ -1151,6 +1405,61 @@ def assert_factory_capacity(
         "bound Q07 seed-stability evidence",
     )
     return {"row": dict(row), "payload": payload}
+
+
+def _stage_diagnostic_expert_binary(
+    payload: Mapping[str, Any], *, terminal: str, expert: str
+) -> dict[str, str]:
+    """Stage the exact bound live EX5 under the executor's effective label.
+
+    Long-lived workers loaded before this diagnostic lane may still construct
+    the ordinary numeric-only expert label.  The runner owns the reserved slot
+    before MT5 starts, so it can safely materialize that alias from the same
+    hash-bound deployed binary and then authenticate it before every cell.
+    """
+
+    normalized = str(expert or "").strip().replace("/", "\\")
+    parts = [part for part in normalized.split("\\") if part]
+    if (
+        len(parts) != 2
+        or parts[0].upper() != "QM"
+        or parts[1] in {".", ".."}
+        or ":" in parts[1]
+        or Path(parts[1]).name != parts[1]
+    ):
+        raise CapacityError("Q09 diagnostic capacity refused: unsafe expert label")
+    required = str(payload.get("staged_ex5_sha256") or "").lower()
+    source = Path(str(payload.get("staged_ex5_path") or "")).resolve()
+    _verify_hash(source, required, "bound Q09 diagnostic deployed EX5")
+    terminal_root = _claimed_factory_terminal_root(terminal).resolve()
+    expert_root = (terminal_root / "MQL5" / "Experts").resolve()
+    destination = (expert_root / parts[0] / f"{parts[1]}.ex5").resolve()
+    try:
+        destination.relative_to(expert_root)
+    except ValueError as exc:
+        raise CapacityError(
+            "Q09 diagnostic capacity refused: expert destination escaped terminal root"
+        ) from exc
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if not destination.is_file() or contract.sha256_file(destination) != required:
+        temporary = destination.with_name(f"{destination.name}.{os.getpid()}.tmp")
+        try:
+            temporary.write_bytes(source.read_bytes())
+            if contract.sha256_file(temporary) != required:
+                raise CapacityError(
+                    "Q09 diagnostic capacity refused: staged expert alias hash mismatch"
+                )
+            os.replace(temporary, destination)
+        finally:
+            if temporary.exists():
+                temporary.unlink()
+    _verify_hash(destination, required, "effective Q09 diagnostic expert EX5")
+    return {
+        "source_path": str(source),
+        "destination_path": str(destination),
+        "sha256": required,
+        "expert": normalized,
+    }
 
 
 def _setfile_values(path: Path) -> dict[str, str]:
@@ -1701,6 +2010,8 @@ def _production_dispatch_cell(
             "-DispatchSubGateHash", f"{str(spec['run_identity_sha256'])[:16]}_{window_name}",
             "-RequireFreshLoggerSample",
         ]
+        if context.get("skip_expert_deploy") is True:
+            command.append("-SkipExpertDeploy")
         _wait_for_claimed_terminal_exit(Path(str(context["terminal_root"])))
         started_at = datetime.now(timezone.utc).timestamp()
         creationflags = 0x08000000 if sys.platform == "win32" else 0
@@ -1810,7 +2121,7 @@ def _persist_q09_result(
     expected_plan_file_sha256: str,
     result: Mapping[str, Any],
 ) -> dict[str, Any]:
-    assert_factory_capacity(
+    capacity = assert_factory_capacity(
         farm_root,
         work_item_id=work_item_id,
         terminal=terminal,
@@ -1820,6 +2131,41 @@ def _persist_q09_result(
     evidence_payload = _load_json(Path(str(result["evidence_path"])), "Q09 evidence")
     adjudication = _load_json(Path(str(result["aggregate_path"])), "Q09 adjudication")
     database = _farm_db_path(farm_root)
+    if capacity["payload"].get("diagnostic_non_admission") is True:
+        connection = sqlite3.connect(str(database), timeout=30)
+        try:
+            recorded = connection.execute(
+                "SELECT 1 FROM q09_news_tests WHERE work_item_id=?", (str(work_item_id),)
+            ).fetchone()
+        finally:
+            connection.close()
+        if recorded is not None:
+            raise RunnerError("diagnostic Q09 result collided with canonical admission storage")
+        summary_path = Path(str(result["aggregate_path"])).resolve().parent / "summary.json"
+        diagnostic_summary = {
+            "schema_version": DIAGNOSTIC_SUMMARY_SCHEMA,
+            "phase": "Q09_NEWS",
+            "verdict": "REVIEW_REQUIRED",
+            "reason": "diagnostic_non_admission",
+            "reason_codes": ["diagnostic_non_admission", "owner_review_required"],
+            "diagnostic_non_admission": True,
+            "diagnostic_contract": DIAGNOSTIC_CONTRACT,
+            "work_item_id": str(work_item_id),
+            "underlying_q09_verdict": adjudication.get("verdict"),
+            "aggregate_path": str(Path(str(result["aggregate_path"])).resolve()),
+            "aggregate_sha256": str(result["aggregate_sha256"]),
+            "evidence_path": str(Path(str(result["evidence_path"])).resolve()),
+            "evidence_sha256": contract.sha256_file(Path(str(result["evidence_path"]))),
+            "diagnostic_anchor_path": capacity["payload"].get("diagnostic_anchor_path"),
+            "diagnostic_anchor_sha256": capacity["payload"].get("diagnostic_anchor_sha256"),
+        }
+        _atomic_write(summary_path, contract.canonical_json_bytes(diagnostic_summary))
+        return {
+            "status": "DIAGNOSTIC_RECORDED",
+            "verdict": "REVIEW_REQUIRED",
+            "summary_path": str(summary_path),
+            "summary_sha256": contract.sha256_file(summary_path),
+        }
     connection = sqlite3.connect(str(database), timeout=30)
     connection.row_factory = sqlite3.Row
     try:
@@ -1880,6 +2226,11 @@ def execute_run_plan(
     )
     payload = capacity["payload"]
     row = capacity["row"]
+    diagnostic_expert_stage = None
+    if payload.get("diagnostic_non_admission") is True:
+        diagnostic_expert_stage = _stage_diagnostic_expert_binary(
+            payload, terminal=terminal, expert=expert
+        )
     if (
         payload.get("q09_run_plan_sha256") != plan.get("plan_sha256")
         or payload.get("q09_input_manifest_sha256") != plan.get("input_manifest_sha256")
@@ -1924,6 +2275,8 @@ def execute_run_plan(
         "q07_work_item_id": payload["q09_q07_work_item_id"],
         "q07_evidence_sha256": payload["q09_q07_evidence_sha256"],
         "calendar_provision": provision,
+        "skip_expert_deploy": payload.get("diagnostic_non_admission") is True,
+        "diagnostic_expert_stage": diagnostic_expert_stage,
     }
     dispatcher = dispatch_cell or _production_dispatch_cell
     for spec in plan["cells"]:
@@ -1954,6 +2307,12 @@ def execute_run_plan(
             plan_path=plan_path,
             expected_plan_file_sha256=expected_plan_file_sha256,
         )
+        if diagnostic_expert_stage is not None:
+            _verify_hash(
+                Path(diagnostic_expert_stage["destination_path"]),
+                diagnostic_expert_stage["sha256"],
+                "effective Q09 diagnostic expert EX5",
+            )
         try:
             dispatcher(spec, context)
             _receipt_to_cell(spec)
