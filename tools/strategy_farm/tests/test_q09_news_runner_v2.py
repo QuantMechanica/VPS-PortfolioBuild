@@ -762,6 +762,50 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         self.assertTrue((first_cell / "cell_failure_2.json").is_file())
         self.assertTrue(Path(result["aggregate_path"]).is_file())
 
+    def test_history_lock_requeues_count_toward_transient_ceiling(self) -> None:
+        plan = self.build(output="transient-history-lock-ceiling")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        with closing(farmctl.connect(farm_root)) as connection:
+            row = connection.execute(
+                "SELECT payload_json FROM work_items WHERE id='q09-news-1'"
+            ).fetchone()
+            payload = json.loads(row["payload_json"])
+            payload["transient_infra_attempts"] = 2
+            connection.execute(
+                "UPDATE work_items SET payload_json=? WHERE id='q09-news-1'",
+                (json.dumps(payload, sort_keys=True),),
+            )
+            connection.commit()
+
+        def always_transient(_spec: dict, _context: dict) -> None:
+            raise runner.TransientCellError("fixture child exit 1 without receipt")
+
+        with patch.object(runner, "_wait_for_claimed_terminal_exit"):
+            result = runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=self.root / "transient-history-lock-ceiling-output",
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / "common-transient-history-lock-ceiling",
+                dispatch_cell=always_transient,
+            )
+
+        self.assertEqual(result["verdict"], "REVIEW_REQUIRED")
+        self.assertEqual(result["failed_cell_count"], 1)
+        self.assertEqual(result["missing_cell_count"], 39)
+        first_cell = Path(plan["cells"][0]["receipt_path"]).parent
+        self.assertTrue((first_cell / "cell_failure.json").is_file())
+        self.assertTrue((first_cell / "cell_failure_2.json").is_file())
+        self.assertTrue(Path(result["aggregate_path"]).is_file())
+
     def test_production_multi_cell_execute_writes_receipts_and_collects(self) -> None:
         plan = self.build(output="production-multi-cell")
         farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)

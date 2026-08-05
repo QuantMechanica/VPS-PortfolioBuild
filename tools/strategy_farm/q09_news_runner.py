@@ -2414,7 +2414,15 @@ def execute_run_plan(
                     work_item_id=str(work_item_id),
                     exc=second_error,
                 )
-                attempt_count = int(row["attempt_count"] or 0)
+                # The ordinary worker normally advances attempt_count for a
+                # summary-missing CapacityError.  Its independently governed
+                # history-lock recovery lane advances transient_infra_attempts
+                # instead.  Count both persisted lanes so a mixed sequence is
+                # still bounded by the Q09 work-item ceiling.
+                attempt_count = (
+                    int(row["attempt_count"] or 0)
+                    + int(payload.get("transient_infra_attempts") or 0)
+                )
                 if attempt_count + 1 < WORK_ITEM_ATTEMPT_CEILING:
                     raise CapacityError(
                         "Q09 transient cell exhausted its bounded in-attempt retry; "
