@@ -56,9 +56,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: PENDING
+q02_status: ENQUEUED
 review_focus: "Falsify whether physical-season and weekday-direction concordance creates a one-session direct-WTI stream whose carrier and dual calendar clock differ from the certified XAU/SP500/NDX/XNG book; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -281,6 +281,7 @@ correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-05 | initial WTI physical-season / weekday concordance candidate | G0 | APPROVED |
 | v2 | 2026-08-05 | initial framework implementation | Q01 | PASS; strict compile and build checks |
+| v3 | 2026-08-05 | paced baseline handoff | Q02 | ENQUEUED as priority work item `f92e06a9-833a-42a7-941c-c3dcfb14c7f3` |
 
 ## Pipeline Phase Status
 
@@ -288,4 +289,4 @@ correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-05 | APPROVED; R1-R4 PASS | `decisions/2026-08-05_qm5_20226_wti_seas_dow_g0.md` |
 | Q01 Compile / Static Validation | 2026-08-05 | PASS | `framework/build/compile/20260805_160700/QM5_20226_wti-seas-dow.compile.log`; `D:/QM/reports/framework/21/build_check_20260805_160700.json` |
-| Q02 Baseline Screening | - | PENDING | - |
+| Q02 Baseline Screening | 2026-08-05 | ENQUEUED | `docs/ops/evidence/2026-08-05_qm5_20226_wti_seas_dow_q02_enqueue.md` |

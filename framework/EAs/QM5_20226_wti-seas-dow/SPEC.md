@@ -92,3 +92,4 @@ admission, or portfolio-gate change.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-05 | Initial build from approved G0 card | Q01 strict compile/build PASS; 0 errors, warnings, failures, or build warnings |
+| v2 | 2026-08-05 | Paced baseline handoff | Q02 priority work item `f92e06a9-833a-42a7-941c-c3dcfb14c7f3` enqueued |
