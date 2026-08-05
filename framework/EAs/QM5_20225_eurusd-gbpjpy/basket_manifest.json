@@ -1,0 +1,20 @@
+{
+  "logical_symbol": "QM5_20225_EURUSD_GBPJPY_COINTEGRATION_D1",
+  "host_symbol": "EURUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "GBPJPY.DWX",
+    "USDJPY.DWX"
+  ],
+  "traded_symbols": [
+    "EURUSD.DWX",
+    "GBPJPY.DWX"
+  ],
+  "notes": [
+    "Dedicated fixed-beta EURUSD/GBPJPY D1 cointegration sleeve selected as rank 47 in the frozen sign-aware 66-pair scan. USDJPY.DWX is conversion-history-only and receives no order or magic slot.",
+    "DEV Sharpe 0.005, OOS Sharpe -0.129, fixed beta -0.242481866, and 135.604-D1-bar half-life are adverse frontier evidence. Q02 is a one-shot retirement gate with no refit; the USD 100000 tester uses canonical RISK_FIXED=1000."
+  ]
+}
