@@ -1,388 +1,243 @@
 #property strict
-#property version   "5.0"
-#property description "QM5_11659 pp-triangle — Triangle (converging-trendline) breakout, H4"
+#property version   "5.1"
+#property description "QM5_11659 pp-triangle - PatternPy rolling triangle labels, H4"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11659 pp-triangle
+// QuantMechanica V5 EA - QM5_11659 pp-triangle
 // -----------------------------------------------------------------------------
+// Approved card: docs/strategy_card.md
 // Source: Keith Orange / keithorange, PatternPy,
-//   tradingpatterns/tradingpatterns.py -> detect_triangle_pattern
-//   https://github.com/keithorange/PatternPy/blob/main/tradingpatterns/tradingpatterns.py
-// Card: artifacts/cards_approved/QM5_11659_pp-triangle.md (g0_status APPROVED).
+//   tradingpatterns/tradingpatterns.py::detect_triangle_pattern
+// Exact source URL and durable approved card are preserved in docs/.
 //
-// The PatternPy detector is a broad rolling-window OHLC mask. The card's own
-// "Lessons Learned" directs P3 to use stricter confirmation: "close beyond the
-// pattern bar high/low". This V5 build mechanizes the triangle as a proper
-// converging-trendline structure with a single breakout EVENT, which is the
-// strict, zero-trade-trap-safe realization of the card's intent.
+// Literal closed-bar translation of the cited detector. For the just-closed
+// bar (shift 1), rolling values span shifts 1..window and the source's
+// DataFrame.shift(1) comparison is shift 2 here:
 //
-// Mechanics (closed-bar reads only; structure cached once per new bar):
-//   Swing points : a closed bar at shift s is a swing HIGH if its high is the
-//                  strict max over +/- swing_strength neighbours; swing LOW is
-//                  the symmetric min. Scanned over a bounded lookback window.
-//   Upper line   : straight line through the two most-recent swing highs.
-//   Lower line   : straight line through the two most-recent swing lows.
-//   Triangle STATE (converging range): upper-line slope <= +eps (non-rising)
-//                  AND lower-line slope >= -eps (non-falling) AND the lines
-//                  converge (lower-line value approaches upper-line value going
-//                  forward) AND the current gap between the projected lines is
-//                  meaningfully tighter than the lookback's full high-low range.
-//                  This single STATE covers ascending / descending / symmetrical.
-//   Trigger EVENT (single, never two-cross-same-bar):
-//     LONG  : close[1] breaks ABOVE the upper line projected to bar 1, while
-//             close[2] was still at/below the upper line projected to bar 2.
-//             (the lower line / convergence is a STATE; the upper break is the
-//             one EVENT.)
-//     SHORT : close[1] breaks BELOW the lower line projected to bar 1, while
-//             close[2] was still at/above the lower line projected to bar 2.
-//   Stop         : ATR(14) emergency stop at sl_atr_mult * ATR (card: 2.0x).
-//   Take profit  : tp_atr_mult * ATR (RR-style target via the same ATR value).
-//   Time exit    : close after max_hold_bars closed bars (card: 12 H4 bars).
-//   Defensive    : long closes if close falls below entry-bar low; short closes
-//                  if close rises above entry-bar high (card exit rules).
+//   ASCENDING  = rolling_high >= high[2]
+//             && rolling_low  <= low[2]
+//             && close[1] > close[2]
+//   DESCENDING = rolling_high <= high[2]
+//             && rolling_low  >= low[2]
+//             && close[1] < close[2]
 //
-// Only the 5 Strategy_* hooks + Strategy inputs + the cached-structure helper
-// are EA-specific. Everything else is framework wiring and MUST stay intact.
+// The rolling window intentionally includes shift 2, exactly as the source
+// implementation does. No trendline, breakout buffer, confirmation, TP, or
+// other mechanic is added. Entries occur at the next H4 bar open. Positions
+// close on the opposite label, a closed-bar breach of the actual entry bar's
+// extreme, or the 12-bar baseline time stop. ATR(14) at 2.0x is the card's
+// V5 emergency stop. One position per magic; no grid, martingale, or ML.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11659;
-input int    qm_magic_slot_offset       = 0;
-input uint   qm_rng_seed                = 42;
+input int    qm_ea_id                    = 11659;
+input int    qm_magic_slot_offset        = 0;
+input uint   qm_rng_seed                 = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.0;
-input double RISK_FIXED                 = 1000.0;
-input double PORTFOLIO_WEIGHT           = 1.0;
+input double RISK_PERCENT                = 0.0;
+input double RISK_FIXED                  = 1000.0;
+input double PORTFOLIO_WEIGHT            = 1.0;
 
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
-input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
+input int    qm_news_stale_max_hours     = 336;
+input string qm_news_min_impact          = "high";
+input QM_NewsMode qm_news_mode_legacy    = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled    = true;
+input bool   qm_friday_close_enabled     = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_swing_strength    = 2;     // bars each side defining a swing pivot
-input int    strategy_lookback_bars     = 60;    // bounded closed-bar window scanned for swings
-input double strategy_converge_ratio    = 0.70;  // projected line gap must be <= this * full range
-input double strategy_slope_eps_atr     = 0.05;  // slope tolerance, in ATR per bar, for "flat enough"
-input int    strategy_atr_period        = 14;    // ATR period (filter / stop / target)
-input double strategy_sl_atr_mult       = 2.0;   // stop distance = mult * ATR (card emergency stop)
-input double strategy_tp_atr_mult       = 3.0;   // target distance = mult * ATR
-input int    strategy_max_hold_bars     = 12;    // time exit after N closed bars (card: 12 H4)
-input double strategy_spread_pct_of_stop = 15.0; // skip only if spread > this % of stop distance
+input int    strategy_window             = 3;    // source baseline; P3: 3..20
+input int    strategy_atr_period         = 14;   // card baseline; P3: 14..30
+input double strategy_sl_atr_mult        = 2.0;  // card baseline; P3: 1.0..3.0
+input int    strategy_max_hold_bars      = 12;   // card baseline; P3: 6..30
 
-// -----------------------------------------------------------------------------
-// Cached triangle structure (advanced ONCE per closed bar; never per tick).
-// All "shift" indices are closed-bar shifts (1 = last closed bar).
-// -----------------------------------------------------------------------------
-bool   g_state_valid     = false;  // a valid converging-triangle structure exists
-// Upper trendline (through 2 most recent swing highs): value = a_up + b_up*shift,
-// where shift is the closed-bar shift (so shift 1 is the most recent closed bar).
-double g_up_a            = 0.0;    // upper line value at shift 0 (intercept)
-double g_up_b            = 0.0;    // upper line slope per shift (price units / bar)
-double g_lo_a            = 0.0;    // lower line value at shift 0
-double g_lo_b            = 0.0;    // lower line slope per shift
-double g_struct_atr      = 0.0;    // ATR cached for the current structure
+// Cached only after QM_IsNewBar() consumes a new H4 bar.
+int    g_pattern_dir      = 0;     // +1 Ascending, -1 Descending, 0 none
+double g_signal_atr       = 0.0;
+bool   g_exit_requested   = false;
 
-// Entry-bar reference levels for the card's defensive exit + time stop.
-bool     g_in_long       = false;
-bool     g_in_short      = false;
-double   g_entry_bar_low  = 0.0;
-double   g_entry_bar_high = 0.0;
-datetime g_entry_bar_time = 0;
-
-// Project a line (value at shift 0 = a, slope per shift = b) to a given shift.
-double LineAtShift(const double a, const double b, const int shift)
+int Strategy_ExpectedSlot()
   {
-   return a + b * (double)shift;
+   if(_Symbol == "EURUSD.DWX") return 0;
+   if(_Symbol == "GBPUSD.DWX") return 1;
+   if(_Symbol == "XAUUSD.DWX") return 2;
+   if(_Symbol == "GDAXI.DWX")  return 3; // registry mapping for card GER40
+   if(_Symbol == "NDX.DWX")    return 4;
+   return -1;
   }
 
-// Recompute the cached triangle structure from closed-bar swing points.
-// Called ONCE per new closed bar from OnTick (post QM_IsNewBar gate). The only
-// raw-OHLC scan in the EA; bounded by strategy_lookback_bars (perf-allowed
-// bespoke structural logic). Reads are at shift >= 1 (closed bars only).
-void AdvanceStructure_OnNewBar()
+bool Strategy_ConfigurationAuthorized()
   {
-   g_state_valid = false;
+   const int expected_slot = Strategy_ExpectedSlot();
+   return (qm_ea_id == 11659 && expected_slot >= 0 &&
+           qm_magic_slot_offset == expected_slot &&
+           (ENUM_TIMEFRAMES)_Period == PERIOD_H4 &&
+           strategy_window >= 3 && strategy_window <= 20 &&
+           strategy_atr_period >= 14 && strategy_atr_period <= 30 &&
+           strategy_sl_atr_mult >= 1.0 && strategy_sl_atr_mult <= 3.0 &&
+           strategy_max_hold_bars >= 6 && strategy_max_hold_bars <= 30);
+  }
 
-   const int strength = (strategy_swing_strength < 1 ? 1 : strategy_swing_strength);
-   const int lookback = (strategy_lookback_bars < (4 * strength + 4)
-                         ? (4 * strength + 4) : strategy_lookback_bars);
+// Compute the source mask and any closed-bar exit request once per H4 bar.
+void AdvanceState_OnNewBar()
+  {
+   g_pattern_dir = 0;
+   g_signal_atr = 0.0;
+   g_exit_requested = false;
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return;
-   g_struct_atr = atr_value;
-
-   // Pull the bounded closed-bar window once. Index i in these arrays maps to
-   // closed-bar shift (i+1): highs[0] = high at shift 1, etc.
-   const int need = lookback + strength + 2;
-   double highs[];
-   double lows[];
-   // perf-allowed: single bounded CopyRates-equivalent read, gated by QM_IsNewBar.
-   const int got_h = CopyHigh(_Symbol, _Period, 1, need, highs);
-   const int got_l = CopyLow(_Symbol, _Period, 1, need, lows);
-   if(got_h < need || got_l < need)
+   if(!Strategy_ConfigurationAuthorized())
       return;
 
-   // Find the two most-recent swing highs and two most-recent swing lows by
-   // walking from the most recent closed bar backwards. A swing pivot at
-   // array index i (shift i+1) requires `strength` neighbours each side inside
-   // the window. We record their (shift, price) pairs.
-   int    sh_shift[2];  double sh_price[2];  int sh_n = 0;
-   int    sl_shift[2];  double sl_price[2];  int sl_n = 0;
+   const int window = strategy_window;
+   double rolling_high = iHigh(_Symbol, _Period, 1); // perf-allowed: bounded card-authorized OHLC read behind QM_IsNewBar().
+   double rolling_low  = iLow(_Symbol, _Period, 1);  // perf-allowed: bounded card-authorized OHLC read behind QM_IsNewBar().
+   if(rolling_high <= 0.0 || rolling_low <= 0.0)
+      return;
 
-   for(int i = strength; i < got_h - strength && (sh_n < 2 || sl_n < 2); ++i)
+   for(int shift = 2; shift <= window; ++shift)
      {
-      // Swing high test: highs[i] strictly >= neighbours, strictly > at least
-      // the immediate neighbours (avoid flat plateaus counting twice).
-      if(sh_n < 2)
-        {
-         bool is_high = true;
-         for(int k = 1; k <= strength; ++k)
-           {
-            if(!(highs[i] >= highs[i - k] && highs[i] >= highs[i + k]))
-              { is_high = false; break; }
-           }
-         if(is_high && highs[i] > highs[i - 1] && highs[i] > highs[i + 1])
-           {
-            sh_shift[sh_n] = i + 1;   // closed-bar shift
-            sh_price[sh_n] = highs[i];
-            sh_n++;
-           }
-        }
-      // Swing low test.
-      if(sl_n < 2)
-        {
-         bool is_low = true;
-         for(int k = 1; k <= strength; ++k)
-           {
-            if(!(lows[i] <= lows[i - k] && lows[i] <= lows[i + k]))
-              { is_low = false; break; }
-           }
-         if(is_low && lows[i] < lows[i - 1] && lows[i] < lows[i + 1])
-           {
-            sl_shift[sl_n] = i + 1;
-            sl_price[sl_n] = lows[i];
-            sl_n++;
-           }
-        }
+      const double bar_high = iHigh(_Symbol, _Period, shift); // perf-allowed: bounded card-authorized OHLC read behind QM_IsNewBar().
+      const double bar_low  = iLow(_Symbol, _Period, shift);  // perf-allowed: bounded card-authorized OHLC read behind QM_IsNewBar().
+      if(bar_high <= 0.0 || bar_low <= 0.0)
+         return;
+      if(bar_high > rolling_high) rolling_high = bar_high;
+      if(bar_low  < rolling_low)  rolling_low  = bar_low;
      }
 
-   if(sh_n < 2 || sl_n < 2)
-      return; // not enough structure to draw two trendlines
-
-   // Build upper line through the two swing highs. sh_shift[0] is the more
-   // recent (smaller shift). Slope per shift: as shift increases (older), price.
-   const int    sh0 = sh_shift[0], sh1 = sh_shift[1];
-   const int    sl0 = sl_shift[0], sl1 = sl_shift[1];
-   if(sh1 == sh0 || sl1 == sl0)
-      return; // degenerate (same bar) — cannot define a slope
-
-   const double up_b = (sh_price[1] - sh_price[0]) / (double)(sh1 - sh0); // price per +1 shift
-   const double up_a = sh_price[0] - up_b * (double)sh0;                  // value at shift 0
-   const double lo_b = (sl_price[1] - sl_price[0]) / (double)(sl1 - sl0);
-   const double lo_a = sl_price[0] - lo_b * (double)sl0;
-
-   // Convert slopes from "per +1 shift (going older)" to a directional read in
-   // chart time. Going FORWARD in time = decreasing shift. A descending upper
-   // line (falls as time advances) has price increasing with shift => up_b > 0.
-   // An ascending lower line (rises as time advances) has price decreasing with
-   // shift => lo_b < 0. We require a converging wedge:
-   //   upper non-rising forward  => up_b >= -eps   (allows flat/descending tops)
-   //   lower non-falling forward => lo_b <=  eps   (allows flat/ascending bottoms)
-   const double eps = strategy_slope_eps_atr * atr_value;
-   if(!(up_b >= -eps))
-      return;
-   if(!(lo_b <= eps))
+   const double prior_high = iHigh(_Symbol, _Period, 2);  // perf-allowed: source shift(1), closed-bar gate.
+   const double prior_low  = iLow(_Symbol, _Period, 2);   // perf-allowed: source shift(1), closed-bar gate.
+   const double close1     = iClose(_Symbol, _Period, 1); // perf-allowed: source close, closed-bar gate.
+   const double close2     = iClose(_Symbol, _Period, 2); // perf-allowed: source shift(1), closed-bar gate.
+   if(prior_high <= 0.0 || prior_low <= 0.0 || close1 <= 0.0 || close2 <= 0.0)
       return;
 
-   // Convergence: the projected gap at the most recent closed bar (shift 1)
-   // must be meaningfully tighter than the full high-low range of the window,
-   // AND the lines must be getting closer going forward (gap shrinks as shift
-   // decreases toward the apex ahead of price).
-   const double gap_recent = LineAtShift(up_a, up_b, 1) - LineAtShift(lo_a, lo_b, 1);
-   if(gap_recent <= 0.0)
-      return; // lines already crossed — no valid triangle interior
+   g_signal_atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
 
-   // Gap at an older reference shift (the older of the two pivot anchors).
-   const int    old_ref = (sh1 > sl1 ? sh1 : sl1);
-   const double gap_old = LineAtShift(up_a, up_b, old_ref) - LineAtShift(lo_a, lo_b, old_ref);
-   if(!(gap_recent < gap_old))
-      return; // not converging (forward gap not shrinking)
+   const bool ascending = (rolling_high >= prior_high &&
+                           rolling_low <= prior_low &&
+                           close1 > close2);
+   const bool descending = (rolling_high <= prior_high &&
+                            rolling_low >= prior_low &&
+                            close1 < close2);
+   if(ascending)
+      g_pattern_dir = +1;
+   else if(descending)
+      g_pattern_dir = -1;
 
-   // Full high-low range over the lookback window for the compression ratio.
-   double win_hi = highs[0];
-   double win_lo = lows[0];
-   const int win_end = (lookback < got_h ? lookback : got_h);
-   for(int j = 1; j < win_end; ++j)
+   const int magic = QM_FrameworkMagic();
+   int matching_positions = 0;
+   bool position_is_long = false;
+   datetime entry_time = 0;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      if(highs[j] > win_hi) win_hi = highs[j];
-      if(lows[j]  < win_lo) win_lo = lows[j];
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      ++matching_positions;
+      position_is_long = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
+      entry_time = (datetime)PositionGetInteger(POSITION_TIME);
      }
-   const double full_range = win_hi - win_lo;
-   if(full_range <= 0.0)
-      return;
-   if(!(gap_recent <= strategy_converge_ratio * full_range))
-      return; // range not compressed enough to call it a triangle
 
-   // Structure accepted.
-   g_up_a = up_a; g_up_b = up_b;
-   g_lo_a = lo_a; g_lo_b = lo_b;
-   g_state_valid = true;
+   if(matching_positions <= 0)
+      return;
+   if(matching_positions != 1 || entry_time <= 0)
+     {
+      g_exit_requested = true;
+      return;
+     }
+
+   // The opposite PatternPy label is an immediate card-authorized exit.
+   if((position_is_long && g_pattern_dir == -1) ||
+      (!position_is_long && g_pattern_dir == +1))
+      g_exit_requested = true;
+
+   // Recover the actual execution bar deterministically from position time.
+   // At the first bar after entry it is shift 1 and therefore fully closed.
+   const int entry_shift = iBarShift(_Symbol, _Period, entry_time, false); // perf-allowed: one position-time lookup behind QM_IsNewBar().
+   if(entry_shift < 1)
+      return;
+
+   if(entry_shift >= strategy_max_hold_bars)
+      g_exit_requested = true;
+
+   const double entry_bar_low  = iLow(_Symbol, _Period, entry_shift);  // perf-allowed: one entry-bar structural read behind QM_IsNewBar().
+   const double entry_bar_high = iHigh(_Symbol, _Period, entry_shift); // perf-allowed: one entry-bar structural read behind QM_IsNewBar().
+   if(position_is_long && entry_bar_low > 0.0 && close1 < entry_bar_low)
+      g_exit_requested = true;
+   if(!position_is_long && entry_bar_high > 0.0 && close1 > entry_bar_high)
+      g_exit_requested = true;
   }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only; fail-open on .DWX zero spread.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   if(g_struct_atr <= 0.0)
-      return false; // no structure ATR yet — defer to entry gate
-
-   const double stop_distance = strategy_sl_atr_mult * g_struct_atr;
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
-
-   return false;
+   return !Strategy_ConfigurationAuthorized();
   }
 
-// Triangle breakout entry. Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
-
-   if(!g_state_valid)
+   if(g_pattern_dir == 0 || g_signal_atr <= 0.0)
       return false;
 
-   const double atr_value = g_struct_atr;
-   if(atr_value <= 0.0)
-      return false;
-
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0 || close2 <= 0.0)
-      return false;
-
-   // Project both trendlines to the trigger bar (shift 1) and the prior bar
-   // (shift 2). The convergence/lower-line is the STATE; the close breaking a
-   // single line is the one EVENT (no two-cross-same-bar trap).
-   const double up_1 = LineAtShift(g_up_a, g_up_b, 1);
-   const double up_2 = LineAtShift(g_up_a, g_up_b, 2);
-   const double lo_1 = LineAtShift(g_lo_a, g_lo_b, 1);
-   const double lo_2 = LineAtShift(g_lo_a, g_lo_b, 2);
-
-   // LONG breakout EVENT: prior close at/below upper line, current close above.
-   const bool long_break = (close2 <= up_2 && close1 > up_1);
-   // SHORT breakout EVENT: prior close at/above lower line, current close below.
-   const bool short_break = (close2 >= lo_2 && close1 < lo_1);
-
-   // Exactly one direction may fire on a given bar (a single close can't be
-   // both above the top and below the bottom of a positive-gap triangle).
-   if(long_break == short_break)
-      return false; // neither, or (impossible) both
-
-   const double entry = (long_break ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                     : SymbolInfoDouble(_Symbol, SYMBOL_BID));
+   const QM_OrderType side = (g_pattern_dir > 0 ? QM_BUY : QM_SELL);
+   const double entry = (g_pattern_dir > 0
+                         ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                         : SymbolInfoDouble(_Symbol, SYMBOL_BID));
    if(entry <= 0.0)
       return false;
 
-   const QM_OrderType side = (long_break ? QM_BUY : QM_SELL);
-   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr_value, strategy_sl_atr_mult);
-   const double tp = QM_TakeATRFromValue(_Symbol, side, entry, atr_value, strategy_tp_atr_mult);
-   if(sl <= 0.0 || tp <= 0.0)
+   const double sl = QM_StopATRFromValue(_Symbol,
+                                         side,
+                                         entry,
+                                         g_signal_atr,
+                                         strategy_sl_atr_mult);
+   if(sl <= 0.0)
       return false;
 
-   req.type   = side;
-   req.price  = 0.0; // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = tp;
-   req.reason = (long_break ? "triangle_break_long" : "triangle_break_short");
-
-   // Latch entry-bar reference levels for the defensive exit + time stop.
-   g_in_long  = long_break;
-   g_in_short = short_break;
-   g_entry_bar_low  = iLow(_Symbol, _Period, 1);   // perf-allowed: single closed-bar read
-   g_entry_bar_high = iHigh(_Symbol, _Period, 1);  // perf-allowed: single closed-bar read
-   g_entry_bar_time = iTime(_Symbol, _Period, 0);  // bar-open time of the bar we enter on
+   req.type = side;
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = 0.0; // card authorizes no TP; exits are structural/time + hard SL
+   req.reason = (g_pattern_dir > 0 ? "patternpy_triangle_ascending"
+                                    : "patternpy_triangle_descending");
    return true;
   }
 
-// No active SL/TP manipulation; fixed ATR stop/target. Clear stale latches when
-// no position is open (e.g. SL/TP/news closed it outside the strategy exit).
 void Strategy_ManageOpenPosition()
   {
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
-     {
-      g_in_long  = false;
-      g_in_short = false;
-     }
+   // No trailing stop, break-even, partial close, or stop mutation.
   }
 
-// Discretionary exits (card): defensive break of the entry bar, and a time stop
-// after strategy_max_hold_bars closed bars. SL/TP are handled by the framework.
 bool Strategy_ExitSignal()
   {
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
-      return false;
-   if(!(g_in_long || g_in_short))
-      return false;
-
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0)
-      return false;
-
-   // Defensive break of the entry bar (card exit rule).
-   if(g_in_long && g_entry_bar_low > 0.0 && close1 < g_entry_bar_low)
-      return true;
-   if(g_in_short && g_entry_bar_high > 0.0 && close1 > g_entry_bar_high)
-      return true;
-
-   // Time exit: close after N closed bars since entry (card: 12 H4 bars). Count
-   // closed bars between the entry bar's open time and the current forming bar.
-   if(g_entry_bar_time > 0)
-     {
-      const int held = iBarShift(_Symbol, _Period, g_entry_bar_time, false);
-      if(held >= strategy_max_hold_bars)
-         return true;
-     }
-
-   return false;
+   return (g_exit_requested &&
+           QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0);
   }
 
-// Defer to the central news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -392,17 +247,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -417,53 +272,68 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Sample MAE before any guard can return.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
+   // Consume the closed-bar gate exactly once. State must advance before the
+   // management/exit hooks so opposite labels and bar-count exits are timely.
+   const bool is_new_bar = QM_IsNewBar();
+   if(is_new_bar)
+      AdvanceState_OnNewBar();
+
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
+      bool close_succeeded = false;
       for(int i = PositionsTotal() - 1; i >= 0; --i)
         {
          const ulong ticket = PositionGetTicket(i);
          if(!PositionSelectByTicket(ticket))
             continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic)
+         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         if(QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY))
+            close_succeeded = true;
         }
-      g_in_long  = false;
-      g_in_short = false;
+      if(close_succeeded)
+         g_exit_requested = false;
      }
 
-   if(!QM_IsNewBar())
+   // Both custom and central news gates suppress entries only. Management and
+   // exits above remain available throughout a news window.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol,
+                                        broker_now,
+                                        qm_news_temporal,
+                                        qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!is_new_bar)
       return;
 
    QM_EquityStreamOnNewBar();
 
-   // Advance the cached triangle structure ONCE per closed bar (the only
-   // bounded OHLC scan; never on the per-tick path).
-   AdvanceStructure_OnNewBar();
-
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
