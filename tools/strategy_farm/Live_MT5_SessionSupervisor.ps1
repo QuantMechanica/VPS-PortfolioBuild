@@ -35,11 +35,11 @@ $ftmoPath = 'C:\Program Files\FTMO Global Markets MT5 Terminal\terminal64.exe'
 $dxzLauncher = 'C:\QM\repo\tools\strategy_farm\T_Live_ON.ps1'
 $ftmoLauncher = 'C:\QM\repo\tools\strategy_farm\FTMO_ON.ps1'
 
-# OWNER state contract (2026-07-26): DXZ remains live; the FTMO campaign is
-# parked. The expiry is an alarm/review edge, never permission to relaunch FTMO.
+# OWNER state contract (2026-08-06): FTMO is RUNNING and must auto-recover like
+# DXZ. The expiry is an alarm/review edge, never permission to relaunch.
 $expectedDxzState = 'RUNNING'
-$expectedFtmoState = 'PARKED'
-$expectedStateReviewExpiresUtc = '2026-08-25T00:00:00Z'
+$expectedFtmoState = 'RUNNING'
+$expectedStateReviewExpiresUtc = '2026-09-30T00:00:00Z'
 
 function Get-UtcStamp {
     return [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')

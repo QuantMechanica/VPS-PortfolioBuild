@@ -10,20 +10,20 @@
   QM_StrategyFarm_FactoryON_AtLogon - the FTMO terminal had no such path (it was
   started manually on 2026-07-05). This closes that gap, mirroring T_Live_ON.ps1.
 
-  OWNER parked the FTMO campaign on 2026-07-26. The baked expected-state
-  contract therefore returns without launching while state=PARKED. It expires
-  fail-closed for review on 2026-08-25; expiry is never permission to launch.
+  OWNER ratified FTMO as RUNNING on 2026-08-06 ("Alles freigegeben" in answer
+  to the explicit RUNNING/PARKED question). The bounded approval is reviewed by
+  2026-09-30; expiry is never permission to launch.
 
-  If a future reviewed source change sets state=RUNNING, the legacy launcher is
-  idempotent: if an FTMO terminal64 is already running it no-ops. When NOT running it
+  The launcher is idempotent: if an FTMO terminal64 is already running it no-ops.
+  When NOT running it
   (1) pins ProfileLast + Experts Enabled=1 in the data-dir config\common.ini so the
-  deployed 12-leg Round25 book (profile 'Default', account 1513845506) reloads and
-  trades after a cold reboot, then (2) launches terminal64.exe (no /portable - the
-  install is registry/appdata based).
+  current demo-instrumentation profile ('Default', account 1514165262) reloads
+  after a cold reboot, then (2) launches terminal64.exe (no /portable - the
+  install is registry/appdata based). This script never toggles AutoTrading.
 
-  Deployed-state authority: decisions/2026-07-05_ftmo_round25_phase1_deploy.md
-  (OWNER-approved trial deploy incl. AutoTrading). Auto-resume mirrors the
-  OWNER-requested T_Live reboot-resilience pattern (2026-06-28).
+  Deployed-state evidence: docs/ops/evidence/
+  2026-08-02_ftmo_demo_instrumentation_package.md plus the read-only contract
+  verifier. Auto-resume mirrors the OWNER-requested T_Live resilience pattern.
 
   Run at logon via QM_FTMO_AtLogon.
 #>
@@ -38,10 +38,10 @@ $dataDir = 'C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\81A933A9A
 $common  = Join-Path $dataDir 'config\common.ini'
 $profile = 'Default'
 $profileDir = Join-Path $dataDir "MQL5\Profiles\Charts\$profile"
-$contractVerifier = 'C:\QM\repo\tools\strategy_farm\verify_ftmo_round25_live_contract.ps1'
+$contractVerifier = 'C:\QM\repo\tools\strategy_farm\verify_ftmo_demo_instrumentation_contract.ps1'
 $maintenanceFlag = 'D:\QM\reports\state\LIVE_UPTIME_MAINTENANCE.flag'
-$expectedFtmoState = 'PARKED'
-$expectedStateReviewExpiresUtc = '2026-08-25T00:00:00Z'
+$expectedFtmoState = 'RUNNING'
+$expectedStateReviewExpiresUtc = '2026-09-30T00:00:00Z'
 $launchMutexName = 'Global\QM.LiveMT5.Launch.FTMO'
 $launchMutex = $null
 $launchMutexOwned = $false
@@ -89,19 +89,13 @@ try {
     Write-Error 'ERROR: invalid FTMO expected-state review expiry; refusing launch'
     exit 3
 }
+if ([DateTime]::UtcNow -ge $expectedStateReviewExpiry) {
+    Write-Error "ERROR: FTMO expected-state review expired at $expectedStateReviewExpiresUtc; refusing launch"
+    exit 3
+}
 if ($expectedFtmoState -ne 'RUNNING') {
-    if ([DateTime]::UtcNow -ge $expectedStateReviewExpiry) {
-        Write-Error "ERROR: FTMO expected-state review expired at $expectedStateReviewExpiresUtc; refusing launch"
-        exit 3
-    }
     Write-Host "FTMO launch suppressed by baked expected state $expectedFtmoState until review expiry $expectedStateReviewExpiresUtc"
     exit 0
-}
-$identity = [Security.Principal.WindowsIdentity]::GetCurrent().Name
-$sessionId = (Get-Process -Id $PID).SessionId
-if ($identity.Split('\')[-1] -ine 'qm-admin' -or $sessionId -le 0) {
-    Write-Error "ERROR: refusing wrong-user/non-interactive launch context: identity=$identity session=$sessionId"
-    exit 2
 }
 try {
     $launchMutex = [Threading.Mutex]::new($false, $launchMutexName)
@@ -133,6 +127,13 @@ if (@($initial.matches).Count -eq 1) {
     Complete-FtmoLauncher 0
 }
 
+$identity = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+$sessionId = (Get-Process -Id $PID).SessionId
+if ($identity.Split('\')[-1] -ine 'qm-admin' -or $sessionId -le 0) {
+    Write-Error "ERROR: refusing wrong-user/non-interactive launch context: identity=$identity session=$sessionId"
+    Complete-FtmoLauncher 2
+}
+
 if (-not (Test-Path $exe)) { Write-Error "ERROR: $exe not found"; Complete-FtmoLauncher 2 }
 if (-not (Test-Path $dataDir)) { Write-Error "ERROR: FTMO data directory not found: $dataDir"; Complete-FtmoLauncher 2 }
 if (-not (Test-Path -LiteralPath $profileDir -PathType Container)) {
@@ -145,7 +146,7 @@ if (-not (Test-Path -LiteralPath $contractVerifier -PathType Leaf)) {
 }
 & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $contractVerifier
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "ERROR: FTMO Round25 recovery contract verification failed: $profile"
+    Write-Error "ERROR: FTMO demo instrumentation recovery contract verification failed: $profile"
     Complete-FtmoLauncher 2
 }
 if (-not (Test-Path $common -PathType Leaf)) { Write-Error "ERROR: common.ini not found: $common"; Complete-FtmoLauncher 2 }
