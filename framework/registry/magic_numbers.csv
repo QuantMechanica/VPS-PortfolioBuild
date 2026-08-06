@@ -15563,3 +15563,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20246,usdjpy-eurgbp,1,EURGBP.DWX,202460001,2026-08-06T09:57:26Z,Codex,active
 20247,wti-vr-calreg,0,XTIUSD.DWX,202470000,2026-08-06T10:09:54Z,Codex,active
 20248,xng-vr-window,0,XNGUSD.DWX,202480000,2026-08-06T11:10:31Z,Codex,active
+20249,xauxag-vr-spread,0,XAUUSD.DWX,202490000,2026-08-06T13:55:57Z,Codex,active
+20249,xauxag-vr-spread,1,XAGUSD.DWX,202490001,2026-08-06T13:55:57Z,Codex,active
