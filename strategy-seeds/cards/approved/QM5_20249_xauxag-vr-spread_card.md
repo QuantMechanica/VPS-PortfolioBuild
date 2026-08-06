@@ -63,7 +63,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: NOT_RUN
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify a monthly two-leg precious-metals relative-memory stream whose common-direction exposure and state variable differ from outright XAU and the certified QM5_12567 XNG oscillator; Q09 alone may establish realized portfolio decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]

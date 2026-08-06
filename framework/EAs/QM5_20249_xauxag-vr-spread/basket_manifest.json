@@ -1,0 +1,11 @@
+{
+  "logical_symbol": "QM5_20249_XAU_XAG_VRSPREAD_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "traded_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "notes": [
+    "One logical opposite-direction XAU/XAG variance-ratio basket. The EA classifies persistence on synchronized completed-month XAU-minus-XAG returns, follows significant persistence, reverses significant anti-persistence, and evaluates combined package PnL and costs at Q02.",
+    "The logical basket must never be decomposed into standalone XAU or XAG gate results. One RISK_FIXED budget is split equally by per-leg ATR stop risk."
+  ]
+}
