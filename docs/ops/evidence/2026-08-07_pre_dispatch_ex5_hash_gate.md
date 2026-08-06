@@ -5,6 +5,12 @@ Router task: `3ffab595-f8c3-4583-b211-4e503e34b071`
 Parent evidence: `2026-08-06_error32_history_sharing_violation_class.md`, section 6
 Status: IMPLEMENTED AND TESTED / REVIEW REQUIRED / NOT DEPLOYED
 
+Implementation provenance: task code and the initial evidence are committed on
+`agents/board-advisor` as `1d1e16e58`; continuation verification is
+`613f57b81`. The evidence is mirrored on `main` as documentation commit
+`9bda2e9c4`. The unreviewed implementation itself remains off `main` pending
+the router review boundary.
+
 ## Scope and result
 
 Every resident-worker MT5 dispatch now passes one registry-resolved EX5 gate:
