@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        20012
 ; ea_slug:      xauxag-cmtar
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    RISK_FIXED
 ; portfolio_weight: 1
-; build_hash:   ffaeb08abe752065533b44ef4628811f4e88cc318ec68008ddb07a50b727a06a
+; build_hash:   aa2d0bfee98104672f36a17f84913b248f442cfb9adf5e6609c53f59ca135f28
 ; author:       Development
 ; date:         2026-07-20
 ;==========================================================
