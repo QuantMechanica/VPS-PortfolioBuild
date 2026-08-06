@@ -60,9 +60,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
+pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_STARTED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a direct WTI structural trend-concordance package whose cumulative twelve-month return and twelve-return binary-sign state must agree. Q09 alone may establish realized decorrelation from XAU/SP500/NDX/XNG."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -295,6 +295,7 @@ manifest; portfolio admission; portfolio-gate edit; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-06 | initial source-bounded WTI trend/sign concordance card and strict build | Q01 | PASS |
+| v1.1 | 2026-08-06 | paced Q02 handoff stopped at binding 7/7 factory-terminal ceiling | Q01 | READY_NOT_ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -302,4 +303,4 @@ manifest; portfolio admission; portfolio-gate edit; or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_qm5_20244_wti_trend_sign_g0.md` |
 | Q01 Build Validation | 2026-08-06 | PASS | strict compile `framework/build/compile/20260806_082948/QM5_20244_wti-trend-sign.compile.log`; build check `D:/QM/reports/framework/21/build_check_20260806_083052.json` |
-| Q02 Baseline Screening | - | NOT_STARTED | - |
+| Q02 Baseline Screening | 2026-08-06 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-06_qm5_20244_wti_trend_sign_q01_cpu_stop.md` |
