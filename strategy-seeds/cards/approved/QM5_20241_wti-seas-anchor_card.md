@@ -59,8 +59,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: NOT_STARTED
+pipeline_phase: Q02
+q01_status: PASS
 q02_status: NOT_STARTED
 review_focus: "Falsify a direct WTI season/anchor agreement package. It is neither the unconditional physical-season sleeve nor the year-round 52-week anchor parent. Q09 alone may establish realized decorrelation from XAU/SP500/NDX/XNG."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -295,12 +295,12 @@ manifest; portfolio admission; portfolio-gate edit; or correlation waiver.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-08-06 | initial source-bounded WTI season/anchor card | G0 | APPROVED |
+| v1 | 2026-08-06 | initial source-bounded WTI season/anchor card and strict build | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_qm5_20241_wti_seas_anchor_g0.md` |
-| Q01 Build Validation | - | NOT_STARTED | - |
+| Q01 Build Validation | 2026-08-06 | PASS | strict compile/build: 0 errors, warnings, failures, or build warnings |
 | Q02 Baseline Screening | - | NOT_STARTED | - |
