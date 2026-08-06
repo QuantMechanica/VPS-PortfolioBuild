@@ -16,6 +16,7 @@ import json
 import math
 import os
 import re
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -37,13 +38,21 @@ except ModuleNotFoundError:
 PLAN_SCHEMA = "q09-news-run-plan/v2"
 CELL_RECEIPT_SCHEMA = "q09-news-cell-receipt/v2"
 CELL_EVIDENCE_SCHEMA = "q09-news-cell-evidence/v2"
-CELL_FAILURE_SCHEMA = "q09-news-cell-failure/v1"
+CELL_FAILURE_SCHEMA_V1 = "q09-news-cell-failure/v1"
+CELL_FAILURE_SCHEMA = "q09-news-cell-failure/v2"
+SUPPORTED_CELL_FAILURE_SCHEMAS = frozenset(
+    {CELL_FAILURE_SCHEMA_V1, CELL_FAILURE_SCHEMA}
+)
+EXECUTION_FAILURE_SCHEMA_V1 = "q09-news-execution-failure/v1"
+EXECUTION_FAILURE_SCHEMA = "q09-news-execution-failure/v2"
+SUPPORTED_EXECUTION_FAILURE_SCHEMAS = frozenset(
+    {EXECUTION_FAILURE_SCHEMA_V1, EXECUTION_FAILURE_SCHEMA}
+)
 DIAGNOSTIC_ANCHOR_SCHEMA = "q09-live-news-diagnostic-anchor/v1"
 DIAGNOSTIC_SUMMARY_SCHEMA = "q09-live-news-diagnostic-summary/v1"
 DIAGNOSTIC_CONTRACT = "q09-live-news-backfill/v1"
 DIAGNOSTIC_ALLOWED_TERMINALS = frozenset({"T1", "T2", "T3", "T4", "T5"})
 CELL_FAILURE_STABLE_FIELDS = (
-    "schema_version",
     "work_item_id",
     "run_identity_sha256",
     "paired_base_identity_sha256",
@@ -52,7 +61,10 @@ CELL_FAILURE_STABLE_FIELDS = (
     "compliance_mode",
     "seed",
 )
-CELL_FAILURE_SIDECAR_RE = re.compile(r"^cell_failure(?:_[1-9][0-9]*)?\.json$")
+CELL_FAILURE_SIDECAR_RE = re.compile(
+    r"^cell_failure(?:_([1-9][0-9]*))?\.json$"
+)
+CELL_FAILURE_ATTEMPT_DIR = "failure_attempts"
 COMPLIANCE_MODE_IDS = {"NONE": 0, "DXZ": 1, "FTMO": 2, "5ERS": 3}
 DEFAULT_CELL_TIMEOUT_SEC = 3600
 CELL_TIMEOUT_HEADROOM_SEC = 600
@@ -1092,37 +1104,133 @@ def _assert_cell_failure_identity(
     expected: Mapping[str, Any],
     path: Path,
 ) -> None:
+    schema_version = str(failure.get("schema_version") or "")
+    if schema_version not in SUPPORTED_CELL_FAILURE_SCHEMAS:
+        raise RunnerError(
+            f"unsupported cell failure schema {schema_version!r}: {path}"
+        )
     for field in CELL_FAILURE_STABLE_FIELDS:
         if failure.get(field) != expected[field]:
             raise RunnerError(f"cell failure {field} mismatch: {path}")
 
 
-def _failure_artifacts(cell_dir: Path) -> list[dict[str, Any]]:
-    """Hash every artifact available when a cell aborts.
+def _cell_failure_occurrence_path(base_path: Path, occurrence: int) -> Path:
+    if occurrence < 1:
+        raise RunnerError("cell failure occurrence must be positive")
+    if occurrence == 1:
+        return base_path
+    return base_path.with_name(
+        f"{base_path.stem}_{occurrence}{base_path.suffix}"
+    )
 
-    The failure sidecar is written only after the child process has stopped, so
-    these identities turn a terse exception into durable row-bound evidence.
-    Planned inputs are intentionally included; the failure sidecar itself is
-    excluded to avoid a recursive identity.
-    """
 
-    artifacts: list[dict[str, Any]] = []
+def _cell_failure_occurrence(path: Path) -> int:
+    match = CELL_FAILURE_SIDECAR_RE.fullmatch(path.name)
+    if match is None:
+        raise RunnerError(f"invalid cell failure sidecar name: {path}")
+    occurrence = int(match.group(1) or 1)
+    if occurrence == 1 and path.name != "cell_failure.json":
+        raise RunnerError(f"cell failure occurrence 1 must use the base name: {path}")
+    return occurrence
+
+
+def _failure_attempt_root(cell_dir: Path, occurrence: int) -> Path:
+    return cell_dir / CELL_FAILURE_ATTEMPT_DIR / f"attempt_{occurrence:04d}"
+
+
+def _next_cell_failure_occurrence(
+    base_path: Path,
+    *,
+    expected_identity: Mapping[str, Any],
+) -> int:
+    highest = 0
+    for candidate in sorted(base_path.parent.glob("cell_failure*.json")):
+        if CELL_FAILURE_SIDECAR_RE.fullmatch(candidate.name) is None:
+            continue
+        occurrence = _cell_failure_occurrence(candidate)
+        prior = _load_json(candidate, f"cell failure {candidate}")
+        _assert_cell_failure_identity(prior, expected_identity, candidate)
+        highest = max(highest, occurrence)
+    attempt_parent = base_path.parent / CELL_FAILURE_ATTEMPT_DIR
+    if attempt_parent.is_dir():
+        for candidate in attempt_parent.iterdir():
+            match = re.fullmatch(r"attempt_([0-9]+)", candidate.name)
+            if match is not None and int(match.group(1)) > 0:
+                highest = max(highest, int(match.group(1)))
+    return highest + 1
+
+
+def _failure_artifact_sources(cell_dir: Path) -> list[tuple[Path, Path]]:
+    sources: list[tuple[Path, Path]] = []
+    resolved_cell_dir = cell_dir.resolve()
     for path in sorted(cell_dir.rglob("*")):
+        if not path.is_file():
+            continue
+        relative_path = path.relative_to(cell_dir)
         if (
-            not path.is_file()
+            relative_path.parts[0] == CELL_FAILURE_ATTEMPT_DIR
             or path.name == "cell_receipt.json"
             or CELL_FAILURE_SIDECAR_RE.fullmatch(path.name)
         ):
             continue
+        try:
+            path.resolve().relative_to(resolved_cell_dir)
+        except ValueError as exc:
+            raise RunnerError(
+                f"cell failure source artifact escapes its cell directory: {path}"
+            ) from exc
+        sources.append((path, relative_path))
+    return sources
+
+
+def _snapshot_failure_artifacts(
+    cell_dir: Path, *, occurrence: int
+) -> tuple[Path, list[dict[str, Any]]]:
+    """Copy every failure artifact into one immutable attempt namespace.
+
+    The failure sidecar is written only after the child process has stopped, so
+    these identities turn a terse exception into durable row-bound evidence.
+    Planned inputs are intentionally included. Prior snapshots, receipts, and
+    failure sidecars are excluded to avoid recursive or cross-attempt identity.
+    """
+
+    snapshot_root = _failure_attempt_root(cell_dir, occurrence)
+    temporary_root = snapshot_root.with_name(snapshot_root.name + ".tmp")
+    if snapshot_root.exists() or temporary_root.exists():
+        raise RunnerError(
+            f"cell failure attempt snapshot already exists: {snapshot_root}"
+        )
+    temporary_root.mkdir(parents=True)
+    sources = _failure_artifact_sources(cell_dir)
+    for source_path, source_relative_path in sources:
+        destination = temporary_root / source_relative_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        before = source_path.stat()
+        shutil.copyfile(source_path, destination)
+        after = source_path.stat()
+        if (
+            before.st_size != after.st_size
+            or before.st_mtime_ns != after.st_mtime_ns
+            or destination.stat().st_size != after.st_size
+        ):
+            raise RunnerError(
+                f"cell failure source artifact changed during snapshot: {source_path}"
+            )
+    temporary_root.replace(snapshot_root)
+
+    artifacts: list[dict[str, Any]] = []
+    for source_path, source_relative_path in sources:
+        path = snapshot_root / source_relative_path
         artifacts.append(
             {
                 "path": str(path.resolve()),
                 "relative_path": path.relative_to(cell_dir).as_posix(),
+                "source_relative_path": source_relative_path.as_posix(),
                 "size_bytes": path.stat().st_size,
                 "sha256": contract.sha256_file(path),
             }
         )
-    return artifacts
+    return snapshot_root, artifacts
 
 
 def _write_cell_failure(
@@ -1131,38 +1239,49 @@ def _write_cell_failure(
     work_item_id: str,
     exc: Exception,
 ) -> Path:
-    path = _cell_failure_path(spec)
+    base_path = _cell_failure_path(spec)
     identity = _cell_failure_identity(spec, work_item_id=work_item_id)
+    occurrence = _next_cell_failure_occurrence(
+        base_path, expected_identity=identity
+    )
+    path = _cell_failure_occurrence_path(base_path, occurrence)
+    snapshot_root, artifacts = _snapshot_failure_artifacts(
+        base_path.parent, occurrence=occurrence
+    )
     payload = {
         **identity,
+        "failure_occurrence": occurrence,
         "error_type": type(exc).__name__,
         "error": str(exc),
-        "artifacts": _failure_artifacts(path.parent),
+        "artifact_snapshot_relative_path": snapshot_root.relative_to(
+            base_path.parent
+        ).as_posix(),
+        "artifacts": artifacts,
     }
     data = contract.canonical_json_bytes(payload)
-    if not path.exists():
-        _write_immutable(path, data)
-        return path
-
-    original = _load_json(path, f"cell failure {path}")
-    _assert_cell_failure_identity(original, identity, path)
-    occurrence = 2
-    while True:
-        occurrence_path = path.with_name(f"{path.stem}_{occurrence}{path.suffix}")
-        if not occurrence_path.exists():
-            _write_immutable(occurrence_path, data)
-            return occurrence_path
-        prior = _load_json(occurrence_path, f"cell failure {occurrence_path}")
-        _assert_cell_failure_identity(prior, identity, occurrence_path)
-        occurrence += 1
+    _write_immutable(path, data)
+    return path
 
 
 def _authenticated_cell_failure(
-    spec: Mapping[str, Any], *, work_item_id: str
+    spec: Mapping[str, Any],
+    *,
+    work_item_id: str,
+    failure_path: Path | None = None,
+    expected_failure_sha256: str | None = None,
 ) -> dict[str, Any] | None:
-    path = _cell_failure_path(spec)
+    path = failure_path or _cell_failure_path(spec)
     if not path.is_file():
         return None
+    cell_dir = _cell_failure_path(spec).parent.resolve()
+    resolved_path = path.resolve()
+    if (
+        resolved_path.parent != cell_dir
+        or CELL_FAILURE_SIDECAR_RE.fullmatch(resolved_path.name) is None
+    ):
+        raise RunnerError(f"cell failure sidecar path is contradictory: {path}")
+    if expected_failure_sha256 is not None:
+        _verify_hash(path, expected_failure_sha256, "cell failure sidecar")
     failure = _load_json(path, f"cell failure {path}")
     expected = _cell_failure_identity(spec, work_item_id=work_item_id)
     _assert_cell_failure_identity(failure, expected, path)
@@ -1173,8 +1292,29 @@ def _authenticated_cell_failure(
     artifacts = failure.get("artifacts")
     if not isinstance(artifacts, list):
         raise RunnerError(f"cell failure artifact manifest is missing: {path}")
-    cell_dir = path.parent.resolve()
+    schema_version = str(failure["schema_version"])
+    snapshot_root: Path | None = None
+    if schema_version == CELL_FAILURE_SCHEMA:
+        occurrence = _cell_failure_occurrence(path)
+        if failure.get("failure_occurrence") != occurrence:
+            raise RunnerError(f"cell failure occurrence is contradictory: {path}")
+        expected_snapshot_relative = _failure_attempt_root(
+            path.parent, occurrence
+        ).relative_to(path.parent).as_posix()
+        if (
+            failure.get("artifact_snapshot_relative_path")
+            != expected_snapshot_relative
+        ):
+            raise RunnerError(
+                f"cell failure artifact snapshot path is contradictory: {path}"
+            )
+        snapshot_root = (path.parent / expected_snapshot_relative).resolve()
+        if not snapshot_root.is_dir():
+            raise RunnerError(
+                f"cell failure artifact snapshot is missing: {snapshot_root}"
+            )
     seen: set[str] = set()
+    seen_sources: set[str] = set()
     for artifact in artifacts:
         if not isinstance(artifact, Mapping):
             raise RunnerError(f"cell failure artifact row is malformed: {path}")
@@ -1187,6 +1327,36 @@ def _authenticated_cell_failure(
         if artifact.get("relative_path") != relative_path or relative_path in seen:
             raise RunnerError(f"cell failure artifact path is contradictory: {path}")
         seen.add(relative_path)
+        if snapshot_root is not None:
+            try:
+                artifact_path.relative_to(snapshot_root)
+            except ValueError as exc:
+                raise RunnerError(
+                    f"cell failure artifact is outside its attempt snapshot: {path}"
+                ) from exc
+            source_relative_path = str(
+                artifact.get("source_relative_path") or ""
+            )
+            source_parts = PurePosixPath(source_relative_path).parts
+            if (
+                not source_relative_path
+                or PurePosixPath(source_relative_path).is_absolute()
+                or ".." in source_parts
+                or ":" in source_relative_path
+                or "\\" in source_relative_path
+                or source_relative_path in seen_sources
+            ):
+                raise RunnerError(
+                    f"cell failure source artifact path is contradictory: {path}"
+                )
+            seen_sources.add(source_relative_path)
+            expected_artifact_path = snapshot_root.joinpath(
+                *source_parts
+            ).resolve()
+            if artifact_path != expected_artifact_path:
+                raise RunnerError(
+                    f"cell failure artifact/source paths disagree: {path}"
+                )
         _verify_hash(artifact_path, str(artifact.get("sha256") or ""), "cell failure artifact")
         if artifact.get("size_bytes") != artifact_path.stat().st_size:
             raise RunnerError(f"cell failure artifact size mismatch: {artifact_path}")
@@ -1194,9 +1364,66 @@ def _authenticated_cell_failure(
         "run_identity_sha256": spec["run_identity_sha256"],
         "error_type": str(failure["error_type"]),
         "error": str(failure["error"]),
-        "failure_path": str(path.resolve()),
+        "failure_path": str(resolved_path),
         "failure_sha256": contract.sha256_file(path),
+        "failure_occurrence": _cell_failure_occurrence(path),
+        "failure_schema_version": schema_version,
         "artifact_count": len(artifacts),
+    }
+
+
+def _execution_failure_reference(
+    output_root: Path,
+    *,
+    plan: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    path = output_root.resolve() / "execution_failure.json"
+    if not path.is_file():
+        return None
+    failure = _load_json(path, f"execution failure {path}")
+    schema_version = str(failure.get("schema_version") or "")
+    if schema_version not in SUPPORTED_EXECUTION_FAILURE_SCHEMAS:
+        raise RunnerError(
+            f"unsupported execution failure schema {schema_version!r}: {path}"
+        )
+    if str(failure.get("work_item_id") or "") != str(plan["work_item_id"]):
+        raise RunnerError(f"execution failure work_item_id mismatch: {path}")
+    run_identity = str(failure.get("run_identity_sha256") or "")
+    spec = next(
+        (
+            row
+            for row in plan["cells"]
+            if str(row["run_identity_sha256"]) == run_identity
+        ),
+        None,
+    )
+    if spec is None:
+        raise RunnerError(f"execution failure names an unknown cell: {path}")
+    sidecar_path = Path(str(failure.get("cell_failure_path") or "")).resolve()
+    cell_dir = _cell_failure_path(spec).parent.resolve()
+    if (
+        sidecar_path.parent != cell_dir
+        or CELL_FAILURE_SIDECAR_RE.fullmatch(sidecar_path.name) is None
+    ):
+        raise RunnerError(f"execution failure sidecar path is contradictory: {path}")
+    occurrence = _cell_failure_occurrence(sidecar_path)
+    if (
+        schema_version == EXECUTION_FAILURE_SCHEMA
+        and failure.get("cell_failure_occurrence") != occurrence
+    ):
+        raise RunnerError(
+            f"execution failure sidecar occurrence is contradictory: {path}"
+        )
+    sidecar_sha256 = str(failure.get("cell_failure_sha256") or "")
+    _verify_hash(sidecar_path, sidecar_sha256, "execution failure sidecar")
+    return {
+        "path": path,
+        "sha256": contract.sha256_file(path),
+        "schema_version": schema_version,
+        "run_identity_sha256": run_identity,
+        "cell_failure_path": sidecar_path,
+        "cell_failure_sha256": sidecar_sha256,
+        "cell_failure_occurrence": occurrence,
     }
 
 
@@ -1302,17 +1529,63 @@ def collect_run_plan_status(
     cells: list[dict[str, Any]] = []
     missing: list[str] = []
     failed: list[dict[str, Any]] = []
-    invalid: list[dict[str, str]] = []
+    invalid_failures: list[dict[str, str]] = []
+    invalid_receipts: list[dict[str, str]] = []
+    collection_root = (output_root or plan_path.parent).resolve()
+    execution_failure_path = collection_root / "execution_failure.json"
+    execution_failure: dict[str, Any] | None = None
+    has_missing_receipt = any(
+        not Path(str(spec["receipt_path"])).is_file()
+        for spec in plan["cells"]
+    )
+    if has_missing_receipt and execution_failure_path.is_file():
+        try:
+            execution_failure = _execution_failure_reference(
+                collection_root, plan=plan
+            )
+        except RunnerError as exc:
+            invalid_failures.append(
+                {
+                    "run_identity_sha256": "",
+                    "error": str(exc),
+                }
+            )
     for spec in plan["cells"]:
         receipt_path = Path(str(spec["receipt_path"]))
         cell_id = str(spec["run_identity_sha256"])
         if not receipt_path.is_file():
             try:
-                failure = _authenticated_cell_failure(
-                    spec, work_item_id=str(plan["work_item_id"])
-                )
+                if execution_failure is not None:
+                    if execution_failure["run_identity_sha256"] != cell_id:
+                        missing.append(cell_id)
+                        continue
+                    failure = _authenticated_cell_failure(
+                        spec,
+                        work_item_id=str(plan["work_item_id"]),
+                        failure_path=execution_failure["cell_failure_path"],
+                        expected_failure_sha256=execution_failure[
+                            "cell_failure_sha256"
+                        ],
+                    )
+                    if failure is None:
+                        raise RunnerError(
+                            "execution failure sidecar disappeared during collection"
+                        )
+                elif execution_failure_path.is_file():
+                    # An invalid authoritative pointer may not be bypassed by
+                    # authenticating an older numbered sidecar.
+                    missing.append(cell_id)
+                    continue
+                else:
+                    # Backward-compatible read path for pre-v2 artifacts that
+                    # did not publish an execution_failure pointer.
+                    failure = _authenticated_cell_failure(
+                        spec, work_item_id=str(plan["work_item_id"])
+                    )
             except RunnerError as exc:
-                invalid.append({"run_identity_sha256": cell_id, "error": str(exc)})
+                invalid_failures.append(
+                    {"run_identity_sha256": cell_id, "error": str(exc)}
+                )
                 continue
             if failure is None:
                 missing.append(cell_id)
@@ -1322,12 +1595,19 @@ def collect_run_plan_status(
         try:
             cells.append(_receipt_to_cell(spec))
         except RunnerError as exc:
-            invalid.append({"run_identity_sha256": cell_id, "error": str(exc)})
+            invalid_receipts.append(
+                {"run_identity_sha256": cell_id, "error": str(exc)}
+            )
+    invalid = invalid_failures + invalid_receipts
     payload = _evidence_payload(input_manifest, cells)
     if invalid:
         adjudication = _nonlocking_adjudication(
             verdict="INVALID_EVIDENCE",
-            reason_code="cell_receipt_invalid",
+            reason_code=(
+                "cell_failure_manifest_invalid"
+                if invalid_failures
+                else "cell_receipt_invalid"
+            ),
             input_manifest=input_manifest,
             details={
                 "planned_cell_count": int(plan["cell_count"]),
@@ -1335,6 +1615,8 @@ def collect_run_plan_status(
                 "failed_cell_count": len(failed),
                 "missing_cell_count": len(missing),
                 "invalid_cells": invalid,
+                "invalid_failure_cells": invalid_failures,
+                "invalid_receipt_cells": invalid_receipts,
             },
         )
     elif failed:
@@ -2375,13 +2657,16 @@ def execute_run_plan(
         _atomic_write(
             failure_path,
             contract.canonical_json_bytes({
-                "schema_version": "q09-news-execution-failure/v1",
+                "schema_version": EXECUTION_FAILURE_SCHEMA,
                 "work_item_id": str(work_item_id),
                 "run_identity_sha256": spec["run_identity_sha256"],
                 "error_type": type(exc).__name__,
                 "error": str(exc),
                 "cell_failure_path": str(cell_failure_path.resolve()),
                 "cell_failure_sha256": contract.sha256_file(cell_failure_path),
+                "cell_failure_occurrence": _cell_failure_occurrence(
+                    cell_failure_path
+                ),
             }),
         )
         result = collect_run_plan_status(

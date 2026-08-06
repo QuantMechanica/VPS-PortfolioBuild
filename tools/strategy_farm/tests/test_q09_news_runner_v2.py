@@ -478,6 +478,120 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             )
         self.assertFalse(first_path.with_name("cell_failure_2.json").exists())
 
+    def test_terminal_failure_pointer_authenticates_distinct_attempt_snapshots(self) -> None:
+        plan = self.build(output="terminal-attempt-snapshots")
+        farm_root, plan_hash = self.setup_bound_farm(
+            plan,
+            activate=True,
+            attempt_count=runner.WORK_ITEM_ATTEMPT_CEILING - 1,
+        )
+        spec = plan["cells"][0]
+        cell_dir = Path(spec["receipt_path"]).parent
+        live_log = cell_dir / "runs" / "selection" / "run_smoke.log"
+        dispatch_count = 0
+
+        def differing_transient_attempts(_spec: dict, _context: dict) -> None:
+            nonlocal dispatch_count
+            dispatch_count += 1
+            live_log.parent.mkdir(parents=True, exist_ok=True)
+            live_log.write_text(
+                f"attempt {dispatch_count} log\n", encoding="utf-8"
+            )
+            raise runner.TransientCellError(
+                f"fixture transient attempt {dispatch_count}"
+            )
+
+        output_root = self.root / "terminal-attempt-snapshots-output"
+        with patch.object(runner, "_wait_for_claimed_terminal_exit"):
+            result = runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=output_root,
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / "common-terminal-attempt-snapshots",
+                dispatch_cell=differing_transient_attempts,
+            )
+
+        self.assertEqual(dispatch_count, 2)
+        self.assertEqual(result["verdict"], "REVIEW_REQUIRED")
+        first_path = cell_dir / "cell_failure.json"
+        second_path = cell_dir / "cell_failure_2.json"
+        first = json.loads(first_path.read_text(encoding="utf-8"))
+        second = json.loads(second_path.read_text(encoding="utf-8"))
+
+        def snapshotted_log(payload: dict) -> Path:
+            artifact = next(
+                row
+                for row in payload["artifacts"]
+                if row["source_relative_path"]
+                == "runs/selection/run_smoke.log"
+            )
+            return Path(artifact["path"])
+
+        first_log = snapshotted_log(first)
+        second_log = snapshotted_log(second)
+        self.assertNotEqual(first_log, second_log)
+        self.assertEqual(first_log.read_text(encoding="utf-8"), "attempt 1 log\n")
+        self.assertEqual(second_log.read_text(encoding="utf-8"), "attempt 2 log\n")
+        self.assertIn("failure_attempts/attempt_0001", first_log.as_posix())
+        self.assertIn("failure_attempts/attempt_0002", second_log.as_posix())
+
+        execution_failure = json.loads(
+            Path(result["execution_failure_path"]).read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            execution_failure["schema_version"], runner.EXECUTION_FAILURE_SCHEMA
+        )
+        self.assertEqual(execution_failure["cell_failure_occurrence"], 2)
+        self.assertEqual(execution_failure["cell_failure_path"], str(second_path))
+        self.assertEqual(
+            result["adjudication"]["details"]["failed_cells"][0]["failure_path"],
+            str(second_path),
+        )
+
+        for sidecar_path in (first_path, second_path):
+            authenticated = runner._authenticated_cell_failure(
+                spec,
+                work_item_id="q09-news-1",
+                failure_path=sidecar_path,
+                expected_failure_sha256=contract.sha256_file(sidecar_path),
+            )
+            self.assertIsNotNone(authenticated)
+
+        # The live log can change again without invalidating either occurrence.
+        live_log.write_text("attempt 3 live mutation\n", encoding="utf-8")
+        recollected = runner.collect_run_plan_status(
+            Path(plan["plan_path"]), output_root=output_root
+        )
+        self.assertEqual(recollected["verdict"], "REVIEW_REQUIRED")
+        self.assertEqual(
+            recollected["adjudication"]["details"]["failed_cells"][0][
+                "failure_path"
+            ],
+            str(second_path),
+        )
+
+        # A terminal snapshot mutation still fails closed, under the accurate
+        # failure-manifest reason rather than the receipt reason.
+        second_log.write_text("tampered snapshot\n", encoding="utf-8")
+        invalid = runner.collect_run_plan_status(
+            Path(plan["plan_path"]), output_root=output_root
+        )
+        self.assertEqual(invalid["verdict"], "INVALID_EVIDENCE")
+        self.assertEqual(
+            invalid["adjudication"]["reason_codes"],
+            ["cell_failure_manifest_invalid"],
+        )
+        self.assertEqual(invalid["invalid_cell_count"], 1)
+
     def test_claimed_terminal_wait_blocks_until_only_that_terminal_exits(self) -> None:
         terminal_root = self.root / "mt5" / "T1"
         terminal_root.mkdir(parents=True)
