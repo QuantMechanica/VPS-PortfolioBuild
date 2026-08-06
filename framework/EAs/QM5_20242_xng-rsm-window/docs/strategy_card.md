@@ -48,9 +48,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
+pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_STARTED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify XNG RSM0.4 only in peer-reviewed natural-gas volatility windows; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
