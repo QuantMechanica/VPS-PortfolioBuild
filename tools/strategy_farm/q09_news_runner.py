@@ -369,9 +369,14 @@ def load_run_plan(path: Path) -> dict[str, Any]:
     return plan
 
 
-def _validate_source_vintage(input_manifest: Mapping[str, Any]) -> None:
+def _validate_source_vintage(
+    input_manifest: Mapping[str, Any],
+    *,
+    source_path_overrides: Mapping[str, Path] | None = None,
+) -> None:
     identities = input_manifest["identities"]
     source_paths = input_manifest["source_paths"]
+    overrides = dict(source_path_overrides or {})
     checks = {
         "q08_evidence": identities["q08_evidence_sha256"],
         "baseline_setfile": identities["baseline_setfile_sha256"],
@@ -379,14 +384,22 @@ def _validate_source_vintage(input_manifest: Mapping[str, Any]) -> None:
         "include_closure": identities["include_closure_sha256"],
         "calendar_manifest": input_manifest["calendar_bundle"]["manifest_sha256"],
     }
+    unknown_overrides = set(overrides) - set(checks)
+    if unknown_overrides:
+        raise RunnerError(
+            "unsupported source-vintage override roles: "
+            + ", ".join(sorted(unknown_overrides))
+        )
     for role, expected in checks.items():
-        _verify_hash(Path(source_paths[role]), expected, role)
+        source_path = Path(overrides.get(role, source_paths[role]))
+        _verify_hash(source_path, expected, role)
 
 
 def load_authenticated_plan(
     plan_path: Path,
     *,
     expected_file_sha256: str | None = None,
+    source_path_overrides: Mapping[str, Path] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Load a plan, its manifest, and every immutable source binding.
 
@@ -412,7 +425,10 @@ def load_authenticated_plan(
             raise RunnerError("Q09 plan/input-manifest work_item_id mismatch")
         if input_manifest.get("candidate_lineage_key") != plan.get("candidate_lineage_key"):
             raise RunnerError("Q09 plan/input-manifest candidate lineage mismatch")
-        _validate_source_vintage(input_manifest)
+        _validate_source_vintage(
+            input_manifest,
+            source_path_overrides=source_path_overrides,
+        )
     except (KeyError, TypeError, ValueError) as exc:
         raise RunnerError(f"Q09 plan/input manifest is malformed: {exc}") from exc
 
@@ -854,6 +870,20 @@ def bind_diagnostic_plan_to_work_item(
             if fresh_build
             else "Q09 exact deployed live EX5"
         )
+        if sealed_identity_rerun:
+            # A later canonical rebuild may move the anchor's mutable EX5 path
+            # to a new vintage. The successor plan may instead bind an
+            # immutable recovered copy, but never a different hash.
+            staged_path = Path(str(
+                (manifest.get("source_paths") or {}).get("ex5", "")
+            )).resolve()
+            payload_staged_path = Path(str(payload.get("staged_ex5_path") or "")).resolve()
+            payload_staged_hash = str(payload.get("staged_ex5_sha256") or "").lower()
+            if payload_staged_path != staged_path or payload_staged_hash != staged_hash:
+                raise RunnerError(
+                    "Q09 sealed-identity rerun EX5 payload differs from plan/anchor"
+                )
+            staged_role = "Q09 exact immutable generation EX5"
         _verify_hash(staged_path, staged_hash, staged_role)
         if staged_hash != identities.get("ex5_sha256"):
             raise RunnerError("Q09 diagnostic staged EX5 differs from sealed plan")

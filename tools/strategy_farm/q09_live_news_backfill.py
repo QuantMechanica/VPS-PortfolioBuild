@@ -633,9 +633,7 @@ def _transient_generation_failure_proof(
     """Authenticate a terminal pre-fix transient/no-receipt diagnostic stop."""
 
     if (
-        predecessor["status"] != "done"
-        or predecessor["verdict"] != "REVIEW_REQUIRED"
-        or payload.get("diagnostic_non_admission") is not True
+        payload.get("diagnostic_non_admission") is not True
         or payload.get("diagnostic_campaign_id") != CAMPAIGN_ID
         or int(payload.get("diagnostic_generation") or 0) < FRESH_BUILD_GENERATION
     ):
@@ -645,6 +643,41 @@ def _transient_generation_failure_proof(
     evidence_path = Path(str(predecessor["evidence_path"] or ""))
     if not evidence_path.is_file():
         raise BackfillError("generation rerun predecessor summary is missing")
+
+    if predecessor["status"] == "failed" and predecessor["verdict"] == "INFRA_FAIL":
+        preflight = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+        payload_failure = payload.get("preflight_failure") or {}
+        detail = str(preflight.get("detail") or "")
+        match = re.fullmatch(r"staged_ex5_source_sha256_mismatch:([0-9a-f]{64})", detail)
+        if (
+            preflight.get("verdict") != "INFRA_FAIL"
+            or preflight.get("reason") != "staged_ex5_preflight_failed"
+            or preflight.get("phase") != "Q09_NEWS"
+            or str(preflight.get("ea_id") or "") != str(predecessor["ea_id"])
+            or str(preflight.get("symbol") or "") != str(predecessor["symbol"])
+            or payload_failure.get("reason") != preflight.get("reason")
+            or payload_failure.get("detail") != detail
+            or match is None
+        ):
+            raise BackfillError(
+                "generation rerun INFRA_FAIL lacks authenticated EX5-drift preflight evidence"
+            )
+        return [{
+            "path": str(evidence_path.resolve()),
+            "sha256": sha256_file(evidence_path),
+            "error_type": "PreflightFailure",
+            "error": detail,
+            "run_identity_sha256": "",
+            "proof_kind": "mutable_staged_ex5_source_drift",
+        }]
+
+    if (
+        predecessor["status"] != "done"
+        or predecessor["verdict"] != "REVIEW_REQUIRED"
+    ):
+        raise BackfillError(
+            "generation rerun predecessor is not a supported terminal diagnostic"
+        )
     summary = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
     if (
         summary.get("schema_version") != "q09-live-news-diagnostic-summary/v1"
@@ -801,6 +834,46 @@ def _cell_identity_tuple(cell: dict[str, Any]) -> tuple[Any, ...]:
     ))
 
 
+def _generation_ex5_vintage(
+    payload: dict[str, Any],
+) -> tuple[Path, dict[str, Any] | None]:
+    """Resolve the exact EX5 vintage without rewriting a mutable build path.
+
+    Generation reruns preserve the predecessor's cell identities, including its
+    EX5 hash.  A later canonical rebuild may legitimately move the mutable source
+    path to a new hash.  In that case only an already-recorded staging destination
+    from the predecessor payload may recover the sealed vintage, and it must hash
+    exactly to the predecessor binding.
+    """
+
+    expected = str(payload.get("staged_ex5_sha256") or "").strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", expected):
+        raise BackfillError("generation rerun predecessor EX5 hash is invalid")
+    primary = Path(str(payload.get("staged_ex5_path") or "")).resolve()
+    if primary.is_file() and sha256_file(primary) == expected:
+        return primary, None
+
+    staged = payload.get("staged_ex5")
+    candidate_raw = staged.get("destination_path") if isinstance(staged, dict) else None
+    if not candidate_raw:
+        raise BackfillError(
+            "generation rerun predecessor EX5 source drifted and has no recorded vintage"
+        )
+    candidate = Path(str(candidate_raw)).resolve()
+    if not candidate.is_file() or sha256_file(candidate) != expected:
+        raise BackfillError(
+            "generation rerun recorded EX5 vintage is missing or hash-mismatched"
+        )
+    observed = sha256_file(primary) if primary.is_file() else None
+    return candidate, {
+        "reason": "mutable_source_path_drift",
+        "original_path": str(primary),
+        "original_observed_sha256": observed,
+        "recovered_from": str(candidate),
+        "required_sha256": expected,
+    }
+
+
 def enqueue_transient_generation_rerun(
     *,
     task_id: str,
@@ -824,9 +897,17 @@ def enqueue_transient_generation_rerun(
         )
     plan_path = Path(str(payload.get("q09_run_plan_path") or "")).resolve()
     expected_plan_hash = str(payload.get("q09_run_plan_file_sha256") or "").lower()
+    source_ex5_path, source_vintage_recovery = _generation_ex5_vintage(payload)
     plan, input_manifest = q09.load_authenticated_plan(
-        plan_path, expected_file_sha256=expected_plan_hash
+        plan_path,
+        expected_file_sha256=expected_plan_hash,
+        source_path_overrides={"ex5": source_ex5_path},
     )
+    if (
+        str(input_manifest["identities"]["ex5_sha256"]).lower()
+        != str(payload["staged_ex5_sha256"]).lower()
+    ):
+        raise BackfillError("generation rerun EX5 payload/manifest hash mismatch")
     failures = _transient_generation_failure_proof(
         predecessor, payload, plan
     )
@@ -853,6 +934,17 @@ def enqueue_transient_generation_rerun(
             "receipt_path": str(receipt_path.resolve()),
             "receipt_sha256": sha256_file(receipt_path),
             "idempotent": True,
+        }
+
+    pinned_ex5_path = source_ex5_path
+    if source_vintage_recovery is not None:
+        pinned_ex5_path = rerun_root / "source_vintage" / source_ex5_path.name
+        write_immutable(pinned_ex5_path, source_ex5_path.read_bytes())
+        if sha256_file(pinned_ex5_path) != str(payload["staged_ex5_sha256"]).lower():
+            raise BackfillError("immutable recovered EX5 vintage hash mismatch")
+        source_vintage_recovery = {
+            **source_vintage_recovery,
+            "immutable_path": str(pinned_ex5_path.resolve()),
         }
 
     source_anchor_path = Path(str(payload.get("diagnostic_anchor_path") or "")).resolve()
@@ -889,7 +981,7 @@ def enqueue_transient_generation_rerun(
         # work-item payload; rewriting the anchor would define a new matrix.
         q08_evidence_path=source_anchor_path,
         baseline_setfile_path=Path(str(sources["baseline_setfile"])),
-        ex5_path=Path(str(sources["ex5"])),
+        ex5_path=pinned_ex5_path,
         include_closure_path=Path(str(sources["include_closure"])),
         calendar_manifest_path=Path(str(sources["calendar_manifest"])),
         calendar_common_relative_path=str(
@@ -935,7 +1027,7 @@ def enqueue_transient_generation_rerun(
         "host_timeframe": str(payload["host_timeframe"]),
         "risk_fixed": 1000.0,
         "risk_percent": 0.0,
-        "staged_ex5_path": str(Path(str(payload["staged_ex5_path"])).resolve()),
+        "staged_ex5_path": str(pinned_ex5_path.resolve()),
         "staged_ex5_sha256": str(payload["staged_ex5_sha256"]),
         "fresh_build_source_path": payload.get("fresh_build_source_path"),
         "fresh_build_source_sha256": payload.get("fresh_build_source_sha256"),
@@ -950,6 +1042,7 @@ def enqueue_transient_generation_rerun(
         "sealed_identity_anchor_work_item_id": sealed_anchor_work_item_id,
         "sealed_identity_anchor_sha256": sha256_file(source_anchor_path),
         "transient_predecessor_failures": failures,
+        "source_vintage_recovery": source_vintage_recovery,
         # Prevent a claim between the binder commit and retry steering update.
         "launch_not_before_utc": launch_hold,
     }
@@ -1042,6 +1135,7 @@ def enqueue_transient_generation_rerun(
         "anchor_sha256": sha256_file(source_anchor_path),
         "sealed_identity_anchor_work_item_id": sealed_anchor_work_item_id,
         "transient_predecessor_failures": failures,
+        "source_vintage_recovery": source_vintage_recovery,
         "binding": bound,
         "enqueued_at_utc": now_iso,
     }

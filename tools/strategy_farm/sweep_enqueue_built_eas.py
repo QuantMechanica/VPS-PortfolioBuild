@@ -469,6 +469,7 @@ for phase in ("Q02", "Q03", "Q08"):
         SELECT x.ea_id, x.symbol, x.setfile_path, MAX(x.updated_at), COUNT(*)
         FROM work_items x
         WHERE x.phase=?
+          AND x.status IN ('done','failed')
           AND x.verdict='INFRA_FAIL'
           {target_filter}
           AND NOT EXISTS (
@@ -494,7 +495,77 @@ for phase in ("Q02", "Q03", "Q08"):
     for ea_id, symbol, setfile, _ts, infra_attempts in stranded_rows:
         if part2_count >= MAX_PART2_PER_RUN:
             break
-        reason = farmctl._q02_symbol_skip_reason(symbol, allow_logical_basket=True)
+        source = cur.execute(
+            """
+            SELECT id,status,payload_json,updated_at
+            FROM work_items
+            WHERE ea_id=? AND phase=? AND symbol=?
+              AND ifnull(setfile_path, '')=ifnull(?, '')
+              AND status IN ('done','failed') AND verdict='INFRA_FAIL'
+            ORDER BY updated_at DESC,id DESC
+            LIMIT 1
+            """,
+            (ea_id, phase, symbol, setfile),
+        ).fetchone()
+        if source is None:
+            report["part2_stranded"]["skipped"].append(
+                {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                 "reason": "terminal_infra_source_missing"})
+            continue
+        try:
+            source_payload = json.loads(source["payload_json"] or "{}")
+        except (TypeError, json.JSONDecodeError):
+            report["part2_stranded"]["skipped"].append(
+                {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                 "reason": "terminal_infra_source_payload_invalid",
+                 "source_work_item_id": source["id"]})
+            continue
+
+        basket_payload = None
+        is_logical_basket = (
+            phase == "Q02"
+            and source_payload.get("portfolio_scope") == "basket"
+        )
+        if is_logical_basket:
+            manifest_path = Path(str(source_payload.get("basket_manifest") or ""))
+            try:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+            except (OSError, json.JSONDecodeError):
+                report["part2_stranded"]["skipped"].append(
+                    {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                     "reason": "basket_manifest_missing_or_invalid",
+                     "source_work_item_id": source["id"]})
+                continue
+            if not isinstance(manifest, dict):
+                report["part2_stranded"]["skipped"].append(
+                    {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                     "reason": "basket_manifest_not_object",
+                     "source_work_item_id": source["id"]})
+                continue
+            required = ("logical_symbol", "host_symbol", "host_timeframe")
+            if (
+                any(not str(manifest.get(key) or "").strip() for key in required)
+                or str(manifest["logical_symbol"]) != symbol
+            ):
+                report["part2_stranded"]["skipped"].append(
+                    {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                     "reason": "basket_manifest_contract_mismatch",
+                     "source_work_item_id": source["id"]})
+                continue
+            host_reason = farmctl._q02_symbol_skip_reason(str(manifest["host_symbol"]))
+            if host_reason:
+                report["part2_stranded"]["skipped"].append(
+                    {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                     "reason": host_reason, "host_symbol": manifest["host_symbol"],
+                     "source_work_item_id": source["id"]})
+                continue
+            manifest["manifest_path"] = str(manifest_path.resolve())
+            basket_payload = farmctl._basket_q02_payload(manifest)
+
+        reason = farmctl._q02_symbol_skip_reason(
+            symbol,
+            allow_logical_basket=is_logical_basket,
+        )
         if reason:
             report["part2_stranded"]["skipped"].append(
                 {"ea_id": ea_id, "phase": phase, "symbol": symbol,
@@ -544,7 +615,17 @@ for phase in ("Q02", "Q03", "Q08"):
             continue
         payload = {"host_symbol": symbol,
                    "enqueued_by": "claude_sweep_enqueue_2026-06-10.stranded_infra_fail",
-                   "enqueued_at_utc": NOW}
+                   "enqueued_at_utc": NOW,
+                   "requeue_source": {
+                       "work_item_id": source["id"],
+                       "status": source["status"],
+                       "verdict": "INFRA_FAIL",
+                       "updated_at": source["updated_at"],
+                   }}
+        if basket_payload is not None:
+            payload.update(basket_payload)
+        if source_payload.get("priority_track") is True:
+            payload["priority_track"] = True
         if phase == "Q08":
             recovery_lineage, lineage_error = build_q08_recovery_lineage(
                 con,
@@ -562,13 +643,24 @@ for phase in ("Q02", "Q03", "Q08"):
                 continue
             if recovery_lineage is not None:
                 payload["q08_recovery_lineage"] = recovery_lineage
-        new_work_item_id = insert_wi(phase, ea_id, symbol, setfile, payload)
+        new_work_item_id = insert_wi(
+            phase,
+            ea_id,
+            symbol,
+            setfile,
+            payload,
+            allow_logical_basket=is_logical_basket,
+        )
         if not new_work_item_id:
             continue
         report["part2_stranded"]["enqueued"].append(
             {"ea_id": ea_id, "phase": phase, "symbol": symbol,
              "setfile": Path(setfile).name,
-             "work_item_id": new_work_item_id})
+             "work_item_id": new_work_item_id,
+             "source_work_item_id": source["id"],
+             "source_status": source["status"],
+             "logical_basket": is_logical_basket,
+             "reason": "stranded_infra_fail"})
         part2_count += 1
         if part2_count >= MAX_PART2_PER_RUN:
             report["part2_stranded"]["rate_limited"] = True

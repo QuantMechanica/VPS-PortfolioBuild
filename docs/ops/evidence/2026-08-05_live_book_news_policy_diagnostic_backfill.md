@@ -780,3 +780,106 @@ checks, and both Q09 diagnostic/runner suites: 37 tests PASS. No T_Live or
 AutoTrading setting was changed, no terminal was started manually, and no
 active test was interrupted. The rows remain pending evidence work; no Q09
 or pipeline verdict is inferred.
+
+## 2026-08-06 ~08:40 — Gate-walk verdict: QM5_12567/XNGUSD diagnostic A/B COMPLETE (first top-weight sleeve result)
+
+Generation-4 row `8b8a7819` completed 40/40 cells (7×1 target-compliance DXZ
+scope, 5 seeds) after the min-trade-floor fix; adjudicator verdict
+`REVIEW_REQUIRED` with `expanded_7x4_matrix_required` (`material_effect:
+delta_profit_factor`). Claude gate-walk over all generation evidence
+(`refresh_v2/3f409823`, `refresh_v3/341299de`, `refresh_v4/8b8a7819` —
+overlapping arms byte-identical across generations, deterministic-identity
+consistency confirmed):
+
+| Arm (full window, mean of 5 seeds) | net_r | PF | trades | DD % |
+|---|---|---|---|---|
+| CONTROL OFF/NONE | 2.827 | 1.78 | 45 | 1.35 |
+| POLICY OFF/DXZ | 2.827 | 1.78 | 45 | 1.35 |
+| POLICY PRE30/DXZ | 2.827 | 1.78 | 45 | 1.35 |
+| POLICY PRE60/DXZ | 2.848 | 1.80 | 44 | 1.45 |
+| POLICY PRE30_POST30/DXZ (≈ live compile-default) | 2.890 | 1.82 | 44 | 1.24 |
+| POLICY PRE60_POST60/DXZ | 2.911 | 1.84 | 43 | 1.34 |
+| POLICY SKIP_DAY/DXZ | 2.818 | 2.19 | 28 | 1.52 |
+| POLICY CLOSE_ALL_PRE/DXZ | 2.827 | 1.78 | 45 | 1.35 |
+
+**Diagnostic verdict (non-admission, ceremony input):** the legacy/live news
+filter is **harmless on XNGUSD** — the hidden-tax hypothesis is refuted for
+this sleeve. Temporal pre/post windows barely bind (blocked_entries = 0 in
+every arm; daily-bar entries rarely coincide with event windows); the live
+compile-default PRE30_POST30/DXZ is marginally *better* than control
+(+0.06 net_r, +0.04 PF). SKIP_DAY is an efficiency curiosity — same net_r
+with 17 fewer trades (PF 2.19) — but is **not** recommended: equal net with
+lower frequency adds no economic value and cuts compounding capacity.
+**Recommendation for the pinning ceremony: pin the current effective policy
+(PRE30_POST30/DXZ) or OFF — indifferent within noise; no policy change
+required for XNG.** The `expanded_7x4_matrix_required` demand is
+knowingly waived for this diagnostic non-admission row (it binds only a
+future admission-grade Q09 run). Contrast: QM5_11422/USDCAD, where every
+blocking variant materially hurt.
+
+## 2026-08-06 ~09:20 — Transient-victim triage after the host crash (work package)
+
+Two further diagnostic rows that surfaced as forced `REVIEW_REQUIRED` are
+**transient victims, not measurements** (underlying aggregates
+`INVALID_EVIDENCE/cell_receipt_invalid`):
+
+- **QM5_11421/EURUSD** (`13860911`, T5): zero cell evidence; first cell
+  accumulated six `TransientCellError` sidecars ("run_smoke exited with code 1
+  without a fresh run_smoke summary or cell receipt") 02:18Z–05:51Z, spanning
+  the post-crash cold-cache window. Generation rerun dispatched: codex ticket
+  `a1f0a936`, avoid T5.
+- **QM5_10440/NDX** (`8f2a0a29`, T3): 39/40 cells missing, adjudicated 02:58Z
+  mid-recovery. Generation rerun dispatched: codex ticket `9887ebeb` (A),
+  avoid T3.
+- **QM5_10939/GBPUSD** (`debf9533`, T4): INFRA_FAIL 03:17Z. Generation rerun
+  in ticket `9887ebeb` (B), avoid T4.
+
+Staged crash-recovery requeues executed directly: Q07 QM5_11205/XAUUSD rerun
+`5b619e63` (predecessor Q06 PASS 67b69d37) and Q06 QM5_12918/USDCAD rerun
+`447968f2` (predecessor Q05 PASS 1d207268), both EX5-sha-bound. Basket motors
+20233/20234/20235 need a sweep part2 coverage extension (ticket `9887ebeb` C).
+The QM5_12552 duplicate_ex5 wave (twin-EX5 relic removed, commit `c442d853f`)
+is passing: 6/11 Q02 PASS at the time of writing, zero failures post-fix.
+
+## 2026-08-06 08:34 CEST - crash-recovery wave 2 execution
+
+Router task `9887ebeb-af11-42f3-a306-97a441c134e3` appended two generation-3
+diagnostic successors. Both are non-admission rows, retain the predecessor's
+sealed anchor, bind `RISK_FIXED=1000` and `RISK_PERCENT=0`, have zero canonical
+`q09_news_tests` rows, and were independently audited as 40/40 ordered-equal
+across run identity, setfile hash, arm, compliance, temporal mode, seed, and
+paired-base identity.
+
+| Sleeve | Predecessor / avoided terminal | Successor | Anchor SHA-256 | Receipt SHA-256 | State at audit |
+|---|---|---|---|---|---|
+| QM5_10440/NDX | `8f2a0a29-f8fd-57ad-a180-2b732a418eb9` / T3 | `2b792348-db4a-500f-a221-c26595ca3c83` | `9c7dd618747803b61accd65ff1096021505f106e93abe2356a81c4117cb0cd6a` | `5dc854325da0a9341cf90ec21d1b12b0cdfbaafee8dd4eb83a9e633b941496dd` | pending, unclaimed, `RUNNABLE_BOUND` |
+| QM5_10939/GBPUSD | `debf9533-f319-5b05-8c89-9747bba7e6bc` / T4 | `2b74dd61-a521-53e9-8d31-1a4deb209338` | `8dd63fcc7902b1c0cf3f4abbac6fb0bbaabfee9f9472a6dfbee9aa76ec9ff7ca` | `949406acbf4ceffdf886c723188b7ce59160d083bee131270b67dd5a6023fd01` | pending, unclaimed, `RUNNABLE_BOUND` |
+
+The QM5_10939 command first failed closed because its predecessor pinned EX5
+SHA-256 `486b1690...`, while the mutable canonical binary had since moved to
+`812fc52a...`. The predecessor's own preflight evidence records that mismatch,
+and its recorded T3 staging destination still contained exactly `486b1690...`.
+The rerun tool now accepts this narrow terminal `failed/INFRA_FAIL` class only
+when the preflight receipt is internally consistent, the recorded vintage
+matches the sealed manifest hash, and an immutable successor copy is written.
+The current canonical binary was not overwritten. The successor copy is under
+`refresh_v3/2b74dd61.../source_vintage/` and is hash-bound in the new plan.
+
+Sweep part 2 was extended to retry terminal (`done` or `failed`) INFRA_FAIL Q02
+rows for validated logical baskets. It now validates the manifest and physical
+`.DWX` host, carries the basket contract, records the exact source row, and
+retains the existing per-run cap. A targeted dry run found exactly three rows;
+the apply run used `--max-part2-per-run 3`, enqueued exactly three, skipped zero,
+and set `rate_limited=true` in
+`D:/QM/reports/state/claude_sweep_enqueue_2026-06-10.json` (SHA-256
+`27355d25002cc9fd7b590a4fb26ff0525b26dda402d6ad298f471d1c9f0da0eb`).
+
+| EA | Source INFRA_FAIL row | Successor Q02 row | State at audit |
+|---|---|---|---|
+| QM5_20233 | `51eb0d13-b80f-4bb1-a07d-1765c4c228d1` | `681cb88b-3c7e-46b5-9043-e162426d719f` | pending, unclaimed |
+| QM5_20234 | `29a9765e-7fb9-4b06-8740-15e5eab1f32b` | `ed115d61-4339-48b4-9a74-26f7e63aec3d` | pending, unclaimed |
+| QM5_20235 | `65eee7b4-b206-48ac-ac6c-4a8ba4a8bd17` | `227c76b0-9b6b-4176-8367-051020a2db17` | pending, unclaimed |
+
+All three basket setfiles independently read `RISK_FIXED=1000` and
+`RISK_PERCENT=0`. No raw database update, terminal interruption, T_Live write,
+AutoTrading change, pipeline verdict, or admission claim was made.

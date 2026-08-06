@@ -174,6 +174,124 @@ def test_never_tested_sweep_prioritizes_every_first_q02_row(
     assert all(payload["priority_track"] is True for payload in payloads)
 
 
+def test_part2_requeues_terminal_failed_logical_basket_with_auditable_source(
+    tmp_path: Path,
+) -> None:
+    farm_root = tmp_path / "farm"
+    repo_root = tmp_path / "repo"
+    report_root = tmp_path / "reports"
+    ea_id = "QM5_9003"
+    ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_basket"
+    sets_dir = ea_dir / "sets"
+    registry = repo_root / "framework" / "registry" / "ea_id_registry.csv"
+    sets_dir.mkdir(parents=True)
+    registry.parent.mkdir(parents=True)
+    report_root.joinpath("state").mkdir(parents=True)
+
+    logical_symbol = "QM5_9003_XAU_XAG_FIXTURE_D1"
+    manifest = {
+        "logical_symbol": logical_symbol,
+        "host_symbol": "XAUUSD.DWX",
+        "host_timeframe": "D1",
+        "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+        "tester_currency": "USD",
+        "tester_deposit": 100000,
+    }
+    manifest_path = ea_dir / "basket_manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    setfile = sets_dir / f"{ea_dir.name}_{logical_symbol}_D1_backtest.set"
+    setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+    with registry.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["ea_id", "slug", "status"])
+        writer.writeheader()
+        writer.writerow({"ea_id": "9003", "slug": "basket", "status": "active"})
+
+    farmctl.init_db(farm_root)
+    source_id = "terminal-failed-basket"
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        conn.execute(
+            """
+            INSERT INTO work_items(
+                id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                attempt_count,payload_json,created_at,updated_at
+            ) VALUES(?, 'backtest', 'Q02', ?, ?, ?, 'failed', 'INFRA_FAIL',
+                     0, ?, '2026-08-06T00:00:00+00:00',
+                     '2026-08-06T01:00:00+00:00')
+            """,
+            (
+                source_id,
+                ea_id,
+                logical_symbol,
+                str(setfile.resolve()),
+                json.dumps({
+                    "basket_manifest": str(manifest_path.resolve()),
+                    "portfolio_scope": "basket",
+                    "priority_track": True,
+                }),
+            ),
+        )
+        conn.commit()
+
+    env = os.environ.copy()
+    env.update({
+        "QM_STRATEGY_FARM_ROOT": str(farm_root),
+        "QM_CANONICAL_REPO_ROOT": str(repo_root),
+        "QM_REPORT_ROOT": str(report_root),
+    })
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(SWEEP),
+            "--apply",
+            "--ea",
+            ea_id,
+            "--max-part2-per-run",
+            "1",
+        ],
+        cwd=REPO,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            "SELECT * FROM work_items WHERE ea_id=? AND status='pending'",
+            (ea_id,),
+        ).fetchone()
+    assert row is not None
+    payload = json.loads(row["payload_json"])
+    assert payload["logical_symbol"] == logical_symbol
+    assert payload["host_symbol"] == "XAUUSD.DWX"
+    assert payload["portfolio_scope"] == "basket"
+    assert payload["priority_track"] is True
+    assert payload["requeue_source"] == {
+        "work_item_id": source_id,
+        "status": "failed",
+        "verdict": "INFRA_FAIL",
+        "updated_at": "2026-08-06T01:00:00+00:00",
+    }
+    report = json.loads(
+        (report_root / "state" / "claude_sweep_enqueue_2026-06-10.json")
+        .read_text(encoding="utf-8")
+    )
+    assert report["part2_stranded"]["enqueued"] == [{
+        "ea_id": ea_id,
+        "phase": "Q02",
+        "symbol": logical_symbol,
+        "setfile": setfile.name,
+        "work_item_id": row["id"],
+        "source_work_item_id": source_id,
+        "source_status": "failed",
+        "logical_basket": True,
+        "reason": "stranded_infra_fail",
+    }]
+
+
 def test_q08_stranded_retry_carries_hash_pinned_requal_lineage(
     tmp_path: Path,
 ) -> None:

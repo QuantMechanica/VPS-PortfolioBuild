@@ -485,6 +485,7 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
         artifact_root = self.root / "campaign"
         plan_path = Path(self.plan["plan_path"])
         plan_hash = contract.sha256_file(plan_path)
+        sealed_ex5 = self.ex5.read_bytes()
         with (
             mock.patch.object(backfill, "ARTIFACT_ROOT", artifact_root),
             mock.patch.object(backfill, "FARM_ROOT", self.farm),
@@ -497,25 +498,28 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
                 cell_timeout_sec=60,
             )
 
-            failed_cell_root = Path(self.plan["cells"][0]["receipt_path"]).parent
-            failed_cell_root.mkdir(parents=True, exist_ok=True)
-            (failed_cell_root / "cell_failure.json").write_text(
-                json.dumps({
-                    "error_type": "RunnerError",
-                    "error": "Q09 selection run_smoke exited with code 1",
-                }),
-                encoding="utf-8",
-            )
-            summary_path = self.root / "summary.json"
-            summary_path.write_text(
-                json.dumps({
-                    "schema_version": "q09-live-news-diagnostic-summary/v1",
-                    "diagnostic_non_admission": True,
-                    "diagnostic_contract": runner.DIAGNOSTIC_CONTRACT,
-                    "work_item_id": self.work_item_id,
-                }),
-                encoding="utf-8",
-            )
+            # A canonical rebuild after the predecessor was sealed must not
+            # erase the exact generation vintage. Recover only from the
+            # predecessor-recorded staging path and copy it into the successor's
+            # immutable artifact root.
+            staged_vintage = self.root / "T3" / "MQL5" / "Experts" / "QM" / self.ex5.name
+            staged_vintage.parent.mkdir(parents=True)
+            staged_vintage.write_bytes(sealed_ex5)
+            self.ex5.write_bytes(b"later canonical rebuild\n")
+
+            observed_hash = contract.sha256_file(self.ex5)
+            preflight_path = self.root / "preflight_failure.json"
+            preflight = {
+                "created_at": "2026-08-06T03:17:45+00:00",
+                "detail": f"staged_ex5_source_sha256_mismatch:{observed_hash}",
+                "ea_id": "QM5_9999",
+                "phase": "Q09_NEWS",
+                "reason": "staged_ex5_preflight_failed",
+                "setfile_path": str(self.setfile.resolve()),
+                "symbol": "EURUSD.DWX",
+                "verdict": "INFRA_FAIL",
+            }
+            preflight_path.write_text(json.dumps(preflight), encoding="utf-8")
             with farmctl.connect(self.farm) as connection:
                 row = connection.execute(
                     "SELECT payload_json FROM work_items WHERE id=?",
@@ -533,11 +537,18 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
                     "host_timeframe": "H1",
                     "terminal": "T4",
                     "protected_chain_exclusion": ["round7", "Q09_PORTFOLIO", "Q10"],
+                    "staged_ex5": {
+                        "destination_path": str(staged_vintage.resolve()),
+                    },
+                    "preflight_failure": {
+                        "reason": preflight["reason"],
+                        "detail": preflight["detail"],
+                    },
                 })
                 connection.execute(
-                    "UPDATE work_items SET status='done',verdict='REVIEW_REQUIRED',"
+                    "UPDATE work_items SET status='failed',verdict='INFRA_FAIL',"
                     "evidence_path=?,payload_json=? WHERE id=?",
-                    (str(summary_path), json.dumps(payload, sort_keys=True), self.work_item_id),
+                    (str(preflight_path), json.dumps(payload, sort_keys=True), self.work_item_id),
                 )
                 connection.commit()
 
@@ -584,6 +595,21 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
         self.assertEqual(rerun["parent_task_id"], self.work_item_id)
         self.assertEqual(rerun_payload["diagnostic_generation"], 3)
         self.assertTrue(rerun_payload["sealed_identity_rerun"])
+        recovered = rerun_payload["source_vintage_recovery"]
+        self.assertEqual(recovered["reason"], "mutable_source_path_drift")
+        self.assertEqual(Path(recovered["recovered_from"]), staged_vintage.resolve())
+        self.assertEqual(
+            contract.sha256_file(Path(recovered["immutable_path"])),
+            contract.sha256_file(staged_vintage),
+        )
+        self.assertEqual(
+            Path(rerun_payload["staged_ex5_path"]),
+            Path(recovered["immutable_path"]),
+        )
+        self.assertEqual(
+            rerun_payload["transient_predecessor_failures"][0]["proof_kind"],
+            "mutable_staged_ex5_source_drift",
+        )
         self.assertEqual(
             Path(rerun_payload["diagnostic_anchor_path"]), self.anchor.resolve()
         )
