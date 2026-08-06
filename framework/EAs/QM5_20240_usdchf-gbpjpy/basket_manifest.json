@@ -1,0 +1,20 @@
+{
+  "logical_symbol": "QM5_20240_USDCHF_GBPJPY_COINTEGRATION_D1",
+  "host_symbol": "USDCHF.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "USDCHF.DWX",
+    "GBPJPY.DWX",
+    "USDJPY.DWX"
+  ],
+  "traded_symbols": [
+    "USDCHF.DWX",
+    "GBPJPY.DWX"
+  ],
+  "notes": [
+    "Dedicated fixed-beta USDCHF/GBPJPY D1 cointegration sleeve selected as rank 59 in the frozen sign-aware 66-pair scan. USDJPY.DWX is conversion-history-only and receives no order or magic slot.",
+    "DEV Sharpe -0.079, OOS Sharpe -0.430, fixed beta -0.070133022445, and 95.663-D1-bar half-life are adverse frontier evidence. Q02 is a one-shot retirement gate with no refit; the USD 100000 tester uses canonical RISK_FIXED=1000."
+  ]
+}
