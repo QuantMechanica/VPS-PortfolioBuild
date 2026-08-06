@@ -1,6 +1,6 @@
 ---
 strategy_id: AI-CODEX-FX-COINT66-20260609-USDCHF-AUDJPY
-ea_id: TBD
+ea_id: 20250
 slug: usdchf-audjpy
 type: strategy
 status: APPROVED
@@ -24,7 +24,7 @@ markets: [forex]
 timeframes: [D1]
 primary_target_symbols: [USDCHF.DWX, AUDJPY.DWX]
 target_symbols: [USDCHF.DWX, AUDJPY.DWX]
-logical_symbol: QM5_TBD_USDCHF_AUDJPY_COINTEGRATION_D1
+logical_symbol: QM5_20250_USDCHF_AUDJPY_COINTEGRATION_D1
 period: D1
 expected_trade_frequency: "Approximately 4 completed two-leg packages per year per traded symbol, inferred from 15 OOS basket state changes across 2023-2024; Q02 must retire the sleeve if realized frequency is below the binding floor."
 expected_trades_per_year_per_symbol: 4
@@ -114,7 +114,7 @@ markets: [forex]
 timeframes: [D1]
 primary_target_symbols: [USDCHF.DWX, AUDJPY.DWX]
 host_symbol: USDCHF.DWX
-logical_symbol: QM5_TBD_USDCHF_AUDJPY_COINTEGRATION_D1
+logical_symbol: QM5_20250_USDCHF_AUDJPY_COINTEGRATION_D1
 tester_currency: USD
 conversion_only_symbols: [AUDUSD.DWX, USDJPY.DWX]
 ```
