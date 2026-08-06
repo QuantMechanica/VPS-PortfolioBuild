@@ -15544,3 +15544,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20234,xauxag-rsj,1,XAGUSD.DWX,202340001,2026-08-06T00:00:00Z,Codex,active
 20235,xauxag-es-rank,0,XAUUSD.DWX,202350000,2026-08-06T00:30:51Z,Codex,active
 20235,xauxag-es-rank,1,XAGUSD.DWX,202350001,2026-08-06T00:30:51Z,Codex,active
+20236,xauxag-vov-rank,0,XAUUSD.DWX,202360000,2026-08-06T01:25:59Z,Codex,active
+20236,xauxag-vov-rank,1,XAGUSD.DWX,202360001,2026-08-06T01:25:59Z,Codex,active
