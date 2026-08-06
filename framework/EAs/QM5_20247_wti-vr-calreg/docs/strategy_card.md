@@ -62,7 +62,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: PENDING
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a direct WTI physical-season sleeve whose direction is admitted only by a statistically significant monthly serial-dependence state, absent from the certified XAU/SP500/NDX/XNG book. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -316,6 +316,7 @@ manifest; portfolio admission; portfolio-gate edit; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-06 | initial source-bounded WTI memory/calendar card and strict build | Q01 | PASS |
+| v1.1 | 2026-08-06 | paced Q02 handoff | Q01 | READY_NOT_ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -323,4 +324,4 @@ manifest; portfolio admission; portfolio-gate edit; or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_qm5_20247_wti_vr_calreg_g0.md` |
 | Q01 Build Validation | 2026-08-06 | PASS | strict compile `framework/build/compile/20260806_101727/QM5_20247_wti-vr-calreg.compile.log`; build check `D:/QM/reports/framework/21/build_check_20260806_101805.json` |
-| Q02 Baseline Screening | - | PENDING | - |
+| Q02 Baseline Screening | 2026-08-06 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-06_qm5_20247_wti_vr_calreg_q01_cpu_stop.md` |
