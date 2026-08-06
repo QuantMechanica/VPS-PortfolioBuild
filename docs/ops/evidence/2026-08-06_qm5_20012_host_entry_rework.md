@@ -84,3 +84,58 @@ than spending more manual backtest CPU.
 No T_Live file, AutoTrading state, deploy manifest, live manifest, portfolio
 gate, portfolio admission rule, or portfolio KPI was changed. No optimization
 or pipeline backtest was manually dispatched.
+
+## Mandatory Codex acceptance review
+
+The headless orchestration cycle independently reviewed the completed repair
+before returning the router task to REVIEW. It did not self-approve the EA or
+assign a Q02 verdict.
+
+Preflight under `qm-build-ea-from-card` passed:
+
+- approved card: `g0_status: APPROVED`, EA `QM5_20012`, slug `xauxag-cmtar`;
+- active EA registry row: `20012 / xauxag-cmtar`;
+- active magic rows: slot 0 `XAUUSD.DWX / 200120000`, slot 1
+  `XAGUSD.DWX / 200120001`;
+- card, EA folder, EA file, and registry slug align; the compiled EA label is
+  within the framework name bound.
+
+The source review confirmed the repaired execution boundary:
+
+- the source contains exactly one `QM_BasketOpenPosition` call;
+- that call is confined to `Strategy_OpenForeignLeg`, which rejects `_Symbol`,
+  any symbol other than `XAGUSD.DWX`, and any slot other than 1;
+- `Strategy_PreparePair` returns the fully populated XAU slot-0 request and
+  never invokes the host order helper itself;
+- `OnTick` submits the XAU request through the explicit-risk overload of
+  `QM_TM_OpenPosition` and immediately closes the package if the host open,
+  two-leg composition, or hedge check fails;
+- `Strategy_ResolveHostRisk` supports exactly one active risk mode, scales the
+  framework risk value to the joint-sized XAU target, and round-trips the
+  framework lot calculation to within one tenth of a volume step before XAG is
+  sent.
+
+The canonical source and artifacts exactly match the recorded generation-1
+build result: MQ5 `D8A4FFE...0043E`, EX5 `A02C138...CB5D`, SPEC
+`C1BD125...7033`, basket manifest `5A94DE1...FC43C`, and setfile
+`AA2D0BF...35F28`. The retained strict compile is therefore bound to the
+reviewed source and reports 0 errors / 0 warnings; no canonical recompile was
+performed after the governed Q02 handoff.
+
+Fresh focused verification on the reviewed tree:
+
+- build check with `-SkipCompile`: PASS, 0 failures, 0 warnings —
+  `D:/QM/reports/framework/21/build_check_20260806_071925.json`;
+- SPEC validation: PASS;
+- build guardrails: PASS, including `qm_news_stale_max_hours=336`;
+- symbol scope: `BASKET_OK`, 0 violations;
+- host-entry and basket-manifest regression tests: 43 PASS;
+- regression file:
+  `tools/strategy_farm/tests/test_qm5_20012_host_entry_static.py`.
+
+The build recorder already created exactly one open governed handoff,
+`37f826f9-3423-4e8d-94ec-95a2fc8ee43f`, with `RISK_FIXED=1000`,
+`RISK_PERCENT=0`, status `pending`, and no verdict. It was not duplicated or
+manually run. The older Q02 PASS belongs to the pre-review binary and is not a
+verdict for this repaired generation; pipeline authority remains with the new
+row's future evidence.
