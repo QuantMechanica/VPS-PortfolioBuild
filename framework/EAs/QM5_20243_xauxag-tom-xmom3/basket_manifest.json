@@ -1,0 +1,11 @@
+{
+  "logical_symbol": "QM5_20243_XAU_XAG_TOM_XMOM3_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "traded_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "notes": [
+    "One logical opposite-direction XAU/XAG turn-of-month basket. The EA freezes a synchronized three-completed-month average-return rank before the cycle, buys the higher-return metal, shorts the lower, and evaluates combined package PnL and costs at Q02.",
+    "The logical basket must never be decomposed into standalone XAU or XAG gate results. One RISK_FIXED budget is split equally by per-leg ATR stop risk."
+  ]
+}
