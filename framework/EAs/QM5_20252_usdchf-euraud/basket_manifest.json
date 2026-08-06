@@ -1,0 +1,20 @@
+{
+  "logical_symbol": "QM5_20252_USDCHF_EURAUD_COINTEGRATION_D1",
+  "host_symbol": "USDCHF.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "USDCHF.DWX",
+    "EURAUD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "traded_symbols": [
+    "USDCHF.DWX",
+    "EURAUD.DWX"
+  ],
+  "notes": [
+    "Dedicated fixed-beta USDCHF/EURAUD D1 cointegration sleeve selected as rank 63 in the frozen sign-aware 66-pair scan. AUDUSD.DWX is conversion-history-only and receives no order or magic slot.",
+    "DEV Sharpe 0.036, OOS Sharpe -0.512, fixed beta -0.013891609131, and 97.342-D1-bar half-life are adverse frontier evidence. Q02 is a one-shot retirement gate with no refit; the USD 100000 tester uses canonical RISK_FIXED=1000."
+  ]
+}
