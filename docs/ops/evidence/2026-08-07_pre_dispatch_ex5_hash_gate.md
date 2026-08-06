@@ -1,8 +1,8 @@
 # Pre-dispatch EX5 hash gate — verified staging and deploy-skip closure
 
-Date: 2026-08-07 (Europe/Berlin)  
-Router task: `3ffab595-f8c3-4583-b211-4e503e34b071`  
-Parent evidence: `2026-08-06_error32_history_sharing_violation_class.md`, section 6  
+Date: 2026-08-07 (Europe/Berlin)
+Router task: `3ffab595-f8c3-4583-b211-4e503e34b071`
+Parent evidence: `2026-08-06_error32_history_sharing_violation_class.md`, section 6
 Status: IMPLEMENTED AND TESTED / REVIEW REQUIRED / NOT DEPLOYED
 
 ## Scope and result
@@ -161,6 +161,49 @@ broader run: one static Factory_ON text-order assertion in an untouched
 PowerShell file, and one Q09 command-builder fixture whose run plan is `{}` and
 already fails the untouched binding validator. The modified-path suites above
 are complete and passing.
+
+### Continuation verification (2026-08-07 01:20-01:40 Europe/Berlin)
+
+The next scheduled single-pass worker recovered this committed artifact after
+the earlier pass stopped before advancing the router. It confirmed that the
+task lease had expired and no competing task runner remained, then reran:
+
+```text
+python -m py_compile tools/strategy_farm/farmctl.py \
+  tools/strategy_farm/terminal_worker.py \
+  tools/strategy_farm/q09_news_runner.py
+PASS
+
+PowerShell AST parse: framework/scripts/run_smoke.ps1
+PASS
+
+test_terminal_worker_staged_ex5.py
+8 passed
+
+test_q09_news_runner_v2.py::Q09NewsRunnerV2Tests::\
+  test_production_multi_cell_execute_writes_receipts_and_collects
+1 passed
+
+test_q09_live_news_diagnostic.py
+13 passed
+
+test_basket_work_items.py
+15 passed
+
+test_terminal_worker_atomic_claim.py, excluding the documented unrelated
+watchdog fixture
+61 passed, 1 deselected
+
+test_phase_runner_process_lineage.py + test_news_calendar_claim_gate.py,
+excluding the documented unrelated allowlist fixture
+15 passed, 1 deselected
+```
+
+A combined run containing the whole `test_q09_news_runner_v2.py` suite hit the
+180-second command-wrapper limit without reporting a test failure. It is not
+counted as a pass in this continuation check. The only assertion changed by
+this task was rerun directly and passed, while the originally recorded full
+suite result above remains the builder-run result.
 
 Post-change filesystem SHA-256 bindings before commit:
 
