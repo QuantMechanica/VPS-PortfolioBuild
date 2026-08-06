@@ -13,7 +13,10 @@ source_author: "Julia S. Mehlitz; Benjamin R. Auer"
 strategy_mechanic: monthly-wti-six-month-return-sign-times-q7-heteroskedastic-robust-variance-ratio-memory-state
 target_symbols: [XTIUSD.DWX]
 period: D1
-pipeline_phase: Q01
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
+q02_work_item_id: "8d734be9-bd6e-4626-990a-1a75b3e27fa3"
 last_updated: 2026-08-07
 ---
 

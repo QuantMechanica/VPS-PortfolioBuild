@@ -55,9 +55,10 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
+q02_work_item_id: "8d734be9-bd6e-4626-990a-1a75b3e27fa3"
 review_focus: "Falsify the published WTI R6-q7 memory state as direct crude-oil exposure distinct from the certified XAU/SP500/NDX/XNG book; only Q09 may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -304,11 +305,13 @@ portfolio-gate edit; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-07 | initial source-bounded WTI R6-q7 card | G0 | APPROVED |
+| v1-q01 | 2026-08-07 | deterministic V5 build and strict compile | Q01 | PASS |
+| v1-q02 | 2026-08-07 | single paced-fleet baseline handoff | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-07 | APPROVED | `decisions/2026-08-07_qm5_20256_wti_vr6_mom_g0.md` |
-| Q01 Build Validation | 2026-08-07 | NOT_RUN | pending deterministic allocation and build |
-| Q02 Baseline Screening | 2026-08-07 | NOT_ENQUEUED | pending Q01 PASS and paced-fleet capacity |
+| Q01 Build Validation | 2026-08-07 | PASS | `docs/ops/evidence/2026-08-07_qm5_20256_wti_vr6_mom_q01_q02.md` |
+| Q02 Baseline Screening | 2026-08-07 | ENQUEUED; pending, attempt 0 | work item `8d734be9-bd6e-4626-990a-1a75b3e27fa3`; same evidence |
