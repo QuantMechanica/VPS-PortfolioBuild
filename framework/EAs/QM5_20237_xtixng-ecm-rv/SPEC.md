@@ -111,3 +111,4 @@ artifact, external runtime data, banned indicator, or ML is authorized.
 |---|---|---|
 | v1 | 2026-08-06 | Initial approved XTI/XNG error-correction basket build |
 | v1.1 | 2026-08-06 | Strict compile and full V5 build check PASS with zero warnings |
+| v1.2 | 2026-08-06 | One paced logical-basket Q02 work item enqueued pending factory dispatch |

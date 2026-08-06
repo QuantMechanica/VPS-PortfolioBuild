@@ -66,7 +66,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 review_focus: "Falsify a rolling oil-conditioned natural-gas error-correction basket. The state is a trend-augmented XNG-on-XTI log-price residual crossing, not a fixed oil/gas ratio, return shock, breakout, calendar effect, momentum rank, volatility rank, or the incumbent XNG RSI pullback. Only Q09 may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -313,6 +313,7 @@ gate edit, portfolio admission, or correlation waiver is authorized.
 |---|---|---|---|---|
 | v1 | 2026-08-06 | initial approved XTI/XNG rolling error-correction basket | G0 | APPROVED |
 | v1.1 | 2026-08-06 | trend-augmented ECM implementation, strict compile, and build validation | Q01 | PASS |
+| v1.2 | 2026-08-06 | one paced logical-basket baseline item enqueued below the terminal ceiling | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -320,4 +321,4 @@ gate edit, portfolio admission, or correlation waiver is authorized.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_qm5_20237_xtixng_ecm_rv_g0.md` |
 | Q01 Build Validation | 2026-08-06 | PASS | `framework/build/compile/20260806_025118/QM5_20237_xtixng-ecm-rv.compile.log`; `D:/QM/reports/framework/21/build_check_20260806_025118.json` (0 errors, 0 warnings, 0 gate failures) |
-| Q02 Baseline Screening | - | NOT ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-06 | ENQUEUED | work item `2e79b80d-2942-491a-a440-4ab92a7c642f`; `docs/ops/evidence/2026-08-06_qm5_20237_xtixng_ecm_rv_build_q02_enqueue.md` |
