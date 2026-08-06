@@ -62,7 +62,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: NOT_RUN
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify an adaptive WTI same-calendar/return-sign concordance stream whose crude-oil carrier and monthly state differ from the certified XAU/SP500/NDX/XNG book; only Q09 may establish realized portfolio decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -297,5 +297,5 @@ waiver.
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_qm5_20251_wti_cal_rsm_g0.md` |
-| Q01 Compile / Static Validation | - | NOT_RUN | pending build |
+| Q01 Compile / Static Validation | 2026-08-06 | PASS | strict compile: 0 errors, 0 warnings; build check: 0 failures, 0 warnings |
 | Q02 Baseline Screening | - | NOT_ENQUEUED | pending Q01 PASS |
