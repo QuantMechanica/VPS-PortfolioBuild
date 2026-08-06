@@ -92,6 +92,22 @@ Per the mission stop rule, no source/Card mutation, EA-ID or magic allocation,
 compile, queue mutation, dispatch tick, tester launch, terminal-control action,
 AutoTrading action, portfolio-gate action, or live artifact followed.
 
+## 08:02Z paced-fleet continuation audit
+
+A fresh path-aware `farmctl.py mt5-slots` sample at
+`2026-08-06T08:02:45Z` found nine running factory terminals:
+
+```text
+T1, T2, T4, T5, T6, T7, T8, T9, T10
+```
+
+Nine remains above the binding seven-terminal ceiling. The same snapshot
+identified `C:/QM/mt5/T_Live/MT5_Base/terminal64.exe` and the unrelated FTMO
+terminal outside the factory set; neither process was controlled. Rank-60
+USDJPY/EURGBP therefore remains a documented candidate only. This continuation
+made no Card, registry, magic, EA, setfile, queue, dispatch, tester, live, or
+portfolio-gate mutation.
+
 ## Next paced action
 
 After a fresh path-aware sample is below the binding ceiling:
