@@ -108,4 +108,5 @@ change.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-06 | Initial build from approved card | OWNER mission; build validation pending |
+| v1 | 2026-08-06 | Initial build from approved card | Q01 strict build/compile PASS: 0 failures, warnings, errors, or compiler warnings |
+| v1-q02 | 2026-08-06 | Paced baseline handoff | One logical-basket Q02 work item enqueued; no manual test or dispatch |

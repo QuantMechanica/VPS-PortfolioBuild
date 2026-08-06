@@ -68,9 +68,10 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
+q02_work_item_id: "3919c4ce-0843-4ad4-9110-b5a0eb278895"
 review_focus: "Falsify a conditional XAU/XAG ratio-convergence stream that suppresses some outright metal direction and only enters under statistically significant relative-return anti-persistence; Q09 alone may establish realized decorrelation from the certified XAU/SP500/NDX/XNG book."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -337,11 +338,13 @@ portfolio-gate edit; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-06 | initial source-bounded XAU/XAG conditional ratio-fade card | G0 | APPROVED |
+| v1-q01 | 2026-08-06 | deterministic V5 basket build and strict compile | Q01 | PASS |
+| v1-q02 | 2026-08-06 | single paced-fleet baseline handoff | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_qm5_20254_xauxag_vr_fade_g0.md` |
-| Q01 Build Validation | 2026-08-06 | NOT_RUN | pending deterministic allocation and build |
-| Q02 Baseline Screening | 2026-08-06 | NOT_ENQUEUED | pending Q01 PASS and paced-fleet capacity |
+| Q01 Build Validation | 2026-08-06 | PASS | `docs/ops/evidence/2026-08-06_qm5_20254_xauxag_vr_fade_q01_q02.md` |
+| Q02 Baseline Screening | 2026-08-06 | ENQUEUED; pending, attempt 0 | work item `3919c4ce-0843-4ad4-9110-b5a0eb278895`; same evidence |
