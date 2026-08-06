@@ -33,7 +33,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: PENDING
+q02_status: ZERO_TRADES
 review_focus: "Falsify a monthly bidirectional XNG physical-window/memory stream structurally unlike QM5_12567's two-day long-only oscillator."
 ---
 
@@ -179,4 +179,5 @@ waivers.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_qm5_20248_xng_vr_window_g0.md` |
 | Q01 Build Validation | 2026-08-06 | PASS | strict compile `framework/build/compile/20260806_111821/QM5_20248_xng-vr-window.compile.log`; build check `D:/QM/reports/framework/21/build_check_20260806_111926.json` |
-| Q02 Baseline Screening | 2026-08-06 | PENDING | work item `178a7b59-3bb7-49e7-9c28-36b7841be600`; `docs/ops/evidence/2026-08-06_qm5_20248_xng_vr_window_q02_enqueue.md` |
+| Q02 Baseline Screening | 2026-08-06 | `ZERO_TRADES`; valid bound run, not PASS or permanent rejection | `D:/QM/reports/work_items/178a7b59-3bb7-49e7-9c28-36b7841be600/QM5_20248/20260806_112323/summary.json` |
+| Q02 Zero-Trades Recovery | 2026-08-06 | diagnostic build PASS; same-bound replay deferred at CPU ceiling | `docs/ops/evidence/2026-08-06_qm5_20248_zero_trades_recovery.md` |

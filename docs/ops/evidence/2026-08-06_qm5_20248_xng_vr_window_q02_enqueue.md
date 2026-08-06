@@ -4,7 +4,8 @@ Date: 2026-08-06 (Europe/Berlin)
 
 Branch: `agents/board-advisor`
 
-Status: Q01 PASS; exactly one Q02 work item pending
+Status: Q01 PASS; exactly one Q02 work item enqueued; factory result
+`ZERO_TRADES`
 
 ## Outcome
 
@@ -26,7 +27,10 @@ scale-in, live configuration, portfolio-gate change, or T_Live artifact.
 Q01 passed with zero compile errors or warnings and zero build-check failures
 or warnings. The immediate path-anchored capacity samples were below the
 binding seven-terminal ceiling, so the guarded dry-run/apply sequence enqueued
-exactly one priority Q02 row. No manual tester or dispatch command was run.
+exactly one priority Q02 row. No manual tester or dispatch command was run. The
+paced factory subsequently claimed that row and returned a valid zero-trade
+result; the follow-up recovery record is
+`docs/ops/evidence/2026-08-06_qm5_20248_zero_trades_recovery.md`.
 
 ## Source And Non-Duplicate Boundary
 
@@ -86,7 +90,7 @@ momentum `QM5_13116`, and incumbent two-day cumulative-RSI pullback
 - EX5 size: 376,522 bytes.
 - Manual smoke or backtest run: none.
 
-Artifact SHA-256 values after the final build:
+Artifact SHA-256 values bound at the initial Q01/Q02 enqueue:
 
 | Artifact | SHA-256 |
 |---|---|
@@ -111,18 +115,40 @@ namespace were excluded.
   `D:/QM/reports/state/claude_sweep_enqueue_2026-06-10.json`, generated at
   `2026-08-06T11:22:18Z` with target EA `QM5_20248`, target symbol
   `XNGUSD.DWX`, one priority row, and zero skips.
-- Canonical work-item query after apply: exactly one row,
+- Canonical work-item query after apply initially showed exactly one row,
   `178a7b59-3bb7-49e7-9c28-36b7841be600`, phase `Q02`, status `pending`,
   attempt count `0`, unclaimed.
 
 No dispatch tick, worker claim, terminal reservation, or tester launch was
 performed by this work session.
 
+## Post-Enqueue Factory Outcome
+
+The existing paced factory later claimed the queued row on T9 without a manual
+dispatch from this work session.
+
+- Bound result: `ZERO_TRADES` / `MIN_TRADES_NOT_MET`, zero trades against the
+  Q02 floor of 25.
+- Contract: `XNGUSD.DWX` D1, model 4 real ticks, `2018.07.02` through
+  `2022.12.31`, one valid run.
+- Harness/setup: source/deployed EX5 and setfile matched and stayed stable;
+  initialization passed; report size 34,352 bytes.
+- Summary:
+  `D:/QM/reports/work_items/178a7b59-3bb7-49e7-9c28-36b7841be600/QM5_20248/20260806_112323/summary.json`.
+- Recovery classification and diagnostic build:
+  `docs/ops/evidence/2026-08-06_qm5_20248_zero_trades_recovery.md`.
+
+The canonical Q02 verdict is not PASS. A diagnostic replay was not launched
+because the exact T1-T10 factory count subsequently reached the binding `7/7`
+CPU ceiling.
+
 ## Safety Boundary
 
 - No manual backtest, downstream phase, terminal-control action, or live action
-  was run.
-- No terminal was started, stopped, reserved, reaped, or altered.
+  was run. The Q02 execution was an automatic claim by the already-running
+  paced factory.
+- No terminal process was started, stopped, reserved, or reaped by this work
+  session.
 - No live, demo, shadow, optimization, or stress setfile was created.
 - AutoTrading was not toggled.
 - The portfolio gate, T_Live manifest, and deploy manifests were not touched.

@@ -242,12 +242,18 @@ bool Strategy_LoadMemoryWindowSignal(const int current_month_key,
                                      double &variance_ratio,
                                      double &z_value,
                                      int &base_direction,
-                                     int &trade_direction)
+                                     int &trade_direction,
+                                     string &diagnostic,
+                                     int &copied_bars,
+                                     int &found_closes)
   {
    variance_ratio = 0.0;
    z_value = 0.0;
    base_direction = 0;
    trade_direction = 0;
+   diagnostic = "UNSET";
+   copied_bars = 0;
+   found_closes = 0;
 
    const int decision_month = current_month_key % 100;
    const int needed_closes = strategy_vr_window_months + 1;
@@ -256,7 +262,10 @@ bool Strategy_LoadMemoryWindowSignal(const int current_month_key,
       strategy_vr_window_months != 32 ||
       strategy_vr_q != 2 ||
       needed_closes != 33)
+     {
+      diagnostic = "WINDOW_OR_PARAMETER_INVALID";
       return false;
+     }
 
    MqlRates bars[];
    ArraySetAsSeries(bars, true);
@@ -266,8 +275,12 @@ bool Strategy_LoadMemoryWindowSignal(const int current_month_key,
                 1,
                 strategy_history_bars,
                 bars);
+   copied_bars = copied;
    if(copied < needed_closes)
+     {
+      diagnostic = "INSUFFICIENT_D1_HISTORY";
       return false;
+     }
 
    int month_keys[];
    double month_closes[];
@@ -289,21 +302,35 @@ bool Strategy_LoadMemoryWindowSignal(const int current_month_key,
          continue;
       if(bars[index].close <= 0.0 ||
          !MathIsValidNumber(bars[index].close))
+        {
+         diagnostic = "INVALID_MONTHLY_CLOSE";
          return false;
+        }
       month_keys[found] = month_key;
       month_closes[found] = bars[index].close;
       last_key = month_key;
       ++found;
      }
+   found_closes = found;
 
-   if(found != needed_closes ||
-      Strategy_NextMonthKey(month_keys[0]) != current_month_key)
+   if(found != needed_closes)
+     {
+      diagnostic = "INSUFFICIENT_MONTHLY_ENDPOINTS";
       return false;
+     }
+   if(Strategy_NextMonthKey(month_keys[0]) != current_month_key)
+     {
+      diagnostic = "LATEST_MONTH_ENDPOINT_MISALIGNED";
+      return false;
+     }
 
    for(int index = 0; index < strategy_vr_window_months; ++index)
      {
       if(Strategy_NextMonthKey(month_keys[index + 1]) != month_keys[index])
+        {
+         diagnostic = "NONCONSECUTIVE_MONTHLY_ENDPOINTS";
          return false;
+        }
      }
 
    // month_closes[] is reverse chronological. Build thirty-two returns in
@@ -318,7 +345,10 @@ bool Strategy_LoadMemoryWindowSignal(const int current_month_key,
       const double monthly_return =
          MathLog(month_closes[newer_index] / month_closes[older_index]);
       if(!MathIsValidNumber(monthly_return))
+        {
+         diagnostic = "INVALID_MONTHLY_RETURN";
          return false;
+        }
       monthly_returns[index] = monthly_return;
      }
 
@@ -334,7 +364,10 @@ bool Strategy_LoadMemoryWindowSignal(const int current_month_key,
       sum += monthly_returns[index];
    const double mean = sum / (double)strategy_vr_window_months;
    if(!MathIsValidNumber(mean))
+     {
+      diagnostic = "INVALID_RETURN_MEAN";
       return false;
+     }
 
    double squared_sum = 0.0;
    for(int index = 0; index < strategy_vr_window_months; ++index)
@@ -343,7 +376,10 @@ bool Strategy_LoadMemoryWindowSignal(const int current_month_key,
       squared_sum += delta * delta;
      }
    if(squared_sum <= 0.0 || !MathIsValidNumber(squared_sum))
+     {
+      diagnostic = "INVALID_RETURN_VARIANCE";
       return false;
+     }
 
    double lag_cross_sum = 0.0;
    double robust_numerator = 0.0;
@@ -363,21 +399,67 @@ bool Strategy_LoadMemoryWindowSignal(const int current_month_key,
    if(robust_se <= 0.0 ||
       !MathIsValidNumber(robust_se) ||
       !MathIsValidNumber(variance_ratio))
+     {
+      diagnostic = "INVALID_ROBUST_STANDARD_ERROR";
       return false;
+     }
 
    z_value = (variance_ratio - 1.0) / robust_se;
    if(!MathIsValidNumber(z_value))
+     {
+      diagnostic = "INVALID_VR_Z";
       return false;
+     }
 
    // Insignificant memory or an exactly flat latest month is a valid flat
    // monthly decision, not a calculation failure.
    if(MathAbs(z_value) <= strategy_significance_z ||
       base_direction == 0)
+     {
+      diagnostic = (base_direction == 0)
+                   ? "LATEST_MONTH_FLAT"
+                   : "VR_NOT_SIGNIFICANT";
       return true;
+     }
 
    const int memory_direction = (z_value > 0.0) ? 1 : -1;
    trade_direction = base_direction * memory_direction;
+   diagnostic = "SIGNAL_READY";
    return true;
+  }
+
+void Strategy_LogMonthlyAttempt(const int month_key,
+                                const datetime current_bar)
+  {
+   QM_LogEvent(QM_INFO,
+               "ENTRY_ATTEMPT",
+               StringFormat("{\"symbol\":\"%s\",\"reason\":\"XNG_VR_WINDOW\",\"month_key\":%d,\"decision_bar\":%I64d}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            month_key,
+                            (long)current_bar));
+  }
+
+void Strategy_LogMonthlyRejected(const int month_key,
+                                 const string detail,
+                                 const int copied_bars = 0,
+                                 const int found_closes = 0,
+                                 const double variance_ratio = 0.0,
+                                 const double z_value = 0.0,
+                                 const int base_direction = 0,
+                                 const int trade_direction = 0)
+  {
+   QM_LogEvent(QM_WARN,
+               "ENTRY_REJECTED",
+               StringFormat("{\"result\":\"STRATEGY_STATE_REJECTED\",\"symbol\":\"%s\",\"reason\":\"XNG_VR_WINDOW\",\"detail\":\"%s\",\"month_key\":%d,\"copied_bars\":%d,\"found_closes\":%d,\"variance_ratio\":%.10f,\"z_value\":%.10f,\"base_direction\":%d,\"trade_direction\":%d}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            QM_LoggerEscapeJson(detail),
+                            month_key,
+                            copied_bars,
+                            found_closes,
+                            variance_ratio,
+                            z_value,
+                            base_direction,
+                            trade_direction));
   }
 
 void Strategy_CloseExpiredPositions()
@@ -499,28 +581,70 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // order gates. A blocked or flat eligible month never retries.
    if(!Strategy_RecordMonthAttempt(month_key))
       return false;
+   Strategy_LogMonthlyAttempt(month_key, current_bar);
 
    if(Strategy_HasOpenPosition() ||
       Strategy_MonthAlreadyEntered(month_key, current_bar))
+     {
+      Strategy_LogMonthlyRejected(month_key,
+                                  "POSITION_OR_MONTH_DEAL_EXISTS");
       return false;
+     }
 
    double variance_ratio = 0.0;
    double z_value = 0.0;
    int base_direction = 0;
    int trade_direction = 0;
+   string diagnostic = "UNSET";
+   int copied_bars = 0;
+   int found_closes = 0;
    if(!Strategy_LoadMemoryWindowSignal(month_key,
                                        variance_ratio,
                                        z_value,
                                        base_direction,
-                                       trade_direction) ||
-      trade_direction == 0)
+                                       trade_direction,
+                                       diagnostic,
+                                       copied_bars,
+                                       found_closes))
+     {
+      Strategy_LogMonthlyRejected(month_key,
+                                  diagnostic,
+                                  copied_bars,
+                                  found_closes,
+                                  variance_ratio,
+                                  z_value,
+                                  base_direction,
+                                  trade_direction);
       return false;
+     }
+   if(trade_direction == 0)
+     {
+      Strategy_LogMonthlyRejected(month_key,
+                                  diagnostic,
+                                  copied_bars,
+                                  found_closes,
+                                  variance_ratio,
+                                  z_value,
+                                  base_direction,
+                                  trade_direction);
+      return false;
+     }
 
    const long spread_points =
       SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
    if(spread_points < 0 ||
       spread_points > strategy_max_spread_points)
+     {
+      Strategy_LogMonthlyRejected(month_key,
+                                  "SPREAD_GATE",
+                                  copied_bars,
+                                  found_closes,
+                                  variance_ratio,
+                                  z_value,
+                                  base_direction,
+                                  trade_direction);
       return false;
+     }
 
    const double atr_last =
       QM_ATR(_Symbol,
@@ -529,13 +653,33 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
              1);
    if(atr_last <= 0.0 ||
       !MathIsValidNumber(atr_last))
+     {
+      Strategy_LogMonthlyRejected(month_key,
+                                  "ATR_UNAVAILABLE",
+                                  copied_bars,
+                                  found_closes,
+                                  variance_ratio,
+                                  z_value,
+                                  base_direction,
+                                  trade_direction);
       return false;
+     }
 
    req.type = (trade_direction > 0) ? QM_BUY : QM_SELL;
    const double entry_price = QM_EntryMarketPrice(req.type);
    if(entry_price <= 0.0 ||
       !MathIsValidNumber(entry_price))
+     {
+      Strategy_LogMonthlyRejected(month_key,
+                                  "ENTRY_PRICE_UNAVAILABLE",
+                                  copied_bars,
+                                  found_closes,
+                                  variance_ratio,
+                                  z_value,
+                                  base_direction,
+                                  trade_direction);
       return false;
+     }
 
    req.sl = QM_StopATRFromValue(_Symbol,
                                 req.type,
@@ -545,15 +689,44 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl = QM_StopRulesNormalizePrice(_Symbol, req.sl);
    if(req.sl <= 0.0 ||
       !MathIsValidNumber(req.sl))
+     {
+      Strategy_LogMonthlyRejected(month_key,
+                                  "STOP_INVALID",
+                                  copied_bars,
+                                  found_closes,
+                                  variance_ratio,
+                                  z_value,
+                                  base_direction,
+                                  trade_direction);
       return false;
+     }
    if((req.type == QM_BUY && req.sl >= entry_price) ||
       (req.type == QM_SELL && req.sl <= entry_price))
+     {
+      Strategy_LogMonthlyRejected(month_key,
+                                  "STOP_WRONG_SIDE",
+                                  copied_bars,
+                                  found_closes,
+                                  variance_ratio,
+                                  z_value,
+                                  base_direction,
+                                  trade_direction);
       return false;
+     }
 
    req.reason = StringFormat("XNG_VR_%s_B%s_Z%.3f",
                              trade_direction > 0 ? "L" : "S",
                              base_direction > 0 ? "+" : "-",
                              z_value);
+   QM_LogEvent(QM_INFO,
+               "ENTRY_SIGNAL_FIRE",
+               StringFormat("{\"symbol\":\"%s\",\"reason\":\"XNG_VR_WINDOW\",\"month_key\":%d,\"variance_ratio\":%.10f,\"z_value\":%.10f,\"base_direction\":%d,\"trade_direction\":%d}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            month_key,
+                            variance_ratio,
+                            z_value,
+                            base_direction,
+                            trade_direction));
    return true;
   }
 
@@ -614,7 +787,20 @@ int OnInit()
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               "{\"card\":\"QM5_20248\",\"ea\":\"xng-vr-window\"}");
+               StringFormat("{\"card\":\"QM5_20248\",\"ea\":\"xng-vr-window\",\"symbol\":\"%s\",\"timeframe\":%d,\"risk_percent\":%.2f,\"risk_fixed\":%.2f,\"portfolio_weight\":%.2f,\"vr_window_months\":%d,\"vr_q\":%d,\"significance_z\":%.12f,\"history_bars\":%d,\"atr_period\":%d,\"atr_sl_mult\":%.2f,\"max_hold_days\":%d,\"max_spread_points\":%d}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            (int)_Period,
+                            RISK_PERCENT,
+                            RISK_FIXED,
+                            PORTFOLIO_WEIGHT,
+                            strategy_vr_window_months,
+                            strategy_vr_q,
+                            strategy_significance_z,
+                            strategy_history_bars,
+                            strategy_atr_period,
+                            strategy_atr_sl_mult,
+                            strategy_max_hold_days,
+                            strategy_max_spread_points));
    return INIT_SUCCEEDED;
   }
 

@@ -120,4 +120,5 @@ portfolio-gate change.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-06 | Initial build from approved G0 card | strict compile/build PASS; zero errors, warnings, failures, or build warnings |
-| v1.1 | 2026-08-06 | Paced Q02 handoff | one priority Q02 work item pending; no manual tester or dispatch |
+| v1.1 | 2026-08-06 | Paced Q02 handoff | one priority Q02 work item enqueued; the factory later returned a valid `ZERO_TRADES` result |
+| v1.2 | 2026-08-06 | Zero-trades observability | bounded eligible-month attempt, rejection-state, input, and signal-fire diagnostics only; strict compile/build PASS; replay deferred at `7/7` CPU ceiling |
