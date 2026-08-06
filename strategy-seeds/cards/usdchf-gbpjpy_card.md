@@ -1,6 +1,6 @@
 ---
 strategy_id: AI-CODEX-FX-COINT66-20260609-USDCHF-GBPJPY
-ea_id: TBD
+ea_id: QM5_20240
 slug: usdchf-gbpjpy
 type: strategy
 status: APPROVED
@@ -24,7 +24,7 @@ markets: [forex]
 timeframes: [D1]
 primary_target_symbols: [USDCHF.DWX, GBPJPY.DWX]
 target_symbols: [USDCHF.DWX, GBPJPY.DWX]
-logical_symbol: QM5_TBD_USDCHF_GBPJPY_COINTEGRATION_D1
+logical_symbol: QM5_20240_USDCHF_GBPJPY_COINTEGRATION_D1
 period: D1
 expected_trade_frequency: "Approximately 4 completed two-leg packages per year per traded symbol, inferred from 15 OOS basket state changes across 2023-2024; Q02 must retire the sleeve if realized frequency is below the binding floor."
 expected_trades_per_year_per_symbol: 4
@@ -43,7 +43,7 @@ pipeline_phase: G0_APPROVED
 g0_approval_reasoning: "R1 PASS: OWNER-requested fixed FX scan plus OWNER-ratified Tier-A Chan SRC02; R2 PASS: fixed low-frequency two-leg D1 beta/z/ATR package; R3 PASS: traded and conversion histories are Darwinex-native; R4 PASS: structural, deterministic, and learned-model-free."
 ---
 
-# USDCHF/GBPJPY D1 Cointegration Basket
+# QM5_20240 USDCHF/GBPJPY D1 Cointegration Basket
 
 ## 1. Source
 
@@ -117,7 +117,7 @@ markets: [forex]
 timeframes: [D1]
 primary_target_symbols: [USDCHF.DWX, GBPJPY.DWX]
 host_symbol: USDCHF.DWX
-logical_symbol: QM5_TBD_USDCHF_GBPJPY_COINTEGRATION_D1
+logical_symbol: QM5_20240_USDCHF_GBPJPY_COINTEGRATION_D1
 tester_currency: USD
 conversion_only_symbols: [USDJPY.DWX]
 ```
