@@ -203,6 +203,9 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: no per-tick guard may skip open-position MAE.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
@@ -242,12 +245,15 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   // The framework gate is the sole D1 cadence consumer for this EA.  Do not
+   // add per-EA iTime/day-key state around the calendar signal.
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
       return;
 
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

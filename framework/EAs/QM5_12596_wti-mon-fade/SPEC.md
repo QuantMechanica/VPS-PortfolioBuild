@@ -4,7 +4,7 @@
 **Slug:** `wti-mon-fade`
 **Source:** `QUAY-WTI-DOW-2019`
 **Author of this spec:** Codex
-**Last revised:** 2026-06-27
+**Last revised:** 2026-08-06
 
 ## 1. Strategy Logic
 
@@ -37,7 +37,8 @@ information sets and entry logic. This EA is a pure weekday calendar anomaly.
 
 - Base timeframe: D1.
 - Multi-timeframe refs: none.
-- Bar gating: `QM_IsNewBar()`.
+- Bar gating: one canonical `QM_IsNewBar(_Symbol, PERIOD_D1)` call; no per-EA
+  timestamp or calendar-key gate.
 
 ## 5. Expected Behaviour
 
@@ -51,6 +52,9 @@ information sets and entry logic. This EA is a pure weekday calendar anomaly.
 Quayyum, H. A., et al., "Seasonality in crude oil returns", Soft Computing 24,
 7857-7873 (2020), DOI https://doi.org/10.1007/s00500-019-04329-0.
 
+R1 lineage and the R2-R4 PASS verdict are recorded in the approved Strategy
+Card at `D:\QM\strategy_farm\artifacts\cards_approved\QM5_12596_wti-mon-fade_card.md`.
+
 ## 7. Risk Model
 
 | Phase | Risk mode | Value |
@@ -60,3 +64,10 @@ Quayyum, H. A., et al., "Seasonality in crude oil returns", Soft Computing 24,
 
 No live manifest, `T_Live` file, portfolio gate, or AutoTrading setting is
 touched by this build.
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-06-27 | Initial build from approved card | Initial Q01 implementation |
+| v1.1 | 2026-08-06 | Bounded review rework | Use the sole framework D1 cadence gate; restore MAE sampling and deterministic request initialization |
