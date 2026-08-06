@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11887
+; ea_slug:      lien-double-bollinger-bands-regime
+; ea_version:   v5.0
+; set_version:  s20260806-001
+; symbol:       USDCAD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   5f94429397f68aaa2bdfaa401fc3747e25b42c8bd4561bc4f1cad9ff9ff471db
+; author:       Development
+; date:         2026-08-06
+;==========================================================
+qm_ea_id=11887
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11887_lien-double-bollinger-bands-regime.md
+strategy_bb_period=20
+strategy_bb_dev_inner=1.0
+strategy_bb_dev_outer=2.0
+strategy_range_dwell_bars=6
+strategy_sl_pips_behind_zone=15
+strategy_spread_cap_pips=20

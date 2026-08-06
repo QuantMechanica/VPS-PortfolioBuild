@@ -1,5 +1,5 @@
 #property strict
-#property version   "5.0"
+#property version   "5.1"
 #property description "QM5_11887 lien-double-bollinger-bands-regime — Kathy Lien Double-BB regime classifier + Range->Trend zone entry (H4)"
 
 #include <QM/QM_Common.mqh>
@@ -79,118 +79,189 @@ input int    strategy_bb_period           = 20;    // Bollinger period (both ban
 input double strategy_bb_dev_inner         = 1.0;   // inner band deviation (1SD regime edge)
 input double strategy_bb_dev_outer         = 2.0;   // outer band deviation (2SD extreme cap)
 input int    strategy_range_dwell_bars     = 6;     // min consecutive Range-Zone closes before the breakout
-input double strategy_sl_pips_behind_zone  = 15.0;  // SL distance behind the 1SD zone boundary (pips)
-input double strategy_spread_cap_pips      = 20.0;  // skip a genuinely wide spread (pips)
+input int    strategy_sl_pips_behind_zone  = 15;    // SL distance behind the 1SD zone boundary (pips)
+input int    strategy_spread_cap_pips      = 20;    // skip a genuinely wide spread (pips)
+
+// Closed-bar state. Indicator reads are performed once after QM_IsNewBar()
+// rather than on every tick.
+int    g_signal_direction   = 0; // +1 long, -1 short, 0 none
+double g_signal_zone_edge   = 0.0;
+bool   g_exit_requested     = false;
+
+int Strategy_ExpectedSlot()
+  {
+   if(_Symbol == "EURUSD.DWX") return 0;
+   if(_Symbol == "GBPUSD.DWX") return 1;
+   if(_Symbol == "USDJPY.DWX") return 2;
+   if(_Symbol == "USDCAD.DWX") return 3;
+   if(_Symbol == "USDCHF.DWX") return 4;
+   if(_Symbol == "AUDUSD.DWX") return 5;
+   if(_Symbol == "NZDUSD.DWX") return 6;
+   if(_Symbol == "EURJPY.DWX") return 7;
+   if(_Symbol == "GBPJPY.DWX") return 8;
+   if(_Symbol == "AUDJPY.DWX") return 9;
+   return -1;
+  }
+
+bool Strategy_ConfigurationAuthorized()
+  {
+   const int expected_slot = Strategy_ExpectedSlot();
+   return (qm_ea_id == 11887 &&
+           expected_slot >= 0 &&
+           qm_magic_slot_offset == expected_slot &&
+           (ENUM_TIMEFRAMES)_Period == PERIOD_H4 &&
+           strategy_bb_period >= 2 && strategy_bb_period <= 250 &&
+           strategy_bb_dev_inner > 0.0 &&
+           strategy_bb_dev_outer > strategy_bb_dev_inner &&
+           strategy_range_dwell_bars >= 1 && strategy_range_dwell_bars <= 100 &&
+           strategy_sl_pips_behind_zone >= 1 && strategy_sl_pips_behind_zone <= 1000 &&
+           strategy_spread_cap_pips >= 1 && strategy_spread_cap_pips <= 1000);
+  }
+
+bool Strategy_SpreadTooWide()
+  {
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   const double spread = ask - bid;
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol,
+                                                              strategy_spread_cap_pips);
+   return (spread > 0.0 && spread_cap > 0.0 && spread > spread_cap);
+  }
+
+// Consume the H4 regime transition and the rule-based exit once per completed
+// bar. The six dwell bars are shifts 2..7; shift 1 is the fresh zone breakout.
+void AdvanceState_OnNewBar()
+  {
+   g_signal_direction = 0;
+   g_signal_zone_edge = 0.0;
+   g_exit_requested = false;
+
+   if(!Strategy_ConfigurationAuthorized())
+      return;
+
+   const double bb1_up_1 = QM_BB_Upper(_Symbol, PERIOD_H4,
+                                       strategy_bb_period,
+                                       strategy_bb_dev_inner, 1);
+   const double bb1_lo_1 = QM_BB_Lower(_Symbol, PERIOD_H4,
+                                       strategy_bb_period,
+                                       strategy_bb_dev_inner, 1);
+   const double bb2_up_1 = QM_BB_Upper(_Symbol, PERIOD_H4,
+                                       strategy_bb_period,
+                                       strategy_bb_dev_outer, 1);
+   const double bb2_lo_1 = QM_BB_Lower(_Symbol, PERIOD_H4,
+                                       strategy_bb_period,
+                                       strategy_bb_dev_outer, 1);
+   const double close1 = iClose(_Symbol, PERIOD_H4, 1); // perf-allowed: fixed read behind QM_IsNewBar().
+   if(bb1_up_1 <= 0.0 || bb1_lo_1 <= 0.0 ||
+      bb2_up_1 <= 0.0 || bb2_lo_1 <= 0.0 || close1 <= 0.0)
+      return;
+
+   const int magic = QM_FrameworkMagic();
+   int matching_positions = 0;
+   long position_type = -1;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      ++matching_positions;
+      position_type = PositionGetInteger(POSITION_TYPE);
+     }
+
+   if(matching_positions > 0)
+     {
+      if(matching_positions != 1)
+         g_exit_requested = true;
+      else if(position_type == POSITION_TYPE_BUY && close1 <= bb1_up_1)
+         g_exit_requested = true;
+      else if(position_type == POSITION_TYPE_SELL && close1 >= bb1_lo_1)
+         g_exit_requested = true;
+      return;
+     }
+
+   const bool enter_long = (close1 > bb1_up_1 && close1 < bb2_up_1);
+   const bool enter_short = (close1 < bb1_lo_1 && close1 > bb2_lo_1);
+   if(!enter_long && !enter_short)
+      return;
+
+   const int last_shift = strategy_range_dwell_bars + 1;
+   for(int shift = 2; shift <= last_shift; ++shift)
+     {
+      const double range_up = QM_BB_Upper(_Symbol, PERIOD_H4,
+                                          strategy_bb_period,
+                                          strategy_bb_dev_inner, shift);
+      const double range_lo = QM_BB_Lower(_Symbol, PERIOD_H4,
+                                          strategy_bb_period,
+                                          strategy_bb_dev_inner, shift);
+      const double range_close = iClose(_Symbol, PERIOD_H4, shift); // perf-allowed: bounded dwell read behind QM_IsNewBar().
+      if(range_up <= 0.0 || range_lo <= 0.0 || range_close <= 0.0)
+         return;
+      if(range_close < range_lo || range_close > range_up)
+         return;
+     }
+
+   g_signal_direction = (enter_long ? +1 : -1);
+   g_signal_zone_edge = (enter_long ? bb1_up_1 : bb1_lo_1);
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only — fail-open on .DWX zero spread.
-// All regime/zone work is on the closed-bar entry path.
+// Configuration is fail-closed. The spread guard is entry-only so management
+// and rule-based exits continue through a temporary wide spread.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   const double spread     = ask - bid;
-   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
-   if(spread > 0.0 && spread_cap > 0.0 && spread > spread_cap)
-      return true;
-
-   return false;
+   return !Strategy_ConfigurationAuthorized();
   }
 
-// Double-BB regime entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
+// Build the market order from the closed-bar state prepared above.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
-
-   // --- Inner/outer band values at the trigger bar (shift 1). ---
-   const double bb1_up_1 = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_inner, 1);
-   const double bb1_lo_1 = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_inner, 1);
-   const double bb2_up_1 = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_outer, 1);
-   const double bb2_lo_1 = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_outer, 1);
-   if(bb1_up_1 <= 0.0 || bb1_lo_1 <= 0.0 || bb2_up_1 <= 0.0 || bb2_lo_1 <= 0.0)
+   if(g_signal_direction == 0 || g_signal_zone_edge <= 0.0)
+      return false;
+   if(Strategy_SpreadTooWide())
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0)
+   const double entry = (g_signal_direction > 0
+                         ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                         : SymbolInfoDouble(_Symbol, SYMBOL_BID));
+   if(entry <= 0.0)
       return false;
 
-   // --- Breakout EVENT at the trigger bar (into the trend zone, not past extreme) ---
-   const bool enter_long  = (close1 >  bb1_up_1 && close1 <  bb2_up_1);
-   const bool enter_short = (close1 <  bb1_lo_1 && close1 >  bb2_lo_1);
-   if(!enter_long && !enter_short)
-      return false;
-
-   // --- Range-Zone dwell STATE: the `dwell` bars PRECEDING the trigger (shifts
-   //     2 .. dwell+1) must ALL have closed inside the 1SD Range Zone. Each bar is
-   //     classified against its OWN inner band (recomputed per shift).            ---
-   const int dwell = (strategy_range_dwell_bars < 1) ? 1 : strategy_range_dwell_bars;
-   const int first_shift = 2;
-   const int last_shift  = dwell + 1;
-   for(int s = first_shift; s <= last_shift; ++s)
-     {
-      const double bb1_up_s = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_inner, s);
-      const double bb1_lo_s = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_inner, s);
-      if(bb1_up_s <= 0.0 || bb1_lo_s <= 0.0)
-         return false;
-
-      const double close_s = iClose(_Symbol, _Period, s); // perf-allowed: single closed-bar read
-      if(close_s <= 0.0)
-         return false;
-
-      // Bar must be in the Range Zone: BB1_lower <= Close <= BB1_upper.
-      if(close_s < bb1_lo_s || close_s > bb1_up_s)
-         return false; // a non-Range bar in the window breaks the dwell -> no entry
-     }
-
-   // --- Build entry. Framework sizes lots (no lots field). SL = 15 pips behind the
-   //     1SD zone boundary at the signal bar.                                      ---
-   const double sl_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_pips_behind_zone);
+   const double sl_dist = QM_StopRulesPipsToPriceDistance(_Symbol,
+                                                           strategy_sl_pips_behind_zone);
    if(sl_dist <= 0.0)
       return false;
 
-   if(enter_long)
-     {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(entry <= 0.0)
-         return false;
-
-      // SL = 15 pips below the inner upper band (Uptrend-Zone boundary).
-      const double sl = QM_StopRulesNormalizePrice(_Symbol, bb1_up_1 - sl_dist);
-      if(sl <= 0.0 || sl >= entry)
-         return false;
-
-      req.type   = QM_BUY;
-      req.price  = 0.0;   // framework fills market price at send
-      req.sl     = sl;
-      req.tp     = 0.0;   // no fixed TP — Range re-entry rule rides the trend
-      req.reason = "dbb_regime_uptrend_zone";
-      return true;
-     }
-
-   // enter_short
-   const double entry_s = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry_s <= 0.0)
+   const double raw_sl = (g_signal_direction > 0
+                          ? g_signal_zone_edge - sl_dist
+                          : g_signal_zone_edge + sl_dist);
+   const double sl = QM_StopRulesNormalizePrice(_Symbol, raw_sl);
+   if(sl <= 0.0)
+      return false;
+   if((g_signal_direction > 0 && sl >= entry) ||
+      (g_signal_direction < 0 && sl <= entry))
       return false;
 
-   // SL = 15 pips above the inner lower band (Downtrend-Zone boundary).
-   const double sl_s = QM_StopRulesNormalizePrice(_Symbol, bb1_lo_1 + sl_dist);
-   if(sl_s <= 0.0 || sl_s <= entry_s)
-      return false;
-
-   req.type   = QM_SELL;
+   req.type   = (g_signal_direction > 0 ? QM_BUY : QM_SELL);
    req.price  = 0.0;
-   req.sl     = sl_s;
-   req.tp     = 0.0;   // no fixed TP — Range re-entry rule rides the trend
-   req.reason = "dbb_regime_downtrend_zone";
+   req.sl     = sl;
+   req.tp     = 0.0;
+   req.reason = (g_signal_direction > 0
+                 ? "dbb_range_to_uptrend"
+                 : "dbb_range_to_downtrend");
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
@@ -200,46 +271,10 @@ void Strategy_ManageOpenPosition()
   {
   }
 
-// Trend-exhaustion exit: the latest closed bar re-enters the 1SD Range Zone.
-//   long  -> Close[1] <= BB1_upper[1]   short -> Close[1] >= BB1_lower[1]
-// Evaluated once per closed bar in OnTick; one position per magic.
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) <= 0)
-      return false;
-
-   const double bb1_up_1 = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_inner, 1);
-   const double bb1_lo_1 = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_inner, 1);
-   if(bb1_up_1 <= 0.0 || bb1_lo_1 <= 0.0)
-      return false;
-
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0)
-      return false;
-
-   // Determine the direction of the open position for this magic.
-   bool is_long  = false;
-   bool is_short = false;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      const long ptype = PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY)  is_long  = true;
-      if(ptype == POSITION_TYPE_SELL) is_short = true;
-      break;
-     }
-
-   if(is_long  && close1 <= bb1_up_1)
-      return true; // long: dropped back into the Range Zone -> trend exhausted
-   if(is_short && close1 >= bb1_lo_1)
-      return true; // short: popped back into the Range Zone -> trend exhausted
-
-   return false;
+   return (g_exit_requested &&
+           QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0);
   }
 
 // Defer to the central news filter.
@@ -284,47 +319,68 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence must sample floating P&L before any per-tick guard returns.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
+   const bool is_new_bar = QM_IsNewBar();
+   if(is_new_bar)
+      AdvanceState_OnNewBar();
+
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
+      bool close_succeeded = false;
       for(int i = PositionsTotal() - 1; i >= 0; --i)
         {
          const ulong ticket = PositionGetTicket(i);
          if(!PositionSelectByTicket(ticket))
             continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic)
+         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
+         if(QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY))
+            close_succeeded = true;
         }
+      if(close_succeeded)
+         g_exit_requested = false;
      }
 
-   if(!QM_IsNewBar())
+   // Custom and central news checks gate NEW entries only. Management and
+   // Range-Zone exits above remain active throughout news windows.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol,
+                                        broker_now,
+                                        qm_news_temporal,
+                                        qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!is_new_bar)
       return;
 
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
