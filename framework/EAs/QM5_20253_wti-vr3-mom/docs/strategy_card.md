@@ -55,9 +55,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01_PASS
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED_CPU_CEILING
+q02_status: ENQUEUED
 review_focus: "Falsify the published WTI R3-q4 memory state as a crude-oil return stream distinct from the certified XAU/SP500/NDX/XNG book; only Q09 may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -236,4 +236,4 @@ gate failure. Do not relax the source rule to rescue a failure.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | decisions/2026-08-06_qm5_20253_wti_vr3_mom_g0.md |
 | Q01 Build Validation | 2026-08-06 | PASS | strict compile and framework build evidence in `docs/ops/evidence/2026-08-06_qm5_20253_wti_vr3_mom_q01_cpu_stop.md` |
-| Q02 Baseline Screening | 2026-08-06 | NOT_ENQUEUED_CPU_CEILING | target-only dry run selected one item; guarded stop evidence in `docs/ops/evidence/2026-08-06_qm5_20253_wti_vr3_mom_q01_cpu_stop.md` |
+| Q02 Baseline Screening | 2026-08-06 | ENQUEUED_ACTIVE | guarded apply was skipped at the CPU ceiling; subsequent readback found one active Q02 item on T10, documented in `docs/ops/evidence/2026-08-06_qm5_20253_wti_vr3_mom_q01_cpu_stop.md` |

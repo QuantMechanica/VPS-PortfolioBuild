@@ -4,8 +4,9 @@ Date: 2026-08-06
 
 Branch: `agents/board-advisor`
 
-Status: Q01 PASS; target-only Q02 dry run PASS; Q02 NOT ENQUEUED because
-the paced-fleet CPU ceiling was binding before apply.
+Status: Q01 PASS; target-only Q02 dry run PASS; guarded apply skipped because
+the paced-fleet CPU ceiling was binding. A subsequent readback observed one
+Q02 item already active on T10.
 
 ## Build outcome
 
@@ -76,22 +77,32 @@ Only executable paths matching `D:/QM/mt5/T1..T10/terminal64.exe` counted.
 No `T_Live` or other MT5 process counted. Because the sample was over the
 ceiling, the enqueue command with `--apply` was not executed.
 
-The next valid paced-fleet action, after a fresh immediate sample is at or
-below seven, is:
+## Post-stop farm state
+
+A post-commit readback found that the shared farm had subsequently created
+exactly one Q02 row at `2026-08-06T20:52:58Z`, after the dry-run/ceiling
+snapshot. At observation it was `active`, `claimed_by=T10`, with
+`attempt_count=0` and work-item ID
+`ec4f0dcd-3ddc-4bcc-b2cd-43e8cd8a93da`. No second row existed.
+
+This agent did not execute the apply command or intervene in the claimed run.
+The active row satisfies the requested Q02 enqueue; normal workers own its
+execution and verdict. The annual WTI calendar prescreen and the card's
+minimum five completed trades per full post-warm-up year remain binding
+retirement checks.
+
+For provenance, the guarded commands associated with this target are:
 
 ```powershell
 python tools/strategy_farm/sweep_enqueue_built_eas.py --ea QM5_20253
 python tools/strategy_farm/sweep_enqueue_built_eas.py --ea QM5_20253 --apply
 ```
 
-Normal workers own dispatch and Q02 execution. The annual WTI calendar
-prescreen and the card's minimum five completed trades per full post-warm-up
-year remain binding retirement checks.
-
 ## Safety
 
-- No Q02 row was inserted, claimed, dispatched, or duplicated.
-- No tester or terminal process was launched, stopped, reserved, or reaped.
+- This agent did not insert, claim, dispatch, or duplicate the Q02 row.
+- This agent did not launch, stop, reserve, reap, or control a tester or
+  terminal process.
 - No live or deployment setfile was created.
 - `T_Live`, AutoTrading, the live manifest, and the portfolio gate were not
   touched.
