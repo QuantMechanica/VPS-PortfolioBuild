@@ -53,8 +53,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: NOT_RUN
+pipeline_phase: Q02
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify a monthly relative uncertainty premium on the XAU/XAG carrier: long the metal with more stable rolling realized volatility and short the one with less stable rolling volatility. It adds a nested volatility-state driver rather than outright metal direction, ratio convergence, RSI, trend, seasonality, skewness, semivariance, or downside-tail exposure; Q09 alone may establish book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -274,13 +274,14 @@ gate edit, portfolio admission, or correlation waiver is authorized.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-06 | initial approved XAU/XAG realized-VoV carrier build | G0 | APPROVED |
+| v1.1 | 2026-08-06 | restart-safe V5 implementation, strict compile, and build validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_qm5_20236_xauxag_vov_rank_g0.md` |
-| Q01 Build Validation | - | NOT RUN | - |
+| Q01 Build Validation | 2026-08-06 | PASS | `framework/build/compile/20260806_013254/QM5_20236_xauxag-vov-rank.compile.log`; `D:/QM/reports/framework/21/build_check_20260806_013327.json` (0 errors, 0 warnings, 0 gate failures) |
 | Q02 Baseline Screening | - | NOT ENQUEUED | - |
 
 ## Lessons Captured

@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_20236_XAU_XAG_VOV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XAU/XAG realized volatility-of-volatility basket from approved card HOLLSTEIN-VOV-2021_XAU_XAG_S02. Run on XAUUSD.DWX D1; at the first tradable bar of every broker month, form 252 overlapping 20-return realized-volatility estimates for each leg, calculate population dispersion divided by mean RV, buy lower realized VoV, short higher realized VoV, and evaluate the package rather than standalone legs. The source uses option-implied volatility; the OHLC-only proxy, two-CFD narrowing, continuous-CFD basis, gaps, and legging are binding Q02 falsification risks."
+  ]
+}
