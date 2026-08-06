@@ -1,0 +1,43 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20241
+; ea_slug:      wti-seas-anchor
+; ea_version:   v5.0
+; set_version:  s20260806-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   0e08957d74506d1cd7417f0f8077bfc6ff9fd77abf6fdb721dce44f21882777b
+; author:       Development
+; date:         2026-08-06
+;==========================================================
+qm_ea_id=20241
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-seas-anchor_card.md
+strategy_winter_first_month=11
+strategy_winter_last_month=5
+strategy_anchor_lookback_d1=252
+strategy_confirm_lookback_d1=63
+strategy_anchor_long_min=0.94
+strategy_anchor_short_max=1.08
+strategy_confirm_min_return_pct=2.0
+strategy_atr_period=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=40
+strategy_max_spread_points=1500
