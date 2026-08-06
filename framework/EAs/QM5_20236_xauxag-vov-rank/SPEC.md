@@ -117,3 +117,4 @@ ML is authorized.
 |---|---|---|
 | v1 | 2026-08-06 | Initial approved XAU/XAG realized-VoV carrier build |
 | v1.1 | 2026-08-06 | Strict compile and full V5 build check PASS with zero warnings |
+| v1.2 | 2026-08-06 | Q02 enqueue withheld at the binding 9-of-7 factory-terminal CPU ceiling |

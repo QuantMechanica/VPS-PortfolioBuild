@@ -55,7 +55,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a monthly relative uncertainty premium on the XAU/XAG carrier: long the metal with more stable rolling realized volatility and short the one with less stable rolling volatility. It adds a nested volatility-state driver rather than outright metal direction, ratio convergence, RSI, trend, seasonality, skewness, semivariance, or downside-tail exposure; Q09 alone may establish book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -275,6 +275,7 @@ gate edit, portfolio admission, or correlation waiver is authorized.
 |---|---|---|---|---|
 | v1 | 2026-08-06 | initial approved XAU/XAG realized-VoV carrier build | G0 | APPROVED |
 | v1.1 | 2026-08-06 | restart-safe V5 implementation, strict compile, and build validation | Q01 | PASS |
+| v1.2 | 2026-08-06 | paced Q02 enqueue withheld at the binding 9-of-7 factory-terminal CPU ceiling | Q02 | NOT ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -282,7 +283,7 @@ gate edit, portfolio admission, or correlation waiver is authorized.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_qm5_20236_xauxag_vov_rank_g0.md` |
 | Q01 Build Validation | 2026-08-06 | PASS | `framework/build/compile/20260806_013254/QM5_20236_xauxag-vov-rank.compile.log`; `D:/QM/reports/framework/21/build_check_20260806_013327.json` (0 errors, 0 warnings, 0 gate failures) |
-| Q02 Baseline Screening | - | NOT ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-06 | NOT ENQUEUED - CPU CEILING | targeted dry run selected one priority item; apply withheld because 9 factory terminals were active against the ceiling of 7 |
 
 ## Lessons Captured
 
