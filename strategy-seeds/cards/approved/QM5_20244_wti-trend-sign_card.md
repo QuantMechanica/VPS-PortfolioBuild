@@ -60,8 +60,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: NOT_STARTED
+pipeline_phase: Q02
+q01_status: PASS
 q02_status: NOT_STARTED
 review_focus: "Falsify a direct WTI structural trend-concordance package whose cumulative twelve-month return and twelve-return binary-sign state must agree. Q09 alone may establish realized decorrelation from XAU/SP500/NDX/XNG."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -191,7 +191,8 @@ is authorized.
 1. Close the prior position on the first processed D1 bar of every new broker
    month before considering replacement risk.
 2. Close after forty elapsed calendar days as a stale guard.
-3. Close an unexpected wrong-side or wrong-symbol owned position immediately.
+3. Close an owned WTI position that belongs to a prior broker month or breaches
+   the stale guard.
 4. Broker hard stops and the framework kill switch remain authoritative.
 5. Friday close is disabled because the source cadence holds through weekends.
 6. No intramonth reversal, target, trail, break-even, partial close, scale-in,
@@ -212,8 +213,8 @@ is authorized.
 ## 7. Trade Management Rules
 
 - Preserve the original broker stop; do not move it.
-- Close older-month, wrong-side, wrong-symbol, or forty-day-stale exposure
-  before evaluating a new entry.
+- Close older-month or forty-day-stale owned WTI exposure before evaluating a
+  new entry.
 - Maintain at most one position and one consumed attempt per broker month.
   Restart recovery combines a persistent marker with owned position and deal
   history; a future-dated tester marker is deleted at initialization.
@@ -278,8 +279,7 @@ drawdown comparison is not hidden.
   cheap parameter guards.
 - trade_entry: monthly attempt persistence, thirteen endpoint reconstruction,
   both trend states, agreement, spread/quote/ATR/stop checks, and one order.
-- trade_management: older-month, wrong-side, wrong-symbol, and stale exits
-  before entry-only gates.
+- trade_management: older-month and stale exits before entry-only gates.
 - trade_close: broker hard stop, framework kill switch, and deterministic
   management closes.
 
@@ -294,12 +294,12 @@ manifest; portfolio admission; portfolio-gate edit; or correlation waiver.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-08-06 | initial source-bounded WTI trend/sign concordance card | G0 | APPROVED |
+| v1 | 2026-08-06 | initial source-bounded WTI trend/sign concordance card and strict build | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_qm5_20244_wti_trend_sign_g0.md` |
-| Q01 Build Validation | - | NOT_STARTED | - |
+| Q01 Build Validation | 2026-08-06 | PASS | strict compile `framework/build/compile/20260806_082948/QM5_20244_wti-trend-sign.compile.log`; build check `D:/QM/reports/framework/21/build_check_20260806_083052.json` |
 | Q02 Baseline Screening | - | NOT_STARTED | - |

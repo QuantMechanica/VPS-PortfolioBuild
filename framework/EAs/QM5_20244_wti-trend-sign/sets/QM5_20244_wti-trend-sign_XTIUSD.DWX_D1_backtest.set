@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20244
+; ea_slug:      wti-trend-sign
+; ea_version:   v5.0
+; set_version:  s20260806-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   66bf76a61a52c8cf1882d166d2110e970e323e2f6b7e783e0e286fb33ec0f248
+; author:       Development
+; date:         2026-08-06
+;==========================================================
+qm_ea_id=20244
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-trend-sign_card.md
+strategy_lookback_months=12
+strategy_positive_threshold=0.40
+strategy_history_bars=500
+strategy_atr_period=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=40
+strategy_max_spread_points=1500
