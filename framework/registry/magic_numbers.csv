@@ -11583,11 +11583,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11658,pp-mtops-bots,2,XAUUSD.DWX,116580002,2026-06-18,Claude,reserved
 11658,pp-mtops-bots,3,GDAXI.DWX,116580003,2026-06-18,Claude,reserved
 11658,pp-mtops-bots,4,NDX.DWX,116580004,2026-06-18,Claude,reserved
-11659,pp-triangle,0,EURUSD.DWX,116590000,2026-06-18,Claude,reserved
-11659,pp-triangle,1,GBPUSD.DWX,116590001,2026-06-18,Claude,reserved
-11659,pp-triangle,2,XAUUSD.DWX,116590002,2026-06-18,Claude,reserved
-11659,pp-triangle,3,GDAXI.DWX,116590003,2026-06-18,Claude,reserved
-11659,pp-triangle,4,NDX.DWX,116590004,2026-06-18,Claude,reserved
+11659,pp-triangle,0,EURUSD.DWX,116590000,2026-06-18,Claude,active
+11659,pp-triangle,1,GBPUSD.DWX,116590001,2026-06-18,Claude,active
+11659,pp-triangle,2,XAUUSD.DWX,116590002,2026-06-18,Claude,active
+11659,pp-triangle,3,GDAXI.DWX,116590003,2026-06-18,Claude,active
+11659,pp-triangle,4,NDX.DWX,116590004,2026-06-18,Claude,active
 11660,pp-wedge,0,EURUSD.DWX,116600000,2026-06-18,Claude,reserved
 11660,pp-wedge,1,GBPUSD.DWX,116600001,2026-06-18,Claude,reserved
 11660,pp-wedge,2,XAUUSD.DWX,116600002,2026-06-18,Claude,reserved
@@ -15548,3 +15548,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20236,xauxag-vov-rank,1,XAGUSD.DWX,202360001,2026-08-06T01:25:59Z,Codex,active
 20237,xtixng-ecm-rv,0,XTIUSD.DWX,202370000,2026-08-06T04:30:00Z,Codex,active
 20237,xtixng-ecm-rv,1,XNGUSD.DWX,202370001,2026-08-06T04:30:00Z,Codex,active
+20238,usdcad-eurjpy,0,USDCAD.DWX,202380000,2026-08-06T02:55:07Z,Codex,active
+20238,usdcad-eurjpy,1,EURJPY.DWX,202380001,2026-08-06T02:55:07Z,Codex,active
