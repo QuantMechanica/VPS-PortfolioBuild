@@ -3,32 +3,31 @@
 ; ea_id:        11353
 ; ea_slug:      rbt-cci14-zone-cross-h1
 ; ea_version:   v5.0
-; set_version:  s20260630-001
+; set_version:  s20260806-001
 ; symbol:       EURGBP.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   14
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   1bae6a5ced70703190c46ea76f75af8c694d05956e79417be917402cc23f19cb
 ; author:       Development
-; date:         2026-06-30
+; date:         2026-08-06
 ;==========================================================
+qm_ea_id=11353
 qm_magic_slot_offset=14
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11353_rbt-cci14-zone-cross-h1.md
+strategy_cci_period=14
+strategy_cci_oversold=-150.0
+strategy_cci_overbought=150.0
+strategy_cci_long_zone=100.0
+strategy_cci_short_zone=-100.0
+strategy_prior_lookback=5
+strategy_sl_pips=20
+strategy_tp_pips=40
+strategy_use_fade_exit=true
+strategy_spread_cap_pips=20
