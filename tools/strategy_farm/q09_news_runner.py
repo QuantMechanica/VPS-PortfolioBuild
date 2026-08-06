@@ -2368,6 +2368,7 @@ def _production_dispatch_cell(
             "-SetFile", str(spec["setfile_path"]), "-ReportRoot", str(run_root),
             "-DispatchPhase", "Q09_NEWS", "-DispatchVersion", "q09_news_executor_v1",
             "-DispatchSubGateHash", f"{str(spec['run_identity_sha256'])[:16]}_{window_name}",
+            "-ExpectedExpertSha256", str(context["expected_expert_sha256"]),
             "-RequireFreshLoggerSample",
         ]
         if context.get("skip_expert_deploy") is True:
@@ -2645,6 +2646,11 @@ def execute_run_plan(
         "calendar_provision": provision,
         "skip_expert_deploy": payload.get("diagnostic_non_admission") is True,
         "diagnostic_expert_stage": diagnostic_expert_stage,
+        "expected_expert_sha256": (
+            diagnostic_expert_stage["sha256"]
+            if diagnostic_expert_stage is not None
+            else input_manifest["identities"]["ex5_sha256"]
+        ),
     }
     dispatcher = dispatch_cell or _production_dispatch_cell
 

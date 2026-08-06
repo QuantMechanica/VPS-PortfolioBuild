@@ -2019,48 +2019,115 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _prepare_staged_ex5(item: sqlite3.Row, terminal: str) -> dict[str, Any] | None:
+def _normalized_ex5_sha256(raw: Any, *, role: str) -> str:
+    value = str(raw or "").strip().lower()
+    if len(value) != 64 or any(ch not in "0123456789abcdef" for ch in value):
+        raise ValueError(f"{role}_invalid")
+    return value
+
+
+def _prepare_staged_ex5(item: sqlite3.Row, terminal: str) -> dict[str, Any]:
+    """Atomically stage and verify the exact EX5 required for this dispatch.
+
+    Manifest-pinned diagnostic binaries retain precedence. Ordinary work items
+    use the registry-resolved canonical EX5 and any enqueue-time hash binding;
+    legacy rows without a binding acquire one from that source at this gate.
+    Every path copies before dispatch so a dormant divergent terminal is
+    repaired only through the same verified gate that authorizes its run.
+    """
+
     payload = _json_loads(item["payload_json"])
     raw_path = payload.get("staged_ex5_path")
     raw_sha = payload.get("staged_ex5_sha256")
-    if raw_path is None and raw_sha is None:
-        return None
-    if not raw_path or not raw_sha:
-        raise ValueError("staged_ex5_path_and_sha256_required_together")
-    expected = str(raw_sha).strip().lower()
-    if len(expected) != 64 or any(ch not in "0123456789abcdef" for ch in expected):
-        raise ValueError("staged_ex5_sha256_invalid")
-    source = Path(str(raw_path))
-    if not source.is_file():
-        raise ValueError(f"staged_ex5_missing:{source}")
-    source_sha = _sha256_file(source)
-    if source_sha != expected:
-        raise ValueError(f"staged_ex5_source_sha256_mismatch:{source_sha}")
-
     ea_dir = farmctl._ea_dir_from_setfile_path(Path(str(item["setfile_path"])), str(item["ea_id"]))
     if ea_dir is None:
         ea_dir = farmctl._preferred_ea_dir(str(item["ea_id"]))
     if ea_dir is None:
         raise ValueError("staged_ex5_ea_dir_unresolved")
+    canonical_source = ea_dir / f"{ea_dir.name}.ex5"
+
+    if raw_path is not None or raw_sha is not None:
+        if not raw_path or not raw_sha:
+            raise ValueError("staged_ex5_path_and_sha256_required_together")
+        source = Path(str(raw_path))
+        if not source.is_absolute():
+            raise ValueError(f"staged_ex5_path_not_absolute:{source}")
+        expected = _normalized_ex5_sha256(
+            raw_sha, role="staged_ex5_sha256"
+        )
+        if payload.get("expected_ex5_sha256"):
+            payload_expected = _normalized_ex5_sha256(
+                payload["expected_ex5_sha256"],
+                role="expected_ex5_sha256",
+            )
+            if payload_expected != expected:
+                raise ValueError(
+                    "staged_ex5_expected_binding_mismatch:"
+                    f"{payload_expected}:staged:{expected}"
+                )
+        binding_source = "manifest_pinned_staged_ex5"
+    else:
+        source = canonical_source
+        payload_expected = payload.get("expected_ex5_sha256")
+        if payload_expected:
+            expected = _normalized_ex5_sha256(
+                payload_expected, role="expected_ex5_sha256"
+            )
+            binding_source = "work_item_expected_ex5_sha256"
+        else:
+            if not source.is_file():
+                raise ValueError(f"dispatch_ex5_missing:{source}")
+            expected = _sha256_file(source)
+            binding_source = "canonical_ex5_at_dispatch"
+
+    if not source.is_file():
+        raise ValueError(f"staged_ex5_missing:{source}")
+    source_sha = _sha256_file(source)
+    if source_sha != expected:
+        if binding_source == "manifest_pinned_staged_ex5":
+            raise ValueError(
+                f"staged_ex5_source_sha256_mismatch:{source_sha}"
+            )
+        raise ValueError(
+            f"dispatch_ex5_source_sha256_mismatch:{source_sha}:expected:{expected}"
+        )
+
     destination = farmctl.MT5_ROOT / terminal / "MQL5" / "Experts" / "QM" / f"{ea_dir.name}.ex5"
     destination.parent.mkdir(parents=True, exist_ok=True)
+    preexisting_sha = _sha256_file(destination) if destination.is_file() else None
     temporary = destination.with_suffix(destination.suffix + f".{os.getpid()}.tmp")
     try:
         shutil.copy2(source, temporary)
         copied_sha = _sha256_file(temporary)
         if copied_sha != expected:
-            raise ValueError(f"staged_ex5_copy_sha256_mismatch:{copied_sha}")
+            if binding_source == "manifest_pinned_staged_ex5":
+                raise ValueError(f"staged_ex5_copy_sha256_mismatch:{copied_sha}")
+            raise ValueError(
+                f"dispatch_ex5_copy_sha256_mismatch:{copied_sha}:expected:{expected}"
+            )
         os.replace(temporary, destination)
     finally:
         temporary.unlink(missing_ok=True)
     pre_run_sha = _sha256_file(destination)
     if pre_run_sha != expected:
-        raise ValueError(f"staged_ex5_pre_run_sha256_mismatch:{pre_run_sha}")
+        if binding_source == "manifest_pinned_staged_ex5":
+            raise ValueError(
+                f"staged_ex5_pre_run_sha256_mismatch:{pre_run_sha}"
+            )
+        raise ValueError(
+            f"dispatch_ex5_pre_run_sha256_mismatch:{pre_run_sha}:expected:{expected}"
+        )
     return {
-        "source_path": str(source),
-        "destination_path": str(destination),
+        "source_path": str(source.resolve()),
+        "destination_path": str(destination.resolve()),
         "required_sha256": expected,
+        "source_sha256": source_sha,
+        "binding_source": binding_source,
+        "preexisting_destination_sha256": preexisting_sha,
+        "copied": True,
+        "restaged": preexisting_sha != expected,
         "pre_run_sha256": pre_run_sha,
+        "verified": True,
     }
 
 
@@ -3341,16 +3408,18 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
                 {"reason": "staged_ex5_preflight_failed", "detail": str(exc)},
             ),
         }
-    if staging:
-        existing_payload["staged_ex5"] = staging
-        with farmctl.connect(root) as conn:
-            conn.execute(
-                "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='active'",
-                (json.dumps(existing_payload, sort_keys=True), farmctl.utc_now(), item["id"]),
-            )
-            conn.commit()
-        row = dict(row)
-        row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
+    existing_payload["staged_ex5"] = staging
+    existing_payload["expected_ex5_sha256"] = staging["required_sha256"]
+    existing_payload["expected_ex5_path"] = staging["source_path"]
+    existing_payload["dispatch_ex5_verified_at"] = farmctl.utc_now()
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='active'",
+            (json.dumps(existing_payload, sort_keys=True), farmctl.utc_now(), item["id"]),
+        )
+        conn.commit()
+    row = dict(row)
+    row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
     _acquire_launch_slot(terminal)
     spawn = farmctl._spawn_work_item_runner(root, row, terminal)
     now = farmctl.utc_now()

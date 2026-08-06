@@ -1567,7 +1567,17 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                     "_news_calendar_preflight",
                     return_value={"ok": True, "status": "VALID"},
                 ),
-                patch.object(terminal_worker, "_prepare_staged_ex5", return_value=None),
+                patch.object(
+                    terminal_worker,
+                    "_prepare_staged_ex5",
+                    return_value={
+                        "source_path": r"C:\fixture\QM5_9999.ex5",
+                        "destination_path": r"D:\fixture\QM5_9999.ex5",
+                        "required_sha256": "a" * 64,
+                        "pre_run_sha256": "a" * 64,
+                        "verified": True,
+                    },
+                ),
                 patch.object(terminal_worker, "_acquire_launch_slot", return_value=None),
                 patch.object(
                     terminal_worker.farmctl,

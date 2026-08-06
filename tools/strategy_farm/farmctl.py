@@ -4935,6 +4935,59 @@ def _capture_spawned_process_identity(proc: subprocess.Popen[Any]) -> dict[str, 
         raise
 
 
+def _worker_staged_ex5_spawn_failure(
+    payload: dict[str, Any],
+    *,
+    terminal: str,
+    ea_dir_name: str,
+) -> dict[str, Any] | None:
+    staging = payload.get("staged_ex5")
+    if not isinstance(staging, dict):
+        return None
+    required = str(staging.get("required_sha256") or "").strip().lower()
+    if (
+        len(required) != 64
+        or any(ch not in "0123456789abcdef" for ch in required)
+    ):
+        return {
+            "spawned": False,
+            "reason": "worker_staged_ex5_required_sha256_invalid",
+            "staged_ex5_sha256": required,
+        }
+    destination = Path(str(staging.get("destination_path") or ""))
+    expected_destination = (
+        MT5_ROOT
+        / terminal
+        / "MQL5"
+        / "Experts"
+        / "QM"
+        / f"{ea_dir_name}.ex5"
+    )
+    if destination.resolve() != expected_destination.resolve():
+        return {
+            "spawned": False,
+            "reason": "worker_staged_ex5_destination_path_mismatch",
+            "expected_destination_path": str(expected_destination),
+            "actual_destination_path": str(destination),
+        }
+    if not destination.is_file():
+        return {
+            "spawned": False,
+            "reason": "worker_staged_ex5_destination_missing",
+            "expected_destination_path": str(expected_destination),
+        }
+    destination_sha256 = _sha256_file(destination)
+    if destination_sha256 != required:
+        return {
+            "spawned": False,
+            "reason": "worker_staged_ex5_destination_sha256_mismatch",
+            "expected_ex5_sha256": required,
+            "actual_ex5_sha256": destination_sha256,
+            "destination_path": str(destination),
+        }
+    return None
+
+
 def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
                                     terminal: str) -> dict[str, Any]:
     """Spawn run_smoke.ps1 for one work_item, pinned to a specific terminal.
@@ -5167,11 +5220,31 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
 
     # Freeze the exact artifacts before launch. The resulting hashes are stored
     # in the active claim and must match run_smoke/v2 before classification.
-    expected_ex5_path = (
-        Path(str(item_payload["staged_ex5_path"]))
-        if item_payload.get("staged_ex5_path")
-        else candidates[0] / f"{ea_dir_name}.ex5"
-    )
+    worker_staging = item_payload.get("staged_ex5")
+    worker_staged = isinstance(worker_staging, dict)
+    if worker_staged:
+        expected_ex5_path = Path(str(worker_staging.get("source_path") or ""))
+        staged_required_sha = str(
+            worker_staging.get("required_sha256") or ""
+        ).strip().lower()
+        if (
+            len(staged_required_sha) != 64
+            or any(ch not in "0123456789abcdef" for ch in staged_required_sha)
+        ):
+            return {
+                "spawned": False,
+                "reason": "worker_staged_ex5_required_sha256_invalid",
+                "staged_ex5_sha256": staged_required_sha,
+            }
+    else:
+        expected_ex5_path = (
+            Path(str(item_payload["staged_ex5_path"]))
+            if item_payload.get("staged_ex5_path")
+            else candidates[0] / f"{ea_dir_name}.ex5"
+        )
+        staged_required_sha = str(
+            item_payload.get("staged_ex5_sha256") or ""
+        ).strip().lower()
     expected_mq5_path = candidates[0] / f"{ea_dir_name}.mq5"
     expected_setfile_path = Path(setfile_path)
     if not expected_ex5_path.is_file() or not expected_setfile_path.is_file():
@@ -5182,7 +5255,6 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             "expected_setfile_path": str(expected_setfile_path),
         }
     expected_ex5_sha256 = _sha256_file(expected_ex5_path)
-    staged_required_sha = str(item_payload.get("staged_ex5_sha256") or "").strip().lower()
     if staged_required_sha and expected_ex5_sha256 != staged_required_sha:
         return {
             "spawned": False,
@@ -5191,6 +5263,14 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             "expected_ex5_sha256": expected_ex5_sha256,
             "staged_ex5_sha256": staged_required_sha,
         }
+    if worker_staged:
+        staging_failure = _worker_staged_ex5_spawn_failure(
+            item_payload,
+            terminal=terminal,
+            ea_dir_name=ea_dir_name,
+        )
+        if staging_failure:
+            return staging_failure
     expected_setfile_sha256 = _sha256_file(expected_setfile_path)
     expected_mq5_sha256 = _sha256_file(expected_mq5_path) if expected_mq5_path.is_file() else None
     expected_expert = f"QM\\{ea_dir_name}"
@@ -5223,6 +5303,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         "-ReportRoot", str(report_root),
         "-AllowMissingRealTicksLogMarker",
         "-TimeoutSeconds", str(timeout_seconds),
+        "-ExpectedExpertSha256", expected_ex5_sha256,
     ]
     tester_currency = str(item_payload.get("tester_currency") or "").strip().upper()
     if tester_currency:
@@ -5237,7 +5318,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         cmd.extend(["-FromDate", from_date])
     if to_date:
         cmd.extend(["-ToDate", to_date])
-    if item_payload.get("staged_ex5_path"):
+    if item_payload.get("staged_ex5_path") or worker_staged:
         cmd.append("-SkipExpertDeploy")
 
     # Production reaches this boundary from the resident per-terminal worker
@@ -6143,6 +6224,52 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
             "phase_runner": None,
         }
 
+    item_payload = json.loads(item_row["payload_json"] or "{}")
+    worker_staging = item_payload.get("staged_ex5")
+    if isinstance(worker_staging, dict):
+        staging_failure = _worker_staged_ex5_spawn_failure(
+            item_payload,
+            terminal=terminal,
+            ea_dir_name=ea_dir_name,
+        )
+        if staging_failure:
+            return {
+                **staging_failure,
+                "log_path": str(log_path),
+                "report_root": str(report_root),
+                "ea_dir_name": ea_dir_name,
+                "phase_runner": None,
+            }
+        dispatch_ex5_sha256 = str(
+            worker_staging.get("required_sha256") or ""
+        ).strip().lower()
+    else:
+        canonical_ex5 = (
+            ea_dir / f"{ea_dir.name}.ex5" if ea_dir is not None else None
+        )
+        if canonical_ex5 is None or not canonical_ex5.is_file():
+            return {
+                "spawned": False,
+                "reason": "dispatch_ex5_missing_before_phase_runner",
+                "log_path": str(log_path),
+                "report_root": str(report_root),
+                "ea_dir_name": ea_dir_name,
+                "phase_runner": None,
+            }
+        dispatch_ex5_sha256 = _sha256_file(canonical_ex5)
+    if (
+        len(dispatch_ex5_sha256) != 64
+        or any(ch not in "0123456789abcdef" for ch in dispatch_ex5_sha256)
+    ):
+        return {
+            "spawned": False,
+            "reason": "dispatch_ex5_sha256_invalid_before_phase_runner",
+            "log_path": str(log_path),
+            "report_root": str(report_root),
+            "ea_dir_name": ea_dir_name,
+            "phase_runner": None,
+        }
+
     # The resident terminal_worker process is the production caller and owns
     # the retained Job handle until every descendant exits. Direct one-shot
     # dispatch is deliberately non-detaching: its exit kills the Job tree.
@@ -6152,6 +6279,7 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
     log_fh.flush()
     creationflags = suspended_runner_creation_flags()
     env = {**os.environ}
+    env["QM_EXPECTED_EX5_SHA256"] = dispatch_ex5_sha256
     env["PYTHONPATH"] = os.pathsep.join(
         [str(runner_repo_root), env.get("PYTHONPATH", "")]
     )

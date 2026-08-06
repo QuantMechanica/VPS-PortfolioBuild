@@ -32,6 +32,8 @@ param(
     [string]$DispatchVersion = "smoke",
     [string]$DispatchSubGateHash,
     [switch]$SkipExpertDeploy,
+    [ValidatePattern('^[0-9A-Fa-f]{64}$')]
+    [string]$ExpectedExpertSha256 = $env:QM_EXPECTED_EX5_SHA256,
     [switch]$AllowRunningTerminal,
     [switch]$AllowMissingRealTicksLogMarker,
     # Q09_NEWS authenticates the structured entry stream for every independent
@@ -2312,6 +2314,25 @@ if ($null -ne $deployedExpertIdentity) {
     } else {
         $expertBinaryIdentity.deployed = $deployedExpertIdentity
     }
+}
+$normalizedExpectedExpertSha256 = if ([string]::IsNullOrWhiteSpace($ExpectedExpertSha256)) {
+    $null
+} else {
+    $ExpectedExpertSha256.ToLowerInvariant()
+}
+if ($SkipExpertDeploy.IsPresent -and $null -eq $normalizedExpectedExpertSha256) {
+    throw "run_smoke.deploy_failed terminal=$effectiveTerminal expert='$Expert' err='SkipExpertDeploy requires ExpectedExpertSha256'"
+}
+if ($null -ne $normalizedExpectedExpertSha256) {
+    if ($null -eq $deployedExpertIdentity) {
+        throw "run_smoke.deploy_failed terminal=$effectiveTerminal dest='$deployedExpertPath' err='required EX5 is missing after deploy'"
+    }
+    if ([string]$deployedExpertIdentity.sha256 -cne $normalizedExpectedExpertSha256) {
+        throw ("run_smoke.deploy_failed terminal={0} dest='{1}' err='required/deployed SHA256 mismatch expected={2} actual={3}'" -f $effectiveTerminal, $deployedExpertPath, $normalizedExpectedExpertSha256, $deployedExpertIdentity.sha256)
+    }
+    $expertBinaryIdentity['required_sha256'] = $normalizedExpectedExpertSha256
+    $expertBinaryIdentity['pre_dispatch_verified'] = $true
+    Write-Host ("run_smoke.deploy_hash_verified terminal={0} expert='{1}' sha256={2}" -f $effectiveTerminal, $Expert, $normalizedExpectedExpertSha256)
 }
 
 if ($SetFile) {

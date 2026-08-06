@@ -946,6 +946,10 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         def fake_run(command: list[str], **_kwargs: object) -> SimpleNamespace:
             commands.append(command)
             self.assertIn("-RequireFreshLoggerSample", command)
+            self.assertEqual(
+                command[command.index("-ExpectedExpertSha256") + 1],
+                contract.sha256_file(self.ex5),
+            )
             self.assertIn("-SmokeMode", command)
             self.assertEqual(command[command.index("-MinTrades") + 1], "0")
             report_root = Path(command[command.index("-ReportRoot") + 1])
