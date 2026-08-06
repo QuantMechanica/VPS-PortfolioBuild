@@ -111,3 +111,53 @@ def test_watchdog_producer_exports_recovery_contract() -> None:
     assert "$script:QmLiveAlarmStateVersion = 3" in helper
     assert "recovery_task_contract_ready" in helper
     assert "-RecoveryTaskContractReady ([bool]$recoveryTasks.ready)" in watchdog
+
+
+def test_morning_safety_failure_pages_once_per_run(tmp_path: Path) -> None:
+    state_file = tmp_path / "morning_safety_check.json"
+    state_file.write_text(
+        json.dumps(
+            {
+                "generated_utc": "2026-08-06T02:45:00Z",
+                "checks": [
+                    {"name": "disk_headroom", "status": "FAILED", "detail": "D: 3GB"},
+                    {"name": "live_terminals", "status": "OK", "detail": "both running"},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    kwargs = {
+        "safety_state_file": state_file,
+        "mail_state_file": tmp_path / "mail_state.json",
+        "log_file": tmp_path / "mail.jsonl",
+        "now": dt.datetime(2026, 8, 6, 2, 45, tzinfo=UTC),
+        "dry_run": True,
+    }
+    first = mailer.process_morning_safety_once(**kwargs)
+    second = mailer.process_morning_safety_once(**kwargs)
+    assert first["decision"] == "FAILED_PAGE"
+    assert first["send_result"]["dry_run"] is True
+    assert second["decision"] == "DUPLICATE_SUPPRESSED"
+
+
+def test_morning_safety_all_ok_never_mails(tmp_path: Path) -> None:
+    state_file = tmp_path / "morning_safety_check.json"
+    state_file.write_text(
+        json.dumps(
+            {
+                "generated_utc": "2026-08-06T02:45:00Z",
+                "checks": [{"name": "disk_headroom", "status": "OK", "detail": "D: 30GB"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    event = mailer.process_morning_safety_once(
+        safety_state_file=state_file,
+        mail_state_file=tmp_path / "mail_state.json",
+        log_file=tmp_path / "mail.jsonl",
+        now=dt.datetime(2026, 8, 6, 2, 45, tzinfo=UTC),
+        dry_run=True,
+    )
+    assert event["decision"] == "NONE"
+    assert not (tmp_path / "mail_state.json").exists()

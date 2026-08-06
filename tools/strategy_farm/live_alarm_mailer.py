@@ -34,6 +34,8 @@ DEFAULT_ALARM_FILE = REPORTS_STATE / "live_alarm_state.json"
 DEFAULT_CONSUMER_STATE = REPORTS_STATE / "live_alarm_mailer_state.json"
 DEFAULT_LOG_FILE = REPORTS_STATE / "live_alarm_mailer.jsonl"
 DEFAULT_MAINTENANCE_FLAG = REPORTS_STATE / "LIVE_UPTIME_MAINTENANCE.flag"
+DEFAULT_MORNING_SAFETY_STATE = REPORTS_STATE / "morning_safety_check.json"
+DEFAULT_MORNING_SAFETY_MAIL_STATE = REPORTS_STATE / "morning_safety_mail_state.json"
 
 ALARM_CONDITIONS = frozenset(
     {
@@ -364,6 +366,108 @@ def process_once(
     return event
 
 
+def _build_morning_safety_mail(
+    failures: list[dict[str, Any]], state: dict[str, Any]
+) -> tuple[str, str, str]:
+    subject = f"[QM LIVE] MORNING SAFETY FAILED - {len(failures)} check(s)"
+    generated = str(state.get("generated_utc") or "?")
+    lines = [
+        "QuantMechanica 04:45 morning safety check",
+        f"Run: {generated}",
+        f"FAILED checks: {len(failures)}",
+        "",
+    ]
+    for check in failures:
+        lines.append(f"- {check.get('name')}: {check.get('detail', '')}")
+    lines.extend(
+        [
+            "",
+            "No terminal was stopped and no reboot/AutoTrading action is permitted by this sweep.",
+            "OWNER-ratified immediate live-uptime exception (2026-08-06).",
+        ]
+    )
+    text_body = "\n".join(lines)
+    p = PALETTE
+    rows = "".join(
+        "<tr><td style='padding:9px 0;border-top:1px solid {border};'>"
+        "<b>{name}</b><br><span style='color:{muted}'>{detail}</span></td></tr>".format(
+            border=p["border"],
+            muted=p["text_muted"],
+            name=html.escape(str(check.get("name") or "unknown")),
+            detail=html.escape(str(check.get("detail") or "")),
+        )
+        for check in failures
+    )
+    html_body = f"""<!doctype html><html><body style="background:{p['bg']};font-family:Segoe UI,Arial,sans-serif;color:{p['text']}">
+<table width="100%"><tr><td align="center"><table width="640" style="background:{p['surface_1']};border:1px solid {p['border']};border-radius:10px">
+<tr><td style="padding:22px"><div style="font-size:11px;color:{p['accent']};letter-spacing:1.5px">QUANTMECHANICA LIVE OPS</div>
+<h2 style="margin:8px 0;color:{p['fail']}">04:45 SAFETY FAILED</h2>
+<div style="color:{p['text_muted']}">{len(failures)} check(s) need attention &middot; {html.escape(generated)}</div></td></tr>
+<tr><td style="padding:0 22px 18px"><table width="100%">{rows}</table></td></tr>
+<tr><td style="padding:14px 22px;background:{p['surface_0']};font-size:11px;color:{p['text_muted']}">
+Start-only sweep &middot; no reboot &middot; no AutoTrading mutation &middot; OWNER-ratified exception 2026-08-06</td></tr>
+</table></td></tr></table></body></html>"""
+    return subject, text_body, html_body
+
+
+def process_morning_safety_once(
+    *,
+    safety_state_file: Path,
+    mail_state_file: Path,
+    log_file: Path,
+    now: dt.datetime,
+    dry_run: bool = False,
+    sender: Sender = _send_mail_with_retries,
+) -> dict[str, Any]:
+    """Page once for a morning-safety run that contains any FAILED check."""
+    safety = _load_json(safety_state_file, required=True)
+    checks = safety.get("checks")
+    if not isinstance(checks, list):
+        raise ValueError("morning safety checks must be an array")
+    failures = [
+        item for item in checks
+        if isinstance(item, dict) and str(item.get("status") or "").upper() == "FAILED"
+    ]
+    run_id = str(safety.get("generated_utc") or "")
+    if not run_id:
+        raise ValueError("morning safety state is missing generated_utc")
+    previous = _load_json(mail_state_file)
+    event: dict[str, Any] = {
+        "ts": _utc_stamp(now),
+        "decision": "NONE",
+        "channel": "morning_safety",
+        "run_id": run_id,
+        "failure_count": len(failures),
+        "dry_run": dry_run,
+    }
+    if not failures:
+        _append_log(log_file, event)
+        return event
+    if previous.get("last_run_id") == run_id:
+        event["decision"] = "DUPLICATE_SUPPRESSED"
+        _append_log(log_file, event)
+        return event
+
+    subject, text_body, html_body = _build_morning_safety_mail(failures, safety)
+    reserved = {
+        "schema_version": 1,
+        "last_run_id": run_id,
+        "last_reserved_utc": _utc_stamp(now),
+        "last_subject": subject,
+        "last_send_result": {"reserved": True, "dry_run": dry_run},
+    }
+    _atomic_write_json(mail_state_file, reserved)
+    if dry_run:
+        send_result: dict[str, Any] = {"sent": False, "dry_run": True, "subject": subject}
+    else:
+        send_result = sender(subject, text_body, html_body)
+    reserved["last_send_result"] = send_result
+    _atomic_write_json(mail_state_file, reserved)
+    event.update({"decision": "FAILED_PAGE", "subject": subject, "send_result": send_result})
+    _append_log(log_file, event)
+    return event
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--alarm-file", type=Path, default=DEFAULT_ALARM_FILE)
@@ -373,6 +477,16 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--repeat-minutes", type=int, default=30)
     parser.add_argument("--now-utc", help="Deterministic UTC timestamp for fixture evidence")
     parser.add_argument("--dry-run", action="store_true", help="Render/reserve without SMTP")
+    parser.add_argument(
+        "--morning-safety-file",
+        type=Path,
+        help="Send the FAILED checks from one morning_safety_check.json run",
+    )
+    parser.add_argument(
+        "--morning-safety-mail-state-file",
+        type=Path,
+        default=DEFAULT_MORNING_SAFETY_MAIL_STATE,
+    )
     return parser
 
 
@@ -384,15 +498,24 @@ def main(argv: list[str] | None = None) -> int:
     if now is None:
         raise SystemExit("--now-utc must be an ISO-8601 UTC timestamp")
     try:
-        event = process_once(
-            alarm_file=args.alarm_file,
-            consumer_state_file=args.consumer_state_file,
-            maintenance_flag=args.maintenance_flag,
-            log_file=args.log_file,
-            now=now,
-            repeat_minutes=args.repeat_minutes,
-            dry_run=args.dry_run,
-        )
+        if args.morning_safety_file:
+            event = process_morning_safety_once(
+                safety_state_file=args.morning_safety_file,
+                mail_state_file=args.morning_safety_mail_state_file,
+                log_file=args.log_file,
+                now=now,
+                dry_run=args.dry_run,
+            )
+        else:
+            event = process_once(
+                alarm_file=args.alarm_file,
+                consumer_state_file=args.consumer_state_file,
+                maintenance_flag=args.maintenance_flag,
+                log_file=args.log_file,
+                now=now,
+                repeat_minutes=args.repeat_minutes,
+                dry_run=args.dry_run,
+            )
     except Exception as exc:
         error = {
             "ts": _utc_stamp(now),

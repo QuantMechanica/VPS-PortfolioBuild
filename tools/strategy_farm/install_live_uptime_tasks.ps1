@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Install both live MT5 logon tasks, resident session supervisor, and SYSTEM watchdog.
+  Install live MT5 recovery, immediate alarm, and 04:45 safety-check tasks.
 
 .DESCRIPTION
   The terminals are GUI applications and therefore run with an InteractiveToken
@@ -28,7 +28,8 @@ $dxzProfileScript = Join-Path $RepoRoot 'tools\strategy_farm\prepare_dxz_v2_live
 $sessionSupervisorScript = Join-Path $RepoRoot 'tools\strategy_farm\Live_MT5_SessionSupervisor.ps1'
 $sessionSupervisorStarter = Join-Path $RepoRoot 'tools\strategy_farm\Start_Live_SessionSupervisor.ps1'
 $alarmMailerScript = Join-Path $RepoRoot 'tools\strategy_farm\live_alarm_mailer.py'
-foreach ($path in @($dxzScript, $ftmoScript, $watchdogScript, $dxzProfileScript, $sessionSupervisorScript, $sessionSupervisorStarter)) {
+$morningSafetyScript = Join-Path $RepoRoot 'tools\strategy_farm\Morning_Safety_Check.ps1'
+foreach ($path in @($dxzScript, $ftmoScript, $watchdogScript, $dxzProfileScript, $sessionSupervisorScript, $sessionSupervisorStarter, $morningSafetyScript)) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Required script missing: $path" }
     $tokens = $null
     $parseErrors = $null
@@ -152,7 +153,7 @@ if ($existingSupervisor -and $existingSupervisor.State -eq 'Running') {
 Enable-ScheduledTask -TaskName 'QM_Live_MT5_SessionSupervisor' | Out-Null
 
 # OWNER 2026-08-06 ("Der Reboot Heilpfad ist approved!"): the controlled-reboot
-# last-resort heal is armed — no -NoReboot. The script-side guards remain: it
+# last-resort heal is armed -- no -NoReboot. The script-side guards remain: it
 # never fires while ANY live terminal process exists, requires verified
 # autologon + recovery-task contract, 2 confirm cycles, 6h cooldown, and a
 # cancellable 20s countdown with re-probe.
@@ -197,6 +198,34 @@ Register-ScheduledTask `
     -Description 'OWNER-ratified live-terminal transition mail: raise, all-clear, and one persistent-alarm escalation per 30 minutes max; maintenance-suppressed.' `
     -Force | Out-Null
 Enable-ScheduledTask -TaskName 'QM_Live_AlarmMailer_1min' | Out-Null
+
+# OWNER 2026-08-06: complete a start-only sweep before the nominal 05:00
+# local QM5_13213 bracket. Broker/local DST edge weeks can shift +/-1 hour;
+# OWNER may retune the local trigger after observation.
+$morningSafetyAction = New-ScheduledTaskAction `
+    -Execute "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" `
+    -Argument "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$morningSafetyScript`"" `
+    -WorkingDirectory $RepoRoot
+$morningSafetyTrigger = New-ScheduledTaskTrigger `
+    -Daily `
+    -At ([DateTime]::Today.AddHours(4).AddMinutes(45))
+$morningSafetySettings = New-ScheduledTaskSettingsSet `
+    -AllowStartIfOnBatteries `
+    -DontStopIfGoingOnBatteries `
+    -StartWhenAvailable `
+    -MultipleInstances IgnoreNew `
+    -ExecutionTimeLimit (New-TimeSpan -Minutes 14) `
+    -RestartCount 1 `
+    -RestartInterval (New-TimeSpan -Minutes 1)
+Register-ScheduledTask `
+    -TaskName 'QM_Morning_Safety_Check_0445' `
+    -Action $morningSafetyAction `
+    -Trigger $morningSafetyTrigger `
+    -Settings $morningSafetySettings `
+    -Principal $systemPrincipal `
+    -Description 'Daily 04:45 local start-only safety sweep: governed live recovery, factory pulse, news freshness, disk and recovery-contract evidence; no stop/reboot/AutoTrading.' `
+    -Force | Out-Null
+Enable-ScheduledTask -TaskName 'QM_Morning_Safety_Check_0445' | Out-Null
 
 function Assert-TaskContract {
     param(
@@ -259,6 +288,15 @@ if ($verifiedAlarmMailer.Triggers[0].Repetition.Interval -ne "PT${AlarmMailerMin
 if (-not [string]::Equals(([string]$verifiedAlarmMailer.Actions[0].Execute).Trim(), $PythonwExe, [StringComparison]::OrdinalIgnoreCase)) {
     throw 'QM_Live_AlarmMailer_1min must use windowless pythonw.exe'
 }
+$verifiedMorningSafety = Assert-TaskContract -TaskName 'QM_Morning_Safety_Check_0445' -ExpectedUser 'SYSTEM' `
+    -ExpectedLogonType 'ServiceAccount' -ExpectedScript $morningSafetyScript -ExpectedTriggerClass 'MSFT_TaskDailyTrigger'
+$morningStart = [DateTime]::Parse([string]$verifiedMorningSafety.Triggers[0].StartBoundary)
+if ($morningStart.Hour -ne 4 -or $morningStart.Minute -ne 45) {
+    throw "QM_Morning_Safety_Check_0445 trigger drift: '$($verifiedMorningSafety.Triggers[0].StartBoundary)'"
+}
+if ([string]$verifiedMorningSafety.Settings.ExecutionTimeLimit -ne 'PT14M') {
+    throw "QM_Morning_Safety_Check_0445 execution limit drift: '$($verifiedMorningSafety.Settings.ExecutionTimeLimit)'"
+}
 
 # Superseded and unsafe: event-triggered tscon caused session arbitration races
 # and session destruction on 2026-07-21. Preserve it for forensics, but keep OFF.
@@ -310,7 +348,7 @@ if ($RunNow.IsPresent) {
     Write-Warning 'RunNow was not supplied; SYSTEM-only Autologon LSA verification remains pending.'
 }
 
-foreach ($name in @('QM_T_Live_AtLogon', 'QM_FTMO_AtLogon', 'QM_Live_MT5_SessionSupervisor', 'QM_T_Live_Watchdog', 'QM_Live_AlarmMailer_1min', 'QM_TSCon_Console_OnDisconnect', 'QM_StrategyFarm_HygieneReboot')) {
+foreach ($name in @('QM_T_Live_AtLogon', 'QM_FTMO_AtLogon', 'QM_Live_MT5_SessionSupervisor', 'QM_T_Live_Watchdog', 'QM_Live_AlarmMailer_1min', 'QM_Morning_Safety_Check_0445', 'QM_TSCon_Console_OnDisconnect', 'QM_StrategyFarm_HygieneReboot')) {
     $task = Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue
     if (-not $task) { continue }
     $info = Get-ScheduledTaskInfo -TaskName $name

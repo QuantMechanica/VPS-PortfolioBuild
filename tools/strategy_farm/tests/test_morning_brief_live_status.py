@@ -525,6 +525,8 @@ def _full_data(live: dict) -> dict:
         "frontier": {"fresh_pass": [], "in_flight": [], "fresh_count": 0, "inflight_count": 0},
         "factory": {"color": mb.EMERALD, "label": "GRÜN", "workers": 10,
                     "d_free": 200.0, "infra": 0.0, "reason": "10/10 Worker."},
+        "morning_safety": {"color": mb.EMERALD, "label": "OK",
+                           "summary": "04:45-Safety: 7/7 OK, 0 FAILED."},
         "actions": [],
         "quota": {"claude": {"week_pct": 40}, "codex": {"week_pct": 50}},
         "heartbeats": [],

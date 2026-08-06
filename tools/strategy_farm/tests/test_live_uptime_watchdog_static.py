@@ -122,7 +122,12 @@ def test_installer_arms_only_interactive_live_launches_and_system_watchdog() -> 
     assert "-ExecutionTimeLimit ([TimeSpan]::Zero)" in source
     assert "-RestartCount 255" in source
     assert "PT45S" in source
-    assert '-File `"$watchdogScript`" -NoReboot' in source
+    # OWNER 2026-08-06 separately armed the regular watchdog's guarded
+    # controlled-reboot heal. The 04:45 start-only sweep retains its own hard
+    # -NoReboot invocation and must never inherit that authority.
+    assert '-File `"$watchdogScript`""' in source
+    morning = (ROOT / "tools" / "strategy_farm" / "Morning_Safety_Check.ps1").read_text(encoding="ascii")
+    assert "-File $watchdogScript -NoReboot" in morning
 
 
 def test_live_launchers_reject_force_and_verify_experts_section() -> None:
