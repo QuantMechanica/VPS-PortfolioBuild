@@ -15567,3 +15567,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20249,xauxag-vr-spread,1,XAGUSD.DWX,202490001,2026-08-06T13:55:57Z,Codex,active
 20250,usdchf-audjpy,0,USDCHF.DWX,202500000,2026-08-06T17:55:47Z,Codex,active
 20250,usdchf-audjpy,1,AUDJPY.DWX,202500001,2026-08-06T17:55:47Z,Codex,active
+20251,wti-cal-rsm,0,XTIUSD.DWX,202510000,2026-08-06T18:09:20Z,Codex,active
