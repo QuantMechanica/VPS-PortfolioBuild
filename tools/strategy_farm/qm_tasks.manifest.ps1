@@ -58,6 +58,7 @@ $QM_ALWAYSON_TASKS = @(
     'QM_FTMO_AtLogon',                        # FTMO live/trial MT5 interactive autostart
     'QM_Live_MT5_SessionSupervisor',          # resident per-session recovery during RDP disconnect
     'QM_T_Live_Watchdog',                     # both live terminals + session recovery, SYSTEM/1min
+    'QM_Live_AlarmMailer_1min',               # OWNER-ratified 2026-08-06 transition/all-clear live paging
     'QM_StrategyFarm_LiveBookPulse',          # DXZ read-only live telemetry
     'QM_FTMO_TrialPulse',                     # FTMO read-only live telemetry
     'QM_StrategyFarm_LsmHealthProbe',          # session-manager health evidence

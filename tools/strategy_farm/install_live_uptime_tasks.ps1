@@ -12,7 +12,9 @@
 param(
     [string]$RepoRoot = 'C:\QM\repo',
     [string]$InteractiveUser = 'qm-admin',
+    [string]$PythonwExe = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe',
     [ValidateRange(1, 5)][int]$WatchdogMinutes = 1,
+    [ValidateRange(1, 2)][int]$AlarmMailerMinutes = 1,
     [switch]$RunNow
 )
 
@@ -25,6 +27,7 @@ $watchdogScript = Join-Path $RepoRoot 'tools\strategy_farm\T_Live_Watchdog.ps1'
 $dxzProfileScript = Join-Path $RepoRoot 'tools\strategy_farm\prepare_dxz_v2_liveops_profile.ps1'
 $sessionSupervisorScript = Join-Path $RepoRoot 'tools\strategy_farm\Live_MT5_SessionSupervisor.ps1'
 $sessionSupervisorStarter = Join-Path $RepoRoot 'tools\strategy_farm\Start_Live_SessionSupervisor.ps1'
+$alarmMailerScript = Join-Path $RepoRoot 'tools\strategy_farm\live_alarm_mailer.py'
 foreach ($path in @($dxzScript, $ftmoScript, $watchdogScript, $dxzProfileScript, $sessionSupervisorScript, $sessionSupervisorStarter)) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Required script missing: $path" }
     $tokens = $null
@@ -34,6 +37,8 @@ foreach ($path in @($dxzScript, $ftmoScript, $watchdogScript, $dxzProfileScript,
         throw "PowerShell parse failed for $path : $(($parseErrors.Message) -join '; ')"
     }
 }
+if (-not (Test-Path -LiteralPath $PythonwExe -PathType Leaf)) { throw "pythonw.exe not found: $PythonwExe" }
+if (-not (Test-Path -LiteralPath $alarmMailerScript -PathType Leaf)) { throw "Required script missing: $alarmMailerScript" }
 
 $localUser = Get-LocalUser -Name $InteractiveUser -ErrorAction Stop
 if (-not $localUser.Enabled) { throw "Interactive user is disabled: $InteractiveUser" }
@@ -166,6 +171,28 @@ Register-ScheduledTask `
     -Force | Out-Null
 Enable-ScheduledTask -TaskName 'QM_T_Live_Watchdog' | Out-Null
 
+# WS-E2 OWNER-ratified immediate alarm channel (2026-08-06).  pythonw.exe is
+# the CREATE_NO_WINDOW execution pattern; the consumer is isolated from the
+# watchdog, transition-deduplicated, and never launches or probes a terminal.
+$alarmMailerAction = New-ScheduledTaskAction `
+    -Execute $PythonwExe `
+    -Argument "-X utf8 `"$alarmMailerScript`"" `
+    -WorkingDirectory $RepoRoot
+$alarmMailerTrigger = New-ScheduledTaskTrigger `
+    -Once `
+    -At (Get-Date).AddMinutes(1) `
+    -RepetitionInterval (New-TimeSpan -Minutes $AlarmMailerMinutes) `
+    -RepetitionDuration (New-TimeSpan -Days 3650)
+Register-ScheduledTask `
+    -TaskName 'QM_Live_AlarmMailer_1min' `
+    -Action $alarmMailerAction `
+    -Trigger $alarmMailerTrigger `
+    -Settings $watchdogSettings `
+    -Principal $systemPrincipal `
+    -Description 'OWNER-ratified live-terminal transition mail: raise, all-clear, and one persistent-alarm escalation per 30 minutes max; maintenance-suppressed.' `
+    -Force | Out-Null
+Enable-ScheduledTask -TaskName 'QM_Live_AlarmMailer_1min' | Out-Null
+
 function Assert-TaskContract {
     param(
         [string]$TaskName,
@@ -219,6 +246,14 @@ $verifiedWatchdog = Assert-TaskContract -TaskName 'QM_T_Live_Watchdog' -Expected
 if ($verifiedWatchdog.Triggers[0].Repetition.Interval -ne "PT${WatchdogMinutes}M") {
     throw "QM_T_Live_Watchdog cadence drift: '$($verifiedWatchdog.Triggers[0].Repetition.Interval)'"
 }
+$verifiedAlarmMailer = Assert-TaskContract -TaskName 'QM_Live_AlarmMailer_1min' -ExpectedUser 'SYSTEM' `
+    -ExpectedLogonType 'ServiceAccount' -ExpectedScript $alarmMailerScript -ExpectedTriggerClass 'MSFT_TaskTimeTrigger'
+if ($verifiedAlarmMailer.Triggers[0].Repetition.Interval -ne "PT${AlarmMailerMinutes}M") {
+    throw "QM_Live_AlarmMailer_1min cadence drift: '$($verifiedAlarmMailer.Triggers[0].Repetition.Interval)'"
+}
+if (-not [string]::Equals(([string]$verifiedAlarmMailer.Actions[0].Execute).Trim(), $PythonwExe, [StringComparison]::OrdinalIgnoreCase)) {
+    throw 'QM_Live_AlarmMailer_1min must use windowless pythonw.exe'
+}
 
 # Superseded and unsafe: event-triggered tscon caused session arbitration races
 # and session destruction on 2026-07-21. Preserve it for forensics, but keep OFF.
@@ -270,7 +305,7 @@ if ($RunNow.IsPresent) {
     Write-Warning 'RunNow was not supplied; SYSTEM-only Autologon LSA verification remains pending.'
 }
 
-foreach ($name in @('QM_T_Live_AtLogon', 'QM_FTMO_AtLogon', 'QM_Live_MT5_SessionSupervisor', 'QM_T_Live_Watchdog', 'QM_TSCon_Console_OnDisconnect', 'QM_StrategyFarm_HygieneReboot')) {
+foreach ($name in @('QM_T_Live_AtLogon', 'QM_FTMO_AtLogon', 'QM_Live_MT5_SessionSupervisor', 'QM_T_Live_Watchdog', 'QM_Live_AlarmMailer_1min', 'QM_TSCon_Console_OnDisconnect', 'QM_StrategyFarm_HygieneReboot')) {
     $task = Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue
     if (-not $task) { continue }
     $info = Get-ScheduledTaskInfo -TaskName $name

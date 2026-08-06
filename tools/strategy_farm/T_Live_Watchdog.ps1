@@ -876,6 +876,8 @@ if ($alarmHelperLoaded) {
             -SupervisorReason $sessionSupervisor.reason -SupervisorLaunchFailed ($supervisorAlarmFacts.fresh -and $supervisorAlarmFacts.ftmo_launch_failed)
         Write-LiveAlarmState -AlarmFilePath $alarmStateFile -NowStamp $stamp -WatchdogStatus $status `
             -Maintenance $maintenance -RebootSuppressed $rebootSuppressed `
+            -RecoveryTaskContractReady ([bool]$recoveryTasks.ready) `
+            -RecoveryTaskContractErrors @($recoveryTasks.reasons) `
             -Sessions @{ T_LIVE = $tliveAlarmCondition; FTMO = $ftmoAlarmCondition } `
             -ExpectedStates @{ T_LIVE = $expectedDxzState; FTMO = $expectedFtmoState } `
             -EscalationThreshold $alarmEscalationCycles -DryRun:$DryRun.IsPresent | Out-Null
