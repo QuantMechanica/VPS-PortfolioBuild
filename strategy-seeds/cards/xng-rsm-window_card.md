@@ -57,9 +57,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING_BUILD
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: NOT_STARTED
 review_focus: "Falsify an XNG return-sign trend held only during source-defined physical volatility windows. It is neither the incumbent RSI pullback nor either parent alone; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -293,12 +293,12 @@ manifest; portfolio admission; portfolio-gate edit; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-06 | initial source-bounded XNG seasonal RSM card | G0 | APPROVED |
+| v1 | 2026-08-06 | initial V5 implementation and fixed-risk set | Q01 | PASS: strict compile/build 0 errors, warnings, failures, or build warnings |
 
 ## Pipeline Phase Status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_qm5_20242_xng_rsm_window_g0.md` |
-| Q01 Build Validation | - | PENDING | - |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
-
+| Q01 Build Validation | 2026-08-06 | PASS | strict compile `D:/QM/reports/compile/20260806_063642/summary.csv`; build check `D:/QM/reports/framework/21/build_check_20260806_063642.json` |
+| Q02 Baseline Screening | - | NOT_STARTED | - |
