@@ -116,3 +116,4 @@ portfolio-gate change.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-06 | Initial build from approved G0 card | Q01 strict compile/build PASS; zero errors, warnings, failures, or build warnings |
+| v1.1 | 2026-08-06 | Paced Q02 handoff | Not enqueued at binding 10/7 factory-terminal CPU ceiling; no tester run |
