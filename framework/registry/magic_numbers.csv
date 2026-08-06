@@ -15557,3 +15557,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20242,xng-rsm-window,0,XNGUSD.DWX,202420000,2026-08-06T06:28:57Z,Codex,active
 20243,xauxag-tom-xmom3,0,XAUUSD.DWX,202430000,2026-08-06T07:37:49Z,Codex,active
 20243,xauxag-tom-xmom3,1,XAGUSD.DWX,202430001,2026-08-06T07:37:49Z,Codex,active
+20244,wti-trend-sign,0,XTIUSD.DWX,202440000,2026-08-06T08:26:56Z,Codex,active
