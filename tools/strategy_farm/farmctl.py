@@ -9048,12 +9048,12 @@ def _spawn_claude_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[st
     Idempotent: if an ea_review task already exists for this build, skip.
     """
     build_task_id = build_task_row["id"]
-    # Check if review already exists
-    with connect(root) as conn:
-        existing = conn.execute(
-            "SELECT id FROM tasks WHERE kind='ea_review' AND payload_json LIKE ?",
-            (f"%\"build_task_id\": \"{build_task_id}\"%",),
-        ).fetchone()
+    # A previous build generation may already have an EA review.  It must not
+    # suppress review of the current generation (the July 31-August 6 review
+    # starvation incident repeatedly selected these rows, then rejected them
+    # here as already reviewed).  Resolve the JSON contract structurally so
+    # compact payloads and key ordering cannot change idempotence.
+    existing = _current_generation_ea_review(root, build_task_row)
     if existing:
         return {"spawned": False, "reason": "ea_review task already exists", "review_task_id": existing[0]}
 
@@ -9651,21 +9651,7 @@ def _spawn_codex_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[str
     record_review_result expects APPROVE_FOR_BACKTEST or REJECT_REWORK.
     """
     build_task_id = build_task_row["id"]
-    build_payload = json.loads(build_task_row["payload_json"] or "{}")
-    with connect(root) as conn:
-        existing_rows = conn.execute(
-            "SELECT id, payload_json FROM tasks WHERE kind='ea_review' AND payload_json LIKE ?",
-            (f"%\"build_task_id\": \"{build_task_id}\"%",),
-        ).fetchall()
-    existing = None
-    for candidate in existing_rows:
-        try:
-            candidate_payload = json.loads(candidate["payload_json"] or "{}")
-        except (json.JSONDecodeError, TypeError):
-            continue
-        if _review_matches_build_generation(candidate_payload, build_payload):
-            existing = candidate
-            break
+    existing = _current_generation_ea_review(root, build_task_row)
     if existing:
         return {"spawned": False, "reason": "ea_review task already exists", "review_task_id": existing[0]}
 
@@ -9940,6 +9926,104 @@ def _review_matches_build_generation(
         not (review_payload or {}).get("superseded_by_build_generation")
         and _build_generation(review_payload) == _build_generation(build_payload)
     )
+
+
+def _task_payload_object(payload_json: Any) -> dict[str, Any] | None:
+    """Parse a task payload without accepting malformed/non-object JSON."""
+    try:
+        payload = json.loads(payload_json or "")
+    except (json.JSONDecodeError, TypeError, ValueError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _current_generation_ea_review(
+    root: Path,
+    build_task_row: sqlite3.Row,
+) -> sqlite3.Row | None:
+    """Return an unsuperseded EA review for this exact build generation."""
+    build_payload = _task_payload_object(build_task_row["payload_json"])
+    if build_payload is None:
+        return None
+    build_task_id = str(build_task_row["id"])
+    with connect(root) as conn:
+        review_rows = conn.execute(
+            "SELECT id, status, payload_json FROM tasks "
+            "WHERE kind='ea_review' ORDER BY created_at DESC"
+        ).fetchall()
+    for review_row in review_rows:
+        review_payload = _task_payload_object(review_row["payload_json"])
+        if review_payload is None:
+            continue
+        if review_payload.get("build_task_id") != build_task_id:
+            continue
+        if _review_matches_build_generation(review_payload, build_payload):
+            return review_row
+    return None
+
+
+def _select_ea_review_candidates(
+    conn: sqlite3.Connection,
+    limit: int,
+) -> list[sqlite3.Row]:
+    """Select render-ready final-review builds using the task JSON contract.
+
+    The old SQL used whitespace-sensitive ``LIKE`` fragments and applied LIMIT
+    before renderability was known.  One legacy build without ``codex_result``
+    plus one prior-generation review could therefore consume every free Claude
+    slot forever.  Parse once in memory, match top-level keys exactly, and only
+    then apply the oldest-first bound.
+    """
+    if limit <= 0:
+        return []
+    rows = conn.execute(
+        "SELECT * FROM tasks "
+        "WHERE kind IN ('build_ea', 'codex_review', 'ea_review')"
+    ).fetchall()
+    passed_generations: set[tuple[str, int]] = set()
+    reviewed_generations: set[tuple[str, int]] = set()
+    build_rows: list[tuple[str, str, int, sqlite3.Row]] = []
+
+    for row in rows:
+        payload = _task_payload_object(row["payload_json"])
+        if payload is None:
+            continue
+        kind = row["kind"]
+        if kind == "build_ea":
+            codex_result = payload.get("codex_result")
+            if row["status"] != "done" or not isinstance(codex_result, dict) or not codex_result:
+                continue
+            build_rows.append(
+                (
+                    str(row["updated_at"] or ""),
+                    str(row["id"]),
+                    _build_generation(payload),
+                    row,
+                )
+            )
+            continue
+
+        build_task_id = payload.get("build_task_id")
+        if not isinstance(build_task_id, str) or not build_task_id:
+            continue
+        if payload.get("superseded_by_build_generation") is not None:
+            continue
+        generation_key = (build_task_id, _build_generation(payload))
+        if kind == "codex_review":
+            if row["status"] == "done" and payload.get("verdict") == "PASS":
+                passed_generations.add(generation_key)
+        else:
+            # An EA review of any state owns this generation.  Pending/orphan
+            # recovery remains the repair subsystem's job, not a duplicate spawn.
+            reviewed_generations.add(generation_key)
+
+    candidates = [
+        row
+        for updated_at, build_task_id, generation, row in sorted(build_rows)
+        if (build_task_id, generation) in passed_generations
+        and (build_task_id, generation) not in reviewed_generations
+    ]
+    return candidates[:limit]
 
 
 def _sha256_file(path: Path) -> str:
@@ -14405,39 +14489,26 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
     claude_spawns_this_cycle = 0
     claude_review_slots = max(0, max_parallel_claude - active_claude_count)
     result["claude_review_slots"] = claude_review_slots
+    # Scan beyond the free-slot count so a candidate that loses an idempotence
+    # race or fails prompt rendering cannot hide later valid work.  The scan is
+    # bounded; only successful spawns consume the per-cycle slot budget.
+    claude_review_scan_limit = max(1, claude_review_slots * 4)
     with connect(root) as conn:
-        done_no_review_rows = conn.execute(
-            """
-            SELECT b.* FROM tasks b
-            WHERE b.kind='build_ea' AND b.status='done'
-              AND EXISTS (
-                SELECT 1 FROM tasks cr
-                WHERE cr.kind='codex_review' AND cr.status='done'
-                  AND cr.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
-                  AND cr.payload_json LIKE '%"verdict": "PASS"%'
-                  AND COALESCE(CAST(json_extract(cr.payload_json, '$.build_generation') AS INTEGER), 0)
-                      = COALESCE(CAST(json_extract(b.payload_json, '$.build_generation') AS INTEGER), 0)
-                  AND json_extract(cr.payload_json, '$.superseded_by_build_generation') IS NULL
-              )
-              AND NOT EXISTS (
-                SELECT 1 FROM tasks r
-                WHERE r.kind='ea_review'
-                  AND r.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
-                  AND COALESCE(CAST(json_extract(r.payload_json, '$.build_generation') AS INTEGER), 0)
-                      = COALESCE(CAST(json_extract(b.payload_json, '$.build_generation') AS INTEGER), 0)
-                  AND json_extract(r.payload_json, '$.superseded_by_build_generation') IS NULL
-              )
-            ORDER BY b.updated_at ASC LIMIT ?
-            """,
-            (max(claude_review_slots, 1),),
-        ).fetchall()
+        done_no_review_rows = _select_ea_review_candidates(
+            conn,
+            claude_review_scan_limit,
+        )
+    result["claude_review_candidate_ids"] = [row["id"] for row in done_no_review_rows]
+    result["claude_review_scan_limit"] = claude_review_scan_limit
     result["claude_review_spawn"] = {"spawned": False, "reason": "no review candidate"}
     result["claude_review_spawns_all"] = []
     if done_no_review_rows:
         if claude_disabled:
             result["claude_review_spawn"] = {"spawned": False, "reason": "CLAUDE_DISABLED.flag present; routed to Codex"}
         elif claude_review_slots > 0:
-            for done_no_review in done_no_review_rows[:claude_review_slots]:
+            for done_no_review in done_no_review_rows:
+                if claude_spawns_this_cycle >= claude_review_slots:
+                    break
                 dnr_payload = json.loads(done_no_review["payload_json"])
                 if dnr_payload.get("build_agent") == "claude":
                     # Mirror: Codex performs the final ea_review of Claude-built
@@ -14448,7 +14519,11 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                 result["claude_review_spawns_all"].append(sp)
                 if sp.get("spawned"):
                     claude_spawns_this_cycle += 1
-            result["claude_review_spawn"] = (
+            first_spawn = next(
+                (sp for sp in result["claude_review_spawns_all"] if sp.get("spawned")),
+                None,
+            )
+            result["claude_review_spawn"] = first_spawn or (
                 result["claude_review_spawns_all"][0]
                 if result["claude_review_spawns_all"]
                 else {"spawned": False, "reason": "no review candidate"}
