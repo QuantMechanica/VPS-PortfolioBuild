@@ -62,7 +62,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: PENDING
 review_focus: "Falsify an XNG physical-season/memory stream whose monthly serial-dependence state and bidirectional mapping are structurally unlike the certified QM5_12567 two-day long-only oscillator. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -316,6 +316,7 @@ manifest; portfolio admission; portfolio-gate edit; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-06 | initial source-bounded XNG memory/window card and strict build | Q01 | PASS |
+| v1.1 | 2026-08-06 | paced Q02 handoff below the factory-terminal ceiling | Q02 | PENDING |
 
 ## Pipeline Phase Status
 
@@ -323,4 +324,4 @@ manifest; portfolio admission; portfolio-gate edit; or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_qm5_20248_xng_vr_window_g0.md` |
 | Q01 Build Validation | 2026-08-06 | PASS | strict compile `framework/build/compile/20260806_111821/QM5_20248_xng-vr-window.compile.log`; build check `D:/QM/reports/framework/21/build_check_20260806_111926.json` |
-| Q02 Baseline Screening | 2026-08-06 | NOT_ENQUEUED | pending Q01 and paced-fleet ceiling |
+| Q02 Baseline Screening | 2026-08-06 | PENDING | work item `178a7b59-3bb7-49e7-9c28-36b7841be600`; `docs/ops/evidence/2026-08-06_qm5_20248_xng_vr_window_q02_enqueue.md` |
