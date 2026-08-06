@@ -1221,6 +1221,20 @@ function Get-QmLoggerFileState {
     return ,$state
 }
 
+function Test-FarmWorkItemReportRoot {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedReportRoot
+    )
+
+    $candidate = [System.IO.Path]::GetFullPath($ResolvedReportRoot)
+    $workItemsRoot = [System.IO.Path]::GetFullPath("D:\QM\reports\work_items")
+    $workItemsPrefix = $workItemsRoot.TrimEnd('\') + '\'
+    return (($candidate -ieq $workItemsRoot) -or
+        $candidate.StartsWith($workItemsPrefix, [System.StringComparison]::OrdinalIgnoreCase))
+}
+
 function Move-QmLoggerFilesForFreshCapture {
     param(
         [Parameter(Mandatory = $true)]
@@ -3104,6 +3118,12 @@ if ($effectiveTerminal -ieq "DEV1") {
     Write-Output "run_smoke.stage=post_run_pump_skipped (DEV1 isolation)"
 } elseif ($effectiveTerminal -ieq "DEV2") {
     Write-Output "run_smoke.stage=post_run_pump_skipped (DEV2 isolation)"
+} elseif (Test-FarmWorkItemReportRoot -ResolvedReportRoot $resolvedReportRoot) {
+    # terminal_worker owns classification and the next claim. Spawning the pump
+    # here makes it a descendant of the worker's KILL_ON_JOB_CLOSE job, so the
+    # otherwise-finished run remains alive until that unrelated pump exits and
+    # can be falsely reaped as ACTIVE_TIMEOUT after a valid summary was written.
+    Write-Output "run_smoke.stage=post_run_pump_skipped (work-item worker owns completion)"
 } elseif (Test-Path 'D:\QM\strategy_farm\state\FACTORY_OFF.flag') {
     Write-Output "run_smoke.stage=post_run_pump_skipped (FACTORY_OFF.flag)"
 } else {
