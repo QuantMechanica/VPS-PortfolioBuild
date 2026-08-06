@@ -15553,3 +15553,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20239,wti-pulltrend,0,XTIUSD.DWX,202390000,2026-08-06T04:15:15Z,Codex,active
 20240,usdchf-gbpjpy,0,USDCHF.DWX,202400000,2026-08-06T04:55:02Z,Codex,active
 20240,usdchf-gbpjpy,1,GBPJPY.DWX,202400001,2026-08-06T04:55:02Z,Codex,active
+20241,wti-seas-anchor,0,XTIUSD.DWX,202410000,2026-08-06T05:30:00Z,Codex,active
