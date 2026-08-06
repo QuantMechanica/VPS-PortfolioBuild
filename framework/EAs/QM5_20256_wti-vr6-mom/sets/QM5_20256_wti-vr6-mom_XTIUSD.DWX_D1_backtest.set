@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20256
+; ea_slug:      wti-vr6-mom
+; ea_version:   v5.0
+; set_version:  s20260807-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   182d23b7991500919fce5826602f2eceada92d2a4a8f1f76a14ebde88083cb72
+; author:       Development
+; date:         2026-08-07
+;==========================================================
+qm_ea_id=20256
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-vr6-mom_card.md
+strategy_vr_window_months=32
+strategy_rank_months=6
+strategy_vr_q=7
+strategy_significance_z=1.64485362695147
+strategy_history_bars_d1=1200
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=35
+strategy_max_spread_points=1500
