@@ -15570,3 +15570,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20251,wti-cal-rsm,0,XTIUSD.DWX,202510000,2026-08-06T18:09:20Z,Codex,active
 20252,usdchf-euraud,0,USDCHF.DWX,202520000,2026-08-06T18:57:12Z,Codex,active
 20252,usdchf-euraud,1,EURAUD.DWX,202520001,2026-08-06T18:57:12Z,Codex,active
+20253,wti-vr3-mom,0,XTIUSD.DWX,202530000,2026-08-06T20:43:07Z,Codex,active
