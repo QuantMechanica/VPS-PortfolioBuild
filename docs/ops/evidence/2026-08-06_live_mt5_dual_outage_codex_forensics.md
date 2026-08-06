@@ -161,3 +161,71 @@ Limitations are explicit: no contemporaneous launcher journal existed; historica
 arguments were overwritten; no Security 4688 or Sysmon process-creation evidence was available; and
 PowerShell event logs had wrapped beyond the incident window. Claims above are separated into
 established fact, bounded inference, and **NOT ESTABLISHED** attribution accordingly.
+
+## Q-B cross-review after the independence seal
+
+After commit `cc6965ac6` sealed Q-A, the parallel Claude report was opened. The two independent
+reports agree on the reboot, exact DXZ exit-2 interval, FTMO's then-`PARKED` behavior, the three
+recovery-contract blockers, the repeated short supervisor actions, and the missing launcher log as
+an incident-level observability defect.
+
+The material differences are confidence boundaries, not contradictory host facts:
+
+- Both reports identify boot-window CIM uncertainty as the leading DXZ hypothesis. Neither has a
+  contemporaneous branch record, so this report retains **NOT ESTABLISHED** rather than promoting
+  the hypothesis to root cause.
+- The parallel report left the supervisor death loop open. This report additionally quantified all
+  20 completed actions and proved their action result was zero, but retained **NOT ESTABLISHED** for
+  the precise normal-exit path because historical arguments/source state are gone.
+- The parallel report hypothesized that the July redundancy layer introduced the task drift. The
+  retained audit window cannot identify that actor or command, so this report records only that the
+  drift existed by 2026-07-26 and predates the crash.
+
+The parallel report's manual-recovery claim was independently corroborated after the seal: both
+surviving terminal processes have parent PID 7024, `C:\Windows\Explorer.EXE`, in session 1. DXZ PID
+9872 was created at 06:25:14 and FTMO PID 10400 at 06:25:16. That evidence is consistent with an
+interactive OWNER start and rules out either hardened launcher as their direct parent.
+
+## Q-C implemented hardening
+
+The proposal above is now implemented in both launchers:
+
+- Every script-controlled completion routes through one centralized function carrying a stable
+  reason and exit code. There are no bare numeric `exit` statements outside that function.
+- Each completion appends one compact JSON record to
+  `D:\QM\reports\state\live_launcher_events.jsonl`. A separate global mutex serializes DXZ and FTMO
+  writers. Records include launcher/script identity, process/user/session, code/reason, boot age,
+  invocation duration, every process-probe attempt, matched exact-path PIDs, and branch details.
+- An unknown process inventory inside the first ten minutes after Windows boot receives at most
+  three total probes with 2-second then 4-second backoff. A known result returns immediately; a
+  duplicate remains a duplicate; exhaustion remains exit 2. Outside that boot window the original
+  single-probe fail-closed behavior remains.
+- Windows PowerShell 5.1 compatibility is explicit: boot age uses `Environment.TickCount`, not the
+  unavailable .NET Core `TickCount64`. A negative long-uptime wrap disables retries safely.
+
+Files changed:
+
+- `tools/strategy_farm/T_Live_ON.ps1`
+- `tools/strategy_farm/FTMO_ON.ps1`
+- `tools/strategy_farm/tests/test_live_uptime_watchdog_static.py`
+
+## Q-D verification
+
+- Windows PowerShell 5.1 parser: PASS for both launchers.
+- Focused pytest: 39 PASS across the live watchdog, RunEx, silent-failure, and alarm suites.
+- Static termination contract: PASS; each launcher contains only centralized `exit $Code`, and all
+  completion calls carry `-Reason`.
+- Static retry contract: PASS; three-probe/ten-minute/2+4-second bounds and immediate known-result
+  return are asserted for both launchers.
+- Safe runtime journal check: both launchers were invoked only with their deliberately unsupported
+  `-Force` switch, which exits before any terminal inventory or launch path. DXZ and FTMO each
+  returned 2 and the final-code check appended `force_unsupported` records at
+  `2026-08-06T07:11:50.214Z` and `2026-08-06T07:11:55.903Z` respectively. The records correctly
+  captured the headless harness identity/session (`NT AUTHORITY\\SYSTEM`, session 0), script paths,
+  boot age, and empty probe lists.
+- Terminal non-interference check: exact snapshots before and after that runtime check were equal.
+  DXZ remained PID 9872, creation 06:25:14; FTMO remained PID 10400, creation 06:25:16. No terminal
+  process was started, stopped, or replaced.
+
+The supervisor-kill RunEx design remains deliberately unexecuted. Verification above did not stop
+the supervisor, invoke a reboot, toggle AutoTrading, or mutate a live MT5 profile.

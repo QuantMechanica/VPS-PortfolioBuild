@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -140,6 +141,46 @@ def test_live_launchers_reject_force_and_verify_experts_section() -> None:
         assert "one_or_more_terminal64_paths_unreadable" in source
         assert "WaitOne([TimeSpan]::FromSeconds(30))" in source
         assert "LIVE_UPTIME_MAINTENANCE.flag" in source
+
+
+def test_live_launchers_journal_every_exit_and_bound_boot_probe_retries() -> None:
+    launchers = (
+        (DXZ_ON, "Complete-TLiveLauncher"),
+        (FTMO_ON, "Complete-FtmoLauncher"),
+    )
+    for path, completion in launchers:
+        source = path.read_text(encoding="ascii")
+        assert r"D:\QM\reports\state\live_launcher_events.jsonl" in source
+        assert "[IO.File]::AppendAllText" in source
+        assert "Global\\QM.LiveMT5.LauncherJournal" in source
+        assert "Write-LiveLauncherExitRecord -Code $Code -Reason $Reason" in source
+        assert "boot_age_seconds" in source
+        assert "probe_attempts" in source
+        assert "invocation_duration_seconds" in source
+        assert "script_path = $PSCommandPath" in source
+        assert "WindowsIdentity]::GetCurrent().Name" in source
+        assert "[Environment]::TickCount / 1000.0" in source
+        assert "[Environment]::TickCount64" not in source
+
+        # Unknown inventory gets at most three probes and six seconds of sleep,
+        # only during the first ten minutes after boot. A positive/known probe
+        # returns immediately and remains subject to duplicate checks.
+        assert "$bootAge -le 600" in source
+        assert "{ 3 } else { 1 }" in source
+        assert "$retryDelays = @(2, 4)" in source
+        assert "if ($state.probe_ok) { return $state }" in source
+
+        # Every explicit termination must flow through the centralized journal
+        # path and every completion call must carry a stable reason.
+        exit_lines = re.findall(r"(?m)^\s*exit\s+.+$", source)
+        assert [line.strip() for line in exit_lines] == ["exit $Code"]
+        calls = [
+            line.strip()
+            for line in source.splitlines()
+            if completion in line and not line.lstrip().startswith("function ")
+        ]
+        assert calls
+        assert all("-Reason" in line for line in calls), calls
 
 
 def test_dxz_recovery_uses_sealed_v2_plus_read_only_monitor_wrapper() -> None:
