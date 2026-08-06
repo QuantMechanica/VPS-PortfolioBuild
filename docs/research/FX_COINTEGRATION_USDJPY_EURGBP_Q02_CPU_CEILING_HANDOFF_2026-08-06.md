@@ -51,6 +51,21 @@ excluded. The stop rule therefore remained binding; no queue apply, dispatch,
 reservation, tester launch, terminal-control action, or AutoTrading action
 followed this recheck.
 
+### Paced recheck at 16:02Z
+
+A fresh path-anchored read-only sample at `2026-08-06T16:02:06Z` again found
+exactly seven running factory terminals:
+
+```text
+T1, T2, T3, T5, T6, T8, T10
+```
+
+The occupied set changed again, but remained at the configured paced-fleet
+ceiling. `T_Live` and the unrelated FTMO terminal were observed separately
+and excluded; neither was controlled. Per the mission stop rule, no rank-61
+Card or build, queue apply, dispatch, reservation, tester launch,
+terminal-control action, or AutoTrading action followed this recheck.
+
 ## Queue and duplicate audit
 
 The canonical farm returned no work item for `QM5_20246`. A guarded dry run
