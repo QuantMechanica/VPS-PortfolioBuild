@@ -1,0 +1,18 @@
+{
+  "logical_symbol": "QM5_20237_XTI_XNG_ECM_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "One Q02 logical work item evaluates the simultaneous WTI/natural-gas trend-augmented error-correction package. Standalone leg tests are invalid because the edge is the two-leg residual."
+  ]
+}
