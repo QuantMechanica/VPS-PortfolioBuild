@@ -39,7 +39,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01_PASS
+pipeline_phase: Q02_PENDING
 g0_approval_reasoning: "R1 PASS: OWNER-requested fixed FX scan plus OWNER-ratified Tier-A Chan SRC02; R2 PASS: fixed low-frequency two-leg D1 beta/z/ATR package; R3 PASS: traded and conversion histories are Darwinex-native; R4 PASS: structural, deterministic, and learned-model-free."
 ---
 
@@ -263,7 +263,7 @@ data_requirements: "USDCHF.DWX, AUDJPY.DWX, AUDUSD.DWX, and USDJPY.DWX D1 histor
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_usdchf_audjpy_cointegration_g0.md` |
 | Q01 Build Validation | 2026-08-06 | PASS | `D:\QM\reports\framework\21\build_check_20260806_175944.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-06 | PENDING | `D:\QM\reports\state\claude_sweep_enqueue_2026-06-10.json`; work item `f3205711-11a3-4bf8-8e11-a4133159301a` |
 
 ## 16. Lessons Captured
 
@@ -274,3 +274,5 @@ data_requirements: "USDCHF.DWX, AUDJPY.DWX, AUDUSD.DWX, and USDJPY.DWX D1 histor
   one-shot sleeve, with retirement rather than rescue after economic failure.
 - 2026-08-06: The fixed-beta, sign-aware two-leg build compiled with zero
   errors and zero warnings and passed the strict Q01 framework gate.
+- 2026-08-06: Guarded enqueue selected the logical basket preset exactly once
+  and skipped the physical host preset.
