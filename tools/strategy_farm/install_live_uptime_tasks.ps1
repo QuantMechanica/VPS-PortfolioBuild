@@ -12,7 +12,7 @@
 param(
     [string]$RepoRoot = 'C:\QM\repo',
     [string]$InteractiveUser = 'qm-admin',
-    [string]$PythonwExe = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe',
+    [string]$PythonwExe = 'C:\Python311\pythonw.exe',
     [ValidateRange(1, 5)][int]$WatchdogMinutes = 1,
     [ValidateRange(1, 2)][int]$AlarmMailerMinutes = 1,
     [switch]$RunNow
@@ -151,9 +151,14 @@ if ($existingSupervisor -and $existingSupervisor.State -eq 'Running') {
 }
 Enable-ScheduledTask -TaskName 'QM_Live_MT5_SessionSupervisor' | Out-Null
 
+# OWNER 2026-08-06 ("Der Reboot Heilpfad ist approved!"): the controlled-reboot
+# last-resort heal is armed — no -NoReboot. The script-side guards remain: it
+# never fires while ANY live terminal process exists, requires verified
+# autologon + recovery-task contract, 2 confirm cycles, 6h cooldown, and a
+# cancellable 20s countdown with re-probe.
 $watchdogAction = New-ScheduledTaskAction `
     -Execute "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" `
-    -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$watchdogScript`" -NoReboot" `
+    -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$watchdogScript`"" `
     -WorkingDirectory $RepoRoot
 $watchdogTrigger = New-ScheduledTaskTrigger `
     -Once `
