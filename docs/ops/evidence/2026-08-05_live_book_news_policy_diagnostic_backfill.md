@@ -883,3 +883,21 @@ and set `rate_limited=true` in
 All three basket setfiles independently read `RISK_FIXED=1000` and
 `RISK_PERCENT=0`. No raw database update, terminal interruption, T_Live write,
 AutoTrading change, pipeline verdict, or admission claim was made.
+
+## 2026-08-06 08:38 CEST - QM5_11421 transient generation rerun
+
+Router task `a1f0a936-2c52-4e2f-af48-f9d69d8834ae` appended generation-3
+successor `ad3d6327-044c-5685-ada7-ee71ea30cb3e` for QM5_11421/EURUSD from
+predecessor `13860911-0db4-56fc-b82f-00746bf2cfd7`, excluding T5. The enqueue
+receipt SHA-256 is
+`a4829e7b091753dbc491e4ea2c9107b567cdbc5745ca43a3d8a44446bc5b642a`.
+
+An independent post-enqueue audit found 40/40 ordered equality for run identity,
+setfile hash, arm, compliance, temporal mode, seed, and paired-base identity.
+The successor carries sealed anchor SHA-256
+`213a305c54402e212fab4b007eb3fb776025e6df317e1a298f84859174f4478c`,
+binds `RISK_FIXED=1000` and `RISK_PERCENT=0`, and had zero canonical
+`q09_news_tests` rows. It was pending, unclaimed, and `RUNNABLE_BOUND` at the
+audit. The rerun receipt authenticated five extant transient/no-receipt failure
+sidecars; no missing sixth artifact is invented. This remains diagnostic
+non-admission work with no policy or pipeline verdict.
