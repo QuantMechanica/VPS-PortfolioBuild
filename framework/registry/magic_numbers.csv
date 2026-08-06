@@ -11568,11 +11568,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11643,robo-ema828-cci30-psar-h1,2,USDJPY.DWX,116430002,2026-06-18,Claude,reserved
 11643,robo-ema828-cci30-psar-h1,3,USDCHF.DWX,116430003,2026-06-18,Claude,reserved
 11643,robo-ema828-cci30-psar-h1,4,AUDUSD.DWX,116430004,2026-06-18,Claude,reserved
-11646,robo-rsi8-pending-d1,0,EURUSD.DWX,116460000,2026-06-18,Claude,reserved
-11646,robo-rsi8-pending-d1,1,GBPUSD.DWX,116460001,2026-06-18,Claude,reserved
-11646,robo-rsi8-pending-d1,2,AUDUSD.DWX,116460002,2026-06-18,Claude,reserved
-11646,robo-rsi8-pending-d1,3,USDJPY.DWX,116460003,2026-06-18,Claude,reserved
-11646,robo-rsi8-pending-d1,4,USDCAD.DWX,116460004,2026-06-18,Claude,reserved
+11646,robo-rsi8-pending-d1,0,EURUSD.DWX,116460000,2026-06-18,Claude,active
+11646,robo-rsi8-pending-d1,1,GBPUSD.DWX,116460001,2026-06-18,Claude,active
+11646,robo-rsi8-pending-d1,2,AUDUSD.DWX,116460002,2026-06-18,Claude,active
+11646,robo-rsi8-pending-d1,3,USDJPY.DWX,116460003,2026-06-18,Claude,active
+11646,robo-rsi8-pending-d1,4,USDCAD.DWX,116460004,2026-06-18,Claude,active
 11657,pp-hs-rev,0,EURUSD.DWX,116570000,2026-06-18,Claude,reserved
 11657,pp-hs-rev,1,GBPUSD.DWX,116570001,2026-06-18,Claude,reserved
 11657,pp-hs-rev,2,XAUUSD.DWX,116570002,2026-06-18,Claude,reserved
