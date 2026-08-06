@@ -1,6 +1,6 @@
 ---
 strategy_id: AI-CODEX-FX-COINT66-20260609-USDJPY-EURGBP
-ea_id: TBD
+ea_id: 20246
 slug: usdjpy-eurgbp
 type: strategy
 status: APPROVED
@@ -24,7 +24,7 @@ markets: [forex]
 timeframes: [D1]
 primary_target_symbols: [USDJPY.DWX, EURGBP.DWX]
 target_symbols: [USDJPY.DWX, EURGBP.DWX]
-logical_symbol: QM5_TBD_USDJPY_EURGBP_COINTEGRATION_D1
+logical_symbol: QM5_20246_USDJPY_EURGBP_COINTEGRATION_D1
 period: D1
 expected_trade_frequency: "Approximately 3 completed two-leg packages per year per traded symbol, inferred from 13 OOS basket state changes across 2023-2024; Q02 must retire the sleeve if realized frequency is below the binding floor."
 expected_trades_per_year_per_symbol: 3
@@ -115,7 +115,7 @@ markets: [forex]
 timeframes: [D1]
 primary_target_symbols: [USDJPY.DWX, EURGBP.DWX]
 host_symbol: USDJPY.DWX
-logical_symbol: QM5_TBD_USDJPY_EURGBP_COINTEGRATION_D1
+logical_symbol: QM5_20246_USDJPY_EURGBP_COINTEGRATION_D1
 tester_currency: USD
 conversion_only_symbols: [GBPUSD.DWX, EURUSD.DWX]
 ```
