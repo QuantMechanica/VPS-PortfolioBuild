@@ -15554,3 +15554,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20240,usdchf-gbpjpy,0,USDCHF.DWX,202400000,2026-08-06T04:55:02Z,Codex,active
 20240,usdchf-gbpjpy,1,GBPJPY.DWX,202400001,2026-08-06T04:55:02Z,Codex,active
 20241,wti-seas-anchor,0,XTIUSD.DWX,202410000,2026-08-06T05:30:00Z,Codex,active
+20242,xng-rsm-window,0,XNGUSD.DWX,202420000,2026-08-06T06:30:00Z,Codex,active
