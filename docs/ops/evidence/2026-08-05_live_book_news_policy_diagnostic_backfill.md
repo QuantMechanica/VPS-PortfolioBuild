@@ -901,3 +901,123 @@ binds `RISK_FIXED=1000` and `RISK_PERCENT=0`, and had zero canonical
 audit. The rerun receipt authenticated five extant transient/no-receipt failure
 sidecars; no missing sixth artifact is invented. This remains diagnostic
 non-admission work with no policy or pipeline verdict.
+
+## 2026-08-06 ~11:55 — Gate-walk verdict: QM5_11132/SP500 diagnostic A/B COMPLETE
+
+Row `7a3a2f4c` (refresh_v3): 40/40 cells, underlying REVIEW_REQUIRED with
+`expanded_7x4_matrix_required` (material effect — waived for the diagnostic
+non-admission purpose as before). Full-window means over 5 seeds:
+
+| Arm | net_r | PF | trades | DD % |
+|---|---|---|---|---|
+| CONTROL OFF/NONE | 7.174 | 1.34 | 84 | 4.03 |
+| POLICY OFF/DXZ | 7.174 | 1.34 | 84 | 4.03 |
+| POLICY PRE30/DXZ | 7.467 | 1.36 | 84 | 4.03 |
+| POLICY PRE60/DXZ | 7.796 | 1.37 | 84 | 4.03 |
+| POLICY PRE30_POST30/DXZ (≈ live default) | 7.467 | 1.36 | 84 | 4.03 |
+| POLICY PRE60_POST60/DXZ | 7.514 | 1.36 | 83 | 4.03 |
+| POLICY SKIP_DAY/DXZ | **2.745** | 1.18 | 41 | 4.72 |
+| POLICY CLOSE_ALL_PRE/DXZ | 7.467 | 1.36 | 84 | 4.03 |
+
+**Diagnostic verdict:** mild temporal windows are neutral-to-slightly-positive
+(entries rarely collide with event windows; PRE60 best at +8.7 % net_r —
+within diagnostic noise, no adoption case). **SKIP_DAY is catastrophic:
+−62 % net_r with doubled-down DD — news days are where SP500 daily
+mean-reversion earns.** Ceremony recommendation: pin the current effective
+policy (PRE30_POST30/DXZ) — and never adopt day-level blocking for this
+sleeve. Three sleeves now show three distinct profiles (11422: all blocking
+hurts; XNG: indifferent; 11132: windows fine, day-skip lethal) — the
+per-sleeve A/B differentiation is earning its cost.
+
+## 2026-08-06 ~12:25 — Gate-walk verdict: QM5_10919/XTIUSD diagnostic A/B COMPLETE (first hidden-tax finding)
+
+Gen-4 row `fcf04081` (refresh_v4, the former min-trade-floor victim): 40/40
+cells, underlying REVIEW_REQUIRED with `expanded_7x4_matrix_required` (waived
+for diagnostics as before). Full-window means over 5 seeds:
+
+| Arm | net_r | PF | trades | DD % |
+|---|---|---|---|---|
+| CONTROL OFF/NONE | 6.172 | 4.52 | 28 | 1.76 |
+| POLICY OFF/DXZ | 6.172 | 4.52 | 28 | 1.76 |
+| POLICY PRE30/DXZ | 6.178 | 4.57 | 27 | 1.76 |
+| POLICY PRE60/DXZ | 6.115 | 4.53 | 26 | 1.76 |
+| POLICY PRE30_POST30/DXZ (≈ live default) | **5.744** | 4.32 | 26 | 1.76 |
+| POLICY PRE60_POST60/DXZ | 5.682 | 4.28 | 25 | 1.76 |
+| POLICY SKIP_DAY/DXZ | **−0.026** | 0.98 | 6 | 1.36 |
+| POLICY CLOSE_ALL_PRE/DXZ | 6.178 | 4.57 | 27 | 1.76 |
+
+**Diagnostic verdict:** first sleeve with a measurable hidden tax in the
+effective live policy — the POST windows filter one to two of only 28 entries,
+and at PF 4.5 those entries carry real PnL: **−7 % net_r vs control for
+PRE30_POST30, −8 % for PRE60_POST60.** Pre-only windows and CLOSE_ALL_PRE are
+free (≈ control). SKIP_DAY annihilates the sleeve (28→6 trades, negative
+net). **Ceremony recommendation: re-pin 10919 to OFF or PRE30 (drop the POST
+window) — a free +7 % net improvement on the #2-weight sleeve.** Frequency
+note: 28 trades over the full window ≈ 4/yr — consistent with its Q02-requal
+MIN_TRADES_NOT_MET and the probation-review frequency flag. Four sleeves,
+four profiles now (11422 all-blocking-hurts · XNG indifferent · 11132
+day-skip-lethal · 10919 post-window-tax).
+
+## 2026-08-06 ~14:00 — Gate-walk verdict: QM5_10706/GBPUSD diagnostic A/B COMPLETE (strongest hidden-tax finding)
+
+Row `831d40fb` (refresh_v2): 40/40 cells, underlying REVIEW_REQUIRED with
+`expanded_7x4_matrix_required` (waived for diagnostics). Full-window means
+over 5 seeds (high-frequency sleeve, 315 trades):
+
+| Arm | net_r | PF | trades | DD % |
+|---|---|---|---|---|
+| CONTROL OFF/NONE | 86.371 | 1.48 | 315 | 9.14 |
+| POLICY OFF/DXZ | 86.371 | 1.48 | 315 | 9.14 |
+| POLICY PRE30/DXZ | 84.606 | 1.47 | 312 | **17.13** |
+| POLICY PRE60/DXZ | 79.575 | 1.44 | 310 | 10.38 |
+| POLICY PRE30_POST30/DXZ (≈ live default) | **78.984** | 1.43 | 310 | **16.10** |
+| POLICY PRE60_POST60/DXZ | 55.577 | 1.30 | 307 | 12.35 |
+| POLICY SKIP_DAY/DXZ | 13.001 | 1.26 | 80 | 13.33 |
+| POLICY CLOSE_ALL_PRE/DXZ | 81.847 | 1.47 | 303 | 17.13 |
+
+**Diagnostic verdict: 11422-class profile at scale — every blocking variant
+hurts.** The effective live default costs −8.6 % net_r AND nearly doubles max
+drawdown (9.14 → 16.10 %); even the mildest window (PRE30, only 3 trades
+filtered) doubles DD, i.e. the filtered entries are disproportionately the
+ones that keep the equity path smooth. Escalation to PRE60_POST60 (−36 %) and
+SKIP_DAY (−85 %) is monotone-destructive. **Ceremony recommendation: re-pin
+10706 to OFF — second concrete re-pin candidate after 10919, and the largest
+single lever so far (+8.6 % net, DD roughly halved vs effective default).**
+Five sleeves, verdict tally: blocking hurts 2 (11422, 10706) · indifferent 1
+(XNG) · day-skip-lethal-only 1 (11132) · post-window-tax 1 (10919).
+
+## 11165/AUDCAD — sixth verdict (~00:55 08-07)
+
+Generation lineage: 7fc27138 (v2, transient-poisoned) → cc754e65 → **da59e191
+(gen-3, COMPLETE: 40/40 cells authentic, underlying REVIEW_REQUIRED =
+diagnostic non-admission wrapper, NOT invalid; adjudicator additionally flags
+`expanded_7x4_matrix_required` for a final gate verdict — the 40-cell read
+below is the diagnostic measurement)**. Selection-window arm table
+(sleeve_arms.py, n = cells per arm across generations):
+
+| Arm | net_r | PF | trades | maxDD% |
+|---|---|---|---|---|
+| CONTROL OFF/NONE | 1.155 | 1.08 | 111 | 3.38 |
+| POLICY OFF/DXZ | 1.155 | 1.08 | 111 | 3.38 |
+| POLICY PRE30/DXZ | −0.294 | 0.98 | 107 | 4.45 |
+| POLICY PRE60/DXZ | −0.843 | 0.94 | 106 | 4.45 |
+| POLICY PRE30_POST30/DXZ (≈ live default class) | −0.134 | 0.99 | 100 | 3.89 |
+| POLICY PRE60_POST60/DXZ | −1.267 | 0.90 | 98 | 3.89 |
+| POLICY SKIP_DAY/DXZ | −4.919 | 0.46 | 41 | 6.04 |
+| POLICY CLOSE_ALL_PRE/DXZ | −0.294 | 0.98 | 107 | 4.45 |
+
+OFF/DXZ == CONTROL exactly (mechanism sanity holds). **Every blocking arm is
+net-negative and PF < 1 while the unblocked sleeve is positive** — removing
+4–13 news-window trades flips the whole selection-window economics; SKIP_DAY
+destroys the sleeve (PF 0.46, trades 111→41, DD 3.38→6.04 %). Same class as
+11422 and 10706. Margins are small in absolute net_r (thin sleeve in this
+window), but the sign is uniform across all six blocking arms.
+
+**Ceremony recommendation: THIRD re-pin candidate — 11165/AUDCAD → OFF**
+(weight #5, 0.52 RISK_PERCENT). Final gate verdict wants the 7×4 expanded
+matrix (105 further cells) — enqueue in a low-load window; the diagnostic
+direction is already unambiguous.
+
+Six sleeves, verdict tally: blocking hurts 3 (11422, 10706, 11165) ·
+indifferent 1 (XNG) · day-skip-lethal-only 1 (11132) · post-window-tax 1
+(10919).
