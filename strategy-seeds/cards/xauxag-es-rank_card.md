@@ -295,7 +295,7 @@ portfolio admission, or portfolio KPI path is authorized.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-06 | APPROVED | `decisions/2026-08-06_qm5_20235_xauxag_es_rank_g0.md` |
 | Q01 Build Validation | 2026-08-06 | PASS | `framework/build/compile/20260806_003832/QM5_20235_xauxag-es-rank.compile.log`; `D:/QM/reports/framework/21/build_check_20260806_003909.json` (0 errors, 0 warnings, 0 gate failures) |
-| Q02 Baseline Screening | — | NOT ENQUEUED | — |
+| Q02 Baseline Screening | 2026-08-06 | NOT ENQUEUED — CPU CEILING | targeted dry run selected one priority item; apply withheld because 8 factory terminals were active against the ceiling of 7 |
 
 ## Lessons Captured
 
