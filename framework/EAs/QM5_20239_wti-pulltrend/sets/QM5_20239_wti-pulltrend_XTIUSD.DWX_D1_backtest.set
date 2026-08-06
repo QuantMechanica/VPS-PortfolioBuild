@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20239
+; ea_slug:      wti-pulltrend
+; ea_version:   v5.0
+; set_version:  s20260806-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   ab7ea996f6592add63808cf81c7655b3d8dfd3f78baf1392d9a9e6c547dbf835
+; author:       Development
+; date:         2026-08-06
+;==========================================================
+qm_ea_id=20239
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-pulltrend_card.md
+strategy_trend_months=12
+strategy_pullback_months=1
+strategy_history_bars=500
+strategy_atr_period=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=40
+strategy_max_spread_points=1500

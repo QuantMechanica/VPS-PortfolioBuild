@@ -6,7 +6,7 @@ authors: Tobias J. Moskowitz, Yao Hua Ooi, Lasse Heje Pedersen
 publication: Journal of Financial Economics, 2012
 url: https://www.aqr.com/Insights/Research/Journal-Article/Time-Series-Momentum
 status: approved_source_complete
-approval_basis: OWNER commodity/energy sleeve missions 2026-07-31 and 2026-08-02
+approval_basis: OWNER commodity/energy sleeve missions through 2026-08-06
 created: 2026-06-27
 created_by: Codex
 last_reviewed: 2026-07-31
@@ -14,8 +14,8 @@ last_reviewed: 2026-07-31
 
 # Time Series Momentum
 
-Canonical source for the `wti-tsmom12m`,
-`tsmom-9m-commodity-xtiusd`, and `xng-tsmom12m-atr` cards.
+Canonical source for the governed WTI/XNG time-series-momentum extraction
+family, including the bounded `wti-pulltrend` entry-timing experiment.
 
 ## Complete-paper review evidence
 
@@ -143,3 +143,42 @@ off.
 - R4: PASS. Native OHLC, calendar, ATR, quote, position, deal-history, and
   framework state only; no trained output, grid, martingale, scale-in, or
   pyramiding.
+
+## WTI pre-pullback trend mechanization boundary
+
+The OWNER commodity/energy sleeve mission dated 2026-08-06 authorizes one
+additional bounded WTI card, `MOP-WTI-PULLTREND-2026_S01`. At the first
+tradable D1 bar of a broker month, it reconstructs fourteen consecutive
+completed broker-month endpoints. The slow state is the sign of the exact
+twelve-completed-month log return ending one full month before the newest
+endpoint. The newest completed-month return must have the opposite sign. The
+EA then enters in the older twelve-month trend direction and holds one monthly
+package.
+
+Only the twelve-month own-return trend and monthly decision/hold cadence come
+from Moskowitz, Ooi, and Pedersen. The non-overlapping one-month counter-move
+gate is a transparent QM entry-timing hypothesis. The paper does not test this
+conjunction, a skipped newest month, the Darwinex continuous CFD, an ATR hard
+stop, fixed-dollar risk, spread caps, or the QM portfolio. No source return,
+volatility, Sharpe ratio, drawdown, trade count, cost, or correlation result
+transfers.
+
+The construction is distinct from pure one-, two-, three-, six-, nine-, or
+twelve-month WTI time-series momentum because an aligned newest month blocks
+entry rather than confirms it. It is also distinct from unconditional WTI
+reversal, fixed-season pullbacks, day-of-month trend, daily channel pullbacks,
+event sleeves, XTI/XNG relative value, and the incumbent XNG cumulative-RSI2
+pullback. The twelve-month trend endpoint, separate newest-month endpoint,
+opposite-sign conjunction, monthly attempt clock, and trend-following trade
+direction are jointly load-bearing.
+
+- R1: PASS. The existing source packet records a complete read of the
+  peer-reviewed *Journal of Financial Economics* paper, its DOI lineage, and
+  durable retrieval hash; WTI is an explicit source commodity.
+- R2: PASS. Fourteen consecutive completed month ends, two non-overlapping
+  return intervals, strict sign rules, one consumed monthly attempt, frozen
+  ATR stop, monthly rollover, and stale exit are deterministic.
+- R3: PASS. Registered `XTIUSD.DWX` D1 history and MT5-native execution state
+  are the only runtime dependencies.
+- R4: PASS. Closed-form return arithmetic only; no trained model, banned
+  indicator, external feed, grid, martingale, scale-in, or pyramiding.
