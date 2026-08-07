@@ -30,7 +30,7 @@ period: D1
 timeframes: [D1]
 expected_trade_frequency: "One consumed decision per broker week; high-volatility gating and top-two ranking should produce roughly 4-12 two-leg packages/year, or about 2-6 entries/year per target symbol."
 expected_trades_per_year_per_symbol: 4
-g0_status: DRAFT
+g0_status: APPROVED
 status: DRAFT
 r1_track_record: PENDING_REVIEW
 r2_mechanical: PENDING_REVIEW
@@ -40,13 +40,14 @@ pipeline_phase: G0
 created: 2026-08-06
 created_by: Research
 last_updated: 2026-08-06
-expected_pf: TBD
-expected_dd_pct: TBD
+expected_pf: 1.3
+expected_dd_pct: 12.0
 risk_class: high
 ml_required: false
 single_symbol_only: false
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 hard_rules_at_risk: [magic_schema, risk_mode_dual, one_position_per_magic_symbol, kill_switch_coverage]
+g0_approval_reasoning: "R1: Lien (2015) Wiley 3rd ed. Ch18 pp.153-160, tier-A OWNER-approved SRC04, complete bounded extract read; R2: fully deterministic weekly-clock carry-efficiency rank + opposite-side atomic 2-leg package, closed bars, hard ATR stops, hysteresis+time exits; R3: all 13 symbols registered .DWX, runtime "
 ---
 
 # FX Carry-Unwind Basket In High Global-FX Volatility
