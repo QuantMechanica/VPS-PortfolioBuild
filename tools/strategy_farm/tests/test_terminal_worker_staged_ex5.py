@@ -165,6 +165,157 @@ class StagedEx5Tests(unittest.TestCase):
             )
             self.assertEqual(failure["expected_ex5_sha256"], required)
 
+    def test_artifact_setfile_phase_runner_uses_registered_staged_ex5_basename(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            repo_root = root / "repo"
+            ea_dir = (
+                repo_root
+                / "framework"
+                / "EAs"
+                / "QM5_12567_cum-rsi2-commodity"
+            )
+            ea_dir.mkdir(parents=True)
+            (
+                repo_root
+                / "framework"
+                / "EAs"
+                / "QM5_12567_unregistered-decoy"
+            ).mkdir()
+            registry = repo_root / "framework" / "registry" / "magic_numbers.csv"
+            registry.parent.mkdir(parents=True)
+            registry.write_text(
+                "ea_id,ea_slug,status\n12567,cum-rsi2-commodity,active\n",
+                encoding="utf-8",
+            )
+            source = ea_dir / "QM5_12567_cum-rsi2-commodity.ex5"
+            source.write_bytes(b"manifest-pinned diagnostic binary")
+            required = hashlib.sha256(source.read_bytes()).hexdigest()
+
+            setfile = (
+                root
+                / "strategy_farm"
+                / "artifacts"
+                / "q09_live_news_backfill_20260805"
+                / "03_QM5_12567_XAUUSD"
+                / "baseline"
+                / "live_derived_diagnostic.set"
+            )
+            setfile.parent.mkdir(parents=True)
+            setfile.write_text(
+                "RISK_FIXED=1000\nRISK_PERCENT=0\n",
+                encoding="utf-8",
+            )
+            mt5_root = root / "mt5"
+            destination = (
+                mt5_root
+                / "T1"
+                / "MQL5"
+                / "Experts"
+                / "QM"
+                / "QM5_12567_cum-rsi2-commodity.ex5"
+            )
+            destination.parent.mkdir(parents=True)
+            destination.write_bytes(source.read_bytes())
+            item = {
+                "id": "4f80a8cf-2cf9-53dd-b59c-414674f24f16",
+                "phase": "Q09_NEWS",
+                "ea_id": "QM5_12567",
+                "symbol": "XAUUSD.DWX",
+                "setfile_path": str(setfile),
+                "payload_json": json.dumps(
+                    {
+                        "staged_ex5_path": str(source),
+                        "staged_ex5_sha256": required,
+                        "staged_ex5": {
+                            "binding_source": "manifest_pinned_staged_ex5",
+                            "source_path": str(source),
+                            "destination_path": str(destination),
+                            "required_sha256": required,
+                            "pre_run_sha256": required,
+                            "verified": True,
+                        },
+                    }
+                ),
+            }
+            commands: list[list[str]] = []
+            spawned_env: dict[str, str] = {}
+
+            class FakeProc:
+                pid = 12567
+
+                def __init__(self, cmd, **kwargs):
+                    commands.append([str(part) for part in cmd])
+                    spawned_env.update(kwargs["env"])
+
+            real_path = Path
+
+            def path_proxy(value) -> Path:
+                if str(value) == r"D:\QM\reports\work_items":
+                    return root / "reports" / "work_items"
+                return real_path(value)
+
+            process_identity = {
+                "process_creation_key": "test-creation-key",
+                "process_image_path": sys.executable,
+                "process_started_at_epoch": 1.0,
+            }
+            with (
+                patch.object(terminal_worker.farmctl, "REPO_ROOT", repo_root),
+                patch.object(terminal_worker.farmctl, "MT5_ROOT", mt5_root),
+                patch.object(terminal_worker.farmctl, "Path", path_proxy),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_ensure_phase_runner_inputs",
+                    return_value=None,
+                ),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_phase_runner_inputs",
+                    return_value={},
+                ),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_phase_runner_cmd_for_work_item",
+                    return_value=[sys.executable, "q09_news_runner.py"],
+                ),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_work_item_artifact_repo_root",
+                    return_value=repo_root,
+                ),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "reap_finished_job_objects",
+                    return_value=None,
+                ),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "suspended_runner_creation_flags",
+                    return_value=0,
+                ),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "bind_spawned_process_to_kill_job",
+                    return_value=process_identity,
+                ),
+                patch.object(terminal_worker.farmctl.subprocess, "Popen", FakeProc),
+            ):
+                result = terminal_worker.farmctl._spawn_phase_runner_for_work_item(
+                    root / "strategy_farm",
+                    item,
+                    "T1",
+                )
+
+            self.assertTrue(result["spawned"])
+            self.assertEqual(result["ea_dir_name"], ea_dir.name)
+            self.assertNotEqual(
+                result.get("reason"),
+                "worker_staged_ex5_destination_path_mismatch",
+            )
+            self.assertEqual(len(commands), 1)
+            self.assertEqual(spawned_env["QM_EXPECTED_EX5_SHA256"], required)
+
     def test_manifest_pinned_drift_keeps_existing_recovery_signature(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)

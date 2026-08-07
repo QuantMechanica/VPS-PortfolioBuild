@@ -6179,6 +6179,8 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
                                       terminal: str) -> dict[str, Any]:
     phase = item_row["phase"]
     ea_dir = _ea_dir_from_setfile_path(item_row["setfile_path"], item_row["ea_id"])
+    if ea_dir is None:
+        ea_dir = _preferred_ea_dir(item_row["ea_id"])
     ea_dir_name = ea_dir.name if ea_dir is not None else item_row["ea_id"]
     # Real phase runners can run several variants for the same EA/phase in
     # parallel. Their default output names are phase-level (`summary.json`,
