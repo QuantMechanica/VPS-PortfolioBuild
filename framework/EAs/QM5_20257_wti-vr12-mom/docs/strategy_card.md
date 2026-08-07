@@ -56,8 +56,8 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify the published WTI R12-q13 memory state as direct crude-oil exposure distinct from the certified XAU/SP500/NDX/XNG book; only Q09 may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -309,11 +309,12 @@ portfolio-gate edit; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-07 | initial source-bounded WTI R12-q13 card | G0 | APPROVED |
+| v1-q01 | 2026-08-07 | deterministic V5 build and strict compile | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-07 | APPROVED | `decisions/2026-08-07_qm5_20257_wti_vr12_mom_g0.md` |
-| Q01 Build Validation | 2026-08-07 | NOT_RUN | pending deterministic allocation and build |
-| Q02 Baseline Screening | 2026-08-07 | NOT_ENQUEUED | pending Q01 PASS and paced-fleet capacity |
+| Q01 Build Validation | 2026-08-07 | PASS | strict compile `D:/QM/reports/compile/20260807_000049/summary.csv`; build check `D:/QM/reports/framework/21/build_check_20260806_235959.json` |
+| Q02 Baseline Screening | 2026-08-07 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-07_qm5_20257_wti_vr12_mom_q01_cpu_stop.md` |

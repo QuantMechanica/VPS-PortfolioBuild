@@ -14,6 +14,8 @@ strategy_mechanic: monthly-wti-twelve-month-return-sign-times-q13-heteroskedasti
 target_symbols: [XTIUSD.DWX]
 period: D1
 pipeline_phase: Q01
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
 last_updated: 2026-08-07
 ---
 
