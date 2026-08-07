@@ -54,9 +54,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
 review_focus: "Falsify a direct WTI monthly path-quality trend whose OLS slope and fixed R-squared gate differ from endpoint momentum, return-sign, calendar, oscillator, and variance-ratio builds; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -291,11 +291,12 @@ or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-07 | initial source-bounded WTI linear-trend quality card | G0 | APPROVED |
+| v1-q01 | 2026-08-07 | deterministic V5 WTI build and strict compile | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-07 | APPROVED | `decisions/2026-08-07_qm5_20261_wti_lr_trend_g0.md` |
-| Q01 Build Validation | 2026-08-07 | NOT_RUN | pending deterministic allocation and strict compile |
-| Q02 Baseline Screening | 2026-08-07 | NOT_ENQUEUED | pending Q01 PASS and paced-fleet capacity |
+| Q01 Build Validation | 2026-08-07 | PASS | `D:/QM/reports/framework/21/build_check_20260807_073248.json`; `D:/QM/reports/compile/20260807_073248/summary.csv` |
+| Q02 Baseline Screening | 2026-08-07 | ENQUEUED | work item `1ddcb021-2d49-4829-aca8-ccf2b1b49e3d` |

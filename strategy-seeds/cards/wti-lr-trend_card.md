@@ -13,9 +13,9 @@ source_author: "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen"
 strategy_mechanic: monthly-wti-thirteen-month-end-log-price-ols-slope-with-fixed-r-squared-path-quality-gate
 target_symbols: [XTIUSD.DWX]
 period: D1
-pipeline_phase: G0
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
 last_updated: 2026-08-07
 ---
 
@@ -42,5 +42,6 @@ Q02 uses `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 
 ## Pipeline Status
 
-G0 is approved under the durable OWNER mission decision. Q01 is not yet run
-and Q02 is not enqueued.
+G0 is approved under the durable OWNER mission decision. Q01 passed the strict
+target-scoped build gate, and Q02 is enqueued as work item
+`1ddcb021-2d49-4829-aca8-ccf2b1b49e3d`.
