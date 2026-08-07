@@ -55,9 +55,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
 review_focus: "Falsify a monthly XAU/XAG market-neutral construction that votes across the source-defined one-, three-, and twelve-month cross-sectional ranks; only Q09 may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -326,11 +326,12 @@ portfolio admission; portfolio-gate edit; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-07 | initial source-bounded XAU/XAG momentum-rank vote card | G0 | APPROVED |
+| v1-q01 | 2026-08-07 | deterministic V5 logical-basket build and strict compile | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-07 | APPROVED | `decisions/2026-08-07_qm5_20260_xauxag_mom_vote_g0.md` |
-| Q01 Build Validation | - | PENDING | - |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q01 Build Validation | 2026-08-07 | PASS | `D:/QM/reports/framework/21/build_check_20260807_051735.json`; `D:/QM/reports/compile/20260807_051735/summary.csv` |
+| Q02 Baseline Screening | 2026-08-07 | ENQUEUED | work item `247fc177-43a3-4bc2-aa66-9a10ed42c151` |
