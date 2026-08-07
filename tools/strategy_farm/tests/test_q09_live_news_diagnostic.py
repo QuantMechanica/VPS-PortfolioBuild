@@ -152,6 +152,37 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temporary.cleanup()
 
+    def write_single_sleeve_campaign(self, artifact_root: Path) -> None:
+        source_anchor = json.loads(self.anchor.read_text(encoding="utf-8"))
+        source_anchor["diagnostic_include_assessment"] = {
+            "path": str(self.includes.resolve()),
+            "sha256": contract.sha256_file(self.includes),
+        }
+        self.anchor.write_bytes(contract.canonical_json_bytes(source_anchor))
+        campaign = {
+            "schema_version": "q09-live-news-backfill-plan/v1",
+            "campaign_id": backfill.CAMPAIGN_ID,
+            "diagnostic_non_admission": True,
+            "sleeves": [{
+                "rank": 2,
+                "ea_id": "QM5_9999",
+                "symbol": "EURUSD.DWX",
+                "period": "H1",
+                "weight": 0.92,
+                "work_item_id": self.work_item_id,
+                "anchor_path": str(self.anchor.resolve()),
+                "anchor_sha256": contract.sha256_file(self.anchor),
+                "baseline_setfile_path": str(self.setfile.resolve()),
+                "baseline_setfile_sha256": contract.sha256_file(self.setfile),
+                "deployed_ex5_path": str(self.ex5.resolve()),
+                "deployed_ex5_sha256": contract.sha256_file(self.ex5),
+            }],
+        }
+        artifact_root.mkdir(parents=True)
+        (artifact_root / "campaign_plan.json").write_bytes(
+            contract.canonical_json_bytes(campaign)
+        )
+
     def bind_and_activate(self) -> str:
         plan_path = Path(self.plan["plan_path"])
         plan_hash = contract.sha256_file(plan_path)
@@ -480,6 +511,210 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
         )
         self.assertNotIn("launch_not_before_utc", rerun_payload)
         self.assertEqual(canonical_count, 0)
+
+    def test_append_only_rerun_accepts_authenticated_spawn_refusal_without_launch_fault(self) -> None:
+        artifact_root = self.root / "spawn-refusal-campaign"
+        self.write_single_sleeve_campaign(artifact_root)
+        failed_at = "2026-08-06T22:55:09+00:00"
+        with farmctl.connect(self.farm) as connection:
+            row = connection.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (self.work_item_id,),
+            ).fetchone()
+            payload = json.loads(row["payload_json"])
+            payload["diagnostic_campaign_id"] = backfill.CAMPAIGN_ID
+            connection.execute(
+                "UPDATE work_items SET status='active',claimed_by='T3',"
+                "payload_json=? WHERE id=?",
+                (json.dumps(payload, sort_keys=True), self.work_item_id),
+            )
+            connection.commit()
+        farmctl.record_work_item_spawn_refusal(
+            self.farm,
+            {"id": self.work_item_id},
+            "T3",
+            {
+                "spawned": False,
+                "phase_runner_scope_blocked": False,
+                "reason": "worker_staged_ex5_destination_path_mismatch",
+            },
+            failed_at=failed_at,
+        )
+
+        task_id = "router-authenticated-spawn-refusal-original"
+        with (
+            mock.patch.object(backfill, "ARTIFACT_ROOT", artifact_root),
+            mock.patch.object(backfill, "FARM_ROOT", self.farm),
+            mock.patch.object(backfill, "CALENDAR_MANIFEST", self.calendar_manifest),
+            mock.patch.object(
+                backfill, "CALENDAR_COMMON_PATH", "QM/q09_news/test/events.csv"
+            ),
+        ):
+            receipt = backfill.enqueue_append_only_rerun(
+                task_id=task_id,
+                predecessor_id=self.work_item_id,
+                avoid_terminal="T3",
+                launch_not_before_utc="2026-08-07T06:30:00Z",
+            )
+
+        proof = receipt["predecessor_infrastructure_proof"]
+        self.assertEqual(proof["proof_kind"], "authenticated_runner_spawn_refusal")
+        self.assertEqual(proof["refusal_terminal"], "T3")
+        self.assertEqual(proof["refusal_failed_at_utc"], failed_at)
+        self.assertTrue(proof["refusal_event_id"].isdigit())
+        self.assertRegex(proof["sha256"], r"^[0-9a-f]{64}$")
+        self.assertEqual(
+            receipt["launch_not_before_utc"],
+            "2026-08-07T06:30:00+00:00",
+        )
+        with farmctl.connect(self.farm) as connection:
+            predecessor_payload = json.loads(connection.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (self.work_item_id,),
+            ).fetchone()["payload_json"])
+            rerun_payload = json.loads(connection.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (receipt["work_item_id"],),
+            ).fetchone()["payload_json"])
+        self.assertNotIn("last_launch_fault_terminal", predecessor_payload)
+        self.assertEqual(
+            rerun_payload["predecessor_infrastructure_proof"],
+            proof,
+        )
+        self.assertEqual(
+            rerun_payload["launch_not_before_utc"],
+            "2026-08-07T06:30:00+00:00",
+        )
+        self.assertEqual(
+            set(rerun_payload["avoid_terminals"]),
+            {"T3", "T6", "T7", "T8", "T9", "T10"},
+        )
+
+    def test_spawn_refusal_timestamp_without_durable_event_is_rejected(self) -> None:
+        failed_at = "2026-08-06T22:55:09+00:00"
+        refusal = {
+            "failed_at_utc": failed_at,
+            "phase": "Q09_NEWS",
+            "phase_runner_scope_blocked": False,
+            "reason": "worker_staged_ex5_destination_path_mismatch",
+            "terminal": "T3",
+        }
+        with farmctl.connect(self.farm) as connection:
+            row = connection.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (self.work_item_id,),
+            ).fetchone()
+            payload = json.loads(row["payload_json"])
+            payload.update({
+                "spawn_refusal": refusal,
+                "verdict_reason": refusal["reason"],
+            })
+            connection.execute(
+                "UPDATE work_items SET status='failed',verdict='INFRA_FAIL',"
+                "claimed_by=NULL,payload_json=?,updated_at=? WHERE id=?",
+                (json.dumps(payload, sort_keys=True), failed_at, self.work_item_id),
+            )
+            predecessor = connection.execute(
+                "SELECT * FROM work_items WHERE id=?",
+                (self.work_item_id,),
+            ).fetchone()
+            with self.assertRaisesRegex(
+                backfill.BackfillError,
+                "lacks one durable refusal event",
+            ):
+                backfill._authenticated_spawn_refusal(
+                    connection,
+                    predecessor,
+                    payload,
+                    farm_root=self.farm,
+                )
+
+    def test_generation_rerun_accepts_authenticated_spawn_refusal_without_summary(self) -> None:
+        artifact_root = self.root / "spawn-refusal-generation-campaign"
+        plan_path = Path(self.plan["plan_path"])
+        plan_hash = contract.sha256_file(plan_path)
+        with (
+            mock.patch.object(backfill, "ARTIFACT_ROOT", artifact_root),
+            mock.patch.object(backfill, "FARM_ROOT", self.farm),
+        ):
+            runner.bind_diagnostic_plan_to_work_item(
+                self.farm,
+                work_item_id=self.work_item_id,
+                plan_path=plan_path,
+                expected_plan_file_sha256=plan_hash,
+                cell_timeout_sec=60,
+            )
+            with farmctl.connect(self.farm) as connection:
+                row = connection.execute(
+                    "SELECT payload_json FROM work_items WHERE id=?",
+                    (self.work_item_id,),
+                ).fetchone()
+                payload = json.loads(row["payload_json"])
+                payload.update({
+                    "diagnostic_campaign_id": backfill.CAMPAIGN_ID,
+                    "diagnostic_generation": 3,
+                    "diagnostic_queue_rank": -98,
+                    "diagnostic_source_rank": 2,
+                    "diagnostic_live_weight": 0.92,
+                    "diagnostic_control": "test-neutralized",
+                    "host_symbol": "EURUSD.DWX",
+                    "host_timeframe": "H1",
+                    "protected_chain_exclusion": [
+                        "round7", "Q09_PORTFOLIO", "Q10"
+                    ],
+                    "sealed_identity_rerun": True,
+                    "sealed_identity_anchor_work_item_id": self.work_item_id,
+                })
+                connection.execute(
+                    "UPDATE work_items SET status='active',verdict=NULL,"
+                    "evidence_path=NULL,claimed_by='T2',payload_json=? WHERE id=?",
+                    (json.dumps(payload, sort_keys=True), self.work_item_id),
+                )
+                connection.commit()
+            failed_at = "2026-08-06T22:54:06+00:00"
+            farmctl.record_work_item_spawn_refusal(
+                self.farm,
+                {"id": self.work_item_id},
+                "T2",
+                {
+                    "spawned": False,
+                    "phase_runner_scope_blocked": False,
+                    "reason": "worker_staged_ex5_destination_path_mismatch",
+                },
+                failed_at=failed_at,
+            )
+
+            receipt = backfill.enqueue_append_only_rerun(
+                task_id="router-authenticated-spawn-refusal-generation",
+                predecessor_id=self.work_item_id,
+                avoid_terminal="T2",
+            )
+
+        self.assertEqual(receipt["diagnostic_generation"], 4)
+        self.assertEqual(receipt["avoid_terminal"], "T2")
+        self.assertEqual(
+            receipt["transient_predecessor_failures"][0]["proof_kind"],
+            "authenticated_runner_spawn_refusal",
+        )
+        self.assertEqual(
+            receipt["transient_predecessor_failures"][0]["refusal_terminal"],
+            "T2",
+        )
+        with farmctl.connect(self.farm) as connection:
+            predecessor = connection.execute(
+                "SELECT evidence_path,payload_json FROM work_items WHERE id=?",
+                (self.work_item_id,),
+            ).fetchone()
+            rerun_payload = json.loads(connection.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (receipt["work_item_id"],),
+            ).fetchone()["payload_json"])
+        self.assertIsNone(predecessor["evidence_path"])
+        self.assertNotIn("terminal", json.loads(predecessor["payload_json"]))
+        self.assertEqual(
+            set(rerun_payload["avoid_terminals"]),
+            {"T2", "T6", "T7", "T8", "T9", "T10"},
+        )
 
     def test_generation_rerun_reuses_sealed_anchor_and_preserves_cell_identities(self) -> None:
         artifact_root = self.root / "campaign"

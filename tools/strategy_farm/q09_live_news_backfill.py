@@ -55,6 +55,9 @@ NEWS_SCOPING_FIX_UTC = datetime(2026, 7, 5, 11, 43, tzinfo=timezone.utc)
 SYMBOL_SLOT_CONSTRUCTOR_FIX_UTC = datetime(2026, 7, 6, 12, 7, tzinfo=timezone.utc)
 FRESH_BUILD_GENERATION = 2
 FRESH_BUILD_QUEUE_OFFSET = -100
+AUTHENTICATED_RERUN_SPAWN_REFUSAL_REASONS = frozenset({
+    "worker_staged_ex5_destination_path_mismatch",
+})
 
 
 @dataclass(frozen=True)
@@ -136,6 +139,26 @@ def write_status(path: Path, value: Any) -> None:
     temporary = path.with_suffix(path.suffix + ".tmp")
     temporary.write_bytes(canonical_bytes(value))
     temporary.replace(path)
+
+
+def normalize_launch_not_before_utc(value: str | None) -> str | None:
+    if value is None or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise BackfillError("rerun launch-not-before timestamp is invalid") from exc
+    if parsed.tzinfo is None:
+        raise BackfillError("rerun launch-not-before timestamp is not timezone-aware")
+    return parsed.astimezone(timezone.utc).isoformat()
+
+
+def binding_launch_hold(now: datetime, launch_not_before_utc: str | None) -> str:
+    hold = now + timedelta(minutes=5)
+    if launch_not_before_utc is not None:
+        scheduled = datetime.fromisoformat(launch_not_before_utc)
+        hold = max(hold, scheduled)
+    return hold.isoformat()
 
 
 def decode_text(path: Path) -> tuple[str, str, bytes]:
@@ -625,10 +648,122 @@ def transient_generation_rerun_id(predecessor_id: str, task_id: str) -> str:
     ))
 
 
+def _row_value(row: sqlite3.Row | dict[str, Any], key: str) -> Any:
+    try:
+        return row[key]
+    except (IndexError, KeyError):
+        return None
+
+
+def _authenticated_spawn_refusal(
+    connection: sqlite3.Connection,
+    predecessor: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+    *,
+    farm_root: Path,
+) -> dict[str, str] | None:
+    """Authenticate one exact, atomically recorded runner spawn refusal.
+
+    A payload timestamp is not evidence.  The structured payload must agree
+    with the terminal work-item row and with the durable
+    ``runner_spawn_refused`` event written by
+    :func:`farmctl.record_work_item_spawn_refusal` in the same transaction.
+    """
+
+    refusal = payload.get("spawn_refusal")
+    if not isinstance(refusal, dict):
+        return None
+    reason = str(refusal.get("reason") or "")
+    if reason not in AUTHENTICATED_RERUN_SPAWN_REFUSAL_REASONS:
+        return None
+
+    predecessor_id = str(_row_value(predecessor, "id") or "")
+    terminal = str(refusal.get("terminal") or "").upper()
+    phase = str(refusal.get("phase") or "")
+    failed_at = str(refusal.get("failed_at_utc") or "")
+    if (
+        not predecessor_id
+        or _row_value(predecessor, "status") != "failed"
+        or _row_value(predecessor, "verdict") != "INFRA_FAIL"
+        or str(_row_value(predecessor, "phase") or "") != "Q09_NEWS"
+        or phase != "Q09_NEWS"
+        or terminal not in ALLOWED_TERMINALS
+        or not failed_at
+        or str(_row_value(predecessor, "updated_at") or "") != failed_at
+        or str(_row_value(predecessor, "claimed_by") or "").strip()
+        or payload.get("verdict_reason") != reason
+        or refusal.get("phase_runner_scope_blocked") is not False
+    ):
+        raise BackfillError(
+            "generation rerun spawn refusal contradicts terminal work-item state"
+        )
+    try:
+        parsed_failed_at = datetime.fromisoformat(failed_at.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise BackfillError(
+            "generation rerun spawn refusal timestamp is invalid"
+        ) from exc
+    if parsed_failed_at.tzinfo is None:
+        raise BackfillError(
+            "generation rerun spawn refusal timestamp is not timezone-aware"
+        )
+
+    event_rows = connection.execute(
+        """
+        SELECT id,ts,entity_type,entity_id,event,detail_json
+        FROM events
+        WHERE entity_type='work_item' AND entity_id=?
+          AND event='runner_spawn_refused'
+        ORDER BY id
+        """,
+        (predecessor_id,),
+    ).fetchall()
+    if len(event_rows) != 1:
+        raise BackfillError(
+            "generation rerun spawn refusal lacks one durable refusal event"
+        )
+    event_row = event_rows[0]
+    try:
+        event_detail = json.loads(event_row["detail_json"] or "{}")
+    except (TypeError, json.JSONDecodeError) as exc:
+        raise BackfillError(
+            "generation rerun spawn refusal event is malformed"
+        ) from exc
+    if event_detail != refusal:
+        raise BackfillError(
+            "generation rerun spawn refusal event contradicts payload"
+        )
+
+    event_record = {
+        "id": int(event_row["id"]),
+        "ts": str(event_row["ts"]),
+        "entity_type": str(event_row["entity_type"]),
+        "entity_id": str(event_row["entity_id"]),
+        "event": str(event_row["event"]),
+        "detail": event_detail,
+    }
+    event_record_sha256 = hashlib.sha256(canonical_bytes(event_record)).hexdigest()
+    database_path = (farm_root / farmctl.DB_REL).resolve()
+    return {
+        "path": f"{database_path}#events/{event_row['id']}",
+        "sha256": event_record_sha256,
+        "error_type": "SpawnRefusal",
+        "error": reason,
+        "run_identity_sha256": "",
+        "proof_kind": "authenticated_runner_spawn_refusal",
+        "refusal_event_id": str(event_row["id"]),
+        "refusal_terminal": terminal,
+        "refusal_failed_at_utc": failed_at,
+        "refusal_phase": phase,
+    }
+
+
 def _transient_generation_failure_proof(
     predecessor: sqlite3.Row,
     payload: dict[str, Any],
     plan: dict[str, Any],
+    *,
+    spawn_refusal_proof: dict[str, str] | None = None,
 ) -> list[dict[str, str]]:
     """Authenticate a terminal pre-fix transient/no-receipt diagnostic stop."""
 
@@ -640,6 +775,8 @@ def _transient_generation_failure_proof(
         raise BackfillError(
             "generation rerun predecessor is not a terminal generation-2+ diagnostic"
         )
+    if spawn_refusal_proof is not None:
+        return [spawn_refusal_proof]
     evidence_path = Path(str(predecessor["evidence_path"] or ""))
     if not evidence_path.is_file():
         raise BackfillError("generation rerun predecessor summary is missing")
@@ -879,22 +1016,39 @@ def enqueue_transient_generation_rerun(
     task_id: str,
     predecessor_id: str,
     avoid_terminal: str,
+    launch_not_before_utc: str | None = None,
 ) -> dict[str, Any]:
     """Append a generation-3+ rerun of a pre-fix transient diagnostic stop."""
 
+    launch_not_before_utc = normalize_launch_not_before_utc(
+        launch_not_before_utc
+    )
     new_id = transient_generation_rerun_id(predecessor_id, task_id)
     with farmctl.connect(FARM_ROOT) as connection:
         predecessor = connection.execute(
             "SELECT * FROM work_items WHERE id=?", (predecessor_id,)
         ).fetchone()
-    if predecessor is None:
-        raise BackfillError("generation rerun predecessor does not exist")
-    payload = json.loads(predecessor["payload_json"] or "{}")
-    predecessor_terminal = str(payload.get("terminal") or "").upper()
+        if predecessor is None:
+            raise BackfillError("generation rerun predecessor does not exist")
+        payload = json.loads(predecessor["payload_json"] or "{}")
+        spawn_refusal_proof = _authenticated_spawn_refusal(
+            connection,
+            predecessor,
+            payload,
+            farm_root=FARM_ROOT,
+        )
+    predecessor_terminal = (
+        str(spawn_refusal_proof["refusal_terminal"])
+        if spawn_refusal_proof is not None
+        else str(payload.get("terminal") or "").upper()
+    )
     if predecessor_terminal != avoid_terminal:
         raise BackfillError(
             "generation rerun avoidance does not match predecessor terminal evidence"
         )
+    # The requested terminal is only a consistency check.  The actual steering
+    # value is always drawn from authenticated predecessor evidence.
+    avoid_terminal = predecessor_terminal
     plan_path = Path(str(payload.get("q09_run_plan_path") or "")).resolve()
     expected_plan_hash = str(payload.get("q09_run_plan_file_sha256") or "").lower()
     source_ex5_path, source_vintage_recovery = _generation_ex5_vintage(payload)
@@ -909,7 +1063,10 @@ def enqueue_transient_generation_rerun(
     ):
         raise BackfillError("generation rerun EX5 payload/manifest hash mismatch")
     failures = _transient_generation_failure_proof(
-        predecessor, payload, plan
+        predecessor,
+        payload,
+        plan,
+        spawn_refusal_proof=spawn_refusal_proof,
     )
     if int(plan.get("cell_count") or 0) != 40:
         raise BackfillError("generation rerun predecessor is not the sealed 40-cell matrix")
@@ -925,6 +1082,7 @@ def enqueue_transient_generation_rerun(
             receipt.get("work_item_id") != new_id
             or receipt.get("rerun_of") != predecessor_id
             or int(receipt.get("diagnostic_generation") or 0) != generation
+            or receipt.get("launch_not_before_utc") != launch_not_before_utc
         ):
             raise BackfillError(
                 f"generation rerun receipt contradicts request: {receipt_path}"
@@ -1008,8 +1166,9 @@ def enqueue_transient_generation_rerun(
     rerun_plan_path = Path(str(rerun_plan["plan_path"])).resolve()
     rerun_plan_file_sha256 = sha256_file(rerun_plan_path)
 
-    now_iso = datetime.now(timezone.utc).isoformat()
-    launch_hold = (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
+    now = datetime.now(timezone.utc)
+    now_iso = now.isoformat()
+    launch_hold = binding_launch_hold(now, launch_not_before_utc)
     rerun_payload = {
         "diagnostic_non_admission": True,
         "diagnostic_contract": q09.DIAGNOSTIC_CONTRACT,
@@ -1105,7 +1264,10 @@ def enqueue_transient_generation_rerun(
         avoided = {str(value).upper() for value in bound_payload.get("avoid_terminals", [])}
         avoided.add(avoid_terminal)
         bound_payload["avoid_terminals"] = sorted(avoided)
-        bound_payload.pop("launch_not_before_utc", None)
+        if launch_not_before_utc is None:
+            bound_payload.pop("launch_not_before_utc", None)
+        else:
+            bound_payload["launch_not_before_utc"] = launch_not_before_utc
         bound_payload["rerun_steered_at_utc"] = datetime.now(timezone.utc).isoformat()
         connection.execute(
             "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
@@ -1122,6 +1284,7 @@ def enqueue_transient_generation_rerun(
         "rerun_of": predecessor_id,
         "status": "pending",
         "avoid_terminal": avoid_terminal,
+        "launch_not_before_utc": launch_not_before_utc,
         "allowed_terminals": list(ALLOWED_TERMINALS),
         "ordered_cell_identities_equal": True,
         "cell_count": len(rerun_identities),
@@ -1152,6 +1315,7 @@ def enqueue_append_only_rerun(
     task_id: str,
     predecessor_id: str,
     avoid_terminal: str,
+    launch_not_before_utc: str | None = None,
 ) -> dict[str, Any]:
     """Append a fresh diagnostic row while leaving its failed predecessor intact."""
 
@@ -1162,6 +1326,9 @@ def enqueue_append_only_rerun(
         raise BackfillError("router task id and predecessor id are required")
     if avoid_terminal not in ALLOWED_TERMINALS:
         raise BackfillError("rerun avoidance must name one of T1-T5")
+    launch_not_before_utc = normalize_launch_not_before_utc(
+        launch_not_before_utc
+    )
 
     with farmctl.connect(FARM_ROOT) as connection:
         generation_row = connection.execute(
@@ -1174,6 +1341,7 @@ def enqueue_append_only_rerun(
                 task_id=task_id,
                 predecessor_id=predecessor_id,
                 avoid_terminal=avoid_terminal,
+                launch_not_before_utc=launch_not_before_utc,
             )
 
     campaign_path = ARTIFACT_ROOT / "campaign_plan.json"
@@ -1263,7 +1431,7 @@ def enqueue_append_only_rerun(
 
     now = datetime.now(timezone.utc)
     now_iso = now.isoformat()
-    launch_hold = (now + timedelta(minutes=5)).isoformat()
+    launch_hold = binding_launch_hold(now, launch_not_before_utc)
     payload = {
         "diagnostic_non_admission": True,
         "diagnostic_contract": q09.DIAGNOSTIC_CONTRACT,
@@ -1293,10 +1461,11 @@ def enqueue_append_only_rerun(
         # binder's commit and the post-bind dynamic retry-steering update.
         "launch_not_before_utc": launch_hold,
     }
+    predecessor_infrastructure_proof: dict[str, str] | None = None
     with farmctl.connect(FARM_ROOT) as connection:
         connection.execute("BEGIN IMMEDIATE")
         predecessor = connection.execute(
-            "SELECT status,verdict,payload_json FROM work_items WHERE id=?",
+            "SELECT * FROM work_items WHERE id=?",
             (predecessor_id,),
         ).fetchone()
         if predecessor is None:
@@ -1308,8 +1477,28 @@ def enqueue_append_only_rerun(
             or predecessor_payload.get("diagnostic_campaign_id") != CAMPAIGN_ID
         ):
             raise BackfillError("rerun predecessor is not the failed campaign diagnostic")
-        if str(predecessor_payload.get("last_launch_fault_terminal") or "").upper() != avoid_terminal:
+        predecessor_infrastructure_proof = _authenticated_spawn_refusal(
+            connection,
+            predecessor,
+            predecessor_payload,
+            farm_root=FARM_ROOT,
+        )
+        predecessor_terminal = (
+            str(predecessor_infrastructure_proof["refusal_terminal"])
+            if predecessor_infrastructure_proof is not None
+            else str(
+                predecessor_payload.get("last_launch_fault_terminal") or ""
+            ).upper()
+        )
+        if predecessor_terminal != avoid_terminal:
             raise BackfillError("requested avoidance does not match predecessor launch-fault evidence")
+        # The requested terminal is only a consistency check.  The actual
+        # steering value comes from authenticated predecessor evidence.
+        avoid_terminal = predecessor_terminal
+        if predecessor_infrastructure_proof is not None:
+            payload["predecessor_infrastructure_proof"] = (
+                predecessor_infrastructure_proof
+            )
         if connection.execute(
             "SELECT 1 FROM q09_news_tests WHERE work_item_id IN (?,?) LIMIT 1",
             (predecessor_id, new_id),
@@ -1353,7 +1542,10 @@ def enqueue_append_only_rerun(
         avoided = {str(value).upper() for value in bound_payload.get("avoid_terminals", [])}
         avoided.add(avoid_terminal)
         bound_payload["avoid_terminals"] = sorted(avoided)
-        bound_payload.pop("launch_not_before_utc", None)
+        if launch_not_before_utc is None:
+            bound_payload.pop("launch_not_before_utc", None)
+        else:
+            bound_payload["launch_not_before_utc"] = launch_not_before_utc
         bound_payload["rerun_steered_at_utc"] = datetime.now(timezone.utc).isoformat()
         connection.execute(
             "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
@@ -1370,6 +1562,7 @@ def enqueue_append_only_rerun(
         "rerun_of": predecessor_id,
         "status": "pending",
         "avoid_terminal": avoid_terminal,
+        "launch_not_before_utc": launch_not_before_utc,
         "allowed_terminals": list(ALLOWED_TERMINALS),
         "baseline_setfile_path": str(baseline_path),
         "baseline_setfile_sha256": sha256_file(baseline_path),
@@ -1390,6 +1583,10 @@ def enqueue_append_only_rerun(
         "enqueued_at_utc": now_iso,
         "binding": bound,
     }
+    if predecessor_infrastructure_proof is not None:
+        receipt["predecessor_infrastructure_proof"] = (
+            predecessor_infrastructure_proof
+        )
     receipt_path = rerun_root / "enqueue_receipt.json"
     write_immutable(receipt_path, canonical_bytes(receipt))
     return {
@@ -2011,6 +2208,10 @@ def build_parser() -> argparse.ArgumentParser:
     rerun.add_argument("--task-id", required=True)
     rerun.add_argument("--predecessor-id", required=True)
     rerun.add_argument("--avoid-terminal", required=True, choices=list(ALLOWED_TERMINALS))
+    rerun.add_argument(
+        "--launch-not-before-utc",
+        help="Optional timezone-aware UTC claim deferral for staggered diagnostics",
+    )
     refresh = sub.add_parser("refresh")
     refresh.add_argument("--task-id", required=True)
     refresh.add_argument("--ea", required=True)
@@ -2029,6 +2230,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             task_id=args.task_id,
             predecessor_id=args.predecessor_id,
             avoid_terminal=args.avoid_terminal,
+            launch_not_before_utc=args.launch_not_before_utc,
         )
     elif args.command == "refresh":
         result = enqueue_fresh_build_reruns(
