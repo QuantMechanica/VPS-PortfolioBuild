@@ -13,9 +13,9 @@ source_author: "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen"
 strategy_mechanic: monthly-xng-one-three-twelve-month-return-sign-majority-vote
 target_symbols: [XNGUSD.DWX]
 period: D1
-pipeline_phase: G0
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q01
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
 last_updated: 2026-08-07
 ---
 
@@ -44,5 +44,6 @@ Q02 uses `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 ## Pipeline Status
 
 G0 is approved under
-`decisions/2026-08-07_qm5_20259_xng_mom_vote_g0.md`. Q01 has not run and Q02
-is not enqueued; no baseline verdict is claimed.
+`decisions/2026-08-07_qm5_20259_xng_mom_vote_g0.md`. Q01 passed the strict
+target-scoped build gate. Q02 is not enqueued because the binding fleet sample
+found 10/7 governed terminals active; no baseline verdict is claimed.
