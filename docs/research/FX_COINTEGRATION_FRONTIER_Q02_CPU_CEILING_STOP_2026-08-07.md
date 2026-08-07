@@ -153,3 +153,29 @@ The target-only dry-run evidence is
 `generated_at=2026-08-07T04:32:35+00:00`, `apply=false`, and zero selected
 rows. No queue row, deferred sidecar entry, terminal process, EA artifact,
 registry, portfolio gate, or live artifact was changed.
+
+## 2026-08-07 08:31Z paced-fleet audit
+
+The non-duplicate decision remains binding. The frozen 66-pair frontier is
+already fully mechanized, and neither requested anchor has a Q02 ONINIT or
+NO_HISTORY blocker. `QM5_12532` remains beyond Q02 with Q04 PASS followed by
+Q05 FAIL; `QM5_12533` remains beyond Q02 with Q04 FAIL. Creating another
+scan-derived basket would duplicate existing work.
+
+Before selecting a second existing-card fallback, the mandatory immediate
+`farmctl mt5-slots` sample found eight factory terminals running:
+
+```text
+T1, T2, T3, T6, T7, T8, T9, T10
+```
+
+Eight exceeds the binding seven-terminal ceiling. All ten enabled terminal
+workers were also present. The separately observed `T_Live` and FTMO
+terminals were excluded and not controlled. Per the paced-fleet stop rule, no
+fallback was selected, no queue row was inserted or dispatched, and no tester
+or terminal action followed.
+
+The machine-readable snapshot is
+`artifacts/fx_cointegration_frontier_stop_20260807T083123Z_board_advisor.json`.
+No Strategy Card, EA, setfile, basket manifest, registry, portfolio gate,
+T_Live manifest, or AutoTrading state changed.
