@@ -13,9 +13,9 @@ source_author: "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen"
 strategy_mechanic: monthly-xng-thirteen-month-end-log-price-ols-slope-with-fixed-r-squared-path-quality-gate
 target_symbols: [XNGUSD.DWX]
 period: D1
-pipeline_phase: G0
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q01
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
 last_updated: 2026-08-07
 ---
 
@@ -42,5 +42,7 @@ Q02 uses `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 
 ## Pipeline Status
 
-G0 is approved under the durable OWNER mission decision. Q01 is not yet run
-and Q02 is not enqueued.
+G0 is approved under the durable OWNER mission decision. Q01 passed strict
+build validation; Q02 was not enqueued because the binding capacity sample
+found nine governed factory terminals executing against the ceiling of seven.
+Evidence: `docs/ops/evidence/2026-08-07_qm5_20262_xng_lr_trend_q01_cpu_stop.md`.
