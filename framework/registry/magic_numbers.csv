@@ -15577,3 +15577,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20255,usdchf-eurjpy,1,EURJPY.DWX,202550001,2026-08-06T22:07:43Z,Codex,active
 20256,wti-vr6-mom,0,XTIUSD.DWX,202560000,2026-08-06T22:40:33Z,Codex,active
 20257,wti-vr12-mom,0,XTIUSD.DWX,202570000,2026-08-06T23:54:53Z,Codex,active
+20258,wti-mom-vote,0,XTIUSD.DWX,202580000,2026-08-07T02:32:32Z,Codex,active
