@@ -1042,3 +1042,23 @@ same treatment as the basket motors (20234/20235). Queue-note: the staggered
 XAU successors were additionally claim-paused this morning by design
 (`commit_headroom_low_pause`, 34 GiB commit reservation of the QM5_20233
 multi-symbol Q02 on T1); they claim as headroom frees.
+
+## 2026-08-07 ~11:05 — class rule: pre-migration cap-exhausted deaths defer to post-migration
+
+10440/NDX generation-4 (`ace3f877`) died 09:04Z with the identical profile as
+11421: `shared_bases_history_lock_transient_cap_exhausted`, 7 transient
+attempts, "some error after pass finished" (evidence
+`D:\QM\mt5\T2\logs\20260807.log`). NDX is the second error-32 epicentre
+(13.35 % of hits).
+
+**Class decision (Claude): any further diagnostic matrix that dies
+cap-exhausted on the shared store BEFORE the Sunday isolation migration is
+deferred to post-migration — no pre-migration re-arm.** Applies to 10440 now,
+11421 already, and prospectively to the remaining runners (12567 active,
+1556/10403/10513/12989/10939 pending) should they die with this signature.
+Rationale: four (11421) resp. one (10440) burned generations prove the
+attempt is not evidence-productive under current contention; every re-arm
+competes for the exact surface the ratified Variant-A migration removes.
+Matrices that COMPLETE pre-migration count normally. The Saturday verdict doc
+lists deferred sleeves explicitly; deferred matrices re-arm during the
+post-soak window with unchanged sealed anchors.
