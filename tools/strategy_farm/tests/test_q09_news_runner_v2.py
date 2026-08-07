@@ -483,7 +483,8 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         spec = plan["cells"][0]
         cell_dir = Path(spec["receipt_path"]).parent
         relative = Path("runs") / "selection"
-        while len(str(cell_dir / relative / "artifact.log")) < 225:
+        attempt_root = runner._failure_attempt_root(cell_dir, 1)
+        while len(str(attempt_root / relative / "artifact.log")) <= 260:
             relative /= "pre_run_logger_archive"
         source = cell_dir / relative / "artifact.log"
         source.parent.mkdir(parents=True)
