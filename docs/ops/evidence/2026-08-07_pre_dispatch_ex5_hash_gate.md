@@ -3,13 +3,13 @@
 Date: 2026-08-07 (Europe/Berlin)
 Router task: `3ffab595-f8c3-4583-b211-4e503e34b071`
 Parent evidence: `2026-08-06_error32_history_sharing_violation_class.md`, section 6
-Status: IMPLEMENTED AND TESTED / REVIEW REQUIRED / NOT DEPLOYED
+Status: REWORK IMPLEMENTED AND TESTED / REVIEW REQUIRED / NOT DEPLOYED
 
 Implementation provenance: task code and the initial evidence are committed on
 `agents/board-advisor` as `1d1e16e58`; continuation verification is
-`613f57b81`. The evidence is mirrored on `main` as documentation commit
-`9bda2e9c4`. The unreviewed implementation itself remains off `main` pending
-the router review boundary.
+`613f57b81`; reviewer-directed rework is `590362fa0`. The evidence is mirrored
+on `main`; the unreviewed implementation itself remains off `main` pending the
+router review boundary.
 
 ## Scope and result
 
@@ -222,6 +222,70 @@ Post-change filesystem SHA-256 bindings before commit:
 | `test_terminal_worker_staged_ex5.py` | `93720a23a20cd32c58635ee754f1a2bd6d8f426bf8dff2acc51361fbcca0dd49` |
 | `test_terminal_worker_atomic_claim.py` | `55f1d749835d06d9bab2d15ef50058752ffdfc4746328d93e8d2896e11a0e6d9` |
 | `test_q09_news_runner_v2.py` | `1e0b78c33f8ad132f943218c78ba6f85f503b41a485854a37b8ea5e873f348b2` |
+
+### Reviewer-directed rework (2026-08-07 01:51-02:17 Europe/Berlin)
+
+Independent review returned the task to `RECYCLE` after reproducing one
+spawn-boundary mismatch against the committed implementation. Work item
+`4f80a8cf-2cf9-53dd-b59c-414674f24f16` is a manifest-pinned QM5_12567 Q09
+diagnostic whose setfile lives under the strategy-farm artifact tree rather
+than `framework/EAs/<ea>/sets`. The worker correctly resolved and staged
+`QM5_12567_cum-rsi2-commodity.ex5`, but
+`_spawn_phase_runner_for_work_item` treated the non-EA setfile path as an
+identity miss and fell directly back to bare `QM5_12567`. Its final boundary
+therefore expected `QM5_12567.ex5` and rejected the already verified slugged
+destination as `worker_staged_ex5_destination_path_mismatch`.
+
+Commit `590362fa0` closes that split identity path. When setfile anchoring does
+not resolve an EA directory, the phase-runner boundary now calls the same
+`_preferred_ea_dir` registry-aware resolver used by the worker, retaining the
+bare EA ID only when both mechanisms are silent. The resolved directory is
+also retained for the ordinary canonical-EX5 branch, so basename derivation
+and source selection cannot diverge at this boundary.
+
+The added regression drives the exact failed work-item ID, EA, phase, symbol,
+and artifact-setfile shape through `_spawn_phase_runner_for_work_item`. Its
+fixture contains the registered `cum-rsi2-commodity` directory plus an
+unregistered decoy, a manifest-pinned staged destination, and a verified
+SHA-256. It asserts that exactly one child is admitted, the slugged EA
+directory is selected, the historical mismatch refusal is absent, and
+`QM_EXPECTED_EX5_SHA256` carries the required hash into the child environment.
+
+Rework verification:
+
+```text
+python -m py_compile tools/strategy_farm/farmctl.py \
+  tools/strategy_farm/terminal_worker.py \
+  tools/strategy_farm/q09_news_runner.py
+PASS
+
+git diff --check -- tools/strategy_farm/farmctl.py \
+  tools/strategy_farm/tests/test_terminal_worker_staged_ex5.py
+PASS
+
+test_terminal_worker_staged_ex5.py
+9 passed
+
+test_q09_live_news_diagnostic.py + test_basket_work_items.py
+28 passed
+
+test_phase_runner_process_lineage.py + test_news_calendar_claim_gate.py,
+excluding the previously documented unrelated allowlist fixture
+15 passed, 1 deselected
+
+test_terminal_worker_atomic_claim.py, excluding the previously documented
+unrelated watchdog fixture
+61 passed, 1 deselected
+
+test_farmctl_job_object_containment.py
+4 passed
+```
+
+This rework did not copy an EX5, launch or stop a terminal, change a work item,
+toggle AutoTrading, or touch T_Live. Resident workers still hold the pre-fix
+module in memory. They must be recycled through the governed operational path
+after review approval and before the diagnostic rows are re-enqueued; worker
+recycling and re-enqueue are deliberately outside this builder task.
 
 ## Review boundary
 
