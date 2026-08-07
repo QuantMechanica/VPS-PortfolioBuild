@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_20265_XAU_XAG_FAILRV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.07.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "traded_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "notes": [
+    "One logical opposite-leg XAU/XAG failed-channel-break reversion package. Sixty synchronized completed ratios at shifts 3..62 define a range before the separate shift-2 outside break and shift-1 strict inside re-entry.",
+    "The basket must never be decomposed into standalone XAU or XAG gate results. One RISK_FIXED budget is split equally after per-leg ATR normalization; Q02 is bounded to the synchronized XAG history endpoint."
+  ]
+}
