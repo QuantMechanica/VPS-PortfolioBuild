@@ -1728,11 +1728,17 @@ function Start-TesterRun {
     $logBombSizes = @{}
     $logBombHit = $null
     $logBombLastCheckUtc = (Get-Date).ToUniversalTime()
+    $terminalExitObservedUtc = $null
+    $metaTesterObservedAfterTerminalExit = $false
+    $metaTesterWaitLogged = $false
+    $metaTesterLastPollUtc = $null
+    $metaTesterPollSeconds = 5
     $deadline = (Get-Date).ToUniversalTime().AddSeconds($TimeoutSec)
     while ((Get-Date).ToUniversalTime() -lt $deadline) {
         if ($childTerminal.HasExited) {
-            $finished = $true
-            break
+            if ($null -eq $terminalExitObservedUtc) {
+                $terminalExitObservedUtc = (Get-Date).ToUniversalTime()
+            }
         }
         $nowUtcForBomb = (Get-Date).ToUniversalTime()
         if (($nowUtcForBomb - $logBombLastCheckUtc).TotalSeconds -ge $script:LogBombCheckSeconds) {
@@ -1802,11 +1808,42 @@ function Start-TesterRun {
                 }
             }
         }
+        if ($null -ne $terminalExitObservedUtc) {
+            # MT5 can let terminal64.exe exit while its metatester64.exe child is
+            # still executing or flushing the report. Treating the terminal
+            # stub's exit as completion publishes an empty M0/1970 shell and
+            # lets the next retry overlap the still-running tester. Wait for the
+            # writer (or a short spawn grace when none has appeared yet).
+            $metaPollNowUtc = (Get-Date).ToUniversalTime()
+            $metaPollDue = ($null -eq $metaTesterLastPollUtc) -or
+                (($metaPollNowUtc - $metaTesterLastPollUtc).TotalSeconds -ge $metaTesterPollSeconds)
+            if ($metaPollDue) {
+                # Exact-path discovery uses CIM; keep it deliberately coarse so
+                # a long tester flush cannot turn seven workers into a WMI poll storm.
+                $metaTesterLastPollUtc = $metaPollNowUtc
+                $activeMetaTesters = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRootForBomb)
+                if (@($activeMetaTesters).Count -gt 0) {
+                    $metaTesterObservedAfterTerminalExit = $true
+                    if (-not $metaTesterWaitLogged) {
+                        $metaPids = @($activeMetaTesters | ForEach-Object { $_.ProcessId }) -join ','
+                        Write-Host ("run_smoke.stage=terminal_exit_waiting_metatester terminal_pid={0} metatester_pids='{1}'" -f $childTerminal.Id, $metaPids)
+                        $metaTesterWaitLogged = $true
+                    }
+                } else {
+                    $spawnGraceElapsed = ($metaPollNowUtc - $terminalExitObservedUtc).TotalSeconds -ge 5
+                    if ($metaTesterObservedAfterTerminalExit -or $spawnGraceElapsed) {
+                        $finished = $true
+                        break
+                    }
+                }
+            }
+        }
         Start-Sleep -Milliseconds 500
     }
 
     if (-not $finished -and -not $latchedReport -and -not $logBombHit -and $childTerminal.HasExited) {
-        $finished = $true
+        $activeMetaTesters = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRootForBomb)
+        $finished = (@($activeMetaTesters).Count -eq 0)
     }
 
     $timedOut = (-not $finished) -and (-not $latchedReport) -and (-not $logBombHit)
@@ -1818,6 +1855,13 @@ function Start-TesterRun {
         if ($proc.Id -ne $childTerminal.Id) {
             try {
                 Stop-Process -Id $proc.Id -Force -ErrorAction Stop
+            } catch {
+            }
+        }
+        $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRootForBomb)
+        foreach ($metaProc in $lingeringMeta) {
+            try {
+                Stop-Process -Id $metaProc.ProcessId -Force -ErrorAction Stop
             } catch {
             }
         }
