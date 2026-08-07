@@ -36,11 +36,17 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 import farmctl
+import custom_history_gate
+import custom_history_lease
 from framework.scripts._phase_utils import cold_cache_summary_signature
 from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
 
 
 POLL_SLEEP_SECONDS = 2.0
+CUSTOM_HISTORY_GUARD_SLEEP_SECONDS = 30.0
+CUSTOM_HISTORY_GATE_PASS_STATUSES = frozenset(
+    {"PASS_ISOLATED", "PASS_SERIALIZED_ROLLBACK"}
+)
 FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS = 5.0
 FACTORY_ADMISSION_LOCK_POLL_SECONDS = 0.01
 NEWS_CALENDAR_GUARD_SLEEP_SECONDS = 30.0
@@ -989,6 +995,170 @@ def _defer_news_calendar_preflight(
         "common_dir": calendar.get("common_dir"),
         "news_calendar_preflight": calendar,
     }
+
+
+def _defer_custom_history_gate(
+    root: Path,
+    row: sqlite3.Row | dict[str, Any],
+    terminal: str,
+    gate: dict[str, Any],
+) -> dict[str, Any]:
+    """Release an isolation-blocked claim without consuming retry capacity."""
+
+    payload = _json_loads(row["payload_json"])
+    claimed_at = payload.get("claimed_at_iso")
+    _clear_stale_runtime_payload(payload)
+    for field in ("claim_stage", "targeted_factory_off_run", "staged_ex5"):
+        payload.pop(field, None)
+    payload["custom_history_gate_failure"] = gate
+    now = farmctl.utc_now()
+
+    def _release() -> bool:
+        with farmctl.connect(root) as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            cur = conn.execute(
+                """
+                UPDATE work_items
+                SET status='pending', verdict=NULL, claimed_by=NULL,
+                    payload_json=?, updated_at=?
+                WHERE id=? AND status='active' AND claimed_by=?
+                """,
+                (json.dumps(payload, sort_keys=True), now, row["id"], terminal),
+            )
+            if cur.rowcount == 1:
+                farmctl.retract_claim_ledger(
+                    conn,
+                    terminal,
+                    row["id"],
+                    str(claimed_at) if claimed_at else None,
+                )
+            conn.commit()
+            return cur.rowcount == 1
+
+    released = bool(_with_sqlite_retry(_release))
+    return {
+        "status": "pending" if released else "active",
+        "reason": "CUSTOM_HISTORY_ISOLATION_FAIL_CLOSED",
+        "claim_released": released,
+        "attempt_count_unchanged": True,
+        "custom_history_gate": gate,
+    }
+
+
+def _custom_history_gate(root: Path, terminal: str) -> dict[str, Any]:
+    """Run the activation-bound gate; every error is a dispatch refusal."""
+
+    try:
+        gate = custom_history_gate.run_worker_gate(root, terminal=terminal)
+    except Exception as exc:
+        activation_file = custom_history_gate.activation_path(root)
+        try:
+            activation_hash = hashlib.sha256(activation_file.read_bytes()).hexdigest()
+        except OSError:
+            activation_hash = "0" * 64
+        try:
+            custom_history_lease.engage_emergency_mode(
+                root,
+                reason=f"custom_history_gate_exception:{type(exc).__name__}",
+                activation_sha256=activation_hash,
+            )
+        except Exception:
+            pass
+        return {
+            "required": True,
+            "status": "FAIL_CLOSED",
+            "terminal": terminal,
+            "reason": "custom_history_gate_exception",
+            "error": repr(exc),
+            "activation_sha256": activation_hash,
+        }
+    if gate.get("required") and gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES:
+        try:
+            custom_history_lease.engage_emergency_mode(
+                root,
+                reason="custom_history_isolation_gate_failure",
+                activation_sha256=str(gate.get("activation_sha256") or "0" * 64),
+            )
+        except Exception:
+            pass
+    return gate
+
+
+def _reconcile_stale_custom_history_lease(
+    root: Path, record: dict[str, Any]
+) -> dict[str, Any]:
+    """Prove terminal inactivity and database reconciliation before stale reap."""
+
+    terminal = str(record.get("terminal") or "").upper()
+    work_item_id = str(record.get("work_item_id") or "")
+    try:
+        terminal_inactive = terminal not in farmctl._running_mt5_terminals()
+    except Exception:
+        terminal_inactive = False
+    released_claims: list[str] = []
+    if terminal_inactive:
+        try:
+            released_claims = release_stale_claims_for_terminal(root, terminal)
+        except Exception:
+            released_claims = []
+    claim_reconciled = False
+    try:
+        with farmctl.connect(root) as conn:
+            if work_item_id:
+                row = conn.execute(
+                    "SELECT status,claimed_by FROM work_items WHERE id=?",
+                    (work_item_id,),
+                ).fetchone()
+                claim_reconciled = row is None or not (
+                    str(row["status"]) == "active"
+                    and str(row["claimed_by"] or "").upper() == terminal
+                )
+            else:
+                row = conn.execute(
+                    "SELECT 1 FROM work_items WHERE status='active' AND claimed_by=? LIMIT 1",
+                    (terminal,),
+                ).fetchone()
+                claim_reconciled = row is None
+    except Exception:
+        claim_reconciled = False
+    return {
+        "terminal": terminal,
+        "work_item_id": work_item_id or None,
+        "terminal_inactive": terminal_inactive,
+        "claim_reconciled": claim_reconciled,
+        "released_stale_claims": released_claims,
+    }
+
+
+def _acquire_custom_history_lease(
+    root: Path, terminal: str
+) -> custom_history_lease.LeaseAcquireResult:
+    return custom_history_lease.acquire_lease(
+        root,
+        terminal=terminal,
+        reconcile_stale=lambda record: _reconcile_stale_custom_history_lease(
+            root, dict(record)
+        ),
+    )
+
+
+def _custom_history_stop_condition(result: dict[str, Any]) -> str | None:
+    text = json.dumps(result, sort_keys=True, default=str).casefold()
+    tokens = {
+        "history_error_32": ("error [32]", "error 32", "sharing_violation"),
+        "history_sync_error": ("history synchronization error", "history synchronization abort"),
+        "archive_drift": ("archive_manifest_mismatch", "archive hash drift", "archive write"),
+        "missing_real_ticks_marker": (
+            "missing_real_ticks_marker",
+            "real_ticks_marker_missing",
+            "real ticks marker missing",
+        ),
+        "isolation_gate": ("custom_history_isolation_fail_closed",),
+    }
+    for reason, values in tokens.items():
+        if any(value in text for value in values):
+            return reason
+    return None
 
 
 def _accumulate_avoid_terminal(payload: dict[str, Any], failed_terminal: str | None) -> list[str]:
@@ -3420,6 +3590,16 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         conn.commit()
     row = dict(row)
     row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
+    history_gate = _custom_history_gate(root, terminal)
+    if history_gate.get("required") and (
+        history_gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES
+        or history_gate.get("admission_allowed") is False
+    ):
+        return {
+            "action": "custom_history_gate_deferred",
+            "item_id": item["id"],
+            **_defer_custom_history_gate(root, row, terminal, history_gate),
+        }
     _acquire_launch_slot(terminal)
     spawn = farmctl._spawn_work_item_runner(root, row, terminal)
     now = farmctl.utc_now()
@@ -3630,6 +3810,56 @@ def _trigger_disk_purge() -> None:
         pass
 
 
+def _pause_after_unclaimed(claim: dict[str, Any], terminal: str) -> None:
+    if claim.get("reason") == "sqlite_locked":
+        print(json.dumps({"event": "sqlite_locked", "terminal": terminal, "action": "claim_backoff"}), flush=True)
+        time.sleep(SQLITE_LOCK_BACKOFF_SECONDS + random.random())
+        return
+    if claim.get("reason") == "news_calendar_preflight_failed":
+        print(
+            json.dumps(
+                {
+                    "event": "news_calendar_preflight_deferred",
+                    "terminal": terminal,
+                    "status": claim.get("calendar_status"),
+                    "principal": claim.get("principal"),
+                    "common_dir": claim.get("common_dir"),
+                    "news_calendar_preflight": claim.get("news_calendar_preflight"),
+                },
+                sort_keys=True,
+            ),
+            flush=True,
+        )
+        time.sleep(NEWS_CALENDAR_GUARD_SLEEP_SECONDS)
+        return
+    if claim.get("reason") in {"commit_probe_failed", "commit_headroom_low"}:
+        print(json.dumps({
+            "event": (
+                "commit_probe_failed_pause"
+                if claim.get("reason") == "commit_probe_failed"
+                else "commit_headroom_low_pause"
+            ),
+            "terminal": terminal,
+            "commit_headroom_gb": claim.get("commit_headroom_gb"),
+            "commit_reserved_gb": claim.get("commit_reserved_gb"),
+            "effective_commit_headroom_gb": claim.get("effective_commit_headroom_gb"),
+            "commit_reservation_count": claim.get("commit_reservation_count"),
+            "commit_reservation_detail": claim.get("commit_reservation_detail"),
+            "threshold_gb": claim.get("threshold_gb"),
+        }), flush=True)
+        time.sleep(COMMIT_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
+        return
+    if claim.get("reason") in {"multisymbol_registry_unavailable", "watchdog_reset_pending"}:
+        print(json.dumps({
+            "event": f"{claim.get('reason')}_pause",
+            "terminal": terminal,
+            "error": claim.get("error"),
+        }), flush=True)
+        time.sleep(POLL_SLEEP_SECONDS + random.uniform(0, 5))
+        return
+    time.sleep(POLL_SLEEP_SECONDS)
+
+
 def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
     """Run the resident production owner for this terminal's runner Jobs.
 
@@ -3644,6 +3874,8 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
     released = release_stale_claims_for_terminal(root, terminal)
     if released:
         print(json.dumps({"event": "released_stale_claims", "terminal": terminal, "item_ids": released}), flush=True)
+    startup_gate = _custom_history_gate(root, terminal)
+    print(json.dumps({"event": "custom_history_startup_gate", **startup_gate}, sort_keys=True), flush=True)
     while not _STOP:
         free_gb = _disk_free_gb(root)
         if free_gb < DISK_MIN_FREE_GB:
@@ -3659,67 +3891,69 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
             # jitter so the fleet doesn't wake in lockstep and re-spike RAM together
             time.sleep(RAM_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
             continue
-        claim = claim_atomic(root, terminal)
-        if not claim.get("claimed"):
-            if claim.get("reason") == "sqlite_locked":
-                print(json.dumps({"event": "sqlite_locked", "terminal": terminal, "action": "claim_backoff"}), flush=True)
-                time.sleep(SQLITE_LOCK_BACKOFF_SECONDS + random.random())
-                continue
-            if claim.get("reason") == "news_calendar_preflight_failed":
-                print(
-                    json.dumps(
-                        {
-                            "event": "news_calendar_preflight_deferred",
-                            "terminal": terminal,
-                            "status": claim.get("calendar_status"),
-                            "principal": claim.get("principal"),
-                            "common_dir": claim.get("common_dir"),
-                            "news_calendar_preflight": claim.get(
-                                "news_calendar_preflight"
-                            ),
-                        },
-                        sort_keys=True,
-                    ),
-                    flush=True,
-                )
-                time.sleep(NEWS_CALENDAR_GUARD_SLEEP_SECONDS)
-                continue
-            if claim.get("reason") in {"commit_probe_failed", "commit_headroom_low"}:
-                print(json.dumps({
-                    "event": (
-                        "commit_probe_failed_pause"
-                        if claim.get("reason") == "commit_probe_failed"
-                        else "commit_headroom_low_pause"
-                    ),
-                    "terminal": terminal,
-                    "commit_headroom_gb": claim.get("commit_headroom_gb"),
-                    "commit_reserved_gb": claim.get("commit_reserved_gb"),
-                    "effective_commit_headroom_gb": claim.get("effective_commit_headroom_gb"),
-                    "commit_reservation_count": claim.get("commit_reservation_count"),
-                    # Per-claim expected peak / measured usage / residual: without
-                    # it a starving fleet looks identical to a busy one (2026-07-26).
-                    "commit_reservation_detail": claim.get("commit_reservation_detail"),
-                    "threshold_gb": claim.get("threshold_gb"),
-                }), flush=True)
-                time.sleep(COMMIT_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
-                continue
-            if claim.get("reason") in {
-                "multisymbol_registry_unavailable",
-                "watchdog_reset_pending",
-            }:
-                print(json.dumps({
-                    "event": f"{claim.get('reason')}_pause",
-                    "terminal": terminal,
-                    "error": claim.get("error"),
-                }), flush=True)
-                time.sleep(POLL_SLEEP_SECONDS + random.uniform(0, 5))
-                continue
+        if not _claim_queue_may_need_mutation(root, terminal):
             time.sleep(POLL_SLEEP_SECONDS)
             continue
-        item = claim["item"]
-        print(json.dumps({"event": "claimed", "terminal": terminal, "item_id": item["id"]}), flush=True)
-        result = _run_claimed_item(root, item, terminal, timeout_seconds)
-        print(json.dumps({"event": "run_result", "terminal": terminal, **result}, sort_keys=True), flush=True)
+        history_gate = _custom_history_gate(root, terminal)
+        if history_gate.get("required") and (
+            history_gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES
+            or history_gate.get("admission_allowed") is False
+        ):
+            print(json.dumps({"event": "custom_history_gate_pause", **history_gate}, sort_keys=True), flush=True)
+            time.sleep(CUSTOM_HISTORY_GUARD_SLEEP_SECONDS)
+            continue
+        try:
+            lease_result = _acquire_custom_history_lease(root, terminal)
+        except Exception as exc:
+            print(json.dumps({
+                "event": "custom_history_lease_error_pause",
+                "terminal": terminal,
+                "error": repr(exc),
+            }, sort_keys=True), flush=True)
+            time.sleep(CUSTOM_HISTORY_GUARD_SLEEP_SECONDS)
+            continue
+        if lease_result.required and not lease_result.acquired:
+            print(json.dumps({
+                "event": "custom_history_lease_busy",
+                "terminal": terminal,
+                "reason": lease_result.reason,
+                "detail": lease_result.detail,
+            }, sort_keys=True), flush=True)
+            time.sleep(POLL_SLEEP_SECONDS + random.uniform(0, 2))
+            continue
+        lease_handle = lease_result.handle
+        try:
+            claim = claim_atomic(root, terminal)
+            if not claim.get("claimed"):
+                _pause_after_unclaimed(claim, terminal)
+                continue
+            item = claim["item"]
+            if lease_handle is not None:
+                lease_handle.bind_work_item(item["id"])
+            print(json.dumps({
+                "event": "claimed",
+                "terminal": terminal,
+                "item_id": item["id"],
+                "custom_history_gate_audit_sha256": history_gate.get("audit_sha256"),
+                "custom_history_lease_token": lease_handle.token if lease_handle else None,
+            }), flush=True)
+            result = _run_claimed_item(root, item, terminal, timeout_seconds)
+            stop_condition = _custom_history_stop_condition(result)
+            if stop_condition and history_gate.get("required"):
+                custom_history_lease.engage_emergency_mode(
+                    root,
+                    reason=f"runtime_stop_condition:{stop_condition}",
+                    activation_sha256=str(history_gate.get("activation_sha256")),
+                )
+            print(json.dumps({"event": "run_result", "terminal": terminal, **result}, sort_keys=True), flush=True)
+        finally:
+            if lease_handle is not None:
+                release_status = lease_handle.release()
+                print(json.dumps({
+                    "event": "custom_history_lease_release",
+                    "terminal": terminal,
+                    "status": release_status,
+                }, sort_keys=True), flush=True)
     return 0
 
 
@@ -3824,15 +4058,38 @@ def main(argv: list[str] | None = None) -> int:
     }, sort_keys=True), flush=True)
     _start_stalldump_watcher(args.terminal)
     if args.work_item_id:
-        claim = claim_specific_atomic(args.root, args.terminal, args.work_item_id)
-        if not claim.get("claimed"):
-            print(json.dumps({"event": "target_claim_refused", "terminal": args.terminal, **claim}, sort_keys=True))
+        history_gate = _custom_history_gate(args.root, args.terminal)
+        if history_gate.get("required") and (
+            history_gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES
+            or history_gate.get("admission_allowed") is False
+        ):
+            print(json.dumps({"event": "target_custom_history_gate_refused", **history_gate}, sort_keys=True))
             return 2
-        item = claim["item"]
-        print(json.dumps({"event": "target_claimed", "terminal": args.terminal, "item_id": item["id"]}), flush=True)
-        result = _run_claimed_item(args.root, item, args.terminal, int(args.timeout_minutes * 60))
-        print(json.dumps({"event": "target_run_result", "terminal": args.terminal, **result}, sort_keys=True), flush=True)
-        return 0 if result.get("status") == "done" and result.get("verdict") == "PASS" else 1
+        lease_result = _acquire_custom_history_lease(args.root, args.terminal)
+        if lease_result.required and not lease_result.acquired:
+            print(json.dumps({
+                "event": "target_custom_history_lease_refused",
+                "terminal": args.terminal,
+                "reason": lease_result.reason,
+                "detail": lease_result.detail,
+            }, sort_keys=True))
+            return 2
+        lease_handle = lease_result.handle
+        try:
+            claim = claim_specific_atomic(args.root, args.terminal, args.work_item_id)
+            if not claim.get("claimed"):
+                print(json.dumps({"event": "target_claim_refused", "terminal": args.terminal, **claim}, sort_keys=True))
+                return 2
+            item = claim["item"]
+            if lease_handle is not None:
+                lease_handle.bind_work_item(item["id"])
+            print(json.dumps({"event": "target_claimed", "terminal": args.terminal, "item_id": item["id"]}), flush=True)
+            result = _run_claimed_item(args.root, item, args.terminal, int(args.timeout_minutes * 60))
+            print(json.dumps({"event": "target_run_result", "terminal": args.terminal, **result}, sort_keys=True), flush=True)
+            return 0 if result.get("status") == "done" and result.get("verdict") == "PASS" else 1
+        finally:
+            if lease_handle is not None:
+                lease_handle.release()
     return run_loop(args.root, args.terminal, int(args.timeout_minutes * 60))
 
 

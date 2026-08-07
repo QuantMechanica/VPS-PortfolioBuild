@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from tools.strategy_farm import mt5_history_isolation as isolation
+from tools.strategy_farm import custom_history_contract as history_contract
 
 
 def _row(terminal: str, component: str, identity: str, *, exists: bool = True):
@@ -217,3 +218,96 @@ def test_filesystem_boundary_resolves_protected_roots(tmp_path: Path) -> None:
     identities = isolation.resolve_protected_root_identities([protected])
 
     assert identities == (isolation._identity(protected).casefold(),)
+
+
+def _variant_a_fixture(tmp_path: Path) -> tuple[Path, Path]:
+    archive_source = tmp_path / "archive-source"
+    source_files = {
+        "history/EURUSD.DWX/2025.hcc": b"archive-bars",
+        "ticks/EURUSD.DWX/202501.tkc": b"archive-ticks",
+        "history/EURUSD.DWX/2026.hcc": b"private-bars",
+        "state.dat": b"private-state",
+    }
+    for relative, body in source_files.items():
+        path = archive_source.joinpath(*relative.split("/"))
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(body)
+    manifest = history_contract.build_archive_manifest(
+        archive_source,
+        runner_identity="TEST\\Runner",
+        created_at_utc="2026-08-07T00:00:00+00:00",
+    )
+    manifest_path = tmp_path / "manifest.json"
+    history_contract.write_json_atomic(manifest_path, manifest)
+    archive_paths = {row["relative_path"] for row in manifest["files"]}
+    mt5_root = tmp_path / "mt5"
+    for terminal in history_contract.DEFAULT_RUNNER_TERMINALS:
+        custom = mt5_root / terminal / "Bases" / "Custom"
+        (mt5_root / terminal / "Tester").mkdir(parents=True)
+        for relative in source_files:
+            source = archive_source.joinpath(*relative.split("/"))
+            target = custom.joinpath(*relative.split("/"))
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if relative in archive_paths:
+                os.link(source, target)
+            else:
+                target.write_bytes(source.read_bytes())
+    return mt5_root, manifest_path
+
+
+def test_variant_a_file_ids_and_manifest_equality_pass(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        acl_probe=lambda path, identity: {"write_denied": True},
+    )
+
+    assert payload["status"] == "PASS_ISOLATED", payload
+    assert payload["variant_a_file_audit"]["status"] == "PASS_ISOLATED"
+    assert len(payload["variant_a_file_audit"]["terminal_summaries"]) == 10
+
+
+def test_variant_a_shared_mutable_file_id_fails_closed(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    t1 = mt5_root / "T1" / "Bases" / "Custom" / "history" / "EURUSD.DWX" / "2026.hcc"
+    t2 = mt5_root / "T2" / "Bases" / "Custom" / "history" / "EURUSD.DWX" / "2026.hcc"
+    t2.unlink()
+    os.link(t1, t2)
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        acl_probe=lambda path, identity: {"write_denied": True},
+    )
+
+    assert payload["status"] == "FAIL_CLOSED"
+    codes = {row["code"] for row in payload["variant_a_file_audit"]["findings"]}
+    assert "CROSS_TERMINAL_MUTABLE_FILE_ID" in codes
+
+
+def test_variant_a_full_audit_rejects_incomplete_mutable_set(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    missing = mt5_root / "T10" / "Bases" / "Custom" / "state.dat"
+    missing.unlink()
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        acl_probe=lambda path, identity: {"write_denied": True},
+    )
+
+    assert payload["status"] == "FAIL_CLOSED"
+    codes = {row["code"] for row in payload["variant_a_file_audit"]["findings"]}
+    assert "TERMINAL_MUTABLE_FILE_MISSING" in codes
+
+
+def test_default_runner_and_protected_sets_resolve_t5_directive() -> None:
+    assert "T5" in isolation.DEFAULT_RUNNER_TERMINALS
+    assert Path(r"D:\QM\mt5\T5") not in isolation.DEFAULT_PROTECTED_ROOTS
+    assert Path(r"C:\QM\mt5\T_Live") in isolation.DEFAULT_PROTECTED_ROOTS
+    assert Path(r"D:\QM\mt5\FTMO_STREAM1") in isolation.DEFAULT_PROTECTED_ROOTS
+    assert Path(r"D:\QM\mt5\FTMO_STREAM2") in isolation.DEFAULT_PROTECTED_ROOTS

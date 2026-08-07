@@ -14,16 +14,48 @@ import hashlib
 import json
 import os
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Callable, Iterable, Mapping, Sequence
+
+try:
+    from custom_history_contract import (
+        DEFAULT_RUNNER_TERMINALS as CONTRACT_RUNNER_TERMINALS,
+        archive_acl_write_denied,
+        canonical_bytes as contract_canonical_bytes,
+        classify_relative_path,
+        file_identity,
+        load_manifest,
+        normalize_relative_path,
+        sha256_file,
+        validate_manifest,
+    )
+except ImportError:  # pragma: no cover - package import path
+    from tools.strategy_farm.custom_history_contract import (
+        DEFAULT_RUNNER_TERMINALS as CONTRACT_RUNNER_TERMINALS,
+        archive_acl_write_denied,
+        canonical_bytes as contract_canonical_bytes,
+        classify_relative_path,
+        file_identity,
+        load_manifest,
+        normalize_relative_path,
+        sha256_file,
+        validate_manifest,
+    )
 
 
-SCHEMA_VERSION = "mt5-history-isolation-audit/v1"
+SCHEMA_VERSION = "mt5-history-isolation-audit/v2"
 DEFAULT_MT5_ROOT = Path(r"D:\QM\mt5")
-DEFAULT_RUNNER_TERMINALS = ("T1", "T2", "T3", "T4", "T6", "T7", "T8", "T9", "T10")
+# T5 is an active factory runner and is inside the OWNER-ratified T1-T10
+# migration set.  The pre-decision v1 default incorrectly listed it as a
+# protected root while also describing a ten-runner cutover.
+DEFAULT_RUNNER_TERMINALS = CONTRACT_RUNNER_TERMINALS
 DEFAULT_PROTECTED_ROOTS = (
     Path(r"C:\QM\mt5\T_Live"),
     Path(r"D:\QM\mt5\T_Live"),
-    Path(r"D:\QM\mt5\T5"),
+    Path(r"D:\QM\mt5\FTMO_STREAM1"),
+    Path(r"D:\QM\mt5\FTMO_STREAM2"),
+    Path(r"D:\QM\mt5\DEV1"),
+    Path(r"D:\QM\mt5\DEV2"),
+    Path(r"D:\QM\mt5\T_Export"),
 )
 MUTABLE_COMPONENTS = ("Tester", "Bases", "Bases/Custom")
 
@@ -130,6 +162,15 @@ def evaluate_inventory(
                 }
             )
             continue
+        if bool(row.get("is_reparse_point")):
+            findings.append(
+                {
+                    "code": "MUTABLE_STORE_REPARSE_POINT",
+                    "component": component,
+                    "terminals": [terminal],
+                    "resolved_identity": identity,
+                }
+            )
         identities.setdefault((component.casefold(), identity.casefold()), []).append(
             terminal
         )
@@ -305,9 +346,404 @@ def collect_inventory(
                     "path": str(path),
                     "exists": path.is_dir(),
                     "resolved_identity": _identity(path),
+                    "is_reparse_point": _is_reparse_point(path),
                 }
             )
     return rows
+
+
+def _is_reparse_point(path: Path) -> bool:
+    try:
+        stat = Path(path).lstat()
+    except OSError:
+        return False
+    attributes = int(getattr(stat, "st_file_attributes", 0))
+    return bool(attributes & 0x400)  # FILE_ATTRIBUTE_REPARSE_POINT
+
+
+def _manifest_rows(manifest: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+    return {
+        str(row["relative_path"]).casefold(): dict(row)
+        for row in manifest["files"]
+    }
+
+
+def load_acl_evidence(
+    path: Path,
+    *,
+    manifest: Mapping[str, Any],
+) -> dict[str, Any]:
+    try:
+        raw = Path(path).read_bytes()
+        payload = json.loads(raw.decode("utf-8-sig"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"invalid archive ACL evidence {path}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("archive ACL evidence root must be an object")
+    if payload.get("schema_version") != "qm.custom-history-archive-acl/v1":
+        raise ValueError("archive ACL evidence schema mismatch")
+    if payload.get("status") != "PASS" or payload.get("mode") not in {"VERIFY", "APPLY"}:
+        raise ValueError("archive ACL evidence is not a passing apply/verify receipt")
+    if payload.get("manifest_sha256") != manifest["manifest_sha256"]:
+        raise ValueError("archive ACL evidence manifest mismatch")
+    if payload.get("runner_identity") != manifest["runner_identity"]:
+        raise ValueError("archive ACL evidence runner identity mismatch")
+    if int(payload.get("archive_file_count", -1)) != int(manifest["file_count"]):
+        raise ValueError("archive ACL evidence file count mismatch")
+    if int(payload.get("verified", -1)) != int(manifest["file_count"]):
+        raise ValueError("archive ACL evidence did not verify every manifest file")
+    if payload.get("failures") not in ([], None):
+        raise ValueError("archive ACL evidence contains failures")
+    return {
+        "path": str(Path(path).absolute()),
+        "file_sha256": hashlib.sha256(raw).hexdigest(),
+        "mode": payload["mode"],
+        "runner_sid": payload.get("runner_sid"),
+        "verified": payload.get("verified"),
+    }
+
+
+def collect_variant_a_file_inventory(
+    *,
+    mt5_root: Path | str,
+    terminals: Sequence[str],
+    manifest: Mapping[str, Any],
+    verify_archive_hashes: bool,
+    acl_probe: Callable[[Path, str], Mapping[str, Any]] = archive_acl_write_denied,
+) -> list[dict[str, Any]]:
+    """Read file IDs, archive hashes, and ACL evidence without changing a path."""
+
+    validated = validate_manifest(manifest, require_owner_approval=False)
+    archive_rows = _manifest_rows(validated)
+    archive_years = tuple(int(value) for value in validated["archive_years"])
+    current_year = int(validated["current_year"])
+    runner_identity = str(validated["runner_identity"])
+    hash_cache: dict[tuple[str, int, int], str] = {}
+    acl_cache: dict[str, dict[str, Any]] = {}
+    rows: list[dict[str, Any]] = []
+    root = Path(mt5_root)
+
+    for terminal in sorted({str(value).upper() for value in terminals}):
+        custom = root / terminal / "Bases" / "Custom"
+        observed_archive: set[str] = set()
+        if not custom.is_dir():
+            for manifest_row in validated["files"]:
+                rows.append(
+                    {
+                        "terminal": terminal,
+                        "relative_path": manifest_row["relative_path"],
+                        "path": str(custom / Path(*Path(manifest_row["relative_path"]).parts)),
+                        "exists": False,
+                        "file_class": "ARCHIVE_IMMUTABLE",
+                        "manifest_present": True,
+                    }
+                )
+            continue
+
+        for path in sorted(
+            (candidate for candidate in custom.rglob("*") if candidate.is_file()),
+            key=lambda candidate: str(candidate).casefold(),
+        ):
+            relative = normalize_relative_path(path.relative_to(custom).as_posix())
+            folded = relative.casefold()
+            classification = classify_relative_path(
+                relative,
+                archive_years=archive_years,
+                current_year=current_year,
+            )
+            identity = file_identity(path)
+            manifest_row = archive_rows.get(folded)
+            row: dict[str, Any] = {
+                "terminal": terminal,
+                "relative_path": relative,
+                "path": str(path),
+                "exists": True,
+                "file_class": classification["file_class"],
+                "year": classification["year"],
+                "manifest_present": manifest_row is not None,
+                **identity,
+            }
+            if classification["file_class"] == "ARCHIVE_IMMUTABLE":
+                observed_archive.add(folded)
+                if manifest_row is not None:
+                    if verify_archive_hashes:
+                        cache_key = (
+                            str(identity["file_id"]),
+                            int(identity["size"]),
+                            int(identity["mtime_ns"]),
+                        )
+                        if cache_key not in hash_cache:
+                            hash_cache[cache_key] = sha256_file(path)
+                        row["sha256"] = hash_cache[cache_key]
+                    if str(identity["file_id"]) not in acl_cache:
+                        acl_cache[str(identity["file_id"])] = dict(
+                            acl_probe(path, runner_identity)
+                        )
+                    row["acl"] = acl_cache[str(identity["file_id"])]
+            rows.append(row)
+
+        for folded, manifest_row in archive_rows.items():
+            if folded in observed_archive:
+                continue
+            relative = str(manifest_row["relative_path"])
+            rows.append(
+                {
+                    "terminal": terminal,
+                    "relative_path": relative,
+                    "path": str(custom.joinpath(*relative.split("/"))),
+                    "exists": False,
+                    "file_class": "ARCHIVE_IMMUTABLE",
+                    "manifest_present": True,
+                }
+            )
+    return sorted(
+        rows,
+        key=lambda row: (
+            str(row["terminal"]).casefold(),
+            str(row["relative_path"]).casefold(),
+        ),
+    )
+
+
+def evaluate_variant_a_file_inventory(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    manifest: Mapping[str, Any],
+    verify_archive_hashes: bool,
+) -> dict[str, Any]:
+    """Pure evaluator for mutable-file isolation and archive manifest equality."""
+
+    validated = validate_manifest(manifest, require_owner_approval=False)
+    archive_rows = _manifest_rows(validated)
+    terminals = tuple(sorted({str(value).upper() for value in validated["runner_terminals"]}))
+    findings: list[dict[str, Any]] = []
+    mutable_identities: dict[str, list[dict[str, str]]] = {}
+    mutable_paths_by_terminal: dict[str, dict[str, int]] = {
+        terminal: {} for terminal in terminals
+    }
+    archive_identity_paths: dict[str, set[str]] = {}
+    archive_ids = {str(row["file_id"]) for row in validated["files"]}
+    observed_by_terminal: dict[str, set[str]] = {terminal: set() for terminal in terminals}
+
+    for source_row in rows:
+        row = dict(source_row)
+        terminal = str(row.get("terminal") or "").upper()
+        relative = normalize_relative_path(str(row.get("relative_path") or ""))
+        folded = relative.casefold()
+        file_class = str(row.get("file_class") or "")
+        if terminal not in observed_by_terminal:
+            findings.append(
+                {
+                    "code": "UNAUTHORIZED_RUNNER_TERMINAL",
+                    "terminal": terminal,
+                    "relative_path": relative,
+                }
+            )
+            continue
+        if not bool(row.get("exists")):
+            findings.append(
+                {
+                    "code": "MANIFEST_ARCHIVE_FILE_MISSING",
+                    "terminal": terminal,
+                    "relative_path": relative,
+                }
+            )
+            continue
+        file_id = str(row.get("file_id") or "")
+        if not file_id:
+            findings.append(
+                {
+                    "code": "FILE_ID_UNAVAILABLE",
+                    "terminal": terminal,
+                    "relative_path": relative,
+                }
+            )
+            continue
+        if file_class == "ARCHIVE_IMMUTABLE":
+            manifest_row = archive_rows.get(folded)
+            if manifest_row is None:
+                findings.append(
+                    {
+                        "code": "ARCHIVE_FILE_NOT_IN_MANIFEST",
+                        "terminal": terminal,
+                        "relative_path": relative,
+                        "file_id": file_id,
+                    }
+                )
+                continue
+            observed_by_terminal[terminal].add(folded)
+            archive_identity_paths.setdefault(file_id, set()).add(folded)
+            comparisons = {
+                "size": (int(row.get("size", -1)), int(manifest_row["size"])),
+                "file_id": (file_id, str(manifest_row["file_id"])),
+            }
+            if verify_archive_hashes:
+                comparisons["sha256"] = (
+                    str(row.get("sha256") or "").casefold(),
+                    str(manifest_row["sha256"]).casefold(),
+                )
+            mismatches = {
+                key: {"actual": actual, "expected": expected}
+                for key, (actual, expected) in comparisons.items()
+                if actual != expected
+            }
+            if mismatches:
+                findings.append(
+                    {
+                        "code": "ARCHIVE_MANIFEST_MISMATCH",
+                        "terminal": terminal,
+                        "relative_path": relative,
+                        "mismatches": mismatches,
+                    }
+                )
+            minimum_links = int(manifest_row["link_count_at_build"]) + len(terminals)
+            if int(row.get("link_count", 0)) < minimum_links:
+                findings.append(
+                    {
+                        "code": "ARCHIVE_LINK_COUNT_TOO_LOW",
+                        "terminal": terminal,
+                        "relative_path": relative,
+                        "actual": int(row.get("link_count", 0)),
+                        "minimum": minimum_links,
+                    }
+                )
+            acl = row.get("acl") if isinstance(row.get("acl"), dict) else {}
+            if not bool(acl.get("write_denied")):
+                findings.append(
+                    {
+                        "code": "ARCHIVE_RUNNER_WRITE_NOT_DENIED",
+                        "terminal": terminal,
+                        "relative_path": relative,
+                        "acl": acl,
+                    }
+                )
+        else:
+            mutable_identities.setdefault(file_id, []).append(
+                {"terminal": terminal, "relative_path": relative}
+            )
+            mutable_paths_by_terminal[terminal][folded] = int(row.get("size", -1))
+            if file_id in archive_ids:
+                findings.append(
+                    {
+                        "code": "MUTABLE_FILE_ALIASES_ARCHIVE",
+                        "terminal": terminal,
+                        "relative_path": relative,
+                        "file_id": file_id,
+                    }
+                )
+
+    expected_paths = set(archive_rows)
+    for terminal in terminals:
+        for folded in sorted(expected_paths - observed_by_terminal[terminal]):
+            finding = {
+                "code": "TERMINAL_MANIFEST_INCOMPLETE",
+                "terminal": terminal,
+                "relative_path": archive_rows[folded]["relative_path"],
+            }
+            if finding not in findings:
+                findings.append(finding)
+
+    for file_id, locations in sorted(mutable_identities.items()):
+        distinct_terminals = sorted({row["terminal"] for row in locations})
+        if len(distinct_terminals) > 1:
+            findings.append(
+                {
+                    "code": "CROSS_TERMINAL_MUTABLE_FILE_ID",
+                    "file_id": file_id,
+                    "terminals": distinct_terminals,
+                    "locations": sorted(
+                        locations,
+                        key=lambda row: (row["terminal"], row["relative_path"].casefold()),
+                    ),
+                }
+            )
+    if verify_archive_hashes:
+        expected_mutable_paths = set().union(
+            *(set(rows) for rows in mutable_paths_by_terminal.values())
+        )
+        for terminal in terminals:
+            missing = sorted(
+                expected_mutable_paths - set(mutable_paths_by_terminal[terminal])
+            )
+            for relative in missing:
+                findings.append(
+                    {
+                        "code": "TERMINAL_MUTABLE_FILE_MISSING",
+                        "terminal": terminal,
+                        "relative_path": relative,
+                    }
+                )
+        for relative in sorted(expected_mutable_paths):
+            sizes = {
+                size
+                for rows_by_path in mutable_paths_by_terminal.values()
+                if (size := rows_by_path.get(relative)) is not None
+            }
+            if len(sizes) > 1:
+                findings.append(
+                    {
+                        "code": "TERMINAL_MUTABLE_SIZE_MISMATCH",
+                        "relative_path": relative,
+                        "sizes": sorted(sizes),
+                    }
+                )
+    for file_id, paths in sorted(archive_identity_paths.items()):
+        if len(paths) > 1:
+            findings.append(
+                {
+                    "code": "ARCHIVE_FILE_ID_REUSED_ACROSS_PATHS",
+                    "file_id": file_id,
+                    "relative_paths": sorted(paths),
+                }
+            )
+
+    findings.sort(
+        key=lambda finding: (
+            str(finding["code"]),
+            str(finding.get("terminal") or ""),
+            str(finding.get("relative_path") or ""),
+            str(finding.get("file_id") or ""),
+        )
+    )
+    summary_rows = []
+    for terminal in terminals:
+        terminal_rows = [row for row in rows if str(row.get("terminal", "")).upper() == terminal]
+        mutable = [row for row in terminal_rows if row.get("file_class") != "ARCHIVE_IMMUTABLE" and row.get("exists")]
+        archive = [row for row in terminal_rows if row.get("file_class") == "ARCHIVE_IMMUTABLE" and row.get("exists")]
+        digest_rows = [
+            {
+                "relative_path": row.get("relative_path"),
+                "file_id": row.get("file_id"),
+                "size": row.get("size"),
+                "link_count": row.get("link_count"),
+                "sha256": row.get("sha256") if verify_archive_hashes else None,
+                "acl_write_denied": (
+                    row.get("acl", {}).get("write_denied")
+                    if isinstance(row.get("acl"), dict)
+                    else None
+                ),
+            }
+            for row in terminal_rows
+            if row.get("exists")
+        ]
+        summary_rows.append(
+            {
+                "terminal": terminal,
+                "archive_files": len(archive),
+                "mutable_files": len(mutable),
+                "inventory_sha256": hashlib.sha256(contract_canonical_bytes({"files": digest_rows})).hexdigest(),
+            }
+        )
+    payload: dict[str, Any] = {
+        "status": "PASS_ISOLATED" if not findings else "FAIL_CLOSED",
+        "manifest_sha256": validated["manifest_sha256"],
+        "archive_hash_verification": "FULL" if verify_archive_hashes else "BOUND_DUAL_AUDIT_RECEIPT",
+        "runner_terminals": list(terminals),
+        "terminal_summaries": summary_rows,
+        "findings": findings,
+    }
+    payload["file_audit_sha256"] = hashlib.sha256(contract_canonical_bytes(payload)).hexdigest()
+    return payload
 
 
 def resolve_protected_root_identities(
@@ -330,11 +766,58 @@ def audit_history_isolation(
     mt5_root: Path | str = DEFAULT_MT5_ROOT,
     terminals: Sequence[str] = DEFAULT_RUNNER_TERMINALS,
     protected_roots: Sequence[Path | str] = DEFAULT_PROTECTED_ROOTS,
+    manifest_path: Path | str | None = None,
+    require_owner_approval: bool = False,
+    verify_archive_hashes: bool = True,
+    acl_probe: Callable[[Path, str], Mapping[str, Any]] = archive_acl_write_denied,
+    acl_evidence_path: Path | str | None = None,
 ) -> dict[str, Any]:
-    return evaluate_inventory(
+    topology = evaluate_inventory(
         collect_inventory(mt5_root=mt5_root, terminals=terminals),
         protected_root_identities=resolve_protected_root_identities(protected_roots),
     )
+    if manifest_path is None:
+        return topology
+    manifest = load_manifest(
+        Path(manifest_path),
+        require_owner_approval=require_owner_approval,
+    )
+    acl_binding = None
+    if acl_evidence_path is not None:
+        acl_binding = load_acl_evidence(Path(acl_evidence_path), manifest=manifest)
+        acl_probe = lambda path, identity: {
+            "supported": True,
+            "write_denied": True,
+            "source": "bound_acl_verification_receipt",
+            "evidence_file_sha256": acl_binding["file_sha256"],
+            "path": str(path),
+            "runner_identity": identity,
+        }
+    file_rows = collect_variant_a_file_inventory(
+        mt5_root=mt5_root,
+        terminals=terminals,
+        manifest=manifest,
+        verify_archive_hashes=verify_archive_hashes,
+        acl_probe=acl_probe,
+    )
+    file_audit = evaluate_variant_a_file_inventory(
+        file_rows,
+        manifest=manifest,
+        verify_archive_hashes=verify_archive_hashes,
+    )
+    payload = dict(topology)
+    payload["topology_audit_sha256"] = payload.pop("audit_sha256")
+    payload["variant_a_file_audit"] = file_audit
+    payload["manifest_path"] = str(Path(manifest_path).absolute())
+    payload["archive_acl_evidence"] = acl_binding
+    payload["status"] = (
+        "PASS_ISOLATED"
+        if topology["status"] == "PASS_ISOLATED"
+        and file_audit["status"] == "PASS_ISOLATED"
+        else "FAIL_CLOSED"
+    )
+    payload["audit_sha256"] = hashlib.sha256(_canonical_bytes(payload)).hexdigest()
+    return payload
 
 
 def main() -> int:
@@ -342,6 +825,15 @@ def main() -> int:
     parser.add_argument("--mt5-root", type=Path, default=DEFAULT_MT5_ROOT)
     parser.add_argument("--terminal", action="append", dest="terminals")
     parser.add_argument("--protected-root", action="append", dest="protected_roots")
+    parser.add_argument("--manifest", type=Path)
+    parser.add_argument("--acl-evidence", type=Path)
+    parser.add_argument("--require-owner-approval", action="store_true")
+    parser.add_argument(
+        "--skip-archive-hash",
+        action="store_true",
+        help="metadata-only scoped check; valid only with independently bound dual full-audit receipts",
+    )
+    parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     payload = audit_history_isolation(
         mt5_root=args.mt5_root,
@@ -350,8 +842,16 @@ def main() -> int:
             Path(value)
             for value in (args.protected_roots or DEFAULT_PROTECTED_ROOTS)
         ),
+        manifest_path=args.manifest,
+        require_owner_approval=args.require_owner_approval,
+        verify_archive_hashes=not args.skip_archive_hash,
+        acl_evidence_path=args.acl_evidence,
     )
-    print(json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False))
+    rendered = json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(rendered, encoding="utf-8", newline="\n")
+    print(rendered, end="")
     return 0 if payload["status"] == "PASS_ISOLATED" else 2
 
 
