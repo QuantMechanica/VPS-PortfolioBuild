@@ -118,3 +118,38 @@ Normal workers own dispatch and Q02 execution.
 - No portfolio-admission, portfolio KPI, or Q08-contribution path was touched.
 - No manual tester, smoke test, or pipeline phase was launched.
 - Existing unrelated dirty-worktree files were left untouched.
+
+## 2026-08-07 04:32Z continuation audit
+
+The deferred-symbol fallback became stale before a safe apply window opened.
+A target-only dry run for `QM5_11646` selected zero rows because the canonical
+farm had already promoted and completed both deferred hosts. Current terminal
+evidence now records Q02 PASS on all five declared FX symbols:
+
+| Symbol | Q02 work item | Verdict |
+|---|---|---|
+| `AUDUSD.DWX` | `53f68c79-595a-465c-8d40-5badd8396b3e` | PASS |
+| `EURUSD.DWX` | `591178a9-50db-4097-987a-aa6f3dffe5f5` | PASS |
+| `GBPUSD.DWX` | `430172e1-7334-4a31-8871-97c53eb4ce7d` | PASS |
+| `USDCAD.DWX` | `2dc0bd15-419d-4e11-8037-7dedc8e891a5` | PASS |
+| `USDJPY.DWX` | `c77db90c-dedd-4cce-8035-b850538a0797` | PASS |
+
+The same card has since reached terminal Q04 FAIL on all five symbols, so it
+is no longer a valid funnel-advancement fallback. Re-enqueueing any of these
+rows would duplicate terminal work. Direct canonical-farm reads also
+reconfirmed that the requested anchors are not currently blocked at Q02:
+`QM5_12532` retains logical-basket Q02 PASS followed by Q04 PASS and Q05 FAIL,
+and `QM5_12533` retains logical-basket Q02 PASS followed by Q04 FAIL.
+
+The immediate `farmctl mt5-slots` sample at `2026-08-07T04:32:53+00:00`
+found every factory terminal `T1` through `T10` running. The separately
+observed `T_Live` and FTMO terminals were excluded from the factory count and
+were not controlled. Ten factory processes exceed the binding seven-terminal
+ceiling, so the mission stopped before selecting another existing FX card,
+applying an enqueue, dispatching work, or launching a tester.
+
+The target-only dry-run evidence is
+`D:\QM\reports\state\claude_sweep_enqueue_2026-06-10.json` with
+`generated_at=2026-08-07T04:32:35+00:00`, `apply=false`, and zero selected
+rows. No queue row, deferred sidecar entry, terminal process, EA artifact,
+registry, portfolio gate, or live artifact was changed.
