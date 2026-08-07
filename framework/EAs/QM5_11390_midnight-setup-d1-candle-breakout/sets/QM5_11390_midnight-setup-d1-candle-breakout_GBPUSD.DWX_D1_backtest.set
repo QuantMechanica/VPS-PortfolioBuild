@@ -1,0 +1,28 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11390
+; ea_slug:      midnight-setup-d1-candle-breakout
+; ea_version:   v5.0
+; set_version:  s20260807-001
+; symbol:       GBPUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-07
+;==========================================================
+qm_ea_id=11390
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11390_midnight-setup-d1-candle-breakout.md
+strategy_min_range_pips=90
+strategy_offset_pips=5
+strategy_sl_pips=50
+strategy_tp_pips=100
+strategy_spread_cap_pips=30

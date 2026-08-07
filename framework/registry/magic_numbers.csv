@@ -11297,9 +11297,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11513,carter-t-ema4-11-adx13-d1,1,GBPUSD.DWX,115130001,2026-06-18,Claude,active
 11514,carter-t-macd3916-adx16-d1,0,EURUSD.DWX,115140000,2026-06-18,Claude,active
 11514,carter-t-macd3916-adx16-d1,1,GBPUSD.DWX,115140001,2026-06-18,Claude,active
-11515,carter-t-adx14-prev-day-range-h1,0,EURUSD.DWX,115150000,2026-06-18,Claude,reserved
-11515,carter-t-adx14-prev-day-range-h1,1,GBPUSD.DWX,115150001,2026-06-18,Claude,reserved
-11515,carter-t-adx14-prev-day-range-h1,2,AUDUSD.DWX,115150002,2026-06-18,Claude,reserved
+11515,carter-t-adx14-prev-day-range-h1,0,EURUSD.DWX,115150000,2026-06-18,Claude,active
+11515,carter-t-adx14-prev-day-range-h1,1,GBPUSD.DWX,115150001,2026-06-18,Claude,active
+11515,carter-t-adx14-prev-day-range-h1,2,AUDUSD.DWX,115150002,2026-06-18,Claude,active
 11519,carter-t-ema7-21-pullback,0,EURUSD.DWX,115190000,2026-06-18,Claude,active
 11519,carter-t-ema7-21-pullback,1,GBPUSD.DWX,115190001,2026-06-18,Claude,active
 11519,carter-t-ema7-21-pullback,2,AUDUSD.DWX,115190002,2026-06-18,Claude,active
