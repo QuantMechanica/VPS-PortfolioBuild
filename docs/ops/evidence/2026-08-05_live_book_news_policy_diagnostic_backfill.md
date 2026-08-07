@@ -1021,3 +1021,24 @@ direction is already unambiguous.
 Six sleeves, verdict tally: blocking hurts 3 (11422, 10706, 11165) ·
 indifferent 1 (XNG) · day-skip-lethal-only 1 (11132) · post-window-tax 1
 (10919).
+
+## 2026-08-07 — 11421/EURUSD generation-4 death and post-migration deferral
+
+Generation-4 rerun `57f403c0-aace-57d5-a111-5e1791b4dee4` (T1-claim path,
+avoid T3) died 06:18Z with
+`shared_bases_history_lock_transient_cap_exhausted` after 7 transient
+attempts (evidence: `D:\QM\mt5\T5\logs\20260807.log`, tester line 08:17:44
+local "some error after pass finished"). Fourth consecutive
+infrastructure-killed generation for this sleeve; EURUSD carries 75.7 % of
+the measured error-32 hits (root-cause doc 2026-08-06), so under current
+fleet load every further attempt competes against the exact contention
+surface the OWNER-ratified Variant-A isolation (decision db40ba300, window
+Sunday 2026-08-09) removes.
+
+**Decision (Claude, diagnostic non-admission lane): defer generation 5 to
+post-migration.** No further pre-migration attempts. The Saturday programme
+verdict doc will carry 11421/EURUSD as "infra-deferred to post-isolation" —
+same treatment as the basket motors (20234/20235). Queue-note: the staggered
+XAU successors were additionally claim-paused this morning by design
+(`commit_headroom_low_pause`, 34 GiB commit reservation of the QM5_20233
+multi-symbol Q02 on T1); they claim as headroom frees.
