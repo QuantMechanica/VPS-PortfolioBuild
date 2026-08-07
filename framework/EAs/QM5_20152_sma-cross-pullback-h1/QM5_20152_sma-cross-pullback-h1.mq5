@@ -100,11 +100,13 @@ datetime g_str143_last_fill_attempt_bar = 0;
 datetime g_str143_last_be_attempt_bar = 0;
 datetime g_str143_last_close_attempt_bar = 0;
 datetime g_str143_last_data_log_bar = 0;
+datetime g_str143_last_filter_log_bar = 0;
 ulong    g_str143_position_id = 0;
 bool     g_str143_episode_reconstructed = false;
 bool     g_str143_fill_protection_exact = false;
 bool     g_str143_be_latched = false;
 bool     g_str143_be_done = false;
+bool     g_str143_first_entry_eval_logged = false;
 
 bool Strategy143_ConfigValid()
   {
@@ -148,6 +150,24 @@ void Strategy143_LogDataMissing(const string component,
          QM_LoggerEscapeJson(component),
          (long)bar_time,
          qm_magic_slot_offset));
+  }
+
+void Strategy143_LogEntryBlockOnce(const string reason,
+                                   const long bars_available)
+  {
+   datetime forming_time = 0;
+   if(!Strategy143_CurrentBar(forming_time) ||
+      forming_time == g_str143_last_filter_log_bar)
+      return;
+   g_str143_last_filter_log_bar = forming_time;
+   QM_LogEvent(
+      QM_WARN,
+      "ENTRY_BLOCK",
+      StringFormat(
+         "{\"strategy\":\"STR-143\",\"reason\":\"%s\",\"forming_time\":%I64d,\"bars_available\":%I64d}",
+         QM_LoggerEscapeJson(reason),
+         (long)forming_time,
+         bars_available));
   }
 
 bool Strategy143_IndicatorValid(const double value)
@@ -355,7 +375,8 @@ int Strategy143_ApplyEpisodeBar(const double fast_now,
                                 const double slow_prev,
                                 const double k_now,
                                 const double k_prev,
-                                const datetime bar_time)
+                                const datetime bar_time,
+                                const bool emit_diagnostics)
   {
    const bool bull_cross =
       (fast_now > slow_now &&
@@ -367,12 +388,32 @@ int Strategy143_ApplyEpisodeBar(const double fast_now,
      {
       g_str143_arm = STR143_ARMED_LONG;
       g_str143_arm_bar = bar_time;
+      if(emit_diagnostics)
+         QM_LogEvent(
+            QM_INFO,
+            "ENTRY_CANDIDATE_READY",
+            StringFormat(
+               "{\"strategy\":\"STR-143\",\"stage\":\"arm\",\"side\":\"BUY\",\"bar_time\":%I64d,\"sma_fast\":%.8f,\"sma_slow\":%.8f,\"stoch_k\":%.6f}",
+               (long)bar_time,
+               fast_now,
+               slow_now,
+               k_now));
       return 0; // same-bar stochastic movement is ineligible
      }
    if(bear_cross)
      {
       g_str143_arm = STR143_ARMED_SHORT;
       g_str143_arm_bar = bar_time;
+      if(emit_diagnostics)
+         QM_LogEvent(
+            QM_INFO,
+            "ENTRY_CANDIDATE_READY",
+            StringFormat(
+               "{\"strategy\":\"STR-143\",\"stage\":\"arm\",\"side\":\"SELL\",\"bar_time\":%I64d,\"sma_fast\":%.8f,\"sma_slow\":%.8f,\"stoch_k\":%.6f}",
+               (long)bar_time,
+               fast_now,
+               slow_now,
+               k_now));
       return 0;
      }
 
@@ -387,11 +428,22 @@ int Strategy143_ApplyEpisodeBar(const double fast_now,
       if(bar_time > g_str143_arm_bar &&
          k_prev <= strategy_os_level &&
          k_now > strategy_os_level)
-        {
-         g_str143_arm = STR143_IDLE; // first trigger consumes the episode
-         g_str143_arm_bar = 0;
-         return 1;
-        }
+         {
+          g_str143_arm = STR143_IDLE; // first trigger consumes the episode
+          g_str143_arm_bar = 0;
+          if(emit_diagnostics)
+             QM_LogEvent(
+                QM_INFO,
+                "ENTRY_SIGNAL_FIRE",
+                StringFormat(
+                   "{\"strategy\":\"STR-143\",\"side\":\"BUY\",\"bar_time\":%I64d,\"sma_fast\":%.8f,\"sma_slow\":%.8f,\"stoch_k_prev\":%.6f,\"stoch_k\":%.6f}",
+                   (long)bar_time,
+                   fast_now,
+                   slow_now,
+                   k_prev,
+                   k_now));
+          return 1;
+         }
      }
    else if(g_str143_arm == STR143_ARMED_SHORT)
      {
@@ -404,11 +456,22 @@ int Strategy143_ApplyEpisodeBar(const double fast_now,
       if(bar_time > g_str143_arm_bar &&
          k_prev >= strategy_ob_level &&
          k_now < strategy_ob_level)
-        {
-         g_str143_arm = STR143_IDLE;
-         g_str143_arm_bar = 0;
-         return -1;
-        }
+         {
+          g_str143_arm = STR143_IDLE;
+          g_str143_arm_bar = 0;
+          if(emit_diagnostics)
+             QM_LogEvent(
+                QM_INFO,
+                "ENTRY_SIGNAL_FIRE",
+                StringFormat(
+                   "{\"strategy\":\"STR-143\",\"side\":\"SELL\",\"bar_time\":%I64d,\"sma_fast\":%.8f,\"sma_slow\":%.8f,\"stoch_k_prev\":%.6f,\"stoch_k\":%.6f}",
+                   (long)bar_time,
+                   fast_now,
+                   slow_now,
+                   k_prev,
+                   k_now));
+          return -1;
+         }
      }
    return 0;
   }
@@ -450,15 +513,26 @@ bool Strategy143_ReconstructEpisode(const datetime forming_time)
                                     forming_time);
          return false;
         }
-      Strategy143_ApplyEpisodeBar(fast_now,
-                                  slow_now,
-                                  fast_prev,
-                                  slow_prev,
-                                  k_now,
-                                  k_prev,
-                                  bar.time);
-     }
+       Strategy143_ApplyEpisodeBar(fast_now,
+                                   slow_now,
+                                   fast_prev,
+                                   slow_prev,
+                                   k_now,
+                                   k_prev,
+                                   bar.time,
+                                   false);
+      }
    g_str143_episode_reconstructed = true;
+   if(g_str143_arm != STR143_IDLE)
+      QM_LogEvent(
+         QM_INFO,
+         "ENTRY_CANDIDATE_READY",
+         StringFormat(
+            "{\"strategy\":\"STR-143\",\"stage\":\"restart_reconstruction\",\"side\":\"%s\",\"arm_bar\":%I64d,\"forming_time\":%I64d,\"lookback\":%d}",
+            g_str143_arm == STR143_ARMED_LONG ? "BUY" : "SELL",
+            (long)g_str143_arm_bar,
+            (long)forming_time,
+            lookback));
    return true;
   }
 
@@ -527,17 +601,32 @@ bool Strategy_NoTradeFilter()
    if(Strategy143_HasOwnPosition())
       return false;
    if(!Strategy143_ConfigValid())
+     {
+      Strategy143_LogEntryBlockOnce("config_invalid", -1);
       return true;
+     }
    if((ENUM_SYMBOL_TRADE_MODE)SymbolInfoInteger(
          _Symbol,
          SYMBOL_TRADE_MODE) == SYMBOL_TRADE_MODE_DISABLED)
+     {
+      Strategy143_LogEntryBlockOnce("symbol_trade_disabled", -1);
       return true;
+     }
    const long bars_available =
       SeriesInfoInteger(_Symbol,
                         PERIOD_H1,
                         SERIES_BARS_COUNT); // perf-allowed: O(1) warmup gate
-   return (bars_available < 202 ||
-           !Strategy143_HandlesReady());
+   if(bars_available < 202)
+     {
+      Strategy143_LogEntryBlockOnce("bars_unready", bars_available);
+      return true;
+     }
+   if(!Strategy143_HandlesReady())
+     {
+      Strategy143_LogEntryBlockOnce("indicator_handles_unready", bars_available);
+      return true;
+     }
+   return false;
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
@@ -555,6 +644,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(forming_time == g_str143_last_entry_eval_bar)
       return false;
    g_str143_last_entry_eval_bar = forming_time;
+
+   if(!g_str143_first_entry_eval_logged)
+     {
+      g_str143_first_entry_eval_logged = true;
+      QM_LogEvent(
+         QM_INFO,
+         "ENTRY_EVAL",
+         StringFormat(
+            "{\"strategy\":\"STR-143\",\"forming_time\":%I64d,\"episode_reconstructed\":%s,\"arm_state\":%d}",
+            (long)forming_time,
+            g_str143_episode_reconstructed ? "true" : "false",
+            (int)g_str143_arm));
+     }
 
    if(!Strategy143_ConfigValid() ||
       !Strategy143_HandlesReady())
@@ -591,7 +693,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                                   slow_prev,
                                   k_now,
                                   k_prev,
-                                  signal_bar.time);
+                                  signal_bar.time,
+                                  true);
    if(direction == 0 ||
       Strategy143_HasOwnPosition())
       return false;

@@ -56,13 +56,14 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_ema_fast_period   = 4;      // fast EMA (cross trigger)
-input int    strategy_ema_slow_period   = 11;     // slow EMA (cross trigger)
-input int    strategy_adx_period        = 13;     // ADX period (trend strength + DI)
-input double strategy_adx_threshold     = 22.0;   // ADX main must exceed this (trending regime)
-input double strategy_sl_pips           = 100.0;  // fixed fallback stop in pips (wide D1 stop)
-input bool   strategy_no_friday_entry   = true;   // skip new entries on Friday
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_ema_fast_period    = 4;      // fast EMA cross leg
+input int    strategy_ema_slow_period    = 11;     // slow EMA cross leg
+input int    strategy_adx_period         = 13;     // ADX and DI period
+input double strategy_adx_threshold      = 22.0;   // ADX must be strictly above this value
+input int    strategy_sl_pips            = 100;    // fixed fallback stop
+input int    strategy_tp_pips            = 0;      // 0=EMA reversal exit; test 100/200/300 fixed TP
+input bool   strategy_no_friday_entry    = true;   // suppress new Friday entries
+input int    strategy_spread_cap_pips    = 30;     // maximum entry spread; zero modeled spread passes
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -75,92 +76,97 @@ bool Strategy_NoTradeFilter()
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_pips);
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
       return true;
 
-   return false;
+   if(strategy_spread_cap_pips <= 0)
+      return false;
+
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
+      return true;
+
+   // .DWX tester quotes may have ask == bid. Only a genuinely positive,
+   // over-cap spread blocks trading.
+   return (ask > bid && (ask - bid) > spread_cap);
   }
 
 // Both-direction entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // No-Friday-entry filter (broker-time day-of-week of the current bar).
    if(strategy_no_friday_entry)
      {
       MqlDateTime dt;
       TimeToStruct(TimeCurrent(), dt);
-      if(dt.day_of_week == 5) // Friday
+      if(dt.day_of_week == 5)
          return false;
      }
 
-   // --- Trigger EVENT: EMA(4)/EMA(11) cross on the just-closed bar ---
-   const double ema_fast_1 = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
-   const double ema_slow_1 = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 1);
-   const double ema_fast_2 = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 2);
-   const double ema_slow_2 = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 2);
+   if(strategy_ema_fast_period <= 0 ||
+      strategy_ema_slow_period <= strategy_ema_fast_period ||
+      strategy_adx_period <= 0 ||
+      strategy_adx_threshold < 0.0 ||
+      strategy_sl_pips <= 0 ||
+      strategy_tp_pips < 0)
+      return false;
+
+   // The crossover is the one trigger event, evaluated on the just-closed D1
+   // bar against the preceding closed D1 bar.
+   const double ema_fast_1 = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_fast_period, 1);
+   const double ema_slow_1 = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_slow_period, 1);
+   const double ema_fast_2 = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_fast_period, 2);
+   const double ema_slow_2 = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_slow_period, 2);
    if(ema_fast_1 <= 0.0 || ema_slow_1 <= 0.0 || ema_fast_2 <= 0.0 || ema_slow_2 <= 0.0)
       return false;
 
    const bool cross_up   = (ema_fast_2 <= ema_slow_2 && ema_fast_1 >  ema_slow_1);
    const bool cross_down = (ema_fast_2 >= ema_slow_2 && ema_fast_1 <  ema_slow_1);
    if(!cross_up && !cross_down)
-      return false; // no fresh cross event this bar
-
-   // --- ADX STATE: trend must be sufficiently strong (trending, not ranging) ---
-   const double adx_main = QM_ADX(_Symbol, _Period, strategy_adx_period, 1);
-   if(adx_main <= 0.0)
       return false;
+
+   // ADX strength and DI direction are states, not additional crossover
+   // events, so no coincident-event requirement is introduced.
+   const double adx_main = QM_ADX(_Symbol, PERIOD_D1, strategy_adx_period, 1);
    if(adx_main <= strategy_adx_threshold)
       return false;
 
-   // --- DI STATE: directional confirmation ---
-   const double plus_di  = QM_ADX_PlusDI(_Symbol, _Period, strategy_adx_period, 1);
-   const double minus_di = QM_ADX_MinusDI(_Symbol, _Period, strategy_adx_period, 1);
-   if(plus_di <= 0.0 || minus_di <= 0.0)
+   const double plus_di  = QM_ADX_PlusDI(_Symbol, PERIOD_D1, strategy_adx_period, 1);
+   const double minus_di = QM_ADX_MinusDI(_Symbol, PERIOD_D1, strategy_adx_period, 1);
+
+   QM_OrderType side;
+   if(cross_up && plus_di > minus_di)
+      side = QM_BUY;
+   else if(cross_down && minus_di > plus_di)
+      side = QM_SELL;
+   else
       return false;
 
-   const double entry = SymbolInfoDouble(_Symbol, (cross_up ? SYMBOL_ASK : SYMBOL_BID));
+   const double entry = SymbolInfoDouble(_Symbol, (side == QM_BUY ? SYMBOL_ASK : SYMBOL_BID));
    if(entry <= 0.0)
       return false;
 
-   if(cross_up)
-     {
-      if(!(plus_di > minus_di))
-         return false; // bullish cross needs +DI dominance
-      const double sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, strategy_sl_pips);
-      if(sl <= 0.0)
-         return false;
-      req.type   = QM_BUY;
-      req.price  = 0.0;   // framework fills market price at send
-      req.sl     = sl;
-      req.tp     = 0.0;   // indicator-driven exit, no fixed TP
-      req.reason = "ema4_11_cross_up_adx";
-      return true;
-     }
-
-   // cross_down -> SHORT
-   if(!(minus_di > plus_di))
-      return false; // bearish cross needs -DI dominance
-   const double sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_sl_pips);
+   const double sl = QM_StopFixedPips(_Symbol, side, entry, strategy_sl_pips);
    if(sl <= 0.0)
       return false;
-   req.type   = QM_SELL;
-   req.price  = 0.0;
+
+   double tp = 0.0;
+   if(strategy_tp_pips > 0)
+     {
+      const double reward_risk = (double)strategy_tp_pips / (double)strategy_sl_pips;
+      tp = QM_TakeRR(_Symbol, side, entry, sl, reward_risk);
+      if(tp <= 0.0)
+         return false;
+     }
+
+   req.type   = side;
+   req.price  = 0.0; // framework fills the market price
    req.sl     = sl;
-   req.tp     = 0.0;
-   req.reason = "ema4_11_cross_down_adx";
+   req.tp     = tp;
+   req.reason = (side == QM_BUY) ? "ema4_11_cross_up_adx13" : "ema4_11_cross_down_adx13";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
@@ -174,14 +180,19 @@ void Strategy_ManageOpenPosition()
 // to the open position. One fresh cross event at shift 1 (vs shift 2).
 bool Strategy_ExitSignal()
   {
+   // Positive TP values select the card-authorized fixed-TP comparison mode;
+   // zero retains the baseline opposite-EMA-cross exit.
+   if(strategy_tp_pips > 0)
+      return false;
+
    const int magic = QM_FrameworkMagic();
    if(QM_TM_OpenPositionCount(magic) <= 0)
       return false;
 
-   const double ema_fast_1 = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
-   const double ema_slow_1 = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 1);
-   const double ema_fast_2 = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 2);
-   const double ema_slow_2 = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 2);
+   const double ema_fast_1 = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_fast_period, 1);
+   const double ema_slow_1 = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_slow_period, 1);
+   const double ema_fast_2 = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_fast_period, 2);
+   const double ema_slow_2 = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_slow_period, 2);
    if(ema_fast_1 <= 0.0 || ema_slow_1 <= 0.0 || ema_fast_2 <= 0.0 || ema_slow_2 <= 0.0)
       return false;
 
@@ -257,18 +268,16 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any per-tick guard can
+   // return. QM_KillSwitchCheck retains the same call as a compatibility
+   // fallback for pre-template EAs; keep this explicit hook in all new builds.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -276,8 +285,14 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
+   // Management, rule-based exits and the Friday sweep above MUST keep
+   // running through news windows — the news gate below blocks NEW entries
+   // only (2026-07-02 audit rule; canonical order per QM5_12821 OnTick,
+   // commit dc418a720).
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -288,16 +303,34 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL);
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults. Gates NEW entries only —
+   // never the management/exit paths above.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req); // symbol_slot=0 (host slot) + expiration=0 defaults; garbage
+                    // in unset fields = the silent-zero-trades class (9e4cfedb1)
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
@@ -314,6 +347,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
