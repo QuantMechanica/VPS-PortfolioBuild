@@ -56,12 +56,16 @@ int Strategy_SlotForCurrentSymbol()
    return g_slots[index];
   }
 
-bool Strategy_SelectSymbols()
+bool Strategy_SelectCurrentSymbol()
   {
-   for(int i = 0; i < QM5_1189_SYMBOL_COUNT; ++i)
-      if(!SymbolSelect(g_symbols[i], true))
-         return false;
-   return true;
+   const int index = Strategy_CurrentSymbolIndex();
+   if(index < 0)
+      return false;
+
+   // XTI and XBR are independent oil proxies, not basket legs.  Selecting an
+   // unavailable alternate on every XTI tick both blocked trading and caused
+   // the tester to emit an unbounded unknown-symbol journal stream.
+   return SymbolSelect(g_symbols[index], true);
   }
 
 bool Strategy_HasOpenPosition(ulong &ticket, datetime &opened_at)
@@ -94,8 +98,8 @@ bool Strategy_HasOpenPosition(ulong &ticket, datetime &opened_at)
 bool Strategy_DailyReturn(const string symbol, const int shift, double &out_return)
   {
    out_return = 0.0;
-   const double close_now = iClose(symbol, PERIOD_D1, shift);
-   const double close_prev = iClose(symbol, PERIOD_D1, shift + 1);
+   const double close_now = iClose(symbol, PERIOD_D1, shift);          // perf-allowed: two closed D1 return inputs, reached only from the framework new-bar entry path.
+   const double close_prev = iClose(symbol, PERIOD_D1, shift + 1);     // perf-allowed: two closed D1 return inputs, reached only from the framework new-bar entry path.
    if(close_now <= 0.0 || close_prev <= 0.0)
       return false;
 
@@ -106,7 +110,7 @@ bool Strategy_DailyReturn(const string symbol, const int shift, double &out_retu
 bool Strategy_ATRPercent(const string symbol, const int shift, double &out_atr_pct)
   {
    out_atr_pct = 0.0;
-   const double close_value = iClose(symbol, PERIOD_D1, shift);
+   const double close_value = iClose(symbol, PERIOD_D1, shift); // perf-allowed: bounded 252-session D1 percentile window evaluated once per new D1 bar.
    const double atr_value = QM_ATR(symbol, PERIOD_D1, strategy_atr_period, shift);
    if(close_value <= 0.0 || atr_value <= 0.0)
       return false;
@@ -152,7 +156,7 @@ double Strategy_MedianDailySpreadPoints()
    for(int shift = 1; shift <= n; ++shift)
      {
       const long spread = iSpread(_Symbol, PERIOD_D1, shift);
-      if(spread <= 0)
+      if(spread < 1)
          continue;
       values[count] = (double)spread;
       ++count;
@@ -182,7 +186,7 @@ bool Strategy_SpreadAllowsEntry()
       return true;
 
    const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(current_spread <= 0)
+   if(current_spread < 1)
       return true;
    return ((double)current_spread <= median_spread * strategy_spread_mult);
   }
@@ -192,10 +196,10 @@ bool Strategy_BarQualityAllowsEntry(const double atr_value)
    if(atr_value <= 0.0)
       return false;
 
-   const double high_value = iHigh(_Symbol, PERIOD_D1, 1);
-   const double low_value = iLow(_Symbol, PERIOD_D1, 1);
-   const double open_value = iOpen(_Symbol, PERIOD_D1, 1);
-   const double prior_close = iClose(_Symbol, PERIOD_D1, 2);
+   const double high_value = iHigh(_Symbol, PERIOD_D1, 1);   // perf-allowed: fixed closed D1 bar-quality read after the framework new-bar gate.
+   const double low_value = iLow(_Symbol, PERIOD_D1, 1);     // perf-allowed: fixed closed D1 bar-quality read after the framework new-bar gate.
+   const double open_value = iOpen(_Symbol, PERIOD_D1, 1);   // perf-allowed: fixed closed D1 bar-quality read after the framework new-bar gate.
+   const double prior_close = iClose(_Symbol, PERIOD_D1, 2); // perf-allowed: fixed prior D1 close after the framework new-bar gate.
    if(high_value <= 0.0 || low_value <= 0.0 || open_value <= 0.0 || prior_close <= 0.0)
       return false;
 
@@ -235,7 +239,7 @@ bool Strategy_NoTradeFilter()
       return true;
    if(iBars(_Symbol, PERIOD_D1) < strategy_min_history_d1_bars)
       return true;
-   return !Strategy_SelectSymbols();
+   return false;
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
@@ -248,7 +252,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = Strategy_SlotForCurrentSymbol();
    req.expiration_seconds = 0;
 
-   const datetime signal_bar = iTime(_Symbol, PERIOD_D1, 1);
+   const datetime signal_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: one closed D1 identity read after the framework new-bar gate.
    if(signal_bar <= 0 || g_last_entry_signal_bar == signal_bar)
       return false;
 
@@ -302,7 +306,7 @@ bool Strategy_ExitSignal()
    if(!Strategy_HasOpenPosition(ticket, opened_at))
       return false;
 
-   const datetime current_d1 = iTime(_Symbol, PERIOD_D1, 0);
+   const datetime current_d1 = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 hold state changes only on the new-bar-gated exit path.
    if(current_d1 <= 0 || opened_at <= 0)
       return false;
 
@@ -318,7 +322,8 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   Strategy_SelectSymbols();
+   if(!Strategy_SelectCurrentSymbol())
+      return INIT_FAILED;
 
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
@@ -356,6 +361,12 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // This D1 strategy has no intrabar management, and its time exit can change
+   // state only when the D1 bar changes.  Keep all strategy series work behind
+   // the framework gate while retaining per-tick kill-switch/Friday checks.
+   if(!QM_IsNewBar())
+      return;
+
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -373,9 +384,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   if(!QM_IsNewBar())
-      return;
 
    QM_EquityStreamOnNewBar();
 
