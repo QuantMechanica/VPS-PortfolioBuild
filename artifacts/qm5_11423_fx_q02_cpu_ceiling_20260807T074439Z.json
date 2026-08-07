@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-08-07T07:44:39Z",
+  "branch": "agents/board-advisor",
+  "target": {
+    "ea_id": "QM5_11423",
+    "ea_slug": "williams-naked-close-stop-entry-d1",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "framework/EAs/QM5_11423_williams-naked-close-stop-entry-d1/sets/QM5_11423_williams-naked-close-stop-entry-d1_EURUSD.DWX_D1_backtest.set",
+    "setfile_commit": "970874f5a741e9915fec4a52a9afbeafbdbc4bc7"
+  },
+  "q02_preapply": {
+    "dry_run_generated_at": "2026-08-07T09:44:27+02:00",
+    "command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --ea QM5_11423",
+    "apply": false,
+    "pending_at_start": 1380,
+    "queue_ceiling": 7000,
+    "selected_count": 1,
+    "selected": {
+      "ea_id": "QM5_11423",
+      "symbol": "EURUSD.DWX",
+      "setfile": "QM5_11423_williams-naked-close-stop-entry-d1_EURUSD.DWX_D1_backtest.set",
+      "priority_track": true
+    },
+    "existing_work_items_before": 0,
+    "evidence_path": "D:/QM/reports/state/claude_sweep_enqueue_2026-06-10.json"
+  },
+  "build_validation": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_11423_williams-naked-close-stop-entry-d1 -SkipCompile",
+    "status": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:/QM/reports/framework/21/build_check_20260807_074329.json",
+    "mq5_sha256": "28DDD1FD89BF558C9124521692FC4ECB3ECC4338405B55C84DB9B794E12F85A5",
+    "ex5_sha256": "B199066285DC43C3D869FD0F7DD3EB82BB7FD88FAF24113FFAFEDAF78270E1EF",
+    "setfile_sha256": "C5778CF118FCB43DD9AD6F7F98DDB8F404960E8F170212C8781E725817648DCC"
+  },
+  "cpu_ceiling": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at": "2026-08-07T07:44:39+00:00",
+    "binding_factory_terminal_ceiling": 7,
+    "running_factory_terminal_count": 7,
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T8",
+      "T9"
+    ],
+    "terminal64_running_count_including_excluded": 9,
+    "excluded_nonfactory_processes": [
+      "C:/QM/mt5/T_Live/MT5_Base/terminal64.exe",
+      "C:/Program Files/FTMO Global Markets MT5 Terminal/terminal64.exe"
+    ],
+    "stop_reason": "running factory terminal count equals the paced-fleet ceiling"
+  },
+  "mutations": {
+    "setfile_committed": true,
+    "q02_apply_invoked": false,
+    "q02_work_item_inserted": false,
+    "dispatch_invoked": false,
+    "terminal_control_invoked": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}
