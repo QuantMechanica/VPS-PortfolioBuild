@@ -15582,3 +15582,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20260,xauxag-mom-vote,0,XAUUSD.DWX,202600000,2026-08-07T05:10:19Z,Codex,active
 20260,xauxag-mom-vote,1,XAGUSD.DWX,202600001,2026-08-07T05:10:19Z,Codex,active
 20261,wti-lr-trend,0,XTIUSD.DWX,202610000,2026-08-07T07:21:38Z,Codex,active
+20262,xng-lr-trend,0,XNGUSD.DWX,202620000,2026-08-07T08:54:24Z,Codex,active
