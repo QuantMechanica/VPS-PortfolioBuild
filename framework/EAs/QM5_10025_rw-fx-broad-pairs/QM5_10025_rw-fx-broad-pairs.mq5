@@ -53,11 +53,14 @@ int g_slots[STRATEGY_SYMBOL_COUNT] = {0, 1, 2, 3, 4, 5, 6};
 int     g_selected_partner = -1;
 double  g_selected_beta = 1.0;
 int     g_selected_month_key = -1;
+double  g_current_corr = 0.0;
 double  g_current_z = 0.0;
 double  g_current_sigma = 0.0;
+double  g_entry_z = 0.0;
 double  g_entry_abs_z = 0.0;
 datetime g_entry_bar_time = 0;
 bool    g_state_ready = false;
+bool    g_pair_corr_breached = false;
 
 int Strategy_SymbolIndex(const string symbol)
   {
@@ -277,11 +280,67 @@ bool Strategy_SpreadStats(const int host_index,
    return MathIsValidNumber(z);
   }
 
+bool Strategy_SelectedSpreadState(const int host_index,
+                                  const int partner_index,
+                                  const double frozen_beta,
+                                  double &corr,
+                                  double &z,
+                                  double &sigma)
+  {
+   corr = 0.0;
+   z = 0.0;
+   sigma = 0.0;
+   if(!MathIsValidNumber(frozen_beta) || MathAbs(frozen_beta) <= 0.01)
+      return false;
+
+   const int formation = MathMax(60, strategy_formation_bars);
+   const int zbars = MathMax(20, strategy_zscore_bars);
+   const int bars = MathMax(formation + 1, zbars + 1);
+
+   double y[];
+   double x[];
+   if(!Strategy_ReadLogs(g_symbols[host_index], g_symbols[partner_index], bars, y, x))
+      return false;
+   if(!Strategy_Correlation(y, x, formation + 1, corr))
+      return false;
+
+   double spread[];
+   ArrayResize(spread, bars);
+   for(int i = 0; i < bars; ++i)
+      spread[i] = y[i] - frozen_beta * x[i];
+
+   double sum = 0.0;
+   for(int i = 0; i < zbars; ++i)
+      sum += spread[i];
+   const double mean = sum / (double)zbars;
+
+   double var = 0.0;
+   for(int i = 0; i < zbars; ++i)
+     {
+      const double d = spread[i] - mean;
+      var += d * d;
+     }
+
+   sigma = MathSqrt(var / MathMax(1, zbars - 1));
+   if(sigma <= 0.0 || !MathIsValidNumber(sigma))
+      return false;
+
+   z = (spread[0] - mean) / sigma;
+   return MathIsValidNumber(z);
+  }
+
 bool Strategy_SelectMonthlyPair(const int host_index)
   {
    const int month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
    if(month_key <= 0)
       return false;
+
+   // Do not orphan a spread that crosses a month boundary. Keep its frozen
+   // partner/beta until exit; the next H4 bar after flatness selects anew.
+   if(month_key != g_selected_month_key &&
+      g_selected_partner >= 0 &&
+      Strategy_HasPairPosition(host_index, g_selected_partner))
+      return true;
 
    // Pair selection is monthly. A month with no qualifying partner is also a
    // completed selection result; do not rescan six 252-bar relationships on
@@ -323,6 +382,7 @@ bool Strategy_RefreshState()
    // OnTick calls this exactly once after the framework's H4 new-bar gate.
    // Exit and entry hooks consume the resulting closed-bar snapshot.
    g_state_ready = false;
+   g_pair_corr_breached = false;
 
    const int host_index = Strategy_SymbolIndex(_Symbol);
    if(host_index < 0)
@@ -337,18 +397,26 @@ bool Strategy_RefreshState()
       return false;
      }
 
-   double beta = 1.0, corr = 0.0, adf_t = 0.0, z = 0.0, sigma = 0.0;
-   if(!Strategy_SpreadStats(host_index, g_selected_partner, false, beta, corr, adf_t, z, sigma))
+   double corr = 0.0, z = 0.0, sigma = 0.0;
+   if(!Strategy_SelectedSpreadState(host_index,
+                                    g_selected_partner,
+                                    g_selected_beta,
+                                    corr,
+                                    z,
+                                    sigma))
      {
       g_state_ready = false;
       return false;
      }
 
-   g_selected_beta = beta;
+   // The approved card freezes the OLS hedge ratio at monthly selection.
+   // Only the selected spread's correlation and z-score advance each H4 bar.
+   g_current_corr = corr;
    g_current_z = z;
    g_current_sigma = sigma;
-   g_state_ready = (corr >= 0.50);
-   return g_state_ready;
+   g_pair_corr_breached = (corr < 0.50);
+   g_state_ready = true;
+   return true;
   }
 
 bool Strategy_IsPairPosition(const int host_index, const int partner_index)
@@ -375,6 +443,47 @@ bool Strategy_HasPairPosition(const int host_index, const int partner_index)
    return false;
   }
 
+double Strategy_InferEntryZSign(const int host_index)
+  {
+   const int host_magic = QM_MagicChecked(qm_ea_id,
+                                          g_slots[host_index],
+                                          g_symbols[host_index]);
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != g_symbols[host_index] ||
+         (int)PositionGetInteger(POSITION_MAGIC) != host_magic)
+         continue;
+
+      const ENUM_POSITION_TYPE position_type =
+         (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      // Positive entry z shorts the spread (SELL host); negative entry z
+      // buys the spread (BUY host). Only the sign is needed for a zero cross.
+      return (position_type == POSITION_TYPE_SELL) ? 1.0 : -1.0;
+     }
+   return 0.0;
+  }
+
+void Strategy_ResetEntryState()
+  {
+   g_entry_z = 0.0;
+   g_entry_abs_z = 0.0;
+   g_entry_bar_time = 0;
+  }
+
+void Strategy_DisableSelectedPair()
+  {
+   g_selected_partner = -1;
+   g_selected_beta = 1.0;
+   g_current_corr = 0.0;
+   g_current_z = 0.0;
+   g_current_sigma = 0.0;
+   g_pair_corr_breached = false;
+   g_state_ready = false;
+  }
+
 int Strategy_ClosePair(const int host_index, const int partner_index, const QM_ExitReason reason)
   {
    int closed = 0;
@@ -388,6 +497,8 @@ int Strategy_ClosePair(const int host_index, const int partner_index, const QM_E
       if(QM_TM_ClosePosition(ticket, reason))
          ++closed;
      }
+   if(closed > 0 && !Strategy_HasPairPosition(host_index, partner_index))
+      Strategy_ResetEntryState();
    return closed;
   }
 
@@ -513,9 +624,31 @@ bool Strategy_PreparePair(const int spread_direction, QM_EntryRequest &host_req)
 
 int Strategy_BarsHeld()
   {
-   if(g_entry_bar_time <= 0)
+   datetime entry_time = g_entry_bar_time;
+   if(entry_time <= 0)
+     {
+      const int host_index = Strategy_SymbolIndex(_Symbol);
+      if(host_index < 0)
+         return 0;
+      const int host_magic = QM_MagicChecked(qm_ea_id,
+                                             g_slots[host_index],
+                                             g_symbols[host_index]);
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = PositionGetTicket(i);
+         if(ticket == 0 || !PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetString(POSITION_SYMBOL) == g_symbols[host_index] &&
+            (int)PositionGetInteger(POSITION_MAGIC) == host_magic)
+           {
+            entry_time = (datetime)PositionGetInteger(POSITION_TIME);
+            break;
+           }
+        }
+     }
+   if(entry_time <= 0)
       return 0;
-   const int shift = iBarShift(_Symbol, PERIOD_H4, g_entry_bar_time, false);
+   const int shift = iBarShift(_Symbol, PERIOD_H4, entry_time, false); // perf-allowed: recover held H4 bars for an existing host leg
    return (shift < 0) ? 0 : shift;
   }
 
@@ -546,6 +679,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(!g_state_ready)
       return false;
+   if(g_pair_corr_breached)
+      return false;
    if(Strategy_NoTradeFilter())
       return false;
    if(Strategy_NewsFilterHook(TimeCurrent()))
@@ -573,17 +708,43 @@ bool Strategy_ExitSignal()
   {
    const int host_index = Strategy_SymbolIndex(_Symbol);
    const int partner_index = g_selected_partner;
-   if(host_index < 0 || partner_index < 0 || !Strategy_HasPairPosition(host_index, partner_index))
+   if(host_index < 0 || partner_index < 0)
       return false;
+
+   const bool has_pair_position = Strategy_HasPairPosition(host_index, partner_index);
+   if(!has_pair_position)
+     {
+      if(g_state_ready && g_pair_corr_breached)
+         Strategy_DisableSelectedPair();
+      return false;
+     }
 
    if(!g_state_ready)
       return false;
 
+   if(g_entry_z == 0.0)
+     {
+      const double entry_sign = Strategy_InferEntryZSign(host_index);
+      if(entry_sign != 0.0)
+        {
+         g_entry_z = entry_sign * MathMax(strategy_entry_z, DBL_EPSILON);
+         g_entry_abs_z = MathAbs(g_entry_z);
+        }
+     }
+
    bool should_close = false;
-   if(MathAbs(g_current_z) <= strategy_exit_z)
+   bool disable_pair = false;
+   if(g_entry_z > 0.0 && g_current_z <= strategy_exit_z)
+      should_close = true;
+   if(g_entry_z < 0.0 && g_current_z >= -strategy_exit_z)
       should_close = true;
    if(MathAbs(g_current_z) >= strategy_spread_stop_z)
       should_close = true;
+   if(g_pair_corr_breached)
+     {
+      should_close = true;
+      disable_pair = true;
+     }
 
    if(strategy_time_stop_bars > 0 && Strategy_BarsHeld() >= strategy_time_stop_bars && g_entry_abs_z > 0.0)
      {
@@ -593,7 +754,12 @@ bool Strategy_ExitSignal()
      }
 
    if(should_close)
-      Strategy_ClosePair(host_index, partner_index, QM_EXIT_STRATEGY);
+     {
+      const int closed = Strategy_ClosePair(host_index, partner_index, QM_EXIT_STRATEGY);
+      if(disable_pair && closed > 0 &&
+         !Strategy_HasPairPosition(host_index, partner_index))
+         Strategy_DisableSelectedPair();
+     }
    return false;
   }
 
@@ -731,6 +897,7 @@ void OnTick()
         }
       else
         {
+         g_entry_z = g_current_z;
          g_entry_abs_z = MathAbs(g_current_z);
          g_entry_bar_time = iTime(_Symbol, PERIOD_H4, 1); // perf-allowed: closed H4 entry timestamp after new-bar gate
         }

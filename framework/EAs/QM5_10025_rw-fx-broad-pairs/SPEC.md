@@ -3,11 +3,11 @@
 **EA ID:** QM5_10025
 **Slug:** `rw-fx-broad-pairs`
 **Source:** `dcbac84f-6ecf-5d21-9630-50faa69306ec`
-**Last revised:** 2026-08-06
+**Last revised:** 2026-08-07
 
 ## 1. Strategy Logic
 
-Robot Wealth FX Broad Pairs Trading is a broad FX mean-reversion pairs strategy. Each H4 chart symbol is treated as the host leg. At monthly rebalance, the EA compares the host symbol against the approved FX universe, estimates a rolling OLS hedge ratio over 252 H4 bars, and keeps the highest-correlation partner that passes the mechanical filters.
+Robot Wealth FX Broad Pairs Trading is a broad FX mean-reversion pairs strategy. Each H4 chart symbol is treated as the host leg. At monthly rebalance, the EA compares the host symbol against the approved FX universe, estimates an OLS hedge ratio over 252 H4 bars, freezes that ratio for the month, and keeps the highest-correlation partner that passes the mechanical filters.
 
 Entry uses the spread:
 
@@ -15,7 +15,7 @@ Entry uses the spread:
 
 The EA computes a z-score over 120 closed H4 bars. If z-score is above `+2.0`, it shorts the spread by selling the host leg and buying the beta-weighted partner leg. If z-score is below `-2.0`, it buys the spread by buying the host leg and selling the beta-weighted partner leg. It opens one spread at a time for the selected host/partner pair.
 
-Exit occurs when absolute z-score reaches the configured exit band, when the spread reaches the hard stop band, or when the 15-bar time stop has elapsed without at least 25 percent z-score improvement. The framework Friday close can also close positions.
+Exit occurs when the signed z-score crosses the configured mean-reversion exit band, when the spread reaches the hard stop band, when pair correlation falls below `0.50`, or when the 15-bar time stop has elapsed without at least 25 percent z-score improvement. A correlation exit disables that pair until the next monthly selection. The framework Friday close can also close positions.
 
 ## 2. Parameters
 
@@ -77,4 +77,10 @@ Backtests use fixed package risk with `RISK_FIXED = 1000.0` and `RISK_PERCENT = 
 
 ## Implementation Notes
 
-The Strategy Card requires true two-leg spread execution. The foreign partner opens first through the local V5 basket order helper; the host leg then opens through `QM_TM_OpenPosition`, with immediate partner rollback if the host is rejected. The seven-symbol dependency set is declared in `basket_manifest.json`, registered through `QM_SymbolGuardInit`, and warmed once at initialization. The card calls for ADF p-value `< 0.10`; the EA implements a deterministic ADF-style t-statistic proxy because there is no framework ADF helper.
+The Strategy Card requires true two-leg spread execution. The foreign partner opens first through the local V5 basket order helper; the host leg then opens through `QM_TM_OpenPosition`, with immediate partner rollback if the host is rejected. The seven-symbol dependency set is declared in `basket_manifest.json`, registered through `QM_SymbolGuardInit`, and warmed once at initialization. The card calls for ADF p-value `< 0.10`; the EA implements a deterministic ADF-style t-statistic proxy because there is no framework ADF helper. The selected OLS beta remains fixed between monthly selection events; only correlation and the selected spread z-score advance on each closed H4 bar.
+
+## Revision History
+
+| Version | Date | Change | Build task |
+|---|---|---|---|
+| v5.0-r3 | 2026-08-07 | Freeze monthly beta and restore signed mean-cross/correlation exits during stale-review rebuild. | `71d862ed-21b8-4337-8986-c1366dd692dc` |

@@ -1,7 +1,7 @@
 {
-  "logical_symbol": "QM5_10025_RW_FX_BROAD_PAIRS_H4",
-  "host_symbol": "_per_instance",
-  "host_timeframe": "H4",
+  "ea_id": "QM5_10025",
+  "slug": "rw-fx-broad-pairs",
+  "timeframe": "H4",
   "basket_symbols": [
     "EURUSD.DWX",
     "GBPUSD.DWX",
@@ -21,6 +21,7 @@
     "USDJPY.DWX"
   ],
   "notes": [
-    "Seven-host H4 FX cointegration universe from approved card QM5_10025. Each setfile runs on one registered host; monthly selection chooses one foreign partner from the other six symbols. The host leg opens through QM_TM_OpenPosition at its registered slot, the foreign partner opens through QM_BasketOpenPosition, and the package risk is beta-weighted across both legs. All seven symbols are registered .DWX instruments."
+    "Seven-host H4 FX cointegration universe from approved card QM5_10025. Each setfile runs on one registered .DWX host; monthly selection chooses one foreign partner from the other six symbols. The host leg opens through QM_TM_OpenPosition at its registered slot, the foreign partner opens through QM_BasketOpenPosition, and the package risk is beta-weighted across both legs.",
+    "This is a multi-symbol dependency manifest, not a synthetic logical-basket manifest: Q02 must retain one real host work item per registered setfile. The absence of logical_symbol/host_symbol/host_timeframe is intentional and keeps farm fanout on the seven canonical .DWX hosts."
   ]
 }
