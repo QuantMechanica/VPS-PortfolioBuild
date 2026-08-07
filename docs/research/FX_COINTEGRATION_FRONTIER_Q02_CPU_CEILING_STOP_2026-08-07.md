@@ -207,3 +207,31 @@ machine-readable snapshot is
 `artifacts/fx_cointegration_frontier_stop_20260807T093028Z_board_advisor.json`.
 No Strategy Card, EA, setfile, basket manifest, registry, portfolio gate,
 T_Live manifest, or AutoTrading state changed.
+
+## 2026-08-07 10:16Z paced-fleet audit
+
+The governed 66-pair frontier and anchor dispositions remain unchanged at
+repository head `bef21f297`: every relationship is already mechanized,
+`QM5_12532` is past Q02 with Q04 PASS followed by Q05 FAIL, and `QM5_12533`
+is past Q02 with Q04 FAIL. A new scan-derived Card or build would therefore
+duplicate existing work.
+
+The mandatory immediate `farmctl mt5-slots` sample observed eight factory
+terminals running:
+
+```text
+T1, T3, T4, T5, T7, T8, T9, T10
+```
+
+Eight exceeds the binding seven-terminal ceiling, and all ten enabled
+terminal workers were present. `T_Live` and the FTMO terminal were observed
+only to exclude them from the factory count; neither was controlled. This is
+a fresh observation rather than a duplicate of the 09:30Z snapshot: `T6`
+exited, `T4` entered, and the count remained eight.
+
+Per the paced-fleet stop rule, no fallback EA was selected, no queue row was
+inserted or dispatched, and no tester or terminal action followed. The
+machine-readable snapshot is
+`artifacts/fx_cointegration_frontier_stop_20260807T101608Z_board_advisor.json`.
+No Strategy Card, EA, setfile, basket manifest, registry, portfolio gate,
+T_Live manifest, or AutoTrading state changed.
