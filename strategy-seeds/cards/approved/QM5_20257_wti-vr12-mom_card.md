@@ -180,10 +180,10 @@ signal-parameter sweep.
    `abs(z_vr)>1.64485362695147`.
 6. Compute `R12` as the sum of the latest twelve monthly log returns. A zero
    ranking return remains flat.
-7. BUY when `sign(R12)*sign(z_vr)>0`; SELL when it is below zero. Persist the
-   broker month as consumed after signal qualification but before news,
-   spread, quote, stop, sizing, or order gates. A rejected, failed, or stopped
-   qualified signal cannot retry that month.
+7. Persist the broker month as evaluated before reconstructing or calculating
+   the state, so invalid, insignificant, rejected, failed, or stopped outcomes
+   cannot retry that month. BUY when `sign(R12)*sign(z_vr)>0`; SELL when it is
+   below zero.
 8. Require spread in `[0,1500]` points, executable quote, completed
    `ATR(20,D1)`, valid stop geometry, volume metadata, and no owned exposure.
 9. Attach one frozen `3.5*ATR(20,D1)` hard stop, size through the V5 fixed-risk
@@ -196,8 +196,9 @@ signal-parameter sweep.
 1. Close the current package on the first processed D1 bar of the next broker
    month before considering the new month's state.
 2. Close after 35 elapsed calendar days as a stale guard.
-3. Immediately flatten a duplicate, wrong-symbol, wrong-magic, wrong-direction,
-   or missing-stop owned state.
+3. Immediately flatten duplicate positions, a wrong-symbol position, an
+   invalid position type, or a missing-stop position bearing this EA's unique
+   magic. Positions with another magic are outside this EA's ownership.
 4. Broker hard stops and the framework kill switch remain authoritative.
 5. Friday close is disabled because a valid monthly package may span weekends.
 6. No intramonth signal reversal, target, trail, break-even, partial close,
@@ -231,16 +232,15 @@ signal-parameter sweep.
 
 | parameter | default | authorized values | role |
 |---|---:|---|---|
-| `strategy_monthly_returns` | 32 | [32] | robust memory sample |
-| `strategy_ranking_months` | 12 | [12] | source ranking horizon |
+| `strategy_vr_window_months` | 32 | [32] | robust memory sample |
+| `strategy_rank_months` | 12 | [12] | source ranking horizon |
 | `strategy_vr_q` | 13 | [13] | source-matched variance-ratio order |
 | `strategy_significance_z` | 1.64485362695147 | [1.64485362695147] | source two-sided 10% boundary |
-| `strategy_history_bars` | 1200 | [1200] | bounded endpoint reconstruction |
+| `strategy_history_bars_d1` | 1200 | [1200] | bounded endpoint reconstruction |
 | `strategy_atr_period_d1` | 20 | [20] | completed D1 stop estimator |
 | `strategy_atr_sl_mult` | 3.5 | [3.5] | frozen hard-stop distance |
 | `strategy_max_hold_days` | 35 | [35] | monthly stale guard |
 | `strategy_max_spread_points` | 1500 | [1500] | entry spread ceiling |
-| `strategy_deviation_points` | 20 | [20] | order deviation |
 
 Changing the ranking horizon, `q`, lag set, weights, critical value, memory
 window, direction matrix, carrier, stop, holding clock, or retry policy
