@@ -14,7 +14,7 @@ strategy_mechanic: synchronized-d1-gold-silver-log-ratio-sixty-day-failed-channe
 target_symbols: [XAUUSD.DWX, XAGUSD.DWX]
 period: D1
 pipeline_phase: Q01
-q01_status: NOT_RUN
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 last_updated: 2026-08-07
 ---
@@ -47,5 +47,5 @@ correlation waiver is authorized.
 
 ## Pipeline Status
 
-G0 is approved under the durable OWNER mission decision. Q01 is not yet run
-and Q02 is not enqueued.
+G0 is approved under the durable OWNER mission decision. The deterministic V5
+build and strict compile passed Q01; Q02 is not yet enqueued.

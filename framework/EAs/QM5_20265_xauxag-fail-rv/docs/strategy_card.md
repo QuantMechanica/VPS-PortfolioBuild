@@ -61,7 +61,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: NOT_RUN
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify an ordered failed-channel-break XAU/XAG package whose completed outside-to-inside event differs from outright XAU, breakout continuation, and every rolling ratio-extreme family; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -298,12 +298,12 @@ or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-07 | initial XAU/XAG failed-break reversion card | G0 | APPROVED |
+| v1 | 2026-08-07 | deterministic V5 build and strict compile | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-07 | APPROVED | `decisions/2026-08-07_qm5_20265_xauxag_fail_rv_g0.md` |
-| Q01 Build Validation | - | NOT_RUN | - |
+| Q01 Build Validation | 2026-08-07 | PASS | `docs/ops/evidence/2026-08-07_qm5_20265_xauxag_fail_rv_q01_q02_enqueue.md` |
 | Q02 Baseline Screening | - | NOT_ENQUEUED | - |
-
