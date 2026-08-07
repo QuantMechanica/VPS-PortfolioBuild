@@ -1062,3 +1062,37 @@ competes for the exact surface the ratified Variant-A migration removes.
 Matrices that COMPLETE pre-migration count normally. The Saturday verdict doc
 lists deferred sleeves explicitly; deferred matrices re-arm during the
 post-soak window with unchanged sealed anchors.
+
+## 2026-08-07 evening — SEVENTH verdict: 10939/GBPUSD — blocking HELPS (first such sleeve)
+
+Generation-4 fresh-build matrix `773b0a56` (refresh_v4, 40 cells 8×5,
+diagnostic non-admission) completed 16:16Z with 40/40 cell evidence, sealed
+bundle `q09cal-…0bb19b5bb9790b76`, seed-identical CONTROL == DXZ/OFF
+(mechanism sanity holds). Full-window aggregates (mean across 5 seeds):
+
+| Arm | net_r | PF | trades | DD % |
+|---|---:|---:|---:|---:|
+| CONTROL (news off) | 15.658 | 1.54 | 77 | 5.49 |
+| DXZ/OFF | 15.658 | 1.54 | 77 | 5.49 |
+| DXZ/PRE30 | 15.881 | 1.54 | 76 | 5.48 |
+| DXZ/PRE60 | 18.254 | 1.67 | 74 | 4.78 |
+| DXZ/PRE30_POST30 | 15.751 | 1.58 | 72 | 4.88 |
+| **DXZ/PRE60_POST60** | **18.992** | **1.78** | **68** | **4.74** |
+| DXZ/SKIP_DAY | 1.876 | 1.21 | 22 | 3.96 |
+| DXZ/CLOSE_ALL_PRE | 15.881 | 1.54 | 76 | 5.48 |
+
+First sleeve in the programme where temporal blocking materially HELPS:
+PRE60_POST60 removes 9 news-window trades and gains +21 % net_r with PF
+1.54→1.78 and DD −14 %. Robust across windows — selection 14.24/1.84 vs
+control 11.66/1.55; holdout 4.76/1.66/DD 1.88 vs control 4.00/1.51/DD 2.35.
+SKIP_DAY destroys the sleeve as everywhere.
+
+**Ceremony recommendation: FOURTH re-pin candidate — 10939/GBPUSD →
+PRE60_POST60 (DXZ)** (pin-to-blocking, unlike the three pin-to-OFF cases).
+Anchor caveat: fresh-build binary lane (live-preset anchor, non-admission);
+the deployment-delta note for 10939 in the ceremony package should carry this
+pin alongside the redeploy decision.
+
+Seven sleeves, verdict tally: blocking hurts 3 (11422, 10706, 11165) ·
+blocking helps 1 (10939) · indifferent 1 (XNG) · day-skip-lethal-only 1
+(11132) · post-window-tax 1 (10919).
