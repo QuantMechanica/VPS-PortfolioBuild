@@ -384,7 +384,9 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             "Remove-Item -LiteralPath $watchdogResetBlockPath",
             kill_pos,
         )
-        spawn_pos = factory_on.index("start_terminal_workers.py")
+        # Search after the reset marker release. An earlier policy comment also
+        # names start_terminal_workers.py, but it is not the worker launch.
+        spawn_pos = factory_on.index("start_terminal_workers.py", clear_pos)
         self.assertLess(kill_pos, clear_pos)
         self.assertLess(clear_pos, spawn_pos)
         clear_block = factory_on[kill_pos:spawn_pos]

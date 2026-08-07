@@ -164,3 +164,33 @@ independently reviews commit `fc9110780`, the proof contract, receipt bindings,
 and staggered queue state. The pending diagnostics do not constitute pipeline
 evidence, economic acceptance, Q09 admission, deployment approval, or live-use
 authorization.
+
+## Append-only T4 chronology correction
+
+Router task `77203161-f3eb-4381-bd01-1a572132f29a` requested a correction
+claiming that the T4 worker with PID 19976 started before commit `590362fa0` and
+therefore retained the pre-fix staged-EX5 basename behavior. The retained
+evidence contradicts that proposed correction, so it is not adopted:
+
+- commit `590362fa0900ed878d116a073be05e0b20f2e046` has author and committer
+  time `2026-08-07T02:16:50+02:00`;
+- the routed task records PID 19976 as created at
+  `2026-08-07T02:20:27+02:00`, 3 minutes 37 seconds after that commit;
+- `D:\QM\strategy_farm\logs\terminal_worker_T4.log` records
+  `worker_start` for PID 19976 and later its claim of work item
+  `d03f6148-7cb4-5397-912f-2c468de539b4`;
+- that row's database payload binds `claimed_by_worker_pid=19976`,
+  `claimed_at_iso=2026-08-07T07:52:14+00:00`, and terminal `T4`; and
+- the row log at
+  `D:\QM\strategy_farm\logs\work_item_d03f6148-7cb4-5397-912f-2c468de539b4.log`
+  shows the 07:52:24 UTC runner command used expert
+  `QM\QM5_12567_cum-rsi2-commodity`, the full basename produced by the
+  `590362fa0` fallback rather than the pre-fix numeric-only expert name.
+
+The retained traceback instead records a
+`qm_news_calendar_bundle_id` effective-input mismatch followed by a collision
+with the existing `attempt_0001` failure snapshot. It does not reproduce the
+pre-fix staged-EX5 basename refusal. The preceding statement that T4 was not
+carrying that pre-fix in-memory module therefore remains supported for this
+worker. This chronology is diagnostic evidence only and creates no Q09 or
+pipeline verdict.
