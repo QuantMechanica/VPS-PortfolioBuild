@@ -56,9 +56,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
 review_focus: "Falsify a direct WTI monthly multi-scale trend vote whose carrier differs from the certified XAU/SP500/NDX/XNG book; only Q09 may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -299,11 +299,13 @@ portfolio-gate edit; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-07 | initial source-bounded WTI momentum-vote card | G0 | APPROVED |
+| v1-q01 | 2026-08-07 | deterministic V5 build and strict compile | Q01 | PASS |
+| v1-q02 | 2026-08-07 | paced-fleet enqueue below the seven-terminal ceiling | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-07 | APPROVED | `decisions/2026-08-07_qm5_20258_wti_mom_vote_g0.md` |
-| Q01 Build Validation | - | NOT_RUN | - |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q01 Build Validation | 2026-08-07 | PASS | strict compile `D:/QM/reports/compile/20260807_024058/summary.csv`; build check `D:/QM/reports/framework/21/build_check_20260807_024058.json` |
+| Q02 Baseline Screening | 2026-08-07 | ENQUEUED; pending, attempt 0, unclaimed | work item `ff028e35-d4c2-49ad-98c4-e0acc80b55c5`; `docs/ops/evidence/2026-08-07_qm5_20258_wti_mom_vote_q01_q02_enqueue.md` |

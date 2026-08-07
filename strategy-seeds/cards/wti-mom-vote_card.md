@@ -13,9 +13,9 @@ source_author: "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen"
 strategy_mechanic: monthly-wti-one-three-twelve-month-return-sign-majority-vote
 target_symbols: [XTIUSD.DWX]
 period: D1
-pipeline_phase: G0
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
 last_updated: 2026-08-07
 ---
 
@@ -40,3 +40,9 @@ hard stop.
 
 Q02 uses `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1`. No live artifact or portfolio mutation is authorized.
+
+## Pipeline Status
+
+Q01 passed the strict compile and target-scoped build gate on 2026-08-07.
+Q02 is enqueued as pending work item
+`ff028e35-d4c2-49ad-98c4-e0acc80b55c5`; no baseline verdict is claimed.
