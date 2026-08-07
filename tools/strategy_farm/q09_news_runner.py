@@ -65,6 +65,10 @@ CELL_FAILURE_SIDECAR_RE = re.compile(
     r"^cell_failure(?:_([1-9][0-9]*))?\.json$"
 )
 CELL_FAILURE_ATTEMPT_DIR = "failure_attempts"
+CELL_FAILURE_ATTEMPT_RE = re.compile(
+    r"^attempt_([0-9]+)(?:\.tmp)?$"
+)
+CELL_FAILURE_SNAPSHOT_LAYOUT = "FLAT_INDEXED_SHA256_V1"
 COMPLIANCE_MODE_IDS = {"NONE": 0, "DXZ": 1, "FTMO": 2, "5ERS": 3}
 DEFAULT_CELL_TIMEOUT_SEC = 3600
 CELL_TIMEOUT_HEADROOM_SEC = 600
@@ -1138,6 +1142,28 @@ def _failure_attempt_root(cell_dir: Path, occurrence: int) -> Path:
     return cell_dir / CELL_FAILURE_ATTEMPT_DIR / f"attempt_{occurrence:04d}"
 
 
+def _failure_snapshot_artifact_name(
+    source_relative_path: Path | PurePosixPath,
+    index: int,
+) -> str:
+    """Return a short deterministic name for one snapshotted artifact.
+
+    Mirroring the full run-smoke tree below ``failure_attempts`` can push an
+    otherwise valid cell past the legacy Windows MAX_PATH boundary.  The
+    sidecar already preserves the authenticated source-relative path, so the
+    immutable copy only needs a unique, deterministic flat name.
+    """
+
+    if index < 1:
+        raise RunnerError("cell failure artifact index must be positive")
+    source = PurePosixPath(source_relative_path.as_posix())
+    digest = hashlib.sha256(source.as_posix().encode("utf-8")).hexdigest()[:16]
+    suffix = source.suffix.lower()
+    if re.fullmatch(r"\.[a-z0-9]{1,10}", suffix) is None:
+        suffix = ""
+    return f"artifact_{index:04d}_{digest}{suffix}"
+
+
 def _next_cell_failure_occurrence(
     base_path: Path,
     *,
@@ -1154,7 +1180,7 @@ def _next_cell_failure_occurrence(
     attempt_parent = base_path.parent / CELL_FAILURE_ATTEMPT_DIR
     if attempt_parent.is_dir():
         for candidate in attempt_parent.iterdir():
-            match = re.fullmatch(r"attempt_([0-9]+)", candidate.name)
+            match = CELL_FAILURE_ATTEMPT_RE.fullmatch(candidate.name)
             if match is not None and int(match.group(1)) > 0:
                 highest = max(highest, int(match.group(1)))
     return highest + 1
@@ -1202,9 +1228,12 @@ def _snapshot_failure_artifacts(
         )
     temporary_root.mkdir(parents=True)
     sources = _failure_artifact_sources(cell_dir)
-    for source_path, source_relative_path in sources:
-        destination = temporary_root / source_relative_path
-        destination.parent.mkdir(parents=True, exist_ok=True)
+    copied: list[tuple[Path, Path, str]] = []
+    for index, (source_path, source_relative_path) in enumerate(sources, 1):
+        snapshot_name = _failure_snapshot_artifact_name(
+            source_relative_path, index
+        )
+        destination = temporary_root / snapshot_name
         before = source_path.stat()
         shutil.copyfile(source_path, destination)
         after = source_path.stat()
@@ -1216,11 +1245,12 @@ def _snapshot_failure_artifacts(
             raise RunnerError(
                 f"cell failure source artifact changed during snapshot: {source_path}"
             )
+        copied.append((source_path, source_relative_path, snapshot_name))
     temporary_root.replace(snapshot_root)
 
     artifacts: list[dict[str, Any]] = []
-    for source_path, source_relative_path in sources:
-        path = snapshot_root / source_relative_path
+    for source_path, source_relative_path, snapshot_name in copied:
+        path = snapshot_root / snapshot_name
         artifacts.append(
             {
                 "path": str(path.resolve()),
@@ -1256,6 +1286,7 @@ def _write_cell_failure(
         "artifact_snapshot_relative_path": snapshot_root.relative_to(
             base_path.parent
         ).as_posix(),
+        "artifact_snapshot_layout": CELL_FAILURE_SNAPSHOT_LAYOUT,
         "artifacts": artifacts,
     }
     data = contract.canonical_json_bytes(payload)
@@ -1294,6 +1325,7 @@ def _authenticated_cell_failure(
         raise RunnerError(f"cell failure artifact manifest is missing: {path}")
     schema_version = str(failure["schema_version"])
     snapshot_root: Path | None = None
+    snapshot_layout: str | None = None
     if schema_version == CELL_FAILURE_SCHEMA:
         occurrence = _cell_failure_occurrence(path)
         if failure.get("failure_occurrence") != occurrence:
@@ -1313,9 +1345,16 @@ def _authenticated_cell_failure(
             raise RunnerError(
                 f"cell failure artifact snapshot is missing: {snapshot_root}"
             )
+        raw_layout = failure.get("artifact_snapshot_layout")
+        if raw_layout is not None:
+            snapshot_layout = str(raw_layout)
+            if snapshot_layout != CELL_FAILURE_SNAPSHOT_LAYOUT:
+                raise RunnerError(
+                    f"cell failure artifact snapshot layout is unsupported: {path}"
+                )
     seen: set[str] = set()
     seen_sources: set[str] = set()
-    for artifact in artifacts:
+    for artifact_index, artifact in enumerate(artifacts, 1):
         if not isinstance(artifact, Mapping):
             raise RunnerError(f"cell failure artifact row is malformed: {path}")
         artifact_path = Path(str(artifact.get("path") or "")).resolve()
@@ -1350,9 +1389,19 @@ def _authenticated_cell_failure(
                     f"cell failure source artifact path is contradictory: {path}"
                 )
             seen_sources.add(source_relative_path)
-            expected_artifact_path = snapshot_root.joinpath(
-                *source_parts
-            ).resolve()
+            if snapshot_layout == CELL_FAILURE_SNAPSHOT_LAYOUT:
+                expected_artifact_path = (
+                    snapshot_root
+                    / _failure_snapshot_artifact_name(
+                        PurePosixPath(source_relative_path), artifact_index
+                    )
+                ).resolve()
+            else:
+                # Backward-compatible authentication for v2 sidecars emitted
+                # before the flat Windows-safe layout was introduced.
+                expected_artifact_path = snapshot_root.joinpath(
+                    *source_parts
+                ).resolve()
             if artifact_path != expected_artifact_path:
                 raise RunnerError(
                     f"cell failure artifact/source paths disagree: {path}"

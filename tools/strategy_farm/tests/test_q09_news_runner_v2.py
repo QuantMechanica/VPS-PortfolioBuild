@@ -478,6 +478,85 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             )
         self.assertFalse(first_path.with_name("cell_failure_2.json").exists())
 
+    def test_failure_snapshot_flattens_deep_source_paths(self) -> None:
+        plan = self.build(output="failure-flat-long-path")
+        spec = plan["cells"][0]
+        cell_dir = Path(spec["receipt_path"]).parent
+        relative = Path("runs") / "selection"
+        while len(str(cell_dir / relative / "artifact.log")) < 225:
+            relative /= "pre_run_logger_archive"
+        source = cell_dir / relative / "artifact.log"
+        source.parent.mkdir(parents=True)
+        source.write_text("long-path failure evidence\n", encoding="utf-8")
+        mirrored = runner._failure_attempt_root(cell_dir, 1) / relative / source.name
+        self.assertGreater(len(str(mirrored)), 260)
+
+        failure_path = runner._write_cell_failure(
+            spec,
+            work_item_id="q09-news-1",
+            exc=runner.RunnerError("long-path fixture"),
+        )
+        payload = json.loads(failure_path.read_text(encoding="utf-8"))
+        artifact = next(
+            row
+            for row in payload["artifacts"]
+            if row["source_relative_path"] == (relative / source.name).as_posix()
+        )
+        snapshot_root = runner._failure_attempt_root(cell_dir, 1)
+        snapshot_path = Path(artifact["path"])
+        self.assertEqual(
+            payload["artifact_snapshot_layout"],
+            runner.CELL_FAILURE_SNAPSHOT_LAYOUT,
+        )
+        self.assertEqual(snapshot_path.parent, snapshot_root)
+        self.assertLess(len(str(snapshot_path)), len(str(mirrored)))
+        self.assertLess(len(str(snapshot_path)), 260)
+        self.assertEqual(
+            snapshot_path.read_text(encoding="utf-8"),
+            "long-path failure evidence\n",
+        )
+        self.assertIsNotNone(
+            runner._authenticated_cell_failure(
+                spec,
+                work_item_id="q09-news-1",
+                failure_path=failure_path,
+                expected_failure_sha256=contract.sha256_file(failure_path),
+            )
+        )
+
+    def test_failure_retry_skips_orphaned_temporary_attempt(self) -> None:
+        plan = self.build(output="failure-orphaned-temporary-attempt")
+        spec = plan["cells"][0]
+        cell_dir = Path(spec["receipt_path"]).parent
+        orphan = runner._failure_attempt_root(cell_dir, 1).with_name(
+            "attempt_0001.tmp"
+        )
+        orphan.mkdir(parents=True)
+        (orphan / "partial.bin").write_bytes(b"partial")
+
+        failure_path = runner._write_cell_failure(
+            spec,
+            work_item_id="q09-news-1",
+            exc=runner.RunnerError("retry after orphaned snapshot"),
+        )
+        payload = json.loads(failure_path.read_text(encoding="utf-8"))
+        self.assertEqual(failure_path.name, "cell_failure_2.json")
+        self.assertEqual(payload["failure_occurrence"], 2)
+        self.assertEqual(
+            payload["artifact_snapshot_relative_path"],
+            "failure_attempts/attempt_0002",
+        )
+        self.assertTrue(orphan.is_dir())
+        self.assertTrue(runner._failure_attempt_root(cell_dir, 2).is_dir())
+        self.assertIsNotNone(
+            runner._authenticated_cell_failure(
+                spec,
+                work_item_id="q09-news-1",
+                failure_path=failure_path,
+                expected_failure_sha256=contract.sha256_file(failure_path),
+            )
+        )
+
     def test_terminal_failure_pointer_authenticates_distinct_attempt_snapshots(self) -> None:
         plan = self.build(output="terminal-attempt-snapshots")
         farm_root, plan_hash = self.setup_bound_farm(
