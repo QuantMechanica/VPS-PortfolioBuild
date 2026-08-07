@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        20123
 ; ea_slug:      dailyopen-h1-basket
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   835fcc15274b37498e90c3c0cb2c7d8739201a13cf6598579bf113e26a32f871
 ; author:       Development
 ; date:         2026-07-24
 ;==========================================================
