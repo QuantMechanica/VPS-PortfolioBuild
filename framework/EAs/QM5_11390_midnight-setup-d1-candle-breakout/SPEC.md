@@ -2,48 +2,42 @@
 
 **EA ID:** QM5_11390
 **Slug:** `midnight-setup-d1-candle-breakout`
-**Source:** `dfd32799-2055-5ef8-b99b-dcbfa51daba0` (Advanced System #1 "Midnight Setup", forex-strategies-revealed.com compilation)
-**Author of this spec:** Claude
-**Last revised:** 2026-06-18
+**Source:** `dfd32799-2055-5ef8-b99b-dcbfa51daba0`
+**Author of this spec:** Codex
+**Last revised:** 2026-08-07
 
 ---
 
 ## 1. Strategy Logic
 
-Pure price-action, indicator-free daily breakout straddle. At each new D1 bar
-(the broker-time "midnight" boundary, taken from the bar timestamp via
-`QM_IsNewBar`/`iTime(_Symbol, PERIOD_D1, 0)` — never a fixed wall-clock), the EA
-inspects the prior CLOSED daily candle. If that candle's range
-`(High[1] - Low[1])` is at least `strategy_min_range_pips`, it places an OCO
-straddle: a BUY STOP at `High[1] + strategy_offset_pips` and a SELL STOP at
-`Low[1] - strategy_offset_pips`. Both pendings expire at the end of the current
-daily bar (the next midnight). Whichever fills first becomes the trade; the
-unfilled peer is cancelled immediately (one-cancels-the-other). The position
-carries a fixed `strategy_sl_pips` stop and `strategy_tp_pips` take-profit. One
-position per magic per symbol; one straddle attempt per day.
+At the first tick of each new D1 bar, the EA reads the prior closed daily candle. If that candle's high-low range is at least 90 pips, it places a BUY STOP 5 pips above the high and a SELL STOP 5 pips below the low; both orders expire at the next daily boundary, and the first fill cancels the other order. Every filled trade has a fixed 50-pip stop loss and 100-pip take profit, with no discretionary exit in the base configuration.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_min_range_pips` | 90 | 50-150 | Skip days whose prior D1 candle range is below this |
-| `strategy_offset_pips` | 5 | 3-15 | Stop-entry offset placed beyond the prior candle High/Low |
-| `strategy_sl_pips` | 50 | 20-80 | Fixed stop-loss distance from entry |
-| `strategy_tp_pips` | 100 | 60-200 | Fixed take-profit distance from entry |
-| `strategy_spread_pct_of_sl` | 30.0 | 5-100 | Block entry if live spread exceeds this % of the SL distance (fail-open on zero modeled spread) |
+|---|---:|---:|---|
+| `strategy_min_range_pips` | 90 | 70-110 | Minimum prior-D1 high-low range required by the card |
+| `strategy_offset_pips` | 5 | 3-10 | Distance beyond the prior high or low for each pending stop |
+| `strategy_sl_pips` | 50 | 1-50 | Fixed stop-loss distance; 50 pips is the card's P2 cap |
+| `strategy_tp_pips` | 100 | 80-150 | Fixed take-profit distance from entry |
+| `strategy_spread_cap_pips` | 30 | 1-30 | Blocks only a genuinely positive spread wider than the card's cap |
+
+> Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`; this table lists only strategy-specific inputs.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `GBPUSD.DWX` — primary; the source ("Midnight Setup") was tested on GBP/USD, a high daily-range major suited to a 90-pip range filter.
-- `EURUSD.DWX` — most liquid major; comparable daily-range behaviour, the card's P3 variant.
+
+- `GBPUSD.DWX` — primary source instrument and a liquid FX major whose daily range can satisfy the 90-pip breakout threshold.
+- `EURUSD.DWX` — the card's portable variant and a liquid FX major with the same pip-scale mechanics.
 
 **Explicitly NOT for:**
-- Index / metal CFDs (`NDX.DWX`, `WS30.DWX`, `XAUUSD.DWX`, …) — the fixed pip range/SL/TP thresholds are calibrated to FX-major pip scale and do not transfer to index point scale.
+
+- Index, metal, and energy CFDs — the fixed FX-pip range, offset, SL, and TP calibration is not portable to their point scales.
 
 ---
 
@@ -52,8 +46,8 @@ position per magic per symbol; one straddle attempt per day.
 | Aspect | Value |
 |---|---|
 | Base timeframe | `D1` |
-| Multi-timeframe refs | `none` (prior D1 candle only) |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Multi-timeframe refs | `none` |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` on a D1 chart |
 
 ---
 
@@ -61,11 +55,12 @@ position per magic per symbol; one straddle attempt per day.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | ~25 |
-| Typical hold time | intraday to ~1 day (SL/TP within the daily bar) |
-| Expected drawdown profile | bounded by the fixed 50-pip stop per trade; clustered losses possible in low-range chop |
-| Regime preference | volatility-expansion / breakout |
-| Win rate target (qualitative) | low-to-medium (2:1 reward:risk compensates) |
+| Trades / year / symbol | `25` |
+| Expected trade frequency | Roughly two trades per month per symbol |
+| Typical hold time | Intraday to one daily bar; pending orders expire at the next D1 boundary |
+| Expected drawdown profile | Fixed 50-pip risk per filled trade, with losses potentially clustering during false breakouts |
+| Regime preference | Volatility expansion / breakout |
+| Win rate target (qualitative) | Low-to-medium; the fixed target is twice the fixed stop |
 
 ---
 
@@ -74,9 +69,9 @@ position per magic per symbol; one straddle attempt per day.
 This card was mechanised from:
 
 **Source ID:** `dfd32799-2055-5ef8-b99b-dcbfa51daba0`
-**Source type:** forum/compilation (anonymous, forex-strategies-revealed.com)
-**Pointer:** local PDF `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\pdfcoffee.com_forex-strategy-7-pdf-free.pdf`
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11390_midnight-setup-d1-candle-breakout.md`
+**Source type:** anonymous forex strategy compilation
+**Pointer:** `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\pdfcoffee.com_forex-strategy-7-pdf-free.pdf`
+**R1 lineage and R2-R4 verdict:** R1 lineage recorded and R2–R4 PASS per `artifacts/cards_approved/QM5_11390_midnight-setup-d1-candle-breakout.md`.
 
 ---
 
@@ -96,4 +91,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | OCO D1 straddle, reference QM5_10006 |
+| v1 | 2026-08-07 | Initial build from card | 91d56258-ea4f-4f82-b124-7699c6e59d09 |
