@@ -1,0 +1,31 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        20266
+; ea_slug:      collins-66mom
+; ea_version:   v5.0
+; set_version:  s20260808-stress-med
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  q05_stress_medium
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   a9b539b26d585edf0f9cdea0f3af46228a27bfdddf81b2559db4d5fc9a641ed9
+; author:       Development
+; date:         2026-08-08
+;==========================================================
+qm_ea_id=20266
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.0000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\collins-66mom_card.md
+strategy_lookback_d1=9
+strategy_entry_fraction=0.66
+strategy_stop_fraction=1.32
+strategy_pending_expiry_hours=24
+strategy_max_hold_bars=20
+strategy_max_spread_points=1000
+strategy_min_stop_points=10
