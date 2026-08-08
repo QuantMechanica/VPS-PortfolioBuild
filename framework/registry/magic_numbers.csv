@@ -11139,9 +11139,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1289,donchian-vegas-hybrid,6,NDX.DWX,12890006,2026-06-18,Claude,reserved
 1289,donchian-vegas-hybrid,7,WS30.DWX,12890007,2026-06-18,Claude,reserved
 1289,donchian-vegas-hybrid,8,GDAXI.DWX,12890008,2026-06-18,Claude,reserved
-11462,goodwin-j-kangaroo-tail-breakout-d1,0,USDJPY.DWX,114620000,2026-06-18,Claude,reserved
-11462,goodwin-j-kangaroo-tail-breakout-d1,1,EURUSD.DWX,114620001,2026-06-18,Claude,reserved
-11462,goodwin-j-kangaroo-tail-breakout-d1,2,GBPUSD.DWX,114620002,2026-06-18,Claude,reserved
+11462,goodwin-j-kangaroo-tail-breakout-d1,0,USDJPY.DWX,114620000,2026-06-18,Claude,active
+11462,goodwin-j-kangaroo-tail-breakout-d1,1,EURUSD.DWX,114620001,2026-06-18,Claude,active
+11462,goodwin-j-kangaroo-tail-breakout-d1,2,GBPUSD.DWX,114620002,2026-06-18,Claude,active
 11463,goodwin-j-session-high-breakout-usdjpy,0,USDJPY.DWX,114630000,2026-06-18,Claude,active
 11463,goodwin-j-session-high-breakout-usdjpy,1,EURUSD.DWX,114630001,2026-06-18,Claude,active
 11463,goodwin-j-session-high-breakout-usdjpy,2,GBPUSD.DWX,114630002,2026-06-18,Claude,active
