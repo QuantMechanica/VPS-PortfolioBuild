@@ -898,6 +898,7 @@ def prepare_startup_files(
     symbols: Sequence[str],
     output_tag: str,
     include_login: bool,
+    chart_symbol: str | None = None,
 ) -> dict[str, Any]:
     terminal_root = terminal_root.expanduser().resolve()
     tag = _safe_tag(output_tag)
@@ -928,7 +929,10 @@ def prepare_startup_files(
             "[StartUp]",
             "Script=QM\\m1_harvest\\QM_M1_SpreadHarvest",
             f"ScriptParameters={preset.name}",
-            f"Symbol={symbols[0]}",
+            # The startup chart only hosts the script. A custom-symbol chart
+            # never finishes initializing on a fresh offline start (live 300s
+            # 'failed with code 0' 2026-08-08) - dxz passes a native symbol.
+            f"Symbol={chart_symbol or symbols[0]}",
             "Period=M1",
             "ShutdownTerminal=0",
             "",
@@ -1380,6 +1384,7 @@ def run_dxz_bootstrap(
                 symbols=DXZ_SYMBOLS,
                 output_tag=output_tag,
                 include_login=False,
+                chart_symbol="EURUSD",
             )
             expected: list[Path] = []
             for symbol in DXZ_SYMBOLS:

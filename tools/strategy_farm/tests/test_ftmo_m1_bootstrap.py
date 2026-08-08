@@ -411,6 +411,7 @@ def test_startup_files_keep_experts_disabled_and_bind_script_parameters(tmp_path
         run_root=run_root,
         symbols=["XAUUSD"],
         output_tag="SAFE_TAG",
+        include_login=True,
     )
 
     ini = Path(result["startup_ini"]["path"]).read_text(encoding="utf-8")
