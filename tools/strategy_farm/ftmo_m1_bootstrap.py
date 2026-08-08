@@ -795,7 +795,13 @@ def assert_process_identity_present(
 ) -> None:
     matches = []
     for index, row in enumerate(rows):
-        identity = process_identity(row, f"{label} row {index}")
+        try:
+            identity = process_identity(row, f"{label} row {index}")
+        except BootstrapError:
+            # An unrelated transient/access-denied row can never be the
+            # expected process; refusing the whole scan over it aborted a
+            # live run 2026-08-08 ('row 3: process identity is incomplete').
+            continue
         if (
             identity["pid"] == expected.get("pid")
             and _windows_path_key(identity["executable_path"])

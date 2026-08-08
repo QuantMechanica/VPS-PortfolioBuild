@@ -13,6 +13,7 @@ input string InpOutputTag = "FTMO_STREAM1";
 #define QM_TICK_CHUNK_DAYS 1
 #define QM_COPY_ATTEMPTS 40
 #define QM_CONNECT_WAIT_SECONDS 180
+#define QM_SYNC_ATTEMPTS 90
 #define QM_ERR_HISTORY_NOT_FOUND 4401
 #define QM_ERR_HISTORY_TIMEOUT 4403
 
@@ -141,6 +142,7 @@ bool CopyTickChunk(const string symbol,
 
 bool WriteRawBars(const string symbol,
                   const string output_path,
+                  const datetime start_time,
                   const datetime end_time,
                   long &bar_count,
                   datetime &first_bar,
@@ -156,7 +158,7 @@ bool WriteRawBars(const string symbol,
      }
 
    const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
-   datetime cursor = QM_HARVEST_FROM;
+   datetime cursor = start_time;
    datetime prior = 0;
    bar_count = 0;
    first_bar = 0;
@@ -236,13 +238,14 @@ bool WriteRawBars(const string symbol,
   }
 
 bool ObserveTickWindow(const string symbol,
+                       const datetime start_time,
                        const datetime end_time,
                        datetime &tick_first,
                        datetime &tick_last)
   {
    tick_first = 0;
    tick_last = 0;
-   datetime cursor = QM_HARVEST_FROM;
+   datetime cursor = start_time;
    while(cursor <= end_time)
      {
       datetime chunk_end = cursor + QM_TICK_CHUNK_DAYS * 86400 - 1;
@@ -316,6 +319,43 @@ bool WriteCoverage(const string symbol,
    return wrote;
   }
 
+
+datetime ResolveHistoryStart(const string symbol)
+  {
+   // A fresh terminal backfills M1 from the server progressively BACKWARD
+   // from now; deep time-window CopyRates return 4401 until that depth is
+   // local (proven live 2026-08-08). Position-based requests trigger the
+   // backfill; SERIES_FIRSTDATE tells us the honestly available depth.
+   datetime first_seen = 0;
+   int stable = 0;
+   for(int attempt = 0; attempt < QM_SYNC_ATTEMPTS && !IsStopped(); ++attempt)
+     {
+      MqlRates warm[];
+      ArraySetAsSeries(warm, false);
+      ResetLastError();
+      const int copied = CopyRates(symbol, PERIOD_M1, 0, 500000, warm);
+      const datetime probe = (datetime)SeriesInfoInteger(symbol, PERIOD_M1, SERIES_FIRSTDATE);
+      if(attempt % 5 == 0 || (probe > 0 && probe != first_seen))
+         PrintFormat("QM_M1_HARVEST_SYNC symbol=%s attempt=%d copied=%d error=%d first=%s",
+                     symbol, attempt + 1, copied, GetLastError(), IsoMinute(probe));
+      if(probe > 0 && probe == first_seen)
+        {
+         if(++stable >= 3)
+            break;
+        }
+      else
+         stable = 0;
+      first_seen = probe;
+      Sleep(2000);
+     }
+   if(first_seen <= 0)
+      return 0;
+   datetime start = first_seen;
+   if(start < QM_HARVEST_FROM)
+      start = QM_HARVEST_FROM;
+   return (start / 60) * 60;
+  }
+
 bool HarvestSymbol(const string symbol, const string output_tag)
   {
    if(!SymbolSelect(symbol, true))
@@ -354,12 +394,19 @@ bool HarvestSymbol(const string symbol, const string output_tag)
    long bar_count = 0;
    datetime first_bar = 0;
    datetime last_bar = 0;
-   if(!WriteRawBars(symbol, raw_path, end_time, bar_count, first_bar, last_bar))
+   const datetime start_time = ResolveHistoryStart(symbol);
+   if(start_time <= 0 || start_time > end_time)
+     {
+      PrintFormat("QM_M1_HARVEST_SYNC_FAIL symbol=%s start=%s end=%s",
+                  symbol, IsoMinute(start_time), IsoMinute(end_time));
+      return false;
+     }
+   if(!WriteRawBars(symbol, raw_path, start_time, end_time, bar_count, first_bar, last_bar))
       return false;
 
    datetime tick_first = 0;
    datetime tick_last = 0;
-   if(!ObserveTickWindow(symbol, end_time, tick_first, tick_last))
+   if(!ObserveTickWindow(symbol, start_time, end_time, tick_first, tick_last))
      {
       FileDelete(raw_path);
       return false;
