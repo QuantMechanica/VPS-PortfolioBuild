@@ -158,41 +158,43 @@ bool WriteRawBars(const string symbol,
      }
 
    const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
-   datetime cursor = start_time;
    datetime prior = 0;
    bar_count = 0;
    first_bar = 0;
    last_bar = 0;
    bool success = true;
 
-   while(cursor <= end_time)
+   // Time-window CopyRates on a fresh /config profile returns instant 0/no
+   // error outside the loaded series cache (proven live 2026-08-08); the
+   // position-based request provably loads the full local series. Fetch all
+   // available bars once, then filter to [start_time, end_time] ascending.
+   MqlRates rates[];
+   int copied = -1;
+   for(int attempt = 0; attempt < QM_COPY_ATTEMPTS && !IsStopped(); ++attempt)
      {
-      datetime chunk_end = cursor + QM_BAR_CHUNK_DAYS * 86400 - 60;
-      if(chunk_end > end_time)
-         chunk_end = end_time;
-      MqlRates rates[];
-      int copied = -1;
-      int error = 0;
-      if(!CopyM1Chunk(symbol, cursor, chunk_end, rates, copied, error))
-        {
-         PrintFormat("QM_M1_HARVEST_COPYRATES_FAIL symbol=%s from=%s to=%s copied=%d error=%d",
-                     symbol,
-                     IsoMinute(cursor),
-                     IsoMinute(chunk_end),
-                     copied,
-                     error);
-         success = false;
+      ArrayResize(rates, 0);
+      ArraySetAsSeries(rates, false);
+      ResetLastError();
+      copied = CopyRates(symbol, PERIOD_M1, 0, 2000000, rates);
+      if(copied > 0)
          break;
-        }
-      for(int index = 0; index < copied; ++index)
-        {
-         if(rates[index].time < cursor || rates[index].time > chunk_end)
-           {
-            PrintFormat("QM_M1_HARVEST_RANGE_VIOLATION symbol=%s ts=%s",
-                        symbol, IsoMinute(rates[index].time));
-            success = false;
-            break;
-           }
+      PrintFormat("QM_M1_HARVEST_POSITION_RETRY symbol=%s attempt=%d copied=%d error=%d",
+                  symbol, attempt + 1, copied, GetLastError());
+      Sleep(500 + attempt * 250);
+     }
+   if(copied <= 0)
+     {
+      PrintFormat("QM_M1_HARVEST_COPYRATES_FAIL symbol=%s copied=%d error=%d",
+                  symbol, copied, GetLastError());
+      FileClose(handle);
+      FileDelete(output_path);
+      return false;
+     }
+   for(int index = 0; index < copied && success; ++index)
+     {
+      {
+         if(rates[index].time < start_time || rates[index].time > end_time)
+            continue;
          if(prior != 0 && rates[index].time <= prior)
            {
             PrintFormat("QM_M1_HARVEST_ORDER_VIOLATION symbol=%s ts=%s prior=%s",
@@ -221,16 +223,14 @@ bool WriteRawBars(const string symbol,
          prior = rates[index].time;
          ++bar_count;
         }
-      FileFlush(handle);
-      if(!success)
-         break;
-      cursor = chunk_end + 60;
      }
 
    FileFlush(handle);
    FileClose(handle);
    if(!success || bar_count <= 0)
      {
+      PrintFormat("QM_M1_HARVEST_NO_BARS_IN_WINDOW symbol=%s copied=%d kept=%I64d start=%s end=%s",
+                  symbol, copied, bar_count, IsoMinute(start_time), IsoMinute(end_time));
       FileDelete(output_path);
       return false;
      }
@@ -408,8 +408,12 @@ bool HarvestSymbol(const string symbol, const string output_tag)
    datetime tick_last = 0;
    if(!ObserveTickWindow(symbol, start_time, end_time, tick_first, tick_last))
      {
-      FileDelete(raw_path);
-      return false;
+      // Tick coverage is evidence, not a bar-harvest precondition: the
+      // coverage contract accepts null ticks (with_ticks=false path). Never
+      // discard valid M1 bars over a tick-window failure.
+      PrintFormat("QM_M1_HARVEST_TICKS_UNAVAILABLE symbol=%s", symbol);
+      tick_first = 0;
+      tick_last = 0;
      }
    if(!WriteCoverage(symbol,
                      output_tag,
