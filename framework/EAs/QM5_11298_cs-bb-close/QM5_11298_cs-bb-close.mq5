@@ -1,38 +1,38 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11298 cs-bb-close — Bollinger close-break entry / midband exit (H1)"
+#property description "QM5_11298 cs-bb-close H1 Bollinger close-break"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11298 cs-bb-close
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Source: CryptoSignal/Crypto-Signal — app/analyzers/informants/bollinger_bands.py
-//         + app/analyzers/crossover.py.
-// Card: artifacts/cards_approved/QM5_11298_cs-bb-close.md (g0_status APPROVED).
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
 //
-// Mechanics (closed-bar reads at shift 1; one position per magic):
-//   Bands        : BB(period=21, deviation=2) on PRICE_CLOSE, H1.
-//   Entry LONG   : EVENT = close crosses ABOVE the upper band
-//                  (close[2] <= upper[2]  AND  close[1] > upper[1]).
-//   Entry SHORT  : EVENT = close crosses BELOW the lower band
-//                  (close[2] >= lower[2]  AND  close[1] < lower[1]).
-//                  The close-break is the SINGLE event (DWX invariant #4); the
-//                  long/short branches are mutually exclusive, so no two events
-//                  are required on the same bar.
-//   Exit LONG    : close crosses back BELOW the middle band
-//                  (close[2] >= middle[2] AND close[1] < middle[1]).
-//   Exit SHORT   : close crosses back ABOVE the middle band
-//                  (close[2] <= middle[2] AND close[1] > middle[1]).
-//   Stop         : catastrophic 2.5 * ATR(14) (source has no native stop).
-//   Reversal     : only after flat state on the next completed bar — enforced by
-//                  the one-position-per-magic gate (a new entry requires zero
-//                  open positions, i.e. a prior exit must have flattened first).
-//   Spread guard : skip only a genuinely wide spread > spread_pct_of_stop of the
-//                  ATR stop distance (fail-OPEN on .DWX zero modeled spread).
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkTrackOpenPositionMae / QM_FrameworkHandleFridayClose /
+//     QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
-// else is framework wiring and MUST stay intact.
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -60,150 +60,151 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_bb_period          = 21;    // Bollinger period (source: period_count=21)
-input double strategy_bb_deviation       = 2.0;   // Bollinger deviations (source: 2 stddev)
-input int    strategy_atr_period         = 14;    // catastrophic-stop ATR period
-input double strategy_sl_atr_mult        = 2.5;   // catastrophic stop = mult * ATR
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_bb_period    = 21;
+input double strategy_bb_deviation = 2.0;
+input int    strategy_atr_period   = 14;
+input double strategy_sl_atr_mult  = 2.5;
+
+// Suppresses a same-closed-bar reversal after the framework processes a
+// mid-band exit. It is fixed lifecycle state, not an adaptive parameter.
+bool g_skip_entry_after_exit = false;
 
 // -----------------------------------------------------------------------------
-// Strategy hooks
+// Strategy hooks — implemented mechanically from the approved card.
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only — band/signal work is in
-// Strategy_EntrySignal on the closed-bar path. Fail-OPEN on .DWX zero spread.
+// No Trade Filter (time, spread, news): the card adds only an H1 timeframe
+// constraint. Framework wiring owns spread-safe execution and the news gate.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block here
-
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
-
-   return false;
+   return ((ENUM_TIMEFRAMES)_Period != PERIOD_H1);
   }
 
-// Bollinger close-break entry. Caller guarantees QM_IsNewBar() == true.
+// Trade Entry: evaluate the two most recent completed H1 bars. A close crossing
+// an outer Bollinger band is the single trigger; no second event is required.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic; reversal only after a flat bar.
+   req.type               = QM_BUY;
+   req.price              = 0.0;
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;
+   req.reason             = "";
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(g_skip_entry_after_exit)
+     {
+      g_skip_entry_after_exit = false;
+      return false;
+     }
+
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
-
-   // Bands at the two most-recent CLOSED bars (shift 2 = prior, shift 1 = trigger).
-   const double upper_prev = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 2);
-   const double upper_now  = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
-   const double lower_prev = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 2);
-   const double lower_now  = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
-   if(upper_prev <= 0.0 || upper_now <= 0.0 || lower_prev <= 0.0 || lower_now <= 0.0)
+   if(strategy_bb_period < 2 || strategy_bb_deviation <= 0.0 ||
+      strategy_atr_period < 2 || strategy_sl_atr_mult <= 0.0)
       return false;
 
-   const double close_prev = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   const double close_now  = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(close_prev <= 0.0 || close_now <= 0.0)
+   MqlRates prior_bar;
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_H1, 2, prior_bar) ||
+      !QM_ReadBar(_Symbol, PERIOD_H1, 1, signal_bar))
       return false;
 
-   // SINGLE EVENT: a fresh close-break of a band on the trigger bar.
-   const bool cross_above_upper = (close_prev <= upper_prev && close_now > upper_now);
-   const bool cross_below_lower = (close_prev >= lower_prev && close_now < lower_now);
+   const double upper_prior = QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period,
+                                          strategy_bb_deviation, 2);
+   const double upper_signal = QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period,
+                                           strategy_bb_deviation, 1);
+   const double lower_prior = QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period,
+                                          strategy_bb_deviation, 2);
+   const double lower_signal = QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period,
+                                           strategy_bb_deviation, 1);
+   if(upper_prior <= 0.0 || upper_signal <= 0.0 ||
+      lower_prior <= 0.0 || lower_signal <= 0.0)
+      return false;
 
-   QM_OrderType dir;
-   string reason;
-   if(cross_above_upper)
+   QM_OrderType direction;
+   string entry_reason;
+   if(prior_bar.close <= upper_prior && signal_bar.close > upper_signal)
      {
-      dir    = QM_BUY;
-      reason = "bb_close_break_long";
+      direction = QM_BUY;
+      entry_reason = "bb_close_break_long";
      }
-   else if(cross_below_lower)
+   else if(prior_bar.close >= lower_prior && signal_bar.close < lower_signal)
      {
-      dir    = QM_SELL;
-      reason = "bb_close_break_short";
+      direction = QM_SELL;
+      entry_reason = "bb_close_break_short";
      }
    else
       return false;
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
+   const double entry_price = (direction == QM_BUY)
+                              ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                              : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(entry_price <= 0.0)
       return false;
 
-   const double entry = (dir == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
+   const double stop_price = QM_StopATR(_Symbol, direction, entry_price,
+                                        strategy_atr_period, strategy_sl_atr_mult);
+   if(stop_price <= 0.0)
       return false;
 
-   const double sl = QM_StopATRFromValue(_Symbol, dir, entry, atr_value, strategy_sl_atr_mult);
-   if(sl <= 0.0)
-      return false;
-
-   req.type   = dir;
-   req.price  = 0.0;   // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = 0.0;   // no fixed target — exit is the midband cross-back
-   req.reason = reason;
+   req.type   = direction;
+   req.sl     = stop_price;
+   req.reason = entry_reason;
    return true;
   }
 
-// No active trade management beyond the catastrophic ATR stop. The midband
-// cross-back exit lives in Strategy_ExitSignal.
+// Trade Management: the card defines no trailing, partial-close, break-even,
+// or scale-in rule. The catastrophic stop is server-side from entry.
 void Strategy_ManageOpenPosition()
   {
   }
 
-// Midband cross-back exit. One event at the trigger bar; direction-aware.
+// Trade Close: close on a completed-bar cross back through the middle band.
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) <= 0)
-      return false;
-
-   const double mid_prev = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 2);
-   const double mid_now  = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
-   if(mid_prev <= 0.0 || mid_now <= 0.0)
-      return false;
-
-   const double close_prev = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   const double close_now  = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(close_prev <= 0.0 || close_now <= 0.0)
-      return false;
-
-   // Determine the side of the currently open position for this magic.
    bool is_long = false;
    bool have_pos = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      is_long  = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
-      have_pos = true;
-      break;
+       if(!PositionSelectByTicket(ticket))
+          continue;
+       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+          continue;
+       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+          continue;
+       is_long  = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
+       have_pos = true;
+       break;
      }
    if(!have_pos)
       return false;
 
-   if(is_long)
-      // Close long when close crosses back BELOW the middle band.
-      return (close_prev >= mid_prev && close_now < mid_now);
+   MqlRates prior_bar;
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_H1, 2, prior_bar) ||
+      !QM_ReadBar(_Symbol, PERIOD_H1, 1, signal_bar))
+      return false;
 
-   // Close short when close crosses back ABOVE the middle band.
-   return (close_prev <= mid_prev && close_now > mid_now);
+   const double middle_prior = QM_BB_Middle(_Symbol, PERIOD_H1, strategy_bb_period,
+                                             strategy_bb_deviation, 2);
+   const double middle_signal = QM_BB_Middle(_Symbol, PERIOD_H1, strategy_bb_period,
+                                              strategy_bb_deviation, 1);
+   if(middle_prior <= 0.0 || middle_signal <= 0.0)
+      return false;
+
+   const bool exit_now = is_long
+                         ? (prior_bar.close >= middle_prior && signal_bar.close < middle_signal)
+                         : (prior_bar.close <= middle_prior && signal_bar.close > middle_signal);
+   if(exit_now)
+      g_skip_entry_after_exit = true;
+   return exit_now;
   }
 
-// Defer to the central news filter.
+// News Filter Hook: no card-specific override; the central callable hook remains
+// available for P8 and gates entries only in the framework wiring below.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
@@ -245,18 +246,16 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any per-tick guard can
+   // return. QM_KillSwitchCheck retains the same call as a compatibility
+   // fallback for pre-template EAs; keep this explicit hook in all new builds.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -277,8 +276,18 @@ void OnTick()
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-        }
+       }
      }
+
+   // FW1 — the news blackout gates NEW entries only. Management, stops, and
+   // exits above continue to run through news windows.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    if(!QM_IsNewBar())
       return;
@@ -286,6 +295,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
