@@ -116,3 +116,16 @@ wrong-side entry, repeated monthly attempt, missing hard stop, risk-mode
 mismatch, nondeterminism, nonpositive governed economics, or any later
 unchanged gate failure. No post-result lookback, threshold, direction, stop,
 hold, spread, retry, or carrier rescue is authorized.
+
+## Q01 Build And Q02 Handoff Status
+
+- Q01: `PASS` on 2026-08-08. Strict build report:
+  `D:/QM/reports/framework/21/build_check_20260808_200406.json`; compiler
+  summary: `D:/QM/reports/compile/20260808_200407/summary.csv`; P1 binary
+  presence: `D:/QM/reports/pipeline/QM5_20267/P1/P1_QM5_20267_result.json`.
+- Q02: `NOT_ENQUEUED_CPU_CEILING`. A non-mutating sweep selected exactly this
+  XNG setfile, but the immediate path-anchored sample found nine T1-T10
+  terminals against the paced ceiling of seven. Apply mode was not run and
+  the work-item readback count remained zero.
+- Handoff evidence:
+  `docs/ops/evidence/2026-08-08_qm5_20267_xng_rank_trend_q01_cpu_stop.md`.

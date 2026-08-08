@@ -56,7 +56,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a slow symmetric XNG ordinal path-trend whose all-pairs ordering ignores return magnitude and differs from the certified QM5_12567 daily RSI pullback; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -296,6 +296,7 @@ or correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-08 | initial source-bounded XNG pairwise rank-trend card | G0 | APPROVED |
 | v1-q01 | 2026-08-08 | deterministic V5 build, strict compile, and build validation | Q01 | PASS |
+| v1-q02-stop | 2026-08-08 | paced capacity sample found nine governed terminals against ceiling seven | Q01 | PASS; Q02 NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -303,4 +304,4 @@ or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-08 | APPROVED | `decisions/2026-08-08_qm5_20267_xng_rank_trend_g0.md` |
 | Q01 Build Validation | 2026-08-08 | PASS | `D:/QM/reports/framework/21/build_check_20260808_200406.json`; `D:/QM/reports/pipeline/QM5_20267/P1/P1_QM5_20267_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-08 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-08_qm5_20267_xng_rank_trend_q01_cpu_stop.md` |
