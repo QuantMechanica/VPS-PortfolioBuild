@@ -1,322 +1,294 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11411 wilder-parabolic-sar-reversal-d1 — Wilder Parabolic SAR stop-and-reverse (always-in-market, D1)"
+#property description "QM5_11411 Wilder Parabolic SAR reversal D1"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11411 wilder-parabolic-sar-reversal-d1
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Source: J. Welles Wilder Jr., "New Concepts in Technical Trading Systems"
-//   (1978), Section II: Parabolic Time/Price System.
-// Card: artifacts/cards_approved/QM5_11411_wilder-parabolic-sar-reversal-d1.md
-//   (g0_status APPROVED).
-//
-// Mechanics (always-in-market stop-and-reverse, closed-bar reads):
-//   The Parabolic SAR (iSAR / QM_SAR, AF step 0.02, max 0.20) is the single
-//   signal. When the SAR crosses to the other side of price, the trend has
-//   flipped: close the current position and reverse into the opposite side.
-//   The PSAR FLIP is the single EVENT; everything else is STATE.
-//
-//   Long regime  : SAR below price.       Short regime : SAR above price.
-//   Bullish flip : SAR[2] > close[2]  AND  SAR[1] < close[1]   (closed bars)
-//   Bearish flip : SAR[2] < close[2]  AND  SAR[1] > close[1]
-//
-//   Entry        : on a flip, enter in the new flip direction (one EVENT/bar).
-//                  Initial bootstrap: if flat and no fresh flip yet, enter in
-//                  the side the SAR currently implies so the system is always
-//                  in-market (Wilder's defining property).
-//   Stop loss    : initial SL = current SAR price; the SAR itself trails the
-//                  stop each closed bar (Strategy_ManageOpenPosition re-anchors
-//                  SL to the live SAR). No fixed take-profit — the reverse IS
-//                  the exit.
-//   Exit         : close the open position when a flip AGAINST it fires; the
-//                  reverse entry is then opened by Strategy_EntrySignal.
-//   Direction    : optional Wilder DI(14) filter (+DI vs -DI). When enabled,
-//                  only flips agreeing with the dominant DI are traded.
-//   Spread guard : skip only a genuinely wide spread (fail-open on .DWX zero
-//                  modeled spread).
-//
-// One position per magic. RISK_FIXED in tester, RISK_PERCENT live.
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific; everything
-// else is framework wiring and MUST stay intact.
+// Strategy Card: QM5_11411 wilder-parabolic-sar-reversal-d1
+// Source: J. Welles Wilder Jr., New Concepts in Technical Trading Systems
+//         (1978), Section II: Parabolic Time/Price System.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11411;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.0;
-input double RISK_FIXED                 = 1000.0;
+input double RISK_PERCENT               = 0.0;    // live setfiles select 0.5%
+input double RISK_FIXED                 = 1000.0; // tester default
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled    = true;
-input int    qm_friday_close_hour_broker = 21;
+input bool   qm_friday_close_enabled      = true;
+input int    qm_friday_close_hour_broker  = 21;
 
 input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input double strategy_sar_step           = 0.02;   // PSAR acceleration factor start/increment
-input double strategy_sar_max            = 0.20;   // PSAR acceleration factor maximum
-input bool   strategy_use_di_filter      = false;  // optional Wilder DI(14) direction filter
-input int    strategy_di_period          = 14;     // ADX/DI period for the optional filter
-input double strategy_max_sl_pips        = 100.0;  // initial-stop cap (D1 bars; card P2 cap)
-input bool   strategy_bootstrap_inmarket = true;   // seed first position from current SAR side
-input double strategy_spread_pct_of_stop = 15.0;   // skip if spread > this % of stop distance
+input double strategy_sar_step             = 0.02;
+input double strategy_sar_maximum          = 0.20;
+input bool   strategy_use_di_filter        = false;
+input int    strategy_di_period            = 14;
+input int    strategy_max_sl_pips          = 100;
+input int    strategy_spread_cap_pips      = 25;
 
 // -----------------------------------------------------------------------------
-// Internal helpers — SAR-vs-price regime + flip detection (closed-bar reads).
+// Strategy hooks — implemented mechanically from the approved card.
 // -----------------------------------------------------------------------------
 
-// +1 = SAR below price (long regime), -1 = SAR above price (short regime),
-// 0 = indeterminate (no data). Reads the closed bar at `shift`.
-int Sar_Regime(const int shift)
-  {
-   const double sar   = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, shift);
-   const double close = iClose(_Symbol, _Period, shift); // perf-allowed: single closed-bar read
-   if(sar <= 0.0 || close <= 0.0)
-      return 0;
-   if(sar < close)
-      return +1;
-   if(sar > close)
-      return -1;
-   return 0;
-  }
-
-// Detect a flip on the just-closed bar. Returns +1 for a bullish flip
-// (short->long), -1 for a bearish flip (long->short), 0 for no flip.
-int Sar_Flip()
-  {
-   const int prev = Sar_Regime(2);
-   const int now  = Sar_Regime(1);
-   if(prev == 0 || now == 0)
-      return 0;
-   if(prev < 0 && now > 0)
-      return +1; // bullish flip
-   if(prev > 0 && now < 0)
-      return -1; // bearish flip
-   return 0;
-  }
-
-// Optional Wilder DI(14) directional filter. Returns true if a trade in
-// `dir` (+1 long / -1 short) is permitted. Disabled -> always permitted.
-bool Di_Allows(const int dir)
-  {
-   if(!strategy_use_di_filter)
-      return true;
-   const double plus  = QM_ADX_PlusDI(_Symbol, _Period, strategy_di_period, 1);
-   const double minus = QM_ADX_MinusDI(_Symbol, _Period, strategy_di_period, 1);
-   if(plus <= 0.0 && minus <= 0.0)
-      return true; // no DI data yet — do not block
-   if(dir > 0)
-      return (plus > minus);
-   if(dir < 0)
-      return (minus > plus);
-   return false;
-  }
-
-// Direction (+1/-1) of the currently open position for this EA's magic,
-// or 0 if flat.
-int Open_Direction()
-  {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      const long ptype = PositionGetInteger(POSITION_TYPE);
-      return (ptype == POSITION_TYPE_BUY) ? +1 : -1;
-     }
-   return 0;
-  }
-
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate. Spread guard only. Fail-open on .DWX zero spread.
+// No strategy-specific time gate exists. Parameter validation lives here;
+// the card's spread cap is entry-only so it cannot suspend risk management.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   // Stop-distance reference: distance from ask to the current SAR.
-   const double sar = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1);
-   if(sar <= 0.0)
-      return false; // no SAR yet — defer to the entry gate, do not block here
-
-   double stop_distance = MathAbs(ask - sar);
-   if(stop_distance <= 0.0)
-     {
-      // Fall back to the pip cap so the spread test still scales.
-      stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_max_sl_pips);
-      if(stop_distance <= 0.0)
-         return false;
-     }
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(strategy_sar_step <= 0.0 ||
+      strategy_sar_maximum <= strategy_sar_step ||
+      strategy_di_period <= 0 ||
+      strategy_max_sl_pips <= 0 ||
+      strategy_spread_cap_pips <= 0)
       return true;
-
    return false;
   }
 
-// Always-in-market entry. Caller guarantees QM_IsNewBar() == true.
-// Fires on a fresh SAR flip in the new direction; bootstraps an initial
-// position from the current SAR side when flat (Wilder is never out-of-market).
+// Closed-bar PSAR flip. When flat without a fresh flip, seed the current PSAR
+// side so the source's always-in-market rule survives startup/Friday closure.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic. If a position is open, the reverse
-   // exit (Strategy_ExitSignal) must close it first before we re-enter.
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   int dir = Sar_Flip(); // +1 bullish flip, -1 bearish flip, 0 none
-
-   // Bootstrap: when flat and no fresh flip, take the side the SAR currently
-   // implies so the system is always in-market (the defining Wilder property).
-   if(dir == 0 && strategy_bootstrap_inmarket)
-      dir = Sar_Regime(1);
-
-   if(dir == 0)
+   MqlRates signal_bar;
+   MqlRates previous_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, signal_bar) ||
+      !QM_ReadBar(_Symbol, PERIOD_D1, 2, previous_bar))
       return false;
 
-   if(!Di_Allows(dir))
+   const double sar_now = QM_SAR(_Symbol, PERIOD_D1,
+                                 strategy_sar_step,
+                                 strategy_sar_maximum,
+                                 1);
+   const double sar_previous = QM_SAR(_Symbol, PERIOD_D1,
+                                      strategy_sar_step,
+                                      strategy_sar_maximum,
+                                      2);
+   if(sar_now <= 0.0 || sar_previous <= 0.0 ||
+      signal_bar.low <= 0.0 || signal_bar.high <= 0.0 ||
+      previous_bar.low <= 0.0 || previous_bar.high <= 0.0)
       return false;
 
-   const double sar = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1);
-   if(sar <= 0.0)
-      return false;
+   const bool current_long = (sar_now < signal_bar.low);
+   const bool current_short = (sar_now > signal_bar.high);
+   const bool previous_long = (sar_previous < previous_bar.low);
+   const bool previous_short = (sar_previous > previous_bar.high);
+   const bool flip_long = (previous_short && current_long);
+   const bool flip_short = (previous_long && current_short);
 
-   const QM_OrderType otype = (dir > 0) ? QM_BUY : QM_SELL;
-   const double entry = (dir > 0) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                  : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
-
-   // Initial stop = SAR price, capped at strategy_max_sl_pips from entry.
-   double sl = QM_TM_NormalizePrice(_Symbol, sar);
-   const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_max_sl_pips);
-   if(cap_dist > 0.0)
+   int direction = 0;
+   bool fresh_flip = false;
+   if(flip_long)
      {
-      if(dir > 0)
-        {
-         const double floor_sl = entry - cap_dist; // deepest allowed long stop
-         if(sl < floor_sl)
-            sl = floor_sl;
-         if(sl >= entry)                            // SAR not yet below entry
-            sl = entry - cap_dist;
-        }
-      else
-        {
-         const double ceil_sl = entry + cap_dist;   // deepest allowed short stop
-         if(sl > ceil_sl)
-            sl = ceil_sl;
-         if(sl <= entry)                            // SAR not yet above entry
-            sl = entry + cap_dist;
-        }
+      direction = 1;
+      fresh_flip = true;
      }
-   sl = QM_TM_NormalizePrice(_Symbol, sl);
-   if(sl <= 0.0)
+   else if(flip_short)
+     {
+      direction = -1;
+      fresh_flip = true;
+     }
+   else if(current_long)
+      direction = 1;
+   else if(current_short)
+      direction = -1;
+
+   if(direction == 0)
       return false;
 
-   req.type   = otype;
-   req.price  = 0.0;   // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = 0.0;   // no fixed target — the reverse IS the exit
-   req.reason = (dir > 0) ? "sar_flip_long" : "sar_flip_short";
+   if(strategy_use_di_filter)
+     {
+      const double plus_di = QM_ADX_PlusDI(_Symbol, PERIOD_D1,
+                                           strategy_di_period, 1);
+      const double minus_di = QM_ADX_MinusDI(_Symbol, PERIOD_D1,
+                                             strategy_di_period, 1);
+      if(plus_di <= 0.0 || minus_di <= 0.0)
+         return false;
+      if(direction > 0 && plus_di <= minus_di)
+         return false;
+      if(direction < 0 && minus_di <= plus_di)
+         return false;
+     }
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(
+      _Symbol, strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
+      return false;
+   if(ask > bid && (ask - bid) > spread_cap)
+      return false;
+
+   const QM_OrderType side = (direction > 0) ? QM_BUY : QM_SELL;
+   const double entry = (direction > 0) ? ask : bid;
+   const double max_stop_distance = QM_StopRulesPipsToPriceDistance(
+      _Symbol, strategy_max_sl_pips);
+   if(max_stop_distance <= 0.0)
+      return false;
+
+   double sl = sar_now;
+   if(direction > 0)
+     {
+      if(sl >= entry)
+         return false;
+      sl = MathMax(sl, entry - max_stop_distance);
+     }
+   else
+     {
+      if(sl <= entry)
+         return false;
+      sl = MathMin(sl, entry + max_stop_distance);
+     }
+   sl = QM_StopRulesNormalizePrice(_Symbol, sl);
+   if(sl <= 0.0 ||
+      (direction > 0 && sl >= entry) ||
+      (direction < 0 && sl <= entry))
+      return false;
+
+   req.type = side;
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = 0.0;
+   if(direction > 0)
+      req.reason = fresh_flip ? "wilder_psar_flip_long" : "wilder_psar_seed_long";
+   else
+      req.reason = fresh_flip ? "wilder_psar_flip_short" : "wilder_psar_seed_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
-// Trail the stop with the SAR each closed bar: re-anchor SL to the live SAR
-// in the favorable direction only (the SAR is monotone within a trend leg).
+// Advance the server-side SAR stop once per D1 calendar bar. The framework
+// calendar helper keeps this O(1) per tick without consuming QM_IsNewBar().
 void Strategy_ManageOpenPosition()
   {
-   // NOTE: do NOT call QM_IsNewBar() here — it is single-consume per tick and
-   // the framework needs it for the entry gate later in OnTick. The SAR value
-   // at shift 1 is constant within a bar, and the monotone "only tighten"
-   // guards below make QM_TM_MoveSL a no-op once the SL already tracks the SAR,
-   // so this re-anchors at most once per closed bar without stealing the event.
    const int magic = QM_FrameworkMagic();
-   const double sar = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1);
+   if(magic <= 0 || QM_TM_OpenPositionCount(magic) <= 0)
+      return;
+   if(!QM_IsNewCalendarPeriod(PERIOD_D1))
+      return;
+
+   const double sar = QM_SAR(_Symbol, PERIOD_D1,
+                             strategy_sar_step,
+                             strategy_sar_maximum,
+                             1);
    if(sar <= 0.0)
+      return;
+   const double normalized_sar = QM_StopRulesNormalizePrice(_Symbol, sar);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(normalized_sar <= 0.0 || bid <= 0.0 || ask <= 0.0)
       return;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
 
-      const long ptype   = PositionGetInteger(POSITION_TYPE);
-      const double cur_sl = PositionGetDouble(POSITION_SL);
-      const double new_sl = QM_TM_NormalizePrice(_Symbol, sar);
-      if(new_sl <= 0.0)
-         continue;
-
-      if(ptype == POSITION_TYPE_BUY)
-        {
-         // Long: SAR is below price and rises; only move the stop UP.
-         if(new_sl > cur_sl && new_sl < PositionGetDouble(POSITION_PRICE_CURRENT))
-            QM_TM_MoveSL(ticket, new_sl, "sar_trail_long");
-        }
-      else
-        {
-         // Short: SAR is above price and falls; only move the stop DOWN.
-         if((cur_sl <= 0.0 || new_sl < cur_sl) && new_sl > PositionGetDouble(POSITION_PRICE_CURRENT))
-            QM_TM_MoveSL(ticket, new_sl, "sar_trail_short");
-        }
+      const ENUM_POSITION_TYPE position_type =
+         (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      if(position_type == POSITION_TYPE_BUY &&
+         normalized_sar < bid &&
+         (current_sl <= 0.0 || normalized_sar > current_sl))
+         QM_TM_MoveSL(ticket, normalized_sar, "wilder_psar_trail_long");
+      else if(position_type == POSITION_TYPE_SELL &&
+              normalized_sar > ask &&
+              (current_sl <= 0.0 || normalized_sar < current_sl))
+         QM_TM_MoveSL(ticket, normalized_sar, "wilder_psar_trail_short");
      }
   }
 
-// Reverse exit: close the open position when a SAR flip fires AGAINST it.
-// The opposite-direction entry is then opened by Strategy_EntrySignal on the
-// same closed bar (always-in-market reverse).
+// Close once the just-closed D1 bar places PSAR on the opposite side of the
+// position. A calendar key makes the closed-bar state a once-daily decision.
 bool Strategy_ExitSignal()
   {
-   const int open_dir = Open_Direction();
-   if(open_dir == 0)
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0 || QM_TM_OpenPositionCount(magic) <= 0)
       return false;
 
-   const int flip = Sar_Flip();
-   if(flip == 0)
+   static int processed_exit_key = 0;
+   const int exit_key = QM_CalendarPeriodKey(PERIOD_D1);
+   if(exit_key <= 0 || exit_key == processed_exit_key)
       return false;
 
-   // Close only when the flip opposes the current position.
-   return (flip == -open_dir);
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, signal_bar))
+      return false;
+   const double sar = QM_SAR(_Symbol, PERIOD_D1,
+                             strategy_sar_step,
+                             strategy_sar_maximum,
+                             1);
+   if(sar <= 0.0 || signal_bar.low <= 0.0 || signal_bar.high <= 0.0)
+      return false;
+
+   processed_exit_key = exit_key;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+
+      const ENUM_POSITION_TYPE position_type =
+         (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(position_type == POSITION_TYPE_BUY && sar > signal_bar.high)
+         return true;
+      if(position_type == POSITION_TYPE_SELL && sar < signal_bar.low)
+         return true;
+     }
+   return false;
   }
 
-// Defer to the central news filter.
+// No card-specific news override; the central P8-callable gate remains active.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring — do NOT edit below this line.
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -326,17 +298,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -351,18 +323,14 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: this must precede every early return.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -370,6 +338,7 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Management and strategy exits remain active through news windows.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -382,9 +351,22 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL);
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // The central news gate blocks only new entries.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now,
+                                        qm_news_temporal,
+                                        qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now,
+                                       qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    if(!QM_IsNewBar())
       return;
@@ -392,6 +374,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
