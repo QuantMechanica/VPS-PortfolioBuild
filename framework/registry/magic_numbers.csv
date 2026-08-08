@@ -15588,3 +15588,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20264,wti-rank-trend,0,XTIUSD.DWX,202640000,2026-08-07T11:43:00Z,Codex,active
 20265,xauxag-fail-rv,0,XAUUSD.DWX,202650000,2026-08-07T12:30:56Z,Codex,active
 20265,xauxag-fail-rv,1,XAGUSD.DWX,202650001,2026-08-07T12:30:56Z,Codex,active
+20266,collins-66mom,0,XTIUSD.DWX,202660000,2026-08-08T17:39:29Z,Codex,active
