@@ -677,11 +677,21 @@ def scan_metaeditor_processes() -> list[dict[str, Any]]:
     return [dict(row) for row in rows]
 
 
+_WMI_JSON_DATE = re.compile(r"^/Date\((-?\d+)\)/$")
+
+
 def _parse_creation_date(value: Any, label: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise BootstrapError(f"{label}: missing CreationDate")
+    text = value.strip()
+    # Windows PowerShell 5.1 ConvertTo-Json serializes CIM DateTime as
+    # /Date(<epoch_ms>)/ - accept it alongside ISO-8601 (pwsh 7 / tests).
+    wmi = _WMI_JSON_DATE.match(text)
+    if wmi is not None:
+        parsed = dt.datetime.fromtimestamp(int(wmi.group(1)) / 1000.0, tz=dt.UTC)
+        return parsed.isoformat(timespec="seconds").replace("+00:00", "Z")
     try:
-        parsed = dt.datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+        parsed = dt.datetime.fromisoformat(text.replace("Z", "+00:00"))
     except ValueError as exc:
         raise BootstrapError(f"{label}: invalid CreationDate") from exc
     if parsed.tzinfo is None:

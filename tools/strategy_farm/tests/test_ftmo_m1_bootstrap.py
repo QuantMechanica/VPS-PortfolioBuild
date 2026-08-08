@@ -557,3 +557,12 @@ def test_exclusive_lock_refuses_concurrent_bootstrap(tmp_path: Path) -> None:
                 pass
         assert first["path"] == str(path.resolve())
     assert not path.exists()
+
+
+def test_parse_creation_date_accepts_wmi_json_epoch_format():
+    """PowerShell 5.1 ConvertTo-Json emits /Date(<epoch_ms>)/ for CIM DateTime."""
+    parsed = bootstrap._parse_creation_date("/Date(1785990314288)/", "test row")
+    assert parsed.endswith("Z")
+    assert parsed.startswith("2026-08-06T")
+    with pytest.raises(bootstrap.BootstrapError):
+        bootstrap._parse_creation_date("/Date(notanumber)/", "test row")
