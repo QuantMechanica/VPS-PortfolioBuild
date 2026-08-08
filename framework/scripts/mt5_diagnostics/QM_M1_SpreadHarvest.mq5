@@ -456,8 +456,11 @@ void OnStart()
       PrintFormat("QM_M1_HARVEST_TAG_FAIL tag=%s", output_tag);
       return;
      }
+   // Custom symbols (.DWX) harvest from the local store without a broker
+   // link; only native-symbol sync needs it. On timeout we proceed and let
+   // CopyRates fail honestly if the link was genuinely required.
    if(!WaitForConnection())
-      return;
+      Print("QM_M1_HARVEST_PROCEED_OFFLINE");
    string symbols[];
    const int count = StringSplit(InpSymbols, ',', symbols);
    if(count <= 0)

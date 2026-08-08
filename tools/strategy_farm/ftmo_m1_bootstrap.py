@@ -897,6 +897,7 @@ def prepare_startup_files(
     run_root: Path,
     symbols: Sequence[str],
     output_tag: str,
+    include_login: bool,
 ) -> dict[str, Any]:
     terminal_root = terminal_root.expanduser().resolve()
     tag = _safe_tag(output_tag)
@@ -1254,6 +1255,7 @@ def run_ftmo_bootstrap(
             run_root=run_root,
             symbols=[symbol],
             output_tag=output_tag,
+            include_login=True,
         )
         raw_path, coverage_path = local_harvest_paths(LANE_ROOTS[lane], output_tag, symbol)
         execution = launch_and_wait(
@@ -1377,6 +1379,7 @@ def run_dxz_bootstrap(
                 run_root=run_root,
                 symbols=DXZ_SYMBOLS,
                 output_tag=output_tag,
+                include_login=False,
             )
             expected: list[Path] = []
             for symbol in DXZ_SYMBOLS:
