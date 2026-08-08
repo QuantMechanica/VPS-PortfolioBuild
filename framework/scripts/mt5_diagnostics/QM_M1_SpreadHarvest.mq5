@@ -11,7 +11,8 @@ input string InpOutputTag = "FTMO_STREAM1";
 #define QM_HARVEST_FROM D'2026.01.01 00:00'
 #define QM_BAR_CHUNK_DAYS 7
 #define QM_TICK_CHUNK_DAYS 1
-#define QM_COPY_ATTEMPTS 12
+#define QM_COPY_ATTEMPTS 40
+#define QM_CONNECT_WAIT_SECONDS 180
 #define QM_ERR_HISTORY_NOT_FOUND 4401
 #define QM_ERR_HISTORY_TIMEOUT 4403
 
@@ -380,6 +381,26 @@ bool HarvestSymbol(const string symbol, const string output_tag)
    return true;
   }
 
+bool WaitForConnection()
+  {
+   // A first-start portable terminal connects asynchronously after login;
+   // harvesting before TERMINAL_CONNECTED yields endless 4401 (proven live
+   // 2026-08-08). Deep server-side M1 sync also needs the link up first.
+   for(int waited = 0; waited < QM_CONNECT_WAIT_SECONDS; ++waited)
+     {
+      if(TerminalInfoInteger(TERMINAL_CONNECTED) == 1)
+        {
+         PrintFormat("QM_M1_HARVEST_CONNECTED after=%ds", waited);
+         return true;
+        }
+      if(waited % 15 == 0)
+         PrintFormat("QM_M1_HARVEST_WAIT_CONNECT waited=%ds", waited);
+      Sleep(1000);
+     }
+   Print("QM_M1_HARVEST_CONNECT_TIMEOUT");
+   return false;
+  }
+
 void OnStart()
   {
    const string output_tag = Trimmed(InpOutputTag);
@@ -388,6 +409,8 @@ void OnStart()
       PrintFormat("QM_M1_HARVEST_TAG_FAIL tag=%s", output_tag);
       return;
      }
+   if(!WaitForConnection())
+      return;
    string symbols[];
    const int count = StringSplit(InpSymbols, ',', symbols);
    if(count <= 0)
