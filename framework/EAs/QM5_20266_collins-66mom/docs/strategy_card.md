@@ -37,7 +37,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
+pipeline_phase: Q02
 expected_pf: 1.1
 expected_dd_pct: 22.0
 risk_class: high
@@ -217,6 +217,8 @@ The EA label must be `QM5_20266_collins-66mom`, use magic slot 0 via
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-08 | OWNER-authorized WTI specialization of unallocated SRC08_S01 draft | G0 | APPROVED |
+| v1-build | 2026-08-08 | Mechanical EA build from the approved card; strict compile and framework build gate | P1 | PASS |
+| v1-queue | 2026-08-08 | Enqueued governed XTIUSD.DWX baseline work item `8927c178-1c81-46bd-84fd-33f3d6c77132` | Q02 | PENDING |
 
 ## Review Focus
 

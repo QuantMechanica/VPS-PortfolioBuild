@@ -1,9 +1,9 @@
 # QM5_20266_collins-66mom - Strategy Spec
 
-**EA ID:** QM5_20266  
-**Slug:** `collins-66mom`  
-**Source:** `SRC08`  
-**Author of this spec:** Codex  
+**EA ID:** QM5_20266
+**Slug:** `collins-66mom`
+**Source:** `SRC08`
+**Author of this spec:** Codex
 **Last revised:** 2026-08-08
 
 ## 1. Strategy Logic
