@@ -11179,11 +11179,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11476,lien-k-double-bb-trend-h1,2,USDJPY.DWX,114760002,2026-06-18,Claude,active
 11476,lien-k-double-bb-trend-h1,3,AUDUSD.DWX,114760003,2026-06-18,Claude,active
 11476,lien-k-double-bb-trend-h1,4,USDCAD.DWX,114760004,2026-06-18,Claude,active
-11477,williams-l-fakeout-day-d1,0,EURUSD.DWX,114770000,2026-06-18,Claude,reserved
-11477,williams-l-fakeout-day-d1,1,GBPUSD.DWX,114770001,2026-06-18,Claude,reserved
-11477,williams-l-fakeout-day-d1,2,USDJPY.DWX,114770002,2026-06-18,Claude,reserved
-11477,williams-l-fakeout-day-d1,3,AUDUSD.DWX,114770003,2026-06-18,Claude,reserved
-11477,williams-l-fakeout-day-d1,4,USDCAD.DWX,114770004,2026-06-18,Claude,reserved
+11477,williams-l-fakeout-day-d1,0,EURUSD.DWX,114770000,2026-06-18,Claude,active
+11477,williams-l-fakeout-day-d1,1,GBPUSD.DWX,114770001,2026-06-18,Claude,active
+11477,williams-l-fakeout-day-d1,2,USDJPY.DWX,114770002,2026-06-18,Claude,active
+11477,williams-l-fakeout-day-d1,3,AUDUSD.DWX,114770003,2026-06-18,Claude,active
+11477,williams-l-fakeout-day-d1,4,USDCAD.DWX,114770004,2026-06-18,Claude,active
 11481,carter-t-ny-open-box-m5,0,GBPJPY.DWX,114810000,2026-06-20,Development,active
 11481,carter-t-ny-open-box-m5,1,GBPUSD.DWX,114810001,2026-06-20,Development,active
 11481,carter-t-ny-open-box-m5,2,EURUSD.DWX,114810002,2026-06-20,Development,active
