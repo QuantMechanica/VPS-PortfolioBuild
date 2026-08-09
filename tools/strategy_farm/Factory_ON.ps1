@@ -297,7 +297,7 @@ function Assert-CanonicalOwnerRestartDecision {
     } catch {
         throw "canonical OWNER decision JSON is invalid: $($_.Exception.Message)"
     }
-    if ([string]$decision.decision_id -cne 'FACTORY_PREPARATION_20260804_EVENING_TEN_WORKER_ZERO_HOLD' -or
+    if ([string]$decision.decision_id -cne 'FACTORY_ISOLATION_20260809_TEN_WORKER_ZERO_HOLD' -or
         [string]$decision.authority -cne 'OWNER' -or
         [string]$decision.status -cne 'APPROVED') {
         throw 'canonical OWNER decision identity mismatch'
