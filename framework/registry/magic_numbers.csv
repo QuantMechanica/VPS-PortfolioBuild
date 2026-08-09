@@ -15592,6 +15592,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20267,xng-rank-trend,0,XNGUSD.DWX,202670000,2026-08-08T20:01:48Z,Codex,active
 20268,xauxag-qtail-rv,0,XAUUSD.DWX,202680000,2026-08-09T10:40:41Z,Codex,active
 20268,xauxag-qtail-rv,1,XAGUSD.DWX,202680001,2026-08-09T10:40:41Z,Codex,active
+20269,wti-medret-mom,0,XTIUSD.DWX,202690000,2026-08-09T12:54:55Z,Codex,active
 9643,bandy-rsi2-atr-regime-filter-mr-index,0,SP500.DWX,96430000,2026-08-09T10:43:41Z,Codex,active
 9643,bandy-rsi2-atr-regime-filter-mr-index,1,NDX.DWX,96430001,2026-08-09T10:43:41Z,Codex,active
 9643,bandy-rsi2-atr-regime-filter-mr-index,2,WS30.DWX,96430002,2026-08-09T10:43:41Z,Codex,active
