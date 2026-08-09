@@ -13,9 +13,9 @@ source_author: "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen"
 strategy_mechanic: monthly-wti-sign-of-even-sample-median-of-twelve-disjoint-completed-monthly-log-returns
 target_symbols: [XTIUSD.DWX]
 period: D1
-pipeline_phase: Q01
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
 last_updated: 2026-08-09
 ---
 

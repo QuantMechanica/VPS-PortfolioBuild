@@ -54,9 +54,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
 review_focus: "Falsify a direct WTI monthly robust typical-return direction whose order statistic differs from cumulative momentum, binary sign breadth, multi-horizon votes, rank trend, OLS trend, and rolling median price; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -300,11 +300,13 @@ or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-09 | initial source-bounded WTI median-return card | G0 | APPROVED |
+| v1-q01 | 2026-08-09 | deterministic V5 build, strict compile, and target build validation | Q01 | PASS |
+| v1-q02 | 2026-08-09 | one paced current-binary baseline handoff below the factory CPU ceiling | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-09 | APPROVED | `decisions/2026-08-09_qm5_20269_wti_medret_mom_g0.md` |
-| Q01 Build Validation | 2026-08-09 | NOT_RUN | pending deterministic allocation and build |
-| Q02 Baseline Screening | 2026-08-09 | NOT_ENQUEUED | pending Q01 PASS and paced CPU check |
+| Q01 Build Validation | 2026-08-09 | PASS | `D:/QM/reports/compile/20260809_130444/summary.csv`; `D:/QM/reports/framework/21/build_check_20260809_130553.json`; `D:/QM/reports/pipeline/QM5_20269/P1/P1_QM5_20269_result.json` |
+| Q02 Baseline Screening | 2026-08-09 | ENQUEUED; pending, attempt 0, unclaimed | work item `6e8edd6b-72da-4b37-8a27-15ccdea515b8`; `docs/ops/evidence/2026-08-09_qm5_20269_wti_medret_mom_q01_q02_enqueue.md` |

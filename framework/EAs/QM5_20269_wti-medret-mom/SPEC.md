@@ -118,3 +118,12 @@ correlation waiver.
   `D:/QM/reports/framework/21/build_check_20260809_130553.json`.
 - P1 artifact validation: PASS at
   `D:/QM/reports/pipeline/QM5_20269/P1/P1_QM5_20269_result.json`.
+
+## 12. Q02 Handoff
+
+One current-binary `XTIUSD.DWX` D1 Q02 row was enqueued at
+`2026-08-09T13:09:10+00:00`: work item
+`6e8edd6b-72da-4b37-8a27-15ccdea515b8`, pending, attempt 0, unclaimed, and
+`priority_track=true` on immediate readback. The binding pre-enqueue sample
+found zero executing T1-T10 factory terminals against the ceiling of seven.
+No dispatch tick or backtest was run by the build mission.
