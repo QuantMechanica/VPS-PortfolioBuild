@@ -104,6 +104,17 @@ def test_manifest_tamper_and_unsigned_execution_fail_closed(tmp_path: Path) -> N
         contract.require_owner_window_open(closed_window)
 
 
+def test_acl_tool_removes_and_rejects_runner_archive_deny() -> None:
+    script = (Path(migration.__file__).with_name("custom_history_acl.ps1")).read_text(
+        encoding="utf-8-sig"
+    )
+    assert "RemoveAccessRuleSpecific" in script
+    assert "RUNNER_WRITE_DELETE_DENY_PRESENT" in script
+    assert "ACL_DENY_REMOVED" in script
+    assert ".SetAccessRule($denyRule)" not in script
+    assert "WRITE_DELETE_DENY_MISSING" not in script
+
+
 def test_stage_is_dry_by_default_and_execute_builds_private_mutable_files(
     tmp_path: Path,
 ) -> None:

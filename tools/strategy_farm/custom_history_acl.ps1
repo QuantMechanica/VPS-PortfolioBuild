@@ -81,19 +81,15 @@ if ($Mode -eq 'Apply') {
 
 $account = [System.Security.Principal.NTAccount]::new([string]$manifest.runner_identity)
 $sid = $account.Translate([System.Security.Principal.SecurityIdentifier])
-$rights = [System.Security.AccessControl.FileSystemRights]::Write -bor
+$denyRights = [System.Security.AccessControl.FileSystemRights]::Write -bor
           [System.Security.AccessControl.FileSystemRights]::Delete -bor
           [System.Security.AccessControl.FileSystemRights]::ChangePermissions -bor
           [System.Security.AccessControl.FileSystemRights]::TakeOwnership
-$denyRule = [System.Security.AccessControl.FileSystemAccessRule]::new(
-    $sid,
-    $rights,
-    [System.Security.AccessControl.AccessControlType]::Deny
-)
 
 $failures = [System.Collections.Generic.List[object]]::new()
 $verified = 0
 $applied = 0
+$removedRules = 0
 foreach ($row in $manifest.files) {
     $relative = ([string]$row.relative_path).Replace('/', '\')
     $path = [System.IO.Path]::GetFullPath((Join-Path $sourceRoot $relative))
@@ -110,23 +106,35 @@ foreach ($row in $manifest.files) {
     }
     if ($Mode -eq 'Apply') {
         $acl = Get-Acl -LiteralPath $path
-        $acl.SetAccessRule($denyRule)
-        Set-Acl -LiteralPath $path -AclObject $acl
-        $applied++
+        $rules = @($acl.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier]))
+        $matchingExplicitDenies = @($rules | Where-Object {
+            $_.IdentityReference.Value -eq $sid.Value -and
+            $_.AccessControlType -eq [System.Security.AccessControl.AccessControlType]::Deny -and
+            -not $_.IsInherited -and
+            (([int]$_.FileSystemRights -band [int]$denyRights) -ne 0)
+        })
+        if ($matchingExplicitDenies.Count -gt 0) {
+            foreach ($rule in $matchingExplicitDenies) {
+                [void]$acl.RemoveAccessRuleSpecific($rule)
+                $removedRules++
+            }
+            Set-Acl -LiteralPath $path -AclObject $acl
+            $applied++
+        }
     }
     if ($Mode -in @('Apply', 'Verify')) {
         $acl = Get-Acl -LiteralPath $path
         $rules = $acl.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier])
-        $denied = $false
+        $denied = @()
         foreach ($rule in $rules) {
             if ($rule.IdentityReference.Value -eq $sid.Value -and
                 $rule.AccessControlType -eq [System.Security.AccessControl.AccessControlType]::Deny -and
-                (([int]$rule.FileSystemRights -band [int]$rights) -eq [int]$rights)) {
-                $denied = $true
+                (([int]$rule.FileSystemRights -band [int]$denyRights) -ne 0)) {
+                $denied += $rule
             }
         }
-        if (-not $denied) {
-            $failures.Add([pscustomobject]@{relative_path=$row.relative_path;reason='WRITE_DELETE_DENY_MISSING'})
+        if ($denied.Count -gt 0) {
+            $failures.Add([pscustomobject]@{relative_path=$row.relative_path;reason='RUNNER_WRITE_DELETE_DENY_PRESENT';rule_count=$denied.Count})
         }
         else {
             $verified++
@@ -137,7 +145,7 @@ foreach ($row in $manifest.files) {
 $payload = [ordered]@{
     schema_version = 'qm.custom-history-archive-acl/v1'
     mode = $Mode.ToUpperInvariant()
-    runtime_action = if ($Mode -eq 'Apply') { 'ACL_DENY_APPLIED' } else { 'NONE' }
+    runtime_action = if ($Mode -eq 'Apply') { 'ACL_DENY_REMOVED' } else { 'NONE' }
     status = if ($failures.Count -eq 0) { 'PASS' } else { 'FAIL_CLOSED' }
     manifest_sha256 = [string]$manifest.manifest_sha256
     manifest_file_sha256 = Get-Sha256 $manifestFile
@@ -146,6 +154,7 @@ $payload = [ordered]@{
     runner_sid = $sid.Value
     archive_file_count = @($manifest.files).Count
     applied = $applied
+    removed_rules = $removedRules
     verified = $verified
     failures = @($failures)
     recorded_at_utc = [DateTime]::UtcNow.ToString('o')

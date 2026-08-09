@@ -610,6 +610,80 @@ function Deploy-ExpertBinaryToTerminal {
     }
 }
 
+function Invoke-CustomHistorySmokeAdmission {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalName,
+        [Parameter(Mandatory = $true)]
+        [int]$TimeoutSecondsValue,
+        [Parameter(Mandatory = $true)]
+        [int]$RunsValue
+    )
+
+    if ($TerminalName -notmatch '^T([1-9]|10)$') {
+        return $null
+    }
+    $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
+    $helper = Join-Path $repoRoot 'tools\strategy_farm\custom_history_smoke_admission.py'
+    if (-not (Test-Path -LiteralPath $helper -PathType Leaf)) {
+        throw "Custom-history smoke admission helper is missing: $helper"
+    }
+    $python = (Get-Command python.exe -ErrorAction Stop).Source
+    $reservationOwner = 'run_smoke:{0}:{1}' -f $PID, [guid]::NewGuid().ToString('N')
+    $maximumAttempts = [Math]::Max(1, $RunsValue * 2)
+    $reservationMinutes = [Math]::Max(
+        30,
+        [int][Math]::Ceiling(($TimeoutSecondsValue * $maximumAttempts) / 60.0) + 30
+    )
+    $helperArguments = @(
+        $helper,
+        '--farm-root', 'D:\QM\strategy_farm',
+        'reserve',
+        '--terminal', $TerminalName,
+        '--reserved-by', $reservationOwner,
+        '--minutes', [string]$reservationMinutes
+    )
+    if (-not [string]::IsNullOrWhiteSpace($env:QM_WORK_ITEM_ID)) {
+        $helperArguments += @('--expected-work-item-id', $env:QM_WORK_ITEM_ID)
+    }
+    $raw = @(& $python @helperArguments 2>&1)
+    $exitCode = $LASTEXITCODE
+    $rendered = [string]::Join([Environment]::NewLine, @($raw | ForEach-Object { [string]$_ }))
+    if ($exitCode -ne 0) {
+        throw "Custom-history gate/reservation refused terminal '$TerminalName': $rendered"
+    }
+    try {
+        $receipt = $rendered | ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        throw "Custom-history smoke admission returned invalid JSON for '$TerminalName': $rendered"
+    }
+    if ($receipt.status -ne 'PASS_RESERVED' -or $receipt.reserved_by -ne $reservationOwner) {
+        throw "Custom-history smoke admission did not prove reservation ownership for '$TerminalName'."
+    }
+    Write-Host ("run_smoke.custom_history_admission=PASS_RESERVED terminal={0} owner={1} until={2}" -f $TerminalName, $reservationOwner, $receipt.reservation.until_utc)
+    return $receipt
+}
+
+function Exit-CustomHistorySmokeAdmission {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object]$Admission
+    )
+
+    $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
+    $helper = Join-Path $repoRoot 'tools\strategy_farm\custom_history_smoke_admission.py'
+    $python = (Get-Command python.exe -ErrorAction Stop).Source
+    $raw = @(& $python $helper --farm-root 'D:\QM\strategy_farm' release `
+        --terminal ([string]$Admission.terminal) `
+        --reserved-by ([string]$Admission.reserved_by) 2>&1)
+    $exitCode = $LASTEXITCODE
+    $rendered = [string]::Join([Environment]::NewLine, @($raw | ForEach-Object { [string]$_ }))
+    if ($exitCode -ne 0) {
+        throw "Custom-history smoke reservation release failed: $rendered"
+    }
+    Write-Host ("run_smoke.custom_history_reservation=RELEASED terminal={0} owner={1}" -f $Admission.terminal, $Admission.reserved_by)
+}
+
 function Resolve-DispatchTerminal {
     param(
         [Parameter(Mandatory = $true)]
@@ -2287,8 +2361,11 @@ if ([string]::IsNullOrWhiteSpace($DispatchSubGateHash)) {
     $DispatchSubGateHash = "{0}-{1}" -f $Period, $Year
 }
 
+$smokeReservation = $null
+try {
 $effectiveTerminal = Resolve-DispatchTerminal -TargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year -SetFilePath $SetFile -DispatchPhaseValue $DispatchPhase -DispatchVersionValue $DispatchVersion -DispatchSubGateHashValue $DispatchSubGateHash
 Write-Host ("run_smoke.stage=resolved_terminal terminal={0}" -f $effectiveTerminal)
+$smokeReservation = Invoke-CustomHistorySmokeAdmission -TerminalName $effectiveTerminal -TimeoutSecondsValue $TimeoutSeconds -RunsValue $Runs
 $terminalRoot = Resolve-TerminalRoot -TerminalName $effectiveTerminal
 $terminalExe = Resolve-TerminalExecutable -TerminalRoot $terminalRoot
 Write-Host ("run_smoke.stage=resolved_terminal_exe terminal={0} exe='{1}'" -f $effectiveTerminal, $terminalExe)
@@ -3207,7 +3284,18 @@ if ($effectiveTerminal -ieq "DEV1") {
 }
 
 if (-not $passed) {
-    exit 1
+    $smokeExitCode = 1
+} else {
+    $smokeExitCode = 0
+}
+} finally {
+    if ($null -ne $smokeReservation) {
+        try {
+            Exit-CustomHistorySmokeAdmission -Admission $smokeReservation
+        } catch {
+            Write-Warning ("run_smoke.custom_history_reservation_release_failed err='{0}'" -f $_.Exception.Message)
+        }
+    }
 }
 
-exit 0
+exit $smokeExitCode

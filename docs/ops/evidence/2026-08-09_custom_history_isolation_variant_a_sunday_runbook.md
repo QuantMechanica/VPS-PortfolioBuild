@@ -47,7 +47,7 @@ Stop new claims and re-engage the global Custom-history lease on any of:
 
 - error `[32]` / sharing violation;
 - history synchronization abort;
-- archive write attempt, hash drift, file-ID drift, or ACL drift;
+- archive hash/file-ID drift or an unexpected runner write/delete deny ACL;
 - missing real-ticks marker;
 - isolation gate failure;
 - missing/extra staged file, mutable hardlink, or reparse-point live root;
@@ -80,8 +80,9 @@ Set-Location -LiteralPath $QmRepo
 
    ```powershell
    git cat-file -e "$QmImplementationCommit^{commit}"
-   git status --short -- tools/strategy_farm/custom_history_contract.py tools/strategy_farm/custom_history_gate.py tools/strategy_farm/custom_history_lease.py tools/strategy_farm/custom_history_migration.py tools/strategy_farm/custom_history_acl.ps1 tools/strategy_farm/mt5_history_isolation.py tools/strategy_farm/terminal_worker.py
-   python -m pytest tools/strategy_farm/tests/test_custom_history_variant_a.py tools/strategy_farm/tests/test_mt5_history_isolation.py tools/strategy_farm/tests/test_terminal_worker_custom_history_isolation.py -q
+   git status --short -- tools/strategy_farm/custom_history_contract.py tools/strategy_farm/custom_history_copy_on_claim.py tools/strategy_farm/custom_history_gate.py tools/strategy_farm/custom_history_lease.py tools/strategy_farm/custom_history_migration.py tools/strategy_farm/custom_history_acl.ps1 tools/strategy_farm/custom_history_smoke_admission.py tools/strategy_farm/mt5_history_isolation.py tools/strategy_farm/terminal_worker.py framework/scripts/run_smoke.ps1
+   python -m pytest tools/strategy_farm/tests/test_custom_history_copy_on_claim.py tools/strategy_farm/tests/test_custom_history_smoke_admission.py tools/strategy_farm/tests/test_custom_history_variant_a.py tools/strategy_farm/tests/test_mt5_history_isolation.py tools/strategy_farm/tests/test_terminal_worker_custom_history_isolation.py -q
+   pwsh.exe -NoProfile -File framework/scripts/tests/Test-RunSmokeCustomHistoryAdmission.ps1
    ```
 
    Require no output from `git status` for those paths and retain the test log.
@@ -132,10 +133,11 @@ Set-Location -LiteralPath $QmRepo
    python tools/strategy_farm/custom_history_migration.py engage-containment --manifest $QmManifest --owner-receipt $QmOwnerReceipt --farm-root $QmFarm --reason 'OWNER_quiesced_variant_a_migration' --execute
    ```
 
-6. Stage ten physical directories beside the live paths. Archive records are
-   hardlinks to the manifest IDs; 2026 `.hcc`/`.tkc`, `.hc`, `.dat`, and every
-   unclassified file are private copies. The command is idempotent and applies
-   the runner write/delete/ACL-change deny only after all files are present.
+6. Stage ten physical directories beside the live paths. Archive records start
+   as hardlinks to the manifest IDs; 2026 `.hcc`/`.tkc`, `.hc`, `.dat`, and every
+   unclassified file are private copies. The command is idempotent. The original
+   rollout applied a runner deny ACL; the OWNER amendment below supersedes that
+   ACL step and requires its removal before any amended worker recycle.
 
    ```powershell
    python tools/strategy_farm/custom_history_migration.py stage --manifest $QmManifest --owner-receipt $QmOwnerReceipt --mt5-root $QmMt5 --receipt (Join-Path $QmOps 'stage_receipt.json') --acl-evidence (Join-Path $QmOps 'acl_apply.json') --execute
@@ -154,7 +156,8 @@ Set-Location -LiteralPath $QmRepo
    python tools/strategy_farm/custom_history_migration.py cutover --manifest $QmManifest --owner-receipt $QmOwnerReceipt --mt5-root $QmMt5 --farm-root $QmFarm --db-backup (Join-Path $QmOps 'farm_state_before_cutover.sqlite') --receipt (Join-Path $QmOps 'cutover_receipt.json') --execute
    ```
 
-8. Run two independent full ACL and isolation audits from fresh processes.
+8. Run two independent full deny-absence/integrity and isolation audits from
+   fresh processes.
 
    ```powershell
    powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/strategy_farm/custom_history_acl.ps1 -Mode Verify -ManifestPath $QmManifest -OwnerReceiptPath $QmOwnerReceipt -SourceCustom 'D:\QM\mt5\T1\Bases\Custom' -EvidencePath (Join-Path $QmOps 'acl_verify_1.json') | Set-Content -Encoding UTF8 (Join-Path $QmOps 'acl_verify_1_stdout.json')
@@ -224,6 +227,75 @@ Set-Location -LiteralPath $QmRepo
     explicit pathspecs on the registered board-advisor checkout and integrate
     to `main`; do not leave the evidence only in an agent worktree or in
     `D:\QM\strategy_farm\artifacts`.
+
+## OWNER amendment — copy-on-claim archive privatization
+
+Binding decision:
+`decisions/2026-08-09_custom_history_isolation_amendment_copy_on_claim.md`.
+Authority: OWNER “Ja freigegeben”, 2026-08-09. Window:
+`custom_history_variant_a_20260809`, open through 2026-08-09 22:00Z. This
+section supersedes the immutable-archive and deny-ACL premises in steps 6, 8,
+11–14; it does not authorize any T_Live/FTMO mutation or a manual terminal
+launch.
+
+The triggering evidence is the T5 13:49 error `[5]` → archive-delete pattern,
+the same T1 class on Q08 work item `5c3506e0`, and the retained window
+restoration receipt. All 11/11 families were restored before this amendment;
+containment remains the controlling state until Claude completes the amended
+review and re-audit.
+
+### Amended runtime contract
+
+1. The worker derives the exact Custom-history set from the claimed host symbol
+   plus declared `conversion_symbols` and `basket_symbols`. Before spawn, and
+   while holding the existing global Custom-history lease, it copies only that
+   terminal/symbol archive set to same-directory temporary files, verifies each
+   full SHA-256 against the OWNER-bound manifest, and atomically replaces the
+   hardlink. A retry verifies and reuses an already-private file. A missing row,
+   size/hash mismatch, shared private inode, or rename failure is fail-closed
+   and re-engages containment.
+2. The immediate gate accepts an archive path only as either:
+
+   - a manifest family hardlink whose link count is at least the manifest
+     baseline plus the family members still observed across T1–T10; or
+   - a terminal-private inode with link count 1 and a full manifest SHA-256.
+
+   Private inode identities must be unique to one terminal/path. The worker
+   runs the gate both before and after copy-on-claim. Every successful claim
+   writes a hash-bound receipt below
+   `D:\QM\strategy_farm\artifacts\ops\custom_history_copy_on_claim\`.
+3. `custom_history_acl.ps1 -Mode Apply -Execute` now removes the explicit runner
+   write/delete deny from archive files; `Verify` fails if any matching deny
+   remains. Content integrity is enforced by the manifest, copy receipt, and
+   mixed-topology audits, not by an ACL premise MT5 disproved.
+4. `run_smoke.ps1` checks the activation gate and ramp before resolving any
+   factory-terminal launch boundary, then owns a farm reservation through its
+   `finally` block. A gate-held terminal is refused. While isolation is active,
+   factory smoke must also be bound to the already-claimed work item via
+   `QM_WORK_ITEM_ID`; unbound direct factory smoke is refused because it has no
+   worker copy-on-claim proof. DEV1/DEV2 remain outside the T1–T10 reservation
+   helper and retain their existing isolation rules.
+
+### Claude-reviewed continuation only
+
+Do not run these steps from the implementation ticket. After approving the
+amendment commit, Claude owns the quiesced ACL removal, two fresh full audits,
+worker recycle, representative Q-only work, and resumed `1 → 2 → 5 → 10` ramp.
+
+```powershell
+$QmAmendmentCommit = '<CLAUDE_APPROVED_AMENDMENT_COMMIT>'
+git cat-file -e "$QmAmendmentCommit^{commit}"
+python -m pytest tools/strategy_farm/tests/test_custom_history_copy_on_claim.py tools/strategy_farm/tests/test_custom_history_smoke_admission.py tools/strategy_farm/tests/test_custom_history_variant_a.py tools/strategy_farm/tests/test_mt5_history_isolation.py tools/strategy_farm/tests/test_terminal_worker_custom_history_isolation.py -q
+pwsh.exe -NoProfile -File framework/scripts/tests/Test-RunSmokeCustomHistoryAdmission.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/strategy_farm/custom_history_acl.ps1 -Mode Apply -ManifestPath $QmManifest -OwnerReceiptPath $QmOwnerReceipt -SourceCustom 'D:\QM\mt5\T1\Bases\Custom' -EvidencePath (Join-Path $QmOps 'acl_amendment_remove_deny.json') -FarmRoot $QmFarm -Execute
+```
+
+After the deny-removal receipt passes, repeat the two fresh-process commands in
+step 8 and replace the activation-bound audit identities under the still-open
+OWNER window. Recycle workers only through the governed scheduled task; never
+start `terminal64.exe` manually. At every Q-only ramp step, require the claimed
+host/conversion/basket symbols, copy-on-claim receipt, post-copy gate audit,
+authenticated report, and zero stop conditions to agree before advancing.
 
 ## Rollback
 

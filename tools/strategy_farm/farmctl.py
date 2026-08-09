@@ -5328,6 +5328,9 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     reap_finished_job_objects()
     log_fh = open(log_path, "w", encoding="utf-8")
     creationflags = suspended_runner_creation_flags()
+    env = {**os.environ}
+    env["QM_WORK_ITEM_ID"] = str(item_row["id"])
+    env["QM_WORK_ITEM_TERMINAL"] = str(terminal).upper()
     proc = subprocess.Popen(
         cmd,
         cwd=str(REPO_ROOT),
@@ -5336,6 +5339,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         stdin=subprocess.DEVNULL,
         creationflags=creationflags,
         close_fds=True,
+        env=env,
     )
     try:
         process_identity = bind_spawned_process_to_kill_job(
@@ -6282,6 +6286,8 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
     creationflags = suspended_runner_creation_flags()
     env = {**os.environ}
     env["QM_EXPECTED_EX5_SHA256"] = dispatch_ex5_sha256
+    env["QM_WORK_ITEM_ID"] = str(item_row["id"])
+    env["QM_WORK_ITEM_TERMINAL"] = str(terminal).upper()
     env["PYTHONPATH"] = os.pathsep.join(
         [str(runner_repo_root), env.get("PYTHONPATH", "")]
     )

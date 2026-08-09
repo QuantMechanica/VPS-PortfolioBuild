@@ -36,6 +36,8 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 import farmctl
+import custom_history_contract
+import custom_history_copy_on_claim
 import custom_history_gate
 import custom_history_lease
 from framework.scripts._phase_utils import cold_cache_summary_signature
@@ -46,6 +48,9 @@ POLL_SLEEP_SECONDS = 2.0
 CUSTOM_HISTORY_GUARD_SLEEP_SECONDS = 30.0
 CUSTOM_HISTORY_GATE_PASS_STATUSES = frozenset(
     {"PASS_ISOLATED", "PASS_SERIALIZED_ROLLBACK"}
+)
+CUSTOM_HISTORY_COPY_PASS_STATUSES = frozenset(
+    {"PASS_PRIVATIZED", "SKIPPED_OWNER_ROLLBACK_TOPOLOGY"}
 )
 FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS = 5.0
 FACTORY_ADMISSION_LOCK_POLL_SECONDS = 0.01
@@ -384,9 +389,10 @@ def _work_item_history_symbols(
     payload: dict[str, Any],
 ) -> list[str]:
     symbols: list[object] = [payload.get("host_symbol") or _work_item_value(item, "symbol", "")]
-    payload_symbols = payload.get("basket_symbols")
-    if isinstance(payload_symbols, list):
-        symbols.extend(payload_symbols)
+    for field in ("basket_symbols", "conversion_symbols"):
+        payload_symbols = payload.get(field)
+        if isinstance(payload_symbols, list):
+            symbols.extend(payload_symbols)
 
     is_basket = (
         str(payload.get("portfolio_scope") or "").strip().lower() == "basket"
@@ -400,6 +406,9 @@ def _work_item_history_symbols(
             manifest_symbols = manifest.get("basket_symbols")
             if isinstance(manifest_symbols, list):
                 symbols.extend(manifest_symbols)
+            manifest_conversion = manifest.get("conversion_symbols")
+            if isinstance(manifest_conversion, list):
+                symbols.extend(manifest_conversion)
 
     return _unique_symbols(symbols)
 
@@ -1082,6 +1091,92 @@ def _custom_history_gate(root: Path, terminal: str) -> dict[str, Any]:
         except Exception:
             pass
     return gate
+
+
+def _custom_history_copy_receipt_path(root: Path, item_id: str, terminal: str) -> Path:
+    safe_item_id = "".join(
+        character if character.isalnum() or character in {"-", "_"} else "_"
+        for character in str(item_id)
+    )
+    return (
+        root
+        / "artifacts"
+        / "ops"
+        / "custom_history_copy_on_claim"
+        / f"{safe_item_id}_{str(terminal).upper()}.json"
+    )
+
+
+def _privatize_custom_history_claim(
+    root: Path,
+    row: sqlite3.Row | dict[str, Any],
+    terminal: str,
+    gate: dict[str, Any],
+) -> dict[str, Any]:
+    """Privatize the host plus declared conversion/basket archive set."""
+
+    if not gate.get("required"):
+        return {"required": False, "status": "NOT_ACTIVE", "terminal": terminal}
+    if gate.get("status") == "PASS_SERIALIZED_ROLLBACK":
+        return {
+            "required": True,
+            "status": "SKIPPED_OWNER_ROLLBACK_TOPOLOGY",
+            "terminal": terminal,
+        }
+    activation_sha256 = str(gate.get("activation_sha256") or "0" * 64)
+    try:
+        activation = custom_history_gate.load_activation(root)
+        if activation is None:
+            raise custom_history_copy_on_claim.CustomHistoryCopyOnClaimError(
+                "activation disappeared after the pre-copy gate"
+            )
+        manifest = custom_history_contract.load_manifest(
+            Path(activation["manifest_path"]), require_owner_approval=True
+        )
+        payload = _json_loads(str(_work_item_value(row, "payload_json", "") or ""))
+        symbols = _work_item_history_symbols(row, payload)
+        receipt_path = _custom_history_copy_receipt_path(
+            root, str(_work_item_value(row, "id", "")), terminal
+        )
+        receipt = custom_history_copy_on_claim.privatize_terminal_archives(
+            manifest=manifest,
+            mt5_root=custom_history_gate.mt5_history_isolation.DEFAULT_MT5_ROOT,
+            terminal=terminal,
+            symbols=symbols,
+            receipt_path=receipt_path,
+        )
+        return {
+            "required": True,
+            "status": receipt["status"],
+            "terminal": str(terminal).upper(),
+            "activation_sha256": activation_sha256,
+            "manifest_sha256": receipt["manifest_sha256"],
+            "symbols": receipt["symbols"],
+            "ignored_non_custom_symbols": receipt["ignored_non_custom_symbols"],
+            "selected_file_count": receipt["selected_file_count"],
+            "copied_file_count": receipt["copied_file_count"],
+            "already_private_file_count": receipt["already_private_file_count"],
+            "receipt_sha256": receipt["receipt_sha256"],
+            "receipt_path": receipt["receipt_path"],
+            "receipt_file_sha256": receipt["receipt_file_sha256"],
+        }
+    except Exception as exc:
+        try:
+            custom_history_lease.engage_emergency_mode(
+                root,
+                reason=f"custom_history_copy_on_claim_failure:{type(exc).__name__}",
+                activation_sha256=activation_sha256,
+            )
+        except Exception:
+            pass
+        return {
+            "required": True,
+            "status": "FAIL_CLOSED",
+            "terminal": str(terminal).upper(),
+            "reason": "custom_history_copy_on_claim_failure",
+            "error": repr(exc),
+            "activation_sha256": activation_sha256,
+        }
 
 
 def _reconcile_stale_custom_history_lease(
@@ -3600,6 +3695,51 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             "item_id": item["id"],
             **_defer_custom_history_gate(root, row, terminal, history_gate),
         }
+    copy_on_claim = _privatize_custom_history_claim(root, row, terminal, history_gate)
+    if copy_on_claim.get("required") and (
+        copy_on_claim.get("status") not in CUSTOM_HISTORY_COPY_PASS_STATUSES
+    ):
+        return {
+            "action": "custom_history_copy_on_claim_deferred",
+            "item_id": item["id"],
+            **_defer_custom_history_gate(root, row, terminal, copy_on_claim),
+        }
+    if copy_on_claim.get("required"):
+        existing_payload["custom_history_copy_on_claim"] = copy_on_claim
+        existing_payload["custom_history_pre_copy_audit_sha256"] = history_gate.get(
+            "audit_sha256"
+        )
+        with farmctl.connect(root) as conn:
+            conn.execute(
+                "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='active'",
+                (json.dumps(existing_payload, sort_keys=True), farmctl.utc_now(), item["id"]),
+            )
+            conn.commit()
+        row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
+
+    # Re-audit the mixed topology after every mutation.  This proves both the
+    # dynamic family link minima and every private manifest SHA before spawn.
+    if copy_on_claim.get("status") == "PASS_PRIVATIZED":
+        post_copy_gate = _custom_history_gate(root, terminal)
+        if (
+            post_copy_gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES
+            or post_copy_gate.get("admission_allowed") is False
+        ):
+            return {
+                "action": "custom_history_post_copy_gate_deferred",
+                "item_id": item["id"],
+                **_defer_custom_history_gate(root, row, terminal, post_copy_gate),
+            }
+        existing_payload["custom_history_post_copy_audit_sha256"] = post_copy_gate.get(
+            "audit_sha256"
+        )
+        with farmctl.connect(root) as conn:
+            conn.execute(
+                "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='active'",
+                (json.dumps(existing_payload, sort_keys=True), farmctl.utc_now(), item["id"]),
+            )
+            conn.commit()
+        row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
     _acquire_launch_slot(terminal)
     spawn = farmctl._spawn_work_item_runner(root, row, terminal)
     now = farmctl.utc_now()

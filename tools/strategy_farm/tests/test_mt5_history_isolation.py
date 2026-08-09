@@ -269,6 +269,82 @@ def test_variant_a_file_ids_and_manifest_equality_pass(tmp_path: Path) -> None:
     assert len(payload["variant_a_file_audit"]["terminal_summaries"]) == 10
 
 
+def test_variant_a_mixed_family_and_private_archives_pass_without_acl_deny(
+    tmp_path: Path,
+) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    for row in manifest["files"]:
+        target = mt5_root / "T1" / "Bases" / "Custom" / Path(row["relative_path"])
+        body = target.read_bytes()
+        target.unlink()
+        target.write_bytes(body)
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        verify_archive_hashes=False,
+        acl_probe=lambda path, identity: {"write_denied": False},
+    )
+
+    assert payload["status"] == "PASS_ISOLATED", payload
+    audit = payload["variant_a_file_audit"]
+    assert audit["terminal_private_hash_verification"] == "FULL"
+    t1 = next(row for row in audit["terminal_summaries"] if row["terminal"] == "T1")
+    assert t1["private_archive_files"] == len(manifest["files"])
+    assert not {
+        finding["code"] for finding in audit["findings"]
+    } & {"ARCHIVE_LINK_COUNT_TOO_LOW", "ARCHIVE_RUNNER_WRITE_NOT_DENIED"}
+
+
+def test_variant_a_fast_gate_hashes_and_rejects_corrupt_private_archive(
+    tmp_path: Path,
+) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    row = manifest["files"][0]
+    target = mt5_root / "T1" / "Bases" / "Custom" / Path(row["relative_path"])
+    target.unlink()
+    target.write_bytes(b"x" * int(row["size"]))
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        verify_archive_hashes=False,
+    )
+
+    assert payload["status"] == "FAIL_CLOSED"
+    codes = {row["code"] for row in payload["variant_a_file_audit"]["findings"]}
+    assert "ARCHIVE_MANIFEST_MISMATCH" in codes
+
+
+def test_variant_a_private_archive_inode_must_be_terminal_unique(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    row = manifest["files"][0]
+    t1 = mt5_root / "T1" / "Bases" / "Custom" / Path(row["relative_path"])
+    body = t1.read_bytes()
+    t1.unlink()
+    t1.write_bytes(body)
+    t2 = mt5_root / "T2" / "Bases" / "Custom" / Path(row["relative_path"])
+    t2.unlink()
+    os.link(t1, t2)
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        verify_archive_hashes=False,
+    )
+
+    assert payload["status"] == "FAIL_CLOSED"
+    codes = {row["code"] for row in payload["variant_a_file_audit"]["findings"]}
+    assert "PRIVATE_ARCHIVE_FILE_ID_SHARED" in codes
+    assert "PRIVATE_ARCHIVE_LINK_COUNT_INVALID" in codes
+
+
 def test_variant_a_shared_mutable_file_id_fails_closed(tmp_path: Path) -> None:
     mt5_root, manifest_path = _variant_a_fixture(tmp_path)
     t1 = mt5_root / "T1" / "Bases" / "Custom" / "history" / "EURUSD.DWX" / "2026.hcc"

@@ -411,15 +411,13 @@ def collect_variant_a_file_inventory(
     verify_archive_hashes: bool,
     acl_probe: Callable[[Path, str], Mapping[str, Any]] = archive_acl_write_denied,
 ) -> list[dict[str, Any]]:
-    """Read file IDs, archive hashes, and ACL evidence without changing a path."""
+    """Read file IDs and the hashes required by the mixed archive contract."""
 
     validated = validate_manifest(manifest, require_owner_approval=False)
     archive_rows = _manifest_rows(validated)
     archive_years = tuple(int(value) for value in validated["archive_years"])
     current_year = int(validated["current_year"])
-    runner_identity = str(validated["runner_identity"])
     hash_cache: dict[tuple[str, int, int], str] = {}
-    acl_cache: dict[str, dict[str, Any]] = {}
     rows: list[dict[str, Any]] = []
     root = Path(mt5_root)
 
@@ -466,7 +464,16 @@ def collect_variant_a_file_inventory(
             if classification["file_class"] == "ARCHIVE_IMMUTABLE":
                 observed_archive.add(folded)
                 if manifest_row is not None:
-                    if verify_archive_hashes:
+                    family_hardlink = str(identity["file_id"]) == str(
+                        manifest_row["file_id"]
+                    )
+                    row["archive_storage_mode"] = (
+                        "FAMILY_HARDLINK" if family_hardlink else "TERMINAL_PRIVATE"
+                    )
+                    # A terminal-private inode is valid only by its manifest
+                    # digest, even during the otherwise metadata-only dispatch
+                    # gate. Family hardlinks remain bound to the two full audits.
+                    if verify_archive_hashes or not family_hardlink:
                         cache_key = (
                             str(identity["file_id"]),
                             int(identity["size"]),
@@ -475,11 +482,6 @@ def collect_variant_a_file_inventory(
                         if cache_key not in hash_cache:
                             hash_cache[cache_key] = sha256_file(path)
                         row["sha256"] = hash_cache[cache_key]
-                    if str(identity["file_id"]) not in acl_cache:
-                        acl_cache[str(identity["file_id"])] = dict(
-                            acl_probe(path, runner_identity)
-                        )
-                    row["acl"] = acl_cache[str(identity["file_id"])]
             rows.append(row)
 
         for folded, manifest_row in archive_rows.items():
@@ -521,9 +523,34 @@ def evaluate_variant_a_file_inventory(
     mutable_paths_by_terminal: dict[str, dict[str, int]] = {
         terminal: {} for terminal in terminals
     }
-    archive_identity_paths: dict[str, set[str]] = {}
     archive_ids = {str(row["file_id"]) for row in validated["files"]}
+    observed_archive_ids: set[str] = set()
+    family_links_by_path: dict[str, int] = {relative: 0 for relative in archive_rows}
+    private_archive_locations: dict[str, list[dict[str, str]]] = {}
     observed_by_terminal: dict[str, set[str]] = {terminal: set() for terminal in terminals}
+
+    # Link-count minima must shrink as individual terminals become private.
+    # Count the still-observed members of each manifest inode family first so
+    # every row is judged against the same mixed-topology snapshot.
+    for source_row in rows:
+        if not bool(source_row.get("exists")):
+            continue
+        if str(source_row.get("file_class") or "") != "ARCHIVE_IMMUTABLE":
+            continue
+        relative = normalize_relative_path(str(source_row.get("relative_path") or ""))
+        folded = relative.casefold()
+        manifest_row = archive_rows.get(folded)
+        file_id = str(source_row.get("file_id") or "")
+        if manifest_row is None or not file_id:
+            continue
+        observed_archive_ids.add(file_id)
+        terminal = str(source_row.get("terminal") or "").upper()
+        if file_id == str(manifest_row["file_id"]):
+            family_links_by_path[folded] += 1
+        else:
+            private_archive_locations.setdefault(file_id, []).append(
+                {"terminal": terminal, "relative_path": relative}
+            )
 
     for source_row in rows:
         row = dict(source_row)
@@ -572,12 +599,11 @@ def evaluate_variant_a_file_inventory(
                 )
                 continue
             observed_by_terminal[terminal].add(folded)
-            archive_identity_paths.setdefault(file_id, set()).add(folded)
+            family_hardlink = file_id == str(manifest_row["file_id"])
             comparisons = {
                 "size": (int(row.get("size", -1)), int(manifest_row["size"])),
-                "file_id": (file_id, str(manifest_row["file_id"])),
             }
-            if verify_archive_hashes:
+            if verify_archive_hashes or not family_hardlink:
                 comparisons["sha256"] = (
                     str(row.get("sha256") or "").casefold(),
                     str(manifest_row["sha256"]).casefold(),
@@ -596,33 +622,50 @@ def evaluate_variant_a_file_inventory(
                         "mismatches": mismatches,
                     }
                 )
-            minimum_links = int(manifest_row["link_count_at_build"]) + len(terminals)
-            if int(row.get("link_count", 0)) < minimum_links:
-                findings.append(
-                    {
-                        "code": "ARCHIVE_LINK_COUNT_TOO_LOW",
-                        "terminal": terminal,
-                        "relative_path": relative,
-                        "actual": int(row.get("link_count", 0)),
-                        "minimum": minimum_links,
-                    }
+            if family_hardlink:
+                minimum_links = int(manifest_row["link_count_at_build"]) + int(
+                    family_links_by_path[folded]
                 )
-            acl = row.get("acl") if isinstance(row.get("acl"), dict) else {}
-            if not bool(acl.get("write_denied")):
-                findings.append(
-                    {
-                        "code": "ARCHIVE_RUNNER_WRITE_NOT_DENIED",
-                        "terminal": terminal,
-                        "relative_path": relative,
-                        "acl": acl,
-                    }
-                )
+                if int(row.get("link_count", 0)) < minimum_links:
+                    findings.append(
+                        {
+                            "code": "ARCHIVE_LINK_COUNT_TOO_LOW",
+                            "terminal": terminal,
+                            "relative_path": relative,
+                            "storage_mode": "FAMILY_HARDLINK",
+                            "actual": int(row.get("link_count", 0)),
+                            "minimum": minimum_links,
+                        }
+                    )
+            else:
+                # A different manifest inode is not a terminal-private copy; it
+                # is a cross-path family alias and must remain fail-closed.
+                if file_id in archive_ids:
+                    findings.append(
+                        {
+                            "code": "ARCHIVE_FILE_ID_REUSED_ACROSS_PATHS",
+                            "terminal": terminal,
+                            "relative_path": relative,
+                            "file_id": file_id,
+                        }
+                    )
+                if int(row.get("link_count", 0)) != 1:
+                    findings.append(
+                        {
+                            "code": "PRIVATE_ARCHIVE_LINK_COUNT_INVALID",
+                            "terminal": terminal,
+                            "relative_path": relative,
+                            "file_id": file_id,
+                            "actual": int(row.get("link_count", 0)),
+                            "expected": 1,
+                        }
+                    )
         else:
             mutable_identities.setdefault(file_id, []).append(
                 {"terminal": terminal, "relative_path": relative}
             )
             mutable_paths_by_terminal[terminal][folded] = int(row.get("size", -1))
-            if file_id in archive_ids:
+            if file_id in observed_archive_ids:
                 findings.append(
                     {
                         "code": "MUTABLE_FILE_ALIASES_ARCHIVE",
@@ -687,13 +730,20 @@ def evaluate_variant_a_file_inventory(
                         "sizes": sorted(sizes),
                     }
                 )
-    for file_id, paths in sorted(archive_identity_paths.items()):
-        if len(paths) > 1:
+    for file_id, locations in sorted(private_archive_locations.items()):
+        if len(locations) > 1:
             findings.append(
                 {
-                    "code": "ARCHIVE_FILE_ID_REUSED_ACROSS_PATHS",
+                    "code": "PRIVATE_ARCHIVE_FILE_ID_SHARED",
                     "file_id": file_id,
-                    "relative_paths": sorted(paths),
+                    "terminals": sorted({row["terminal"] for row in locations}),
+                    "locations": sorted(
+                        locations,
+                        key=lambda row: (
+                            row["terminal"],
+                            row["relative_path"].casefold(),
+                        ),
+                    ),
                 }
             )
 
@@ -710,18 +760,20 @@ def evaluate_variant_a_file_inventory(
         terminal_rows = [row for row in rows if str(row.get("terminal", "")).upper() == terminal]
         mutable = [row for row in terminal_rows if row.get("file_class") != "ARCHIVE_IMMUTABLE" and row.get("exists")]
         archive = [row for row in terminal_rows if row.get("file_class") == "ARCHIVE_IMMUTABLE" and row.get("exists")]
+        family_archive = [
+            row for row in archive if row.get("archive_storage_mode") == "FAMILY_HARDLINK"
+        ]
+        private_archive = [
+            row for row in archive if row.get("archive_storage_mode") == "TERMINAL_PRIVATE"
+        ]
         digest_rows = [
             {
                 "relative_path": row.get("relative_path"),
                 "file_id": row.get("file_id"),
                 "size": row.get("size"),
                 "link_count": row.get("link_count"),
-                "sha256": row.get("sha256") if verify_archive_hashes else None,
-                "acl_write_denied": (
-                    row.get("acl", {}).get("write_denied")
-                    if isinstance(row.get("acl"), dict)
-                    else None
-                ),
+                "sha256": row.get("sha256"),
+                "archive_storage_mode": row.get("archive_storage_mode"),
             }
             for row in terminal_rows
             if row.get("exists")
@@ -730,6 +782,8 @@ def evaluate_variant_a_file_inventory(
             {
                 "terminal": terminal,
                 "archive_files": len(archive),
+                "family_archive_files": len(family_archive),
+                "private_archive_files": len(private_archive),
                 "mutable_files": len(mutable),
                 "inventory_sha256": hashlib.sha256(contract_canonical_bytes({"files": digest_rows})).hexdigest(),
             }
@@ -738,6 +792,7 @@ def evaluate_variant_a_file_inventory(
         "status": "PASS_ISOLATED" if not findings else "FAIL_CLOSED",
         "manifest_sha256": validated["manifest_sha256"],
         "archive_hash_verification": "FULL" if verify_archive_hashes else "BOUND_DUAL_AUDIT_RECEIPT",
+        "terminal_private_hash_verification": "FULL",
         "runner_terminals": list(terminals),
         "terminal_summaries": summary_rows,
         "findings": findings,

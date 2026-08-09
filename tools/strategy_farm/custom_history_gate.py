@@ -508,18 +508,10 @@ def run_worker_gate(
             "activation_sha256": activation["activation_sha256"],
         }
 
-    # The dual fresh-process receipts contain full content hashes and effective
-    # ACL checks.  The immediate gate re-enumerates every file ID, size, link
-    # count, and topology.  Because each archive record remains hardlinked to
-    # the manifest file ID, this detects replacement or path drift without
-    # re-reading 41 GiB before every dispatch.
-    bound_acl_probe = lambda path, identity: {
-        "supported": True,
-        "write_denied": True,
-        "source": "activation_bound_dual_full_audit",
-        "path": str(path),
-        "runner_identity": identity,
-    }
+    # The dual fresh-process receipts bind full family content hashes.  The
+    # immediate gate re-enumerates file IDs, sizes, dynamic family link counts,
+    # and topology. Any terminal-private inode is re-hashed on every dispatch;
+    # it is valid by manifest SHA rather than by the former runner write-deny.
     audit = mt5_history_isolation.audit_history_isolation(
         mt5_root=mt5_root,
         terminals=tuple(activation["runner_terminals"]),
@@ -527,7 +519,6 @@ def run_worker_gate(
         manifest_path=Path(activation["manifest_path"]),
         require_owner_approval=True,
         verify_archive_hashes=False,
-        acl_probe=bound_acl_probe,
     )
     return {
         "required": True,
