@@ -3,9 +3,9 @@
  "decision_id": "FACTORY_ISOLATION_20260809_TEN_WORKER_ZERO_HOLD",
  "status": "APPROVED",
  "authority": "OWNER",
- "activation_nonce": "be2ad72ac25545b9b7e6bc81e8a41a37",
- "authorized_at_utc": "2026-08-09T09:54:00Z",
- "expires_at_utc": "2026-08-10T09:54:00Z",
+ "activation_nonce": "ba90901de3d24c2cb5caa1153f66b74a",
+ "authorized_at_utc": "2026-08-09T10:04:00Z",
+ "expires_at_utc": "2026-08-10T10:04:00Z",
  "authorizations": {
   "factory_on": true,
   "release_declared_restart_holds": true,
@@ -35,9 +35,9 @@
  "source_bindings": {
   "factory_on": {
    "relative_path": "tools/strategy_farm/Factory_ON.ps1",
-   "sha256": "0570ace32e41999e320e39be423d55dd03527eef6a48d81b4f5b549ab1451df5",
-   "git_commit": "26cc72380d71765fb76ebe2140e813f2dbc0c6a7",
-   "git_blob": "25a336b46bdb15c1c2a12784b9d6dcbdbd14df78"
+   "sha256": "b9c25abfac3935110fc6849ea9b30b46020a9c29ad445a264c5bc8c7012ed06f",
+   "git_commit": "46056707a3669fa6b030d3479bad132deddaa6b7",
+   "git_blob": "c68d42c88c226093c105dd64419a1ac1f78e407e"
   },
   "factory_off": {
    "relative_path": "tools/strategy_farm/Factory_OFF.ps1",
