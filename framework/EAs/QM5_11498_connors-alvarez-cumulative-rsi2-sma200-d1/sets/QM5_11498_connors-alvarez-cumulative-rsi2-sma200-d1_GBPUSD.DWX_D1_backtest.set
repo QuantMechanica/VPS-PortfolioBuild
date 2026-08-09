@@ -1,0 +1,36 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11498
+; ea_slug:      connors-alvarez-cumulative-rsi2-sma200-d1
+; ea_version:   v5.0
+; set_version:  s20260809-001
+; symbol:       GBPUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-09
+;==========================================================
+qm_ea_id=11498
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11498_connors-alvarez-cumulative-rsi2-sma200-d1.md
+strategy_timeframe=16408
+strategy_rsi_period=2
+strategy_cum_window=2
+strategy_sma_period=200
+strategy_entry_long=45.0
+strategy_entry_short=55.0
+strategy_exit_long=65.0
+strategy_exit_short=35.0
+strategy_atr_period=14
+strategy_atr_stop_mult=2.0
+strategy_max_stop_pips=100
+strategy_max_hold_bars=10
+strategy_spread_cap_pips=30

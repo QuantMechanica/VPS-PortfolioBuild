@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        13086
 ; ea_slug:      xbr-cadchf-rspr
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   de8d3c87ddba0448adc843a0a2e2e7fefb93b5f08c21ea93d0e6db841ebdc770
+; build_hash:   1a8698ebf24f6bfc60ceb0a43ad7338795d939f705464dd46a76be041daa857a
 ; author:       Development
 ; date:         2026-07-09
 ;==========================================================
