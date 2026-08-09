@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_20268_XAU_XAG_QTAILRV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.07.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "traded_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "notes": [
+    "One logical opposite-leg XAU/XAG empirical-quantile tail-reversion package. A frozen 126-ratio reference at shifts 4..129 excludes the central shift-3 observation and two strict same-tail closes at shifts 2 and 1.",
+    "The basket must never be decomposed into standalone XAU or XAG gate results. One RISK_FIXED budget is split equally after per-leg ATR normalization; Q02 is bounded to the synchronized XAG history endpoint."
+  ]
+}
