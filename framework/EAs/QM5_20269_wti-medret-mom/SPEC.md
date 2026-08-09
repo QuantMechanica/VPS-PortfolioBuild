@@ -109,3 +109,12 @@ Only research, deterministic allocation, build, strict compile/Q01, one
 authorized. Do not run a manual backtest or touch live artifacts, AutoTrading,
 `T_Live`, deploy manifests, the portfolio gate, portfolio admission, or a
 correlation waiver.
+
+## 11. Q01 Status
+
+- Strict compile: PASS, zero errors and zero warnings; summary
+  `D:/QM/reports/compile/20260809_130444/summary.csv`.
+- Target build check: PASS, zero failures and zero warnings; report
+  `D:/QM/reports/framework/21/build_check_20260809_130553.json`.
+- P1 artifact validation: PASS at
+  `D:/QM/reports/pipeline/QM5_20269/P1/P1_QM5_20269_result.json`.
