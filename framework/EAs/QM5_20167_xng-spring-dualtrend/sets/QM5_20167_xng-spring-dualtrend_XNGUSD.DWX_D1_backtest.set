@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        20167
 ; ea_slug:      xng-spring-dualtrend
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   abe263bc9445670b358ba0ca9e01b8342f5dc98ed9da29a843d75448adceb7c0
+; build_hash:   475fd03ad42967b8c2b6d8d3f8f833db26da1c8122715105b518141770289b91
 ; author:       Development
 ; date:         2026-07-26
 ;==========================================================
