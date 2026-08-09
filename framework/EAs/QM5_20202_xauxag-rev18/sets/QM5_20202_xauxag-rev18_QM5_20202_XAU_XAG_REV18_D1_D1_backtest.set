@@ -3,7 +3,7 @@
 ; ea_id:        20202
 ; ea_slug:      xauxag-rev18
 ; ea_version:   v5.0
-; set_version:  s20260802-001
+; set_version:  s20260809-001
 ; symbol:       QM5_20202_XAU_XAG_REV18_D1
 ; host_symbol:  XAUUSD.DWX
 ; timeframe:    D1
@@ -11,9 +11,9 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   014f00b81717c5452c0b0b0f8d3dc239a5d326e0009c30328be15d56445b83a9
 ; author:       Development
-; date:         2026-08-02
+; date:         2026-08-09
 ;==========================================================
 qm_ea_id=20202
 qm_magic_slot_offset=0
@@ -30,7 +30,7 @@ qm_friday_close_enabled=0
 qm_friday_close_hour_broker=21
 qm_stress_reject_probability=0.0
 ; strategy-specific locked baseline generated from the approved card
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\xauxag-rev18_card.md
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_20202_xauxag-rev18_card.md
 strategy_reversal_months=18
 strategy_history_bars=520
 strategy_max_boundary_gap_days=10
