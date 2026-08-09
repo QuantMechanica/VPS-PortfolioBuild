@@ -6,6 +6,10 @@ ea_id: QM5_20268
 slug: xauxag-qtail-rv
 status: APPROVED
 g0_status: APPROVED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
+q02_work_item_id: 2b803c41-5ef5-4cf4-8b20-ce51681287bc
 target_symbols: [XAUUSD.DWX, XAGUSD.DWX]
 logical_symbol: QM5_20268_XAU_XAG_QTAILRV_D1
 period: D1

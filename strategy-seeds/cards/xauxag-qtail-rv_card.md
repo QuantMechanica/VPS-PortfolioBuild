@@ -13,9 +13,10 @@ source_author: "Karsten Schweikert; OlaOluwa S. Yaya; Xuan Vinh Vo; Hammed A. Ol
 strategy_mechanic: synchronized-d1-gold-silver-log-ratio-frozen-126-empirical-decile-central-to-two-tail-reversion-basket
 target_symbols: [XAUUSD.DWX, XAGUSD.DWX]
 period: D1
-pipeline_phase: G0
-q01_status: NOT_STARTED
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
+q02_work_item_id: 2b803c41-5ef5-4cf4-8b20-ce51681287bc
 last_updated: 2026-08-09
 ---
 
@@ -47,5 +48,6 @@ mutation, neutrality claim, or correlation waiver is authorized.
 
 ## Pipeline Status
 
-G0 is approved under the durable OWNER mission decision. Registry allocation,
-Q01 build validation, and Q02 handoff remain pending.
+G0 is approved under the durable OWNER mission decision. The deterministic V5
+basket build and strict compile passed Q01; one logical-basket Q02 item is
+enqueued under `2b803c41-5ef5-4cf4-8b20-ce51681287bc`.

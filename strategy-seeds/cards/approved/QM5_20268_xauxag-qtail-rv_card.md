@@ -69,9 +69,10 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: NOT_STARTED
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
+q02_work_item_id: 2b803c41-5ef5-4cf4-8b20-ce51681287bc
 review_focus: "Falsify a distribution-free two-hit gold/silver relative-value excursion whose paired returns may diversify the directional XAU/SP500/NDX/XNG book; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -321,11 +322,13 @@ portfolio-gate edit; correlation waiver; or neutrality claim.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-09 | initial source-bounded empirical-tail ratio card | G0 | APPROVED |
+| v1 | 2026-08-09 | deterministic V5 basket build and strict compile | Q01 | PASS |
+| v1 | 2026-08-09 | one paced logical-basket baseline handoff | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-09 | APPROVED | `decisions/2026-08-09_qm5_20268_xauxag_qtail_rv_g0.md` |
-| Q01 Build Validation | — | NOT_STARTED | — |
-| Q02 Baseline Screening | — | NOT_ENQUEUED | — |
+| Q01 Build Validation | 2026-08-09 | PASS | `docs/ops/evidence/2026-08-09_qm5_20268_xauxag_qtail_rv_q01_q02_handoff.md` |
+| Q02 Baseline Screening | 2026-08-09 | ENQUEUED; pending at confirmation | work item `2b803c41-5ef5-4cf4-8b20-ce51681287bc` |
