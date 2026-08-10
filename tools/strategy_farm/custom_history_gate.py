@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import time
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -515,15 +516,37 @@ def run_worker_gate(
     # archives write-open, so a concurrent read open would raise a sharing
     # violation. Foreign private inodes remain bound by their claim-time
     # copy-on-claim proof and the quiescent full audits.
-    audit = mt5_history_isolation.audit_history_isolation(
-        mt5_root=mt5_root,
-        terminals=tuple(activation["runner_terminals"]),
-        protected_roots=tuple(Path(value) for value in activation["protected_roots"]),
-        manifest_path=Path(activation["manifest_path"]),
-        require_owner_approval=True,
-        verify_archive_hashes=False,
-        hash_private_terminals=(target,),
-    )
+    #
+    # A concurrent copy-on-claim privatization on another terminal shrinks a
+    # hardlink family while this gate's sequential scan is mid-snapshot, so a
+    # pure ARCHIVE_LINK_COUNT_TOO_LOW result (typically actual==minimum-1) can
+    # be a benign torn read. Re-audit for a consistent snapshot before
+    # treating it as real; genuine deletions either raise MISSING findings
+    # (different code, no retry) or persist across every re-audit and stay
+    # fail-closed.
+    audit: dict[str, Any] = {}
+    for attempt in range(3):
+        audit = mt5_history_isolation.audit_history_isolation(
+            mt5_root=mt5_root,
+            terminals=tuple(activation["runner_terminals"]),
+            protected_roots=tuple(Path(value) for value in activation["protected_roots"]),
+            manifest_path=Path(activation["manifest_path"]),
+            require_owner_approval=True,
+            verify_archive_hashes=False,
+            hash_private_terminals=(target,),
+        )
+        if audit["status"] == "PASS_ISOLATED":
+            break
+        codes = {
+            str(finding.get("code"))
+            for finding in (
+                list(audit.get("findings", []))
+                + list(audit.get("variant_a_file_audit", {}).get("findings", []))
+            )
+        }
+        if codes != {"ARCHIVE_LINK_COUNT_TOO_LOW"}:
+            break
+        time.sleep(1.5)
     return {
         "required": True,
         "status": audit["status"],

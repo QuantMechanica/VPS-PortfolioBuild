@@ -441,3 +441,166 @@ def test_cutover_and_rollback_are_rename_only_and_retain_both_trees(
     for terminal in contract.DEFAULT_RUNNER_TERMINALS:
         assert migration.custom_path(mt5_root, terminal).is_dir()
         assert migration.failed_path(mt5_root, terminal, window_id).exists()
+
+
+def test_worker_gate_reaudits_pure_link_count_races(monkeypatch, tmp_path: Path) -> None:
+    activation = {
+        "runner_terminals": ["T1", "T2"],
+        "protected_roots": [],
+        "manifest_path": str(tmp_path / "manifest.json"),
+        "activation_sha256": "a" * 64,
+        "manifest_sha256": "b" * 64,
+    }
+    monkeypatch.setattr(gate, "load_activation", lambda root: activation)
+    monkeypatch.setattr(gate, "load_rollback_mode", lambda root, activation: None)
+    monkeypatch.setattr(
+        gate,
+        "load_ramp",
+        lambda root, activation: {
+            "terminal_order": ["T1", "T2"],
+            "limit": 2,
+            "ramp_sha256": "c" * 64,
+        },
+    )
+    monkeypatch.setattr(gate.time, "sleep", lambda seconds: None)
+
+    torn = {
+        "status": "FAIL_CLOSED",
+        "audit_sha256": "d" * 64,
+        "findings": [],
+        "variant_a_file_audit": {
+            "findings": [
+                {
+                    "code": "ARCHIVE_LINK_COUNT_TOO_LOW",
+                    "terminal": "T2",
+                    "relative_path": "history/XAUUSD.DWX/2017.hcc",
+                    "actual": 6,
+                    "minimum": 7,
+                }
+            ]
+        },
+    }
+    clean = {
+        "status": "PASS_ISOLATED",
+        "audit_sha256": "e" * 64,
+        "findings": [],
+        "variant_a_file_audit": {"findings": []},
+    }
+    results = [dict(torn), dict(clean)]
+    calls = []
+    monkeypatch.setattr(
+        gate.mt5_history_isolation,
+        "audit_history_isolation",
+        lambda **kwargs: (calls.append(kwargs), results.pop(0))[1],
+    )
+
+    verdict = gate.run_worker_gate(tmp_path, terminal="T1")
+
+    assert verdict["status"] == "PASS_ISOLATED"
+    assert len(calls) == 2
+
+
+def test_worker_gate_persistent_link_deficit_stays_fail_closed(
+    monkeypatch, tmp_path: Path
+) -> None:
+    activation = {
+        "runner_terminals": ["T1"],
+        "protected_roots": [],
+        "manifest_path": str(tmp_path / "manifest.json"),
+        "activation_sha256": "a" * 64,
+        "manifest_sha256": "b" * 64,
+    }
+    monkeypatch.setattr(gate, "load_activation", lambda root: activation)
+    monkeypatch.setattr(gate, "load_rollback_mode", lambda root, activation: None)
+    monkeypatch.setattr(
+        gate,
+        "load_ramp",
+        lambda root, activation: {
+            "terminal_order": ["T1"],
+            "limit": 1,
+            "ramp_sha256": "c" * 64,
+        },
+    )
+    monkeypatch.setattr(gate.time, "sleep", lambda seconds: None)
+
+    torn = {
+        "status": "FAIL_CLOSED",
+        "audit_sha256": "d" * 64,
+        "findings": [],
+        "variant_a_file_audit": {
+            "findings": [
+                {
+                    "code": "ARCHIVE_LINK_COUNT_TOO_LOW",
+                    "terminal": "T1",
+                    "relative_path": "history/XAUUSD.DWX/2017.hcc",
+                    "actual": 5,
+                    "minimum": 7,
+                }
+            ]
+        },
+    }
+    calls = []
+    monkeypatch.setattr(
+        gate.mt5_history_isolation,
+        "audit_history_isolation",
+        lambda **kwargs: (calls.append(kwargs), dict(torn))[1],
+    )
+
+    verdict = gate.run_worker_gate(tmp_path, terminal="T1")
+
+    assert verdict["status"] == "FAIL_CLOSED"
+    assert len(calls) == 3
+
+
+def test_worker_gate_mixed_findings_do_not_retry(monkeypatch, tmp_path: Path) -> None:
+    activation = {
+        "runner_terminals": ["T1"],
+        "protected_roots": [],
+        "manifest_path": str(tmp_path / "manifest.json"),
+        "activation_sha256": "a" * 64,
+        "manifest_sha256": "b" * 64,
+    }
+    monkeypatch.setattr(gate, "load_activation", lambda root: activation)
+    monkeypatch.setattr(gate, "load_rollback_mode", lambda root, activation: None)
+    monkeypatch.setattr(
+        gate,
+        "load_ramp",
+        lambda root, activation: {
+            "terminal_order": ["T1"],
+            "limit": 1,
+            "ramp_sha256": "c" * 64,
+        },
+    )
+
+    deleted = {
+        "status": "FAIL_CLOSED",
+        "audit_sha256": "d" * 64,
+        "findings": [],
+        "variant_a_file_audit": {
+            "findings": [
+                {
+                    "code": "MANIFEST_ARCHIVE_FILE_MISSING",
+                    "terminal": "T1",
+                    "relative_path": "history/XAUUSD.DWX/2017.hcc",
+                },
+                {
+                    "code": "ARCHIVE_LINK_COUNT_TOO_LOW",
+                    "terminal": "T1",
+                    "relative_path": "history/XAUUSD.DWX/2018.hcc",
+                    "actual": 6,
+                    "minimum": 7,
+                },
+            ]
+        },
+    }
+    calls = []
+    monkeypatch.setattr(
+        gate.mt5_history_isolation,
+        "audit_history_isolation",
+        lambda **kwargs: (calls.append(kwargs), dict(deleted))[1],
+    )
+
+    verdict = gate.run_worker_gate(tmp_path, terminal="T1")
+
+    assert verdict["status"] == "FAIL_CLOSED"
+    assert len(calls) == 1
