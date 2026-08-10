@@ -102,3 +102,78 @@ def test_gate_and_lease_precede_claim_and_spawn_boundaries() -> None:
     spawn = run.index("farmctl._spawn_work_item_runner")
     assert pre_gate < copy < post_gate < launch < spawn
     assert "_defer_custom_history_gate" in run
+
+
+def test_transient_gate_io_error_defers_without_containment(
+    monkeypatch, tmp_path: Path
+) -> None:
+    def raise_sharing_violation(root, terminal):
+        raise PermissionError(13, "Permission denied")
+
+    monkeypatch.setattr(
+        terminal_worker.custom_history_gate,
+        "run_worker_gate",
+        raise_sharing_violation,
+    )
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append((root, kwargs)),
+    )
+
+    gate = terminal_worker._custom_history_gate(tmp_path, "T9")
+
+    assert gate["status"] == "FAIL_CLOSED"
+    assert gate["reason"] == "custom_history_gate_transient_io"
+    assert calls == []
+
+
+def test_wrapped_transient_cause_defers_without_containment(
+    monkeypatch, tmp_path: Path
+) -> None:
+    def raise_wrapped(root, terminal):
+        try:
+            raise FileNotFoundError(2, "The system cannot find the file specified")
+        except FileNotFoundError as exc:
+            raise terminal_worker.custom_history_gate.CustomHistoryGateError(
+                "ramp receipt unreadable"
+            ) from exc
+
+    monkeypatch.setattr(
+        terminal_worker.custom_history_gate, "run_worker_gate", raise_wrapped
+    )
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append((root, kwargs)),
+    )
+
+    gate = terminal_worker._custom_history_gate(tmp_path, "T4")
+
+    assert gate["reason"] == "custom_history_gate_transient_io"
+    assert calls == []
+
+
+def test_non_transient_gate_exception_still_engages_containment(
+    monkeypatch, tmp_path: Path
+) -> None:
+    def raise_value_error(root, terminal):
+        raise ValueError("activation record corrupt")
+
+    monkeypatch.setattr(
+        terminal_worker.custom_history_gate, "run_worker_gate", raise_value_error
+    )
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append((root, kwargs)),
+    )
+
+    gate = terminal_worker._custom_history_gate(tmp_path, "T2")
+
+    assert gate["reason"] == "custom_history_gate_exception"
+    assert len(calls) == 1
+    assert calls[0][1]["reason"] == "custom_history_gate_exception:ValueError"

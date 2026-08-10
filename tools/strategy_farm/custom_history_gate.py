@@ -510,8 +510,11 @@ def run_worker_gate(
 
     # The dual fresh-process receipts bind full family content hashes.  The
     # immediate gate re-enumerates file IDs, sizes, dynamic family link counts,
-    # and topology. Any terminal-private inode is re-hashed on every dispatch;
-    # it is valid by manifest SHA rather than by the former runner write-deny.
+    # and topology. Only the claiming terminal's private inodes are content
+    # re-hashed here: other terminals' MT5 processes hold their privatized
+    # archives write-open, so a concurrent read open would raise a sharing
+    # violation. Foreign private inodes remain bound by their claim-time
+    # copy-on-claim proof and the quiescent full audits.
     audit = mt5_history_isolation.audit_history_isolation(
         mt5_root=mt5_root,
         terminals=tuple(activation["runner_terminals"]),
@@ -519,6 +522,7 @@ def run_worker_gate(
         manifest_path=Path(activation["manifest_path"]),
         require_owner_approval=True,
         verify_archive_hashes=False,
+        hash_private_terminals=(target,),
     )
     return {
         "required": True,

@@ -58,6 +58,9 @@ DEFAULT_PROTECTED_ROOTS = (
     Path(r"D:\QM\mt5\T_Export"),
 )
 MUTABLE_COMPONENTS = ("Tester", "Bases", "Bases/Custom")
+# Transient worker-owned privatization copies (custom_history_copy_on_claim):
+# ".<name>.copy-on-claim.<pid>.<hex>.tmp"
+COPY_ON_CLAIM_TEMP_MARKER = ".copy-on-claim."
 
 
 def _canonical_bytes(payload: Mapping[str, Any]) -> bytes:
@@ -409,14 +412,28 @@ def collect_variant_a_file_inventory(
     terminals: Sequence[str],
     manifest: Mapping[str, Any],
     verify_archive_hashes: bool,
+    hash_private_terminals: Sequence[str] | None = None,
     acl_probe: Callable[[Path, str], Mapping[str, Any]] = archive_acl_write_denied,
 ) -> list[dict[str, Any]]:
-    """Read file IDs and the hashes required by the mixed archive contract."""
+    """Read file IDs and the hashes required by the mixed archive contract.
+
+    ``hash_private_terminals`` limits terminal-private content hashing to the
+    listed terminals; other terminals' private inodes are recorded STAT_ONLY.
+    A running terminal's MT5 holds its privatized archives write-open, so a
+    concurrent dispatch gate must not open them for read — content equality
+    for those inodes is bound by their own claim-time copy-on-claim proof and
+    by the quiescent full audits (``None`` keeps full hashing everywhere).
+    """
 
     validated = validate_manifest(manifest, require_owner_approval=False)
     archive_rows = _manifest_rows(validated)
     archive_years = tuple(int(value) for value in validated["archive_years"])
     current_year = int(validated["current_year"])
+    hash_private_set = (
+        None
+        if hash_private_terminals is None
+        else {str(value).upper() for value in hash_private_terminals}
+    )
     hash_cache: dict[tuple[str, int, int], str] = {}
     rows: list[dict[str, Any]] = []
     root = Path(mt5_root)
@@ -442,6 +459,10 @@ def collect_variant_a_file_inventory(
             (candidate for candidate in custom.rglob("*") if candidate.is_file()),
             key=lambda candidate: str(candidate).casefold(),
         ):
+            if COPY_ON_CLAIM_TEMP_MARKER in path.name:
+                # Worker-owned transient privatization copy; never part of the
+                # contract and may vanish mid-scan via os.replace.
+                continue
             relative = normalize_relative_path(path.relative_to(custom).as_posix())
             folded = relative.casefold()
             classification = classify_relative_path(
@@ -449,7 +470,13 @@ def collect_variant_a_file_inventory(
                 archive_years=archive_years,
                 current_year=current_year,
             )
-            identity = file_identity(path)
+            try:
+                identity = file_identity(path)
+            except FileNotFoundError:
+                # Vanished between enumeration and stat (concurrent atomic
+                # replace). A genuinely deleted manifest file is still caught
+                # by the missing-path synthesis below.
+                continue
             manifest_row = archive_rows.get(folded)
             row: dict[str, Any] = {
                 "terminal": terminal,
@@ -470,18 +497,32 @@ def collect_variant_a_file_inventory(
                     row["archive_storage_mode"] = (
                         "FAMILY_HARDLINK" if family_hardlink else "TERMINAL_PRIVATE"
                     )
-                    # A terminal-private inode is valid only by its manifest
-                    # digest, even during the otherwise metadata-only dispatch
-                    # gate. Family hardlinks remain bound to the two full audits.
-                    if verify_archive_hashes or not family_hardlink:
+                    # A terminal-private inode is valid by its manifest digest.
+                    # The dispatch gate content-hashes only the claiming
+                    # terminal's own private files: a concurrently running
+                    # terminal's MT5 holds its archives write-open and a read
+                    # open would raise a sharing violation. Foreign private
+                    # inodes stay bound by claim-time proof + full audits.
+                    needs_hash = verify_archive_hashes or (
+                        not family_hardlink
+                        and (hash_private_set is None or terminal in hash_private_set)
+                    )
+                    if needs_hash:
                         cache_key = (
                             str(identity["file_id"]),
                             int(identity["size"]),
                             int(identity["mtime_ns"]),
                         )
                         if cache_key not in hash_cache:
-                            hash_cache[cache_key] = sha256_file(path)
+                            try:
+                                hash_cache[cache_key] = sha256_file(path)
+                            except FileNotFoundError:
+                                # Replaced mid-hash; missing-path synthesis
+                                # keeps genuine deletions fail-closed.
+                                continue
                         row["sha256"] = hash_cache[cache_key]
+                    elif not family_hardlink:
+                        row["sha256_verification"] = "STAT_ONLY"
             rows.append(row)
 
         for folded, manifest_row in archive_rows.items():
@@ -600,10 +641,15 @@ def evaluate_variant_a_file_inventory(
                 continue
             observed_by_terminal[terminal].add(folded)
             family_hardlink = file_id == str(manifest_row["file_id"])
+            stat_only = (
+                str(row.get("sha256_verification") or "") == "STAT_ONLY"
+                and not family_hardlink
+                and not verify_archive_hashes
+            )
             comparisons = {
                 "size": (int(row.get("size", -1)), int(manifest_row["size"])),
             }
-            if verify_archive_hashes or not family_hardlink:
+            if (verify_archive_hashes or not family_hardlink) and not stat_only:
                 comparisons["sha256"] = (
                     str(row.get("sha256") or "").casefold(),
                     str(manifest_row["sha256"]).casefold(),
@@ -788,11 +834,19 @@ def evaluate_variant_a_file_inventory(
                 "inventory_sha256": hashlib.sha256(contract_canonical_bytes({"files": digest_rows})).hexdigest(),
             }
         )
+    stat_only_private = any(
+        str(row.get("sha256_verification") or "") == "STAT_ONLY"
+        and row.get("archive_storage_mode") == "TERMINAL_PRIVATE"
+        and row.get("exists")
+        for row in rows
+    )
     payload: dict[str, Any] = {
         "status": "PASS_ISOLATED" if not findings else "FAIL_CLOSED",
         "manifest_sha256": validated["manifest_sha256"],
         "archive_hash_verification": "FULL" if verify_archive_hashes else "BOUND_DUAL_AUDIT_RECEIPT",
-        "terminal_private_hash_verification": "FULL",
+        "terminal_private_hash_verification": (
+            "CLAIMING_TERMINAL_ONLY" if stat_only_private else "FULL"
+        ),
         "runner_terminals": list(terminals),
         "terminal_summaries": summary_rows,
         "findings": findings,
@@ -824,6 +878,7 @@ def audit_history_isolation(
     manifest_path: Path | str | None = None,
     require_owner_approval: bool = False,
     verify_archive_hashes: bool = True,
+    hash_private_terminals: Sequence[str] | None = None,
     acl_probe: Callable[[Path, str], Mapping[str, Any]] = archive_acl_write_denied,
     acl_evidence_path: Path | str | None = None,
 ) -> dict[str, Any]:
@@ -853,6 +908,7 @@ def audit_history_isolation(
         terminals=terminals,
         manifest=manifest,
         verify_archive_hashes=verify_archive_hashes,
+        hash_private_terminals=hash_private_terminals,
         acl_probe=acl_probe,
     )
     file_audit = evaluate_variant_a_file_inventory(

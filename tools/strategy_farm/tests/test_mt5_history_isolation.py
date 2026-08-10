@@ -387,3 +387,120 @@ def test_default_runner_and_protected_sets_resolve_t5_directive() -> None:
     assert Path(r"C:\QM\mt5\T_Live") in isolation.DEFAULT_PROTECTED_ROOTS
     assert Path(r"D:\QM\mt5\FTMO_STREAM1") in isolation.DEFAULT_PROTECTED_ROOTS
     assert Path(r"D:\QM\mt5\FTMO_STREAM2") in isolation.DEFAULT_PROTECTED_ROOTS
+
+
+def test_variant_a_dispatch_gate_never_opens_foreign_private_archives(
+    tmp_path: Path, monkeypatch
+) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    for terminal in ("T1", "T2"):
+        for row in manifest["files"]:
+            target = mt5_root / terminal / "Bases" / "Custom" / Path(row["relative_path"])
+            body = target.read_bytes()
+            target.unlink()
+            target.write_bytes(body)
+
+    real_sha256_file = isolation.sha256_file
+    opened: list[str] = []
+
+    def guarded_sha256_file(path):
+        text = str(path)
+        opened.append(text)
+        if f"{os.sep}T1{os.sep}" in text:
+            raise PermissionError(13, "Permission denied")
+        return real_sha256_file(path)
+
+    monkeypatch.setattr(isolation, "sha256_file", guarded_sha256_file)
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        verify_archive_hashes=False,
+        hash_private_terminals=("T2",),
+    )
+
+    assert payload["status"] == "PASS_ISOLATED", payload
+    audit = payload["variant_a_file_audit"]
+    assert audit["terminal_private_hash_verification"] == "CLAIMING_TERMINAL_ONLY"
+    assert not any(f"{os.sep}T1{os.sep}" in text for text in opened)
+
+
+def test_variant_a_dispatch_gate_still_hashes_claiming_terminal(
+    tmp_path: Path,
+) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    row = manifest["files"][0]
+    target = mt5_root / "T1" / "Bases" / "Custom" / Path(row["relative_path"])
+    target.unlink()
+    target.write_bytes(b"x" * int(row["size"]))
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        verify_archive_hashes=False,
+        hash_private_terminals=("T1",),
+    )
+
+    assert payload["status"] == "FAIL_CLOSED"
+    codes = {row["code"] for row in payload["variant_a_file_audit"]["findings"]}
+    assert "ARCHIVE_MANIFEST_MISMATCH" in codes
+
+
+def test_variant_a_foreign_private_size_drift_still_fails_stat_only(
+    tmp_path: Path,
+) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    row = manifest["files"][0]
+    target = mt5_root / "T1" / "Bases" / "Custom" / Path(row["relative_path"])
+    target.unlink()
+    target.write_bytes(b"short")
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        verify_archive_hashes=False,
+        hash_private_terminals=("T2",),
+    )
+
+    assert payload["status"] == "FAIL_CLOSED"
+    codes = {row["code"] for row in payload["variant_a_file_audit"]["findings"]}
+    assert "ARCHIVE_MANIFEST_MISMATCH" in codes
+
+
+def test_variant_a_copy_on_claim_temp_files_are_ignored(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    temp = (
+        mt5_root
+        / "T1"
+        / "Bases"
+        / "Custom"
+        / "history"
+        / "EURUSD.DWX"
+        / ".2025.hcc.copy-on-claim.123.deadbeef.tmp"
+    )
+    temp.write_bytes(b"transient")
+
+    rows = isolation.collect_variant_a_file_inventory(
+        mt5_root=mt5_root,
+        terminals=history_contract.DEFAULT_RUNNER_TERMINALS,
+        manifest=manifest,
+        verify_archive_hashes=False,
+    )
+    assert not any(
+        ".copy-on-claim." in str(row.get("relative_path")) for row in rows
+    )
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        verify_archive_hashes=False,
+    )
+    assert payload["status"] == "PASS_ISOLATED", payload

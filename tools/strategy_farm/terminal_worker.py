@@ -1054,6 +1054,25 @@ def _defer_custom_history_gate(
     }
 
 
+def _is_transient_gate_io_error(exc: BaseException) -> bool:
+    """Concurrency artifacts of the mixed-topology gate, not isolation breaches.
+
+    A running terminal's MT5 holds privatized archives write-open (sharing
+    violation → PermissionError) and copy-on-claim swaps files atomically
+    (FileNotFoundError mid-scan). Both defer THIS claim attempt only; engaging
+    fleet-wide containment for them serializes the whole factory.
+    """
+
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if isinstance(current, (PermissionError, FileNotFoundError)):
+            return True
+        current = current.__cause__ or current.__context__
+    return False
+
+
 def _custom_history_gate(root: Path, terminal: str) -> dict[str, Any]:
     """Run the activation-bound gate; every error is a dispatch refusal."""
 
@@ -1065,6 +1084,15 @@ def _custom_history_gate(root: Path, terminal: str) -> dict[str, Any]:
             activation_hash = hashlib.sha256(activation_file.read_bytes()).hexdigest()
         except OSError:
             activation_hash = "0" * 64
+        if _is_transient_gate_io_error(exc):
+            return {
+                "required": True,
+                "status": "FAIL_CLOSED",
+                "terminal": terminal,
+                "reason": "custom_history_gate_transient_io",
+                "error": repr(exc),
+                "activation_sha256": activation_hash,
+            }
         try:
             custom_history_lease.engage_emergency_mode(
                 root,
