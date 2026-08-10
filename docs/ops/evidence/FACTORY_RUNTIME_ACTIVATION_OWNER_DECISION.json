@@ -1,109 +1,120 @@
 {
- "schema_version": "qm.factory-runtime-activation-owner-decision/v1",
- "decision_id": "FACTORY_ISOLATION_20260809_TEN_WORKER_ZERO_HOLD",
- "status": "APPROVED",
- "authority": "OWNER",
- "activation_nonce": "ba90901de3d24c2cb5caa1153f66b74a",
- "authorized_at_utc": "2026-08-09T10:04:00Z",
- "expires_at_utc": "2026-08-10T10:04:00Z",
- "authorizations": {
-  "factory_on": true,
-  "release_declared_restart_holds": true,
-  "runtime_flag_upgrade_authorized": false
- },
- "preparation_decision": {
-  "relative_path": "docs/ops/evidence/2026-08-09_factory_preparation_owner_decision_isolation.json",
-  "sha256": "e01667eb4881b80d8774c7adcebae28bab3a10ad4e857a12d0d8851336d1a450",
-  "git_commit": "191671ab3e2b7a3bff5573bffbb5db4f752872f9",
-  "git_blob": "8336703fee1071f9e2494c1a063be85df34113a7"
- },
- "restart_holds": {
-  "authorized_release_count": 0,
-  "authorized_work_item_ids": []
- },
- "restore_intent": {
-  "factory_off_flag_sha256": "d5e2026add5cb8f0bd78f2272a692dd0d81d5bf7a2bc8a4634d54aaed8f52c63",
-  "factory_off_schema_version": 2,
-  "factory_off_state": "OFF",
-  "task_enabled_before_sha256": "ccfb16110aa5722fdbc72bec361c180a485ae14afe2f3c1c99a9949301e0297f"
- },
- "worker_policy": {
-  "disabled_terminals": [],
-  "expected_worker_count": 10,
-  "expected_terminals": ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10"]
- },
- "source_bindings": {
-  "factory_on": {
-   "relative_path": "tools/strategy_farm/Factory_ON.ps1",
-   "sha256": "b9c25abfac3935110fc6849ea9b30b46020a9c29ad445a264c5bc8c7012ed06f",
-   "git_commit": "46056707a3669fa6b030d3479bad132deddaa6b7",
-   "git_blob": "c68d42c88c226093c105dd64419a1ac1f78e407e"
+  "schema_version": "qm.factory-runtime-activation-owner-decision/v1",
+  "decision_id": "FACTORY_RUNTIME_20260810_RAMPSOAK_GATE_STATONLY_RELOAD",
+  "activation_nonce": "f9fa633ea6d821e1b1f04bee5431ac2b",
+  "authority": "OWNER",
+  "status": "APPROVED",
+  "authorized_at_utc": "2026-08-10T08:30:10Z",
+  "expires_at_utc": "2026-08-11T08:30:10Z",
+  "preparation_decision": {
+    "relative_path": "docs/ops/evidence/2026-08-10_factory_preparation_owner_decision_isolation_rampsoak.json",
+    "sha256": "ad275c2ba9b689eab1ab72e71f6622906bf17526dac1b8847702ca119a90d851",
+    "git_commit": "b6135d9c90d92629629e1c469b252811eb21015b",
+    "git_blob": "e4fe809e1ab99ae5e9e09ae1b7a8622557eb55f1"
   },
-  "factory_off": {
-   "relative_path": "tools/strategy_farm/Factory_OFF.ps1",
-   "sha256": "77018ce9cd9dc8d31688c29dce862bc5a0e7ba7621e1ffcd25195f2773205db8",
-   "git_commit": "c817f5a748df5b3bece736d88d5e3710c22deb56",
-   "git_blob": "cb6a6ddc01fda7ab8fb0eb1e372331d1c8a52101"
+  "authorizations": {
+    "factory_on": true,
+    "release_declared_restart_holds": true,
+    "runtime_flag_upgrade_authorized": false
   },
-  "maintenance_control": {
-   "relative_path": "tools/strategy_farm/maintenance_control.py",
-   "sha256": "7f64dcdffffc22de9fbfc8a3680844f786c9f3648325cd761acca5c6ac2e15e3",
-   "git_commit": "26cc72380d71765fb76ebe2140e813f2dbc0c6a7",
-   "git_blob": "ec3e26c28d1c07813db2a61012520cb1d5d418f3"
+  "restart_holds": {
+    "authorized_release_count": 0,
+    "authorized_work_item_ids": []
   },
-  "runtime_activation_validator": {
-   "relative_path": "tools/strategy_farm/factory_runtime_activation.py",
-   "sha256": "c87d92c3d5c77cfab1441bd17eeebc6184e45dfc9a337767895b8a2364be467e",
-   "git_commit": "6903d91e24cec92b21396173cbc2084463b7c3e1",
-   "git_blob": "ff8dc8b514028b104c97e90a939bfd02d11a02e8"
+  "worker_policy": {
+    "disabled_terminals": [],
+    "expected_worker_count": 10,
+    "expected_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ]
   },
-  "restart_health": {
-   "relative_path": "tools/strategy_farm/factory_restart_health.ps1",
-   "sha256": "e1ca8e846f50cdcc02be4dbe1bd7b12e6eeadab06c9323a54ad59a5222dee1a6",
-   "git_commit": "dc039dec0ad0e7f5d37c78589dd02cb7598fc29f",
-   "git_blob": "d6ac44210c2caf241498811e24ecdcbf309bb7fb"
+  "restore_intent": {
+    "factory_off_flag_sha256": "226414b977213dce39a687cc78ace93506e3e4172841a35e170b8aa819193379",
+    "factory_off_schema_version": 2,
+    "factory_off_state": "OFF",
+    "task_enabled_before_sha256": "ccfb16110aa5722fdbc72bec361c180a485ae14afe2f3c1c99a9949301e0297f"
   },
-  "process_scope": {
-   "relative_path": "tools/strategy_farm/factory_process_scope.ps1",
-   "sha256": "47b0c70893c7f8baaa3a75493f8ee081ab404188128e0ed4a1feb2793e5e3d44",
-   "git_commit": "068e811bcd1ea76bc3b72d41926dd987202f07db",
-   "git_blob": "e38157457262dbc79fa5f2a4b27de1cdc7101e42"
-  },
-  "mutation_lock_protocol": {
-   "relative_path": "tools/strategy_farm/factory_mutation_lock.ps1",
-   "sha256": "ee2614b966aac95a15ec923df3380a808bd2de0873f6cf9cf6cb65cbc2308a54",
-   "git_commit": "b2800e226ac10ec0d737e30d6e86920b1b0abba4",
-   "git_blob": "681fd6f8e13bb933aa57624f9f7b0194ae76d6c7"
-  },
-  "task_manifest": {
-   "relative_path": "tools/strategy_farm/qm_tasks.manifest.ps1",
-   "sha256": "336f4f8eb5d8e234c4674cca30ef024a134af484e208fb8c53ac82594a9d23a3",
-   "git_commit": "04daf074886d58f82088895d0bdac96f072f5d69",
-   "git_blob": "5d34b843a53c079e0406d00f4b69474b64466c44"
-  },
-  "worker_launcher": {
-   "relative_path": "tools/strategy_farm/start_terminal_workers.py",
-   "sha256": "3bd62af8f20ac567aa9ffde1876df4103ece45aa897f37199b63eff9dc682ef5",
-   "git_commit": "c4dc83a84e4b5f7573b5e0191546e8378d4ad22b",
-   "git_blob": "bcf0833bb92c6e881c48ad395513bc20d32b3b4a"
-  },
-  "farmctl": {
-   "relative_path": "tools/strategy_farm/farmctl.py",
-   "sha256": "42ef53e095d63be0e43fddc7079362a9471b68803bdaed27c806f81d766cd9c8",
-   "git_commit": "590362fa0900ed878d116a073be05e0b20f2e046",
-   "git_blob": "80c21e270325144e8434778f5ccd26569d84c0b0"
-  },
-  "public_snapshot_task_wrapper": {
-   "relative_path": "scripts/run_public_snapshot_task.ps1",
-   "sha256": "83bf1668efb9d4b678f5533074c6c38c6762971cdcd2db62dc77a1c9e7a0b0f1",
-   "git_commit": "0dead3ff978b2c7b9790c4e6988c39e9a8fece46",
-   "git_blob": "f209303814b70d56983ab8d51881a1e849b70d15"
-  },
-  "public_snapshot_incident_guard": {
-   "relative_path": "tools/strategy_farm/public_snapshot_incident_guard.py",
-   "sha256": "28be1d553e5ead0c670bce9730770882166d8e0e40c060c767b91f36b8cbaef6",
-   "git_commit": "0dead3ff978b2c7b9790c4e6988c39e9a8fece46",
-   "git_blob": "76785695aa5dab57c32a7a6e2cfe7a077a800b04"
+  "source_bindings": {
+    "factory_on": {
+      "relative_path": "tools/strategy_farm/Factory_ON.ps1",
+      "sha256": "e8258dfe4337f77e28e5d531b011177eb3a3d4e201013e54a567a277eb3c3a33",
+      "git_commit": "61b4b2ebeb58015910decc17b40f637dc037516f",
+      "git_blob": "b3b14535fb9b690bdb06479df743a7402dd42183"
+    },
+    "factory_off": {
+      "relative_path": "tools/strategy_farm/Factory_OFF.ps1",
+      "sha256": "77018ce9cd9dc8d31688c29dce862bc5a0e7ba7621e1ffcd25195f2773205db8",
+      "git_commit": "61b4b2ebeb58015910decc17b40f637dc037516f",
+      "git_blob": "cb6a6ddc01fda7ab8fb0eb1e372331d1c8a52101"
+    },
+    "maintenance_control": {
+      "relative_path": "tools/strategy_farm/maintenance_control.py",
+      "sha256": "27adad4cced525cdc2d907cc318771f190e46e8582133207319e2ab010fc2201",
+      "git_commit": "61b4b2ebeb58015910decc17b40f637dc037516f",
+      "git_blob": "921130663019383e328034559d140696c4fb07a8"
+    },
+    "runtime_activation_validator": {
+      "relative_path": "tools/strategy_farm/factory_runtime_activation.py",
+      "sha256": "9ca09296dc5a6ec0cfd572ec451d2684e7fcd8eaf140be4b15fe0feb24a31dbd",
+      "git_commit": "61b4b2ebeb58015910decc17b40f637dc037516f",
+      "git_blob": "d08201a54a70c765e314775fe17172b755b49488"
+    },
+    "restart_health": {
+      "relative_path": "tools/strategy_farm/factory_restart_health.ps1",
+      "sha256": "e1ca8e846f50cdcc02be4dbe1bd7b12e6eeadab06c9323a54ad59a5222dee1a6",
+      "git_commit": "61b4b2ebeb58015910decc17b40f637dc037516f",
+      "git_blob": "d6ac44210c2caf241498811e24ecdcbf309bb7fb"
+    },
+    "process_scope": {
+      "relative_path": "tools/strategy_farm/factory_process_scope.ps1",
+      "sha256": "47b0c70893c7f8baaa3a75493f8ee081ab404188128e0ed4a1feb2793e5e3d44",
+      "git_commit": "61b4b2ebeb58015910decc17b40f637dc037516f",
+      "git_blob": "e38157457262dbc79fa5f2a4b27de1cdc7101e42"
+    },
+    "mutation_lock_protocol": {
+      "relative_path": "tools/strategy_farm/factory_mutation_lock.ps1",
+      "sha256": "ee2614b966aac95a15ec923df3380a808bd2de0873f6cf9cf6cb65cbc2308a54",
+      "git_commit": "61b4b2ebeb58015910decc17b40f637dc037516f",
+      "git_blob": "681fd6f8e13bb933aa57624f9f7b0194ae76d6c7"
+    },
+    "task_manifest": {
+      "relative_path": "tools/strategy_farm/qm_tasks.manifest.ps1",
+      "sha256": "336f4f8eb5d8e234c4674cca30ef024a134af484e208fb8c53ac82594a9d23a3",
+      "git_commit": "61b4b2ebeb58015910decc17b40f637dc037516f",
+      "git_blob": "5d34b843a53c079e0406d00f4b69474b64466c44"
+    },
+    "worker_launcher": {
+      "relative_path": "tools/strategy_farm/start_terminal_workers.py",
+      "sha256": "3bd62af8f20ac567aa9ffde1876df4103ece45aa897f37199b63eff9dc682ef5",
+      "git_commit": "61b4b2ebeb58015910decc17b40f637dc037516f",
+      "git_blob": "bcf0833bb92c6e881c48ad395513bc20d32b3b4a"
+    },
+    "farmctl": {
+      "relative_path": "tools/strategy_farm/farmctl.py",
+      "sha256": "c726a0a1e6f6743d4c9befec5551ad8e2cb947d2688e36ca3fcefd40ffefd6cf",
+      "git_commit": "61b4b2ebeb58015910decc17b40f637dc037516f",
+      "git_blob": "51e507c4ee74209f1497efb699a912eab21cbdfc"
+    },
+    "public_snapshot_task_wrapper": {
+      "relative_path": "scripts/run_public_snapshot_task.ps1",
+      "sha256": "83bf1668efb9d4b678f5533074c6c38c6762971cdcd2db62dc77a1c9e7a0b0f1",
+      "git_commit": "61b4b2ebeb58015910decc17b40f637dc037516f",
+      "git_blob": "f209303814b70d56983ab8d51881a1e849b70d15"
+    },
+    "public_snapshot_incident_guard": {
+      "relative_path": "tools/strategy_farm/public_snapshot_incident_guard.py",
+      "sha256": "28be1d553e5ead0c670bce9730770882166d8e0e40c060c767b91f36b8cbaef6",
+      "git_commit": "61b4b2ebeb58015910decc17b40f637dc037516f",
+      "git_blob": "76785695aa5dab57c32a7a6e2cfe7a077a800b04"
+    }
   }
- }
 }
