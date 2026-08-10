@@ -1,31 +1,30 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        12352
-; ea_slug:      orev-bb-rsi
+; ea_id:        1354
+; ea_slug:      woodie-cci-dual-h1
 ; ea_version:   v5.0
 ; set_version:  s20260810-001
 ; symbol:       WS30.DWX
-; timeframe:    D1
+; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f82294327f776eb5d7f97db9ae659fe9ad3a26eededb4d61fee43d74b445364d
+; build_hash:   994c06a82b2b830ea000dc5e82d031e59ea65942cf1d39842e6bf2f8d4bec277
 ; author:       Development
 ; date:         2026-08-10
 ;==========================================================
-qm_ea_id=12352
+qm_ea_id=1354
 qm_magic_slot_offset=6
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12352_orev-bb-rsi.md
-strategy_signal_tf=16408
-strategy_rsi_period=3
-strategy_rsi_entry=30.0
-strategy_bb_period=21
-strategy_bb_deviation=2.0
-strategy_sma_fast=50
-strategy_sma_slow=150
-strategy_max_hold_days=4
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1354_woodie-cci-dual-h1.md
+strategy_trend_cci_period=34
+strategy_turbo_cci_period=6
+strategy_atr_period=14
+strategy_sl_atr_mult=1.8
+strategy_tp_atr_mult=2.5
+strategy_time_stop_bars=48
+strategy_spread_mult=1.5
