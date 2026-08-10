@@ -1,0 +1,26 @@
+{
+  "review_task_id": "6ec40513-d44b-4b71-babc-91c725bce7fb",
+  "build_task_id": "932cb7ee-a445-41c4-9fbf-a9650d0155be",
+  "ea_id": "QM5_1627",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "FAIL",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "QM5_1627_hopwood-bermaui-cci-h4.mq5:23-27 defaults both news axes and the legacy mode OFF, contradicting the card's mandatory standard news-calendar pause and the active mandatory-news-blackout contract.",
+    "QM5_1627_hopwood-bermaui-cci-h4.mq5:425 begins OnTick at the kill switch without the canonical first-statement QM_FrameworkTrackOpenPositionMae hook, so Q08 open-position MAE evidence can be skipped.",
+    "QM5_1627_hopwood-bermaui-cci-h4.mq5:432-436 returns on news before Strategy_ManageOpenPosition and Strategy_ExitSignal at lines 498-500; enabling news later would suspend break-even, partial-profit, reverse-signal, and time-stop handling during blackout windows.",
+    "QM5_1627_hopwood-bermaui-cci-h4.mq5:379-395 calls IsEnvelopeLong/Short from the per-tick exit path; each path repeatedly reconstructs the 60-sample Bermaui CCI in GetBermauiCCI, creating hundreds of pooled indicator reads per tick while a position is open instead of caching closed-bar state.",
+    "QM5_1627_hopwood-bermaui-cci-h4.mq5:53-62 and 445-490 keep ATR-at-entry, bars-in-trade, cooldown, and partial-close completion only in process memory; after restart the time stop restarts, ATR thresholds change, and an already-taken 50% partial can fire again.",
+    "C:/QM/repo/framework/registry/ea_id_registry.csv has no active row for ea_id 1627 / slug hopwood-bermaui-cci-h4. The four magic rows and generated resolver are internally exact, but the deterministic EA-registry preflight is incomplete.",
+    "C:/QM/repo/framework/EAs/QM5_1627_hopwood-bermaui-cci-h4/SPEC.md is missing; validate_spec_doc.py reports FAIL.",
+    "Source task 932cb7ee-a445-41c4-9fbf-a9650d0155be supplied only the .mq5 artifact. No canonical build_result.json or smoke summary exists, so build-result sanity fails and smoke sanity remains UNKNOWN; compile_ea and build_check independently passed 0 errors/0 warnings but do not establish trade generation."
+  ],
+  "reviewed_at": "2026-08-10T21:41:34.5934396Z"
+}
