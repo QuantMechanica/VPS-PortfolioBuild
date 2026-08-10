@@ -15649,3 +15649,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11435,carter-t-adx35-priorday-range-h1,2,USDJPY.DWX,114350002,2026-08-10T15:08:42Z,Claude,active
 11435,carter-t-adx35-priorday-range-h1,3,AUDUSD.DWX,114350003,2026-08-10T15:08:42Z,Claude,active
 11435,carter-t-adx35-priorday-range-h1,4,USDCAD.DWX,114350004,2026-08-10T15:08:42Z,Claude,active
+20272,wti-qtrvote-tr,0,XTIUSD.DWX,202720000,2026-08-10T15:27:36Z,Codex,active
