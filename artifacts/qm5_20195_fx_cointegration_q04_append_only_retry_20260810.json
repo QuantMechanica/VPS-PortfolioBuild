@@ -1,0 +1,111 @@
+{
+  "schema": "qm.fx_cointegration_existing_card_append_only_retry/v1",
+  "generated_at": "2026-08-10T13:08:36+02:00",
+  "branch": "agents/board-advisor",
+  "inspected_head": "30a921fa57bbcc400b7a4ef93b027382ddbc4a46",
+  "ea_id": "QM5_20195",
+  "slug": "nzd-eurgbp-coint",
+  "logical_symbol": "QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1",
+  "traded_symbols": [
+    "NZDUSD.DWX",
+    "EURGBP.DWX"
+  ],
+  "conversion_history_symbols": [
+    "GBPUSD.DWX",
+    "EURUSD.DWX"
+  ],
+  "action": "Q04_APPEND_ONLY_RETRY_ENQUEUED_FROM_CURRENT_LOGICAL_Q02_PASS",
+  "selection": {
+    "frozen_66_pair_frontier_exhausted": true,
+    "new_card_or_build_created": false,
+    "anchor_q02_blocker_found": false,
+    "qm5_12532_state": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "qm5_12533_state": "Q02_PASS_Q04_FAIL",
+    "reason": "existing approved D1 structural FX basket had current-binary Q02 PASS and a terminal infrastructure-invalid Q04 result"
+  },
+  "source_and_risk": {
+    "card_status": "APPROVED",
+    "g0_status": "APPROVED",
+    "primary_method_source": "Ernest P. Chan, Quantitative Trading (Wiley, 2009), OWNER-ratified Tier-A SRC02 extraction",
+    "pair_selection": "frozen Darwinex D1 sign-aware scan rank 12",
+    "structural": true,
+    "ml": false,
+    "banned_indicator": false,
+    "timeframe": "D1",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "artifact_sha256": {
+    "mq5": "23ce5192a6faf318345ca6ae5561a206c4cd15a6d24e7ccdf5cbfb4e41d74496",
+    "ex5": "909c1622e913fa77129aad70ece7529d7a073b9c421791c743ed86775a0b6cf6",
+    "basket_manifest": "a51f1083ee914d4c032da40233aedaa64118998f917e17f0966f365de1799c29",
+    "logical_backtest_setfile": "585f398945b2aa596b1a68994c02eaba1a829d90fbd95a3f55ca6b87ba7d99a9"
+  },
+  "q02": {
+    "work_item_id": "5b51938b-04ab-47fa-9cf9-a833d7498984",
+    "status": "done",
+    "verdict": "PASS",
+    "evidence_path": "D:/QM/reports/work_items/5b51938b-04ab-47fa-9cf9-a833d7498984/QM5_20195/20260802_170921/summary.json",
+    "evidence_sha256": "ebaaf115c4743f1eb588411f40785f45eacd6b0c99bd9d8f5136dc6a938506e3",
+    "reason_classes": [
+      "OK"
+    ],
+    "trades": 72,
+    "profit_factor": 1.18,
+    "net_profit": 1631.76,
+    "drawdown": 3551.82,
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31"
+  },
+  "preserved_q04": {
+    "work_item_id": "9a95577b-9872-4757-8966-3af71a463224",
+    "status": "done",
+    "verdict": "INFRA_FAIL",
+    "evidence_path": "D:/QM/reports/pipeline/QM5_20195/Q04/QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1__9a95577b-9872-4757-8966-3af71a463224/aggregate.json",
+    "evidence_sha256": "36d6dfd05e111e29326e7507912deb664cfd8482af18888173467f9bae1dfab9",
+    "invalid_folds": [
+      "F1",
+      "F2"
+    ],
+    "valid_f3_trades": 8,
+    "valid_f3_pf_net": 0.7515679365325445
+  },
+  "q04_retry": {
+    "work_item_id": "b14b5edf-ffdd-4439-a2ed-dc4930d65029",
+    "status_at_verification": "pending",
+    "claimed_by_at_verification": null,
+    "attempt_count_at_verification": 0,
+    "append_only": true,
+    "historical_work_item_preserved": true,
+    "promoted_from_phase": "Q02",
+    "promoted_from_work_item": "5b51938b-04ab-47fa-9cf9-a833d7498984",
+    "rerun_of_work_item": "9a95577b-9872-4757-8966-3af71a463224",
+    "created_rows": 1,
+    "requeued_rows": 0,
+    "skipped_rows": 0,
+    "same_ea_q04_open_rows_at_verification": 1
+  },
+  "cpu_sample": {
+    "sampled_at": "2026-08-10T13:08:29+02:00",
+    "binding_ceiling": 7,
+    "factory_terminal_count": 5,
+    "factory_terminals": [
+      "T3",
+      "T4",
+      "T5",
+      "T8",
+      "T10"
+    ],
+    "ceiling_blocked": false
+  },
+  "safety": {
+    "tester_dispatched": false,
+    "terminal_control_performed": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "strategy_or_build_artifact_changed": false
+  }
+}
