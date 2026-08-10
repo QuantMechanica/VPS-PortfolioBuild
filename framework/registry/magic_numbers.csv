@@ -15620,3 +15620,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10973,ftmo-adl-div,1,GBPUSD.DWX,109730001,2026-08-10T13:56:00Z,Claude,active
 10973,ftmo-adl-div,2,XAUUSD.DWX,109730002,2026-08-10T13:56:00Z,Claude,active
 10973,ftmo-adl-div,3,WS30.DWX,109730003,2026-08-10T13:56:00Z,Claude,active
+11301,tc-m5-macd1-stoch-ema5-open-close,0,EURUSD.DWX,113010000,2026-08-10T14:20:00Z,Gemini,active
+11301,tc-m5-macd1-stoch-ema5-open-close,1,GBPUSD.DWX,113010001,2026-08-10T14:20:00Z,Gemini,active
+11302,tc-m5-bb-stoch-extreme-reversal,0,EURUSD.DWX,113020000,2026-08-10T14:20:00Z,Gemini,active
+11302,tc-m5-bb-stoch-extreme-reversal,1,GBPUSD.DWX,113020001,2026-08-10T14:20:00Z,Gemini,active
+11302,tc-m5-bb-stoch-extreme-reversal,2,USDJPY.DWX,113020002,2026-08-10T14:20:00Z,Gemini,active
+11325,tc-m5-9-ema50-100-macd-partial-exit,0,EURUSD.DWX,113250000,2026-08-10T14:48:53Z,Claude,active
+11325,tc-m5-9-ema50-100-macd-partial-exit,1,GBPUSD.DWX,113250001,2026-08-10T14:48:53Z,Claude,active
+11325,tc-m5-9-ema50-100-macd-partial-exit,2,USDJPY.DWX,113250002,2026-08-10T14:48:53Z,Claude,active
