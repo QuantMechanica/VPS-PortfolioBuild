@@ -15829,3 +15829,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20073,pip-hunter-heiken-ashi-r1-recovery,3,AUDUSD.DWX,200730003,2026-08-10,claude,active
 20073,pip-hunter-heiken-ashi-r1-recovery,4,EURJPY.DWX,200730004,2026-08-10,claude,active
 20073,pip-hunter-heiken-ashi-r1-recovery,5,XAUUSD.DWX,200730005,2026-08-10,claude,active
+20275,gsr-runfade,0,XAUUSD.DWX,202750000,2026-08-11,Research+Development,active
+20275,gsr-runfade,1,XAGUSD.DWX,202750001,2026-08-11,Research+Development,active
