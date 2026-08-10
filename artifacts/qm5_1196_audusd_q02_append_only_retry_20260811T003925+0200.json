@@ -1,0 +1,80 @@
+{
+  "schema": "qm.fx-fallback-q02-append-only/v1",
+  "generated_at": "2026-08-11T00:39:31+02:00",
+  "branch": "agents/board-advisor",
+  "repository_head_at_enqueue": "14ec6f8720f97697e8728b0e2bf12858c59f5761",
+  "frontier_decision": {
+    "unbuilt_pair_found": false,
+    "frozen_scan_relationships": 66,
+    "reason": "All frozen-scan relationships are already mechanized; creating another pair would duplicate governed work.",
+    "anchor_states": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    }
+  },
+  "target": {
+    "ea_id": "QM5_1196",
+    "ea_slug": "qp-fx-meanrev-linear",
+    "symbol": "AUDUSD.DWX",
+    "timeframe": "D1",
+    "source_work_item_id": "bc25ee6c-2922-4df3-bf88-d5e15eaa4c72",
+    "new_work_item_id": "24a5a5d1-15af-4b4a-b6bf-195036aba1fa",
+    "source_verdict": "INFRA_FAIL",
+    "source_reason_classes": [
+      "BARS_ZERO",
+      "INCOMPLETE_RUNS"
+    ],
+    "strategy_mechanics_changed": false,
+    "logical_basket": false,
+    "dependency_symbols_are_read_only_signal_inputs": true
+  },
+  "capacity_gate": {
+    "sampled_at": "2026-08-11T00:39:25+02:00",
+    "binding_factory_ceiling": 7,
+    "factory_count": 4,
+    "factory_terminals": [
+      "T1",
+      "T3",
+      "T6",
+      "T10"
+    ],
+    "below_ceiling": true,
+    "t_live_excluded": true,
+    "ftmo_terminal_excluded": true
+  },
+  "bindings": {
+    "ea_registry_status": "active",
+    "magic_slot": 3,
+    "magic": 11960003,
+    "magic_status": "active",
+    "ex5_sha256": "f0ea458c155624c547eeb738f37bd8e3af5afd7a4585680eaf22f6e1135dc703",
+    "mq5_sha256": "2dcdd2868e2bb5a2be9e02bb30a4e940bff063e6b845b87291f54e33bbfa7825",
+    "setfile_sha256": "59a81facbec11453556b22b6202219c2ea678050865545de45974b426c8eeadf",
+    "card_copy_sha256": "a3b578192e10ed9f6b84d38a1a8bd122727ff1b916c521d91cfb283e98da599d",
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 0.1667
+  },
+  "enqueue_result": {
+    "created_count": 1,
+    "requeued_count": 0,
+    "skipped_count": 0,
+    "status_at_readback": "pending",
+    "attempt_count_at_readback": 0,
+    "claimed_by_at_readback": null,
+    "verdict_at_readback": null,
+    "exact_historical_row_count": 14,
+    "exact_open_row_count": 1,
+    "sqlite_quick_check": "ok"
+  },
+  "safety": {
+    "tester_launched": false,
+    "dispatch_tick_invoked": false,
+    "terminal_process_controlled": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
