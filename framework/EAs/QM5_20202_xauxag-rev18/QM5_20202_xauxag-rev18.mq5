@@ -407,15 +407,18 @@ void Strategy_AdvanceSignal_OnNewBar()
    g_cache_period_key = 0;
    g_cache_decision_bar_time = 0;
 
-   const datetime decision_bar_time =
-      iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cached timestamp on D1 new-bar path.
-   const datetime prior_bar_time =
-      iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: exact monthly D1 transition check.
-   const int current_month_key = Strategy_MonthKeyForTime(decision_bar_time);
-   const int prior_month_key = Strategy_MonthKeyForTime(prior_bar_time);
+   const int current_month_key =
+      QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int prior_month_key =
+      QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
    if(current_month_key <= 0 || prior_month_key <= 0 ||
       current_month_key == prior_month_key)
       return;
+
+   MqlRates decision_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, decision_bar))
+      return;
+   const datetime decision_bar_time = decision_bar.time;
 
    g_monthly_rebalance_bar = true;
    g_cache_month_key = current_month_key;
@@ -696,10 +699,10 @@ int OnInit()
    QM_SymbolGuardInit(basket_symbols);
    const int xau_magic = QM_FrameworkRegisterMagicSymbol(qm_ea_id, 0, g_leg_xau);
    const int xag_magic = QM_FrameworkRegisterMagicSymbol(qm_ea_id, 1, g_leg_xag);
-   if(xau_magic != 202020000 || xag_magic != 202020001)
+   if(xau_magic <= 0 || xag_magic <= 0 || xau_magic == xag_magic)
      {
       QM_LogEvent(QM_ERROR,
-                  "INIT_MAGIC_REGISTRATION_FAILED",
+                  "BASKET_MAGIC_REGISTRATION_FAILED",
                   StringFormat("{\"xau_magic\":%d,\"xag_magic\":%d}",
                                xau_magic,
                                xag_magic));
