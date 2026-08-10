@@ -1948,3 +1948,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11388,russ-horn-golden-smma55-wpr55-stoch555,0,EURUSD.DWX,113880000,2026-08-10,Development,active
 11388,russ-horn-golden-smma55-wpr55-stoch555,1,GBPUSD.DWX,113880001,2026-08-10,Development,active
 11388,russ-horn-golden-smma55-wpr55-stoch555,2,USDJPY.DWX,113880002,2026-08-10,Development,active
+11401,davey-low-volume-mean-reversion-d1,0,EURUSD.DWX,114010000,2026-08-10,Development,active
+11401,davey-low-volume-mean-reversion-d1,1,GBPUSD.DWX,114010001,2026-08-10,Development,active
+11401,davey-low-volume-mean-reversion-d1,2,AUDUSD.DWX,114010002,2026-08-10,Development,active
+11401,davey-low-volume-mean-reversion-d1,3,USDJPY.DWX,114010003,2026-08-10,Development,active
+11402,davey-dueling-momentum-d1,0,EURUSD.DWX,114020000,2026-08-10,Development,active
+11402,davey-dueling-momentum-d1,1,GBPUSD.DWX,114020001,2026-08-10,Development,active
+11402,davey-dueling-momentum-d1,2,AUDUSD.DWX,114020002,2026-08-10,Development,active
+11402,davey-dueling-momentum-d1,3,USDJPY.DWX,114020003,2026-08-10,Development,active
