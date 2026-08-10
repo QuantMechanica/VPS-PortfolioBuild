@@ -125,6 +125,9 @@ correlation waiver.
 
 ## 12. Q02 Handoff
 
-Not started. Q01 has passed. Exactly one paced `XTIUSD.DWX` D1 work item may
-be enqueued only while live factory utilization remains below the binding CPU
-ceiling.
+One current-binary `XTIUSD.DWX` D1 Q02 row was enqueued at
+`2026-08-10T13:03:29+00:00`: work item
+`62f9a076-8d5a-4da4-a246-bd0def468b05`, pending, attempt 0, unclaimed, and
+`priority_track=true` on immediate readback. The binding pre-enqueue sample
+found four executing T1-T10 factory terminals against the ceiling of seven.
+No dispatch tick or backtest was run by the build mission.

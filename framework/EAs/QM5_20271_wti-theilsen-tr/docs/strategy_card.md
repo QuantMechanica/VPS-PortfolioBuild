@@ -54,9 +54,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_STARTED
+q02_status: ENQUEUED
 review_focus: "Falsify a direct WTI monthly robust log-price trend whose median of all 78 pairwise slopes differs from cumulative momentum, OLS, ordinal rank trend, and adjacent-return order statistics; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -305,6 +305,7 @@ or correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-10 | initial source-bounded WTI Theil-Sen robust-trend card | G0 | APPROVED |
 | v1-q01 | 2026-08-10 | deterministic V5 build, strict compile, and target build validation | Q01 | PASS |
+| v1-q02 | 2026-08-10 | one paced current-binary baseline handoff below the factory CPU ceiling | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -312,4 +313,4 @@ or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-10 | APPROVED | `decisions/2026-08-10_qm5_20271_wti_theilsen_tr_g0.md` |
 | Q01 Build Validation | 2026-08-10 | PASS | `D:/QM/reports/compile/20260810_125956/summary.csv`; `D:/QM/reports/framework/21/build_check_20260810_125956.json`; `D:/QM/reports/pipeline/QM5_20271/P1/P1_QM5_20271_result.json` |
-| Q02 Baseline Screening | - | NOT STARTED | paced fleet only after Q01 PASS |
+| Q02 Baseline Screening | 2026-08-10 | ENQUEUED; pending, attempt 0, unclaimed | work item `62f9a076-8d5a-4da4-a246-bd0def468b05`; `docs/ops/evidence/2026-08-10_qm5_20271_wti_theilsen_tr_q01_q02_enqueue.md` |
