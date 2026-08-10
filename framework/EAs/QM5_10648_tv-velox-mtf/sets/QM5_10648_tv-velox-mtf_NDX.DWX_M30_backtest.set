@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10648
+; ea_slug:      tv-velox-mtf
+; ea_version:   v5.0
+; set_version:  s20260810-001
+; symbol:       NDX.DWX
+; timeframe:    M30
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-10
+;==========================================================
+qm_ea_id=10648
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10648_tv-velox-mtf.md
+strategy_ema_fast=6
+strategy_ema_slow=21
+strategy_atr_period=14
+strategy_slope_lookback_bars=3
+strategy_angle_deg_threshold=80.0
+strategy_angle_norm_atr_mult=0.15
+strategy_marubozu_body_ratio=0.60
+strategy_adx_period=14
+strategy_adx_threshold=20.0
+strategy_pivot_lookback_bars=60
+strategy_sl_atr_mult=1.5
+strategy_sl_atr_cap_mult=4.0
+strategy_tp_r_mult=7.0
+strategy_time_exit_bars=48
