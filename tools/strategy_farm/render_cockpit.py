@@ -901,11 +901,14 @@ def render_pipeline_books_program(snapshot: dict) -> str:
             '</div>'
         )
 
-    safety = snapshot.get("safety") or {}
+    # The programme snapshot is a hash-bound projection that can be days old;
+    # its factory_state claim must never contradict the live flag (a stale
+    # INTENTIONALLY_OFF rendered while the fleet was running, 2026-08-10).
+    live_factory = "OFF (INTENTIONAL)" if FACTORY_OFF_FLAG.exists() else "ON"
     safety_html = (
         '<div class="pb-safety">'
-        f'<span><b>FACTORY</b> {e(safety.get("factory_state", "UNKNOWN"))}</span>'
-        '<span><b>RUNTIME AUTHORITY</b> NONE</span>'
+        f'<span><b>FACTORY</b> {e(live_factory)}</span>'
+        '<span><b>PROGRAMME RUNTIME AUTHORITY</b> NONE</span>'
         '<span><b>SCHEDULER / MT5 / AUTOTRADING / DEPLOY</b> NO ACTION AUTHORIZED</span>'
         '</div>'
     )
@@ -1652,7 +1655,6 @@ def main() -> int:
     qsnap = quota_snapshot()
     money = live_money_snapshot()
     live_book = live_book_snapshot()
-    next_book = frontier_next_book_snapshot()
     heartbeats = ops_heartbeats_snapshot()
     q12_count = q12_review_ready_count()
     programme = pipeline_books_program_snapshot()
@@ -2220,6 +2222,7 @@ def main() -> int:
         f"T1–T10 Workers // {len(active_terms)} of 10 farm-active // "
         f"{len(proc_terms)} terminal proc{'s' if len(proc_terms) != 1 else ''} up // "
         f"{len(reserved_terms)} reserved"
+        + (" — R = smoke/maintenance hold, blocks new claims" if reserved_terms else "")
     )
 
     # Watchdog pulse: last self-heal action + interactive-session state. Answers
@@ -2666,46 +2669,6 @@ def main() -> int:
   </div>
 '''
 
-    # ---------- v7. NEXT-BOOK FRONTIER (~26.07) ----------
-    nbf_rows: list[str] = []
-    for r in next_book.get("fresh_pass", []):
-        nbf_rows.append(
-            '<div class="nbf-row pass">'
-            f'<span class="nbf-tag">{e(r.get("phase"))} PASS</span>'
-            f'<span class="nbf-ea">{e(r.get("ea_id"))}</span>'
-            f'<span class="nbf-sym">{e(r.get("symbol"))}</span>'
-            f'<span class="nbf-when">{e(r.get("when"))}</span>'
-            '</div>'
-        )
-    for r in next_book.get("in_flight", []):
-        nbf_rows.append(
-            '<div class="nbf-row inflight">'
-            f'<span class="nbf-tag">Q08 {e(str(r.get("status")).upper())}</span>'
-            f'<span class="nbf-ea">{e(r.get("ea_id"))}</span>'
-            f'<span class="nbf-sym">{e(r.get("symbol"))}</span>'
-            f'<span class="nbf-when">Q07 {e(r.get("when"))}</span>'
-            '</div>'
-        )
-    if not nbf_rows:
-        nbf_rows.append(
-            '<div class="nbf-row">'
-            '<span class="nbf-tag" style="color:var(--text-3)">CLEAR</span>'
-            '<span class="nbf-ea">no fresh Q08+ PASS and no Q07&rarr;Q08 in flight</span>'
-            '<span class="nbf-sym"></span><span class="nbf-when"></span>'
-            '</div>'
-        )
-    next_book_html = f'''
-  <div class="nbf">
-    <div class="nbf-summary">
-      <span><b>{next_book.get("fresh_count", 0)}</b> fresh Q08/Q09/Q10 PASS since 19.07 18:00Z</span>
-      <span><b>{next_book.get("inflight_count", 0)}</b> Q07-PASS with Q08 pending/running</span>
-    </div>
-    <div class="nbf-rows">
-      {"".join(nbf_rows)}
-    </div>
-  </div>
-'''
-
     # ---------- v7. OPS HEARTBEATS ----------
     def _dur_short(sec: int) -> str:
         if sec >= 3600 and sec % 3600 == 0:
@@ -2974,8 +2937,8 @@ body { padding: 32px; min-height: 100vh; }
 .term.active .dot { color: var(--text); }
 .term.idle   .dot { color: var(--text-3); }
 .term.active .id  { color: var(--text-2); }
-.term.reserved .dot { color: var(--danger); font-size: 9px; }
-.term.reserved .id  { color: var(--danger); }
+.term.reserved .dot { color: var(--warn); font-size: 9px; }
+.term.reserved .id  { color: var(--warn); }
 .term.proc .dot { color: var(--warn); }
 .term.proc .id  { color: var(--text-2); }
 
@@ -3254,30 +3217,6 @@ a.frontier-tile:hover { background: var(--surface-2); }
 .botbar .key    { color: var(--text-4); margin-right: 8px; }
 .botbar .val    { color: var(--text-2); }
 
-/* v7 NEXT-BOOK FRONTIER */
-.nbf { background: var(--surface-1); border: 1px solid var(--border); }
-.nbf-summary {
-  display: flex; flex-wrap: wrap; gap: 32px;
-  padding: 14px 20px; border-bottom: 1px solid var(--border);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3);
-}
-.nbf-summary b { color: var(--signal); font-weight: 700; font-size: 13px; }
-.nbf-row {
-  display: grid; grid-template-columns: 120px 130px 1fr 160px;
-  gap: 14px; padding: 10px 20px; align-items: baseline;
-  border-bottom: 1px solid var(--border);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-variant-numeric: tabular-nums; font-size: 12px; color: var(--text-2);
-}
-.nbf-row:last-child { border-bottom: none; }
-.nbf-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
-.nbf-row.pass .nbf-tag { color: var(--pass); }
-.nbf-row.inflight .nbf-tag { color: var(--warn); }
-.nbf-ea { color: var(--text); font-weight: 600; }
-.nbf-sym { color: var(--text-2); }
-.nbf-when { color: var(--text-3); text-align: right; font-size: 10px; letter-spacing: 0.08em; }
-
 /* v7 OPS HEARTBEATS */
 .hb-grid {
   display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px;
@@ -3469,16 +3408,6 @@ a.frontier-tile:hover { background: var(--surface-2); }
     </div>
   </div>
 
-  <!-- 3b. PIPELINE BOOKS PROGRAMME -->
-  <div class="section">
-    <div class="section-head">
-      <span class="section-glyph"></span>
-      <span class="section-title">Pipeline Books // DXZ + FTMO Programme</span>
-      <span class="section-aux">W0–W8 // Hash-Bound Source // No Runtime Authority</span>
-    </div>
-    {programme_html}
-  </div>
-
   <!-- 4. COMPANY FRONTIER -->
   <div class="section">
     <div class="section-head">
@@ -3487,16 +3416,6 @@ a.frontier-tile:hover { background: var(--surface-2); }
       <span class="section-aux">Furthest Candidate // Q08 Cohort // Conversion // Throughput</span>
     </div>
     {frontier_html}
-  </div>
-
-  <!-- 4b. NEXT-BOOK FRONTIER (~26.07) -->
-  <div class="section">
-    <div class="section-head">
-      <span class="section-glyph"></span>
-      <span class="section-title">Next Book // Frontier ~26.07</span>
-      <span class="section-aux">Fresh Q08+ PASS // Q07&rarr;Q08 In Flight</span>
-    </div>
-    {next_book_html}
   </div>
 
   {progress_html}
@@ -3594,6 +3513,18 @@ a.frontier-tile:hover { background: var(--surface-2); }
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- 7a. PIPELINE BOOKS PROGRAMME — hash-bound projection whose source
+       snapshots go stale between programme runs; lives below the live
+       sections so stale SOURCE states never crowd mission control. -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Pipeline Books // DXZ + FTMO Programme</span>
+      <span class="section-aux">W0–W8 // Hash-Bound Source // No Runtime Authority</span>
+    </div>
+    {programme_html}
   </div>
 
   <!-- 7b. OPS HEARTBEATS -->
