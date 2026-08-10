@@ -14,7 +14,7 @@ strategy_mechanic: monthly-wti-sign-of-middle-eight-trimmed-mean-of-twelve-disjo
 target_symbols: [XTIUSD.DWX]
 period: D1
 pipeline_phase: Q01
-q01_status: PENDING
+q01_status: PASS
 q02_status: NOT_STARTED
 last_updated: 2026-08-10
 ---
@@ -51,4 +51,4 @@ waiver is authorized.
 ## Pipeline Status
 
 G0 is approved under the durable OWNER mission decision. Deterministic
-allocation, build/Q01, and paced Q02 handoff remain pending.
+allocation and build/Q01 are PASS; paced Q02 handoff remains pending.

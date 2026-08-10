@@ -115,11 +115,17 @@ correlation waiver.
 
 ## 11. Q01 Status
 
-Pending deterministic V5 implementation, strict compile, target build check,
-and P1 artifact validation.
+- Strict compile: PASS, zero errors and zero warnings; summary
+  `D:/QM/reports/compile/20260810_093222/summary.csv`.
+- Target build check: PASS, zero failures and zero warnings; report
+  `D:/QM/reports/framework/21/build_check_20260810_093222.json`.
+- P1 artifact validation: PASS at
+  `D:/QM/reports/pipeline/QM5_20270/P1/P1_QM5_20270_result.json`.
+- Backtest set build hash:
+  `409f58f6b9537c64171835f155868ea7c74802db63ced3209c5d61e52b08efb2`.
 
 ## 12. Q02 Handoff
 
-Not started. Exactly one paced `XTIUSD.DWX` D1 work item may be enqueued only
-after Q01 passes and the live factory utilization remains below the binding
-CPU ceiling.
+Not started. Q01 has passed. Exactly one paced `XTIUSD.DWX` D1 work item may
+be enqueued only while live factory utilization remains below the binding CPU
+ceiling.
