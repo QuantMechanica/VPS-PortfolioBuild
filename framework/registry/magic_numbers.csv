@@ -15823,3 +15823,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1626,hopwood-bermaui-stoch-h4,1,GBPUSD.DWX,16260001,2026-08-10,claude,active
 1626,hopwood-bermaui-stoch-h4,2,NDX.DWX,16260002,2026-08-10,claude,active
 1626,hopwood-bermaui-stoch-h4,3,XAUUSD.DWX,16260003,2026-08-10,claude,active
+20073,pip-hunter-heiken-ashi-r1-recovery,0,EURUSD.DWX,200730000,2026-08-10,claude,active
+20073,pip-hunter-heiken-ashi-r1-recovery,1,GBPUSD.DWX,200730001,2026-08-10,claude,active
+20073,pip-hunter-heiken-ashi-r1-recovery,2,USDJPY.DWX,200730002,2026-08-10,claude,active
+20073,pip-hunter-heiken-ashi-r1-recovery,3,AUDUSD.DWX,200730003,2026-08-10,claude,active
+20073,pip-hunter-heiken-ashi-r1-recovery,4,EURJPY.DWX,200730004,2026-08-10,claude,active
+20073,pip-hunter-heiken-ashi-r1-recovery,5,XAUUSD.DWX,200730005,2026-08-10,claude,active
