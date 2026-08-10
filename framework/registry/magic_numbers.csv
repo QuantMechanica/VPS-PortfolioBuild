@@ -15639,3 +15639,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11402,davey-dueling-momentum-d1,1,GBPUSD.DWX,114020001,2026-08-10T15:01:27Z,Claude,active
 11402,davey-dueling-momentum-d1,2,AUDUSD.DWX,114020002,2026-08-10T15:01:27Z,Claude,active
 11402,davey-dueling-momentum-d1,3,USDJPY.DWX,114020003,2026-08-10T15:01:27Z,Claude,active
+11434,carter-t-sma32hl-psar-sma200-h1,0,EURUSD.DWX,114340000,2026-08-10T15:08:42Z,Claude,active
+11434,carter-t-sma32hl-psar-sma200-h1,1,GBPUSD.DWX,114340001,2026-08-10T15:08:42Z,Claude,active
+11434,carter-t-sma32hl-psar-sma200-h1,2,USDJPY.DWX,114340002,2026-08-10T15:08:42Z,Claude,active
+11434,carter-t-sma32hl-psar-sma200-h1,3,AUDUSD.DWX,114340003,2026-08-10T15:08:42Z,Claude,active
+11434,carter-t-sma32hl-psar-sma200-h1,4,USDCAD.DWX,114340004,2026-08-10T15:08:42Z,Claude,active
+11435,carter-t-adx35-priorday-range-h1,0,EURUSD.DWX,114350000,2026-08-10T15:08:42Z,Claude,active
+11435,carter-t-adx35-priorday-range-h1,1,GBPUSD.DWX,114350001,2026-08-10T15:08:42Z,Claude,active
+11435,carter-t-adx35-priorday-range-h1,2,USDJPY.DWX,114350002,2026-08-10T15:08:42Z,Claude,active
+11435,carter-t-adx35-priorday-range-h1,3,AUDUSD.DWX,114350003,2026-08-10T15:08:42Z,Claude,active
+11435,carter-t-adx35-priorday-range-h1,4,USDCAD.DWX,114350004,2026-08-10T15:08:42Z,Claude,active
