@@ -82,3 +82,20 @@ disabled. No live setfile or live authorization exists.
 - trade_management: package repair, first-counter-return close, invalid-state
   close, and twelve-day stale close.
 - trade_close: package helper, broker hard stops, and framework kill switch.
+
+## 8. Q01 Validation
+
+Strict compilation passed with zero errors and zero warnings. The targeted
+framework build check passed with zero failures and zero warnings, and the P1
+artifact validator confirmed the EA directory and EX5 binary. No manual smoke
+or backtest was run.
+
+## 9. Q02 Handoff
+
+One current-binary logical-basket Q02 row was enqueued at
+`2026-08-10T23:14:52+00:00`: work item
+`2384e96c-5240-4c0c-8829-c2fab47702b3`, attempt 0, no verdict, and
+`priority_track=true`. Immediate readback was pending and unclaimed. The
+binding pre-enqueue sample at `2026-08-10T23:14:38+00:00` found six executing
+T1-T10 factory terminals against the ceiling of seven. This mission ran no
+dispatch tick or manual backtest.

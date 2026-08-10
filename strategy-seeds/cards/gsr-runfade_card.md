@@ -13,9 +13,9 @@ source_author: "Karsten Schweikert; OlaOluwa S. Yaya; Xuan Vinh Vo; Hammed A. Ol
 strategy_mechanic: synchronized-d1-gold-silver-log-ratio-five-consecutive-same-sign-relative-returns-fresh-run-exhaustion-reversion-basket
 target_symbols: [XAUUSD.DWX, XAGUSD.DWX]
 period: D1
-pipeline_phase: G0
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02_ENQUEUED
+q01_status: PASS
+q02_status: ENQUEUED
 last_updated: 2026-08-11
 ---
 
@@ -46,3 +46,10 @@ Q02 uses `RISK_FIXED=1000`, `RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1` for
 one logical basket. Opposite legs are not proof of neutrality. No live
 artifact, portfolio mutation, correlation waiver, or efficacy claim is
 authorized.
+
+## Pipeline Status
+
+G0 is OWNER-approved. Q01 passed strict compile, target build validation, and
+P1 artifact validation on 2026-08-11. Exactly one current-binary Q02 logical
+basket was enqueued below the factory CPU ceiling: work item
+`2384e96c-5240-4c0c-8829-c2fab47702b3`, attempt 0 with no verdict at handoff.
