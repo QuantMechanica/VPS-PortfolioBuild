@@ -1717,3 +1717,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 10842,tv-kalki-sweep,d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7,active,Research,2026-05-22
 10843,tv-fracture-th,d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7,active,Research,2026-05-22
 11325,tc-m5-9-ema50-100-macd-partial-exit,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Development,2026-08-10
+11388,russ-horn-golden-smma55-wpr55-stoch555,8e980ec0-c92b-5163-a865-c3e451c5442b,active,Development,2026-08-10

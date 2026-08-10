@@ -1945,3 +1945,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11325,tc-m5-9-ema50-100-macd-partial-exit,0,EURUSD.DWX,113250000,2026-08-10,Development,active
 11325,tc-m5-9-ema50-100-macd-partial-exit,1,GBPUSD.DWX,113250001,2026-08-10,Development,active
 11325,tc-m5-9-ema50-100-macd-partial-exit,2,USDJPY.DWX,113250002,2026-08-10,Development,active
+11388,russ-horn-golden-smma55-wpr55-stoch555,0,EURUSD.DWX,113880000,2026-08-10,Development,active
+11388,russ-horn-golden-smma55-wpr55-stoch555,1,GBPUSD.DWX,113880001,2026-08-10,Development,active
+11388,russ-horn-golden-smma55-wpr55-stoch555,2,USDJPY.DWX,113880002,2026-08-10,Development,active
