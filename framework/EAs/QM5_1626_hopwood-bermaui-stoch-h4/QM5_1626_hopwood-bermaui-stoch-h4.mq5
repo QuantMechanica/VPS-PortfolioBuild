@@ -243,7 +243,7 @@ bool Strategy_SelectOurPosition(ENUM_POSITION_TYPE &position_type, ulong &ticket
 bool Strategy_NoTradeFilter()
   {
    // Warmup: enough H4 history for the double-smoothing window + Stochastic lookback.
-   if(Bars(_Symbol, PERIOD_H4) < QM_BERMAUI_WARMUP + strategy_stoch_k_period + strategy_stoch_slowing + 10)
+   if(Bars(_Symbol, PERIOD_H4) < QM_BERMAUI_WARMUP + strategy_stoch_k_period + strategy_stoch_slowing + 10) // perf-allowed: O(1) warmup bar-count guard
       return true;
 
    const double atr1 = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
@@ -340,7 +340,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    // Record the entry bar for the same-direction cooldown.
-   const datetime bar_time = iTime(_Symbol, PERIOD_H4, 0);
+   const datetime bar_time = iTime(_Symbol, PERIOD_H4, 0); // perf-allowed: cooldown bar-time bookkeeping
    if(side == QM_BUY)
       g_last_long_entry_bar = bar_time;
    else
