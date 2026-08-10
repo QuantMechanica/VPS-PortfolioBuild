@@ -155,16 +155,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   // Closed-bar OHLC for the 3-bar swing (shifts 1,2,3). perf-allowed: bespoke
-   // structural pattern, fixed single-shift reads (no loops, no warmup window).
-   const double low1   = iLow(_Symbol, _Period, 1);
-   const double low2   = iLow(_Symbol, _Period, 2);
-   const double low3   = iLow(_Symbol, _Period, 3);
-   const double high1  = iHigh(_Symbol, _Period, 1);
-   const double high2  = iHigh(_Symbol, _Period, 2);
-   const double high3  = iHigh(_Symbol, _Period, 3);
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double close2 = iClose(_Symbol, _Period, 2);
+   // Closed-bar OHLC for the 3-bar swing (shifts 1,2,3): bespoke structural
+   // pattern, fixed single-shift reads (no loops, no warmup window).
+   const double low1   = iLow(_Symbol, _Period, 1); // perf-allowed: bespoke structural read
+   const double low2   = iLow(_Symbol, _Period, 2); // perf-allowed: bespoke structural read
+   const double low3   = iLow(_Symbol, _Period, 3); // perf-allowed: bespoke structural read
+   const double high1  = iHigh(_Symbol, _Period, 1); // perf-allowed: bespoke structural read
+   const double high2  = iHigh(_Symbol, _Period, 2); // perf-allowed: bespoke structural read
+   const double high3  = iHigh(_Symbol, _Period, 3); // perf-allowed: bespoke structural read
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: bespoke structural read
+   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: bespoke structural read
    if(low1 <= 0.0 || low2 <= 0.0 || low3 <= 0.0 ||
       high1 <= 0.0 || high2 <= 0.0 || high3 <= 0.0 ||
       close1 <= 0.0 || close2 <= 0.0)
@@ -321,18 +321,16 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any per-tick guard can
+   // return. QM_KillSwitchCheck retains the same call as a compatibility
+   // fallback for pre-template EAs; keep this explicit hook in all new builds.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -340,6 +338,11 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
+   // Management, rule-based exits and the Friday sweep above MUST keep
+   // running through news windows — the news gate below blocks NEW entries
+   // only (2026-07-02 audit rule; canonical order per QM5_12821 OnTick,
+   // commit dc418a720).
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -356,12 +359,25 @@ void OnTick()
         }
      }
 
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults. Gates NEW entries only —
+   // never the management/exit paths above.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req); // symbol_slot=0 (host slot) + expiration=0 defaults; garbage
+                    // in unset fields = the silent-zero-trades class (9e4cfedb1)
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
