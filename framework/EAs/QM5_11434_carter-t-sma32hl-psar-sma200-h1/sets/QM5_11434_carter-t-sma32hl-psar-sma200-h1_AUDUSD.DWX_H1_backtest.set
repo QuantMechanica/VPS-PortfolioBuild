@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        11434
 ; ea_slug:      carter-t-sma32hl-psar-sma200-h1
@@ -10,7 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6c156a1d91fc89d4a4731d3e2a3ebf9f4e07749abf2745031423d7ded454a5fb
+; build_hash:   2034f7fe5995ee93b2ea140566abb204c2f41629ad1636a0ca7720b6b5428518
 ; author:       Development
 ; date:         2026-08-10
 ;==========================================================
