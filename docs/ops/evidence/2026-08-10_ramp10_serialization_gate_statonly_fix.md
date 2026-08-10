@@ -150,3 +150,52 @@ Close-out contract (2026-08-11): evaluate the ≥24h soak — ≥500 runs, ≥80
 occupancy in a 4h window, 0 error[32]/error[5], archive-integrity audit
 (quiescent FULL hash), before/after error-32 numbers — then rollback-tree
 retention decision, migration execution record, main integration.
+
+## Third collapse class — re-audit window vs long privatizations (17:28Z)
+
+Containment re-engaged 2026-08-10T17:28:00Z
+(`custom_history_isolation_gate_failure`, mode `ea411b2e…`). T7's gate
+recorded 288 findings, exclusively `ARCHIVE_LINK_COUNT_TOO_LOW` with
+`actual==minimum-1`, all `ticks/AUDJPY.DWX` + `history/AUDJPY.DWX` families,
+staggered by scan order (T2: 11, T3: 25, T4: 37, T5–T9: all 43; T1/T10
+zero) — the signature of a single terminal privatizing AUDJPY's 43 archives
+file-by-file WHILE each audit pass scanned the fleet. Root cause: one
+inventory pass spans many seconds and a large copy-on-claim privatization
+runs for minutes, so all three whole-audit retries (8b13cc91f) saw freshly
+torn state every time. The 8b13cc91f re-audit assumption ("a consistent
+second snapshot passes") only holds for sub-second churn.
+
+Timing note: the privatization started on T1/T10 immediately after their
+stale run_smoke reservations (dead holder PIDs 2020/15232, blocking claims
+since ~13:25Z/12:19Z) were released at ~17:0xZ — the fleet resumed claiming
+AUDJPY-family work and the first large privatization hit the gate window.
+
+Fix — commit `6a1366777`: `reconcile_archive_link_count_findings` in
+mt5_history_isolation.py performs per-path instantaneous recounts: for each
+flagged family it stats the path across all ten terminals in one tight pass
+(microsecond-scale) and clears the finding iff every non-member is a valid
+private inode (nlink==1, manifest size) and the members' shared inode
+reports exactly `link_count_at_build + member_count` links. Deleted
+rollback links, cross-terminal aliases, missing files, and unexplained
+deficits keep their findings; reconciliation errors stay fail-closed. Wired
+into `run_worker_gate` after the (retained) re-audit loop; result records
+`link_count_reconciliation` = CLEARED/REMAINING/ERROR. 8 new regression
+tests; focused set 49 passed.
+
+Third governed reload: Factory_OFF (first attempt died at the known
+PSModulePath/Get-FileHash trap, flag preserved at OFF_IN_PROGRESS with the
+21-task map; re-run with repaired PSModulePath finalized OFF — MNT-046
+evidence `mnt046_factory_off_quiescence_20260810T174039Z_10264.json`,
+T_Live/FTMO untouched) → stale claims T3/T5 released, dead-holder global
+lease (pythonw 16408) + 3 agent-task locks + orchestration lock (PIDs
+9876/14440 dead) archived to the window artifacts → containment released
+(mode `e722da43…`, reason
+`post_link_count_reconciliation_fix_6a1366777_quiescent_release_ramp10_soak`)
+→ runtime decision R5 minted via builder:
+`FACTORY_RUNTIME_20260810_RAMPSOAK_LINKCOUNT_RECONCILE_R5`, decision sha
+`41ad2045…`, flag sha `915ea8a9…`, source cohort `5c5bb6023`, task-map sha
+matches pinned `ccfb1611…`, valid to 2026-08-11T17:44:13Z → Factory_ON.
+
+Soak-clock note: the fleet was containment-serialized 17:28Z→~18:0xZ; the
+close-out occupancy window must exclude or annotate this span, and the
+run_smoke reservation holds (legitimate admission work) count as occupied.

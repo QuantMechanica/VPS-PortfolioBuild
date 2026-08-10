@@ -86,6 +86,10 @@ COMMIT_GUARD_SLEEP_SECONDS = 20
 # working set. Reserve its expected peak during that launch/warm-up window so
 # other workers cannot all pass against the same unchanged OS measurement.
 COMMIT_RESERVATION_SECONDS = 300
+# Throttle ledger for claim-decline logging: reason -> monotonic timestamp.
+# 2026-08-10: factory_mutation_lock_busy declines were fully silent, hiding a
+# wedged restart window behind an idle-looking fleet for 40 minutes.
+_UNCLAIMED_DECLINE_LOG_LAST: dict[str, float] = {}
 ORDINARY_COMMIT_RESERVATION_GB = 8.0
 WATCHDOG_RESET_BLOCK_FILENAME = "WATCHDOG_RESET_PENDING.json"
 # Multi-symbol real-tick jobs need materially more launch headroom than ordinary
@@ -4025,6 +4029,19 @@ def _pause_after_unclaimed(claim: dict[str, Any], terminal: str) -> None:
         }), flush=True)
         time.sleep(POLL_SLEEP_SECONDS + random.uniform(0, 5))
         return
+    reason = str(claim.get("reason") or "unknown")
+    now_mono = time.monotonic()
+    interval = 300.0 if reason == "no_pending_claimable" else 60.0
+    if now_mono - _UNCLAIMED_DECLINE_LOG_LAST.get(reason, 0.0) >= interval:
+        _UNCLAIMED_DECLINE_LOG_LAST[reason] = now_mono
+        print(json.dumps({
+            "event": "claim_declined",
+            "terminal": terminal,
+            "reason": reason,
+            "lock": claim.get("lock"),
+            "history_skipped": len(claim.get("history_skipped") or []),
+            "launch_cooldown_skipped": len(claim.get("launch_cooldown_skipped") or []),
+        }), flush=True)
     time.sleep(POLL_SLEEP_SECONDS)
 
 
