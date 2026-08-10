@@ -2004,3 +2004,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20076,trendline-diagonal-break-retest,4,XAUUSD.DWX,200760004,2026-08-11,claude,active
 20076,trendline-diagonal-break-retest,5,NDX.DWX,200760005,2026-08-11,claude,active
 20076,trendline-diagonal-break-retest,6,GDAXI.DWX,200760006,2026-08-11,claude,active
+20074,trendline-horizontal-sr-retest,0,EURUSD.DWX,200740000,2026-08-11,claude,active
+20074,trendline-horizontal-sr-retest,1,GBPUSD.DWX,200740001,2026-08-11,claude,active
+20074,trendline-horizontal-sr-retest,2,XAUUSD.DWX,200740002,2026-08-11,claude,active
+20074,trendline-horizontal-sr-retest,3,GDAXI.DWX,200740003,2026-08-11,claude,active
+20074,trendline-horizontal-sr-retest,4,NDX.DWX,200740004,2026-08-11,claude,active
+20074,trendline-horizontal-sr-retest,5,WS30.DWX,200740005,2026-08-11,claude,active

@@ -1728,3 +1728,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 12436,ea31337-wpr,041e0d5c-bf76-501d-bee2-31c0f4a6e233,active,Development,2026-08-10
 1626,hopwood-bermaui-stoch-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,claude,2026-08-10
 20076,trendline-diagonal-break-retest,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-08-11
+20074,trendline-horizontal-sr-retest,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-08-11

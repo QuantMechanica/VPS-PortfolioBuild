@@ -1,0 +1,31 @@
+{
+  "task_id": "5fdad0a7-0719-4846-ba82-c13302374f37",
+  "ea_id": "QM5_20074",
+  "ea_dir": "framework/EAs/QM5_20074_trendline-horizontal-sr-retest",
+  "mq5_path": "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20074_trendline-horizontal-sr-retest/QM5_20074_trendline-horizontal-sr-retest.mq5",
+  "ex5_path": "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20074_trendline-horizontal-sr-retest/QM5_20074_trendline-horizontal-sr-retest.ex5",
+  "magic_base": 200740000,
+  "symbols_registered": ["EURUSD.DWX", "GBPUSD.DWX", "XAUUSD.DWX", "GDAXI.DWX", "NDX.DWX", "WS30.DWX"],
+  "setfiles_generated": [
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20074_trendline-horizontal-sr-retest/sets/QM5_20074_trendline-horizontal-sr-retest_EURUSD.DWX_H1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20074_trendline-horizontal-sr-retest/sets/QM5_20074_trendline-horizontal-sr-retest_GBPUSD.DWX_H1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20074_trendline-horizontal-sr-retest/sets/QM5_20074_trendline-horizontal-sr-retest_XAUUSD.DWX_H1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20074_trendline-horizontal-sr-retest/sets/QM5_20074_trendline-horizontal-sr-retest_GDAXI.DWX_H1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20074_trendline-horizontal-sr-retest/sets/QM5_20074_trendline-horizontal-sr-retest_NDX.DWX_H1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20074_trendline-horizontal-sr-retest/sets/QM5_20074_trendline-horizontal-sr-retest_WS30.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20074_trendline-horizontal-sr-retest/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "smoke deferred to Q02: this EA was built in the isolated worktree C:/QM/worktrees/claude-orchestration-2, but run_smoke.ps1 deploys the tester expert from the canonical checkout C:/QM/repo. The freshly-compiled .ex5 exists only in the worktree, so run_smoke emitted 'deploy_skip=source_missing source=C:/QM/repo/framework/EAs/QM5_20074_trendline-horizontal-sr-retest/QM5_20074_trendline-horizontal-sr-retest.ex5' and the T6 tester (pid 16340, exit_code=0) ran without the EA deployed -- no valid summary.json was produced. Writing the worktree .ex5 into C:/QM/repo was declined to avoid polluting the concurrent agents/board-advisor session's dirty checkout. build_check PASS + compile PASS (0 errors / 0 warnings). Q02 runs the real smoke with proper work-item binding once the worktree merges to main -- identical outcome to the QM5_20076 sibling built in this worktree.",
+  "open_questions": [
+    "Cluster partitioning: card says 'walk sorted prices and group anything within 0.5*ATR'. Implemented a deterministic non-overlapping greedy partition (each cluster span <= cluster_frac*ATR), with the level price = cluster mean of >= min_swings members. A sliding/overlapping-window reading could merge boundary swings differently; reviewer to confirm the partition interpretation.",
+    "Break-event detection: card states 'a level is broken when one closed bar closes beyond it by >= 0.3*ATR'. Implemented as a FRESH cross (prior bar's close within threshold, current bar's close beyond) so the arm fires on the breaking bar, not on every bar price sits beyond -- this also naturally prevents re-entry on the same level without an explicit consumed-level guard (fresh cross + one-position-per-magic). Confirm the fresh-cross reading.",
+    "Retest condition: card 'any bar whose Low <= R + 0.1*ATR AND closes back above R' implemented as a single-bar wick-and-close (low and close of the same closed bar), not a two-bar touch-then-close latch. SL anchors on that confirming retest bar's low/high +/- 0.3*ATR per card.",
+    "Opposite-side S/R break exit (card secondary exit, P3-toggleable): interpreted as, for a long, a fresh DOWNWARD break of a support cluster (mirror for short), reusing the same break detector; enabled by default (strategy_opp_break_exit=true). Time-stop 50 bars and RR=2.0 TP also implemented per card.",
+    "P2 saturation: registered all 6 card target_symbols (EURUSD/GBPUSD/XAUUSD/GDAXI/NDX/WS30) at H1, slots 0-5.",
+    "Restart-safety: swing/level/position state is rebuilt from a monotonic per-bar counter starting at backtest/session origin; on live restart it re-detects within ~<= strategy_lookback_bars (200) bars. Acceptable for H1 structural logic; noted for review."
+  ]
+}
