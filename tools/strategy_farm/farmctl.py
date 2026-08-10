@@ -17068,6 +17068,36 @@ def _stale_pass_source_binding(
     }
 
 
+def _repaired_infra_source_binding(
+    target: sqlite3.Row,
+    payload: dict[str, Any],
+    current_bindings: dict[str, Any],
+) -> tuple[bool, dict[str, Any]]:
+    """Authenticate a terminal INFRA row whose bound artifacts were repaired.
+
+    The historical bytes no longer need to be present in the canonical EA
+    directory, but the terminal row must still carry a complete sealed binding,
+    retain the same execution identity, and name a binary distinct from the
+    operator-bound current EX5.
+    """
+    ok, detail = _stale_pass_source_binding(target, payload, current_bindings)
+    if ok:
+        return True, detail
+    reason_map = {
+        "stale_pass_source_binding_missing_or_invalid": (
+            "repaired_infra_source_binding_missing_or_invalid"
+        ),
+        "q02_pass_source_not_stale": "q02_infra_source_binary_not_repaired",
+        "stale_pass_source_identity_mismatch": (
+            "repaired_infra_source_identity_mismatch"
+        ),
+    }
+    mapped = dict(detail)
+    source_reason = str(detail.get("reason"))
+    mapped["reason"] = reason_map.get(source_reason, source_reason)
+    return False, mapped
+
+
 def enqueue_fresh_q02_seed(
     root: Path,
     ea_id: str,
@@ -17467,23 +17497,44 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 **risk_detail,
             }
         stale_pass = str(target["verdict"]) == "PASS"
-        stale_detail: dict[str, Any] = {}
+        repaired_infra = False
+        source_transition_detail: dict[str, Any] = {}
         if stale_pass:
             bindings_ok, bindings = _expected_current_execution_bindings(
                 target, expected_current_ex5_sha256
             )
             if bindings_ok:
-                bindings_ok, stale_detail = _stale_pass_source_binding(
+                bindings_ok, source_transition_detail = _stale_pass_source_binding(
                     target, source_payload, bindings
                 )
         else:
-            bindings_ok, bindings = _q02_exact_artifact_bindings(target, source_payload)
-            if bindings_ok and expected_current_ex5_sha256:
+            historical_ok, historical_detail = _q02_exact_artifact_bindings(
+                target, source_payload
+            )
+            bindings_ok, bindings = historical_ok, historical_detail
+            if historical_ok and expected_current_ex5_sha256:
                 bindings_ok, bindings = _expected_current_execution_bindings(
                     target, expected_current_ex5_sha256
                 )
+            elif not historical_ok and expected_current_ex5_sha256:
+                current_ok, current_bindings = _expected_current_execution_bindings(
+                    target, expected_current_ex5_sha256
+                )
+                if current_ok:
+                    transition_ok, source_transition_detail = (
+                        _repaired_infra_source_binding(
+                            target, source_payload, current_bindings
+                        )
+                    )
+                    if transition_ok:
+                        repaired_infra = True
+                        bindings_ok, bindings = True, current_bindings
+                    else:
+                        bindings_ok, bindings = False, source_transition_detail
+                else:
+                    bindings_ok, bindings = False, current_bindings
         if not bindings_ok:
-            failure_detail = stale_detail if stale_pass and stale_detail else bindings
+            failure_detail = source_transition_detail or bindings
             return {
                 "enqueued": False,
                 "ea_id": ea_id,
@@ -17604,6 +17655,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
             "rerun_source_updated_at": target["updated_at"],
             "rerun_source_verdict": target["verdict"],
             "stale_pass_rerun": stale_pass,
+            "repaired_infra_rerun": repaired_infra,
             "risk_fixed": risk_detail["risk_fixed"],
             "risk_percent": risk_detail["risk_percent"],
             **bindings["artifact_sha256"],
@@ -17613,11 +17665,24 @@ def _enqueue_q02_append_only_exact_row_rerun(
         })
         if stale_pass:
             payload.update({
-                "expected_current_ex5_sha256": stale_detail["current_ex5_sha256"],
-                "rerun_source_expected_ex5_sha256": stale_detail[
+                "expected_current_ex5_sha256": source_transition_detail[
+                    "current_ex5_sha256"
+                ],
+                "rerun_source_expected_ex5_sha256": source_transition_detail[
                     "source_expected_ex5_sha256"
                 ],
                 "rerun_source_current_ex5_mismatch_verified": True,
+            })
+        elif repaired_infra:
+            payload.update({
+                "expected_current_ex5_sha256": source_transition_detail[
+                    "current_ex5_sha256"
+                ],
+                "rerun_source_expected_ex5_sha256": source_transition_detail[
+                    "source_expected_ex5_sha256"
+                ],
+                "rerun_source_current_ex5_mismatch_verified": True,
+                "rerun_source_repaired_after_infra": True,
             })
         wid = str(uuid.uuid4())
         conn.execute(

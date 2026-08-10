@@ -227,6 +227,116 @@ def test_stale_pass_q02_is_append_only_and_double_enqueue_safe(
     assert new_payload["risk_percent"] == 0.0
 
 
+def test_repaired_infra_q02_binds_current_artifacts_append_only(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-infra-old-binary",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=_payload(art, stale=True),
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-old-binary",
+        append_only_rerun_of="q02-infra-old-binary",
+        rerun_reason="runtime hot path repaired",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    assert _work_item_count(art) == 2
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        historical = conn.execute(
+            "SELECT status,verdict FROM work_items WHERE id='q02-infra-old-binary'"
+        ).fetchone()
+        new_payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (result["created"][0]["id"],),
+            ).fetchone()[0]
+        )
+    assert historical == ("failed", "INFRA_FAIL")
+    assert new_payload["stale_pass_rerun"] is False
+    assert new_payload["repaired_infra_rerun"] is True
+    assert new_payload["rerun_source_repaired_after_infra"] is True
+    assert new_payload["rerun_source_current_ex5_mismatch_verified"] is True
+    assert new_payload["rerun_source_expected_ex5_sha256"] == "2" * 64
+    assert new_payload["expected_current_ex5_sha256"] == art["current_ex5"]
+    assert new_payload["expected_ex5_sha256"] == art["current_ex5"]
+    assert new_payload["risk_fixed"] == 1000.0
+    assert new_payload["risk_percent"] == 0.0
+
+
+def test_repaired_infra_q02_refuses_unsealed_historical_binding(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    payload = _payload(art, stale=True)
+    payload.pop("expected_mq5_sha256")
+    _insert_work_item(
+        art,
+        item_id="q02-infra-unsealed",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=payload,
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-unsealed",
+        append_only_rerun_of="q02-infra-unsealed",
+        rerun_reason="must remain fail closed",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "repaired_infra_source_binding_missing_or_invalid"
+    assert result["binding"] == "expected_mq5_sha256"
+    assert _work_item_count(art) == 1
+
+
+def test_repaired_infra_q02_refuses_wrong_current_ex5_hash(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-infra-wrong-current",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=_payload(art, stale=True),
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-wrong-current",
+        append_only_rerun_of="q02-infra-wrong-current",
+        rerun_reason="operator hash must bind current binary",
+        expected_current_ex5_sha256="f" * 64,
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "current_ex5_hash_mismatch"
+    assert result["expected_sha256"] == "f" * 64
+    assert result["actual_sha256"] == art["current_ex5"]
+    assert _work_item_count(art) == 1
+
+
 def test_fresh_q02_seed_requires_current_ex5_hash(tmp_path: Path, monkeypatch) -> None:
     art = _artifacts(tmp_path, monkeypatch)
     _insert_work_item(
