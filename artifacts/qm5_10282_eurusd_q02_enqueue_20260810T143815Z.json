@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-08-10T14:38:15+00:00",
+  "branch": "agents/board-advisor",
+  "mission": "fx_cointegration_frontier_fallback",
+  "decision": "ENQUEUE_EXISTING_LOW_FREQUENCY_FX_CARD",
+  "frontier": {
+    "source_document": "docs/research/FX_COINTEGRATION_FRONTIER_Q02_CPU_CEILING_STOP_2026-08-07.md",
+    "source_commit": "eda8802a13b98b83b60bdb4125af39a8758da250",
+    "all_66_relationships_mechanized": true,
+    "qm5_12532": {
+      "logical_q02": "PASS",
+      "later_terminal_gate": "Q05 FAIL"
+    },
+    "qm5_12533": {
+      "logical_q02": "PASS",
+      "later_terminal_gate": "Q04 FAIL"
+    }
+  },
+  "candidate": {
+    "ea_id": "QM5_10282",
+    "slug": "jstm-bbw",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "H1",
+    "card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10282_jstm-bbw.md",
+    "g0_status": "APPROVED",
+    "source": "https://github.com/je-suis-tm/quant-trading/blob/master/Bollinger%20Bands%20Pattern%20Recognition%20backtest.py",
+    "expected_trades_per_year_per_symbol": "3-8",
+    "registry_status": "active",
+    "magic_slot": 1,
+    "magic": 102820001,
+    "build_commit": "908003072710d728bd80f2fc32a8f7f2849b425e",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "artifact_sha256": {
+    "card": "B2FDCBA6C3389DA3F3E2F1182742CE02D54DE0F6F1E360BCF639AB33529A7D3E",
+    "mq5": "CE9578118CE06542C38174CCDF5124CEBC66DED726F4E5BBACD625111264A417",
+    "ex5": "E91019F539EB319828B18499BBB1DD8AF71D9E3CCDFDC37709DA76DAF653D4CD",
+    "setfile": "9188C4B4C42554570F057EE9F3BB2A6B5D785DF0C9D96D19B977C92A612E9E15",
+    "enqueue_evidence_at_readback": "95120B1C5DAD8B275A009EE87D4F2E7352A0637FFE62DA4426F0D60787930446"
+  },
+  "capacity_preapply": {
+    "scanned_at_utc": "2026-08-10T14:37:56+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "running_factory_count": 6,
+    "ceiling": 7,
+    "below_ceiling": true,
+    "t_live_excluded": true,
+    "ftmo_terminal_excluded": true
+  },
+  "enqueue": {
+    "selector": "python tools/strategy_farm/sweep_enqueue_built_eas.py --ea QM5_10282 --symbols EURUSD.DWX --apply",
+    "pending_before": 1101,
+    "queue_ceiling": 7000,
+    "selected_rows": 1,
+    "priority_track": true,
+    "work_item_id": "ede93177-885c-4a04-a7c7-6d6f96ff51a1",
+    "created_at_utc": "2026-08-10T14:38:15+00:00",
+    "immediate_status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "verdict": null,
+    "deferred_symbols": [
+      "GBPUSD.DWX",
+      "WS30.DWX"
+    ],
+    "target_filter_skips": [
+      "NDX.DWX",
+      "XAUUSD.DWX"
+    ]
+  },
+  "safety": {
+    "manual_backtest_started": false,
+    "dispatch_tick_run": false,
+    "terminal_control_performed": false,
+    "autotrading_changed": false,
+    "t_live_changed": false,
+    "portfolio_gate_changed": false,
+    "live_artifact_created": false
+  }
+}
