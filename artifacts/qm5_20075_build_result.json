@@ -1,0 +1,29 @@
+{
+  "task_id": "81793202-f0ec-45d3-9e99-96c1a619a626",
+  "ea_id": "QM5_20075",
+  "ea_dir": "framework/EAs/QM5_20075_camarilla-inner-pivot-fade",
+  "mq5_path": "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20075_camarilla-inner-pivot-fade/QM5_20075_camarilla-inner-pivot-fade.mq5",
+  "ex5_path": "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20075_camarilla-inner-pivot-fade/QM5_20075_camarilla-inner-pivot-fade.ex5",
+  "magic_base": 200750000,
+  "symbols_registered": ["EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "EURJPY.DWX", "GBPJPY.DWX"],
+  "setfiles_generated": [
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20075_camarilla-inner-pivot-fade/sets/QM5_20075_camarilla-inner-pivot-fade_EURUSD.DWX_H1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20075_camarilla-inner-pivot-fade/sets/QM5_20075_camarilla-inner-pivot-fade_GBPUSD.DWX_H1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20075_camarilla-inner-pivot-fade/sets/QM5_20075_camarilla-inner-pivot-fade_USDJPY.DWX_H1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20075_camarilla-inner-pivot-fade/sets/QM5_20075_camarilla-inner-pivot-fade_EURJPY.DWX_H1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20075_camarilla-inner-pivot-fade/sets/QM5_20075_camarilla-inner-pivot-fade_GBPJPY.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_20075_camarilla-inner-pivot-fade/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "smoke deferred (capacity): the single sanctioned smoke pass (EURUSD.DWX H1 2024, -SmokeMode -MinTrades 1) was REFUSED at the terminal-reservation gate -- run_smoke.ps1:653 threw 'Custom-history gate/reservation refused terminal T5: active Custom-history isolation requires a worker-bound work item whose archives were privatized before run_smoke (status=REFUSED)' with dispatch_status=duplicate. The T1-T10 fleet is saturated with worker-bound backtests under the Copy-on-Claim/STAT_ONLY custom-history isolation, so no isolated terminal was lent to this ad-hoc smoke and NO tester run executed for this binary (no summary.json for my .ex5 sha=bffcde94a9ee95007ae3566af432a5b5561e891a83b37c939af4f73655acafcd). build_check PASS + compile PASS (0 errors / 0 warnings); the 5 magics 200750000-200750004 were appended to magic_numbers.csv and baked into the worktree QM_MagicResolver.mqh (verified present) which this .ex5 was compiled against. Per one-pass discipline, not retried. Q02 runs the real smoke with proper work-item binding once the worktree merges to main.",
+  "open_questions": [
+    "DUPLICATE BUILD -- a concurrent session claude-orchestration-3 independently built QM5_20075 and its smoke (D:/QM/reports/smoke/QM5_20075/20260810_225631/summary.json, binary sha=86785a4744ff726fab8bd27e6fb700a14ab69e53980136510d5e66da9769146f) FAILED OnInit with 'EA_MAGIC_NOT_REGISTERED: ea_id=20075 slot=0 magic=200750000' -- that binary was compiled against a resolver LACKING the 20075 rows. THIS build (distinct .ex5 sha=bffcde94...) correctly appended all 5 magics AND regenerated the worktree resolver before compiling, so it does not have that defect. Reviewer/merger MUST dedupe QM5_20075 across worktrees (claude-orchestration-2 vs -3 vs the board-advisor inert skeleton in C:/QM/repo) and prefer the correctly-registered build; also watch for duplicate 20075 rows in ea_id_registry.csv / magic_numbers.csv at merge time.",
+    "OnTick pattern: adopted the SOP Intraday Discipline OnTick (Strategy_EntrySignal runs PER TICK reading cached D1/M15/H1 state) instead of the closed-bar-gated skeleton default, because the card entry is an intrabar tick-level touch of L1/H1. Caches advance on independent QM_IsNewBar(sym,tf) latches (D1 pivots, M15 gate, H1 soft-exit); management + exits run every tick; only NEW entries are gated by spread/news.",
+    "Opposite-pivot soft exit direction: card tertiary exit reads literally 'long stopped if an hourly bar closes > H2; short stopped if close < L2' -- geometrically a favorable-overshoot exit (price ran past the mid pivot P to the far inner band), not an adverse stop. Implemented literally per HR9 (most-literal reading); reviewer to confirm intent vs the 'soft exit before hard SL' framing.",
+    "TP = pivot P geometry: on days where the prior close sits high in the prior range, P=(H+L+C)/3 can fall BELOW L1 (the long entry) or ABOVE H1 (the short entry). Such entries are skipped (a TP on the wrong side of entry is an invalid order); this is faithful to 'TP at P' and self-consistent with mean-reversion (longs mostly fire on down-close days where P>L1), but it reduces trade frequency on strong-close days. Reviewer to confirm skip vs an alternative fallback TP.",
+    "Broker-time native: the Camarilla day boundary (D1 bar rollover == broker 00:00), the 06:00-18:00 entry window, and the 21:00 EOD flatten all use server time (TimeCurrent), which IS DXZ NY-Close broker time -- so no QM_BrokerToUTC/QM_UTCToBroker/QM_IsUSDSTUTC conversion is needed and no DST offset bug class is introduced. P2 saturation: registered all 5 card target_symbols (EURUSD/GBPUSD/USDJPY/EURJPY/GBPJPY) at H1, slots 0-4."
+  ]
+}
