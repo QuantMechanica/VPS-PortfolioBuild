@@ -13,6 +13,7 @@ import argparse
 import hashlib
 import json
 import os
+import time
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
@@ -868,6 +869,105 @@ def resolve_protected_root_identities(
             }
         )
     )
+
+
+def reconcile_archive_link_count_findings(
+    *,
+    mt5_root: Path | str,
+    terminals: Sequence[str],
+    manifest: Mapping[str, Any],
+    findings: Sequence[Mapping[str, Any]],
+    attempts: int = 5,
+    delay_seconds: float = 0.05,
+    sleeper: Callable[[float], None] = time.sleep,
+) -> dict[str, Any]:
+    """Per-path instantaneous recount for torn ARCHIVE_LINK_COUNT_TOO_LOW findings.
+
+    A copy-on-claim privatization of a large symbol family takes minutes while a
+    full inventory pass spans many seconds, so whole-audit retries keep tearing
+    for the entire privatization window. Statting one family across all
+    terminals is microsecond-scale: the family is consistent iff, in a single
+    tight pass, every non-member row is a valid private inode (nlink==1,
+    manifest size) and the members' shared inode reports exactly
+    link_count_at_build + member_count links. Anything else — deleted rollback
+    link, cross-terminal private alias, missing file, persistent deficit —
+    keeps its finding and stays fail-closed.
+    """
+
+    validated = validate_manifest(manifest, require_owner_approval=False)
+    archive_rows = _manifest_rows(validated)
+    root = Path(mt5_root)
+    terms = tuple(sorted({str(value).upper() for value in terminals}))
+    cleared: list[dict[str, Any]] = []
+    remaining: list[dict[str, Any]] = []
+    recounts: list[dict[str, Any]] = []
+    by_path: dict[str, list[dict[str, Any]]] = {}
+    for finding in findings:
+        if str(finding.get("code")) != "ARCHIVE_LINK_COUNT_TOO_LOW":
+            remaining.append(dict(finding))
+            continue
+        folded = normalize_relative_path(
+            str(finding.get("relative_path") or "")
+        ).casefold()
+        by_path.setdefault(folded, []).append(dict(finding))
+
+    for folded, flagged in sorted(by_path.items()):
+        manifest_row = archive_rows.get(folded)
+        if manifest_row is None:
+            remaining.extend(flagged)
+            continue
+        relative_parts = str(manifest_row["relative_path"]).split("/")
+        consistent = False
+        recount: dict[str, Any] = {}
+        for attempt in range(max(1, int(attempts))):
+            members = 0
+            member_links: set[int] = set()
+            valid = True
+            for terminal in terms:
+                path = root / terminal / "Bases" / "Custom"
+                path = path.joinpath(*relative_parts)
+                try:
+                    identity = file_identity(path)
+                except (FileNotFoundError, OSError):
+                    valid = False
+                    break
+                if int(identity["size"]) != int(manifest_row["size"]):
+                    valid = False
+                    break
+                if str(identity["file_id"]) == str(manifest_row["file_id"]):
+                    members += 1
+                    member_links.add(int(identity["link_count"]))
+                elif int(identity["link_count"]) != 1:
+                    # A non-manifest inode shared by more than one directory
+                    # entry is a cross-terminal alias, never a benign tear.
+                    valid = False
+                    break
+            if valid:
+                if members == 0:
+                    # Every terminal privatized this path in valid isolation;
+                    # no family row remains for the finding to bind to.
+                    consistent = True
+                elif len(member_links) == 1 and member_links == {
+                    int(manifest_row["link_count_at_build"]) + members
+                }:
+                    consistent = True
+            if consistent:
+                recount = {
+                    "relative_path": str(manifest_row["relative_path"]),
+                    "family_members": members,
+                    "link_count": next(iter(member_links), 0),
+                    "expected": int(manifest_row["link_count_at_build"]) + members,
+                    "attempts": attempt + 1,
+                }
+                break
+            if attempt + 1 < max(1, int(attempts)):
+                sleeper(delay_seconds)
+        if consistent:
+            cleared.extend(flagged)
+            recounts.append(recount)
+        else:
+            remaining.extend(flagged)
+    return {"cleared": cleared, "remaining": remaining, "recounts": recounts}
 
 
 def audit_history_isolation(

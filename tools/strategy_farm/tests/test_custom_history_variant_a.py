@@ -604,3 +604,124 @@ def test_worker_gate_mixed_findings_do_not_retry(monkeypatch, tmp_path: Path) ->
 
     assert verdict["status"] == "FAIL_CLOSED"
     assert len(calls) == 1
+
+
+def _gate_activation_fixture(monkeypatch, tmp_path: Path) -> list:
+    activation = {
+        "runner_terminals": ["T1"],
+        "protected_roots": [],
+        "manifest_path": str(tmp_path / "manifest.json"),
+        "activation_sha256": "a" * 64,
+        "manifest_sha256": "b" * 64,
+    }
+    monkeypatch.setattr(gate, "load_activation", lambda root: activation)
+    monkeypatch.setattr(gate, "load_rollback_mode", lambda root, activation: None)
+    monkeypatch.setattr(
+        gate,
+        "load_ramp",
+        lambda root, activation: {
+            "terminal_order": ["T1"],
+            "limit": 1,
+            "ramp_sha256": "c" * 64,
+        },
+    )
+    monkeypatch.setattr(gate.time, "sleep", lambda seconds: None)
+    torn = {
+        "status": "FAIL_CLOSED",
+        "audit_sha256": "d" * 64,
+        "findings": [],
+        "variant_a_file_audit": {
+            "findings": [
+                {
+                    "code": "ARCHIVE_LINK_COUNT_TOO_LOW",
+                    "terminal": "T1",
+                    "relative_path": "ticks/AUDJPY.DWX/202206.tkc",
+                    "actual": 10,
+                    "minimum": 11,
+                }
+            ]
+        },
+    }
+    calls: list = []
+    monkeypatch.setattr(
+        gate.mt5_history_isolation,
+        "audit_history_isolation",
+        lambda **kwargs: (calls.append(kwargs), dict(torn))[1],
+    )
+    return calls
+
+
+def test_worker_gate_reconciles_persistent_link_count_churn(
+    monkeypatch, tmp_path: Path
+) -> None:
+    calls = _gate_activation_fixture(monkeypatch, tmp_path)
+    monkeypatch.setattr(
+        gate, "load_manifest", lambda path, require_owner_approval=True: {"files": []}
+    )
+    monkeypatch.setattr(
+        gate.mt5_history_isolation,
+        "reconcile_archive_link_count_findings",
+        lambda **kwargs: {
+            "cleared": list(kwargs["findings"]),
+            "remaining": [],
+            "recounts": [
+                {
+                    "relative_path": "ticks/AUDJPY.DWX/202206.tkc",
+                    "family_members": 9,
+                    "link_count": 10,
+                    "expected": 10,
+                    "attempts": 1,
+                }
+            ],
+        },
+    )
+
+    verdict = gate.run_worker_gate(tmp_path, terminal="T1")
+
+    assert verdict["status"] == "PASS_ISOLATED"
+    assert verdict["findings"] == []
+    assert verdict["link_count_reconciliation"]["status"] == "CLEARED"
+    assert verdict["link_count_reconciliation"]["cleared_count"] == 1
+    assert len(calls) == 3
+
+
+def test_worker_gate_reconciliation_remaining_stays_fail_closed(
+    monkeypatch, tmp_path: Path
+) -> None:
+    calls = _gate_activation_fixture(monkeypatch, tmp_path)
+    monkeypatch.setattr(
+        gate, "load_manifest", lambda path, require_owner_approval=True: {"files": []}
+    )
+    monkeypatch.setattr(
+        gate.mt5_history_isolation,
+        "reconcile_archive_link_count_findings",
+        lambda **kwargs: {
+            "cleared": [],
+            "remaining": list(kwargs["findings"]),
+            "recounts": [],
+        },
+    )
+
+    verdict = gate.run_worker_gate(tmp_path, terminal="T1")
+
+    assert verdict["status"] == "FAIL_CLOSED"
+    assert verdict["link_count_reconciliation"]["status"] == "REMAINING"
+    assert len(verdict["findings"]) == 1
+    assert len(calls) == 3
+
+
+def test_worker_gate_reconciliation_error_stays_fail_closed(
+    monkeypatch, tmp_path: Path
+) -> None:
+    calls = _gate_activation_fixture(monkeypatch, tmp_path)
+
+    def broken_manifest(path, require_owner_approval=True):
+        raise RuntimeError("manifest unavailable")
+
+    monkeypatch.setattr(gate, "load_manifest", broken_manifest)
+
+    verdict = gate.run_worker_gate(tmp_path, terminal="T1")
+
+    assert verdict["status"] == "FAIL_CLOSED"
+    assert verdict["link_count_reconciliation"]["status"] == "ERROR"
+    assert len(calls) == 3

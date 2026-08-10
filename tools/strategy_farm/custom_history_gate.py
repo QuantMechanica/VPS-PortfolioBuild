@@ -547,9 +547,49 @@ def run_worker_gate(
         if codes != {"ARCHIVE_LINK_COUNT_TOO_LOW"}:
             break
         time.sleep(1.5)
-    return {
+
+    # A large copy-on-claim privatization replaces archives for minutes while
+    # one inventory pass itself spans many seconds, so every whole-audit retry
+    # above can tear again (2026-08-10: 43 AUDJPY archives privatizing on one
+    # terminal produced 288 persistent link-count findings across the fleet).
+    # Reconcile the flagged families with per-path instantaneous recounts; a
+    # recount is microsecond-scale and converges even mid-privatization.
+    # Reconciliation errors and unexplained deficits stay fail-closed.
+    status = str(audit["status"])
+    findings = audit.get("findings", []) + (
+        audit.get("variant_a_file_audit", {}).get("findings", [])
+    )
+    reconciliation_summary: dict[str, Any] | None = None
+    if status != "PASS_ISOLATED" and findings and {
+        str(finding.get("code")) for finding in findings
+    } == {"ARCHIVE_LINK_COUNT_TOO_LOW"}:
+        try:
+            manifest = load_manifest(
+                Path(activation["manifest_path"]), require_owner_approval=True
+            )
+            reconciliation = mt5_history_isolation.reconcile_archive_link_count_findings(
+                mt5_root=mt5_root,
+                terminals=tuple(activation["runner_terminals"]),
+                manifest=manifest,
+                findings=findings,
+            )
+        except Exception as exc:
+            reconciliation_summary = {"status": "ERROR", "error": repr(exc)}
+        else:
+            reconciliation_summary = {
+                "status": "CLEARED" if not reconciliation["remaining"] else "REMAINING",
+                "cleared_count": len(reconciliation["cleared"]),
+                "remaining_count": len(reconciliation["remaining"]),
+                "paths_recounted": len(reconciliation["recounts"]),
+            }
+            if not reconciliation["remaining"]:
+                status = "PASS_ISOLATED"
+                findings = []
+            else:
+                findings = reconciliation["remaining"]
+    result = {
         "required": True,
-        "status": audit["status"],
+        "status": status,
         "terminal": target,
         "activation_sha256": activation["activation_sha256"],
         "audit_sha256": audit["audit_sha256"],
@@ -557,6 +597,8 @@ def run_worker_gate(
         "admission_allowed": True,
         "ramp_limit": ramp["limit"],
         "ramp_sha256": ramp["ramp_sha256"],
-        "findings": audit.get("findings", [])
-        + (audit.get("variant_a_file_audit", {}).get("findings", [])),
+        "findings": findings,
     }
+    if reconciliation_summary is not None:
+        result["link_count_reconciliation"] = reconciliation_summary
+    return result

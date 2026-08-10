@@ -504,3 +504,124 @@ def test_variant_a_copy_on_claim_temp_files_are_ignored(tmp_path: Path) -> None:
         verify_archive_hashes=False,
     )
     assert payload["status"] == "PASS_ISOLATED", payload
+
+
+def _link_count_finding(relative: str, terminal: str = "T2") -> dict:
+    return {
+        "code": "ARCHIVE_LINK_COUNT_TOO_LOW",
+        "terminal": terminal,
+        "relative_path": relative,
+        "storage_mode": "FAMILY_HARDLINK",
+        "actual": 10,
+        "minimum": 11,
+    }
+
+
+def test_reconcile_clears_torn_link_count_after_privatization(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    relative = "history/EURUSD.DWX/2025.hcc"
+    target = mt5_root / "T1" / "Bases" / "Custom" / Path(relative)
+    body = target.read_bytes()
+    target.unlink()
+    target.write_bytes(body)
+
+    result = isolation.reconcile_archive_link_count_findings(
+        mt5_root=mt5_root,
+        terminals=history_contract.DEFAULT_RUNNER_TERMINALS,
+        manifest=manifest,
+        findings=[_link_count_finding(relative)],
+    )
+
+    assert result["remaining"] == []
+    assert len(result["cleared"]) == 1
+    recount = result["recounts"][0]
+    assert recount["family_members"] == 9
+    assert recount["link_count"] == recount["expected"]
+
+
+def test_reconcile_keeps_deleted_rollback_link_fail_closed(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    relative = "history/EURUSD.DWX/2025.hcc"
+    (tmp_path / "archive-source" / Path(relative)).unlink()
+
+    result = isolation.reconcile_archive_link_count_findings(
+        mt5_root=mt5_root,
+        terminals=history_contract.DEFAULT_RUNNER_TERMINALS,
+        manifest=manifest,
+        findings=[_link_count_finding(relative)],
+        attempts=2,
+        sleeper=lambda seconds: None,
+    )
+
+    assert result["cleared"] == []
+    assert len(result["remaining"]) == 1
+
+
+def test_reconcile_keeps_cross_terminal_private_alias_fail_closed(
+    tmp_path: Path,
+) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    relative = "history/EURUSD.DWX/2025.hcc"
+    t1 = mt5_root / "T1" / "Bases" / "Custom" / Path(relative)
+    t2 = mt5_root / "T2" / "Bases" / "Custom" / Path(relative)
+    body = t1.read_bytes()
+    t1.unlink()
+    t1.write_bytes(body)
+    t2.unlink()
+    os.link(t1, t2)
+
+    result = isolation.reconcile_archive_link_count_findings(
+        mt5_root=mt5_root,
+        terminals=history_contract.DEFAULT_RUNNER_TERMINALS,
+        manifest=manifest,
+        findings=[_link_count_finding(relative, terminal="T3")],
+        attempts=2,
+        sleeper=lambda seconds: None,
+    )
+
+    assert result["cleared"] == []
+    assert len(result["remaining"]) == 1
+
+
+def test_reconcile_keeps_missing_archive_fail_closed(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    relative = "history/EURUSD.DWX/2025.hcc"
+    (mt5_root / "T2" / "Bases" / "Custom" / Path(relative)).unlink()
+
+    result = isolation.reconcile_archive_link_count_findings(
+        mt5_root=mt5_root,
+        terminals=history_contract.DEFAULT_RUNNER_TERMINALS,
+        manifest=manifest,
+        findings=[_link_count_finding(relative, terminal="T3")],
+        attempts=2,
+        sleeper=lambda seconds: None,
+    )
+
+    assert result["cleared"] == []
+    assert len(result["remaining"]) == 1
+
+
+def test_reconcile_all_private_family_clears(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    relative = "history/EURUSD.DWX/2025.hcc"
+    for terminal in history_contract.DEFAULT_RUNNER_TERMINALS:
+        target = mt5_root / terminal / "Bases" / "Custom" / Path(relative)
+        body = target.read_bytes()
+        target.unlink()
+        target.write_bytes(body)
+
+    result = isolation.reconcile_archive_link_count_findings(
+        mt5_root=mt5_root,
+        terminals=history_contract.DEFAULT_RUNNER_TERMINALS,
+        manifest=manifest,
+        findings=[_link_count_finding(relative)],
+    )
+
+    assert result["remaining"] == []
+    assert len(result["cleared"]) == 1
+    assert result["recounts"][0]["family_members"] == 0
