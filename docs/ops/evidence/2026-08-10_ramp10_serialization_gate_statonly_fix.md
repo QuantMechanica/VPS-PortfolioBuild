@@ -84,9 +84,41 @@ pending. OWNER observed and asked twice ("Derzeit nur auf T7 ein Backtest?").
    2026-08-11T08:30:10Z.
 7. `Factory_ON.ps1 -CanonicalRuntimeHost -NoPause` (canonical argv).
 
+## Second collapse class after the first reload (same day)
+
+The 08:36Z Factory_ON with the STAT_ONLY gate proved multi-terminal claims
+for the first time (T7/T9/T10 simultaneously active 08:40Z, monitor
+SUCCESS). Four minutes later containment re-engaged again — this time via
+the FINDINGS path (`custom_history_isolation_gate_failure`, 08:40:34Z), not
+an exception: concurrent copy-on-claim privatizations (T7 XAU basket, T4/T9
+GDAXI, T10 XAU) shrank hardlink families while other gates were
+mid-snapshot. The sequential scan then reported
+`ARCHIVE_LINK_COUNT_TOO_LOW` with exactly `actual == minimum-1`
+(T1: 679 findings, T2: 540, T3: 561, T4: 169, T6: 311, T8: 510, T9: 316 —
+all XAUUSD/GDAXI families, worker logs post-restart offsets verified), and
+the worker escalated the gate FAIL to fleet-wide containment.
+
+Fix — commit `8b13cc91f`: `run_worker_gate` re-audits (max 3 attempts,
+1.5s apart) when the finding set is exclusively
+`ARCHIVE_LINK_COUNT_TOO_LOW`. A consistent second snapshot passes; genuine
+deletions raise `MANIFEST_ARCHIVE_FILE_MISSING` (different code — no retry)
+or persist across all re-audits (e.g. a deleted rollback link) and remain
+fail-closed. 3 regression tests; focused set 48 passed.
+
+Second governed reload: OFF (clean, T_Live/FTMO untouched) → stale claim
+`32649a6e` released, lease archived → containment released
+(`post_link_count_reaudit_fix_8b13cc91f_quiescent_release_ramp10_soak`) →
+runtime decision R3 minted via builder
+(`FACTORY_RUNTIME_20260810_RAMPSOAK_GATE_STATONLY_RELOAD_R3`, sha
+`8989e27d…`, cohort `8b13cc91f`, authorized:true, valid to
+2026-08-11T08:48:21Z) → Factory_ON.
+
 ## Post-ON verification contract
 
-- ≥3 terminals with simultaneous active work_items (previously impossible).
-- Zero `custom_history_gate_exception` / containment re-engage events.
+- ≥3 terminals with simultaneous active work_items (proven 08:40Z, must
+  now hold WITHOUT containment re-engage).
+- Zero `custom_history_gate_exception` / containment re-engage events over
+  a 1h stability monitor; transient `custom_history_gate_transient_io`
+  deferrals and re-audit passes are acceptable by design.
 - Zero error[32]/error[5] in tester logs post-ON.
 - Soak continues per ratified plan (≥24h, ≥500 runs, ≥80% occupancy).
