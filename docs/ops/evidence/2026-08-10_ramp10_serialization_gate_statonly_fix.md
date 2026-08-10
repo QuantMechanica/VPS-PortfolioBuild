@@ -199,3 +199,34 @@ matches pinned `ccfb1611…`, valid to 2026-08-11T17:44:13Z → Factory_ON.
 Soak-clock note: the fleet was containment-serialized 17:28Z→~18:0xZ; the
 close-out occupancy window must exclude or annotate this span, and the
 run_smoke reservation holds (legitimate admission work) count as occupied.
+
+## Fourth blocker class — post-start health gate as timing lottery (R5→R7)
+
+R5's Factory_ON timed out after 1800s: the gate demanded one instant where
+ALL critical 5-minute tasks (QuotaPull, AgentRouter, Pump) were
+simultaneously Ready with result 0 and fresh. Two agent-router processes
+(scheduled task + a claude-orchestration-lane spawn using the C:\Python311
+husk python) additionally froze mid-read at strategy_priority.py:755 with
+0 CPU for 45+ minutes (same query completes in 7.2-36.5s in a fresh
+process; py-spy stacks captured; root cause open — double-forensics case).
+An overlapping 5-minute trigger on a running instance also poisons
+LastTaskResult with 0x800710E0. R6 (with router wall-clock watchdog 600s +
+single-instance takeover + silent-claim-decline logging, commit range
+7b82f7330) timed out the same way — proving the gate semantics themselves
+were the blocker.
+
+Fix — health-gate latch (factory_restart_health.ps1 + Factory_ON.ps1):
+one observed fresh post-baseline success per critical task latches for the
+entire restart window, including the pre-release revalidation. Unlatched
+tasks still require the full instantaneous proof; worker-cohort and
+enabled-state checks stay live. Pester 28 assertions + pytest 17 passed
+(stale pin test moved to the 2026-08-10 preparation).
+
+R7 `FACTORY_RUNTIME_20260810_RAMPSOAK_HEALTH_LATCH_R7` (sha `1d984335…`,
+valid to 2026-08-11T19:20:24Z): FACTORY STARTED 10/10; 7 simultaneous
+claims immediately (T1,T3,T4,T5,T6,T8,T10); the new claim_declined logging
+recorded the factory_mutation_lock_busy window during ON exactly as
+designed. Soak guard v2 armed (containment re-engage + 20-min fleet-stall
+detection). En route the run_smoke reservation-corpse class recurred twice
+(OFF drain kills holders; T1-T10 sweeps via release_terminal_reservation)
+— holder-PID liveness in farmctl stays the post-soak ceremony item.
