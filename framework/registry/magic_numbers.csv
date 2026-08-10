@@ -15597,3 +15597,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9643,bandy-rsi2-atr-regime-filter-mr-index,1,NDX.DWX,96430001,2026-08-09T10:43:41Z,Codex,active
 9643,bandy-rsi2-atr-regime-filter-mr-index,2,WS30.DWX,96430002,2026-08-09T10:43:41Z,Codex,active
 20270,wti-trimmean-mom,0,XTIUSD.DWX,202700000,2026-08-10T09:27:13Z,Codex,active
+20271,wti-theilsen-tr,0,XTIUSD.DWX,202710000,2026-08-10T12:56:10Z,Codex,active
