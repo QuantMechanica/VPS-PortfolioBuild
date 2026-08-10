@@ -240,9 +240,10 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   const int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
-   const datetime now = TimeCurrent();
 
+   // Identify our open position for this symbol/magic and its direction.
+   ENUM_POSITION_TYPE pos_type = POSITION_TYPE_BUY;
+   bool have_pos = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -252,19 +253,25 @@ bool Strategy_ExitSignal()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-
-      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      const long max_hold_seconds = (long)strategy_max_hold_bars * (long)period_seconds;
-      if(period_seconds > 0 && opened > 0 &&
-         (long)(now - opened) >= max_hold_seconds)
-         return true;
-
-      if(pos_type == POSITION_TYPE_BUY && Strategy_ShortSignal())
-         return true;
-      if(pos_type == POSITION_TYPE_SELL && Strategy_LongSignal())
-         return true;
+      pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      have_pos = true;
+      break;
      }
+   if(!have_pos)
+      return false;
+
+   // Time exit: completed bars held on this timeframe. QM_TM_HeldPeriodsForMagic
+   // counts actual chart periods via iBarShift (skips weekends/holidays like the
+   // chart, restart-safe); -1 means "unknown" and must never count as due.
+   const int held = QM_TM_HeldPeriodsForMagic(magic, _Symbol, (ENUM_TIMEFRAMES)_Period);
+   if(held >= strategy_max_hold_bars)
+      return true;
+
+   // Opposite-signal exit (closed-bar shift-1 confluence).
+   if(pos_type == POSITION_TYPE_BUY && Strategy_ShortSignal())
+      return true;
+   if(pos_type == POSITION_TYPE_SELL && Strategy_LongSignal())
+      return true;
 
    return false;
   }

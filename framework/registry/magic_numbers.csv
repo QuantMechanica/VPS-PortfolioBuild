@@ -15744,3 +15744,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12435,ea31337-cci,1,GBPUSD.DWX,124350001,2026-08-10,Claude,active
 12435,ea31337-cci,2,USDJPY.DWX,124350002,2026-08-10,Claude,active
 12435,ea31337-cci,3,XAUUSD.DWX,124350003,2026-08-10,Claude,active
+12436,ea31337-wpr,0,EURUSD.DWX,124360000,2026-08-10,Claude,active
+12436,ea31337-wpr,1,GBPUSD.DWX,124360001,2026-08-10,Claude,active
+12436,ea31337-wpr,2,USDJPY.DWX,124360002,2026-08-10,Claude,active
+12436,ea31337-wpr,3,XAUUSD.DWX,124360003,2026-08-10,Claude,active
