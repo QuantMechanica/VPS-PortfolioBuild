@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1286
+; ea_slug:      camarilla-monthly-pivots-position
+; ea_version:   v5.0
+; set_version:  s20260810-001
+; symbol:       GBPUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   42829e96b220b738aa534eb157571218b20065c52431b0661107035517dd6c78
+; author:       Development
+; date:         2026-08-10
+;==========================================================
+qm_ea_id=1286
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1286_camarilla-monthly-pivots-position.md
+strategy_atr_period=20
+strategy_atr_month_mult=20.0
+strategy_break_ratio=0.80
+strategy_skip_ratio=0.50
+strategy_sl_atr_buffer=0.50
+strategy_chandelier_mult=3.00
+strategy_trail_engage_mult=1.00
+strategy_time_stop_months=3
+strategy_max_spread_points=50
