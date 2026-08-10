@@ -128,4 +128,9 @@ correlation waiver.
 
 ## 12. Q02 Handoff
 
-Not enqueued. Capacity must be checked immediately before any mutation.
+One current-binary `XTIUSD.DWX` D1 Q02 row was enqueued at
+`2026-08-10T15:42:40+00:00`: work item
+`4fe84586-d791-4bbd-84ef-82aa0de5d0f1`, pending, attempt 0, unclaimed, and
+`priority_track=true` on immediate readback. The binding pre-enqueue sample
+found four executing T1-T10 factory terminals against the ceiling of seven.
+No dispatch tick or backtest was run by the build mission.

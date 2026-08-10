@@ -13,9 +13,9 @@ source_author: "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen"
 strategy_mechanic: monthly-wti-four-nonoverlapping-quarter-return-three-of-four-sign-consensus
 target_symbols: [XTIUSD.DWX]
 period: D1
-pipeline_phase: Q01
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 last_updated: 2026-08-10
 ---
 
@@ -52,4 +52,5 @@ waiver is authorized.
 ## Pipeline Status
 
 G0 is approved under the durable OWNER mission decision. Deterministic
-allocation and build/Q01 are PASS; Q02 has not yet been enqueued.
+allocation and build/Q01 are PASS; Q02 work item
+`4fe84586-d791-4bbd-84ef-82aa0de5d0f1` is enqueued and pending.
