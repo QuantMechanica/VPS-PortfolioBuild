@@ -23,6 +23,10 @@
 //   double QM_BB_Upper(sym, tf, period, deviation, shift=1, price=PRICE_CLOSE)
 //   double QM_BB_Lower(sym, tf, period, deviation, shift=1, price=PRICE_CLOSE)
 //   double QM_BB_Middle(sym, tf, period, deviation, shift=1, price=PRICE_CLOSE)
+//   double QM_Stoch_K(sym, tf, k=5, d=3, slowing=3, shift=1)
+//   double QM_Stoch_D(sym, tf, k=5, d=3, slowing=3, shift=1)
+//   double QM_CCI(sym, tf, period=14, shift=1, price=PRICE_TYPICAL)
+//   double QM_WPR(sym, tf, period=14, shift=1)
 //
 //   void   QM_IndicatorsShutdown()       // called from QM_FrameworkShutdown
 //
@@ -334,6 +338,23 @@ double QM_CCI(const string sym, const ENUM_TIMEFRAMES tf, const int period = 14,
               const int shift = 1, const ENUM_APPLIED_PRICE price = PRICE_TYPICAL)
   {
    return QM_IndicatorReadBuffer(QM_IndCCI(sym, tf, period, price), 0, shift);
+  }
+
+// --- Williams Percent Range (iWPR) ---
+int QM_IndWPR(const string sym, const ENUM_TIMEFRAMES tf, const int period)
+  {
+   const string key = StringFormat("WPR|%s|%d|%d", sym, (int)tf, period);
+   int h = QM_IndicatorsLookup(key);
+   if(h != INVALID_HANDLE)
+      return h;
+   h = iWPR(sym, tf, period);
+   return QM_IndicatorsRegister(key, h);
+  }
+
+double QM_WPR(const string sym, const ENUM_TIMEFRAMES tf, const int period = 14,
+              const int shift = 1)
+  {
+   return QM_IndicatorReadBuffer(QM_IndWPR(sym, tf, period), 0, shift);
   }
 
 int QM_IndBands(const string sym, const ENUM_TIMEFRAMES tf, const int period,

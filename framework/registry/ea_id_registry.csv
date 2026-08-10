@@ -1725,3 +1725,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 11362,robo-one-two-bb-reversal,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Development,2026-08-10
 12430,ea31337-stoch,041e0d5c-bf76-501d-bee2-31c0f4a6e233,active,Development,2026-08-10
 12435,ea31337-cci,041e0d5c-bf76-501d-bee2-31c0f4a6e233,active,Development,2026-08-10
+12436,ea31337-wpr,041e0d5c-bf76-501d-bee2-31c0f4a6e233,active,Development,2026-08-10
