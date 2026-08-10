@@ -15718,3 +15718,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11563,connors-rsi2-sma200-mean-reversion-d1,0,EURUSD.DWX,115630000,2026-08-10,Claude,active
 11563,connors-rsi2-sma200-mean-reversion-d1,1,GBPUSD.DWX,115630001,2026-08-10,Claude,active
 11563,connors-rsi2-sma200-mean-reversion-d1,2,USDJPY.DWX,115630002,2026-08-10,Claude,active
+20273,wti-signrun-tr,0,XTIUSD.DWX,202730000,2026-08-10T17:25:33Z,Codex,active
