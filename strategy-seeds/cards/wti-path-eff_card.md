@@ -13,9 +13,9 @@ source_author: "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen"
 strategy_mechanic: monthly-wti-twelve-adjacent-log-return-net-to-absolute-path-efficiency-threshold-trend
 target_symbols: [XTIUSD.DWX]
 period: D1
-pipeline_phase: Q01_PASS
+pipeline_phase: Q02_ENQUEUED
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 last_updated: 2026-08-10
 ---
 
@@ -53,5 +53,6 @@ waiver is authorized.
 
 G0 is approved under the durable OWNER mission decision. Q01 passed the
 explicit strict compile, target build check, and P1 artifact validation on
-2026-08-10. Q02 remains not enqueued pending a binding factory-capacity
-sample below the CPU ceiling.
+2026-08-10. Exactly one current-binary Q02 item was enqueued below the
+factory CPU ceiling: `6586fea1-87ce-4bf4-a570-f49431c50a57`, attempt 0 with
+no verdict at handoff.

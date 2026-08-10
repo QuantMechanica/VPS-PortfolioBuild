@@ -127,5 +127,11 @@ correlation waiver.
 
 ## 12. Q02 Handoff
 
-Not enqueued. A path-anchored T1-T10 capacity sample must remain below the
-binding ceiling before one current-binary Q02 item may be inserted.
+One current-binary `XTIUSD.DWX` D1 Q02 row was enqueued at
+`2026-08-10T21:32:17+00:00`: work item
+`6586fea1-87ce-4bf4-a570-f49431c50a57`, attempt 0, no verdict, and
+`priority_track=true`. Immediate readback was pending and unclaimed; the
+existing factory claimed the row on T6 at `2026-08-10T21:32:26+00:00`.
+The binding pre-enqueue sample at `2026-08-10T21:32:12+00:00` found three
+executing T1-T10 factory terminals against the ceiling of seven. This
+mission ran no dispatch tick or manual backtest.

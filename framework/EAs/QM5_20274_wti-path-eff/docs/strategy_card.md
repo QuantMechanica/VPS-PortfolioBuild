@@ -54,9 +54,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01_PASS
+pipeline_phase: Q02_ENQUEUED
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 review_focus: "Falsify a direct WTI monthly trend whose direction is the twelve-month net log move and whose fixed qualification gate is absolute net displacement divided by the full absolute monthly path; distinct from endpoint-only, sign-count/run, vote, regression/rank, and robust-average estimators. Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -314,6 +314,7 @@ or correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-10 | initial source-bounded WTI path-efficiency card | G0 | APPROVED |
 | v1-q01 | 2026-08-10 | deterministic V5 build, strict compile, target build validation, and P1 artifact validation | Q01 | PASS |
+| v1-q02 | 2026-08-10 | one paced current-binary WTI baseline handoff below the factory CPU ceiling | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -321,4 +322,4 @@ or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-10 | APPROVED | `decisions/2026-08-10_qm5_20274_wti_path_eff_g0.md` |
 | Q01 Build Validation | 2026-08-10 | PASS | `D:/QM/reports/compile/20260810_212857/summary.csv`; `D:/QM/reports/framework/21/build_check_20260810_212913.json`; `D:/QM/reports/pipeline/QM5_20274/P1/P1_QM5_20274_result.json` |
-| Q02 Baseline Screening | pending | NOT_ENQUEUED | pending |
+| Q02 Baseline Screening | 2026-08-10 | ENQUEUED; attempt 0, no verdict | work item `6586fea1-87ce-4bf4-a570-f49431c50a57`; `docs/ops/evidence/2026-08-10_qm5_20274_wti_path_eff_q01_q02_enqueue.md` |
