@@ -1,0 +1,24 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        10282
+; ea_slug:      jstm-bbw
+; ea_version:   v5.0
+; set_version:  s20260810-001
+; symbol:       WS30.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   4
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   6771a3b445adcbccddd6bfb284a3b56a94e6c8f9200821b571f43c1aaeddd835
+; author:       Development
+; date:         2026-08-10
+;==========================================================
+qm_ea_id=10282
+qm_magic_slot_offset=4
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10282_jstm-bbw.md
+; card_defaults_status=none_found
