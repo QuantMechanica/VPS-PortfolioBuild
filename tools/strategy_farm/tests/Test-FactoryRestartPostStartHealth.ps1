@@ -202,6 +202,55 @@ try {
 }
 Assert-True -Condition $timeoutThrown -Message 'bounded wait must throw detailed timeout failure'
 
+# Latch semantics (2026-08-10): short 5-minute-cadence critical tasks are
+# legitimately 'Running' again moments after a fresh success, and overlapping
+# triggers poison LastTaskResult with 0x800710E0. One observed fresh
+# post-baseline success per task must satisfy the gate for the whole restart
+# window; without a latch the same snapshot must keep failing closed.
+$latchedRouterOnly = [ordered]@{
+    'QM_StrategyFarm_AgentRouter_5min' = [ordered]@{
+        latched_at_utc = '2026-07-30T10:00:13Z'
+        last_run_utc = '2026-07-30T10:00:11Z'
+    }
+}
+$routerRunningAgain = New-HealthySnapshot
+$routerRunningAgain.tasks[1].state = 'Running'
+$routerRunningAgain.tasks[1].last_task_result = 2147946720
+$assessment = Test-QmFactoryPostStartHealth -Snapshot $routerRunningAgain @common
+Assert-True -Condition (-not $assessment.healthy) `
+    -Message 'running critical task without latch must still fail closed'
+$assessment = Test-QmFactoryPostStartHealth -Snapshot $routerRunningAgain @common `
+    -LatchedCriticalTasks $latchedRouterOnly
+Assert-True -Condition $assessment.healthy `
+    -Message 'latched critical task must pass despite Running state and poisoned result'
+
+$snapA = New-HealthySnapshot
+$snapA.tasks[2].state = 'Running'
+$snapA.tasks[2].last_task_result = 267009
+$snapB = New-HealthySnapshot
+$snapB.tasks[1].state = 'Running'
+$snapB.tasks[1].last_task_result = 2147946720
+$snapB.tasks[0].state = 'Running'
+$snapB.tasks[0].last_task_result = 267009
+$script:latchSnapshots = @($snapA, $snapB, $snapB, $snapB)
+$latchProbe = {
+    param([string[]]$TaskNames)
+    $next = $script:latchSnapshots[0]
+    if ($script:latchSnapshots.Count -gt 1) {
+        $script:latchSnapshots = @($script:latchSnapshots[1..($script:latchSnapshots.Count - 1)])
+    }
+    return $next
+}
+$script:fakeNow = [datetimeoffset]'2026-07-30T10:00:12Z'
+$latchResult = Wait-QmFactoryPostStartHealth @common -TimeoutSeconds 30 -PollSeconds 1 `
+    -SnapshotProbe $latchProbe -UtcNowProbe $clockProbe -SleepProbe $sleepProbe
+Assert-True -Condition $latchResult.healthy `
+    -Message 'alternating Running windows must pass via per-task latches'
+foreach ($criticalName in $critical) {
+    Assert-True -Condition $latchResult.latched_critical_tasks.Contains($criticalName) `
+        -Message "latch evidence must record '$criticalName'"
+}
+
 # Operational State is not the configured enabled bit: Task Scheduler can keep
 # a disabled task Running until its current instance exits. The snapshot must
 # preserve Settings.Enabled=false in that state instead of deriving true from

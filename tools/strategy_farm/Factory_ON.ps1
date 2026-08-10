@@ -1436,6 +1436,10 @@ try {
         -Context 'immediately before restart-hold release' | Out-Null
     $releaseHealthSnapshot = Get-QmFactoryPostStartSnapshot `
         -TaskNames @($expectedTaskEnabledState.Keys)
+    # The wait gate latched a fresh post-baseline success per critical task;
+    # this instantaneous revalidation must honor those latches or a critical
+    # task that legitimately started its next 5-minute run in the meantime
+    # fails the release for being 'Running' (2026-08-10 R3/R5/R6 timeouts).
     $releaseHealth = Test-QmFactoryPostStartHealth `
         -Snapshot $releaseHealthSnapshot `
         -ExpectedTaskEnabledState $expectedTaskEnabledState `
@@ -1443,7 +1447,8 @@ try {
         -CriticalTaskNames $QM_CRITICAL_POST_START_TASKS `
         -ExpectedWorkerTerminals $expectedWorkerTerminals `
         -ExpectedSessionId $mySession `
-        -FreshNotBeforeUtc $criticalTasksStartedAtUtc
+        -FreshNotBeforeUtc $criticalTasksStartedAtUtc `
+        -LatchedCriticalTasks $postStartHealth.latched_critical_tasks
     if (-not $releaseHealth.healthy) {
         throw ("immediate pre-release task/worker health revalidation failed: " +
             ($releaseHealth.errors -join '; '))
