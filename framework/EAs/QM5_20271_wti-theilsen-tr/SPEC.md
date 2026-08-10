@@ -38,7 +38,7 @@ No baseline parameter sweep is authorized.
 ## 3. Symbol Universe
 
 - `XTIUSD.DWX` only.
-- Magic slot 0, intended magic `202710000`.
+- Magic slot 0, registered magic `202710000`.
 - Single-position, single-symbol EA.
 - Runtime uses only native MT5 price, calendar, ATR, quote, position, deal, and
   framework state.
@@ -114,11 +114,17 @@ correlation waiver.
 
 ## 11. Q01 Status
 
-Not started. Deterministic magic allocation, implementation, strict compile,
-target build validation, and P1 artifact validation remain pending.
+- Strict compile: PASS, zero errors and zero warnings; summary
+  `D:/QM/reports/compile/20260810_125956/summary.csv`.
+- Target build check: PASS, zero failures and zero warnings; report
+  `D:/QM/reports/framework/21/build_check_20260810_125956.json`.
+- P1 artifact validation: PASS at
+  `D:/QM/reports/pipeline/QM5_20271/P1/P1_QM5_20271_result.json`.
+- Backtest set build hash:
+  `cb157cf6fb36fc77c24c9f9d534ccfe73377d3f79d326d75a7ec64b8873e15f2`.
 
 ## 12. Q02 Handoff
 
-Not started. Exactly one paced `XTIUSD.DWX` D1 work item may be enqueued only
-after Q01 PASS and while live factory utilization remains below the binding CPU
+Not started. Q01 has passed. Exactly one paced `XTIUSD.DWX` D1 work item may
+be enqueued only while live factory utilization remains below the binding CPU
 ceiling.
