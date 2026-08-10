@@ -1,9 +1,9 @@
 # QM5_20274_wti-path-eff - Strategy Spec
 
-**EA ID:** QM5_20274  
-**Slug:** `wti-path-eff`  
-**Source:** `MOP-TSMOM-2012_XTI_PATHEFF12_S23`  
-**Card:** `strategy-seeds/cards/approved/QM5_20274_wti-path-eff_card.md`  
+**EA ID:** QM5_20274
+**Slug:** `wti-path-eff`
+**Source:** `MOP-TSMOM-2012_XTI_PATHEFF12_S23`
+**Card:** `strategy-seeds/cards/approved/QM5_20274_wti-path-eff_card.md`
 **Last revised:** 2026-08-10
 
 ## 1. Strategy Logic
@@ -117,13 +117,13 @@ correlation waiver.
 ## 11. Q01 Status
 
 - Strict compile: PASS, zero errors and zero warnings; summary
-  `D:/QM/reports/compile/20260810_212116/summary.csv`.
+  `D:/QM/reports/compile/20260810_212857/summary.csv`.
 - Target build check: PASS, zero failures and zero warnings; report
-  `D:/QM/reports/framework/21/build_check_20260810_212234.json`.
+  `D:/QM/reports/framework/21/build_check_20260810_212913.json`.
 - P1 artifact validation: PASS at
   `D:/QM/reports/pipeline/QM5_20274/P1/P1_QM5_20274_result.json`.
 - Backtest set build hash:
-  `faf677c76e8f4b289262e5f756046e779fb947dd32b883f19582f7eb8ed01c11`.
+  `df3012520f3f78bc3338e7926d96e7580b38f5acd0e74eba6253ddd328dc8356`.
 
 ## 12. Q02 Handoff
 

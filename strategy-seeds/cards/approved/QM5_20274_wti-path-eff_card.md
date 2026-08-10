@@ -320,5 +320,5 @@ or correlation waiver.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-10 | APPROVED | `decisions/2026-08-10_qm5_20274_wti_path_eff_g0.md` |
-| Q01 Build Validation | 2026-08-10 | PASS | `D:/QM/reports/compile/20260810_212116/summary.csv`; `D:/QM/reports/framework/21/build_check_20260810_212234.json`; `D:/QM/reports/pipeline/QM5_20274/P1/P1_QM5_20274_result.json` |
+| Q01 Build Validation | 2026-08-10 | PASS | `D:/QM/reports/compile/20260810_212857/summary.csv`; `D:/QM/reports/framework/21/build_check_20260810_212913.json`; `D:/QM/reports/pipeline/QM5_20274/P1/P1_QM5_20274_result.json` |
 | Q02 Baseline Screening | pending | NOT_ENQUEUED | pending |

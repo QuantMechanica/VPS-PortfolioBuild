@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        20274
 ; ea_slug:      wti-path-eff
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   faf677c76e8f4b289262e5f756046e779fb947dd32b883f19582f7eb8ed01c11
+; build_hash:   df3012520f3f78bc3338e7926d96e7580b38f5acd0e74eba6253ddd328dc8356
 ; author:       Development
 ; date:         2026-08-10
 ;==========================================================
@@ -37,4 +37,3 @@ strategy_atr_period_d1=20
 strategy_atr_sl_mult=3.5
 strategy_max_hold_days=40
 strategy_max_spread_points=1500
-
