@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QuantMechanica V5 EA skeleton template"
+#property description "QM5_9643 Bandy RSI2 ATR-regime mean reversion"
 
 #include <QM/QM_Common.mqh>
 
@@ -36,7 +36,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11498;
+input int    qm_ea_id                   = 9643;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -74,175 +74,197 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_timeframe       = PERIOD_D1;
-input int             strategy_rsi_period      = 2;
-input int             strategy_cum_window      = 2;
-input int             strategy_sma_period      = 200;
-input double          strategy_entry_long      = 45.0;
-input double          strategy_entry_short     = 55.0;
-input double          strategy_exit_long       = 65.0;
-input double          strategy_exit_short      = 35.0;
-input int             strategy_atr_period      = 14;
-input double          strategy_atr_stop_mult   = 2.0;
-input int             strategy_max_stop_pips   = 100;
-input int             strategy_max_hold_bars   = 10;
-input int             strategy_spread_cap_pips = 30;
+input int    strategy_rsi_period            = 2;
+input double strategy_rsi_entry_threshold   = 5.0;
+input double strategy_rsi_exit_threshold    = 70.0;
+input int    strategy_trend_sma_period      = 200;
+input int    strategy_atr_period            = 14;
+input int    strategy_atr_percentile_bars   = 252;
+input double strategy_atr_percentile_cutoff = 50.0;
+input double strategy_atr_sl_mult           = 2.0;
+input int    strategy_time_exit_bars        = 5;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// No Trade Filter: enforce the card's D1-only execution context. Entry-only
-// filters (spread and Friday) are applied inside Strategy_EntrySignal so they
-// cannot suspend management or exits for an already-open position.
+// No Trade Filter (time, spread, news): the framework owns the news and Friday
+// time gates. The card declares no spread cap; this hook only enforces the D1
+// execution contract and rejects degenerate strategy inputs.
 bool Strategy_NoTradeFilter()
   {
-   return (_Period != strategy_timeframe);
-  }
-
-// Trade Entry: on each newly closed D1 bar, buy above SMA(200) when the sum of
-// the last two RSI(2) values is below 45; sell below SMA(200) when it is above
-// 55. The framework sends the market order on the first tick of the next bar.
-bool Strategy_EntrySignal(QM_EntryRequest &req)
-  {
-   req.type               = QM_BUY;
-   req.price              = 0.0;
-   req.sl                 = 0.0;
-   req.tp                 = 0.0;
-   req.reason             = "";
-   req.symbol_slot        = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-
-   if(strategy_rsi_period <= 0 || strategy_cum_window <= 0 ||
-      strategy_sma_period <= 0 || strategy_atr_period <= 0 ||
-      strategy_atr_stop_mult <= 0.0 || strategy_max_stop_pips <= 0 ||
-      strategy_spread_cap_pips < 0)
-      return false;
-
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
-      return false;
-
-   // Card filter: never initiate a position on broker-time Friday.
-   MqlDateTime broker_dt;
-   TimeToStruct(TimeCurrent(), broker_dt);
-   if(broker_dt.day_of_week == 5)
-      return false;
-
-   MqlRates signal_bar;
-   if(!QM_ReadBar(_Symbol, strategy_timeframe, 1, signal_bar) || signal_bar.close <= 0.0)
-      return false;
-
-   const double sma = QM_SMA(_Symbol, strategy_timeframe, strategy_sma_period, 1);
-   const double atr = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
-   if(sma <= 0.0 || atr <= 0.0)
-      return false;
-
-   double cumulative_rsi = 0.0;
-   for(int shift = 1; shift <= strategy_cum_window; ++shift)
-     {
-      const double rsi = QM_RSI(_Symbol, strategy_timeframe, strategy_rsi_period, shift);
-      if(!MathIsValidNumber(rsi) || rsi < 0.0 || rsi > 100.0)
-         return false;
-      cumulative_rsi += rsi;
-     }
-
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false;
-
-   // .DWX tester quotes may have ask==bid. Only a genuinely positive, wide
-   // spread is rejected; a zero modeled spread remains tradable.
-   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
-   if(spread_cap <= 0.0)
-      return false;
-   if(ask > bid && (ask - bid) > spread_cap)
-      return false;
-
-   const double stop_distance = atr * strategy_atr_stop_mult;
-   const double max_stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_stop_pips);
-   if(stop_distance <= 0.0 || max_stop_distance <= 0.0 || stop_distance > max_stop_distance)
-      return false;
-
-   if(signal_bar.close > sma && cumulative_rsi < strategy_entry_long)
-     {
-      const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, ask, atr, strategy_atr_stop_mult);
-      if(sl <= 0.0 || sl >= ask)
-         return false;
-      req.type   = QM_BUY;
-      req.sl     = sl;
-      req.reason = "cumulative_rsi2_long";
+   if(_Period != PERIOD_D1)
       return true;
-     }
-
-   if(signal_bar.close < sma && cumulative_rsi > strategy_entry_short)
-     {
-      const double sl = QM_StopATRFromValue(_Symbol, QM_SELL, bid, atr, strategy_atr_stop_mult);
-      if(sl <= bid)
-         return false;
-      req.type   = QM_SELL;
-      req.sl     = sl;
-      req.reason = "cumulative_rsi2_short";
+   if(strategy_rsi_period < 2 ||
+      strategy_rsi_entry_threshold < 0.0 ||
+      strategy_rsi_entry_threshold > 100.0 ||
+      strategy_rsi_exit_threshold < 0.0 ||
+      strategy_rsi_exit_threshold > 100.0 ||
+      strategy_trend_sma_period < 2 ||
+      strategy_atr_period < 2 ||
+      strategy_atr_percentile_bars < 2 ||
+      strategy_atr_percentile_cutoff < 0.0 ||
+      strategy_atr_percentile_cutoff > 100.0 ||
+      strategy_atr_sl_mult <= 0.0 ||
+      strategy_time_exit_bars < 1)
       return true;
-     }
-
    return false;
   }
 
-// Trade Management: the card specifies no break-even, trailing, partial-close,
-// or scale-in rule. The server-side two-ATR stop remains unchanged.
+// Trade Entry: on the just-closed D1 bar, buy when RSI(2) is deeply oversold,
+// price is above SMA(200), and ATR(14)/close is no higher than its rolling
+// percentile gate. Entry is a market order at the next available session tick.
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0 || QM_TM_OpenPositionCount(magic) > 0)
+      return false;
+
+   // Custom normalized-volatility percentile. This single bulk series read is
+   // reached only after the skeleton's QM_IsNewBar() gate.
+   MqlRates regime_bars[];
+   ArraySetAsSeries(regime_bars, true);
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1,
+                                strategy_atr_percentile_bars,
+                                regime_bars); // perf-allowed: one rolling-window read per closed D1 bar.
+   if(copied != strategy_atr_percentile_bars)
+      return false;
+
+   const double close_last = regime_bars[0].close;
+   const double rsi_last = QM_RSI(_Symbol, PERIOD_D1,
+                                  strategy_rsi_period, 1, PRICE_CLOSE);
+   const double sma_last = QM_SMA(_Symbol, PERIOD_D1,
+                                  strategy_trend_sma_period, 1, PRICE_CLOSE);
+   const double atr_last = QM_ATR(_Symbol, PERIOD_D1,
+                                  strategy_atr_period, 1);
+   if(close_last <= 0.0 || sma_last <= 0.0 || atr_last <= 0.0)
+      return false;
+
+   double normalized_volatility[];
+   ArrayResize(normalized_volatility, strategy_atr_percentile_bars);
+   for(int i = 0; i < strategy_atr_percentile_bars; ++i)
+     {
+      const double sample_close = regime_bars[i].close;
+      const double sample_atr = QM_ATR(_Symbol, PERIOD_D1,
+                                       strategy_atr_period, i + 1);
+      if(sample_close <= 0.0 || sample_atr <= 0.0)
+         return false;
+      normalized_volatility[i] = sample_atr / sample_close;
+     }
+
+   ArraySort(normalized_volatility);
+   const double percentile_rank =
+      (strategy_atr_percentile_cutoff / 100.0) *
+      (double)(strategy_atr_percentile_bars - 1);
+   const int rank_lower = (int)MathFloor(percentile_rank);
+   const int rank_upper = (int)MathCeil(percentile_rank);
+   const double rank_weight = percentile_rank - (double)rank_lower;
+   const double nv_percentile =
+      normalized_volatility[rank_lower] * (1.0 - rank_weight) +
+      normalized_volatility[rank_upper] * rank_weight;
+   const double nv_last = atr_last / close_last;
+
+   if(rsi_last > strategy_rsi_entry_threshold ||
+      close_last <= sma_last ||
+      nv_last > nv_percentile)
+      return false;
+
+   const double entry_price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(entry_price <= 0.0)
+      return false;
+
+   const double sl_price = QM_StopATRFromValue(_Symbol, QM_BUY,
+                                                entry_price, atr_last,
+                                                strategy_atr_sl_mult);
+   if(sl_price <= 0.0 || sl_price >= entry_price)
+      return false;
+
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = sl_price;
+   req.tp = 0.0;
+   req.reason = "BANDY_RSI2_ATR_REGIME_LONG";
+   return true;
+  }
+
+// Trade Management: the card specifies a fixed initial ATR stop and no
+// trailing, break-even, partial-close, scale-in, or pyramiding behaviour.
 void Strategy_ManageOpenPosition()
   {
   }
 
-// Trade Close: evaluate once per new broker D1 period. A position becomes
-// eligible only after one completed D1 holding bar, then exits on the card's
-// side-specific RSI(2) recovery or after ten completed D1 holding bars.
+// Trade Close: evaluate the closed-bar RSI take-profit and restart-safe D1
+// held-period time stop once per broker trading day for the active ticket.
 bool Strategy_ExitSignal()
   {
+   static ulong cached_ticket = 0;
+   static int cached_broker_day = 0;
+   static bool cached_exit_due = false;
+
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0 || QM_TM_OpenPositionCount(magic) <= 0)
+   if(magic <= 0)
       return false;
 
-   if(!QM_IsNewCalendarPeriod(PERIOD_D1, _Symbol))
-      return false;
-
-   const int held_bars = QM_TM_HeldPeriodsForMagic((long)magic,
-                                                    _Symbol,
-                                                    strategy_timeframe,
-                                                    TimeCurrent());
-   if(held_bars < 1)
-      return false;
-   if(strategy_max_hold_bars > 0 && held_bars >= strategy_max_hold_bars)
-      return true;
-
-   const double rsi = QM_RSI(_Symbol, strategy_timeframe, strategy_rsi_period, 1);
-   if(!MathIsValidNumber(rsi) || rsi < 0.0 || rsi > 100.0)
-      return false;
-
+   ulong position_ticket = 0;
+   datetime position_open_time = 0;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
       if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
-      if(PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
-
-      const ENUM_POSITION_TYPE position_type =
-         (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(position_type == POSITION_TYPE_BUY)
-         return (rsi > strategy_exit_long);
-      if(position_type == POSITION_TYPE_SELL)
-         return (rsi < strategy_exit_short);
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      position_ticket = ticket;
+      position_open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      break;
      }
 
-   return false;
+   if(position_ticket == 0)
+     {
+      cached_ticket = 0;
+      cached_broker_day = 0;
+      cached_exit_due = false;
+      return false;
+     }
+
+   const datetime broker_now = TimeCurrent();
+   MqlDateTime broker_parts;
+   if(!TimeToStruct(broker_now, broker_parts))
+      return false;
+   const int broker_day = broker_parts.year * 10000 +
+                          broker_parts.mon * 100 + broker_parts.day;
+
+   if(position_ticket == cached_ticket && broker_day == cached_broker_day)
+      return cached_exit_due;
+
+   cached_ticket = position_ticket;
+   cached_broker_day = broker_day;
+   cached_exit_due = false;
+
+   const double rsi_last = QM_RSI(_Symbol, PERIOD_D1,
+                                  strategy_rsi_period, 1, PRICE_CLOSE);
+   if(rsi_last >= strategy_rsi_exit_threshold)
+      cached_exit_due = true;
+
+   const int held_bars = QM_TM_HeldPeriods(_Symbol, PERIOD_D1,
+                                            position_open_time, broker_now);
+   if(held_bars >= strategy_time_exit_bars)
+      cached_exit_due = true;
+
+   return cached_exit_due;
   }
 
-// News Filter Hook: no card-specific override; the central fail-closed news
-// calendar gate remains callable for P8 and gates entries below exits.
+// News Filter Hook: defer to the central high-impact ±30-minute entry gate.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
