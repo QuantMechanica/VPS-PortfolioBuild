@@ -15678,3 +15678,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11532,carter-t-h1-ema5-15-60-pullback,0,EURUSD.DWX,115320000,2026-08-10,Gemini,active
 11532,carter-t-h1-ema5-15-60-pullback,1,GBPUSD.DWX,115320001,2026-08-10,Gemini,active
 11531,carter-t-h1-ema6-23-stoch-macd,0,EURUSD.DWX,115310000,2026-08-10,Gemini,active
+11904,grimes-sperandeo-failure-test-2b-h1,0,EURUSD.DWX,119040000,2026-08-10,Codex,active
+11904,grimes-sperandeo-failure-test-2b-h1,1,GBPUSD.DWX,119040001,2026-08-10,Codex,active
+11904,grimes-sperandeo-failure-test-2b-h1,2,USDJPY.DWX,119040002,2026-08-10,Codex,active
+11904,grimes-sperandeo-failure-test-2b-h1,3,USDCAD.DWX,119040003,2026-08-10,Codex,active
+11904,grimes-sperandeo-failure-test-2b-h1,4,USDCHF.DWX,119040004,2026-08-10,Codex,active
+11904,grimes-sperandeo-failure-test-2b-h1,5,AUDUSD.DWX,119040005,2026-08-10,Codex,active
+11904,grimes-sperandeo-failure-test-2b-h1,6,NZDUSD.DWX,119040006,2026-08-10,Codex,active
+11904,grimes-sperandeo-failure-test-2b-h1,7,EURJPY.DWX,119040007,2026-08-10,Codex,active
+11904,grimes-sperandeo-failure-test-2b-h1,8,GBPJPY.DWX,119040008,2026-08-10,Codex,active
+11904,grimes-sperandeo-failure-test-2b-h1,9,AUDJPY.DWX,119040009,2026-08-10,Codex,active
