@@ -1,0 +1,145 @@
+{
+  "schema": "qm.fx_existing_card_append_only_retry/v1",
+  "generated_at": "2026-08-10T14:45:42+02:00",
+  "branch": "agents/board-advisor",
+  "inspected_head": "ff950d025486502db30ae2e487a6042ade19521b",
+  "ea_id": "QM5_11470",
+  "slug": "nekritin-peters-kangaroo-tail-d1",
+  "symbol": "USDCAD.DWX",
+  "action": "Q05_APPEND_ONLY_RETRY_ENQUEUED_FROM_Q04_PASS_LOWFREQ",
+  "selection": {
+    "frozen_66_pair_frontier_exhausted": true,
+    "new_card_or_build_created": false,
+    "anchor_q02_blocker_found": false,
+    "qm5_12532_state": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "qm5_12533_state": "Q02_PASS_Q04_FAIL",
+    "reason": "existing approved indicator-free D1 FX card had a current-binary Q04 PASS_LOWFREQ and an exact T5-scope Q05 infrastructure failure explicitly classified READY_APPEND_ONLY"
+  },
+  "source_and_risk": {
+    "card_status": "APPROVED",
+    "g0_status": "APPROVED",
+    "source_id": "7f773fbb-884e-54c9-a5d8-3f4087497622",
+    "citation": "Alex Nekritin and Walter Peters PhD, Naked Forex: High-Probability Techniques for Trading without Indicators, Chapter 8, Wiley Trading (2012)",
+    "r1_track_record": "PASS",
+    "r2_mechanical": "PASS",
+    "r3_data_available": "PASS",
+    "r4_ml_forbidden": "PASS",
+    "structural": true,
+    "active_indicators": [],
+    "optional_atr_filter_enabled": false,
+    "ml": false,
+    "timeframe": "D1",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "artifact_sha256": {
+    "mq5": "cb106725391cbef0219f87389eed0870115462b7cc73594cf602881a96f52ec8",
+    "ex5": "56f7c134649df3174a93e90d718152f56c380372f275e9a6b4660f25a7bbbd5f",
+    "usdcad_backtest_setfile": "578c34fecaa323e68b85d44015dac3dedfb352fc79969e7e07bb536e13cbc86a"
+  },
+  "q02": {
+    "work_item_id": "955a893e-0973-4da4-9a23-224e1a43361a",
+    "status": "done",
+    "verdict": "PASS",
+    "evidence_path": "D:/QM/reports/work_items/955a893e-0973-4da4-9a23-224e1a43361a/QM5_11470/20260731_215450/summary.json",
+    "evidence_sha256": "be8fbcc91c41466a4fe74f4304d13fe8933ba488b312213b39f175c5e6f3257c",
+    "reason_classes": [
+      "OK"
+    ],
+    "trades": 27,
+    "profit_factor": 0.38,
+    "net_profit": -9296.12,
+    "drawdown": 10172.94,
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31"
+  },
+  "q04_predecessor": {
+    "work_item_id": "88a13e89-6f77-4938-bdc9-86f38885cb26",
+    "status": "done",
+    "verdict": "PASS_LOWFREQ",
+    "evidence_path": "D:/QM/reports/pipeline/QM5_11470/Q04/USDCAD.DWX__88a13e89-6f77-4938-bdc9-86f38885cb26/aggregate.json",
+    "evidence_sha256": "899b1a9b6c152806ae9d3b7cd367c89f0135628b50c60b76c95428a3df9da85a",
+    "pooled_pf_net": 1.048,
+    "pooled_trades": 20,
+    "active_years": "3/3",
+    "folds": [
+      {
+        "id": "F1",
+        "trades": 5,
+        "pf_net": 1.7119369042020722,
+        "status": "OK"
+      },
+      {
+        "id": "F2",
+        "trades": 9,
+        "pf_net": 0.3283651948466528,
+        "status": "OK"
+      },
+      {
+        "id": "F3",
+        "trades": 6,
+        "pf_net": 3.1044850785478753,
+        "status": "OK"
+      }
+    ]
+  },
+  "preserved_q05": {
+    "work_item_id": "4b7af90f-5c1e-48d7-8473-6e10183a88aa",
+    "status": "failed",
+    "verdict": "INFRA_FAIL",
+    "evidence_path": null,
+    "incident_class": "MNT-046_T5_PHASE_RUNNER_SCOPE",
+    "recovery_disposition": "READY_APPEND_ONLY",
+    "historical_row_preserved": true
+  },
+  "q05_retry": {
+    "work_item_id": "1b7474a6-5790-4923-9a7c-26fa611d16bd",
+    "status_at_immediate_verification": "pending",
+    "claimed_by_at_immediate_verification": null,
+    "attempt_count_at_immediate_verification": 0,
+    "append_only": true,
+    "historical_work_item_preserved": true,
+    "promoted_from_phase": "Q04",
+    "promoted_from_work_item": "88a13e89-6f77-4938-bdc9-86f38885cb26",
+    "rerun_of_work_item": "4b7af90f-5c1e-48d7-8473-6e10183a88aa",
+    "expected_expert": "QM\\QM5_11470_nekritin-peters-kangaroo-tail-d1",
+    "expected_symbol": "USDCAD.DWX",
+    "expected_period": "D1",
+    "from_year": 2017,
+    "to_year": 2022,
+    "timeout_min": 120,
+    "created_rows": 1,
+    "requeued_rows": 0,
+    "skipped_rows": 0,
+    "same_identity_open_rows_at_immediate_verification": 1
+  },
+  "cpu_sample": {
+    "sampled_at": "2026-08-10T14:45:37+02:00",
+    "binding_ceiling": 7,
+    "factory_terminal_count": 5,
+    "factory_terminals": [
+      "T1",
+      "T10",
+      "T5",
+      "T8",
+      "T9"
+    ],
+    "ceiling_blocked": false
+  },
+  "verification": {
+    "farm_database_quick_check": "ok",
+    "exact_q05_open_count": 1,
+    "source_q05_row_unchanged": true,
+    "q04_predecessor_row_unchanged": true
+  },
+  "safety": {
+    "tester_dispatched": false,
+    "terminal_control_performed": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "strategy_or_build_artifact_changed": false
+  }
+}
