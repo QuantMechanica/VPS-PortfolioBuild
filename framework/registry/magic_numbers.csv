@@ -15736,6 +15736,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12401,mom-vol-rev,5,XAUUSD.DWX,124010005,2026-08-10,Claude,active
 12401,mom-vol-rev,6,XTIUSD.DWX,124010006,2026-08-10,Claude,active
 20273,wti-signrun-tr,0,XTIUSD.DWX,202730000,2026-08-10T17:25:33Z,Codex,active
+20274,wti-path-eff,0,XTIUSD.DWX,202740000,2026-08-10T21:15:16Z,Codex,active
 12430,ea31337-stoch,0,EURUSD.DWX,124300000,2026-08-10,Claude,active
 12430,ea31337-stoch,1,GBPUSD.DWX,124300001,2026-08-10,Claude,active
 12430,ea31337-stoch,2,USDJPY.DWX,124300002,2026-08-10,Claude,active
