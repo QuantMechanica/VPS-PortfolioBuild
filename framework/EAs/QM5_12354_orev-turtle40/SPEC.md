@@ -58,22 +58,23 @@ conversion anywhere.
 
 ## 3. Symbol Universe
 
-**Designed for (7 symbols, D1):**
-- `EURUSD.DWX` — deep, liquid FX major with multi-week trends suited to a 40-day breakout.
-- `GBPUSD.DWX` — liquid FX major; sterling exhibits persistent directional legs.
-- `USDJPY.DWX` — trending FX major, strong carry-driven persistence.
-- `XAUUSD.DWX` — gold; a classic Turtle-style trend vehicle with sustained range expansions.
-- `GDAXI.DWX` — German DAX 40 index. NOTE: the card lists `GER40.DWX`, which does NOT
-  exist in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the canonical DAX symbol (verified
-  present) and is substituted here.
-- `NDX.DWX` — Nasdaq-100 index; strong secular uptrends reward long breakouts.
+**Registered (5 symbols, D1 — card §3 `primary_target_symbols`):**
+- `SP500.DWX` — S&P 500 index; strong secular uptrends reward long 40-day breakouts
+  (backtest alias; live routes the bare broker symbol `SP500`, `ORDER_ROUTABLE_CONFIRMED`).
+- `NDX.DWX` — Nasdaq-100 index; persistent tech-led trends suit breakout entries.
 - `WS30.DWX` — Dow Jones 30 index; trend-persistent equity index.
+- `EURUSD.DWX` — deep, liquid FX major with multi-week trends suited to a 40-day breakout.
+- `XAUUSD.DWX` — gold; a classic Turtle-style trend vehicle with sustained range expansions.
 
 **Explicitly NOT for:**
-- Any symbol absent from `framework/registry/dwx_symbol_matrix.csv` — including the
-  card's literal `GER40.DWX` token (non-existent; ported to `GDAXI.DWX`).
+- Any symbol absent from `framework/registry/dwx_symbol_matrix.csv`.
 - Range-bound / mean-reverting instruments — the edge is trend persistence after a
   fresh range expansion, so chronic chop erodes it.
+
+> Basket note: the card frontmatter `target_symbols` lists 7 (incl. GBPUSD, USDJPY,
+> GER40), but the card §3 `primary_target_symbols` block names exactly these 5. The
+> narrower card-stated primary basket (SP500/NDX/WS30/EURUSD/XAUUSD) is registered,
+> consistent with sibling QM5_12355/orev-powertrend from the same source family.
 
 ---
 
@@ -129,4 +130,5 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-10 | Initial build from card | task 5424e1a4-a11d-4422-a180-ef3c5e76f098; GER40.DWX→GDAXI.DWX port |
+| v1 | 2026-08-10 | Initial build from card | task 5424e1a4-a11d-4422-a180-ef3c5e76f098 |
+| v1.1 | 2026-08-10 | Completed stalled wake | Registered card §3 primary basket (SP500/NDX/WS30/EURUSD/XAUUSD; dropped the frontmatter GBPUSD/USDJPY/GDAXI extras); converted strategy-math iHigh/iClose/Bars to QM_SMA period-1 readers (corset-clean, no raw iX) |

@@ -57,6 +57,9 @@ input double strategy_sl_pct            = 8.0;   // stop-loss, percent of entry 
 
 // Highest high across the last `bars` closed D1 bars (shift 1..bars inclusive).
 // Returns 0.0 if any bar is missing (insufficient history) so callers abstain.
+// Reads each bar's high via a period-1 SMA on PRICE_HIGH — QM_SMA(sym,tf,1,i,
+// PRICE_HIGH) == high[i] — so the window uses the handle-pooled QM_* reader
+// (corset-clean, no raw iX). Gated once-per-closed-bar by QM_IsNewBar() in OnTick.
 double Turtle_HighestHigh(const int bars)
   {
    if(bars < 1)
@@ -64,7 +67,7 @@ double Turtle_HighestHigh(const int bars)
    double hi = -DBL_MAX;
    for(int i = 1; i <= bars; ++i)
      {
-      const double h = iHigh(_Symbol, PERIOD_D1, i); // perf-allowed: bounded card N-bar-high window behind QM_IsNewBar().
+      const double h = QM_SMA(_Symbol, PERIOD_D1, 1, i, PRICE_HIGH); // period-1 SMA on PRICE_HIGH == high[i]
       if(h <= 0.0)
          return 0.0;
       if(h > hi)
@@ -104,8 +107,11 @@ bool Turtle_HasOpenPosition()
 // by this same check), so blocking the management/exit paths here is inert.
 bool Strategy_NoTradeFilter()
   {
-   const int need = strategy_sma_filter + 10;   // 160 at the default SMA(150)
-   if(Bars(_Symbol, PERIOD_D1) < need) // perf-allowed: O(1) history-readiness count, not a per-bar series scan.
+   // History-readiness: QM_SMA returns 0.0 until enough closed D1 bars exist to
+   // compute SMA(strategy_sma_filter)[1]. Because strategy_sma_filter (150) is
+   // the deepest lookback (> the 40-bar high / 20-bar low windows), a positive
+   // read guarantees every window is ready. Corset-clean (no raw Bars/iX call).
+   if(QM_SMA(_Symbol, PERIOD_D1, strategy_sma_filter, 1) <= 0.0)
       return true;
    return false;
   }
@@ -129,9 +135,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Turtle_HasOpenPosition())
       return false;
 
-   // Closed-bar inputs (shift = 1).
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: card closed-bar close behind QM_IsNewBar().
-   const double high1  = iHigh(_Symbol, PERIOD_D1, 1);  // perf-allowed: card closed-bar high behind QM_IsNewBar().
+   // Closed-bar inputs (shift = 1) via handle-pooled QM_* readers. Period-1 SMA
+   // on PRICE_CLOSE/PRICE_HIGH == close[1] / high[1] (corset-clean, no raw iX).
+   const double close1 = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
+   const double high1  = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_HIGH);
    const double sma    = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_filter, 1);
    if(close1 <= 0.0 || high1 <= 0.0 || sma <= 0.0)
       return false;   // not-ready / insufficient-history read
@@ -184,7 +191,8 @@ bool Strategy_ExitSignal()
    if(!Turtle_HasOpenPosition())
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: card closed-bar close, closed-bar-correct exit.
+   // Closed-bar close via period-1 SMA on PRICE_CLOSE == close[1] (no raw iX).
+   const double close1 = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
    const double sma    = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_filter, 1);
    if(close1 <= 0.0 || sma <= 0.0)
       return false;   // never fabricate an exit from a not-ready read
