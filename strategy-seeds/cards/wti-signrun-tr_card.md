@@ -13,8 +13,8 @@ source_author: "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen"
 strategy_mechanic: monthly-wti-prior-twelve-adjacent-return-dominant-longest-four-sign-run-trend
 target_symbols: [XTIUSD.DWX]
 period: D1
-pipeline_phase: G0
-q01_status: NOT_RUN
+pipeline_phase: Q01_PASS
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 last_updated: 2026-08-10
 ---
@@ -53,4 +53,4 @@ waiver is authorized.
 ## Pipeline Status
 
 G0 is approved under the durable OWNER mission decision. Deterministic
-allocation, build/Q01, and Q02 enqueue remain pending.
+allocation and build/Q01 are PASS; Q02 enqueue remains pending.

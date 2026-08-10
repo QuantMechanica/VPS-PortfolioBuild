@@ -117,8 +117,14 @@ correlation waiver.
 
 ## 11. Q01 Status
 
-Pending deterministic implementation, strict compile, target build check, and
-P1 artifact validation.
+- Strict compile: PASS, zero errors and zero warnings; summary
+  `D:/QM/reports/compile/20260810_173101/summary.csv`.
+- Target build check: PASS, zero failures and zero warnings; report
+  `D:/QM/reports/framework/21/build_check_20260810_173101.json`.
+- P1 artifact validation: PASS at
+  `D:/QM/reports/pipeline/QM5_20273/P1/P1_QM5_20273_result.json`.
+- Backtest set build hash:
+  `a0b0ffbd2e81ff11303d427e4e036df6790e673571edd84f1a7900232a724083`.
 
 ## 12. Q02 Handoff
 
