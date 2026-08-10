@@ -1981,3 +1981,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11362,robo-one-two-bb-reversal,3,USDCAD.DWX,113620003,2026-08-10,Development,active
 11362,robo-one-two-bb-reversal,4,NZDUSD.DWX,113620004,2026-08-10,Development,active
 11362,robo-one-two-bb-reversal,5,USDJPY.DWX,113620005,2026-08-10,Development,active
+12430,ea31337-stoch,0,EURUSD.DWX,124300000,2026-08-10,Claude,active
+12430,ea31337-stoch,1,GBPUSD.DWX,124300001,2026-08-10,Claude,active
+12430,ea31337-stoch,2,USDJPY.DWX,124300002,2026-08-10,Claude,active
+12430,ea31337-stoch,3,XAUUSD.DWX,124300003,2026-08-10,Claude,active
+12435,ea31337-cci,0,EURUSD.DWX,124350000,2026-08-10,Claude,active
+12435,ea31337-cci,1,GBPUSD.DWX,124350001,2026-08-10,Claude,active
+12435,ea31337-cci,2,USDJPY.DWX,124350002,2026-08-10,Claude,active
+12435,ea31337-cci,3,XAUUSD.DWX,124350003,2026-08-10,Claude,active

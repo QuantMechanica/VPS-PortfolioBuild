@@ -1723,3 +1723,5 @@ ea_id,slug,strategy_id,status,owner,created_at
 11533,carter-t-h1-ema3-5-13-21-80-rsi21,3001a121-97a0-5db0-b6ff-69b89a0fc07d,active,Development,2026-08-10
 11363,robo-vol-channel-breakout,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Development,2026-08-10
 11362,robo-one-two-bb-reversal,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Development,2026-08-10
+12430,ea31337-stoch,041e0d5c-bf76-501d-bee2-31c0f4a6e233,active,Development,2026-08-10
+12435,ea31337-cci,041e0d5c-bf76-501d-bee2-31c0f4a6e233,active,Development,2026-08-10
