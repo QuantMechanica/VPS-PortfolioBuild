@@ -122,3 +122,31 @@ runtime decision R3 minted via builder
   deferrals and re-audit passes are acceptable by design.
 - Zero error[32]/error[5] in tester logs post-ON.
 - Soak continues per ratified plan (≥24h, ≥500 runs, ≥80% occupancy).
+
+## Post-ON verification results (R4, 2026-08-10)
+
+Runtime decision R4 `FACTORY_RUNTIME_20260810_RAMPSOAK_GATE_STATONLY_RELOAD_R4`
+(sha `e367a768…`, runtime_decision_commit `c41528c51`, valid to
+2026-08-11T08:54:52Z) went live after a third Factory_OFF re-finalized the
+OFF flag: an aborted ON (benign AgentRouter `state='Running'` health race)
+had rewritten it to `OFF_RECOVERY_REQUIRED`; re-running Factory_OFF
+preserved the saved 21-task map (Factory_OFF.ps1 lines 566–579). Outcome:
+
+- Milestones ≥3 / ≥5 / ≥8 simultaneously active terminals reached; peak 8
+  (T2,T3,T4,T5,T6,T8,T9,T10). HOUR_STABLE: one full hour at ramp 10 with
+  containment off, 0 gate FAIL_CLOSED, 0 transient defers post-R4.
+- 45 work items completed by 2026-08-10 midday vs ~1/h under the serialized
+  regime (source: `farm_state.sqlite` work_items, done since R4-ON).
+- Containment mode `D:\QM\strategy_farm\state\custom_history_containment_mode.json`:
+  `enabled:false`, reason
+  `post_link_count_reaudit_fix_8b13cc91f_quiescent_release_ramp10_soak`.
+- Queue at soak start: 1036 Q02 + 24 Q03 + 39 Q04 pending; Q09_NEWS
+  59 done / 24 failed / 2 pending (live-book news backfill rides this queue).
+- Branch `agents/board-advisor` pushed (through `5964cd9b0`); main
+  integration deferred to soak close-out (runbook step 15) — main carries 98
+  commits not on this branch, so it is a true merge, not a fast-forward.
+
+Close-out contract (2026-08-11): evaluate the ≥24h soak — ≥500 runs, ≥80%
+occupancy in a 4h window, 0 error[32]/error[5], archive-integrity audit
+(quiescent FULL hash), before/after error-32 numbers — then rollback-tree
+retention decision, migration execution record, main integration.
