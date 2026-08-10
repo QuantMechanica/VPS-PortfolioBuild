@@ -1997,3 +1997,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1626,hopwood-bermaui-stoch-h4,1,GBPUSD.DWX,16260001,2026-08-10,claude,active
 1626,hopwood-bermaui-stoch-h4,2,NDX.DWX,16260002,2026-08-10,claude,active
 1626,hopwood-bermaui-stoch-h4,3,XAUUSD.DWX,16260003,2026-08-10,claude,active
+20076,trendline-diagonal-break-retest,0,EURUSD.DWX,200760000,2026-08-11,claude,active
+20076,trendline-diagonal-break-retest,1,GBPUSD.DWX,200760001,2026-08-11,claude,active
+20076,trendline-diagonal-break-retest,2,USDJPY.DWX,200760002,2026-08-11,claude,active
+20076,trendline-diagonal-break-retest,3,AUDUSD.DWX,200760003,2026-08-11,claude,active
+20076,trendline-diagonal-break-retest,4,XAUUSD.DWX,200760004,2026-08-11,claude,active
+20076,trendline-diagonal-break-retest,5,NDX.DWX,200760005,2026-08-11,claude,active
+20076,trendline-diagonal-break-retest,6,GDAXI.DWX,200760006,2026-08-11,claude,active
