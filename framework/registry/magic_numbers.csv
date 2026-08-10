@@ -1971,3 +1971,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11461,goodwin-j-outside-bar-daily-reversion-d1,2,USDJPY.DWX,114610002,2026-08-10,Development,active
 11461,goodwin-j-outside-bar-daily-reversion-d1,3,AUDUSD.DWX,114610003,2026-08-10,Development,active
 11461,goodwin-j-outside-bar-daily-reversion-d1,4,USDCAD.DWX,114610004,2026-08-10,Development,active
+11533,carter-t-h1-ema3-5-13-21-80-rsi21,0,EURUSD.DWX,115330000,2026-08-10,Development,active
+11363,robo-vol-channel-breakout,0,EURUSD.DWX,113630000,2026-08-10,Development,active
+11363,robo-vol-channel-breakout,1,GBPUSD.DWX,113630001,2026-08-10,Development,active
+11363,robo-vol-channel-breakout,2,GBPJPY.DWX,113630002,2026-08-10,Development,active
+11362,robo-one-two-bb-reversal,0,EURUSD.DWX,113620000,2026-08-10,Development,active
+11362,robo-one-two-bb-reversal,1,GBPUSD.DWX,113620001,2026-08-10,Development,active
+11362,robo-one-two-bb-reversal,2,AUDUSD.DWX,113620002,2026-08-10,Development,active
+11362,robo-one-two-bb-reversal,3,USDCAD.DWX,113620003,2026-08-10,Development,active
+11362,robo-one-two-bb-reversal,4,NZDUSD.DWX,113620004,2026-08-10,Development,active
+11362,robo-one-two-bb-reversal,5,USDJPY.DWX,113620005,2026-08-10,Development,active
