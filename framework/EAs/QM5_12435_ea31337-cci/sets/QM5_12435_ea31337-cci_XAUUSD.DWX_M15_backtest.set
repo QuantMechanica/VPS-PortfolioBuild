@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12435
+; ea_slug:      ea31337-cci
+; ea_version:   v5.0
+; set_version:  s20260810-001
+; symbol:       XAUUSD.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   b2b212242b66e3b1d0397c650563adfadacad5f9a62fc413005175628f0b95b0
+; author:       Development
+; date:         2026-08-10
+;==========================================================
+qm_ea_id=12435
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12435_ea31337-cci.md
+strategy_cci_period=20
+strategy_signal_open_level=90.0
+strategy_stop_pips=80
+strategy_take_pips=80
+strategy_max_hold_bars=30
+strategy_max_spread_pips=4.0
