@@ -135,6 +135,7 @@ waiver is authorized.
 |---|---|---|---|
 | v1 | 2026-08-11 | Initial scaffold from approved card | Build commit pending |
 | v2 | 2026-08-11 | Initial V5 implementation and Q01 validation | Strict compile, target build check, P1 artifact validation, and independent reference vectors PASS |
+| v3 | 2026-08-11 | Paced Q02 handoff | One current-binary WTI row enqueued below the path-anchored factory CPU ceiling |
 
 ## 11. Q01 Status
 
@@ -153,6 +154,11 @@ waiver is authorized.
 
 ## 12. Q02 Handoff
 
-`NOT_ENQUEUED`. A single current-binary `XTIUSD.DWX` D1 row may be enqueued
-only after an immediate path-anchored capacity sample below the paced CPU
-ceiling. No manual tester run is authorized.
+One current-binary `XTIUSD.DWX` Q02 row was enqueued at
+`2026-08-11T15:15:32+00:00`: work item
+`fab14b85-52c0-4fb1-96d9-10b6c8fb9628`, attempt 0, no verdict, and
+`priority_track=true`. Immediate readback was pending and unclaimed. The
+binding path-anchored pre-enqueue sample at
+`2026-08-11T15:15:26.6767388Z` found three executing T1-T10 factory
+terminals, T1, T5, and T10, against the ceiling of seven. This mission ran no
+dispatch tick or manual backtest.
