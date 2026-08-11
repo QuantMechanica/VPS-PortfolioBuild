@@ -7560,6 +7560,11 @@ BASKET_CONTEXT_PAYLOAD_KEYS = (
     "timeout_min",
 )
 
+PROMOTION_QUEUE_CONTEXT_PAYLOAD_KEYS = (
+    "priority_track",
+    "priority_reason",
+)
+
 
 def _basket_q02_payload(
     basket_manifest: dict[str, Any],
@@ -7625,7 +7630,7 @@ def _promotion_payload_with_basket_context(
     parent_work_item: sqlite3.Row | dict[str, Any],
     extra: dict[str, Any],
 ) -> dict[str, Any]:
-    """Carry basket host/manifest metadata when promoting logical basket work_items."""
+    """Carry queue-priority and basket metadata across phase promotions."""
     payload = dict(extra)
     try:
         raw = parent_work_item["payload_json"]
@@ -7637,6 +7642,9 @@ def _promotion_payload_with_basket_context(
         parent_payload = {}
     if not isinstance(parent_payload, dict):
         parent_payload = {}
+    for key in PROMOTION_QUEUE_CONTEXT_PAYLOAD_KEYS:
+        if key in parent_payload and key not in payload:
+            payload[key] = parent_payload[key]
     for key in BASKET_CONTEXT_PAYLOAD_KEYS:
         if key in parent_payload and key not in payload:
             payload[key] = parent_payload[key]
