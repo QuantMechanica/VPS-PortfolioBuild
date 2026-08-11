@@ -1,0 +1,71 @@
+{
+  "artifact_schema": "qm.fx_q02_magic_binding_repair/v1",
+  "recorded_at_utc": "2026-08-11T00:12:22Z",
+  "branch": "agents/board-advisor",
+  "build_commit": "d5d50e7a8ea204c16b6337ff2a4c61ee9436dcaa",
+  "frontier": {
+    "new_pair_created": false,
+    "reason": "governed_66_pair_frontier_exhausted",
+    "anchor_states": {
+      "QM5_12532": ["Q02_PASS", "Q04_PASS", "Q05_FAIL"],
+      "QM5_12533": ["Q02_PASS", "Q04_FAIL"]
+    }
+  },
+  "target": {
+    "ea_id": "QM5_11402",
+    "ea_slug": "QM5_11402_davey-dueling-momentum-d1",
+    "symbol": "GBPUSD.DWX",
+    "period": "D1",
+    "magic_slot": 1,
+    "magic": 114020001
+  },
+  "source_failure": {
+    "work_item_id": "9659574a-b214-4eb0-a321-ae127c56c9b4",
+    "status": "done",
+    "verdict": "INFRA_FAIL",
+    "reason_classes": ["ONINIT_FAILED", "INCOMPLETE_RUNS"],
+    "evidence_path": "D:\\QM\\reports\\work_items\\9659574a-b214-4eb0-a321-ae127c56c9b4\\QM5_11402\\20260810_234741\\summary.json",
+    "root_cause": "EA_MAGIC_NOT_REGISTERED: ea_id=11402 slot=1 magic=114020001"
+  },
+  "artifact_bindings": {
+    "mq5_sha256": "4cb23b969157605aa1364eb5f029b6570467316367b3aecc87643b1803354b55",
+    "old_ex5_sha256": "1a2ca96003502f8b3cf86f355037e39e9344338a690c4fa8805ac83f9dd92a00",
+    "current_ex5_sha256": "5a05c726898fd8e5b4f910afdda3853d2f39cf0e4c2fd5a0435ba2066badf70f",
+    "gbpusd_setfile_sha256": "b8e956a37d0f4aa25cd6eed6dffb02eb8e290aac83f647ce5e9e315addd0db31",
+    "strategy_card_sha256": "94c5f27a0ecaea13f6babf0550cec0e91730305f56ec4a7c4501cb322e4e72c5"
+  },
+  "verification": {
+    "strict_compile": "PASS_0_ERRORS_0_WARNINGS",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260811_000736\\summary.csv",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260811_000815.json",
+    "card_schema_lint": "PASS",
+    "build_guard": "PASS",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "q02_handoff": {
+    "work_item_id": "70d42e0f-7e9b-4d81-8a8a-ffcad70a7805",
+    "status_at_sample": "pending",
+    "created_at_utc": "2026-08-10T23:52:58Z",
+    "source_work_item_id": "9659574a-b214-4eb0-a321-ae127c56c9b4",
+    "preclaim_artifact_binding": false,
+    "duplicate_enqueued_by_this_change": false
+  },
+  "capacity_sample": {
+    "scanned_at_utc": "2026-08-11T00:11:19Z",
+    "running_factory_mt5_count": 5,
+    "backtest_cpu_ceiling": 7,
+    "running_factory_terminals": ["T1", "T2", "T4", "T5", "T8"],
+    "ceiling_hit": false,
+    "t_live_untouched": true,
+    "autotrading_untouched": true
+  },
+  "forbidden_scope_untouched": [
+    "portfolio_admission",
+    "portfolio_kpi",
+    "q08_contribution",
+    "T_Live_manifest"
+  ]
+}
