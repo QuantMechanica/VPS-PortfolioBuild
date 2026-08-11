@@ -1,0 +1,23 @@
+{
+  "review_task_id": "982fe1f3-c9e2-430b-a080-093f59a5b012",
+  "build_task_id": "78fa29a2-a41f-4eaf-bc55-b892025fadb1",
+  "ea_id": "QM5_9354",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "framework_corset: canonical build_check report D:/QM/reports/framework/21/build_check_20260811_054338.json fails 31 unapproved raw-series calls (iHigh/iLow/iClose/iTime) across mq5 lines 51-370.",
+    "framework_corset: Strategy_EntrySignal mutates last_traded_w3_time and last_w4_extreme at lines 285-286 and 338-339 before QM_TM_OpenPosition runs at line 466, so an order rejection consumes the skeleton and suppresses a valid retry.",
+    "framework_corset: OnTick omits the mandatory QM_FrameworkTrackOpenPositionMae hook and places the news entry gate before management and exits; because every entry supplies server-side SL and TP, the latter is an ONTICK-ORDER advisory rather than an additional hard failure.",
+    "build_result: the Gemini artifact declares build_check_passed=true and source verdict compile 0 errors/0 warnings, but focused canonical verification produced build_check FAIL (31 failures) and a fresh compile with 0 errors/1 warning at C:/QM/repo/framework/build/compile/20260811_054219/QM5_9354_demark-td-dwave-wave4-h4.compile.log.",
+    "smoke_sanity: smoke_result is deferred_p2_smoke and smoke_report_path is null, so no pipeline or trade-generation verdict is available."
+  ],
+  "reviewed_at": "2026-08-11T05:44:24.9835955Z"
+}
