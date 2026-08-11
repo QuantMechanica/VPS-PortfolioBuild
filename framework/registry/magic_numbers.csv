@@ -15903,3 +15903,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20279,wti-expw-mom,0,XTIUSD.DWX,202790000,2026-08-11,Research+Development,active
 20280,wti-tsmom4m,0,XTIUSD.DWX,202800000,2026-08-11,Research+Development,active
 20281,wti-tsmom-h2,0,XTIUSD.DWX,202810000,2026-08-11,Research+Development,active
+20282,wti-madcap-mom,0,XTIUSD.DWX,202820000,2026-08-11,Research+Development,active
