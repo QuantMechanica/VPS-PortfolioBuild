@@ -15906,3 +15906,17 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20282,wti-madcap-mom,0,XTIUSD.DWX,202820000,2026-08-11,Research+Development,active
 20283,wti-trimean-mom,0,XTIUSD.DWX,202830000,2026-08-11,Research+Development,active
 20284,wti-skip1-trend,0,XTIUSD.DWX,202840000,2026-08-11,Research+Development,active
+1537,aa-vol-sma10,0,XAUUSD.DWX,15370000,2026-08-12,Claude,active
+1537,aa-vol-sma10,1,XAGUSD.DWX,15370001,2026-08-12,Claude,active
+1537,aa-vol-sma10,2,XNGUSD.DWX,15370002,2026-08-12,Claude,active
+1537,aa-vol-sma10,3,XTIUSD.DWX,15370003,2026-08-12,Claude,active
+1537,aa-vol-sma10,4,NDX.DWX,15370004,2026-08-12,Claude,active
+1537,aa-vol-sma10,5,WS30.DWX,15370005,2026-08-12,Claude,active
+1537,aa-vol-sma10,6,GDAXI.DWX,15370006,2026-08-12,Claude,active
+1537,aa-vol-sma10,7,UK100.DWX,15370007,2026-08-12,Claude,active
+1537,aa-vol-sma10,8,SP500.DWX,15370008,2026-08-12,Claude,active
+12926,renko-color-streak-h1,0,EURUSD.DWX,129260000,2026-08-12,Claude,active
+12926,renko-color-streak-h1,1,GBPUSD.DWX,129260001,2026-08-12,Claude,active
+12926,renko-color-streak-h1,2,USDJPY.DWX,129260002,2026-08-12,Claude,active
+12926,renko-color-streak-h1,3,XAUUSD.DWX,129260003,2026-08-12,Claude,active
+12926,renko-color-streak-h1,4,AUDUSD.DWX,129260004,2026-08-12,Claude,active
