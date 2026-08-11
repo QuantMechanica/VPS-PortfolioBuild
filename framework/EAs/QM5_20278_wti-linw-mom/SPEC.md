@@ -124,10 +124,20 @@ correlation waiver.
 
 ## 11. Q01 Status
 
-Pending implementation, strict compile, targeted build check, statistic
-reference test, and P1 artifact validation.
+Strict compilation passed with zero errors and zero warnings. The targeted
+framework build check passed with zero failures and zero warnings, the
+independent estimator reference test confirmed chronology-sensitive weights
+`1..12`, divisor 78, exact-zero handling, and sign divergence from all three
+existing robust-location estimators, and P1 confirmed the EA directory and
+EX5 binary. No manual smoke or backtest was run.
 
 ## 12. Q02 Handoff
 
-Not enqueued. Q02 may receive exactly one `XTIUSD.DWX` D1 current-binary row
-only after Q01 PASS and a binding factory CPU-ceiling check.
+One current-binary `XTIUSD.DWX` Q02 row was enqueued at
+`2026-08-11T07:29:58+00:00`: work item
+`50b53e15-f54e-407d-89ee-76dfc758f762`, attempt 0, no verdict, and
+`priority_track=true`. Immediate readback was pending and unclaimed. The
+binding path-anchored pre-enqueue sample at `2026-08-11T07:29:50+00:00` found
+three executing T1-T10 factory terminals against the ceiling of seven.
+`T_Live` and FTMO were excluded from that governed count and were not touched.
+This mission ran no dispatch tick or manual backtest.

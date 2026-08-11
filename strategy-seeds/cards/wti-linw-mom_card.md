@@ -13,9 +13,9 @@ source_author: "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen"
 strategy_mechanic: monthly-wti-sign-of-one-through-twelve-linear-recency-weighted-completed-monthly-log-returns
 target_symbols: [XTIUSD.DWX]
 period: D1
-pipeline_phase: G0_APPROVED
-q01_status: PENDING_BUILD
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02_ENQUEUED
+q01_status: PASS
+q02_status: ENQUEUED
 last_updated: 2026-08-11
 ---
 
@@ -50,5 +50,6 @@ waiver is authorized.
 
 ## Pipeline Status
 
-G0 is APPROVED. Q01 is pending the deterministic registry-clean build and Q02
-is not enqueued.
+G0 is APPROVED and Q01 is PASS. One current-binary `XTIUSD.DWX` Q02 row is
+pending as work item `50b53e15-f54e-407d-89ee-76dfc758f762`; no screening
+verdict is claimed.
