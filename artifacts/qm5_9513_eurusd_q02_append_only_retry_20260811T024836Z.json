@@ -1,0 +1,69 @@
+{
+  "schema": "qm.paced_fleet.append_only_retry/v1",
+  "recorded_at_utc": "2026-08-11T02:48:36+00:00",
+  "branch": "agents/board-advisor",
+  "repo_head_before_evidence_commit": "141e0f9c640d64f69e801d593db11afa7bcef3ec",
+  "mission_priority": 2,
+  "ea_id": "QM5_9513",
+  "ea_label": "QM5_9513_lt-breakout-stack",
+  "symbol": "EURUSD.DWX",
+  "timeframe": "D1",
+  "source_work_item": {
+    "id": "d0e72ff8-3f29-4419-b060-11db59cb81c5",
+    "status": "failed",
+    "verdict": "INFRA_FAIL",
+    "attempt_count": 3,
+    "failure": "cold_cache_retries_exhausted:NO_HISTORY",
+    "evidence_path": "D:\\QM\\reports\\work_items\\d0e72ff8-3f29-4419-b060-11db59cb81c5\\QM5_9513\\20260729_010836\\summary.json"
+  },
+  "farm_claim": {
+    "id": "b227bf83-00c1-44f1-9032-661b5208cb1d",
+    "state_at_enqueue": "IN_PROGRESS",
+    "assigned_agent": "codex:agents/board-advisor",
+    "backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_9513_q02_claim_20260811T024647Z.sqlite"
+  },
+  "capacity_sample": {
+    "scanned_at": "2026-08-11T04:48:10+02:00",
+    "factory_ceiling": 7,
+    "running_factory_count": 5,
+    "running_factory_terminals": ["T10", "T3", "T6", "T8", "T9"],
+    "t_live_excluded": true,
+    "ftmo_excluded": true
+  },
+  "artifact_bindings": {
+    "approved_card_sha256": "1cad503bdc027734607e84eb5a0e5ad412c9e00e4057e2efc1244c9de54bc823",
+    "mq5_sha256": "fcd5dca87ac3fa196bb22c077fbd92b80f42976e7a5710217baf7e1347d055fe",
+    "ex5_sha256": "655b633fead5cc7e1a3809dc7be50d1ca966eaeb603f4ad9d99ecc0b348f7476",
+    "setfile_sha256": "fc1ce2c5555fc46b1ccda7a9ac55ec08997db735dd5b6ac738fef8d47fc5e9a2",
+    "magic_slot": 0,
+    "magic": 95130000,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 1.0
+  },
+  "repair": {
+    "type": "governed_custom_history_copy_on_claim",
+    "strategy_code_changed": false,
+    "setfile_changed": false,
+    "manual_tester_launched": false,
+    "manual_dispatch": false
+  },
+  "successor_work_item": {
+    "id": "67fd19a6-7165-463f-99ca-4e25528d8d6e",
+    "created_at": "2026-08-11T02:48:36+00:00",
+    "status_at_readback": "pending",
+    "verdict_at_readback": null,
+    "attempt_count_at_readback": 0,
+    "claimed_by_at_readback": null,
+    "append_only_rerun_of": "d0e72ff8-3f29-4419-b060-11db59cb81c5",
+    "exact_open_row_count_at_readback": 1,
+    "ea_open_row_count_at_readback": 1
+  },
+  "sqlite_quick_check": "ok",
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
