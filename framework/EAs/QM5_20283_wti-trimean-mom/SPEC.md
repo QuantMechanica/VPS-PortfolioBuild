@@ -160,11 +160,24 @@ waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-11 | Initial scaffold from approved card | Build commit pending |
+| v2 | 2026-08-11 | Initial V5 implementation and Q01 validation | Strict compile, target build check, P1 artifact validation, and independent trimean reference vectors PASS |
 
 ## 12. Q01 Status
 
-Not run. Strict compile, target build check, artifact validation, and
-independent quartile-trimean reference vectors are required before Q02.
+- Strict compile: PASS with zero errors and zero warnings; summary
+  `D:/QM/reports/compile/20260811_184440/summary.csv` and log
+  `C:/QM/repo/framework/build/compile/20260811_184440/QM5_20283_wti-trimean-mom.compile.log`.
+- Target build check: PASS with zero failures and zero warnings; report
+  `D:/QM/reports/framework/21/build_check_20260811_184440.json`.
+- P1 artifact validation: PASS at
+  `D:/QM/reports/pipeline/QM5_20283/P1/P1_QM5_20283_result.json`.
+- Independent statistic/clock reference vectors: PASS for positive, negative,
+  exact-zero, trim/Winsor sign divergence, raw-median sign divergence,
+  endpoint orientation, and cross-year month continuity cases.
+- Backtest set build hash:
+  `81b8e1ac61600fdce049d7865c74b9a8b3adae29d6c971377ae40191d4b715d3`.
+- Compiled binary SHA-256:
+  `A354227A1F5C8E1DB0F5968217CDCC3C58C485861BBE0FAFE73C6B2F9BAC39ED`.
 
 ## 13. Q02 Handoff
 
