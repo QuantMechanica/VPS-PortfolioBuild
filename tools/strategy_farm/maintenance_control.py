@@ -40,13 +40,13 @@ DEFAULT_DISABLED_TERMINALS = Path(
 
 CANONICAL_FACTORY_ON_PATH = Path(r"C:\QM\repo\tools\strategy_farm\Factory_ON.ps1")
 CANONICAL_OWNER_DECISION_RELATIVE_PATH = Path(
-    "docs/ops/evidence/2026-08-10_factory_preparation_owner_decision_isolation_rampsoak.json"
+    "docs/ops/evidence/2026-08-11_factory_preparation_owner_decision_standing_unlimited.json"
 )
 CANONICAL_OWNER_DECISION_SHA256 = (
-    "ad275c2ba9b689eab1ab72e71f6622906bf17526dac1b8847702ca119a90d851"
+    "9d77f78ffb9ba5b263cf2e29ade0cf79b938ad34ab14ad2ab4ad5efd5153c4e4"
 )
-CANONICAL_OWNER_DECISION_COMMIT = "b6135d9c90d92629629e1c469b252811eb21015b"
-CANONICAL_OWNER_DECISION_BLOB = "e4fe809e1ab99ae5e9e09ae1b7a8622557eb55f1"
+CANONICAL_OWNER_DECISION_COMMIT = "ecbd911628e0850cbbfd8ab3ed1eb3c0b0b911b3"
+CANONICAL_OWNER_DECISION_BLOB = "2247ace7ec310bfb0c76dfdc455193e209683463"
 CANONICAL_WORKER_TERMINALS = (
     "T1",
     "T2",
@@ -412,7 +412,7 @@ def _validate_canonical_restart_owner_decision() -> dict[str, Any]:
         raise RuntimeError("canonical OWNER decision must be a JSON object")
 
     expected_scalar = {
-        "decision_id": "FACTORY_ISOLATION_20260810_RAMP_SOAK_TEN_WORKER_ZERO_HOLD",
+        "decision_id": "FACTORY_PREPARATION_20260811_STANDING_UNLIMITED",
         "authority": "OWNER",
         "status": "APPROVED",
     }

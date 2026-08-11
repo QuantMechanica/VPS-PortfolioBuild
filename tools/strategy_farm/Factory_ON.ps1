@@ -120,11 +120,11 @@ $publicSnapshotTaskWrapper = 'C:\QM\repo\scripts\run_public_snapshot_task.ps1'
 $publicSnapshotTaskWorkingDirectory = 'C:\QM\repo'
 $canonicalFactoryOnPath = 'C:\QM\repo\tools\strategy_farm\Factory_ON.ps1'
 $canonicalFactoryOnProcessImage = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-$canonicalOwnerDecisionPath = 'C:\QM\repo\docs\ops\evidence\2026-08-10_factory_preparation_owner_decision_isolation_rampsoak.json'
-$canonicalOwnerDecisionRelativePath = 'docs/ops/evidence/2026-08-10_factory_preparation_owner_decision_isolation_rampsoak.json'
-$QM_OWNER_DECISION_SHA256 = 'ad275c2ba9b689eab1ab72e71f6622906bf17526dac1b8847702ca119a90d851'
-$QM_OWNER_DECISION_COMMIT = 'b6135d9c90d92629629e1c469b252811eb21015b'
-$QM_OWNER_DECISION_BLOB = 'e4fe809e1ab99ae5e9e09ae1b7a8622557eb55f1'
+$canonicalOwnerDecisionPath = 'C:\QM\repo\docs\ops\evidence\2026-08-11_factory_preparation_owner_decision_standing_unlimited.json'
+$canonicalOwnerDecisionRelativePath = 'docs/ops/evidence/2026-08-11_factory_preparation_owner_decision_standing_unlimited.json'
+$QM_OWNER_DECISION_SHA256 = '9d77f78ffb9ba5b263cf2e29ade0cf79b938ad34ab14ad2ab4ad5efd5153c4e4'
+$QM_OWNER_DECISION_COMMIT = 'ecbd911628e0850cbbfd8ab3ed1eb3c0b0b911b3'
+$QM_OWNER_DECISION_BLOB = '2247ace7ec310bfb0c76dfdc455193e209683463'
 # The Pump task is scheduler-bounded by PT10M. TaskScheduler start/finish
 # evidence sampled on 2026-07-31 found 13 substantive runs: p50=550.203s,
 # p75=599.982s, and five reached the 600s ceiling. First-attempt success is
@@ -297,7 +297,7 @@ function Assert-CanonicalOwnerRestartDecision {
     } catch {
         throw "canonical OWNER decision JSON is invalid: $($_.Exception.Message)"
     }
-    if ([string]$decision.decision_id -cne 'FACTORY_ISOLATION_20260810_RAMP_SOAK_TEN_WORKER_ZERO_HOLD' -or
+    if ([string]$decision.decision_id -cne 'FACTORY_PREPARATION_20260811_STANDING_UNLIMITED' -or
         [string]$decision.authority -cne 'OWNER' -or
         [string]$decision.status -cne 'APPROVED') {
         throw 'canonical OWNER decision identity mismatch'

@@ -7,10 +7,10 @@
  "authorized_at_utc": "REPLACE_WITH_UTC_Z_TIMESTAMP",
  "expires_at_utc": "REPLACE_WITH_UTC_Z_TIMESTAMP_MAX_24H",
  "preparation_decision": {
-  "relative_path": "docs/ops/evidence/2026-08-10_factory_preparation_owner_decision_isolation_rampsoak.json",
-  "sha256": "ad275c2ba9b689eab1ab72e71f6622906bf17526dac1b8847702ca119a90d851",
-  "git_commit": "b6135d9c90d92629629e1c469b252811eb21015b",
-  "git_blob": "e4fe809e1ab99ae5e9e09ae1b7a8622557eb55f1"
+  "relative_path": "docs/ops/evidence/2026-08-11_factory_preparation_owner_decision_standing_unlimited.json",
+  "sha256": "9d77f78ffb9ba5b263cf2e29ade0cf79b938ad34ab14ad2ab4ad5efd5153c4e4",
+  "git_commit": "ecbd911628e0850cbbfd8ab3ed1eb3c0b0b911b3",
+  "git_blob": "2247ace7ec310bfb0c76dfdc455193e209683463"
  },
  "authorizations": {
   "factory_on": true,
