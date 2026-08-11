@@ -276,6 +276,101 @@ def test_repaired_infra_q02_binds_current_artifacts_append_only(
     assert new_payload["risk_percent"] == 0.0
 
 
+def test_exact_infra_q02_accepts_payload_bound_transient_evidence_append_only(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    payload = _payload(art, stale=False)
+    evidence = _insert_work_item(
+        art,
+        item_id="q02-infra-payload-evidence",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=payload,
+    )
+    payload["transient_infra_evidence_path"] = str(evidence)
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        conn.execute(
+            "UPDATE work_items SET evidence_path=NULL,payload_json=? WHERE id=?",
+            (json.dumps(payload, sort_keys=True), "q02-infra-payload-evidence"),
+        )
+        conn.commit()
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        root,
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-payload-evidence",
+        append_only_rerun_of="q02-infra-payload-evidence",
+        rerun_reason="shared-bases history isolation repaired",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    assert _work_item_count(art) == 2
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        historical = conn.execute(
+            "SELECT evidence_path FROM work_items WHERE id=?",
+            ("q02-infra-payload-evidence",),
+        ).fetchone()
+        successor_payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (result["created"][0]["id"],),
+            ).fetchone()[0]
+        )
+    assert historical == (None,)
+    assert successor_payload["rerun_source_evidence_binding"] == (
+        "payload.transient_infra_evidence_path"
+    )
+    assert successor_payload["rerun_source_evidence_path"] == str(evidence)
+    assert successor_payload["rerun_source_evidence_sha256"] == (
+        farmctl._sha256_file(evidence)
+    )
+    assert successor_payload["historical_work_item_preserved"] is True
+    assert successor_payload["expected_ex5_sha256"] == art["current_ex5"]
+
+
+def test_exact_infra_q02_refuses_null_evidence_without_payload_binding(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-infra-unbound-evidence",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=_payload(art, stale=False),
+    )
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        conn.execute(
+            "UPDATE work_items SET evidence_path=NULL WHERE id=?",
+            ("q02-infra-unbound-evidence",),
+        )
+        conn.commit()
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        root,
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-unbound-evidence",
+        append_only_rerun_of="q02-infra-unbound-evidence",
+        rerun_reason="must remain fail closed",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "q02_rerun_source_evidence_missing"
+    assert result["evidence_binding"] == "payload.transient_infra_evidence_path"
+    assert _work_item_count(art) == 1
+
+
 def test_repaired_infra_q02_refuses_unsealed_historical_binding(
     tmp_path: Path, monkeypatch
 ) -> None:

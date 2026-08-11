@@ -17462,7 +17462,6 @@ def _enqueue_q02_append_only_exact_row_rerun(
             and target["status"] in {"done", "failed"}
             and target["verdict"] in {"INFRA_FAIL", "PASS"}
             and not target["claimed_by"]
-            and str(target["evidence_path"] or "").strip()
         )
         if not target_matches:
             return {
@@ -17471,16 +17470,6 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "phase": phase,
                 "reason": "q02_rerun_target_mismatch_or_not_terminal_supported_verdict",
                 "source_work_item_id": source_id,
-            }
-        evidence_path = Path(str(target["evidence_path"]))
-        if not evidence_path.is_file():
-            return {
-                "enqueued": False,
-                "ea_id": ea_id,
-                "phase": phase,
-                "reason": "q02_rerun_source_evidence_missing",
-                "source_work_item_id": source_id,
-                "evidence_path": str(evidence_path),
             }
         try:
             source_payload = json.loads(target["payload_json"] or "{}")
@@ -17494,6 +17483,41 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "reason": "q02_rerun_source_payload_invalid",
                 "source_work_item_id": source_id,
             }
+
+        evidence_binding = "work_items.evidence_path"
+        evidence_path_raw = str(target["evidence_path"] or "").strip()
+        if not evidence_path_raw and target["verdict"] == "INFRA_FAIL":
+            # Legacy transient-infrastructure rows can predate MNT-009 evidence
+            # binding while still naming the concrete terminal log in their
+            # immutable payload.  Accept only that purpose-specific field; the
+            # row's sealed execution identity is authenticated below, and the
+            # evidence bytes are hash-bound into the append-only successor.
+            evidence_path_raw = str(
+                source_payload.get("transient_infra_evidence_path") or ""
+            ).strip()
+            evidence_binding = "payload.transient_infra_evidence_path"
+        if not evidence_path_raw:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "q02_rerun_source_evidence_missing",
+                "source_work_item_id": source_id,
+                "evidence_binding": evidence_binding,
+                "evidence_path": evidence_path_raw,
+            }
+        evidence_path = Path(evidence_path_raw)
+        if not evidence_path.is_file():
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "q02_rerun_source_evidence_missing",
+                "source_work_item_id": source_id,
+                "evidence_binding": evidence_binding,
+                "evidence_path": str(evidence_path),
+            }
+        evidence_sha256 = _sha256_file(evidence_path)
 
         risk_ok, risk_detail = _q02_fixed_risk_contract(str(target["setfile_path"]))
         if not risk_ok:
@@ -17655,7 +17679,9 @@ def _enqueue_q02_append_only_exact_row_rerun(
             "enqueued_by": "farmctl.append_only_exact_row_rerun",
             "historical_work_item_preserved": True,
             "rerun_reason": reason,
+            "rerun_source_evidence_binding": evidence_binding,
             "rerun_source_evidence_path": str(evidence_path),
+            "rerun_source_evidence_sha256": evidence_sha256,
             "rerun_source_payload_sha256": hashlib.sha256(
                 str(target["payload_json"] or "{}").encode("utf-8")
             ).hexdigest(),
@@ -17725,7 +17751,9 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "ea_id": ea_id,
                 "created": created,
                 "rerun_reason": reason,
+                "source_evidence_binding": evidence_binding,
                 "source_evidence_path": str(evidence_path),
+                "source_evidence_sha256": evidence_sha256,
                 "source_payload_sha256": payload["rerun_source_payload_sha256"],
             },
         )

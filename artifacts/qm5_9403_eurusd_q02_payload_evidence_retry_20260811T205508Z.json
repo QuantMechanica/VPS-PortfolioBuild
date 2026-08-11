@@ -1,0 +1,134 @@
+{
+  "schema_version": "qm.q02-infra-recovery-evidence/v1",
+  "recorded_at_utc": "2026-08-11T20:55:57.4339246Z",
+  "branch": "agents/board-advisor",
+  "head_before_commit": "de0a33ea555a9029db54a482ad553eaba6aa41fd",
+  "mission_priority": 2,
+  "outcome": "APPEND_ONLY_Q02_SUCCESSOR_ENQUEUED_PENDING",
+  "approved_build_backlog": {
+    "open_build_ea_tasks": 0,
+    "fallback_reason": "No eligible allocated, approved, unbuilt card existed; priority 2 therefore applied."
+  },
+  "farm_claim": {
+    "task_id": "4a01860a-7992-4b74-b825-5ffa08efe233",
+    "state_at_enqueue": "IN_PROGRESS",
+    "assigned_agent": "codex:agents/board-advisor",
+    "claimed_at_utc": "2026-08-11T20:47:17.224167+00:00",
+    "backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_9403_q02_claim_20260811T204717Z.sqlite"
+  },
+  "strategy": {
+    "ea_id": "QM5_9403",
+    "ea_label": "QM5_9403_williams-pro-go-h4",
+    "symbol": "EURUSD.DWX",
+    "period": "H4",
+    "expected_trades_per_year": 45,
+    "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9403_williams-pro-go-h4.md",
+    "card_sha256": "2d968a4f6b66edfacc72f1c3a7d86c6f97231c8a7990e6915ce3a0941b783806",
+    "g0_status": "APPROVED",
+    "source_lineage": "Larry Williams, Long-Term Secrets to Short-Term Trading, Wiley 1999, chapter 14",
+    "structural_rule": "Closed-form Pro/Go OHLC participation decomposition with fixed SMA and ATR filters",
+    "family_deepest_observed_result": {
+      "symbol": "GDAXI.DWX",
+      "phase": "Q08",
+      "verdict": "FAIL_SOFT"
+    }
+  },
+  "execution_contract": {
+    "ea_registry_status": "active",
+    "magic_slot": 0,
+    "magic": 94030000,
+    "magic_status": "active",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "news_stale_max_hours": 336,
+    "mq5_sha256": "0b2b68f986d28daa4b34681c754a4ae9a07de7cc94dcdd1c025d2252671ecb50",
+    "ex5_sha256": "240e0fe04b1a93fbabb6c4996a9507424ee88941a3de7b43ef3ed9dc61bd4526",
+    "setfile_sha256": "576a03a4308657745ae6ad49d09bc848c4130b23c9dd87a452005b9e41b570ab"
+  },
+  "predecessor": {
+    "work_item_id": "1d72f99b-2c1a-473b-8cae-6974c51577e8",
+    "status": "failed",
+    "verdict": "INFRA_FAIL",
+    "final_failure": "shared_bases_history_lock_transient_cap_exhausted",
+    "created_at_utc": "2026-07-22T11:52:58+00:00",
+    "updated_at_utc": "2026-07-31T10:55:17+00:00",
+    "payload_sha256": "f239be365754ece5da27b61de6d721d91e32d925054d8b79ed351decf429bf58",
+    "evidence_column": null,
+    "payload_evidence_field": "transient_infra_evidence_path",
+    "payload_evidence_path": "D:\\QM\\mt5\\T3\\logs\\20260729.log",
+    "payload_evidence_sha256": "d6e4d3052d753fbf2569908bd432ab4d6c6d73f1dd368c5d213d410da22b7ca3",
+    "historical_row_mutated": false
+  },
+  "guard_repair": {
+    "initial_refusal": "q02_rerun_target_mismatch_or_not_terminal_supported_verdict",
+    "cause": "The sealed legacy INFRA_FAIL row named its retained terminal evidence in payload.transient_infra_evidence_path but had a null work_items.evidence_path column.",
+    "implementation": "For terminal INFRA_FAIL rows only, the exact-row guard now accepts the purpose-specific payload evidence field when the column is blank, requires the file to exist, and SHA-256 binds its bytes into the successor and enqueue event. Other null-evidence rows remain fail-closed.",
+    "changed_files": [
+      "tools/strategy_farm/farmctl.py",
+      "tools/strategy_farm/tests/test_candidate_repair_enqueue.py"
+    ],
+    "focused_tests": {
+      "command": "python -m pytest tools/strategy_farm/tests/test_candidate_repair_enqueue.py -q",
+      "result": "PASS",
+      "passed": 26,
+      "failed": 0
+    },
+    "py_compile": "PASS",
+    "diff_check": "PASS"
+  },
+  "successor": {
+    "work_item_id": "d81b27ac-586b-4925-abd2-85c8d69d73c1",
+    "created_at_utc": "2026-08-11T20:55:08+00:00",
+    "status_at_readback": "pending",
+    "verdict_at_readback": null,
+    "claimed_by_at_readback": null,
+    "append_only_rerun": true,
+    "append_only_rerun_of_work_item": "1d72f99b-2c1a-473b-8cae-6974c51577e8",
+    "historical_work_item_preserved": true,
+    "matching_open_rows_at_readback": 1,
+    "successors_for_predecessor": 1,
+    "rerun_source_evidence_binding": "payload.transient_infra_evidence_path",
+    "rerun_source_evidence_sha256": "d6e4d3052d753fbf2569908bd432ab4d6c6d73f1dd368c5d213d410da22b7ca3"
+  },
+  "capacity": {
+    "ceiling": 7,
+    "final_pre_enqueue_scan_utc": "2026-08-11T22:54:44+02:00",
+    "running_factory_terminals": [
+      "T1",
+      "T5",
+      "T8"
+    ],
+    "running_factory_count": 3,
+    "reservations": 3,
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "host_cpu_sample_utc": "2026-08-11T20:48:15.6423063Z",
+    "host_cpu_average_percent": 77.79,
+    "host_cpu_max_percent": 82.24,
+    "ceiling_reached": false
+  },
+  "history_isolation": {
+    "activation_enabled": true,
+    "activation_file": "D:\\QM\\strategy_farm\\state\\custom_history_isolation_activation.json",
+    "activation_file_sha256": "0089c8b613a1181ff4d2304a9b2d7102da5445e6f7e9970841739dd5533f3672",
+    "containment_enabled": false,
+    "containment_file": "D:\\QM\\strategy_farm\\state\\custom_history_containment_mode.json",
+    "containment_file_sha256": "c40b990df884badeb3f1d96d85ab143ece149a138172914cf53e223f172ec7f0"
+  },
+  "news_data": {
+    "observed_at_utc": "2026-08-11T20:43:09.7496655Z",
+    "maximum_age_hours": 41.96,
+    "source_and_common_copies_identical": true,
+    "news_calendar_sha256": "ceef5352f0339172f6b34133996a6025744b66c0cdad5607aecebfb7f5f0c6df",
+    "forex_factory_calendar_sha256": "1c728b3ab507608d153c9ee09298eeb0a25984ca907211f42e181eb139353a2e"
+  },
+  "database_quick_check": "ok",
+  "manual_dispatch": false,
+  "manual_smoke_or_backtest": false,
+  "strategy_or_ea_artifact_changed": false,
+  "t_live_touched": false,
+  "autotrading_touched": false,
+  "portfolio_gate_touched": false,
+  "deploy_manifest_touched": false
+}
