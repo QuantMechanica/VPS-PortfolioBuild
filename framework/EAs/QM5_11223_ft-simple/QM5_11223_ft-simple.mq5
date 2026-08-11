@@ -107,7 +107,10 @@ bool Strategy_NoTradeFilter()
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
+   // .DWX tester quotes can legitimately model zero spread (ask == bid).
+   // Reject only invalid/crossed quotes; the stop-relative guard below still
+   // enforces the card's maximum-spread rule whenever spread is non-zero.
+   if(ask <= 0.0 || bid <= 0.0 || ask < bid)
       return true;
 
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
@@ -177,7 +180,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0 || bid <= 0.0 || entry <= bid)
+   if(entry <= 0.0 || bid <= 0.0 || entry < bid)
       return false;
 
    const double atr_sl = QM_StopATR(_Symbol, QM_BUY, entry,
@@ -297,20 +300,16 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any per-tick guard can
+   // return. QM_KillSwitchCheck retains the same call as a compatibility
+   // fallback for pre-template EAs; keep this explicit hook in all new builds.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
-      return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -319,6 +318,10 @@ void OnTick()
       return;
 
    // Per-tick: trade management can adjust SL/TP on open positions.
+   // Management, rule-based exits and the Friday sweep above MUST keep
+   // running through news windows — the news gate below blocks NEW entries
+   // only (2026-07-02 audit rule; canonical order per QM5_12821 OnTick,
+   // commit dc418a720).
    Strategy_ManageOpenPosition();
 
    // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
@@ -339,6 +342,17 @@ void OnTick()
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
    // per-tick recompute mistakes — EntrySignal sees one new closed bar per
    // call, not every incoming tick.
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults. Gates NEW entries only —
+   // never the management/exit paths above.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!QM_IsNewBar())
       return;
 
@@ -347,6 +361,8 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req); // symbol_slot=0 (host slot) + expiration=0 defaults; garbage
+                    // in unset fields = the silent-zero-trades class (9e4cfedb1)
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
