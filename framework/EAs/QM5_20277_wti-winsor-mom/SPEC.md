@@ -122,8 +122,16 @@ correlation waiver.
 
 ## 11. Q01 Status
 
-Pending implementation, strict compile, targeted build check, estimator
-reference test, and P1 artifact validation.
+- Strict compile: PASS with zero errors and zero warnings; summary
+  `D:/QM/reports/compile/20260811_051914/summary.csv`.
+- Target build check: PASS with zero failures and zero warnings; report
+  `D:/QM/reports/framework/21/build_check_20260811_052000.json`.
+- P1 artifact validation: PASS at
+  `D:/QM/reports/pipeline/QM5_20277/P1/P1_QM5_20277_result.json`.
+- Independent statistic reference vectors: PASS, including a sample where the
+  Winsorized and middle-eight trimmed means have opposite signs.
+- Backtest set build hash:
+  `a369d91afd07fea9f3ddca9bbf46dbd0d48c9931ed4b50b4e26dfc98fe5f27a2`.
 
 ## 12. Q02 Handoff
 

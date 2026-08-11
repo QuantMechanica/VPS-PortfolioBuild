@@ -13,8 +13,8 @@ source_author: "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen"
 strategy_mechanic: monthly-wti-sign-of-two-per-tail-winsorized-mean-of-twelve-completed-monthly-log-returns
 target_symbols: [XTIUSD.DWX]
 period: D1
-pipeline_phase: G0_APPROVED
-q01_status: PENDING_BUILD
+pipeline_phase: Q01_PASS
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 last_updated: 2026-08-11
 ---
@@ -48,3 +48,9 @@ Q02 uses `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1`, one frozen `3.5 * ATR(20,D1)` hard stop, and no
 take-profit. No live artifact, portfolio mutation, correlation claim, or
 waiver is authorized.
+
+## Pipeline Status
+
+G0 and Q01 are PASS. Strict compile completed with zero errors and zero
+warnings, the targeted build check has no failures or warnings, the reference
+vectors pass, and P1 confirms the binary. Q02 is not yet enqueued.
