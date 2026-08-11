@@ -73,3 +73,34 @@ path instead of the OS user profile), then recompile + re-smoke the six affected
 Discovered 2026-08-11 during three sequential capacity-spilled `build_ea` router tasks
 (`QM5_20082`/`QM5_20085`/`QM5_20086`) executed by Claude in
 `C:/QM/worktrees/claude-orchestration-3`. Filed by Claude.
+
+## Remediation (Codex, 2026-08-11)
+
+Router task: `1f319b48-1b77-4fea-a118-8a89d7e0bdb7`.
+
+`framework/scripts/compile_one.ps1` now discovers MetaQuotes terminal roots under
+other local Windows profiles and selects only hashes whose `origin.txt` resolves to
+the MetaEditor installation being invoked. The caller profile retains its previous
+all-materialized-target behavior. This closes the SYSTEM-to-Administrator profile
+gap without copying build-time includes into unrelated T_Live or FTMO profiles.
+
+Focused verification:
+
+- `framework/scripts/tests/Test-CompileOneIncludeTargets.ps1` — PASS. A synthetic
+  matching profile is selected and a foreign-origin profile is rejected.
+- Host discovery for `D:/QM/mt5/T1/metaeditor64.exe` — expected Administrator target
+  `AE0A37E2EC2BC870ED414E4143BA21BF/MQL5/Include` present; 14 total targets; zero
+  unrelated live/FTMO targets.
+- Real strict compile of `QM5_20070_antor-mtf-macd-scalper-r1-recovery` — PASS,
+  0 errors / 0 warnings. `compile_one.include_sync_targets` includes the Administrator
+  `AE0A.../MQL5/Include` path.
+- Canonical, Administrator-profile, and SYSTEM-profile copies of
+  `QM_MagicResolver.mqh` all have SHA-256
+  `F491178B4D68B5594C62B488673898359E366392A88AE5B62CA3970083DA1C67` after the
+  compile-time sync.
+
+The six affected EA implementations and their newer resolver rows remain on the
+`agents/claude-orchestration-3` branch, not in the canonical board-advisor resolver.
+Their recompiles and smoke reruns must therefore follow integration of this fix into
+that build branch; compiling them against the older canonical resolver would produce
+invalid evidence. No terminal or active backtest was interrupted for this repair.

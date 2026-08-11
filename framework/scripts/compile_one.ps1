@@ -38,22 +38,92 @@ function Resolve-DefaultMetaEditorPath {
 function Resolve-TerminalIncludeTargets {
     param(
         [Parameter(Mandatory = $true)]
-        [string]$MetaEditorPath
+        [string]$MetaEditorPath,
+        [string[]]$AdditionalTerminalRoots = @()
     )
 
     $targets = New-Object System.Collections.Generic.List[string]
+    $metaEditorRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $MetaEditorPath)).Path.TrimEnd("\")
 
-    $installInclude = Join-Path (Split-Path -Parent $MetaEditorPath) "MQL5\Include"
+    $installInclude = Join-Path $metaEditorRoot "MQL5\Include"
     if (Test-Path -LiteralPath $installInclude) {
         [void]$targets.Add((Resolve-Path -LiteralPath $installInclude).Path)
     }
 
-    $terminalRoot = Join-Path $env:APPDATA "MetaQuotes\Terminal"
-    if (Test-Path -LiteralPath $terminalRoot) {
-        $dirs = Get-ChildItem -LiteralPath $terminalRoot -Directory -ErrorAction SilentlyContinue
+    $currentTerminalRoot = $null
+    if (-not [string]::IsNullOrWhiteSpace($env:APPDATA)) {
+        $candidate = Join-Path $env:APPDATA "MetaQuotes\Terminal"
+        if (Test-Path -LiteralPath $candidate) {
+            $currentTerminalRoot = (Resolve-Path -LiteralPath $candidate).Path
+        }
+    }
+
+    # Preserve the existing behaviour for the account running compile_one:
+    # sync every materialized terminal include tree in that account's profile.
+    if ($currentTerminalRoot) {
+        $dirs = Get-ChildItem -LiteralPath $currentTerminalRoot -Directory -ErrorAction SilentlyContinue
         foreach ($dir in $dirs) {
             $includePath = Join-Path $dir.FullName "MQL5\Include"
             if (Test-Path -LiteralPath $includePath) {
+                [void]$targets.Add((Resolve-Path -LiteralPath $includePath).Path)
+            }
+        }
+    }
+
+    # MetaEditor can resolve its data folder from a different Windows profile
+    # than the caller (for example, SYSTEM launching an installation registered
+    # under Administrator). Discover those profile roots, but sync only terminal
+    # hashes whose origin.txt points at this MetaEditor installation. This avoids
+    # copying build-time includes into unrelated live or FTMO terminal profiles.
+    $profileTerminalRoots = New-Object System.Collections.Generic.List[string]
+    foreach ($terminalRoot in @($AdditionalTerminalRoots)) {
+        if (-not [string]::IsNullOrWhiteSpace($terminalRoot)) {
+            [void]$profileTerminalRoots.Add($terminalRoot)
+        }
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($env:SystemDrive)) {
+        $usersRoot = Join-Path $env:SystemDrive "Users"
+        if (Test-Path -LiteralPath $usersRoot) {
+            $profiles = Get-ChildItem -LiteralPath $usersRoot -Directory -ErrorAction SilentlyContinue
+            foreach ($profile in $profiles) {
+                $terminalRoot = Join-Path $profile.FullName "AppData\Roaming\MetaQuotes\Terminal"
+                if (Test-Path -LiteralPath $terminalRoot) {
+                    [void]$profileTerminalRoots.Add($terminalRoot)
+                }
+            }
+        }
+    }
+
+    foreach ($terminalRoot in @($profileTerminalRoots | Select-Object -Unique)) {
+        if (-not (Test-Path -LiteralPath $terminalRoot)) {
+            continue
+        }
+
+        $resolvedTerminalRoot = (Resolve-Path -LiteralPath $terminalRoot).Path
+        if ($currentTerminalRoot -and
+            [string]::Equals($resolvedTerminalRoot, $currentTerminalRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+            continue
+        }
+
+        $dirs = Get-ChildItem -LiteralPath $resolvedTerminalRoot -Directory -ErrorAction SilentlyContinue
+        foreach ($dir in $dirs) {
+            $includePath = Join-Path $dir.FullName "MQL5\Include"
+            $originPath = Join-Path $dir.FullName "origin.txt"
+            if (-not (Test-Path -LiteralPath $includePath) -or -not (Test-Path -LiteralPath $originPath)) {
+                continue
+            }
+
+            try {
+                $originRoot = [System.IO.Path]::GetFullPath(
+                    (Get-Content -LiteralPath $originPath -Raw -ErrorAction Stop).Trim()
+                ).TrimEnd("\")
+            }
+            catch {
+                continue
+            }
+
+            if ([string]::Equals($originRoot, $metaEditorRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
                 [void]$targets.Add((Resolve-Path -LiteralPath $includePath).Path)
             }
         }
