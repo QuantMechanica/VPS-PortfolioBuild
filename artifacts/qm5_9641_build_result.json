@@ -1,0 +1,31 @@
+{
+  "task_id": "fead18b1-3859-48aa-a192-0eb7c1a79530",
+  "ea_id": "QM5_9641",
+  "ea_dir": "framework/EAs/QM5_9641_bandy-cci-extreme-fade-mr-index",
+  "mq5_path": "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9641_bandy-cci-extreme-fade-mr-index/QM5_9641_bandy-cci-extreme-fade-mr-index.mq5",
+  "ex5_path": "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9641_bandy-cci-extreme-fade-mr-index/QM5_9641_bandy-cci-extreme-fade-mr-index.ex5",
+  "magic_base": 96410000,
+  "symbols_registered": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "WS30.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9641_bandy-cci-extreme-fade-mr-index/sets/QM5_9641_bandy-cci-extreme-fade-mr-index_SP500.DWX_D1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9641_bandy-cci-extreme-fade-mr-index/sets/QM5_9641_bandy-cci-extreme-fade-mr-index_NDX.DWX_D1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9641_bandy-cci-extreme-fade-mr-index/sets/QM5_9641_bandy-cci-extreme-fade-mr-index_WS30.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9641_bandy-cci-extreme-fade-mr-index/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": "D:/QM/reports/smoke/QM5_9641/20260811_021922/summary.json",
+  "blocked_reason": "smoke deferred (worktree deploy-source limitation): run_smoke.ps1 reserved terminal T6 and launched the tester, but the deploy step resolved the .ex5 from the CANONICAL repo path 'C:/QM/repo/framework/EAs/QM5_9641_bandy-cci-extreme-fade-mr-index/QM5_9641_bandy-cci-extreme-fade-mr-index.ex5' (size=373342, mtime 2026-08-11T03:42, branch agents/board-advisor) rather than my worktree binary (size=371388, mtime 2026-08-11T04:18). The tester therefore ran a FOREIGN board-advisor build and logged ONINIT_FAILED;INCOMPLETE_RUNS (oninit_failure_detected=true), so the result does NOT reflect this build. This is a deploy/setup mismatch, NOT a strategy defect and NOT a compile/build_check failure: build_check.result=PASS (0 failures) + compile_one.result=PASS (0 errors/0 warnings) in the worktree, all 3 magics 96410000-96410002 (SP500/NDX/WS30) appended to magic_numbers.csv and baked into the worktree QM_MagicResolver.mqh (1753->1756 rows, 0 dropped, all 13 QM5_9501 rows retained). Model-4 marker was detected and news_calendar OK (age 23h < 336h). Per ONE-PASS build discipline, not retried. Q02 runs the real smoke with proper work-item binding once this worktree merges to main. (Incidental observation: the foreign board-advisor .ex5 still parsed 9 trades / PF 2.36 / DD 1.44% on SP500.DWX D1 2024 before being marked INVALID, which is a weak positive signal that the CCI-fade logic generates trades on D1 index CFDs, but it is NOT my binary and is not claimed as this build's smoke evidence.)",
+  "open_questions": [
+    "CAPACITY-SPILLED / DUPLICATE-BUILD WATCH: the canonical repo C:/QM/repo is on branch agents/board-advisor and already holds a PARALLEL QM5_9641 build (framework/EAs/QM5_9641_bandy-cci-extreme-fade-mr-index/ with its own .ex5 size=373342 built 03:42 + SPEC.md + sets/ + docs/). THIS build (branch agents/claude-orchestration-2) is an independent, compiled implementation (worktree .ex5 size=371388 built 04:18). Reviewer/merger MUST dedupe QM5_9641 across the board-advisor build vs this worktree at merge time, and watch for duplicate 9641 rows in magic_numbers.csv (board-advisor pump may have pre-committed identical 96410000-96410002 rows). ea_id_registry.csv already had the 9641,bandy-cci-extreme-fade-mr-index row (Research 2026-05-19) -- left unchanged.",
+    "EXIT-TIMING INTERPRETATION: the card says take-profit 'exit at next bar's close after cci >= 0'. Realized as: detect CCI(shift1) >= 0 on the just-closed D1 bar in AdvanceDaily, then close at the next session open (first tick of the new D1 bar) -- which equals the signal bar's CLOSE on gapless .DWX index CFDs (open[0]==close[1]). This keeps exit execution symmetric with the entry convention ('enter long at next session open') and is the most-literal framework realization. If the reviewer prefers a strict additional +1-bar delay (exit at the bar AFTER the cci>=0 bar's close), it is a one-line latch change.",
+    "CHAOS-FILTER PERCENTILE SEMANTICS: 'skip if ATR(14)/close is in the top 1st percentile over the trailing 252 bars' is implemented as: maintain a 252-bar ring of ATR/close ratios (includes the current closed bar), and block a new entry when the current ratio >= the (1 - vol_top_pctile/100) = 0.99 quantile of that window (top ~2-3 of 252 samples). The filter is inactive until the ring holds a full 252 samples (cannot rank a partial window). Computed once per new D1 bar and cached (g_chaos_block); the per-tick path only reads the cached bool. strategy_vol_lookback (252) and strategy_vol_top_pctile (1.0) are inputs.",
+    "P2 SATURATION: card target_symbols = [SP500.DWX, NDX.DWX, WS30.DWX]; all three are present in dwx_symbol_matrix.csv and were registered per the P2 saturation rule (SP500.DWX backtest-primary, NDX/WS30 live-routable). No card-listed symbol was absent from the matrix, so none were skipped.",
+    "NEWS FILTER: card requires skipping new entries within +/-30 min of high-impact NFP/FOMC/CPI. Implemented via qm_news_temporal = QM_NEWS_TEMPORAL_PRE30_POST30 with qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ, gated on the entry path only (management/exits run through news windows per the audit-binding OnTick ordering). qm_news_stale_max_hours = 336 (<= hard-rule ceiling)."
+  ]
+}
