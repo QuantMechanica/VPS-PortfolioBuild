@@ -33,10 +33,18 @@ The 15 slots enumerate the six-symbol universe in deterministic order:
 
 ## Basket Q02 Packaging
 
-`basket_manifest.json` declares the concrete slot-00 EURUSD.DWX / GBPUSD.DWX pair as logical symbol
-`QM5_1156_EURUSD_GBPUSD_COINTEGRATION_M30`, hosted on `EURUSD.DWX` M30 with `strategy_pair_slot=0`.
-This supersedes the old component-symbol Q02 attempts, which evaluated the pair-slot setfiles as standalone
-symbol rows and produced terminal infrastructure failures rather than a market-neutral package verdict.
+`basket_manifest.json` declares the active slot-12 USDCHF.DWX / AUDUSD.DWX
+package as logical symbol
+`QM5_1156_USDCHF_AUDUSD_COINTEGRATION_M30`, hosted on `USDCHF.DWX` M30
+with `strategy_pair_slot=12`. Signal formation remains D1. The pair already
+existed in the approved 15-slot build; the logical binding prevents the farm
+from confusing this package with a component-symbol test.
+
+The retired slot-00 EURUSD.DWX / GBPUSD.DWX manifest reached Q02 PASS and
+later Q04 FAIL. Its exact logical identity is retained in
+`docs/basket_manifest_slot00_q02_snapshot.json` for evidence auditability.
+Moving the active manifest does not change strategy mechanics or authorize a
+retry of slot 00.
 
 ## Notes
 - The card describes Engle-Granger ADF p-values. The EA implements the standard residual AR(1) ADF t-stat and maps requested p-thresholds to fixed critical values inline; no external packages or APIs are used.
