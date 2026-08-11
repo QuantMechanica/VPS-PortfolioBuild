@@ -11588,11 +11588,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11659,pp-triangle,2,XAUUSD.DWX,116590002,2026-06-18,Claude,active
 11659,pp-triangle,3,GDAXI.DWX,116590003,2026-06-18,Claude,active
 11659,pp-triangle,4,NDX.DWX,116590004,2026-06-18,Claude,active
-11660,pp-wedge,0,EURUSD.DWX,116600000,2026-06-18,Claude,reserved
-11660,pp-wedge,1,GBPUSD.DWX,116600001,2026-06-18,Claude,reserved
-11660,pp-wedge,2,XAUUSD.DWX,116600002,2026-06-18,Claude,reserved
-11660,pp-wedge,3,GDAXI.DWX,116600003,2026-06-18,Claude,reserved
-11660,pp-wedge,4,NDX.DWX,116600004,2026-06-18,Claude,reserved
+11660,pp-wedge,0,EURUSD.DWX,116600000,2026-06-18,Claude,active
+11660,pp-wedge,1,GBPUSD.DWX,116600001,2026-06-18,Claude,active
+11660,pp-wedge,2,XAUUSD.DWX,116600002,2026-06-18,Claude,active
+11660,pp-wedge,3,GDAXI.DWX,116600003,2026-06-18,Claude,active
+11660,pp-wedge,4,NDX.DWX,116600004,2026-06-18,Claude,active
 11662,fps-ema10-25-50-h1,0,EURUSD.DWX,116620000,2026-06-18,Claude,reserved
 11662,fps-ema10-25-50-h1,1,GBPUSD.DWX,116620001,2026-06-18,Claude,reserved
 11662,fps-ema10-25-50-h1,2,USDJPY.DWX,116620002,2026-06-18,Claude,reserved
