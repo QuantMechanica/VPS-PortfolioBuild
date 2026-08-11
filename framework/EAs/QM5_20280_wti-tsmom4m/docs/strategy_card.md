@@ -54,7 +54,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify a direct WTI four-completed-month own-return carrier absent from the XAU/SP500/NDX/XNG book; separate exact broker-month continuity from existing one/two/three/six/nine/twelve-month, vote, weighted-return, calendar, event, and incumbent-XNG logic; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -290,6 +290,7 @@ portfolio-gate edit; or correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-11 | initial source-bounded WTI four-month card | G0 | APPROVED |
 | v1-q01 | 2026-08-11 | deterministic V5 build, strict compile, target validation, exact-return reference vectors, and P1 artifact validation | Q01 | PASS |
+| v1-q02-hold | 2026-08-11 | binding factory sample reached the seven-terminal CPU ceiling; no enqueue or backtest | Q01 | NOT_ENQUEUED_CPU_CEILING |
 
 ## Pipeline Phase Status
 
@@ -297,4 +298,4 @@ portfolio-gate edit; or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-11 | APPROVED | `decisions/2026-08-11_qm5_20280_wti_tsmom4m_g0.md` |
 | Q01 Build Validation | 2026-08-11 | PASS | `D:/QM/reports/compile/20260811_132811/summary.csv`; `D:/QM/reports/framework/21/build_check_20260811_132811.json`; `D:/QM/reports/pipeline/QM5_20280/P1/P1_QM5_20280_result.json` |
-| Q02 Baseline Screening | pending | NOT_ENQUEUED | pending |
+| Q02 Baseline Screening | 2026-08-11 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-11_qm5_20280_wti_tsmom4m_q01_cpu_stop.md` |

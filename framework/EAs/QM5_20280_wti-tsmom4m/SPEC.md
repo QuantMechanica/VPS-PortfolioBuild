@@ -151,6 +151,10 @@ admission, or a correlation waiver.
 
 ## 12. Q02 Handoff
 
-NOT ENQUEUED. Capacity must be sampled using the governed path-anchored T1-T10
-factory count immediately before any bounded enqueue. Stop if the ceiling is
-binding; do not dispatch or run a manual backtest.
+`NOT_ENQUEUED_CPU_CEILING`. The target-only dry run selected exactly one
+priority-track `XTIUSD.DWX` row with zero existing work items. The binding
+`2026-08-11T13:34:23.4269163Z` path-anchored sample then found seven executing
+T1-T10 terminals (`T1`, `T2`, `T3`, `T5`, `T7`, `T8`, and `T10`) against the
+ceiling of seven. No apply-mode enqueue, dispatch, or manual backtest was run.
+A later paced operator may take a fresh immediate capacity sample and enqueue
+exactly one current-binary row only when the factory count is below seven.

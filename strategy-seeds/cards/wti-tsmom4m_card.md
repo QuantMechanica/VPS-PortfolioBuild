@@ -15,7 +15,7 @@ target_symbols: [XTIUSD.DWX]
 period: D1
 pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 last_updated: 2026-08-11
 ---
 
@@ -48,4 +48,5 @@ waiver is authorized.
 
 ## Pipeline Status
 
-G0 is APPROVED and Q01 is PASS. Q02 is not enqueued.
+G0 is APPROVED and Q01 is PASS. Q02 is
+`NOT_ENQUEUED_CPU_CEILING` after the binding 7/7 factory sample.
