@@ -137,6 +137,12 @@ correlation waiver.
 
 ## 12. Q02 Handoff
 
-NOT QUEUED. Capacity must be sampled using the governed path-anchored T1-T10
-factory count immediately before any bounded enqueue. Stop if the ceiling is
-binding; do not dispatch or run a manual backtest.
+One current-binary `XTIUSD.DWX` Q02 row was enqueued at
+`2026-08-11T11:22:16+00:00`: work item
+`32cbb0ce-42eb-498a-b8da-2a0115c78494`, attempt 0, no verdict, and
+`priority_track=true`. Immediate readback was pending and unclaimed. The
+binding path-anchored pre-enqueue sample at
+`2026-08-11T11:22:12+00:00` found two executing T1-T10 factory terminals,
+T4 and T7, against the ceiling of seven. `T_Live` and FTMO were separately
+observed outside that count and were not touched. This mission ran no dispatch
+tick or manual backtest.
