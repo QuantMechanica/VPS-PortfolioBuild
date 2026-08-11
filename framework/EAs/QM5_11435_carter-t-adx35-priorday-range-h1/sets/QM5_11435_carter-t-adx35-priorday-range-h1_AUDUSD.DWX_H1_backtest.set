@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        11435
 ; ea_slug:      carter-t-adx35-priorday-range-h1
@@ -10,7 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6e5f4c4b7b3c4c0f5db7eca06f1e19628e148f2f642430a9440d7db8a8eeaa88
+; build_hash:   951ffa1b93cf469bb0b9a9a4e48ca343e3b4b3309ad454f382ec02ad69add2cd
 ; author:       Development
 ; date:         2026-08-10
 ;==========================================================
