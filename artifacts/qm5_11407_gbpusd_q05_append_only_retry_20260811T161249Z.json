@@ -1,0 +1,100 @@
+{
+  "schema_version": "qm-fx-fallback-q05-enqueue/v1",
+  "generated_at_utc": "2026-08-11T16:13:41+00:00",
+  "branch": "agents/board-advisor",
+  "repository_head_at_enqueue": "4e41a1a097b19beee5d435b5da6c40ffc447266b",
+  "frontier": {
+    "frozen_scan_relationships_built": 66,
+    "unbuilt_pair_found": false,
+    "qm5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "qm5_12533": "Q02_PASS_Q04_FAIL",
+    "decision": "advance_existing_fx_card"
+  },
+  "selection": {
+    "ea_id": "QM5_11407",
+    "slug": "carter-tf17-ema18-adx-pullback",
+    "symbol": "GBPUSD.DWX",
+    "timeframe": "H4",
+    "card_status": "APPROVED",
+    "r1_r4": "PASS",
+    "source": "Thomas Carter, 20 Trend Following Systems (2014), Strategy #17",
+    "expected_trades_per_year_per_symbol": 40,
+    "structural_constraints": {
+      "ml": false,
+      "adaptive_fit": false,
+      "grid": false,
+      "martingale": false,
+      "pyramiding": false
+    },
+    "risk_contract": {
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1
+    },
+    "magic": {
+      "symbol_slot": 1,
+      "number": 114070001,
+      "status": "active"
+    }
+  },
+  "artifact_bindings": {
+    "mq5_sha256": "18f26338bc5dd9b8a365fbd729a789390542d2772b8983fd0a54da1453ad9701",
+    "ex5_sha256": "33f36cfeba3d967641935e9eeba1cb9d2b77f740d7acdfc1b0f647f0f3d7c285",
+    "setfile_sha256": "77d3028c3270ffa49c85f72c95f5cebf0c14e74c6873d09d93a0cbd1a2646a70",
+    "expected_expert": "QM\\QM5_11407_carter-tf17-ema18-adx-pullback",
+    "expected_symbol": "GBPUSD.DWX",
+    "expected_period": "H4"
+  },
+  "predecessor": {
+    "q04_work_item_id": "f56b82f6-89b9-457d-8862-b73cd22c74e8",
+    "q04_verdict": "PASS_SOFT",
+    "q04_aggregate_sha256": "7c58757444760b4eb0e0e033f04a9228fbbe6d51ae94cd4308e97c54be28b52f",
+    "q05_work_item_id": "543f3ab5-016d-4f52-8ad3-43787ae0c4d6",
+    "q05_status": "done",
+    "q05_verdict": "INFRA_FAIL",
+    "q05_reason": "invalid_summary:BARS_ZERO,EMPTY_EXPERT,EMPTY_SYMBOL,M0_1970_PERIOD,RUN_STATUS_INVALID",
+    "q05_aggregate_sha256": "c08ce89cd0f97e76e5401c7cba315a2b132ad534a83b9904f1c29017720017d8",
+    "historical_row_preserved": true
+  },
+  "capacity_gate": {
+    "scanned_at_utc": "2026-08-11T16:12:34+00:00",
+    "binding_ceiling": 7,
+    "factory_terminal_count": 3,
+    "factory_terminals": [
+      "T1",
+      "T2",
+      "T3"
+    ],
+    "non_factory_terminal64_count": 2,
+    "below_ceiling": true
+  },
+  "database": {
+    "backup_path": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11407_q05_append_20260811T161238Z.sqlite",
+    "backup_quick_check": "ok",
+    "post_enqueue_quick_check": "ok"
+  },
+  "enqueue": {
+    "phase": "Q05",
+    "mode": "append_only_rerun",
+    "created_work_item_id": "0ea708b1-d1f5-4197-aa4f-6e9aa5a8ebe5",
+    "created_at_utc": "2026-08-11T16:12:49+00:00",
+    "created_count": 1,
+    "requeued_count": 0,
+    "skipped_count": 0,
+    "exact_open_row_count_at_readback": 1,
+    "exact_total_row_count_at_readback": 2,
+    "status_at_readback": "active",
+    "claimed_by_at_readback": "T5",
+    "updated_at_readback": "2026-08-11T16:13:41+00:00",
+    "manual_dispatch_performed": false,
+    "manual_tester_launch_performed": false
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "strategy_artifacts_changed": false
+  }
+}
