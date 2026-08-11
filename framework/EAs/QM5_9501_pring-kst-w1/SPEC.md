@@ -2,27 +2,34 @@
 
 **EA ID:** QM5_9501
 **Slug:** `pring-kst-w1`
-**Source:** `6e967762-b26d-59a3-b076-35c17f2e7c36` (ForexFactory Trading Systems — Martin Pring long-term-KST thread cluster; Pring 1993 "Martin Pring on Market Momentum" ch. 8-9)
-**Author of this spec:** Claude (capacity-spilled build_ea)
+**Source:** `6e967762-b26d-59a3-b076-35c17f2e7c36` (see `strategy-seeds/sources/6e967762-b26d-59a3-b076-35c17f2e7c36/`)
+**Author of this spec:** Claude
 **Last revised:** 2026-08-11
 
 ---
 
 ## 1. Strategy Logic
 
-Long-term (weekly) momentum system built on Martin Pring's Know-Sure-Thing (KST)
-composite. On every closed W1 bar the EA reconstructs KST as a weighted sum of
-four SMA-smoothed Rate-of-Change series — `KST = 1*SMA(ROC(9),6) +
-2*SMA(ROC(12),6) + 3*SMA(ROC(18),6) + 4*SMA(ROC(24),9)` — and its signal line
-`Signal = SMA(KST, 9)`. It goes LONG on the next W1 open when the weekly close is
-above its 40-week SMA, KST crosses above Signal, and KST is in positive territory
-(> 0); SHORT mirrors (close below the 40-week SMA, KST crosses below Signal, KST
-< 0). A position exits on the opposite KST/Signal cross, on a 26-week time stop,
-or on a broker-side hard stop set at entry to `3.0 * ATR(14, W1)`. A whipsaw
-guard blocks any fresh entry within 4 W1 bars of a prior stop-loss exit, and an
-entry is skipped if the spread exceeds `0.05 * ATR(14, W1)`. All indicator state
-is computed once per closed W1 bar and cached; the per-tick path only reads
-cached state and current Bid/Ask.
+Pring's long-term Know-Sure-Thing (KST) signal-line cross — the canonical
+weekly parameter set (ROC lookbacks 9/12/18/24, smoothings 6/6/6/9, weights
+1/2/3/4, signal SMA 9). KST = weighted sum of four SMA-smoothed rate-of-change
+series; Signal = SMA(KST, 9). Long when `close > SMA(40 weeks)` AND the KST
+line crosses above the Signal line on a closed bar AND KST is above zero at
+the cross; short is the mirror (close < SMA(40w), cross below, KST < 0).
+Exit on the opposite KST/Signal cross or after 26 weeks, whichever first.
+Hard stop at 3.0×ATR(14 weeks) from entry. A 4-week cooldown blocks new
+entries after any stop-loss exit (whipsaw guard).
+
+**Timeframe rescale (binding, not optional):** the approved card specifies
+`PERIOD_W1`, but `framework/include/QM/QM_Indicators.mqh`'s own
+`QM_CalendarPeriodKey` documents that *".DWX custom symbols yield 0 bars on
+MN1/W1 in the tester"* — the exact limitation the framework already routes
+around for monthly strategies (DWX backtest invariant #10: "Monthly logic is
+untestable... make monthly EAs D1-native with a ~21-bar/month proxy"). This
+EA applies the identical rescue, extended to weekly: every W1 bar count in
+the card is multiplied by 5 (5 trading days/week) and the entire EA runs on
+`PERIOD_D1` closed bars instead. The KST formula, cross logic, and all
+thresholds are otherwise unchanged from the card.
 
 ---
 
@@ -30,54 +37,43 @@ cached state and current Bid/Ask.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_roc1_period` | 9 | 4-40 | ROC lookback 1 (W1 bars). |
-| `strategy_roc2_period` | 12 | 4-40 | ROC lookback 2 (W1 bars). |
-| `strategy_roc3_period` | 18 | 4-52 | ROC lookback 3 (W1 bars). |
-| `strategy_roc4_period` | 24 | 4-64 | ROC lookback 4 (W1 bars). |
-| `strategy_rcma_short` | 6 | 2-20 | SMA smoothing applied to ROC1..ROC3. |
-| `strategy_rcma_long` | 9 | 2-24 | SMA smoothing applied to ROC4. |
-| `strategy_signal_period` | 9 | 2-24 | Signal line = SMA(KST, period). |
-| `strategy_bias_ma_period` | 40 | 10-80 | 40-week close SMA regime/bias filter. |
-| `strategy_atr_period` | 14 | 5-30 | ATR period (W1) for the stop-distance basis. |
-| `strategy_atr_sl_mult` | 3.0 | 1.0-5.0 | Hard stop = entry -/+ mult * ATR(14, W1). |
-| `strategy_time_stop_bars` | 26 | 8-52 | Force exit after N closed W1 bars in trade. |
-| `strategy_reentry_block_bars` | 4 | 0-12 | No fresh entry within N W1 bars of an SL exit. |
-| `strategy_spread_atr_frac` | 0.05 | 0.01-0.30 | Skip entry if spread > frac * ATR(14, W1). |
+| `strategy_roc1_lookback` | 45 | fixed (9 W1×5) | ROC-1 lookback in D1 bars |
+| `strategy_roc2_lookback` | 60 | fixed (12 W1×5) | ROC-2 lookback in D1 bars |
+| `strategy_roc3_lookback` | 90 | fixed (18 W1×5) | ROC-3 lookback in D1 bars |
+| `strategy_roc4_lookback` | 120 | fixed (24 W1×5) | ROC-4 lookback in D1 bars |
+| `strategy_smooth_123` | 30 | fixed (6 W1×5) | SMA smoothing for rcma1/2/3 |
+| `strategy_smooth_4` | 45 | fixed (9 W1×5) | SMA smoothing for rcma4 |
+| `strategy_signal_smooth` | 45 | fixed (9 W1×5) | Signal = SMA(KST, this) |
+| `strategy_bias_sma_period` | 200 | fixed (40 W1×5) | Long-term trend bias filter |
+| `strategy_atr_period` | 70 | fixed (14 W1×5) | ATR period for stop and spread filter |
+| `strategy_atr_stop_mult` | 3.0 | fixed | Stop distance in ATR multiples |
+| `strategy_time_stop_days` | 130 | fixed (26 W1×5) | Max holding period (D1 bars) |
+| `strategy_whipsaw_guard_days` | 20 | fixed (4 W1×5) | Cooldown (D1 bars) after an SL exit |
+| `strategy_spread_atr_frac` | 0.05 | fixed | Spread cap as a fraction of ATR |
 
-KST composite weights (1, 2, 3, 4) are Pring's canonical fixed constants that
-define the indicator identity and are held as literals, not inputs. Framework
-inputs of note: `qm_news_temporal = OFF` (card: news filter not applied to W1
-entries) and `qm_friday_close_enabled = false` (a weekly position EA holds across
-many Fridays; a Friday flatten would truncate every multi-week hold).
+> Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
+> qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
+> are documented in `framework/V5_FRAMEWORK_DESIGN.md` — do NOT re-document
+> them here. Only list strategy-specific inputs.
 
 ---
 
 ## 3. Symbol Universe
 
-Registered (all present in `dwx_symbol_matrix.csv` with the correct `.DWX`
-suffix), slots 0-12:
+**Designed for** (13 of 15 card-listed symbols confirmed present in
+`framework/registry/dwx_symbol_matrix.csv`; registered in `magic_numbers.csv`):
+- `EURUSD.DWX`, `GBPUSD.DWX`, `USDJPY.DWX`, `AUDUSD.DWX`, `USDCAD.DWX`,
+  `USDCHF.DWX`, `NZDUSD.DWX` — FX majors, KST is instrument-agnostic
+- `XAUUSD.DWX` — gold, long-history D1 series
+- `XTIUSD.DWX` — WTI crude, long-history D1 series
+- `GDAXI.DWX` (DAX 40), `NDX.DWX` (Nasdaq 100), `WS30.DWX` (Dow 30),
+  `UK100.DWX` (FTSE 100) — index CFDs
 
-- `EURUSD.DWX` (slot 0) — deepest-liquidity major; long W1 history for the KST warmup.
-- `GBPUSD.DWX` (slot 1) — liquid major; distinct business-cycle momentum.
-- `USDJPY.DWX` (slot 2) — liquid major; strong multi-month trend legs suit W1 KST.
-- `AUDUSD.DWX` (slot 3) — commodity-linked major; cyclical momentum.
-- `USDCAD.DWX` (slot 4) — oil-linked major; adds macro-cycle diversity.
-- `USDCHF.DWX` (slot 5) — safe-haven major; orthogonal trend timing.
-- `NZDUSD.DWX` (slot 6) — commodity-linked major; complements AUD.
-- `XAUUSD.DWX` (slot 7) — gold; long-cycle momentum instrument (metals).
-- `XTIUSD.DWX` (slot 8) — WTI crude; business-cycle-sensitive energy leg.
-- `GDAXI.DWX` (slot 9) — DAX 40; equity-index long-term momentum.
-- `NDX.DWX` (slot 10) — Nasdaq 100; growth-index momentum.
-- `WS30.DWX` (slot 11) — Dow 30; broad US large-cap momentum.
-- `UK100.DWX` (slot 12) — FTSE 100; European equity-index momentum.
-
-**Explicitly NOT registered (card-listed but absent from the matrix):**
-- `FRA40.DWX` (CAC 40) — no French index CFD exists in `dwx_symbol_matrix.csv`; not registered (no invented symbols).
-- `JP225.DWX` (Nikkei 225) — no Japanese index CFD exists in the matrix; not registered.
-
-The KST composite is timeframe- and instrument-agnostic (card R3 PASS), so the
-full portable basket present in the matrix is registered per the P2 Saturation
-Rule.
+**Explicitly NOT for:**
+- `FRA40.DWX`, `JP225.DWX` — card lists these but neither appears in
+  `dwx_symbol_matrix.csv`; no acceptable port exists per the build SOP's DWX
+  symbol discipline (no invented substitute registered). 13/15 of the card's
+  basket is still a wide P2 saturation footprint.
 
 ---
 
@@ -85,9 +81,9 @@ Rule.
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `W1` |
-| Multi-timeframe refs | none (all KST/Signal/bias/ATR state on `PERIOD_W1`) |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_W1)` — state advances once per closed W1 bar; per-tick path reads cached state only |
+| Base timeframe | `D1` (rescaled from the card's `W1`; see §1 rescale note) |
+| Multi-timeframe refs | `none` |
+| Bar gating | `QM_IsNewBar()` for entries, `QM_IsNewCalendarPeriod(PERIOD_D1)` self-gate for the exit hook |
 
 ---
 
@@ -95,11 +91,11 @@ Rule.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `~3` (card `expected_trades_per_year_per_symbol: 3`) |
-| Typical hold time | `multi-week to multi-month (up to a 26-week time stop)` |
-| Expected drawdown profile | `~18% expected DD (card `expected_dd_pct: 18.0`)` |
-| Regime preference | `trend-following (long-term / business-cycle momentum)` |
-| Expected PF (card) | `~1.2 (card `expected_pf: 1.2`)` |
+| Trades / year / symbol | `3` |
+| Typical hold time | `weeks to ~6 months (130 D1 bars)` |
+| Expected drawdown profile | `~18% (card expected_dd_pct)` |
+| Regime preference | `trend-following (long-term momentum)` |
+| Win rate target (qualitative) | `medium` |
 
 ---
 
@@ -108,9 +104,9 @@ Rule.
 This card was mechanised from:
 
 **Source ID:** `6e967762-b26d-59a3-b076-35c17f2e7c36`
-**Source type:** `forum`
-**Pointer:** `ForexFactory Trading Systems — Martin Pring long-term-KST thread cluster (https://www.forexfactory.com/thread/post/14002300); Pring, "Martin Pring on Market Momentum" (McGraw-Hill 1993) ch. 8-9`
-**R1 lineage recorded and R2-R4 PASS** per `artifacts/cards_approved/QM5_9501_pring-kst-w1.md`.
+**Source type:** `forum / book`
+**Pointer:** ForexFactory Trading Systems (Pring KST thread cluster); Martin J. Pring, *Martin Pring on Market Momentum* (McGraw-Hill 1993) ch. 8–9
+**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_9501_pring-kst-w1.md`
 
 ---
 
@@ -130,4 +126,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-11 | Initial build from card | build task 037da632-6b8f-435f-b142-3829e442a2a9 |
+| v1 | 2026-08-11 | Initial build from card (D1-native W1 rescale) | claude-orchestration-3 router task 037da632 |

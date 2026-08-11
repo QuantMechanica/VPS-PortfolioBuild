@@ -1,44 +1,64 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_9501 Pring Know-Sure-Thing (KST) Signal-Line Cross (W1)"
-// Strategy Card: QM5_9501 (pring-kst-w1), G0 APPROVED.
-// Source lineage: 6e967762-b26d-59a3-b076-35c17f2e7c36 (ForexFactory Trading
-// Systems, Martin Pring long-term-KST thread cluster). Long-term (weekly) KST
-// parameter set per Pring 1993 "Martin Pring on Market Momentum" ch. 8-9.
+#property description "QM5_9501 Pring KST Signal-Line Cross (D1-native W1-rescale)"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — Pring long-term KST Signal-Line Cross (weekly).
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// KST is a weighted composite of four SMA-smoothed Rate-of-Change series, all on
-// CLOSED W1 bars:
-//   rcma1 = SMA(ROC(9) , 6)   rcma2 = SMA(ROC(12), 6)
-//   rcma3 = SMA(ROC(18), 6)   rcma4 = SMA(ROC(24), 9)
-//   KST   = 1*rcma1 + 2*rcma2 + 3*rcma3 + 4*rcma4
-//   Signal= SMA(KST, 9)
-// The composite has no QM_Indicators equivalent, so it is reconstructed once per
-// new W1 bar from closed-bar closes (iClose shift>=1, // perf-allowed) inside the
-// QM_IsNewBar(_Symbol,PERIOD_W1) gate and cached in file-scope state. The 40-week
-// bias MA and the ATR(14,W1) stop distance use the framework readers QM_SMA /
-// QM_ATR (handle-pooled). The per-tick path only reads cached state.
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
 //
-// LONG  : Close > SMA(Close,40) AND KST crosses ABOVE Signal AND KST > 0.
-// SHORT : Close < SMA(Close,40) AND KST crosses BELOW Signal AND KST < 0.
-//         Entry fires at the new W1 bar's market open (first tick of the bar).
-// EXIT  : opposite KST/Signal cross, OR 26-W1-bar time stop, OR broker-side
-//         3.0*ATR(14,W1) hard stop set at entry (rides on the server).
-// GUARD : no fresh entry within 4 W1 bars of a prior stop-loss exit (whipsaw).
-//         Spread filter: skip entry if spread > 0.05*ATR(14,W1) (never blocks on
-//         .DWX zero modeled spread). News temporal gate OFF (card: not applied to
-//         W1 entries). Friday-close flatten OFF (multi-week position holds).
-// Broker-time native: the W1 bar boundary is the broker week open; no UTC/DST
-// conversion is needed.
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkTrackOpenPositionMae / QM_FrameworkHandleFridayClose /
+//     QM_KillSwitchCheck / QM_NewsAllowsTrade
+//
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
+//
+// CARD-MANDATED RESCALE (documented, DWX backtest invariant #10 extended to
+// W1): the approved card defines Pring's long-term KST on PERIOD_W1, but
+// QM_Indicators.mqh's own QM_CalendarPeriodKey documents that ".DWX custom
+// symbols yield 0 bars on MN1/W1 in the tester" — the same limitation the
+// framework already works around for monthly strategies by going D1-native
+// with a bars-per-period proxy. This EA applies the identical rescue: every
+// W1 lookback in the card is multiplied by 5 (5 trading days/week) and
+// evaluated on PERIOD_D1 closed bars instead. The KST cross-detection logic
+// itself is untouched — only the bar unit changes.
+//
+// CARD-MANDATED DEVIATION: the card's whipsaw guard ("no fresh entry within
+// 4 W1 bars of a prior SL exit") requires knowing whether the last close of
+// this magic's position was SL-triggered, which the 5 standard Strategy_
+// hooks cannot see. OnTradeTransaction below therefore carries one extra
+// call (Strategy_OnTradeTransactionHook) alongside the mandatory
+// QM_FrameworkOnTradeTransaction call — a minimal, additive wiring change,
+// not a reimplementation of any framework primitive.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 9501;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -47,288 +67,303 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-// Card: news filter NOT applied to W1 entries (HIGH events are intra-day and
-// average out over a multi-week hold). Temporal axis OFF; DXZ compliance overlay
-// retained for the live venue (no extra backtest blackout).
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+// Card explicitly excludes news filtering from this W1-cadence strategy
+// ("news_calendar HIGH events are intra-day phenomena that average out over
+// a W1 holding period") — Axis A defaults OFF here, unlike the framework's
+// usual PRE30_POST30 default. Axis B (DXZ prop-firm compliance overlay) is a
+// separate, mandatory Hard-Rule concern and stays on regardless of holding
+// period.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-// OFF: this is a weekly position EA that holds across many Fridays; a Friday
-// flatten would truncate every multi-week hold.
-input bool   qm_friday_close_enabled    = false;
+input bool   qm_friday_close_enabled     = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_roc1_period       = 9;    // Card: ROC lookback 1 (W1 bars).
-input int    strategy_roc2_period       = 12;   // Card: ROC lookback 2 (W1 bars).
-input int    strategy_roc3_period       = 18;   // Card: ROC lookback 3 (W1 bars).
-input int    strategy_roc4_period       = 24;   // Card: ROC lookback 4 (W1 bars).
-input int    strategy_rcma_short        = 6;    // Card: SMA smoothing for ROC1..ROC3.
-input int    strategy_rcma_long         = 9;    // Card: SMA smoothing for ROC4.
-input int    strategy_signal_period     = 9;    // Card: Signal = SMA(KST, 9).
-input int    strategy_bias_ma_period    = 40;   // Card: 40-week close SMA regime filter.
-input int    strategy_atr_period        = 14;   // Card: ATR(14, W1) stop-distance basis.
-input double strategy_atr_sl_mult       = 3.0;  // Card: SL = entry -/+ 3.0*ATR(14,W1).
-input int    strategy_time_stop_bars    = 26;   // Card: time stop after 26 closed W1 bars.
-input int    strategy_reentry_block_bars= 4;    // Card: no re-entry within 4 W1 bars of an SL exit.
-input double strategy_spread_atr_frac   = 0.05; // Card: skip entry if spread > 0.05*ATR(14,W1).
-
-// KST composite weights are Pring's canonical long-term fixed constants (1,2,3,4)
-// that define the indicator identity — held as literals, not tunables.
-#define KST_W1 1.0
-#define KST_W2 2.0
-#define KST_W3 3.0
-#define KST_W4 4.0
+// KST composite, D1-native (W1 lookbacks x5 — see header rescale note).
+input int    strategy_roc1_lookback      = 45;   // 9 W1 bars
+input int    strategy_roc2_lookback      = 60;   // 12 W1 bars
+input int    strategy_roc3_lookback      = 90;   // 18 W1 bars
+input int    strategy_roc4_lookback      = 120;  // 24 W1 bars
+input int    strategy_smooth_123         = 30;   // 6 W1 bars — rcma1/2/3 smoothing
+input int    strategy_smooth_4           = 45;   // 9 W1 bars — rcma4 smoothing
+input int    strategy_signal_smooth      = 45;   // 9 W1 bars — Signal = SMA(KST, .)
+input int    strategy_bias_sma_period    = 200;  // 40 W1 bars — long-term bias filter
+input int    strategy_atr_period         = 70;   // 14 W1 bars — stop + spread-filter ATR
+input double strategy_atr_stop_mult      = 3.0;
+input int    strategy_time_stop_days     = 130;  // 26 W1 bars (~6 months)
+input int    strategy_whipsaw_guard_days = 20;   // 4 W1 bars post-SL cooldown
+input double strategy_spread_atr_frac    = 0.05;
 
 // -----------------------------------------------------------------------------
-// File-scope cached state (advanced once per new W1 bar).
+// KST composite — pure array arithmetic over one bounded CopyClose read
+// (perf-allowed: one structural read per closed D1 bar, not per tick).
 // -----------------------------------------------------------------------------
-bool   g_state_valid = false;
-double g_kst_curr = 0.0, g_kst_prev = 0.0;   // KST at shift 1 (latest closed) / shift 2.
-double g_sig_curr = 0.0, g_sig_prev = 0.0;   // Signal at shift 1 / shift 2.
-double g_close_curr = 0.0;                    // latest closed W1 close.
-double g_sma_bias   = 0.0;                    // SMA(Close, bias_period) on W1.
-double g_atr14      = 0.0;                    // ATR(atr_period, W1) snapshot.
 
-int    g_pos_dir   = 0;      // 0 flat / +1 long / -1 short.
-int    g_bars_held = 0;      // closed W1 bars since entry.
-int    g_reentry_block = 0;  // W1 bars remaining in the post-SL re-entry block.
-bool   g_pending_long  = false;
-bool   g_pending_short = false;
-bool   g_exit_now  = false;  // set on opposite-cross or time-stop.
-bool   g_we_closed = false;  // true once THIS EA issued the close (distinguishes SL exits).
-QM_ExitReason g_exit_reason = QM_EXIT_STRATEGY;
-
-// -----------------------------------------------------------------------------
-// KST reconstruction — bespoke composite, no QM_Indicators equivalent.
-// perf-allowed: all reads are closed-bar W1 (shift>=1) and run ONCE per new W1
-// bar inside the QM_IsNewBar(_Symbol,PERIOD_W1) gate (not per tick).
-// -----------------------------------------------------------------------------
-bool ComputeKSTAt(const int base_shift, double &kst_out)
+double KST_ROC(const double &closes[], const int idx_now, const int lookback)
   {
-   double rcma1 = 0.0, rcma2 = 0.0, rcma3 = 0.0, rcma4 = 0.0;
+   const int idx_then = idx_now + lookback;
+   return (closes[idx_now] - closes[idx_then]) / closes[idx_then] * 100.0;
+  }
 
-   // rcma1/2/3: SMA over strategy_rcma_short of ROC(9)/ROC(12)/ROC(18).
-   for(int k = 0; k < strategy_rcma_short; k++)
-     {
-      const int s = base_shift + k;
-      const double c  = iClose(_Symbol, PERIOD_W1, s);                        // perf-allowed
-      const double c1 = iClose(_Symbol, PERIOD_W1, s + strategy_roc1_period); // perf-allowed
-      const double c2 = iClose(_Symbol, PERIOD_W1, s + strategy_roc2_period); // perf-allowed
-      const double c3 = iClose(_Symbol, PERIOD_W1, s + strategy_roc3_period); // perf-allowed
-      if(c <= 0.0 || c1 <= 0.0 || c2 <= 0.0 || c3 <= 0.0)
+double KST_RCMA(const double &closes[], const int base_idx, const int lookback, const int smooth)
+  {
+   double sum = 0.0;
+   for(int j = 0; j < smooth; ++j)
+      sum += KST_ROC(closes, base_idx + j, lookback);
+   return sum / (double)smooth;
+  }
+
+double KST_Value(const double &closes[], const int base_idx)
+  {
+   const double rcma1 = KST_RCMA(closes, base_idx, strategy_roc1_lookback, strategy_smooth_123);
+   const double rcma2 = KST_RCMA(closes, base_idx, strategy_roc2_lookback, strategy_smooth_123);
+   const double rcma3 = KST_RCMA(closes, base_idx, strategy_roc3_lookback, strategy_smooth_123);
+   const double rcma4 = KST_RCMA(closes, base_idx, strategy_roc4_lookback, strategy_smooth_4);
+   return 1.0 * rcma1 + 2.0 * rcma2 + 3.0 * rcma3 + 4.0 * rcma4;
+  }
+
+double KST_Signal(const double &closes[], const int base_idx)
+  {
+   double sum = 0.0;
+   for(int j = 0; j < strategy_signal_smooth; ++j)
+      sum += KST_Value(closes, base_idx + j);
+   return sum / (double)strategy_signal_smooth;
+  }
+
+// Returns KST/Signal at the current closed D1 bar (shift=1, base_idx=0) and
+// the prior closed bar (shift=2, base_idx=1) for cross detection, plus the
+// current closed-bar close for the bias-MA filter.
+bool ComputeKSTSeries(double &kst_1, double &signal_1,
+                      double &kst_2, double &signal_2,
+                      double &close_1)
+  {
+   if(strategy_roc1_lookback < 1 || strategy_roc2_lookback < 1 ||
+      strategy_roc3_lookback < 1 || strategy_roc4_lookback < 1 ||
+      strategy_smooth_123 < 1 || strategy_smooth_4 < 1 || strategy_signal_smooth < 1)
+      return false;
+
+   const int max_smooth = MathMax(strategy_smooth_123, strategy_smooth_4);
+   const int max_lookback = MathMax(MathMax(strategy_roc1_lookback, strategy_roc2_lookback),
+                                    MathMax(strategy_roc3_lookback, strategy_roc4_lookback));
+   const int need = 1 + (strategy_signal_smooth - 1) + (max_smooth - 1) + max_lookback + 5;
+
+   double closes[];
+   ArrayResize(closes, need);
+   ArraySetAsSeries(closes, true);
+   // Replaces ~10k+ per-point CopyRates calls the naive per-term
+   // implementation would otherwise require; only called from the
+   // closed-bar-gated EntrySignal / self-gated ExitSignal paths.
+   if(CopyClose(_Symbol, PERIOD_D1, 1, need, closes) != need) // perf-allowed: one bounded structural close-price read per closed D1 bar
+      return false;
+   for(int i = 0; i < need; ++i)
+      if(closes[i] <= 0.0)
          return false;
-      rcma1 += (c - c1) / c1 * 100.0;
-      rcma2 += (c - c2) / c2 * 100.0;
-      rcma3 += (c - c3) / c3 * 100.0;
-     }
-   rcma1 /= strategy_rcma_short;
-   rcma2 /= strategy_rcma_short;
-   rcma3 /= strategy_rcma_short;
 
-   // rcma4: SMA over strategy_rcma_long of ROC(24).
-   for(int k = 0; k < strategy_rcma_long; k++)
-     {
-      const int s = base_shift + k;
-      const double c  = iClose(_Symbol, PERIOD_W1, s);                        // perf-allowed
-      const double c4 = iClose(_Symbol, PERIOD_W1, s + strategy_roc4_period); // perf-allowed
-      if(c <= 0.0 || c4 <= 0.0)
-         return false;
-      rcma4 += (c - c4) / c4 * 100.0;
-     }
-   rcma4 /= strategy_rcma_long;
-
-   kst_out = KST_W1 * rcma1 + KST_W2 * rcma2 + KST_W3 * rcma3 + KST_W4 * rcma4;
+   close_1 = closes[0];
+   kst_1 = KST_Value(closes, 0);
+   signal_1 = KST_Signal(closes, 0);
+   kst_2 = KST_Value(closes, 1);
+   signal_2 = KST_Signal(closes, 1);
    return true;
   }
 
-// Advance the cached KST/Signal/bias/ATR state and the entry/exit decision flags
-// once per new closed W1 bar.
-void AdvanceWeekly()
+string WhipsawKey()
   {
-   g_state_valid = false;
+   return StringFormat("QM_9501_WHIPSAW_%d", qm_ea_id * 10000 + qm_magic_slot_offset);
+  }
 
-   // Whipsaw guard countdown (one step per new W1 bar).
-   if(g_reentry_block > 0)
-      g_reentry_block--;
-
-   const int nvals = strategy_signal_period + 1; // KST at shifts 1..nvals.
-   double kbuf[];
-   ArrayResize(kbuf, nvals + 1); // index 1..nvals used.
-   for(int b = 1; b <= nvals; b++)
-     {
-      double kv = 0.0;
-      if(!ComputeKSTAt(b, kv))
-         return; // insufficient history — leave g_state_valid = false.
-      kbuf[b] = kv;
-     }
-
-   double sum_curr = 0.0, sum_prev = 0.0;
-   for(int b = 1; b <= strategy_signal_period; b++)
-      sum_curr += kbuf[b];                  // shifts 1..P.
-   for(int b = 2; b <= strategy_signal_period + 1; b++)
-      sum_prev += kbuf[b];                  // shifts 2..P+1.
-
-   const double kst_curr = kbuf[1];
-   const double kst_prev = kbuf[2];
-   const double sig_curr = sum_curr / strategy_signal_period;
-   const double sig_prev = sum_prev / strategy_signal_period;
-
-   const double close_curr = iClose(_Symbol, PERIOD_W1, 1); // perf-allowed: regime-filter close.
-   const double sma_bias   = QM_SMA(_Symbol, PERIOD_W1, strategy_bias_ma_period, 1);
-   const double atr14      = QM_ATR(_Symbol, PERIOD_W1, strategy_atr_period, 1);
-   if(close_curr <= 0.0 || sma_bias <= 0.0 || atr14 <= 0.0)
-      return;
-
-   g_kst_curr = kst_curr; g_kst_prev = kst_prev;
-   g_sig_curr = sig_curr; g_sig_prev = sig_prev;
-   g_close_curr = close_curr; g_sma_bias = sma_bias; g_atr14 = atr14;
-   g_state_valid = true;
-
-   const bool long_cross  = (kst_prev <= sig_prev) && (kst_curr > sig_curr);
-   const bool short_cross = (kst_prev >= sig_prev) && (kst_curr < sig_curr);
-
-   // Recompute pending entries fresh each bar (crosses are edge events).
-   g_pending_long  = false;
-   g_pending_short = false;
-
-   if(g_pos_dir != 0)
-     {
-      g_bars_held++;
-      if(g_pos_dir > 0 && short_cross)
-        { g_exit_now = true; g_exit_reason = QM_EXIT_OPPOSITE_SIGNAL; }
-      else if(g_pos_dir < 0 && long_cross)
-        { g_exit_now = true; g_exit_reason = QM_EXIT_OPPOSITE_SIGNAL; }
-      else if(g_bars_held >= strategy_time_stop_bars)
-        { g_exit_now = true; g_exit_reason = QM_EXIT_TIME_STOP; }
-     }
-   else if(g_reentry_block == 0)
-     {
-      g_pending_long  = long_cross  && (close_curr > sma_bias) && (kst_curr > 0.0);
-      g_pending_short = short_cross && (close_curr < sma_bias) && (kst_curr < 0.0);
-     }
+// DWX invariant #1: only block a genuinely wide spread; never fail-closed on
+// the zero-modeled-spread .DWX backtest reading.
+bool PassesSpreadFilter(const double atr_now)
+  {
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || bid >= ask)
+      return true;
+   const double cap = strategy_spread_atr_frac * atr_now;
+   if(cap <= 0.0)
+      return true;
+   return ((ask - bid) <= cap);
   }
 
 // -----------------------------------------------------------------------------
-// Strategy hooks.
+// Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// No Trade Filter — spread gate only. Reads cached ATR; never fail-closed on the
-// .DWX zero modeled spread (invariant #1).
 bool Strategy_NoTradeFilter()
   {
-   if(!g_state_valid)
-      return false;
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask > 0.0 && bid > 0.0 && ask > bid)
-     {
-      const double cap = strategy_spread_atr_frac * g_atr14;
-      if(cap > 0.0 && (ask - bid) > cap)
-         return true;
-     }
    return false;
   }
 
-// Trade Entry — fires on the first tick of a new W1 bar when a fresh cross was
-// latched by AdvanceWeekly. Reads cached state + current Ask/Bid only.
+// Trade Entry: bidirectional KST/Signal cross with 200-D1 (40W1) bias filter
+// and zero-line confirmation, plus a post-SL-exit whipsaw cooldown.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   if(!g_state_valid)
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_bias_sma_period < 2 || strategy_atr_period < 1 || strategy_atr_stop_mult <= 0.0)
       return false;
+
+   double kst_1 = 0.0, signal_1 = 0.0, kst_2 = 0.0, signal_2 = 0.0, close_1 = 0.0;
+   if(!ComputeKSTSeries(kst_1, signal_1, kst_2, signal_2, close_1))
+      return false;
+
+   const double bias_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_bias_sma_period, 1, PRICE_CLOSE);
+   if(bias_sma <= 0.0)
+      return false;
+
+   const bool cross_up = (kst_2 <= signal_2) && (kst_1 > signal_1);
+   const bool cross_down = (kst_2 >= signal_2) && (kst_1 < signal_1);
+
+   const bool want_long = (close_1 > bias_sma) && cross_up && (kst_1 > 0.0);
+   const bool want_short = (close_1 < bias_sma) && cross_down && (kst_1 < 0.0);
+   if(!want_long && !want_short)
+      return false;
+
+   if(strategy_whipsaw_guard_days > 0 && GlobalVariableCheck(WhipsawKey()))
+     {
+      const datetime last_sl_exit = (datetime)GlobalVariableGet(WhipsawKey());
+      if(last_sl_exit > 0)
+        {
+         const int held_days = QM_TM_HeldPeriods(_Symbol, PERIOD_D1, last_sl_exit, TimeCurrent());
+         if(held_days >= 0 && held_days < strategy_whipsaw_guard_days)
+            return false;
+        }
+     }
+
+   const double atr_now = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(atr_now <= 0.0)
+      return false;
+
+   if(!PassesSpreadFilter(atr_now))
+      return false;
+
+   const QM_OrderType order_type = want_long ? QM_BUY : QM_SELL;
+   const double entry_price = SymbolInfoDouble(_Symbol, want_long ? SYMBOL_ASK : SYMBOL_BID);
+   if(entry_price <= 0.0)
+      return false;
+
+   const double stop_price = QM_StopATR(_Symbol, order_type, entry_price,
+                                        strategy_atr_period, strategy_atr_stop_mult);
+   if(stop_price <= 0.0)
+      return false;
+   if(order_type == QM_BUY && stop_price >= entry_price)
+      return false;
+   if(order_type == QM_SELL && stop_price <= entry_price)
+      return false;
+
+   req.type = order_type;
+   req.sl = stop_price;
+   req.reason = StringFormat("PRING_KST_%s kst=%.4f signal=%.4f", want_long ? "LONG" : "SHORT", kst_1, signal_1);
+   return true;
+  }
+
+// Trade Management: the card specifies no trailing, break-even, partial-close
+// or scale-in rule. The ATR stop is server-side from entry.
+void Strategy_ManageOpenPosition()
+  {
+  }
+
+// Trade Close: evaluate only once per D1 calendar edge. Close on the opposite
+// KST/Signal cross or after the card's 26-W1-bar (130 D1) time stop.
+bool Strategy_ExitSignal()
+  {
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-   if(g_pos_dir != 0 || QM_TM_OpenPositionCount(magic) > 0)
-      return false;
-   if(g_reentry_block > 0)
-      return false;
-   if(!g_pending_long && !g_pending_short)
+   if(magic <= 0 || QM_TM_OpenPositionCount(magic) <= 0)
       return false;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
+   if(!QM_IsNewCalendarPeriod(PERIOD_D1))
       return false;
 
-   if(g_pending_long)
+   if(strategy_time_stop_days > 0)
      {
-      const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, ask, g_atr14, strategy_atr_sl_mult);
-      if(sl <= 0.0 || sl >= ask)
-         return false; // invalid long stop geometry.
-      req.type = QM_BUY;
-      req.price = 0.0;
-      req.sl = sl;
-      req.tp = 0.0;      // no fixed TP; exit via opposite cross / time stop / SL.
-      req.reason = "KST_CROSS_UP_W1";
-      req.symbol_slot = qm_magic_slot_offset;
-      req.expiration_seconds = 0;
-      g_pos_dir = 1; g_bars_held = 0; g_exit_now = false; g_we_closed = false;
-      g_pending_long = false;
-      return true;
+      const int held_days = QM_TM_HeldPeriodsForMagic((long)magic, _Symbol, PERIOD_D1, TimeCurrent());
+      if(held_days >= strategy_time_stop_days)
+         return true;
      }
 
-   if(g_pending_short)
+   double kst_1 = 0.0, signal_1 = 0.0, kst_2 = 0.0, signal_2 = 0.0, close_1 = 0.0;
+   if(!ComputeKSTSeries(kst_1, signal_1, kst_2, signal_2, close_1))
+      return false;
+
+   const bool cross_up = (kst_2 <= signal_2) && (kst_1 > signal_1);
+   const bool cross_down = (kst_2 >= signal_2) && (kst_1 < signal_1);
+
+   bool is_long = false, is_short = false;
+   for(int i = 0; i < PositionsTotal(); ++i)
      {
-      const double sl = QM_StopATRFromValue(_Symbol, QM_SELL, bid, g_atr14, strategy_atr_sl_mult);
-      if(sl <= bid)
-         return false; // invalid short stop geometry (also catches sl==0).
-      req.type = QM_SELL;
-      req.price = 0.0;
-      req.sl = sl;
-      req.tp = 0.0;
-      req.reason = "KST_CROSS_DN_W1";
-      req.symbol_slot = qm_magic_slot_offset;
-      req.expiration_seconds = 0;
-      g_pos_dir = -1; g_bars_held = 0; g_exit_now = false; g_we_closed = false;
-      g_pending_short = false;
-      return true;
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      is_long = (ptype == POSITION_TYPE_BUY);
+      is_short = (ptype == POSITION_TYPE_SELL);
+      break;
      }
 
+   if(is_long)
+      return cross_down;
+   if(is_short)
+      return cross_up;
    return false;
   }
 
-// Trade Management — reconcile cached direction against live positions. If a
-// position vanished without THIS EA issuing the close, it was the broker-side ATR
-// stop → arm the post-SL re-entry block. O(1), reads cached state only.
-void Strategy_ManageOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return;
-   if(g_pos_dir != 0 && QM_TM_OpenPositionCount(magic) == 0)
-     {
-      if(!g_we_closed)
-         g_reentry_block = strategy_reentry_block_bars; // stop-loss whipsaw guard.
-      g_pos_dir = 0; g_bars_held = 0; g_exit_now = false; g_we_closed = false;
-     }
-  }
-
-// Trade Close — reads the once-per-bar exit latch (opposite cross / time stop).
-// The 3.0*ATR hard stop rides broker-side independently.
-bool Strategy_ExitSignal()
-  {
-   if(g_pos_dir == 0)
-      return false;
-   return g_exit_now;
-  }
-
-// News Filter Hook — defer to the central gate (temporal axis OFF per card).
+// News Filter Hook: no card-specific override. Axis A is OFF by default input
+// (card excludes news filtering from this W1-cadence strategy); Axis B (DXZ
+// compliance) remains available via the framework's callable two-axis gate.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
 
+// Whipsaw guard bookkeeping: record the timestamp of any SL-triggered close
+// of this magic's position so EntrySignal can enforce the card's post-SL
+// cooldown. Only DEAL_REASON_SL closing deals are recorded; signal/time-stop
+// exits (closed by our own code, not the broker stop) do not arm the guard.
+void Strategy_OnTradeTransactionHook(const MqlTradeTransaction &trans)
+  {
+   if(trans.type != TRADE_TRANSACTION_DEAL_ADD)
+      return;
+   if(!HistoryDealSelect(trans.deal))
+      return;
+   if((int)HistoryDealGetInteger(trans.deal, DEAL_MAGIC) != QM_FrameworkMagic())
+      return;
+   if(HistoryDealGetString(trans.deal, DEAL_SYMBOL) != _Symbol)
+      return;
+   const ENUM_DEAL_ENTRY entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(trans.deal, DEAL_ENTRY);
+   if(entry != DEAL_ENTRY_OUT && entry != DEAL_ENTRY_OUT_BY)
+      return;
+   const ENUM_DEAL_REASON reason = (ENUM_DEAL_REASON)HistoryDealGetInteger(trans.deal, DEAL_REASON);
+   if(reason == DEAL_REASON_SL)
+      GlobalVariableSet(WhipsawKey(), (double)TimeCurrent());
+  }
+
 // -----------------------------------------------------------------------------
-// Framework wiring — closed-bar (W1) cadence. State advances on the W1 new-bar
-// latch; management + exits run every tick; only NEW entries pass spread/news.
+// Framework wiring — do NOT edit below this line unless you know why.
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -351,7 +386,7 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"ea\":\"QM5_9501_pring-kst-w1\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 
@@ -364,25 +399,30 @@ void OnDeinit(const int reason)
 void OnTick()
   {
    // Q08 evidence lifecycle: sample floating P&L before any per-tick guard can
-   // return.
+   // return. QM_KillSwitchCheck retains the same call as a compatibility
+   // fallback for pre-template EAs; keep this explicit hook in all new builds.
    QM_FrameworkTrackOpenPositionMae();
 
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   // Advance cached weekly state once per new closed W1 bar.
-   if(QM_IsNewBar(_Symbol, PERIOD_W1))
-     {
-      AdvanceWeekly();
-      QM_EquityStreamOnNewBar();
-     }
+   if(Strategy_NoTradeFilter())
+      return;
 
-   // Management + rule-based exits run EVERY tick, through news/spread windows.
+   // Per-tick: trade management can adjust SL/TP on open positions.
+   // Management, rule-based exits and the Friday sweep above MUST keep
+   // running through news windows — the news gate below blocks NEW entries
+   // only (2026-07-02 audit rule; canonical order per QM5_12821 OnTick,
+   // commit dc418a720).
    Strategy_ManageOpenPosition();
+
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -393,17 +433,16 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, g_exit_reason);
-         g_we_closed = true;
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
 
-   // ---- entry path (gates NEW entries only; never management/exits above) ----
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   if(Strategy_NoTradeFilter())
-      return;
-
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults. Gates NEW entries only —
+   // never the management/exit paths above.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -412,8 +451,16 @@ void OnTick()
    if(!news_allows)
       return;
 
+   if(!QM_IsNewBar())
+      return;
+
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
-   ZeroMemory(req);
+   ZeroMemory(req); // symbol_slot=0 (host slot) + expiration=0 defaults; garbage
+                    // in unset fields = the silent-zero-trades class (9e4cfedb1)
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
@@ -430,7 +477,11 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
+   // CARD-MANDATED DEVIATION (see header comment): whipsaw-guard bookkeeping.
+   Strategy_OnTradeTransactionHook(trans);
   }
 
 double OnTester()
