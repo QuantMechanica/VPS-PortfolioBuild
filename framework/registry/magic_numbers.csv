@@ -15881,3 +15881,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9501,pring-kst-w1,11,WS30.DWX,95010011,2026-08-11,claude,active
 9501,pring-kst-w1,12,UK100.DWX,95010012,2026-08-11,claude,active
 20276,wti-hl-mom,0,XTIUSD.DWX,202760000,2026-08-11,Research+Development,active
+20277,wti-winsor-mom,0,XTIUSD.DWX,202770000,2026-08-11,Research+Development,active
