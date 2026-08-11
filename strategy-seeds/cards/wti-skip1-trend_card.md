@@ -11,7 +11,7 @@ execution_contract_ref: strategy-seeds/cards/approved/QM5_20284_wti-skip1-trend_
 execution_contract_status: DRAFT
 created: 2026-08-11
 created_by: Research+Development
-last_updated: 2026-08-11
+last_updated: 2026-08-12
 g0_status: APPROVED
 source_authors: "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen"
 source_citation: "Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104(2), 228-250, DOI 10.1016/j.jfineco.2011.11.003."
@@ -298,11 +298,12 @@ portfolio-gate edit; or correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-11 | initial source-bounded WTI skip-one-month trend card | G0 | APPROVED |
 | v1-q01 | 2026-08-11 | deterministic V5 build, strict compile, target validation, skipped-month reference vectors, and P1 artifact validation | Q01 | PASS |
+| v1-q02-hold | 2026-08-12 | target-only Q02 dry run selected one priority row; binding 7/7 tester CPU ceiling prohibited enqueue | Q02 | NOT_ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-11 | APPROVED | `decisions/2026-08-11_qm5_20284_wti_skip1_trend_g0.md` |
-| Q01 Build Validation | 2026-08-11 | PASS | `D:/QM/reports/compile/20260811_213056/summary.csv`; `D:/QM/reports/framework/21/build_check_20260811_213037.json`; `D:/QM/reports/pipeline/QM5_20284/P1/P1_QM5_20284_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q01 Build Validation | 2026-08-12 | PASS | `D:/QM/reports/compile/20260811_223924/summary.csv`; `D:/QM/reports/framework/21/build_check_20260811_223840.json`; `D:/QM/reports/pipeline/QM5_20284/P1/P1_QM5_20284_result.json` |
+| Q02 Baseline Screening | 2026-08-12 | NOT_ENQUEUED; stopped at binding 7/7 tester CPU ceiling | `docs/ops/evidence/2026-08-12_qm5_20284_wti_skip1_trend_q01_cpu_ceiling_stop.md` |

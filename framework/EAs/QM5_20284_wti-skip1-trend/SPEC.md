@@ -4,7 +4,7 @@
 **Slug:** `wti-skip1-trend`
 **Source:** `MOP-WTI-SKIP1-2026` (see `strategy-seeds/sources/MOP-WTI-SKIP1-2026/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-08-11
+**Last revised:** 2026-08-12
 
 ---
 
@@ -158,6 +158,7 @@ waiver is authorized.
 |---|---|---|---|
 | v1 | 2026-08-11 | Initial scaffold from approved card | Build commit pending |
 | v2 | 2026-08-11 | Initial V5 implementation and Q01 validation | Strict compile, target build check, P1 artifact validation, and independent skipped-month vectors PASS |
+| v3 | 2026-08-12 | Paced Q02 handoff stopped at CPU ceiling | Target-only dry run selected one priority row; binding 7/7 tester sample prohibited enqueue |
 
 ## 12. Q01 Status
 
@@ -168,12 +169,17 @@ proved endpoint orientation, exclusion invariance, difference from both the
 ordinary trailing rule and the pullback gate, exact-zero handling, short-side
 direction, and cross-year month continuity. Evidence:
 
-- `D:/QM/reports/compile/20260811_213056/summary.csv`
-- `D:/QM/reports/framework/21/build_check_20260811_213037.json`
+- `D:/QM/reports/compile/20260811_223924/summary.csv`
+- `D:/QM/reports/framework/21/build_check_20260811_223840.json`
 - `D:/QM/reports/pipeline/QM5_20284/P1/P1_QM5_20284_result.json`
 - `docs/test_skip1_reference.py`
 
 ## 13. Q02 Handoff
 
-Not enqueued. The paced CPU ceiling must be sampled after Q01 PASS; this
-mission will not dispatch or run a manual backtest.
+Not enqueued. The target-only dry run selected exactly one priority-track
+`XTIUSD.DWX` row with 1,103 pending rows against the 7,000 queue ceiling. The
+binding path-anchored sample at `2026-08-11T22:42:22.8387848Z` then found
+seven executing T1-T10 factory terminals (`T2,T5,T6,T7,T8,T9,T10`) against
+the hard ceiling of seven. The OWNER-approved stop rule therefore prohibited
+the apply. Immediate readback remained zero work items for `QM5_20284`.
+Evidence: `docs/ops/evidence/2026-08-12_qm5_20284_wti_skip1_trend_q01_cpu_ceiling_stop.md`.
