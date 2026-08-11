@@ -165,11 +165,24 @@ waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-11 | Initial scaffold from approved card | Build commit pending |
+| v2 | 2026-08-11 | Initial V5 implementation and Q01 validation | Strict compile, target build check, P1 artifact validation, and independent MAD-cap reference vectors PASS |
 
 ## 12. Q01 Status
 
-Pending deterministic implementation, strict compile, target build check,
-reference vectors, and P1 artifact validation.
+- Strict compile: PASS with zero errors and zero warnings; summary
+  `D:/QM/reports/compile/20260811_163516/summary.csv` and log
+  `C:/QM/repo/framework/build/compile/20260811_163516/QM5_20282_wti-madcap-mom.compile.log`.
+- Target build check: PASS with zero failures and zero warnings; report
+  `D:/QM/reports/framework/21/build_check_20260811_163516.json`.
+- P1 artifact validation: PASS at
+  `D:/QM/reports/pipeline/QM5_20282/P1/P1_QM5_20282_result.json`.
+- Independent statistic/clock reference vectors: PASS for positive, negative,
+  exact-zero, zero-MAD, adaptive-cap divergence, endpoint orientation, and
+  cross-year month continuity cases.
+- Backtest set build hash:
+  `6377c85f3a9f84b18a32653cd33925a60228a682adea6ef21ba94057ffca416f`.
+- Compiled binary SHA-256:
+  `356320796590ded3143a5a7271b58b21849654a356922fa2d93f09a37e66aa46`.
 
 ## 13. Q02 Handoff
 
