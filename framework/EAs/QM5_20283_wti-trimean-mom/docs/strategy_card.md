@@ -54,9 +54,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02_ENQUEUED
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 review_focus: "Falsify a direct WTI monthly robust trend whose fixed quartile-trimean functional differs from cumulative, raw-median, middle-eight trim, fixed-tail Winsor, MAD-cap, pairwise-pseudomedian, sign-vote/run, recency-weighted, slope, rank, regression, and path-efficiency estimators; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -314,6 +314,7 @@ or correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-11 | initial source-bounded WTI quartile-trimean return card | G0 | APPROVED |
 | v1-q01 | 2026-08-11 | deterministic V5 build, strict compile, target validation, quartile-trimean reference vectors, and P1 artifact validation | Q01 | PASS |
+| v1-q02 | 2026-08-11 | one paced current-binary WTI handoff below the factory CPU ceiling | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -321,4 +322,4 @@ or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-11 | APPROVED | `decisions/2026-08-11_qm5_20283_wti_trimean_mom_g0.md` |
 | Q01 Build Validation | 2026-08-11 | PASS | `D:/QM/reports/compile/20260811_184440/summary.csv`; `D:/QM/reports/framework/21/build_check_20260811_184440.json`; `D:/QM/reports/pipeline/QM5_20283/P1/P1_QM5_20283_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-11 | ENQUEUED; pending at immediate readback, attempt 0, no verdict | work item `2db5b53c-82d0-4856-a2b8-83f99307bce9`; `docs/ops/evidence/2026-08-11_qm5_20283_wti_trimean_mom_q01_q02_enqueue.md` |
