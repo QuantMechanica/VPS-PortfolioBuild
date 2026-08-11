@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        11401
 ; ea_slug:      davey-low-volume-mean-reversion-d1
@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3b13093d6d4aa683c7eadfe14ebc91d68ebe16e1f7906d69e3f2e937fe629cd5
+; build_hash:   102e844f8cf9ade9f67e4d2efbe3b29656e7ca54c8936bb30ca4646823ff6c28
 ; author:       Development
 ; date:         2026-08-10
 ;==========================================================
