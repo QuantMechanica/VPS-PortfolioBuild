@@ -4,7 +4,7 @@
 **Slug:** `tdi-mbl-cross`
 **Source:** `0693c604-4f96-56ef-be79-15efe9f48b86` (see `strategy-seeds/sources/0693c604-4f96-56ef-be79-15efe9f48b86/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-07
+**Last revised:** 2026-08-11
 
 ---
 
@@ -49,6 +49,7 @@ The EA evaluates completed bars on the chart timeframe, with the P2 baseline usi
 | Base timeframe | `H1` |
 | Multi-timeframe refs | `none` |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Indicator evaluation | One shared closed-bar TDI state per new H1 bar; time-stop checks remain per tick. |
 
 ---
 
@@ -92,3 +93,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-07 | Initial build from card | d294b0a3-5c1b-499b-b6b3-bc66bd32a595 |
+| v2 | 2026-08-11 | Q02 infrastructure repair | Cache the two completed-bar TDI states behind `QM_IsNewBar`; mechanics and defaults unchanged. |
