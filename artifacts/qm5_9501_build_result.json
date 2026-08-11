@@ -1,0 +1,50 @@
+{
+  "task_id": "037da632-6b8f-435f-b142-3829e442a2a9",
+  "ea_id": "QM5_9501",
+  "ea_dir": "framework/EAs/QM5_9501_pring-kst-w1",
+  "mq5_path": "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/QM5_9501_pring-kst-w1.mq5",
+  "ex5_path": "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/QM5_9501_pring-kst-w1.ex5",
+  "magic_base": 95010000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "NZDUSD.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX",
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "UK100.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/sets/QM5_9501_pring-kst-w1_EURUSD.DWX_W1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/sets/QM5_9501_pring-kst-w1_GBPUSD.DWX_W1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/sets/QM5_9501_pring-kst-w1_USDJPY.DWX_W1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/sets/QM5_9501_pring-kst-w1_AUDUSD.DWX_W1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/sets/QM5_9501_pring-kst-w1_USDCAD.DWX_W1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/sets/QM5_9501_pring-kst-w1_USDCHF.DWX_W1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/sets/QM5_9501_pring-kst-w1_NZDUSD.DWX_W1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/sets/QM5_9501_pring-kst-w1_XAUUSD.DWX_W1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/sets/QM5_9501_pring-kst-w1_XTIUSD.DWX_W1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/sets/QM5_9501_pring-kst-w1_GDAXI.DWX_W1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/sets/QM5_9501_pring-kst-w1_NDX.DWX_W1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/sets/QM5_9501_pring-kst-w1_WS30.DWX_W1_backtest.set",
+    "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/sets/QM5_9501_pring-kst-w1_UK100.DWX_W1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/worktrees/claude-orchestration-2/framework/EAs/QM5_9501_pring-kst-w1/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": "D:/QM/reports/smoke/QM5_9501/20260811_015533/summary.json",
+  "blocked_reason": "smoke deferred (worktree deploy-source limitation): run_smoke.ps1 reserved terminal T6 and launched the tester, but the deploy step resolved the .ex5 from the CANONICAL repo path 'C:/QM/repo/framework/EAs/QM5_9501_pring-kst-w1/QM5_9501_pring-kst-w1.ex5' (deploy_skip=source_missing) -- that path holds only the board-advisor INERT SKELETON .mq5 (never compiled), not my worktree binary. The tester therefore logged 'Experts\\QM\\QM5_9501_pring-kst-w1.ex5 not found' (both runs) -> REPORT_MISSING/ONINIT_FAILED. This is a deploy/setup mismatch, NOT a strategy defect and NOT a compile/build_check failure: build_check PASS + compile PASS (0 errors/0 warnings) in the worktree, all 13 magics 95010000-95010012 appended to magic_numbers.csv and baked into the worktree QM_MagicResolver.mqh (1740->1753 rows, 0 dropped) which this .ex5 (sha256=2f9ef8f48f0db41ffa4f59c7f2ad4ea855a20f01f6598f6116e4d4027b219c28) was compiled against. Per one-pass discipline, not retried. Q02 runs the real smoke with proper work-item binding once the worktree merges to main.",
+  "open_questions": [
+    "CAPACITY-SPILLED / DUPLICATE-BUILD WATCH: the canonical repo C:/QM/repo is on branch agents/board-advisor and already holds an INERT skeleton framework/EAs/QM5_9501_pring-kst-w1/ (stub .mq5 'Unknown Strategy', all hooks return false, NO .ex5, empty sets/) plus pre-allocated magic rows for 9501. THIS build (branch agents/claude-orchestration-2) is the real, compiled implementation. Reviewer/merger MUST dedupe QM5_9501 across the board-advisor skeleton vs this worktree and prefer THIS build; also watch for duplicate 9501 rows in magic_numbers.csv (board-advisor pump-committed identical rows) at merge time. ea_id_registry already had the 9501,pring-kst-w1 row (Research 2026-05-19) -- left unchanged.",
+    "SYMBOL PORTABILITY: card target_symbols listed 15 symbols; FRA40.DWX (CAC 40) and JP225.DWX (Nikkei 225) are NOT in dwx_symbol_matrix.csv (no French/Japanese index CFD available) so they were SKIPPED (no invented symbols). Registered the 13 that are present: 7 FX majors + XAUUSD + XTIUSD + GDAXI/NDX/WS30/UK100 (P2 saturation).",
+    "NO REVERSAL ON EXIT CROSS: entry signals are evaluated only when flat at the once-per-bar advance, so the KST/Signal cross that exits a position does NOT immediately open the opposite side on the same bar (one entry per distinct cross event). Implemented as the most-literal reading of the card's separate Entry and Exit rules under HR9; reviewer to confirm reversal-vs-flat intent if Pring's canonical system expects stop-and-reverse.",
+    "W1 SMOKE FREQUENCY: card expects ~3 trades/yr/symbol; a single-year (2024) W1 smoke window (~52 bars, ~42 consumed by KST/40-week-SMA warmup) can legitimately produce 0 signals by design -- W1 frequency is judged at Q02 over full history, not on a one-year smoke."
+  ]
+}
