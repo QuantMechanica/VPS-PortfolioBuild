@@ -79,6 +79,24 @@ input double strategy_partial_fraction  = 0.5;    // fraction closed at TP-half
 input int    strategy_warmup_bars       = 250;    // forward-iteration warmup for ST/McGinley
 input int    strategy_max_spread_points = 300;
 
+// Closed-D1 cache.  McGinley and SuperTrend both require a bounded forward
+// reconstruction over strategy_warmup_bars.  The framework calls management
+// and exit hooks on every tick, so those reconstructions must be advanced once
+// per newly closed D1 bar and reused by all three strategy hooks.
+int    g_strategy_cached_day_key = 0;
+bool   g_strategy_cache_initialized = false;
+bool   g_strategy_exit_cache_ready = false;
+bool   g_strategy_entry_cache_ready = false;
+double g_strategy_close_last = 0.0;
+double g_strategy_md_last = 0.0;
+double g_strategy_atr_last = 0.0;
+double g_strategy_vi_plus = 0.0;
+double g_strategy_vi_minus = 0.0;
+double g_strategy_adx_last = 0.0;
+double g_strategy_adx_prev = 0.0;
+int    g_strategy_cross_dir = 0;
+int    g_strategy_st_dir = 0;
+
 // -----------------------------------------------------------------------------
 // Indicator computations from permitted primitives (closed bars only, shift>=1).
 // -----------------------------------------------------------------------------
@@ -216,6 +234,79 @@ int Strategy_BaselineCross(const string sym, const int period, const int shift, 
    return 0;
   }
 
+// Advance all closed-bar strategy state at most once for each completed D1
+// bar.  QM_CalendarPeriodKey is the framework-owned, tester-robust cadence key;
+// using shift=1 binds the cache to the bar whose values feed the signal.
+void Strategy_RefreshClosedBarState()
+  {
+   const int closed_day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 1);
+   if(closed_day_key <= 0)
+      return;
+   if(g_strategy_cache_initialized && closed_day_key == g_strategy_cached_day_key)
+      return;
+
+   // Latch before the bounded reconstruction.  A missing-history read fails
+   // closed for this bar instead of retrying a 250-bar scan on every tick.
+   g_strategy_cache_initialized = true;
+   g_strategy_cached_day_key = closed_day_key;
+   g_strategy_exit_cache_ready = false;
+   g_strategy_entry_cache_ready = false;
+   g_strategy_close_last = 0.0;
+   g_strategy_md_last = 0.0;
+   g_strategy_atr_last = 0.0;
+   g_strategy_vi_plus = 0.0;
+   g_strategy_vi_minus = 0.0;
+   g_strategy_adx_last = 0.0;
+   g_strategy_adx_prev = 0.0;
+   g_strategy_cross_dir = 0;
+   g_strategy_st_dir = 0;
+
+   if(strategy_baseline_period <= 0 ||
+      strategy_baseline_cross_lookback <= 0 ||
+      strategy_atr_period <= 0 ||
+      strategy_supertrend_period <= 0 ||
+      strategy_supertrend_mult <= 0.0 ||
+      strategy_vortex_period <= 0 ||
+      strategy_adx_period <= 0 ||
+      strategy_warmup_bars <= 0)
+      return;
+
+   const double close_last = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: once-per-D1 closed-bar cache
+   const double md_last = Strategy_McGinley(_Symbol, strategy_baseline_period, 1);
+   if(close_last <= 0.0 || md_last <= 0.0)
+      return;
+
+   g_strategy_close_last = close_last;
+   g_strategy_md_last = md_last;
+   g_strategy_atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   g_strategy_st_dir = Strategy_SuperTrendDir(_Symbol, strategy_supertrend_period,
+                                              strategy_supertrend_mult, 1);
+   // Baseline exits remain enforceable even if a non-exit entry component is
+   // temporarily unavailable.
+   g_strategy_exit_cache_ready = true;
+
+   double vi_plus = 0.0;
+   double vi_minus = 0.0;
+   if(g_strategy_atr_last <= 0.0 ||
+      g_strategy_st_dir == 0 ||
+      !Strategy_Vortex(_Symbol, strategy_vortex_period, 1, vi_plus, vi_minus))
+      return;
+
+   const double adx_last = QM_ADX(_Symbol, PERIOD_D1, strategy_adx_period, 1);
+   const double adx_prev = QM_ADX(_Symbol, PERIOD_D1, strategy_adx_period, 2);
+   const int cross_dir = Strategy_BaselineCross(_Symbol, strategy_baseline_period,
+                                                1, strategy_baseline_cross_lookback);
+   if(adx_last <= 0.0 || adx_prev <= 0.0 || cross_dir == 0)
+      return;
+
+   g_strategy_vi_plus = vi_plus;
+   g_strategy_vi_minus = vi_minus;
+   g_strategy_adx_last = adx_last;
+   g_strategy_adx_prev = adx_prev;
+   g_strategy_cross_dir = cross_dir;
+   g_strategy_entry_cache_ready = true;
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks.
 // -----------------------------------------------------------------------------
@@ -260,39 +351,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_warmup_bars <= 0)
       return false;
 
-   // Stack inputs on the last closed bar (shift = 1).
-   const double close_last = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: closed-bar stack input
-   const double md_last    = Strategy_McGinley(_Symbol, strategy_baseline_period, 1);
-   const double atr_last   = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(close_last <= 0.0 || md_last <= 0.0 || atr_last <= 0.0)
+   Strategy_RefreshClosedBarState();
+   if(!g_strategy_entry_cache_ready)
       return false;
 
-   // 1. Baseline cross direction within the validity window.
-   const int cross_dir = Strategy_BaselineCross(_Symbol, strategy_baseline_period,
-                                                1, strategy_baseline_cross_lookback);
-   if(cross_dir == 0)
-      return false;
+   // Stack inputs on the last closed bar (shift = 1), computed once per D1 bar.
+   const double close_last = g_strategy_close_last;
+   const double md_last = g_strategy_md_last;
+   const double atr_last = g_strategy_atr_last;
+   const int cross_dir = g_strategy_cross_dir;
+   const int st_dir = g_strategy_st_dir;
+   const double vi_plus = g_strategy_vi_plus;
+   const double vi_minus = g_strategy_vi_minus;
+   const double adx_last = g_strategy_adx_last;
+   const double adx_prev = g_strategy_adx_prev;
 
    // 2. ATR proximity at signal.
    if(MathAbs(close_last - md_last) >= strategy_atr_proximity * atr_last)
       return false;
 
-   // 3. C1 — SuperTrend direction.
-   const int st_dir = Strategy_SuperTrendDir(_Symbol, strategy_supertrend_period,
-                                             strategy_supertrend_mult, 1);
-   if(st_dir == 0)
-      return false;
-
-   // 4. C2 — Vortex VI+ vs VI-.
-   double vi_plus = 0.0, vi_minus = 0.0;
-   if(!Strategy_Vortex(_Symbol, strategy_vortex_period, 1, vi_plus, vi_minus))
-      return false;
-
    // 5. Volume gate — ADX >= threshold AND rising.
-   const double adx_last = QM_ADX(_Symbol, PERIOD_D1, strategy_adx_period, 1);
-   const double adx_prev = QM_ADX(_Symbol, PERIOD_D1, strategy_adx_period, 2);
-   if(adx_last <= 0.0 || adx_prev <= 0.0)
-      return false;
    if(adx_last < strategy_adx_threshold || adx_last <= adx_prev)
       return false;
 
@@ -327,7 +405,8 @@ void Strategy_ManageOpenPosition()
    if(magic <= 0)
       return;
 
-   const double atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   Strategy_RefreshClosedBarState();
+   const double atr_last = g_strategy_atr_last;
    if(atr_last <= 0.0)
       return;
    const double tp_distance = strategy_atr_tp_mult * atr_last;
@@ -382,12 +461,13 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
-   const double close_last = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: closed-bar exit input
-   const double md_last    = Strategy_McGinley(_Symbol, strategy_baseline_period, 1);
-   const int    st_dir     = Strategy_SuperTrendDir(_Symbol, strategy_supertrend_period,
-                                                    strategy_supertrend_mult, 1);
-   if(close_last <= 0.0 || md_last <= 0.0)
+   Strategy_RefreshClosedBarState();
+   if(!g_strategy_exit_cache_ready)
       return false;
+
+   const double close_last = g_strategy_close_last;
+   const double md_last = g_strategy_md_last;
+   const int st_dir = g_strategy_st_dir;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -457,20 +537,15 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any per-tick guard can
+   // return.  The kill-switch retains a compatibility fallback for old EAs.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
-      return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -481,7 +556,8 @@ void OnTick()
    // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. opposite-signal). Separate from SL/TP.
+   // Per-tick hook with once-per-D1 cached signal state.  Management and exits
+   // stay active through central news windows; only new entries are gated.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -496,6 +572,15 @@ void OnTick()
         }
      }
 
+   // FW1 — central two-axis news filtering gates NEW entries only.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
    // per-tick recompute mistakes — EntrySignal sees one new closed bar per
    // call, not every incoming tick.
@@ -507,6 +592,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
