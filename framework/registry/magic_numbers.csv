@@ -15902,3 +15902,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 2245,pring-three-trends-mtf-h4,7,UK100.DWX,22450007,2026-08-11,gemini,active
 20279,wti-expw-mom,0,XTIUSD.DWX,202790000,2026-08-11,Research+Development,active
 20280,wti-tsmom4m,0,XTIUSD.DWX,202800000,2026-08-11,Research+Development,active
+20281,wti-tsmom-h2,0,XTIUSD.DWX,202810000,2026-08-11,Research+Development,active
