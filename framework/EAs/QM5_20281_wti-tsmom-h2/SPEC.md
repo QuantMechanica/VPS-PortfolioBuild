@@ -134,14 +134,25 @@ waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-11 | Initial scaffold from approved card | Build commit pending |
+| v2 | 2026-08-11 | Initial V5 implementation and Q01 validation | Strict compile, target build check, P1 artifact validation, and independent reference vectors PASS |
 
 ## 11. Q01 Status
 
-`NOT_RUN`. Strict compile, target build check, P1 artifact validation, and the
-independent return/clock reference vectors are pending implementation.
+- Strict compile: PASS with zero errors and zero warnings; summary
+  `D:/QM/reports/compile/20260811_150844/summary.csv` and log
+  `C:/QM/repo/framework/build/compile/20260811_150844/QM5_20281_wti-tsmom-h2.compile.log`.
+- Target build check: PASS with zero failures and zero warnings; report
+  `D:/QM/reports/framework/21/build_check_20260811_150911.json`.
+- P1 artifact validation: PASS at
+  `D:/QM/reports/pipeline/QM5_20281/P1/P1_QM5_20281_result.json`.
+- Independent statistic/clock reference vectors: PASS for month continuity,
+  positive/negative/zero direction, endpoint identity, non-conjunction,
+  six odd-month decisions, even-month hold, and odd-month rollover.
+- Backtest set build hash:
+  `a594314869a2da7593b85033736f0b949a45edf880be260750a14500e6f607ef`.
 
 ## 12. Q02 Handoff
 
 `NOT_ENQUEUED`. A single current-binary `XTIUSD.DWX` D1 row may be enqueued
-only after Q01 PASS and an immediate path-anchored capacity sample below the
-paced CPU ceiling.
+only after an immediate path-anchored capacity sample below the paced CPU
+ceiling. No manual tester run is authorized.
