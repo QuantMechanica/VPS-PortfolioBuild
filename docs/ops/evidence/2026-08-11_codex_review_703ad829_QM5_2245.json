@@ -1,0 +1,23 @@
+{
+  "review_task_id": "703ad829-d436-4815-ae26-da1bde4f04de",
+  "build_task_id": "db396423-a845-48d4-b75e-c6f858ad953c",
+  "ea_id": "QM5_2245",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "framework_corset: canonical build_check report D:/QM/reports/framework/21/build_check_20260811_054308.json fails 6 raw-series calls at mq5 lines 140, 145, 155, 156, 318, and 333; the EA has no reviewer-approved perf-allowed annotations.",
+    "framework_corset: mq5 lines 268 and 293 call raw OrderSend for stop modification, bypassing the V5 trade-management helpers and producing unchecked-return compiler warnings.",
+    "framework_corset: OnTick omits the mandatory QM_FrameworkTrackOpenPositionMae hook and places the news entry gate before management and exits; because every entry supplies a server-side SL, the latter is an ONTICK-ORDER advisory rather than an additional hard failure.",
+    "build_result: the Gemini artifact declares build_check_passed=true and source verdict compile 0 errors/0 warnings, but focused canonical verification produced build_check FAIL (6 failures, 2 warnings) and a fresh compile with 0 errors/2 warnings at C:/QM/repo/framework/build/compile/20260811_054138/QM5_2245_pring-three-trends-mtf-h4.compile.log.",
+    "smoke_sanity: smoke_result is deferred_p2_smoke and smoke_report_path is null, so no pipeline or trade-generation verdict is available."
+  ],
+  "reviewed_at": "2026-08-11T05:44:24.9835955Z"
+}
