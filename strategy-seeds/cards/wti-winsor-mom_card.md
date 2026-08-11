@@ -13,9 +13,9 @@ source_author: "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen"
 strategy_mechanic: monthly-wti-sign-of-two-per-tail-winsorized-mean-of-twelve-completed-monthly-log-returns
 target_symbols: [XTIUSD.DWX]
 period: D1
-pipeline_phase: Q01_PASS
+pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 last_updated: 2026-08-11
 ---
 
@@ -53,4 +53,5 @@ waiver is authorized.
 
 G0 and Q01 are PASS. Strict compile completed with zero errors and zero
 warnings, the targeted build check has no failures or warnings, the reference
-vectors pass, and P1 confirms the binary. Q02 is not yet enqueued.
+vectors pass, and P1 confirms the binary. Q02 is
+`NOT_ENQUEUED_CPU_CEILING`; no screening result exists.

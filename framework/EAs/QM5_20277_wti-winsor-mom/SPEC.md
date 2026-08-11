@@ -135,5 +135,9 @@ correlation waiver.
 
 ## 12. Q02 Handoff
 
-Not enqueued. Q02 may receive exactly one `XTIUSD.DWX` D1 current-binary row
-only after Q01 PASS and a binding factory CPU-ceiling check.
+`NOT_ENQUEUED_CPU_CEILING`. The binding `2026-08-11T05:21:13+00:00`
+factory sample found seven executing T1-T10 terminals against the ceiling of
+seven, so no dry-run, apply-mode enqueue, dispatch, or manual backtest was
+run. The immediate target readback found zero work items. A later paced
+operator may take a fresh capacity sample and enqueue exactly one
+`XTIUSD.DWX` D1 current-binary row only when below the ceiling.
