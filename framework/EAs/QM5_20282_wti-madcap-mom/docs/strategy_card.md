@@ -54,9 +54,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02_ENQUEUED
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 review_focus: "Falsify a direct WTI monthly robust trend whose median-centered raw-MAD cap differs from cumulative, raw-median, fixed-tail trim/Winsor, pairwise-pseudomedian, sign-vote/run, recency weighting, price-slope, rank, regression, and path-efficiency estimators; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -327,6 +327,7 @@ or correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-11 | initial source-bounded WTI median/MAD-capped return card | G0 | APPROVED |
 | v1-q01 | 2026-08-11 | deterministic V5 build, strict compile, target validation, MAD-cap reference vectors, and P1 artifact validation | Q01 | PASS |
+| v1-q02 | 2026-08-11 | one paced current-binary WTI handoff below the factory CPU ceiling | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -334,4 +335,4 @@ or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-11 | APPROVED | `decisions/2026-08-11_qm5_20282_wti_madcap_mom_g0.md` |
 | Q01 Build Validation | 2026-08-11 | PASS | `D:/QM/reports/compile/20260811_163516/summary.csv`; `D:/QM/reports/framework/21/build_check_20260811_163516.json`; `D:/QM/reports/pipeline/QM5_20282/P1/P1_QM5_20282_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-11 | ENQUEUED; active at immediate readback, attempt 0, no verdict | work item `0bf7e357-2686-4e5b-98f5-0eb8c65cf31e`; `docs/ops/evidence/2026-08-11_qm5_20282_wti_madcap_mom_q01_q02_enqueue.md` |
