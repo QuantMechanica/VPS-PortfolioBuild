@@ -38,6 +38,20 @@ def _sliding_windows(seq: list[str], size: int):
         yield seq[i : i + size]
 
 
+def _seed_active_fleet(db: "_FarmDB", n: "int | None" = None) -> None:
+    """Seed enough ACTIVE rows that the occupancy floor keeps the cap regime armed.
+
+    OWNER-ratified amendment 2026-08-11 ("Go, alles freigegeben", evidence
+    docs/ops/evidence/2026-08-11_ramp10_soak_evaluation.md): the rolling
+    recovery cap binds only while at least CLAIM_RECOVERY_OCCUPANCY_MIN_ACTIVE
+    work items are active fleet-wide; below that floor the frontier demonstrably
+    cannot fill capacity and recovery takes the idle slot.
+    """
+    count = farmctl.CLAIM_RECOVERY_OCCUPANCY_MIN_ACTIVE if n is None else n
+    for i in range(count):
+        db.insert(f"busy{i}", "Q02", f"BUSY{i}", status="active", claimed_by=f"TB{i}")
+
+
 class _FarmDB:
     """A throwaway file-backed farm DB rooted at a temp dir (root/state/...sqlite)."""
 
@@ -225,6 +239,7 @@ class RecoveryCapPrimitiveTests(unittest.TestCase):
         db = _FarmDB()
         self.addCleanup(db.close)
         db.insert("frontier", "Q02", "FRONT")  # persistent non-recovery pending -> cap active
+        _seed_active_fleet(db)  # occupancy at the floor -> cap regime binds (OWNER 2026-08-11)
         with closing(db.conn()) as c:
             # Seed ONE fresh priority claim: the amended cap regime requires
             # ledger evidence that the priority lane is alive (else the stall
@@ -262,6 +277,7 @@ class RecoveryCapPrimitiveTests(unittest.TestCase):
         db = _FarmDB()
         self.addCleanup(db.close)
         db.insert("frontier", "Q02", "FRONT")
+        _seed_active_fleet(db)  # occupancy at the floor -> cap regime binds (OWNER 2026-08-11)
         with closing(db.conn()) as c:
             c.execute("BEGIN IMMEDIATE")
             # Fresh priority claim -> lane provably alive -> cap regime applies.
@@ -278,6 +294,7 @@ class RecoveryCapPrimitiveTests(unittest.TestCase):
         db = _FarmDB()
         self.addCleanup(db.close)
         db.insert("frontier", "Q02", "FRONT")  # persistent frontier -> cap stays active
+        _seed_active_fleet(db)  # occupancy at the floor -> cap regime binds (OWNER 2026-08-11)
         iters_each = 25
         with closing(db.conn()) as c0:
             c0.execute("BEGIN IMMEDIATE")
@@ -369,6 +386,7 @@ class ClaimAtomicIntegrationTests(unittest.TestCase):
         db = _FarmDB()
         self.addCleanup(db.close)
         db.insert("frontier", "Q02", "FRONT")  # keeps the cap regime active
+        _seed_active_fleet(db)  # occupancy at the floor -> cap regime binds (OWNER 2026-08-11)
         with closing(db.conn()) as c:
             c.execute("BEGIN IMMEDIATE")
             farmctl.record_claim_ledger(c, "T1", "r", "recovery", farmctl.utc_now())
@@ -397,10 +415,43 @@ class ClaimAtomicIntegrationTests(unittest.TestCase):
         db = _FarmDB()
         self.addCleanup(db.close)
         db.insert("frontier", "Q02", "FRONT")
+        _seed_active_fleet(db)  # occupancy at the floor -> cap regime binds (OWNER 2026-08-11)
         with closing(db.conn()) as c:
             c.execute("BEGIN IMMEDIATE")
             farmctl.record_claim_ledger(c, "T2", "p", "priority", "not-a-timestamp")
             farmctl.record_claim_ledger(c, "T1", "r", "recovery", farmctl.utc_now())
+            self.assertFalse(farmctl.recovery_claim_allowed(c))
+            c.commit()
+
+    def test_occupancy_escape_opens_below_half_fleet(self) -> None:
+        # OWNER-ratified amendment 2026-08-11 ("Go, alles freigegeben"): recovery
+        # in the window + priority lane provably alive would deny under the
+        # rolling cap — but with fewer than CLAIM_RECOVERY_OCCUPANCY_MIN_ACTIVE
+        # active claims the frontier cannot fill the fleet, so recovery may take
+        # the idle slot (2026-08-11 trickle regime: 906 recovery rows pending,
+        # 2-3/10 terminals busy, stall escape never triggered).
+        db = _FarmDB()
+        self.addCleanup(db.close)
+        db.insert("frontier", "Q02", "FRONT")
+        _seed_active_fleet(db, farmctl.CLAIM_RECOVERY_OCCUPANCY_MIN_ACTIVE - 1)
+        with closing(db.conn()) as c:
+            c.execute("BEGIN IMMEDIATE")
+            farmctl.record_claim_ledger(c, "T1", "r", "recovery", farmctl.utc_now())
+            farmctl.record_claim_ledger(c, "T2", "p", "priority", farmctl.utc_now())
+            self.assertTrue(farmctl.recovery_claim_allowed(c))
+            c.commit()
+
+    def test_occupancy_escape_stays_closed_at_floor(self) -> None:
+        # At exactly the occupancy floor the fleet is meaningfully busy and the
+        # ratified 1-in-5 share bound must keep protecting frontier throughput.
+        db = _FarmDB()
+        self.addCleanup(db.close)
+        db.insert("frontier", "Q02", "FRONT")
+        _seed_active_fleet(db)
+        with closing(db.conn()) as c:
+            c.execute("BEGIN IMMEDIATE")
+            farmctl.record_claim_ledger(c, "T1", "r", "recovery", farmctl.utc_now())
+            farmctl.record_claim_ledger(c, "T2", "p", "priority", farmctl.utc_now())
             self.assertFalse(farmctl.recovery_claim_allowed(c))
             c.commit()
 
@@ -477,6 +528,9 @@ class DispatchRealPathTests(_DispatchStubMixin, unittest.TestCase):
         db.insert("lock_active", "Q02", "LOCK", status="active", claimed_by="T9")
         db.insert("front_locked", "Q02", "LOCK")                 # frontier pending, ineligible
         db.insert("rec1", "Q02", "S1", recovery="stranded_infra_fail")
+        # lock_active plus four more actives reach the occupancy floor, so the
+        # cap regime (not the 2026-08-11 occupancy escape) governs this test.
+        _seed_active_fleet(db, farmctl.CLAIM_RECOVERY_OCCUPANCY_MIN_ACTIVE - 1)
         with closing(db.conn()) as c:                            # pre-seed cap: last claim = recovery
             c.execute("BEGIN IMMEDIATE")
             # Fresh priority row keeps the cap regime armed under the amended

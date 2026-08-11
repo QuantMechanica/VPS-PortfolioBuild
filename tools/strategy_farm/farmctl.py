@@ -460,8 +460,62 @@ def phase_runner_terminals() -> tuple[str, ...]:
     return worker_policy_terminals()
 
 
+def _reservation_holder_pid(reserved_by: Any) -> "int | None":
+    """Extract the holder PID from a '<label>:<pid>:<token>' reserved_by value.
+
+    Returns None when the value does not carry a PID-encoded holder (such
+    reservations stay TTL-governed only).
+    """
+    parts = str(reserved_by or "").split(":")
+    if len(parts) < 2 or not parts[1].isdigit():
+        return None
+    try:
+        return int(parts[1])
+    except ValueError:
+        return None
+
+
+def _reservation_holder_alive(pid: int) -> "bool | None":
+    """Cheap kernel32 liveness probe for reservation holders.
+
+    Deliberately NOT _pid_exists (which spawns a PowerShell process): this runs
+    on every claim attempt of every worker. Returns None when liveness cannot be
+    determined (fail conservative: treat the holder as alive). PID reuse can
+    only ever err toward keeping a reservation, never toward dropping a live one.
+    """
+    if sys.platform != "win32":
+        return None
+    try:
+        import ctypes
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        STILL_ACTIVE = 259
+        ERROR_ACCESS_DENIED = 5
+        handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, int(pid))
+        if not handle:
+            if ctypes.get_last_error() == ERROR_ACCESS_DENIED:
+                return None  # process exists but is not queryable: assume alive
+            return False
+        try:
+            code = ctypes.c_ulong()
+            if not kernel32.GetExitCodeProcess(handle, ctypes.byref(code)):
+                return None
+            return code.value == STILL_ACTIVE
+        finally:
+            kernel32.CloseHandle(handle)
+    except Exception:
+        return None
+
+
 def terminal_reservations(root: Path | None = None, now: dt.datetime | None = None) -> dict[str, dict[str, Any]]:
-    """Return live terminal reservations; malformed/expired entries fail open."""
+    """Return live terminal reservations; malformed/expired entries fail open.
+
+    Reservations whose reserved_by encodes a holder PID ('run_smoke:<pid>:<tok>')
+    are additionally dropped when that holder process is verifiably dead — the
+    reservation-corpse class (three recurrences on 2026-08-11: T8/T2/T7 blocked
+    for hours behind dead pwsh holders). Liveness ambiguity keeps the entry.
+    """
     farm_root = root or DEFAULT_ROOT
     path = farm_root / TERMINAL_RESERVATIONS_REL
     try:
@@ -486,6 +540,9 @@ def terminal_reservations(root: Path | None = None, now: dt.datetime | None = No
             continue
         if until <= current:
             continue
+        holder_pid = _reservation_holder_pid(value.get("reserved_by"))
+        if holder_pid is not None and _reservation_holder_alive(holder_pid) is False:
+            continue  # dead holder: corpse reservation fails open like TTL expiry
         live[terminal] = {
             "terminal": terminal,
             "reserved_by": str(value.get("reserved_by") or "unknown"),
@@ -923,6 +980,18 @@ CLAIM_RECOVERY_MAX_IN_WINDOW = 1
 # OWNER-ratified amendment 2026-08-04 ("Go"), evidence:
 # docs/ops/evidence/2026-08-04_recovery_cap_stall_escape_proposal.md
 CLAIM_RECOVERY_STALL_ESCAPE_MINUTES = 15.0
+# Occupancy escape: the rolling cap bounds recovery's SHARE of throughput while
+# the priority frontier fills the fleet. When the frontier narrows to a blocked
+# symbol cluster it can trickle a priority claim every few minutes without ever
+# filling capacity — the time-based stall escape never triggers and the fleet
+# idles against a deep recovery queue (2026-08-11: 906 recovery rows pending,
+# 2-3/10 terminals busy for seven hours). Ordering already guarantees a recovery
+# row is only reached after every claimable priority row was taken or skipped,
+# so when fewer than half the ratified 10-terminal cohort holds an active claim,
+# recovery may take the idle slot regardless of the rolling window.
+# OWNER-ratified amendment 2026-08-11 ("Go, alles freigegeben"), evidence:
+# docs/ops/evidence/2026-08-11_ramp10_soak_evaluation.md
+CLAIM_RECOVERY_OCCUPANCY_MIN_ACTIVE = 5
 # Keep the ledger bounded: retain a tail far larger than the window and prune older
 # rows inside the same claim transaction. Only the last (WINDOW-1) rows are ever read.
 CLAIM_LEDGER_RETAIN = 64
@@ -1109,6 +1178,16 @@ def recovery_claim_allowed(conn: sqlite3.Connection) -> bool:
     ).fetchall()
     recent_recovery = sum(1 for r in rows if str(r[0]) == "recovery")
     if recent_recovery < CLAIM_RECOVERY_MAX_IN_WINDOW:
+        return True
+    # Occupancy escape (OWNER-ratified 2026-08-11, see constant block): fewer
+    # than half the cohort busy means the frontier demonstrably cannot fill
+    # capacity right now — recovery takes the idle slot. Priority rows, when
+    # claimable, still always win through the claim ordering; the first
+    # occupancy recovery >= the floor re-arms the rolling cap automatically.
+    active_now = conn.execute(
+        "SELECT COUNT(*) FROM work_items WHERE status='active'"
+    ).fetchone()
+    if active_now is not None and int(active_now[0]) < CLAIM_RECOVERY_OCCUPANCY_MIN_ACTIVE:
         return True
     # Priority-lane stall escape (OWNER amendment 2026-08-04): the rolling window
     # assumes priority claims keep advancing the ledger. When every frontier row

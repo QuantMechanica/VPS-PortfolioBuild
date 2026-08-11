@@ -28,6 +28,17 @@ if (-not $CanonicalRuntimeHost) {
 }
 
 $ErrorActionPreference = 'Stop'
+# PSModulePath self-heal (2026-08-10 trap: a poisoned caller environment made
+# Get-FileHash unresolvable in PS5.1 and killed Factory_OFF mid-flag-write).
+# Never trust the inherited value; prepend the canonical roots.
+$qmCanonicalModulePaths = @(
+    (Join-Path $env:ProgramFiles 'WindowsPowerShell\Modules'),
+    (Join-Path $env:SystemRoot 'system32\WindowsPowerShell\v1.0\Modules')
+)
+$env:PSModulePath = (
+    @($qmCanonicalModulePaths) +
+    @(($env:PSModulePath -split ';') | Where-Object { $_ -and ($_ -notin $qmCanonicalModulePaths) })
+) -join ';'
 $processScopePath = Join-Path $PSScriptRoot 'factory_process_scope.ps1'
 try {
     $script:QmFactoryProcessScopeVersion = $null
@@ -143,6 +154,18 @@ $QM_RESPAWN_TASKS = @(
     'QM_StrategyFarm_FactoryWatchdog_15min',
     'QM_StrategyFarm_FactoryON_AtLogon',
     'QM_StrategyFarm_ReconcileOrphans_Hourly'
+)
+# AI-orchestration quiet zone (OWNER 2026-08-11 "Go, alles freigegeben"): the
+# 2026-08-10 router freeze was a lane-spawned agent_router racing the scheduled
+# instance inside the restart window (R5/R6 FAILED CLOSED). Orchestration lanes
+# and the codex/agy pacers are therefore enabled only AFTER the post-start
+# health gate passes; AgentRouter_5min itself stays pre-gate (critical task).
+$QM_AI_ORCHESTRATION_QUIET_ZONE_TASKS = @(
+    'QM_StrategyFarm_CodexOrchestration_15min',
+    'QM_StrategyFarm_GeminiOrchestration_15min',
+    'QM_StrategyFarm_ClaudeOrchestration_15min',
+    'QM_StrategyFarm_CodexFleetPacer',
+    'QM_StrategyFarm_AgyGovernor'
 )
 $QM_QUIESCENCE_TASKS = @(
     'QM_CodexParallel_RestoreOnReset',
@@ -1187,6 +1210,16 @@ foreach ($taskName in $QM_ALWAYSON_TASKS) {
     Add-QmExpectedTaskEnabledState -TaskMap $expectedTaskEnabledState `
         -TaskName $taskName -Enabled $true
 }
+# Quiet-zone variant for the post-start health WAIT: orchestration lanes and
+# pacers stay disabled until the gate passes, so the gate must expect them
+# disabled. The final map ($expectedTaskEnabledState) governs the pre-release
+# revalidation after the deferred enablement.
+$expectedTaskEnabledStateDuringGate = [ordered]@{}
+foreach ($key in $expectedTaskEnabledState.Keys) {
+    $duringGateEnabled = [bool]$expectedTaskEnabledState[$key]
+    if ($key -in $QM_AI_ORCHESTRATION_QUIET_ZONE_TASKS) { $duringGateEnabled = $false }
+    $expectedTaskEnabledStateDuringGate[$key] = $duringGateEnabled
+}
 $invalidExpectedTaskRegistrations = @(@($expectedTaskEnabledState.Keys) | Where-Object {
     @(Get-ScheduledTask -TaskName ([string]$_) -ErrorAction SilentlyContinue).Count -ne 1
 })
@@ -1378,6 +1411,7 @@ try {
     $criticalTasksStartedAtUtc = [datetimeoffset]::UtcNow
 
     foreach ($taskName in @(@($QM_FACTORY_TASKS + $QM_AI_TASKS + $QM_RESPAWN_TASKS) | Sort-Object -Unique)) {
+        if ($taskName -in $QM_AI_ORCHESTRATION_QUIET_ZONE_TASKS) { continue }  # deferred post-gate
         Assert-NoFactoryOffIntent -Context "before enabling scheduled task '$taskName'"
         Enable-ScheduledTask -TaskName $taskName -ErrorAction Stop | Out-Null
     }
@@ -1389,6 +1423,7 @@ try {
         # silently enabled by ON without an explicit captured operator state.
         $shouldEnable = $false
         if ($taskEnabledBefore.Contains($taskName)) { $shouldEnable = [bool]$taskEnabledBefore[$taskName] }
+        if ($shouldEnable -and $taskName -in $QM_AI_ORCHESTRATION_QUIET_ZONE_TASKS) { continue }  # deferred post-gate
         if ($shouldEnable) {
             Assert-NoFactoryOffIntent -Context "before enabling quiescence task '$taskName'"
             Enable-ScheduledTask -TaskName $taskName -ErrorAction Stop | Out-Null
@@ -1416,7 +1451,7 @@ try {
 
     Assert-NoFactoryOffIntent -Context 'before post-start health wait'
     $postStartHealth = Wait-QmFactoryPostStartHealth `
-        -ExpectedTaskEnabledState $expectedTaskEnabledState `
+        -ExpectedTaskEnabledState $expectedTaskEnabledStateDuringGate `
         -CriticalTaskBaselines $criticalTaskBaselines `
         -CriticalTaskNames $QM_CRITICAL_POST_START_TASKS `
         -ExpectedWorkerTerminals $expectedWorkerTerminals `
@@ -1425,6 +1460,22 @@ try {
         -TimeoutSeconds $factoryPostStartHealthTimeoutSeconds
     Write-Host ("  post-start health gate passed: {0} tasks, {1} workers." -f `
         $postStartHealth.observed_task_count,$postStartHealth.observed_worker_count)
+
+    # Quiet zone ends only now: orchestration lanes and pacers join a factory
+    # that is provably healthy (OWNER 2026-08-11; router-freeze class R5/R6).
+    foreach ($taskName in $QM_AI_ORCHESTRATION_QUIET_ZONE_TASKS) {
+        $enableAfterGate = $true
+        if ($QM_QUIESCENCE_TASKS -contains $taskName) {
+            $enableAfterGate = $false
+            if ($taskEnabledBefore.Contains($taskName)) {
+                $enableAfterGate = [bool]$taskEnabledBefore[$taskName]
+            }
+        }
+        if ($enableAfterGate) {
+            Assert-NoFactoryOffIntent -Context "before enabling quiet-zone task '$taskName'"
+            Enable-ScheduledTask -TaskName $taskName -ErrorAction Stop | Out-Null
+        }
+    }
 
     # The held cohort is released only after every contractually enabled
     # worker/task is healthy.  Non-release quarantine holds remain active; the
