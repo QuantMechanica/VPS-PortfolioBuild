@@ -133,4 +133,24 @@ admission, or a correlation waiver.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-11 | Initial build from approved card | Pre-magic scaffold; implementation pending |
+| v1 | 2026-08-11 | Initial build from approved card | Magic allocated; implementation and Q01 PASS |
+
+## 11. Q01 Status
+
+- Strict compile: PASS with zero errors and zero warnings; summary
+  `D:/QM/reports/compile/20260811_132811/summary.csv`.
+- Target build check: PASS with zero failures and zero warnings; report
+  `D:/QM/reports/framework/21/build_check_20260811_132811.json`.
+- P1 artifact validation: PASS at
+  `D:/QM/reports/pipeline/QM5_20280/P1/P1_QM5_20280_result.json`.
+- Exact four-month reference vectors: PASS for endpoint/path identity,
+  positive, negative, exact-zero, chronology reversal, invalid inputs, and
+  three-/six-month neighbor divergence.
+- Backtest set build hash:
+  `eff9f719bd94d121b371c44c954d200c7ec4a5cf303cdf5ceda22a0fb2950a38`.
+
+## 12. Q02 Handoff
+
+NOT ENQUEUED. Capacity must be sampled using the governed path-anchored T1-T10
+factory count immediately before any bounded enqueue. Stop if the ceiling is
+binding; do not dispatch or run a manual backtest.

@@ -13,8 +13,8 @@ source_author: "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen"
 strategy_mechanic: monthly-wti-sign-of-exact-four-completed-broker-month-log-return-one-month-hold
 target_symbols: [XTIUSD.DWX]
 period: D1
-pipeline_phase: G0_APPROVED
-q01_status: NOT_RUN
+pipeline_phase: Q01
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 last_updated: 2026-08-11
 ---
@@ -45,3 +45,7 @@ Q02 uses `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1`, one frozen `3.5 * ATR(20,D1)` hard stop, and no
 take-profit. No live artifact, portfolio mutation, correlation claim, or
 waiver is authorized.
+
+## Pipeline Status
+
+G0 is APPROVED and Q01 is PASS. Q02 is not enqueued.
