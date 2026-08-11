@@ -321,5 +321,5 @@ or correlation waiver.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-11 | APPROVED | `decisions/2026-08-11_qm5_20283_wti_trimean_mom_g0.md` |
-| Q01 Build Validation | 2026-08-11 | PASS | `D:/QM/reports/compile/20260811_184440/summary.csv`; `D:/QM/reports/framework/21/build_check_20260811_184440.json`; `D:/QM/reports/pipeline/QM5_20283/P1/P1_QM5_20283_result.json` |
+| Q01 Build Validation | 2026-08-11 | PASS | `D:/QM/reports/compile/20260811_185111/summary.csv`; `D:/QM/reports/framework/21/build_check_20260811_184440.json`; `D:/QM/reports/pipeline/QM5_20283/P1/P1_QM5_20283_result.json` |
 | Q02 Baseline Screening | 2026-08-11 | ENQUEUED; pending at immediate readback, attempt 0, no verdict | work item `2db5b53c-82d0-4856-a2b8-83f99307bce9`; `docs/ops/evidence/2026-08-11_qm5_20283_wti_trimean_mom_q01_q02_enqueue.md` |

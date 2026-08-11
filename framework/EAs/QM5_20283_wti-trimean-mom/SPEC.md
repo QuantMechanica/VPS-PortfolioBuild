@@ -166,8 +166,8 @@ waiver is authorized.
 ## 12. Q01 Status
 
 - Strict compile: PASS with zero errors and zero warnings; summary
-  `D:/QM/reports/compile/20260811_184440/summary.csv` and log
-  `C:/QM/repo/framework/build/compile/20260811_184440/QM5_20283_wti-trimean-mom.compile.log`.
+  `D:/QM/reports/compile/20260811_185111/summary.csv` and log
+  `C:/QM/repo/framework/build/compile/20260811_185111/QM5_20283_wti-trimean-mom.compile.log`.
 - Target build check: PASS with zero failures and zero warnings; report
   `D:/QM/reports/framework/21/build_check_20260811_184440.json`.
 - P1 artifact validation: PASS at
@@ -178,7 +178,7 @@ waiver is authorized.
 - Backtest set build hash:
   `81b8e1ac61600fdce049d7865c74b9a8b3adae29d6c971377ae40191d4b715d3`.
 - Compiled binary SHA-256:
-  `A354227A1F5C8E1DB0F5968217CDCC3C58C485861BBE0FAFE73C6B2F9BAC39ED`.
+  `FFC2BA85EF3C3B3C1C82DFF65BE52CFD747A27AB6D852F6822D5B610C4D19B7A`.
 
 ## 13. Q02 Handoff
 
