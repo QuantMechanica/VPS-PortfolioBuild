@@ -15838,3 +15838,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20071,channel-cci-bollinger-mr-r1-recovery,1,GBPUSD.DWX,200710001,2026-08-11,gemini,active
 20071,channel-cci-bollinger-mr-r1-recovery,2,AUDUSD.DWX,200710002,2026-08-11,gemini,active
 20071,channel-cci-bollinger-mr-r1-recovery,3,USDCHF.DWX,200710003,2026-08-11,gemini,active
+20089,hopwood-ts4-standalone-h4-r1-recovery,0,EURUSD.DWX,200890000,2026-08-11,Development,active
+20089,hopwood-ts4-standalone-h4-r1-recovery,1,GBPUSD.DWX,200890001,2026-08-11,Development,active
+20089,hopwood-ts4-standalone-h4-r1-recovery,2,USDJPY.DWX,200890002,2026-08-11,Development,active
+20089,hopwood-ts4-standalone-h4-r1-recovery,3,AUDUSD.DWX,200890003,2026-08-11,Development,active
+20089,hopwood-ts4-standalone-h4-r1-recovery,4,NDX.DWX,200890004,2026-08-11,Development,active
+20089,hopwood-ts4-standalone-h4-r1-recovery,5,WS30.DWX,200890005,2026-08-11,Development,active
+20089,hopwood-ts4-standalone-h4-r1-recovery,6,XAUUSD.DWX,200890006,2026-08-11,Development,active
+20089,hopwood-ts4-standalone-h4-r1-recovery,7,XTIUSD.DWX,200890007,2026-08-11,Development,active
+20090,pricebob-ttr-brooks-stoporder-breakout-audusd,0,AUDUSD.DWX,200900000,2026-08-11,Development,active
