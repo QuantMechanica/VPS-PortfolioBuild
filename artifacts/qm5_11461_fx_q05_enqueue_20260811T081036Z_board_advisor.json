@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-08-11T08:12:40Z",
+  "branch": "agents/board-advisor",
+  "repository_head_before": "ef8a8f0cca30f9d2031d8f13900597a6a194a828",
+  "mission_disposition": {
+    "cointegration_frontier": "exhausted_all_66_relationships_mechanized",
+    "qm5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "qm5_12533": "Q02_PASS_Q04_FAIL",
+    "fallback": "advance_existing_low_frequency_fx_sleeve"
+  },
+  "selection": {
+    "ea_id": "QM5_11461",
+    "slug": "goodwin-j-outside-bar-daily-reversion-d1",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "D1",
+    "expected_trades_per_year_per_symbol": 8,
+    "logic_class": "structural_outside_bar_ohlc_reversion",
+    "g0_status": "APPROVED",
+    "source": "Jarrod Goodwin, Beat the Markets Strategy Guidebook; underlying outside-bar concept attributed to Larry Williams (1999)"
+  },
+  "q04_predecessor": {
+    "work_item_id": "657bc4fe-d07c-474e-9f93-71389abc8ce7",
+    "status": "done",
+    "verdict": "PASS_LOWFREQ",
+    "aggregate_path": "D:/QM/reports/pipeline/QM5_11461/Q04/EURUSD.DWX__657bc4fe-d07c-474e-9f93-71389abc8ce7/aggregate.json",
+    "pooled_net_pf": 1.226,
+    "pooled_trades": 26,
+    "active_years": "3/3",
+    "folds": [
+      {"id": "F1", "oos_year": 2023, "trades": 10, "net_pf": 1.080756748472325},
+      {"id": "F2", "oos_year": 2024, "trades": 9, "net_pf": 2.2538393855877707},
+      {"id": "F3", "oos_year": 2025, "trades": 7, "net_pf": 0.611713502484574}
+    ]
+  },
+  "artifact_bindings": {
+    "ex5_sha256": "1c19c94d31ce5510ccef7f0b15873f0bf5e8029772a2e83e9edc7b2b0a888403",
+    "setfile_sha256": "6ec71f302db22964813b4d2849b97caf0366ff9a7ae4b685c4e187ab3da6cdb7",
+    "q04_aggregate_sha256": "ef20955a01d6971eaf858868ac30002a2917ca6fb14829b2679ec39367152935",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "magic": 114610000
+  },
+  "database_backup": {
+    "path": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_11461_q05_20260811T081017Z.sqlite",
+    "source_quick_check": "ok",
+    "backup_quick_check": "ok"
+  },
+  "capacity_guard": {
+    "scanned_at_utc": "2026-08-11T08:10:31Z",
+    "binding_ceiling": 7,
+    "running_factory_count": 3,
+    "running_factory_terminals": ["T3", "T8", "T10"],
+    "below_ceiling": true,
+    "t_live_excluded": true
+  },
+  "enqueue": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_11461 --phase Q05 --from-work-item-id 657bc4fe-d07c-474e-9f93-71389abc8ce7",
+    "work_item_id": "f50395de-a43f-4358-9468-a4e10780c5e1",
+    "created_at_utc": "2026-08-11T08:10:36Z",
+    "phase": "Q05",
+    "status_at_verification": "pending",
+    "claimed_by_at_verification": null,
+    "attempt_count_at_verification": 0,
+    "q05_rows_for_ea_at_verification": 1,
+    "created_count": 1,
+    "requeued_count": 0,
+    "skipped_count": 0,
+    "payload": {
+      "from_year": 2017,
+      "to_year": 2022,
+      "host_symbol": "EURUSD.DWX",
+      "host_timeframe": "D1",
+      "promoted_from_phase": "Q04",
+      "promoted_from_work_item": "657bc4fe-d07c-474e-9f93-71389abc8ce7",
+      "promotion_source": "farmctl_enqueue_backtest_ea",
+      "timeout_min": 120
+    },
+    "post_enqueue_quick_check": "ok",
+    "dispatched_by_this_operation": false
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_toggled": false,
+    "mt5_process_controlled": false
+  }
+}
