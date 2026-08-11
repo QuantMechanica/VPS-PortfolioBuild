@@ -149,17 +149,28 @@ def test_qm5_12507_manifest_declares_all_warmed_pair_symbols() -> None:
     assert _mq5_allowed_symbols(ea_dir) <= declared
 
 
-def test_qm5_1257_manifest_declares_audusd_usdjpy_logical_pair() -> None:
+def test_qm5_1257_manifest_declares_gbpusd_usdjpy_logical_pair() -> None:
     ea_dir = REPO / "framework" / "EAs" / "QM5_1257_lemishko-fx-cointpair"
     manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
 
     declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
 
-    assert manifest["logical_symbol"] == "QM5_1257_AUDUSD_USDJPY_COINTEGRATION_H1"
+    assert manifest["logical_symbol"] == "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1"
     assert manifest["host_timeframe"] == "H1"
     assert manifest["tester_currency"] == "USD"
-    assert declared == {"AUDUSD.DWX", "USDJPY.DWX"}
+    assert declared == {"GBPUSD.DWX", "USDJPY.DWX"}
     assert _mq5_allowed_symbols(ea_dir) <= declared
+
+    retired = json.loads(
+        (ea_dir / "docs" / "basket_manifest_slot12_q02_snapshot.json").read_text(
+            encoding="utf-8-sig"
+        )
+    )
+    assert retired["logical_symbol"] == "QM5_1257_AUDUSD_USDJPY_COINTEGRATION_H1"
+    assert {retired["host_symbol"], *retired["basket_symbols"]} == {
+        "AUDUSD.DWX",
+        "USDJPY.DWX",
+    }
 
 
 def test_qm5_9184_manifest_has_logical_audusd_nzdusd_setfile() -> None:

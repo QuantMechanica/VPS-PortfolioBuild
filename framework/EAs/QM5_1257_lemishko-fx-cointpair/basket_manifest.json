@@ -1,17 +1,18 @@
 {
-  "logical_symbol": "QM5_1257_AUDUSD_USDJPY_COINTEGRATION_H1",
-  "host_symbol": "AUDUSD.DWX",
+  "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+  "host_symbol": "GBPUSD.DWX",
   "host_timeframe": "H1",
   "tester_currency": "USD",
   "tester_deposit": 100000,
   "basket_symbols": [
-    "AUDUSD.DWX",
+    "GBPUSD.DWX",
     "USDJPY.DWX"
   ],
   "q02_from_date": "2017.01.01",
   "q02_to_date": "2022.12.31",
   "notes": [
-    "Canonical logical basket row for slot 12 of QM5_1257. The original 21 per-slot setfiles remain for diagnostics, but Q02 should evaluate this AUDUSD/USDJPY pair as one market-neutral basket rather than as a standalone host-leg symbol.",
-    "Uses the existing slot 12 RISK_FIXED backtest parameters: strategy_pair_slot=12, RISK_FIXED=1000, RISK_PERCENT=0."
+    "Active logical basket row for slot 8 of the pre-existing approved QM5_1257 Card. The GBPUSD.DWX H1 host setfile selects strategy_pair_slot=8; signal formation uses completed D1/H1 history, and Q02 evaluates both traded legs as one package.",
+    "The frozen sign-aware 66-pair scan ranks GBPUSD.DWX/USDJPY.DWX 58 of 66 with adverse DEV and OOS results. Q02 is a one-shot cadence/economics gate with no refit, filter addition, or rescue tuning.",
+    "The completed slot-12 AUDUSD.DWX/USDJPY.DWX logical manifest is preserved at docs/basket_manifest_slot12_q02_snapshot.json."
   ]
 }
