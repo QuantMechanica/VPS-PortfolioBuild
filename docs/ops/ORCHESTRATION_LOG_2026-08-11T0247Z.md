@@ -113,3 +113,56 @@ cycle's QM5_20075 incident, none of these were a genuine duplicate *build*
 in progress at claim time (verified clean pre-build) — but the
 board-advisor-side artifacts still need dedup at merge time for all three
 ea_ids.
+
+## POST-SUBMIT CORRECTION (2026-08-11T0253Z, ~10 min after cycle-log commit above)
+
+The "no sibling collision this cycle" claim above is **wrong** — corrected here
+rather than by amending the commit above.
+
+While preparing this log, cross-checked `git log --all --grep=9501` and found
+`agents/board-advisor` commit `669e9e981` (2026-08-11T02:06:36Z), which
+independently rebuilt the SAME 3 router tasks (`fead18b1`/`d9102952`/`037da632`)
+from a concurrent claude session (see
+[[project_qm_claude_lease_pool_duplicate_build_2026-08-10]] — this is at least
+the third occurrence of the unscoped claude-lease-pool collision, now on the
+exact same task cohort that already collided once in `claude-orchestration-1`'s
+`0135Z` cycle log). My pre-build git-log/directory/sibling-worktree check
+(described above) did not catch it because that build hadn't landed yet at
+the time I checked — an expired-lease/in-flight-work check has an inherent
+race window no static pre-check closes.
+
+**More importantly, that commit was not just a duplicate — it was a
+correction.** `669e9e981`'s message states: "Card specifies PERIOD_W1, but
+QM_CalendarPeriodKey documents .DWX symbols yield 0 bars on W1/MN1 in the
+tester — rescaled D1-native (all W1 lookbacks x5)". Verified this
+independently against `framework/include/QM/QM_Indicators.mqh:162-163`
+(`QM_CalendarPeriodKey`'s own doc comment) — it is real, load-bearing, and
+my own QM5_9501 build above used native `PERIOD_W1` (`QM_IsNewBar(_Symbol,
+PERIOD_W1)`), exactly the trap the framework helper exists to avoid. My
+build would have compiled, `build_check`-passed, and sat in REVIEW looking
+clean, then silently zero-traded at every future Q02+ backtest — the same
+failure class as [[project_qm_mn1_untestable_tester_2026-06-06]] (MN1), just
+not yet documented for W1 anywhere outside that one code comment.
+
+**Action taken:** adopted `669e9e981`'s corrected `.mq5`/`SPEC.md` into this
+worktree (`git show 669e9e981:<path>`, verified the fix logic against the
+framework source myself first, not blind trust), deleted the 13 stale W1
+setfiles, regenerated 13 D1 setfiles, re-ran `build_check` + `compile_one`
+in this worktree — both PASS clean (0/0). Committed `b0be16c70`. Re-issued
+`update-task --state REVIEW` on `037da632` with a corrected verdict pointing
+the reviewer at the fix. `QM5_9641`/`QM5_9644` were NOT re-audited against
+their own `669e9e981` counterparts — neither card uses W1/MN1 cadence so
+this specific defect class doesn't apply; those are normal parallel-build
+duplication for board-advisor/reviewer to dedupe at merge, not a
+correctness defect I independently confirmed.
+
+**Lesson:** a clean pre-build dedup check (no existing dir, no sibling
+worktree dirty state, no git-log hit) only rules out collisions *already
+committed* at check time — it does NOT rule out a concurrent build landing
+*during* your own build window, and per-worktree collisions can carry
+genuine quality deltas (not just redundant duplication) that are worth
+diffing against even after your own build reaches REVIEW. Re-running the
+same `git log --all --grep=<ea_id>` check right before writing the cycle
+log (not just before starting the build) is what caught this — that's now
+worth doing as a standing habit for W1/MN1-cadence cards specifically,
+given the trap is real and currently undocumented outside one code comment.
