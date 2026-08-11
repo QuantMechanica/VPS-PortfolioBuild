@@ -123,9 +123,17 @@ correlation waiver.
 
 ## 11. Q01 Status
 
-PENDING. The approved card and EA-ID reservation exist. Magic allocation,
-resolver generation, implementation, strict compile, target validation, and
-P1 artifact validation remain required.
+- Strict compile: PASS with zero errors and zero warnings; summary
+  `D:/QM/reports/compile/20260811_111716/summary.csv`.
+- Target build check: PASS with zero failures and zero warnings; report
+  `D:/QM/reports/framework/21/build_check_20260811_111759.json`.
+- P1 artifact validation: PASS at
+  `D:/QM/reports/pipeline/QM5_20279/P1/P1_QM5_20279_result.json`.
+- Independent statistic reference vectors: PASS, including a sample where the
+  exponential kernel is short while the linear, median, trimmed, and
+  Winsorized estimators remain long.
+- Backtest set build hash:
+  `4e60ca04da6ad5097fd291fac676bf72cf218bc2341bbdbab9c03ea5ed9670eb`.
 
 ## 12. Q02 Handoff
 
