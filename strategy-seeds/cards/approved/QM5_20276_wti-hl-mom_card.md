@@ -54,9 +54,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02_ENQUEUED
+q01_status: PASS
+q02_status: ENQUEUED
 review_focus: "Falsify a direct WTI monthly robust return-location trend whose inclusive pairwise-average pseudomedian differs from cumulative, raw-median, trimmed-mean, sign-vote/run, price-slope, rank, and path-efficiency estimators; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -320,11 +320,13 @@ or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-11 | initial source-bounded WTI pairwise-return-location card | G0 | APPROVED |
+| v1-q01 | 2026-08-11 | deterministic V5 build, strict compile, target validation, estimator reference test, and P1 artifact validation | Q01 | PASS |
+| v1-q02 | 2026-08-11 | one paced current-binary WTI handoff below the factory CPU ceiling | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-11 | APPROVED | `decisions/2026-08-11_qm5_20276_wti_hl_mom_g0.md` |
-| Q01 Build Validation | - | NOT_RUN | - |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q01 Build Validation | 2026-08-11 | PASS | `D:/QM/reports/compile/20260811_034736/summary.csv`; `D:/QM/reports/framework/21/build_check_20260811_034736.json`; `D:/QM/reports/pipeline/QM5_20276/P1/P1_QM5_20276_result.json` |
+| Q02 Baseline Screening | 2026-08-11 | ENQUEUED; attempt 0, no verdict | work item `dd8c4995-ea1d-4b8b-baa2-1cfbfb063b83`; `docs/ops/evidence/2026-08-11_qm5_20276_wti_hl_mom_q01_q02_enqueue.md` |

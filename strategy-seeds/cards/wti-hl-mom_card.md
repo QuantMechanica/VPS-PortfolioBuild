@@ -13,9 +13,9 @@ source_author: "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen"
 strategy_mechanic: monthly-wti-sign-of-hodges-lehmann-pseudomedian-of-78-inclusive-pairwise-averages-of-twelve-completed-monthly-log-returns
 target_symbols: [XTIUSD.DWX]
 period: D1
-pipeline_phase: G0
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02_ENQUEUED
+q01_status: PASS
+q02_status: ENQUEUED
 last_updated: 2026-08-11
 ---
 
@@ -48,4 +48,3 @@ Q02 uses `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1`, one frozen `3.5 * ATR(20,D1)` hard stop, and no
 take-profit. No live artifact, portfolio mutation, correlation claim, or
 waiver is authorized.
-

@@ -118,3 +118,21 @@ Only research, deterministic allocation, build, strict compile/Q01, one
 authorized. Do not run a manual backtest or touch live artifacts, AutoTrading,
 `T_Live`, deploy manifests, the portfolio gate, portfolio admission, or a
 correlation waiver.
+
+## 11. Q01 Validation
+
+Strict compilation passed with zero errors and zero warnings. The targeted
+framework build check passed with zero failures and zero warnings, the
+independent estimator reference test confirmed all 78 inclusive pairs and
+center indexes 38/39, and P1 confirmed the EA directory and EX5 binary. No
+manual smoke or backtest was run.
+
+## 12. Q02 Handoff
+
+One current-binary `XTIUSD.DWX` Q02 row was enqueued at
+`2026-08-11T03:52:14+00:00`: work item
+`dd8c4995-ea1d-4b8b-baa2-1cfbfb063b83`, attempt 0, no verdict, and
+`priority_track=true`. Immediate readback was pending and unclaimed. The
+binding pre-enqueue sample at `2026-08-11T03:50:29+00:00` found two executing
+T1-T10 factory terminals against the ceiling of seven. This mission ran no
+dispatch tick or manual backtest.
