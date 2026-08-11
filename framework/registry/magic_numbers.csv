@@ -15920,3 +15920,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12926,renko-color-streak-h1,2,USDJPY.DWX,129260002,2026-08-12,Claude,active
 12926,renko-color-streak-h1,3,XAUUSD.DWX,129260003,2026-08-12,Claude,active
 12926,renko-color-streak-h1,4,AUDUSD.DWX,129260004,2026-08-12,Claude,active
+20285,wti-huber-mom,0,XTIUSD.DWX,202850000,2026-08-12,Research+Development,active
