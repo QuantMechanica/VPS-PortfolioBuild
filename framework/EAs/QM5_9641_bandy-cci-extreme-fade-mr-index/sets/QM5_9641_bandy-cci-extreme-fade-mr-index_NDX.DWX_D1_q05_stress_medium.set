@@ -1,11 +1,11 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11407
-; ea_slug:      carter-tf17-ema18-adx-pullback
+; ea_id:        9641
+; ea_slug:      bandy-cci-extreme-fade-mr-index
 ; ea_version:   v5.0
 ; set_version:  s20260811-stress-med
-; symbol:       GBPUSD.DWX
-; timeframe:    H4
+; symbol:       NDX.DWX
+; timeframe:    D1
 ; environment:  q05_stress_medium
 ; magic_slot:   1
 ; risk_mode:    FIXED
@@ -14,22 +14,20 @@
 ; author:       Development
 ; date:         2026-08-11
 ;==========================================================
-qm_ea_id=11407
+qm_ea_id=9641
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 qm_stress_reject_probability=0.0000
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11407_carter-tf17-ema18-adx-pullback.md
-strategy_ema_period=18
-strategy_adx_period=12
-strategy_adx_threshold=25.0
-strategy_touch_lookback_bars=3
-strategy_entry_buffer_pips=1
-strategy_swing_lookback=3
-strategy_sl_cap_pips=70
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9641_bandy-cci-extreme-fade-mr-index.md
+strategy_cci_period=20
+strategy_entry_cci=-100.0
+strategy_exit_cci=0.0
+strategy_regime_sma_period=200
 strategy_atr_period=14
-strategy_atr_tp_mult=2.0
-strategy_be_trigger_atr=1.0
-strategy_spread_cap_pips=20
+strategy_atr_stop_mult=2.5
+strategy_time_stop_days=7
+strategy_vol_lookback_bars=252
+strategy_vol_percentile=99.0

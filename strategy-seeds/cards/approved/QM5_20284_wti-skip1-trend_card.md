@@ -53,8 +53,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: NOT_RUN
+pipeline_phase: Q01
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify a direct WTI delayed trend that excludes the newest completed month without conditioning on it; Q09 alone may establish realized book decorrelation from XAU/SP500/NDX/XNG."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -297,13 +297,12 @@ portfolio-gate edit; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-11 | initial source-bounded WTI skip-one-month trend card | G0 | APPROVED |
+| v1-q01 | 2026-08-11 | deterministic V5 build, strict compile, target validation, skipped-month reference vectors, and P1 artifact validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-11 | APPROVED | `decisions/2026-08-11_qm5_20284_wti_skip1_trend_g0.md` |
-| Q01 Build Validation | - | NOT_RUN | - |
+| Q01 Build Validation | 2026-08-11 | PASS | `D:/QM/reports/compile/20260811_213056/summary.csv`; `D:/QM/reports/framework/21/build_check_20260811_213037.json`; `D:/QM/reports/pipeline/QM5_20284/P1/P1_QM5_20284_result.json` |
 | Q02 Baseline Screening | - | NOT_ENQUEUED | - |
-
-

@@ -157,11 +157,21 @@ waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-11 | Initial scaffold from approved card | Build commit pending |
+| v2 | 2026-08-11 | Initial V5 implementation and Q01 validation | Strict compile, target build check, P1 artifact validation, and independent skipped-month vectors PASS |
 
 ## 12. Q01 Status
 
-Not run. Strict compile, target build check, artifact validation, and
-independent skipped-return reference vectors are required before Q02.
+PASS. Strict compile completed with zero errors and zero warnings; the targeted
+build check completed with zero failures and zero warnings; P1 artifact
+validation found the EA directory and current `.ex5`; and independent vectors
+proved endpoint orientation, exclusion invariance, difference from both the
+ordinary trailing rule and the pullback gate, exact-zero handling, short-side
+direction, and cross-year month continuity. Evidence:
+
+- `D:/QM/reports/compile/20260811_213056/summary.csv`
+- `D:/QM/reports/framework/21/build_check_20260811_213037.json`
+- `D:/QM/reports/pipeline/QM5_20284/P1/P1_QM5_20284_result.json`
+- `docs/test_skip1_reference.py`
 
 ## 13. Q02 Handoff
 
