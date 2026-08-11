@@ -81,6 +81,57 @@ input int             strategy_spread_median_bars = 230;
 input int             strategy_direction          = 0;       // 0 both, 1 long-only, 2 short-only.
 input ENUM_TIMEFRAMES strategy_timeframe          = PERIOD_D1;
 
+datetime g_channel_signal_time = 0;
+double   g_channel_prior_high  = 0.0;
+double   g_channel_prior_low   = 0.0;
+double   g_channel_signal_high = 0.0;
+double   g_channel_signal_low  = 0.0;
+
+// Cache the closed-bar Donchian snapshot. ExitSignal runs on every tick in the
+// framework skeleton, so rebuilding a 210-bar window there would be needlessly
+// expensive. QM_ReadBar supplies the O(1) freshness check; the bounded bulk
+// copy runs only when the closed D1 signal bar changes.
+bool RefreshChannelSnapshot()
+  {
+   if(strategy_channel_bars < 1)
+      return false;
+
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, strategy_timeframe, 1, signal_bar))
+      return false;
+   if(g_channel_signal_time == signal_bar.time &&
+      g_channel_prior_high > 0.0 && g_channel_prior_low > 0.0 &&
+      g_channel_signal_high > 0.0 && g_channel_signal_low > 0.0)
+      return true;
+
+   const int bars_needed = strategy_channel_bars + 1;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, strategy_timeframe, 1, bars_needed, rates); // perf-allowed: bounded Donchian snapshot refreshes only when the closed D1 bar changes.
+   if(copied != bars_needed)
+      return false;
+
+   double prior_high = -DBL_MAX;
+   double prior_low = DBL_MAX;
+   for(int i = 1; i < copied; ++i)
+     {
+      if(rates[i].high <= 0.0 || rates[i].low <= 0.0)
+         return false;
+      prior_high = MathMax(prior_high, rates[i].high);
+      prior_low = MathMin(prior_low, rates[i].low);
+     }
+   if(prior_high <= 0.0 || prior_low <= 0.0 || prior_high <= prior_low ||
+      rates[0].high <= 0.0 || rates[0].low <= 0.0)
+      return false;
+
+   g_channel_prior_high = prior_high;
+   g_channel_prior_low = prior_low;
+   g_channel_signal_high = rates[0].high;
+   g_channel_signal_low = rates[0].low;
+   g_channel_signal_time = rates[0].time;
+   return true;
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -138,22 +189,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   double prior_high = -DBL_MAX;
-   double prior_low = DBL_MAX;
-   for(int shift = 2; shift <= strategy_channel_bars + 1; ++shift)
-     {
-      const double h = iHigh(_Symbol, strategy_timeframe, shift);
-      const double l = iLow(_Symbol, strategy_timeframe, shift);
-      if(h <= 0.0 || l <= 0.0)
-         return false;
-      prior_high = MathMax(prior_high, h);
-      prior_low = MathMin(prior_low, l);
-     }
+   if(!RefreshChannelSnapshot())
+      return false;
+   const double prior_high = g_channel_prior_high;
+   const double prior_low = g_channel_prior_low;
    if(prior_high <= 0.0 || prior_low <= 0.0 || prior_high <= prior_low)
       return false;
 
-   const double signal_high = iHigh(_Symbol, strategy_timeframe, 1);
-   const double signal_low = iLow(_Symbol, strategy_timeframe, 1);
+   const double signal_high = g_channel_signal_high;
+   const double signal_low = g_channel_signal_low;
    if(signal_high <= 0.0 || signal_low <= 0.0)
       return false;
 
@@ -237,22 +281,15 @@ bool Strategy_ExitSignal()
    if(!has_position)
       return false;
 
-   double prior_high = -DBL_MAX;
-   double prior_low = DBL_MAX;
-   for(int shift = 2; shift <= strategy_channel_bars + 1; ++shift)
-     {
-      const double h = iHigh(_Symbol, strategy_timeframe, shift);
-      const double l = iLow(_Symbol, strategy_timeframe, shift);
-      if(h <= 0.0 || l <= 0.0)
-         return false;
-      prior_high = MathMax(prior_high, h);
-      prior_low = MathMin(prior_low, l);
-     }
+   if(!RefreshChannelSnapshot())
+      return false;
+   const double prior_high = g_channel_prior_high;
+   const double prior_low = g_channel_prior_low;
    if(prior_high <= 0.0 || prior_low <= 0.0)
       return false;
 
-   const double signal_high = iHigh(_Symbol, strategy_timeframe, 1);
-   const double signal_low = iLow(_Symbol, strategy_timeframe, 1);
+   const double signal_high = g_channel_signal_high;
+   const double signal_low = g_channel_signal_low;
    if(signal_high <= 0.0 || signal_low <= 0.0)
       return false;
 
