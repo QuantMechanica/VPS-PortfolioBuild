@@ -15956,3 +15956,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13072,brent-feb-prem,0,XTIUSD.DWX,130720000,2026-08-12,Research+Development,active
 13091,xbr-vrp-proxy,0,XTIUSD.DWX,130910000,2026-08-12,Research+Development,active
 20171,brent-tsmom3m,0,XTIUSD.DWX,201710000,2026-08-12,Research+Development,active
+20293,wti-tsmom9m,0,XTIUSD.DWX,202930000,2026-08-12,Research+Development,active
