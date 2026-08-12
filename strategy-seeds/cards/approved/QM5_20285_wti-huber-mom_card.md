@@ -59,8 +59,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: NOT_RUN
+pipeline_phase: Q01
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify a direct WTI monthly robust trend whose fixed-scale 32-step Huber re-centering differs from cumulative, median, trim, Winsor, MAD-cap, quartile-trimean, pairwise-pseudomedian, sign/vote/run, recency-weighted, regression, rank, path-efficiency, and skip-month estimators; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -328,11 +328,12 @@ or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-12 | initial source-bounded WTI fixed-step Huber card | G0 | APPROVED |
+| v1-q01 | 2026-08-12 | deterministic V5 build, strict compile, target validation, Huber reference vectors, and P1 artifact validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-12 | APPROVED | `decisions/2026-08-12_qm5_20285_wti_huber_mom_g0.md` |
-| Q01 Build Validation | - | NOT_RUN | - |
+| Q01 Build Validation | 2026-08-12 | PASS | `D:/QM/reports/compile/20260812_000246/summary.csv`; `D:/QM/reports/framework/21/build_check_20260812_000245.json`; `D:/QM/reports/pipeline/QM5_20285/P1/P1_QM5_20285_result.json` |
 | Q02 Baseline Screening | - | NOT_ENQUEUED | - |
