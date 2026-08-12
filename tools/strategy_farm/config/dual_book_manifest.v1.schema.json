@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.local/schema/dual_book_manifest.v1.schema.json",
+  "title": "QuantMechanica DL-084 dual-book dry-run manifest",
+  "type": "object",
+  "required": [
+    "schema",
+    "lane",
+    "as_of",
+    "execution_mode",
+    "status",
+    "application_authority",
+    "deployment_action",
+    "autotrading_action",
+    "roster_sha256",
+    "sleeve_list_sha256",
+    "sleeves"
+  ],
+  "properties": {
+    "schema": {"const": "qm.dual-book-manifest/v1"},
+    "lane": {"enum": ["Q11_DXZ", "Q11_FTMO"]},
+    "as_of": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "execution_mode": {"const": "DRY_RUN"},
+    "status": {
+      "enum": [
+        "APPLY_RECOMMENDED",
+        "NOT_WORSE_BAR_NOT_MET",
+        "BAR_MET_OWNER_REVIEW",
+        "BAR_NOT_MET"
+      ]
+    },
+    "application_authority": {"const": "OWNER_ONLY"},
+    "deployment_action": {"const": "NONE"},
+    "autotrading_action": {"const": "NONE"},
+    "challenge_recommendation": {"const": "NONE"},
+    "roster_sha256": {"$ref": "#/$defs/sha256"},
+    "candidate_roster_sha256": {"$ref": "#/$defs/sha256"},
+    "sleeve_list_sha256": {"$ref": "#/$defs/sha256"},
+    "sleeves": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/sleeve"}
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"lane": {"const": "Q11_DXZ"}}},
+      "then": {"required": ["weighting", "comparison", "stream_basis"]}
+    },
+    {
+      "if": {"properties": {"lane": {"const": "Q11_FTMO"}}},
+      "then": {
+        "required": [
+          "challenge_recommendation",
+          "fund_score",
+          "density",
+          "ftmo_cost_swap",
+          "phase1_bootstrap",
+          "bar"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "sleeve": {
+      "type": "object",
+      "required": [
+        "ea_id",
+        "symbol",
+        "magic",
+        "setfile",
+        "setfile_sha256",
+        "weight"
+      ],
+      "properties": {
+        "ea_id": {"type": "integer", "minimum": 1},
+        "symbol": {"type": "string", "minLength": 1},
+        "magic": {"type": "integer", "minimum": 1},
+        "setfile": {"type": "string", "minLength": 1},
+        "setfile_sha256": {"$ref": "#/$defs/sha256"},
+        "weight": {"type": "number", "exclusiveMinimum": 0},
+        "backtest_risk_fixed": {"type": "number", "exclusiveMinimum": 0},
+        "backtest_risk_percent": {"const": 0.0},
+        "risk_fixed": {"type": "number", "exclusiveMinimum": 0},
+        "risk_fixed_source": {"type": "number", "exclusiveMinimum": 0},
+        "risk_percent": {"const": 0.0},
+        "risk_percent_source": {"const": 0.0},
+        "fund_score": {"type": "number"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}
