@@ -53,8 +53,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: NOT_STARTED
+pipeline_phase: Q01
+q01_status: PASS
 q02_status: NOT_STARTED
 review_focus: "Falsify the source's post-financialization low-MAX relation on a paired XAU/XAG carrier. Full-sample and two-portfolio evidence is null; paired legs do not prove neutrality, and Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -258,11 +258,12 @@ admission; and correlation waivers.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-12 | initial source-bounded XAU/XAG low-MAX carrier | G0 | APPROVED |
+| v1-q01 | 2026-08-12 | deterministic V5 build, strict compile, target guardrails, MAX reference vectors, and P1 artifact validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-12 | APPROVED | `decisions/2026-08-12_qm5_20294_xauxag_max_rank_g0.md` |
-| Q01 Build Validation | - | NOT_STARTED | - |
+| Q01 Build Validation | 2026-08-12 | PASS | `D:/QM/reports/compile/20260812_221737/summary.csv`; `D:/QM/reports/framework/21/build_check_20260812_221737.json`; `D:/QM/reports/pipeline/QM5_20294/P1/P1_QM5_20294_result.json` |
 | Q02 Baseline Screening | - | NOT_STARTED | - |

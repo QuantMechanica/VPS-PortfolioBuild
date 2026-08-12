@@ -89,12 +89,16 @@ stress, or deployment setfile is authorized.
 
 ## 8. Build State
 
-The G0 card is approved and EA ID 20294 is reserved. MQ5 implementation may
-start only after active XAU and XAG magic rows exist and the generated resolver
-contains both exact mappings.
+The approved card is implemented with the registered two-slot basket,
+restart-safe consumed-month state, bounded monthly MAX calculation, aggregate
+fixed-risk sizing, hard stops, renewal/stale exits, and orphan repair. Strict
+compile and the target build guard pass with zero errors, warnings, or
+failures; P1/Q01 artifact validation is PASS. One paced Q02 enqueue remains.
 
 ## Revision History
 
 | Version | Date | Reason |
 |---|---|---|
 | v1 | 2026-08-12 | approved XAU/XAG low-MAX carrier scaffold |
+| v2 | 2026-08-12 | implemented locked low-MAX statistic and paired lifecycle |
+| v3 | 2026-08-12 | strict compile, build guard, reference, and P1/Q01 PASS |

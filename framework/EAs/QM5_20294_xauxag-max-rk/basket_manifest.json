@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_20294_XAU_XAG_LOWMAX_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XAU/XAG low-MAX basket from approved card HOLLSTEIN-MAX-2021_XAU_XAG_S04. Run on XAUUSD.DWX D1 and evaluate the paired package, not standalone legs. At each genuine broker-month transition it forms exactly 252 completed simple D1 returns per metal, averages each leg's five largest returns, buys the lower-MAX leg, shorts the higher-MAX leg, and closes or renews at the next month. The full-sample and two-portfolio source results are null and the negative direction is post-financialization-subsample-only, so Q02 is a strict carrier falsification; equal fixed-risk halves do not assert dollar, beta, volatility, factor, market, or portfolio neutrality."
+  ]
+}
