@@ -8,7 +8,7 @@
 // QM5_12856 - Brent Monday Calendar Fade
 // -----------------------------------------------------------------------------
 // D1 structural weekday sleeve:
-//   - sell XBRUSD.DWX on the broker-calendar Monday D1 bar
+//   - sell XTIUSD.DWX on the broker-calendar Monday D1 bar
 //   - flatten on the next D1 bar or a one-day stale-position guard
 // Runtime uses MT5 OHLC/broker calendar only; no external energy data.
 // =============================================================================
@@ -48,7 +48,7 @@ int g_last_entry_day_key = 0;
 
 bool Strategy_IsBrentD1()
   {
-   return (_Symbol == "XBRUSD.DWX" && _Period == PERIOD_D1);
+   return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
 int Strategy_DayKey(const datetime t)

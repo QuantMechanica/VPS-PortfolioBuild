@@ -55,7 +55,7 @@ int g_last_signal_day_key = 0;
 
 bool Strategy_IsXbrD1()
   {
-   return (_Symbol == "XBRUSD.DWX" && _Period == PERIOD_D1);
+   return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
 int Strategy_DayKey(const datetime t)

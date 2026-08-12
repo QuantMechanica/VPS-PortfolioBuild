@@ -8,7 +8,7 @@
 // QM5_12855 - Brent November Calendar Fade
 // -----------------------------------------------------------------------------
 // D1 structural month-of-year sleeve:
-//   - short XBRUSD.DWX only during broker-calendar November D1 bars
+//   - short XTIUSD.DWX only during broker-calendar November D1 bars
 //   - flatten on the next D1 bar, at month end, or by a one-day stale guard
 // Runtime uses MT5 OHLC/broker calendar only; no external energy data.
 // =============================================================================
@@ -48,7 +48,7 @@ int g_last_entry_day_key = 0;
 
 bool Strategy_IsBrentD1()
   {
-   return (_Symbol == "XBRUSD.DWX" && _Period == PERIOD_D1);
+   return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
 int Strategy_DayKey(const datetime t)

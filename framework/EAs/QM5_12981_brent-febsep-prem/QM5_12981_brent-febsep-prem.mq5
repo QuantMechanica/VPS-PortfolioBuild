@@ -8,7 +8,7 @@
 // QM5_12981 - Brent Feb-Sep Seasonal Premium
 // -----------------------------------------------------------------------------
 // D1 structural source-window sleeve:
-//   - long XBRUSD.DWX on the first tradable D1 bar of February through September
+//   - long XTIUSD.DWX on the first tradable D1 bar of February through September
 //   - flatten on the next D1 bar, outside the window, or by a stale guard
 // Runtime uses MT5 OHLC/broker calendar only; no external energy data.
 // =============================================================================
@@ -49,7 +49,7 @@ int g_last_entry_month_key = 0;
 
 bool Strategy_IsBrentD1()
   {
-   return (_Symbol == "XBRUSD.DWX" && _Period == PERIOD_D1);
+   return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
 int Strategy_DayKey(const datetime t)

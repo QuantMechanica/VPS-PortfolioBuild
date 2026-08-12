@@ -8,7 +8,7 @@
 // QM5_12865 - Brent Friday Calendar Premium
 // -----------------------------------------------------------------------------
 // D1 structural weekday sleeve:
-//   - buy XBRUSD.DWX on the broker-calendar Friday D1 bar
+//   - buy XTIUSD.DWX on the broker-calendar Friday D1 bar
 //   - flatten via Friday close, next D1 bar, or a one-day stale-position guard
 // Runtime uses MT5 OHLC/broker calendar only; no external energy data.
 // =============================================================================
@@ -48,7 +48,7 @@ int g_last_entry_day_key = 0;
 
 bool Strategy_IsBrentD1()
   {
-   return (_Symbol == "XBRUSD.DWX" && _Period == PERIOD_D1);
+   return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
 int Strategy_DayKey(const datetime t)

@@ -8,7 +8,7 @@
 // QM5_12854 - Brent December Calendar Fade
 // -----------------------------------------------------------------------------
 // D1 structural month-of-year sleeve:
-//   - short XBRUSD.DWX only during broker-calendar December D1 bars
+//   - short XTIUSD.DWX only during broker-calendar December D1 bars
 //   - flatten on the next D1 bar, at month end, or by a one-day stale guard
 // Runtime uses MT5 OHLC/broker calendar only; no external energy data.
 // =============================================================================
@@ -46,7 +46,7 @@ input int    strategy_max_spread_points   = 1200;
 
 bool Strategy_IsBrentD1()
   {
-   return (_Symbol == "XBRUSD.DWX" && _Period == PERIOD_D1);
+   return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
 // Card §5: a position's open time is an arbitrary stored timestamp, not the

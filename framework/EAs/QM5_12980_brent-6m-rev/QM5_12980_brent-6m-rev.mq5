@@ -8,7 +8,7 @@
 // QM5_12980 - Brent 6M Overextension Fade
 // -----------------------------------------------------------------------------
 // D1 structural Brent sleeve:
-//   - evaluates one monthly overextension setup on XBRUSD.DWX
+//   - evaluates one monthly overextension setup on XTIUSD.DWX
 //   - fades fixed 120-D1-bar Brent return extremes
 //   - requires price to be stretched from SMA(20) by an ATR multiple
 //   - exits by 6M-return zero-cross, max-hold guard, or ATR stop
@@ -54,7 +54,7 @@ int g_last_signal_month_key = -1;
 
 bool Strategy_IsBrentD1()
   {
-   return (_Symbol == "XBRUSD.DWX" && _Period == PERIOD_D1);
+   return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
 int Strategy_MonthKey(const datetime t)

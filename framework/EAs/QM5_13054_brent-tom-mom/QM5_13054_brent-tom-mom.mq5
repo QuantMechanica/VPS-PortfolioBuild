@@ -54,7 +54,7 @@ int g_last_entry_cycle_key = 0;
 
 bool Strategy_IsBrentD1()
   {
-   return (_Symbol == "XBRUSD.DWX" && _Period == PERIOD_D1);
+   return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
 int Strategy_YearFromDayKey(const int day_key)

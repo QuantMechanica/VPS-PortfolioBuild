@@ -55,7 +55,7 @@ int g_last_entry_week_key = 0;
 
 bool Strategy_IsXbrD1()
   {
-   return (_Symbol == "XBRUSD.DWX" && _Period == PERIOD_D1);
+   return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
 bool Strategy_HasOpenPosition()
