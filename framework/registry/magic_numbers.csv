@@ -15959,3 +15959,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20293,wti-tsmom9m,0,XTIUSD.DWX,202930000,2026-08-12,Research+Development,active
 20294,xauxag-max-rk,0,XAUUSD.DWX,202940000,2026-08-12,Research+Development,active
 20294,xauxag-max-rk,1,XAGUSD.DWX,202940001,2026-08-12,Research+Development,active
+20295,wti-kurt-prem,0,XTIUSD.DWX,202950000,2026-08-13,Research+Development,active
