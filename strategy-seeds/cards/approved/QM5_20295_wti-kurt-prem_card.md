@@ -54,8 +54,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0_APPROVED
-q01_status: NOT_STARTED
+pipeline_phase: Q01_PASS
+q01_status: PASS
 q02_status: NOT_STARTED
 review_focus: "Falsify an outright monthly WTI fourth-moment premium around a fixed normal benchmark, unlike existing XTI/XNG and XAU/XAG kurtosis ranks, WTI skewness, semivariance, return trend/reversal, calendar, event, and XNG RSI neighbors; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -295,11 +295,12 @@ portfolio admission; or a correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-13 | initial WTI historical-kurtosis premium | G0 | APPROVED; build pending |
+| v1-q01 | 2026-08-13 | deterministic V5 build, strict compile, target guardrails, independent kurtosis vectors, and P1 artifact validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-13 | APPROVED; R1-R4 PASS | durable decision and bounded source packet |
-| Q01 Build Validation | - | NOT STARTED | - |
+| Q01 Build Validation | 2026-08-13 | PASS; strict compile 0 errors/0 warnings, build check 0 failures/0 warnings, 5 reference tests PASS, P1 PASS | `D:/QM/reports/compile/20260812_231711/summary.csv`; `D:/QM/reports/framework/21/build_check_20260812_231710.json`; `D:/QM/reports/pipeline/QM5_20295/P1/P1_QM5_20295_result.json` |
 | Q02 Baseline Screening | - | NOT STARTED | - |

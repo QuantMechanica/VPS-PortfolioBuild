@@ -1,9 +1,9 @@
 # QM5_20295_wti-kurt-prem — Strategy Spec
 
-**EA ID:** QM5_20295  
-**Slug:** `wti-kurt-prem`  
-**Source:** `HOLLSTEIN-WTI-KURT-2026`  
-**Author of this spec:** Codex  
+**EA ID:** QM5_20295
+**Slug:** `wti-kurt-prem`
+**Source:** `HOLLSTEIN-WTI-KURT-2026`
+**Author of this spec:** Codex
 **Last revised:** 2026-08-13
 
 ## 1. Strategy Logic
@@ -135,14 +135,20 @@ waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-13 | Initial scaffold from approved card | Build pending |
+| v2 | 2026-08-13 | Implemented locked statistic and monthly lifecycle | Strict compile and reference checks pass |
+| v3 | 2026-08-13 | Completed target Q01 validation | Build check and P1 PASS |
 
 ## 12. Q01 Status
 
-NOT STARTED. Strict compile, build checks, P1 artifact validation, and an
-independent statistic reference must pass before Q02 handoff.
+PASS. The registered one-slot EA implements the exact card statistic,
+restart-safe monthly attempt state, one-position lifecycle, frozen hard stop,
+and fixed-risk contract. Strict compile passed with zero errors and zero
+warnings; the target build check passed with zero failures and zero warnings;
+five independent statistic, direction, chronology, count, and freshness tests
+passed; and P1 artifact validation found the compiled `.ex5`.
 
 ## 13. Q02 Handoff
 
-NOT STARTED. Exactly one paced `XTIUSD.DWX` D1 work item may be enqueued after
-Q01 passes and the path-anchored backtest CPU sample remains below the binding
-ceiling.
+READY, NOT ENQUEUED. Exactly one paced `XTIUSD.DWX` D1 work item may be
+enqueued after the path-anchored backtest CPU sample remains below the binding
+ceiling. No dispatch or manual tester run is authorized.
