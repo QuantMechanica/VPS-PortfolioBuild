@@ -52,9 +52,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: NOT_STARTED
-q02_status: NOT_STARTED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: PASS
 review_focus: "Falsify a direct WTI exact nine-completed-month own-return carrier absent from the XAU/SP500/NDX/XNG book; separate completed-month continuity and a pure sign from the existing 189-D1 nine-month signal with threshold and three-month confirmation; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -295,6 +295,7 @@ portfolio-gate edit; or correlation waiver.
 | v1 | 2026-08-12 | initial source-bounded WTI nine-month card | G0 | APPROVED |
 | v1-q01 | 2026-08-12 | deterministic V5 build, strict compile, target validation, exact-return reference vectors, and P1 artifact validation | Q01 | PASS |
 | v1-q02-hold | 2026-08-12 | binding factory sample reached the seven-terminal CPU ceiling; no enqueue or backtest | Q01 | NOT_ENQUEUED_CPU_CEILING |
+| v1-q02 | 2026-08-12 | paced farm subsequently created one hash-bound XTIUSD work item and completed the baseline | Q02 | PASS |
 
 ## Pipeline Phase Status
 
@@ -302,4 +303,4 @@ portfolio-gate edit; or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-12 | APPROVED | `decisions/2026-08-12_qm5_20293_wti_tsmom9m_g0.md` |
 | Q01 Build Validation | 2026-08-12 | PASS | `D:/QM/reports/compile/20260812_181052/summary.csv`; `D:/QM/reports/framework/21/build_check_20260812_181142.json`; `D:/QM/reports/pipeline/QM5_20293/P1/P1_QM5_20293_result.json` |
-| Q02 Baseline Screening | 2026-08-12 | NOT_ENQUEUED_CPU_CEILING | `docs/ops/evidence/2026-08-12_qm5_20293_wti_tsmom9m_q01_cpu_stop.md` |
+| Q02 Baseline Screening | 2026-08-12 | PASS | `D:/QM/reports/work_items/6dc123c3-7d53-4d1d-8a07-1348cda756cd/QM5_20293/20260812_185701/summary.json`; `docs/ops/evidence/2026-08-12_qm5_20293_wti_tsmom9m_q02_pass.md` |

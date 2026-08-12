@@ -137,6 +137,7 @@ admission, or a correlation waiver.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-12 | Initial build from approved card | Magic allocated; implementation and Q01 PASS |
+| v1-q02 | 2026-08-12 | Paced baseline completed | One hash-bound XTIUSD Q02 row; PASS |
 
 ## 11. Q01 Status
 
@@ -152,12 +153,20 @@ admission, or a correlation waiver.
 - The only setfile is D1/backtest with `RISK_FIXED=1000`,
   `RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`.
 
-## 12. Q02 Handoff
+## 12. Q02 Result
 
-`NOT_ENQUEUED_CPU_CEILING`. The binding
-`2026-08-12T18:15:59.0156924Z` path-anchored sample found seven executing
-T1-T10 terminals (`T1`, `T2`, `T4`, `T5`, `T6`, `T8`, and
-`T9`) against the ceiling of seven. The immediate target-only readback
-returned zero work items. No apply-mode enqueue, dispatch, or manual backtest
-was run. A later paced operator may take a fresh capacity sample and enqueue
-exactly one current-binary row only when factory use is below seven.
+The binding `2026-08-12T18:15:59.0156924Z` capacity sample initially found
+seven executing T1-T10 terminals (`T1`, `T2`, `T4`, `T5`, `T6`, `T8`, and
+`T9`) against the ceiling of seven, so that operator correctly stopped before
+enqueue. The paced farm subsequently created exactly one current-binary Q02
+row, `6dc123c3-7d53-4d1d-8a07-1348cda756cd`, and completed it on T10.
+
+The hash-bound baseline is `PASS`: 52 completed trades from 2018-07-02 through
+2022-12-31, net profit 4,174.98, profit factor 1.24, and maximum drawdown
+5,126.86 (5.08%). The result used one deterministic real-ticks-marked run and
+the sole `RISK_FIXED=1000` setfile. Full evidence is at
+`docs/ops/evidence/2026-08-12_qm5_20293_wti_tsmom9m_q02_pass.md` and
+`D:/QM/reports/work_items/6dc123c3-7d53-4d1d-8a07-1348cda756cd/QM5_20293/20260812_185701/summary.json`.
+
+Q02 PASS is baseline evidence only. It does not establish cost robustness,
+realized decorrelation, certification, portfolio admission, or live authority.
