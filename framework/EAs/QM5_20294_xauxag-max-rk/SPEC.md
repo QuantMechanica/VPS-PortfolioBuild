@@ -93,7 +93,8 @@ The approved card is implemented with the registered two-slot basket,
 restart-safe consumed-month state, bounded monthly MAX calculation, aggregate
 fixed-risk sizing, hard stops, renewal/stale exits, and orphan repair. Strict
 compile and the target build guard pass with zero errors, warnings, or
-failures; P1/Q01 artifact validation is PASS. One paced Q02 enqueue remains.
+failures; P1/Q01 artifact validation is PASS. One paced logical-basket Q02
+row is enqueued and pending; no dispatch or manual tester run was issued.
 
 ## Revision History
 
@@ -102,3 +103,4 @@ failures; P1/Q01 artifact validation is PASS. One paced Q02 enqueue remains.
 | v1 | 2026-08-12 | approved XAU/XAG low-MAX carrier scaffold |
 | v2 | 2026-08-12 | implemented locked low-MAX statistic and paired lifecycle |
 | v3 | 2026-08-12 | strict compile, build guard, reference, and P1/Q01 PASS |
+| v4 | 2026-08-12 | one logical XAU/XAG fixed-risk baseline enqueued at Q02 |
