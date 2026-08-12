@@ -154,7 +154,10 @@ admission, or a correlation waiver.
 
 ## 12. Q02 Handoff
 
-`NOT_ENQUEUED`. Take one immediate path-anchored factory-capacity sample only
-after Q01 PASS. If the executing T1-T10 count is at the seven-job ceiling,
-stop without apply-mode enqueue. Otherwise perform one target-only dry run and
-one bounded enqueue; never dispatch or run a manual backtest.
+`NOT_ENQUEUED_CPU_CEILING`. The binding
+`2026-08-12T18:15:59.0156924Z` path-anchored sample found seven executing
+T1-T10 terminals (`T1`, `T2`, `T4`, `T5`, `T6`, `T8`, and
+`T9`) against the ceiling of seven. The immediate target-only readback
+returned zero work items. No apply-mode enqueue, dispatch, or manual backtest
+was run. A later paced operator may take a fresh capacity sample and enqueue
+exactly one current-binary row only when factory use is below seven.
