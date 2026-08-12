@@ -15926,3 +15926,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20288,wti-volnorm-mom,0,XTIUSD.DWX,202880000,2026-08-12,Research+Development,active
 20289,wti-rsj-rev,0,XTIUSD.DWX,202890000,2026-08-12,Research+Development,active
 20290,wti-skew-prem,0,XTIUSD.DWX,202900000,2026-08-12,Research+Development,active
+20291,xauxag-kurt-rk,0,XAUUSD.DWX,202910000,2026-08-12,Research+Development,active
+20291,xauxag-kurt-rk,1,XAGUSD.DWX,202910001,2026-08-12,Research+Development,active
