@@ -95,3 +95,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 3ccdd668-dded-4754-bf18-94ab2f290eb4 |
+| v2 | 2026-08-12 | Q02 infrastructure recovery | Retained terminal evidence identifies a Custom-history sharing violation (`EURUSD.DWX` error 32), not a strategy OnInit defect. Rebuilt the unchanged strategy against the current framework and regenerated both canonical `RISK_FIXED` setfiles with explicit EA/strategy inputs for an append-only Q02 retry. |
