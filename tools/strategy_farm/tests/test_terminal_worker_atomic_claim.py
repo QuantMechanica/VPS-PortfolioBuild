@@ -1586,6 +1586,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                     "smoke_year_count": 6,
                     "effective_min_trades": 5,
                     "phase_runner": "run_smoke.ps1",
+                    "timeout_seconds": 7200,
                 }
                 terminal_worker.farmctl._pid_tree_exists = lambda _pid: False
                 terminal_worker._work_item_preflight_failure = lambda _row: None
@@ -1620,6 +1621,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(payload["prior_failure"], "launch_fault")
             self.assertEqual(payload["launch_fault_count"], 1)
             self.assertEqual(payload["launch_fault_defer_seconds"], terminal_worker.LAUNCH_FAULT_DEFER_SECONDS)
+            self.assertEqual(payload["timeout_seconds"], 7200)
             self.assertIn("launch_not_before_utc", payload)
 
     def test_spawn_refusal_persists_reason_and_event_before_releasing_claim(self) -> None:

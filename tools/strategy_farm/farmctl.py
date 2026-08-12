@@ -17633,6 +17633,18 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 source_payload.get("transient_infra_evidence_path") or ""
             ).strip()
             evidence_binding = "payload.transient_infra_evidence_path"
+        if (
+            not evidence_path_raw
+            and target["verdict"] == "INFRA_FAIL"
+            and str(source_payload.get("verdict_reason") or "").upper()
+            == "ACTIVE_TIMEOUT"
+        ):
+            # Active-age reaps are written before a summary exists, so their
+            # immutable execution evidence is the work-item runner log recorded
+            # by the reaper.  Authenticate and hash-bind that exact payload path
+            # just like the legacy purpose-specific transient evidence above.
+            evidence_path_raw = str(source_payload.get("log_path") or "").strip()
+            evidence_binding = "payload.log_path"
         if not evidence_path_raw:
             return {
                 "enqueued": False,

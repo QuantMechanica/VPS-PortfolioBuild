@@ -510,6 +510,75 @@ def test_exact_infra_q02_accepts_payload_bound_transient_evidence_append_only(
     assert successor_payload["expected_ex5_sha256"] == art["current_ex5"]
 
 
+def test_exact_active_timeout_q02_accepts_payload_bound_runner_log_append_only(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    runner_log = tmp_path / "work_item_q02-active-timeout.log"
+    runner_log.write_text("work-item-bound progressing tester log\n", encoding="utf-8")
+    payload = _payload(art, stale=False)
+    payload.update(
+        {
+            "active_age_min": 47.31,
+            "log_path": str(runner_log),
+            "progress_evidence": {
+                "determined": True,
+                "progress_pct": 46,
+                "stalled_min": 1.18,
+            },
+            "reap_reason": "OUTER_ABSOLUTE_CEILING",
+            "timeout_min": 45,
+            "verdict_reason": "ACTIVE_TIMEOUT",
+        }
+    )
+    _insert_work_item(
+        art,
+        item_id="q02-active-timeout",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=payload,
+    )
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        conn.execute(
+            "UPDATE work_items SET evidence_path=NULL WHERE id=?",
+            ("q02-active-timeout",),
+        )
+        conn.commit()
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        root,
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-active-timeout",
+        append_only_rerun_of="q02-active-timeout",
+        rerun_reason="persist the runner inner budget before active-age reaping",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        historical = conn.execute(
+            "SELECT status,verdict,evidence_path FROM work_items WHERE id=?",
+            ("q02-active-timeout",),
+        ).fetchone()
+        successor_payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (result["created"][0]["id"],),
+            ).fetchone()[0]
+        )
+    assert historical == ("failed", "INFRA_FAIL", None)
+    assert successor_payload["rerun_source_evidence_binding"] == "payload.log_path"
+    assert successor_payload["rerun_source_evidence_path"] == str(runner_log)
+    assert successor_payload["rerun_source_evidence_sha256"] == (
+        farmctl._sha256_file(runner_log)
+    )
+    assert successor_payload["historical_work_item_preserved"] is True
+
+
 def test_exact_infra_q02_refuses_null_evidence_without_payload_binding(
     tmp_path: Path, monkeypatch
 ) -> None:

@@ -3908,6 +3908,18 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         "expected_setfile_sha256": spawn.get("expected_setfile_sha256"),
         "expected_mq5_sha256": spawn.get("expected_mq5_sha256"),
     })
+    # Bind the runner's actual inner budget before monitoring starts.  The
+    # active-age reaper deliberately derives its outer ceiling from this field;
+    # omitting it collapsed long but healthy Q02 full runs back to the generic
+    # 45-minute ceiling even when run_smoke had been launched with a two-hour
+    # budget.
+    try:
+        spawn_timeout_seconds = int(spawn.get("timeout_seconds") or 0)
+    except (TypeError, ValueError):
+        spawn_timeout_seconds = 0
+    if spawn_timeout_seconds > 0:
+        payload["timeout_seconds"] = spawn_timeout_seconds
+
     def _record_spawn() -> None:
         with farmctl.connect(root) as conn:
             conn.execute(
