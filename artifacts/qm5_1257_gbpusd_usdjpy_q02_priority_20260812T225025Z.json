@@ -1,0 +1,123 @@
+{
+  "artifact_type": "fx_cointegration_existing_q02_priority_advance",
+  "generated_at_utc": "2026-08-12T22:50:25Z",
+  "local_date": "2026-08-13",
+  "timezone": "Europe/Berlin",
+  "operator": "codex-headless-board-advisor",
+  "branch": "agents/board-advisor",
+  "base_commit": "edbcf861e3c9750dfeec33bf7bb0307e0ab40e22",
+  "mission_outcome": "EXISTING_FOREX_Q02_PRIORITY_ADVANCED",
+  "frontier_decision": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationship_audit": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_pair_built": false,
+    "duplicate_pair_created": false,
+    "anchor_triage": {
+      "QM5_12532": "Q02_PASS_THEN_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_THEN_Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "fallback_reason": "All frozen scan relationships are already mechanized and neither anchor has an open Q02 setup blocker, so the mission's existing-forex-card fallback applies."
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_1257",
+    "slug": "lemishko-fx-cointpair",
+    "pair_slot": 8,
+    "scan_relationship_rank": 58,
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "source_citation": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+    "g0_status": "APPROVED",
+    "scan_evidence": {
+      "dev_net_sharpe": -0.10353789372,
+      "oos_net_sharpe": -0.419922430787,
+      "oos_return_percent": -3.600289808739,
+      "oos_state_changes": 16,
+      "dev_beta": -0.388288093234,
+      "half_life_d1_bars": 76.715376014881,
+      "disposition": "ONE_SHOT_Q02_NO_REFIT_OR_RESCUE"
+    },
+    "mechanization": {
+      "strategy_card": {
+        "path": "framework/EAs/QM5_1257_lemishko-fx-cointpair/docs/strategy_card.md",
+        "sha256": "aa0313ea4218ed418432adcdf3a34b49cd3c4f46e725fefd31ec5b2266b2f9ae"
+      },
+      "basket_manifest": {
+        "path": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json",
+        "sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3"
+      },
+      "fixed_risk_setfile": {
+        "path": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+        "sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+        "risk_fixed": 1000,
+        "risk_percent": 0,
+        "portfolio_weight": 1
+      },
+      "mq5_sha256": "28bd88d0a7a7401ec7fe3b3a4f99ef3ba6b9fec146298c512b1c76e1adf7e12b",
+      "ex5_sha256": "86c6e9f077e37ddd5aea1e15b253cd4509c7f180c846cc6aebd806fa17d95cbd"
+    }
+  },
+  "queue_mutation": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_1257_gbpusd_usdjpy_priority_20260812T225025Z.sqlite",
+    "backup_size_bytes": 380551168,
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "action": "PROMOTE_EXISTING_EXACT_ROW_IN_PLACE",
+    "status_before": "pending",
+    "status_after": "pending",
+    "attempt_count_after": 0,
+    "claimed_by_after": null,
+    "open_exact_rows_after": 1,
+    "duplicate_work_item_created": false,
+    "priority_track_before": false,
+    "priority_track_after": true,
+    "claim_rank_before": 100,
+    "claim_rank_after": 15,
+    "canonical_pending_rows": 947,
+    "prior_payload_sha256": "44f471d91b6a47c1d1ece35535e5b3ce214d3d24369a6af82c437c15d226d46c",
+    "post_payload_sha256": "9ac648d9bd03a9f3f86c3d5b941ec6e33f66a8cf4dc17935e9b305dc507b45ef",
+    "audit_event": {
+      "id": 347668,
+      "event": "priority_track_set"
+    },
+    "mutation_lock_release_status": "released",
+    "alpha_change": false,
+    "pipeline_verdict_changed": false
+  },
+  "validation": {
+    "strategy_card_schema_lint": "PASS",
+    "build_check": {
+      "status": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260812_224906.json"
+    },
+    "symbol_scope": "BASKET_OK",
+    "basket_regressions": "59 passed",
+    "validator_side_effect_cleanup": "All 44 validator-induced setfile header rewrites were restored; no setfile diff remains."
+  },
+  "capacity": {
+    "paced_launch_gate_max": 1,
+    "factory_terminals_running_before": 0,
+    "factory_terminals_running_after": 0,
+    "ceiling_binding": false,
+    "manual_dispatch": false,
+    "dispatch_reason": "The promoted row is canonical rank 15. No targeted Factory-ON bypass, queue displacement beyond priority_track, terminal reservation, or manual tester launch was performed."
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "live_setfile_change_committed": false
+  }
+}
