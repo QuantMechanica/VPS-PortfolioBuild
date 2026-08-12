@@ -21073,6 +21073,137 @@ def record_review_result(root: Path, review_task_id: str, result_file: str) -> d
     }
 
 
+def enqueue_head_to_head(
+    root: Path,
+    *,
+    opt_card_path: str,
+    parent_lineage_path: str,
+    challenger_lineage_path: str,
+    trial_ledger_path: str,
+    book_manifest_path: str,
+    book_stream_manifest_path: str,
+    parent_q10_work_item_id: str | None,
+    challenger_q10_work_item_id: str | None,
+    apply: bool,
+) -> dict[str, Any]:
+    """Validate and optionally enqueue one analytic Q16 evaluator work item.
+
+    Dry-run is the default. The explicit ``--apply`` path creates only an
+    ``analytic`` work item, which terminal workers do not claim.
+    """
+    import sys as _sys
+
+    _sys.path.insert(0, str(REPO_ROOT))
+    from framework.scripts import q16_head_to_head as q16  # noqa: WPS433
+
+    paths = {
+        "opt_card": Path(opt_card_path).expanduser().resolve(),
+        "parent_lineage": Path(parent_lineage_path).expanduser().resolve(),
+        "challenger_lineage": Path(challenger_lineage_path).expanduser().resolve(),
+        "trial_ledger": Path(trial_ledger_path).expanduser().resolve(),
+        "book_manifest": Path(book_manifest_path).expanduser().resolve(),
+        "book_stream_manifest": Path(book_stream_manifest_path).expanduser().resolve(),
+    }
+    bindings: dict[str, dict[str, Any]] = {}
+    for name, path in paths.items():
+        if not path.is_file():
+            raise ValueError(f"enqueue-head-to-head {name} is missing: {path}")
+        bindings[name] = {
+            "path": str(path), "sha256": _sha256_file(path), "size_bytes": path.stat().st_size,
+        }
+    try:
+        card = json.loads(paths["opt_card"].read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"enqueue-head-to-head opt-card is invalid: {exc}") from exc
+    if not isinstance(card, dict) or card.get("schema") != q16.OPT_CARD_SCHEMA:
+        raise ValueError(f"enqueue-head-to-head requires {q16.OPT_CARD_SCHEMA}")
+    q16.load_windows(card)
+    parent = q16.load_lineage(paths["parent_lineage"], "PARENT")
+    challenger = q16.load_lineage(paths["challenger_lineage"], "CHALLENGER")
+    card_parent = card.get("parent")
+    if not isinstance(card_parent, dict) or q16._key(card_parent, "opt-card parent") != parent["key"]:
+        raise ValueError("enqueue-head-to-head parent lineage does not match opt-card")
+    if parent["key"][1] != challenger["key"][1]:
+        raise ValueError("enqueue-head-to-head parent/challenger symbols differ")
+    payload = {
+        "schema": "qm.enqueue-head-to-head/v1",
+        "phase": "Q16",
+        "card_id": card.get("card_id"),
+        "parent": {"ea_id": f"QM5_{parent['key'][0]}", "symbol": parent["key"][1]},
+        "challenger": {"ea_id": f"QM5_{challenger['key'][0]}", "symbol": challenger["key"][1]},
+        "bindings": bindings,
+        "dependency_refs": {
+            "parent_lineage": parent_q10_work_item_id,
+            "challenger_q10": challenger_q10_work_item_id,
+        },
+        "runner": "framework/scripts/q16_head_to_head.py",
+        "execution_lane": "ANALYTIC_DISPATCH_NOT_TERMINAL_WORKER",
+    }
+    identity = _canonical_json_sha256(payload)
+    work_item_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"qm:q16:{identity}"))
+    preview = {
+        "enqueued": False,
+        "dry_run": not apply,
+        "would_create_work_item_id": work_item_id,
+        "payload": payload,
+    }
+    if not apply:
+        return preview
+    if not parent_q10_work_item_id or not challenger_q10_work_item_id:
+        raise ValueError("--apply requires parent and challenger Q10 work-item ids")
+    init_db(root)
+    with connect(root) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        rows = {}
+        for role, item_id, expected_key in (
+            ("parent_lineage", parent_q10_work_item_id, parent["key"]),
+            ("challenger_q10", challenger_q10_work_item_id, challenger["key"]),
+        ):
+            row = conn.execute("SELECT * FROM work_items WHERE id=?", (item_id,)).fetchone()
+            if row is None:
+                conn.rollback()
+                raise ValueError(f"Q16 dependency {role} work item is missing: {item_id}")
+            actual_key = (_ea_numeric_id(row["ea_id"]), str(row["symbol"]).upper())
+            if (
+                str(row["phase"]).upper() != "Q10"
+                or str(row["status"]).lower() != "done"
+                or str(row["verdict"] or "").upper() != "PASS"
+                or actual_key != expected_key
+            ):
+                conn.rollback()
+                raise ValueError(f"Q16 dependency {role} is not the matching done Q10 PASS row")
+            rows[role] = row
+        existing = conn.execute("SELECT payload_json,status FROM work_items WHERE id=?", (work_item_id,)).fetchone()
+        payload_json = json.dumps(payload, sort_keys=True)
+        if existing is not None:
+            if str(existing["payload_json"]) != payload_json:
+                conn.rollback()
+                raise ValueError("deterministic Q16 work-item id collides with different payload")
+            conn.rollback()
+            return {**preview, "enqueued": True, "dry_run": False, "idempotent": True, "status": existing["status"]}
+        now = utc_now()
+        conn.execute(
+            """
+            INSERT INTO work_items(
+                id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                attempt_count,parent_task_id,evidence_path,claimed_by,payload_json,
+                created_at,updated_at
+            ) VALUES(?,?,?,?,?,?,'pending',NULL,0,NULL,NULL,NULL,?,?,?)
+            """,
+            (
+                work_item_id, "analytic", "Q16", f"QM5_{challenger['key'][0]}",
+                challenger["key"][1], str(rows["challenger_q10"]["setfile_path"]),
+                payload_json, now, now,
+            ),
+        )
+        event(conn, "work_item", work_item_id, "q16_head_to_head_enqueued", {
+            "card_id": card.get("card_id"), "payload_sha256": identity,
+            "dependency_refs": payload["dependency_refs"],
+        })
+        conn.commit()
+    return {**preview, "enqueued": True, "dry_run": False, "idempotent": False, "status": "pending"}
+
+
 def print_json(payload: dict[str, Any]) -> None:
     print(json.dumps(payload, indent=2, sort_keys=True))
 
@@ -21497,6 +21628,20 @@ def build_parser() -> argparse.ArgumentParser:
     fs.add_argument("--symbol")
     fs.add_argument("--refresh-cache", action="store_true")
 
+    q16 = sub.add_parser(
+        "enqueue-head-to-head",
+        help="Validate and optionally enqueue one analytic Q16 sealed comparison (dry-run default).",
+    )
+    q16.add_argument("--opt-card", required=True)
+    q16.add_argument("--parent-lineage", required=True)
+    q16.add_argument("--challenger-lineage", required=True)
+    q16.add_argument("--trial-ledger", required=True)
+    q16.add_argument("--book-manifest", required=True)
+    q16.add_argument("--book-stream-manifest", required=True)
+    q16.add_argument("--parent-q10-work-item-id")
+    q16.add_argument("--challenger-q10-work-item-id")
+    q16.add_argument("--apply", action="store_true")
+
     return parser
 
 
@@ -21516,6 +21661,8 @@ _STATE_MUTATING_COMMANDS = frozenset({
 
 
 def _command_mutates_state(args: argparse.Namespace) -> bool:
+    if args.command == "enqueue-head-to-head":
+        return bool(args.apply)
     if args.command in _STATE_MUTATING_COMMANDS:
         return True
     if args.command == "reconcile-mt5":
@@ -21679,6 +21826,19 @@ def main(argv: list[str] | None = None) -> int:
             symbol = str(args.symbol).upper().replace(".DWX", "")
             rows = [r for r in rows if r["sleeve"].split(":", 1)[-1] == symbol]
         print_json({**payload, "rows": rows})
+    elif args.command == "enqueue-head-to-head":
+        print_json(enqueue_head_to_head(
+            root,
+            opt_card_path=args.opt_card,
+            parent_lineage_path=args.parent_lineage,
+            challenger_lineage_path=args.challenger_lineage,
+            trial_ledger_path=args.trial_ledger,
+            book_manifest_path=args.book_manifest,
+            book_stream_manifest_path=args.book_stream_manifest,
+            parent_q10_work_item_id=args.parent_q10_work_item_id,
+            challenger_q10_work_item_id=args.challenger_q10_work_item_id,
+            apply=args.apply,
+        ))
     elif args.command == "mt5-slots":
         print_json(get_mt5_status(root))
     elif args.command == "reserve-terminal":
