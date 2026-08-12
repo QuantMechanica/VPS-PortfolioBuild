@@ -55,8 +55,27 @@ session 2026-08-11 evening) ratifying the batch scope.
   re-expectations, fresh quiescent audit), not a cleanup delete. That step is
   deliberately deferred; disk pressure does not force it (tester_cache_purge
   governs D: headroom independently).
-- Remaining Task #22 item: main integration per runbook step 15 (true merge
-  via the cto_main worktree with local sync).
+- Main integration (runbook step 15, executed 2026-08-12 morning): true merge
+  via the cto_main worktree. Local main had silently diverged — 106 commits
+  (orchestration-lane doc records, Q09 rounds) existed only on the stale local
+  branch, 94 of them patch-equivalent to board-advisor, 12 unique in wording
+  but with canonicalized file counterparts. Double merge: `ab946a44a` (sync
+  stale local main with origin/main, 12 conflicts resolved to canonical
+  archive versions) then `d02f3f349` (agents/board-advisor 7c113be2c in,
+  2 add/add doc conflicts, both strict-prefix cases resolved to the
+  board-advisor superset). **Verification: `git diff agents/board-advisor` on
+  the merged main is empty — byte-identical tree**; standing-prep JSON bytes
+  re-verified against the pinned sha256 (9d77f78f…) post-checkout. Push of
+  main is classifier-gated → OWNER-`!` command handed over.
+- **Forensic find in cto_main (pre-merge)**: uncommitted working-tree
+  modifications dated 2026-07-28 21:36 had `_stop_pid`/`_stop_pid_tree` in
+  farmctl.py stubbed to `return False` (process-kill neutered) plus a stale
+  magic-registry SHA and `_reap_stuck_codex_procs` edits — never committed,
+  origin unknown (falls into the codex-mnt-review-20260728 window). Preserved
+  as stash `27f631637` in cto_main and as diff artifact
+  `D:\QM\strategy_farm\artifacts\ops\rebind_20260812\cto_main_uncommitted_mods_20260812.diff`
+  (sha256 e12e2b5fe06b02f26e4ff4e0c64d641f1d5077b3fa0d401cd0f7a88f2187bed7).
+  Excluded from the merge; production farmctl (board-advisor) unaffected.
 
 ## Open follow-ups
 
