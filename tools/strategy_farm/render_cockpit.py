@@ -99,6 +99,18 @@ FTMO_MONITOR_DIR = Path(
 FTMO_DEALS_CSV = FTMO_MONITOR_DIR / "live_deals_normalized.csv"
 LIVE_BOOK_SLEEVES = 24  # current live book size (label denominator only)
 
+LIFETIME_PASS_CHIP_LABEL = "Q02-Q10 // LIFETIME DISTINCT PASS (MIXED ERAS)"
+PIPELINE_COHORT_SCHEMA_VERSION = "qm.cockpit-adjacent-cohort/v1"
+PIPELINE_COHORT_BUCKETS = ("NO_ROW", "OPEN", "INFRA", "SOFT", "HARD", "PASS")
+PIPELINE_COHORT_TRANSITIONS = (
+    ("Q02 -> Q03", "Q02", "Q03", 2),
+    ("Q03 -> Q04", "Q03", "Q04", 3),
+    ("Q04 -> Q05", "Q04", "Q05", 4),
+    ("Q05 -> Q06", "Q05", "Q06", 5),
+    ("Q06 -> Q07", "Q06", "Q07", 6),
+    ("Q07 -> Q08", "Q07", "Q08", 7),
+)
+
 
 
 
@@ -296,6 +308,310 @@ def db_rows_ro(query: str, params: tuple = ()) -> list[dict]:
         return [dict(r) for r in con.execute(query, params).fetchall()]
     finally:
         con.close()
+
+
+def pipeline_cohort_snapshot() -> dict:
+    """Return the versioned, read-only adjacent-gate cohort projection.
+
+    The historical phase chips intentionally retain lifetime distinct-PASS
+    semantics. This projection supplies the missing denominator: each row begins
+    with the upstream phase's strict-PASS pair set and assigns every pair to one
+    exclusive next-gate bucket. Canonical Q rows are used so legacy aliases do
+    not silently change this v1 contract.
+    """
+
+    out = {
+        "schema_version": PIPELINE_COHORT_SCHEMA_VERSION,
+        "available": False,
+        "buckets": list(PIPELINE_COHORT_BUCKETS),
+        "transitions": [],
+        "q09_arms": [],
+        "q09_both_authenticated": 0,
+        "q09_upstream_pass": 0,
+        "q10_historical_visible": 0,
+        "q10_current_contract_bound": 0,
+    }
+    try:
+        adjacent_rows = db_rows(
+            """
+            WITH transitions(label, upstream_phase, next_phase, ordinal) AS (
+              VALUES
+                ('Q02 -> Q03','Q02','Q03',2),
+                ('Q03 -> Q04','Q03','Q04',3),
+                ('Q04 -> Q05','Q04','Q05',4),
+                ('Q05 -> Q06','Q05','Q06',5),
+                ('Q06 -> Q07','Q06','Q07',6),
+                ('Q07 -> Q08','Q07','Q08',7)
+            ), upstream AS (
+              SELECT t.label,t.upstream_phase,t.next_phase,t.ordinal,w.ea_id,w.symbol
+              FROM transitions t
+              JOIN work_items w
+                ON UPPER(w.phase)=t.upstream_phase AND UPPER(w.verdict)='PASS'
+              GROUP BY t.label,t.upstream_phase,t.next_phase,t.ordinal,w.ea_id,w.symbol
+            ), flags AS (
+              SELECT u.label,u.upstream_phase,u.next_phase,u.ordinal,u.ea_id,u.symbol,
+                     COUNT(w.id) AS row_count,
+                     MAX(CASE WHEN UPPER(COALESCE(w.verdict,''))='PASS'
+                              THEN 1 ELSE 0 END) AS is_pass,
+                     MAX(CASE WHEN UPPER(COALESCE(w.verdict,'')) IN
+                                      ('FAIL','FAIL_HARD','RETIRE','RETIRED_LOW_FREQ')
+                              THEN 1 ELSE 0 END) AS is_hard,
+                     MAX(CASE WHEN UPPER(COALESCE(w.verdict,'')) IN
+                                      ('FAIL_SOFT','PASS_SOFT','PASS_LOWFREQ',
+                                       'FAIL_DD_PORTFOLIO_REVIEW','NEED_MORE_DATA')
+                              THEN 1 ELSE 0 END) AS is_soft,
+                     MAX(CASE WHEN UPPER(COALESCE(w.verdict,'')) IN
+                                      ('INFRA_FAIL','INVALID','INVALID_EVIDENCE',
+                                       'ZERO_TRADES','WAITING_INPUT')
+                                   OR LOWER(COALESCE(w.status,''))='failed'
+                              THEN 1 ELSE 0 END) AS is_infra
+              FROM upstream u
+              LEFT JOIN work_items w
+                ON UPPER(w.phase)=u.next_phase
+               AND w.ea_id=u.ea_id AND w.symbol=u.symbol
+              GROUP BY u.label,u.upstream_phase,u.next_phase,u.ordinal,u.ea_id,u.symbol
+            ), classified AS (
+              SELECT label,upstream_phase,next_phase,ordinal,
+                     CASE WHEN row_count=0 THEN 'NO_ROW'
+                          WHEN is_pass=1 THEN 'PASS'
+                          WHEN is_hard=1 THEN 'HARD'
+                          WHEN is_soft=1 THEN 'SOFT'
+                          WHEN is_infra=1 THEN 'INFRA'
+                          ELSE 'OPEN' END AS bucket
+              FROM flags
+            )
+            SELECT label,upstream_phase,next_phase,ordinal,bucket,COUNT(*) AS pairs
+            FROM classified
+            GROUP BY label,upstream_phase,next_phase,ordinal,bucket
+            ORDER BY ordinal,bucket
+            """
+        )
+
+        by_transition: dict[str, dict[str, int]] = {}
+        for row in adjacent_rows:
+            label = str(row.get("label") or "")
+            by_transition.setdefault(label, {})[str(row.get("bucket") or "")] = int(
+                row.get("pairs") or 0
+            )
+        for label, upstream_phase, next_phase, ordinal in PIPELINE_COHORT_TRANSITIONS:
+            counts = {
+                bucket: by_transition.get(label, {}).get(bucket, 0)
+                for bucket in PIPELINE_COHORT_BUCKETS
+            }
+            out["transitions"].append(
+                {
+                    "label": label,
+                    "upstream_phase": upstream_phase,
+                    "next_phase": next_phase,
+                    "ordinal": ordinal,
+                    "upstream_pass": sum(counts.values()),
+                    "counts": counts,
+                }
+            )
+
+        q09_rows = db_rows(
+            """
+            WITH source AS (
+              SELECT DISTINCT ea_id,symbol
+              FROM work_items
+              WHERE UPPER(phase)='Q08' AND UPPER(verdict)='PASS'
+            ), arms(arm) AS (
+              VALUES ('Q09_NEWS'),('Q09_PORTFOLIO')
+            ), flags AS (
+              SELECT a.arm,s.ea_id,s.symbol,COUNT(w.id) AS row_count,
+                     MAX(CASE WHEN
+                           (a.arm='Q09_NEWS' AND UPPER(COALESCE(w.verdict,''))='CONFIG_LOCKED')
+                           OR (a.arm='Q09_PORTFOLIO' AND UPPER(COALESCE(w.verdict,''))='PASS_PORTFOLIO')
+                         THEN 1 ELSE 0 END) AS is_pass,
+                     MAX(CASE WHEN UPPER(COALESCE(w.verdict,'')) IN
+                                      ('FAIL_PORTFOLIO','FAIL','FAIL_HARD')
+                              THEN 1 ELSE 0 END) AS is_hard,
+                     MAX(CASE WHEN UPPER(COALESCE(w.verdict,'')) IN
+                                      ('NEED_MORE_DATA','FAIL_SOFT',
+                                       'FAIL_DD_PORTFOLIO_REVIEW')
+                              THEN 1 ELSE 0 END) AS is_soft,
+                     MAX(CASE WHEN UPPER(COALESCE(w.verdict,'')) IN
+                                      ('INFRA_FAIL','INVALID','INVALID_EVIDENCE',
+                                       'ZERO_TRADES','WAITING_INPUT')
+                                   OR LOWER(COALESCE(w.status,''))='failed'
+                              THEN 1 ELSE 0 END) AS is_infra,
+                     MAX(CASE WHEN UPPER(COALESCE(w.verdict,'')) IN
+                                      ('REVIEW_REQUIRED','PENDING_RUNNER')
+                                   OR LOWER(COALESCE(w.status,'')) IN ('pending','active')
+                                   OR w.verdict IS NULL
+                              THEN 1 ELSE 0 END) AS is_open
+              FROM source s CROSS JOIN arms a
+              LEFT JOIN work_items w
+                ON UPPER(w.phase)=a.arm
+               AND w.ea_id=s.ea_id AND w.symbol=s.symbol
+              GROUP BY a.arm,s.ea_id,s.symbol
+            ), classified AS (
+              SELECT arm,ea_id,symbol,
+                     CASE WHEN row_count=0 THEN 'NO_ROW'
+                          WHEN is_pass=1 THEN 'PASS'
+                          WHEN is_hard=1 THEN 'HARD'
+                          WHEN is_soft=1 THEN 'SOFT'
+                          WHEN is_open=1 THEN 'OPEN'
+                          WHEN is_infra=1 THEN 'INFRA'
+                          ELSE 'OPEN' END AS bucket
+              FROM flags
+            ), news_authenticated AS (
+              SELECT DISTINCT s.ea_id,s.symbol
+              FROM source s JOIN work_items w USING(ea_id,symbol)
+              WHERE UPPER(w.phase)='Q09_NEWS' AND UPPER(w.verdict)='CONFIG_LOCKED'
+            ), portfolio_authenticated AS (
+              SELECT DISTINCT s.ea_id,s.symbol
+              FROM source s JOIN work_items w USING(ea_id,symbol)
+              WHERE UPPER(w.phase)='Q09_PORTFOLIO' AND UPPER(w.verdict)='PASS_PORTFOLIO'
+            )
+            SELECT 'ARM' AS row_type,arm AS label,bucket,COUNT(*) AS pairs
+            FROM classified GROUP BY arm,bucket
+            UNION ALL
+            SELECT 'BOTH_AUTHENTICATED' AS row_type,'Q09' AS label,'PASS' AS bucket,
+                   COUNT(*) AS pairs
+            FROM news_authenticated n
+            JOIN portfolio_authenticated p USING(ea_id,symbol)
+            """
+        )
+        arm_counts: dict[str, dict[str, int]] = {}
+        for row in q09_rows:
+            if row.get("row_type") == "BOTH_AUTHENTICATED":
+                out["q09_both_authenticated"] = int(row.get("pairs") or 0)
+                continue
+            label = str(row.get("label") or "")
+            arm_counts.setdefault(label, {})[str(row.get("bucket") or "")] = int(
+                row.get("pairs") or 0
+            )
+        for arm in ("Q09_NEWS", "Q09_PORTFOLIO"):
+            counts = {
+                bucket: arm_counts.get(arm, {}).get(bucket, 0)
+                for bucket in PIPELINE_COHORT_BUCKETS
+            }
+            upstream_pass = sum(counts.values())
+            out["q09_arms"].append(
+                {
+                    "label": arm,
+                    "upstream_phase": "Q08",
+                    "upstream_pass": upstream_pass,
+                    "counts": counts,
+                }
+            )
+            out["q09_upstream_pass"] = max(out["q09_upstream_pass"], upstream_pass)
+
+        q10_rows = db_rows(
+            """
+            SELECT
+              COUNT(DISTINCT CASE
+                WHEN UPPER(phase)='Q10' AND UPPER(COALESCE(verdict,''))='PASS'
+                THEN ea_id || '|' || symbol END) AS historical_visible,
+              COUNT(DISTINCT CASE
+                WHEN UPPER(phase)='Q10' AND UPPER(COALESCE(verdict,''))='PASS'
+                 AND EXISTS (
+                   SELECT 1 FROM work_item_dependencies d
+                   WHERE d.child_work_item_id=work_items.id
+                     AND d.dependency_role='Q09_NEWS'
+                 )
+                 AND EXISTS (
+                   SELECT 1 FROM work_item_dependencies d
+                   WHERE d.child_work_item_id=work_items.id
+                     AND d.dependency_role='Q09_PORTFOLIO'
+                 )
+                THEN ea_id || '|' || symbol END) AS current_contract_bound
+            FROM work_items
+            """
+        )
+        if q10_rows:
+            out["q10_historical_visible"] = int(q10_rows[0].get("historical_visible") or 0)
+            out["q10_current_contract_bound"] = int(
+                q10_rows[0].get("current_contract_bound") or 0
+            )
+        out["available"] = True
+    except sqlite3.Error as exc:
+        out["error"] = str(exc)
+    return out
+
+
+def render_pipeline_cohorts(snapshot: dict) -> str:
+    """Render the compact adjacent-cohort contract panel."""
+
+    schema_version = str(snapshot.get("schema_version") or PIPELINE_COHORT_SCHEMA_VERSION)
+    if not snapshot.get("available"):
+        return (
+            '<div class="section cohort-section">'
+            '<div class="section-head"><span class="section-glyph"></span>'
+            '<span class="section-title">Contract Cohorts // Adjacent Gates</span>'
+            f'<span class="section-aux">{e(schema_version)}</span></div>'
+            '<div class="cohort-unavailable">QUERY UNAVAILABLE // '
+            f'{e(snapshot.get("error") or "unknown database error")}</div></div>'
+        )
+
+    def cohort_row(label: str, upstream_pass: int, counts: dict) -> str:
+        cells = "".join(
+            f'<td class="cohort-{bucket.lower()}">{int(counts.get(bucket, 0)):,}</td>'
+            for bucket in PIPELINE_COHORT_BUCKETS
+        )
+        return (
+            f'<tr><th scope="row">{e(label)}</th>'
+            f'<td class="cohort-up">{int(upstream_pass):,}</td>{cells}</tr>'
+        )
+
+    transition_rows = "".join(
+        cohort_row(
+            str(row.get("label") or ""),
+            int(row.get("upstream_pass") or 0),
+            row.get("counts") or {},
+        )
+        for row in snapshot.get("transitions") or []
+    )
+    q09_rows = "".join(
+        cohort_row(
+            f"Q08 -> {str(row.get('label') or '').replace('_', ' ')}",
+            int(row.get("upstream_pass") or 0),
+            row.get("counts") or {},
+        )
+        for row in snapshot.get("q09_arms") or []
+    )
+    headers = "".join(f"<th>{e(bucket)}</th>" for bucket in PIPELINE_COHORT_BUCKETS)
+    return f"""
+  <div class="section cohort-section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Contract Cohorts // Adjacent Gates</span>
+      <span class="section-aux">{e(schema_version)} // CANONICAL Q ROWS</span>
+    </div>
+    <div class="cohort-table-wrap">
+      <table class="cohort-table">
+        <thead><tr><th>TRANSITION</th><th>UP PASS</th>{headers}</tr></thead>
+        <tbody>{transition_rows}{q09_rows}</tbody>
+      </table>
+    </div>
+    <div class="cohort-tail">
+      <div class="cohort-tail-card">
+        <span>Q09 BOTH AUTHENTICATED</span>
+        <b>{int(snapshot.get("q09_both_authenticated") or 0):,}</b>
+        <small>/ {int(snapshot.get("q09_upstream_pass") or 0):,} Q08 PASS pairs</small>
+      </div>
+      <div class="cohort-tail-card">
+        <span>Q10 HISTORICAL VISIBLE</span>
+        <b>{int(snapshot.get("q10_historical_visible") or 0):,}</b>
+        <small>distinct lifetime PASS pairs</small>
+      </div>
+      <div class="cohort-tail-card contract-bound">
+        <span>Q10 CURRENT CONTRACT BOUND</span>
+        <b>{int(snapshot.get("q10_current_contract_bound") or 0):,}</b>
+        <small>PASS rows with both Q09 dependency roles</small>
+      </div>
+    </div>
+    <div class="cohort-foot">
+      Strict upstream PASS pairs; lifetime canonical-row evidence. Adjacent precedence:
+      PASS &gt; HARD &gt; SOFT/PORTFOLIO &gt; INFRA/RETRY &gt; OPEN &gt; NO_ROW;
+      Q09 OPEN decision/runner tokens take precedence over prior infra rows.
+      Q09 authenticated = CONFIG_LOCKED + PASS_PORTFOLIO for the same Q08 PASS pair.
+      Q10 binding is database dependency presence; execution-time hash verification remains
+      authoritative. This panel is not a claim of one historical lineage or gate era.
+    </div>
+  </div>
+"""
 
 
 def _json_from_path(path_value: str | None) -> dict:
@@ -1659,6 +1975,7 @@ def main() -> int:
     q12_count = q12_review_ready_count()
     programme = pipeline_books_program_snapshot()
     programme_html = render_pipeline_books_program(programme)
+    cohort_html = render_pipeline_cohorts(pipeline_cohort_snapshot())
 
     # Pipeline health (written by `farmctl health`, scheduled every 15 min)
     health_file = ROOT / "state" / "health.json"
@@ -2517,6 +2834,7 @@ def main() -> int:
       <div class="prog-counter"><div class="prog-lbl">Backtests Done</div><div class="prog-val">{bt_done:,}</div></div>
       <div class="prog-counter"><div class="prog-lbl">Backtests Open</div><div class="prog-val">{bt_open:,}</div></div>
     </div>
+    <div class="prog-strip-label">{e(LIFETIME_PASS_CHIP_LABEL)}</div>
     <div class="prog-strip">
       {''.join(
           f'<div class="prog-chip{" empty" if q_counts[q] == 0 else ""}">'
@@ -2530,7 +2848,8 @@ def main() -> int:
       Q00 = strategy cards &middot; Q01 = EAs with .ex5 on disk &middot;
       Q02..Q10 = distinct (EA, symbol) PASS pairs, cumulative across gate-regime
       eras (Q03/Q08 entered mid-history &mdash; adjacent chips are not one
-      regime's funnel) &middot; Q09 = news/portfolio sub-gate passes &middot;
+      regime's funnel) &middot; Q09 = union of news/portfolio sub-gate passes &middot;
+      Q10 = historical-visible PASS pairs, not current-contract binding &middot;
       Q12 = EAs in OWNER review pool &middot; Q13 = sleeves live on T_Live (pulse)
     </div>
   </div>
@@ -3002,6 +3321,58 @@ body { padding: 32px; min-height: 100vh; }
   font-size: 9px; color: var(--text-4); letter-spacing: 0.06em;
   padding: 8px 4px 0;
 }
+.prog-strip-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  color: var(--warn); text-transform: uppercase; padding: 0 4px 8px;
+}
+
+/* CONTRACT-VERSIONED ADJACENT COHORTS */
+.cohort-table-wrap { overflow-x: auto; border: 1px solid var(--border); }
+.cohort-table {
+  width: 100%; border-collapse: collapse; background: var(--surface-1);
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.cohort-table th, .cohort-table td {
+  padding: 8px 10px; border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border); text-align: right;
+}
+.cohort-table th:first-child { min-width: 180px; text-align: left; }
+.cohort-table thead th {
+  color: var(--text-3); background: var(--surface-2); font-size: 9px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.cohort-table tbody th { color: var(--text-2); font-weight: 600; }
+.cohort-table tr:last-child th, .cohort-table tr:last-child td { border-bottom: none; }
+.cohort-table th:last-child, .cohort-table td:last-child { border-right: none; }
+.cohort-up { color: var(--text); font-weight: 700; }
+.cohort-no_row, .cohort-open { color: var(--text-3); }
+.cohort-infra { color: var(--warn); }
+.cohort-soft { color: var(--signal); }
+.cohort-hard { color: var(--fail); }
+.cohort-pass { color: var(--pass); font-weight: 700; }
+.cohort-tail {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px; background: var(--border); border: 1px solid var(--border); border-top: none;
+}
+.cohort-tail-card { background: var(--surface-1); padding: 11px 14px; }
+.cohort-tail-card span, .cohort-tail-card small {
+  display: block; font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px; color: var(--text-3); letter-spacing: 0.08em;
+}
+.cohort-tail-card b {
+  display: inline-block; margin-top: 5px; font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 20px; color: var(--pass); font-variant-numeric: tabular-nums;
+}
+.cohort-tail-card small { display: inline; margin-left: 6px; letter-spacing: 0; }
+.cohort-tail-card.contract-bound b { color: var(--signal); }
+.cohort-foot, .cohort-unavailable {
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 9px;
+  line-height: 1.45; color: var(--text-4); padding: 9px 4px 0;
+}
+.cohort-unavailable { padding: 14px 18px; border: 1px solid var(--border); color: var(--fail); }
+@media (max-width: 900px) { .cohort-tail { grid-template-columns: 1fr; } }
 
 /* PIPELINE FUNNEL */
 .funnel {
@@ -3419,6 +3790,8 @@ a.frontier-tile:hover { background: var(--surface-2); }
   </div>
 
   {progress_html}
+
+  {cohort_html}
 
   <!-- 5. PIPELINE FUNNEL -->
   <div class="section">
