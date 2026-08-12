@@ -1,0 +1,17 @@
+{
+  "logical_symbol": "QM5_20291_XAU_XAG_HKURT_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XAU/XAG historical-kurtosis basket from approved card HOLLSTEIN-MAX-2021_XAU_XAG_S03. Run on XAUUSD.DWX D1 and evaluate the paired package, not standalone legs. At each genuine broker-month transition it calculates each metal's source-defined Pearson historical kurtosis from exactly 252 completed simple D1 returns, buys the higher-kurtosis leg, shorts the lower-kurtosis leg, and closes or renews at the next month. The directly relevant source tests are insignificant or sign-reversed, so Q02 is a strict carrier falsification; equal fixed-risk halves do not assert dollar, beta, volatility, factor, or portfolio neutrality."
+  ]
+}
+

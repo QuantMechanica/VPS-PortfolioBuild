@@ -18,7 +18,7 @@ This is a pure fourth-moment cross-sectional rank. It uses no price ratio,
 OLS residual, spread z-score, trend, oscillator, calendar direction, trained
 output, or adaptive threshold.
 
-## 2. Formula And Parameters
+## 2. Parameters
 
 ```text
 mu = sum(r[d]) / 252
@@ -51,7 +51,7 @@ closed against the one authorized Q02 baseline.
 - Logical symbol: `QM5_20291_XAU_XAG_HKURT_D1`.
 - No standalone-leg interpretation or single-leg fallback is authorized.
 
-## 4. Timeframe And Lifecycle
+## 4. Timeframe
 
 Both series and the host use D1. Decisions occur only on a genuine broker-
 month transition. A terminal-persistent attempt marker is written before
@@ -59,7 +59,24 @@ history or order checks. The manager closes the prior package before renewal,
 closes after forty days, and flattens any orphan, duplicate, same-side, or
 otherwise malformed package.
 
-## 5. Risk Model
+## 5. Expected Behaviour
+
+After the 253-close warm-up, the basket should attempt approximately one
+opposite-side package per broker month. XAU is long only when its source-
+defined kurtosis is higher than XAG's; otherwise the sides reverse. A tie or
+invalid state remains flat. Q02 retires the candidate below five completed
+packages per full post-warm-up year, and Q09 alone may establish realized
+correlation to the certified book.
+
+## 6. Source Citation
+
+Hollstein, F.; Prokopczuk, M.; and Tharann, B. (2021), "Anomalies in
+Commodity Futures Markets," *Quarterly Journal of Finance* 11(4), article
+2150017, DOI `10.1142/S2010139221500178`. The source's two-portfolio result is
+insignificant and its later-period result reverses sign; no efficacy transfers
+to this two-CFD carrier.
+
+## 7. Risk Model
 
 Q02 is locked to `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1` for the whole package. Each leg receives half of the
@@ -72,4 +89,4 @@ stress, or deployment setfile is authorized.
 | Version | Date | Reason |
 |---|---|---|
 | v1 | 2026-08-12 | initial approved XAU/XAG historical-kurtosis carrier scaffold |
-
+| v2 | 2026-08-12 | Q01 implementation, strict compile, and registry validation PASS |
