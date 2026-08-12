@@ -83,9 +83,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const int idx_high_n = iHighest(_Symbol, PERIOD_D1, MODE_CLOSE, strategy_extreme_lookback, 2);
    if(idx_low_n < 0 || idx_high_n < 0)
       return false;
-   const double lowest_n = iClose(_Symbol, PERIOD_D1, idx_low_n);
-   const double highest_n = iClose(_Symbol, PERIOD_D1, idx_high_n);
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double lowest_n = iClose(_Symbol, PERIOD_D1, idx_low_n); // perf-allowed: bounded D1 structural read after the QM_IsNewBar gate.
+   const double highest_n = iClose(_Symbol, PERIOD_D1, idx_high_n); // perf-allowed: bounded D1 structural read after the QM_IsNewBar gate.
+   const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: bounded D1 structural read after the QM_IsNewBar gate.
    if(lowest_n <= 0.0 || highest_n <= 0.0 || close1 <= 0.0)
       return false;
 
@@ -99,7 +99,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                          : iLowest(_Symbol, PERIOD_D1, MODE_CLOSE, strategy_stop_lookback, 2);
    if(idx_stop < 0)
       return false;
-   const double stop_price = iClose(_Symbol, PERIOD_D1, idx_stop);
+   const double stop_price = iClose(_Symbol, PERIOD_D1, idx_stop); // perf-allowed: bounded D1 structural read after the QM_IsNewBar gate.
    if(stop_price <= 0.0)
       return false;
 

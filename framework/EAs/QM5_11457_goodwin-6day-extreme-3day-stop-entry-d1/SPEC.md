@@ -103,3 +103,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-10 | Initial build from card | build_ea task 3d6528b3-867e-49d7-b359-3ea00ab4137d |
+| v2 | 2026-08-12 | Strict performance-contract repair | Documented the four bounded D1 close reads as new-bar-gated; trading mechanics and parameters are unchanged. |
