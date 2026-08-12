@@ -90,3 +90,4 @@ stress, or deployment setfile is authorized.
 |---|---|---|
 | v1 | 2026-08-12 | initial approved XAU/XAG historical-kurtosis carrier scaffold |
 | v2 | 2026-08-12 | Q01 implementation, strict compile, and registry validation PASS |
+| v3 | 2026-08-12 | one logical XAU/XAG fixed-risk baseline enqueued at Q02 |

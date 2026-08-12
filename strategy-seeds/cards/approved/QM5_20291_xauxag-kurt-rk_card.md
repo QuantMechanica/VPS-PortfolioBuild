@@ -54,9 +54,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01_PASS
+pipeline_phase: Q02_ENQUEUED
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 review_focus: "Falsify a monthly XAU/XAG fourth-moment relative premium without directional metal intent. It differs from ratio convergence, skewness, semivariance, expected-shortfall, volatility-of-volatility, variance-ratio, trend, calendar, and RSI systems; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -264,6 +264,7 @@ admission; and correlation waivers.
 |---|---|---|---|---|
 | v1 | 2026-08-12 | initial source-bounded XAU/XAG historical-kurtosis carrier | G0 | APPROVED |
 | v2 | 2026-08-12 | initial V5 implementation and deterministic validation | Q01 | PASS |
+| v3 | 2026-08-12 | paced two-leg baseline handoff below factory CPU ceiling | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -271,3 +272,4 @@ admission; and correlation waivers.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-12 | APPROVED | `decisions/2026-08-12_qm5_20291_xauxag_kurt_rank_g0.md` |
 | Q01 Build Validation | 2026-08-12 | PASS | `D:/QM/reports/compile/20260812_101248/summary.csv`; `D:/QM/reports/framework/21/build_check_20260812_101248.json`; `D:/QM/reports/pipeline/QM5_20291/P1/P1_QM5_20291_result.json` |
+| Q02 Baseline Screening | 2026-08-12 | ENQUEUED; pending at immediate readback, attempt 0, no verdict | work item `fbe16151-4f78-446d-a61f-a399f1c6659a`; `docs/ops/evidence/2026-08-12_qm5_20291_xauxag_kurt_rank_q01_q02_enqueue.md` |
