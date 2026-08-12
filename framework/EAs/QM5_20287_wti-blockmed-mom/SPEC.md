@@ -147,11 +147,22 @@ waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-12 | Initial scaffold from approved card | Build pending |
+| v2 | 2026-08-12 | Initial V5 implementation and Q01 validation | Strict compile, target build check, P1 artifact validation, and independent block-statistic vectors PASS |
 
 ## 12. Q01 Status
 
-PENDING. Strict compile, target build validation, P1 artifact validation, and
-independent statistic/clock reference vectors must pass before Q02 handoff.
+PASS. Strict compile completed with zero errors and zero warnings; the target
+build check completed with zero failures and zero warnings; P1 artifact
+validation found the EA directory and current `.ex5`; and independent vectors
+proved return orientation, four fixed chronological blocks, inner-two even
+median, exact-zero handling, a two-versus-two divergence from quarterly sign
+consensus, a sign divergence from both raw-return median and middle-eight
+trimmed mean, and cross-year month continuity. Evidence:
+
+- `D:/QM/reports/compile/20260812_041650/summary.csv`
+- `D:/QM/reports/framework/21/build_check_20260812_041650.json`
+- `D:/QM/reports/pipeline/QM5_20287/P1/P1_QM5_20287_result.json`
+- `framework/EAs/QM5_20287_wti-blockmed-mom/docs/test_blockmed_reference.py`
 
 ## 13. Q02 Handoff
 
