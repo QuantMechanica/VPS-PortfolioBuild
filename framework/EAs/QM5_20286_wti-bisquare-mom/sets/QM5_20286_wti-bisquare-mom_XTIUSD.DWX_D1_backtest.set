@@ -1,0 +1,32 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        20286
+; ea_slug:      wti-bisquare-mom
+; ea_version:   v5.0
+; set_version:  s20260812-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   2b724569faa1145c1f14229ac5c468abeed0b9bd5bf2caef4b556feb3cf34938
+; author:       Development
+; date:         2026-08-12
+;==========================================================
+qm_ea_id=20286
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-bisquare-mom_card.md
+strategy_return_months=12
+strategy_bisquare_cutoff=4.685
+strategy_mad_normalizer=1.4826
+strategy_bisquare_steps=32
+strategy_history_bars_d1=800
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=40
+strategy_max_spread_points=1500

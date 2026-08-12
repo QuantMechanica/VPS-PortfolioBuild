@@ -152,11 +152,22 @@ waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-12 | Initial scaffold from approved card | Build pending |
+| v2 | 2026-08-12 | Initial V5 implementation and Q01 validation | Strict compile, target build check, P1 artifact validation, and independent bisquare vectors PASS |
 
 ## 12. Q01 Status
 
-PENDING. Build, strict compile, target validation, and independent reference
-vectors have not yet run.
+PASS. Strict compile completed with zero errors and zero warnings; the target
+build check completed with zero failures and zero warnings; P1 artifact
+validation found the EA directory and current `.ex5`; and independent vectors
+proved return orientation, even median/MAD, strict redescending support,
+zero-tail influence, a sign divergence from the Huber neighbor, exact-zero
+handling, zero-MAD fail-closed behavior, and cross-year month continuity.
+Evidence:
+
+- `D:/QM/reports/compile/20260812_022306/summary.csv`
+- `D:/QM/reports/framework/21/build_check_20260812_022411.json`
+- `D:/QM/reports/pipeline/QM5_20286/P1/P1_QM5_20286_result.json`
+- `framework/EAs/QM5_20286_wti-bisquare-mom/docs/test_bisquare_reference.py`
 
 ## 13. Q02 Handoff
 

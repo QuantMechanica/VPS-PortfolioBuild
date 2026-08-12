@@ -33,7 +33,7 @@ indicators:
   - "[[indicators/completed-month-log-return]]"
   - "[[indicators/redescending-bisquare-location]]"
   - "[[indicators/atr]]"
-strategy_type_flags: [commodity, energy, crude-oil, structural-trend, robust-location, redescending-score, monthly-rebalance, atr-hard-stop, time-stop, symmetric-long-short, low-frequency]
+strategy_type_flags: [atr-hard-stop, time-stop, symmetric-long-short]
 markets: [commodities, energy, crude_oil]
 timeframes: [D1]
 target_symbols: [XTIUSD.DWX]
@@ -55,8 +55,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: PENDING
+pipeline_phase: Q01
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify a direct WTI monthly robust trend whose redescending bisquare score assigns exactly zero influence beyond a frozen cutoff, unlike the positive-tail Huber neighbor and all one-shot trim, cap, Winsor, median, trimean, and pseudomedian estimators; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -336,11 +336,12 @@ edit; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-12 | initial source-bounded WTI redescending bisquare card | G0 | APPROVED |
+| v1-q01 | 2026-08-12 | deterministic V5 build, strict compile, target validation, and bisquare reference vectors | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-12 | APPROVED | `decisions/2026-08-12_qm5_20286_wti_bisquare_mom_g0.md` |
-| Q01 Build Validation | - | PENDING | - |
+| Q01 Build Validation | 2026-08-12 | PASS | `D:/QM/reports/compile/20260812_022306/summary.csv`; `D:/QM/reports/framework/21/build_check_20260812_022411.json`; `D:/QM/reports/pipeline/QM5_20286/P1/P1_QM5_20286_result.json` |
 | Q02 Baseline Screening | - | NOT_ENQUEUED | - |
