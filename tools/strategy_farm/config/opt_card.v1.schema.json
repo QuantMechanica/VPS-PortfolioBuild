@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.local/schemas/opt_card.v1.schema.json",
+  "title": "QuantMechanica Q14 optimization card",
+  "type": "object",
+  "required": [
+    "schema",
+    "card_id",
+    "program",
+    "parent",
+    "lever",
+    "hypothesis",
+    "parameter_surface",
+    "comparison_windows",
+    "success_metric",
+    "trial_ledger_path"
+  ],
+  "properties": {
+    "schema": {
+      "const": "qm.opt-card/v1"
+    },
+    "card_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "program": {
+      "type": "object",
+      "required": [
+        "program_id",
+        "config_sha256",
+        "q10_snapshot_sha256"
+      ],
+      "properties": {
+        "program_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "config_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "q10_snapshot_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "parent": {
+      "type": "object",
+      "required": [
+        "ea_id",
+        "symbol",
+        "binary",
+        "setfile",
+        "q10"
+      ],
+      "properties": {
+        "ea_id": {
+          "pattern": "^QM5_[0-9]+$"
+        },
+        "symbol": {
+          "pattern": "^[A-Z0-9_]+\\.DWX$"
+        },
+        "binary": {
+          "$ref": "#/$defs/binding"
+        },
+        "setfile": {
+          "$ref": "#/$defs/binding"
+        },
+        "q10": {
+          "type": "object",
+          "required": [
+            "work_item_id",
+            "verdict",
+            "evidence",
+            "metrics"
+          ],
+          "properties": {
+            "work_item_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "verdict": {
+              "const": "PASS"
+            },
+            "evidence": {
+              "$ref": "#/$defs/binding"
+            },
+            "metrics": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "lever": {
+      "enum": [
+        "EXIT_SURGERY",
+        "VOL_REGIME_FILTER",
+        "LOCKED_PORT",
+        "MTF_ENTRY"
+      ]
+    },
+    "hypothesis": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parameter_surface": {
+      "type": "object",
+      "required": [
+        "fixed_parameters",
+        "parameters"
+      ],
+      "properties": {
+        "fixed_parameters": {
+          "type": "object"
+        },
+        "parameters": {
+          "type": "array"
+        }
+      }
+    },
+    "comparison_windows": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "start",
+          "end"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "Q04_ANCHORED_OOS",
+              "POST_DEV_HOLDOUT"
+            ]
+          },
+          "start": {
+            "type": "string",
+            "format": "date"
+          },
+          "end": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
+    },
+    "success_metric": {
+      "type": "object",
+      "required": [
+        "primary",
+        "direction",
+        "minimum_improvement"
+      ]
+    },
+    "trial_ledger_path": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "binding": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "size_bytes"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

@@ -21204,6 +21204,28 @@ def enqueue_head_to_head(
     return {**preview, "enqueued": True, "dry_run": False, "idempotent": False, "status": "pending"}
 
 
+def admit_optimization(
+    root: Path,
+    *,
+    config_path: str | None,
+    report_root: str | None,
+    apply: bool,
+) -> dict[str, Any]:
+    """Dry-run or apply the deterministic analytic Q14 admission gate."""
+    import sys as _sys
+
+    _sys.path.insert(0, str(REPO_ROOT))
+    from framework.scripts import q14_opt_admission as q14  # noqa: WPS433
+
+    return q14.run_admission(
+        db_path=db_path(root),
+        config_path=Path(config_path).expanduser() if config_path else q14.DEFAULT_CONFIG,
+        repo_root=CANONICAL_REPO_ROOT,
+        report_root=Path(report_root).expanduser() if report_root else q14.DEFAULT_REPORT_ROOT,
+        apply=apply,
+    )
+
+
 def print_json(payload: dict[str, Any]) -> None:
     print(json.dumps(payload, indent=2, sort_keys=True))
 
@@ -21628,6 +21650,14 @@ def build_parser() -> argparse.ArgumentParser:
     fs.add_argument("--symbol")
     fs.add_argument("--refresh-cache", action="store_true")
 
+    q14 = sub.add_parser(
+        "admit-optimization",
+        help="Evaluate Q10 PASS survivors for deterministic Q14 opt-card admission (dry-run default).",
+    )
+    q14.add_argument("--config")
+    q14.add_argument("--report-root")
+    q14.add_argument("--apply", action="store_true")
+
     q16 = sub.add_parser(
         "enqueue-head-to-head",
         help="Validate and optionally enqueue one analytic Q16 sealed comparison (dry-run default).",
@@ -21661,6 +21691,8 @@ _STATE_MUTATING_COMMANDS = frozenset({
 
 
 def _command_mutates_state(args: argparse.Namespace) -> bool:
+    if args.command == "admit-optimization":
+        return bool(args.apply)
     if args.command == "enqueue-head-to-head":
         return bool(args.apply)
     if args.command in _STATE_MUTATING_COMMANDS:
@@ -21826,6 +21858,13 @@ def main(argv: list[str] | None = None) -> int:
             symbol = str(args.symbol).upper().replace(".DWX", "")
             rows = [r for r in rows if r["sleeve"].split(":", 1)[-1] == symbol]
         print_json({**payload, "rows": rows})
+    elif args.command == "admit-optimization":
+        print_json(admit_optimization(
+            root,
+            config_path=args.config,
+            report_root=args.report_root,
+            apply=args.apply,
+        ))
     elif args.command == "enqueue-head-to-head":
         print_json(enqueue_head_to_head(
             root,

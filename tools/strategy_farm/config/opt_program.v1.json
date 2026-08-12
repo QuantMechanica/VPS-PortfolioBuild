@@ -1,0 +1,373 @@
+{
+  "schema": "qm.opt-program/v1",
+  "program_id": "SURVIVOR_OPTIMIZATION_2026-08-12_V1",
+  "source_decision": "decisions/2026-08-12_DL-084_optimization_track_q14_q16_dual_book.md",
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0
+  },
+  "caps": {
+    "max_concurrent_opt_cards": 12,
+    "max_cards_per_parent": 2
+  },
+  "comparison_windows": [
+    {
+      "id": "Q04_F1_OOS_2023",
+      "kind": "Q04_ANCHORED_OOS",
+      "start": "2023-01-01",
+      "end": "2023-12-31"
+    },
+    {
+      "id": "Q04_F2_OOS_2024",
+      "kind": "Q04_ANCHORED_OOS",
+      "start": "2024-01-01",
+      "end": "2024-12-31"
+    },
+    {
+      "id": "Q04_F3_OOS_2025",
+      "kind": "Q04_ANCHORED_OOS",
+      "start": "2025-01-01",
+      "end": "2025-12-31"
+    },
+    {
+      "id": "POST_DEV_HOLDOUT_2026_H1_PLUS_JUL",
+      "kind": "POST_DEV_HOLDOUT",
+      "start": "2026-01-01",
+      "end": "2026-07-31"
+    }
+  ],
+  "levers": {
+    "EXIT_SURGERY": {
+      "enabled": true,
+      "order": 10,
+      "min_trades": 60,
+      "success_metric": {
+        "primary": "annual_return_pct",
+        "direction": "MAXIMIZE",
+        "minimum_improvement": 0,
+        "require_maxdd_not_worse": true,
+        "require_worst_day_not_worse": true,
+        "required_robust_gates": [
+          "Q04",
+          "Q06",
+          "Q08"
+        ]
+      }
+    },
+    "VOL_REGIME_FILTER": {
+      "enabled": true,
+      "order": 20,
+      "min_trades": 150,
+      "min_max_drawdown_pct": 12,
+      "success_metric": {
+        "primary": "return_to_maxdd",
+        "direction": "MAXIMIZE",
+        "minimum_improvement": 0,
+        "require_maxdd_not_worse": true,
+        "require_worst_day_not_worse": true,
+        "minimum_anchored_fold_wins": 2,
+        "anchored_fold_count": 3,
+        "frequency_floor_trades": 60,
+        "selection_note": "DD-shaped comparison; standalone PF is not the primary objective"
+      }
+    },
+    "LOCKED_PORT": {
+      "enabled": true,
+      "order": 5,
+      "carrier_list_required": true,
+      "success_metric": {
+        "primary": "return_to_maxdd",
+        "direction": "MAXIMIZE",
+        "minimum_improvement": 0,
+        "require_maxdd_not_worse": true,
+        "require_worst_day_not_worse": true
+      }
+    },
+    "MTF_ENTRY": {
+      "enabled": true,
+      "order": 30,
+      "backlog_only": true,
+      "success_metric": {
+        "primary": "return_to_maxdd",
+        "direction": "MAXIMIZE",
+        "minimum_improvement": 0,
+        "require_maxdd_not_worse": true,
+        "require_worst_day_not_worse": true
+      }
+    }
+  },
+  "surface_profiles": {
+    "exit_13213_hour": {
+      "fixed_parameters": {},
+      "parameters": [
+        {
+          "name": "strategy_exit_hour",
+          "type": "integer",
+          "incumbent": 18,
+          "candidate_values": [
+            19,
+            20
+          ],
+          "bounds": {
+            "minimum": 18,
+            "maximum": 20
+          }
+        }
+      ],
+      "selection_rule": "Select on DEV only; freeze one candidate before Q04 OOS"
+    },
+    "exit_10706_friday_hour": {
+      "fixed_parameters": {
+        "FridayExitMinuteBroker": 30
+      },
+      "parameters": [
+        {
+          "name": "FridayExitHourBroker",
+          "type": "integer",
+          "incumbent": 18,
+          "candidate_values": [
+            19,
+            20
+          ],
+          "bounds": {
+            "minimum": 18,
+            "maximum": 20
+          }
+        }
+      ],
+      "selection_rule": "Select on DEV only; freeze one candidate before Q04 OOS"
+    },
+    "exit_10692_hold_bars": {
+      "fixed_parameters": {},
+      "parameters": [
+        {
+          "name": "strategy_max_hold_bars",
+          "type": "integer",
+          "incumbent": 24,
+          "candidate_values": [
+            30,
+            36
+          ],
+          "bounds": {
+            "minimum": 24,
+            "maximum": 36
+          }
+        }
+      ],
+      "selection_rule": "Select on DEV only; freeze one candidate before Q04 OOS"
+    },
+    "exit_10911_hold_bars": {
+      "fixed_parameters": {
+        "strategy_ema_exit_period": 20,
+        "strategy_target_r_mult": 1.5
+      },
+      "parameters": [
+        {
+          "name": "strategy_max_hold_bars",
+          "type": "integer",
+          "incumbent": 30,
+          "candidate_values": [
+            36,
+            42
+          ],
+          "bounds": {
+            "minimum": 30,
+            "maximum": 42
+          }
+        }
+      ],
+      "selection_rule": "Hold EMA20 and 1.5R fixed; select the ceiling on DEV only"
+    },
+    "exit_13301_hour": {
+      "fixed_parameters": {
+        "strategy_exit_minute": 0
+      },
+      "parameters": [
+        {
+          "name": "strategy_exit_hour",
+          "type": "integer",
+          "incumbent": 18,
+          "candidate_values": [
+            19,
+            20
+          ],
+          "bounds": {
+            "minimum": 18,
+            "maximum": 20
+          }
+        }
+      ],
+      "selection_rule": "Select on DEV only; freeze one candidate before Q04 OOS"
+    },
+    "exit_11422_new_hold_bars": {
+      "fixed_parameters": {
+        "implementation_contract": "Add strategy_max_hold_bars with zero preserving incumbent behavior",
+        "strategy_tp_r_multiple": 2
+      },
+      "parameters": [
+        {
+          "name": "strategy_max_hold_bars",
+          "type": "integer",
+          "incumbent": 0,
+          "candidate_values": [
+            10,
+            15
+          ],
+          "bounds": {
+            "minimum": 10,
+            "maximum": 15
+          }
+        }
+      ],
+      "selection_rule": "New exit-only input; select on DEV and preserve the incumbent no-ceiling control"
+    },
+    "vol_prior_d1_atr_ratio": {
+      "fixed_parameters": {
+        "control_filter_enabled": false,
+        "challenger_filter_enabled": true,
+        "evaluation_bar_shift": 1,
+        "regime_timeframe": "D1",
+        "atr_period": 14,
+        "atr_median_lookback": 100
+      },
+      "parameters": [
+        {
+          "name": "strategy_vol_regime_atr_ratio_min",
+          "type": "number",
+          "incumbent": 1,
+          "candidate_values": [
+            0.9,
+            1,
+            1.1
+          ],
+          "bounds": {
+            "minimum": 0.75,
+            "maximum": 1.25
+          }
+        }
+      ],
+      "selection_rule": "One threshold selected on DEV only; bar[1] only; freeze before Q04 OOS"
+    }
+  },
+  "cohort_freeze": [
+    {
+      "ea_id": "QM5_13213",
+      "symbol": "USDJPY.DWX",
+      "priority": 10,
+      "levers": {
+        "EXIT_SURGERY": {
+          "surface_profile": "exit_13213_hour",
+          "hypothesis": "Extending the fixed same-day exit by one or two hours captures breakout continuation without changing the GMT range anchor or stop logic."
+        },
+        "VOL_REGIME_FILTER": {
+          "surface_profile": "vol_prior_d1_atr_ratio",
+          "hypothesis": "A prior-closed-D1 ATR-ratio permission gate removes compressed-regime breakout attempts and reduces drawdown without tuning the structural GMT session."
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_10706",
+      "symbol": "GBPUSD.DWX",
+      "priority": 20,
+      "levers": {
+        "EXIT_SURGERY": {
+          "surface_profile": "exit_10706_friday_hour",
+          "hypothesis": "A later Friday strategy exit gives valid weekly reversals more room while retaining the mandatory framework Friday close as the final ceiling."
+        },
+        "VOL_REGIME_FILTER": {
+          "surface_profile": "vol_prior_d1_atr_ratio",
+          "hypothesis": "A prior-closed-D1 ATR-ratio permission gate avoids Monday-box reversals in compressed regimes and lowers tail drawdown."
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_10692",
+      "symbol": "NDX.DWX",
+      "priority": 30,
+      "levers": {
+        "EXIT_SURGERY": {
+          "surface_profile": "exit_10692_hold_bars",
+          "hypothesis": "Loosening the 24-bar ceiling allows completed liquidity-sweep reversals to realize their fixed 2R target without tightening the stop."
+        },
+        "VOL_REGIME_FILTER": {
+          "surface_profile": "vol_prior_d1_atr_ratio",
+          "hypothesis": "A prior-closed-D1 ATR-ratio permission gate excludes low-energy index sweeps and improves return-to-drawdown."
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_10911",
+      "symbol": "GDAXI.DWX",
+      "priority": 40,
+      "levers": {
+        "EXIT_SURGERY": {
+          "surface_profile": "exit_10911_hold_bars",
+          "hypothesis": "Loosening only the 30-bar ceiling reduces premature truncation while leaving the EMA20 cross and 1.5R target unchanged."
+        },
+        "VOL_REGIME_FILTER": {
+          "surface_profile": "vol_prior_d1_atr_ratio",
+          "hypothesis": "A prior-closed-D1 ATR-ratio gate suppresses weak-volatility pullbacks and reduces drawdown without changing the Grimes entry pattern."
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_13301",
+      "symbol": "GDAXI.DWX",
+      "priority": 50,
+      "levers": {
+        "EXIT_SURGERY": {
+          "surface_profile": "exit_13301_hour",
+          "hypothesis": "Extending the same-day exit captures late-session range-breakout continuation without perturbing the fixed range window."
+        },
+        "VOL_REGIME_FILTER": {
+          "surface_profile": "vol_prior_d1_atr_ratio",
+          "hypothesis": "A prior-closed-D1 ATR-ratio permission gate removes compressed-regime minute-range breaks and improves tail behavior."
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_11422",
+      "symbol": "USDCAD.DWX",
+      "priority": 60,
+      "levers": {
+        "EXIT_SURGERY": {
+          "surface_profile": "exit_11422_new_hold_bars",
+          "hypothesis": "A single D1 bar-count ceiling removes stale outside-bar positions while preserving the fixed stop and 2R target."
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_10128",
+      "symbol": "XAUUSD.DWX",
+      "priority": 70,
+      "levers": {
+        "VOL_REGIME_FILTER": {
+          "surface_profile": "vol_prior_d1_atr_ratio",
+          "hypothesis": "A prior-closed-D1 ATR-ratio gate tests the gold-volatility thesis without changing the Bollinger breakout parameters."
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_10145",
+      "symbol": "XAUUSD.DWX",
+      "priority": 80,
+      "levers": {
+        "VOL_REGIME_FILTER": {
+          "surface_profile": "vol_prior_d1_atr_ratio",
+          "hypothesis": "A prior-closed-D1 ATR-ratio gate tests the gold-volatility thesis without changing the time-series-momentum parameters."
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_10183",
+      "symbol": "XAUUSD.DWX",
+      "priority": 90,
+      "levers": {
+        "VOL_REGIME_FILTER": {
+          "surface_profile": "vol_prior_d1_atr_ratio",
+          "hypothesis": "A prior-closed-D1 ATR-ratio gate tests the gold-volatility thesis without changing the multi-signal strategy parameters."
+        }
+      }
+    }
+  ]
+}

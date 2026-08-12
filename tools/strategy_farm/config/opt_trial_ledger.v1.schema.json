@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.local/schemas/opt_trial_ledger.v1.schema.json",
+  "title": "QuantMechanica optimization trial ledger",
+  "type": "object",
+  "required": [
+    "schema",
+    "card_id",
+    "status",
+    "declared_trial_count",
+    "planned_trials",
+    "trials"
+  ],
+  "properties": {
+    "schema": {
+      "const": "qm.opt-trial-ledger/v1"
+    },
+    "card_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "OPENED",
+        "CLOSED"
+      ]
+    },
+    "declared_trial_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "planned_trials": {
+      "type": "array",
+      "minItems": 1
+    },
+    "trials": {
+      "type": "array"
+    }
+  }
+}
