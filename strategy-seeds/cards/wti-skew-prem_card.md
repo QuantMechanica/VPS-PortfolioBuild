@@ -54,9 +54,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02_ENQUEUED
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 review_focus: "Falsify an outright WTI monthly third-moment premium driven by absolute twelve-month Pearson skewness, unlike existing XTI/XNG and XAU/XAG relative-rank baskets, WTI signed semivariance, return trend/reversal, calendar, event, and XNG RSI neighbors; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -321,6 +321,7 @@ portfolio-gate edit; or correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-12 | initial source-bounded WTI absolute-skewness premium card | G0 | APPROVED |
 | v2 | 2026-08-12 | initial V5 implementation and validation | Q01 | PASS |
+| v3 | 2026-08-12 | paced baseline handoff below factory CPU ceiling | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -328,4 +329,4 @@ portfolio-gate edit; or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-12 | APPROVED | `decisions/2026-08-12_qm5_20290_wti_skew_prem_g0.md` |
 | Q01 Build Validation | 2026-08-12 | PASS | `D:/QM/reports/compile/20260812_085247/summary.csv`; `D:/QM/reports/framework/21/build_check_20260812_085247.json`; `D:/QM/reports/pipeline/QM5_20290/P1/P1_QM5_20290_result.json` |
-| Q02 Baseline Screening | - | NOT ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-12 | ENQUEUED; pending at immediate readback, attempt 0, no verdict | work item `661b4c77-8fed-41ff-92e2-d4851ebcaad0`; `docs/ops/evidence/2026-08-12_qm5_20290_wti_skew_prem_q01_q02_enqueue.md` |

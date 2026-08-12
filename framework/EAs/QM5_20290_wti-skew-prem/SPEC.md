@@ -146,6 +146,7 @@ waiver is authorized.
 |---|---|---|---|
 | v1 | 2026-08-12 | Initial scaffold from approved card | Build pending |
 | v2 | 2026-08-12 | Initial V5 implementation and Q01 validation | Strict compile, target build check, P1 artifact validation, and independent skewness vectors PASS |
+| v3 | 2026-08-12 | Paced Q02 handoff | One WTI priority-track row enqueued below the path-anchored factory CPU ceiling |
 
 ## 12. Q01 Status
 
@@ -161,3 +162,15 @@ Evidence:
 - `D:/QM/reports/framework/21/build_check_20260812_085247.json`
 - `D:/QM/reports/pipeline/QM5_20290/P1/P1_QM5_20290_result.json`
 - `framework/EAs/QM5_20290_wti-skew-prem/docs/test_skew_reference.py`
+
+## 13. Q02 Handoff
+
+ENQUEUED. The canonical never-tested sweep created exactly one priority-track
+row for `QM5_20290 / XTIUSD.DWX` while Q01 was finishing: work item
+`661b4c77-8fed-41ff-92e2-d4851ebcaad0`. Immediate readback found attempt 0
+pending and unclaimed with no verdict. The subsequent target-only dry run
+selected no additional row because this exact EA already had work-item state.
+The binding path-anchored capacity sample found four exact T1-T10 tester
+processes against the ceiling of seven. No duplicate apply, dispatch tick,
+terminal launch, or manual backtest was issued by this mission. This is a
+handoff, not a Q02 result.
