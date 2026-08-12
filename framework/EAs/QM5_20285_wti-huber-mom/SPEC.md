@@ -151,6 +151,7 @@ waiver is authorized.
 |---|---|---|---|
 | v1 | 2026-08-12 | Initial scaffold from approved card | Build pending |
 | v2 | 2026-08-12 | Initial V5 implementation and Q01 validation | Strict compile, target build check, P1 artifact validation, and independent Huber vectors PASS |
+| v3 | 2026-08-12 | Paced Q02 handoff | One current-binary WTI row enqueued below the path-anchored factory CPU ceiling |
 
 ## 12. Q01 Status
 
@@ -168,5 +169,10 @@ zero-MAD fail-closed behavior, and cross-year month continuity. Evidence:
 
 ## 13. Q02 Handoff
 
-NOT_ENQUEUED. A paced enqueue is allowed only after current-binary Q01 PASS
-and a fresh factory CPU-ceiling sample below the binding limit.
+ENQUEUED. The target-only dry run selected one never-tested priority-track
+row for `QM5_20285 / XTIUSD.DWX`. The binding path-anchored capacity sample
+found three exact T1-T10 tester processes against the ceiling of seven. The
+bounded apply created work item `3e3d87c9-3d4e-4188-8ae6-4840a5259a11` for
+Q02. Immediate readback found attempt 0 active on T6 with no verdict; the
+resident fleet claimed it without a mission-issued dispatch tick or terminal
+launch. This is a handoff, not a Q02 result.
