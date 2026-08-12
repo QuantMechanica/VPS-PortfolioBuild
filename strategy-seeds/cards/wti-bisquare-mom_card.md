@@ -343,5 +343,5 @@ edit; or correlation waiver.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-12 | APPROVED | `decisions/2026-08-12_qm5_20286_wti_bisquare_mom_g0.md` |
-| Q01 Build Validation | 2026-08-12 | PASS | `D:/QM/reports/compile/20260812_022306/summary.csv`; `D:/QM/reports/framework/21/build_check_20260812_022411.json`; `D:/QM/reports/pipeline/QM5_20286/P1/P1_QM5_20286_result.json` |
+| Q01 Build Validation | 2026-08-12 | PASS | `D:/QM/reports/compile/20260812_023008/summary.csv`; `D:/QM/reports/framework/21/build_check_20260812_023034.json`; `D:/QM/reports/pipeline/QM5_20286/P1/P1_QM5_20286_result.json` |
 | Q02 Baseline Screening | - | NOT_ENQUEUED | - |

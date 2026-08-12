@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        20286
 ; ea_slug:      wti-bisquare-mom
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2b724569faa1145c1f14229ac5c468abeed0b9bd5bf2caef4b556feb3cf34938
+; build_hash:   2f1d5b46581b2b5c203f2eea6740e9cc3b4bf3021221db43f736d8c87bba5559
 ; author:       Development
 ; date:         2026-08-12
 ;==========================================================

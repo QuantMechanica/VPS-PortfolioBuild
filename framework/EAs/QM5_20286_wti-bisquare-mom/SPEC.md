@@ -164,8 +164,8 @@ zero-tail influence, a sign divergence from the Huber neighbor, exact-zero
 handling, zero-MAD fail-closed behavior, and cross-year month continuity.
 Evidence:
 
-- `D:/QM/reports/compile/20260812_022306/summary.csv`
-- `D:/QM/reports/framework/21/build_check_20260812_022411.json`
+- `D:/QM/reports/compile/20260812_023008/summary.csv`
+- `D:/QM/reports/framework/21/build_check_20260812_023034.json`
 - `D:/QM/reports/pipeline/QM5_20286/P1/P1_QM5_20286_result.json`
 - `framework/EAs/QM5_20286_wti-bisquare-mom/docs/test_bisquare_reference.py`
 
