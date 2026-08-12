@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        9107
 ; ea_slug:      aa-mom-filter111
@@ -10,7 +10,7 @@
 ; magic_slot:   18
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   2f4c049ee51cea1ebd48cab2eeb31d11aee69ede1b5bc9e22852e7f68e797518
 ; author:       Development
 ; date:         2026-05-25
 ;==========================================================

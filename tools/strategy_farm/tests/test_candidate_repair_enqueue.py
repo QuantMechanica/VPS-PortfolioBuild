@@ -276,6 +276,131 @@ def test_repaired_infra_q02_binds_current_artifacts_append_only(
     assert new_payload["risk_percent"] == 0.0
 
 
+def test_repaired_infra_q02_binds_new_multisymbol_dependency_manifest(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    ea_dir = art["ea_dir"]
+    assert isinstance(ea_dir, Path)
+    manifest_path = ea_dir / "basket_manifest.json"
+    manifest_path.write_text(
+        json.dumps({
+            "ea_id": art["ea_id"],
+            "timeframe": "H1",
+            "basket_symbols": ["EURUSD.DWX", "GBPUSD.DWX"],
+        }),
+        encoding="utf-8",
+    )
+    _insert_work_item(
+        art,
+        item_id="q02-infra-legacy-multisymbol",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=_payload(art, stale=False),
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-legacy-multisymbol",
+        append_only_rerun_of="q02-infra-legacy-multisymbol",
+        rerun_reason="declare peer history before isolated rerun",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        successor_payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (result["created"][0]["id"],),
+            ).fetchone()[0]
+        )
+    assert successor_payload["basket_manifest"] == str(manifest_path.resolve())
+    assert successor_payload["basket_symbol_count"] == 2
+    assert successor_payload["basket_symbols"] == ["EURUSD.DWX", "GBPUSD.DWX"]
+    assert successor_payload["host_symbol"] == "EURUSD.DWX"
+    assert successor_payload["host_timeframe"] == "H1"
+
+
+def test_exact_infra_q02_ignores_noninfra_result_for_different_setfile(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-infra-h1",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=_payload(art, stale=False),
+    )
+    ea_dir = art["ea_dir"]
+    assert isinstance(ea_dir, Path)
+    other_setfile = ea_dir / "sets" / f"{ea_dir.name}_EURUSD.DWX_D1_backtest.set"
+    other_setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+    _insert_work_item(
+        art,
+        item_id="q02-strategy-d1",
+        phase="Q02",
+        status="done",
+        verdict="FAIL",
+        payload={"expected_period": "D1"},
+        setfile=other_setfile,
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-h1",
+        append_only_rerun_of="q02-infra-h1",
+        rerun_reason="repair exact H1 identity only",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+
+
+def test_exact_infra_q02_refuses_noninfra_result_for_same_setfile(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-infra-same-identity",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=_payload(art, stale=False),
+    )
+    _insert_work_item(
+        art,
+        item_id="q02-strategy-same-identity",
+        phase="Q02",
+        status="done",
+        verdict="FAIL",
+        payload=_payload(art, stale=False),
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-same-identity",
+        append_only_rerun_of="q02-infra-same-identity",
+        rerun_reason="must not duplicate a strategy-terminal identity",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "q02_pair_already_has_noninfra_terminal_result"
+
+
 def test_exact_infra_q02_accepts_payload_bound_transient_evidence_append_only(
     tmp_path: Path, monkeypatch
 ) -> None:

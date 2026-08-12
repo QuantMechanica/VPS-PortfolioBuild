@@ -17729,11 +17729,12 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 """
                 SELECT id, status, verdict FROM work_items
                 WHERE ea_id=? AND phase IN ('Q02','P2') AND symbol=? AND id<>?
+                  AND setfile_path=?
                   AND status IN ('done','failed')
                   AND COALESCE(verdict, '') <> 'INFRA_FAIL'
                 ORDER BY updated_at DESC LIMIT 1
                 """,
-                (ea_id, target["symbol"], source_id),
+                (ea_id, target["symbol"], source_id, target["setfile_path"]),
             ).fetchone()
             if noninfra_row:
                 return {
@@ -17751,6 +17752,24 @@ def _enqueue_q02_append_only_exact_row_rerun(
             for key in _Q02_APPEND_ONLY_STABLE_PAYLOAD_KEYS
             if key in source_payload
         }
+        # Legacy multisymbol rows can predate their dependency manifest.  Bind
+        # the current manifest on the append-only successor so the terminal
+        # worker serializes the heavy job, reserves the right commit headroom,
+        # and privatizes every custom-history archive the EA reads.
+        dependency_manifest = _load_multisymbol_dependency_manifest(ea_id)
+        dependency_symbols = (dependency_manifest or {}).get("basket_symbols") or []
+        if (
+            dependency_manifest
+            and str(target["symbol"]).casefold()
+            in {str(item).casefold() for item in dependency_symbols}
+        ):
+            payload.update({
+                "basket_manifest": dependency_manifest["manifest_path"],
+                "basket_symbol_count": len(dependency_symbols),
+                "basket_symbols": list(dependency_symbols),
+                "host_symbol": str(target["symbol"]),
+                "host_timeframe": dependency_manifest["host_timeframe"],
+            })
         payload.update({
             "append_only_rerun": True,
             "append_only_rerun_of_work_item": source_id,
