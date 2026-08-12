@@ -55,9 +55,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02_ENQUEUED
 q01_status: PASS
-q02_status: PENDING
+q02_status: ENQUEUED
 review_focus: "Falsify a direct WTI monthly trend whose even median of four chronological three-month mean-return blocks retains magnitude and resolves two-versus-two block splits, unlike sign consensus, raw-return median, trimmed-mean, cumulative, and iterative robust-location neighbors; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -313,6 +313,7 @@ or correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-12 | initial source-bounded WTI chronological block-median card | G0 | APPROVED |
 | v1-q01 | 2026-08-12 | deterministic V5 build, strict compile, target validation, and block-statistic reference vectors | Q01 | PASS |
+| v1-q02 | 2026-08-12 | one paced current-binary WTI handoff below the factory CPU ceiling | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -320,4 +321,4 @@ or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-12 | APPROVED | `decisions/2026-08-12_qm5_20287_wti_blockmed_mom_g0.md` |
 | Q01 Build Validation | 2026-08-12 | PASS | `D:/QM/reports/compile/20260812_041650/summary.csv`; `D:/QM/reports/framework/21/build_check_20260812_041650.json`; `D:/QM/reports/pipeline/QM5_20287/P1/P1_QM5_20287_result.json` |
-| Q02 Baseline Screening | TBD | PENDING | TBD |
+| Q02 Baseline Screening | 2026-08-12 | ENQUEUED; pending at immediate readback, attempt 0, no verdict | work item `1e04556a-44ce-4eca-8c19-d8e9d3f9c7ee`; `docs/ops/evidence/2026-08-12_qm5_20287_wti_blockmed_mom_q01_q02_enqueue.md` |
