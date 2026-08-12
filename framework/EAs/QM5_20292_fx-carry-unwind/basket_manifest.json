@@ -1,0 +1,33 @@
+{
+  "logical_symbol": "QM5_20292_FX_CARRY_UNWIND_D1",
+  "host_symbol": "AUDCHF.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "AUDCHF.DWX",
+    "AUDJPY.DWX",
+    "GBPCHF.DWX",
+    "GBPJPY.DWX",
+    "NZDCHF.DWX",
+    "NZDJPY.DWX"
+  ],
+  "traded_symbols": [
+    "AUDCHF.DWX",
+    "AUDJPY.DWX",
+    "GBPCHF.DWX",
+    "GBPJPY.DWX",
+    "NZDCHF.DWX",
+    "NZDJPY.DWX"
+  ],
+  "signal_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDJPY.DWX",
+    "USDCHF.DWX",
+    "USDCAD.DWX"
+  ],
+  "notes": [
+    "One logical weekly FX carry-unwind basket from approved card SRC04_S11b. Run only on AUDCHF.DWX D1 and evaluate the atomic two-leg package, not standalone target legs. During a seven-major realized-volatility stress state, the EA ranks comparable positive broker carry per ATR-risk dollar and reverses the top two current carry directions. Missing, zero, unsupported, or incomparable swap metadata never invokes a momentum or static-rate fallback."
+  ]
+}

@@ -15928,3 +15928,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20290,wti-skew-prem,0,XTIUSD.DWX,202900000,2026-08-12,Research+Development,active
 20291,xauxag-kurt-rk,0,XAUUSD.DWX,202910000,2026-08-12,Research+Development,active
 20291,xauxag-kurt-rk,1,XAGUSD.DWX,202910001,2026-08-12,Research+Development,active
+20292,fx-carry-unwind,0,AUDCHF.DWX,202920000,2026-08-12,Research+Development,active
+20292,fx-carry-unwind,1,AUDJPY.DWX,202920001,2026-08-12,Research+Development,active
+20292,fx-carry-unwind,2,GBPCHF.DWX,202920002,2026-08-12,Research+Development,active
+20292,fx-carry-unwind,3,GBPJPY.DWX,202920003,2026-08-12,Research+Development,active
+20292,fx-carry-unwind,4,NZDCHF.DWX,202920004,2026-08-12,Research+Development,active
+20292,fx-carry-unwind,5,NZDJPY.DWX,202920005,2026-08-12,Research+Development,active
