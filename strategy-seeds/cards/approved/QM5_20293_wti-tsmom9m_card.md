@@ -293,11 +293,12 @@ portfolio-gate edit; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-12 | initial source-bounded WTI nine-month card | G0 | APPROVED |
+| v1-q01 | 2026-08-12 | deterministic V5 build, strict compile, target validation, exact-return reference vectors, and P1 artifact validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-12 | APPROVED | `decisions/2026-08-12_qm5_20293_wti_tsmom9m_g0.md` |
-| Q01 Build Validation | — | NOT_STARTED | — |
+| Q01 Build Validation | 2026-08-12 | PASS | `D:/QM/reports/compile/20260812_181052/summary.csv`; `D:/QM/reports/framework/21/build_check_20260812_181142.json`; `D:/QM/reports/pipeline/QM5_20293/P1/P1_QM5_20293_result.json` |
 | Q02 Baseline Screening | — | NOT_STARTED | — |

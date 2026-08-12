@@ -136,13 +136,21 @@ admission, or a correlation waiver.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-12 | Initial build from approved card | Allocation and Q01 pending |
+| v1 | 2026-08-12 | Initial build from approved card | Magic allocated; implementation and Q01 PASS |
 
 ## 11. Q01 Status
 
-`PENDING`. Strict compile, target build check, P1 validation, card/SPEC
-checks, fixed-risk setfile generation, and reference-vector execution remain
-to be bound here.
+- Strict compile: PASS with zero errors and zero warnings; summary
+  `D:/QM/reports/compile/20260812_181052/summary.csv`.
+- Target build check: PASS with zero failures and zero warnings; report
+  `D:/QM/reports/framework/21/build_check_20260812_181142.json`.
+- P1 artifact validation: PASS at
+  `D:/QM/reports/pipeline/QM5_20293/P1/P1_QM5_20293_result.json`.
+- Exact nine-month reference vectors: PASS for endpoint/path identity,
+  positive, negative, exact-zero, chronology reversal, invalid inputs, and
+  four-/twelve-month neighbor divergence.
+- The only setfile is D1/backtest with `RISK_FIXED=1000`,
+  `RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`.
 
 ## 12. Q02 Handoff
 
