@@ -42,6 +42,17 @@ except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpi
     from pipeline_books_dashboard_status import program_status_snapshot
 
 try:  # package import in tests and module consumers
+    from tools.strategy_farm.optimization_dashboard_status import (
+        optimization_track_snapshot,
+        successful_phase_counts,
+    )
+except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit.py``
+    from optimization_dashboard_status import (
+        optimization_track_snapshot,
+        successful_phase_counts,
+    )
+
+try:  # package import in tests and module consumers
     from tools.strategy_farm.phase_ids import (
         PHASE_ORDER as Q_DISPLAY_ORDER,
         Q_TO_LEGACY_ALIASES,
@@ -60,6 +71,7 @@ CARDS_DRAFT = ROOT / "artifacts" / "cards_draft"
 CARDS_APPROVED = ROOT / "artifacts" / "cards_approved"
 QUOTA_SNAPSHOT = ROOT / "state" / "quota_snapshot.json"
 REPORTS_STATE = Path(r"D:\QM\reports\state")
+PORTFOLIO_REPORT_ROOT = Path(r"D:\QM\reports\portfolio")
 LIVE_BOOK_PULSE = REPORTS_STATE / "live_book_pulse.json"
 FTMO_TRIAL_PULSE = REPORTS_STATE / "ftmo_trial_pulse.json"
 OWNER_DECISIONS_FILE = REPORTS_STATE / "owner_decisions.json"
@@ -609,6 +621,85 @@ def render_pipeline_cohorts(snapshot: dict) -> str:
       Q09 authenticated = CONFIG_LOCKED + PASS_PORTFOLIO for the same Q08 PASS pair.
       Q10 binding is database dependency presence; execution-time hash verification remains
       authoritative. This panel is not a claim of one historical lineage or gate era.
+    </div>
+  </div>
+"""
+
+
+def render_optimization_track(snapshot: dict) -> str:
+    """Render read-only Q14--Q16 outcomes and parked Q11 lane manifests."""
+
+    phase_names = {
+        "Q14": "Optimization Admission",
+        "Q15": "Challenger Build & Freeze",
+        "Q16": "Head-to-Head Requalification",
+    }
+    phases = snapshot.get("phases") or {}
+    phase_cards = []
+    for phase in ("Q14", "Q15", "Q16"):
+        row = phases.get(phase) or {}
+        outcomes = row.get("outcomes") or {}
+        outcome_html = "".join(
+            f'<span><b>{e(verdict)}</b> {int(count or 0):,}</span>'
+            for verdict, count in outcomes.items()
+        )
+        phase_cards.append(
+            '<div class="opt-phase-card">'
+            f'<div class="opt-phase-id">{phase}</div>'
+            f'<div class="opt-phase-name">{e(phase_names[phase])}</div>'
+            f'<div class="opt-phase-total">{int(row.get("total") or 0):,}</div>'
+            f'<div class="opt-phase-outcomes">{outcome_html}'
+            f'<span><b>OPEN / OTHER</b> {int(row.get("open") or 0):,}</span></div>'
+            '</div>'
+        )
+
+    book_chips = []
+    books = snapshot.get("books") or {}
+    for lane in ("Q11_DXZ", "Q11_FTMO"):
+        book = books.get(lane) or {"validation": "MISSING", "book_status": "MISSING"}
+        validation = str(book.get("validation") or "INVALID").upper()
+        css_state = (
+            validation.lower()
+            if validation in {"VALID", "MISSING", "INVALID"}
+            else "invalid"
+        )
+        details = []
+        if book.get("as_of"):
+            details.append(str(book["as_of"]))
+        if book.get("sleeve_count") is not None:
+            details.append(f'{int(book["sleeve_count"]):,} sleeves')
+        if book.get("error"):
+            details.append(str(book["error"]))
+        book_chips.append(
+            f'<div class="opt-book-chip {css_state}">'
+            f'<span>{e(lane)} // {e(validation)}</span>'
+            f'<b>{e(book.get("book_status") or "MISSING")}</b>'
+            f'<small>{e(" // ".join(details) or "no parked manifest")}</small>'
+            '</div>'
+        )
+
+    availability = (
+        "READ MODEL AVAILABLE"
+        if snapshot.get("available")
+        else "READ MODEL UNAVAILABLE"
+    )
+    error = snapshot.get("error")
+    error_html = f'<div class="opt-track-error">{e(error)}</div>' if error else ""
+    return f"""
+  <div class="section opt-track-section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Optimization Track // Q10 Fork</span>
+      <span class="section-aux">{e(snapshot.get("schema_version") or "unknown")} // {availability}</span>
+    </div>
+    {error_html}
+    <div class="opt-track-grid">{''.join(phase_cards)}</div>
+    <div class="opt-book-row">{''.join(book_chips)}</div>
+    <div class="opt-track-foot">
+      Explicit branch only: Q10 &rarr; Q14 &rarr; Q15 &rarr; challenger Q02&ndash;Q10
+      &rarr; Q16 &rarr; Q11. Q11_DXZ and Q11_FTMO are storage lanes, not top-level
+      phases. This surface is read-only and grants no worker, deployment, terminal,
+      money, or AutoTrading authority.
     </div>
   </div>
 """
@@ -1976,6 +2067,8 @@ def main() -> int:
     programme = pipeline_books_program_snapshot()
     programme_html = render_pipeline_books_program(programme)
     cohort_html = render_pipeline_cohorts(pipeline_cohort_snapshot())
+    optimization_snapshot = optimization_track_snapshot(DB, PORTFOLIO_REPORT_ROOT)
+    optimization_html = render_optimization_track(optimization_snapshot)
 
     # Pipeline health (written by `farmctl health`, scheduled every 15 min)
     health_file = ROOT / "state" / "health.json"
@@ -2817,6 +2910,9 @@ def main() -> int:
             )
     except (OSError, json.JSONDecodeError, TypeError, ValueError):
         pass
+    # Q14--Q16 are an explicit Q10 optimization fork, not ordinal successors
+    # of Q13.  Only recorded success outcomes enter the compact chip counts.
+    q_counts.update(successful_phase_counts(optimization_snapshot))
 
     # Build the progress HTML — top-line counters + per-Q chip strip.
     progress_html = f"""
@@ -2850,7 +2946,9 @@ def main() -> int:
       eras (Q03/Q08 entered mid-history &mdash; adjacent chips are not one
       regime's funnel) &middot; Q09 = union of news/portfolio sub-gate passes &middot;
       Q10 = historical-visible PASS pairs, not current-contract binding &middot;
-      Q12 = EAs in OWNER review pool &middot; Q13 = sleeves live on T_Live (pulse)
+      Q12 = EAs in OWNER review pool &middot; Q13 = sleeves live on T_Live (pulse) &middot;
+      Q14 = OPT_ELIGIBLE &middot; Q15 = CHALLENGER_SPAWNED &middot;
+      Q16 = PROMOTE_CHALLENGER + KEEP_INCUMBENT + ADMIT_BOTH on the explicit Q10 fork
     </div>
   </div>
 """
@@ -3374,6 +3472,42 @@ body { padding: 32px; min-height: 100vh; }
 .cohort-unavailable { padding: 14px 18px; border: 1px solid var(--border); color: var(--fail); }
 @media (max-width: 900px) { .cohort-tail { grid-template-columns: 1fr; } }
 
+/* READ-ONLY Q14--Q16 OPTIMIZATION EXTENSION */
+.opt-track-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px; background: var(--border); border: 1px solid var(--border);
+}
+.opt-phase-card { background: var(--surface-1); padding: 14px; min-width: 0; }
+.opt-phase-id, .opt-phase-name, .opt-phase-outcomes, .opt-book-chip {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+.opt-phase-id { color: var(--signal); font-size: 11px; font-weight: 700; letter-spacing: 0.15em; }
+.opt-phase-name { color: var(--text-3); font-size: 9px; margin-top: 3px; text-transform: uppercase; }
+.opt-phase-total {
+  color: var(--text); font-size: 24px; font-weight: 600; margin: 10px 0 8px;
+  font-variant-numeric: tabular-nums;
+}
+.opt-phase-outcomes { display: grid; gap: 4px; color: var(--text-3); font-size: 9px; }
+.opt-phase-outcomes b { color: var(--text-2); font-weight: 600; }
+.opt-book-row {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px; margin-top: 8px;
+}
+.opt-book-chip { border: 1px solid var(--border); background: var(--surface-1); padding: 11px 14px; }
+.opt-book-chip span, .opt-book-chip small { display: block; color: var(--text-3); font-size: 9px; }
+.opt-book-chip b { display: block; color: var(--text-2); font-size: 13px; margin: 5px 0; }
+.opt-book-chip.valid { border-left: 3px solid var(--pass); }
+.opt-book-chip.invalid { border-left: 3px solid var(--fail); }
+.opt-book-chip.missing { border-left: 3px solid var(--warn); }
+.opt-track-foot, .opt-track-error {
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 9px;
+  line-height: 1.45; color: var(--text-4); padding: 9px 4px 0;
+}
+.opt-track-error { color: var(--fail); padding: 10px 14px; border: 1px solid var(--fail); margin-bottom: 8px; }
+@media (max-width: 900px) {
+  .opt-track-grid, .opt-book-row { grid-template-columns: 1fr; }
+}
+
 /* PIPELINE FUNNEL */
 .funnel {
   display: grid;
@@ -3792,6 +3926,8 @@ a.frontier-tile:hover { background: var(--surface-2); }
   {progress_html}
 
   {cohort_html}
+
+  {optimization_html}
 
   <!-- 5. PIPELINE FUNNEL -->
   <div class="section">

@@ -39,7 +39,7 @@ except ModuleNotFoundError:
     )
 
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 CONTRACT_VERSION = "Q09_NEWS_V2"
 ACTIVATION_HOLD_CODE = "Q09_AWAITING_SEALED_PLAN"
 ACTIVATION_HOLD_REASON = (
@@ -189,7 +189,10 @@ CREATE TABLE IF NOT EXISTS work_item_contracts (
 CREATE TABLE IF NOT EXISTS work_item_dependencies (
     child_work_item_id TEXT NOT NULL,
     dependency_role TEXT NOT NULL CHECK (
-        dependency_role IN ('Q08_INPUT', 'Q09_NEWS', 'Q09_PORTFOLIO')
+        dependency_role IN (
+            'Q08_INPUT', 'Q09_NEWS', 'Q09_PORTFOLIO',
+            'PARENT_LINEAGE', 'CHALLENGER_Q10'
+        )
     ),
     parent_work_item_id TEXT NOT NULL,
     parent_evidence_sha256 TEXT NOT NULL CHECK (
@@ -500,6 +503,17 @@ BEGIN
         WHERE c.id=NEW.child_work_item_id AND p.id=NEW.parent_work_item_id
           AND c.phase='Q10' AND p.phase='Q09_PORTFOLIO'
     ) THEN RAISE(ABORT, 'Q09_PORTFOLIO dependency phase mismatch') END;
+    SELECT CASE WHEN NEW.dependency_role='PARENT_LINEAGE' AND NOT EXISTS (
+        SELECT 1 FROM work_items c, work_items p
+        WHERE c.id=NEW.child_work_item_id AND p.id=NEW.parent_work_item_id
+          AND c.phase='Q16' AND p.phase='Q10' AND p.status='done' AND p.verdict='PASS'
+    ) THEN RAISE(ABORT, 'PARENT_LINEAGE dependency phase mismatch') END;
+    SELECT CASE WHEN NEW.dependency_role='CHALLENGER_Q10' AND NOT EXISTS (
+        SELECT 1 FROM work_items c, work_items p
+        WHERE c.id=NEW.child_work_item_id AND p.id=NEW.parent_work_item_id
+          AND c.phase='Q16' AND p.phase='Q10' AND p.status='done' AND p.verdict='PASS'
+          AND c.ea_id=p.ea_id AND c.symbol=p.symbol
+    ) THEN RAISE(ABORT, 'CHALLENGER_Q10 dependency phase/identity mismatch') END;
 END;
 
 CREATE TRIGGER IF NOT EXISTS trg_ncbf_validate_insert
@@ -744,6 +758,45 @@ WHERE q.state='QUALIFIED';
 """
 
 
+def _dependency_role_migration_scripts(conn: sqlite3.Connection) -> tuple[str, str]:
+    """Return an additive v3->v4 table rebuild for the widened role CHECK.
+
+    SQLite cannot alter a CHECK constraint in place. Historical dependency rows
+    are copied byte-for-byte; only the accepted role vocabulary is widened for
+    the analytic Q16 sidecar.
+    """
+    if not _table_exists(conn, "work_item_dependencies"):
+        return "", ""
+    if _table_exists(conn, "work_item_dependencies_v3_migration"):
+        raise SchemaError("stale work_item_dependencies v3 migration table exists")
+    row = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='work_item_dependencies'"
+    ).fetchone()
+    sql = str(row[0] or "") if row else ""
+    if "PARENT_LINEAGE" in sql and "CHALLENGER_Q10" in sql:
+        return "", ""
+    before = """
+        DROP TRIGGER IF EXISTS trg_wid_validate_insert;
+        DROP TRIGGER IF EXISTS trg_wid_no_update;
+        DROP TRIGGER IF EXISTS trg_wid_no_delete;
+        DROP TRIGGER IF EXISTS trg_q09_test_validate_insert;
+        DROP TRIGGER IF EXISTS trg_cq_validate_insert;
+        ALTER TABLE work_item_dependencies
+            RENAME TO work_item_dependencies_v3_migration;
+    """
+    after = """
+        INSERT INTO work_item_dependencies(
+            child_work_item_id,dependency_role,parent_work_item_id,
+            parent_evidence_sha256,required_verdicts_json,created_at
+        )
+        SELECT child_work_item_id,dependency_role,parent_work_item_id,
+               parent_evidence_sha256,required_verdicts_json,created_at
+        FROM work_item_dependencies_v3_migration;
+        DROP TABLE work_item_dependencies_v3_migration;
+    """
+    return before, after
+
+
 def ensure_schema(conn: sqlite3.Connection, *, commit: bool = True) -> None:
     """Install or validate the additive schema without changing legacy rows.
 
@@ -761,9 +814,18 @@ def ensure_schema(conn: sqlite3.Connection, *, commit: bool = True) -> None:
     if existing is not None and int(existing[0]) > SCHEMA_VERSION:
         raise SchemaError(f"database Q09 schema {existing[0]} is newer than supported {SCHEMA_VERSION}")
     installed_at = utc_now().replace("'", "''")
+    dependency_migration_before, dependency_migration_after = (
+        _dependency_role_migration_scripts(conn)
+    )
     install_script = (
         "BEGIN IMMEDIATE;\n"
+        + dependency_migration_before
         + DDL
+        + dependency_migration_after
+        + "\nDROP TRIGGER IF EXISTS trg_wid_validate_insert;\n"
+        + "DROP TRIGGER IF EXISTS trg_wid_no_update;\n"
+        + "DROP TRIGGER IF EXISTS trg_wid_no_delete;\n"
+        + "DROP TRIGGER IF EXISTS trg_q09_test_validate_insert;\n"
         + "\n"
         + "\nDROP TRIGGER IF EXISTS trg_cq_validate_insert;\n"
         + TRIGGERS

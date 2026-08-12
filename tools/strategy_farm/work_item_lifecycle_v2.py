@@ -39,6 +39,11 @@ SUCCEEDED_VERDICTS = frozenset(
         "PASS_LOWFREQ",
         "PASS_PORTFOLIO",
         "CONFIG_LOCKED",
+        "OPT_ELIGIBLE",
+        "CHALLENGER_SPAWNED",
+        "PROMOTE_CHALLENGER",
+        "KEEP_INCUMBENT",
+        "ADMIT_BOTH",
     }
 )
 WAITING_INPUT_VERDICTS = frozenset(
@@ -73,6 +78,7 @@ FAILED_VERDICTS = frozenset(
         "INVALID_EVIDENCE",
         "MIN_TRADES_NOT_MET",
         "OBSOLETE_NON_DWX_SYMBOL",
+        "OPT_REJECTED",
         "RETIRE",
         "RETIRED_ARCHIVED",
         "RETIRED_LOW_FREQ",

@@ -340,9 +340,12 @@ def test_bad_parent_risk_is_rejected_without_artifact(tmp_path: Path) -> None:
 
 def test_farmctl_subcommand_is_dry_run_by_default_and_apply_is_mutating() -> None:
     parser = farmctl.build_parser()
-    dry = parser.parse_args(["admit-optimization"])
-    applied = parser.parse_args(["admit-optimization", "--apply"])
+    dry = parser.parse_args(["enqueue-opt-admission"])
+    applied = parser.parse_args(["enqueue-opt-admission", "--apply"])
+    compatibility = parser.parse_args(["admit-optimization"])
 
     assert dry.apply is False
+    assert compatibility.apply is False
     assert farmctl._command_mutates_state(dry) is False
+    assert farmctl._command_mutates_state(compatibility) is False
     assert farmctl._command_mutates_state(applied) is True

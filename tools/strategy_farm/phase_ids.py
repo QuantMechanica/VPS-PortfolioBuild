@@ -1,7 +1,7 @@
 """Canonical phase IDs for the V5 pipeline (post-2026-05-23 rewrite).
 
 Pre-rewrite the codebase used legacy P-keys in storage (P1..P10) with a Q-id
-display map (Q00..Q14). After the 14-phase rewrite, **Qxx is canonical
+display map. After the gate rewrite, **Qxx is canonical
 end-to-end** — display AND storage. The work_items wipe on 2026-05-23 cleared
 the migration debt; new work_items use Qxx directly.
 
@@ -25,6 +25,12 @@ Mapping reference (legacy → new):
     P9             →   Q11 Portfolio Construction
     P9b            →   Q12 Operational Readiness
     P10            →   Q13 Live Burn-In DXZ
+    (opt fork)      →   Q14 Optimization Admission
+    (opt fork)      →   Q15 Challenger Build & Freeze
+    (opt fork)      →   Q16 Head-to-Head Requalification
+
+The ordinary chain remains Q00→Q13. The read-inert optimization branch is
+Q10→Q14→Q15→Q16→Q11; Q14 is not the successor of Q13.
 
 The `phase_label()` and `phase_qid()` helpers stay backwards-compatible:
 - pass a known Qxx → returns it unchanged
@@ -46,6 +52,15 @@ _GATE_MANIFEST = load_gate_manifest()
 
 PHASE_ORDER = list(_GATE_MANIFEST.phase_ids)
 PHASE_NAME = _GATE_MANIFEST.names
+PHASE_NEXT = _GATE_MANIFEST.next_by_phase
+if _GATE_MANIFEST.extension_topology is None:
+    ORDINARY_PHASE_ORDER = list(_GATE_MANIFEST.phase_ids)
+    OPTIMIZATION_PHASE_ORDER: list[str] = []
+else:
+    ORDINARY_PHASE_ORDER = list(_GATE_MANIFEST.extension_topology["ordinary_chain"])
+    OPTIMIZATION_PHASE_ORDER = list(
+        _GATE_MANIFEST.extension_topology["optimization_fork"]["path"]
+    )
 
 # Legacy P-key → new Qxx mapping. Used only as a back-compat shim for any
 # orphan call sites that still pass P-keys (old report files on disk,
@@ -101,6 +116,12 @@ def phase_label(phase: str | None, *, include_name: bool = False) -> str:
         if name:
             return f"{qid} {name}"
     return qid
+
+
+def next_phase_id(phase: str | None) -> str | None:
+    """Return the manifest-declared successor, preserving the Q10 fork shape."""
+    qid = phase_qid(phase)
+    return PHASE_NEXT.get(qid)
 
 
 def normalize_phase_id(value: str | None) -> str:

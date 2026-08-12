@@ -58,7 +58,11 @@ def test_projection_keeps_waiting_blocked_and_quarantined_nonterminal() -> None:
 
 @pytest.mark.parametrize(
     "verdict",
-    ["PASS", "PASS_SOFT", "PASS_LOWFREQ", "PASS_PORTFOLIO", "CONFIG_LOCKED"],
+    [
+        "PASS", "PASS_SOFT", "PASS_LOWFREQ", "PASS_PORTFOLIO", "CONFIG_LOCKED",
+        "OPT_ELIGIBLE", "CHALLENGER_SPAWNED", "PROMOTE_CHALLENGER",
+        "KEEP_INCUMBENT", "ADMIT_BOTH",
+    ],
 )
 def test_real_success_verdict_family_projects_to_succeeded(verdict: str) -> None:
     projected = lifecycle.project_row(_row("success", "done", verdict))
@@ -73,6 +77,13 @@ def test_lifecycle_taxonomy_covers_canonical_farmctl_verdicts() -> None:
     assert lifecycle.KNOWN_VERDICTS == (
         set(farmctl.CANONICAL_PARENT_CHILD_VERDICTS) | placeholders
     )
+
+
+def test_optimization_rejection_projects_to_failed() -> None:
+    projected = lifecycle.project_row(_row("opt-rejected", "done", "OPT_REJECTED"))
+
+    assert projected["typed_state"] == "FAILED"
+    assert projected["terminal"] is True
 
 
 def test_maintenance_quarantine_payload_precedes_blocked_legacy_verdict() -> None:

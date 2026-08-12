@@ -156,6 +156,69 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
             self.conn.execute("SELECT 1 FROM sqlite_master WHERE type='view' AND name='portfolio_candidates_eligible'").fetchone()
         )
 
+    def test_v3_dependency_rows_migrate_byte_for_byte_and_q16_roles_open(self) -> None:
+        add_work_item(self.conn, "q08", "Q08", "PASS")
+        add_work_item(self.conn, "q09n", "Q09_NEWS", "CONFIG_LOCKED")
+        self.conn.executescript(
+            """
+            CREATE TABLE q09_news_schema_meta (
+                schema_name TEXT PRIMARY KEY,
+                schema_version INTEGER NOT NULL,
+                installed_at TEXT NOT NULL
+            );
+            INSERT INTO q09_news_schema_meta VALUES('q09_news',3,'2026-01-01T00:00:00Z');
+            CREATE TABLE work_item_dependencies (
+                child_work_item_id TEXT NOT NULL,
+                dependency_role TEXT NOT NULL CHECK (
+                    dependency_role IN ('Q08_INPUT','Q09_NEWS','Q09_PORTFOLIO')
+                ),
+                parent_work_item_id TEXT NOT NULL,
+                parent_evidence_sha256 TEXT NOT NULL,
+                required_verdicts_json TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                PRIMARY KEY(child_work_item_id,dependency_role)
+            );
+            """
+        )
+        prior = (
+            "q09n", "Q08_INPUT", "q08", _hash("q08"), '["PASS"]',
+            "2026-01-01T00:00:00Z",
+        )
+        self.conn.execute(
+            "INSERT INTO work_item_dependencies VALUES(?,?,?,?,?,?)", prior
+        )
+        self.conn.commit()
+
+        schema.ensure_schema(self.conn)
+
+        self.assertEqual(
+            tuple(self.conn.execute("SELECT * FROM work_item_dependencies").fetchone()),
+            prior,
+        )
+        table_sql = self.conn.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='work_item_dependencies'"
+        ).fetchone()[0]
+        self.assertIn("PARENT_LINEAGE", table_sql)
+        self.assertIn("CHALLENGER_Q10", table_sql)
+        self.assertEqual(
+            self.conn.execute(
+                "SELECT schema_version FROM q09_news_schema_meta WHERE schema_name='q09_news'"
+            ).fetchone()[0],
+            4,
+        )
+
+        add_work_item(self.conn, "q10", "Q10", "PASS")
+        add_work_item(self.conn, "q16", "Q16", None)
+        for role in ("PARENT_LINEAGE", "CHALLENGER_Q10"):
+            schema.add_dependency(
+                self.conn,
+                child_work_item_id="q16",
+                dependency_role=role,
+                parent_work_item_id="q10",
+                parent_evidence_sha256=_hash(role),
+                required_verdicts=["PASS"],
+            )
+
     def test_dependency_trigger_rejects_missing_parent_with_foreign_keys_off(self) -> None:
         add_work_item(self.conn, "q09n", "Q09_NEWS", None)
         self.conn.commit()

@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "qm.gate-manifest/v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "pipeline_version", "canonical_id_pattern", "write_policy",
+    "legacy_policy", "verdict_dimensions", "gates", "legacy_aliases", "extension_topology"
+  ],
+  "properties": {
+    "schema_version": {"const": "qm.gate-manifest/v2"},
+    "pipeline_version": {"type": "string", "minLength": 1},
+    "canonical_id_pattern": {"const": "^Q(?:0[0-9]|1[0-6])$"},
+    "write_policy": {"const": "CANONICAL_ONLY"},
+    "legacy_policy": {"const": "READ_AND_MIGRATION_ONLY"},
+    "verdict_dimensions": {
+      "type": "array", "minItems": 5, "maxItems": 5, "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "gates": {
+      "type": "array", "minItems": 17, "maxItems": 17,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "ordinal", "name", "authority", "runner", "evidence_role", "next"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^Q(?:0[0-9]|1[0-6])$"},
+          "ordinal": {"type": "integer", "minimum": 0, "maximum": 16},
+          "name": {"type": "string", "minLength": 1},
+          "authority": {"enum": ["OWNER", "DEVELOPMENT", "PIPELINE"]},
+          "runner": {"enum": ["MANUAL", "MANUAL_OR_ROUTED", "AUTOMATED", "MANUAL_OR_ANALYTIC"]},
+          "evidence_role": {"type": "string", "minLength": 1},
+          "next": {"type": ["string", "null"], "pattern": "^Q(?:0[0-9]|1[0-6])$"}
+        }
+      }
+    },
+    "legacy_aliases": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "pattern": "^Q(?:0[0-9]|1[0-6])$"}
+    },
+    "extension_topology": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ordinary_chain", "optimization_fork", "storage_lanes"],
+      "properties": {
+        "ordinary_chain": {
+          "const": ["Q00","Q01","Q02","Q03","Q04","Q05","Q06","Q07","Q08","Q09","Q10","Q11","Q12","Q13"]
+        },
+        "optimization_fork": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["from", "entry", "path", "rejoins", "activation"],
+          "properties": {
+            "from": {"const": "Q10"},
+            "entry": {"const": "Q14"},
+            "path": {"const": ["Q14", "Q15", "Q16"]},
+            "rejoins": {"const": "Q11"},
+            "activation": {"const": "EXPLICIT_Q14_ADMISSION_RUN"}
+          }
+        },
+        "storage_lanes": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "parent", "authority", "runner", "evidence_role", "top_level"],
+            "properties": {
+              "id": {"enum": ["Q11_DXZ", "Q11_FTMO"]},
+              "parent": {"const": "Q11"},
+              "authority": {"const": "OWNER"},
+              "runner": {"const": "MANUAL_OR_ANALYTIC"},
+              "evidence_role": {"type": "string", "minLength": 1},
+              "top_level": {"const": false}
+            }
+          }
+        }
+      }
+    }
+  }
+}

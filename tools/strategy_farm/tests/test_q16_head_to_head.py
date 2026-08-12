@@ -5,6 +5,8 @@ import json
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from framework.scripts.q16_head_to_head import (
     _is_mutable_mt5_storage,
     evaluate_q16,
@@ -258,16 +260,22 @@ def test_farmctl_head_to_head_is_dry_run_default_and_apply_is_idempotent(tmp_pat
     farmctl.init_db(root)
     now = "2026-08-12T00:00:00+00:00"
     with farmctl.connect(root) as conn:
-        for item_id, ea_id in (("parent-q10", "QM5_10939"), ("challenger-q10", "QM5_12990")):
+        for item_id, ea_id, evidence_path in (
+            ("parent-q10", "QM5_10939", paths["parent_lineage_path"].parent / "parent_q10.json"),
+            ("challenger-q10", "QM5_12990", paths["challenger_lineage_path"].parent / "challenger_q10.json"),
+        ):
             conn.execute(
                 """
                 INSERT INTO work_items(
                     id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
                     parent_task_id,evidence_path,claimed_by,payload_json,created_at,updated_at
                 ) VALUES(?, 'backtest', 'Q10', ?, 'GBPUSD.DWX', ?, 'done', 'PASS', 0,
-                         NULL, NULL, NULL, '{}', ?, ?)
+                         NULL, ?, NULL, '{}', ?, ?)
                 """,
-                (item_id, ea_id, str(paths["challenger_lineage_path"]), now, now),
+                (
+                    item_id, ea_id, str(paths["challenger_lineage_path"]),
+                    str(evidence_path), now, now,
+                ),
             )
         conn.commit()
     applied = farmctl.enqueue_head_to_head(root, apply=True, **kwargs)
@@ -279,4 +287,27 @@ def test_farmctl_head_to_head_is_dry_run_default_and_apply_is_idempotent(tmp_pat
             "SELECT kind,phase,status FROM work_items WHERE id=?",
             (applied["would_create_work_item_id"],),
         ).fetchone()
+        dependencies = conn.execute(
+            """
+            SELECT dependency_role,parent_work_item_id,required_verdicts_json
+            FROM work_item_dependencies WHERE child_work_item_id=?
+            ORDER BY dependency_role
+            """,
+            (applied["would_create_work_item_id"],),
+        ).fetchall()
     assert tuple(row) == ("analytic", "Q16", "pending")
+    assert [tuple(row) for row in dependencies] == [
+        ("CHALLENGER_Q10", "challenger-q10", '["PASS"]'),
+        ("PARENT_LINEAGE", "parent-q10", '["PASS"]'),
+    ]
+
+    # A later DB/path substitution cannot ride the deterministic idempotent
+    # path: both sidecar dependencies are rebound to their sealed Q10 evidence.
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "UPDATE work_items SET evidence_path=? WHERE id='parent-q10'",
+            (str(paths["challenger_lineage_path"].parent / "challenger_q10.json"),),
+        )
+        conn.commit()
+    with pytest.raises(ValueError, match="DB evidence does not match"):
+        farmctl.enqueue_head_to_head(root, apply=True, **kwargs)

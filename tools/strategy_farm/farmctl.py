@@ -8043,6 +8043,12 @@ CANONICAL_PARENT_CHILD_VERDICTS = frozenset({
     "NEED_MORE_DATA",
     "REPORT_ONLY",
     "CONFIG_LOCKED",
+    "OPT_ELIGIBLE",
+    "OPT_REJECTED",
+    "CHALLENGER_SPAWNED",
+    "PROMOTE_CHALLENGER",
+    "KEEP_INCUMBENT",
+    "ADMIT_BOTH",
     "REVIEW_REQUIRED",
     "RETIRE",
     "RETIRED_LOW_FREQ",
@@ -21073,6 +21079,70 @@ def record_review_result(root: Path, review_task_id: str, result_file: str) -> d
     }
 
 
+def _q16_dependency_spec(
+    work_item: sqlite3.Row,
+    lineage: dict[str, Any],
+    *,
+    dependency_role: str,
+) -> dict[str, str]:
+    """Bind a Q16 dependency to the exact Q10 evidence used by its lineage."""
+    db_evidence = str(work_item["evidence_path"] or "").strip()
+    lineage_evidence = lineage["q10"]["evidence"]
+    lineage_path = Path(str(lineage_evidence["path"])).resolve()
+    if not db_evidence:
+        raise ValueError(f"Q16 {dependency_role} Q10 row has no evidence_path")
+    db_path = Path(db_evidence).resolve()
+    if db_path != lineage_path or not db_path.is_file():
+        raise ValueError(f"Q16 {dependency_role} DB evidence does not match bound lineage evidence")
+    observed = _sha256_file(db_path).lower()
+    expected = str(lineage_evidence["sha256"]).lower()
+    if observed != expected:
+        raise ValueError(f"Q16 {dependency_role} Q10 evidence SHA-256 mismatch")
+    return {
+        "dependency_role": dependency_role,
+        "parent_work_item_id": str(work_item["id"]),
+        "parent_evidence_sha256": expected,
+    }
+
+
+def _ensure_q16_dependency(
+    conn: sqlite3.Connection,
+    *,
+    child_work_item_id: str,
+    spec: dict[str, str],
+) -> bool:
+    """Append one Q16 dependency, or verify an identical prior append."""
+    existing = conn.execute(
+        """
+        SELECT parent_work_item_id,parent_evidence_sha256,required_verdicts_json
+        FROM work_item_dependencies
+        WHERE child_work_item_id=? AND dependency_role=?
+        """,
+        (child_work_item_id, spec["dependency_role"]),
+    ).fetchone()
+    if existing is not None:
+        try:
+            required = json.loads(str(existing["required_verdicts_json"]))
+        except (TypeError, json.JSONDecodeError) as exc:
+            raise ValueError("Q16 dependency has invalid required verdict JSON") from exc
+        if (
+            str(existing["parent_work_item_id"]) != spec["parent_work_item_id"]
+            or str(existing["parent_evidence_sha256"]) != spec["parent_evidence_sha256"]
+            or required != ["PASS"]
+        ):
+            raise ValueError(f"Q16 {spec['dependency_role']} dependency differs from sealed payload")
+        return False
+    add_q09_dependency(
+        conn,
+        child_work_item_id=child_work_item_id,
+        dependency_role=spec["dependency_role"],
+        parent_work_item_id=spec["parent_work_item_id"],
+        parent_evidence_sha256=spec["parent_evidence_sha256"],
+        required_verdicts=["PASS"],
+    )
+    return True
+
+
 def enqueue_head_to_head(
     root: Path,
     *,
@@ -21133,8 +21203,14 @@ def enqueue_head_to_head(
         "challenger": {"ea_id": f"QM5_{challenger['key'][0]}", "symbol": challenger["key"][1]},
         "bindings": bindings,
         "dependency_refs": {
-            "parent_lineage": parent_q10_work_item_id,
-            "challenger_q10": challenger_q10_work_item_id,
+            "PARENT_LINEAGE": {
+                "work_item_id": parent_q10_work_item_id,
+                "evidence_sha256": parent["q10"]["evidence"]["sha256"],
+            },
+            "CHALLENGER_Q10": {
+                "work_item_id": challenger_q10_work_item_id,
+                "evidence_sha256": challenger["q10"]["evidence"]["sha256"],
+            },
         },
         "runner": "framework/scripts/q16_head_to_head.py",
         "execution_lane": "ANALYTIC_DISPATCH_NOT_TERMINAL_WORKER",
@@ -21155,9 +21231,10 @@ def enqueue_head_to_head(
     with connect(root) as conn:
         conn.execute("BEGIN IMMEDIATE")
         rows = {}
-        for role, item_id, expected_key in (
-            ("parent_lineage", parent_q10_work_item_id, parent["key"]),
-            ("challenger_q10", challenger_q10_work_item_id, challenger["key"]),
+        dependency_specs = []
+        for role, item_id, expected_key, lineage in (
+            ("PARENT_LINEAGE", parent_q10_work_item_id, parent["key"], parent),
+            ("CHALLENGER_Q10", challenger_q10_work_item_id, challenger["key"], challenger),
         ):
             row = conn.execute("SELECT * FROM work_items WHERE id=?", (item_id,)).fetchone()
             if row is None:
@@ -21173,13 +21250,18 @@ def enqueue_head_to_head(
                 conn.rollback()
                 raise ValueError(f"Q16 dependency {role} is not the matching done Q10 PASS row")
             rows[role] = row
+            dependency_specs.append(
+                _q16_dependency_spec(row, lineage, dependency_role=role)
+            )
         existing = conn.execute("SELECT payload_json,status FROM work_items WHERE id=?", (work_item_id,)).fetchone()
         payload_json = json.dumps(payload, sort_keys=True)
         if existing is not None:
             if str(existing["payload_json"]) != payload_json:
                 conn.rollback()
                 raise ValueError("deterministic Q16 work-item id collides with different payload")
-            conn.rollback()
+            for spec in dependency_specs:
+                _ensure_q16_dependency(conn, child_work_item_id=work_item_id, spec=spec)
+            conn.commit()
             return {**preview, "enqueued": True, "dry_run": False, "idempotent": True, "status": existing["status"]}
         now = utc_now()
         conn.execute(
@@ -21192,10 +21274,12 @@ def enqueue_head_to_head(
             """,
             (
                 work_item_id, "analytic", "Q16", f"QM5_{challenger['key'][0]}",
-                challenger["key"][1], str(rows["challenger_q10"]["setfile_path"]),
+                challenger["key"][1], str(rows["CHALLENGER_Q10"]["setfile_path"]),
                 payload_json, now, now,
             ),
         )
+        for spec in dependency_specs:
+            _ensure_q16_dependency(conn, child_work_item_id=work_item_id, spec=spec)
         event(conn, "work_item", work_item_id, "q16_head_to_head_enqueued", {
             "card_id": card.get("card_id"), "payload_sha256": identity,
             "dependency_refs": payload["dependency_refs"],
@@ -21658,6 +21742,14 @@ def build_parser() -> argparse.ArgumentParser:
     q14.add_argument("--report-root")
     q14.add_argument("--apply", action="store_true")
 
+    q14_enqueue = sub.add_parser(
+        "enqueue-opt-admission",
+        help="Canonical Q14 opt-card admission enqueue path (dry-run default).",
+    )
+    q14_enqueue.add_argument("--config")
+    q14_enqueue.add_argument("--report-root")
+    q14_enqueue.add_argument("--apply", action="store_true")
+
     q16 = sub.add_parser(
         "enqueue-head-to-head",
         help="Validate and optionally enqueue one analytic Q16 sealed comparison (dry-run default).",
@@ -21691,7 +21783,7 @@ _STATE_MUTATING_COMMANDS = frozenset({
 
 
 def _command_mutates_state(args: argparse.Namespace) -> bool:
-    if args.command == "admit-optimization":
+    if args.command in {"admit-optimization", "enqueue-opt-admission"}:
         return bool(args.apply)
     if args.command == "enqueue-head-to-head":
         return bool(args.apply)
@@ -21858,7 +21950,7 @@ def main(argv: list[str] | None = None) -> int:
             symbol = str(args.symbol).upper().replace(".DWX", "")
             rows = [r for r in rows if r["sleeve"].split(":", 1)[-1] == symbol]
         print_json({**payload, "rows": rows})
-    elif args.command == "admit-optimization":
+    elif args.command in {"admit-optimization", "enqueue-opt-admission"}:
         print_json(admit_optimization(
             root,
             config_path=args.config,

@@ -30,7 +30,12 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from tools.strategy_farm.phase_ids import PHASE_ORDER, LEGACY_P_TO_Q as PHASE_QID, phase_label
+from tools.strategy_farm.phase_ids import (
+    PHASE_ORDER,
+    LEGACY_P_TO_Q as PHASE_QID,
+    next_phase_id,
+    phase_label,
+)
 
 PHASE_DISPLAY = PHASE_QID
 PHASE_LABEL_FROM_KIND = {
@@ -553,12 +558,9 @@ def derive_ea_candidates(tasks: list[dict], root: Path | None = None) -> list[di
                     verdict = cls.get("verdict")
                     if verdict == "PASS":
                         completed.add(phase)
-                        try:
-                            idx = PHASE_ORDER.index(phase)
-                            if idx < len(PHASE_ORDER) - 1:
-                                current_phase = PHASE_ORDER[idx + 1]
-                        except ValueError:
-                            pass
+                        successor = next_phase_id(phase)
+                        if successor:
+                            current_phase = successor
                     elif verdict in ("STRATEGY_FAIL", "INFRA_FAIL"):
                         failed_at = phase
                         dead = True
@@ -1141,15 +1143,9 @@ def render_hero(state: dict) -> str:
     if leader:
         heureka_completed = len(leader["completed_phases"])
         heureka_pct = int(100 * heureka_completed / heureka_total) if heureka_total else 0
-        # Compute next gate label from PHASE_ORDER
-        current_idx = None
-        try:
-            current_idx = PHASE_ORDER.index(leader["current_phase"])
-        except (ValueError, KeyError):
-            current_idx = None
-        next_gate = "live"
-        if current_idx is not None and current_idx + 1 < heureka_total:
-            next_gate = PHASE_ORDER[current_idx + 1]
+        # Use the manifest edge rather than ordinal adjacency: Q13 terminates
+        # the ordinary chain, while Q16 returns to Q11.
+        next_gate = next_phase_id(leader.get("current_phase")) or "live"
         phases_html = render_phase_dots(leader["completed_phases"], leader["current_phase"], leader.get("failed_at"))
         heureka_leader_block = f"""
       <div class="heureka-leader">
@@ -3826,11 +3822,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
     highest_pass = pass_phases[-1] if pass_phases else None
     most_advanced = present_phases[-1] if present_phases else None
     cur_phase = ea.get("current_phase") or "—"
-    next_gate = "—"
-    if cur_phase in PHASE_ORDER:
-        ci = PHASE_ORDER.index(cur_phase)
-        if ci + 1 < len(PHASE_ORDER):
-            next_gate = PHASE_ORDER[ci + 1]
+    next_gate = next_phase_id(cur_phase) or "—"
     decision = _detail_decision(ea, highest_pass, most_advanced, next_gate)
 
     # Card description block
