@@ -20466,7 +20466,7 @@ def record_build_result(
     }
 
 
-Q02_DEFERRED_SYMBOLS_FILE = Path(r"D:/QM/strategy_farm/state/q02_deferred_symbols.json")
+Q02_DEFERRED_SYMBOLS_FILE = DEFAULT_ROOT / "state" / "q02_deferred_symbols.json"
 Q02_STAGE1_MAX_SYMBOLS = 3
 
 

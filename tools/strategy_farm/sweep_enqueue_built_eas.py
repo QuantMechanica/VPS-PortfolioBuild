@@ -413,7 +413,9 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
         # Defer the sidecar write until the same final interlock check as the DB
         # commit.  Otherwise OFF racing this sweep could roll back SQLite while
         # leaving a promoted/deferred file mutation behind.
-        deferred_records.append((ea_id, deferred, "sweep_enqueue"))
+        deferred_records.append(
+            (ea_id, deferred, "sweep_enqueue", priority_track, len(parsed))
+        )
     for deferred_item in deferred:
         _sf, _sym, _tf = deferred_item[:3]
         report["part1_never_tested"]["skipped"].append(
@@ -739,11 +741,20 @@ if APPLY:
         }))
         raise SystemExit(0)
     con.commit()
-    for ea_id, deferred, source in deferred_records:
-        farmctl._record_q02_deferral(ea_id, deferred, source)
+    # Persist promotions/removals from the snapshot before appending new
+    # stage-1 deferrals.  Reversing this order overwrites every newly recorded
+    # cohort whenever the sidecar was non-empty at sweep start.
     if deferred_state_present:
         deferred_file.write_text(json.dumps(deferred_state, indent=1),
                                  encoding="utf-8")
+    for ea_id, deferred, source, priority_track, cohort_size in deferred_records:
+        farmctl._record_q02_deferral(
+            ea_id,
+            deferred,
+            source,
+            priority_track=priority_track,
+            cohort_size=cohort_size,
+        )
 EVIDENCE.write_text(json.dumps(report, indent=1), encoding="utf-8")
 
 p1, p2 = report["part1_never_tested"], report["part2_stranded"]

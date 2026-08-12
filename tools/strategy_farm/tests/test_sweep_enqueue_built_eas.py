@@ -174,6 +174,89 @@ def test_never_tested_sweep_prioritizes_every_first_q02_row(
     assert all(payload["priority_track"] is True for payload in payloads)
 
 
+def test_apply_preserves_new_deferral_when_sidecar_was_already_nonempty(
+    tmp_path: Path,
+) -> None:
+    farm_root = tmp_path / "farm"
+    repo_root = tmp_path / "repo"
+    report_root = tmp_path / "reports"
+    ea_id = "QM5_9004"
+    ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_multisym"
+    sets_dir = ea_dir / "sets"
+    registry = repo_root / "framework" / "registry" / "ea_id_registry.csv"
+    sets_dir.mkdir(parents=True)
+    registry.parent.mkdir(parents=True)
+    report_root.joinpath("state").mkdir(parents=True)
+
+    (ea_dir / f"{ea_dir.name}.ex5").write_text("compiled\n", encoding="utf-8")
+    symbols = (
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPJPY.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX",
+    )
+    for symbol in symbols:
+        (sets_dir / f"{ea_dir.name}_{symbol}_D1_backtest.set").write_text(
+            "; staged Q02 cohort\n",
+            encoding="utf-8",
+        )
+
+    with registry.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["ea_id", "slug", "status"])
+        writer.writeheader()
+        writer.writerow({"ea_id": "9004", "slug": "multisym", "status": "active"})
+
+    farmctl.init_db(farm_root)
+    deferred_file = farm_root / "state" / "q02_deferred_symbols.json"
+    deferred_file.write_text(
+        json.dumps({
+            "QM5_8999": {
+                "setfiles": [{
+                    "setfile": str(tmp_path / "missing.set"),
+                    "symbol": "EURCHF.DWX",
+                    "tf": "D1",
+                }],
+                "source": "fixture",
+                "deferred_at": "2026-08-01T00:00:00+00:00",
+            }
+        }),
+        encoding="utf-8",
+    )
+
+    env = os.environ.copy()
+    env.update({
+        "QM_STRATEGY_FARM_ROOT": str(farm_root),
+        "QM_CANONICAL_REPO_ROOT": str(repo_root),
+        "QM_REPORT_ROOT": str(report_root),
+    })
+    result = subprocess.run(
+        [sys.executable, str(SWEEP), "--apply", "--ea", ea_id],
+        cwd=REPO,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    with sqlite3.connect(farm_root / farmctl.DB_REL) as conn:
+        q02_count = conn.execute(
+            "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase='Q02'",
+            (ea_id,),
+        ).fetchone()[0]
+    assert q02_count == 3
+
+    deferred_state = json.loads(deferred_file.read_text(encoding="utf-8"))
+    assert ea_id in deferred_state
+    assert deferred_state[ea_id]["priority_track"] is True
+    assert deferred_state[ea_id]["q02_cohort_size"] == 5
+    assert {
+        row["symbol"] for row in deferred_state[ea_id]["setfiles"]
+    } == {"GBPUSD.DWX", "USDJPY.DWX"}
+
+
 def test_part2_requeues_terminal_failed_logical_basket_with_auditable_source(
     tmp_path: Path,
 ) -> None:
