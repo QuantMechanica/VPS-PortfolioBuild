@@ -1,0 +1,20 @@
+{
+  "logical_symbol": "QM5_20238_USDCAD_EURJPY_COINTEGRATION_D1",
+  "host_symbol": "USDCAD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "USDCAD.DWX",
+    "EURJPY.DWX",
+    "USDJPY.DWX"
+  ],
+  "traded_symbols": [
+    "USDCAD.DWX",
+    "EURJPY.DWX"
+  ],
+  "notes": [
+    "Dedicated fixed-beta USDCAD/EURJPY D1 cointegration sleeve selected as rank 57 in the frozen sign-aware 66-pair scan. USDJPY.DWX is conversion-history-only and receives no order or magic slot.",
+    "DEV Sharpe -0.007, OOS Sharpe -0.403, fixed beta -0.243266890557, and 66.784-D1-bar half-life are adverse frontier evidence. Q02 is a one-shot retirement gate with no refit; the USD 100000 tester uses canonical RISK_FIXED=1000."
+  ]
+}

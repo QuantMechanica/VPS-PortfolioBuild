@@ -142,6 +142,12 @@ keep the assumptions feeding it documented and correct.
 
 - Repo: `C:\QM\repo` · Strategy farm: `C:\QM\repo\tools\strategy_farm` · runtime `D:\QM\strategy_farm`
 - Live terminal: `C:\QM\mt5\T_Live` · Factory: `D:\QM\mt5\T1..T10`
+- Custom-history isolation (Variant A, live since 2026-08-10): each T1–T10 owns a
+  physical `Bases\Custom` (archive years content-verified against the signed manifest,
+  copy-on-claim privatization, fail-closed dispatch gate). Containment watch:
+  `D:\QM\strategy_farm\state\custom_history_containment_mode.json` must stay
+  `enabled:false`. Evidence:
+  `docs/ops/evidence/2026-08-10_ramp10_serialization_gate_statonly_fix.md`.
 - Data: `D:\QM\data` · Reports: `D:\QM\reports` · Exports: `D:\QM\exports`
 - News calendar seed: `D:\QM\data\news_calendar`
 - Timezone: `W. Europe Standard Time`
@@ -162,9 +168,14 @@ operational state. Essentials:
   throttled.** State: `D:/QM/reports/state/quota_governor_state.json` + `.log`. Headless
   Claude builds run Sonnet (separate cheap quota) — Claude can build while Codex rests.
 - **Factory wedged / `launch_fault` (terminal64 instant-exits, real-rate ~0, host idle):**
-  recover with **`Factory_OFF.ps1` then `Factory_ON.ps1 -NoPause`** (admin, visible
-  session; `echo '' |` pipes Enter past OFF's Read-Host). A worker-only restart does NOT
-  fix it. **Do NOT VPS-reboot** (stops T_Live live trading) unless OFF/ON fails.
+  recover with **`Factory_OFF.ps1` then `Factory_ON.ps1 -CanonicalRuntimeHost -NoPause`**
+  (admin, visible session; `echo '' |` pipes Enter past OFF's Read-Host). Factory_ON is
+  fail-closed behind a **runtime-activation decision**: after every OFF-flag change, mint
+  via `tools/strategy_farm/build_runtime_activation_decision.py` (requires a clean tree
+  incl. untracked and a live preparation window), commit decision + sidecar, then ON. An
+  aborted ON rewrites the flag to `OFF_RECOVERY_REQUIRED` — re-run Factory_OFF (it
+  preserves the saved task map) before re-minting. A worker-only restart does NOT fix a
+  wedge. **Do NOT VPS-reboot** (stops T_Live live trading) unless OFF/ON fails.
 - **Disk (D:) fast-burn:** `tester_cache_purge.ps1` runs every **20min** (no-op ≥150GB free; LowWater 80→150 seit 2026-07-21).
   `NO_HISTORY;INCOMPLETE_RUNS` = first-attempt cold-cache transient (self-heals; do NOT
   re-import .DWX history — ops 6e26c61f for the worker-retry fix).

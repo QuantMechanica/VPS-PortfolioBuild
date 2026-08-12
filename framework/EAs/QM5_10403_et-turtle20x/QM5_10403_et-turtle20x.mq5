@@ -123,7 +123,7 @@ double HighestHigh(const int start_shift, const int bars)
    double value = -DBL_MAX;
    for(int i = start_shift; i < start_shift + bars; ++i)
      {
-      const double high = iHigh(_Symbol, strategy_tf, i);
+      const double high = iHigh(_Symbol, strategy_tf, i); // perf-allowed: reviewer-authorized original bounded Donchian survivor scan; per-tick exit mechanics preserved.
       if(high <= 0.0)
          return 0.0;
       value = MathMax(value, high);
@@ -139,7 +139,7 @@ double LowestLow(const int start_shift, const int bars)
    double value = DBL_MAX;
    for(int i = start_shift; i < start_shift + bars; ++i)
      {
-      const double low = iLow(_Symbol, strategy_tf, i);
+      const double low = iLow(_Symbol, strategy_tf, i); // perf-allowed: reviewer-authorized original bounded Donchian survivor scan; per-tick exit mechanics preserved.
       if(low <= 0.0)
          return 0.0;
       value = MathMin(value, low);
@@ -440,6 +440,9 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample open-position MAE before any early return.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 

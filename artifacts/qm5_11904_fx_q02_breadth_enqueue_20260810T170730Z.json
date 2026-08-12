@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-08-10T17:08:42Z",
+  "branch": "agents/board-advisor",
+  "repo_head_at_enqueue": "568543befa44041eda2f93cda354f97ba0e438e2",
+  "mission": "fx_cointegration_frontier_fallback",
+  "decision": "PROMOTE_EXISTING_STRUCTURAL_FX_CARD_Q02_BREADTH",
+  "frontier": {
+    "source_document": "docs/research/FX_COINTEGRATION_FRONTIER_Q02_CPU_CEILING_STOP_2026-08-07.md",
+    "all_66_relationships_mechanized": true,
+    "new_pair_created": false,
+    "qm5_12532": {
+      "logical_q02": "PASS",
+      "later_terminal_gate": "Q05 FAIL"
+    },
+    "qm5_12533": {
+      "logical_q02": "PASS",
+      "later_terminal_gate": "Q04 FAIL"
+    }
+  },
+  "candidate": {
+    "ea_id": "QM5_11904",
+    "slug": "grimes-sperandeo-failure-test-2b-h1",
+    "timeframe": "H1",
+    "expected_trades_per_year_per_symbol": 10,
+    "g0_status": "APPROVED",
+    "structural_logic": "fixed swing pivot, bounded breach, close-back-inside failure test",
+    "source_lineage": [
+      "Adam Grimes, The Art and Science of Trading Course Workbook, Module 6",
+      "Victor Sperandeo, Trader Vic: Methods of a Wall Street Master, Wiley 1991"
+    ],
+    "build_commit": "fc71511485e14d04ca265229b605dd4dfbb80ceb",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "ml_used": false
+  },
+  "stage1_trigger": {
+    "symbol": "USDJPY.DWX",
+    "work_item_id": "38c08150-b157-4de3-bba1-3e73e4a0e661",
+    "status": "done",
+    "verdict": "PASS",
+    "updated_at_utc": "2026-08-10T16:31:48Z"
+  },
+  "capacity_preapply": {
+    "scanned_at_utc": "2026-08-10T17:07:25Z",
+    "running_factory_terminals": [
+      "T3",
+      "T8"
+    ],
+    "running_factory_count": 2,
+    "ceiling": 7,
+    "below_ceiling": true,
+    "t_live_excluded": true,
+    "ftmo_terminal_excluded": true
+  },
+  "enqueue": {
+    "selector": "python tools/strategy_farm/sweep_enqueue_built_eas.py --ea QM5_11904 --apply",
+    "applied_at_utc": "2026-08-10T17:07:30Z",
+    "pending_before": 1137,
+    "queue_ceiling": 7000,
+    "promotion_reason": "stage1_pass",
+    "promoted_rows": 7,
+    "never_tested_rows": 0,
+    "stranded_retry_rows": 0,
+    "kept_deferred_rows": 0,
+    "deferred_sidecar_entry_removed": true,
+    "work_items": [
+      {
+        "symbol": "AUDJPY.DWX",
+        "id": "51b3ac5e-4480-4edf-a758-5d3acd4ce4de"
+      },
+      {
+        "symbol": "AUDUSD.DWX",
+        "id": "d0715f0d-3553-407b-995c-13df4d33c1ea"
+      },
+      {
+        "symbol": "EURJPY.DWX",
+        "id": "5c988fff-add3-4c6f-9f9a-53e7f17e3cd5"
+      },
+      {
+        "symbol": "GBPJPY.DWX",
+        "id": "31a10cf5-9645-4d25-bc07-6f8a55cef05f"
+      },
+      {
+        "symbol": "NZDUSD.DWX",
+        "id": "be06ccdb-02a7-4301-8c76-58ed7a27b9df"
+      },
+      {
+        "symbol": "USDCAD.DWX",
+        "id": "59d1ff63-83a9-4c65-bb55-36008e1b032a"
+      },
+      {
+        "symbol": "USDCHF.DWX",
+        "id": "40257e3d-cac5-48d8-a027-2c88730a4e0e"
+      }
+    ]
+  },
+  "readback": {
+    "at_utc": "2026-08-10T17:08:42Z",
+    "rows_found": 7,
+    "all_status": "pending",
+    "all_attempt_count": 0,
+    "all_unclaimed": true,
+    "all_verdict_null": true
+  },
+  "artifact_sha256": {
+    "mq5": "1748EB75D9A9033A117AD1105F245A2A8D44887231F302FCF99B152C8ED5E7C4",
+    "ex5": "07A0B77E270BC966BC12FC0E7D26BC84104026BD1F4B6F638FC2DFBD06CA4C29",
+    "strategy_card": "4664DE1C1F2DD9F1828CFE4D60215E4BBDD513A9E03DAFB326A22599B14AA65E",
+    "selector_evidence_at_readback": "466980CC7A6AD6D31E7C12CBC6D7AC803A38A43AE2F19DD12512A0D8E493FA36",
+    "q02_deferred_sidecar_after": "9C574E42BD68D22B8D9FDF6E11355296D5EA135C41B2FBFB455D83A98BC1DA3D"
+  },
+  "safety": {
+    "manual_backtest_started": false,
+    "dispatch_tick_run": false,
+    "terminal_control_performed": false,
+    "autotrading_changed": false,
+    "t_live_changed": false,
+    "portfolio_gate_changed": false,
+    "live_artifact_created": false
+  }
+}

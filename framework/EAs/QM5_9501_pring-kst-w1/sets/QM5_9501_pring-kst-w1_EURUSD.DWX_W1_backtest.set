@@ -1,0 +1,42 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9501
+; ea_slug:      pring-kst-w1
+; ea_version:   v5.0
+; set_version:  s20260811-001
+; symbol:       EURUSD.DWX
+; timeframe:    W1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   b92622a451fe136f2c6c4f35bd95dd2d8d629cd1edbd5f4447d71426a98d16fd
+; author:       Development
+; date:         2026-08-11
+;==========================================================
+qm_ea_id=9501
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9501_pring-kst-w1.md
+strategy_roc1_period=9
+strategy_roc2_period=12
+strategy_roc3_period=18
+strategy_roc4_period=24
+strategy_rcma1_smooth=6
+strategy_rcma2_smooth=6
+strategy_rcma3_smooth=6
+strategy_rcma4_smooth=9
+strategy_w1=1.0
+strategy_w2=2.0
+strategy_w3=3.0
+strategy_w4=4.0
+strategy_signal_period=9
+strategy_bias_sma_period=40
+strategy_atr_period=14
+strategy_atr_stop_mult=3.0
+strategy_time_stop_bars=26
+strategy_spread_atr_mult=0.05
+strategy_whipsaw_guard_bars=4

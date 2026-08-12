@@ -56,6 +56,8 @@ function New-FakeProcess {
 
 $script:launcherProcess = New-FakeProcess -Id 1111 -ExitCode -1 -WaitResult $true
 $script:childTerminalProcess = New-FakeProcess -Id 2222 -ExitCode 0 -WaitResult $true
+$script:metaTesterPollCalls = 0
+$script:LogBombCheckSeconds = 60
 
 function Start-Process {
     param(
@@ -77,6 +79,15 @@ function Wait-TerminalSpawn {
     return $script:childTerminalProcess
 }
 
+function Get-MetaTesterProcessesForTerminalRoot {
+    param([string]$TerminalRoot)
+    $script:metaTesterPollCalls += 1
+    if ($script:metaTesterPollCalls -eq 1) {
+        return @([pscustomobject]@{ ProcessId = 3333 })
+    }
+    return @()
+}
+
 $result = Start-TesterRun `
     -TerminalExe "C:\MT5\T1\terminal64.exe" `
     -IniPath "C:\QM\reports\smoke\run_01\tester.ini" `
@@ -89,6 +100,10 @@ if ($script:childTerminalProcess.HasExitedCalls -lt 1) {
 
 if ($script:launcherProcess.WaitCalls -ne 0) {
     throw "Start-TesterRun waited on launcher process instead of spawned terminal."
+}
+
+if ($script:metaTesterPollCalls -lt 2) {
+    throw "Start-TesterRun returned before the metatester writer became quiescent."
 }
 
 if ($result.exit_code -ne 0) {

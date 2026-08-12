@@ -1,0 +1,88 @@
+{
+  "schema": "qm_commodity_build_q02_handoff/v1",
+  "timestamp_utc": "2026-08-06T00:42:51.4426809Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20235",
+  "slug": "xauxag-es-rank",
+  "logical_symbol": "QM5_20235_XAU_XAG_ES_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "timeframe": "D1",
+  "strategy_id": "YIYI-ES-2025_XAU_XAG_S03",
+  "mechanic": "monthly long-higher-expected-shortfall short-lower-expected-shortfall rank across synchronized prior-twelve-complete-month XAU and XAG D1 returns",
+  "source": {
+    "primary": "Qin, Cai, Zhu, and Webb (2025), Journal of Futures Markets 45(3), 176-207",
+    "doi": "10.1002/fut.22559",
+    "durable_approval": "decisions/2026-08-06_qm5_20235_xauxag_es_rank_g0.md",
+    "source_packet": "strategy-seeds/sources/YIYI-ES-2025/source.md",
+    "public_retrieval_status": "DEFERRED:SOURCE_POLICY",
+    "metal_carrier_tested_by_source": false,
+    "efficacy_transfer_claimed": false
+  },
+  "dedup": {
+    "exact_duplicate": false,
+    "registry_rows_scanned": 4292,
+    "cards_scanned": 408,
+    "fuzzy_family_matches": ["energy-es-rank"],
+    "manual_resolution": "same estimator on a disclosed XTI/XNG sibling but a new XAU/XAG carrier; distinct from ratio, OLS, skew, RSJ, return-reversal, momentum, calendar, volatility, shock, and cumulative-RSI mechanics"
+  },
+  "build": {
+    "card_schema_lint": "PASS",
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_passed": true,
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "magics": {
+      "XAUUSD.DWX": 202350000,
+      "XAGUSD.DWX": 202350001
+    },
+    "source_packet_sha256": "AC00A311DCA3BDB3C1BF47725EAB1887BC0335ADE84E898F4DBD8117C3A36FE9",
+    "g0_decision_sha256": "1101957F8CD084D3FB3CAB10921BAE67AD17CAB3EA99B301747A4A59FABC644A",
+    "card_sha256": "D027BEB621181EC4B32769084B158356DA901B0D284E4501247E79B64D2CDDB2",
+    "mq5_sha256": "113533FD8EC4C4FEEBCBBD0A4196B8E0D31469AF9EA7ACEAFFA796C20FD8A0DC",
+    "ex5_sha256": "A3226CC5B57B714B6EBFF23B03BA0DE395EE37BAAABAF076858F458D773DC805",
+    "spec_sha256": "91104DCCADFCC2E3ACB59FAB1AA98062A1276045BA92CAC6A051BE370024AE11",
+    "basket_manifest_sha256": "412C4ED47586F40EBD94D5BC6BE0A73DC48F76B796AC022E4B3ECA7DFC511A4C",
+    "setfile_sha256": "5D3F0D6A1E97AD8876E7022BFA5FA629A7F021D073F9204C4EEFB29931DEF28D",
+    "build_hash": "418eaf8f891ab9382f3ac760cadbe54d7b8e7417308bf3a99965a61ffea1b89d",
+    "build_report": "D:\\QM\\reports\\framework\\21\\build_check_20260806_003909.json",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260806_003832\\QM5_20235_xauxag-es-rank.compile.log",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260806_003832\\summary.csv",
+    "manual_smoke_or_backtest": false
+  },
+  "risk": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "package_risk_split": "equal stop-risk halves",
+    "live_setfile_created": false
+  },
+  "q02": {
+    "targeted_dry_run_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --ea QM5_20235 --symbols QM5_20235_XAU_XAG_ES_D1 --max-part2-per-run 0",
+    "dry_run_selected_items": 1,
+    "dry_run_priority_track_items": 1,
+    "apply_performed": false,
+    "work_item_id": null,
+    "existing_work_items_at_precheck": 0,
+    "status_at_handoff": "not_enqueued_cpu_ceiling",
+    "queue_pending_at_precheck": 1518,
+    "queue_active_at_precheck": 9,
+    "queue_ceiling": 7000,
+    "cpu_ceiling": 7,
+    "cpu_ceiling_reached": true,
+    "factory_terminals_at_binding_scan": 8,
+    "factory_terminal_names_at_binding_scan": ["T1", "T2", "T3", "T5", "T6", "T8", "T9", "T10"],
+    "t_live_excluded": true,
+    "manual_dispatch": false,
+    "stop_reason": "binding factory-terminal CPU ceiling exceeded before apply"
+  },
+  "commits": {
+    "source_and_g0": "7ddceff40090bbc7cdc71545ef5c367b4f756ca0",
+    "card_and_registries": "01688e9171361a1415d86f679ce88c48b3c5df19",
+    "build": "9639113b929f62f408eebeccd0672cc12b03b72b"
+  },
+  "prohibited_surfaces_touched": []
+}

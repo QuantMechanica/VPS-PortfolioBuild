@@ -384,7 +384,9 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             "Remove-Item -LiteralPath $watchdogResetBlockPath",
             kill_pos,
         )
-        spawn_pos = factory_on.index("start_terminal_workers.py")
+        # Search after the reset marker release. An earlier policy comment also
+        # names start_terminal_workers.py, but it is not the worker launch.
+        spawn_pos = factory_on.index("start_terminal_workers.py", clear_pos)
         self.assertLess(kill_pos, clear_pos)
         self.assertLess(clear_pos, spawn_pos)
         clear_block = factory_on[kill_pos:spawn_pos]
@@ -625,6 +627,169 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                     "SELECT status FROM work_items WHERE id='ordinary-q02'"
                 ).fetchone()[0]
             self.assertEqual(status, "pending")
+
+    def test_two_leg_fx_claim_uses_measured_eight_gb_reservation(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "two-leg-fx",
+                "EURUSD.DWX",
+                phase="Q08",
+                ea_id="QM5_20196",
+                payload={
+                    "portfolio_scope": "basket",
+                    "basket_symbol_count": 2,
+                    "basket_symbols": ["EURUSD.DWX", "USDJPY.DWX"],
+                },
+            )
+            self._insert_work_item(
+                root,
+                "ordinary-after-pair",
+                "GBPUSD.DWX",
+                phase="Q08",
+                ea_id="QM5_9000",
+            )
+            terminal_worker._commit_headroom_gb = lambda: 55.0
+
+            with patch.object(terminal_worker, "_free_ram_gb", return_value=64.0):
+                result = terminal_worker.claim_atomic(root, "T1")
+                following = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            payload = json.loads(result["item"]["payload_json"])
+            self.assertEqual(
+                payload["commit_reservation_class"],
+                terminal_worker.MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX,
+            )
+            self.assertEqual(
+                payload["commit_reservation_gb"],
+                terminal_worker.MULTISYMBOL_TWO_LEG_FX_COMMIT_RESERVATION_GB,
+            )
+            self.assertTrue(following.get("claimed"), following)
+            self.assertEqual(following["item"]["id"], "ordinary-after-pair")
+
+    def test_multisymbol_commit_class_mapping_keeps_large_and_unknown_baskets_heavy(self) -> None:
+        four_leg_fx = {
+            "portfolio_scope": "basket",
+            "basket_symbol_count": 4,
+            "basket_symbols": [
+                "EURUSD.DWX",
+                "GBPUSD.DWX",
+                "AUDUSD.DWX",
+                "NZDUSD.DWX",
+            ],
+        }
+        ten_leg_fx = {
+            "portfolio_scope": "basket",
+            "basket_symbol_count": 10,
+            "basket_symbols": [
+                "EURUSD.DWX",
+                "GBPUSD.DWX",
+                "AUDUSD.DWX",
+                "NZDUSD.DWX",
+                "USDJPY.DWX",
+                "USDCHF.DWX",
+                "USDCAD.DWX",
+                "EURGBP.DWX",
+                "EURJPY.DWX",
+                "GBPJPY.DWX",
+            ],
+        }
+        metal_pair = {
+            "portfolio_scope": "basket",
+            "basket_symbol_count": 2,
+            "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+        }
+
+        four_leg_class = terminal_worker._multisymbol_commit_class(
+            {"ea_id": "QM5_9001", "symbol": "EURUSD.DWX"}, four_leg_fx, True
+        )
+        ten_leg_class = terminal_worker._multisymbol_commit_class(
+            {"ea_id": "QM5_9002", "symbol": "EURUSD.DWX"}, ten_leg_fx, True
+        )
+        metal_class = terminal_worker._multisymbol_commit_class(
+            {"ea_id": "QM5_9003", "symbol": "XAUUSD.DWX"}, metal_pair, True
+        )
+        unknown_class = terminal_worker._multisymbol_commit_class(
+            {"ea_id": "QM5_9004", "symbol": "EURUSD.DWX"},
+            {"portfolio_scope": "basket", "basket_symbol_count": 2},
+            True,
+        )
+
+        self.assertEqual(
+            four_leg_class,
+            terminal_worker.MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX,
+        )
+        self.assertEqual(
+            terminal_worker._commit_reservation_gb(four_leg_class),
+            terminal_worker.MULTISYMBOL_MULTI_LEG_FX_COMMIT_RESERVATION_GB,
+        )
+        for commit_class in (ten_leg_class, metal_class, unknown_class):
+            self.assertEqual(commit_class, terminal_worker.MULTISYMBOL_COMMIT_CLASS_HEAVY)
+            self.assertEqual(
+                terminal_worker._commit_reservation_gb(commit_class),
+                terminal_worker.MULTISYMBOL_COMMIT_RESERVATION_GB,
+            )
+
+    def test_legacy_qm5_11240_fx_host_is_two_leg_but_index_host_stays_heavy(self) -> None:
+        fx_class = terminal_worker._multisymbol_commit_class(
+            {"ea_id": "QM5_11240", "symbol": "NZDUSD.DWX"}, {}, True
+        )
+        index_class = terminal_worker._multisymbol_commit_class(
+            {"ea_id": "QM5_11240", "symbol": "NDX.DWX"}, {}, True
+        )
+
+        self.assertEqual(fx_class, terminal_worker.MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX)
+        self.assertEqual(
+            terminal_worker._commit_reservation_gb(fx_class),
+            terminal_worker.MULTISYMBOL_TWO_LEG_FX_COMMIT_RESERVATION_GB,
+        )
+        self.assertEqual(index_class, terminal_worker.MULTISYMBOL_COMMIT_CLASS_HEAVY)
+        self.assertEqual(
+            terminal_worker._commit_reservation_gb(index_class),
+            terminal_worker.MULTISYMBOL_COMMIT_RESERVATION_GB,
+        )
+
+    def test_two_leg_fx_reservation_still_decays_against_measured_subtree(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            now = datetime.now(timezone.utc)
+            self._insert_work_item(
+                root,
+                "two-leg-active",
+                "QM5_20196_EURUSD_USDJPY_COINTEGRATION_D1",
+                phase="Q02",
+                status="active",
+                claimed_by="T1",
+                ea_id="QM5_20196",
+                payload={
+                    "portfolio_scope": "basket",
+                    "basket_symbol_count": 2,
+                    "basket_symbols": ["EURUSD.DWX", "USDJPY.DWX"],
+                    "claimed_at_iso": now.isoformat(),
+                    "commit_reservation_until_utc": (
+                        now + timedelta(seconds=terminal_worker.MULTISYMBOL_COMMIT_RESERVATION_SECONDS)
+                    ).isoformat(),
+                    "pid": 12345,
+                },
+            )
+
+            with patch.object(terminal_worker, "_measured_subtree_gb", return_value=3.0):
+                with farmctl.connect(root) as conn:
+                    snapshot = terminal_worker._commit_admission_snapshot(
+                        conn,
+                        now.isoformat(),
+                        frozenset({"QM5_20196"}),
+                    )
+
+            self.assertEqual(snapshot["reserved_gb"], 5.0)
+            self.assertEqual(snapshot["reservations"][0]["expected_peak_gb"], 8.0)
+            self.assertEqual(snapshot["reservations"][0]["measured_gb"], 3.0)
+            self.assertEqual(
+                snapshot["reservations"][0]["reservation_class"],
+                terminal_worker.MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX,
+            )
 
     def test_frozen_commit_probe_caps_parallel_ordinary_claims(self) -> None:
         with self._root() as tmp:
@@ -1175,6 +1340,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
     def test_stale_runtime_cleanup_removes_commit_reservation_fields(self) -> None:
         payload = {
             "commit_reservation_gb": terminal_worker.ORDINARY_COMMIT_RESERVATION_GB,
+            "commit_reservation_class": terminal_worker.MULTISYMBOL_COMMIT_CLASS_ORDINARY,
             "commit_reservation_until_utc": "2026-07-07T20:18:41+00:00",
             "priority_track": True,
         }
@@ -1182,6 +1348,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
         terminal_worker._clear_stale_runtime_payload(payload)
 
         self.assertNotIn("commit_reservation_gb", payload)
+        self.assertNotIn("commit_reservation_class", payload)
         self.assertNotIn("commit_reservation_until_utc", payload)
         self.assertTrue(payload["priority_track"])
 
@@ -1402,7 +1569,17 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                     "_news_calendar_preflight",
                     return_value={"ok": True, "status": "VALID"},
                 ),
-                patch.object(terminal_worker, "_prepare_staged_ex5", return_value=None),
+                patch.object(
+                    terminal_worker,
+                    "_prepare_staged_ex5",
+                    return_value={
+                        "source_path": r"C:\fixture\QM5_9999.ex5",
+                        "destination_path": r"D:\fixture\QM5_9999.ex5",
+                        "required_sha256": "a" * 64,
+                        "pre_run_sha256": "a" * 64,
+                        "verified": True,
+                    },
+                ),
                 patch.object(terminal_worker, "_acquire_launch_slot", return_value=None),
                 patch.object(
                     terminal_worker.farmctl,

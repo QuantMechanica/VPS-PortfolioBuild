@@ -8,7 +8,7 @@
 // QuantMechanica V5 EA — QM5_12486 shv-supertrend
 // -----------------------------------------------------------------------------
 // Source: shashankvemuri, Finance super_trend.py
-//   https://github.com/shashankvemuri/Finance/blob/master/technical_indicators/super_trend.py
+//   github.com/shashankvemuri/Finance/blob/master/technical_indicators/super_trend.py
 // Card: artifacts/cards_approved/QM5_12486_shv-supertrend.md (g0_status APPROVED).
 //
 // Mechanics (long+short, closed-bar reads, D1):
@@ -75,6 +75,15 @@ input int    strategy_sl_atr_period      = 20;     // emergency-stop ATR period 
 input double strategy_sl_atr_mult        = 3.0;    // catastrophic stop = mult * ATR(sl_atr_period)
 input double strategy_spread_pct_of_stop = 15.0;   // skip if spread > this % of stop distance
 
+// The bounded SuperTrend reconstruction is deliberately cached once per
+// completed D1 bar. Q02 previously rebuilt the full seed window from both the
+// exit and entry paths on every modeled tick, which made the EA time out before
+// producing economic evidence.
+bool   g_st_state_ready = false;
+int    g_st_dir1        = 0;
+int    g_st_dir2        = 0;
+double g_st_stop_atr    = 0.0;
+
 // -----------------------------------------------------------------------------
 // SuperTrend reconstruction
 // -----------------------------------------------------------------------------
@@ -97,7 +106,7 @@ bool ST_Direction(const int newest_shift, int &dir_newest, int &dir_older)
    const int start_shift = newest_shift + seed; // oldest bar processed
 
    // Need ATR + OHLC available across the whole window.
-   if(Bars(_Symbol, _Period) <= start_shift + 2)
+   if(Bars(_Symbol, PERIOD_D1) <= start_shift + 2) // perf-allowed: one bounded D1 history-readiness check per completed bar.
       return false;
 
    double final_upper_prev = 0.0;
@@ -114,7 +123,7 @@ bool ST_Direction(const int newest_shift, int &dir_newest, int &dir_older)
    // Walk from oldest (large shift) to newest (small shift).
    for(int s = start_shift; s >= newest_shift; --s)
      {
-      const double atr_v = QM_ATR(_Symbol, _Period, period, s);
+      const double atr_v = QM_ATR(_Symbol, PERIOD_D1, period, s);
       if(atr_v <= 0.0)
         {
          // ATR not ready this deep — reset and keep walking forward.
@@ -123,9 +132,9 @@ bool ST_Direction(const int newest_shift, int &dir_newest, int &dir_older)
          continue;
         }
 
-      const double hi = iHigh(_Symbol, _Period, s);  // perf-allowed: bounded once-per-bar seed
-      const double lo = iLow(_Symbol, _Period, s);   // perf-allowed
-      const double cl = iClose(_Symbol, _Period, s); // perf-allowed
+      const double hi = iHigh(_Symbol, PERIOD_D1, s);  // perf-allowed: bounded once-per-D1-bar seed
+      const double lo = iLow(_Symbol, PERIOD_D1, s);   // perf-allowed
+      const double cl = iClose(_Symbol, PERIOD_D1, s); // perf-allowed
       if(hi <= 0.0 || lo <= 0.0 || cl <= 0.0)
         {
          have_prev = false;
@@ -199,6 +208,26 @@ bool ST_Direction(const int newest_shift, int &dir_newest, int &dir_older)
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
+// Refresh the complete signal state once when a D1 bar rolls over. Exit,
+// spread, and entry hooks only read this cache, keeping every tick path O(1).
+bool Strategy_AdvanceStateOnNewBar()
+  {
+   g_st_state_ready = false;
+   g_st_dir1        = 0;
+   g_st_dir2        = 0;
+   g_st_stop_atr    = 0.0;
+
+   if(!ST_Direction(1, g_st_dir1, g_st_dir2))
+      return false;
+
+   g_st_stop_atr = QM_ATR(_Symbol, PERIOD_D1, strategy_sl_atr_period, 1);
+   if(g_st_dir1 == 0 || g_st_stop_atr <= 0.0)
+      return false;
+
+   g_st_state_ready = true;
+   return true;
+  }
+
 // Cheap O(1) per-tick gate. Spread guard only; fail-open on .DWX zero spread.
 bool Strategy_NoTradeFilter()
   {
@@ -207,11 +236,10 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_sl_atr_period, 1);
-   if(atr_value <= 0.0)
+   if(!g_st_state_ready)
       return false; // defer to entry gate, do not block here
 
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
+   const double stop_distance = strategy_sl_atr_mult * g_st_stop_atr;
    if(stop_distance <= 0.0)
       return false;
 
@@ -231,29 +259,22 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // dir@1 = last closed bar, dir@2 = the bar before — from ONE reconstruction.
-   int dir1 = 0, dir2 = 0;
-   if(!ST_Direction(1, dir1, dir2))
-      return false;
-   if(dir1 == 0)
+   // dir@1 = last closed bar, dir@2 = the bar before — from the cached pass.
+   if(!g_st_state_ready)
       return false;
 
-   const bool flip_up   = (dir2 <= 0 && dir1 > 0);
-   const bool flip_down = (dir2 >= 0 && dir1 < 0);
+   const bool flip_up   = (g_st_dir2 <= 0 && g_st_dir1 > 0);
+   const bool flip_down = (g_st_dir2 >= 0 && g_st_dir1 < 0);
    if(!flip_up && !flip_down)
       return false;
 
    // Emergency stop ATR (card: 3.0 * ATR(20)), independent of the signal ATR.
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_sl_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false;
-
    if(flip_up)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
          return false;
-      const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_sl_atr_mult);
+      const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, g_st_stop_atr, strategy_sl_atr_mult);
       if(sl <= 0.0)
          return false;
       req.type   = QM_BUY;
@@ -268,7 +289,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double entry_s = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(entry_s <= 0.0)
       return false;
-   const double sl_s = QM_StopATRFromValue(_Symbol, QM_SELL, entry_s, atr_value, strategy_sl_atr_mult);
+   const double sl_s = QM_StopATRFromValue(_Symbol, QM_SELL, entry_s, g_st_stop_atr, strategy_sl_atr_mult);
    if(sl_s <= 0.0)
       return false;
    req.type   = QM_SELL;
@@ -293,10 +314,7 @@ bool Strategy_ExitSignal()
    if(QM_TM_OpenPositionCount(magic) <= 0)
       return false;
 
-   int dir1 = 0, dir2 = 0;
-   if(!ST_Direction(1, dir1, dir2))
-      return false;
-   if(dir1 == 0)
+   if(!g_st_state_ready)
       return false;
 
    // Determine the side of our open position for this magic.
@@ -316,9 +334,9 @@ bool Strategy_ExitSignal()
          have_short = true;
      }
 
-   if(have_long && dir1 < 0)
+   if(have_long && g_st_dir1 < 0)
       return true;   // regime turned down — exit long
-   if(have_short && dir1 > 0)
+   if(have_short && g_st_dir1 > 0)
       return true;   // regime turned up — exit short
    return false;
   }
@@ -335,6 +353,9 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
+   if(_Period != PERIOD_D1)
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -365,6 +386,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
@@ -380,6 +403,12 @@ void OnTick()
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
+
+   // QM_IsNewBar is single-consume. Latch it once and refresh the expensive
+   // recursive state before either exit or entry reads it.
+   const bool qm_new_bar = QM_IsNewBar(_Symbol, PERIOD_D1);
+   if(qm_new_bar)
+      Strategy_AdvanceStateOnNewBar();
 
    if(Strategy_NoTradeFilter())
       return;
@@ -400,7 +429,7 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
+   if(!qm_new_bar)
       return;
 
    QM_EquityStreamOnNewBar();

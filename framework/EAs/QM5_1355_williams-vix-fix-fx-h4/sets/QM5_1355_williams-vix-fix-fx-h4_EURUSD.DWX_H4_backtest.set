@@ -1,0 +1,35 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1355
+; ea_slug:      williams-vix-fix-fx-h4
+; ea_version:   v5.0
+; set_version:  s20260810-001
+; symbol:       EURUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   6
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   d3d9ed47e439b8a220f46bb360a3f69acd8e4430cd3d4d545e97851a54628bd0
+; author:       Development
+; date:         2026-08-10
+;==========================================================
+qm_ea_id=1355
+qm_magic_slot_offset=6
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1355_williams-vix-fix-fx-h4.md
+strategy_wvf_lookback=22
+strategy_wvf_ma_period=20
+strategy_wvf_devs=2.0
+strategy_wvf_range_pct=0.85
+strategy_atr_period=14
+strategy_ema_filter_period=200
+strategy_sl_atr_mult=1.5
+strategy_tp1_atr_mult=1.5
+strategy_tp2_atr_mult=3.0
+strategy_time_stop_bars=24
+strategy_spread_mult=1.5
+strategy_warmup_h4_bars=250

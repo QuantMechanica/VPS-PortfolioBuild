@@ -1,0 +1,63 @@
+{
+  "artifact_type": "q02_infra_repair_requeue",
+  "created_at_utc": "2026-08-06T21:58:24+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_11353",
+  "ea_label": "QM5_11353_rbt-cci14-zone-cross-h1",
+  "result": "PIPELINE",
+  "farm_claim": {
+    "agent_task_id": "14164eb0-b1fe-4487-9a99-6b0a1ed8ff15",
+    "claim_key": "manual:codex:agents/board-advisor:QM5_11353:q02-stale-ex5-recovery:2026-08-06T21:51:23+00:00",
+    "claimed_by": "codex:agents/board-advisor",
+    "backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_11353_q02_repair_claim_20260806T215122Z.sqlite"
+  },
+  "diagnosis": {
+    "classification": "INFRA_STALE_EX5",
+    "source_work_item_id": "e9233f8f-5a0a-4446-8491-b997d0a6bc1a",
+    "symbol": "EURJPY.DWX",
+    "magic_slot": 15,
+    "magic": 113530015,
+    "failure": "EA_MAGIC_NOT_REGISTERED",
+    "old_ex5_sha256": "53d767f23e4425293627e80ef574c334002ece126c5043262cffa8c0376ec355",
+    "mq5_sha256": "c42e5eaed8e6606210f879e27a26bae6d029947682b512055f278030931801c8",
+    "resolver_sha256": "d36d10d09f9f58d1180337035670e0803867e272ba9e84c44f05c6bdae710aaf",
+    "strategy_logic_changed": false
+  },
+  "repair": {
+    "new_ex5_sha256": "8d786847a22752c348277012fee71a95dd83894031565bc1ebc3c98861bdefa8",
+    "setfiles_regenerated": 28,
+    "setfile_manifest_sha256": "7b5605aa459070d3af1d14d910f521d9cd9a3a3b93b9956f713f246a4c0e5f2d",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0
+  },
+  "validation": {
+    "strict_compile": "PASS_0E_0W",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260806_215400\\summary.csv",
+    "spec": "PASS",
+    "build_guardrails": "PASS_0_FINDINGS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_check": "PASS_0F_0W",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260806_215548.json",
+    "manual_smoke": "NOT_RUN_BUILD_SKILL_BOUNDARY"
+  },
+  "q02_handoff": {
+    "enqueue_method": "farmctl.seed-fresh-q02",
+    "source_work_item_id": "07d2cb16-4635-4e5b-89fe-a2c98d38e88f",
+    "work_item_id": "b8dd5a59-73c0-4dd0-a101-74dffbb9d477",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "H1",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "expected_ex5_sha256": "8d786847a22752c348277012fee71a95dd83894031565bc1ebc3c98861bdefa8",
+    "expected_setfile_sha256": "db3522549b2bb356abb2c98cad58384f7708f54b5d1118d14689785ae9dc23a6",
+    "backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_11353_q02_seed_20260806T215823Z.sqlite"
+  },
+  "capacity": {
+    "observed_at_utc": "2026-08-06T21:57:17.8857337Z",
+    "cpu_load_pct": 27.0,
+    "active_work_items": 4,
+    "cpu_ceiling_hit": false
+  },
+  "evidence_path": "docs/ops/evidence/2026-08-06_qm5_11353_fx_stale_ex5_q02_recovery.md",
+  "safety": "No T_Live, AutoTrading, portfolio gate, deploy manifest, process kill, manual dispatch, or strategy-mechanics mutation."
+}

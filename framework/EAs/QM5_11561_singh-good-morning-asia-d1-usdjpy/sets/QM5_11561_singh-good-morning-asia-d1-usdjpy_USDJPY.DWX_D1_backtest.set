@@ -3,16 +3,16 @@
 ; ea_id:        11561
 ; ea_slug:      singh-good-morning-asia-d1-usdjpy
 ; ea_version:   v5.0
-; set_version:  s20260709-001
+; set_version:  s20260805-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5acad9ee08db5cb5900a5d4dcafca4aea2b27762000e5c1e9354041d3bb69e27
+; build_hash:   738964da2f05f14e884ab5db4a3891be3966e22f2388602e392ab02cf8fb46e2
 ; author:       Development
-; date:         2026-07-09
+; date:         2026-08-05
 ;==========================================================
 qm_ea_id=11561
 qm_magic_slot_offset=0

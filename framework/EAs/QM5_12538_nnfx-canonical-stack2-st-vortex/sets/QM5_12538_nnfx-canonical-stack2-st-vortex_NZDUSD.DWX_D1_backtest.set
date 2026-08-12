@@ -3,32 +3,35 @@
 ; ea_id:        12538
 ; ea_slug:      nnfx-canonical-stack2-st-vortex
 ; ea_version:   v5.0
-; set_version:  s20260625-001
+; set_version:  s20260811-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   867a8130fbcce81991f00a639001df99f8ce6484bef525087cd884e8a4532645
+; build_hash:   b49e3c7af2e703e15b814fb000480b15c8f458ea25a690fc4280a5e546aec0ac
 ; author:       Development
-; date:         2026-06-25
+; date:         2026-08-11
 ;==========================================================
+qm_ea_id=12538
 qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12538_nnfx-canonical-stack2-st-vortex.md
+strategy_baseline_period=20
+strategy_baseline_cross_lookback=3
+strategy_atr_period=14
+strategy_atr_proximity=1.0
+strategy_supertrend_period=10
+strategy_supertrend_mult=3.0
+strategy_vortex_period=14
+strategy_adx_period=14
+strategy_adx_threshold=20.0
+strategy_atr_sl_mult=1.5
+strategy_atr_tp_mult=1.0
+strategy_partial_fraction=0.5
+strategy_warmup_bars=250
+strategy_max_spread_points=300

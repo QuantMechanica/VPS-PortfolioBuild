@@ -14,10 +14,13 @@ import hashlib
 import html
 import json
 import math
+import os
 import re
+import shutil
 import sqlite3
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable, Mapping, Sequence
@@ -35,12 +38,49 @@ except ModuleNotFoundError:
 PLAN_SCHEMA = "q09-news-run-plan/v2"
 CELL_RECEIPT_SCHEMA = "q09-news-cell-receipt/v2"
 CELL_EVIDENCE_SCHEMA = "q09-news-cell-evidence/v2"
-CELL_FAILURE_SCHEMA = "q09-news-cell-failure/v1"
+CELL_FAILURE_SCHEMA_V1 = "q09-news-cell-failure/v1"
+CELL_FAILURE_SCHEMA = "q09-news-cell-failure/v2"
+SUPPORTED_CELL_FAILURE_SCHEMAS = frozenset(
+    {CELL_FAILURE_SCHEMA_V1, CELL_FAILURE_SCHEMA}
+)
+EXECUTION_FAILURE_SCHEMA_V1 = "q09-news-execution-failure/v1"
+EXECUTION_FAILURE_SCHEMA = "q09-news-execution-failure/v2"
+SUPPORTED_EXECUTION_FAILURE_SCHEMAS = frozenset(
+    {EXECUTION_FAILURE_SCHEMA_V1, EXECUTION_FAILURE_SCHEMA}
+)
+DIAGNOSTIC_ANCHOR_SCHEMA = "q09-live-news-diagnostic-anchor/v1"
+DIAGNOSTIC_SUMMARY_SCHEMA = "q09-live-news-diagnostic-summary/v1"
+DIAGNOSTIC_CONTRACT = "q09-live-news-backfill/v1"
+DIAGNOSTIC_ALLOWED_TERMINALS = frozenset({"T1", "T2", "T3", "T4", "T5"})
+CELL_FAILURE_STABLE_FIELDS = (
+    "work_item_id",
+    "run_identity_sha256",
+    "paired_base_identity_sha256",
+    "arm",
+    "temporal_mode",
+    "compliance_mode",
+    "seed",
+)
+CELL_FAILURE_SIDECAR_RE = re.compile(
+    r"^cell_failure(?:_([1-9][0-9]*))?\.json$"
+)
+CELL_FAILURE_ATTEMPT_DIR = "failure_attempts"
+CELL_FAILURE_ATTEMPT_RE = re.compile(
+    r"^attempt_([0-9]+)(?:\.tmp)?$"
+)
+CELL_FAILURE_SNAPSHOT_LAYOUT = "FLAT_INDEXED_SHA256_V1"
 COMPLIANCE_MODE_IDS = {"NONE": 0, "DXZ": 1, "FTMO": 2, "5ERS": 3}
 DEFAULT_CELL_TIMEOUT_SEC = 3600
 CELL_TIMEOUT_HEADROOM_SEC = 600
+TERMINAL_EXIT_WAIT_SEC = 180
+TERMINAL_EXIT_POLL_SEC = 2.0
+# This is the same terminal-worker attempt ceiling.  A transient cell may
+# force the work item back through that existing retry lane, but must not
+# create a second, unbounded retry budget inside the Q09 runner.
+WORK_ITEM_ATTEMPT_CEILING = 3
 WINDOW_NAMES = ("selection", "holdout", "full")
 FACTORY_DB_RELATIVE_PATH = Path("state") / "farm_state.sqlite"
+FACTORY_MT5_ROOT = Path(r"D:\QM\mt5")
 
 
 class RunnerError(RuntimeError):
@@ -49,6 +89,10 @@ class RunnerError(RuntimeError):
 
 class CapacityError(RunnerError):
     """Raised when execution is outside the active factory terminal claim."""
+
+
+class TransientCellError(RunnerError):
+    """Raised for a child exit-1 that produced no fresh tester receipt."""
 
 
 def _safe_common_path(value: str) -> str:
@@ -341,9 +385,14 @@ def load_run_plan(path: Path) -> dict[str, Any]:
     return plan
 
 
-def _validate_source_vintage(input_manifest: Mapping[str, Any]) -> None:
+def _validate_source_vintage(
+    input_manifest: Mapping[str, Any],
+    *,
+    source_path_overrides: Mapping[str, Path] | None = None,
+) -> None:
     identities = input_manifest["identities"]
     source_paths = input_manifest["source_paths"]
+    overrides = dict(source_path_overrides or {})
     checks = {
         "q08_evidence": identities["q08_evidence_sha256"],
         "baseline_setfile": identities["baseline_setfile_sha256"],
@@ -351,14 +400,22 @@ def _validate_source_vintage(input_manifest: Mapping[str, Any]) -> None:
         "include_closure": identities["include_closure_sha256"],
         "calendar_manifest": input_manifest["calendar_bundle"]["manifest_sha256"],
     }
+    unknown_overrides = set(overrides) - set(checks)
+    if unknown_overrides:
+        raise RunnerError(
+            "unsupported source-vintage override roles: "
+            + ", ".join(sorted(unknown_overrides))
+        )
     for role, expected in checks.items():
-        _verify_hash(Path(source_paths[role]), expected, role)
+        source_path = Path(overrides.get(role, source_paths[role]))
+        _verify_hash(source_path, expected, role)
 
 
 def load_authenticated_plan(
     plan_path: Path,
     *,
     expected_file_sha256: str | None = None,
+    source_path_overrides: Mapping[str, Path] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Load a plan, its manifest, and every immutable source binding.
 
@@ -384,7 +441,10 @@ def load_authenticated_plan(
             raise RunnerError("Q09 plan/input-manifest work_item_id mismatch")
         if input_manifest.get("candidate_lineage_key") != plan.get("candidate_lineage_key"):
             raise RunnerError("Q09 plan/input-manifest candidate lineage mismatch")
-        _validate_source_vintage(input_manifest)
+        _validate_source_vintage(
+            input_manifest,
+            source_path_overrides=source_path_overrides,
+        )
     except (KeyError, TypeError, ValueError) as exc:
         raise RunnerError(f"Q09 plan/input manifest is malformed: {exc}") from exc
 
@@ -490,7 +550,24 @@ def _dispatch_binding_material(payload: Mapping[str, Any]) -> dict[str, Any]:
         "q09_cell_count",
         "q09_cell_timeout_sec",
     )
-    return {field: payload.get(field) for field in fields}
+    material = {field: payload.get(field) for field in fields}
+    # Standard Q09 bindings predate the live-book diagnostic lane.  Keep their
+    # hash material byte-for-byte stable (including an already-active round-7
+    # row), while binding every non-admission control that makes the diagnostic
+    # lane safe when that explicit marker is present.
+    if payload.get("diagnostic_non_admission") is True:
+        material.update({
+            "diagnostic_non_admission": True,
+            "diagnostic_contract": payload.get("diagnostic_contract"),
+            "diagnostic_anchor_path": payload.get("diagnostic_anchor_path"),
+            "diagnostic_anchor_sha256": payload.get("diagnostic_anchor_sha256"),
+            "diagnostic_campaign_id": payload.get("diagnostic_campaign_id"),
+            "diagnostic_queue_rank": payload.get("diagnostic_queue_rank"),
+            "avoid_terminals": payload.get("avoid_terminals"),
+            "staged_ex5_path": payload.get("staged_ex5_path"),
+            "staged_ex5_sha256": payload.get("staged_ex5_sha256"),
+        })
+    return material
 
 
 def _dispatch_binding_sha256(payload: Mapping[str, Any]) -> str:
@@ -698,6 +775,242 @@ def bind_plan_to_work_item(
     }
 
 
+def bind_diagnostic_plan_to_work_item(
+    farm_root: Path,
+    *,
+    work_item_id: str,
+    plan_path: Path,
+    expected_plan_file_sha256: str,
+    cell_timeout_sec: int = DEFAULT_CELL_TIMEOUT_SEC,
+) -> dict[str, Any]:
+    """Bind a live-book Q09 diagnostic without manufacturing pipeline lineage.
+
+    The anchor is carried in the plan's historical ``q08_evidence`` identity
+    slot only so the sealed v2 plan/collector format remains reusable.  This
+    binder proves that it is an explicit non-admission anchor, authenticates a
+    real completed Q07 seed-stability row, and never creates a Q08 dependency.
+    Diagnostic persistence is consequently kept out of ``q09_news_tests``.
+    """
+
+    plan_path = plan_path.resolve()
+    plan, manifest = load_authenticated_plan(
+        plan_path, expected_file_sha256=expected_plan_file_sha256
+    )
+    if str(plan.get("work_item_id")) != str(work_item_id):
+        raise RunnerError("Q09 diagnostic plan is bound to a different work_item_id")
+    if str(manifest.get("tester_model") or "").strip().upper() not in {
+        "REAL_TICKS", "MODEL4_REAL_TICKS",
+    }:
+        raise RunnerError("Q09 diagnostic execution requires sealed REAL_TICKS")
+    if int(plan.get("cell_count") or 0) != 40 or manifest.get("matrix_scope") != "7x1_target_compliance":
+        raise RunnerError("Q09 live-book diagnostic requires the canonical 7x1 / 40-cell matrix")
+
+    anchor_path = Path(str((manifest.get("source_paths") or {}).get("q08_evidence", ""))).resolve()
+    anchor = _load_json(anchor_path, "Q09 live-book diagnostic anchor")
+    if (
+        anchor.get("schema_version") != DIAGNOSTIC_ANCHOR_SCHEMA
+        or anchor.get("diagnostic_non_admission") is not True
+        or anchor.get("diagnostic_contract") != DIAGNOSTIC_CONTRACT
+    ):
+        raise RunnerError("Q09 diagnostic anchor contract is missing or contradictory")
+
+    timeout_sec = int(cell_timeout_sec)
+    timeout_min = required_factory_timeout_min(
+        int(plan["cell_count"]), cell_timeout_sec=timeout_sec
+    )
+    database = _farm_db_path(farm_root)
+    if not database.is_file():
+        raise RunnerError(f"strategy-farm database missing: {database}")
+
+    connection = sqlite3.connect(str(database), timeout=30)
+    connection.row_factory = sqlite3.Row
+    try:
+        connection.execute("BEGIN IMMEDIATE")
+        item = connection.execute(
+            "SELECT * FROM work_items WHERE id=?", (str(work_item_id),)
+        ).fetchone()
+        if item is None:
+            raise RunnerError("Q09 diagnostic work item does not exist")
+        if item["phase"] != "Q09_NEWS" or item["status"] != "pending" or str(item["claimed_by"] or "").strip():
+            raise RunnerError("Q09 diagnostic plan requires an unclaimed pending Q09_NEWS row")
+        try:
+            payload = json.loads(str(item["payload_json"] or "{}"))
+        except json.JSONDecodeError as exc:
+            raise RunnerError("Q09 diagnostic payload is invalid JSON") from exc
+        anchor_work_item_id = str(anchor.get("work_item_id") or "")
+        direct_anchor = anchor_work_item_id == str(work_item_id)
+        rerun_parent_id = str(payload.get("rerun_of") or "")
+        sealed_identity_rerun = (
+            payload.get("sealed_identity_rerun") is True
+            and int(payload.get("diagnostic_generation") or 0) >= 3
+            and bool(rerun_parent_id)
+            and rerun_parent_id == str(item["parent_task_id"] or "")
+            and str(payload.get("sealed_identity_anchor_work_item_id") or "")
+            == anchor_work_item_id
+            and str(payload.get("sealed_identity_anchor_sha256") or "").lower()
+            == contract.sha256_file(anchor_path)
+        )
+        if not direct_anchor and not sealed_identity_rerun:
+            raise RunnerError("Q09 diagnostic anchor work-item lineage is contradictory")
+        if str(item["ea_id"]) != str(anchor.get("ea_id")) or str(item["symbol"]) != str(anchor.get("symbol")):
+            raise RunnerError("Q09 diagnostic anchor differs from work-item EA/symbol")
+        if connection.execute(
+            "SELECT 1 FROM q09_news_tests WHERE work_item_id=?", (str(work_item_id),)
+        ).fetchone() is not None:
+            raise RunnerError("diagnostic work item must not have canonical Q09 admission evidence")
+
+        identities = manifest.get("identities") or {}
+        if identities.get("q08_evidence_sha256") != contract.sha256_file(anchor_path):
+            raise RunnerError("Q09 diagnostic anchor hash differs from sealed plan")
+        if identities.get("q08_work_item_id") != str(anchor.get("anchor_id")):
+            raise RunnerError("Q09 diagnostic anchor identity differs from sealed plan")
+        setfile_path = Path(str(item["setfile_path"] or "")).resolve()
+        source_baseline = Path(str((manifest.get("source_paths") or {}).get("baseline_setfile", ""))).resolve()
+        if setfile_path != source_baseline:
+            raise RunnerError("Q09 diagnostic baseline differs from work-item setfile")
+        _verify_hash(
+            setfile_path,
+            str(identities.get("baseline_setfile_sha256") or ""),
+            "Q09 diagnostic baseline setfile",
+        )
+
+        fresh_build = anchor.get("fresh_build_ex5") or {}
+        deployed = anchor.get("deployed_ex5") or {}
+        staged_identity = fresh_build or deployed
+        if fresh_build and int(anchor.get("diagnostic_generation") or 0) != 2:
+            raise RunnerError("Q09 fresh-build diagnostic lacks generation-2 identity")
+        staged_path = Path(str(staged_identity.get("path") or "")).resolve()
+        staged_hash = str(staged_identity.get("sha256") or "").lower()
+        staged_role = (
+            "Q09 exact fresh current-build EX5"
+            if fresh_build
+            else "Q09 exact deployed live EX5"
+        )
+        if sealed_identity_rerun:
+            # A later canonical rebuild may move the anchor's mutable EX5 path
+            # to a new vintage. The successor plan may instead bind an
+            # immutable recovered copy, but never a different hash.
+            staged_path = Path(str(
+                (manifest.get("source_paths") or {}).get("ex5", "")
+            )).resolve()
+            payload_staged_path = Path(str(payload.get("staged_ex5_path") or "")).resolve()
+            payload_staged_hash = str(payload.get("staged_ex5_sha256") or "").lower()
+            if payload_staged_path != staged_path or payload_staged_hash != staged_hash:
+                raise RunnerError(
+                    "Q09 sealed-identity rerun EX5 payload differs from plan/anchor"
+                )
+            staged_role = "Q09 exact immutable generation EX5"
+        _verify_hash(staged_path, staged_hash, staged_role)
+        if staged_hash != identities.get("ex5_sha256"):
+            raise RunnerError("Q09 diagnostic staged EX5 differs from sealed plan")
+
+        q07 = anchor.get("q07_seed_stability") or {}
+        q07_id = str(q07.get("work_item_id") or "")
+        q07_path = Path(str(q07.get("evidence_path") or "")).resolve()
+        q07_hash = str(q07.get("evidence_sha256") or "").lower()
+        q07_row = connection.execute(
+            "SELECT phase,status,verdict,evidence_path FROM work_items WHERE id=?",
+            (q07_id,),
+        ).fetchone()
+        exact_work_item_evidence = (
+            q07_row is not None
+            and Path(str(q07_row["evidence_path"] or "")).resolve() == q07_path
+        )
+        durable_fallback = str(q07.get("evidence_source") or "") == "DURABLE_PIPELINE_FALLBACK"
+        if (
+            q07_row is None
+            or q07_row["phase"] != "Q07"
+            or q07_row["status"] != "done"
+            or q07_row["verdict"] not in {"PASS", "MULTI_SEED_PASS"}
+            or (not exact_work_item_evidence and not durable_fallback)
+        ):
+            raise RunnerError("Q09 diagnostic Q07 seed-stability reference is not a completed PASS")
+        _verify_hash(q07_path, q07_hash, "Q09 diagnostic Q07 seed-stability evidence")
+        if durable_fallback:
+            fallback_document = _load_json(q07_path, "durable Q07 fallback evidence")
+            if (
+                str(fallback_document.get("phase") or "").upper() != "Q07"
+                or str(fallback_document.get("verdict") or "").upper()
+                not in {"PASS", "MULTI_SEED_PASS"}
+                or str(fallback_document.get("symbol") or fallback_document.get("runner_symbol") or "")
+                != str(item["symbol"])
+            ):
+                raise RunnerError("durable Q07 fallback does not match the diagnostic sleeve")
+
+        calendar_manifest = Path(str((manifest.get("source_paths") or {}).get("calendar_manifest", "")))
+        try:
+            verified_calendar = calendar_bundle.verify_bundle(calendar_manifest.parent)
+        except calendar_bundle.CalendarBundleError as exc:
+            raise RunnerError(f"calendar bundle verification failed during diagnostic binding: {exc}") from exc
+        registered = connection.execute(
+            "SELECT manifest_sha256,content_sha256 FROM news_calendar_bundles WHERE bundle_id=?",
+            (str(verified_calendar["bundle_id"]),),
+        ).fetchone()
+        if registered is None:
+            news_schema.record_calendar_bundle(
+                connection, verified_calendar, str(calendar_manifest.resolve())
+            )
+        elif (
+            registered["manifest_sha256"] != verified_calendar["manifest_sha256"]
+            or registered["content_sha256"] != verified_calendar["content_sha256"]
+        ):
+            raise RunnerError("registered calendar bundle contradicts diagnostic plan")
+
+        avoided = {str(value).upper() for value in payload.get("avoid_terminals", [])}
+        if (
+            payload.get("diagnostic_non_admission") is not True
+            or payload.get("diagnostic_contract") != DIAGNOSTIC_CONTRACT
+            or avoided != {"T6", "T7", "T8", "T9", "T10"}
+            or Path(str(payload.get("staged_ex5_path") or "")).resolve() != staged_path
+            or str(payload.get("staged_ex5_sha256") or "").lower() != staged_hash
+        ):
+            raise RunnerError("Q09 diagnostic payload lacks the non-admission/cap/exact-EX5 controls")
+
+        payload.update({
+            "q09_binding_version": "q09-news-dispatch-binding/v1",
+            "q09_activation_state": news_schema.ACTIVATION_STATE_RUNNABLE,
+            "q09_run_plan_path": str(plan_path),
+            "q09_run_plan_file_sha256": contract.sha256_file(plan_path),
+            "q09_run_plan_sha256": plan["plan_sha256"],
+            "q09_input_manifest_sha256": plan["input_manifest_sha256"],
+            "q09_q08_work_item_id": str(anchor["anchor_id"]),
+            "q09_q08_evidence_sha256": contract.sha256_file(anchor_path),
+            "q09_q07_work_item_id": q07_id,
+            "q09_q07_evidence_path": str(q07_path),
+            "q09_q07_evidence_sha256": q07_hash,
+            "q09_cell_count": 40,
+            "q09_cell_timeout_sec": timeout_sec,
+            "diagnostic_anchor_path": str(anchor_path),
+            "diagnostic_anchor_sha256": contract.sha256_file(anchor_path),
+        })
+        payload["q09_dispatch_binding_sha256"] = _dispatch_binding_sha256(payload)
+        payload["timeout_min"] = max(int(payload.get("timeout_min") or 0), timeout_min)
+        bound_at = datetime.now(timezone.utc).isoformat()
+        payload["q09_plan_bound_at"] = bound_at
+        connection.execute(
+            "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
+            (json.dumps(payload, sort_keys=True), bound_at, str(work_item_id)),
+        )
+        connection.commit()
+    except BaseException:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+    return {
+        "bound": True,
+        "diagnostic_non_admission": True,
+        "work_item_id": str(work_item_id),
+        "plan_path": str(plan_path),
+        "plan_file_sha256": contract.sha256_file(plan_path),
+        "cell_count": 40,
+        "cell_timeout_sec": timeout_sec,
+        "timeout_min": timeout_min,
+        "dispatch_binding_sha256": payload["q09_dispatch_binding_sha256"],
+        "allowed_terminals": sorted(DIAGNOSTIC_ALLOWED_TERMINALS),
+    }
+
+
 def _receipt_to_cell(spec: Mapping[str, Any]) -> dict[str, Any]:
     receipt_path = Path(spec["receipt_path"])
     receipt = _load_json(receipt_path, f"cell receipt {receipt_path}")
@@ -761,6 +1074,8 @@ def _receipt_to_cell(spec: Mapping[str, Any]) -> dict[str, Any]:
         "setfile_sha256": spec["setfile_sha256"],
         "evidence_sha256": artifact_hashes["evidence_sha256"],
         "report_sha256": artifact_hashes["report_sha256"],
+        "evidence_path": str(artifact_paths["evidence"].resolve()),
+        "report_path": str(artifact_paths["report"].resolve()),
         "selection": metrics["selection"],
         "holdout": metrics["holdout"],
         "full": metrics["full"],
@@ -773,28 +1088,179 @@ def _cell_failure_path(spec: Mapping[str, Any]) -> Path:
     return Path(str(spec["receipt_path"])).with_name("cell_failure.json")
 
 
-def _failure_artifacts(cell_dir: Path) -> list[dict[str, Any]]:
-    """Hash every artifact available when a cell aborts.
+def _cell_failure_identity(
+    spec: Mapping[str, Any], *, work_item_id: str
+) -> dict[str, Any]:
+    return {
+        "schema_version": CELL_FAILURE_SCHEMA,
+        "work_item_id": str(work_item_id),
+        "run_identity_sha256": spec["run_identity_sha256"],
+        "paired_base_identity_sha256": spec["paired_base_identity_sha256"],
+        "arm": spec["arm"],
+        "temporal_mode": spec["temporal_mode"],
+        "compliance_mode": spec["compliance_mode"],
+        "seed": spec["seed"],
+    }
+
+
+def _assert_cell_failure_identity(
+    failure: Mapping[str, Any],
+    expected: Mapping[str, Any],
+    path: Path,
+) -> None:
+    schema_version = str(failure.get("schema_version") or "")
+    if schema_version not in SUPPORTED_CELL_FAILURE_SCHEMAS:
+        raise RunnerError(
+            f"unsupported cell failure schema {schema_version!r}: {path}"
+        )
+    for field in CELL_FAILURE_STABLE_FIELDS:
+        if failure.get(field) != expected[field]:
+            raise RunnerError(f"cell failure {field} mismatch: {path}")
+
+
+def _cell_failure_occurrence_path(base_path: Path, occurrence: int) -> Path:
+    if occurrence < 1:
+        raise RunnerError("cell failure occurrence must be positive")
+    if occurrence == 1:
+        return base_path
+    return base_path.with_name(
+        f"{base_path.stem}_{occurrence}{base_path.suffix}"
+    )
+
+
+def _cell_failure_occurrence(path: Path) -> int:
+    match = CELL_FAILURE_SIDECAR_RE.fullmatch(path.name)
+    if match is None:
+        raise RunnerError(f"invalid cell failure sidecar name: {path}")
+    occurrence = int(match.group(1) or 1)
+    if occurrence == 1 and path.name != "cell_failure.json":
+        raise RunnerError(f"cell failure occurrence 1 must use the base name: {path}")
+    return occurrence
+
+
+def _failure_attempt_root(cell_dir: Path, occurrence: int) -> Path:
+    return cell_dir / CELL_FAILURE_ATTEMPT_DIR / f"attempt_{occurrence:04d}"
+
+
+def _failure_snapshot_artifact_name(
+    source_relative_path: Path | PurePosixPath,
+    index: int,
+) -> str:
+    """Return a short deterministic name for one snapshotted artifact.
+
+    Mirroring the full run-smoke tree below ``failure_attempts`` can push an
+    otherwise valid cell past the legacy Windows MAX_PATH boundary.  The
+    sidecar already preserves the authenticated source-relative path, so the
+    immutable copy only needs a unique, deterministic flat name.
+    """
+
+    if index < 1:
+        raise RunnerError("cell failure artifact index must be positive")
+    source = PurePosixPath(source_relative_path.as_posix())
+    digest = hashlib.sha256(source.as_posix().encode("utf-8")).hexdigest()[:16]
+    suffix = source.suffix.lower()
+    if re.fullmatch(r"\.[a-z0-9]{1,10}", suffix) is None:
+        suffix = ""
+    return f"artifact_{index:04d}_{digest}{suffix}"
+
+
+def _next_cell_failure_occurrence(
+    base_path: Path,
+    *,
+    expected_identity: Mapping[str, Any],
+) -> int:
+    highest = 0
+    for candidate in sorted(base_path.parent.glob("cell_failure*.json")):
+        if CELL_FAILURE_SIDECAR_RE.fullmatch(candidate.name) is None:
+            continue
+        occurrence = _cell_failure_occurrence(candidate)
+        prior = _load_json(candidate, f"cell failure {candidate}")
+        _assert_cell_failure_identity(prior, expected_identity, candidate)
+        highest = max(highest, occurrence)
+    attempt_parent = base_path.parent / CELL_FAILURE_ATTEMPT_DIR
+    if attempt_parent.is_dir():
+        for candidate in attempt_parent.iterdir():
+            match = CELL_FAILURE_ATTEMPT_RE.fullmatch(candidate.name)
+            if match is not None and int(match.group(1)) > 0:
+                highest = max(highest, int(match.group(1)))
+    return highest + 1
+
+
+def _failure_artifact_sources(cell_dir: Path) -> list[tuple[Path, Path]]:
+    sources: list[tuple[Path, Path]] = []
+    resolved_cell_dir = cell_dir.resolve()
+    for path in sorted(cell_dir.rglob("*")):
+        if not path.is_file():
+            continue
+        relative_path = path.relative_to(cell_dir)
+        if (
+            relative_path.parts[0] == CELL_FAILURE_ATTEMPT_DIR
+            or path.name == "cell_receipt.json"
+            or CELL_FAILURE_SIDECAR_RE.fullmatch(path.name)
+        ):
+            continue
+        try:
+            path.resolve().relative_to(resolved_cell_dir)
+        except ValueError as exc:
+            raise RunnerError(
+                f"cell failure source artifact escapes its cell directory: {path}"
+            ) from exc
+        sources.append((path, relative_path))
+    return sources
+
+
+def _snapshot_failure_artifacts(
+    cell_dir: Path, *, occurrence: int
+) -> tuple[Path, list[dict[str, Any]]]:
+    """Copy every failure artifact into one immutable attempt namespace.
 
     The failure sidecar is written only after the child process has stopped, so
     these identities turn a terse exception into durable row-bound evidence.
-    Planned inputs are intentionally included; the failure sidecar itself is
-    excluded to avoid a recursive identity.
+    Planned inputs are intentionally included. Prior snapshots, receipts, and
+    failure sidecars are excluded to avoid recursive or cross-attempt identity.
     """
 
+    snapshot_root = _failure_attempt_root(cell_dir, occurrence)
+    temporary_root = snapshot_root.with_name(snapshot_root.name + ".tmp")
+    if snapshot_root.exists() or temporary_root.exists():
+        raise RunnerError(
+            f"cell failure attempt snapshot already exists: {snapshot_root}"
+        )
+    temporary_root.mkdir(parents=True)
+    sources = _failure_artifact_sources(cell_dir)
+    copied: list[tuple[Path, Path, str]] = []
+    for index, (source_path, source_relative_path) in enumerate(sources, 1):
+        snapshot_name = _failure_snapshot_artifact_name(
+            source_relative_path, index
+        )
+        destination = temporary_root / snapshot_name
+        before = source_path.stat()
+        shutil.copyfile(source_path, destination)
+        after = source_path.stat()
+        if (
+            before.st_size != after.st_size
+            or before.st_mtime_ns != after.st_mtime_ns
+            or destination.stat().st_size != after.st_size
+        ):
+            raise RunnerError(
+                f"cell failure source artifact changed during snapshot: {source_path}"
+            )
+        copied.append((source_path, source_relative_path, snapshot_name))
+    temporary_root.replace(snapshot_root)
+
     artifacts: list[dict[str, Any]] = []
-    for path in sorted(cell_dir.rglob("*")):
-        if not path.is_file() or path.name in {"cell_failure.json", "cell_receipt.json"}:
-            continue
+    for source_path, source_relative_path, snapshot_name in copied:
+        path = snapshot_root / snapshot_name
         artifacts.append(
             {
                 "path": str(path.resolve()),
                 "relative_path": path.relative_to(cell_dir).as_posix(),
+                "source_relative_path": source_relative_path.as_posix(),
                 "size_bytes": path.stat().st_size,
                 "sha256": contract.sha256_file(path),
             }
         )
-    return artifacts
+    return snapshot_root, artifacts
 
 
 def _write_cell_failure(
@@ -803,44 +1269,53 @@ def _write_cell_failure(
     work_item_id: str,
     exc: Exception,
 ) -> Path:
-    path = _cell_failure_path(spec)
+    base_path = _cell_failure_path(spec)
+    identity = _cell_failure_identity(spec, work_item_id=work_item_id)
+    occurrence = _next_cell_failure_occurrence(
+        base_path, expected_identity=identity
+    )
+    path = _cell_failure_occurrence_path(base_path, occurrence)
+    snapshot_root, artifacts = _snapshot_failure_artifacts(
+        base_path.parent, occurrence=occurrence
+    )
     payload = {
-        "schema_version": CELL_FAILURE_SCHEMA,
-        "work_item_id": str(work_item_id),
-        "run_identity_sha256": spec["run_identity_sha256"],
-        "paired_base_identity_sha256": spec["paired_base_identity_sha256"],
-        "arm": spec["arm"],
-        "temporal_mode": spec["temporal_mode"],
-        "compliance_mode": spec["compliance_mode"],
-        "seed": spec["seed"],
+        **identity,
+        "failure_occurrence": occurrence,
         "error_type": type(exc).__name__,
         "error": str(exc),
-        "artifacts": _failure_artifacts(path.parent),
+        "artifact_snapshot_relative_path": snapshot_root.relative_to(
+            base_path.parent
+        ).as_posix(),
+        "artifact_snapshot_layout": CELL_FAILURE_SNAPSHOT_LAYOUT,
+        "artifacts": artifacts,
     }
-    _write_immutable(path, contract.canonical_json_bytes(payload))
+    data = contract.canonical_json_bytes(payload)
+    _write_immutable(path, data)
     return path
 
 
 def _authenticated_cell_failure(
-    spec: Mapping[str, Any], *, work_item_id: str
+    spec: Mapping[str, Any],
+    *,
+    work_item_id: str,
+    failure_path: Path | None = None,
+    expected_failure_sha256: str | None = None,
 ) -> dict[str, Any] | None:
-    path = _cell_failure_path(spec)
+    path = failure_path or _cell_failure_path(spec)
     if not path.is_file():
         return None
+    cell_dir = _cell_failure_path(spec).parent.resolve()
+    resolved_path = path.resolve()
+    if (
+        resolved_path.parent != cell_dir
+        or CELL_FAILURE_SIDECAR_RE.fullmatch(resolved_path.name) is None
+    ):
+        raise RunnerError(f"cell failure sidecar path is contradictory: {path}")
+    if expected_failure_sha256 is not None:
+        _verify_hash(path, expected_failure_sha256, "cell failure sidecar")
     failure = _load_json(path, f"cell failure {path}")
-    expected = {
-        "schema_version": CELL_FAILURE_SCHEMA,
-        "work_item_id": str(work_item_id),
-        "run_identity_sha256": spec["run_identity_sha256"],
-        "paired_base_identity_sha256": spec["paired_base_identity_sha256"],
-        "arm": spec["arm"],
-        "temporal_mode": spec["temporal_mode"],
-        "compliance_mode": spec["compliance_mode"],
-        "seed": spec["seed"],
-    }
-    for field, value in expected.items():
-        if failure.get(field) != value:
-            raise RunnerError(f"cell failure {field} mismatch: {path}")
+    expected = _cell_failure_identity(spec, work_item_id=work_item_id)
+    _assert_cell_failure_identity(failure, expected, path)
     if not str(failure.get("error_type") or "").strip() or not str(
         failure.get("error") or ""
     ).strip():
@@ -848,9 +1323,38 @@ def _authenticated_cell_failure(
     artifacts = failure.get("artifacts")
     if not isinstance(artifacts, list):
         raise RunnerError(f"cell failure artifact manifest is missing: {path}")
-    cell_dir = path.parent.resolve()
+    schema_version = str(failure["schema_version"])
+    snapshot_root: Path | None = None
+    snapshot_layout: str | None = None
+    if schema_version == CELL_FAILURE_SCHEMA:
+        occurrence = _cell_failure_occurrence(path)
+        if failure.get("failure_occurrence") != occurrence:
+            raise RunnerError(f"cell failure occurrence is contradictory: {path}")
+        expected_snapshot_relative = _failure_attempt_root(
+            path.parent, occurrence
+        ).relative_to(path.parent).as_posix()
+        if (
+            failure.get("artifact_snapshot_relative_path")
+            != expected_snapshot_relative
+        ):
+            raise RunnerError(
+                f"cell failure artifact snapshot path is contradictory: {path}"
+            )
+        snapshot_root = (path.parent / expected_snapshot_relative).resolve()
+        if not snapshot_root.is_dir():
+            raise RunnerError(
+                f"cell failure artifact snapshot is missing: {snapshot_root}"
+            )
+        raw_layout = failure.get("artifact_snapshot_layout")
+        if raw_layout is not None:
+            snapshot_layout = str(raw_layout)
+            if snapshot_layout != CELL_FAILURE_SNAPSHOT_LAYOUT:
+                raise RunnerError(
+                    f"cell failure artifact snapshot layout is unsupported: {path}"
+                )
     seen: set[str] = set()
-    for artifact in artifacts:
+    seen_sources: set[str] = set()
+    for artifact_index, artifact in enumerate(artifacts, 1):
         if not isinstance(artifact, Mapping):
             raise RunnerError(f"cell failure artifact row is malformed: {path}")
         artifact_path = Path(str(artifact.get("path") or "")).resolve()
@@ -862,6 +1366,46 @@ def _authenticated_cell_failure(
         if artifact.get("relative_path") != relative_path or relative_path in seen:
             raise RunnerError(f"cell failure artifact path is contradictory: {path}")
         seen.add(relative_path)
+        if snapshot_root is not None:
+            try:
+                artifact_path.relative_to(snapshot_root)
+            except ValueError as exc:
+                raise RunnerError(
+                    f"cell failure artifact is outside its attempt snapshot: {path}"
+                ) from exc
+            source_relative_path = str(
+                artifact.get("source_relative_path") or ""
+            )
+            source_parts = PurePosixPath(source_relative_path).parts
+            if (
+                not source_relative_path
+                or PurePosixPath(source_relative_path).is_absolute()
+                or ".." in source_parts
+                or ":" in source_relative_path
+                or "\\" in source_relative_path
+                or source_relative_path in seen_sources
+            ):
+                raise RunnerError(
+                    f"cell failure source artifact path is contradictory: {path}"
+                )
+            seen_sources.add(source_relative_path)
+            if snapshot_layout == CELL_FAILURE_SNAPSHOT_LAYOUT:
+                expected_artifact_path = (
+                    snapshot_root
+                    / _failure_snapshot_artifact_name(
+                        PurePosixPath(source_relative_path), artifact_index
+                    )
+                ).resolve()
+            else:
+                # Backward-compatible authentication for v2 sidecars emitted
+                # before the flat Windows-safe layout was introduced.
+                expected_artifact_path = snapshot_root.joinpath(
+                    *source_parts
+                ).resolve()
+            if artifact_path != expected_artifact_path:
+                raise RunnerError(
+                    f"cell failure artifact/source paths disagree: {path}"
+                )
         _verify_hash(artifact_path, str(artifact.get("sha256") or ""), "cell failure artifact")
         if artifact.get("size_bytes") != artifact_path.stat().st_size:
             raise RunnerError(f"cell failure artifact size mismatch: {artifact_path}")
@@ -869,9 +1413,66 @@ def _authenticated_cell_failure(
         "run_identity_sha256": spec["run_identity_sha256"],
         "error_type": str(failure["error_type"]),
         "error": str(failure["error"]),
-        "failure_path": str(path.resolve()),
+        "failure_path": str(resolved_path),
         "failure_sha256": contract.sha256_file(path),
+        "failure_occurrence": _cell_failure_occurrence(path),
+        "failure_schema_version": schema_version,
         "artifact_count": len(artifacts),
+    }
+
+
+def _execution_failure_reference(
+    output_root: Path,
+    *,
+    plan: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    path = output_root.resolve() / "execution_failure.json"
+    if not path.is_file():
+        return None
+    failure = _load_json(path, f"execution failure {path}")
+    schema_version = str(failure.get("schema_version") or "")
+    if schema_version not in SUPPORTED_EXECUTION_FAILURE_SCHEMAS:
+        raise RunnerError(
+            f"unsupported execution failure schema {schema_version!r}: {path}"
+        )
+    if str(failure.get("work_item_id") or "") != str(plan["work_item_id"]):
+        raise RunnerError(f"execution failure work_item_id mismatch: {path}")
+    run_identity = str(failure.get("run_identity_sha256") or "")
+    spec = next(
+        (
+            row
+            for row in plan["cells"]
+            if str(row["run_identity_sha256"]) == run_identity
+        ),
+        None,
+    )
+    if spec is None:
+        raise RunnerError(f"execution failure names an unknown cell: {path}")
+    sidecar_path = Path(str(failure.get("cell_failure_path") or "")).resolve()
+    cell_dir = _cell_failure_path(spec).parent.resolve()
+    if (
+        sidecar_path.parent != cell_dir
+        or CELL_FAILURE_SIDECAR_RE.fullmatch(sidecar_path.name) is None
+    ):
+        raise RunnerError(f"execution failure sidecar path is contradictory: {path}")
+    occurrence = _cell_failure_occurrence(sidecar_path)
+    if (
+        schema_version == EXECUTION_FAILURE_SCHEMA
+        and failure.get("cell_failure_occurrence") != occurrence
+    ):
+        raise RunnerError(
+            f"execution failure sidecar occurrence is contradictory: {path}"
+        )
+    sidecar_sha256 = str(failure.get("cell_failure_sha256") or "")
+    _verify_hash(sidecar_path, sidecar_sha256, "execution failure sidecar")
+    return {
+        "path": path,
+        "sha256": contract.sha256_file(path),
+        "schema_version": schema_version,
+        "run_identity_sha256": run_identity,
+        "cell_failure_path": sidecar_path,
+        "cell_failure_sha256": sidecar_sha256,
+        "cell_failure_occurrence": occurrence,
     }
 
 
@@ -977,17 +1578,63 @@ def collect_run_plan_status(
     cells: list[dict[str, Any]] = []
     missing: list[str] = []
     failed: list[dict[str, Any]] = []
-    invalid: list[dict[str, str]] = []
+    invalid_failures: list[dict[str, str]] = []
+    invalid_receipts: list[dict[str, str]] = []
+    collection_root = (output_root or plan_path.parent).resolve()
+    execution_failure_path = collection_root / "execution_failure.json"
+    execution_failure: dict[str, Any] | None = None
+    has_missing_receipt = any(
+        not Path(str(spec["receipt_path"])).is_file()
+        for spec in plan["cells"]
+    )
+    if has_missing_receipt and execution_failure_path.is_file():
+        try:
+            execution_failure = _execution_failure_reference(
+                collection_root, plan=plan
+            )
+        except RunnerError as exc:
+            invalid_failures.append(
+                {
+                    "run_identity_sha256": "",
+                    "error": str(exc),
+                }
+            )
     for spec in plan["cells"]:
         receipt_path = Path(str(spec["receipt_path"]))
         cell_id = str(spec["run_identity_sha256"])
         if not receipt_path.is_file():
             try:
-                failure = _authenticated_cell_failure(
-                    spec, work_item_id=str(plan["work_item_id"])
-                )
+                if execution_failure is not None:
+                    if execution_failure["run_identity_sha256"] != cell_id:
+                        missing.append(cell_id)
+                        continue
+                    failure = _authenticated_cell_failure(
+                        spec,
+                        work_item_id=str(plan["work_item_id"]),
+                        failure_path=execution_failure["cell_failure_path"],
+                        expected_failure_sha256=execution_failure[
+                            "cell_failure_sha256"
+                        ],
+                    )
+                    if failure is None:
+                        raise RunnerError(
+                            "execution failure sidecar disappeared during collection"
+                        )
+                elif execution_failure_path.is_file():
+                    # An invalid authoritative pointer may not be bypassed by
+                    # authenticating an older numbered sidecar.
+                    missing.append(cell_id)
+                    continue
+                else:
+                    # Backward-compatible read path for pre-v2 artifacts that
+                    # did not publish an execution_failure pointer.
+                    failure = _authenticated_cell_failure(
+                        spec, work_item_id=str(plan["work_item_id"])
+                    )
             except RunnerError as exc:
-                invalid.append({"run_identity_sha256": cell_id, "error": str(exc)})
+                invalid_failures.append(
+                    {"run_identity_sha256": cell_id, "error": str(exc)}
+                )
                 continue
             if failure is None:
                 missing.append(cell_id)
@@ -997,12 +1644,19 @@ def collect_run_plan_status(
         try:
             cells.append(_receipt_to_cell(spec))
         except RunnerError as exc:
-            invalid.append({"run_identity_sha256": cell_id, "error": str(exc)})
+            invalid_receipts.append(
+                {"run_identity_sha256": cell_id, "error": str(exc)}
+            )
+    invalid = invalid_failures + invalid_receipts
     payload = _evidence_payload(input_manifest, cells)
     if invalid:
         adjudication = _nonlocking_adjudication(
             verdict="INVALID_EVIDENCE",
-            reason_code="cell_receipt_invalid",
+            reason_code=(
+                "cell_failure_manifest_invalid"
+                if invalid_failures
+                else "cell_receipt_invalid"
+            ),
             input_manifest=input_manifest,
             details={
                 "planned_cell_count": int(plan["cell_count"]),
@@ -1010,6 +1664,8 @@ def collect_run_plan_status(
                 "failed_cell_count": len(failed),
                 "missing_cell_count": len(missing),
                 "invalid_cells": invalid,
+                "invalid_failure_cells": invalid_failures,
+                "invalid_receipt_cells": invalid_receipts,
             },
         )
     elif failed:
@@ -1090,6 +1746,30 @@ def assert_factory_capacity(
         raise CapacityError("Q09 factory capacity refused: payload is invalid JSON") from exc
     if payload.get("q09_binding_version") != "q09-news-dispatch-binding/v1":
         raise CapacityError("Q09 factory capacity refused: sealed dispatch binding missing")
+    if payload.get("diagnostic_non_admission") is True:
+        if payload.get("diagnostic_contract") != DIAGNOSTIC_CONTRACT:
+            raise CapacityError("Q09 diagnostic capacity refused: contract marker missing")
+        if str(terminal).upper() not in DIAGNOSTIC_ALLOWED_TERMINALS:
+            raise CapacityError("Q09 diagnostic capacity refused: five-terminal cap violated")
+        anchor_path = Path(str(payload.get("diagnostic_anchor_path") or ""))
+        _verify_hash(
+            anchor_path,
+            str(payload.get("diagnostic_anchor_sha256") or ""),
+            "bound Q09 diagnostic anchor",
+        )
+        staging = payload.get("staged_ex5") or {}
+        required_ex5 = str(payload.get("staged_ex5_sha256") or "").lower()
+        if (
+            not isinstance(staging, Mapping)
+            or staging.get("required_sha256") != required_ex5
+            or staging.get("pre_run_sha256") != required_ex5
+        ):
+            raise CapacityError("Q09 diagnostic capacity refused: exact live EX5 was not staged")
+        _verify_hash(
+            Path(str(staging.get("destination_path") or "")),
+            required_ex5,
+            "staged Q09 diagnostic live EX5",
+        )
     bound_path = Path(str(payload.get("q09_run_plan_path") or ""))
     if bound_path.resolve() != plan_path.resolve():
         raise CapacityError("Q09 factory capacity refused: run-plan path differs from binding")
@@ -1098,6 +1778,16 @@ def assert_factory_capacity(
         raise CapacityError("Q09 factory capacity refused: run-plan hash differs from binding")
     _verify_hash(plan_path.resolve(), expected, "bound Q09 run-plan")
     actual_binding = _dispatch_binding_sha256(payload)
+    if (
+        payload.get("diagnostic_non_admission") is True
+        and payload.get("q09_dispatch_binding_sha256") != actual_binding
+    ):
+        # Retry steering may add a failed T1-T5 slot to avoid_terminals.  The
+        # sealed diagnostic binding authenticates the permanent T6-T10
+        # exclusion, not that mutable in-fleet retry hint.
+        stable_payload = dict(payload)
+        stable_payload["avoid_terminals"] = ["T6", "T7", "T8", "T9", "T10"]
+        actual_binding = _dispatch_binding_sha256(stable_payload)
     if payload.get("q09_dispatch_binding_sha256") != actual_binding:
         raise CapacityError("Q09 factory capacity refused: dispatch binding hash mismatch")
     q07_path = Path(str(payload.get("q09_q07_evidence_path") or ""))
@@ -1107,6 +1797,61 @@ def assert_factory_capacity(
         "bound Q07 seed-stability evidence",
     )
     return {"row": dict(row), "payload": payload}
+
+
+def _stage_diagnostic_expert_binary(
+    payload: Mapping[str, Any], *, terminal: str, expert: str
+) -> dict[str, str]:
+    """Stage the exact bound live EX5 under the executor's effective label.
+
+    Long-lived workers loaded before this diagnostic lane may still construct
+    the ordinary numeric-only expert label.  The runner owns the reserved slot
+    before MT5 starts, so it can safely materialize that alias from the same
+    hash-bound deployed binary and then authenticate it before every cell.
+    """
+
+    normalized = str(expert or "").strip().replace("/", "\\")
+    parts = [part for part in normalized.split("\\") if part]
+    if (
+        len(parts) != 2
+        or parts[0].upper() != "QM"
+        or parts[1] in {".", ".."}
+        or ":" in parts[1]
+        or Path(parts[1]).name != parts[1]
+    ):
+        raise CapacityError("Q09 diagnostic capacity refused: unsafe expert label")
+    required = str(payload.get("staged_ex5_sha256") or "").lower()
+    source = Path(str(payload.get("staged_ex5_path") or "")).resolve()
+    _verify_hash(source, required, "bound Q09 diagnostic deployed EX5")
+    terminal_root = _claimed_factory_terminal_root(terminal).resolve()
+    expert_root = (terminal_root / "MQL5" / "Experts").resolve()
+    destination = (expert_root / parts[0] / f"{parts[1]}.ex5").resolve()
+    try:
+        destination.relative_to(expert_root)
+    except ValueError as exc:
+        raise CapacityError(
+            "Q09 diagnostic capacity refused: expert destination escaped terminal root"
+        ) from exc
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if not destination.is_file() or contract.sha256_file(destination) != required:
+        temporary = destination.with_name(f"{destination.name}.{os.getpid()}.tmp")
+        try:
+            temporary.write_bytes(source.read_bytes())
+            if contract.sha256_file(temporary) != required:
+                raise CapacityError(
+                    "Q09 diagnostic capacity refused: staged expert alias hash mismatch"
+                )
+            os.replace(temporary, destination)
+        finally:
+            if temporary.exists():
+                temporary.unlink()
+    _verify_hash(destination, required, "effective Q09 diagnostic expert EX5")
+    return {
+        "source_path": str(source),
+        "destination_path": str(destination),
+        "sha256": required,
+        "expert": normalized,
+    }
 
 
 def _setfile_values(path: Path) -> dict[str, str]:
@@ -1365,6 +2110,21 @@ def _latest_summary(report_root: Path, started_at: float) -> Path:
     return max(candidates, key=lambda path: path.stat().st_mtime)
 
 
+def _single_ok_run(summary: Mapping[str, Any]) -> Mapping[str, Any]:
+    """Return the sole successful attempt from a run_smoke summary."""
+
+    runs = summary.get("runs")
+    if not isinstance(runs, list):
+        raise RunnerError("run_smoke did not publish exactly one authenticated OK run")
+    ok_runs = [
+        run for run in runs
+        if isinstance(run, Mapping) and run.get("status") == "OK"
+    ]
+    if len(ok_runs) != 1:
+        raise RunnerError("run_smoke did not publish exactly one authenticated OK run")
+    return ok_runs[0]
+
+
 def _validate_window_summary(
     summary_path: Path,
     *,
@@ -1416,10 +2176,7 @@ def _validate_window_summary(
         or source_set.get("sha256") != spec["setfile_sha256"]
     ):
         raise RunnerError("run_smoke EX5/setfile identity authentication failed")
-    runs = summary.get("runs")
-    if not isinstance(runs, list) or len(runs) != 1 or runs[0].get("status") != "OK":
-        raise RunnerError("run_smoke did not publish exactly one authenticated OK run")
-    run = runs[0]
+    run = _single_ok_run(summary)
     report_path = Path(str(run.get("report_canonical_path") or ""))
     if not report_path.is_file():
         raise RunnerError("run_smoke canonical MT5 report is missing")
@@ -1502,6 +2259,119 @@ def _validate_window_summary(
     return metrics, artifacts
 
 
+def _claimed_factory_terminal_root(terminal: str) -> Path:
+    terminal_name = str(terminal).upper()
+    if re.fullmatch(r"T(?:[1-9]|10)", terminal_name) is None:
+        raise CapacityError(
+            f"Q09 terminal exit gate refused non-factory terminal {terminal!r}"
+        )
+    return (FACTORY_MT5_ROOT / terminal_name).resolve()
+
+
+def _path_is_under_root(path: str, root: Path) -> bool:
+    if not str(path).strip():
+        return False
+    try:
+        candidate = os.path.normcase(os.path.realpath(os.path.abspath(str(path))))
+        anchor = os.path.normcase(os.path.realpath(os.path.abspath(str(root))))
+        return os.path.commonpath((candidate, anchor)) == anchor
+    except (OSError, ValueError):
+        return False
+
+
+def _scan_terminal64_processes() -> list[dict[str, Any]]:
+    command = [
+        "pwsh.exe",
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        (
+            "$ErrorActionPreference='Stop'; "
+            "@(Get-CimInstance Win32_Process -Filter \"Name='terminal64.exe'\" "
+            "| Select-Object ProcessId,ExecutablePath) "
+            "| ConvertTo-Json -Compress -Depth 3"
+        ),
+    ]
+    creationflags = 0x08000000 if sys.platform == "win32" else 0
+    try:
+        completed = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            creationflags=creationflags,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise RunnerError(f"Q09 terminal process scan failed: {exc}") from exc
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout or "").strip()
+        raise RunnerError(
+            f"Q09 terminal process scan exited with code {completed.returncode}: {detail}"
+        )
+    raw = (completed.stdout or "").strip()
+    if not raw:
+        return []
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise RunnerError("Q09 terminal process scan returned invalid JSON") from exc
+    rows = payload if isinstance(payload, list) else [payload]
+    if not all(isinstance(row, dict) for row in rows):
+        raise RunnerError("Q09 terminal process scan returned an invalid row set")
+    return rows
+
+
+def _claimed_terminal_processes(
+    processes: Sequence[Mapping[str, Any]],
+    terminal_root: Path,
+) -> list[dict[str, Any]]:
+    matches: list[dict[str, Any]] = []
+    for process in processes:
+        executable_path = str(process.get("ExecutablePath") or "")
+        if Path(executable_path).name.lower() != "terminal64.exe":
+            continue
+        if not _path_is_under_root(executable_path, terminal_root):
+            continue
+        matches.append(dict(process))
+    return matches
+
+
+def _wait_for_claimed_terminal_exit(
+    terminal_root: Path,
+    *,
+    timeout_sec: float = TERMINAL_EXIT_WAIT_SEC,
+    poll_sec: float = TERMINAL_EXIT_POLL_SEC,
+    process_scan: Callable[[], Sequence[Mapping[str, Any]]] | None = None,
+    monotonic: Callable[[], float] | None = None,
+    sleeper: Callable[[float], None] | None = None,
+) -> None:
+    """Wait for terminal64 processes under one claimed factory root to exit."""
+
+    if timeout_sec <= 0 or poll_sec <= 0:
+        raise RunnerError("Q09 terminal exit wait requires positive timeout and poll values")
+    scan = process_scan or _scan_terminal64_processes
+    clock = monotonic or time.monotonic
+    sleep = sleeper or time.sleep
+    started = clock()
+    deadline = started + float(timeout_sec)
+    while True:
+        matching = _claimed_terminal_processes(scan(), terminal_root)
+        if not matching:
+            return
+        remaining = deadline - clock()
+        if remaining <= 0:
+            pids = sorted(
+                str(process.get("ProcessId") or "unknown") for process in matching
+            )
+            raise RunnerError(
+                "Q09 claimed-terminal exit wait timed out after "
+                f"{float(timeout_sec):g}s for {terminal_root}; "
+                f"terminal64.exe pids still active: {','.join(pids)}"
+            )
+        sleep(min(float(poll_sec), remaining))
+
+
 def _production_dispatch_cell(
     spec: Mapping[str, Any],
     context: Mapping[str, Any],
@@ -1537,13 +2407,22 @@ def _production_dispatch_cell(
             "-Symbol", str(context["symbol"]), "-Year", to_date[:4],
             "-FromDate", from_date, "-ToDate", to_date,
             "-Terminal", str(context["terminal"]), "-Period", str(context["period"]),
-            "-Runs", "1", "-MinTrades", "0", "-Model", "4",
+            # Q09 measures the policy-induced entry delta in each independent
+            # window.  It is diagnostic non-admission work, so the Q02
+            # five-trades-per-year floor must not replace this explicit zero.
+            # SmokeMode is run_smoke's opt-in for honoring the caller's floor;
+            # admission callers retain the default fail-closed Q02 behavior.
+            "-Runs", "1", "-MinTrades", "0", "-SmokeMode", "-Model", "4",
             "-TimeoutSeconds", str(context["cell_timeout_sec"]),
             "-SetFile", str(spec["setfile_path"]), "-ReportRoot", str(run_root),
             "-DispatchPhase", "Q09_NEWS", "-DispatchVersion", "q09_news_executor_v1",
             "-DispatchSubGateHash", f"{str(spec['run_identity_sha256'])[:16]}_{window_name}",
+            "-ExpectedExpertSha256", str(context["expected_expert_sha256"]),
             "-RequireFreshLoggerSample",
         ]
+        if context.get("skip_expert_deploy") is True:
+            command.append("-SkipExpertDeploy")
+        _wait_for_claimed_terminal_exit(Path(str(context["terminal_root"])))
         started_at = datetime.now(timezone.utc).timestamp()
         creationflags = 0x08000000 if sys.platform == "win32" else 0
         try:
@@ -1563,6 +2442,14 @@ def _production_dispatch_cell(
             ((completed.stdout or "") + (completed.stderr or "")).encode("utf-8", errors="replace"),
         )
         if completed.returncode != 0:
+            if completed.returncode == 1:
+                try:
+                    _latest_summary(run_root, started_at)
+                except RunnerError as summary_error:
+                    raise TransientCellError(
+                        f"Q09 {window_name} run_smoke exited with code 1 "
+                        "without a fresh run_smoke summary or cell receipt"
+                    ) from summary_error
             raise RunnerError(
                 f"Q09 {window_name} run_smoke exited with code {completed.returncode}"
             )
@@ -1652,7 +2539,7 @@ def _persist_q09_result(
     expected_plan_file_sha256: str,
     result: Mapping[str, Any],
 ) -> dict[str, Any]:
-    assert_factory_capacity(
+    capacity = assert_factory_capacity(
         farm_root,
         work_item_id=work_item_id,
         terminal=terminal,
@@ -1662,23 +2549,45 @@ def _persist_q09_result(
     evidence_payload = _load_json(Path(str(result["evidence_path"])), "Q09 evidence")
     adjudication = _load_json(Path(str(result["aggregate_path"])), "Q09 adjudication")
     database = _farm_db_path(farm_root)
+    if capacity["payload"].get("diagnostic_non_admission") is True:
+        connection = sqlite3.connect(str(database), timeout=30)
+        try:
+            recorded = connection.execute(
+                "SELECT 1 FROM q09_news_tests WHERE work_item_id=?", (str(work_item_id),)
+            ).fetchone()
+        finally:
+            connection.close()
+        if recorded is not None:
+            raise RunnerError("diagnostic Q09 result collided with canonical admission storage")
+        summary_path = Path(str(result["aggregate_path"])).resolve().parent / "summary.json"
+        diagnostic_summary = {
+            "schema_version": DIAGNOSTIC_SUMMARY_SCHEMA,
+            "phase": "Q09_NEWS",
+            "verdict": "REVIEW_REQUIRED",
+            "reason": "diagnostic_non_admission",
+            "reason_codes": ["diagnostic_non_admission", "owner_review_required"],
+            "diagnostic_non_admission": True,
+            "diagnostic_contract": DIAGNOSTIC_CONTRACT,
+            "work_item_id": str(work_item_id),
+            "underlying_q09_verdict": adjudication.get("verdict"),
+            "aggregate_path": str(Path(str(result["aggregate_path"])).resolve()),
+            "aggregate_sha256": str(result["aggregate_sha256"]),
+            "evidence_path": str(Path(str(result["evidence_path"])).resolve()),
+            "evidence_sha256": contract.sha256_file(Path(str(result["evidence_path"]))),
+            "diagnostic_anchor_path": capacity["payload"].get("diagnostic_anchor_path"),
+            "diagnostic_anchor_sha256": capacity["payload"].get("diagnostic_anchor_sha256"),
+        }
+        _atomic_write(summary_path, contract.canonical_json_bytes(diagnostic_summary))
+        return {
+            "status": "DIAGNOSTIC_RECORDED",
+            "verdict": "REVIEW_REQUIRED",
+            "summary_path": str(summary_path),
+            "summary_sha256": contract.sha256_file(summary_path),
+        }
     connection = sqlite3.connect(str(database), timeout=30)
     connection.row_factory = sqlite3.Row
     try:
-        existing = connection.execute(
-            "SELECT verdict,aggregate_path,aggregate_sha256 FROM q09_news_tests WHERE work_item_id=?",
-            (str(work_item_id),),
-        ).fetchone()
-        if existing is not None:
-            if (
-                existing["verdict"] != result["verdict"]
-                or Path(str(existing["aggregate_path"])).resolve()
-                != Path(str(result["aggregate_path"])).resolve()
-                or existing["aggregate_sha256"] != result["aggregate_sha256"]
-            ):
-                raise RunnerError("existing immutable Q09 adjudication contradicts executor result")
-            return {"status": "ALREADY_RECORDED", "verdict": existing["verdict"]}
-        news_schema.record_q09_adjudication(
+        summary_inserted = news_schema.record_q09_adjudication(
             connection,
             evidence_payload=evidence_payload,
             adjudication=adjudication,
@@ -1691,7 +2600,10 @@ def _persist_q09_result(
         ).fetchone()
         if recorded is None or recorded["aggregate_sha256"] != result["aggregate_sha256"]:
             raise RunnerError("Q09 adjudication sidecar verification failed")
-        return {"status": "RECORDED", "verdict": recorded["verdict"]}
+        return {
+            "status": "RECORDED" if summary_inserted else "ALREADY_RECORDED",
+            "verdict": recorded["verdict"],
+        }
     finally:
         connection.close()
 
@@ -1732,6 +2644,11 @@ def execute_run_plan(
     )
     payload = capacity["payload"]
     row = capacity["row"]
+    diagnostic_expert_stage = None
+    if payload.get("diagnostic_non_admission") is True:
+        diagnostic_expert_stage = _stage_diagnostic_expert_binary(
+            payload, terminal=terminal, expert=expert
+        )
     if (
         payload.get("q09_run_plan_sha256") != plan.get("plan_sha256")
         or payload.get("q09_input_manifest_sha256") != plan.get("input_manifest_sha256")
@@ -1765,6 +2682,7 @@ def execute_run_plan(
         "farm_root": str(farm_root.resolve()),
         "work_item_id": str(work_item_id),
         "terminal": str(terminal),
+        "terminal_root": str(_claimed_factory_terminal_root(terminal)),
         "ea_id": int(ea_id),
         "expert": str(expert),
         "symbol": str(symbol),
@@ -1775,8 +2693,54 @@ def execute_run_plan(
         "q07_work_item_id": payload["q09_q07_work_item_id"],
         "q07_evidence_sha256": payload["q09_q07_evidence_sha256"],
         "calendar_provision": provision,
+        "skip_expert_deploy": payload.get("diagnostic_non_admission") is True,
+        "diagnostic_expert_stage": diagnostic_expert_stage,
+        "expected_expert_sha256": (
+            diagnostic_expert_stage["sha256"]
+            if diagnostic_expert_stage is not None
+            else input_manifest["identities"]["ex5_sha256"]
+        ),
     }
     dispatcher = dispatch_cell or _production_dispatch_cell
+
+    def adjudicate_cell_failure(
+        spec: Mapping[str, Any],
+        exc: Exception,
+        cell_failure_path: Path,
+    ) -> dict[str, Any]:
+        failure_path = output_root.resolve() / "execution_failure.json"
+        _atomic_write(
+            failure_path,
+            contract.canonical_json_bytes({
+                "schema_version": EXECUTION_FAILURE_SCHEMA,
+                "work_item_id": str(work_item_id),
+                "run_identity_sha256": spec["run_identity_sha256"],
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+                "cell_failure_path": str(cell_failure_path.resolve()),
+                "cell_failure_sha256": contract.sha256_file(cell_failure_path),
+                "cell_failure_occurrence": _cell_failure_occurrence(
+                    cell_failure_path
+                ),
+            }),
+        )
+        result = collect_run_plan_status(
+            plan_path,
+            output_root=output_root,
+            expected_plan_file_sha256=expected_plan_file_sha256,
+        )
+        result["execution_failure_path"] = str(failure_path)
+        result["execution_failure_sha256"] = contract.sha256_file(failure_path)
+        result["sidecar"] = _persist_q09_result(
+            farm_root,
+            work_item_id=work_item_id,
+            terminal=terminal,
+            plan_path=plan_path,
+            expected_plan_file_sha256=expected_plan_file_sha256,
+            result=result,
+        )
+        return result
+
     for spec in plan["cells"]:
         receipt_path = Path(str(spec["receipt_path"]))
         if receipt_path.is_file():
@@ -1805,46 +2769,87 @@ def execute_run_plan(
             plan_path=plan_path,
             expected_plan_file_sha256=expected_plan_file_sha256,
         )
+        if diagnostic_expert_stage is not None:
+            _verify_hash(
+                Path(diagnostic_expert_stage["destination_path"]),
+                diagnostic_expert_stage["sha256"],
+                "effective Q09 diagnostic expert EX5",
+            )
         try:
             dispatcher(spec, context)
             _receipt_to_cell(spec)
         except CapacityError:
             raise
+        except TransientCellError as first_error:
+            _write_cell_failure(
+                spec,
+                work_item_id=str(work_item_id),
+                exc=first_error,
+            )
+            try:
+                # A child can exit before its terminal process fully releases
+                # the claimed profile.  The single in-attempt retry is allowed
+                # only after that exact terminal root is clear and the claim is
+                # still ours.
+                _wait_for_claimed_terminal_exit(Path(str(context["terminal_root"])))
+                assert_factory_capacity(
+                    farm_root,
+                    work_item_id=work_item_id,
+                    terminal=terminal,
+                    plan_path=plan_path,
+                    expected_plan_file_sha256=expected_plan_file_sha256,
+                )
+                if diagnostic_expert_stage is not None:
+                    _verify_hash(
+                        Path(diagnostic_expert_stage["destination_path"]),
+                        diagnostic_expert_stage["sha256"],
+                        "effective Q09 diagnostic expert EX5",
+                    )
+                dispatcher(spec, context)
+                _receipt_to_cell(spec)
+            except CapacityError:
+                raise
+            except TransientCellError as second_error:
+                second_failure_path = _write_cell_failure(
+                    spec,
+                    work_item_id=str(work_item_id),
+                    exc=second_error,
+                )
+                # The ordinary worker normally advances attempt_count for a
+                # summary-missing CapacityError.  Its independently governed
+                # history-lock recovery lane advances transient_infra_attempts
+                # instead.  Count both persisted lanes so a mixed sequence is
+                # still bounded by the Q09 work-item ceiling.
+                attempt_count = (
+                    int(row["attempt_count"] or 0)
+                    + int(payload.get("transient_infra_attempts") or 0)
+                )
+                if attempt_count + 1 < WORK_ITEM_ATTEMPT_CEILING:
+                    raise CapacityError(
+                        "Q09 transient cell exhausted its bounded in-attempt retry; "
+                        f"requeue work item at attempt {attempt_count + 1}/"
+                        f"{WORK_ITEM_ATTEMPT_CEILING}"
+                    ) from second_error
+                return adjudicate_cell_failure(
+                    spec, second_error, second_failure_path
+                )
+            except Exception as retry_error:
+                retry_failure_path = _write_cell_failure(
+                    spec,
+                    work_item_id=str(work_item_id),
+                    exc=retry_error,
+                )
+                return adjudicate_cell_failure(
+                    spec, retry_error, retry_failure_path
+                )
+            continue
         except Exception as exc:
             cell_failure_path = _write_cell_failure(
                 spec,
                 work_item_id=str(work_item_id),
                 exc=exc,
             )
-            failure_path = output_root.resolve() / "execution_failure.json"
-            _atomic_write(
-                failure_path,
-                contract.canonical_json_bytes({
-                    "schema_version": "q09-news-execution-failure/v1",
-                    "work_item_id": str(work_item_id),
-                    "run_identity_sha256": spec["run_identity_sha256"],
-                    "error_type": type(exc).__name__,
-                    "error": str(exc),
-                    "cell_failure_path": str(cell_failure_path.resolve()),
-                    "cell_failure_sha256": contract.sha256_file(cell_failure_path),
-                }),
-            )
-            result = collect_run_plan_status(
-                plan_path,
-                output_root=output_root,
-                expected_plan_file_sha256=expected_plan_file_sha256,
-            )
-            result["execution_failure_path"] = str(failure_path)
-            result["execution_failure_sha256"] = contract.sha256_file(failure_path)
-            result["sidecar"] = _persist_q09_result(
-                farm_root,
-                work_item_id=work_item_id,
-                terminal=terminal,
-                plan_path=plan_path,
-                expected_plan_file_sha256=expected_plan_file_sha256,
-                result=result,
-            )
-            return result
+            return adjudicate_cell_failure(spec, exc, cell_failure_path)
     result = collect_run_plan_status(
         plan_path,
         output_root=output_root,

@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "kind": "fx_cointegration_preflight_cpu_ceiling_stop",
+  "recorded_at": "2026-08-06T00:03:28Z",
+  "branch": "agents/board-advisor",
+  "candidate": {
+    "pair": [
+      "USDCAD.DWX",
+      "EURJPY.DWX"
+    ],
+    "sign_aware_rank": 57,
+    "scan_size": 66,
+    "dev_net_sharpe": -0.006562345356,
+    "oos_net_sharpe": -0.403385422796,
+    "oos_return_pct": -2.696283405216,
+    "oos_state_changes": 13,
+    "dev_beta": -0.243266890557,
+    "half_life_d1_bars": 66.784057177571,
+    "exact_pair_card_found": false,
+    "exact_pair_ea_found": false,
+    "exact_pair_registry_row_found": false,
+    "exact_pair_manifest_found": false
+  },
+  "anchors": {
+    "QM5_12532": "Q02_PASS_then_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_then_Q04_FAIL"
+  },
+  "capacity": {
+    "binding_factory_terminal_ceiling": 7,
+    "running_factory_terminal_count": 9,
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "t_live_observed_and_excluded": true,
+    "external_ftmo_terminal_observed_and_excluded": true,
+    "ceiling_reached": true
+  },
+  "actions": {
+    "card_created": false,
+    "ea_id_allocated": false,
+    "magic_rows_allocated": false,
+    "ea_built": false,
+    "q02_enqueued": false,
+    "tester_launched": false,
+    "terminal_controlled": false,
+    "autotrading_changed": false,
+    "portfolio_gate_changed": false,
+    "t_live_manifest_changed": false
+  },
+  "stop_reason": "BACKTEST_CPU_CEILING"
+}

@@ -1,0 +1,130 @@
+{
+  "schema": "qm_fx_cointegration_build_q02_handoff/v1",
+  "timestamp_utc": "2026-08-05T06:22:21Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20219",
+  "slug": "usdjpy-nzdusd",
+  "pair": [
+    "USDJPY.DWX",
+    "NZDUSD.DWX"
+  ],
+  "logical_symbol": "QM5_20219_USDJPY_NZDUSD_COINTEGRATION_D1",
+  "selection": {
+    "scan_size": 66,
+    "sign_aware_rank": 40,
+    "dev_net_sharpe": 0.12191561234631561,
+    "oos_net_sharpe": 0.05091758006605608,
+    "oos_return_pct": 0.5798657681076694,
+    "oos_state_changes": 14,
+    "fixed_dev_beta": -0.7823029792857074,
+    "half_life_d1_bars": 206.28130086271622,
+    "dedicated_fixed_d1_pair_previously_built": false,
+    "known_overlap": "Ranks 34-39 are already dedicated sleeves QM5_12751, QM5_12756, QM5_12758, QM5_12760, QM5_12762, and QM5_12764; exact-pair searches and unordered traded-symbol manifest reconciliation found no dedicated USDJPY/NZDUSD sleeve before QM5_20219."
+  },
+  "source": {
+    "primary": "Chan, Ernest P. (2009), Quantitative Trading, Examples 3.6, 7.2, 7.3, and 7.5",
+    "quality_tier": "A",
+    "durable_approval": "strategy-seeds/sources/SRC02/source.md (ceo_ratified_2026-04-28)",
+    "bounded_extraction": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "pair_selection_evidence": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md; framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges"
+  },
+  "anchors": {
+    "QM5_12532": "Q02_PASS_THEN_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_THEN_Q04_FAIL"
+  },
+  "build": {
+    "card_schema_lint": "PASS",
+    "build_preconditions": "PASS: OWNER-approved G0 card and active deterministic EA/magic registry rows",
+    "build_check_passed": true,
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "spec_validation": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "basket_regression_passed": 38,
+    "magic_resolver_tests_passed": 4,
+    "magic_resolver_rows_kept": 15489,
+    "magic_resolver_rows_dropped": 0,
+    "targeted_registry_checks": "PASS",
+    "magic_registry_sha256": "93719c246c954f80635728b618830749a80a198b0303afdcf6bc2bc979bb18a9",
+    "magic_resolver_sha256": "1e3e82cc321699436b56a560ce2b43b4bf50be2c85c81117d65114e69eb0bcaf",
+    "card_sha256": "696486d101c7fac2216bb6f6558e78189d833a506c2aea3491fd0b5654ee096b",
+    "mq5_sha256": "a3d9f49b79b5eba8eacc96f63fc74266ac4d3deebd17a35d89510758406fed13",
+    "ex5_sha256": "4f9758038a5ddfd2d4ca3ffa21ea22facf73973af9b623d4fc924e61eff1caba",
+    "spec_sha256": "6a7130a20f05f79b7ce32d96b6aaea4c49c7059f5f6870f73d36bf3ddf75482b",
+    "basket_manifest_sha256": "f3fb7c93c0bebf8cd86aeae11a2e43e94b4d4bc976a14315092394db992ab54c",
+    "logical_setfile_sha256": "58bce294bf0ae7d46d398da737b5857e8ec71d985dae202b3f12a54a8a2361bc",
+    "physical_setfile_sha256": "a350cbff8ac2da83cf4749d4e88894f029a750042847c0f765a973ac4ae247ab",
+    "build_report": "D:\\QM\\reports\\framework\\21\\build_check_20260805_060126.json",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260805_055944\\summary.csv",
+    "manual_smoke_run": false
+  },
+  "basket_manifest": {
+    "host_symbol": "USDJPY.DWX",
+    "host_timeframe": "D1",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "basket_symbols": [
+      "USDJPY.DWX",
+      "NZDUSD.DWX"
+    ],
+    "traded_symbols": [
+      "USDJPY.DWX",
+      "NZDUSD.DWX"
+    ],
+    "conversion_only_symbols": []
+  },
+  "risk": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "q02": {
+    "work_item_id": "5eb61981-472e-4f08-82c0-53fbec77d6c8",
+    "created_at_utc": "2026-08-05T06:22:21+00:00",
+    "status_at_handoff": "pending",
+    "attempt_count_at_handoff": 0,
+    "claimed_by_at_handoff": null,
+    "logical_setfile_enqueued": true,
+    "physical_host_setfile_skipped": true,
+    "skip_reason": "basket_manifest_logical_setfile_preferred",
+    "priority_track": true,
+    "timeout_min": 450,
+    "queue_pending_at_enqueue": 1576,
+    "queue_ceiling": 7000,
+    "cpu_ceiling": 7,
+    "cpu_ceiling_reached": false,
+    "factory_terminals_at_initial_precheck": 4,
+    "factory_terminal_names_at_initial_precheck": [
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "maximum_explicitly_sampled_factory_terminals": 6,
+    "factory_terminals_at_enqueue": 3,
+    "factory_terminal_names_at_enqueue": [
+      "T1",
+      "T4",
+      "T8"
+    ],
+    "factory_terminals_at_postcheck": 3,
+    "t_live_excluded": true,
+    "lock_busy_observed_without_mutation": true,
+    "busy_lock_attempts_before_final_wait": 372,
+    "successful_wait_lock_attempts": 874,
+    "total_lock_attempts": 1246,
+    "canonical_mutation_lock_released": true,
+    "manual_dispatch": false
+  },
+  "commits": {
+    "research": "efcddb103",
+    "allocation_and_sets": "f82280060",
+    "binary_magic_and_resolver": "42f235275",
+    "source_build": "68f5698ce"
+  },
+  "prohibited_surfaces_touched": []
+}

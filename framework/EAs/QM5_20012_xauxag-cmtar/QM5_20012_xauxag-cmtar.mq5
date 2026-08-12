@@ -57,6 +57,8 @@ input int    strategy_deviation_points        = 20;
 string g_leg_xau = "XAUUSD.DWX";
 string g_leg_xag = "XAGUSD.DWX";
 
+QM_RiskMode g_host_risk_mode = QM_RISK_MODE_UNSET;
+double      g_host_risk_value = 0.0;
 bool     g_month_boundary = false;
 bool     g_signal_ready = false;
 bool     g_pair_state_dirty = true;
@@ -614,14 +616,75 @@ bool Strategy_PreparePackage(const QM_OrderType xau_type,
            hedge_error_pct <= strategy_max_hedge_error_pct);
   }
 
-bool Strategy_OpenLeg(const string symbol,
-                      const QM_OrderType type,
-                      const double lots,
-                      const double stop,
-                      const string reason)
+bool Strategy_ResolveHostRisk(const QM_OrderType type,
+                              const double entry,
+                              const double stop,
+                              const double target_lots,
+                              QM_RiskMode &risk_mode,
+                              double &risk_value)
+  {
+   risk_mode = QM_RISK_MODE_UNSET;
+   risk_value = 0.0;
+   const double point = SymbolInfoDouble(g_leg_xau, SYMBOL_POINT);
+   const double volume_step = SymbolInfoDouble(g_leg_xau, SYMBOL_VOLUME_STEP);
+   if(entry <= 0.0 || stop <= 0.0 || target_lots <= 0.0 ||
+      point <= 0.0 || volume_step <= 0.0)
+      return false;
+
+   double configured_risk_value = 0.0;
+   if(RISK_FIXED > 0.0 && RISK_PERCENT <= 0.0)
+     {
+      risk_mode = QM_RISK_MODE_FIXED;
+      configured_risk_value = RISK_FIXED;
+     }
+   else if(RISK_PERCENT > 0.0 && RISK_FIXED <= 0.0)
+     {
+      risk_mode = QM_RISK_MODE_PERCENT;
+      configured_risk_value = RISK_PERCENT;
+     }
+   else
+      return false;
+
+   const double sl_points = MathAbs(entry - stop) / point;
+   const ENUM_ORDER_TYPE order_type = QM_OrderTypeIsBuy(type)
+      ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+   const double full_lots = QM_LotsForRiskAtEntry(g_leg_xau,
+                                                   sl_points,
+                                                   order_type,
+                                                   entry,
+                                                   risk_mode,
+                                                   configured_risk_value);
+   if(sl_points <= 0.0 || full_lots <= 0.0 ||
+      target_lots > full_lots + 1.0e-8)
+      return false;
+
+   // QM_TM_OpenPosition owns host-symbol sizing. Scale its explicit risk
+   // budget so its normal risk path resolves to the already joint-sized XAU
+   // volume. The preflight uses the same side, entry, stop and margin rail as
+   // the subsequent host order; any post-XAG margin reduction fails closed
+   // through the package-integrity check and immediate rollback in OnTick.
+   risk_value = configured_risk_value * target_lots / full_lots;
+   const double resolved_lots = QM_LotsForRiskAtEntry(g_leg_xau,
+                                                       sl_points,
+                                                       order_type,
+                                                       entry,
+                                                       risk_mode,
+                                                       risk_value);
+   return (risk_value > 0.0 && resolved_lots > 0.0 &&
+           MathAbs(resolved_lots - target_lots) <= volume_step * 0.1);
+  }
+
+// Only the off-chart XAG leg may use the basket helper. The XAU host request
+// is returned through Strategy_EntrySignal and opened by QM_TM_OpenPosition.
+bool Strategy_OpenForeignLeg(const string symbol,
+                             const QM_OrderType type,
+                             const double lots,
+                             const double stop,
+                             const string reason)
   {
    const int slot = Strategy_SlotForSymbol(symbol);
-   if(slot < 0 || lots <= 0.0 || stop <= 0.0)
+   if(symbol == _Symbol || symbol != g_leg_xag || slot != 1 ||
+      lots <= 0.0 || stop <= 0.0)
       return false;
    QM_BasketOrderRequest req;
    req.symbol = symbol;
@@ -638,8 +701,10 @@ bool Strategy_OpenLeg(const string symbol,
                                 strategy_deviation_points, req, ticket);
   }
 
-bool Strategy_OpenPair(const int pair_direction)
+bool Strategy_PreparePair(const int pair_direction, QM_EntryRequest &host_req)
   {
+   g_host_risk_mode = QM_RISK_MODE_UNSET;
+   g_host_risk_value = 0.0;
    if(pair_direction == 0 || Strategy_OpenPairLegCount() > 0 ||
       !Strategy_SymbolReady(g_leg_xau) || !Strategy_SymbolReady(g_leg_xag))
       return false;
@@ -657,16 +722,27 @@ bool Strategy_OpenPair(const int pair_direction)
    if(!Strategy_PreparePackage(xau_type, xag_type,
                                xau_lots, xag_lots, xau_stop, xag_stop))
       return false;
-   if(!Strategy_OpenLeg(g_leg_xau, xau_type, xau_lots, xau_stop, reason))
+
+   const double xau_entry = QM_OrderTypeIsBuy(xau_type)
+      ? SymbolInfoDouble(g_leg_xau, SYMBOL_ASK)
+      : SymbolInfoDouble(g_leg_xau, SYMBOL_BID);
+   if(!Strategy_ResolveHostRisk(xau_type, xau_entry, xau_stop, xau_lots,
+                                g_host_risk_mode, g_host_risk_value))
       return false;
-   if(Strategy_OpenLeg(g_leg_xag, xag_type, xag_lots, xag_stop, reason) &&
-      Strategy_PairCompositionValid() && Strategy_PairHedgeValid())
-     {
-      g_pair_entry_time = TimeCurrent();
-      return true;
-     }
-   Strategy_ClosePair(QM_EXIT_STRATEGY);
-   return false;
+
+   host_req.type = xau_type;
+   host_req.price = 0.0;
+   host_req.sl = xau_stop;
+   host_req.tp = 0.0;
+   host_req.reason = reason;
+   host_req.symbol_slot = 0;
+   host_req.expiration_seconds = 0;
+
+   // Prepare the host completely before sending the foreign leg. XAG is sent
+   // first; a failed foreign order leaves the package flat, while a failed
+   // host order is rolled back immediately by OnTick.
+   return Strategy_OpenForeignLeg(g_leg_xag, xag_type, xag_lots,
+                                  xag_stop, reason);
   }
 
 bool Strategy_NoTradeFilter()
@@ -727,8 +803,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // the current source-period attempt and cannot create a same-month retry.
    if(!Strategy_RecordAttemptState(g_signal_month_key))
       return false;
-   Strategy_OpenPair(g_signal_pair_direction);
-   return false;
+   return Strategy_PreparePair(g_signal_pair_direction, req);
   }
 
 void Strategy_ManageOpenPosition()
@@ -828,6 +903,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
    const datetime broker_now = TimeCurrent();
@@ -884,7 +961,18 @@ void OnTick()
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      const bool host_opened =
+         g_host_risk_mode != QM_RISK_MODE_UNSET &&
+         g_host_risk_value > 0.0 &&
+         QM_TM_OpenPosition(req, out_ticket, 0,
+                            g_host_risk_mode, g_host_risk_value);
+      if(!host_opened || !Strategy_PairCompositionValid() ||
+         !Strategy_PairHedgeValid())
+         Strategy_ClosePair(QM_EXIT_STRATEGY);
+      else
+         g_pair_entry_time = TimeCurrent();
+      g_host_risk_mode = QM_RISK_MODE_UNSET;
+      g_host_risk_value = 0.0;
      }
   }
 

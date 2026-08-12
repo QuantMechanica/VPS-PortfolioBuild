@@ -227,6 +227,336 @@ def test_stale_pass_q02_is_append_only_and_double_enqueue_safe(
     assert new_payload["risk_percent"] == 0.0
 
 
+def test_repaired_infra_q02_binds_current_artifacts_append_only(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-infra-old-binary",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=_payload(art, stale=True),
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-old-binary",
+        append_only_rerun_of="q02-infra-old-binary",
+        rerun_reason="runtime hot path repaired",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    assert _work_item_count(art) == 2
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        historical = conn.execute(
+            "SELECT status,verdict FROM work_items WHERE id='q02-infra-old-binary'"
+        ).fetchone()
+        new_payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (result["created"][0]["id"],),
+            ).fetchone()[0]
+        )
+    assert historical == ("failed", "INFRA_FAIL")
+    assert new_payload["stale_pass_rerun"] is False
+    assert new_payload["repaired_infra_rerun"] is True
+    assert new_payload["rerun_source_repaired_after_infra"] is True
+    assert new_payload["rerun_source_current_ex5_mismatch_verified"] is True
+    assert new_payload["rerun_source_expected_ex5_sha256"] == "2" * 64
+    assert new_payload["expected_current_ex5_sha256"] == art["current_ex5"]
+    assert new_payload["expected_ex5_sha256"] == art["current_ex5"]
+    assert new_payload["risk_fixed"] == 1000.0
+    assert new_payload["risk_percent"] == 0.0
+
+
+def test_repaired_infra_q02_binds_new_multisymbol_dependency_manifest(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    ea_dir = art["ea_dir"]
+    assert isinstance(ea_dir, Path)
+    manifest_path = ea_dir / "basket_manifest.json"
+    manifest_path.write_text(
+        json.dumps({
+            "ea_id": art["ea_id"],
+            "timeframe": "H1",
+            "basket_symbols": ["EURUSD.DWX", "GBPUSD.DWX"],
+        }),
+        encoding="utf-8",
+    )
+    _insert_work_item(
+        art,
+        item_id="q02-infra-legacy-multisymbol",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=_payload(art, stale=False),
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-legacy-multisymbol",
+        append_only_rerun_of="q02-infra-legacy-multisymbol",
+        rerun_reason="declare peer history before isolated rerun",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        successor_payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (result["created"][0]["id"],),
+            ).fetchone()[0]
+        )
+    assert successor_payload["basket_manifest"] == str(manifest_path.resolve())
+    assert successor_payload["basket_symbol_count"] == 2
+    assert successor_payload["basket_symbols"] == ["EURUSD.DWX", "GBPUSD.DWX"]
+    assert successor_payload["host_symbol"] == "EURUSD.DWX"
+    assert successor_payload["host_timeframe"] == "H1"
+
+
+def test_exact_infra_q02_ignores_noninfra_result_for_different_setfile(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-infra-h1",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=_payload(art, stale=False),
+    )
+    ea_dir = art["ea_dir"]
+    assert isinstance(ea_dir, Path)
+    other_setfile = ea_dir / "sets" / f"{ea_dir.name}_EURUSD.DWX_D1_backtest.set"
+    other_setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+    _insert_work_item(
+        art,
+        item_id="q02-strategy-d1",
+        phase="Q02",
+        status="done",
+        verdict="FAIL",
+        payload={"expected_period": "D1"},
+        setfile=other_setfile,
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-h1",
+        append_only_rerun_of="q02-infra-h1",
+        rerun_reason="repair exact H1 identity only",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+
+
+def test_exact_infra_q02_refuses_noninfra_result_for_same_setfile(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-infra-same-identity",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=_payload(art, stale=False),
+    )
+    _insert_work_item(
+        art,
+        item_id="q02-strategy-same-identity",
+        phase="Q02",
+        status="done",
+        verdict="FAIL",
+        payload=_payload(art, stale=False),
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-same-identity",
+        append_only_rerun_of="q02-infra-same-identity",
+        rerun_reason="must not duplicate a strategy-terminal identity",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "q02_pair_already_has_noninfra_terminal_result"
+
+
+def test_exact_infra_q02_accepts_payload_bound_transient_evidence_append_only(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    payload = _payload(art, stale=False)
+    evidence = _insert_work_item(
+        art,
+        item_id="q02-infra-payload-evidence",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=payload,
+    )
+    payload["transient_infra_evidence_path"] = str(evidence)
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        conn.execute(
+            "UPDATE work_items SET evidence_path=NULL,payload_json=? WHERE id=?",
+            (json.dumps(payload, sort_keys=True), "q02-infra-payload-evidence"),
+        )
+        conn.commit()
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        root,
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-payload-evidence",
+        append_only_rerun_of="q02-infra-payload-evidence",
+        rerun_reason="shared-bases history isolation repaired",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    assert _work_item_count(art) == 2
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        historical = conn.execute(
+            "SELECT evidence_path FROM work_items WHERE id=?",
+            ("q02-infra-payload-evidence",),
+        ).fetchone()
+        successor_payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (result["created"][0]["id"],),
+            ).fetchone()[0]
+        )
+    assert historical == (None,)
+    assert successor_payload["rerun_source_evidence_binding"] == (
+        "payload.transient_infra_evidence_path"
+    )
+    assert successor_payload["rerun_source_evidence_path"] == str(evidence)
+    assert successor_payload["rerun_source_evidence_sha256"] == (
+        farmctl._sha256_file(evidence)
+    )
+    assert successor_payload["historical_work_item_preserved"] is True
+    assert successor_payload["expected_ex5_sha256"] == art["current_ex5"]
+
+
+def test_exact_infra_q02_refuses_null_evidence_without_payload_binding(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-infra-unbound-evidence",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=_payload(art, stale=False),
+    )
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        conn.execute(
+            "UPDATE work_items SET evidence_path=NULL WHERE id=?",
+            ("q02-infra-unbound-evidence",),
+        )
+        conn.commit()
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        root,
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-unbound-evidence",
+        append_only_rerun_of="q02-infra-unbound-evidence",
+        rerun_reason="must remain fail closed",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "q02_rerun_source_evidence_missing"
+    assert result["evidence_binding"] == "payload.transient_infra_evidence_path"
+    assert _work_item_count(art) == 1
+
+
+def test_repaired_infra_q02_refuses_unsealed_historical_binding(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    payload = _payload(art, stale=True)
+    payload.pop("expected_mq5_sha256")
+    _insert_work_item(
+        art,
+        item_id="q02-infra-unsealed",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=payload,
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-unsealed",
+        append_only_rerun_of="q02-infra-unsealed",
+        rerun_reason="must remain fail closed",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "repaired_infra_source_binding_missing_or_invalid"
+    assert result["binding"] == "expected_mq5_sha256"
+    assert _work_item_count(art) == 1
+
+
+def test_repaired_infra_q02_refuses_wrong_current_ex5_hash(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-infra-wrong-current",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=_payload(art, stale=True),
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-wrong-current",
+        append_only_rerun_of="q02-infra-wrong-current",
+        rerun_reason="operator hash must bind current binary",
+        expected_current_ex5_sha256="f" * 64,
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "current_ex5_hash_mismatch"
+    assert result["expected_sha256"] == "f" * 64
+    assert result["actual_sha256"] == art["current_ex5"]
+    assert _work_item_count(art) == 1
+
+
 def test_fresh_q02_seed_requires_current_ex5_hash(tmp_path: Path, monkeypatch) -> None:
     art = _artifacts(tmp_path, monkeypatch)
     _insert_work_item(
@@ -482,6 +812,107 @@ def test_fresh_q02_seed_refuses_noncanonical_ea_directory(
 
     assert not result["enqueued"]
     assert result["reason"] == "current_execution_binding_not_in_canonical_ea_directory"
+    assert _work_item_count(art) == 1
+
+
+def test_fresh_q02_seed_reconciles_semantically_equal_worktree_setfile(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    canonical_ea = art["ea_dir"]
+    canonical_setfile = art["setfile"]
+    assert isinstance(canonical_ea, Path)
+    assert isinstance(canonical_setfile, Path)
+    worktree_ea = tmp_path / "worktrees" / "agent-1" / canonical_ea.name
+    worktree_sets = worktree_ea / "sets"
+    worktree_sets.mkdir(parents=True)
+    worktree_setfile = worktree_sets / canonical_setfile.name
+    worktree_setfile.write_text(
+        "; stale build_hash comment only\nRISK_FIXED=1000\nRISK_PERCENT=0\n",
+        encoding="utf-8",
+    )
+    _insert_work_item(
+        art,
+        item_id="q02-prebinding-worktree",
+        phase="Q02",
+        status="done",
+        verdict="PASS",
+        payload=_prebinding_payload(),
+        setfile=worktree_setfile,
+    )
+
+    result = farmctl.enqueue_fresh_q02_seed(
+        art["root"],
+        art["ea_id"],
+        old_work_item_id="q02-prebinding-worktree",
+        requal_reason="governed worktree-to-canonical reconciliation",
+        expected_current_ex5_sha256=art["current_ex5"],
+        reconcile_noncanonical_setfile=True,
+    )
+
+    assert result["enqueued"]
+    new_id = result["created"][0]["id"]
+    with sqlite3.connect(art["root"] / farmctl.DB_REL) as conn:
+        conn.row_factory = sqlite3.Row
+        source = conn.execute(
+            "SELECT setfile_path FROM work_items WHERE id='q02-prebinding-worktree'"
+        ).fetchone()
+        created = conn.execute(
+            "SELECT setfile_path,payload_json FROM work_items WHERE id=?", (new_id,)
+        ).fetchone()
+    payload = json.loads(created["payload_json"])
+    assert Path(source["setfile_path"]) == worktree_setfile
+    assert Path(created["setfile_path"]) == canonical_setfile.resolve()
+    assert payload["setfile_reconciliation"]["schema_version"] == (
+        "qm-q02-setfile-reconciliation/v1"
+    )
+    assert payload["setfile_reconciliation"]["semantic_parameters_equal"] is True
+    assert payload["requalification_source_setfile_identity"]["sha256"] == (
+        farmctl._sha256_file(worktree_setfile)
+    )
+    assert payload["requalification_setfile_identity"]["sha256"] == (
+        farmctl._sha256_file(canonical_setfile)
+    )
+    assert _work_item_count(art) == 2
+
+
+def test_fresh_q02_seed_reconciliation_refuses_parameter_drift(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    canonical_ea = art["ea_dir"]
+    canonical_setfile = art["setfile"]
+    assert isinstance(canonical_ea, Path)
+    assert isinstance(canonical_setfile, Path)
+    worktree_ea = tmp_path / "worktrees" / "agent-1" / canonical_ea.name
+    worktree_sets = worktree_ea / "sets"
+    worktree_sets.mkdir(parents=True)
+    worktree_setfile = worktree_sets / canonical_setfile.name
+    worktree_setfile.write_text(
+        "RISK_FIXED=500\nRISK_PERCENT=0\n", encoding="utf-8"
+    )
+    _insert_work_item(
+        art,
+        item_id="q02-prebinding-worktree-drift",
+        phase="Q02",
+        status="done",
+        verdict="PASS",
+        payload=_prebinding_payload(),
+        setfile=worktree_setfile,
+    )
+
+    result = farmctl.enqueue_fresh_q02_seed(
+        art["root"],
+        art["ea_id"],
+        old_work_item_id="q02-prebinding-worktree-drift",
+        requal_reason="must refuse executable parameter drift",
+        expected_current_ex5_sha256=art["current_ex5"],
+        reconcile_noncanonical_setfile=True,
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "noncanonical_setfile_semantic_mismatch"
+    assert result["differing_parameter_keys"] == ["risk_fixed"]
     assert _work_item_count(art) == 1
 
 

@@ -1,0 +1,13 @@
+{
+  "logical_symbol": "QM5_20263_XAU_XAG_MADRV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "traded_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "notes": [
+    "One logical opposite-leg XAU/XAG robust ratio-reversion package. The EA uses synchronized completed D1 closes and independent 63-value current/prior median-MAD windows; Q02 must evaluate combined package PnL and costs.",
+    "The basket must never be decomposed into standalone XAU or XAG gate results. One RISK_FIXED budget is split equally after per-leg ATR normalization."
+  ]
+}

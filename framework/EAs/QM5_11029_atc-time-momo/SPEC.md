@@ -4,7 +4,7 @@
 **Slug:** atc-time-momo
 **Source:** 9441393d-5ffc-5b43-87be-bd532110f204 (see MQL5 article citation in approved card)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-08-09
 
 ---
 
@@ -102,3 +102,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | e71a71af-73d8-4fae-8f9d-8168ff9e5641 |
+| v2 | 2026-08-09 | Q02 infrastructure recovery | Rebuilt against the current framework; made news checks entry-only/new-bar gated so EOD and Friday exits remain available. |

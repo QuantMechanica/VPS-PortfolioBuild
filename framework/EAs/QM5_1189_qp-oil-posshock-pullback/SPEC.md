@@ -10,7 +10,7 @@ Quantpedia oil positive-shock pullback strategy. The EA shorts oil after a compl
 - Close: closes after the configured next-D1 holding window; default is one D1 bar after entry.
 
 ## Data Contract
-The EA uses Darwinex MT5/DWX daily bars only. There are no web calls, external APIs, ML models, or CSV dependencies. `XTIUSD.DWX` is the preferred route; `XBRUSD.DWX` is the alternate oil proxy.
+The EA uses Darwinex MT5/DWX daily bars only. There are no web calls, external APIs, ML models, or CSV dependencies. `XTIUSD.DWX` is the preferred route; `XBRUSD.DWX` is the alternate oil proxy. The routes are independent, so initialization selects only the chart symbol and never requires the alternate proxy to exist.
 
 ## Symbols and Slots
 - slot 0: `XTIUSD.DWX`, magic `11890000`

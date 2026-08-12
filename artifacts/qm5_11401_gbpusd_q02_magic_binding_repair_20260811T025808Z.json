@@ -1,0 +1,81 @@
+{
+  "schema": "qm.ops.fx_q02_magic_binding_repair/v1",
+  "captured_at": "2026-08-11T02:58:08.107044+00:00",
+  "branch": "agents/board-advisor",
+  "pre_commit_head": "b40d102556939b27a8b16f5faf09e2740b434fb1",
+  "scope": {
+    "ea_id": "QM5_11401",
+    "ea_slug": "davey-low-volume-mean-reversion-d1",
+    "phase": "Q02",
+    "symbol": "GBPUSD.DWX",
+    "timeframe": "D1",
+    "environment": "backtest"
+  },
+  "frontier": {
+    "all_66_pairs_mechanized": true,
+    "qm5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "qm5_12533": "Q02_PASS_Q04_FAIL",
+    "new_pair_created": false
+  },
+  "source_failure": {
+    "work_item_id": "eb481e3b-95b3-4bdc-8f7d-5ca99fffa92c",
+    "status": "done",
+    "verdict": "INFRA_FAIL",
+    "reason_classes": [
+      "ONINIT_FAILED",
+      "INCOMPLETE_RUNS"
+    ],
+    "tester_marker": "EA_MAGIC_NOT_REGISTERED: ea_id=11401 slot=1 magic=114010001",
+    "history_synchronized": true,
+    "evidence_path": "D:/QM/reports/work_items/eb481e3b-95b3-4bdc-8f7d-5ca99fffa92c/QM5_11401/20260811_023824/summary.json"
+  },
+  "registry": {
+    "ea_id_status": "active",
+    "symbol_slot": 1,
+    "magic": 114010001,
+    "magic_status": "active"
+  },
+  "repair": {
+    "strategy_source_changed": false,
+    "card_localized": true,
+    "mq5_sha256": "2b69efd37e8b2b44330e3ecff0a62b385e2a17f9b52efc95ba086a87bdaa14fe",
+    "old_ex5_sha256": "41c52ad5b0a5e2d097d2e168d311d025208ae52b2533382387d985058429e9a2",
+    "new_ex5_sha256": "8a7491bbcb9d7f9956b6b6f3d31eaaa3a612fa0371b2c2dc706146263568e661",
+    "old_gbpusd_setfile_sha256": "3a992831a047469baf794180fa5672a21e122bf9afcd3f9e23c0c493d07452f8",
+    "new_gbpusd_setfile_sha256": "e3eafa8cdc3ac8cf385221fb924ae1d1e92690d91de9046205c8dd15639b4060",
+    "card_sha256": "847fc9f41bb100fdab97b347f4f78f97b94ac196643fdb98448bcbc46f364484"
+  },
+  "validation": {
+    "strict_compile": "PASS_0_ERRORS_0_WARNINGS",
+    "compile_summary": "D:/QM/reports/compile/20260811_025440/summary.csv",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260811_025550.json",
+    "card_schema_lint": "PASS",
+    "g0_readiness_lint": "PASS",
+    "build_guard": "PASS"
+  },
+  "q02_handoff": {
+    "work_item_id": "5f000316-5d0a-4559-9828-3fc22a9658b1",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "exact_open_count": 1,
+    "manual_enqueue_performed": false,
+    "duplicate_inserted": false,
+    "execution_hashes_bound_at_claim": true
+  },
+  "capacity": {
+    "active_work_item_limit": 7,
+    "active_work_item_count": 7,
+    "at_ceiling": true,
+    "manual_dispatch_performed": false
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false,
+    "manual_mt5_test_started": false
+  }
+}

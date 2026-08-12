@@ -102,6 +102,33 @@ bool Strategy069_ConfigValid()
            strategy_basket_tp_pips > 0.0);
   }
 
+// Entry-only readiness.  This used to live in Strategy_NoTradeFilter(), which
+// the framework calls on every real tick before its closed-bar gate.  Four
+// cross-symbol SeriesInfoInteger reads per tick made the two-symbol Q02 path
+// CPU-bound.  The approved mechanic evaluates once after the first closed H1
+// bar, so checking the same prerequisites from Strategy_EntrySignal preserves
+// the decision while reducing them to once per completed host bar.
+bool Strategy069_MembersReadyForEntry()
+  {
+   for(int slot = 0; slot < STR069_MEMBER_COUNT; ++slot)
+     {
+      const string symbol = g_str069_symbols[slot];
+      if((ENUM_SYMBOL_TRADE_MODE)SymbolInfoInteger(
+            symbol,
+            SYMBOL_TRADE_MODE) ==
+         SYMBOL_TRADE_MODE_DISABLED)
+         return false;
+      if(SeriesInfoInteger(symbol,
+                           PERIOD_H1,
+                           SERIES_BARS_COUNT) < 3 ||
+         SeriesInfoInteger(symbol,
+                           PERIOD_D1,
+                           SERIES_BARS_COUNT) < 2)
+         return false;
+     }
+   return true;
+  }
+
 // This must be called from OnInit after QM_FrameworkInit. The hook calls it
 // again defensively, but OnInit wiring is required so a restored foreign leg
 // is already owned before the first kill-switch/Friday-close pass.
@@ -243,13 +270,17 @@ bool Strategy069_FindMemberPosition(const int slot,
    if(slot < 0 || slot >= STR069_MEMBER_COUNT)
       return false;
 
+   const int total = PositionsTotal();
+   if(total <= 0)
+      return false;
+
    const string symbol = g_str069_symbols[slot];
    const int magic =
       QM_MagicChecked(qm_ea_id, slot, symbol);
    if(magic <= 0)
       return false;
 
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   for(int i = total - 1; i >= 0; --i)
      {
       const ulong candidate = PositionGetTicket(i);
       if(candidate == 0 ||
@@ -278,6 +309,8 @@ bool Strategy069_FindMemberPosition(const int slot,
 
 bool Strategy069_HasAnyMemberPosition()
   {
+   if(PositionsTotal() <= 0)
+      return false;
    for(int slot = 0; slot < STR069_MEMBER_COUNT; ++slot)
      {
       ulong ticket = 0;
@@ -430,28 +463,6 @@ bool Strategy_NoTradeFilter()
       !Strategy069_ConfigValid() ||
       !Strategy069_InitBasketContext())
       return true;
-
-   // Management of a one-leg remainder must never be blocked by an entry
-   // warmup check.
-   if(Strategy069_HasAnyMemberPosition())
-      return false;
-
-   for(int slot = 0; slot < STR069_MEMBER_COUNT; ++slot)
-     {
-      const string symbol = g_str069_symbols[slot];
-      if((ENUM_SYMBOL_TRADE_MODE)SymbolInfoInteger(
-            symbol,
-            SYMBOL_TRADE_MODE) ==
-         SYMBOL_TRADE_MODE_DISABLED)
-         return true;
-      if(SeriesInfoInteger(symbol,
-                           PERIOD_H1,
-                           SERIES_BARS_COUNT) < 3 ||
-         SeriesInfoInteger(symbol,
-                           PERIOD_D1,
-                           SERIES_BARS_COUNT) < 2)
-         return true;
-     }
    return false;
   }
 
@@ -464,6 +475,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    if(!Strategy069_InitBasketContext())
+      return false;
+   if(!Strategy069_MembersReadyForEntry())
       return false;
 
    MqlRates host_d1;
@@ -615,6 +628,17 @@ void Strategy_ManageOpenPosition()
   {
    if(!Strategy069_InitBasketContext())
       return;
+
+   // The overwhelmingly common state is flat.  Avoid resolving two magics and
+   // scanning the position table on every real tick when there is nothing to
+   // manage.  A latched close is complete once the global position table is
+   // empty, so reset its retry state at the same time.
+   if(PositionsTotal() <= 0)
+     {
+      g_str069_basket_close_latched = false;
+      g_str069_last_close_attempt_bar = 0;
+      return;
+     }
 
    if(g_str069_basket_close_latched)
      {

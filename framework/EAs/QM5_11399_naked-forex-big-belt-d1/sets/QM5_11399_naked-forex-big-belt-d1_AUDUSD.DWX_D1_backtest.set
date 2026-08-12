@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11399
+; ea_slug:      naked-forex-big-belt-d1
+; ea_version:   v5.0
+; set_version:  s20260812-001
+; symbol:       AUDUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   c36ab569812ee04bb8a1c612653f18c290da590bd76b5c5b3d489ee14eb98e7d
+; author:       Development
+; date:         2026-08-12
+;==========================================================
+qm_ea_id=11399
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\naked-forex-big-belt-d1_card.md
+strategy_extreme_lookback_bars=20
+strategy_atr_period=14
+strategy_atr_tp_mult=2.5
+strategy_entry_offset_pips=5
+strategy_sl_cap_pips=100
+strategy_spread_cap_pips=30
+strategy_be_buffer_pips=0
+strategy_order_expiration_bars=1

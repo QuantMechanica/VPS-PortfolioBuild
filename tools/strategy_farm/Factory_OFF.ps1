@@ -46,6 +46,17 @@ if (-not $pr.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
 }
 
 $ErrorActionPreference = 'Stop'
+# PSModulePath self-heal (2026-08-10 trap: a poisoned caller environment made
+# Get-FileHash unresolvable in PS5.1 and killed Factory_OFF mid-flag-write at
+# line 806). Never trust the inherited value; prepend the canonical roots.
+$qmCanonicalModulePaths = @(
+    (Join-Path $env:ProgramFiles 'WindowsPowerShell\Modules'),
+    (Join-Path $env:SystemRoot 'system32\WindowsPowerShell\v1.0\Modules')
+)
+$env:PSModulePath = (
+    @($qmCanonicalModulePaths) +
+    @(($env:PSModulePath -split ';') | Where-Object { $_ -and ($_ -notin $qmCanonicalModulePaths) })
+) -join ';'
 $processScopePath = Join-Path $PSScriptRoot 'factory_process_scope.ps1'
 try {
     $script:QmFactoryProcessScopeVersion = $null

@@ -1,0 +1,183 @@
+{
+  "schema_version": "qm.fx_q02_handoff.v1",
+  "generated_at_utc": "2026-08-12T01:22:29Z",
+  "branch": "agents/board-advisor",
+  "base_head": "a60f693c436a0825e64f864fc437a663f1290dcd",
+  "mission_decision": {
+    "frozen_cointegration_scan_relationships": 66,
+    "unbuilt_relationship_found": false,
+    "frontier_duplicate_coverage_complete": true,
+    "anchors": {
+      "QM5_12532": ["Q02_PASS", "Q04_PASS", "Q05_FAIL"],
+      "QM5_12533": ["Q02_PASS", "Q04_FAIL"]
+    },
+    "fallback_authorized_by_mission": true,
+    "fallback_action": "advance_existing_forex_card",
+    "selected_ea": "QM5_11399",
+    "selection_reason": "Active, OWNER-approved, reputable-source low-frequency structural FX card with zero prior farm work items and missing canonical Q01/Q02 packaging."
+  },
+  "ea": {
+    "ea_id": "QM5_11399",
+    "slug": "naked-forex-big-belt-d1",
+    "market": "forex",
+    "timeframe": "D1",
+    "expected_trades_per_year_per_symbol": 20,
+    "structure_only": true,
+    "ml_required": false,
+    "source": {
+      "type": "book",
+      "citation": "Alex Nekritin and Walter Peters, Naked Forex, Wiley, 2012, Chapter 9, The Big Belt",
+      "quality_tier": "A",
+      "source_id": "94a3a139-a123-57c2-ae40-b5513532e244"
+    },
+    "registry": {
+      "ea_status": "active",
+      "owner": "Research",
+      "magic_slots": {
+        "EURUSD.DWX": {"slot": 0, "magic": 113990000},
+        "GBPUSD.DWX": {"slot": 1, "magic": 113990001},
+        "USDJPY.DWX": {"slot": 2, "magic": 113990002},
+        "AUDUSD.DWX": {"slot": 3, "magic": 113990003},
+        "GBPJPY.DWX": {"slot": 4, "magic": 113990004}
+      }
+    }
+  },
+  "q01": {
+    "verdict": "PASS",
+    "card_schema_lint": "PASS",
+    "build_card_schema_lint": "PASS",
+    "spec_validation": "PASS",
+    "strict_compile": {
+      "verdict": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "summary": "D:\\QM\\reports\\compile\\20260812_011034\\summary.csv"
+    },
+    "strict_build_check": {
+      "verdict": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:\\QM\\reports\\framework\\21\\build_check_20260812_011143.json"
+    },
+    "mq5_sha256": "22038821df880b75485a8fb430dd9962a125a2f6db0902fe05d36ffafca161a9",
+    "ex5_sha256": "bcb46b6116b65240575f2a06722aebc99a4b399b60c19639ba2a6ca2f6294e66"
+  },
+  "setfiles": [
+    {
+      "symbol": "AUDUSD.DWX",
+      "timeframe": "D1",
+      "magic_slot": 3,
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "sha256": "4c4a0dc9590a26ced6322e5ed746aced30d695c5d21c17dfdfd8af3e9b1f4f"
+    },
+    {
+      "symbol": "EURUSD.DWX",
+      "timeframe": "D1",
+      "magic_slot": 0,
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "sha256": "2dcf708dfe7b290f3b4ac910acffb66252fbd3c2f64ec2c50503e778c9bc017e"
+    },
+    {
+      "symbol": "GBPJPY.DWX",
+      "timeframe": "D1",
+      "magic_slot": 4,
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "sha256": "5210ce221bd6b9b9b2f342942bf2b80aa92035e666d1bf4efe3004af9e6aa514"
+    },
+    {
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "D1",
+      "magic_slot": 1,
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "sha256": "21ea616ab1e0008c9bddf87b653bbdfb6f4fe6dba5a2c9824f9bf4297f26a95f"
+    },
+    {
+      "symbol": "USDJPY.DWX",
+      "timeframe": "D1",
+      "magic_slot": 2,
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "sha256": "e27e5eb22ee6b6f76edbf33595721267a8476efb74546b4d038a5abb587678f1"
+    }
+  ],
+  "q02_enqueue": {
+    "target_only": true,
+    "dry_run_at_utc": "2026-08-12T01:14:13Z",
+    "applied_at_utc": "2026-08-12T01:16:18Z",
+    "external_evidence": "D:\\QM\\reports\\state\\claude_sweep_enqueue_2026-06-10.json",
+    "pending_queue_at_start": 1096,
+    "queue_ceiling": 7000,
+    "cpu_capacity_sample": {
+      "scanned_at_utc": "2026-08-12T01:16:13Z",
+      "factory_terminals": ["T4", "T5"],
+      "factory_running_count": 2,
+      "binding_ceiling": 7,
+      "ceiling_hit": false
+    },
+    "work_items": [
+      {
+        "id": "ed3b8964-6c63-4cb9-a211-25dc3f8ec052",
+        "symbol": "AUDUSD.DWX",
+        "attempt_count": 0,
+        "priority_track": true,
+        "state_at_capture": "active",
+        "claimed_by_at_capture": "T3"
+      },
+      {
+        "id": "5b4206e6-188d-4769-a110-8db8e113f591",
+        "symbol": "EURUSD.DWX",
+        "attempt_count": 0,
+        "priority_track": true,
+        "state_at_capture": "pending",
+        "claimed_by_at_capture": null
+      },
+      {
+        "id": "5936f311-de8f-4caf-bffd-6179e6373274",
+        "symbol": "GBPJPY.DWX",
+        "attempt_count": 0,
+        "priority_track": true,
+        "state_at_capture": "active",
+        "claimed_by_at_capture": "T2"
+      }
+    ],
+    "deferred": {
+      "recorded_at_utc": "2026-08-12T01:20:55Z",
+      "symbols": ["GBPUSD.DWX", "USDJPY.DWX"],
+      "priority_track": true,
+      "q02_cohort_size": 5,
+      "state_file": "D:\\QM\\strategy_farm\\state\\q02_deferred_symbols.json"
+    }
+  },
+  "queue_hardening": {
+    "defect": "A non-empty pre-existing deferred snapshot overwrote new deferrals after append.",
+    "fixes": [
+      "Persist promotion/removal snapshot before appending new deferrals.",
+      "Resolve deferred state beneath QM_STRATEGY_FARM_ROOT.",
+      "Carry priority_track and q02_cohort_size into the deferred entry."
+    ],
+    "regression_test": "test_apply_preserves_new_deferral_when_sidecar_was_already_nonempty",
+    "targeted_test_result": "PASS",
+    "production_repair_under_mutation_lock": true
+  },
+  "files": [
+    {"path": "strategy-seeds/cards/naked-forex-big-belt-d1_card.md", "sha256": "ced44a821c4743406adb16a6e9dcd6c98b249d0879351781ae14a801c516d354"},
+    {"path": "framework/EAs/QM5_11399_naked-forex-big-belt-d1/docs/strategy_card.md", "sha256": "bdf6720b90e8bce627586176eb8c50ee43ca0dcb7a52c8b2c41c2d359867997a"},
+    {"path": "tools/strategy_farm/farmctl.py", "sha256": "ba93a22eff7313c6aaca372e60b31c1b9caa3fb8712fdafc4c04ce662f1e889b"},
+    {"path": "tools/strategy_farm/sweep_enqueue_built_eas.py", "sha256": "a08ba88075daf5a0822c5fe4a70dfd68cc682e0d365b7c24400dfeffb6a1e493"},
+    {"path": "tools/strategy_farm/tests/test_sweep_enqueue_built_eas.py", "sha256": "ac5f2ba0d803d389125d1bbad3f18a6cb113d575f479166166c116bbb59f22e2"}
+  ],
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "live_set_created": false,
+    "portfolio_gate_touched": false,
+    "portfolio_kpi_touched": false,
+    "portfolio_q08_contribution_touched": false,
+    "manual_backtest_dispatch": false,
+    "duplicate_cointegration_build_created": false
+  }
+}

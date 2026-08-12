@@ -369,6 +369,8 @@ class BasketWorkItemsTests(unittest.TestCase):
                 "traded_symbols": ["EURGBP.DWX", "EURAUD.DWX"],
                 "conversion_symbols": ["EURUSD.DWX", "AUDUSD.DWX"],
                 "scan_ranking": {"rank_positive_hedge": 12},
+                "priority_track": True,
+                "priority_reason": "Tier-A market-neutral FX diversity lane",
             }),
         }
 
@@ -398,6 +400,11 @@ class BasketWorkItemsTests(unittest.TestCase):
         self.assertEqual(payload["traded_symbols"], ["EURGBP.DWX", "EURAUD.DWX"])
         self.assertEqual(payload["conversion_symbols"], ["EURUSD.DWX", "AUDUSD.DWX"])
         self.assertEqual(payload["scan_ranking"], {"rank_positive_hedge": 12})
+        self.assertIs(payload["priority_track"], True)
+        self.assertEqual(
+            payload["priority_reason"],
+            "Tier-A market-neutral FX diversity lane",
+        )
 
     def test_q02_dispatch_falls_back_to_basket_manifest_host_symbol(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

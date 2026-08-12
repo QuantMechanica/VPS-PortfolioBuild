@@ -649,3 +649,49 @@ def test_atomic_json_output_is_create_only_or_byte_identical(tmp_path: Path) -> 
             output, {"schema": "fixture/v1", "plan_sha256": "b" * 64}
         )
     assert output.read_bytes() == first
+
+
+def test_replace_active_file_retries_sharing_violation(tmp_path, monkeypatch):
+    from tools.strategy_farm import news_calendar_gate as gate
+
+    root = tmp_path / "common"
+    root.mkdir()
+    (root / "cal.csv").write_bytes(b"old")
+    real_replace = gate.os.replace
+    failures = {"left": 2}
+    calls = []
+
+    def flaky_replace(src, dst):
+        if failures["left"] > 0:
+            failures["left"] -= 1
+            raise PermissionError(5, "Access is denied")
+        return real_replace(src, dst)
+
+    monkeypatch.setattr(gate.os, "replace", flaky_replace)
+    changed = gate._replace_active_file(
+        root, "cal.csv", b"new", sleeper=lambda seconds: calls.append(seconds)
+    )
+    assert changed is True
+    assert (root / "cal.csv").read_bytes() == b"new"
+    assert len(calls) == 2
+
+
+def test_replace_active_file_persistent_hold_stays_fail_closed(tmp_path, monkeypatch):
+    import pytest
+
+    from tools.strategy_farm import news_calendar_gate as gate
+
+    root = tmp_path / "common"
+    root.mkdir()
+    (root / "cal.csv").write_bytes(b"old")
+
+    def blocked_replace(src, dst):
+        raise PermissionError(32, "sharing violation")
+
+    monkeypatch.setattr(gate.os, "replace", blocked_replace)
+    with pytest.raises(PermissionError):
+        gate._replace_active_file(
+            root, "cal.csv", b"new", sleeper=lambda seconds: None
+        )
+    assert (root / "cal.csv").read_bytes() == b"old"
+    assert not list(root.glob(".cal.csv.*.tmp"))

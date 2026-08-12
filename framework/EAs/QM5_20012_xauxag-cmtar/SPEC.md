@@ -4,7 +4,7 @@
 **Slug:** `xauxag-cmtar`  
 **Strategy ID:** `MIGHRI-XAUXAG-CMTAR-2018_S01`  
 **Source ID:** `MIGHRI-XAUXAG-CMTAR-2018`  
-**Last revised:** 2026-07-20
+**Last revised:** 2026-08-06
 
 ## 1. Strategy Logic
 
@@ -120,8 +120,11 @@ disclosed QM translations because the source does not publish a trading rule.
 Each leg's full-budget ATR-stop lot capacity is computed independently. The
 two rounded-down lot sizes are then solved jointly so their normalized stop
 risk sums to no more than one framework budget while their notionals remain
-within the configured hedge-error cap. The second leg is submitted only after
-the first succeeds; any second-leg failure immediately closes the first.
+within the configured hedge-error cap. The off-chart XAG leg uses the basket
+helper; the XAU host leg uses `QM_TM_OpenPosition` with an explicit framework
+risk share that resolves to the joint-sized host volume. XAG is sent first so
+a foreign-leg rejection leaves the package flat; a host rejection or any
+post-fill composition/hedge mismatch immediately closes all owned legs.
 
 There is no TP, trailing stop, partial close, scale-in, grid, martingale,
 pyramiding, ML, banned indicator, external runtime feed, T_Live preset,
@@ -148,3 +151,4 @@ AutoTrading action, portfolio-gate change, or deploy manifest.
 |---|---|---|---|
 | v1 | 2026-07-20 | Initial approved build | OWNER commodity-sleeve mission; Q02 only |
 | v1.1 | 2026-08-02 | Q02 infrastructure recovery | Signal and risk rules unchanged; framework calendar key plus event/new-bar basket integrity scheduling removes redundant per-tick multi-leg scans. |
+| v1.2 | 2026-08-06 | Framework entry-path review repair | XAU host now opens through `QM_TM_OpenPosition`; only off-chart XAG uses `QM_BasketOpenPosition`. Signal, joint sizing, and rollback rules are unchanged. |

@@ -4,12 +4,14 @@ title: Commodity Futures Characteristics and Asset Pricing Models
 publisher: Journal of Futures Markets
 source_type: peer_reviewed_paper
 status: approved_source_complete
-approval_basis: OWNER commodity-sleeve mission directive 2026-07-11
+approval_basis: OWNER commodity-sleeve mission directives 2026-07-11 and 2026-08-06
 created: 2026-07-11
 created_by: Research
+last_updated: 2026-08-06
 uri: https://onlinelibrary.wiley.com/doi/10.1002/fut.22559
 cards_extracted:
   - energy-es-rank
+  - xauxag-es-rank
 ---
 
 # Qin et al. Commodity Expected-Shortfall Source Packet
@@ -24,6 +26,10 @@ cards_extracted:
 - This packet extracts only the transparent expected-shortfall characteristic.
   The source's IPCA and latent-factor estimation are evidence context, not EA
   runtime logic.
+- The OWNER mission dated 2026-08-06 authorizes the same locked characteristic
+  as one paired `XAUUSD.DWX` / `XAGUSD.DWX` carrier extension. It does not
+  authorize another characteristic, a tail-probability sweep, a direction
+  change, or a post-result rescue.
 
 ## Primary Citation
 
@@ -76,6 +82,29 @@ and adds risk controls. This is a new carrier falsification, not a
 replication. No source return, alpha, drawdown, correlation, or transaction
 cost statistic is imported as a QM result.
 
+The 2026-08-06 carrier extension,
+`YIYI-ES-2025_XAU_XAG_S03`, preserves the same estimator, direction, formation
+window, and monthly lifecycle:
+
+- on the first tradable XAU D1 bar of a broker month, use synchronized simple
+  returns whose ending timestamps fall inside exactly the prior twelve
+  completed broker-calendar months;
+- require every expected month plus at least 220 valid returns per metal;
+- set `K = ceil(N * 0.05)` and average the `K` lowest daily returns per leg;
+- buy the metal with the higher expected-shortfall statistic (the less
+  negative lower tail) and short the metal with the lower statistic;
+- split one `RISK_FIXED=1000` package equally, attach frozen per-leg ATR hard
+  stops, renew at the next month transition, and repair an orphan; and
+- consume a numerical tie or invalid-data month without a trade or retry.
+
+This is a two-CFD carrier falsification of a broad commodity characteristic,
+not a source result for gold versus silver. Opposite directions and equal
+fixed-risk halves do not establish dollar, beta, volatility, factor, or
+portfolio neutrality. The public full-paper URL was routed again on
+2026-08-06 and generic automated retrieval was policy-deferred; the receipt is
+`strategy-seeds/sources/YIYI-ES-2025/retrieval_route_20260806.json`. No new
+source content was inferred from that deferred route.
+
 ## Non-Duplicate Boundary
 
 - QM5_12567 is short-horizon long-only cumulative-RSI2 pullback logic.
@@ -98,6 +127,28 @@ The canonical checker returned only lexical energy-rank fuzzy matches. Manual
 signal-input, transform, direction, formation-window, and exit review verdict:
 CLEAN_AFTER_MANUAL_REVIEW before atomic allocation.
 
+For `S03`, the deterministic pre-allocation checker scanned 4,292 EA-registry
+rows and 408 canonical cards. It found no exact identity and the expected
+same-source fuzzy sibling:
+
+- `QM5_13143_energy-es-rank` uses the identical locked expected-shortfall
+  characteristic on XTI/XNG. `S03` is a predeclared XAU/XAG carrier test, not a
+  parameter variant or repair, and it inherits no sibling performance result.
+- `QM5_20233_xauxag-skew-rank` estimates the centered third moment over twelve
+  months; `QM5_20234_xauxag-rsj` compares one month of separately squared
+  positive and negative returns; `QM5_20202_xauxag-rev18` uses an eighteen-
+  month return sign. None averages the worst five percent of raw daily returns.
+- Existing XAU/XAG ratio, OLS-residual, quantile-channel, calendar, momentum,
+  idiosyncratic-volatility, and shock baskets use different information
+  objects, directions, or clocks.
+- `QM5_12567_cum-rsi2-commodity` is a short-horizon long-only oscillator
+  pullback rather than an opposite-side monthly tail-risk rank.
+
+The prior-twelve-complete-month window, raw simple returns, five-percent lower-
+tail mean, ceiling count, higher-ES-long/lower-ES-short direction, XAU/XAG
+carrier, and monthly lifecycle are jointly load-bearing. Verdict:
+`CLEAN_CARRIER_EXTENSION_AFTER_MANUAL_REVIEW`.
+
 ## R1-R4
 
 - R1 source: PASS. Peer-reviewed Journal of Futures Markets paper, DOI,
@@ -106,7 +157,16 @@ CLEAN_AFTER_MANUAL_REVIEW before atomic allocation.
   mean, high-minus-low direction, monthly hold, equal fixed risk, hard stops,
   deal-history restart guard, and orphan cleanup.
 - R3 data: PASS with carrier risk. Registered XTI/XNG D1 histories provide
-  closes, calendar timestamps, ATR, spreads, and broker metadata.
+  closes, calendar timestamps, ATR, spreads, and broker metadata for `S02`;
+  registered XAU/XAG D1 histories provide the same native inputs for `S03`.
 - R4 deterministic/no ML: PASS. No IPCA, PCA, regression, option input,
   futures curve, external runtime feed, banned indicator, ML, grid,
   martingale, pyramiding, or adaptive PnL fit.
+
+## Safety Boundary
+
+The 2026-08-06 mission authorizes one durable G0 record, card, branch-only
+non-live build, strict compile, and paced Q02 enqueue for `S03`. It excludes a
+manual backtest; live, demo, or shadow setfiles; AutoTrading; `T_Live`; deploy
+or T_Live manifests; portfolio admission; portfolio-gate changes; and
+correlation waivers.

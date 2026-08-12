@@ -28,6 +28,17 @@ if (-not $CanonicalRuntimeHost) {
 }
 
 $ErrorActionPreference = 'Stop'
+# PSModulePath self-heal (2026-08-10 trap: a poisoned caller environment made
+# Get-FileHash unresolvable in PS5.1 and killed Factory_OFF mid-flag-write).
+# Never trust the inherited value; prepend the canonical roots.
+$qmCanonicalModulePaths = @(
+    (Join-Path $env:ProgramFiles 'WindowsPowerShell\Modules'),
+    (Join-Path $env:SystemRoot 'system32\WindowsPowerShell\v1.0\Modules')
+)
+$env:PSModulePath = (
+    @($qmCanonicalModulePaths) +
+    @(($env:PSModulePath -split ';') | Where-Object { $_ -and ($_ -notin $qmCanonicalModulePaths) })
+) -join ';'
 $processScopePath = Join-Path $PSScriptRoot 'factory_process_scope.ps1'
 try {
     $script:QmFactoryProcessScopeVersion = $null
@@ -120,11 +131,11 @@ $publicSnapshotTaskWrapper = 'C:\QM\repo\scripts\run_public_snapshot_task.ps1'
 $publicSnapshotTaskWorkingDirectory = 'C:\QM\repo'
 $canonicalFactoryOnPath = 'C:\QM\repo\tools\strategy_farm\Factory_ON.ps1'
 $canonicalFactoryOnProcessImage = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-$canonicalOwnerDecisionPath = 'C:\QM\repo\docs\ops\evidence\2026-08-03_factory_preparation_owner_decision.json'
-$canonicalOwnerDecisionRelativePath = 'docs/ops/evidence/2026-08-03_factory_preparation_owner_decision.json'
-$QM_OWNER_DECISION_SHA256 = 'e3e3c4794f4e680080eb8032be13fdd25457485749a9a62d0d1eeb31811c8d34'
-$QM_OWNER_DECISION_COMMIT = '1ec04dc9eff37cabc0582718047a4d3cabe3a1c2'
-$QM_OWNER_DECISION_BLOB = '30b4845d06a0944ef419448bacfa2fb394504b92'
+$canonicalOwnerDecisionPath = 'C:\QM\repo\docs\ops\evidence\2026-08-11_factory_preparation_owner_decision_standing_unlimited.json'
+$canonicalOwnerDecisionRelativePath = 'docs/ops/evidence/2026-08-11_factory_preparation_owner_decision_standing_unlimited.json'
+$QM_OWNER_DECISION_SHA256 = '9d77f78ffb9ba5b263cf2e29ade0cf79b938ad34ab14ad2ab4ad5efd5153c4e4'
+$QM_OWNER_DECISION_COMMIT = 'ecbd911628e0850cbbfd8ab3ed1eb3c0b0b911b3'
+$QM_OWNER_DECISION_BLOB = '2247ace7ec310bfb0c76dfdc455193e209683463'
 # The Pump task is scheduler-bounded by PT10M. TaskScheduler start/finish
 # evidence sampled on 2026-07-31 found 13 substantive runs: p50=550.203s,
 # p75=599.982s, and five reached the 600s ceiling. First-attempt success is
@@ -143,6 +154,18 @@ $QM_RESPAWN_TASKS = @(
     'QM_StrategyFarm_FactoryWatchdog_15min',
     'QM_StrategyFarm_FactoryON_AtLogon',
     'QM_StrategyFarm_ReconcileOrphans_Hourly'
+)
+# AI-orchestration quiet zone (OWNER 2026-08-11 "Go, alles freigegeben"): the
+# 2026-08-10 router freeze was a lane-spawned agent_router racing the scheduled
+# instance inside the restart window (R5/R6 FAILED CLOSED). Orchestration lanes
+# and the codex/agy pacers are therefore enabled only AFTER the post-start
+# health gate passes; AgentRouter_5min itself stays pre-gate (critical task).
+$QM_AI_ORCHESTRATION_QUIET_ZONE_TASKS = @(
+    'QM_StrategyFarm_CodexOrchestration_15min',
+    'QM_StrategyFarm_GeminiOrchestration_15min',
+    'QM_StrategyFarm_ClaudeOrchestration_15min',
+    'QM_StrategyFarm_CodexFleetPacer',
+    'QM_StrategyFarm_AgyGovernor'
 )
 $QM_QUIESCENCE_TASKS = @(
     'QM_CodexParallel_RestoreOnReset',
@@ -297,7 +320,7 @@ function Assert-CanonicalOwnerRestartDecision {
     } catch {
         throw "canonical OWNER decision JSON is invalid: $($_.Exception.Message)"
     }
-    if ([string]$decision.decision_id -cne 'FACTORY_PREPARATION_20260803_TEN_WORKER_ZERO_HOLD' -or
+    if ([string]$decision.decision_id -cne 'FACTORY_PREPARATION_20260811_STANDING_UNLIMITED' -or
         [string]$decision.authority -cne 'OWNER' -or
         [string]$decision.status -cne 'APPROVED') {
         throw 'canonical OWNER decision identity mismatch'
@@ -1187,6 +1210,16 @@ foreach ($taskName in $QM_ALWAYSON_TASKS) {
     Add-QmExpectedTaskEnabledState -TaskMap $expectedTaskEnabledState `
         -TaskName $taskName -Enabled $true
 }
+# Quiet-zone variant for the post-start health WAIT: orchestration lanes and
+# pacers stay disabled until the gate passes, so the gate must expect them
+# disabled. The final map ($expectedTaskEnabledState) governs the pre-release
+# revalidation after the deferred enablement.
+$expectedTaskEnabledStateDuringGate = [ordered]@{}
+foreach ($key in $expectedTaskEnabledState.Keys) {
+    $duringGateEnabled = [bool]$expectedTaskEnabledState[$key]
+    if ($key -in $QM_AI_ORCHESTRATION_QUIET_ZONE_TASKS) { $duringGateEnabled = $false }
+    $expectedTaskEnabledStateDuringGate[$key] = $duringGateEnabled
+}
 $invalidExpectedTaskRegistrations = @(@($expectedTaskEnabledState.Keys) | Where-Object {
     @(Get-ScheduledTask -TaskName ([string]$_) -ErrorAction SilentlyContinue).Count -ne 1
 })
@@ -1378,6 +1411,7 @@ try {
     $criticalTasksStartedAtUtc = [datetimeoffset]::UtcNow
 
     foreach ($taskName in @(@($QM_FACTORY_TASKS + $QM_AI_TASKS + $QM_RESPAWN_TASKS) | Sort-Object -Unique)) {
+        if ($taskName -in $QM_AI_ORCHESTRATION_QUIET_ZONE_TASKS) { continue }  # deferred post-gate
         Assert-NoFactoryOffIntent -Context "before enabling scheduled task '$taskName'"
         Enable-ScheduledTask -TaskName $taskName -ErrorAction Stop | Out-Null
     }
@@ -1389,6 +1423,7 @@ try {
         # silently enabled by ON without an explicit captured operator state.
         $shouldEnable = $false
         if ($taskEnabledBefore.Contains($taskName)) { $shouldEnable = [bool]$taskEnabledBefore[$taskName] }
+        if ($shouldEnable -and $taskName -in $QM_AI_ORCHESTRATION_QUIET_ZONE_TASKS) { continue }  # deferred post-gate
         if ($shouldEnable) {
             Assert-NoFactoryOffIntent -Context "before enabling quiescence task '$taskName'"
             Enable-ScheduledTask -TaskName $taskName -ErrorAction Stop | Out-Null
@@ -1416,7 +1451,7 @@ try {
 
     Assert-NoFactoryOffIntent -Context 'before post-start health wait'
     $postStartHealth = Wait-QmFactoryPostStartHealth `
-        -ExpectedTaskEnabledState $expectedTaskEnabledState `
+        -ExpectedTaskEnabledState $expectedTaskEnabledStateDuringGate `
         -CriticalTaskBaselines $criticalTaskBaselines `
         -CriticalTaskNames $QM_CRITICAL_POST_START_TASKS `
         -ExpectedWorkerTerminals $expectedWorkerTerminals `
@@ -1425,6 +1460,22 @@ try {
         -TimeoutSeconds $factoryPostStartHealthTimeoutSeconds
     Write-Host ("  post-start health gate passed: {0} tasks, {1} workers." -f `
         $postStartHealth.observed_task_count,$postStartHealth.observed_worker_count)
+
+    # Quiet zone ends only now: orchestration lanes and pacers join a factory
+    # that is provably healthy (OWNER 2026-08-11; router-freeze class R5/R6).
+    foreach ($taskName in $QM_AI_ORCHESTRATION_QUIET_ZONE_TASKS) {
+        $enableAfterGate = $true
+        if ($QM_QUIESCENCE_TASKS -contains $taskName) {
+            $enableAfterGate = $false
+            if ($taskEnabledBefore.Contains($taskName)) {
+                $enableAfterGate = [bool]$taskEnabledBefore[$taskName]
+            }
+        }
+        if ($enableAfterGate) {
+            Assert-NoFactoryOffIntent -Context "before enabling quiet-zone task '$taskName'"
+            Enable-ScheduledTask -TaskName $taskName -ErrorAction Stop | Out-Null
+        }
+    }
 
     # The held cohort is released only after every contractually enabled
     # worker/task is healthy.  Non-release quarantine holds remain active; the
@@ -1436,6 +1487,10 @@ try {
         -Context 'immediately before restart-hold release' | Out-Null
     $releaseHealthSnapshot = Get-QmFactoryPostStartSnapshot `
         -TaskNames @($expectedTaskEnabledState.Keys)
+    # The wait gate latched a fresh post-baseline success per critical task;
+    # this instantaneous revalidation must honor those latches or a critical
+    # task that legitimately started its next 5-minute run in the meantime
+    # fails the release for being 'Running' (2026-08-10 R3/R5/R6 timeouts).
     $releaseHealth = Test-QmFactoryPostStartHealth `
         -Snapshot $releaseHealthSnapshot `
         -ExpectedTaskEnabledState $expectedTaskEnabledState `
@@ -1443,7 +1498,8 @@ try {
         -CriticalTaskNames $QM_CRITICAL_POST_START_TASKS `
         -ExpectedWorkerTerminals $expectedWorkerTerminals `
         -ExpectedSessionId $mySession `
-        -FreshNotBeforeUtc $criticalTasksStartedAtUtc
+        -FreshNotBeforeUtc $criticalTasksStartedAtUtc `
+        -LatchedCriticalTasks $postStartHealth.latched_critical_tasks
     if (-not $releaseHealth.healthy) {
         throw ("immediate pre-release task/worker health revalidation failed: " +
             ($releaseHealth.errors -join '; '))

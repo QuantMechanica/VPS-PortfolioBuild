@@ -55,6 +55,7 @@ int g_leg_slots[QM5_1193_LEG_COUNT] = {0, 1, 2, 3, 4};
 int g_leg_direction[QM5_1193_LEG_COUNT] = {-1, -1, -1, 1, 1};
 
 datetime g_last_entry_signal_day = 0;
+bool g_symbols_ready = false;
 
 int Strategy_DayKey(const datetime value)
   {
@@ -89,18 +90,56 @@ int Strategy_DirectionForCurrentSymbol()
    return g_leg_direction[index];
   }
 
-bool Strategy_SelectSymbols()
+bool Strategy_AppendSymbolUnique(string &symbols[], const string symbol)
   {
-   bool ok = true;
+   if(symbol == "")
+      return false;
+
+   const int count = ArraySize(symbols);
+   for(int i = 0; i < count; ++i)
+      if(symbols[i] == symbol)
+         return true;
+
+   if(ArrayResize(symbols, count + 1) != count + 1)
+      return false;
+   symbols[count] = symbol;
+   return true;
+  }
+
+bool Strategy_InitSymbols()
+  {
+   string symbols[];
    for(int i = 0; i < QM5_1193_LEG_COUNT; ++i)
-      ok = (SymbolSelect(g_leg_symbols[i], true) && ok);
-   if(strategy_equity_signal_symbol != "")
-      ok = (SymbolSelect(strategy_equity_signal_symbol, true) && ok);
-   if(strategy_oil_primary_symbol != "")
-      ok = (SymbolSelect(strategy_oil_primary_symbol, true) && ok);
-   if(strategy_oil_fallback_symbol != "")
-      SymbolSelect(strategy_oil_fallback_symbol, true);
-   return ok;
+      if(!Strategy_AppendSymbolUnique(symbols, g_leg_symbols[i]))
+         return false;
+
+   if(!Strategy_AppendSymbolUnique(symbols, strategy_equity_signal_symbol) ||
+      !Strategy_AppendSymbolUnique(symbols, strategy_oil_primary_symbol))
+      return false;
+
+   // Select the required basket once during setup. Re-selecting the same
+   // foreign symbols on every tick caused the Q02 tester journal log bomb.
+   for(int i = 0; i < ArraySize(symbols); ++i)
+      if(!SymbolSelect(symbols[i], true))
+         return false;
+
+   // The approved card permits Brent only as a best-effort fallback. Do not
+   // turn its absence from a .DWX terminal into a setup failure.
+   if(strategy_oil_fallback_symbol != "" &&
+      strategy_oil_fallback_symbol != strategy_oil_primary_symbol &&
+      SymbolSelect(strategy_oil_fallback_symbol, true))
+     {
+      if(!Strategy_AppendSymbolUnique(symbols, strategy_oil_fallback_symbol))
+         return false;
+     }
+
+   QM_SymbolGuardInit(symbols);
+   QM_BasketWarmupHistory(symbols,
+                          PERIOD_D1,
+                          MathMax(strategy_min_d1_bars,
+                                  strategy_atr_period_d1 + 10));
+   g_symbols_ready = true;
+   return true;
   }
 
 bool Strategy_DailyReturn(const string symbol, const int shift, double &ret)
@@ -108,13 +147,13 @@ bool Strategy_DailyReturn(const string symbol, const int shift, double &ret)
    ret = 0.0;
    if(symbol == "")
       return false;
-   if(!SymbolSelect(symbol, true))
+   if(!g_symbols_ready || !QM_SymbolAssertOrLog(symbol))
       return false;
    if(iBars(symbol, PERIOD_D1) < MathMax(strategy_min_d1_bars, shift + 3))
       return false;
 
-   const double close_now = iClose(symbol, PERIOD_D1, shift);
-   const double close_prev = iClose(symbol, PERIOD_D1, shift + 1);
+   const double close_now = iClose(symbol, PERIOD_D1, shift); // perf-allowed: fixed-shift cross-asset return, D1 entry path only
+   const double close_prev = iClose(symbol, PERIOD_D1, shift + 1); // perf-allowed: fixed-shift cross-asset return, D1 entry path only
    if(close_now <= 0.0 || close_prev <= 0.0)
       return false;
 
@@ -147,7 +186,7 @@ bool Strategy_StressSignal(const datetime signal_day, double &equity_ret, double
 
    if(signal_day <= 0)
       return false;
-   if(iTime(_Symbol, PERIOD_D1, 1) != signal_day)
+   if(iTime(_Symbol, PERIOD_D1, 1) != signal_day) // perf-allowed: fixed-shift D1 basket alignment, new-bar entry path only
       return false;
    if(!Strategy_DailyReturn(strategy_equity_signal_symbol, 1, equity_ret))
       return false;
@@ -317,7 +356,7 @@ bool Strategy_NoTradeFilter()
       return true;
    if(strategy_min_d1_bars < MathMax(strategy_atr_period_d1 + 5, 10))
       return true;
-   return !Strategy_SelectSymbols();
+   return !g_symbols_ready;
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
@@ -334,7 +373,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = Strategy_SlotForCurrentSymbol();
    req.expiration_seconds = 0;
 
-   const datetime signal_day = iTime(_Symbol, PERIOD_D1, 1);
+   const datetime signal_day = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: fixed-shift D1 signal key after QM_IsNewBar
    if(signal_day <= 0 || g_last_entry_signal_day == signal_day)
       return false;
 
@@ -381,7 +420,7 @@ bool Strategy_ExitSignal()
    if(!Strategy_HasOpenPosition(ticket, opened_at))
       return false;
 
-   const datetime current_day = iTime(_Symbol, PERIOD_D1, 0);
+   const datetime current_day = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: O(1) current D1 key for the card's time exit
    if(current_day <= 0)
       return false;
 
@@ -401,8 +440,6 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   Strategy_SelectSymbols();
-
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -421,6 +458,15 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   if(!Strategy_InitSymbols())
+     {
+      QM_LogEvent(QM_ERROR,
+                  "SETUP_DATA_MISSING",
+                  "{\"reason\":\"required_basket_symbol_unavailable\"}");
+      QM_FrameworkShutdown();
+      return INIT_FAILED;
+     }
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1193\",\"strategy\":\"qp-stress-usd-rebound\"}");
    return INIT_SUCCEEDED;
   }
@@ -433,20 +479,12 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -471,12 +509,24 @@ void OnTick()
         }
      }
 
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

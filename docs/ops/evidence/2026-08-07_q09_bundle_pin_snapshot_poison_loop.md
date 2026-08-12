@@ -216,3 +216,24 @@ poisoned old-binary siblings. That is the existing governed path which both
 preserves append-only ancestry and supplies the tester calendar-input
 interface; claiming that a calendar-only rebind repairs an old EX5 would be
 false.
+
+## Append-only correction (Claude review, 2026-08-07 evening)
+
+The remediation table's "Current rebuilt EX5 SHA-256" value for `QM5_12567`
+(`8d901924…e3b10f9`) is a splice artifact: its first 24 hex characters match
+the real hash and its tail matches the OLD deployed binary
+(`5d5be334…e3b10f9`). The correct value, verified against three independent
+sources (canonical file hash, successor `cd3efa38` staged binding, and the
+sealed predecessor `4f80a8cf` binding), is:
+
+```text
+8d901924fe7dd2cd00c61dac6db78871fdfe34f73e0f003393196992d5143e04
+```
+
+The executed rerun bindings were never affected — the tool resolved the
+registry identity, not the document table. Executed successors:
+`cd3efa38-b8ca-5e40-811c-0ef529f88b69` (QM5_12567) and
+`9d3506f1-e011-529c-b866-b010e0a9cf9c` (QM5_1556), both pre-claim-verified
+(bundle + content SHA in cell setfiles, RISK_FIXED=1000, RISK_PERCENT=0,
+stale_max=336, avoid T1) under Claude task
+`1b52344b-2742-4ca8-bd02-09ac486f5ce8`.

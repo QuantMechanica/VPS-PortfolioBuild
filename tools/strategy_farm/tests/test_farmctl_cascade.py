@@ -1127,6 +1127,94 @@ class AppendOnlyCascadeRerunTests(unittest.TestCase):
             ):
                 self.assertNotIn(runtime_key, payload)
 
+    def test_q02_exact_rerun_keeps_basket_row_and_host_identities_distinct(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            repo_root = Path(tmp) / "repo"
+            ea_id = "QM5_9992"
+            ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_basket-demo"
+            sets_dir = ea_dir / "sets"
+            sets_dir.mkdir(parents=True)
+            mq5 = ea_dir / f"{ea_dir.name}.mq5"
+            ex5 = ea_dir / f"{ea_dir.name}.ex5"
+            logical = "QM5_9992_EURUSD_AUDJPY_COINTEGRATION_D1"
+            host = "EURUSD.DWX"
+            setfile = sets_dir / f"{ea_dir.name}_{logical}_D1_backtest.set"
+            mq5.write_text("// source\n", encoding="utf-8")
+            ex5.write_bytes(b"compiled")
+            setfile.write_text(
+                "RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8"
+            )
+            evidence = Path(tmp) / "basket-summary.json"
+            evidence.write_text("{}\n", encoding="utf-8")
+            source_payload = {
+                "basket_manifest": str(ea_dir / "basket_manifest.json"),
+                "basket_symbol_count": 2,
+                "basket_symbols": [host, "AUDJPY.DWX"],
+                "host_symbol": host,
+                "host_timeframe": "D1",
+                "logical_symbol": logical,
+                "portfolio_scope": "basket",
+                "expected_symbol": host,
+                "expected_period": "D1",
+                "expected_expert": f"QM\\{ea_dir.name}",
+                "expected_mq5_sha256": farmctl._sha256_file(mq5),
+                "expected_ex5_sha256": farmctl._sha256_file(ex5),
+                "expected_setfile_sha256": farmctl._sha256_file(setfile),
+            }
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status,
+                       verdict, attempt_count, evidence_path, payload_json,
+                       created_at, updated_at)
+                    VALUES
+                      ('q02-basket-infra', 'backtest', 'Q02', ?, ?, ?,
+                       'failed', 'INFRA_FAIL', 3, ?, ?, ?, ?)
+                    """,
+                    (
+                        ea_id,
+                        logical,
+                        str(setfile),
+                        str(evidence),
+                        json.dumps(source_payload, sort_keys=True),
+                        now,
+                        now,
+                    ),
+                )
+                conn.commit()
+
+            old_repo_root = farmctl.REPO_ROOT
+            try:
+                farmctl.REPO_ROOT = repo_root
+                result = farmctl.enqueue_cascade_backtest_for_ea(
+                    root,
+                    ea_id,
+                    "Q02",
+                    predecessor_work_item_id="q02-basket-infra",
+                    append_only_rerun_of="q02-basket-infra",
+                    rerun_reason="basket host-history infrastructure retry",
+                    expected_current_ex5_sha256=farmctl._sha256_file(ex5),
+                )
+            finally:
+                farmctl.REPO_ROOT = old_repo_root
+
+            self.assertTrue(result["enqueued"])
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT symbol, payload_json FROM work_items WHERE id=?",
+                    (result["created"][0]["id"],),
+                ).fetchone()
+            self.assertEqual(row[0], logical)
+            payload = json.loads(row[1])
+            self.assertEqual(payload["logical_symbol"], logical)
+            self.assertEqual(payload["host_symbol"], host)
+            self.assertEqual(payload["expected_symbol"], host)
+            self.assertEqual(payload["expected_period"], "D1")
+
     def test_exact_rerun_creates_one_row_and_preserves_historical_verdict(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "farm"

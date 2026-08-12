@@ -71,13 +71,13 @@ $ftmoPath = 'C:\Program Files\FTMO Global Markets MT5 Terminal\terminal64.exe'
 $dxzCommon = 'C:\QM\mt5\T_Live\MT5_Base\config\common.ini'
 $ftmoCommon = 'C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\81A933A9AFC5DE3C23B15CAB19C63850\config\common.ini'
 $expectedDxzProfile = 'DarwinexZero_V2_LiveOps'
-$expectedFtmoProfile = $null
+$expectedFtmoProfile = 'Default'
 
-# OWNER state contract (2026-07-26). FTMO is intentionally parked after trial
-# #2; this watchdog must neither relaunch nor silently forget that disposition.
+# OWNER state contract (2026-08-06): FTMO is RUNNING and must auto-recover like
+# DXZ. Review expiry remains a fail-closed alarm edge, never launch permission.
 $expectedDxzState = 'RUNNING'
-$expectedFtmoState = 'PARKED'
-$expectedStateReviewExpiresUtc = '2026-08-25T00:00:00Z'
+$expectedFtmoState = 'RUNNING'
+$expectedStateReviewExpiresUtc = '2026-09-30T00:00:00Z'
 $alarmEscalationCycles = 3
 
 function Get-UtcStamp {
@@ -876,6 +876,8 @@ if ($alarmHelperLoaded) {
             -SupervisorReason $sessionSupervisor.reason -SupervisorLaunchFailed ($supervisorAlarmFacts.fresh -and $supervisorAlarmFacts.ftmo_launch_failed)
         Write-LiveAlarmState -AlarmFilePath $alarmStateFile -NowStamp $stamp -WatchdogStatus $status `
             -Maintenance $maintenance -RebootSuppressed $rebootSuppressed `
+            -RecoveryTaskContractReady ([bool]$recoveryTasks.ready) `
+            -RecoveryTaskContractErrors @($recoveryTasks.reasons) `
             -Sessions @{ T_LIVE = $tliveAlarmCondition; FTMO = $ftmoAlarmCondition } `
             -ExpectedStates @{ T_LIVE = $expectedDxzState; FTMO = $expectedFtmoState } `
             -EscalationThreshold $alarmEscalationCycles -DryRun:$DryRun.IsPresent | Out-Null

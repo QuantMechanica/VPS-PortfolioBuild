@@ -356,20 +356,27 @@ def summary_invalid_reason(summary_path: Path) -> str | None:
 
     A Q04 fold can produce a run_smoke failure summary even when the real MT5
     report was never exported. That is retryable infrastructure evidence, not a
-    completed zero-trade strategy fold.
+    completed zero-trade strategy fold. Conversely, run_smoke retains failed
+    cold-cache attempts after a later valid report. Once an ``OK`` run exists,
+    only that completed run and the authoritative top-level reason classes may
+    invalidate the fold; stale retry markers must not override it.
     """
     sj = _load_summary(summary_path)
     if sj is None:
         return "summary_parse_error"
-    runs = sj.get("runs") or []
+    runs = [run for run in (sj.get("runs") or []) if isinstance(run, dict)]
     if str(sj.get("result") or "").upper() == "PASS" and any(
         str(run.get("status") or "").upper() == "OK" for run in runs
     ):
         return None
     reasons = {str(r).upper() for r in (sj.get("reason_classes") or [])}
+    completed = any(str(run.get("status") or "").upper() == "OK" for run in runs)
     markers: set[str] = set()
     for run in runs:
-        if str(run.get("status") or "").upper() == "INVALID":
+        status = str(run.get("status") or "").upper()
+        if completed and status != "OK":
+            continue
+        if status == "INVALID":
             markers.add("RUN_STATUS_INVALID")
         for reason in run.get("invalid_report_reasons") or []:
             markers.add(str(reason).upper())

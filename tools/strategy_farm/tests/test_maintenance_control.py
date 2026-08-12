@@ -1390,3 +1390,50 @@ def test_safe_defer_reclassification_rejects_non_defer_verdict(tmp_path: Path) -
             apply=False,
             reason="must not change",
         )
+
+
+def test_checkpoint_wal_retries_transient_reader_busy(tmp_path, monkeypatch) -> None:
+    # R8 2026-08-12: wal_checkpoint(TRUNCATE) FAILED CLOSED at the restart-hold
+    # evidence step because ten polling workers never yield a WAL-reader-free
+    # instant. FULL + bounded retry converges; the sleeper is injected.
+    results = iter([(1, 2, 0), (1, 2, 1), (0, 2, 2)])
+    sleeps: list[float] = []
+    monkeypatch.setattr(mc, "_wal_checkpoint_once", lambda path: next(results))
+    out = mc.checkpoint_wal(
+        tmp_path / "x.sqlite", attempts=5, delay_seconds=0.5, sleeper=sleeps.append
+    )
+    assert out == {"busy": 0, "log_frames": 2, "checkpointed_frames": 2}
+    assert sleeps == [0.5, 0.5]
+
+
+def test_checkpoint_wal_persistent_busy_fails_closed(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(mc, "_wal_checkpoint_once", lambda path: (1, 3, 1))
+    sleeps: list[float] = []
+    with pytest.raises(RuntimeError, match="remained busy"):
+        mc.checkpoint_wal(
+            tmp_path / "x.sqlite", attempts=3, delay_seconds=0.1, sleeper=sleeps.append
+        )
+    assert sleeps == [0.1, 0.1]  # no sleep after the final attempt
+
+
+def test_checkpoint_wal_uses_full_not_truncate() -> None:
+    # The evidence contract needs every committed frame in the main file
+    # (FULL at busy==0); TRUNCATE's reader-free-instant demand is the lottery.
+    import inspect
+
+    src = inspect.getsource(mc._wal_checkpoint_once)
+    assert "wal_checkpoint(FULL)" in src
+    assert "TRUNCATE" not in src
+
+
+def test_checkpoint_wal_real_database_single_attempt(tmp_path) -> None:
+    db = tmp_path / "real.sqlite"
+    conn = sqlite3.connect(db)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("CREATE TABLE t (x INTEGER)")
+    conn.execute("INSERT INTO t VALUES (1)")
+    conn.commit()
+    conn.close()
+    out = mc.checkpoint_wal(db, attempts=2, delay_seconds=0.01)
+    assert out["busy"] == 0
+    assert out["log_frames"] == out["checkpointed_frames"]

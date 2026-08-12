@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11537
+; ea_slug:      carter-t-h1-ema5s5-ema75-bb-rsi
+; ea_version:   v5.0
+; set_version:  s20260810-001
+; symbol:       GBPUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   a2f5665da2be097dfd41b88c3881ab431c1b92bded17a691fcf7200c623d7dc0
+; author:       Development
+; date:         2026-08-10
+;==========================================================
+qm_ea_id=11537
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11537_carter-t-h1-ema5s5-ema75-bb-rsi.md
+strategy_ema_period=75
+strategy_bb_period=20
+strategy_bb_deviation=2.0
+strategy_rsi_period=14
+strategy_rsi_threshold=50.0
+strategy_swing_lookback=5
+strategy_sl_cap_pips=40
+strategy_rr=2.0
+strategy_max_spread_pips=15

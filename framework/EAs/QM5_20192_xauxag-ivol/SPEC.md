@@ -5,7 +5,7 @@
 **Strategy ID:** `FUERTES-MOMIVOL-2015_XAU_XAG_S03`
 **Source:** `FUERTES-MOMIVOL-2015`
 **Author of this spec:** Codex
-**Last revised:** 2026-08-01
+**Last revised:** 2026-08-12
 
 ## 1. Strategy Logic
 
@@ -110,7 +110,9 @@ martingale, or pyramid.
 - **Entry:** monthly low/high IVol rank, equal-notional paired sizing, frozen
   hard stops, and atomic second-leg repair.
 - **Management:** month transition, 35-day stale close, composition/stop
-  validation, and orphan cleanup.
+  validation, and orphan cleanup. The broker position snapshot is refreshed
+  after each trade transaction and on restart, then its invariant is checked
+  in O(1) on every intervening tick.
 - **Close:** `QM_TM_ClosePosition` package exits plus broker hard stops.
 
 ## 9. Safety Boundary
@@ -124,3 +126,4 @@ external runtime data, banned indicator, or trained model is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-01 | Initial build from approved S03 card | Q01/Q02 handoff only |
+| v1.1 | 2026-08-12 | Q02 timeout recovery | Cached immutable leg magics, registered XAG framework ownership, and transaction-invalidated pair state; strategy mechanics unchanged |

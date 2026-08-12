@@ -5,15 +5,16 @@
 **Strategy ID:** `BIANCHI-MOMREV-2015_XAU_XAG_S03`
 **Source:** `BIANCHI-MOMREV-2015`
 **Author:** Codex
-**Last revised:** 2026-08-02
+**Last revised:** 2026-08-09
 
 ## 1. Strategy Logic
 
 The EA runs one XAU/XAG D1 logical basket from `XAUUSD.DWX`. At a genuine
 broker-month transition it reconstructs synchronized completed month-end
 closes for both metals and calculates each leg's 18-completed-month log
-return. It buys the long-horizon loser and shorts the winner. An exact rank
-tie remains flat.
+return. It buys the long-horizon loser and shorts the winner. A rank
+difference with absolute value at or below `1e-10` consumes the month and
+remains flat.
 
 This is the pure long-term reversal leg of the approved
 Bianchi-Drew-Fan lineage. It does not calculate or gate on the 12-month rank,
@@ -81,10 +82,12 @@ imported.
 
 Q02 uses one aggregate `RISK_FIXED=1000` package budget,
 `RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`. Each leg receives half the budget
-through independent `ATR(20) * 3.5` hard-stop sizing. Friday close and all news
-axes are OFF for the monthly native-price baseline. The framework kill switch,
-broker stops, close-before-renew, 35-day stale exit, position/deal history,
-persisted attempt marker, and orphan repair remain active.
+through independent `ATR(20) * 3.5` hard-stop sizing. Both leg requests,
+including their frozen stops and half-budget lots, must validate before the
+first order is sent; any second-leg or composition failure closes the package.
+Friday close and all news axes are OFF for the monthly native-price baseline.
+Both registered magics participate in the framework kill switch, MAE tracking,
+position/deal history, persisted attempt marker, and orphan repair.
 
 No live setfile, `T_Live`, AutoTrading, deploy manifest, portfolio-gate change,
 portfolio admission, or correlation waiver is authorized.
@@ -94,3 +97,4 @@ portfolio admission, or correlation waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-02 | initial approved pure 18-month reversal carrier | Q01/Q02 build only |
+| v1.1 | 2026-08-09 | approved-card conformance build | task `f505c697-5956-41ef-8341-e79c4af92ef4`; exact tie epsilon, pre-sized atomic legs, dual-magic registration |

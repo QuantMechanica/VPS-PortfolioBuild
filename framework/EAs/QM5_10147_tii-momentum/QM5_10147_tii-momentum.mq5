@@ -40,6 +40,8 @@ input double strategy_max_spread_atr_frac = 0.05;
 
 double g_tii_current = 0.0;
 double g_tii_previous = 0.0;
+double g_cached_atr = 0.0;
+bool   g_tii_state_ready = false;
 bool   g_tii_long_extreme_seen = false;
 bool   g_tii_short_extreme_seen = false;
 bool   g_tii_exit_requested = false;
@@ -67,31 +69,36 @@ bool Strategy_GetOurPosition(ENUM_POSITION_TYPE &position_type)
    return false;
   }
 
-bool Strategy_CalculateTII(const int shift, double &tii)
+bool Strategy_CalculateTIIFromWindow(const double &closes[],
+                                     const int start_index,
+                                     const int period,
+                                     double &tii)
   {
    tii = 0.0;
-   const int period = MathMax(2, strategy_tii_period);
-
-   double closes[];
-   ArraySetAsSeries(closes, true);
-   const int copied = CopyClose(_Symbol, _Period, shift, period, closes); // perf-allowed: custom TII, called only after skeleton QM_IsNewBar gate.
-   if(copied < period)
+   if(period < 2 || start_index < 0 ||
+      ArraySize(closes) < start_index + 2 * period - 1)
       return false;
+
+   // TII compares each close with the SMA ending on that same bar. Build the
+   // first SMA once, then roll it through the window instead of creating one
+   // framework indicator handle per historical bar.
+   double ma_sum = 0.0;
+   for(int i = 0; i < period; ++i)
+      ma_sum += closes[start_index + i];
 
    double positive = 0.0;
    double negative = 0.0;
    for(int i = 0; i < period; ++i)
      {
-      const int bar_shift = shift + i;
-      const double ma = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, period, bar_shift);
-      if(ma <= 0.0)
-         return false;
-
-      const double deviation = closes[i] - ma;
+      const double ma = ma_sum / (double)period;
+      const double deviation = closes[start_index + i] - ma;
       if(deviation > 0.0)
          positive += deviation;
       else
          negative += -deviation;
+
+      if(i + 1 < period)
+         ma_sum += closes[start_index + i + period] - closes[start_index + i];
      }
 
    const double total = positive + negative;
@@ -99,6 +106,38 @@ bool Strategy_CalculateTII(const int shift, double &tii)
       return false;
 
    tii = 100.0 * positive / total;
+   return true;
+  }
+
+bool Strategy_AdvanceStateOnNewBar()
+  {
+   g_tii_state_ready = false;
+   g_cached_atr = 0.0;
+
+   const int period = MathMax(2, strategy_tii_period);
+   const int close_count = 2 * period;
+   double closes[];
+   ArraySetAsSeries(closes, true);
+   const int copied = CopyClose(_Symbol, _Period, 1, close_count, closes); // perf-allowed: one custom-TII cache fill per completed D1 bar.
+   if(copied < close_count)
+      return false;
+
+   if(!Strategy_CalculateTIIFromWindow(closes, 0, period, g_tii_current) ||
+      !Strategy_CalculateTIIFromWindow(closes, 1, period, g_tii_previous))
+      return false;
+
+   // Cache the spread normalizer once per completed bar. The former per-tick
+   // QM_ATR call was another avoidable indicator-handle hot path in Q02.
+   g_cached_atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period,
+                         strategy_atr_period, 1);
+   g_tii_state_ready = true;
+
+   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
+   if(Strategy_GetOurPosition(position_type))
+      Strategy_UpdateExitState(position_type);
+   else
+      Strategy_ResetExitState();
+
    return true;
   }
 
@@ -153,11 +192,10 @@ bool Strategy_NoTradeFilter()
 
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   if(bid <= 0.0 || ask <= 0.0 || ask < bid || atr <= 0.0)
+   if(bid <= 0.0 || ask <= 0.0 || ask < bid || g_cached_atr <= 0.0)
       return false;
 
-   return ((ask - bid) > atr * strategy_max_spread_atr_frac);
+   return ((ask - bid) > g_cached_atr * strategy_max_spread_atr_frac);
   }
 
 // Trade Entry.
@@ -178,17 +216,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_tii_centerline >= strategy_tii_upper)
       return false;
 
-   if(!Strategy_CalculateTII(1, g_tii_current))
-      return false;
-   if(!Strategy_CalculateTII(2, g_tii_previous))
+   if(!g_tii_state_ready)
       return false;
 
    ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
    if(Strategy_GetOurPosition(position_type))
-     {
-      Strategy_UpdateExitState(position_type);
       return false;
-     }
 
    Strategy_ResetExitState();
 
@@ -288,28 +321,30 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: no guard may skip floating-P&L sampling.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
+
+   // QM_IsNewBar is single-consume. Latch it once so TII/ATR state is derived
+   // once per completed D1 bar and reused by exit and entry paths.
+   const bool qm_new_bar = QM_IsNewBar();
+   if(qm_new_bar)
+      Strategy_AdvanceStateOnNewBar();
 
    if(Strategy_NoTradeFilter())
       return;
 
    Strategy_ManageOpenPosition();
 
+   bool exit_fired_this_tick = false;
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -320,16 +355,28 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         if(QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY))
+            exit_fired_this_tick = true;
         }
      }
 
-   if(!QM_IsNewBar())
+   // News blackouts gate new entries only; management and source exits above
+   // remain active during blackout windows.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!qm_new_bar || exit_fired_this_tick)
       return;
 
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

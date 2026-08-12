@@ -149,17 +149,28 @@ def test_qm5_12507_manifest_declares_all_warmed_pair_symbols() -> None:
     assert _mq5_allowed_symbols(ea_dir) <= declared
 
 
-def test_qm5_1257_manifest_declares_audusd_usdjpy_logical_pair() -> None:
+def test_qm5_1257_manifest_declares_gbpusd_usdjpy_logical_pair() -> None:
     ea_dir = REPO / "framework" / "EAs" / "QM5_1257_lemishko-fx-cointpair"
     manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
 
     declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
 
-    assert manifest["logical_symbol"] == "QM5_1257_AUDUSD_USDJPY_COINTEGRATION_H1"
+    assert manifest["logical_symbol"] == "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1"
     assert manifest["host_timeframe"] == "H1"
     assert manifest["tester_currency"] == "USD"
-    assert declared == {"AUDUSD.DWX", "USDJPY.DWX"}
+    assert declared == {"GBPUSD.DWX", "USDJPY.DWX"}
     assert _mq5_allowed_symbols(ea_dir) <= declared
+
+    retired = json.loads(
+        (ea_dir / "docs" / "basket_manifest_slot12_q02_snapshot.json").read_text(
+            encoding="utf-8-sig"
+        )
+    )
+    assert retired["logical_symbol"] == "QM5_1257_AUDUSD_USDJPY_COINTEGRATION_H1"
+    assert {retired["host_symbol"], *retired["basket_symbols"]} == {
+        "AUDUSD.DWX",
+        "USDJPY.DWX",
+    }
 
 
 def test_qm5_9184_manifest_has_logical_audusd_nzdusd_setfile() -> None:
@@ -791,6 +802,386 @@ def test_qm5_20211_manifest_conversion_history_and_fixed_risk_setfile() -> None:
         in source
     )
     assert "if(gbpjpy_lots <= 0.0 || euraud_lots <= 0.0)" in source
+    assert "g_companion_entry_ready &&" in source
+    assert "if(!companion_opened)" in source
+
+
+def test_qm5_20212_manifest_conversion_history_and_fixed_risk_setfile() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_20212_gbpusd-eurjpy"
+    source = (ea_dir / "QM5_20212_gbpusd-eurjpy.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    logical = manifest["logical_symbol"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_D1_backtest.set"
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+    source_symbols = set(re.findall(r'"([A-Z]{6}\.DWX)"', source))
+
+    assert logical == "QM5_20212_GBPUSD_EURJPY_COINTEGRATION_D1"
+    assert manifest["host_symbol"] == "GBPUSD.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["tester_currency"] == "USD"
+    assert manifest["tester_deposit"] == 100000
+    assert manifest["traded_symbols"] == ["GBPUSD.DWX", "EURJPY.DWX"]
+    assert declared == {
+        "GBPUSD.DWX",
+        "EURJPY.DWX",
+        "EURUSD.DWX",
+        "USDJPY.DWX",
+    }
+    assert source_symbols == declared
+    assert logical_setfile.exists()
+    assert "; host_symbol:  GBPUSD.DWX" in set_text
+    assert "RISK_FIXED=1000" in set_text
+    assert "RISK_PERCENT=0" in set_text
+    assert "strategy_beta=-0.080732288" in set_text
+    assert "const int history_count = lookback + 1;" in source
+    assert source.count("PERIOD_D1, 1, history_count") == 4
+    assert source.count("for(int i = 1; i < history_count; ++i)") == 2
+    assert (
+        'string allowed[4] = {"GBPUSD.DWX", "EURJPY.DWX", '
+        '"EURUSD.DWX", "USDJPY.DWX"};'
+        in source
+    )
+    assert "if(gbpusd_lots <= 0.0 || eurjpy_lots <= 0.0)" in source
+    assert "g_companion_entry_ready &&" in source
+    assert "if(!companion_opened)" in source
+
+
+def test_qm5_20216_manifest_conversion_history_and_fixed_risk_setfile() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_20216_audusd-euraud"
+    source = (ea_dir / "QM5_20216_audusd-euraud.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    logical = manifest["logical_symbol"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_D1_backtest.set"
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+    source_symbols = set(re.findall(r'"([A-Z]{6}\.DWX)"', source))
+
+    assert logical == "QM5_20216_AUDUSD_EURAUD_COINTEGRATION_D1"
+    assert manifest["host_symbol"] == "AUDUSD.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["tester_currency"] == "USD"
+    assert manifest["tester_deposit"] == 100000
+    assert manifest["traded_symbols"] == ["AUDUSD.DWX", "EURAUD.DWX"]
+    assert declared == {
+        "AUDUSD.DWX",
+        "EURAUD.DWX",
+        "EURUSD.DWX",
+    }
+    assert source_symbols == declared
+    assert logical_setfile.exists()
+    assert "; host_symbol:  AUDUSD.DWX" in set_text
+    assert "qm_ea_id=20216" in set_text
+    assert "RISK_FIXED=1000" in set_text
+    assert "RISK_PERCENT=0" in set_text
+    assert "strategy_beta=-0.655175398" in set_text
+    assert "const int history_count = lookback + 1;" in source
+    assert source.count("PERIOD_D1, 1, history_count") == 4
+    assert source.count("for(int i = 1; i < history_count; ++i)") == 2
+    assert (
+        'string allowed[3] = {"AUDUSD.DWX", "EURAUD.DWX", "EURUSD.DWX"};'
+        in source
+    )
+    assert "if(audusd_lots <= 0.0 || euraud_lots <= 0.0)" in source
+    assert "g_companion_entry_ready &&" in source
+    assert "if(!companion_opened)" in source
+
+
+def test_qm5_20219_manifest_and_fixed_risk_setfile() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_20219_usdjpy-nzdusd"
+    source = (ea_dir / "QM5_20219_usdjpy-nzdusd.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    logical = manifest["logical_symbol"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_D1_backtest.set"
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+    source_symbols = set(re.findall(r'"([A-Z]{6}\.DWX)"', source))
+
+    assert logical == "QM5_20219_USDJPY_NZDUSD_COINTEGRATION_D1"
+    assert manifest["host_symbol"] == "USDJPY.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["tester_currency"] == "USD"
+    assert manifest["tester_deposit"] == 100000
+    assert manifest["traded_symbols"] == ["USDJPY.DWX", "NZDUSD.DWX"]
+    assert declared == {"USDJPY.DWX", "NZDUSD.DWX"}
+    assert source_symbols == declared
+    assert logical_setfile.exists()
+    assert "; host_symbol:  USDJPY.DWX" in set_text
+    assert "qm_ea_id=20219" in set_text
+    assert "RISK_FIXED=1000" in set_text
+    assert "RISK_PERCENT=0" in set_text
+    assert "PORTFOLIO_WEIGHT=1" in set_text
+    assert "strategy_beta=-0.782302979" in set_text
+    assert "const int history_count = lookback + 1;" in source
+    assert source.count("PERIOD_D1, 1, history_count") == 4
+    assert source.count("for(int i = 1; i < history_count; ++i)") == 2
+    assert 'string allowed[2] = {"USDJPY.DWX", "NZDUSD.DWX"};' in source
+    assert "if(usdjpy_lots <= 0.0 || nzdusd_lots <= 0.0)" in source
+    assert "g_companion_entry_ready &&" in source
+    assert "if(!companion_opened)" in source
+
+
+def test_qm5_20220_manifest_conversion_history_and_fixed_risk_setfile() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_20220_usdcad-audjpy"
+    source = (ea_dir / "QM5_20220_usdcad-audjpy.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    logical = manifest["logical_symbol"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_D1_backtest.set"
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+    source_symbols = set(re.findall(r'"([A-Z]{6}\.DWX)"', source))
+
+    assert logical == "QM5_20220_USDCAD_AUDJPY_COINTEGRATION_D1"
+    assert manifest["host_symbol"] == "USDCAD.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["tester_currency"] == "USD"
+    assert manifest["tester_deposit"] == 100000
+    assert manifest["traded_symbols"] == ["USDCAD.DWX", "AUDJPY.DWX"]
+    assert declared == {
+        "USDCAD.DWX",
+        "AUDJPY.DWX",
+        "AUDUSD.DWX",
+        "USDJPY.DWX",
+    }
+    assert source_symbols == declared
+    assert logical_setfile.exists()
+    assert "; host_symbol:  USDCAD.DWX" in set_text
+    assert "qm_ea_id=20220" in set_text
+    assert "RISK_FIXED=1000" in set_text
+    assert "RISK_PERCENT=0" in set_text
+    assert "PORTFOLIO_WEIGHT=1" in set_text
+    assert "strategy_beta=-0.186232670" in set_text
+    assert "const int history_count = lookback + 1;" in source
+    assert source.count("PERIOD_D1, 1, history_count") == 4
+    assert source.count("for(int i = 1; i < history_count; ++i)") == 2
+    assert (
+        'string allowed[4] = {"USDCAD.DWX", "AUDJPY.DWX", '
+        '"AUDUSD.DWX", "USDJPY.DWX"};'
+        in source
+    )
+    assert "if(usdcad_lots <= 0.0 || audjpy_lots <= 0.0)" in source
+    assert "g_companion_entry_ready &&" in source
+    assert "if(!companion_opened)" in source
+
+
+def test_qm5_20223_manifest_and_fixed_risk_setfile() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_20223_gbpusd-eurgbp"
+    source = (ea_dir / "QM5_20223_gbpusd-eurgbp.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    logical = manifest["logical_symbol"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_D1_backtest.set"
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+    source_symbols = set(re.findall(r'"([A-Z]{6}\.DWX)"', source))
+
+    assert logical == "QM5_20223_GBPUSD_EURGBP_COINTEGRATION_D1"
+    assert manifest["host_symbol"] == "GBPUSD.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["tester_currency"] == "USD"
+    assert manifest["tester_deposit"] == 100000
+    assert manifest["traded_symbols"] == ["GBPUSD.DWX", "EURGBP.DWX"]
+    assert declared == {"GBPUSD.DWX", "EURGBP.DWX"}
+    assert source_symbols == declared
+    assert logical_setfile.exists()
+    assert "; host_symbol:  GBPUSD.DWX" in set_text
+    assert "qm_ea_id=20223" in set_text
+    assert "RISK_FIXED=1000" in set_text
+    assert "RISK_PERCENT=0" in set_text
+    assert "PORTFOLIO_WEIGHT=1" in set_text
+    assert "strategy_beta=-0.399228065" in set_text
+    assert "const int history_count = lookback + 1;" in source
+    assert source.count("PERIOD_D1, 1, history_count") == 4
+    assert source.count("for(int i = 1; i < history_count; ++i)") == 2
+    assert 'string allowed[2] = {"GBPUSD.DWX", "EURGBP.DWX"};' in source
+    assert "if(gbpusd_lots <= 0.0 || eurgbp_lots <= 0.0)" in source
+    assert "g_companion_entry_ready &&" in source
+    assert "if(!companion_opened)" in source
+
+
+def test_qm5_20246_manifest_conversion_history_and_fixed_risk_setfile() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_20246_usdjpy-eurgbp"
+    source = (ea_dir / "QM5_20246_usdjpy-eurgbp.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    logical = manifest["logical_symbol"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_D1_backtest.set"
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+    source_symbols = set(re.findall(r'"([A-Z]{6}\.DWX)"', source))
+
+    assert logical == "QM5_20246_USDJPY_EURGBP_COINTEGRATION_D1"
+    assert manifest["host_symbol"] == "USDJPY.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["tester_currency"] == "USD"
+    assert manifest["tester_deposit"] == 100000
+    assert manifest["traded_symbols"] == ["USDJPY.DWX", "EURGBP.DWX"]
+    assert declared == {
+        "USDJPY.DWX",
+        "EURGBP.DWX",
+        "GBPUSD.DWX",
+        "EURUSD.DWX",
+    }
+    assert source_symbols == declared
+    assert logical_setfile.exists()
+    assert "; host_symbol:  USDJPY.DWX" in set_text
+    assert "qm_ea_id=20246" in set_text
+    assert "RISK_FIXED=1000" in set_text
+    assert "RISK_PERCENT=0" in set_text
+    assert "PORTFOLIO_WEIGHT=1" in set_text
+    assert "strategy_beta=-1.281773609960" in set_text
+    assert "const int history_count = lookback + 1;" in source
+    assert source.count("PERIOD_D1, 1, history_count") == 4
+    assert source.count("for(int i = 1; i < history_count; ++i)") == 2
+    assert (
+        'string allowed[4] = {"USDJPY.DWX", "EURGBP.DWX", '
+        '"GBPUSD.DWX", "EURUSD.DWX"};'
+        in source
+    )
+    assert "if(usdjpy_lots <= 0.0 || eurgbp_lots <= 0.0)" in source
+    assert "g_companion_entry_ready &&" in source
+    assert "if(!companion_opened)" in source
+
+
+def test_qm5_20250_manifest_conversion_history_and_fixed_risk_setfile() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_20250_usdchf-audjpy"
+    source = (ea_dir / "QM5_20250_usdchf-audjpy.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    logical = manifest["logical_symbol"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_D1_backtest.set"
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+    source_symbols = set(re.findall(r'"([A-Z]{6}\.DWX)"', source))
+
+    assert logical == "QM5_20250_USDCHF_AUDJPY_COINTEGRATION_D1"
+    assert manifest["host_symbol"] == "USDCHF.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["tester_currency"] == "USD"
+    assert manifest["tester_deposit"] == 100000
+    assert manifest["traded_symbols"] == ["USDCHF.DWX", "AUDJPY.DWX"]
+    assert declared == {
+        "USDCHF.DWX",
+        "AUDJPY.DWX",
+        "AUDUSD.DWX",
+        "USDJPY.DWX",
+    }
+    assert source_symbols == declared
+    assert logical_setfile.exists()
+    assert "; host_symbol:  USDCHF.DWX" in set_text
+    assert "qm_ea_id=20250" in set_text
+    assert "RISK_FIXED=1000" in set_text
+    assert "RISK_PERCENT=0" in set_text
+    assert "PORTFOLIO_WEIGHT=1" in set_text
+    assert "strategy_beta=-0.027722525061" in set_text
+    assert "const int history_count = lookback + 1;" in source
+    assert source.count("PERIOD_D1, 1, history_count") == 4
+    assert source.count("for(int i = 1; i < history_count; ++i)") == 2
+    assert (
+        'string allowed[4] = {"USDCHF.DWX", "AUDJPY.DWX", '
+        '"AUDUSD.DWX", "USDJPY.DWX"};'
+        in source
+    )
+    assert "if(usdchf_lots <= 0.0 || audjpy_lots <= 0.0)" in source
+    assert "g_companion_entry_ready &&" in source
+    assert "if(!companion_opened)" in source
+
+
+def test_qm5_20252_manifest_conversion_history_and_fixed_risk_setfile() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_20252_usdchf-euraud"
+    source = (ea_dir / "QM5_20252_usdchf-euraud.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    logical = manifest["logical_symbol"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_D1_backtest.set"
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+    source_symbols = set(re.findall(r'"([A-Z]{6}\.DWX)"', source))
+
+    assert logical == "QM5_20252_USDCHF_EURAUD_COINTEGRATION_D1"
+    assert manifest["host_symbol"] == "USDCHF.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["tester_currency"] == "USD"
+    assert manifest["tester_deposit"] == 100000
+    assert manifest["traded_symbols"] == ["USDCHF.DWX", "EURAUD.DWX"]
+    assert declared == {
+        "USDCHF.DWX",
+        "EURAUD.DWX",
+        "AUDUSD.DWX",
+    }
+    assert source_symbols == declared
+    assert logical_setfile.exists()
+    assert "; host_symbol:  USDCHF.DWX" in set_text
+    assert "qm_ea_id=20252" in set_text
+    assert "RISK_FIXED=1000" in set_text
+    assert "RISK_PERCENT=0" in set_text
+    assert "PORTFOLIO_WEIGHT=1" in set_text
+    assert "strategy_beta=-0.013891609131" in set_text
+    assert "const int history_count = lookback + 1;" in source
+    assert source.count("PERIOD_D1, 1, history_count") == 4
+    assert source.count("for(int i = 1; i < history_count; ++i)") == 2
+    assert (
+        'string allowed[3] = {"USDCHF.DWX", "EURAUD.DWX", '
+        '"AUDUSD.DWX"};'
+        in source
+    )
+    assert "if(usdchf_lots <= 0.0 || euraud_lots <= 0.0)" in source
+    assert "g_companion_entry_ready &&" in source
+    assert "if(!companion_opened)" in source
+
+
+def test_qm5_20255_manifest_conversion_history_and_fixed_risk_setfile() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_20255_usdchf-eurjpy"
+    source = (ea_dir / "QM5_20255_usdchf-eurjpy.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    logical = manifest["logical_symbol"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_D1_backtest.set"
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+    source_symbols = set(re.findall(r'"([A-Z]{6}\.DWX)"', source))
+
+    assert logical == "QM5_20255_USDCHF_EURJPY_COINTEGRATION_D1"
+    assert manifest["host_symbol"] == "USDCHF.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["tester_currency"] == "USD"
+    assert manifest["tester_deposit"] == 100000
+    assert manifest["traded_symbols"] == ["USDCHF.DWX", "EURJPY.DWX"]
+    assert declared == {
+        "USDCHF.DWX",
+        "EURJPY.DWX",
+        "USDJPY.DWX",
+    }
+    assert source_symbols == declared
+    assert logical_setfile.exists()
+    assert "; host_symbol:  USDCHF.DWX" in set_text
+    assert "qm_ea_id=20255" in set_text
+    assert "RISK_FIXED=1000" in set_text
+    assert "RISK_PERCENT=0" in set_text
+    assert "PORTFOLIO_WEIGHT=1" in set_text
+    assert "strategy_beta=-0.075286902527" in set_text
+    assert "const int history_count = lookback + 1;" in source
+    assert source.count("PERIOD_D1, 1, history_count") == 4
+    assert source.count("for(int i = 1; i < history_count; ++i)") == 2
+    assert (
+        'string allowed[3] = {"USDCHF.DWX", "EURJPY.DWX", '
+        '"USDJPY.DWX"};'
+        in source
+    )
+    assert "if(usdchf_lots <= 0.0 || eurjpy_lots <= 0.0)" in source
     assert "g_companion_entry_ready &&" in source
     assert "if(!companion_opened)" in source
 

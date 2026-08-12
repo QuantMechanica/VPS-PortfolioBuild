@@ -1,8 +1,13 @@
-# QM5_10025 rw-fx-broad-pairs
+# QM5_10025 rw-fx-broad-pairs - Strategy Spec
 
-## Strategy Logic
+**EA ID:** QM5_10025
+**Slug:** `rw-fx-broad-pairs`
+**Source:** `dcbac84f-6ecf-5d21-9630-50faa69306ec`
+**Last revised:** 2026-08-07
 
-Robot Wealth FX Broad Pairs Trading is a broad FX mean-reversion pairs strategy. Each H4 chart symbol is treated as the host leg. At monthly rebalance, the EA compares the host symbol against the approved FX universe, estimates a rolling OLS hedge ratio over 252 H4 bars, and keeps the highest-correlation partner that passes the mechanical filters.
+## 1. Strategy Logic
+
+Robot Wealth FX Broad Pairs Trading is a broad FX mean-reversion pairs strategy. Each H4 chart symbol is treated as the host leg. At monthly rebalance, the EA compares the host symbol against the approved FX universe, estimates an OLS hedge ratio over 252 H4 bars, freezes that ratio for the month, and keeps the highest-correlation partner that passes the mechanical filters.
 
 Entry uses the spread:
 
@@ -10,9 +15,9 @@ Entry uses the spread:
 
 The EA computes a z-score over 120 closed H4 bars. If z-score is above `+2.0`, it shorts the spread by selling the host leg and buying the beta-weighted partner leg. If z-score is below `-2.0`, it buys the spread by buying the host leg and selling the beta-weighted partner leg. It opens one spread at a time for the selected host/partner pair.
 
-Exit occurs when absolute z-score reaches the configured exit band, when the spread reaches the hard stop band, or when the 15-bar time stop has elapsed without at least 25 percent z-score improvement. The framework Friday close can also close positions.
+Exit occurs when the signed z-score crosses the configured mean-reversion exit band, when the spread reaches the hard stop band, when pair correlation falls below `0.50`, or when the 15-bar time stop has elapsed without at least 25 percent z-score improvement. A correlation exit disables that pair until the next monthly selection. The framework Friday close can also close positions.
 
-## Parameters
+## 2. Parameters
 
 | Input | Default | Range | Meaning |
 |---|---:|---|---|
@@ -42,7 +47,7 @@ Exit occurs when absolute z-score reaches the configured exit band, when the spr
 | `strategy_min_improve_frac` | `0.25` | `0.0..1.0` | Required z-score improvement by time stop. |
 | `strategy_max_spread_points` | `50` | positive int | Maximum broker spread in points for each basket symbol. |
 
-## Symbol Universe
+## 3. Symbol Universe
 
 The approved P2 basket is:
 
@@ -50,24 +55,32 @@ The approved P2 basket is:
 
 The EA explicitly does not trade non-card symbols. Other DWX FX crosses, indices, metals, and energy symbols are outside this card's R3 basket.
 
-## Timeframe
+## 4. Timeframe
 
 Base timeframe is H4. All formation, z-score, ATR stop, monthly rebalance, entry, and exit logic uses closed H4 bars. The smoke and P2 setfiles are generated on H4.
 
-## Expected Behaviour
+## 5. Expected Behaviour
 
-Expected trade frequency from the card is about 45 trades per year per pair-symbol. Typical holds are mean-reversion holds up to 15 H4 bars unless the z-score exits sooner. The strategy prefers correlated, stationary FX pair regimes and is expected to degrade when correlation falls below 0.50.
+Expected trade frequency from the approved card is about 6 completed round trips per year per host symbol. Typical holds are mean-reversion holds up to 15 H4 bars unless the z-score exits sooner. The strategy prefers correlated, stationary FX pair regimes and is expected to degrade when correlation falls below 0.50.
 
-## Source Citation
+All multi-symbol history reads, spread checks, partner selection, and package-news checks are H4-bar gated. News checks cover only the selected host/partner package, not every member of the formation universe on every tick. This keeps the structural monthly/H4 logic unchanged while preventing pathological real-tick tester runtime.
+
+## 6. Source Citation
 
 Source ID: `dcbac84f-6ecf-5d21-9630-50faa69306ec`
 
 Citation: Robot Wealth, "Index of Strategies", FX Broad Pairs Trading section, https://robotwealth.com/index-of-strategies/
 
-## Risk Model
+## 7. Risk Model
 
-Backtests use fixed risk with `RISK_FIXED = 1000.0` and `RISK_PERCENT = 0.0` per HR4. Live promotion uses percent risk via deploy manifest with `RISK_PERCENT = 0.5` and `RISK_FIXED = 0.0`. Position sizing is delegated to the V5 framework risk helpers.
+Backtests use fixed package risk with `RISK_FIXED = 1000.0` and `RISK_PERCENT = 0.0` per H4 host. The package risk is split between host and partner in proportion to the absolute OLS weights. Live promotion uses percent risk via deploy manifest with `RISK_PERCENT = 0.5` and `RISK_FIXED = 0.0`. Position sizing is delegated to the V5 framework risk helpers.
 
 ## Implementation Notes
 
-The Strategy Card requires true two-leg spread execution. The EA uses the local V5 basket order helper for the partner leg while retaining the five strategy hooks and framework guards. The card calls for ADF p-value `< 0.10`; the EA implements a deterministic ADF-style t-statistic proxy because there is no framework ADF helper.
+The Strategy Card requires true two-leg spread execution. The foreign partner opens first through the local V5 basket order helper; the host leg then opens through `QM_TM_OpenPosition`, with immediate partner rollback if the host is rejected. The seven-symbol dependency set is declared in `basket_manifest.json`, registered through `QM_SymbolGuardInit`, and warmed once at initialization. The card calls for ADF p-value `< 0.10`; the EA implements a deterministic ADF-style t-statistic proxy because there is no framework ADF helper. The selected OLS beta remains fixed between monthly selection events; only correlation and the selected spread z-score advance on each closed H4 bar.
+
+## Revision History
+
+| Version | Date | Change | Build task |
+|---|---|---|---|
+| v5.0-r3 | 2026-08-07 | Freeze monthly beta and restore signed mean-cross/correlation exits during stale-review rebuild. | `71d862ed-21b8-4337-8986-c1366dd692dc` |

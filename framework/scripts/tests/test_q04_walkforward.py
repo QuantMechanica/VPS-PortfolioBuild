@@ -201,6 +201,62 @@ class Q04WalkForwardTests(unittest.TestCase):
 
         self.assertIsNone(reason)
 
+    def test_min_trades_summary_ignores_recovered_cold_cache_attempt(self) -> None:
+        mod = _load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            summary = Path(tmp) / "summary.json"
+            summary.write_text(
+                """
+                {
+                  "result": "FAIL",
+                  "reason_classes": ["MIN_TRADES_NOT_MET"],
+                  "runs": [
+                    {
+                      "status": "INVALID",
+                      "failure": "BARS_ZERO",
+                      "invalid_report_reasons": ["BARS_ZERO"],
+                      "total_trades": 0
+                    },
+                    {
+                      "status": "OK",
+                      "total_trades": 2,
+                      "profit_factor": 0.46,
+                      "net_profit": -101.36
+                    }
+                  ]
+                }
+                """,
+                encoding="utf-8",
+            )
+
+            reason = mod.summary_invalid_reason(summary)
+
+        self.assertIsNone(reason)
+
+    def test_completed_report_keeps_top_level_oninit_failure_invalid(self) -> None:
+        mod = _load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            summary = Path(tmp) / "summary.json"
+            summary.write_text(
+                """
+                {
+                  "result": "FAIL",
+                  "reason_classes": ["ONINIT_FAILED"],
+                  "runs": [{
+                    "status": "OK",
+                    "oninit_failure": true,
+                    "total_trades": 0
+                  }]
+                }
+                """,
+                encoding="utf-8",
+            )
+
+            reason = mod.summary_invalid_reason(summary)
+
+        self.assertIsNotNone(reason)
+        self.assertIn("ONINIT_FAILED", reason)
+
     def test_run_fold_allows_worker_owned_terminal_and_logs_summary(self) -> None:
         mod = _load_module()
         with tempfile.TemporaryDirectory() as tmp:

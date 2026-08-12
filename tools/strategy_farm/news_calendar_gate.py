@@ -27,10 +27,11 @@ import json
 import os
 import re
 import threading
+import time
 import uuid
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Callable, Iterable, Mapping, Sequence
 
 try:
     from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
@@ -1287,7 +1288,23 @@ def _install_immutable_bundle(
         raise
 
 
-def _replace_active_file(root: Path, name: str, raw: bytes) -> bool:
+# A running MT5 tester can hold an active calendar CSV open; os.replace then
+# raises a sharing violation and the 03:30Z publication dies fail-closed,
+# leaving the fleet deferring on a stale-Common mismatch until manual repair
+# (2026-08-11: WinError 5 on forex_factory_calendar_clean.csv, throughput
+# 37/h -> 1/h). Those very deferrals drain the testers, so a bounded retry
+# almost always lands in a released-handle window.
+ACTIVE_REPLACE_RETRY_ATTEMPTS = 18
+ACTIVE_REPLACE_RETRY_DELAY_SECONDS = 50.0
+
+
+def _replace_active_file(
+    root: Path,
+    name: str,
+    raw: bytes,
+    *,
+    sleeper: Callable[[float], None] = time.sleep,
+) -> bool:
     root = _canonical_target(root, label="active publication root")
     root.mkdir(parents=True, exist_ok=True)
     destination = root / name
@@ -1301,7 +1318,14 @@ def _replace_active_file(root: Path, name: str, raw: bytes) -> bool:
         _write_fsynced(temp, raw)
         if _sha256_file(temp) != _sha256_bytes(raw):
             raise NewsCalendarError(f"temporary publication hash mismatch: {temp}")
-        os.replace(temp, destination)
+        for attempt in range(ACTIVE_REPLACE_RETRY_ATTEMPTS):
+            try:
+                os.replace(temp, destination)
+                break
+            except PermissionError:
+                if attempt + 1 >= ACTIVE_REPLACE_RETRY_ATTEMPTS:
+                    raise
+                sleeper(ACTIVE_REPLACE_RETRY_DELAY_SECONDS)
         _fsync_directory(root)
     finally:
         temp.unlink(missing_ok=True)

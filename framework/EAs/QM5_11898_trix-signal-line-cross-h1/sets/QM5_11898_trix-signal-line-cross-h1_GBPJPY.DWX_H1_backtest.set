@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11898
+; ea_slug:      trix-signal-line-cross-h1
+; ea_version:   v5.0
+; set_version:  s20260810-001
+; symbol:       GBPJPY.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   8
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   acde10e11e2fd827c7687a686db82248745d01c369eb5a13bccf556d71114c7e
+; author:       Development
+; date:         2026-08-10
+;==========================================================
+qm_ea_id=11898
+qm_magic_slot_offset=8
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11898_trix-signal-line-cross-h1.md
+strategy_timeframe=H1
+strategy_trix_ema_period=14
+strategy_trix_signal_period=9
+strategy_zero_line_filter=true
+strategy_atr_period_for_stop=14
+strategy_atr_stop_mult=2.0
+strategy_target_rr=2.0

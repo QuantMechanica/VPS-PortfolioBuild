@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from tools.strategy_farm import mt5_history_isolation as isolation
+from tools.strategy_farm import custom_history_contract as history_contract
 
 
 def _row(terminal: str, component: str, identity: str, *, exists: bool = True):
@@ -217,3 +218,410 @@ def test_filesystem_boundary_resolves_protected_roots(tmp_path: Path) -> None:
     identities = isolation.resolve_protected_root_identities([protected])
 
     assert identities == (isolation._identity(protected).casefold(),)
+
+
+def _variant_a_fixture(tmp_path: Path) -> tuple[Path, Path]:
+    archive_source = tmp_path / "archive-source"
+    source_files = {
+        "history/EURUSD.DWX/2025.hcc": b"archive-bars",
+        "ticks/EURUSD.DWX/202501.tkc": b"archive-ticks",
+        "history/EURUSD.DWX/2026.hcc": b"private-bars",
+        "state.dat": b"private-state",
+    }
+    for relative, body in source_files.items():
+        path = archive_source.joinpath(*relative.split("/"))
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(body)
+    manifest = history_contract.build_archive_manifest(
+        archive_source,
+        runner_identity="TEST\\Runner",
+        created_at_utc="2026-08-07T00:00:00+00:00",
+    )
+    manifest_path = tmp_path / "manifest.json"
+    history_contract.write_json_atomic(manifest_path, manifest)
+    archive_paths = {row["relative_path"] for row in manifest["files"]}
+    mt5_root = tmp_path / "mt5"
+    for terminal in history_contract.DEFAULT_RUNNER_TERMINALS:
+        custom = mt5_root / terminal / "Bases" / "Custom"
+        (mt5_root / terminal / "Tester").mkdir(parents=True)
+        for relative in source_files:
+            source = archive_source.joinpath(*relative.split("/"))
+            target = custom.joinpath(*relative.split("/"))
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if relative in archive_paths:
+                os.link(source, target)
+            else:
+                target.write_bytes(source.read_bytes())
+    return mt5_root, manifest_path
+
+
+def test_variant_a_file_ids_and_manifest_equality_pass(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        acl_probe=lambda path, identity: {"write_denied": True},
+    )
+
+    assert payload["status"] == "PASS_ISOLATED", payload
+    assert payload["variant_a_file_audit"]["status"] == "PASS_ISOLATED"
+    assert len(payload["variant_a_file_audit"]["terminal_summaries"]) == 10
+
+
+def test_variant_a_mixed_family_and_private_archives_pass_without_acl_deny(
+    tmp_path: Path,
+) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    for row in manifest["files"]:
+        target = mt5_root / "T1" / "Bases" / "Custom" / Path(row["relative_path"])
+        body = target.read_bytes()
+        target.unlink()
+        target.write_bytes(body)
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        verify_archive_hashes=False,
+        acl_probe=lambda path, identity: {"write_denied": False},
+    )
+
+    assert payload["status"] == "PASS_ISOLATED", payload
+    audit = payload["variant_a_file_audit"]
+    assert audit["terminal_private_hash_verification"] == "FULL"
+    t1 = next(row for row in audit["terminal_summaries"] if row["terminal"] == "T1")
+    assert t1["private_archive_files"] == len(manifest["files"])
+    assert not {
+        finding["code"] for finding in audit["findings"]
+    } & {"ARCHIVE_LINK_COUNT_TOO_LOW", "ARCHIVE_RUNNER_WRITE_NOT_DENIED"}
+
+
+def test_variant_a_fast_gate_hashes_and_rejects_corrupt_private_archive(
+    tmp_path: Path,
+) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    row = manifest["files"][0]
+    target = mt5_root / "T1" / "Bases" / "Custom" / Path(row["relative_path"])
+    target.unlink()
+    target.write_bytes(b"x" * int(row["size"]))
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        verify_archive_hashes=False,
+    )
+
+    assert payload["status"] == "FAIL_CLOSED"
+    codes = {row["code"] for row in payload["variant_a_file_audit"]["findings"]}
+    assert "ARCHIVE_MANIFEST_MISMATCH" in codes
+
+
+def test_variant_a_private_archive_inode_must_be_terminal_unique(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    row = manifest["files"][0]
+    t1 = mt5_root / "T1" / "Bases" / "Custom" / Path(row["relative_path"])
+    body = t1.read_bytes()
+    t1.unlink()
+    t1.write_bytes(body)
+    t2 = mt5_root / "T2" / "Bases" / "Custom" / Path(row["relative_path"])
+    t2.unlink()
+    os.link(t1, t2)
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        verify_archive_hashes=False,
+    )
+
+    assert payload["status"] == "FAIL_CLOSED"
+    codes = {row["code"] for row in payload["variant_a_file_audit"]["findings"]}
+    assert "PRIVATE_ARCHIVE_FILE_ID_SHARED" in codes
+    assert "PRIVATE_ARCHIVE_LINK_COUNT_INVALID" in codes
+
+
+def test_variant_a_shared_mutable_file_id_fails_closed(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    t1 = mt5_root / "T1" / "Bases" / "Custom" / "history" / "EURUSD.DWX" / "2026.hcc"
+    t2 = mt5_root / "T2" / "Bases" / "Custom" / "history" / "EURUSD.DWX" / "2026.hcc"
+    t2.unlink()
+    os.link(t1, t2)
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        acl_probe=lambda path, identity: {"write_denied": True},
+    )
+
+    assert payload["status"] == "FAIL_CLOSED"
+    codes = {row["code"] for row in payload["variant_a_file_audit"]["findings"]}
+    assert "CROSS_TERMINAL_MUTABLE_FILE_ID" in codes
+
+
+def test_variant_a_full_audit_rejects_incomplete_mutable_set(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    missing = mt5_root / "T10" / "Bases" / "Custom" / "state.dat"
+    missing.unlink()
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        acl_probe=lambda path, identity: {"write_denied": True},
+    )
+
+    assert payload["status"] == "FAIL_CLOSED"
+    codes = {row["code"] for row in payload["variant_a_file_audit"]["findings"]}
+    assert "TERMINAL_MUTABLE_FILE_MISSING" in codes
+
+
+def test_default_runner_and_protected_sets_resolve_t5_directive() -> None:
+    assert "T5" in isolation.DEFAULT_RUNNER_TERMINALS
+    assert Path(r"D:\QM\mt5\T5") not in isolation.DEFAULT_PROTECTED_ROOTS
+    assert Path(r"C:\QM\mt5\T_Live") in isolation.DEFAULT_PROTECTED_ROOTS
+    assert Path(r"D:\QM\mt5\FTMO_STREAM1") in isolation.DEFAULT_PROTECTED_ROOTS
+    assert Path(r"D:\QM\mt5\FTMO_STREAM2") in isolation.DEFAULT_PROTECTED_ROOTS
+
+
+def test_variant_a_dispatch_gate_never_opens_foreign_private_archives(
+    tmp_path: Path, monkeypatch
+) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    for terminal in ("T1", "T2"):
+        for row in manifest["files"]:
+            target = mt5_root / terminal / "Bases" / "Custom" / Path(row["relative_path"])
+            body = target.read_bytes()
+            target.unlink()
+            target.write_bytes(body)
+
+    real_sha256_file = isolation.sha256_file
+    opened: list[str] = []
+
+    def guarded_sha256_file(path):
+        text = str(path)
+        opened.append(text)
+        if f"{os.sep}T1{os.sep}" in text:
+            raise PermissionError(13, "Permission denied")
+        return real_sha256_file(path)
+
+    monkeypatch.setattr(isolation, "sha256_file", guarded_sha256_file)
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        verify_archive_hashes=False,
+        hash_private_terminals=("T2",),
+    )
+
+    assert payload["status"] == "PASS_ISOLATED", payload
+    audit = payload["variant_a_file_audit"]
+    assert audit["terminal_private_hash_verification"] == "CLAIMING_TERMINAL_ONLY"
+    assert not any(f"{os.sep}T1{os.sep}" in text for text in opened)
+
+
+def test_variant_a_dispatch_gate_still_hashes_claiming_terminal(
+    tmp_path: Path,
+) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    row = manifest["files"][0]
+    target = mt5_root / "T1" / "Bases" / "Custom" / Path(row["relative_path"])
+    target.unlink()
+    target.write_bytes(b"x" * int(row["size"]))
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        verify_archive_hashes=False,
+        hash_private_terminals=("T1",),
+    )
+
+    assert payload["status"] == "FAIL_CLOSED"
+    codes = {row["code"] for row in payload["variant_a_file_audit"]["findings"]}
+    assert "ARCHIVE_MANIFEST_MISMATCH" in codes
+
+
+def test_variant_a_foreign_private_size_drift_still_fails_stat_only(
+    tmp_path: Path,
+) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    row = manifest["files"][0]
+    target = mt5_root / "T1" / "Bases" / "Custom" / Path(row["relative_path"])
+    target.unlink()
+    target.write_bytes(b"short")
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        verify_archive_hashes=False,
+        hash_private_terminals=("T2",),
+    )
+
+    assert payload["status"] == "FAIL_CLOSED"
+    codes = {row["code"] for row in payload["variant_a_file_audit"]["findings"]}
+    assert "ARCHIVE_MANIFEST_MISMATCH" in codes
+
+
+def test_variant_a_copy_on_claim_temp_files_are_ignored(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    temp = (
+        mt5_root
+        / "T1"
+        / "Bases"
+        / "Custom"
+        / "history"
+        / "EURUSD.DWX"
+        / ".2025.hcc.copy-on-claim.123.deadbeef.tmp"
+    )
+    temp.write_bytes(b"transient")
+
+    rows = isolation.collect_variant_a_file_inventory(
+        mt5_root=mt5_root,
+        terminals=history_contract.DEFAULT_RUNNER_TERMINALS,
+        manifest=manifest,
+        verify_archive_hashes=False,
+    )
+    assert not any(
+        ".copy-on-claim." in str(row.get("relative_path")) for row in rows
+    )
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        verify_archive_hashes=False,
+    )
+    assert payload["status"] == "PASS_ISOLATED", payload
+
+
+def _link_count_finding(relative: str, terminal: str = "T2") -> dict:
+    return {
+        "code": "ARCHIVE_LINK_COUNT_TOO_LOW",
+        "terminal": terminal,
+        "relative_path": relative,
+        "storage_mode": "FAMILY_HARDLINK",
+        "actual": 10,
+        "minimum": 11,
+    }
+
+
+def test_reconcile_clears_torn_link_count_after_privatization(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    relative = "history/EURUSD.DWX/2025.hcc"
+    target = mt5_root / "T1" / "Bases" / "Custom" / Path(relative)
+    body = target.read_bytes()
+    target.unlink()
+    target.write_bytes(body)
+
+    result = isolation.reconcile_archive_link_count_findings(
+        mt5_root=mt5_root,
+        terminals=history_contract.DEFAULT_RUNNER_TERMINALS,
+        manifest=manifest,
+        findings=[_link_count_finding(relative)],
+    )
+
+    assert result["remaining"] == []
+    assert len(result["cleared"]) == 1
+    recount = result["recounts"][0]
+    assert recount["family_members"] == 9
+    assert recount["link_count"] == recount["expected"]
+
+
+def test_reconcile_keeps_deleted_rollback_link_fail_closed(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    relative = "history/EURUSD.DWX/2025.hcc"
+    (tmp_path / "archive-source" / Path(relative)).unlink()
+
+    result = isolation.reconcile_archive_link_count_findings(
+        mt5_root=mt5_root,
+        terminals=history_contract.DEFAULT_RUNNER_TERMINALS,
+        manifest=manifest,
+        findings=[_link_count_finding(relative)],
+        attempts=2,
+        sleeper=lambda seconds: None,
+    )
+
+    assert result["cleared"] == []
+    assert len(result["remaining"]) == 1
+
+
+def test_reconcile_keeps_cross_terminal_private_alias_fail_closed(
+    tmp_path: Path,
+) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    relative = "history/EURUSD.DWX/2025.hcc"
+    t1 = mt5_root / "T1" / "Bases" / "Custom" / Path(relative)
+    t2 = mt5_root / "T2" / "Bases" / "Custom" / Path(relative)
+    body = t1.read_bytes()
+    t1.unlink()
+    t1.write_bytes(body)
+    t2.unlink()
+    os.link(t1, t2)
+
+    result = isolation.reconcile_archive_link_count_findings(
+        mt5_root=mt5_root,
+        terminals=history_contract.DEFAULT_RUNNER_TERMINALS,
+        manifest=manifest,
+        findings=[_link_count_finding(relative, terminal="T3")],
+        attempts=2,
+        sleeper=lambda seconds: None,
+    )
+
+    assert result["cleared"] == []
+    assert len(result["remaining"]) == 1
+
+
+def test_reconcile_keeps_missing_archive_fail_closed(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    relative = "history/EURUSD.DWX/2025.hcc"
+    (mt5_root / "T2" / "Bases" / "Custom" / Path(relative)).unlink()
+
+    result = isolation.reconcile_archive_link_count_findings(
+        mt5_root=mt5_root,
+        terminals=history_contract.DEFAULT_RUNNER_TERMINALS,
+        manifest=manifest,
+        findings=[_link_count_finding(relative, terminal="T3")],
+        attempts=2,
+        sleeper=lambda seconds: None,
+    )
+
+    assert result["cleared"] == []
+    assert len(result["remaining"]) == 1
+
+
+def test_reconcile_all_private_family_clears(tmp_path: Path) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    relative = "history/EURUSD.DWX/2025.hcc"
+    for terminal in history_contract.DEFAULT_RUNNER_TERMINALS:
+        target = mt5_root / terminal / "Bases" / "Custom" / Path(relative)
+        body = target.read_bytes()
+        target.unlink()
+        target.write_bytes(body)
+
+    result = isolation.reconcile_archive_link_count_findings(
+        mt5_root=mt5_root,
+        terminals=history_contract.DEFAULT_RUNNER_TERMINALS,
+        manifest=manifest,
+        findings=[_link_count_finding(relative)],
+    )
+
+    assert result["remaining"] == []
+    assert len(result["cleared"]) == 1
+    assert result["recounts"][0]["family_members"] == 0

@@ -1,0 +1,27 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11423
+; ea_slug:      williams-naked-close-stop-entry-d1
+; ea_version:   v5.0
+; set_version:  s20260807-001
+; symbol:       EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   12e844b64755d67eae5bdbaf749b3b4cd42e1255976f6a63f36726270dee5f25
+; author:       Development
+; date:         2026-08-07
+;==========================================================
+qm_ea_id=11423
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11423_williams-naked-close-stop-entry-d1.md
+strategy_buffer_pips=1
+strategy_max_stop_pips=70
+strategy_tp_rr=2.0
+strategy_spread_cap_pips=25

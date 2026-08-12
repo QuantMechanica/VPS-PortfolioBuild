@@ -1,0 +1,38 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        20275
+; ea_slug:      gsr-runfade
+; ea_version:   v5.0
+; set_version:  s20260811-001
+; symbol:       QM5_20275_XAU_XAG_RUNFADE_D1
+; host_symbol:  XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   b0d361346047ed8d0e3563301227e9a22afd10c37e9b07c0147c1e1a0b9200ac
+; author:       Development
+; date:         2026-08-11
+;==========================================================
+qm_ea_id=20275
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_friday_close_enabled=0
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_run_length_d1=5
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=12
+strategy_xau_max_spread_pts=1500
+strategy_xag_max_spread_pts=3000
+strategy_deviation_points=20

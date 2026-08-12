@@ -1,0 +1,64 @@
+{
+  "schema": "qm.paced_fleet.q02_infra_repair.v1",
+  "created_at_utc": "2026-08-11T04:12:26Z",
+  "branch": "agents/board-advisor",
+  "repo_head_before_commit": "2c126bda6a934c4658b4f59eb720be02df8dfe5b",
+  "farm_claim_id": "543c8404-8439-4337-a9cf-42a6f22baa2c",
+  "farm_claim_backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_10977_q02_claim_20260811T040642Z.sqlite",
+  "ea_id": "QM5_10977",
+  "ea_label": "QM5_10977_ftmo-bb-sqz",
+  "symbol": "GBPUSD.DWX",
+  "timeframe": "H1",
+  "phase": "Q02",
+  "source_work_item_id": "b9fc8a59-c929-4fd8-aff2-6e7747f9b99b",
+  "successor_work_item_id": "0689ba5c-9b1f-40d3-8ac6-618814d6f623",
+  "successor_status_at_readback": "pending",
+  "successor_claimed_by_at_readback": null,
+  "failure": {
+    "verdict": "INFRA_FAIL",
+    "reason": "ACTIVE_TIMEOUT",
+    "root_cause": "GBPUSD.DWX Custom-history file sharing violation (Windows error 32) caused zero tester progress and no report",
+    "terminal": "T8",
+    "progress_pct": 0,
+    "stalled_minutes": 21.59
+  },
+  "repair": {
+    "evidence_restoration_sha256": "08e1d8df6ca320da1ed500b7ec0d3983e3f1337a3da5c5c776416a5e499a0671",
+    "evidence_restoration_mirror": "artifacts/qm5_10977_gbpusd_q02_history_lock_evidence_20260811T041100Z.log",
+    "strict_recompile": true,
+    "strategy_source_changed": false,
+    "setfile_risk_changed": false,
+    "enqueue_mode": "append_only_exact_row_rerun",
+    "history_path": "governed custom-history copy-on-claim"
+  },
+  "bindings": {
+    "approved_card_sha256": "108851969ea63112b01df2b905923a163af91341010b06470bb9f0d78663adba",
+    "mq5_sha256": "582dbd20f2a6677978035f9c8f52f59fb18cff451636ddb80d397424541229d4",
+    "predecessor_ex5_sha256": "24498aeefbfacf32189486722af640722a7bcd2babceb5722752f468d46ab241",
+    "successor_ex5_sha256": "a6033a1283427856e6036bced67a9d6ae8629ed7856a409629ea1ecfecf1e8a0",
+    "successor_setfile_sha256": "554efa711a7e393c4a3f2d98cc8670512e438cbbb1cf0bcfb10f7e786b88fb0c",
+    "magic_slot": 1,
+    "magic": 109770001,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "model": 4
+  },
+  "validation": {
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check": "PASS",
+    "spec_validation": "PASS",
+    "sqlite_quick_check": "ok",
+    "open_rows_for_ea_at_readback": 1,
+    "running_factory_terminals_at_readback": ["T8"],
+    "cpu_ceiling": 7
+  },
+  "safety": {
+    "manual_tester_launch": false,
+    "manual_dispatch": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}

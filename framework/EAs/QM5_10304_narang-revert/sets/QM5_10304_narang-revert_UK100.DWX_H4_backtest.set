@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        10304
 ; ea_slug:      narang-revert
@@ -10,7 +10,7 @@
 ; magic_slot:   28
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   81ab564d43a39c62ed93a37066b02e465e9d345684a314faea1d17653abde997
+; build_hash:   544109ab77360a050c1c1753afc64aec1d07e79fa57dfedbe31132de13b64e5e
 ; author:       Development
 ; date:         2026-06-25
 ;==========================================================

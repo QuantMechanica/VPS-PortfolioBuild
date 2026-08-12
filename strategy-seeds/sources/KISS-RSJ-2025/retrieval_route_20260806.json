@@ -1,0 +1,10 @@
+{
+  "status": "PERMISSION_REQUIRED",
+  "adapter": "generic",
+  "url": "https://www.diva-portal.org/smash/get/diva2%3A2013183/FULLTEXT01.pdf",
+  "retrieved_at": null,
+  "lead_status": "DEFERRED:SOURCE_POLICY",
+  "reason": "generic runtime retrieval is disabled until a cryptographic OWNER authorization verifier exists",
+  "adapter_state": "ROUTER_ONLY",
+  "next_action": "review the source policy and defer the lead"
+}

@@ -4,7 +4,7 @@
 **Slug:** `stoch-mtf-state`
 **Source:** `0693c604-4f96-56ef-be79-15efe9f48b86` (see `strategy-seeds/sources/0693c604-4f96-56ef-be79-15efe9f48b86/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-07
+**Last revised:** 2026-08-05
 
 ---
 
@@ -95,4 +95,5 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
+| v2 | 2026-08-05 | Q02 infrastructure recovery | Refreshed current-framework MAE sampling, entry-only news ordering, deterministic request initialization, and artifact bindings; strategy mechanics unchanged. |
 | v1 | 2026-06-07 | Initial build from card | 01e390e3-8ca8-40f1-959e-da1a10fc77bf |

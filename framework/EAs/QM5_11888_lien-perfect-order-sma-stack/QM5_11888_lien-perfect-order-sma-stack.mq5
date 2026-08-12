@@ -81,20 +81,41 @@ input int    strategy_sma_200                 = 200;
 input int    strategy_fresh_lookback_bars     = 60;
 input int    strategy_sl_sma50_buffer_pips    = 25;
 
-int Strategy_PerfectOrderState(const int shift)
-  {
-   if(shift < 1)
-      return 0;
-   if(strategy_sma_10 <= 0 || strategy_sma_20 <= 0 || strategy_sma_50 <= 0 ||
-      strategy_sma_100 <= 0 || strategy_sma_200 <= 0)
-      return 0;
+int    g_perfect_order_state       = 0;
+bool   g_perfect_order_fresh       = false;
+double g_cached_sma20              = 0.0;
+double g_cached_sma50              = 0.0;
+bool   g_perfect_order_state_ready = false;
 
-   const double sma10  = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_10, shift, PRICE_CLOSE);
-   const double sma20  = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_20, shift, PRICE_CLOSE);
-   const double sma50  = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_50, shift, PRICE_CLOSE);
-   const double sma100 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_100, shift, PRICE_CLOSE);
-   const double sma200 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_200, shift, PRICE_CLOSE);
-   if(sma10 <= 0.0 || sma20 <= 0.0 || sma50 <= 0.0 || sma100 <= 0.0 || sma200 <= 0.0)
+bool Strategy_SMAFromPrefix(const double &prefix[],
+                            const int offset,
+                            const int period,
+                            double &value)
+  {
+   value = 0.0;
+   if(offset < 0 || period <= 0 || offset + period >= ArraySize(prefix))
+      return false;
+
+   value = (prefix[offset + period] - prefix[offset]) / (double)period;
+   return (value > 0.0);
+  }
+
+int Strategy_PerfectOrderStateFromPrefix(const double &prefix[],
+                                         const int offset,
+                                         double &sma20,
+                                         double &sma50)
+  {
+   double sma10 = 0.0;
+   double sma100 = 0.0;
+   double sma200 = 0.0;
+   sma20 = 0.0;
+   sma50 = 0.0;
+
+   if(!Strategy_SMAFromPrefix(prefix, offset, strategy_sma_10, sma10) ||
+      !Strategy_SMAFromPrefix(prefix, offset, strategy_sma_20, sma20) ||
+      !Strategy_SMAFromPrefix(prefix, offset, strategy_sma_50, sma50) ||
+      !Strategy_SMAFromPrefix(prefix, offset, strategy_sma_100, sma100) ||
+      !Strategy_SMAFromPrefix(prefix, offset, strategy_sma_200, sma200))
       return 0;
 
    if(sma10 > sma20 && sma20 > sma50 && sma50 > sma100 && sma100 > sma200)
@@ -104,15 +125,58 @@ int Strategy_PerfectOrderState(const int shift)
    return 0;
   }
 
-bool Strategy_IsFreshPerfectOrder(const int direction)
+bool Strategy_AdvanceStateOnNewBar()
   {
-   if(direction == 0 || strategy_fresh_lookback_bars < 1)
+   g_perfect_order_state = 0;
+   g_perfect_order_fresh = false;
+   g_cached_sma20 = 0.0;
+   g_cached_sma50 = 0.0;
+   g_perfect_order_state_ready = false;
+
+   if(strategy_sma_10 <= 0 || strategy_sma_20 <= 0 || strategy_sma_50 <= 0 ||
+      strategy_sma_100 <= 0 || strategy_sma_200 <= 0 ||
+      strategy_fresh_lookback_bars < 1)
       return false;
-   for(int shift = 2; shift <= strategy_fresh_lookback_bars + 1; ++shift)
+
+   int max_period = strategy_sma_10;
+   max_period = MathMax(max_period, strategy_sma_20);
+   max_period = MathMax(max_period, strategy_sma_50);
+   max_period = MathMax(max_period, strategy_sma_100);
+   max_period = MathMax(max_period, strategy_sma_200);
+   const int close_count = max_period + strategy_fresh_lookback_bars;
+
+   double closes[];
+   ArraySetAsSeries(closes, true);
+   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, close_count, closes); // perf-allowed: one bounded cache fill per completed D1 bar.
+   if(copied < close_count)
+      return false;
+
+   double prefix[];
+   if(ArrayResize(prefix, close_count + 1) != close_count + 1)
+      return false;
+   prefix[0] = 0.0;
+   for(int i = 0; i < close_count; ++i)
      {
-      if(Strategy_PerfectOrderState(shift) == direction)
+      if(closes[i] <= 0.0)
          return false;
+      prefix[i + 1] = prefix[i] + closes[i];
      }
+
+   g_perfect_order_state = Strategy_PerfectOrderStateFromPrefix(prefix,
+                                                                0,
+                                                                g_cached_sma20,
+                                                                g_cached_sma50);
+   g_perfect_order_fresh = (g_perfect_order_state != 0);
+   for(int offset = 1; offset <= strategy_fresh_lookback_bars && g_perfect_order_fresh; ++offset)
+     {
+      double prior_sma20 = 0.0;
+      double prior_sma50 = 0.0;
+      if(Strategy_PerfectOrderStateFromPrefix(prefix, offset, prior_sma20, prior_sma50) ==
+         g_perfect_order_state)
+         g_perfect_order_fresh = false;
+     }
+
+   g_perfect_order_state_ready = true;
    return true;
   }
 
@@ -140,11 +204,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const int direction = Strategy_PerfectOrderState(1);
-   if(direction == 0 || !Strategy_IsFreshPerfectOrder(direction))
+   if(!g_perfect_order_state_ready)
       return false;
 
-   const double sma50 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_50, 1, PRICE_CLOSE);
+   const int direction = g_perfect_order_state;
+   if(direction == 0 || !g_perfect_order_fresh)
+      return false;
+
+   const double sma50 = g_cached_sma50;
    const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_sma50_buffer_pips);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -175,7 +242,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   const double sma20 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_20, 1, PRICE_CLOSE);
+   if(!g_perfect_order_state_ready)
+      return;
+
+   const double sma20 = g_cached_sma20;
    if(sma20 <= 0.0)
       return;
 
@@ -216,7 +286,10 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int state = Strategy_PerfectOrderState(1);
+   if(!g_perfect_order_state_ready)
+      return false;
+
+   const int state = g_perfect_order_state;
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -281,23 +354,22 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: no guard may skip floating-P&L sampling.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
+
+   // QM_IsNewBar is single-consume. Latch it once and derive the full SMA
+   // stack/freshness window once per completed D1 bar. Entry, exit, and the
+   // SMA20 trail then reuse the same closed-bar state on every tick.
+   const bool qm_new_bar = QM_IsNewBar();
+   if(qm_new_bar)
+      Strategy_AdvanceStateOnNewBar();
 
    if(Strategy_NoTradeFilter())
       return;
@@ -306,6 +378,7 @@ void OnTick()
    Strategy_ManageOpenPosition();
 
    // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   bool exit_fired_this_tick = false;
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -316,14 +389,24 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         if(QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY))
+            exit_fired_this_tick = true;
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
-   if(!QM_IsNewBar())
+   // News blackouts gate new entries only; broker-side protection, trailing,
+   // and source exits above remain active during blackout windows.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!qm_new_bar || exit_fired_this_tick)
       return;
 
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
@@ -331,6 +414,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

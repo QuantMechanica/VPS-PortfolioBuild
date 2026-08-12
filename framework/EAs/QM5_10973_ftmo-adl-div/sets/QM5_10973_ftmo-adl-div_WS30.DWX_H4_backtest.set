@@ -1,0 +1,36 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10973
+; ea_slug:      ftmo-adl-div
+; ea_version:   v5.0
+; set_version:  s20260810-001
+; symbol:       WS30.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-10
+;==========================================================
+qm_ea_id=10973
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10973_ftmo-adl-div.md
+strategy_atr_period=14
+strategy_ema_trend_period=100
+strategy_ema_tp_cap_period=50
+strategy_pivot_lookback_bars=60
+strategy_swing_sep_min_bars=5
+strategy_swing_sep_max_bars=30
+strategy_adl_window_bars=70
+strategy_extreme_lookback_bars=60
+strategy_extreme_atr_mult=0.75
+strategy_sl_atr_buffer_mult=0.25
+strategy_tp_r_mult=2.0
+strategy_time_exit_bars=20
+strategy_atr_percentile_sample=100

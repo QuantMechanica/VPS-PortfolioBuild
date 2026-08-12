@@ -1,0 +1,34 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1156
+; ea_slug:      caldeira-cointegration-pairs-fx
+; ea_version:   v5.0
+; set_version:  s20260811-001
+; symbol:       QM5_1156_USDCHF_AUDUSD_COINTEGRATION_M30
+; host_symbol:  USDCHF.DWX
+; timeframe:    M30
+; environment:  backtest
+; magic_slot:   12
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   cd478e9dbc5e917ddf0a5940bf390faf2fb20d05b34cd3821b4c4d0ef4a4d3e2
+; author:       Development
+; date:         2026-08-11
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+strategy_pair_slot=12
+strategy_formation_days=60
+strategy_zscore_days=60
+strategy_entry_z=2.0
+strategy_exit_abs_z=0.5
+strategy_stop_abs_z=4.0
+strategy_coint_entry_p=0.05
+strategy_coint_exit_p=0.10
+strategy_max_hold_days=30
+strategy_atr_period=14
+strategy_atr_stop_mult=3.0
+strategy_max_active_pairs=4
+strategy_deviation_points=20

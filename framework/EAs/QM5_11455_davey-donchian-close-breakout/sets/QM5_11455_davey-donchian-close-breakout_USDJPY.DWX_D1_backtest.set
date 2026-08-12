@@ -1,0 +1,28 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11455
+; ea_slug:      davey-donchian-close-breakout
+; ea_version:   v5.0
+; set_version:  s20260810-001
+; symbol:       USDJPY.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-10
+;==========================================================
+qm_ea_id=11455
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11455_davey-donchian-close-breakout.md
+strategy_length=20
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_atr_tp_mult=3.0
+strategy_sl_cap_pips=120

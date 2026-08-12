@@ -1,0 +1,89 @@
+{
+  "artifact_type": "fx_cointegration_existing_card_q02_handoff",
+  "generated_at_utc": "2026-08-11T18:17:20Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "886b55a684ef36539a69ca52a1d3b25a107ac4e7",
+  "selection": {
+    "mode": "existing_card_fallback",
+    "reason": "The frozen sign-aware 66-pair frontier is fully mechanized; a new Card or EA would duplicate existing work.",
+    "ea_id": "QM5_1156",
+    "pair_slot": 12,
+    "scan_rank": 65,
+    "host_symbol": "USDCHF.DWX",
+    "companion_symbol": "AUDUSD.DWX",
+    "logical_symbol": "QM5_1156_USDCHF_AUDUSD_COINTEGRATION_M30",
+    "host_timeframe": "M30",
+    "signal_timeframe": "D1",
+    "scan_evidence": {
+      "dev_net_sharpe": -0.21,
+      "oos_net_sharpe": -0.66,
+      "oos_return_percent": -5.70,
+      "oos_state_changes": 16,
+      "disposition": "one_shot_q02_no_refit_or_rescue"
+    }
+  },
+  "anchors": {
+    "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_Q04_FAIL",
+    "q02_oninit_or_no_history_blocker_found": false
+  },
+  "source": {
+    "citation": "Caldeira and Moura (2013), Selection of a Portfolio of Pairs Based on Cointegration: A Statistical Arbitrage Strategy, SSRN 2196391 / Journal of International Financial Markets, Institutions and Money",
+    "approved_artifact": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1156_caldeira-cointegration-pairs-fx.md",
+    "approved_artifact_sha256": "39e6eb1d3959f10bfa9da11a973b55153934dcfb95240577522ba4e0f3508a58",
+    "approval_or_mechanics_changed": false
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "ml_grid_martingale": false
+  },
+  "q01": {
+    "strict_compile": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_summary": "D:/QM/reports/compile/20260811_180754/summary.csv",
+    "mq5_sha256": "c717d4aeb91994c8f59c89938e133defd7757b97fe196d4de0927121cb96d509",
+    "ex5_sha256": "b49906e0d11679c2c3522b1d95c7759d5fb59dda5c36bb77e27a71e1a2b2d2f6",
+    "setfile_sha256": "246ba49e1721cdcc99c38dbb8681bb6fd4dc6a57ddd604b57226e16c41c48c1a",
+    "card_schema_lint": "PASS",
+    "regression_tests": {
+      "passed": 48,
+      "failed": 0
+    }
+  },
+  "capacity_sample": {
+    "scanned_at_utc": "2026-08-11T18:14:38Z",
+    "binding_factory_terminal_ceiling": 7,
+    "running_factory_terminal_count": 2,
+    "running_factory_terminals": [
+      "T7",
+      "T8"
+    ],
+    "excluded_from_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "q02_enqueue": {
+    "enqueued_at_utc": "2026-08-11T18:14:48Z",
+    "task_id": "54d69913-4c50-498a-9f79-79d9d3163377",
+    "work_item_id": "415cd6d3-560c-46d8-a9f9-ee4a5b399100",
+    "created_count": 1,
+    "skipped_count": 0,
+    "verified_status": "pending",
+    "verified_attempt_count": 0,
+    "verified_claimed_by": null,
+    "dispatch_tick_run": false,
+    "tester_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}

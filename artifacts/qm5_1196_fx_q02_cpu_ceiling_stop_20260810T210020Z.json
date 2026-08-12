@@ -1,0 +1,69 @@
+{
+  "schema": "qm_fx_q02_cpu_ceiling_stop/v1",
+  "generated_at_utc": "2026-08-10T21:00:20+00:00",
+  "branch": "agents/board-advisor",
+  "repository_head": "842e8fedd17215eead6d3a584493ad0a90d6ef21",
+  "frontier": {
+    "scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationships": 66,
+    "unbuilt_relationships": 0,
+    "qm5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "qm5_12533": "Q02_PASS_Q04_FAIL"
+  },
+  "fallback": {
+    "ea_id": "QM5_1196",
+    "ea_dir": "framework/EAs/QM5_1196_qp-fx-meanrev-linear",
+    "card": "framework/EAs/QM5_1196_qp-fx-meanrev-linear/docs/strategy_card.md",
+    "g0_status": "APPROVED",
+    "source": "Quantpedia: How to Build Mean Reversion Strategies in Currencies",
+    "symbol": "AUDUSD.DWX",
+    "timeframe": "D1",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "registry_status": "active",
+    "magic_slot": 3,
+    "magic": 11960003,
+    "ex5_sha256": "f0ea458c155624c547eeb738f37bd8e3af5afd7a4585680eaf22f6e1135dc703",
+    "mq5_sha256": "2dcdd2868e2bb5a2be9e02bb30a4e940bff063e6b845b87291f54e33bbfa7825",
+    "setfile_sha256": "59a81facbec11453556b22b6202219c2ea678050865545de45974b426c8eeadf",
+    "predecessor_work_item_id": "bc25ee6c-2922-4df3-bf88-d5e15eaa4c72",
+    "predecessor_status": "failed",
+    "predecessor_verdict": "INFRA_FAIL",
+    "predecessor_reason_classes": [
+      "BARS_ZERO",
+      "INCOMPLETE_RUNS"
+    ],
+    "predecessor_evidence": "D:\\QM\\reports\\work_items\\bc25ee6c-2922-4df3-bf88-d5e15eaa4c72\\QM5_1196\\20260802_134545\\summary.json",
+    "q02_open_rows_before": 0,
+    "q02_noninfra_terminal_rows_before": 0,
+    "q02_requeue_excluded": false
+  },
+  "cpu_interlock": {
+    "threshold_factory_terminals": 7,
+    "comparison": "stop_if_count_greater_than_or_equal_to_threshold",
+    "sampled_at": "2026-08-10T23:00:20+02:00",
+    "observed_factory_terminal_count": 7,
+    "observed_factory_terminals": [
+      "T1",
+      "T3",
+      "T4",
+      "T5",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "verdict": "CPU_CEILING_REACHED_NO_ENQUEUE"
+  },
+  "postcondition": {
+    "enqueue_invoked": false,
+    "queue_rows_inserted": 0,
+    "q02_historical_rows_after": 13,
+    "q02_open_rows_after": 0,
+    "rows_created_after_sample": 0,
+    "tester_launched": false,
+    "terminal_controlled": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  }
+}

@@ -140,16 +140,11 @@ string Strategy_UniverseSymbol(const int idx)
 
 bool Strategy_IsFirstD1BarOfMonth()
   {
-   const datetime t0 = iTime(_Symbol, PERIOD_D1, 0);
-   const datetime t1 = iTime(_Symbol, PERIOD_D1, 1);
-   if(t0 <= 0 || t1 <= 0)
+   const int current_month = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int prior_month = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
+   if(current_month <= 0 || prior_month <= 0)
       return false;
-
-   MqlDateTime d0;
-   MqlDateTime d1;
-   TimeToStruct(t0, d0);
-   TimeToStruct(t1, d1);
-   return (d0.year != d1.year || d0.mon != d1.mon);
+   return (current_month != prior_month);
   }
 
 bool Strategy_MonthlyMomentum(const string symbol,
@@ -158,11 +153,11 @@ bool Strategy_MonthlyMomentum(const string symbol,
                               double &out_mom)
   {
    out_mom = 0.0;
-   if(Bars(symbol, PERIOD_MN1) < strategy_min_monthly_bars)
+   if(Bars(symbol, PERIOD_MN1) < strategy_min_monthly_bars) // perf-allowed: month-gated cross-sectional peer history
       return false;
 
-   const double recent_close = iClose(symbol, PERIOD_MN1, recent_shift);
-   const double old_close = iClose(symbol, PERIOD_MN1, old_shift);
+   const double recent_close = iClose(symbol, PERIOD_MN1, recent_shift); // perf-allowed: month-gated cross-sectional peer history
+   const double old_close = iClose(symbol, PERIOD_MN1, old_shift); // perf-allowed: month-gated cross-sectional peer history
    if(recent_close <= 0.0 || old_close <= 0.0)
       return false;
 

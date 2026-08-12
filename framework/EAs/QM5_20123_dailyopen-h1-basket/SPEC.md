@@ -4,7 +4,7 @@
 **Slug:** `dailyopen-h1-basket`
 **Source:** FF-NIK13-DAILYOPEN-535657 (see card QM5_20123)
 **Author of this spec:** Claude (reconciled with Codex blind spec)
-**Last revised:** 2026-07-25
+**Last revised:** 2026-08-07
 
 ---
 
@@ -53,6 +53,10 @@ H1 on the host; member D1 opens + first-H1 closes read per symbol.
 
 ~250 evaluation days/yr, up to 2 legs each; 10-pip targets on majors are
 cost-sensitive — Q02/Q04 judge; basket coupling is the distinct mechanic.
+Entry-only symbol/history readiness is evaluated after the framework H1
+closed-bar gate. Per-tick management remains active only while a position is
+open; these lifecycle constraints are performance invariants and do not alter
+the daily signal.
 
 ---
 
@@ -75,4 +79,7 @@ fail-closed; Friday close 21:00 broker.
 
 ## Revision History
 
+- 2026-08-07 — move entry-only cross-symbol readiness behind the H1 gate and
+  add flat-position fast paths after recurrent Q02 `ACTIVE_TIMEOUT`; mechanics,
+  risk, and basket membership unchanged.
 - 2026-07-25 — initial spec (harvest build run tranche 8, ledger STR-069).

@@ -36,11 +36,22 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 import farmctl
+import custom_history_contract
+import custom_history_copy_on_claim
+import custom_history_gate
+import custom_history_lease
 from framework.scripts._phase_utils import cold_cache_summary_signature
 from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
 
 
 POLL_SLEEP_SECONDS = 2.0
+CUSTOM_HISTORY_GUARD_SLEEP_SECONDS = 30.0
+CUSTOM_HISTORY_GATE_PASS_STATUSES = frozenset(
+    {"PASS_ISOLATED", "PASS_SERIALIZED_ROLLBACK"}
+)
+CUSTOM_HISTORY_COPY_PASS_STATUSES = frozenset(
+    {"PASS_PRIVATIZED", "SKIPPED_OWNER_ROLLBACK_TOPOLOGY"}
+)
 FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS = 5.0
 FACTORY_ADMISSION_LOCK_POLL_SECONDS = 0.01
 NEWS_CALENDAR_GUARD_SLEEP_SECONDS = 30.0
@@ -75,6 +86,10 @@ COMMIT_GUARD_SLEEP_SECONDS = 20
 # working set. Reserve its expected peak during that launch/warm-up window so
 # other workers cannot all pass against the same unchanged OS measurement.
 COMMIT_RESERVATION_SECONDS = 300
+# Throttle ledger for claim-decline logging: reason -> monotonic timestamp.
+# 2026-08-10: factory_mutation_lock_busy declines were fully silent, hiding a
+# wedged restart window behind an idle-looking fleet for 40 minutes.
+_UNCLAIMED_DECLINE_LOG_LAST: dict[str, float] = {}
 ORDINARY_COMMIT_RESERVATION_GB = 8.0
 WATCHDOG_RESET_BLOCK_FILENAME = "WATCHDOG_RESET_PENDING.json"
 # Multi-symbol real-tick jobs need materially more launch headroom than ordinary
@@ -84,7 +99,31 @@ MULTISYMBOL_RAM_MIN_FREE_GB = 12.0
 # Observed multi-symbol working sets range from 20-44GB.  Keep that worst case
 # plus a small system margin available before admitting another heavy job.
 MULTISYMBOL_COMMIT_MIN_FREE_GB = 48.0
+# Commit reservations are calibrated from per-run maxima in the worker's
+# decaying reservation telemetry (2026-07-26 through 2026-08-04). Exact
+# two-symbol FX pairs observed p95/max 7.36GB; 3-9-symbol FX baskets observed
+# p95 24.81GB and max 28.23GB. Unknown, 10+-symbol, and non-FX baskets stay in
+# the 44GB fail-safe class (observed p95 34.99GB, max 38.52GB).
+MULTISYMBOL_TWO_LEG_FX_COMMIT_RESERVATION_GB = 8.0
+MULTISYMBOL_MULTI_LEG_FX_COMMIT_RESERVATION_GB = 32.0
 MULTISYMBOL_COMMIT_RESERVATION_GB = 44.0
+MULTISYMBOL_COMMIT_CLASS_ORDINARY = "ordinary"
+MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX = "two_leg_fx_pair"
+MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX = "multi_leg_fx_basket"
+MULTISYMBOL_COMMIT_CLASS_HEAVY = "heavy_or_unknown_multisymbol"
+MULTISYMBOL_HEAVY_SYMBOL_COUNT = 10
+# Legacy source-scanned EAs do not carry basket_symbols in their old work-item
+# payloads. Keep this narrow and host-specific: the audited QM5_11240 FX hosts
+# each exercise one two-leg FX sleeve; its metal/index hosts remain heavy.
+_AUDITED_LEGACY_TWO_LEG_FX_HOSTS: dict[str, frozenset[str]] = {
+    "QM5_11240": frozenset({
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "NZDUSD.DWX",
+    }),
+}
+_FX_CURRENCIES = frozenset({"AUD", "CAD", "CHF", "EUR", "GBP", "JPY", "NZD", "USD"})
 # A multisymbol loader materializes its working set over tens of minutes, so the
 # ordinary 300s window expires long before it stops growing and other jobs get
 # admitted into the balloon phase (2026-07-26 17:45 pagefile storm). Holding the
@@ -354,9 +393,10 @@ def _work_item_history_symbols(
     payload: dict[str, Any],
 ) -> list[str]:
     symbols: list[object] = [payload.get("host_symbol") or _work_item_value(item, "symbol", "")]
-    payload_symbols = payload.get("basket_symbols")
-    if isinstance(payload_symbols, list):
-        symbols.extend(payload_symbols)
+    for field in ("basket_symbols", "conversion_symbols"):
+        payload_symbols = payload.get(field)
+        if isinstance(payload_symbols, list):
+            symbols.extend(payload_symbols)
 
     is_basket = (
         str(payload.get("portfolio_scope") or "").strip().lower() == "basket"
@@ -370,6 +410,9 @@ def _work_item_history_symbols(
             manifest_symbols = manifest.get("basket_symbols")
             if isinstance(manifest_symbols, list):
                 symbols.extend(manifest_symbols)
+            manifest_conversion = manifest.get("conversion_symbols")
+            if isinstance(manifest_conversion, list):
+                symbols.extend(manifest_conversion)
 
     return _unique_symbols(symbols)
 
@@ -533,6 +576,68 @@ def _work_item_is_multisymbol(
         return int(payload.get("basket_symbol_count") or 0) > 1
     except (TypeError, ValueError):
         return False
+
+
+def _is_fx_symbol(symbol: Any) -> bool:
+    canonical = str(symbol or "").strip().upper().split(".", 1)[0]
+    return (
+        len(canonical) == 6
+        and canonical[:3] in _FX_CURRENCIES
+        and canonical[3:] in _FX_CURRENCIES
+    )
+
+
+def _multisymbol_commit_class(
+    item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+    multisymbol: bool,
+) -> str:
+    """Return the measured reservation class, defaulting unknowns to heavy.
+
+    Only a complete, internally consistent ``basket_symbols`` list can lower a
+    multisymbol reservation. A bare count or malformed list is not enough: an
+    unclassified item must retain the historical 44GB fail-safe reservation.
+    """
+
+    if not multisymbol:
+        return MULTISYMBOL_COMMIT_CLASS_ORDINARY
+
+    raw_symbols = payload.get("basket_symbols")
+    if isinstance(raw_symbols, list):
+        symbols = tuple(str(value or "").strip().upper() for value in raw_symbols)
+        if symbols and all(symbols):
+            try:
+                declared_count = int(payload.get("basket_symbol_count") or len(symbols))
+            except (TypeError, ValueError):
+                declared_count = -1
+            if declared_count != len(symbols):
+                return MULTISYMBOL_COMMIT_CLASS_HEAVY
+            if len(symbols) == 2 and all(_is_fx_symbol(symbol) for symbol in symbols):
+                return MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX
+            if (
+                3 <= len(symbols) < MULTISYMBOL_HEAVY_SYMBOL_COUNT
+                and all(_is_fx_symbol(symbol) for symbol in symbols)
+            ):
+                return MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX
+            return MULTISYMBOL_COMMIT_CLASS_HEAVY
+
+    ea_id = str(_work_item_value(item, "ea_id", "") or "").strip().upper()
+    host_symbol = str(
+        _work_item_value(item, "symbol", "") or payload.get("host_symbol") or ""
+    ).strip().upper()
+    if host_symbol in _AUDITED_LEGACY_TWO_LEG_FX_HOSTS.get(ea_id, frozenset()):
+        return MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX
+    return MULTISYMBOL_COMMIT_CLASS_HEAVY
+
+
+def _commit_reservation_gb(commit_class: str) -> float:
+    if commit_class == MULTISYMBOL_COMMIT_CLASS_ORDINARY:
+        return ORDINARY_COMMIT_RESERVATION_GB
+    if commit_class == MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX:
+        return MULTISYMBOL_TWO_LEG_FX_COMMIT_RESERVATION_GB
+    if commit_class == MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX:
+        return MULTISYMBOL_MULTI_LEG_FX_COMMIT_RESERVATION_GB
+    return MULTISYMBOL_COMMIT_RESERVATION_GB
 
 
 _PROCESS_SNAPSHOT_TTL_SECONDS = 3.0
@@ -743,11 +848,8 @@ def _commit_admission_snapshot(
             until = claimed_at + timedelta(seconds=window_seconds)
         if until is None or until <= now_dt:
             continue
-        default_reservation = (
-            MULTISYMBOL_COMMIT_RESERVATION_GB
-            if item_is_multisym
-            else ORDINARY_COMMIT_RESERVATION_GB
-        )
+        commit_class = _multisymbol_commit_class(row, payload, item_is_multisym)
+        default_reservation = _commit_reservation_gb(commit_class)
         try:
             expected_peak_gb = max(
                 0.0,
@@ -770,6 +872,7 @@ def _commit_admission_snapshot(
             "ea_id": row["ea_id"],
             "reservation_gb": round(reservation_gb, 2),
             "expected_peak_gb": expected_peak_gb,
+            "reservation_class": commit_class,
             "measured_gb": (
                 None
                 if measured_gb is None or math.isinf(measured_gb)
@@ -791,13 +894,17 @@ def _set_commit_reservation(
     *,
     claimed_at_iso: str,
     multisymbol: bool,
+    commit_class: str | None = None,
 ) -> None:
     claimed_at = _parse_utc_iso(claimed_at_iso) or datetime.now(timezone.utc)
-    payload["commit_reservation_gb"] = (
-        MULTISYMBOL_COMMIT_RESERVATION_GB
-        if multisymbol
-        else ORDINARY_COMMIT_RESERVATION_GB
-    )
+    if commit_class is None:
+        commit_class = (
+            MULTISYMBOL_COMMIT_CLASS_HEAVY
+            if multisymbol
+            else MULTISYMBOL_COMMIT_CLASS_ORDINARY
+        )
+    payload["commit_reservation_class"] = commit_class
+    payload["commit_reservation_gb"] = _commit_reservation_gb(commit_class)
     payload["commit_reservation_until_utc"] = (
         claimed_at
         + timedelta(
@@ -824,6 +931,10 @@ def _payload_avoid_terminals(payload: dict[str, Any]) -> set[str]:
         terminal = str(value or "").strip().upper()
         if farmctl.is_factory_terminal_name(terminal):
             terminals.add(terminal)
+    if payload.get("diagnostic_non_admission") is True:
+        allowed_raw = payload.get("diagnostic_allowed_terminals", [])
+        allowed = {str(value or "").strip().upper() for value in allowed_raw}
+        terminals.update({f"T{index}" for index in range(1, 11)} - allowed)
     return terminals
 
 
@@ -834,6 +945,7 @@ _STALE_RUNTIME_PAYLOAD_KEYS = (
     "claimed_at_iso",
     "claimed_by_worker_pid",
     "commit_reservation_gb",
+    "commit_reservation_class",
     "commit_reservation_until_utc",
     "terminal",
 )
@@ -898,6 +1010,284 @@ def _defer_news_calendar_preflight(
     }
 
 
+def _defer_custom_history_gate(
+    root: Path,
+    row: sqlite3.Row | dict[str, Any],
+    terminal: str,
+    gate: dict[str, Any],
+) -> dict[str, Any]:
+    """Release an isolation-blocked claim without consuming retry capacity."""
+
+    payload = _json_loads(row["payload_json"])
+    claimed_at = payload.get("claimed_at_iso")
+    _clear_stale_runtime_payload(payload)
+    for field in ("claim_stage", "targeted_factory_off_run", "staged_ex5"):
+        payload.pop(field, None)
+    payload["custom_history_gate_failure"] = gate
+    now = farmctl.utc_now()
+
+    def _release() -> bool:
+        with farmctl.connect(root) as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            cur = conn.execute(
+                """
+                UPDATE work_items
+                SET status='pending', verdict=NULL, claimed_by=NULL,
+                    payload_json=?, updated_at=?
+                WHERE id=? AND status='active' AND claimed_by=?
+                """,
+                (json.dumps(payload, sort_keys=True), now, row["id"], terminal),
+            )
+            if cur.rowcount == 1:
+                farmctl.retract_claim_ledger(
+                    conn,
+                    terminal,
+                    row["id"],
+                    str(claimed_at) if claimed_at else None,
+                )
+            conn.commit()
+            return cur.rowcount == 1
+
+    released = bool(_with_sqlite_retry(_release))
+    return {
+        "status": "pending" if released else "active",
+        "reason": "CUSTOM_HISTORY_ISOLATION_FAIL_CLOSED",
+        "claim_released": released,
+        "attempt_count_unchanged": True,
+        "custom_history_gate": gate,
+    }
+
+
+def _is_transient_gate_io_error(exc: BaseException) -> bool:
+    """Concurrency artifacts of the mixed-topology gate, not isolation breaches.
+
+    A running terminal's MT5 holds privatized archives write-open (sharing
+    violation → PermissionError) and copy-on-claim swaps files atomically
+    (FileNotFoundError mid-scan). Both defer THIS claim attempt only; engaging
+    fleet-wide containment for them serializes the whole factory.
+    """
+
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if isinstance(current, (PermissionError, FileNotFoundError)):
+            return True
+        current = current.__cause__ or current.__context__
+    return False
+
+
+def _custom_history_gate(root: Path, terminal: str) -> dict[str, Any]:
+    """Run the activation-bound gate; every error is a dispatch refusal."""
+
+    try:
+        gate = custom_history_gate.run_worker_gate(root, terminal=terminal)
+    except Exception as exc:
+        activation_file = custom_history_gate.activation_path(root)
+        try:
+            activation_hash = hashlib.sha256(activation_file.read_bytes()).hexdigest()
+        except OSError:
+            activation_hash = "0" * 64
+        if _is_transient_gate_io_error(exc):
+            return {
+                "required": True,
+                "status": "FAIL_CLOSED",
+                "terminal": terminal,
+                "reason": "custom_history_gate_transient_io",
+                "error": repr(exc),
+                "activation_sha256": activation_hash,
+            }
+        try:
+            custom_history_lease.engage_emergency_mode(
+                root,
+                reason=f"custom_history_gate_exception:{type(exc).__name__}",
+                activation_sha256=activation_hash,
+            )
+        except Exception:
+            pass
+        return {
+            "required": True,
+            "status": "FAIL_CLOSED",
+            "terminal": terminal,
+            "reason": "custom_history_gate_exception",
+            "error": repr(exc),
+            "activation_sha256": activation_hash,
+        }
+    if gate.get("required") and gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES:
+        try:
+            custom_history_lease.engage_emergency_mode(
+                root,
+                reason="custom_history_isolation_gate_failure",
+                activation_sha256=str(gate.get("activation_sha256") or "0" * 64),
+            )
+        except Exception:
+            pass
+    return gate
+
+
+def _custom_history_copy_receipt_path(root: Path, item_id: str, terminal: str) -> Path:
+    safe_item_id = "".join(
+        character if character.isalnum() or character in {"-", "_"} else "_"
+        for character in str(item_id)
+    )
+    return (
+        root
+        / "artifacts"
+        / "ops"
+        / "custom_history_copy_on_claim"
+        / f"{safe_item_id}_{str(terminal).upper()}.json"
+    )
+
+
+def _privatize_custom_history_claim(
+    root: Path,
+    row: sqlite3.Row | dict[str, Any],
+    terminal: str,
+    gate: dict[str, Any],
+) -> dict[str, Any]:
+    """Privatize the host plus declared conversion/basket archive set."""
+
+    if not gate.get("required"):
+        return {"required": False, "status": "NOT_ACTIVE", "terminal": terminal}
+    if gate.get("status") == "PASS_SERIALIZED_ROLLBACK":
+        return {
+            "required": True,
+            "status": "SKIPPED_OWNER_ROLLBACK_TOPOLOGY",
+            "terminal": terminal,
+        }
+    activation_sha256 = str(gate.get("activation_sha256") or "0" * 64)
+    try:
+        activation = custom_history_gate.load_activation(root)
+        if activation is None:
+            raise custom_history_copy_on_claim.CustomHistoryCopyOnClaimError(
+                "activation disappeared after the pre-copy gate"
+            )
+        manifest = custom_history_contract.load_manifest(
+            Path(activation["manifest_path"]), require_owner_approval=True
+        )
+        payload = _json_loads(str(_work_item_value(row, "payload_json", "") or ""))
+        symbols = _work_item_history_symbols(row, payload)
+        receipt_path = _custom_history_copy_receipt_path(
+            root, str(_work_item_value(row, "id", "")), terminal
+        )
+        receipt = custom_history_copy_on_claim.privatize_terminal_archives(
+            manifest=manifest,
+            mt5_root=custom_history_gate.mt5_history_isolation.DEFAULT_MT5_ROOT,
+            terminal=terminal,
+            symbols=symbols,
+            receipt_path=receipt_path,
+        )
+        return {
+            "required": True,
+            "status": receipt["status"],
+            "terminal": str(terminal).upper(),
+            "activation_sha256": activation_sha256,
+            "manifest_sha256": receipt["manifest_sha256"],
+            "symbols": receipt["symbols"],
+            "ignored_non_custom_symbols": receipt["ignored_non_custom_symbols"],
+            "selected_file_count": receipt["selected_file_count"],
+            "copied_file_count": receipt["copied_file_count"],
+            "already_private_file_count": receipt["already_private_file_count"],
+            "receipt_sha256": receipt["receipt_sha256"],
+            "receipt_path": receipt["receipt_path"],
+            "receipt_file_sha256": receipt["receipt_file_sha256"],
+        }
+    except Exception as exc:
+        try:
+            custom_history_lease.engage_emergency_mode(
+                root,
+                reason=f"custom_history_copy_on_claim_failure:{type(exc).__name__}",
+                activation_sha256=activation_sha256,
+            )
+        except Exception:
+            pass
+        return {
+            "required": True,
+            "status": "FAIL_CLOSED",
+            "terminal": str(terminal).upper(),
+            "reason": "custom_history_copy_on_claim_failure",
+            "error": repr(exc),
+            "activation_sha256": activation_sha256,
+        }
+
+
+def _reconcile_stale_custom_history_lease(
+    root: Path, record: dict[str, Any]
+) -> dict[str, Any]:
+    """Prove terminal inactivity and database reconciliation before stale reap."""
+
+    terminal = str(record.get("terminal") or "").upper()
+    work_item_id = str(record.get("work_item_id") or "")
+    try:
+        terminal_inactive = terminal not in farmctl._running_mt5_terminals()
+    except Exception:
+        terminal_inactive = False
+    released_claims: list[str] = []
+    if terminal_inactive:
+        try:
+            released_claims = release_stale_claims_for_terminal(root, terminal)
+        except Exception:
+            released_claims = []
+    claim_reconciled = False
+    try:
+        with farmctl.connect(root) as conn:
+            if work_item_id:
+                row = conn.execute(
+                    "SELECT status,claimed_by FROM work_items WHERE id=?",
+                    (work_item_id,),
+                ).fetchone()
+                claim_reconciled = row is None or not (
+                    str(row["status"]) == "active"
+                    and str(row["claimed_by"] or "").upper() == terminal
+                )
+            else:
+                row = conn.execute(
+                    "SELECT 1 FROM work_items WHERE status='active' AND claimed_by=? LIMIT 1",
+                    (terminal,),
+                ).fetchone()
+                claim_reconciled = row is None
+    except Exception:
+        claim_reconciled = False
+    return {
+        "terminal": terminal,
+        "work_item_id": work_item_id or None,
+        "terminal_inactive": terminal_inactive,
+        "claim_reconciled": claim_reconciled,
+        "released_stale_claims": released_claims,
+    }
+
+
+def _acquire_custom_history_lease(
+    root: Path, terminal: str
+) -> custom_history_lease.LeaseAcquireResult:
+    return custom_history_lease.acquire_lease(
+        root,
+        terminal=terminal,
+        reconcile_stale=lambda record: _reconcile_stale_custom_history_lease(
+            root, dict(record)
+        ),
+    )
+
+
+def _custom_history_stop_condition(result: dict[str, Any]) -> str | None:
+    text = json.dumps(result, sort_keys=True, default=str).casefold()
+    tokens = {
+        "history_error_32": ("error [32]", "error 32", "sharing_violation"),
+        "history_sync_error": ("history synchronization error", "history synchronization abort"),
+        "archive_drift": ("archive_manifest_mismatch", "archive hash drift", "archive write"),
+        "missing_real_ticks_marker": (
+            "missing_real_ticks_marker",
+            "real_ticks_marker_missing",
+            "real ticks marker missing",
+        ),
+        "isolation_gate": ("custom_history_isolation_fail_closed",),
+    }
+    for reason, values in tokens.items():
+        if any(value in text for value in values):
+            return reason
+    return None
+
+
 def _accumulate_avoid_terminal(payload: dict[str, Any], failed_terminal: str | None) -> list[str]:
     """Add a sick terminal to the item's avoid_terminals steering list.
 
@@ -915,6 +1305,15 @@ def _accumulate_avoid_terminal(payload: dict[str, Any], failed_terminal: str | N
     except Exception:
         enabled = set()
     if enabled and enabled.issubset(avoid):
+        if payload.get("diagnostic_non_admission") is True:
+            allowed_raw = payload.get("diagnostic_allowed_terminals", [])
+            allowed = {str(value or "").strip().upper() for value in allowed_raw}
+            avoid = {f"T{index}" for index in range(1, 11)} - allowed
+            payload["avoid_terminals"] = sorted(avoid)
+            payload["avoid_terminals_cleared_reason"] = (
+                "diagnostic_retry_hints_would_exclude_allowed_fleet"
+            )
+            return payload["avoid_terminals"]
         payload.pop("avoid_terminals", None)
         payload["avoid_terminals_cleared_reason"] = "would_exclude_whole_fleet"
         print(json.dumps({
@@ -1390,6 +1789,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         payload,
                         claimed_at_iso=now,
                         multisymbol=item_is_multisym,
+                        commit_class=_multisymbol_commit_class(item, payload, item_is_multisym),
                     )
                     cur = conn.execute(
                         """
@@ -1716,6 +2116,7 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                     payload,
                     claimed_at_iso=now,
                     multisymbol=item_is_multisym,
+                    commit_class=_multisymbol_commit_class(item, payload, item_is_multisym),
                 )
                 cur = conn.execute(
                     """
@@ -1915,48 +2316,115 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _prepare_staged_ex5(item: sqlite3.Row, terminal: str) -> dict[str, Any] | None:
+def _normalized_ex5_sha256(raw: Any, *, role: str) -> str:
+    value = str(raw or "").strip().lower()
+    if len(value) != 64 or any(ch not in "0123456789abcdef" for ch in value):
+        raise ValueError(f"{role}_invalid")
+    return value
+
+
+def _prepare_staged_ex5(item: sqlite3.Row, terminal: str) -> dict[str, Any]:
+    """Atomically stage and verify the exact EX5 required for this dispatch.
+
+    Manifest-pinned diagnostic binaries retain precedence. Ordinary work items
+    use the registry-resolved canonical EX5 and any enqueue-time hash binding;
+    legacy rows without a binding acquire one from that source at this gate.
+    Every path copies before dispatch so a dormant divergent terminal is
+    repaired only through the same verified gate that authorizes its run.
+    """
+
     payload = _json_loads(item["payload_json"])
     raw_path = payload.get("staged_ex5_path")
     raw_sha = payload.get("staged_ex5_sha256")
-    if raw_path is None and raw_sha is None:
-        return None
-    if not raw_path or not raw_sha:
-        raise ValueError("staged_ex5_path_and_sha256_required_together")
-    expected = str(raw_sha).strip().lower()
-    if len(expected) != 64 or any(ch not in "0123456789abcdef" for ch in expected):
-        raise ValueError("staged_ex5_sha256_invalid")
-    source = Path(str(raw_path))
-    if not source.is_file():
-        raise ValueError(f"staged_ex5_missing:{source}")
-    source_sha = _sha256_file(source)
-    if source_sha != expected:
-        raise ValueError(f"staged_ex5_source_sha256_mismatch:{source_sha}")
-
     ea_dir = farmctl._ea_dir_from_setfile_path(Path(str(item["setfile_path"])), str(item["ea_id"]))
     if ea_dir is None:
         ea_dir = farmctl._preferred_ea_dir(str(item["ea_id"]))
     if ea_dir is None:
         raise ValueError("staged_ex5_ea_dir_unresolved")
+    canonical_source = ea_dir / f"{ea_dir.name}.ex5"
+
+    if raw_path is not None or raw_sha is not None:
+        if not raw_path or not raw_sha:
+            raise ValueError("staged_ex5_path_and_sha256_required_together")
+        source = Path(str(raw_path))
+        if not source.is_absolute():
+            raise ValueError(f"staged_ex5_path_not_absolute:{source}")
+        expected = _normalized_ex5_sha256(
+            raw_sha, role="staged_ex5_sha256"
+        )
+        if payload.get("expected_ex5_sha256"):
+            payload_expected = _normalized_ex5_sha256(
+                payload["expected_ex5_sha256"],
+                role="expected_ex5_sha256",
+            )
+            if payload_expected != expected:
+                raise ValueError(
+                    "staged_ex5_expected_binding_mismatch:"
+                    f"{payload_expected}:staged:{expected}"
+                )
+        binding_source = "manifest_pinned_staged_ex5"
+    else:
+        source = canonical_source
+        payload_expected = payload.get("expected_ex5_sha256")
+        if payload_expected:
+            expected = _normalized_ex5_sha256(
+                payload_expected, role="expected_ex5_sha256"
+            )
+            binding_source = "work_item_expected_ex5_sha256"
+        else:
+            if not source.is_file():
+                raise ValueError(f"dispatch_ex5_missing:{source}")
+            expected = _sha256_file(source)
+            binding_source = "canonical_ex5_at_dispatch"
+
+    if not source.is_file():
+        raise ValueError(f"staged_ex5_missing:{source}")
+    source_sha = _sha256_file(source)
+    if source_sha != expected:
+        if binding_source == "manifest_pinned_staged_ex5":
+            raise ValueError(
+                f"staged_ex5_source_sha256_mismatch:{source_sha}"
+            )
+        raise ValueError(
+            f"dispatch_ex5_source_sha256_mismatch:{source_sha}:expected:{expected}"
+        )
+
     destination = farmctl.MT5_ROOT / terminal / "MQL5" / "Experts" / "QM" / f"{ea_dir.name}.ex5"
     destination.parent.mkdir(parents=True, exist_ok=True)
+    preexisting_sha = _sha256_file(destination) if destination.is_file() else None
     temporary = destination.with_suffix(destination.suffix + f".{os.getpid()}.tmp")
     try:
         shutil.copy2(source, temporary)
         copied_sha = _sha256_file(temporary)
         if copied_sha != expected:
-            raise ValueError(f"staged_ex5_copy_sha256_mismatch:{copied_sha}")
+            if binding_source == "manifest_pinned_staged_ex5":
+                raise ValueError(f"staged_ex5_copy_sha256_mismatch:{copied_sha}")
+            raise ValueError(
+                f"dispatch_ex5_copy_sha256_mismatch:{copied_sha}:expected:{expected}"
+            )
         os.replace(temporary, destination)
     finally:
         temporary.unlink(missing_ok=True)
     pre_run_sha = _sha256_file(destination)
     if pre_run_sha != expected:
-        raise ValueError(f"staged_ex5_pre_run_sha256_mismatch:{pre_run_sha}")
+        if binding_source == "manifest_pinned_staged_ex5":
+            raise ValueError(
+                f"staged_ex5_pre_run_sha256_mismatch:{pre_run_sha}"
+            )
+        raise ValueError(
+            f"dispatch_ex5_pre_run_sha256_mismatch:{pre_run_sha}:expected:{expected}"
+        )
     return {
-        "source_path": str(source),
-        "destination_path": str(destination),
+        "source_path": str(source.resolve()),
+        "destination_path": str(destination.resolve()),
         "required_sha256": expected,
+        "source_sha256": source_sha,
+        "binding_source": binding_source,
+        "preexisting_destination_sha256": preexisting_sha,
+        "copied": True,
+        "restaged": preexisting_sha != expected,
         "pre_run_sha256": pre_run_sha,
+        "verified": True,
     }
 
 
@@ -2047,12 +2515,13 @@ def _q09_sidecar_matches(
     aggregate_path: Path,
     aggregate: dict[str, Any],
 ) -> bool:
-    """Require the append-only Q09 sidecar before accepting its aggregate."""
+    """Require the appropriate sealed Q09 sidecar before accepting an aggregate."""
 
     if str(item["phase"] or "").upper() != "Q09_NEWS":
         return True
     try:
         aggregate_sha256 = _sha256_file(aggregate_path)
+        payload = _json_loads(item["payload_json"])
         connection = farmctl.connect(root)
         try:
             row = connection.execute(
@@ -2064,6 +2533,40 @@ def _q09_sidecar_matches(
             ).fetchone()
         finally:
             connection.close()
+        if payload.get("diagnostic_non_admission") is True:
+            # Diagnostic results must stay outside q09_news_tests.  Their
+            # sibling summary is the fail-closed sidecar and forces the worker
+            # verdict to REVIEW_REQUIRED even when the underlying Q09
+            # adjudication happens to find a lockable arm.
+            if row is not None:
+                return False
+            diagnostic_path = aggregate_path.resolve().parent / "summary.json"
+            diagnostic = json.loads(
+                diagnostic_path.read_text(encoding="utf-8-sig")
+            )
+            evidence_path = Path(str(diagnostic.get("evidence_path") or ""))
+            return bool(
+                diagnostic.get("schema_version")
+                == "q09-live-news-diagnostic-summary/v1"
+                and diagnostic.get("diagnostic_non_admission") is True
+                and diagnostic.get("diagnostic_contract")
+                == "q09-live-news-backfill/v1"
+                and str(diagnostic.get("work_item_id") or "") == str(item["id"])
+                and str(diagnostic.get("verdict") or "") == "REVIEW_REQUIRED"
+                and str(diagnostic.get("underlying_q09_verdict") or "")
+                == str(aggregate.get("verdict") or "")
+                and Path(str(diagnostic.get("aggregate_path") or "")).resolve()
+                == aggregate_path.resolve()
+                and str(diagnostic.get("aggregate_sha256") or "")
+                == aggregate_sha256
+                and evidence_path.is_file()
+                and str(diagnostic.get("evidence_sha256") or "")
+                == _sha256_file(evidence_path)
+                and diagnostic.get("diagnostic_anchor_path")
+                == payload.get("diagnostic_anchor_path")
+                and diagnostic.get("diagnostic_anchor_sha256")
+                == payload.get("diagnostic_anchor_sha256")
+            )
         return bool(
             row is not None
             and str(row["verdict"]) == str(aggregate.get("verdict") or "")
@@ -2246,6 +2749,8 @@ def _finish_work_item(
             ):
                 payload["q09_sidecar_verification"] = "missing_or_mismatched"
                 summary_data = None
+            elif summary_data and payload.get("diagnostic_non_admission") is True:
+                payload["q09_sidecar_verification"] = "diagnostic_summary_matched"
             if summary_data:
                 summary_path, summary = summary_data
                 cold_signature = (
@@ -2347,20 +2852,32 @@ def _finish_work_item(
                             root, item["parent_task_id"]
                         ),
                     }
-                effective_min_trades = int(
-                    payload.get("effective_min_trades")
-                    or summary.get("min_trades_required")
-                    or 5
-                )
-                verdict, reason = farmctl._derive_verdict_from_summary(
-                    summary,
-                    min_trades=effective_min_trades,
-                    phase=item["phase"],
-                )
-                _mirror_real_phase_artifacts(item, summary_path, verdict)
+                if payload.get("diagnostic_non_admission") is True:
+                    diagnostic_summary_path = summary_path.resolve().parent / "summary.json"
+                    diagnostic_summary = json.loads(
+                        diagnostic_summary_path.read_text(encoding="utf-8-sig")
+                    )
+                    payload["diagnostic_underlying_q09_verdict"] = summary.get("verdict")
+                    summary_path = diagnostic_summary_path
+                    summary = diagnostic_summary
+                    verdict, reason = "REVIEW_REQUIRED", "diagnostic_non_admission"
+                    payload["evidence_provenance"] = "phase_runner_diagnostic_non_admission"
+                    payload["verdict_taxonomy"] = "review"
+                else:
+                    effective_min_trades = int(
+                        payload.get("effective_min_trades")
+                        or summary.get("min_trades_required")
+                        or 5
+                    )
+                    verdict, reason = farmctl._derive_verdict_from_summary(
+                        summary,
+                        min_trades=effective_min_trades,
+                        phase=item["phase"],
+                    )
+                    _mirror_real_phase_artifacts(item, summary_path, verdict)
+                    payload["evidence_provenance"] = "phase_runner" if item["phase"] in farmctl.REAL_PHASE_RUNNER_PHASES else "real_mt5"
+                    payload["verdict_taxonomy"] = "infra" if verdict == "INFRA_FAIL" else "strategy"
                 payload["verdict_reason"] = reason
-                payload["evidence_provenance"] = "phase_runner" if item["phase"] in farmctl.REAL_PHASE_RUNNER_PHASES else "real_mt5"
-                payload["verdict_taxonomy"] = "infra" if verdict == "INFRA_FAIL" else "strategy"
                 payload["run_smoke_exit_code"] = exit_code
                 # 2026-06-10 — two-stage prescreen, worker path (mirrors the
                 # farmctl dispatch classification): a prescreen PASS is NOT a
@@ -3188,15 +3705,72 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
                 {"reason": "staged_ex5_preflight_failed", "detail": str(exc)},
             ),
         }
-    if staging:
-        existing_payload["staged_ex5"] = staging
+    existing_payload["staged_ex5"] = staging
+    existing_payload["expected_ex5_sha256"] = staging["required_sha256"]
+    existing_payload["expected_ex5_path"] = staging["source_path"]
+    existing_payload["dispatch_ex5_verified_at"] = farmctl.utc_now()
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='active'",
+            (json.dumps(existing_payload, sort_keys=True), farmctl.utc_now(), item["id"]),
+        )
+        conn.commit()
+    row = dict(row)
+    row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
+    history_gate = _custom_history_gate(root, terminal)
+    if history_gate.get("required") and (
+        history_gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES
+        or history_gate.get("admission_allowed") is False
+    ):
+        return {
+            "action": "custom_history_gate_deferred",
+            "item_id": item["id"],
+            **_defer_custom_history_gate(root, row, terminal, history_gate),
+        }
+    copy_on_claim = _privatize_custom_history_claim(root, row, terminal, history_gate)
+    if copy_on_claim.get("required") and (
+        copy_on_claim.get("status") not in CUSTOM_HISTORY_COPY_PASS_STATUSES
+    ):
+        return {
+            "action": "custom_history_copy_on_claim_deferred",
+            "item_id": item["id"],
+            **_defer_custom_history_gate(root, row, terminal, copy_on_claim),
+        }
+    if copy_on_claim.get("required"):
+        existing_payload["custom_history_copy_on_claim"] = copy_on_claim
+        existing_payload["custom_history_pre_copy_audit_sha256"] = history_gate.get(
+            "audit_sha256"
+        )
         with farmctl.connect(root) as conn:
             conn.execute(
                 "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='active'",
                 (json.dumps(existing_payload, sort_keys=True), farmctl.utc_now(), item["id"]),
             )
             conn.commit()
-        row = dict(row)
+        row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
+
+    # Re-audit the mixed topology after every mutation.  This proves both the
+    # dynamic family link minima and every private manifest SHA before spawn.
+    if copy_on_claim.get("status") == "PASS_PRIVATIZED":
+        post_copy_gate = _custom_history_gate(root, terminal)
+        if (
+            post_copy_gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES
+            or post_copy_gate.get("admission_allowed") is False
+        ):
+            return {
+                "action": "custom_history_post_copy_gate_deferred",
+                "item_id": item["id"],
+                **_defer_custom_history_gate(root, row, terminal, post_copy_gate),
+            }
+        existing_payload["custom_history_post_copy_audit_sha256"] = post_copy_gate.get(
+            "audit_sha256"
+        )
+        with farmctl.connect(root) as conn:
+            conn.execute(
+                "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='active'",
+                (json.dumps(existing_payload, sort_keys=True), farmctl.utc_now(), item["id"]),
+            )
+            conn.commit()
         row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
     _acquire_launch_slot(terminal)
     spawn = farmctl._spawn_work_item_runner(root, row, terminal)
@@ -3408,6 +3982,69 @@ def _trigger_disk_purge() -> None:
         pass
 
 
+def _pause_after_unclaimed(claim: dict[str, Any], terminal: str) -> None:
+    if claim.get("reason") == "sqlite_locked":
+        print(json.dumps({"event": "sqlite_locked", "terminal": terminal, "action": "claim_backoff"}), flush=True)
+        time.sleep(SQLITE_LOCK_BACKOFF_SECONDS + random.random())
+        return
+    if claim.get("reason") == "news_calendar_preflight_failed":
+        print(
+            json.dumps(
+                {
+                    "event": "news_calendar_preflight_deferred",
+                    "terminal": terminal,
+                    "status": claim.get("calendar_status"),
+                    "principal": claim.get("principal"),
+                    "common_dir": claim.get("common_dir"),
+                    "news_calendar_preflight": claim.get("news_calendar_preflight"),
+                },
+                sort_keys=True,
+            ),
+            flush=True,
+        )
+        time.sleep(NEWS_CALENDAR_GUARD_SLEEP_SECONDS)
+        return
+    if claim.get("reason") in {"commit_probe_failed", "commit_headroom_low"}:
+        print(json.dumps({
+            "event": (
+                "commit_probe_failed_pause"
+                if claim.get("reason") == "commit_probe_failed"
+                else "commit_headroom_low_pause"
+            ),
+            "terminal": terminal,
+            "commit_headroom_gb": claim.get("commit_headroom_gb"),
+            "commit_reserved_gb": claim.get("commit_reserved_gb"),
+            "effective_commit_headroom_gb": claim.get("effective_commit_headroom_gb"),
+            "commit_reservation_count": claim.get("commit_reservation_count"),
+            "commit_reservation_detail": claim.get("commit_reservation_detail"),
+            "threshold_gb": claim.get("threshold_gb"),
+        }), flush=True)
+        time.sleep(COMMIT_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
+        return
+    if claim.get("reason") in {"multisymbol_registry_unavailable", "watchdog_reset_pending"}:
+        print(json.dumps({
+            "event": f"{claim.get('reason')}_pause",
+            "terminal": terminal,
+            "error": claim.get("error"),
+        }), flush=True)
+        time.sleep(POLL_SLEEP_SECONDS + random.uniform(0, 5))
+        return
+    reason = str(claim.get("reason") or "unknown")
+    now_mono = time.monotonic()
+    interval = 300.0 if reason == "no_pending_claimable" else 60.0
+    if now_mono - _UNCLAIMED_DECLINE_LOG_LAST.get(reason, 0.0) >= interval:
+        _UNCLAIMED_DECLINE_LOG_LAST[reason] = now_mono
+        print(json.dumps({
+            "event": "claim_declined",
+            "terminal": terminal,
+            "reason": reason,
+            "lock": claim.get("lock"),
+            "history_skipped": len(claim.get("history_skipped") or []),
+            "launch_cooldown_skipped": len(claim.get("launch_cooldown_skipped") or []),
+        }), flush=True)
+    time.sleep(POLL_SLEEP_SECONDS)
+
+
 def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
     """Run the resident production owner for this terminal's runner Jobs.
 
@@ -3422,6 +4059,8 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
     released = release_stale_claims_for_terminal(root, terminal)
     if released:
         print(json.dumps({"event": "released_stale_claims", "terminal": terminal, "item_ids": released}), flush=True)
+    startup_gate = _custom_history_gate(root, terminal)
+    print(json.dumps({"event": "custom_history_startup_gate", **startup_gate}, sort_keys=True), flush=True)
     while not _STOP:
         free_gb = _disk_free_gb(root)
         if free_gb < DISK_MIN_FREE_GB:
@@ -3437,67 +4076,69 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
             # jitter so the fleet doesn't wake in lockstep and re-spike RAM together
             time.sleep(RAM_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
             continue
-        claim = claim_atomic(root, terminal)
-        if not claim.get("claimed"):
-            if claim.get("reason") == "sqlite_locked":
-                print(json.dumps({"event": "sqlite_locked", "terminal": terminal, "action": "claim_backoff"}), flush=True)
-                time.sleep(SQLITE_LOCK_BACKOFF_SECONDS + random.random())
-                continue
-            if claim.get("reason") == "news_calendar_preflight_failed":
-                print(
-                    json.dumps(
-                        {
-                            "event": "news_calendar_preflight_deferred",
-                            "terminal": terminal,
-                            "status": claim.get("calendar_status"),
-                            "principal": claim.get("principal"),
-                            "common_dir": claim.get("common_dir"),
-                            "news_calendar_preflight": claim.get(
-                                "news_calendar_preflight"
-                            ),
-                        },
-                        sort_keys=True,
-                    ),
-                    flush=True,
-                )
-                time.sleep(NEWS_CALENDAR_GUARD_SLEEP_SECONDS)
-                continue
-            if claim.get("reason") in {"commit_probe_failed", "commit_headroom_low"}:
-                print(json.dumps({
-                    "event": (
-                        "commit_probe_failed_pause"
-                        if claim.get("reason") == "commit_probe_failed"
-                        else "commit_headroom_low_pause"
-                    ),
-                    "terminal": terminal,
-                    "commit_headroom_gb": claim.get("commit_headroom_gb"),
-                    "commit_reserved_gb": claim.get("commit_reserved_gb"),
-                    "effective_commit_headroom_gb": claim.get("effective_commit_headroom_gb"),
-                    "commit_reservation_count": claim.get("commit_reservation_count"),
-                    # Per-claim expected peak / measured usage / residual: without
-                    # it a starving fleet looks identical to a busy one (2026-07-26).
-                    "commit_reservation_detail": claim.get("commit_reservation_detail"),
-                    "threshold_gb": claim.get("threshold_gb"),
-                }), flush=True)
-                time.sleep(COMMIT_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
-                continue
-            if claim.get("reason") in {
-                "multisymbol_registry_unavailable",
-                "watchdog_reset_pending",
-            }:
-                print(json.dumps({
-                    "event": f"{claim.get('reason')}_pause",
-                    "terminal": terminal,
-                    "error": claim.get("error"),
-                }), flush=True)
-                time.sleep(POLL_SLEEP_SECONDS + random.uniform(0, 5))
-                continue
+        if not _claim_queue_may_need_mutation(root, terminal):
             time.sleep(POLL_SLEEP_SECONDS)
             continue
-        item = claim["item"]
-        print(json.dumps({"event": "claimed", "terminal": terminal, "item_id": item["id"]}), flush=True)
-        result = _run_claimed_item(root, item, terminal, timeout_seconds)
-        print(json.dumps({"event": "run_result", "terminal": terminal, **result}, sort_keys=True), flush=True)
+        history_gate = _custom_history_gate(root, terminal)
+        if history_gate.get("required") and (
+            history_gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES
+            or history_gate.get("admission_allowed") is False
+        ):
+            print(json.dumps({"event": "custom_history_gate_pause", **history_gate}, sort_keys=True), flush=True)
+            time.sleep(CUSTOM_HISTORY_GUARD_SLEEP_SECONDS)
+            continue
+        try:
+            lease_result = _acquire_custom_history_lease(root, terminal)
+        except Exception as exc:
+            print(json.dumps({
+                "event": "custom_history_lease_error_pause",
+                "terminal": terminal,
+                "error": repr(exc),
+            }, sort_keys=True), flush=True)
+            time.sleep(CUSTOM_HISTORY_GUARD_SLEEP_SECONDS)
+            continue
+        if lease_result.required and not lease_result.acquired:
+            print(json.dumps({
+                "event": "custom_history_lease_busy",
+                "terminal": terminal,
+                "reason": lease_result.reason,
+                "detail": lease_result.detail,
+            }, sort_keys=True), flush=True)
+            time.sleep(POLL_SLEEP_SECONDS + random.uniform(0, 2))
+            continue
+        lease_handle = lease_result.handle
+        try:
+            claim = claim_atomic(root, terminal)
+            if not claim.get("claimed"):
+                _pause_after_unclaimed(claim, terminal)
+                continue
+            item = claim["item"]
+            if lease_handle is not None:
+                lease_handle.bind_work_item(item["id"])
+            print(json.dumps({
+                "event": "claimed",
+                "terminal": terminal,
+                "item_id": item["id"],
+                "custom_history_gate_audit_sha256": history_gate.get("audit_sha256"),
+                "custom_history_lease_token": lease_handle.token if lease_handle else None,
+            }), flush=True)
+            result = _run_claimed_item(root, item, terminal, timeout_seconds)
+            stop_condition = _custom_history_stop_condition(result)
+            if stop_condition and history_gate.get("required"):
+                custom_history_lease.engage_emergency_mode(
+                    root,
+                    reason=f"runtime_stop_condition:{stop_condition}",
+                    activation_sha256=str(history_gate.get("activation_sha256")),
+                )
+            print(json.dumps({"event": "run_result", "terminal": terminal, **result}, sort_keys=True), flush=True)
+        finally:
+            if lease_handle is not None:
+                release_status = lease_handle.release()
+                print(json.dumps({
+                    "event": "custom_history_lease_release",
+                    "terminal": terminal,
+                    "status": release_status,
+                }, sort_keys=True), flush=True)
     return 0
 
 
@@ -3602,15 +4243,38 @@ def main(argv: list[str] | None = None) -> int:
     }, sort_keys=True), flush=True)
     _start_stalldump_watcher(args.terminal)
     if args.work_item_id:
-        claim = claim_specific_atomic(args.root, args.terminal, args.work_item_id)
-        if not claim.get("claimed"):
-            print(json.dumps({"event": "target_claim_refused", "terminal": args.terminal, **claim}, sort_keys=True))
+        history_gate = _custom_history_gate(args.root, args.terminal)
+        if history_gate.get("required") and (
+            history_gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES
+            or history_gate.get("admission_allowed") is False
+        ):
+            print(json.dumps({"event": "target_custom_history_gate_refused", **history_gate}, sort_keys=True))
             return 2
-        item = claim["item"]
-        print(json.dumps({"event": "target_claimed", "terminal": args.terminal, "item_id": item["id"]}), flush=True)
-        result = _run_claimed_item(args.root, item, args.terminal, int(args.timeout_minutes * 60))
-        print(json.dumps({"event": "target_run_result", "terminal": args.terminal, **result}, sort_keys=True), flush=True)
-        return 0 if result.get("status") == "done" and result.get("verdict") == "PASS" else 1
+        lease_result = _acquire_custom_history_lease(args.root, args.terminal)
+        if lease_result.required and not lease_result.acquired:
+            print(json.dumps({
+                "event": "target_custom_history_lease_refused",
+                "terminal": args.terminal,
+                "reason": lease_result.reason,
+                "detail": lease_result.detail,
+            }, sort_keys=True))
+            return 2
+        lease_handle = lease_result.handle
+        try:
+            claim = claim_specific_atomic(args.root, args.terminal, args.work_item_id)
+            if not claim.get("claimed"):
+                print(json.dumps({"event": "target_claim_refused", "terminal": args.terminal, **claim}, sort_keys=True))
+                return 2
+            item = claim["item"]
+            if lease_handle is not None:
+                lease_handle.bind_work_item(item["id"])
+            print(json.dumps({"event": "target_claimed", "terminal": args.terminal, "item_id": item["id"]}), flush=True)
+            result = _run_claimed_item(args.root, item, args.terminal, int(args.timeout_minutes * 60))
+            print(json.dumps({"event": "target_run_result", "terminal": args.terminal, **result}, sort_keys=True), flush=True)
+            return 0 if result.get("status") == "done" and result.get("verdict") == "PASS" else 1
+        finally:
+            if lease_handle is not None:
+                lease_handle.release()
     return run_loop(args.root, args.terminal, int(args.timeout_minutes * 60))
 
 

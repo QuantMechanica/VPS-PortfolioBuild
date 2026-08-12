@@ -2,60 +2,48 @@
 
 **EA ID:** QM5_11405
 **Slug:** `carter-tf11-adx-weak-prevday-breakout-h1`
-**Source:** `29c77a02-59bd-52f7-bcb3-b3108d5f1e79` (see `strategy-seeds/sources/29c77a02-59bd-52f7-bcb3-b3108d5f1e79/`)
-**Author of this spec:** Claude
-**Last revised:** 2026-06-18
+**Source:** `29c77a02-59bd-52f7-bcb3-b3108d5f1e79`
+**Author of this spec:** Codex
+**Last revised:** 2026-08-03
 
 ---
 
 ## 1. Strategy Logic
 
-Prior-day high/low breakout traded only while the trend is weak (ranging). On the
-H1 base timeframe the EA reads ADX(14) on the last closed bar; a value below the
-weak threshold (default 35) confirms a consolidation/range regime rather than a
-strong trend. Yesterday's daily High and Low are read once per broker day from the
-completed D1 bar (shift 1), with the day boundary derived from the broker-time bar
-timestamp via `QM_BrokerToUTC`.
-
-The setup is a false break of the opposite prior-day extreme: if the last closed
-H1 bar's Low pierced below `prevDayLow - buffer` (false breakdown), the EA arms a
-BUYSTOP at `prevDayHigh + buffer`; if the last closed H1 bar's High pierced above
-`prevDayHigh + buffer` (false breakout), it arms a SELLSTOP at `prevDayLow - buffer`.
-The probe uses the intraday H1 bar Low/High (a genuine excursion, not an open gap),
-so it is valid on gapless .DWX CFDs. The pending stop order carries a fixed stop
-(30 pips) and take-profit (60 pips), moves to break-even after +30 pips, and is
-cancelled at the end of the current broker day if it never triggers. One position
-and at most one live pending order per magic.
+On each completed H1 bar, the EA requires ADX(14) below 35 and checks whether that bar moved at least 15 pips beyond the previous day's range. A move below the previous-day low arms a buy stop 15 pips above the previous-day high, while a move above the previous-day high arms a sell stop 15 pips below the previous-day low; an unfilled order expires at the end of the broker day. A filled trade has a 30-pip stop, a 60-pip target, and moves its stop to break-even after a 30-pip favorable move.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_adx_period` | 14 | 7-28 | ADX period on the H1 base TF |
-| `strategy_adx_weak_threshold` | 35.0 | 25-35 | Trade only when ADX < this (weak/ranging regime) |
-| `strategy_breakout_buffer_pips` | 15 | 5-15 | Pips beyond the prior-day extreme for probe + entry |
-| `strategy_sl_pips` | 30 | 20-40 | Initial stop distance from entry (pips) |
-| `strategy_tp_pips` | 60 | 40-80 | Take-profit distance from entry (pips) |
-| `strategy_be_trigger_pips` | 30 | 20-40 | Move SL to break-even after +this many pips |
-| `strategy_spread_cap_pips` | 20.0 | 5-30 | Block a genuinely wide spread above this (pips); fail-open on zero spread |
+|---|---:|---|---|
+| `strategy_adx_period` | 14 | 7–28 | ADX lookback on H1. |
+| `strategy_adx_weak_threshold` | 35.0 | 25–35 | Entries require ADX strictly below this weak-trend ceiling. |
+| `strategy_breakout_buffer_pips` | 15 | 5–15 | Distance beyond the previous-day extreme for both the probe and pending entry. |
+| `strategy_sl_pips` | 30 | 1–40 | Initial stop distance; the card caps P2 at 40 pips. |
+| `strategy_tp_pips` | 60 | 40–80 | Fixed take-profit distance from pending entry. |
+| `strategy_be_trigger_pips` | 30 | 1–60 | Favorable distance that triggers an exact break-even stop. |
+| `strategy_spread_cap_pips` | 20 | 1–20 | Blocks only a genuinely positive modeled spread above this value. |
+
+> Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not repeated here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — major liquid pair, the card's primary breakout instrument
-- `GBPUSD.DWX` — major pair with frequent intraday range expansions
-- `USDJPY.DWX` — major pair; 3-digit pip scaling handled by the framework
-- `AUDUSD.DWX` — liquid commodity-linked pair with clean prior-day levels
-- `USDCAD.DWX` — liquid major; range/consolidation regimes common
-- `USDCHF.DWX` — liquid major; complements the USD-pair basket
+
+- `EURUSD.DWX` — liquid FX major named by the approved card.
+- `GBPUSD.DWX` — liquid FX major named by the approved card.
+- `USDJPY.DWX` — liquid FX major named by the approved card; framework pip conversion handles JPY scaling.
+- `AUDUSD.DWX` — liquid FX major named by the approved card.
+- `USDCAD.DWX` — liquid FX major named by the approved card.
+- `USDCHF.DWX` — liquid FX major named by the approved card.
 
 **Explicitly NOT for:**
-- Index / metal / energy `.DWX` symbols — the card scopes this strategy to FX
-  majors; pip scaling and the 15/30/60-pip levels are calibrated for FX.
+
+- Non-FX `.DWX` symbols — the approved card restricts the portable basket to these six FX majors and calibrates its distances in FX pips.
 
 ---
 
@@ -64,7 +52,7 @@ and at most one live pending order per magic.
 | Aspect | Value |
 |---|---|
 | Base timeframe | `H1` |
-| Multi-timeframe refs | `PERIOD_D1` (prior-day High/Low, shift 1) |
+| Multi-timeframe refs | `D1` previous-day high and low at shift 1 |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
@@ -73,11 +61,12 @@ and at most one live pending order per magic.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `~50` |
-| Typical hold time | `intraday to a few hours (same broker day)` |
-| Expected drawdown profile | `moderate; fixed 30-pip stop, 60-pip target (2R)` |
-| Regime preference | `breakout (within a weak-ADX range)` |
-| Win rate target (qualitative) | `medium` |
+| Trades / year / symbol | Approximately 50 |
+| Expected trade frequency | Roughly weekly, derived from the card's 50 trades/year estimate |
+| Typical hold time | Hours to several days; the card specifies no filled-position time stop |
+| Expected drawdown profile | Losses can cluster when weak-ADX range failures continue instead of crossing the prior-day range |
+| Regime preference | Weak-ADX consolidation followed by a false break and cross-range expansion |
+| Win rate target (qualitative) | Medium |
 
 ---
 
@@ -87,8 +76,8 @@ This card was mechanised from:
 
 **Source ID:** `29c77a02-59bd-52f7-bcb3-b3108d5f1e79`
 **Source type:** `book`
-**Pointer:** Thomas Carter, "20 Trend Following Systems" (2014), Strategy #11
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11405_carter-tf11-adx-weak-prevday-breakout-h1.md`
+**Pointer:** Thomas Carter, *20 Trend Following Systems* (2014), Strategy #11; local PDF `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\514732392-Forex-Trend-Following-Strategy.pdf`
+**R1–R4 verdict (Q00):** R1 lineage recorded and R2–R4 PASS per `artifacts/cards_approved/QM5_11405_carter-tf11-adx-weak-prevday-breakout-h1.md`
 
 ---
 
@@ -108,7 +97,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
-
-> When this EA cycles back to Q01 from a Q02 zero-trade event, add a row:
-> `| v2 | YYYY-MM-DD | Q02 all-symbol zero-trades; widened entry filter X | <commit> |`
+| v1 | 2026-08-03 | Initial build from card | a3058d61-2053-4133-a7eb-b90dde62df9e |

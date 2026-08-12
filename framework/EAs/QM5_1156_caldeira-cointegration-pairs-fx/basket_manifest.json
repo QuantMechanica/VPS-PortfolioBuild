@@ -1,12 +1,24 @@
 {
-  "logical_symbol": "QM5_1156_EURUSD_GBPUSD_COINTEGRATION_M30",
-  "host_symbol": "EURUSD.DWX",
+  "logical_symbol": "QM5_1156_USDCHF_AUDUSD_COINTEGRATION_M30",
+  "host_symbol": "USDCHF.DWX",
   "host_timeframe": "M30",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
   "basket_symbols": [
     "EURUSD.DWX",
-    "GBPUSD.DWX"
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "USDCHF.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "traded_symbols": [
+    "USDCHF.DWX",
+    "AUDUSD.DWX"
   ],
   "notes": [
-    "Concrete slot-00 Caldeira/Moura FX cointegration pair from the approved QM5_1156 card. The EA runs from the EURUSD.DWX host setfile with strategy_pair_slot=0 and trades the EURUSD.DWX/GBPUSD.DWX market-neutral spread using rolling Engle-Granger OLS/ADF and residual z-score rules. Added 2026-06-26 because prior Q02 attempts treated the pair-slot files as component-symbol tests and produced terminal INFRA_FAIL rows; this logical basket route lets Q02 judge the pair package rather than either leg standalone."
+    "Active slot-12 Caldeira/Moura FX cointegration package from the pre-existing approved QM5_1156 Card. The USDCHF.DWX M30 host setfile selects strategy_pair_slot=12; signal formation and residual state use closed D1 bars, and both traded legs share the registered pair-package magic.",
+    "The frozen sign-aware 66-pair scan maps USDCHF.DWX/AUDUSD.DWX to this explicit slot. Its adverse scan result makes Q02 a one-shot cadence/economics gate with no refit or rescue.",
+    "The retired slot-00 logical manifest that reached Q02 PASS and Q04 FAIL is preserved at docs/basket_manifest_slot00_q02_snapshot.json."
   ]
 }

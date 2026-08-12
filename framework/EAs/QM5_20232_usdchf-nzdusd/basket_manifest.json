@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_20232_USDCHF_NZDUSD_COINTEGRATION_D1",
+  "host_symbol": "USDCHF.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "USDCHF.DWX",
+    "NZDUSD.DWX"
+  ],
+  "traded_symbols": [
+    "USDCHF.DWX",
+    "NZDUSD.DWX"
+  ],
+  "notes": [
+    "Dedicated frozen-beta USDCHF/NZDUSD D1 cointegration sleeve selected as rank 55 in the sign-aware 66-pair scan. Both symbols are traded; no conversion-only history or magic slot is declared.",
+    "DEV Sharpe 0.036, OOS Sharpe -0.387, fixed beta -0.270458913, and 108.268-D1-bar half-life are adverse frontier evidence. Q02 is a one-shot retirement gate with no refit; the USD 100000 tester uses canonical RISK_FIXED=1000."
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "artifact_type": "fx_cointegration_existing_card_q02_handoff",
+  "generated_at_utc": "2026-08-11T23:56:00Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "6224d796765af0eb0fb969b2258f5e327ae9b9dd",
+  "selection": {
+    "mode": "existing_card_fallback",
+    "reason": "The frozen sign-aware 66-pair frontier is fully mechanized; a new Card or EA would duplicate existing work.",
+    "ea_id": "QM5_1257",
+    "pair_slot": 8,
+    "scan_rank": 58,
+    "host_symbol": "GBPUSD.DWX",
+    "companion_symbol": "USDJPY.DWX",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "host_timeframe": "H1",
+    "signal_timeframes": [
+      "D1",
+      "H1"
+    ],
+    "scan_evidence": {
+      "dev_net_sharpe": -0.103537893720,
+      "oos_net_sharpe": -0.419922430787,
+      "oos_return_percent": -3.600289808739,
+      "oos_state_changes": 16,
+      "dev_beta": -0.388288093234,
+      "half_life_d1_bars": 76.715376014881,
+      "disposition": "one_shot_q02_no_refit_or_rescue"
+    }
+  },
+  "anchors": {
+    "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_Q04_FAIL",
+    "q02_oninit_or_no_history_blocker_found": false
+  },
+  "source": {
+    "citation": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+    "approved_artifact": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1257_lemishko-fx-cointpair.md",
+    "approved_artifact_sha256": "d1c36d0c6c13647eded8bd7ae4cb8424d8746b51d703d2854900c5094b440dd9",
+    "approval_or_mechanics_changed": false
+  },
+  "risk_contract": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "ml_grid_martingale": false
+  },
+  "q01": {
+    "strict_compile": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_summary": "D:/QM/reports/compile/20260811_234320/summary.csv",
+    "compile_log": "C:/QM/repo/framework/build/compile/20260811_234320/QM5_1257_lemishko-fx-cointpair.compile.log",
+    "strict_build_check": "PASS",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260811_234424.json",
+    "mq5_sha256": "28bd88d0a7a7401ec7fe3b3a4f99ef3ba6b9fec146298c512b1c76e1adf7e12b",
+    "ex5_sha256": "86c6e9f077e37ddd5aea1e15b253cd4509c7f180c846cc6aebd806fa17d95cbd",
+    "manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+    "retired_manifest_snapshot_sha256": "9174245647fba815de66edae9ddef6042a46b3c34beb0c7cdf39fd1fa5e4de2a",
+    "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+    "card_sha256": "aa0313ea4218ed418432adcdf3a34b49cd3c4f46e725fefd31ec5b2266b2f9ae",
+    "card_schema_lint": "PASS",
+    "regression_tests": {
+      "passed": 63,
+      "failed": 0
+    },
+    "target_sweep_dry_run_selected": 0,
+    "manual_smoke_or_backtest_run": false
+  },
+  "capacity_sample": {
+    "scanned_at_utc": "2026-08-11T23:53:33Z",
+    "binding_factory_terminal_ceiling": 7,
+    "running_factory_terminal_count": 3,
+    "running_factory_terminals": [
+      "T7",
+      "T8",
+      "T10"
+    ],
+    "excluded_from_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "q02_enqueue": {
+    "approved_review_task_id": "a0571cb2-8ad3-4187-9434-5e8b545d71f7",
+    "enqueued_at_utc": "2026-08-11T23:53:50Z",
+    "task_id": "39ee6910-5d04-4087-83b0-65a6fd6b22f9",
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "created_count": 1,
+    "skipped_count": 0,
+    "verified_exact_identity_count": 1,
+    "verified_status": "pending",
+    "verified_attempt_count": 0,
+    "verified_claimed_by": null,
+    "dispatch_tick_run": false,
+    "tester_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}

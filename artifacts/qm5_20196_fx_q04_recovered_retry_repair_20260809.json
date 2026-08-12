@@ -1,0 +1,126 @@
+{
+  "schema_version": "qm.fx-q04-recovered-retry-repair/v1",
+  "generated_at_utc": "2026-08-09T12:22:28Z",
+  "branch": "agents/board-advisor",
+  "frontier": {
+    "frozen_scan_relationships": 66,
+    "unbuilt_relationships": 0,
+    "source": "docs/research/FX_COINTEGRATION_FRONTIER_Q02_CPU_CEILING_STOP_2026-08-07.md"
+  },
+  "anchors": {
+    "QM5_12532": {
+      "q02": "PASS",
+      "q04": "PASS",
+      "latest_terminal_phase": "Q05",
+      "latest_terminal_verdict": "FAIL"
+    },
+    "QM5_12533": {
+      "q02": "PASS",
+      "latest_terminal_phase": "Q04",
+      "latest_terminal_verdict": "FAIL"
+    }
+  },
+  "target": {
+    "ea_id": "QM5_20196",
+    "ea_label": "QM5_20196_eurusd-jpy-coint",
+    "logical_symbol": "QM5_20196_EURUSD_USDJPY_COINTEGRATION_D1",
+    "host_symbol": "EURUSD.DWX",
+    "traded_symbols": [
+      "EURUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "period": "D1",
+    "q02_predecessor_work_item_id": "a34c39c1-7ef6-43e2-b1b4-eb6a717271b2",
+    "q02_predecessor_verdict": "PASS",
+    "preserved_q04_work_item_id": "e2dde9f5-0ec1-488c-af5c-e6a64dce6710",
+    "preserved_q04_verdict": "INFRA_FAIL",
+    "created_q04_work_item_id": "6d420834-e8d0-481e-ae3d-806bddb17ec4",
+    "created_q04_status_at_verification": "pending",
+    "created_q04_attempt_count_at_verification": 0,
+    "created_q04_claimed_by_at_verification": null,
+    "event_id": 342365
+  },
+  "defect": {
+    "class": "RECOVERED_COLD_CACHE_RETRY_OVERRIDES_VALID_REPORT",
+    "prior_reason": "invalid_summary:BARS_ZERO,RUN_STATUS_INVALID",
+    "recovered_fold_reports": [
+      {
+        "fold": "F1",
+        "year": 2023,
+        "valid_report_trades": 0
+      },
+      {
+        "fold": "F2",
+        "year": 2024,
+        "valid_report_trades": 0
+      },
+      {
+        "fold": "F3",
+        "year": 2025,
+        "valid_report_trades": 2,
+        "valid_report_profit_factor": 0.46
+      }
+    ],
+    "repair_paths": [
+      "framework/scripts/q04_walkforward.py",
+      "framework/scripts/tests/test_q04_walkforward.py"
+    ],
+    "strategy_mechanics_changed": false,
+    "gate_thresholds_changed": false
+  },
+  "risk_contract": {
+    "environment": "backtest",
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "artifact_sha256": {
+    "approved_card": "d6f42538b40a717a02f923d380cb863cf9783c1a471e23118ff165ba14aa51fd",
+    "mq5": "8de25f66c15be8e2fdd1791d5d22acff6dab2162ea96860dfb7c5d51d70815dd",
+    "ex5": "b8b268676f8cd3e8312e1e30ea71abf65efc2e8970eb618c75db281ae7947bb2",
+    "basket_manifest": "5b36889e87a44fa2a2961d2cfda9696fd1531e487af9be3325a05d81da114a64",
+    "logical_backtest_setfile": "9489a6642c19f33b0834d1e92303dfafbe261f47c74e0e566d200b816a5414df"
+  },
+  "verification": {
+    "q04_unit_tests": {
+      "command": "python -m unittest framework.scripts.tests.test_q04_walkforward",
+      "tests_run": 24,
+      "result": "PASS"
+    },
+    "build_check": {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_20196_eurusd-jpy-coint -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260809_122154.json"
+    },
+    "preserved_summary_classifier_results": {
+      "2023": null,
+      "2024": null,
+      "2025": null
+    }
+  },
+  "capacity": {
+    "sampled_at_utc": "2026-08-09T12:22:23Z",
+    "running_factory_terminals": [],
+    "running_factory_terminal_count": 0,
+    "ceiling": 7,
+    "ceiling_hit": false,
+    "t_live_excluded": true
+  },
+  "enqueue": {
+    "mode": "APPEND_ONLY_EXACT_PREDECESSOR_AND_RERUN_TARGET",
+    "created_count": 1,
+    "requeued_count": 0,
+    "skipped_count": 0,
+    "manual_dispatch": false,
+    "manual_tester_launch": false
+  },
+  "safety": {
+    "portfolio_gate_changed": false,
+    "q08_contribution_changed": false,
+    "t_live_manifest_changed": false,
+    "autotrading_changed": false,
+    "live_artifact_created": false
+  }
+}

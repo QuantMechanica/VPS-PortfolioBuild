@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_20235_XAU_XAG_ES_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XAU/XAG expected-shortfall basket from approved card YIYI-ES-2025_XAU_XAG_S03. Run on XAUUSD.DWX D1 and evaluate the paired package, never standalone legs. At each genuine broker-month transition, calculate synchronized simple returns ending inside exactly the prior twelve completed months, average each metal's worst five percent, buy the higher-ES metal, short the lower-ES metal, and renew at the next month. Equal fixed-risk halves do not assert dollar, beta, volatility, factor, or portfolio neutrality."
+  ]
+}

@@ -2,11 +2,17 @@
 ; QM5 Set File — Claude DAX hand-build variant vB (quality entries + R)
 ; ea_id:        10911
 ; ea_slug:      grimes-complex-pb
+; ea_version:   v5.0
+; set_version:  s20260805-vb
 ; symbol:       GDAXI.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   fa592fba4ccfd380aee683c330e7e8431b9b1cfac7e3f8de6df2531d56e0d1ef
+; author:       Development
+; date:         2026-08-05
 ; note: stricter thrust filter (1.0->1.3) + deeper pullback + tighter stop + target_r 1.8 for R:R
 ;==========================================================
 qm_magic_slot_offset=3

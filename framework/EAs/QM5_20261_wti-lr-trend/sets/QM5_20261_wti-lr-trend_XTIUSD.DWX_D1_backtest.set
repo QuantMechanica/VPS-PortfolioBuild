@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20261
+; ea_slug:      wti-lr-trend
+; ea_version:   v5.0
+; set_version:  s20260807-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   3c4e604de898b069e0cf255cf7ca3945f8ddf1f59489525cd9255d4f62b8861b
+; author:       Development
+; date:         2026-08-07
+;==========================================================
+qm_ea_id=20261
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-lr-trend_card.md
+strategy_regression_points=13
+strategy_min_r_squared=0.50
+strategy_slope_epsilon=0.0000000001
+strategy_history_bars_d1=800
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=40
+strategy_max_spread_points=1500

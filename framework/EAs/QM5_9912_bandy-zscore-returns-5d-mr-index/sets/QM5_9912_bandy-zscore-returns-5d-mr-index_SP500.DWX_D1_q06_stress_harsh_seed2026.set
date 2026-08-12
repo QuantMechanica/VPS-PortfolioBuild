@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9912
+; ea_slug:      bandy-zscore-returns-5d-mr-index
+; ea_version:   v5.0
+; set_version:  s20260805-stress-harsh
+; symbol:       SP500.DWX
+; timeframe:    D1
+; environment:  q06_stress_harsh
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-05
+;==========================================================
+qm_ea_id=9912
+qm_magic_slot_offset=0
+qm_rng_seed=2026
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9912_bandy-zscore-returns-5d-mr-index.md
+strategy_return_window=5
+strategy_zscore_lookback=20
+strategy_entry_z=-2.0
+strategy_exit_z=0.0
+strategy_regime_sma_period=200
+strategy_atr_period=14
+strategy_atr_stop_mult=2.5
+strategy_time_stop_bars=8

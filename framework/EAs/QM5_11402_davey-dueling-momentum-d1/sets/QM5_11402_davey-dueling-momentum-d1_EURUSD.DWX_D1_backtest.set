@@ -1,0 +1,31 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        11402
+; ea_slug:      davey-dueling-momentum-d1
+; ea_version:   v5.0
+; set_version:  s20260810-001
+; symbol:       EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   f6195a4d7c280ed1c144654269b09730880fbbfed179109a7d84806e9007c383
+; author:       Development
+; date:         2026-08-10
+;==========================================================
+qm_ea_id=11402
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11402_davey-dueling-momentum-d1.md
+strategy_sl_lookback=5
+strategy_slx_lookback=25
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_atr_tp_mult=1.5
+strategy_be_trigger_atr_mult=1.0
+strategy_sl_cap_pips=60.0
+strategy_max_spread_pips=25

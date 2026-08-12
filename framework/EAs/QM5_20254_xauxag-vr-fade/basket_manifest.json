@@ -1,0 +1,11 @@
+{
+  "logical_symbol": "QM5_20254_XAU_XAG_VRFADE_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "traded_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "notes": [
+    "One logical opposite-direction XAU/XAG package. Entry requires a significantly negative q=2 robust variance-ratio state in synchronized completed monthly relative returns and then fades an extreme completed-D1 gold/silver log-ratio z-score.",
+    "The logical basket must never be decomposed into standalone XAU or XAG gate results. One RISK_FIXED budget is split equally by per-leg ATR stop risk."
+  ]
+}

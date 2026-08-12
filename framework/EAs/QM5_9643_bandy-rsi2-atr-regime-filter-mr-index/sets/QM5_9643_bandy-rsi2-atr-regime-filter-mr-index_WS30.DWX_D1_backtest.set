@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9643
+; ea_slug:      bandy-rsi2-atr-regime-filter-mr-index
+; ea_version:   v5.0
+; set_version:  s20260809-001
+; symbol:       WS30.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-09
+;==========================================================
+qm_ea_id=9643
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9643_bandy-rsi2-atr-regime-filter-mr-index.md
+strategy_rsi_period=2
+strategy_rsi_entry_threshold=5.0
+strategy_rsi_exit_threshold=70.0
+strategy_trend_sma_period=200
+strategy_atr_period=14
+strategy_atr_percentile_bars=252
+strategy_atr_percentile_cutoff=50.0
+strategy_atr_sl_mult=2.0
+strategy_time_exit_bars=5

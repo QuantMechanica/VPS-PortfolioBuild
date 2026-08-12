@@ -2420,7 +2420,7 @@ QM5_10386,et-lunch-brk,d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe,active,Research,2026
 11539,carter-t-h1-ema5-10-rsi10-median,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
 11540,carter-t-h1-ema5-13-62-macd3060-sep,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
 11541,carter-t-h1-ema5-21-rsi21-candlestick,3001a121-97a0-5db0-b6ff-69b89a0fc07d,active,Claude,2026-05-23
-11542,carter-t-h1-mtf-4candle-align,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
+11542,carter-t-h1-mtf-4candle-align,3001a121-97a0-5db0-b6ff-69b89a0fc07d,active,Development,2026-05-23
 11543,carter-t-h1-ema100-smma28-macd3060,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
 11544,carter-t-h1-psar02-adx50,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
 11545,carter-t-h1-ema18-28-wma5-12-rsi21,3001a121-97a0-5db0-b6ff-69b89a0fc07d,active,Development,2026-06-25
@@ -2471,7 +2471,7 @@ QM5_11560,lien-xtreme-fade-bb3-adx25-m15,f8b7c68d-870a-5568-81ff-9b825dcddd32,ac
 11590,bf-ema-stoch,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
 11591,robo-ao-macd574-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
 11592,robo-3candle-fade-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Claude,2026-05-23
-11593,robo-midnight-hammer-adx-d1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11593,robo-midnight-hammer-adx-d1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Claude,2026-05-23
 11594,carter-t-m5-ema10-21-50-zone-pullback,bbbba6a1-c18a-5035-bedf-fbd6207e996a,pending,Claude,2026-05-23
 11595,carter-t-m5-ema15-50hl-macd15-70,bbbba6a1-c18a-5035-bedf-fbd6207e996a,pending,Claude,2026-05-23
 11596,carter-tf10-sma3-15-macd-adx-dpo-h1,b20a1c94-74f8-58a3-aeac-bfab2f1dbbf0,pending,Claude,2026-05-23
@@ -4267,3 +4267,89 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 20209,wti-winter-mom1,BURAKOV-MOP-WTI-WINTER-MOM1-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-03
 20210,gbpusd-audjpy,AI-CODEX-FX-COINT66-20260609-GBPUSD-AUDJPY,active,Research+Development (OWNER FX portfolio mission),2026-08-03
 20211,gbpjpy-euraud,AI-CODEX-FX-COINT66-20260609-GBPJPY-EURAUD,active,Research+Development (OWNER FX portfolio mission),2026-08-04
+20212,gbpusd-eurjpy,AI-CODEX-FX-COINT66-20260609-GBPUSD-EURJPY,active,Research+Development (OWNER FX portfolio mission),2026-08-04
+20213,wti-summer-mom1,BURAKOV-MOP-WTI-SUMMER-MOM1-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-04
+20214,wti-sum-rev1,BURAKOV-YANG-WTI-SUMREV1-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-04
+13302,profactus-bb-limitmr,YT-PROFACTUS-PROP-2026-08_BB-LIMITMR,active,Development,2026-08-04
+20215,wti-dom-trend,BOROWSKI-MOP-WTI-DOMTREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-04
+20216,audusd-euraud,AI-CODEX-FX-COINT66-20260609-AUDUSD-EURAUD,active,Research+Development (OWNER FX portfolio mission),2026-08-05
+20217,wti-wkend-mom,CHAN-TGIF-WTI-WKENDMOM-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-05
+20218,wti-winter-rev1,BURAKOV-YANG-WTI-WINREV1-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-05
+20219,usdjpy-nzdusd,AI-CODEX-FX-COINT66-20260609-USDJPY-NZDUSD,active,Research+Development (OWNER FX portfolio mission),2026-08-05
+20220,usdcad-audjpy,AI-CODEX-FX-COINT66-20260609-USDCAD-AUDJPY,active,Development,2026-08-05
+20221,wti-win-signmom,BURAKOV-PAPAILIAS-WTI-WINSIGN-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-05
+20222,wti-seas-sign,BURAKOV-PAPAILIAS-WTI-SEASIGN-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-05
+20223,gbpusd-eurgbp,AI-CODEX-FX-COINT66-20260609-GBPUSD-EURGBP,active,Codex,2026-08-05
+20224,eurusd-eurjpy,AI-CODEX-FX-COINT66-20260609-EURUSD-EURJPY,active,Research+Development (OWNER FX portfolio mission),2026-08-05
+20225,eurusd-gbpjpy,AI-CODEX-FX-COINT66-20260609-EURUSD-GBPJPY,active,Research+Development (OWNER FX portfolio mission),2026-08-05
+20226,wti-seas-dow,BURAKOV-GORSKA-WTI-SEASDOW-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-05
+20227,wti-seas-mom1,BURAKOV-MOP-WTI-SEASMOM1-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-05
+20228,usdcad-gbpjpy,AI-CODEX-FX-COINT66-20260609-USDCAD-GBPJPY,active,Codex,2026-08-05
+20229,wti-seas-rev1,BURAKOV-YANG-WTI-SEASREV1-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-05
+20230,wti-seas-gap,BURAKOV-CHAN-WTI-SEASGAP-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-05
+20231,wti-seas-mom12,BURAKOV-MOP-WTI-SEASMOM12-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-05
+20232,usdchf-nzdusd,AI-CODEX-FX-COINT66-20260609-USDCHF-NZDUSD,active,Codex,2026-08-05
+20233,xauxag-skew-rank,FERNANDEZ-SKEW-2018_XAU_XAG_S02,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20234,xauxag-rsj,KISS-RSJ-2025_XAU_XAG_S02,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20235,xauxag-es-rank,YIYI-ES-2025_XAU_XAG_S03,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20236,xauxag-vov-rank,HOLLSTEIN-VOV-2021_XAU_XAG_S02,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20237,xtixng-ecm-rv,VILLAR-RAMBERG-OILGAS-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20238,usdcad-eurjpy,AI-CODEX-FX-COINT66-20260609-USDCAD-EURJPY,active,Codex,2026-08-06
+20239,wti-pulltrend,MOP-WTI-PULLTREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20240,usdchf-gbpjpy,AI-CODEX-FX-COINT66-20260609-USDCHF-GBPJPY,active,Codex,2026-08-06
+20241,wti-seas-anchor,BURAKOV-BIANCHI-WTI-SEAS52W-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20242,xng-rsm-window,SUENAGA-PAPAILIAS-XNG-SEASRSM-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20243,xauxag-tom-xmom3,VANHEMERT-FMR-XAUXAG-TOMXMOM3-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20244,wti-trend-sign,MOP-PAPAILIAS-WTI-TRENDSIGN-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20245,wti-vr-rsm,MEHLITZ-PAPAILIAS-WTI-VRRSM-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20246,usdjpy-eurgbp,AI-CODEX-FX-COINT66-20260609-USDJPY-EURGBP,active,Codex,2026-08-06
+20247,wti-vr-calreg,BURAKOV-MEHLITZ-WTI-VRCAL-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20248,xng-vr-window,SUENAGA-MEHLITZ-XNG-VRWIN-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20249,xauxag-vr-spread,CME-MEHLITZ-XAUXAG-VRSPREAD-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20250,usdchf-audjpy,AI-CODEX-FX-COINT66-20260609-USDCHF-AUDJPY,active,Codex,2026-08-06
+20251,wti-cal-rsm,KELOHARJU-PAPAILIAS-WTI-CALRSM-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20252,usdchf-euraud,AI-CODEX-FX-COINT66-20260609-USDCHF-EURAUD,active,Codex,2026-08-06
+20253,wti-vr3-mom,MEHLITZ-AUER-MEM-2024_XTI_R3Q4_S02,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20254,xauxag-vr-fade,CME-MEHLITZ-XAUXAG-VRFADE-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-06
+20255,usdchf-eurjpy,AI-CODEX-FX-COINT66-20260609-USDCHF-EURJPY,active,Codex,2026-08-06
+20256,wti-vr6-mom,MEHLITZ-AUER-MEM-2024_XTI_R6Q7_S03,active,Research+Development (OWNER commodity/energy portfolio mission),2026-08-07
+20257,wti-vr12-mom,MEHLITZ-AUER-MEM-2024_XTI_R12Q13_S04,active,Research+Development (OWNER commodity/energy portfolio mission),2026-08-07
+20258,wti-mom-vote,MOP-TSMOM-2012_XTI_MAJ1312_S12,active,Research+Development (OWNER commodity/energy portfolio mission),2026-08-07
+20259,xng-mom-vote,MOP-TSMOM-2012_XNG_MAJ1312_S13,active,Research+Development (OWNER commodity/energy portfolio mission),2026-08-07
+20260,xauxag-mom-vote,FMR-MOMTS-2010_XAU_XAG_MAJ1312_S05,active,Research+Development (OWNER commodity/energy portfolio mission),2026-08-07
+20261,wti-lr-trend,MOP-TSMOM-2012_XTI_LR12R2_S14,active,Research+Development (OWNER commodity/energy portfolio mission),2026-08-07
+20262,xng-lr-trend,MOP-TSMOM-2012_XNG_LR12R2_S15,active,Research+Development (OWNER commodity/energy portfolio mission),2026-08-07
+20263,xauxag-mad-rv,SCHWEIKERT-CME-XAUXAG-MADRV-2026_S01,active,Research+Development (OWNER commodity/energy portfolio mission),2026-08-07
+20264,wti-rank-trend,MOP-TSMOM-2012_XTI_MK12_S16,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-07),2026-08-07
+20265,xauxag-fail-rv,SCHWEIKERT-CME-XAUXAG-FAILRV-2026_S02,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-07),2026-08-07
+20266,collins-66mom,SRC08_S01_XTI,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-08),2026-08-08
+20267,xng-rank-trend,MOP-TSMOM-2012_XNG_MK12_S17,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-08),2026-08-08
+20268,xauxag-qtail-rv,SCHWEIKERT-CME-XAUXAG-QTAILRV-2026_S03,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-09),2026-08-09
+20269,wti-medret-mom,MOP-TSMOM-2012_XTI_MEDRET12_S18,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-09),2026-08-09
+20270,wti-trimmean-mom,MOP-TSMOM-2012_XTI_TRIM12_S19,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-10),2026-08-10
+20271,wti-theilsen-tr,MOP-TSMOM-2012_XTI_THEILSEN12_S20,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-10),2026-08-10
+10648,tv-velox-mtf,d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7,active,Research,2026-08-10
+10649,tv-stoch-sltp,d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7,active,Research,2026-08-10
+10973,ftmo-adl-div,c11dc4d3-bdfb-5076-aeed-5d943e9ef03f,active,Research,2026-08-10
+20272,wti-qtrvote-tr,MOP-TSMOM-2012_XTI_QTRVOTE12_S21,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-10),2026-08-10
+20273,wti-signrun-tr,MOP-TSMOM-2012_XTI_SIGNRUN12_S22,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-10),2026-08-10
+1286,camarilla-monthly-pivots-position,6e967762-b26d-59a3-b076-35c17f2e7c36,active,claude,2026-08-10
+1287,mtf-macd-histogram-divergence,6e967762-b26d-59a3-b076-35c17f2e7c36,active,claude,2026-08-10
+1312,ha-sma-smoothed-flip-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,claude,2026-08-10
+20274,wti-path-eff,MOP-TSMOM-2012_XTI_PATHEFF12_S23,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-10),2026-08-10
+1626,hopwood-bermaui-stoch-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-08-10
+20275,gsr-runfade,SCHWEIKERT-CME-GSR-RUNFADE-2026_S04,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-11),2026-08-11
+2076,chaikin-oscillator-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,gemini,2026-08-11
+20276,wti-hl-mom,MOP-TSMOM-2012_XTI_HLRET12_S24,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-11),2026-08-11
+20277,wti-winsor-mom,MOP-TSMOM-2012_XTI_WINS12_S25,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-11),2026-08-11
+20278,wti-linw-mom,MOP-TSMOM-2012_XTI_LINW12_S26,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-11),2026-08-11
+20279,wti-expw-mom,MOP-TSMOM-2012_XTI_EXPW12_S27,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-11),2026-08-11
+20280,wti-tsmom4m,MOP-TSMOM-2012_XTI_4M_S28,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-11),2026-08-11
+20281,wti-tsmom-h2,MOP-TSMOM-2012_XTI_K12H2_S29,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-11),2026-08-11
+20282,wti-madcap-mom,MOP-TSMOM-2012_XTI_MADCAP12_S30,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-11),2026-08-11
+20283,wti-trimean-mom,MOP-TSMOM-2012_XTI_TRIMEAN12_S31,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-11),2026-08-11
+20284,wti-skip1-trend,MOP-TSMOM-2012_XTI_SKIP1_S32,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-11),2026-08-11
+20285,wti-huber-mom,MOP-TSMOM-2012_XTI_HUBER12_S33,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-12),2026-08-12
+20286,wti-bisquare-mom,MOP-TSMOM-2012_XTI_BISQUARE12_S34,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-12),2026-08-12
+20287,wti-blockmed-mom,MOP-TSMOM-2012_XTI_BLOCKMED12_S35,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-12),2026-08-12
+20288,wti-volnorm-mom,MOP-TSMOM-2012_XTI_VOLNORM12_S36,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-12),2026-08-12

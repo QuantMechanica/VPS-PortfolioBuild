@@ -2,55 +2,44 @@
 
 **EA ID:** QM5_11411
 **Slug:** `wilder-parabolic-sar-reversal-d1`
-**Source:** `0ab0a479-4a09-5ecc-bb90-6a37148fa78b` (see `strategy-seeds/sources/0ab0a479-4a09-5ecc-bb90-6a37148fa78b/`)
+**Source:** `0ab0a479-4a09-5ecc-bb90-6a37148fa78b`
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-08-08
 
 ---
 
 ## 1. Strategy Logic
 
-Wilder's Parabolic SAR stop-and-reverse system, always in the market on D1.
-The Parabolic SAR (acceleration factor starting at 0.02, incrementing by 0.02
-on each new extreme price, capped at 0.20) is the single signal. The SAR sits
-below price during an up-leg and above price during a down-leg. When the SAR
-crosses to the other side of price on the close of a daily bar, the trend has
-flipped: the EA closes the current position and immediately reverses into the
-opposite direction. A bullish flip is detected when the SAR was above the close
-on the prior closed bar and is now below the close on the just-closed bar; a
-bearish flip is the mirror. The initial stop on each new entry is the SAR price
-itself (capped at 100 pips from entry), and the stop trails the SAR each closed
-bar in the favourable direction only — there is no fixed profit target because
-the opposite-direction reverse is the exit. An optional Wilder DI(14) filter can
-restrict entries to flips that agree with the dominant directional index.
+This D1 system is always positioned in the direction indicated by Wilder's Parabolic SAR. A bullish reversal occurs when the SAR moves from above the prior daily price range to below the just-closed range; a bearish reversal is the mirror, and the EA enters at the next bar's market open. The initial stop is the current SAR value, capped at 100 pips from entry, and it advances to each new closed-bar SAR value; an opposite SAR state closes and reverses the position. The optional DI(14) switch permits a long only when +DI exceeds -DI and a short only when -DI exceeds +DI.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_sar_step` | 0.02 | 0.01-0.03 | PSAR acceleration factor start/increment |
-| `strategy_sar_max` | 0.20 | 0.15-0.25 | PSAR acceleration factor maximum |
-| `strategy_use_di_filter` | false | true/false | Enable optional Wilder DI(14) direction filter |
-| `strategy_di_period` | 14 | 7-28 | ADX/DI period for the optional filter |
-| `strategy_max_sl_pips` | 100.0 | 50-200 | Initial-stop cap distance in pips (D1 P2 cap) |
-| `strategy_bootstrap_inmarket` | true | true/false | Seed first position from current SAR side (always-in-market) |
-| `strategy_spread_pct_of_stop` | 15.0 | 5-30 | Skip entry if spread exceeds this % of the stop distance |
+|---|---:|---|---|
+| `strategy_sar_step` | 0.02 | 0.01–0.03 | PSAR acceleration-factor start and increment. |
+| `strategy_sar_maximum` | 0.20 | 0.15–0.25 | Maximum PSAR acceleration factor. |
+| `strategy_use_di_filter` | false | false/true | Enables the card's optional DI direction filter. |
+| `strategy_di_period` | 14 | fixed at 14 | Wilder directional-index period. |
+| `strategy_max_sl_pips` | 100 | fixed at 100 | Maximum initial stop distance for the P2 baseline. |
+| `strategy_spread_cap_pips` | 25 | fixed at 25 | Blocks a new entry only when modeled spread genuinely exceeds 25 pips. |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — deep, liquid major; clean trend legs suit a stop-and-reverse system.
-- `GBPUSD.DWX` — volatile major with sustained directional swings PSAR follows well.
-- `USDJPY.DWX` — strong trending behaviour on D1; reverse-on-flip captures regime turns.
-- `AUDUSD.DWX` — commodity major with persistent macro trends.
-- `USDCAD.DWX` — oil-linked major; multi-week trends fit the accelerating SAR.
+
+- `EURUSD.DWX` — liquid major FX pair with D1 trend legs suitable for PSAR.
+- `GBPUSD.DWX` — liquid major with sustained daily directional swings.
+- `USDJPY.DWX` — liquid major whose macro trends suit stop-and-reverse logic.
+- `AUDUSD.DWX` — liquid commodity-linked major with persistent D1 moves.
+- `USDCAD.DWX` — liquid commodity-linked major with multi-day trend legs.
 
 **Explicitly NOT for:**
-- Index/CFD symbols (NDX.DWX, WS30.DWX, SP500.DWX) — the card scopes this build to the five FX majors only.
+
+- Non-FX symbols — the approved card scopes this baseline to the five named DWX major pairs.
 
 ---
 
@@ -59,8 +48,8 @@ restrict entries to flips that agree with the dominant directional index.
 | Aspect | Value |
 |---|---|
 | Base timeframe | `D1` |
-| Multi-timeframe refs | `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Multi-timeframe refs | none |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)`; all strategy reads use closed `PERIOD_D1` bars |
 
 ---
 
@@ -68,11 +57,12 @@ restrict entries to flips that agree with the dominant directional index.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `~30` |
-| Typical hold time | `days to weeks (one trend leg)` |
-| Expected drawdown profile | `whipsaw losses in ranging regimes; recovers in trends` |
-| Regime preference | `trend` |
-| Win rate target (qualitative) | `low (trend-following: many small losses, few large wins)` |
+| Trades / year / symbol | 30 |
+| Expected trade frequency | approximately 2–3 reversals per month |
+| Typical hold time | days to weeks, one PSAR trend leg |
+| Expected drawdown profile | clustered small whipsaw losses during range-bound periods |
+| Regime preference | trend-following |
+| Win rate target (qualitative) | low-to-medium, with larger trend wins offsetting whipsaws |
 
 ---
 
@@ -81,9 +71,9 @@ restrict entries to flips that agree with the dominant directional index.
 This card was mechanised from:
 
 **Source ID:** `0ab0a479-4a09-5ecc-bb90-6a37148fa78b`
-**Source type:** `book`
-**Pointer:** `J. Welles Wilder Jr., "New Concepts in Technical Trading Systems" (Trend Research, 1978), Section II: Parabolic Time/Price System`
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11411_wilder-parabolic-sar-reversal-d1.md`
+**Source type:** book
+**Pointer:** J. Welles Wilder Jr., *New Concepts in Technical Trading Systems* (Trend Research, 1978), Section II; local PDF `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\53093880-Welles-Wilder-New-Concepts-in-Technical-Trading-Systems.pdf`
+**R1–R4 verdict (Q00):** R1 lineage recorded and R2–R4 PASS per `artifacts/cards_approved/QM5_11411_wilder-parabolic-sar-reversal-d1.md`
 
 ---
 
@@ -103,4 +93,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | uncommitted |
+| v1 | 2026-08-08 | Initial build from card | 7f656d49-591c-4f18-a746-9abe373f5918 |

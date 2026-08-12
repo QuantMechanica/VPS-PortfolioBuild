@@ -1,0 +1,35 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9644
+; ea_slug:      bandy-tps-bounded-mr-index
+; ea_version:   v5.0
+; set_version:  s20260811-001
+; symbol:       WS30.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-11
+;==========================================================
+qm_ea_id=9644
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9644_bandy-tps-bounded-mr-index.md
+strategy_zscore_lookback=20
+strategy_unit1_entry_z=-2.0
+strategy_unit2_entry_z=-2.5
+strategy_unit3_entry_z=-3.0
+strategy_exit_z=0.0
+strategy_regime_sma_period=200
+strategy_atr_period=14
+strategy_catastrophic_atr_mult=4.0
+strategy_time_stop_days=10
+strategy_unit_stale_days=15
+strategy_vol_lookback_bars=252
+strategy_vol_percentile=99.0

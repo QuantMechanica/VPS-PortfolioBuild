@@ -103,3 +103,4 @@ ENV to mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MI
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-09 | Initial build from approved card | Build task `cc652ca1-79eb-49bd-85f9-450566373310`; USOIL card sleeve ported to XTIUSD DWX proxy. |
+| v1.1 | 2026-08-05 | Q02 infrastructure recovery | Latch monthly-state recomputation attempts by calendar month so warmup-invalid state emits at most one event per month; strategy signals and risk rules are unchanged. |

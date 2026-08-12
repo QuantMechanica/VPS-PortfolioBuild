@@ -2,11 +2,17 @@
 ; QM5 Set File — Claude DAX hand-build variant vA (let-winners-run)
 ; ea_id:        10911
 ; ea_slug:      grimes-complex-pb
+; ea_version:   v5.0
+; set_version:  s20260805-va
 ; symbol:       GDAXI.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   ba81cc9eef237759c486d6f86181f30e71e3629c3be7f399c9417bbaadeae35d
+; author:       Development
+; date:         2026-08-05
 ; note: base 10911 GDAXI (all Q04 folds positive PF1.1-1.7); raise target_r 1.5->2.2 to lift PF/Sharpe
 ;==========================================================
 qm_magic_slot_offset=3

@@ -94,3 +94,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-23 | Initial build from card | cce3fd7b-adec-4af5-b652-039dfe80ebe1 |
+| v2 | 2026-08-05 | Q02 infrastructure recovery | Rebuilt in place against the current framework and made the Q02 news-off baseline explicit; strategy mechanics unchanged. Farm claim `b9abd2c1-d2a7-47f8-8657-6b484a950eeb`. |

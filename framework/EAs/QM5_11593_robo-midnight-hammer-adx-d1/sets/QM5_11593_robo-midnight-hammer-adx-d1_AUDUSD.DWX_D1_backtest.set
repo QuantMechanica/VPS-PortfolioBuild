@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11593
+; ea_slug:      robo-midnight-hammer-adx-d1
+; ea_version:   v5.0
+; set_version:  s20260806-001
+; symbol:       AUDUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   4e63278e7cca3c563519a9ee81344e387b15a4a9043a3cc0f980fb75a4bd206e
+; author:       Development
+; date:         2026-08-06
+;==========================================================
+qm_ea_id=11593
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11593_robo-midnight-hammer-adx-d1.md
+strategy_adx_period=14
+strategy_adx_threshold=20.0
+strategy_tail_body_ratio=3.0
+strategy_opposite_tail_max_ratio=0.5
+strategy_rr_target=2.0
+strategy_max_hold_bars=1

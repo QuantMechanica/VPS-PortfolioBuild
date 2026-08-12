@@ -29,8 +29,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q04
-last_updated: 2026-07-07
+pipeline_phase: Q02
+last_updated: 2026-08-12
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-directed in-house FX cointegration screen; R2 PASS deterministic fixed-pair z-score basket; R3 PASS GBPCAD.DWX and GBPNZD.DWX data exist in the extended Darwinex scan; R4 PASS no ML/grid/martingale. Owner mission accepted the borderline OOS-heavy profile as the next non-duplicate FX cointegration sleeve."
 expected_pf: 1.05
 expected_dd_pct: 30.0
@@ -59,6 +59,11 @@ original strict 60-day filter, and its DEV net Sharpe is -0.11. The reason to
 route it anyway is explicit and limited: the trade-check output showed the
 strongest OOS result in the extension, with OOS net Sharpe 1.66, OOS return
 14.15%, 30 OOS state changes, and DEV hedge `0.3460`.
+
+The 2026-08-12 v2 mechanization uses the already pre-declared 90-bar window so
+the trading-state horizon spans the 84.8-day source half-life. This is one
+source-driven slow-horizon variant, not a fold-selected parameter search;
+beta, entry/exit thresholds, stops, symbols, and risk remain unchanged.
 
 ## Concept
 
@@ -96,7 +101,7 @@ so the pipeline gates remain the judge.
 
 - Evaluate only after a new closed D1 bar.
 - Compute `spread = ln(GBPCAD) - 0.3460 * ln(GBPNZD)`.
-- Compute a 60-bar rolling z-score of the spread.
+- Compute a 90-bar rolling z-score of the spread.
 - If no pair package is open and z > +2.0, open a short-spread package: short GBPCAD and long GBPNZD.
 - If no pair package is open and z < -2.0, open a long-spread package: long GBPCAD and short GBPNZD.
 - Size each leg from V5 fixed risk, split by absolute hedge weights.
@@ -118,7 +123,7 @@ so the pipeline gates remain the judge.
 ## Parameters To Test
 
 - name: strategy_z_lookback_d1
-  default: 60
+  default: 90
   sweep_range: [40, 60, 90]
 - name: strategy_beta
   default: 0.3460
@@ -181,3 +186,4 @@ gates.
 | v1 | 2026-07-07 | initial extended-screen FX cointegration sibling card | G0 | APPROVED |
 | v2 | 2026-07-07 | compiled basket EA and logical basket Q02 enqueued as work item 8acc9930 | Q02 | PASS |
 | v3 | 2026-07-07 | Q02 PASS follow-through; Q03 work item 4298cfb6 and Q04 work item 629d9f34 priority-routed | Q03/Q04 | PENDING |
+| v4 | 2026-08-12 | source-aligned slow-horizon revision: pre-authorized z-score window 60 -> 90 D1 bars; all other mechanics frozen | Q02 | PENDING `614cc154-31e1-4919-9a1e-de7bc5e0c5f3` |

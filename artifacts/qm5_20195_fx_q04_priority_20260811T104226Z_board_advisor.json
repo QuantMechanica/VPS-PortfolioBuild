@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-08-11T10:42:26Z",
+  "branch": "agents/board-advisor",
+  "repository_head_before": "48f0d411d5e5f01f880f896b28abc1bbc8d5f249",
+  "mission_disposition": {
+    "cointegration_frontier": "all_66_relationships_already_mechanized",
+    "qm5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "qm5_12533": "Q02_PASS_Q04_FAIL",
+    "fallback": "priority_existing_unique_pending_fx_cointegration_q04"
+  },
+  "selection": {
+    "ea_id": "QM5_20195",
+    "slug": "nzd-eurgbp-coint",
+    "logical_symbol": "QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1",
+    "host_symbol": "NZDUSD.DWX",
+    "companion_symbol": "EURGBP.DWX",
+    "conversion_only_symbols": [
+      "GBPUSD.DWX",
+      "EURUSD.DWX"
+    ],
+    "timeframe": "D1",
+    "scan_rank": 12,
+    "scan_oos_net_sharpe": 0.720866,
+    "scan_oos_return_pct": 8.085125,
+    "scan_oos_state_changes": 21,
+    "scan_dev_beta": -0.101296029,
+    "scan_half_life_d1_bars": 116.313,
+    "expected_trades_per_year_per_symbol": 5,
+    "g0_status": "APPROVED",
+    "source": "Ernest P. Chan, Quantitative Trading (Wiley, 2009), OWNER-ratified Tier-A SRC02 extraction"
+  },
+  "latest_q02_predecessor": {
+    "work_item_id": "5b51938b-04ab-47fa-9cf9-a833d7498984",
+    "status": "done",
+    "verdict": "PASS",
+    "evidence_path": "D:/QM/reports/work_items/5b51938b-04ab-47fa-9cf9-a833d7498984/QM5_20195/20260802_170921/summary.json",
+    "evidence_sha256": "ebaaf115c4743f1eb588411f40785f45eacd6b0c99bd9d8f5136dc6a938506e3",
+    "deterministic": true,
+    "oninit_failure_detected": false,
+    "total_trades": 72,
+    "profit_factor": 1.18,
+    "net_profit": 1631.76,
+    "drawdown": 3551.82,
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31"
+  },
+  "prior_q04_infrastructure_result": {
+    "work_item_id": "9a95577b-9872-4757-8966-3af71a463224",
+    "status": "done",
+    "verdict": "INFRA_FAIL",
+    "reason": "F1/F2 invalid summaries with BARS_ZERO, EMPTY_EXPERT, EMPTY_SYMBOL, INCOMPLETE_RUNS, M0_1970_PERIOD, and RUN_STATUS_INVALID"
+  },
+  "artifact_bindings": {
+    "ex5_sha256": "909c1622e913fa77129aad70ece7529d7a073b9c421791c743ed86775a0b6cf6",
+    "mq5_sha256": "23ce5192a6faf318345ca6ae5561a206c4cd15a6d24e7ccdf5cbfb4e41d74496",
+    "setfile_sha256": "585f398945b2aa596b1a68994c02eaba1a829d90fbd95a3f55ca6b87ba7d99a9",
+    "basket_manifest_sha256": "a51f1083ee914d4c032da40233aedaa64118998f917e17f0966f365de1799c29",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "database_backup": {
+    "path": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_20195_q04_priority_20260811T104226Z.sqlite",
+    "source_quick_check": "ok",
+    "backup_quick_check": "ok",
+    "post_mutation_quick_check": "ok"
+  },
+  "capacity_guard": {
+    "scanned_at_utc": "2026-08-11T10:41:31+00:00",
+    "binding_ceiling": 7,
+    "running_factory_count": 3,
+    "running_factory_terminals": [
+      "T3",
+      "T7",
+      "T8"
+    ],
+    "below_ceiling": true,
+    "t_live_excluded": true
+  },
+  "queue_mutation": {
+    "work_item_id": "b14b5edf-ffdd-4439-a2ed-dc4930d65029",
+    "phase": "Q04",
+    "status_at_verification": "pending",
+    "claimed_by_at_verification": null,
+    "attempt_count_at_verification": 0,
+    "created_at_utc": "2026-08-10T11:08:36+00:00",
+    "updated_at_preserved": "2026-08-10T11:08:36+00:00",
+    "priority_track": true,
+    "priority_updated_at_utc": "2026-08-11T10:42:26Z",
+    "priority_updated_by": "codex/agents-board-advisor",
+    "priority_dedupe_guard": "updated_existing_unique_q04_row_no_enqueue",
+    "open_exact_q04_rows_after": 1,
+    "total_work_items_before": 106910,
+    "total_work_items_after": 106910,
+    "rows_inserted": 0,
+    "queued_top_position_at_verification": 1
+  },
+  "safety": {
+    "tester_or_pipeline_phase_launched": false,
+    "mt5_process_controlled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_toggled": false
+  }
+}

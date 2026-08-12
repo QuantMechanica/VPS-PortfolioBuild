@@ -1,5 +1,6 @@
 import argparse
 import contextlib
+import hashlib
 import importlib.util
 import json
 import sqlite3
@@ -125,7 +126,16 @@ def test_all_allowlisted_factory_commands_parse_and_carry_uuid_lineage(
     for phase in selector_by_phase:
         row = _row(phase)
         if phase == "Q09_NEWS":
-            row["payload_json"] = json.dumps({"q09_run_plan_path": str(q09_plan)})
+            row["payload_json"] = json.dumps(
+                {
+                    "q09_binding_version": "q09-news-dispatch-binding/v1",
+                    "q09_run_plan_path": str(q09_plan),
+                    "q09_run_plan_file_sha256": hashlib.sha256(
+                        q09_plan.read_bytes()
+                    ).hexdigest(),
+                    "q09_dispatch_binding_sha256": "a" * 64,
+                }
+            )
         cmd = farmctl._phase_runner_cmd_for_work_item(
             Path(r"D:\QM\strategy_farm"),
             row,

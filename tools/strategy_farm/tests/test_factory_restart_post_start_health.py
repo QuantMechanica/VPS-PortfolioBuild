@@ -19,7 +19,7 @@ OWNER_DECISION = (
     / "docs"
     / "ops"
     / "evidence"
-    / "2026-08-03_factory_preparation_owner_decision.json"
+    / "2026-08-11_factory_preparation_owner_decision_standing_unlimited.json"
 )
 
 
@@ -61,6 +61,49 @@ def test_factory_on_health_gate_precedes_restart_hold_release() -> None:
     assert "factoryPostStartHealthTimeoutSeconds = 1800" in source
     assert "[ValidateRange(1, 1800)]" in HEALTH_GATE.read_text(encoding="utf-8-sig")
     assert "Invoke-FailClosedRollbackWithLockRetention" in source[health_wait:]
+
+
+def test_ai_orchestration_quiet_zone_enables_only_after_health_gate() -> None:
+    # OWNER 2026-08-11 ("Go, alles freigegeben"): the router-freeze class was a
+    # lane-spawned agent_router racing the scheduled instance inside the restart
+    # window. Orchestration lanes and pacers join only after the gate passes.
+    source = FACTORY_ON.read_text(encoding="utf-8-sig")
+    quiet_tasks = set(
+        _single_quoted_values(_ps_array(source, "QM_AI_ORCHESTRATION_QUIET_ZONE_TASKS"))
+    )
+    assert quiet_tasks == {
+        "QM_StrategyFarm_CodexOrchestration_15min",
+        "QM_StrategyFarm_GeminiOrchestration_15min",
+        "QM_StrategyFarm_ClaudeOrchestration_15min",
+        "QM_StrategyFarm_CodexFleetPacer",
+        "QM_StrategyFarm_AgyGovernor",
+    }
+    # AgentRouter_5min is a critical gate task and must NOT be quiet-zoned.
+    assert "QM_StrategyFarm_AgentRouter_5min" not in quiet_tasks
+    health_wait = source.index("$postStartHealth = Wait-QmFactoryPostStartHealth")
+    quiet_enable = source.index("before enabling quiet-zone task")
+    release_hold = source.rindex("Invoke-RestartHoldReleaseWithMutationLock")
+    assert health_wait < quiet_enable < release_hold
+    # Both pre-gate enable loops skip the quiet zone.
+    assert source.count("deferred post-gate") == 2
+    # The wait gate expects quiet-zone tasks disabled; the pre-release
+    # revalidation uses the final map after the deferred enablement.
+    assert "-ExpectedTaskEnabledState $expectedTaskEnabledStateDuringGate" in source
+    pre_release = source.index("$releaseHealth = Test-QmFactoryPostStartHealth")
+    assert source.index(
+        "-ExpectedTaskEnabledState $expectedTaskEnabledState ", pre_release
+    ) > pre_release
+
+
+def test_psmodulepath_self_heal_present_in_off_and_on() -> None:
+    # 2026-08-10 trap: poisoned PSModulePath made Get-FileHash unresolvable in
+    # PS5.1 and killed Factory_OFF mid-flag-write. Both scripts self-heal now.
+    for path in (FACTORY_ON, STRATEGY_FARM / "Factory_OFF.ps1"):
+        src = path.read_text(encoding="utf-8-sig")
+        heal = src.index("$qmCanonicalModulePaths = @(")
+        assert "WindowsPowerShell\\Modules" in src[heal : heal + 400]
+        first_module_use = src.index("$processScopePath = Join-Path")
+        assert heal < first_module_use
 
 
 def test_factory_on_builds_exact_non_live_task_and_worker_expectations() -> None:

@@ -206,8 +206,10 @@ bool ComputeMonthlyState(bool &trend_long,
 void RefreshMonthlyStateIfNeeded()
   {
    const int month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
-   const bool calendar_roll = QM_IsNewCalendarPeriod(PERIOD_MN1, _Symbol);
-   if(g_state_valid && !calendar_roll)
+   // Latch both valid and warmup-invalid attempts.  Without this guard an
+   // invalid warmup state is recomputed and logged on every tick until enough
+   // completed months exist, which can exhaust the tester journal quota.
+   if(month_key <= 0 || g_last_state_month_key == month_key)
       return;
 
    bool trend_long = false;

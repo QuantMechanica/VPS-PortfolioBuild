@@ -1,0 +1,19 @@
+{
+  "ea_id": "QM5_1354",
+  "ea_slug": "woodie-cci-dual-h1",
+  "symbol": "EURUSD.DWX",
+  "timeframe": "H1",
+  "compiled_at_utc": "2026-08-10T20:37:55Z",
+  "compile_result": "PASS",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260810_203755.json",
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260810_203755\\QM5_1354_woodie-cci-dual-h1.compile.log",
+  "ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_1354_woodie-cci-dual-h1\\QM5_1354_woodie-cci-dual-h1.ex5",
+  "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_1354_woodie-cci-dual-h1\\sets\\QM5_1354_woodie-cci-dual-h1_EURUSD.DWX_H1_backtest.set",
+  "setfile_build_hash": "4a9646c65547aad3796d0400269629b92f000f9c3862f11d8cb2ab75a1763f05",
+  "notes": "Build-only verification. All setfiles generated."
+}

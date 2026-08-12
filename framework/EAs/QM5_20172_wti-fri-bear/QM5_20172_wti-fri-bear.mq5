@@ -50,6 +50,8 @@ input int    strategy_max_spread_points    = 1500;
 
 int    g_last_attempt_week_key = 0;
 string g_attempt_state_key     = "";
+datetime g_current_d1_bar      = 0;
+datetime g_prior_d1_bar        = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implemented mechanically from the approved card.
@@ -60,32 +62,22 @@ bool Strategy_IsWtiD1()
    return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
-int Strategy_WeekKey(const datetime value)
+bool Strategy_AdvanceCalendarState()
   {
-   if(value <= 0)
-      return 0;
+   g_current_d1_bar = 0;
+   g_prior_d1_bar = 0;
 
-   MqlDateTime parts;
-   ZeroMemory(parts);
-   if(!TimeToStruct(value, parts))
-      return 0;
+   MqlRates current_bar;
+   MqlRates prior_bar;
+   ZeroMemory(current_bar);
+   ZeroMemory(prior_bar);
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, current_bar) ||
+      !QM_ReadBar(_Symbol, PERIOD_D1, 1, prior_bar))
+      return false;
 
-   const int days_since_monday =
-      (parts.day_of_week + 6) % 7;
-   parts.hour = 12;
-   parts.min = 0;
-   parts.sec = 0;
-   const datetime monday_noon =
-      (datetime)(StructToTime(parts) -
-                 (long)days_since_monday * 86400);
-   if(monday_noon <= 0)
-      return 0;
-
-   MqlDateTime monday;
-   ZeroMemory(monday);
-   if(!TimeToStruct(monday_noon, monday))
-      return 0;
-   return monday.year * 1000 + monday.day_of_year;
+   g_current_d1_bar = current_bar.time;
+   g_prior_d1_bar = prior_bar.time;
+   return true;
   }
 
 bool Strategy_IsFridayBar(const datetime value)
@@ -108,13 +100,10 @@ bool Strategy_IsThursdayBar(const datetime value)
            parts.day_of_week == 4);
   }
 
-bool Strategy_IsGenuineFridayBoundary(const datetime current_bar)
+bool Strategy_IsGenuineFridayBoundary()
   {
-   if(!Strategy_IsFridayBar(current_bar))
-      return false;
-   const datetime prior_bar =
-      iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: prior completed D1 calendar gate.
-   return Strategy_IsThursdayBar(prior_bar);
+   return (Strategy_IsFridayBar(g_current_d1_bar) &&
+           Strategy_IsThursdayBar(g_prior_d1_bar));
   }
 
 bool Strategy_EntryWithinGrace(const datetime current_bar)
@@ -150,56 +139,7 @@ bool Strategy_HasOpenPosition()
    return false;
   }
 
-bool Strategy_WeekAlreadyEntered(const int week_key,
-                                 const datetime current_bar)
-  {
-   if(week_key <= 0 || current_bar <= 0)
-      return true;
-
-   for(int index = PositionsTotal() - 1; index >= 0; --index)
-     {
-      const ulong ticket = PositionGetTicket(index);
-      if(ticket == 0 || !PositionSelectByTicket(ticket) ||
-         !Strategy_IsManagedPosition())
-         continue;
-      const datetime opened =
-         (datetime)PositionGetInteger(POSITION_TIME);
-      if(Strategy_WeekKey(opened) == week_key)
-         return true;
-     }
-
-   const datetime history_start =
-      current_bar - (long)14 * 86400;
-   if(history_start <= 0 ||
-      !HistorySelect(history_start, TimeCurrent()))
-      return true;
-
-   const int magic = QM_FrameworkMagic();
-   const int deal_count = HistoryDealsTotal();
-   for(int index = deal_count - 1; index >= 0; --index)
-     {
-      const ulong deal_ticket = HistoryDealGetTicket(index);
-      if(deal_ticket == 0)
-         continue;
-      if((int)HistoryDealGetInteger(deal_ticket, DEAL_MAGIC) != magic)
-         continue;
-      if(HistoryDealGetString(deal_ticket, DEAL_SYMBOL) != _Symbol)
-         continue;
-      const ENUM_DEAL_ENTRY entry_kind =
-         (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal_ticket,
-                                                DEAL_ENTRY);
-      if(entry_kind != DEAL_ENTRY_IN &&
-         entry_kind != DEAL_ENTRY_INOUT)
-         continue;
-      const datetime deal_time =
-         (datetime)HistoryDealGetInteger(deal_ticket, DEAL_TIME);
-      if(Strategy_WeekKey(deal_time) == week_key)
-         return true;
-     }
-   return false;
-  }
-
-void Strategy_LoadAttemptState(const datetime reference_time)
+void Strategy_LoadAttemptState()
   {
    g_last_attempt_week_key = 0;
    if(g_attempt_state_key == "" ||
@@ -207,7 +147,7 @@ void Strategy_LoadAttemptState(const datetime reference_time)
       return;
 
    const int current_week_key =
-      Strategy_WeekKey(reference_time);
+      QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
    const double stored =
       GlobalVariableGet(g_attempt_state_key);
    const int stored_week_key =
@@ -279,8 +219,7 @@ bool Strategy_LoadMomentum(double &momentum,
 
 void Strategy_CloseExpiredPositions()
   {
-   const datetime current_bar =
-      iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: Friday D1 lifecycle gate.
+   const datetime current_bar = g_current_d1_bar;
    if(current_bar <= 0)
       return;
 
@@ -350,14 +289,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const datetime current_bar =
-      iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: Friday D1 entry calendar.
-   if(!Strategy_IsGenuineFridayBoundary(current_bar) ||
+   const datetime current_bar = g_current_d1_bar;
+   if(!Strategy_IsGenuineFridayBoundary() ||
       !Strategy_EntryWithinGrace(current_bar))
       return false;
 
    const int week_key =
-      Strategy_WeekKey(current_bar);
+      QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
    if(week_key <= 0 ||
       week_key == g_last_attempt_week_key)
       return false;
@@ -366,8 +304,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_RecordWeekAttempt(week_key))
       return false;
 
-   if(Strategy_HasOpenPosition() ||
-      Strategy_WeekAlreadyEntered(week_key, current_bar))
+   if(Strategy_HasOpenPosition())
       return false;
 
    double momentum = 0.0;
@@ -453,7 +390,7 @@ int OnInit()
    g_attempt_state_key =
       StringFormat("QM5_20172_WEEK_ATTEMPT_%d",
                    QM_FrameworkMagic());
-   Strategy_LoadAttemptState(TimeCurrent());
+   Strategy_LoadAttemptState();
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
@@ -482,6 +419,8 @@ void OnTick()
    if(!Strategy_IsWtiD1())
       return;
    if(!QM_IsNewBar())
+      return;
+   if(!Strategy_AdvanceCalendarState())
       return;
 
    QM_EquityStreamOnNewBar();

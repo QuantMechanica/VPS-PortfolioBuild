@@ -1,0 +1,19 @@
+{
+  "ea_id": "QM5_1627",
+  "ea_slug": "hopwood-bermaui-cci-h4",
+  "symbol": "EURUSD.DWX",
+  "timeframe": "H4",
+  "compiled_at_utc": "2026-08-10T20:44:42Z",
+  "compile_result": "PASS",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260810_204441.json",
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260810_204442\\QM5_1627_hopwood-bermaui-cci-h4.compile.log",
+  "ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_1627_hopwood-bermaui-cci-h4\\QM5_1627_hopwood-bermaui-cci-h4.ex5",
+  "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_1627_hopwood-bermaui-cci-h4\\sets\\QM5_1627_hopwood-bermaui-cci-h4_EURUSD.DWX_H4_backtest.set",
+  "setfile_build_hash": "8b53e7eb2be2cac959ce840b506c73032a01e38570c7f93f2cc51d9c4d63e838",
+  "notes": "Build completed by Gemini. All setfiles generated."
+}

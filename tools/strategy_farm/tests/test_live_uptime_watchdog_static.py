@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -14,7 +15,7 @@ INSTALLER = TOOLS / "install_live_uptime_tasks.ps1"
 DXZ_ON = TOOLS / "T_Live_ON.ps1"
 FTMO_ON = TOOLS / "FTMO_ON.ps1"
 DXZ_PROFILE = TOOLS / "prepare_dxz_v2_liveops_profile.ps1"
-FTMO_CONTRACT = TOOLS / "verify_ftmo_round25_live_contract.ps1"
+FTMO_CONTRACT = TOOLS / "verify_ftmo_demo_instrumentation_contract.ps1"
 SESSION_SUPERVISOR = TOOLS / "Live_MT5_SessionSupervisor.ps1"
 SESSION_SUPERVISOR_STARTER = TOOLS / "Start_Live_SessionSupervisor.ps1"
 ALARM_STATE = TOOLS / "Live_Alarm_State.ps1"
@@ -122,7 +123,12 @@ def test_installer_arms_only_interactive_live_launches_and_system_watchdog() -> 
     assert "-ExecutionTimeLimit ([TimeSpan]::Zero)" in source
     assert "-RestartCount 255" in source
     assert "PT45S" in source
-    assert '-File `"$watchdogScript`" -NoReboot' in source
+    # OWNER 2026-08-06 separately armed the regular watchdog's guarded
+    # controlled-reboot heal. The 04:45 start-only sweep retains its own hard
+    # -NoReboot invocation and must never inherit that authority.
+    assert '-File `"$watchdogScript`""' in source
+    morning = (ROOT / "tools" / "strategy_farm" / "Morning_Safety_Check.ps1").read_text(encoding="ascii")
+    assert "-File $watchdogScript -NoReboot" in morning
 
 
 def test_live_launchers_reject_force_and_verify_experts_section() -> None:
@@ -135,6 +141,46 @@ def test_live_launchers_reject_force_and_verify_experts_section() -> None:
         assert "one_or_more_terminal64_paths_unreadable" in source
         assert "WaitOne([TimeSpan]::FromSeconds(30))" in source
         assert "LIVE_UPTIME_MAINTENANCE.flag" in source
+
+
+def test_live_launchers_journal_every_exit_and_bound_boot_probe_retries() -> None:
+    launchers = (
+        (DXZ_ON, "Complete-TLiveLauncher"),
+        (FTMO_ON, "Complete-FtmoLauncher"),
+    )
+    for path, completion in launchers:
+        source = path.read_text(encoding="ascii")
+        assert r"D:\QM\reports\state\live_launcher_events.jsonl" in source
+        assert "[IO.File]::AppendAllText" in source
+        assert "Global\\QM.LiveMT5.LauncherJournal" in source
+        assert "Write-LiveLauncherExitRecord -Code $Code -Reason $Reason" in source
+        assert "boot_age_seconds" in source
+        assert "probe_attempts" in source
+        assert "invocation_duration_seconds" in source
+        assert "script_path = $PSCommandPath" in source
+        assert "WindowsIdentity]::GetCurrent().Name" in source
+        assert "[Environment]::TickCount / 1000.0" in source
+        assert "[Environment]::TickCount64" not in source
+
+        # Unknown inventory gets at most three probes and six seconds of sleep,
+        # only during the first ten minutes after boot. A positive/known probe
+        # returns immediately and remains subject to duplicate checks.
+        assert "$bootAge -le 600" in source
+        assert "{ 3 } else { 1 }" in source
+        assert "$retryDelays = @(2, 4)" in source
+        assert "if ($state.probe_ok) { return $state }" in source
+
+        # Every explicit termination must flow through the centralized journal
+        # path and every completion call must carry a stable reason.
+        exit_lines = re.findall(r"(?m)^\s*exit\s+.+$", source)
+        assert [line.strip() for line in exit_lines] == ["exit $Code"]
+        calls = [
+            line.strip()
+            for line in source.splitlines()
+            if completion in line and not line.lstrip().startswith("function ")
+        ]
+        assert calls
+        assert all("-Reason" in line for line in calls), calls
 
 
 def test_dxz_recovery_uses_sealed_v2_plus_read_only_monitor_wrapper() -> None:
@@ -157,15 +203,15 @@ def test_ftmo_recovery_verifies_approved_profile_presets_and_binaries_before_lau
     contract = FTMO_CONTRACT.read_text(encoding="ascii")
     shared_contract = PROFILE_CONTRACT.read_text(encoding="ascii")
 
-    assert "verify_ftmo_round25_live_contract.ps1" in launcher
+    assert "verify_ftmo_demo_instrumentation_contract.ps1" in launcher
     assert launcher.index("& powershell.exe") < launcher.index("[IO.File]::ReadAllText($common")
-    assert contract.count("binary_sha=") == 12
-    assert contract.count("preset_sha=") == 12
+    assert contract.count("binary_sha=") == 5
+    assert contract.count("preset_sha=") == 5
     assert "Assert-ExactProfileFiles" in contract
     assert "expected exactly one expert" in shared_contract
-    assert "Assert-PackageManifest" in contract
+    assert "Assert-BlankChartContract" in contract
+    assert "QM_AccountMonitor" in contract
     assert "terminal binary hash mismatch" in contract
-    assert "package binary hash mismatch" in contract
     assert "FTMO account mismatch" in contract
 
 
@@ -184,26 +230,27 @@ def test_resident_session_supervisor_is_fail_closed_and_non_destructive() -> Non
     assert "Stop-Process" not in source
     assert "shutdown.exe" not in source
     assert "AutoTrading" not in source
-    assert "$expectedFtmoState = 'PARKED'" in source
+    assert "$expectedFtmoState = 'RUNNING'" in source
     assert "parked_no_relaunch:$name" in source
     assert "$expectedFtmoState -eq 'RUNNING' -and $misses.FTMO" in source
 
 
-def test_watchdog_bakes_parked_ftmo_contract_without_process_control() -> None:
+def test_watchdog_bakes_running_ftmo_contract_without_process_control() -> None:
     source = WATCHDOG.read_text(encoding="ascii")
     launcher = FTMO_ON.read_text(encoding="ascii")
     alarm_state = ALARM_STATE.read_text(encoding="ascii")
 
     assert "$expectedDxzState = 'RUNNING'" in source
-    assert "$expectedFtmoState = 'PARKED'" in source
-    assert "$expectedFtmoProfile = $null" in source
-    assert "$expectedStateReviewExpiresUtc = '2026-08-25T00:00:00Z'" in source
+    assert "$expectedFtmoState = 'RUNNING'" in source
+    assert "$expectedFtmoProfile = 'Default'" in source
+    assert "$expectedStateReviewExpiresUtc = '2026-09-30T00:00:00Z'" in source
     assert "parked_no_relaunch:FTMO" in source
     assert "expected_parked_but_running:FTMO" in source
     assert "Stop-Process" not in source
-    assert "$expectedFtmoState = 'PARKED'" in launcher
+    assert "$expectedFtmoState = 'RUNNING'" in launcher
     assert "FTMO launch suppressed by baked expected state" in launcher
-    assert launcher.index("if ($expectedFtmoState -ne 'RUNNING')") < launcher.index("$identity =")
+    assert "verify_ftmo_demo_instrumentation_contract.ps1" in launcher
+    assert launcher.index("if (@($initial.matches).Count -eq 1)") < launcher.index("$identity =")
     assert source.index("if ($expectedStateReviewExpired)") < source.index("} elseif ($maintenance) {")
     assert alarm_state.index("if ($ReviewExpired)") < alarm_state.index(
         "if ($Maintenance -or $ExpectedState -eq 'MAINTENANCE')"

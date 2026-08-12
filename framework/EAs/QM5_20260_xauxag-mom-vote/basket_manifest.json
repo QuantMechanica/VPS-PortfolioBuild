@@ -1,0 +1,11 @@
+{
+  "logical_symbol": "QM5_20260_XAU_XAG_MOMVOTE_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "traded_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "notes": [
+    "One logical opposite-direction XAU/XAG monthly momentum-vote basket. The EA compares synchronized arithmetic-average completed monthly returns at the locked one-, three-, and twelve-month horizons, buys the metal winning at least two ranks, shorts the other, and evaluates combined package PnL and costs at Q02.",
+    "The logical basket must never be decomposed into standalone XAU or XAG gate results. One RISK_FIXED budget is split equally by per-leg ATR stop risk."
+  ]
+}

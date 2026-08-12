@@ -129,3 +129,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | board-advisor build |
 | v2 | 2026-06-30 | In-place rebuild with full P2 FX basket registration | be93b14f-3d5d-4167-894b-15f3ad708e86 |
+| v3 | 2026-08-06 | Recompile unchanged source against the current 28-slot magic resolver; regenerate all fixed-risk setfiles after a slot-15 Q02 OnInit failure | farm claim `14164eb0-b1fe-4487-9a99-6b0a1ed8ff15` |

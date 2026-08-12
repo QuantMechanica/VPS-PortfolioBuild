@@ -389,7 +389,7 @@ bool Strategy_LoadSignalState(const datetime decision_bar_time,
    if(!MathIsValidNumber(g_cache_reversal_difference))
       return false;
 
-   const double rank_epsilon = 1.0e-12;
+   const double rank_epsilon = 1.0e-10;
    // Negative difference means XAU is the 18-month loser: buy XAU/sell XAG.
    if(g_cache_reversal_difference < -rank_epsilon)
       pair_direction = 1;
@@ -407,15 +407,18 @@ void Strategy_AdvanceSignal_OnNewBar()
    g_cache_period_key = 0;
    g_cache_decision_bar_time = 0;
 
-   const datetime decision_bar_time =
-      iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cached timestamp on D1 new-bar path.
-   const datetime prior_bar_time =
-      iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: exact monthly D1 transition check.
-   const int current_month_key = Strategy_MonthKeyForTime(decision_bar_time);
-   const int prior_month_key = Strategy_MonthKeyForTime(prior_bar_time);
+   const int current_month_key =
+      QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int prior_month_key =
+      QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
    if(current_month_key <= 0 || prior_month_key <= 0 ||
       current_month_key == prior_month_key)
       return;
+
+   MqlRates decision_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, decision_bar))
+      return;
+   const datetime decision_bar_time = decision_bar.time;
 
    g_monthly_rebalance_bar = true;
    g_cache_month_key = current_month_key;
@@ -435,12 +438,13 @@ bool Strategy_MaxHoldExceeded()
   }
 
 double Strategy_LotsForLeg(const string symbol,
+                           const double atr,
                            const double risk_weight,
                            const double risk_weight_sum)
   {
-   const double atr = QM_ATR(symbol, PERIOD_D1, strategy_atr_period_d1, 1);
    const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
-   if(atr <= 0.0 || point <= 0.0 || risk_weight <= 0.0 || risk_weight_sum <= 0.0)
+   if(!MathIsValidNumber(atr) || atr <= 0.0 || point <= 0.0 ||
+      risk_weight <= 0.0 || risk_weight_sum <= 0.0)
       return 0.0;
 
    const double sl_points = strategy_atr_sl_mult * atr / point;
@@ -457,14 +461,16 @@ double Strategy_LotsForLeg(const string symbol,
    return MathMin(max_lot, NormalizeDouble(lots, 8));
   }
 
-bool Strategy_OpenLeg(const string symbol,
-                      const QM_OrderType type,
-                      const double risk_weight,
-                      const double risk_weight_sum,
-                      const string reason)
+bool Strategy_BuildLegRequest(const string symbol,
+                              const QM_OrderType type,
+                              const double risk_weight,
+                              const double risk_weight_sum,
+                              const string reason,
+                              QM_BasketOrderRequest &req)
   {
    const int slot = Strategy_SlotForSymbol(symbol);
-   if(slot < 0 || !Strategy_SpreadAllowed(symbol))
+   if(slot < 0 || QM_MagicChecked(qm_ea_id, slot, symbol) <= 0 ||
+      !Strategy_SpreadAllowed(symbol))
       return false;
 
    const double entry = QM_OrderTypeIsBuy(type) ? SymbolInfoDouble(symbol, SYMBOL_ASK)
@@ -475,11 +481,10 @@ bool Strategy_OpenLeg(const string symbol,
 
    const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    const double stop_dist = strategy_atr_sl_mult * atr;
-   const double lots = Strategy_LotsForLeg(symbol, risk_weight, risk_weight_sum);
-   if(lots <= 0.0)
+   const double lots = Strategy_LotsForLeg(symbol, atr, risk_weight, risk_weight_sum);
+   if(!MathIsValidNumber(stop_dist) || stop_dist <= 0.0 || lots <= 0.0)
       return false;
 
-   QM_BasketOrderRequest req;
    req.symbol = symbol;
    req.type = type;
    req.price = 0.0;
@@ -490,9 +495,7 @@ bool Strategy_OpenLeg(const string symbol,
    req.reason = reason;
    req.symbol_slot = slot;
    req.expiration_seconds = 0;
-
-   ulong ticket = 0;
-   return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, strategy_deviation_points, req, ticket);
+   return (req.sl > 0.0);
   }
 
 bool Strategy_OpenPair(const int pair_direction)
@@ -509,8 +512,29 @@ bool Strategy_OpenPair(const int pair_direction)
                                              : "QM5_20202_SHORT_XAU_LONG_XAG_REV18";
    const double weight_sum = 2.0;
 
-   const bool xau_ok = Strategy_OpenLeg(g_leg_xau, xau_type, 1.0, weight_sum, reason);
-   const bool xag_ok = Strategy_OpenLeg(g_leg_xag, xag_type, 1.0, weight_sum, reason);
+   // The approved atomicity contract requires both frozen-stop requests and
+   // both half-budget lot sizes to be valid before the first order is sent.
+   QM_BasketOrderRequest xau_req;
+   QM_BasketOrderRequest xag_req;
+   if(!Strategy_BuildLegRequest(g_leg_xau, xau_type, 1.0, weight_sum, reason, xau_req) ||
+      !Strategy_BuildLegRequest(g_leg_xag, xag_type, 1.0, weight_sum, reason, xag_req))
+      return false;
+
+   ulong xau_ticket = 0;
+   const bool xau_ok = QM_BasketOpenPosition(qm_ea_id,
+                                              qm_news_mode_legacy,
+                                              strategy_deviation_points,
+                                              xau_req,
+                                              xau_ticket);
+   if(!xau_ok)
+      return false;
+
+   ulong xag_ticket = 0;
+   const bool xag_ok = QM_BasketOpenPosition(qm_ea_id,
+                                              qm_news_mode_legacy,
+                                              strategy_deviation_points,
+                                              xag_req,
+                                              xag_ticket);
    if(xau_ok && xag_ok &&
       Strategy_OpenPairLegCount() == 2 &&
       Strategy_PairCompositionValid(pair_direction))
@@ -673,6 +697,17 @@ int OnInit()
 
    string basket_symbols[2] = {g_leg_xau, g_leg_xag};
    QM_SymbolGuardInit(basket_symbols);
+   const int xau_magic = QM_FrameworkRegisterMagicSymbol(qm_ea_id, 0, g_leg_xau);
+   const int xag_magic = QM_FrameworkRegisterMagicSymbol(qm_ea_id, 1, g_leg_xag);
+   if(xau_magic <= 0 || xag_magic <= 0 || xau_magic == xag_magic)
+     {
+      QM_LogEvent(QM_ERROR,
+                  "BASKET_MAGIC_REGISTRATION_FAILED",
+                  StringFormat("{\"xau_magic\":%d,\"xag_magic\":%d}",
+                               xau_magic,
+                               xag_magic));
+      return INIT_FAILED;
+     }
    QM_BasketWarmupHistory(basket_symbols, PERIOD_D1, MathMax(450, strategy_history_bars));
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_20202\",\"ea\":\"xauxag-rev18\"}");
@@ -687,6 +722,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 

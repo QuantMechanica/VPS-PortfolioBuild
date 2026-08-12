@@ -96,6 +96,7 @@ LIVE_ALARM_STATE = REPORTS_STATE / "live_alarm_state.json"              # WS-E1 
 LIVE_WATCHDOG_STATE = REPORTS_STATE / "live_uptime_watchdog.json"       # shipped uptime-watchdog atomic state (fallback)
 LIVE_SUPERVISOR_STATE = REPORTS_STATE / "live_session_supervisor.json"  # resident supervisor atomic state (fallback cross-read)
 LIVE_MAINTENANCE_FLAG = REPORTS_STATE / "LIVE_UPTIME_MAINTENANCE.flag"
+MORNING_SAFETY_STATE = REPORTS_STATE / "morning_safety_check.json"      # OWNER-ratified 04:45 start-only sweep
 FTMO_PULSE_STATE = REPORTS_STATE / "ftmo_trial_pulse.json"             # FTMO account-monitor state (shipped)
 DDGUARD_STATE = REPORTS_STATE / "live_book_dd_guard_state.json"         # DXZ live-book DD-guard state (shipped)
 LIVE_DEPLOY_CONTRACT_STATE = REPORTS_STATE / "live_deployment_contract_state.json"  # WS-E3 verifier --json-out (deployment contract)
@@ -977,6 +978,40 @@ def factory_light() -> dict:
             "reason": f"{workers}/10 Worker · D: {free_txt} frei · INFRA {infra_txt} 24h."}
 
 
+def morning_safety_summary() -> dict:
+    """One fail-closed summary line from the 04:45 start-only sweep."""
+    try:
+        value = json.loads(MORNING_SAFETY_STATE.read_text(encoding="utf-8"))
+        generated = _parse_utc(value.get("generated_utc"))
+        if generated is None:
+            raise ValueError("generated_utc fehlt")
+        age_sec = max(0.0, (_utc_now() - generated).total_seconds())
+        if age_sec > 30 * 3600:
+            return {"color": FAIL, "label": "UNBEKANNT",
+                    "summary": f"04:45-Safety veraltet (Alter {_age(age_sec)})."}
+        summary = value.get("summary") or {}
+        failed = int(summary.get("failed") or 0)
+        healed = int(summary.get("healed") or 0)
+        suppressed = int(summary.get("suppressed") or 0)
+        total = int(summary.get("total") or len(value.get("checks") or []))
+        if failed:
+            names = [str(c.get("name")) for c in (value.get("checks") or [])
+                     if isinstance(c, dict) and c.get("status") == "FAILED"]
+            return {"color": FAIL, "label": "ROT",
+                    "summary": f"04:45-Safety: {failed}/{total} FAILED ({', '.join(names[:3])})."}
+        if healed:
+            return {"color": ORANGE, "label": "GEHEILT",
+                    "summary": f"04:45-Safety: {healed} geheilt, 0 FAILED ({total} Checks)."}
+        if suppressed:
+            return {"color": ORANGE, "label": "SUPPRESSED",
+                    "summary": f"04:45-Safety: {suppressed}/{total} bewusst unterdrückt, 0 FAILED."}
+        return {"color": EMERALD, "label": "OK",
+                "summary": f"04:45-Safety: {total}/{total} OK, 0 FAILED."}
+    except Exception as exc:
+        return {"color": FAIL, "label": "UNBEKANNT",
+                "summary": f"04:45-Safety fehlt/unlesbar ({type(exc).__name__})."}
+
+
 def owner_actions() -> list[dict]:
     """severity=action, fällig ≤ 7 Tage, fällig-sortiert (cockpit logic re-used)."""
     try:
@@ -1141,6 +1176,7 @@ def render_html(data: dict) -> str:
     nb = data["night"]
     fr = data["frontier"]
     fl = data["factory"]
+    ms = data["morning_safety"]
     acts = data["actions"]
     qt = data["quota"]
     hb = data["heartbeats"]
@@ -1232,7 +1268,10 @@ def render_html(data: dict) -> str:
             f'<span style="font-size:15px;font-weight:800;color:{P["surface_0"]};'
             f'letter-spacing:1px;">{e(fl["label"])}</span></td>'
             f'<td style="padding:10px 14px;font-size:12px;color:{P["text_dim"]};line-height:1.4;">'
-            f'{e(fl["reason"])}</td></tr></table>')
+            f'{e(fl["reason"])}</td></tr></table>'
+            f'<div style="margin-top:9px;padding:8px 10px;border-left:3px solid {ms["color"]};'
+            f'background:{P["surface_2"]};font-size:11px;color:{P["text_dim"]};">'
+            f'<b>{e(ms["label"])}</b> · {e(ms["summary"])}</div>')
     )
 
     # ── Section 4: OWNER-ENTSCHEIDUNGEN ─────────────────────────────────
@@ -1394,6 +1433,7 @@ def render_text(data: dict) -> str:
         L.append(f"   [Q08 laeuft] {r['ea_id']} {r['symbol']} — {r['status']}")
     L.append("")
     L.append(f"3) FACTORY-AMPEL: {fl['label']} — {fl['reason']}")
+    L.append(f"   04:45-SAFETY: {data['morning_safety']['label']} — {data['morning_safety']['summary']}")
     L.append("")
     L.append("4) OWNER-ENTSCHEIDUNGEN (Aktion, faellig <= 7 T)")
     if data["actions"]:
@@ -1474,6 +1514,7 @@ def collect() -> dict:
         "since": _yesterday_18(),
         "frontier": frontier(),
         "factory": factory_light(),
+        "morning_safety": morning_safety_summary(),
         "actions": owner_actions(),
         "quota": quota(),
         "heartbeats": heartbeats(),

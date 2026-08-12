@@ -2,65 +2,71 @@
 
 **EA ID:** QM5_11389
 **Slug:** `munzer-d1-ema34-sma150-double-cci`
-**Source:** `dfd32799-2055-5ef8-b99b-dcbfa51daba0` (Mohammed Munzer Complex System #7, forex-strategies-revealed.com compilation)
+**Source:** `dfd32799-2055-5ef8-b99b-dcbfa51daba0`
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-08-07
 
 ---
 
 ## 1. Strategy Logic
 
-A D1 trend-with-momentum-trigger system on forex. The EMA(34)/SMA(150) pair fixes
-the trend STATE: EMA above SMA = uptrend, below = downtrend. When price (the last
-closed daily bar's close) sits BETWEEN the two moving averages it is a no-trade
-zone and the EA stands aside. The single entry EVENT is the fast CCI(14) crossing
-zero in the trend direction on the last closed bar; the slow CCI(50) sign, the
-EMA/SMA stack, the price-vs-EMA(34) side, and the Stochastic %K level are all
-confirming STATES (never a second fresh cross on the same bar — this avoids the
-two-cross-same-bar zero-trade trap).
+On each newly opened D1 bar, the EA evaluates the preceding closed candle. A
+long setup requires EMA(34) above SMA(150), the close above EMA(34), both
+CCI(50) and CCI(14) above zero, and Stochastic %K(5,3,3) below 80; a short setup
+uses the exact mirror conditions and requires Stochastic %K above 20. A close
+between EMA(34) and SMA(150) is a no-trade zone.
 
-Long: EMA34 > SMA150, close above EMA34, fast CCI(14) crosses up through 0, slow
-CCI(50) > 0, and Stoch %K not overbought (< 80). Short is the mirror (CCI cross
-down, CCI(50) < 0, Stoch %K not oversold > 20). Entry is a market order on the
-confirming closed bar. Stop is placed at the signal candle's opposite extreme
-±10 pips, with the stop distance capped at 60 pips (D1 candles can be large).
-Take profit is 2× ATR(14). The stop is moved to breakeven once price advances
-+1× ATR(14) in favour.
+For a valid long setup, the EA places a buy stop 10 pips above the signal
+candle high; for a short setup, it places a sell stop 10 pips below the signal
+candle low. The pending order is bounded to the following D1 interval. The stop
+is 10 pips beyond the opposite signal-candle extreme, capped to 60 pips from
+entry; the target is 2 × ATR(14), and the stop moves to entry after a 1 × ATR
+favourable move. Unfilled stops are removed when the next D1 signal evaluation
+begins, and positions otherwise exit through SL, TP, breakeven, or the framework
+Friday close.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_ema_period` | 34 | 13-100 | Fast trend EMA |
-| `strategy_sma_period` | 150 | 50-300 | Slow trend SMA |
-| `strategy_cci_slow_period` | 50 | 20-100 | Slow CCI sign-confirmation state |
-| `strategy_cci_fast_period` | 14 | 7-30 | Fast CCI zero-cross trigger event |
-| `strategy_stoch_k` | 5 | 3-21 | Stochastic %K period |
-| `strategy_stoch_d` | 3 | 1-10 | Stochastic %D period |
-| `strategy_stoch_slow` | 3 | 1-10 | Stochastic slowing |
-| `strategy_stoch_ob` | 80.0 | 60-95 | Overbought ceiling (block longs above) |
-| `strategy_stoch_os` | 20.0 | 5-40 | Oversold floor (block shorts below) |
-| `strategy_atr_period` | 14 | 7-30 | ATR period for TP and breakeven |
-| `strategy_tp_atr_mult` | 2.0 | 1.0-4.0 | Take-profit distance = mult × ATR |
-| `strategy_sl_buffer_pips` | 10 | 2-30 | Stop placed this many pips beyond candle extreme |
-| `strategy_sl_max_pips` | 60 | 20-150 | Hard cap on stop distance (D1) |
-| `strategy_be_atr_mult` | 1.0 | 0.5-3.0 | Move SL to breakeven once +mult × ATR in profit |
-| `strategy_spread_pct_of_stop` | 25.0 | 5-100 | Skip if spread > this % of stop distance |
+|---|---:|---|---|
+| `strategy_ema_period` | 34 | 21 or 34 | Fast exponential trend average; 21 is the card's Q03 alternative |
+| `strategy_sma_period` | 150 | fixed by card | Slow simple trend average |
+| `strategy_cci_slow_period` | 50 | 50 or 100 | Slow CCI sign filter; 100 is the card's Q03 alternative |
+| `strategy_cci_fast_period` | 14 | 14 or 20 | Fast CCI sign filter; 20 is the card's Q03 alternative |
+| `strategy_stoch_k` | 5 | 5 or 14 | Stochastic %K period; 14 is the card's Q03 alternative |
+| `strategy_stoch_d` | 3 | fixed by card | Stochastic %D period |
+| `strategy_stoch_slowing` | 3 | fixed by card | Stochastic slowing period |
+| `strategy_stoch_overbought` | 80.0 | fixed by card | Long entries require %K below this level |
+| `strategy_stoch_oversold` | 20.0 | fixed by card | Short entries require %K above this level |
+| `strategy_entry_offset_pips` | 10 | fixed by card | Pending-stop distance beyond the signal-candle extreme |
+| `strategy_sl_buffer_pips` | 10 | fixed by card | Stop buffer beyond the opposite signal-candle extreme |
+| `strategy_sl_cap_pips` | 60 | fixed by card | Maximum entry-to-stop distance |
+| `strategy_atr_period` | 14 | fixed by card | ATR period for target and breakeven distance |
+| `strategy_tp_atr_mult` | 2.0 | fixed by card | Target distance in ATR multiples |
+| `strategy_breakeven_atr_mult` | 1.0 | fixed by card | Favourable ATR move required before moving SL to entry |
+| `strategy_spread_cap_pips` | 30 | fixed by card | Blocks only a genuinely positive spread above 30 pips |
+| `strategy_pending_expiration_seconds` | 86400 | one D1 interval | Broker-side lifetime for an unfilled pending stop |
+
+Framework inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are
+not repeated here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — most liquid major; clean D1 trends, low spread cost.
-- `GBPUSD.DWX` — liquid major with strong directional D1 swings.
-- `USDJPY.DWX` — liquid major; pip-factor handling verified for 3-digit quote.
+
+- `EURUSD.DWX` — card-listed liquid major with complete D1 DWX history.
+- `GBPUSD.DWX` — card-listed liquid major with complete D1 DWX history.
+- `USDJPY.DWX` — card-listed liquid major; framework pip conversion handles its
+  three-digit quote scale.
 
 **Explicitly NOT for:**
-- Index / metal `.DWX` symbols — the card's R3 PASS scopes this strategy to the
-  three forex majors above; trend/CCI calibration is not validated outside FX.
+
+- Other `.DWX` symbols — the approved R3 universe names only the three forex
+  majors above, so no unapproved symbol expansion is included.
 
 ---
 
@@ -70,7 +76,7 @@ Take profit is 2× ATR(14). The stop is moved to breakeven once price advances
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` in the canonical skeleton; strategy reads are fixed to closed `PERIOD_D1` shift 1 |
 
 ---
 
@@ -78,11 +84,12 @@ Take profit is 2× ATR(14). The stop is moved to breakeven once price advances
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `~30` |
-| Typical hold time | `several days (D1 swing)` |
-| Expected drawdown profile | `moderate; capped per-trade by 60-pip stop ceiling` |
-| Regime preference | `trend` |
-| Win rate target (qualitative) | `medium` |
+| Trades / year / symbol | `30` |
+| Expected trade frequency | `approximately 2.5 per month`, derived arithmetically from 30/year |
+| Typical hold time | Card does not quantify it; D1 swing held until SL, TP, breakeven exit, or Friday close |
+| Expected drawdown profile | Card does not quantify it; every trade uses fixed-risk sizing and a 60-pip stop-distance cap |
+| Regime preference | `trend`, as stated by the card's trend-following concept and MA structure |
+| Win rate target (qualitative) | Not specified in the approved card |
 
 ---
 
@@ -91,9 +98,12 @@ Take profit is 2× ATR(14). The stop is moved to breakeven once price advances
 This card was mechanised from:
 
 **Source ID:** `dfd32799-2055-5ef8-b99b-dcbfa51daba0`
-**Source type:** `paper` (forex-strategies-revealed.com PDF compilation)
-**Pointer:** Mohammed Munzer "Complex Trading System #7", `pdfcoffee.com_forex-strategy-7-pdf-free.pdf`
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11389_munzer-d1-ema34-sma150-double-cci.md`
+**Source type:** PDF compilation / named-author trading system
+**Pointer:** Mohammed Munzer, “Complex Trading System #7,” in the
+forex-strategies-revealed.com compilation; local archive
+`C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\pdfcoffee.com_forex-strategy-7-pdf-free.pdf`
+**R1–R4 verdict (Q00):** R1 lineage recorded and R2–R4 PASS per
+`artifacts/cards_approved/QM5_11389_munzer-d1-ema34-sma150-double-cci.md`.
 
 ---
 
@@ -113,4 +123,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-08-07 | Initial build from card | bf147105-5ef4-4df5-992c-e4dac77272b9 |

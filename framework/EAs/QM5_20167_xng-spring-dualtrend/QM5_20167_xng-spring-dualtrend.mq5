@@ -37,8 +37,6 @@ input double strategy_atr_sl_mult          = 3.5;
 input int    strategy_max_hold_days        = 35;
 input int    strategy_max_spread_points    = 1000;
 
-datetime g_last_entry_bar = 0;
-
 bool Strategy_IsSpringMonth(const int month)
   {
    return (month == 4 || month == 5);
@@ -126,11 +124,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const datetime d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: one D1 timestamp read per framework new-bar pass
-   if(d1_bar <= 0 || d1_bar == g_last_entry_bar)
-      return false;
-   g_last_entry_bar = d1_bar;
-
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
    const int month_key = QM_CalendarPeriodKey(PERIOD_MN1);
@@ -186,6 +179,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
    if(QM_FrameworkHandleFridayClose())

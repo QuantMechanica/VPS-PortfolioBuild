@@ -1,0 +1,79 @@
+{
+  "schema": "qm.fx_cointegration_existing_card_handoff/v1",
+  "generated_at": "2026-08-07T04:51:54+02:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20246",
+  "slug": "usdjpy-eurgbp",
+  "logical_symbol": "QM5_20246_USDJPY_EURGBP_COINTEGRATION_D1",
+  "traded_symbols": [
+    "USDJPY.DWX",
+    "EURGBP.DWX"
+  ],
+  "action": "Q04_ENQUEUED_FROM_CURRENT_LOGICAL_Q02_PASS",
+  "selection": {
+    "frozen_66_pair_frontier_exhausted": true,
+    "new_card_or_build_created": false,
+    "anchor_q02_blocker_found": false,
+    "qm5_11646_already_advanced": true,
+    "qm5_11755_requeue_excluded": true,
+    "reason": "existing low-frequency structural FX basket had current Q02 PASS and no Q04 row"
+  },
+  "source_and_risk": {
+    "primary_method_source": "Ernest P. Chan, Quantitative Trading (Wiley, 2009), OWNER-ratified Tier-A SRC02 extraction",
+    "structural": true,
+    "ml": false,
+    "timeframe": "D1",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "artifact_sha256": {
+    "mq5": "4ee9db9b746599413e00af5f01583252bd8ec9b8440d0509ca25207ea483ec6a",
+    "ex5": "f2384173fdd41e914b48b3098467c9b02a7648494f937f5f027f4e8b45aa6eab",
+    "basket_manifest": "63b4084a8522588bb3c3629b12430b4b27efd133472ea24dc5adafff250a66f5",
+    "logical_backtest_setfile": "94923d6a78f9e2abbc66b4c8b268fb5b5cb9cbdc50c4a24f6c5b1aa7b5bb7cbb"
+  },
+  "q02": {
+    "work_item_id": "d8619249-7764-4d80-a714-6b7922b73b4b",
+    "status": "done",
+    "verdict": "PASS",
+    "evidence_path": "D:/QM/reports/work_items/d8619249-7764-4d80-a714-6b7922b73b4b/QM5_20246/20260807_013638/summary.json",
+    "reason_classes": [
+      "OK"
+    ],
+    "oninit_failure": false,
+    "trades": 136,
+    "profit_factor": 1.11,
+    "net_profit": 1610.27,
+    "drawdown": 5814.91,
+    "drawdown_pct": 5.43
+  },
+  "q04": {
+    "work_item_id": "1a269ff4-cbef-429b-afa4-47a3cc692916",
+    "status_at_verification": "pending",
+    "claimed_by_at_verification": null,
+    "attempt_count_at_verification": 0,
+    "same_ea_q04_rows_at_verification": 1
+  },
+  "cpu_sample": {
+    "sampled_at": "2026-08-07T04:51:53+02:00",
+    "binding_ceiling": 7,
+    "factory_terminal_count": 5,
+    "factory_terminals": [
+      "T2",
+      "T4",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "ceiling_blocked": false
+  },
+  "safety": {
+    "tester_dispatched": false,
+    "terminal_control_performed": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

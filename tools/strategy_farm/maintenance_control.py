@@ -18,6 +18,7 @@ import re
 import sqlite3
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -40,13 +41,13 @@ DEFAULT_DISABLED_TERMINALS = Path(
 
 CANONICAL_FACTORY_ON_PATH = Path(r"C:\QM\repo\tools\strategy_farm\Factory_ON.ps1")
 CANONICAL_OWNER_DECISION_RELATIVE_PATH = Path(
-    "docs/ops/evidence/2026-08-03_factory_preparation_owner_decision.json"
+    "docs/ops/evidence/2026-08-11_factory_preparation_owner_decision_standing_unlimited.json"
 )
 CANONICAL_OWNER_DECISION_SHA256 = (
-    "e3e3c4794f4e680080eb8032be13fdd25457485749a9a62d0d1eeb31811c8d34"
+    "9d77f78ffb9ba5b263cf2e29ade0cf79b938ad34ab14ad2ab4ad5efd5153c4e4"
 )
-CANONICAL_OWNER_DECISION_COMMIT = "1ec04dc9eff37cabc0582718047a4d3cabe3a1c2"
-CANONICAL_OWNER_DECISION_BLOB = "30b4845d06a0944ef419448bacfa2fb394504b92"
+CANONICAL_OWNER_DECISION_COMMIT = "ecbd911628e0850cbbfd8ab3ed1eb3c0b0b911b3"
+CANONICAL_OWNER_DECISION_BLOB = "2247ace7ec310bfb0c76dfdc455193e209683463"
 CANONICAL_WORKER_TERMINALS = (
     "T1",
     "T2",
@@ -91,17 +92,45 @@ def sqlite_state_sha256(path: Path) -> str:
     return hashlib.sha256(image).hexdigest()
 
 
-def checkpoint_wal(path: Path) -> dict[str, int]:
-    """Checkpoint every committed WAL frame before the post-state file hash."""
+def _wal_checkpoint_once(path: Path) -> tuple[int, int, int]:
     with sqlite3.connect(path, timeout=30, isolation_level=None) as conn:
-        conn.execute("PRAGMA busy_timeout=30000")
-        row = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+        conn.execute("PRAGMA busy_timeout=5000")
+        row = conn.execute("PRAGMA wal_checkpoint(FULL)").fetchone()
     busy, log_frames, checkpointed = (int(value or 0) for value in row)
-    if busy:
-        raise RuntimeError(
-            f"SQLite WAL checkpoint remained busy (log={log_frames}, checkpointed={checkpointed})"
-        )
-    return {"busy": busy, "log_frames": log_frames, "checkpointed_frames": checkpointed}
+    return busy, log_frames, checkpointed
+
+
+def checkpoint_wal(
+    path: Path,
+    *,
+    attempts: int = 12,
+    delay_seconds: float = 2.5,
+    sleeper=time.sleep,
+) -> dict[str, int]:
+    """Checkpoint every committed WAL frame before the post-state file hash.
+
+    Mode FULL, not TRUNCATE: the evidence contract needs every committed frame
+    copied into the main database file before hashing — FULL guarantees exactly
+    that at busy==0. TRUNCATE additionally demands a WAL-reader-free instant,
+    which a fleet of ten polling terminal workers almost never yields; R8
+    (2026-08-12) FAILED CLOSED at the restart-hold evidence step on exactly
+    that lottery. Transient busy (a reader on an old snapshot) is retried a
+    bounded number of times; persistent busy still raises fail-closed.
+    """
+    busy = log_frames = checkpointed = 0
+    for attempt in range(attempts):
+        busy, log_frames, checkpointed = _wal_checkpoint_once(path)
+        if not busy:
+            return {
+                "busy": busy,
+                "log_frames": log_frames,
+                "checkpointed_frames": checkpointed,
+            }
+        if attempt < attempts - 1:
+            sleeper(delay_seconds)
+    raise RuntimeError(
+        f"SQLite WAL checkpoint remained busy (log={log_frames}, checkpointed={checkpointed})"
+    )
 
 
 def connect_ro(path: Path) -> sqlite3.Connection:
@@ -412,7 +441,7 @@ def _validate_canonical_restart_owner_decision() -> dict[str, Any]:
         raise RuntimeError("canonical OWNER decision must be a JSON object")
 
     expected_scalar = {
-        "decision_id": "FACTORY_PREPARATION_20260803_TEN_WORKER_ZERO_HOLD",
+        "decision_id": "FACTORY_PREPARATION_20260811_STANDING_UNLIMITED",
         "authority": "OWNER",
         "status": "APPROVED",
     }

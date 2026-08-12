@@ -15,8 +15,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -233,12 +233,12 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
   {
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
-      return false;
-
    const int minute_now = Strategy_MinuteOfDay(TimeCurrent());
    const int eod_minute = Strategy_TargetMinute(strategy_eod_hour_server, strategy_eod_minute_server);
-   return (minute_now >= eod_minute);
+   if(minute_now < eod_minute)
+      return false;
+
+   return (QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0);
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
@@ -282,16 +282,6 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -318,6 +308,19 @@ void OnTick()
       return;
 
    QM_EquityStreamOnNewBar();
+
+   // News gates entries only. Risk, Friday and EOD exits must remain available
+   // during a blackout, and the calendar lookup is needed only once per M5 bar.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

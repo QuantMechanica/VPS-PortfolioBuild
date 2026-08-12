@@ -1,0 +1,97 @@
+{
+  "schema": "qm.ops.fx_q02_magic_binding_repair/v1",
+  "captured_at": "2026-08-11T05:04:40+00:00",
+  "branch": "agents/board-advisor",
+  "pre_commit_head": "f4c917e9339b607f8578afe66661609a41f31837",
+  "scope": {
+    "ea_id": "QM5_11435",
+    "ea_slug": "carter-t-adx35-priorday-range-h1",
+    "phase": "Q02",
+    "symbol": "GBPUSD.DWX",
+    "timeframe": "H1",
+    "environment": "backtest"
+  },
+  "frontier": {
+    "all_66_pairs_mechanized": true,
+    "qm5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "qm5_12533": "Q02_PASS_Q04_FAIL",
+    "new_pair_created": false
+  },
+  "source_failure": {
+    "work_item_id": "6fb626dc-a9bb-4ab0-9052-271cf5c26a52",
+    "status": "done",
+    "verdict": "INFRA_FAIL",
+    "reason_classes": [
+      "ONINIT_FAILED",
+      "INCOMPLETE_RUNS"
+    ],
+    "tester_marker": "EA_MAGIC_NOT_REGISTERED: ea_id=11435 slot=1 magic=114350001",
+    "history_synchronized": true,
+    "evidence_path": "D:/QM/reports/work_items/6fb626dc-a9bb-4ab0-9052-271cf5c26a52/QM5_11435/20260811_044301/summary.json"
+  },
+  "registry": {
+    "ea_id_status": "active",
+    "symbol_slot": 1,
+    "magic": 114350001,
+    "magic_status": "active"
+  },
+  "repair": {
+    "strategy_source_changed": false,
+    "registry_changed": false,
+    "card_localized": true,
+    "approved_farm_card_sha256": "071802e8b3832728135e520d6403004841e78746db929ba575763d361adfeef0",
+    "mq5_sha256": "48c9b1d6c54778e3368a03d39682f8f495e125e2712709e2f4e6a3bfb5f61609",
+    "old_ex5_sha256": "f1ea74e3f558dbe1b213b882075948e0c9eef9547613949642b141c0c89286d4",
+    "new_ex5_sha256": "d988c4243b42f75e69a4a273d302d45bd07ff278bcf14ad693b36fc5faaf898f",
+    "old_gbpusd_setfile_sha256": "b1384823f85b3b6aa42b705734a91d507b849e991135023540c10a6b2c52cf0d",
+    "new_gbpusd_setfile_sha256": "76cf527b382540255c9b90755fd480b27528179b60b12927543c80c3d6cde866",
+    "card_sha256": "6bac4bdd7c2f8d6f6da10ce9ce44144fb5197ee03eb8be59ae383ba54a56cea3"
+  },
+  "validation": {
+    "strict_compile": "PASS_0_ERRORS_0_WARNINGS",
+    "compile_summary": "D:/QM/reports/compile/20260811_050050/summary.csv",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260811_050050.json",
+    "card_schema_lint": "PASS",
+    "g0_readiness_lint": "PASS",
+    "build_guard": "PASS"
+  },
+  "q02_handoff": {
+    "work_item_id": "eee60b29-b5f3-439d-a454-2381ea9b06a9",
+    "predecessor_work_item_id": "6fb626dc-a9bb-4ab0-9052-271cf5c26a52",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "exact_open_count": 1,
+    "manual_enqueue_performed": false,
+    "automatic_sweep_enqueue_observed": true,
+    "duplicate_inserted": false,
+    "execution_hashes_bound_at_claim": true
+  },
+  "pre_rebuild_race": {
+    "work_item_id": "23e6a6a4-8d44-4d65-bac6-3f99efbe177e",
+    "symbol": "AUDUSD.DWX",
+    "claimed_at": "2026-08-11T04:56:47+00:00",
+    "bound_old_ex5_sha256": "f1ea74e3f558dbe1b213b882075948e0c9eef9547613949642b141c0c89286d4",
+    "status": "done",
+    "verdict": "INFRA_FAIL",
+    "rewritten": false
+  },
+  "capacity": {
+    "factory_terminal_ceiling": 7,
+    "running_factory_terminal_count": 3,
+    "running_factory_terminals": ["T1", "T8", "T9"],
+    "at_cpu_ceiling": false,
+    "t_live_excluded": true,
+    "ftmo_excluded": true,
+    "manual_dispatch_performed": false
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false,
+    "manual_mt5_test_started": false
+  }
+}

@@ -159,6 +159,34 @@ class BasketMemberPreflightRemovedStaticTests(unittest.TestCase):
         self.assertIn("Strategy069_NewsAllowsMember", text)
         self.assertIn("BASKET_PARTIAL_ABORT", text)
 
+    def test_qm5_20123_entry_history_checks_are_closed_bar_gated(self) -> None:
+        # Q02 runtime repair: Strategy_NoTradeFilter runs before QM_IsNewBar on
+        # every real tick. Cross-symbol SeriesInfoInteger calls therefore belong
+        # in Strategy_EntrySignal, which is reached only after the framework H1
+        # gate. Moving them back to NoTradeFilter recreates the timeout hot path.
+        text = EA_20123.read_text(encoding="utf-8")
+        no_trade_start = text.index("bool Strategy_NoTradeFilter()")
+        entry_start = text.index("bool Strategy_EntrySignal", no_trade_start)
+        manage_start = text.index("void Strategy_ManageOpenPosition", entry_start)
+        no_trade = text[no_trade_start:entry_start]
+        entry = text[entry_start:manage_start]
+
+        self.assertNotIn("SeriesInfoInteger", no_trade)
+        self.assertNotIn("Strategy069_HasAnyMemberPosition", no_trade)
+        self.assertIn("Strategy069_MembersReadyForEntry()", entry)
+
+    def test_qm5_20123_flat_ticks_skip_position_scans(self) -> None:
+        # A flat basket is the common state. Keep explicit zero-position fast
+        # paths in both the shared membership query and per-tick management.
+        text = EA_20123.read_text(encoding="utf-8")
+        has_start = text.index("bool Strategy069_HasAnyMemberPosition()")
+        has_end = text.index("bool Strategy069_BuildRequest", has_start)
+        manage_start = text.index("void Strategy_ManageOpenPosition()")
+        manage_end = text.index("bool Strategy_ExitSignal()", manage_start)
+
+        self.assertIn("if(PositionsTotal() <= 0)", text[has_start:has_end])
+        self.assertIn("if(PositionsTotal() <= 0)", text[manage_start:manage_end])
+
 
 class PendingFillingPolicyStaticTests(unittest.TestCase):
     def test_pending_requests_force_return_and_deals_keep_symbol_resolver(self) -> None:

@@ -20,7 +20,7 @@
   deterministic deduplication.
 
   Top-level schema:
-    schema_version   int     contract version (2)
+    schema_version   int     contract version (3)
     generated_utc    string  UTC 'yyyy-MM-ddTHH:mm:ssZ' of THIS write; refreshed
                              every cycle so consumers can detect a dead watchdog
                              (staleness => treat as UNKNOWN/RED, never green).
@@ -30,6 +30,11 @@
     maintenance      bool    maintenance kill switch active this cycle.
     reboot_suppressed bool   a reboot-suppression / cancel / countdown-abort action
                              fired this cycle (informational for consumers).
+    recovery_task_contract_ready bool|null  watchdog verdict for the hardened
+                             interactive recovery-task contract. false is a
+                             page-worthy recovery-blocked condition; null is
+                             retained for fixture/backward compatibility.
+    recovery_task_contract_errors array  watchdog contract-drift reasons.
     any_alarm        bool    true if ANY session condition is an alarm condition
                              (missing|duplicate|launch_failed|probe_unknown|stale|
                              unexpected_running|contract_expired).
@@ -89,7 +94,7 @@
 
 Set-StrictMode -Version Latest
 
-$script:QmLiveAlarmStateVersion = 2
+$script:QmLiveAlarmStateVersion = 3
 $script:QmLiveAlarmConditions = @(
     'ok', 'parked', 'missing', 'duplicate', 'launch_failed', 'probe_unknown',
     'stale', 'unexpected_running', 'contract_expired', 'maintenance'
@@ -354,6 +359,8 @@ function Build-LiveAlarmState {
         [AllowNull()][string]$WatchdogStatus,
         [bool]$Maintenance,
         [bool]$RebootSuppressed,
+        [AllowNull()]$RecoveryTaskContractReady = $null,
+        [string[]]$RecoveryTaskContractErrors = @(),
         [System.Collections.IDictionary]$Sessions,
         [System.Collections.IDictionary]$ExpectedStates = @{ T_LIVE = 'RUNNING'; FTMO = 'RUNNING' },
         [ValidateRange(1, 60)][int]$EscalationThreshold = 3
@@ -388,6 +395,8 @@ function Build-LiveAlarmState {
         watchdog_status = $WatchdogStatus
         maintenance = $Maintenance
         reboot_suppressed = $RebootSuppressed
+        recovery_task_contract_ready = $RecoveryTaskContractReady
+        recovery_task_contract_errors = @($RecoveryTaskContractErrors)
         any_alarm = $anyAlarm
         any_new_escalation = $anyNewEscalation
         escalation_threshold = $EscalationThreshold
@@ -408,6 +417,8 @@ function Write-LiveAlarmState {
         [AllowNull()][string]$WatchdogStatus,
         [bool]$Maintenance,
         [bool]$RebootSuppressed,
+        [AllowNull()]$RecoveryTaskContractReady = $null,
+        [string[]]$RecoveryTaskContractErrors = @(),
         [System.Collections.IDictionary]$Sessions,
         [System.Collections.IDictionary]$ExpectedStates = @{ T_LIVE = 'RUNNING'; FTMO = 'RUNNING' },
         [ValidateRange(1, 60)][int]$EscalationThreshold = 3,
@@ -418,7 +429,9 @@ function Write-LiveAlarmState {
         try { $prev = Get-Content -LiteralPath $AlarmFilePath -Raw -ErrorAction Stop | ConvertFrom-Json } catch { $prev = $null }
     }
     $doc = Build-LiveAlarmState -PrevDocument $prev -NowStamp $NowStamp -WatchdogStatus $WatchdogStatus `
-        -Maintenance $Maintenance -RebootSuppressed $RebootSuppressed -Sessions $Sessions `
+        -Maintenance $Maintenance -RebootSuppressed $RebootSuppressed `
+        -RecoveryTaskContractReady $RecoveryTaskContractReady `
+        -RecoveryTaskContractErrors $RecoveryTaskContractErrors -Sessions $Sessions `
         -ExpectedStates $ExpectedStates -EscalationThreshold $EscalationThreshold
     $json = $doc | ConvertTo-Json -Depth 6
 

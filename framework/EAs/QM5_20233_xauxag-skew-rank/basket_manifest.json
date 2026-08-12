@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_20233_XAU_XAG_SKEW_RANK_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XAU/XAG commodity-skewness basket from approved card FERNANDEZ-SKEW-2018_XAU_XAG_S02. Run the EA on the XAUUSD.DWX D1 host and evaluate the paired package, not standalone legs. At each genuine broker-month transition it computes each metal's Pearson skewness from completed daily log returns in the preceding 12 complete broker months, buys the lower-skew metal, shorts the higher-skew metal, and closes or renews at the next month. Q02 is a strict two-CFD carrier falsification; equal fixed-risk halves do not assert dollar, beta, volatility, or portfolio neutrality."
+  ]
+}

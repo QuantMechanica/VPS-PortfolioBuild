@@ -1,0 +1,17 @@
+{
+  "ea_id": "QM5_12401",
+  "slug": "mom-vol-rev",
+  "mode": "cross_sectional_basket",
+  "rebalance": "non_overlapping_monthly",
+  "timeframe": "D1",
+  "symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "GDAXI.DWX",
+    "UK100.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX"
+  ],
+  "notes": "Card lists 8 symbols; GER40.DWX ported to GDAXI.DWX; JP225.DWX dropped (no DWX matrix equivalent). One instance per symbol, one magic per symbol (slots 0-6); every instance recomputes the same full-basket ranking via QM_BasketWarmupHistory and acts only on its own chart symbol."
+}

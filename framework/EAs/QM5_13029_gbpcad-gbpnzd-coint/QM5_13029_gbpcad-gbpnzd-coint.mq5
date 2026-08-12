@@ -74,7 +74,7 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_z_lookback_d1     = 60;
+input int    strategy_z_lookback_d1     = 90;
 input double strategy_beta              = 0.3460;
 input double strategy_entry_z           = 2.0;
 input double strategy_exit_z            = 0.5;

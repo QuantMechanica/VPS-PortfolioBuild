@@ -1,0 +1,105 @@
+{
+  "schema": "qm_commodity_build_q02_handoff/v1",
+  "timestamp_utc": "2026-08-06T01:35:48.3639501Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20236",
+  "slug": "xauxag-vov-rank",
+  "logical_symbol": "QM5_20236_XAU_XAG_VOV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "timeframe": "D1",
+  "strategy_id": "HOLLSTEIN-VOV-2021_XAU_XAG_S02",
+  "mechanic": "monthly long-lower-realized-volatility-of-volatility and short-higher-realized-volatility-of-volatility rank across 252 overlapping 20-return XAU and XAG D1 volatility observations",
+  "source": {
+    "primary": "Hollstein, Prokopczuk, and Tharann (2021), Quarterly Journal of Finance 11(4), article 2150017",
+    "doi": "10.1142/S2010139221500178",
+    "durable_approval": "decisions/2026-08-06_qm5_20236_xauxag_vov_rank_g0.md",
+    "source_packet": "strategy-seeds/sources/HOLLSTEIN-VOV-2021/source.md",
+    "source_signal": "option-implied volatility-of-volatility",
+    "ea_proxy": "nested price-native realized volatility-of-volatility",
+    "metal_carrier_tested_by_source": false,
+    "efficacy_transfer_claimed": false,
+    "parent_carrier": {
+      "ea_id": "QM5_13146",
+      "carrier": "XTIUSD.DWX/XNGUSD.DWX",
+      "highest_phase_passed": "Q07",
+      "terminal_verdict": "Q08 FAIL_HARD",
+      "disposition": "adverse context only; no result transfers"
+    }
+  },
+  "dedup": {
+    "exact_duplicate": false,
+    "registry_rows_scanned": 4293,
+    "cards_scanned_before_candidate": 409,
+    "fuzzy_family_matches": [
+      "energy-vov",
+      "energy-kurt-rank",
+      "energy-trend36",
+      "xauxag-es-rank",
+      "xti-xng-lowmax"
+    ],
+    "manual_resolution": "locked XAU/XAG carrier extension of the VoV estimator; distinct from ratio, OLS, skew, signed semivariance, expected shortfall, idiosyncratic volatility, momentum, calendar, shock, and cumulative-RSI mechanics"
+  },
+  "build": {
+    "card_schema_lint": "PASS",
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_passed": true,
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "magics": {
+      "XAUUSD.DWX": 202360000,
+      "XAGUSD.DWX": 202360001
+    },
+    "source_packet_sha256": "F54F17F2DCDA40000D939D2D89122F4EA3F305293018AFF331A6C018F3DBDD00",
+    "g0_decision_sha256": "166926A6BB5C0BB6C11408D07E076E71B55BC127D21A27AC60639619A90D3D74",
+    "card_sha256": "4B6BD4AF16109AEB7475C625154C87BB8F7286ACD401F78C71E1F7C9ACD9E57C",
+    "mq5_sha256": "682E9EDC0C1A224FAAA3BCBF3CB7EB9E45FD54D5393606525042EC15B3E32620",
+    "ex5_sha256": "D14E205561C95898917109D4BB73644829F2C15E0419699D17F4C76C251C6D96",
+    "spec_sha256": "A214A57E48F3A9E2CAF113D9958D7A862AC04CACF2A1A71A2496E6BEE1411385",
+    "basket_manifest_sha256": "B84F1DDAD91D215B783868599FA55C3EBD001C1B23FC2648FE10A81BF563E25A",
+    "setfile_sha256": "4545D008BD6EAFE9117B38FC11FE41E3BD1CE0C63A18548A85D359157BBF4706",
+    "build_hash": "f60dc4763ee93261e234823dfdf95503d64735c2067c65e5619465cb7f7a82a2",
+    "build_report": "D:\\QM\\reports\\framework\\21\\build_check_20260806_013327.json",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260806_013254\\QM5_20236_xauxag-vov-rank.compile.log",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260806_013254\\summary.csv",
+    "manual_smoke_or_backtest": false
+  },
+  "risk": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "package_risk_split": "equal stop-risk halves",
+    "live_setfile_created": false
+  },
+  "q02": {
+    "targeted_dry_run_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --ea QM5_20236 --symbols QM5_20236_XAU_XAG_VOV_D1 --max-part2-per-run 0",
+    "targeted_dry_run_evidence": "D:\\QM\\reports\\state\\claude_sweep_enqueue_2026-06-10.json",
+    "dry_run_selected_items": 1,
+    "dry_run_priority_track_items": 1,
+    "apply_performed": false,
+    "work_item_id": null,
+    "existing_work_items_at_precheck": 0,
+    "queue_pending_at_precheck": 1514,
+    "queue_active_at_precheck": 10,
+    "queue_ceiling": 7000,
+    "cpu_ceiling": 7,
+    "cpu_ceiling_reached": true,
+    "factory_process_scan_utc": "2026-08-06T01:35:03+00:00",
+    "factory_terminals_at_binding_scan": 9,
+    "factory_terminal_names_at_binding_scan": ["T1", "T2", "T4", "T5", "T6", "T7", "T8", "T9", "T10"],
+    "terminal64_running_count_including_nonfactory": 11,
+    "t_live_excluded": true,
+    "manual_dispatch": false,
+    "status_at_handoff": "not_enqueued_cpu_ceiling",
+    "stop_reason": "binding factory-terminal CPU ceiling exceeded before apply"
+  },
+  "commits": {
+    "source_and_g0": "d0054a3c0680f571135ab803b86e57f04b7209fc",
+    "card_registries_and_resolver": "608b13e329a4b3dfe27648a64829138314392ce3",
+    "build": "1fc743eaf10c3af34a24892d8cf261e5318aebdc"
+  },
+  "prohibited_surfaces_touched": []
+}

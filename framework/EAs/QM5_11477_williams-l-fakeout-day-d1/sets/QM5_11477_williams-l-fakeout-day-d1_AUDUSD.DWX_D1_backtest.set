@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11477
+; ea_slug:      williams-l-fakeout-day-d1
+; ea_version:   v5.0
+; set_version:  s20260808-001
+; symbol:       AUDUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   d02ddcc5d7c4c06658c80d4ad6190724739987953533fa63c64f2b9f6c9831b4
+; author:       Development
+; date:         2026-08-08
+;==========================================================
+qm_ea_id=11477
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11477_williams-l-fakeout-day-d1.md
+strategy_entry_buffer_pips=1
+strategy_sl_buffer_pips=1
+strategy_max_signal_range_pips=80
+strategy_tp_range_mult=1.5
+strategy_pending_expiry_bars=1
+strategy_time_stop_bars=5
+strategy_require_close_third=false
+strategy_no_friday_entry=true
+strategy_spread_cap_pips=25

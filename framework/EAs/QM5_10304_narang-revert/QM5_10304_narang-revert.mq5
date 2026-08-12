@@ -76,6 +76,83 @@ input int             strategy_adx_period      = 14;
 input double          strategy_adx_max         = 28.0;
 input int             strategy_max_hold_bars   = 12;
 
+// Fixed-risk sizing of a non-USD DWX cross needs both quote-to-account and
+// base-to-account prices.  If those conversion histories are first selected
+// when the initial trade is sized, MetaTester can abort the run with a late
+// history-synchronization error.  Resolve the same direct/inverse routes used
+// by QM_RiskSizer and pre-load them once during tester initialization.
+bool Strategy_AppendUniqueSymbol(string &symbols[], const string symbol)
+  {
+   if(StringLen(symbol) == 0)
+      return false;
+
+   const int count = ArraySize(symbols);
+   for(int i = 0; i < count; ++i)
+      if(symbols[i] == symbol)
+         return true;
+
+   if(ArrayResize(symbols, count + 1) != count + 1)
+      return false;
+   symbols[count] = symbol;
+   return true;
+  }
+
+bool Strategy_AppendRiskConversion(string &symbols[],
+                                   const string currency,
+                                   const string account_currency,
+                                   const string suffix)
+  {
+   const string ccy = QM_RiskSizerUpper(currency);
+   const string account = QM_RiskSizerUpper(account_currency);
+   if(ccy == account)
+      return true;
+
+   bool is_custom = false;
+   const string direct = ccy + account + suffix;
+   if(SymbolExist(direct, is_custom))
+      return Strategy_AppendUniqueSymbol(symbols, direct);
+
+   const string inverse = account + ccy + suffix;
+   if(SymbolExist(inverse, is_custom))
+      return Strategy_AppendUniqueSymbol(symbols, inverse);
+
+   return false;
+  }
+
+void Strategy_WarmupDwxRiskConversions()
+  {
+   if(!MQLInfoInteger(MQL_TESTER) || RISK_FIXED <= 0.0)
+      return;
+
+   const string suffix = QM_RiskSizerSymbolSuffix(_Symbol);
+   const string pair = QM_RiskSizerBaseSymbol(_Symbol);
+   if(suffix != ".DWX" || StringLen(pair) != 6)
+      return;
+
+   const string base = StringSubstr(pair, 0, 3);
+   const string quote = StringSubstr(pair, 3, 3);
+   if(!QM_RiskSizerIsFiatCode(base) || !QM_RiskSizerIsFiatCode(quote))
+      return;
+
+   const string account_currency =
+      QM_RiskSizerUpper(AccountInfoString(ACCOUNT_CURRENCY));
+   string conversion_symbols[];
+   Strategy_AppendRiskConversion(conversion_symbols,
+                                 quote,
+                                 account_currency,
+                                 suffix);
+   Strategy_AppendRiskConversion(conversion_symbols,
+                                 base,
+                                 account_currency,
+                                 suffix);
+
+   // These are data-only risk-conversion dependencies, not order routes.
+   // Keep the framework symbol guard in single-symbol mode so magic ownership
+   // and Friday-close behavior remain scoped to this chart instance.
+   if(ArraySize(conversion_symbols) > 0)
+      QM_BasketWarmupHistory(conversion_symbols, PERIOD_H4, 300);
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -230,6 +307,8 @@ int OnInit()
                         qm_news_temporal,
                         qm_news_compliance))
       return INIT_FAILED;
+
+   Strategy_WarmupDwxRiskConversions();
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;

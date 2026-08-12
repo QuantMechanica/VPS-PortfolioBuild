@@ -32,6 +32,8 @@ param(
     [string]$DispatchVersion = "smoke",
     [string]$DispatchSubGateHash,
     [switch]$SkipExpertDeploy,
+    [ValidatePattern('^[0-9A-Fa-f]{64}$')]
+    [string]$ExpectedExpertSha256 = $env:QM_EXPECTED_EX5_SHA256,
     [switch]$AllowRunningTerminal,
     [switch]$AllowMissingRealTicksLogMarker,
     # Q09_NEWS authenticates the structured entry stream for every independent
@@ -606,6 +608,80 @@ function Deploy-ExpertBinaryToTerminal {
         deployed = $deployedIdentity
         source_matches_deployed = $true
     }
+}
+
+function Invoke-CustomHistorySmokeAdmission {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalName,
+        [Parameter(Mandatory = $true)]
+        [int]$TimeoutSecondsValue,
+        [Parameter(Mandatory = $true)]
+        [int]$RunsValue
+    )
+
+    if ($TerminalName -notmatch '^T([1-9]|10)$') {
+        return $null
+    }
+    $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
+    $helper = Join-Path $repoRoot 'tools\strategy_farm\custom_history_smoke_admission.py'
+    if (-not (Test-Path -LiteralPath $helper -PathType Leaf)) {
+        throw "Custom-history smoke admission helper is missing: $helper"
+    }
+    $python = (Get-Command python.exe -ErrorAction Stop).Source
+    $reservationOwner = 'run_smoke:{0}:{1}' -f $PID, [guid]::NewGuid().ToString('N')
+    $maximumAttempts = [Math]::Max(1, $RunsValue * 2)
+    $reservationMinutes = [Math]::Max(
+        30,
+        [int][Math]::Ceiling(($TimeoutSecondsValue * $maximumAttempts) / 60.0) + 30
+    )
+    $helperArguments = @(
+        $helper,
+        '--farm-root', 'D:\QM\strategy_farm',
+        'reserve',
+        '--terminal', $TerminalName,
+        '--reserved-by', $reservationOwner,
+        '--minutes', [string]$reservationMinutes
+    )
+    if (-not [string]::IsNullOrWhiteSpace($env:QM_WORK_ITEM_ID)) {
+        $helperArguments += @('--expected-work-item-id', $env:QM_WORK_ITEM_ID)
+    }
+    $raw = @(& $python @helperArguments 2>&1)
+    $exitCode = $LASTEXITCODE
+    $rendered = [string]::Join([Environment]::NewLine, @($raw | ForEach-Object { [string]$_ }))
+    if ($exitCode -ne 0) {
+        throw "Custom-history gate/reservation refused terminal '$TerminalName': $rendered"
+    }
+    try {
+        $receipt = $rendered | ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        throw "Custom-history smoke admission returned invalid JSON for '$TerminalName': $rendered"
+    }
+    if ($receipt.status -ne 'PASS_RESERVED' -or $receipt.reserved_by -ne $reservationOwner) {
+        throw "Custom-history smoke admission did not prove reservation ownership for '$TerminalName'."
+    }
+    Write-Host ("run_smoke.custom_history_admission=PASS_RESERVED terminal={0} owner={1} until={2}" -f $TerminalName, $reservationOwner, $receipt.reservation.until_utc)
+    return $receipt
+}
+
+function Exit-CustomHistorySmokeAdmission {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object]$Admission
+    )
+
+    $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
+    $helper = Join-Path $repoRoot 'tools\strategy_farm\custom_history_smoke_admission.py'
+    $python = (Get-Command python.exe -ErrorAction Stop).Source
+    $raw = @(& $python $helper --farm-root 'D:\QM\strategy_farm' release `
+        --terminal ([string]$Admission.terminal) `
+        --reserved-by ([string]$Admission.reserved_by) 2>&1)
+    $exitCode = $LASTEXITCODE
+    $rendered = [string]::Join([Environment]::NewLine, @($raw | ForEach-Object { [string]$_ }))
+    if ($exitCode -ne 0) {
+        throw "Custom-history smoke reservation release failed: $rendered"
+    }
+    Write-Host ("run_smoke.custom_history_reservation=RELEASED terminal={0} owner={1}" -f $Admission.terminal, $Admission.reserved_by)
 }
 
 function Resolve-DispatchTerminal {
@@ -1221,6 +1297,20 @@ function Get-QmLoggerFileState {
     return ,$state
 }
 
+function Test-FarmWorkItemReportRoot {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedReportRoot
+    )
+
+    $candidate = [System.IO.Path]::GetFullPath($ResolvedReportRoot)
+    $workItemsRoot = [System.IO.Path]::GetFullPath("D:\QM\reports\work_items")
+    $workItemsPrefix = $workItemsRoot.TrimEnd('\') + '\'
+    return (($candidate -ieq $workItemsRoot) -or
+        $candidate.StartsWith($workItemsPrefix, [System.StringComparison]::OrdinalIgnoreCase))
+}
+
 function Move-QmLoggerFilesForFreshCapture {
     param(
         [Parameter(Mandatory = $true)]
@@ -1712,11 +1802,17 @@ function Start-TesterRun {
     $logBombSizes = @{}
     $logBombHit = $null
     $logBombLastCheckUtc = (Get-Date).ToUniversalTime()
+    $terminalExitObservedUtc = $null
+    $metaTesterObservedAfterTerminalExit = $false
+    $metaTesterWaitLogged = $false
+    $metaTesterLastPollUtc = $null
+    $metaTesterPollSeconds = 5
     $deadline = (Get-Date).ToUniversalTime().AddSeconds($TimeoutSec)
     while ((Get-Date).ToUniversalTime() -lt $deadline) {
         if ($childTerminal.HasExited) {
-            $finished = $true
-            break
+            if ($null -eq $terminalExitObservedUtc) {
+                $terminalExitObservedUtc = (Get-Date).ToUniversalTime()
+            }
         }
         $nowUtcForBomb = (Get-Date).ToUniversalTime()
         if (($nowUtcForBomb - $logBombLastCheckUtc).TotalSeconds -ge $script:LogBombCheckSeconds) {
@@ -1786,11 +1882,42 @@ function Start-TesterRun {
                 }
             }
         }
+        if ($null -ne $terminalExitObservedUtc) {
+            # MT5 can let terminal64.exe exit while its metatester64.exe child is
+            # still executing or flushing the report. Treating the terminal
+            # stub's exit as completion publishes an empty M0/1970 shell and
+            # lets the next retry overlap the still-running tester. Wait for the
+            # writer (or a short spawn grace when none has appeared yet).
+            $metaPollNowUtc = (Get-Date).ToUniversalTime()
+            $metaPollDue = ($null -eq $metaTesterLastPollUtc) -or
+                (($metaPollNowUtc - $metaTesterLastPollUtc).TotalSeconds -ge $metaTesterPollSeconds)
+            if ($metaPollDue) {
+                # Exact-path discovery uses CIM; keep it deliberately coarse so
+                # a long tester flush cannot turn seven workers into a WMI poll storm.
+                $metaTesterLastPollUtc = $metaPollNowUtc
+                $activeMetaTesters = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRootForBomb)
+                if (@($activeMetaTesters).Count -gt 0) {
+                    $metaTesterObservedAfterTerminalExit = $true
+                    if (-not $metaTesterWaitLogged) {
+                        $metaPids = @($activeMetaTesters | ForEach-Object { $_.ProcessId }) -join ','
+                        Write-Host ("run_smoke.stage=terminal_exit_waiting_metatester terminal_pid={0} metatester_pids='{1}'" -f $childTerminal.Id, $metaPids)
+                        $metaTesterWaitLogged = $true
+                    }
+                } else {
+                    $spawnGraceElapsed = ($metaPollNowUtc - $terminalExitObservedUtc).TotalSeconds -ge 5
+                    if ($metaTesterObservedAfterTerminalExit -or $spawnGraceElapsed) {
+                        $finished = $true
+                        break
+                    }
+                }
+            }
+        }
         Start-Sleep -Milliseconds 500
     }
 
     if (-not $finished -and -not $latchedReport -and -not $logBombHit -and $childTerminal.HasExited) {
-        $finished = $true
+        $activeMetaTesters = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRootForBomb)
+        $finished = (@($activeMetaTesters).Count -eq 0)
     }
 
     $timedOut = (-not $finished) -and (-not $latchedReport) -and (-not $logBombHit)
@@ -1802,6 +1929,13 @@ function Start-TesterRun {
         if ($proc.Id -ne $childTerminal.Id) {
             try {
                 Stop-Process -Id $proc.Id -Force -ErrorAction Stop
+            } catch {
+            }
+        }
+        $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRootForBomb)
+        foreach ($metaProc in $lingeringMeta) {
+            try {
+                Stop-Process -Id $metaProc.ProcessId -Force -ErrorAction Stop
             } catch {
             }
         }
@@ -2227,8 +2361,11 @@ if ([string]::IsNullOrWhiteSpace($DispatchSubGateHash)) {
     $DispatchSubGateHash = "{0}-{1}" -f $Period, $Year
 }
 
+$smokeReservation = $null
+try {
 $effectiveTerminal = Resolve-DispatchTerminal -TargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year -SetFilePath $SetFile -DispatchPhaseValue $DispatchPhase -DispatchVersionValue $DispatchVersion -DispatchSubGateHashValue $DispatchSubGateHash
 Write-Host ("run_smoke.stage=resolved_terminal terminal={0}" -f $effectiveTerminal)
+$smokeReservation = Invoke-CustomHistorySmokeAdmission -TerminalName $effectiveTerminal -TimeoutSecondsValue $TimeoutSeconds -RunsValue $Runs
 $terminalRoot = Resolve-TerminalRoot -TerminalName $effectiveTerminal
 $terminalExe = Resolve-TerminalExecutable -TerminalRoot $terminalRoot
 Write-Host ("run_smoke.stage=resolved_terminal_exe terminal={0} exe='{1}'" -f $effectiveTerminal, $terminalExe)
@@ -2298,6 +2435,25 @@ if ($null -ne $deployedExpertIdentity) {
     } else {
         $expertBinaryIdentity.deployed = $deployedExpertIdentity
     }
+}
+$normalizedExpectedExpertSha256 = if ([string]::IsNullOrWhiteSpace($ExpectedExpertSha256)) {
+    $null
+} else {
+    $ExpectedExpertSha256.ToLowerInvariant()
+}
+if ($SkipExpertDeploy.IsPresent -and $null -eq $normalizedExpectedExpertSha256) {
+    throw "run_smoke.deploy_failed terminal=$effectiveTerminal expert='$Expert' err='SkipExpertDeploy requires ExpectedExpertSha256'"
+}
+if ($null -ne $normalizedExpectedExpertSha256) {
+    if ($null -eq $deployedExpertIdentity) {
+        throw "run_smoke.deploy_failed terminal=$effectiveTerminal dest='$deployedExpertPath' err='required EX5 is missing after deploy'"
+    }
+    if ([string]$deployedExpertIdentity.sha256 -cne $normalizedExpectedExpertSha256) {
+        throw ("run_smoke.deploy_failed terminal={0} dest='{1}' err='required/deployed SHA256 mismatch expected={2} actual={3}'" -f $effectiveTerminal, $deployedExpertPath, $normalizedExpectedExpertSha256, $deployedExpertIdentity.sha256)
+    }
+    $expertBinaryIdentity['required_sha256'] = $normalizedExpectedExpertSha256
+    $expertBinaryIdentity['pre_dispatch_verified'] = $true
+    Write-Host ("run_smoke.deploy_hash_verified terminal={0} expert='{1}' sha256={2}" -f $effectiveTerminal, $Expert, $normalizedExpectedExpertSha256)
 }
 
 if ($SetFile) {
@@ -3104,6 +3260,12 @@ if ($effectiveTerminal -ieq "DEV1") {
     Write-Output "run_smoke.stage=post_run_pump_skipped (DEV1 isolation)"
 } elseif ($effectiveTerminal -ieq "DEV2") {
     Write-Output "run_smoke.stage=post_run_pump_skipped (DEV2 isolation)"
+} elseif (Test-FarmWorkItemReportRoot -ResolvedReportRoot $resolvedReportRoot) {
+    # terminal_worker owns classification and the next claim. Spawning the pump
+    # here makes it a descendant of the worker's KILL_ON_JOB_CLOSE job, so the
+    # otherwise-finished run remains alive until that unrelated pump exits and
+    # can be falsely reaped as ACTIVE_TIMEOUT after a valid summary was written.
+    Write-Output "run_smoke.stage=post_run_pump_skipped (work-item worker owns completion)"
 } elseif (Test-Path 'D:\QM\strategy_farm\state\FACTORY_OFF.flag') {
     Write-Output "run_smoke.stage=post_run_pump_skipped (FACTORY_OFF.flag)"
 } else {
@@ -3122,7 +3284,18 @@ if ($effectiveTerminal -ieq "DEV1") {
 }
 
 if (-not $passed) {
-    exit 1
+    $smokeExitCode = 1
+} else {
+    $smokeExitCode = 0
+}
+} finally {
+    if ($null -ne $smokeReservation) {
+        try {
+            Exit-CustomHistorySmokeAdmission -Admission $smokeReservation
+        } catch {
+            Write-Warning ("run_smoke.custom_history_reservation_release_failed err='{0}'" -f $_.Exception.Message)
+        }
+    }
 }
 
-exit 0
+exit $smokeExitCode

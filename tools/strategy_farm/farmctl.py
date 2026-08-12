@@ -240,6 +240,22 @@ def is_q02_requeue_excluded(ea_id: Any, excluded: set[str] | None = None) -> boo
     excluded = load_requeue_excluded_eas() if excluded is None else excluded
     return _normalise_ea_label(ea_id) in excluded
 
+
+_FX_CURRENCY_CODES = frozenset({"AUD", "CAD", "CHF", "EUR", "GBP", "JPY", "NZD", "USD"})
+
+
+def _is_fx_currency_pair(symbol: str) -> bool:
+    """Return whether a normalized DWX symbol is a supported fiat FX pair."""
+    base = str(symbol or "").strip().upper()
+    if base.endswith(".DWX"):
+        base = base[:-4]
+    return (
+        len(base) == 6
+        and base[:3] in _FX_CURRENCY_CODES
+        and base[3:] in _FX_CURRENCY_CODES
+        and base[:3] != base[3:]
+    )
+
 # 2026-05-23 OR3 — post-pipeline-rewrite Qxx canonical phase set.
 # Vault: 03 Pipeline/Pipeline Overview.md
 # Wipe (DL-063 + PIPELINE_REWRITE_PROPOSAL_2026-05-23) cleared all legacy
@@ -444,8 +460,62 @@ def phase_runner_terminals() -> tuple[str, ...]:
     return worker_policy_terminals()
 
 
+def _reservation_holder_pid(reserved_by: Any) -> "int | None":
+    """Extract the holder PID from a '<label>:<pid>:<token>' reserved_by value.
+
+    Returns None when the value does not carry a PID-encoded holder (such
+    reservations stay TTL-governed only).
+    """
+    parts = str(reserved_by or "").split(":")
+    if len(parts) < 2 or not parts[1].isdigit():
+        return None
+    try:
+        return int(parts[1])
+    except ValueError:
+        return None
+
+
+def _reservation_holder_alive(pid: int) -> "bool | None":
+    """Cheap kernel32 liveness probe for reservation holders.
+
+    Deliberately NOT _pid_exists (which spawns a PowerShell process): this runs
+    on every claim attempt of every worker. Returns None when liveness cannot be
+    determined (fail conservative: treat the holder as alive). PID reuse can
+    only ever err toward keeping a reservation, never toward dropping a live one.
+    """
+    if sys.platform != "win32":
+        return None
+    try:
+        import ctypes
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        STILL_ACTIVE = 259
+        ERROR_ACCESS_DENIED = 5
+        handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, int(pid))
+        if not handle:
+            if ctypes.get_last_error() == ERROR_ACCESS_DENIED:
+                return None  # process exists but is not queryable: assume alive
+            return False
+        try:
+            code = ctypes.c_ulong()
+            if not kernel32.GetExitCodeProcess(handle, ctypes.byref(code)):
+                return None
+            return code.value == STILL_ACTIVE
+        finally:
+            kernel32.CloseHandle(handle)
+    except Exception:
+        return None
+
+
 def terminal_reservations(root: Path | None = None, now: dt.datetime | None = None) -> dict[str, dict[str, Any]]:
-    """Return live terminal reservations; malformed/expired entries fail open."""
+    """Return live terminal reservations; malformed/expired entries fail open.
+
+    Reservations whose reserved_by encodes a holder PID ('run_smoke:<pid>:<tok>')
+    are additionally dropped when that holder process is verifiably dead — the
+    reservation-corpse class (three recurrences on 2026-08-11: T8/T2/T7 blocked
+    for hours behind dead pwsh holders). Liveness ambiguity keeps the entry.
+    """
     farm_root = root or DEFAULT_ROOT
     path = farm_root / TERMINAL_RESERVATIONS_REL
     try:
@@ -470,6 +540,9 @@ def terminal_reservations(root: Path | None = None, now: dt.datetime | None = No
             continue
         if until <= current:
             continue
+        holder_pid = _reservation_holder_pid(value.get("reserved_by"))
+        if holder_pid is not None and _reservation_holder_alive(holder_pid) is False:
+            continue  # dead holder: corpse reservation fails open like TTL expiry
         live[terminal] = {
             "terminal": terminal,
             "reserved_by": str(value.get("reserved_by") or "unknown"),
@@ -900,6 +973,25 @@ RECOVERY_MARKER_LIKE = '%"recovery_class":%'
 #     the last (WINDOW-1) rows and continues.
 CLAIM_RECOVERY_WINDOW = 5
 CLAIM_RECOVERY_MAX_IN_WINDOW = 1
+# Stall escape: if no PRIORITY claim was recorded fleet-wide within this horizon
+# while frontier rows exist, the priority lane is stalled (rows pending but
+# unclaimable) and recovery may drain freely until the next priority claim lands.
+# Healthy claim cadence is seconds-to-minutes; hours-long freezes are stalls.
+# OWNER-ratified amendment 2026-08-04 ("Go"), evidence:
+# docs/ops/evidence/2026-08-04_recovery_cap_stall_escape_proposal.md
+CLAIM_RECOVERY_STALL_ESCAPE_MINUTES = 15.0
+# Occupancy escape: the rolling cap bounds recovery's SHARE of throughput while
+# the priority frontier fills the fleet. When the frontier narrows to a blocked
+# symbol cluster it can trickle a priority claim every few minutes without ever
+# filling capacity — the time-based stall escape never triggers and the fleet
+# idles against a deep recovery queue (2026-08-11: 906 recovery rows pending,
+# 2-3/10 terminals busy for seven hours). Ordering already guarantees a recovery
+# row is only reached after every claimable priority row was taken or skipped,
+# so when fewer than half the ratified 10-terminal cohort holds an active claim,
+# recovery may take the idle slot regardless of the rolling window.
+# OWNER-ratified amendment 2026-08-11 ("Go, alles freigegeben"), evidence:
+# docs/ops/evidence/2026-08-11_ramp10_soak_evaluation.md
+CLAIM_RECOVERY_OCCUPANCY_MIN_ACTIVE = 5
 # Keep the ledger bounded: retain a tail far larger than the window and prune older
 # rows inside the same claim transaction. Only the last (WINDOW-1) rows are ever read.
 CLAIM_LEDGER_RETAIN = 64
@@ -987,6 +1079,14 @@ def pending_claim_order_sql() -> str:
           CASE
             WHEN w.phase='Q02' AND w.payload_json LIKE '%"portfolio_scope": "basket"%' THEN 0
             ELSE 1 END AS _basket_q02_rank,
+          CASE
+            -- Within an otherwise-equal downstream tier, preserve ordinary
+            -- admission/round-chain work ahead of live-book diagnostics.  The
+            -- latter carry an explicit owner weight order in their sealed payload.
+            WHEN json_valid(w.payload_json)=1
+             AND json_extract(w.payload_json, '$.diagnostic_non_admission')=1
+            THEN COALESCE(json_extract(w.payload_json, '$.diagnostic_queue_rank'), 9999) + 1
+            ELSE 0 END AS _diagnostic_queue_rank,
           CASE WHEN EXISTS (
             SELECT 1 FROM work_items wp
             WHERE wp.ea_id=w.ea_id AND wp.status='done' AND wp.verdict='PASS'
@@ -1038,7 +1138,8 @@ def pending_claim_order_sql() -> str:
           )
         ORDER BY _recovery_rank ASC,
                  (_priority_track_rank * 10 + _phase_rank - _age_weeks) ASC,
-                 _basket_q02_rank ASC, _winner_rank ASC, _asset_rank ASC,
+                 _basket_q02_rank ASC, _diagnostic_queue_rank ASC,
+                 _winner_rank ASC, _asset_rank ASC,
                  w.updated_at ASC, w.created_at ASC
     """
 
@@ -1076,7 +1177,43 @@ def recovery_claim_allowed(conn: sqlite3.Connection) -> bool:
         (CLAIM_RECOVERY_WINDOW - 1,),
     ).fetchall()
     recent_recovery = sum(1 for r in rows if str(r[0]) == "recovery")
-    return recent_recovery < CLAIM_RECOVERY_MAX_IN_WINDOW
+    if recent_recovery < CLAIM_RECOVERY_MAX_IN_WINDOW:
+        return True
+    # Occupancy escape (OWNER-ratified 2026-08-11, see constant block): fewer
+    # than half the cohort busy means the frontier demonstrably cannot fill
+    # capacity right now — recovery takes the idle slot. Priority rows, when
+    # claimable, still always win through the claim ordering; the first
+    # occupancy recovery >= the floor re-arms the rolling cap automatically.
+    active_now = conn.execute(
+        "SELECT COUNT(*) FROM work_items WHERE status='active'"
+    ).fetchone()
+    if active_now is not None and int(active_now[0]) < CLAIM_RECOVERY_OCCUPANCY_MIN_ACTIVE:
+        return True
+    # Priority-lane stall escape (OWNER amendment 2026-08-04): the rolling window
+    # assumes priority claims keep advancing the ledger. When every frontier row
+    # is pending-but-unclaimable (symbol locks, multisym serialization, missing
+    # history), no priority claim ever lands, the window freezes with a recovery
+    # entry in it, and the whole fleet idles against a deep recovery queue — the
+    # 2026-08-04 starvation (8 idle workers, 1435 recovery rows, 242 unclaimable
+    # frontier rows). Ordering already guarantees a recovery row is only REACHED
+    # after every priority row was claimed or skipped for this claimant, so a
+    # fleet-wide priority claim this recent is the only signal that the frontier
+    # is actually flowing. If none landed within the stall horizon, recovery
+    # drains freely; the first priority claim that lands re-arms the cap.
+    row = conn.execute(
+        "SELECT claimed_at_utc FROM claim_class_ledger "
+        "WHERE claim_class='priority' ORDER BY seq DESC LIMIT 1",
+    ).fetchone()
+    if row is None:
+        return True  # retained tail holds no priority claim at all -> lane stalled
+    try:
+        last_priority = dt.datetime.fromisoformat(str(row[0]))
+        if last_priority.tzinfo is None:
+            last_priority = last_priority.replace(tzinfo=dt.timezone.utc)
+    except ValueError:
+        return False  # unparseable timestamp: keep the conservative cap
+    age_min = (dt.datetime.now(dt.timezone.utc) - last_priority).total_seconds() / 60.0
+    return age_min >= CLAIM_RECOVERY_STALL_ESCAPE_MINUTES
 
 
 def record_claim_ledger(
@@ -2376,6 +2513,7 @@ def _build_task_claim_guard(
     task_row: Any,
     *,
     require_card: bool = True,
+    allow_q02_excluded: bool = False,
 ) -> dict[str, Any]:
     """Read-only eligibility guard shared by every build dispatch lane.
 
@@ -2432,6 +2570,20 @@ def _build_task_claim_guard(
             "reason": "eligible_payload_only",
             "task_id": task_id,
             "ea_id": ea_id,
+        }
+
+    exclusion_sources: list[str] = []
+    if is_q02_requeue_excluded(ea_id):
+        exclusion_sources.append("requeue_excluded_eas")
+    if exclusion_sources and not allow_q02_excluded:
+        return {
+            "claimable": False,
+            "code": "Q02_EXCLUDED",
+            "reason": "Q02_EXCLUDED:" + ",".join(exclusion_sources),
+            "task_id": task_id,
+            "ea_id": ea_id,
+            "q02_exclusion_sources": exclusion_sources,
+            "override_allowed": True,
         }
 
     card_path: Path | None = None
@@ -2497,14 +2649,49 @@ def _build_task_claim_guard(
             "card_path": str(card_path),
             "r_gate": consistency,
         }
+
+    try:
+        expected_trades = int(str(fm.get("expected_trades_per_year_per_symbol") or "").strip())
+    except (TypeError, ValueError):
+        expected_trades = 0
+    try:
+        card_text = card_path.read_text(encoding="utf-8-sig", errors="ignore")
+    except OSError:
+        card_text = ""
+    declared_symbols = _card_universe_symbols(
+        f"Target symbols: {fm.get('target_symbols') or ''}"
+    )
+    if not declared_symbols:
+        declared_symbols = _card_universe_symbols(card_text)
+    fx_only_high_frequency = (
+        expected_trades > 100
+        and bool(declared_symbols)
+        and all(_is_fx_currency_pair(symbol) for symbol in declared_symbols)
+    )
+    if fx_only_high_frequency:
+        exclusion_sources.append("fx_only_expected_trades_gt_100")
+    if exclusion_sources and not allow_q02_excluded:
+        return {
+            "claimable": False,
+            "code": "Q02_EXCLUDED",
+            "reason": "Q02_EXCLUDED:" + ",".join(exclusion_sources),
+            "task_id": task_id,
+            "ea_id": ea_id,
+            "card_path": str(card_path),
+            "q02_exclusion_sources": exclusion_sources,
+            "expected_trades_per_year_per_symbol": expected_trades,
+            "declared_symbols": sorted(declared_symbols),
+            "override_allowed": True,
+        }
     return {
         "claimable": True,
-        "code": "eligible",
-        "reason": "eligible",
+        "code": "eligible_q02_exclusion_override" if exclusion_sources else "eligible",
+        "reason": "eligible_q02_exclusion_override" if exclusion_sources else "eligible",
         "task_id": task_id,
         "ea_id": ea_id,
         "card_path": str(card_path),
         "r_gate": consistency,
+        **({"q02_exclusion_sources": exclusion_sources} if exclusion_sources else {}),
     }
 
 
@@ -4827,6 +5014,59 @@ def _capture_spawned_process_identity(proc: subprocess.Popen[Any]) -> dict[str, 
         raise
 
 
+def _worker_staged_ex5_spawn_failure(
+    payload: dict[str, Any],
+    *,
+    terminal: str,
+    ea_dir_name: str,
+) -> dict[str, Any] | None:
+    staging = payload.get("staged_ex5")
+    if not isinstance(staging, dict):
+        return None
+    required = str(staging.get("required_sha256") or "").strip().lower()
+    if (
+        len(required) != 64
+        or any(ch not in "0123456789abcdef" for ch in required)
+    ):
+        return {
+            "spawned": False,
+            "reason": "worker_staged_ex5_required_sha256_invalid",
+            "staged_ex5_sha256": required,
+        }
+    destination = Path(str(staging.get("destination_path") or ""))
+    expected_destination = (
+        MT5_ROOT
+        / terminal
+        / "MQL5"
+        / "Experts"
+        / "QM"
+        / f"{ea_dir_name}.ex5"
+    )
+    if destination.resolve() != expected_destination.resolve():
+        return {
+            "spawned": False,
+            "reason": "worker_staged_ex5_destination_path_mismatch",
+            "expected_destination_path": str(expected_destination),
+            "actual_destination_path": str(destination),
+        }
+    if not destination.is_file():
+        return {
+            "spawned": False,
+            "reason": "worker_staged_ex5_destination_missing",
+            "expected_destination_path": str(expected_destination),
+        }
+    destination_sha256 = _sha256_file(destination)
+    if destination_sha256 != required:
+        return {
+            "spawned": False,
+            "reason": "worker_staged_ex5_destination_sha256_mismatch",
+            "expected_ex5_sha256": required,
+            "actual_ex5_sha256": destination_sha256,
+            "destination_path": str(destination),
+        }
+    return None
+
+
 def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
                                     terminal: str) -> dict[str, Any]:
     """Spawn run_smoke.ps1 for one work_item, pinned to a specific terminal.
@@ -5059,11 +5299,31 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
 
     # Freeze the exact artifacts before launch. The resulting hashes are stored
     # in the active claim and must match run_smoke/v2 before classification.
-    expected_ex5_path = (
-        Path(str(item_payload["staged_ex5_path"]))
-        if item_payload.get("staged_ex5_path")
-        else candidates[0] / f"{ea_dir_name}.ex5"
-    )
+    worker_staging = item_payload.get("staged_ex5")
+    worker_staged = isinstance(worker_staging, dict)
+    if worker_staged:
+        expected_ex5_path = Path(str(worker_staging.get("source_path") or ""))
+        staged_required_sha = str(
+            worker_staging.get("required_sha256") or ""
+        ).strip().lower()
+        if (
+            len(staged_required_sha) != 64
+            or any(ch not in "0123456789abcdef" for ch in staged_required_sha)
+        ):
+            return {
+                "spawned": False,
+                "reason": "worker_staged_ex5_required_sha256_invalid",
+                "staged_ex5_sha256": staged_required_sha,
+            }
+    else:
+        expected_ex5_path = (
+            Path(str(item_payload["staged_ex5_path"]))
+            if item_payload.get("staged_ex5_path")
+            else candidates[0] / f"{ea_dir_name}.ex5"
+        )
+        staged_required_sha = str(
+            item_payload.get("staged_ex5_sha256") or ""
+        ).strip().lower()
     expected_mq5_path = candidates[0] / f"{ea_dir_name}.mq5"
     expected_setfile_path = Path(setfile_path)
     if not expected_ex5_path.is_file() or not expected_setfile_path.is_file():
@@ -5074,7 +5334,6 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             "expected_setfile_path": str(expected_setfile_path),
         }
     expected_ex5_sha256 = _sha256_file(expected_ex5_path)
-    staged_required_sha = str(item_payload.get("staged_ex5_sha256") or "").strip().lower()
     if staged_required_sha and expected_ex5_sha256 != staged_required_sha:
         return {
             "spawned": False,
@@ -5083,6 +5342,14 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             "expected_ex5_sha256": expected_ex5_sha256,
             "staged_ex5_sha256": staged_required_sha,
         }
+    if worker_staged:
+        staging_failure = _worker_staged_ex5_spawn_failure(
+            item_payload,
+            terminal=terminal,
+            ea_dir_name=ea_dir_name,
+        )
+        if staging_failure:
+            return staging_failure
     expected_setfile_sha256 = _sha256_file(expected_setfile_path)
     expected_mq5_sha256 = _sha256_file(expected_mq5_path) if expected_mq5_path.is_file() else None
     expected_expert = f"QM\\{ea_dir_name}"
@@ -5115,6 +5382,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         "-ReportRoot", str(report_root),
         "-AllowMissingRealTicksLogMarker",
         "-TimeoutSeconds", str(timeout_seconds),
+        "-ExpectedExpertSha256", expected_ex5_sha256,
     ]
     tester_currency = str(item_payload.get("tester_currency") or "").strip().upper()
     if tester_currency:
@@ -5129,7 +5397,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         cmd.extend(["-FromDate", from_date])
     if to_date:
         cmd.extend(["-ToDate", to_date])
-    if item_payload.get("staged_ex5_path"):
+    if item_payload.get("staged_ex5_path") or worker_staged:
         cmd.append("-SkipExpertDeploy")
 
     # Production reaches this boundary from the resident per-terminal worker
@@ -5139,6 +5407,9 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     reap_finished_job_objects()
     log_fh = open(log_path, "w", encoding="utf-8")
     creationflags = suspended_runner_creation_flags()
+    env = {**os.environ}
+    env["QM_WORK_ITEM_ID"] = str(item_row["id"])
+    env["QM_WORK_ITEM_TERMINAL"] = str(terminal).upper()
     proc = subprocess.Popen(
         cmd,
         cwd=str(REPO_ROOT),
@@ -5147,6 +5418,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         stdin=subprocess.DEVNULL,
         creationflags=creationflags,
         close_fds=True,
+        env=env,
     )
     try:
         process_identity = bind_spawned_process_to_kill_job(
@@ -5906,6 +6178,20 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         ea_num = _ea_numeric_id(ea_id)
         if ea_num is None:
             return None
+        q09_expert = f"QM\\{ea_label}"
+        if payload.get("diagnostic_non_admission") is True:
+            # The live-book diagnostic stages the exact deployed binary under
+            # its deployed filename.  The ordinary EA label can be only the
+            # numeric id for these synthetic rows, which would make MT5 look
+            # for a different EX5 and fail before OnInit.
+            staged_ex5_path = Path(str(payload.get("staged_ex5_path") or ""))
+            if (
+                not staged_ex5_path.is_absolute()
+                or staged_ex5_path.suffix.lower() != ".ex5"
+                or not staged_ex5_path.is_file()
+            ):
+                return None
+            q09_expert = f"QM\\{staged_ex5_path.stem}"
         q09_output_root = (
             report_root
             / f"QM5_{ea_num}"
@@ -5923,7 +6209,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--work-item-id", str(item_row["id"]),
             "--terminal", terminal,
             "--ea-id", str(ea_num),
-            "--expert", f"QM\\{ea_label}",
+            "--expert", q09_expert,
             "--symbol", runner_symbol,
             "--work-item-symbol", symbol,
             "--period", runner_period,
@@ -5976,6 +6262,8 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
                                       terminal: str) -> dict[str, Any]:
     phase = item_row["phase"]
     ea_dir = _ea_dir_from_setfile_path(item_row["setfile_path"], item_row["ea_id"])
+    if ea_dir is None:
+        ea_dir = _preferred_ea_dir(item_row["ea_id"])
     ea_dir_name = ea_dir.name if ea_dir is not None else item_row["ea_id"]
     # Real phase runners can run several variants for the same EA/phase in
     # parallel. Their default output names are phase-level (`summary.json`,
@@ -6021,6 +6309,52 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
             "phase_runner": None,
         }
 
+    item_payload = json.loads(item_row["payload_json"] or "{}")
+    worker_staging = item_payload.get("staged_ex5")
+    if isinstance(worker_staging, dict):
+        staging_failure = _worker_staged_ex5_spawn_failure(
+            item_payload,
+            terminal=terminal,
+            ea_dir_name=ea_dir_name,
+        )
+        if staging_failure:
+            return {
+                **staging_failure,
+                "log_path": str(log_path),
+                "report_root": str(report_root),
+                "ea_dir_name": ea_dir_name,
+                "phase_runner": None,
+            }
+        dispatch_ex5_sha256 = str(
+            worker_staging.get("required_sha256") or ""
+        ).strip().lower()
+    else:
+        canonical_ex5 = (
+            ea_dir / f"{ea_dir.name}.ex5" if ea_dir is not None else None
+        )
+        if canonical_ex5 is None or not canonical_ex5.is_file():
+            return {
+                "spawned": False,
+                "reason": "dispatch_ex5_missing_before_phase_runner",
+                "log_path": str(log_path),
+                "report_root": str(report_root),
+                "ea_dir_name": ea_dir_name,
+                "phase_runner": None,
+            }
+        dispatch_ex5_sha256 = _sha256_file(canonical_ex5)
+    if (
+        len(dispatch_ex5_sha256) != 64
+        or any(ch not in "0123456789abcdef" for ch in dispatch_ex5_sha256)
+    ):
+        return {
+            "spawned": False,
+            "reason": "dispatch_ex5_sha256_invalid_before_phase_runner",
+            "log_path": str(log_path),
+            "report_root": str(report_root),
+            "ea_dir_name": ea_dir_name,
+            "phase_runner": None,
+        }
+
     # The resident terminal_worker process is the production caller and owns
     # the retained Job handle until every descendant exits. Direct one-shot
     # dispatch is deliberately non-detaching: its exit kills the Job tree.
@@ -6030,6 +6364,9 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
     log_fh.flush()
     creationflags = suspended_runner_creation_flags()
     env = {**os.environ}
+    env["QM_EXPECTED_EX5_SHA256"] = dispatch_ex5_sha256
+    env["QM_WORK_ITEM_ID"] = str(item_row["id"])
+    env["QM_WORK_ITEM_TERMINAL"] = str(terminal).upper()
     env["PYTHONPATH"] = os.pathsep.join(
         [str(runner_repo_root), env.get("PYTHONPATH", "")]
     )
@@ -7302,6 +7639,11 @@ BASKET_CONTEXT_PAYLOAD_KEYS = (
     "timeout_min",
 )
 
+PROMOTION_QUEUE_CONTEXT_PAYLOAD_KEYS = (
+    "priority_track",
+    "priority_reason",
+)
+
 
 def _basket_q02_payload(
     basket_manifest: dict[str, Any],
@@ -7367,7 +7709,7 @@ def _promotion_payload_with_basket_context(
     parent_work_item: sqlite3.Row | dict[str, Any],
     extra: dict[str, Any],
 ) -> dict[str, Any]:
-    """Carry basket host/manifest metadata when promoting logical basket work_items."""
+    """Carry queue-priority and basket metadata across phase promotions."""
     payload = dict(extra)
     try:
         raw = parent_work_item["payload_json"]
@@ -7379,6 +7721,9 @@ def _promotion_payload_with_basket_context(
         parent_payload = {}
     if not isinstance(parent_payload, dict):
         parent_payload = {}
+    for key in PROMOTION_QUEUE_CONTEXT_PAYLOAD_KEYS:
+        if key in parent_payload and key not in payload:
+            payload[key] = parent_payload[key]
     for key in BASKET_CONTEXT_PAYLOAD_KEYS:
         if key in parent_payload and key not in payload:
             payload[key] = parent_payload[key]
@@ -8564,6 +8909,17 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             except (TypeError, ValueError):
                 item_payload = {}
             item_is_recovery = is_recovery_payload(item_payload)
+            if item_payload.get("diagnostic_non_admission") is True:
+                # The resident terminal worker owns manifest-pinned EX5 staging
+                # and enforces avoid_terminals.  This older secondary claimant
+                # has neither primitive, so it must never claim a diagnostic row.
+                actions.append({
+                    "action": "diagnostic_deferred_to_terminal_worker",
+                    "reason": "exact_live_ex5_staging_and_five_terminal_cap",
+                    "item_id": item["id"],
+                    "ea_id": item["ea_id"],
+                })
+                continue
             item_symbol = item["symbol"]
             item_symbol_key = str(item_symbol or "").upper()
             if item_symbol_key and item_symbol_key in claimed_symbol_keys:
@@ -8915,12 +9271,12 @@ def _spawn_claude_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[st
     Idempotent: if an ea_review task already exists for this build, skip.
     """
     build_task_id = build_task_row["id"]
-    # Check if review already exists
-    with connect(root) as conn:
-        existing = conn.execute(
-            "SELECT id FROM tasks WHERE kind='ea_review' AND payload_json LIKE ?",
-            (f"%\"build_task_id\": \"{build_task_id}\"%",),
-        ).fetchone()
+    # A previous build generation may already have an EA review.  It must not
+    # suppress review of the current generation (the July 31-August 6 review
+    # starvation incident repeatedly selected these rows, then rejected them
+    # here as already reviewed).  Resolve the JSON contract structurally so
+    # compact payloads and key ordering cannot change idempotence.
+    existing = _current_generation_ea_review(root, build_task_row)
     if existing:
         return {"spawned": False, "reason": "ea_review task already exists", "review_task_id": existing[0]}
 
@@ -9518,21 +9874,7 @@ def _spawn_codex_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[str
     record_review_result expects APPROVE_FOR_BACKTEST or REJECT_REWORK.
     """
     build_task_id = build_task_row["id"]
-    build_payload = json.loads(build_task_row["payload_json"] or "{}")
-    with connect(root) as conn:
-        existing_rows = conn.execute(
-            "SELECT id, payload_json FROM tasks WHERE kind='ea_review' AND payload_json LIKE ?",
-            (f"%\"build_task_id\": \"{build_task_id}\"%",),
-        ).fetchall()
-    existing = None
-    for candidate in existing_rows:
-        try:
-            candidate_payload = json.loads(candidate["payload_json"] or "{}")
-        except (json.JSONDecodeError, TypeError):
-            continue
-        if _review_matches_build_generation(candidate_payload, build_payload):
-            existing = candidate
-            break
+    existing = _current_generation_ea_review(root, build_task_row)
     if existing:
         return {"spawned": False, "reason": "ea_review task already exists", "review_task_id": existing[0]}
 
@@ -9807,6 +10149,104 @@ def _review_matches_build_generation(
         not (review_payload or {}).get("superseded_by_build_generation")
         and _build_generation(review_payload) == _build_generation(build_payload)
     )
+
+
+def _task_payload_object(payload_json: Any) -> dict[str, Any] | None:
+    """Parse a task payload without accepting malformed/non-object JSON."""
+    try:
+        payload = json.loads(payload_json or "")
+    except (json.JSONDecodeError, TypeError, ValueError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _current_generation_ea_review(
+    root: Path,
+    build_task_row: sqlite3.Row,
+) -> sqlite3.Row | None:
+    """Return an unsuperseded EA review for this exact build generation."""
+    build_payload = _task_payload_object(build_task_row["payload_json"])
+    if build_payload is None:
+        return None
+    build_task_id = str(build_task_row["id"])
+    with connect(root) as conn:
+        review_rows = conn.execute(
+            "SELECT id, status, payload_json FROM tasks "
+            "WHERE kind='ea_review' ORDER BY created_at DESC"
+        ).fetchall()
+    for review_row in review_rows:
+        review_payload = _task_payload_object(review_row["payload_json"])
+        if review_payload is None:
+            continue
+        if review_payload.get("build_task_id") != build_task_id:
+            continue
+        if _review_matches_build_generation(review_payload, build_payload):
+            return review_row
+    return None
+
+
+def _select_ea_review_candidates(
+    conn: sqlite3.Connection,
+    limit: int,
+) -> list[sqlite3.Row]:
+    """Select render-ready final-review builds using the task JSON contract.
+
+    The old SQL used whitespace-sensitive ``LIKE`` fragments and applied LIMIT
+    before renderability was known.  One legacy build without ``codex_result``
+    plus one prior-generation review could therefore consume every free Claude
+    slot forever.  Parse once in memory, match top-level keys exactly, and only
+    then apply the oldest-first bound.
+    """
+    if limit <= 0:
+        return []
+    rows = conn.execute(
+        "SELECT * FROM tasks "
+        "WHERE kind IN ('build_ea', 'codex_review', 'ea_review')"
+    ).fetchall()
+    passed_generations: set[tuple[str, int]] = set()
+    reviewed_generations: set[tuple[str, int]] = set()
+    build_rows: list[tuple[str, str, int, sqlite3.Row]] = []
+
+    for row in rows:
+        payload = _task_payload_object(row["payload_json"])
+        if payload is None:
+            continue
+        kind = row["kind"]
+        if kind == "build_ea":
+            codex_result = payload.get("codex_result")
+            if row["status"] != "done" or not isinstance(codex_result, dict) or not codex_result:
+                continue
+            build_rows.append(
+                (
+                    str(row["updated_at"] or ""),
+                    str(row["id"]),
+                    _build_generation(payload),
+                    row,
+                )
+            )
+            continue
+
+        build_task_id = payload.get("build_task_id")
+        if not isinstance(build_task_id, str) or not build_task_id:
+            continue
+        if payload.get("superseded_by_build_generation") is not None:
+            continue
+        generation_key = (build_task_id, _build_generation(payload))
+        if kind == "codex_review":
+            if row["status"] == "done" and payload.get("verdict") == "PASS":
+                passed_generations.add(generation_key)
+        else:
+            # An EA review of any state owns this generation.  Pending/orphan
+            # recovery remains the repair subsystem's job, not a duplicate spawn.
+            reviewed_generations.add(generation_key)
+
+    candidates = [
+        row
+        for updated_at, build_task_id, generation, row in sorted(build_rows)
+        if (build_task_id, generation) in passed_generations
+        and (build_task_id, generation) not in reviewed_generations
+    ]
+    return candidates[:limit]
 
 
 def _sha256_file(path: Path) -> str:
@@ -14272,39 +14712,26 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
     claude_spawns_this_cycle = 0
     claude_review_slots = max(0, max_parallel_claude - active_claude_count)
     result["claude_review_slots"] = claude_review_slots
+    # Scan beyond the free-slot count so a candidate that loses an idempotence
+    # race or fails prompt rendering cannot hide later valid work.  The scan is
+    # bounded; only successful spawns consume the per-cycle slot budget.
+    claude_review_scan_limit = max(1, claude_review_slots * 4)
     with connect(root) as conn:
-        done_no_review_rows = conn.execute(
-            """
-            SELECT b.* FROM tasks b
-            WHERE b.kind='build_ea' AND b.status='done'
-              AND EXISTS (
-                SELECT 1 FROM tasks cr
-                WHERE cr.kind='codex_review' AND cr.status='done'
-                  AND cr.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
-                  AND cr.payload_json LIKE '%"verdict": "PASS"%'
-                  AND COALESCE(CAST(json_extract(cr.payload_json, '$.build_generation') AS INTEGER), 0)
-                      = COALESCE(CAST(json_extract(b.payload_json, '$.build_generation') AS INTEGER), 0)
-                  AND json_extract(cr.payload_json, '$.superseded_by_build_generation') IS NULL
-              )
-              AND NOT EXISTS (
-                SELECT 1 FROM tasks r
-                WHERE r.kind='ea_review'
-                  AND r.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
-                  AND COALESCE(CAST(json_extract(r.payload_json, '$.build_generation') AS INTEGER), 0)
-                      = COALESCE(CAST(json_extract(b.payload_json, '$.build_generation') AS INTEGER), 0)
-                  AND json_extract(r.payload_json, '$.superseded_by_build_generation') IS NULL
-              )
-            ORDER BY b.updated_at ASC LIMIT ?
-            """,
-            (max(claude_review_slots, 1),),
-        ).fetchall()
+        done_no_review_rows = _select_ea_review_candidates(
+            conn,
+            claude_review_scan_limit,
+        )
+    result["claude_review_candidate_ids"] = [row["id"] for row in done_no_review_rows]
+    result["claude_review_scan_limit"] = claude_review_scan_limit
     result["claude_review_spawn"] = {"spawned": False, "reason": "no review candidate"}
     result["claude_review_spawns_all"] = []
     if done_no_review_rows:
         if claude_disabled:
             result["claude_review_spawn"] = {"spawned": False, "reason": "CLAUDE_DISABLED.flag present; routed to Codex"}
         elif claude_review_slots > 0:
-            for done_no_review in done_no_review_rows[:claude_review_slots]:
+            for done_no_review in done_no_review_rows:
+                if claude_spawns_this_cycle >= claude_review_slots:
+                    break
                 dnr_payload = json.loads(done_no_review["payload_json"])
                 if dnr_payload.get("build_agent") == "claude":
                     # Mirror: Codex performs the final ea_review of Claude-built
@@ -14315,7 +14742,11 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                 result["claude_review_spawns_all"].append(sp)
                 if sp.get("spawned"):
                     claude_spawns_this_cycle += 1
-            result["claude_review_spawn"] = (
+            first_spawn = next(
+                (sp for sp in result["claude_review_spawns_all"] if sp.get("spawned")),
+                None,
+            )
+            result["claude_review_spawn"] = first_spawn or (
                 result["claude_review_spawns_all"][0]
                 if result["claude_review_spawns_all"]
                 else {"spawned": False, "reason": "no review candidate"}
@@ -14754,6 +15185,11 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                 f"""
                 SELECT w.* FROM work_items w
                 WHERE w.status='done' AND w.phase=? AND w.verdict in ({placeholders})
+                  AND NOT (
+                    w.phase='Q09_NEWS'
+                    AND json_valid(w.payload_json)=1
+                    AND json_extract(w.payload_json, '$.diagnostic_non_admission')=1
+                  )
                   AND NOT EXISTS (
                     -- DL-074 2026-06-10: block on ANY existing next-phase row
                     -- for the same (ea, symbol, setfile), regardless of which
@@ -16342,6 +16778,8 @@ _FRESH_Q02_SEED_PROVENANCE_KEYS = (
     "requalification_old_work_item_id",
     "requalification_reason",
     "requalification_setfile_identity",
+    "requalification_source_setfile_identity",
+    "setfile_reconciliation",
     "risk_fixed",
     "risk_percent",
 )
@@ -16390,6 +16828,120 @@ def _q02_fixed_risk_contract(setfile_path: str) -> tuple[bool, dict[str, Any]]:
     }
 
 
+def _setfile_semantic_parameters(path: Path) -> dict[str, str]:
+    """Return the executable key/value contract, excluding comments and layout."""
+
+    text = path.read_text(encoding="utf-8-sig", errors="strict")
+    values: dict[str, str] = {}
+    for line_number, raw_line in enumerate(text.splitlines(), start=1):
+        line = raw_line.strip()
+        if not line or line.startswith(";"):
+            continue
+        if "=" not in line:
+            raise ValueError(f"non-comment line {line_number} has no '=' delimiter")
+        key, value = line.split("=", 1)
+        normalized_key = key.strip().casefold()
+        if not normalized_key:
+            raise ValueError(f"line {line_number} has an empty parameter name")
+        if normalized_key in values:
+            raise ValueError(f"duplicate parameter {key.strip()!r} at line {line_number}")
+        values[normalized_key] = value.strip()
+    return values
+
+
+def _noncanonical_setfile_reconciliation(
+    source_path: Path,
+    canonical_path: Path,
+) -> tuple[bool, dict[str, Any]]:
+    """Prove that a worktree preset and canonical preset execute identically."""
+
+    if not source_path.is_file() or not canonical_path.is_file():
+        return False, {
+            "reason": "noncanonical_setfile_reconciliation_artifact_missing",
+            "source_path": str(source_path),
+            "canonical_path": str(canonical_path),
+        }
+    try:
+        source_values = _setfile_semantic_parameters(source_path)
+        canonical_values = _setfile_semantic_parameters(canonical_path)
+    except (OSError, UnicodeError, ValueError) as exc:
+        return False, {
+            "reason": "noncanonical_setfile_reconciliation_unreadable",
+            "source_path": str(source_path),
+            "canonical_path": str(canonical_path),
+            "detail": str(exc),
+        }
+    source_sha256 = _sha256_file(source_path)
+    canonical_sha256 = _sha256_file(canonical_path)
+    if source_values != canonical_values:
+        differing_keys = sorted(
+            key
+            for key in set(source_values) | set(canonical_values)
+            if source_values.get(key) != canonical_values.get(key)
+        )
+        return False, {
+            "reason": "noncanonical_setfile_semantic_mismatch",
+            "source_path": str(source_path),
+            "source_sha256": source_sha256,
+            "canonical_path": str(canonical_path),
+            "canonical_sha256": canonical_sha256,
+            "differing_parameter_keys": differing_keys,
+        }
+    return True, {
+        "schema_version": "qm-q02-setfile-reconciliation/v1",
+        "source_path": str(source_path),
+        "source_sha256": source_sha256,
+        "canonical_path": str(canonical_path),
+        "canonical_sha256": canonical_sha256,
+        "semantic_parameters_equal": True,
+        "semantic_parameter_count": len(source_values),
+        "permitted_difference_scope": "comments_bom_whitespace_and_line_endings_only",
+    }
+
+
+def _q02_execution_symbol_binding(
+    target: sqlite3.Row, payload: dict[str, Any]
+) -> tuple[bool, dict[str, Any]]:
+    """Resolve the MT5 host symbol without confusing it with a basket identity."""
+    row_symbol = str(target["symbol"] or "").strip()
+    logical_symbol = str(payload.get("logical_symbol") or "").strip()
+    host_symbol = str(payload.get("host_symbol") or "").strip()
+    portfolio_scope = str(payload.get("portfolio_scope") or "").strip().lower()
+    is_basket = bool(
+        portfolio_scope == "basket"
+        or payload.get("basket_manifest")
+        or payload.get("basket_symbol_count")
+        or logical_symbol
+    )
+    if not is_basket:
+        return True, {"expected_symbol": row_symbol}
+    if not logical_symbol:
+        return False, {
+            "reason": "historical_execution_identity_missing",
+            "binding": "logical_symbol",
+            "expected": row_symbol,
+            "actual": logical_symbol,
+        }
+    if logical_symbol != row_symbol:
+        return False, {
+            "reason": "historical_execution_identity_mismatch",
+            "binding": "logical_symbol",
+            "expected": row_symbol,
+            "actual": logical_symbol,
+        }
+    if not host_symbol:
+        return False, {
+            "reason": "historical_execution_identity_missing",
+            "binding": "host_symbol",
+            "expected": "non-empty MT5 host symbol",
+            "actual": host_symbol,
+        }
+    return True, {
+        "expected_symbol": host_symbol,
+        "logical_symbol": logical_symbol,
+    }
+
+
 def _q02_exact_artifact_bindings(
     target: sqlite3.Row, payload: dict[str, Any]
 ) -> tuple[bool, dict[str, Any]]:
@@ -16432,8 +16984,11 @@ def _q02_exact_artifact_bindings(
                 "expected_sha256": expected,
                 "actual_sha256": digest,
             }
+    symbol_ok, symbol_binding = _q02_execution_symbol_binding(target, payload)
+    if not symbol_ok:
+        return False, symbol_binding
     identity_checks = {
-        "expected_symbol": str(target["symbol"]),
+        "expected_symbol": symbol_binding["expected_symbol"],
         "expected_period": _detect_ea_period(ea_id, setfile_path),
         "expected_expert": f"QM\\{ea_dir.name}",
     }
@@ -16455,6 +17010,8 @@ def _q02_exact_artifact_bindings(
 def _expected_current_execution_bindings(
     target: sqlite3.Row,
     expected_current_ex5_sha256: str | None,
+    *,
+    allow_noncanonical_setfile_reconciliation: bool = False,
 ) -> tuple[bool, dict[str, Any]]:
     """Authenticate one row identity against an operator-bound current EX5."""
     expected_ex5 = str(expected_current_ex5_sha256 or "").strip().lower()
@@ -16464,23 +17021,56 @@ def _expected_current_execution_bindings(
             "expected_current_ex5_sha256": expected_ex5,
         }
     ea_id = str(target["ea_id"])
-    setfile_path = Path(str(target["setfile_path"]))
-    ea_dir = _ea_dir_from_setfile_path(setfile_path, ea_id)
+    source_setfile_path = Path(str(target["setfile_path"])).resolve()
+    ea_dir = _ea_dir_from_setfile_path(source_setfile_path, ea_id)
     if ea_dir is None:
         return False, {
             "reason": "setfile_not_bound_to_exact_ea_directory",
-            "setfile_path": str(setfile_path),
+            "setfile_path": str(source_setfile_path),
         }
     canonical_ea_dir = _preferred_ea_dir(ea_id)
-    if canonical_ea_dir is None or os.path.normcase(str(ea_dir.resolve())) != os.path.normcase(
-        str(canonical_ea_dir.resolve())
-    ):
-        return False, {
+    reconciliation: dict[str, Any] | None = None
+    canonical_match = bool(
+        canonical_ea_dir is not None
+        and os.path.normcase(str(ea_dir.resolve()))
+        == os.path.normcase(str(canonical_ea_dir.resolve()))
+    )
+    if not canonical_match:
+        refusal = {
             "reason": "current_execution_binding_not_in_canonical_ea_directory",
-            "setfile_path": str(setfile_path),
+            "setfile_path": str(source_setfile_path),
             "resolved_ea_dir": str(ea_dir),
             "canonical_ea_dir": str(canonical_ea_dir) if canonical_ea_dir else None,
         }
+        source_is_worktree = any(
+            part.casefold() == "worktrees" for part in source_setfile_path.parts
+        )
+        same_ea_directory_name = bool(
+            canonical_ea_dir is not None and ea_dir.name == canonical_ea_dir.name
+        )
+        if (
+            not allow_noncanonical_setfile_reconciliation
+            or not source_is_worktree
+            or not same_ea_directory_name
+        ):
+            return False, refusal
+        canonical_setfile_path = (
+            canonical_ea_dir / "sets" / source_setfile_path.name
+        ).resolve()
+        reconciled, reconciliation_detail = _noncanonical_setfile_reconciliation(
+            source_setfile_path, canonical_setfile_path
+        )
+        if not reconciled:
+            return False, {
+                **refusal,
+                **reconciliation_detail,
+                "reconciliation_requested": True,
+            }
+        reconciliation = reconciliation_detail
+        ea_dir = canonical_ea_dir
+        setfile_path = canonical_setfile_path
+    else:
+        setfile_path = source_setfile_path
     paths = {
         "expected_mq5_sha256": ea_dir / f"{ea_dir.name}.mq5",
         "expected_ex5_sha256": ea_dir / f"{ea_dir.name}.ex5",
@@ -16502,12 +17092,23 @@ def _expected_current_execution_bindings(
             "expected_sha256": expected_ex5,
             "actual_sha256": actual["expected_ex5_sha256"],
         }
+    try:
+        payload = json.loads(target["payload_json"] or "{}")
+    except json.JSONDecodeError:
+        payload = None
+    if not isinstance(payload, dict):
+        return False, {"reason": "current_execution_payload_invalid"}
+    symbol_ok, symbol_binding = _q02_execution_symbol_binding(target, payload)
+    if not symbol_ok:
+        return False, symbol_binding
     return True, {
         "ea_dir": str(ea_dir),
+        "effective_setfile_path": str(setfile_path),
         "artifact_sha256": actual,
-        "expected_symbol": str(target["symbol"]),
+        "expected_symbol": symbol_binding["expected_symbol"],
         "expected_period": _detect_ea_period(ea_id, setfile_path),
         "expected_expert": f"QM\\{ea_dir.name}",
+        "setfile_reconciliation": reconciliation,
     }
 
 
@@ -16554,6 +17155,36 @@ def _stale_pass_source_binding(
     }
 
 
+def _repaired_infra_source_binding(
+    target: sqlite3.Row,
+    payload: dict[str, Any],
+    current_bindings: dict[str, Any],
+) -> tuple[bool, dict[str, Any]]:
+    """Authenticate a terminal INFRA row whose bound artifacts were repaired.
+
+    The historical bytes no longer need to be present in the canonical EA
+    directory, but the terminal row must still carry a complete sealed binding,
+    retain the same execution identity, and name a binary distinct from the
+    operator-bound current EX5.
+    """
+    ok, detail = _stale_pass_source_binding(target, payload, current_bindings)
+    if ok:
+        return True, detail
+    reason_map = {
+        "stale_pass_source_binding_missing_or_invalid": (
+            "repaired_infra_source_binding_missing_or_invalid"
+        ),
+        "q02_pass_source_not_stale": "q02_infra_source_binary_not_repaired",
+        "stale_pass_source_identity_mismatch": (
+            "repaired_infra_source_identity_mismatch"
+        ),
+    }
+    mapped = dict(detail)
+    source_reason = str(detail.get("reason"))
+    mapped["reason"] = reason_map.get(source_reason, source_reason)
+    return False, mapped
+
+
 def enqueue_fresh_q02_seed(
     root: Path,
     ea_id: str,
@@ -16561,6 +17192,7 @@ def enqueue_fresh_q02_seed(
     old_work_item_id: str | None,
     requal_reason: str | None,
     expected_current_ex5_sha256: str | None,
+    reconcile_noncanonical_setfile: bool = False,
 ) -> dict[str, Any]:
     """Append one current-binary Q02 seed from a terminal pre-binding row.
 
@@ -16661,19 +17293,12 @@ def enqueue_fresh_q02_seed(
                 ),
             }
 
-        risk_ok, risk_detail = _q02_fixed_risk_contract(
-            str(source["setfile_path"])
-        )
-        if not risk_ok:
-            return {
-                "enqueued": False,
-                "ea_id": ea_id,
-                "phase": phase,
-                "old_work_item_id": source_id,
-                **risk_detail,
-            }
         bindings_ok, bindings = _expected_current_execution_bindings(
-            source, expected_ex5
+            source,
+            expected_ex5,
+            allow_noncanonical_setfile_reconciliation=(
+                reconcile_noncanonical_setfile
+            ),
         )
         if not bindings_ok:
             return {
@@ -16682,6 +17307,16 @@ def enqueue_fresh_q02_seed(
                 "phase": phase,
                 "old_work_item_id": source_id,
                 **bindings,
+            }
+        effective_setfile_path = str(bindings["effective_setfile_path"])
+        risk_ok, risk_detail = _q02_fixed_risk_contract(effective_setfile_path)
+        if not risk_ok:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "old_work_item_id": source_id,
+                **risk_detail,
             }
 
         open_row = conn.execute(
@@ -16781,7 +17416,7 @@ def enqueue_fresh_q02_seed(
             "requalification_old_work_item_id": source_id,
             "requalification_reason": reason,
             "requalification_setfile_identity": {
-                "path": str(source["setfile_path"]),
+                "path": effective_setfile_path,
                 "sha256": bindings["artifact_sha256"][
                     "expected_setfile_sha256"
                 ],
@@ -16793,6 +17428,15 @@ def enqueue_fresh_q02_seed(
             "expected_period": bindings["expected_period"],
             "expected_symbol": bindings["expected_symbol"],
         })
+        reconciliation = bindings.get("setfile_reconciliation")
+        if isinstance(reconciliation, dict):
+            payload.update({
+                "requalification_source_setfile_identity": {
+                    "path": reconciliation["source_path"],
+                    "sha256": reconciliation["source_sha256"],
+                },
+                "setfile_reconciliation": reconciliation,
+            })
         wid = str(uuid.uuid4())
         conn.execute(
             """
@@ -16805,7 +17449,7 @@ def enqueue_fresh_q02_seed(
                 wid,
                 ea_id,
                 source["symbol"],
-                source["setfile_path"],
+                effective_setfile_path,
                 json.dumps(payload, sort_keys=True),
                 now,
                 now,
@@ -16814,7 +17458,7 @@ def enqueue_fresh_q02_seed(
         created = [{
             "id": wid,
             "symbol": source["symbol"],
-            "setfile_path": source["setfile_path"],
+            "setfile_path": effective_setfile_path,
             "old_work_item_id": source_id,
             "expected_ex5_sha256": payload["expected_ex5_sha256"],
             "expected_setfile_sha256": payload["expected_setfile_sha256"],
@@ -16829,6 +17473,7 @@ def enqueue_fresh_q02_seed(
                 "created": created,
                 "requalification_reason": reason,
                 "old_work_item_id": source_id,
+                "setfile_reconciliation": reconciliation,
             },
         )
         conn.commit()
@@ -16896,7 +17541,6 @@ def _enqueue_q02_append_only_exact_row_rerun(
             and target["status"] in {"done", "failed"}
             and target["verdict"] in {"INFRA_FAIL", "PASS"}
             and not target["claimed_by"]
-            and str(target["evidence_path"] or "").strip()
         )
         if not target_matches:
             return {
@@ -16905,16 +17549,6 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "phase": phase,
                 "reason": "q02_rerun_target_mismatch_or_not_terminal_supported_verdict",
                 "source_work_item_id": source_id,
-            }
-        evidence_path = Path(str(target["evidence_path"]))
-        if not evidence_path.is_file():
-            return {
-                "enqueued": False,
-                "ea_id": ea_id,
-                "phase": phase,
-                "reason": "q02_rerun_source_evidence_missing",
-                "source_work_item_id": source_id,
-                "evidence_path": str(evidence_path),
             }
         try:
             source_payload = json.loads(target["payload_json"] or "{}")
@@ -16929,6 +17563,41 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "source_work_item_id": source_id,
             }
 
+        evidence_binding = "work_items.evidence_path"
+        evidence_path_raw = str(target["evidence_path"] or "").strip()
+        if not evidence_path_raw and target["verdict"] == "INFRA_FAIL":
+            # Legacy transient-infrastructure rows can predate MNT-009 evidence
+            # binding while still naming the concrete terminal log in their
+            # immutable payload.  Accept only that purpose-specific field; the
+            # row's sealed execution identity is authenticated below, and the
+            # evidence bytes are hash-bound into the append-only successor.
+            evidence_path_raw = str(
+                source_payload.get("transient_infra_evidence_path") or ""
+            ).strip()
+            evidence_binding = "payload.transient_infra_evidence_path"
+        if not evidence_path_raw:
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "q02_rerun_source_evidence_missing",
+                "source_work_item_id": source_id,
+                "evidence_binding": evidence_binding,
+                "evidence_path": evidence_path_raw,
+            }
+        evidence_path = Path(evidence_path_raw)
+        if not evidence_path.is_file():
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "reason": "q02_rerun_source_evidence_missing",
+                "source_work_item_id": source_id,
+                "evidence_binding": evidence_binding,
+                "evidence_path": str(evidence_path),
+            }
+        evidence_sha256 = _sha256_file(evidence_path)
+
         risk_ok, risk_detail = _q02_fixed_risk_contract(str(target["setfile_path"]))
         if not risk_ok:
             return {
@@ -16939,23 +17608,44 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 **risk_detail,
             }
         stale_pass = str(target["verdict"]) == "PASS"
-        stale_detail: dict[str, Any] = {}
+        repaired_infra = False
+        source_transition_detail: dict[str, Any] = {}
         if stale_pass:
             bindings_ok, bindings = _expected_current_execution_bindings(
                 target, expected_current_ex5_sha256
             )
             if bindings_ok:
-                bindings_ok, stale_detail = _stale_pass_source_binding(
+                bindings_ok, source_transition_detail = _stale_pass_source_binding(
                     target, source_payload, bindings
                 )
         else:
-            bindings_ok, bindings = _q02_exact_artifact_bindings(target, source_payload)
-            if bindings_ok and expected_current_ex5_sha256:
+            historical_ok, historical_detail = _q02_exact_artifact_bindings(
+                target, source_payload
+            )
+            bindings_ok, bindings = historical_ok, historical_detail
+            if historical_ok and expected_current_ex5_sha256:
                 bindings_ok, bindings = _expected_current_execution_bindings(
                     target, expected_current_ex5_sha256
                 )
+            elif not historical_ok and expected_current_ex5_sha256:
+                current_ok, current_bindings = _expected_current_execution_bindings(
+                    target, expected_current_ex5_sha256
+                )
+                if current_ok:
+                    transition_ok, source_transition_detail = (
+                        _repaired_infra_source_binding(
+                            target, source_payload, current_bindings
+                        )
+                    )
+                    if transition_ok:
+                        repaired_infra = True
+                        bindings_ok, bindings = True, current_bindings
+                    else:
+                        bindings_ok, bindings = False, source_transition_detail
+                else:
+                    bindings_ok, bindings = False, current_bindings
         if not bindings_ok:
-            failure_detail = stale_detail if stale_pass and stale_detail else bindings
+            failure_detail = source_transition_detail or bindings
             return {
                 "enqueued": False,
                 "ea_id": ea_id,
@@ -17039,11 +17729,12 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 """
                 SELECT id, status, verdict FROM work_items
                 WHERE ea_id=? AND phase IN ('Q02','P2') AND symbol=? AND id<>?
+                  AND setfile_path=?
                   AND status IN ('done','failed')
                   AND COALESCE(verdict, '') <> 'INFRA_FAIL'
                 ORDER BY updated_at DESC LIMIT 1
                 """,
-                (ea_id, target["symbol"], source_id),
+                (ea_id, target["symbol"], source_id, target["setfile_path"]),
             ).fetchone()
             if noninfra_row:
                 return {
@@ -17061,6 +17752,24 @@ def _enqueue_q02_append_only_exact_row_rerun(
             for key in _Q02_APPEND_ONLY_STABLE_PAYLOAD_KEYS
             if key in source_payload
         }
+        # Legacy multisymbol rows can predate their dependency manifest.  Bind
+        # the current manifest on the append-only successor so the terminal
+        # worker serializes the heavy job, reserves the right commit headroom,
+        # and privatizes every custom-history archive the EA reads.
+        dependency_manifest = _load_multisymbol_dependency_manifest(ea_id)
+        dependency_symbols = (dependency_manifest or {}).get("basket_symbols") or []
+        if (
+            dependency_manifest
+            and str(target["symbol"]).casefold()
+            in {str(item).casefold() for item in dependency_symbols}
+        ):
+            payload.update({
+                "basket_manifest": dependency_manifest["manifest_path"],
+                "basket_symbol_count": len(dependency_symbols),
+                "basket_symbols": list(dependency_symbols),
+                "host_symbol": str(target["symbol"]),
+                "host_timeframe": dependency_manifest["host_timeframe"],
+            })
         payload.update({
             "append_only_rerun": True,
             "append_only_rerun_of_work_item": source_id,
@@ -17068,7 +17777,9 @@ def _enqueue_q02_append_only_exact_row_rerun(
             "enqueued_by": "farmctl.append_only_exact_row_rerun",
             "historical_work_item_preserved": True,
             "rerun_reason": reason,
+            "rerun_source_evidence_binding": evidence_binding,
             "rerun_source_evidence_path": str(evidence_path),
+            "rerun_source_evidence_sha256": evidence_sha256,
             "rerun_source_payload_sha256": hashlib.sha256(
                 str(target["payload_json"] or "{}").encode("utf-8")
             ).hexdigest(),
@@ -17076,6 +17787,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
             "rerun_source_updated_at": target["updated_at"],
             "rerun_source_verdict": target["verdict"],
             "stale_pass_rerun": stale_pass,
+            "repaired_infra_rerun": repaired_infra,
             "risk_fixed": risk_detail["risk_fixed"],
             "risk_percent": risk_detail["risk_percent"],
             **bindings["artifact_sha256"],
@@ -17085,11 +17797,24 @@ def _enqueue_q02_append_only_exact_row_rerun(
         })
         if stale_pass:
             payload.update({
-                "expected_current_ex5_sha256": stale_detail["current_ex5_sha256"],
-                "rerun_source_expected_ex5_sha256": stale_detail[
+                "expected_current_ex5_sha256": source_transition_detail[
+                    "current_ex5_sha256"
+                ],
+                "rerun_source_expected_ex5_sha256": source_transition_detail[
                     "source_expected_ex5_sha256"
                 ],
                 "rerun_source_current_ex5_mismatch_verified": True,
+            })
+        elif repaired_infra:
+            payload.update({
+                "expected_current_ex5_sha256": source_transition_detail[
+                    "current_ex5_sha256"
+                ],
+                "rerun_source_expected_ex5_sha256": source_transition_detail[
+                    "source_expected_ex5_sha256"
+                ],
+                "rerun_source_current_ex5_mismatch_verified": True,
+                "rerun_source_repaired_after_infra": True,
             })
         wid = str(uuid.uuid4())
         conn.execute(
@@ -17124,7 +17849,9 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "ea_id": ea_id,
                 "created": created,
                 "rerun_reason": reason,
+                "source_evidence_binding": evidence_binding,
                 "source_evidence_path": str(evidence_path),
+                "source_evidence_sha256": evidence_sha256,
                 "source_payload_sha256": payload["rerun_source_payload_sha256"],
             },
         )
@@ -19739,7 +20466,7 @@ def record_build_result(
     }
 
 
-Q02_DEFERRED_SYMBOLS_FILE = Path(r"D:/QM/strategy_farm/state/q02_deferred_symbols.json")
+Q02_DEFERRED_SYMBOLS_FILE = DEFAULT_ROOT / "state" / "q02_deferred_symbols.json"
 Q02_STAGE1_MAX_SYMBOLS = 3
 
 
@@ -20599,6 +21326,14 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         help="Exact SHA-256 required to match the current canonical repo EX5 bytes",
     )
+    seed_fresh_q02.add_argument(
+        "--reconcile-noncanonical-setfile",
+        action="store_true",
+        help=(
+            "Opt in to hash-recorded worktree-to-canonical setfile reconciliation; "
+            "executable key/value parameters must be identical"
+        ),
+    )
     bind_q09 = sub.add_parser(
         "bind-q09-plan",
         help="Hash-bind a sealed Q09_NEWS plan to one exact pending work item",
@@ -20918,6 +21653,7 @@ def main(argv: list[str] | None = None) -> int:
             old_work_item_id=args.old_work_item_id,
             requal_reason=args.requal_reason,
             expected_current_ex5_sha256=args.expected_current_ex5_sha256,
+            reconcile_noncanonical_setfile=args.reconcile_noncanonical_setfile,
         ))
     elif args.command == "bind-q09-plan":
         print_json(bind_q09_run_plan(

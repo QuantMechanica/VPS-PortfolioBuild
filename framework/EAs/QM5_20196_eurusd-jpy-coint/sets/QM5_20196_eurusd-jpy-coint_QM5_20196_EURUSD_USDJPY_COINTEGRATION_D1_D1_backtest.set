@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        20196
 ; ea_slug:      eurusd-jpy-coint
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3f051b9d4a6940a593835fedb60dfda56f946652bbcf725a4cc9376f8d30a2ae
+; build_hash:   02e83338eef5b279f4015712022dd2a583ec01178964dc1da23360204e58dde2
 ; author:       Development
 ; date:         2026-08-01
 ;==========================================================

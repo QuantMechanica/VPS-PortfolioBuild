@@ -1,0 +1,76 @@
+QM EVIDENCE-RESTORATION RECEIPT
+schema: qm.q02.infrastructure_evidence_restoration.v1
+created_at_utc: 2026-08-11T04:11:00Z
+created_by: codex:agents/board-advisor
+branch: agents/board-advisor
+work_item_id: b9fc8a59-c929-4fd8-aff2-6e7747f9b99b
+ea_id: QM5_10977
+symbol: GBPUSD.DWX
+phase: Q02
+terminal: T8
+verdict: INFRA_FAIL
+verdict_reason: ACTIVE_TIMEOUT
+
+IMPORTANT: This is not the original worker log. The database-bound path
+D:\QM\strategy_farm\logs\work_item_b9fc8a59-c929-4fd8-aff2-6e7747f9b99b.log
+was missing when the paced-fleet repair began on 2026-08-11. This receipt
+reconstructs the infrastructure diagnosis solely from surviving artifacts
+already bound by the terminal work-item payload.
+
+Surviving tester configuration:
+D:\QM\reports\work_items\b9fc8a59-c929-4fd8-aff2-6e7747f9b99b\QM5_10977\20260728_152120\raw\run_01\tester.ini
+
+[Tester]
+Expert=QM\QM5_10977_ftmo-bb-sqz
+Symbol=GBPUSD.DWX
+Period=H1
+Model=4
+ExecutionMode=0
+Optimization=0
+OptimizationCriterion=0
+FromDate=2018.07.02
+ToDate=2022.12.31
+ForwardMode=0
+Deposit=100000
+Currency=USD
+ProfitInPips=0
+Leverage=100
+UseLocal=1
+Visual=0
+Replace=1
+ReplaceReport=1
+ShutdownTerminal=1
+Report=QM5_10977_GBPUSD_DWX_20260728_152120_run_01.htm
+ExpertParameters=QM5_10977_ftmo-bb-sqz_GBPUSD.DWX_H1_backtest.set
+
+Surviving terminal log:
+D:\QM\mt5\T8\logs\20260728.log
+
+Relevant terminal events (original terminal timestamps):
+- 17:21:25.677 Startup: initialized from the tester.ini above.
+- 17:21:26.710 Terminal: launched with the tester.ini above.
+- 17:22:45.029 Tester: automatic testing started.
+- 17:22:45.050 through 17:22:46.238 History: repeated
+  'GBPUSD.DWX' file opening or reading error [32].
+- No tester progress or report followed before the worker watchdog disposition.
+
+Surviving database payload facts:
+- expected_ex5_sha256=24498aeefbfacf32189486722af640722a7bcd2babceb5722752f468d46ab241
+- expected_mq5_sha256=582dbd20f2a6677978035f9c8f52f59fb18cff451636ddb80d397424541229d4
+- expected_setfile_sha256=240a9673373eb41c4726dc2c49309f083c150bbcf5f54adcfe44ce6260fbc222
+- progress_pct=0
+- stalled_min=21.59
+- reap_reason=NO_FORWARD_PROGRESS
+- reason_classes=ACTIVE_TIMEOUT
+- killed_at=2026-07-28T15:42:54+00:00
+
+Diagnosis:
+Windows error 32 is a file-sharing violation. The tester could not read the
+GBPUSD.DWX Custom history archive and never reached an evaluable strategy
+run. This is infrastructure-only evidence; it does not establish a strategy
+PASS, FAIL, or zero-trade outcome.
+
+Repair boundary:
+Route one append-only current-hash Q02 successor through the governed
+custom-history copy-on-claim path. Do not change strategy mechanics, risk,
+portfolio gates, deployment manifests, AutoTrading, or T_Live.

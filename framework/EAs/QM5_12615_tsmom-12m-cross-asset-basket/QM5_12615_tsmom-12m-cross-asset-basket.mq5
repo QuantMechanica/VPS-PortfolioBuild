@@ -91,16 +91,11 @@ bool Strategy_IsMonthRebalanceBar()
    if(!Strategy_IsHostChart())
       return false;
 
-   const datetime closed_bar = iTime(g_qm12615_symbols[0], PERIOD_D1, 1); // perf-allowed: monthly D1 boundary detection
-   const datetime current_bar = iTime(g_qm12615_symbols[0], PERIOD_D1, 0); // perf-allowed: monthly D1 boundary detection
-   if(closed_bar <= 0 || current_bar <= 0)
+   const int current_month = QM_CalendarPeriodKey(PERIOD_MN1, g_qm12615_symbols[0], 0);
+   const int prior_month = QM_CalendarPeriodKey(PERIOD_MN1, g_qm12615_symbols[0], 1);
+   if(current_month <= 0 || prior_month <= 0)
       return false;
-
-   MqlDateTime closed_dt;
-   MqlDateTime current_dt;
-   TimeToStruct(closed_bar, closed_dt);
-   TimeToStruct(current_bar, current_dt);
-   return (closed_dt.year != current_dt.year || closed_dt.mon != current_dt.mon);
+   return (current_month != prior_month);
   }
 
 bool Strategy_HistoryReady(const string symbol)

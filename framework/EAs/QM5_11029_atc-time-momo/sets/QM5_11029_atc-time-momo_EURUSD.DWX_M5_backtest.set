@@ -3,32 +3,38 @@
 ; ea_id:        11029
 ; ea_slug:      atc-time-momo
 ; ea_version:   v5.0
-; set_version:  s20260618-001
+; set_version:  s20260809-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0ead6eaf7838212f5878c279e39d44dca7dc14254cb79abbdedab3705a018b35
+; build_hash:   cdabb014f73d202c93d493f2402d8d723eafb332175138f3d006cc8e960d90ce
 ; author:       Development
-; date:         2026-06-18
+; date:         2026-08-09
 ;==========================================================
+qm_ea_id=11029
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11029_atc-time-momo.md
+strategy_entry_hour_server=10
+strategy_entry_minute_server=36
+strategy_entry_window_minutes=10
+strategy_eod_hour_server=21
+strategy_eod_minute_server=0
+strategy_lookback_minutes=60
+strategy_atr_period=14
+strategy_min_movement_atr=0.50
+strategy_strong_movement_atr=1.50
+strategy_sl_atr_mult=0.80
+strategy_tp_normal_atr_mult=1.20
+strategy_tp_strong_atr_mult=0.80
+strategy_use_stop_order=false
+strategy_entry_buffer_atr=0.10
+strategy_max_spread_points=0
+strategy_use_h1_ema_filter=false
+strategy_h1_ema_period=48

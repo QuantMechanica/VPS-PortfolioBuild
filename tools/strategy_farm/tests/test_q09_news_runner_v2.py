@@ -16,6 +16,7 @@ import q09_news_calendar as calendar_bundle  # noqa: E402
 import q09_news_runner as runner  # noqa: E402
 import q09_news_schema as schema  # noqa: E402
 import farmctl  # noqa: E402
+import terminal_worker  # noqa: E402
 
 
 def metrics(sharpe: float) -> dict:
@@ -88,6 +89,24 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.temporary.cleanup()
+
+    def test_single_ok_run_accepts_invalid_startup_attempt_then_success(self) -> None:
+        invalid = {"run": "run_01", "status": "INVALID", "failure": "BARS_ZERO"}
+        successful = {"run": "run_02", "status": "OK", "total_trades": 34}
+
+        self.assertIs(
+            runner._single_ok_run({"runs": [invalid, successful]}),
+            successful,
+        )
+        for runs in (
+            [invalid],
+            [successful, {"run": "run_03", "status": "OK"}],
+        ):
+            with self.assertRaisesRegex(
+                runner.RunnerError,
+                "exactly one authenticated OK run",
+            ):
+                runner._single_ok_run({"runs": runs})
 
     def build(self, *, target: str = "DXZ", output: str = "experiment", news: bool = False) -> dict:
         return runner.build_run_plan(
@@ -168,7 +187,13 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         for spec in plan["cells"]:
             self.write_receipt(spec)
 
-    def setup_bound_farm(self, plan: dict, *, activate: bool) -> tuple[Path, str]:
+    def setup_bound_farm(
+        self,
+        plan: dict,
+        *,
+        activate: bool,
+        attempt_count: int = 0,
+    ) -> tuple[Path, str]:
         farm_root = self.root / "farm"
         farmctl.init_db(farm_root)
         q07_evidence = self.root / "q07.json"
@@ -234,6 +259,12 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         self.assertEqual(hold[0], 0)
         self.assertIn("sealed Q09 run plan bound", hold[1])
         self.assertEqual(payload["q09_activation_state"], "RUNNABLE_BOUND")
+        with closing(farmctl.connect(farm_root)) as connection:
+            connection.execute(
+                "UPDATE work_items SET attempt_count=? WHERE id='q09-news-1'",
+                (int(attempt_count),),
+            )
+            connection.commit()
         if activate:
             with closing(farmctl.connect(farm_root)) as connection:
                 connection.execute(
@@ -381,6 +412,398 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         self.assertEqual(tampered_result["invalid_cell_count"], 1)
         self.assertEqual(tampered_result["adjudication"]["locked_arms"], [])
 
+    def test_failure_retries_append_and_receipt_precedes_stale_sidecars(self) -> None:
+        plan = self.build(output="retry-stable-failure")
+        spec = plan["cells"][0]
+        cell_dir = Path(spec["receipt_path"]).parent
+        first_artifact = cell_dir / "attempt-1.log"
+        first_artifact.write_text("first attempt\n", encoding="utf-8")
+
+        first_path = runner._write_cell_failure(
+            spec,
+            work_item_id="q09-news-1",
+            exc=runner.RunnerError("first transient failure"),
+        )
+        original_bytes = first_path.read_bytes()
+        first_payload = json.loads(original_bytes)
+
+        second_artifact = cell_dir / "attempt-2.log"
+        second_artifact.write_text("second attempt\n", encoding="utf-8")
+        second_path = runner._write_cell_failure(
+            spec,
+            work_item_id="q09-news-1",
+            exc=runner.RunnerError("second transient failure"),
+        )
+        second_payload = json.loads(second_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(first_path.name, "cell_failure.json")
+        self.assertEqual(second_path.name, "cell_failure_2.json")
+        self.assertEqual(first_path.read_bytes(), original_bytes)
+        self.assertNotEqual(first_payload["error"], second_payload["error"])
+        self.assertNotEqual(first_payload["artifacts"], second_payload["artifacts"])
+        self.assertFalse(
+            any(
+                artifact["relative_path"].startswith("cell_failure")
+                for artifact in second_payload["artifacts"]
+            )
+        )
+        for field in runner.CELL_FAILURE_STABLE_FIELDS:
+            self.assertEqual(first_payload[field], second_payload[field])
+
+        self.write_receipts(plan)
+        result = runner.collect_run_plan_status(Path(plan["plan_path"]))
+        self.assertEqual(result["verdict"], "CONFIG_LOCKED")
+        self.assertEqual(result["authenticated_cell_count"], 40)
+        self.assertEqual(result["failed_cell_count"], 0)
+        self.assertEqual(first_path.read_bytes(), original_bytes)
+        self.assertTrue(second_path.is_file())
+
+    def test_failure_retry_keeps_stable_identity_mismatch_fail_closed(self) -> None:
+        plan = self.build(output="failure-identity-mismatch")
+        spec = plan["cells"][0]
+        first_path = runner._write_cell_failure(
+            spec,
+            work_item_id="q09-news-1",
+            exc=runner.RunnerError("first transient failure"),
+        )
+        contradictory = json.loads(first_path.read_text(encoding="utf-8"))
+        contradictory["seed"] = int(contradictory["seed"]) + 1
+        first_path.write_bytes(contract.canonical_json_bytes(contradictory))
+
+        with self.assertRaisesRegex(runner.RunnerError, "cell failure seed mismatch"):
+            runner._write_cell_failure(
+                spec,
+                work_item_id="q09-news-1",
+                exc=runner.RunnerError("second transient failure"),
+            )
+        self.assertFalse(first_path.with_name("cell_failure_2.json").exists())
+
+    def test_failure_snapshot_flattens_deep_source_paths(self) -> None:
+        plan = self.build(output="failure-flat-long-path")
+        spec = plan["cells"][0]
+        cell_dir = Path(spec["receipt_path"]).parent
+        relative = Path("runs") / "selection"
+        attempt_root = runner._failure_attempt_root(cell_dir, 1)
+        while len(str(attempt_root / relative / "artifact.log")) <= 260:
+            relative /= "pre_run_logger_archive"
+        source = cell_dir / relative / "artifact.log"
+        source.parent.mkdir(parents=True)
+        source.write_text("long-path failure evidence\n", encoding="utf-8")
+        mirrored = runner._failure_attempt_root(cell_dir, 1) / relative / source.name
+        self.assertGreater(len(str(mirrored)), 260)
+
+        failure_path = runner._write_cell_failure(
+            spec,
+            work_item_id="q09-news-1",
+            exc=runner.RunnerError("long-path fixture"),
+        )
+        payload = json.loads(failure_path.read_text(encoding="utf-8"))
+        artifact = next(
+            row
+            for row in payload["artifacts"]
+            if row["source_relative_path"] == (relative / source.name).as_posix()
+        )
+        snapshot_root = runner._failure_attempt_root(cell_dir, 1)
+        snapshot_path = Path(artifact["path"])
+        self.assertEqual(
+            payload["artifact_snapshot_layout"],
+            runner.CELL_FAILURE_SNAPSHOT_LAYOUT,
+        )
+        self.assertEqual(snapshot_path.parent, snapshot_root)
+        self.assertLess(len(str(snapshot_path)), len(str(mirrored)))
+        self.assertLess(len(str(snapshot_path)), 260)
+        self.assertEqual(
+            snapshot_path.read_text(encoding="utf-8"),
+            "long-path failure evidence\n",
+        )
+        self.assertIsNotNone(
+            runner._authenticated_cell_failure(
+                spec,
+                work_item_id="q09-news-1",
+                failure_path=failure_path,
+                expected_failure_sha256=contract.sha256_file(failure_path),
+            )
+        )
+
+    def test_failure_retry_skips_orphaned_temporary_attempt(self) -> None:
+        plan = self.build(output="failure-orphaned-temporary-attempt")
+        spec = plan["cells"][0]
+        cell_dir = Path(spec["receipt_path"]).parent
+        orphan = runner._failure_attempt_root(cell_dir, 1).with_name(
+            "attempt_0001.tmp"
+        )
+        orphan.mkdir(parents=True)
+        (orphan / "partial.bin").write_bytes(b"partial")
+
+        failure_path = runner._write_cell_failure(
+            spec,
+            work_item_id="q09-news-1",
+            exc=runner.RunnerError("retry after orphaned snapshot"),
+        )
+        payload = json.loads(failure_path.read_text(encoding="utf-8"))
+        self.assertEqual(failure_path.name, "cell_failure_2.json")
+        self.assertEqual(payload["failure_occurrence"], 2)
+        self.assertEqual(
+            payload["artifact_snapshot_relative_path"],
+            "failure_attempts/attempt_0002",
+        )
+        self.assertTrue(orphan.is_dir())
+        self.assertTrue(runner._failure_attempt_root(cell_dir, 2).is_dir())
+        self.assertIsNotNone(
+            runner._authenticated_cell_failure(
+                spec,
+                work_item_id="q09-news-1",
+                failure_path=failure_path,
+                expected_failure_sha256=contract.sha256_file(failure_path),
+            )
+        )
+
+    def test_terminal_failure_pointer_authenticates_distinct_attempt_snapshots(self) -> None:
+        plan = self.build(output="terminal-attempt-snapshots")
+        farm_root, plan_hash = self.setup_bound_farm(
+            plan,
+            activate=True,
+            attempt_count=runner.WORK_ITEM_ATTEMPT_CEILING - 1,
+        )
+        spec = plan["cells"][0]
+        cell_dir = Path(spec["receipt_path"]).parent
+        live_log = cell_dir / "runs" / "selection" / "run_smoke.log"
+        dispatch_count = 0
+
+        def differing_transient_attempts(_spec: dict, _context: dict) -> None:
+            nonlocal dispatch_count
+            dispatch_count += 1
+            live_log.parent.mkdir(parents=True, exist_ok=True)
+            live_log.write_text(
+                f"attempt {dispatch_count} log\n", encoding="utf-8"
+            )
+            raise runner.TransientCellError(
+                f"fixture transient attempt {dispatch_count}"
+            )
+
+        output_root = self.root / "terminal-attempt-snapshots-output"
+        with patch.object(runner, "_wait_for_claimed_terminal_exit"):
+            result = runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=output_root,
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / "common-terminal-attempt-snapshots",
+                dispatch_cell=differing_transient_attempts,
+            )
+
+        self.assertEqual(dispatch_count, 2)
+        self.assertEqual(result["verdict"], "REVIEW_REQUIRED")
+        first_path = cell_dir / "cell_failure.json"
+        second_path = cell_dir / "cell_failure_2.json"
+        first = json.loads(first_path.read_text(encoding="utf-8"))
+        second = json.loads(second_path.read_text(encoding="utf-8"))
+
+        def snapshotted_log(payload: dict) -> Path:
+            artifact = next(
+                row
+                for row in payload["artifacts"]
+                if row["source_relative_path"]
+                == "runs/selection/run_smoke.log"
+            )
+            return Path(artifact["path"])
+
+        first_log = snapshotted_log(first)
+        second_log = snapshotted_log(second)
+        self.assertNotEqual(first_log, second_log)
+        self.assertEqual(first_log.read_text(encoding="utf-8"), "attempt 1 log\n")
+        self.assertEqual(second_log.read_text(encoding="utf-8"), "attempt 2 log\n")
+        self.assertIn("failure_attempts/attempt_0001", first_log.as_posix())
+        self.assertIn("failure_attempts/attempt_0002", second_log.as_posix())
+
+        execution_failure = json.loads(
+            Path(result["execution_failure_path"]).read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            execution_failure["schema_version"], runner.EXECUTION_FAILURE_SCHEMA
+        )
+        self.assertEqual(execution_failure["cell_failure_occurrence"], 2)
+        self.assertEqual(execution_failure["cell_failure_path"], str(second_path))
+        self.assertEqual(
+            result["adjudication"]["details"]["failed_cells"][0]["failure_path"],
+            str(second_path),
+        )
+
+        for sidecar_path in (first_path, second_path):
+            authenticated = runner._authenticated_cell_failure(
+                spec,
+                work_item_id="q09-news-1",
+                failure_path=sidecar_path,
+                expected_failure_sha256=contract.sha256_file(sidecar_path),
+            )
+            self.assertIsNotNone(authenticated)
+
+        # The live log can change again without invalidating either occurrence.
+        live_log.write_text("attempt 3 live mutation\n", encoding="utf-8")
+        recollected = runner.collect_run_plan_status(
+            Path(plan["plan_path"]), output_root=output_root
+        )
+        self.assertEqual(recollected["verdict"], "REVIEW_REQUIRED")
+        self.assertEqual(
+            recollected["adjudication"]["details"]["failed_cells"][0][
+                "failure_path"
+            ],
+            str(second_path),
+        )
+
+        # A terminal snapshot mutation still fails closed, under the accurate
+        # failure-manifest reason rather than the receipt reason.
+        second_log.write_text("tampered snapshot\n", encoding="utf-8")
+        invalid = runner.collect_run_plan_status(
+            Path(plan["plan_path"]), output_root=output_root
+        )
+        self.assertEqual(invalid["verdict"], "INVALID_EVIDENCE")
+        self.assertEqual(
+            invalid["adjudication"]["reason_codes"],
+            ["cell_failure_manifest_invalid"],
+        )
+        self.assertEqual(invalid["invalid_cell_count"], 1)
+
+    def test_claimed_terminal_wait_blocks_until_only_that_terminal_exits(self) -> None:
+        terminal_root = self.root / "mt5" / "T1"
+        terminal_root.mkdir(parents=True)
+        snapshots = [
+            [
+                {
+                    "ProcessId": 101,
+                    "ExecutablePath": str(terminal_root / "terminal64.exe"),
+                },
+                {
+                    "ProcessId": 202,
+                    "ExecutablePath": str(
+                        terminal_root.parent / "T2" / "terminal64.exe"
+                    ),
+                },
+                {
+                    "ProcessId": 303,
+                    "ExecutablePath": str(
+                        terminal_root.parent / "T_Live" / "terminal64.exe"
+                    ),
+                },
+                {
+                    "ProcessId": 404,
+                    "ExecutablePath": str(
+                        self.root / "FTMO Global Markets MT5 Terminal" / "terminal64.exe"
+                    ),
+                },
+            ],
+            [
+                {
+                    "ProcessId": 202,
+                    "ExecutablePath": str(
+                        terminal_root.parent / "T2" / "terminal64.exe"
+                    ),
+                },
+                {
+                    "ProcessId": 303,
+                    "ExecutablePath": str(
+                        terminal_root.parent / "T_Live" / "terminal64.exe"
+                    ),
+                },
+            ],
+        ]
+        now = [0.0]
+        sleeps: list[float] = []
+
+        def scan() -> list[dict]:
+            return snapshots.pop(0)
+
+        def sleep(seconds: float) -> None:
+            sleeps.append(seconds)
+            now[0] += seconds
+
+        runner._wait_for_claimed_terminal_exit(
+            terminal_root,
+            process_scan=scan,
+            monotonic=lambda: now[0],
+            sleeper=sleep,
+        )
+
+        self.assertEqual(sleeps, [runner.TERMINAL_EXIT_POLL_SEC])
+        self.assertEqual(snapshots, [])
+
+    def test_claimed_terminal_wait_is_bounded_when_process_never_exits(self) -> None:
+        terminal_root = self.root / "mt5" / "T1"
+        process = {
+            "ProcessId": 101,
+            "ExecutablePath": str(terminal_root / "terminal64.exe"),
+        }
+        now = [0.0]
+        sleeps: list[float] = []
+
+        def sleep(seconds: float) -> None:
+            sleeps.append(seconds)
+            now[0] += seconds
+
+        with self.assertRaisesRegex(
+            runner.RunnerError,
+            "claimed-terminal exit wait timed out after 5s.*101",
+        ):
+            runner._wait_for_claimed_terminal_exit(
+                terminal_root,
+                timeout_sec=5,
+                poll_sec=2,
+                process_scan=lambda: [process],
+                monotonic=lambda: now[0],
+                sleeper=sleep,
+            )
+
+        self.assertEqual(sleeps, [2.0, 2.0, 1.0])
+        self.assertEqual(sum(sleeps), 5.0)
+
+    def test_terminal_wait_timeout_fails_cell_closed_without_spawning_smoke(self) -> None:
+        plan = self.build(output="terminal-wait-timeout")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+
+        with (
+            patch.object(
+                runner,
+                "_wait_for_claimed_terminal_exit",
+                side_effect=runner.RunnerError(
+                    "Q09 claimed-terminal exit wait timed out after 180s for T1"
+                ),
+            ),
+            patch.object(runner.subprocess, "run") as smoke_run,
+        ):
+            result = runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=self.root / "terminal-wait-timeout-output",
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / "common-terminal-wait-timeout",
+            )
+
+        smoke_run.assert_not_called()
+        self.assertEqual(result["verdict"], "REVIEW_REQUIRED")
+        self.assertEqual(result["failed_cell_count"], 1)
+        failure = json.loads(
+            Path(result["adjudication"]["details"]["failed_cells"][0]["failure_path"])
+            .read_text(encoding="utf-8")
+        )
+        self.assertEqual(failure["schema_version"], runner.CELL_FAILURE_SCHEMA)
+        self.assertIn("claimed-terminal exit wait timed out", failure["error"])
+
     def test_executor_surfaces_a_failed_cell_instead_of_reporting_every_cell_missing(self) -> None:
         plan = self.build(output="failed-cell")
         farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
@@ -421,6 +844,180 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         )
         self.assertEqual(top_level_failure["cell_failure_path"], str(failure_path))
 
+    def test_transient_cell_retry_succeeds_inside_same_attempt(self) -> None:
+        plan = self.build(output="transient-retry-succeeds")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        dispatch_count = 0
+
+        def transient_then_success(spec: dict, _context: dict) -> None:
+            nonlocal dispatch_count
+            dispatch_count += 1
+            if dispatch_count == 1:
+                raise runner.TransientCellError("fixture child exit 1 without receipt")
+            self.write_receipt(spec)
+
+        with patch.object(runner, "_wait_for_claimed_terminal_exit") as wait_for_exit:
+            result = runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=self.root / "transient-retry-succeeds-output",
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / "common-transient-retry-succeeds",
+                dispatch_cell=transient_then_success,
+            )
+
+        self.assertEqual(result["verdict"], "CONFIG_LOCKED")
+        self.assertEqual(result["authenticated_cell_count"], 40)
+        self.assertEqual(dispatch_count, 41)
+        wait_for_exit.assert_called_once()
+        first_cell = Path(plan["cells"][0]["receipt_path"]).parent
+        self.assertTrue((first_cell / "cell_failure.json").is_file())
+        self.assertTrue((first_cell / "cell_receipt.json").is_file())
+
+    def test_transient_cell_twice_requeues_without_adjudication(self) -> None:
+        plan = self.build(output="transient-twice-requeue")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        self.assertEqual(
+            runner.WORK_ITEM_ATTEMPT_CEILING,
+            terminal_worker.MAX_WORK_ITEM_RETRIES,
+        )
+
+        with (
+            patch.object(
+                runner.subprocess,
+                "run",
+                return_value=SimpleNamespace(returncode=1, stdout="", stderr=""),
+            ) as smoke_run,
+            patch.object(runner, "_wait_for_claimed_terminal_exit"),
+            self.assertRaisesRegex(
+                runner.CapacityError,
+                "transient cell exhausted.*requeue work item",
+            ),
+        ):
+            runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=self.root / "transient-twice-requeue-output",
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / "common-transient-twice-requeue",
+            )
+
+        self.assertEqual(smoke_run.call_count, 2)
+        self.assertFalse(
+            list((self.root / "transient-twice-requeue-output").rglob("aggregate.json"))
+        )
+        first_cell = Path(plan["cells"][0]["receipt_path"]).parent
+        self.assertTrue((first_cell / "cell_failure.json").is_file())
+        self.assertTrue((first_cell / "cell_failure_2.json").is_file())
+        self.assertFalse((first_cell / "cell_receipt.json").exists())
+
+        finished = terminal_worker._finish_work_item(farm_root, "q09-news-1", 1)
+        self.assertEqual(finished["status"], "pending")
+        self.assertEqual(finished["attempt"], 1)
+        with closing(farmctl.connect(farm_root)) as connection:
+            row = connection.execute(
+                "SELECT status,verdict,attempt_count,evidence_path "
+                "FROM work_items WHERE id='q09-news-1'"
+            ).fetchone()
+        self.assertEqual(tuple(row), ("pending", None, 1, None))
+
+    def test_transient_cell_attempt_ceiling_adjudicates(self) -> None:
+        plan = self.build(output="transient-attempt-ceiling")
+        farm_root, plan_hash = self.setup_bound_farm(
+            plan,
+            activate=True,
+            attempt_count=runner.WORK_ITEM_ATTEMPT_CEILING - 1,
+        )
+
+        def always_transient(_spec: dict, _context: dict) -> None:
+            raise runner.TransientCellError("fixture child exit 1 without receipt")
+
+        with patch.object(runner, "_wait_for_claimed_terminal_exit"):
+            result = runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=self.root / "transient-attempt-ceiling-output",
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / "common-transient-attempt-ceiling",
+                dispatch_cell=always_transient,
+            )
+
+        self.assertEqual(result["verdict"], "REVIEW_REQUIRED")
+        self.assertEqual(result["failed_cell_count"], 1)
+        self.assertEqual(result["missing_cell_count"], 39)
+        first_cell = Path(plan["cells"][0]["receipt_path"]).parent
+        self.assertTrue((first_cell / "cell_failure.json").is_file())
+        self.assertTrue((first_cell / "cell_failure_2.json").is_file())
+        self.assertTrue(Path(result["aggregate_path"]).is_file())
+
+    def test_history_lock_requeues_count_toward_transient_ceiling(self) -> None:
+        plan = self.build(output="transient-history-lock-ceiling")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        with closing(farmctl.connect(farm_root)) as connection:
+            row = connection.execute(
+                "SELECT payload_json FROM work_items WHERE id='q09-news-1'"
+            ).fetchone()
+            payload = json.loads(row["payload_json"])
+            payload["transient_infra_attempts"] = 2
+            connection.execute(
+                "UPDATE work_items SET payload_json=? WHERE id='q09-news-1'",
+                (json.dumps(payload, sort_keys=True),),
+            )
+            connection.commit()
+
+        def always_transient(_spec: dict, _context: dict) -> None:
+            raise runner.TransientCellError("fixture child exit 1 without receipt")
+
+        with patch.object(runner, "_wait_for_claimed_terminal_exit"):
+            result = runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=self.root / "transient-history-lock-ceiling-output",
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / "common-transient-history-lock-ceiling",
+                dispatch_cell=always_transient,
+            )
+
+        self.assertEqual(result["verdict"], "REVIEW_REQUIRED")
+        self.assertEqual(result["failed_cell_count"], 1)
+        self.assertEqual(result["missing_cell_count"], 39)
+        first_cell = Path(plan["cells"][0]["receipt_path"]).parent
+        self.assertTrue((first_cell / "cell_failure.json").is_file())
+        self.assertTrue((first_cell / "cell_failure_2.json").is_file())
+        self.assertTrue(Path(result["aggregate_path"]).is_file())
+
     def test_production_multi_cell_execute_writes_receipts_and_collects(self) -> None:
         plan = self.build(output="production-multi-cell")
         farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
@@ -429,6 +1026,12 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         def fake_run(command: list[str], **_kwargs: object) -> SimpleNamespace:
             commands.append(command)
             self.assertIn("-RequireFreshLoggerSample", command)
+            self.assertEqual(
+                command[command.index("-ExpectedExpertSha256") + 1],
+                contract.sha256_file(self.ex5),
+            )
+            self.assertIn("-SmokeMode", command)
+            self.assertEqual(command[command.index("-MinTrades") + 1], "0")
             report_root = Path(command[command.index("-ReportRoot") + 1])
             summary = report_root / "QM5_9999" / "fixture" / "summary.json"
             summary.parent.mkdir(parents=True, exist_ok=True)
@@ -458,6 +1061,7 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
 
         with (
             patch.object(runner.subprocess, "run", side_effect=fake_run),
+            patch.object(runner, "_wait_for_claimed_terminal_exit") as wait_for_exit,
             patch.object(runner, "_validate_window_summary", side_effect=fake_validate),
         ):
             result = runner.execute_run_plan(
@@ -478,6 +1082,8 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         self.assertEqual(result["verdict"], "CONFIG_LOCKED")
         self.assertEqual(result["authenticated_cell_count"], 40)
         self.assertEqual(len(commands), 40 * len(runner.WINDOW_NAMES))
+        self.assertEqual(wait_for_exit.call_count, 40 * len(runner.WINDOW_NAMES))
+        self.assertTrue(all("-AllowRunningTerminal" not in command for command in commands))
         self.assertEqual(
             len(list((self.root / "production-multi-cell").rglob("cell_receipt.json"))),
             40,
@@ -545,6 +1151,15 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         self.assertEqual(result["verdict"], "CONFIG_LOCKED")
         self.assertEqual(result["authenticated_cell_count"], 40)
         self.assertEqual(result["sidecar"]["status"], "RECORDED")
+        resumed = runner._persist_q09_result(
+            farm_root,
+            work_item_id="q09-news-1",
+            terminal="T1",
+            plan_path=Path(plan["plan_path"]),
+            expected_plan_file_sha256=plan_hash,
+            result=result,
+        )
+        self.assertEqual(resumed["status"], "ALREADY_RECORDED")
         with closing(farmctl.connect(farm_root)) as connection:
             test = connection.execute(
                 "SELECT verdict,aggregate_sha256 FROM q09_news_tests WHERE work_item_id='q09-news-1'"
@@ -562,6 +1177,200 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
                     "SELECT count(*) FROM q09_news_arms WHERE q09_news_work_item_id='q09-news-1'"
                 ).fetchone()[0],
                 2,
+            )
+            self.assertEqual(
+                connection.execute(
+                    "SELECT count(*) FROM q09_news_cell_occurrences"
+                ).fetchone()[0],
+                40,
+            )
+
+    def test_cross_round_resume_records_new_provenance_without_rewriting_cells(self) -> None:
+        plan = self.build(output="resume-prior-cells")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        self.write_receipts(plan)
+        result = runner.collect_run_plan_status(
+            Path(plan["plan_path"]),
+            output_root=self.root / "resume-prior-output",
+            expected_plan_file_sha256=plan_hash,
+        )
+        evidence = json.loads(Path(result["evidence_path"]).read_text(encoding="utf-8"))
+        adjudication = json.loads(
+            Path(result["aggregate_path"]).read_text(encoding="utf-8")
+        )
+        prior_evidence = dict(evidence)
+        prior_evidence["work_item_id"] = "q09-news-prior"
+        prior_cells = []
+        for cell in evidence["cells"][:5]:
+            prior = dict(cell)
+            run_identity = prior["run_identity_sha256"]
+            prior["evidence_sha256"] = contract.sha256_bytes(
+                f"prior-evidence:{run_identity}".encode("utf-8")
+            )
+            prior["report_sha256"] = contract.sha256_bytes(
+                f"prior-report:{run_identity}".encode("utf-8")
+            )
+            prior["evidence_path"] = f"D:/prior/{run_identity}/summary.json"
+            prior["report_path"] = f"D:/prior/{run_identity}/report.htm"
+            prior_cells.append(prior)
+        prior_evidence["cells"] = prior_cells
+        shared_identity = prior_cells[0]["run_identity_sha256"]
+
+        with closing(farmctl.connect(farm_root)) as connection:
+            connection.execute(
+                """
+                INSERT INTO work_items(
+                    id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                    attempt_count,parent_task_id,evidence_path,claimed_by,
+                    payload_json,created_at,updated_at
+                )
+                SELECT 'q09-news-prior',kind,phase,ea_id,symbol,setfile_path,
+                       'done','REVIEW_REQUIRED',0,NULL,NULL,NULL,'{}',created_at,updated_at
+                FROM work_items WHERE id='q09-news-1'
+                """
+            )
+            schema.add_dependency(
+                connection,
+                child_work_item_id="q09-news-prior",
+                dependency_role="Q08_INPUT",
+                parent_work_item_id="q08-1",
+                parent_evidence_sha256=contract.sha256_file(self.q08),
+                required_verdicts=["PASS"],
+            )
+            connection.commit()
+            schema.record_q09_adjudication(
+                connection,
+                evidence_payload=prior_evidence,
+                adjudication=adjudication,
+                aggregate_path=result["aggregate_path"],
+                aggregate_sha256=result["aggregate_sha256"],
+            )
+
+        resumed = runner._persist_q09_result(
+            farm_root,
+            work_item_id="q09-news-1",
+            terminal="T1",
+            plan_path=Path(plan["plan_path"]),
+            expected_plan_file_sha256=plan_hash,
+            result=result,
+        )
+        self.assertEqual(resumed["status"], "RECORDED")
+        with closing(farmctl.connect(farm_root)) as connection:
+            self.assertEqual(
+                connection.execute("SELECT count(*) FROM q09_news_cells").fetchone()[0],
+                40,
+            )
+            self.assertEqual(
+                connection.execute(
+                    """
+                    SELECT count(*) FROM q09_news_cells
+                    WHERE q09_news_work_item_id='q09-news-prior'
+                    """
+                ).fetchone()[0],
+                5,
+            )
+            self.assertEqual(
+                connection.execute(
+                    """
+                    SELECT count(*) FROM q09_news_cells
+                    WHERE q09_news_work_item_id='q09-news-1'
+                    """
+                ).fetchone()[0],
+                35,
+            )
+            self.assertEqual(
+                connection.execute(
+                    """
+                    SELECT count(*) FROM q09_news_cells_by_work_item
+                    WHERE q09_news_work_item_id='q09-news-1'
+                    """
+                ).fetchone()[0],
+                40,
+            )
+            self.assertEqual(
+                connection.execute(
+                    "SELECT count(*) FROM q09_news_cell_occurrences"
+                ).fetchone()[0],
+                45,
+            )
+            canonical = connection.execute(
+                """
+                SELECT evidence_sha256,report_sha256 FROM q09_news_cells
+                WHERE run_identity_sha256=?
+                """,
+                (shared_identity,),
+            ).fetchone()
+            self.assertEqual(canonical["evidence_sha256"], prior_cells[0]["evidence_sha256"])
+            occurrences = connection.execute(
+                """
+                SELECT q09_news_work_item_id,evidence_sha256,report_sha256,
+                       evidence_path,report_path
+                FROM q09_news_cell_occurrences
+                WHERE run_identity_sha256=?
+                ORDER BY q09_news_work_item_id
+                """,
+                (shared_identity,),
+            ).fetchall()
+            self.assertEqual(len(occurrences), 2)
+            current = next(
+                row for row in occurrences if row["q09_news_work_item_id"] == "q09-news-1"
+            )
+            current_cell = next(
+                cell for cell in evidence["cells"]
+                if cell["run_identity_sha256"] == shared_identity
+            )
+            self.assertEqual(current["evidence_sha256"], current_cell["evidence_sha256"])
+            self.assertEqual(current["report_sha256"], current_cell["report_sha256"])
+            self.assertEqual(current["evidence_path"], current_cell["evidence_path"])
+            self.assertEqual(current["report_path"], current_cell["report_path"])
+
+    def test_persistence_resume_fails_closed_on_divergent_cell_content(self) -> None:
+        plan = self.build(output="resume-divergence")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        self.write_receipts(plan)
+        result = runner.collect_run_plan_status(
+            Path(plan["plan_path"]),
+            output_root=self.root / "resume-divergence-output",
+            expected_plan_file_sha256=plan_hash,
+        )
+        evidence = json.loads(Path(result["evidence_path"]).read_text(encoding="utf-8"))
+        adjudication = json.loads(
+            Path(result["aggregate_path"]).read_text(encoding="utf-8")
+        )
+        partial_evidence = dict(evidence)
+        divergent_cell = dict(evidence["cells"][0])
+        divergent_selection = dict(divergent_cell["selection"])
+        divergent_selection["trades"] += 1
+        divergent_cell["selection"] = divergent_selection
+        partial_evidence["cells"] = [divergent_cell]
+        run_identity = divergent_cell["run_identity_sha256"]
+
+        with closing(farmctl.connect(farm_root)) as connection:
+            schema.record_q09_adjudication(
+                connection,
+                evidence_payload=partial_evidence,
+                adjudication=adjudication,
+                aggregate_path=result["aggregate_path"],
+                aggregate_sha256=result["aggregate_sha256"],
+            )
+
+        with self.assertRaises(schema.SchemaError) as raised:
+            runner._persist_q09_result(
+                farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                plan_path=Path(plan["plan_path"]),
+                expected_plan_file_sha256=plan_hash,
+                result=result,
+            )
+        report = str(raised.exception)
+        self.assertIn("Q09 persistence divergence", report)
+        self.assertIn(run_identity, report)
+        self.assertIn("selection_metrics_json", report)
+        with closing(farmctl.connect(farm_root)) as connection:
+            self.assertEqual(
+                connection.execute("SELECT count(*) FROM q09_news_cells").fetchone()[0],
+                1,
             )
 
     def test_executor_refuses_period_that_contradicts_sealed_q08(self) -> None:

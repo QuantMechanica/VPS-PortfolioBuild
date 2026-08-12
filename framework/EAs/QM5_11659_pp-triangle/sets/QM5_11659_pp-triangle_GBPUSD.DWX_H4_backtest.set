@@ -1,0 +1,27 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11659
+; ea_slug:      pp-triangle
+; ea_version:   v5.0
+; set_version:  s20260806-001
+; symbol:       GBPUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   57ef70239d2b35fdb5c2e22e6d046cf8e83e9ab245e83fe50378f6f5d41f0499
+; author:       Development
+; date:         2026-08-06
+;==========================================================
+qm_ea_id=11659
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11659_pp-triangle.md
+strategy_window=3
+strategy_atr_period=14
+strategy_sl_atr_mult=2.0
+strategy_max_hold_bars=12

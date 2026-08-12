@@ -82,6 +82,15 @@ input int    strategy_atr_period              = 14;
 input double strategy_atr_sl_mult             = 2.0;
 input int    strategy_time_stop_bars          = 18;
 
+// TDI uses only completed bars. Cache the four cross decisions once per new
+// H1 bar so entry and exit hooks share one calculation. The previous wiring
+// rebuilt two full TDI states on every tick while a position was open.
+bool g_tdi_closed_bar_valid = false;
+bool g_tdi_buy_entry        = false;
+bool g_tdi_sell_entry       = false;
+bool g_tdi_buy_exit         = false;
+bool g_tdi_sell_exit        = false;
+
 double Strategy_RsiSma(const int period, const int shift)
   {
    if(period <= 0 || shift < 0)
@@ -154,14 +163,26 @@ bool Strategy_TdiLines(const int shift,
    return (upper_band > lower_band);
   }
 
-bool Strategy_TdiSignalAndBase(const int shift,
-                               double &signal_line,
-                               double &market_base_line)
+bool Strategy_UpdateTdiClosedBarState()
   {
-   double price_line = 0.0;
-   double upper_band = 0.0;
-   double lower_band = 0.0;
-   return Strategy_TdiLines(shift, price_line, signal_line, market_base_line, upper_band, lower_band);
+   g_tdi_closed_bar_valid = false;
+   g_tdi_buy_entry = false;
+   g_tdi_sell_entry = false;
+   g_tdi_buy_exit = false;
+   g_tdi_sell_exit = false;
+
+   double price_1 = 0.0, signal_1 = 0.0, mbl_1 = 0.0, upper_1 = 0.0, lower_1 = 0.0;
+   double price_2 = 0.0, signal_2 = 0.0, mbl_2 = 0.0, upper_2 = 0.0, lower_2 = 0.0;
+   if(!Strategy_TdiLines(1, price_1, signal_1, mbl_1, upper_1, lower_1) ||
+      !Strategy_TdiLines(2, price_2, signal_2, mbl_2, upper_2, lower_2))
+      return false;
+
+   g_tdi_buy_entry = (signal_2 <= mbl_2 && signal_1 > mbl_1);
+   g_tdi_sell_entry = (signal_2 >= mbl_2 && signal_1 < mbl_1);
+   g_tdi_buy_exit = g_tdi_sell_entry || (price_2 >= signal_2 && price_1 < signal_1);
+   g_tdi_sell_exit = g_tdi_buy_entry || (price_2 <= signal_2 && price_1 > signal_1);
+   g_tdi_closed_bar_valid = true;
+   return true;
   }
 
 bool Strategy_HasOpenPosition()
@@ -212,13 +233,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_HasOpenPosition())
       return false;
 
-   double signal_1 = 0.0, mbl_1 = 0.0;
-   double signal_2 = 0.0, mbl_2 = 0.0;
-   if(!Strategy_TdiSignalAndBase(1, signal_1, mbl_1) ||
-      !Strategy_TdiSignalAndBase(2, signal_2, mbl_2))
+   if(!g_tdi_closed_bar_valid)
       return false;
 
-   if(signal_2 <= mbl_2 && signal_1 > mbl_1)
+   if(g_tdi_buy_entry)
      {
       req.type = QM_BUY;
       req.price = 0.0;
@@ -228,7 +246,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return (req.sl > 0.0);
      }
 
-   if(signal_2 >= mbl_2 && signal_1 < mbl_1)
+   if(g_tdi_sell_entry)
      {
       req.type = QM_SELL;
       req.price = 0.0;
@@ -256,10 +274,6 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
-   double price_1 = 0.0, signal_1 = 0.0, mbl_1 = 0.0, upper_1 = 0.0, lower_1 = 0.0;
-   double price_2 = 0.0, signal_2 = 0.0, mbl_2 = 0.0, upper_2 = 0.0, lower_2 = 0.0;
-   const bool have_tdi = Strategy_TdiLines(1, price_1, signal_1, mbl_1, upper_1, lower_1) &&
-                         Strategy_TdiLines(2, price_2, signal_2, mbl_2, upper_2, lower_2);
    const int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -279,24 +293,14 @@ bool Strategy_ExitSignal()
             return true;
         }
 
-      if(!have_tdi)
+      if(!g_tdi_closed_bar_valid)
          continue;
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY)
-        {
-         if(signal_2 >= mbl_2 && signal_1 < mbl_1)
-            return true;
-         if(price_2 >= signal_2 && price_1 < signal_1)
-            return true;
-        }
-      else if(ptype == POSITION_TYPE_SELL)
-        {
-         if(signal_2 <= mbl_2 && signal_1 > mbl_1)
-            return true;
-         if(price_2 <= signal_2 && price_1 > signal_1)
-            return true;
-        }
+      if(ptype == POSITION_TYPE_BUY && g_tdi_buy_exit)
+         return true;
+      if(ptype == POSITION_TYPE_SELL && g_tdi_sell_exit)
+         return true;
      }
 
    return false;
@@ -370,7 +374,20 @@ void OnTick()
    // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   // TDI is defined on completed bars, so refresh its shared entry/exit state
+   // once before evaluating this bar. The time stop remains per-tick below.
+   const bool is_new_bar = QM_IsNewBar();
+   if(is_new_bar)
+     {
+      Strategy_UpdateTdiClosedBarState();
+
+      // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+      // since last tick. Cheap: most calls early-return on same-day check.
+      QM_EquityStreamOnNewBar();
+     }
+
+   // Per-tick: discretionary exit (including the elapsed-time stop). TDI
+   // cross decisions above are cached, making this path O(open positions).
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -385,15 +402,9 @@ void OnTick()
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
-   if(!QM_IsNewBar())
+   // Per-closed-bar: entry-signal evaluation.
+   if(!is_new_bar)
       return;
-
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

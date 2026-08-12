@@ -4,7 +4,7 @@
 **Slug:** ft-simple
 **Source:** 1580128f-e465-5454-bb97-a7572a6cfd6d (see `strategy-seeds/sources/1580128f-e465-5454-bb97-a7572a6cfd6d/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-08
+**Last revised:** 2026-08-11
 
 ---
 
@@ -96,4 +96,5 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
+| v1.1 | 2026-08-11 | Q02 infrastructure repair | Refreshed canonical V5 runtime ordering, zero-initialized entry requests, accepted valid zero-spread DWX tester quotes, and regenerated explicit RISK_FIXED presets; strategy mechanics unchanged. |
 | v1 | 2026-06-08 | Initial build from card | 354dc104-8df7-4359-8920-adaa9d406cfb |

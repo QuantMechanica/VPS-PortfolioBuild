@@ -1,0 +1,80 @@
+{
+  "schema": "qm_commodity_build_q02_handoff/v1",
+  "timestamp_utc": "2026-08-05T20:33:18.4375210Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20231",
+  "slug": "wti-seas-mom12",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "strategy_id": "BURAKOV-MOP-WTI-SEASMOM12-2026_S01",
+  "mechanic": "fixed WTI physical-season direction agrees with the exact completed twelve-calendar-month cumulative return sign",
+  "source": {
+    "primary": "Burakov, Freidin, and Solovyev (2018), International Journal of Energy Economics and Policy 8(2), 121-126",
+    "secondary": "Moskowitz, Ooi, and Pedersen (2012), Journal of Financial Economics 104(2), 228-250",
+    "durable_approval": "decisions/2026-08-05_qm5_20231_wti_seas_mom12_g0.md",
+    "composite_packet": "strategy-seeds/sources/BURAKOV-MOP-WTI-SEASMOM12-2026/source.md",
+    "complete_parent_reviews": true
+  },
+  "dedup": {
+    "exact_duplicate": false,
+    "registry_rows_scanned": 4288,
+    "cards_scanned": 404,
+    "fuzzy_family_matches": 4,
+    "manual_resolution": "distinct exact-calendar twelve-month cumulative endpoint, all-season agreement map, and monthly lifecycle versus year-round, winter-only, summer-only, sign-breadth, one-month, weekday, gap, reversal, and RSI relatives"
+  },
+  "build": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "spec_validation": "PASS",
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_passed": true,
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "magic_resolver_rows_kept": 15506,
+    "magic_resolver_rows_dropped": 0,
+    "magic": 202310000,
+    "card_sha256": "66E0B37933F5AA9639D28AF7594BEACF222FA12BEF3BE4A93A4B3B10791A8616",
+    "mq5_sha256": "87695AF82918777D54E972AC1A86B1FBF6B9825B9F6D403A158D1ACB9BFE25CD",
+    "ex5_sha256": "5079AAECFBD9B52C2FB869A289D96321CE99981AFBF461CE06E09AEBEAA0DA93",
+    "spec_sha256": "EB7D67C37C15D96A1BA56EFA2D80507906247E7BBD7100D0AE203AA3AD5040A1",
+    "setfile_sha256": "6D688FFE25A8C26E07CBF9C1DDC8B52F4A9F9F516994C82F133AEE11E2A78EC9",
+    "build_report": "D:\\QM\\reports\\framework\\21\\build_check_20260805_202958.json",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260805_202746\\QM5_20231_wti-seas-mom12.compile.log",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260805_202746\\summary.csv",
+    "manual_smoke_or_backtest": false
+  },
+  "risk": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "live_setfile_created": false
+  },
+  "q02": {
+    "work_item_id": "aeb35f94-4dfd-4ffc-9d68-76166e601ec7",
+    "created_at_utc": "2026-08-05T20:32:24+00:00",
+    "status_at_handoff": "pending",
+    "attempt_count_at_handoff": 0,
+    "claimed_by_at_handoff": null,
+    "priority_track": true,
+    "queue_pending_at_enqueue": 1529,
+    "queue_ceiling": 7000,
+    "cpu_ceiling": 7,
+    "cpu_ceiling_reached": false,
+    "factory_terminals_at_precheck": 6,
+    "factory_terminal_names_at_precheck": ["T2", "T3", "T4", "T5", "T7", "T9"],
+    "factory_terminals_at_postcheck": 6,
+    "t_live_excluded": true,
+    "manual_dispatch": false
+  },
+  "commits": {
+    "source_and_g0": "59ba725fc",
+    "card_and_ea_id": "08786a159",
+    "magic_and_resolver": "e3606ce53",
+    "binary_pump": "39aca2d69",
+    "source_build": "f40c837a3"
+  },
+  "prohibited_surfaces_touched": []
+}

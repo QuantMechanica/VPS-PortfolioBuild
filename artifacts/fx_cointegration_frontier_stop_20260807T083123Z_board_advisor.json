@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "captured_at_utc": "2026-08-07T08:31:23Z",
+  "branch": "agents/board-advisor",
+  "inspected_head": "147ecbf41",
+  "mission": "grow the certified V5 portfolio book with new forex sleeves",
+  "decision": "STOP_CPU_CEILING",
+  "frontier": {
+    "unbuilt_eligible_pair_found": false,
+    "scan_status": "ALL_66_RELATIONSHIPS_ALREADY_MECHANIZED",
+    "anchor_status": {
+      "QM5_12532": "Q02_PASS_THEN_Q04_PASS_THEN_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_THEN_Q04_FAIL"
+    },
+    "fallback_status": "NOT_SELECTED_AFTER_BINDING_CPU_STOP"
+  },
+  "capacity": {
+    "factory_terminal_processes_observed": [
+      "T1",
+      "T2",
+      "T3",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "factory_terminal_process_count": 8,
+    "binding_ceiling": 7,
+    "enabled_terminal_workers": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "excluded_processes_observed": [
+      "T_Live",
+      "FTMO Global Markets MT5 Terminal"
+    ],
+    "classification": "PACED_FLEET_CPU_CEILING"
+  },
+  "actions": {
+    "card_created": false,
+    "ea_built": false,
+    "queue_mutated": false,
+    "mt5_launched": false,
+    "terminal_controlled": false,
+    "autotrading_changed": false,
+    "portfolio_gate_changed": false,
+    "live_manifest_changed": false
+  },
+  "commands": [
+    "python tools/strategy_farm/farmctl.py mt5-slots"
+  ]
+}
