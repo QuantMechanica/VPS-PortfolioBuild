@@ -4,7 +4,7 @@
 **Slug:** `aa-dsp-fbank-turn`
 **Source:** `ede348b4-0fa7-5be1-baa8-09e9089b67b7` (see `strategy-seeds/sources/ede348b4-0fa7-5be1-baa8-09e9089b67b7/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-08-12
 
 ---
 
@@ -97,3 +97,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | 655e8f0a-b8eb-4b3f-8564-75191b3b5986 |
+| v1.1 | 2026-08-12 | Current-framework infrastructure recovery | Removed a strict-compiler warning with no strategy-logic change and refreshed the artifact identity for append-only Q02 re-entry; farm task `fb5c1bc6-1aa4-4a5e-8b1b-595757c4b51d`. |

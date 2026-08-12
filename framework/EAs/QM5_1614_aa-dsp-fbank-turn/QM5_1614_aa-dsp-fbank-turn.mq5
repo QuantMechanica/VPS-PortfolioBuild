@@ -1,5 +1,5 @@
 #property strict
-#property version   "5.0"
+#property version   "5.1"
 #property description "QM5_1614 Alpha Architect DSP filter-bank turns"
 
 #include <QM/QM_Common.mqh>
@@ -170,9 +170,8 @@ void DSP_AdvanceStateOnNewBar()
      }
    else
      {
-      double close_last[1];
-      ArraySetAsSeries(close_last, false);
-      const int got = CopyClose(_Symbol, PERIOD_D1, 1, 1, close_last); // perf-allowed: single D1 closed-bar close for IIR state advance
+       double close_last[1];
+       const int got = CopyClose(_Symbol, PERIOD_D1, 1, 1, close_last); // perf-allowed: single D1 closed-bar close for IIR state advance
       if(got == 1 && close_last[0] > 0.0)
          DSP_Advance(close_last[0]);
      }
