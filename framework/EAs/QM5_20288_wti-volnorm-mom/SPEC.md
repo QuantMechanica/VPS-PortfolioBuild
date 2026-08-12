@@ -154,6 +154,7 @@ waiver is authorized.
 |---|---|---|---|
 | v1 | 2026-08-12 | Initial scaffold from approved card | Build pending |
 | v2 | 2026-08-12 | Initial V5 implementation and Q01 validation | Strict compile, target build check, P1 artifact validation, and independent volatility-normalized statistic vectors PASS |
+| v3 | 2026-08-12 | Paced Q02 handoff | One current-binary WTI row enqueued below the path-anchored factory CPU ceiling |
 
 ## 12. Q01 Status
 
@@ -172,6 +173,10 @@ Evidence:
 
 ## 13. Q02 Handoff
 
-PENDING. Enqueue exactly one current-binary `XTIUSD.DWX` D1 item only after
-Q01 passes and a binding path-anchored CPU-ceiling sample permits the handoff.
-Do not dispatch or run a manual backtest from this build mission.
+ENQUEUED. The target-only dry run selected one never-tested priority-track row
+for `QM5_20288 / XTIUSD.DWX`. The binding path-anchored capacity sample found
+three exact T1-T10 tester processes against the ceiling of seven. The bounded
+apply created work item `9714bc6b-d11d-485e-b359-6e6cfa2c2ec5` for Q02.
+Immediate readback found attempt 0 pending and unclaimed with no verdict. No
+dispatch tick, terminal launch, or manual backtest was issued by this mission.
+This is a handoff, not a Q02 result.
