@@ -15924,3 +15924,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20286,wti-bisquare-mom,0,XTIUSD.DWX,202860000,2026-08-12,Research+Development,active
 20287,wti-blockmed-mom,0,XTIUSD.DWX,202870000,2026-08-12,Research+Development,active
 20288,wti-volnorm-mom,0,XTIUSD.DWX,202880000,2026-08-12,Research+Development,active
+20289,wti-rsj-rev,0,XTIUSD.DWX,202890000,2026-08-12,Research+Development,active
