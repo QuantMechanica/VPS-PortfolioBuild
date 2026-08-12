@@ -1,0 +1,130 @@
+{
+  "artifact_type": "fx_cointegration_existing_q02_priority_advance",
+  "generated_at_utc": "2026-08-12T23:49:41Z",
+  "local_date": "2026-08-13",
+  "timezone": "Europe/Berlin",
+  "operator": "codex-headless-board-advisor",
+  "branch": "agents/board-advisor",
+  "base_commit": "d8d7c3acf8a1c79c88f09ed379c769476dc0e496",
+  "mission_outcome": "EXISTING_FOREX_Q02_PRIORITY_ADVANCED",
+  "frontier_decision": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationship_audit": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_pair_built": false,
+    "duplicate_pair_created": false,
+    "anchor_triage": {
+      "QM5_12532": "Q02_PASS_THEN_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_THEN_Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "fallback_reason": "All frozen scan relationships are already mechanized and neither anchor has an open Q02 setup blocker, so the mission's existing-forex-card fallback applies."
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_1156",
+    "slug": "caldeira-cointegration-pairs-fx",
+    "pair_slot": 12,
+    "scan_relationship_rank": 65,
+    "pair": [
+      "USDCHF.DWX",
+      "AUDUSD.DWX"
+    ],
+    "logical_symbol": "QM5_1156_USDCHF_AUDUSD_COINTEGRATION_M30",
+    "host_symbol": "USDCHF.DWX",
+    "host_timeframe": "M30",
+    "signal_timeframe": "D1",
+    "source_citation": "Caldeira and Moura (2013), Selection of a Portfolio of Pairs Based on Cointegration: A Statistical Arbitrage Strategy, SSRN 2196391 / Journal of International Financial Markets, Institutions and Money",
+    "g0_status": "APPROVED",
+    "scan_evidence": {
+      "dev_net_sharpe": -0.21,
+      "oos_net_sharpe": -0.66,
+      "oos_return_percent": -5.70,
+      "oos_state_changes": 16,
+      "disposition": "ONE_SHOT_Q02_NO_REFIT_OR_RESCUE"
+    },
+    "mechanization": {
+      "strategy_card": {
+        "path": "framework/EAs/QM5_1156_caldeira-cointegration-pairs-fx/docs/strategy_card.md",
+        "sha256": "aa6ddfa8a91deb2fb9cab24d0c6b12d2749583cb802283772541971297cfa2a9"
+      },
+      "basket_manifest": {
+        "path": "framework/EAs/QM5_1156_caldeira-cointegration-pairs-fx/basket_manifest.json",
+        "sha256": "2d8c186207c1ce5231d0ca237a2702b1c1bbeb32fcd1ee68dc4c12f9a2fce2ca"
+      },
+      "fixed_risk_setfile": {
+        "path": "framework/EAs/QM5_1156_caldeira-cointegration-pairs-fx/sets/QM5_1156_caldeira-cointegration-pairs-fx_QM5_1156_USDCHF_AUDUSD_COINTEGRATION_M30_M30_backtest.set",
+        "sha256": "246ba49e1721cdcc99c38dbb8681bb6fd4dc6a57ddd604b57226e16c41c48c1a",
+        "risk_fixed": 1000,
+        "risk_percent": 0,
+        "portfolio_weight": 1
+      },
+      "mq5_sha256": "c717d4aeb91994c8f59c89938e133defd7757b97fe196d4de0927121cb96d509",
+      "ex5_sha256": "b49906e0d11679c2c3522b1d95c7759d5fb59dda5c36bb77e27a71e1a2b2d2f6"
+    }
+  },
+  "queue_mutation": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_1156_usdchf_audusd_priority_20260812T234941Z.sqlite",
+    "backup_size_bytes": 380559360,
+    "backup_quick_check": "ok",
+    "work_item_id": "415cd6d3-560c-46d8-a9f9-ee4a5b399100",
+    "action": "PROMOTE_EXISTING_EXACT_ROW_IN_PLACE",
+    "status_before": "pending",
+    "status_after": "pending",
+    "attempt_count_after": 0,
+    "claimed_by_after": null,
+    "open_exact_rows_before": 1,
+    "open_exact_rows_after": 1,
+    "duplicate_work_item_created": false,
+    "priority_track_before": false,
+    "priority_track_after": true,
+    "claim_rank_before": 101,
+    "claim_rank_after": 5,
+    "canonical_pending_rows": 949,
+    "prior_payload_sha256": "b71ad531d5d1e9d9bf1e17b26bf3764a723bd5743c485332ea763f2bcbd114a9",
+    "post_payload_sha256": "98d606148167990e699cc5b9fea24fc7d1c56dc099e9fb1d2e06cc997d11f9fc",
+    "audit_event": {
+      "id": 347670,
+      "event": "priority_track_set"
+    },
+    "mutation_lock_release_status": "released",
+    "alpha_change": false,
+    "pipeline_verdict_changed": false
+  },
+  "validation": {
+    "strategy_card_schema_lint": "PASS",
+    "canonical_and_ea_local_cards_checked": true,
+    "build_guardrails": {
+      "status": "PASS",
+      "files_checked": 23,
+      "findings": 0,
+      "checked_at_utc": "2026-08-12T23:48:03.309398Z"
+    },
+    "symbol_scope": "BASKET_OK",
+    "symbol_scope_violations": 0,
+    "basket_regressions": "15 passed"
+  },
+  "capacity": {
+    "paced_launch_gate_max": 1,
+    "factory_terminals_running_before": 0,
+    "sample_before_utc": "2026-08-12T23:48:43Z",
+    "factory_terminals_running_after": 0,
+    "sample_after_utc": "2026-08-12T23:50:02Z",
+    "ceiling_binding": false,
+    "manual_dispatch": false,
+    "factory_start": false,
+    "tester_or_backtest_run": false
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "live_setfile_change_committed": false
+  }
+}
