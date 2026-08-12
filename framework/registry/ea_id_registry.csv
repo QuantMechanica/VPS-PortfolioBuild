@@ -4350,3 +4350,4 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 20283,wti-trimean-mom,MOP-TSMOM-2012_XTI_TRIMEAN12_S31,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-11),2026-08-11
 20284,wti-skip1-trend,MOP-TSMOM-2012_XTI_SKIP1_S32,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-11),2026-08-11
 20285,wti-huber-mom,MOP-TSMOM-2012_XTI_HUBER12_S33,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-12),2026-08-12
+20286,wti-bisquare-mom,MOP-TSMOM-2012_XTI_BISQUARE12_S34,active,Research+Development (OWNER commodity/energy portfolio mission 2026-08-12),2026-08-12
