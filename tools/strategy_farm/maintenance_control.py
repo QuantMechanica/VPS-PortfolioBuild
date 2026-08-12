@@ -103,7 +103,7 @@ def _wal_checkpoint_once(path: Path) -> tuple[int, int, int]:
 def checkpoint_wal(
     path: Path,
     *,
-    attempts: int = 12,
+    attempts: int = 36,
     delay_seconds: float = 2.5,
     sleeper=time.sleep,
 ) -> dict[str, int]:
@@ -116,7 +116,15 @@ def checkpoint_wal(
     (2026-08-12) FAILED CLOSED at the restart-hold evidence step on exactly
     that lottery. Transient busy (a reader on an old snapshot) is retried a
     bounded number of times; persistent busy still raises fail-closed.
+
+    R10 (2026-08-12) exhausted the original 12x2.5s envelope with the
+    checkpointed frame count frozen for all 30s — the signature of one reader
+    holding a >30s-old snapshot, not of transient poll readers. The envelope is
+    90s and the failure message carries the per-attempt progression so a
+    fail-closed run distinguishes a persistent pin (frozen counts) from
+    transient churn (moving counts) without a re-run.
     """
+    progression: list[tuple[int, int]] = []
     busy = log_frames = checkpointed = 0
     for attempt in range(attempts):
         busy, log_frames, checkpointed = _wal_checkpoint_once(path)
@@ -126,10 +134,15 @@ def checkpoint_wal(
                 "log_frames": log_frames,
                 "checkpointed_frames": checkpointed,
             }
+        progression.append((log_frames, checkpointed))
         if attempt < attempts - 1:
             sleeper(delay_seconds)
+    distinct = sorted(set(progression))
     raise RuntimeError(
-        f"SQLite WAL checkpoint remained busy (log={log_frames}, checkpointed={checkpointed})"
+        f"SQLite WAL checkpoint remained busy (log={log_frames}, checkpointed={checkpointed}) "
+        f"after {attempts} attempts x {delay_seconds}s; "
+        f"(log, checkpointed) states seen: {distinct} — "
+        f"{'persistent reader pin' if len(distinct) == 1 else 'moving reader churn'}"
     )
 
 

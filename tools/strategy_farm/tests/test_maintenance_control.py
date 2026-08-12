@@ -1409,11 +1409,26 @@ def test_checkpoint_wal_retries_transient_reader_busy(tmp_path, monkeypatch) -> 
 def test_checkpoint_wal_persistent_busy_fails_closed(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(mc, "_wal_checkpoint_once", lambda path: (1, 3, 1))
     sleeps: list[float] = []
-    with pytest.raises(RuntimeError, match="remained busy"):
+    with pytest.raises(RuntimeError, match="remained busy") as excinfo:
         mc.checkpoint_wal(
             tmp_path / "x.sqlite", attempts=3, delay_seconds=0.1, sleeper=sleeps.append
         )
     assert sleeps == [0.1, 0.1]  # no sleep after the final attempt
+    # R10 forensics: a frozen (log, checkpointed) progression must label itself
+    # as a persistent reader pin in the fail-closed message.
+    assert "persistent reader pin" in str(excinfo.value)
+    assert "[(3, 1)]" in str(excinfo.value)
+
+
+def test_checkpoint_wal_moving_busy_labels_churn(tmp_path, monkeypatch) -> None:
+    results = iter([(1, 3, 1), (1, 4, 2), (1, 5, 3)])
+    monkeypatch.setattr(mc, "_wal_checkpoint_once", lambda path: next(results))
+    with pytest.raises(RuntimeError, match="moving reader churn") as excinfo:
+        mc.checkpoint_wal(
+            tmp_path / "x.sqlite", attempts=3, delay_seconds=0.1, sleeper=lambda _s: None
+        )
+    assert "(3, 1)" in str(excinfo.value)
+    assert "(5, 3)" in str(excinfo.value)
 
 
 def test_checkpoint_wal_uses_full_not_truncate() -> None:
