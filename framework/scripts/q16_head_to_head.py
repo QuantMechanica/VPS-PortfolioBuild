@@ -100,6 +100,16 @@ def _key(row: Mapping[str, Any], label: str) -> Key:
     return ea, symbol
 
 
+def _is_mutable_mt5_storage(path: Path) -> bool:
+    """Identify terminal-owned MT5 storage without rejecting all AppData paths."""
+    lowered = "\\" + str(path.resolve()).lower().replace("/", "\\").strip("\\") + "\\"
+    return any(pattern in lowered for pattern in (
+        "\\metaquotes\\terminal\\",
+        "\\terminal\\common\\files\\",
+        "\\mql5\\files\\",
+    ))
+
+
 def _set_risk_contract(path: Path, label: str) -> None:
     text = path.read_text(encoding="utf-8-sig")
     values: dict[str, float] = {}
@@ -220,8 +230,7 @@ def load_lineage(path: Path, expected_role: str) -> dict[str, Any]:
     stream_path, stream = _resolve_bound_file(stream_raw, f"{expected_role} stream", base=path.parent)
     if not isinstance(stream_raw, Mapping) or stream_raw.get("frozen") is not True:
         raise Q16Error(f"{expected_role} stream must declare frozen=true")
-    lowered = str(stream_path).lower().replace("/", "\\")
-    if "\\appdata\\" in lowered or "\\common\\files\\" in lowered:
+    if _is_mutable_mt5_storage(stream_path):
         raise Q16Error(f"{expected_role} stream resolves to mutable MT5 storage")
     try:
         stream_risk_fixed = float(stream_raw.get("risk_fixed"))
@@ -576,8 +585,7 @@ def load_frozen_book(
         if row.get("frozen") is not True or float(row.get("risk_fixed", -1)) != RISK_FIXED or float(row.get("risk_percent", -1)) != 0:
             raise Q16Error(f"book stream {key} is not frozen RISK_FIXED=1000/RISK_PERCENT=0")
         path, bound = _resolve_bound_file(row, f"book stream {key}", base=stream_manifest_path.parent)
-        lowered = str(path).lower().replace("/", "\\")
-        if "\\appdata\\" in lowered or "\\common\\files\\" in lowered:
+        if _is_mutable_mt5_storage(path):
             raise Q16Error(f"book stream {key} resolves to mutable MT5 storage")
         if path in seen_stream_paths:
             raise Q16Error(f"frozen book stream file is reused by multiple sleeves: {path}")

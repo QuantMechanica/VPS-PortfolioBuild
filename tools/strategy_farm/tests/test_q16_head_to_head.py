@@ -2,9 +2,14 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import tempfile
 from pathlib import Path
 
-from framework.scripts.q16_head_to_head import evaluate_q16, sha256_file
+from framework.scripts.q16_head_to_head import (
+    _is_mutable_mt5_storage,
+    evaluate_q16,
+    sha256_file,
+)
 from tools.strategy_farm import farmctl
 
 
@@ -158,6 +163,38 @@ def test_q16_fixture_is_deterministic_and_sealed(tmp_path: Path) -> None:
     if first["verdict"] == "ADMIT_BOTH":
         checks = first["book_marginal"]["admit_both_checks"]
         assert checks == {"both_contribute": True, "max_abs_pair_regime_corr_below_0p15": True}
+
+
+def test_q16_accepts_operator_staged_evidence_under_appdata_temp(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    appdata_temp = tmp_path / "Users" / "Operator" / "AppData" / "Local" / "Temp"
+    appdata_temp.mkdir(parents=True)
+    monkeypatch.setenv("TMP", str(appdata_temp))
+    monkeypatch.setenv("TEMP", str(appdata_temp))
+    previous_tempdir = tempfile.tempdir
+    tempfile.tempdir = None
+    try:
+        generated = Path(tempfile.mkdtemp(prefix="q16_operator_stage_"))
+        assert appdata_temp.resolve() in generated.resolve().parents
+        result = evaluate_q16(**_fixture(generated))
+    finally:
+        tempfile.tempdir = previous_tempdir
+
+    assert result["verdict"] in {"PROMOTE_CHALLENGER", "ADMIT_BOTH"}
+
+
+def test_mutable_storage_classifier_is_mt5_specific(tmp_path: Path) -> None:
+    assert not _is_mutable_mt5_storage(
+        tmp_path / "Users" / "Operator" / "AppData" / "Local" / "Temp" / "frozen.jsonl"
+    )
+    assert _is_mutable_mt5_storage(
+        tmp_path / "Users" / "Operator" / "AppData" / "Roaming" / "MetaQuotes" /
+        "Terminal" / "ABC123" / "Common" / "Files" / "live.jsonl"
+    )
+    assert _is_mutable_mt5_storage(
+        tmp_path / "portable-terminal" / "MQL5" / "Files" / "live.jsonl"
+    )
 
 
 def test_q16_trial_ledger_undercount_is_hard_fail(tmp_path: Path) -> None:
