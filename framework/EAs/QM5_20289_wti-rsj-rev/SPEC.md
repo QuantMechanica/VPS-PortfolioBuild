@@ -144,6 +144,7 @@ waiver is authorized.
 |---|---|---|---|
 | v1 | 2026-08-12 | Initial scaffold from approved card | Build pending |
 | v2 | 2026-08-12 | Initial V5 implementation and Q01 validation | Strict compile, target build check, P1 artifact validation, and independent RSJ vectors PASS |
+| v3 | 2026-08-12 | Paced Q02 handoff | One current-binary WTI row enqueued below the path-anchored factory CPU ceiling |
 
 ## 12. Q01 Status
 
@@ -161,5 +162,11 @@ and the genuine broker-month transition gate. Evidence:
 
 ## 13. Q02 Handoff
 
-NOT ENQUEUED. Capacity must be checked against the path-anchored factory CPU
-ceiling after Q01 passes. No manual dispatch or backtest is authorized.
+ENQUEUED. The target-only dry run selected one never-tested priority-track row
+for `QM5_20289 / XTIUSD.DWX`. The binding path-anchored capacity sample found
+three exact T1-T10 tester processes against the ceiling of seven. The bounded
+apply created work item `41d6f237-cc5e-46ec-8048-1722c398a110` for Q02.
+Immediate readback found attempt 0 pending and unclaimed with no verdict. Two
+earlier apply attempts were refused by the canonical mutation lock and made no
+queue change. No dispatch tick, terminal launch, or manual backtest was issued
+by this mission. This is a handoff, not a Q02 result.

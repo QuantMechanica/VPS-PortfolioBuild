@@ -54,9 +54,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02_ENQUEUED
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 review_focus: "Falsify an outright WTI monthly reversal driven by the absolute balance of upside and downside realized semivariance, unlike the existing XTI/XNG and XAU/XAG relative-rank baskets, ordinary return trend/reversal, calendar, event, and XNG RSI neighbors; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -314,6 +314,7 @@ or correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-12 | initial source-bounded WTI absolute-RSJ reversal card | G0 | APPROVED |
 | v2 | 2026-08-12 | initial V5 implementation and validation | Q01 | PASS |
+| v3 | 2026-08-12 | paced baseline handoff below factory CPU ceiling | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -321,4 +322,4 @@ or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-12 | APPROVED | `decisions/2026-08-12_qm5_20289_wti_rsj_rev_g0.md` |
 | Q01 Build Validation | 2026-08-12 | PASS | `D:/QM/reports/compile/20260812_074558/summary.csv`; `D:/QM/reports/framework/21/build_check_20260812_074442.json`; `D:/QM/reports/pipeline/QM5_20289/P1/P1_QM5_20289_result.json` |
-| Q02 Baseline Screening | - | NOT ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-12 | ENQUEUED; pending at immediate readback, attempt 0, no verdict | work item `41d6f237-cc5e-46ec-8048-1722c398a110`; `docs/ops/evidence/2026-08-12_qm5_20289_wti_rsj_rev_q01_q02_enqueue.md` |
