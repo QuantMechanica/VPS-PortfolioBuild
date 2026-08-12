@@ -19,7 +19,7 @@ Mapping reference (legacy → new):
     (P5c dropped — old "Crisis Slices" folded into Q08.10 Regime)
     (new)          →   Q06 Stress HARSH
     P6             →   Q07 Multi-Seed
-    P7+P8 merged   →   Q08 Davey Statistical Validation (10 sub-gates)
+    P7+P8 merged   →   Q08 Davey Statistical Validation (11 sub-gates)
     (new)          →   Q09 News Impact Mode
     (new)          →   Q10 Full-History Confirmation
     P9             →   Q11 Portfolio Construction
