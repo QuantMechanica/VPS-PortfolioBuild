@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12355
+; ea_slug:      orev-powertrend
+; ea_version:   v5.0
+; set_version:  s20260812-stress-harsh
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  q06_stress_harsh
+; magic_slot:   4
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   eff7e97d261ac31f88a5a9f3385ce6bdb73aea33898ea9f938330814ef7bbaba
+; author:       Development
+; date:         2026-08-12
+;==========================================================
+qm_ea_id=12355
+qm_magic_slot_offset=4
+qm_rng_seed=17
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12355_orev-powertrend.md
+strategy_ema_period=21
+strategy_sma_period=50
+strategy_low_above_ema_window=10
+strategy_ema_above_sma_window=5
+strategy_atr_period=21
+strategy_atr_stop_mult=4.0
