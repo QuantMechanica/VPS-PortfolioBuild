@@ -67,6 +67,19 @@ double   g_cache_xag_ivol = 0.0;
 double   g_cache_ivol_difference = 0.0;
 double   g_cache_notional_mismatch_pct = 0.0;
 
+// Pair identity and invariant snapshot.  The magics are immutable after
+// framework initialization.  Position composition can only change through a
+// trade transaction, so refresh the broker snapshot on init/transaction and
+// validate that cached snapshot in O(1) on every intervening tick.  This keeps
+// the card's every-tick orphan/stop guard without repeating collision-safe
+// magic resolution and multiple full position scans on every XAU real tick.
+int      g_pair_magic_xau = -1;
+int      g_pair_magic_xag = -1;
+bool     g_pair_state_dirty = true;
+int      g_pair_state_leg_count = 0;
+bool     g_pair_state_composition_valid = false;
+datetime g_pair_state_entry_time = 0;
+
 int Strategy_SlotForSymbol(const string symbol)
   {
    if(symbol == g_leg_xau)
@@ -97,11 +110,12 @@ bool Strategy_SpreadAllowed(const string symbol)
 bool Strategy_IsPairPosition()
   {
    const string symbol = PositionGetString(POSITION_SYMBOL);
-   const int slot = Strategy_SlotForSymbol(symbol);
-   if(slot < 0)
-      return false;
-   return ((int)PositionGetInteger(POSITION_MAGIC) ==
-           QM_MagicChecked(qm_ea_id, slot, symbol));
+   const int magic = (int)PositionGetInteger(POSITION_MAGIC);
+   if(symbol == g_leg_xau)
+      return (g_pair_magic_xau > 0 && magic == g_pair_magic_xau);
+   if(symbol == g_leg_xag)
+      return (g_pair_magic_xag > 0 && magic == g_pair_magic_xag);
+   return false;
   }
 
 int Strategy_OpenPairLegCount()
@@ -177,6 +191,57 @@ bool Strategy_PairCompositionValid(const int expected_pair_direction = 0)
    return true;
   }
 
+void Strategy_RefreshPairState()
+  {
+   int xau_direction = 0;
+   int xag_direction = 0;
+   int xau_count = 0;
+   int xag_count = 0;
+   int leg_count = 0;
+   bool stops_valid = true;
+   datetime earliest = 0;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket) ||
+         !Strategy_IsPairPosition())
+         continue;
+
+      ++leg_count;
+      const string symbol = PositionGetString(POSITION_SYMBOL);
+      const ENUM_POSITION_TYPE position_type =
+         (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const int direction = (position_type == POSITION_TYPE_BUY) ? 1 : -1;
+      const double stop_loss = PositionGetDouble(POSITION_SL);
+      if(stop_loss <= 0.0 || !MathIsValidNumber(stop_loss))
+         stops_valid = false;
+
+      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
+      if(opened > 0 && (earliest == 0 || opened < earliest))
+         earliest = opened;
+
+      if(symbol == g_leg_xau)
+        {
+         xau_direction = direction;
+         ++xau_count;
+        }
+      else if(symbol == g_leg_xag)
+        {
+         xag_direction = direction;
+         ++xag_count;
+        }
+     }
+
+   g_pair_state_leg_count = leg_count;
+   g_pair_state_entry_time = earliest;
+   g_pair_entry_time = earliest;
+   g_pair_state_composition_valid =
+      (stops_valid && leg_count == 2 && xau_count == 1 && xag_count == 1 &&
+       xau_direction == -xag_direction);
+   g_pair_state_dirty = false;
+  }
+
 int Strategy_MonthKeyForTime(const datetime value)
   {
    if(value <= 0)
@@ -239,13 +304,13 @@ void Strategy_ClosePair(const QM_ExitReason reason)
          QM_TM_ClosePosition(ticket, reason);
      }
    g_pair_entry_time = 0;
+   g_pair_state_dirty = true;
   }
 
 bool Strategy_IsPairMagic(const long magic)
   {
-   const int xau_magic = QM_MagicChecked(qm_ea_id, 0, g_leg_xau);
-   const int xag_magic = QM_MagicChecked(qm_ea_id, 1, g_leg_xag);
-   return (magic == xau_magic || magic == xag_magic);
+   return ((g_pair_magic_xau > 0 && magic == g_pair_magic_xau) ||
+           (g_pair_magic_xag > 0 && magic == g_pair_magic_xag));
   }
 
 bool Strategy_PeriodAlreadyEntered(const int period_key,
@@ -714,6 +779,7 @@ bool Strategy_OpenPair(const int pair_direction)
       Strategy_PairCompositionValid(pair_direction))
      {
       g_pair_entry_time = TimeCurrent();
+      g_pair_state_dirty = true;
       return true;
      }
 
@@ -812,10 +878,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
-   const int open_legs = Strategy_OpenPairLegCount();
+   if(g_pair_state_dirty)
+      Strategy_RefreshPairState();
+
+   const int open_legs = g_pair_state_leg_count;
    if(open_legs <= 0)
       return;
-   if(open_legs != 2 || !Strategy_PairCompositionValid())
+   if(open_legs != 2 || !g_pair_state_composition_valid)
      {
       Strategy_ClosePair(QM_EXIT_STRATEGY);
       return;
@@ -823,9 +892,7 @@ void Strategy_ManageOpenPosition()
 
    if(g_monthly_rebalance_bar)
      {
-      datetime entry_time = g_pair_entry_time;
-      if(entry_time <= 0)
-         entry_time = Strategy_CurrentPairEntryTime();
+      const datetime entry_time = g_pair_state_entry_time;
       if(Strategy_PeriodKeyForTime(entry_time) != g_cache_period_key)
         {
          Strategy_ClosePair(QM_EXIT_STRATEGY);
@@ -877,6 +944,19 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   // Bind both traded legs into framework ownership once.  Slot 0 is already
+   // the host context; registering slot 1 makes kill-switch, Friday-close and
+   // Q08 accounting own the XAG leg as well as avoiding per-tick re-resolution.
+   g_pair_magic_xau = QM_FrameworkMagic();
+   g_pair_magic_xag =
+      QM_FrameworkRegisterMagicSymbol(qm_ea_id, 1, g_leg_xag);
+   if(g_pair_magic_xau <= 0 || g_pair_magic_xag <= 0)
+     {
+      QM_FrameworkShutdown();
+      return INIT_FAILED;
+     }
+   g_pair_state_dirty = true;
+
    string basket_symbols[4] =
       {g_factor_xti, g_factor_xng, g_leg_xau, g_leg_xag};
    QM_SymbolGuardInit(basket_symbols);
@@ -913,7 +993,7 @@ void OnTick()
       return;
      }
 
-   if(Strategy_NoTradeFilter() || !new_bar)
+   if(!new_bar || Strategy_NoTradeFilter())
       return;
 
    QM_EquityStreamOnNewBar();
@@ -936,6 +1016,7 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   g_pair_state_dirty = true;
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
