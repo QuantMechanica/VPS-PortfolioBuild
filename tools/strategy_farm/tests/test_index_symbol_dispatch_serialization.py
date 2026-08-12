@@ -13,13 +13,25 @@ import farmctl  # noqa: E402
 
 
 class IndexSymbolDispatchSerializationTests(unittest.TestCase):
-    def _dispatch_symbols(self, symbols: list[str]) -> tuple[list[tuple[str, str]], dict[str, object], dict[str, str]]:
+    def _dispatch_symbols(
+        self, symbols: list[str], terminals: tuple[str, ...] = ("T1", "T2", "T3")
+    ) -> tuple[list[tuple[str, str]], dict[str, object], dict[str, str]]:
+        return self._dispatch_rows([("QM5_9999", symbol) for symbol in symbols], terminals)
+
+    def _dispatch_rows(
+        self,
+        rows_spec: list[tuple[str, str]],
+        terminals: tuple[str, ...] = ("T1", "T2", "T3"),
+    ) -> tuple[list[tuple[str, str]], dict[str, object], dict[str, str]]:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "farm"
             farmctl.init_db(root)
             now = farmctl.utc_now()
             db = root / "state" / "farm_state.sqlite"
-            rows = [(f"wi-{index}", "QM5_9999", symbol, now) for index, symbol in enumerate(symbols, start=1)]
+            rows = [
+                (f"wi-{index}", ea_id, symbol, now)
+                for index, (ea_id, symbol) in enumerate(rows_spec, start=1)
+            ]
             with sqlite3.connect(db) as conn:
                 conn.executemany(
                     """
@@ -55,7 +67,7 @@ class IndexSymbolDispatchSerializationTests(unittest.TestCase):
             old_running = farmctl._running_mt5_terminals
             old_spawn = farmctl._spawn_run_smoke_for_work_item
             try:
-                farmctl.MT5_TERMINALS = ("T1", "T2", "T3")
+                farmctl.MT5_TERMINALS = terminals
                 farmctl._running_mt5_terminals = lambda: set()
                 farmctl._spawn_run_smoke_for_work_item = fake_spawn
                 result = farmctl.dispatch_work_items(root, timeout_minutes=8)
@@ -93,6 +105,50 @@ class IndexSymbolDispatchSerializationTests(unittest.TestCase):
         self.assertEqual(statuses["wi-1"], "active")
         self.assertEqual(statuses["wi-2"], "active")
         self.assertEqual(statuses["wi-3"], "active")
+
+    def test_dispatch_same_symbol_across_eas_runs_up_to_cap(self) -> None:
+        # Variant-A relaxation (2026-08-12): different EAs on the same symbol
+        # dispatch in parallel up to CLAIM_SYMBOL_ACTIVE_CAP; the overflow is
+        # deferred with the dedicated cap action, not the duplicate lock.
+        rows = [(f"QM5_80{i:02d}", "XAUUSD.DWX") for i in range(6)]
+        spawned, result, statuses = self._dispatch_rows(
+            rows, terminals=("T1", "T2", "T3", "T4", "T5", "T6")
+        )
+
+        self.assertEqual(len(spawned), farmctl.CLAIM_SYMBOL_ACTIVE_CAP)
+        capped = [a for a in result["actions"] if a.get("action") == "deferred_symbol_cap"]
+        self.assertEqual(len(capped), 6 - farmctl.CLAIM_SYMBOL_ACTIVE_CAP)
+        for action in capped:
+            self.assertEqual(action["reason"], "symbol_active_cap_reached")
+            self.assertEqual(action["cap"], farmctl.CLAIM_SYMBOL_ACTIVE_CAP)
+            self.assertEqual(action["active_count"], farmctl.CLAIM_SYMBOL_ACTIVE_CAP)
+        self.assertEqual(
+            sum(1 for status in statuses.values() if status == "active"),
+            farmctl.CLAIM_SYMBOL_ACTIVE_CAP,
+        )
+
+    def test_dispatch_duplicate_ea_symbol_defers_below_cap(self) -> None:
+        # Two rows of ONE (ea_id, symbol) — the literal 2026-05-18 crash shape —
+        # stay serialized even though the symbol cap has headroom.
+        rows = [("QM5_8000", "XAUUSD.DWX"), ("QM5_8000", "XAUUSD.DWX")]
+        spawned, result, statuses = self._dispatch_rows(
+            rows, terminals=("T1", "T2", "T3", "T4", "T5", "T6")
+        )
+
+        self.assertEqual([item_id for item_id, _terminal in spawned], ["wi-1"])
+        self.assertIn(
+            {
+                "action": "deferred_symbol_lock",
+                "reason": "symbol_already_active_on_other_terminal",
+                "item_id": "wi-2",
+                "ea_id": "QM5_8000",
+                "symbol": "XAUUSD.DWX",
+                "active_symbol": "XAUUSD.DWX",
+            },
+            result["actions"],
+        )
+        self.assertEqual(statuses["wi-1"], "active")
+        self.assertEqual(statuses["wi-2"], "pending")
 
     def test_dispatch_defers_duplicate_forex_symbol(self) -> None:
         spawned, result, statuses = self._dispatch_symbols(["EURUSD.DWX", "EURUSD.DWX"])

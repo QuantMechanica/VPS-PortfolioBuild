@@ -369,7 +369,9 @@ class ClaimAtomicIntegrationTests(unittest.TestCase):
         db = _FarmDB()
         self.addCleanup(db.close)
         db.insert("locked_active", "Q02", "LOCK", status="active", claimed_by="T9")
-        db.insert("locked_pending", "Q02", "LOCK")            # ineligible frontier
+        # Same (ea_id, symbol) as the active row: the duplicate guard keeps the
+        # frontier ineligible under the 2026-08-12 same-symbol cap contract.
+        db.insert("locked_pending", "Q02", "LOCK", ea_id="QM5_locked_active")
         db.insert("r1", "Q02", "S1", recovery="stranded_infra_fail")
         db.insert("r2", "Q02", "S2", recovery="stranded_infra_fail")
         res1 = terminal_worker.claim_atomic(db.root, "T1")
@@ -526,7 +528,9 @@ class DispatchRealPathTests(_DispatchStubMixin, unittest.TestCase):
         # (ineligible) so the frontier is non-empty and the cap regime (not the idle
         # escape) applies. A pending recovery row on a free symbol is then cap-tested.
         db.insert("lock_active", "Q02", "LOCK", status="active", claimed_by="T9")
-        db.insert("front_locked", "Q02", "LOCK")                 # frontier pending, ineligible
+        # Duplicate (ea_id, symbol) of the active row keeps the frontier
+        # ineligible under the 2026-08-12 same-symbol cap contract.
+        db.insert("front_locked", "Q02", "LOCK", ea_id="QM5_lock_active")
         db.insert("rec1", "Q02", "S1", recovery="stranded_infra_fail")
         # lock_active plus four more actives reach the occupancy floor, so the
         # cap regime (not the 2026-08-11 occupancy escape) governs this test.
@@ -550,12 +554,14 @@ class DispatchRealPathTests(_DispatchStubMixin, unittest.TestCase):
         self.assertTrue(any(a.get("action") == "recovery_capped" for a in actions))
 
     def test_dispatch_still_defers_duplicate_symbol(self) -> None:
-        # Behaviour-preservation for the Phase-2 rewrite: two pending rows on the same
-        # symbol -> exactly one claimed+spawned, the other deferred (symbol lock).
+        # Behaviour-preservation: two pending rows of ONE (ea_id, symbol) ->
+        # exactly one claimed+spawned, the other deferred (duplicate guard).
+        # Cross-EA same-symbol parallelism is covered by the 2026-08-12 cap
+        # tests in test_index_symbol_dispatch_serialization.py.
         db = _FarmDB()
         self.addCleanup(db.close)
-        db.insert("a", "Q02", "SAME")
-        db.insert("b", "Q02", "SAME")
+        db.insert("a", "Q02", "SAME", ea_id="QM5_pair")
+        db.insert("b", "Q02", "SAME", ea_id="QM5_pair")
         spawn_calls: list = []
         self.install_dispatch_stubs(("D1", "D2"), spawn_calls)
         result = farmctl.dispatch_work_items(db.root)

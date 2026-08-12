@@ -546,6 +546,79 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(statuses["pending-1"], "pending")
             self.assertEqual(statuses["pending-2"], "active")
 
+    def test_same_symbol_parallel_across_eas_up_to_cap(self) -> None:
+        # Variant-A relaxation (2026-08-12): cross-EA same-symbol work is
+        # capped at CLAIM_SYMBOL_ACTIVE_CAP, no longer serialized to one.
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            for idx in range(farmctl.CLAIM_SYMBOL_ACTIVE_CAP - 1):
+                self._insert_work_item(
+                    root,
+                    f"active-{idx}",
+                    "XAUUSD.DWX",
+                    phase="P3",
+                    status="active",
+                    claimed_by=f"T{idx + 1}",
+                    ea_id=f"QM5_800{idx}",
+                )
+            self._insert_work_item(root, "pending-xau", "XAUUSD.DWX", phase="P3", ea_id="QM5_8099")
+
+            result = terminal_worker.claim_atomic(root, "T9")
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "pending-xau")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                active_count = conn.execute(
+                    "SELECT COUNT(*) FROM work_items WHERE status='active' AND symbol='XAUUSD.DWX'"
+                ).fetchone()[0]
+            self.assertEqual(active_count, farmctl.CLAIM_SYMBOL_ACTIVE_CAP)
+
+    def test_same_symbol_cap_blocks_next_run_at_cap(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            for idx in range(farmctl.CLAIM_SYMBOL_ACTIVE_CAP):
+                self._insert_work_item(
+                    root,
+                    f"active-{idx}",
+                    "XAUUSD.DWX",
+                    phase="P3",
+                    status="active",
+                    claimed_by=f"T{idx + 1}",
+                    ea_id=f"QM5_800{idx}",
+                )
+            self._insert_work_item(root, "pending-xau", "XAUUSD.DWX", phase="P3", ea_id="QM5_8099")
+
+            result = terminal_worker.claim_atomic(root, "T9")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='pending-xau'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_duplicate_ea_symbol_pair_never_runs_twice(self) -> None:
+        # The literal 2026-05-18 crash shape (five concurrent items of ONE
+        # (ea_id, symbol)) stays hard-blocked below the cap.
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root, "active-dup", "XAUUSD.DWX", phase="P3",
+                status="active", claimed_by="T1", ea_id="QM5_8000",
+            )
+            self._insert_work_item(root, "pending-dup", "XAUUSD.DWX", phase="P3", ea_id="QM5_8000")
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='pending-dup'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
     def test_claim_waits_when_system_commit_headroom_is_low(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"

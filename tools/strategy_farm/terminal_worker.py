@@ -1668,7 +1668,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         "threshold_gb": COMMIT_MIN_FREE_GB,
                     }
 
-                active_symbols = farmctl._active_work_item_symbols(conn)
+                active_symbol_counts, active_ea_symbol_pairs = farmctl._active_symbol_claim_state(conn)
                 active_q04_eas = {
                     str(row["ea_id"])
                     for row in conn.execute(
@@ -1744,8 +1744,15 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             })
                             continue
                     symbol_key = str(item["symbol"] or "").upper()
-                    if symbol_key and symbol_key in active_symbols:
-                        continue
+                    if symbol_key:
+                        # Duplicate (ea_id, symbol) never runs twice concurrently
+                        # (2026-05-18 crash shape); cross-EA same-symbol work is
+                        # capped, not serialized, since Variant-A private Custom
+                        # stores removed the shared-history hazard.
+                        if (str(item["ea_id"]), symbol_key) in active_ea_symbol_pairs:
+                            continue
+                        if active_symbol_counts.get(symbol_key, 0) >= farmctl.CLAIM_SYMBOL_ACTIVE_CAP:
+                            continue
                     if str(item["phase"]).upper() == "Q04" and str(item["ea_id"]) in active_q04_eas:
                         continue
                     # Skip a multi-symbol item while another multi-symbol backtest
@@ -2003,8 +2010,11 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                         }
 
                 symbol_key = str(item["symbol"] or "").upper()
-                active_symbols = farmctl._active_work_item_symbols(conn)
-                if symbol_key and symbol_key in active_symbols:
+                active_symbol_counts, active_ea_symbol_pairs = farmctl._active_symbol_claim_state(conn)
+                if symbol_key and (
+                    (str(item["ea_id"]), symbol_key) in active_ea_symbol_pairs
+                    or active_symbol_counts.get(symbol_key, 0) >= farmctl.CLAIM_SYMBOL_ACTIVE_CAP
+                ):
                     conn.commit()
                     return {"claimed": False, "reason": "symbol_busy", "item_id": item_id}
 

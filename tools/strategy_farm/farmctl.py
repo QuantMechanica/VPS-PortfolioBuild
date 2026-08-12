@@ -6696,6 +6696,43 @@ def _active_work_item_symbols(conn: sqlite3.Connection) -> dict[str, str]:
     return {str(row["symbol"]).upper(): row["symbol"] for row in rows}
 
 
+# --- Same-symbol claim cap (2026-08-12, OWNER-ratified) ----------------------
+# The original claim rule serialized the fleet to ONE active work item per
+# symbol. It was introduced for the 2026-05-18 index crash cluster
+# (docs/ops/INDEX_SYMBOL_CRASH_DIAGNOSIS_2026-05-18.md): five simultaneous
+# items of the SAME (ea_id, symbol) launched into the then-SHARED Bases\Custom
+# store crashed every terminal. Variant-A isolation (live 2026-08-10) gives
+# each terminal a physical, content-verified private Custom store with
+# copy-on-claim privatization, so different-EA runs on the same symbol no
+# longer share history files. What remains hard-guarded is the literal crash
+# shape — a duplicate (ea_id, symbol) never runs twice concurrently — while
+# cross-EA same-symbol work may run up to this cap. The cap (not unlimited)
+# bounds first-privatization copy I/O and keeps a brake on tick-cache
+# thundering herds when the queue degenerates into a single-symbol
+# monoculture (2026-08-12: 504 of 1031 pending rows were XAUUSD behind one
+# active run).
+CLAIM_SYMBOL_ACTIVE_CAP = 4
+
+
+def _active_symbol_claim_state(
+    conn: sqlite3.Connection,
+) -> tuple[dict[str, int], set[tuple[str, str]]]:
+    """Per-symbol active counts and active (ea_id, symbol) pairs, upper-cased."""
+    counts: dict[str, int] = {}
+    pairs: set[tuple[str, str]] = set()
+    for row in conn.execute(
+        """
+        SELECT ea_id, symbol
+        FROM work_items
+        WHERE status='active' AND symbol IS NOT NULL AND symbol != ''
+        """
+    ):
+        key = str(row["symbol"]).upper()
+        counts[key] = counts.get(key, 0) + 1
+        pairs.add((str(row["ea_id"]), key))
+    return counts, pairs
+
+
 def _stop_pid(
     pid: Any,
     *,
@@ -8895,9 +8932,10 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             import poison_pill_quarantine
             poison_pill_quarantine.refresh_pending(conn)
             conn.commit()
-            active_symbol_keys = _active_work_item_symbols(conn)
+            claimed_symbol_counts, claimed_ea_symbol_pairs = _active_symbol_claim_state(conn)
             pending = conn.execute(pending_claim_order_sql()).fetchall()
-        claimed_symbol_keys = dict(active_symbol_keys)
+        claimed_symbol_counts = dict(claimed_symbol_counts)
+        claimed_ea_symbol_pairs = set(claimed_ea_symbol_pairs)
         for item in pending:
             if not free_terminals:
                 break
@@ -8922,14 +8960,27 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 continue
             item_symbol = item["symbol"]
             item_symbol_key = str(item_symbol or "").upper()
-            if item_symbol_key and item_symbol_key in claimed_symbol_keys:
+            if item_symbol_key and (str(item["ea_id"]), item_symbol_key) in claimed_ea_symbol_pairs:
+                # Hard duplicate guard: the 2026-05-18 crash cluster was five
+                # concurrent items of ONE (ea_id, symbol). Never two at once.
                 actions.append({
                     "action": "deferred_symbol_lock",
                     "reason": "symbol_already_active_on_other_terminal",
                     "item_id": item["id"],
                     "ea_id": item["ea_id"],
                     "symbol": item_symbol,
-                    "active_symbol": claimed_symbol_keys[item_symbol_key],
+                    "active_symbol": item_symbol,
+                })
+                continue
+            if item_symbol_key and claimed_symbol_counts.get(item_symbol_key, 0) >= CLAIM_SYMBOL_ACTIVE_CAP:
+                actions.append({
+                    "action": "deferred_symbol_cap",
+                    "reason": "symbol_active_cap_reached",
+                    "item_id": item["id"],
+                    "ea_id": item["ea_id"],
+                    "symbol": item_symbol,
+                    "active_count": claimed_symbol_counts[item_symbol_key],
+                    "cap": CLAIM_SYMBOL_ACTIVE_CAP,
                 })
                 continue
             if item["phase"] in REAL_PHASE_RUNNER_PHASES:
@@ -9192,7 +9243,8 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             })
             launched_pids.append(int(spawn["pid"]))
             if item_symbol_key:
-                claimed_symbol_keys[item_symbol_key] = item_symbol
+                claimed_symbol_counts[item_symbol_key] = claimed_symbol_counts.get(item_symbol_key, 0) + 1
+                claimed_ea_symbol_pairs.add((str(item["ea_id"]), item_symbol_key))
 
     # --- Phase 3: aggregate completed parents ---
     with connect(root) as conn:
