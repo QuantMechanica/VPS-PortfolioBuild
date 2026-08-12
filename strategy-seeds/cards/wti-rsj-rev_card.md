@@ -24,7 +24,7 @@ expected_dd_pct: 30.0
 risk_class: high
 ml_required: false
 pipeline_phase: Q01
-q01_status: NOT_RUN
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -86,5 +86,5 @@ inherited or repaired.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-12 | APPROVED | `decisions/2026-08-12_qm5_20289_wti_rsj_rev_g0.md` |
-| Q01 Build Validation | - | NOT RUN | - |
+| Q01 Build Validation | 2026-08-12 | PASS | `D:/QM/reports/compile/20260812_074558/summary.csv`; `D:/QM/reports/framework/21/build_check_20260812_074442.json`; `D:/QM/reports/pipeline/QM5_20289/P1/P1_QM5_20289_result.json` |
 | Q02 Baseline Screening | - | NOT ENQUEUED | - |

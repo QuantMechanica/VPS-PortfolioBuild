@@ -143,11 +143,21 @@ waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-12 | Initial scaffold from approved card | Build pending |
+| v2 | 2026-08-12 | Initial V5 implementation and Q01 validation | Strict compile, target build check, P1 artifact validation, and independent RSJ vectors PASS |
 
 ## 12. Q01 Status
 
-NOT RUN. Implementation, strict compile, target validation, and independent RSJ
-reference vectors are pending.
+PASS. Strict compile completed with zero errors and zero warnings; the target
+build check completed with zero failures and zero warnings; P1 artifact
+validation found the EA directory and current `.ex5`; and independent vectors
+proved reversal direction, exact-zero handling, positive scale invariance,
+boundary-return exclusion, 15-25 observation bounds, zero-variance rejection,
+and the genuine broker-month transition gate. Evidence:
+
+- `D:/QM/reports/compile/20260812_074558/summary.csv`
+- `D:/QM/reports/framework/21/build_check_20260812_074442.json`
+- `D:/QM/reports/pipeline/QM5_20289/P1/P1_QM5_20289_result.json`
+- `framework/EAs/QM5_20289_wti-rsj-rev/docs/test_rsj_reference.py`
 
 ## 13. Q02 Handoff
 
