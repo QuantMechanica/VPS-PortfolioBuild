@@ -145,3 +145,19 @@ waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-12 | Initial scaffold from approved card | Build pending |
+| v2 | 2026-08-12 | Initial V5 implementation and Q01 validation | Strict compile, target build check, P1 artifact validation, and independent skewness vectors PASS |
+
+## 12. Q01 Status
+
+PASS. Strict compile completed with zero errors and zero warnings; the target
+build check completed with zero failures and zero warnings; P1 artifact
+validation found the EA directory and current `.ex5`; and independent vectors
+proved the premium direction, near-zero handling, positive scale invariance,
+twelve-month coverage, boundary-return exclusion, 180-280 observation bounds,
+zero-variance rejection, and the genuine broker-month transition gate.
+Evidence:
+
+- `D:/QM/reports/compile/20260812_085247/summary.csv`
+- `D:/QM/reports/framework/21/build_check_20260812_085247.json`
+- `D:/QM/reports/pipeline/QM5_20290/P1/P1_QM5_20290_result.json`
+- `framework/EAs/QM5_20290_wti-skew-prem/docs/test_skew_reference.py`
