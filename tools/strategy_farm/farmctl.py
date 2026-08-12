@@ -17539,7 +17539,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
             and target["ea_id"] == ea_id
             and target["phase"] == phase
             and target["status"] in {"done", "failed"}
-            and target["verdict"] in {"INFRA_FAIL", "PASS"}
+            and target["verdict"] in {"DRAFT_DEFECT", "INFRA_FAIL", "PASS"}
             and not target["claimed_by"]
         )
         if not target_matches:
@@ -17609,6 +17609,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
             }
         stale_pass = str(target["verdict"]) == "PASS"
         repaired_infra = False
+        repaired_draft_defect = False
         source_transition_detail: dict[str, Any] = {}
         if stale_pass:
             bindings_ok, bindings = _expected_current_execution_bindings(
@@ -17638,7 +17639,10 @@ def _enqueue_q02_append_only_exact_row_rerun(
                         )
                     )
                     if transition_ok:
-                        repaired_infra = True
+                        repaired_infra = str(target["verdict"]) == "INFRA_FAIL"
+                        repaired_draft_defect = (
+                            str(target["verdict"]) == "DRAFT_DEFECT"
+                        )
                         bindings_ok, bindings = True, current_bindings
                     else:
                         bindings_ok, bindings = False, source_transition_detail
@@ -17788,6 +17792,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
             "rerun_source_verdict": target["verdict"],
             "stale_pass_rerun": stale_pass,
             "repaired_infra_rerun": repaired_infra,
+            "repaired_draft_defect_rerun": repaired_draft_defect,
             "risk_fixed": risk_detail["risk_fixed"],
             "risk_percent": risk_detail["risk_percent"],
             **bindings["artifact_sha256"],
@@ -17805,8 +17810,8 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 ],
                 "rerun_source_current_ex5_mismatch_verified": True,
             })
-        elif repaired_infra:
-            payload.update({
+        elif repaired_infra or repaired_draft_defect:
+            repaired_payload = {
                 "expected_current_ex5_sha256": source_transition_detail[
                     "current_ex5_sha256"
                 ],
@@ -17814,8 +17819,12 @@ def _enqueue_q02_append_only_exact_row_rerun(
                     "source_expected_ex5_sha256"
                 ],
                 "rerun_source_current_ex5_mismatch_verified": True,
-                "rerun_source_repaired_after_infra": True,
-            })
+            }
+            if repaired_infra:
+                repaired_payload["rerun_source_repaired_after_infra"] = True
+            else:
+                repaired_payload["rerun_source_repaired_after_draft_defect"] = True
+            payload.update(repaired_payload)
         wid = str(uuid.uuid4())
         conn.execute(
             """

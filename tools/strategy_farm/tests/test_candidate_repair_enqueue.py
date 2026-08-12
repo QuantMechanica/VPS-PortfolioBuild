@@ -276,6 +276,57 @@ def test_repaired_infra_q02_binds_current_artifacts_append_only(
     assert new_payload["risk_percent"] == 0.0
 
 
+def test_repaired_draft_defect_q02_binds_current_artifacts_append_only(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-draft-defect-old-binary",
+        phase="Q02",
+        status="done",
+        verdict="DRAFT_DEFECT",
+        payload=_payload(art, stale=True),
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-draft-defect-old-binary",
+        append_only_rerun_of="q02-draft-defect-old-binary",
+        rerun_reason="zero-trade implementation defect repaired",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    assert _work_item_count(art) == 2
+    root = art["root"]
+    assert isinstance(root, Path)
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        historical = conn.execute(
+            "SELECT status,verdict FROM work_items "
+            "WHERE id='q02-draft-defect-old-binary'"
+        ).fetchone()
+        new_payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (result["created"][0]["id"],),
+            ).fetchone()[0]
+        )
+    assert historical == ("done", "DRAFT_DEFECT")
+    assert new_payload["stale_pass_rerun"] is False
+    assert new_payload["repaired_infra_rerun"] is False
+    assert new_payload["repaired_draft_defect_rerun"] is True
+    assert new_payload["rerun_source_repaired_after_draft_defect"] is True
+    assert new_payload["rerun_source_current_ex5_mismatch_verified"] is True
+    assert new_payload["rerun_source_expected_ex5_sha256"] == "2" * 64
+    assert new_payload["expected_current_ex5_sha256"] == art["current_ex5"]
+    assert new_payload["expected_ex5_sha256"] == art["current_ex5"]
+    assert new_payload["risk_fixed"] == 1000.0
+    assert new_payload["risk_percent"] == 0.0
+
+
 def test_repaired_infra_q02_binds_new_multisymbol_dependency_manifest(
     tmp_path: Path, monkeypatch
 ) -> None:
