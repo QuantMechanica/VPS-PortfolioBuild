@@ -1,10 +1,21 @@
-# Survivor Optimization Program — 2026-08-12
+# Survivor Optimization Program — 2026-08-12 (v1.1)
 
 Status: **DRAFT for OWNER review**. Author: Claude (multi-agent analysis, 12 agents:
 5 fact-finders, 4 adversarial lever critiques, 1 idea generator, 1 synthesis, 1 funnel
 re-verification). Trigger: OWNER 2026-08-12 — "Warum verhungern so viele Q06→Q10, wie
 optimieren wir die 34 weiter (Unger-Tagesfilter, SL/TP, MTF, FVG-Kombos, weitere
 Symbole)?"
+
+**v1.1 (same day):** reconciled against the independent Codex dual-forensics pass
+(4 router tickets, all reviewed APPROVED; comparison in
+`SURVIVOR_OPTIMIZATION_DUAL_FORENSICS_RECONCILIATION_2026-08-12.md`). Material
+changes: §1 funnel narrative corrected (dashboard chips are lifetime mixed-era PASS
+sets; **zero Q10 rows bound to the current paired-Q09 contract** — current-contract
+requalification is now WS-1's primary objective); §3 WS-2 reframed measure-then-decide
+(realized correlations refute mechanism-based redundancy); WS-6 symbol ports unblocked
+(Codex quota reset verified) and promoted; MTF entry upgraded to PURSUE_CONDITIONAL
+(backlog); §5 adopts compiled predicate profiles; §6 charter gains the mandatory
+no-change incumbent control.
 
 Evidence substrate: read-only backup DB
 `D:/QM/strategy_farm/state/backups/farm_state_before_xti_cohort_block_20260812T164553Z.sqlite`
@@ -35,17 +46,38 @@ soft/low-sample sub-gates missed) is **deliberately routed onward to the Q09 por
 track** (`framework/scripts/q08_davey/aggregate.py:113`; corroborated by
 `tools/strategy_farm/analyze_q04_survivor_cohort.py:376`,
 `keep_verdicts = PASSISH | {"FAIL_SOFT"}`). The dashboard's "19" counts only strict
-all-10-sub-gates-clean PASS. The **admitted** post-Q08 cohort is
-`Q08 ∈ {PASS, FAIL_SOFT}` = **92** distinct sleeves. The monotone funnel is:
+clean PASS (11 Davey sub-gates — the executable defines 11 incl. 8.11 MC shuffled DD;
+`phase_ids.py` prose still says 10, doc-drift ticket). The **admitted** post-Q08
+cohort under evidence precedence (PASS > FAIL_HARD > FAIL_SOFT, a pair that ever
+recorded FAIL_HARD is terminal) is 19 PASS + 62 exclusive-FAIL_SOFT = **81** sleeves
+(loose any-row upper bound PASS∪FAIL_SOFT = 92). The monotone funnel is:
 
 ```
-Q06 255  →  Q07 179 (70.2%)  →  Q08 admitted 92 (51.4%)  →  Q10 survivors 34
+Q06 255  →  Q07 179 (70.2%)  →  Q08 admitted ~81 (45%)  →  Q10 survivors 34
 ```
 
-Of the 34 Q10 survivors, only 16 hold a strict Q08 PASS; 30/34 are covered by
-PASS∪FAIL_SOFT; 2 basket-logical sleeves (12778/AUDUSD, 13117/EURGBP) have no Q08 row
-of their own. The Q07→Q08 conversion is **51%, not 10%** — the "10%" is an artifact of
-counting only strict PASS.
+Of the 34 Q10 survivors, only 16 hold a strict Q08 PASS; 18 came through the
+soft-track/legacy promotion paths; 2 basket-logical sleeves (12778/AUDUSD,
+13117/EURGBP) have no Q08 row of their own. The Q07→Q08 conversion is **~45–51%, not
+10%** — the "10%" is an artifact of counting only strict PASS.
+
+**Finding 1b (Codex, verified) — the dashboard chips are not one funnel at all.**
+The 255/179/19/34 chips come from `render_cockpit.py` `_pass_pairs`: **lifetime
+distinct-PASS sets, cumulative across gate-regime eras** (the cockpit's own footnote,
+`render_cockpit.py:2529-2534`). The Q09 chip "34" is a union (PASS_PORTFOLIO ∪
+CONFIG_LOCKED ∪ legacy Q09/PASS) and overlaps the Q10 "34" in only **17** pairs — the
+equal values are coincidence, not 100% conversion. Follow-up: relabel the chips
+`LIFETIME (MIXED ERAS)` and add a contract-versioned cohort panel.
+
+**Finding 1c (Codex, verified — the sharpest finding of the window):** **Zero of the
+41 Q10 rows carry the current paired-Q09 dependency binding** (both Q09_NEWS +
+Q09_PORTFOLIO roles), and only **one** (ea,symbol) pair holds both current success
+labels (CONFIG_LOCKED + PASS_PORTFOLIO). Current code refuses to execute new Q10
+without both authenticated arms (`farmctl.py:5922-5929`, `:15200-15218`). All 34
+survivors are **historical-visible** passes from earlier gate eras; under today's
+contract the binding bottleneck is **Q09_NEWS CONFIG_LOCKED** — exactly what the
+running live-book news program (Task #20, ticket 3260d15d) is working through.
+Re-verified against the backup: 41 rows / 0 both-bound; CONFIG_LOCKED pairs = 1.
 
 **Finding 2 — there is no queue starvation at Q06–Q08.** Row status at Q08: done 532,
 failed 44, active 1, **pending 0** — the gate is drained. Live backlog across Q06–Q10
@@ -53,16 +85,23 @@ is ≤3 sleeves anywhere. The collapse is **genuine merit kill**, exactly as the
 are designed to do (funnel audit 2026-06-09: deaths are legitimate).
 
 **Finding 3 — what actually kills.**
-- **Q07 Multi-Seed** (vault: 5 fixed seeds 42/17/99/7/2026; PASS requires cross-seed
-  PF variance < 20% of mean AND **no single seed PF < 1.0**): the merit kill is the
-  min-PF-floor rule — ~20 sleeves died to one seed under 1.0 (seeds [7]: 6, [2026]: 5,
-  [17]: 5, [99]: 4) + 6 to the 20-trade seed floor. This kills seed/tick-ordering
-  fragility — an edge that only exists under one tick sequence is not an edge.
-- **Q08 Davey** (vault: 10 sub-gates — correlation, DSR+MC+FDR, tail dependence,
-  seasonal, neighborhood, chopping block, PBO, edge decay, runs test, regime — binary
-  AND): terminal kill = `FAIL_HARD`, 135 rows / 163 sleeves terminally dead at Q08.
-- **Q09_PORTFOLIO**: 61 sleeves dead at `FAIL_PORTFOLIO` — standalone-clean but
-  redundant against the book (DL-083 correlation gates doing their job).
+- **Q07 Multi-Seed** (5 fixed seeds 42/17/99/7/2026; any seed PF < 1.0 fails; since
+  2026-07-25 a second axis passes variance 20–40% when worst-seed PF ≥ 1.10,
+  `decisions/2026-07-25_q07_second_axis_worst_seed_pf.md`): the merit kill is the
+  per-seed PF floor — 21 pairs died to a losing seed, 1 to the 20-trade seed floor,
+  2 to variance with the second axis unmet. **11 further stored variance-fails predate
+  the second axis and lack its marker (rule-era mixing, Codex SQL-6)** — legitimate
+  recertification candidates under the current ratified rule (→ WS-1).
+- **Q08 Davey** (11 sub-gates, binary AND): terminal kill = `FAIL_HARD` — under
+  evidence precedence 102 sleeves exclusively hard-dead (96 of them from the Q07-pass
+  cohort); 62 exclusively soft (portfolio track). Q05's
+  `FAIL_DD_PORTFOLIO_REVIEW` (~20 pairs) is a **park** for portfolio review, not a
+  merit kill (`q05_stress_medium.py:574-595`) — also WS-1 inventory.
+- **Q09_PORTFOLIO**: 64 sleeves ever `FAIL_PORTFOLIO` — standalone-clean but redundant
+  against the book. Of the 19 strict Q08 passers, only **5** reached PASS_PORTFOLIO
+  (12 FAIL_PORTFOLIO, 2 NEED_MORE_DATA): **most clean Q08 passers die on portfolio
+  contribution, not robustness** — optimizing standalone PF attacks the wrong
+  constraint.
 
 **Finding 4 — the recyclable residue (free throughput, no optimization needed).**
 "Infra-stuck" sleeves ran, hit an infra error (ACTIVE_TIMEOUT, launch_fault,
@@ -95,14 +134,20 @@ Clusters (directory slugs + SPEC.md reads; full table in the census evidence):
 - **Symbol concentration: XAUUSD = 9/34 (26%)**, EURUSD 4, GDAXI 4, NDX 3; a single
   XAU shock hits a quarter of the book.
 - **Grimes pullback bloc = 6 sleeves** (10911, 10919, 10938, 10939, 12989, 13013) —
-  same H1 pullback mechanic across 5 symbols, co-drawdown risk.
-- **Near-duplicate pairs:** 10142+11132 (both SP500 D1 Connors-RSI2) and 13036+13301
-  (both GDAXI Balke breakout).
+  same H1 pullback mechanic across 5 symbols. **But (Codex census, re-verified):
+  mechanism similarity ≠ return redundancy.** Realized daily-return correlations over
+  2,348 common days: Grimes cousins 10939/12989 = +0.077, Balke variants 13213/13301 =
+  +0.008, cum-RSI2 cousins 11132/12567 = +0.053, cointegration cousins 12778/13117 =
+  −0.032. The only bloc above the DL-083 0.15 admit reference is **XAU trend
+  10403/10513/1556** (max 0.295); nothing reaches the 0.40 reject level.
+- **Same-symbol duplicate pairs (untested):** 10142+11132 (both SP500 D1 Connors-RSI2)
+  and 13036+13301 (both GDAXI Balke) have no rostered return series — candidates for
+  measurement, **not** for mechanism-based retirement.
 - **XAU breakout trio** (10123 Donchian / 10403 Turtle / 10128 Bollinger) + **XAU
   trend quartet** (10145 TSM / 10183 Carver / 10513 Ichimoku / 1556 mom12): all
-  long-gold-biased; effective independent XAU bets are far fewer than 9 (10123/10145
-  already failed portfolio admission at corr ~0.91,
-  `docs/research/GOLD_REAPER_BREAKOUT_MINING_2026-07-23.md`).
+  long-gold-biased; the rostered members correlate at up to 0.295 (10123/10145 trade
+  overlap ~0.91 per `GOLD_REAPER_BREAKOUT_MINING_2026-07-23.md` — trade-overlap and
+  return-corr measure different things; both feed the leave-one-out).
 - **Orthogonal corner worth protecting:** event/calendar (12969 Gotobi, 13128
   pre-FOMC, 20048 WTI pre-holiday, 10706 Monday-LS), cointegration pairs
   (12778, 13117), H4 reversals (1328 Brooks, 1567 DeMark).
@@ -124,14 +169,21 @@ Anti-Overfit Charter (§6). Lane constraint: Codex quota-dead until Mon 18.08 00
 Claude headless-Sonnet build lane available now; agy for research; backtests never
 throttled.
 
-### WS-1 — Harvest before optimizing: recycle + admit what is already clean
+### WS-1 — Harvest before optimizing: recycle, recertify, requalify
 - **Priority HIGH, overfit ~0 (no fitting anywhere).**
 - **Scope:** (a) the **~60 infra-stuck sleeves** (Q07: 41 — ACTIVE_TIMEOUT/launch_fault
   class, staged-recovery requeue per operating rules; Q06: 9; Q08: 9; Q09_NEWS: 15);
-  (b) the 4 Q09 NEED_MORE_DATA verdicts; (c) drain the Q09_NEWS frontier (the one real
-  backlog — coordinate with the running news-backfill program, ticket 3260d15d, never
-  displace its chain); (d) stage the 19 Q09-in-flight + 12 Q10-pass-not-live for OWNER
-  portfolio admission (honor the 11422/13036 news-A/B holds).
+  (b) the Q09 NEED_MORE_DATA verdicts (4 furthest-phase / 10 ever — enumerate at
+  execution); (c) **current-contract requalification (new primary objective, Codex
+  finding C2):** zero Q10 rows are bound to the paired-Q09 contract and only 1 pair
+  holds CONFIG_LOCKED+PASS_PORTFOLIO — drive the survivor cohort through Q09_NEWS
+  CONFIG_LOCKED + paired Q10, riding the running news program (Task #20, ticket
+  3260d15d — never displace its chain); (d) **Q07 rule-era recertification:** re-run
+  the 11 legacy variance-fails under the ratified second axis (var 20–40% +
+  worst-seed ≥1.10) — potential free survivors; (e) the ~20 Q05 DD-parked sleeves
+  (`FAIL_DD_PORTFOLIO_REVIEW`) into the portfolio-review queue; (f) stage the 19
+  Q09-in-flight + 12 Q10-pass-not-live for OWNER portfolio admission (honor the
+  11422/13036 news-A/B holds).
 - **Validation:** pipeline verdicts only. Admission via the OWNER marginal-contribution
   eval: regime-split return-corr admit <0.15 / reject ≥0.40 (DL-083), ΔSharpe (eps
   0.020, never sole driver), ΔMaxDD/Δworst-day, min-contribution 0.06%/yr at capped
@@ -139,18 +191,23 @@ throttled.
 - **Effort S–M; lane: factory + Claude + OWNER admission. No Codex dependency —
   runnable now.**
 
-### WS-2 — Correlation-aware cluster caps + retire near-duplicates
+### WS-2 — Correlation overlay: measure, then select (reframed in v1.1)
 - **Priority HIGH, overfit ~0 (selection/allocation only).**
 - **Scope:** portfolio overlay on top of inverse-vol (INVVOL is correlation-blind by
-  design — a cluster cap complements it). Cap aggregate long-XAU-beta / Grimes-bloc /
-  GDAXI weight; retire or hold one leg of 10142+11132 and 13036+13301; thin the XAU
-  breakout trio + trend quartet to representatives.
-- **Validation:** regime-split return-corr matrix over the 34 (backup DB `ea_metrics` +
-  `D:/QM/reports/portfolio/invvol_stage1_20260804/daily/*.csv`); apply only via
-  incumbent head-to-head ("apply only if not worse", INVVOL addendum); any live change
-  fail-closed behind OWNER-signed manifest.
+  design — a cluster cap complements it). **Mechanism-based retirement is off the
+  table** (Codex C3: realized correlations refute it — max pair 0.295, near-duplicate
+  cousins ≈0). Sequence: (1) regime-split correlation matrix + leave-one-out over the
+  rostered 34; (2) generate fixed-risk return series for the unrostered sleeves —
+  especially the untested same-symbol pairs 10142+11132 and 13036+13301 — then measure
+  them the same way; (3) selection/weight decision **only for evidenced blocs** (today
+  that is the XAU trend bloc 10403/10513/1556 and the GDAXI watch pair 10911/13301 at
+  0.135).
+- **Validation:** DL-082/DL-083 regime-split measures (full-period Pearson is triage
+  only); apply only via incumbent head-to-head ("apply only if not worse", INVVOL
+  addendum) with the mandatory no-change control; any live change fail-closed behind
+  OWNER-signed manifest.
 - **Effort M; lane: Claude + OWNER. Runnable now; ideally after WS-1 admissions so the
-  cap is computed on the final roster.**
+  overlay is computed on the final roster.**
 
 ### WS-3 — Exit surgery, second wave (the legitimate residue of "SL/TP optimieren")
 - **Priority HIGH, overfit MEDIUM. Precedent: Tier A exit surgery produced 6 validated
@@ -188,18 +245,24 @@ throttled.
   **bar[1] (last closed D1)** — the reference's bar[0] forming-candle read repaints and
   is inadmissible. Judged on **ΔMaxDD/Δworst-day, not PF**. Maps onto the open house
   thesis "the vol-gate IS the edge" (GOLD_REAPER_BREAKOUT_MINING_2026-07-23.md).
-- **Validation:** Lane-1 pre-declared ablation (same ea_id, base params LOCKED,
-  filter-OFF vs ON, precedent QM5_10513 ablation_00..04), re-graded from Q02 —
-  entry-filter changes invalidate all prior PASS evidence
-  (`framework/V5_FRAMEWORK_DESIGN.md:31`). Threshold picked on IS/DEV then FROZEN;
+- **Validation:** Lane-1 pre-declared ablation (base params LOCKED, filter-OFF vs ON,
+  precedent QM5_10513 ablation_00..04) is the **measurement** instrument; any
+  **promotion** candidate gets a **new EA identity** with clean lineage (Codex C9/C10
+  reconciliation — no inherited PASS either way,
+  `framework/V5_FRAMEWORK_DESIGN.md:31`). Threshold picked on IS/DEV then FROZEN;
   filtered must beat unfiltered on ≥2/3 anchored OOS folds and on Q04/Q06/Q08, never
   Q02. Calendar/session anchors are STRUCTURAL non-perturbable at Q08.5
   (`decisions/2026-07-15_q08_neighborhood_calendar_params.md`); the one tunable
-  threshold must land on a plateau. Full trial ledger to Q07 DSR/PBO. Promotion as v2
-  requires beating the live incumbent at BOOK level OOS (corr ≤0.40, DL-083).
-- **Effort:** S per EA to wire (§5 Option A), M–L total; lane Claude-Sonnet builds now.
-- **Ranks below WS-3 and the INVVOL head-to-head** — all three target the same DD
-  goal, WS-4 is the priciest and most overfit-prone.
+  threshold must land on a plateau. Full trial ledger to Q07 DSR/PBO. Promotion
+  requires beating the live incumbent at BOOK level OOS (corr ≤0.40, DL-083). The
+  predicate must be **source-derived and fixed before looking at the survivor's
+  day-level returns** (Codex wording, adopted); "find profitable regimes" is rejected.
+- **Effort:** S per EA to wire (§5 Option A + profile API), M–L total; lane
+  Claude-Sonnet builds now.
+- **Ranks below WS-3, WS-6 and the INVVOL head-to-head** (v1.1 demotion — Codex rates
+  the lever DEPRIORITIZE-with-narrow-exception; both passes agree the same DD goal is
+  reachable cheaper elsewhere; the narrow slice survives only with the protocol
+  above).
 
 ### WS-5 — Monte-Carlo tail-risk resizing at the live/portfolio layer only
 - **Priority MEDIUM, overfit MEDIUM.** Bootstrap each sleeve's realized returns to set
@@ -209,19 +272,25 @@ throttled.
   only at the live 0.5% layer + Q13. Apply only via incumbent head-to-head.
   Effort M; Claude + OWNER manifest; runnable now.
 
-### WS-6 — Thesis-gated cross-asset survivor ports (BLOCKED until Codex returns 18.08)
-- **Priority conditional; universe-shotgun REJECTED.** Port a proven mechanic to
-  **1–2 thesis-backed, uncorrelated carriers** (locked params, new ea_id, full
-  Q02→Q10). Same-asset-class ports mostly add correlation, not orthogonality
-  (10123/10145 corr ~0.91 portfolio-fail); symbol-conditionality is real (Balke:
-  USDJPY OOS PF 1.20 vs XAU 1.03 RETIRE,
-  `docs/research/BALKE_RANGEBREAKOUT_WALKFORWARD_2026-07-14.md`-family evidence).
-- **Blocker:** host-gates are hardcoded pervasively (969 host-symbol comparisons across
+### WS-6 — Thesis-gated cross-asset survivor ports (UNBLOCKED in v1.1, promoted)
+- **Priority HIGH (Codex ranks this #1: "port first, portfolio-evaluate second,
+  challengers third" — adopted as co-priority with WS-1/WS-2 because it adds zero
+  fitted parameters and attacks the declared orthogonality bottleneck directly).
+  Universe-shotgun stays REJECTED.** Port a proven mechanic to **1–2 thesis-backed,
+  uncorrelated carriers** (locked params, new ea_id, full Q02→Q10). Symbol-
+  conditionality is real (Balke: USDJPY OOS PF 1.20 vs XAU 1.03 RETIRE). Port
+  precedents: 12567 (→ book), 12915 → 12966/67/68 (OPERATING_RULES Rule 6).
+- **Protocol hardening (Codex C11, adopted):** pre-register the full carrier LIST
+  ex-ante (market-mechanism fit + portfolio need), hash the parent binary + inputs,
+  change only symbol/broker-normalization fields, **run every listed carrier and
+  publish the failures** — each attempted carrier enters family-wise DSR/PBO/FDR
+  accounting. A failing port dies as a port (Rule 6), never re-fitted per symbol.
+- **Gate:** host-gates are hardcoded pervasively (969 host-symbol comparisons across
   571 EA sources; the XTI reroute failed exactly here — 23 EAs, ticket **9ad6d9c0**,
-  19 rows BLOCKED_STALE_BUILD_RESULT). Genericization is Codex-class work → builds
-  deferred to 18.08; thesis pre-registration (Claude/agy) proceeds now. Carrier
-  tradability + custom-history against `dwx_symbol_matrix.csv`; per-symbol venue cost
-  (≥2× Q08 cushion); survivor-port purity: a failing port dies, it is not re-fitted.
+  19 rows BLOCKED_STALE_BUILD_RESULT). **Codex quota is reset (verified 08-12: used
+  1%, week to 19.08)** → hand the host-gate genericization + 9ad6d9c0 rework to the
+  Codex lane NOW, not 18.08. Carrier tradability + custom-history against
+  `dwx_symbol_matrix.csv`; per-symbol venue cost (≥2× Q08 cushion).
 
 *Folded under WS-4's discipline, not standalone: spread/cost-aware skip on
 marginal-cushion sleeves (10128 PF1.05, 13036 1.04); trend-regime coherence gate on
@@ -248,9 +317,14 @@ the Connors-RSI2 sleeves (economically grounded but acute floor risk, all <75tr)
 - **SL-tightening — CLOSED** (Tier B MAE verdict, see WS-3 caveat).
 - **TP re-optimization — DEPRIORITIZE.** Pure re-opt of a Q03-swept param without a
   structural hypothesis; Q07 PBO/DSR + Q08 neighborhood exist to punish exactly this.
-- **MTF entry refinement — DEPRIORITIZE.** Entry-logic change = new EA, full cascade;
-  3+ new DOF; "waiting for a better fill" thins trades toward the floor; no house
-  evidence of an MTF-timing edge; contradicts orthogonality>addition.
+- **MTF entry refinement — upgraded to PURSUE_CONDITIONAL (backlog, v1.1).** The
+  Codex critique supplies a survival contract the v1.0 rejection lacked: freeze the
+  D1/H4 parent signal at its closed-bar timestamp; choose exactly ONE lower-TF trigger
+  tuple (trigger, validity window, missed-entry rule) from market mechanics before
+  the holdout; report **opportunity-level conversion** (parent signals vs filled vs
+  skipped) alongside trade economics so a "better entry" cannot silently delete parent
+  losses; timestamp look-ahead audit; frequency floor binding. Still a new EA + full
+  cascade, still behind WS-3/WS-4 in the queue — but no longer rejected on principle.
 - **Session-window tightening on 13213/13301 — REJECT** (tuning a structural anchor =
   curve-fitting; 13213's edge IS its GMT-normalized window).
 - **Seasonality month/quarter masks — LOW/trap** (only the 0-param date-math gates
@@ -281,7 +355,14 @@ filter.
 **Chosen design: Option A — per-EA `strategy_*` inputs wired into the existing
 `Strategy_NoTradeFilter` hook** (the canonical per-tick permission hook every
 skeleton-derived EA already has), reusing the dormant no-ML `QM_FilterVolatility.mqh` /
-`QM_FilterRegime.mqh` includes per-EA, kept OUT of `QM_Common`:
+`QM_FilterRegime.mqh` includes per-EA, kept OUT of `QM_Common` — **upgraded in v1.1
+with the Codex profile API (C7/C9):** predicates ship as **compiled, card-declared
+profiles** (`qm_pattern_profile=<NAME>` + enable flag in the `.set`, not N free
+slots), the evaluator takes `closed_shift >= 1` and rejects shift 0, returns a
+`valid` flag that **fails closed** (invalid ⇒ both directions blocked — the reference
+implementation is fail-open, verified at `PatternFilter.mqh:250-259`), and caches by
+`(symbol, timeframe, reference_bar_time, profile)` so restarts and tick cadence cannot
+change a decision. The central news/kill-switch path stays the last authority:
 - Lowest blast radius: no shared-include fleet recompile, no `gen_setfile.ps1` /
   build_check schema change, no factory OFF/ON window; `strategy_*` inputs flow to
   `.set` automatically. Proven pattern: QM5_10513 already stacks session+spread gates
@@ -323,35 +404,53 @@ v2 — entry-filter changes invalidate prior PASS evidence either way.
 8. **Builder ≠ approver; one EA at a time; never auto-swap a live sleeve** —
    challenger eval only at Q09; live changes only via OWNER-signed manifest; backtest
    sizing stays RISK_FIXED $1000.
+9. **Mandatory no-change incumbent control (v1.1, Codex G3).** Every experiment runs
+   the exact incumbent binary/set as a contemporaneous control; the challenger must
+   beat "do nothing" after all costs on portfolio marginal contribution. Passing
+   absolute gates is necessary but never sufficient to replace a proven sleeve.
+10. **Full multiplicity accounting (v1.1).** Every evaluated mask, threshold, carrier,
+    profile, and trigger tuple — including discarded and abandoned runs — enters the
+    family-wise DSR/PBO/FDR trial count. Selection among carriers/profiles is itself
+    a trial.
 
 ---
 
-## 7. Sequencing & milestones — first two weeks
+## 7. Sequencing & milestones — first two weeks (v1.1)
+
+Lane fact correction: **Codex quota is reset** (verified 08-12 18:23Z: used 1%, week
+to 19.08 16:30Z) — the v1.0 "Codex dead until 18.08" assumption is void.
 
 **Week 1 (now → 15.08):**
-- WS-1: staged-recovery requeue of the infra-stuck residue (Q07's 41 first); run the 4
-  NEED_MORE_DATA; stage 19 Q09-in-flight + 12 Q10-not-live for OWNER admission.
-- WS-2: regime-split correlation matrix over the 34; cluster-cap + near-duplicate
-  retirement proposal to OWNER.
-- Prereqs in parallel: sanctioned filter list re-derivation (agy/Claude); WS-4 thesis
-  pre-registration + trial ledger; WS-3 MAE capture on the 6 high-DD sleeves.
-- **M1:** NEED_MORE_DATA resolved; corr matrix + retirement proposal on OWNER's desk;
-  MAE evidence captured; filter thesis pre-registered.
+- WS-1: staged-recovery requeue of the infra-stuck residue (Q07's 41 first); Q07
+  legacy variance-fail recertification scan (the 11); NEED_MORE_DATA runs; Q05
+  DD-park review queue; stage 19 Q09-in-flight + 12 Q10-not-live for OWNER admission;
+  current-contract requal plan aligned with Task #20's news chain.
+- WS-2: regime-split correlation matrix + leave-one-out over the rostered 34;
+  fixed-risk return series regeneration for the unrostered sleeves (incl. 10142,
+  13036, 11422); selection proposal ONLY for evidenced blocs (XAU 10403/10513/1556).
+- WS-6 (Codex lane, now): host-gate genericization design + 9ad6d9c0 rework; carrier
+  lists pre-registered (Claude/agy).
+- Prereqs in parallel: sanctioned filter list re-derivation; WS-4 source-derived
+  thesis pre-registration + trial ledger; WS-3 MAE capture on the 6 high-DD sleeves.
+- **M1:** recertification scan + NEED_MORE_DATA resolved; corr matrix + evidenced-bloc
+  proposal on OWNER's desk; MAE evidence captured; carrier lists + filter thesis
+  pre-registered; host-gate rework in Codex lane.
 
 **Week 2 (15.08 → 22.08):**
 - WS-3: first 1–2 exit-surgery v2s built (Claude-Sonnet), enter Q02.
-- WS-4: first vol-regime Lane-1 ablation on ONE eligible sleeve (13213 or 10692),
-  bar[1], default-OFF baseline, review_ea grep, enter Q02.
+- WS-6: first 1–2 locked-parameter ports built (Codex) once host-gate rework lands,
+  enter Q02 (full carrier list runs, failures published).
+- WS-4: first vol-regime ablation measurement on ONE eligible sleeve (13213 or 10692),
+  bar[1], default-OFF baseline, profile API, review_ea grep, enter Q02.
 - WS-5: MC tail-sizing prototype vs the capped-inverse-vol baseline (head-to-head only).
-- WS-6: 1–2 transfer theses pre-registered; host-gate genericization handed to Codex
-  on return (18.08), riding on the 9ad6d9c0 XTI rework.
-- **M2:** ≥1 exit-surgery v2 + ≥1 vol-regime ablation in the funnel at Q02+; WS-2
-  decision returned by OWNER; WS-6 unblocked.
+- **M2:** ≥1 exit-surgery v2 + ≥1 port + ≥1 vol-regime ablation in the funnel at Q02+;
+  WS-2 decision returned by OWNER.
 
-**Governing rule:** WS-1/WS-2 (zero-overfit, cheapest, they hit the concentration the
-census names as the true upside) precede all per-sleeve optimization. Expected
-survivors reaching live from WS-3/4/6: low single digits; the bulk of near-term book
-value is WS-1 harvest + WS-2 de-concentration.
+**Governing rule:** WS-1/WS-2/WS-6 (zero-fitted-DOF, they hit orthogonality and the
+current-contract debt — the two constraints the funnel data says actually bind)
+precede all per-sleeve parameter work. Expected survivors reaching live from
+WS-3/4/6: low single digits; the bulk of near-term book value is WS-1 harvest +
+requalification, WS-2 evidence-based selection, and WS-6 orthogonal carriers.
 
 ---
 
@@ -384,3 +483,12 @@ value is WS-1 harvest + WS-2 de-concentration.
   `decisions/2026-07-25_q02_pf_floor_120_to_110.md`, DL-071/072/073, DL-082/083.
 - Workflow run: 11 agents (wf_29630f92-2d4) + 1 funnel re-verification agent;
   per-agent results in the session workflow journal.
+- **Dual-forensics (v1.1):** independent Codex pass, router tickets d37bb33e /
+  c2b505e6 / b4c56952 / 3e187d36 (APPROVED), artifacts
+  `CODEX_FUNNEL_FORENSICS_2026-08-12.md`, `CODEX_SURVIVOR_CENSUS_2026-08-12.md`,
+  `CODEX_UNGER_REFERENCE_PORTABILITY_2026-08-12.md`,
+  `CODEX_SURVIVOR_LEVER_CRITIQUE_2026-08-12.md`; comparison + resolution matrix in
+  `SURVIVOR_OPTIMIZATION_DUAL_FORENSICS_RECONCILIATION_2026-08-12.md`. Load-bearing
+  Codex claims re-verified by Claude: Q10 both-arm binding 41/0, CONFIG_LOCKED pairs
+  1/1, correlations 10403/10513=0.294803 + 13213/13301=0.008319 (n=2348), PatternFilter
+  fail-open at source :250-259, cockpit mixed-era footnote :2531.
