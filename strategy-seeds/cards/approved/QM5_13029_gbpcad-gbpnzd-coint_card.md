@@ -29,7 +29,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
+pipeline_phase: Q03_PENDING
+q02_status: PASS
+q03_status: ENQUEUED
 last_updated: 2026-08-12
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-directed in-house FX cointegration screen; R2 PASS deterministic fixed-pair z-score basket; R3 PASS GBPCAD.DWX and GBPNZD.DWX data exist in the extended Darwinex scan; R4 PASS no ML/grid/martingale. Owner mission accepted the borderline OOS-heavy profile as the next non-duplicate FX cointegration sleeve."
 expected_pf: 1.05
@@ -186,4 +188,12 @@ gates.
 | v1 | 2026-07-07 | initial extended-screen FX cointegration sibling card | G0 | APPROVED |
 | v2 | 2026-07-07 | compiled basket EA and logical basket Q02 enqueued as work item 8acc9930 | Q02 | PASS |
 | v3 | 2026-07-07 | Q02 PASS follow-through; Q03 work item 4298cfb6 and Q04 work item 629d9f34 priority-routed | Q03/Q04 | PENDING |
-| v4 | 2026-08-12 | source-aligned slow-horizon revision: pre-authorized z-score window 60 -> 90 D1 bars; all other mechanics frozen | Q02 | PENDING `614cc154-31e1-4919-9a1e-de7bc5e0c5f3` |
+| v4 | 2026-08-12 | source-aligned slow-horizon revision: pre-authorized z-score window 60 -> 90 D1 bars; all other mechanics frozen | Q02 | PASS `614cc154-31e1-4919-9a1e-de7bc5e0c5f3` |
+| v5 | 2026-08-12 | current-binary Q02 PASS follow-through; superseded 60-bar Q03 evidence preserved | Q03 | PENDING `493a64ad-c9ed-46f4-9d05-1444ef50e645` |
+
+The current-bound Q02 run used EX5 SHA-256
+`957b7065a6fc75d3e81feeab5e4a691872763a8b11203f067676da3758438525`
+and returned PF `1.10`, 128 trades, net profit `1604.00`, and drawdown
+`3.82%`, with no ONINIT or history failure. Q03 is an append-only rerun tied
+to that exact Q02 identity. The July 60-bar Q03 PASS and Q04 FAIL remain
+historical evidence and do not adjudicate the 90-bar build.

@@ -121,3 +121,4 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 |---|---|---|---|
 | v1 | 2026-07-07 | Initial extended-screen FX cointegration basket build | Built from the 13024 two-leg basket pattern with sign-aware positive-beta leg direction |
 | v2 | 2026-08-12 | Mechanize the approved slow-horizon variant | Changed only the pre-authorized z-score window from 60 to 90 D1 bars to align with the 84.8-day source half-life; task `41092da0-e9a5-4983-b615-2c85993668fa` |
+| v3 | 2026-08-12 | Advance the current binary after Q02 PASS | Q02 work item `614cc154-31e1-4919-9a1e-de7bc5e0c5f3` passed; append-only Q03 work item `493a64ad-c9ed-46f4-9d05-1444ef50e645` was enqueued without dispatching a tester |
