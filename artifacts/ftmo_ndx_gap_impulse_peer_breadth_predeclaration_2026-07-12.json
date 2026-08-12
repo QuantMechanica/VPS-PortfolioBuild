@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_PEER_BREADTH_SCREEN",
+  "parent_screen": "artifacts/ftmo_m15_gap_impulse_alignment_screen_2026-07-12.json",
+  "post_hoc_scope_disclosure": "The NDX base parameters were selected after inspecting 2018-2023 in the parent screen. Consequently 2018-2023 is research only, 2024 is the next untouched validation year, and 2025 remains the final candidate-specific holdout.",
+  "symbol": "NDX.DWX",
+  "peer_symbols": [
+    "SP500.DWX",
+    "WS30.DWX"
+  ],
+  "timeframe": "M15",
+  "frozen_base_parameters": {
+    "range_bars": 4,
+    "gap_atr": 0.25,
+    "impulse_atr": 0.75,
+    "stop_atr": 1.5,
+    "target_r": 3.0
+  },
+  "research_years": [
+    2018,
+    2019,
+    2021,
+    2022,
+    2023
+  ],
+  "validation_year": 2024,
+  "holdout_year": 2025,
+  "filters": [
+    "raw_control",
+    "sp500_impulse_025_align",
+    "ws30_impulse_025_align",
+    "any_peer_impulse_025_align",
+    "both_peer_impulse_025_align",
+    "both_peer_gap_010_align",
+    "peer_majority_3_of_4_010_align"
+  ],
+  "feature_contract": {
+    "peer_gap_atr": "Peer session open minus the prior completed peer-session close, divided by peer ATR56 measured on the final completed opening-window bar.",
+    "peer_impulse_atr": "Peer completed four-bar opening-window close minus peer session open, divided by the same peer ATR56.",
+    "causality": "All peer features use only bars completed by the frozen NDX decision time. Entry remains the next M15 bar open.",
+    "thresholds": {
+      "impulse_atr": 0.25,
+      "gap_atr": 0.1,
+      "majority_component_atr": 0.1
+    },
+    "missing_peer_data": "Reject the trade for every non-control filter."
+  },
+  "research_survivor_rule": "A non-control filter must have at least 200 research trades, pooled PF strictly above raw control, at least four positive research years, and worst annual PF at least 0.90.",
+  "selection_rule": "Select once by highest worst annual PF, then pooled PF, then trade count.",
+  "validation_open_rule": "Open 2024 only for the frozen research survivor; require at least 40 trades, PF>=1.10, and positive net R.",
+  "holdout_open_rule": "Open 2025 once only if the same frozen filter passes 2024; require at least 40 trades, PF>=1.10, and positive net R.",
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

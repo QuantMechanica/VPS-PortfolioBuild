@@ -1,0 +1,152 @@
+{
+  "schema": "qm.ftmo-m1-bootstrap-coverage/v1",
+  "observed_at_utc": "2026-08-03T09:43:01Z",
+  "status": "DEFERRED_ACTIVE_CHALLENGE_AUTOTRADING",
+  "account": {
+    "login": 1514165262,
+    "server": "FTMO-Demo",
+    "shared_by_lanes": [
+      "FTMO_STREAM1",
+      "FTMO_STREAM2"
+    ]
+  },
+  "challenge_terminal_guard": {
+    "process_observed": true,
+    "process_id": 8344,
+    "executable_path": "C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe",
+    "program_files_challenge_terminal": true,
+    "terminal_log_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\logs\\20260802.log",
+    "terminal_log_sha256": "70a3e4c6829251a638d70a904ca83930af62f6f1323bd8d93335f9d70ccfc635",
+    "last_account_sync": {
+      "timestamp_local": "2026-08-02T23:02:12.787",
+      "positions": 0,
+      "orders": 0,
+      "trading_enabled": true
+    },
+    "automated_trading_enabled_timestamp_local": "2026-08-02T19:37:38.602",
+    "decision": "REFUSE_RESEARCH_LANE_LAUNCH_UNTIL_OWNER_COORDINATED_NONTRADING_WINDOW"
+  },
+  "lanes": [
+    {
+      "lane": "FTMO_STREAM1",
+      "root": "D:\\QM\\mt5\\FTMO_STREAM1",
+      "terminal_process_observed": false,
+      "receipt_path": "D:\\QM\\reports\\state\\FTMO_STREAM1_provision_2026-08-03.json",
+      "receipt_sha256": "1340bb513ed16e5cbf8c65a73d1c1b85de078d3d56c0dd6b4e401ccf2645af14",
+      "receipt_status": "HOLD"
+    },
+    {
+      "lane": "FTMO_STREAM2",
+      "root": "D:\\QM\\mt5\\FTMO_STREAM2",
+      "terminal_process_observed": false,
+      "receipt_path": "D:\\QM\\reports\\state\\FTMO_STREAM2_provision_2026-08-03.json",
+      "receipt_sha256": "83b82ce1100f86ef44e2ac534d12ac5b881e7bf62b5d9f1bda92efb6f16e7bb8",
+      "receipt_status": "HOLD"
+    }
+  ],
+  "symbols": [
+    {
+      "symbol": "XAUUSD",
+      "role": "BOOK",
+      "m1_cache_files_per_lane": 0,
+      "coverage_first_bar": null,
+      "coverage_last_bar": null,
+      "coverage_depth_days": null,
+      "coverage_proven": false
+    },
+    {
+      "symbol": "GER40.cash",
+      "role": "BOOK",
+      "m1_cache_files_per_lane": 0,
+      "coverage_first_bar": null,
+      "coverage_last_bar": null,
+      "coverage_depth_days": null,
+      "coverage_proven": false
+    },
+    {
+      "symbol": "EURUSD",
+      "role": "MAJOR",
+      "m1_cache_files_per_lane": 1,
+      "cache_location": "Bases/Default/History/EURUSD/2023.hcc",
+      "coverage_first_bar": null,
+      "coverage_last_bar": null,
+      "coverage_depth_days": null,
+      "coverage_proven": false,
+      "admissibility": "REFUSED_UNBOUND_DEFAULT_PROFILE_CACHE"
+    },
+    {
+      "symbol": "GBPUSD",
+      "role": "MAJOR",
+      "m1_cache_files_per_lane": 1,
+      "cache_location": "Bases/Default/History/GBPUSD/2023.hcc",
+      "coverage_first_bar": null,
+      "coverage_last_bar": null,
+      "coverage_depth_days": null,
+      "coverage_proven": false,
+      "admissibility": "REFUSED_UNBOUND_DEFAULT_PROFILE_CACHE"
+    },
+    {
+      "symbol": "USDJPY",
+      "role": "MAJOR",
+      "m1_cache_files_per_lane": 1,
+      "cache_location": "Bases/Default/History/USDJPY/2023.hcc",
+      "coverage_first_bar": null,
+      "coverage_last_bar": null,
+      "coverage_depth_days": null,
+      "coverage_proven": false,
+      "admissibility": "REFUSED_UNBOUND_DEFAULT_PROFILE_CACHE"
+    },
+    {
+      "symbol": "USDCHF",
+      "role": "MAJOR",
+      "m1_cache_files_per_lane": 1,
+      "cache_location": "Bases/Default/History/USDCHF/2023.hcc",
+      "coverage_first_bar": null,
+      "coverage_last_bar": null,
+      "coverage_depth_days": null,
+      "coverage_proven": false,
+      "admissibility": "REFUSED_UNBOUND_DEFAULT_PROFILE_CACHE"
+    },
+    {
+      "symbol": "AUDUSD",
+      "role": "MAJOR",
+      "m1_cache_files_per_lane": 0,
+      "coverage_first_bar": null,
+      "coverage_last_bar": null,
+      "coverage_depth_days": null,
+      "coverage_proven": false
+    },
+    {
+      "symbol": "USDCAD",
+      "role": "MAJOR",
+      "m1_cache_files_per_lane": 0,
+      "coverage_first_bar": null,
+      "coverage_last_bar": null,
+      "coverage_depth_days": null,
+      "coverage_proven": false
+    },
+    {
+      "symbol": "NZDUSD",
+      "role": "MAJOR",
+      "m1_cache_files_per_lane": 0,
+      "coverage_first_bar": null,
+      "coverage_last_bar": null,
+      "coverage_depth_days": null,
+      "coverage_proven": false
+    }
+  ],
+  "spread_calibration": {
+    "status": "REFUSED",
+    "path": "D:\\QM\\reports\\ftmo_spread_calibration\\2026-08-03_bootstrap_deferred_refusal.json",
+    "sha256": "b366ed3ffed04371f6a8ed565de6d751d079108c71585fbe6d03d54cd3bac9f6",
+    "reason": "required FTMO_STREAM1 XAUUSD 2026 HCC is absent"
+  },
+  "safety": {
+    "ftmo_stream_terminals_launched": 0,
+    "ftmo_stream_concurrent_peak": 0,
+    "challenge_terminal_writes": 0,
+    "autotrading_touched": false,
+    "live_terminals_touched": false
+  },
+  "next_action": "OWNER must provide a documented nontrading window; then run FTMO_STREAM1 and FTMO_STREAM2 strictly serially via ftmo_lane_runner."
+}

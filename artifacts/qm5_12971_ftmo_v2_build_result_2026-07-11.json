@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-07-11T14:42:00Z",
+  "ea_id": 12971,
+  "lineage": "QM5_12971_spx-pre-fomc-drift_v2",
+  "scope": "approved event-flat FTMO research amendment",
+  "status": "PIPELINE_STOP_Q07",
+  "source": {
+    "path": "framework/EAs/QM5_12971_spx-pre-fomc-drift/QM5_12971_spx-pre-fomc-drift.mq5",
+    "sha256": "30CD13CB672A912C86FB62FA3178E46361EFED38DE452B61F09F430E3BACEFC2"
+  },
+  "setfile": {
+    "path": "framework/EAs/QM5_12971_spx-pre-fomc-drift/sets/QM5_12971_spx-pre-fomc-drift_SP500.DWX_H1_backtest.set",
+    "sha256": "F299E45B15CA19E3C9D668D9E07E13E634D2DE5B0893B361FB57AA4312ADB64C"
+  },
+  "compile": {
+    "verdict": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "framework/build/compile/20260711_135801/QM5_12971_spx-pre-fomc-drift.compile.log",
+    "log_sha256": "21DD2EAA159392C9544E68581F759257DCF32E17D226C2BFA4C7DCB39C7F3C27"
+  },
+  "frozen_binary": {
+    "path": "D:/QM/mt5/T4/MQL5/Experts/QM/QM5_12971_prefomc_ftmo_v2_lock.ex5",
+    "size_bytes": 328330,
+    "sha256": "C51887E09C3C5A8F118EB163E9DDCFB3B220E26E090822EFD3C29F3874E16EFC",
+    "reason": "immutable downstream-test alias protected the exact build from concurrent canonical EX5 replacement"
+  },
+  "build_check": {
+    "verdict": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "path": "D:/QM/reports/framework/21/build_check_20260711_144115.json",
+    "sha256": "9870CC392AFDEE028583AE5858222793E3F9839319172500E0883B26063C621D"
+  },
+  "model4_full_history": {
+    "summary_path": "D:/QM/reports/pipeline_ftmo_secret/12971_prefomc_v2_final_monthend/QM5_12971/20260711_140137/summary.json",
+    "summary_sha256": "862F2DBDE0F0BD66AACC03851F71F98FE1CE14C22811BBFB5F18D087EBF04372",
+    "report_sha256": "DDE8CC0BF49B74EE3C5D69945DFE37A9B13B590EDD5B0225CCD942E0E290AB0A",
+    "window": "2018-07-02/2025-12-31",
+    "runs": 2,
+    "deterministic": true,
+    "trades_each": 56,
+    "profit_factor_each": 1.5,
+    "net_profit_each": 9485.06,
+    "equity_drawdown_each": 6146.97,
+    "equity_drawdown_pct_each": 6.05
+  },
+  "ftmo_current_cost": {
+    "artifact": "artifacts/ftmo_12971_sp500_cost_reconciliation_2026-07-11.json",
+    "artifact_sha256": "7D9F171160A4F1E765045ED646F181264EDD2C381703222237D506D9F0BD798F",
+    "complete_years": "2019-2025",
+    "trades": 54,
+    "profit_factor": 1.730277,
+    "net_profit": 12228.32,
+    "close_to_close_max_drawdown": 4598.16,
+    "minimum_trades_in_any_year": 7,
+    "verdict": "PASS"
+  },
+  "downstream": {
+    "q04": {
+      "verdict": "PASS",
+      "fold_profit_factors": [2.646, 1.932, 1.028],
+      "evidence": "D:/QM/reports/pipeline_ftmo_secret/12971_prefomc_v2_q04/QM5_12971/Q04/SP500.DWX/aggregate.json",
+      "sha256": "8E2DEFF25ED58D976F20204651786B52727EBF84B38D72BB8224EA5DBE47093D"
+    },
+    "q05": {
+      "verdict": "PASS",
+      "profit_factor": 1.54,
+      "drawdown_pct": 6.15,
+      "evidence": "D:/QM/reports/pipeline_ftmo_secret/12971_prefomc_v2_q05/QM5_12971/Q05/SP500_DWX/aggregate.json",
+      "sha256": "0EEEDF5FDAC163EC1F15A601FDDB1BFFEDA5F6C553F1FFB66019C0720BAE6810"
+    },
+    "q06": {
+      "verdict": "PASS",
+      "profit_factor": 1.38,
+      "drawdown_pct": 6.35,
+      "evidence": "D:/QM/reports/pipeline_ftmo_secret/12971_prefomc_v2_q06/QM5_12971/Q06/SP500_DWX/aggregate.json",
+      "sha256": "7C76DBFC0E883A095F282B2B87607BBE88594678278B6AB3600B1EE919792C0A"
+    },
+    "q07": {
+      "verdict": "FAIL",
+      "seed_profit_factors": [1.38, 1.47, 1.71, 1.9, 1.48],
+      "profit_factor_variance_pct": 32.75,
+      "maximum_allowed_variance_pct": 20.0,
+      "evidence": "D:/QM/reports/pipeline_ftmo_secret/12971_prefomc_v2_q07/QM5_12971/Q07/SP500_DWX/aggregate.json",
+      "sha256": "1B8CFF741994703B0645ADF8CF4B98144684EE69F4854D499FEF78CA96486378"
+    },
+    "q08_and_later": "STOPPED_AFTER_Q07"
+  },
+  "book_admission": false,
+  "deployment_permission": false,
+  "live_permission": false
+}

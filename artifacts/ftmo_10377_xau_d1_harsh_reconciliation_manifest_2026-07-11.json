@@ -1,0 +1,8 @@
+[
+  {
+    "ea_id": 10377,
+    "symbol": "XAUUSD.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_secret\\q06_10377_xau_d1_reconcile\\QM5_10377\\20260711_123600\\summary.json",
+    "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10377_XAUUSD_D1_HARSH.jsonl"
+  }
+]

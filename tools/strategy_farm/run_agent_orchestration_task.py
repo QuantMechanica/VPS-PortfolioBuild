@@ -15,20 +15,70 @@ import shutil
 import subprocess
 import sys
 import time
+import traceback
+import uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
+
+
+def _pythonw_excepthook(exc_type: type[BaseException], exc: BaseException, tb: Any) -> None:
+    """Persist otherwise invisible top-level pythonw failures."""
+    try:
+        crash_log = globals().get(
+            "PYTHONW_CRASH_LOG",
+            Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
+            / "logs"
+            / "agent_orchestration_pythonw_crash.log",
+        )
+        crash_log.parent.mkdir(parents=True, exist_ok=True)
+        stamp = dt.datetime.now(dt.UTC).replace(microsecond=0).strftime("%Y%m%dT%H%M%SZ")
+        with crash_log.open("a", encoding="utf-8") as handle:
+            handle.write(f"\n[{stamp}] uncaught top-level exception\n")
+            traceback.print_exception(exc_type, exc, tb, file=handle)
+    except Exception:
+        # An exception hook must never mask the original failure.
+        pass
+
+
+if __name__ == "__main__":
+    # Install before project-local imports so pythonw import/startup failures are
+    # durable even when the normal per-run log has not been created.
+    sys.excepthook = _pythonw_excepthook
+
+
+try:
+    from managed_codex import (
+        release_managed_codex_process,
+        spawn_managed_codex,
+        terminate_managed_codex_pid,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.managed_codex import (
+        release_managed_codex_process,
+        spawn_managed_codex,
+        terminate_managed_codex_pid,
+    )
+
+try:
+    from process_identity import get_process_identity
+except ModuleNotFoundError:
+    from tools.strategy_farm.process_identity import get_process_identity
+
+try:
+    import quota_spawn_gate
+except ModuleNotFoundError:
+    from tools.strategy_farm import quota_spawn_gate
 
 
 REPO_ROOT = Path(r"C:\QM\repo")
 WORKTREE_ROOT = Path(os.environ.get("QM_AGENT_WORKTREE_ROOT", r"C:\QM\worktrees"))
 FARM_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 LOG_DIR = FARM_ROOT / "logs"
+PYTHONW_CRASH_LOG = LOG_DIR / "agent_orchestration_pythonw_crash.log"
 LOCK_DIR = FARM_ROOT / "locks"
 PYTHON_EXE = Path(r"C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe")
 CODEX_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\codex.cmd")
-GEMINI_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\gemini.cmd")
-GEMINI_NODE_BUNDLE = Path(r"C:\Users\Administrator\AppData\Roaming\npm\node_modules\@google\gemini-cli\bundle\gemini.js")
 # Antigravity CLI (agy) — replaces the deprecated gemini-cli for the "gemini" lane
 # (2026-06-29). Headless via `agy -p`; auth = Windows Credential Manager (gemini:antigravity),
 # OWNER-authenticated, no API key. agy does NOT read stdin -> prompt passed as a -p file-pointer.
@@ -53,13 +103,25 @@ CLAUDE_BUDGET_POLICY = FARM_ROOT / "CLAUDE_BUDGET_POLICY.json"
 # Each headless cycle is mostly routine orchestration (claim work, run gates,
 # write the cycle log, monitor health) — work that does not need the top model.
 # Default Claude headless to Sonnet and let OWNER raise to opus per-run via env;
-# Codex/Gemini default to their config.toml model unless an env override is set.
+# Codex/Antigravity default to their account model unless an env override is set.
 # Interactive sessions (e.g. the senior agent) are unaffected — they ignore
 # these vars. Empty string => omit the flag (use the CLI/account default).
 #   $env:QM_CLAUDE_HEADLESS_MODEL = 'opus'   # bump a cycle back to Opus
-#   $env:QM_CODEX_HEADLESS_MODEL  = 'gpt-5-codex'  # cheaper Codex tier
-CLAUDE_HEADLESS_MODEL = os.environ.get("QM_CLAUDE_HEADLESS_MODEL", "sonnet").strip()
-CODEX_HEADLESS_MODEL = os.environ.get("QM_CODEX_HEADLESS_MODEL", "").strip()
+#   $env:QM_CODEX_HEADLESS_MODEL  = 'gpt-5-codex'  # explicit model override
+# OWNER-approved 2026-08-03 5x-plan matrix: task class sets Codex effort
+# (max/high/medium), Claude remains Sonnet unless a task deliberately selects
+# Opus, and quota pressure may defer volume but never lower the selected tier.
+_DEFAULT_CODEX_INVOCATION = quota_spawn_gate.invocation_profile("codex", "build_ea") or {}
+_DEFAULT_CLAUDE_INVOCATION = quota_spawn_gate.invocation_profile("claude", "build_ea") or {}
+_CODEX_MODEL_ENV_OVERRIDE = os.environ.get("QM_CODEX_HEADLESS_MODEL", "").strip()
+_CLAUDE_MODEL_ENV_OVERRIDE = os.environ.get("QM_CLAUDE_HEADLESS_MODEL", "").strip()
+CLAUDE_HEADLESS_MODEL = _CLAUDE_MODEL_ENV_OVERRIDE or str(
+    _DEFAULT_CLAUDE_INVOCATION.get("model") or "sonnet"
+)
+CODEX_HEADLESS_MODEL = _CODEX_MODEL_ENV_OVERRIDE or str(
+    _DEFAULT_CODEX_INVOCATION.get("model") or ""
+)
+CODEX_HEADLESS_EFFORT = str(_DEFAULT_CODEX_INVOCATION.get("reasoning_effort") or "high")
 GEMINI_HEADLESS_MODEL = os.environ.get("QM_GEMINI_HEADLESS_MODEL", "").strip()
 
 
@@ -75,8 +137,8 @@ def resolve_cli(agent: str) -> str:
         return str(CODEX_FALLBACK if CODEX_FALLBACK.exists() else "codex")
     if agent == "gemini":
         # Antigravity CLI (agy) is the live backend; gemini-cli is DEAD (OWNER
-        # 2026-07-02) and must never be silently revived. No gemini.cmd/gemini
-        # fallback: if agy is missing we return its expected path and let the
+        # 2026-07-02) and must never be silently revived. No deprecated npm
+        # fallback exists: if agy is missing we return its expected path and let the
         # spawn fail LOUDLY (visible in the result JSON) instead of running the
         # deprecated CLI with incompatible args, which burned every scheduled
         # slot 2026-07-06/07 while reporting only a generic rc=1.
@@ -100,13 +162,12 @@ def agent_env(agent: str) -> dict[str, str]:
     if agent == "codex":
         env["CODEX_HOME"] = str(CODEX_HOME)
     if agent == "gemini":
-        # Scheduled tasks run as SYSTEM; point Gemini at the operator profile
-        # where OAuth and workspace trust are configured.
+        # Scheduled tasks run as SYSTEM; point agy at the operator profile where
+        # its Windows Credential Manager token and workspace trust are configured.
         env["USERPROFILE"] = str(AGENT_USER_HOME)
         env["HOME"] = str(AGENT_USER_HOME)
         env["HOMEDRIVE"] = "C:"
         env["HOMEPATH"] = r"\Users\Administrator"
-        env.setdefault("GEMINI_DEFAULT_AUTH_TYPE", "oauth-personal")
         env.setdefault("TERM", "dumb")
         env.setdefault("NO_COLOR", "1")
         env.setdefault("FORCE_COLOR", "0")
@@ -122,7 +183,7 @@ def agent_env(agent: str) -> dict[str, str]:
 def build_prompt(agent: str, cwd: Path) -> str:
     edge_charter = cwd / "docs" / "ops" / "EDGE_LAB_CHARTER_2026-05-22.md"
     profitability = cwd / "docs" / "ops" / "PROFITABILITY_TRACK_2026-05-21.md"
-    # G: drive (Google Drive for Desktop) is mounted per-user. Gemini/agy runs as SYSTEM
+    # G: drive (Google Drive for Desktop) is mounted per-user. Antigravity/agy runs as SYSTEM
     # in a scheduled task with no G: mount -> any G: access raises PermissionError and
     # strands the task IN_PROGRESS (Rule 13, OPERATING_RULES_2026-07-03). Skip G: paths
     # for gemini; Claude/Codex run interactively or have G: via the user session.
@@ -184,75 +245,141 @@ Hard rules:
   no martingale/grid, mechanical only, no ML in EA.
 - Strategy card drafts go to D:/QM/strategy_farm/artifacts/cards_review/.
 - Evidence docs and ops artifacts MUST be committed to the canonical checkout
-  C:/QM/repo/docs/ops/evidence/ (absolute path) and merged to main via the
-  cto_main worktree (C:/QM/worktrees/cto_main) or board-advisor branch.
+  C:/QM/repo/docs/ops/evidence/ (absolute path) and merged to the main branch
+  from its registered worktree or via the board-advisor branch.
   Do NOT leave evidence files stranded in a non-main agent-worktree branch only.
   (2026-07-02: 7 docs stranded in worktree branches; this rule prevents recurrence.)
 """
 
 
-def process_alive(pid: int) -> bool:
-    if pid <= 0:
+def process_alive(pid: int, expected_creation_key: str | None) -> bool:
+    """Read-only, PID-reuse-safe lock-owner check.
+
+    Never use ``os.kill(pid, 0)`` on Windows: CPython implements unsupported
+    signals with ``TerminateProcess`` and signal 0 can therefore kill the very
+    process being "probed" with exit code 0.
+    """
+
+    if pid <= 0 or not str(expected_creation_key or ""):
         return False
     try:
-        os.kill(pid, 0)
+        identity = get_process_identity(int(pid))
     except Exception:
         return False
-    return True
+    return bool(
+        identity
+        and identity.get("is_running", True)
+        and str(identity.get("creation_key") or "") == str(expected_creation_key)
+    )
 
 
 def acquire_lock(agent: str, stale_minutes: int, slot: int = 1) -> tuple[bool, dict[str, Any]]:
     LOCK_DIR.mkdir(parents=True, exist_ok=True)
     lock_name = f"{agent}_orchestration.lock" if slot == 1 else f"{agent}_orchestration_{slot}.lock"
     lock_path = LOCK_DIR / lock_name
-    now = time.time()
-    if lock_path.exists():
+    owner_token = uuid.uuid4().hex
+    for _attempt in range(3):
         try:
-            data = json.loads(lock_path.read_text(encoding="utf-8"))
+            fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            now = time.time()
+            try:
+                data = json.loads(lock_path.read_text(encoding="utf-8"))
+            except Exception:
+                data = {}
+            try:
+                age_sec = now - lock_path.stat().st_mtime
+            except OSError:
+                continue
+            pid = int(data.get("pid") or 0)
+            process_creation_key = str(data.get("process_creation_key") or "")
+            if pid and process_alive(pid, process_creation_key):
+                return False, {
+                    "lock_path": str(lock_path),
+                    "reason": "previous_run_active",
+                    "pid": pid,
+                    "age_sec": round(age_sec, 1),
+                }
+            if age_sec < stale_minutes * 60:
+                return False, {
+                    "lock_path": str(lock_path),
+                    "reason": "recent_lock_owner_not_live",
+                    "pid": pid,
+                    "age_sec": round(age_sec, 1),
+                }
+            stale_path = lock_path.with_name(
+                f"{lock_path.name}.{uuid.uuid4().hex}.stale"
+            )
+            try:
+                os.replace(lock_path, stale_path)
+                stale_path.unlink(missing_ok=True)
+            except OSError:
+                continue
+            continue
+
+        try:
+            identity = get_process_identity(os.getpid())
+            if identity is None or not identity.get("is_running", True):
+                raise RuntimeError("cannot capture orchestration lock owner identity")
+            process_creation_key = str(identity.get("creation_key") or "")
+            if not process_creation_key:
+                raise RuntimeError("orchestration lock owner creation key is empty")
+            payload = {
+                "agent": agent,
+                "slot": slot,
+                "pid": os.getpid(),
+                "process_creation_key": process_creation_key,
+                "owner_token": owner_token,
+                "started_at": dt.datetime.now(dt.UTC).isoformat(),
+            }
+            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+                json.dump(payload, handle, indent=2, sort_keys=True)
+                handle.write("\n")
+                handle.flush()
+                os.fsync(handle.fileno())
         except Exception:
-            data = {}
-        pid = int(data.get("pid") or 0)
-        age_sec = now - lock_path.stat().st_mtime
-        if age_sec < stale_minutes * 60 and process_alive(pid):
-            return False, {
-                "lock_path": str(lock_path),
-                "reason": "previous_run_active",
-                "pid": pid,
-                "age_sec": round(age_sec, 1),
-            }
-        if age_sec < stale_minutes * 60 and not pid:
-            return False, {
-                "lock_path": str(lock_path),
-                "reason": "recent_lock_without_pid",
-                "age_sec": round(age_sec, 1),
-            }
-    payload = {
-        "agent": agent,
-        "slot": slot,
-        "pid": os.getpid(),
-        "started_at": dt.datetime.now(dt.UTC).isoformat(),
-    }
-    lock_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
-    return True, {"lock_path": str(lock_path)}
+            try:
+                os.close(fd)
+            except OSError:
+                pass
+            lock_path.unlink(missing_ok=True)
+            raise
+        return True, {"lock_path": str(lock_path), "owner_token": owner_token}
+    return False, {"lock_path": str(lock_path), "reason": "lock_contention"}
 
 
 def release_lock(lock_info: dict[str, Any]) -> None:
     path = Path(str(lock_info.get("lock_path") or ""))
+    owner_token = str(lock_info.get("owner_token") or "")
     try:
-        if path.exists():
-            path.unlink()
-    except OSError:
+        if not path.exists() or not owner_token:
+            return
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if str(data.get("owner_token") or "") != owner_token:
+            return
+        path.unlink()
+    except (OSError, ValueError, TypeError):
         pass
 
 
-def command_for(agent: str, cwd: Path, prompt_path: Path | None = None) -> list[str]:
+def command_for(
+    agent: str,
+    cwd: Path,
+    prompt_path: Path | None = None,
+    model_contract: dict[str, Any] | None = None,
+) -> list[str]:
     cli = resolve_cli(agent)
     if agent == "codex":
-        model_args = ["-m", CODEX_HEADLESS_MODEL] if CODEX_HEADLESS_MODEL else []
+        contract = headless_model_contract(agent, model_contract)
+        model = str(contract.get("model") or "")
+        effort = str(contract.get("reasoning_effort") or CODEX_HEADLESS_EFFORT)
+        model_args = ["-m", model] if model else []
         return [
             cli,
             "exec",
             *model_args,
+            "-c",
+            f'model_reasoning_effort="{effort}"',
             "--dangerously-bypass-approvals-and-sandbox",
             "--cd",
             str(cwd),
@@ -275,7 +402,13 @@ def command_for(agent: str, cwd: Path, prompt_path: Path | None = None) -> list[
             FARM_ROOT / "artifacts" / "cards_review",   # artifact write target
             Path(r"G:\My Drive"),                        # shared Drive (spec outputs)
         ):
-            if extra.exists():
+            try:
+                available = extra.exists()
+            except OSError:
+                # Google Drive is per-user and can return Access Denied under
+                # the SYSTEM scheduled-task token even for a read-only probe.
+                available = False
+            if available:
                 extra_dirs.append(str(extra))
         add_dir_flags: list[str] = []
         for d in extra_dirs:
@@ -299,7 +432,9 @@ def command_for(agent: str, cwd: Path, prompt_path: Path | None = None) -> list[
             pointer,
         ]
     if agent == "claude":
-        model_args = ["--model", CLAUDE_HEADLESS_MODEL] if CLAUDE_HEADLESS_MODEL else []
+        contract = headless_model_contract(agent, model_contract)
+        model = str(contract.get("model") or "")
+        model_args = ["--model", model] if model else []
         return [
             cli,
             "-p",
@@ -309,6 +444,26 @@ def command_for(agent: str, cwd: Path, prompt_path: Path | None = None) -> list[
             str(cwd),
         ]
     raise ValueError(f"unsupported agent: {agent}")
+
+
+def headless_model_contract(
+    agent: str,
+    selected: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Observable enforcement point: quota pacing changes volume, not depth."""
+    if agent == "codex":
+        contract = dict(selected or _DEFAULT_CODEX_INVOCATION)
+        if _CODEX_MODEL_ENV_OVERRIDE:
+            contract["model"] = _CODEX_MODEL_ENV_OVERRIDE
+            contract["model_override_source"] = "QM_CODEX_HEADLESS_MODEL"
+        return contract
+    if agent == "claude":
+        contract = dict(selected or _DEFAULT_CLAUDE_INVOCATION)
+        if _CLAUDE_MODEL_ENV_OVERRIDE:
+            contract["model"] = _CLAUDE_MODEL_ENV_OVERRIDE
+            contract["model_override_source"] = "QM_CLAUDE_HEADLESS_MODEL"
+        return contract
+    return {"model": GEMINI_HEADLESS_MODEL or None, "reasoning_effort": None}
 
 
 def worktree_path(agent: str, slot: int) -> Path:
@@ -425,7 +580,14 @@ def ensure_worktree(agent: str, slot: int) -> dict[str, Any]:
     }
 
 
-def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, timeout_minutes: int) -> dict[str, Any]:
+def run_agent_slot(
+    agent: str,
+    slot: int,
+    dry_run: bool,
+    stale_minutes: int,
+    timeout_minutes: int,
+    invocation_profile: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     stamp = utc_stamp()
     if agent == "gemini":
@@ -476,9 +638,12 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
     # BEFORE the empty-spawn guards — see _write_lane_heartbeat).
     _write_lane_heartbeat(agent, slot=slot)
 
-    cmd = command_for(agent, cwd, prompt_path)
+    model_contract = headless_model_contract(agent, invocation_profile)
+    cmd = command_for(agent, cwd, prompt_path, model_contract)
     payload: dict[str, Any] = {
         "agent": agent,
+        "execution_backend": "agy" if agent == "gemini" else agent,
+        "model_contract": model_contract,
         "slot": slot,
         "dry_run": dry_run,
         "prompt_path": str(prompt_path),
@@ -488,30 +653,75 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
         "worktree": worktree,
         "started_at": dt.datetime.now(dt.UTC).isoformat(),
     }
+    managed_lease_id: str | None = None
+    managed_pid: int | None = None
+    managed_process_finished = False
     try:
         if dry_run:
             payload.update({"ok": True, "returncode": 0, "dry_run_verified": True})
             return payload
         creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
         with open(prompt_path, "rb") as stdin_f, open(live_log, "wb") as stdout_f:
-            proc = subprocess.Popen(
-                cmd,
-                cwd=str(cwd),
-                stdin=stdin_f,
-                stdout=stdout_f,
-                stderr=subprocess.STDOUT,
-                env=agent_env(agent),
-                shell=(agent != "gemini"),
-                creationflags=creationflags,
-                close_fds=True,
-            )
+            popen_kwargs = {
+                "stdin": stdin_f,
+                "stdout": stdout_f,
+                "stderr": subprocess.STDOUT,
+                "env": agent_env(agent),
+                "shell": agent != "gemini",
+                "creationflags": creationflags,
+                "close_fds": True,
+            }
+            if agent == "codex":
+                proc, lease = spawn_managed_codex(
+                    FARM_ROOT,
+                    cmd,
+                    purpose="orchestration",
+                    cwd=cwd,
+                    dedupe_key="orchestration:codex",
+                    # The wrapper owns the primary timeout.  Five minutes of
+                    # lease headroom covers its result write/push cleanup while
+                    # remaining below the Task Scheduler's four-hour limit for
+                    # the default 225-minute run.
+                    max_age_minutes=timeout_minutes + 5,
+                    metadata={
+                        "slot": slot,
+                        "live_log": str(live_log),
+                        "result_path": str(result_path),
+                    },
+                    **popen_kwargs,
+                )
+                managed_lease_id = str(lease["lease_id"])
+                managed_pid = int(proc.pid)
+                payload["lease_id"] = managed_lease_id
+            else:
+                proc = subprocess.Popen(cmd, cwd=str(cwd), **popen_kwargs)
             payload["pid"] = proc.pid
             try:
                 payload["returncode"] = proc.wait(timeout=timeout_minutes * 60)
                 payload["ok"] = payload["returncode"] == 0
+                managed_process_finished = managed_pid is not None
             except subprocess.TimeoutExpired:
-                proc.kill()
+                if managed_pid is not None:
+                    stopped = terminate_managed_codex_pid(FARM_ROOT, managed_pid)
+                    payload["timeout_stop"] = stopped
+                    managed_process_finished = bool(stopped.get("stopped"))
+                    if not managed_process_finished:
+                        try:
+                            proc.wait(timeout=30)
+                            managed_process_finished = True
+                            payload["timeout_stop_completed_concurrently"] = True
+                        except subprocess.TimeoutExpired:
+                            pass
+                else:
+                    proc.kill()
                 payload.update({"ok": False, "returncode": 124, "error": "timeout"})
+        if managed_lease_id is not None and not managed_process_finished:
+            payload["push"] = {
+                "attempted": False,
+                "ok": False,
+                "reason": "managed_process_exit_unconfirmed",
+            }
+            return payload
         if worktree.get("shared_repo"):
             payload["push"] = {
                 "attempted": False,
@@ -525,9 +735,24 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
         payload.update({"ok": False, "returncode": 1, "error": repr(exc)})
         return payload
     finally:
+        # A lease may be removed only after the exact registered process is
+        # known to have exited.  If waiting or termination fails, retain it so
+        # the ownership-safe reaper can retry instead of orphaning the tree.
+        if managed_lease_id is not None and managed_process_finished:
+            removed = release_managed_codex_process(FARM_ROOT, lease_id=managed_lease_id)
+            if not removed:
+                payload["lease_retained_for_reaper"] = True
+        elif managed_lease_id is not None:
+            payload["lease_retained_for_reaper"] = True
         payload["finished_at"] = dt.datetime.now(dt.UTC).isoformat()
         result_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
-        release_lock(lock_info)
+        if managed_lease_id is None or managed_process_finished:
+            release_lock(lock_info)
+        else:
+            payload["lock_retained_until_stale_recovery"] = True
+            result_path.write_text(
+                json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8"
+            )
 
 
 def claude_work_available() -> dict[str, Any]:
@@ -713,6 +938,133 @@ def _agent_tasks_work_available(agent: str) -> dict[str, Any]:
         return {"any_work": True, "reason": f"work_check_error:{exc!r}"}
 
 
+def _quota_lane_candidates(agent: str) -> tuple[list[dict[str, Any]], str]:
+    """Return assigned or capability-compatible unrouted work for one lane."""
+    import sqlite3 as _sqlite3
+
+    db = FARM_ROOT / "state" / "farm_state.sqlite"
+    if not db.exists():
+        return [], "db_missing"
+    try:
+        con = _sqlite3.connect(db)
+        con.row_factory = _sqlite3.Row
+        registry = con.execute(
+            "SELECT capabilities_json FROM agent_registry WHERE agent_id=?",
+            (agent,),
+        ).fetchone()
+        capabilities = None
+        if registry is not None:
+            capabilities = set(json.loads(registry["capabilities_json"] or "[]"))
+        rows = con.execute(
+            """
+            SELECT id, task_type, priority, assigned_agent, required_capabilities_json, payload_json
+            FROM agent_tasks
+            WHERE (assigned_agent=? AND state IN ('TODO','IN_PROGRESS'))
+               OR (state IN ('BACKLOG','TODO') AND (assigned_agent IS NULL OR assigned_agent=''))
+            ORDER BY priority DESC, updated_at ASC
+            LIMIT 100
+            """,
+            (agent,),
+        ).fetchall()
+        con.close()
+        candidates: list[dict[str, Any]] = []
+        for row in rows:
+            required = set(json.loads(row["required_capabilities_json"] or "[]"))
+            assigned = str(row["assigned_agent"] or "")
+            if not assigned and capabilities is not None and not required.issubset(capabilities):
+                continue
+            candidates.append(
+                {
+                    "task_id": row["id"],
+                    "task_type": row["task_type"],
+                    "priority": int(row["priority"]),
+                    "assigned": bool(assigned),
+                    "payload": json.loads(row["payload_json"] or "{}"),
+                }
+            )
+        return candidates, "ok"
+    except Exception as exc:
+        return [], f"db_error:{exc!r}"
+
+
+def _quota_lane_check(
+    agent: str,
+    *,
+    config_path: Path | None = None,
+    state_path: Path | None = None,
+    summary_path: Path | None = None,
+) -> dict[str, Any]:
+    """Gate a 15-minute lane before any Codex/Claude CLI process is spawned."""
+    if agent not in quota_spawn_gate.GATED_AGENTS:
+        return {"allowed": True, "reason": "agent_not_quota_gated", "allowed_task_count": 1}
+
+    candidates, candidate_status = _quota_lane_candidates(agent)
+    if candidate_status != "ok":
+        # DB visibility is an operations incident. Preserve the explicit
+        # ops/review fail-open contract while still recording a gate decision.
+        decision = quota_spawn_gate.evaluate_spawn(
+            agent,
+            "ops_issue",
+            70,
+            config_path=config_path,
+            state_path=state_path,
+            summary_path=summary_path,
+        )
+        return {
+            "allowed": bool(decision.get("allowed")),
+            "reason": "lane_db_unavailable_ops_continuity",
+            "candidate_status": candidate_status,
+            "allowed_task_count": 1 if decision.get("allowed") else 0,
+            "selected_decision": decision,
+        }
+    if not candidates:
+        return {
+            "allowed": False,
+            "reason": "no_quota_eligible_agent_tasks",
+            "candidate_status": candidate_status,
+            "allowed_task_count": 0,
+        }
+
+    allowed: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    denied: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    for candidate in candidates:
+        decision = quota_spawn_gate.evaluate_spawn(
+            agent,
+            str(candidate["task_type"]),
+            int(candidate["priority"]),
+            config_path=config_path,
+            state_path=state_path,
+            summary_path=summary_path,
+            payload=dict(candidate.get("payload") or {}),
+            write_summary=False,
+        )
+        (allowed if decision.get("allowed") else denied).append((candidate, decision))
+
+    selected_pair = allowed[0] if allowed else denied[0]
+    quota_spawn_gate.record_gate_decision(
+        selected_pair[1],
+        state_path=state_path,
+        summary_path=summary_path,
+    )
+    return {
+        "allowed": bool(allowed),
+        "reason": "quota_eligible_work_available" if allowed else "all_candidate_tasks_quota_blocked",
+        "candidate_status": candidate_status,
+        "candidate_count": len(candidates),
+        "allowed_task_count": len(allowed),
+        "blocked_task_count": len(denied),
+        "selected_task": {
+            key: value for key, value in selected_pair[0].items() if key != "payload"
+        },
+        "selected_decision": selected_pair[1],
+        "allowed_invocations": [
+            decision.get("invocation")
+            for _candidate, decision in allowed
+            if decision.get("invocation")
+        ],
+    }
+
+
 def _write_lane_heartbeat(agent: str, slot: int = 0) -> None:
     """Lane heartbeat = 'this lane's scheduled infrastructure is alive', NOT
     'this lane is busy'. The router skips lanes whose heartbeat is older than
@@ -777,15 +1129,54 @@ def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: in
                 "reason": "no_actionable_work",
                 "work_available_check": wa,
             }
+    quota_check: dict[str, Any] | None = None
+    if agent in quota_spawn_gate.GATED_AGENTS and not dry_run:
+        quota_check = _quota_lane_check(agent)
+        if not quota_check.get("allowed"):
+            return {
+                "agent": agent,
+                "ok": True,
+                "skipped": True,
+                "reason": "quota_gate_blocked",
+                "quota_gate_check": quota_check,
+            }
+        max_sessions = min(
+            max_sessions,
+            max(1, int(quota_check.get("allowed_task_count") or 1)),
+        )
     session_count = max(1, max_sessions)
     if agent != "claude":
         session_count = 1
+    slot_invocations = list((quota_check or {}).get("allowed_invocations") or [])
+
+    def slot_invocation(slot_index: int) -> dict[str, Any] | None:
+        if not slot_invocations:
+            return None
+        return dict(slot_invocations[min(slot_index, len(slot_invocations) - 1)] or {})
+
     if session_count == 1:
-        results = [run_agent_slot(agent, 1, dry_run, stale_minutes, timeout_minutes)]
+        results = [
+            run_agent_slot(
+                agent,
+                1,
+                dry_run,
+                stale_minutes,
+                timeout_minutes,
+                slot_invocation(0),
+            )
+        ]
     else:
         with ThreadPoolExecutor(max_workers=session_count) as executor:
             futures = [
-                executor.submit(run_agent_slot, agent, slot, dry_run, stale_minutes, timeout_minutes)
+                executor.submit(
+                    run_agent_slot,
+                    agent,
+                    slot,
+                    dry_run,
+                    stale_minutes,
+                    timeout_minutes,
+                    slot_invocation(slot - 1),
+                )
                 for slot in range(1, session_count + 1)
             ]
             results = [future.result() for future in futures]
@@ -795,6 +1186,7 @@ def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: in
         "ok": ok,
         "returncode": 0 if ok else 1,
         "max_sessions": session_count,
+        "quota_gate_check": quota_check,
         "results": results,
     }
 
@@ -804,8 +1196,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run one headless agent orchestration pass.")
     parser.add_argument("--agent", choices=("codex", "gemini", "claude"), required=True)
     parser.add_argument("--dry-run", action="store_true", help="Verify prompt/lock/command without launching the model.")
-    parser.add_argument("--stale-minutes", type=int, default=180)
-    parser.add_argument("--timeout-minutes", type=int, default=240)
+    # Must remain above the 225-minute agent timeout and the PT4H task limit.
+    parser.add_argument("--stale-minutes", type=int, default=250)
+    # Leave cleanup headroom below the scheduled task's PT4H execution limit.
+    parser.add_argument("--timeout-minutes", type=int, default=225)
     parser.add_argument("--max-sessions", type=int, default=1, help="Claude-only parallel slot count.")
     args = parser.parse_args()
     result = run_agent(args.agent, args.dry_run, args.stale_minutes, args.timeout_minutes, args.max_sessions)

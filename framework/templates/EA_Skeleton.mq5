@@ -19,7 +19,8 @@
 //   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
 //   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
 //   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
+//   - QM_FrameworkTrackOpenPositionMae / QM_FrameworkHandleFridayClose /
+//     QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
 // DO NOT
 //   - Write per-EA IsNewBar() — use QM_IsNewBar()
@@ -171,6 +172,11 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any per-tick guard can
+   // return. QM_KillSwitchCheck retains the same call as a compatibility
+   // fallback for pre-template EAs; keep this explicit hook in all new builds.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 

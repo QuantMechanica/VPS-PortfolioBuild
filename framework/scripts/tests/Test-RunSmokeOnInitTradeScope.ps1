@@ -18,6 +18,7 @@ $neededFunctions = @(
     "Convert-HtmlEntityText",
     "Get-ReportMetricValue",
     "Convert-ReportNumber",
+    "Get-TesterLogCurrentRunText",
     "Test-TesterLogShowsOnInitFailure",
     "Test-TesterLogShowsSetupDataMissing",
     "Test-TesterLogHasNoHistoryForRun",
@@ -76,6 +77,27 @@ $zeroTradeReasons = Get-ReportInvalidReasons `
 
 if ($zeroTradeReasons -notcontains "ONINIT_FAILED") {
     throw "Zero-trade report did not preserve OnInit failure detection."
+}
+
+$sharedDailyLog = @"
+AA  0  12:00:00 Tester XNGUSD.DWX,Daily: testing of Experts\QM\old.ex5 from 2018.01.01 to 2018.12.31 started with inputs:
+AA  2  12:00:01 Tester tester stopped because OnInit returns non-zero code 1
+BB  0  13:00:00 Tester GBPNZD.DWX,H4: testing of Experts\QM\QM5_1517_ehlers-roofing-filter-trend-h4.ex5 from 2022.07.01 to 2022.12.31 started with inputs:
+BB  0  13:00:30 Tester final balance 100000.00 USD
+BB  0  13:00:30 Tester test passed in 0:00:30.000
+"@
+
+$currentRunText = Get-TesterLogCurrentRunText -TesterLogTail $sharedDailyLog
+if ($currentRunText -match "old\.ex5" -or (Test-TesterLogShowsOnInitFailure -TesterLogTail $currentRunText)) {
+    throw "A previous EA's OnInit failure leaked into the current run journal scope."
+}
+
+$currentFailureLog = @"
+BB  0  13:00:00 Tester GBPNZD.DWX,H4: testing of Experts\QM\QM5_1517_ehlers-roofing-filter-trend-h4.ex5 from 2022.07.01 to 2022.12.31 started with inputs:
+BB  2  13:00:01 Tester tester stopped because OnInit returns non-zero code 1
+"@
+if (-not (Test-TesterLogShowsOnInitFailure -TesterLogTail (Get-TesterLogCurrentRunText -TesterLogTail $currentFailureLog))) {
+    throw "The current EA's OnInit failure was removed by journal scoping."
 }
 
 $initialDepositTail = @"

@@ -1,0 +1,45 @@
+;==========================================================
+; QM5 Master-EA Set File — Phase-3-REST per-module regression
+; ea_id:        20001
+; ea_slug:      master-xauusd
+; ea_version:   v5.0
+; symbol:       XAUUSD.DWX
+; timeframe:    H4   (tester Period MUST be set to H4 for this run — 12989
+;                     is the one XAU sleeve whose own TF is not D1)
+; environment:  backtest (regression)
+; purpose:      strategy4 (QM5_12989 grimes-nested-pb-v2) ONLY, FIXED/1000 —
+;               reproduce the verified standalone stream (51 trades / net
+;               $13,878, all rows magic=129890003) inside the master host.
+;               qm_news_temporal/qm_news_compliance mirror the standalone
+;               12989 EA's own compiled defaults (mode 3 / mode 1); the
+;               master's own defaults are OFF/NONE and must be overridden
+;               here or the news corset diverges from the reference run.
+; author:       headless Sonnet (Phase-3-REST)
+; date:         2026-07-13
+;==========================================================
+qm_ea_id=20001
+qm_magic_slot_offset=0
+qm_rng_seed=42
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy1_enabled=false
+strategy1_risk_mode=1
+strategy1_risk_value=0
+strategy2_enabled=false
+strategy2_risk_mode=1
+strategy2_risk_value=0
+strategy3_enabled=false
+strategy3_risk_mode=1
+strategy3_risk_value=0
+strategy4_enabled=true
+strategy4_risk_mode=2
+strategy4_risk_value=1000
+strategy5_enabled=false
+strategy5_risk_mode=1
+strategy5_risk_value=0

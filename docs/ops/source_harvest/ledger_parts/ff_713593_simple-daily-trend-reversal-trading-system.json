@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_713593_simple-daily-trend-reversal-trading-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_713593_simple-daily-trend-reversal-trading-system.pdf",
+      "source_pages": "1-3",
+      "source_ref": "Simple Daily Trend Reversal Trading System, ForexFactory thread 713593, opened by user 'mrdfx' (2018), https://www.forexfactory.com/thread/713593-simple-daily-trend-reversal-trading-system (Part II: thread 864690)",
+      "strategy_name": "Simple Daily Trend Reversal (multi-indicator confluence)",
+      "concept": "Trend-reversal entry taken only when a (repainting) ZigZag arrow, an MBFX/Turbo-JSRX stochastic overbought-or-oversold reading, a custom trend indicator, and a candle closing back across a 10/15-period MA at a Fibonacci pivot zone all agree.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Primary trigger (ZigZag arrow) repaints by author's own admission; confirming indicators (MBFX Timing / Turbo JSRX / unnamed 'trend indicator') are custom with parameters never disclosed; exits are wholly discretionary; cannot be faithfully mechanized and the thread's own EA was pulled for poor results.",
+      "priority_hint": "LOW",
+      "notes": "Mainly H4 (also H1/D1), FX majors + GOLD. Exit is discretionary (fixed 50-100 pips / Fib / %ADR / opposite signal / trailing, plus manual 'monitor price action'). Variant by user 'ebeckers' adds a S/R-level filter and a channel-surfer filter and a H1-confirms-H4 multi-TF rule. Page 3: the mechanized SDTR EA was 'discontinued temporarily. Due to the poor results... removed.' Mechanizable skeleton (stochastic exit-of-OB/OS + trend filter + MA close-cross near Fib pivot) is generic and overlaps yet-another swing/reversal-MR variant; would require inventing all indicator definitions and a mechanical exit."
+    }
+  ],
+  "notes": ["zero_usable_candidates_single_reject_row"]
+}

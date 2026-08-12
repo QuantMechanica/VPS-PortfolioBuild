@@ -382,11 +382,14 @@ void OnTick()
       g_vs_init_bars++;
    }
 
-   Strategy_ManageOpenPosition();
-   Strategy_ExitSignal();
-
    if (!is_new_bar)
       return;
+
+   // The volatility stop only changes when UpdateVSLine() consumes a closed
+   // H1 bar.  Retrying the same rejected SL modification on every tick can
+   // emit millions of VS_SL_UPDATE_FAIL records and exhaust the tester disk.
+   Strategy_ManageOpenPosition();
+   Strategy_ExitSignal();
 
    QM_EquityStreamOnNewBar();
 

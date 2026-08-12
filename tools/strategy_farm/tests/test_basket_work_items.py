@@ -14,7 +14,38 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 import farmctl  # noqa: E402
 
 
+def _fake_running_process_identity(pid: int) -> dict:
+    """Deterministic OS identity for FakeProc dispatch doubles."""
+    return {
+        "pid": pid,
+        "is_running": True,
+        "creation_key": f"test-process:{pid}",
+        "image_path": "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe",
+        "started_at_epoch": 1_700_000_000.0,
+    }
+
+
+def _fake_job_binding(proc, capture_identity, **_kwargs) -> dict:
+    """Containment double for FakeProc instances without real Windows handles."""
+    identity = capture_identity(proc)
+    return {
+        **identity,
+        "job_object_assigned": True,
+        "job_object_mode": "KILL_ON_JOB_CLOSE",
+        "job_object_registry_key": f"{proc.pid}|{identity['process_creation_key']}",
+        "process_started_suspended": True,
+        "primary_thread_resumed": True,
+    }
+
+
 class BasketWorkItemsTests(unittest.TestCase):
+    def setUp(self) -> None:
+        old_binding = farmctl.bind_spawned_process_to_kill_job
+        self.addCleanup(
+            setattr, farmctl, "bind_spawned_process_to_kill_job", old_binding
+        )
+        farmctl.bind_spawned_process_to_kill_job = _fake_job_binding
+
     def _insert_active_basket_q02(self, root: Path, *, item_id: str, age_minutes: int) -> None:
         farmctl.init_db(root)
         updated = (
@@ -64,7 +95,7 @@ class BasketWorkItemsTests(unittest.TestCase):
             old_stop_pid = farmctl._stop_pid
             old_stop_terminal_slot = farmctl._stop_terminal_slot
             try:
-                farmctl._stop_pid = lambda _pid: False
+                farmctl._stop_pid = lambda _pid, **_kw: False
                 farmctl._stop_terminal_slot = lambda _terminal: False
                 with farmctl.connect(root) as conn:
                     flagged = farmctl._detect_active_age_timeout(conn)
@@ -78,7 +109,9 @@ class BasketWorkItemsTests(unittest.TestCase):
             self.assertEqual(len(flagged), 1)
             self.assertEqual(flagged[0]["timeout_min"], farmctl.BASKET_Q02_ACTIVE_TIMEOUT_MIN)
             self.assertEqual(row[0], "failed")
-            self.assertEqual(row[1], "FAIL")
+            # WP-4 (2026-07-25): an active-age reap is a harness kill -> INFRA_FAIL,
+            # not a strategy FAIL. verdict_reason stays 'ACTIVE_TIMEOUT'.
+            self.assertEqual(row[1], "INFRA_FAIL")
             self.assertEqual(json.loads(row[2])["verdict_reason"], "ACTIVE_TIMEOUT")
 
     def test_payload_timeout_extends_phase_active_timeout(self) -> None:
@@ -374,6 +407,7 @@ class BasketWorkItemsTests(unittest.TestCase):
             ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_demo"
             sets_dir = ea_dir / "sets"
             sets_dir.mkdir(parents=True)
+            (ea_dir / f"{ea_id}_demo.ex5").write_text("compiled\n", encoding="utf-8")
             logical = "QM5_12723_NZDUSD_EURJPY_COINTEGRATION_D1"
             manifest = {
                 "logical_symbol": logical,
@@ -413,9 +447,11 @@ class BasketWorkItemsTests(unittest.TestCase):
             old_repo_root = farmctl.REPO_ROOT
             old_popen = farmctl.subprocess.Popen
             old_compile_gate_check = farmctl._compile_gate_check
+            old_get_process_identity = farmctl.get_process_identity
             try:
                 farmctl.REPO_ROOT = repo_root
                 farmctl.subprocess.Popen = FakeProc
+                farmctl.get_process_identity = _fake_running_process_identity
                 farmctl._compile_gate_check = lambda _ea_dir_name: {
                     "allowed": True,
                     "verdict": "COMPILED_CACHED",
@@ -430,6 +466,7 @@ class BasketWorkItemsTests(unittest.TestCase):
                 farmctl.REPO_ROOT = old_repo_root
                 farmctl.subprocess.Popen = old_popen
                 farmctl._compile_gate_check = old_compile_gate_check
+                farmctl.get_process_identity = old_get_process_identity
 
             self.assertTrue(result["spawned"])
             self.assertEqual(result["logical_symbol"], logical)
@@ -500,9 +537,11 @@ class BasketWorkItemsTests(unittest.TestCase):
 
             old_popen = farmctl.subprocess.Popen
             old_compile_gate_check = farmctl._compile_gate_check
+            old_get_process_identity = farmctl.get_process_identity
             try:
                 farmctl.REPO_ROOT = repo_root
                 farmctl.subprocess.Popen = FakeProc
+                farmctl.get_process_identity = _fake_running_process_identity
                 farmctl._compile_gate_check = lambda _ea_dir_name: {
                     "allowed": True,
                     "verdict": "COMPILED_CACHED",
@@ -517,6 +556,7 @@ class BasketWorkItemsTests(unittest.TestCase):
                 farmctl.REPO_ROOT = old_repo_root
                 farmctl.subprocess.Popen = old_popen
                 farmctl._compile_gate_check = old_compile_gate_check
+                farmctl.get_process_identity = old_get_process_identity
 
             self.assertTrue(result["spawned"])
             self.assertEqual(result["runner_symbol"], "EURUSD.DWX")
@@ -592,9 +632,11 @@ class BasketWorkItemsTests(unittest.TestCase):
 
             old_repo_root = farmctl.REPO_ROOT
             old_popen = farmctl.subprocess.Popen
+            old_get_process_identity = farmctl.get_process_identity
             try:
                 farmctl.REPO_ROOT = repo_root
                 farmctl.subprocess.Popen = FakeProc
+                farmctl.get_process_identity = _fake_running_process_identity
                 with farmctl.connect(root) as conn:
                     row = conn.execute(
                         "SELECT * FROM work_items WHERE id='wi-q03-basket-window'"
@@ -603,6 +645,7 @@ class BasketWorkItemsTests(unittest.TestCase):
             finally:
                 farmctl.REPO_ROOT = old_repo_root
                 farmctl.subprocess.Popen = old_popen
+                farmctl.get_process_identity = old_get_process_identity
 
             self.assertTrue(result["spawned"])
             self.assertEqual(result["logical_symbol"], logical)

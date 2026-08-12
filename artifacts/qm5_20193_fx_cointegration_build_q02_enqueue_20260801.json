@@ -1,0 +1,96 @@
+{
+  "schema": "qm.fx-cointegration-build-q02/v1",
+  "generated_at_utc": "2026-08-01T10:13:44Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20193",
+  "ea_label": "QM5_20193_eurusd-cad-coint",
+  "pair": [
+    "EURUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "logical_symbol": "QM5_20193_EURUSD_USDCAD_COINTEGRATION_D1",
+  "scan_rank_oos": 11,
+  "scan_metrics": {
+    "dev_net_sharpe": 0.006938,
+    "oos_net_sharpe": 0.734143,
+    "oos_return_pct": 4.351185,
+    "oos_state_changes": 14,
+    "fixed_dev_beta": -0.8397573,
+    "half_life_d1_bars": 160.705
+  },
+  "build": {
+    "task_id": "31d54db7-2160-451f-a324-cfb25c678dd5",
+    "commits": [
+      "b671fd504",
+      "43ca8cd8b",
+      "380ab88c1"
+    ],
+    "strict_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_failures": 0,
+    "build_warnings": 0,
+    "symbol_scope": "BASKET_OK",
+    "basket_tests_passed": 24,
+    "build_report": "D:\\QM\\reports\\framework\\21\\build_check_20260801_100502.json",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260801_100502\\summary.csv"
+  },
+  "smoke": {
+    "result": "PASS",
+    "deterministic": true,
+    "real_ticks": true,
+    "oninit_failure": false,
+    "log_bomb": false,
+    "runs": 2,
+    "trades_per_run": 2,
+    "profit_factor": 1.52,
+    "drawdown_pct": 0.19,
+    "net_profit": 103.76,
+    "report": "D:\\QM\\reports\\smoke\\QM5_20193\\20260801_100659\\summary.json"
+  },
+  "risk": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "capacity_observation": {
+    "scanned_at_utc": "2026-08-01T10:13:44Z",
+    "running_factory_terminals": [
+      "T1",
+      "T10",
+      "T2"
+    ],
+    "count": 3,
+    "ceiling": 7,
+    "t_live_excluded": true,
+    "factory_off": false
+  },
+  "q02": {
+    "enqueued_at_utc": "2026-08-01T10:13:09Z",
+    "work_item_id": "0610ebc5-fbb0-4658-8455-2574ee98b277",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "evidence_path": null,
+    "setfile": "framework/EAs/QM5_20193_eurusd-cad-coint/sets/QM5_20193_eurusd-cad-coint_QM5_20193_EURUSD_USDCAD_COINTEGRATION_D1_D1_backtest.set",
+    "host_symbol": "EURUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "EURUSD.DWX",
+      "USDCAD.DWX"
+    ],
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "timeout_min": 450,
+    "priority_track": true,
+    "physical_host_setfile_skipped": true
+  },
+  "safety": {
+    "manual_dispatch": false,
+    "manual_q02_tester_launch": false,
+    "portfolio_gate_changed": false,
+    "t_live_changed": false,
+    "autotrading_changed": false,
+    "live_artifacts_created": false
+  }
+}

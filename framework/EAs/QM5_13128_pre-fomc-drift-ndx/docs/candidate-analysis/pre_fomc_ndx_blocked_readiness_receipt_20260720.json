@@ -1,0 +1,33 @@
+{
+  "artifact_type": "BLOCKED_REQUALIFICATION_VERIFICATION_RECEIPT",
+  "analysis_id": "QM5_13128_PRE_FOMC_NDX_REQUAL_READINESS_20260720_001",
+  "verified_at_utc": "2026-07-20T07:26:50Z",
+  "qualification_state": "BLOCKED_NOT_RELEASED",
+  "execution_authority": "NONE",
+  "tester_started": false,
+  "tuning_performed": false,
+  "contract": {
+    "path": "framework/EAs/QM5_13128_pre-fomc-drift-ndx/docs/candidate-analysis/pre_fomc_ndx_requalification_blocked_contract_20260720.json",
+    "sha256": "dcdabba12eab90bea7c1b93e5442fe926b1345b8ecbe47802cabad3723a3ff43",
+    "captured_commit": "2a636c5e72cc90bf5a181745329b63a9e11b486e"
+  },
+  "validator": {
+    "path": "framework/EAs/QM5_13128_pre-fomc-drift-ndx/tools/candidate_analysis/audit_pre_fomc_ndx_requalification.py",
+    "sha256": "543cace3b4666ced230cdd6b205f19c3aa09a43fb54acefdda46c504cd26ad1d",
+    "captured_commit": "694b15a5f59c690b1cd3c9b9400c794693d242e0",
+    "status": "PASS_BLOCKED_STATE_REPRODUCED",
+    "source_bindings_verified": 22,
+    "official_calendar_dates_verified": 65,
+    "future_events_fenced": 4
+  },
+  "tests": {
+    "path": "framework/EAs/QM5_13128_pre-fomc-drift-ndx/tests/candidate_analysis/test_audit_pre_fomc_ndx_requalification.py",
+    "sha256": "48eaa1dadac2d16e3f2033aa1be7dceda0e78c7e6a254ee2f02a2e0fa2837cc3",
+    "command": "python -m pytest -q framework/EAs/QM5_13128_pre-fomc-drift-ndx/tests/candidate_analysis/test_audit_pre_fomc_ndx_requalification.py",
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "duration_seconds": 1.07
+  },
+  "capture_note": "The running factory pump captured the contract and validator bundle while verification was in progress. This receipt binds those immutable commit identities; no history rewrite was attempted. The contract commit also contains an unrelated pre-existing QM5_10729 path captured by the pump, which was not edited by this audit."
+}

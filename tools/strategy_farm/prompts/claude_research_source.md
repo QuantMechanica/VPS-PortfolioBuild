@@ -29,24 +29,28 @@ URI: `{{uri}}`
 - Do not switch to another source.
 - Do not code an EA.
 - Do not run backtests.
-- Do not create Paperclip issues.
+- Do not create external orchestration issues.
 - Do not use MQL5 Marketplace.
 - Reject or mark PENDING (per relaxed criteria 2026-05-15, see
   `C:/QM/repo/processes/qb_reputable_source_criteria.md`):
-  - **No source link / unattributable** (R1 fail)
+  - **Missing source lineage**: assign the deterministic Fabian Grabner
+    (OWNER) source fallback and continue; never reject for source reputation
+    or attribution formatting alone.
   - **Purely discretionary with NO rules at all** (R2 fail). Gaps in
     side-parameters are OK — Codex fills defaults.
   - **Fundamentally untestable on any DWX instrument even after porting**
     (R3 fail). Crypto / equity / options strategies that PORT to Forex,
     indices, or CFDs are valid — note the porting plan in the card.
-    Special case: **SP500 → SP500.DWX (Custom Symbol, backtest-only,
-    OWNER-provided ticks 2018-07→2026-05).** Available since 2026-05-16T19:15Z
-    on T1-T5. R3 PASS for SPY/SPX-intraday-specific edges. Card MUST note
-    in `## R3` section: "Live promotion T6 gate: SP500.DWX is not
-    broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy
-    requires a parallel-validation on NDX.DWX or WS30.DWX before
-    AutoTrading enable." This is Board Advisor's T6-gate enforcement, not
-    yours — but the card must flag it so it doesn't surprise anyone at P10.
+    Special case: **SP500 → SP500.DWX** (Custom Symbol backtest alias,
+    OWNER-provided ticks 2018-07→2026-05, available since 2026-05-16T19:15Z).
+    R3 PASS for SPY/SPX-intraday-specific edges, **with no live-promotion
+    caveat**: live orders use the bare broker symbol `SP500` and are
+    **confirmed routable** (accepted entry+close on Darwinex-Live,
+    `ORDER_ROUTABLE_CONFIRMED` in `dwx_symbol_matrix.csv`, evidence
+    `docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md`;
+    QM5_11132 trades SP500 in the deployed DXZ book). Do NOT re-add the old
+    "not broker-routable / parallel-validate on NDX or WS30" note — it was
+    superseded on 2026-07-16.
     Other US-equity instruments (SPY ETF, ES futures, individual stocks)
     remain unavailable — port them to SP500.DWX / NDX.DWX / WS30.DWX per
     the card edge.
@@ -63,6 +67,10 @@ URI: `{{uri}}`
 - **Anonymous forum handles are OK** as long as you link the source URL.
   The strategy will pass or fail on its own data in P2-P7. R1 used to require
   author track record — that was dropped 2026-05-15.
+- OWNER- and AI-originated hypotheses are also valid sources. If no prior
+  book/web/forum source is identifiable, use
+  `OWNER-FABIAN-GRABNER-R1-RECOVERY-20260723`; never reject solely for source
+  reputation.
 - Preserve attribution: URL, author/handle (anon OK), post/article title, date
   if visible, and exact source location.
 

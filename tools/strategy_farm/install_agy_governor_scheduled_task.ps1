@@ -3,7 +3,7 @@ param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$PythonwExe = "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe",
     [int]$EveryMinutes = 10,
-    [string]$UserId = ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name),
+    [string]$UserId = 'qm-admin',
     [switch]$RunNow
 )
 
@@ -11,16 +11,18 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 # agy quota governor: pulls the Antigravity/Gemini quota and raises/clears the
-# AGY_LOW_QUOTA.flag gate. MUST run as Administrator with LogonType Interactive:
-# the OAuth token lives in the Administrator user's DPAPI credential vault
-# (Credential Manager target gemini:antigravity). SYSTEM / S4U cannot decrypt it
-# (no password-derived DPAPI key), so this only works in the logged-on
-# Administrator session -- which is exactly when the factory + agy run.
+# AGY_LOW_QUOTA.flag gate. The scheduler root runs as SYSTEM, then the approved
+# console-session helper launches pythonw with the logged-on qm-admin token so
+# the child can use that user's DPAPI credential vault.
 $taskName = "QM_StrategyFarm_AgyGovernor"
 $script = Join-Path $RepoRoot "tools\strategy_farm\agy_governor.py"
+$helper = Join-Path $RepoRoot "tools\strategy_farm\run_in_console_session.ps1"
+$powerShellExe = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
 
 if (-not (Test-Path -LiteralPath $PythonwExe)) { throw "pythonw.exe not found: $PythonwExe" }
 if (-not (Test-Path -LiteralPath $script)) { throw "agy_governor.py not found: $script" }
+if (-not (Test-Path -LiteralPath $helper)) { throw "console-session helper not found: $helper" }
+if ($UserId -ne 'qm-admin') { throw "Agy governor target user must be qm-admin, not $UserId" }
 
 $settings = New-ScheduledTaskSettingsSet `
     -AllowStartIfOnBatteries `
@@ -29,16 +31,23 @@ $settings = New-ScheduledTaskSettingsSet `
     -MultipleInstances IgnoreNew `
     -ExecutionTimeLimit (New-TimeSpan -Minutes 5)
 
-# Interactive logon for the Administrator account = has the DPAPI key to read the
-# credential vault. Runs only while Administrator is logged on (the factory's
-# normal state); when no session, agy isn't running so no gating is needed.
-$principal = New-ScheduledTaskPrincipal -UserId $UserId -LogonType Interactive -RunLevel Highest
+$principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest
 
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date `
     -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes) `
     -RepetitionDuration (New-TimeSpan -Days 3650)
 
-$action = New-ScheduledTaskAction -Execute $PythonwExe -Argument "`"$script`"" -WorkingDirectory $RepoRoot
+$actionArguments = (
+    '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "{0}" -Exe "{1}" -Arguments "{2}" -WorkDir "{3}" -TargetUser "{4}" -WaitSeconds 240' -f `
+        $helper, $PythonwExe, $script, $RepoRoot, $UserId
+)
+if ($actionArguments.Contains("'")) {
+    throw 'MNT-003 v2 action must not contain literal apostrophe wrappers.'
+}
+$action = New-ScheduledTaskAction `
+    -Execute $powerShellExe `
+    -Argument $actionArguments `
+    -WorkingDirectory $RepoRoot
 
 Register-ScheduledTask `
     -TaskName $taskName `
@@ -46,7 +55,7 @@ Register-ScheduledTask `
     -Trigger $trigger `
     -Settings $settings `
     -Principal $principal `
-    -Description "agy (Antigravity/Gemini) quota governor: pull quota + raise/clear AGY_LOW_QUOTA.flag (every $EveryMinutes min, Administrator/Interactive for the DPAPI credential vault)." `
+    -Description "agy (Antigravity/Gemini) quota governor: SYSTEM scheduler root bridges into the logged-on qm-admin session for DPAPI-backed quota access (every $EveryMinutes min)." `
     -Force | Out-Null
 
 Enable-ScheduledTask -TaskName $taskName | Out-Null

@@ -1,0 +1,8 @@
+[
+  {
+    "ea_id": 13117,
+    "symbol": "EURGBP.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_13117_eurgbp_audjpy_ftmo_retry_20260712\\QM5_13117\\20260712_151704\\summary.json",
+    "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\13117_EURGBP_AUDJPY_BASKET_T2_FRESH_20260712.jsonl"
+  }
+]

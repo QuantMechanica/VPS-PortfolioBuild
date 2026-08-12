@@ -1,0 +1,79 @@
+{
+  "schema": "qm_fx_cointegration_build_q02_handoff/v1",
+  "timestamp_utc": "2026-08-01T15:03:00Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20196",
+  "slug": "eurusd-jpy-coint",
+  "pair": [
+    "EURUSD.DWX",
+    "USDJPY.DWX"
+  ],
+  "logical_symbol": "QM5_20196_EURUSD_USDJPY_COINTEGRATION_D1",
+  "selection": {
+    "scan_size": 66,
+    "sign_aware_rank": 13,
+    "dev_net_sharpe": 0.661899,
+    "oos_net_sharpe": 0.686450,
+    "oos_return_pct": 4.994192,
+    "oos_state_changes": 20,
+    "fixed_dev_beta": -0.505485905,
+    "half_life_d1_bars": 87.404,
+    "dedicated_fixed_d1_pair_previously_built": false,
+    "known_umbrella_overlap": "QM5_1156 adaptive M30 slot; mechanically distinct"
+  },
+  "anchors": {
+    "QM5_12532": "Q02_PASS_THEN_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_THEN_Q04_FAIL"
+  },
+  "build": {
+    "build_check_passed": true,
+    "compile_succeeded": true,
+    "compile_strict": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "ex5_sha256": "b8b268676f8cd3e8312e1e30ea71abf65efc2e8970eb618c75db281ae7947bb2",
+    "build_report": "D:\\QM\\reports\\framework\\21\\build_check_20260801_145920.json",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260801_150618\\summary.csv",
+    "manual_smoke_run": false
+  },
+  "basket_manifest": {
+    "host_symbol": "EURUSD.DWX",
+    "host_timeframe": "D1",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "basket_symbols": [
+      "EURUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "traded_symbols": [
+      "EURUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "conversion_only_symbols": []
+  },
+  "risk": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "q02": {
+    "work_item_id": "a34c39c1-7ef6-43e2-b1b4-eb6a717271b2",
+    "status_at_handoff": "pending",
+    "attempt_count_at_handoff": 0,
+    "logical_setfile_enqueued": true,
+    "physical_host_setfile_skipped": true,
+    "skip_reason": "basket_manifest_logical_setfile_preferred",
+    "priority_track": true,
+    "timeout_min": 450,
+    "cpu_ceiling": 7,
+    "factory_terminals_at_precheck": 3,
+    "factory_terminal_names": [
+      "T2",
+      "T4",
+      "T7"
+    ],
+    "t_live_excluded": true
+  },
+  "prohibited_surfaces_touched": []
+}

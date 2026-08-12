@@ -1,0 +1,34 @@
+{
+  "analysis_id": "QM5_10253_TV_IFVG_SWEEP_TWO_ARM_FULL_DEV_001",
+  "artifact_type": "TWO_RUN_REPRODUCIBILITY_RECEIPT",
+  "contract": {
+    "commit": "ab3b31c0126deee5882a8c3eba38a3bd96011912",
+    "sha256": "687daaf95e085f3eaf086a4eab7b67627671a66dcc9f3090b93a7df28e40c87d"
+  },
+  "executions": [
+    {
+      "independent_process": true,
+      "result_sha256": "1f92af36de46b5361cdbc140726b03438039b5e8e8d66ec818e5a1911a5510b8",
+      "run": 1,
+      "runner_status": "PASS"
+    },
+    {
+      "independent_process": true,
+      "result_sha256": "1f92af36de46b5361cdbc140726b03438039b5e8e8d66ec818e5a1911a5510b8",
+      "run": 2,
+      "runner_status": "PASS"
+    }
+  ],
+  "future_ohlc_parsed": false,
+  "result_path": "framework/EAs/QM5_10253_tv-ifvg-sweep/docs/candidate-analysis/tv_ifvg_sweep_two_arm_full_dev_result.json",
+  "synthetic_tests": {
+    "command": "python -m pytest -q framework/EAs/QM5_10253_tv-ifvg-sweep/tests/candidate_analysis/test_audit_tv_ifvg_sweep_two_arm_dev.py",
+    "passed": 12,
+    "status": "PASS"
+  },
+  "tool": {
+    "commit": "5217784987a73c7415ca6409aeb7e843a5c2b0c9",
+    "sha256": "60f7b449c129f6efa6f64547a732b16801879a9d34e3f6894155c3d0f445acd7"
+  },
+  "two_runs_byte_identical": true
+}

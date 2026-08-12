@@ -1,0 +1,56 @@
+EA_FRAMEWORK_AUDIT_2026-07-20.md RECONCILED vs HEAD (2026-07-24). All fixes require a REBUILD
+to reach live .ex5 (include-level edits). Commit dates for .ex5-mtime synthesis noted per item.
+
+P0.1 Q08 full-history walk in live OnDeinit: FIXED_IN_TREE 5b21b9b1d 2026-07-20 00:53.
+  QM_Common.mqh:1029-1038 wraps Q08 emit in if(MQLInfoInteger(MQL_TESTER)!=0); +DEINIT
+  duration_ms telemetry (WARN>1s) :1047-1051. rebuild=YES.
+P0.2 Per-trade cap frozen as money: FIXED_IN_TREE 5b21b9b1d. QM_Common.mqh:174-182 SetCapPct(1.0);
+  QM_RiskSizer.mqh:68-87 cap=equity*cap_pct/100 per-trade (PERCENT follows live); FIXED keeps money
+  rail. Critical for FTMO 5% legs. rebuild=YES.
+P0.3 KillSwitch halt coverage 13/24 (recompile debt): CODE FIXED_IN_TREE 47f1d9709 2026-07-05.
+  QM_KillSwitch.mqh:486-496 sandbox-relative defaults. PARTIAL IN PRACTICE: pre-fix live binaries
+  still dead until rebuilt (12/24 pre-fix on T_Live per tlive_ks_vintage_20260720.csv). Also note
+  KS_PORTFOLIO_DD sub-channel has no live feed (armed-but-unfed). rebuild=YES (26.07 wave).
+P0.4 No held-period exit primitive: FIXED_IN_TREE (primitive) 37196e79 2026-07-20 00:54.
+  QM_TradeManagement.mqh:587 QM_TM_HeldPeriods, :619 QM_TM_HeldPeriodsForMagic rehydrate from
+  POSITION_TIME. Per-EA adoption (20004/20010 still hand-roll) + rebuild pending. rebuild=YES.
+P0.5 Duplicate guard positions-only: FIXED_IN_TREE 5b21b9b1d. QM_Entry.mqh:129 QM_EntryHasPendingOrder
+  wired at :249-254 (same magic+symbol+type). rebuild=YES.
+P0.6 News CSV boot SPOF: FIXED_IN_TREE 5b21b9b1d. QM_NewsFilter.mqh:662-720 CSV missing/parse/zero
+  -> WARN NEWS_CSV_DEGRADED_LIVE outside tester (not INIT_FAILED). rebuild=YES.
+
+P1.1 MAE tracking 2/3181: FIXED_IN_TREE 6e92c806 2026-07-20 08:20. EA_Skeleton.mq5:178 explicit
+  QM_FrameworkTrackOpenPositionMae() in OnTick + fallback inside QM_KillSwitchCheck (KS.mqh:634).
+  rebuild=YES.
+P1.2 EQUITY_SNAPSHOT scope conflation: FIXED_IN_TREE 6e92c806. QM_EquityStream.mqh:255 emits
+  "scope":"account"; consumer q08_davey/common.py updated same commit. rebuild=YES (+consumer live).
+P1.3 EQUITY_SNAPSHOT baseline reset on re-init: FIXED_IN_TREE 6e92c806. QM_EquityStream.mqh
+  QM_EquityStreamPersistBaseline/RestoreBaseline via GlobalVariables (:45-160, STATE_RESTORED/
+  STATE_STALE_IGNORED). rebuild=YES.
+P1.4 Silent sizing clamps no evidence: FIXED_IN_TREE 5b21b9b1d. RISK_CLAMP event QM_Entry.mqh:313
+  (flag set in QM_RiskSizer.mqh:75, reset+read per pass :287,311-321); registered event_vocabulary.json:253.
+  rebuild=YES.
+P1.5 Tester news no symbol selftest: FIXED_IN_TREE 6e92c806. QM_NewsFilter.mqh:461,465
+  NEWS_TESTER_CALENDAR_SELFTEST (counts symbol-matched events). rebuild=YES.
+P1.6 Event log unversioned + bare TRADE_CLOSED: FIXED_IN_TREE 6e92c806. event_vocabulary.json
+  (schema_version:1, "sv" envelope field :309, bare-schema documented :18) + build_check.ps1(+259)
+  validates registry. rebuild only affects emitters; registry is build-time. rebuild=YES(emit).
+P1.7 SeedRNG sub-streams not independent: OPEN. QM_SeedRNG.mqh UNCHANGED since 2026-05-23; tags
+  still XOR into single g_qm_rng_state (:63-69); design-note doc not corrected. Deferred per audit.
+P1.8 Non-FX sizing unverified (PLAUSIBLE): PARTIAL. Diagnostic added b65e45b4 2026-07-20
+  (guarded DWX tick-value diagnostic); verification dump not yet run/confirmed. No code bug fixed.
+
+P2 (one-line):
+  Stops/freeze-level clamp + modify dedup: FIXED_IN_TREE 37196e79 (QM_TradeManagement.mqh:155-184).
+  QM_Sig_SessionMinutes primitive: OPEN (still hour-granular QM_Sig_Session :191).
+  Partial-close reason overwrite: FIXED_IN_TREE 37196e79 (QM_Exit.mqh:314 keeps true reason).
+  Live SKIP_DAY window skew 2-3h: OPEN (rarely-used mode, not addressed).
+  Friday-close half-day/holiday awareness: OPEN (deferred; day_of_week==5 only).
+  TM_CLOSE stream omits server fills (doc note): OPEN (documentation contract item).
+  build_check waiver language: FIXED_IN_TREE 37196e79 (CEO/CTO->OWNER; waiver OWNER sign-off).
+  Resolver array pruning/binary-search: OPEN (deferred).
+  Generalize FTMO-governor compile-test: PARTIAL 6e92c806 (Invoke-FrameworkP1CompileTest + Test-BuildCheck* added).
+  RUN_CONFIG provenance event at INIT_OK: OPEN (no RUN_CONFIG event emitted; EA_Skeleton emits bare INIT_OK).
+  Deinit-budget telemetry (warn>1s): FIXED_IN_TREE 5b21b9b1d (DEINIT duration_ms).
+  Framework spread-guard primitive: OPEN (deferred).
+  Lifecycle contract doc + wiring assertion: PARTIAL 6e92c806 (build_check MAE-hook assertion Test-BuildCheckMaeHook + codex_build_ea.md).

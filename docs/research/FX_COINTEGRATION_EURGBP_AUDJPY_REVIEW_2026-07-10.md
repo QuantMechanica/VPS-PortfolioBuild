@@ -7,12 +7,13 @@
 
 ## Outcome
 
-The existing non-duplicate EURGBP/AUDJPY draft is submitted for CEO +
+The existing non-duplicate EURGBP/AUDJPY draft is submitted for OWNER +
 Quality-Business G0 review. It is the highest-ranked strict all-sign row from
 the OWNER-requested 66-pair scan that does not already have an EA build.
 
 No EA ID was allocated and no build or Q02 row was created. The card remains
-blocked from Development until G0 is approved and CEO + CTO allocate the ID.
+blocked from Development until G0 is OWNER-approved and Development allocates
+the ID through the deterministic registry.
 
 ## Reproduction
 

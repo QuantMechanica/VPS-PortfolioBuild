@@ -1,0 +1,520 @@
+{
+  "evaluated_configurations": 216,
+  "holdout_pass_count": 0,
+  "predeclaration": "artifacts/ftmo_m15_us_index_relative_strength_predeclaration_2026-07-12.json",
+  "preholdout_leaderboard": [
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 85.187539,
+        "net_r": -48.721255,
+        "profit_factor": 0.912932,
+        "trades": 672,
+        "win_rate": 0.27381
+      },
+      "parameters": {
+        "mode": "convergence",
+        "relative_atr": 0.75,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 4
+      },
+      "preholdout_score": 0.912932,
+      "validation_2023": {
+        "max_drawdown_r": 23.794179,
+        "net_r": 5.228341,
+        "profit_factor": 1.030915,
+        "trades": 208,
+        "win_rate": 0.298077
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 86.05428,
+        "net_r": -68.40271,
+        "profit_factor": 0.900303,
+        "trades": 823,
+        "win_rate": 0.27096
+      },
+      "parameters": {
+        "mode": "convergence",
+        "relative_atr": 0.25,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 4
+      },
+      "preholdout_score": 0.900303,
+      "validation_2023": {
+        "max_drawdown_r": 29.036877,
+        "net_r": -0.623515,
+        "profit_factor": 0.996754,
+        "trades": 234,
+        "win_rate": 0.290598
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 97.906344,
+        "net_r": -65.45638,
+        "profit_factor": 0.894517,
+        "trades": 743,
+        "win_rate": 0.270525
+      },
+      "parameters": {
+        "mode": "convergence",
+        "relative_atr": 0.5,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 4
+      },
+      "preholdout_score": 0.894517,
+      "validation_2023": {
+        "max_drawdown_r": 28.607165,
+        "net_r": -4.532272,
+        "profit_factor": 0.975065,
+        "trades": 220,
+        "win_rate": 0.286364
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 131.334222,
+        "net_r": -109.256891,
+        "profit_factor": 0.841701,
+        "trades": 803,
+        "win_rate": 0.257783
+      },
+      "parameters": {
+        "mode": "convergence",
+        "relative_atr": 0.25,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 2
+      },
+      "preholdout_score": 0.824786,
+      "validation_2023": {
+        "max_drawdown_r": 46.354591,
+        "net_r": -36.68898,
+        "profit_factor": 0.824786,
+        "trades": 241,
+        "win_rate": 0.253112
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 132.424807,
+        "net_r": -109.738075,
+        "profit_factor": 0.821027,
+        "trades": 708,
+        "win_rate": 0.252825
+      },
+      "parameters": {
+        "mode": "convergence",
+        "relative_atr": 0.5,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 2
+      },
+      "preholdout_score": 0.821027,
+      "validation_2023": {
+        "max_drawdown_r": 37.138941,
+        "net_r": -29.998862,
+        "profit_factor": 0.845592,
+        "trades": 225,
+        "win_rate": 0.257778
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 91.72644,
+        "net_r": -51.815913,
+        "profit_factor": 0.900802,
+        "trades": 617,
+        "win_rate": 0.270665
+      },
+      "parameters": {
+        "mode": "convergence",
+        "relative_atr": 0.75,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 2
+      },
+      "preholdout_score": 0.818239,
+      "validation_2023": {
+        "max_drawdown_r": 34.504693,
+        "net_r": -32.729421,
+        "profit_factor": 0.818239,
+        "trades": 207,
+        "win_rate": 0.251208
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 128.198013,
+        "net_r": -121.590981,
+        "profit_factor": 0.80606,
+        "trades": 823,
+        "win_rate": 0.335358
+      },
+      "parameters": {
+        "mode": "convergence",
+        "relative_atr": 0.25,
+        "stop_atr": 1.0,
+        "target_r": 2.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 4
+      },
+      "preholdout_score": 0.80606,
+      "validation_2023": {
+        "max_drawdown_r": 28.497919,
+        "net_r": -19.196488,
+        "profit_factor": 0.88943,
+        "trades": 234,
+        "win_rate": 0.358974
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 166.564492,
+        "net_r": -118.144916,
+        "profit_factor": 0.803526,
+        "trades": 624,
+        "win_rate": 0.293269
+      },
+      "parameters": {
+        "mode": "continuation",
+        "relative_atr": 0.75,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "NDX.DWX",
+        "window_bars": 2
+      },
+      "preholdout_score": 0.803526,
+      "validation_2023": {
+        "max_drawdown_r": 42.02138,
+        "net_r": -24.709472,
+        "profit_factor": 0.866894,
+        "trades": 206,
+        "win_rate": 0.286408
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 125.110155,
+        "net_r": -120.64465,
+        "profit_factor": 0.788494,
+        "trades": 743,
+        "win_rate": 0.33109
+      },
+      "parameters": {
+        "mode": "convergence",
+        "relative_atr": 0.5,
+        "stop_atr": 1.0,
+        "target_r": 2.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 4
+      },
+      "preholdout_score": 0.788494,
+      "validation_2023": {
+        "max_drawdown_r": 29.842924,
+        "net_r": -21.105245,
+        "profit_factor": 0.871634,
+        "trades": 220,
+        "win_rate": 0.354545
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 118.459336,
+        "net_r": -113.423873,
+        "profit_factor": 0.780766,
+        "trades": 672,
+        "win_rate": 0.328869
+      },
+      "parameters": {
+        "mode": "convergence",
+        "relative_atr": 0.75,
+        "stop_atr": 1.0,
+        "target_r": 2.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 4
+      },
+      "preholdout_score": 0.780766,
+      "validation_2023": {
+        "max_drawdown_r": 26.435702,
+        "net_r": -19.344632,
+        "profit_factor": 0.875356,
+        "trades": 208,
+        "win_rate": 0.355769
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 196.184553,
+        "net_r": -154.564088,
+        "profit_factor": 0.773322,
+        "trades": 701,
+        "win_rate": 0.285307
+      },
+      "parameters": {
+        "mode": "continuation",
+        "relative_atr": 0.5,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "NDX.DWX",
+        "window_bars": 2
+      },
+      "preholdout_score": 0.773322,
+      "validation_2023": {
+        "max_drawdown_r": 41.252425,
+        "net_r": -22.927307,
+        "profit_factor": 0.883821,
+        "trades": 220,
+        "win_rate": 0.290909
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 104.850045,
+        "net_r": -80.355803,
+        "profit_factor": 0.847771,
+        "trades": 617,
+        "win_rate": 0.257699
+      },
+      "parameters": {
+        "mode": "continuation",
+        "relative_atr": 0.75,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 2
+      },
+      "preholdout_score": 0.770814,
+      "validation_2023": {
+        "max_drawdown_r": 44.524341,
+        "net_r": -41.941542,
+        "profit_factor": 0.770814,
+        "trades": 207,
+        "win_rate": 0.241546
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 161.503413,
+        "net_r": -141.661284,
+        "profit_factor": 0.780903,
+        "trades": 743,
+        "win_rate": 0.240915
+      },
+      "parameters": {
+        "mode": "continuation",
+        "relative_atr": 0.5,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 4
+      },
+      "preholdout_score": 0.766514,
+      "validation_2023": {
+        "max_drawdown_r": 57.179875,
+        "net_r": -45.125851,
+        "profit_factor": 0.766514,
+        "trades": 220,
+        "win_rate": 0.240909
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 109.963059,
+        "net_r": -87.612443,
+        "profit_factor": 0.871646,
+        "trades": 803,
+        "win_rate": 0.262765
+      },
+      "parameters": {
+        "mode": "continuation",
+        "relative_atr": 0.25,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 2
+      },
+      "preholdout_score": 0.766375,
+      "validation_2023": {
+        "max_drawdown_r": 53.523522,
+        "net_r": -49.901102,
+        "profit_factor": 0.766375,
+        "trades": 241,
+        "win_rate": 0.240664
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 97.137596,
+        "net_r": -69.899928,
+        "profit_factor": 0.8833,
+        "trades": 708,
+        "win_rate": 0.265537
+      },
+      "parameters": {
+        "mode": "continuation",
+        "relative_atr": 0.5,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 2
+      },
+      "preholdout_score": 0.744924,
+      "validation_2023": {
+        "max_drawdown_r": 51.518616,
+        "net_r": -51.210983,
+        "profit_factor": 0.744924,
+        "trades": 225,
+        "win_rate": 0.235556
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 155.765234,
+        "net_r": -134.844838,
+        "profit_factor": 0.770441,
+        "trades": 672,
+        "win_rate": 0.238095
+      },
+      "parameters": {
+        "mode": "continuation",
+        "relative_atr": 0.75,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 4
+      },
+      "preholdout_score": 0.735846,
+      "validation_2023": {
+        "max_drawdown_r": 58.096923,
+        "net_r": -48.938128,
+        "profit_factor": 0.735846,
+        "trades": 208,
+        "win_rate": 0.230769
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 185.444372,
+        "net_r": -168.841677,
+        "profit_factor": 0.765047,
+        "trades": 823,
+        "win_rate": 0.238153
+      },
+      "parameters": {
+        "mode": "continuation",
+        "relative_atr": 0.25,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 4
+      },
+      "preholdout_score": 0.725247,
+      "validation_2023": {
+        "max_drawdown_r": 69.040045,
+        "net_r": -57.217094,
+        "profit_factor": 0.725247,
+        "trades": 234,
+        "win_rate": 0.230769
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 164.20741,
+        "net_r": -141.423664,
+        "profit_factor": 0.756051,
+        "trades": 743,
+        "win_rate": 0.318977
+      },
+      "parameters": {
+        "mode": "continuation",
+        "relative_atr": 0.5,
+        "stop_atr": 1.0,
+        "target_r": 2.0,
+        "target_symbol": "WS30.DWX",
+        "window_bars": 4
+      },
+      "preholdout_score": 0.71852,
+      "validation_2023": {
+        "max_drawdown_r": 57.948802,
+        "net_r": -49.125851,
+        "profit_factor": 0.71852,
+        "trades": 220,
+        "win_rate": 0.313636
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 251.942794,
+        "net_r": -223.058285,
+        "profit_factor": 0.717251,
+        "trades": 795,
+        "win_rate": 0.27044
+      },
+      "parameters": {
+        "mode": "continuation",
+        "relative_atr": 0.25,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "NDX.DWX",
+        "window_bars": 2
+      },
+      "preholdout_score": 0.717251,
+      "validation_2023": {
+        "max_drawdown_r": 54.041034,
+        "net_r": -33.148428,
+        "profit_factor": 0.844385,
+        "trades": 234,
+        "win_rate": 0.282051
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 186.675963,
+        "net_r": -177.703083,
+        "profit_factor": 0.730358,
+        "trades": 673,
+        "win_rate": 0.271917
+      },
+      "parameters": {
+        "mode": "continuation",
+        "relative_atr": 0.25,
+        "stop_atr": 1.0,
+        "target_r": 3.0,
+        "target_symbol": "SP500.DWX",
+        "window_bars": 4
+      },
+      "preholdout_score": 0.714458,
+      "validation_2023": {
+        "max_drawdown_r": 54.2078,
+        "net_r": -54.2078,
+        "profit_factor": 0.714458,
+        "trades": 199,
+        "win_rate": 0.261307
+      }
+    }
+  ],
+  "preholdout_pass_count": 0,
+  "schema_version": 1,
+  "selected_family_winners": [],
+  "selection_contract": {
+    "development": "2018-2022",
+    "entry_rule": "next_bar_open_after_synchronized_completed_window",
+    "holdout_opened": false,
+    "same_bar_rule": "stop_first",
+    "sealed_holdout": "2024-2025",
+    "selection_uses_holdout": false,
+    "validation": "2023"
+  },
+  "status": "NO_HOLDOUT_SURVIVOR"
+}

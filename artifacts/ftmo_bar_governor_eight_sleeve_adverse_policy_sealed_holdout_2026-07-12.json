@@ -1,0 +1,48 @@
+{
+  "basis": "fresh_start_entry_sized_m15_trade_cancellation_governor",
+  "excluded_years": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+  ],
+  "fill_contract": "adverse_bar",
+  "horizon_calendar_days": 30,
+  "manifest": "artifacts\\ftmo_joint_eight_sleeve_10715_10286_manifest_2026-07-11.json",
+  "results": [
+    {
+      "daily_stop": 4000.0,
+      "full_risk_room": 3000.0,
+      "historical_rolling": {
+        "daily_breach_pct": 16.833095577746075,
+        "max_breach_pct": 25.249643366619118,
+        "not_reached_pct": 9.12981455064194,
+        "pass_ci95_pct": [
+          45.10389394946222,
+          52.48421614433907
+        ],
+        "pass_pct": 48.787446504992865,
+        "runs": 701
+      },
+      "mean_accepted_entries": 15.48074179743224,
+      "mean_blocked_entries": 0.6504992867332382,
+      "mean_ending_balance": 102582.73924117594,
+      "mean_minimum_equity": 93837.90504910889,
+      "mean_stop_events": 1.485021398002853,
+      "mean_trading_days": 8.28530670470756,
+      "nominal_risk_pct": 25.0,
+      "risk_multiplier": 25.0,
+      "room_retention": 0.1,
+      "scenario": "ea10715_03_wti10",
+      "start_windows": 701
+    }
+  ],
+  "schema_version": 1,
+  "start_windows": 701,
+  "status": "RESEARCH_ONLY",
+  "timestamp_basis": "darwinex_broker_wall",
+  "trade_paths": 924
+}

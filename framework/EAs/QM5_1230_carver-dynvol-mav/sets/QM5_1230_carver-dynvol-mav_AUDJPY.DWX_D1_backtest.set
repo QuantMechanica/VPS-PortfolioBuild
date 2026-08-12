@@ -31,4 +31,14 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=ea_input_defaults (materialized 2026-07-19 push)
+strategy_fast_ema_period=16
+strategy_slow_ema_period=64
+strategy_daily_vol_period=25
+strategy_stop_gap_vol_mult=8.0
+strategy_min_d1_bars=100
+strategy_cooldown_bars=20
+strategy_exit_on_ma_flip=true
+strategy_dynamic_derisk=true
+strategy_derisk_step=0.10
+strategy_spread_cap_points=0

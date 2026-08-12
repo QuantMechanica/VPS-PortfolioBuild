@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "calendar_id": "NYSE_GROUP_US_CASH_EQUITIES",
+  "timezone": "America/New_York",
+  "coverage_start": "2018-01-01",
+  "coverage_end": "2025-12-31",
+  "normal_open_new_york": "09:30",
+  "normal_close_new_york": "16:00",
+  "outside_coverage_policy": "FAIL_CLOSED",
+  "runtime_file": "QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+  "runtime_rows": 95,
+  "runtime_sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11",
+  "full_close_rows": 77,
+  "early_close_rows": 18,
+  "provenance_file": "QM5_NYSE_US_cash_session_exceptions_provenance.csv",
+  "provenance_rows": 95,
+  "provenance_sha256": "792a50afd9ea9a3ca2be5daf50d75d7c65130cf9bff424795937e7028a518136",
+  "sources_file": "QM5_NYSE_US_cash_session_exceptions_sources.csv",
+  "source_rows": 10,
+  "sources_sha256": "cf2cd19b3767f41dd1a9fd9af8cb50fa1b1daa6ce532221b884f21cffee06429",
+  "source_policy": "NYSE_ICE_PRIMARY_ONLY"
+}

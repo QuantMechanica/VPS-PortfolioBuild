@@ -1,0 +1,120 @@
+{
+  "schema_version": "qm.factory-runtime-activation-owner-decision/v1",
+  "decision_id": "FACTORY_RUNTIME_ACTIVATION_20260803_TEN_WORKER_ZERO_HOLD_GO_R2",
+  "activation_nonce": "8b44e7bc061d2050e8928d44db402d26",
+  "authority": "OWNER",
+  "status": "APPROVED",
+  "authorized_at_utc": "2026-08-03T11:38:07Z",
+  "expires_at_utc": "2026-08-04T11:38:07Z",
+  "preparation_decision": {
+    "relative_path": "docs/ops/evidence/2026-08-03_factory_preparation_owner_decision.json",
+    "sha256": "e3e3c4794f4e680080eb8032be13fdd25457485749a9a62d0d1eeb31811c8d34",
+    "git_commit": "1ec04dc9eff37cabc0582718047a4d3cabe3a1c2",
+    "git_blob": "30b4845d06a0944ef419448bacfa2fb394504b92"
+  },
+  "authorizations": {
+    "factory_on": true,
+    "release_declared_restart_holds": true,
+    "runtime_flag_upgrade_authorized": false
+  },
+  "restart_holds": {
+    "authorized_release_count": 0,
+    "authorized_work_item_ids": []
+  },
+  "worker_policy": {
+    "disabled_terminals": [],
+    "expected_worker_count": 10,
+    "expected_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ]
+  },
+  "restore_intent": {
+    "factory_off_flag_sha256": "217ff0e3b7cc0832d790bd95534c58057266b991537c5417d75878ff0db6b97b",
+    "factory_off_schema_version": 2,
+    "factory_off_state": "OFF",
+    "task_enabled_before_sha256": "ccfb16110aa5722fdbc72bec361c180a485ae14afe2f3c1c99a9949301e0297f"
+  },
+  "source_bindings": {
+    "factory_on": {
+      "relative_path": "tools/strategy_farm/Factory_ON.ps1",
+      "sha256": "96f8f1f301c7b540309352fff0ff87da8c090c5a0e691f0d165df7c7f82f1bf0",
+      "git_commit": "30a70203460543d7ca8fb35077560759aee40f91",
+      "git_blob": "2cbd78f6dbf8ab1285452efc002ee8927f82347f"
+    },
+    "factory_off": {
+      "relative_path": "tools/strategy_farm/Factory_OFF.ps1",
+      "sha256": "77018ce9cd9dc8d31688c29dce862bc5a0e7ba7621e1ffcd25195f2773205db8",
+      "git_commit": "30a70203460543d7ca8fb35077560759aee40f91",
+      "git_blob": "cb6a6ddc01fda7ab8fb0eb1e372331d1c8a52101"
+    },
+    "maintenance_control": {
+      "relative_path": "tools/strategy_farm/maintenance_control.py",
+      "sha256": "a353b60d1af4a4ecea4e878684366ba2ecf27a08e6336f495cb182acacae0e07",
+      "git_commit": "30a70203460543d7ca8fb35077560759aee40f91",
+      "git_blob": "7c8899dce58965ea6e9669e78c6372cbdb21294f"
+    },
+    "runtime_activation_validator": {
+      "relative_path": "tools/strategy_farm/factory_runtime_activation.py",
+      "sha256": "1272370870b987dacffef7063c38b15157793dca7ee8cb2840800d0b9828f54d",
+      "git_commit": "30a70203460543d7ca8fb35077560759aee40f91",
+      "git_blob": "ec76fbcc276fc61ab74a1d4ec3025eeb22655c33"
+    },
+    "restart_health": {
+      "relative_path": "tools/strategy_farm/factory_restart_health.ps1",
+      "sha256": "e1ca8e846f50cdcc02be4dbe1bd7b12e6eeadab06c9323a54ad59a5222dee1a6",
+      "git_commit": "30a70203460543d7ca8fb35077560759aee40f91",
+      "git_blob": "d6ac44210c2caf241498811e24ecdcbf309bb7fb"
+    },
+    "process_scope": {
+      "relative_path": "tools/strategy_farm/factory_process_scope.ps1",
+      "sha256": "47b0c70893c7f8baaa3a75493f8ee081ab404188128e0ed4a1feb2793e5e3d44",
+      "git_commit": "30a70203460543d7ca8fb35077560759aee40f91",
+      "git_blob": "e38157457262dbc79fa5f2a4b27de1cdc7101e42"
+    },
+    "mutation_lock_protocol": {
+      "relative_path": "tools/strategy_farm/factory_mutation_lock.ps1",
+      "sha256": "ee2614b966aac95a15ec923df3380a808bd2de0873f6cf9cf6cb65cbc2308a54",
+      "git_commit": "30a70203460543d7ca8fb35077560759aee40f91",
+      "git_blob": "681fd6f8e13bb933aa57624f9f7b0194ae76d6c7"
+    },
+    "task_manifest": {
+      "relative_path": "tools/strategy_farm/qm_tasks.manifest.ps1",
+      "sha256": "7caf42bc39341f909dec121d62bae3788769c7cd6ed97b44bfcfc5a5cbf1fdd6",
+      "git_commit": "30a70203460543d7ca8fb35077560759aee40f91",
+      "git_blob": "8f818e9f7af5a6f5b52ad2c4779b40f41f026331"
+    },
+    "worker_launcher": {
+      "relative_path": "tools/strategy_farm/start_terminal_workers.py",
+      "sha256": "3bd62af8f20ac567aa9ffde1876df4103ece45aa897f37199b63eff9dc682ef5",
+      "git_commit": "30a70203460543d7ca8fb35077560759aee40f91",
+      "git_blob": "bcf0833bb92c6e881c48ad395513bc20d32b3b4a"
+    },
+    "farmctl": {
+      "relative_path": "tools/strategy_farm/farmctl.py",
+      "sha256": "739dd0afe996f2ad7cff14d4f11dd03d7ad013f05f2ab6294995f1c1bd4e97f3",
+      "git_commit": "30a70203460543d7ca8fb35077560759aee40f91",
+      "git_blob": "d6bcd5e86bd213b1f7a90e5217e6d31aac9a1daa"
+    },
+    "public_snapshot_task_wrapper": {
+      "relative_path": "scripts/run_public_snapshot_task.ps1",
+      "sha256": "83bf1668efb9d4b678f5533074c6c38c6762971cdcd2db62dc77a1c9e7a0b0f1",
+      "git_commit": "30a70203460543d7ca8fb35077560759aee40f91",
+      "git_blob": "f209303814b70d56983ab8d51881a1e849b70d15"
+    },
+    "public_snapshot_incident_guard": {
+      "relative_path": "tools/strategy_farm/public_snapshot_incident_guard.py",
+      "sha256": "28be1d553e5ead0c670bce9730770882166d8e0e40c060c767b91f36b8cbaef6",
+      "git_commit": "30a70203460543d7ca8fb35077560759aee40f91",
+      "git_blob": "76785695aa5dab57c32a7a6e2cfe7a077a800b04"
+    }
+  }
+}

@@ -1,0 +1,191 @@
+{
+  "schema_version": "qm.density-execution-contract-reconciliation/v1",
+  "status": "SOURCE_AND_RUNTIME_RECONCILED_SEMANTIC_REQUALIFICATION_REQUIRED",
+  "recorded_at_utc": "2026-07-30T09:39:10.277429Z",
+  "owner_decision_ref": "docs/ops/evidence/2026-07-30_factory_preparation_owner_decision.json",
+  "owner_decision_id": "FACTORY_PREPARATION_20260730_REPAIR_NO_WAIVER",
+  "owner_decision_binding": {
+    "path": "docs/ops/evidence/2026-07-30_factory_preparation_owner_decision.json",
+    "sha256": "af8479fdc73163250f966014eca5c53224a4ae159426a07cf96c80a379c6edb2",
+    "commit": "7b36ff27f83f024bf1c43bb5537cc747f52b887a",
+    "git_blob": "6d36cf6682e317324a35bc8388042402b0f3e540"
+  },
+  "owner_source_head": "58fa8d7b39b1d9039be5088c7624358dc3404339",
+  "implementation_head_observed": "b2800e226ac10ec0d737e30d6e86920b1b0abba4",
+  "boundaries": {
+    "repair_without_waiver": true,
+    "silent_rebinding": false,
+    "runtime_calendar_publication_executed": true,
+    "factory_activation_authorized": false,
+    "card_approval_or_promotion_authorized": false,
+    "resulting_card_status": "DRAFT",
+    "resulting_promotion_status": "BLOCKED"
+  },
+  "source_change_lineage": [
+    {
+      "ea_id": 20030,
+      "source_commit": "be9af8011d9b98973a8f9b74c8431aece6758fbe",
+      "source_commit_subject": "fix(qm20030): anchor EIA entries to deployed news calendar",
+      "source_path": "framework/EAs/QM5_20030_eia-cad/QM5_20030_eia-cad.mq5",
+      "source_sha256": "1597922bae5ddbc6ee2095503b2490a1b9bd0f500fbd9745e79110b6854d7535",
+      "ex5_path": "framework/EAs/QM5_20030_eia-cad/QM5_20030_eia-cad.ex5",
+      "ex5_sha256": "ae4ed014feb81001899a4abf24da133df69611443c81751e78726d4dc4ca7b04",
+      "spec_path": "framework/EAs/QM5_20030_eia-cad/SPEC.md",
+      "spec_sha256": "d86cb6b82b51deaa9c64ef0abac28cd8b125ec28ac00e5a257d43d02b889e24c"
+    },
+    {
+      "ea_id": 20032,
+      "source_commit": "1ad007f0d31d8141aae4c879c278e12a216f4cb4",
+      "source_commit_subject": "fix(qm20032): anchor 0830 entries to deployed news calendar",
+      "source_path": "framework/EAs/QM5_20032_macro0830-brk/QM5_20032_macro0830-brk.mq5",
+      "source_sha256": "3d718d428e8b41ed9dd0dce1469c31e0e021bf0c514fdcc380bce46d13196d01",
+      "ex5_path": "framework/EAs/QM5_20032_macro0830-brk/QM5_20032_macro0830-brk.ex5",
+      "ex5_sha256": "a05ce698582ffd7ae00f5e3afbc46f84666157c420cdb6d634064f2dd60bb77f",
+      "spec_path": "framework/EAs/QM5_20032_macro0830-brk/SPEC.md",
+      "spec_sha256": "9ed1a4774925f99cc192e61ab73eeccf787554a78db6030e99a428eea22ca557"
+    }
+  ],
+  "setfile_binding_amendments": [
+    {
+      "ea_id": 20030,
+      "symbol": "USDCAD.DWX",
+      "timeframe": "M5",
+      "path": "framework/EAs/QM5_20030_eia-cad/sets/QM5_20030_eia-cad_USDCAD.DWX_M5_backtest.set",
+      "previous_declared_sha256": "766ccf532d13a2380fc49d1ce4372817c3993438229a4d99a409e19e18a1c7fd",
+      "reconciled_sha256": "0f0dc3e774216bbaaf3ff6f45eb8ff51e1a02f12ecfa08b59ad2e947f7162437"
+    },
+    {
+      "ea_id": 20032,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M5",
+      "path": "framework/EAs/QM5_20032_macro0830-brk/sets/QM5_20032_macro0830-brk_GDAXI.DWX_M5_backtest.set",
+      "previous_declared_sha256": "1fced27d24e634cd8a6fd175c2b0abede40ea8ef4f84d46718563ca37e8f88f1",
+      "reconciled_sha256": "6a26283ee244e4e8c742bf4b0a2b2d91b7544afa52a57340a5475078c40d36a0"
+    },
+    {
+      "ea_id": 20032,
+      "symbol": "SP500.DWX",
+      "timeframe": "M5",
+      "path": "framework/EAs/QM5_20032_macro0830-brk/sets/QM5_20032_macro0830-brk_SP500.DWX_M5_backtest.set",
+      "previous_declared_sha256": "aee78de4c7e2ef1332c7dee4784a6970c9d40fbe7ba86e5886bcf1ae78de72f5",
+      "reconciled_sha256": "6e91206ba32f51ad2a7e1a69f37974e9a6a2cb02bf6b1e1ae68d36735bb15f3f"
+    }
+  ],
+  "byte_exact_setfile_policy": {
+    "attribute_file": ".gitattributes",
+    "attribute": "-text",
+    "exact_path_count": 28,
+    "pre_reconciliation_current_worktree_hash_matches": 25,
+    "post_reconciliation_current_worktree_hash_matches": 28,
+    "line_endings": {
+      "mixed": 24,
+      "crlf": 3,
+      "lf": 1
+    },
+    "pre_reconciliation_lf_normalized_git_blob_hash_matches": 0,
+    "pre_reconciliation_all_crlf_hash_matches": 3,
+    "required_integration_action": "stage all 28 exact paths after the -text attribute is active"
+  },
+  "ftmo_20009_calendar_binding_amendment": {
+    "reason": "bind the four blocked FTMO sleeves to the actual deployed source generation selected for atomic multi-principal reconciliation",
+    "contract_count": 4,
+    "silent_rebinding": false,
+    "previous_generation": {
+      "primary_sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d",
+      "secondary_sha256": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1",
+      "coverage_start": "2015-01-01",
+      "coverage_end": "2026-07-24"
+    },
+    "reconciled_generation": {
+      "primary_sha256": "16d95a7ca00de57accbb2bf7ad63418873c7c1afbffd58b8ec35136abb057ece",
+      "secondary_sha256": "e54a18bc317657260edb01a57eb29e97d7c1e3c451a2befc60dbc636d9286338",
+      "coverage_start": "2015-01-01",
+      "coverage_end": "2026-07-31"
+    },
+    "source_roles": [
+      "SHARED_PRIMARY",
+      "SHARED_SECONDARY",
+      "QMDEV1_COMMON_PRIMARY",
+      "QMDEV1_COMMON_SECONDARY"
+    ],
+    "runtime_copy_state": "MULTI_PRINCIPAL_PUBLICATION_VERIFIED",
+    "promotion_status": "BLOCKED"
+  },
+  "deployed_framework_calendar_binding": {
+    "dependency_id": "deployed_framework_news_calendar",
+    "qualification_status": "BLOCKED",
+    "block_reason": "deployed_framework_news_calendar_semantic_requalification_required",
+    "source_ref": "QM_NEWS_CALENDAR_PAIR_V1_ACTIVE_PRIMARY",
+    "calendar_policy": "DEPLOYED_FRAMEWORK_EVENT_ROWS_FAIL_CLOSED",
+    "stale_behavior": "ENTRY_FAIL_CLOSED",
+    "source_dir": "D:/QM/data/news_calendar",
+    "primary": {
+      "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
+      "sha256": "16d95a7ca00de57accbb2bf7ad63418873c7c1afbffd58b8ec35136abb057ece",
+      "size_bytes": 4444920,
+      "row_count": 48150,
+      "first_event_utc": "2015-01-01T01:00:00Z",
+      "last_event_utc": "2026-07-31T14:00:00Z"
+    },
+    "secondary": {
+      "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv",
+      "sha256": "e54a18bc317657260edb01a57eb29e97d7c1e3c451a2befc60dbc636d9286338",
+      "size_bytes": 4314582,
+      "row_count": 48159,
+      "first_event_utc": "2015-01-01T01:00:00Z",
+      "last_event_utc": "2026-07-31T14:00:00Z"
+    },
+    "bound_contracts": [
+      "20030:USDCAD.DWX:M5",
+      "20032:GDAXI.DWX:M5",
+      "20032:SP500.DWX:M5"
+    ],
+    "multi_principal_targets": [
+      "D:/QM/data/news_calendar",
+      "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/Common/Files",
+      "C:/Windows/System32/config/systemprofile/AppData/Roaming/MetaQuotes/Terminal/Common/Files",
+      "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files"
+    ],
+    "publication_contract": "qm-news-calendar-multi-principal-publication-plan/v1",
+    "one_time_reconciliation": "COMPLETED_RUNTIME",
+    "last_superseded_read_only_plan": {
+      "status": "SUPERSEDED_BY_PRODUCTION_POLICY_AND_JOURNAL_HARDENING",
+      "generated_at": "2026-07-30T08:07:31.507277Z",
+      "plan_sha256": "b6d32c288a3c69ebab9f8694bc84dd124f94f1afbadce58cc445af05209267f5",
+      "bundle_id": "news-calendar-d53243b798eed8b6b1b2f79f23321fe68a720513a346633226d2b1f7fefba6ca",
+      "manifest_sha256": "fb70ad42a84eaf9dce6c7f6752a53ae42bdc18609ceeacff69e842937cfdfa10",
+      "provenance_kind": "scheduled-refresh-script",
+      "provenance_path": "C:\\QM\\repo\\tools\\strategy_farm\\refresh_news_calendar.ps1",
+      "provenance_sha256": "876776307a76cd673b0b4ccadce816d0b34b9e6cdf8445aec3eb7c803479e02d",
+      "what_if_validated": true,
+      "factory_mode": "OFF_HASH_BOUND",
+      "factory_off_sha256": "09cc4f83e8d5f384f03bc51306beff2cdd165108559a00dbf665097c60b47f1c",
+      "factory_off_flag_unchanged": true,
+      "factory_mutation_lock_absent_before_and_after": true,
+      "production_policy_pinned": true,
+      "apply_requires_pre_reserved_journal_and_receipt": true,
+      "requires_regeneration_after_final_source_commit": true,
+      "files_written": 0,
+      "apply_executed": false
+    },
+    "completed_runtime_publication": {
+      "verified_at_utc": "2026-07-30T09:39:10.277429Z",
+      "source_commit": "b2800e226ac10ec0d737e30d6e86920b1b0abba4",
+      "plan_path": "D:\\QM\\reports\\state\\news_calendar_publication_plan_20260730T093620Z-c12394db17ee4117b7420200a7e728a7.json",
+      "plan_file_sha256": "bf3a1a19547f95f69a6c3d8a29c64ae034d119a71e5a55f83f4589558cba1c59",
+      "plan_sha256": "5e324ac201131b6500ab8c77a5544ecca0050d7dffbacb48239b0fd4a66f4fcb",
+      "receipt_path": "D:\\QM\\reports\\state\\news_calendar_publication_receipt_20260730T093620Z-c12394db17ee4117b7420200a7e728a7.json",
+      "receipt_file_sha256": "6a5577d3aad658d9fac7c830b6f016ac6ab5d975d13daf5c0775a21cd2616e68",
+      "journal_path": "D:\\QM\\reports\\state\\news_calendar_publication_journal_20260730T093620Z-c12394db17ee4117b7420200a7e728a7.json",
+      "journal_file_sha256": "96639ae159a5c587b6c8088be83adf76031a94db04fea3f75e9f18ee70da6452",
+      "operation_id": "836fa46d9d67b4d8e793a24990d463ff92efbd54c33dfbbe379aa9b7982efba3",
+      "bundle_id": "news-calendar-de6b180644a441df3d640a5c251ce25156cddfee484d397f508aae0f4660dc1d",
+      "manifest_sha256": "224d4558e62bd7e1c7df0b709641587f68ce59d0817b19b6270d292ec87be4c4",
+      "receipt_status": "committed",
+      "journal_state": "COMMITTED_RECEIPTED",
+      "lock_release_succeeded": true,
+      "verified_common_count": 3,
+      "backup_root": "D:\\QM\\backups\\news_calendar\\5e324ac201131b6500ab8c77a5544ecca0050d7dffbacb48239b0fd4a66f4fcb"
+    }
+  }
+}

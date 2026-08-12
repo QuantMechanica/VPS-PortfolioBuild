@@ -1,0 +1,20 @@
+{
+  "as_of": "2026-07-19",
+  "backtest_bundle": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+  "blend_window": 42,
+  "decision_record": "C:\\QM\\repo\\decisions\\2026-07-19_t_live_dxz_sunday_final_book.md",
+  "generated_at_utc": "2026-07-19T15:37:22Z",
+  "generator_commit": "be6cb400d619dd25354a8987308e30f0f6358402",
+  "live_start": "2026-07-20",
+  "magic_registry": "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv",
+  "manifest": "D:\\QM\\reports\\portfolio\\portfolio_manifest_sunday_final_24sleeve_DRAFT_20260719.json",
+  "minimum_live_closed_positions": 2,
+  "minimum_proposal_sessions": 21,
+  "pinned_baseline_fingerprint_sha256": "d40b26fe56d4ce1cd6082413a566a4c5b6f3ac2e8f1e3ce8b80ba13d2103e495",
+  "schema_version": 1,
+  "sleeve_cap": 1.0,
+  "staging_report": "C:\\QM\\deploy\\DXZ_FINAL_2026-07-19\\staging_report.json",
+  "task_id": "f1c19271-dbff-4694-a302-327605a59616",
+  "template_only": true,
+  "total_risk": 9.75
+}

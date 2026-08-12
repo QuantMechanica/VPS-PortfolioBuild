@@ -3,7 +3,6 @@ param(
     [string]$DiskPath = "C:\",
     [int]$DiskWarnGb = 60,
     [int]$DiskCriticalGb = 30,
-    [string]$PaperclipHealthUrl = $(if ($env:PAPERCLIP_HEALTH_URL) { $env:PAPERCLIP_HEALTH_URL } else { "http://127.0.0.1:8501/api/health" }),
     [string]$AggregatorHeartbeatPath = "C:\QM\logs\aggregator\heartbeat.txt",
     [int]$AggregatorMaxSilentMinutes = 15,
     [string]$DriveSyncHeartbeatPath = "C:\QM\logs\drive-sync\heartbeat.txt",
@@ -25,10 +24,7 @@ param(
     [int]$TLiveMaxAgeMinutes = 5,
     [string]$DwxHeartbeatScript = "C:\QM\repo\infra\monitoring\Test-DwxHeartbeat.ps1",
     [string]$DriveGitExclusionScript = "C:\QM\repo\infra\monitoring\Test-DriveGitExclusion.ps1",
-    [string]$GitIndexLockMonitorScript = "C:\QM\repo\infra\monitoring\Invoke-GitIndexLockMonitor.ps1",
-    [string]$PipelineOperatorRunHealthScript = "C:\QM\repo\infra\monitoring\Test-PipelineOperatorRunHealth.ps1",
-    [string]$DwxRoutineTickScript = "C:\QM\repo\infra\monitoring\Test-DwxRoutineTick.ps1",
-    [string]$TokenCostBudgetScript = "C:\QM\repo\infra\monitoring\Test-TokenCostBudget.ps1"
+    [string]$GitIndexLockMonitorScript = "C:\QM\repo\infra\monitoring\Invoke-GitIndexLockMonitor.ps1"
 )
 
 Set-StrictMode -Version Latest
@@ -165,55 +161,6 @@ if (Test-Path -LiteralPath $DriveGitExclusionScript) {
     catch {
         $checks.Add((New-Check -Name "drive_git_exclusion" -Status "critical" -Message "Drive/git exclusion check execution failed." -Details $_.Exception.Message))
     }
-}
-
-# Pipeline-Operator heartbeat run health (process_loss recovery view)
-if (Test-Path -LiteralPath $PipelineOperatorRunHealthScript) {
-    try {
-        $pipelineRunHealthRaw = & powershell -NoProfile -ExecutionPolicy Bypass -File $PipelineOperatorRunHealthScript 2>$null | Out-String
-        $pipelineRunHealth = $pipelineRunHealthRaw | ConvertFrom-Json -ErrorAction Stop
-        $checks.Add((New-Check -Name "pipeline_operator_run_health" -Status $pipelineRunHealth.status -Message $pipelineRunHealth.message -Details $pipelineRunHealth))
-    }
-    catch {
-        $checks.Add((New-Check -Name "pipeline_operator_run_health" -Status "critical" -Message "Pipeline-Operator run health check execution failed." -Details $_.Exception.Message))
-    }
-}
-
-# Daily token-cost budget observability (70/80/95% alarms)
-if (Test-Path -LiteralPath $TokenCostBudgetScript) {
-    try {
-        $tokenCostRaw = & powershell -NoProfile -ExecutionPolicy Bypass -File $TokenCostBudgetScript 2>$null | Out-String
-        $tokenCostObj = $tokenCostRaw | ConvertFrom-Json -ErrorAction Stop
-        $checks.Add((New-Check -Name "token_cost_budget" -Status $tokenCostObj.status -Message $tokenCostObj.message -Details $tokenCostObj))
-    }
-    catch {
-        $checks.Add((New-Check -Name "token_cost_budget" -Status "critical" -Message "Token-cost budget check execution failed." -Details $_.Exception.Message))
-    }
-}
-
-# Verify hourly cadence + observed tick for DWX Paperclip routine
-if (Test-Path -LiteralPath $DwxRoutineTickScript) {
-    try {
-        $tickRaw = & powershell -NoProfile -ExecutionPolicy Bypass -File $DwxRoutineTickScript 2>$null | Out-String
-        $tickObj = $tickRaw | ConvertFrom-Json -ErrorAction Stop
-        $checks.Add((New-Check -Name "dwx_hourly_routine_tick" -Status $tickObj.status -Message $tickObj.message -Details $tickObj))
-    }
-    catch {
-        $checks.Add((New-Check -Name "dwx_hourly_routine_tick" -Status "critical" -Message "DWX hourly routine tick check execution failed." -Details $_.Exception.Message))
-    }
-}
-
-# Paperclip daemon health
-try {
-    $response = Invoke-WebRequest -Uri $PaperclipHealthUrl -UseBasicParsing -TimeoutSec 10
-    if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 300) {
-        $checks.Add((New-Check -Name "paperclip_daemon" -Status "ok" -Message "Paperclip daemon healthy." -Details @{ url = $PaperclipHealthUrl; status = $response.StatusCode }))
-    } else {
-        $checks.Add((New-Check -Name "paperclip_daemon" -Status "critical" -Message "Paperclip daemon health endpoint returned non-2xx." -Details @{ url = $PaperclipHealthUrl; status = $response.StatusCode }))
-    }
-}
-catch {
-    $checks.Add((New-Check -Name "paperclip_daemon" -Status "critical" -Message "Paperclip daemon unresponsive." -Details @{ url = $PaperclipHealthUrl; error = $_.Exception.Message }))
 }
 
 # Aggregator loop silence

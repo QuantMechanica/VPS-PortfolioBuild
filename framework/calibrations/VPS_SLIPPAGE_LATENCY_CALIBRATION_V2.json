@@ -33,6 +33,25 @@
       "stub_created_at": "2026-06-14T21:14:19+00:00",
       "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
+    "AUDCHF.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-16T11:59:42+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
     "AUDJPY.DWX": {
       "auto_stub": true,
       "commission_cents_per_lot": 700.0,
@@ -71,6 +90,25 @@
       "stub_created_at": "2026-06-26T17:18:47+00:00",
       "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
+    "CADJPY.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-16T12:42:49+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
     "CHFJPY.DWX": {
       "auto_stub": true,
       "commission_cents_per_lot": 700.0,
@@ -88,6 +126,63 @@
         "p95": 60.0
       },
       "stub_created_at": "2026-07-05T14:33:35+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
+    "EURAUD.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-15T12:15:27+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
+    "EURCAD.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-16T12:52:25+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
+    "EURGBP.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-16T07:49:00+00:00",
       "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
     "EURJPY.DWX": {
@@ -109,6 +204,25 @@
       "stub_created_at": "2026-05-29T16:43:02+00:00",
       "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
+    "EURNZD.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-15T11:07:27+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
     "EURUSD.DWX": {
       "commission_cents_per_lot": 250.0,
       "latency_ms": {
@@ -123,6 +237,25 @@
         "median": 3.0,
         "p95": 4.0
       }
+    },
+    "GBPAUD.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-16T08:30:12+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
     "GBPJPY.DWX": {
       "auto_stub": true,
@@ -141,6 +274,25 @@
         "p95": 60.0
       },
       "stub_created_at": "2026-07-01T14:12:43+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
+    "GBPNZD.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-18T05:13:02+00:00",
       "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
     "GBPUSD.DWX": {
@@ -504,6 +656,101 @@
       "stub_created_at": "2026-07-13T05:38:20+00:00",
       "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
+    "QM5_13140_XTI_XNG_ALIQ_D1": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\275aff7b-1563-426a-b723-8c9ab2e318dd\\QM5_13140\\Q04\\QM5_13140_XTI_XNG_ALIQ_D1\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-19T15:30:38+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
+    "QM5_13144_XTI_XNG_MICRO11_D1": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\da401989-3c4d-4272-8776-aa907f86c9e1\\QM5_13144\\Q04\\QM5_13144_XTI_XNG_MICRO11_D1\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-20T23:50:19+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
+    "QM5_13146_XTI_XNG_VOV_D1": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\045b3ef2-956a-4ee9-adca-991cdf8c61fc\\QM5_13146\\Q04\\QM5_13146_XTI_XNG_VOV_D1\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-20T12:20:21+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
+    "QM5_13147_XTI_XNG_JBETA_D1": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\2ec6f080-9100-4887-972e-a2c9c94b22d5\\QM5_13147\\Q04\\QM5_13147_XTI_XNG_JBETA_D1\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-20T13:20:11+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
+    "QM5_13151_XTI_XNG_VBETA_D1": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\972fe8b6-1d8a-4f72-9f22-dae5438999fc\\QM5_13151\\Q04\\QM5_13151_XTI_XNG_VBETA_D1\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-20T14:52:07+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
     "SP500.DWX": {
       "auto_stub": true,
       "commission_cents_per_lot": 700.0,
@@ -521,6 +768,25 @@
         "p95": 60.0
       },
       "stub_created_at": "2026-05-31T05:39:23+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
+    "UK100.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\2b34fd19-847a-4789-b6d1-c25131f962f9\\QM5_9403\\Q04\\UK100.DWX\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-21T02:06:46+00:00",
       "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
     "USDCAD.DWX": {
@@ -597,6 +863,25 @@
         "p95": 60.0
       },
       "stub_created_at": "2026-05-29T10:30:04+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
+    "XAGUSD.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\5276ab51-168d-49d2-8f42-b9c5df436fd8\\QM5_10123\\Q04\\XAGUSD.DWX\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-14T21:36:35+00:00",
       "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
     "XAUUSD.DWX": {

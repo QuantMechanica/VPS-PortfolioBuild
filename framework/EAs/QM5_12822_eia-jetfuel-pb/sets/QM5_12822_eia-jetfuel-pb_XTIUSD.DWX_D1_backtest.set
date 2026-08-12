@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12822
 ; ea_slug:      eia-jetfuel-pb
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   05defd4bf8fc1e005efb25c6205199d9d6e20e4efe0d56f631c7898a4d959c48
+; build_hash:   6f8fcd9867212c5a604a03186c7ea040d01d5b6136bc41cc3efebb7f8892042f
 ; author:       Development
 ; date:         2026-06-30
 ;==========================================================

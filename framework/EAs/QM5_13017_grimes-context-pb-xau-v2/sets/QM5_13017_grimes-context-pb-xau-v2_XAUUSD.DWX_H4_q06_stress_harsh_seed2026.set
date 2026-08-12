@@ -3,7 +3,7 @@
 ; ea_id:        13017
 ; ea_slug:      grimes-context-pb-xau-v2
 ; ea_version:   v5.0
-; set_version:  s20260705-stress-harsh
+; set_version:  s20260714-stress-harsh
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H4
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Claude
-; date:         2026-07-05
+; date:         2026-07-14
 ;==========================================================
 qm_ea_id=13017
 qm_magic_slot_offset=0

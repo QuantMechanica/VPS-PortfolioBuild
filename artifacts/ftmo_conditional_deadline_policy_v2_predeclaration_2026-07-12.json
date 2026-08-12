@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_AFTER_V1_DEVELOPMENT_BEFORE_V2_REPLAY_OR_2023",
+  "label": "RESEARCH_ONLY_NO_GO",
+  "evidence_path": "artifacts/ftmo_conditional_deadline_policy_v2_predeclaration_2026-07-12.json",
+  "parent_development_artifact": "artifacts/ftmo_conditional_deadline_policy_development_screen_2026-07-12.json",
+  "parent_development_sha256": "5C3E5DE791C776DD81AA74F82858B9188D0C05B864CD367A2E0087BDB8D27E71",
+  "iteration_disclosure": "V1 remains a no-survivor under its zero-breach-increase rule. V2 locks the V1 row with the largest smaller normal/adverse pass-rate gain and tests a predeclared 0.5 percentage-point individual breach budget. No V1 candidate was evaluated on 2023.",
+  "manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "manifest_sha256": "56EF3EB7216B743290E8C6ADD61FC5FC321E00FCED6AF438D0C168545B850847",
+  "scenario": "path_01_11095_gbpusd_down2",
+  "fixed_governor": {
+    "risk_multiplier": 25.0,
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "room_retention": 0.2,
+    "horizon_calendar_days": 30,
+    "open_risk_limit_ratio": 0.0
+  },
+  "control": {"name": "fixed_25", "conditional_steps": []},
+  "candidates": [
+    {
+      "name": "d23_p0_9500_r40",
+      "conditional_steps": [{"elapsed_calendar_days": 23, "minimum_profit": 0.0, "maximum_profit": 9500.0, "risk_multiplier": 40.0}]
+    }
+  ],
+  "selection_split": {
+    "development_years": [2018, 2019, 2021, 2022],
+    "validation_years": [2023],
+    "sealed_years": [2024, 2025],
+    "unavailable_joint_bar_year": 2020,
+    "development_excluded_years": [2017, 2020, 2023, 2024, 2025, 2026]
+  },
+  "minimum_normal_pass_improvement_pp": 0.0,
+  "minimum_adverse_pass_improvement_pp": 0.0,
+  "maximum_individual_breach_increase_pp": 0.5,
+  "development_replay_rule": "The one locked candidate must reproduce strict normal and adverse pass-rate improvements and keep every daily/max breach-rate increase within 0.5 percentage points.",
+  "validation_open_rule": "Only a reproduced development survivor may open 2023 once. The same pass-improvement and 0.5 pp breach-budget rule applies versus the 2023 control.",
+  "sealed_open_rule": "Only a 2023 survivor may open 2024-2025 once without edits.",
+  "deployment_allowed": false
+}

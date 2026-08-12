@@ -1,0 +1,21 @@
+{
+  "review_task_id": "5d6a575f-029d-41c1-8c02-e60a96fafdc6",
+  "build_task_id": "141480b4-be7c-4520-b618-0959d8d5924f",
+  "ea_id": "QM5_12822",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "FAIL",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "PASS",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "Framework corset violation: file-scope g_last_signal_day_key at line 59 and its entry gate at lines 297/338 reimplement D1 new-period gating despite QM_IsNewBar(); remove the per-EA gate or use QM_CalendarPeriodKey/QM_IsNewCalendarPeriod.",
+    "Framework corset violation: raw iTime(_Symbol, PERIOD_D1, 1) at line 143 supplies the EA's seasonal calendar/day key; use QM_CalendarPeriodKey or another framework calendar helper.",
+    "[ONTICK-ORDER-ADVISORY] News blackout returns at lines 400-401 before Friday-close and Strategy_ManageOpenPosition at lines 402-408; entries set a server-side ATR SL at lines 333-335, so this remains advisory."
+  ],
+  "reviewed_at": "2026-07-26T15:12:33.103Z"
+}

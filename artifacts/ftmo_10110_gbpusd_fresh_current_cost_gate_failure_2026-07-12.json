@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_GATE",
+  "ea_id": 10110,
+  "symbol": "GBPUSD.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/20260712_123805/QM5_10110_tv-sma20-200-pullback.compile.log",
+  "compile_log_sha256": "6FD132ADA17F0FC34B0955B9B198884534980EEE31C84C59F176A8549136801B",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10110_gbpusd_h1_wave6_20260712\\QM5_10110\\20260712_123958\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10110_gbpusd_h1_wave6_20260712\\QM5_10110\\20260712_123958\\raw\\run_01\\report.htm",
+      "sha256": "D047AB9317A405E2E2983B45613DD1EF13BC34F099055B4A80B19E6652AFB9AD"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10110_gbpusd_h1_wave6_20260712\\QM5_10110\\20260712_123958\\raw\\run_02\\report.htm",
+      "sha256": "EF6AD159684A26F1BA83EDE340C3AA95E43BF1FA695A4E621FBF19AF44227494"
+    }
+  ],
+  "native": {
+    "trades": 1483,
+    "profit_factor": 0.862187,
+    "net_profit": -66319.23,
+    "equity_drawdown": 67422.18
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10110_GBPUSD_DWX_T1_FRESH_20260712.jsonl",
+    "rows": 1483,
+    "sha256": "3BC261075A6294D52B7370C4D9A304F7F9DE9F4C17CDC4476C5DB7880BA367C3",
+    "report_reconciliation": "PASS_EXACT_COUNT_NET_DELTA_WITHIN_TOLERANCE",
+    "corrected_net_delta": -1.26,
+    "net_tolerance": 14.83
+  },
+  "current_cost_artifact": "artifacts/ftmo_10110_gbpusd_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 1483,
+    "profit_factor": 0.865747,
+    "net_profit": -64546.97,
+    "close_to_close_max_drawdown": 65497.02,
+    "commission_total": 22247.1,
+    "swap_total": -4868.66
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "annual_density_pass": true,
+    "negative_calendar_years": [
+      2017,
+      2018,
+      2019,
+      2021,
+      2022,
+      2023,
+      2025
+    ],
+    "reason_for_reject": "The current implementation is loss-making natively and under the current official FTMO cost snapshot; seven of nine calendar years are negative."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

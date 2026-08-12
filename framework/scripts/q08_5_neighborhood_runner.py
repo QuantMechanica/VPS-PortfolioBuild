@@ -46,7 +46,7 @@ from typing import Any
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from framework.scripts._phase_utils import period_from_setfile
+from framework.scripts._phase_utils import period_from_setfile, run_with_launch_fault_retry
 from framework.scripts.q05_stress_medium import summary_invalid_reason
 
 # Wrapper must outlive the tester budget, or a run finishing at the buzzer
@@ -123,48 +123,141 @@ def _parse_scalar(raw: str) -> bool | int | float | None:
     return value if math.isfinite(value) else None
 
 
-def parse_setfile_assignments(setfile_path: Path) -> dict[str, dict[str, Any]]:
-    """Parse the strategy block, including MT5 optimiser step metadata.
+def _assignment_metadata(
+    key: str,
+    rhs: str,
+    line_number: int,
+    setfile_path: Path,
+) -> dict[str, Any]:
+    if not rhs:
+        raise ValueError(f"empty strategy parameter {key}: {setfile_path}")
+    cells = [cell.strip() for cell in rhs.split("||")]
+    active = _parse_scalar(cells[0])
+    step = _parse_scalar(cells[2]) if len(cells) >= 4 else None
+    minimum = _parse_scalar(cells[1]) if len(cells) >= 4 else None
+    maximum = _parse_scalar(cells[3]) if len(cells) >= 4 else None
+    return {
+        "value": active,
+        "raw_rhs": rhs,
+        "cells": cells,
+        "step": step if isinstance(step, (int, float)) and not isinstance(step, bool) else None,
+        "minimum": (
+            minimum
+            if isinstance(minimum, (int, float)) and not isinstance(minimum, bool)
+            else None
+        ),
+        "maximum": (
+            maximum
+            if isinstance(maximum, (int, float)) and not isinstance(maximum, bool)
+            else None
+        ),
+        "line_number": line_number,
+    }
 
-    MT5 setfiles may encode ``value||start||step||stop||Y/N``.  Q08 uses the
-    first cell as the active value and the third cell as the lattice/stepsize.
-    Duplicate or empty strategy assignments are rejected fail-closed.
+
+def parse_setfile_assignments(setfile_path: Path) -> dict[str, dict[str, Any]]:
+    """Parse strategy assignments and MT5 optimiser step metadata.
+
+    Markerless legacy files narrowly harvest exact, column-zero
+    ``strategy_[A-Za-z0-9_]+=`` rows.  Their sole duplicate exception is the
+    generated ablation-child shape: one contiguous base block, its exact child
+    separator, and one contiguous override block with the identical key set.
+    That shape follows MT5 last-value-wins semantics.  Marker-based parsing
+    retains its established behavior and never receives this exception.
     """
     if not setfile_path.exists():
         raise FileNotFoundError(f"baseline setfile missing: {setfile_path}")
     text = setfile_path.read_text(encoding="utf-8-sig", errors="replace")
-    in_strategy_block = False
+    lines = text.splitlines()
+    has_strategy_marker = any(
+        raw.strip().casefold().startswith("; strategy-specific params")
+        for raw in lines
+    )
     assignments: dict[str, dict[str, Any]] = {}
-    for line_number, raw in enumerate(text.splitlines(), start=1):
-        line = raw.strip()
-        if line.casefold().startswith("; strategy-specific params"):
-            in_strategy_block = True
+    if has_strategy_marker:
+        in_strategy_block = False
+        for line_number, raw in enumerate(lines, start=1):
+            line = raw.strip()
+            if line.casefold().startswith("; strategy-specific params"):
+                in_strategy_block = True
+                continue
+            if not in_strategy_block or not line or line.startswith(";") or "=" not in line:
+                continue
+            key, rhs = line.split("=", 1)
+            key = key.strip()
+            rhs = rhs.strip()
+            if not key or _is_framework_param(key):
+                continue
+            if key in assignments:
+                raise ValueError(f"duplicate strategy parameter {key}: {setfile_path}")
+            assignments[key] = _assignment_metadata(key, rhs, line_number, setfile_path)
+        return assignments
+
+    # Block structure is consulted only when duplicates exist. Unique legacy
+    # files retain the previous behavior even when unrelated lines separate
+    # their exact strategy assignments.
+    blocks: list[list[tuple[int, str, str]]] = []
+    rows: list[tuple[int, str, str]] = []
+    previous_line_number: int | None = None
+    for line_number, raw in enumerate(lines, start=1):
+        legacy_match = re.match(r"^(strategy_[A-Za-z0-9_]+)=(.*)$", raw)
+        if legacy_match is None:
+            previous_line_number = None
             continue
-        if not in_strategy_block or not line or line.startswith(";") or "=" not in line:
-            continue
-        key, rhs = line.split("=", 1)
-        key = key.strip()
-        rhs = rhs.strip()
-        if not key or _is_framework_param(key):
-            continue
-        if key in assignments:
-            raise ValueError(f"duplicate strategy parameter {key}: {setfile_path}")
-        if not rhs:
-            raise ValueError(f"empty strategy parameter {key}: {setfile_path}")
-        cells = [cell.strip() for cell in rhs.split("||")]
-        active = _parse_scalar(cells[0])
-        step = _parse_scalar(cells[2]) if len(cells) >= 4 else None
-        minimum = _parse_scalar(cells[1]) if len(cells) >= 4 else None
-        maximum = _parse_scalar(cells[3]) if len(cells) >= 4 else None
-        assignments[key] = {
-            "value": active,
-            "raw_rhs": rhs,
-            "cells": cells,
-            "step": step if isinstance(step, (int, float)) and not isinstance(step, bool) else None,
-            "minimum": minimum if isinstance(minimum, (int, float)) and not isinstance(minimum, bool) else None,
-            "maximum": maximum if isinstance(maximum, (int, float)) and not isinstance(maximum, bool) else None,
-            "line_number": line_number,
-        }
+        key = legacy_match.group(1)
+        rhs = legacy_match.group(2).strip()
+        row = (line_number, key, rhs)
+        rows.append(row)
+        if previous_line_number is None or line_number != previous_line_number + 1:
+            blocks.append([])
+        blocks[-1].append(row)
+        previous_line_number = line_number
+
+    keys = [key for _line_number, key, _rhs in rows]
+    if len(keys) == len(set(keys)):
+        for line_number, key, rhs in rows:
+            assignments[key] = _assignment_metadata(key, rhs, line_number, setfile_path)
+        return assignments
+
+    for block in blocks:
+        block_keys = [key for _line_number, key, _rhs in block]
+        if len(block_keys) != len(set(block_keys)):
+            duplicate = next(key for key in block_keys if block_keys.count(key) > 1)
+            raise ValueError(
+                f"duplicate strategy parameter {duplicate} inside markerless block: "
+                f"{setfile_path}"
+            )
+    if len(blocks) != 2:
+        raise ValueError(
+            "markerless duplicate strategy parameters require exactly two contiguous "
+            f"blocks: {setfile_path}"
+        )
+    base_block, override_block = blocks
+    base_keys = [key for _line_number, key, _rhs in base_block]
+    override_keys = [key for _line_number, key, _rhs in override_block]
+    if set(base_keys) != set(override_keys):
+        raise ValueError(
+            f"markerless ablation base/override key sets differ: {setfile_path}"
+        )
+    separator = [
+        raw.strip()
+        for raw in lines[base_block[-1][0] : override_block[0][0] - 1]
+        if raw.strip()
+    ]
+    ablation_separator = re.compile(
+        r"^;\s*---\s+ablation child [0-9]{2} of .+ "
+        r"\(perturb=.+\)\s+---\s*$",
+        flags=re.IGNORECASE,
+    )
+    if len(separator) != 1 or ablation_separator.fullmatch(separator[0]) is None:
+        raise ValueError(
+            f"markerless duplicate blocks lack the exact ablation-child separator: {setfile_path}"
+        )
+
+    override_by_key = {key: (line_number, rhs) for line_number, key, rhs in override_block}
+    for _base_line, key, _base_rhs in base_block:
+        line_number, rhs = override_by_key[key]
+        assignments[key] = _assignment_metadata(key, rhs, line_number, setfile_path)
     return assignments
 
 
@@ -238,6 +331,38 @@ def classify_param(
 
 def is_perturbable_param(key: str, value: int | float) -> bool:
     return classify_param(key, value)["class"] in {"continuous", "discrete"}
+
+
+def baseline_is_structurally_inapplicable(
+        baseline_assignments: dict[str, dict[str, Any]],
+        param_type_overrides: dict[str, str] | None = None) -> bool:
+    """True iff the baseline setfile has strategy params but NONE is perturbable.
+
+    A fixed-parameter strategy — every strategy input is fixed / structural / a
+    categorical flag, with no continuous or discrete tuning knob — has no ±10%
+    neighborhood and (downstream, in Q08.7) no >=2-config family BY CONSTRUCTION.
+    The gate is Not-Applicable, not a failure and not a retry-owed infra state.
+
+    Derived from the FULL baseline strategy-param inventory (2026-07-27 census-rank-7
+    fix), not the post-filtered Q03 pick: the setfile-fallback pick strips fixed
+    params before classification, which made an all-fixed card look like it had an
+    empty (hence non-structural) classification set and mis-route to INFRA_FAIL.
+    ``parse_setfile_assignments`` already excludes framework/RISK inputs, so every
+    key here is a strategy parameter.
+    """
+    overrides = param_type_overrides or {}
+    strategy_params = 0
+    perturbable = 0
+    for key, meta in baseline_assignments.items():
+        strategy_params += 1
+        value = meta.get("value")
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            continue
+        if classify_param(key, value, meta, overrides.get(key))["class"] in {
+            "continuous", "discrete"
+        }:
+            perturbable += 1
+    return strategy_params > 0 and perturbable == 0
 
 
 def load_plateau_pick(plateau_path: Path) -> dict:
@@ -399,6 +524,7 @@ def materialize_setfile(source_set: Path, overrides: dict[str, Any], out_path: P
     if missing:
         raise ValueError(f"setfile override parameters missing from baseline: {','.join(missing)}")
     text = source_set.read_text(encoding="utf-8-sig", errors="replace")
+    lines = text.splitlines(keepends=True)
     for key, value in overrides.items():
         original = source_assignments[key]
         cells = list(original["cells"])
@@ -406,10 +532,22 @@ def materialize_setfile(source_set: Path, overrides: dict[str, Any], out_path: P
         if len(cells) >= 5:
             cells[4] = "N"
         replacement = f"{key}={'||'.join(cells)}"
-        pattern = re.compile(rf"^{re.escape(key)}\s*=.*$", flags=re.MULTILINE)
-        text, count = pattern.subn(lambda _match: replacement, text)
-        if count != 1:
-            raise ValueError(f"setfile override count for {key}: got={count}:need=1")
+        try:
+            line_index = int(original["line_number"]) - 1
+            source_line = lines[line_index]
+        except (IndexError, KeyError, TypeError, ValueError) as exc:
+            raise ValueError(f"setfile effective line missing for {key}") from exc
+        if re.match(rf"^{re.escape(key)}\s*=", source_line.rstrip("\r\n")) is None:
+            raise ValueError(f"setfile effective line mismatch for {key}")
+        line_ending = "\r\n" if source_line.endswith("\r\n") else (
+            "\n" if source_line.endswith("\n") else ""
+        )
+        # Canonical markerless ablation children contain a base block followed
+        # by one override block.  parse_setfile_assignments has already proved
+        # that narrow shape and records the effective (last-value-wins) line;
+        # edit only that line so the base block remains immutable.
+        lines[line_index] = replacement + line_ending
+    text = "".join(lines)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(text, encoding="utf-8")
 
@@ -455,9 +593,10 @@ def _normalize_expert(expert: str | None) -> str:
 
 def _summary_matches_invocation(
         summary_path: Path, *, started_at: float, ea_id: int, ea_expert: str,
-        symbol: str, period: str, terminal: str) -> bool:
+        symbol: str, period: str, terminal: str,
+        require_fresh: bool = True) -> bool:
     try:
-        if summary_path.stat().st_mtime < started_at:
+        if require_fresh and summary_path.stat().st_mtime < started_at:
             return False
         data = json.loads(summary_path.read_text(encoding="utf-8-sig"))
         summary_ea_id = int(data.get("ea_id"))
@@ -510,7 +649,8 @@ def _summary_from_run_smoke_output(
         path = Path(match.group("path").strip().strip('"'))
         if _summary_matches_invocation(
                 path, started_at=started_at, ea_id=ea_id, ea_expert=ea_expert,
-                symbol=symbol, period=period, terminal=terminal):
+                symbol=symbol, period=period, terminal=terminal,
+                require_fresh=False):
             return path
     return None
 
@@ -569,7 +709,7 @@ def fire_backtest_details(*, ea_id: int, ea_expert: str, symbol: str,
     return_code: int | None = None
     timed_out = False
     try:
-        proc = subprocess.run(
+        proc = run_with_launch_fault_retry(
             args, capture_output=True, text=True,
             timeout=timeout_sec + RUNNER_HEADROOM_SEC,
             creationflags=creationflags,
@@ -658,23 +798,62 @@ def resolve_backtest_context(
     tester_symbol = str(identity.get("host_symbol") or logical_symbol)
     manifest_path = baseline_setfile.parent.parent / "basket_manifest.json"
     manifest: dict[str, Any] = {}
+    dependency_symbols: list[str] = []
     if manifest_path.exists():
         try:
             candidate = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
-            if str(candidate.get("logical_symbol") or "").casefold() == logical_symbol.casefold():
+            raw_symbols = (
+                candidate.get("basket_symbols")
+                or candidate.get("symbols")
+                or []
+            )
+            if isinstance(raw_symbols, list):
+                dependency_symbols = list(dict.fromkeys(
+                    str(symbol).strip()
+                    for symbol in raw_symbols
+                    if str(symbol).strip()
+                ))
+            logical_matches = (
+                str(candidate.get("logical_symbol") or "").casefold()
+                == logical_symbol.casefold()
+            )
+            dependency_matches = (
+                len(dependency_symbols) > 1
+                and logical_symbol.casefold()
+                in {symbol.casefold() for symbol in dependency_symbols}
+            )
+            if logical_matches or dependency_matches:
                 manifest = candidate
-                tester_symbol = str(candidate.get("host_symbol") or tester_symbol)
+                if logical_matches:
+                    tester_symbol = str(candidate.get("host_symbol") or tester_symbol)
                 period = str(candidate.get("host_timeframe") or period)
         except (OSError, json.JSONDecodeError):
             manifest = {}
+            dependency_symbols = []
 
-    is_basket = tester_symbol.casefold() != logical_symbol.casefold()
-    effective_from = from_date or ("2018.07.02" if is_basket else "2017.01.01")
+    is_logical_basket = tester_symbol.casefold() != logical_symbol.casefold()
+    is_basket = is_logical_basket or len(dependency_symbols) > 1
+    effective_from = from_date or ("2018.07.02" if is_logical_basket else "2017.01.01")
     effective_to = to_date or "2025.12.31"
+    # Data-honest clamp for late-start (2018+) symbols like the rebuilt NDX store:
+    # a 2017 request hard-fails tester history sync (wave evidence 2026-07-18).
+    if not is_logical_basket and effective_from < "2018":
+        _reg = Path(__file__).resolve().parents[1] / "registry" / "dwx_symbol_history_ranges.csv"
+        try:
+            with _reg.open("r", encoding="utf-8-sig", newline="") as _fh:
+                for _row in csv.DictReader(_fh):
+                    if (str(_row.get("symbol") or "").casefold() == tester_symbol.casefold()
+                            and str(_row.get("period") or "").casefold() == str(period).casefold()):
+                        if int(_row.get("first_year") or 2017) >= 2018:
+                            effective_from = "2018.07.02"
+                        break
+        except (OSError, TypeError, ValueError):
+            pass
     latest_full_year = manifest.get("latest_full_year")
     if is_basket and not latest_full_year:
         symbols = {
-            str(symbol).casefold() for symbol in (manifest.get("basket_symbols") or [tester_symbol])
+            str(symbol).casefold()
+            for symbol in (dependency_symbols or [tester_symbol])
         }
         registry = Path(__file__).resolve().parents[1] / "registry" / "dwx_symbol_history_ranges.csv"
         years: list[int] = []
@@ -692,7 +871,20 @@ def resolve_backtest_context(
             latest_full_year = min(years)
     if is_basket and latest_full_year and not to_date:
         effective_to = f"{int(latest_full_year)}.12.31"
-    effective_timeout = max(timeout_sec, 3600) if is_basket else timeout_sec
+    # Full-history child runs scale with bar count: a 9y M5 index run cannot
+    # finish inside the flat 900s D1-era budget (13301/GDAXI wave evidence
+    # 2026-07-17: every child INCOMPLETE_RUNS,TIMEOUT at ~15min).
+    tf_floor = {"M1": 4200, "M5": 4200, "M15": 3600, "M30": 3600,
+                "H1": 1800, "H2": 1800, "H4": 1800}
+    effective_timeout = max(timeout_sec, tf_floor.get(str(period).upper(), 0))
+    # Tick-heavy commodities/indices need a cold-cache first-sync allowance even
+    # on D1 (10403/XAU-D1 wave evidence 2026-07-18: children INVALID on a
+    # cold-XAU terminal at the flat 900s while warm terminals pass).
+    tick_heavy = ("XAU", "XAG", "XTI", "XNG", "GDAXI", "NDX", "SP500", "WS30")
+    if any(t in str(tester_symbol).upper() for t in tick_heavy):
+        effective_timeout = max(effective_timeout, 2400)
+    if is_basket:
+        effective_timeout = max(effective_timeout, 3600)
     return {
         "logical_symbol": logical_symbol,
         "tester_symbol": tester_symbol,
@@ -701,6 +893,8 @@ def resolve_backtest_context(
         "to_date": effective_to,
         "timeout_sec": effective_timeout,
         "is_basket": is_basket,
+        "is_logical_basket": is_logical_basket,
+        "basket_symbols": dependency_symbols,
         "manifest_path": str(manifest_path.resolve()) if manifest_path.exists() else None,
         "latest_full_year": int(latest_full_year) if latest_full_year else None,
     }
@@ -926,10 +1120,18 @@ def main() -> int:
         evidence_status = "INVALID_NO_PERTURBABLE_PARAMS"
     else:
         evidence_status = "INVALID_INSUFFICIENT_VALID_PERTURBATIONS"
-    excluded_classes = {row["class"] for row in classifications if not row["candidate_values"]}
-    structurally_inapplicable = bool(classifications) and not eligible and excluded_classes <= {
-        "fixed", "structural"
-    }
+    # Structural inapplicability is a property of the WHOLE strategy parameter set, not
+    # just the (possibly fixed-stripped) Q03 pick: an all-fixed card has an empty pick and
+    # would otherwise look non-structural and mis-route to INFRA_FAIL (2026-07-27 census
+    # rank 7). Determine it from the full baseline inventory. `not eligible` stays a
+    # necessary condition so a pick that simply omitted an existing perturbable param is a
+    # production gap (retry-owed), NOT a structural NA.
+    structurally_inapplicable = (
+        not eligible
+        and baseline_is_structurally_inapplicable(
+            baseline_assignments, param_type_overrides
+        )
+    )
 
     payload = {
         "schema_version": EVIDENCE_SCHEMA_VERSION,

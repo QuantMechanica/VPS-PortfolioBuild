@@ -31,4 +31,16 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=ea_input_defaults (materialized 2026-07-19 push)
+strategy_signal_tf=0
+strategy_sma_fast=5
+strategy_sma_mid=8
+strategy_sma_slow=13
+strategy_atr_period=14
+strategy_ambush_atr_frac=0.20
+strategy_initial_stop_pct=2.0
+strategy_emergency_atr_mult=3.0
+strategy_safety_trail_pct=2.0
+strategy_target_d_level=5
+strategy_doji_body_ratio=0.10
+strategy_morning_body_ratio=0.35

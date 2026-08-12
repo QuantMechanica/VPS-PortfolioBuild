@@ -1,0 +1,45 @@
+;==========================================================
+; QM5 Set File — canonical backtest (BACKTEST-ONLY instrument)
+; ea_id:        20181
+; ea_slug:      ftmo-joint-multisym-timer
+; symbol:       USDJPY.DWX   (host chart)
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0 (host); slot 1 = XAUUSD.DWX reserved for step 2
+; risk_mode:    FIXED
+; author:       Claude
+; date:         2026-07-27
+;----------------------------------------------------------
+; STEP 1: only the runner (sleeve 0 = 9936:USDJPY) is enabled. Satellites are
+; added one at a time in steps 2-3, each admitted at match_rate == 1.0 first.
+; News left at EA defaults (PRE30_POST30 + DXZ), exactly as 9936's gated set.
+;==========================================================
+qm_ea_id=20181
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_risk_cap_pct=1.0
+qm_stress_reject_probability=0.0
+host_symbol=USDJPY.DWX
+; --- Sleeve 0 : RUNNER — QM5_9936 gated backtest params ---
+s0_enabled=1
+s0_symbol=USDJPY.DWX
+s0_risk_fixed=1000
+s0_range_start_hr=1
+s0_range_end_hr=6
+s0_cancel_hr=13
+s0_close_hr=20
+s0_atr_period=14
+s0_min_range_atr_mult=0.4
+s0_max_range_atr_mult=2.5
+s0_trail_trigger_r=1.0
+s0_range_scan_bars=36
+; --- Sleeve 1 : SATELLITE-1 (XAUUSD) — DISABLED in step 1 (wired in step 2) ---
+s1_enabled=0
+s1_symbol=XAUUSD.DWX
+s1_risk_fixed=1000
+; --- Sleeve 2 : SATELLITE-2 (13108:XTIUSD) — DISABLED in runner control ---
+s2_enabled=0
+s2_symbol=XTIUSD.DWX
+s2_risk_fixed=1000

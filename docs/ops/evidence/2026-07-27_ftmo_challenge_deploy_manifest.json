@@ -1,0 +1,64 @@
+{
+  "generated_utc": "2026-07-27T03:25:30.436685+00:00",
+  "purpose": "FTMO Phase 1 campaign - one challenge account per sleeve",
+  "measurement": "docs/research/FTMO_MULTI_ACCOUNT_CAMPAIGN_2026-07-26.md",
+  "ftmo_leverage_source": "ftmo.com blog 'A few answers to your questions' fetched 2026-07-27: forex 1:100, indices 1:50 (1:30 for HK50/US2000/SPN35), metals 1:30, Normal account type",
+  "accounts": [
+    {
+      "ea": "QM5_13213_balke-gmt3-range-breakout",
+      "symbol": "USDJPY.DWX",
+      "timeframe": "H1",
+      "risk_percent": 4.0,
+      "risk_fixed": 0,
+      "setfile": "framework/EAs/QM5_13213_balke-gmt3-range-breakout/sets/QM5_13213_balke-gmt3-range-breakout_USDJPY.DWX_H1_ftmo_challenge.set",
+      "setfile_sha256": "0c81c93ed2a37bbf7dff1437194dbe509552574950eac07a46130dea2246cc60",
+      "derived_from": "framework/EAs/QM5_13213_balke-gmt3-range-breakout/sets/QM5_13213_balke-gmt3-range-breakout_USDJPY.DWX_H1_backtest.set",
+      "peak_concurrent_notional_x_equity": 73.8,
+      "ftmo_leverage": "1:100",
+      "margin_used_pct": 73.8,
+      "margin_level_at_ftmo_loss_limit_pct": 122
+    },
+    {
+      "ea": "QM5_10848_tv-mtf-ambush",
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "H1",
+      "risk_percent": 4.0,
+      "risk_fixed": 0,
+      "setfile": "framework/EAs/QM5_10848_tv-mtf-ambush/sets/QM5_10848_tv-mtf-ambush_XAUUSD.DWX_H1_ftmo_challenge.set",
+      "setfile_sha256": "a094d0ea125dc67e75360ef684c40914136a348b3bdbb098fe90d08c762df521",
+      "derived_from": "framework/EAs/QM5_10848_tv-mtf-ambush/sets/QM5_10848_tv-mtf-ambush_XAUUSD.DWX_H1_backtest.set",
+      "peak_concurrent_notional_x_equity": 17.2,
+      "ftmo_leverage": "1:30",
+      "margin_used_pct": 57.3,
+      "margin_level_at_ftmo_loss_limit_pct": 157
+    },
+    {
+      "ea": "QM5_10553_mql5-rsioma",
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "H4",
+      "risk_percent": 8.0,
+      "risk_fixed": 0,
+      "setfile": "framework/EAs/QM5_10553_mql5-rsioma/sets/QM5_10553_mql5-rsioma_XAUUSD.DWX_H4_ftmo_challenge.set",
+      "setfile_sha256": "8d578b6007a07dab42ba80ed4355ff44b3b52328acade0ea00f355c9d34ff8ca",
+      "derived_from": "framework/EAs/QM5_10553_mql5-rsioma/sets/QM5_10553_mql5-rsioma_XAUUSD.DWX_H4_backtest.set",
+      "peak_concurrent_notional_x_equity": 19.9,
+      "ftmo_leverage": "1:30",
+      "margin_used_pct": 66.3,
+      "margin_level_at_ftmo_loss_limit_pct": 136
+    },
+    {
+      "ea": "QM5_13036_balke-go-long-regime",
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M15",
+      "risk_percent": 8.0,
+      "risk_fixed": 0,
+      "setfile": "framework/EAs/QM5_13036_balke-go-long-regime/sets/QM5_13036_balke-go-long-regime_GDAXI.DWX_M15_ftmo_challenge.set",
+      "setfile_sha256": "7e4c87af05613d5892941558cbb9b3b783e8a7ac3b38b09b54350b4adec5966c",
+      "derived_from": "framework/EAs/QM5_13036_balke-go-long-regime/sets/QM5_13036_balke-go-long-regime_GDAXI.DWX_M15_backtest.set",
+      "peak_concurrent_notional_x_equity": 5.2,
+      "ftmo_leverage": "1:50",
+      "margin_used_pct": 10.4,
+      "margin_level_at_ftmo_loss_limit_pct": 865
+    }
+  ]
+}

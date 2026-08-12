@@ -1,0 +1,35 @@
+{
+  "schema_version": "qm.priority-track-expectations/v1",
+  "owner_reference": "OWNER_DECISION_2026-07-31_QM5_20007_PRIORITY_TRACK",
+  "mode": "EXACT_ID_NO_WAVE_NO_BULK",
+  "recensus_at_utc": "2026-07-31T14:38:09Z",
+  "rows": [
+    {
+      "work_item_id": "6dce5d90-4a59-4753-9830-9eebdaeed397",
+      "ea_id": "QM5_20007",
+      "symbol": "NDX.DWX",
+      "expected_status": "pending",
+      "expected_phase": "Q02",
+      "expected_payload_sha256": "d62742d555f23e60f2209fbf376daf8abe01ed62c96673465b8c73a81cc722e0"
+    }
+  ],
+  "excluded_recensus_rows": [
+    {
+      "work_item_id": "0928164a-2c70-448b-ae23-4cfaf6c06c6a",
+      "symbol": "GDAXI.DWX",
+      "status": "failed",
+      "phase": "Q02",
+      "verdict": "INFRA_FAIL",
+      "reason": "terminal row; normal recovery classification, not priority backfill"
+    },
+    {
+      "work_item_id": "80c64b67-7eaa-461e-ba1c-80892f7cf73d",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "phase": "Q02",
+      "priority_track": true,
+      "recovery_class": "stranded_infra_fail",
+      "reason": "already priority-marked recovery row; no mutation"
+    }
+  ]
+}

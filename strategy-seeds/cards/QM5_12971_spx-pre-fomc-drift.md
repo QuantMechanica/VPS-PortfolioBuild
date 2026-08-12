@@ -300,7 +300,7 @@ at_risk_explanation: |
   emergency stop are entry-side `_v2` changes, so prior pipeline evidence cannot be inherited.
 ```
 
-## 13. Implementation Notes (CTO fills at APPROVED stage)
+## 13. Implementation Notes (Development fills for an OWNER-approved build)
 
 ```yaml
 target_modules:

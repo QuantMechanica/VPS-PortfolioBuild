@@ -5,7 +5,10 @@
 
 ## Mission
 
-Rebuild the QuantMechanica strategy-mining factory on clean infrastructure, operated by a revised Paperclip multi-agent company, fully documented on YouTube as the Build-in-Public series. End-goal: a profitable, publicly-tracked live portfolio of mechanical trading strategies by month 12.
+Operate the QuantMechanica strategy-mining factory on clean infrastructure with
+deterministic local state, evidence-bound gates, and OWNER authority. Document
+the work on YouTube as the Build-in-Public series. End-goal: a profitable,
+publicly-tracked live portfolio of mechanical trading strategies by month 12.
 
 ## Success Criteria (12-Month Horizon)
 
@@ -24,19 +27,19 @@ Rebuild the QuantMechanica strategy-mining factory on clean infrastructure, oper
 |---|---|---|---|
 | Live deploy (real money) | OWNER | Claude-Assistant, Codex | OWNER |
 | Infrastructure spend > €200 | OWNER | Board | OWNER |
-| Paperclip agent hire/fire | OWNER | Board | OWNER |
-| Strategy PASS/FAIL judgement | Paperclip CEO (agent) | Quality-Tech | OWNER |
-| Sweep/research dispatch | Paperclip CEO (agent) | — | OWNER |
+| Worker/tool selection | OWNER | Claude-Assistant, Codex | OWNER |
+| Source authorization and G0 approval | OWNER | Claude-Assistant, Codex | OWNER |
+| Build integrity and test PASS/FAIL | Deterministic repository gates | Claude-Assistant, Codex audit | OWNER may stop, never waive evidence |
+| T6/live promotion | OWNER | Deterministic test evidence + Claude-Assistant/Codex audit | OWNER |
 | YouTube episode publish | OWNER | Board | OWNER |
 | Blog / newsletter publish | OWNER | Board | OWNER |
 | Website changes | OWNER | Board | OWNER |
 
 ## Stakeholders
 
-- **OWNER (Fabian Grabner)** — Founder, CEO, Final Authority, on-camera host
+- **OWNER (Fabian Grabner)** — Founder, Final Authority, on-camera host
 - **Claude-Assistant (Opus 4.7 1M)** — Board Member, strategy sparring, playbook author
 - **Codex** — Code review + phase-boundary audit
-- **Paperclip CEO Agent** — Operational CEO inside the Paperclip company (distinct from OWNER the human CEO)
 - **YouTube viewers** — Witnesses, feedback channel, eventual customers
 - **Darwinex** — Broker + data source
 
@@ -44,7 +47,7 @@ Rebuild the QuantMechanica strategy-mining factory on clean infrastructure, oper
 
 - NinjaScript + Futures (deferred to V6, planned Summer 2026)
 - Mobile app / iOS client
-- Multi-user Paperclip workspace (still solo operator)
+- Multi-user orchestration workspace (still solo operator)
 - Sub-ms HFT strategies
 - Any manual-discretionary trading
 - Machine Learning in EAs (V5 ban; sources can be collected for V6 reconsideration)
@@ -54,6 +57,8 @@ Rebuild the QuantMechanica strategy-mining factory on clean infrastructure, oper
 1. **Same-VPS factory/live contention** (T1-T5 sweeps could degrade T6 Live/Demo) → mitigation: T6 isolation, process priority, factory pause thresholds
 2. **Darwinex data outages** (observed historically) → mitigation: Tick Data Suite local cache as fallback
 3. **YouTube tone drifts from data-driven to hype** → mitigation: Board review every episode pre-publish
-4. **Paperclip agent-loop failures** (observed in V1) → mitigation: fresh company, no old QUAA issue import, revised prompts with explicit halt-and-ask triggers
+4. **Automation loop failures** (observed historically) → mitigation:
+   deterministic local state transitions, idempotent workers, bounded retries,
+   and evidence-linked stop conditions
 5. **Solo-founder burnout** → mitigation: weekly Board cadence, OWNER sets pace
 6. **Drive-sync vs `.git/` mass-delete-incident-class** → mitigation: PC1-00 (Drive `.git/` exclusion + git mutex) before Wave 0 starts concurrent writes (per `lessons-learned/2026-04-20_mass_delete_incident.md`)

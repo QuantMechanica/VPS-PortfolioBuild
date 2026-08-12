@@ -1,0 +1,8 @@
+{
+  "logical_symbol": "QM5_20051_XTI_XNG_XMOM1_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": ["XTIUSD.DWX", "XNGUSD.DWX"],
+  "traded_symbols": ["XTIUSD.DWX", "XNGUSD.DWX"],
+  "notes": ["One logical XTI/XNG monthly package: rank the immediately completed monthly returns, buy the winner, short the loser, and evaluate combined PnL and costs at Q02."]
+}

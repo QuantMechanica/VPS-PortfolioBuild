@@ -1,0 +1,15 @@
+============================================================
+FULL: C:\QM\mt5\T_Live\MT5_Base\MQL5\Logs\20260719.log
+L1: OQ	2	15:33:58.189	QM5_11165_weiss-rsi-ma (AUDCAD,H1)	Abnormal termination
+L2: JE	2	15:33:58.315	QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,D1)	Abnormal termination
+L3: IM	2	15:33:58.419	QM5_11165_weiss-rsi-ma (EURUSD,H1)	Abnormal termination
+============================================================
+FULL: C:\QM\mt5\T_Live\MT5_Base\MQL5\Logs\20260722.log
+L1: JQ	2	07:24:11.355	QM5_11165_weiss-rsi-ma (AUDCAD,H1)	Abnormal termination
+L2: HE	2	07:24:11.683	QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,D1)	Abnormal termination
+L3: RM	2	07:24:11.836	QM5_11165_weiss-rsi-ma (EURUSD,H1)	Abnormal termination
+L4: LK	2	07:24:12.011	QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,D1)	Abnormal termination
+L5: ME	2	07:24:12.202	QM5_10706_tv-mon-ls (GBPUSD,H1)	Abnormal termination
+============================================================
+SAMPLE 20260724.log (session start) unique message types:
+SOURCE-column value counts: {'Trades': 23, 'Network': 8, 'Terminal': 3, 'Experts': 25, 'Signal': 1}

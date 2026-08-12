@@ -1,0 +1,253 @@
+{
+  "schema_version": 2,
+  "contract_revision": 3,
+  "artifact_type": "QM5_20002_PREREGISTERED_REVERSE_TIME_CANDIDATE_CONTRACT",
+  "analysis_id": "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001",
+  "created_utc": "2026-07-20T01:55:00Z",
+  "revision_2_created_utc": "2026-07-20T02:12:28Z",
+  "revision_2_outcome_fence": "INFRASTRUCTURE_ONLY_BEFORE_ANY_2017_2021_REPORT_OR_MARKET_OUTCOME_WAS_READ",
+  "revision_2_reason": "QM_NewsInit consumes two tester CSV files, while revision 1 bound only the primary file; revision 2 binds both inputs and makes pending-order fill-time compliance an explicit INVALID gate.",
+  "revision_3_created_utc": "2026-07-20T03:27:46Z",
+  "revision_3_outcome_fence": "SOURCE_CAUSAL_AND_SAFETY_CORRECTIONS_FROZEN_BEFORE_ANY_QM5_20002_MT5_RUN_REPORT_ANNOTATED_TRADE_OR_2017_2021_MARKET_OUTCOME_WAS_OPENED",
+  "revision_3_reason": "Primary-source and static review found a blocked immediate reclaim, pre-sweep FVG eligibility, broker-calendar liquidity levels, news-before-management ordering, stale GTC fill paths and volatile restart state. Revision 3 binds the outcome-blind source-corrected implementation without changing any screen input or merit gate.",
+  "revision_3_byte_closure_created_utc": "2026-07-20T03:34:28Z",
+  "revision_3_byte_closure_reason": "A path-local -text policy and byte-only source recommit make the committed MQ5 and Windows working-tree/compile bytes identical; no executable token, input, gate or outcome changed.",
+  "purpose": "Test the previously claimed short-only New-York ICT rescue on an earlier outcome window that was not used to select the direction/session filter.",
+  "epistemic_status": {
+    "candidate_origin": "POST_HOC_FILTER_FROM_2022_2025_EURUSD_M1_OUTCOMES",
+    "screen_window": "REVERSE_TIME_VALIDATION_NOT_PRISTINE_SOURCE_HOLDOUT",
+    "reason_not_pristine": "The source dossier contains selected winning examples from 2020-2023, although no loss-complete result for this exact candidate and window was used to define these arms.",
+    "no_tuning_after_outcome_read": true,
+    "future_use": "A passing arm remains a candidate only and must later pass forward OOS and prospective observation."
+  },
+  "rejected_prior_claim": {
+    "document": "docs/ops/evidence/ict_rescue_deep_dive_20260716.md",
+    "claimed_configuration": "TradeLongs=false, TradeShorts=true, KZ_London_on=false, KZ_NewYork_on=true",
+    "claimed_profit_factor": 1.21,
+    "native_report": "D:/QM/mt5/T8/tester_verification.htm",
+    "native_report_sha256": "3c0fdb2c1854f6a436578024dbe4c5ec649ae4fa6e5147fb1a4f29002cd07d84",
+    "native_report_profit_factor": 1.10,
+    "native_report_total_trades": 47,
+    "native_report_embedded_input_conflicts": {
+      "KZ_London_on": true,
+      "UseHTFBias": true
+    },
+    "disposition": "INVALID_FOR_CLAIMED_RESCUE_CONFIGURATION"
+  },
+  "frozen_implementation": {
+    "source_path": "framework/EAs/QM5_20002_ict-icytea-core/QM5_20002_ict-icytea-core.mq5",
+    "source_git_commit": "3f1039f0eeb56ee882b5c3451eed3ee71567d6bc",
+    "source_sha256": "3fd49f2cea7575e659f1b1cf9c24c752a4a8e11db5e0c17cae69629a6f207f83",
+    "primary_source_path": "D:/QM/strategy_farm/artifacts/sources/ict_icy_tea_source_20260716/MQL5_Strategie_Spezifikation_some_icy_tea.docx",
+    "primary_source_sha256": "8880629e924c7dee48e1d2cd0a5cd835020e057ee592b132b6fd0c7a438231af",
+    "source_correction_plan_path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/source_correction_v3_plan.md",
+    "source_correction_plan_git_commit": "4e94d4c6a84c9d7bc773344a2311a23cba927f46",
+    "source_correction_plan_sha256": "914e1b1c81c4352ee51e7ea1dc4f525739b4e16e1a866d86b759c8dafbbf8c9a",
+    "strategy_card_path": "framework/EAs/QM5_20002_ict-icytea-core/docs/strategy_card.md",
+    "strategy_card_sha256": "230e59ae40179333a3c7790cc56f371bede8edd2b8fa53913557b20d8cb8bded",
+    "build_brief_path": "framework/EAs/QM5_20002_ict-icytea-core/docs/BUILD_BRIEF.md",
+    "build_brief_sha256": "57c16befda21c6fb1cc8e44a24b715c92940faee70de9adc1b9351c46d9c92bb",
+    "strategy_card_status_at_revision_3": "intake",
+    "approval_claim": "NONE_RESEARCH_SOURCE_CORRECTION_ONLY",
+    "fresh_compile_required": true,
+    "compiled_binary_must_bind_source_manifest": true,
+    "existing_binary_may_not_be_reused_without_fresh_compile_proof": true
+  },
+  "markets": [
+    {
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M1",
+      "role": "PRIMARY"
+    },
+    {
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M1",
+      "role": "TRANSPORT"
+    }
+  ],
+  "window": {
+    "from": "2017-10-01",
+    "to": "2021-12-31",
+    "date_semantics": "MT5_TESTER_INCLUSIVE_FROM_AND_TO",
+    "reason": "Darwinex model-4 FX ticks begin in 2017-10; the filter was selected from 2022-2025 outcomes."
+  },
+  "arms": [
+    {
+      "id": "A_SHORT_NY_NO_HTF",
+      "UseHTFBias": false
+    },
+    {
+      "id": "B_SHORT_NY_H1_BIAS",
+      "UseHTFBias": true
+    }
+  ],
+  "common_inputs": {
+    "qm_chartui_enabled": false,
+    "qm_chartui_corner": 0,
+    "InpQMSimCommissionPerLot": 0.0,
+    "qm_ea_id": 20002,
+    "qm_magic_slot_offset": 0,
+    "qm_rng_seed": 42,
+    "RISK_PERCENT": 0.0,
+    "RISK_FIXED": 1000.0,
+    "PORTFOLIO_WEIGHT": 1.0,
+    "qm_news_temporal": 3,
+    "qm_news_compliance": 1,
+    "qm_news_stale_max_hours": 336,
+    "qm_news_min_impact": "high",
+    "qm_news_mode_legacy": 0,
+    "qm_friday_close_enabled": true,
+    "qm_friday_close_hour_broker": 21,
+    "qm_stress_reject_probability": 0.0,
+    "TradeLongs": false,
+    "TradeShorts": true,
+    "ExecutionTF": 1,
+    "HTF_Context_M15": 15,
+    "HTF_Context_H1": 16385,
+    "SwingLookback": 2,
+    "EqualTolerance_Pips": 2.0,
+    "EqualTolerance_ATRfrac": 0.1,
+    "SweepReturnBars": 3,
+    "DisplacementATR": 1.5,
+    "RequireFVGInImpulse": true,
+    "FVG_MinPoints": 10.0,
+    "EntryMode": 0,
+    "PremiumDiscountFilter": true,
+    "HTFBiasLookback": 60,
+    "UseOTE": false,
+    "SL_BufferPoints": 15.0,
+    "MinRR": 2.0,
+    "PartialPct": 50.0,
+    "PartialAt": 50.0,
+    "BreakevenAfterPartial": true,
+    "MaxTradesPerKZ": 2,
+    "TZ_Offset_NYtoBroker": 0,
+    "KZ_London_on": false,
+    "KZ_NewYork_on": true,
+    "Setup_Judas": false,
+    "Setup_TurtleSoup": false,
+    "Setup_Unicorn": false,
+    "Setup_SilverBullet": false,
+    "Setup_TGIF": false,
+    "Setup_3Drives": false,
+    "Setup_MMxM": false,
+    "Setup_IndexMacro": false,
+    "UseSMT": false
+  },
+  "tester": {
+    "terminal": "DEV1",
+    "model": 4,
+    "execution_mode": 0,
+    "optimization": 0,
+    "deposit": 100000,
+    "currency": "USD",
+    "leverage": 100,
+    "duplicates_per_cell": 2,
+    "exact_report_input_map_required": true,
+    "model4_log_marker_required": true,
+    "native_commission_required": 0.0,
+    "ea_simulated_commission_required": 0.0
+  },
+  "costs": {
+    "spread": "MODEL4_EMBEDDED_HISTORICAL_BID_ASK",
+    "external_commission": "DEALWISE_MAX_DXZ_FTMO_PER_SIDE_VOLUME_USD",
+    "commission_symbols": {
+      "EURUSD.DWX": "MAX(2.50_USD,2.50_EUR_CONVERTED_AT_DEAL_PRICE)_PER_SIDE_PER_LOT",
+      "GBPUSD.DWX": "MAX(2.50_USD,2.50_GBP_CONVERTED_AT_DEAL_PRICE)_PER_SIDE_PER_LOT"
+    },
+    "slippage_scenarios_points_per_side": [0, 2, 5],
+    "center_slippage_points_per_side": 2,
+    "qualification_status": "RESEARCH_ONLY_UNTIL_LIVE_SLIPPAGE_AXIS_IS_RESOLVED"
+  },
+  "data_bindings": {
+    "provisioning_manifest": "D:/QM/reports/dev1/provisioning/20260719/source_destination_sha256.csv",
+    "provisioning_manifest_sha256": "65cb423348fbe1e5f04d99d9594bef80ed303ec52f6d8ad0d225fa86e4d1235c",
+    "news_calendars": [
+      {
+        "role": "PRIMARY_QM_NEWS_CALENDAR",
+        "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
+        "sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d"
+      },
+      {
+        "role": "SECONDARY_QM_NEWS_CALENDAR_REQUIRED_BY_QM_NewsInit",
+        "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv",
+        "sha256": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1"
+      }
+    ],
+    "tester_news_semantics": "UNION_OF_BOTH_QM_NewsInit_CSV_INPUTS",
+    "future_bar_parse_forbidden_after": "2021-12-31T23:59:59"
+  },
+  "execution_integrity_gates": {
+    "opening_fill_new_york_window": "07:00:00_INCLUSIVE_TO_10:00:00_EXCLUSIVE",
+    "opening_fill_must_be_outside_news_blackout_union": true,
+    "news_blackout_union_inputs": [
+      "PRIMARY_QM_NEWS_CALENDAR",
+      "SECONDARY_QM_NEWS_CALENDAR_REQUIRED_BY_QM_NewsInit"
+    ],
+    "news_blackout_minutes_before": 30,
+    "news_blackout_minutes_after": 30,
+    "violation_disposition": "INVALID",
+    "rationale": "The EA places ORDER_TIME_SPECIFIED limit orders. A limit accepted inside the killzone and outside news can still fill after 10:00 NY or during a later news blackout, so placement-time gating alone cannot prove the candidate semantics."
+  },
+  "revision_3_causal_semantics": {
+    "immediate_sweep_reclaim": "JUST_CLOSED_BAR_WICKS_STRICTLY_THROUGH_LEVEL_AND_CLOSES_STRICTLY_BACK_ACROSS_PREVIOUS_CLOSE_IRRELEVANT",
+    "later_sweep_reclaim": "FIRST_SUBSEQUENT_CLOSE_BACK_ACROSS_WITHIN_SweepReturnBars_SUBSEQUENTLY_CLOSED_BARS_ALL_INTERVENING_CLOSES_REMAIN_ON_SWEPT_SIDE",
+    "recorded_sweep_identity": "ORIGINAL_WICK_BAR_TIME_AND_MANIPULATION_EXTREME",
+    "immediate_same_bar_mss": "FORBIDDEN_BECAUSE_OHLC_CANNOT_ESTABLISH_INTRABAR_SWEEP_BEFORE_MSS",
+    "later_reclaim_bar_mss": "ALLOWED_WHEN_THE_RECORDED_SWEEP_BAR_IS_STRICTLY_EARLIER",
+    "mss_reference": "MOST_RECENT_CONFIRMED_RELEVANT_SWING_STRICTLY_BEFORE_RECORDED_SWEEP",
+    "fvg_window": "ALL_THREE_FVG_CANDLES_STRICTLY_AFTER_RECORDED_SWEEP_AND_NO_LATER_THAN_MSS_BAR",
+    "pre_sweep_fvg_may_satisfy_displacement": false,
+    "sweep_to_mss_expiry_bars": 30,
+    "sweep_to_mss_expiry_status": "UNCHANGED_ENGINEERING_ASSUMPTION_PRIMARY_SOURCE_HAS_NO_NUMERICAL_VALUE",
+    "structural_send_rejection_semantics": "UNCHANGED_ONE_SHOT_ENGINEERING_ASSUMPTION"
+  },
+  "revision_3_calendar_and_runtime_safety": {
+    "daily_level_calendar": "MOST_RECENT_COMPLETED_NEW_YORK_WEEKDAY_WITH_CLOSED_M15_DATA_WEEKEND_FRAGMENTS_SKIPPED",
+    "weekly_level_calendar": "NEW_YORK_MONDAY_00_00_INCLUSIVE_TO_NEXT_MONDAY_00_00_EXCLUSIVE_FROM_CLOSED_M15_BARS",
+    "broker_d1_levels_forbidden": true,
+    "tick_order_before_entry_news_gate": [
+      "KILL_SWITCH",
+      "CANCEL_INVALID_PENDING_AND_CLOSE_RACING_INVALID_FILL",
+      "FRIDAY_CLOSE",
+      "PARTIAL_AND_BREAKEVEN_MANAGEMENT",
+      "NEW_YORK_DAY_END_EXIT",
+      "CUSTOM_AND_FRESH_TWO_AXIS_NEWS_ENTRY_GATE"
+    ],
+    "pending_order_policy": "REMOVE_OWN_LIMITS_OUTSIDE_ENABLED_KILLZONE_OR_DURING_FRESH_TWO_CALENDAR_BLACKOUT",
+    "fill_race_policy": "VALIDATE_POSITION_TIME_AND_RETRY_IMMEDIATE_CLOSE_UNTIL_INVALID_FILL_IS_GONE",
+    "restart_swings": "CAUSALLY_REPLAY_CONFIRMED_CLOSED_BAR_FRACTALS_TO_REBUILD_BOUNDED_BUFFERS",
+    "restart_pending": "TRANSACTIONAL_VERSIONED_TERMINAL_GLOBAL_RECORD_PER_MAGIC_SYMBOL_SIDE_REJECT_FUTURE_STALE_OR_INCOMPLETE",
+    "restart_partial": "RECONSTRUCT_FROM_CLOSING_DEAL_HISTORY_FAIL_CLOSED_IF_HISTORY_UNAVAILABLE",
+    "restart_breakeven": "RECONSTRUCT_FROM_CURRENT_BROKER_STOP_AND_RETRY_BE_IF_PARTIAL_EXISTS_BUT_BE_DOES_NOT"
+  },
+  "familywise_policy": {
+    "hypothesis_count": 4,
+    "unit": "2_ARMS_X_2_SYMBOLS",
+    "selection": "NO_ARM_OR_SYMBOL_MAY_BE_SILENTLY_DROPPED",
+    "pooled_candidate_choice": "An arm passes only on its preregistered EURUSD+GBPUSD pool; no best-symbol promotion.",
+    "post_result_parameter_changes": "CREATE_A_NEW_CANDIDATE_AND_REQUIRE_A_NEW_UNSEEN_WINDOW"
+  },
+  "merit_gates": {
+    "minimum_pooled_closed_trades": 60,
+    "minimum_closed_trades_per_symbol": 20,
+    "center_cost_adjusted_profit_factor_min": 1.35,
+    "adverse_cost_adjusted_profit_factor_min": 1.15,
+    "minimum_positive_full_calendar_years": 3,
+    "required_full_calendar_years": [2018, 2019, 2020, 2021],
+    "each_symbol_net_positive_center": true,
+    "each_symbol_profit_factor_min_center": 1.10,
+    "leave_best_year_out_net_positive_center": true,
+    "leave_best_five_trades_out_net_positive_center": true,
+    "maximum_closed_balance_drawdown_percent": 8.0,
+    "maximum_single_ny_day_loss_percent_initial_balance": 3.0,
+    "duplicate_deal_sequence_must_match": true,
+    "zero_overnight_swap_or_exact_swap_cost_proof_required": true,
+    "all_gates_required": true
+  },
+  "decision": {
+    "on_pass": "PORT_CAUSAL_ARM_INTO_QM5_20009_AS_A_NEW_FX_SLEEVE_THEN_REPEAT_REAL_TICK_DEV_AND_FORWARD_OOS",
+    "on_fail": "REJECT_SHORT_NY_RESCUE_WITHOUT_TUNING",
+    "on_invalid": "REPAIR_INFRASTRUCTURE_ONLY_AND_REPEAT_IDENTICAL_CONTRACT"
+  }
+}

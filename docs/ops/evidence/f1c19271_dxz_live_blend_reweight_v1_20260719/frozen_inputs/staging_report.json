@@ -1,0 +1,189 @@
+{
+ "existing": [
+  {
+   "ea": "10403",
+   "sym": "XAUUSD",
+   "old_risk": "0.2227",
+   "new_risk": 0.2204,
+   "preset": "slot2_XAUUSD_D1_QM5_10403_et-turtle20x_magic104030002_dxzfinal_live.set"
+  },
+  {
+   "ea": "10440",
+   "sym": "NDX",
+   "old_risk": "0.0584",
+   "new_risk": 0.0577,
+   "preset": "slot3_NDX_H1_QM5_10440_mql5-ohlc-mtf_magic104400003_dxzfinal_live.set"
+  },
+  {
+   "ea": "10513",
+   "sym": "XAUUSD",
+   "old_risk": "0.3081",
+   "new_risk": 0.305,
+   "preset": "slot3_XAUUSD_D1_QM5_10513_mql5-ichimoku_magic105130003_dxzfinal_live.set"
+  },
+  {
+   "ea": "10911",
+   "sym": "GDAXI",
+   "old_risk": "0.1289",
+   "new_risk": 0.1276,
+   "preset": "slot3_GDAXI_H1_QM5_10911_grimes-complex-pb_magic109110003_dxzfinal_live.set"
+  },
+  {
+   "ea": "10919",
+   "sym": "XTIUSD",
+   "old_risk": "0.9277",
+   "new_risk": 0.9181,
+   "preset": "slot1_XTIUSD_H4_QM5_10919_grimes-overshoot_magic109190001_dxzfinal_live.set"
+  },
+  {
+   "ea": "10939",
+   "sym": "GBPUSD",
+   "old_risk": "0.1907",
+   "new_risk": 0.1887,
+   "preset": "slot1_GBPUSD_H4_QM5_10939_grimes-context-pb_magic109390001_dxzfinal_live.set"
+  },
+  {
+   "ea": "11132",
+   "sym": "SP500",
+   "old_risk": "0.4610",
+   "new_risk": 0.4562,
+   "preset": "slot0_SP500_D1_QM5_11132_ohlc-daily-squeeze-reversal-d1_magic111320000_dxzfinal_live.set"
+  },
+  {
+   "ea": "11165",
+   "sym": "AUDCAD",
+   "old_risk": "0.5284",
+   "new_risk": 0.523,
+   "preset": "slot2_AUDCAD_H1_QM5_11165_audcad-momentum_magic111650002_dxzfinal_live.set"
+  },
+  {
+   "ea": "11165",
+   "sym": "EURUSD",
+   "old_risk": "0.4170",
+   "new_risk": 0.4127,
+   "preset": "slot0_EURUSD_H1_QM5_11165_weiss-rsi-ma_magic111650000_dxzfinal_live.set"
+  },
+  {
+   "ea": "11421",
+   "sym": "AUDUSD",
+   "old_risk": "0.3652",
+   "new_risk": 0.3614,
+   "preset": "slot3_AUDUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1_magic114210003_dxzfinal_live.set"
+  },
+  {
+   "ea": "11421",
+   "sym": "EURUSD",
+   "old_risk": "0.3399",
+   "new_risk": 0.3364,
+   "preset": "slot0_EURUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1_magic114210000_dxzfinal_live.set"
+  },
+  {
+   "ea": "11708",
+   "sym": "EURUSD",
+   "old_risk": "0.5133",
+   "new_risk": 0.508,
+   "preset": "slot0_EURUSD_D1_QM5_11708_anon-market-squeeze-d1_magic117080000_dxzfinal_live.set"
+  },
+  {
+   "ea": "12567",
+   "sym": "XAUUSD",
+   "old_risk": "0.7543",
+   "new_risk": 0.7465,
+   "preset": "slot3_XAUUSD_D1_QM5_12567_cum-rsi2-commodity_magic125670003_dxzfinal_live.set"
+  },
+  {
+   "ea": "12567",
+   "sym": "XNGUSD",
+   "old_risk": "0.9899",
+   "new_risk": 0.9797,
+   "preset": "slot2_XNGUSD_D1_QM5_12567_cum-rsi2-commodity_magic125670002_dxzfinal_live.set"
+  },
+  {
+   "ea": "12778",
+   "sym": "AUDUSD",
+   "old_risk": "0.4956",
+   "new_risk": 0.4905,
+   "preset": "slot0_AUDUSD_D1_QM5_12778_edgelab-audusd-eurjpy-cointegration_magic127780000_dxzfinal_live.set"
+  },
+  {
+   "ea": "12969",
+   "sym": "USDJPY",
+   "old_risk": "0.5154",
+   "new_risk": 0.51,
+   "preset": "slot0_USDJPY_M30_QM5_12969_usdjpy-gotobi-nakane-fix_magic129690000_dxzfinal_live.set"
+  },
+  {
+   "ea": "12989",
+   "sym": "XAUUSD",
+   "old_risk": "0.2445",
+   "new_risk": 0.242,
+   "preset": "slot3_XAUUSD_H4_QM5_12989_grimes-nested-pb-v2_magic129890003_dxzfinal_live.set"
+  },
+  {
+   "ea": "13128",
+   "sym": "NDX",
+   "old_risk": "1.0000",
+   "new_risk": 1.0,
+   "preset": "slot0_NDX_H1_QM5_13128_pre-fomc-drift-ndx_magic131280000_dxzfinal_live.set"
+  },
+  {
+   "ea": "1556",
+   "sym": "XAUUSD",
+   "old_risk": "0.6080",
+   "new_risk": 0.6017,
+   "preset": "slot4_XAUUSD_D1_QM5_1556_aa-zak-mom12_magic15560004_dxzfinal_live.set"
+  },
+  {
+   "ea": "10706",
+   "sym": "GBPUSD",
+   "old_risk": "0.0536",
+   "new_risk": 0.053,
+   "preset": "slot1_GBPUSD_H1_QM5_10706_tv-mon-ls_magic107060001_dxzfinal_live.set"
+  },
+  {
+   "ea": "13117",
+   "sym": "EURGBP",
+   "old_risk": "0.4243",
+   "new_risk": 0.4199,
+   "preset": "slot0_EURGBP_D1_QM5_13117_eurgbp-audjpy_magic131170000_dxzfinal_live.set"
+  },
+  {
+   "ea": "13301",
+   "sym": "GDAXI",
+   "old_risk": "0.0700",
+   "new_risk": 0.0692,
+   "preset": "slot10_GDAXI_M5_QM5_13301_balke-minute-range-breakout_magic133010010_dxzfinal_live.set"
+  }
+ ],
+ "new": [
+  {
+   "ea": "13213",
+   "sym": "USDJPY",
+   "new_risk": 0.0431,
+   "preset": "slot0_USDJPY_H1_QM5_13213_balke-gmt3-range-breakout_magic132130000_dxzfinal_live.set"
+  },
+  {
+   "ea": "1567",
+   "sym": "EURUSD",
+   "new_risk": 0.1791,
+   "preset": "slot7_EURUSD_H4_QM5_1567_demark-td-reverse-sequential-h4_magic15670007_dxzfinal_live.set"
+  }
+ ],
+ "warnings": [],
+ "binaries": [
+  {
+   "ea": "13213",
+   "ex5": "QM5_13213_balke-gmt3-range-breakout.ex5",
+   "sha256": "321b1dca0064686100ee85d0ba614b0bcf0cd3096ca1bf9d5380ddade8a9ad4a"
+  },
+  {
+   "ea": "1567",
+   "ex5": "QM5_1567_demark-td-reverse-sequential-h4.ex5",
+   "sha256": "71c2f84b3e694210176e928fcaf688eff3f59c7efacdb275511e474c35a9e45c"
+  }
+ ],
+ "news_age_hours": 6.5,
+ "sum_risk_percent": 9.7499,
+ "manifest_sha256": "5ce872cc4ff92fe849edcfbcb9d1fd8e4e75d0b0d9892cdc025f6590f008fb8a",
+ "generated_at": "2026-07-19T12:00:08.941911"
+}

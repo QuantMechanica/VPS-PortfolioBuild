@@ -1,0 +1,20 @@
+{
+  "task_id": "719ef7b1-0c1f-4215-b1e0-328f34165dd5",
+  "ea_id": "QM5_20056",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_20056_wti-dual-mom",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20056_wti-dual-mom\\QM5_20056_wti-dual-mom.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20056_wti-dual-mom\\QM5_20056_wti-dual-mom.ex5",
+  "magic_base": 200560000,
+  "symbols_registered": ["XTIUSD.DWX"],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_20056_wti-dual-mom\\sets\\QM5_20056_wti-dual-mom_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20056_wti-dual-mom\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced factory occupied seven terminal slots; Q02 owns execution.",
+  "blocked_reason": "",
+  "open_questions": []
+}

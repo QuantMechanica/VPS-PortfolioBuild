@@ -1,0 +1,26 @@
+{
+  "ea_id": "QM5_20032",
+  "slug": "macro0830-brk",
+  "timeframe": "M5",
+  "basket_symbols": [
+    "GDAXI.DWX",
+    "SP500.DWX",
+    "EURUSD.DWX"
+  ],
+  "symbols": [
+    "GDAXI.DWX",
+    "SP500.DWX",
+    "EURUSD.DWX"
+  ],
+  "order_routes": [
+    "GDAXI.DWX",
+    "SP500.DWX"
+  ],
+  "conversion_only_dependencies": [
+    "EURUSD.DWX"
+  ],
+  "notes": [
+    "GER40 and US500 from the card are implemented through the registered GDAXI.DWX and SP500.DWX tester aliases.",
+    "EURUSD.DWX is read only for the card-required EUR commission conversion on the USD tester account; it is never an order route."
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_RUN",
+  "objective": "Test two already approved, built XTI/XNG strategies as potential FTMO diversification sleeves after the archive candidate pool is exhausted.",
+  "candidates": [
+    {
+      "execution_order": 1,
+      "ea_id": 13120,
+      "expert": "QM\\QM5_13120_energy-momrev",
+      "logical_symbol": "QM5_13120_ENERGY_MOMREV_D1",
+      "host_symbol": "XTIUSD.DWX",
+      "basket_symbols": ["XTIUSD.DWX", "XNGUSD.DWX"],
+      "period": "D1",
+      "approved_card": "artifacts/cards_approved/QM5_13120_energy-momrev.md"
+    },
+    {
+      "execution_order": 2,
+      "ea_id": 13132,
+      "expert": "QM\\QM5_13132_energy-bab",
+      "logical_symbol": "QM5_13132_XTI_XNG_BAB_D1",
+      "host_symbol": "XTIUSD.DWX",
+      "basket_symbols": ["XTIUSD.DWX", "XNGUSD.DWX"],
+      "period": "D1",
+      "approved_card": "artifacts/cards_approved/QM5_13132_energy-bab.md"
+    }
+  ],
+  "fresh_evidence_contract": {
+    "history": "2018-01-01 through 2025-12-31",
+    "model": 4,
+    "required_identical_runs": 2,
+    "current_framework_strict_compile": true,
+    "joint_mae_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "strict_q02_pf_floor": 1.2,
+    "strict_q02_minimum_completed_packages_per_calendar_year": 5
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [0.5, 1.0, 2.0, 3.0, 5.0, 7.5, 10.0],
+    "development_survivor_rule": "A fixed candidate representation and weight must improve both threshold and adverse preholdout pass rates.",
+    "sealed_holdout_open_rule": "Open once only for a frozen development survivor."
+  },
+  "execution_order_contract": "Both candidates share XTIUSD.DWX and XNGUSD.DWX, so 13132 may start only after 13120 exits and its Q08 stream is copied.",
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

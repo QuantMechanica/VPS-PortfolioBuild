@@ -1,0 +1,1977 @@
+[
+  {
+    "text": "The question is, can we build a strategy",
+    "start": 0.0,
+    "duration": 4.28
+  },
+  {
+    "text": "that is super effective for prop firms",
+    "start": 1.84,
+    "duration": 4.04
+  },
+  {
+    "text": "and then not for the challenges because",
+    "start": 4.28,
+    "duration": 3.8
+  },
+  {
+    "text": "that was covered in last week's episode,",
+    "start": 5.88,
+    "duration": 4.44
+  },
+  {
+    "text": "but can it be very effective for if you",
+    "start": 8.08,
+    "duration": 4.76
+  },
+  {
+    "text": "are a funded prop firm trader and what's",
+    "start": 10.32,
+    "duration": 5.0
+  },
+  {
+    "text": "important, what to look at and how to",
+    "start": 12.84,
+    "duration": 4.56
+  },
+  {
+    "text": "even build it in Perfectus AI. It will",
+    "start": 15.32,
+    "duration": 4.4
+  },
+  {
+    "text": "be a beginner tutorial on how to build a",
+    "start": 17.4,
+    "duration": 5.68
+  },
+  {
+    "text": "strategy for prop firms. This one super",
+    "start": 19.72,
+    "duration": 5.44
+  },
+  {
+    "text": "high strike rate, super consistent in",
+    "start": 23.08,
+    "duration": 5.44
+  },
+  {
+    "text": "the sense of what it does every single",
+    "start": 25.16,
+    "duration": 5.32
+  },
+  {
+    "text": "month. And yeah, I think it's a nice",
+    "start": 28.52,
+    "duration": 3.8
+  },
+  {
+    "text": "template to use. Of course, no financial",
+    "start": 30.48,
+    "duration": 4.88
+  },
+  {
+    "text": "advice and let's dive into Perfectus and",
+    "start": 32.32,
+    "duration": 5.08
+  },
+  {
+    "text": "let me show you the trades, the report",
+    "start": 35.36,
+    "duration": 3.88
+  },
+  {
+    "text": "and how to build it. Okay, super excited",
+    "start": 37.4,
+    "duration": 4.96
+  },
+  {
+    "text": "to dive into this strategy. It is made",
+    "start": 39.24,
+    "duration": 5.24
+  },
+  {
+    "text": "not for a personal account. It is made",
+    "start": 42.36,
+    "duration": 4.28
+  },
+  {
+    "text": "for just prop firm accounts and the",
+    "start": 44.48,
+    "duration": 4.32
+  },
+  {
+    "text": "reason for it is it is super consistent,",
+    "start": 46.64,
+    "duration": 5.56
+  },
+  {
+    "text": "but it has some big risks, okay? And",
+    "start": 48.8,
+    "duration": 5.32
+  },
+  {
+    "text": "therefore on a prop firm account, it is",
+    "start": 52.2,
+    "duration": 5.0
+  },
+  {
+    "text": "demo money and the payouts are real. So,",
+    "start": 54.12,
+    "duration": 5.92
+  },
+  {
+    "text": "that is a different way and therefore I",
+    "start": 57.2,
+    "duration": 4.76
+  },
+  {
+    "text": "play this a statistical game. It's like",
+    "start": 60.04,
+    "duration": 4.15
+  },
+  {
+    "text": "how many payouts can I get without",
+    "start": 61.96,
+    "duration": 4.24
+  },
+  {
+    "text": "[snorts] losing my account? If I can get",
+    "start": 64.19,
+    "duration": 4.29
+  },
+  {
+    "text": "10 payouts and then lose my account,",
+    "start": 66.2,
+    "duration": 4.96
+  },
+  {
+    "text": "I've made in those 10 payouts enough",
+    "start": 68.48,
+    "duration": 4.72
+  },
+  {
+    "text": "that I can purchase a lot of new",
+    "start": 71.16,
+    "duration": 3.4
+  },
+  {
+    "text": "challenge accounts, okay? That's the",
+    "start": 73.2,
+    "duration": 4.2
+  },
+  {
+    "text": "statistical game I play with prop firms",
+    "start": 74.56,
+    "duration": 5.2
+  },
+  {
+    "text": "and therefore maybe the strategy looks",
+    "start": 77.4,
+    "duration": 4.56
+  },
+  {
+    "text": "epic to run on a personal private",
+    "start": 79.76,
+    "duration": 5.12
+  },
+  {
+    "text": "account as well, but I don't recommend",
+    "start": 81.96,
+    "duration": 4.8
+  },
+  {
+    "text": "to do that because there are some risk",
+    "start": 84.88,
+    "duration": 3.6
+  },
+  {
+    "text": "with it and we're going to dive into it.",
+    "start": 86.76,
+    "duration": 3.28
+  },
+  {
+    "text": "But besides that, you will have a",
+    "start": 88.48,
+    "duration": 4.52
+  },
+  {
+    "text": "beautiful thing here. Let's dive into",
+    "start": 90.04,
+    "duration": 4.92
+  },
+  {
+    "text": "the overall platform. So, if you are",
+    "start": 93.0,
+    "duration": 4.32
+  },
+  {
+    "text": "new, what you can do is go to the link",
+    "start": 94.96,
+    "duration": 5.52
+  },
+  {
+    "text": "in the bio of this video or in",
+    "start": 97.32,
+    "duration": 5.96
+  },
+  {
+    "text": "description. Click on it, this strategy",
+    "start": 100.48,
+    "duration": 4.76
+  },
+  {
+    "text": "opens. If you are new, just make a free",
+    "start": 103.28,
+    "duration": 4.52
+  },
+  {
+    "text": "account and it opens up and you can",
+    "start": 105.24,
+    "duration": 5.6
+  },
+  {
+    "text": "yeah, test and play around with it with",
+    "start": 107.8,
+    "duration": 6.08
+  },
+  {
+    "text": "me. So, how does does this work? We put",
+    "start": 110.84,
+    "duration": 5.2
+  },
+  {
+    "text": "everything of all the code we put in",
+    "start": 113.88,
+    "duration": 4.52
+  },
+  {
+    "text": "blocks and therefore we built a drag and",
+    "start": 116.04,
+    "duration": 5.16
+  },
+  {
+    "text": "drop platform. Why do we put it in",
+    "start": 118.4,
+    "duration": 5.12
+  },
+  {
+    "text": "blocks? Because the code is pre-written,",
+    "start": 121.2,
+    "duration": 4.24
+  },
+  {
+    "text": "it's consistent, it's always the same,",
+    "start": 123.52,
+    "duration": 3.48
+  },
+  {
+    "text": "it's reliable, and that's what you want",
+    "start": 125.44,
+    "duration": 3.56
+  },
+  {
+    "text": "with financial algorithms, right? And by",
+    "start": 127.0,
+    "duration": 4.16
+  },
+  {
+    "text": "connecting these blocks with yes and no",
+    "start": 129.0,
+    "duration": 4.72
+  },
+  {
+    "text": "answers, you can build a billion",
+    "start": 131.16,
+    "duration": 4.12
+  },
+  {
+    "text": "different strategies. Like we have",
+    "start": 133.72,
+    "duration": 3.96
+  },
+  {
+    "text": "automated all types of strategies. I'll",
+    "start": 135.28,
+    "duration": 4.36
+  },
+  {
+    "text": "show you some here, and you can see all",
+    "start": 137.68,
+    "duration": 4.04
+  },
+  {
+    "text": "trading styles are already automated. We",
+    "start": 139.64,
+    "duration": 4.28
+  },
+  {
+    "text": "have been building so many strategies",
+    "start": 141.72,
+    "duration": 4.52
+  },
+  {
+    "text": "and yeah, you can uh just find your",
+    "start": 143.92,
+    "duration": 4.64
+  },
+  {
+    "text": "trading style. But first, let's focus on",
+    "start": 146.24,
+    "duration": 4.12
+  },
+  {
+    "text": "prop firms now because that is the",
+    "start": 148.56,
+    "duration": 3.24
+  },
+  {
+    "text": "current season.",
+    "start": 150.36,
+    "duration": 3.24
+  },
+  {
+    "text": "This strategy, we have the blocks on the",
+    "start": 151.8,
+    "duration": 3.68
+  },
+  {
+    "text": "canvas. Let me quickly explain",
+    "start": 153.6,
+    "duration": 4.76
+  },
+  {
+    "text": "everything on this canvas runs every",
+    "start": 155.48,
+    "duration": 5.92
+  },
+  {
+    "text": "single time the price moves. So, imagine",
+    "start": 158.36,
+    "duration": 5.76
+  },
+  {
+    "text": "here seeing run per candle.",
+    "start": 161.4,
+    "duration": 4.36
+  },
+  {
+    "text": "Run per candle just means every",
+    "start": 164.12,
+    "duration": 3.68
+  },
+  {
+    "text": "candlestick close, the algorithm is",
+    "start": 165.76,
+    "duration": 4.56
+  },
+  {
+    "text": "checking the next thing below and below",
+    "start": 167.8,
+    "duration": 5.12
+  },
+  {
+    "text": "and below. It's like a decision tree.",
+    "start": 170.32,
+    "duration": 4.639
+  },
+  {
+    "text": "If you run this algorithm, let's say",
+    "start": 172.92,
+    "duration": 4.44
+  },
+  {
+    "text": "it's on the 15-minute time frame on Kiwi",
+    "start": 174.959,
+    "duration": 5.201
+  },
+  {
+    "text": "Swiss, then I will keep it on the",
+    "start": 177.36,
+    "duration": 4.96
+  },
+  {
+    "text": "15-minute time frame because then run",
+    "start": 180.16,
+    "duration": 4.76
+  },
+  {
+    "text": "per candle means every 15 minutes, we're",
+    "start": 182.32,
+    "duration": 4.639
+  },
+  {
+    "text": "going to check the next thing. What is",
+    "start": 184.92,
+    "duration": 5.24
+  },
+  {
+    "text": "the next thing? Are we in a certain time",
+    "start": 186.959,
+    "duration": 5.721
+  },
+  {
+    "text": "session? And this time session is using",
+    "start": 190.16,
+    "duration": 5.079
+  },
+  {
+    "text": "inputs, but you can also just uh use",
+    "start": 192.68,
+    "duration": 5.2
+  },
+  {
+    "text": "text, but let's uh do an input. An input",
+    "start": 195.239,
+    "duration": 4.561
+  },
+  {
+    "text": "is a setting in your MetaTrader. If you",
+    "start": 197.88,
+    "duration": 3.76
+  },
+  {
+    "text": "download this algorithm and not test in",
+    "start": 199.8,
+    "duration": 3.96
+  },
+  {
+    "text": "the platform, but on your own terminal",
+    "start": 201.64,
+    "duration": 5.28
+  },
+  {
+    "text": "in MetaTrader 5, then you want to adjust",
+    "start": 203.76,
+    "duration": 5.24
+  },
+  {
+    "text": "settings when you upload it. And if you",
+    "start": 206.92,
+    "duration": 3.76
+  },
+  {
+    "text": "have any questions, by the way, use the",
+    "start": 209.0,
+    "duration": 4.239
+  },
+  {
+    "text": "question mark down below, uh and you can",
+    "start": 210.68,
+    "duration": 5.24
+  },
+  {
+    "text": "ask anything to our AI because this",
+    "start": 213.239,
+    "duration": 5.201
+  },
+  {
+    "text": "trained on all everything we build, our",
+    "start": 215.92,
+    "duration": 5.16
+  },
+  {
+    "text": "documentation, our teachings, okay? With",
+    "start": 218.44,
+    "duration": 5.2
+  },
+  {
+    "text": "that said, we have here running session",
+    "start": 221.08,
+    "duration": 5.12
+  },
+  {
+    "text": "means start time is set at 2:00 at",
+    "start": 223.64,
+    "duration": 5.64
+  },
+  {
+    "text": "night, and end time is set at uh 8:00 in",
+    "start": 226.2,
+    "duration": 5.48
+  },
+  {
+    "text": "the evening. So, what that means is",
+    "start": 229.28,
+    "duration": 5.8
+  },
+  {
+    "text": "every single 15-minute close,",
+    "start": 231.68,
+    "duration": 6.2
+  },
+  {
+    "text": "we going to check are we within",
+    "start": 235.08,
+    "duration": 5.6
+  },
+  {
+    "text": "2:00 in the morning or 2:00 at night and",
+    "start": 237.88,
+    "duration": 4.56
+  },
+  {
+    "text": "8:00 in the evening. Okay, are we within",
+    "start": 240.68,
+    "duration": 3.52
+  },
+  {
+    "text": "that timeframe? So, this algorithm",
+    "start": 242.44,
+    "duration": 4.28
+  },
+  {
+    "text": "doesn't do anything before 2:00 and",
+    "start": 244.2,
+    "duration": 5.56
+  },
+  {
+    "text": "after 8:00. So, are we in the session?",
+    "start": 246.72,
+    "duration": 5.56
+  },
+  {
+    "text": "Yes. You can also maybe see it as like a",
+    "start": 249.76,
+    "duration": 4.36
+  },
+  {
+    "text": "are we in the London session or Asian",
+    "start": 252.28,
+    "duration": 3.799
+  },
+  {
+    "text": "session? Like you can build it all. And",
+    "start": 254.12,
+    "duration": 4.36
+  },
+  {
+    "text": "you can even adjust options like are we",
+    "start": 256.079,
+    "duration": 4.521
+  },
+  {
+    "text": "in a certain month or in a certain",
+    "start": 258.48,
+    "duration": 4.64
+  },
+  {
+    "text": "weekday, but not relevant for now.",
+    "start": 260.6,
+    "duration": 4.44
+  },
+  {
+    "text": "If that's true, if we",
+    "start": 263.12,
+    "duration": 3.799
+  },
+  {
+    "text": "at the 15-minute close are within the",
+    "start": 265.04,
+    "duration": 3.6
+  },
+  {
+    "text": "session, we going to check if the candle",
+    "start": 266.919,
+    "duration": 3.801
+  },
+  {
+    "text": "close is above the upper band of the",
+    "start": 268.64,
+    "duration": 5.2
+  },
+  {
+    "text": "Bollinger. If that is true, then we",
+    "start": 270.72,
+    "duration": 4.88
+  },
+  {
+    "text": "going to check if the relative strength",
+    "start": 273.84,
+    "duration": 5.0
+  },
+  {
+    "text": "index is also above the value 70. If",
+    "start": 275.6,
+    "duration": 5.08
+  },
+  {
+    "text": "that is true, we going to check some",
+    "start": 278.84,
+    "duration": 4.36
+  },
+  {
+    "text": "higher timeframe confluence. If that is",
+    "start": 280.68,
+    "duration": 4.88
+  },
+  {
+    "text": "also set at one and I will explain what",
+    "start": 283.2,
+    "duration": 4.12
+  },
+  {
+    "text": "this block does. These two are quite",
+    "start": 285.56,
+    "duration": 3.6
+  },
+  {
+    "text": "simple, just simple price action, a",
+    "start": 287.32,
+    "duration": 3.76
+  },
+  {
+    "text": "little bit more trends. And if you",
+    "start": 289.16,
+    "duration": 4.16
+  },
+  {
+    "text": "watched last week's episode about",
+    "start": 291.08,
+    "duration": 4.44
+  },
+  {
+    "text": "creating a prop firm challenge",
+    "start": 293.32,
+    "duration": 4.2
+  },
+  {
+    "text": "algorithm, then you might already",
+    "start": 295.52,
+    "duration": 3.92
+  },
+  {
+    "text": "recognize a little bit of this strategy,",
+    "start": 297.52,
+    "duration": 4.0
+  },
+  {
+    "text": "but it is different. So,",
+    "start": 299.44,
+    "duration": 4.28
+  },
+  {
+    "text": "stay with me. We have count trades. Do",
+    "start": 301.52,
+    "duration": 5.0
+  },
+  {
+    "text": "we have any trades open? Yes or no? So,",
+    "start": 303.72,
+    "duration": 5.08
+  },
+  {
+    "text": "is the trade count zero or is the order",
+    "start": 306.52,
+    "duration": 3.84
+  },
+  {
+    "text": "count zero? This is also something if",
+    "start": 308.8,
+    "duration": 3.16
+  },
+  {
+    "text": "you open your MetaTrader before you take",
+    "start": 310.36,
+    "duration": 4.52
+  },
+  {
+    "text": "a trade, probably you remind",
+    "start": 311.96,
+    "duration": 4.56
+  },
+  {
+    "text": "you know it out of your head like do I",
+    "start": 314.88,
+    "duration": 3.48
+  },
+  {
+    "text": "have trades open today? And this",
+    "start": 316.52,
+    "duration": 3.88
+  },
+  {
+    "text": "strategy doesn't want to have more",
+    "start": 318.36,
+    "duration": 5.12
+  },
+  {
+    "text": "trades open every day. So, therefore we",
+    "start": 320.4,
+    "duration": 5.68
+  },
+  {
+    "text": "check do we have zero trades? Yes, we",
+    "start": 323.48,
+    "duration": 5.16
+  },
+  {
+    "text": "have zero orders also placed, no buy",
+    "start": 326.08,
+    "duration": 5.04
+  },
+  {
+    "text": "limits or anything or sell orders in",
+    "start": 328.64,
+    "duration": 4.08
+  },
+  {
+    "text": "this case. If that's true, we going to",
+    "start": 331.12,
+    "duration": 3.92
+  },
+  {
+    "text": "place a sell pending order on a certain",
+    "start": 332.72,
+    "duration": 4.52
+  },
+  {
+    "text": "price and that's the candle close of the",
+    "start": 335.04,
+    "duration": 5.64
+  },
+  {
+    "text": "last 15-minute candle with a price price",
+    "start": 337.24,
+    "duration": 5.72
+  },
+  {
+    "text": "offset of two pips or two pips away of",
+    "start": 340.68,
+    "duration": 4.72
+  },
+  {
+    "text": "that closing price on the 15-minute",
+    "start": 342.96,
+    "duration": 5.2
+  },
+  {
+    "text": "candle. One means last closed candle.",
+    "start": 345.4,
+    "duration": 4.2
+  },
+  {
+    "text": "The if you want to place it on the",
+    "start": 348.16,
+    "duration": 4.08
+  },
+  {
+    "text": "candle before, you can do candle uh two,",
+    "start": 349.6,
+    "duration": 5.28
+  },
+  {
+    "text": "but Okay, let me quickly repeat. We have",
+    "start": 352.24,
+    "duration": 4.2
+  },
+  {
+    "text": "Every 15 minutes, we're going to check",
+    "start": 354.88,
+    "duration": 3.72
+  },
+  {
+    "text": "if we are in a session. If we are in a",
+    "start": 356.44,
+    "duration": 4.08
+  },
+  {
+    "text": "session, we're going to see if the last",
+    "start": 358.6,
+    "duration": 3.64
+  },
+  {
+    "text": "candle closed",
+    "start": 360.52,
+    "duration": 3.96
+  },
+  {
+    "text": "on the 15-minute time frame is above the",
+    "start": 362.24,
+    "duration": 4.28
+  },
+  {
+    "text": "Bollinger Band upper band. You have",
+    "start": 364.48,
+    "duration": 5.16
+  },
+  {
+    "text": "three bands. And then, we also check if",
+    "start": 366.52,
+    "duration": 5.52
+  },
+  {
+    "text": "the Relative Strength Index is above 70.",
+    "start": 369.64,
+    "duration": 5.56
+  },
+  {
+    "text": "If that's also true, then we check one",
+    "start": 372.04,
+    "duration": 5.2
+  },
+  {
+    "text": "more thing, more on that later, and then",
+    "start": 375.2,
+    "duration": 3.6
+  },
+  {
+    "text": "count trades. If you have zero trades,",
+    "start": 377.24,
+    "duration": 2.88
+  },
+  {
+    "text": "we're going to place a sell pending",
+    "start": 378.8,
+    "duration": 3.44
+  },
+  {
+    "text": "order at the candle close with that",
+    "start": 380.12,
+    "duration": 5.16
+  },
+  {
+    "text": "offset with a fixed volume, so a fixed",
+    "start": 382.24,
+    "duration": 5.4
+  },
+  {
+    "text": "lot size. You can change that. It is an",
+    "start": 385.28,
+    "duration": 5.08
+  },
+  {
+    "text": "input. Again, it is a setting that you",
+    "start": 387.64,
+    "duration": 5.24
+  },
+  {
+    "text": "can use and create. Here, you can see",
+    "start": 390.36,
+    "duration": 4.4
+  },
+  {
+    "text": "all the standard settings.",
+    "start": 392.88,
+    "duration": 4.08
+  },
+  {
+    "text": "Then, we have stop loss. We have a stop",
+    "start": 394.76,
+    "duration": 5.36
+  },
+  {
+    "text": "loss of pips. So, how many pips we are",
+    "start": 396.96,
+    "duration": 4.8
+  },
+  {
+    "text": "using",
+    "start": 400.12,
+    "duration": 4.0
+  },
+  {
+    "text": "a huge stop loss. So, we don't really",
+    "start": 401.76,
+    "duration": 4.24
+  },
+  {
+    "text": "have a stop loss, and therefore, never",
+    "start": 404.12,
+    "duration": 4.08
+  },
+  {
+    "text": "run this on a private account. It's like",
+    "start": 406.0,
+    "duration": 5.24
+  },
+  {
+    "text": "super risky. It has a huge strike rate",
+    "start": 408.2,
+    "duration": 4.4
+  },
+  {
+    "text": "because you",
+    "start": 411.24,
+    "duration": 3.24
+  },
+  {
+    "text": "have a small target, so you reach your",
+    "start": 412.6,
+    "duration": 4.28
+  },
+  {
+    "text": "target quickly. But then, if you're in",
+    "start": 414.48,
+    "duration": 4.2
+  },
+  {
+    "text": "drawdown, you can be in deep drawdown",
+    "start": 416.88,
+    "duration": 5.08
+  },
+  {
+    "text": "lose lose it all, right? So, never never",
+    "start": 418.68,
+    "duration": 6.0
+  },
+  {
+    "text": "run this on a private account. It's way",
+    "start": 421.96,
+    "duration": 6.04
+  },
+  {
+    "text": "too risky. Then, custom price level.",
+    "start": 424.68,
+    "duration": 5.72
+  },
+  {
+    "text": "We're going to have a take profit at the",
+    "start": 428.0,
+    "duration": 3.68
+  },
+  {
+    "text": "middle line. So, you have three",
+    "start": 430.4,
+    "duration": 3.92
+  },
+  {
+    "text": "Bollingers. We're going to target the",
+    "start": 431.68,
+    "duration": 6.0
+  },
+  {
+    "text": "mid line. We delete the order after 15",
+    "start": 434.32,
+    "duration": 5.52
+  },
+  {
+    "text": "minutes. Quite similar to the strategy",
+    "start": 437.68,
+    "duration": 4.4
+  },
+  {
+    "text": "of the last week's episode. By the way,",
+    "start": 439.84,
+    "duration": 4.4
+  },
+  {
+    "text": "this we do a whole season about the",
+    "start": 442.08,
+    "duration": 3.8
+  },
+  {
+    "text": "trading style. So, this is the prop firm",
+    "start": 444.24,
+    "duration": 4.04
+  },
+  {
+    "text": "season. So, also check the last, I",
+    "start": 445.88,
+    "duration": 5.12
+  },
+  {
+    "text": "think, three videos before this one.",
+    "start": 448.28,
+    "duration": 4.88
+  },
+  {
+    "text": "We have here running session. So, we're",
+    "start": 451.0,
+    "duration": 4.76
+  },
+  {
+    "text": "going to check between two and what was",
+    "start": 453.16,
+    "duration": 5.64
+  },
+  {
+    "text": "it? Two and eight, we're going to check",
+    "start": 455.76,
+    "duration": 5.08
+  },
+  {
+    "text": "something. What do we check? If the",
+    "start": 458.8,
+    "duration": 3.52
+  },
+  {
+    "text": "candle high",
+    "start": 460.84,
+    "duration": 3.72
+  },
+  {
+    "text": "of the 1-hour time frame",
+    "start": 462.32,
+    "duration": 4.72
+  },
+  {
+    "text": "is currently above the upper band. If",
+    "start": 464.56,
+    "duration": 5.28
+  },
+  {
+    "text": "that is true, we change a variable. So,",
+    "start": 467.04,
+    "duration": 5.44
+  },
+  {
+    "text": "a variable is normally, if you create a",
+    "start": 469.84,
+    "duration": 4.68
+  },
+  {
+    "text": "variable, let's go to inputs and",
+    "start": 472.48,
+    "duration": 3.44
+  },
+  {
+    "text": "variables.",
+    "start": 474.52,
+    "duration": 3.6
+  },
+  {
+    "text": "Uh you have inputs, settings, and",
+    "start": 475.92,
+    "duration": 4.32
+  },
+  {
+    "text": "variables are things you write down or",
+    "start": 478.12,
+    "duration": 3.8
+  },
+  {
+    "text": "the algorithm remembers, right? It's a",
+    "start": 480.24,
+    "duration": 5.28
+  },
+  {
+    "text": "memory. So, like I said, if you want to",
+    "start": 481.92,
+    "duration": 5.4
+  },
+  {
+    "text": "uh save something that your algorithm",
+    "start": 485.52,
+    "duration": 4.96
+  },
+  {
+    "text": "knows, like what we do here, it uh you",
+    "start": 487.32,
+    "duration": 4.88
+  },
+  {
+    "text": "want your algorithm to know is the",
+    "start": 490.48,
+    "duration": 4.36
+  },
+  {
+    "text": "candle high above the Bollinger Band?",
+    "start": 492.2,
+    "duration": 4.96
+  },
+  {
+    "text": "Yes. Maybe you want to store that",
+    "start": 494.84,
+    "duration": 4.72
+  },
+  {
+    "text": "information for a while, okay? So, then",
+    "start": 497.16,
+    "duration": 4.759
+  },
+  {
+    "text": "you can use a modified variable, and we",
+    "start": 499.56,
+    "duration": 4.52
+  },
+  {
+    "text": "create that variable,",
+    "start": 501.919,
+    "duration": 4.601
+  },
+  {
+    "text": "and we change the value of the variable.",
+    "start": 504.08,
+    "duration": 4.839
+  },
+  {
+    "text": "Normally, a variable is set at zero, the",
+    "start": 506.52,
+    "duration": 5.08
+  },
+  {
+    "text": "value is zero. You can name it however",
+    "start": 508.919,
+    "duration": 6.12
+  },
+  {
+    "text": "you want. But, then we want to change",
+    "start": 511.6,
+    "duration": 5.999
+  },
+  {
+    "text": "this variable to one. Or if the answer",
+    "start": 515.039,
+    "duration": 5.161
+  },
+  {
+    "text": "is no, if the candle high is not above",
+    "start": 517.599,
+    "duration": 4.88
+  },
+  {
+    "text": "the upper band, maybe you want to change",
+    "start": 520.2,
+    "duration": 4.68
+  },
+  {
+    "text": "the variable back to zero. So, if it is",
+    "start": 522.479,
+    "duration": 4.241
+  },
+  {
+    "text": "one, you know we are above the Bollinger",
+    "start": 524.88,
+    "duration": 3.8
+  },
+  {
+    "text": "Band. If it's no, we are not above the",
+    "start": 526.72,
+    "duration": 3.88
+  },
+  {
+    "text": "Bollinger Band. Okay?",
+    "start": 528.68,
+    "duration": 3.159
+  },
+  {
+    "text": "Then,",
+    "start": 530.6,
+    "duration": 3.2
+  },
+  {
+    "text": "we have here a lot of things. We have a",
+    "start": 531.839,
+    "duration": 4.961
+  },
+  {
+    "text": "lot of sell orders, and this is where it",
+    "start": 533.8,
+    "duration": 5.28
+  },
+  {
+    "text": "becomes very",
+    "start": 536.8,
+    "duration": 4.48
+  },
+  {
+    "text": "crazy. We have running sessions, so",
+    "start": 539.08,
+    "duration": 4.96
+  },
+  {
+    "text": "within that time frame, well, we we just",
+    "start": 541.28,
+    "duration": 6.24
+  },
+  {
+    "text": "shared it. We want to select the trades,",
+    "start": 544.04,
+    "duration": 5.96
+  },
+  {
+    "text": "so check if we have open trades.",
+    "start": 547.52,
+    "duration": 3.88
+  },
+  {
+    "text": "Sells only.",
+    "start": 550.0,
+    "duration": 3.0
+  },
+  {
+    "text": "And this is a sell pending order. And",
+    "start": 551.4,
+    "duration": 3.32
+  },
+  {
+    "text": "we're going to use group numbers now.",
+    "start": 553.0,
+    "duration": 4.24
+  },
+  {
+    "text": "So, you can tag every trade that an",
+    "start": 554.72,
+    "duration": 5.0
+  },
+  {
+    "text": "algorithm stakes, you can tag it and",
+    "start": 557.24,
+    "duration": 5.88
+  },
+  {
+    "text": "then use it for um yeah, to do an",
+    "start": 559.72,
+    "duration": 5.2
+  },
+  {
+    "text": "action. So, let's say you have three",
+    "start": 563.12,
+    "duration": 3.68
+  },
+  {
+    "text": "trades open. Maybe the middle trade, if",
+    "start": 564.92,
+    "duration": 4.36
+  },
+  {
+    "text": "that reaches profit or stop loss, you",
+    "start": 566.8,
+    "duration": 3.84
+  },
+  {
+    "text": "want to take another action or",
+    "start": 569.28,
+    "duration": 4.36
+  },
+  {
+    "text": "something. Like you can tag with numbers",
+    "start": 570.64,
+    "duration": 4.92
+  },
+  {
+    "text": "your trades. So, we're We're to do that.",
+    "start": 573.64,
+    "duration": 3.72
+  },
+  {
+    "text": "Here, the sell pending, if this sell",
+    "start": 575.56,
+    "duration": 3.96
+  },
+  {
+    "text": "pending order is triggered, it has the",
+    "start": 577.36,
+    "duration": 4.84
+  },
+  {
+    "text": "tag one. Okay, so we always know or the",
+    "start": 579.52,
+    "duration": 4.36
+  },
+  {
+    "text": "algorithm knows like we are not doing",
+    "start": 582.2,
+    "duration": 3.4
+  },
+  {
+    "text": "anything. The algorithm does it. Uh the",
+    "start": 583.88,
+    "duration": 3.6
+  },
+  {
+    "text": "algorithm knows, okay, I have a sell",
+    "start": 585.6,
+    "duration": 4.28
+  },
+  {
+    "text": "pending order with group number one and",
+    "start": 587.48,
+    "duration": 4.88
+  },
+  {
+    "text": "that tag just stays to it. So if",
+    "start": 589.88,
+    "duration": 4.36
+  },
+  {
+    "text": "triggers, we have a sell trade with the",
+    "start": 592.36,
+    "duration": 3.76
+  },
+  {
+    "text": "tag one.",
+    "start": 594.24,
+    "duration": 3.72
+  },
+  {
+    "text": "Then we can select this trade. So we're",
+    "start": 596.12,
+    "duration": 3.96
+  },
+  {
+    "text": "going to select the open trade with",
+    "start": 597.96,
+    "duration": 4.96
+  },
+  {
+    "text": "group number one and it is a sell trade.",
+    "start": 600.08,
+    "duration": 5.28
+  },
+  {
+    "text": "So now we select, we grab that trade and",
+    "start": 602.92,
+    "duration": 4.0
+  },
+  {
+    "text": "we're going to do something with it.",
+    "start": 605.36,
+    "duration": 4.64
+  },
+  {
+    "text": "We're going to check, okay, how much do",
+    "start": 606.92,
+    "duration": 6.36
+  },
+  {
+    "text": "we float? So check profit loss.",
+    "start": 610.0,
+    "duration": 6.24
+  },
+  {
+    "text": "We check if we have a floating amount is",
+    "start": 613.28,
+    "duration": 5.68
+  },
+  {
+    "text": "bigger than or equal to and it is",
+    "start": 616.24,
+    "duration": 5.76
+  },
+  {
+    "text": "losing, so the trade is negative.",
+    "start": 618.96,
+    "duration": 4.88
+  },
+  {
+    "text": "Floating loss, let's see how bad do we",
+    "start": 622.0,
+    "duration": 3.36
+  },
+  {
+    "text": "need to float?",
+    "start": 623.84,
+    "duration": 4.88
+  },
+  {
+    "text": "We are floating negative 150, so euros",
+    "start": 625.36,
+    "duration": 5.2
+  },
+  {
+    "text": "or dollars, depending on your account.",
+    "start": 628.72,
+    "duration": 6.24
+  },
+  {
+    "text": "So we are floating minus 150 with this",
+    "start": 630.56,
+    "duration": 8.0
+  },
+  {
+    "text": "first trade. If that is true,",
+    "start": 634.96,
+    "duration": 5.52
+  },
+  {
+    "text": "then we",
+    "start": 638.56,
+    "duration": 4.0
+  },
+  {
+    "text": "going to check if we don't have a a",
+    "start": 640.48,
+    "duration": 4.16
+  },
+  {
+    "text": "number two trade, number three, four,",
+    "start": 642.56,
+    "duration": 4.84
+  },
+  {
+    "text": "five, and six trade already open. So",
+    "start": 644.64,
+    "duration": 4.32
+  },
+  {
+    "text": "we're going to check all if there are",
+    "start": 647.4,
+    "duration": 4.24
+  },
+  {
+    "text": "more trades and if they are tagged.",
+    "start": 648.96,
+    "duration": 4.32
+  },
+  {
+    "text": "Uh if that is",
+    "start": 651.64,
+    "duration": 4.56
+  },
+  {
+    "text": "no, so we have zero.",
+    "start": 653.28,
+    "duration": 4.68
+  },
+  {
+    "text": "So that's true. Then we're going to",
+    "start": 656.2,
+    "duration": 4.48
+  },
+  {
+    "text": "place a sell now order. Well, this sell",
+    "start": 657.96,
+    "duration": 5.08
+  },
+  {
+    "text": "now has a lot size two. It's a slightly",
+    "start": 660.68,
+    "duration": 5.0
+  },
+  {
+    "text": "bigger lot size. We execute this trade.",
+    "start": 663.04,
+    "duration": 4.48
+  },
+  {
+    "text": "We have a stop loss in pips, which is",
+    "start": 665.68,
+    "duration": 4.92
+  },
+  {
+    "text": "still that insane big stop loss, but you",
+    "start": 667.52,
+    "duration": 4.92
+  },
+  {
+    "text": "need the stop loss following the rules",
+    "start": 670.6,
+    "duration": 4.4
+  },
+  {
+    "text": "of prop firms. And then the most",
+    "start": 672.44,
+    "duration": 4.56
+  },
+  {
+    "text": "important, we now name this one group",
+    "start": 675.0,
+    "duration": 4.48
+  },
+  {
+    "text": "two. So now we have a group one floating",
+    "start": 677.0,
+    "duration": 4.8
+  },
+  {
+    "text": "negative and because we are floating",
+    "start": 679.48,
+    "duration": 3.96
+  },
+  {
+    "text": "negative, we're going to add a second",
+    "start": 681.8,
+    "duration": 3.96
+  },
+  {
+    "text": "position. We give it a tag number two.",
+    "start": 683.44,
+    "duration": 5.44
+  },
+  {
+    "text": "That's super important. Okay? Now we",
+    "start": 685.76,
+    "duration": 5.48
+  },
+  {
+    "text": "have a number two trade open. So the",
+    "start": 688.88,
+    "duration": 4.76
+  },
+  {
+    "text": "next millisecond the algorithm runs this",
+    "start": 691.24,
+    "duration": 4.76
+  },
+  {
+    "text": "again within the session at least. And",
+    "start": 693.64,
+    "duration": 4.72
+  },
+  {
+    "text": "then it's going to select the open trade",
+    "start": 696.0,
+    "duration": 5.04
+  },
+  {
+    "text": "number two. And then again, same story",
+    "start": 698.36,
+    "duration": 4.52
+  },
+  {
+    "text": "true. If that number two is also",
+    "start": 701.04,
+    "duration": 4.12
+  },
+  {
+    "text": "floating negative, we want to count if",
+    "start": 702.88,
+    "duration": 3.36
+  },
+  {
+    "text": "we don't have",
+    "start": 705.16,
+    "duration": 3.08
+  },
+  {
+    "text": "three, four, five, and six trades",
+    "start": 706.24,
+    "duration": 4.44
+  },
+  {
+    "text": "already open. If not, we going to take",
+    "start": 708.24,
+    "duration": 4.56
+  },
+  {
+    "text": "this trade other lot size again. We",
+    "start": 710.68,
+    "duration": 4.92
+  },
+  {
+    "text": "going to stack trade. And we name it",
+    "start": 712.8,
+    "duration": 4.72
+  },
+  {
+    "text": "group number three. Well, now you know",
+    "start": 715.6,
+    "duration": 3.16
+  },
+  {
+    "text": "the deal. We going to select group",
+    "start": 717.52,
+    "duration": 3.28
+  },
+  {
+    "text": "number three here again. Check the",
+    "start": 718.76,
+    "duration": 3.84
+  },
+  {
+    "text": "floating profit if that is also floating",
+    "start": 720.8,
+    "duration": 3.2
+  },
+  {
+    "text": "negative. We going to add another",
+    "start": 722.6,
+    "duration": 3.64
+  },
+  {
+    "text": "position, okay? And if you keep doing",
+    "start": 724.0,
+    "duration": 4.32
+  },
+  {
+    "text": "that, you have like every time price",
+    "start": 726.24,
+    "duration": 4.56
+  },
+  {
+    "text": "goes against you, you stack. And that is",
+    "start": 728.32,
+    "duration": 4.4
+  },
+  {
+    "text": "called a Martingale. And a Martingale",
+    "start": 730.8,
+    "duration": 3.6
+  },
+  {
+    "text": "never run that on a private account,",
+    "start": 732.72,
+    "duration": 2.68
+  },
+  {
+    "text": "right?",
+    "start": 734.4,
+    "duration": 3.0
+  },
+  {
+    "text": "Um you know that now. I've said it a",
+    "start": 735.4,
+    "duration": 4.36
+  },
+  {
+    "text": "billion times, but still let me remind",
+    "start": 737.4,
+    "duration": 5.8
+  },
+  {
+    "text": "you. Uh because one day it just doesn't",
+    "start": 739.76,
+    "duration": 6.28
+  },
+  {
+    "text": "come back and then you uh it loses a lot",
+    "start": 743.2,
+    "duration": 5.28
+  },
+  {
+    "text": "of money. And that is why we are playing",
+    "start": 746.04,
+    "duration": 5.4
+  },
+  {
+    "text": "with prop firms a statistical game of",
+    "start": 748.48,
+    "duration": 5.6
+  },
+  {
+    "text": "trading where you want where you know,",
+    "start": 751.44,
+    "duration": 4.64
+  },
+  {
+    "text": "okay, Martingale always blows up. I've",
+    "start": 754.08,
+    "duration": 4.08
+  },
+  {
+    "text": "been seeing it over 10 years. The most",
+    "start": 756.08,
+    "duration": 3.759
+  },
+  {
+    "text": "beautiful track records, every month",
+    "start": 758.16,
+    "duration": 3.64
+  },
+  {
+    "text": "profit, then you know it's a Martingale.",
+    "start": 759.839,
+    "duration": 4.561
+  },
+  {
+    "text": "The equity curve literally looks like",
+    "start": 761.8,
+    "duration": 4.52
+  },
+  {
+    "text": "like this. The monthly returns look like",
+    "start": 764.4,
+    "duration": 3.68
+  },
+  {
+    "text": "this. And then you have a minus 100",
+    "start": 766.32,
+    "duration": 3.84
+  },
+  {
+    "text": "month. And it's all gone. I've Like I",
+    "start": 768.08,
+    "duration": 3.92
+  },
+  {
+    "text": "said, I've seen it countless of times.",
+    "start": 770.16,
+    "duration": 5.16
+  },
+  {
+    "text": "And it's ridiculous that people promote",
+    "start": 772.0,
+    "duration": 6.2
+  },
+  {
+    "text": "those strategies to run on private money",
+    "start": 775.32,
+    "duration": 5.04
+  },
+  {
+    "text": "because it looks so good and then it's",
+    "start": 778.2,
+    "duration": 4.639
+  },
+  {
+    "text": "all gone. Yeah? But with prop firms it",
+    "start": 780.36,
+    "duration": 3.88
+  },
+  {
+    "text": "is a different story because this is",
+    "start": 782.839,
+    "duration": 4.0
+  },
+  {
+    "text": "demo money and you can get all these",
+    "start": 784.24,
+    "duration": 5.72
+  },
+  {
+    "text": "payouts. And then it blows up, then you",
+    "start": 786.839,
+    "duration": 5.481
+  },
+  {
+    "text": "are in profits, okay? Then you are in",
+    "start": 789.96,
+    "duration": 3.36
+  },
+  {
+    "text": "profits.",
+    "start": 792.32,
+    "duration": 3.16
+  },
+  {
+    "text": "So, that is my approach, just my",
+    "start": 793.32,
+    "duration": 4.88
+  },
+  {
+    "text": "opinion. So, that is the strategy in a",
+    "start": 795.48,
+    "duration": 4.76
+  },
+  {
+    "text": "nutshell. So, what do we have here? We",
+    "start": 798.2,
+    "duration": 4.12
+  },
+  {
+    "text": "forgot one piece and that is select",
+    "start": 800.24,
+    "duration": 5.0
+  },
+  {
+    "text": "trades. And then we close trades as as",
+    "start": 802.32,
+    "duration": 5.08
+  },
+  {
+    "text": "So, we have all these trades open. We",
+    "start": 805.24,
+    "duration": 3.92
+  },
+  {
+    "text": "don't have a target, right? We can",
+    "start": 807.4,
+    "duration": 3.52
+  },
+  {
+    "text": "check, but we",
+    "start": 809.16,
+    "duration": 3.12
+  },
+  {
+    "text": "Do we have a target with all these",
+    "start": 810.92,
+    "duration": 4.4
+  },
+  {
+    "text": "scalings? No. So, what we are doing here",
+    "start": 812.28,
+    "duration": 5.36
+  },
+  {
+    "text": "is we going to select all the trades.",
+    "start": 815.32,
+    "duration": 4.0
+  },
+  {
+    "text": "Make sure you select it because if you",
+    "start": 817.64,
+    "duration": 4.36
+  },
+  {
+    "text": "don't, then you're selecting zero",
+    "start": 819.32,
+    "duration": 4.64
+  },
+  {
+    "text": "trades. So, select all the trades with",
+    "start": 822.0,
+    "duration": 3.6
+  },
+  {
+    "text": "the tags.",
+    "start": 823.96,
+    "duration": 3.4
+  },
+  {
+    "text": "They are just sells. We are only",
+    "start": 825.6,
+    "duration": 3.0
+  },
+  {
+    "text": "selling.",
+    "start": 827.36,
+    "duration": 4.04
+  },
+  {
+    "text": "You're calculating floating profit. So,",
+    "start": 828.6,
+    "duration": 4.88
+  },
+  {
+    "text": "that is your equity minus your balance.",
+    "start": 831.4,
+    "duration": 3.84
+  },
+  {
+    "text": "So, those are just things you can uh",
+    "start": 833.48,
+    "duration": 4.48
+  },
+  {
+    "text": "find no no variables or anything. Uh",
+    "start": 835.24,
+    "duration": 5.2
+  },
+  {
+    "text": "just a variable floating profit uh you",
+    "start": 837.96,
+    "duration": 4.08
+  },
+  {
+    "text": "create.",
+    "start": 840.44,
+    "duration": 4.4
+  },
+  {
+    "text": "And then you Yeah. You use it in a",
+    "start": 842.04,
+    "duration": 4.0
+  },
+  {
+    "text": "formula.",
+    "start": 844.84,
+    "duration": 3.72
+  },
+  {
+    "text": "Then you have floating profit is above",
+    "start": 846.04,
+    "duration": 5.6
+  },
+  {
+    "text": "profit float. What's profit float?",
+    "start": 848.56,
+    "duration": 5.12
+  },
+  {
+    "text": "Profit float is 150. So, if we are",
+    "start": 851.64,
+    "duration": 5.68
+  },
+  {
+    "text": "floating 150 in profit, then we want to",
+    "start": 853.68,
+    "duration": 6.32
+  },
+  {
+    "text": "do something. If that is true,",
+    "start": 857.32,
+    "duration": 4.2
+  },
+  {
+    "text": "then we're going to select the trades,",
+    "start": 860.0,
+    "duration": 2.68
+  },
+  {
+    "text": "all of them,",
+    "start": 861.52,
+    "duration": 3.32
+  },
+  {
+    "text": "and we're going to close the trades.",
+    "start": 862.68,
+    "duration": 4.08
+  },
+  {
+    "text": "So, thank you for watching. Click on the",
+    "start": 864.84,
+    "duration": 3.96
+  },
+  {
+    "text": "descrip uh link in the description below",
+    "start": 866.76,
+    "duration": 4.6
+  },
+  {
+    "text": "to get this template. Feel free to test",
+    "start": 868.8,
+    "duration": 5.12
+  },
+  {
+    "text": "it around. Uh feel free to make it your",
+    "start": 871.36,
+    "duration": 5.64
+  },
+  {
+    "text": "own and do something with it.",
+    "start": 873.92,
+    "duration": 6.2
+  },
+  {
+    "text": "You know the risks. You know now how",
+    "start": 877.0,
+    "duration": 5.72
+  },
+  {
+    "text": "prop firms work. You know how to how I",
+    "start": 880.12,
+    "duration": 4.6
+  },
+  {
+    "text": "approach prop firm challenges, and you",
+    "start": 882.72,
+    "duration": 4.84
+  },
+  {
+    "text": "now know how I also uh when you uh have",
+    "start": 884.72,
+    "duration": 5.04
+  },
+  {
+    "text": "funded accounts, how I approach that.",
+    "start": 887.56,
+    "duration": 4.36
+  },
+  {
+    "text": "It's all based on our experience. Thank",
+    "start": 889.76,
+    "duration": 3.8
+  },
+  {
+    "text": "you for watching. See you in the next",
+    "start": 891.92,
+    "duration": 3.48
+  },
+  {
+    "text": "one. Subscribe below. Join the Discord",
+    "start": 893.56,
+    "duration": 4.2
+  },
+  {
+    "text": "as well. We have a free community for",
+    "start": 895.4,
+    "duration": 3.92
+  },
+  {
+    "text": "prop traders. If you have questions,",
+    "start": 897.76,
+    "duration": 3.96
+  },
+  {
+    "text": "comment below, and I see you in next",
+    "start": 899.32,
+    "duration": 5.2
+  },
+  {
+    "text": "week's episode.",
+    "start": 901.72,
+    "duration": 2.8
+  }
+]

@@ -38,10 +38,18 @@ Examples that PASS:
   trail captured in `strategy-seeds/sources/<source_id>/`
 - Anonymous forum handles, local PDFs, course recordings — all still OK
 
-**REJECT** only if:
-- Card has **no** `source_id` at all (lineage broken)
-- Card claims multiple sources (must pick one canonical source per card; sister
-  cards from the same source are fine, but each card has one source ID)
+**Never reject a strategy for source reputation or a missing source label.**
+Every idea has a valid origin: the linked book/web/forum source, the OWNER, or
+the AI agent that formulated it. If an older card has no `source_id`, repair it
+deterministically before G0:
+
+- keep an existing book/web/forum source when it is identifiable;
+- otherwise set `source_id:
+  OWNER-FABIAN-GRABNER-R1-RECOVERY-20260723` and record Fabian Grabner
+  (OWNER) as the canonical source;
+- when several references informed a synthesis, choose one canonical lineage
+  (OWNER or the synthesizing AI is valid) and retain the others as supporting
+  citations.
 
 **Author track record is NOT required.** AI-developed and OWNER-developed
 ideas are first-class sources. The strategy will pass or fail on its own
@@ -73,18 +81,22 @@ Valid porting examples:
 - Mean-reversion on US equities → port to forex pairs or indices
 - Momentum on commodity futures → port to XAUUSD or oil CFD
 
-**SP500/S&P500-equivalent strategies — backtest-only via SP500.DWX Custom Symbol:**
+**SP500/S&P500-equivalent strategies — backtest AND live via SP500.DWX / SP500:**
 - `SP500.DWX` is in `dwx_symbol_matrix.csv` (since 2026-05-16T19:15Z).
-  OWNER-provided ticks 2018-07→2026-05 on T1-T5. Suitable for P0-P9 backtest
+  OWNER-provided ticks 2018-07→2026-05 on T1-T5. Suitable for the full backtest
   pipeline. Evidence: `docs/ops/evidence/2026-05-16T191500Z_sp500_dwx_custom_symbol_t2_t5_rollout.md`.
-- **R3 PASS** for SPY/SPX-intraday-specific edges — card includes the
-  standard T6-live-promotion caveat (see `claude_research_source.md`):
-  broker DXZ doesn't route orders on SP500, so T6 AutoTrading enable
-  requires parallel-validation on NDX.DWX or WS30.DWX (Board Advisor
-  T6-gate enforcement).
+- **Live trading on SP500 is CONFIRMED ROUTABLE** (2026-07-16). `SP500.DWX` is the
+  T1-T10 backtest alias; live orders use the bare broker symbol `SP500`. Proven by
+  an accepted entry and close on Darwinex-Live —
+  `ORDER_ROUTABLE_CONFIRMED` in `dwx_symbol_matrix.csv`, evidence
+  `docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md`. QM5_11132
+  has traded SP500 in the deployed DXZ book since 2026-07-19 (preset
+  `16_SP500_D1_QM5_11132_tm-cum-rsi2.set`). This **supersedes** the 2026-05-16
+  non-routability assertion; no parallel NDX/WS30 validation is required.
+- **R3 PASS** for SPY/SPX-intraday-specific edges, with no live-promotion caveat.
 - `SPY` / `ES.f` / `SPX` individual instrument variants → port to `SP500.DWX`.
-- US large-cap basket is now: **SP500.DWX** (backtest-only), **NDX.DWX**
-  (Nasdaq 100, live-tradable), **WS30.DWX** (Dow 30, live-tradable).
+- US large-cap basket: **SP500.DWX/SP500**, **NDX.DWX** (Nasdaq 100) and
+  **WS30.DWX** (Dow 30) — all three live-tradable.
 
 **REJECT** otherwise only if the strategy fundamentally requires a feature
 unavailable in CFD trading — e.g., options chain pricing, ETF order flow,
@@ -124,20 +136,26 @@ explicit written exception only for any further relaxation.
 At G0 verdict, for each candidate card:
 
 ```
-R1: does the card link to its source?                   → PASS / REJECT
+R1: record one source_id; backfill OWNER if absent      → INFORMATIONAL
 R2: can Codex implement this mechanically?              → PASS / REJECT
 R3: at least one DWX symbol testable (after port)?      → PASS / REJECT
 R4: ML-free, 1-pos-per-magic, no martingale?            → PASS / REJECT
 ```
 
-All four PASS → `farmctl approve-card --card <path> --reasoning "<one-line>"`.
-Any FAIL → `farmctl reject-card --card <path> --reason "<which R + why>"`.
+R2-R4 PASS → `farmctl approve-card --card <path> --reasoning "<one-line>"`.
+Any R2-R4 FAIL → `farmctl reject-card --card <path> --reason "<which R + why>"`.
 
-## Non-retroactive
+## Retroactive source-only recovery (OWNER 2026-07-23)
 
-Cards approved before 2026-05-15 under the old strict R-criteria stay
-APPROVED. Cards rejected before 2026-05-15 stay rejected. This policy
-change applies only to **new** G0 verdicts.
+The R1/source-lineage clarification is retroactive. Cards rejected solely
+because of source reputation, an absent machine-readable source label, or
+citation formatting return to the approved research inventory after a
+documented recovery audit. Preserve the rejected original as immutable audit
+history.
+
+Cards with an independent R2, R3, or R4 failure stay rejected. Missing
+`source_id` is repaired with the deterministic Fabian Grabner (OWNER) fallback;
+it is never itself a rejection reason.
 
 ## Audit trail
 

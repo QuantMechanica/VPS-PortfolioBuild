@@ -38,10 +38,11 @@ input int    strategy_pivot_h1_bars       = 24;
 input int    strategy_m15_pivot_lookback  = 96;
 input int    strategy_max_spread_points   = 35;
 
-int      g_entry_day_key   = -1;
 double   g_tp1_price       = 0.0;
 double   g_initial_volume  = 0.0;
 bool     g_partial_done    = false;
+ulong    g_management_position_id = 0;
+bool     g_management_state_ready = false;
 
 int Strategy_DayKey(const datetime t)
   {
@@ -69,11 +70,106 @@ bool Strategy_InLondonKillzone(const datetime t)
    return (hhmm >= 900 && hhmm < 1200);
   }
 
-double Strategy_NormalizePrice(const double price)
+datetime Strategy_DayStart(const datetime t)
   {
-   if(price <= 0.0)
-      return 0.0;
-   return NormalizeDouble(price, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   dt.hour = 0;
+   dt.min = 0;
+   dt.sec = 0;
+   return StructToTime(dt);
+  }
+
+int Strategy_SecondsUntilLondonKillzoneEnd(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   dt.hour = 12;
+   dt.min = 0;
+   dt.sec = 0;
+   const datetime killzone_end = StructToTime(dt);
+   if(killzone_end <= t)
+      return 0;
+   return (int)(killzone_end - t);
+  }
+
+// Align every executable price to SYMBOL_TRADE_TICK_SIZE before geometry is
+// judged. For a buy, floor is conservative for the limit, stop and targets;
+// for a sell, ceil is the corresponding conservative direction.
+bool Strategy_QuantizeDirectionalPrice(const double raw_price,
+                                       const double tick_size,
+                                       const int direction,
+                                       double &quantized_price)
+  {
+   quantized_price = 0.0;
+   if(raw_price <= 0.0 || !MathIsValidNumber(raw_price) ||
+      tick_size <= 0.0 || !MathIsValidNumber(tick_size) ||
+      (direction != 1 && direction != -1))
+      return false;
+
+   const double tick_units = raw_price / tick_size;
+   if(!MathIsValidNumber(tick_units))
+      return false;
+
+   const double rounded_units = (direction > 0)
+                                ? MathFloor(tick_units + 1e-12)
+                                : MathCeil(tick_units - 1e-12);
+   const double candidate = NormalizeDouble(rounded_units * tick_size, _Digits);
+   if(candidate <= 0.0 || !MathIsValidNumber(candidate))
+      return false;
+
+   // QM_Entry formats to digits again. Prove that this value remains both on
+   // the executable grid and on the requested conservative side.
+   const double candidate_units = candidate / tick_size;
+   const double side_tolerance = tick_size * 1e-9;
+   if(!MathIsValidNumber(candidate_units) ||
+      MathAbs(candidate_units - MathRound(candidate_units)) > 1e-8 ||
+      (direction > 0 && candidate > raw_price + side_tolerance) ||
+      (direction < 0 && candidate < raw_price - side_tolerance))
+      return false;
+
+   quantized_price = candidate;
+   return true;
+  }
+
+void Strategy_ResetManagementState()
+  {
+   g_tp1_price = 0.0;
+   g_initial_volume = 0.0;
+   g_partial_done = false;
+   g_management_position_id = 0;
+   g_management_state_ready = false;
+  }
+
+string Strategy_EntryComment(const bool is_long, const double tp1)
+  {
+   const string prefix = is_long ? "ICTKZL|T1=" : "ICTKZS|T1=";
+   return prefix + DoubleToString(tp1, _Digits);
+  }
+
+bool Strategy_ParseTP1Comment(const string comment,
+                              const bool is_long,
+                              double &tp1)
+  {
+   tp1 = 0.0;
+   const string prefix = is_long ? "ICTKZL|T1=" : "ICTKZS|T1=";
+   if(StringFind(comment, prefix) != 0)
+      return false;
+
+   const string encoded = StringSubstr(comment, StringLen(prefix));
+   const double parsed = StringToDouble(encoded);
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(parsed <= 0.0 || !MathIsValidNumber(parsed) ||
+      tick_size <= 0.0 || !MathIsValidNumber(tick_size))
+      return false;
+
+   const double tick_units = parsed / tick_size;
+   if(!MathIsValidNumber(tick_units) ||
+      MathAbs(tick_units - MathRound(tick_units)) > 1e-8)
+      return false;
+
+   tp1 = NormalizeDouble(parsed, _Digits);
+   return true;
   }
 
 bool Strategy_LoadRates(const ENUM_TIMEFRAMES tf,
@@ -122,6 +218,62 @@ bool Strategy_HasPendingOrder()
    return false;
   }
 
+bool Strategy_IsEntryLimitType(const ENUM_ORDER_TYPE type)
+  {
+   return (type == ORDER_TYPE_BUY_LIMIT || type == ORDER_TYPE_SELL_LIMIT);
+  }
+
+// Restart-persistent one-entry-per-broker-day lock. Active exposure is read
+// from the live pools; accepted/finished limit orders and filled entries are
+// read from terminal history. A history-read failure blocks a new entry.
+bool Strategy_DailyEntryLocked(const datetime broker_now)
+  {
+   if(Strategy_HasOpenPosition() || Strategy_HasPendingOrder())
+      return true;
+
+   const int magic = QM_FrameworkMagic();
+   const datetime day_start = Strategy_DayStart(broker_now);
+   const int day_key = Strategy_DayKey(broker_now);
+   if(magic <= 0 || day_start <= 0 || !HistorySelect(day_start, broker_now))
+      return true;
+
+   for(int i = HistoryOrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = HistoryOrderGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(HistoryOrderGetString(ticket, ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)HistoryOrderGetInteger(ticket, ORDER_MAGIC) != magic)
+         continue;
+      const datetime setup_time = (datetime)HistoryOrderGetInteger(ticket, ORDER_TIME_SETUP);
+      if(Strategy_DayKey(setup_time) != day_key)
+         continue;
+      const ENUM_ORDER_TYPE type = (ENUM_ORDER_TYPE)HistoryOrderGetInteger(ticket, ORDER_TYPE);
+      if(Strategy_IsEntryLimitType(type))
+         return true;
+     }
+
+   for(int i = HistoryDealsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = HistoryDealGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(HistoryDealGetString(ticket, DEAL_SYMBOL) != _Symbol)
+         continue;
+      if((int)HistoryDealGetInteger(ticket, DEAL_MAGIC) != magic)
+         continue;
+      const datetime deal_time = (datetime)HistoryDealGetInteger(ticket, DEAL_TIME);
+      if(Strategy_DayKey(deal_time) != day_key)
+         continue;
+      const ENUM_DEAL_ENTRY entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(ticket, DEAL_ENTRY);
+      if(entry == DEAL_ENTRY_IN || entry == DEAL_ENTRY_INOUT)
+         return true;
+     }
+
+   return false;
+  }
+
 bool Strategy_SpreadOK()
   {
    if(strategy_max_spread_points <= 0)
@@ -142,16 +294,21 @@ bool Strategy_PreviousDayLevels(double &pdh, double &pdl)
    return (pdh > 0.0 && pdl > 0.0);
   }
 
-bool Strategy_AsiaRange(const int day_key, double &asia_high, double &asia_low)
+// Build the Asia range only from bars that were already closed before this
+// sweep bar. The array is series-ordered, so strictly older data starts at
+// sweep_shift+1; nothing between the sweep and the later MSS is visible here.
+bool Strategy_AsiaRangeBeforeSweep(const MqlRates &m15[],
+                                   const int sweep_shift,
+                                   double &asia_high,
+                                   double &asia_low)
   {
    asia_high = 0.0;
    asia_low = DBL_MAX;
-
-   MqlRates m15[];
-   if(!Strategy_LoadRates(PERIOD_M15, 1, 128, m15))
+   if(sweep_shift < 0 || sweep_shift + 1 >= ArraySize(m15))
       return false;
 
-   for(int i = 0; i < ArraySize(m15); ++i)
+   const int day_key = Strategy_DayKey(m15[sweep_shift].time);
+   for(int i = sweep_shift + 1; i < ArraySize(m15); ++i)
      {
       if(Strategy_DayKey(m15[i].time) != day_key)
          continue;
@@ -163,66 +320,111 @@ bool Strategy_AsiaRange(const int day_key, double &asia_high, double &asia_low)
    return (asia_high > 0.0 && asia_low < DBL_MAX);
   }
 
-bool Strategy_M15PivotPools(const double reference_price,
-                            double &nearest_high_above,
-                            double &nearest_low_below)
+// Card pool candidate: the LOWEST confirmed pivot low / HIGHEST confirmed
+// pivot high in the preceding 24 H1 = 96 M15 bars (default input). Starting
+// at sweep_shift+2 also keeps the pivot's newer confirmation bar strictly
+// older than the sweep; a pivot confirmed by the sweep itself is excluded.
+bool Strategy_ExtremePivotPoolsBeforeSweep(const MqlRates &m15[],
+                                           const int sweep_shift,
+                                           double &highest_pivot_high,
+                                           double &lowest_pivot_low)
   {
-   nearest_high_above = DBL_MAX;
-   nearest_low_below = 0.0;
-
-   MqlRates m15[];
-   const int bars_needed = MathMax(16, strategy_pivot_h1_bars * 4 + 4);
-   if(!Strategy_LoadRates(PERIOD_M15, 1, bars_needed, m15))
+   highest_pivot_high = 0.0;
+   lowest_pivot_low = DBL_MAX;
+   const int pivot_window_bars = MathMax(4, strategy_pivot_h1_bars * 4);
+   const int first_center = sweep_shift + 2;
+   const int last_center = MathMin(sweep_shift + pivot_window_bars,
+                                   ArraySize(m15) - 2);
+   if(first_center > last_center)
       return false;
 
-   for(int i = 1; i < ArraySize(m15) - 1; ++i)
+   for(int i = first_center; i <= last_center; ++i)
      {
-      const bool pivot_high = (m15[i].high > m15[i - 1].high && m15[i].high > m15[i + 1].high);
-      const bool pivot_low = (m15[i].low < m15[i - 1].low && m15[i].low < m15[i + 1].low);
-      if(pivot_high && m15[i].high > reference_price && m15[i].high < nearest_high_above)
-         nearest_high_above = m15[i].high;
-      if(pivot_low && m15[i].low < reference_price && m15[i].low > nearest_low_below)
-         nearest_low_below = m15[i].low;
+      const bool pivot_high = (m15[i].high > m15[i - 1].high &&
+                               m15[i].high > m15[i + 1].high);
+      const bool pivot_low = (m15[i].low < m15[i - 1].low &&
+                              m15[i].low < m15[i + 1].low);
+      if(pivot_high)
+         highest_pivot_high = MathMax(highest_pivot_high, m15[i].high);
+      if(pivot_low)
+         lowest_pivot_low = MathMin(lowest_pivot_low, m15[i].low);
      }
-   return true;
+   return (highest_pivot_high > 0.0 || lowest_pivot_low < DBL_MAX);
   }
 
-bool Strategy_LiquidityPools(const double reference_price,
-                             const int day_key,
-                             double &pool_below,
-                             double &pool_above)
+// Freeze both pool classes at the sweep. Entry pools may use the card's
+// extreme local pivot; opposite TP1 pools deliberately may NOT. The sweep
+// bar open is the causal price reference known before its raid occurs.
+bool Strategy_FreezeSweepPools(const MqlRates &m15[],
+                               const int sweep_shift,
+                               const double pdh,
+                               const double pdl,
+                               double &entry_pool_below,
+                               double &entry_pool_above,
+                               double &exit_pool_below,
+                               double &exit_pool_above)
   {
-   pool_below = 0.0;
-   pool_above = DBL_MAX;
+   entry_pool_below = 0.0;
+   entry_pool_above = DBL_MAX;
+   exit_pool_below = 0.0;
+   exit_pool_above = DBL_MAX;
+   if(sweep_shift < 0 || sweep_shift >= ArraySize(m15))
+      return false;
 
-   double pdh, pdl;
-   if(Strategy_PreviousDayLevels(pdh, pdl))
+   const double sweep_reference = m15[sweep_shift].open;
+   if(sweep_reference <= 0.0 || !MathIsValidNumber(sweep_reference))
+      return false;
+
+   double asia_high = 0.0;
+   double asia_low = DBL_MAX;
+   const bool asia_valid = Strategy_AsiaRangeBeforeSweep(m15,
+                                                         sweep_shift,
+                                                         asia_high,
+                                                         asia_low);
+
+   // PDL/PDH and the completed Asia range serve both as entry liquidity and
+   // as the only allowed opposite-pool TP1 candidates.
+   if(pdl > 0.0 && pdl < sweep_reference)
      {
-      if(pdl < reference_price)
-         pool_below = MathMax(pool_below, pdl);
-      if(pdh > reference_price)
-         pool_above = MathMin(pool_above, pdh);
+      entry_pool_below = MathMax(entry_pool_below, pdl);
+      exit_pool_below = MathMax(exit_pool_below, pdl);
+     }
+   if(pdh > sweep_reference)
+     {
+      entry_pool_above = MathMin(entry_pool_above, pdh);
+      exit_pool_above = MathMin(exit_pool_above, pdh);
+     }
+   if(asia_valid)
+     {
+      if(asia_low < sweep_reference)
+        {
+         entry_pool_below = MathMax(entry_pool_below, asia_low);
+         exit_pool_below = MathMax(exit_pool_below, asia_low);
+        }
+      if(asia_high > sweep_reference)
+        {
+         entry_pool_above = MathMin(entry_pool_above, asia_high);
+         exit_pool_above = MathMin(exit_pool_above, asia_high);
+        }
      }
 
-   double asia_high, asia_low;
-   if(Strategy_AsiaRange(day_key, asia_high, asia_low))
+   // The local-pivot candidate participates in ENTRY selection only. Per the
+   // card it is the extreme pivot over the window, after which the nearest of
+   // Asia / previous-day / extreme-pivot pools is selected around the sweep.
+   double highest_pivot_high = 0.0;
+   double lowest_pivot_low = DBL_MAX;
+   if(Strategy_ExtremePivotPoolsBeforeSweep(m15,
+                                            sweep_shift,
+                                            highest_pivot_high,
+                                            lowest_pivot_low))
      {
-      if(asia_low < reference_price)
-         pool_below = MathMax(pool_below, asia_low);
-      if(asia_high > reference_price)
-         pool_above = MathMin(pool_above, asia_high);
+      if(lowest_pivot_low < sweep_reference)
+         entry_pool_below = MathMax(entry_pool_below, lowest_pivot_low);
+      if(highest_pivot_high > sweep_reference)
+         entry_pool_above = MathMin(entry_pool_above, highest_pivot_high);
      }
 
-   double pivot_high, pivot_low;
-   if(Strategy_M15PivotPools(reference_price, pivot_high, pivot_low))
-     {
-      if(pivot_low > 0.0)
-         pool_below = MathMax(pool_below, pivot_low);
-      if(pivot_high < DBL_MAX)
-         pool_above = MathMin(pool_above, pivot_high);
-     }
-
-   return (pool_below > 0.0 || pool_above < DBL_MAX);
+   return (entry_pool_below > 0.0 || entry_pool_above < DBL_MAX);
   }
 
 double Strategy_MostRecentPivotHigh(const MqlRates &rates[])
@@ -248,25 +450,44 @@ double Strategy_MostRecentPivotLow(const MqlRates &rates[])
   }
 
 bool Strategy_FindBullishSetup(const MqlRates &m15[],
-                               const double pool_below,
+                               const double pdh,
+                               const double pdl,
                                int &sweep_shift,
                                double &sweep_extreme,
-                               double &fvg_mid)
+                               double &fvg_mid,
+                               double &opposite_exit_pool)
   {
    sweep_shift = -1;
    sweep_extreme = 0.0;
    fvg_mid = 0.0;
-   if(pool_below <= 0.0)
-      return false;
+   opposite_exit_pool = 0.0;
 
-   for(int s = 2; s <= strategy_mss_max_bars + 1 && s < ArraySize(m15); ++s)
+   for(int s = 2; s <= strategy_mss_max_bars && s < ArraySize(m15); ++s)
      {
       if(!Strategy_InLondonKillzone(m15[s].time))
          continue;
-      if(m15[s].low < pool_below && m15[s].close > pool_below)
+
+      double entry_pool_below = 0.0;
+      double entry_pool_above = DBL_MAX;
+      double exit_pool_below = 0.0;
+      double exit_pool_above = DBL_MAX;
+      if(!Strategy_FreezeSweepPools(m15,
+                                    s,
+                                    pdh,
+                                    pdl,
+                                    entry_pool_below,
+                                    entry_pool_above,
+                                    exit_pool_below,
+                                    exit_pool_above))
+         continue;
+      if(entry_pool_below <= 0.0 || exit_pool_above >= DBL_MAX)
+         continue;
+
+      if(m15[s].low < entry_pool_below && m15[s].close > entry_pool_below)
         {
          sweep_shift = s;
          sweep_extreme = m15[s].low;
+         opposite_exit_pool = exit_pool_above;
          break;
         }
      }
@@ -292,25 +513,44 @@ bool Strategy_FindBullishSetup(const MqlRates &m15[],
   }
 
 bool Strategy_FindBearishSetup(const MqlRates &m15[],
-                               const double pool_above,
+                               const double pdh,
+                               const double pdl,
                                int &sweep_shift,
                                double &sweep_extreme,
-                               double &fvg_mid)
+                               double &fvg_mid,
+                               double &opposite_exit_pool)
   {
    sweep_shift = -1;
    sweep_extreme = 0.0;
    fvg_mid = 0.0;
-   if(pool_above >= DBL_MAX)
-      return false;
+   opposite_exit_pool = 0.0;
 
-   for(int s = 2; s <= strategy_mss_max_bars + 1 && s < ArraySize(m15); ++s)
+   for(int s = 2; s <= strategy_mss_max_bars && s < ArraySize(m15); ++s)
      {
       if(!Strategy_InLondonKillzone(m15[s].time))
          continue;
-      if(m15[s].high > pool_above && m15[s].close < pool_above)
+
+      double entry_pool_below = 0.0;
+      double entry_pool_above = DBL_MAX;
+      double exit_pool_below = 0.0;
+      double exit_pool_above = DBL_MAX;
+      if(!Strategy_FreezeSweepPools(m15,
+                                    s,
+                                    pdh,
+                                    pdl,
+                                    entry_pool_below,
+                                    entry_pool_above,
+                                    exit_pool_below,
+                                    exit_pool_above))
+         continue;
+      if(entry_pool_above >= DBL_MAX || exit_pool_below <= 0.0)
+         continue;
+
+      if(m15[s].high > entry_pool_above && m15[s].close < entry_pool_above)
         {
          sweep_shift = s;
          sweep_extreme = m15[s].high;
+         opposite_exit_pool = exit_pool_below;
          break;
         }
      }
@@ -338,7 +578,7 @@ bool Strategy_FindBearishSetup(const MqlRates &m15[],
 bool Strategy_NoTradeFilter()
   {
    if(Strategy_HasOpenPosition() || Strategy_HasPendingOrder())
-      return false;
+      return true;
    if(!Strategy_InLondonKillzone(TimeCurrent()))
       return true;
    if(!Strategy_SpreadOK())
@@ -364,33 +604,56 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    MqlRates m15[];
-   if(!Strategy_LoadRates(PERIOD_M15, 1, MathMax(128, strategy_m15_pivot_lookback + strategy_mss_max_bars + 8), m15))
+   const int sweep_pool_bars = MathMax(4, strategy_pivot_h1_bars * 4) +
+                               strategy_mss_max_bars + 3;
+   const int mss_scan_bars = strategy_m15_pivot_lookback +
+                             strategy_mss_max_bars + 8;
+   const int bars_needed = MathMax(128, MathMax(sweep_pool_bars, mss_scan_bars));
+   if(!Strategy_LoadRates(PERIOD_M15, 1, bars_needed, m15))
       return false;
 
    if(!Strategy_InLondonKillzone(m15[0].time))
       return false;
 
    const int day_key = Strategy_DayKey(m15[0].time);
-   if(g_entry_day_key == day_key)
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_DayKey(broker_now) != day_key || Strategy_DailyEntryLocked(broker_now))
       return false;
 
-   double pool_below, pool_above;
-   if(!Strategy_LiquidityPools(m15[0].close, day_key, pool_below, pool_above))
-      return false;
+   // Previous-day D1 levels were complete before every same-day London sweep.
+   // A missing D1 bar does not invent a level; Asia/extreme-pivot entry pools
+   // and the Asia opposite target may still form a fully specified setup.
+   double pdh = 0.0;
+   double pdl = 0.0;
+   Strategy_PreviousDayLevels(pdh, pdl);
 
    const double atr = QM_ATR(_Symbol, PERIOD_M15, strategy_atr_period, 1);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(atr <= 0.0 || point <= 0.0)
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(atr <= 0.0 || !MathIsValidNumber(atr) ||
+      tick_size <= 0.0 || !MathIsValidNumber(tick_size))
       return false;
 
    int sweep_shift = -1;
    double sweep_extreme = 0.0;
    double entry = 0.0;
+   double opposite_exit_pool = 0.0;
    bool is_long = false;
 
-   if(Strategy_FindBullishSetup(m15, pool_below, sweep_shift, sweep_extreme, entry))
+   if(Strategy_FindBullishSetup(m15,
+                                pdh,
+                                pdl,
+                                sweep_shift,
+                                sweep_extreme,
+                                entry,
+                                opposite_exit_pool))
       is_long = true;
-   else if(!Strategy_FindBearishSetup(m15, pool_above, sweep_shift, sweep_extreme, entry))
+   else if(!Strategy_FindBearishSetup(m15,
+                                      pdh,
+                                      pdl,
+                                      sweep_shift,
+                                      sweep_extreme,
+                                      entry,
+                                      opposite_exit_pool))
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -398,52 +661,211 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   entry = Strategy_NormalizePrice(entry);
+   const int direction = is_long ? 1 : -1;
+   double entry_price = 0.0;
+   if(!Strategy_QuantizeDirectionalPrice(entry, tick_size, direction, entry_price))
+      return false;
+   entry = entry_price;
    if(is_long && entry >= ask)
       return false;
    if(!is_long && entry <= bid)
       return false;
 
-   const double sl = is_long
-                     ? Strategy_NormalizePrice(sweep_extreme - atr * strategy_atr_buffer_mult)
-                     : Strategy_NormalizePrice(sweep_extreme + atr * strategy_atr_buffer_mult);
-   if(sl <= 0.0)
+   const double raw_sl = is_long
+                         ? (sweep_extreme - atr * strategy_atr_buffer_mult)
+                         : (sweep_extreme + atr * strategy_atr_buffer_mult);
+   double sl = 0.0;
+   if(!Strategy_QuantizeDirectionalPrice(raw_sl, tick_size, direction, sl))
       return false;
 
    const double risk = MathAbs(entry - sl);
-   if(risk <= 0.0 || risk > atr * strategy_max_risk_atr_mult)
+   const bool stop_geometry_valid = is_long ? (sl < entry) : (sl > entry);
+   if(!stop_geometry_valid || risk <= 0.0 || risk > atr * strategy_max_risk_atr_mult)
       return false;
 
-   const double rr2 = is_long ? (entry + 2.0 * risk) : (entry - 2.0 * risk);
-   const double rr3 = is_long ? (entry + 3.0 * risk) : (entry - 3.0 * risk);
-   double tp1 = rr2;
-   if(is_long && pool_above < DBL_MAX)
-      tp1 = MathMin(pool_above, rr2);
-   if(!is_long && pool_below > 0.0)
-      tp1 = MathMax(pool_below, rr2);
-   if(is_long && tp1 <= entry)
-      tp1 = rr2;
-   if(!is_long && tp1 >= entry)
-      tp1 = rr2;
+   const double raw_rr2 = is_long ? (entry + 2.0 * risk) : (entry - 2.0 * risk);
+   const double raw_rr3 = is_long ? (entry + 3.0 * risk) : (entry - 3.0 * risk);
+   if(opposite_exit_pool <= 0.0 || !MathIsValidNumber(opposite_exit_pool))
+      return false;
+   // Card exit: ONLY the frozen opposite Asia/previous-day pool, capped at
+   // 2R. There is deliberately no pivot target and no 2R fallback when the
+   // opposite pool is no longer beyond the executable entry.
+   const double raw_tp1 = is_long
+                          ? MathMin(opposite_exit_pool, raw_rr2)
+                          : MathMax(opposite_exit_pool, raw_rr2);
+   if((is_long && raw_tp1 <= entry) || (!is_long && raw_tp1 >= entry))
+      return false;
+
+   double tp1 = 0.0;
+   double tp3 = 0.0;
+   if(!Strategy_QuantizeDirectionalPrice(raw_tp1, tick_size, direction, tp1) ||
+      !Strategy_QuantizeDirectionalPrice(raw_rr3, tick_size, direction, tp3))
+      return false;
+   const bool target_geometry_valid = is_long
+                                      ? (tp1 > entry && tp3 > entry)
+                                      : (tp1 < entry && tp3 < entry);
+   if(!target_geometry_valid)
+      return false;
+
+   const long requested_expiration = (long)strategy_order_valid_bars *
+                                     (long)PeriodSeconds(PERIOD_M15);
+   const int killzone_expiration = Strategy_SecondsUntilLondonKillzoneEnd(broker_now);
+   if(requested_expiration <= 0 || killzone_expiration <= 0)
+      return false;
 
    req.type = is_long ? QM_BUY_LIMIT : QM_SELL_LIMIT;
    req.price = entry;
    req.sl = sl;
-   req.tp = Strategy_NormalizePrice(rr3);
-   req.reason = is_long ? "ICT_LONDON_KZ_SWEEP_FVG_LONG" : "ICT_LONDON_KZ_SWEEP_FVG_SHORT";
+   req.tp = tp3;
+   req.reason = Strategy_EntryComment(is_long, tp1);
    req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = strategy_order_valid_bars * PeriodSeconds(PERIOD_M15);
+   req.expiration_seconds = (requested_expiration < (long)killzone_expiration)
+                            ? (int)requested_expiration
+                            : killzone_expiration;
 
-   g_entry_day_key = day_key;
-   g_tp1_price = Strategy_NormalizePrice(tp1);
+   g_tp1_price = tp1;
    g_initial_volume = 0.0;
    g_partial_done = false;
+   g_management_position_id = 0;
+   g_management_state_ready = false;
    return true;
+  }
+
+// Reconstruct every partial-management fact from the live position plus its
+// broker/tester position history. Unknown history or a missing persisted TP1
+// suppresses the partial fail-closed; it never falls back to a different pool.
+bool Strategy_RebuildManagementState(const ulong ticket)
+  {
+   if(ticket == 0 || !PositionSelectByTicket(ticket))
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   if(PositionGetString(POSITION_SYMBOL) != _Symbol ||
+      (int)PositionGetInteger(POSITION_MAGIC) != magic)
+      return false;
+
+   const ulong position_id = (ulong)PositionGetInteger(POSITION_IDENTIFIER);
+   const ENUM_POSITION_TYPE position_type =
+      (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+   const bool is_long = (position_type == POSITION_TYPE_BUY);
+   double reconstructed_tp1 = 0.0;
+   bool tp1_found = Strategy_ParseTP1Comment(PositionGetString(POSITION_COMMENT),
+                                             is_long,
+                                             reconstructed_tp1);
+
+   if(position_id == 0 || !HistorySelectByPosition(position_id))
+      return false;
+
+   double opening_volume = 0.0;
+   double closing_volume = 0.0;
+   const int deal_total = HistoryDealsTotal();
+   for(int i = 0; i < deal_total; ++i)
+     {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0 || HistoryDealGetString(deal, DEAL_SYMBOL) != _Symbol)
+         continue;
+
+      const double deal_volume = HistoryDealGetDouble(deal, DEAL_VOLUME);
+      const ENUM_DEAL_ENTRY entry =
+         (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal, DEAL_ENTRY);
+      if(entry == DEAL_ENTRY_IN || entry == DEAL_ENTRY_INOUT)
+        {
+         opening_volume += deal_volume;
+         if(!tp1_found)
+            tp1_found = Strategy_ParseTP1Comment(HistoryDealGetString(deal, DEAL_COMMENT),
+                                                 is_long,
+                                                 reconstructed_tp1);
+         if(!tp1_found)
+           {
+            const ulong order = (ulong)HistoryDealGetInteger(deal, DEAL_ORDER);
+            if(order > 0)
+               tp1_found = Strategy_ParseTP1Comment(HistoryOrderGetString(order, ORDER_COMMENT),
+                                                    is_long,
+                                                    reconstructed_tp1);
+           }
+        }
+      if(entry == DEAL_ENTRY_OUT || entry == DEAL_ENTRY_OUT_BY || entry == DEAL_ENTRY_INOUT)
+         closing_volume += deal_volume;
+     }
+
+   // Some venues do not propagate the pending comment to the position/deal.
+   // The original accepted order remains the third deterministic source.
+   if(!tp1_found)
+     {
+      for(int i = HistoryOrdersTotal() - 1; i >= 0; --i)
+        {
+         const ulong order = HistoryOrderGetTicket(i);
+         if(order == 0 || HistoryOrderGetString(order, ORDER_SYMBOL) != _Symbol)
+            continue;
+         if((int)HistoryOrderGetInteger(order, ORDER_MAGIC) != magic)
+            continue;
+         const ENUM_ORDER_TYPE order_type =
+            (ENUM_ORDER_TYPE)HistoryOrderGetInteger(order, ORDER_TYPE);
+         if(!Strategy_IsEntryLimitType(order_type))
+            continue;
+         if(Strategy_ParseTP1Comment(HistoryOrderGetString(order, ORDER_COMMENT),
+                                     is_long,
+                                     reconstructed_tp1))
+           {
+            tp1_found = true;
+            break;
+           }
+        }
+     }
+
+   // Defensive reselect: position-history selection must not be allowed to
+   // leave stale live-position properties in the management path.
+   if(!PositionSelectByTicket(ticket) ||
+      (ulong)PositionGetInteger(POSITION_IDENTIFIER) != position_id)
+      return false;
+
+   const double current_volume = PositionGetDouble(POSITION_VOLUME);
+   const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+   const double volume_step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
+   const double volume_tolerance = MathMax(1e-8, volume_step * 0.25);
+   if(opening_volume <= volume_tolerance)
+      opening_volume = current_volume + closing_volume;
+
+   const bool target_geometry_valid = is_long
+                                      ? (reconstructed_tp1 > open_price)
+                                      : (reconstructed_tp1 < open_price);
+   if(!tp1_found || !target_geometry_valid ||
+      current_volume <= 0.0 || opening_volume + volume_tolerance < current_volume)
+      return false;
+
+   g_management_position_id = position_id;
+   g_tp1_price = reconstructed_tp1;
+   g_initial_volume = opening_volume;
+   g_partial_done = (closing_volume > volume_tolerance ||
+                     current_volume + volume_tolerance < opening_volume);
+   g_management_state_ready = true;
+   return true;
+  }
+
+bool Strategy_EnsureManagementState(const ulong ticket)
+  {
+   if(ticket == 0 || !PositionSelectByTicket(ticket))
+      return false;
+
+   const ulong position_id = (ulong)PositionGetInteger(POSITION_IDENTIFIER);
+   const double current_volume = PositionGetDouble(POSITION_VOLUME);
+   if(g_management_state_ready && position_id == g_management_position_id)
+     {
+      const double volume_step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
+      const double volume_tolerance = MathMax(1e-8, volume_step * 0.25);
+      if(current_volume + volume_tolerance < g_initial_volume)
+         g_partial_done = true;
+      return true;
+     }
+
+   Strategy_ResetManagementState();
+   return Strategy_RebuildManagementState(ticket);
   }
 
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
+   bool found = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -454,14 +876,14 @@ void Strategy_ManageOpenPosition()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
+      found = true;
+      if(!Strategy_EnsureManagementState(ticket) || !PositionSelectByTicket(ticket))
+         continue;
+
       const ENUM_POSITION_TYPE type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double sl = PositionGetDouble(POSITION_SL);
       const double volume = PositionGetDouble(POSITION_VOLUME);
-      if(g_initial_volume <= 0.0)
-         g_initial_volume = volume;
-      if(volume < g_initial_volume * 0.75)
-         g_partial_done = true;
       if(g_partial_done || sl <= 0.0 || open_price <= 0.0)
          continue;
 
@@ -470,9 +892,9 @@ void Strategy_ManageOpenPosition()
       if(risk <= 0.0)
          continue;
 
-      double target = g_tp1_price;
+      const double target = g_tp1_price;
       if(target <= 0.0)
-         target = is_long ? (open_price + 2.0 * risk) : (open_price - 2.0 * risk);
+         continue;
 
       const double px = is_long ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
                                 : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -484,6 +906,9 @@ void Strategy_ManageOpenPosition()
             g_partial_done = true;
         }
      }
+
+   if(!found)
+      Strategy_ResetManagementState();
   }
 
 bool Strategy_ExitSignal()
@@ -529,6 +954,9 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   // Module-local only: every init/test run starts empty and reconstructs an
+   // existing position from broker history. No Terminal GlobalVariable state.
+   Strategy_ResetManagementState();
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12539_ict-london-kz-cable-sweep\"}");
    return INIT_SUCCEEDED;
   }
@@ -541,25 +969,16 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   if(Strategy_NoTradeFilter())
-      return;
-
+   // Management and hard exits are safety paths, not entry paths. They must
+   // continue through news blackouts and outside the London entry window.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -580,6 +999,23 @@ void OnTick()
       return;
 
    QM_EquityStreamOnNewBar();
+
+   if(Strategy_NoTradeFilter())
+      return;
+
+   // News suppresses NEW orders only. QM_Entry repeats the same check at the
+   // send boundary, retaining fail-closed protection against an intra-call
+   // calendar-state change.
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

@@ -1,0 +1,5 @@
+=== agent_registry ===
+cols: ['agent_id', 'enabled', 'capabilities_json', 'max_parallel', 'cost_rank', 'budget_class', 'updated_at']
+{'agent_id': 'codex', 'enabled': 1, 'capabilities_json': '["code","tests","repo_edit","review","ops","research","strategy"]', 'max_parallel': 5, 'cost_rank': 20, 'budget_class': 'standard', 'updated_at': '2026-07-24T05:11:17+00:00'}
+{'agent_id': 'claude', 'enabled': 0, 'capabilities_json': '["code","tests","repo_edit","repo","ops","research","review","strategy","summary"]', 'max_parallel': 0, 'cost_rank': 30, 'budget_class': 'standard', 'updated_at': '2026-07-24T05:11:17+00:00'}
+{'agent_id': 'gemini', 'enabled': 1, 'capabilities_json': '["code","tests","repo_edit","research","strategy","source_discovery","video_analysis"]', 'max_parallel': 2, 'cost_rank': 10, 'budget_class': 'standard', 'updated_at': '2026-07-24T05:11:17+00:00'}

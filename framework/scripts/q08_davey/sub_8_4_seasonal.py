@@ -34,10 +34,22 @@ def run(trades: list[dict], **_) -> dict:
 
     months_covered = len(monthly)
     if months_covered < 12:
-        return make_result(GATE_NAME, "FAIL",
+        # DL-082 §3b (frequency-aware). Structural requirement math: the gate needs
+        # >=1 trade in EACH of the 12 calendar-month buckets, then every bucket
+        # net-positive. The number of coverable buckets is bounded by the trades the
+        # EA actually opens; with months_covered < 12 at least one bucket is empty, so
+        # "all 12 months net-positive" is STRUCTURALLY unevaluable — a low-frequency
+        # survivor cannot populate every calendar month. Demote to INFORMATIONAL
+        # (recorded with its measured coverage, carrying no soft-fail signal) instead
+        # of soft-failing on an unsatisfiable requirement. When all 12 months ARE
+        # covered the gate evaluates exactly as before (a genuine losing month FAILs).
+        return make_result(GATE_NAME, "INFORMATIONAL",
                            value=months_covered, threshold=12,
-                           detail=f"months_with_no_trades:covered={months_covered}:need=12",
-                           evidence={"monthly_net": dict(monthly), "trades_counted": counted})
+                           detail=(f"structurally_inapplicable_low_frequency:"
+                                   f"months_covered={months_covered}:need=12"),
+                           evidence={"monthly_net": {m: round(v, 2) for m, v in monthly.items()},
+                                     "months_covered": months_covered,
+                                     "trades_counted": counted})
 
     losing_months = [m for m, v in monthly.items() if v <= 0]
     if losing_months:

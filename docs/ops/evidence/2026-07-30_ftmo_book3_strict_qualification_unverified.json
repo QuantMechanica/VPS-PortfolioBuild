@@ -1,0 +1,62 @@
+{
+  "schema": "qm.ftmo-book3-strict-qualification-assessment/v1",
+  "as_of_utc": "2026-07-30T01:30:00Z",
+  "book_id": "FTMO_BOOK3_STANDALONE_R0_R1_R2",
+  "status": "UNVERIFIED",
+  "authority": "RESEARCH_INPUT_ONLY",
+  "partial_book_approval": false,
+  "candidates": [
+    {
+      "ea_id": "QM5_9936",
+      "symbol": "USDJPY.DWX",
+      "challenge_ready": false,
+      "state": "TARGET_ELIGIBLE_WITH_UNCLOSED_EVIDENCE_DEBT",
+      "q08_verdict": "UNVERIFIED_FOR_STRICT_FTMO_ADMISSION",
+      "blockers": [
+        "authenticated_strict_q08_qualification_artifact_missing",
+        "event_complete_joint_equity_trace_missing",
+        "selection_sealed_out_of_sample_evidence_missing",
+        "exact_profile_free_trial_missing"
+      ]
+    },
+    {
+      "ea_id": "QM5_10145",
+      "symbol": "XAUUSD.DWX",
+      "challenge_ready": false,
+      "state": "TARGET_ELIGIBLE_WITH_UNCLOSED_EVIDENCE_DEBT",
+      "q08_verdict": "UNVERIFIED_FOR_STRICT_FTMO_ADMISSION",
+      "blockers": [
+        "authenticated_strict_q08_qualification_artifact_missing",
+        "event_complete_joint_equity_trace_missing",
+        "selection_sealed_out_of_sample_evidence_missing",
+        "exact_profile_free_trial_missing"
+      ]
+    },
+    {
+      "ea_id": "QM5_13108",
+      "symbol": "XTIUSD.DWX",
+      "challenge_ready": false,
+      "state": "STANDALONE_DIAGNOSTIC_PENDING",
+      "q08_verdict": "NOT_YET_MEASURED_BY_DIAGNOSTIC_CONTRACT",
+      "blockers": [
+        "fresh_standalone_diagnostic_pending",
+        "authenticated_strict_q08_qualification_artifact_missing",
+        "event_complete_joint_equity_trace_missing",
+        "selection_sealed_out_of_sample_evidence_missing",
+        "exact_profile_free_trial_missing"
+      ]
+    }
+  ],
+  "global_blockers": [
+    "qualification_schema_producer_policy_and_input_provenance_not_yet_authenticated",
+    "standalone_runs_do_not_prove_shared_account_execution_or_margin",
+    "historical_split_is_not_selection_sealed",
+    "paid_challenge_requires_separate_owner_signature"
+  ],
+  "authorization": {
+    "money_gate_authorized": false,
+    "deployment_allowed": false,
+    "factory_action_authorized": false,
+    "paid_challenge_purchase_authorized": false
+  }
+}

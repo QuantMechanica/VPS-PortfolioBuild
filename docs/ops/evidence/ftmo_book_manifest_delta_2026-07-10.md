@@ -1,9 +1,16 @@
 # FTMO book manifest delta — density refresh (2026-07-10) — FOR CODEX
 
-**Status:** proposed, awaiting OWNER approval before live-challenge deployment. Validated on
-T8–T10 (`ftmo_density_validation_2026-07-10.md`): at matched daily-breach budget this raises
-P1 pass 47.5%→52.3%, lowers max-breach 31%→29%. **Risk-neutral** — Σ RISK_FIXED unchanged
-(8999 ≈ 9.00% at scale 9.0); only the sleeve *set* and relative weights change.
+**Status: SUPERSEDED / DO NOT EXECUTE.** The 2026-07-10 Codex reconciliation
+found that two of the three added MAE streams do not match their originating
+MT5 reports. `10118/NDX` differs by 2 trades and `$1,156.97`; `10546/XAUUSD`
+differs by 54 trades and `$46,702.34`. Only `10916/GDAXI` reconciles. Therefore
+the claimed 47.5% to 52.3% improvement is not validated and this manifest must
+not be applied to presets, set files, or a deploy manifest. See
+`artifacts/ftmo_stream_reconciliation_2026-07-10.json`.
+
+The proposed weights below are retained only as the exact historical experiment
+specification. A new delta requires report-reconciled streams, a rerun of the
+model, hard pipeline qualification, and OWNER approval.
 
 Book location (r25p1 preset set files):
 `…\Terminal\81A933A9AFC5DE3C23B15CAB19C63850\MQL5\Presets\r25p1_<SYM>_<TF>_QM5_<id>_<slug>_magic<magic>.set`
@@ -58,3 +65,5 @@ RF shown @ scale 9.0 for reference — **apply the current target scale** (scale
 - Live-challenge change → **OWNER sign-off required** (this doc is the spec, not the go).
 - Gain is real but **modest** — the bigger lever is decorrelation (separate workstream B, in
   flight on T8–T10). If the decorrelated FX sleeves validate, a second delta may supersede this.
+- 2026-07-10 follow-up: the gain is not established because the source streams
+  failed report reconciliation. This note overrides the earlier recommendation.

@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_ANNUAL_DENSITY_GATE",
+  "ea_id": 11181,
+  "symbol": "XAUUSD.DWX",
+  "period": "M5",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "source_sha256": "31EBBD0DFFB740EFFE03DF2846E4EDBE1E35D3447F5A438CF95AA11511B21993",
+  "compile_log": "framework/build/compile/compile/20260712_143905/QM5_11181_ft003-mfi-fish.compile.log",
+  "compile_log_sha256": "1AE9EF176412E4E2334B866DCD6C172AEF7B9E56C4796A8DC92A039F77BFEC15",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11181_xau_m5_wave15_20260712\\QM5_11181\\20260712_143927\\summary.json",
+  "deterministic": true,
+  "native": {
+    "trades": 216,
+    "profit_factor": 1.589531,
+    "net_profit": 1423.74,
+    "equity_drawdown": 740.76
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\11181_XAUUSD_DWX_T3_FRESH_20260712.jsonl",
+    "rows": 216,
+    "sha256": "8F6A1CAF4A22464CFDBCC235B1D637B456657E00E877E67234233B7554ED30CD",
+    "report_reconciliation": "PASS",
+    "count_delta": 0,
+    "missing_mae_rows": 0,
+    "corrected_net_delta": 0.0
+  },
+  "current_cost_artifact": "artifacts/ftmo_11181_xau_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 216,
+    "profit_factor": 1.275711,
+    "net_profit": 776.58,
+    "close_to_close_max_drawdown": 759.82,
+    "commission_total": 54.15,
+    "swap_total": -593.01
+  },
+  "gate": {
+    "profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "calendar_years_below_density_floor": [2017],
+    "negative_calendar_years": [2017, 2023, 2025],
+    "reason_for_reject": "The predeclared strict annual-density gate fails before portfolio admission; current-cost 2023 validation and 2025 confirmation are also negative."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

@@ -13,6 +13,8 @@ class ResearchBacklogInventoryTests(unittest.TestCase):
             f"""---
 ea_id: {ea_id}
 slug: {slug}
+source_id: TEST-SOURCE
+target_symbols: [XAUUSD.DWX]
 g0_status: APPROVED
 r1_track_record: PASS
 r2_mechanical: PASS

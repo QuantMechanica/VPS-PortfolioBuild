@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "status": "PREDECLARED_BEFORE_EXECUTION",
+  "manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "scenario": "path_01_11095_gbpusd_down2",
+  "objective": "Reduce adverse intrabar breach tails without lowering threshold-fill pass rate.",
+  "development_years": [2018, 2019, 2021, 2022, 2023],
+  "sealed_holdout_years": [2024, 2025],
+  "fixed_policy": {
+    "risk_multiplier": 25.0,
+    "full_risk_room": 4000.0,
+    "room_retention": 0.2,
+    "open_risk_limit_ratio": 0.0,
+    "profit_risk_steps": []
+  },
+  "stage_1_daily_stops": [2500.0, 3000.0, 3500.0, 4000.0, 4250.0, 4500.0],
+  "incumbent_daily_stop": 4500.0,
+  "stage_1_gate": "A tighter daily stop survives only if it strictly improves pass_pct in both threshold and adverse development reconstructions versus 4500. Ties do not pass.",
+  "stage_2_rule": "Run no refinement and open no holdout unless Stage 1 has a joint survivor.",
+  "selection_uses_holdout": false
+}

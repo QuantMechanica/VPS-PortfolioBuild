@@ -2,12 +2,17 @@
   "logical_symbol": "QM5_13060_XTI_EURCAD_RSPREAD_D1",
   "host_symbol": "XTIUSD.DWX",
   "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
   "basket_symbols": [
     "XTIUSD.DWX",
-    "EURCAD.DWX"
+    "EURCAD.DWX",
+    "USDCAD.DWX",
+    "EURUSD.DWX"
   ],
   "notes": [
-    "Two-leg WTI/EURCAD inverse-CAD return-spread reversion basket from the approved BOC-EURCAD-OIL-RSPREAD-2026 card. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute a standardized log-return spread over a fixed lookback. Q02 must evaluate the logical basket, not the standalone legs."
+    "Two-leg WTI/EURCAD inverse-CAD return-spread reversion basket from the approved BOC-EURCAD-OIL-RSPREAD-2026 card. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute a standardized log-return spread over a fixed lookback. Q02 must evaluate the logical basket, not the standalone legs.",
+    "USDCAD.DWX and EURUSD.DWX are history-only dependencies for CAD P/L and EUR margin conversion under the USD tester account. XTIUSD.DWX and EURCAD.DWX remain the only traded legs."
   ]
 }
 

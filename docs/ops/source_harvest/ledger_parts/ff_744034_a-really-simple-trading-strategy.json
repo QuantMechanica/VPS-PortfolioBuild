@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_744034_a-really-simple-trading-strategy.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_744034_a-really-simple-trading-strategy.pdf",
+      "source_pages": "1",
+      "source_ref": "Seeley, \"A really simple Trading Strategy\", ForexFactory thread 744034 (3 posts, complete), https://www.forexfactory.com/thread/744034/a-really-simple-trading-strategy",
+      "strategy_name": "Seeley 'really simple' strategy (video-only)",
+      "concept": "Poster claims a simple clean-entry strategy but all rules live in an embedded video, none written in the thread text.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "No written entry/exit/params in the thread; the only content is 'watch it here - Inserted Video' plus a promise to write it out later; nothing implementable.",
+      "priority_hint": "LOW",
+      "notes": "3-post thread, moved to commercial content because it is a video. Market/timeframe/session are placeholders only; the text states no instrument or timeframe. Revisit would require the promised written write-up with imagery, which is not present in this source."
+    }
+  ],
+  "notes": ["zero usable candidates: rules exist only in a linked video, none in text"]
+}

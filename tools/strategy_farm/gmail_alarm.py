@@ -1,4 +1,4 @@
-"""Gmail alarm when health watchdog hits FAIL — debounced.
+"""Legacy Gmail alarm when health watchdog hits FAIL — OWNER-disabled.
 
 OWNER 2026-05-17: "Gmail-Alarm bei FAIL". Reads state/health.json (written
 by farmctl health every 15min) and sends a mail when:
@@ -12,12 +12,13 @@ triggers a notification (transitions matter).
 State file: state/gmail_alarm_state.json holds last-alarm fingerprint.
 
 Credentials: re-uses the existing Gmail SMTP setup at
-.private/secrets/gmail_{app_password,sender}.txt (same as
-paperclip/tools/ops/daily_status_mail.py).
+.private/secrets/gmail_{app_password,sender}.txt.
 
-Scheduled: hourly via QM_StrategyFarm_GmailAlarm_Hourly. NOT every 15min
-to keep traffic low — if a critical FAIL appears 5min after a check, you
-see it within an hour, and the cockpit banner is immediate anyway.
+OWNER 2026-07-23: the separate PIPELINE FAIL/OK mail is no longer wanted.
+The scheduled task is policy-disabled and ``main()`` fails closed below.
+This module remains the canonical SMTP helper for MorningBriefing, the weekly
+unreadable-source report, and the post-reboot diagnostic mail;
+importing/calling ``_send_mail`` is unaffected.
 """
 
 from __future__ import annotations
@@ -32,23 +33,27 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
 
-# Brand palette — mirrors render_cockpit.py + daily_status_mail.py
+# Brand palette — mirrors render_cockpit.py (Direction C "Unified Neutral",
+# OWNER-DL 2026-07-20: paper-light bg, white card, ONE steel-blue accent,
+# TRUE red/green P&L; key names kept for backwards compatibility —
+# "emerald" now holds the status/profit GREEN, "accent" is the brand blue).
 PALETTE = {
-    "bg":           "#020617",
-    "surface_0":    "#060b18",
-    "surface_1":    "#0f172a",
-    "surface_2":    "#1e293b",
-    "border":       "rgba(148,163,184,0.18)",
-    "text":         "#f8fafc",
-    "text_dim":     "#cbd5e1",
-    "text_muted":   "#94a3b8",
-    "text_subtle":  "#64748b",
-    "emerald":      "#10b981",
-    "emerald_dark": "#059669",
-    "warn":         "#f59e0b",
-    "fail":         "#ef4444",
-    "info":         "#3b82f6",
-    "live":         "#06b6d4",
+    "bg":           "#f6f5f2",
+    "surface_0":    "#efece3",
+    "surface_1":    "#ffffff",
+    "surface_2":    "#f1efe8",
+    "border":       "#e2ded4",
+    "text":         "#1c1a16",
+    "text_dim":     "#45403a",
+    "text_muted":   "#726b60",
+    "text_subtle":  "#9a938a",
+    "emerald":      "#1a8f4c",
+    "emerald_dark": "#14713c",
+    "warn":         "#b8720a",
+    "fail":         "#d13438",
+    "info":         "#2954d4",
+    "live":         "#0e7490",
+    "accent":       "#2954d4",
 }
 FONT_STACK = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif"
 MONO_STACK = "'Source Code Pro', ui-monospace, 'SF Mono', Menlo, monospace"
@@ -63,15 +68,26 @@ SENDER_FILE = SECRETS_DIR / "gmail_sender.txt"
 RECIPIENT = "fabian.grabner@gmail.com"
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 587
+PIPELINE_ALERTS_ENABLED = False  # OWNER 2026-07-23; SMTP helper stays enabled.
 
 
 def _load_health() -> dict:
     if not HEALTH_FILE.exists():
         return {}
     try:
-        return json.loads(HEALTH_FILE.read_text(encoding="utf-8"))
+        health = json.loads(HEALTH_FILE.read_text(encoding="utf-8"))
     except Exception:
         return {}
+    # Silent-failure meta-monitor (task #11, 2026-07-19): fold its alarm sidecar
+    # into the health dict so the existing fingerprint/one-mail-per-change logic
+    # covers the silent classes (task deaths, skip-streaks, lane stalls) too.
+    # A missing/stale sidecar injects its own staleness FAIL inside the merge.
+    try:
+        import silent_failure_monitor
+        health = silent_failure_monitor.merge_into_health(health)
+    except Exception:
+        pass
+    return health
 
 
 def _load_state() -> dict:
@@ -217,7 +233,7 @@ def _build_mail_body(health: dict) -> tuple[str, str, str]:
   <tr><td style="padding:22px 26px 18px;border-bottom:1px solid {P['border']};">
     <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
       <td>
-        <div style="font-size:10px;letter-spacing:2px;color:{P['emerald']};text-transform:uppercase;font-weight:700;">QuantMechanica · Strategy Farm</div>
+        <div style="font-size:10px;letter-spacing:2px;color:{P['accent']};text-transform:uppercase;font-weight:700;">QuantMechanica · Strategy Farm</div>
         <div style="font-size:22px;color:{P['text']};font-weight:600;margin-top:4px;">Pipeline Health Alert</div>
       </td>
       <td align="right" valign="top">
@@ -256,15 +272,29 @@ def _build_mail_body(health: dict) -> tuple[str, str, str]:
     return subject, text_body, body_html
 
 
-def _send_mail(subject: str, text_body: str, html_body: str | None = None) -> dict:
+def _send_mail(
+    subject: str,
+    text_body: str,
+    html_body: str | None = None,
+    *,
+    message_id: str | None = None,
+) -> dict:
     """Send via Gmail SMTP. Multipart/alternative with text fallback + HTML."""
     if not APP_PASSWORD_FILE.exists() or not SENDER_FILE.exists():
-        return {"sent": False, "reason": "Gmail credentials missing in .private/secrets/"}
+        return {
+            "sent": False,
+            "reason": "Gmail credentials missing in .private/secrets/",
+            "failure_stage": "pre_send",
+        }
     try:
         password = APP_PASSWORD_FILE.read_text(encoding="utf-8").strip()
         sender = SENDER_FILE.read_text(encoding="utf-8").strip()
     except Exception as exc:
-        return {"sent": False, "reason": f"reading creds failed: {exc!r}"}
+        return {
+            "sent": False,
+            "reason": f"reading creds failed: {exc!r}",
+            "failure_stage": "pre_send",
+        }
     if html_body:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
@@ -277,13 +307,45 @@ def _send_mail(subject: str, text_body: str, html_body: str | None = None) -> di
         msg["Subject"] = subject
         msg["From"] = sender
         msg["To"] = RECIPIENT
+    if message_id:
+        msg["Message-ID"] = message_id
+    srv = None
     try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as srv:
-            srv.starttls()
-            srv.login(sender, password)
-            srv.sendmail(sender, [RECIPIENT], msg.as_string())
+        srv = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30)
+        srv.starttls()
+        srv.login(sender, password)
     except Exception as exc:
-        return {"sent": False, "reason": f"smtp failed: {exc!r}"}
+        if srv is not None:
+            try:
+                srv.close()
+            except Exception:
+                pass
+        return {
+            "sent": False,
+            "reason": f"smtp pre-send failed: {exc!r}",
+            "failure_stage": "pre_send",
+        }
+    try:
+        srv.sendmail(sender, [RECIPIENT], msg.as_string())
+    except Exception as exc:
+        try:
+            srv.close()
+        except Exception:
+            pass
+        return {
+            "sent": False,
+            "reason": f"smtp delivery outcome ambiguous: {exc!r}",
+            "failure_stage": "send_ambiguous",
+        }
+    # Gmail has accepted the message.  A QUIT/connection-close error after this
+    # point must not turn a successful handoff into a retry and duplicate mail.
+    try:
+        srv.quit()
+    except Exception:
+        try:
+            srv.close()
+        except Exception:
+            pass
     return {"sent": True, "subject": subject, "html": bool(html_body)}
 
 
@@ -295,6 +357,11 @@ def _send_mail_with_retries(subject: str, text_body: str, html_body: str | None 
         last["attempt"] = attempt
         if last.get("sent"):
             return last
+        # Only failures known to have happened before SMTP delivery are safe to
+        # retry.  Once sendmail started, the server may have accepted the mail
+        # even if the client lost the response; retrying could duplicate it.
+        if last.get("failure_stage") != "pre_send":
+            break
         if attempt < attempts:
             time.sleep(base_delay_sec * (2 ** (attempt - 1)))
     DASHBOARDS_DIR.mkdir(parents=True, exist_ok=True)
@@ -309,6 +376,9 @@ def _send_mail_with_retries(subject: str, text_body: str, html_body: str | None 
 
 
 def main() -> int:
+    if not PIPELINE_ALERTS_ENABLED:
+        print("pipeline FAIL/OK mail disabled by OWNER policy (2026-07-23) — skip")
+        return 0
     health = _load_health()
     if not health:
         print("no health.json — skipping (run farmctl health first)")
@@ -346,7 +416,7 @@ def main() -> int:
             f'style="max-width:640px;background:{P["surface_1"]};border-radius:12px;'
             f'border:1px solid {P["border"]};">'
             f'<tr><td style="padding:28px 28px;text-align:center;">'
-            f'<div style="font-size:10px;letter-spacing:2px;color:{P["emerald"]};'
+            f'<div style="font-size:10px;letter-spacing:2px;color:{P["accent"]};'
             f'text-transform:uppercase;font-weight:700;">QuantMechanica · Strategy Farm</div>'
             f'<div style="font-size:36px;color:{P["emerald"]};font-weight:700;'
             f'margin-top:14px;letter-spacing:1px;">ALL GREEN</div>'

@@ -1,0 +1,29 @@
+{
+  "task_id": "21a85c2f-7c79-4b16-b914-a32f1bd34cae",
+  "ea_id": "QM5_11032",
+  "ea_dir": "framework/EAs/QM5_11032_atc-horiz-chan",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11032_atc-horiz-chan\\QM5_11032_atc-horiz-chan.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11032_atc-horiz-chan\\QM5_11032_atc-horiz-chan.ex5",
+  "magic_base": 110320000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "XAUUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11032_atc-horiz-chan\\sets\\QM5_11032_atc-horiz-chan_EURUSD.DWX_M5_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11032_atc-horiz-chan\\sets\\QM5_11032_atc-horiz-chan_GBPUSD.DWX_M5_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11032_atc-horiz-chan\\sets\\QM5_11032_atc-horiz-chan_USDJPY.DWX_M5_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11032_atc-horiz-chan\\sets\\QM5_11032_atc-horiz-chan_XAUUSD.DWX_M5_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11032_atc-horiz-chan\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": "D:\\QM\\reports\\smoke\\QM5_11032\\20260731_145552\\summary.json",
+  "blocked_reason": "",
+  "open_questions": [],
+  "build_smoke_framework_error": "infra-only build smoke on T9: NO_HISTORY;INCOMPLETE_RUNS after four internal attempts; stable EX5/setfile identity and no OnInit failure",
+  "smoke_skipped_reason": "framework_error_during_build_smoke_treated_as_done"
+}

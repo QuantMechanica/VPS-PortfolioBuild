@@ -2,7 +2,7 @@
 
 Canonical card:
 
-- `strategy-seeds/cards/xbr-nzdcad-rspr_card.md`
+- `strategy-seeds/cards/approved/QM5_13082_xbr-nzdcad-rspr_card.md`
 - `artifacts/cards_approved/QM5_13082_xbr-nzdcad-rspr.md`
 
 This EA implements the D1 Brent/NZDCAD return-spread reversion basket described

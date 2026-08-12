@@ -1,0 +1,8 @@
+1567: mtime=2026-07-15T13:45:25 size=311150 path=C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_1567_demark-td-reverse-sequential-h4.ex5
+10513: mtime=2026-06-28T09:11:02 size=286118 path=C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_10513_mql5-ichimoku.ex5
+10919: mtime=2026-07-04T00:18:32 size=206326 path=C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_10919_grimes-overshoot.ex5
+11165: mtime=2026-07-17T16:30:45 size=323322 path=C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_11165_weiss-rsi-ma.ex5
+11421: mtime=2026-06-28T09:12:13 size=278902 path=C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5
+12567: mtime=2026-06-28T09:12:22 size=282416 path=C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_12567_cum-rsi2-commodity.ex5
+12989: mtime=2026-07-04T00:18:32 size=309006 path=C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_12989_grimes-nested-pb-v2.ex5
+13213: mtime=2026-07-14T14:49:23 size=330342 path=C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_13213_balke-gmt3-range-breakout.ex5

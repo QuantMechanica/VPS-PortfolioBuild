@@ -12,8 +12,9 @@
 //   rspread = log(XTI[t] / XTI[t-L]) + beta_eurcad * log(EURCAD[t] / EURCAD[t-L])
 //   z > entry: short return spread = sell WTI, sell EURCAD
 //   z < -entry: long return spread = buy WTI, buy EURCAD
-// The EA runs from the XTIUSD.DWX host chart and trades both registered legs
-// through QM_BasketOrder. Runtime uses MT5 OHLC only; no external feed.
+// The EA runs from the XTIUSD.DWX host chart. The host leg uses the V5 trade
+// manager; only the off-host EURCAD leg uses QM_BasketOrder. Runtime uses MT5
+// OHLC only; no external feed.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -189,15 +190,43 @@ bool Strategy_RefreshSpreadState()
    return g_state_ready;
   }
 
-double Strategy_LotsForLeg(const string symbol, const double risk_weight, const double risk_weight_sum)
+bool Strategy_RiskForLeg(const double risk_weight,
+                         const double risk_weight_sum,
+                         QM_RiskMode &risk_mode,
+                         double &risk_value)
+  {
+   risk_mode = QM_RISK_MODE_UNSET;
+   risk_value = 0.0;
+   if(risk_weight <= 0.0 || risk_weight_sum <= 0.0)
+      return false;
+
+   const double share = risk_weight / risk_weight_sum;
+   if(RISK_FIXED > 0.0 && RISK_PERCENT <= 0.0)
+     {
+      risk_mode = QM_RISK_MODE_FIXED;
+      risk_value = RISK_FIXED * share;
+      return (risk_value > 0.0);
+     }
+   if(RISK_PERCENT > 0.0 && RISK_FIXED <= 0.0)
+     {
+      risk_mode = QM_RISK_MODE_PERCENT;
+      risk_value = RISK_PERCENT * share;
+      return (risk_value > 0.0);
+     }
+   return false;
+  }
+
+double Strategy_LotsForLeg(const string symbol,
+                           const QM_RiskMode risk_mode,
+                           const double risk_value)
   {
    const double atr = QM_ATR(symbol, PERIOD_D1, strategy_atr_period_d1, 1);
    const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
-   if(atr <= 0.0 || point <= 0.0 || risk_weight <= 0.0 || risk_weight_sum <= 0.0)
+   if(atr <= 0.0 || point <= 0.0 || risk_value <= 0.0)
       return 0.0;
 
    const double sl_points = strategy_atr_sl_mult * atr / point;
-   double lots = QM_LotsForRisk(symbol, sl_points) * risk_weight / risk_weight_sum;
+   double lots = QM_LotsForRisk(symbol, sl_points, risk_mode, risk_value);
    const double min_lot = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MIN);
    const double max_lot = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MAX);
    const double step = SymbolInfoDouble(symbol, SYMBOL_VOLUME_STEP);
@@ -210,14 +239,14 @@ double Strategy_LotsForLeg(const string symbol, const double risk_weight, const 
    return MathMin(max_lot, NormalizeDouble(lots, 8));
   }
 
-bool Strategy_OpenLeg(const string symbol,
-                      const QM_OrderType type,
-                      const double risk_weight,
-                      const double risk_weight_sum,
-                      const string reason)
+bool Strategy_OpenOffHostLeg(const string symbol,
+                             const QM_OrderType type,
+                             const QM_RiskMode risk_mode,
+                             const double risk_value,
+                             const string reason)
   {
    const int slot = Strategy_SlotForSymbol(symbol);
-   if(slot < 0 || !Strategy_SpreadAllowed(symbol))
+   if(symbol == _Symbol || slot < 0 || !Strategy_SpreadAllowed(symbol))
       return false;
 
    const double entry = QM_OrderTypeIsBuy(type) ? SymbolInfoDouble(symbol, SYMBOL_ASK)
@@ -228,7 +257,7 @@ bool Strategy_OpenLeg(const string symbol,
 
    const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    const double stop_dist = strategy_atr_sl_mult * atr;
-   const double lots = Strategy_LotsForLeg(symbol, risk_weight, risk_weight_sum);
+   const double lots = Strategy_LotsForLeg(symbol, risk_mode, risk_value);
    if(lots <= 0.0)
       return false;
 
@@ -248,7 +277,40 @@ bool Strategy_OpenLeg(const string symbol,
    return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, strategy_deviation_points, req, ticket);
   }
 
-bool Strategy_OpenPair(const int spread_direction)
+bool Strategy_PrepareHostLeg(const QM_OrderType type,
+                             const QM_RiskMode risk_mode,
+                             const double risk_value,
+                             const string reason,
+                             QM_EntryRequest &req)
+  {
+   if(!Strategy_IsHostChart() || !Strategy_SpreadAllowed(g_leg_xti))
+      return false;
+
+   const double entry = QM_OrderTypeIsBuy(type) ? SymbolInfoDouble(g_leg_xti, SYMBOL_ASK)
+                                                : SymbolInfoDouble(g_leg_xti, SYMBOL_BID);
+   const double atr = QM_ATR(g_leg_xti, PERIOD_D1, strategy_atr_period_d1, 1);
+   const double point = SymbolInfoDouble(g_leg_xti, SYMBOL_POINT);
+   if(entry <= 0.0 || atr <= 0.0 || point <= 0.0)
+      return false;
+
+   const double stop_dist = strategy_atr_sl_mult * atr;
+   const double sl_points = stop_dist / point;
+   if(QM_LotsForRisk(g_leg_xti, sl_points, risk_mode, risk_value) <= 0.0)
+      return false;
+
+   const int digits = (int)SymbolInfoInteger(g_leg_xti, SYMBOL_DIGITS);
+   req.type = type;
+   req.price = 0.0;
+   req.sl = QM_OrderTypeIsBuy(type) ? NormalizeDouble(entry - stop_dist, digits)
+                                    : NormalizeDouble(entry + stop_dist, digits);
+   req.tp = 0.0;
+   req.reason = reason;
+   req.symbol_slot = 0;
+   req.expiration_seconds = 0;
+   return true;
+  }
+
+bool Strategy_OpenPair(const int spread_direction, QM_EntryRequest &host_req)
   {
    if(spread_direction == 0 || Strategy_OpenPairLegCount() > 0)
       return false;
@@ -264,16 +326,28 @@ bool Strategy_OpenPair(const int spread_direction)
    const string reason = long_spread ? "QM5_13060_LONG_XTI_EURCAD_RSPREAD"
                                      : "QM5_13060_SHORT_XTI_EURCAD_RSPREAD";
 
-   bool xti_ok = Strategy_OpenLeg(g_leg_xti, xti_type, xti_weight, weight_sum, reason);
-   bool eurcad_ok = Strategy_OpenLeg(g_leg_eurcad, eurcad_type, eurcad_weight, weight_sum, reason);
-   if(xti_ok && eurcad_ok)
-     {
-      g_pair_entry_time = TimeCurrent();
-      return true;
-     }
+   QM_RiskMode xti_risk_mode;
+   QM_RiskMode eurcad_risk_mode;
+   double xti_risk_value = 0.0;
+   double eurcad_risk_value = 0.0;
+   if(!Strategy_RiskForLeg(xti_weight, weight_sum, xti_risk_mode, xti_risk_value) ||
+      !Strategy_RiskForLeg(eurcad_weight, weight_sum, eurcad_risk_mode, eurcad_risk_value))
+      return false;
 
-   Strategy_ClosePair(QM_EXIT_STRATEGY);
-   return false;
+   // Validate the host request before exposing the package to one-leg risk.
+   // The framework opens this request through QM_TM_OpenPosition in OnTick.
+   if(!Strategy_PrepareHostLeg(xti_type, xti_risk_mode, xti_risk_value, reason, host_req))
+      return false;
+
+   if(!Strategy_OpenOffHostLeg(g_leg_eurcad,
+                               eurcad_type,
+                               eurcad_risk_mode,
+                               eurcad_risk_value,
+                               reason))
+      return false;
+
+   g_pair_entry_time = TimeCurrent();
+   return true;
   }
 
 bool Strategy_NoTradeFilter()
@@ -305,10 +379,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    if(g_spread_z > strategy_entry_z)
-      Strategy_OpenPair(-1);
-   else if(g_spread_z < -strategy_entry_z)
-      Strategy_OpenPair(1);
-
+      return Strategy_OpenPair(-1, req);
+   if(g_spread_z < -strategy_entry_z)
+      return Strategy_OpenPair(1, req);
    return false;
   }
 
@@ -388,7 +461,17 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   string basket_symbols[2] = {g_leg_xti, g_leg_eurcad};
+   // EURCAD settles and margins outside the USD tester currency. MT5 requests
+   // USDCAD for CAD P/L conversion and EURUSD for EUR margin conversion when
+   // the off-host leg first trades. Warm both manifest-declared history-only
+   // routes with the traded legs so valuation cannot arrive late at entry.
+   string basket_symbols[4] =
+     {
+      g_leg_xti,
+      g_leg_eurcad,
+      "USDCAD.DWX",
+      "EURUSD.DWX"
+     };
    QM_SymbolGuardInit(basket_symbols);
    QM_BasketWarmupHistory(basket_symbols,
                           PERIOD_D1,
@@ -406,6 +489,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck())
       return;
 
@@ -453,8 +537,17 @@ void OnTick()
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
+      const double xti_weight = 1.0;
+      const double eurcad_weight = MathMax(0.1, MathAbs(strategy_beta_eurcad));
+      QM_RiskMode host_risk_mode;
+      double host_risk_value = 0.0;
       ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      if(!Strategy_RiskForLeg(xti_weight,
+                              xti_weight + eurcad_weight,
+                              host_risk_mode,
+                              host_risk_value) ||
+         !QM_TM_OpenPosition(req, out_ticket, 0, host_risk_mode, host_risk_value))
+         Strategy_ClosePair(QM_EXIT_STRATEGY);
      }
   }
 

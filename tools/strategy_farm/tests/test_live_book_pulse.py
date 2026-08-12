@@ -1,4 +1,5 @@
 import os
+import json
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -36,6 +37,26 @@ def test_normalize_timeframe_aliases_daily_to_d1() -> None:
     assert live_book_pulse.normalize_timeframe("Daily") == "D1"
     assert live_book_pulse.normalize_timeframe("PERIOD_D1") == "D1"
     assert live_book_pulse.normalize_timeframe("H1") == "H1"
+
+
+def test_load_live_presets_accepts_deployment_suffix(tmp_path: Path) -> None:
+    root = tmp_path / "terminal"
+    preset_dir = root / "MQL5" / "Presets"
+    preset_dir.mkdir(parents=True)
+    preset = preset_dir / (
+        "slot01_NDX_H1_QM5_10440_tm-cum-rsi2_"
+        "magic104400003_d2d_s3_live.set"
+    )
+    preset.write_text("RISK_FIXED=250\n", encoding="ascii")
+
+    rows = live_book_pulse.load_live_presets([root])
+
+    assert len(rows) == 1
+    assert rows[0]["slot"] == 1
+    assert rows[0]["ea_id"] == 10440
+    assert rows[0]["magic"] == 104400003
+    assert rows[0]["preset_tf_norm"] == "H1"
+    assert rows[0]["risk_fixed"] == "250"
 
 
 def test_compare_loaded_charts_to_presets_flags_tf_mismatch() -> None:
@@ -165,3 +186,295 @@ def test_heartbeat_flags_missing_today_log_after_first_scan(tmp_path: Path) -> N
     assert hb["today_broker_journal_check_due"] is True
     assert hb["today_broker_journal_file_exists"] is False
     assert "today_broker_date_journal_missing_after_first_scan" in hb["alarm_reason"]
+
+
+def test_manifest_reconcile_uses_manifest_count_keys_magic_and_timeframe(tmp_path: Path) -> None:
+    path = tmp_path / "dxz_book.json"
+    path.write_text(
+        json.dumps(
+            {
+                "book": "DXZ",
+                "status": "FROZEN",
+                "n_sleeves": 2,
+                "sleeves": [
+                    {
+                        "ea_id": 10403,
+                        "symbol": "XAUUSD.DWX",
+                        "magic_number": 104030002,
+                        "backtest_set": "QM5_10403_XAUUSD.DWX_D1_backtest.set",
+                    },
+                    {
+                        "ea_id": 10706,
+                        "symbol": "GBPUSD.DWX",
+                        "magic_number": 107060001,
+                        "timeframe": "H1",
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    manifest = live_book_pulse.load_book_manifest(path)
+    presets = [
+        {
+            "ea_id": 10403,
+            "symbol": "XAUUSD",
+            "magic": 999,
+            "preset_tf": "H1",
+            "path": "wrong.set",
+        }
+    ]
+    loaded = [{"ea_id": 10403, "symbol": "XAUUSD", "tf": "D1"}]
+
+    result = live_book_pulse.reconcile_manifest_to_live(manifest, presets, loaded)
+
+    assert manifest["expected_sleeve_count"] == 2
+    assert manifest["sha256"]
+    assert result["expected_count"] == 2
+    assert [row["key"] for row in result["missing_loaded"]] == ["10706|GBPUSD"]
+    assert [row["key"] for row in result["missing_presets"]] == ["10706|GBPUSD"]
+    assert result["magic_mismatches"][0]["expected_magic"] == 104030002
+    assert result["timeframe_mismatches"][0]["expected_tf"] == "D1"
+
+
+def test_build_alarms_uses_manifest_expected_count_not_static_fallback() -> None:
+    snapshot = {
+        "heartbeat": {"alarm": False, "alarm_details": []},
+        "terminal_journals": {"loaded_sleeve_count": 2, "account_id": "123456"},
+        "book_manifest": {
+            "enabled": True,
+            "loaded": True,
+            "status": "FROZEN",
+            "declared_sleeve_count": 2,
+            "actual_manifest_sleeve_count": 2,
+            "expected_sleeve_count": 2,
+            "duplicate_key_count": 0,
+        },
+        "manifest_reconcile": {
+            "expected_count": 2,
+            "missing_loaded": [],
+            "unexpected_loaded": [],
+            "missing_presets": [],
+            "unexpected_presets": [],
+            "magic_mismatches": [],
+            "timeframe_mismatches": [],
+        },
+        "preset_consistency": {"mismatches": []},
+    }
+
+    alarms = live_book_pulse.build_alarms(snapshot)
+
+    assert not [alarm for alarm in alarms if alarm["metric"] == "loaded_sleeve_count"]
+
+
+def test_manifest_preset_selection_chooses_newest_matching_magic() -> None:
+    manifest = {
+        "loaded": True,
+        "sleeves": [
+            {
+                "key": "10440|NDX",
+                "ea_id": 10440,
+                "symbol_norm": "NDX",
+                "magic": 104400003,
+                "live_preset_path": None,
+            }
+        ],
+    }
+    presets = [
+        {
+            "ea_id": 10440,
+            "symbol": "NDX",
+            "magic": 104400003,
+            "path": "old.set",
+            "modified_time_ns": 1,
+            "slot": 3,
+        },
+        {
+            "ea_id": 10440,
+            "symbol": "NDX",
+            "magic": 104400003,
+            "path": "dxz23_live.set",
+            "modified_time_ns": 2,
+            "slot": 3,
+        },
+    ]
+
+    result = live_book_pulse.select_manifest_presets(manifest, presets)
+
+    assert result["selected_count"] == 1
+    assert result["selected"][0]["path"] == "dxz23_live.set"
+    assert result["ambiguous"][0]["chosen"] == "dxz23_live.set"
+
+
+def test_ks_baseline_metric_uses_terminal_local_precedence_and_detects_mirror_drift(
+    tmp_path: Path,
+) -> None:
+    terminal = tmp_path / "terminal"
+    local = terminal / "MQL5" / "Files" / "QM" / "baselines"
+    common = tmp_path / "common"
+    local.mkdir(parents=True)
+    common.mkdir()
+    local_doc = {"hash": "LOCAL", "trades_sorted": list(range(10))}
+    (local / "QM5_10440_NDX.json").write_text(json.dumps(local_doc), encoding="utf-8")
+    (common / "QM5_10440_NDX.json").write_text(
+        json.dumps({"hash": "COMMON", "trades_sorted": list(range(10))}),
+        encoding="utf-8",
+    )
+    manifest = {
+        "loaded": True,
+        "sleeves": [{
+            "key": "10440|NDX",
+            "ea_id": 10440,
+            "symbol": "NDX.DWX",
+            "symbol_norm": "NDX",
+        }],
+    }
+    events = {
+        "10440|NDX": {
+            "event": "KS_BASELINE_LOADED",
+            "hash": "LOCAL",
+            "ts_utc": "2026-07-28T00:00:00Z",
+        },
+    }
+
+    result = live_book_pulse.assess_ks_baselines(
+        manifest,
+        [terminal],
+        events,
+        common_baseline_dir=common,
+    )
+
+    assert result["status"] == "FAIL"
+    assert result["loaded_ok"] == 1
+    assert result["baseline_sources"] == {"terminal_local": 1}
+    assert result["mirror_divergences"] == ["10440|NDX"]
+
+
+def test_ks_baseline_metric_prevents_green_when_loaded_event_is_absent(tmp_path: Path) -> None:
+    terminal = tmp_path / "terminal"
+    local = terminal / "MQL5" / "Files" / "QM" / "baselines"
+    local.mkdir(parents=True)
+    (local / "QM5_10440_NDX.json").write_text(
+        json.dumps({"hash": "EXPECTED", "trades_sorted": list(range(10))}),
+        encoding="utf-8",
+    )
+    manifest = {
+        "loaded": True,
+        "sleeves": [{
+            "key": "10440|NDX",
+            "ea_id": 10440,
+            "symbol": "NDX.DWX",
+            "symbol_norm": "NDX",
+        }],
+    }
+
+    result = live_book_pulse.assess_ks_baselines(
+        manifest,
+        [terminal],
+        {},
+        common_baseline_dir=tmp_path / "absent_common",
+    )
+    alarms = live_book_pulse.build_alarms({
+        "kill_switch_baselines": result,
+        "heartbeat": {"alarm": False, "alarm_details": []},
+        "terminal_journals": {"loaded_sleeve_count": 1, "account_id": "4000090541"},
+        "book_manifest": {"enabled": True, "loaded": True, "status": "LIVE",
+                          "expected_sleeve_count": 1, "actual_manifest_sleeve_count": 1,
+                          "declared_sleeve_count": 1, "duplicate_key_count": 0},
+        "manifest_reconcile": {"expected_count": 1},
+        "live_presets": {"ambiguous_selections": []},
+        "preset_consistency": {"mismatches": []},
+    })
+
+    assert result["status"] == "WARN"
+    assert result["loaded_ok"] == 0
+    assert result["dormant"] == ["10440|NDX"]
+    assert any(alarm["metric"] == "ks_baseline_status" for alarm in alarms)
+
+
+def test_parse_ea_logs_exposes_latest_ks_baseline_event(tmp_path: Path) -> None:
+    root = tmp_path / "terminal"
+    qm_dir = root / "MQL5" / "Files" / "QM"
+    qm_dir.mkdir(parents=True)
+    log = qm_dir / "QM5_10440_ea-104400003.log"
+    records = [
+        {
+            "ts_utc": "2026-07-28T10:00:00Z",
+            "ea_id": "QM5_10440",
+            "symbol": "NDX.DWX",
+            "event": "KS_BASELINE_LOADED",
+            "payload": {"hash": "EXPECTED", "path": "terminal-local"},
+        },
+        {
+            "ts_utc": "2026-07-28T10:00:01Z",
+            "ea_id": "QM5_10440",
+            "symbol": "NDX.DWX",
+            "event": "INIT_OK",
+            "payload": {},
+        },
+    ]
+    log.write_text(
+        "".join(json.dumps(record) + "\n" for record in records),
+        encoding="utf-8",
+    )
+
+    result = live_book_pulse.parse_ea_logs([root], {}, tail_bytes=64_000)
+
+    assert result["latest_ks_baseline_events"]["10440|NDX"] == {
+        "event": "KS_BASELINE_LOADED",
+        "ts_utc": "2026-07-28T10:00:00Z",
+        "hash": "EXPECTED",
+        "path": "terminal-local",
+        "source_file": str(log),
+    }
+
+
+def test_parse_ea_logs_streams_full_log_for_ks_event_before_latest_init(tmp_path: Path) -> None:
+    root = tmp_path / "terminal"
+    qm_dir = root / "MQL5" / "Files" / "QM"
+    qm_dir.mkdir(parents=True)
+    log = qm_dir / "QM5_10706_ea-10706.log"
+    lifecycle = [
+        {
+            "ts_utc": "2026-07-31T20:56:08Z",
+            "ea_id": 10706,
+            "symbol": "GBPUSD",
+            "magic": 107060001,
+            "event": "KS_BASELINE_LOADED",
+            "payload": {"hash": "ARMED", "path": "QM/baselines/QM5_10706_GBPUSD.json"},
+        },
+        {
+            "ts_utc": "2026-07-31T20:56:09Z",
+            "ea_id": 10706,
+            "symbol": "GBPUSD",
+            "magic": 107060001,
+            "event": "INIT_OK",
+            "payload": {},
+        },
+    ]
+    noise = {
+        "ts_utc": "2026-07-31T21:00:00Z",
+        "ea_id": 10706,
+        "symbol": "GBPUSD",
+        "magic": 107060001,
+        "event": "NOISY_HEARTBEAT",
+        "payload": {"padding": "x" * 1024},
+    }
+    with log.open("w", encoding="utf-8") as handle:
+        for record in lifecycle:
+            handle.write(json.dumps(record) + "\n")
+        for _ in range(4_500):
+            handle.write(json.dumps(noise) + "\n")
+
+    assert log.stat().st_size > live_book_pulse.DEFAULT_TAIL_BYTES
+    result = live_book_pulse.parse_ea_logs(
+        [root], {}, tail_bytes=live_book_pulse.DEFAULT_TAIL_BYTES
+    )
+
+    assert result["latest_ks_baseline_events"]["10706|GBPUSD"] == {
+        "event": "KS_BASELINE_LOADED",
+        "ts_utc": "2026-07-31T20:56:08Z",
+        "hash": "ARMED",
+        "path": "QM/baselines/QM5_10706_GBPUSD.json",
+        "source_file": str(log),
+    }

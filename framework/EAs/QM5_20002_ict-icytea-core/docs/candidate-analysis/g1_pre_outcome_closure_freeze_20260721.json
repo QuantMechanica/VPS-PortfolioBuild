@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_20002_G1_PRE_OUTCOME_CLOSURE_FREEZE",
+  "created_utc": "2026-07-21T06:02:29.2154412Z",
+  "analysis_id": "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001",
+  "run_id": "20260721T025051Z_24ed7b13baac4e9ea10a2cff755ae5f5",
+  "status": "FROZEN_DEFINITIVE_PASS_READY_FOR_ONE_SHOT_CLOSURE",
+  "reason_code": "SCHEDULER_TRIGGER_NULL_COLLECTION_CONTRACT_DEFECT",
+  "owner_closure_authorized_utc": "2026-07-21T06:02:29.2154412Z",
+  "repository": {
+    "reviewed_head": "973ed08b3f17f7ef11b60bed6f578e07aa3dcf24",
+    "files": {
+      "closure_utility": {
+        "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/close_qm20002_g1.py",
+        "size": 117730,
+        "sha256": "60869a4584f2415b7f1200f6ccec403da78ef97894990b28527564fee222408b",
+        "last_content_commit": "973ed08b3f17f7ef11b60bed6f578e07aa3dcf24"
+      },
+      "closure_task_helper": {
+        "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/close_qm20002_g1_task.ps1",
+        "size": 30387,
+        "sha256": "0f375586ab41745f66636e0faa995d8dc7d1075a648803e565af500a7ea536da",
+        "last_content_commit": "8198b59d86c3d247eaabf00e5eddc2ea7cea451d"
+      },
+      "closure_tests": {
+        "path": "framework/EAs/QM5_20002_ict-icytea-core/tests/candidate_analysis/test_close_qm20002_g1.py",
+        "size": 66855,
+        "sha256": "8d163a4ffa605c5abdb0f98bd046bfd2e41cee02b9efa74ddcfeeb86578bee10",
+        "last_content_commit": "973ed08b3f17f7ef11b60bed6f578e07aa3dcf24"
+      },
+      "closure_contract": {
+        "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/g1_pre_outcome_closure_contract_20260721.md",
+        "size": 11473,
+        "sha256": "178f22785624e4b584d7fbbbcbc409cfae9c7213768b9611b05d4ae210380811",
+        "last_content_commit": "eb16f93be25b9c4e7463f6a550c39a1282279de9"
+      },
+      "frozen_g1_auditor": {
+        "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/audit_short_ny_reverse_time.py",
+        "size": 249680,
+        "sha256": "4f9068c710a34d7f0bd72ad0c93a856d966ca58943ca84fa48f4addc686b0a2f"
+      },
+      "frozen_g1_scheduler": {
+        "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/run_outcome_fenced_task.ps1",
+        "size": 11213,
+        "sha256": "a11e058453f362785a9c7f2d94b4194dd61de3dcadbeb0184884628e4dfe3bf2"
+      },
+      "frozen_g1_control_helper": {
+        "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/assert_qm20002_control_path.ps1",
+        "size": 32942,
+        "sha256": "b3be96b0beb5b264390ba6087deacfd9fb3174537c2495d566e431d71089fc2f"
+      },
+      "g1_runtime_freeze": {
+        "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/short_ny_reverse_time_runtime_freeze_20260721.json",
+        "size": 3937,
+        "sha256": "3a1c86cc33db859d64ef4c611dbde6dd721372fd586ab375cfe45f9e0739a618",
+        "commit": "9f258f9fa2cc84746c34f76859888274ca60cf15"
+      }
+    }
+  },
+  "historical_run_smoke_provenance": {
+    "path": "framework/scripts/run_smoke.ps1",
+    "pre_and_runtime_freeze_size": 115860,
+    "pre_and_runtime_freeze_sha256": "634fd4a012135372b9c9e73b522978ba8cc54453051f1d7204443a124839575a",
+    "content_commit": "adf26cd8b1ea61a306c9949217aad139a9971ab9",
+    "content_commit_is_ancestor_of_runtime_freeze": true,
+    "raw_git_blob_size": 113224,
+    "raw_git_blob_sha256": "92c324dad414deae95f453d77d2c4d2aa12d27292caf590c972c9c168d181c84",
+    "filtered_git_blob_size": 115894,
+    "filtered_git_blob_sha256": "665f392c5923e9f5002792b5984df01dce1437c3d2ba3e0cc6081e1fc45bbfe4",
+    "scope": "ONLY_HISTORICAL_PRE_RUNTIME_RUNNER_SMOKE_MIXED_EOL_EXCEPTION",
+    "all_other_pre_repository_bindings": "EXACT_GIT_BLOB_AT_RUNTIME_FREEZE_COMMIT"
+  },
+  "run_artifacts_before_closure": {
+    "launch_state": {
+      "path": "D:\\QM\\reports\\qm20002\\short_ny_reverse_time\\runs\\20260721T025051Z_24ed7b13baac4e9ea10a2cff755ae5f5\\launch_state.json",
+      "size": 2426,
+      "sha256": "7aa51ce458420431db4cac94e500d3da07b82261312ba334cb80a7b420433ce7"
+    },
+    "launch_job": {
+      "path": "D:\\QM\\reports\\qm20002\\short_ny_reverse_time\\runs\\20260721T025051Z_24ed7b13baac4e9ea10a2cff755ae5f5\\launch_job.json",
+      "size": 4684,
+      "sha256": "ef4e247e2aefc6bd5e205df1b51296f40aac0c7401c1f64f9ab75fec69106f6b"
+    },
+    "pre_receipt": {
+      "path": "D:\\QM\\reports\\qm20002\\short_ny_reverse_time\\pre\\pre_receipt.json",
+      "size": 91487,
+      "sha256": "2ce641d3b0c0028eae3056958f09e8a28ee60d6f8ac6c621f0bde57f81161b94"
+    },
+    "authorization": {
+      "path": "D:\\QM\\reports\\qm20002\\short_ny_reverse_time\\authorization\\authorization.json",
+      "size": 380,
+      "sha256": "223d53e83a0d3b03f20af3b1b9c5730da365b414cad2f9f427f8b6e17ad46c6f"
+    },
+    "authorization_consumption": {
+      "path": "D:\\QM\\reports\\qm20002\\short_ny_reverse_time\\authorization\\consumptions\\223d53e83a0d3b03f20af3b1b9c5730da365b414cad2f9f427f8b6e17ad46c6f.json",
+      "size": 1570,
+      "sha256": "c8f71626003e7a30635b0b054c80804e4343a414769ad888f892daabc098ad4a"
+    },
+    "closure_outputs_absent": [
+      "g1_pre_outcome_closure_intent.json",
+      "g1_pre_outcome_quiescence_anchor.json",
+      "g1_pre_outcome_closure_receipt.json",
+      "post_receipt.json",
+      "worker"
+    ]
+  },
+  "scheduled_task_before_closure": {
+    "task_name": "QM_QM20002_AUDIT_d3fc294915f4ef4af1ed2795",
+    "task_path": "\\",
+    "state": "Ready",
+    "enabled": true,
+    "never_run": true,
+    "last_run_utc": null,
+    "last_task_result": 267011,
+    "non_null_trigger_count": 0,
+    "non_null_action_count": 1,
+    "task_xml_sha256": "26185aa4253a150fb7675bfa7d3221353e56eaf8dabeba79be05898a3c17e256",
+    "task_contract_sha256": "f258390c438a0665a3c12a9df28468d6c507fce727a5c95e52b0dd39e8bfc396",
+    "dev1_owner_process_count": 0,
+    "dev1_root_process_count": 0,
+    "stable_snapshot_count": 2,
+    "process_probe_method": "NATIVE_PROCESS_HANDLE_TOKEN_SID_AND_IMAGE_PATH_STABLE_DOUBLE_SNAPSHOT_NO_COMMAND_LINE"
+  },
+  "verification": {
+    "focused_closure_tests": "73_PASS",
+    "closure_plus_g1_auditor_tests": "179_PASS",
+    "closure_plus_g1_auditor_plus_g2_helper_tests": "185_PASS",
+    "python_compile": "PASS",
+    "powershell_ast": "PASS",
+    "banned_process_surface": "ABSENT",
+    "diff_check": "PASS",
+    "real_historical_chain": "PASS",
+    "real_inspect_ready": "PASS",
+    "real_inspect_ready_or_running": "PASS",
+    "independent_review": "DEFINITIVE_PASS",
+    "double_hash_identical": true,
+    "host_or_task_mutation_during_freeze": false,
+    "outcome_data_read": false
+  },
+  "execution_policy": {
+    "single_authorized_invocation": true,
+    "authorized_utc": "2026-07-21T06:02:29.2154412Z",
+    "expected_utility_sha256": "60869a4584f2415b7f1200f6ccec403da78ef97894990b28527564fee222408b",
+    "expected_task_helper_sha256": "0f375586ab41745f66636e0faa995d8dc7d1075a648803e565af500a7ea536da",
+    "crash_retry_must_reuse_exact_authorized_utc_and_hashes": true,
+    "terminal_state": "REJECT_CLOSED_PRE_OUTCOME",
+    "task_must_be_absent": true,
+    "outcome_fence_crossed": false,
+    "outcome_data_read": false
+  }
+}

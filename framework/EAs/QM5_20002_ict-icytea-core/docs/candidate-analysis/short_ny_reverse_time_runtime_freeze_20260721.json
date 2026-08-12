@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_20002_SHORT_NY_RUNTIME_FREEZE",
+  "created_utc": "2026-07-21T02:48:18.5733577Z",
+  "analysis_id": "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001",
+  "status": "FROZEN_REVIEWED_READY_FOR_FRESH_PRE",
+  "files": {
+    "auditor": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/audit_short_ny_reverse_time.py",
+      "size": 249680,
+      "sha256": "4f9068c710a34d7f0bd72ad0c93a856d966ca58943ca84fa48f4addc686b0a2f",
+      "last_content_commit": "b5b062eadc6720f9d2ff0da9b153f1b9bb93e9b0"
+    },
+    "scheduled_task_helper": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/run_outcome_fenced_task.ps1",
+      "size": 11213,
+      "sha256": "a11e058453f362785a9c7f2d94b4194dd61de3dcadbeb0184884628e4dfe3bf2",
+      "last_content_commit": "3b729f9fd649cf3ca658a1444acca5c039abb042"
+    },
+    "control_path_helper": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/assert_qm20002_control_path.ps1",
+      "size": 32942,
+      "sha256": "b3be96b0beb5b264390ba6087deacfd9fb3174537c2495d566e431d71089fc2f",
+      "last_content_commit": "b5b062eadc6720f9d2ff0da9b153f1b9bb93e9b0"
+    },
+    "auditor_tests": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tests/candidate_analysis/test_audit_short_ny_reverse_time.py",
+      "size": 112075,
+      "sha256": "87da448e3663441b1e0e2759c9cc523bbba56e5abd4af886415fc71df4fa4d47",
+      "last_content_commit": "b5b062eadc6720f9d2ff0da9b153f1b9bb93e9b0"
+    },
+    "static_audit": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/short_ny_reverse_time_static_audit.md",
+      "size": 15970,
+      "sha256": "6a6d1db85941c8b234b53c3b2e78a143577253df711843d17702100989c22c60",
+      "last_content_commit": "b5b062eadc6720f9d2ff0da9b153f1b9bb93e9b0"
+    },
+    "compiler": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/compile_short_ny_v3.ps1",
+      "size": 101172,
+      "sha256": "c63f636df7b7512314e664bf49fc9c1ecf0d688a14ef3e5cdf437342fee9b3d9",
+      "commit": "6456cc273"
+    },
+    "compiler_tests": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tests/candidate_analysis/test_compile_short_ny_v3.py",
+      "size": 17596,
+      "sha256": "084d1d3746f871503d30bcf11884f930c75ebd79ece56beebc8a9cf0fe4177ea",
+      "commit": "6456cc273"
+    }
+  },
+  "shared_runtime": {
+    "wmi_exit_race_fix_commit": "13e82258f",
+    "invoke_dev1_smoke_task_sha256": "b9c91f64e26f43c23282d501ecfb2a7b985c316fef5d392e8075911919d4d6e7",
+    "frozen_run_smoke_size": 115860,
+    "frozen_run_smoke_sha256": "634fd4a012135372b9c9e73b522978ba8cc54453051f1d7204443a124839575a",
+    "frozen_run_smoke_commit": "adf26cd8b1ea61a306c9949217aad139a9971ab9"
+  },
+  "verification": {
+    "auditor_tests": "106_PASS",
+    "compiler_tests": "19_PASS",
+    "run_smoke_tests": "9_PASS",
+    "powershell_ast": "PASS",
+    "python_compile": "PASS",
+    "embedded_csharp_compile": "PASS",
+    "diff_check": "PASS",
+    "double_hash_delay_milliseconds": 30014,
+    "double_hash_identical": true,
+    "independent_adversarial_review": "DEFINITIVE_PASS_NO_BLOCKER",
+    "actual_ancestor_raw_descriptors": {
+      "D:\\": "PASS",
+      "D:\\QM": "PASS",
+      "D:\\QM\\reports": "PASS"
+    },
+    "atomic_protected_directory_creation": "PASS",
+    "precreated_path_disposition": "ERROR_ALREADY_EXISTS_FAIL_CLOSED",
+    "host_or_mt5_mutation_during_freeze": false
+  },
+  "launch_policy": {
+    "fresh_pre_required": true,
+    "fresh_short_lived_owner_authorization_required": true,
+    "retry_003_reuse_forbidden": true,
+    "control_root": "D:\\QM\\reports\\qm20002\\short_ny_reverse_time",
+    "next_run_state_pattern": "D:\\QM\\reports\\qm20002\\short_ny_reverse_time\\runs\\<yyyyMMddTHHmmssZ_32hex>\\launch_state.json",
+    "outcomes_may_not_be_read_before_terminal_complete_and_fenced_post": true
+  }
+}

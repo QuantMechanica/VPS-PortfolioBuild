@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_1075281_previous-day-breakout-edge-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1075281_previous-day-breakout-edge-system.pdf",
+      "source_pages": "1",
+      "source_ref": "Proc, \"Previous Day Breakout Edge System\", ForexFactory thread 1075281, ~2021, https://www.forexfactory.com/thread/1075281/previous-day-breakout-edge-system",
+      "strategy_name": "Previous Day Breakout Edge",
+      "concept": "A confirmed break-and-close of the previous day's high (long) or low (short) on the H1 chart signals continuation, entered at the next candle's open with a fixed 1:2 R:R and an optional 34-SMA trend filter.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "London",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic prior-day-level breakout, pure price rules in MQL5, fixed SL/TP with defined risk, EURUSD/GBPUSD data available, FTMO/DXZ-compatible.",
+      "priority_hint": "MED",
+      "notes": "Core OP rules: trading day starts 22:00 GMT (cyclic day boundary); enter at open of the H1 candle AFTER an H1 close beyond prev-day high/low; SL 12.5 pips / TP 25 pips (R:R 1:2). Optional 34-SMA filter (price above SMA for longs). Author claims ~57% WR but only with discretionary fundamental/news overlay; Maddin's mechanical M30 backtest EU 2020-2021 (1 trade/day, extended London 06:00-17:00 GMT-1, SL13/TP26) showed -3R over 13 months -> edge unproven; klw notes popular static breakout unlikely to hold. Variants (one core, treat as params to sweep at Q02): ATR-based SL/TP + breakeven (NikoArms ATR(72)); wider stops for gold/USA100 (SL20/TP30); 'false-breakout' re-entry filter (MachineLearn, judged not worth it); '3-Day-Levels' trend filter; yonnie's pre-breakout 25-35% ATR pullback entry. Reported to extend to GBPJPY, USA100/NDX, XAUUSD but best-specified on FX. Reputability: anonymous FF thread, no shared audited stats (Balke-precedent keeps it in scope). DaveBerg's late post proposes a DISTINCT inside-range mean-reversion concept (trade BETWEEN prev-day H/L, sell near prev-day-avg-to-high when weekly/monthly candle bearish) but it is VAGUE (needs unspecified patterns/news/variables) -> not separately implementable."
+    }
+  ],
+  "notes": []
+}

@@ -1,7 +1,12 @@
+import argparse
+import contextlib
+import io
 import json
+import os
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -29,12 +34,25 @@ class Q10ConfirmationTests(unittest.TestCase):
         self.assertTrue(result["reason"].startswith("pf_below_floor:"))
 
     def test_run_confirmation_fails_when_drawdown_above_ceiling(self) -> None:
+        # Ceiling is 25.0, not the historical 15.0: the 2026-07-15 OWNER decision raised the
+        # per-EA DD ceiling and its affected-files list missed q10_confirmation.py because Q10
+        # had never been executed at that point (first run 2026-07-20). Aligned 2026-07-25 —
+        # see decisions/2026-07-15_dd_ceiling_25pct_portfolio_rationale.md, amendment section.
         result = self._run_confirmation_with_summary(
-            {"runs": [{"profit_factor": 1.2, "drawdown": 16000.0, "total_trades": 42}]}
+            {"runs": [{"profit_factor": 1.2, "drawdown": 26000.0, "total_trades": 42}]}
         )
 
         self.assertEqual(result["verdict"], "FAIL")
         self.assertTrue(result["reason"].startswith("dd_above_ceiling:"))
+        self.assertEqual(result["dd_pct"], 26.0)
+
+    def test_run_confirmation_passes_between_the_old_and_current_ceiling(self) -> None:
+        """16% DD used to FAIL and now PASSes — the concrete effect of the 15->25 alignment."""
+        result = self._run_confirmation_with_summary(
+            {"runs": [{"profit_factor": 1.2, "drawdown": 16000.0, "total_trades": 42}]}
+        )
+
+        self.assertEqual(result["verdict"], "PASS")
         self.assertEqual(result["dd_pct"], 16.0)
 
     def test_run_confirmation_passes_when_pf_and_drawdown_are_inside_bounds(self) -> None:
@@ -44,25 +62,169 @@ class Q10ConfirmationTests(unittest.TestCase):
 
         self.assertEqual(result["verdict"], "PASS")
         self.assertTrue(result["reason"].startswith("pf=1.200:dd_pct=1.00"))
+        self.assertIsNotNone(result["report_htm"])
 
-    def test_extract_per_trade_profits_from_synthetic_mt5_html(self) -> None:
+    def test_run_confirmation_rejects_stale_matching_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            report_root = Path(tmp)
+            summary = report_root / "QM5_1056" / "20260101" / "summary.json"
+            summary.parent.mkdir(parents=True)
+            summary.write_text(
+                json.dumps({
+                    "ea_id": 1056,
+                    "expert": "QM/QM5_1056_dummy/QM5_1056_dummy",
+                    "symbol": "NDX.DWX",
+                    "period": "H1",
+                    "terminal": "T2",
+                    "runs": [{
+                        "profit_factor": 1.2,
+                        "drawdown": 1000.0,
+                        "total_trades": 42,
+                    }],
+                }),
+                encoding="utf-8",
+            )
+            os.utime(summary, (1, 1))
+            completed = subprocess.CompletedProcess(
+                args=["pwsh.exe"], returncode=1, stdout="", stderr="",
+            )
+
+            with mock.patch.object(q10_confirmation.subprocess, "run", return_value=completed):
+                result = q10_confirmation.run_confirmation(
+                    ea_id=1056,
+                    ea_expert="QM/QM5_1056_dummy/QM5_1056_dummy",
+                    symbol="NDX.DWX",
+                    setfile=report_root / "baseline.set",
+                    terminal="T2",
+                    period="H1",
+                    report_root=report_root,
+                    timeout_sec=1,
+                )
+
+        self.assertIsNone(result["summary_path"])
+        self.assertEqual(result["reason"], "missing_pf_or_dd_in_summary")
+
+    def test_run_confirmation_rejects_fresh_foreign_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            report_root = Path(tmp)
+            foreign = report_root / "QM5_13138" / "20260713_063719" / "summary.json"
+
+            def fake_run(_args, **_kwargs):
+                foreign.parent.mkdir(parents=True)
+                foreign.write_text(
+                    json.dumps({
+                        "ea_id": 13138,
+                        "expert": r"QM\QM5_13138_xau-m5-ema20",
+                        "symbol": "XAUUSD.DWX",
+                        "period": "M5",
+                        "terminal": "T5",
+                        "runs": [{
+                            "profit_factor": 1.7,
+                            "drawdown": 400.0,
+                            "total_trades": 80,
+                        }],
+                    }),
+                    encoding="utf-8",
+                )
+                return subprocess.CompletedProcess(
+                    args=["pwsh.exe"], returncode=1, stdout="", stderr="",
+                )
+
+            with mock.patch.object(q10_confirmation.subprocess, "run", side_effect=fake_run):
+                result = q10_confirmation.run_confirmation(
+                    ea_id=1056,
+                    ea_expert="QM/QM5_1056_dummy/QM5_1056_dummy",
+                    symbol="NDX.DWX",
+                    setfile=report_root / "baseline.set",
+                    terminal="T2",
+                    period="H1",
+                    report_root=report_root,
+                    timeout_sec=1,
+                )
+
+        self.assertIsNone(result["summary_path"])
+        self.assertEqual(result["reason"], "missing_pf_or_dd_in_summary")
+
+    def test_find_report_rejects_report_older_than_confirmation_run(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            report = root / "raw" / "run_01" / "report.htm"
+            report.parent.mkdir(parents=True)
+            report.write_text("<html></html>", encoding="utf-8")
+            os.utime(report, (1, 1))
+            started_at = time.time()
+            summary = root / "summary.json"
+            summary.write_text(
+                json.dumps({
+                    "runs": [{"report_canonical_path": str(report)}],
+                }),
+                encoding="utf-8",
+            )
+
+            selected = q10_confirmation._find_report_htm(
+                summary,
+                started_at=started_at,
+            )
+
+        self.assertIsNone(selected)
+
+    def test_extract_per_trade_nets_named_columns(self) -> None:
+        # Named-column parse: net = Profit + Swap + Commission (the exact
+        # quantity the live KS path feeds). The opening ('in') and balance rows
+        # are skipped; the third closing deal is the spaced-thousands +
+        # numeric-comment case ('-1 023.75' / 'sl 0.74059') that the old
+        # positional regex mis-read as +023.75 (WP-11 regression guard).
         htm = """
         <html><body><table>
-          <tr><td>2024.01.01</td><td>buy</td><td>in</td><td>0.00</td><td>1000.00</td></tr>
-          <tr><td>2024.01.02</td><td>sell</td><td>out</td><td>12.34</td><td>1012.34</td></tr>
-          <tr><td>2024.01.03</td><td>sell</td><td>out</td><td>-5.67</td><td>1006.67</td></tr>
+          <tr><td>Time</td><td>Deal</td><td>Symbol</td><td>Type</td><td>Direction</td>
+              <td>Volume</td><td>Price</td><td>Order</td><td>Commission</td><td>Swap</td>
+              <td>Profit</td><td>Balance</td><td>Comment</td></tr>
+          <tr><td>2024.01.01</td><td>1</td><td></td><td>balance</td><td></td><td></td>
+              <td></td><td></td><td>0.00</td><td>0.00</td><td>100 000.00</td>
+              <td>100 000.00</td><td></td></tr>
+          <tr><td>2024.01.02</td><td>2</td><td>EURUSD</td><td>buy</td><td>in</td><td>1.00</td>
+              <td>1.10</td><td>3</td><td>-2.00</td><td>0.00</td><td>0.00</td>
+              <td>99 998.00</td><td>squeeze_long</td></tr>
+          <tr><td>2024.01.03</td><td>3</td><td>EURUSD</td><td>sell</td><td>out</td><td>1.00</td>
+              <td>1.11</td><td>4</td><td>-2.00</td><td>1.00</td><td>12.34</td>
+              <td>100 009.34</td><td>qm_tm_close</td></tr>
+          <tr><td>2024.01.04</td><td>4</td><td>EURUSD</td><td>buy</td><td>out</td><td>1.00</td>
+              <td>1.10</td><td>5</td><td>-2.00</td><td>0.00</td><td>-5.67</td>
+              <td>100 001.67</td><td>sl 1.09912</td></tr>
+          <tr><td>2024.01.05</td><td>5</td><td>AUDUSD</td><td>buy</td><td>out</td><td>1.25</td>
+              <td>0.74</td><td>6</td><td>-2.31</td><td>-8.26</td><td>-1 023.75</td>
+              <td>98 665.86</td><td>sl 0.74059</td></tr>
         </table></body></html>
         """
+        # deal3: 12.34 + 1.00 + -2.00 = 11.34
+        # deal4: -5.67 + 0.00 + -2.00 = -7.67
+        # deal5: -1023.75 + -8.26 + -2.31 = -1034.32 (never +023.75)
+        self.assertEqual(
+            gen_q10_baseline.extract_per_trade_nets(htm),
+            [11.34, -7.67, -1034.32],
+        )
 
-        self.assertEqual(gen_q10_baseline.extract_per_trade_profits(htm), [12.34, -5.67])
+    def test_extract_per_trade_nets_fails_loud_without_header(self) -> None:
+        # A report whose deals header cannot be resolved must raise, never
+        # return a short/empty baseline that would still load in the live EA.
+        with self.assertRaises(gen_q10_baseline.ReportParseError):
+            gen_q10_baseline.extract_per_trade_nets(
+                "<html><body><table><tr><td>no</td><td>header</td></tr></table></body></html>"
+            )
 
-    def test_write_baseline_uses_tmp_dir_and_expected_schema(self) -> None:
+    def test_write_baseline_defaults_to_staging_and_expected_schema(self) -> None:
+        # write_baseline with no out_dir must fall back to STAGING (safe by
+        # default), never the live Common dir (WP-11 OWNER gate). We patch
+        # STAGING_DIR to a tmp dir; if the fallback ever regressed to
+        # BASELINE_DIR the write would land elsewhere and .name/schema below
+        # would still be checked from the returned path.
         with tempfile.TemporaryDirectory() as tmp:
-            with mock.patch.object(gen_q10_baseline, "BASELINE_DIR", Path(tmp)):
+            with mock.patch.object(gen_q10_baseline, "STAGING_DIR", Path(tmp)):
                 out_path = gen_q10_baseline.write_baseline(1056, "NDX.DWX", [10.0, -2.0, 4.0])
 
             payload = json.loads(out_path.read_text(encoding="utf-8"))
 
+        self.assertEqual(Path(out_path).parent, Path(tmp))
         self.assertEqual(out_path.name, "QM5_1056_NDX_DWX.json")
         self.assertEqual(payload["ea_id"], 1056)
         self.assertEqual(payload["symbol"], "NDX.DWX")
@@ -71,18 +233,174 @@ class Q10ConfirmationTests(unittest.TestCase):
         self.assertEqual(payload["trades_sorted"], [-2.0, 4.0, 10.0])
         self.assertIn("hash", payload)
 
+    def test_resolve_out_dir_defaults_to_staging_not_common(self) -> None:
+        # Default (no --out-dir, no --deploy-live) MUST be staging, never the
+        # live Common kill-switch dir. This is the WP-11 OWNER gate in code.
+        ns = argparse.Namespace(out_dir=None, deploy_live=False)
+        resolved = gen_q10_baseline._resolve_out_dir(ns)
+        self.assertEqual(resolved, gen_q10_baseline.STAGING_DIR)
+        self.assertNotEqual(resolved, gen_q10_baseline.BASELINE_DIR)
+
+    def test_resolve_out_dir_requires_deploy_live_for_common(self) -> None:
+        # The live Common dir is reachable ONLY via the explicit --deploy-live
+        # flag; nothing else resolves to it.
+        ns = argparse.Namespace(out_dir=None, deploy_live=True)
+        self.assertEqual(gen_q10_baseline._resolve_out_dir(ns), gen_q10_baseline.BASELINE_DIR)
+
+    def test_resolve_out_dir_explicit_out_dir_overrides(self) -> None:
+        explicit = Path("D:/QM/reports/state/q10_baselines_regen")
+        ns = argparse.Namespace(out_dir=explicit, deploy_live=False)
+        self.assertEqual(gen_q10_baseline._resolve_out_dir(ns), explicit)
+
+    def test_resolve_out_dir_refuses_live_out_dir_without_deploy_live(self) -> None:
+        # WP-11: `--out-dir <exact live BASELINE_DIR>` without --deploy-live must
+        # be refused, so --deploy-live stays the ONLY route into live Common.
+        # Patch BASELINE_DIR to a throwaway dir — never touch the real live path.
+        with tempfile.TemporaryDirectory() as tmp:
+            with mock.patch.object(gen_q10_baseline, "BASELINE_DIR", Path(tmp)):
+                ns = argparse.Namespace(out_dir=Path(tmp), deploy_live=False)
+                err = io.StringIO()
+                with contextlib.redirect_stderr(err):
+                    with self.assertRaises(SystemExit) as cm:
+                        gen_q10_baseline._resolve_out_dir(ns)
+        self.assertEqual(cm.exception.code, 2)
+        self.assertIn("REFUSED", err.getvalue())
+        self.assertIn("--deploy-live", err.getvalue())
+
+    def test_resolve_out_dir_refuses_path_nested_in_live_dir(self) -> None:
+        # Sneaky equivalent: a path that resolves INTO the live dir (a nested
+        # subdirectory) is refused just like the live dir itself.
+        with tempfile.TemporaryDirectory() as tmp:
+            with mock.patch.object(gen_q10_baseline, "BASELINE_DIR", Path(tmp)):
+                nested = Path(tmp) / "sub" / "deeper"
+                ns = argparse.Namespace(out_dir=nested, deploy_live=False)
+                with contextlib.redirect_stderr(io.StringIO()):
+                    with self.assertRaises(SystemExit) as cm:
+                        gen_q10_baseline._resolve_out_dir(ns)
+        self.assertEqual(cm.exception.code, 2)
+
+    def test_resolve_out_dir_deploy_live_alone_allowed_with_warning(self) -> None:
+        # --deploy-live ALONE (no --out-dir) resolves to the live Common dir and
+        # prints the loud warning — the sanctioned promotion route.
+        with tempfile.TemporaryDirectory() as tmp:
+            with mock.patch.object(gen_q10_baseline, "BASELINE_DIR", Path(tmp)):
+                ns = argparse.Namespace(out_dir=None, deploy_live=True)
+                err = io.StringIO()
+                with contextlib.redirect_stderr(err):
+                    resolved = gen_q10_baseline._resolve_out_dir(ns)
+                self.assertEqual(resolved, Path(tmp))
+        self.assertIn("--deploy-live", err.getvalue())
+        self.assertIn("LIVE MT5 Common", err.getvalue())
+
+    def test_write_baseline_into_live_dir_requires_allow_live(self) -> None:
+        # Function-level guard: a direct caller passing the live dir WITHOUT
+        # allow_live=True must raise, never silently move the live distribution.
+        with tempfile.TemporaryDirectory() as tmp:
+            with mock.patch.object(gen_q10_baseline, "BASELINE_DIR", Path(tmp)):
+                with self.assertRaises(gen_q10_baseline.LiveBaselineGuardError):
+                    gen_q10_baseline.write_baseline(
+                        1056, "NDX.DWX", [10.0, -2.0, 4.0], out_dir=Path(tmp)
+                    )
+                # ...and with allow_live=True (the --deploy-live route) it writes.
+                out_path = gen_q10_baseline.write_baseline(
+                    1056, "NDX.DWX", [10.0, -2.0, 4.0],
+                    out_dir=Path(tmp), allow_live=True,
+                )
+                self.assertTrue(out_path.exists())
+                self.assertEqual(out_path.parent, Path(tmp))
+
+    def test_write_baseline_scratch_dir_unaffected_by_guard(self) -> None:
+        # Staging / other dirs are unaffected: a scratch out_dir distinct from
+        # the live dir writes fine with the default allow_live=False.
+        with tempfile.TemporaryDirectory() as live, tempfile.TemporaryDirectory() as scratch:
+            with mock.patch.object(gen_q10_baseline, "BASELINE_DIR", Path(live)):
+                out_path = gen_q10_baseline.write_baseline(
+                    1056, "NDX.DWX", [10.0, -2.0, 4.0], out_dir=Path(scratch)
+                )
+                self.assertTrue(out_path.exists())
+                self.assertEqual(out_path.parent, Path(scratch))
+
+    def test_main_deploy_live_and_out_dir_remain_mutually_exclusive(self) -> None:
+        # The pre-existing mutual-exclusion guard survives the new refusal logic:
+        # passing both flags returns 2 with the mutual-exclusion message before
+        # any directory resolution/refusal runs.
+        with tempfile.TemporaryDirectory() as scratch:
+            argv = [
+                "gen_q10_baseline.py",
+                "--deploy-live",
+                "--out-dir", scratch,
+                "--ea-id", "1056",
+                "--symbol", "NDX.DWX",
+                "--report", "does_not_matter.htm",
+            ]
+            err = io.StringIO()
+            with mock.patch.object(sys, "argv", argv):
+                with contextlib.redirect_stderr(err):
+                    rc = gen_q10_baseline.main()
+        self.assertEqual(rc, 2)
+        self.assertIn("mutually exclusive", err.getvalue())
+
+    def test_trigger_baseline_capture_targets_staging_not_common(self) -> None:
+        # The automated Q10-PASS trigger must pass --out-dir=STAGING and never
+        # --deploy-live, so an automated PASS cannot publish into live Common.
+        captured: dict = {}
+
+        def fake_run(args, **_kwargs):
+            captured["args"] = args
+            return subprocess.CompletedProcess(args=args, returncode=0, stdout="ok", stderr="")
+
+        with mock.patch.object(q10_confirmation.subprocess, "run", side_effect=fake_run):
+            ok = q10_confirmation.trigger_baseline_capture(1056, "NDX.DWX", "C:/x/report.htm")
+
+        self.assertTrue(ok)
+        args = captured["args"]
+        self.assertIn("--out-dir", args)
+        out_dir_val = args[args.index("--out-dir") + 1]
+        self.assertEqual(Path(out_dir_val), gen_q10_baseline.STAGING_DIR)
+        self.assertNotIn("--deploy-live", args)
+
     def _run_confirmation_with_summary(self, summary: dict) -> dict:
         with tempfile.TemporaryDirectory() as tmp:
             report_root = Path(tmp)
             summary_dir = report_root / "QM5_1056" / "20260101"
-            summary_dir.mkdir(parents=True)
             summary_path = summary_dir / "summary.json"
-            summary_path.write_text(json.dumps(summary), encoding="utf-8")
+            report_path = summary_dir / "raw" / "run_01" / "report.htm"
             setfile = report_root / "baseline.set"
             setfile.write_text("", encoding="utf-8")
 
-            completed = subprocess.CompletedProcess(args=["pwsh.exe"], returncode=0, stdout="", stderr="")
-            with mock.patch.object(q10_confirmation.subprocess, "run", return_value=completed) as run:
+            def fake_run(_args, **_kwargs):
+                payload = dict(summary)
+                payload.setdefault("ea_id", 1056)
+                payload.setdefault("expert", "QM/QM5_1056_dummy/QM5_1056_dummy")
+                payload.setdefault("symbol", "NDX.DWX")
+                payload.setdefault("period", "H1")
+                payload.setdefault("terminal", "T2")
+                runs = [dict(run) for run in payload.get("runs") or []]
+                if runs:
+                    report_path.parent.mkdir(parents=True)
+                    report_path.write_text("<html></html>", encoding="utf-8")
+                    runs[-1]["report_canonical_path"] = str(report_path)
+                    payload["runs"] = runs
+                summary_dir.mkdir(parents=True, exist_ok=True)
+                summary_path.write_text(json.dumps(payload), encoding="utf-8")
+                # `_summary_matches_run` rejects a summary whose mtime predates the
+                # invocation's `started_at`. That guard is right for production, where the
+                # tester takes minutes, but this fake writes the file within microseconds of
+                # `time.time()` being sampled — and `st_mtime` and `time.time()` do not share
+                # a clock, so the comparison can go either way. Push the mtime unambiguously
+                # forward so the test exercises the verdict logic instead of the race.
+                future = time.time() + 5
+                os.utime(summary_path, (future, future))
+                if runs:
+                    os.utime(report_path, (future, future))
+                return subprocess.CompletedProcess(
+                    args=["pwsh.exe"],
+                    returncode=0,
+                    stdout=f"run_smoke.summary={summary_path}\n",
+                    stderr="",
+                )
+
+            with mock.patch.object(q10_confirmation.subprocess, "run", side_effect=fake_run) as run:
                 result = q10_confirmation.run_confirmation(
                     ea_id=1056,
                     ea_expert="QM/QM5_1056_dummy/QM5_1056_dummy",

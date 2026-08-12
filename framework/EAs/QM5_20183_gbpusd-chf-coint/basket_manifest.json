@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_20183_GBPUSD_USDCHF_COINTEGRATION_D1",
+  "host_symbol": "GBPUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "GBPUSD.DWX",
+    "USDCHF.DWX"
+  ],
+  "notes": [
+    "Two-leg GBPUSD/USDCHF D1 cointegration sleeve selected as the highest-OOS-ranked pair from the sign-aware 66-pair scan without a dedicated cointegration build.",
+    "The fixed beta is negative, so long spread buys both legs and short spread sells both legs. Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget."
+  ]
+}

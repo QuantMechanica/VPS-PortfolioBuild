@@ -1,0 +1,385 @@
+{
+  "control": {
+    "adverse": {
+      "daily_breach_pct": 21.255349500713265,
+      "max_breach_pct": 12.696148359486447,
+      "not_reached_pct": 14.693295292439373,
+      "pass_pct": 51.35520684736091
+    },
+    "name": "fixed_25",
+    "threshold": {
+      "daily_breach_pct": 0.0,
+      "max_breach_pct": 0.0,
+      "not_reached_pct": 40.94151212553495,
+      "pass_pct": 59.05848787446505
+    }
+  },
+  "development_years": [
+    2018,
+    2019,
+    2021,
+    2022
+  ],
+  "evaluated_candidates": 10,
+  "leaderboard": [
+    {
+      "adverse": {
+        "daily_breach_pct": 18.972895863052784,
+        "max_breach_pct": 11.198288159771755,
+        "not_reached_pct": 20.470756062767475,
+        "pass_pct": 49.35805991440799
+      },
+      "base_risk_multiplier": 22.0,
+      "development_survivor": false,
+      "name": "pf22_a",
+      "pass_deltas": {
+        "adverse_pass_pct_points": -1.9971469329529228,
+        "threshold_pass_pct_points": -1.7118402282453644
+      },
+      "profit_risk_steps": [
+        [
+          2000.0,
+          25.0
+        ],
+        [
+          5000.0,
+          32.0
+        ],
+        [
+          8000.0,
+          40.0
+        ]
+      ],
+      "threshold": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 42.65335235378031,
+        "pass_pct": 57.34664764621969
+      }
+    },
+    {
+      "adverse": {
+        "daily_breach_pct": 17.68901569186876,
+        "max_breach_pct": 11.554921540656206,
+        "not_reached_pct": 21.82596291012839,
+        "pass_pct": 48.93009985734665
+      },
+      "base_risk_multiplier": 22.0,
+      "development_survivor": false,
+      "name": "pf22_b",
+      "pass_deltas": {
+        "adverse_pass_pct_points": -2.425106990014264,
+        "threshold_pass_pct_points": -2.353780313837376
+      },
+      "profit_risk_steps": [
+        [
+          3000.0,
+          27.0
+        ],
+        [
+          6000.0,
+          35.0
+        ],
+        [
+          8500.0,
+          45.0
+        ]
+      ],
+      "threshold": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 43.295292439372325,
+        "pass_pct": 56.704707560627675
+      }
+    },
+    {
+      "adverse": {
+        "daily_breach_pct": 15.335235378031383,
+        "max_breach_pct": 13.12410841654779,
+        "not_reached_pct": 24.10841654778887,
+        "pass_pct": 47.43223965763195
+      },
+      "base_risk_multiplier": 20.0,
+      "development_survivor": false,
+      "name": "pf20_b",
+      "pass_deltas": {
+        "adverse_pass_pct_points": -3.9229671897289577,
+        "threshold_pass_pct_points": -3.85164051355207
+      },
+      "profit_risk_steps": [
+        [
+          2000.0,
+          25.0
+        ],
+        [
+          5000.0,
+          35.0
+        ],
+        [
+          8000.0,
+          45.0
+        ]
+      ],
+      "threshold": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 44.79315263908702,
+        "pass_pct": 55.20684736091298
+      }
+    },
+    {
+      "adverse": {
+        "daily_breach_pct": 13.55206847360913,
+        "max_breach_pct": 7.703281027104136,
+        "not_reached_pct": 29.600570613409417,
+        "pass_pct": 49.14407988587732
+      },
+      "base_risk_multiplier": 18.0,
+      "development_survivor": false,
+      "name": "pf18_a",
+      "pass_deltas": {
+        "adverse_pass_pct_points": -2.2111269614835933,
+        "threshold_pass_pct_points": -5.064194008559198
+      },
+      "profit_risk_steps": [
+        [
+          1000.0,
+          22.0
+        ],
+        [
+          3000.0,
+          28.0
+        ],
+        [
+          6000.0,
+          36.0
+        ]
+      ],
+      "threshold": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 46.00570613409415,
+        "pass_pct": 53.99429386590585
+      }
+    },
+    {
+      "adverse": {
+        "daily_breach_pct": 17.546362339514978,
+        "max_breach_pct": 12.482168330955776,
+        "not_reached_pct": 23.75178316690442,
+        "pass_pct": 46.219686162624825
+      },
+      "base_risk_multiplier": 20.0,
+      "development_survivor": false,
+      "name": "pf20_a",
+      "pass_deltas": {
+        "adverse_pass_pct_points": -5.135520684736086,
+        "threshold_pass_pct_points": -4.778887303851647
+      },
+      "profit_risk_steps": [
+        [
+          1000.0,
+          25.0
+        ],
+        [
+          4000.0,
+          30.0
+        ],
+        [
+          7000.0,
+          40.0
+        ]
+      ],
+      "threshold": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 45.72039942938659,
+        "pass_pct": 54.279600570613404
+      }
+    },
+    {
+      "adverse": {
+        "daily_breach_pct": 13.837375178316691,
+        "max_breach_pct": 7.703281027104136,
+        "not_reached_pct": 29.95720399429387,
+        "pass_pct": 48.502139800285306
+      },
+      "base_risk_multiplier": 18.0,
+      "development_survivor": false,
+      "name": "pf18_b",
+      "pass_deltas": {
+        "adverse_pass_pct_points": -2.853067047075605,
+        "threshold_pass_pct_points": -6.276747503566341
+      },
+      "profit_risk_steps": [
+        [
+          2000.0,
+          22.0
+        ],
+        [
+          5000.0,
+          30.0
+        ],
+        [
+          8000.0,
+          40.0
+        ]
+      ],
+      "threshold": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 47.21825962910128,
+        "pass_pct": 52.78174037089871
+      }
+    },
+    {
+      "adverse": {
+        "daily_breach_pct": 29.885877318116975,
+        "max_breach_pct": 13.052781740370897,
+        "not_reached_pct": 13.12410841654779,
+        "pass_pct": 43.93723252496434
+      },
+      "base_risk_multiplier": 25.0,
+      "development_survivor": false,
+      "name": "pf25_a",
+      "pass_deltas": {
+        "adverse_pass_pct_points": -7.417974322396574,
+        "threshold_pass_pct_points": -2.353780313837376
+      },
+      "profit_risk_steps": [
+        [
+          2000.0,
+          30.0
+        ],
+        [
+          5000.0,
+          35.0
+        ],
+        [
+          8000.0,
+          45.0
+        ]
+      ],
+      "threshold": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 43.295292439372325,
+        "pass_pct": 56.704707560627675
+      }
+    },
+    {
+      "adverse": {
+        "daily_breach_pct": 12.553495007132668,
+        "max_breach_pct": 7.0613409415121255,
+        "not_reached_pct": 33.309557774607704,
+        "pass_pct": 47.07560627674751
+      },
+      "base_risk_multiplier": 15.0,
+      "development_survivor": false,
+      "name": "pf15_a",
+      "pass_deltas": {
+        "adverse_pass_pct_points": -4.279600570613404,
+        "threshold_pass_pct_points": -7.417974322396574
+      },
+      "profit_risk_steps": [
+        [
+          1000.0,
+          20.0
+        ],
+        [
+          3000.0,
+          25.0
+        ],
+        [
+          6000.0,
+          35.0
+        ]
+      ],
+      "threshold": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 48.35948644793152,
+        "pass_pct": 51.64051355206848
+      }
+    },
+    {
+      "adverse": {
+        "daily_breach_pct": 11.126961483594865,
+        "max_breach_pct": 7.0613409415121255,
+        "not_reached_pct": 35.092724679029956,
+        "pass_pct": 46.718972895863054
+      },
+      "base_risk_multiplier": 15.0,
+      "development_survivor": false,
+      "name": "pf15_b",
+      "pass_deltas": {
+        "adverse_pass_pct_points": -4.636233951497857,
+        "threshold_pass_pct_points": -8.202567760342376
+      },
+      "profit_risk_steps": [
+        [
+          2000.0,
+          20.0
+        ],
+        [
+          5000.0,
+          30.0
+        ],
+        [
+          8000.0,
+          40.0
+        ]
+      ],
+      "threshold": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 49.14407988587732,
+        "pass_pct": 50.855920114122675
+      }
+    },
+    {
+      "adverse": {
+        "daily_breach_pct": 28.744650499286735,
+        "max_breach_pct": 13.052781740370897,
+        "not_reached_pct": 15.121255349500714,
+        "pass_pct": 43.081312410841655
+      },
+      "base_risk_multiplier": 25.0,
+      "development_survivor": false,
+      "name": "pf25_b",
+      "pass_deltas": {
+        "adverse_pass_pct_points": -8.273894436519257,
+        "threshold_pass_pct_points": -3.9229671897289577
+      },
+      "profit_risk_steps": [
+        [
+          3000.0,
+          30.0
+        ],
+        [
+          6000.0,
+          40.0
+        ],
+        [
+          8500.0,
+          50.0
+        ]
+      ],
+      "threshold": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 44.864479315263914,
+        "pass_pct": 55.13552068473609
+      }
+    }
+  ],
+  "manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "predeclaration": "artifacts/ftmo_incumbent_profit_feedback_predeclaration_2026-07-12.json",
+  "scenario": "path_01_11095_gbpusd_down2",
+  "schema_version": 1,
+  "selection_uses_sealed": false,
+  "selection_uses_validation": false,
+  "status": "NO_DEVELOPMENT_SURVIVOR",
+  "survivor_count": 0,
+  "survivors": []
+}

@@ -31,7 +31,7 @@ framework/
 To build a new V5 EA:
 
 1. Research writes a Strategy Card → `strategy-seeds/cards/QM5_NNNN_<slug>_card.md`
-2. CEO + CTO allocate `ea_id` → row in `framework/registry/ea_id_registry.csv`
+2. Allocate `ea_id` through the deterministic registry procedure after OWNER G0 approval
 3. Copy `framework/templates/EA_Skeleton.mq5` to `framework/EAs/QM5_NNNN_<slug>/QM5_NNNN_<slug>.mq5`
 4. Fill in strategy logic
 5. `framework/scripts/compile_one.ps1 -EAPath ...` must pass strict
@@ -50,7 +50,7 @@ Factory deploy helpers (idempotent):
 
 ```powershell
 pwsh -File framework/scripts/deploy_ea_to_all_terminals.ps1 -EaPath D:\QM\mt5\T1\MQL5\Experts\QM\QM5_1002_davey-eu-night.ex5
-pwsh -File framework/scripts/deploy_ea_manifest_to_all_terminals.ps1 -EvidenceJsonPath C:\QM\repo\docs\ops\QUA-411_DEPLOY_MANIFEST_T1_T10_2026-04-28.json
+pwsh -File framework/scripts/deploy_ea_manifest_to_all_terminals.ps1 -EvidenceJsonPath D:\QM\reports\deploy\<owner-signed-manifest>.json
 ```
 
 Single-EA helper success line format:

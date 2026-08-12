@@ -30,6 +30,11 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
     import agent_scopes  # type: ignore
 
+try:
+    from tools.strategy_farm import quota_spawn_gate
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    import quota_spawn_gate  # type: ignore
+
 
 DEFAULT_ROOT = farmctl.DEFAULT_ROOT
 CLAUDE_DISABLED_FLAG = Path(r"D:\QM\strategy_farm\CLAUDE_DISABLED.flag")
@@ -60,11 +65,47 @@ TASK_TYPE_CAPABILITIES: dict[str, list[str]] = {
     "review_strategy": ["review", "strategy"],
     "build_ea": ["code"],
     "review_ea": ["review", "code"],
-    "pipeline_run": ["pipeline"],
     "triage_failure": ["ops", "review"],
     "ops_issue": ["ops", "code"],
     "agent_learn": ["research"],
 }
+
+# Task types deliberately removed from the agent lane. `pipeline_run` required
+# capability `pipeline`, which no enabled agent declares — so it was
+# deterministically unroutable (census 2026-07-27 rank 12: a priority-99 row
+# returned no_available_agent three times and had to be re-filed). It is NOT
+# re-added by giving an agent the `pipeline` capability: a pipeline VERDICT is
+# produced only by the deterministic Q02–Q10 backtest factory (work_items +
+# phase runners + T1–T10), never by an AI worker (Hard Rule: "Pipeline verdicts
+# come only from the pipeline"). Running a pipeline phase is factory work
+# (farmctl pump / phase runners), not an agent_tasks lane. Code/ops work that a
+# `pipeline_run` row was standing in for must be filed as `ops_issue`.
+REMOVED_TASK_TYPES: dict[str, str] = {
+    "pipeline_run": (
+        "pipeline_run is retired from the agent router: pipeline verdicts come "
+        "only from the Q02–Q10 factory, not an agent. File code/ops work as ops_issue."
+    ),
+}
+
+# Contractual exit semantics for the three limbo states that the deterministic
+# router never selects (census 2026-07-27 ranks 4/5/8). The canonical contract
+# (AI Agent Routing and Role Contracts.md) is
+#   BACKLOG -> TODO -> IN_PROGRESS -> REVIEW -> APPROVED -> PIPELINE -> PASSED
+#   \-> FAILED / RECYCLE / OPS_FIX_REQUIRED / BLOCKED
+# and defines APPROVED as "formally clean enough for the next deterministic
+# process to start". For a build that next process is the backtest pipeline, so
+# build_ea APPROVED advances to PIPELINE. For every other task type there is NO
+# further deterministic pipeline (a research card / review / ops report / triage
+# has no MT5 gate), so APPROVED is already the accepted terminal and resolves to
+# PASSED — pushing those into PIPELINE would only mint a new dead end where no
+# pipeline verdict can ever arrive.
+PIPELINE_BOUND_TASK_TYPES = {"build_ea"}
+# A recycled task is re-queued for another attempt, but bounded so a permanently
+# unbuildable card cannot loop forever; past the cap it parks in BLOCKED for a
+# human. Closing phases whose PASS/FAIL is the per-EA verdict.
+RECYCLE_MAX_ATTEMPTS = 3
+CLOSING_PIPELINE_PHASES = ("Q10", "P8")
+LIMBO_STATES = ("RECYCLE", "APPROVED", "PIPELINE")
 
 DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
     "codex": {
@@ -148,6 +189,42 @@ class RouteDecision:
 
 def _json(data: Any) -> str:
     return json.dumps(data, sort_keys=True, separators=(",", ":"))
+
+
+def _directory_artifact_error(artifact_path: str | None) -> dict[str, str] | None:
+    """Refuse to RECORD a directory where a task artifact must be a FILE.
+
+    Census 2026-07-27 rank 9: a directory recorded in artifact_path expanded the
+    build-guardrail scan to the whole framework/EAs tree and timed out repeatedly
+    on close-review. The multi-path semicolon form (fixed the same day, four
+    review_strategy tasks depend on it) is preserved: each part is checked
+    independently. Only an *existing* directory is rejected — a not-yet-written
+    file path is allowed, because artifacts are often recorded before they land.
+    """
+    if not artifact_path:
+        return None
+    for part in str(artifact_path).split(";"):
+        part = part.strip()
+        if not part:
+            continue
+        path = Path(part)
+        if not path.is_absolute():
+            path = farmctl.REPO_ROOT / path
+        try:
+            is_dir = path.is_dir()
+        except OSError:
+            continue
+        if is_dir:
+            return {
+                "reason": "artifact_must_be_file_not_directory",
+                "artifact_path": part,
+                "detail": (
+                    "a task artifact must be a single evidence file, not a directory; "
+                    "point at the specific file (e.g. build_result.json / a report.csv), "
+                    "not the EA folder"
+                ),
+            }
+    return None
 
 
 def _effective_claude_disabled_flag(root: Path, claude_disabled_flag: Path) -> Path:
@@ -291,10 +368,15 @@ def enqueue_task(
     artifact_path: str | None = None,
     payload: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    if task_type in REMOVED_TASK_TYPES:
+        raise ValueError(REMOVED_TASK_TYPES[task_type])
     if task_type not in TASK_TYPE_CAPABILITIES:
         raise ValueError(f"unknown task_type: {task_type}")
     if state not in TASK_STATES:
         raise ValueError(f"unknown state: {state}")
+    dir_err = _directory_artifact_error(artifact_path)
+    if dir_err is not None:
+        raise ValueError(f"{dir_err['reason']}: {dir_err['artifact_path']}")
     capabilities = required_capabilities or TASK_TYPE_CAPABILITIES[task_type]
     skills = required_skills or []
     task_id = str(uuid.uuid4())
@@ -511,7 +593,50 @@ def _eligible_agents(conn: sqlite3.Connection, required: set[str], root: Path = 
     return eligible
 
 
-def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG) -> RouteDecision:
+def _quota_gate_decision(
+    root: Path,
+    task: sqlite3.Row,
+    agent_id: str,
+    *,
+    enabled: bool | None,
+    config_path: Path | None,
+    state_path: Path | None,
+    summary_path: Path | None,
+) -> dict[str, Any]:
+    enforce = (Path(root) == Path(DEFAULT_ROOT)) if enabled is None else bool(enabled)
+    if agent_id not in quota_spawn_gate.GATED_AGENTS or not enforce:
+        return {
+            "allowed": True,
+            "agent": agent_id,
+            "reason": "quota_gate_not_applicable",
+            "enforced": False,
+        }
+    try:
+        task_payload = json.loads(task["payload_json"] or "{}")
+    except (TypeError, json.JSONDecodeError):
+        task_payload = {}
+    decision = quota_spawn_gate.evaluate_spawn(
+        agent_id,
+        str(task["task_type"]),
+        int(task["priority"]),
+        config_path=config_path,
+        state_path=state_path,
+        summary_path=summary_path,
+        payload=task_payload,
+    )
+    decision["enforced"] = True
+    return decision
+
+
+def route_once(
+    root: Path = DEFAULT_ROOT,
+    *,
+    claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG,
+    quota_gate_enabled: bool | None = None,
+    quota_config_path: Path | None = None,
+    quota_state_path: Path | None = None,
+    quota_summary_path: Path | None = None,
+) -> RouteDecision:
     sync_default_registry(root, claude_disabled_flag=claude_disabled_flag)
     release_stale_in_progress(root)
     now_dt = dt.datetime.now(dt.UTC).replace(microsecond=0)
@@ -523,7 +648,6 @@ def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE
             SELECT * FROM agent_tasks
             WHERE state IN ('BACKLOG', 'TODO')
             ORDER BY priority DESC, updated_at ASC, created_at ASC
-            LIMIT 25
             """
         ).fetchall()
         if not tasks:
@@ -531,7 +655,8 @@ def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE
             return RouteDecision("", "", None, "no_routable_task")
         declared_caps = _declared_registry_capabilities(conn)
         skipped: list[str] = []
-        selected: tuple[sqlite3.Row, sqlite3.Row, set[str]] | None = None
+        selected: tuple[sqlite3.Row, sqlite3.Row, set[str], dict[str, Any]] | None = None
+        quota_blocked: list[dict[str, Any]] = []
         for task in tasks:
             required = set(json.loads(task["required_capabilities_json"] or "[]"))
             # required_skills gate routing too — but only skills some agent
@@ -548,19 +673,50 @@ def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE
             if not agents:
                 skipped.append(task["id"])
                 continue
-            if not _acquire_task_lease(conn, task["id"], agents[0]["agent_id"], now_dt):
+            chosen_agent: sqlite3.Row | None = None
+            chosen_gate: dict[str, Any] | None = None
+            for agent in agents:
+                gate = _quota_gate_decision(
+                    root,
+                    task,
+                    str(agent["agent_id"]),
+                    enabled=quota_gate_enabled,
+                    config_path=quota_config_path,
+                    state_path=quota_state_path,
+                    summary_path=quota_summary_path,
+                )
+                if gate.get("allowed"):
+                    chosen_agent = agent
+                    chosen_gate = gate
+                    break
+                quota_blocked.append({"task_id": task["id"], **gate})
+                _record_lease_event(
+                    conn,
+                    task["id"],
+                    "quota_gate_blocked",
+                    {key: value for key, value in gate.items() if key != "metrics"},
+                )
+            if chosen_agent is None or chosen_gate is None:
                 skipped.append(task["id"])
                 continue
-            selected = (task, agents[0], required)
+            if not _acquire_task_lease(conn, task["id"], chosen_agent["agent_id"], now_dt):
+                skipped.append(task["id"])
+                continue
+            selected = (task, chosen_agent, required, chosen_gate)
             break
         if selected is None:
             conn.commit()
             first = tasks[0]
-            return RouteDecision(first["id"], first["task_type"], None, "no_available_agent")
-        task, agent, required = selected
+            reason = "quota_gate_blocked" if quota_blocked else "no_available_agent"
+            return RouteDecision(first["id"], first["task_type"], None, reason)
+        task, agent, required, gate = selected
         payload = json.loads(task["payload_json"] or "{}")
         payload["routed_at"] = now
         payload["required_capabilities"] = sorted(required)
+        if gate.get("enforced"):
+            payload["quota_gate"] = gate
+            if gate.get("tier_escalation"):
+                payload["quota_tier_escalation"] = gate["tier_escalation"]
         if skipped:
             payload["router_skipped_blocked_task_count"] = len(skipped)
         conn.execute(
@@ -580,6 +736,10 @@ def route_many(
     *,
     max_routes: int = 5,
     claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG,
+    quota_gate_enabled: bool | None = None,
+    quota_config_path: Path | None = None,
+    quota_state_path: Path | None = None,
+    quota_summary_path: Path | None = None,
 ) -> list[dict[str, Any]]:
     """Route up to `max_routes` waiting tickets.
 
@@ -589,7 +749,14 @@ def route_many(
     """
     decisions: list[dict[str, Any]] = []
     for _ in range(max(0, max_routes)):
-        decision = route_once(root, claude_disabled_flag=claude_disabled_flag)
+        decision = route_once(
+            root,
+            claude_disabled_flag=claude_disabled_flag,
+            quota_gate_enabled=quota_gate_enabled,
+            quota_config_path=quota_config_path,
+            quota_state_path=quota_state_path,
+            quota_summary_path=quota_summary_path,
+        )
         decisions.append(decision.__dict__)
         if decision.reason != "assigned":
             break
@@ -630,10 +797,18 @@ def directed_research_targets(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
     """
     try:
         import research_matrix
+    except ModuleNotFoundError:
+        try:
+            from tools.strategy_farm import research_matrix
+        except Exception as exc:  # pragma: no cover - defensive
+            return {"available": False, "ranked_targets": [], "reason": f"matrix_unavailable:{exc}"}
     except Exception as exc:  # pragma: no cover - defensive
         return {"available": False, "ranked_targets": [], "reason": f"matrix_unavailable:{exc}"}
     try:
-        sc = research_matrix.sleeve_coverage()
+        sc = research_matrix.sleeve_coverage(
+            db_path=farmctl.db_path(root),
+            cards_dir=root / CARDS_APPROVED_REL,
+        )
     except Exception as exc:  # pragma: no cover - defensive
         return {"available": False, "ranked_targets": [], "reason": f"matrix_error:{exc}"}
     return {
@@ -835,7 +1010,11 @@ def status(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE_DIS
                 """
             ).fetchall()
         ]
-    return {"agents": agents, "tasks": tasks}
+    return {
+        "agents": agents,
+        "tasks": tasks,
+        "quota_headroom": quota_spawn_gate.read_headroom_summary(),
+    }
 
 
 def list_tasks(root: Path = DEFAULT_ROOT, agent_id: str | None = None, state: str | None = None) -> list[dict[str, Any]]:
@@ -891,6 +1070,9 @@ def update_task(
         row = conn.execute("SELECT * FROM agent_tasks WHERE id=?", (task_id,)).fetchone()
         if not row:
             return {"updated": False, "task_id": task_id, "reason": "task_not_found"}
+        dir_err = _directory_artifact_error(artifact_path)
+        if dir_err is not None:
+            return {"updated": False, "task_id": task_id, **dir_err}
         if row["task_type"] == "research_strategy" and state == "REVIEW" and artifact_path:
             try:
                 resolved_artifact = Path(artifact_path).resolve()
@@ -993,6 +1175,7 @@ def update_task(
                     "reason": "codex_review_required_for_gemini_code",
                     "source_task_id": task_id,
                     "source_agent": "gemini",
+                    "source_execution_backend": "agy",
                     "source_task_type": row["task_type"],
                     "source_artifact_path": artifact_path or row["artifact_path"],
                     "source_verdict": verdict,
@@ -1034,7 +1217,15 @@ def update_task(
     }
 
 
-def _task_artifact_path(root: Path, row: sqlite3.Row, artifact_path: str | None) -> Path | None:
+def _task_artifact_paths(root: Path, row: sqlite3.Row, artifact_path: str | None) -> list[Path]:
+    """Every artifact a task cites, as absolute paths.
+
+    Agents that produce several pieces of evidence record them as one
+    semicolon-separated string. Treating that string as a single filename made
+    every such task permanently unapprovable with reason 'artifact_missing' -
+    four review_strategy tasks sat in REVIEW for two days that way, each with all
+    of its artifacts present on disk.
+    """
     candidate = artifact_path or row["artifact_path"]
     if not candidate:
         try:
@@ -1043,11 +1234,23 @@ def _task_artifact_path(root: Path, row: sqlite3.Row, artifact_path: str | None)
             payload = {}
         candidate = payload.get("closeout_artifact") or payload.get("expected_artifact")
     if not candidate:
-        return None
-    path = Path(str(candidate))
-    if not path.is_absolute():
-        path = farmctl.REPO_ROOT / path
-    return path
+        return []
+    out = []
+    for part in str(candidate).split(";"):
+        part = part.strip()
+        if not part:
+            continue
+        path = Path(part)
+        if not path.is_absolute():
+            path = farmctl.REPO_ROOT / path
+        out.append(path)
+    return out
+
+
+def _task_artifact_path(root: Path, row: sqlite3.Row, artifact_path: str | None) -> Path | None:
+    """The task's primary artifact - the first one it cites."""
+    paths = _task_artifact_paths(root, row, artifact_path)
+    return paths[0] if paths else None
 
 
 try:
@@ -1070,6 +1273,13 @@ def close_review_task(
         raise ValueError(f"close_state must be one of {sorted(REVIEW_CLOSE_STATES)}")
     if not verdict.strip():
         raise ValueError("verdict is required")
+    if close_state == "APPROVED" and _is_safe_defer_verdict(verdict):
+        return {
+            "closed": False,
+            "task_id": task_id,
+            "reason": "safe_defer_must_be_blocked",
+            "detail": "SAFE_DEFER records unfinished work and cannot use the APPROVED/PASSED path",
+        }
     now = farmctl.utc_now()
     with closing(connect(root)) as conn:
         row = conn.execute("SELECT * FROM agent_tasks WHERE id=?", (task_id,)).fetchone()
@@ -1077,16 +1287,34 @@ def close_review_task(
             return {"closed": False, "task_id": task_id, "reason": "task_not_found"}
         if row["state"] != "REVIEW":
             return {"closed": False, "task_id": task_id, "reason": f"not_in_review:{row['state']}"}
-        evidence = _task_artifact_path(root, row, artifact_path)
+        dir_err = _directory_artifact_error(artifact_path)
+        if dir_err is not None:
+            return {"closed": False, "task_id": task_id, **dir_err}
+        all_evidence = _task_artifact_paths(root, row, artifact_path)
+        evidence = all_evidence[0] if all_evidence else None
         if close_state == "APPROVED":
             if evidence is None:
                 return {"closed": False, "task_id": task_id, "reason": "approval_requires_artifact"}
-            if not evidence.exists():
+            missing = [p for p in all_evidence if not p.exists()]
+            if missing:
                 return {
                     "closed": False,
                     "task_id": task_id,
                     "reason": "artifact_missing",
-                    "artifact_path": str(evidence),
+                    "artifact_path": ";".join(str(p) for p in missing),
+                }
+            # Never hand a directory to the build guardrails: evidence.parent on a
+            # directory artifact is the EAs root, which made validate_path walk the
+            # whole framework/EAs tree and time out (census rank 9). Refuse here so
+            # a pre-existing directory row cannot trip the scan on close.
+            dir_evidence = [str(p) for p in all_evidence if p.is_dir()]
+            if dir_evidence:
+                return {
+                    "closed": False,
+                    "task_id": task_id,
+                    "reason": "artifact_must_be_file_not_directory",
+                    "artifact_path": ";".join(dir_evidence),
+                    "detail": "point the artifact at a single evidence file, not the EA folder",
                 }
             # Hard-Rule backstop: never approve a build that violates the deterministic
             # build guardrails - news-staleness bypass (qm_news_stale_max_hours > 336) or
@@ -1108,6 +1336,13 @@ def close_review_task(
         payload["review_closed_at"] = now
         payload["review_close_state"] = close_state
         payload["review_close_verdict"] = verdict
+        if close_state == "RECYCLE":
+            try:
+                prior_recycle_count = max(0, int(payload.get("recycle_count") or 0))
+            except (TypeError, ValueError):
+                prior_recycle_count = 0
+            payload["recycle_count"] = prior_recycle_count + 1
+            payload["recycle_count_recorded_at_review"] = now
         if note:
             payload["review_close_note"] = note
         conn.execute(
@@ -1134,6 +1369,193 @@ def close_review_task(
         "state": close_state,
         "verdict": verdict,
         "artifact_path": str(evidence) if evidence else artifact_path,
+    }
+
+
+def _task_ea_id(payload: dict[str, Any]) -> str | None:
+    """The EA a task references, normalized to the 'QM5_<num>' work_items key."""
+    raw = payload.get("ea_id") or payload.get("card_id")
+    if not raw:
+        return None
+    m = re.search(r"(\d{3,6})", str(raw))
+    return f"QM5_{m.group(1)}" if m else None
+
+
+def _is_safe_defer_verdict(value: Any) -> bool:
+    """Return true only for the explicit SAFE_DEFER verdict family."""
+    text = str(value or "").strip().upper()
+    return re.match(r"^SAFE(?:[\s_-]+)DEFER\b", text) is not None
+
+
+def _ea_pipeline_verdict(conn: sqlite3.Connection, ea_id: str | None) -> str | None:
+    """The pipeline's closing verdict for an EA, READ from work_items — never
+    manufactured (Hard Rule: pipeline verdicts come only from the pipeline).
+
+    PASS wins over FAIL when both exist (a later full-history PASS supersedes an
+    earlier fail). Returns None while the EA is still in flight — no closing-phase
+    (Q10/P8) terminal row — so an in-flight PIPELINE task is LEFT in place rather
+    than forced to a verdict it has not earned.
+    """
+    if not ea_id:
+        return None
+    placeholders = ",".join("?" for _ in CLOSING_PIPELINE_PHASES)
+    for want in ("PASS", "FAIL"):
+        try:
+            row = conn.execute(
+                f"""
+                SELECT 1 FROM work_items
+                WHERE ea_id=? AND phase IN ({placeholders})
+                  AND status='done' AND verdict=? LIMIT 1
+                """,
+                (ea_id, *CLOSING_PIPELINE_PHASES, want),
+            ).fetchone()
+        except sqlite3.OperationalError:
+            return None  # work_items table absent (never in production) -> in flight
+        if row:
+            return want
+    return None
+
+
+def _compute_task_exit(
+    conn: sqlite3.Connection, row: sqlite3.Row
+) -> tuple[str | None, str, dict[str, Any]]:
+    """Deterministic, type-aware exit for a limbo-state task.
+
+    Returns (target_state, reason, payload_updates); target_state None means
+    "leave in place" (a legitimately in-flight PIPELINE row, or a non-limbo row).
+    See PIPELINE_BOUND_TASK_TYPES / RECYCLE_MAX_ATTEMPTS for the contract mapping.
+    """
+    state = row["state"]
+    task_type = row["task_type"]
+    try:
+        payload = json.loads(row["payload_json"] or "{}")
+    except (TypeError, json.JSONDecodeError):
+        payload = {}
+
+    # Retired task type (pipeline_run): give the orphan row a terminal home
+    # instead of leaving it structurally unroutable (census rank 12).
+    if task_type in REMOVED_TASK_TYPES:
+        return "BLOCKED", "pipeline_run_retired_not_agent_lane", {}
+
+    if state == "APPROVED":
+        review_verdict = row["verdict"] or payload.get("review_close_verdict")
+        if _is_safe_defer_verdict(review_verdict):
+            return (
+                "BLOCKED",
+                "approved_safe_defer_not_completed",
+                {"safe_defer_reclassified": True},
+            )
+        if task_type in PIPELINE_BOUND_TASK_TYPES:
+            return "PIPELINE", "approved_build_handed_to_pipeline", {}
+        # research / review / ops / triage: APPROVED already IS the accepted
+        # verdict; there is no further MT5 pipeline, so PASSED is the terminal.
+        return "PASSED", "approved_accepted_terminal", {}
+
+    if state == "PIPELINE":
+        verdict = _ea_pipeline_verdict(conn, _task_ea_id(payload))
+        if verdict == "PASS":
+            return "PASSED", "pipeline_closing_verdict_pass", {}
+        if verdict == "FAIL":
+            return "FAILED", "pipeline_closing_verdict_fail", {}
+        return None, "pipeline_in_flight_no_closing_verdict", {}
+
+    if state == "RECYCLE":
+        recycle_count = int(payload.get("recycle_count") or 0)
+        counted_at_review = (
+            payload.get("recycle_count_recorded_at_review")
+            and payload.get("recycle_count_recorded_at_review") == payload.get("review_closed_at")
+        )
+        if recycle_count > RECYCLE_MAX_ATTEMPTS or (
+            recycle_count >= RECYCLE_MAX_ATTEMPTS and not counted_at_review
+        ):
+            # Bounded: a permanently unbuildable card cannot loop forever.
+            return "BLOCKED", "recycle_attempts_exhausted", {}
+        if counted_at_review:
+            return "TODO", "recycle_requeue", {}
+        return "TODO", "recycle_requeue", {"recycle_count": recycle_count + 1}
+
+    return None, "not_a_limbo_state", {}
+
+
+def reconcile_task_exits(
+    root: Path = DEFAULT_ROOT,
+    *,
+    apply: bool = False,
+    limit: int | None = None,
+    states: tuple[str, ...] | list[str] | None = None,
+) -> dict[str, Any]:
+    """Give the three no-exit limbo states their contractual exit (census ranks
+    4/5/8). DRY-RUN by default: it reports what WOULD move and moves nothing.
+
+    It is deliberately NOT wired into the autonomous run_once tick. RECYCLE->TODO
+    re-queues 411 build_ea rows into the build lane — a mass requeue and an OWNER
+    capacity decision — and even the terminal APPROVED->PASSED reclassification
+    of ~200 rows must be a visible, opted-in action, not a silent side effect of
+    a routing tick. Detection (health invariant) runs continuously; remediation
+    is an explicit operator call. Bound it with `limit` and `states` when
+    applying so a single run cannot flood a lane.
+    """
+    target_states = tuple(states) if states else LIMBO_STATES
+    for s in target_states:
+        if s not in LIMBO_STATES:
+            raise ValueError(f"reconcile state must be one of {LIMBO_STATES}: {s}")
+    now = farmctl.utc_now()
+    moved: list[dict[str, Any]] = []
+    would_move: dict[str, int] = {}
+    left_in_place: dict[str, int] = {}
+    placeholders = ",".join("?" for _ in target_states)
+    with closing(connect(root)) as conn:
+        if apply:
+            conn.execute("BEGIN IMMEDIATE")
+        rows = conn.execute(
+            f"SELECT * FROM agent_tasks WHERE state IN ({placeholders}) ORDER BY state, updated_at ASC",
+            tuple(target_states),
+        ).fetchall()
+        n_applied = 0
+        for row in rows:
+            target, reason, payload_updates = _compute_task_exit(conn, row)
+            if target is None:
+                left_in_place[reason] = left_in_place.get(reason, 0) + 1
+                continue
+            key = f"{row['state']}->{target}:{reason}"
+            would_move[key] = would_move.get(key, 0) + 1
+            if not apply or (limit is not None and n_applied >= limit):
+                continue
+            try:
+                payload = json.loads(row["payload_json"] or "{}")
+            except (TypeError, json.JSONDecodeError):
+                payload = {}
+            payload.update(payload_updates)
+            history = list(payload.get("exit_reconciliations") or [])
+            history.append(
+                {"reconciled_at": now, "from_state": row["state"], "to_state": target, "reason": reason}
+            )
+            payload["exit_reconciliations"] = history[-5:]
+            conn.execute(
+                "UPDATE agent_tasks SET state=?, payload_json=?, updated_at=? WHERE id=? AND state=?",
+                (target, _json(payload), now, row["id"], row["state"]),
+            )
+            _release_task_lease(conn, row["id"])
+            n_applied += 1
+            moved.append(
+                {
+                    "task_id": row["id"],
+                    "task_type": row["task_type"],
+                    "from_state": row["state"],
+                    "to_state": target,
+                    "reason": reason,
+                }
+            )
+        if apply:
+            conn.commit()
+    return {
+        "apply": apply,
+        "limit": limit,
+        "states": list(target_states),
+        "would_move": would_move,
+        "left_in_place": left_in_place,
+        "moved_count": len(moved),
+        "moved": moved[:50],
     }
 
 
@@ -1292,6 +1714,18 @@ def main(argv: list[str] | None = None) -> int:
     close.add_argument("--verdict", required=True)
     close.add_argument("--artifact-path")
     close.add_argument("--note")
+    reconcile = sub.add_parser(
+        "reconcile-exits",
+        help="Report/apply contractual exits for the RECYCLE/APPROVED/PIPELINE limbo states (dry-run by default)",
+    )
+    reconcile.add_argument("--apply", action="store_true", help="Perform the transitions (default: dry-run report only)")
+    reconcile.add_argument("--limit", type=int, default=None, help="Max rows to move in one run (bounds a lane flood)")
+    reconcile.add_argument(
+        "--state",
+        action="append",
+        choices=sorted(LIMBO_STATES),
+        help="Restrict to these limbo states (repeatable); default all three",
+    )
     sync_q11 = sub.add_parser("sync-q11-candidates")
     sync_q11.add_argument("--no-admission", action="store_true",
                           help="legacy mirror-all (skip the DL-064 R-064-2 diversification gate)")
@@ -1340,6 +1774,13 @@ def main(argv: list[str] | None = None) -> int:
             verdict=args.verdict,
             artifact_path=args.artifact_path,
             note=args.note,
+        )
+    elif args.command == "reconcile-exits":
+        result = reconcile_task_exits(
+            args.root,
+            apply=args.apply,
+            limit=args.limit,
+            states=args.state,
         )
     elif args.command == "sync-q11-candidates":
         result = sync_q11_candidates(args.root, apply_admission=not args.no_admission)

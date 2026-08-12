@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_297661_pb-dual-stochastic-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_297661_pb-dual-stochastic-system.pdf",
+      "source_pages": "1-3",
+      "source_ref": "Radu Ciofu (handle Radu_C), 'PB dual stochastic system', ForexFactory thread 297661, ~2011, https://www.forexfactory.com/thread/297661 (author site ProfitBursier.ro/en)",
+      "strategy_name": "PB Dual Stochastic Pullback",
+      "concept": "A fast-vs-slow stochastic crossover sets the trend regime, then trades pull-backs (two consecutive opposite candles) in the direction of the fast stochastic.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5: two Stochastic oscillators (green %K72/slow1, red %K285/slow246, levels 76/24) plus 2-candle pattern on EUR/USD M15; deterministic entry+exit, no ML; framework must inject a protective stop (native 'open system' has no SL/TP).",
+      "priority_hint": "LOW",
+      "notes": "Single-post thread, author frames it as an educational example ('not highly profitable', ~6.91%/yr, -14.61% system DD, -785 max trade DD, 2000-2011 spot no leverage). Long: green>red AND green>24 AND two bearish candles -> enter open of 3rd candle; Close Long: green<red AND two bullish candles. Short: green<red AND green<76 AND two bullish candles; Close Short: green>red AND two bearish candles. Highly specific optimized params (285/246) smell of overfit; indicator-only exits, no native SL/TP -> add framework protective stop + Friday-close. Just another EUR/USD FX indicator variant, low uncorrelated-driver value."
+    }
+  ],
+  "notes": []
+}

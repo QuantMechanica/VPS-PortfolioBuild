@@ -7,7 +7,7 @@ Template created: 2026-05-09 by Documentation-KM (QUA-1068)
 
 # Build-in-Public Pack: {{CARD_NAME}}
 
-**Status:** DRAFT — pending CEO + OWNER sign-off. Do NOT publish.
+**Status:** DRAFT — pending OWNER sign-off. Do NOT publish.
 **Drafted by:** Documentation-KM
 **Drafted on:** {{DATE_YYYY-MM-DD}}
 **Source issue:** {{QUA_ISSUE_ID}}
@@ -150,12 +150,12 @@ for the keyboard.
 - [ ] Reproducibility block verified: `git show {{COMMIT_SHA}}` returns the expected EA and summary files.
 - [ ] Buy-me-a-coffee URL confirmed by OWNER (not committed to repo).
 - [ ] Support CTA is visually separated from any performance/portfolio claims in the final publish.
-- [ ] CEO sign-off obtained.
+- [ ] OWNER sign-off obtained.
 - [ ] OWNER sign-off obtained (required before any publish action).
 
 ## 10. Approvals
 
-- [ ] CEO sign-off — agent `7795b4b0-8ecd-46da-ab22-06def7c8fa2d`
+- [ ] OWNER sign-off recorded with date and evidence path
 - [ ] OWNER sign-off — voice, scope, publish go/no-go
 
 **No publish without both.**

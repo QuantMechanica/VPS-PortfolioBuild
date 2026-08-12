@@ -3,7 +3,7 @@
 ; ea_id:        11165
 ; ea_slug:      weiss-rsi-ma
 ; ea_version:   v5.0
-; set_version:  s20260607-001
+; set_version:  s20260717-wave
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
@@ -31,4 +31,14 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=ea_input_defaults (materialized 2026-07-17: setgen param-empty repair;
+; values are the EA's compiled input defaults - the exact config every prior run used)
+strategy_timeframe=16385
+strategy_rsi_period=9
+strategy_sma_period=200
+strategy_long_rsi=25.0
+strategy_short_rsi=75.0
+strategy_exit_rsi=50.0
+strategy_stop_pct=1.0
+strategy_max_hold_bars=60
+strategy_max_spread_pts=0

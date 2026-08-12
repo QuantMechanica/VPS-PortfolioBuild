@@ -370,7 +370,7 @@ bool Strategy_ExitSignal()
    if(bar_seconds > 0 && open_time > 0 && TimeCurrent() - open_time >= strategy_time_exit_h4_bars * bar_seconds)
       return true;
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_H4))
       return false;
 
    if(g_qm10939_retrace_exit <= 0.0)
@@ -422,6 +422,11 @@ int OnInit()
                         qm_stress_reject_probability,
                         qm_news_temporal,              // FW1 Axis A
                         qm_news_compliance))           // FW1 Axis B
+      return INIT_FAILED;
+
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_H4,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED"))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -478,7 +483,7 @@ void OnTick()
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
    // per-tick recompute mistakes — EntrySignal sees one new closed bar per
    // call, not every incoming tick.
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_H4))
       return;
 
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled

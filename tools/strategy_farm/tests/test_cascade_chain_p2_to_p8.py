@@ -12,7 +12,26 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 import farmctl  # noqa: E402
 
 
+def _fake_job_binding(proc, capture_identity, **_kwargs) -> dict:
+    identity = capture_identity(proc)
+    return {
+        **identity,
+        "job_object_assigned": True,
+        "job_object_mode": "KILL_ON_JOB_CLOSE",
+        "job_object_registry_key": f"{proc.pid}|{identity['process_creation_key']}",
+        "process_started_suspended": True,
+        "primary_thread_resumed": True,
+    }
+
+
 class CascadeChainP2ToP8Tests(unittest.TestCase):
+    def setUp(self) -> None:
+        old_binding = farmctl.bind_spawned_process_to_kill_job
+        self.addCleanup(
+            setattr, farmctl, "bind_spawned_process_to_kill_job", old_binding
+        )
+        farmctl.bind_spawned_process_to_kill_job = _fake_job_binding
+
     def _insert_work_item(self, root: Path, *, item_id: str, ea_id: str, phase: str, symbol: str = "EURUSD.DWX") -> None:
         farmctl.init_db(root)
         now = farmctl.utc_now()
@@ -103,16 +122,31 @@ class CascadeChainP2ToP8Tests(unittest.TestCase):
             old_pipeline = farmctl.PIPELINE_REPORT_ROOT
             old_news = farmctl.NEWS_MATRIX_FALLBACK
             old_popen = farmctl.subprocess.Popen
+            old_process_identity = farmctl.get_process_identity
             old_terminals = farmctl.MT5_TERMINALS
+            old_disabled_terminals_file = farmctl.DISABLED_TERMINALS_FILE
             old_running = farmctl._running_mt5_terminals
             old_active = farmctl.active_mt5_terminals
             try:
                 farmctl.PIPELINE_REPORT_ROOT = pipeline_root
                 farmctl.NEWS_MATRIX_FALLBACK = fallback_news
                 farmctl.subprocess.Popen = FakeProc
-                farmctl.MT5_TERMINALS = tuple(f"T{i}" for i in range(1, 7))
+                farmctl.get_process_identity = lambda pid: {
+                    "pid": pid,
+                    "is_running": True,
+                    "creation_key": f"test-process:{pid}",
+                    "image_path": sys.executable,
+                    "started_at_epoch": 1.0,
+                }
+                disabled_terminals_file = root / "disabled_terminals.txt"
+                disabled_terminals_file.write_text("", encoding="utf-8")
+                farmctl.DISABLED_TERMINALS_FILE = disabled_terminals_file
+                phase_terminals = tuple(f"T{i}" for i in range(1, 7))
+                farmctl.MT5_TERMINALS = phase_terminals
+                self.assertEqual(farmctl.phase_runner_terminals(), phase_terminals)
+                self.assertIn("T5", farmctl.phase_runner_terminals())
                 farmctl._running_mt5_terminals = lambda: set()
-                farmctl.active_mt5_terminals = lambda: [f"T{i}" for i in range(1, 7)]
+                farmctl.active_mt5_terminals = lambda: list(phase_terminals)
                 for idx, phase in enumerate(phases, start=1):
                     self._insert_work_item(root, item_id=f"wi-{phase}", ea_id="QM5_9999", phase=phase, symbol=f"EURUSD{idx}.DWX")
                 farmctl.dispatch_work_items(root, timeout_minutes=8)
@@ -120,7 +154,9 @@ class CascadeChainP2ToP8Tests(unittest.TestCase):
                 farmctl.PIPELINE_REPORT_ROOT = old_pipeline
                 farmctl.NEWS_MATRIX_FALLBACK = old_news
                 farmctl.subprocess.Popen = old_popen
+                farmctl.get_process_identity = old_process_identity
                 farmctl.MT5_TERMINALS = old_terminals
+                farmctl.DISABLED_TERMINALS_FILE = old_disabled_terminals_file
                 farmctl._running_mt5_terminals = old_running
                 farmctl.active_mt5_terminals = old_active
 

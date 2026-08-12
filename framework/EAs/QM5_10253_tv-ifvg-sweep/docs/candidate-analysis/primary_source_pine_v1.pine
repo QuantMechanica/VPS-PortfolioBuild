@@ -1,0 +1,639 @@
+// This Pine Script® code is subject to the Mozilla Public License 2.0
+// Combined: Multicator Table + Liquidity Sweeps + IFVG Alerts + Sweep Zone Touch Alerts
+// Original credits: © only_fibonacci, © LuxAlgo
+// Modified/combined for unified use
+
+//@version=6
+indicator("Multicator + Sweeps + IFVG + Zone Alerts",
+     shorttitle="EMA Sweeps IFVG Alerts",
+     overlay=true,
+     max_lines_count=500,
+     max_boxes_count=500,
+     max_labels_count=500)
+
+//==============================================================================
+// MULTICATOR SETTINGS
+//==============================================================================
+
+dil = input.string(defval="EN", title="Language", options=["EN", "TR"], group="Multicator Table")
+yaziRenk = input.color(defval=color.black, title="Text Color", group="Multicator Table")
+multScaleLen = input.int(defval=200, title="Fine Tunning", maxval=300, minval=50, group="Multicator Table")
+
+scaleMax = ta.lowest(multScaleLen)
+scaleMin = scaleMax / 2
+
+en = dil == "EN"
+fibUst = en ? "Top ( " : "Tepe ( "
+fibAlt = en ? "Bottom ( " : "Dip ( "
+
+mobilGoster = input.bool(false, "Is mobile?", group="Multicator Table")
+tabloGoster = input.bool(true, "Show Table?", group="Multicator Table")
+tabloYonu = input.string(defval="Sağ Üst", title="Table Position", options=["Sağ Üst", "Sağ Alt", "Sağ Orta", "Orta Alt", "Orta Sol"], group="Multicator Table")
+tabloBuyukluk = input.string(defval="Küçük", title="Table Size", options=["Küçük", "Büyük", "Orta"], group="Multicator Table")
+
+yon = switch tabloYonu
+    "Sağ Üst" => position.top_right
+    "Sağ Alt" => position.bottom_right
+    "Sağ Orta" => position.middle_right
+    "Orta Alt" => position.bottom_center
+    "Orta Sol" => position.bottom_left
+
+buyuk = switch tabloBuyukluk
+    "Küçük" => size.small
+    "Büyük" => size.large
+    "Orta" => size.normal
+
+var table mobiletablo = table.new(position.bottom_right, 2, 6, border_width=4, border_color=color.gray, frame_color=color.gray, frame_width=4)
+var table tablo = table.new(yon, 6, 6, border_width=4, border_color=color.gray, frame_color=color.gray, frame_width=4)
+
+//==============================================================================
+// FIBONACCI
+//==============================================================================
+
+fibonacciGoster = input.bool(false, "Show Fibonacci Retracement", group="Fibonacci")
+fibonacciExtendRight = input.bool(true, "Fibonacci Extend Right", group="Fibonacci", inline="FG")
+fibShowData = input.bool(true, "Fibonacci Show Data", group="Fibonacci", inline="FG")
+uzunluk = input.int(233, minval=8, title="Fibonacci Distance", group="Fibonacci")
+fibColor = input.color(defval=color.black, title="Fibonacci Color", group="Fibonacci")
+fib1 = input.int(defval=618, title="Fib Level 1", group="Fibonacci", maxval=1618)
+fib2 = input.int(defval=382, title="Fib Level 2", group="Fibonacci", maxval=1618)
+fib3 = input.int(defval=786, title="Fib Level 3", group="Fibonacci", maxval=1618)
+
+fibTepe = ta.highest(uzunluk)
+fibDip = ta.lowest(uzunluk)
+tepeyeUzaklik = math.abs(ta.highestbars(uzunluk))
+dipeUzaklik = math.abs(ta.lowestbars(uzunluk))
+
+if barstate.islast and fibonacciGoster
+    fib618 = dipeUzaklik > tepeyeUzaklik ? fibTepe - ((fibTepe - fibDip) * fib1 / 1000) : fibDip + ((fibTepe - fibDip) * fib1 / 1000)
+    fib50 = dipeUzaklik > tepeyeUzaklik ? fibTepe - ((fibTepe - fibDip) * 500 / 1000) : fibDip + ((fibTepe - fibDip) * 500 / 1000)
+    fib382 = dipeUzaklik > tepeyeUzaklik ? fibTepe - ((fibTepe - fibDip) * fib2 / 1000) : fibDip + ((fibTepe - fibDip) * fib2 / 1000)
+    fib786 = dipeUzaklik > tepeyeUzaklik ? fibTepe - ((fibTepe - fibDip) * fib3 / 1000) : fibDip + ((fibTepe - fibDip) * fib3 / 1000)
+
+    line.new(bar_index - tepeyeUzaklik, fibTepe, bar_index + 50, fibTepe, color=fibColor, width=1, extend=fibonacciExtendRight ? extend.right : extend.none)
+    line.new(bar_index - dipeUzaklik, fibDip, bar_index + 50, fibDip, color=fibColor, width=1, extend=fibonacciExtendRight ? extend.right : extend.none)
+    line.new(bar_index + 10, fib382, bar_index + 50, fib382, color=fibColor, style=line.style_dashed, extend=fibonacciExtendRight ? extend.right : extend.none)
+    line.new(bar_index + 10, fib50, bar_index + 50, fib50, color=fibColor, style=line.style_dashed, extend=fibonacciExtendRight ? extend.right : extend.none)
+    line.new(bar_index + 10, fib618, bar_index + 50, fib618, color=fibColor, style=line.style_dashed, extend=fibonacciExtendRight ? extend.right : extend.none)
+    line.new(bar_index + 10, fib786, bar_index + 50, fib786, color=fibColor, style=line.style_dashed, extend=fibonacciExtendRight ? extend.right : extend.none)
+
+    if fibShowData
+        label.new(bar_index + 55, fibTepe, fibUst + str.tostring(math.round_to_mintick(fibTepe)) + " )", style=label.style_none, textcolor=yaziRenk)
+        label.new(bar_index + 55, fibDip, fibAlt + str.tostring(math.round_to_mintick(fibDip)) + " )", style=label.style_none, textcolor=yaziRenk)
+        label.new(bar_index + 55, fib382, str.tostring(fib2 / 1000) + " ( " + str.tostring(math.round_to_mintick(fib382)) + " )", style=label.style_none, textcolor=yaziRenk)
+        label.new(bar_index + 55, fib618, str.tostring(fib1 / 1000) + " ( " + str.tostring(math.round_to_mintick(fib618)) + " )", style=label.style_none, textcolor=yaziRenk)
+        label.new(bar_index + 55, fib50, "% 50 ( " + str.tostring(math.round_to_mintick(fib50)) + " )", style=label.style_none, textcolor=yaziRenk)
+        label.new(bar_index + 55, fib786, str.tostring(fib3 / 1000) + " ( " + str.tostring(math.round_to_mintick(fib786)) + " )", style=label.style_none, textcolor=yaziRenk)
+
+//==============================================================================
+// EMA / SMA SETTINGS
+//==============================================================================
+
+ema1 = input.int(defval=13, title="EMA 1", group="MA", inline="E1")
+ema1Show = input.bool(defval=true, group="MA", inline="E1", title="")
+ema1Color = input.color(defval=color.red, title="EMA1 Color", group="MA")
+
+ema2 = input.int(defval=21, title="EMA 2", group="MA", inline="E2")
+ema2Show = input.bool(defval=true, group="MA", inline="E2", title="")
+ema2Color = input.color(defval=color.black, title="EMA2 Color", group="MA")
+
+ema3 = input.int(defval=34, title="EMA 3", group="MA", inline="E3")
+ema3Show = input.bool(defval=true, group="MA", inline="E3", title="")
+ema3Color = input.color(defval=color.blue, title="EMA3 Color", group="MA")
+
+sma1 = input.int(defval=50, title="SMA 1", group="MA", inline="S1")
+sma1Show = input.bool(defval=false, group="MA", inline="S1", title="")
+sma1Color = input.color(defval=color.black, title="SMA1 Color", group="MA")
+
+sma2 = input.int(defval=100, title="SMA 2", group="MA", inline="S2")
+sma2Show = input.bool(defval=false, group="MA", inline="S2", title="")
+sma2Color = input.color(defval=color.black, title="SMA2 Color", group="MA")
+
+sma3 = input.int(defval=200, title="SMA 3", group="MA", inline="S3")
+sma3Show = input.bool(defval=false, group="MA", inline="S3", title="")
+sma3Color = input.color(defval=color.black, title="SMA3 Color", group="MA")
+
+ema50 = ta.ema(close, ema1)
+ema100 = ta.ema(close, ema2)
+ema200 = ta.ema(close, ema3)
+sma50 = ta.sma(close, sma1)
+sma100 = ta.sma(close, sma2)
+sma200 = ta.sma(close, sma3)
+
+plot(ema1Show ? ema50 : na, color=ema1Color, title="EMA1")
+plot(ema2Show ? ema100 : na, color=ema2Color, title="EMA2")
+plot(ema3Show ? ema200 : na, color=ema3Color, title="EMA3")
+plot(sma1Show ? sma50 : na, color=sma1Color, title="SMA1")
+plot(sma2Show ? sma100 : na, color=sma2Color, title="SMA2")
+plot(sma3Show ? sma200 : na, color=sma3Color, title="SMA3")
+
+//==============================================================================
+// OSCILLATORS / TABLE VALUES
+//==============================================================================
+
+textColor = input.color(defval=color.white, title="Oscillator Label Text Color", group="Oscillator Display")
+
+rsiPeriod = input.int(defval=14, title="RSI Period", inline="RSI", group="RSI")
+rsiShow = input.bool(defval=true, title="", inline="RSI", group="RSI")
+rsiColor = input.color(defval=color.purple, title="RSI Color", group="RSI")
+rsi = ta.rsi(close, rsiPeriod)
+rsiMaPeriod = input.int(defval=10, title="RSI MA Period", group="RSI")
+rsiMa = ta.sma(rsi, rsiMaPeriod)
+
+atrPeriodTable = input.int(defval=14, title="ATR Period", inline="ATR", group="ATR")
+atrShow = input.bool(defval=true, title="", inline="ATR", group="ATR")
+atrColor = input.color(defval=color.red, title="ATR Color", group="ATR")
+atrTable = ta.atr(atrPeriodTable)
+
+momPeriod = input.int(defval=14, title="MOM Period", inline="MOM", group="MOM")
+momShow = input.bool(defval=false, title="", inline="MOM", group="MOM")
+momColor = input.color(defval=color.orange, title="MOM Color", group="MOM")
+mom = ta.mom(close, momPeriod)
+
+lensig = input.int(14, title="ADX Smoothing", minval=1, maxval=50, inline="ADX", group="ADX")
+adxShow = input.bool(defval=false, title="", inline="ADX", group="ADX")
+[diplus, diminus, adx] = ta.dmi(17, lensig)
+adxColor = input.color(defval=color.green, title="ADX Color", group="ADX")
+
+ml = input.int(defval=12, title="MACD Line", inline="MACD", group="MACD")
+sl = input.int(defval=26, title="Signal Line", group="MACD")
+hl = input.int(defval=9, title="Hist Line", group="MACD")
+macdShow = input.bool(defval=false, title="", inline="MACD", group="MACD")
+[macdLine, signalLine, histLine] = ta.macd(close, ml, sl, hl)
+macdLineColor = input.color(defval=color.blue, title="MACD Line Color", group="MACD")
+macdSignalColor = input.color(defval=color.orange, title="MACD Signal Color", group="MACD")
+
+scale(data) =>
+    dataMax = ta.highest(data, multScaleLen)
+    dataMin = ta.lowest(data, multScaleLen)
+    dataMax == dataMin ? na : (data - dataMin) / (dataMax - dataMin) * (scaleMax - scaleMin) + scaleMin
+
+last = 50
+
+if rsiShow
+    rS = label.new(bar_index, scale(rsi), text="RSI : " + str.tostring(math.round_to_mintick(rsi)), textcolor=textColor, color=rsiColor)
+    label.delete(rS[1])
+plot(rsiShow ? scale(rsi) : na, show_last=last, color=rsiColor)
+plot(rsiShow ? scale(rsiMa) : na, show_last=last, color=color.black)
+
+if atrShow
+    aS = label.new(bar_index - last, scale(atrTable), text="ATR : " + str.tostring(math.round_to_mintick(atrTable)), textcolor=textColor, color=atrColor)
+    label.delete(aS[1])
+plot(atrShow ? scale(atrTable) : na, show_last=last, offset=-1 * last, color=atrColor)
+
+if momShow
+    mS = label.new(bar_index - last * 2, scale(mom), text="MOM : " + str.tostring(math.round_to_mintick(mom)), textcolor=textColor, color=momColor)
+    label.delete(mS[1])
+plot(momShow ? scale(mom) : na, show_last=last, offset=-2 * last, color=momColor)
+
+if adxShow
+    adS = label.new(bar_index - last * 3, scale(adx), text="ADX : " + str.tostring(math.round_to_mintick(adx)), textcolor=textColor, color=adxColor)
+    label.delete(adS[1])
+plot(adxShow ? scale(adx) : na, show_last=last, offset=-3 * last, color=adxColor)
+
+if macdShow
+    mcS = label.new(bar_index - last * 4 - last / 2, math.max(scale(macdLine)[last / 2], scale(signalLine)[last / 2]), text="MACD", textcolor=textColor, color=macdLineColor)
+    label.delete(mcS[1])
+plot(macdShow ? scale(macdLine) : na, show_last=last, offset=-4 * last, color=macdLineColor)
+plot(macdShow ? scale(signalLine) : na, show_last=last, offset=-4 * last, color=macdSignalColor)
+
+//==============================================================================
+// OPTIONAL MULTICATOR OVERLAYS
+//==============================================================================
+
+sarShow = input.bool(defval=false, title="Show P.SAR", inline="SAR", group="P.SAR")
+sarStart = input.float(0.02, group="P.SAR", inline="SAR")
+sarIncrement = input.float(0.02, group="P.SAR")
+sarMaximum = input.float(0.2, "Max Value", group="P.SAR")
+sarOut = ta.sar(sarStart, sarIncrement, sarMaximum)
+plot(sarShow ? sarOut : na, "Parabolic SAR", style=plot.style_cross, color=#2962FF)
+
+bbShow = input.bool(defval=false, title="Show Bollinger Bands", inline="BB", group="BB")
+bbLength = input.int(20, minval=1, group="BB", inline="BB")
+maType = input.string("SMA", "Basis MA Type", options=["SMA", "EMA", "SMMA (RMA)", "WMA", "VWMA"], group="BB")
+src = input(close, title="Source", group="BB")
+mult = input.float(2.0, minval=0.001, maxval=50, title="StdDev", group="BB")
+
+ma(source, length, _type) =>
+    switch _type
+        "SMA" => ta.sma(source, length)
+        "EMA" => ta.ema(source, length)
+        "SMMA (RMA)" => ta.rma(source, length)
+        "WMA" => ta.wma(source, length)
+        "VWMA" => ta.vwma(source, length)
+
+basis = ma(src, bbLength, maType)
+dev = mult * ta.stdev(src, bbLength)
+upper = basis + dev
+lower = basis - dev
+bbOffset = input.int(0, "Offset", minval=-500, maxval=500, group="BB")
+bbP1 = plot(bbShow ? upper : na, "BB Upper", color=#2962FF, offset=bbOffset)
+bbP2 = plot(bbShow ? lower : na, "BB Lower", color=#2962FF, offset=bbOffset)
+plot(bbShow ? basis : na, "BB Basis", color=#FF6D00, offset=bbOffset)
+fill(bbP1, bbP2, title="BB Background", color=bbShow ? color.rgb(33, 150, 243, 90) : na)
+
+ichShow = input.bool(defval=false, group="ICHIMOKU", inline="ICHIMOKU", title="Show Ichimoku")
+conversionPeriods = input.int(9, minval=1, title="Conversion Line Length", group="ICHIMOKU")
+basePeriods = input.int(26, minval=1, title="Base Line Length", group="ICHIMOKU")
+laggingSpan2Periods = input.int(52, minval=1, title="Leading Span B Length", group="ICHIMOKU")
+displacement = input.int(26, minval=1, title="Lagging Span", group="ICHIMOKU")
+
+donchian(_len) => math.avg(ta.lowest(_len), ta.highest(_len))
+conversionLine = donchian(conversionPeriods)
+baseLine = donchian(basePeriods)
+leadLine1 = math.avg(conversionLine, baseLine)
+leadLine2 = donchian(laggingSpan2Periods)
+
+plot(ichShow ? conversionLine : na, color=#2962FF, title="Ichimoku Conversion")
+plot(ichShow ? baseLine : na, color=#B71C1C, title="Ichimoku Base")
+plot(ichShow ? close : na, offset=-displacement + 1, color=#43A047, title="Lagging Span")
+p1i = plot(ichShow ? leadLine1 : na, offset=displacement - 1, color=#A5D6A7, title="Leading Span A")
+p2i = plot(ichShow ? leadLine2 : na, offset=displacement - 1, color=#EF9A9A, title="Leading Span B")
+fill(p1i, p2i, color=leadLine1 > leadLine2 ? color.rgb(67, 160, 71, ichShow ? 90 : 100) : color.rgb(244, 67, 54, ichShow ? 90 : 100))
+
+pivotShow = input.bool(defval=false, title="Pivot Labels Show", group="Pivot Labels")
+leftLenH = input.int(title="Pivot High Left", defval=10, minval=1, group="Pivot Labels")
+rightLenH = input.int(title="Pivot High Right", defval=10, minval=1, group="Pivot Labels")
+leftLenL = input.int(title="Pivot Low Left", defval=10, minval=1, group="Pivot Labels")
+rightLenL = input.int(title="Pivot Low Right", defval=10, minval=1, group="Pivot Labels")
+textColorH = input.color(title="Pivot High Text", defval=color.black, group="Pivot Labels")
+labelColorH = input.color(title="Pivot High Label", defval=color.white, group="Pivot Labels")
+textColorL = input.color(title="Pivot Low Text", defval=color.black, group="Pivot Labels")
+labelColorL = input.color(title="Pivot Low Label", defval=color.white, group="Pivot Labels")
+
+phPivotLabel = ta.pivothigh(leftLenH, rightLenH)
+plPivotLabel = ta.pivotlow(leftLenL, rightLenL)
+
+drawLabel(_offset, _pivot, _style, _color, _textColor) =>
+    if not na(_pivot)
+        label.new(bar_index[_offset], _pivot, str.tostring(_pivot, format.mintick), style=_style, color=_color, textcolor=_textColor)
+
+if pivotShow
+    drawLabel(rightLenH, phPivotLabel, label.style_label_down, labelColorH, textColorH)
+    drawLabel(rightLenL, plPivotLabel, label.style_label_up, labelColorL, textColorL)
+
+//==============================================================================
+// MULTICATOR TABLE
+//==============================================================================
+
+hacim = volume
+acilis = open
+kapanis = close
+fark = (ta.change(close) / close[1]) * 100
+
+if barstate.islast and not mobilGoster and tabloGoster
+    table.cell(tablo, 0, 0, bgcolor=color.black, text_color=color.white, text="Open", text_size=buyuk)
+    table.cell(tablo, 1, 0, bgcolor=color.black, text_color=color.white, text="Close", text_size=buyuk)
+    table.cell(tablo, 2, 0, bgcolor=color.black, text_color=color.white, text="Change %", text_size=buyuk)
+    table.cell(tablo, 3, 0, bgcolor=color.black, text_color=color.white, text="RSI", text_size=buyuk)
+    table.cell(tablo, 4, 0, bgcolor=color.black, text_color=color.white, text="ATR", text_size=buyuk)
+    table.cell(tablo, 5, 0, bgcolor=color.black, text_color=color.white, text="Volume", text_size=buyuk)
+
+    table.cell(tablo, 0, 1, bgcolor=color.black, text_color=color.white, text=str.tostring(acilis), text_size=buyuk)
+    table.cell(tablo, 1, 1, bgcolor=color.black, text_color=color.white, text=str.tostring(kapanis), text_size=buyuk)
+    table.cell(tablo, 2, 1, bgcolor=fark > 0 ? color.green : color.red, text_color=color.white, text=str.tostring(math.round_to_mintick(fark)) + " %", text_size=buyuk)
+    table.cell(tablo, 3, 1, bgcolor=rsi > 70 ? color.green : rsi < 30 ? color.red : color.teal, text_color=color.white, text=str.tostring(math.round_to_mintick(rsi)), text_size=buyuk)
+    table.cell(tablo, 4, 1, bgcolor=color.black, text_color=color.white, text=str.tostring(math.round_to_mintick(atrTable)), text_size=buyuk)
+    table.cell(tablo, 5, 1, bgcolor=color.black, text_color=color.white, text=str.tostring(hacim), text_size=buyuk)
+
+    table.cell(tablo, 0, 2, bgcolor=color.gray, text_color=color.white, text="SMA" + str.tostring(sma1), text_size=buyuk)
+    table.cell(tablo, 1, 2, bgcolor=color.gray, text_color=color.white, text="SMA" + str.tostring(sma2), text_size=buyuk)
+    table.cell(tablo, 2, 2, bgcolor=color.gray, text_color=color.white, text="SMA" + str.tostring(sma3), text_size=buyuk)
+    table.cell(tablo, 3, 2, bgcolor=color.gray, text_color=color.white, text="EMA" + str.tostring(ema1), text_size=buyuk)
+    table.cell(tablo, 4, 2, bgcolor=color.gray, text_color=color.white, text="EMA" + str.tostring(ema2), text_size=buyuk)
+    table.cell(tablo, 5, 2, bgcolor=color.gray, text_color=color.white, text="EMA" + str.tostring(ema3), text_size=buyuk)
+
+    table.cell(tablo, 0, 3, bgcolor=sma50 > close ? color.red : color.green, text_color=color.white, text=str.tostring(math.round_to_mintick(sma50)), text_size=buyuk)
+    table.cell(tablo, 1, 3, bgcolor=sma100 > close ? color.red : color.green, text_color=color.white, text=str.tostring(math.round_to_mintick(sma100)), text_size=buyuk)
+    table.cell(tablo, 2, 3, bgcolor=sma200 > close ? color.red : color.green, text_color=color.white, text=str.tostring(math.round_to_mintick(sma200)), text_size=buyuk)
+    table.cell(tablo, 3, 3, bgcolor=ema50 > close ? color.red : color.green, text_color=color.white, text=str.tostring(math.round_to_mintick(ema50)), text_size=buyuk)
+    table.cell(tablo, 4, 3, bgcolor=ema100 > close ? color.red : color.green, text_color=color.white, text=str.tostring(math.round_to_mintick(ema100)), text_size=buyuk)
+    table.cell(tablo, 5, 3, bgcolor=ema200 > close ? color.red : color.green, text_color=color.white, text=str.tostring(math.round_to_mintick(ema200)), text_size=buyuk)
+
+if barstate.islast and mobilGoster and not tabloGoster
+    table.cell(mobiletablo, 0, 0, bgcolor=color.black, text_color=color.white, text="Open", text_size=buyuk)
+    table.cell(mobiletablo, 0, 1, bgcolor=color.black, text_color=color.white, text="Close", text_size=buyuk)
+    table.cell(mobiletablo, 0, 2, bgcolor=color.black, text_color=color.white, text="Change %", text_size=buyuk)
+    table.cell(mobiletablo, 0, 3, bgcolor=color.black, text_color=color.white, text="RSI", text_size=buyuk)
+    table.cell(mobiletablo, 0, 4, bgcolor=color.black, text_color=color.white, text="ATR", text_size=buyuk)
+    table.cell(mobiletablo, 0, 5, bgcolor=color.black, text_color=color.white, text="Volume", text_size=buyuk)
+
+    table.cell(mobiletablo, 1, 0, bgcolor=color.black, text_color=color.white, text=str.tostring(acilis), text_size=buyuk)
+    table.cell(mobiletablo, 1, 1, bgcolor=color.black, text_color=color.white, text=str.tostring(kapanis), text_size=buyuk)
+    table.cell(mobiletablo, 1, 2, bgcolor=fark > 0 ? color.green : color.red, text_color=color.white, text=str.tostring(math.round_to_mintick(fark)) + " %", text_size=buyuk)
+    table.cell(mobiletablo, 1, 3, bgcolor=rsi > 70 ? color.green : rsi < 30 ? color.red : color.teal, text_color=color.white, text=str.tostring(math.round_to_mintick(rsi)), text_size=buyuk)
+    table.cell(mobiletablo, 1, 4, bgcolor=color.black, text_color=color.white, text=str.tostring(math.round_to_mintick(atrTable)), text_size=buyuk)
+    table.cell(mobiletablo, 1, 5, bgcolor=color.black, text_color=color.white, text=str.tostring(hacim), text_size=buyuk)
+
+//==============================================================================
+// LIQUIDITY SWEEPS + IFVG SETTINGS
+//==============================================================================
+
+sweepLen = input.int(5, "Swings", minval=1, group="Liquidity Sweeps")
+sweepOpt = input.string("Wicks + Outbreaks & Retest", "Sweep Options", options=["Only Wicks", "Only Outbreaks & Retest", "Wicks + Outbreaks & Retest"], group="Liquidity Sweeps")
+
+colBl = input.color(#ffeb3b, "Bullish Sweep", group="Liquidity Sweeps", inline="c1")
+colBr = input.color(#9c27b0, "Bearish Sweep", group="Liquidity Sweeps", inline="c2")
+colBl2 = input.color(#ffeb3b80, "", group="Liquidity Sweeps", inline="c1")
+colBr2 = input.color(#9c27b080, "", group="Liquidity Sweeps", inline="c2")
+
+extendSweeps = input.bool(true, "Extend Sweep Areas", group="Sweep Area")
+maxB = input.int(300, "Max Bars to Extend", minval=1, maxval=5000, group="Sweep Area")
+colBl3 = input.color(#ffeb3b41, "Bull Area Color", group="Sweep Area")
+colBr3 = input.color(#9c27b041, "Bear Area Color", group="Sweep Area")
+
+showIfvg = input.bool(true, "Show Inverse FVGs", group="IFVG Settings")
+volFilter = input.float(0.6, "Volatility Filter Multiplier", minval=0, step=0.1, group="IFVG Settings")
+ifvgBullCol = input.color(color.new(#089981, 85), "IFVG Bullish Color", group="IFVG Settings")
+ifvgBearCol = input.color(color.new(#f23645, 85), "IFVG Bearish Color", group="IFVG Settings")
+maxIfvgDisplay = input.int(3, "Max Displayed IFVGs", minval=1, group="IFVG Settings")
+
+alertSweeps = input.bool(false, "Enable Original Sweep Formation Alerts", group="Alert Settings")
+alertIfvgs = input.bool(true, "Enable IFVG Alerts", group="Alert Settings")
+alertSweepTouches = input.bool(true, "Enable Sweep Zone Touch Alerts", group="Alert Settings")
+
+oW = sweepOpt == "Only Wicks"
+oO = sweepOpt == "Only Outbreaks & Retest"
+n = bar_index
+
+//==============================================================================
+// TYPES
+//==============================================================================
+
+type piv
+    float prc
+    int bix
+    bool brk
+    bool mit
+    bool tak
+    bool wic
+    line lin
+
+type boxBr
+    box bx
+    line ln
+    bool br
+    int dr
+    bool touchedTop
+
+type fvg
+    float top
+    float bottom
+    int startIndex
+    bool isBull
+
+type ifvgObj
+    box bx
+    float top
+    float bottom
+    bool isBull
+    bool mitigated
+
+var array<piv> aPivH = array.new<piv>()
+var array<piv> aPivL = array.new<piv>()
+var array<boxBr> aBoxBr = array.new<boxBr>()
+var array<fvg> activeFvgs = array.new<fvg>()
+var array<ifvgObj> activeIfvgs = array.new<ifvgObj>()
+
+var bool ifvgBearBeginning = false
+var bool ifvgBullBeginning = false
+var bool ifvgBearCompleted = false
+var bool ifvgBullCompleted = false
+var bool bullishSweepZoneTouched = false
+var bool bearishSweepZoneTouched = false
+
+ifvgBearBeginning := false
+ifvgBullBeginning := false
+ifvgBearCompleted := false
+ifvgBullCompleted := false
+bullishSweepZoneTouched := false
+bearishSweepZoneTouched := false
+
+method l(piv get, color c, string s="sd") =>
+    style = switch s
+        "dt" => line.style_dotted
+        "ds" => line.style_dashed
+        => line.style_solid
+    line.new(get.bix, get.prc, n, get.prc, color=c, style=style)
+
+method br(piv get, color c3, color c, int d) =>
+    y1 = d == 1 ? high : get.prc
+    y2 = d == 1 ? get.prc : low
+    boxBr.new(box.new(n - 1, y1, n + 1, y2, border_color=color.new(color.white, 100), bgcolor=c3), line.new(n, y1, n, y2, color=c, width=3), false, d, false)
+
+lnDot(y, c) =>
+    line.new(n, y, n + 3, y, color=c, style=line.style_dotted)
+
+//==============================================================================
+// LIQUIDITY SWEEPS
+//==============================================================================
+
+sweepPh = ta.pivothigh(sweepLen, sweepLen)
+sweepPl = ta.pivotlow(sweepLen, sweepLen)
+
+if not na(sweepPh)
+    aPivH.unshift(piv.new(sweepPh, n - sweepLen, false, false, false, false, na))
+
+if not na(sweepPl)
+    aPivL.unshift(piv.new(sweepPl, n - sweepLen, false, false, false, false, na))
+
+if aPivH.size() > 0
+    for i = aPivH.size() - 1 to 0
+        get = aPivH.get(i)
+
+        if not get.mit
+            if not get.brk
+                if close > get.prc
+                    if not oW
+                        get.brk := true
+                    else
+                        get.mit := true
+
+                if not oO and not get.wic
+                    if high > get.prc and close < get.prc
+                        aBoxBr.unshift(get.br(colBr3, colBr, 1))
+                        get.lin := get.l(colBr2, "dt")
+                        lnDot(low, colBr)
+                        get.wic := true
+                        if alertSweeps
+                            alert("Bearish Sweep Detected at " + str.tostring(get.prc), alert.freq_once_per_bar)
+            else
+                if close < get.prc
+                    get.mit := true
+
+                if not oW and low < get.prc and close > get.prc
+                    aBoxBr.unshift(get.br(colBl3, colBl, -1))
+                    get.lin := get.l(colBl2, "ds")
+                    lnDot(high, colBl)
+                    get.tak := true
+                    if alertSweeps
+                        alert("Bullish Sweep Detected at " + str.tostring(get.prc), alert.freq_once_per_bar)
+
+        if n - get.bix > 2000 or get.mit or get.tak
+            p = aPivH.remove(i)
+            if not na(p.lin)
+                p.lin.delete()
+
+if aPivL.size() > 0
+    for i = aPivL.size() - 1 to 0
+        get = aPivL.get(i)
+
+        if not get.mit
+            if not get.brk
+                if close < get.prc
+                    if not oW
+                        get.brk := true
+                    else
+                        get.mit := true
+
+                if not oO and not get.wic
+                    if low < get.prc and close > get.prc
+                        aBoxBr.unshift(get.br(colBl3, colBl, -1))
+                        get.lin := get.l(colBl2, "dt")
+                        lnDot(high, colBl)
+                        get.wic := true
+                        if alertSweeps
+                            alert("Bullish Sweep Detected at " + str.tostring(get.prc), alert.freq_once_per_bar)
+            else
+                if close > get.prc
+                    get.mit := true
+
+                if not oW and high > get.prc and close < get.prc
+                    aBoxBr.unshift(get.br(colBr3, colBr, 1))
+                    get.lin := get.l(colBr2, "ds")
+                    lnDot(low, colBr)
+                    get.tak := true
+                    if alertSweeps
+                        alert("Bearish Sweep Detected at " + str.tostring(get.prc), alert.freq_once_per_bar)
+
+        if n - get.bix > 2000 or get.mit or get.tak
+            p = aPivL.remove(i)
+            if not na(p.lin)
+                p.lin.delete()
+
+// Extend sweep boxes + alert when price touches the TOP of the sweep box.
+// touchedTop prevents repeated alerts from the same box.
+if extendSweeps and aBoxBr.size() > 0
+    for i = aBoxBr.size() - 1 to 0
+        bx = aBoxBr.get(i)
+
+        if not bx.br and n - bx.bx.get_left() - 1 <= maxB
+            bx.bx.set_right(n)
+
+            sweepTop = bx.bx.get_top()
+            sweepBottom = bx.bx.get_bottom()
+
+            if not bx.touchedTop and high >= sweepTop
+                bx.touchedTop := true
+
+                if bx.dr == -1
+                    bullishSweepZoneTouched := true
+                    if alertSweepTouches
+                        alert("Price touched Bullish Sweep Zone top on " + syminfo.ticker + " " + timeframe.period, alert.freq_once_per_bar)
+
+                if bx.dr == 1
+                    bearishSweepZoneTouched := true
+                    if alertSweepTouches
+                        alert("Price touched Bearish Sweep Zone top on " + syminfo.ticker + " " + timeframe.period, alert.freq_once_per_bar)
+
+            if bx.dr == -1 and close < sweepBottom
+                bx.br := true
+
+            if bx.dr == 1 and close > sweepTop
+                bx.br := true
+
+            aBoxBr.set(i, bx)
+
+//==============================================================================
+// FVG / IFVG
+//==============================================================================
+
+ifvgAtr = ta.atr(14)
+threshold = ifvgAtr * volFilter
+
+if low > high[2]
+    gapSize = low - high[2]
+    if gapSize > threshold
+        activeFvgs.push(fvg.new(low, high[2], n - 2, true))
+
+if high < low[2]
+    gapSize = low[2] - high
+    if gapSize > threshold
+        activeFvgs.push(fvg.new(low[2], high, n - 2, false))
+
+if showIfvg
+    if activeFvgs.size() > 0
+        for i = activeFvgs.size() - 1 to 0
+            item = activeFvgs.get(i)
+            bool confirmed = false
+
+            if item.isBull
+                // Original bullish FVG starts to invert bearish.
+                if low < item.top and close >= item.bottom
+                    ifvgBearBeginning := true
+                    if alertIfvgs
+                        alert("Bearish IFVG beginning to form", alert.freq_once_per_bar)
+
+                // Bearish IFVG completed.
+                if close < item.bottom
+                    ifvgBearCompleted := true
+                    newBx = box.new(item.startIndex, item.top, n + 5, item.bottom, bgcolor=ifvgBearCol, border_color=color.new(ifvgBearCol, 20), text="Bearish IFVG", text_color=chart.fg_color, text_size=size.tiny)
+                    activeIfvgs.unshift(ifvgObj.new(newBx, item.top, item.bottom, false, false))
+
+                    if alertIfvgs
+                        alert("Bearish IFVG completed", alert.freq_once_per_bar_close)
+
+                    confirmed := true
+            else
+                // Original bearish FVG starts to invert bullish.
+                if high > item.bottom and close <= item.top
+                    ifvgBullBeginning := true
+                    if alertIfvgs
+                        alert("Bullish IFVG beginning to form", alert.freq_once_per_bar)
+
+                // Bullish IFVG completed.
+                if close > item.top
+                    ifvgBullCompleted := true
+                    newBx = box.new(item.startIndex, item.top, n + 5, item.bottom, bgcolor=ifvgBullCol, border_color=color.new(ifvgBullCol, 20), text="Bullish IFVG", text_color=chart.fg_color, text_size=size.tiny)
+                    activeIfvgs.unshift(ifvgObj.new(newBx, item.top, item.bottom, true, false))
+
+                    if alertIfvgs
+                        alert("Bullish IFVG completed", alert.freq_once_per_bar_close)
+
+                    confirmed := true
+
+            if confirmed or n - item.startIndex > 1000
+                activeFvgs.remove(i)
+
+    if activeIfvgs.size() > 0
+        for i = activeIfvgs.size() - 1 to 0
+            ifvO = activeIfvgs.get(i)
+
+            if not ifvO.mitigated
+                if ifvO.isBull
+                    if close < ifvO.bottom
+                        ifvO.mitigated := true
+                        ifvO.bx.set_right(n)
+                else
+                    if close > ifvO.top
+                        ifvO.mitigated := true
+                        ifvO.bx.set_right(n)
+
+            if not ifvO.mitigated
+                ifvO.bx.set_right(n + 5)
+
+    while activeIfvgs.size() > maxIfvgDisplay
+        old = activeIfvgs.pop()
+        old.bx.delete()
+
+//==============================================================================
+// ALERT CONDITIONS - these appear as selectable alert options in TradingView
+//==============================================================================
+
+alertcondition(ifvgBearBeginning, title="Bearish IFVG Beginning", message="Bearish IFVG is beginning to form on {{ticker}} {{interval}}")
+alertcondition(ifvgBullBeginning, title="Bullish IFVG Beginning", message="Bullish IFVG is beginning to form on {{ticker}} {{interval}}")
+alertcondition(ifvgBearCompleted, title="Bearish IFVG Completed", message="Bearish IFVG completed on {{ticker}} {{interval}}")
+alertcondition(ifvgBullCompleted, title="Bullish IFVG Completed", message="Bullish IFVG completed on {{ticker}} {{interval}}")
+
+alertcondition(bullishSweepZoneTouched, title="Bullish Sweep Zone Touched", message="Price touched the top of a Bullish Sweep Zone on {{ticker}} {{interval}}")
+alertcondition(bearishSweepZoneTouched, title="Bearish Sweep Zone Touched", message="Price touched the top of a Bearish Sweep Zone on {{ticker}} {{interval}}")

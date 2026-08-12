@@ -1,0 +1,117 @@
+{
+  "schema": "qm_fx_cointegration_build_q02_handoff/v1",
+  "timestamp_utc": "2026-08-04T02:34:45Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20211",
+  "slug": "gbpjpy-euraud",
+  "pair": [
+    "GBPJPY.DWX",
+    "EURAUD.DWX"
+  ],
+  "logical_symbol": "QM5_20211_GBPJPY_EURAUD_COINTEGRATION_D1",
+  "selection": {
+    "scan_size": 66,
+    "sign_aware_rank": 31,
+    "dev_net_sharpe": 0.43025364565356994,
+    "oos_net_sharpe": 0.2731899067410672,
+    "oos_return_pct": 4.833997588601451,
+    "oos_state_changes": 19,
+    "fixed_dev_beta": -1.386054145312838,
+    "half_life_d1_bars": 33.69401696774575,
+    "dedicated_fixed_d1_pair_previously_built": false,
+    "known_overlap": "Rank 30 GBPUSD/AUDUSD is already QM5_12739; exact strategy/slug/card/registry searches and unordered traded-symbol manifest reconciliation found no fixed-beta D1 GBPJPY/EURAUD sleeve before QM5_20211."
+  },
+  "source": {
+    "primary": "Chan, Ernest P. (2009), Quantitative Trading, Examples 3.6, 7.2, 7.3, and 7.5",
+    "quality_tier": "A",
+    "durable_approval": "strategy-seeds/sources/SRC02/source.md (ceo_ratified_2026-04-28)",
+    "bounded_extraction": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "pair_selection_evidence": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md; framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges"
+  },
+  "anchors": {
+    "QM5_12532": "Q02_PASS_THEN_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_THEN_Q04_FAIL"
+  },
+  "build": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "build_authorization_guard": "PASS",
+    "build_check_passed": true,
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "spec_validation": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "basket_regression_passed": 35,
+    "magic_resolver_tests_passed": 5,
+    "magic_resolver_rows_kept": 15473,
+    "magic_resolver_rows_dropped": 0,
+    "targeted_registry_checks": "PASS",
+    "repo_wide_registry_validator": "PREEXISTING_LEGACY_FAIL_NO_QM5_20211_HIT",
+    "magic_registry_sha256": "7a5b4cd2fbb9874973946072ed65a7fa01a3231bb686d4649c5403d0291c6fcc",
+    "card_sha256": "d67cf0d7f7f89e8d9cc50f6f9157ba34f253b8dc36b6eb521dd3cd5c9aa74782",
+    "mq5_sha256": "b93fee38cc15e3a72eecb1ae189f6fabfe9a793221bf1f683d1414a5fafd43df",
+    "ex5_sha256": "54ddb7987359f0f5a8ad8806c0f6ea5582b23979c8b6814ea6610e3547bcdc56",
+    "spec_sha256": "920a03c7dca03ea00c3a0ad8c91741ec4acb4b5b84814d07a454a5f53fabdb17",
+    "basket_manifest_sha256": "2c3932c98d1efae4706466db012cfb3e050a6a3cf3a21afafed6a7952a896386",
+    "logical_setfile_sha256": "93709b95ca6495ad903feb7e94b26462c2ecac9f27297a9a64d49f1f89ffd549",
+    "build_report": "D:\\QM\\reports\\framework\\21\\build_check_20260804_023205.json",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260804_023205\\summary.csv",
+    "manual_smoke_run": false
+  },
+  "basket_manifest": {
+    "host_symbol": "GBPJPY.DWX",
+    "host_timeframe": "D1",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "basket_symbols": [
+      "GBPJPY.DWX",
+      "EURAUD.DWX",
+      "USDJPY.DWX",
+      "GBPUSD.DWX",
+      "EURUSD.DWX",
+      "AUDUSD.DWX"
+    ],
+    "traded_symbols": [
+      "GBPJPY.DWX",
+      "EURAUD.DWX"
+    ],
+    "conversion_only_symbols": [
+      "USDJPY.DWX",
+      "GBPUSD.DWX",
+      "EURUSD.DWX",
+      "AUDUSD.DWX"
+    ]
+  },
+  "risk": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "q02": {
+    "work_item_id": "21db772c-c974-4a05-8e21-5ec78659e988",
+    "created_at_utc": "2026-08-04T02:31:25+00:00",
+    "status_at_handoff": "pending",
+    "attempt_count_at_handoff": 0,
+    "claimed_by_at_handoff": null,
+    "logical_setfile_enqueued": true,
+    "physical_host_setfile_skipped": true,
+    "skip_reason": "basket_manifest_logical_setfile_preferred",
+    "priority_track": true,
+    "timeout_min": 450,
+    "cpu_ceiling": 7,
+    "factory_terminals_at_precheck": 3,
+    "factory_terminal_names": [
+      "T10",
+      "T6",
+      "T9"
+    ],
+    "t_live_excluded": true,
+    "initial_lock_busy_attempts_without_mutation": 2,
+    "canonical_mutation_lock_released": true
+  },
+  "prohibited_surfaces_touched": []
+}

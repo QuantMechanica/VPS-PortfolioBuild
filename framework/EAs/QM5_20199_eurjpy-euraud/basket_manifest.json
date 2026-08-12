@@ -1,0 +1,22 @@
+{
+  "logical_symbol": "QM5_20199_EURJPY_EURAUD_COINTEGRATION_D1",
+  "host_symbol": "EURJPY.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "EURJPY.DWX",
+    "EURAUD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "EURUSD.DWX"
+  ],
+  "traded_symbols": [
+    "EURJPY.DWX",
+    "EURAUD.DWX"
+  ],
+  "notes": [
+    "Dedicated two-leg EURJPY/EURAUD D1 cointegration sleeve selected as the first unbuilt row after rank 15 in the frozen sign-aware 66-pair scan. USDJPY.DWX, AUDUSD.DWX, and EURUSD.DWX are conversion-history-only and receive no order or magic slot.",
+    "DEV Sharpe 0.843, OOS Sharpe 0.646, negative beta 1.073345776, and 27.755-D1-bar half-life are adverse frontier evidence. Q02 is a one-shot retirement gate with no refit; the USD 100000 tester uses canonical RISK_FIXED=1000."
+  ]
+}

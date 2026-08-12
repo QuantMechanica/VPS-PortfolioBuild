@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_AND_STREAM_GATES",
+  "ea_id": 10133,
+  "symbol": "GDAXI.DWX",
+  "period": "M1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/20260712_132404/QM5_10133_tv-ema80-scalp.compile.log",
+  "compile_log_sha256": "AE49CC5E743853D51538950A506A380EADC88BC30A2A68F5F416F754C675EA9A",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10133_gdaxi_m1_wave9_retry_serial_20260712\\QM5_10133\\20260712_134907\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10133_gdaxi_m1_wave9_retry_serial_20260712\\QM5_10133\\20260712_134907\\raw\\run_01\\report.htm",
+      "sha256": "79CEE1BEB9A4D93C66AC70E04D0C8D9949F1FF6BB694E9EE4288C81CBD8C0252"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10133_gdaxi_m1_wave9_retry_serial_20260712\\QM5_10133\\20260712_134907\\raw\\run_02\\report.htm",
+      "sha256": "CC782DAC39DB08759A1173DE20A924C396C7A27BD840C9E8337A0629BF5B382E"
+    }
+  ],
+  "native": {
+    "trades": 310,
+    "profit_factor": 0.672346,
+    "net_profit": -75332.38,
+    "equity_drawdown": 84961.18
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10133_GDAXI_DWX_T1_FRESH_SERIAL_20260712.jsonl",
+    "rows": 294,
+    "sha256": "A2B54511C9DFEDA208300D0AC7B2CBECE1427F65A96B35CB8DEFB6C43FBB92E1",
+    "report_reconciliation": "FAIL",
+    "count_delta": -16,
+    "missing_mae_rows": 294,
+    "corrected_net_delta": -10893.61,
+    "net_tolerance": 3.10,
+    "reasons": [
+      "stream_missing_mae_rows:294",
+      "trade_count_mismatch:294!=310",
+      "corrected_net_mismatch:delta=-10893.61:tolerance=3.10"
+    ]
+  },
+  "current_cost_artifact": "artifacts/ftmo_10133_gdaxi_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 310,
+    "profit_factor": 0.685151,
+    "net_profit": -70804.82,
+    "close_to_close_max_drawdown": 79115.25,
+    "commission_total": 0.0,
+    "swap_total": -3815.06
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "negative_calendar_years": [2018, 2019, 2020],
+    "reason_for_reject": "The full-history implementation is deeply loss-making both natively and at current FTMO costs. Its Q08 output independently violates the mandatory count, MAE, and corrected-net stream contract."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

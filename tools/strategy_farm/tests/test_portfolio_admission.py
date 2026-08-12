@@ -14,6 +14,12 @@ from portfolio import portfolio_admission  # noqa: E402
 from portfolio.portfolio_admission import evaluate_candidate  # noqa: E402
 from portfolio.portfolio_kpi import equal_weights, portfolio_metrics  # noqa: E402
 
+# NOTE (C1, 2026-07-26, decisions/2026-07-26_q09_hard_gate_dl083_port.md): the hard gate now
+# emits reason strings suffixed with the binding correlation basis (e.g.
+# "correlation_above_max_corr:corr_full", "admitted:regime_unknown"). These legacy tests assert
+# on the base verdict token via reason.split(":")[0]; the new DL-083 zoned rule + boundaries are
+# covered in test_portfolio_admission_dl083_gate.py.
+
 
 class PortfolioAdmissionTests(unittest.TestCase):
     def test_default_starting_capital_matches_canonical_tester_deposit(self) -> None:
@@ -73,7 +79,7 @@ class PortfolioAdmissionTests(unittest.TestCase):
             )
 
         self.assertFalse(verdict["admit"])
-        self.assertEqual(verdict["reason"], "correlation_above_max_corr")
+        self.assertEqual(verdict["reason"].split(":")[0], "correlation_above_max_corr")
         self.assertGreater(verdict["max_corr_to_book"], 0.30)
 
     def test_candidate_without_portfolio_improvement_is_rejected(self) -> None:
@@ -99,7 +105,7 @@ class PortfolioAdmissionTests(unittest.TestCase):
             )
 
         self.assertFalse(verdict["admit"])
-        self.assertEqual(verdict["reason"], "no_diversification")
+        self.assertEqual(verdict["reason"].split(":")[0], "no_diversification")
         self.assertFalse(verdict["diversifies"])
 
     def test_dl079_maxdd_only_gain_with_sharpe_degradation_is_rejected(self) -> None:
@@ -129,7 +135,7 @@ class PortfolioAdmissionTests(unittest.TestCase):
             ):
                 rejected = evaluate_candidate((101, "EURUSD.DWX"), [(100, "EURUSD.DWX")], common_dir)
             self.assertFalse(rejected["admit"])
-            self.assertEqual(rejected["reason"], "no_diversification")
+            self.assertEqual(rejected["reason"].split(":")[0], "no_diversification")
             self.assertFalse(rejected["diversifies"])
 
             # Control: Sharpe improves (even though MaxDD worsens) -> admit.
@@ -142,7 +148,7 @@ class PortfolioAdmissionTests(unittest.TestCase):
             ):
                 admitted = evaluate_candidate((101, "EURUSD.DWX"), [(100, "EURUSD.DWX")], common_dir)
             self.assertTrue(admitted["admit"])
-            self.assertEqual(admitted["reason"], "admitted")
+            self.assertEqual(admitted["reason"].split(":")[0], "admitted")
             self.assertTrue(admitted["diversifies"])
 
     def test_risk_parity_admits_dense_diversifier_that_equal_weight_rejects(self) -> None:
@@ -174,7 +180,7 @@ class PortfolioAdmissionTests(unittest.TestCase):
             verdict = evaluate_candidate((101, "EURUSD.DWX"), book, common_dir)
 
         self.assertTrue(verdict["admit"])
-        self.assertEqual(verdict["reason"], "admitted")
+        self.assertEqual(verdict["reason"].split(":")[0], "admitted")
         self.assertLessEqual(verdict["max_corr_to_book"], 0.30)
         self.assertTrue(verdict["diversifies"])
 
@@ -221,7 +227,7 @@ class PortfolioAdmissionTests(unittest.TestCase):
         self.assertFalse(verdict["corr_insufficient"])
         self.assertLessEqual(verdict["max_corr_to_book"], 0.30)
         self.assertTrue(verdict["admit"])
-        self.assertEqual(verdict["reason"], "admitted")
+        self.assertEqual(verdict["reason"].split(":")[0], "admitted")
 
     def test_monthly_fallback_rejects_sparse_correlated_low_freq(self) -> None:
         # Same sparsity, but the two sleeves move in phase monthly. The daily gate would
@@ -242,7 +248,7 @@ class PortfolioAdmissionTests(unittest.TestCase):
         self.assertFalse(verdict["corr_insufficient"])
         self.assertGreater(verdict["max_corr_to_book"], 0.30)
         self.assertFalse(verdict["admit"])
-        self.assertEqual(verdict["reason"], "correlation_above_max_corr")
+        self.assertEqual(verdict["reason"].split(":")[0], "correlation_above_max_corr")
 
     def test_one_unmeasurable_book_pair_does_not_veto_a_measurable_diversifier(self) -> None:
         # Regression: with a multi-sleeve book holding a sparse low-freq member, the OLD gate
@@ -387,7 +393,7 @@ class ChallengerSwapTests(unittest.TestCase):
             )
 
         self.assertFalse(verdict["admit"])
-        self.assertEqual(verdict["reason"], "correlation_above_max_corr")
+        self.assertEqual(verdict["reason"].split(":")[0], "correlation_above_max_corr")
         self.assertIsNotNone(verdict["challenger_swap"])
         self.assertFalse(verdict["challenger_swap"]["challenger_superior"])
         self.assertEqual(verdict["challenger_swap"]["incumbent"], "11132:EURUSD.DWX")
@@ -421,8 +427,10 @@ class ChallengerSwapTests(unittest.TestCase):
         self.assertIsNotNone(swap["current_book_sharpe"])
         self.assertIsNotNone(swap["swap_book_sharpe"])
 
-    def test_non_corr_rejection_has_no_challenger_swap(self) -> None:
-        # Candidates rejected for reasons other than correlation should have challenger_swap=None.
+    def test_no_diversification_rejection_checks_weakest_incumbent_swap(self) -> None:
+        # OWNER 2026-07-15: every non-admit reason gets a diagnostic swap check.
+        # A no-diversification candidate is compared with the weakest incumbent,
+        # but an inferior swap remains rejected and never auto-admits.
         with tempfile.TemporaryDirectory() as tmp:
             common_dir = Path(tmp)
             stream_dir = self._stream_dir(common_dir)
@@ -439,8 +447,14 @@ class ChallengerSwapTests(unittest.TestCase):
             )
 
         self.assertFalse(verdict["admit"])
-        self.assertEqual(verdict["reason"], "no_diversification")
-        self.assertIsNone(verdict["challenger_swap"])
+        self.assertEqual(verdict["reason"].split(":")[0], "no_diversification")
+        self.assertIsNotNone(verdict["challenger_swap"])
+        self.assertFalse(verdict["challenger_swap"]["challenger_superior"])
+        self.assertEqual(verdict["challenger_swap"]["incumbent"], "100:EURUSD.DWX")
+        self.assertEqual(
+            verdict["challenger_swap"]["trigger"],
+            "weakest_incumbent_swap:no_diversification",
+        )
 
     def test_lineage_rejection_runs_challenger_swap_without_auto_swap(self) -> None:
         # A lineage challenger rejected for no_diversification is not a new sleeve, but it
@@ -464,7 +478,7 @@ class ChallengerSwapTests(unittest.TestCase):
             )
 
         self.assertFalse(verdict["admit"])
-        self.assertEqual(verdict["reason"], "no_diversification")
+        self.assertEqual(verdict["reason"].split(":")[0], "no_diversification")
         self.assertIsNotNone(verdict["challenger_swap"])
         self.assertFalse(verdict["challenger_swap"]["challenger_superior"])
         self.assertEqual(verdict["challenger_swap"]["incumbent"], "100:EURUSD.DWX")
@@ -537,7 +551,7 @@ class ChallengerSwapTests(unittest.TestCase):
             )
 
         self.assertFalse(verdict["admit"])
-        self.assertEqual(verdict["reason"], "no_diversification")
+        self.assertEqual(verdict["reason"].split(":")[0], "no_diversification")
         self.assertIsNotNone(verdict["challenger_swap"])
         self.assertEqual(verdict["challenger_swap"]["incumbent"], "100:EURUSD.DWX")
 

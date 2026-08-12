@@ -1,0 +1,37 @@
+{
+  "pdf": "ff_1182304_notable-numbers-strategy.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1182304_notable-numbers-strategy.pdf",
+      "source_pages": "1-11",
+      "source_ref": "joyny, \"Notable numbers strategy\", ForexFactory thread 1182304, 2022-2024. https://www.forexfactory.com/thread/1182304-notable-numbers-strategy",
+      "strategy_name": "Notable-Number Level Fade",
+      "concept": "Fade psychological repeated-digit price levels ('notable numbers' such as 00/66/444): when the prior N days' highs and lows all sit on one side of the level and price then reaches it, enter a mean-reversion trade against the approach with fixed %-of-account SL/TP.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "London",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 deterministic level/N-day-lookback/session rules on available FX majors+crosses with fixed % SL/TP, no ML/grid; but per-symbol digit and lookback were MT5-optimizer-picked (overfit risk), so framework must re-derive params, not trust the thread's.",
+      "priority_hint": "MED",
+      "notes": "Same core rule engine parameterised per symbol; treat as ONE candidate. Entry evaluated on M5 bar opens only (author's 2023-06-23 correction); level touch is BUY-from-above / SELL-from-below (reversion). Per-symbol table (notable#/lookback-days/SL/TP): EURUSD 66/2d/0.5%/0.8%; GBPUSD 00/22d/0.4%/0.4%; USDJPY 444/20d/0.25%/0.25%; EURGBP 66/13d/0.9%/0.35%; AUDUSD 33/42d/0.55%/0.85%; USDCAD 88/9d/0.75%/0.15%; AUDNZD 333/1d/0.8%/0.35%; AUDCAD 55/43d/0.6%/0.4%; EURCAD 44/23d/0.55%/0.65%. Sessions vary per symbol (EURUSD London->NY window; GBPUSD/EURGBP Sydney/Tokyo 'calm market'; AUDUSD Tokyo-London; USDCAD around London open); author stresses entering in calm Asia sessions and letting UK traders push price off the level. Only 00/50 have a documented round-number microstructure basis; arbitrary digits (66/444/333/88) plus per-symbol lookback strongly suggest optimization artifact. Low trade counts on several legs (USDJPY 15 deals in 11yr; 100%-win legs are r/r 5:1 small-sample flattery). Params tuned on 2013-2019 in-sample + 2020-2022 forward. Single anonymous author promoting a signals site (blometech.com) + MyFxBook; reputability moderate. Secondary: Lazar83 links a YouTube round-number (50/00) EA idea but gives no complete rules (VAGUE) - not carried as its own row."
+    },
+    {
+      "source_file": "ff_1182304_notable-numbers-strategy.pdf",
+      "source_pages": "7-9",
+      "source_ref": "joyny, \"Notable numbers strategy\" (CADJPY reverse setup post), ForexFactory thread 1182304, 2022. https://www.forexfactory.com/thread/1182304-notable-numbers-strategy",
+      "strategy_name": "Notable-Number Breakout Continuation (reverse)",
+      "concept": "Inverse of the fade: when price that has spent the prior N days on one side of a notable-number level breaks through it, ride the continuation in the breakout direction with fixed %-of-account SL/TP.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "NY",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Same pure-MQL5 deterministic engine as the fade but with reversed entry polarity (momentum/continuation); implementable and FTMO/DXZ-compatible, yet demonstrated on a single symbol with a small sample - likely an optimizer polarity flip.",
+      "priority_hint": "LOW",
+      "notes": "Stated only for CADJPY: notable '88' (e.g. 104.88), previous 41 days on one side, enter in the breakthrough direction (BUY when prior 41d were below and price reaches '88' from below), TP 1% / SL 0.75%, entry window 14:00-22:00 (London+2h). Distinct edge from Row 1 (continuation vs reversion) so listed separately; single-symbol evidence, so a genuine reverse edge vs. curve-fit sign flip is unresolved - let Q02-Q10 arbitrate."
+    }
+  ],
+  "notes": ["Two candidate rows: a per-symbol mean-reversion 'notable number' level-fade family (10 FX legs, one rule engine) and a single reverse/breakout-continuation variant (CADJPY). Rest of the 27-page thread is trade-log chatter, signal-site promotion and Q&A with no new mechanical rules."]
+}

@@ -1,0 +1,42 @@
+{
+  "fail_count": 1,
+  "pass_count": 0,
+  "results": [
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": 1156.97,
+      "count_delta": -2,
+      "ea_id": 10118,
+      "net_tolerance": 7.16,
+      "reasons": [
+        "trade_count_mismatch:714!=716",
+        "corrected_net_mismatch:delta=1156.97:tolerance=7.16"
+      ],
+      "report": {
+        "drawdown": 26807.73,
+        "exists": true,
+        "net_profit": 35545.14,
+        "path": "D:\\QM\\reports\\smoke_ftmo_density\\QM5_10118\\20260710_172927\\summary.json",
+        "profit_factor": 1.09,
+        "report_canonical_path": "D:\\QM\\reports\\smoke_ftmo_density\\QM5_10118\\20260710_172927\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 716,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -3515.28,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10118_NDX_DWX_FTMO_DENSITY_20260710.jsonl",
+        "raw_net": 40217.39,
+        "round_trip_corrected_net": 36702.11,
+        "trade_count": 714
+      },
+      "symbol": "NDX.DWX"
+    }
+  ],
+  "schema_version": 1,
+  "status": "FAIL"
+}

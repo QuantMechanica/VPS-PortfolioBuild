@@ -3,45 +3,45 @@ ea_id,slug,strategy_id,status,owner,created_at
 11429,carter-london-open-box-breakout-m5,ec63ff86-b6dd-522b-ac8e-d90de82e2dee,active,Development,2026-06-21
 11548,carter-t-m5-session-box-breakout,42530cb3-0265-534a-89cc-150f80733ff5,active,Development,2026-06-20
 1128,daniel-momentum-crash-vol-scale,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Research,2026-05-18
-1001,breakout-atr,TBD,active,CTO,2026-04-27
-1002,davey-eu-night,SRC01_S01,active,CTO,2026-04-27
+1001,breakout-atr,TBD,active,Development,2026-04-27
+1002,davey-eu-night,SRC01_S01,active,Development,2026-04-27
 1003,davey-baseline-3bar,SRC01_S03,active,Development,2026-04-28
 1004,davey-es-breakout,SRC01_S04,active,Development,2026-04-28
-1017,chan-pairs-stat-arb,SRC02_S01,active,CTO,2026-05-01
+1017,chan-pairs-stat-arb,SRC02_S01,active,Development,2026-05-01
 1009,lien-fade-double-zeros,SRC04_S03,active,Development,2026-05-01
-1010,lien-waiting-deal,SRC04_S04,active,CTO,2026-05-01
-1011,lien-inside-day-breakout,SRC04_S05,active,CTO,2026-05-01
-1012,lien-fader,SRC04_S06,active,CTO,2026-05-01
-1013,lien-20day-breakout,SRC04_S07,active,CTO,2026-05-01
-1014,lien-channels,SRC04_S08,active,CTO,2026-05-01
-1015,lien-perfect-order,SRC04_S09,active,CTO,2026-05-01
-1016,lien-carry-trade,SRC04_S11,active,CTO,2026-05-01
-1018,williams-pro-go,SRC03_S16,active,CTO,2026-05-09
-1019,williams-pinch-paunch,SRC03_S17,active,CTO,2026-05-09
-1020,williams-vol-bo,SRC03_S01,active,CTO,2026-05-13
-1021,lien-dbb-pick-tops,SRC04_S02a,active,CTO,2026-05-13
-1022,lien-dbb-trend-join,SRC04_S02b,active,CTO,2026-05-13
-1023,chan-at-bb-pair,SRC05_S01,active,CTO,2026-05-13
-1024,chan-at-kf-pair,SRC05_S02,active,CTO,2026-05-13
-1025,chan-at-buy-on-gap-src05,SRC05_S03,active,CTO,2026-05-13
-1026,chan-at-fx-coint-pair,SRC05_S05,active,CTO,2026-05-13
-1027,chan-at-cal-spread,SRC05_S06,active,CTO,2026-05-13
-1028,chan-at-ts-mom-fut,SRC05_S07,active,CTO,2026-05-13
-1029,chan-at-fstx-gap-mom-src05,SRC05_S12,active,CTO,2026-05-13
-1030,singh-rapid-fire,SRC06_S01,active,CTO,2026-05-13
-1031,singh-piranha,SRC06_S02,active,CTO,2026-05-13
-1032,singh-fade-break,SRC06_S03,active,CTO,2026-05-13
-1033,singh-trade-break,SRC06_S04,active,CTO,2026-05-13
-1034,singh-trend-rider,SRC06_S07,active,CTO,2026-05-13
-1035,singh-trend-bouncer,SRC06_S08,active,CTO,2026-05-13
-1036,singh-fifth-element,SRC06_S09,active,CTO,2026-05-13
-1037,singh-power-ranger,SRC06_S10,active,CTO,2026-05-13
-1038,singh-pendulum,SRC06_S11,active,CTO,2026-05-13
-1039,singh-swap-fly,SRC06_S12,active,CTO,2026-05-13
-1040,singh-cmd-corr,SRC06_S13,active,CTO,2026-05-13
-1041,singh-guppy-burst,SRC06_S15,active,CTO,2026-05-13
-1042,singh-eng-bk-tea,SRC06_S16,active,CTO,2026-05-13
-1043,singh-gd-morn-asia,SRC06_S17,active,CTO,2026-05-13
+1010,lien-waiting-deal,SRC04_S04,active,Development,2026-05-01
+1011,lien-inside-day-breakout,SRC04_S05,active,Development,2026-05-01
+1012,lien-fader,SRC04_S06,active,Development,2026-05-01
+1013,lien-20day-breakout,SRC04_S07,active,Development,2026-05-01
+1014,lien-channels,SRC04_S08,active,Development,2026-05-01
+1015,lien-perfect-order,SRC04_S09,active,Development,2026-05-01
+1016,lien-carry-trade,SRC04_S11,active,Development,2026-05-01
+1018,williams-pro-go,SRC03_S16,active,Development,2026-05-09
+1019,williams-pinch-paunch,SRC03_S17,active,Development,2026-05-09
+1020,williams-vol-bo,SRC03_S01,active,Development,2026-05-13
+1021,lien-dbb-pick-tops,SRC04_S02a,active,Development,2026-05-13
+1022,lien-dbb-trend-join,SRC04_S02b,active,Development,2026-05-13
+1023,chan-at-bb-pair,SRC05_S01,active,Development,2026-05-13
+1024,chan-at-kf-pair,SRC05_S02,active,Development,2026-05-13
+1025,chan-at-buy-on-gap-src05,SRC05_S03,active,Development,2026-05-13
+1026,chan-at-fx-coint-pair,SRC05_S05,active,Development,2026-05-13
+1027,chan-at-cal-spread,SRC05_S06,active,Development,2026-05-13
+1028,chan-at-ts-mom-fut,SRC05_S07,active,Development,2026-05-13
+1029,chan-at-fstx-gap-mom-src05,SRC05_S12,active,Development,2026-05-13
+1030,singh-rapid-fire,SRC06_S01,active,Development,2026-05-13
+1031,singh-piranha,SRC06_S02,active,Development,2026-05-13
+1032,singh-fade-break,SRC06_S03,active,Development,2026-05-13
+1033,singh-trade-break,SRC06_S04,active,Development,2026-05-13
+1034,singh-trend-rider,SRC06_S07,active,Development,2026-05-13
+1035,singh-trend-bouncer,SRC06_S08,active,Development,2026-05-13
+1036,singh-fifth-element,SRC06_S09,active,Development,2026-05-13
+1037,singh-power-ranger,SRC06_S10,active,Development,2026-05-13
+1038,singh-pendulum,SRC06_S11,active,Development,2026-05-13
+1039,singh-swap-fly,SRC06_S12,active,Development,2026-05-13
+1040,singh-cmd-corr,SRC06_S13,active,Development,2026-05-13
+1041,singh-guppy-burst,SRC06_S15,active,Development,2026-05-13
+1042,singh-eng-bk-tea,SRC06_S16,active,Development,2026-05-13
+1043,singh-gd-morn-asia,SRC06_S17,active,Development,2026-05-13
 1006,davey-eu-day,SRC01_S02,active,Development,2026-05-15
 1047,halloween-sell-in-may-idx,SRC08_S03,active,Development,2026-05-16
 1048,estrada-lazy-6m-rotation,SRC08_S04,active,Development,2026-05-16
@@ -145,8 +145,9 @@ ea_id,slug,strategy_id,status,owner,created_at
 1154,unger-dax-4h-high-breakout,eb97a148-0af9-5b9c-878c-25fb5dfa34f9,active,Research,2026-05-17
 1155,unger-nasdaq-atr-spike-short,eb97a148-0af9-5b9c-878c-25fb5dfa34f9,active,Research,2026-05-17
 1156,caldeira-cointegration-pairs-fx,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Research,2026-05-18
-1157,qp-stress-reversal-sp500,7ede58dd-d184-5099-9d48-7a65de230853,active,Research,2026-05-17
-1158,qp-january-barometer,7ede58dd-d184-5099-9d48-7a65de230853,active,Research,2026-05-17
+1157,qp-stress-reversal-sp500,7ede58dd-d184-5099-9d48-7a65de230853,retired,Research,2026-05-17
+1157,plastun-crude-oil-autumn,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Development,2026-06-18
+1158,qp-january-barometer,7ede58dd-d184-5099-9d48-7a65de230853,retired,Research,2026-05-17
 1159,qp-spy-overnight-ma20,7ede58dd-d184-5099-9d48-7a65de230853,active,Research,2026-05-17
 1160,qp-gold-christmas-drift,7ede58dd-d184-5099-9d48-7a65de230853,active,Research,2026-05-17
 1161,unger-crude-intraday-bias,eb97a148-0af9-5b9c-878c-25fb5dfa34f9,active,Research,2026-05-17
@@ -220,7 +221,7 @@ ea_id,slug,strategy_id,status,owner,created_at
 1225,dahlquist-fx-econmom,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Research,2026-05-18
 1226,psaradellis-oil-channel,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Research,2026-05-18
 1227,neely-fx-channel,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Research,2026-05-18
-1258,hopwood-dmi-cross-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-05-18
+1258,hopwood-dmi-cross-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,retired,Research,2026-05-18
 1259,antor-mtf-macd-scalper,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-05-18
 1260,channel-cci-bollinger-mr,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-05-18
 1261,4h-box-frankfurt-london,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-05-18
@@ -328,7 +329,7 @@ ea_id,slug,strategy_id,status,owner,created_at
 1487,as-kda-defensive,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
 1488,as-ddm-pods,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
 1489,as-permanent-tactical,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
-1492,as-raa-balanced,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
+1492,as-raa-balanced,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,retired,Research,2026-05-19
 1493,hopwood-pattern-recognition-master-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-07-07
 1494,dorsey-mass-index-reversal-bulge-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-05-19
 1495,as-all-weather,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
@@ -531,8 +532,8 @@ ea_id,slug,strategy_id,status,owner,created_at
 9204,mql5-mfi-trend,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
 9195,mql5-signal-pulse,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
 9196,mql5-macd-obv-zero,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
-9197,mql5-macd-obv-div,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
-9198,mql5-ha-ema-trend,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
+9197,mql5-macd-obv-div,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,retired,Research,2026-05-19
+9198,mql5-ha-ema-trend,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,retired,Research,2026-05-19
 9199,mql5-liq-ma-sweep,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
 9205,mql5-stoch-side,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
 9206,mql5-wpr-ma,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
@@ -1817,7 +1818,7 @@ QM5_10386,et-lunch-brk,d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe,active,Research,2026
 10937,grimes-mtf-crack,fbfd7f6e-462a-55c8-9efa-9005a70c9f5c,active,Research,2026-05-22
 10938,grimes-accept-high,fbfd7f6e-462a-55c8-9efa-9005a70c9f5c,active,Research,2026-05-22
 10939,grimes-context-pb,fbfd7f6e-462a-55c8-9efa-9005a70c9f5c,active,Research,2026-05-22
-10940,grimes-nested-pb,fbfd7f6e-462a-55c8-9efa-9005a70c9f5c,active,Research,2026-05-22
+10940,grimes-nested-pb,fbfd7f6e-462a-55c8-9efa-9005a70c9f5c,retired,Research,2026-05-22
 10941,grimes-keltner-pb,fbfd7f6e-462a-55c8-9efa-9005a70c9f5c,active,Research,2026-05-22
 10942,grimes-run-fade,fbfd7f6e-462a-55c8-9efa-9005a70c9f5c,active,Research,2026-05-22
 10943,grimes-trendday,fbfd7f6e-462a-55c8-9efa-9005a70c9f5c,active,Research,2026-05-22
@@ -2154,7 +2155,7 @@ QM5_10386,et-lunch-brk,d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe,active,Research,2026
 11274,iaf-rsi-ema,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
 11275,iaf-st-ema,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
 11276,iaf-donchian,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
-11277,blade-m5-ema-zone-scalp-alt,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
+11277,blade-m5-ema-zone-scalp-alt,e78a9f1f-4e6a-563c-a080-915133d6ed28,retired,Research,2026-05-23
 11278,blade-4h-multi-ema-breakout,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
 11279,blade-macd-stoch-divergence,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
 11280,vegas-wave-ema144-169-fractal,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
@@ -2304,7 +2305,7 @@ QM5_10386,et-lunch-brk,d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe,active,Research,2026
 11424,williams-fakeout-day-stop-entry-d1,bb9e26af-ebd1-5a26-b1a8-cc4d78835f03,active,Research,2026-05-23
 11425,williams-smash-day-stop-entry-d1,bb9e26af-ebd1-5a26-b1a8-cc4d78835f03,active,Research,2026-05-23
 11426,williams-consecutive-down-closes-d1,bb9e26af-ebd1-5a26-b1a8-cc4d78835f03,active,Research,2026-05-23
-11427,connors-rsi2-sma200-pullback-d1-alt,4932e25a-fdfb-50cd-b5f5-18e55f3045c2,active,Research,2026-05-23
+11427,connors-rsi2-sma200-pullback-d1-alt,4932e25a-fdfb-50cd-b5f5-18e55f3045c2,retired,Research,2026-05-23
 11428,connors-double7s-sma200-d1-alt-a,4932e25a-fdfb-50cd-b5f5-18e55f3045c2,active,Research,2026-05-23
 11429,carter-london-open-box-breakout-m5,ec63ff86-b6dd-522b-ac8e-d90de82e2dee,active,Research,2026-05-23
 11430,carter-cci21-ema4080-zero-cross-m5,ec63ff86-b6dd-522b-ac8e-d90de82e2dee,active,Research,2026-05-23
@@ -2469,7 +2470,7 @@ QM5_11560,lien-xtreme-fade-bb3-adx25-m15,f8b7c68d-870a-5568-81ff-9b825dcddd32,ac
 11589,bf-break-vol,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
 11590,bf-ema-stoch,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
 11591,robo-ao-macd574-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
-11592,robo-3candle-fade-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11592,robo-3candle-fade-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Claude,2026-05-23
 11593,robo-midnight-hammer-adx-d1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
 11594,carter-t-m5-ema10-21-50-zone-pullback,bbbba6a1-c18a-5035-bedf-fbd6207e996a,pending,Claude,2026-05-23
 11595,carter-t-m5-ema15-50hl-macd15-70,bbbba6a1-c18a-5035-bedf-fbd6207e996a,pending,Claude,2026-05-23
@@ -2496,7 +2497,7 @@ QM5_11560,lien-xtreme-fade-bb3-adx25-m15,f8b7c68d-870a-5568-81ff-9b825dcddd32,ac
 11616,robo-ema8-28-cci30-m30,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Development,2026-06-25
 11617,robo-psar001-ao-ema5-m30,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Development,2026-06-25
 11618,robo-lwma-low-macd1526-m30,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Development,2026-06-26
-11619,robo-psar01-ema6-11-34-h1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11619,robo-psar01-ema6-11-34-h1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Development,2026-07-23
 11620,robo-bb3dev-ema50-pullback-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
 11621,robo-ema100hl-bb10-23-reversal-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Development,2026-05-23
 11622,ba-sma12-x,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
@@ -2735,7 +2736,7 @@ QM5_11693,strat-mom,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Development,2026
 11854,xtreme-fade-bb-adx-m15,e8271b25-edfe-59fc-8609-f19c30aa857b,active,claude,2026-05-24
 11855,blade-m5-ema-zone-scalp-alt-b,7f6f2831-ea66-58f6-a7ff-a8c89a44803d,active,claude,2026-05-24
 11856,blade-4h-ema30-breakout-retrace,7f6f2831-ea66-58f6-a7ff-a8c89a44803d,active,claude,2026-05-24
-11857,blade-macd-stoch-divergence-h1-alt,7f6f2831-ea66-58f6-a7ff-a8c89a44803d,active,claude,2026-05-24
+11857,blade-macd-stoch-divergence-h1-alt,7f6f2831-ea66-58f6-a7ff-a8c89a44803d,retired,claude,2026-05-24
 11858,psar-ao-ac-triple-confluence,78d504fe-863c-59e6-945b-34b9e54b62e8,active,claude,2026-05-24
 11859,kobas-ema5-10-15-65-macd,1319514a-ba7e-5b62-b919-fc65b58efefe,active,claude,2026-05-24
 11860,macd-stoch-m1-scalp,005c4660-2425-5e61-a136-36f66b3ab782,active,claude,2026-05-24
@@ -2957,9 +2958,9 @@ QM5_11693,strat-mom,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Development,2026
 12071,enhanced-fvg-smc-mech,gold-003,active,Research,2026-05-26
 12072,enhanced-zone-recovery-safe,gold-004,active,Research,2026-05-26
 12073,enhanced-crt-amd-breakout,gold-005,active,Research,2026-05-26
-12074,QM5_1157_qp-stress-reversal-sp500,7ede58dd-d184-5099-9d48-7a65de230853,active,DeepSeek,2026-05-26
-12075,QM5_1158_qp-january-barometer,7ede58dd-d184-5099-9d48-7a65de230853,active,DeepSeek,2026-05-26
-12076,QM5_1223_hopwood-dmi-cross-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
+12074,qp-stress-reversal-sp500,7ede58dd-d184-5099-9d48-7a65de230853,active,DeepSeek,2026-05-26
+12075,qp-january-barometer,7ede58dd-d184-5099-9d48-7a65de230853,active,DeepSeek,2026-05-26
+12076,hopwood-dmi-cross-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12077,QM5_1228_hopwood-stochastic-cross-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12078,QM5_1229_hopwood-ma-rainbow-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12079,QM5_1230_renko-color-streak-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
@@ -2981,8 +2982,8 @@ QM5_11693,strat-mom,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Development,2026
 12095,QM5_1649_robopip-hlhb-trend-catcher-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12096,QM5_1649_sperandeo-trend-fault-line-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12097,QM5_9166_tv-kn-ema-cross-atr-tp,c84ae47e-8ea0-56f1-8b25-4436b6dda5b5,active,DeepSeek,2026-05-26
-12098,QM5_9197_mql5-macd-obv-div,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,DeepSeek,2026-05-26
-12099,QM5_9198_mql5-ha-ema-trend,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,DeepSeek,2026-05-26
+12098,mql5-macd-obv-div,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,DeepSeek,2026-05-26
+12099,mql5-ha-ema-trend,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,DeepSeek,2026-05-26
 12100,QM5_9199_mql5-mfi-trend,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,DeepSeek,2026-05-26
 12101,QM5_9220_mql5-rvi-ma,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,DeepSeek,2026-05-26
 12102,QM5_9221_mql5-chaikin-zero,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,DeepSeek,2026-05-26
@@ -3130,9 +3131,9 @@ QM5_11693,strat-mom,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Development,2026
 12244,QM5_1595_sperandeo-2b-pivot-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12245,QM5_1622_demark-td-termination-count-alt-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12246,QM5_1623_hopwood-bermaui-dss-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
-12247,QM5_1624_ehlers-adaptive-cg-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
+12247,ehlers-adaptive-cg-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12248,QM5_1629_ehlers-cybernetic-cycle-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
-12249,QM5_1643_aa-overnight-mom,ede348b4-0fa7-5be1-baa8-09e9089b67b7,active,DeepSeek,2026-05-26
+12249,aa-overnight-mom,ede348b4-0fa7-5be1-baa8-09e9089b67b7,retired,DeepSeek,2026-05-26
 12250,QM5_1645_carney-cypher-pattern-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12251,QM5_1647_ehlers-ebsw-cycle-extraction-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12252,QM5_1647_hopwood-bermaui-macd-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
@@ -3492,7 +3493,6 @@ QM5_11558,carter-t-m5-psar-macd64128-ema100,42530cb3-0265-534a-89cc-150f80733ff5
 11733,tc-m5-s15-ema-bb-channel-macd,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,Development,2026-06-21
 11429,carter-london-open-box-breakout-m5,ec63ff86-b6dd-522b-ac8e-d90de82e2dee,active,Claude,2026-06-21
 11463,goodwin-j-session-high-breakout-usdjpy,038d2a5d-1c89-5745-afdb-2cd76b623b77,active,Claude,2026-06-21
-11733,tc-m5-s15-ema-bb-channel-macd,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,Development,2026-06-21
 11347,rbt-adx-momentum-m5,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Research,2026-06-20
 11265,qt-awesome,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Development,2026-06-21
 1238,tv-vwap-rsi-cont,30591366-874b-5bee-b47c-da2fca20b728,active,Development,2026-06-21
@@ -3582,6 +3582,10 @@ QM5_1403,harmonic-5-0-pattern-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Dev
 12622,comm-reversal-12m-contrarian-xauusd,05abad87-420d-5a51-8a9b-3c35ad795385,active,Research,2026-06-27
 12623,comm-mom-rev-interaction-xauusd,05abad87-420d-5a51-8a9b-3c35ad795385,active,Research,2026-06-27
 12624,edgelab-eurjpy-audjpy-cointegration,claude_cross_asset_discovery_2026-06-09,active,Development,2026-06-27
+12625,as-raa-balanced,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
+12626,blade-m5-ema-zone-scalp-alt,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
+12627,connors-rsi2-sma200-pullback-d1-alt,4932e25a-fdfb-50cd-b5f5-18e55f3045c2,active,Research,2026-05-23
+12628,blade-macd-stoch-divergence-h1-alt,7f6f2831-ea66-58f6-a7ff-a8c89a44803d,active,claude,2026-05-24
 12700,balke-range-breakout,BALKE-RANGE-BREAKOUT-USDJPY-2026,active,Development,2026-06-27
 12701,wti-oct-fade,GORSKA-WTI-CAL-2015,active,Development,2026-06-27
 12702,xngusd-winter-withdrawal-long,706222b7-2d60-5fdb-8dab-d722d3c96f92,active,Research,2026-06-27
@@ -3659,7 +3663,7 @@ QM5_1403,harmonic-5-0-pattern-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Dev
 2134,brooks-major-trend-reversal-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-06-23
 12783,edgelab-audusd-audjpy-cointegration,claude_cross_asset_discovery_2026-06-09,active,Development,2026-06-29
 12784,progo-xti,SRC03_S16_XTI,active,Development,2026-06-29
-12784,intraday-config-engine,intraday-config-engine,active,Research,2026-06-29
+12784,intraday-config-engine,intraday-config-engine,retired,Research,2026-06-29
 12785,timerangebreakout-orb,timerangebreakout-orb,active,Research,2026-06-29
 12786,edgelab-usdchf-eurgbp-cointegration,claude_cross_asset_discovery_2026-06-09,active,Development,2026-06-29
 12787,vol-contraction-breakout,vol-contraction-breakout,active,Research,2026-06-29
@@ -4000,30 +4004,30 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 13113,energy-mom-ivol,FUERTES-MOMIVOL-2015_XTI_XNG_S01,active,Codex,2026-07-10
 13114,wti-roc14-xtrm,GURRIB-WTI-ROC14-2024_S01,active,Codex,2026-07-10
 13115,energy-samecal,KELOHARJU-RETSEAS-2016_XTI_XNG_S01,active,Codex,2026-07-10
-13116,xng-signmom,PAPAILIAS-RSM-2021_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
-13117,eurgbp-audjpy,SRC02_S09,active,CEO+CTO mission allocation,2026-07-10
-13118,energy-skew-rank,FERNANDEZ-SKEW-2018_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
-13119,usdjpy-euraud,SRC02_S10,active,CEO+CTO mission allocation,2026-07-10
-13120,energy-momrev,BIANCHI-MOMREV-2015_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
-13121,energy-tfmom,CLARE-TFMOM-2014_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
-13122,tokyo-fix-5m,SRCCEO-ANOMALY-SLATE-2026-07-03_S07,active,OWNER-delegated CEO+CTO allocation,2026-07-10
-13123,energy-val-rank,AMP-VALUE-2013_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
-13124,fx-early-asia-drift,CODEX-FTMO-H1-RESEARCH-2026-07-10_S01,retired,OWNER-delegated CEO+CTO allocation,2026-07-10
-13125,xau-usclose-ovnt,CODEX-FTMO-H1-RESEARCH-2026-07-10_S02,retired,OWNER-delegated CEO+CTO allocation,2026-07-10
-13126,energy-momcarry,FMR-MOMTS-2010_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
-13127,et-open-atr-long,CODEX-FTMO-ORB-LONG-2026-07-10_S01,retired,OWNER-delegated CEO+CTO allocation,2026-07-10
+13116,xng-signmom,PAPAILIAS-RSM-2021_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-10
+13117,eurgbp-audjpy,SRC02_S09,active,Research+Development (OWNER research mission),2026-07-10
+13118,energy-skew-rank,FERNANDEZ-SKEW-2018_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-10
+13119,usdjpy-euraud,SRC02_S10,active,Research+Development (OWNER research mission),2026-07-10
+13120,energy-momrev,BIANCHI-MOMREV-2015_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-10
+13121,energy-tfmom,CLARE-TFMOM-2014_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-10
+13122,tokyo-fix-5m,SRCCEO-ANOMALY-SLATE-2026-07-03_S07,active,Research+Development (OWNER FTMO mission),2026-07-10
+13123,energy-val-rank,AMP-VALUE-2013_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-10
+13124,fx-early-asia-drift,CODEX-FTMO-H1-RESEARCH-2026-07-10_S01,retired,Research+Development (OWNER FTMO mission),2026-07-10
+13125,xau-usclose-ovnt,CODEX-FTMO-H1-RESEARCH-2026-07-10_S02,retired,Research+Development (OWNER FTMO mission),2026-07-10
+13126,energy-momcarry,FMR-MOMTS-2010_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-10
+13127,et-open-atr-long,CODEX-FTMO-ORB-LONG-2026-07-10_S01,retired,Research+Development (OWNER FTMO mission),2026-07-10
 13128,pre-fomc-drift-ndx,nyfed-sr512-pre-fomc-drift,active,claude,2026-07-10
-13129,energy-rsj,KISS-RSJ-2025_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-11
-13130,xti-xng-lowmax,HOLLSTEIN-MAX-2021_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-11
-13131,energy-kurt-rank,HOLLSTEIN-MAX-2021_XTI_XNG_S02,active,CEO+CTO mission allocation,2026-07-11
-13132,energy-bab,FRAZZINI-BAB-2014_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-11
-13133,energy-ivol,FUERTES-MOMIVOL-2015_XTI_XNG_S02,active,CEO+CTO mission allocation,2026-07-11
-13134,energy-vr-mom,MEHLITZ-AUER-MEM-2024_XTI_S01,active,CEO+CTO mission allocation,2026-07-11
-13135,xau-sma50-hold,OWNER-FTMO-SURVIVORS-20260711_S02,retired,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
-13136,jpy-sma20-riskon,OWNER-FTMO-SURVIVORS-20260711_S03,retired,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
-13137,breadth-tue,OWNER-FTMO-SURVIVORS-20260711_S04,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
-13138,xau-m5-ema20,OWNER-FTMO-SURVIVORS-20260711_S05,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
-13139,energy-cv-rank,SZYMANOWSKA-CV-2014_XTI_XNG_S01,active,OWNER-delegated CEO+CTO mission allocation,2026-07-11
+13129,energy-rsj,KISS-RSJ-2025_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
+13130,xti-xng-lowmax,HOLLSTEIN-MAX-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
+13131,energy-kurt-rank,HOLLSTEIN-MAX-2021_XTI_XNG_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
+13132,energy-bab,FRAZZINI-BAB-2014_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
+13133,energy-ivol,FUERTES-MOMIVOL-2015_XTI_XNG_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
+13134,energy-vr-mom,MEHLITZ-AUER-MEM-2024_XTI_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
+13135,xau-sma50-hold,OWNER-FTMO-SURVIVORS-20260711_S02,retired,Research+Development (OWNER FTMO mission),2026-07-11
+13136,jpy-sma20-riskon,OWNER-FTMO-SURVIVORS-20260711_S03,retired,Research+Development (OWNER FTMO mission),2026-07-11
+13137,breadth-tue,OWNER-FTMO-SURVIVORS-20260711_S04,active,Research+Development (OWNER FTMO mission),2026-07-11
+13138,xau-m5-ema20,OWNER-FTMO-SURVIVORS-20260711_S05,active,Research+Development (OWNER FTMO mission),2026-07-11
+13139,energy-cv-rank,SZYMANOWSKA-CV-2014_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
 13140,energy-aliq-rank,YIYI-ALIQ-2025_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
 13141,energy-ie-rank,HAN-IE-2023_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
 13142,energy-sal-rank,HE-SALIENCE-2025_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
@@ -4036,9 +4040,230 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 13149,energy-trend36,HOLLSTEIN-3YR-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
 13150,wti-signmom,PAPAILIAS-RSM-2021_XTI_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
 13151,energy-volbeta,HOLLSTEIN-AGGVOL-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
-13200,ndx-convex-orb,CODEX-FTMO-CONVEX-ORB-20260711_S01,retired,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
-13201,dax-convex-orb,CODEX-FTMO-DAX-CONVEX-ORB-20260711_S01,retired,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
-13202,ws30-fri-pm-long,CODEX-FTMO-WS30-FRI-PM-20260711_S01,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
+13200,ndx-convex-orb,CODEX-FTMO-CONVEX-ORB-20260711_S01,retired,Research+Development (OWNER FTMO mission),2026-07-11
+13201,dax-convex-orb,CODEX-FTMO-DAX-CONVEX-ORB-20260711_S01,retired,Research+Development (OWNER FTMO mission),2026-07-11
+13202,ws30-fri-pm-long,CODEX-FTMO-WS30-FRI-PM-20260711_S01,active,Research+Development (OWNER FTMO mission),2026-07-11
 13203,energy-downbeta,HOLLSTEIN-DOWNBETA-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
 13205,xau-xag-qc,SCHWEIKERT-QC-2018_XAU_XAG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
-13206,ftmo-account-governor,FTMO-RUNTIME-GOVERNOR-V1,reserved,DevOps,2026-07-13
+13206,ftmo-account-governor,FTMO-RUNTIME-GOVERNOR-V2,build_test,OWNER-delegated DevOps,2026-07-13
+13207,ws30-fri-t20a,CODEX-FTMO-WS30-FRI-PM-T20A-20260712_S01,active,Codex,2026-07-13
+13208,mulham-4h-sweep-fvg,YT-MULHAM-2026-07_4H-SWEEP-FVG_S01,active,Research+Development (OWNER Mulham channel mandate),2026-07-13
+13209,mulham-pm-range-sweep,YT-MULHAM-2026-07_PM-RANGE-SWEEP_S01,active,Research+Development (OWNER Mulham channel mandate),2026-07-13
+13210,mulham-asian-sweep-london,YT-MULHAM-2026-07_ASIAN-SWEEP-LONDON_S01,active,Research+Development (OWNER Mulham channel mandate),2026-07-13
+13211,mulham-tgif-weekly-fade,YT-MULHAM-2026-07_TGIF-WEEKLY-FADE_S01,active,Research+Development (OWNER Mulham channel mandate),2026-07-13
+13212,mulham-us500-org,YT-MULHAM-2026-07_US500-ORG_S01,active,Research+Development (OWNER Mulham channel mandate),2026-07-13
+20001,master-xauusd,MASTER-XAUUSD-MULTI-MAGIC-V1,active,Development,2026-07-13
+13301,balke-minute-range-breakout,BALKE-MINUTE-RANGE-BREAKOUT-2026,active,Claude,2026-07-15
+20002,ict-icytea-core,ICT-ICYTEA-CORE-2026,active,claude,2026-07-16
+20003,vorwald-pbd-vp-reversion,NILL-VORWALD-PBD-2026,active,claude,2026-07-16
+20004,turn-of-month-index-long,fx_edge_army_A3_2026-07-16,APPROVED,claude,2026-07-17
+20005,kurisko-quad-rotation-retest,KURISKO-QUADROT-2026,active,claude,2026-07-17
+4006,fx-session-flow,SRC09_S01,active,Research+Development (OWNER FTMO mission),2026-07-17
+4007,index-mac5-rev,SRC10_S01,active,Research+Development (OWNER FTMO mission),2026-07-17
+20007,intraday-config-engine,intraday-config-engine,active,Development,2026-07-19
+20008,wti-month-ch3,SZAKMARY-WTI-MCH3-2010,active,Research+Development (OWNER commodity-sleeve mission),2026-07-19
+20009,ict-liquidity-portfolio,ICT-OFFICIAL-2022-2023-ICYTEA-2026,active,Codex-OWNER-delegated,2026-07-19
+20006,spx-intraday-mom,FTMO-V3-R3-INTRADAY-MOM-2026,active,claude,2026-07-19
+20010,xau-friday-rush,INVESTUI_EFFECTS_SOURCING_2026-07-19,active,claude,2026-07-19
+20011,xng-thu-tue,MEEK-HOELSCHER-XNG-DOW-2023_S03,active,Research+Development (OWNER commodity-sleeve mission),2026-07-19
+20012,xauxag-cmtar,MIGHRI-XAUXAG-CMTAR-2018_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-20
+20013,xng-2m-contr,MISHRA-SMYTH-XNG-2M-2016_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-20
+20014,xng-month-ch3,SZAKMARY-XNG-MCH3-2010,active,Research+Development (OWNER commodity-sleeve mission),2026-07-20
+20015,wti-halloween-winter,BURAKOV-WTI-HALLOWEEN-2018_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-20
+20016,xti-xng-mon-rv,TGIF-WTI-WEEKEND-2017_S03,active,Research+Development (OWNER commodity-sleeve mission),2026-07-20
+20017,xng-dom15-long,BOROWSKI-XNG-DOM15-2016_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-20
+20018,xng-wed-short,BOROWSKI-COMM-DOW-2016_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-20
+20019,xauxag-wkend,BOROWSKI-LUKASIK-METALS-2017_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-20
+20020,wti-dom17-short,BOROWSKI-WTI-DOM17-2016_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-20
+20021,wti-h2m-short,BOROWSKI-WTI-H2M-2016_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-20
+20022,wti-wed-long,LI-WTI-DOW-2022_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-21
+20023,idx-macro-announce-day,SAVOR-WILSON-ANNDAY-2013_S01,active,Research+Development (OWNER density directive 2026-07-21),2026-07-21
+20024,london-fix-reversion,EDGELAB-T14-LONDONFIX_S01,active,Research+Development (collision fix ex-20006),2026-07-21
+20025,wti-feboct-daily,GORSKA-KRAWIEC-WTI-CAL-2015_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-21
+20026,tom-settlement-trough,ETULA-DASHFORCASH-TOM-2020_S01,active,Research+Development (OWNER density directive 2026-07-21),2026-07-21
+20027,wti-dom26-short,BOROWSKI-WTI-DOM26-2016_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-21
+20028,wti-dom1-long,BOROWSKI-WTI-DOM1-2016_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-21
+20029,wti-monfri-daily,GORSKA-KRAWIEC-WTI-CAL-2015_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-21
+20030,eia-cad,WFSWEEP-20260722,active,Research,2026-07-22
+20031,asia-fx-fade,WFSWEEP-20260722,active,Research,2026-07-22
+20032,macro0830-brk,WFSWEEP-20260722,active,Research,2026-07-22
+20033,moc-imom,WFSWEEP-20260722,active,Research,2026-07-22
+20034,wmr-postfix,WFSWEEP-20260722,active,Research,2026-07-22
+20035,xng-dom27-short,BOROWSKI-XNG-DOM15-2016_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-22
+20036,wti-dom8-long,BOROWSKI-WTI-DOM8-2016_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-22
+20037,lbma-pm-brk,CAMINSCHI-HEANEY-2014-JFM,active,Research (FTMO density wave-2),2026-07-22
+20038,vwap2s-revert,BERKOWITZ-LOGUE-NOSER-1988-JF,active,Research (FTMO density wave-2),2026-07-22
+20039,onr-mid-brk,ZARATTINI-2023-ORB,active,Research (FTMO density wave-2),2026-07-22
+20040,b3-relvol-brk,FORCA-GITHUB-UNVERIFIED-2024,active,Research (FTMO density wave-2),2026-07-22
+20041,postclose-cont,PLOSONE-2024-POSTCLOSE,active,Research (FTMO density wave-2),2026-07-22
+20042,brent-dom17,BOROWSKI-XBR-DOM17-2016_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-22
+20043,tpo-va80-rot,FTMO-MARKETPROFILE-80-2026,active,Research (FTMO density wave-3),2026-07-22
+20044,gap-hilo-fade,SANCHES-COSTA-2008-GAPHILO,active,Research (FTMO density wave-3),2026-07-22
+20045,london-box,FF-MER071898-2010-LONBRK,active,Research (FTMO density wave-3),2026-07-22
+20046,wti-halloween-ls,BURAKOV-WTI-HALLOWEEN-2018_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-22
+20047,wti-mon-loss-bnc,LI-WTI-DOW-2022_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-22
+20048,wti-preholiday,QADAN-AHARON-EICHEL-2019_WTI_HOL_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-22
+20049,wti-abret-mom,CAPORALE-PLASTUN-2021_OIL_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-22
+20050,xauxag-xmom12,FMR-MOMTS-2010_XAU_XAG_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-23
+20051,energy-xmom1,FMR-MOMTS-2010_XTI_XNG_S03,active,Research+Development (OWNER commodity-sleeve mission),2026-07-23
+20052,xng-seas-trend,SUENAGA-MOP-XNG-2008-2012_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-23
+20053,xcu-weekend-prem,BOROWSKI-LUKASIK-METALS-2017_S02,allocated,Codex,2026-07-23
+20054,xng-1m-contr,MISHRA-SMYTH-XNG-1M-2016_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-23
+20055,wti-tsmom3m,MOP-TSMOM-2012_XTI_S03,active,Research+Development (OWNER commodity-sleeve mission),2026-07-23
+20056,wti-dual-mom,MOP-TSMOM-2012_XTI_S04,active,Research+Development (OWNER commodity-sleeve mission),2026-07-23
+20057,xauxag-xmom1,FMR-MOMTS-2010_XAU_XAG_S03,active,Research+Development (OWNER commodity-sleeve mission),2026-07-23
+20058,xcu-tsmom3m,MOP-TSMOM-2012_XCU_S05,active,Research+Development (OWNER commodity-sleeve mission),2026-07-23
+20059,wti-tsmom6m,MOP-TSMOM-2012_XTI_S06,active,Research+Development (OWNER commodity-sleeve mission),2026-07-23
+20060,xcu-xag-rspread,PARNES-CME-COPPERSILVER-2026,active,Research+Development (OWNER commodity-sleeve mission),2026-07-23
+20061,kats-dax-maci,KATSANOS-INTERMARKET-2008_S01,active,Research+Development (OWNER G0),2026-07-26
+20062,kats-eu-macisar,KATSANOS-INTERMARKET-2008_S02,allocated,Research (OWNER G0),2026-07-23
+20063,xng-tsmom3m,MOP-TSMOM-2012_XNG_S07,active,Research+Development (OWNER commodity-sleeve mission),2026-07-23
+20064,wti-tsmom2m,MOP-TSMOM-2012_XTI_S08,active,Research+Development (OWNER commodity-sleeve mission),2026-07-23
+20065,pricebob-refbar-breakout-eurusd,68eff294-e3b2-5010-82d8-e9dd5f4130e6,active,Research,2026-07-23
+20066,pricebob-atr-gated-lbma-breakout-xauusd,68eff294-e3b2-5010-82d8-e9dd5f4130e6,active,Research,2026-07-23
+20067,pricebob-retracement-reentry-usdjpy,68eff294-e3b2-5010-82d8-e9dd5f4130e6,active,Research,2026-07-23
+20068,pricebob-bounded-fixedr-intraday-ws30,68eff294-e3b2-5010-82d8-e9dd5f4130e6,active,Research,2026-07-23
+20069,pricebob-eodflat-session-breakout-xtiusd,68eff294-e3b2-5010-82d8-e9dd5f4130e6,active,Research,2026-07-23
+20070,antor-mtf-macd-scalper-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,claude,2026-07-23
+20071,channel-cci-bollinger-mr-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,claude,2026-07-23
+20072,4h-box-frankfurt-london-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,claude,2026-07-23
+20073,pip-hunter-heiken-ashi-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-07-23
+20074,trendline-horizontal-sr-retest,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-07-23
+20075,camarilla-inner-pivot-fade,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-07-23
+20076,trendline-diagonal-break-retest,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-07-23
+20077,atr-channel-trail-breakout-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-07-23
+20078,volume-profile-poc-retest-intraday,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20079,pip-boxer-bounded-grid-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20080,goodman-wave-theory-intersection-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20081,renko-triple-block-flip-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20082,connors-rsi2-pullback-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20083,pricebob-sar-invalidation-flip-gbpusd,68eff294-e3b2-5010-82d8-e9dd5f4130e6,active,Research,2026-07-23
+20084,pricebob-ib30-settled-continuation-ndx,68eff294-e3b2-5010-82d8-e9dd5f4130e6,active,Research,2026-07-23
+20085,lebeau-lucas-momentum-oscillator-h4-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20086,connors-multi-day-high-low-h4-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20087,carney-three-drives-h4-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20088,carney-crab-pattern-h4-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20089,hopwood-ts4-standalone-h4-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20090,pricebob-ttr-brooks-stoporder-breakout-audusd,68eff294-e3b2-5010-82d8-e9dd5f4130e6,active,Research,2026-07-23
+20091,pricebob-extreme-reversal-fade-gdaxi,68eff294-e3b2-5010-82d8-e9dd5f4130e6,active,Research,2026-07-23
+20092,pricebob-refbar-breakout-correlated-metal-xagusd,68eff294-e3b2-5010-82d8-e9dd5f4130e6,active,Research,2026-07-23
+20093,wti-summer-short,BURAKOV-WTI-HALLOWEEN-2018_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-24
+20094,xng-fri-short,BOROWSKI-COMM-DOW-2016_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-24
+13213,balke-gmt3-range-breakout,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-14
+20095,auag-mon-diff,LUCEY-TULLY-DOW-2006_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-24
+20096,ha-stoch-h4-swing,WEB-SOURCES-HARVEST-2026-07,active,Claude,2026-07-24
+20097,three-little-pigs-mtf-sma,WEB-SOURCES-HARVEST-2026-07,active,Claude,2026-07-24
+20098,weekly-open-liquidity-sweep,WEB-SOURCES-HARVEST-2026-07,active,Claude,2026-07-24
+20099,wti-samecal,KELOHARJU-RETSEAS-2016_XTI_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-24
+20100,xng-samecal,KELOHARJU-RETSEAS-2016_XNG_S03,active,Research+Development (OWNER commodity-sleeve mission),2026-07-24
+20101,simplicity-ha-ema100-london,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20102,prevday-breakout-close-edge,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20103,daylight-wpr-smma-m15,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20104,notable-number-fade-m5,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20105,notable-number-breakout-m5,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20106,daily-wick-stop-breakout,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20107,asian-range-straddle-m15,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20108,ema144-displaced-breach-m5,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20109,vr-gap-fade-d1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20110,xti-xng-fri-rv,MEEK-HOELSCHER-ENERGY-DOW-2023_S04,active,Research+Development (OWNER commodity-sleeve mission),2026-07-24
+20111,london-box-fib-straddle,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20112,ema9-pullback-m15,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20113,ema369-cross-m5,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20114,h4-engulf-sma50-stop,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20115,pb-dual-stoch-m15,WEB-SOURCES-HARVEST-2026-07,retired,Research,2026-07-24
+20116,ema512-rsi7-m15,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20117,wti-fri-lagrev,MEEK-HOELSCHER-WTI-DOW-2023_S05,active,Research+Development (OWNER commodity-sleeve mission),2026-07-24
+20118,dtrt-cci-h1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20119,macd50-ukgrid-gbpusd,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20120,simple-daily-3rise,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20121,mtf-rsi2-align-m15,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20122,bb-stoch-bandcross-h1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20123,dailyopen-h1-basket,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-24
+20124,xng-stor-m30,EIA-XNG-STORAGE-INTRADAY-2026_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-25
+20125,rsi2-obos-scalp-m15,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20126,abo-atr-straddle-h1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20127,sisyphus-2ma-rsi2-d1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20128,xng-stor-fade,EIA-XNG-STORAGE-INTRADAY-2026_S02,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20129,ema-rsi-cci-h1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20130,channel-ma-m15,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20131,wick-latest-h1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20132,xng-stor-orb,EIA-XNG-STORAGE-INTRADAY-2026_S03,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20133,wti-wpsr-pb,EIA-WTI-WPSR-INTRADAY-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20134,wti-wpsr-fail,EIA-WTI-WPSR-INTRADAY-2026_S02,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20135,wti-winter-trend,BURAKOV-MOP-WTI-WINTER-TREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20136,wti-caltrend,KELOHARJU-MOP-WTI-CALTREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20137,wti-seas-pb,KELOHARJU-YANG-WTI-SEASPULL-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20138,stoch-ema50-pullback-h4,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20139,dibs-inside-bar-h1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20140,roundnum-sma50-h1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20141,wti-sumtrend,EWALD-MOP-WTI-SUMTREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20142,mtf-ema25-align-h4,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20143,macd-bb-campaign-m5,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20144,ichimoku-atr-cloud-d1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20145,wti-fri-trend,GORSKA-MOP-WTI-FRITREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20146,london-orb-3candle-h1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20147,ndx-ema50-momentum-d1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20148,usdjpy-pretokyo-straddle,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20149,wti-montrend,QUAY-MOP-WTI-MONTREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20150,emacross-stochhook-fib-h4,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20151,dual-supertrend-confluence-h1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20152,sma-cross-pullback-h1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20153,wti-thu-trend,QUAY-MOP-WTI-THUTREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20154,wti-wed-trend,LI-MOP-WTI-WEDTREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20155,wti-tue-trend,GORSKA-MOP-WTI-TUETREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20156,xng-wed-trend,BOROWSKI-MOP-XNG-WEDTREND-2026_S01,active,Codex,2026-07-25
+20157,xau-xag-ratio,SCHWEIKERT-XAUXAG-RATIO-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20158,xng-tue-trend,BOROWSKI-MOP-XNG-TUETREND-2026_S01,active,Codex,2026-07-25
+20159,xng-mon-trend,BOROWSKI-MOP-XNG-MONTREND-2026_S01,active,Codex,2026-07-25
+20160,xng-fri-trend,BOROWSKI-MOP-XNG-FRITREND-2026_S01,active,Codex,2026-07-25
+20161,xauxag-ols-rv,SCHWEIKERT-XAUXAG-OLS-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20162,xng-winter-dualtrend,EIA-MOP-XNG-WINTER-DUALTREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-26
+20163,xng-thu-trend,BOROWSKI-MOP-XNG-THUTREND-2026_S01,active,Codex,2026-07-26
+20164,xng-summer-dualtrend,EIA-MOP-XNG-SUMMER-DUALTREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-26
+20165,energy-lev-conv,KRISTOUFEK-ENERGY-LEV-2014_S03,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-26
+20166,xng-shoulder-brk,EIA-XNG-SHOULDER-2026_S05,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-26
+20167,xng-spring-dualtrend,EIA-MOP-XNG-SPRING-DUALTREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-26
+20168,xng-autumn-dualtrend,EIA-MOP-XNG-AUTUMN-DUALTREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-26
+20169,wti-thu-bear,QUAY-MOP-WTI-THUBEAR-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-26
+20170,wti-wed-bear,LI-MOP-WTI-WEDBEAR-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-26
+20171,brent-tsmom3m,MOP-TSMOM-2012_XBR_S09,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-26
+20172,wti-fri-bear,GORSKA-MOP-WTI-FRIBEAR-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-26
+20173,wti-mon-bullfade,QUAY-MOP-WTI-MONBULL-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-26
+20174,wti-tue-bullfade,GORSKA-MOP-WTI-TUEBULL-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-26
+20175,alpha-inst-magnet-r1-recovery,OWNER-FABIAN-GRABNER-R1-RECOVERY-20260723,active,Codex,2026-07-26
+20176,hopwood-ts5-standalone-h4-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Codex,2026-07-27
+20177,carney-ab-cd-pattern-h4-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Codex,2026-07-27
+20178,hopwood-bermaui-macd-h4-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Codex,2026-07-27
+20179,pesavento-abcd-pattern-h4-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Codex,2026-07-27
+20180,ftmo-joint-sim-backtest-only,CLAUDE-FTMO-JOINT-SIM-BACKTEST-ONLY-20260727,backtest-only,Claude,2026-07-27
+20181,ftmo-joint-multisym-timer,CLAUDE-FTMO-JOINT-MULTISYM-TIMER-20260727,backtest-only,Claude,2026-07-27
+20182,wti-sum-bull,EWALD-MOP-WTI-SUMBULL-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-29
+20183,gbpusd-chf-coint,AI-CLAUDE-FX-COINT66-20260609-GBPUSD-USDCHF,active,Codex,2026-07-31
+20184,xauxag-xmom3,FMR-MOMTS-2010_XAU_XAG_S04,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-31
+20185,wti-win-bearfade,BURAKOV-MOP-WTI-WINBEAR-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-31
+20186,xauxag-samecal,KELOHARJU-FMR-XAUXAG-SAMECAL-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-31
+20187,wti-tsmom1m,MOP-TSMOM-2012_XTI_S10,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-31
+20188,ff-rb-tue-off,6e967762-b26d-59a3-b076-35c17f2e7c36-TUE-OFF-20260731,active,OWNER+Codex,2026-07-31
+20189,xauxag-calmom1,KELOHARJU-FMR-XAUXAG-CALMOM1-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-31
+20190,oilbench-cal,KELOHARJU-GK-OILBENCH-CAL-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-01
+20191,eurusd-chf-coint,AI-CLAUDE-FX-COINT66-20260609-EURUSD-USDCHF,active,Codex,2026-08-01
+20192,xauxag-ivol,FUERTES-MOMIVOL-2015_XAU_XAG_S03,active,Research,2026-08-01
+20193,eurusd-cad-coint,AI-CLAUDE-FX-COINT66-20260609-EURUSD-USDCAD,active,Research+Development (OWNER FX portfolio mission),2026-08-01
+20194,xauxag-momrev,BIANCHI-MOMREV-2015_XAU_XAG_S02,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-01
+20195,nzd-eurgbp-coint,AI-CLAUDE-FX-COINT66-20260609-NZDUSD-EURGBP,active,Research+Development (OWNER FX portfolio mission),2026-08-01
+20196,eurusd-jpy-coint,AI-CLAUDE-FX-COINT66-20260609-EURUSD-USDJPY,active,Research+Development (OWNER FX portfolio mission),2026-08-01
+20197,eurjpy-eurgbp,AI-CLAUDE-FX-COINT66-20260609-EURJPY-EURGBP,active,Research+Development (OWNER FX portfolio mission),2026-08-01
+20198,xng-tue-bear,BOROWSKI-MOP-XNG-TUEBEAR-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-01
+20199,eurjpy-euraud,AI-CODEX-FX-COINT66-20260609-EURJPY-EURAUD,active,Research+Development (OWNER FX portfolio mission),2026-08-01
+20200,audjpy-euraud,AI-CODEX-FX-COINT66-20260609-AUDJPY-EURAUD,active,Research+Development (OWNER FX portfolio mission),2026-08-01
+20201,gbpjpy-eurgbp,AI-CODEX-FX-COINT66-20260609-GBPJPY-EURGBP,active,Research+Development (OWNER FX portfolio mission),2026-08-01
+20202,xauxag-rev18,BIANCHI-MOMREV-2015_XAU_XAG_S03,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-02
+20203,eurusd-audjpy,AI-CODEX-FX-COINT66-20260609-EURUSD-AUDJPY,active,Research+Development (OWNER FX portfolio mission),2026-08-02
+20204,xng-tsmom1m,MOP-TSMOM-2012_XNG_S11,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-02
+20205,wti-calmom1,KELOHARJU-MOP-WTI-CALMOM1-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-03
+20206,xauxag-momivol,FUERTES-MOMIVOL-2015_XAU_XAG_S04,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-03
+20207,usdcad-audusd,AI-CODEX-FX-COINT66-20260609-USDCAD-AUDUSD,active,Research+Development (OWNER FX portfolio mission),2026-08-03
+20208,nzdusd-euraud,AI-CODEX-FX-COINT66-20260609-NZDUSD-EURAUD,active,Research+Development (OWNER FX portfolio mission),2026-08-03
+20209,wti-winter-mom1,BURAKOV-MOP-WTI-WINTER-MOM1-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-08-03
+20210,gbpusd-audjpy,AI-CODEX-FX-COINT66-20260609-GBPUSD-AUDJPY,active,Research+Development (OWNER FX portfolio mission),2026-08-03
+20211,gbpjpy-euraud,AI-CODEX-FX-COINT66-20260609-GBPJPY-EURAUD,active,Research+Development (OWNER FX portfolio mission),2026-08-04

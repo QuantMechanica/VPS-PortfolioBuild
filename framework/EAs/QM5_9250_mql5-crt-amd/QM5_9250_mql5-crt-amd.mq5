@@ -274,21 +274,28 @@ bool Strategy_FindCrtSetup(const MqlRates &range_bar,
    return true;
   }
 
-bool Strategy_OppositeCrtSignal(const long position_type)
+bool Strategy_FindOurPosition(ulong &out_ticket, ENUM_POSITION_TYPE &out_type)
   {
-   MqlRates range_bar;
-   if(!Strategy_ReadRangeBar(range_bar))
+   out_ticket = 0;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
-   int direction = 0;
-   double manip_extreme = 0.0;
-   if(!Strategy_FindCrtSetup(range_bar, direction, manip_extreme))
-      return false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
 
-   if(position_type == POSITION_TYPE_BUY && direction < 0)
+      out_ticket = ticket;
+      out_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       return true;
-   if(position_type == POSITION_TYPE_SELL && direction > 0)
-      return true;
+     }
+
    return false;
   }
 
@@ -324,7 +331,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(_Period != PERIOD_M15 || !Strategy_InputsValid() || Strategy_HasOpenPosition())
+   if(_Period != PERIOD_M15 || !Strategy_InputsValid())
       return false;
 
    MqlRates range_bar;
@@ -344,6 +351,22 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double manip_extreme = 0.0;
    if(!Strategy_FindCrtSetup(range_bar, direction, manip_extreme))
       return false;
+
+   // Card §Exit: "Close if an opposite valid CRT AMD signal appears." Evaluated
+   // here (once per closed M15 bar, same cadence as the entry scan) rather than
+   // per-tick in Strategy_ExitSignal, which would otherwise force an ungated
+   // CopyRates rescan on every tick a position is open (perf-discipline
+   // violation). A same-direction open position blocks a duplicate entry.
+   ulong existing_ticket = 0;
+   ENUM_POSITION_TYPE existing_type = POSITION_TYPE_BUY;
+   if(Strategy_FindOurPosition(existing_ticket, existing_type))
+     {
+      const bool existing_is_buy = (existing_type == POSITION_TYPE_BUY);
+      const bool opposite = (existing_is_buy && direction < 0) || (!existing_is_buy && direction > 0);
+      if(!opposite)
+         return false;
+      QM_TM_ClosePosition(existing_ticket, QM_EXIT_OPPOSITE_SIGNAL);
+     }
 
    const double stop_atr = QM_ATR(_Symbol, PERIOD_M15, strategy_atr_period, 1);
    if(stop_atr <= 0.0)
@@ -430,10 +453,6 @@ bool Strategy_ExitSignal()
 
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
       if(opened > 0 && broker_now - opened >= hold_seconds)
-         return true;
-
-      const long position_type = PositionGetInteger(POSITION_TYPE);
-      if(Strategy_OppositeCrtSignal(position_type))
          return true;
      }
 

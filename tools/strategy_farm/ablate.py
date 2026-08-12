@@ -32,6 +32,9 @@ _INPUT_LINE_RE = re.compile(
     r"input\s+(int|double|long|float)\s+(strategy_\w+)\s*=\s*([0-9.\-]+)\s*;",
     re.IGNORECASE,
 )
+_SETFILE_ASSIGNMENT_RE = re.compile(
+    r"^(?P<prefix>[ \t]*(?P<name>[A-Za-z_]\w*)[ \t]*=[ \t]*).*$"
+)
 
 
 def _utc_now_iso() -> str:
@@ -59,6 +62,42 @@ def extract_strategy_inputs(ea_mq5_path: Path) -> list[dict]:
             continue
         out.append({"name": name, "type": typ, "default": default})
     return out
+
+
+def _render_variant(
+    parent_text: str,
+    marker: str,
+    overrides: dict[str, str],
+) -> str:
+    """Replace override assignments in place and add only missing keys.
+
+    Older children were produced by appending overrides, leaving duplicate
+    strategy_* assignments when the parent already contained a key.  Keep the
+    first assignment position, remove later copies of overridden keys, and
+    append only overrides that were genuinely absent from the parent.
+    """
+
+    body: list[str] = []
+    replaced: set[str] = set()
+
+    for line in parent_text.rstrip().splitlines():
+        match = _SETFILE_ASSIGNMENT_RE.match(line)
+        name = match.group("name") if match else None
+        if name not in overrides:
+            body.append(line)
+            continue
+        if name in replaced:
+            continue
+        body.append(f"{match.group('prefix')}{overrides[name]}")
+        replaced.add(name)
+
+    body.append(marker)
+    body.extend(
+        f"{name}={value}"
+        for name, value in overrides.items()
+        if name not in replaced
+    )
+    return "\n".join(body) + "\n"
 
 
 def mutate_setfile(
@@ -104,16 +143,17 @@ def mutate_setfile(
                     new_val_str = "0"
             overrides[inp["name"]] = new_val_str
 
-        body = [parent_text.rstrip()]
-        body.append(
+        marker = (
             f"; --- ablation child {i:02d} of {parent_stem} "
             f"(perturb=±{int(perturb_pct*100)}%) ---"
         )
-        for k, v in overrides.items():
-            body.append(f"{k}={v}")
 
         out_path = parent_setfile.parent / f"{parent_stem}_ablation_{i:02d}.set"
-        out_path.write_text("\n".join(body) + "\n", encoding="utf-8", newline="\n")
+        out_path.write_text(
+            _render_variant(parent_text, marker, overrides),
+            encoding="utf-8",
+            newline="\n",
+        )
         out_paths.append(out_path)
 
     return out_paths
@@ -183,16 +223,17 @@ def mutate_setfile_grid(
                     new_val_str = "0"
             overrides[inp["name"]] = new_val_str
 
-        body = [parent_text.rstrip()]
-        body.append(
+        marker = (
             f"; --- grid child {idx:03d}/{len(combos):03d} of {parent_stem} "
             f"(n_dims={n_dims} m_per_dim={m_per_dim} perturb=±{int(perturb_pct*100)}%) ---"
         )
-        for k, v in overrides.items():
-            body.append(f"{k}={v}")
 
         out_path = parent_setfile.parent / f"{parent_stem}_grid_{idx:03d}.set"
-        out_path.write_text("\n".join(body) + "\n", encoding="utf-8", newline="\n")
+        out_path.write_text(
+            _render_variant(parent_text, marker, overrides),
+            encoding="utf-8",
+            newline="\n",
+        )
         out_paths.append(out_path)
 
     return out_paths

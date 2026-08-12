@@ -1,0 +1,27 @@
+{
+  "candidate_evidence": [
+    "artifacts/ftmo_1142_usdjpy_fresh_stream_reconciliation_2026-07-12.json",
+    "artifacts/ftmo_1142_usdjpy_current_report_cost_reconciliation_2026-07-12.json"
+  ],
+  "sleeve": {
+    "ea_id": 1142,
+    "symbol": "USDJPY.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_1142_usdjpy_20260712\\QM5_1142\\20260712_034905\\summary.json",
+    "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\1142_USDJPY_DWX_FTMO_RESEARCH_FRESH_20260712.jsonl",
+    "base_risk_fixed": 1000.0,
+    "qualification": "fresh_reconciled_current_ftmo_q02_pass_owner_diagnostic_parameter_lineage_research_only",
+    "cost": {
+      "ftmo_symbol_code": "USD/JPY",
+      "commission_percent_per_side": 0.0,
+      "flat_round_trip_commission_per_lot": 5.0,
+      "swap_long_points": 2.62,
+      "swap_short_points": -22.41,
+      "contract_size": 100000.0,
+      "source_contract_size": 100000.0,
+      "profit_currency_to_account_rate": 0.0066666667,
+      "derive_profit_currency_rate_from_pnl": true,
+      "digits": 3,
+      "triple_weekday": 2
+    }
+  }
+}

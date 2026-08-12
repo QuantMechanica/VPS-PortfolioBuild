@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_1005994_dual-candle-strategy.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1005994_dual-candle-strategy.pdf",
+      "source_pages": "1",
+      "source_ref": "sak.mandhai, 'Dual Candle Strategy' (Dual Candlestick / Inside Bar H4), ForexFactory thread 1005994, https://www.forexfactory.com/thread/1005994-dual-candle-strategy",
+      "strategy_name": "Dual-Candle Inside-Bar BB/RSI Breakout",
+      "concept": "H4 inside-bar (second candle fully contained by the first) breaks out via stop order in the direction of the first candle, filtered by Bollinger-Band position and RSI momentum.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic inside-bar breakout with BB(20,2) + RSI(14>50/<50) filters, pure MQL5, H4 FX data on .DWX, has a stop-loss so FTMO/DXZ-compatible; SL/TP delegated to an unseen Google-Sheet calculator (one worked example only), so exits need reconstruction.",
+      "priority_hint": "LOW",
+      "notes": "Entry FULL: long = bullish first candle + contained second candle both between upper & middle BB + RSI>50 -> buy-stop at first-candle high; short = mirror below middle BB + RSI<50 -> sell-stop at first-candle low; RSI read off the first candle. Exit VAGUE: SL/TP from a Google spreadsheet not posted; sole example EURUSD sell-stop 1.12202, SL 1.13402 (~120p), TP1/TP2/TP3 1.12002/1.11802/1.10702 (~20/40/150p) implies wide SL + laddered TPs. Author is a signal-seller (forexfiverr/tradingview signal service) -> reputability caveat. Inside-bar breakout is a heavily-mined generic pattern, not an uncorrelated driver. Thread otherwise chatter: a 'miracle indicator' tangent (no rules), a shared FXSniper Insidebar.ex4 helper indicator (not a distinct strategy), no backtest evidence beyond signal screenshots. No year stated in the thread."
+    }
+  ],
+  "notes": []
+}

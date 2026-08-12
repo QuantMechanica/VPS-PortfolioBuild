@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-07-10T22:57:22.583939+00:00",
+  "selection_contract": {
+    "development": "2018-2022",
+    "validation": "2023",
+    "holdout": "2024-2025",
+    "preholdout_gate": "DEV trades>=100 PF>=1.15; VAL trades>=15 PF>=1.05 net>0; >=3 positive DEV years",
+    "holdout_gate": "trades>=30 PF>=1.10 net>0 and both 2024/2025 positive",
+    "collision_rule": "stop_first_if_stop_and_target_touch_same_H1_bar",
+    "daily_position_limit": 1,
+    "overnight_positions": 0
+  },
+  "evaluated_configurations": 44,
+  "preholdout_pass_count": 0,
+  "selected_family_winners": [],
+  "holdout_pass_count": 0
+}

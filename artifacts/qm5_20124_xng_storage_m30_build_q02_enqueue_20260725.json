@@ -1,0 +1,81 @@
+{
+  "date": "2026-07-25",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20124",
+  "ea_numeric_id": 20124,
+  "slug": "xng-stor-m30",
+  "strategy_id": "EIA-XNG-STORAGE-INTRADAY-2026_S01",
+  "source_id": "EIA-XNG-STORAGE-AFTERSHOCK-2026",
+  "symbol": "XNGUSD.DWX",
+  "timeframe": "M30",
+  "magic_slot": 0,
+  "magic_number": 201240000,
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "source_urls": [
+    "https://www.eia.gov/naturalgas/data.php",
+    "https://ir.eia.gov/ngs/schedule.html"
+  ],
+  "dedup": {
+    "status": "CLEAN",
+    "registry_rows_checked": 4181,
+    "cards_checked": 374,
+    "manual_storage_family_duplicate_found": false
+  },
+  "validation": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "targeted_build_guard": "PASS",
+    "spec_validation": "PASS",
+    "strict_compile": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "strict_build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0
+  },
+  "hashes_sha256": {
+    "mq5": "781F68439429A80A492534B1C0628B567630E971C2C14A3EA3F031A352327261",
+    "ex5": "9B2752807C1C7216D2AE7B968A3D9289A949B1A992CF3CE7CD48E38B5FE63BD8",
+    "setfile": "277CA092B1684F417DFA67D6507FDC0E9DB3408EADED3579BA34D66B87977E47",
+    "setfile_build_hash_receipt": "2D4BB0C3ACC298285102E9AA26445588078BC3A7BEA4C5050D844F86C3B9EF68",
+    "magic_resolver": "3A032FCE081C82061D500745EF41DCD153BF9D804CD53E73F4DA5572D021B523",
+    "magic_registry_embedded": "F1101903B28BFC60F702624608D3E3DF0076DDB3C28A5C8FFE257E71945BB053"
+  },
+  "reports": {
+    "compile_log": "C:/QM/repo/framework/build/compile/20260724_223658/QM5_20124_xng-stor-m30.compile.log",
+    "build_check_with_compile": "D:/QM/reports/framework/21/build_check_20260724_223658.json",
+    "build_check_final": "D:/QM/reports/framework/21/build_check_20260724_224539.json",
+    "runtime_build_result": "D:/QM/strategy_farm/artifacts/builds/6158129f-43b0-45e2-be2d-11e6654a37ad.json"
+  },
+  "farm": {
+    "build_task_id": "6158129f-43b0-45e2-be2d-11e6654a37ad",
+    "build_status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "q02_work_item_id": "6ecb71e5-84f6-41ac-b257-507f6aef38e0",
+    "q02_status": "pending",
+    "q02_attempt_count": 0,
+    "q02_rows_for_ea": 1,
+    "factory_off_asserted": true,
+    "active_factory_terminals_at_handoff": [
+      "T4"
+    ],
+    "active_factory_terminal_count": 1,
+    "cpu_ceiling": 7,
+    "cpu_ceiling_hit": false
+  },
+  "safety": {
+    "manual_backtest_launched": false,
+    "dispatcher_or_pump_run": false,
+    "autotrading_toggled": false,
+    "t_live_mutated": false,
+    "live_setfile_created": false,
+    "deploy_or_t_live_manifest_changed": false,
+    "portfolio_gate_changed": false,
+    "portfolio_admission_claimed": false,
+    "correlation_waiver_claimed": false
+  }
+}

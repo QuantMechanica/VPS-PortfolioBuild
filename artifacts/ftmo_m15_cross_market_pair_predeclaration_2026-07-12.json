@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_SCREEN",
+  "deployment_allowed": false,
+  "hypothesis": "Market-neutral relative-value or relative-momentum trades across economically related non-US pairs may add return density without the incumbent directional beta.",
+  "pairs": [
+    ["GDAXI.DWX", "UK100.DWX"],
+    ["XAUUSD.DWX", "XAGUSD.DWX"],
+    ["XTIUSD.DWX", "XNGUSD.DWX"]
+  ],
+  "data_sha256": {
+    "GDAXI.DWX": "8BC3BF7E7913EE8C6C3F96AB29EEEBD9F0FD24A1A21E45895E0F7E813474E072",
+    "XAUUSD.DWX": "8A4BFDD6630C54D6DCD1042C89E90BF03C428311A6746C7EB2A572152504E1EB",
+    "UK100.DWX": "C2C58FF58773DB1F8546FBEA91D09F23B92B2779EAE2218EE5FC24A368A878F8",
+    "XAGUSD.DWX": "D39D04669E24C0A9870A9D9251A1D4BE0196C51BF14B357A52AD6EF920BD80B2",
+    "XTIUSD.DWX": "E682FB1A050D027F00B73149B63723ADED5190D6909F82C24DB54DA84581BE57",
+    "XNGUSD.DWX": "ED94745884D1539CBE62CA92B455FB7976665DF3298E86C49D3ECF2769D4A6B5"
+  },
+  "engine_contract": {
+    "engine": "ftmo_m15_us_index_pair_reversion.py",
+    "entry": "Next synchronized M15 bar open after a completed divergence window.",
+    "sizing": "Equal ATR risk per leg with opposite directions.",
+    "same_bar_rule": "Joint adverse extremes trigger stop before joint favorable extremes trigger target.",
+    "modes": ["reversion", "momentum"],
+    "maximum_one_pair_trade_per_day": true
+  },
+  "fixed_grid": {
+    "lookback_bars": [2, 4, 8],
+    "divergence_atr": [0.25, 0.5, 0.75],
+    "portfolio_stop_atr": [0.5, 1.0],
+    "target_r": [1.0, 2.0, 3.0],
+    "hold_bars": [2, 4, 8],
+    "total_configurations": 972
+  },
+  "selection_contract": {
+    "development": "2018-2022",
+    "validation": "2023",
+    "sealed_holdout": "2024-2025",
+    "minimum_development_trades": 150,
+    "minimum_development_profit_factor": 1.18,
+    "minimum_positive_development_years": 4,
+    "minimum_validation_trades": 25,
+    "minimum_validation_profit_factor": 1.1,
+    "winner_count": 1,
+    "holdout_open_rule": "Open 2024-2025 only for the single global mode/pair winner if every preholdout gate passes.",
+    "holdout_pass_rule": "At least 50 trades, PF >= 1.10, positive pooled net R, and positive 2024 and 2025 net R."
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

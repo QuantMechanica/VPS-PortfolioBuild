@@ -74,7 +74,7 @@ EUR-denominated tester accounting of the AUDUSD leg. They are not traded legs.
 |---|---|
 | Base timeframe | D1 |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_D1)`; `OnInit` rejects every non-D1 host chart |
 
 ---
 
@@ -121,6 +121,11 @@ Q02 tester note: the manifest pins `tester_currency=EUR` and
 
 No manual tester run is launched from this build session; Q02 is delegated to
 the paced farm workers through the logical basket setfile.
+
+Execution-contract guard: tester runs now fail `OnInit` when the account
+currency is not EUR. This prevents a raw USD annex from being mistaken for the
+canonical basket qualification. Live account currency is not altered or gated
+by this tester-only assertion.
 
 Q02 handoff: build task `e6ac4aae-f214-40f0-b037-1a9eeea4e2f8` was recorded
 on 2026-06-29 and auto-enqueued one logical basket work item,

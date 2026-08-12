@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_13209_NDX_PRESCREEN_OUTCOME_FENCED_ANALYSIS_CONTRACT",
+  "status": "IMPLEMENTED_REVIEW_APPROVED_NOT_AUTHORIZED_NOT_LAUNCHED",
+  "created_utc": "2026-07-21T11:43:25Z",
+  "analysis_id": "QM5_13209_MULHAM_PM_RANGE_SWEEP_NDX_PRESCREEN_NATIVE_001",
+  "candidate": {
+    "ea_id": "QM5_13209",
+    "slug": "mulham-pm-range-sweep",
+    "research_symbol": "NDX.DWX",
+    "live_aliases": {
+      "DXZ_LIVE": "NDX",
+      "FTMO_TRIAL": "US100.cash"
+    },
+    "magic_slot": 1,
+    "magic": 132090001
+  },
+  "scope": {
+    "execution_lane": "DEV2",
+    "run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13209\\NDX_PM_RANGE_SWEEP_NATIVE_001\\ATTEMPT_001",
+    "attempts": 1,
+    "resume_permitted": false,
+    "relaunch_permitted": false,
+    "retry_permitted": false,
+    "old_factory_workitem_resumed": false,
+    "parameter_tuning_permitted": false,
+    "gate_changes_permitted": false
+  },
+  "cell": {
+    "cell_id": "PRESCREEN_2022H2",
+    "from_date": "2022-07-01",
+    "to_date": "2022-12-31",
+    "timeframe": "M5",
+    "model": 4,
+    "initial_deposit_usd": 100000,
+    "leverage": 100,
+    "accepted_deterministic_duplicates": 2,
+    "maximum_native_starts": 4,
+    "maximum_infrastructure_warmups": 2,
+    "allowed_warmup_reasons": [
+      "BARS_ZERO",
+      "NO_HISTORY"
+    ],
+    "warmups_must_be_prefix_zero_trade_zero_result": true
+  },
+  "cost_contract": {
+    "spread": "EMBEDDED_IN_NDX.DWX_REAL_TICKS",
+    "swap": "MUST_BE_ZERO_BY_INTRADAY_LIFECYCLE",
+    "round_turn_usd_per_closed_lot": "5.50",
+    "application": "EXTERNAL_LEDGER_PER_CLOSED_TRADE_VOLUME_ROUNDED_TO_CENT",
+    "native_commission_must_be_zero": true,
+    "ea_simulated_commission_must_be_zero": true
+  },
+  "merit_gates": {
+    "minimum_trades": 5,
+    "minimum_native_profit_factor": "1.20",
+    "minimum_cost_adjusted_profit_factor": "1.20",
+    "cost_adjusted_net_must_be_strictly_positive": true,
+    "all_lifecycle_and_session_invariants_must_pass": true
+  },
+  "lifecycle_contract": {
+    "entry_broker_time_half_open": "[16:30,19:00)",
+    "same_broker_day_flat": true,
+    "flat_before_broker_time_exclusive": "20:05",
+    "maximum_entries_per_broker_day": 1,
+    "overlap_or_pyramiding_forbidden": true,
+    "orphan_closes_forbidden": true,
+    "nonzero_swap_forbidden": true
+  },
+  "data_contract": {
+    "receipt": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\data\\NDX_DWX_201807_202512_DEV2_backtest_data_receipt.json",
+      "size": 27870,
+      "sha256": "b16fbc866b7e03a73b04fb5e67938eb7e290a0b31addcc6cc34736d1f554a66e"
+    },
+    "historical_file_ledger_must_rehash": true,
+    "history_files": 8,
+    "tick_files": 90,
+    "coverage": "2018-07-02..2025-12-31",
+    "obsolete_whole_alias_registry_hash_from_receipt_must_not_be_required": true,
+    "current_exact_ndx_alias_semantics_validated_separately": true
+  },
+  "infrastructure_contract": {
+    "factory_off_flag_required": "D:\\QM\\strategy_farm\\state\\FACTORY_OFF.flag",
+    "dev2_named_mutex": "Global\\QM_DEV2_SMOKE_CONTROLLER",
+    "mutex_must_be_acquirable_before_launch_and_each_cell": true,
+    "exact_dev2_terminal_and_metatester_processes_must_be_absent": true,
+    "active_dev2_smoke_cleanup_profile_tasks_must_be_absent": true,
+    "live_process_command_lines_read_or_emitted": false,
+    "runner_sha256": "d3d2bcbcd2d2d52bea4d0a50f501d86e35d48211b67066fad236d5c5d4efc485",
+    "runner_child_sha256": "6602217a4c27636a9d4faa26086b6be5dfd3a4817b5fa8174640e5160922d6b1",
+    "cleanup_helper_sha256": "617bbd95dfd1324bf70654a831ca6caec087df3cbaa8c1d064ddda3455e9f250",
+    "credential_probe_sha256": "103c9886c85e36650e3c0ac4c05fc3891ad019faab66c9d31ea961d0d93812d5",
+    "credential_helper_sha256": "bd3077f5ff671d80a377a820e35cd233cdf8ad1b25d376d579da4714c323ad2c",
+    "lane_contract_sha256": "866e4e346187e47c33e32beb30bb96dc4085e98cc316819fb33f7925306dda06",
+    "report_parser_sha256": "c9dc5106383073b50150f0edb091338181dc53470615839fb252f5bc96a46c03"
+  },
+  "outcome_fence": {
+    "pre_opens_native_reports": false,
+    "worker_opens_native_reports": false,
+    "worker_parses_market_values": false,
+    "worker_seals_paths_sizes_and_hashes_only": true,
+    "post_is_first_strategy_outcome_reader": true,
+    "invalid_infrastructure_has_no_merit_verdict": true
+  },
+  "factory_database_gate": {
+    "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "semantic_rows_are_validated_without_opening_evidence": true,
+    "aff5_ndx": "failed/INFRA_FAIL/attempt1/evidence_path_NULL/payload_closure_only",
+    "c9_sp500_duplicate": "failed/INVALID/attempt0/evidence_path_NULL/duplicate_of_and_superseded_by_f5",
+    "f5_sp500_strategy_result": "done/FAIL/existing_evidence_path_and_metrics_unchanged",
+    "no_pending_or_active_qm5_13209_rows": true,
+    "closure_json_as_evidence_path_forbidden": true
+  },
+  "build_review_gate": {
+    "receipt": "docs/candidate-analysis/build_receipt_20260721.json",
+    "review_task_id": "6154711f-fb6e-4900-a208-17fe7df355b2",
+    "required_verdict": "APPROVE_FOR_BACKTEST",
+    "observed_verdict_artifact": {
+      "path": "D:\\QM\\strategy_farm\\artifacts\\verdicts\\review_6154711f-fb6e-4900-a208-17fe7df355b2.json",
+      "size": 3390,
+      "sha256": "7f59367de9c6dd826b059eeec843154610e2d3a4b3017b865d7886599940f45f"
+    },
+    "canonical_build_result": {
+      "path": "D:\\QM\\strategy_farm\\artifacts\\builds\\d54ae7b2-bed6-4c7d-85a2-5030944f3127.json",
+      "size": 2278,
+      "sha256": "a6f60f690b5ec26293ea5e14f6e693d5a7d90ea5f4880d54f93997d881b27293"
+    },
+    "verdict_invented": false
+  }
+}

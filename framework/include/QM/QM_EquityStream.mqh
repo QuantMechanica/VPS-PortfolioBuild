@@ -33,6 +33,121 @@ double    g_qm_eqstream_day_start_equity = 0.0;
 double    g_qm_eqstream_month_start_equity = 0.0;
 int       g_qm_eqstream_atr_handle       = INVALID_HANDLE;
 
+string QM_EquityStreamStateName(const string suffix)
+  {
+   return StringFormat("QM_EQS_%I64d_%d_%s",
+                       AccountInfoInteger(ACCOUNT_LOGIN),
+                       g_qm_logger_ea_id,
+                       suffix);
+  }
+
+bool QM_EquityStreamRestoreBaseline(const string period_name,
+                                    const string key_suffix,
+                                    const string equity_suffix,
+                                    const int current_key,
+                                    double &baseline)
+  {
+   // Tester agents reuse terminal GlobalVariables across runs. Reading them in
+   // a test would make otherwise-identical backtests depend on agent history.
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+      return false;
+   if(AccountInfoInteger(ACCOUNT_LOGIN) <= 0)
+      return false;
+
+   const string key_name = QM_EquityStreamStateName(key_suffix);
+   const string equity_name = QM_EquityStreamStateName(equity_suffix);
+   const bool has_key = GlobalVariableCheck(key_name);
+   const bool has_equity = GlobalVariableCheck(equity_name);
+   if(!has_key && !has_equity)
+      return false;
+
+   const double raw_key = has_key ? GlobalVariableGet(key_name) : -1.0;
+   const double saved_equity = has_equity ? GlobalVariableGet(equity_name) : 0.0;
+   int saved_key = -1;
+   if(MathIsValidNumber(raw_key))
+      saved_key = (int)MathRound(raw_key);
+
+   const bool key_is_integer = MathIsValidNumber(raw_key) &&
+                               MathAbs(raw_key - (double)saved_key) <= 0.0000001;
+   const bool saved_equity_valid = MathIsValidNumber(saved_equity) && saved_equity > 0.0;
+   const bool valid = has_key && has_equity && key_is_integer &&
+                      saved_key == current_key && saved_equity_valid;
+   if(!valid)
+     {
+      const double logged_saved_equity = MathIsValidNumber(saved_equity) ? saved_equity : 0.0;
+      QM_LogEvent(QM_WARN, "EQUITY_STREAM_STATE_STALE_IGNORED",
+                  StringFormat("{\"period\":\"%s\",\"saved_key\":%d,\"current_key\":%d,\"has_key\":%s,\"has_equity\":%s,\"saved_equity_valid\":%s,\"saved_equity\":%.2f}",
+                               QM_LoggerEscapeJson(period_name),
+                               saved_key,
+                               current_key,
+                               has_key ? "true" : "false",
+                               has_equity ? "true" : "false",
+                               saved_equity_valid ? "true" : "false",
+                               logged_saved_equity));
+      return false;
+     }
+
+   baseline = saved_equity;
+   QM_LogEvent(QM_INFO, "EQUITY_STREAM_STATE_RESTORED",
+               StringFormat("{\"period\":\"%s\",\"key\":%d,\"start_equity\":%.2f}",
+                            QM_LoggerEscapeJson(period_name), current_key, baseline));
+   return true;
+  }
+
+bool QM_EquityStreamPersistBaseline(const string period_name,
+                                    const string key_suffix,
+                                    const string equity_suffix,
+                                    const int period_key,
+                                    const double baseline)
+  {
+   // Backtests stay process-local and deterministic; never read or write
+   // terminal GlobalVariables from tester/optimization agents.
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+      return true;
+
+   if(AccountInfoInteger(ACCOUNT_LOGIN) <= 0)
+     {
+      QM_LogEvent(QM_WARN, "EQUITY_STREAM_STATE_PERSIST_FAILED",
+                  StringFormat("{\"period\":\"%s\",\"stage\":\"account_login\",\"key\":%d,\"error\":0}",
+                               QM_LoggerEscapeJson(period_name), period_key));
+      return false;
+     }
+
+   if(!MathIsValidNumber(baseline) || baseline <= 0.0)
+     {
+      QM_LogEvent(QM_WARN, "EQUITY_STREAM_STATE_PERSIST_FAILED",
+                  StringFormat("{\"period\":\"%s\",\"stage\":\"validation\",\"key\":%d,\"error\":0}",
+                               QM_LoggerEscapeJson(period_name), period_key));
+      return false;
+     }
+
+   const string key_name = QM_EquityStreamStateName(key_suffix);
+   const string equity_name = QM_EquityStreamStateName(equity_suffix);
+
+   // The value is written first and the period key last as the commit marker.
+   // A crash between the writes therefore leaves a key mismatch on next init.
+   ResetLastError();
+   if(GlobalVariableSet(equity_name, baseline) == 0)
+     {
+      QM_LogEvent(QM_WARN, "EQUITY_STREAM_STATE_PERSIST_FAILED",
+                  StringFormat("{\"period\":\"%s\",\"stage\":\"equity\",\"key\":%d,\"error\":%d}",
+                               QM_LoggerEscapeJson(period_name), period_key, GetLastError()));
+      return false;
+     }
+
+   ResetLastError();
+   if(GlobalVariableSet(key_name, (double)period_key) == 0)
+     {
+      QM_LogEvent(QM_WARN, "EQUITY_STREAM_STATE_PERSIST_FAILED",
+                  StringFormat("{\"period\":\"%s\",\"stage\":\"key\",\"key\":%d,\"error\":%d}",
+                               QM_LoggerEscapeJson(period_name), period_key, GetLastError()));
+      return false;
+     }
+
+   GlobalVariablesFlush();
+   return true;
+  }
+
 int QM_EquityStreamDayKey(const datetime broker_time)
   {
    MqlDateTime dt;
@@ -88,8 +203,33 @@ void QM_EquityStreamInit()
    const datetime now = TimeCurrent();
    g_qm_eqstream_last_day_key   = QM_EquityStreamDayKey(now);
    g_qm_eqstream_last_month_key = QM_EquityStreamMonthKey(now);
-   g_qm_eqstream_day_start_equity   = AccountInfoDouble(ACCOUNT_EQUITY);
-   g_qm_eqstream_month_start_equity = g_qm_eqstream_day_start_equity;
+   const double equity_now = AccountInfoDouble(ACCOUNT_EQUITY);
+   g_qm_eqstream_day_start_equity   = equity_now;
+   g_qm_eqstream_month_start_equity = equity_now;
+
+   // Restore each period independently. Missing, stale, or invalid state is
+   // re-baselined to current equity without preventing framework init.
+   if(!QM_EquityStreamRestoreBaseline("day",
+                                      "DAY_KEY",
+                                      "DAY_EQUITY",
+                                      g_qm_eqstream_last_day_key,
+                                      g_qm_eqstream_day_start_equity))
+      QM_EquityStreamPersistBaseline("day",
+                                     "DAY_KEY",
+                                     "DAY_EQUITY",
+                                     g_qm_eqstream_last_day_key,
+                                     g_qm_eqstream_day_start_equity);
+
+   if(!QM_EquityStreamRestoreBaseline("month",
+                                      "MONTH_KEY",
+                                      "MONTH_EQUITY",
+                                      g_qm_eqstream_last_month_key,
+                                      g_qm_eqstream_month_start_equity))
+      QM_EquityStreamPersistBaseline("month",
+                                     "MONTH_KEY",
+                                     "MONTH_EQUITY",
+                                     g_qm_eqstream_last_month_key,
+                                     g_qm_eqstream_month_start_equity);
   }
 
 // Call on every closed-bar tick. Cheap: most calls early-return because
@@ -112,7 +252,7 @@ void QM_EquityStreamOnNewBar()
    const string regime     = QM_EquityStreamATRRegime();
 
    const string payload = StringFormat(
-      "{\"day_key\":%d,\"month_key\":%d,\"equity\":%.2f,\"day_pnl\":%.2f,\"month_pnl\":%.2f,\"atr_regime\":\"%s\",\"symbol\":\"%s\"}",
+      "{\"scope\":\"account\",\"day_key\":%d,\"month_key\":%d,\"equity\":%.2f,\"day_pnl\":%.2f,\"month_pnl\":%.2f,\"atr_regime\":\"%s\",\"symbol\":\"%s\"}",
       g_qm_eqstream_last_day_key,
       g_qm_eqstream_last_month_key,
       equity_now,
@@ -126,12 +266,22 @@ void QM_EquityStreamOnNewBar()
    // Roll the day window.
    g_qm_eqstream_last_day_key = day_key;
    g_qm_eqstream_day_start_equity = equity_now;
+   QM_EquityStreamPersistBaseline("day",
+                                  "DAY_KEY",
+                                  "DAY_EQUITY",
+                                  g_qm_eqstream_last_day_key,
+                                  g_qm_eqstream_day_start_equity);
 
    // Roll the month window when month also rolled over.
    if(month_key != g_qm_eqstream_last_month_key)
      {
       g_qm_eqstream_last_month_key = month_key;
       g_qm_eqstream_month_start_equity = equity_now;
+      QM_EquityStreamPersistBaseline("month",
+                                     "MONTH_KEY",
+                                     "MONTH_EQUITY",
+                                     g_qm_eqstream_last_month_key,
+                                     g_qm_eqstream_month_start_equity);
      }
   }
 

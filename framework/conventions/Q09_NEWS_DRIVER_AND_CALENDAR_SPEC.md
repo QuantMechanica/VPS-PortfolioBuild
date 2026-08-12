@@ -10,7 +10,7 @@ Status: PENDING REWRITE
 
 Created: 2026-05-08  
 Replaced: 2026-05-20 synthetic news matrix selector  
-Owners: CTO + CEO  
+Owner: OWNER
 Scope: V5 pipeline P8 real news replay and EA runtime news gating.
 
 ## 1. Purpose

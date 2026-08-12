@@ -57,7 +57,7 @@ Timezone/DST mismatch is never a strategy PASS/FAIL signal.
 
 ## Phase 0 Todo
 
-Create Paperclip issue: `P0: Verify Tick Data Manager DarwinexZero GMT/DST settings`.
+Create an OWNER work item: `P0: Verify Tick Data Manager DarwinexZero GMT/DST settings`.
 
 Owner: DevOps + Pipeline-Operator
 Reviewer: Quality-Tech

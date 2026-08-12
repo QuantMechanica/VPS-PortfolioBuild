@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_1348501_144-ema-method.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1348501_144-ema-method.pdf",
+      "source_pages": "1-2",
+      "source_ref": "jamesagnew, '144 ema method', ForexFactory thread #1348501 (30 posts, 2 pages), n.d. — https://www.forexfactory.com/thread/1348501-144-ema-method",
+      "strategy_name": "144-EMA displaced-MA breakout (M5)",
+      "concept": "Enter on a 5-minute close past a 34-EMA displaced 16 bars forward, with a 144-EMA breach as the stop and a fixed 17-pip target.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic displaced-EMA breakout, pure MQL5, FX M5 data available, explicit SL (144-EMA breach) + TP (17 pips) — FTMO/DXZ compatible.",
+      "priority_hint": "LOW",
+      "notes": "Low-reputation forum source: per thread the proponent posts a new system nightly (none good) and never shows live trades; skeptics call it curve-fit MA crossover. Params arbitrary (34-EMA shift 16, 17-pip TP, 144-EMA SL) — 'why these numbers?' unanswered. Archetypal MA-crossover, flagged non-robust by our own FX-edge doctrine. Variant (page 2): drop the 17-pip TP, hold until opposite 34-EMA close. Secondary ref by flashpaul to a sibling '144 x 77 ema and 77 ema method' thread."
+    }
+  ],
+  "notes": []
+}

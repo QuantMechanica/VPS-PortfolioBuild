@@ -1,0 +1,8 @@
+=== merged-into-origin/main branches that HAVE a worktree (stale worktrees) ===
+MERGED  2026-06-02  C:/QM/worktrees/claude-orchestration-4  [agents/claude-orchestration-4]
+MERGED  2026-06-01  C:/QM/worktrees/codex-q08-regen  [codex/q08-regen]
+MERGED  2026-05-09  C:/QM/worktrees/development-claude  [agents/development-claude]
+MERGED  2026-05-27  C:/QM/worktrees/gemini-orchestration-1  [agents/gemini-orchestration-1]
+MERGED  2026-05-08  C:/QM/worktrees/pdf-analyst  [agents/pdf-analyst]
+MERGED  2026-04-29  C:/QM/worktrees/pipeline-operations  [agents/pipeline-operations]
+MERGED  2026-05-08  C:/QM/worktrees/youtube-analyst  [agents/youtube-analyst]

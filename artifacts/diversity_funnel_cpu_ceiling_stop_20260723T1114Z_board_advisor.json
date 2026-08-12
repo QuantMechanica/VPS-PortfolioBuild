@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0",
+  "observed_at_utc": "2026-07-23T11:14:26Z",
+  "agent": "codex:agents/board-advisor",
+  "branch": "agents/board-advisor",
+  "mission": "advance V5 strategy farm toward more certified portfolio sleeves",
+  "outcome": "STOP_CPU_CEILING",
+  "farm_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+  "active_pipeline_jobs": 8,
+  "active_terminals": [
+    "T1",
+    "T2",
+    "T4",
+    "T6",
+    "T7",
+    "T8",
+    "T9",
+    "T10"
+  ],
+  "active_diverse_jobs": [
+    {
+      "ea_id": "QM5_1235",
+      "symbol": "GBPUSD.DWX",
+      "phase": "Q03",
+      "terminal": "T4"
+    },
+    {
+      "ea_id": "QM5_10763",
+      "symbol": "USDJPY.DWX",
+      "phase": "Q04",
+      "terminal": "T7"
+    },
+    {
+      "ea_id": "QM5_10763",
+      "symbol": "AUDUSD.DWX",
+      "phase": "Q05",
+      "terminal": "T6"
+    },
+    {
+      "ea_id": "QM5_10763",
+      "symbol": "USDCHF.DWX",
+      "phase": "Q05",
+      "terminal": "T8"
+    }
+  ],
+  "backlog_review": {
+    "pending_build_tasks": 2,
+    "highest_diversity_candidate": "QM5_1457_as-predict-bonds",
+    "highest_diversity_candidate_status": "already claimed and blocked by codex:agents/board-advisor",
+    "highest_diversity_blocker": "non_dwx_rates_inputs_required_by_card",
+    "other_pending_candidate": "QM5_1459_as-lumber-gold",
+    "other_pending_candidate_diversity": "commodity/index/metal proxy; lower priority than rates and overlaps the current commodity-heavy frontier"
+  },
+  "collision_avoidance": {
+    "farm_task_claimed": false,
+    "work_item_inserted": false,
+    "queue_mutated": false,
+    "reason": "Eight active paced pipeline jobs exceed the seven-job CPU ceiling; the rates candidate is already claimed and deterministically blocked."
+  },
+  "protected_surfaces_untouched": [
+    "portfolio gate",
+    "T_Live manifest",
+    "AutoTrading",
+    "T_Live"
+  ],
+  "recommended_next_action": "After active paced jobs fall below seven, re-read the live farm DB. Prefer a genuinely unclaimed forex, crypto, rates, or market-neutral approved card; do not duplicate QM5_1457 unless an approved DWX rates/bond feed now exists."
+}

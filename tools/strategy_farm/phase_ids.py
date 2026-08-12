@@ -34,78 +34,41 @@ The `phase_label()` and `phase_qid()` helpers stay backwards-compatible:
 
 from __future__ import annotations
 
-PHASE_ORDER = [
-    "Q00",
-    "Q01",
-    "Q02",
-    "Q03",
-    "Q04",
-    "Q05",
-    "Q06",
-    "Q07",
-    "Q08",
-    "Q09",
-    "Q10",
-    "Q11",
-    "Q12",
-    "Q13",
-]
+try:  # direct ``python tools/strategy_farm/<script>.py`` imports
+    from gate_manifest import load_gate_manifest
+except ModuleNotFoundError:  # package imports in tests and module consumers
+    from tools.strategy_farm.gate_manifest import load_gate_manifest
 
-PHASE_NAME = {
-    "Q00": "Research Intake",
-    "Q01": "Build & Spec",
-    "Q02": "Baseline Screening",
-    "Q03": "Parameter Sweep",
-    "Q04": "Walk-Forward + Commission",
-    "Q05": "Stress MEDIUM",
-    "Q06": "Stress HARSH",
-    "Q07": "Multi-Seed",
-    "Q08": "Davey Statistical Validation",
-    "Q09": "News Impact Mode",
-    "Q10": "Full-History Confirmation",
-    "Q11": "Portfolio Construction",
-    "Q12": "Operational Readiness",
-    "Q13": "Live Burn-In DXZ",
-}
+
+# Load and validate the versioned contract once at import time.  Runtime helpers
+# below use these in-memory tables; hot paths never re-parse the JSON manifest.
+_GATE_MANIFEST = load_gate_manifest()
+
+PHASE_ORDER = list(_GATE_MANIFEST.phase_ids)
+PHASE_NAME = _GATE_MANIFEST.names
 
 # Legacy P-key → new Qxx mapping. Used only as a back-compat shim for any
 # orphan call sites that still pass P-keys (old report files on disk,
 # pre-rewrite test fixtures). New code never emits these keys.
-LEGACY_P_TO_Q = {
-    "G0":    "Q00",
-    "P1":    "Q01",
-    "P2":    "Q02",
-    "P3":    "Q03",
-    "P3.5":  "Q03",   # collapsed into Q03 (was redundant Cross-Sectional)
-    "P4":    "Q04",
-    "P5":    "Q05",
-    "P5b":   "Q05",   # collapsed into Q05 (was Calibrated Noise)
-    "P5c":   "Q05",   # collapsed into Q08.10 Regime; legacy maps to Q05 for display
-    "P6":    "Q07",
-    "P7":    "Q08",
-    "P8":    "Q08",   # merged P7+P8 into Q08 Davey
-    "P9":    "Q11",
-    "P9b":   "Q12",
-    "P10":   "Q13",
+LEGACY_P_TO_Q = dict(_GATE_MANIFEST.legacy_aliases)
+
+# A canonical gate can have zero, one, or several legacy aliases.  Keep the
+# complete inverse for UNION reads; choosing only one alias silently loses old
+# P3.5/P5b/P5c/P8 rows after the collapsed rewrite.
+Q_TO_LEGACY_ALIASES = {
+    qid: tuple(
+        alias for alias, target in LEGACY_P_TO_Q.items() if target == qid
+    )
+    for qid in PHASE_ORDER
 }
 
-# Inverse for any code that needs to look up the dominant legacy key from
-# a new Qxx (e.g. when reading old report directories on disk).
+# Compatibility for callers that truly require one legacy directory name.
+# JSON insertion order is the documented primary-alias rule. Gates introduced
+# by the rewrite (Q06/Q09/Q10) intentionally have no invented legacy key.
 Q_TO_LEGACY_P = {
-    "Q00": "G0",
-    "Q01": "P1",
-    "Q02": "P2",
-    "Q03": "P3",
-    "Q04": "P4",
-    "Q05": "P5",
-    "Q06": "P6",      # NEW: Stress HARSH; no legacy P-key in storage
-    "Q07": "P7",
-    "Q08": "P8",
-    "Q09": "P9N",     # NEW: News mode; placeholder legacy key
-    "Q10": "P10C",    # NEW: Full-history confirmation; placeholder
-    "Q11": "P9",
-    "Q12": "P9b",
-    "Q13": "P10",
+    qid: aliases[0]
+    for qid, aliases in Q_TO_LEGACY_ALIASES.items()
+    if aliases
 }
 
 
@@ -119,9 +82,10 @@ def phase_qid(phase: str | None) -> str:
     if phase is None:
         return ""
     key = str(phase)
-    if key in PHASE_NAME:
-        return key
-    return LEGACY_P_TO_Q.get(key, key)
+    upper = key.upper()
+    if upper in PHASE_NAME:
+        return upper
+    return LEGACY_P_TO_Q.get(upper, key)
 
 
 def phase_label(phase: str | None, *, include_name: bool = False) -> str:

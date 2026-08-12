@@ -81,6 +81,7 @@ input double          strategy_entry_roc_level = 0.0;
 input double          strategy_exit_roc_level  = 0.0;
 input int             strategy_atr_period      = 14;
 input double          strategy_atr_sl_mult     = 2.0;
+input int             strategy_max_spread_points = 80;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -90,7 +91,11 @@ input double          strategy_atr_sl_mult     = 2.0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   return false;
+   if(strategy_max_spread_points <= 0)
+      return false;
+
+   const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   return (spread_points > 0 && spread_points > strategy_max_spread_points);
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry

@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_premarket-range-break-10-30-confirmation-strategy_1282095.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_premarket-range-break-10-30-confirmation-strategy_1282095.pdf",
+      "source_pages": "1",
+      "source_ref": "KGMK, 'Premarket Range Break + 10:30 Confirmation Strategy', Babypips Forums, 2025, https://forums.babypips.com/t/premarket-range-break-10-30-confirmation-strategy/1282095",
+      "strategy_name": "Premarket Range Break + 10:30 Confirmation",
+      "concept": "On a gap-up stock, buy the post-open breakout of the premarket high, then require a second breakout of the 10:30 high while holding above VWAP as confirmation to filter fakeouts.",
+      "market": "Indices",
+      "timeframe": "M15",
+      "session": "NY",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Single-name US cash-equity gap play (premarket session, 9:30 open, VWAP, earnings/news-driven gaps) with no individual-stock data in our .DWX/DXZ universe; rules are one anecdotal example with no exit/target and subjective 'consolidates', too vague to mechanize.",
+      "priority_hint": "LOW",
+      "notes": "Low-reputability single forum post (one post, handle KGMK, 2025). Only example given: premarket high 102, break at 9:45 holds above VWAP, 10:35 break of 10:30 high 103 -> entry 103.10, stop 102.40 (below VWAP); no take-profit rule stated. Generic opening-range-break + confirmation concept already covered by existing index/gold ORB lineage (e.g. 20007 GOLD_BREAKOUT, Balke range-break) and is single-stock-specific, so no new uncorrelated driver."
+    }
+  ],
+  "notes": []
+}

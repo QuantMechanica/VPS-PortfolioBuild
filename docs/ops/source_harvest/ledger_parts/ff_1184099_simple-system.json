@@ -1,0 +1,26 @@
+{
+  "pdf": "ff_1184099_simple-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1184099_simple-system.pdf",
+      "source_pages": "1-4, 22-26",
+      "source_ref": "sharpiemomo, \"Simple System\", ForexFactory forum thread #1184099 (year not stated, n.d.), https://www.forexfactory.com/thread/1184099-simple-system",
+      "strategy_name": "APB Color-Flip Scalp (US30 NY-Open)",
+      "concept": "Enter on the first opposite-color close of a custom modified-Heiken-Ashi bar (APB) as a momentum-rejection reversal scalp on US30 during the NY open, stopping at the prior swing.",
+      "market": "Indices",
+      "timeframe": "M5",
+      "session": "NY",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Exit and sizing are wholly discretionary (author states \"no TP rule\", takes partials ~0.5R by instinct, scratches stalling trades by feel, sizes via subjective \"clicks\"); entry depends on an undisclosed proprietary \"APB\" (modified Heiken Ashi) indicator plus paid range bars, and setup quality is explicitly experience/instinct-based -- no mechanically complete rule set to implement.",
+      "priority_hint": "LOW",
+      "notes": "Entry kernel (Heiken-Ashi color-flip reversal, stop at prior swing high/low) is the only mechanizable part but is a classic discretionary chart pattern with no structural edge -- congruent with the closed Wyckoff/SMC/chart-pattern doctrine. Author trades US30 09:30-12:00 EST (also formerly NASDAQ/NDX), M15 and M5 plus paid range bars; risk = \"Risk Per Click\" ($250/click, max 4, MFR $1k). Community members (demon83, MrEnterprise) tried and failed to extract a mechanical exit; author rejected the 5-EMA-touch TP suggestion. Thread is 47 pages but content after p.4 is trade-log screenshots and Q&A with no additional rules. Uses FTMO demo for practice only.",
+      "market_note": "US30 = WS30 (DXZ tradable); NDX also available; range-bar data not native to the time-TF tester."
+    }
+  ],
+  "notes": [
+    "Single REJECTED summary row: no mechanically complete candidate. Discretionary scalping system around undisclosed modified-HA indicator + paid range bars; exit/sizing 100% discretionary.",
+    "Thread = 60 posts, 3 pages of the original thread flattened into 47 PDF pages; pages 5-47 are almost entirely 'Attached Image' trade screenshots and chatter with no rule content."
+  ]
+}

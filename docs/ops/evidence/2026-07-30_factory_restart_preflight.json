@@ -1,0 +1,204 @@
+{
+  "schema_version": 1,
+  "artifact_type": "FACTORY_RESTART_PREFLIGHT",
+  "generated_at_utc": "2026-07-30T05:25:25Z",
+  "audited_source_commit": "f8593cd4beba7194f2a30fe29dfd43bffda6556d",
+  "mode": "READ_ONLY_PREPARATION",
+  "disposition": "BLOCKED_OWNER_ACTION_REQUIRED",
+  "factory_on_executed": false,
+  "runtime_mutations_performed_by_preflight": false,
+  "safety": {
+    "factory_off_flag": {
+      "path": "D:\\QM\\strategy_farm\\state\\FACTORY_OFF.flag",
+      "bytes": 66,
+      "sha256": "09cc4f83e8d5f384f03bc51306beff2cdd165108559a00dbf665097c60b47f1c",
+      "legacy_schema": true,
+      "off_at": "2026-07-29T07:27:38Z",
+      "codex_parallel_before": "0"
+    },
+    "factory_mutation_lock_present": false,
+    "managed_tasks": {
+      "expected": 30,
+      "present": 30,
+      "disabled": 30
+    },
+    "enforce_disabled_tasks": {
+      "expected": 6,
+      "present": 6,
+      "disabled": 6
+    },
+    "disabled_terminals": [
+      "T5"
+    ],
+    "t_live": {
+      "pid": 5220,
+      "started_at_local": "2026-07-29T09:25:43.169641+02:00",
+      "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\terminal64.exe",
+      "touched": false
+    },
+    "autotrading_touched": false
+  },
+  "verification": {
+    "green_lane": {
+      "passed": 3399,
+      "skipped": 1,
+      "deselected_external_residual": 5,
+      "subtests_passed": 49
+    },
+    "external_residual_lane": {
+      "expected_failures": 5,
+      "additional_failures": 0,
+      "classification": "KNOWN_EXTERNAL_STATE_RESIDUALS_NOT_SILENTLY_WEAKENED"
+    },
+    "factory_process_scope": {
+      "status": "PASS",
+      "assertions": 278
+    },
+    "factory_restore_intent": {
+      "status": "PASS"
+    }
+  },
+  "restore_intent": {
+    "owner_authorized": false,
+    "executable_manifest_created": false,
+    "reason": "The legacy OFF record has no task_enabled_before map. Factory_ON correctly refuses it, and current Disabled state must not be treated as pre-OFF intent.",
+    "proposal_provenance": {
+      "path": "docs/ops/source_harvest/audit/evidence/pipeline__scheduled_tasks.txt",
+      "source_commit": "c44e12d163078f336029ea2026fa798d412d80ca",
+      "observed_at_or_before": "2026-07-24T07:48:01+02:00",
+      "caveat": "Historical evidence for OWNER review; not an authorization and not proof of the exact 2026-07-29 pre-OFF instant."
+    },
+    "proposed_task_enabled_before": {
+      "QM_CodexParallel_RestoreOnReset": true,
+      "QM_ClaudeParallel_RestoreOnReset": true,
+      "QM_NewsCalendar_Refresh": true,
+      "QM_Repo_Push": true,
+      "QM_StrategyFarm_AgyGovernor": true,
+      "QM_StrategyFarm_CodexFleetPacer": true,
+      "QM_StrategyFarm_FactoryRecycle_Daily": false,
+      "QM_StrategyFarm_SweepEnqueue_Hourly": true,
+      "QM_StrategyFarm_MailboxSourceIntake_Daily": true,
+      "QM_StrategyFarm_InboxCleanup_Daily": true,
+      "QM_StrategyFarm_PlausibilityScan": true,
+      "QM_StrategyFarm_QuotaGovernor": true,
+      "QM_StrategyFarm_REvalDrain_15min": true,
+      "QM_StrategyFarm_ReportsLogPurge_12h": true,
+      "QM_StrategyFarm_SourcingIntakeSweep": false,
+      "QM_Public_Snapshot_Hourly": true,
+      "QM_StrategyFarm_TesterCachePurge": true,
+      "QM_StrategyFarm_WorkerDedupe": true,
+      "QM_StrategyFarm_WorktreeClean_4h": true,
+      "QM_StrategyFarm_HourlyMonitor_60min": true,
+      "QM_WorkItemLogPruner_Daily_0310": true
+    }
+  },
+  "holds": {
+    "active_total": 23,
+    "release_on_restart": 7,
+    "non_releasing": 16,
+    "release_contract": "Only the seven release_on_restart rows are in scope. Current Factory_ON waits for nine worker daemons, starts/enables selected tasks and then releases these rows without waiting for task-result or heartbeat health; source hardening is required before restart. FTMO and quarantine holds remain active."
+  },
+  "health": {
+    "read_only_full_census": {
+      "ok": 21,
+      "warn": 8,
+      "fail": 6,
+      "off_induced_failures": [
+        "pump_task_lastresult",
+        "mt5_dispatch_idle",
+        "mt5_worker_saturation"
+      ],
+      "persistent_failures_requiring_separate_handling": [
+        "unbuilt_cards_count",
+        "q02_stranded_exhausted_pairs",
+        "ks_baseline_dormancy"
+      ]
+    },
+    "q02_stranded_exhausted_pairs": 265,
+    "mnt007_read_only_census": {
+      "current_infra_only_groups": 1543,
+      "historical_infra_only_groups": 1507,
+      "current_pair_phase_groups": 1328,
+      "dispositions": {
+        "RETRY": 1417,
+        "BLOCKED": 397,
+        "RETIRED": 1,
+        "REAL_VERDICT": 1237
+      },
+      "invariant": "PASS",
+      "unresolved": 0,
+      "q08_invalid_report_retryable": 0
+    },
+    "mnt007_wave1_queue_effect": {
+      "eligible_total": 1619,
+      "q02_groups": 596,
+      "q02_eligible": 204,
+      "q02_refused": 392,
+      "pending_before": 2188,
+      "pending_after_if_applied": 2193,
+      "statement": "The prepared five-row wave would enter an existing queue of 2,188 pending rows; restart is not an isolated five-row canary."
+    },
+    "mnt007_wave1_plan": {
+      "path": "D:\\QM\\strategy_farm\\artifacts\\factory_restart_preflight_f8593cd4b_20260730\\mnt007_wave1_plan.json",
+      "sha256": "aec0b2be416230f63f96a676aa89b63de826bb891021385da6d87ad02ca9aa00",
+      "contract": "MNT-007_STRANDED_INFRA_5_THEN_25",
+      "status": "READY_DRY_RUN_ONLY",
+      "size": 5,
+      "applied": false
+    }
+  },
+  "candidate_source_preparations": {
+    "post_start_health_gate": {
+      "status": "SOURCE_IMPLEMENTED_TESTED_RUNTIME_DEFERRED",
+      "contract": "Factory_ON now requires exact expected task states, fresh successful QuotaPull/AgentRouter/Pump runs and the exact nine-worker interactive-session set before release-on-restart. A 300-second timeout enters the existing fail-closed rollback."
+    },
+    "unreadable_links_policy": {
+      "status": "SAFE_DEFAULT_SOURCE_IMPLEMENTED_RUNTIME_ALREADY_DISABLED",
+      "contract": "QM_StrategyFarm_UnreadableLinks_Friday moved from ALWAYS_ON to ENFORCE_DISABLED and therefore remains Disabled unless a later explicit OWNER decision changes policy."
+    },
+    "mnt003_task_contract": {
+      "status": "SOURCE_IMPLEMENTED_TESTED_OWNER_APPLY_PENDING",
+      "contract": "Factory scope has an OFF-hash- and plan-bound protocol-v2 locked apply with complete preflight, disabled-state preservation, create-only crash journal, per-task CAS, reverse compensation and retained-lock fail-closed recovery. Live scope is plan-only."
+    }
+  },
+  "hard_blockers": [
+    {
+      "id": "RESTORE_INTENT_OWNER_DECISION",
+      "detail": "A fresh OWNER authorization, exact legacy-flag hash and all 21 Boolean task decisions are required before Factory_OFF may upgrade the flag to schema v2."
+    },
+    {
+      "id": "HEALTH_QUARANTINE_OWNER_RATIFICATION",
+      "detail": "T5 remains intentionally disabled and the enabled-fleet minimum is fail-closed. OWNER must ratify the current T5 quarantine/minimum-worker policy for restart readiness."
+    },
+    {
+      "id": "MNT003_OWNER_APPLY_PENDING",
+      "detail": "The OFF-safe Factory apply contract is source-implemented and its read-only plan now classifies all five Factory tasks BEFORE/disabled. After canonical publication, regenerate the commit-bound plan and require a fresh OWNER PLAN-to-WhatIf-to-Apply action. No task contract was applied by this preparation."
+    },
+    {
+      "id": "EXTERNAL_RESIDUAL_EXIT_CONTRACT",
+      "detail": "The authoritative residual plan keeps the Factory OFF until all five fail-closed external-residual tests pass. Repair the bound external state or obtain an explicit OWNER-approved governance revision; do not silently waive the exit contract."
+    },
+    {
+      "id": "CANONICAL_PUBLICATION_AND_INTEGRATION",
+      "detail": "The reviewed source must be durably pushed and the exact canonical checkout/commit selected before a restart. A moving or unpublished source boundary is not acceptable."
+    }
+  ],
+  "orthogonal_non_authorities": {
+    "ftmo_evaluation_status": "RESEARCH_MODEL_COMPLETE_STRICT_QUALIFICATION_UNVERIFIED",
+    "ftmo_money_gate": "SETUP_DATA_MISSING",
+    "ftmo_paid_challenge": "NO_GO",
+    "ftmo_factory_restart_authorized": false,
+    "statement": "The FTMO result neither authorizes nor by itself blocks infrastructure restart; Factory restart has its own OWNER and safety contract."
+  },
+  "next_safe_sequence": [
+    "Publish and review the exact final source commit without staging the five user-owned open files.",
+    "Resolve all five external-residual tests or record an explicit OWNER-approved revision to the existing MNT-052 exit contract.",
+    "Obtain explicit OWNER decisions for the 21-task proposal, T5/minimum-worker quarantine policy, seven restart-hold releases and the MNT-003 Factory apply.",
+    "From the exact canonical commit, regenerate the MNT-003 Factory plan and execute its mutation-free WhatIf; only then may OWNER authorize the hash-bound Factory apply while OFF remains asserted.",
+    "Create a fresh qm.factory-restore-intent/v1 manifest only after those decisions; its authorization expires after 24 hours.",
+    "Run Factory_OFF.ps1 -RestoreIntentManifest against the exact 09cc4f83... flag to upgrade the OFF record while remaining OFF.",
+    "Re-run process/task/flag/lock/hold/source preflight on the resulting schema-v2 flag.",
+    "Run Factory_ON.ps1 -NoPause only in the visible admin session after explicit final OWNER authorization; require nine enabled workers plus proven task-result and heartbeat health before releasing exactly seven restart holds.",
+    "Do not apply the prepared MNT-007 Wave 1 or buy/deploy an FTMO challenge unless separately authorized."
+  ]
+}

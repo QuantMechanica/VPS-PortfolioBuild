@@ -1,15 +1,35 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13206
+; ea_slug:      ftmo-account-governor
+; ea_version:   v2.0
+; set_version:  s20260717-002
+; symbol:       ACCOUNT
+; timeframe:    TIMER
+; environment:  dryrun
+; magic_slot:   0
+; risk_mode:    GOVERNOR
+; portfolio_weight: 0
+; build_hash:   fec0b1824c693a5599aa91687cdbf606eea059d2eb8d38d717bfbf6932d9f312
+; author:       Codex
+; date:         2026-07-17
+;==========================================================
 ; FTMO account-governor build/test preset. Intentionally cannot deploy.
+qm_ea_id=13206
+signed_policy_id=
+qm_news_filters_not_applicable=true
+qm_friday_close_owned_by_sleeves=true
+strategy_no_trade_controller=true
 expected_account_login=0
-governor_policy_id=FTMO_P1_GOVERNOR_V1
-governor_policy_version=1.0
+challenge_id=
+challenge_start_utc=0
 allowed_magics_csv=
 governor_dry_run=true
-policy_start_balance=100000.0
-policy_target_balance=110000.0
-policy_total_loss_floor=90000.0
-policy_execution_daily_stop=4500.0
-policy_profit_room_retention=0.20
-policy_full_risk_room=4000.0
-policy_minimum_trading_days=4
+challenge_state_bootstrap=false
+bootstrap_no_prior_breach_confirmed=false
+bootstrap_prague_day_key=0
+bootstrap_midnight_balance=0.0
+bootstrap_trading_days=0
+bootstrap_last_trade_day_key=0
 governor_timer_ms=200
 close_deviation_points=50

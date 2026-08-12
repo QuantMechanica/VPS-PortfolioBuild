@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "bound_as_of_utc": "2026-07-16T12:30:00Z",
+  "repo_root": "C:\\QM\\repo",
+  "source_manifest_path": "D:\\QM\\reports\\portfolio\\dxz23_audit_requal_input_20260715T221618Z\\source_manifest_AUDIT_REQUAL_INPUT.json",
+  "sleeves": [
+    {
+      "ea_id": 10403,
+      "symbol": "XAUUSD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10403_et-turtle20x.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\QM5_10403_et-turtle20x.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\01_10403_XAUUSD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot2_XAUUSD_D1_QM5_10403_et-turtle20x_magic104030002_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\01_10403_XAUUSD_DWX\\report.htm"
+    },
+    {
+      "ea_id": 10440,
+      "symbol": "NDX.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10440_mql5-ohlc-mtf.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10440_mql5-ohlc-mtf\\QM5_10440_mql5-ohlc-mtf.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\02_10440_NDX_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot3_NDX_H1_QM5_10440_mql5-ohlc-mtf_magic104400003_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\02_10440_NDX_DWX\\report.htm"
+    },
+    {
+      "ea_id": 10476,
+      "symbol": "USDCAD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10476_mql5-pamxa.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10476_mql5-pamxa\\QM5_10476_mql5-pamxa.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_h1_staged_serial\\20260716T071056Z\\runs\\03_10476_USDCAD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot4_USDCAD_H1_QM5_10476_mql5-pamxa_magic104760004_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_h1_staged_serial\\20260716T071056Z\\runs\\03_10476_USDCAD_DWX\\report.htm"
+    },
+    {
+      "ea_id": 10513,
+      "symbol": "XAUUSD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10513_mql5-ichimoku.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\QM5_10513_mql5-ichimoku.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_technical_retry\\20260716T060039Z\\runs\\04_10513_XAUUSD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot3_XAUUSD_D1_QM5_10513_mql5-ichimoku_magic105130003_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_technical_retry\\20260716T060039Z\\runs\\04_10513_XAUUSD_DWX\\report.htm"
+    },
+    {
+      "ea_id": 10692,
+      "symbol": "NDX.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10692_tv-ls-ms.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10692_tv-ls-ms\\QM5_10692_tv-ls-ms.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\05_10692_NDX_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot5_NDX_H1_QM5_10692_tv-ls-ms_magic106920005_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\05_10692_NDX_DWX\\report.htm"
+    },
+    {
+      "ea_id": 10715,
+      "symbol": "USDJPY.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10715_tv-asian-box.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10715_tv-asian-box\\QM5_10715_tv-asian-box.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\06_10715_USDJPY_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot4_USDJPY_M15_QM5_10715_tv-asian-box_magic107150004_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\06_10715_USDJPY_DWX\\report.htm"
+    },
+    {
+      "ea_id": 10911,
+      "symbol": "GDAXI.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10911_grimes-complex-pb.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10911_grimes-complex-pb\\QM5_10911_grimes-complex-pb.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\07_10911_GDAXI_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot3_GDAXI_H1_QM5_10911_grimes-complex-pb_magic109110003_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\07_10911_GDAXI_DWX\\report.htm"
+    },
+    {
+      "ea_id": 10919,
+      "symbol": "XTIUSD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10919_grimes-overshoot.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10919_grimes-overshoot\\QM5_10919_grimes-overshoot.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\08_10919_XTIUSD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot1_XTIUSD_H4_QM5_10919_grimes-overshoot_magic109190001_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\08_10919_XTIUSD_DWX\\report.htm"
+    },
+    {
+      "ea_id": 10939,
+      "symbol": "GBPUSD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10939_grimes-context-pb.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10939_grimes-context-pb\\QM5_10939_grimes-context-pb.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_h4_staged_serial\\20260716T075313Z\\runs\\09_10939_GBPUSD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot1_GBPUSD_H4_QM5_10939_grimes-context-pb_magic109390001_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_h4_staged_serial\\20260716T075313Z\\runs\\09_10939_GBPUSD_DWX\\report.htm"
+    },
+    {
+      "ea_id": 11132,
+      "symbol": "SP500.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11132_tm-cum-rsi2.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11132_tm-cum-rsi2\\QM5_11132_tm-cum-rsi2.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\10_11132_SP500_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot0_SP500_D1_QM5_11132_ohlc-daily-squeeze-reversal-d1_magic111320000_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\10_11132_SP500_DWX\\report.htm"
+    },
+    {
+      "ea_id": 11165,
+      "symbol": "AUDCAD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11165_weiss-rsi-ma.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11165_weiss-rsi-ma\\QM5_11165_weiss-rsi-ma.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_h1_staged_serial\\20260716T071056Z\\runs\\11_11165_AUDCAD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot2_AUDCAD_H1_QM5_11165_audcad-momentum_magic111650002_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_h1_staged_serial\\20260716T071056Z\\runs\\11_11165_AUDCAD_DWX\\report.htm"
+    },
+    {
+      "ea_id": 11165,
+      "symbol": "EURUSD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11165_weiss-rsi-ma.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11165_weiss-rsi-ma\\QM5_11165_weiss-rsi-ma.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_technical_retry\\20260716T060039Z\\runs\\12_11165_EURUSD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot0_EURUSD_H1_QM5_11165_weiss-rsi-ma_magic111650000_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_technical_retry\\20260716T060039Z\\runs\\12_11165_EURUSD_DWX\\report.htm"
+    },
+    {
+      "ea_id": 11421,
+      "symbol": "AUDUSD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11421_ohlc-daily-squeeze-reversal-d1.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_d1_staged_serial\\20260716T080201Z\\runs\\13_11421_AUDUSD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot3_AUDUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1_magic114210003_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_d1_staged_serial\\20260716T080201Z\\runs\\13_11421_AUDUSD_DWX\\report.htm"
+    },
+    {
+      "ea_id": 11421,
+      "symbol": "EURUSD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11421_ohlc-daily-squeeze-reversal-d1.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\14_11421_EURUSD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot0_EURUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1_magic114210000_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\14_11421_EURUSD_DWX\\report.htm"
+    },
+    {
+      "ea_id": 11708,
+      "symbol": "EURUSD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11708_anon-market-squeeze-d1.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11708_anon-market-squeeze-d1\\QM5_11708_anon-market-squeeze-d1.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\15_11708_EURUSD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot0_EURUSD_D1_QM5_11708_anon-market-squeeze-d1_magic117080000_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\15_11708_EURUSD_DWX\\report.htm"
+    },
+    {
+      "ea_id": 12567,
+      "symbol": "XAUUSD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12567_cum-rsi2-commodity.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\QM5_12567_cum-rsi2-commodity.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_d1_staged_serial\\20260716T080201Z\\runs\\16_12567_XAUUSD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot3_XAUUSD_D1_QM5_12567_cum-rsi2-commodity_magic125670003_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_d1_staged_serial\\20260716T080201Z\\runs\\16_12567_XAUUSD_DWX\\report.htm"
+    },
+    {
+      "ea_id": 12567,
+      "symbol": "XNGUSD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12567_cum-rsi2-commodity.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\QM5_12567_cum-rsi2-commodity.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\17_12567_XNGUSD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot2_XNGUSD_D1_QM5_12567_cum-rsi2-commodity_magic125670002_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\17_12567_XNGUSD_DWX\\report.htm"
+    },
+    {
+      "ea_id": 12778,
+      "symbol": "AUDUSD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12778_edgelab-audusd-eurjpy-cointegration.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_d1_staged_serial\\20260716T080201Z\\runs\\18_12778_AUDUSD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot0_AUDUSD_D1_QM5_12778_edgelab-audusd-eurjpy-cointegration_magic127780000_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_d1_staged_serial\\20260716T080201Z\\runs\\18_12778_AUDUSD_DWX\\report.htm"
+    },
+    {
+      "ea_id": 12969,
+      "symbol": "USDJPY.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12969_usdjpy-gotobi-nakane-fix.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\QM5_12969_usdjpy-gotobi-nakane-fix.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\19_12969_USDJPY_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot0_USDJPY_M30_QM5_12969_usdjpy-gotobi-nakane-fix_magic129690000_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\19_12969_USDJPY_DWX\\report.htm"
+    },
+    {
+      "ea_id": 12989,
+      "symbol": "XAUUSD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12989_grimes-nested-pb-v2.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12989_grimes-nested-pb-v2\\QM5_12989_grimes-nested-pb-v2.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_technical_retry\\20260716T060039Z\\runs\\20_12989_XAUUSD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot3_XAUUSD_H4_QM5_12989_grimes-nested-pb-v2_magic129890003_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_technical_retry\\20260716T060039Z\\runs\\20_12989_XAUUSD_DWX\\report.htm"
+    },
+    {
+      "ea_id": 13128,
+      "symbol": "NDX.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13128_pre-fomc-drift-ndx.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13128_pre-fomc-drift-ndx\\QM5_13128_pre-fomc-drift-ndx.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\21_13128_NDX_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot0_NDX_H1_QM5_13128_pre-fomc-drift-ndx_magic131280000_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\21_13128_NDX_DWX\\report.htm"
+    },
+    {
+      "ea_id": 1556,
+      "symbol": "XAUUSD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1556_aa-zak-mom12.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1556_aa-zak-mom12\\QM5_1556_aa-zak-mom12.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\22_1556_XAUUSD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot4_XAUUSD_D1_QM5_1556_aa-zak-mom12_magic15560004_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_hardened\\20260716T051551Z\\runs\\22_1556_XAUUSD_DWX\\report.htm"
+    },
+    {
+      "ea_id": 10706,
+      "symbol": "GBPUSD.DWX",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10706_tv-mon-ls.md",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.mq5",
+      "receipt_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_h1_staged_serial\\20260716T071056Z\\runs\\23_10706_GBPUSD_DWX\\receipt.json",
+      "preset_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot1_GBPUSD_H1_QM5_10706_tv-mon-ls_magic107060001_dxz23_live.set",
+      "report_path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_h1_staged_serial\\20260716T071056Z\\runs\\23_10706_GBPUSD_DWX\\report.htm"
+    }
+  ]
+}

@@ -3,7 +3,7 @@
 ; ea_id:        10706
 ; ea_slug:      tv-mon-ls
 ; ea_version:   v5.0
-; set_version:  s20260605-001
+; set_version:  s20260713-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
@@ -12,26 +12,15 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-06-05
+; date:         2026-07-13
 ;==========================================================
+qm_ea_id=10706
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=framework/EAs/QM5_10706_tv-mon-ls/SPEC.md
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10706_tv-mon-ls.md
 strategy_spread_atr_mult=0.25
 MondayBoxShiftHours=7
 LiqPct=0.0002
@@ -42,6 +31,6 @@ MondayRangeTpPct=1.30
 BeTriggerR=1.5
 BeBars=24
 BeLockFrac=0.1
-EntryMode=1
+EntryMode=MLS_ONE_TRADE_PER_WEEK
 FridayExitHourBroker=18
 FridayExitMinuteBroker=30

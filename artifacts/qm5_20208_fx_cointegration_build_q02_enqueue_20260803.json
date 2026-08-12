@@ -1,0 +1,98 @@
+{
+  "schema": "qm_fx_cointegration_build_q02_handoff/v1",
+  "timestamp_utc": "2026-08-03T15:31:47Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20208",
+  "slug": "nzdusd-euraud",
+  "pair": [
+    "NZDUSD.DWX",
+    "EURAUD.DWX"
+  ],
+  "logical_symbol": "QM5_20208_NZDUSD_EURAUD_COINTEGRATION_D1",
+  "selection": {
+    "scan_size": 66,
+    "sign_aware_rank": 27,
+    "dev_net_sharpe": -0.091704,
+    "oos_net_sharpe": 0.474703,
+    "oos_return_pct": 4.877699,
+    "oos_state_changes": 19,
+    "fixed_dev_beta": -0.286008035,
+    "half_life_d1_bars": 138.333205,
+    "dedicated_fixed_d1_pair_previously_built": false,
+    "known_overlap": "Rank 26 NZDUSD/AUDJPY is already QM5_12749; no unordered traded-symbol manifest, fixed-beta D1 card, allocation, EA, or logical basket for NZDUSD/EURAUD existed before QM5_20208."
+  },
+  "anchors": {
+    "QM5_12532": "Q02_PASS_THEN_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_THEN_Q04_FAIL"
+  },
+  "build": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "build_check_passed": true,
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "spec_validation": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "basket_regression_passed": 33,
+    "magic_resolver_rows_kept": 15468,
+    "magic_resolver_rows_dropped": 0,
+    "magic_registry_sha256": "6035d864c9749d3cb9ac2247907cfa9bff28bf33f9e6799f51041d911f2da6c0",
+    "mq5_sha256": "ac7d3deba42aed2db1bf4fca01a6aac34f28ccfa6e496a6b64d93b3def0db8d3",
+    "ex5_sha256": "31d4460df6cd3e9ef579d8ed4e3849e62b3423ef0e942f6703122e2245988bc4",
+    "logical_setfile_sha256": "f6ae2633e6ec4e54a7e14835c16c50c231c4135495abf7f3cdb00eaf5346ae04",
+    "build_report": "D:\\QM\\reports\\framework\\21\\build_check_20260803_152910.json",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260803_152739\\summary.csv",
+    "manual_smoke_run": false
+  },
+  "basket_manifest": {
+    "host_symbol": "NZDUSD.DWX",
+    "host_timeframe": "D1",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "basket_symbols": [
+      "NZDUSD.DWX",
+      "EURAUD.DWX",
+      "AUDUSD.DWX",
+      "EURUSD.DWX"
+    ],
+    "traded_symbols": [
+      "NZDUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "conversion_only_symbols": [
+      "AUDUSD.DWX",
+      "EURUSD.DWX"
+    ]
+  },
+  "risk": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "q02": {
+    "work_item_id": "1935fc01-6eaa-4db1-8397-660d22ebdfbb",
+    "status_at_handoff": "pending",
+    "attempt_count_at_handoff": 0,
+    "claimed_by_at_handoff": null,
+    "logical_setfile_enqueued": true,
+    "physical_host_setfile_skipped": true,
+    "skip_reason": "basket_manifest_logical_setfile_preferred",
+    "priority_track": true,
+    "timeout_min": 450,
+    "cpu_ceiling": 7,
+    "factory_terminals_at_precheck": 4,
+    "factory_terminal_names": [
+      "T1",
+      "T2",
+      "T3",
+      "T5"
+    ],
+    "t_live_excluded": true,
+    "canonical_mutation_lock_released": true
+  },
+  "prohibited_surfaces_touched": []
+}

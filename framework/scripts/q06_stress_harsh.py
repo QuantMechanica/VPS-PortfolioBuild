@@ -7,7 +7,7 @@ parameters to run_smoke. The implemented (and ratified) test is:
   Trade-rejection: 10% via the FW2 EA hook qm_stress_reject_probability=0.10
   (seeded, deterministic; set by gen_stress_setfile.py --level HARSH)
   Window: full available history per symbol, Q03 plateau-median params
-  Verdict: PF > 1.0 AND DD < 15% AND >= 20 trades (gross, like every tester run)
+  Verdict: PF > 1.0 AND DD < 25% AND >= 20 trades (gross, like every tester run)
 Cost STRESS lives at Q08 (DL-072 cost-cushion: gross >= 2x worst-case
 commission); cost REALISM at Q04. All historical Q06 verdicts remain valid.
 """
@@ -19,6 +19,7 @@ import json
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 if __package__ in (None, ""):
@@ -26,12 +27,14 @@ if __package__ in (None, ""):
 
 from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
                                             resolve_ea_expert_path, period_from_setfile,
-                                            find_latest_summary, full_history_window,
+                                            full_history_window,
                                             run_with_launch_fault_retry)
 from framework.scripts.q05_stress_medium import (
-    _latest_report_metrics, _parse_pf_dd_trades, summary_invalid_reason, MIN_TRADES,
-    PF_FLOOR, DD_PCT_MAX, STARTING_EQUITY, DEFAULT_TIMEOUT_SEC,
-    RUNNER_HEADROOM_SEC, _basket_tester_overrides,
+    _latest_report_metrics, _parse_pf_dd_trades, _select_run_summary,
+    _text_from_completed_process, summary_invalid_reason, MIN_TRADES, PF_FLOOR,
+    DD_PCT_MAX, STARTING_EQUITY, DEFAULT_TIMEOUT_SEC, RUNNER_HEADROOM_SEC,
+    _basket_tester_overrides, _load_summary, _summary_report_path,
+    _summary_provenance, _report_input_value,
 )
 from framework.scripts.gen_stress_setfile import stress_setfile_text
 
@@ -110,6 +113,8 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     runner_timeout_sec = timeout_sec + RUNNER_HEADROOM_SEC
     timed_out = False
     timeout_detail = None
+    output_text = ""
+    started_at = time.time()
     try:
         proc = run_with_launch_fault_retry(
             args,
@@ -120,14 +125,30 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
             creationflags=creationflags,
         )
         exit_code = proc.returncode
+        output_text = _text_from_completed_process(proc)
     except subprocess.TimeoutExpired as exc:
         timed_out = True
         timeout_detail = f"subprocess_timeout_after={exc.timeout}s"
         exit_code = 124
-    sym_clean = symbol.replace(".", "_")
-    summary = find_latest_summary(report_root)
+        output_text = _text_from_completed_process(exc)
+    summary = _select_run_summary(
+        output_text,
+        report_root,
+        started_at=started_at,
+        ea_id=ea_id,
+        ea_expert=ea_expert,
+        symbol=symbol,
+        period=period,
+        terminal=terminal,
+    )
     invalid_reason = summary_invalid_reason(summary) if summary else None
-    report_metrics = None if summary else _latest_report_metrics(report_root)
+    report_metrics = None if summary else _latest_report_metrics(
+        report_root,
+        started_at=started_at,
+        expected_expert=ea_expert,
+        expected_symbol=symbol,
+        expected_period=period,
+    )
     if summary:
         pf, dd_money, trades = _parse_pf_dd_trades(summary)
     elif report_metrics:
@@ -137,6 +158,24 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     else:
         pf, dd_money, trades = None, None, 0
     dd_pct = (dd_money / STARTING_EQUITY * 100.0) if dd_money is not None else None
+    summary_data = _load_summary(summary) if summary else None
+    report_path = _summary_report_path(summary_data)
+    if report_path is None and report_metrics and report_metrics.get("report_path"):
+        report_path = Path(report_metrics["report_path"])
+    report_readable, stress_input_raw = _report_input_value(
+        report_path,
+        "qm_stress_reject_probability",
+    )
+    try:
+        stress_input_value = float(stress_input_raw) if stress_input_raw is not None else None
+    except ValueError:
+        stress_input_value = None
+    stress_input_authenticated = (
+        report_readable
+        and stress_input_value is not None
+        and abs(stress_input_value - 0.10) <= 1e-12
+    )
+    provenance = _summary_provenance(summary, setfile)
 
     if summary is None and report_metrics is None:
         if timed_out:
@@ -146,6 +185,12 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
             verdict, reason = "INVALID", "summary_missing"
     elif invalid_reason:
         verdict, reason = "INVALID", invalid_reason
+    elif not report_readable:
+        verdict, reason = "INVALID", "stress_input_evidence_missing:native_report_unreadable"
+    elif not stress_input_authenticated:
+        observed = "missing" if stress_input_raw is None else stress_input_raw
+        verdict = "INVALID"
+        reason = f"stress_input_not_effective:expected=0.1000:observed={observed}"
     elif trades < MIN_TRADES:
         verdict, reason = "FAIL", f"trades_below_floor:trades={trades}:floor={MIN_TRADES}"
     elif pf is None:
@@ -166,6 +211,8 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "runner_symbol": symbol,
         "stress_level": LEVEL,
         "rejection_probability": 0.10,
+        "stress_input_value": stress_input_value,
+        "stress_input_authenticated": stress_input_authenticated,
         "verdict": verdict,
         "reason": reason,
         "pf": pf,
@@ -186,6 +233,7 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "latest_full_year": latest_full_year,
         "full_history_from_override": full_history_from,
         "generated_at_utc": utc_now_iso(),
+        **provenance,
     }
 
 
@@ -194,8 +242,11 @@ def main() -> int:
     ap.add_argument("--ea", required=True)
     ap.add_argument("--symbol", required=True)
     ap.add_argument("--baseline-setfile", type=Path, required=True)
+    ap.add_argument("--expert",
+                    help="Optional pre-deployed MT5 expert path override")
     ap.add_argument("--terminal", default="T2")
     ap.add_argument("--report-root", type=Path, default=Path("D:/QM/reports/pipeline"))
+    ap.add_argument("--out-prefix", type=Path, help=argparse.SUPPRESS)
     ap.add_argument("--timeout-sec", type=int, default=DEFAULT_TIMEOUT_SEC)
     ap.add_argument("--latest-full-year", type=int,
                     help="Cap full-history window when validated custom-symbol history ends before default")
@@ -212,7 +263,7 @@ def main() -> int:
     ea_id = int(ea_match.group(1))
 
     repo_root = Path(__file__).resolve().parents[2]
-    ea_expert = resolve_ea_expert_path(repo_root, args.ea)
+    ea_expert = args.expert or resolve_ea_expert_path(repo_root, args.ea)
     if ea_expert is None:
         print(f"cannot resolve EA dir for {args.ea}", file=sys.stderr)
         return 2

@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13212
+; ea_slug:      mulham-us500-org
+; ea_version:   v5.0
+; set_version:  s20260721-001
+; symbol:       SP500.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-21
+;==========================================================
+qm_ea_id=13212
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_13212_mulham-us500-org.md
+strategy_org_min_frac_daily_atr=0.25
+strategy_atr_period_d1=14
+strategy_atr_period_m15=14
+strategy_displacement_atr_mult=1.2
+strategy_entry_window_end_hhmm=1900
+strategy_flatten_hhmm=2230
+strategy_sl_buffer_atr_mult=0.1
+strategy_tp_mode=QM_TP_ORG_STDEV_1
+strategy_fvg_trigger=false
+strategy_spread_cap_atr_frac=0.15

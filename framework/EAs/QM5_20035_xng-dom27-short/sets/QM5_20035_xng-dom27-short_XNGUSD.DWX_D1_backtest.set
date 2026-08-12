@@ -1,0 +1,28 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        20035
+; ea_slug:      xng-dom27-short
+; ea_version:   v5.0
+; set_version:  s20260722-001
+; symbol:       XNGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    RISK_FIXED
+; portfolio_weight: 1
+; build_hash:   60b6731a096740b90efce95f414691532fe3c973004db9ac22d94c7b2ce666b2
+; author:       Development
+; date:         2026-07-22
+;==========================================================
+qm_ea_id=20035
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\xng-dom27-short_card.md
+strategy_entry_day=27
+strategy_atr_period=20
+strategy_atr_sl_mult=2.75
+strategy_max_hold_days=1
+strategy_max_spread_points=2500

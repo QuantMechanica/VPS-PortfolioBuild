@@ -67,7 +67,7 @@ bool Strategy_NoTradeFilter()
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
+   if(ask <= 0.0 || bid <= 0.0 || ask < bid)
       return true;
 
    const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
@@ -305,4 +305,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-

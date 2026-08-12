@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        10279
 ; ea_slug:      whc-roc-ma
@@ -10,7 +10,7 @@
 ; magic_slot:   9
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6cdd09700b643d22c7985c87da3bdcd43efe2f6df4baed3fc35a00fc1d666640
+; build_hash:   213f971784f5e02889e79d1535ebebf98f92143d1a86e7fca3014daa1b3eb90f
 ; author:       Development
 ; date:         2026-06-12
 ;==========================================================

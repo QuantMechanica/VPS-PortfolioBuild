@@ -1,0 +1,38 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20033
+; ea_slug:      moc-imom
+; ea_version:   v5.0
+; set_version:  s20260722-001
+; symbol:       SP500.DWX
+; timeframe:    M30
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   330af2fd78e2979f31251591ef10fa78b94c0bfd8230718ec20f0e9fe633a6f9
+; author:       Development
+; date:         2026-07-22
+;==========================================================
+qm_ea_id=20033
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_signal_tf=30
+strategy_us_open_hour_broker=16
+strategy_us_open_minute_broker=30
+strategy_us_entry_hour_broker=22
+strategy_us_entry_minute_broker=30
+strategy_us_close_hour_broker=23
+strategy_us_close_minute_broker=0
+strategy_xetra_open_hour_broker=10
+strategy_xetra_open_minute_broker=0
+strategy_xetra_entry_hour_broker=18
+strategy_xetra_entry_minute_broker=0
+strategy_xetra_close_hour_broker=18
+strategy_xetra_close_minute_broker=30
+strategy_max_spread_points=0
+strategy_debug_entry_hooks=false

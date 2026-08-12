@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_562470_atr-break-out.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_562470_atr-break-out.pdf",
+      "source_pages": "1-8, 16-17",
+      "source_ref": "abokwaik, 'ATR Break Out' (ABO Trading System), ForexFactory thread 562470 (year n.d.), https://www.forexfactory.com/thread/562470/atr-break-out",
+      "strategy_name": "ATR Break Out (ABO) straddle",
+      "concept": "Momentum breakout: at each new bar place buy-stop/sell-stop pending orders an ATR-multiple away from price, so a move beyond average bar size triggers a trend-following trade managed with ATR-scaled SL/TP/trailing.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "London",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 ATR straddle breakout with ATR-based SL/TP/trailing stop and risk-% sizing; deterministic; FX-majors + Gold H1 data available via .DWX; each order carries its own stop (not martingale/grid).",
+      "priority_hint": "MED",
+      "notes": "One core rule set. Entry: at start of each new bar, place pending stop orders at BreakOut_ATR_mult x ATR(period, default 50) from price (straddle both sides; optional 'Follow Last Bar Direction' filters to one side); untriggered pendings deleted and re-placed each bar until filled. Exits: SL = SL_ATR_mult, TP = TP_ATR_mult, plus ATR trailing stop. Params stated: BO mult 2-3, SL 2-4, TP 4-20, TS 6, ATR period 50; optional MACD+RSI filters (suggested by auvergnat78) to cut false signals. Variants = same core: 'default' (BO x3 + RSI on) vs abokwaik 'crazy'/aggressive (BO x2, filters off, MaxOrders 99, multiple simultaneous orders). Also run on XAUUSD M15, GBP/USD M30, USD/JPY, USD/CAD (instrument-agnostic momentum). Trading-Time window configurable (author uses European session for EURUSD). Caveats: forum-sourced (reputability); user Kubiasty reported persistent losses, author admits Gold-M15 gives many false signals in ranges and default settings 'fire mostly at red-news times' (event-vol angle worth isolating); MaxOrders up to 99 / multi-order stacking = concentration risk, implement with capped max orders. MT4 .ex4 originals only (rebuild in V5 MQL5)."
+    }
+  ],
+  "notes": []
+}

@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_DEVELOPMENT_YEAR_ECONOMICS_AND_DENSITY_GATES",
+  "ea_id": 10938,
+  "symbol": "GDAXI.DWX",
+  "period": "H1",
+  "variant": "ablation_02",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "source_sha256": "1795F1050B353C4932AA48AF373125E7FBE7C90965D4F821ACACDCA83DA4DE8B",
+  "setfile_sha256": "E32DC2813A16ACF5203B4E1C281C53EEC954475B0C3CD82438EA8C998D152FA8",
+  "compile_log": "framework/build/compile/20260712_163854/QM5_10938_grimes-accept-high.compile.log",
+  "compile_log_sha256": "67187FDAC9C3D400AD3B1F307BA81065070C938FEAF2790D56E7AC0577B6534C",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10938_gdaxi_h1_wave24_20260712\\QM5_10938\\20260712_163916\\summary.json",
+  "deterministic": true,
+  "native": {
+    "trades": 61,
+    "profit_factor": 1.267895,
+    "net_profit": 7016.39,
+    "equity_drawdown": 6874.87
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10938_GDAXI_DWX_ABLATION02_T1_FRESH_20260712.jsonl",
+    "rows": 61,
+    "sha256": "7657D9AFDC9BA7AA5745DFC19AFD22693DA234E651E3F73B7A05CD21D01BCA6B",
+    "report_reconciliation": "PASS",
+    "count_delta": 0,
+    "missing_mae_rows": 0,
+    "corrected_net_delta": -0.04,
+    "net_tolerance": 1.0
+  },
+  "current_cost_artifact": "artifacts/ftmo_10938_gdaxi_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 61,
+    "profit_factor": 1.272453,
+    "net_profit": 7058.83,
+    "close_to_close_max_drawdown": 6051.92,
+    "commission_total": 0.0,
+    "swap_total": -647.71
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "negative_calendar_years": [
+      2021,
+      2022,
+      2024
+    ],
+    "calendar_years_below_density_floor": [
+      2017,
+      2018,
+      2019
+    ],
+    "development_years": [
+      2018,
+      2019,
+      2021,
+      2022
+    ],
+    "development_current_cost_net_profit": -2063.01,
+    "reason_for_reject": "The pooled PF clears 1.2, but the pre-validation development sample is net negative, three years lose money, and three calendar years miss the density floor. A marginal portfolio screen cannot be promoted under the frozen gate."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

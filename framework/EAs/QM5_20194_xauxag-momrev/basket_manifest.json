@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_20194_XAU_XAG_MOMREV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XAU/XAG momentum-reversal basket from approved card BIANCHI-MOMREV-2015_XAU_XAG_S02. Run on XAUUSD.DWX D1 and evaluate the paired package, never standalone legs. At each genuine broker-month transition, rank synchronized overlapping 12- and 18-completed-month returns and trade only when the ranks disagree. Q02 is a strict narrow-carrier falsification; no source performance, neutrality, decorrelation, or portfolio admission is claimed."
+  ]
+}

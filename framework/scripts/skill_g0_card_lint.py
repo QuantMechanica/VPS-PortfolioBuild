@@ -35,7 +35,7 @@ def main():
     text=path.read_text(encoding='utf-8') if path.exists() else ''
     missing=[k for k in REQUIRED if k not in text.lower()]
     status='ok' if path.exists() and not missing else 'error'
-    print(json.dumps({'status':status,'card_exists':path.exists(),'missing_sections':missing,'next_action':'cto_semantic_review' if status=='ok' else 'complete_card_fields'},indent=2))
+    print(json.dumps({'status':status,'card_exists':path.exists(),'missing_sections':missing,'next_action':'owner_semantic_review' if status=='ok' else 'complete_card_fields'},indent=2))
     return 0 if status=='ok' else 2
 
 if __name__=='__main__': raise SystemExit(main())

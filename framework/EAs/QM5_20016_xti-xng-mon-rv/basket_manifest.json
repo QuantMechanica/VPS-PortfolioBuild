@@ -1,0 +1,20 @@
+{
+  "logical_symbol": "QM5_20016_XTI_XNG_MON_RV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.01.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "One source-backed, QM-translated Monday-session package: SELL XTI and BUY XNG, target 1:1 absolute USD notionals, and cap both ATR stops to one RISK_FIXED=1000 budget. The source measures Friday-close to Monday-close spot returns, so this Monday-open CFD carrier omits the weekend gap. Existing standalone Monday legs are known component overlap; only the jointly sized logical package is valid. Q02 uses the synchronized 2018-2024 DWX window. No standalone result, live preset, portfolio admission, or decorrelation claim is authorized."
+  ]
+}

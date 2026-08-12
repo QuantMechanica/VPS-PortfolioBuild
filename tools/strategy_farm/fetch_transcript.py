@@ -114,7 +114,12 @@ def main():
     video_id = sys.argv[1]
     out_dir = sys.argv[2] if len(sys.argv) > 2 else "."
     attempts_file = sys.argv[3] if len(sys.argv) > 3 else None
-    
+
+    import os
+    os.makedirs(out_dir, exist_ok=True)
+    if attempts_file:
+        os.makedirs(os.path.dirname(os.path.abspath(attempts_file)), exist_ok=True)
+
     proxies, stats = get_proxies()
     rows, success, attempts = fetch_with_proxies(video_id, proxies, max_attempts=150)
     

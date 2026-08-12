@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "phase": "Q03",
+  "preregistered_at_utc": "2026-07-17T10:41:19Z",
+  "ea_id": 12969,
+  "ea_dir_name": "QM5_12969_usdjpy-gotobi-nakane-fix",
+  "symbol": "USDJPY.DWX",
+  "period": "M30",
+  "is_window": {
+    "from": "2017.01.01",
+    "to": "2022.12.31"
+  },
+  "model": 4,
+  "identity": {
+    "card": {
+      "path": "strategy-seeds/cards/approved/QM5_12969_usdjpy-gotobi-nakane-fix_card.md",
+      "sha256": "f8989e1e7e6592d601a2142a8b0daf8449d0e33d8f638d4521077bfa1c321e4c"
+    },
+    "mq5": {
+      "path": "framework/EAs/QM5_12969_usdjpy-gotobi-nakane-fix/QM5_12969_usdjpy-gotobi-nakane-fix.mq5",
+      "sha256": "4e9503fd61e960de689128ebda343d7e078feb24dd42a25605c246f196ddfb86"
+    },
+    "ex5": {
+      "path": "framework/EAs/QM5_12969_usdjpy-gotobi-nakane-fix/QM5_12969_usdjpy-gotobi-nakane-fix.ex5",
+      "sha256": "933d63c036a154725df1376e22ca74cb419860588f0313fc986fc3ead7673be4"
+    },
+    "baseline_setfile": {
+      "path": "framework/EAs/QM5_12969_usdjpy-gotobi-nakane-fix/sets/QM5_12969_usdjpy-gotobi-nakane-fix_USDJPY.DWX_M30_backtest.set",
+      "sha256": "d247aacc47308cfcf33875ab87d429539106a80f01ed39cfbcb9a9442929947f"
+    }
+  },
+  "axis": {
+    "name": "strategy_risk_stop_pips",
+    "value_type": "int",
+    "active": true,
+    "values": [60, 90, 120, 150, 180, 240, 360]
+  },
+  "strategy_parameter_names": [
+    "PORTFOLIO_WEIGHT",
+    "strategy_entry_jst_hhmm",
+    "strategy_exit_jst_hhmm",
+    "strategy_holiday_volume_proxy_enabled",
+    "strategy_risk_stop_pips",
+    "strategy_max_spread_points"
+  ],
+  "locked_parameters": {
+    "PORTFOLIO_WEIGHT": 1.0,
+    "strategy_entry_jst_hhmm": 200,
+    "strategy_exit_jst_hhmm": 955,
+    "strategy_holiday_volume_proxy_enabled": true,
+    "strategy_max_spread_points": 0
+  },
+  "profitability": {
+    "profit_factor_strictly_greater_than": 1.0,
+    "minimum_fraction": 0.5,
+    "minimum_trades": 180,
+    "maximum_drawdown_money": null
+  },
+  "plateau": {
+    "minimum_contiguous_width": 3,
+    "run_selection": "widest_then_lower_start",
+    "cell_selection": "median",
+    "even_median": "lower"
+  },
+  "run_contract": {
+    "runs_per_cell": 2
+  }
+}

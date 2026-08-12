@@ -1,0 +1,61 @@
+{
+  "branch": "agents/board-advisor",
+  "captured_at": "2026-07-26T02:15:19+00:00",
+  "decision": "STOP_CPU_CEILING",
+  "frontier": {
+    "anchor_q02": {
+      "QM5_12532": {
+        "q02_verdict": "PASS",
+        "later_gate": "Q05",
+        "later_verdict": "FAIL"
+      },
+      "QM5_12533": {
+        "q02_verdict": "PASS",
+        "later_gate": "Q04",
+        "later_verdict": "FAIL"
+      }
+    },
+    "eligible_unbuilt_pair_count": 0,
+    "source": "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md"
+  },
+  "capacity": {
+    "active_work_items": 9,
+    "claimed_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "factory_terminal_processes": [
+      "T2",
+      "T3",
+      "T7",
+      "T9",
+      "T10"
+    ],
+    "legacy_scheduler": {
+      "available_slots_before": 0,
+      "available_slots_after": 0,
+      "scheduled": 0,
+      "status": "ok"
+    }
+  },
+  "actions": {
+    "card_created": false,
+    "ea_built": false,
+    "q02_enqueued": false,
+    "mt5_launched": false,
+    "queue_mutated": false,
+    "terminal_controlled": false
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  }
+}

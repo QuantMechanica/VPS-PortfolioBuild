@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_1140599_emas-band-scalp-trading-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1140599_emas-band-scalp-trading-system.pdf",
+      "source_pages": "1",
+      "source_ref": "wdmenet1991, \"EMA's Band Scalp Trading System\", ForexFactory thread 1140599, https://www.forexfactory.com/thread/1140599/emas-band-scalp-trading-system (single post, no date stated)",
+      "strategy_name": "EMA-Band Stochastic Pullback Scalp",
+      "concept": "M1 trend-pullback scalp: a 50-EMA high/low/close band above/below the 100-EMA defines trend direction, and a Stochastic cross out of oversold/overbought on a pullback into the band triggers entry.",
+      "market": "FX",
+      "timeframe": "M1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 mechanical rules (EMA50 H/L/C band, EMA100, Stochastic 14/3/3), deterministic entry/exit, defined SL (3 pips beyond 50-EMA band edge) and TP (7-12 pips); FX majors M1 data via .DWX; FTMO/DXZ compatible.",
+      "priority_hint": "LOW",
+      "notes": "Single anonymous post, no track record. Pullback proximity ('rally back toward the 3 EMAs') left qualitative -> reasonable-interpretation needed, hence PARTIAL. M1 scalp with 7-12 pip TP and 2.5-pip max spread is highly cost/commission sensitive; generic trend+stoch pullback variant, not an uncorrelated event/energy/JPY/long-vol driver. Pairs: EUR/USD, GBP/USD, AUD/USD."
+    }
+  ],
+  "notes": []
+}

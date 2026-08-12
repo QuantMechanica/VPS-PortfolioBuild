@@ -1,0 +1,25 @@
+{
+  "pdf": "forex-system-20150605.html.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forex-system-20150605.html.pdf",
+      "source_pages": "1",
+      "source_ref": "Robopip, \"Forex Mechanical System: SMA Crossover Pullback\", babypips.com Trading Systems, June 5, 2015 (based on Big Pippin's Daily Chart Art framework). URL approx https://www.babypips.com/trading-systems/forex-mechanical-system-sma-crossover-pullback",
+      "strategy_name": "SMA Crossover Pullback (Big Pippin)",
+      "concept": "Trade in the direction of the 100/200 SMA trend and time entries on a stochastic (14,3,3) pullback back into that trend.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 dual-SMA trend filter + stochastic pullback entry, deterministic, no ML, FX data available; but this HTML snapshot is truncated by a cookie-consent overlay so precise entry trigger, exit and SL/TP are missing.",
+      "priority_hint": "LOW",
+      "notes": "Only the intro survived the page capture: indicators = 100 & 200 SMA + Stochastic (14,3,3); direction from SMA crossover, entry on stochastic pullback. Generic MA-crossover trend-follow (heavily arbitraged retail template, contradicts FX-edge doctrine). Timeframe D1 inferred from 'Daily Chart Art'. Full rules would need reconstruction from the original babypips article."
+    }
+  ],
+  "notes": [
+    "PDF is a single-page babypips.com HTML snapshot; content truncated by a German cookie-consent overlay after the intro paragraph.",
+    "Extracted via pypdf and pdftotext -layout; both yield identical truncated text. No parameter table or exit rules present in the capture."
+  ]
+}

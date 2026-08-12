@@ -1,0 +1,34 @@
+{
+  "logical_symbol": "QM5_1224_FX7_XMOM_D1",
+  "host_symbol": "EURUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2017.01.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "USDJPY.DWX"
+  ],
+  "traded_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "USDJPY.DWX"
+  ],
+  "notes": [
+    "One atomic White-Okunev cross-sectional package: rank all seven USD crosses, hold one foreign-currency long and one foreign-currency short, and reject standalone component results.",
+    "Q02 uses the synchronized 2017-2024 D1 intersection; AUDUSD, NZDUSD, USDCAD, and USDCHF define the 2024 end bound.",
+    "The tester host is EURUSD.DWX. The logical symbol is evidence identity only and is never sent to MT5 as a custom market symbol.",
+    "Friday close is disabled because monthly rank retention is a source rule; hard ATR stops, basket loss kill, and framework kill switch remain active.",
+    "No standalone result, live preset, portfolio admission, or decorrelation claim is authorized by this repair."
+  ]
+}

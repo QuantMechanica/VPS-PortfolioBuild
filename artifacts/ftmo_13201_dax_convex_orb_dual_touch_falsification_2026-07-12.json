@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_RESEARCH_SCREEN_EXECUTION_BIAS",
+  "ea_id": 13201,
+  "registry_status": "retired",
+  "symbol": "GDAXI.DWX",
+  "period": "H1",
+  "old_optimistic_screen": {
+    "path": "artifacts/ftmo_convex_orb_screen_broker_time_corrected_2026-07-11.json",
+    "sha256": "EF6F5A4577011BB01FBC94826D08D2A7BF2E0B56EA934AAF8017237881BFAA84",
+    "parameters": {
+      "range_bars": 1,
+      "buffer_atr": 0.05,
+      "target_r": 5.0,
+      "max_range_atr": 1.75
+    },
+    "development_profit_factor": 1.913818,
+    "validation_2023_profit_factor": 1.909669,
+    "holdout_2024_2025_profit_factor": 1.850558,
+    "bias": "Ambiguous H1 bars that crossed both pending thresholds were omitted from the historical trade set."
+  },
+  "native_mt5_falsification": {
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\dax_convex_orb_native_20260711\\QM5_13201\\20260711_201001\\summary.json",
+    "report_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\dax_convex_orb_native_20260711\\QM5_13201\\20260711_201001\\raw\\run_01\\report.htm",
+    "year": 2024,
+    "trades": 199,
+    "native_profit_factor": 0.91,
+    "native_net_profit": -12375.17,
+    "native_equity_drawdown": 25701.62
+  },
+  "pessimistic_reconstruction": {
+    "path": "artifacts/ftmo_convex_orb_dual_touch_pessimistic_2026-07-12.json",
+    "sha256": "401B71438E7BCF49C6056793D55037016C2A293B9E2660DA14D7A68241B6A3BA",
+    "evaluated_configurations": 312,
+    "preholdout_survivors": 0,
+    "holdout_survivors": 0,
+    "old_winner_reconstructed": {
+      "development_profit_factor": 0.976602,
+      "development_trades": 1015,
+      "validation_2023_profit_factor": 0.845129,
+      "validation_2023_trades": 215,
+      "holdout_2024_2025_profit_factor": 0.994814,
+      "holdout_2024_2025_trades": 407,
+      "year_2024_trades": 199,
+      "year_2024_profit_factor": 0.854113
+    },
+    "native_parity_signal": "The pessimistic screen and native MT5 both produce 199 trades in 2024 and both reject the strategy."
+  },
+  "portfolio_gate_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

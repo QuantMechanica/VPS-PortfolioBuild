@@ -26,6 +26,7 @@ This EA trades long-only daily momentum. It opens a long position when ROC(12) o
 | `strategy_exit_roc_level` | `0.0` | any decimal | ROC threshold below which the EA exits. |
 | `strategy_atr_period` | `14` | `1+` | ATR period used for the catastrophic stop. |
 | `strategy_atr_sl_mult` | `2.0` | `> 0` | ATR multiple for the catastrophic stop. |
+| `strategy_max_spread_points` | `80` | `0+` | Blocks entries above this terminal-reported spread; `0` disables and synthetic-history zero spreads remain allowed. |
 
 ---
 
@@ -100,3 +101,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-12 | Initial build from card | c608396c-fab0-409b-9ff0-b88bb70f96ca |
+| v2 | 2026-07-24 | Q02 infrastructure recovery | Added the mandatory file-scoped spread guard before rebuilding the stale binary. |

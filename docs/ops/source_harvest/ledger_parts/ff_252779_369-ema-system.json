@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_252779_369-ema-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_252779_369-ema-system.pdf",
+      "source_pages": "1-4",
+      "source_ref": "jaws810 et al., '3,6,9 EMA system', ForexFactory thread 252779 (17 posts, 2011-era), https://www.forexfactory.com/thread/252779-369-ema-system",
+      "strategy_name": "3/6/9 Triple EMA Crossover Scalp",
+      "concept": "EMA3 crossing above (buy) or below (sell) both EMA6 and EMA9 signals fast-timeframe momentum entries, exiting on a hard SL, an opposite EMA3 cross, or a small fixed TP.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic MQL5-implementable EMA crossover on FX majors/crosses with a hard SL and FTMO/DXZ-compatible risk; but a naked M5 crossover is very low edge plausibility.",
+      "priority_hint": "LOW",
+      "notes": "Entry: EMA3 crosses top of both EMA6+EMA9 = long, bottom = short; enter after close of the cross candle. Exit: 20-pip disaster SL, primary exit = opposite EMA3-cross of the 6+9, TP ~10 pips (stated as 2.5% of balance on OANDA). Variants/filters suggested in thread (all same core rules): (1) skip signals when 3/6/9 EMAs are bunched together, wait for separation; (2) use higher TF (15M/30M) for separation then wait for 5M retrace + re-cross; (3) ADX/ATR filter; (4) MACD 8/17/9 or RSI-divergence confirmation; (5) golden1 uses 6/36 EMA on M5. Author admits it was UNTESTED at posting; multiple replies warn of whipsaws/blowups in ranging markets. Forum source of low reputability -> priority lowered. TP<SL structure needs commission/spread scrutiny at Q02/Q04."
+    }
+  ],
+  "notes": []
+}

@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_RUN",
+  "candidate": {
+    "ea_id": 13013,
+    "expert": "QM\\QM5_13013_grimes-trendday-v2",
+    "symbol": "NDX.DWX",
+    "period": "M15",
+    "setfile": "framework/EAs/QM5_13013_grimes-trendday-v2/sets/QM5_13013_grimes-trendday-v2_NDX.DWX_M15_backtest.set",
+    "setfile_sha256": "E13CA72196DD4F2E0A18CFFE71F45262F5B36DED8F1251CF58ECBEA0D9EC227B"
+  },
+  "selection_source": {
+    "rule": "Registry-valid Q04-Q07 NDX survivor with positive current-cost pooled PF but only a one-run legacy report and no admitted joint-MAE stream.",
+    "q04": {"path": "D:\\QM\\reports\\pipeline\\QM5_13013\\Q04\\aggregate.json", "sha256": "060C14A556B853B54A29DF755DA78D83114BB0EA1FA42BFE24C3E4A911B218DE", "verdict": "PASS", "fold_profit_factors": [3.374042, 1.962921, 1.264593], "fold_trades": [7, 12, 4]},
+    "q05": {"path": "D:\\QM\\reports\\pipeline\\QM5_13013\\Q05\\aggregate.json", "sha256": "4DA6DD4F2AE14EE6BBB4C121A590B99603061220AC59BDB5AC5849CB90B394DC", "verdict": "PASS", "profit_factor": 1.36, "trades": 69},
+    "q06": {"path": "D:\\QM\\reports\\pipeline\\QM5_13013\\Q06\\aggregate.json", "sha256": "BF7DA5E8499D3504E7970FEDB6E26D31C7541A123DB651F33223FA7B76684A7C", "verdict": "PASS"},
+    "q07": {"path": "D:\\QM\\reports\\pipeline\\QM5_13013\\Q07\\aggregate.json", "sha256": "47B65CCEF6C295BAE2ADBDCEEB35112C96E158E2C88EEDFA5A0CE95FB50879A5", "verdict": "PASS", "minimum_seed_profit_factor": 1.18, "seed_variance_pct": 17.05},
+    "legacy_current_cost": {"path": "artifacts/ftmo_13013_ndx_cost_reconciliation_2026-07-11.json", "sha256": "EF25E7EA0521BE18B597FFE4798D014C073A504A3C78748279397604BF1F83B3", "profit_factor": 1.372053, "trades": 69, "strict_gate": "FAIL_ANNUAL_DENSITY_AND_QUALITY"}
+  },
+  "fresh_evidence_contract": {
+    "history": "2017-01-01 through 2025-12-31",
+    "model": 4,
+    "required_identical_runs": 2,
+    "current_framework_strict_compile": true,
+    "joint_mae_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [0.5, 1.0, 2.0, 3.0, 5.0, 7.5, 10.0],
+    "development_survivor_rule": "A fixed raw candidate weight must improve both threshold and adverse preholdout pass rates.",
+    "sealed_holdout_open_rule": "Open once only for a frozen development survivor."
+  },
+  "execution": {"terminal": "T4", "symbol_mutex": "NDX.DWX"},
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

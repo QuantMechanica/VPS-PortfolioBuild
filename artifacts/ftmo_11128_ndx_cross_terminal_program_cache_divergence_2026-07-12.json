@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "INFRASTRUCTURE_BLOCKED_NO_STRATEGY_VERDICT",
+  "ea_id": 11128,
+  "symbol": "NDX.DWX",
+  "period": "D1",
+  "history": "2017-01-01/2025-12-31",
+  "binary_identity": {
+    "sha256": "B0B5F350A7652E03D734890F2782F57041850E4932DCA550BA3ED43EA0342A9F",
+    "repo_bytes": 278528,
+    "t2_bytes": 278528,
+    "t4_bytes": 278528,
+    "repo_t2_t4_byte_identical": true
+  },
+  "setfile_identity": {
+    "path": "framework/EAs/QM5_11128_tm-rsi25-75/sets/QM5_11128_tm-rsi25-75_NDX.DWX_D1_backtest.set",
+    "sha256": "1F07E8105350A9B7F918387C4C08005AD49854375C0C0081D39233CF56EDBC62"
+  },
+  "t4_current_framework_observation": {
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11128_ndx_d1_currentq08b_20260712\\QM5_11128\\20260712_085655\\summary.json",
+    "report_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11128_ndx_d1_currentq08b_20260712\\QM5_11128\\20260712_085655\\raw\\run_01\\report.htm",
+    "report_sha256": "382EEE474C5C3D80E88CA9E428CCFEA67148435338A320E7578ACFB07A095C8A",
+    "trades": 163,
+    "native_profit_factor": 1.26,
+    "native_net_profit": 7702.92,
+    "native_equity_drawdown": 3628.78,
+    "q08_rows": 163,
+    "q08_schema": "current_entry_time_and_mae",
+    "q08_sha256": "AFE14C252EAF9FC23E399E84F4E0918A61D1152BCF9869CD55B37883081BEC38"
+  },
+  "t2_cached_legacy_observation": {
+    "report_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11128_ndx_d1_currentq08_t2_20260712\\QM5_11128\\20260712_105001\\raw\\run_01\\report.htm",
+    "report_sha256": "0A42AF68087284B451AEFA554203066BDE44DDF5B692633AEA8BCEC870BF8EB7",
+    "trades": 146,
+    "native_profit_factor": 1.37,
+    "native_net_profit": 9959.54,
+    "native_equity_drawdown": 3782.23,
+    "q08_rows": 75,
+    "q08_schema": "legacy_missing_entry_time_and_mae",
+    "q08_sha256": "381DBBE7CAD55FFFCA6D43F5C022DA6B02BF66639F639F3FF0AFE323BADDE4C7"
+  },
+  "t3_unique_name_observation": {
+    "artifact": "artifacts/ftmo_11128_ndx_t3_unique_expert_history_sync_failure_2026-07-12.json",
+    "attempts": 3,
+    "result": "M0_1970_BARS_ZERO_AFTER_HISTORY_SYNCHRONIZATION_ERROR"
+  },
+  "decision": "Identical EX5 and setfile inputs produce incompatible report and emitter schemas across isolated terminals. Do not reconcile, cost, portfolio-screen, or reject the strategy until tester program/history caches are rebuilt and two cache-cold current-schema runs match exactly.",
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

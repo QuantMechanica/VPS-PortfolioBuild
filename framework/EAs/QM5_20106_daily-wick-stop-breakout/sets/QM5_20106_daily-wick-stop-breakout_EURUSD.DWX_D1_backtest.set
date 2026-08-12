@@ -1,0 +1,27 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20106
+; ea_slug:      daily-wick-stop-breakout
+; ea_version:   v5.0
+; set_version:  s20260724-001
+; symbol:       EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   e97a6a5590b2828d0ccee559869cd81667d808e5dc7b4cddfff86b7d537f001c
+; author:       Development
+; date:         2026-07-24
+;==========================================================
+qm_ea_id=20106
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_pips_above_high=2.0
+strategy_pips_below_low=2.0
+strategy_sl_pips=30.0
+strategy_tp_pips=100.0

@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PASS_FIXED_CONDITIONAL_TIMESTAMP_NORMALIZATION",
+  "source_calendar": "D:\\QM\\data\\news_calendar\\forex_factory_calendar_clean.csv",
+  "source_calendar_sha256": "C2B196EE2A097E2B45E4A8C4CA39D50A240D23D0214A4FA7FC06398006D66A69",
+  "finding": "The field labelled DateTime_UTC mixes correct 12:30/13:30 UTC release rows with lagged 19:30/20:30 rows that are one calendar day early and isolated same-day 11:30, 12:32, and 15:00 corruptions.",
+  "fixed_rule": {
+    "release_date": "Use raw date + 1 day when parsed naive hour >= 18; otherwise use raw date.",
+    "release_time": "Construct 08:30 America/New_York on that release date.",
+    "utc_conversion": "Convert the timezone-aware release timestamp to UTC using America/New_York DST rules.",
+    "postcondition": "All selected macro releases normalize to 12:30 or 13:30 UTC.",
+    "duplicate_resolution": "For the same event name and normalized timestamp, prefer the row whose raw timestamp already equals normalized UTC; equal-quality ambiguity is a hard error."
+  },
+  "official_samples": [
+    {
+      "event": "Employment Situation / Non-Farm Employment Change",
+      "calendar_raw": "2015-02-05 20:30",
+      "normalized_utc": "2015-02-06T13:30:00Z",
+      "official_release": "2015-02-06 08:30 EST",
+      "source": "https://www.bls.gov/news.release/archives/empsit_02062015.htm"
+    },
+    {
+      "event": "Employment Situation / Non-Farm Employment Change",
+      "calendar_raw": "2015-04-03 12:30",
+      "normalized_utc": "2015-04-03T12:30:00Z",
+      "official_release": "2015-04-03 08:30 EDT",
+      "source": "https://www.bls.gov/schedule/2015/home.htm"
+    },
+    {
+      "event": "Advance Retail Sales for December 2014",
+      "calendar_raw": "2015-01-13 20:30",
+      "normalized_utc": "2015-01-14T13:30:00Z",
+      "official_release": "2015-01-14 08:30 EST",
+      "source": "https://www2.census.gov/retail/releases/historical/marts/adv1412.pdf"
+    },
+    {
+      "event": "Advance GDP q/q, first quarter 2021",
+      "calendar_raw": "2021-04-29 12:30",
+      "normalized_utc": "2021-04-29T12:30:00Z",
+      "official_release": "2021-04-29 08:30 EDT",
+      "source": "https://www.bea.gov/news/2021/gross-domestic-product-first-quarter-2021-advance-estimate"
+    }
+  ],
+  "pre_screen_amendment": "The first validation pass covered the lagged and already-correct cases. A full selected-event audit then exposed isolated 11:30, 12:32, and 15:00 corruptions plus one conflicting Core PCE duplicate on 2019-04-29. The timestamp and duplicate rules were strengthened before any strategy screen was executed.",
+  "selection_use": "The normalization rule was fixed before the macro surprise screen and is not a strategy parameter."
+}

@@ -1,0 +1,22 @@
+{
+  "pdf": "forexfactory_1394867_vr-gap-open-source-strategy_p1.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forexfactory_1394867_vr-gap-open-source-strategy_p1.pdf",
+      "source_pages": "1-2",
+      "source_ref": "Voldemar227, 'VR Gap Open Source Trading Strategy', ForexFactory forum thread #1394867, 2026, https://www.forexfactory.com/thread/1394867-vr-gap-open-source-trading-strategy (open-source EA also published on MQL5 Code Base: MT4 https://www.mql5.com/en/code/9994, MT5 https://www.mql5.com/en/code/72239).",
+      "strategy_name": "VR Gap fade (bar-open gap-fill mean-reversion)",
+      "concept": "On each new bar, if the gap between the prior bar's close and the current bar's open exceeds a threshold, fade the impulse betting the price returns to close the gap.",
+      "market": "Indices",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic gap-fade fully specified (entry threshold, direction, fixed-point SL, TP=gap size); pure MQL5, no ML, has hard stops so FTMO/DXZ-compatible.",
+      "priority_hint": "MED",
+      "notes": "Entry: at new-bar open, if |prev_close - cur_open| > MinGapSize -> Buy on downward gap, Sell on upward gap; market entry, fixed lot (use RISK_FIXED for backtest). Exit: SL = fixed points from entry; TP dynamic = the gap size itself (target = the level that fully closes the gap). Params: Trading Volume, Minimum Gap Size, Stop Loss Size, Magic/Slippage; no indicators/trend/news filters. Source says any TF/instrument, but real gaps only occur at weekend/session boundaries on continuous .DWX feeds -> best tested as a weekend/session-gap fader (Monday open; index cash gaps); intraday bar-to-bar gaps ~0 on 24h FX. Forum post is essentially an open-source-EA advert -> moderate reputability. Gaps above threshold are rare -> watch Q02 frequency floor (>=5 trades/yr)."
+    }
+  ],
+  "notes": ["single strategy in thread; page 3 empty; PDF text extracted via pypdf (poppler unavailable for render)"]
+}

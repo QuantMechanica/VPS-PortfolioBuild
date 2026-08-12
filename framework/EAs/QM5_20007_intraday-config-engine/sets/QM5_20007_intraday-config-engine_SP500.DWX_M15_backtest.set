@@ -1,0 +1,24 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20007
+; ea_slug:      intraday-config-engine
+; ea_version:   v5.0
+; set_version:  s20260723-001
+; symbol:       SP500.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   c11f40b76ae61a0f504e37b5473dc6e140918f8b94fb01f810e00bb22e73f9aa
+; author:       Development
+; date:         2026-07-23
+;==========================================================
+qm_ea_id=20007
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_20007_intraday-config-engine.md
+intraday_lane=LANE_MOMENTUM_BAND

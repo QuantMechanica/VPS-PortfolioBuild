@@ -108,7 +108,7 @@ no edge.
 
 ## Filters
 
-- Host chart must be AUDUSD.DWX or EURJPY.DWX on D1/H1, with slot 0 used for the logical host.
+- Host chart must be AUDUSD.DWX or EURJPY.DWX on D1, with slot 0 used for the logical host. Non-D1 attachment fails `OnInit`.
 - The EA selects EURUSD.DWX as conversion history for EUR-denominated AUDUSD accounting.
 - No pyramiding, averaging, grid, martingale, partial close, or trailing stop.
 - Framework news, kill-switch, magic, and Friday-close guards remain active.

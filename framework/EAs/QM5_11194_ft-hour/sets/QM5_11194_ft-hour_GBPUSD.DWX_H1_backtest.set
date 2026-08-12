@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11194
+; ea_slug:      ft-hour
+; ea_version:   v5.0
+; set_version:  s20260802-001
+; symbol:       GBPUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-08-02
+;==========================================================
+qm_ea_id=11194
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11194_ft-hour.md
+strategy_buy_hour_min=4
+strategy_buy_hour_max=24
+strategy_sell_hour_min=22
+strategy_sell_hour_max=21
+strategy_atr_period=14
+strategy_atr_stop_mult=2.0
+strategy_max_spread_stop_fraction=0.08
+strategy_roi_t1_minutes=169
+strategy_roi_t2_minutes=528
+strategy_roi_t3_minutes=1837
+strategy_roi_t0=0.528
+strategy_roi_t1=0.113
+strategy_roi_t2=0.089
+strategy_roi_t3=0.0

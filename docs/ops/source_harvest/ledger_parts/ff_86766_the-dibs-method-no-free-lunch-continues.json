@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_86766_the-dibs-method-no-free-lunch-continues.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_86766_the-dibs-method-no-free-lunch-continues.pdf",
+      "source_pages": "1-9,19",
+      "source_ref": "The DIBS Method (Daily Inside Bar Setup), method by trader 'PeterCrowns', compiled/continued by jarroo in ForexFactory thread 86766 'The DIBS Method... No Free Lunch continues' (continuation of thread 56907 'No Free Lunch but all the coffee you can drink'), 2008, https://www.forexfactory.com/thread/86766-the-dibs-method-no-free-lunch-continues",
+      "strategy_name": "DIBS daily-open inside-bar breakout",
+      "concept": "Anchor a daily reference at 06:00 GMT (00:00 GMT for JPY pairs); on an up-day (price above the open) buy the break of an hourly inside bar, on a down-day sell the break, riding intraday continuation with a stop on the far side of the IB.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "London",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 deterministic breakout: IB detection, daily-open direction filter, entry 1 pip beyond IB range +spread, initial stop at opposite IB extreme, exit half at 1:1 (FTT) then hold remainder as free trade; FX-H1 data on .DWX; bounded risk fits FTMO/DXZ.",
+      "priority_hint": "HIGH",
+      "notes": "Well-specified core rules; open-hour (06:00 GMT majors vs 00:00 GMT JPY) and remainder-trailing method (fixed initial stop / MA-trail) are sweepable params, not gaps. Session-structure/breakout driver, orthogonal to index/metal swing-MR. Best trades stated in first 6-9 hours after the open (London into early NY). Optional 'hot hand' relative-strength filter (trade the currency most up/down on the day) and M15/M30 variants mentioned but not the core. Forum-sourced, but detailed and rule-based (Balke EA precedent from ForexFactory). An MQ4 identifier 'DIBS_TriggerLines' was posted in-thread as reference only."
+    }
+  ],
+  "notes": []
+}

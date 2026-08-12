@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "status": "PREDECLARED_BEFORE_EXECUTION",
+  "manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "scenario": "path_01_11095_gbpusd_down2",
+  "objective": "Use a short initial risk burst, then revert permanently to risk 25 for unresolved challenges.",
+  "development_years": [2018, 2019, 2021, 2022, 2023],
+  "sealed_holdout_years": [2024, 2025],
+  "fixed_policy": {
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "room_retention": 0.2,
+    "open_risk_limit_ratio": 0.0,
+    "profit_risk_steps": []
+  },
+  "incumbent": {"base_risk_multiplier": 25.0, "elapsed_risk_steps": []},
+  "candidate_grid": {
+    "base_risk_multipliers": [28.0, 30.0, 35.0],
+    "revert_to_risk": 25.0,
+    "revert_after_calendar_days": [5, 7, 10],
+    "candidate_count": 9
+  },
+  "selection_gate": "A candidate must improve both threshold and adverse development pass_pct by at least 1.0 percentage point versus the incumbent. Select the largest minimum improvement; ties prefer lower peak risk and shorter burst.",
+  "holdout_rule": "Open 2024-2025 once only for a selected joint survivor.",
+  "sequential_research_warning": "This family was declared after the separate deadline-acceleration holdout and therefore requires the stronger one-point development hurdle.",
+  "selection_uses_holdout": false
+}

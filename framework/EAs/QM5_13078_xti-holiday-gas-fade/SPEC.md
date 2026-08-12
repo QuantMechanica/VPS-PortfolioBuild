@@ -3,8 +3,8 @@
 **EA ID:** QM5_13078
 **Slug:** `xti-holiday-gas-fade`
 **Source:** `EIA-GAS-HOLIDAY-PULLFORWARD-2018`
-**Author of this spec:** Codex
-**Last revised:** 2026-07-09
+**Author of this spec:** Claude
+**Last revised:** 2026-07-14
 
 ---
 
@@ -106,3 +106,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit`
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-09 | Initial build from card | Mission-directed XTI post-driving-holiday gasoline pull-forward fade |
+| v2 | 2026-07-14 | Rebuild in place (DL-069) — prior .mq5 used a file-scope `g_last_manage_d1_bar` new-bar reimplementation forbidden by the current framework corset; rewritten to drop it | task e84c2e4a-e9f3-47f1-a7cf-96ea93effa94 |

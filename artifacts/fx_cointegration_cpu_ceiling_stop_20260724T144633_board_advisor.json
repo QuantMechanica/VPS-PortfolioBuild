@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-07-24T14:46:33.9033752+02:00",
+  "branch": "agents/board-advisor",
+  "mission": "fx_cointegration_q02",
+  "outcome": "STOP_CPU_CEILING",
+  "selection": {
+    "unbuilt_qualifying_pair_found": false,
+    "canonical_approved_cointegration_card_count": 21,
+    "approved_card_without_ea_count": 0,
+    "approved_card_without_basket_manifest_count": 0,
+    "anchor_state": {
+      "QM5_12532": {
+        "pair": "AUDUSD.DWX/NZDUSD.DWX",
+        "q02": "PASS",
+        "later_terminal_outcome": "Q05 FAIL"
+      },
+      "QM5_12533": {
+        "pair": "EURJPY.DWX/GBPJPY.DWX",
+        "q02": "PASS",
+        "later_terminal_outcome": "Q04 FAIL"
+      }
+    },
+    "fallback": "Retain the existing non-duplicate Q02 rows; do not create another card, EA, or queue row."
+  },
+  "factory_capacity": {
+    "documented_process_ceiling": 7,
+    "observed_factory_process_count": 6,
+    "observed_factory_terminals": [
+      {
+        "terminal": "T1",
+        "pid": 10260,
+        "executable_path": "D:\\QM\\mt5\\T1\\terminal64.exe"
+      },
+      {
+        "terminal": "T3",
+        "pid": 17580,
+        "executable_path": "D:\\QM\\mt5\\T3\\terminal64.exe"
+      },
+      {
+        "terminal": "T6",
+        "pid": 3772,
+        "executable_path": "D:\\QM\\mt5\\T6\\terminal64.exe"
+      },
+      {
+        "terminal": "T7",
+        "pid": 12192,
+        "executable_path": "D:\\QM\\mt5\\T7\\terminal64.exe"
+      },
+      {
+        "terminal": "T8",
+        "pid": 2368,
+        "executable_path": "D:\\QM\\mt5\\T8\\terminal64.exe"
+      },
+      {
+        "terminal": "T10",
+        "pid": 13140,
+        "executable_path": "D:\\QM\\mt5\\T10\\terminal64.exe"
+      }
+    ],
+    "scheduler_is_binding": true,
+    "scheduler_dry_run": {
+      "available_slots_after": 0,
+      "available_slots_before": 0,
+      "dry_run": true,
+      "duplicate": 0,
+      "invalid": 0,
+      "no_capacity": 0,
+      "queued_scanned": 0,
+      "scheduled": 0,
+      "status": "ok"
+    }
+  },
+  "queue_snapshot": {
+    "queued_count": 4,
+    "existing_fx_rows": [
+      {
+        "id": 2,
+        "ea_id": "QM5_12760",
+        "phase": "Q02",
+        "symbol": "GBPUSD.DWX",
+        "sub_gate_config_hash": "q02_fx_coint_12760_s20260629_001",
+        "priority": 80,
+        "status": "queued",
+        "assigned_terminal": null,
+        "dispatch_decision": null,
+        "last_error": null
+      },
+      {
+        "id": 4,
+        "ea_id": "QM5_13119",
+        "phase": "Q02",
+        "symbol": "USDJPY.DWX",
+        "sub_gate_config_hash": "q02_fx_coint_13119_s20260710_001",
+        "priority": 80,
+        "status": "queued",
+        "assigned_terminal": null,
+        "dispatch_decision": null,
+        "last_error": null
+      }
+    ]
+  },
+  "mutations": {
+    "card_created": false,
+    "ea_built": false,
+    "queue_changed": false,
+    "terminal_launched_or_controlled": false,
+    "portfolio_gate_changed": false,
+    "t_live_changed": false
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_AND_ANNUAL_QUALITY_GATES",
+  "ea_id": 12864,
+  "logical_symbol": "QM5_12864_XTI_XAG_RSPREAD_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "traded_symbols": ["XTIUSD.DWX", "XAGUSD.DWX"],
+  "period": "D1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "source_sha256": "FF55A4A74EA61172CD250E920B4231D42805D4E6F1C93BCFD691FCE1E3566DDB",
+  "compile_log": "framework/build/compile/20260712_160715/QM5_12864_oilsilver-rspr.compile.log",
+  "compile_log_sha256": "8FABE8FF15661EF262DF453BB904461F2559CA0E66CEBDA2FDD2530B8D44A3AC",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12864_xti_xag_d1_wave21_20260712\\QM5_12864\\20260712_160734\\summary.json",
+  "deterministic": true,
+  "native": {
+    "trades": 106,
+    "profit_factor": 1.052285,
+    "net_profit": 363.55,
+    "equity_drawdown": 2206.2
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\12864_XTIUSD_XAGUSD_BASKET_T1_FRESH_20260712.jsonl",
+    "rows": 106,
+    "sha256": "A67BDE6BFF7460329AE0F860835D3524B2E8FBF9947E492D7F5EC1F90F4CC059",
+    "report_reconciliation": "PASS",
+    "count_delta": 0,
+    "missing_mae_rows": 0,
+    "corrected_net_delta": 0.0
+  },
+  "current_cost_artifact": "artifacts/ftmo_12864_xti_xag_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 106,
+    "profit_factor": 0.977582,
+    "net_profit": -163.52,
+    "close_to_close_max_drawdown": 2000.11,
+    "commission_total": 9.89,
+    "swap_total": -517.18
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "negative_calendar_years": [2018, 2021, 2025],
+    "calendar_years_below_density_floor": [2017],
+    "reason_for_reject": "Native PF fails the strict floor and official per-leg FTMO costs make pooled net negative."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

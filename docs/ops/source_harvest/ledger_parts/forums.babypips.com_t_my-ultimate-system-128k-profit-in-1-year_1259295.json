@@ -1,0 +1,37 @@
+{
+  "pdf": "forums.babypips.com_t_my-ultimate-system-128k-profit-in-1-year_1259295.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_my-ultimate-system-128k-profit-in-1-year_1259295.pdf",
+      "source_pages": "1-24",
+      "source_ref": "Babypips forum thread \"My ultimate system - 128K% profit in 1 year\" by user KGMK, 2024, https://forums.babypips.com/t/my-ultimate-system-128k-profit-in-1-year/1259295",
+      "strategy_name": "KGMK OHLC no-stop reversion",
+      "concept": "Enter against a bar that closes beyond the prior bar's high/low and hold with no stop-loss until price reverts to a recent high/low ('take profit at a later date').",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Reported 100% win / 128K% stats are a look-ahead / no-stop-loss artifact (positions held indefinitely, author refuses SL, admits -300% drawdowns and a code bug); edge vanishes the moment any stop is added, so it is un-tradeable and incompatible with FTMO/DXZ DD limits.",
+      "priority_hint": "LOW",
+      "notes": "Author flip-flops between gap-continuation (post #1: buy if open>prior open, TP=prior high) and mean-reversion (post #17/#22: sell if close>prior high, TP=recent low) - same fabricated no-stop core, one row. Demo/backtest only, never live (posts #66/#71); ML-optimised in later posts (#77 'put into machine learning'). ProfesorPips and others correctly call it overfit."
+    },
+    {
+      "source_file": "forums.babypips.com_t_my-ultimate-system-128k-profit-in-1-year_1259295.pdf",
+      "source_pages": "11",
+      "source_ref": "Babypips forum thread \"My ultimate system - 128K% profit in 1 year\", post #29 by user tommor, 2024, https://forums.babypips.com/t/my-ultimate-system-128k-profit-in-1-year/1259295",
+      "strategy_name": "50EMA Smash-Day breakout (tommor)",
+      "concept": "In an up-trend (Close > 50EMA) buy the break of the day's High with the day's Low as stop-loss, exiting at the first profitable close.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic D1 breakout with a defined stop (day's Low) and exit (first profitable Close); pure-MQL5 implementable, DXZ FX data available, FTMO/DXZ DD-compatible.",
+      "priority_hint": "LOW",
+      "notes": "Forum sketch by a different user (tommor, #29), untested in-thread and longs-only (symmetrical short rule to be defined). References Larry Williams 'Smash Day' (#27). Pyramiding ('do not cancel untriggered trades, keep adding new buy orders') needs a total-risk cap. Just-another-D1-breakout, hence LOW."
+    }
+  ],
+  "notes": ["Thread is 82 posts of one user (KGMK) posting fabricated no-stop backtest fantasy; only a single-line breakout idea from another user (tommor) is salvageable."]
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "DISCLOSED_FOLLOWUP_PREDECLARED_BEFORE_SCREEN",
+  "candidate": "RESEARCH:WS30_FRIDAY_SESSION_LONG",
+  "triggering_evidence": {
+    "proportional_screen": "artifacts/ftmo_ws30_friday_session_joint_screen_2026-07-12.json",
+    "result": "No proportional risk-neutral weight improved normal development.",
+    "donor_choice_is_independent": true,
+    "donor_basis": "The locked incumbent was already selected by reducing 11095:GBPUSD.DWX by two absolute percentage points because that improved both normal and adverse development results before the WS30 candidate existed."
+  },
+  "portfolio_contract": {
+    "base_manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+    "base_scenario": "path_01_11095_gbpusd_down2",
+    "donor_key": "11095:GBPUSD.DWX",
+    "candidate_key": "RESEARCH:WS30_FRIDAY_SESSION_LONG",
+    "absolute_transfer_pct_points": [0.5, 1.0, 2.0, 3.0, 5.0],
+    "all_other_weights_fixed": true,
+    "development_years": [2018, 2019, 2021, 2022],
+    "validation_year": 2023,
+    "confirmation_years": [2024, 2025],
+    "development_survivor_rule": "A frozen transfer must strictly improve both threshold and adverse development pass rates.",
+    "validation_rule": "The frozen transfer must be non-inferior in both threshold and adverse 2023 results.",
+    "confirmation_label": "CONTAMINATED_CONFIRMATION_NOT_HOLDOUT_NOT_DEPLOYMENT_EVIDENCE"
+  },
+  "candidate_rule_and_path_contract": "artifacts/ftmo_ws30_friday_session_joint_predeclaration_2026-07-12.json",
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

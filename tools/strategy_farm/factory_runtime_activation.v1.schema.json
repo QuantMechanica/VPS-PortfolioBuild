@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "qm.factory-runtime-activation-owner-decision/v1",
+  "title": "QuantMechanica Factory Runtime Activation OWNER Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision_id",
+    "activation_nonce",
+    "authority",
+    "status",
+    "authorized_at_utc",
+    "expires_at_utc",
+    "preparation_decision",
+    "authorizations",
+    "restart_holds",
+    "worker_policy",
+    "restore_intent",
+    "source_bindings"
+  ],
+  "properties": {
+    "schema_version": { "const": "qm.factory-runtime-activation-owner-decision/v1" },
+    "decision_id": { "type": "string", "minLength": 1 },
+    "activation_nonce": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+    "authority": { "const": "OWNER" },
+    "status": { "const": "APPROVED" },
+    "authorized_at_utc": { "type": "string", "format": "date-time", "pattern": "Z$" },
+    "expires_at_utc": { "type": "string", "format": "date-time", "pattern": "Z$" },
+    "preparation_decision": {
+      "const": {
+        "relative_path": "docs/ops/evidence/2026-08-03_factory_preparation_owner_decision.json",
+        "sha256": "e3e3c4794f4e680080eb8032be13fdd25457485749a9a62d0d1eeb31811c8d34",
+        "git_commit": "1ec04dc9eff37cabc0582718047a4d3cabe3a1c2",
+        "git_blob": "30b4845d06a0944ef419448bacfa2fb394504b92"
+      }
+    },
+    "authorizations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["factory_on", "release_declared_restart_holds", "runtime_flag_upgrade_authorized"],
+      "properties": {
+        "factory_on": { "const": true },
+        "release_declared_restart_holds": { "const": true },
+        "runtime_flag_upgrade_authorized": { "const": false }
+      }
+    },
+    "restart_holds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authorized_release_count", "authorized_work_item_ids"],
+      "properties": {
+        "authorized_release_count": { "type": "integer", "minimum": 0 },
+        "authorized_work_item_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{36}$"
+          }
+        }
+      }
+    },
+    "worker_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disabled_terminals", "expected_worker_count", "expected_terminals"],
+      "properties": {
+        "disabled_terminals": { "const": [] },
+        "expected_worker_count": { "const": 10 },
+        "expected_terminals": {
+          "const": ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10"]
+        }
+      }
+    },
+    "restore_intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["factory_off_flag_sha256", "factory_off_schema_version", "factory_off_state", "task_enabled_before_sha256"],
+      "properties": {
+        "factory_off_flag_sha256": { "$ref": "#/$defs/sha256" },
+        "factory_off_schema_version": { "const": 2 },
+        "factory_off_state": { "const": "OFF" },
+        "task_enabled_before_sha256": {
+          "const": "ccfb16110aa5722fdbc72bec361c180a485ae14afe2f3c1c99a9949301e0297f"
+        }
+      }
+    },
+    "source_bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["factory_on", "factory_off", "maintenance_control", "runtime_activation_validator", "restart_health", "process_scope", "mutation_lock_protocol", "task_manifest", "worker_launcher", "farmctl", "public_snapshot_task_wrapper", "public_snapshot_incident_guard"],
+      "properties": {
+        "factory_on": { "$ref": "#/$defs/fileBinding" },
+        "factory_off": { "$ref": "#/$defs/fileBinding" },
+        "maintenance_control": { "$ref": "#/$defs/fileBinding" },
+        "runtime_activation_validator": { "$ref": "#/$defs/fileBinding" },
+        "restart_health": { "$ref": "#/$defs/fileBinding" },
+        "process_scope": { "$ref": "#/$defs/fileBinding" },
+        "mutation_lock_protocol": { "$ref": "#/$defs/fileBinding" },
+        "task_manifest": { "$ref": "#/$defs/fileBinding" },
+        "worker_launcher": { "$ref": "#/$defs/fileBinding" },
+        "farmctl": { "$ref": "#/$defs/fileBinding" },
+        "public_snapshot_task_wrapper": { "$ref": "#/$defs/fileBinding" },
+        "public_snapshot_incident_guard": { "$ref": "#/$defs/fileBinding" }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "gitOid": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "fileBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relative_path", "sha256", "git_commit", "git_blob"],
+      "properties": {
+        "relative_path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "git_commit": { "$ref": "#/$defs/gitOid" },
+        "git_blob": { "$ref": "#/$defs/gitOid" }
+      }
+    }
+  }
+}

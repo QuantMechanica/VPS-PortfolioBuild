@@ -1,0 +1,8 @@
+{
+  "analysis_id": "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001",
+  "pre_receipt_sha256": "dd9d406f42767dc8113f74d5096548a9c2f8bbbf84c0114f0081d3b410d1f82f",
+  "scope": "QM5_20002_4_CELLS_X_2_DUPLICATES_MODEL4",
+  "mt5_execution_authorized": true,
+  "authorized_by": "OWNER explicit research-and-test mandate; Codex root executor",
+  "authorized_utc": "2026-07-20T07:26:15.8088739Z"
+}

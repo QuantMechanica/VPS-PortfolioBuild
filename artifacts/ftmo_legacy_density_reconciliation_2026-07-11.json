@@ -1,0 +1,135 @@
+{
+  "fail_count": 1,
+  "pass_count": 3,
+  "results": [
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": 0.0,
+      "count_delta": 0,
+      "ea_id": 10692,
+      "net_tolerance": 6.76,
+      "reasons": [],
+      "report": {
+        "drawdown": 22483.29,
+        "exists": true,
+        "net_profit": 38723.69,
+        "path": "D:\\QM\\reports\\ftmo_mae_refresh_20260710_after_oom\\QM5_10692\\20260710_091830\\summary.json",
+        "profit_factor": 1.15,
+        "report_canonical_path": "D:\\QM\\reports\\ftmo_mae_refresh_20260710_after_oom\\QM5_10692\\20260710_091830\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 676,
+        "usable_run": "run_01"
+      },
+      "status": "PASS",
+      "stream": {
+        "closing_commission": -1657.93,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10692_NDX_DWX.jsonl",
+        "raw_net": 40381.62,
+        "round_trip_corrected_net": 38723.69,
+        "trade_count": 676
+      },
+      "symbol": "NDX.DWX"
+    },
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": 0.0,
+      "count_delta": 0,
+      "ea_id": 10700,
+      "net_tolerance": 3.73,
+      "reasons": [],
+      "report": {
+        "drawdown": 16928.12,
+        "exists": true,
+        "net_profit": 61674.77,
+        "path": "D:\\QM\\reports\\ftmo_mae_refresh_20260710_after_oom\\QM5_10700\\20260710_093914\\summary.json",
+        "profit_factor": 1.32,
+        "report_canonical_path": "D:\\QM\\reports\\ftmo_mae_refresh_20260710_after_oom\\QM5_10700\\20260710_093914\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 373,
+        "usable_run": "run_01"
+      },
+      "status": "PASS",
+      "stream": {
+        "closing_commission": -0.08,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10700_XAUUSD_DWX.jsonl",
+        "raw_net": 61674.85,
+        "round_trip_corrected_net": 61674.77,
+        "trade_count": 373
+      },
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": 0.7,
+      "count_delta": 0,
+      "ea_id": 10847,
+      "net_tolerance": 8.02,
+      "reasons": [],
+      "report": {
+        "drawdown": 58485.01,
+        "exists": true,
+        "net_profit": 41977.55,
+        "path": "D:\\QM\\reports\\ftmo_mae_refresh_20260710_after_oom\\QM5_10847\\20260710_090821\\summary.json",
+        "profit_factor": 1.09,
+        "report_canonical_path": "D:\\QM\\reports\\ftmo_mae_refresh_20260710_after_oom\\QM5_10847\\20260710_090821\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 802,
+        "usable_run": "run_01"
+      },
+      "status": "PASS",
+      "stream": {
+        "closing_commission": -7337.48,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10847_GBPUSD_DWX.jsonl",
+        "raw_net": 49315.73,
+        "round_trip_corrected_net": 41978.25,
+        "trade_count": 802
+      },
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": -1025.08,
+      "count_delta": 1,
+      "ea_id": 10911,
+      "net_tolerance": 3.3,
+      "reasons": [
+        "trade_count_mismatch:331!=330",
+        "corrected_net_mismatch:delta=-1025.08:tolerance=3.30"
+      ],
+      "report": {
+        "drawdown": 14781.71,
+        "exists": true,
+        "net_profit": 19234.19,
+        "path": "D:\\QM\\reports\\ftmo_mae_refresh_20260710_after_oom\\QM5_10911\\20260710_094816\\summary.json",
+        "profit_factor": 1.16,
+        "report_canonical_path": "D:\\QM\\reports\\ftmo_mae_refresh_20260710_after_oom\\QM5_10911\\20260710_094816\\raw\\run_02\\report.htm",
+        "result": "PASS",
+        "trade_count": 330,
+        "usable_run": "run_02"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -957.15,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10911_GDAXI_DWX.jsonl",
+        "raw_net": 19166.26,
+        "round_trip_corrected_net": 18209.11,
+        "trade_count": 331
+      },
+      "symbol": "GDAXI.DWX"
+    }
+  ],
+  "schema_version": 1,
+  "status": "FAIL"
+}

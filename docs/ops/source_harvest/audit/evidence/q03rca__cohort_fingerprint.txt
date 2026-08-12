@@ -1,0 +1,33 @@
+Q03 INFRA_FAIL ROOT-CAUSE COHORT FINGERPRINT  (generated read-only)
+root cause: farmctl.py _summary_matches_expected_evidence fail-closes when
+expected_from_date/expected_to_date is None (full-history). Dispatcher
+farmctl.py:3249-3251 stamps evidence_binding_required=True + expected dates=None.
+
+recent Q03 INFRA_FAIL (updated>=2026-07-23): {"n": 114, "binding": 111, "null_date": 114, "both": 111}
+Q03 PASS pre-flip (07-20..07-23T02:54):       {"n": 138, "binding": 4, "null_date": 138, "both": 4}
+Q03 pending now (verdict NULL, >=07-24):       {"n": 29, "binding": 27, "null_date": 29, "both": 27}
+
+last Q03 PASS ever:        2026-07-23T02:54:06+00:00  QM5_20047 XTIUSD.DWX (7cf9f770-51eb-4891-a769-ce45d20fb7f3)
+latest Q03 INFRA_FAIL:     2026-07-24T06:45:40+00:00  QM5_1642 EURUSD.DWX (7f180c9b-cbf0-44b0-b68b-b849b46d97f0)  <- class STILL ACTIVE
+
+=== latest 20 Q03 INFRA_FAIL rows (claimed_by/attempt_count/evidence_path) ===
+  2026-07-24T06:45:40+00:00  QM5_1642   EURUSD.DWX   by=None att=0 ev=None
+  2026-07-24T05:24:48+00:00  QM5_10207  EURUSD.DWX   by=None att=0 ev=None
+  2026-07-24T05:24:47+00:00  QM5_1642   USDJPY.DWX   by=None att=0 ev=None
+  2026-07-24T05:24:47+00:00  QM5_1642   XTIUSD.DWX   by=None att=0 ev=None
+  2026-07-24T05:22:42+00:00  QM5_1642   SP500.DWX    by=None att=0 ev=None
+  2026-07-24T05:11:57+00:00  QM5_12836  GDAXI.DWX    by=None att=0 ev=None
+  2026-07-24T05:05:28+00:00  QM5_12966  GDAXI.DWX    by=None att=0 ev=None
+  2026-07-24T05:05:21+00:00  QM5_10412  NDX.DWX      by=None att=0 ev=None
+  2026-07-24T04:58:59+00:00  QM5_10961  NDX.DWX      by=None att=0 ev=None
+  2026-07-24T04:23:41+00:00  QM5_10207  GBPUSD.DWX   by=None att=0 ev=None
+  2026-07-24T04:21:25+00:00  QM5_1614   GBPUSD.DWX   by=None att=0 ev=None
+  2026-07-24T04:20:00+00:00  QM5_1235   GBPUSD.DWX   by=None att=0 ev=None
+  2026-07-24T03:53:59+00:00  QM5_10000  GBPUSD.DWX   by=None att=0 ev=None
+  2026-07-24T03:35:22+00:00  QM5_1133   GDAXI.DWX    by=None att=0 ev=None
+  2026-07-24T03:29:02+00:00  QM5_1642   XTIUSD.DWX   by=None att=0 ev=None
+  2026-07-24T03:24:28+00:00  QM5_1240   AUDUSD.DWX   by=None att=0 ev=None
+  2026-07-24T03:09:50+00:00  QM5_10805  GDAXI.DWX    by=None att=0 ev=None
+  2026-07-24T02:40:01+00:00  QM5_10412  NDX.DWX      by=None att=0 ev=None
+  2026-07-24T02:19:58+00:00  QM5_1614   EURUSD.DWX   by=None att=0 ev=None
+  2026-07-24T02:18:08+00:00  QM5_10961  NDX.DWX      by=None att=0 ev=None

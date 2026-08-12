@@ -13,7 +13,38 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 import farmctl  # noqa: E402
 
 
+def _fake_job_binding(proc, capture_identity, **_kwargs) -> dict:
+    identity = capture_identity(proc)
+    return {
+        **identity,
+        "job_object_assigned": True,
+        "job_object_mode": "KILL_ON_JOB_CLOSE",
+        "job_object_registry_key": f"{proc.pid}|{identity['process_creation_key']}",
+        "process_started_suspended": True,
+        "primary_thread_resumed": True,
+    }
+
+
 class CascadeRealPhaseRunnerTests(unittest.TestCase):
+    def _install_spawn_identity_fixture(self) -> None:
+        old_process_identity = farmctl.get_process_identity
+        self.addCleanup(setattr, farmctl, "get_process_identity", old_process_identity)
+        farmctl.get_process_identity = lambda pid: {
+            "pid": pid,
+            "is_running": True,
+            "creation_key": f"test-process:{pid}",
+            "image_path": sys.executable,
+            "started_at_epoch": 1.0,
+        }
+        old_job_binding = farmctl.bind_spawned_process_to_kill_job
+        self.addCleanup(
+            setattr,
+            farmctl,
+            "bind_spawned_process_to_kill_job",
+            old_job_binding,
+        )
+        farmctl.bind_spawned_process_to_kill_job = _fake_job_binding
+
     def _insert_work_item(self, root: Path, *, item_id: str, phase: str,
                           symbol: str = "EURUSD.DWX",
                           payload: dict | None = None) -> None:
@@ -53,6 +84,7 @@ class CascadeRealPhaseRunnerTests(unittest.TestCase):
             old_running = farmctl._running_mt5_terminals
             try:
                 farmctl.subprocess.Popen = FakeProc
+                self._install_spawn_identity_fixture()
                 farmctl.MT5_TERMINALS = ("T1",)
                 farmctl._running_mt5_terminals = lambda: set()
                 result = farmctl.dispatch_work_items(root, timeout_minutes=8)
@@ -91,6 +123,7 @@ class CascadeRealPhaseRunnerTests(unittest.TestCase):
             old_running = farmctl._running_mt5_terminals
             try:
                 farmctl.subprocess.Popen = FakeProc
+                self._install_spawn_identity_fixture()
                 farmctl.MT5_TERMINALS = ("T1",)
                 farmctl._running_mt5_terminals = lambda: set()
                 farmctl.dispatch_work_items(root, timeout_minutes=8)
@@ -103,6 +136,39 @@ class CascadeRealPhaseRunnerTests(unittest.TestCase):
             cmd = spawned_cmds[0]
             self.assertEqual(cmd[cmd.index("--symbol") + 1], "EURJPY.DWX")
             self.assertEqual(cmd[cmd.index("--logical-symbol") + 1], logical)
+
+    def test_q08_dispatch_bounds_neighborhood_and_passes_baseline_setfile(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            self._insert_work_item(root, item_id="wi-q08", phase="Q08")
+            spawned_cmds: list[list[str]] = []
+
+            class FakeProc:
+                pid = 4244
+
+                def __init__(self, cmd, **_kwargs):
+                    spawned_cmds.append([str(part) for part in cmd])
+
+            old_popen = farmctl.subprocess.Popen
+            old_terminals = farmctl.MT5_TERMINALS
+            old_running = farmctl._running_mt5_terminals
+            try:
+                farmctl.subprocess.Popen = FakeProc
+                self._install_spawn_identity_fixture()
+                farmctl.MT5_TERMINALS = ("T1",)
+                farmctl._running_mt5_terminals = lambda: set()
+                farmctl.dispatch_work_items(root, timeout_minutes=8)
+            finally:
+                farmctl.subprocess.Popen = old_popen
+                farmctl.MT5_TERMINALS = old_terminals
+                farmctl._running_mt5_terminals = old_running
+
+            cmd = spawned_cmds[0]
+            self.assertEqual(cmd[cmd.index("--baseline-setfile") + 1], "dummy.set")
+            self.assertEqual(
+                cmd[cmd.index("--neighborhood-max-params") + 1],
+                str(farmctl.Q08_NEIGHBORHOOD_MAX_PARAMS),
+            )
 
     def test_missing_q06_runner_marks_pending_runner(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

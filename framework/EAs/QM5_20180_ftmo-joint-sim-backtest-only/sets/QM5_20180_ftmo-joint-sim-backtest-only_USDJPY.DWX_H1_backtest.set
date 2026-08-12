@@ -1,0 +1,57 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20180
+; ea_slug:      ftmo-joint-sim-backtest-only
+; ea_version:   v5.0
+; set_version:  s20260727-001
+; symbol:       USDJPY.DWX   (host chart; both sleeves trade this symbol)
+; timeframe:    H1
+; environment:  backtest      (BACKTEST-ONLY instrument — no live/demo set exists)
+; magic_slot:   0             (host slot; sleeve 1 uses slot 1 via QM_MagicFor)
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Claude
+; date:         2026-07-27
+;----------------------------------------------------------
+; DERIVATION. Framework + risk + news + friday-close carried from the two gated
+; _backtest.set files (identical between them). Strategy params are the union of
+; both gated sets, re-namespaced s0_* / s1_*:
+;   s0_* = QM5_9936_..._USDJPY.DWX_H1_backtest.set   (range 01-06, cancel 13, close 20)
+;   s1_* = QM5_13213_..._USDJPY.DWX_H1_backtest.set  (range 03-06, single evening flat 18)
+; 13213 uses ONE evening hour for BOTH pending-cancel and session-close, so
+; s1_cancel_hr == s1_close_hr == 18 (adversarial-review M2 — the design's
+; "bind the rest to 9936's defaults" recipe would have wrongly set it to 13).
+; News is preserved via the EA input DEFAULTS (PRE30_POST30 + DXZ), exactly as
+; both gated sets do (they set no news inputs). prop_phase is left at its OFF
+; default (RECORD, not ENFORCE). stress stays 0 (measurement instrument).
+;==========================================================
+qm_ea_id=20180
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_risk_cap_pct=1.0
+qm_stress_reject_probability=0.0
+; --- Sleeve 0 : QM5_9936 gated backtest params ---
+s0_enabled=1
+s0_range_start_hr=1
+s0_range_end_hr=6
+s0_cancel_hr=13
+s0_close_hr=20
+s0_atr_period=14
+s0_min_range_atr_mult=0.4
+s0_max_range_atr_mult=2.5
+s0_trail_trigger_r=1.0
+s0_range_scan_bars=36
+; --- Sleeve 1 : QM5_13213 gated backtest params (cancel==close==18) ---
+s1_enabled=1
+s1_range_start_hr=3
+s1_range_end_hr=6
+s1_cancel_hr=18
+s1_close_hr=18
+s1_atr_period=14
+s1_min_range_atr_mult=0.4
+s1_max_range_atr_mult=2.5
+s1_trail_trigger_r=1.0
+s1_range_scan_bars=36

@@ -1,0 +1,78 @@
+{
+ "live": {
+  "15560004": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_1556_aa-zak-mom12.ex5",
+   "exists": true,
+   "mtime_iso": "2026-07-13T06:47:49.698425",
+   "size": 323290
+  },
+  "104400003": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_10440_mql5-ohlc-mtf.ex5",
+   "exists": true,
+   "mtime_iso": "2026-06-28T09:10:53.441831",
+   "size": 281894
+  },
+  "109110003": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_10911_grimes-complex-pb.ex5",
+   "exists": true,
+   "mtime_iso": "2026-06-28T09:11:28.245024",
+   "size": 287858
+  },
+  "111320000": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_11132_tm-cum-rsi2.ex5",
+   "exists": true,
+   "mtime_iso": "2026-06-28T09:11:55.121228",
+   "size": 282368
+  },
+  "114210000": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+   "exists": true,
+   "mtime_iso": "2026-06-28T09:12:13.427975",
+   "size": 278902
+  },
+  "125670002": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_12567_cum-rsi2-commodity.ex5",
+   "exists": true,
+   "mtime_iso": "2026-06-28T09:12:22.788189",
+   "size": 282416
+  },
+  "129690000": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_12969_usdjpy-gotobi-nakane-fix.ex5",
+   "exists": true,
+   "mtime_iso": "2026-07-13T06:47:40.138464",
+   "size": 318680
+  },
+  "131280000": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_13128_pre-fomc-drift-ndx.ex5",
+   "exists": true,
+   "mtime_iso": "2026-07-13T06:47:54.340114",
+   "size": 322536
+  }
+ },
+ "candidate_in_live_eas_dir": {
+  "1567_XAGUSD": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_1567_demark-td-reverse-sequential-h4.ex5",
+   "exists": true,
+   "mtime_iso": "2026-07-15T13:45:25.394002",
+   "size": 311150
+  },
+  "10145_XAUUSD": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_10145_tsm-meanret.ex5",
+   "exists": false
+  },
+  "10692_NDX": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_10692_tv-ls-ms.ex5",
+   "exists": true,
+   "mtime_iso": "2026-06-28T09:11:11.044578",
+   "size": 285532
+  },
+  "10815_EURUSD": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_10815_tv-post-vwap.ex5",
+   "exists": false
+  },
+  "12474_GBPUSD": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_12474_gh-dual-thrust.ex5",
+   "exists": false
+  }
+ }
+}

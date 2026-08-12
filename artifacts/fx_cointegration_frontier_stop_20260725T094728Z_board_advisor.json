@@ -1,0 +1,134 @@
+{
+  "schema_version": "fx-cointegration-frontier-stop-v1",
+  "generated_at_utc": "2026-07-25T09:47:28.531372+00:00",
+  "generated_at_local": "2026-07-25T11:47:28.8013108+02:00",
+  "branch": "agents/board-advisor",
+  "inspected_head": "2e4c02cf531daaf785acd983ce7f0d218c275fe9",
+  "outcome": "CPU_CEILING_STOP_NO_DUPLICATE_TARGET",
+  "decision": {
+    "card_created": false,
+    "ea_built": false,
+    "queue_mutated": false,
+    "backtest_started": false,
+    "reason": "The governed pure-FX cointegration frontier has no unbuilt pair, both anchor baskets already have terminal Q02 PASS evidence and later economic failures, and the canonical saturation scheduler reports zero available slots."
+  },
+  "anchor_baskets": [
+    {
+      "ea_id": "QM5_12532",
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "q02": {
+        "status": "done",
+        "verdict": "PASS",
+        "work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+        "evidence_path": "D:/QM/reports/work_items/e4890d77-b865-4a48-b946-315faefca920/QM5_12532/20260626_164610/summary.json"
+      },
+      "later_terminal": {
+        "phase": "Q05",
+        "status": "done",
+        "verdict": "FAIL",
+        "work_item_id": "82cab3d1-bf05-4aa4-8278-86c8064b16e7",
+        "evidence_path": "D:/QM/reports/work_items/82cab3d1-bf05-4aa4-8278-86c8064b16e7/QM5_12532/Q05/QM5_12532_AUDNZD_COINTEGRATION_D1/aggregate.json"
+      }
+    },
+    {
+      "ea_id": "QM5_12533",
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "q02": {
+        "status": "done",
+        "verdict": "PASS",
+        "work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+        "evidence_path": "D:/QM/reports/work_items/76cb11ee-7e9d-4d75-be9d-626c205bca62/QM5_12533/20260627_092645/summary.json"
+      },
+      "later_terminal": {
+        "phase": "Q04",
+        "status": "done",
+        "verdict": "FAIL",
+        "work_item_id": "ff2cb183-8269-4e63-abaf-27ba79afdb62",
+        "evidence_path": "D:/QM/reports/work_items/ff2cb183-8269-4e63-abaf-27ba79afdb62/QM5_12533/Q04/QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1/aggregate.json"
+      }
+    }
+  ],
+  "frontier_reconciliation": {
+    "original_scan_survivors": 2,
+    "approved_pair_cards_matched_by_filename": 21,
+    "approved_pair_cards_without_matching_ea_directory": 0,
+    "eligible_unbuilt_pure_fx_pairs": [],
+    "governing_evidence": [
+      "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+      "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md"
+    ]
+  },
+  "paced_fleet_snapshot": {
+    "farm_state_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "active_work_items": 8,
+    "pending_work_items": 2264,
+    "active_claimed_terminals": [
+      "T1",
+      "T10",
+      "T2",
+      "T3",
+      "T4",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "dispatch_state_running": {
+      "T1": 3,
+      "T10": 3,
+      "T2": 3,
+      "T3": 3,
+      "T4": 3,
+      "T5": 3,
+      "T6": 3,
+      "T7": 3,
+      "T8": 3,
+      "T9": 3
+    },
+    "scheduler_dry_run": {
+      "available_slots_after": 0,
+      "available_slots_before": 0,
+      "dry_run": true,
+      "duplicate": 0,
+      "invalid": 0,
+      "no_capacity": 0,
+      "queued_scanned": 0,
+      "scheduled": 0,
+      "status": "ok"
+    },
+    "factory_terminal64_processes": [],
+    "factory_terminal64_process_count": 0,
+    "scheduler_process_mismatch": true,
+    "t_live_observed_only": true,
+    "t_live_excluded_from_factory_count": true
+  },
+  "legacy_queue_duplicate_guard": {
+    "queue_mutated": false,
+    "stale_fx_rows_not_dispatched": [
+      {
+        "queue_id": 2,
+        "ea_id": "QM5_12760",
+        "phase": "Q02",
+        "symbol": "GBPUSD.DWX",
+        "status": "queued",
+        "canonical_conflict": "Q02 PASS; later Q04 FAIL"
+      },
+      {
+        "queue_id": 4,
+        "ea_id": "QM5_13119",
+        "phase": "Q02",
+        "symbol": "USDJPY.DWX",
+        "status": "queued",
+        "canonical_conflict": "Q02 PASS; later Q04 FAIL"
+      }
+    ]
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_process_controlled": false,
+    "autotrading_toggled": false
+  }
+}

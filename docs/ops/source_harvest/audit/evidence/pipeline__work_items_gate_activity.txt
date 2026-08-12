@@ -1,0 +1,92 @@
+=== work_items: latest updated_at + counts per phase (all statuses) ===
+P2     done     FAIL             n=    56 latest=2026-05-25T08:44:39+00:00
+P2     done     INFRA_FAIL       n=    42 latest=2026-06-18T19:34:59+00:00
+P2     done     PASS             n=   344 latest=2026-05-24T20:59:59+00:00
+P2     failed   INVALID          n=     4 latest=2026-06-05T16:38:14.036938Z
+Q02    active   None             n=     5 latest=2026-07-24T05:05:24+00:00
+Q02    done     DRAFT_DEFECT     n=     8 latest=2026-07-23T00:54:45+00:00
+Q02    done     FAIL             n=  6038 latest=2026-07-24T04:53:46+00:00
+Q02    done     INFRA_FAIL       n=  4934 latest=2026-07-24T05:11:55+00:00
+Q02    done     INVALID          n=     1 latest=2026-07-02T13:45:51+00:00
+Q02    done     PASS             n= 11559 latest=2026-07-24T05:07:22+00:00
+Q02    done     RETIRED_ARCHIVED n=     1 latest=2026-07-03T04:37:36+00:00
+Q02    done     RETIRED_LOW_FREQ n=    87 latest=2026-06-15T18:51:14+00:00
+Q02    done     RETIRED_WITHOUT_BUILD n=     1 latest=2026-07-20T06:10:04+00:00
+Q02    done     SUPERSEDED       n=     3 latest=2026-06-05T08:44:39Z
+Q02    done     SUPERSEDED_BY_LOGICAL_BASKET n=    49 latest=2026-07-09T14:18:43+00:00
+Q02    done     ZERO_TRADES      n=   364 latest=2026-07-24T04:25:15+00:00
+Q02    failed   None             n=   684 latest=2026-07-15T16:50:33Z
+Q02    failed   CANCELLED_DUPLICATE_REQUEUE n=     9 latest=2026-07-07T12:14:02+00:00
+Q02    failed   FAIL             n=   217 latest=2026-07-24T03:09:46+00:00
+Q02    failed   INFRA_FAIL       n= 44496 latest=2026-07-24T00:50:53+00:00
+Q02    failed   INVALID          n=  1578 latest=2026-07-21T12:15:07Z
+Q02    failed   INVALID_BUILD_STATIC_FIDELITY n=     5 latest=2026-07-20T07:54:25+00:00
+Q02    failed   OBSOLETE_NON_DWX_SYMBOL n=    12 latest=2026-06-12T08:09:55.727162+00:00
+Q02    pending  None             n=  2281 latest=2027-01-01T00:00:00+00:00
+Q03    active   None             n=     2 latest=2026-07-24T05:11:55+00:00
+Q03    done     FAIL             n=   405 latest=2026-07-22T22:55:43+00:00
+Q03    done     INFRA_FAIL       n=  1269 latest=2026-07-23T03:22:27+00:00
+Q03    done     INVALID          n=     1 latest=2026-07-19T16:54:53+00:00
+Q03    done     PASS             n= 10056 latest=2026-07-23T02:54:06+00:00
+Q03    done     RETIRE           n=     1 latest=2026-07-16T15:15:43+00:00
+Q03    done     SUPERSEDED_BY_LOGICAL_BASKET n=     4 latest=2026-07-01 10:13:10
+Q03    failed   None             n=     1 latest=2026-07-14T14:21:55Z
+Q03    failed   FAIL             n=    11 latest=2026-07-23T00:12:18+00:00
+Q03    failed   INFRA_FAIL       n=   594 latest=2026-07-24T05:11:57+00:00
+Q03    failed   INVALID          n=     1 latest=2026-07-19T16:53:00+00:00
+Q03    failed   OBSOLETE_NON_DWX_SYMBOL n=   104 latest=2026-06-12T08:09:55.727162+00:00
+Q03    pending  None             n=    45 latest=2026-07-24T05:09:55+00:00
+Q04    done     FAIL             n= 12591 latest=2026-07-24T04:07:15+00:00
+Q04    done     INFRA_FAIL       n=  1498 latest=2026-07-24T04:03:04+00:00
+Q04    done     PASS             n=   440 latest=2026-07-24T04:12:32+00:00
+Q04    done     PASS_LOWFREQ     n=    70 latest=2026-07-23T11:53:14+00:00
+Q04    done     PASS_SOFT        n=   273 latest=2026-07-24T02:39:36+00:00
+Q04    done     PENDING_RUNNER   n=    27 latest=2026-07-20T16:46:27+00:00
+Q04    done     RETIRE           n=     1 latest=2026-07-16T17:02:41+00:00
+Q04    done     SUPERSEDED_BY_LOGICAL_BASKET n=     3 latest=2026-07-01 10:13:10
+Q04    failed   None             n=    56 latest=2026-07-14T21:46:51Z
+Q04    failed   FAIL             n=     3 latest=2026-07-13T22:06:46+00:00
+Q04    failed   INFRA_FAIL       n=     2 latest=2026-06-21T14:32:51+00:00
+Q04    failed   INVALID          n=     1 latest=2026-06-26T10:01:12+00:00
+Q04    failed   OBSOLETE_NON_DWX_SYMBOL n=    80 latest=2026-06-12T08:09:55.727162+00:00
+Q04    pending  None             n=    20 latest=2026-07-24T02:17:20+00:00
+Q05    done     FAIL             n=   345 latest=2026-07-23T12:53:39+00:00
+Q05    done     FAIL_DD_PORTFOLIO_REVIEW n=     9 latest=2026-07-24T04:31:50+00:00
+Q05    done     INFRA_FAIL       n=    72 latest=2026-07-23T12:53:18+00:00
+Q05    done     PASS             n=   309 latest=2026-07-23T23:09:01+00:00
+Q05    failed   None             n=    90 latest=2026-07-15T06:43:09Z
+Q05    failed   INFRA_FAIL       n=     3 latest=2026-06-28T05:58:12+00:00
+Q06    done     FAIL             n=    45 latest=2026-07-21T01:49:27+00:00
+Q06    done     INFRA_FAIL       n=     8 latest=2026-07-20T13:25:59+00:00
+Q06    done     PASS             n=   304 latest=2026-07-24T03:49:37+00:00
+Q06    failed   FAIL             n=     1 latest=2026-06-09T09:54:28+00:00
+Q07    active   None             n=     1 latest=2026-07-24T04:03:29+00:00
+Q07    done     FAIL             n=    52 latest=2026-07-23T00:48:25+00:00
+Q07    done     INFRA_FAIL       n=    14 latest=2026-07-22T18:02:05+00:00
+Q07    done     PASS             n=   228 latest=2026-07-23T15:03:37+00:00
+Q07    failed   None             n=     1 latest=2026-07-14T14:21:55Z
+Q07    failed   INFRA_FAIL       n=     5 latest=2026-07-16T00:29:17+00:00
+Q07    pending  None             n=     5 latest=2026-07-24T03:53:13+00:00
+Q08    done     FAIL_HARD        n=   114 latest=2026-07-21T05:58:49+00:00
+Q08    done     FAIL_SOFT        n=   171 latest=2026-07-23T07:46:11+00:00
+Q08    done     INFRA_FAIL       n=   160 latest=2026-07-23T17:54:53+00:00
+Q08    done     PASS             n=     8 latest=2026-07-22T19:01:54+00:00
+Q08    done     SUPERSEDED_DUPLICATE n=     1 latest=2026-07-18 09:32:27
+Q08    failed   FAIL             n=     4 latest=2026-07-20T00:43:31+00:00
+Q08    failed   INFRA_FAIL       n=    37 latest=2026-07-18T03:08:42+00:00
+Q09_PORTFOLIO done     FAIL_PORTFOLIO   n=    56 latest=2026-07-23T07:49:45+00:00
+Q09_PORTFOLIO done     NEED_MORE_DATA   n=    13 latest=2026-07-18T12:11:21+00:00
+Q09_PORTFOLIO done     PASS_PORTFOLIO   n=    31 latest=2026-07-20T02:42:50+00:00
+Q10    done     PASS             n=     8 latest=2026-07-22T19:26:53+00:00
+
+=== per phase: latest DONE verdict timestamp (evidence recency) ===
+P2     done_latest=2026-06-18T19:34:59+00:00  done_count=442
+Q02    done_latest=2026-07-24T05:11:55+00:00  done_count=23045
+Q03    done_latest=2026-07-23T03:22:27+00:00  done_count=11736
+Q04    done_latest=2026-07-24T04:12:32+00:00  done_count=14903
+Q05    done_latest=2026-07-24T04:31:50+00:00  done_count=735
+Q06    done_latest=2026-07-24T03:49:37+00:00  done_count=357
+Q07    done_latest=2026-07-23T15:03:37+00:00  done_count=294
+Q08    done_latest=2026-07-23T17:54:53+00:00  done_count=454
+Q09_PORTFOLIO done_latest=2026-07-23T07:49:45+00:00  done_count=100
+Q10    done_latest=2026-07-22T19:26:53+00:00  done_count=8

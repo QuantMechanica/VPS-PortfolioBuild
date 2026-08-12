@@ -1,0 +1,371 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "qm/q08-v3-migration-inventory/v1",
+  "title": "Q08 v3 read-only migration inventory v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tool_version",
+    "owner_authorization",
+    "runtime_action",
+    "database_access",
+    "source",
+    "records",
+    "collisions",
+    "summary",
+    "inventory_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "qm.q08-v3-migration-inventory/v1"},
+    "tool_version": {"const": "q08_v3_migration_inventory/1.0.0"},
+    "owner_authorization": {"const": "NONE"},
+    "runtime_action": {"const": "NONE"},
+    "database_access": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sqlite_uri_mode", "pragma_query_only", "writes_supported"],
+      "properties": {
+        "sqlite_uri_mode": {"const": "ro"},
+        "pragma_query_only": {"const": true},
+        "writes_supported": {"const": false}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "phase",
+        "required_columns",
+        "schema_sha256",
+        "rowset_sha256",
+        "target_manifest_sha256",
+        "artifact_verification",
+        "q08_policy_binding"
+      ],
+      "properties": {
+        "label": {"type": "string", "minLength": 1},
+        "phase": {"const": "Q08"},
+        "required_columns": {
+          "const": [
+            "id",
+            "kind",
+            "phase",
+            "ea_id",
+            "symbol",
+            "setfile_path",
+            "status",
+            "verdict",
+            "attempt_count",
+            "parent_task_id",
+            "evidence_path",
+            "claimed_by",
+            "payload_json",
+            "created_at",
+            "updated_at"
+          ]
+        },
+        "schema_sha256": {"$ref": "#/$defs/sha256"},
+        "rowset_sha256": {"$ref": "#/$defs/sha256"},
+        "target_manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "artifact_verification": {"enum": ["ENABLED", "NOT_REQUESTED"]},
+        "q08_policy_binding": {"$ref": "#/$defs/policyBinding"}
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/record"}
+    },
+    "collisions": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/collision"}
+    },
+    "summary": {"$ref": "#/$defs/summary"},
+    "inventory_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "policyBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "file_sha256", "canonical_sha256", "policy_version"],
+      "properties": {
+        "path": {"const": "framework/scripts/q08_v3_shadow/archetype_policy_v1.json"},
+        "file_sha256": {"$ref": "#/$defs/sha256"},
+        "canonical_sha256": {"$ref": "#/$defs/sha256"},
+        "policy_version": {"type": "string", "minLength": 1}
+      }
+    },
+    "nullableString": {
+      "type": ["string", "null"]
+    },
+    "stringSet": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "targetSelector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "selector_type", "selector"],
+      "properties": {
+        "target": {"enum": ["DXZ", "FTMO"]},
+        "selector_type": {"enum": ["WORK_ITEM_ID", "LINEAGE_KEY"]},
+        "selector": {"type": "string", "minLength": 1}
+      }
+    },
+    "alias": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alias", "origins"],
+      "properties": {
+        "alias": {"type": "string", "minLength": 1},
+        "origins": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "WORK_ITEM_ID",
+              "DERIVED_IDENTITY",
+              "PAYLOAD_ALIAS",
+              "PAYLOAD_REFERENCE"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "declared_path", "state", "sha256"],
+      "properties": {
+        "role": {"enum": ["SETFILE", "EVIDENCE"]},
+        "declared_path": {"type": ["string", "null"]},
+        "state": {
+          "enum": [
+            "NOT_DECLARED",
+            "NOT_CHECKED",
+            "INVALID_PATH",
+            "ARTIFACT_ROOT_MISSING",
+            "SYMLINK",
+            "MISSING",
+            "UNREADABLE",
+            "OUTSIDE_ROOT",
+            "NON_REGULAR",
+            "VERIFIED"
+          ]
+        },
+        "sha256": {
+          "anyOf": [
+            {"$ref": "#/$defs/sha256"},
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "legacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "phase",
+        "status",
+        "verdict",
+        "attempt_count",
+        "parent_task_id",
+        "claimed_by",
+        "created_at",
+        "updated_at",
+        "payload_sha256",
+        "raw_row_sha256"
+      ],
+      "properties": {
+        "kind": {"$ref": "#/$defs/nullableString"},
+        "phase": {"$ref": "#/$defs/nullableString"},
+        "status": {"$ref": "#/$defs/nullableString"},
+        "verdict": {"$ref": "#/$defs/nullableString"},
+        "attempt_count": {"type": ["integer", "null"]},
+        "parent_task_id": {"$ref": "#/$defs/nullableString"},
+        "claimed_by": {"$ref": "#/$defs/nullableString"},
+        "created_at": {"$ref": "#/$defs/nullableString"},
+        "updated_at": {"$ref": "#/$defs/nullableString"},
+        "payload_sha256": {"$ref": "#/$defs/sha256"},
+        "raw_row_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "lineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "basis", "derived_key", "explicit_keys", "conflict"],
+      "properties": {
+        "key": {"type": "string", "minLength": 1},
+        "basis": {"enum": ["EXPLICIT_PAYLOAD", "DERIVED_IDENTITY", "CONFLICT"]},
+        "derived_key": {"type": "string", "minLength": 1},
+        "explicit_keys": {"$ref": "#/$defs/stringSet"},
+        "conflict": {"type": "boolean"}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "work_item_id",
+        "ea_id",
+        "symbol",
+        "setfile_path",
+        "evidence_path",
+        "legacy",
+        "lineage",
+        "aliases",
+        "targets",
+        "artifacts",
+        "disposition",
+        "priority",
+        "reason_codes",
+        "record_sha256"
+      ],
+      "properties": {
+        "work_item_id": {"type": "string", "minLength": 1},
+        "ea_id": {"type": "string"},
+        "symbol": {"type": "string"},
+        "setfile_path": {"type": "string"},
+        "evidence_path": {"type": ["string", "null"]},
+        "legacy": {"$ref": "#/$defs/legacy"},
+        "lineage": {"$ref": "#/$defs/lineage"},
+        "aliases": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/alias"}
+        },
+        "targets": {
+          "type": "array",
+          "items": {"enum": ["DXZ", "FTMO"]},
+          "uniqueItems": true
+        },
+        "artifacts": {
+          "type": "array",
+          "prefixItems": [
+            {"allOf": [{"$ref": "#/$defs/artifact"}, {"properties": {"role": {"const": "SETFILE"}}}]},
+            {"allOf": [{"$ref": "#/$defs/artifact"}, {"properties": {"role": {"const": "EVIDENCE"}}}]}
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "disposition": {
+          "enum": [
+            "CURRENT",
+            "LEGACY_UNVERIFIED",
+            "ELIGIBLE_REEVALUATION",
+            "INVALID",
+            "SUPERSEDED"
+          ]
+        },
+        "priority": {
+          "enum": [
+            "P0_CURRENT_TARGET",
+            "P1_V2_PASS",
+            "P2_V2_FAIL_SOFT",
+            "P3_LEGACY",
+            "HOLD_INVALID",
+            "HOLD_SUPERSEDED"
+          ]
+        },
+        "reason_codes": {"$ref": "#/$defs/stringSet"},
+        "record_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "collision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "collision_type",
+        "key",
+        "work_item_ids",
+        "lineage_keys",
+        "blocking",
+        "collision_id"
+      ],
+      "properties": {
+        "collision_type": {
+          "enum": ["MULTIPLE_WORK_ITEMS_FOR_LINEAGE", "ALIAS_TO_MULTIPLE_LINEAGES"]
+        },
+        "key": {"type": "string", "minLength": 1},
+        "work_item_ids": {"$ref": "#/$defs/stringSet"},
+        "lineage_keys": {"$ref": "#/$defs/stringSet"},
+        "blocking": {"type": "boolean"},
+        "collision_id": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "row_count",
+        "disposition_counts",
+        "priority_counts",
+        "legacy_verdict_counts",
+        "collision_count",
+        "blocking_collision_count",
+        "blocking_work_item_ids",
+        "unmatched_target_selectors"
+      ],
+      "properties": {
+        "row_count": {"type": "integer", "minimum": 0},
+        "disposition_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "CURRENT",
+            "LEGACY_UNVERIFIED",
+            "ELIGIBLE_REEVALUATION",
+            "INVALID",
+            "SUPERSEDED"
+          ],
+          "properties": {
+            "CURRENT": {"type": "integer", "minimum": 0},
+            "LEGACY_UNVERIFIED": {"type": "integer", "minimum": 0},
+            "ELIGIBLE_REEVALUATION": {"type": "integer", "minimum": 0},
+            "INVALID": {"type": "integer", "minimum": 0},
+            "SUPERSEDED": {"type": "integer", "minimum": 0}
+          }
+        },
+        "priority_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "P0_CURRENT_TARGET",
+            "P1_V2_PASS",
+            "P2_V2_FAIL_SOFT",
+            "P3_LEGACY",
+            "HOLD_INVALID",
+            "HOLD_SUPERSEDED"
+          ],
+          "properties": {
+            "P0_CURRENT_TARGET": {"type": "integer", "minimum": 0},
+            "P1_V2_PASS": {"type": "integer", "minimum": 0},
+            "P2_V2_FAIL_SOFT": {"type": "integer", "minimum": 0},
+            "P3_LEGACY": {"type": "integer", "minimum": 0},
+            "HOLD_INVALID": {"type": "integer", "minimum": 0},
+            "HOLD_SUPERSEDED": {"type": "integer", "minimum": 0}
+          }
+        },
+        "legacy_verdict_counts": {
+          "type": "object",
+          "additionalProperties": {"type": "integer", "minimum": 0}
+        },
+        "collision_count": {"type": "integer", "minimum": 0},
+        "blocking_collision_count": {"type": "integer", "minimum": 0},
+        "blocking_work_item_ids": {"$ref": "#/$defs/stringSet"},
+        "unmatched_target_selectors": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/targetSelector"}
+        }
+      }
+    }
+  }
+}

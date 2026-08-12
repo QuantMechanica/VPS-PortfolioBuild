@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECTED_DEVELOPMENT_DUAL_FILL_GATE",
+  "deployment_allowed": false,
+  "candidate": {
+    "ea_id": 10558,
+    "symbol": "EURUSD.DWX",
+    "period": "H6",
+    "variant": "grid_007",
+    "native_trades": 213,
+    "native_profit_factor": 1.494175,
+    "ftmo_current_cost_profit_factor": 1.473122,
+    "ftmo_current_cost_net_profit": 31052.58,
+    "standalone_q02_gate": "FAIL",
+    "negative_calendar_years": [2019, 2022, 2024],
+    "calendar_years_below_minimum_density": [2017]
+  },
+  "replacement_contract": {
+    "base_manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+    "base_scenario": "path_01_11095_gbpusd_down2",
+    "candidate_manifest": "artifacts/ftmo_joint_eleven_sleeve_10558_grid007_replacement_manifest_2026-07-12.json",
+    "weight_preserved": 0.1412512181945908,
+    "all_other_sleeves_and_weights_preserved": true,
+    "development_excluded_years": [2017, 2020, 2023, 2024, 2025, 2026]
+  },
+  "development_result": {
+    "normal": {
+      "control_pass_pct": 59.05848787446505,
+      "candidate_pass_pct": 58.7018544935806,
+      "delta_pct_points": -0.35663338088445,
+      "strict_improvement": false
+    },
+    "adverse": {
+      "control_pass_pct": 51.35520684736091,
+      "candidate_pass_pct": 51.35520684736091,
+      "delta_pct_points": 0.0,
+      "strict_improvement": false
+    }
+  },
+  "gates": {
+    "development_dual_fill": "FAIL",
+    "validation_2023_opened": false,
+    "sealed_2024_2025_opened": false
+  },
+  "evidence": [
+    "artifacts/ftmo_10558_eurusd_grid007_incumbent_replacement_predeclaration_2026-07-12.json",
+    "artifacts/ftmo_10558_eurusd_grid007_fresh_stream_reconciliation_2026-07-12.json",
+    "artifacts/ftmo_10558_eurusd_grid007_fresh_current_report_cost_reconciliation_2026-07-12.json",
+    "artifacts/ftmo_bar_governor_10558_grid007_replacement_dev_normal_2026-07-12.json",
+    "artifacts/ftmo_bar_governor_10558_grid007_replacement_dev_adverse_2026-07-12.json"
+  ],
+  "label": "RESEARCH_ONLY_NO_GO"
+}

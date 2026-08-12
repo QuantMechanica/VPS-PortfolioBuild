@@ -10,6 +10,7 @@ REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
 import farmctl  # noqa: E402
+import q09_news_schema as q09_schema  # noqa: E402
 from framework.scripts.q08_davey import aggregate as q08_aggregate  # noqa: E402
 
 
@@ -52,6 +53,12 @@ def _memory_work_items_conn() -> sqlite3.Connection:
     return conn
 
 
+def _activate_q09_schema(conn: sqlite3.Connection) -> None:
+    farmctl._ensure_portfolio_candidates_table(conn)
+    conn.commit()
+    q09_schema.ensure_schema(conn)
+
+
 class VerdictTaxonomyWs2Tests(unittest.TestCase):
     def test_no_real_ticks_is_infra_fail(self) -> None:
         verdict, reason = farmctl._derive_verdict_from_summary(
@@ -87,7 +94,10 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
         self.assertEqual(verdict, "INFRA_FAIL")
         self.assertIn("without_real_mt5", reason)
 
-    def test_q08_invalid_gate_report_remains_infra_fail(self) -> None:
+    def test_q08_invalid_preserves_dominant_sub_gate_detail(self) -> None:
+        # A Q08 aggregate INVALID stays non-retryable and carries
+        # the dominant sub-gate detail instead of collapsing to the generic
+        # phase_runner_invalid_report (which erased which sub-gate blocked).
         verdict, reason = farmctl._derive_phase_runner_verdict(
             {
                 "phase": "Q08",
@@ -99,8 +109,41 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
             },
             phase="Q08",
         )
-        self.assertEqual(verdict, "INFRA_FAIL")
-        self.assertEqual(reason, "phase_runner_invalid_report")
+        self.assertEqual(verdict, "INVALID")
+        self.assertEqual(reason, "q08_8.2_dsr_mc_fdr:insufficient_daily_returns")
+
+    def test_q08_invalid_prefers_blocking_neighborhood_pbo_gate(self) -> None:
+        # Blocking INVALIDs (8.5 neighborhood / 8.7 PBO) win over a non-blocking one.
+        verdict, reason = farmctl._derive_phase_runner_verdict(
+            {
+                "phase": "Q08",
+                "verdict": "INVALID",
+                "n_trades": 3,
+                "sub_gates": [
+                    {"name": "8.2_dsr_mc_fdr", "status": "INVALID", "detail": "insufficient_daily_returns"},
+                    {"name": "8.5_neighborhood", "status": "INVALID", "detail": "artifact_missing"},
+                ],
+            },
+            phase="Q08",
+        )
+        self.assertEqual(verdict, "INVALID")
+        self.assertEqual(reason, "q08_8.5_neighborhood:artifact_missing")
+
+    def test_q08_invalid_without_sub_gates_keeps_generic_reason(self) -> None:
+        # Missing evidence is itself non-retryable evidence-invalid, not transport.
+        verdict, reason = farmctl._derive_phase_runner_verdict(
+            {"phase": "Q08", "verdict": "INVALID"},
+            phase="Q08",
+        )
+        self.assertEqual(verdict, "INVALID")
+        self.assertEqual(reason, "q08_evidence_invalid")
+
+    def test_q08_transient_invalid_remains_retryable_infra(self) -> None:
+        verdict, reason = farmctl._derive_phase_runner_verdict(
+            {"phase": "Q08", "verdict": "INVALID", "reason": "ACTIVE_TIMEOUT"},
+            phase="Q08",
+        )
+        self.assertEqual((verdict, reason), ("INFRA_FAIL", "ACTIVE_TIMEOUT"))
 
     def test_q08_soft_and_hard_verdicts_are_preserved(self) -> None:
         soft, soft_reason = farmctl._derive_phase_runner_verdict(
@@ -140,7 +183,7 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
             ],
             trades=[{"net": 10.0}, {"net": -5.0}],
         )
-        self.assertEqual(verdict, "FAIL_SOFT")
+        self.assertEqual(verdict, "PASS")
         self.assertEqual(classification["8.6_chopping_block"], "EDGE_SOFT")
 
     def test_q08_aggregate_classifies_hard_pbo_fail(self) -> None:
@@ -166,7 +209,7 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
             ],
             trades=[{"net": 10.0}, {"net": -5.0}],
         )
-        self.assertEqual(verdict, "FAIL_SOFT")
+        self.assertEqual(verdict, "PASS")
         self.assertEqual(classification["8.4_seasonal"], "EDGE_SOFT")
 
     def test_q08_seasonal_consecutive_streak_is_soft_for_portfolio_track(self) -> None:
@@ -178,7 +221,7 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
             ],
             trades=[{"net": 10.0}, {"net": -5.0}],
         )
-        self.assertEqual(verdict, "FAIL_SOFT")
+        self.assertEqual(verdict, "PASS")
         self.assertEqual(classification["8.4_seasonal"], "EDGE_SOFT")
 
     def test_q08_hard_fail_dominates_invalid_gate(self) -> None:
@@ -203,84 +246,100 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
             ],
             trades=[{"net": 10.0}, {"net": -5.0}],
         )
-        self.assertEqual(verdict, "FAIL_SOFT")
+        self.assertEqual(verdict, "PASS")
         self.assertEqual(classification["8.10_regime_crisis"], "EDGE_SOFT")
 
     def test_q08_fail_soft_routes_to_q09_portfolio_when_trade_count_met(self) -> None:
         conn = _memory_work_items_conn()
         try:
-            conn.execute(
-                """
-                INSERT INTO work_items(
-                    id, kind, phase, ea_id, symbol, setfile_path, status,
-                    verdict, attempt_count, parent_task_id, payload_json,
-                    created_at, updated_at
+            _activate_q09_schema(conn)
+            with tempfile.TemporaryDirectory() as tmp:
+                evidence_path = Path(tmp) / "q08.json"
+                evidence_path.write_text('{"verdict":"FAIL_SOFT"}', encoding="utf-8")
+                conn.execute(
+                    """
+                    INSERT INTO work_items(
+                        id, kind, phase, ea_id, symbol, setfile_path, status,
+                        verdict, attempt_count, parent_task_id, evidence_path, payload_json,
+                        created_at, updated_at
+                    )
+                    VALUES (
+                        'q08-soft', 'backtest', 'Q08', 'QM5_10692', 'NDX.DWX',
+                        'dummy.set', 'done', 'FAIL_SOFT', 1, NULL, ?, ?,
+                        '2026-06-03T00:00:00Z', '2026-06-03T00:00:00Z'
+                    )
+                    """,
+                    (str(evidence_path), '{"q08_n_trades": 443}'),
                 )
-                VALUES (
-                    'q08-soft', 'backtest', 'Q08', 'QM5_10692', 'NDX.DWX',
-                    'dummy.set', 'done', 'FAIL_SOFT', 1, NULL, ?,
-                    '2026-06-03T00:00:00Z', '2026-06-03T00:00:00Z'
-                )
-                """,
-                ('{"q08_n_trades": 443}',),
-            )
-            result = {
-                "q09_portfolio_promotions": [],
-                "q09_portfolio_promotions_skipped": [],
-            }
-            changed = farmctl._promote_q08_soft_fails_to_q09_portfolio(conn, result)
-            self.assertTrue(changed)
-            row = conn.execute(
-                "SELECT phase, status FROM work_items WHERE phase='Q09_PORTFOLIO'"
-            ).fetchone()
-            self.assertIsNotNone(row)
-            self.assertEqual(row["status"], "pending")
+                result = {
+                    "q09_portfolio_promotions": [],
+                    "q09_portfolio_promotions_skipped": [],
+                }
+                changed = farmctl._promote_q08_soft_fails_to_q09_portfolio(conn, result)
+                self.assertTrue(changed)
+                row = conn.execute(
+                    "SELECT id, phase, status FROM work_items WHERE phase='Q09_PORTFOLIO'"
+                ).fetchone()
+                self.assertIsNotNone(row)
+                self.assertEqual(row["status"], "pending")
+                dependency = conn.execute(
+                    "SELECT dependency_role,parent_work_item_id FROM work_item_dependencies "
+                    "WHERE child_work_item_id=?",
+                    (row["id"],),
+                ).fetchone()
+                self.assertEqual(tuple(dependency), ("Q08_INPUT", "q08-soft"))
         finally:
             conn.close()
 
     def test_q08_soft_portfolio_route_dedups_by_ea_symbol(self) -> None:
         conn = _memory_work_items_conn()
         try:
-            for idx, setfile in enumerate(("grid_001.set", "grid_002.set"), start=1):
-                conn.execute(
-                    """
-                    INSERT INTO work_items(
-                        id, kind, phase, ea_id, symbol, setfile_path, status,
-                        verdict, attempt_count, parent_task_id, payload_json,
-                        created_at, updated_at
+            _activate_q09_schema(conn)
+            with tempfile.TemporaryDirectory() as tmp:
+                evidence_path = Path(tmp) / "q08.json"
+                evidence_path.write_text('{"verdict":"FAIL_SOFT"}', encoding="utf-8")
+                for idx, setfile in enumerate(("grid_001.set", "grid_002.set"), start=1):
+                    conn.execute(
+                        """
+                        INSERT INTO work_items(
+                            id, kind, phase, ea_id, symbol, setfile_path, status,
+                            verdict, attempt_count, parent_task_id, evidence_path, payload_json,
+                            created_at, updated_at
+                        )
+                        VALUES (
+                            ?, 'backtest', 'Q08', 'QM5_10692', 'NDX.DWX',
+                            ?, 'done', 'FAIL_SOFT', 1, NULL, ?, ?,
+                            ?, ?
+                        )
+                        """,
+                        (
+                            f"q08-soft-{idx}",
+                            setfile,
+                            str(evidence_path),
+                            '{"q08_n_trades": 443}',
+                            f"2026-06-03T00:0{idx}:00Z",
+                            f"2026-06-03T00:0{idx}:00Z",
+                        ),
                     )
-                    VALUES (
-                        ?, 'backtest', 'Q08', 'QM5_10692', 'NDX.DWX',
-                        ?, 'done', 'FAIL_SOFT', 1, NULL, ?,
-                        ?, ?
-                    )
-                    """,
-                    (
-                        f"q08-soft-{idx}",
-                        setfile,
-                        '{"q08_n_trades": 443}',
-                        f"2026-06-03T00:0{idx}:00Z",
-                        f"2026-06-03T00:0{idx}:00Z",
-                    ),
-                )
-            result = {
-                "q09_portfolio_promotions": [],
-                "q09_portfolio_promotions_skipped": [],
-            }
-            first = farmctl._promote_q08_soft_fails_to_q09_portfolio(conn, result)
-            second = farmctl._promote_q08_soft_fails_to_q09_portfolio(conn, result)
-            q09_count = conn.execute(
-                "SELECT COUNT(*) FROM work_items WHERE phase='Q09_PORTFOLIO'"
-            ).fetchone()[0]
-            self.assertEqual(first, 1)
-            self.assertEqual(second, 0)
-            self.assertEqual(q09_count, 1)
+                result = {
+                    "q09_portfolio_promotions": [],
+                    "q09_portfolio_promotions_skipped": [],
+                }
+                first = farmctl._promote_q08_soft_fails_to_q09_portfolio(conn, result)
+                second = farmctl._promote_q08_soft_fails_to_q09_portfolio(conn, result)
+                q09_count = conn.execute(
+                    "SELECT COUNT(*) FROM work_items WHERE phase='Q09_PORTFOLIO'"
+                ).fetchone()[0]
+                self.assertEqual(first, 1)
+                self.assertEqual(second, 0)
+                self.assertEqual(q09_count, 1)
         finally:
             conn.close()
 
-    def test_q09_portfolio_pass_enters_portfolio_candidates(self) -> None:
+    def test_q09_portfolio_pass_does_not_directly_enter_portfolio_candidates(self) -> None:
         conn = _memory_work_items_conn()
         try:
+            _activate_q09_schema(conn)
             conn.execute(
                 """
                 INSERT INTO work_items(
@@ -298,18 +357,19 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
             )
             result = {"q09_portfolio_admissions": []}
             changed = farmctl._admit_q09_portfolio_passes(conn, result)
-            self.assertTrue(changed)
+            self.assertEqual(changed, 0)
             row = conn.execute(
                 "SELECT state, evidence_path FROM portfolio_candidates WHERE ea_id='QM5_10692'"
             ).fetchone()
-            self.assertIsNotNone(row)
-            self.assertEqual(row["state"], "Q12_REVIEW_READY")
+            self.assertIsNone(row)
+            self.assertEqual(result["q09_portfolio_admissions"], [])
         finally:
             conn.close()
 
-    def test_q09_portfolio_admission_dedupes_same_ea_symbol_preferring_default(self) -> None:
+    def test_q09_portfolio_pass_variants_remain_unadmitted_without_q10(self) -> None:
         conn = _memory_work_items_conn()
         try:
+            _activate_q09_schema(conn)
             rows = [
                 (
                     "q09-ablation",
@@ -342,14 +402,14 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
             result = {"q09_portfolio_admissions": []}
             changed = farmctl._admit_q09_portfolio_passes(conn, result)
 
-            self.assertEqual(changed, 1)
+            self.assertEqual(changed, 0)
             admitted = conn.execute(
                 """
                 SELECT q11_work_item_id FROM portfolio_candidates
                 WHERE ea_id='QM5_11132' AND symbol='SP500.DWX'
                 """
             ).fetchall()
-            self.assertEqual([row["q11_work_item_id"] for row in admitted], ["q09-default"])
+            self.assertEqual(admitted, [])
         finally:
             conn.close()
 

@@ -1,0 +1,711 @@
+{
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "fail_count": 17,
+  "pass_count": 4,
+  "results": [
+    {
+      "corrected_net_delta": 0.0,
+      "count_delta": 0,
+      "ea_id": 1556,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\375ef243-b2b0-408d-966e-d0dcc35c9d16\\QM5_1556\\Q08\\XAUUSD_DWX\\aggregate.json",
+      "reasons": [],
+      "report": {
+        "drawdown": 2683.23,
+        "exists": true,
+        "net_profit": 8090.03,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_1556\\Q08\\_baseline\\QM5_1556\\20260705_192913\\summary.json",
+        "profit_factor": 1.99,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_1556\\Q08\\_baseline\\QM5_1556\\20260705_192913\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 64,
+        "usable_run": "run_01"
+      },
+      "status": "PASS",
+      "stream": {
+        "closing_commission": 0.0,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1556_XAUUSD_DWX.jsonl",
+        "raw_net": 8090.03,
+        "round_trip_corrected_net": 8090.03,
+        "trade_count": 64
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\1556_XAUUSD_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_1556\\Q08\\_baseline\\QM5_1556\\20260705_192913\\summary.json",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "corrected_net_delta": 0.0,
+      "count_delta": 0,
+      "ea_id": 10403,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\b98c3c48-d9af-404b-8fdf-dcba57e7098a\\QM5_10403\\Q08\\XAUUSD_DWX\\aggregate.json",
+      "reasons": [],
+      "report": {
+        "drawdown": 7338.55,
+        "exists": true,
+        "net_profit": 14411.17,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_10403\\Q08\\_baseline\\QM5_10403\\20260706_231640\\summary.json",
+        "profit_factor": 1.31,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_10403\\Q08\\_baseline\\QM5_10403\\20260706_231640\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 209,
+        "usable_run": "run_01"
+      },
+      "status": "PASS",
+      "stream": {
+        "closing_commission": 0.0,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10403_XAUUSD_DWX.jsonl",
+        "raw_net": 14411.17,
+        "round_trip_corrected_net": 14411.17,
+        "trade_count": 209
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10403_XAUUSD_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_10403\\Q08\\_baseline\\QM5_10403\\20260706_231640\\summary.json",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "corrected_net_delta": -3705.96,
+      "count_delta": -10,
+      "ea_id": 10440,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\9b6c3259-82e7-4de6-b558-5194a7fbb619\\QM5_10440\\Q08\\NDX_DWX\\aggregate.json",
+      "reasons": [
+        "stream_missing_mae_rows:441",
+        "trade_count_mismatch:441!=451",
+        "corrected_net_mismatch:delta=-3705.96:tolerance=4.51"
+      ],
+      "report": {
+        "drawdown": 18157.19,
+        "exists": true,
+        "net_profit": 63871.95,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_10440\\Q08\\_baseline\\QM5_10440\\20260626_230253\\summary.json",
+        "profit_factor": 1.22,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_10440\\Q08\\_baseline\\QM5_10440\\20260626_230253\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 451,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -4293.43,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 441,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10440_NDX_DWX.jsonl",
+        "raw_net": 64459.42,
+        "round_trip_corrected_net": 60165.99,
+        "trade_count": 441
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10440_NDX_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_10440\\Q08\\_baseline\\QM5_10440\\20260626_230253\\summary.json",
+      "symbol": "NDX.DWX"
+    },
+    {
+      "corrected_net_delta": -8813.27,
+      "count_delta": -24,
+      "ea_id": 10476,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\f7f379d3-841d-455a-a64f-ea69ea3fc5ef\\QM5_10476\\Q08\\USDCAD_DWX\\aggregate.json",
+      "reasons": [
+        "stream_missing_mae_rows:233",
+        "trade_count_mismatch:233!=257",
+        "corrected_net_mismatch:delta=-8813.27:tolerance=2.57"
+      ],
+      "report": {
+        "drawdown": 13352.23,
+        "exists": true,
+        "net_profit": 51300.27,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_10476\\Q08\\_baseline\\QM5_10476\\20260703_142423\\summary.json",
+        "profit_factor": 1.34,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_10476\\Q08\\_baseline\\QM5_10476\\20260703_142423\\raw\\run_03\\report.htm",
+        "result": "PASS",
+        "trade_count": 257,
+        "usable_run": "run_03"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -3821.89,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 233,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10476_USDCAD_DWX.jsonl",
+        "raw_net": 46308.89,
+        "round_trip_corrected_net": 42487.0,
+        "trade_count": 233
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10476_USDCAD_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_10476\\Q08\\_baseline\\QM5_10476\\20260703_142423\\summary.json",
+      "symbol": "USDCAD.DWX"
+    },
+    {
+      "corrected_net_delta": 638.44,
+      "count_delta": -1,
+      "ea_id": 10692,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\16b48cd4-9493-4eee-90f4-5114fb4082f6\\QM5_10692\\Q08\\NDX_DWX\\aggregate.json",
+      "reasons": [
+        "trade_count_mismatch:675!=676",
+        "corrected_net_mismatch:delta=638.44:tolerance=6.76"
+      ],
+      "report": {
+        "drawdown": 22483.29,
+        "exists": true,
+        "net_profit": 38723.69,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_10692\\Q08\\_baseline\\QM5_10692\\20260710_142151\\summary.json",
+        "profit_factor": 1.15,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_10692\\Q08\\_baseline\\QM5_10692\\20260710_142151\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 676,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -1655.78,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10692_NDX_DWX.jsonl",
+        "raw_net": 41017.91,
+        "round_trip_corrected_net": 39362.13,
+        "trade_count": 675
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10692_NDX_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_10692\\Q08\\_baseline\\QM5_10692\\20260710_142151\\summary.json",
+      "symbol": "NDX.DWX"
+    },
+    {
+      "ea_id": 10706,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\19e11add-09ee-420b-a4ec-31fd03bd1b84\\QM5_10706\\Q08\\GBPUSD_DWX\\aggregate.json",
+      "reasons": [
+        "aggregate_paths_missing"
+      ],
+      "status": "FAIL",
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+      "summary_path": null,
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "corrected_net_delta": 0.0,
+      "count_delta": 0,
+      "ea_id": 10715,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\59a62276-643f-4368-ae2c-d2db69abe6bd\\QM5_10715\\Q08\\USDJPY_DWX\\aggregate.json",
+      "reasons": [
+        "stream_missing_mae_rows:1466"
+      ],
+      "report": {
+        "drawdown": 5088.01,
+        "exists": true,
+        "net_profit": 19263.66,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_10715\\Q08\\_baseline\\QM5_10715\\20260626_221246\\summary.json",
+        "profit_factor": 1.11,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_10715\\Q08\\_baseline\\QM5_10715\\20260626_221246\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 1466,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -2816.95,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 1466,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10715_USDJPY_DWX.jsonl",
+        "raw_net": 22080.61,
+        "round_trip_corrected_net": 19263.66,
+        "trade_count": 1466
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10715_USDJPY_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_10715\\Q08\\_baseline\\QM5_10715\\20260626_221246\\summary.json",
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "corrected_net_delta": 478.53,
+      "count_delta": -1,
+      "ea_id": 10919,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\8e45588c-46f8-4862-8ed9-a049ee174091\\QM5_10919\\Q08\\XTIUSD_DWX\\aggregate.json",
+      "reasons": [
+        "stream_missing_mae_rows:29",
+        "trade_count_mismatch:29!=30",
+        "corrected_net_mismatch:delta=478.53:tolerance=1.00"
+      ],
+      "report": {
+        "drawdown": 1851.18,
+        "exists": true,
+        "net_profit": 6723.93,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_10919\\Q08\\_baseline\\QM5_10919\\20260703_111932\\summary.json",
+        "profit_factor": 4.84,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_10919\\Q08\\_baseline\\QM5_10919\\20260703_111932\\raw\\run_01\\report.htm",
+        "result": "FAIL",
+        "trade_count": 30,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -0.42,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 29,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10919_XTIUSD_DWX.jsonl",
+        "raw_net": 7202.88,
+        "round_trip_corrected_net": 7202.46,
+        "trade_count": 29
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10919_XTIUSD_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_10919\\Q08\\_baseline\\QM5_10919\\20260703_111932\\summary.json",
+      "symbol": "XTIUSD.DWX"
+    },
+    {
+      "corrected_net_delta": -0.33,
+      "count_delta": 0,
+      "ea_id": 10939,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\55813535-5da2-4c00-b2b9-6b824e02135b\\QM5_10939\\Q08\\GBPUSD_DWX\\aggregate.json",
+      "reasons": [
+        "stream_missing_mae_rows:92"
+      ],
+      "report": {
+        "drawdown": 6190.06,
+        "exists": true,
+        "net_profit": 19324.69,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_10939\\Q08\\_baseline\\QM5_10939\\20260626_231629\\summary.json",
+        "profit_factor": 1.58,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_10939\\Q08\\_baseline\\QM5_10939\\20260626_231629\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 92,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -494.2,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 92,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10939_GBPUSD_DWX.jsonl",
+        "raw_net": 19818.56,
+        "round_trip_corrected_net": 19324.36,
+        "trade_count": 92
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10939_GBPUSD_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_10939\\Q08\\_baseline\\QM5_10939\\20260626_231629\\summary.json",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "corrected_net_delta": -2117.14,
+      "count_delta": -16,
+      "ea_id": 10940,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\0c185c6d-f25c-4e5c-bf71-0932f9e61cee\\QM5_10940\\Q08\\XAUUSD_DWX\\aggregate.json",
+      "reasons": [
+        "stream_missing_mae_rows:35",
+        "trade_count_mismatch:35!=51",
+        "corrected_net_mismatch:delta=-2117.14:tolerance=1.00"
+      ],
+      "report": {
+        "drawdown": 7436.44,
+        "exists": true,
+        "net_profit": 9080.11,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_10940\\Q08\\_baseline\\QM5_10940\\20260627_182436\\summary.json",
+        "profit_factor": 1.53,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_10940\\Q08\\_baseline\\QM5_10940\\20260627_182436\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 51,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": 0.0,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 35,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10940_XAUUSD_DWX.jsonl",
+        "raw_net": 6962.97,
+        "round_trip_corrected_net": 6962.97,
+        "trade_count": 35
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10940_XAUUSD_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_10940\\Q08\\_baseline\\QM5_10940\\20260627_182436\\summary.json",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "corrected_net_delta": -2732.77,
+      "count_delta": -22,
+      "ea_id": 11132,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\c894d56e-562f-4d20-a7ab-2b3a4fdf24c2\\QM5_11132\\Q08\\SP500_DWX\\aggregate.json",
+      "reasons": [
+        "stream_missing_mae_rows:43",
+        "trade_count_mismatch:43!=65",
+        "corrected_net_mismatch:delta=-2732.77:tolerance=1.00"
+      ],
+      "report": {
+        "drawdown": 3635.36,
+        "exists": true,
+        "net_profit": 7541.73,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_11132\\Q08\\_baseline\\QM5_11132\\20260627_182512\\summary.json",
+        "profit_factor": 1.65,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_11132\\Q08\\_baseline\\QM5_11132\\20260627_182512\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 65,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -9.07,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 43,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11132_SP500_DWX.jsonl",
+        "raw_net": 4818.03,
+        "round_trip_corrected_net": 4808.96,
+        "trade_count": 43
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11132_SP500_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_11132\\Q08\\_baseline\\QM5_11132\\20260627_182512\\summary.json",
+      "symbol": "SP500.DWX"
+    },
+    {
+      "corrected_net_delta": 4454.13,
+      "count_delta": -34,
+      "ea_id": 11165,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\fb446580-e6f4-4659-8835-631c7e308774\\QM5_11165\\Q08\\AUDCAD_DWX\\aggregate.json",
+      "reasons": [
+        "stream_missing_mae_rows:173",
+        "trade_count_mismatch:173!=207",
+        "corrected_net_mismatch:delta=4454.13:tolerance=2.07"
+      ],
+      "report": {
+        "drawdown": 4409.88,
+        "exists": true,
+        "net_profit": 2780.62,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_11165\\Q08\\_baseline\\QM5_11165\\20260626_221231\\summary.json",
+        "profit_factor": 1.14,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_11165\\Q08\\_baseline\\QM5_11165\\20260626_221231\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 207,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -430.2,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 173,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11165_AUDCAD_DWX.jsonl",
+        "raw_net": 7664.95,
+        "round_trip_corrected_net": 7234.75,
+        "trade_count": 173
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11165_AUDCAD_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_11165\\Q08\\_baseline\\QM5_11165\\20260626_221231\\summary.json",
+      "symbol": "AUDCAD.DWX"
+    },
+    {
+      "corrected_net_delta": 6646.9,
+      "count_delta": -37,
+      "ea_id": 11165,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\d72b9a83-9041-44a3-b2cc-6563b6e4314c\\QM5_11165\\Q08\\EURUSD_DWX\\aggregate.json",
+      "reasons": [
+        "stream_missing_mae_rows:223",
+        "trade_count_mismatch:223!=260",
+        "corrected_net_mismatch:delta=6646.90:tolerance=2.60"
+      ],
+      "report": {
+        "drawdown": 3806.64,
+        "exists": true,
+        "net_profit": 1994.1,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_11165\\Q08\\_baseline\\QM5_11165\\20260706_192257\\summary.json",
+        "profit_factor": 1.07,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_11165\\Q08\\_baseline\\QM5_11165\\20260706_192257\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 260,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -554.39,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 223,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11165_EURUSD_DWX.jsonl",
+        "raw_net": 9195.39,
+        "round_trip_corrected_net": 8641.0,
+        "trade_count": 223
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11165_EURUSD_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_11165\\Q08\\_baseline\\QM5_11165\\20260706_192257\\summary.json",
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "corrected_net_delta": 2952.13,
+      "count_delta": -28,
+      "ea_id": 11421,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\26aa4de9-c87e-4701-921d-daf9439db249\\QM5_11421\\Q08\\AUDUSD_DWX\\aggregate.json",
+      "reasons": [
+        "stream_missing_mae_rows:53",
+        "trade_count_mismatch:53!=81",
+        "corrected_net_mismatch:delta=2952.13:tolerance=1.00"
+      ],
+      "report": {
+        "drawdown": 5594.32,
+        "exists": true,
+        "net_profit": 2612.47,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q08\\_baseline\\QM5_11421\\20260627_122807\\summary.json",
+        "profit_factor": 1.12,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q08\\_baseline\\QM5_11421\\20260627_122807\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 81,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -113.84,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 53,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_AUDUSD_DWX.jsonl",
+        "raw_net": 5678.44,
+        "round_trip_corrected_net": 5564.6,
+        "trade_count": 53
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_AUDUSD_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q08\\_baseline\\QM5_11421\\20260627_122807\\summary.json",
+      "symbol": "AUDUSD.DWX"
+    },
+    {
+      "corrected_net_delta": 2699.81,
+      "count_delta": -34,
+      "ea_id": 11421,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\031b80ef-29e9-4f63-b289-7c74d427b1b8\\QM5_11421\\Q08\\EURUSD_DWX\\aggregate.json",
+      "reasons": [
+        "stream_missing_mae_rows:58",
+        "trade_count_mismatch:58!=92",
+        "corrected_net_mismatch:delta=2699.81:tolerance=1.00"
+      ],
+      "report": {
+        "drawdown": 6446.62,
+        "exists": true,
+        "net_profit": 3837.65,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q08\\_baseline\\QM5_11421\\20260627_123447\\summary.json",
+        "profit_factor": 1.15,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q08\\_baseline\\QM5_11421\\20260627_123447\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 92,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -201.01,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 58,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+        "raw_net": 6738.47,
+        "round_trip_corrected_net": 6537.46,
+        "trade_count": 58
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_11421\\Q08\\_baseline\\QM5_11421\\20260627_123447\\summary.json",
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "corrected_net_delta": 2578.23,
+      "count_delta": 80,
+      "ea_id": 11708,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\d4d139bf-7e81-48a9-a1ad-ebf392748f8d\\QM5_11708\\Q08\\EURUSD_DWX\\aggregate.json",
+      "reasons": [
+        "stream_missing_mae_rows:258",
+        "trade_count_mismatch:258!=178",
+        "corrected_net_mismatch:delta=2578.23:tolerance=1.78"
+      ],
+      "report": {
+        "drawdown": 4366.72,
+        "exists": true,
+        "net_profit": 5249.23,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_11708\\Q08\\_baseline\\QM5_11708\\20260706_002740\\summary.json",
+        "profit_factor": 1.3,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_11708\\Q08\\_baseline\\QM5_11708\\20260706_002740\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 178,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -563.8,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 258,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11708_EURUSD_DWX.jsonl",
+        "raw_net": 8391.26,
+        "round_trip_corrected_net": 7827.46,
+        "trade_count": 258
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11708_EURUSD_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_11708\\Q08\\_baseline\\QM5_11708\\20260706_002740\\summary.json",
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "corrected_net_delta": 1276.33,
+      "count_delta": -45,
+      "ea_id": 12567,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\3f89b9ec-526b-4d15-a00c-3b34b01afc5d\\QM5_12567\\Q08\\XAUUSD_DWX\\aggregate.json",
+      "reasons": [
+        "stream_missing_mae_rows:28",
+        "trade_count_mismatch:28!=73",
+        "corrected_net_mismatch:delta=1276.33:tolerance=1.00"
+      ],
+      "report": {
+        "drawdown": 2372.94,
+        "exists": true,
+        "net_profit": 4676.76,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_12567\\Q08\\_baseline\\QM5_12567\\20260627_201726\\summary.json",
+        "profit_factor": 1.61,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_12567\\Q08\\_baseline\\QM5_12567\\20260627_201726\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 73,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": 0.0,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 28,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12567_XAUUSD_DWX.jsonl",
+        "raw_net": 5953.09,
+        "round_trip_corrected_net": 5953.09,
+        "trade_count": 28
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12567_XAUUSD_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_12567\\Q08\\_baseline\\QM5_12567\\20260627_201726\\summary.json",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "corrected_net_delta": 3424.48,
+      "count_delta": -38,
+      "ea_id": 12567,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\084a05e0-99cf-435e-bce3-d464d97081e0\\QM5_12567\\Q08\\XNGUSD_DWX\\aggregate.json",
+      "reasons": [
+        "stream_missing_mae_rows:20",
+        "trade_count_mismatch:20!=58",
+        "corrected_net_mismatch:delta=3424.48:tolerance=1.00"
+      ],
+      "report": {
+        "drawdown": 2248.27,
+        "exists": true,
+        "net_profit": 1791.18,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_12567\\Q08\\_baseline\\QM5_12567\\20260626_222604\\summary.json",
+        "profit_factor": 1.31,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_12567\\Q08\\_baseline\\QM5_12567\\20260626_222604\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 58,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -0.17,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 20,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12567_XNGUSD_DWX.jsonl",
+        "raw_net": 5215.83,
+        "round_trip_corrected_net": 5215.66,
+        "trade_count": 20
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12567_XNGUSD_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_12567\\Q08\\_baseline\\QM5_12567\\20260626_222604\\summary.json",
+      "symbol": "XNGUSD.DWX"
+    },
+    {
+      "corrected_net_delta": null,
+      "count_delta": null,
+      "ea_id": 12778,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\8637b758-4763-4a1c-a88e-f2001a1da7b4\\QM5_12778\\Q08\\QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1\\aggregate.json",
+      "reasons": [
+        "report_usable_run_missing"
+      ],
+      "report": {
+        "exists": true,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_12778\\Q08\\_baseline\\QM5_12778\\20260705_175116\\summary.json",
+        "result": "FAIL",
+        "usable_run": null
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -139.83,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12778_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1.jsonl",
+        "raw_net": 1456.16,
+        "round_trip_corrected_net": 1316.33,
+        "trade_count": 195
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12778_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_12778\\Q08\\_baseline\\QM5_12778\\20260705_175116\\summary.json",
+      "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1"
+    },
+    {
+      "corrected_net_delta": 0.0,
+      "count_delta": 0,
+      "ea_id": 12969,
+      "q08_evidence_path": "D:\\QM\\reports\\work_items\\74a089c5-194d-466f-ba0f-0536fdf32641\\QM5_12969\\Q08\\USDJPY_DWX\\aggregate.json",
+      "reasons": [],
+      "report": {
+        "drawdown": 2016.39,
+        "exists": true,
+        "net_profit": 10974.78,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_12969\\Q08\\_baseline\\QM5_12969\\20260710_180401\\summary.json",
+        "profit_factor": 1.53,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_12969\\Q08\\_baseline\\QM5_12969\\20260710_180401\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 331,
+        "usable_run": "run_01"
+      },
+      "status": "PASS",
+      "stream": {
+        "closing_commission": -862.19,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12969_USDJPY_DWX.jsonl",
+        "raw_net": 11836.97,
+        "round_trip_corrected_net": 10974.78,
+        "trade_count": 331
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12969_USDJPY_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_12969\\Q08\\_baseline\\QM5_12969\\20260710_180401\\summary.json",
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "corrected_net_delta": -0.31,
+      "count_delta": 0,
+      "ea_id": 12990,
+      "reasons": [],
+      "report": {
+        "drawdown": 5937.5,
+        "exists": true,
+        "net_profit": 25624.41,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_12990\\Q08\\_baseline\\QM5_12990\\20260703_100827\\summary.json",
+        "profit_factor": 1.72,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_12990\\Q08\\_baseline\\QM5_12990\\20260703_100827\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 91,
+        "usable_run": "run_01"
+      },
+      "source": "known_challenger",
+      "status": "PASS",
+      "stream": {
+        "closing_commission": -490.69,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12990_GBPUSD_DWX.jsonl",
+        "raw_net": 26114.79,
+        "round_trip_corrected_net": 25624.1,
+        "trade_count": 91
+      },
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12990_GBPUSD_DWX.jsonl",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_12990\\Q08\\_baseline\\QM5_12990\\20260703_100827\\summary.json",
+      "symbol": "GBPUSD.DWX"
+    }
+  ],
+  "schema_version": 1
+}

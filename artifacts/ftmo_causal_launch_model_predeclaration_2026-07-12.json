@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "status": "PREDECLARED_BEFORE_EXECUTION",
+  "objective": "Condition challenge launch on information available before the start day and improve both threshold and adverse 30-day pass rates.",
+  "manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "scenario": "path_01_11095_gbpusd_down2",
+  "policy": {
+    "horizon_calendar_days": 30,
+    "risk_multiplier": 25.0,
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "room_retention": 0.2
+  },
+  "data_split": {
+    "development_years": [2018, 2019, 2021, 2022],
+    "validation_years": [2023],
+    "sealed_holdout_years": [2024, 2025],
+    "other_excluded_years": [2017, 2020]
+  },
+  "feature_contract": {
+    "causal_cutoff": "Strictly before Prague midnight on the candidate start day.",
+    "shadow_book_lookback_calendar_days": [5, 10, 20, 40, 60, 120],
+    "shadow_book_dispersion_lookback_calendar_days": [10, 20, 60],
+    "shadow_book_drawdown_lookback_calendar_days": [20, 60, 120],
+    "market_symbols": ["NDX.DWX", "XAUUSD.DWX", "USDJPY.DWX", "XTIUSD.DWX"],
+    "market_features": ["return_5d", "return_20d", "volatility_ratio"],
+    "calendar_features": ["month_one_hot", "weekday_one_hot"]
+  },
+  "model_grid": {
+    "family": "standardized_ridge_least_squares",
+    "score_modes": ["joint", "minimum", "mean"],
+    "ridge_penalties": [0.1, 1.0, 10.0, 100.0],
+    "development_top_fractions": [0.15, 0.2, 0.25, 0.33, 0.5],
+    "candidate_count": 60
+  },
+  "preholdout_gate": {
+    "minimum_development_starts": 150,
+    "minimum_validation_starts": 30,
+    "minimum_eligible_pct_each_split": 10.0,
+    "minimum_pass_pct_each_fill_and_split": 60.0,
+    "minimum_improvement_pct_over_control_each_fill_and_split": 5.0
+  },
+  "winner_rule": "Maximize the minimum pass rate across development/validation and threshold/adverse, then validation eligible starts, without reading 2024-2025.",
+  "holdout_rule": "Open 2024-2025 once only if a preholdout survivor exists. The 80 percent target is met only if both threshold and adverse pass rates are at least 80 percent.",
+  "selection_uses_holdout": false
+}

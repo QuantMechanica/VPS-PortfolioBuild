@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_10-pips-day-nbop_10624.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_10-pips-day-nbop_10624.pdf",
+      "source_pages": "4-6",
+      "source_ref": "Thread \"10 pips / day (NBoP)\", author handle PIPology (MT4 indicator-setup help by Sweet_Pip), babypips.com Forex forum, 2008, https://forums.babypips.com/t/10-pips-day-nbop/10624 (full ruleset in posts #11 and #13; %R-vs-RSI-cross filter refined in posts #66/#100).",
+      "strategy_name": "NBoP 10-pips/day EMA-MACD-%R momentum-pullback scalp",
+      "concept": "On an 8-EMA(close)/13-EMA(open) cross confirmed by a MACD(13,21,8) zero-line cross within 4 bars, enter on a Williams %R(8) pullback (below -20 long / above -80 short) that is NOT crossing RSI(13,open), taking a fixed 10-pip target against a 10-pip+spread stop.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "London",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Mechanical core (EMA cross + MACD zero-cross within 4 bars + %R pullback + %R-not-crossing-RSI filter + fixed 10-pip TP + 10-pip/+spread SL + ~15-30min time exit + no-Friday) is fully specified and buildable in pure MQL5 on FX majors/JPY-crosses; only the hand-drawn trendline / previous-day linear-regression-channel breakout confirmation is discretionary and would be dropped or approximated as a fixed linreg-channel break.",
+      "priority_hint": "LOW",
+      "notes": "Original chart TF is 30M (nearest allowed enum = M15); trades resolve in 3-15 min which is finer than the signal TF (execution-granularity red flag). Fixed 1:1 R:R 10-pip scalp with spread eating the target = marginal net economics on spread-inclusive .DWX feed; classic indicator-confluence FX scalp with no structural limit-to-arbitrage edge (contra FX-Edge-Doctrine). Promotional context (blog/YouTube/feed, refuses template + account statement) and winning trades posted a day later (hindsight bias, called out in posts #115/#91) lower confidence but do not by themselves reject per forum-source rule. Pairs traded: EUR/USD, GBP/USD, USD/JPY, CAD/JPY (avoids AUD/USD, GBP/CHF, divergence days, news). Variant suggested by user enochbenjamin (#75): scale out at 10 pips, trail remainder at break-even. An undisclosed H4 'long trades' system is referenced (#77) but never specified -> not a candidate."
+    }
+  ],
+  "notes": ["single disclosed scalping system; H4 variant referenced but never specified"]
+}

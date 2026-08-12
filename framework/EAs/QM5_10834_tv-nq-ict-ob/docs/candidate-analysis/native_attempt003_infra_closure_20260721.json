@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_10834_NATIVE_ANALYSIS_INFRA_CLOSURE",
+  "created_utc": "2026-07-21T01:17:25.0661558Z",
+  "analysis_id": "QM5_10834_TV_NQ_ICT_OB_NATIVE_001",
+  "candidate": {
+    "ea_id": "QM5_10834",
+    "symbol": "NDX.DWX",
+    "timeframe": "M5",
+    "model": 4
+  },
+  "terminal_disposition": "INFRA_INCONCLUSIVE_BUDGET_EXHAUSTED_NO_MERIT_ADJUDICATION",
+  "attempt": {
+    "claim_sequence": 3,
+    "counted_alternate_attempt_number": 2,
+    "maximum_counted_alternate_attempts": 2,
+    "counting_boundary": "EXACT_DEV2_METATESTER_PROCESS_STARTED",
+    "counting_boundary_crossed": true,
+    "resume_permitted": false,
+    "same_analysis_retry_permitted": false,
+    "run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\NDX_ICT_OB_FULL_DEV2_NATIVE_ATTEMPT_003",
+    "pre_receipt": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\NDX_ICT_OB_FULL_DEV2_NATIVE_ATTEMPT_003\\pre_receipt.json",
+      "sha256": "bd0318c60bea890c3a3814d4614b16c7b4b9531eea2b74a6b909c341fb48e853"
+    },
+    "launch_state": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\NDX_ICT_OB_FULL_DEV2_NATIVE_ATTEMPT_003\\launch_state.json",
+      "size": 7352,
+      "sha256": "8ebd6e4f144004134b2a0d449dfd7ba692075fecc496e053d4dade42b6178a3e",
+      "status": "INVALID_TERMINAL",
+      "first_cell_status": "INVALID_TERMINAL_OUTPUT"
+    },
+    "launch_job": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\NDX_ICT_OB_FULL_DEV2_NATIVE_ATTEMPT_003\\launch_job.json",
+      "size": 2061,
+      "sha256": "8d32aabc2b995208b7cf8f8f626ba41d826a35e7318f919d7bfb19d0b9071de9"
+    },
+    "native_claim": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\claims\\QM5_10834_TV_NQ_ICT_OB_NATIVE_001_DEV2_NATIVE_ATTEMPT_003.json",
+      "size": 4087,
+      "sha256": "c76fcb58345231e1ee3c1b68c63866c1544d0457ca27b23d0e3ef110631428cf"
+    },
+    "authorization": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\NDX_ICT_OB_FULL_DEV2_NATIVE_ATTEMPT_003\\native_outcome_authorization.json",
+      "size": 1660,
+      "sha256": "68f953db7485919a7a5a6be925f5f5e98881e9ef7044638dff2a2000f5eb92ca",
+      "payload_sha256": "6bd1a0333cb0b5581b317284675424f65673935640792ae0028345f524c33d72"
+    },
+    "controller_stdout": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\NDX_ICT_OB_FULL_DEV2_NATIVE_ATTEMPT_003\\native\\DEV\\controller.stdout.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "controller_stderr": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\NDX_ICT_OB_FULL_DEV2_NATIVE_ATTEMPT_003\\native\\DEV\\controller.stderr.log",
+      "size": 708,
+      "sha256": "9bf2ea36ee149335b47441a73deb2dbb50173d8a347f44f8e58326a13a584d0b"
+    },
+    "dev2_infrastructure_result": {
+      "path": "D:\\QM\\reports\\dev2\\runs\\20260720T230904Z_cda1560e1a2c45cd9f03847aa3863897\\output\\result.json",
+      "size": 2000,
+      "sha256": "444f409a1f7a8d4de06f41fa08d63a73f824acc54e36fce2d19ce0545f57dd3a",
+      "success": false,
+      "error_code": "CHILD_PRECHECK_FAILED",
+      "run_smoke_exit_code": null
+    },
+    "dev2_infrastructure_log": {
+      "path": "D:\\QM\\reports\\dev2\\runs\\20260720T230904Z_cda1560e1a2c45cd9f03847aa3863897\\output\\run.log",
+      "size": 154,
+      "sha256": "fd47a57a8905c2541d058ea14cd390a6c42f13a30ce75b7287890c749a35e45f"
+    }
+  },
+  "root_cause": {
+    "classification": "WMI_PROCESS_EXIT_RACE_MISCLASSIFIED_AS_WRONG_OR_UNREADABLE_OWNER_SID",
+    "process_id": 18760,
+    "wmi_event": {
+      "log": "Microsoft-Windows-WMI-Activity/Operational",
+      "record_id": 63726,
+      "time_created_utc": "2026-07-21T00:52:51.7676242Z",
+      "operation": "Win32_Process.Handle=18760::GetOwnerSid",
+      "result_code": "0x80041002",
+      "result_name": "NotFound",
+      "caller_identity": "WIN-B95G5LPSJ1O\\QMDev2"
+    },
+    "interpretation": "The exact-path metatester exited after enumeration and before GetOwnerSid. This is not evidence of a foreign owner SID.",
+    "failure_boundary": "DEV2_CHILD_LISTENER_PROOF_BEFORE_CONTROLLER_STDOUT_PUBLICATION"
+  },
+  "repair": {
+    "git_commit": "13e82258f",
+    "classification": "OUTCOME_BLIND_SHARED_RUNTIME_REPAIR",
+    "invoke_dev2_smoke_task_sha256": "6602217a4c27636a9d4faa26086b6be5dfd3a4817b5fa8174640e5160922d6b1",
+    "invoke_dev1_smoke_task_sha256": "b9c91f64e26f43c23282d501ecfb2a7b985c316fef5d392e8075911919d4d6e7",
+    "dev2_contract_test_sha256": "fde93fe1b45999fcc4436758a0ec780701a343a5f7edc15dbef6d3d35dcd9de5",
+    "dev1_contract_test_sha256": "39bab6a880cb8acea62ea3127d94e86e9af6ded27832f34bb67542b2204e51ca",
+    "frozen_run_smoke_sha256": "0d56520dafc02d2f443353b42c97fd70fb3c5b086abd0e5d166331b1845155c7",
+    "independent_review": "DEFINITIVE_PASS",
+    "qm10834_audit_tests": "110_PASS"
+  },
+  "outcome_fence": {
+    "opaque_native_outcome_artifacts_opened": false,
+    "strategy_outcomes_read": false,
+    "strategy_merit_adjudicated": false,
+    "attempt003_artifacts_must_remain_immutable": true,
+    "retroactive_uncount_forbidden": true,
+    "new_analysis_must_use_genuinely_untouched_symbol_or_window": true
+  }
+}

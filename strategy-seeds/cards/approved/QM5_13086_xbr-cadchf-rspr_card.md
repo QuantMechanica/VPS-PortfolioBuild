@@ -48,8 +48,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
-last_updated: 2026-07-09
+pipeline_phase: Q02_QUEUED
+last_updated: 2026-07-22
 expected_pf: 1.08
 expected_dd_pct: 20.0
 risk_class: medium-high
@@ -258,3 +258,4 @@ V5 one-position-per-magic model.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-09 | APPROVED | this card |
+| Q02 Structural Smoke | 2026-07-22 | QUEUED | `D:/QM/reports/pipeline/mt5_queue.db` row 3 |

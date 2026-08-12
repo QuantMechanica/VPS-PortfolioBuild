@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20201
+; ea_slug:      gbpjpy-eurgbp
+; ea_version:   v5.0
+; set_version:  s20260801-001
+; symbol:       QM5_20201_GBPJPY_EURGBP_COINTEGRATION_D1
+; host_symbol:  GBPJPY.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   08d24cec7d8a9cf146ba5a0de21b7b6d8ef4ec52971ad9c7f850089c1abc5024
+; author:       Development
+; date:         2026-08-01
+;==========================================================
+qm_ea_id=20201
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Q02 structural baseline: keep both news axes off.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+; strategy-specific defaults from the approved card
+strategy_z_lookback_d1=60
+strategy_beta=-1.681438352
+strategy_entry_z=2.0
+strategy_exit_z=0.5
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=2.0
+strategy_deviation_points=20
+

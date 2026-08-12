@@ -1,0 +1,1003 @@
+{
+ "header": [
+  "ea_id",
+  "ea_slug",
+  "symbol_slot",
+  "symbol",
+  "magic",
+  "reserved_at",
+  "reserved_by",
+  "status"
+ ],
+ "live_magic_rows": {
+  "15560004": [
+   {
+    "line": 13756,
+    "row": [
+     "1556",
+     "aa-zak-mom12",
+     "4",
+     "XAUUSD.DWX",
+     "15560004",
+     "2026-06-27",
+     "Development",
+     "active"
+    ]
+   }
+  ],
+  "104400003": [
+   {
+    "line": 4490,
+    "row": [
+     "10440",
+     "mql5-ohlc-mtf",
+     "3",
+     "NDX.DWX",
+     "104400003",
+     "2026-05-27",
+     "Codex",
+     "active"
+    ]
+   }
+  ],
+  "109110003": [
+   {
+    "line": 6110,
+    "row": [
+     "10911",
+     "grimes-complex-pb",
+     "3",
+     "GDAXI.DWX",
+     "109110003",
+     "2026-06-06",
+     "Development",
+     "active"
+    ]
+   }
+  ],
+  "111320000": [
+   {
+    "line": 6618,
+    "row": [
+     "11132",
+     "tm-cum-rsi2",
+     "0",
+     "SP500.DWX",
+     "111320000",
+     "2026-06-07",
+     "Development",
+     "active"
+    ]
+   }
+  ],
+  "114210000": [
+   {
+    "line": 10864,
+    "row": [
+     "11421",
+     "ohlc-daily-squeeze-reversal-d1",
+     "0",
+     "EURUSD.DWX",
+     "114210000",
+     "2026-06-18",
+     "Claude",
+     "active"
+    ]
+   }
+  ],
+  "125670002": [
+   {
+    "line": 13523,
+    "row": [
+     "12567",
+     "cum-rsi2-commodity",
+     "2",
+     "XNGUSD.DWX",
+     "125670002",
+     "2026-06-25",
+     "Claude",
+     "active"
+    ]
+   }
+  ],
+  "129690000": [
+   {
+    "line": 14394,
+    "row": [
+     "12969",
+     "usdjpy-gotobi-nakane-fix",
+     "0",
+     "USDJPY.DWX",
+     "129690000",
+     "2026-07-03",
+     "Codex",
+     "active"
+    ]
+   }
+  ],
+  "131280000": [
+   {
+    "line": 14954,
+    "row": [
+     "13128",
+     "pre-fomc-drift-ndx",
+     "0",
+     "NDX.DWX",
+     "131280000",
+     "2026-07-10",
+     "claude",
+     "active"
+    ]
+   }
+  ]
+ },
+ "candidate_ea_rows": {
+  "1567": [
+   {
+    "line": 1502,
+    "row": [
+     "1567",
+     "demark-td-reverse-sequential-h4",
+     "0",
+     "SP500.DWX",
+     "15670000",
+     "2026-05-19",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 1503,
+    "row": [
+     "1567",
+     "demark-td-reverse-sequential-h4",
+     "1",
+     "NDX.DWX",
+     "15670001",
+     "2026-05-19",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 1504,
+    "row": [
+     "1567",
+     "demark-td-reverse-sequential-h4",
+     "2",
+     "WS30.DWX",
+     "15670002",
+     "2026-05-19",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 1505,
+    "row": [
+     "1567",
+     "demark-td-reverse-sequential-h4",
+     "3",
+     "GDAXI.DWX",
+     "15670003",
+     "2026-05-19",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 1506,
+    "row": [
+     "1567",
+     "demark-td-reverse-sequential-h4",
+     "4",
+     "UK100.DWX",
+     "15670004",
+     "2026-05-19",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 1507,
+    "row": [
+     "1567",
+     "demark-td-reverse-sequential-h4",
+     "5",
+     "XAUUSD.DWX",
+     "15670005",
+     "2026-05-19",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 1508,
+    "row": [
+     "1567",
+     "demark-td-reverse-sequential-h4",
+     "6",
+     "XTIUSD.DWX",
+     "15670006",
+     "2026-05-19",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 1509,
+    "row": [
+     "1567",
+     "demark-td-reverse-sequential-h4",
+     "7",
+     "EURUSD.DWX",
+     "15670007",
+     "2026-05-19",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 1510,
+    "row": [
+     "1567",
+     "demark-td-reverse-sequential-h4",
+     "8",
+     "GBPUSD.DWX",
+     "15670008",
+     "2026-05-19",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 1511,
+    "row": [
+     "1567",
+     "demark-td-reverse-sequential-h4",
+     "9",
+     "USDJPY.DWX",
+     "15670009",
+     "2026-05-19",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 15045,
+    "row": [
+     "1567",
+     "demark-td-reverse-sequential-h4",
+     "10",
+     "XAGUSD.DWX",
+     "15670010",
+     "2026-07-15",
+     "Claude",
+     "active"
+    ]
+   }
+  ],
+  "10145": [
+   {
+    "line": 2668,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "0",
+     "AUDCAD.DWX",
+     "101450000",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2669,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "1",
+     "AUDCHF.DWX",
+     "101450001",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2670,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "2",
+     "AUDJPY.DWX",
+     "101450002",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2671,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "3",
+     "AUDNZD.DWX",
+     "101450003",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2672,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "4",
+     "AUDUSD.DWX",
+     "101450004",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2673,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "5",
+     "CADCHF.DWX",
+     "101450005",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2674,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "6",
+     "CADJPY.DWX",
+     "101450006",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2675,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "7",
+     "CHFJPY.DWX",
+     "101450007",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2676,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "8",
+     "EURAUD.DWX",
+     "101450008",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2677,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "9",
+     "EURCAD.DWX",
+     "101450009",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2678,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "10",
+     "EURCHF.DWX",
+     "101450010",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2679,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "11",
+     "EURGBP.DWX",
+     "101450011",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2680,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "12",
+     "EURJPY.DWX",
+     "101450012",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2681,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "13",
+     "EURNZD.DWX",
+     "101450013",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2682,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "14",
+     "EURUSD.DWX",
+     "101450014",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2683,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "15",
+     "GBPAUD.DWX",
+     "101450015",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2684,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "16",
+     "GBPCAD.DWX",
+     "101450016",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2685,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "17",
+     "GBPCHF.DWX",
+     "101450017",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2686,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "18",
+     "GBPJPY.DWX",
+     "101450018",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2687,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "19",
+     "GBPNZD.DWX",
+     "101450019",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2688,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "20",
+     "GBPUSD.DWX",
+     "101450020",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2689,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "21",
+     "GDAXI.DWX",
+     "101450021",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2690,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "22",
+     "NDX.DWX",
+     "101450022",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2691,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "23",
+     "NZDCAD.DWX",
+     "101450023",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2692,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "24",
+     "NZDCHF.DWX",
+     "101450024",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2693,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "25",
+     "NZDJPY.DWX",
+     "101450025",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2694,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "26",
+     "NZDUSD.DWX",
+     "101450026",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2695,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "27",
+     "SP500.DWX",
+     "101450027",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2696,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "28",
+     "UK100.DWX",
+     "101450028",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2697,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "29",
+     "USDCAD.DWX",
+     "101450029",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2698,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "30",
+     "USDCHF.DWX",
+     "101450030",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2699,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "31",
+     "USDJPY.DWX",
+     "101450031",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2700,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "32",
+     "WS30.DWX",
+     "101450032",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2701,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "33",
+     "XAGUSD.DWX",
+     "101450033",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2702,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "34",
+     "XAUUSD.DWX",
+     "101450034",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2703,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "35",
+     "XNGUSD.DWX",
+     "101450035",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 2704,
+    "row": [
+     "10145",
+     "tsm-meanret",
+     "36",
+     "XTIUSD.DWX",
+     "101450036",
+     "2026-05-24",
+     "Development",
+     "active"
+    ]
+   }
+  ],
+  "10692": [
+   {
+    "line": 5277,
+    "row": [
+     "10692",
+     "tv-ls-ms",
+     "0",
+     "EURUSD.DWX",
+     "106920000",
+     "2026-05-31",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 5278,
+    "row": [
+     "10692",
+     "tv-ls-ms",
+     "1",
+     "GBPUSD.DWX",
+     "106920001",
+     "2026-05-31",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 5279,
+    "row": [
+     "10692",
+     "tv-ls-ms",
+     "2",
+     "USDJPY.DWX",
+     "106920002",
+     "2026-05-31",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 5280,
+    "row": [
+     "10692",
+     "tv-ls-ms",
+     "3",
+     "XAUUSD.DWX",
+     "106920003",
+     "2026-05-31",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 5281,
+    "row": [
+     "10692",
+     "tv-ls-ms",
+     "4",
+     "GDAXI.DWX",
+     "106920004",
+     "2026-05-31",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 5282,
+    "row": [
+     "10692",
+     "tv-ls-ms",
+     "5",
+     "NDX.DWX",
+     "106920005",
+     "2026-05-31",
+     "Development",
+     "active"
+    ]
+   }
+  ],
+  "10815": [
+   {
+    "line": 5844,
+    "row": [
+     "10815",
+     "tv-post-vwap",
+     "0",
+     "EURUSD.DWX",
+     "108150000",
+     "2026-06-05",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 5845,
+    "row": [
+     "10815",
+     "tv-post-vwap",
+     "1",
+     "GBPUSD.DWX",
+     "108150001",
+     "2026-06-05",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 5846,
+    "row": [
+     "10815",
+     "tv-post-vwap",
+     "2",
+     "USDJPY.DWX",
+     "108150002",
+     "2026-06-05",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 5847,
+    "row": [
+     "10815",
+     "tv-post-vwap",
+     "3",
+     "XAUUSD.DWX",
+     "108150003",
+     "2026-06-05",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 5848,
+    "row": [
+     "10815",
+     "tv-post-vwap",
+     "4",
+     "GDAXI.DWX",
+     "108150004",
+     "2026-06-05",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 5849,
+    "row": [
+     "10815",
+     "tv-post-vwap",
+     "5",
+     "NDX.DWX",
+     "108150005",
+     "2026-06-05",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 5850,
+    "row": [
+     "10815",
+     "tv-post-vwap",
+     "6",
+     "WS30.DWX",
+     "108150006",
+     "2026-06-05",
+     "Development",
+     "active"
+    ]
+   }
+  ],
+  "12474": [
+   {
+    "line": 7339,
+    "row": [
+     "12474",
+     "gh-dual-thrust",
+     "0",
+     "EURUSD.DWX",
+     "124740000",
+     "2026-06-11",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 7340,
+    "row": [
+     "12474",
+     "gh-dual-thrust",
+     "1",
+     "GBPUSD.DWX",
+     "124740001",
+     "2026-06-11",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 7341,
+    "row": [
+     "12474",
+     "gh-dual-thrust",
+     "2",
+     "XAUUSD.DWX",
+     "124740002",
+     "2026-06-11",
+     "Development",
+     "active"
+    ]
+   },
+   {
+    "line": 7342,
+    "row": [
+     "12474",
+     "gh-dual-thrust",
+     "3",
+     "GDAXI.DWX",
+     "124740003",
+     "2026-06-11",
+     "Development",
+     "active"
+    ]
+   }
+  ]
+ },
+ "duplicate_magics_count": 0,
+ "my_magic_collisions": {
+  "15560004": "no-collision",
+  "104400003": "no-collision",
+  "109110003": "no-collision",
+  "111320000": "no-collision",
+  "114210000": "no-collision",
+  "125670002": "no-collision",
+  "129690000": "no-collision",
+  "131280000": "no-collision"
+ },
+ "duplicate_magics_sample": {}
+}

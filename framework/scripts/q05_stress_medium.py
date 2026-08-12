@@ -10,7 +10,7 @@ actually tests, and now officially tests:
               cost STRESS lives in Q08's DL-072 cost-cushion gate: PASS needs
               the gross edge to survive 2x worst-case commission)
   Trade-rejection: 0% (Q06 HARSH only)
-  Verdict:    PF > 1.0 AND DD < 15% AND trades >= 20
+  Verdict:    PF > 1.0 AND DD < 25% AND trades >= 20 (DD 15->25 OWNER 2026-07-15)
 
 Per-symbol verdict; runs per Q04-PASS entry. The generated "*_q05_stress_medium"
 setfile differs from baseline only in headers + qm_stress_reject_probability=0.
@@ -19,11 +19,13 @@ setfile differs from baseline only in headers + qm_stress_reject_probability=0.
 from __future__ import annotations
 
 import argparse
+import hashlib
 from html import unescape
 import json
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 if __package__ in (None, ""):
@@ -31,7 +33,7 @@ if __package__ in (None, ""):
 
 from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
                                             resolve_ea_expert_path, period_from_setfile,
-                                            find_latest_summary, full_history_window,
+                                            full_history_window,
                                             is_launch_fault_exit_code,
                                             run_with_launch_fault_retry)
 from framework.scripts.gen_stress_setfile import stress_setfile_text
@@ -47,7 +49,7 @@ LEVEL = "MED"
 DEFAULT_TIMEOUT_SEC = 5400
 RUNNER_HEADROOM_SEC = 120
 PF_FLOOR = 1.0
-DD_PCT_MAX = 15.0
+DD_PCT_MAX = 25.0  # 15->25 OWNER 2026-07-15: decisions/2026-07-15_dd_ceiling_25pct_portfolio_rationale.md
 MIN_TRADES = 20
 STARTING_EQUITY = 100_000.0
 INVALID_SUMMARY_REASON_CLASSES = {
@@ -92,6 +94,74 @@ def _load_summary(summary_path: Path) -> dict | None:
         return json.loads(summary_path.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError):
         return None
+
+
+def _sha256_path(path: Path | None) -> str | None:
+    if path is None:
+        return None
+    try:
+        digest = hashlib.sha256()
+        with path.open("rb") as fh:
+            for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+                digest.update(chunk)
+        return digest.hexdigest()
+    except OSError:
+        return None
+
+
+def _summary_report_path(summary: dict | None) -> Path | None:
+    if not isinstance(summary, dict):
+        return None
+    runs = summary.get("runs") or []
+    if not runs or not isinstance(runs[-1], dict):
+        return None
+    raw = runs[-1].get("report_canonical_path") or runs[-1].get("report_source_path")
+    return Path(raw) if raw else None
+
+
+def _summary_provenance(summary_path: Path | None, setfile: Path | None = None) -> dict[str, str]:
+    """Copy run_smoke's hash-bound identity into the durable phase aggregate.
+
+    Older summaries may lack execution_identity.  In that case this helper does
+    not infer an EA/binary identity after the fact; it only binds artifacts that
+    are still part of the just-finished runner transaction (the generated set
+    and native report).  That keeps legacy evidence explicitly partial.
+    """
+    summary = _load_summary(summary_path) if summary_path else None
+    identity = summary.get("execution_identity") if isinstance(summary, dict) else None
+    identity = identity if isinstance(identity, dict) else {}
+    binary = identity.get("expert_binary") if isinstance(identity.get("expert_binary"), dict) else {}
+    binary_source = binary.get("source") if isinstance(binary.get("source"), dict) else {}
+    mq5 = identity.get("mq5_source") if isinstance(identity.get("mq5_source"), dict) else {}
+    set_identity = identity.get("setfile") if isinstance(identity.get("setfile"), dict) else {}
+    set_source = set_identity.get("source") if isinstance(set_identity.get("source"), dict) else {}
+    runs = (summary.get("runs") or []) if isinstance(summary, dict) else []
+    run = runs[-1] if runs and isinstance(runs[-1], dict) else {}
+    report_path = _summary_report_path(summary)
+
+    values = {
+        "ea_sha256": mq5.get("sha256"),
+        "ex5_sha256": binary_source.get("sha256"),
+        "set_sha256": set_source.get("sha256") or _sha256_path(setfile),
+        "report_sha256": run.get("report_sha256") or _sha256_path(report_path),
+    }
+    return {key: str(value) for key, value in values.items() if value}
+
+
+def _report_input_value(report_path: Path | None, key: str) -> tuple[bool, str | None]:
+    """Return (report_readable, effective tester input value)."""
+    if report_path is None:
+        return False, None
+    try:
+        html = report_path.read_text(encoding="utf-16", errors="replace")
+    except OSError:
+        return False, None
+    match = re.search(
+        rf"<b>\s*{re.escape(key)}\s*=\s*([^<]*)</b>",
+        html,
+        re.IGNORECASE,
+    )
+    return True, unescape(match.group(1)).strip() if match else None
 
 
 def summary_invalid_reason(summary_path: Path) -> str | None:
@@ -178,12 +248,140 @@ def _parse_report_int(value: str | None) -> int | None:
     return int(parsed) if parsed is not None else None
 
 
-def _latest_report_metrics(report_root: Path) -> dict | None:
+def _text_from_completed_process(
+        proc: subprocess.CompletedProcess | subprocess.TimeoutExpired) -> str:
+    parts: list[str] = []
+    for raw in (getattr(proc, "stdout", None), getattr(proc, "stderr", None)):
+        if raw is None:
+            continue
+        if isinstance(raw, bytes):
+            parts.append(raw.decode("utf-8", errors="replace"))
+        else:
+            parts.append(str(raw))
+    return "\n".join(part for part in parts if part)
+
+
+def _normalize_expert(expert: str | None) -> str:
+    value = str(expert or "").strip().replace("/", "\\")
+    leaf = value.rsplit("\\", 1)[-1]
+    return re.sub(r"\.ex5$", "", leaf, flags=re.IGNORECASE).casefold()
+
+
+def _summary_identity_matches(
+        summary: dict, *, ea_id: int, ea_expert: str, symbol: str,
+        period: str, terminal: str) -> bool:
+    try:
+        summary_ea_id = int(summary.get("ea_id"))
+    except (TypeError, ValueError):
+        return False
+    return (
+        summary_ea_id == ea_id
+        and _normalize_expert(summary.get("expert")) == _normalize_expert(ea_expert)
+        and str(summary.get("symbol") or "").strip().casefold() == symbol.strip().casefold()
+        and str(summary.get("period") or "").strip().casefold() == period.strip().casefold()
+        and str(summary.get("terminal") or "").strip().casefold() == terminal.strip().casefold()
+    )
+
+
+def _summary_matches_run(
+        summary_path: Path, *, started_at: float, ea_id: int,
+        ea_expert: str, symbol: str, period: str, terminal: str,
+        require_fresh: bool = True) -> bool:
+    try:
+        if require_fresh and summary_path.stat().st_mtime < started_at:
+            return False
+    except OSError:
+        return False
+    summary = _load_summary(summary_path)
+    if summary is None:
+        return False
+    return _summary_identity_matches(
+        summary,
+        ea_id=ea_id,
+        ea_expert=ea_expert,
+        symbol=symbol,
+        period=period,
+        terminal=terminal,
+    )
+
+
+def _summary_from_run_smoke_output(
+        output_text: str, *, started_at: float, ea_id: int,
+        ea_expert: str, symbol: str, period: str, terminal: str) -> Path | None:
+    matches = list(re.finditer(
+        r"(?m)^run_smoke\.summary=(?P<path>.+?)\s*$",
+        output_text or "",
+    ))
+    for match in reversed(matches):
+        path = Path(match.group("path").strip().strip('"'))
+        if _summary_matches_run(
+                path, started_at=started_at, ea_id=ea_id,
+                ea_expert=ea_expert, symbol=symbol, period=period,
+                terminal=terminal, require_fresh=False):
+            return path
+    return None
+
+
+def _find_latest_matching_summary(
+        report_root: Path, *, started_at: float, ea_id: int,
+        ea_expert: str, symbol: str, period: str, terminal: str) -> Path | None:
     root = Path(report_root)
     if not root.is_dir():
         return None
-    reports = sorted(root.rglob("report.htm"), key=lambda p: p.stat().st_mtime, reverse=True)
-    for report in reports:
+    candidates: list[tuple[float, Path]] = []
+    for summary_path in root.rglob("summary.json"):
+        try:
+            mtime = summary_path.stat().st_mtime
+        except OSError:
+            continue
+        if mtime >= started_at:
+            candidates.append((mtime, summary_path))
+    for _mtime, summary_path in sorted(candidates, reverse=True):
+        if _summary_matches_run(
+                summary_path, started_at=started_at, ea_id=ea_id,
+                ea_expert=ea_expert, symbol=symbol, period=period,
+                terminal=terminal):
+            return summary_path
+    return None
+
+
+def _select_run_summary(
+        output_text: str, report_root: Path, *, started_at: float, ea_id: int,
+        ea_expert: str, symbol: str, period: str, terminal: str) -> Path | None:
+    return _summary_from_run_smoke_output(
+        output_text,
+        started_at=started_at,
+        ea_id=ea_id,
+        ea_expert=ea_expert,
+        symbol=symbol,
+        period=period,
+        terminal=terminal,
+    ) or _find_latest_matching_summary(
+        report_root,
+        started_at=started_at,
+        ea_id=ea_id,
+        ea_expert=ea_expert,
+        symbol=symbol,
+        period=period,
+        terminal=terminal,
+    )
+
+
+def _latest_report_metrics(
+        report_root: Path, *, started_at: float, expected_expert: str,
+        expected_symbol: str, expected_period: str) -> dict | None:
+    root = Path(report_root)
+    if not root.is_dir():
+        return None
+    reports: list[tuple[float, Path]] = []
+    for report in root.rglob("report.htm"):
+        try:
+            mtime = report.stat().st_mtime
+        except OSError:
+            continue
+        if mtime >= started_at:
+            reports.append((mtime, report))
+    for _mtime, report in sorted(reports, reverse=True):
         try:
             raw = report.read_bytes()
         except (OSError, UnicodeError):
@@ -205,6 +403,13 @@ def _latest_report_metrics(report_root: Path) -> dict | None:
         period = _report_cell(html, "Period")
         bars = _parse_report_int(_report_cell(html, "Bars"))
         if not expert or not symbol or not period or period.upper().startswith("M0 ") or not bars:
+            continue
+        report_period = re.split(r"[\s(]", period.strip(), maxsplit=1)[0]
+        if (
+            _normalize_expert(expert) != _normalize_expert(expected_expert)
+            or symbol.strip().casefold() != expected_symbol.strip().casefold()
+            or report_period.casefold() != expected_period.strip().casefold()
+        ):
             continue
 
         pf = _parse_report_float(_report_cell(html, "Profit Factor"))
@@ -308,6 +513,8 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     runner_timeout_sec = timeout_sec + RUNNER_HEADROOM_SEC
     timed_out = False
     timeout_detail = None
+    output_text = ""
+    started_at = time.time()
     try:
         proc = run_with_launch_fault_retry(
             args,
@@ -318,14 +525,30 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
             creationflags=creationflags,
         )
         exit_code = proc.returncode
+        output_text = _text_from_completed_process(proc)
     except subprocess.TimeoutExpired as exc:
         timed_out = True
         timeout_detail = f"subprocess_timeout_after={exc.timeout}s"
         exit_code = 124
-    sym_clean = symbol.replace(".", "_")
-    summary = find_latest_summary(report_root)
+        output_text = _text_from_completed_process(exc)
+    summary = _select_run_summary(
+        output_text,
+        report_root,
+        started_at=started_at,
+        ea_id=ea_id,
+        ea_expert=ea_expert,
+        symbol=symbol,
+        period=period,
+        terminal=terminal,
+    )
     invalid_reason = summary_invalid_reason(summary) if summary else None
-    report_metrics = None if summary else _latest_report_metrics(report_root)
+    report_metrics = None if summary else _latest_report_metrics(
+        report_root,
+        started_at=started_at,
+        expected_expert=ea_expert,
+        expected_symbol=symbol,
+        expected_period=period,
+    )
     if summary:
         pf, dd_money, trades = _parse_pf_dd_trades(summary)
     elif report_metrics:
@@ -335,6 +558,7 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     else:
         pf, dd_money, trades = None, None, 0
     dd_pct = (dd_money / STARTING_EQUITY * 100.0) if dd_money is not None else None
+    provenance = _summary_provenance(summary, setfile)
 
     if summary is None and report_metrics is None:
         if timed_out:
@@ -356,7 +580,17 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     elif pf <= PF_FLOOR:
         verdict, reason = "FAIL", f"pf_below_floor:pf={pf:.3f}:floor={PF_FLOOR}"
     elif dd_pct > DD_PCT_MAX:
-        verdict, reason = "FAIL", f"dd_above_ceiling:dd_pct={dd_pct:.2f}:max={DD_PCT_MAX}"
+        # DL-082 §4 (Spur 2, 2026-07-19): a DD-ceiling breach is no longer an
+        # auto-RETIRE. A weaker-but-diversifying edge can still be book-relevant,
+        # so the (EA, symbol) PARKS for marginal-contribution evaluation instead
+        # of dying here. The distinct verdict FAIL_DD_PORTFOLIO_REVIEW does NOT
+        # cascade to Q06 (it is not a PASS) but is preserved through farmctl's
+        # _derive_phase_runner_verdict pass-through so the park is visible to the
+        # portfolio lane. pf_below_floor / trades_below_floor stay hard FAILs.
+        # The reason keeps the `dd_above_ceiling` diagnostic token; the return
+        # dict carries the measured DD + ceiling for the later evaluator.
+        verdict = "FAIL_DD_PORTFOLIO_REVIEW"
+        reason = f"dd_above_ceiling:dd_pct={dd_pct:.2f}:max={DD_PCT_MAX}"
     else:
         verdict, reason = "PASS", f"pf={pf:.3f}:dd_pct={dd_pct:.2f}"
 
@@ -370,6 +604,7 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "pf": pf,
         "dd_money": dd_money,
         "dd_pct": dd_pct,
+        "dd_ceiling_pct": DD_PCT_MAX,  # DL-082 §4: park evidence carries measured DD + ceiling
         "trades": trades,
         "exit_code": exit_code,
         "timed_out": timed_out,
@@ -385,6 +620,7 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "latest_full_year": latest_full_year,
         "full_history_from_override": full_history_from,
         "generated_at_utc": utc_now_iso(),
+        **provenance,
     }
 
 
@@ -394,8 +630,11 @@ def main() -> int:
     ap.add_argument("--symbol", required=True)
     ap.add_argument("--baseline-setfile", type=Path, required=True,
                     help="Q03 plateau-median setfile; Q05 stress variant generated from this")
+    ap.add_argument("--expert",
+                    help="Optional pre-deployed MT5 expert path override")
     ap.add_argument("--terminal", default="T2")
     ap.add_argument("--report-root", type=Path, default=Path("D:/QM/reports/pipeline"))
+    ap.add_argument("--out-prefix", type=Path, help=argparse.SUPPRESS)
     ap.add_argument("--timeout-sec", type=int, default=DEFAULT_TIMEOUT_SEC)
     ap.add_argument("--latest-full-year", type=int,
                     help="Cap full-history window when validated custom-symbol history ends before default")
@@ -412,7 +651,7 @@ def main() -> int:
     ea_id = int(ea_match.group(1))
 
     repo_root = Path(__file__).resolve().parents[2]
-    ea_expert = resolve_ea_expert_path(repo_root, args.ea)
+    ea_expert = args.expert or resolve_ea_expert_path(repo_root, args.ea)
     if ea_expert is None:
         print(f"cannot resolve EA dir for {args.ea}", file=sys.stderr)
         return 2
@@ -434,7 +673,14 @@ def main() -> int:
     out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q05" / evidence_symbol.replace(".", "_"))
     write_json(out_dir / "aggregate.json", res)
     print(f"Q05 {args.ea} {evidence_symbol}: {res['verdict']}  pf={res['pf']}  dd_pct={res['dd_pct']}")
-    return 0 if res["verdict"] == "PASS" else (1 if res["verdict"] == "FAIL" else 3)
+    # FAIL_DD_PORTFOLIO_REVIEW is a strategy verdict (parked for the portfolio
+    # lane), never an infra INVALID — exit like a FAIL so callers keying on the
+    # process exit code do not retry it as a transient fault (DL-082 §4).
+    if res["verdict"] == "PASS":
+        return 0
+    if res["verdict"] in ("FAIL", "FAIL_DD_PORTFOLIO_REVIEW"):
+        return 1
+    return 3
 
 
 if __name__ == "__main__":

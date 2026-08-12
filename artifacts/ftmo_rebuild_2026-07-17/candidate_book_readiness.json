@@ -1,0 +1,43 @@
+{
+  "book_source": {
+    "path": "artifacts\\ftmo_rebuild_2026-07-17\\candidate_book_manifest.json",
+    "type": "candidate_manifest"
+  },
+  "contract": {
+    "all_sleeves_strictly_qualified": true,
+    "all_streams_report_reconciled": true,
+    "partial_book_approval": false
+  },
+  "nominal_risk_fixed_sum": 250.0,
+  "qualification_ready_count": 0,
+  "ready_count": 0,
+  "reconciliation_pass_count": 1,
+  "schema_version": 1,
+  "sleeve_count": 1,
+  "sleeves": [
+    {
+      "blockers": [
+        "qualification_not_ready:NOT_QUALIFIED"
+      ],
+      "ea_id": 12969,
+      "qualification_blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_evidence_predates_build",
+        "q05_evidence_predates_build",
+        "q06_evidence_predates_build",
+        "q07_evidence_predates_build",
+        "q08_not_pass:FAIL_SOFT",
+        "q10_pass_missing"
+      ],
+      "qualification_state": "NOT_QUALIFIED",
+      "ready": false,
+      "reconciliation_reasons": [],
+      "reconciliation_status": "PASS",
+      "risk_fixed": 250.0,
+      "symbol": "USDJPY.DWX",
+      "timeframe": "M30"
+    }
+  ],
+  "status": "NO_GO"
+}

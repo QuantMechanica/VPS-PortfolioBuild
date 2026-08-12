@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_20207_USDCAD_AUDUSD_COINTEGRATION_D1",
+  "host_symbol": "USDCAD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "USDCAD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "traded_symbols": [
+    "USDCAD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "notes": [
+    "Dedicated fixed-beta USDCAD/AUDUSD D1 cointegration sleeve selected as rank 25 in the frozen sign-aware 66-pair scan. QM5_1257 has an adaptive H1 universe slot for the pair, not this fixed-beta D1 logical package.",
+    "DEV Sharpe 0.611, OOS Sharpe 0.485, fixed beta -0.460267756, and 50.048-D1-bar half-life are frontier evidence. Q02 is a one-shot retirement gate with no refit; the USD 100000 tester uses canonical RISK_FIXED=1000."
+  ]
+}

@@ -54,7 +54,7 @@ Get-ScheduledTaskInfo -TaskName QM_DriveGitExclusion_15min | Format-List LastRun
 ## Alert Routing
 
 - The monitor posts failures to `QM_ALERT_WEBHOOK_URL` when configured.
-- Keep webhook routing aligned with CEO + Obs-SRE destination policy.
+- Keep webhook routing aligned with the OWNER-approved alert destination policy.
 
 ## Incident Response (Critical)
 

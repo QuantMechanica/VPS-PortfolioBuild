@@ -1,35 +1,49 @@
 from __future__ import annotations
 
 import json
+import io
 import sqlite3
 import subprocess
+import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from framework.scripts import phase_orchestrator as po
 
 
 class PhaseOrchestratorProducerTests(unittest.TestCase):
-    def test_launch_phase_p2_enqueues_queue_rows(self) -> None:
+    @patch("framework.scripts.phase_orchestrator._verify_build_deployment_for_ea")
+    def test_launch_phase_p2_enqueues_queue_rows(self, mock_verify: object) -> None:
+        mock_verify.return_value = (True, "", {"verdict": "PASS"})
+        ea = "QM5_1003_davey_baseline_3bar"
         with tempfile.TemporaryDirectory() as tmp:
             queue_db = Path(tmp) / "mt5_queue.db"
-            result = po.launch_phase("QM5_1003", "P2", dry_run=False, queue_sqlite=queue_db)
+            result = po.launch_phase(ea, "P2", dry_run=False, queue_sqlite=queue_db)
             self.assertEqual(result["status"], "enqueued")
             self.assertGreater(result["requested"], 0)
             self.assertGreater(result["inserted"], 0)
             self.assertEqual(result["invalid_setfile"], 0)
             self.assertEqual(len(result["inserted_ids"]), result["inserted"])
 
-            dry = po.launch_phase("QM5_1003", "P2", dry_run=True, queue_sqlite=queue_db)
+            dry = po.launch_phase(ea, "P2", dry_run=True, queue_sqlite=queue_db)
             self.assertEqual(dry["status"], "dry_run_enqueue")
             self.assertGreater(len(dry["symbols"]), 0)
 
-            second = po.launch_phase("QM5_1003", "P2", dry_run=False, queue_sqlite=queue_db)
+            second = po.launch_phase(ea, "P2", dry_run=False, queue_sqlite=queue_db)
             self.assertEqual(second["status"], "enqueued")
             self.assertEqual(second["inserted"], 0)
             self.assertGreater(second["skipped_duplicate"], 0)
+            self.assertEqual(
+                mock_verify.call_args_list,
+                [
+                    call(ea, dry_run=False),
+                    call(ea, dry_run=True),
+                    call(ea, dry_run=False),
+                ],
+            )
 
     @patch("framework.scripts.phase_orchestrator._verify_build_deployment_for_ea")
     def test_launch_phase_p2_is_blocked_when_verifier_fails(self, mock_verify: object) -> None:
@@ -86,36 +100,42 @@ class PhaseOrchestratorProducerTests(unittest.TestCase):
             self.assertIn("BLOCKED at P2", state)
             self.assertIn("dispatch_state_path", evidence)
 
-    def test_cli_execute_enqueues_jobs_into_worker_pool_schema(self) -> None:
+    @patch("framework.scripts.phase_orchestrator._verify_build_deployment_for_ea")
+    def test_cli_execute_enqueues_jobs_into_worker_pool_schema(self, mock_verify: object) -> None:
+        mock_verify.return_value = (True, "", {"verdict": "PASS"})
+        ea = "QM5_1003_davey_baseline_3bar"
         with tempfile.TemporaryDirectory() as tmp:
             out_root = Path(tmp) / "pipeline"
             db_path = Path(tmp) / "mt5_queue.db"
+            state_path = Path(tmp) / "dispatch_state.json"
             old_root = po.PIPELINE_ROOT
-            po.PIPELINE_ROOT = out_root
             try:
-                p1_dir = out_root / "QM5_1003" / "P1"
+                p1_dir = out_root / ea / "P1"
                 p1_dir.mkdir(parents=True, exist_ok=True)
-                payload = {"phase": "P1", "ea_id": "QM5_1003", "verdict": "PASS"}
-                (p1_dir / "P1_QM5_1003_result.json").write_text(json.dumps(payload), encoding="utf-8")
+                payload = {"phase": "P1", "ea_id": ea, "verdict": "PASS"}
+                (p1_dir / f"P1_{ea}_result.json").write_text(json.dumps(payload), encoding="utf-8")
 
-                cmd = [
-                    "python",
-                    str(po.REPO_ROOT / "framework" / "scripts" / "phase_orchestrator.py"),
+                argv = [
+                    "phase_orchestrator.py",
                     "--ea",
-                    "QM5_1003",
+                    ea,
                     "--execute",
                     "--json",
                     "--pipeline-root",
                     str(out_root),
                     "--queue-sqlite",
                     str(db_path),
+                    "--dispatch-state",
+                    str(state_path),
                 ]
-                proc = subprocess.run(cmd, cwd=str(po.REPO_ROOT), capture_output=True, text=True)
-                self.assertEqual(proc.returncode, 0, msg=f"stdout={proc.stdout}\nstderr={proc.stderr}")
-                decisions = json.loads(proc.stdout)
+                stdout = io.StringIO()
+                with patch.object(sys, "argv", argv), redirect_stdout(stdout):
+                    self.assertEqual(po.main(), 0)
+                decisions = json.loads(stdout.getvalue())
                 self.assertEqual(len(decisions), 1)
                 self.assertEqual(decisions[0]["next_phase"], "P2")
                 self.assertEqual(decisions[0]["launch"]["status"], "enqueued")
+                mock_verify.assert_called_once_with(ea, dry_run=False)
 
                 con = sqlite3.connect(str(db_path))
                 try:
@@ -124,7 +144,8 @@ class PhaseOrchestratorProducerTests(unittest.TestCase):
                     ).fetchone()[0]
                     self.assertEqual(table_exists, 1)
                     rows = con.execute(
-                        "SELECT COUNT(*) FROM jobs WHERE ea_id='QM5_1003' AND phase='P2' AND status='queued'"
+                        "SELECT COUNT(*) FROM jobs WHERE ea_id=? AND phase='P2' AND status='queued'",
+                        (ea,),
                     ).fetchone()[0]
                     self.assertGreater(rows, 0)
                 finally:

@@ -1,0 +1,37 @@
+{
+  "pdf": "ff_316055_ema-rsi-intraday-m15-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_316055_ema-rsi-intraday-m15-system.pdf",
+      "source_pages": "1, 24",
+      "source_ref": "sashadeol, \"EMA & RSI Intraday M15 system\", ForexFactory thread 316055, 2011 (coded EA/backtest variants by ruben-trader and Sudislavi, 2015-2016). https://www.forexfactory.com/thread/316055-ema-rsi-intraday-m15-system",
+      "strategy_name": "EMA 5/12 cross + RSI-7 M15 trend intraday",
+      "concept": "Trend-following: go with an EMA 5/12 crossover confirmed by RSI-7 above/below its 50 level, exit on fixed-pip TP and SL.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 deterministic EMA-cross + RSI filter with fixed SL; EURUSD M15 data available via .DWX; has stops so FTMO/DXZ-compatible.",
+      "priority_hint": "LOW",
+      "notes": "Vanilla EMA-cross trend follower on FX majors; retail forum, low reputability, no verified track record. Core rules (page 1): LONG EMA5 crosses above EMA12 & RSI7>50, SHORT reverse; TP 10-30 pips (range needs selection), SL 20 pips or prior-candle low/high. Only concrete coded implementation (Sudislavi, cTrader pseudo-code page 24: RSI 5, TP/SL 25 pips, NY hours 16:00-21:45 GMT, optional trailing) reported consistently poor results; ruben-trader's positive MT4 backtest is an unverified screenshot. In-thread param variants folded in: dynel14 (RSI 8 + EMA100 trend filter, first candle above 50), cmena82 (H1, EMA 13/50, RSI 30/70), farzin11 (ATR-based TP1=1ATR/TP2=2ATR)."
+    },
+    {
+      "source_file": "ff_316055_ema-rsi-intraday-m15-system.pdf",
+      "source_pages": "6",
+      "source_ref": "siraj282 (in-thread suggestion), ForexFactory thread 316055 \"EMA & RSI Intraday M15 system\", 2016. https://www.forexfactory.com/thread/316055-ema-rsi-intraday-m15-system",
+      "strategy_name": "BB + RSI-14 + MACD counter-trend",
+      "concept": "Counter-trend mean reversion: enter when price pierces a Bollinger band with an RSI extreme, confirmed by a MACD cross in the reversion direction.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Standard-indicator mean-reversion entry (BB + RSI 30/70 + MACD 12,26,9) implementable in MQL5 on available FX data, but no exit/TP/SL/params stated.",
+      "priority_hint": "LOW",
+      "notes": "One-line forum suggestion, no track record, no exit rules stated (would require full exit design). Long: price penetrates lower BB & RSI<30, enter on MACD upward cross; Short: mirror at upper BB & RSI>70. Distinct mechanism (mean reversion) from the thread's main trend-following system; timeframe inferred from thread context (M15), not specified by poster."
+    }
+  ],
+  "notes": ["ForexFactory thread 316055, 26 pages, mostly retail chatter and screenshots; text-extracted via pypdf (Read-tool PDF rendering unavailable). Two candidate mechanisms: a well-specified vanilla EMA-cross+RSI trend system and a thinly-specified BB+RSI+MACD counter-trend suggestion. Attached .ex4 EA and results are unverified images/binaries, not reproduced."]
+}

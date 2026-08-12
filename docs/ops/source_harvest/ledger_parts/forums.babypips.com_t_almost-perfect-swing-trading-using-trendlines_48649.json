@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_almost-perfect-swing-trading-using-trendlines_48649.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_almost-perfect-swing-trading-using-trendlines_48649.pdf",
+      "source_pages": "1-13",
+      "source_ref": "pipcompounder et al., \"(ALMOST) Perfect Swing Trading using Trendlines\", BabyPips forum thread, 2012-2013, https://forums.babypips.com/t/almost-perfect-swing-trading-using-trendlines/48649",
+      "strategy_name": "GBPNZD trendline-breakout trend-following swing",
+      "concept": "High-trending NZD/GBP cross pairs respect straight trendlines, so you ride the trend after a trendline (or MA) break and hold until the counter-trendline breaks or a wide stop is hit.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Discretionary hand-drawn-trendline core is non-deterministic, but OP gives an explicit mechanical proxy (SMA 8/17 close crossover on H4) and medisoft gives a linear-regression/standard-deviation-channel breakout variant; both are pure-MQL5, deterministic, no ML, use 100-pip stops, and GBPNZD/NZD-cross data exists via DXZ/.DWX.",
+      "priority_hint": "LOW",
+      "notes": "Core entry is discretionary hand-drawn trendlines (VAGUE alone); mechanical proxies: SMA 8/17 close crossover on H4 (djhenry1981 later suggests 8/13). Medisoft variant = linear-regression / std-dev channel breakout (1SD break), higher-TF trend + lower-TF entry, trail 161.8% daily ATR (more mechanizable form of same core). Marshalmax variant = line between last two fractals with angle filter (fractals repaint -> determinism caveat). Risk: SL ~100 pips, TP let run (500-600 pips typical) or 100-120 pip trailing stop, move to BE after ~70-100 pips. Correlated pairs cited EURNZD/GBPAUD/EURAUD -> basket potential. 'TrendMeLeaveMe' MT4 EA trades a manually named trendline object (not auto-mechanizable). Forum anecdote only, no backtest evidence; GBPNZD high spread / exotic cross cost; NZD-news volatility repeatedly noted as move driver. Priority lifted above REJECT by trend-following FX-cross diversification vs the MR-heavy index/metal portfolio; held down by commoditized MA-cross mechanization and zero evidence."
+    }
+  ],
+  "notes": ["single-strategy thread: pipcompounder trendline-breakout core with SMA-cross and linear-regression-channel mechanization variants folded into one row"]
+}

@@ -1,0 +1,20 @@
+{
+  "logical_symbol": "QM5_20012_XAU_XAG_CMTAR_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.07.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XAU/XAG C-MTAR convergence package from MIGHRI-XAUXAG-CMTAR-2018. The source-fixed base-10 residual is traded only when its completed-month change is strictly below 0.021. Signed residual fades target 0.71970:1 XAU:XAG notionals, jointly capped to one RISK_FIXED=1000 stop-risk budget. Q02 is confined to the synchronized DWX multi-symbol window through XAG's validated 2024 endpoint. No standalone-leg result, live preset, portfolio admission, or decorrelation claim is authorized."
+  ]
+}

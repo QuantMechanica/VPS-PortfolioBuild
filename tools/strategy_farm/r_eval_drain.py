@@ -49,8 +49,12 @@ def card_unknown(card_path: Path) -> bool:
         fm = farmctl.parse_card_frontmatter(card_path)
     except Exception:
         return False
-    return any(str(fm.get(k) or "UNKNOWN").strip().upper() not in ("PASS", "FAIL")
-               for k in R_KEYS)
+    if not farmctl._card_r1_build_ready(fm):
+        return True
+    return any(
+        str(fm.get(key) or "UNKNOWN").strip().upper() not in ("PASS", "FAIL")
+        for key in farmctl.R_STRICT_PASS_FIELDS
+    )
 
 
 def quota_ok() -> tuple[bool, str]:
@@ -95,19 +99,25 @@ Read the criteria file: {CRITERIA}
 
 Then, for EACH card file below, one at a time:
 1. Read the card (YAML frontmatter + body).
-2. Evaluate the four R-gates per the criteria:
-   - r1_track_record  (reputable source / track record per R1-R4 criteria)
+2. Evaluate only R-fields that do not already carry a final value:
+   - r1_track_record  (source-quality tier; final values are PASS, TIER_A,
+     TIER_B, TIER_C, or FAIL)
    - r2_mechanical    (rules fully mechanical, no discretion, no ML)
    - r3_data_available (symbols/timeframe testable on our DWX MT5 data)
    - r4_ml_forbidden  (no machine-learning components)
-3. Edit the card file IN PLACE: set each of the four frontmatter keys to
-   PASS or FAIL, and add/update matching reasoning keys
+3. Preserve every already-final value exactly, especially an existing R1 tier.
+   For unresolved fields, edit the card file IN PLACE: set R1 to TIER_A,
+   TIER_B, or TIER_C when source_id exists (unknown author reputation is valid);
+   when source_id is absent, set it to
+   {farmctl.OWNER_SOURCE_RECOVERY_ID} and record Fabian Grabner (OWNER) as the
+   canonical source instead of rejecting R1. Set R2-R4 to PASS or FAIL; and
+   add/update matching reasoning keys
    (r1_reasoning, r2_reasoning, r3_reasoning, r4_reasoning - one concise
    sentence each). Do not touch any other frontmatter key. Do not modify
    the card body. Preserve YAML validity.
-Be strict: when the card gives no verifiable source or the rules are not
-mechanically reproducible, FAIL the gate. FAIL verdicts are valuable -
-they keep weak cards out of the build queue.
+Be strict on R2-R4 mechanics/data/ML. Never fail a card solely because its
+author, reputation, or original citation is unknown; apply the OWNER source
+fallback above.
 No commit, no push, no other files. When all cards are done, exit.
 
 Cards:

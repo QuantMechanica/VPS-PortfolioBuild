@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_668957_quad-candle-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_668957_quad-candle-system.pdf",
+      "source_pages": "2-15,20-21,29-32,44-49",
+      "source_ref": "Masterrmind, \"Quad Candle System\" (QCS), ForexFactory thread 668957, ~2017-2022, https://www.forexfactory.com/thread/668957-quad-candle-system",
+      "strategy_name": "Quad Candle D1 Reversal at Murrey-Math Extremes",
+      "concept": "On D1, a 2-up-then-2-down candle sequence (short) or 2-down-then-2-up (long) at an extreme Murrey-Math octave level triggers a mean-reversion entry expected to roll into a longer trend.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Mechanizable kernel: deterministic D1 candle-color sequence + public Murrey-Math (period 64) extreme-zone filter, ATR/octave-gap SL (1-2 OG beyond cluster), RR-based TP to opposite MML, exit on 2 opposite-color candles or trailing; FX D1 data available, stops present, Friday/swap handled by framework.",
+      "priority_hint": "LOW",
+      "notes": "Forum source (Balke precedent = not auto-reject) but reputability weak: author is selling a withheld 'Advanced Traders Toolkit'. The claimed edge lives in NON-mechanizable overlays (Gann squaring/SQ9, planetary/astro aspects, moon-phase yearly-reset, harmonics, discretionary fundamental bias, correlated-pair confluence) which must be dropped; author himself concedes '2up-2down has been around as long as Japanese candles' and 'I make no ownership of this method in its pure form'. 'Master Octive Trading Frame' is disclosed later in-thread to be Murrey Math Lines (0/8,8/8,+/-1/8,+/-2/8 zones), so the level filter IS public/deterministic. Additional-entries scheme is capped-risk scale-in pyramid (each leg has its own SL, sum of SLs < total assigned risk 1.5-15%), NOT a stopless martingale. Same core as the 'V Method'/'V trading system' (Paul Langham) referenced in-thread. Generic D1 swing-MR variant on FX majors/crosses; extreme-MML filter lowers frequency."
+    }
+  ],
+  "notes": ["Basic-tools kernel is testable; the sold 'advanced' Gann/astro/harmonic layer is discretionary and was excluded as unmechanizable/non-deterministic (not ML, but not rule-reducible)."]
+}

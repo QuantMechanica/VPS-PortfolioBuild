@@ -1,0 +1,275 @@
+{
+  "control_adverse_pass_pct": 51.35520684736091,
+  "control_normal_pass_pct": 59.05848787446505,
+  "deployment_allowed": false,
+  "excluded_years": [
+    2017,
+    2020,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "label": "RESEARCH_ONLY_NO_GO",
+  "manifest": "artifacts\\ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "rows": [
+    {
+      "adverse": {
+        "historical_rolling": {
+          "daily_breach_pct": 21.255349500713265,
+          "max_breach_pct": 12.696148359486447,
+          "not_reached_pct": 14.693295292439373,
+          "pass_ci95_pct": [
+            48.738796344625854,
+            53.964211150392586
+          ],
+          "pass_pct": 51.35520684736091,
+          "runs": 1402
+        },
+        "mean_accepted_entries": 30.257489300998575,
+        "mean_blocked_entries": 1.3566333808844508,
+        "mean_ending_balance": 102593.41105671867,
+        "mean_minimum_equity": 94159.9281766532,
+        "mean_stop_events": 1.6355206847360912,
+        "mean_trading_days": 9.764621968616263,
+        "start_windows": 1402
+      },
+      "adverse_delta_pct_points": 0.0,
+      "lookback_days": 0,
+      "maximum_effective_risk_multiplier": 25.0,
+      "maximum_scale": 1.25,
+      "minimum_scale": 0.5,
+      "name": "control",
+      "normal": {
+        "historical_rolling": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 40.94151212553495,
+          "pass_ci95_pct": [
+            56.463202750869314,
+            61.60426840004345
+          ],
+          "pass_pct": 59.05848787446505,
+          "runs": 1402
+        },
+        "mean_accepted_entries": 41.950071326676174,
+        "mean_blocked_entries": 3.8373751783166905,
+        "mean_ending_balance": 103098.97816876888,
+        "mean_minimum_equity": 93419.0814322548,
+        "mean_stop_events": 2.471469329529244,
+        "mean_trading_days": 13.384450784593438,
+        "start_windows": 1402
+      },
+      "normal_delta_pct_points": 0.0,
+      "target_rms": 0.0
+    },
+    {
+      "adverse": {
+        "historical_rolling": {
+          "daily_breach_pct": 21.754636233951498,
+          "max_breach_pct": 12.125534950071327,
+          "not_reached_pct": 18.473609129814548,
+          "pass_ci95_pct": [
+            45.04187615909368,
+            50.2634266127164
+          ],
+          "pass_pct": 47.646219686162624,
+          "runs": 1402
+        },
+        "mean_accepted_entries": 34.72681883024251,
+        "mean_blocked_entries": 1.216833095577746,
+        "mean_ending_balance": 102311.4413058863,
+        "mean_minimum_equity": 94247.93191444202,
+        "mean_stop_events": 1.4600570613409416,
+        "mean_trading_days": 11.099857346647646,
+        "start_windows": 1402
+      },
+      "adverse_delta_pct_points": -3.708987161198287,
+      "lookback_days": 3,
+      "maximum_effective_risk_multiplier": 31.25,
+      "maximum_scale": 1.25,
+      "minimum_scale": 0.5,
+      "name": "vol3_target1000",
+      "normal": {
+        "historical_rolling": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 42.93865905848788,
+          "pass_ci95_pct": [
+            54.45450497243976,
+            59.629586712130035
+          ],
+          "pass_pct": 57.06134094151213,
+          "runs": 1402
+        },
+        "mean_accepted_entries": 46.005706134094154,
+        "mean_blocked_entries": 3.2261055634807416,
+        "mean_ending_balance": 103404.22299659981,
+        "mean_minimum_equity": 93697.36824955126,
+        "mean_stop_events": 2.152639087018545,
+        "mean_trading_days": 14.60485021398003,
+        "start_windows": 1402
+      },
+      "normal_delta_pct_points": -1.9971469329529228,
+      "target_rms": 1000.0
+    },
+    {
+      "adverse": {
+        "historical_rolling": {
+          "daily_breach_pct": 26.03423680456491,
+          "max_breach_pct": 13.40941512125535,
+          "not_reached_pct": 14.907275320970042,
+          "pass_ci95_pct": [
+            43.05718394803837,
+            48.264739357428745
+          ],
+          "pass_pct": 45.6490727532097,
+          "runs": 1402
+        },
+        "mean_accepted_entries": 31.609843081312412,
+        "mean_blocked_entries": 1.3209700427960056,
+        "mean_ending_balance": 101812.44102586996,
+        "mean_minimum_equity": 94131.13894284927,
+        "mean_stop_events": 1.6726105563480742,
+        "mean_trading_days": 10.159771754636234,
+        "start_windows": 1402
+      },
+      "adverse_delta_pct_points": -5.70613409415121,
+      "lookback_days": 3,
+      "maximum_effective_risk_multiplier": 31.25,
+      "maximum_scale": 1.25,
+      "minimum_scale": 0.5,
+      "name": "vol3_target1500",
+      "normal": {
+        "historical_rolling": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 43.36661911554921,
+          "pass_ci95_pct": [
+            54.024630048206724,
+            59.20588032214671
+          ],
+          "pass_pct": 56.63338088445078,
+          "runs": 1402
+        },
+        "mean_accepted_entries": 44.64407988587732,
+        "mean_blocked_entries": 3.7703281027104136,
+        "mean_ending_balance": 102971.22655845649,
+        "mean_minimum_equity": 93442.61106734654,
+        "mean_stop_events": 2.615549215406562,
+        "mean_trading_days": 14.280313837375179,
+        "start_windows": 1402
+      },
+      "normal_delta_pct_points": -2.425106990014271,
+      "target_rms": 1500.0
+    },
+    {
+      "adverse": {
+        "historical_rolling": {
+          "daily_breach_pct": 18.972895863052784,
+          "max_breach_pct": 12.76747503566334,
+          "not_reached_pct": 23.03851640513552,
+          "pass_ci95_pct": [
+            42.632438668114894,
+            47.83590332313587
+          ],
+          "pass_pct": 45.22111269614836,
+          "runs": 1402
+        },
+        "mean_accepted_entries": 36.28601997146933,
+        "mean_blocked_entries": 1.1169757489300998,
+        "mean_ending_balance": 101955.45449638464,
+        "mean_minimum_equity": 94088.28242642096,
+        "mean_stop_events": 1.4614835948644793,
+        "mean_trading_days": 11.497146932952925,
+        "start_windows": 1402
+      },
+      "adverse_delta_pct_points": -6.134094151212551,
+      "lookback_days": 5,
+      "maximum_effective_risk_multiplier": 31.25,
+      "maximum_scale": 1.25,
+      "minimum_scale": 0.5,
+      "name": "vol5_target1000",
+      "normal": {
+        "historical_rolling": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 50.28530670470756,
+          "pass_ci95_pct": [
+            47.101850330871606,
+            52.32909545965083
+          ],
+          "pass_pct": 49.71469329529244,
+          "runs": 1402
+        },
+        "mean_accepted_entries": 48.139087018544934,
+        "mean_blocked_entries": 3.216119828815977,
+        "mean_ending_balance": 102509.55050009351,
+        "mean_minimum_equity": 93545.79078884068,
+        "mean_stop_events": 2.1476462196861625,
+        "mean_trading_days": 15.115549215406562,
+        "start_windows": 1402
+      },
+      "normal_delta_pct_points": -9.34379457917261,
+      "target_rms": 1000.0
+    },
+    {
+      "adverse": {
+        "historical_rolling": {
+          "daily_breach_pct": 21.897289586305277,
+          "max_breach_pct": 16.191155492154067,
+          "not_reached_pct": 16.547788873038517,
+          "pass_ci95_pct": [
+            42.773998940755725,
+            47.978870155233814
+          ],
+          "pass_pct": 45.36376604850214,
+          "runs": 1402
+        },
+        "mean_accepted_entries": 32.80884450784593,
+        "mean_blocked_entries": 1.3124108416547788,
+        "mean_ending_balance": 101622.82805991113,
+        "mean_minimum_equity": 93994.37376050727,
+        "mean_stop_events": 1.6997146932952925,
+        "mean_trading_days": 10.532097004279601,
+        "start_windows": 1402
+      },
+      "adverse_delta_pct_points": -5.991440798858768,
+      "lookback_days": 5,
+      "maximum_effective_risk_multiplier": 31.25,
+      "maximum_scale": 1.25,
+      "minimum_scale": 0.5,
+      "name": "vol5_target1500",
+      "normal": {
+        "historical_rolling": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 46.50499286733238,
+          "pass_ci95_pct": [
+            50.87816758526523,
+            56.09274648083497
+          ],
+          "pass_pct": 53.49500713266762,
+          "runs": 1402
+        },
+        "mean_accepted_entries": 45.34379457917261,
+        "mean_blocked_entries": 4.159771754636234,
+        "mean_ending_balance": 102553.22356090571,
+        "mean_minimum_equity": 93359.22188865386,
+        "mean_stop_events": 2.574179743223966,
+        "mean_trading_days": 14.42225392296719,
+        "start_windows": 1402
+      },
+      "normal_delta_pct_points": -5.563480741797434,
+      "target_rms": 1500.0
+    }
+  ],
+  "scenario": "path_01_11095_gbpusd_down2",
+  "schema_version": 1,
+  "sealed_holdout_open_allowed": false,
+  "selected_policy": null,
+  "start_windows": 1402,
+  "status": "NO_DEVELOPMENT_SURVIVOR",
+  "trade_paths": 3584,
+  "validation_2023_open_allowed": false
+}

@@ -25,7 +25,8 @@ param(
     [Parameter(Mandatory = $true)][string]$Exe,
     [string]$Arguments = "",
     [string]$WorkDir = "C:\QM\repo",
-    [string]$TargetUser = ""   # default: autologon DefaultUserName
+    [string]$TargetUser = "",   # default: autologon DefaultUserName
+    [int]$WaitSeconds = 0       # optional: wait for launcher/starter completion and return its exit code
 )
 $ErrorActionPreference = 'Stop'
 
@@ -39,9 +40,12 @@ using System;
 using System.Runtime.InteropServices;
 
 namespace QM {
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
     public struct STARTUPINFO {
-        public int cb; public string lpReserved; public string lpDesktop; public string lpTitle;
+        public int cb;
+        [MarshalAs(UnmanagedType.LPWStr)] public string lpReserved;
+        [MarshalAs(UnmanagedType.LPWStr)] public string lpDesktop;
+        [MarshalAs(UnmanagedType.LPWStr)] public string lpTitle;
         public int dwX; public int dwY; public int dwXSize; public int dwYSize;
         public int dwXCountChars; public int dwYCountChars; public int dwFillAttribute; public int dwFlags;
         public short wShowWindow; public short cbReserved2; public IntPtr lpReserved2;
@@ -99,12 +103,13 @@ namespace QM {
             uint dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory,
             ref STARTUPINFO lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation);
         [DllImport("kernel32.dll", SetLastError=true)] public static extern bool CloseHandle(IntPtr hObject);
+        [DllImport("kernel32.dll", SetLastError=true)] public static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
+        [DllImport("kernel32.dll", SetLastError=true)] public static extern bool GetExitCodeProcess(IntPtr hProcess, out uint lpExitCode);
     }
 }
 "@
 
 $CREATE_UNICODE_ENVIRONMENT = 0x00000400
-$CREATE_NO_WINDOW = 0x08000000
 $TOKEN_ALL = 0xF01FF
 $SecurityImpersonation = 2
 $TokenPrimary = 1
@@ -137,7 +142,11 @@ if (-not (Test-Path -LiteralPath $exeFull)) {
 $cmdline = '"' + $exeFull + '"'
 if ($Arguments) { $cmdline += ' ' + $Arguments }
 
-$flags = $CREATE_UNICODE_ENVIRONMENT -bor $CREATE_NO_WINDOW
+# Do not use CREATE_NO_WINDOW here. This process is intentionally attached to
+# winsta0\default so its descendants (notably terminal64.exe) inherit a real
+# interactive desktop. Combining CREATE_NO_WINDOW with lpDesktop reproduced the
+# 0xC0000142 broken-respawn class during the 2026-07-26 acceptance test.
+$flags = $CREATE_UNICODE_ENVIRONMENT
 $ok = [QM.Native]::CreateProcessAsUser($hDup, $exeFull, $cmdline, [IntPtr]::Zero, [IntPtr]::Zero, $false, $flags, $env, $WorkDir, [ref]$si, [ref]$pi)
 $err = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
 
@@ -146,10 +155,30 @@ if ($hDup -ne [IntPtr]::Zero) { [void][QM.Native]::CloseHandle($hDup) }
 if ($hTok -ne [IntPtr]::Zero) { [void][QM.Native]::CloseHandle($hTok) }
 
 if ($ok) {
+    Write-Output "LAUNCHED pid=$($pi.dwProcessId) into console session $sid : $cmdline"
+    $childExit = 0
+    if ($WaitSeconds -gt 0 -and $pi.hProcess -ne [IntPtr]::Zero) {
+        $waitResult = [QM.Native]::WaitForSingleObject($pi.hProcess, [uint32]($WaitSeconds * 1000))
+        if ($waitResult -eq 0x00000102) {
+            Write-Error "child pid=$($pi.dwProcessId) did not exit within ${WaitSeconds}s"
+            $childExit = 6
+        } elseif ($waitResult -ne 0) {
+            Write-Error "WaitForSingleObject failed result=$waitResult"
+            $childExit = 7
+        } else {
+            $exitCode = [uint32]0
+            if (-not [QM.Native]::GetExitCodeProcess($pi.hProcess, [ref]$exitCode)) {
+                Write-Error "GetExitCodeProcess failed"
+                $childExit = 8
+            } else {
+                Write-Output "WAIT_EXIT pid=$($pi.dwProcessId) code=$exitCode"
+                $childExit = [int]$exitCode
+            }
+        }
+    }
     if ($pi.hProcess -ne [IntPtr]::Zero) { [void][QM.Native]::CloseHandle($pi.hProcess) }
     if ($pi.hThread  -ne [IntPtr]::Zero) { [void][QM.Native]::CloseHandle($pi.hThread) }
-    Write-Output "LAUNCHED pid=$($pi.dwProcessId) into console session $sid : $cmdline"
-    exit 0
+    exit $childExit
 } else {
     Write-Error "CreateProcessAsUser failed ($err): $([ComponentModel.Win32Exception]::new($err).Message)"; exit 5
 }

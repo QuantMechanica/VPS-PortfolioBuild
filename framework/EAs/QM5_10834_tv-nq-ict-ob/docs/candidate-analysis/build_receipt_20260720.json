@@ -1,0 +1,37 @@
+{
+  "artifact_type": "QM5_10834_BUILD_RECEIPT",
+  "schema_version": 1,
+  "created_utc": "2026-07-20T15:27:43.6256557Z",
+  "ea_id": "QM5_10834",
+  "build_commit": "5981f0cc58bca0a5c28d377e0ef29799aa390149",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "source_sha256": "851784e9a000fdf93e738c04da8e61090130857b23a3d299092d4c4be529f993",
+  "ex5_sha256": "d7373b1ae4aa27a40c6117aa3b03b089d1f99fdee265133c7483ae29190a266b",
+  "spec_sha256": "151d72aeb450e75954b92b855da44e9c2cb4799eb8b042f90a8b98ee21685b09",
+  "primary_source_sha256": "015bb5d550a8687f506646de6c33ddfe8b29c3ed5e4ec96f3c66364edfb7f0b5",
+  "setfile_sha256": {
+    "EURUSD.DWX": "7aa0d293a1a23fb910ed2b7d15542fa9427e82cbb65fdff498523d79e159cec1",
+    "GDAXI.DWX": "81d31cad778db84cd76e210292f4e41e4e89cfab14d30f91a87b63a092b95fa1",
+    "NDX.DWX": "bb1c34a27deef3ec98ceafda386ab6ff40cf0e9235078583d654442e5e982c4d",
+    "WS30.DWX": "0f6979d7024aa9f5098deac1f04010876a86cf0363f1fd25ab21eb3ed066e3d6",
+    "XAUUSD.DWX": "6d5f23bd029cc86fe2c23e0c3523fcd9afc3d76d3902ed6bb405bcdbb4a917be"
+  },
+  "compile_evidence": {
+    "compile_log_path": "C:/QM/repo/framework/build/compile/20260720_152458/QM5_10834_tv-nq-ict-ob.compile.log",
+    "compile_log_size": 20406,
+    "compile_log_sha256": "69fa5cb8b937d20b4ccde0fb5116429f027c21e956253230e5af75e5552da1a8",
+    "summary_path": "D:/QM/reports/compile/20260720_152458/summary.csv",
+    "summary_size": 2277,
+    "summary_sha256": "463c1bddfa0ec4218dfaba22fe224b4cfed75e822f9419068979446aeae912c3"
+  },
+  "verification": {
+    "command": "framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_10834_tv-nq-ict-ob/QM5_10834_tv-nq-ict-ob.mq5 -Strict",
+    "source_contract_tests": 8,
+    "candidate_runner_tests": 24,
+    "tests_passed": 32
+  },
+  "scope": "BUILD_ONLY_NO_BACKTEST_NO_MERIT_CLAIM"
+}

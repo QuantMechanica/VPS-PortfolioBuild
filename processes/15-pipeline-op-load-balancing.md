@@ -6,7 +6,8 @@ Pipeline-Operator receives one or more runnable backtest jobs with `target_termi
 
 ## Actors
 
-- [Pipeline-Operator](/QUA/agents/pipeline-operator)
+- The pipeline scheduling worker assigned by OWNER. The label identifies a task
+  lane, not an approval role.
 
 ## Guardrails
 

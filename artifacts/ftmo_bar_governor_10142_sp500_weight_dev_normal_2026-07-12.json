@@ -1,0 +1,207 @@
+{
+  "basis": "fresh_start_entry_sized_m15_trade_cancellation_governor",
+  "excluded_years": [
+    2017,
+    2020,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "fill_contract": "ideal_threshold_inside_m15_bar",
+  "horizon_calendar_days": 30,
+  "manifest": "artifacts\\ftmo_joint_twelve_sleeve_11095_down2_10142_sp500_manifest_2026-07-12.json",
+  "results": [
+    {
+      "daily_stop": 4500.0,
+      "elapsed_risk_steps": [],
+      "full_risk_room": 4000.0,
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 40.94151212553495,
+        "pass_ci95_pct": [
+          56.463202750869314,
+          61.60426840004345
+        ],
+        "pass_pct": 59.05848787446505,
+        "runs": 1402
+      },
+      "mean_accepted_entries": 41.950071326676174,
+      "mean_blocked_entries": 3.8373751783166905,
+      "mean_ending_balance": 103098.97816876888,
+      "mean_minimum_equity": 93419.0814322548,
+      "mean_stop_events": 2.471469329529244,
+      "mean_trading_days": 13.384450784593438,
+      "nominal_peak_risk_pct": 25.000000000000007,
+      "nominal_risk_pct": 25.000000000000007,
+      "open_risk_limit_ratio": 0.0,
+      "peak_risk_multiplier": 25.0,
+      "profit_risk_steps": [],
+      "risk_multiplier": 25.0,
+      "room_retention": 0.2,
+      "scenario": "path_01_control",
+      "start_windows": 1402
+    },
+    {
+      "daily_stop": 4500.0,
+      "elapsed_risk_steps": [],
+      "full_risk_room": 4000.0,
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 41.012838801711844,
+        "pass_ci95_pct": [
+          56.391388816295105,
+          61.53381878224826
+        ],
+        "pass_pct": 58.98716119828816,
+        "runs": 1402
+      },
+      "mean_accepted_entries": 42.38159771754636,
+      "mean_blocked_entries": 3.8573466476462195,
+      "mean_ending_balance": 103106.61394377353,
+      "mean_minimum_equity": 93426.61565132886,
+      "mean_stop_events": 2.450071326676177,
+      "mean_trading_days": 13.410841654778887,
+      "nominal_peak_risk_pct": 25.0,
+      "nominal_risk_pct": 25.0,
+      "open_risk_limit_ratio": 0.0,
+      "peak_risk_multiplier": 25.0,
+      "profit_risk_steps": [],
+      "risk_multiplier": 25.0,
+      "room_retention": 0.2,
+      "scenario": "path_01_plus_10142_sp500_00p5",
+      "start_windows": 1402
+    },
+    {
+      "daily_stop": 4500.0,
+      "elapsed_risk_steps": [],
+      "full_risk_room": 4000.0,
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 41.012838801711844,
+        "pass_ci95_pct": [
+          56.391388816295105,
+          61.53381878224826
+        ],
+        "pass_pct": 58.98716119828816,
+        "runs": 1402
+      },
+      "mean_accepted_entries": 42.559914407988586,
+      "mean_blocked_entries": 3.709700427960057,
+      "mean_ending_balance": 103106.0777472897,
+      "mean_minimum_equity": 93444.5584844096,
+      "mean_stop_events": 2.4315263908701854,
+      "mean_trading_days": 13.458630527817403,
+      "nominal_peak_risk_pct": 25.0,
+      "nominal_risk_pct": 25.0,
+      "open_risk_limit_ratio": 0.0,
+      "peak_risk_multiplier": 25.0,
+      "profit_risk_steps": [],
+      "risk_multiplier": 25.0,
+      "room_retention": 0.2,
+      "scenario": "path_01_plus_10142_sp500_01",
+      "start_windows": 1402
+    },
+    {
+      "daily_stop": 4500.0,
+      "elapsed_risk_steps": [],
+      "full_risk_room": 4000.0,
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 41.15549215406562,
+        "pass_ci95_pct": [
+          56.24777765679981,
+          61.39290283700477
+        ],
+        "pass_pct": 58.84450784593438,
+        "runs": 1402
+      },
+      "mean_accepted_entries": 42.780313837375175,
+      "mean_blocked_entries": 3.6626248216833095,
+      "mean_ending_balance": 103113.2106578295,
+      "mean_minimum_equity": 93443.70183314971,
+      "mean_stop_events": 2.391583452211127,
+      "mean_trading_days": 13.514265335235377,
+      "nominal_peak_risk_pct": 24.999999999999996,
+      "nominal_risk_pct": 24.999999999999996,
+      "open_risk_limit_ratio": 0.0,
+      "peak_risk_multiplier": 25.0,
+      "profit_risk_steps": [],
+      "risk_multiplier": 25.0,
+      "room_retention": 0.2,
+      "scenario": "path_01_plus_10142_sp500_02",
+      "start_windows": 1402
+    },
+    {
+      "daily_stop": 4500.0,
+      "elapsed_risk_steps": [],
+      "full_risk_room": 4000.0,
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 40.37089871611983,
+        "pass_ci95_pct": [
+          57.037915337109766,
+          62.167664232758135
+        ],
+        "pass_pct": 59.62910128388017,
+        "runs": 1402
+      },
+      "mean_accepted_entries": 42.860912981455066,
+      "mean_blocked_entries": 3.581312410841655,
+      "mean_ending_balance": 103297.59957902881,
+      "mean_minimum_equity": 93503.91651746487,
+      "mean_stop_events": 2.3516405135520686,
+      "mean_trading_days": 13.530670470756062,
+      "nominal_peak_risk_pct": 25.0,
+      "nominal_risk_pct": 25.0,
+      "open_risk_limit_ratio": 0.0,
+      "peak_risk_multiplier": 25.0,
+      "profit_risk_steps": [],
+      "risk_multiplier": 25.0,
+      "room_retention": 0.2,
+      "scenario": "path_01_plus_10142_sp500_03",
+      "start_windows": 1402
+    },
+    {
+      "daily_stop": 4500.0,
+      "elapsed_risk_steps": [],
+      "full_risk_room": 4000.0,
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 41.79743223965763,
+        "pass_ci95_pct": [
+          55.60180229802454,
+          60.75850622445553
+        ],
+        "pass_pct": 58.20256776034237,
+        "runs": 1402
+      },
+      "mean_accepted_entries": 43.429386590584876,
+      "mean_blocked_entries": 3.5991440798858774,
+      "mean_ending_balance": 103154.43779301779,
+      "mean_minimum_equity": 93528.66212176772,
+      "mean_stop_events": 2.2746077032810272,
+      "mean_trading_days": 13.67546362339515,
+      "nominal_peak_risk_pct": 24.999999999999993,
+      "nominal_risk_pct": 24.999999999999993,
+      "open_risk_limit_ratio": 0.0,
+      "peak_risk_multiplier": 25.0,
+      "profit_risk_steps": [],
+      "risk_multiplier": 25.0,
+      "room_retention": 0.2,
+      "scenario": "path_01_plus_10142_sp500_05",
+      "start_windows": 1402
+    }
+  ],
+  "schema_version": 1,
+  "start_windows": 1402,
+  "status": "RESEARCH_ONLY",
+  "timestamp_basis": "darwinex_broker_wall",
+  "trade_paths": 3609
+}

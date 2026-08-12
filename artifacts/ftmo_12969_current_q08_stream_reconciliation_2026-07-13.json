@@ -1,0 +1,39 @@
+{
+  "fail_count": 0,
+  "pass_count": 1,
+  "results": [
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": 0.0,
+      "count_delta": 0,
+      "ea_id": 12969,
+      "net_tolerance": 3.31,
+      "reasons": [],
+      "report": {
+        "drawdown": 2016.39,
+        "exists": true,
+        "net_profit": 11017.97,
+        "path": "D:\\QM\\reports\\pipeline\\QM5_12969\\Q08\\_baseline\\QM5_12969\\20260713_085657\\summary.json",
+        "profit_factor": 1.54,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline\\QM5_12969\\Q08\\_baseline\\QM5_12969\\20260713_085657\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 331,
+        "usable_run": "run_01"
+      },
+      "status": "PASS",
+      "stream": {
+        "closing_commission": -862.19,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12969_USDJPY_DWX.jsonl",
+        "raw_net": 11880.16,
+        "round_trip_corrected_net": 11017.97,
+        "trade_count": 331
+      },
+      "symbol": "USDJPY.DWX"
+    }
+  ],
+  "schema_version": 1,
+  "status": "PASS"
+}

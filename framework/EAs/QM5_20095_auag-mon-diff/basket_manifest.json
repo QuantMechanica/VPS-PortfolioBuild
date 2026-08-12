@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_20095_XAU_XAG_MON_DIFF_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.07.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "traded_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "notes": ["Logical Monday-session relative-value package: BUY XAU and SELL XAG at the synchronized broker-Monday D1 boundary, equal USD notionals, shared RISK_FIXED=1000 ATR-stop budget, next-D1 close. Q02 must evaluate combined net PnL only. The source calls mean seasonality weak and does not test this spread; no live preset, portfolio admission, or decorrelation claim is authorized."]
+}

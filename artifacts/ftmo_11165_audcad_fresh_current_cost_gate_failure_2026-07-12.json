@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_AND_ANNUAL_QUALITY_GATES",
+  "ea_id": 11165,
+  "symbol": "AUDCAD.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "source_sha256": "28FEF1804F8DFB28850E09E32ACD12B301798A5166CCFBD7A3F52B05AE9B6358",
+  "compile_log": "framework/build/compile/20260712_155641/QM5_11165_weiss-rsi-ma.compile.log",
+  "compile_log_sha256": "21F934E1E4E4B6E97BF13FE2EB6CF5E98930DCEF61DBF4CDA04B44CAB6A389BC",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11165_audcad_h1_wave20_20260712\\QM5_11165\\20260712_155704\\summary.json",
+  "deterministic": true,
+  "native": {
+    "trades": 133,
+    "profit_factor": 1.154236,
+    "net_profit": 2447.68,
+    "equity_drawdown": 3769.55
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\11165_AUDCAD_DWX_T4_FRESH_20260712.jsonl",
+    "rows": 133,
+    "sha256": "F44393985DE1ADF3F5B96386BB10EC3EA63D29E3E6F7C88AC9FA2C2BA014FA21",
+    "report_reconciliation": "PASS",
+    "count_delta": 0,
+    "missing_mae_rows": 0,
+    "corrected_net_delta": 0.19,
+    "net_tolerance": 1.33
+  },
+  "current_cost_artifact": "artifacts/ftmo_11165_audcad_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 133,
+    "profit_factor": 1.110893,
+    "net_profit": 1792.52,
+    "close_to_close_max_drawdown": 3566.94,
+    "commission_total": 957.65,
+    "swap_total": -149.31
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "negative_calendar_years": [2019, 2021],
+    "calendar_years_below_density_floor": [2017, 2021],
+    "reason_for_reject": "Native and current-cost pooled PF both fail the strict floor, with two negative active years and two years below the density floor."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

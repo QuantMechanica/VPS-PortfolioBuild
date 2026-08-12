@@ -1,0 +1,8 @@
+# Item6: artifacts + disk
+## D: free=226GB used=728GB (77%)
+## D:\ root top consumers: D:\QM=722.8GB (config/Temp ~0)
+## D:\QM top-level: mt5=607.9GB reports=93.0GB strategy_farm=18.0GB data=2.6GB tmp=0.57GB
+## per-terminal mt5 GB: T1=98.4 T2=83.9 T4=76.5 T3=74.4 T5=52.5 T8=41.2 T10=39.2 T6=32.2 T9=29.7 T7=28.1 T_Export=27.7 DEV1=12.6 DEV2=12.0
+## strategy_farm/artifacts total ~280MB (nothing large-orphaned). Notable leftover backup dirs:
+  cards_approved_bak_freqfill_20260625T151220Z = 20MB (one-time backup 2026-06-25)
+  g0_duplicate_target_backup=24K g0_duplicate_backup=20K (small backups)

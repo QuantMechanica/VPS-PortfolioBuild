@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_a-scalping-day-trading-strategy-5minute-timeframe_1266726.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_a-scalping-day-trading-strategy-5minute-timeframe_1266726.pdf",
+      "source_pages": "1-2",
+      "source_ref": "Eliteforexpartner, 'A Scalping/Day Trading strategy 5minute timeframe', forums.babypips.com, thread #1266726, 2024, https://forums.babypips.com/t/a-scalping-day-trading-strategy-5minute-timeframe/1266726",
+      "strategy_name": "MACD-Campaign BB-Pullback Breakout Scalper",
+      "concept": "A MACD zero-line cross sets trade direction ('campaign'); after price pulls back into a Bollinger Band, a buy/sell stop 1 pip beyond the pre-pullback swing extreme catches the momentum-continuation breakout.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Mechanical M5 breakout-after-pullback: MACD(6,17,1) zero-cross direction filter, Bollinger(10,shift 1,dev 0.66) pullback, stop order 1 pip past marked swing high/low, defined SL/TP variants (1:1 or 2:1) - pure MQL5, deterministic, defined stops, DXZ/FTMO-compatible.",
+      "priority_hint": "LOW",
+      "notes": "Low edge plausibility: promotional source (poster's blog link in bio), forum member TheodoreThring shows MACD-6/17/1 reduces exactly to an EMA-6/17 crossover, and tester DEAMON reports 'terrible results' / 'cannot be traded like this, needs filters'. Generic trend-continuation breakout, no distinctive uncorrelated driver. Three exit methods: M1 SL 1 pip below breakout candle at 1:1 RR, M2 SL 1 pip below lower band at 2:1 RR (both mechanical), M3 discretionary trend exit (wedge break / third-touch overshoot) - excluded as non-deterministic. 'Draw resistance at pre-pullback high' = swing/pivot-high detection, mechanizable. Wick-above-high without close = re-mark high (repeat step 3). Cancel unfilled stop order on opposite zero-line cross. Author claims it also works on indices and precious metals."
+    }
+  ],
+  "notes": []
+}

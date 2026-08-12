@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_DEVELOPMENT_REGIME_AND_ANNUAL_DENSITY_GATES",
+  "ea_id": 12989,
+  "symbol": "XAUUSD.DWX",
+  "period": "H4",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "source_sha256": "1B8388162F10AE04B10BA5FEF734118D6469833B2739D70B77153D035C1EA94A",
+  "setfile_sha256": "6E5F9D98F2BE63E0C3E5346EA98ED1402E8D78D4E47DECD7101F97BEA5A36148",
+  "compile_log": "framework/build/compile/20260712_162252/QM5_12989_grimes-nested-pb-v2.compile.log",
+  "compile_log_sha256": "215886D2A87B233F8C84933DEC62242DDE85DCBD1B1FD1D20446F84513240342",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12989_xau_h4_wave22_20260712\\QM5_12989\\20260712_162313\\summary.json",
+  "deterministic": true,
+  "native": {
+    "trades": 51,
+    "profit_factor": 1.715331,
+    "net_profit": 13878.26,
+    "equity_drawdown": 6479.45
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\12989_XAUUSD_DWX_H4_T3_FRESH_20260712.jsonl",
+    "rows": 51,
+    "sha256": "5C736D370F64FF88F6129454ECE2D086AD06403CAEAE3848A5BBC0DF3C5D8AC2",
+    "report_reconciliation": "PASS",
+    "count_delta": 0,
+    "missing_mae_rows": 0,
+    "corrected_net_delta": 0.0,
+    "net_tolerance": 1.0
+  },
+  "current_cost_artifact": "artifacts/ftmo_12989_xau_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 51,
+    "profit_factor": 1.523585,
+    "net_profit": 10610.99,
+    "close_to_close_max_drawdown": 6979.4,
+    "commission_total": 179.64,
+    "swap_total": -3087.62
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "negative_calendar_years": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022
+    ],
+    "calendar_years_below_density_floor": [
+      2017,
+      2018,
+      2021,
+      2025
+    ],
+    "development_current_cost_net_profit_2018_2022": -6626.99,
+    "reason_for_reject": "The strong pooled PF is entirely driven by 2023-2025. Every active development year from 2018 through 2022 loses money, so opening portfolio validation or the sealed holdout would be forward-selection leakage."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_13210_XAUUSD_ATTEMPT_INVALID_INFRASTRUCTURE_CLOSURE",
+  "status": "INVALID_INFRASTRUCTURE_CLOSED_OUTCOME_BLIND",
+  "analysis_id": "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_001",
+  "attempt_id": "ATTEMPT_001",
+  "classification": "SCHEDULER_HELPER_TASK_NAME_PATTERN_REJECTED_BEFORE_REGISTRATION",
+  "closed_utc": "2026-07-21T08:55:59.5786415Z",
+  "run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001\\ATTEMPT_001",
+  "control_bindings": {
+    "pre_receipt": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\pre_receipt.json",
+      "size": 51557,
+      "sha256": "b7e6b6852f72c76cf87733e7f43563b7f5b20c9a222102cdf2a85d739809f8c2"
+    },
+    "authorization": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\native_outcome_authorization.json",
+      "size": 656,
+      "sha256": "1be238cb77ec12655078f8623814641a2becdaf62c18f43e0e5d8f1095fa694c"
+    },
+    "launch_job": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\launch_job.json",
+      "size": 2140,
+      "sha256": "c924e5511649c2d84b424c4b12a4eb1ad1d9be672c16f623d8f32991b0cf436d"
+    },
+    "launch_state": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\launch_state.json",
+      "size": 3691,
+      "sha256": "8657bf4bcae7182c57c80bf2dd9517f388eaf7c3519826f23e7e7bc9a82c15f8"
+    }
+  },
+  "failure_evidence": {
+    "failed_operation": "Register",
+    "rejected_task_name": "QM_QM13210_XAU_AUDIT_08e91a0b4fef8e702efc569e",
+    "helper_validate_pattern_at_failure": "^QM_QM13210_AUDIT_[0-9a-f]{24}$",
+    "failed_helper_binding": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\tools\\candidate_analysis\\run_outcome_fenced_task.ps1",
+      "size": 9479,
+      "sha256": "d81952ddc9d23b3d3d0e45de1a22bd2cf61336d4bb54b49babe03faf5a3b1443"
+    },
+    "task_registration_reached": false
+  },
+  "scheduled_task_absence": {
+    "observed_utc": "2026-07-21T08:55:59.5786415Z",
+    "task_name": "QM_QM13210_XAU_AUDIT_08e91a0b4fef8e702efc569e",
+    "task_path": "\\",
+    "exists": false,
+    "match_count": 0,
+    "live_reprobe_required_before_attempt002_pre": true
+  },
+  "native_start_proof": {
+    "native_start_count": 0,
+    "worker_pid": null,
+    "cell_count": 4,
+    "all_cell_statuses": "PENDING",
+    "all_cell_attempt_lists_empty": true,
+    "launch_status": "PENDING_SCHEDULED",
+    "launch_audit_status": "PREPARED",
+    "run_root_inventory": [
+      "launch_job.json",
+      "launch_state.json",
+      "native_outcome_authorization.json",
+      "pre_receipt.json"
+    ],
+    "native_directory_present": false,
+    "native_reports_present": false,
+    "outcome_artifacts_present": false
+  },
+  "outcome_fence": {
+    "native_reports_opened": false,
+    "native_outcomes_opened": false,
+    "controller_stdout_opened": false,
+    "controller_stderr_opened": false,
+    "closure_uses_control_files_and_filesystem_metadata_only": true
+  },
+  "recovery_contract": {
+    "attempt001_resume_forbidden": true,
+    "attempt001_control_files_immutable": true,
+    "single_authorized_alternate": "ATTEMPT_002",
+    "attempt003_plus_forbidden": true,
+    "strategy_or_parameter_change_forbidden": true
+  }
+}

@@ -1,49 +1,23 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11407 carter-tf17-ema18-adx-pullback — EMA18 + ADX pullback stop-order (H4)"
+#property description "QM5_11407 Carter TF17 EMA18 ADX pullback"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA — QM5_11407 carter-tf17-ema18-adx-pullback
 // -----------------------------------------------------------------------------
-// Source: Thomas Carter, "20 Trend Following Systems" (2014), Strategy #17.
-// Card: artifacts/cards_approved/QM5_11407_carter-tf17-ema18-adx-pullback.md
-//       (g0_status APPROVED).
-//
-// Mechanics (closed-bar reads at shift 1; STATES vs the single EVENT):
-//   Trend STATE   : close[1] vs EMA18[1] decides direction
-//                     close[1] > EMA18[1]  -> uptrend candidate (long)
-//                     close[1] < EMA18[1]  -> downtrend candidate (short)
-//   Strength STATE: ADX(adx_period)[1] > adx_threshold on the touch bar
-//                   (confirms trend strength persists DURING the pullback).
-//   Touch  STATE  : LONG  -> low[1]  <= EMA18[1]   (price pulled back to EMA18)
-//                   SHORT -> high[1] >= EMA18[1]   (price rallied to EMA18)
-//   EVENT (single): the pending STOP order triggers when price breaks the touch
-//                   bar's extreme:
-//                     LONG  BUYSTOP  at high[1] + buffer
-//                     SHORT SELLSTOP at low[1]  - buffer
-//                   Using a resting stop order as the ONE event sidesteps the
-//                   two-cross-same-bar zero-trade trap: trend + ADX + touch are
-//                   STATES read on the closed bar; the break is the event.
-//   Stop loss     : structure stop over the recent swing (swing_lookback bars),
-//                   capped at sl_cap_pips.
-//   Take profit   : RR multiple of the realised risk distance (entry->SL).
-//   Break-even    : move SL to BE once price has run +be_trigger_atr * ATR.
-//   Spread guard  : fail-open on .DWX zero modeled spread; block only a
-//                   genuinely wide spread > spread_pct_of_stop of stop distance.
-//
-// Pending-order lifecycle: at most ONE resting stop order per magic at a time;
-// it auto-expires after order_expiry_bars closed bars if not triggered, and a
-// fresh closed-bar signal replaces a stale resting order. One position per magic.
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
-// else is framework wiring and MUST stay intact.
+// Mechanised only from the APPROVED Strategy Card. Strategy-specific code is
+// confined to the five hooks and the Strategy input group. Framework lifecycle,
+// risk, magic, news, Friday-close, MAE, entry, and logging wiring stays canonical.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11407;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -52,257 +26,296 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault Q09 News Impact Mode.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled    = true;
+input bool   qm_friday_close_enabled     = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_ema_period        = 18;     // dynamic S/R EMA for the pullback
-input int    strategy_adx_period        = 12;     // ADX trend-strength period
-input double strategy_adx_threshold     = 25.0;   // ADX must exceed this on the touch bar
-input int    strategy_entry_buffer_pips = 1;      // stop trigger offset beyond touch-bar extreme
-input int    strategy_swing_lookback    = 10;     // bars for the structure (swing) stop
-input int    strategy_sl_buffer_pips    = 2;      // extra pips beyond the swing extreme
-input int    strategy_sl_cap_pips       = 70;     // hard SL distance cap (card P2 cap)
-input double strategy_tp_rr             = 2.0;    // take-profit as RR multiple of risk
-input int    strategy_atr_period        = 14;     // ATR period (break-even trigger scale)
-input double strategy_be_trigger_atr    = 1.0;    // move SL to BE after +N*ATR of favourable run
-input int    strategy_order_expiry_bars = 3;      // resting stop order lifetime, in closed bars
-input double strategy_spread_pct_of_stop = 20.0;  // block if spread > this % of stop distance
+input int    strategy_ema_period          = 18;
+input int    strategy_adx_period          = 12;
+input double strategy_adx_threshold       = 25.0;
+input int    strategy_touch_lookback_bars = 3;
+input int    strategy_entry_buffer_pips   = 1;
+input int    strategy_swing_lookback      = 3;
+input int    strategy_sl_cap_pips         = 70;
+input int    strategy_atr_period          = 14;
+input double strategy_atr_tp_mult         = 2.0;
+input double strategy_be_trigger_atr      = 1.0;
+input int    strategy_spread_cap_pips     = 20;
 
 // -----------------------------------------------------------------------------
-// Helpers (EA-local, non-framework)
+// Strategy hooks — implemented mechanically from the approved card.
 // -----------------------------------------------------------------------------
 
-// Pip size (price units) for the symbol. 5/3-digit symbols use 10*point.
-double Carter_PipSize()
-  {
-   const double point  = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const int    digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   if(digits == 3 || digits == 5)
-      return point * 10.0;
-   return point;
-  }
-
-// Count this EA's resting pending orders (BUYSTOP/SELLSTOP) for _Symbol/magic.
-int Carter_PendingCount(const int magic)
-  {
-   int count = 0;
-   const int total = OrdersTotal();
-   for(int i = 0; i < total; ++i)
-     {
-      const ulong ticket = OrderGetTicket(i);
-      if(ticket == 0)
-         continue;
-      if(!OrderSelect(ticket))
-         continue;
-      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
-         continue;
-      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
-         continue;
-      count++;
-     }
-   return count;
-  }
-
-// Remove this EA's resting pending orders for _Symbol/magic (stale-order cleanup).
-void Carter_RemovePending(const int magic)
-  {
-   const int total = OrdersTotal();
-   for(int i = total - 1; i >= 0; --i)
-     {
-      const ulong ticket = OrderGetTicket(i);
-      if(ticket == 0)
-         continue;
-      if(!OrderSelect(ticket))
-         continue;
-      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
-         continue;
-      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
-         continue;
-      QM_TM_RemovePendingOrder(ticket, "carter_replace_stale_stop");
-     }
-  }
-
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate. Spread guard only. Fail-open on .DWX zero spread.
+// No Trade Filter: the card has no session restriction. The framework owns
+// time/weekend/Friday and news gates; this hook applies only the 20-pip spread
+// cap. A zero modelled .DWX spread is valid and therefore passes.
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
+      return true;
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block here
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol,
+                                                              strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
+      return true;
 
-   const double stop_distance = atr_value; // reference scale for the spread cap
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(ask > bid && (ask - bid) > spread_cap)
       return true;
 
    return false;
   }
 
-// Pullback stop-order entry. Caller guarantees QM_IsNewBar() == true.
+// Trade Entry: identify the first EMA touch within the card's three-bar scan.
+// The preceding closed bar supplies the pre-pullback trend and ADX state; the
+// touch bar must retain ADX > threshold. The break of that bar is the one event.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type               = QM_BUY;
+   req.price              = 0.0;
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;
+   req.reason             = "";
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0; // card gives no cancellation rule: literal GTC
+
+   if(strategy_ema_period <= 0 ||
+      strategy_adx_period <= 0 ||
+      strategy_adx_threshold <= 0.0 ||
+      strategy_touch_lookback_bars <= 0 ||
+      strategy_entry_buffer_pips <= 0 ||
+      strategy_swing_lookback <= 0 ||
+      strategy_sl_cap_pips <= 0 ||
+      strategy_atr_period <= 0 ||
+      strategy_atr_tp_mult <= 0.0)
+      return false;
+
    const int magic = QM_FrameworkMagic();
-
-   // One position per magic: if we are already in a trade, do nothing (and let
-   // any leftover resting order alone — it cannot fill while a position is open).
-   if(QM_TM_OpenPositionCount(magic) > 0)
+   if(magic <= 0 || QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
-   // --- Closed-bar STATES (shift 1 = the touch-bar candidate) ---
-   const double ema   = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
-   const double adx   = QM_ADX(_Symbol, _Period, strategy_adx_period, 1);
-   if(ema <= 0.0 || adx <= 0.0)
-      return false;
-
-   // Strength STATE: trend strength must persist on the touch bar.
-   if(adx <= strategy_adx_threshold)
-      {
-       // No fresh setup this bar — clear any stale resting order so we do not
-       // leave a stop order from a setup whose ADX has since decayed.
-       Carter_RemovePending(magic);
-       return false;
-      }
-
-   const double high1  = iHigh(_Symbol, _Period, 1);  // perf-allowed: single closed-bar reads
-   const double low1   = iLow(_Symbol, _Period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
-   if(high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
-      return false;
-
-   const double pip = Carter_PipSize();
-   if(pip <= 0.0)
-      return false;
-
-   bool is_long  = false;
-   bool is_short = false;
-
-   // Trend STATE decides direction; Touch STATE confirms the pullback to EMA18.
-   if(close1 > ema && low1 <= ema)        // uptrend + pullback low touched EMA18
-      is_long = true;
-   else if(close1 < ema && high1 >= ema)  // downtrend + rally high touched EMA18
-      is_short = true;
-
-   if(!is_long && !is_short)
+   // Keep at most one resting stop order for this EA/symbol. The card does not
+   // authorize replacing or cancelling an untriggered order on later signals.
+   for(int order_index = OrdersTotal() - 1; order_index >= 0; --order_index)
      {
-      Carter_RemovePending(magic);
+      const ulong ticket = OrderGetTicket(order_index);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
       return false;
      }
 
-   // Fresh setup this bar — replace any stale resting order with the new one.
-   if(Carter_PendingCount(magic) > 0)
-      Carter_RemovePending(magic);
+   int touch_shift = 0;
+   bool long_setup = false;
+   bool short_setup = false;
+   double touch_high = 0.0;
+   double touch_low = 0.0;
+   double touch_atr = 0.0;
 
-   // --- EVENT trigger price: break of the touch bar's extreme ---
-   const double trigger = is_long
-                          ? (high1 + strategy_entry_buffer_pips * pip)
-                          : (low1  - strategy_entry_buffer_pips * pip);
+   // The card's Implementation Notes explicitly specify scan i=1..3. The
+   // configurable upper bound defaults to three so P3 can reproduce the card.
+   for(int shift = 1; shift <= strategy_touch_lookback_bars; ++shift)
+     {
+      const double ema_touch = QM_EMA(_Symbol, PERIOD_H4,
+                                      strategy_ema_period, shift);
+      const double ema_before = QM_EMA(_Symbol, PERIOD_H4,
+                                       strategy_ema_period, shift + 1);
+      const double adx_touch = QM_ADX(_Symbol, PERIOD_H4,
+                                      strategy_adx_period, shift);
+      const double adx_before = QM_ADX(_Symbol, PERIOD_H4,
+                                       strategy_adx_period, shift + 1);
+
+      const double high_touch = iHigh(_Symbol, PERIOD_H4, shift); // perf-allowed: card-authorized three-bar first-touch scan behind the framework closed-bar gate.
+      const double low_touch = iLow(_Symbol, PERIOD_H4, shift); // perf-allowed: card-authorized three-bar first-touch scan behind the framework closed-bar gate.
+      const double close_before = iClose(_Symbol, PERIOD_H4, shift + 1); // perf-allowed: card-authorized pre-pullback trend state behind the framework closed-bar gate.
+      const double high_before = iHigh(_Symbol, PERIOD_H4, shift + 1); // perf-allowed: confirms the short setup's first EMA touch in the bounded scan.
+      const double low_before = iLow(_Symbol, PERIOD_H4, shift + 1); // perf-allowed: confirms the long setup's first EMA touch in the bounded scan.
+
+      if(ema_touch <= 0.0 || ema_before <= 0.0 ||
+         adx_touch <= 0.0 || adx_before <= 0.0 ||
+         high_touch <= 0.0 || low_touch <= 0.0 ||
+         close_before <= 0.0 || high_before <= 0.0 || low_before <= 0.0)
+         continue;
+
+      if(adx_before <= strategy_adx_threshold ||
+         adx_touch <= strategy_adx_threshold)
+         continue;
+
+      const bool first_long_touch = (close_before > ema_before &&
+                                     low_before > ema_before &&
+                                     low_touch <= ema_touch);
+      const bool first_short_touch = (close_before < ema_before &&
+                                      high_before < ema_before &&
+                                      high_touch >= ema_touch);
+
+      if(first_long_touch)
+        {
+         touch_shift = shift;
+         long_setup = true;
+         touch_high = high_touch;
+         touch_low = low_touch;
+         break;
+        }
+      if(first_short_touch)
+        {
+         touch_shift = shift;
+         short_setup = true;
+         touch_high = high_touch;
+         touch_low = low_touch;
+         break;
+        }
+     }
+
+   if(touch_shift <= 0 || (!long_setup && !short_setup))
+      return false;
+
+   touch_atr = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, touch_shift);
+   if(touch_atr <= 0.0)
+      return false;
+
+   const double entry_buffer = QM_StopRulesPipsToPriceDistance(_Symbol,
+                                                                strategy_entry_buffer_pips);
+   if(entry_buffer <= 0.0)
+      return false;
+
+   const QM_OrderType side = long_setup ? QM_BUY : QM_SELL;
+   const QM_OrderType pending_type = long_setup ? QM_BUY_STOP : QM_SELL_STOP;
+   const double trigger_raw = long_setup
+                              ? (touch_high + entry_buffer)
+                              : (touch_low - entry_buffer);
+   const double trigger = QM_StopRulesNormalizePrice(_Symbol, trigger_raw);
    if(trigger <= 0.0)
       return false;
 
-   const QM_OrderType otype = is_long ? QM_BUY_STOP : QM_SELL_STOP;
+   // A historical touch whose break already happened is no longer a valid
+   // resting stop placement. Zero spread remains valid here.
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(long_setup && ask > 0.0 && trigger <= ask)
+      return false;
+   if(short_setup && bid > 0.0 && trigger >= bid)
+      return false;
 
-   // --- Stop loss: recent swing structure, capped at sl_cap_pips ---
    double sl = QM_StopStructure(_Symbol,
-                                is_long ? QM_BUY : QM_SELL,
+                                side,
                                 trigger,
                                 strategy_swing_lookback);
-   if(sl > 0.0 && strategy_sl_buffer_pips > 0)
-      {
-       const double buf = strategy_sl_buffer_pips * pip;
-       sl = is_long ? (sl - buf) : (sl + buf);
-      }
-
-   // Enforce the hard pip cap on the stop distance (fall back to it if structure
-   // is unusable or wider than the cap).
-   const double cap_dist = strategy_sl_cap_pips * pip;
-   if(sl <= 0.0)
-      sl = is_long ? (trigger - cap_dist) : (trigger + cap_dist);
-   else
-      {
-       const double sl_dist = MathAbs(trigger - sl);
-       if(sl_dist > cap_dist)
-          sl = is_long ? (trigger - cap_dist) : (trigger + cap_dist);
-      }
    if(sl <= 0.0)
       return false;
 
-   // --- Take profit: RR multiple of the risk distance (trigger -> SL) ---
-   const double tp = QM_TakeRR(_Symbol, is_long ? QM_BUY : QM_SELL, trigger, sl, strategy_tp_rr);
+   const double sl_cap = QM_StopRulesPipsToPriceDistance(_Symbol,
+                                                          strategy_sl_cap_pips);
+   if(sl_cap <= 0.0)
+      return false;
+
+   if(long_setup)
+     {
+      if(sl >= trigger)
+         return false;
+      if((trigger - sl) > sl_cap)
+         sl = trigger - sl_cap;
+     }
+   else
+     {
+      if(sl <= trigger)
+         return false;
+      if((sl - trigger) > sl_cap)
+         sl = trigger + sl_cap;
+     }
+   sl = QM_StopRulesNormalizePrice(_Symbol, sl);
+
+   const double tp = QM_TakeATRFromValue(_Symbol,
+                                          side,
+                                          trigger,
+                                          touch_atr,
+                                          strategy_atr_tp_mult);
    if(tp <= 0.0)
       return false;
 
-   req.type               = otype;
-   req.price              = trigger;   // pending stop price
+   req.type               = pending_type;
+   req.price              = trigger;
    req.sl                 = sl;
    req.tp                 = tp;
-   req.reason             = is_long ? "carter_ema18_adx_pb_long" : "carter_ema18_adx_pb_short";
-   req.expiration_seconds = strategy_order_expiry_bars * PeriodSeconds(_Period);
+   req.reason             = long_setup
+                            ? "carter_tf17_ema18_adx_long"
+                            : "carter_tf17_ema18_adx_short";
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
-// Break-even management on the open position once it has run +N*ATR.
+// Trade Management: move the stop to exact break-even at +1 entry ATR. The
+// entry ATR is recovered from the fixed ATR target, avoiding per-tick indicator
+// reads while preserving the card's entry-time volatility scale.
 void Strategy_ManageOpenPosition()
   {
+   if(strategy_atr_tp_mult <= 0.0 || strategy_be_trigger_atr <= 0.0)
+      return;
+
    const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) <= 0)
+   if(magic <= 0 || QM_TM_OpenPositionCount(magic) <= 0)
       return;
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
+   const double one_pip = QM_StopRulesPipsToPriceDistance(_Symbol, 1);
+   if(one_pip <= 0.0)
       return;
 
-   const double pip = Carter_PipSize();
-   if(pip <= 0.0)
-      return;
-
-   // Convert the +N*ATR break-even trigger to pips for the framework helper.
-   const int trigger_pips = (int)MathRound((strategy_be_trigger_atr * atr_value) / pip);
-   if(trigger_pips <= 0)
-      return;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   for(int position_index = PositionsTotal() - 1; position_index >= 0; --position_index)
      {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
+      const ulong ticket = PositionGetTicket(position_index);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
-      QM_TM_MoveToBreakEven(ticket, trigger_pips, strategy_sl_buffer_pips);
+
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double take_price = PositionGetDouble(POSITION_TP);
+      if(open_price <= 0.0 || take_price <= 0.0)
+         continue;
+
+      const double entry_atr = MathAbs(take_price - open_price) /
+                               strategy_atr_tp_mult;
+      const int trigger_pips = (int)MathRound(strategy_be_trigger_atr *
+                                               entry_atr / one_pip);
+      if(trigger_pips <= 0)
+         continue;
+
+      QM_TM_MoveToBreakEven(ticket, trigger_pips, 0);
      }
   }
 
-// No discretionary close beyond SL/TP/BE; the resting stop + RR target govern exits.
+// Trade Close: no discretionary close beyond the card's SL, ATR target, and
+// break-even management. The framework still enforces kill-switch and Friday.
 bool Strategy_ExitSignal()
   {
    return false;
   }
 
-// Defer to the central news filter.
+// News Filter Hook: no card-specific override. P8 can call this hook while the
+// central two-axis news filter remains the authoritative entry gate.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
@@ -344,18 +357,16 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any per-tick guard can
+   // return. QM_KillSwitchCheck retains the same call as a compatibility
+   // fallback for pre-template EAs; keep this explicit hook in all new builds.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -363,8 +374,13 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
+   // Management, rule-based exits and the Friday sweep above MUST keep
+   // running through news windows — the news gate below blocks NEW entries
+   // only (2026-07-02 audit rule).
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -379,12 +395,26 @@ void OnTick()
         }
      }
 
+   // FW1 — the two-axis news check gates new entries only.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol,
+                                        broker_now,
+                                        qm_news_temporal,
+                                        qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

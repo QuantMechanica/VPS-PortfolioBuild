@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11263
+; ea_slug:      qt-dual-thrust
+; ea_version:   v5.0
+; set_version:  s20260724-001
+; symbol:       EURUSD.DWX
+; timeframe:    M1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-24
+;==========================================================
+qm_ea_id=11263
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11263_qt-dual-thrust.md
+strategy_range_sessions=5
+strategy_threshold_param=0.50
+strategy_source_open_hhmm_est=300
+strategy_source_close_hhmm_est=1200
+strategy_atr_period=14
+strategy_atr_sl_mult=1.50
+strategy_spread_max_frac=0.10

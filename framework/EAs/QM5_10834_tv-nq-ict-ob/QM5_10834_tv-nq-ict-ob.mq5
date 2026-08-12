@@ -81,9 +81,17 @@ enum StrategyBiasMode
 
 enum StrategyOBRefinement
   {
-   OB_DEFENSIVE_BODY = 0,
-   OB_AGGRESSIVE_HALF = 1,
+   OB_DEFENSIVE_ATR55 = 0,
+   OB_AGGRESSIVE_FULL = 1,
    OB_FULL_CANDLE = 2
+  };
+
+enum StrategySetupPhase
+  {
+   SETUP_WAIT_SWEEP = 0,
+   SETUP_WAIT_MSS = 1,
+   SETUP_WAIT_MITIGATION = 2,
+   SETUP_DONE = 3
   };
 
 input int                  strategy_entry_start_hhmm  = 945;
@@ -93,7 +101,8 @@ input StrategyBiasMode     strategy_bias_mode         = BIAS_CURRENT_PRICE;
 input int                  strategy_fractal_width     = 5;
 input int                  strategy_fractal_lookback  = 60;
 input int                  strategy_ob_lookback       = 20;
-input StrategyOBRefinement strategy_ob_refinement     = OB_DEFENSIVE_BODY;
+input StrategyOBRefinement strategy_ob_refinement     = OB_DEFENSIVE_ATR55;
+input int                  strategy_ob_refine_atr_period = 55;
 input int                  strategy_atr_period        = 14;
 input double               strategy_min_stop_atr      = 0.25;
 input double               strategy_max_stop_atr      = 2.0;
@@ -102,10 +111,17 @@ input int                  strategy_max_spread_points = 0;
 
 int    g_ny_day_key = 0;
 bool   g_trade_taken_today = false;
-bool   g_bull_sweep_seen = false;
-bool   g_bear_sweep_seen = false;
-bool   g_bull_ob_active = false;
-bool   g_bear_ob_active = false;
+bool   g_trade_history_ready = false;
+bool   g_daily_levels_ready = false;
+double g_previous_day_high = 0.0;
+double g_previous_day_low = 0.0;
+datetime g_previous_day_bar_time = 0;
+StrategySetupPhase g_bull_phase = SETUP_WAIT_SWEEP;
+StrategySetupPhase g_bear_phase = SETUP_WAIT_SWEEP;
+datetime g_bull_sweep_bar_time = 0;
+datetime g_bear_sweep_bar_time = 0;
+datetime g_bull_mss_bar_time = 0;
+datetime g_bear_mss_bar_time = 0;
 double g_bull_ob_low = 0.0;
 double g_bull_ob_high = 0.0;
 double g_bear_ob_low = 0.0;
@@ -141,34 +157,116 @@ int NYMinutes(const datetime broker_time)
    return dt.hour * 60 + dt.min;
   }
 
-void RefreshNYDayState()
+bool TryRestoreTradeState(bool &trade_seen)
   {
-   const int day_key = NYDayKey(TimeCurrent());
-   if(day_key == g_ny_day_key)
-      return;
+   trade_seen = false;
+   const int magic = QM_FrameworkMagic();
+   const datetime now = TimeCurrent();
+   if(magic <= 0 || now <= 0)
+      return false;
+   if(!HistorySelect(now - 7 * 86400, now))
+      return false;
 
-   g_ny_day_key = day_key;
+   const int total = HistoryDealsTotal();
+   for(int i = 0; i < total; ++i)
+     {
+      const ulong ticket = HistoryDealGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(HistoryDealGetString(ticket, DEAL_SYMBOL) != _Symbol)
+         continue;
+      if((int)HistoryDealGetInteger(ticket, DEAL_MAGIC) != magic)
+         continue;
+      const long entry_kind = HistoryDealGetInteger(ticket, DEAL_ENTRY);
+      if(entry_kind != DEAL_ENTRY_IN && entry_kind != DEAL_ENTRY_INOUT)
+         continue;
+      const datetime deal_time = (datetime)HistoryDealGetInteger(ticket, DEAL_TIME);
+      if(NYDayKey(deal_time) != g_ny_day_key)
+         continue;
+      trade_seen = true;
+      return true;
+     }
+
+   return true;
+  }
+
+bool TrySnapshotPreviousDayLevels()
+  {
+   const datetime bar_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: once-per-NY-day D1 snapshot.
+   const double high = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed: once-per-NY-day D1 snapshot.
+   const double low = iLow(_Symbol, PERIOD_D1, 1); // perf-allowed: once-per-NY-day D1 snapshot.
+   if(bar_time <= 0 || bar_time >= TimeCurrent() || high <= 0.0 || low <= 0.0 || high <= low)
+      return false;
+
+   g_previous_day_bar_time = bar_time;
+   g_previous_day_high = high;
+   g_previous_day_low = low;
+   return true;
+  }
+
+void ResetDailySetupState()
+  {
    g_trade_taken_today = false;
-   g_bull_sweep_seen = false;
-   g_bear_sweep_seen = false;
-   g_bull_ob_active = false;
-   g_bear_ob_active = false;
+   g_trade_history_ready = false;
+   g_daily_levels_ready = false;
+   g_previous_day_high = 0.0;
+   g_previous_day_low = 0.0;
+   g_previous_day_bar_time = 0;
+   g_bull_phase = SETUP_WAIT_SWEEP;
+   g_bear_phase = SETUP_WAIT_SWEEP;
+   g_bull_sweep_bar_time = 0;
+   g_bear_sweep_bar_time = 0;
+   g_bull_mss_bar_time = 0;
+   g_bear_mss_bar_time = 0;
    g_bull_ob_low = 0.0;
    g_bull_ob_high = 0.0;
    g_bear_ob_low = 0.0;
    g_bear_ob_high = 0.0;
   }
 
+void RefreshNYDayState()
+  {
+   const int day_key = NYDayKey(TimeCurrent());
+   if(day_key != g_ny_day_key)
+     {
+      g_ny_day_key = day_key;
+      ResetDailySetupState();
+     }
+
+   if(!g_daily_levels_ready)
+      g_daily_levels_ready = TrySnapshotPreviousDayLevels();
+
+   if(!g_trade_history_ready)
+     {
+      bool trade_seen = false;
+      if(TryRestoreTradeState(trade_seen))
+        {
+         g_trade_taken_today = trade_seen;
+         g_trade_history_ready = true;
+         if(trade_seen)
+           {
+            g_bull_phase = SETUP_DONE;
+            g_bear_phase = SETUP_DONE;
+           }
+        }
+     }
+  }
+
+bool InEntryWindowAt(const datetime broker_time)
+  {
+   const int minutes = NYMinutes(broker_time);
+   return (minutes >= HHMMToMinutes(strategy_entry_start_hhmm) &&
+           minutes < HHMMToMinutes(strategy_entry_end_hhmm));
+  }
+
 bool InEntryWindow()
   {
-   const int now_minutes = NYMinutes(TimeCurrent());
-   return (now_minutes >= HHMMToMinutes(strategy_entry_start_hhmm) &&
-           now_minutes <= HHMMToMinutes(strategy_entry_end_hhmm));
+   return InEntryWindowAt(TimeCurrent());
   }
 
 bool EntryWindowEnded()
   {
-   return (NYMinutes(TimeCurrent()) > HHMMToMinutes(strategy_entry_end_hhmm));
+   return (NYMinutes(TimeCurrent()) >= HHMMToMinutes(strategy_entry_end_hhmm));
   }
 
 bool HasOurOpenPosition()
@@ -206,8 +304,9 @@ bool SpreadAllowed()
    return ((ask - bid) / point <= strategy_max_spread_points);
   }
 
-bool DailyBiasBullish()
+bool TryDailyBias(bool &bullish)
   {
+   bullish = false;
    const double ema = QM_EMA(_Symbol, PERIOD_D1, strategy_daily_ema_period, 1);
    if(ema <= 0.0)
       return false;
@@ -215,8 +314,11 @@ bool DailyBiasBullish()
    double ref_price = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: bespoke ICT bias uses closed-bar price.
    if(strategy_bias_mode == BIAS_PREVIOUS_DAILY_CLOSE)
       ref_price = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: card requires previous daily close bias option.
+   if(ref_price <= 0.0)
+      return false;
 
-   return (ref_price > ema);
+   bullish = (ref_price > ema);
+   return true;
   }
 
 bool IsFractalHigh(const int shift, const int wing)
@@ -271,44 +373,57 @@ double LastFractalLow(const int width, const int lookback)
    return 0.0;
   }
 
-bool RefinedOBLevels(const int shift, const bool bullish, double &ob_low, double &ob_high)
+bool RefinedOBLevels(const int shift,
+                     const bool bullish,
+                     const double refine_atr,
+                     double &ob_low,
+                     double &ob_high)
   {
    const double open = iOpen(_Symbol, (ENUM_TIMEFRAMES)_Period, shift); // perf-allowed: card-defined order-block candle.
    const double high = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, shift); // perf-allowed: card-defined order-block candle.
    const double low = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, shift); // perf-allowed: card-defined order-block candle.
    const double close = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, shift); // perf-allowed: card-defined order-block candle.
-   if(open <= 0.0 || high <= 0.0 || low <= 0.0 || close <= 0.0)
+   if(open <= 0.0 || high <= 0.0 || low <= 0.0 || close <= 0.0 || high <= low)
       return false;
 
-   if(strategy_ob_refinement == OB_FULL_CANDLE)
+   if(strategy_ob_refinement == OB_FULL_CANDLE ||
+      strategy_ob_refinement == OB_AGGRESSIVE_FULL)
      {
       ob_low = low;
       ob_high = high;
       return (ob_low < ob_high);
      }
 
-   if(strategy_ob_refinement == OB_AGGRESSIVE_HALF)
-     {
-      const double mid = (high + low) * 0.5;
-      if(bullish)
-        {
-         ob_low = mid;
-         ob_high = high;
-        }
-      else
-        {
-         ob_low = low;
-         ob_high = mid;
-        }
-      return (ob_low < ob_high);
-     }
+   if(refine_atr <= 0.0)
+      return false;
 
-   ob_low = MathMin(open, close);
-   ob_high = MathMax(open, close);
+   const double candle_range = high - low;
+   if(candle_range <= refine_atr * 0.5)
+     {
+      ob_low = low;
+      ob_high = high;
+     }
+   else if(bullish)
+     {
+      // Public Pine v1: defensive bullish OB is low-to-close for a
+      // bearish source candle once its range exceeds 0.5*ATR(55).
+      ob_low = low;
+      ob_high = close;
+     }
+   else
+     {
+      // Public Pine v1: defensive bearish OB is close-to-high for a
+      // bullish source candle once its range exceeds 0.5*ATR(55).
+      ob_low = close;
+      ob_high = high;
+     }
    return (ob_low < ob_high);
   }
 
-bool FindLastOppositeOrderBlock(const bool bullish, double &ob_low, double &ob_high)
+bool FindLastOppositeOrderBlock(const bool bullish,
+                                const double refine_atr,
+                                double &ob_low,
+                                double &ob_high)
   {
    for(int shift = 2; shift <= strategy_ob_lookback; ++shift)
      {
@@ -318,9 +433,9 @@ bool FindLastOppositeOrderBlock(const bool bullish, double &ob_low, double &ob_h
          continue;
 
       if(bullish && close < open)
-         return RefinedOBLevels(shift, true, ob_low, ob_high);
+         return RefinedOBLevels(shift, true, refine_atr, ob_low, ob_high);
       if(!bullish && close > open)
-         return RefinedOBLevels(shift, false, ob_low, ob_high);
+         return RefinedOBLevels(shift, false, refine_atr, ob_low, ob_high);
      }
 
    return false;
@@ -361,6 +476,9 @@ bool Strategy_NoTradeFilter()
    if(HasOurOpenPosition())
       return false;
 
+   if(!g_trade_history_ready || !g_daily_levels_ready || g_trade_taken_today)
+      return true;
+
    if(!InEntryWindow())
       return true;
 
@@ -378,48 +496,81 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    InitRequest(req);
    RefreshNYDayState();
 
-   if(g_trade_taken_today || !InEntryWindow())
+   if(g_trade_taken_today || !g_trade_history_ready || !g_daily_levels_ready)
       return false;
 
-   const double pdh = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed: card requires previous-day high.
-   const double pdl = iLow(_Symbol, PERIOD_D1, 1); // perf-allowed: card requires previous-day low.
+   const datetime bar_time = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: closed signal-bar session binding.
+   if(bar_time <= 0 || bar_time <= g_previous_day_bar_time || !InEntryWindowAt(bar_time))
+      return false;
+
    const double high1 = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: current closed bar sweep check.
    const double low1 = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: current closed bar sweep check.
    const double close1 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: current closed bar sweep/MSS/mitigation check.
-   if(pdh <= 0.0 || pdl <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
+   const double close2 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 2); // perf-allowed: fresh-cross confirmation.
+   if(high1 <= 0.0 || low1 <= 0.0 || high1 < low1 || close1 <= 0.0 || close2 <= 0.0)
       return false;
 
-   if(low1 < pdl && close1 > pdl)
-      g_bull_sweep_seen = true;
-   if(high1 > pdh && close1 < pdh)
-      g_bear_sweep_seen = true;
+   bool bullish_bias = false;
+   if(!TryDailyBias(bullish_bias))
+      return false;
 
-   const bool bullish_bias = DailyBiasBullish();
+   // The three setup events are intentionally distinct closed bars. This
+   // removes the unknowable intrabar order that the public Pine OHLC logic
+   // otherwise permits when sweep, MSS and mitigation share one candle.
+   if(g_bull_phase == SETUP_WAIT_SWEEP &&
+      low1 < g_previous_day_low && close1 > g_previous_day_low)
+     {
+      g_bull_phase = SETUP_WAIT_MSS;
+      g_bull_sweep_bar_time = bar_time;
+     }
+   if(g_bear_phase == SETUP_WAIT_SWEEP &&
+      high1 > g_previous_day_high && close1 < g_previous_day_high)
+     {
+      g_bear_phase = SETUP_WAIT_MSS;
+      g_bear_sweep_bar_time = bar_time;
+     }
+
    const double swing_high = LastFractalHigh(strategy_fractal_width, strategy_fractal_lookback);
    const double swing_low = LastFractalLow(strategy_fractal_width, strategy_fractal_lookback);
 
-   if(bullish_bias && g_bull_sweep_seen && swing_high > 0.0 && close1 > swing_high)
+   if(g_bull_phase == SETUP_WAIT_MSS && bar_time > g_bull_sweep_bar_time &&
+      bullish_bias && swing_high > 0.0 && close1 > swing_high && close2 <= swing_high)
      {
+      const double refine_atr = QM_ATR(_Symbol,
+                                       (ENUM_TIMEFRAMES)_Period,
+                                       strategy_ob_refine_atr_period,
+                                       1);
       double ob_low = 0.0;
       double ob_high = 0.0;
-      if(FindLastOppositeOrderBlock(true, ob_low, ob_high))
+      if(refine_atr > 0.0 && FindLastOppositeOrderBlock(true, refine_atr, ob_low, ob_high))
         {
          g_bull_ob_low = ob_low;
          g_bull_ob_high = ob_high;
-         g_bull_ob_active = true;
+         g_bull_mss_bar_time = bar_time;
+         g_bull_phase = SETUP_WAIT_MITIGATION;
         }
+      else
+         g_bull_phase = SETUP_DONE;
      }
 
-   if(!bullish_bias && g_bear_sweep_seen && swing_low > 0.0 && close1 < swing_low)
+   if(g_bear_phase == SETUP_WAIT_MSS && bar_time > g_bear_sweep_bar_time &&
+      !bullish_bias && swing_low > 0.0 && close1 < swing_low && close2 >= swing_low)
      {
+      const double refine_atr = QM_ATR(_Symbol,
+                                       (ENUM_TIMEFRAMES)_Period,
+                                       strategy_ob_refine_atr_period,
+                                       1);
       double ob_low = 0.0;
       double ob_high = 0.0;
-      if(FindLastOppositeOrderBlock(false, ob_low, ob_high))
+      if(refine_atr > 0.0 && FindLastOppositeOrderBlock(false, refine_atr, ob_low, ob_high))
         {
          g_bear_ob_low = ob_low;
          g_bear_ob_high = ob_high;
-         g_bear_ob_active = true;
+         g_bear_mss_bar_time = bar_time;
+         g_bear_phase = SETUP_WAIT_MITIGATION;
         }
+      else
+         g_bear_phase = SETUP_DONE;
      }
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -427,43 +578,59 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   if(bullish_bias && g_bull_sweep_seen && g_bull_ob_active &&
-      low1 <= g_bull_ob_high && close1 >= g_bull_ob_low)
+   if(g_bull_phase == SETUP_WAIT_MITIGATION && bar_time > g_bull_mss_bar_time)
      {
-      const double entry = ask;
-      const double sl = g_bull_ob_low;
-      if(sl <= 0.0 || sl >= entry || !StopDistanceAllowed(entry, sl))
-         return false;
+      // Pine invalidates a bullish OB once price has already crossed its
+      // opposite side. Do this before considering an entry on the bar.
+      if(low1 <= g_bull_ob_low)
+         g_bull_phase = SETUP_DONE;
+      else if(bullish_bias && low1 <= g_bull_ob_high && close1 >= g_bull_ob_low)
+        {
+         const double entry = ask;
+         const double sl = g_bull_ob_low;
+         if(sl <= 0.0 || sl >= entry || !StopDistanceAllowed(entry, sl))
+            return false;
 
-      const double risk = entry - sl;
-      req.type = QM_BUY;
-      req.price = 0.0;
-      req.sl = sl;
-      req.tp = entry + strategy_target_r * risk;
-      req.reason = "TV_NQ_ICT_OB_LONG";
-      g_trade_taken_today = true;
-      return true;
+         const double risk = entry - sl;
+         req.type = QM_BUY;
+         req.price = 0.0;
+         req.sl = sl;
+         req.tp = entry + strategy_target_r * risk;
+         req.reason = "TV_NQ_ICT_OB_LONG";
+         return true;
+        }
      }
 
-   if(!bullish_bias && g_bear_sweep_seen && g_bear_ob_active &&
-      high1 >= g_bear_ob_low && close1 <= g_bear_ob_high)
+   if(g_bear_phase == SETUP_WAIT_MITIGATION && bar_time > g_bear_mss_bar_time)
      {
-      const double entry = bid;
-      const double sl = g_bear_ob_high;
-      if(sl <= 0.0 || sl <= entry || !StopDistanceAllowed(entry, sl))
-         return false;
+      if(high1 >= g_bear_ob_high)
+         g_bear_phase = SETUP_DONE;
+      else if(!bullish_bias && high1 >= g_bear_ob_low && close1 <= g_bear_ob_high)
+        {
+         const double entry = bid;
+         const double sl = g_bear_ob_high;
+         if(sl <= 0.0 || sl <= entry || !StopDistanceAllowed(entry, sl))
+            return false;
 
-      const double risk = sl - entry;
-      req.type = QM_SELL;
-      req.price = 0.0;
-      req.sl = sl;
-      req.tp = entry - strategy_target_r * risk;
-      req.reason = "TV_NQ_ICT_OB_SHORT";
-      g_trade_taken_today = true;
-      return true;
+         const double risk = sl - entry;
+         req.type = QM_SELL;
+         req.price = 0.0;
+         req.sl = sl;
+         req.tp = entry - strategy_target_r * risk;
+         req.reason = "TV_NQ_ICT_OB_SHORT";
+         return true;
+        }
      }
 
    return false;
+  }
+
+void MarkTradeOpenedToday()
+  {
+   g_trade_taken_today = true;
+   g_trade_history_ready = true;
+   g_bull_phase = SETUP_DONE;
+   g_bear_phase = SETUP_DONE;
   }
 
 // Called every tick when an open position exists for this EA's magic.
@@ -531,17 +698,6 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -558,12 +714,16 @@ void OnTick()
       for(int i = PositionsTotal() - 1; i >= 0; --i)
         {
          const ulong ticket = PositionGetTicket(i);
-         if(!PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic)
-            continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-        }
+          if(!PositionSelectByTicket(ticket))
+             continue;
+          if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+             continue;
+          if(PositionGetInteger(POSITION_MAGIC) != magic)
+             continue;
+          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         }
+      // Never re-enter from the just-closed 10:10 bar on the force-flat tick.
+      return;
      }
 
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
@@ -576,11 +736,25 @@ void OnTick()
    // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
+   // News is an entry authorization only. Position management, Friday close
+   // and the mandatory 10:15 New-York flatten above must never be skipped by
+   // a blackout.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      if(QM_TM_OpenPosition(req, out_ticket) && out_ticket > 0)
+         MarkTradeOpenedToday();
      }
   }
 

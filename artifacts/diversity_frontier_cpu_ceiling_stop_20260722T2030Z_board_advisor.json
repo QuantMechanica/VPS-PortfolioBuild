@@ -1,0 +1,52 @@
+{
+  "observed_at_utc": "2026-07-22T20:30:46Z",
+  "branch": "agents/board-advisor",
+  "mission": "advance V5 strategy farm toward more certified portfolio sleeves",
+  "unit_of_work": "non-duplicate diversity frontier audit under active paced-fleet CPU ceiling",
+  "decision": "cpu_ceiling_stop_no_queue_mutation",
+  "priority_1_build_backlog": {
+    "pending_build_tasks": 2,
+    "highest_diversity_candidate": "QM5_1459_as-lumber-gold",
+    "eligible": false,
+    "failed_gates": [
+      "card R3 Data Available is UNKNOWN",
+      "card requires lumber futures and IEF series that are not approved DWX inputs",
+      "framework/registry/magic_numbers.csv has no QM5_1459 rows"
+    ],
+    "other_pending_candidate": "QM5_1457_as-predict-bonds",
+    "other_candidate_state": "previously blocked for unavailable Treasury yield/IEF/BIL/DBC inputs"
+  },
+  "priority_2_infra_frontier": {
+    "duplicate_repair_rejected": {
+      "ea_id": "QM5_12834",
+      "instrument_class": "market-neutral XTIUSD/USDJPY spread",
+      "reason": "existing Codex repair task dcc0a3b8-d500-4177-a0a9-66e47b225997 already PASSED; repeating it would duplicate fleet work",
+      "latest_q03_work_item": "b46fef91-427c-4f4e-a921-cd1b3f6e46fc",
+      "latest_observation": "run_01 produced a valid 363318-byte report; run_02 stalled and the item exhausted summary-missing retries"
+    },
+    "already_repaired_fx_rejected": {
+      "ea_id": "QM5_11891",
+      "reason": "existing Codex repair task 50c49420-423f-4455-bfe1-f27761c7bf55 is APPROVED and replacement USDCAD Q02/Q03 rows both PASS"
+    },
+    "already_pending_pairs_rejected": {
+      "ea_id": "QM5_11240",
+      "reason": "multiple Q02 rows are already pending; creating another row would collide with paced workers"
+    }
+  },
+  "cpu_ceiling": {
+    "established_active_job_ceiling": 7,
+    "running_factory_terminals": ["T1", "T2", "T3", "T5", "T6", "T9", "T10"],
+    "running_factory_terminal_count": 7,
+    "additional_non_factory_terminals_observed": ["T_Live", "FTMO"],
+    "cpu_samples_percent": [88.97, 71.96, 76.80],
+    "stop_reason": "The paced factory is at the established seven-job backtest CPU ceiling; the mission requires stopping instead of adding load."
+  },
+  "mutations": {
+    "farm_db": "none",
+    "queue": "none",
+    "mt5": "none",
+    "t_live": "untouched",
+    "portfolio_gate": "untouched"
+  },
+  "recommended_next_action": "After active factory jobs fall below seven, select a genuinely unclaimed diverse Q02-Q03 INFRA failure; do not retry QM5_12834, QM5_11891, or duplicate QM5_11240 rows."
+}

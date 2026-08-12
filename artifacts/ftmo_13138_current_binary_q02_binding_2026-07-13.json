@@ -1,0 +1,81 @@
+{
+  "blockers": [],
+  "cohort_metrics": null,
+  "deterministic": true,
+  "ea_id": 13138,
+  "files": {
+    "card": {
+      "modified_utc": "2026-07-11T06:46:21.290435+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13138_xau-m5-ema20\\docs\\strategy_card.md",
+      "sha256": "c03c119d168fd376a2020a262e94de141b95d3a20fc695f5acc566099ca6a7ea",
+      "size_bytes": 5086
+    },
+    "ex5": {
+      "modified_utc": "2026-07-11T07:00:45.692775+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13138_xau-m5-ema20\\QM5_13138_xau-m5-ema20.ex5",
+      "sha256": "74e00380ccee6517bd37f02c600005023f575b940bbf0d573aaf1777252cb68b",
+      "size_bytes": 321674
+    },
+    "mq5": {
+      "modified_utc": "2026-07-11T06:54:17.966188+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13138_xau-m5-ema20\\QM5_13138_xau-m5-ema20.mq5",
+      "sha256": "1bdfddb0bf4ce3e3b8f8189fa84213aed8979509212cecff9b84e8f98a2ee827",
+      "size_bytes": 9451
+    },
+    "setfile": {
+      "modified_utc": "2026-07-11T07:00:50.555474+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13138_xau-m5-ema20\\sets\\QM5_13138_xau-m5-ema20_XAUUSD.DWX_M5_backtest.set",
+      "sha256": "f4c65accaaeb09ba6fa370336ea1a5cce8b2f6894cc91981aeaf8f13070f5f61",
+      "size_bytes": 970
+    },
+    "spec": {
+      "modified_utc": "2026-07-11T07:19:39.695029+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13138_xau-m5-ema20\\SPEC.md",
+      "sha256": "ebc0813f3c0e6e8906412f76b607759896eb93dc96063b30114153a5bb620a79",
+      "size_bytes": 1187
+    },
+    "summary": {
+      "modified_utc": "2026-07-13T08:57:14.313684+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260713\\13138_q02_current\\QM5_13138\\20260713_083326\\summary.json",
+      "sha256": "643eed19b40e78af377a4a36b6e1906b3427700df1474dd070a163cfc6e970a3",
+      "size_bytes": 2903
+    }
+  },
+  "metrics": {
+    "drawdown": 2266.11,
+    "net_profit": 8397.19,
+    "profit_factor": 1.51,
+    "trades": 325
+  },
+  "model": 4,
+  "period": "M5",
+  "phase": "Q02",
+  "promotion_note": "BOUND_PASS does not waive FTMO cost reconciliation or Q04-Q10.",
+  "reports": [
+    {
+      "modified_utc": "2026-07-13T08:45:47.883720+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260713\\13138_q02_current\\QM5_13138\\20260713_083326\\raw\\run_01\\report.htm",
+      "sha256": "e7a9771aeb820975612bbe52790d7a13d77b2cd3037b4425920642530cf0be40",
+      "size_bytes": 701708
+    },
+    {
+      "modified_utc": "2026-07-13T08:57:12.766665+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260713\\13138_q02_current\\QM5_13138\\20260713_083326\\raw\\run_02\\report.htm",
+      "sha256": "0f8e8a1e15fd5a4a35ccd08007c27fc14d5870d65791c530ff96830617123d3b",
+      "size_bytes": 701708
+    }
+  ],
+  "run_contract": {
+    "description": "current-binary deterministic replay",
+    "minimum_runs": 2,
+    "observed_runs": 2,
+    "require_identical_metrics": true
+  },
+  "schema_version": 1,
+  "scope": "native_current_binary_q02_only",
+  "seed_evidence": [],
+  "source_summary_deterministic": true,
+  "status": "BOUND_PASS",
+  "symbol": "XAUUSD.DWX",
+  "terminal": "T4"
+}

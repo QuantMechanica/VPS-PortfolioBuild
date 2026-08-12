@@ -235,6 +235,11 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_D1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED"))
+      return INIT_FAILED;
+
    string warmup_symbols[1] = {_Symbol};
    QM_SymbolGuardInit(warmup_symbols);
    QM_BasketWarmupHistory(warmup_symbols, PERIOD_D1,
@@ -272,7 +277,7 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
-   const bool nb = QM_IsNewBar();
+   const bool nb = QM_IsNewBar(_Symbol, PERIOD_D1);
    if(!nb)
       return;
 

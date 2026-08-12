@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import subprocess
 import tempfile
 import unittest
@@ -21,23 +22,64 @@ def _load_module():
 
 
 class Q04CommissionFallbackTests(unittest.TestCase):
-    """OWNER 2026-06-26: the EA-side flat fallback must grade at the realistic per-class rate
-    (forex $5 / index $5.5 / commodity $0), not a blanket $7 that over-charged FX ~40%."""
+    """DL-082 §2 (2026-07-19): the EA-side flat fallback grades at the per-SYMBOL
+    venue worst-case (venue_cost_model.json), not the DL-073 per-class flat."""
 
-    def test_per_class_fallback_rates(self) -> None:
+    def test_per_symbol_venue_rates(self) -> None:
         mod = _load_module()
-        self.assertEqual(mod._ea_side_sim_commission_per_lot("EURUSD.DWX"), 5.0)
-        self.assertEqual(mod._ea_side_sim_commission_per_lot("GBPJPY.DWX"), 5.0)
-        self.assertEqual(mod._ea_side_sim_commission_per_lot("NDX.DWX"), 5.5)
-        self.assertEqual(mod._ea_side_sim_commission_per_lot("XAUUSD.DWX"), 0.0)
+        self.assertAlmostEqual(mod._ea_side_sim_commission_per_lot("EURUSD.DWX"), 5.85)
+        self.assertAlmostEqual(mod._ea_side_sim_commission_per_lot("NDX.DWX"), 5.5)
+        self.assertAlmostEqual(mod._ea_side_sim_commission_per_lot("WS30.DWX"), 0.70)
+        self.assertAlmostEqual(mod._ea_side_sim_commission_per_lot("XAUUSD.DWX"), 20.37)
+        # GBPJPY.DWX not in venue_cost_model.json -> forex class-conservative max
+        self.assertAlmostEqual(mod._ea_side_sim_commission_per_lot("GBPJPY.DWX"), 6.35)
 
-    def test_unknown_symbol_falls_back_to_conservative_constant(self) -> None:
+    def test_unknown_symbol_falls_back_to_class_conservative_never_zero(self) -> None:
         mod = _load_module()
-        # unknown symbol -> default class (forex) -> registry flat, still NOT the blanket $7
-        self.assertEqual(mod._ea_side_sim_commission_per_lot("ZZZUSD.DWX"), 5.0)
+        self.assertAlmostEqual(mod._ea_side_sim_commission_per_lot("ZZZUSD.DWX"), 6.35)
+        self.assertEqual(mod._ea_side_sim_commission_per_lot("XAUUSD.DWX", "flat7"), 7.00)
 
 
 class Q04WalkForwardTests(unittest.TestCase):
+    @staticmethod
+    def _prepare_fold_preflight(
+        root: Path,
+        *,
+        expert: str,
+        terminal: str,
+        symbol: str,
+        year: int = 2023,
+    ) -> tuple[Path, Path]:
+        expert_leaf = expert.replace("/", "\\").split("\\")[-1]
+        ea_dir = root / "framework" / "EAs" / expert_leaf
+        ea_dir.mkdir(parents=True, exist_ok=True)
+        (ea_dir / f"{expert_leaf}.ex5").write_bytes(b"compiled")
+        mt5_root = root / "mt5"
+        history = (
+            mt5_root
+            / terminal
+            / "Bases"
+            / "Custom"
+            / "history"
+            / symbol
+            / f"{year}.hcc"
+        )
+        history.parent.mkdir(parents=True, exist_ok=True)
+        history.write_bytes(b"warm")
+        return root, mt5_root
+
+    def test_period_inference_accepts_non_backtest_set_suffix(self) -> None:
+        mod = _load_module()
+
+        self.assertEqual(
+            mod.period_from_setfile(Path("QM5_13202_WS30.DWX_M15_native_parity.set")),
+            "M15",
+        )
+        self.assertEqual(
+            mod.period_from_setfile(Path("QM5_10163_USDJPY.DWX_H1_backtest.set")),
+            "H1",
+        )
+
     def test_stream_pf_cannot_override_losing_native_report(self) -> None:
         mod = _load_module()
 
@@ -168,6 +210,12 @@ class Q04WalkForwardTests(unittest.TestCase):
             summary = root / "summary.json"
             summary.write_text("{}", encoding="utf-8")
             captured = {}
+            repo_root, mt5_root = self._prepare_fold_preflight(
+                root,
+                expert=r"QM\QM5_1001_test",
+                terminal="T6",
+                symbol="EURUSD.DWX",
+            )
 
             def fake_run(args, **kwargs):
                 captured["args"] = args
@@ -191,6 +239,8 @@ class Q04WalkForwardTests(unittest.TestCase):
                     terminal="T6",
                     period="H1",
                     timeout_sec=60,
+                    repo_root=repo_root,
+                    mt5_root=mt5_root,
                 )
 
             args = captured["args"]
@@ -198,7 +248,14 @@ class Q04WalkForwardTests(unittest.TestCase):
             self.assertIn("-AllowMissingRealTicksLogMarker", args)
             self.assertEqual(args[args.index("-FromDate") + 1], "2023.01.01")
             self.assertEqual(args[args.index("-ToDate") + 1], "2023.12.31")
-            self.assertEqual(result["summary_path"], str(summary))
+            self.assertEqual(result["source_summary_path"], str(summary))
+            self.assertTrue(Path(result["summary_path"]).is_file())
+            self.assertEqual(
+                json.loads(Path(result["summary_path"]).read_text(encoding="utf-8"))[
+                    "verdict_reason"
+                ],
+                "STRATEGY_ZERO_TRADES",
+            )
             self.assertTrue(Path(result["log_path"]).exists())
 
     def test_run_fold_retries_windows_launch_fault_before_grading(self) -> None:
@@ -210,6 +267,12 @@ class Q04WalkForwardTests(unittest.TestCase):
             summary = root / "summary.json"
             summary.write_text("{}", encoding="utf-8")
             calls = []
+            repo_root, mt5_root = self._prepare_fold_preflight(
+                root,
+                expert=r"QM\QM5_12728_test",
+                terminal="T6",
+                symbol="USDJPY.DWX",
+            )
 
             def fake_run(args, **kwargs):
                 calls.append(args)
@@ -236,11 +299,14 @@ class Q04WalkForwardTests(unittest.TestCase):
                     terminal="T6",
                     period="D1",
                     timeout_sec=60,
+                    repo_root=repo_root,
+                    mt5_root=mt5_root,
                 )
 
             self.assertEqual(len(calls), 2)
             sleep_mock.assert_called_once()
-            self.assertEqual(result["summary_path"], str(summary))
+            self.assertEqual(result["source_summary_path"], str(summary))
+            self.assertTrue(Path(result["summary_path"]).is_file())
             self.assertIn("launch_fault_retry", Path(result["log_path"]).read_text(encoding="utf-8"))
 
     def test_run_fold_passes_basket_manifest_tester_overrides(self) -> None:
@@ -259,6 +325,12 @@ class Q04WalkForwardTests(unittest.TestCase):
             summary = root / "summary.json"
             summary.write_text("{}", encoding="utf-8")
             captured = {}
+            repo_root, mt5_root = self._prepare_fold_preflight(
+                root,
+                expert=r"QM\QM5_12533_test",
+                terminal="T10",
+                symbol="EURJPY.DWX",
+            )
 
             def fake_run(args, **kwargs):
                 captured["args"] = args
@@ -282,6 +354,8 @@ class Q04WalkForwardTests(unittest.TestCase):
                     terminal="T10",
                     period="D1",
                     timeout_sec=60,
+                    repo_root=repo_root,
+                    mt5_root=mt5_root,
                 )
 
             args = captured["args"]

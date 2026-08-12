@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_707474_channel-ma-short-term-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_707474_channel-ma-short-term-system.pdf",
+      "source_pages": "1-3",
+      "source_ref": "ForexFactory Thread 707474 'Channel MA Short-Term System', author handle MickeyMar, forexfactory.com forum, 2017 (indicator/EA attachments dated Oct-Nov 2017), https://www.forexfactory.com/thread/707474",
+      "strategy_name": "Channel MA Crossover (MickeyMar)",
+      "concept": "MA-crossover trend-following that filters range-bound whipsaws by requiring the 33 EMA(close) signal line to cross fully beyond a channel formed by 55 EMA(high) and 55 EMA(low).",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic EMA-channel crossover, pure MQL5, hard 40-50pip SL (capped 50), FX majors on .DWX, Friday/session close available; FTMO/DXZ compatible.",
+      "priority_hint": "MED",
+      "notes": "Channel = 55 EMA(high) + 55 EMA(low); signal = 33 EMA(close). Long when signal crosses ABOVE 55EMA(high), short when below 55EMA(low); signal valid only on CLOSED M15 bar (author insists candle-2/candle-1). Two entries: (1) Normal = immediate market entry when price near channel; (2) Delayed = when crossover fires >40pips from channel, place pending order at 33EMA level, fills on pullback to signal MA. Stop: hard 40-50pip, or reverse at opposite signal. Exit variants: fixed 40pip TP w/ BE at +20-25; flexible 210pip cap closed at end of session (author's preferred, usually NY close); or no-TP close-at-opposite-signal. Options author wants in EA: first-signal-only vs take-all-reconfirmations; optional H1-cross confirmation filter; optional Asia hour-filter for non-JPY/AUD/NZD/USD pairs. Favored pairs USDJPY/EURUSD/GBPUSD; intended as 15-20 pair correlation-managed basket. ~20 trades/mo per pair (~8-9 losers) -> well above Q02 freq floor. CAVEATS: forum source, author admits discretion in live trading and offers no backtest/track record; pure technical trend-following with no structural limit-to-arbitrage basis (FX edge doctrine) -> expect Q04/Q05 scrutiny. Minor same-core variants (NOT separate rows): diamonddbw 3-pip-retrace-to-33 entry w/ 20-25pip SL; forexbandit7 5M-retrenchment pending entry; Lifestudent3 Bollinger-band pullback idea (unadopted/vague)."
+    }
+  ],
+  "notes": []
+}

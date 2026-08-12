@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "NO_DEVELOPMENT_SURVIVOR",
+  "deployment_allowed": false,
+  "predeclaration": "artifacts/ftmo_incumbent_weekday_filter_predeclaration_2026-07-12.json",
+  "selection_evidence": "artifacts/ftmo_incumbent_weekday_filter_selection_2026-07-12.json",
+  "candidate_manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weekday_filter_manifest_2026-07-12.json",
+  "mechanical_exclusions": {
+    "10715:USDJPY.DWX": [2],
+    "10286:XTIUSD.DWX": [4]
+  },
+  "development": {
+    "years": [2018, 2019, 2021, 2022],
+    "start_windows": 1402,
+    "control": {
+      "normal_pass_pct": 59.05848787446505,
+      "adverse_pass_pct": 51.35520684736091
+    },
+    "candidate": {
+      "normal_pass_pct": 57.77460770328102,
+      "adverse_pass_pct": 50.42796005706134,
+      "normal_delta_pct_points": -1.283880171184029,
+      "adverse_delta_pct_points": -0.9272467902995715,
+      "normal_daily_breach_pct": 0.0,
+      "normal_max_breach_pct": 0.0,
+      "adverse_daily_breach_pct": 20.185449358059916,
+      "adverse_max_breach_pct": 13.480741797432238,
+      "accepted_trade_paths": 3410
+    }
+  },
+  "validation_2023_opened": false,
+  "sealed_holdout_2024_2025_opened": false,
+  "reason": "The mechanically derived exclusions reduce both normal and adverse development pass rates, so the strict dual-fill gate fails.",
+  "label": "RESEARCH_ONLY_NO_GO"
+}

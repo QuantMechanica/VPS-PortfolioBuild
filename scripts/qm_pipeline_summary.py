@@ -14,7 +14,7 @@ Inputs (read-only):
     C:/QM/repo/public-data/public-snapshot.json   (last published snapshot mtime)
 
 Output:
-    C:/QM/paperclip/dashboards/daily/<YYYY-MM-DD>_pipeline_summary.md   (canonical)
+    D:/QM/strategy_farm/dashboards/daily/<YYYY-MM-DD>_pipeline_summary.md   (canonical)
     stdout                                                              (with --stdout)
 
 Usage:
@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -40,7 +41,7 @@ WATCHDOG_DIR = REPO_ROOT / "docs" / "ops" / "pipeline_health"
 PUBLIC_SNAPSHOT = REPO_ROOT / "public-data" / "public-snapshot.json"
 CARDS_DIR = REPO_ROOT / "strategy-seeds" / "cards"
 EA_REGISTRY = REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv"
-DAILY_OUT = Path(r"C:/QM/paperclip/dashboards/daily")
+DAILY_OUT = Path(r"D:/QM/strategy_farm/dashboards/daily")
 
 
 def read_json_safe(path: Path) -> dict | None:
@@ -271,7 +272,7 @@ def render_summary(date_str_target: str) -> str:
     # Publication
     lines.append(section(
         "Local dashboard & strategy archive",
-        f"- Hourly task `QM_DashboardRender_Hourly` regenerates `C:/QM/paperclip/dashboards/current.html` + `strategies.html`"
+        f"- Hourly task `QM_StrategyFarm_Dashboard_Hourly` regenerates `D:/QM/strategy_farm/dashboards/current.html` + `strategies.html`"
         f"\n- See `LastTaskResult` in scheduled-tasks query for failure detection"
     ))
 
@@ -334,6 +335,8 @@ def main() -> int:
     body = render_summary(args.date)
 
     if args.stdout:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="strict")
         print(body)
         return 0
 

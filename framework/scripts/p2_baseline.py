@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import os
 import re
 import shutil
@@ -61,6 +62,11 @@ REGISTRY_DIR = REPO_ROOT / "framework" / "registry"
 def installed_terminals() -> list[str]:
     terminals = [terminal for terminal in TERMINALS if (MT5_ROOT / terminal / "terminal64.exe").exists()]
     return terminals or list(TERMINALS)
+
+
+def deployment_terminals(pinned_terminal: str | None) -> list[str]:
+    """Keep binary and registry deployment inside an explicit terminal pin."""
+    return [pinned_terminal] if pinned_terminal else installed_terminals()
 
 
 def _active_registered_slugs(ea_label: str) -> set[str]:
@@ -225,10 +231,68 @@ def parse_summary(summary_path: Path) -> dict:
 # rate-based `min_trades` (= 5 * window_years) passed in by the caller; this
 # constant is only an absolute lower bound for sub-year windows.
 #
-Q02_PF_MIN = 1.20         # profit factor floor (per symbol)
+Q02_PF_MIN = 1.10         # profit factor hard bottom (per symbol). 1.20->1.10 OWNER 2026-07-25,
+                          # decisions/2026-07-25_q02_pf_floor_120_to_110.md. Was already the
+                          # operative bottom via Q02_EVIDENCE_FLOOR['hard_bottom_pf'] (DL-082 §4);
+                          # this constant is the fallback when the evidence curve is disabled and
+                          # the value reported in the pf_below_q02_floor reason string.
 Q02_TRADES_MIN = 5        # absolute sample-size floor (per symbol); 5/yr rate set by caller
-Q02_DD_PCT_MAX = 15.0     # max drawdown ceiling, % of starting equity
+Q02_DD_PCT_MAX = 25.0     # max drawdown ceiling, % of starting equity (15->25 OWNER 2026-07-15, see decisions/)
 Q02_STARTING_EQUITY = 100_000.0   # HR4: fixed-risk backtest deposit
+
+# DL-082 §4 (2026-07-19) — evidence-strength-conditional PF floor (review track C,
+# scratchpad gatereview/C_analysis.md). Rationale: under the symmetric two-point
+# per-trade model, PF=1.20 gives t = 0.0913*sqrt(N), i.e. it reaches ~2σ evidence
+# only at N~=450 trades; below that a flat 1.20 admits sub-2σ noise. Track C's
+# constant-evidence curve, anchored at t_ref=1.94 (== PF 1.20 @ N=450), holds
+# EVIDENCE STRENGTH constant across sample sizes in BOTH directions (DL-082 §4,
+# OWNER portfolio-first mandate 2026-07-19: "PF 1.05 @ 600 trades is stronger
+# evidence than PF 1.30 @ 40"):
+#   d = u / sqrt(1 + u^2),  u = t_ref / sqrt(N),  floor(N) = (1 + d) / (1 - d)
+#   effective_floor(N) = max(HARD_BOTTOM, floor(N))
+# Below N=450 the curve RAISES the bar (N=50 -> 1.72, N=100 -> 1.47: thin samples
+# were passing on statistically weak evidence). Above N=450 it DESCENDS through
+# the old 1.20 headline (N=1000 -> ~1.13, N=2000 -> ~1.09) so high-frequency
+# small-edge styles with strong evidence become book-relevant, clamped at the
+# cost-noise HARD BOTTOM 1.10 (spread is already in the .DWX data; commission on
+# the cheap classes leaves margin; FX net checks still bind at Q04). The 5/yr
+# frequency floor is UNTOUCHED; Q07 PBO/DSR stays the selection-bias guard and
+# gets MORE load-bearing in the many-sleeves regime (DL-082 §1 guard).
+# DISABLED by OWNER 2026-07-25 (decisions/2026-07-25_q02_pf_floor_120_to_110.md): the Q02 PF
+# floor is now FLAT 1.10 for every sample size. Rationale for why this is less exposed than it
+# reads: the trades floor (max(5*window_years, Q02_TRADES_MIN)) is evaluated BEFORE the PF gate,
+# so a full-history window already discards anything under ~45 trades — exactly the region where
+# the curve was doing its work. Measured over 1288 unique (EA, symbol) Q02 FAILs with recorded
+# metrics, only 2 have n >= 45. Selection-bias protection therefore rests on the 5/yr frequency
+# floor and on Q07 PBO/DSR, per the DL-082 §1 guard, not on this curve.
+# Re-enable by flipping "enabled" back to True; the curve itself is unchanged and still tested.
+Q02_EVIDENCE_FLOOR = {
+    "enabled": False,
+    "t_ref": 1.94,           # anchor: PF 1.20 == ~2σ evidence at N=450
+    "hard_bottom_pf": 1.10,  # cost-noise bottom (DL-082 §4), NOT the old 1.20 headline
+}
+
+
+def evidence_conditional_pf_floor(n_trades: int, cfg: dict | None = None) -> float:
+    """Return the evidence-strength-conditional Q02 PF floor for a sample of N trades.
+
+    Constant-evidence curve through the (PF 1.20, N=450) anchor in both
+    directions: stricter below the anchor, progressively down to the 1.10
+    cost-noise hard bottom above it (DL-082 §4 portfolio-first mandate).
+    """
+    cfg = cfg or Q02_EVIDENCE_FLOOR
+    hard_bottom = float(cfg.get("hard_bottom_pf", Q02_PF_MIN))
+    if not cfg.get("enabled", True):
+        return hard_bottom
+    n = int(n_trades or 0)
+    if n <= 1:
+        # Degenerate sample; the trade floor gates N < 5 before this is consulted.
+        return hard_bottom
+    t_ref = float(cfg.get("t_ref", 1.94))
+    u = t_ref / math.sqrt(n)
+    d = u / math.sqrt(1.0 + u * u)
+    curve = (1.0 + d) / (1.0 - d)
+    return max(hard_bottom, curve)
 
 
 def _run_stat(run: dict, key: str) -> float | None:
@@ -324,14 +388,20 @@ def derive_verdict(summary: dict, min_trades: int) -> tuple[str, str, str]:
                 f"trades_below_q02_floor:got={trades}:floor={floor}",
                 report_dir)
 
-    # Profit-factor gate.
+    # Profit-factor gate. DL-082 §4: the floor is evidence-strength-conditional
+    # (frequency-aware) — max(hard_bottom, constant-evidence curve through the
+    # PF 1.20 @ N=450 anchor). The curve RAISES the bar below N=450 (N=100 -> 1.47)
+    # and descends toward the hard bottom above it. See
+    # evidence_conditional_pf_floor / Q02_EVIDENCE_FLOOR.
     if pf is None:
         return ("FAIL",
                 "missing_profit_factor_in_summary",
                 report_dir)
-    if pf < Q02_PF_MIN:
+    pf_floor = evidence_conditional_pf_floor(trades)
+    if pf < pf_floor:
         return ("FAIL",
-                f"pf_below_q02_floor:pf={pf:.3f}:min={Q02_PF_MIN}",
+                f"pf_below_q02_floor:pf={pf:.3f}:min={pf_floor:.3f}:n={trades}"
+                f":hard_bottom={Q02_PF_MIN}:t_ref={Q02_EVIDENCE_FLOOR['t_ref']}",
                 report_dir)
 
     # Drawdown gate. Reports give DD in account currency; convert to % vs
@@ -654,7 +724,9 @@ def main() -> int:
 
     ea_dir = find_ea_dir(args.ea)
     ea_id = derive_numeric_ea_id(args.ea, ea_dir)
-    active_terminals = installed_terminals()
+    # A pinned run is also a deployment boundary. Do not copy the EA or registry
+    # into unrelated terminals when the operator explicitly selected one slot.
+    active_terminals = deployment_terminals(args.terminal)
     terminal_roots = [MT5_ROOT / t for t in active_terminals]
     ensure_magic_registry_contains_ea(ea_id)
     ensure_expert_binary_deployed(ea_dir, terminal_roots)

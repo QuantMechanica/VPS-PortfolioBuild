@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_RESEARCH_ONLY",
+  "deployment_allowed": false,
+  "manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "scenario": "path_01_11095_gbpusd_down2",
+  "hypothesis": "A per-symbol nominal-risk cap can remove simultaneous duplicate exposure across same-symbol sleeves while preserving independent cross-symbol density.",
+  "policy": {
+    "risk_multiplier": 25.0,
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "room_retention": 0.2,
+    "global_open_risk_limit_ratio": 0.0,
+    "symbol_open_risk_limit_ratios": [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0],
+    "cap_basis": "multiple_of_current_equity_room_to_active_policy_floor_per_symbol"
+  },
+  "selection": {
+    "development_years": [2018, 2019, 2021, 2022],
+    "required": "strictly improve control in both threshold and adverse bar fills",
+    "tie_break": "maximum of the smaller normal/adverse pass-rate delta, then smaller cap ratio",
+    "validation_years": [2023],
+    "sealed_years": [2024, 2025]
+  },
+  "implementation": {
+    "tool": "tools/strategy_farm/portfolio/ftmo_bar_governor_sim.py",
+    "test": "tools/strategy_farm/tests/test_ftmo_bar_governor_sim.py::test_symbol_open_risk_limit_caps_only_same_symbol_entries"
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_ANNUAL_DENSITY_AND_RECENCY_GATES",
+  "ea_id": 13117,
+  "host_symbol": "EURGBP.DWX",
+  "basket_symbols": [
+    "EURGBP.DWX",
+    "AUDJPY.DWX"
+  ],
+  "period": "D1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "source_sha256": "14DDCCB7AC7FE8B1C1E9CEC4C6A59C7045481DE99F15E1728FB38A76CFE6BCD1",
+  "setfile_sha256": "B02C5CA32950585071F515B59D66F3F18491372CA8B4504BEBEF193524CA3B61",
+  "compile_log": "framework/build/compile/20260712_144356/QM5_13117_eurgbp-audjpy.compile.log",
+  "compile_log_sha256": "7F3EC51308443A1AC8071D8431BD35DF4E04A5F9042E6B81933B687ABFF8AE85",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_13117_eurgbp_audjpy_ftmo_retry_20260712\\QM5_13117\\20260712_151704\\summary.json",
+  "deterministic": true,
+  "native": {
+    "trades": 180,
+    "profit_factor": 1.536607,
+    "net_profit": 8784.3,
+    "equity_drawdown": 3049.81
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\13117_EURGBP_AUDJPY_BASKET_T2_FRESH_20260712.jsonl",
+    "rows": 180,
+    "rows_by_symbol": {
+      "EURGBP.DWX": 90,
+      "AUDJPY.DWX": 90
+    },
+    "sha256": "0D3964B12DB43DC11493D84459E19E1026D8CA7F3E1CB9A4F60EF70FD51EFD46",
+    "report_reconciliation": "PASS",
+    "count_delta": 0,
+    "missing_mae_rows": 0,
+    "corrected_net_delta": 0.24,
+    "net_tolerance": 1.8
+  },
+  "current_cost_artifact": "artifacts/ftmo_13117_eurgbp_audjpy_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 180,
+    "profit_factor": 1.412223,
+    "net_profit": 7034.69,
+    "close_to_close_max_drawdown": 2352.74,
+    "commission_total": 373.35,
+    "swap_total": -1823.17,
+    "per_symbol_profit_factor": {
+      "EURGBP.DWX": 1.466735,
+      "AUDJPY.DWX": 1.065948
+    }
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "negative_calendar_years": [
+      2019
+    ],
+    "calendar_years_below_density_floor": [
+      2017,
+      2025
+    ],
+    "zero_trade_years": [
+      2017,
+      2025
+    ],
+    "reason_for_reject": "The pooled cost-adjusted PF is strong, but the basket has no 2025 trades and therefore fails the predeclared annual density and 30-day speed evidence contract. The weak AUDJPY leg does not justify a post-hoc ablation."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

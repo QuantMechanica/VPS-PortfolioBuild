@@ -1,0 +1,12 @@
+RECYCLE SEMANTICS (agent_router.py)
+RECYCLE in TASK_STATES (l.48), REVIEW_CLOSE_STATES={APPROVED,BLOCKED,FAILED,RECYCLE} (l.54),
+LEASE_RELEASE_STATES incl RECYCLE (l.56).
+Router routing SELECT only touches state IN ('BACKLOG','TODO') (l.524, l.570).
+Stale-lease release path: IN_PROGRESS -> TODO only (l.446), never RECYCLE -> TODO.
+=> RECYCLE is a TERMINAL close disposition. It is NOT awaiting requeue in the
+   agent_tasks state machine; a RECYCLE row is never re-routed/re-claimed. If the
+   work is still wanted a NEW task must be enqueued.
+RECYCLE pile: 420 total (codex 346, claude 41, gemini 21, None 12).
+  by task_type: build_ea 410, ops_issue 9, research_strategy 1.
+  updated_at age: min 3.3d / max 56.1d; 306/420 updated within last 14d (302 within 7d)
+  => recent heavy build-rework churn, but each row terminal (expected accumulation).

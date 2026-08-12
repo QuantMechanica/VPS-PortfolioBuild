@@ -1,0 +1,10 @@
+{
+  "logical_symbol": "QM5_20189_XAU_XAG_CALMOM1_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "traded_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "notes": [
+    "One logical two-leg XAU/XAG monthly basket. Trade only when the ten-year historical same-calendar relative-return sign agrees with the exact immediately completed relative-month sign; evaluate combined package PnL, costs, density, and neutrality at Q02."
+  ]
+}

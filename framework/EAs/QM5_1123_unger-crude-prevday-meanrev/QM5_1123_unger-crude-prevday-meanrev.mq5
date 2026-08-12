@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_1123 Unger crude previous-day mean reversion"
+// Strategy Card: eb97a148-0af9-5b9c-878c-25fb5dfa34f9 (unger-crude-prevday-meanrev), G0 APPROVED 2026-05-17.
 
 #include <QM/QM_Common.mqh>
 
@@ -29,289 +30,264 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_atr_period              = 14;
-input double strategy_atr_sl_mult             = 1.5;
-input bool   strategy_use_vwap_proxy_tp       = true;
-input double strategy_tp_rr                   = 1.0;
-input int    strategy_daily_atr_lookback      = 120;
-input double strategy_daily_atr_percentile    = 25.0;
-input bool   strategy_skip_eia_day            = true;
-input int    strategy_eia_day_of_week         = 3;     // Sunday=0, Wednesday=3.
-input int    strategy_session_start_hhmm      = 100;
-input int    strategy_flatten_hhmm            = 2200;
-input int    strategy_max_spread_points       = 80;
+// Card §Entry: LOW_TRIGGER=min(prev day low, low 5 sessions earlier);
+// HIGH_TRIGGER=max(prev day high, high 5 sessions earlier); reclaim entry.
+input int    strategy_atr_period               = 14;    // Card §Stop Loss: ATR(14,M15).
+input double strategy_atr_sl_mult              = 1.5;   // Card §Stop Loss: SL = 1.5 * ATR.
+input bool   strategy_use_vwap_target           = true;  // Card §Exit: prior-day (H+L+C)/3 target, default enabled.
+input double strategy_tp_rr                     = 1.0;   // Card §Stop Loss: optional 1.0R TP when VWAP target disabled.
+input int    strategy_atr_percentile_lookback   = 120;   // Card §Filter: 120-day ATR percentile window.
+input double strategy_atr_percentile_pct        = 25.0;  // Card §Filter: skip below this ATR percentile.
+input bool   strategy_skip_eia_day              = true;  // Card §Filter: skip EIA inventory release day.
+input int    strategy_eia_day_of_week           = 3;     // Sunday=0 .. Wednesday=3 (weekly EIA release proxy; holiday-shifted Thursdays not modeled).
+input int    strategy_session_start_hhmm        = 0;     // Broker-time HHMM entry window start.
+input int    strategy_flatten_hhmm              = 2200;  // Card §Exit: EOD flatten + entry cutoff, broker time HHMM.
+input int    strategy_max_spread_points         = 80;    // Card §Filter: standard V5 spread filter; zero spread stays tradeable.
 
-int Strategy_Hhmm(const datetime broker_time)
+// -----------------------------------------------------------------------------
+// Cached per-day state (recomputed once per D1 calendar-period roll).
+// -----------------------------------------------------------------------------
+double g_low_trigger        = 0.0;
+double g_high_trigger       = 0.0;
+double g_vwap_proxy         = 0.0;
+bool   g_atr_filter_ok      = false;
+bool   g_long_taken_today   = false;
+bool   g_short_taken_today  = false;
+bool   g_stopped_out_today  = false;
+
+// Tracked open-position lifecycle (for same-day-stopout detection).
+ulong  g_open_ticket        = 0;
+long   g_open_position_id   = 0;
+int    g_open_dir           = 0; // +1 long, -1 short, 0 none
+
+bool Strategy_DailyAtrFilterAllows()
   {
-   MqlDateTime dt;
-   TimeToStruct(broker_time, dt);
-   return dt.hour * 100 + dt.min;
-  }
-
-datetime Strategy_DayStart(const datetime broker_time)
-  {
-   MqlDateTime dt;
-   TimeToStruct(broker_time, dt);
-   dt.hour = 0;
-   dt.min = 0;
-   dt.sec = 0;
-   return StructToTime(dt);
-  }
-
-int Strategy_DayOfWeek(const datetime broker_time)
-  {
-   MqlDateTime dt;
-   TimeToStruct(broker_time, dt);
-   return dt.day_of_week;
-  }
-
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
+   if(strategy_atr_percentile_lookback < 20)
       return true;
-     }
 
-   return false;
-  }
-
-void Strategy_TodayTradeState(bool &long_taken, bool &short_taken, bool &stopped_out)
-  {
-   long_taken = false;
-   short_taken = false;
-   stopped_out = false;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return;
-
-   if(!HistorySelect(Strategy_DayStart(TimeCurrent()), TimeCurrent()))
-      return;
-
-   const int total_deals = HistoryDealsTotal();
-   for(int i = 0; i < total_deals; ++i)
+   double samples[];
+   ArrayResize(samples, strategy_atr_percentile_lookback);
+   int count = 0;
+   for(int shift = 1; shift <= strategy_atr_percentile_lookback; ++shift)
      {
-      const ulong deal = HistoryDealGetTicket(i);
-      if(deal == 0)
-         continue;
-      if(HistoryDealGetString(deal, DEAL_SYMBOL) != _Symbol)
-         continue;
-      if((int)HistoryDealGetInteger(deal, DEAL_MAGIC) != magic)
-         continue;
-
-      const ENUM_DEAL_ENTRY deal_entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal, DEAL_ENTRY);
-      const ENUM_DEAL_TYPE deal_type = (ENUM_DEAL_TYPE)HistoryDealGetInteger(deal, DEAL_TYPE);
-      const ENUM_DEAL_REASON deal_reason = (ENUM_DEAL_REASON)HistoryDealGetInteger(deal, DEAL_REASON);
-
-      if(deal_entry == DEAL_ENTRY_IN)
+      const double v = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, shift);
+      if(v > 0.0)
         {
-         if(deal_type == DEAL_TYPE_BUY)
-            long_taken = true;
-         if(deal_type == DEAL_TYPE_SELL)
-            short_taken = true;
+         samples[count] = v;
+         ++count;
         }
-
-      if(deal_entry == DEAL_ENTRY_OUT && deal_reason == DEAL_REASON_SL)
-         stopped_out = true;
      }
-  }
-
-bool Strategy_DailyAtrFilterAllowsTrade()
-  {
-   if(strategy_daily_atr_lookback < 20)
+   // Insufficient warmup history: fail-open so the early backtest window is
+   // not permanently blocked before 120 D1 bars exist.
+   if(count < 20)
       return true;
+
+   ArrayResize(samples, count);
+   ArraySort(samples);
+
+   double pct = strategy_atr_percentile_pct;
+   if(pct < 0.0)
+      pct = 0.0;
+   if(pct > 100.0)
+      pct = 100.0;
+   int idx = (int)MathFloor((pct / 100.0) * (count - 1));
+   if(idx < 0)
+      idx = 0;
+   if(idx >= count)
+      idx = count - 1;
 
    const double current_atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(current_atr <= 0.0)
       return false;
 
-   double atr_values[];
-   ArrayResize(atr_values, strategy_daily_atr_lookback);
-   int count = 0;
-
-   for(int shift = 1; shift <= strategy_daily_atr_lookback; ++shift)
-     {
-      const double atr_value = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, shift);
-      if(atr_value > 0.0)
-        {
-         atr_values[count] = atr_value;
-         ++count;
-        }
-     }
-
-   if(count < 20)
-      return false;
-
-   ArrayResize(atr_values, count);
-   ArraySort(atr_values);
-
-   double pct = strategy_daily_atr_percentile;
-   if(pct < 0.0)
-      pct = 0.0;
-   if(pct > 100.0)
-      pct = 100.0;
-
-   int pct_index = (int)MathFloor((pct / 100.0) * (count - 1));
-   if(pct_index < 0)
-      pct_index = 0;
-   if(pct_index >= count)
-      pct_index = count - 1;
-
-   return current_atr >= atr_values[pct_index];
+   return current_atr >= samples[idx];
   }
 
-bool Strategy_SpreadAllowsTrade()
+void Strategy_RecomputeDailyState()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   g_long_taken_today  = false;
+   g_short_taken_today = false;
+   g_stopped_out_today = false;
+   g_low_trigger       = 0.0;
+   g_high_trigger      = 0.0;
+   g_vwap_proxy        = 0.0;
+   g_atr_filter_ok     = false;
 
-   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
-      return false;
+   MqlRates prev_day, five_day;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, prev_day) || !QM_ReadBar(_Symbol, PERIOD_D1, 5, five_day))
+      return;
 
-   if(ask > bid && ((ask - bid) / point) > strategy_max_spread_points)
-      return false;
-
-   return true;
+   g_low_trigger  = MathMin(prev_day.low,  five_day.low);
+   g_high_trigger = MathMax(prev_day.high, five_day.high);
+   g_vwap_proxy   = (prev_day.high + prev_day.low + prev_day.close) / 3.0;
+   g_atr_filter_ok = Strategy_DailyAtrFilterAllows();
   }
 
-// No Trade Filter: time, spread, EIA/news-day suppression.
+// No Trade Filter: session window, EIA-day suppression, spread guard.
+// Cheap O(1) checks only; the D1-cadence trigger/ATR recompute lives in
+// Strategy_EntrySignal (gated behind QM_IsNewBar()), not here.
 bool Strategy_NoTradeFilter()
   {
-   if(Strategy_HasOpenPosition())
-      return false;
-
-   const datetime broker_now = TimeCurrent();
-   const int hhmm = Strategy_Hhmm(broker_now);
-
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const int hhmm = dt.hour * 100 + dt.min;
    if(hhmm < strategy_session_start_hhmm || hhmm >= strategy_flatten_hhmm)
       return true;
 
-   if(strategy_skip_eia_day && Strategy_DayOfWeek(broker_now) == strategy_eia_day_of_week)
+   // EIA Petroleum Status Report ~10:30 ET; DXZ broker time = ET+7h year-round
+   // (broker DST tracks US DST), so the release lands ~17:30-18:30 broker.
+   // Wednesday is the standard release day; holiday-shifted Thursdays are a
+   // documented gap (see SPEC.md / open_questions).
+   if(strategy_skip_eia_day && dt.day_of_week == strategy_eia_day_of_week)
       return true;
 
-   if(!Strategy_SpreadAllowsTrade())
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+      return true;
+   // .DWX quotes ask==bid (0 modeled spread) in the tester; only block a
+   // genuinely wide spread, never zero/degenerate spread.
+   if(ask > bid && ((ask - bid) / point) > strategy_max_spread_points)
       return true;
 
    return false;
   }
 
-// Trade Entry: fade prior-day/five-session extremes after closed-bar reclaim.
+// Trade Entry: prior-day/five-session extreme reclaim, one trade per
+// direction per day, no reversal after a same-day stopout (card §Entry item 5).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
+   if(QM_IsNewCalendarPeriod(PERIOD_D1))
+      Strategy_RecomputeDailyState();
 
-   if(_Period != PERIOD_M15)
+   if(g_low_trigger <= 0.0 || g_high_trigger <= 0.0 || !g_atr_filter_ok)
       return false;
 
-   if(Strategy_HasOpenPosition())
+   if(g_open_ticket != 0)
       return false;
 
-   bool long_taken = false;
-   bool short_taken = false;
-   bool stopped_out = false;
-   Strategy_TodayTradeState(long_taken, short_taken, stopped_out);
-   if(stopped_out)
+   if(g_stopped_out_today)
       return false;
 
-   if(!Strategy_DailyAtrFilterAllowsTrade())
+   MqlRates bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_M15, 1, bar))
       return false;
 
-   const double prev_day_low = iLow(_Symbol, PERIOD_D1, 1);      // perf-allowed: fixed closed-bar D1 trigger; no QM_Low helper exists.
-   const double prev_day_high = iHigh(_Symbol, PERIOD_D1, 1);    // perf-allowed: fixed closed-bar D1 trigger; no QM_High helper exists.
-   const double prev_day_close = iClose(_Symbol, PERIOD_D1, 1);  // perf-allowed: fixed closed-bar D1 target; no QM_Close helper exists.
-   const double fifth_day_low = iLow(_Symbol, PERIOD_D1, 5);     // perf-allowed: fixed closed-bar D1 trigger; no QM_Low helper exists.
-   const double fifth_day_high = iHigh(_Symbol, PERIOD_D1, 5);   // perf-allowed: fixed closed-bar D1 trigger; no QM_High helper exists.
+   const bool long_ready  = (bar.low  < g_low_trigger)  && (bar.close >= g_low_trigger);
+   const bool short_ready = (bar.high > g_high_trigger) && (bar.close <= g_high_trigger);
 
-   if(prev_day_low <= 0.0 || prev_day_high <= 0.0 || prev_day_close <= 0.0 ||
-      fifth_day_low <= 0.0 || fifth_day_high <= 0.0)
-      return false;
-
-   const double low_trigger = MathMin(prev_day_low, fifth_day_low);
-   const double high_trigger = MathMax(prev_day_high, fifth_day_high);
-
-   const double bar_low = iLow(_Symbol, PERIOD_M15, 1);       // perf-allowed: fixed closed-bar reclaim test; no QM_Low helper exists.
-   const double bar_high = iHigh(_Symbol, PERIOD_M15, 1);     // perf-allowed: fixed closed-bar reclaim test; no QM_High helper exists.
-   const double bar_close = iClose(_Symbol, PERIOD_M15, 1);   // perf-allowed: fixed closed-bar reclaim test; no QM_Close helper exists.
-   if(bar_low <= 0.0 || bar_high <= 0.0 || bar_close <= 0.0)
-      return false;
-
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
-      return false;
-
-   double entry_price = 0.0;
-   if(!long_taken && bar_low < low_trigger && bar_close > low_trigger)
+   if(long_ready && !g_long_taken_today)
      {
-      req.type = QM_BUY;
-      req.reason = "LOW_TRIGGER_RECLAIM_LONG";
-      entry_price = ask;
+      const double entry_price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double sl = QM_StopATR(_Symbol, QM_BUY, entry_price, strategy_atr_period, strategy_atr_sl_mult);
+      if(entry_price <= 0.0 || sl <= 0.0)
+         return false;
+
+      req.type   = QM_BUY;
+      req.price  = 0.0;
+      req.sl     = sl;
+      req.tp     = strategy_use_vwap_target
+                   ? ((g_vwap_proxy > entry_price) ? QM_StopRulesNormalizePrice(_Symbol, g_vwap_proxy) : 0.0)
+                   : ((strategy_tp_rr > 0.0) ? QM_TakeRR(_Symbol, QM_BUY, entry_price, sl, strategy_tp_rr) : 0.0);
+      req.reason = "prevday_5session_reclaim_long";
+      req.symbol_slot = 0;
+      req.expiration_seconds = 0;
+      g_long_taken_today = true;
+      return true;
      }
-   else if(!short_taken && bar_high > high_trigger && bar_close < high_trigger)
+
+   if(short_ready && !g_short_taken_today)
      {
-      req.type = QM_SELL;
-      req.reason = "HIGH_TRIGGER_RECLAIM_SHORT";
-      entry_price = bid;
+      const double entry_price = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double sl = QM_StopATR(_Symbol, QM_SELL, entry_price, strategy_atr_period, strategy_atr_sl_mult);
+      if(entry_price <= 0.0 || sl <= 0.0)
+         return false;
+
+      req.type   = QM_SELL;
+      req.price  = 0.0;
+      req.sl     = sl;
+      req.tp     = strategy_use_vwap_target
+                   ? ((g_vwap_proxy < entry_price) ? QM_StopRulesNormalizePrice(_Symbol, g_vwap_proxy) : 0.0)
+                   : ((strategy_tp_rr > 0.0) ? QM_TakeRR(_Symbol, QM_SELL, entry_price, sl, strategy_tp_rr) : 0.0);
+      req.reason = "prevday_5session_reclaim_short";
+      req.symbol_slot = 0;
+      req.expiration_seconds = 0;
+      g_short_taken_today = true;
+      return true;
      }
-   else
-      return false;
 
-   req.sl = QM_StopATR(_Symbol, req.type, entry_price, strategy_atr_period, strategy_atr_sl_mult);
-   if(req.sl <= 0.0 || MathAbs(entry_price - req.sl) / point <= 0.0)
-      return false;
-
-   if(strategy_use_vwap_proxy_tp)
-     {
-      const double target = QM_StopRulesNormalizePrice(_Symbol, (prev_day_high + prev_day_low + prev_day_close) / 3.0);
-      const bool target_valid = (req.type == QM_BUY && target > entry_price) ||
-                                (req.type == QM_SELL && target < entry_price);
-      req.tp = target_valid ? target : 0.0;
-     }
-   else
-      req.tp = QM_TakeRR(_Symbol, req.type, entry_price, req.sl, strategy_tp_rr);
-
-   return true;
+   return false;
   }
 
-// Trade Management: card specifies no trailing, break-even, partial close, or scale-in.
+// Trade Management: VWAP-proxy mean-reversion target close, plus same-day
+// stopout tracking for the "no reversal after a stopout" entry gate.
 void Strategy_ManageOpenPosition()
   {
+   const int magic = QM_FrameworkMagic();
+   bool found = false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      found = true;
+      if(g_open_ticket == 0)
+        {
+         g_open_ticket      = ticket;
+         g_open_position_id = (long)PositionGetInteger(POSITION_IDENTIFIER);
+         g_open_dir         = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY) ? 1 : -1;
+        }
+
+      if(strategy_use_vwap_target && g_vwap_proxy > 0.0)
+        {
+         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+         if(g_open_dir > 0 && bid >= g_vwap_proxy)
+            QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         else if(g_open_dir < 0 && ask <= g_vwap_proxy)
+            QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+        }
+      break; // one position per magic (card §Filter).
+     }
+
+   if(!found && g_open_ticket != 0)
+     {
+      if(HistorySelectByPosition(g_open_position_id))
+        {
+         for(int d = HistoryDealsTotal() - 1; d >= 0; --d)
+           {
+            const ulong deal_ticket = HistoryDealGetTicket(d);
+            if((ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal_ticket, DEAL_ENTRY) != DEAL_ENTRY_OUT)
+               continue;
+            if((ENUM_DEAL_REASON)HistoryDealGetInteger(deal_ticket, DEAL_REASON) == DEAL_REASON_SL)
+               g_stopped_out_today = true;
+            break;
+           }
+        }
+      g_open_ticket      = 0;
+      g_open_position_id = 0;
+      g_open_dir         = 0;
+     }
   }
 
-// Trade Close: flatten all open positions before crude session end.
+// Trade Close: flatten all open positions before session end (card §Exit).
 bool Strategy_ExitSignal()
   {
-   return Strategy_Hhmm(TimeCurrent()) >= strategy_flatten_hhmm;
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const int hhmm = dt.hour * 100 + dt.min;
+   return (hhmm >= strategy_flatten_hhmm);
   }
 
-// News Filter Hook: EIA inventory release-day proxy; central V5 news filters still run.
+// News Filter Hook: defers to the central V5 2-axis news filter (card §Filter
+// "Standard V5 spread/news filters").
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   if(Strategy_HasOpenPosition())
-      return false;
-
-   if(strategy_skip_eia_day && Strategy_DayOfWeek(broker_time) == strategy_eia_day_of_week)
-      return true;
-
    return false;
   }
 
@@ -322,20 +298,20 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,
+                        qm_news_mode_legacy,           // legacy back-compat
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,
-                        30,
+                        30,                            // pause-before (legacy hint)
+                        30,                            // pause-after (legacy hint)
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,
-                        qm_news_compliance))
+                        qm_news_temporal,              // FW1 Axis A
+                        qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1123_unger_crude_prevday_meanrev\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 
@@ -353,23 +329,20 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
-
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
+   // Management, rule-based exits and the Friday sweep above MUST keep
+   // running through news windows — the news gate below blocks NEW entries
+   // only (2026-07-02 audit rule; canonical order per QM5_12821 OnTick,
+   // commit dc418a720).
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -384,12 +357,30 @@ void OnTick()
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults. Gates NEW entries only —
+   // never the management/exit paths above.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req); // symbol_slot=0 (host slot) + expiration=0 defaults; garbage
+                    // in unset fields = the silent-zero-trades class (9e4cfedb1)
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
@@ -406,6 +397,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 

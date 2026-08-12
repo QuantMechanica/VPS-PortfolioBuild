@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_SCREEN",
+  "family": "us_index_pair_relative_value_reversion",
+  "hypothesis": "An ATR-normalized intraday divergence between two highly related US indices can mean-revert as a market-neutral long-laggard/short-leader pair, adding dense return with less common market-direction MAE than a single-index sleeve.",
+  "data": {
+    "root": "D:\\QM\\mt5\\T_Export\\MQL5\\Files",
+    "symbols": ["NDX.DWX", "SP500.DWX", "WS30.DWX"],
+    "timeframe": "M15",
+    "allowed_end_year": 2025
+  },
+  "parameter_grid": {
+    "pair": ["NDX.DWX/SP500.DWX", "NDX.DWX/WS30.DWX", "SP500.DWX/WS30.DWX"],
+    "lookback_bars": [2, 4, 8],
+    "divergence_atr": [0.25, 0.5, 0.75],
+    "portfolio_stop_atr": [0.5, 1.0],
+    "target_r": [1.0, 2.0, 3.0],
+    "hold_bars": [2, 4, 8]
+  },
+  "evaluated_configurations": 486,
+  "execution_contract": {
+    "feature": "At a completed 30/60/120-minute US cash-session window, subtract each leg's session-open-to-close move normalized by its own lagged ATR56.",
+    "entry": "At the next synchronized M15 open, short the stronger leg and buy the weaker leg with equal normalized ATR contribution.",
+    "exit": "Joint portfolio stop, joint target, or fixed synchronized hold; no overnight exposure.",
+    "same_bar_rule": "Joint adverse extremes are evaluated before joint favorable extremes, assuming both legs reach their adverse intrabar prices together.",
+    "daily_position_limit": "one trade per pair",
+    "round_trip_costs_in_points": {"NDX.DWX": 4.0, "SP500.DWX": 1.0, "WS30.DWX": 4.0}
+  },
+  "selection_contract": {
+    "development": "2018-2022",
+    "validation": "2023",
+    "sealed_holdout": "2024-2025",
+    "preholdout_gate": "DEV trades>=150 PF>=1.15 net>0; validation trades>=25 PF>=1.05 net>0; at least four positive development years",
+    "selection": "One global family winner by the lower of development and validation PF, then development trade count.",
+    "holdout_open_rule": "Only a preholdout survivor may be recomputed through 2025.",
+    "holdout_gate": "trades>=50 PF>=1.10 net>0 and both 2024 and 2025 positive"
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

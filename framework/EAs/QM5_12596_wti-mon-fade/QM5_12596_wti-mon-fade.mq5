@@ -44,18 +44,9 @@ input int    strategy_max_hold_days       = 1;
 input int    strategy_entry_dow           = 1;
 input int    strategy_max_spread_points   = 1000;
 
-int g_last_entry_day_key = 0;
-
 bool Strategy_IsXtiD1()
   {
    return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
-  }
-
-int Strategy_DayKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 10000 + dt.mon * 100 + dt.day;
   }
 
 int Strategy_DayOfWeek(const datetime t)
@@ -86,8 +77,7 @@ void Strategy_CloseTimeExpiredPositions()
   {
    const int magic = QM_FrameworkMagic();
    const datetime now = TimeCurrent();
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 exit check behind new-bar gate.
-   const int current_dow = (current_d1_bar > 0) ? Strategy_DayOfWeek(current_d1_bar) : Strategy_DayOfWeek(now);
+   const int current_dow = Strategy_DayOfWeek(now);
    const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -147,14 +137,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 entry calendar gate behind new-bar gate.
-   if(current_d1_bar <= 0)
-      return false;
-   if(Strategy_DayOfWeek(current_d1_bar) != strategy_entry_dow)
-      return false;
-
-   const int day_key = Strategy_DayKey(current_d1_bar);
-   if(day_key <= 0 || day_key == g_last_entry_day_key)
+   if(Strategy_DayOfWeek(TimeCurrent()) != strategy_entry_dow)
       return false;
 
    const double atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
@@ -170,7 +153,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.reason = "WTI_MONDAY_FADE_SHORT";
-   g_last_entry_day_key = day_key;
    return true;
   }
 

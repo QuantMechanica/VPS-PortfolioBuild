@@ -1,0 +1,422 @@
+{
+  "schema_version": 2,
+  "generated_at_utc": "2026-07-12T06:30:29.149723+00:00",
+  "basis": "native_mt5_model4_round_trips_recosted_to_ftmo_snapshot",
+  "expected_symbol": "GBPUSD.DWX",
+  "cost_model": {
+    "official_snapshot": {
+      "as_of": "2026-07-11",
+      "api_url": "https://ftmo.com/wp-json/ftmo/symbols",
+      "page_url": "https://ftmo.com/en/symbols/",
+      "symbol_code": "GBP/USD",
+      "commission_type": "flat_USD",
+      "swap_type": "points"
+    },
+    "ftmo_commission_percent_per_side": 0.0,
+    "ftmo_flat_round_trip_commission_per_lot": 5.0,
+    "ftmo_swap_long_points": -5.77,
+    "ftmo_swap_short_points": -4.97,
+    "source_contract_size": 100000.0,
+    "contract_size": 100000.0,
+    "equivalent_volume_basis": "source_volume_x_source_contract_size_divided_by_ftmo_contract_size",
+    "profit_currency_to_account_rate": 1.0,
+    "derive_profit_currency_rate_from_pnl": false,
+    "digits": 5,
+    "point_value_per_lot": 1.0,
+    "triple_swap_weekday": 2,
+    "internal_round_trip_notional_rate": 5e-05,
+    "data_coverage_start_year": 2017,
+    "data_coverage_end_year": 2025,
+    "spread_basis": "native MT5 bid/ask ticks already included",
+    "swap_basis": "current FTMO snapshot applied to every historical rollover; deployment-cost stress, not historical swap reconstruction"
+  },
+  "gate": {
+    "name": "strict_ftmo_q02_research_gate",
+    "profit_factor_floor": 1.2,
+    "minimum_trades_per_year": 5,
+    "verdict": "PASS"
+  },
+  "years": [
+    {
+      "year": 2017,
+      "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10706_gbpusd_20260712\\QM5_10706\\20260712_061204\\summary.json",
+      "summary_sha256": "3eca485f8c3e81bebc8b4ab9c0656fb81888662d74fe3d938b2450a7fbe9141c",
+      "report_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10706_gbpusd_20260712\\QM5_10706\\20260712_061204\\raw\\run_01\\report.htm",
+      "report_sha256": "a23a82ff1957aaa76f6451534f7a7b3df7fd0ce410f9557cef5144f8c2c04fd3",
+      "deterministic_ok_run_count": 2,
+      "native_report": {
+        "expert": "QM5_10706_tv-mon-ls",
+        "symbol": "GBPUSD.DWX",
+        "period": "H1 (2017.01.01 - 2025.12.31)",
+        "net": 71673.3,
+        "gross_profit": 283902.19,
+        "gross_loss": -212228.89,
+        "pf": 1.34,
+        "total_trades": 367,
+        "equity_drawdown": 19628.74,
+        "equity_drawdown_pct": 19.21
+      },
+      "native_deal_reconstruction": {
+        "trades": 367,
+        "net_profit": 71673.3,
+        "gross_profit": 281654.55,
+        "gross_loss": -209981.25,
+        "profit_factor": 1.341332,
+        "close_to_close_max_drawdown": 18356.57
+      },
+      "ftmo_official_current_cost": {
+        "trades": 367,
+        "net_profit": 68243.3,
+        "gross_profit": 278526.21,
+        "gross_loss": -210282.91,
+        "profit_factor": 1.324531,
+        "close_to_close_max_drawdown": 18810.21,
+        "commission_total": 8082.7,
+        "swap_total": -5839.86,
+        "swap_rollover_units": 309
+      },
+      "internal_conservative_current_swap": {
+        "trades": 367,
+        "net_profit": 65831.92,
+        "gross_profit": 277549.9,
+        "gross_loss": -211717.98,
+        "profit_factor": 1.310942,
+        "close_to_close_max_drawdown": 19154.72,
+        "commission_total": 10494.09,
+        "swap_total": -5839.86,
+        "swap_rollover_units": 309
+      }
+    }
+  ],
+  "calendar_years": [
+    {
+      "year": 2017,
+      "native_deal_reconstruction": {
+        "trades": 7,
+        "net_profit": 864.49,
+        "gross_profit": 6013.87,
+        "gross_loss": -5149.38,
+        "profit_factor": 1.167882,
+        "close_to_close_max_drawdown": 4109.07
+      },
+      "ftmo_official_current_cost": {
+        "trades": 7,
+        "net_profit": 829.88,
+        "gross_profit": 5976.0,
+        "gross_loss": -5146.12,
+        "profit_factor": 1.161264,
+        "close_to_close_max_drawdown": 4113.88,
+        "commission_total": 139.35,
+        "swap_total": -80.49,
+        "swap_rollover_units": 4
+      },
+      "internal_conservative_current_swap": {
+        "trades": 7,
+        "net_profit": 784.08,
+        "gross_profit": 5959.92,
+        "gross_loss": -5175.84,
+        "profit_factor": 1.151488,
+        "close_to_close_max_drawdown": 4135.55,
+        "commission_total": 185.16,
+        "swap_total": -80.49,
+        "swap_rollover_units": 4
+      }
+    },
+    {
+      "year": 2018,
+      "native_deal_reconstruction": {
+        "trades": 46,
+        "net_profit": -14117.51,
+        "gross_profit": 13931.83,
+        "gross_loss": -28049.34,
+        "profit_factor": 0.49669,
+        "close_to_close_max_drawdown": 15086.1
+      },
+      "ftmo_official_current_cost": {
+        "trades": 46,
+        "net_profit": -14531.48,
+        "gross_profit": 13600.36,
+        "gross_loss": -28131.84,
+        "profit_factor": 0.483451,
+        "close_to_close_max_drawdown": 15389.35,
+        "commission_total": 817.95,
+        "swap_total": -682.46,
+        "swap_rollover_units": 48
+      },
+      "internal_conservative_current_swap": {
+        "trades": 46,
+        "net_profit": -14800.3,
+        "gross_profit": 13505.24,
+        "gross_loss": -28305.54,
+        "profit_factor": 0.477124,
+        "close_to_close_max_drawdown": 15599.0,
+        "commission_total": 1086.77,
+        "swap_total": -682.46,
+        "swap_rollover_units": 48
+      }
+    },
+    {
+      "year": 2019,
+      "native_deal_reconstruction": {
+        "trades": 42,
+        "net_profit": 4664.55,
+        "gross_profit": 30224.35,
+        "gross_loss": -25559.8,
+        "profit_factor": 1.182496,
+        "close_to_close_max_drawdown": 9273.31
+      },
+      "ftmo_official_current_cost": {
+        "trades": 42,
+        "net_profit": 4332.5,
+        "gross_profit": 29861.42,
+        "gross_loss": -25528.92,
+        "profit_factor": 1.169709,
+        "close_to_close_max_drawdown": 9304.39,
+        "commission_total": 859.7,
+        "swap_total": -570.35,
+        "swap_rollover_units": 38
+      },
+      "internal_conservative_current_swap": {
+        "trades": 42,
+        "net_profit": 4094.23,
+        "gross_profit": 29771.06,
+        "gross_loss": -25676.83,
+        "profit_factor": 1.159452,
+        "close_to_close_max_drawdown": 9367.37,
+        "commission_total": 1097.97,
+        "swap_total": -570.35,
+        "swap_rollover_units": 38
+      }
+    },
+    {
+      "year": 2020,
+      "native_deal_reconstruction": {
+        "trades": 44,
+        "net_profit": 27557.07,
+        "gross_profit": 53266.68,
+        "gross_loss": -25709.61,
+        "profit_factor": 2.071859,
+        "close_to_close_max_drawdown": 8100.25
+      },
+      "ftmo_official_current_cost": {
+        "trades": 44,
+        "net_profit": 27091.59,
+        "gross_profit": 52941.88,
+        "gross_loss": -25850.29,
+        "profit_factor": 2.048019,
+        "close_to_close_max_drawdown": 8144.13,
+        "commission_total": 841.15,
+        "swap_total": -706.11,
+        "swap_rollover_units": 45
+      },
+      "internal_conservative_current_swap": {
+        "trades": 44,
+        "net_profit": 26850.97,
+        "gross_profit": 52837.77,
+        "gross_loss": -25986.8,
+        "profit_factor": 2.033254,
+        "close_to_close_max_drawdown": 8200.02,
+        "commission_total": 1081.77,
+        "swap_total": -706.11,
+        "swap_rollover_units": 45
+      }
+    },
+    {
+      "year": 2021,
+      "native_deal_reconstruction": {
+        "trades": 46,
+        "net_profit": 19387.27,
+        "gross_profit": 41612.88,
+        "gross_loss": -22225.61,
+        "profit_factor": 1.872294,
+        "close_to_close_max_drawdown": 4734.73
+      },
+      "ftmo_official_current_cost": {
+        "trades": 46,
+        "net_profit": 18608.08,
+        "gross_profit": 40882.15,
+        "gross_loss": -22274.07,
+        "profit_factor": 1.835415,
+        "close_to_close_max_drawdown": 4771.54,
+        "commission_total": 1158.1,
+        "swap_total": -1216.51,
+        "swap_rollover_units": 41
+      },
+      "internal_conservative_current_swap": {
+        "trades": 46,
+        "net_profit": 18169.85,
+        "gross_profit": 40660.57,
+        "gross_loss": -22490.72,
+        "profit_factor": 1.807882,
+        "close_to_close_max_drawdown": 4869.63,
+        "commission_total": 1596.32,
+        "swap_total": -1216.51,
+        "swap_rollover_units": 41
+      }
+    },
+    {
+      "year": 2022,
+      "native_deal_reconstruction": {
+        "trades": 42,
+        "net_profit": 12734.05,
+        "gross_profit": 34386.97,
+        "gross_loss": -21652.92,
+        "profit_factor": 1.588099,
+        "close_to_close_max_drawdown": 9251.05
+      },
+      "ftmo_official_current_cost": {
+        "trades": 42,
+        "net_profit": 12296.84,
+        "gross_profit": 34124.3,
+        "gross_loss": -21827.46,
+        "profit_factor": 1.563365,
+        "close_to_close_max_drawdown": 9400.06,
+        "commission_total": 789.7,
+        "swap_total": -638.09,
+        "swap_rollover_units": 37
+      },
+      "internal_conservative_current_swap": {
+        "trades": 42,
+        "net_profit": 12095.81,
+        "gross_profit": 34024.02,
+        "gross_loss": -21928.21,
+        "profit_factor": 1.55161,
+        "close_to_close_max_drawdown": 9460.4,
+        "commission_total": 990.72,
+        "swap_total": -638.09,
+        "swap_rollover_units": 37
+      }
+    },
+    {
+      "year": 2023,
+      "native_deal_reconstruction": {
+        "trades": 48,
+        "net_profit": 11136.9,
+        "gross_profit": 35880.09,
+        "gross_loss": -24743.19,
+        "profit_factor": 1.4501,
+        "close_to_close_max_drawdown": 6817.58
+      },
+      "ftmo_official_current_cost": {
+        "trades": 48,
+        "net_profit": 10694.7,
+        "gross_profit": 35364.78,
+        "gross_loss": -24670.08,
+        "profit_factor": 1.433509,
+        "close_to_close_max_drawdown": 6775.41,
+        "commission_total": 1114.0,
+        "swap_total": -719.07,
+        "swap_rollover_units": 39
+      },
+      "internal_conservative_current_swap": {
+        "trades": 48,
+        "net_profit": 10417.79,
+        "gross_profit": 35258.26,
+        "gross_loss": -24840.46,
+        "profit_factor": 1.419388,
+        "close_to_close_max_drawdown": 6817.47,
+        "commission_total": 1390.91,
+        "swap_total": -719.07,
+        "swap_rollover_units": 39
+      }
+    },
+    {
+      "year": 2024,
+      "native_deal_reconstruction": {
+        "trades": 46,
+        "net_profit": -4336.87,
+        "gross_profit": 26483.34,
+        "gross_loss": -30820.21,
+        "profit_factor": 0.859285,
+        "close_to_close_max_drawdown": 14152.67
+      },
+      "ftmo_official_current_cost": {
+        "trades": 46,
+        "net_profit": -4558.3,
+        "gross_profit": 26195.38,
+        "gross_loss": -30753.68,
+        "profit_factor": 0.85178,
+        "close_to_close_max_drawdown": 14251.89,
+        "commission_total": 1263.2,
+        "swap_total": -572.16,
+        "swap_rollover_units": 25
+      },
+      "internal_conservative_current_swap": {
+        "trades": 46,
+        "net_profit": -4909.15,
+        "gross_profit": 26093.12,
+        "gross_loss": -31002.27,
+        "profit_factor": 0.841652,
+        "close_to_close_max_drawdown": 14410.03,
+        "commission_total": 1614.04,
+        "swap_total": -572.16,
+        "swap_rollover_units": 25
+      }
+    },
+    {
+      "year": 2025,
+      "native_deal_reconstruction": {
+        "trades": 46,
+        "net_profit": 13783.35,
+        "gross_profit": 39854.54,
+        "gross_loss": -26071.19,
+        "profit_factor": 1.528681,
+        "close_to_close_max_drawdown": 9367.56
+      },
+      "ftmo_official_current_cost": {
+        "trades": 46,
+        "net_profit": 13479.5,
+        "gross_profit": 39579.96,
+        "gross_loss": -26100.46,
+        "profit_factor": 1.516447,
+        "close_to_close_max_drawdown": 9377.54,
+        "commission_total": 1099.55,
+        "swap_total": -654.61,
+        "swap_rollover_units": 32
+      },
+      "internal_conservative_current_swap": {
+        "trades": 46,
+        "net_profit": 13128.63,
+        "gross_profit": 39439.94,
+        "gross_loss": -26311.32,
+        "profit_factor": 1.498973,
+        "close_to_close_max_drawdown": 9447.6,
+        "commission_total": 1450.42,
+        "swap_total": -654.61,
+        "swap_rollover_units": 32
+      }
+    }
+  ],
+  "pooled": {
+    "native_deal_reconstruction": {
+      "trades": 367,
+      "net_profit": 71673.3,
+      "gross_profit": 281654.55,
+      "gross_loss": -209981.25,
+      "profit_factor": 1.341332,
+      "close_to_close_max_drawdown": 18356.57
+    },
+    "ftmo_official_current_cost": {
+      "trades": 367,
+      "net_profit": 68243.3,
+      "gross_profit": 278526.21,
+      "gross_loss": -210282.91,
+      "profit_factor": 1.324531,
+      "close_to_close_max_drawdown": 18810.21,
+      "commission_total": 8082.7,
+      "swap_total": -5839.86,
+      "swap_rollover_units": 309
+    },
+    "internal_conservative_current_swap": {
+      "trades": 367,
+      "net_profit": 65831.92,
+      "gross_profit": 277549.9,
+      "gross_loss": -211717.98,
+      "profit_factor": 1.310942,
+      "close_to_close_max_drawdown": 19154.72,
+      "commission_total": 10494.09,
+      "swap_total": -5839.86,
+      "swap_rollover_units": 309
+    }
+  }
+}

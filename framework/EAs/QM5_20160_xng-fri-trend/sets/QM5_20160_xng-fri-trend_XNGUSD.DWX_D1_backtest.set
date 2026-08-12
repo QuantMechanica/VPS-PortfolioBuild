@@ -1,0 +1,41 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        20160
+; ea_slug:      xng-fri-trend
+; ea_version:   v5.0
+; set_version:  s20260725-001
+; symbol:       XNGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   d7c012a638d6005d6d78796d64ef99cd67bb0d2dbeba166c48b996cebf22d510
+; author:       Development
+; date:         2026-07-25
+;==========================================================
+qm_ea_id=20160
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Native-price structural signal; no external calendar dependency.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+; Friday-session packages close through the governed Friday-close control.
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_momentum_lookback_d1=252
+strategy_min_abs_return_pct=0.0
+strategy_entry_grace_minutes=5
+strategy_atr_period=20
+strategy_atr_sl_mult=3.0
+strategy_max_hold_days=2
+strategy_max_spread_points=2500

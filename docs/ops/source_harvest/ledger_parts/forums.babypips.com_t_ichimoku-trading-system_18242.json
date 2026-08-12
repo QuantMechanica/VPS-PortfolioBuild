@@ -1,0 +1,41 @@
+{
+  "pdf": "forums.babypips.com_t_ichimoku-trading-system_18242.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_ichimoku-trading-system_18242.pdf",
+      "source_pages": "1, 31-33",
+      "source_ref": "currency_tunes (original poster), thread 'Ichimoku Trading System', BabyPips forum (forums.babypips.com), 2008-2009, https://forums.babypips.com/t/ichimoku-trading-system/18242 (mechanized exit/stop variant 'Ichimoku 2' by user ArmyDoc, 2009, posts #121-#123)",
+      "strategy_name": "Ichimoku triple-condition D1 trend system",
+      "concept": "Daily-chart Ichimoku trend-following: enter when Tenkan/Kijun cross, price breaks the Kumo cloud, and Chikou Span confirms above/below the price curve 26 bars back, all three aligned.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure Ichimoku (iIchimoku) trend system, MQL5-native, no ML; entry fully deterministic, exit becomes deterministic via ArmyDoc's mechanical variant; FX D1 .DWX data available, FTMO/DXZ-compatible.",
+      "priority_hint": "LOW",
+      "notes": "OP entry FULL (9,26,52; BUY = Tenkan>Kijun + price>cloud + Chikou>price-curve; SELL mirror; enter at open of next candle) but OP exit is discretionary hand-drawn Chikou Span S/R for SL/TP plus 2x hourly-ATR trailing on a runner lot -> not directly mechanizable. ArmyDoc 'Ichimoku 2' variant closes the gap: 3% risk, SL 20 pips beyond Kumo, exit when all three signals reverse (that mechanization is what makes it implementable). Alt settings floated: 9,26,65 and 5,10,20. Thread is rife with skepticism (posters call the lines just lagging EMAs / self-fulfilling prophecy, heavy whipsaws in ranges); OP's 90% win-rate claim is unsupported marketing. Generic FX trend-following, no structural/limit-to-arbitrage edge argument -> low priority per FX-edge doctrine. JPY crosses favored by several posters (claimed Japanese institutional usage); avoid AUD pairs per unhommefou. Forum-sourced, reputability caveat lowers priority (not a reject)."
+    },
+    {
+      "source_file": "forums.babypips.com_t_ichimoku-trading-system_18242.pdf",
+      "source_pages": "6-10",
+      "source_ref": "unhommefou, posts #25-#39 in thread 'Ichimoku Trading System', BabyPips forum (forums.babypips.com), 2009, https://forums.babypips.com/t/ichimoku-trading-system/18242",
+      "strategy_name": "Mechanized Ichimoku cloud trend system (ATR cloud filter)",
+      "concept": "Go long/short when Tenkan is above/below Kijun with price a full ATR(20) beyond the Kumo (whipsaw filter), exit on the opposite Tenkan/Kijun cross; Chikou Span dropped entirely.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure iIchimoku + iATR, fully deterministic entry (Tenkan/Kijun relation + price beyond cloud + ATR filter) and exit (opposite T/K cross), no ML; FX D1 (.DWX) data available, FTMO/DXZ-compatible.",
+      "priority_hint": "MED",
+      "notes": "Cleaner mechanical variant than the OP: LONG = Tenkan>Kijun AND price > cloud + ATR(20); SHORT mirror; exit when Tenkan crosses back through Kijun. Walk-forward best settings reported 9,26,65 (then 9,26,100, then 9,26,52). Self-reported NinjaTrader backtest 1970-2009 on the four majors -- NO CSV/report evidence, treat as unverified forum claim. USDJPY best performer; AUD pairs called consistent losers (avoid). Optional ATR(20)-based pyramiding up to 3 lots raises drawdown sharply -- keep base 1-lot deterministic version. Higher priority than OP variant because fully mechanical + explicit optimized params, but still a generic trend system with no structural edge; forum-sourced reputability caveat applies."
+    }
+  ],
+  "notes": [
+    "Thread yields two mechanical candidates; the rest is discretionary chatter (CamelToeJoe penny-stock/stock short-term signals = discretionary + out-of-universe; desander Renko-bar Ichimoku = non-time bars, discretionary) -> not carried as candidates.",
+    "PDF text extracted via PyMuPDF (fitz) because the Read tool's pdftoppm/poppler backend is unavailable on this VPS; all 33 pages read.",
+    "ArmyDoc 'Ichimoku 1/2/3' are money-management variants of the OP entry (1%/3% risk, Chikou-S/R vs 20-pip-beyond-Kumo stops, daily vs weekly confirmation) -> folded into the OP row as variants per schema."
+  ]
+}

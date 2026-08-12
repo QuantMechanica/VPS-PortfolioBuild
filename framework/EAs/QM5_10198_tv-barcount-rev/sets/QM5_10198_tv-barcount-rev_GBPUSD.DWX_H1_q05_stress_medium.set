@@ -3,7 +3,7 @@
 ; ea_id:        10198
 ; ea_slug:      tv-barcount-rev
 ; ea_version:   v5.0
-; set_version:  s20260611-stress-med
+; set_version:  s20260714-stress-med
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  q05_stress_medium
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   e7f11db8a3a568b0045ec0a7b78a6b4825271c25920fda91961a7291793d6d87
 ; author:       Development
-; date:         2026-06-11
+; date:         2026-07-14
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000

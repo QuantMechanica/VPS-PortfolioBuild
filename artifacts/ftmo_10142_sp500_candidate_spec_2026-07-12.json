@@ -1,0 +1,27 @@
+{
+  "candidate_evidence": [
+    "artifacts/ftmo_10142_sp500_fresh_stream_reconciliation_2026-07-12.json",
+    "artifacts/ftmo_10142_sp500_fresh_current_report_cost_reconciliation_2026-07-12.json"
+  ],
+  "sleeve": {
+    "ea_id": 10142,
+    "symbol": "SP500.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10142_sp500_d1_wave17_20260712\\QM5_10142\\20260712_152124\\summary.json",
+    "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10142_SP500_DWX_T1_FRESH_20260712.jsonl",
+    "base_risk_fixed": 1000.0,
+    "qualification": "fresh_two_report_exact_stream_current_cost_pooled_pf_pass_but_annual_density_and_2019_2020_quality_fail_research_only_raw_marginal",
+    "cost": {
+      "ftmo_symbol_code": "US500.cash",
+      "commission_percent_per_side": 0.0,
+      "flat_round_trip_commission_per_lot": 0.0,
+      "swap_long_points": -86.56,
+      "swap_short_points": -68.93,
+      "contract_size": 1.0,
+      "source_contract_size": 1.0,
+      "profit_currency_to_account_rate": 1.0,
+      "derive_profit_currency_rate_from_pnl": false,
+      "digits": 2,
+      "triple_weekday": 2
+    }
+  }
+}

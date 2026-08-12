@@ -1,0 +1,388 @@
+{
+  "schema_version": 3,
+  "as_of_utc": "2026-07-17T11:14:37Z",
+  "book_id": "FTMO_2STEP_SWING_EA_BOOK_V3",
+  "status": "BOOK_CONTRACT_COMPLETE_CHALLENGE_NO_GO",
+  "design_complete": true,
+  "research_only": true,
+  "challenge_purchase_allowed": false,
+  "deployment_allowed": false,
+  "autotrading_allowed": false,
+  "owner_delegation": "OWNER delegated research, adjudication, build-test, and technical book release on 2026-07-17; this does not waive evidence gates or authorize live deployment.",
+  "canonical_documents": [
+    "docs/research/FTMO_CHALLENGE_EA_TARGET_BOOK_2026-07-17.md",
+    "docs/ops/evidence/FTMO_EA_BOOK_REBUILD_STATUS_2026-07-17.md"
+  ],
+  "supersedes_as_release_contract": [
+    "artifacts/ftmo_rebuild_2026-07-17/candidate_book_manifest.json",
+    "artifacts/ftmo_rebuild_2026-07-17/candidate_book_readiness.json"
+  ],
+  "account_contract": {
+    "provider": "FTMO",
+    "model": "2-Step",
+    "account_style": "Swing",
+    "planning_balance": 100000.0,
+    "official_snapshot_date": "2026-07-17",
+    "phase_1_profit_target_pct": 10.0,
+    "phase_2_profit_target_pct": 5.0,
+    "maximum_daily_loss_pct": 5.0,
+    "maximum_loss_pct": 10.0,
+    "minimum_trading_days_each_phase": 4,
+    "maximum_time_limit": null,
+    "daily_loss_reset_timezone": "CE(S)T",
+    "daily_loss_includes_open_pnl_commission_and_swap": true,
+    "target_requires_closed_positions": true,
+    "earliest_first_reward_request_calendar_days_after_first_funded_trade": 14,
+    "reward_request_requires_flat_account_and_no_pending_orders": true,
+    "two_step_reward_split_pct": 80.0,
+    "official_sources": [
+      "https://ftmo.com/en/trading-objectives/",
+      "https://ftmo.com/en/faq/how-do-i-withdraw-my-profits/"
+    ]
+  },
+  "control_plane": {
+    "ea_id": 13206,
+    "name": "QM5_13206_FTMO-AccountGovernor",
+    "contract_revision": 2,
+    "state": "APPROVE_FOR_BUILD_TEST_LIVE_BLOCKED",
+    "evidence": {
+      "python_tests_passed": 18,
+      "client_compile_errors": 0,
+      "client_compile_warnings": 0,
+      "strict_build_result": "PASS",
+      "strict_build_receipt": "D:/QM/reports/framework/21/build_check_20260717_105002.json",
+      "golden_policy_artifact": "artifacts/ftmo_governor_policy_golden_2026-07-17.json"
+    },
+    "live_blockers": [
+      "TARGET_REACHED_BEFORE_MINIMUM_DAY_4_CAN_DEADLOCK_NEW_ENTRIES",
+      "PRAGUE_MIDNIGHT_AND_DEAL_TIME_EDGE_NOT_EXECUTION_VERIFIED",
+      "SIGNED_MANIFEST_AND_MAGIC_WHITELIST_NOT_RUNTIME_BOUND",
+      "BOOTSTRAP_HAS_NO_INDEPENDENT_HISTORY_RECONCILIATION",
+      "NO_PRODUCTION_ALPHA_SLEEVE_ADMITTED_AND_WIRED",
+      "T1_TO_T5_FAULT_AND_PARITY_TESTS_NOT_EXECUTED",
+      "OWNER_SIGNED_LIVE_MANIFEST_AND_T6_READ_ONLY_VERIFICATION_MISSING",
+      "PAYOUT_READINESS_NOT_MODELED"
+    ]
+  },
+  "roles": [
+    {
+      "role": "fx_density_engine",
+      "required_for_fast_corridor": true,
+      "selected_ea_id": 4006,
+      "name": "QM5_4006_fx-session-flow",
+      "symbol": "EURUSD.DWX",
+      "strategy_id": "SRC09_S01",
+      "target_executable_legs_per_20_trading_days": {
+        "min": 38,
+        "max": 42
+      },
+      "phase_1_risk_pct_per_leg": 0.25,
+      "fx_family_realized_loss_cap_pct_per_strategy_day": 0.50,
+      "state": "BUILD_PASS_Q02_INFRA_FAIL_UNDECIDABLE_NOT_ADMITTED",
+      "evidence": {
+        "strict_build_receipt": "D:/QM/reports/framework/21/build_check_20260717_100152.json",
+        "q02_last_summary": "D:/QM/reports/pipeline/QM5_4006_fx-session-flow/Q02_recovery_T4/QM5_4006/20260717_102256/summary.json",
+        "q02_last_summary_sha256": "469C886256E7A5DEEA8505720F8DF93D9C5D2A57C94FBEE2317BE273A9D14CB8",
+        "q02_terminals_attempted": [
+          "T1",
+          "T2",
+          "T3",
+          "T4"
+        ],
+        "q02_failure": "EURUSD.DWX_HISTORY_SYNCHRONIZATION_ERROR_BEFORE_BARS"
+      },
+      "next_gate": "REPAIR_TERMINAL_HISTORY_WITHOUT_CHANGING_EA_THEN_REPEAT_MODEL4_Q02"
+    },
+    {
+      "role": "calendar_fx_anchor",
+      "required_for_fast_corridor": false,
+      "selected_ea_id": 12969,
+      "name": "QM5_12969_usdjpy-gotobi-nakane-fix",
+      "symbol": "USDJPY.DWX",
+      "target_trades_per_month": {
+        "min": 5,
+        "max": 6
+      },
+      "phase_1_risk_pct_per_signal": 0.30,
+      "state": "Q02_PASS_Q03_RUNNING_NOT_ADMITTED",
+      "identity": {
+        "card_sha256": "F8989E1E7E6592D601A2142A8B0DAF8449D0E33D8F638D4521077BFA1C321E4C",
+        "mq5_sha256": "4E9503F7B74A2644119F8D24555E99A69729A5579B88F1AB5891BF86EB4B6AFA",
+        "ex5_sha256": "933D63C036A154725DF1376E22CA74CB419860588F0313FC986FC3EAD7673BE4",
+        "set_sha256": "D247AAE4EF08654AE7D090FE026A3DA183DC2D21818729D352FB8606D595D592"
+      },
+      "q02": {
+        "status": "PASS_DETERMINISTIC",
+        "model": 4,
+        "window": "2017-01-01/2022-12-31",
+        "runs": 2,
+        "trades_each_run": 213,
+        "profit_factor_each_run": 1.57,
+        "net_profit_each_run": 6062.13,
+        "drawdown_pct_each_run": 1.89,
+        "summary": "D:/QM/reports/pipeline/QM5_12969_usdjpy-gotobi-nakane-fix/Q02_contract_v2_T1/QM5_12969/20260717_104210/summary.json",
+        "summary_sha256": "BB8D3C7AC14A82E3E78CEFEC965FDC035D4AD76B59C2E2BDA673FF022D99F291"
+      },
+      "q03": {
+        "status": "RUNNING",
+        "axis": "stop_loss_pips",
+        "cells": [
+          60,
+          90,
+          120,
+          150,
+          180,
+          240,
+          360
+        ],
+        "runs_per_cell": 2,
+        "completed_cells_at_snapshot": 2,
+        "current_cell_at_snapshot": 120,
+        "minimum_trades": 180,
+        "minimum_profitable_cell_fraction": 0.50,
+        "minimum_contiguous_plateau_width": 3,
+        "selection": "PLATEAU_MEDIAN_ONLY",
+        "predeclaration": "artifacts/ftmo_12969_usdjpy_q03_grid_predeclaration_2026-07-17.json",
+        "predeclaration_sha256": "7CF4B4C061430CDEBE9C749ACA27725CB1B2E7A3C6E8C9C590789FD53F88B481",
+        "run_root": "D:/QM/reports/pipeline/QM5_12969/Q03/USDJPY_DWX/runs/20260717_105757_700877_7cf4b4c06143_dc9ce88d324b"
+      },
+      "next_gate": "COMPLETE_Q03_FREEZE_MEDIAN_THEN_REGENERATE_Q04_TO_Q10_AND_FTMO_COST_EVIDENCE_ON_SAME_LINEAGE"
+    },
+    {
+      "role": "equity_microstructure_champion",
+      "required_for_fast_corridor": true,
+      "selected_ea_id": null,
+      "state": "ROLE_UNFILLED",
+      "target_trades_per_month": {
+        "min": 12,
+        "max": 20
+      },
+      "phase_1_risk_pct_per_signal": {
+        "min": 0.25,
+        "max": 0.30
+      },
+      "evaluated_candidates": [
+        {
+          "ea_id": 4007,
+          "name": "QM5_4007_index-mac5-rev",
+          "state": "BUILD_PASS_Q02_FAIL_ZERO_TRADES_BELOW_COHORT_NO_DISPATCH",
+          "strict_build_receipt": "D:/QM/reports/framework/21/build_check_20260717_110304.json",
+          "ex5_sha256": "8C5ED569D5ABE7FB8FFFA2B8CDF93E0B59D1613BC0F6B13302E3704BD612CD6D",
+          "tested_card_sha256_before_result_append": "3D7F86DC2978F7A3570CFBA86058AC7FA900F9F4195DD26EE44E898C9313AF84",
+          "current_card_sha256_after_result_append": "5CCAC2B04C39EE9D7EAC75D91790008C32444225DFDCE87B023BDB8DEE055846",
+          "q02_summary": "D:/QM/reports/pipeline/QM5_4007_index-mac5-rev/Q02_research_T2/QM5_4007/20260717_110744/summary.json",
+          "q02_summary_sha256": "D9005A82B18CFBE4F881EC95B3935A7DBD0FF37D04E62E668AD909BD094480A3",
+          "q02_trades": [
+            0,
+            0
+          ],
+          "observed_root_cause": "D1_BOUNDARY_ORDERS_MARKET_CLOSED_AFTER_ONE_SHOT_FLAG_PERSISTED",
+          "zt_cohort_count": 1,
+          "zt_dispatch_threshold": 5,
+          "root_cause_record": "framework/EAs/QM5_4007_index-mac5-rev/ZT_RootCause_QM5_4007_20260717.md"
+        },
+        {
+          "ea_id": 1159,
+          "name": "Overnight_MA20",
+          "state": "EXCLUDED_Q05_RAW_FAIL_AND_LINEAGE_GAP",
+          "q05_profit_factor": 1.07,
+          "q05_drawdown_pct": 17.09
+        },
+        {
+          "ea_id": 10326,
+          "name": "Closing_Auction_Reversal",
+          "state": "UNDECIDABLE_PROXY_CARD_AND_Q02_INFRASTRUCTURE"
+        }
+      ],
+      "next_gate": "QUALIFY_ONE_NEW_OR_IDENTITY_CLEAN_CANDIDATE_WITHOUT_REUSING_MAC5_V1"
+    },
+    {
+      "role": "turn_of_month_diversifier",
+      "required_for_fast_corridor": false,
+      "selected_ea_id": null,
+      "reference_ea_id": 20004,
+      "name": "Turn_of_Month_Index_D1",
+      "target_trades_per_month": 1,
+      "phase_1_risk_pct_per_signal": {
+        "min": 0.30,
+        "max": 0.35
+      },
+      "state": "REFERENCE_EXISTS_NOT_CURRENTLY_QUALIFIED",
+      "new_card_adjudication": "REJECTED_DUPLICATE_OF_QM5_1049_AND_QM5_20004",
+      "next_gate": "CURRENT_CANONICAL_Q02_TO_Q10_LINEAGE_FOR_REFERENCE_EA_OR_LEAVE_ROLE_UNFILLED"
+    },
+    {
+      "role": "slow_diversifier_champion",
+      "required_for_fast_corridor": false,
+      "selected_ea_id": null,
+      "state": "ROLE_UNFILLED_AFTER_READ_ONLY_AUDIT",
+      "target_trades_per_month": {
+        "min": 1,
+        "max": 2
+      },
+      "phase_1_risk_pct_per_signal": {
+        "min": 0.25,
+        "max": 0.30
+      },
+      "evaluated_candidates": [
+        {
+          "ea_id": 12382,
+          "state": "REJECT_CURRENT_Q04_INVALID_SYMBOL_AND_BINARY_LINEAGE_GAPS"
+        },
+        {
+          "ea_id": 10377,
+          "state": "REJECT_CURRENT_Q02_Q04_BINARY_MISMATCH_CARD_TIMEFRAME_MISMATCH_LOW_FREQUENCY",
+          "promising_but_unbound_profit_factor": 1.826,
+          "promising_but_unbound_trades": 61
+        },
+        {
+          "ea_id": 10513,
+          "state": "REJECT_CURRENT_COST_FREQUENCY_AND_Q04_FAIL",
+          "q04_f2_profit_factor": 0.782
+        },
+        {
+          "ea_id": 12897,
+          "state": "EXCLUDED_CURRENT_FTMO_COST_HARD_FAIL",
+          "trades": 89,
+          "profit_factor": 0.555,
+          "net_profit": -12514.99
+        }
+      ],
+      "next_gate": "QUALIFY_EXACTLY_ONE_IDENTITY_CLEAN_SLOW_CANDIDATE_OR_KEEP_ROLE_EMPTY"
+    }
+  ],
+  "risk_modes": {
+    "phase_1": {
+      "governor_policy_id": "FTMO_2S_P1_100K_V2",
+      "per_signal_risk_pct": {
+        "normal_min": 0.25,
+        "normal_max": 0.30,
+        "tom_exception_max": 0.35,
+        "mac5_gap_sensitive_exception": 0.15
+      },
+      "max_gross_open_risk_pct": 1.00,
+      "max_fx_cluster_open_risk_pct": 0.50,
+      "max_equity_cluster_open_risk_pct": 0.45,
+      "entry_daily_stop_amount": 900.0,
+      "liquidation_daily_stop_amount": 1250.0,
+      "internal_total_floor_balance": 94000.0,
+      "target_balance": 110000.0,
+      "progress_tapers": [
+        {
+          "balance": 107500.0,
+          "risk_scale": 0.75
+        },
+        {
+          "balance": 109000.0,
+          "risk_scale": 0.50
+        }
+      ]
+    },
+    "phase_2": {
+      "governor_policy_id": "FTMO_2S_P2_100K_V2",
+      "base_risk_multiplier_vs_phase_1": 0.70,
+      "max_gross_open_risk_pct": 0.70,
+      "entry_daily_stop_amount": 650.0,
+      "liquidation_daily_stop_amount": 900.0,
+      "internal_total_floor_balance": 96000.0,
+      "target_balance": 105000.0,
+      "progress_tapers": [
+        {
+          "balance": 103500.0,
+          "risk_scale": 0.70
+        },
+        {
+          "balance": 104500.0,
+          "risk_scale": 0.40
+        }
+      ]
+    },
+    "funded_until_first_reward": {
+      "governor_policy_id": "FTMO_2S_FUNDED_100K_V2",
+      "risk_pct_per_signal": {
+        "min": 0.10,
+        "max": 0.15
+      },
+      "max_gross_open_risk_pct": 0.45,
+      "entry_daily_stop_amount": 350.0,
+      "liquidation_daily_stop_amount": 500.0,
+      "internal_total_floor_balance": 97500.0,
+      "profit_target": null,
+      "objective": "CAPITAL_PRESERVATION_AND_POSITIVE_FLAT_REWARD_REQUEST"
+    }
+  },
+  "speed_and_economics": {
+    "target_executable_trades_per_20_trading_days": {
+      "min": 50,
+      "max": 65
+    },
+    "weighted_oos_net_expectancy_r_minimum": 0.25,
+    "weighted_oos_net_expectancy_r_fast_corridor": 0.30,
+    "release_gate_median_phase_1_trading_days_max": 50,
+    "release_gate_median_phase_2_trading_days_max": 30,
+    "planning_time_to_first_reward_weeks": {
+      "min": 11,
+      "max": 17,
+      "guaranteed": false
+    },
+    "fallback_if_net_expectancy_near_0_20r_weeks": {
+      "min": 14,
+      "max": 26
+    },
+    "challenge_fee_actual": null,
+    "vps_monthly_cost_actual": null,
+    "economic_preflight": "BLOCKED_UNTIL_ACTUAL_COSTS_AND_DECISION_GRADE_TIME_DISTRIBUTION_EXIST"
+  },
+  "release_gates": {
+    "minimum_admitted_independent_alpha_roles": 3,
+    "density_engine_required": true,
+    "minimum_roles_before_portfolio_simulation": 2,
+    "each_role_requires": [
+      "CURRENT_STRICT_Q02_TO_Q08_AND_Q10_PASS",
+      "SAME_BINARY_AND_SET_LINEAGE",
+      "CURRENT_FTMO_NATIVE_SYMBOL_ROUTE_AND_COST_BINDING",
+      "TWO_X_COST_STRESS_PASS",
+      "STREAM_AND_TRADE_RECONCILIATION_PASS",
+      "GOVERNOR_V2_CLIENT_WIRING_AND_FAIL_CLOSED_TEST_PASS"
+    ],
+    "portfolio_requires": [
+      "SYNCHRONIZED_OOS_RETURNS",
+      "NORMAL_AND_ADVERSE_MONTE_CARLO_WITH_PRECOMMITTED_BREACH_LIMITS",
+      "MEDIAN_PHASE_1_AND_PHASE_2_TIME_GATES_PASS",
+      "CLUSTER_RISK_LIMITS_PASS",
+      "ACTUAL_CHALLENGE_FEE_AND_VPS_ECONOMIC_PREFLIGHT_PASS"
+    ],
+    "live_requires": [
+      "OWNER_SIGNED_DEPLOY_MANIFEST",
+      "MAGIC_AND_SYMBOL_WHITELIST_BOUND",
+      "T6_READ_ONLY_DEPLOY_VERIFICATION_WITH_AUTOTRADING_OFF",
+      "OWNER_ALONE_MAY_ENABLE_AUTOTRADING"
+    ]
+  },
+  "prohibited": [
+    "CHALLENGE_PURCHASE_BEFORE_ALL_RELEASE_GATES",
+    "LIVE_DEPLOYMENT_OR_AUTOTRADING_BY_AGENT",
+    "DEADLINE_DRIVEN_RISK_ESCALATION",
+    "ROUND25_BOOK_REUSE",
+    "GRID",
+    "MARTINGALE",
+    "AVERAGING_DOWN",
+    "LATENCY_OR_FEED_EXPLOIT",
+    "CORRELATED_EQUITY_OR_METAL_CLONE_STACKING",
+    "MID_PRICE_ONLY_RELEASE_DECISION",
+    "CROSS_EA_OR_CROSS_SYMBOL_EVIDENCE_TRANSFER",
+    "SILENT_REPAIR_OF_TERMINAL_ZERO_TRADE_LINEAGE"
+  ],
+  "current_decision": {
+    "book_contract": "RELEASED_FOR_CONTROLLED_RESEARCH_AND_BUILD_TEST",
+    "challenge": "NO_GO",
+    "reason": "ZERO_ADMITTED_ALPHA_EAS_AND_GOVERNOR_LIVE_BLOCKERS",
+    "next_actions": [
+      "COMPLETE_GOTOBI_Q03_AND_IF_PASS_RUN_Q04_TO_Q10_ON_FROZEN_LINEAGE",
+      "REPAIR_SESSIONFLOW_TERMINAL_HISTORY_WITHOUT_EA_CHANGE_AND_REPEAT_Q02",
+      "FILL_EQUITY_AND_SLOW_ROLES_ONLY_WITH_HARD_IDENTITY_BOUND_EVIDENCE",
+      "CLOSE_GOVERNOR_LIVE_BLOCKERS_AND_WIRE_ADMITTED_CLIENTS",
+      "RUN_SYNCHRONIZED_PORTFOLIO_AND_VPS_ECONOMIC_PREFLIGHT_AFTER_MINIMUM_EVIDENCE_GATE"
+    ]
+  }
+}

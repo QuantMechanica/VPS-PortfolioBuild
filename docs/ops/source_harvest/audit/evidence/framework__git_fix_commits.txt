@@ -1,0 +1,32 @@
+FRAMEWORK COMPLIANCE FIX COMMITS (git log, C:\QM\repo, branch agents/board-advisor HEAD)
+Collected 2026-07-24 read-only audit.
+
+KillSwitch halt-channel fix (P0.3 root fix):
+  47f1d9709 | 2026-07-05 21:12 | Codex | fix(killswitch): halt-file channel was dead
+     (invalid D:\ sandbox paths) -> sandbox-relative defaults + QM_KillSwitchSetBookTag (H2)
+     files: framework/include/QM/QM_KillSwitch.mqh (+37/-3), QM_Common.mqh (4),
+            docs/ops/KILLSWITCH_HALT_CHANNEL_FIX_2026-07-05.md
+  KillSwitch follow-ups: 841449513 (2026-07-06 15:20 C-2 tester-gate KS dist switch),
+     eb5195a14 (2026-07-06 14:04 E2/E3 restart persistence + day anchor),
+     2bd733c32 (2026-07-13 11:35 per-strategy magic+risk contexts),
+     6f2393373 (2026-07-20 22:15 preserve foreign-config persisted state across Init)
+
+Audit P0/P1 bundle (dated 2026-07-20, same day as EA_FRAMEWORK_AUDIT_2026-07-20.md):
+  5b21b9b1d | 2026-07-20 00:53 | "pump auto-commit 4" = P0 bundle PART 1 (swept per 37196e79 msg)
+     QM_Common.mqh(+31 P0.1 deinit guard/telemetry + P0.2 cap_pct),
+     QM_Entry.mqh(+51 P0.5 pending guard + P1.4 RISK_CLAMP),
+     QM_NewsFilter.mqh(+38 P0.6 live-degrade), QM_RiskSizer.mqh(+66 P0.2 cap + P1.4 clamp)
+  37196e79d | 2026-07-20 00:54 | fix(framework): audit P0 bundle part 2 —
+     QM_TradeManagement.mqh(+166 P0.4 held-period + P2 stops-level/modify-dedup),
+     QM_Exit.mqh(+6 P2 partial reason), build_check.ps1(CEO/CTO->OWNER)
+  0295ba5a6 | 2026-07-20 00:56 | test: audit P0-bundle compile test 0/0
+  7dc4751ca | 2026-07-20 01:04 | fix: adversarial-review fixes for P0 bundle
+     QM_Common.mqh(+14), QM_TradeManagement.mqh(+40), p0_compile_test.ex5
+  6e92c8062 | 2026-07-20 08:20 | framework: add P1 evidence integrity controls
+     QM_EquityStream.mqh(+156 P1.2 scope + P1.3 persist), QM_NewsFilter.mqh(+107 P1.5 selftest),
+     QM_Logger.mqh(+2 P1.6), event_vocabulary.json(+319 P1.6), build_check.ps1(+259),
+     EA_Skeleton.mq5(+8 P1.1 MAE hook), q08_davey/common.py(consumer P1.2)
+  b65e45b4  | 2026-07-20 08:20 | framework: add guarded DWX tick-value diagnostic (P1.8)
+  2acf9721c | 2026-07-20 08:43 | merge: Codex framework P1 evidence bundle (review-accepted)
+
+QM_SeedRNG.mqh (P1.7): UNCHANGED since 8e597ca1e 2026-05-23 — no fix applied.

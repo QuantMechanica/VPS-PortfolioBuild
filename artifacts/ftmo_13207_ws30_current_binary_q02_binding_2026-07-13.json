@@ -1,0 +1,81 @@
+{
+  "blockers": [],
+  "cohort_metrics": null,
+  "deterministic": true,
+  "ea_id": 13207,
+  "files": {
+    "card": {
+      "modified_utc": "2026-07-13T09:46:16.465691+00:00",
+      "path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13207_ws30-fri-t20a.md",
+      "sha256": "aa5d86af230fd4dbb28878852a8d3388be018870a5d3761362049959ddd55755",
+      "size_bytes": 5623
+    },
+    "ex5": {
+      "modified_utc": "2026-07-13T09:43:33.565311+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13207_ws30-fri-t20a\\QM5_13207_ws30-fri-t20a.ex5",
+      "sha256": "9b508e5c88599ed841bcf516c9a610084c94868aff5582905bfbac602cd03716",
+      "size_bytes": 318596
+    },
+    "mq5": {
+      "modified_utc": "2026-07-13T09:40:27.696317+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13207_ws30-fri-t20a\\QM5_13207_ws30-fri-t20a.mq5",
+      "sha256": "a86d9b64b38906462d597149e051fb7f3390e0ca2e223a65f53ffc4d43eafe77",
+      "size_bytes": 10408
+    },
+    "setfile": {
+      "modified_utc": "2026-07-13T09:42:09.435232+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13207_ws30-fri-t20a\\sets\\QM5_13207_ws30-fri-t20a_WS30.DWX_M15_native_parity.set",
+      "sha256": "c9fa8a76781129004ff4284cfd0605178489d8b8ab0c1b76a790b5a801807e2d",
+      "size_bytes": 853
+    },
+    "spec": {
+      "modified_utc": "2026-07-13T09:45:23.104452+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13207_ws30-fri-t20a\\SPEC.md",
+      "sha256": "3c1f06acf3942d7c0074e6568d40f488df5306cd043347efe25ca6785c188909",
+      "size_bytes": 4109
+    },
+    "summary": {
+      "modified_utc": "2026-07-13T10:01:57.907047+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260713\\13207_ws30_q02_native100_t1\\QM5_13207\\20260713_095512\\summary.json",
+      "sha256": "cd521c6744c6b51095300cc7aca0fb890ab7673a19ef11235a86eef3747bf893",
+      "size_bytes": 2959
+    }
+  },
+  "metrics": {
+    "drawdown": 22602.12,
+    "net_profit": 60820.92,
+    "profit_factor": 1.39,
+    "trades": 233
+  },
+  "model": 4,
+  "period": "M15",
+  "phase": "Q02",
+  "promotion_note": "BOUND_PASS does not waive FTMO cost reconciliation or Q04-Q10.",
+  "reports": [
+    {
+      "modified_utc": "2026-07-13T09:58:14.292091+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260713\\13207_ws30_q02_native100_t1\\QM5_13207\\20260713_095512\\raw\\run_01\\report.htm",
+      "sha256": "563b8dcd454953d364a0f5894ce62f67cf338e90dbfbc04aa9310f88c0ed743d",
+      "size_bytes": 498256
+    },
+    {
+      "modified_utc": "2026-07-13T10:01:53.218293+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260713\\13207_ws30_q02_native100_t1\\QM5_13207\\20260713_095512\\raw\\run_02\\report.htm",
+      "sha256": "b097a893bc524f8dad2ed0b56f2ea63c59f7e687b9f56a7aeb8ed9bcf8f447f1",
+      "size_bytes": 498256
+    }
+  ],
+  "run_contract": {
+    "description": "current-binary deterministic replay",
+    "minimum_runs": 2,
+    "observed_runs": 2,
+    "require_identical_metrics": true
+  },
+  "schema_version": 1,
+  "scope": "native_current_binary_q02_only",
+  "seed_evidence": [],
+  "source_summary_deterministic": true,
+  "status": "BOUND_PASS",
+  "symbol": "WS30.DWX",
+  "terminal": "T1"
+}

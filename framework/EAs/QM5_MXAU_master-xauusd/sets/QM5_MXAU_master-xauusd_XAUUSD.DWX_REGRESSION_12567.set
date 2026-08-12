@@ -1,0 +1,40 @@
+;==========================================================
+; QM5 Master-EA Set File — Phase-3 PILOT per-module regression
+; ea_id:        20001
+; ea_slug:      master-xauusd
+; ea_version:   v5.0
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest (regression)
+; purpose:      strategy3 (QM5_12567 cum-rsi2-commodity) ONLY, FIXED/1000 —
+;               reproduce the verified standalone stream (73 trades / net
+;               $4,676.76, all rows magic=125670003) inside the master host.
+;               qm_news_temporal/qm_news_compliance mirror the standalone
+;               12567 EA's own compiled defaults (mode 3 / mode 1); the
+;               master's own defaults are OFF/NONE and must be overridden
+;               here or the news corset diverges from the reference run.
+; author:       headless Sonnet (Phase-3 PILOT)
+; date:         2026-07-13
+;==========================================================
+qm_ea_id=20001
+qm_magic_slot_offset=0
+qm_rng_seed=42
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy1_enabled=false
+strategy1_risk_percent=0
+strategy2_enabled=false
+strategy2_risk_percent=0
+strategy3_enabled=true
+strategy3_risk_mode=2
+strategy3_risk_value=1000
+strategy4_enabled=false
+strategy4_risk_percent=0
+strategy5_enabled=false
+strategy5_risk_percent=0

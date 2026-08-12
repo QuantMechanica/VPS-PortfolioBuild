@@ -1,0 +1,28 @@
+{
+  "schema_version": "qm.owner-priority-tracks/v1",
+  "policy": "EXPLICIT_OWNER_ORDERING_PRIOR_NOT_PIPELINE_EVIDENCE",
+  "entries": [
+    {
+      "ea_id": "QM5_20007",
+      "priority_track": true,
+      "asset_class": "index_metal",
+      "timeframe": "M5/M15",
+      "target_symbols": [
+        "GDAXI.DWX",
+        "NDX.DWX",
+        "XAUUSD.DWX"
+      ],
+      "excluded_symbols": [
+        "SP500.DWX"
+      ],
+      "owner_reference": "OWNER_DECISION_2026-07-31_QM5_20007_PRIORITY_TRACK",
+      "decision_date": "2026-07-31",
+      "reason": "FTMO decisive-density experiment; accepted NDX claim-order displacement",
+      "decision_source": {
+        "path": "docs/ops/CODEX_BRIEF_2026-07-31_priority_track_controller.md",
+        "sha256": "5873608ec14fd9d559bf5ea53eea9ba4483b709b7c24f8bd876a3456b9d70879",
+        "commit_sha": "31475d9f1c476c9ca43d94fef58cc13b933c1337"
+      }
+    }
+  ]
+}

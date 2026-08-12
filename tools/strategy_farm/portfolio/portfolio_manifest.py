@@ -28,6 +28,7 @@ try:
         portfolio_metrics,
     )
     from .portfolio_montecarlo import build_artifact as mc_build_artifact
+    from .portfolio_resize import AllocationError, capped_proportional_allocation
 except ImportError:  # pragma: no cover - direct script execution
     from commission import describe_model, load_model  # type: ignore
     from portfolio_assemble import assemble_portfolio  # type: ignore
@@ -48,6 +49,7 @@ except ImportError:  # pragma: no cover - direct script execution
         portfolio_metrics,
     )
     from portfolio_montecarlo import build_artifact as mc_build_artifact  # type: ignore
+    from portfolio_resize import AllocationError, capped_proportional_allocation  # type: ignore
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -103,7 +105,34 @@ def apply_leverage_scale(manifest: dict[str, Any], scale: float) -> None:
     book to 2 sleeves, throwing away the diversification we built)."""
     if scale <= 0.0:
         raise ValueError("leverage scale must be > 0")
+    # Fail before mutating any field if a legacy manifest would multiply the
+    # already-allocated RISK_PERCENT by a relative weight a second time.
+    for sleeve in manifest.get("sleeves", []):
+        sfe = sleeve.get("set_file_expectation")
+        if not isinstance(sfe, dict):
+            raise ValueError("sleeve lacks set_file_expectation risk contract")
+        try:
+            set_risk = float(sfe["RISK_PERCENT"])
+            portfolio_weight = float(sfe["PORTFOLIO_WEIGHT"])
+            allocated_risk = float(sleeve["risk_percent"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError("sleeve risk contract is incomplete or non-numeric") from exc
+        if not math.isclose(portfolio_weight, 1.0, rel_tol=0.0, abs_tol=1e-12):
+            raise ValueError(
+                "legacy double-scaled risk contract: PORTFOLIO_WEIGHT must be 1.0 "
+                "when RISK_PERCENT is the allocated sleeve risk"
+            )
+        if not math.isclose(set_risk, allocated_risk, rel_tol=0.0, abs_tol=1e-9):
+            raise ValueError("sleeve RISK_PERCENT does not equal allocated sleeve risk")
     manifest["account_risk_pct"] = _round_float(float(manifest["account_risk_pct"]) * scale)
+    if "requested_account_risk_pct" in manifest:
+        manifest["requested_account_risk_pct"] = _round_float(
+            float(manifest["requested_account_risk_pct"]) * scale
+        )
+    if "allocated_total_risk_pct" in manifest:
+        manifest["allocated_total_risk_pct"] = manifest["account_risk_pct"]
+    if "risk_target_preserved" in manifest:
+        manifest["risk_target_preserved"] = True
     for sleeve in manifest.get("sleeves", []):
         sleeve["risk_percent"] = _round_float(float(sleeve["risk_percent"]) * scale)
         sfe = sleeve.get("set_file_expectation")
@@ -166,11 +195,40 @@ def build_manifest(
 
     keys = _normalize_keys(book_keys)
     normalized_weights = _normalize_weights(keys, weights)
+    requested_account_risk_pct = float(account_risk_pct)
+    if keys and requested_account_risk_pct > 0.0:
+        positive_scores = {
+            key_label(key): weight
+            for key, weight in normalized_weights.items()
+            if weight > 0.0
+        }
+        try:
+            risk_by_label = capped_proportional_allocation(
+                positive_scores,
+                requested_account_risk_pct,
+                MAX_RISK_PCT_PER_TRADE,
+            )
+        except AllocationError as exc:
+            raise ValueError(
+                "account risk cannot be allocated without violating the 1% sleeve cap: "
+                f"{exc}"
+            ) from exc
+        risk_by_key = {key: risk_by_label.get(key_label(key), 0.0) for key in keys}
+        # Portfolio KPI weights must describe the same relative allocation that the
+        # set-file risk percentages implement.  The former min(...) clip changed one
+        # without changing the other and silently lost total risk.
+        effective_weights = {
+            key: risk_by_key[key] / requested_account_risk_pct for key in keys
+        }
+    else:
+        risk_by_key = {key: 0.0 for key in keys}
+        effective_weights = normalized_weights
+    allocated_account_risk_pct = sum(risk_by_key.values())
     model = load_model()
     if keys:
         kpis = portfolio_metrics(
             keys,
-            normalized_weights,
+            effective_weights,
             common_dir,
             starting_capital=starting_capital,
             commission_model=model,
@@ -187,11 +245,11 @@ def build_manifest(
     magic_rows = _load_magic_registry(magic_registry, keys)
     for slot, key in enumerate(keys):
         ea_id, symbol = key
-        weight = normalized_weights[key]
-        # Hard Rule (OWNER 2026-06-26): never risk more than 1% per trade. RISK_PERCENT is
-        # the per-trade account risk for this sleeve's EA — cap it regardless of weight x
-        # account_risk_pct so a heavy sleeve can never exceed the per-trade limit.
-        risk_percent = min(float(account_risk_pct) * weight, MAX_RISK_PCT_PER_TRADE)
+        weight = effective_weights[key]
+        # Hard Rule (OWNER 2026-06-26): never risk more than 1% per trade.  Excess from a
+        # capped sleeve has already been redistributed across uncapped positive-weight
+        # sleeves above; an infeasible target raised instead of being silently discarded.
+        risk_percent = risk_by_key[key]
         ex5_path = _expected_ex5_path(ea_id)
         magic = _resolve_magic(magic_rows, ea_id, symbol)
         sleeves.append(
@@ -210,7 +268,10 @@ def build_manifest(
                     "RISK_PERCENT": _round_float(risk_percent),
                     "RISK_FIXED": 0.0,
                     "qm_magic_slot_offset": magic["symbol_slot"],
-                    "PORTFOLIO_WEIGHT": _round_float(weight),
+                    # ``risk_percent`` is already the sleeve's absolute account-risk
+                    # allocation. Applying the relative analytics weight again in the
+                    # EA would double-scale risk (risk_percent * weight).
+                    "PORTFOLIO_WEIGHT": 1.0,
                 },
             }
         )
@@ -226,11 +287,27 @@ def build_manifest(
         "commission_model": describe_model(model),
         "degraded": model.degraded,
         "degraded_symbols": sorted(model.degraded_symbols),
-        "account_risk_pct": float(account_risk_pct),
+        "requested_account_risk_pct": requested_account_risk_pct,
+        "account_risk_pct": allocated_account_risk_pct,
+        "allocated_total_risk_pct": allocated_account_risk_pct,
+        "risk_application_contract": {
+            "unit": "account_percent_points",
+            "RISK_PERCENT": "absolute_allocated_sleeve_risk",
+            "PORTFOLIO_WEIGHT": 1.0,
+            "effective_risk_formula": "RISK_PERCENT * PORTFOLIO_WEIGHT",
+            "relative_weights_are_analytics_only": True,
+        },
+        "risk_target_preserved": math.isclose(
+            requested_account_risk_pct,
+            allocated_account_risk_pct,
+            rel_tol=0.0,
+            abs_tol=1e-9,
+        ) if keys else requested_account_risk_pct == 0.0,
         "starting_capital": float(starting_capital),
         "n_sleeves": len(sleeves),
         "book": [key_label(key) for key in keys],
-        "weights": {key_label(key): _round_float(normalized_weights[key]) for key in keys},
+        "base_weights": {key_label(key): _round_float(normalized_weights[key]) for key in keys},
+        "weights": {key_label(key): _round_float(effective_weights[key]) for key in keys},
         "kpis": kpis,
         "sleeves": sleeves,
     }

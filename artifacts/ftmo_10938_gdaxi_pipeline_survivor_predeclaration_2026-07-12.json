@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_RESEARCH_ONLY",
+  "deployment_allowed": false,
+  "candidate": {
+    "ea_id": 10938,
+    "expert": "QM\\QM5_10938_grimes-accept-high",
+    "symbol": "GDAXI.DWX",
+    "period": "H1",
+    "setfile": "framework/EAs/QM5_10938_grimes-accept-high/sets/QM5_10938_grimes-accept-high_GDAXI.DWX_H1_backtest_ablation_02.set"
+  },
+  "selection_basis": {
+    "q04_fold_profit_factors": [2.37, 1.062, 1.337],
+    "q05_status": "INFRA_FAIL_NO_STRATEGY_VERDICT",
+    "q06_harsh_profit_factor": 1.5,
+    "q07_min_profit_factor": 1.5,
+    "archive_q02_note": "The latest Q02 used a different ablation_00 set and failed density; this refresh freezes the Q04-Q07 survivor ablation_02 set."
+  },
+  "locked_test": {
+    "history": "2017-01-01/2025-12-31",
+    "model": 4,
+    "runs": 2,
+    "minimum_trades": 45,
+    "terminal": "T1",
+    "fresh_q08_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "portfolio_gate": "development normal and adverse must both strictly improve the locked incumbent before 2023 validation",
+    "sealed_years": [2024, 2025]
+  },
+  "operational_constraints": {
+    "factory_off_required": true,
+    "symbol_mutex": "GDAXI.DWX",
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

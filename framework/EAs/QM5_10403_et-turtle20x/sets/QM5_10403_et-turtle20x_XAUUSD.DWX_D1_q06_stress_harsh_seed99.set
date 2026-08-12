@@ -3,7 +3,7 @@
 ; ea_id:        10403
 ; ea_slug:      et-turtle20x
 ; ea_version:   v5.0
-; set_version:  s20260706-stress-harsh
+; set_version:  s20260714-stress-harsh
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  q06_stress_harsh
@@ -12,9 +12,10 @@
 ; portfolio_weight: 1
 ; build_hash:   70d60c1d6afb449e7d11e9a06433253a79a91c3d734254eb770e631783a7adb8
 ; author:       Development
-; date:         2026-07-06
+; date:         2026-07-14
 ;==========================================================
 qm_magic_slot_offset=2
+qm_rng_seed=99
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

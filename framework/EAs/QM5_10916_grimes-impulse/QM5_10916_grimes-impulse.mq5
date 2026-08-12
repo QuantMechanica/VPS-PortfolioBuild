@@ -4,6 +4,7 @@
 // Strategy Card: QM5_10916 (grimes-impulse), G0 APPROVED 2026-05-22.
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_FTMOGovernorClient.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -54,12 +55,81 @@ input double strategy_trail_atr_mult         = 2.00;
 input double strategy_spread_stop_fraction   = 0.10;
 input int    strategy_time_exit_bars         = 18;
 
+input group "FTMO Governor"
+// Non-tester identity is supplied only by the signed deploy manifest. Empty
+// defaults make an unconfigured live attachment unable to open a position.
+input string strategy_governor_policy_id     = "";
+input string strategy_challenge_instance_id  = "";
+input int    strategy_governor_heartbeat_max_age_seconds = 5;
+
 ulong  g_active_ticket = 0;
 bool   g_active_is_long = false;
 double g_entry_price = 0.0;
 double g_initial_risk = 0.0;
 double g_extreme_close = 0.0;
 bool   g_trail_armed = false;
+double g_strategy_governor_scale = 0.0;
+string g_strategy_last_governor_block = "";
+datetime g_strategy_last_governor_log = 0;
+
+bool Strategy_NonTesterGovernorConfigValid()
+  {
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+      return true;
+
+   QM_FTMO_GovernorPolicy policy;
+   if(!QM_FTMO_SelectPolicy(strategy_governor_policy_id, policy) ||
+      !QM_FTMO_IsExactPolicy(policy) ||
+      !QM_FTMO_IdentifierValid(strategy_challenge_instance_id) ||
+      strategy_governor_heartbeat_max_age_seconds != 5 ||
+      !MathIsValidNumber(RISK_FIXED) || RISK_FIXED != 0.0 ||
+      !MathIsValidNumber(RISK_PERCENT) || RISK_PERCENT <= 0.0)
+      return false;
+   if(AccountInfoString(ACCOUNT_CURRENCY) != "USD" ||
+      (ENUM_ACCOUNT_MARGIN_MODE)AccountInfoInteger(ACCOUNT_MARGIN_MODE) !=
+      ACCOUNT_MARGIN_MODE_RETAIL_HEDGING)
+      return false;
+   return true;
+  }
+
+bool Strategy_GovernorAllowsEntry()
+  {
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+     {
+      g_strategy_governor_scale = 1.0;
+      return true;
+     }
+
+   double scale = 0.0;
+   string block_reason = "GOVERNOR_UNKNOWN";
+   const bool allowed = QM_FTMO_ReadGovernorScale(
+      strategy_governor_policy_id,
+      strategy_challenge_instance_id,
+      strategy_governor_heartbeat_max_age_seconds,
+      scale,
+      block_reason);
+   if(!allowed)
+     {
+      g_strategy_governor_scale = 0.0;
+      const datetime now_broker = TimeCurrent();
+      if(block_reason != g_strategy_last_governor_block ||
+         now_broker - g_strategy_last_governor_log >= 60)
+        {
+         g_strategy_last_governor_block = block_reason;
+         g_strategy_last_governor_log = now_broker;
+         QM_LogEvent(QM_WARN,
+                     "GRIMES_GOVERNOR_ENTRY_BLOCK",
+                     StringFormat("{\"reason\":\"%s\",\"policy_id\":\"%s\"}",
+                                  QM_LoggerEscapeJson(block_reason),
+                                  QM_LoggerEscapeJson(strategy_governor_policy_id)));
+        }
+      return false;
+     }
+
+   g_strategy_governor_scale = scale;
+   g_strategy_last_governor_block = "";
+   return true;
+  }
 
 double StrategyNormalizePrice(const double price)
   {
@@ -491,6 +561,9 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
+   if(!Strategy_NonTesterGovernorConfigValid())
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -566,7 +639,30 @@ void OnTick()
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      if(MQLInfoInteger(MQL_TESTER) != 0)
+        {
+         // Preserve the established Q02-Q10 sizing and order path bit-for-bit.
+         QM_TM_OpenPosition(req, out_ticket);
+        }
+      else if(Strategy_GovernorAllowsEntry())
+        {
+         const double scaled_risk_percent =
+            RISK_PERCENT * g_strategy_governor_scale;
+         const bool opened = (scaled_risk_percent > 0.0) &&
+            QM_TM_OpenPosition(req,
+                               out_ticket,
+                               0,
+                               QM_RISK_MODE_PERCENT,
+                               scaled_risk_percent);
+         QM_LogEvent(opened ? QM_INFO : QM_WARN,
+                     "GRIMES_GOVERNED_ENTRY_RESULT",
+                     StringFormat("{\"opened\":%s,\"ticket\":%I64u,\"base_risk_percent\":%.8f,\"governor_scale\":%.8f,\"scaled_risk_percent\":%.8f}",
+                                  opened ? "true" : "false",
+                                  out_ticket,
+                                  RISK_PERCENT,
+                                  g_strategy_governor_scale,
+                                  scaled_risk_percent));
+        }
      }
   }
 

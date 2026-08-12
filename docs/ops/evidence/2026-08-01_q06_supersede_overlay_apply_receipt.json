@@ -1,0 +1,241 @@
+{
+  "applied_at_utc": "2026-07-31T23:40:35+00:00",
+  "apply_task_id": "4b64823f-cd32-42f6-908f-9ea1841b4858",
+  "apply_tool_path": "C:\\QM\\repo\\tools\\strategy_farm\\apply_q06_stress_supersede.py",
+  "apply_tool_sha256": "0436d70fa196600eb2b96d22719f2ba07505ce81a12424b4725c7b02d564a074",
+  "authority": {
+    "agent_task_row_sha256": "b8fa7aca6fe2ab428f75c4b3215faaf110a078196638ca6e839139cd37e970ba",
+    "review_close_state": "APPROVED",
+    "review_close_verdict": "APPROVED. Independently verified: 21+4 cascade tests green, 26 append-only rerun rows with exact predecessor bindings, historical Q06 rows intact (sampled), 10571 EX5 hash matches the sealed build table, dirty-guard honored via clean detached build worktree, DB pre-enqueue backup taken. The new exact-row append-only rerun mode is the right primitive. VALIDATION BY REALITY: the first natural rerun (1551/USDJPY Q06, repaired wiring) landed FAIL at 22:26Z - the historical PASS was vacuous exactly as diagnosed; the repaired gate now measures real stress. Supersede proposal semantics APPROVED: apply ticket dispatched with this close-review as the bound Claude authority; apply tool must satisfy the full re-verify/append-atomic/no-UPDATE contract from the packet. Remaining 25 reruns flow through the normal queue.",
+    "review_closed_at": "2026-07-31T22:30:56+00:00",
+    "task_id": "13c3a60d-e9fc-4c97-962b-eb735b16960b",
+    "task_state": "APPROVED"
+  },
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "database_open_mode": "ro/query_only",
+  "historical_rows_reverified_unchanged": 13,
+  "overlay": {
+    "after_bytes": 26676,
+    "after_bytes_sha256": "f3b3a11877689a4a81848f764f26623c1f778dc615a8e8f1e817a835fde9621c",
+    "after_event_count": 13,
+    "after_tail_event_sha256": "0ec0eb5a0c9c1c580b1282eefeef0632c7c08851965ab6f97c4cf75a8555adc6",
+    "appended_event_count": 13,
+    "before_bytes": 0,
+    "before_bytes_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "before_event_count": 0,
+    "before_existed": false,
+    "before_tail_event_sha256": null,
+    "chain_validation": "PASS",
+    "path": "D:\\QM\\reports\\maintenance\\mnt_adjudication_overlay.jsonl",
+    "publication": "single_same-directory_atomic_replace"
+  },
+  "proposal_commit": "e12753b4dcc1a367f01335b00e1d8f14dc4d8924",
+  "proposal_path": "docs\\ops\\evidence\\2026-07-31_q06_stress_supersede_proposal.json",
+  "proposal_sha256": "cdb3472e9a24738c09eb928ebde1b2ea6042f0035e50be2ab5d8a263408a0b27",
+  "raw_row_hash_algorithm": "sha256(canonical-json(all SQLite work_items columns))",
+  "raw_work_item_mutations": 0,
+  "reason_counts": {
+    "BASKET_REJECTION_HOOK_MISSING": 5,
+    "STRESS_INPUT_NOT_EFFECTIVE": 8
+  },
+  "receipt_fingerprint_sha256": "82a5c1c8e21ca1f496cfb81c82be7b03842c9a3678cd92abf25e4f5642efc6e1",
+  "rows": [
+    {
+      "event_id": "19472fa3f0f6d15ca0c43b96ac3c46497fd369782eea6794b00d5344cd86b843",
+      "event_sha256": "bdd5c4f02ba801d456a3ab0fa46d750e951191b2470e806f215b8c43bdcec5bc",
+      "evidence_sha256": "6758aee37f7dc9db04b419d560069d26eaa99b6639887137efd8c1ee5097dbaf",
+      "line_number": 1,
+      "previous_event_sha256": null,
+      "proposal_event_id": "4aaf9309c6fa3aeb2ff36a95414bf80e68679e71d3b127ddd2c48a72617ca765",
+      "raw_row_sha256": "8de3908d676a01cb3085e98a871485dfdc033e610cf58cebde49e9b70e10d4b3",
+      "reason_classes": [
+        "STRESS_INPUT_NOT_EFFECTIVE"
+      ],
+      "replacement_raw_row_sha256": "545c8e7062867a222a593f717d11f0cf141e3cc6142b0134467c4981a86d871c",
+      "replacement_work_item_id": "40af0543-1fd0-4dae-80e1-531cd49df2a6",
+      "work_item_id": "747b2cb2-debc-4da9-8f19-4d937c732532"
+    },
+    {
+      "event_id": "26ae68a1077e205a5e7db24d3c7d29d86c72a524adc9d87b3e11f7445de5be9f",
+      "event_sha256": "5b841e52be44e72b998901d6368ab15edd367cd3749b14fe17aae94dbe12efdb",
+      "evidence_sha256": "eb63c76fb8849d269c8590eea4e37291a09956331bed3d1ed0cdd907330740d5",
+      "line_number": 2,
+      "previous_event_sha256": "bdd5c4f02ba801d456a3ab0fa46d750e951191b2470e806f215b8c43bdcec5bc",
+      "proposal_event_id": "c708e9415a2d3956219f010e80c828169db3a44d1f57ce602dacf181bffd3681",
+      "raw_row_sha256": "e24f47c4af331aa0c16bca4db9e7c5fa3338aafa337a136c65f36574c67b23b5",
+      "reason_classes": [
+        "BASKET_REJECTION_HOOK_MISSING"
+      ],
+      "replacement_raw_row_sha256": "2431259f85d78aaa2a1a539dba4b2b229ac3d6dc7be3b4edf323d5f80ef533e6",
+      "replacement_work_item_id": "167a7fd4-0575-41bd-9c86-8d8a4fd00ca5",
+      "work_item_id": "603a318d-cad2-47d5-888b-b767f8536849"
+    },
+    {
+      "event_id": "4d025f6efb5a970c0275a8a3586236342776cf82bf9b7ecc58864bcc8f604e83",
+      "event_sha256": "959612648a6587961ae4a33729feda35494d57faff958c73ce5efc1aeecaba79",
+      "evidence_sha256": "8422673840bd9e749728dfd183c504674a337ab0c0e772cb0520dccf73616d72",
+      "line_number": 3,
+      "previous_event_sha256": "5b841e52be44e72b998901d6368ab15edd367cd3749b14fe17aae94dbe12efdb",
+      "proposal_event_id": "be9b6816b67d4f639f6b457ad1c39ce9d992e43f50ce236ac8fb69a3f0dd18aa",
+      "raw_row_sha256": "148758773a8fec99892513f49d1b42eb6d12e05ff1e674faf030096a67a6bcbb",
+      "reason_classes": [
+        "STRESS_INPUT_NOT_EFFECTIVE"
+      ],
+      "replacement_raw_row_sha256": "141d2a7a9dd22ff791d6527994b713568aef3ce6f5d17e7d9648ea4af6efb5c2",
+      "replacement_work_item_id": "a5f6ab9f-75f1-4459-8375-f4e8a627bfd3",
+      "work_item_id": "04fd4814-f1d9-4db5-a529-1faf300e0896"
+    },
+    {
+      "event_id": "4f19accb6c1929590ac1f04a89069ee4455c0f5fe88293132ae03572680a038c",
+      "event_sha256": "16455ab721b2c2ca60b78594a269ff25f7a9e4105403e401781b3622b037a9d6",
+      "evidence_sha256": "f760001aa1a361bcea8e35f212756f092942506edd66dd7d583a775ba8c3058c",
+      "line_number": 4,
+      "previous_event_sha256": "959612648a6587961ae4a33729feda35494d57faff958c73ce5efc1aeecaba79",
+      "proposal_event_id": "7db9096667c46b8d69ef691f0a002675c5a89cde929bb4fface08bff1228c207",
+      "raw_row_sha256": "d8ca99398d1ddb444cf1b5e0fb276a83629fe3d42903eb09cb5d5117ebaec51c",
+      "reason_classes": [
+        "STRESS_INPUT_NOT_EFFECTIVE"
+      ],
+      "replacement_raw_row_sha256": "a1139256e153618619e943f05efb80a98684c713b68e7d1a97ebe8ca2a012cad",
+      "replacement_work_item_id": "bec90777-8491-4574-9ecb-ce324d22e65c",
+      "work_item_id": "9f4eaf7c-5af1-4075-ac78-48e97e5c4c13"
+    },
+    {
+      "event_id": "61efc1367b6ae3a3c5126345d8c89a8e76f3c740e14c9ceb4d15d922a7447474",
+      "event_sha256": "62eff35d063992ab20d2ffada87d608902949398830ecacf0fd57d81575fcc6a",
+      "evidence_sha256": "fb9e43358db384186b7b96532965f807a9f12f0464882825e13eb3fbbf883323",
+      "line_number": 5,
+      "previous_event_sha256": "16455ab721b2c2ca60b78594a269ff25f7a9e4105403e401781b3622b037a9d6",
+      "proposal_event_id": "63f32de1fa817b615f4818e996734d813aae81e6e8cb4a51d18e82bd6c9cc147",
+      "raw_row_sha256": "235c931c0e23a33c8507951a7bcb4892d43b954738ea95c40489f0952588c7e8",
+      "reason_classes": [
+        "STRESS_INPUT_NOT_EFFECTIVE"
+      ],
+      "replacement_raw_row_sha256": "1985fb8a974e4db2d19a1fc3e426d548b4bbf4260a59de2fe56dc459bfec630a",
+      "replacement_work_item_id": "c36efc32-ef33-40fb-ad07-78871731978b",
+      "work_item_id": "42cb13b0-11d3-475f-bc5e-a96cfcd2c8f7"
+    },
+    {
+      "event_id": "7514e748d07dc3803b47a7813456a705535b2b574e85f08ad64ec9b169748183",
+      "event_sha256": "58b5a2299b97a2f23cfcf9a745ff19458a5a74f6450cda2eba90360a8fc05359",
+      "evidence_sha256": "60dda0710b08764c9b2c903a372fb9aa56f10a4c2a76c94c5f3b2c420772d564",
+      "line_number": 6,
+      "previous_event_sha256": "62eff35d063992ab20d2ffada87d608902949398830ecacf0fd57d81575fcc6a",
+      "proposal_event_id": "5e9b641cfd664088093b2dbf0d7170f957cde9ea767bb40dd1995c20cc091371",
+      "raw_row_sha256": "aec4c760804f0df387824108a7f154b66e1cfab9d067d26810aaab7b10316082",
+      "reason_classes": [
+        "BASKET_REJECTION_HOOK_MISSING"
+      ],
+      "replacement_raw_row_sha256": "4f3ffef3b6a1553a8fd4917a9d9870618f648c34bab8c034de07af77e7c670e6",
+      "replacement_work_item_id": "c94c6fda-c669-446d-9b00-2739d2775bf1",
+      "work_item_id": "5766463f-f929-46a5-ba8d-3133f7ddd0e8"
+    },
+    {
+      "event_id": "8ea9bdcd551c61a3282311974ddb512a80eb8f60ea1fccf5018824e37cb69588",
+      "event_sha256": "d90f58c3764d9e1c1e5fa3ac97263e965585f40cec600685dd5d568af596efe3",
+      "evidence_sha256": "0fc3091a8020b2bdfa4ab295dce7b524b9905855e4a9c9bae27d78db62528523",
+      "line_number": 7,
+      "previous_event_sha256": "58b5a2299b97a2f23cfcf9a745ff19458a5a74f6450cda2eba90360a8fc05359",
+      "proposal_event_id": "b9430897c78f5505a14774d577bbe172e415a1d3a7baeb93a2206995d3de2989",
+      "raw_row_sha256": "58d1e316794753c80bc47ace88a8d3e35ab18ccf8e6ae0817bb14ffdc7ca5b41",
+      "reason_classes": [
+        "STRESS_INPUT_NOT_EFFECTIVE"
+      ],
+      "replacement_raw_row_sha256": "f234392cba55b4ef7776f9f95c522719ec9b63f898f5e700992e039a226e7e70",
+      "replacement_work_item_id": "0430f87d-bc38-4f79-8a44-d4d04c7d3bc1",
+      "work_item_id": "5299eb44-8e1d-46c8-938c-06d8c1ac5d52"
+    },
+    {
+      "event_id": "92781fa90ab0e093d16082ad982badc4da512dc18de3c40ed5c2df40434200d2",
+      "event_sha256": "9b7225584bb2e3dd12beac1e223d1987a049226ffa1d42bd678e491c0ef575e0",
+      "evidence_sha256": "3b91562113d5cd67e65b97ae3d8e0547f9c08185e7b21ca12323a326259fde23",
+      "line_number": 8,
+      "previous_event_sha256": "d90f58c3764d9e1c1e5fa3ac97263e965585f40cec600685dd5d568af596efe3",
+      "proposal_event_id": "928f4cf2837cb107aad285d45052b80c1a231ccbee41c3c7a617df4c27cbb90c",
+      "raw_row_sha256": "edcb1a053fb69e03de927c9dda35f62f8b3b7d3834d6f5b21a090d79b59abce7",
+      "reason_classes": [
+        "STRESS_INPUT_NOT_EFFECTIVE"
+      ],
+      "replacement_raw_row_sha256": "b7e847deff2206ef04ad98e0bb597bfe9024b3fc3d605cc349e6653c58a1d692",
+      "replacement_work_item_id": "00f37313-423e-4a51-b7e0-d17ec88fe10c",
+      "work_item_id": "c9f74c71-6eed-413c-9bae-116137f7cef0"
+    },
+    {
+      "event_id": "9f1162b338c4fd5923197220c26a41ac29043d80114768e4b125f062a85ebe1e",
+      "event_sha256": "cc61d5c57a68afe1c3cf4360af6dc74890815548d2f2c5bbf596bda7bc5e860a",
+      "evidence_sha256": "9836a3974b4313c4ac6b0009e11afeea944773706075cad3d7e4b7ba199c8507",
+      "line_number": 9,
+      "previous_event_sha256": "9b7225584bb2e3dd12beac1e223d1987a049226ffa1d42bd678e491c0ef575e0",
+      "proposal_event_id": "c2fb1148e6290d27bd1692eede53891541d26103375890786e8c4613165a4511",
+      "raw_row_sha256": "bfcd19c47b4c377f90d968854b50a6d3a38a52fe45fd415dfaedab81993f0753",
+      "reason_classes": [
+        "STRESS_INPUT_NOT_EFFECTIVE"
+      ],
+      "replacement_raw_row_sha256": "9b7df10eab2d48271e26f32481ea381dde7a7f36435094148644735e29d319d9",
+      "replacement_work_item_id": "f814ba0f-ec03-4baa-be4e-7f1779536f3d",
+      "work_item_id": "70f8df8a-4251-4082-8c8a-374c1947250a"
+    },
+    {
+      "event_id": "c2fbf417875276bff909d1934b96e50912ec711072b8a0c984200564a1035936",
+      "event_sha256": "4846aff3cd0a185a9d36174bac569e5ab5c54d61066b910f73ecb426cf6bed9a",
+      "evidence_sha256": "4f3ceb40996c9a2cc99d49daa38de142b10e67b6f4c0ff0935c03f246898c1c7",
+      "line_number": 10,
+      "previous_event_sha256": "cc61d5c57a68afe1c3cf4360af6dc74890815548d2f2c5bbf596bda7bc5e860a",
+      "proposal_event_id": "6d0eafc0e979953a00344c7b636e60da68ceb771d313c2599e3243b0fb4faecb",
+      "raw_row_sha256": "0b4647c773e90986148ea228bf6fbd6d145f575156c14d65339efb6011c2c971",
+      "reason_classes": [
+        "BASKET_REJECTION_HOOK_MISSING"
+      ],
+      "replacement_raw_row_sha256": "ef025e910fad0d699b77c960aee29f4c537485e6d8f6ace1871e43b2c27fb574",
+      "replacement_work_item_id": "76e26ada-4bb5-457e-8233-25feaa209982",
+      "work_item_id": "1fcbda55-8565-4718-bb2a-b7dfd7753c3d"
+    },
+    {
+      "event_id": "e620aac85f711da14718b00309a1972c38f944d312dcab6ca6afbeba142e03c5",
+      "event_sha256": "5b8b533055612f69069ad27be2f5c8d5cde958050acb1592c26e9c6e774f566f",
+      "evidence_sha256": "8c2526f05c4ba1baa89366f390d38c9f7f25200b98d0f6124a77239c76e7bbf4",
+      "line_number": 11,
+      "previous_event_sha256": "4846aff3cd0a185a9d36174bac569e5ab5c54d61066b910f73ecb426cf6bed9a",
+      "proposal_event_id": "26758951676569d4b95e97fa6b05b748fe770036012f1c33275061b08ac31a0b",
+      "raw_row_sha256": "783d5fb4ac7582bdf9beedaf4d098ad3e45e71f84539a75727f0f1861fcc73dc",
+      "reason_classes": [
+        "BASKET_REJECTION_HOOK_MISSING"
+      ],
+      "replacement_raw_row_sha256": "cbd8623d9b880fc1b85d3ab48eb1ed9ea424a8665dede063fb7ff0c95c28160b",
+      "replacement_work_item_id": "031a2107-94f9-42b3-b75a-f54e1553f055",
+      "work_item_id": "a61f2775-1ef0-489e-8d63-26d9f7614cfe"
+    },
+    {
+      "event_id": "f53de6679e840924f29f6032afd7263d3c9cac382215b5a1867559da6ca1f975",
+      "event_sha256": "aff5e55e8a7dc4f98ca6c381be0c99bf605817488d31550e6dd02eb64f5df208",
+      "evidence_sha256": "e511efe6dbbd102a51820c313233f452606e90cde508a353fc9a976c7c2ce0a0",
+      "line_number": 12,
+      "previous_event_sha256": "5b8b533055612f69069ad27be2f5c8d5cde958050acb1592c26e9c6e774f566f",
+      "proposal_event_id": "3791ad23ae621bb275eb56c72fb8f5124fe50043315df6e97506f758b8aa1d0d",
+      "raw_row_sha256": "cce4cc36346b6959e3c957ee2ff8dba48e9af8071dfb7b00138d1cfc93dc9fe2",
+      "reason_classes": [
+        "STRESS_INPUT_NOT_EFFECTIVE"
+      ],
+      "replacement_raw_row_sha256": "f6281cc0f9f8d4c6a5f1917e63e8b80ba6b7bbbe5621ed4c1ba563079f74dc6d",
+      "replacement_work_item_id": "4dd0e95f-5338-4b69-b2f2-169411cc6da4",
+      "work_item_id": "eeb2da0e-9243-46ff-8c46-8a5ab3bbe5fa"
+    },
+    {
+      "event_id": "fce95536e8285827fae740d8c8f4583ecdced6cbbe8563a3a50f91b7f759e11b",
+      "event_sha256": "0ec0eb5a0c9c1c580b1282eefeef0632c7c08851965ab6f97c4cf75a8555adc6",
+      "evidence_sha256": "aacdb05d14fb7796036664f2cc6c51e6ea527e858beaa95181c38b3f7b66a451",
+      "line_number": 13,
+      "previous_event_sha256": "aff5e55e8a7dc4f98ca6c381be0c99bf605817488d31550e6dd02eb64f5df208",
+      "proposal_event_id": "a2b3a812b6a5555ba0677fc3227eac72fd3d6633c50685181202aae1bf0ea937",
+      "raw_row_sha256": "33e0075652be10cb1442c12f918b1cd936b05acb9d75fde4f96516f159983f37",
+      "reason_classes": [
+        "BASKET_REJECTION_HOOK_MISSING"
+      ],
+      "replacement_raw_row_sha256": "2a86a5c45bc250266568aff8ee1a66f8d85339337b951b70ee6c10b1db03ca00",
+      "replacement_work_item_id": "c31b69ad-fa20-4dd1-8f07-11cbbabefa82",
+      "work_item_id": "c2f718c6-7427-427a-84da-9da08e2918e3"
+    }
+  ],
+  "schema": "qm/q06-stress-supersede-apply-receipt/v1",
+  "status": "APPLIED"
+}

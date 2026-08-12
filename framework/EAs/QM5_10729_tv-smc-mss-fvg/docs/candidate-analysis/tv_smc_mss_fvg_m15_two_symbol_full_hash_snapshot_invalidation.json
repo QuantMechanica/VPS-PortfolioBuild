@@ -1,0 +1,32 @@
+{
+  "analysis_id": "QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001",
+  "artifact_type": "CONTRACT_EVIDENCE_INVALIDATION_AND_SUPERSESSION",
+  "status": "CONTRACT_INVALID_FUTURE_TAIL_HASHED",
+  "invalid_evidence_commits": [
+    "b119e97e7271a7fcf1089a3b7024da3ccd0210fe",
+    "52c5031bab44e2cda860136bf6c8edbba7c8719c"
+  ],
+  "invalid_snapshot": {
+    "root": "D:/QM/audit_snapshots/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/release_0b221d1c_2d009fa4",
+    "manifest_sha256": "66dc5e8ea9842a570686940b3c7df90d33164aaefa2bf48911c730d9ea70b5ca",
+    "result_sha256": "a6022464b04e99e87ece8db015e539a2fe36b258292cfd38c069f11420e26aa9",
+    "report_sha256": "49f7f2fd5a5e9302ef934934064e537c2dae7fcd99d31d251c308ce6e6d09e17",
+    "reason": "The snapshot builder hashed and copied the complete market files, including bytes in the OHLC tail at and after the contract fence. The simulator did not parse that tail, but the preparation hash itself violated the explicit no-read/no-hash future fence. These artifacts are never contract-clean evidence."
+  },
+  "oos_epistemic_status": {
+    "period": "2023+ market data in the two frozen source files",
+    "status": "CONTAMINATED_NEVER_CLAIM_PRISTINE",
+    "clarification": "The bytes were hashed but not interpreted. The contract nevertheless treats that access as contamination."
+  },
+  "superseded_by": {
+    "snapshot_root": "D:/QM/audit_snapshots/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/release_0b221d1c_2d009fa4_fenced_v2",
+    "manifest_sha256": "2a3b4e79c005b368fc67886ed9e3eb260b3d71f27abc5db2ed1b78d98353101e",
+    "projection": "HEADER_PLUS_PRESTART_TIMESTAMP_ONLY_PLUS_EXACT_IN_WINDOW_ROWS_PLUS_FIRST_EXCLUDED_TIMESTAMP_PREFIX_ONLY",
+    "future_ohlc_tail_read_or_hashed": false,
+    "result_sha256": "a26073a6b8b6fbcecffa98295ff665303d9fb01e04b7ebdb56f5c1eb70334b41",
+    "report_sha256": "35e391a50872b47c3b408963a38c062ed6803caec45d069ff016384217ff5fc5",
+    "metrics_equal_to_invalid_runs": true,
+    "verdict": "NO_CONJUNCTIVE_FAMILY_MERIT",
+    "disposition": "STOP_NO_TUNING"
+  }
+}

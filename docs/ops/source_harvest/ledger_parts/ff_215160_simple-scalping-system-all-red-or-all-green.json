@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_215160_simple-scalping-system-all-red-or-all-green.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_215160_simple-scalping-system-all-red-or-all-green.pdf",
+      "source_pages": "1-5",
+      "source_ref": "Brb-Fraudin (thread starter), 'Simple scalping system, all red or all green', ForexFactory thread 215160 (year not stated in excerpt; ~60 posts, first 3 pages captured), https://www.forexfactory.com/thread/215160",
+      "strategy_name": "Multi-TF candle-color alignment scalp (all red / all green)",
+      "concept": "When the last CLOSED candles of M5, M15, M30 and H1 are all the same color, enter in that direction as a short momentum/trend-continuation scalp.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Entry fully deterministic (four closed TF candles same color); exit is semi-discretionary (author closes manually ~+15/+20 pips, SL -15) but trivially mechanizable to fixed TP/SL; pure MQL5, FX data on .DWX, has stops -> FTMO/DXZ compatible.",
+      "priority_hint": "LOW",
+      "notes": "Decision cadence anchored at H1 close (evaluate the just-closed M5/M15/M30/H1); 'closed candle' reading is the only mechanizable one -- the active-candle version is degenerate (at the top of each hour all TFs share the same M5 candle => random hourly signal, per Misiacyk/magnumfreak). Naive candle-color momentum with no limit-to-arbitrage structure; multiple experienced posters report it fails live (bobsmith: retracement stops you out before TP; finally/jonirrenicus: 'does not work'). Variants folded here: Vantage 'follow-the-1hr' filter with M5 8-LWMA cross + higher-low entry; 4xProfessor adds M1 same-color confirmation. Attached indicators are MQL4 only (All_GreenOrRed.mq4, Multi Meter Candle Color.ex4, bar_close_alarm_V1.mq4) -- reference, not usable in V5. Overlaps existing dead chart-pattern/candle-momentum FX doctrine; cheap to backtest but expected to die early (Q02/Q04)."
+    }
+  ],
+  "notes": ["classified from extracted PDF text via pypdf (Read tool pdftoppm unavailable); one core system with minor discretionary variants folded into a single row"]
+}

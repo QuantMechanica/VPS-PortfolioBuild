@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_GATE",
+  "ea_id": 11118,
+  "symbol": "USDJPY.DWX",
+  "period": "H4",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/20260712_131308/QM5_11118_stoch-alert-cross.compile.log",
+  "compile_log_sha256": "226D3EF9E70A0B03A93E3A8006ADEBC45284BFF9AD99B0803C41650AF5DC5908",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11118_usdjpy_h4_wave8_20260712\\QM5_11118\\20260712_131328\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11118_usdjpy_h4_wave8_20260712\\QM5_11118\\20260712_131328\\raw\\run_01\\report.htm",
+      "sha256": "9227B46FE2469DADD863387023630C636FD72D2852902A8F8F3A13AE7C3A8BB9"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11118_usdjpy_h4_wave8_20260712\\QM5_11118\\20260712_131328\\raw\\run_02\\report.htm",
+      "sha256": "7D83E591ADBF80E1198C005BE6C36E66E6B633B6122EA238AB24D298851998E6"
+    }
+  ],
+  "native": {
+    "trades": 3128,
+    "profit_factor": 0.965253,
+    "net_profit": -27893.72,
+    "equity_drawdown": 48441.45
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\11118_USDJPY_DWX_T2_FRESH_20260712.jsonl",
+    "rows": 3128,
+    "sha256": "31A635111C37697EBFDE2890D1BFA697F12BC713C4A5252D92F89E3849FBAA8B",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET",
+    "corrected_net_delta": 0.0,
+    "net_tolerance": 31.28
+  },
+  "current_cost_artifact": "artifacts/ftmo_11118_usdjpy_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 3128,
+    "profit_factor": 0.934652,
+    "net_profit": -53500.20,
+    "close_to_close_max_drawdown": 69394.86,
+    "commission_total": 31798.65,
+    "swap_total": -43548.33
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "annual_density_pass": true,
+    "negative_calendar_years": [2017, 2018, 2019, 2020, 2021, 2023, 2025],
+    "reason_for_reject": "The full-history implementation is loss-making natively and deteriorates further under current FTMO USDJPY commission and rollover costs; seven of nine calendar years are negative."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

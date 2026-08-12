@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "INFRASTRUCTURE_RESOLVED_STRATEGY_REJECTED",
+  "deployment_allowed": false,
+  "repair": {
+    "ea_id": 1241,
+    "symbol": "USDJPY.DWX",
+    "period": "H1",
+    "changes": [
+      "break-even modification limited to one request per ticket and H1 bar",
+      "strategy close limited to one request per ticket and H1 bar",
+      "runner invoked with full EA label instead of unresolved short label"
+    ],
+    "compile": "PASS_0_WARNINGS",
+    "deterministic_native_runs": 2,
+    "log_bomb_recurred": false,
+    "stream_reconciliation": "PASS"
+  },
+  "economics": {
+    "trades": 1519,
+    "native_profit_factor": 0.981854,
+    "native_net_profit": -8341.8,
+    "ftmo_current_cost_profit_factor": 0.966121,
+    "ftmo_current_cost_net_profit": -15696.87,
+    "ftmo_current_cost_close_to_close_drawdown": 43785.77,
+    "strict_q02_gate": "FAIL"
+  },
+  "gates": {
+    "portfolio_weight_screen_opened": false,
+    "validation_opened": false,
+    "sealed_holdout_opened": false
+  },
+  "evidence": [
+    "artifacts/ftmo_archive_density_wave10_predeclaration_2026-07-12.json",
+    "artifacts/ftmo_1241_usdjpy_repaired_fresh_stream_reconciliation_2026-07-12.json",
+    "artifacts/ftmo_1241_usdjpy_repaired_fresh_current_report_cost_reconciliation_2026-07-12.json",
+    "D:/QM/reports/pipeline_ftmo_joint/fresh_1241_usdjpy_h1_wave34_full_label_20260712/QM5_1241/20260712_175152/summary.json"
+  ],
+  "label": "RESEARCH_ONLY_NO_GO"
+}

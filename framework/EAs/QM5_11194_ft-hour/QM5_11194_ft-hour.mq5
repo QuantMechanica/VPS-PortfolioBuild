@@ -88,6 +88,10 @@ input double strategy_roi_t1             = 0.113;
 input double strategy_roi_t2             = 0.089;
 input double strategy_roi_t3             = 0.0;
 
+// Refreshed once per closed H1 bar before the entry-only spread guard runs.
+// Keeping the ATR-derived value cached avoids indicator reads on every tick.
+double g_planned_stop_distance = 0.0;
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -98,19 +102,26 @@ bool Strategy_NoTradeFilter()
   {
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(bid <= 0.0 || ask <= 0.0 || ask <= bid)
+   if(bid <= 0.0 || ask <= 0.0)
       return true;
 
-   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
-   const double planned_stop_distance = atr * strategy_atr_stop_mult;
-   if(planned_stop_distance <= 0.0)
+   if(g_planned_stop_distance <= 0.0)
       return true;
 
-   const double spread = ask - bid;
-   if(spread > planned_stop_distance * strategy_max_spread_stop_fraction)
+   // Custom .DWX tester symbols legitimately model zero spread (ask == bid).
+   // Block only a real, positive spread that exceeds the card's 8%-of-stop cap.
+   if(ask > bid &&
+      (ask - bid) > g_planned_stop_distance * strategy_max_spread_stop_fraction)
       return true;
 
    return false;
+  }
+
+// Called only after the framework's single-consume new-bar gate.
+void Strategy_AdvanceStateOnNewBar()
+  {
+   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
+   g_planned_stop_distance = atr * strategy_atr_stop_mult;
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -269,7 +280,6 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 
@@ -309,28 +319,18 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any guard can return.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   if(Strategy_NoTradeFilter())
-      return;
-
    // Per-tick: trade management can adjust SL/TP on open positions.
+   // Management and exits remain active during news/no-trade entry windows.
    Strategy_ManageOpenPosition();
 
    // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
@@ -348,9 +348,18 @@ void OnTick()
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
+   // Both the custom hook and central calendar gate suppress NEW entries only.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   // Per-closed-bar: refresh cached strategy state and evaluate entry once.
    if(!QM_IsNewBar())
       return;
 
@@ -358,7 +367,12 @@ void OnTick()
    // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
+   Strategy_AdvanceStateOnNewBar();
+   if(Strategy_NoTradeFilter())
+      return;
+
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

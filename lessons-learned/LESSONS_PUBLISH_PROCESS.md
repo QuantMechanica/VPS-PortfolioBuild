@@ -9,9 +9,9 @@
 ## When to publish a lesson MD
 
 A lesson MD must be published into `lessons-learned/` after any of the following events.
-**All three trigger classes are mandatory** — they do not require CEO approval to create the
+**All three trigger classes are mandatory** — they do not require a separate role approval to create the
 entry (Documentation-KM is autonomous here per DL-027), but significant entries should be
-flagged as `learning-candidate` issues for CEO + Board review before being promoted to the
+flagged as `learning-candidate` records for OWNER review before being promoted to the
 Learnings Archive.
 
 ### 1. Gate review produces a notable finding
@@ -63,7 +63,7 @@ Example: `2026-05-09_p2_runner_gate_gap.md`
 - Data pipeline failures (phantom PASS, zombie dispatch_state, symbol mismatch)
 - Live-system incidents (T6 anomalies — OWNER gates these separately)
 
-**Trigger:** Incident closed in Paperclip AND post-mortem doc exists in `docs/ops/`.
+**Trigger:** Incident is closed in the active local controller and a post-mortem exists in `docs/ops/`.
 
 **Process (`04-incident-response.md` Step Q):**
 1. Read the post-mortem doc (authored by Observability-SRE or incident owner)
@@ -109,7 +109,7 @@ A lesson MD in `lessons-learned/` is an **operational log**. The Learnings Archi
 
 To promote a lesson to the archive:
 1. Open a `learning-candidate` issue tagged with the relevant lesson file
-2. CEO + Board review and decide format: L-K-xx (Keep), L-C-xx (Changed), L-D-xx (Discarded)
+2. OWNER reviews and decides format: L-K-xx (Keep), L-C-xx (Changed), L-D-xx (Discarded)
 3. Documentation-KM adds the entry to `docs/notion-mirror/learnings_archive.md` and the
    Notion source after board approval
 

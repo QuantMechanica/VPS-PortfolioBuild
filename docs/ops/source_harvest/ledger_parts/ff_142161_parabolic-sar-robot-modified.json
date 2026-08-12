@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_142161_parabolic-sar-robot-modified.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_142161_parabolic-sar-robot-modified.pdf",
+      "source_pages": "3-4",
+      "source_ref": "Everett et al., 'Parabolic SAR robot (modified)', ForexFactory thread 142161 (18 posts, complete; 'Happy New Year' opening post, year not stated in excerpt, thread id implies ~2011), https://www.forexfactory.com/thread/142161",
+      "strategy_name": "Parabolic SAR flip trend-follower (EURUSD)",
+      "concept": "Trend-following entry on a Parabolic SAR flip (price crossing to the opposite side of the SAR dot), ride the move with a trailing stop; author reports the short side flips work better than longs.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5, deterministic single-indicator system on EURUSD (data available), no ML, stops + Friday-close fit FTMO/DXZ; but entry-only precise while trailing-stop distance and SL are unquantified in the base EA.",
+      "priority_hint": "LOW",
+      "notes": "Explicit entry (p.3): SELL when price<SARCurrent AND price>SARPrevious; BUY when price>SARCurrent AND price<SARPrevious (i.e. on the SAR flip). Exit = trailing stop; base EA sets no hard SL ('handled internally'), author advises adding a moderate SL. Original setup = EURUSD M30, default SAR settings; enum has no M30 so recorded as H1, which the thread itself recommends as the minimum TF to cut whipsaw. Proposed variants (all same core, mention only): higher-TF SAR confirmation (take sells only if 4h+daily SAR agree), MA trend filter, buy/sell-limit straddle entry +/-5 pips of the flip bar, lock-in-pips trailing (13->5, 25->15), session start/stop filter, Friday close-out. Vanilla PSAR flip with no structural edge, author admits 'modest, not consistent' results and members note heavy whipsaw in ranges; forum-anecdotal, so LOW. Martingale conversion suggested by one poster is NOT adopted and would be incompatible (a)-(d)."
+    }
+  ],
+  "notes": []
+}

@@ -1,0 +1,45 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10115
+; ea_slug:      tv-ma-scalper-relief
+; ea_version:   v5.0
+; set_version:  s20260609-001
+; symbol:       GDAXI.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-06-09
+;==========================================================
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
+; --- ablation child 01 of QM5_10115_tv-ma-scalper-relief_GDAXI.DWX_M15_backtest (perturb=±25%) ---
+strategy_sma_fast_period=9
+strategy_sma_mid_period=38
+strategy_sma_slow_period=87
+strategy_sma_regime_period=196
+strategy_sma_slope_bars=21
+strategy_atr_period=14
+strategy_atr_sl_mult=2.239969
+strategy_structure_lookback=16
+strategy_max_hold_bars=91
+strategy_max_spread_stop_frac=0.117501

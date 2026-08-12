@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20100
+; ea_slug:      xng-samecal
+; ea_version:   v5.0
+; set_version:  s20260724-001
+; symbol:       XNGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   68bafe1fe15c8ee93e3e36c902ac18f3eb9406e2130fb9fc94a1775e176204f0
+; author:       Development
+; date:         2026-07-24
+;==========================================================
+qm_ea_id=20100
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_history_years=10
+strategy_min_history_years=5
+strategy_history_bars=3000
+strategy_atr_period=20
+strategy_atr_sl_mult=4.0
+strategy_max_hold_days=35
+strategy_max_spread_points=2500

@@ -21,6 +21,7 @@ $neededFunctions = @(
     "Test-TesterLogShowsOnInitFailure",
     "Test-TesterLogShowsSetupDataMissing",
     "Test-TesterLogHasNoHistoryForRun",
+    "Get-LatestTesterLog",
     "Get-ReportInvalidReasons",
     "Resolve-InvalidReportVerdict"
 )
@@ -37,6 +38,27 @@ foreach ($name in $neededFunctions) {
     }
 
     Invoke-Expression $functionAst.Extent.Text
+}
+
+$logRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("qm-run-smoke-log-discovery-" + [guid]::NewGuid())
+try {
+    $controllerDir = Join-Path $logRoot "Tester\logs"
+    $agentDir = Join-Path $logRoot "Tester\Agent-127.0.0.1-3000\logs"
+    New-Item -ItemType Directory -Path $controllerDir,$agentDir -Force | Out-Null
+    $controllerLog = Join-Path $controllerDir "controller.log"
+    $agentLog = Join-Path $agentDir "agent.log"
+    Set-Content -LiteralPath $controllerLog -Value "controller"
+    Set-Content -LiteralPath $agentLog -Value "EURUSD.DWX: no history data"
+    (Get-Item -LiteralPath $controllerLog).LastWriteTimeUtc = [datetime]::UtcNow.AddSeconds(-5)
+    (Get-Item -LiteralPath $agentLog).LastWriteTimeUtc = [datetime]::UtcNow
+    $latest = Get-LatestTesterLog -TerminalRoot $logRoot -SinceUtc ([datetime]::UtcNow.AddMinutes(-1))
+    if (-not $latest -or $latest.FullName -ne $agentLog) {
+        throw "Latest tester log discovery did not include the local Agent-* log tree."
+    }
+} finally {
+    if (Test-Path -LiteralPath $logRoot) {
+        Remove-Item -LiteralPath $logRoot -Recurse -Force
+    }
 }
 
 $foreignNoHistoryTail = @"
@@ -123,6 +145,21 @@ if ($currentNoHistoryReasons -notcontains "HISTORY_CONTEXT_INVALID") {
 }
 if ((Resolve-InvalidReportVerdict -InvalidReasons $currentNoHistoryReasons) -ne "NO_HISTORY") {
     throw "Current-symbol no-history shell was not classified as NO_HISTORY."
+}
+
+$syncErrorTail = @"
+MN  0  18:45:16.844  Tester  EURUSD.DWX,M15 (Darwinex-Live): testing of Experts\QM\QM5_4006_fx-session-flow.ex5 from 2022.07.01 00:00 to 2022.12.31 00:00
+KR  0  18:45:16.855  Core 01 common synchronization completed
+JK  2  18:45:16.866  Core 01 EURUSD.DWX: history synchronization error
+"@
+if (-not (Test-TesterLogHasNoHistoryForRun -TesterLogTail $syncErrorTail -ExpectedSymbol "EURUSD.DWX" -ExpectedFromDate "2022.07.01" -ExpectedToDate "2022.12.31")) {
+    throw "Scoped history synchronization error was not classified as current-run NO_HISTORY."
+}
+if (Test-TesterLogHasNoHistoryForRun -TesterLogTail $syncErrorTail -ExpectedSymbol "GBPUSD.DWX" -ExpectedFromDate "2022.07.01" -ExpectedToDate "2022.12.31") {
+    throw "Foreign-symbol history synchronization error was incorrectly classified as current-run NO_HISTORY."
+}
+if (Test-TesterLogHasNoHistoryForRun -TesterLogTail $syncErrorTail -ExpectedSymbol "EURUSD.DWX" -ExpectedFromDate "2021.01.01" -ExpectedToDate "2021.12.31") {
+    throw "Wrong-window history synchronization error was incorrectly classified as current-run NO_HISTORY."
 }
 
 Write-Host "PASS Test-RunSmokeNoHistoryScope"

@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_silly-scalping-ea_560458.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_silly-scalping-ea_560458.pdf",
+      "source_pages": "1-8",
+      "source_ref": "wilczasty, 'Silly Scalping EA', Babypips forum thread (2021-2023), https://forums.babypips.com/t/silly-scalping-ea/560458",
+      "strategy_name": "Silly Scalper (ATR-candle fade + averaging-down grid)",
+      "concept": "Fade a candle whose body exceeds an ATR multiple, then average down (each candle or on an ATR-spaced grid) until aggregate unrealized P/L hits a small fixed profit target, with no stop loss.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Averaging-down / grid martingale with no stop loss - incompatible with FTMO daily-loss/max-DD and DXZ 5%/20% DD; author warns profitability depends on unlimited position-adding and it 'can eat your margin like CRAZY'.",
+      "priority_hint": "LOW",
+      "notes": "Three variants of one core money-management engine, so one row: (v1) per-candle averaging with 3-pip TP, H1 GBPUSD; (v2) ATR*integer-spaced grid to an aggregate profit target, targets 10-20 open levels, M15 EURUSD/GBPUSD tested with up to 95 open trades; (v3) RSI-triggered entry (#27), same open-until-aggregate-profit engine, ~1% p.a. per pair at 1:30 'safest' settings. Salvageable kernel is only the candle-body>ATR*k mean-reversion entry, but it would need a hard stop + fixed risk (never specified in the thread) to become ELIGIBLE. Author self-describes the method as 'gambling'/'silly'; backtests are unverified forum screenshots (grand claim 25%/1900 trades later walked back to 10-15%)."
+    }
+  ],
+  "notes": ["extracted_via_pypdf_text_layer"]
+}

@@ -5,7 +5,7 @@
 
 **Horizon:** Relaunch targeted for month 3-4 of V5 build (~2026-07 / 2026-08).
 **Hosting:** Continue on easyname (already paid).
-**Stack:** Static site generator (Astro or 11ty) + Netlify CDN + Paperclip-style live operations dashboard.
+**Stack:** Static site generator (Astro or 11ty) + Netlify CDN + evidence-driven operations dashboard.
 **Update cadence:** hourly public snapshot by VPS Task Scheduler; sensitive T6/live details remain private.
 
 ## Core Sections (Revised from March 2026 version)
@@ -24,7 +24,7 @@
    - Public list of every V5-tested strategy plus legacy strategy-seeds clearly marked as pending re-test
    - Source citation, Strategy Card, PASS/FAIL/REJECT, phase history, why
    - Searchable + filterable by source, market, timeframe, style, phase, status, live/demo usage
-   - Visual style: QuantMechanica brand voice + Paperclip operations-board density (status chips, evidence links, agent decisions, manifest references)
+   - Visual style: QuantMechanica brand voice with status chips, evidence links, gate decisions, and manifest references
    - Locked detail-pages available to newsletter subscribers (soft-gate CTA)
 
 4. **Episode Library**
@@ -40,14 +40,14 @@
    - Separate collaboration/investor inquiries from project donations
 
 8. **Process Roadmap**
-   - Public view of how the Paperclip company works: processes, owners, checklist status, review cadence, latest lessons learned
+   - Public view of the strategy factory: processes, evidence owners, checklist status, review cadence, and lessons learned
    - Generated from internal process registry with private details redacted
 
 9. **Support the Build**
    - Buy-me-a-coffee CTA on episode pages, YouTube descriptions, and optional dashboard footer
    - Must be framed as project support, not an investment ask
 
-## Paperclip-Style Dashboard Principle
+## Evidence-First Dashboard Principle
 
 The website remains QuantMechanica first: pipeline, strategy archive, contact, legal, newsletter, and the existing professional dark/teal design direction stay. The relaunch extends with a public operations board: current phase, agents, blockers, strategy factory, T6 Live/Demo status, deploy manifests, expenses, process roadmap, latest episode evidence.
 
@@ -57,12 +57,12 @@ The website remains QuantMechanica first: pipeline, strategy archive, contact, l
 
 ```text
 VPS Windows Task Scheduler (hourly HH:07) → export_public_snapshot.ps1
-Paperclip SQLite/API + T6 logs + reports + expenses + process registry → redacted public-data/*.json
+Strategy-farm SQLite + T6 logs + reports + expenses + process registry → redacted public-data/*.json
 public-data/*.json → git commit/push when changed → Netlify rebuild/cache refresh → dashboard read
 Notion + expenses.csv → hourly docs/expense export → dashboard read
 ```
 
-Primary scheduler: Windows Task Scheduler on Hetzner VPS. GitHub Actions and Netlify Scheduled Functions are fallback/support tools only, because they do not own the local MT5/Paperclip state.
+Primary scheduler: Windows Task Scheduler on Hetzner VPS. GitHub Actions and Netlify Scheduled Functions are fallback/support tools only, because they do not own local MT5 or strategy-farm state.
 
 ### Tech Choices
 
@@ -77,10 +77,10 @@ Full dashboard spec: `docs/ops/QUANTMECHANICA_DASHBOARD_SPEC.md`.
 
 | Widget | Source | Refresh | Notes |
 |---|---|---|---|
-| Strategies in pipeline by phase | Paperclip DB | hourly | bar chart, 15 phases |
+| Strategies in pipeline by phase | Strategy-farm DB | hourly | bar chart, 15 phases |
 | Portfolio equity curve | Myfxbook | hourly | line chart |
 | Live EAs: win rate, PF, DD | DarwinexZero | hourly | card grid |
-| Latest PASS | Paperclip DB | on event | banner |
+| Latest PASS | Strategy-farm DB | on event | banner |
 | Total cost to date | Expense Log | manual update + hourly | tile |
 | YouTube subscriber count | YT API | daily | tile |
 
@@ -88,7 +88,7 @@ Full dashboard spec: `docs/ops/QUANTMECHANICA_DASHBOARD_SPEC.md`.
 
 Current site (March 2026 version) has: Hero, Archive teaser, Myfxbook embed, Shop, Newsletter. Keep the copy voice (professional, data-driven, first-person "I"), keep the current design direction, keep the Pipeline and Get in Contact paths, and keep the Strategy Archive as a core asset.
 
-Relaunch adds: Paperclip-style Project Dashboard, rebuilt Strategy Archive with fresh V5 data, Episode Library, Expense Log, Deploy Manifest Ledger, Process Roadmap, Buy-me-a-coffee support CTA.
+Relaunch adds: evidence-first Project Dashboard, rebuilt Strategy Archive with fresh V5 data, Episode Library, Expense Log, Deploy Manifest Ledger, Process Roadmap, and support CTA.
 
 Deprecate: Shop (defer — no EA sales until live portfolio has 90-day track record).
 

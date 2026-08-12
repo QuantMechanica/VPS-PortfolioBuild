@@ -19,4 +19,14 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=ea_input_defaults (materialized 2026-07-19 push: setgen param-empty repair)
+strategy_setup_bars=9
+strategy_countdown_bars=13
+strategy_countdown_timeout=24
+strategy_atr_period=14
+strategy_sl_atr_buffer=0.5
+strategy_sl_atr_cap=3.0
+strategy_tp_atr_mult=1.5
+strategy_spread_atr_mult=0.4
+strategy_regime_sma_period=200
+strategy_time_stop_h4_bars=12

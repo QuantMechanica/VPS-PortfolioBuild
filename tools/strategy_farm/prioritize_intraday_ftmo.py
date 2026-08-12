@@ -15,7 +15,7 @@ Scope: Q02 pending only. Intraday = timeframe in {M1,M5,M15,M30} OR slug in
   python prioritize_intraday_ftmo.py --revert
 """
 from __future__ import annotations
-import argparse, json, re, sqlite3, time
+import argparse, datetime as dt, json, re, sqlite3
 from collections import Counter
 from pathlib import Path
 
@@ -29,6 +29,13 @@ def is_intraday(setfile_path: str) -> bool:
     return bool(INTRADAY_TF.search(p) or INTRADAY_SLUG.search(p))
 
 
+def normalize_epoch_timestamp(value) -> str | None:
+    text = str(value or "").strip()
+    if not re.fullmatch(r"\d{10}(?:\.\d+)?", text):
+        return None
+    return dt.datetime.fromtimestamp(float(text), tz=dt.UTC).replace(microsecond=0).isoformat()
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     g = ap.add_mutually_exclusive_group()
@@ -39,7 +46,8 @@ def main(argv=None) -> int:
     c = sqlite3.connect(DB)
     c.row_factory = sqlite3.Row
     rows = c.execute(
-        "SELECT id, setfile_path, payload_json FROM work_items WHERE status='pending' AND phase='Q02'"
+        "SELECT id, setfile_path, payload_json, updated_at FROM work_items "
+        "WHERE status='pending' AND phase='Q02'"
     ).fetchall()
 
     targets = [r for r in rows if is_intraday(r["setfile_path"])]
@@ -58,29 +66,41 @@ def main(argv=None) -> int:
         c.close()
         return 0
 
-    now = int(time.time())
+    now = dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()
     changed = 0
+    timestamps_normalized = 0
     for r in targets:
         try:
             payload = json.loads(r["payload_json"]) if r["payload_json"] else {}
         except Exception:
             payload = {}
+        payload_changed = False
         if args.apply:
             if payload.get("priority_track") is True:
-                continue
-            payload["priority_track"] = True
+                pass
+            else:
+                payload["priority_track"] = True
+                payload_changed = True
         else:  # revert
-            if "priority_track" not in payload:
-                continue
-            payload.pop("priority_track", None)
+            if "priority_track" in payload:
+                payload.pop("priority_track", None)
+                payload_changed = True
+        normalized_timestamp = normalize_epoch_timestamp(r["updated_at"])
+        if not payload_changed and normalized_timestamp is None:
+            continue
+        updated_at = now if payload_changed else normalized_timestamp
         c.execute(
             "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='pending' AND phase='Q02'",
-            (json.dumps(payload), now, r["id"]),
+            (json.dumps(payload), updated_at, r["id"]),
         )
-        changed += 1
+        if payload_changed:
+            changed += 1
+        if normalized_timestamp is not None:
+            timestamps_normalized += 1
     c.commit()
     verb = "prioritized" if args.apply else "reverted"
     print(f"\n{verb} {changed} intraday Q02 work_items")
+    print(f"normalized {timestamps_normalized} epoch updated_at values to UTC ISO")
     # confirm
     n = c.execute(
         "SELECT COUNT(*) FROM work_items WHERE status='pending' AND phase='Q02' "

@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20034
+; ea_slug:      wmr-postfix
+; ea_version:   v5.0
+; set_version:  s20260722-001
+; symbol:       GBPUSD.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   aab0da86abbba52a79d327db7c0185dc1b235de3f368e64fe6219369ced6439a
+; author:       Development
+; date:         2026-07-22
+;==========================================================
+qm_ea_id=20034
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_signal_tf=5
+strategy_median_days=20
+strategy_displacement_mult=1.50
+strategy_p0_hour_london=15
+strategy_p0_minute_london=57
+strategy_p0_second_london=30
+strategy_p1_hour_london=16
+strategy_p1_minute_london=2
+strategy_p1_second_london=30
+strategy_entry_hour_london=16
+strategy_entry_minute_london=5
+strategy_exit_hour_london=16
+strategy_exit_minute_london=30
+strategy_max_spread_points=0

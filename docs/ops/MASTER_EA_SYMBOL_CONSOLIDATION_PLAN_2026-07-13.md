@@ -53,6 +53,9 @@ je-Magic-q08-Stream extrahieren → gegen den EINZELN verifizierten Standalone-S
 Strategie diffen (die Referenzen aus dem 13.07.-Sweep: 10403 209/$14.411, 10513 76/$9.649,
 12567 73/$4.677, 12989 51/$13.878, 1556 53/$6.370). **Match = Konsolidierung ändert kein
 Verhalten.** Erst dann geht's live. (Nutzt die Verifikations-Infra vom 12./13.07.)
+Für Centgenauigkeit läuft die Regression im **RISK_FIXED**-Modus mit den Standalone-Backtest-
+Werten (Phase 2.5 liefert den expliziten FIXED-Pfad); Live-RISK_PERCENT ist ein separater
+Sizing-Modus desselben Moduls.
 
 ## Phasenplan + Delegation
 
@@ -66,18 +69,71 @@ Verhalten.** Erst dann geht's live. (Nutzt die Verifikations-Infra vom 12./13.07
 - **Gate:** ein bestehender Single-EA (z.B. 12567) kompiliert + backtestet identisch nach
   dem Framework-Change (Regression auf den 13.07.-Referenzen).
 
+**Phase 1.5 — q08-Serializer per-Magic (headless CODEX) [NEU, aus Phase-1-Review]:**
+- Befund (Codex-Design-Note 13.07.): der q08-JSONL-Writer sammelt owned position_ids, schreibt
+  aber EINE Host-EA-Datei OHNE per-Row-Magic. Damit dekomponiert der Stream NICHT je Sub-Magic.
+- Fix: `magic`-Feld je q08-Row ergänzen (aus dem Eröffnungs-Deal), backward-kompatibel
+  (Single-Magic-EAs bekommen ihre Magic in die Row, Format-Superset). Nötig für (a) das
+  per-Magic-Regression-Gate in Phase 4 und (b) spätere per-Strategie-Live-Attribution.
+- **Gate:** 12567 reproduziert weiter 73/$4.676,76; die Row trägt jetzt magic=125670003.
+- **Status Phase 1: ✅ ABGESCHLOSSEN + gemerged (c172395e); Gate GRÜN (12567 centgenau).**
+
 **Phase 2 — Master-EA-Skelett + Modul-Interface (headless CODEX):**
 - `framework/EAs/QM5_MXAU_master-xauusd/` (neue ea_id-Klasse, z.B. 20001).
 - Dispatcher-OnTick; Strategie-Modul-Interface (`StratN_Entry/Exit/Manage/NoTrade`, TF,
   Magic-Kontext, Risk). Inputs `strategyN_*`. Registry-Eintrag + Resolver.
 - **Gate:** kompiliert 0/0; mit 0 aktiven Modulen = No-Op-Backtest sauber.
+- **Status Phase 2: ✅ ABGESCHLOSSEN + gemerged (430f917c5 Merge, 0832efc4e .ex5-Rebuild).**
+  `CQMStrategyModule`-Interface (Init/Deinit/Enabled/Magic/TF/RiskPercent/NoTrade/ManageOpen/
+  CheckExit/CheckEntry) + `QM_ModuleOwnsPosition`. Dispatcher: Corset einmal → per-Modul
+  Manage/Exit immer → Entry auf Modul-TF-NewBar (auch bei entries_blocked konsumiert →
+  kein Late-Entry-Bug). Master eröffnet NIE unter Host-Magic 200010000; 5 XAU-Sub-Magics
+  als Closed-Allowlist; Init-Guards (Magic-Allowlist, TF≠CURRENT, Risk>0). Gate GRÜN
+  (T8, unabhängig): Compile 0/0, No-Op-Smoke 0 Trades, MASTER_INIT_OK host_magic=200010000
+  active_modules=0, Model-4 real ticks.
+- **★Gate-Lektion (für Phase 3/4):** `run_smoke.ps1` deployt die `.ex5` fest aus
+  `C:\QM\repo`, NICHT aus dem Worktree. Vor-Merge-Gates aus einem Worktree müssen die
+  `.ex5` erst manuell ins Ziel-Terminal (`D:\QM\mt5\T<n>\MQL5\Experts\QM\`) kopieren, sonst
+  `REPORT_MISSING` (deploy_skip=source_missing). Nach dem Merge greift der Deploy automatisch.
+  Zusätzlich: `-MinTrades 0` wird von run_smoke auf den 5/yr-Ökonomie-Floor überschrieben →
+  ein No-Op-Skelett meldet `MIN_TRADES_NOT_MET` trotz sauberem Run (run_01 status=OK zählt).
+
+**Phase 2.5 — Expliziter Fixed-Lot-Sizing-Pfad (headless CODEX) [NEU, OWNER-Wahl A 13.07.]:**
+- Befund: die per-Modul-Regression (Phase 3/4) muss das Standalone-**RISK_FIXED**-Backtest-
+  Sizing centgenau reproduzieren. Standalones sizen im Backtest über RISK_FIXED (fixes
+  Risiko-*Geld* `g_qm_risk_fixed`, Lots aus SL-Distanz). Phase 1 lieferte NUR einen expliziten
+  PERCENT-Pfad (`QM_RiskSizerRiskMoney(equity, explicit_risk_percent)` / `QM_LotsForRisk(...,
+  explicit_risk_percent)`) — der explizite FIXED-Branch fehlt.
+- Fix: paralleler expliziter FIXED-Pfad (mode+value je Call), der den globalen FIXED-Branch
+  (base_risk = fixed, × portfolio_weight, per_trade_cap) 1:1 spiegelt, ohne Globals zu
+  mutieren. Durch `QM_TM_OpenPosition` threaden. Phase-1-PERCENT-Overload bleibt (backward-
+  kompatibel; ggf. als Wrapper mode=PERCENT).
+- **Gate:** (a) risk_sizer-Unit-Test beweist explizit-FIXED == global-FIXED (identisches
+  risk_money + Lots für gleiche Inputs); (b) ein bestehender Single-EA (12567) reproduziert
+  weiter 73/$4.676,76 (backward-compat). Kein Phase-3-Modul nötig — reiner Framework-Beweis.
+- **Status Phase 2.5: ✅ ABGESCHLOSSEN + gemerged (9b4202b1e).** Overloads
+  `QM_RiskSizerRiskMoney(equity, mode, value)` + `QM_LotsForRisk(sym, sl, mode, value)`
+  (PERCENT delegiert an Phase-1-Pfad; FIXED spiegelt Global-Branch ohne Global-Mutation),
+  durch `QM_TM_OpenPosition` + `QM_Entry` gethreadet. Gates GRÜN (T8, unabhängig):
+  Unit `AssertExact` explicit-FIXED==global-FIXED (2 PASS, 0 fails) + 12567 = 73/$4.676,76.
 
 **Phase 3 — die 5 XAU-Strategien als Module portieren (headless SONNET):**
 - Je Strategie: Entry/Exit/Manage-Logik 1:1 aus dem Standalone-EA übernehmen, TF-hart,
-  Original-Magic-Kontext, Live-Risk als Default. Pro Modul der committete Standalone-Code
-  als Quelle (nach dem 13.07.-Rebuild verifiziert).
-- **Gate je Modul:** Master mit NUR diesem Modul aktiv reproduziert den Standalone-Stream
-  centgenau (Einzel-Regression vor der Integration).
+  Original-Magic-Kontext. **Dualmodus (CLAUDE.md-Pflicht):** Regression = expliziter FIXED-Pfad
+  mit dem `g_qm_risk_fixed`-Wert aus dem Standalone-Backtest-Set; Live = expliziter PERCENT-Pfad
+  mit dem deployten Sub-Sleeve-Risk. Pro Modul der committete Standalone-Code als Quelle
+  (nach dem 13.07.-Rebuild verifiziert).
+- **Gate je Modul:** Master mit NUR diesem Modul aktiv, im **FIXED**-Regressionsmodus,
+  reproduziert den Standalone-q08-Stream **centgenau** (Einzel-Regression vor der Integration).
+  Deploy-Lektion aus Phase 2 beachten (Worktree-`.ex5` vor dem Smoke ins Terminal kopieren).
+- **Status Phase 3: ✅ ABGESCHLOSSEN + gemerged.** Pilot 12567 (`0792b2967`) + die 4 restlichen
+  (`a16eaef6b`). Module: CumRsi2Commodity/EtTurtle20x/Mql5Ichimoku/GrimesNestedPbV2(H4)/AaZakMom12.
+  Interface `RiskPercent()`→`RiskMode()`+`RiskValue()` (Dualmodus), `CQMMasterSlotModule`-Platzhalter
+  entfernt. **Alle 5 per-Modul-Gates GREEN_MATCH centgenau** (T8, autoritativ):
+  12567 73/$4.676,76 · 10403 209/$14.411,17 · 10513 76/$9.649,32 · 12989 51/$13.878,26 ·
+  1556 53/$6.369,87 — je nur die Original-Magic. Prozess-Lektion: `claude -p` (headless Sonnet)
+  darf NICHTS backgrounden → Prompt muss „synchron + committen vor exit" hart vorschreiben;
+  Claude fährt die autoritativen Gates.
 
 **Phase 4 — Integration + Full-Regression (CLAUDE fährt, Codex fixt Drift):**
 - Alle 5 Module aktiv, Full-History-Backtest, je-Magic-Stream-Diff gegen alle 5 Referenzen.

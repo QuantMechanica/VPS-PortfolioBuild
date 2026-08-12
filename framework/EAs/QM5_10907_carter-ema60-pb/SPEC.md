@@ -4,7 +4,7 @@
 **Slug:** carter-ema60-pb
 **Source:** 6facee24-8a58-5bbf-88e9-38d44291db50
 **Author of this spec:** Codex
-**Last revised:** 2026-06-06
+**Last revised:** 2026-07-20
 
 ---
 
@@ -90,3 +90,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-06 | Initial build from card | 505d9d9a-e483-45c3-8e88-d1d50da8e763 |
+| v1.1 | 2026-07-20 | Q02 infrastructure recovery | Restored explicit setfile identity/defaults, rebuilt against current V5 framework, and aligned news gating with the entry-only framework order; strategy rules unchanged. |

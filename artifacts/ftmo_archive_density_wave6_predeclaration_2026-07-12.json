@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_RUNS",
+  "selection_source": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\portfolio\\prop_challenge_ftmo_report_candidate_screen_dedup_fast_20260629.json",
+    "sha256": "05298982b0e80d32bcbd835a5f1444bdf3aa1a992b284aaf756b075da2fa2404",
+    "rule": "Continue with the strongest useful-density 2024 PASS rows remaining after Waves 2-5. Exclude incumbent sleeves, candidates already falsified on the same symbol by fresher full-history evidence, known portfolio rejects, and the M1 candidate whose full-history runtime would block a terminal before higher-priority H1/M15 tests complete."
+  },
+  "ordered_candidates": [
+    {
+      "order": 1,
+      "ea_id": 10110,
+      "expert": "QM\\QM5_10110_tv-sma20-200-pullback",
+      "symbol": "GBPUSD.DWX",
+      "period": "H1",
+      "archive_pf": 1.2428744806692058,
+      "archive_trades": 224,
+      "archive_trades_per_60d": 36.92307692307693,
+      "note": "Different FX symbol/mechanism from the index-gold core and a higher-priority decorrelation test than another USDJPY sleeve."
+    },
+    {
+      "order": 2,
+      "ea_id": 11629,
+      "expert": "QM\\QM5_11629_cat-rsi6070",
+      "symbol": "NDX.DWX",
+      "period": "M15",
+      "archive_pf": 1.2405379384134674,
+      "archive_trades": 209,
+      "archive_trades_per_60d": 34.450549450549445,
+      "note": "Intraday density candidate; retained despite NDX concentration because its M15 mechanism differs from incumbent index sleeves."
+    },
+    {
+      "order": 3,
+      "ea_id": 10423,
+      "expert": "QM\\QM5_10423_et-close-channel",
+      "symbol": "XAUUSD.DWX",
+      "period": "H1",
+      "archive_pf": 1.2062341677507222,
+      "archive_trades": 203,
+      "archive_trades_per_60d": 33.46153846153846,
+      "note": "Last unrefreshed full-2024 gold row above the archive 1.20 floor; current XAU rollover is expected to be the binding test."
+    }
+  ],
+  "fresh_evidence_contract": {
+    "history": "2017-01-01 through 2025-12-31",
+    "model": 4,
+    "required_identical_runs": 2,
+    "current_framework_strict_compile": true,
+    "joint_mae_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "strict_q02_pf_floor": 1.2,
+    "strict_q02_minimum_trades_per_calendar_year": 5
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [0.5, 1.0, 2.0, 3.0, 5.0, 7.5, 10.0],
+    "development_survivor_rule": "A fixed candidate representation and weight must improve both threshold and adverse preholdout pass rates.",
+    "sealed_holdout_open_rule": "Open once only for a frozen development survivor."
+  },
+  "operational_boundary": {
+    "allowed_terminals": ["T1", "T2", "T3", "T4"],
+    "t5_disabled": true,
+    "factory_off_required": true,
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

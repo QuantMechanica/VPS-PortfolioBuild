@@ -1,0 +1,93 @@
+{
+  "schema": "qm_fx_cointegration_build_q02_handoff/v1",
+  "timestamp_utc": "2026-08-03T12:51:31Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20207",
+  "slug": "usdcad-audusd",
+  "pair": [
+    "USDCAD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "logical_symbol": "QM5_20207_USDCAD_AUDUSD_COINTEGRATION_D1",
+  "selection": {
+    "scan_size": 66,
+    "sign_aware_rank": 25,
+    "dev_net_sharpe": 0.610821,
+    "oos_net_sharpe": 0.485169,
+    "oos_return_pct": 2.072809,
+    "oos_state_changes": 20,
+    "fixed_dev_beta": -0.460267756,
+    "half_life_d1_bars": 50.048,
+    "dedicated_fixed_d1_pair_previously_built": false,
+    "known_overlap": "QM5_1257 contains an adaptive H1 AUDUSD/USDCAD universe slot, not this fixed-beta D1 logical package; ranks 22-24 already have dedicated D1 builds QM5_12624, QM5_12731, and QM5_12732."
+  },
+  "anchors": {
+    "QM5_12532": "Q02_PASS_THEN_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_THEN_Q04_FAIL"
+  },
+  "build": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "build_check_passed": true,
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "spec_validation": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "basket_regression_passed": 32,
+    "magic_resolver_rows_kept": 15466,
+    "magic_resolver_rows_dropped": 0,
+    "magic_registry_sha256": "fa6ec8d1cd6bd6fc3edb7eea9272e9f60f8f1c0eca867e2ffdb9fc5ec11b8aa7",
+    "mq5_sha256": "6e2f5898809ccb285646fb80eda38061e366366f7a256ebd2887e690019ca91a",
+    "ex5_sha256": "1d2e698b653dde254a5635699a99b96eeb0498feb329f34b933d7942724938f3",
+    "logical_setfile_sha256": "5a3339bdad86a86ddd3be8c9ffcb5e21afb6f1e1d093d1b44b1cd642ed9e99f3",
+    "build_report": "D:\\QM\\reports\\framework\\21\\build_check_20260803_124806.json",
+    "compile_summary": "D:\\QM\\reports\\compile\\20260803_124739\\summary.csv",
+    "manual_smoke_run": false
+  },
+  "basket_manifest": {
+    "host_symbol": "USDCAD.DWX",
+    "host_timeframe": "D1",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "basket_symbols": [
+      "USDCAD.DWX",
+      "AUDUSD.DWX"
+    ],
+    "traded_symbols": [
+      "USDCAD.DWX",
+      "AUDUSD.DWX"
+    ],
+    "conversion_only_symbols": []
+  },
+  "risk": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "q02": {
+    "work_item_id": "232f5aeb-0435-4762-bb06-6bc6225c1675",
+    "status_at_handoff": "pending",
+    "attempt_count_at_handoff": 0,
+    "claimed_by_at_handoff": null,
+    "logical_setfile_enqueued": true,
+    "physical_host_setfile_skipped": true,
+    "skip_reason": "basket_manifest_logical_setfile_preferred",
+    "priority_track": true,
+    "timeout_min": 450,
+    "cpu_ceiling": 7,
+    "factory_terminals_at_precheck": 3,
+    "factory_terminal_names": [
+      "T2",
+      "T3",
+      "T8"
+    ],
+    "t_live_excluded": true,
+    "first_attempt_lock_busy": true,
+    "canonical_mutation_lock_released": true
+  },
+  "prohibited_surfaces_touched": []
+}

@@ -16,6 +16,9 @@ if (-not (Test-Path -LiteralPath $PythonwExe)) {
 if (-not (Test-Path -LiteralPath $wrapper)) {
     throw "Wrapper not found: $wrapper"
 }
+if ($RunNow.IsPresent) {
+    throw "-RunNow is unavailable: the pipeline FAIL/OK mail channel is OWNER-disabled."
+}
 
 $action = New-ScheduledTaskAction `
     -Execute $PythonwExe `
@@ -40,15 +43,11 @@ Register-ScheduledTask `
     -Action $action `
     -Trigger $trigger `
     -Settings $settings `
-    -Description "Send Gmail when Strategy Farm health watchdog transitions to/from FAIL." `
+    -Description "Legacy PIPELINE FAIL/OK mail channel. OWNER-disabled by default since 2026-07-23; MorningBriefing is separate." `
     -User "SYSTEM" `
     -RunLevel Highest `
     -Force | Out-Null
 
-Enable-ScheduledTask -TaskName $TaskName | Out-Null
-
-if ($RunNow.IsPresent) {
-    Start-ScheduledTask -TaskName $TaskName
-}
+Disable-ScheduledTask -TaskName $TaskName | Out-Null
 
 Get-ScheduledTask -TaskName $TaskName | Get-ScheduledTaskInfo

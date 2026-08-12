@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_beagle-boys-machine-learning_1260609.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_beagle-boys-machine-learning_1260609.pdf",
+      "source_pages": "1-2",
+      "source_ref": "KGMK, \"Beagle Boys Machine Learning\" (trading journal), Babypips Forums, 2024, https://forums.babypips.com/t/beagle-boys-machine-learning/1260609",
+      "strategy_name": "Beagle Boys ML Journal (no strategy stated)",
+      "concept": "Journal-intro post that only names indicators and tools; no edge or mechanism is described.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Journal intro only, no entry/exit rules; centers on Machine Learning (V5 hard-rule ban) plus Python/C#/PHP external runtimes and options/futures methods.",
+      "priority_hint": "LOW",
+      "notes": "Single opening post (#1). Lists tools RSI/MACD/ADX/EMA across TFs 1M-1W; brokers ICMarkets/Vantage; methods regular/option/futures. No deterministic rules, no parameters, no results. Low reputability (bare intro). Market/TF inferred; not actually specified."
+    }
+  ],
+  "notes": ["zero usable candidates; single REJECTED summary row"]
+}

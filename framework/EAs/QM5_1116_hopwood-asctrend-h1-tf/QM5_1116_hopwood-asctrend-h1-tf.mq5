@@ -7,6 +7,7 @@
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 1116;
 input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
 input double RISK_PERCENT               = 0.0;
@@ -19,6 +20,9 @@ input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input ENUM_TIMEFRAMES strategy_tf       = PERIOD_H1;
@@ -305,7 +309,13 @@ int OnInit()
                         PORTFOLIO_WEIGHT,
                         qm_news_mode,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        336,
+                        "high",
+                        qm_rng_seed,
+                        qm_stress_reject_probability))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1116\",\"ea\":\"hopwood-asctrend-h1-tf\"}");
@@ -371,4 +381,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-

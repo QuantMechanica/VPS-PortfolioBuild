@@ -1,0 +1,41 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11173
+; ea_slug:      weiss-dmi-adx
+; ea_version:   v5.0
+; set_version:  s20260607-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   f7d107244d2019fb1822e5f05f718cab993f8cd4d5e9188c92eea5970b65c7c0
+; author:       Development
+; date:         2026-06-07
+;==========================================================
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
+; --- ablation child 00 of QM5_11173_weiss-dmi-adx_XTIUSD.DWX_D1_backtest (perturb=±25%) ---
+strategy_dmi_period=11
+strategy_adx_period=11
+strategy_ddif_entry_level=17.909748
+strategy_adx_min=21.404783
+strategy_atr_period=17
+strategy_atr_sl_mult=3.721385

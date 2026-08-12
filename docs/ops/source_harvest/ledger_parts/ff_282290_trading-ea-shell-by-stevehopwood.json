@@ -1,0 +1,24 @@
+{
+  "pdf": "ff_282290_trading-ea-shell-by-stevehopwood.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_282290_trading-ea-shell-by-stevehopwood.pdf",
+      "source_pages": "2-5",
+      "source_ref": "SteveHopwood et al., 'Trading EA shell' thread, ForexFactory forum, 2011, thread #282290, https://www.forexfactory.com/thread/282290-trading-ea-shell-by-stevehopwood ; the strategy passage was posted by member 'newark18'.",
+      "strategy_name": "H4 Engulfing + 50 SMA trend breakout",
+      "concept": "Place a stop order beyond an H4 engulfing candle that forms on the trend-correct side of the 50-period SMA, riding continuation; hard-stop at the engulfing candle's opposite extreme and close when an H4 candle closes back across the SMA.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic engulfing + SMA-filter stop-breakout, pure-MQL5 implementable on FX H4 (.DWX), with a hard SL and an SMA-close exit; martingale/grid free, so FTMO/DXZ DD-compatible.",
+      "priority_hint": "LOW",
+      "notes": "Long: candle[2] bearish, candle[1] bullish engulfing with close>SMA50 -> BUYSTOP at high of engulfing candle, SL at its low. Short is the mirror (SELLSTOP at low, SL at high). TP optional in pips; primary exit is 'close all buys when an H4 candle closes below the SMA, all sells when it closes above'. Posted by forum member 'newark18' (not the thread author) while asking for coding help - the SMA-close exit was stated in words but left commented/unfinished in the buggy posted code (order-modify error 130). Classic candlestick-pattern trigger, a chart-pattern class repeatedly falsified in QM research, so low-conviction. The thread itself is a generic EA code 'shell' (trade-management scaffold: hidden SL/TP 'Stealth', 'Caterpillar' scale-in, 'CBI' multi-trade module, AllAverages trend indicator, Hanover module) with no standalone edge -> not a strategy candidate."
+    }
+  ],
+  "notes": [
+    "Thread is a generic MT4 EA code shell (trade-management scaffold), not a strategy; the single candidate is a forum member's embedded H4 engulfing+50SMA breakout idea."
+  ]
+}

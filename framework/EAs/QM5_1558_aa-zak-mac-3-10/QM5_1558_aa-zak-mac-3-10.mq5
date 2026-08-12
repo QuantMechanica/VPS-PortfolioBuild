@@ -230,7 +230,11 @@ void RefreshMonthlyStateIfNeeded()
   {
    const int month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
    const bool calendar_roll = QM_IsNewCalendarPeriod(PERIOD_MN1, _Symbol);
-   if(g_state_valid && !calendar_roll)
+   // A data-invalid state is still the state for this calendar month.  Retrying
+   // it on every tick both wastes tester CPU and emits MONTHLY_STATE_INVALID
+   // until the journal reaches the log-bomb ceiling.  Retry only after the
+   // monthly calendar advances (or if no month has ever been evaluated).
+   if(g_last_state_month_key == month_key && !calendar_roll)
       return;
 
    bool trend_long = false;

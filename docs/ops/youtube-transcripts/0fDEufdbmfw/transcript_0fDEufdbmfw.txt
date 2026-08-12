@@ -1,0 +1,931 @@
+So if you guys have any questions feel
+free to drop them in the chat. I'm going
+to move through this whole keynote and
+then at the end I share a strategy with
+you as always. I think it will be a very
+interesting session because we're going
+to talk about prop firms how to get
+funding and also my overall journey
+towards profitable trading and how you
+can use profactus to reach that. So
+Profactus AI first of all what is it?
+What is our mission? Well, simplifying
+automated trading for everyone is our
+goal. Why we started this company. But
+what is Profactus AI? Well, real quick,
+it's the easy tole learn no code builder
+to automate any trading strategy
+allowing everyone to trade FX, crypto,
+and stocks uh automatically. So, with
+algorithms, but without having to code.
+So we built a no coding platform for
+every trader to just automate your
+trading plan and then use it in the
+markets to stay consistent and be
+consistent while you work out, while you
+sleep, while you do whatever you want to
+do during the day, your trades are taken
+and managed. So I always have this
+statement, if you were trading for a
+living tomorrow, you use perfect AI. And
+what I mean with that is is to figure
+out, okay, how can you really achieve
+your goal with trading? And when I
+started 10 years ago, my goal was to
+live from this, be independent, be a
+trader, make money from the markets. And
+that's why I started learning this
+skill. And I think if you master
+Proactors AI, the software platform,
+then you can reach this goal. And I'm
+going to dive into that. Why? Let's
+break it down. The goal, the method, and
+the metrics, the three steps to take.
+The goal first is becoming free,
+independent, making return on your
+capital, maybe reach financial freedom
+or whatever it is. That was my goal and
+I think it's very similar to the goals
+you guys have. The method is having a
+profitable strategy and how to know that
+the strategy is profitable is by testing
+it and seeing results in the live
+markets but also seeing results in your
+back test. So you need a strategy that
+worked last year the year before that
+but also that works this year right that
+is how I define a profitable strategy.
+So that's the method to reach this goal.
+But what are the metrics? And the
+metrics are often forgotten. And this is
+where the journey of every trader comes
+down to executing the strategy
+perfectly. I can give you the most
+profitable strategy on earth. But still,
+because some trades happen while you
+sleep, some trades happen while you're
+just not at the charts or you're
+emotional and you don't execute the
+trades. Those are all reasons why you're
+not reaching this goal. So, Pracus AI is
+built to help you find those profitable
+strategies, but also execute them
+without error. And that's the goal of
+also this call and every call we do
+every month is to help you find those
+strategies, build those strategies, test
+them to see for yourself that they work
+and then you can reach your goal that
+you well you started trading for, right?
+So to go back if you were trading for a
+living tomorrow you use profactus AI
+this every time I share this statement
+just think about the goal the method and
+the metrics. All right. So, I'm
+currently uh standing to the right
+there. You can see that they upgraded
+the screen. But here you can see I'm
+standing here on the trading floor and
+this is the history of this trading
+floor. And why this is important is
+because to the left you see a lot of
+chaos, a lot of people standing here,
+these desks like this all this wasn't
+there, right? You can see that a screen
+didn't exist. And why I'm telling that
+is because here in Amsterdam uh in the
+17th century it all started. uh we in
+Amsterdam the people living here
+invented the stock market the first uh
+company and when that happened also
+price action was discovered right prices
+move and therefore technical analysis
+was used by people here already hundreds
+of years ago and some people still trade
+like the same technical analysis from
+back then right so that was the first
+invention then the second invention was
+um the computers existed right market
+data exploded there were more companies
+like that first uh stock market company
+that just went more and more and more
+companies and therefore there was so
+much data uh creating a tech revolution
+and human beings couldn't really handle
+it so it had to be automated then we had
+the next invention and that was PCs this
+allowed data analysis beyond human
+capacity this is where the Jim Simons
+like the the billionaire hedge fund
+manager that started with automating
+technical analysis started that During
+this time when PCs existed or started to
+uh pop up everywhere, the professionals,
+the hatchants started to automate what
+manual traders were doing and this was
+gamechanging. This literally created
+billionaires u in our industry in the
+trading and investing space. Then the
+next invention was the internet and the
+internet created market access for
+everyone. You and me, we're not talking
+through the internet, right? But also I
+can access my broker account and every
+financial market through the internet
+now by my phone, by my laptop. And this
+changed everything like even more data,
+more people could trade, more volume,
+more liquidity, markets became safer and
+better uh and easier to to trade. And
+then right now, where are we currently?
+Well, you can call this more or less the
+cloud and the AI um period. You can
+automate anything. You can test it. You
+can trade it and you can get funded. And
+this is uh ridiculous that we are so
+lucky that we're now able to trade in
+this time, right? It is never it has
+never been easier to automate anything,
+test it if it really works, to trade it,
+to access the markets, and also how to
+get funded. Back in the days, it was
+super hard to uh to get funding and get
+money to trade with, right? So how I
+define a modern profitable trader is
+someone that moved through these five
+steps. Study the basics of analysis.
+This can be technical analysis. This can
+be fundamental analysis. Doesn't really
+matter. But at least you know the basics
+of the markets. If you don't, there's so
+much information online about the
+basics. What is a pip? What is what is
+trading? How to buy and sell? How to
+work with a broker. Right? That's step
+one. I think most of you guys here are
+well past that step one. But some of you
+guys are stuck at step two and that is
+the skill of automation. Uh back in the
+days you had to become a developer,
+learn to code for many years and then
+you were able to automate a strategy.
+Still it took you a lot of time and
+hours and months or years even to
+automate one strategy. But now we teach
+you guys the skill or offer you a
+platform where you can learn the skill
+to automate your trading plan without
+writing any code. So you can build way
+quicker. you can instead of you having
+to code a strategy, you can now drag and
+drop it and you can build well 10 times
+faster than a developer. So that is step
+two and then step three is able to back
+test very quickly. Like I said, uh if
+you didn't test your strategy, how do
+you know it works, right? So it's very
+important to test the strategy because
+if it worked in the past it's likely to
+work in the future at least more likely
+than if you didn't test something or you
+test something and it is really a bad
+system then you know it probably won't
+work in the future right so step three
+is super important and then four is
+trades without any errors. How do you do
+that? Well, automation solves more or
+less all the problems uh for manual
+traders. And that's just because yeah,
+the trade is executed. It's followed by
+the plan. There are no emotions
+involved. Yeah. The charts when they
+move, a trade is taken, right? Uh
+instead of you having to be stuck to
+your charts and then has large capital
+opportunities. This is like that step
+five that is so important to talk about
+and that is the topic of today's
+webinar. So before I continue, any
+questions guys? All right. So, capital,
+how to get it and how to keep it. My
+journey was uh a lot different because
+it started 10 years ago. So, there
+weren't prop firms or I didn't no prop
+firms existed. I don't think there were
+prop firms 10 years ago. But, so my
+journey was very uh different compared
+to what traders have right now. But we
+also walk the prop firm journey as well.
+And that is what we're going to talk
+about. So, method one is using prop
+firms online. today's topic and in
+future webinars maybe I do a a session
+about how I did it how I got private
+capital and started to go uh walk that
+path more or less the old way of doing
+things. All right so method one using
+prop firms online is how to get capital
+real quick for people that don't know
+what a prop firm is a company that
+provides capital and resources to
+skilled traders so they can trade on its
+behalf in financial markets. So a
+company invests in you, you trade that
+company for a profit split. They win,
+you win, right? That is at least what
+you think. The skill uh the skill test
+uh companies give you to to you to prove
+that you actually can trade, right? The
+prop firm tests the trader skill by
+giving a trading challenge. Normally you
+get a trading account. You need to make
+10% uh following a lot of rules. And if
+you make that 10%, you pass the
+challenge. And then you have a second
+challenge and that's the verification
+where you need to make another 5% or
+more or less that is the the system most
+firms offer uh like FTMO like that is
+one of the biggest one in the world has
+this skill test. Then what's the
+business model from their uh their point
+of view? Well the trader pays the prop
+firm for that skill test. So to take
+that skill you need to to pay them a few
+hundred bucks. And if the trader wins
+and he proves that he can trade, he
+passes the 10% and the 5% he gets
+capital and they refund the money he
+paid for the skill test. Right? So
+that's the business model, how it works
+from a prop firm point of view. The
+statistics, how does this work in real
+life? Well, most traders fill the test
+and a prop firm makes a lot of money
+because they keep the money that people
+pay for uh for the skill test, right?
+The money is used to pay out the select
+few of traders that actually do pass the
+skill test and make money. So you have a
+lot of people losing and uh selection
+making money. We are one of those people
+and in this call probably many of you
+guys have been working with prop firms
+and got payouts. But that is the
+business model. You have a lot of losing
+traders and they pay the winning traders
+because you're not actually trading real
+capital. You're trading in demo account.
+So if you make 10k profits, that money
+didn't really exist, but they still pay
+you your profit split. Yeah. All right.
+So FTMO is the biggest one to prove how
+much money this industry is making with
+prop firms is insane. I put in uh from
+last year August there is the turnover
+of FTMO. They made 213 million um which
+is ridiculous. So this is really an
+industry on its own. But we're going to
+talk about how to beat them, right? How
+to how to still be at a good side in
+this overall plan. So, what I've learned
+in the building thousands of strategies
+uh over the past years is you have
+strategies to pass the skill test. So,
+the 10% and 5% for instance, you have
+specifically created strategies to
+achieve that. And you also have
+strategies to get payouts, right? So you
+have two types of strategies to pursue
+this and you mostly need two strategies.
+Sometimes you can use the same strategy
+but I'm not going to share that with you
+because I want to give you the highest
+probability to to make money with this.
+Right. Today we talk about payout
+strategies. Maybe in a future webinar
+we're going to talk about uh passing
+prop firms but right now we're going to
+talk about how to get the payouts
+consistently. This will blow your mind
+to be honest. So take your notes. The
+most consistently profitable algorithms
+you see online are the riskiest.
+Almost everything you see regarding bots
+and algorithms online are the most risky
+systems with the best track records and
+the most consistent results. And I'm
+going to show you how that works, why
+that is uh the reason because if you
+don't know that, you can fall in a trap.
+And also if you know this, you can use
+it for prop terms. So, these systems
+have a very large stop-loss and a very
+small target. All right? Creating a very
+high win rate because it's so easy to
+hit your target versus your stop-loss.
+Imagine that you have a huge stop-loss
+and you have a very tiny target. The
+market just statistically is more likely
+to quickly tap your uh target than move
+all the way down to your stop- loss.
+Right? That's what I'm trying to say
+here. and therefore you have very high
+win rate but your risk-to-reward is
+negative for the more advanced traders
+creating profitable results. This
+strategy creating profitable results
+month in month out until the market does
+something crazy and blows up the
+account. This is probably uh the
+algorithm that you have seen everywhere
+online. uh if you ever Googled FX
+algorithms or whatever algorithm yeah
+you have seen very steep equity charts
+and I will show you examples I've seen
+these systems come and go for the past
+10 years so I'm not just telling you
+I've seen this and it's sort of an
+obsession for me to see if people trade
+it on capital to see okay how long will
+they survive right so have here you
+create uh you have one that we created
+this is uh one of those strategies we
+built um together with my team. You can
+see it is super consistent, right? Every
+month of the 14 months is profit. The
+cumulative return is ridiculous. It is
+just a straight line, right? All right.
+So, it looks great indeed. I promise
+this account will blow up one day.
+Account gone, everything gone. It will
+be a minus 100% uh month. And why do I
+say that to you? Well, this is a risky
+system to run on private capital. Um but
+they always do they always explode. This
+one is now running for 14 months and one
+day maybe another 14 months will be very
+good and then it will be bad. Yeah, I
+will show you um why in a second. So
+here you have another system. This is
+not my system. This is a public system.
+This track record I've been following
+for many years. It's currently up
+11,710%
+in profits. Yeah. but it blew up but the
+owner deposited double the money to save
+it. So you had a big draw down and then
+it was margin call and the owner had the
+money to double the account and saved it
+and that's what you can see here uh in
+the big spike right. So also this system
+blew up but yeah if it's a small account
+you can just double your money but if
+you do this on a on a million you better
+have a million in cash also laying there
+otherwise the million is gone right so
+this is how those strategies look and
+why do I talk about this why do I share
+this with you guys because yeah it's a
+little bit of a yeah a weird thing to
+share right to talk about systems that
+blow up well what if you can trade these
+strategies and not worry about blow
+blowing up. So you can be very
+consistent month in month out making
+half a percent 1% maybe more and not
+worrying about blowing up. Well, this is
+where prop firms come in because it's
+not your own capital. It's not even real
+capital. So if it blows up after x
+amount of months, you did collect the
+real money payouts, right? So I will
+bring this home for people that see this
+for the first time. I think whoa, what
+what is this? I'll slowly step by step
+show it to you. So if we go back to to
+our track record here, you count 14
+profitable months equaling 14 payouts
+from prop firms, right? When we blow up,
+I already made good returns. So one of
+our founders of Profus is also here in
+the chat and he proved this for almost a
+year now that since December running
+this system on FTMO on prop firms and
+getting payouts, right? And this is what
+I'm about to teach you today. And also
+give you a strategy that does this. And
+then you can test it for yourself. Of
+course, um you need to test it yourself
+and play around with it. So of course
+your own decision, but I just want to
+show you how to build these type of
+strategies on proactives AI because a
+long time ago I made the promise you can
+automate anything. So also these type of
+systems. So how the industry names these
+crazy stupid and risky strategies is
+normally either martingale grid systems
+or sculping systems. Yeah, you have you
+can really investigate a lot of systems
+you see online and they probably look
+like this or that and then they have a
+big draw down uh floating but they close
+in profits and they do generate uh
+consistent returns but one day they blow
+up but on prop firms it doesn't really
+matter right because you have more
+payouts than uh than the probability of
+losing the account. So far questions.
+Let me quickly check how that um again
+never use these on real capital not
+worth the risk to reward. So for some of
+you guys you might build uh take the
+strategy we share today and you uh
+change it a little bit be creative learn
+from it and do all of that and then
+you're thinking like oh maybe I do run
+it on private capital. Of course, it's
+your money. Do what with it, whatever.
+But my disclaimer is pretty clear,
+right? These strategies are risky but
+consistent. And
+um what you will figure out is like if
+you make a 100% gain because your draw
+down is 100%. Right? If you know that
+you might lose your account, you need to
+have crazy good returns every month to
+cover that 100%. So therefore, it's not
+worth the risk to reward. You can
+calculate it yourself, but it is for
+prop firms ideal. To follow prop firm
+rules, it is important that you adjust
+the strategy. The entries, the exits,
+everything needs to be adjusted because
+we are not allowed to all trade the same
+strategies. Um, so when you start with a
+strategy like this, when you do trust
+that you tested it yourself, it's
+important to adjust it and therefore you
+need to learn a little bit about how to
+use perfect AI. So let's dive into that.
+Let's build a strategy like this step by
+step and then I share with you the a
+link the link will be shared here in the
+Google uh meets later on and then yeah
+you can just click on it and if you
+don't have an account sign up and then
+download it and play around with it
+adjust it export it and run it. All
+right. So this is the equity chart uh on
+a CAD on the 15minut time frame. So 15
+and this is what the strategy I'm about
+to share with you. It's very consistent.
+It is not the same strategy as this.
+This is a different strategy but ID is
+the same and it's also uh well you can
+test for yourself right. All right
+trading plan for buys. Let's dive into
+the trading plan because first we need
+to know what is this doing step by step
+and then how to transform the trading
+plan in building blocks in perfect AI.
+So we have three u rules here for buy.
+So what do I need to see the market
+doing to buy and of course also for
+sales. What does the market need to show
+me before I click sell? Of course we are
+not manually clicking buy and sell. The
+algorithm will do that. Um, we're living
+in uh 2025, right? Every 15 minutes,
+check candle closed is below the
+bowlinger band low. I will show you a
+chart example soon. Then check if we
+don't have trades open, then buy with a
+lot size, an x amount of lots. If we do
+have trades open, check how far away we
+are from this trade and use a different
+lot size. So it's possible that you take
+a buy, price goes against you and then
+you take another buy. So you have two
+positions open, sometimes you have three
+positions open, sometimes you have four
+positions open. Yeah, I'll show you with
+examples. Then the trading plan for
+sells is the same but then check uh
+every 15 minutes check candle closed is
+above the bowlinger bands high. Super
+simple strategy. This works on so many
+strate uh so many different uh simple
+rules. We have check if we don't have
+trades open then sell with this lot size
+and then if we do have trades open check
+how far away we are from this trade and
+use a different lot size. Pretty easy
+trading plan right? All right. How does
+that look? Well, here we have the
+algorithm uh opened. When you open a
+profactive AI algorithm, you can see you
+can recognize the colors that this
+created on our platform and you see the
+bowlinger band, right? So you see uh
+more or less a moving channel with three
+lines. You have the lower line, the
+midline and the high uh higher line, the
+top line. Well, the rule for a cell if
+we go back is check candle closed above
+the band high. Well, we see that right
+now. Right now the trade is taken. We
+have a sell and we have a huge target uh
+huge stop loss and a very tiny target as
+I I explained. What happens when p price
+moves higher? Well, then I want another
+sell because one day it will do that. So
+I forwarded it and now you have a sell
+trade one that's to the left. You have
+sell trade two to the right. So you were
+in a sale, price moved against you, you
+took another sell, and then the the
+floating profit of both of the systems
+was positive, and then you close all
+cell trades. But we're going to dive
+into that a little bit more now, but
+this is how the strategy works. You can
+also see in the middle, I don't know if
+you can clearly see, but in the middle
+there was also a buy trade taken. Uh buy
+trade taken, and it was a quick win. But
+let's focus on these sell trades now.
+And well let's buy the uh also do the
+buy side. So every 15 minutes check
+candle closed below the bowlinger band
+low is now transformed to five blocks in
+profactus AI. We have block number one
+run pair candle. We have block number
+two run in session. We have then a
+trading rule. We have count trades and
+we have a buy now. These are five blocks
+you need right now and we're going to
+build more and more and more. So run per
+candle. What does that mean? Well, every
+candlestick close, I want to look at the
+charts and see if we have a break of
+that bowlinger band high, right? Or the
+low. All right. So, the algorithm always
+starts with run per candle. Then run in
+session a block is used when to trade.
+Well, normally you trade almost all the
+hours because FX is almost 24 hours a
+day open. So, you want to trade let's
+say 22 hours um per day. That is what
+you do here. So every candlestick close
+on a 15minut time frame run in session
+and then the trade rule. Well, can you
+guess it? What is the trade rule? Check
+if the candle close uh that just closed
+is below the bowlinger band. All right,
+then
+check if we don't have trades open then
+buy with this lot size. What you can see
+here is count trades. Well, the name
+already tells you we are counting if we
+have any trades open. Well, right now we
+don't have trades open. So that is also
+valid. And then we have buy now and the
+trade is executed. You have that that
+happened here. But then this is a sell
+example. Um and then this is done. Okay.
+Now that is just one trade. We have now
+another tree. And this is a lot of copy
+paste work. It's just copy paste copy
+paste. So it's not really getting more
+complex the more blocks we use. But we
+have a lot of trades we need to take. So
+if we have one trade open, if we are far
+away from that trade one, I want to take
+trade two if the candle closes again
+below the bowling band. So that is what
+we did see here with this example. U
+again for sales, we had a close above uh
+that level and then I'm looking to get a
+sell to uh trade two. Right? So you can
+see here we have a second tree again run
+per candle on the 15-minut time frame
+running in that same session but now we
+count if we have a buy one trade open.
+You can just do that select that in the
+that block itself and then select uh
+that buy one trade. So select the trade
+that was already open. Then check how
+much profits it is running. Is it
+running 15 pips in profit or is it
+running uh in a in a loss? How far away
+is it current price and that all trade
+because you don't want to enter more
+trades on the same level, right? You
+want to see markets far away from that
+first trade and then trade rule. Well,
+trade rule is close on the below the
+bowlinger band and then you buy for the
+second time. All right, so here you have
+two trees. You have buy trade one and
+you have buy trade two. All right, let's
+continue. But the markets can keep going
+against us. So we want more trades. This
+is how these systems work, right? It is
+again uh just for prop firms. Never run
+this on private capital. Um but we have
+here a trade number one, then price
+falls more. We have trade number two,
+then price falls more. You have trade
+number three, price falls more, and then
+you have your fourth trade. And that one
+plays out. And the more trades you have,
+the lot size of each position also
+changes. So the last trade that banks
+banks more than the other ones and
+therefore combined you can close all
+four positions for profit because the
+last trade is the biggest one. That's
+how normally Martin Gills work or great
+systems. Again be careful with them. We
+repeat the same process again just copy
+paste and change some settings. So we're
+going to just uh we have now two trades
+and we need let's say eight trades. So
+it's quite a big uh piece of code. You
+don't have to build it because we're
+going to share this very soon. But uh I
+want you to analyze it, practice it,
+learn from it, be be active, right? Then
+you can build hundreds or thousands of
+these systems yourself. So now we have
+the the whole piece of code. Um it's the
+same. You can see by trade two that tree
+looks exactly the same as the tree next
+to it and the by trade four, five, six,
+seven, eight. So this is the whole
+build. uh within the blocks we have
+small changes and you can see that if
+you analyze the blocks when you have the
+code but uh the difference between let's
+say buy trade two that tree of blocks
+and buy trade three that tree of blocks
+we uh just have to count trades you just
+count if you already have a position
+open uh on uh by trade one or two or you
+don't have uh positions open uh of the
+other trades because that's the only
+complex thing here. All right.
+Then we have management. How to manage
+this uh algorithm? Well, we have this
+stream. Select all trades. Check how
+much profit we have floating. So all the
+trades combined that we have open. Are
+we floating combined in profits or loss?
+If floating profit is enough, something
+you can of course adjust yourself. If we
+are in good floating profit, then we
+want to uh close all the trades and we
+take our profit and we wait for the next
+setups. And yeah, this is how you build
+it. You do it. Select all the trades, a
+formula to calculate all the the
+floating profit. So let's say you have
+five trades open, then you have a a
+quick formula block there where you
+count all the the trades combined. And
+then trade rule. Um so is the profit
+higher than what I want? Yes. Okay. Then
+once per trade, close all the trades.
+And this is how it works. The complexity
+of this system is in using group
+numbers. I'm going to explain that real
+quick. Remember you have that buy trade
+one. You have the buy trade two. Perhaps
+you have three, four, five, six, seven,
+eight. You have a lot of trades, right?
+What you can do is tag them. So give
+them a name. Buy trade one has the name
+group one. By trade two has the name
+group two. And then you can separate
+your trades. And that's done within the
+platform within the blocks. But that's
+just the only complex thing of this
+algorithm for if you're totally new to
+building this, you quickly have to get
+used to it. We have a lot of templates
+and we have a big docks also where you
+can just take a lot of tutorials to
+learn. But this the complex thingy uh
+for this strategy. All right. Uh please
+open the strategy and learn how it
+works. The link will now be shared by
+Yoast in this chat. So, Yos, can you
+share the template link and then you can
+download it. Of course, this is only
+available for you guys here online. So,
+thank you for hopping in and let's cover
+some questions. Yeah, let's cover some
+questions. Ask me in the chat here. Let
+me know. Did you guys like this? Was
+this beneficial? Was this too advanced?
+Was this too easy?
+All right. Yos, thank you for sharing.
+Really good. Thanks. Perfect. What's the
+average max draw down of this strategy?
+All right. Yeah. So, uh if you uh
+download the strategy, you have inputs
+and inputs are the settings of your
+strategy. And there you can adjust the
+lot size. So, play around with that. Run
+a back test. See what the floating draw
+down is. And then if it's too much for
+you, then just in decrease the size,
+right? If it's too small, then increase
+the size. Just play around with it. If
+you want to have a max risk uh max draw
+down of 5%. Then you need to decrease
+the lot size a bit. But if you have for
+instance uh 10% room then you can maybe
+trade a little bit more risk. For me,
+what we personally do with our accounts
+is to just target half a percent, 1% a
+month on prop ter firms and then let's
+say you are 400k funded, you just
+passively make 4k. But you can also up
+the risk, but then the probability of
+losing the account and having big draw
+down once in the 12 months or in the 24
+months or 36 months or whatever. Um it
+yeah, it all depends on do you want big
+payouts fast or consistent and long
+term. That's uh always the the thing,
+right? All right. Uh this is great.
+Thank you. Very good topic. Crazy
+strategy. What's the formula for
+defining target on each new trade? All
+right. So, uh good one. I didn't cover
+that. The first trade I believe has a a
+small target. And every second trade, uh
+so if you have one position open and a
+new one, a new one, a new one, they
+don't have um targets. And that's
+because you sum all the floating profit
+together. So you don't need to target,
+you just want to stack your positions
+and when you move into profits uh
+combined if your profit is uh there like
+maybe you're floating uh 500 bucks uh
+maybe that's what you have in the
+algorithm then everything is closed so
+you don't need the target. It's just
+managed every every tick. I hope that
+answers it.
+>> Um nice that you explained the strategy
+in detail before sharing. Yeah. Yeah. We
+can also build it like really build it
+in the platform step by step. But I
+think that will be maybe too overkill
+but especially with a big project like
+this but maybe u in the future we can
+also just not do a keynote and just
+build that I just built a strategy live
+with you. You can ask questions and be
+very uh very nice there. Uh great for
+further development. Combining it with
+simple breakout strats from for me makes
+understanding somewhat more complex
+strategies easier. Nice.
+Will there be tutorials on loops and
+perfect? Maybe in later Thursday
+meetings for example. We can do advanced
+uh concepts. I try to get these um try
+to cover both right to do uh for
+beginners and advanced traders. uh but
+we can do uh an advanced topic maybe uh
+later this year for the the more active
+builders that have a little bit more
+experience and loops. Yeah, loops are
+easy to build in perfect uh you you just
+uh you don't uh need too many blocks. So
+I will definitely teach you guys that.
+Uh what about stacking positive
+positions? MT Martingale
+maybe that's it, right? Go test it. go
+try build it and play around with it. Uh
+it's an interesting uh idea indeed.
+Uh we run this on all the mean reversion
+pairs. So think about a cat for
+instance. Aussie cat really never move
+somewhere. Uh just like a kiwi kiwi cat
+those pairs are the best. And then run
+this system again on the 15minut time
+frame and just test for yourself. All
+right. Thanks for explaining same
+questions on lot size. Uh you can see
+that in the settings when you download
+the system uh you have eight different
+lot sizes and they stack so you can
+adjust that see what better results you
+have but we gave you default settings
+that already work on rcat for instance
+but you can play around with it make
+drone
+general question I see new cap isn't
+taking anyone any more members is the
+course to remain for
+uh it's we yeah so new cap is a
+different company than profactus but Um
+we will launch a uh a big course on uh
+uh on proactus as well but
+that is not a main priority now we are
+building the best platform out there
+that cannot be all places at once right
+so if you want to learn YouTube has a
+lot of tutorials a lot of people know
+how to build they want to to share that
+create content if you're an advanced
+builder right go to YouTube make an
+account and start sharing uh good
+content that's uh we also have Enso here
+he's I Dubai in his background he uh
+good life he uh is Dutch he has a Dutch
+community teaching about profactus so
+more people will uh teach you about
+building we are just here to to make
+sure the platform is suitable for
+everyone and works
+uh let's see a lot of questions guys
+uh are your best systems the ones with
+the most blocks or not necessarily no
+keep it keep it so simple this is what
+every also the people that learned
+building And if I interview them quite
+quite often like what what have you
+built? And we of course also built
+thousands of strategies, simple wins,
+simple wins. Focus on simple strategies
+like the amount of blocks I shared today
+or Yos shared with you today is is just
+a lot of blocks because you have
+multiple trades but it has one trade
+rule, right? Keep it simple.
+Three trading rules max, maybe five, but
+don't over complicate it.
+Bjorn, uh, with imperfectus, it would be
+great if you can get a tutorial on how
+to determine the bias for a trade.
+Example, only enter when an overall
+higher high is made and execute on a
+trade when price pulls back to point to
+fib. Yeah, I have built these type of
+strategies myself. Uh, I can uh post
+more of them like these small tutorials
+in the docs. So, docs.practice.ai,
+that's also in the builder. You have
+like a question mark down right. open
+that and you find a lot of tutorials but
+I will uh feed that more I will build
+these tutorials there um simple question
+is how we can build a tradable range
+when positions are executed
+only yeah so it's a little bit too much
+work to to share that tutorial right now
+um but I'll ASAP make a tutorial on it
+it's like for the other people uh
+listening what if the market is in a
+trending environment can you tell your
+algorithm to just trade in that training
+environment or markets are consolidating
+can you just ask your system to to to
+trade in a consolidation market like
+those are good filters interesting
+filters I'll share that possible to make
+a B different uh with different time
+frames so for example daily time frame
+bias and 4hour entry yeah so any time
+frame is possible you can look at the
+weekly and the daily the 4 hour the one
+hour and then execute on the one minute
+if you want um Yeah, all possible.
+All right. All right.
+Any more questions?
+And did you download the system? Because
+after this call, it's gone. So, make
+sure you got it. Yeah.
+But you have the link. So, it will be
+fine.
+All right, guys. If there are no more
+questions, it was already almost a
+40inut call. Thank you for being here.
+Next month, every second Thursday of
+every month, we host a live webinar and
+it's always at the same time. So, put it
+in your calendar and yeah, happy to keep
+sharing good stuff with you guys. Um,
+thanks.
+>> No, this is not the machine you're
+all right. All right, guys. Thank you
+and we speak next month. Bye-bye.
+[Music]

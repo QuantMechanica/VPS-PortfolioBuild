@@ -1,0 +1,34 @@
+ALL_LOG_FILES:
+   C:\QM\mt5\T_Live\MT5_Base\MQL5\Logs\20260719.log 488
+   C:\QM\mt5\T_Live\MT5_Base\MQL5\Logs\20260722.log 818
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260424.log 8652
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260628.log 10520
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260629.log 5408
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260630.log 6784
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260701.log 5862
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260702.log 10370
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260703.log 2306
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260704.log 1146
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260705.log 20586
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260706.log 3222
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260707.log 14106
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260708.log 13344
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260709.log 10080
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260710.log 4932
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260711.log 1146
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260712.log 10772
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260713.log 17000
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260714.log 2426
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260715.log 2964
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260716.log 5018
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260717.log 3482
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260718.log 3842
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260719.log 43282
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260720.log 20670
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260721.log 38280
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260722.log 34412
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260723.log 22032
+   C:\QM\mt5\T_Live\MT5_Base\logs\20260724.log 11902
+
+=== BROAD KEYWORD HITS (all dates, all files) ===
+TOTAL_KEYWORD_HITS: 0

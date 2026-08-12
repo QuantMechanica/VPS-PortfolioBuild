@@ -28,6 +28,26 @@ double      g_qm_risk_percent               = 0.0;
 double      g_qm_risk_fixed                 = 0.0;
 double      g_qm_risk_portfolio_weight      = 1.0;
 double      g_qm_risk_per_trade_cap_money   = 0.0;
+// 2026-07-20 framework audit P0.2 — PERCENT-mode cap follows live equity.
+// When cap_pct > 0, percent-style sizing caps at equity*cap_pct/100 evaluated
+// per call, so compounding survives and a re-init cannot shift the sizing
+// regime. FIXED mode keeps the frozen money cap: backtests run RISK_FIXED
+// (HR4) and their evidence must stay bit-identical to the historical record.
+double      g_qm_risk_per_trade_cap_pct     = 0.0;
+// 2026-07-20 framework audit P1.4 — sizing clamps must leave an evidence
+// trail. The sizer stays logger-free by design; QM_Entry clears the flag
+// before sizing, reads it afterwards, and emits RISK_CLAMP.
+bool        g_qm_risk_clamp_flag            = false;
+string      g_qm_risk_clamp_kind            = "";
+double      g_qm_risk_clamp_from            = 0.0;
+double      g_qm_risk_clamp_to              = 0.0;
+// Entry sizing prefers the broker/tester's directional account-currency loss
+// calculation. A snapshot fallback remains available for symbols/calculation
+// modes where OrderCalcProfit is unavailable, but it must be observable by the
+// caller so evidence never silently mixes the two sizing methods.
+bool        g_qm_risk_profit_fallback_flag  = false;
+int         g_qm_risk_profit_fallback_error = 0;
+string      g_qm_risk_profit_fallback_reason = "";
 
 bool QM_RiskSizerConfigure(const QM_RiskMode mode,
                            const double risk_percent,
@@ -52,6 +72,43 @@ bool QM_RiskSizerConfigure(const QM_RiskMode mode,
    return true;
   }
 
+void QM_RiskSizerSetCapPct(const double cap_pct)
+  {
+   g_qm_risk_per_trade_cap_pct = cap_pct;
+  }
+
+void QM_RiskSizerNoteClamp(const string kind, const double from_value, const double to_value)
+  {
+   g_qm_risk_clamp_flag = true;
+   g_qm_risk_clamp_kind = kind;
+   g_qm_risk_clamp_from = from_value;
+   g_qm_risk_clamp_to   = to_value;
+  }
+
+void QM_RiskSizerResetProfitFallback()
+  {
+   g_qm_risk_profit_fallback_flag = false;
+   g_qm_risk_profit_fallback_error = 0;
+   g_qm_risk_profit_fallback_reason = "";
+  }
+
+void QM_RiskSizerNoteProfitFallback(const string reason, const int error_code)
+  {
+   g_qm_risk_profit_fallback_flag = true;
+   g_qm_risk_profit_fallback_error = error_code;
+   g_qm_risk_profit_fallback_reason = reason;
+  }
+
+// Effective per-trade cap for percent-style sizing: live-following percentage
+// when configured, frozen money amount otherwise (direct Configure callers,
+// e.g. tests, keep the historical semantics).
+double QM_RiskSizerPercentCap(const double equity)
+  {
+   if(g_qm_risk_per_trade_cap_pct > 0.0 && equity > 0.0)
+      return equity * (g_qm_risk_per_trade_cap_pct / 100.0);
+   return g_qm_risk_per_trade_cap_money;
+  }
+
 double QM_RiskSizerRiskMoney(const double equity)
   {
    if(equity <= 0.0)
@@ -69,8 +126,67 @@ double QM_RiskSizerRiskMoney(const double equity)
    if(weighted_risk <= 0.0)
       return 0.0;
 
+   const double cap_global = (g_qm_risk_mode == QM_RISK_MODE_PERCENT)
+                             ? QM_RiskSizerPercentCap(equity)
+                             : g_qm_risk_per_trade_cap_money;
+   if(cap_global > 0.0 && weighted_risk > cap_global)
+     {
+      QM_RiskSizerNoteClamp("per_trade_cap", weighted_risk, cap_global);
+      weighted_risk = cap_global;
+     }
+   return weighted_risk;
+  }
+
+// Phase 1 master-EA support: resolve one strategy's explicit percentage without
+// mutating the process-wide risk configuration. Portfolio weighting and the
+// per-trade money cap remain the same framework safety rails as on the legacy
+// global path.
+double QM_RiskSizerRiskMoney(const double equity,
+                             const double explicit_risk_percent)
+  {
+   if(equity <= 0.0 || explicit_risk_percent <= 0.0)
+      return 0.0;
+
+   const double base_risk = equity * (explicit_risk_percent / 100.0);
+   double weighted_risk = base_risk * g_qm_risk_portfolio_weight;
+   if(weighted_risk <= 0.0)
+      return 0.0;
+
+   const double cap_explicit_pct = QM_RiskSizerPercentCap(equity);
+   if(cap_explicit_pct > 0.0 && weighted_risk > cap_explicit_pct)
+     {
+      QM_RiskSizerNoteClamp("per_trade_cap", weighted_risk, cap_explicit_pct);
+      weighted_risk = cap_explicit_pct;
+     }
+   return weighted_risk;
+  }
+
+// Phase 2.5 master-EA support: resolve an explicit per-strategy risk mode
+// without mutating the process-wide risk configuration. PERCENT deliberately
+// delegates to the Phase-1 overload above so its arithmetic stays identical.
+// FIXED mirrors the global fixed-money branch: fixed base risk, portfolio
+// weighting, then the configured per-trade money cap.
+double QM_RiskSizerRiskMoney(const double equity,
+                             const QM_RiskMode explicit_mode,
+                             const double explicit_value)
+  {
+   if(explicit_mode == QM_RISK_MODE_PERCENT)
+      return QM_RiskSizerRiskMoney(equity, explicit_value);
+
+   if(explicit_mode != QM_RISK_MODE_FIXED || equity <= 0.0 || explicit_value <= 0.0)
+      return 0.0;
+
+   const double base_risk = explicit_value;
+   double weighted_risk = base_risk * g_qm_risk_portfolio_weight;
+   if(weighted_risk <= 0.0)
+      return 0.0;
+
+   // FIXED semantics: frozen money cap stays authoritative (see cap_pct note).
    if(g_qm_risk_per_trade_cap_money > 0.0 && weighted_risk > g_qm_risk_per_trade_cap_money)
+     {
+      QM_RiskSizerNoteClamp("per_trade_cap", weighted_risk, g_qm_risk_per_trade_cap_money);
       weighted_risk = g_qm_risk_per_trade_cap_money;
+     }
    return weighted_risk;
   }
 
@@ -338,6 +454,8 @@ double QM_LotsForRisk(const string symbol, const double sl_points)
 
       // Use a safety fraction so the bracket pair (two pending stops) stays affordable.
       double margin_cap_lots = (free_margin * 0.90) / margin_per_lot;
+      if(margin_cap_lots < lots)
+         QM_RiskSizerNoteClamp("margin_cap", lots, margin_cap_lots);
       lots = QM_RiskSizerQuantizeLots(MathMin(lots, margin_cap_lots),
                                       snapshot.volume_min,
                                       snapshot.volume_max,
@@ -345,6 +463,384 @@ double QM_LotsForRisk(const string symbol, const double sl_points)
      }
 
    return lots;
+  }
+
+// Explicit per-strategy percentage overload. The two-argument function above
+// intentionally remains intact so every existing EA follows its original
+// global percent/fixed-money sizing path bit-for-bit.
+double QM_LotsForRisk(const string symbol,
+                      const double sl_points,
+                      const double explicit_risk_percent)
+  {
+   QM_SymbolRiskSnapshot snapshot;
+   if(!QM_RiskSizerReadSymbolSnapshot(symbol, snapshot))
+      return 0.0;
+
+   double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   double risk_money = QM_RiskSizerRiskMoney(equity, explicit_risk_percent);
+   if(risk_money <= 0.0)
+      return 0.0;
+
+   double lots = QM_LotsForRiskFromSnapshot(snapshot, risk_money, sl_points);
+   if(lots <= 0.0)
+      return 0.0;
+
+   // Keep the same available-margin ceiling as the legacy sizing path,
+   // including the DWX fallback when SYMBOL_MARGIN_INITIAL is unavailable.
+   double margin_per_lot = snapshot.margin_initial;
+   if(margin_per_lot <= 0.0)
+     {
+      double leverage = (double)AccountInfoInteger(ACCOUNT_LEVERAGE);
+      if(leverage <= 0.0)
+         leverage = 100.0;
+      double price = SymbolInfoDouble(symbol, SYMBOL_ASK);
+      if(price <= 0.0)
+         price = SymbolInfoDouble(symbol, SYMBOL_BID);
+      if(price > 0.0 && snapshot.contract_size > 0.0)
+         margin_per_lot = (price * snapshot.contract_size) / leverage;
+     }
+
+   if(margin_per_lot > 0.0)
+     {
+      double free_margin = AccountInfoDouble(ACCOUNT_MARGIN_FREE);
+      if(free_margin <= 0.0)
+         return 0.0;
+
+      double margin_cap_lots = (free_margin * 0.90) / margin_per_lot;
+      if(margin_cap_lots < lots)
+         QM_RiskSizerNoteClamp("margin_cap", lots, margin_cap_lots);
+      lots = QM_RiskSizerQuantizeLots(MathMin(lots, margin_cap_lots),
+                                      snapshot.volume_min,
+                                      snapshot.volume_max,
+                                      snapshot.volume_step);
+     }
+
+   return lots;
+  }
+
+// Explicit per-strategy mode/value overload. PERCENT routes through the
+// untouched Phase-1 overload; FIXED uses the mode-aware money resolver and
+// otherwise follows the same snapshot, quantization, and margin-cap path.
+double QM_LotsForRisk(const string symbol,
+                      const double sl_points,
+                      const QM_RiskMode explicit_mode,
+                      const double explicit_value)
+  {
+   if(explicit_mode == QM_RISK_MODE_PERCENT)
+      return QM_LotsForRisk(symbol, sl_points, explicit_value);
+   if(explicit_mode != QM_RISK_MODE_FIXED)
+      return 0.0;
+
+   QM_SymbolRiskSnapshot snapshot;
+   if(!QM_RiskSizerReadSymbolSnapshot(symbol, snapshot))
+      return 0.0;
+
+   double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   double risk_money = QM_RiskSizerRiskMoney(equity, explicit_mode, explicit_value);
+   if(risk_money <= 0.0)
+      return 0.0;
+
+   double lots = QM_LotsForRiskFromSnapshot(snapshot, risk_money, sl_points);
+   if(lots <= 0.0)
+      return 0.0;
+
+   double margin_per_lot = snapshot.margin_initial;
+   if(margin_per_lot <= 0.0)
+     {
+      double leverage = (double)AccountInfoInteger(ACCOUNT_LEVERAGE);
+      if(leverage <= 0.0)
+         leverage = 100.0;
+      double price = SymbolInfoDouble(symbol, SYMBOL_ASK);
+      if(price <= 0.0)
+         price = SymbolInfoDouble(symbol, SYMBOL_BID);
+      if(price > 0.0 && snapshot.contract_size > 0.0)
+         margin_per_lot = (price * snapshot.contract_size) / leverage;
+     }
+
+   if(margin_per_lot > 0.0)
+     {
+      double free_margin = AccountInfoDouble(ACCOUNT_MARGIN_FREE);
+      if(free_margin <= 0.0)
+         return 0.0;
+
+      double margin_cap_lots = (free_margin * 0.90) / margin_per_lot;
+      if(margin_cap_lots < lots)
+         QM_RiskSizerNoteClamp("margin_cap", lots, margin_cap_lots);
+      lots = QM_RiskSizerQuantizeLots(MathMin(lots, margin_cap_lots),
+                                      snapshot.volume_min,
+                                      snapshot.volume_max,
+                                      snapshot.volume_step);
+     }
+
+   return lots;
+  }
+
+// Entry-only exact margin rail.  The legacy QM_LotsForRisk overloads above are
+// intentionally left unchanged because many direct callers depend on their
+// historical sizing semantics.  QM_Entry has the actual side and resolved
+// execution price, so it uses this path to replace the notional/leverage
+// approximation with the broker/tester's symbol calculation mode.
+const double QM_RISK_SIZER_MARGIN_HEADROOM = 0.90;
+
+bool QM_RiskSizerExactDirectionalLossPerLot(const string symbol,
+                                             const ENUM_ORDER_TYPE order_type,
+                                             const double entry_price,
+                                             const double sl_points,
+                                             const QM_SymbolRiskSnapshot &snapshot,
+                                             double &loss_per_lot)
+  {
+   loss_per_lot = 0.0;
+   if(StringLen(symbol) <= 0 ||
+      (order_type != ORDER_TYPE_BUY && order_type != ORDER_TYPE_SELL) ||
+      entry_price <= 0.0 || sl_points <= 0.0 || snapshot.point <= 0.0)
+      return false;
+
+   const double stop_distance = sl_points * snapshot.point;
+   const double stop_price = (order_type == ORDER_TYPE_BUY)
+                             ? entry_price - stop_distance
+                             : entry_price + stop_distance;
+   if(stop_price <= 0.0 ||
+      (order_type == ORDER_TYPE_BUY && stop_price >= entry_price) ||
+      (order_type == ORDER_TYPE_SELL && stop_price <= entry_price))
+      return false;
+
+   // Use a legal reference volume and normalise back to one lot. Some symbols
+   // do not accept 1.0 as a valid volume even though OrderCalcProfit otherwise
+   // supports their broker calculation mode.
+   const double reference_lots = QM_RiskSizerQuantizeLots(
+      MathMax(snapshot.volume_min, MathMin(1.0, snapshot.volume_max)),
+      snapshot.volume_min,
+      snapshot.volume_max,
+      snapshot.volume_step);
+   if(reference_lots <= 0.0)
+      return false;
+
+   double directional_profit = 0.0;
+   ResetLastError();
+   if(!OrderCalcProfit(order_type,
+                       symbol,
+                       reference_lots,
+                       entry_price,
+                       stop_price,
+                       directional_profit))
+     {
+      QM_RiskSizerNoteProfitFallback("order_calc_profit_unavailable", GetLastError());
+      return false;
+     }
+   if(directional_profit >= 0.0)
+     {
+      QM_RiskSizerNoteProfitFallback("order_calc_profit_not_loss", GetLastError());
+      return false;
+     }
+
+   loss_per_lot = (-directional_profit) / reference_lots;
+   return (loss_per_lot > 0.0);
+  }
+
+double QM_LotsForRiskAtEntryDirectional(const string symbol,
+                                         const double sl_points,
+                                         const double risk_money,
+                                         const ENUM_ORDER_TYPE order_type,
+                                         const double entry_price,
+                                         const QM_SymbolRiskSnapshot &snapshot)
+  {
+   double loss_per_lot = 0.0;
+   if(QM_RiskSizerExactDirectionalLossPerLot(symbol,
+                                             order_type,
+                                             entry_price,
+                                             sl_points,
+                                             snapshot,
+                                             loss_per_lot))
+     {
+      const double raw_lots = risk_money / loss_per_lot;
+      return QM_RiskSizerQuantizeLots(raw_lots,
+                                      snapshot.volume_min,
+                                      snapshot.volume_max,
+                                      snapshot.volume_step);
+     }
+
+   // Compatibility fallback for calculation modes that cannot service
+   // OrderCalcProfit. QM_Entry emits the recorded reason/error for this sizing
+   // pass; a supported exact calculation is therefore never replaced silently.
+   if(!g_qm_risk_profit_fallback_flag)
+      QM_RiskSizerNoteProfitFallback("directional_inputs_invalid", GetLastError());
+   return QM_LotsForRiskFromSnapshot(snapshot, risk_money, sl_points);
+  }
+
+double QM_RiskSizerCapLotsByOrderMargin(const string symbol,
+                                        const ENUM_ORDER_TYPE order_type,
+                                        const double entry_price,
+                                        const double requested_lots,
+                                        const QM_SymbolRiskSnapshot &snapshot)
+  {
+   if(StringLen(symbol) <= 0 ||
+      (order_type != ORDER_TYPE_BUY && order_type != ORDER_TYPE_SELL) ||
+      entry_price <= 0.0 || requested_lots <= 0.0)
+      return 0.0;
+
+   double lots = QM_RiskSizerQuantizeLots(requested_lots,
+                                           snapshot.volume_min,
+                                           snapshot.volume_max,
+                                           snapshot.volume_step);
+   if(lots <= 0.0)
+      return 0.0;
+
+   const double free_margin = AccountInfoDouble(ACCOUNT_MARGIN_FREE);
+   if(free_margin <= 0.0)
+      return 0.0;
+   const double margin_budget = free_margin * QM_RISK_SIZER_MARGIN_HEADROOM;
+   if(margin_budget <= 0.0)
+      return 0.0;
+
+   double required_margin = 0.0;
+   ResetLastError();
+   if(!OrderCalcMargin(order_type, symbol, lots, entry_price, required_margin) ||
+      required_margin <= 0.0)
+      return 0.0;
+
+   const double margin_epsilon = MathMax(1e-8, margin_budget * 1e-10);
+   if(required_margin <= margin_budget + margin_epsilon)
+      return lots;
+   const double requested_quantized = lots;   // audit P1.4: evidence baseline for the reduction below
+
+   // The requested volume is unaffordable.  Search the discrete broker volume
+   // grid for the greatest affordable lot count.  Recomputing OrderCalcMargin
+   // at every probe avoids assuming linear margin across symbol calculation
+   // modes or broker tiers, while flooring to volume_step prevents overshoot.
+   const long minimum_steps = (long)MathCeil((snapshot.volume_min - 1e-12) /
+                                              snapshot.volume_step);
+   const long requested_steps = (long)MathFloor((lots + 1e-12) /
+                                                 snapshot.volume_step);
+   if(minimum_steps <= 0 || requested_steps < minimum_steps)
+      return 0.0;
+
+   long low = minimum_steps;
+   long high = requested_steps - 1; // requested_steps is already known to exceed the budget.
+   long affordable_steps = 0;
+   while(low <= high)
+     {
+      const long middle = low + (high - low) / 2;
+      const double probe_lots = NormalizeDouble((double)middle * snapshot.volume_step, 8);
+      double probe_margin = 0.0;
+      ResetLastError();
+      if(!OrderCalcMargin(order_type, symbol, probe_lots, entry_price, probe_margin) ||
+         probe_margin <= 0.0)
+         return 0.0;
+
+      if(probe_margin <= margin_budget + margin_epsilon)
+        {
+         affordable_steps = middle;
+         low = middle + 1;
+        }
+      else
+         high = middle - 1;
+     }
+
+   if(affordable_steps <= 0)
+      return 0.0;
+
+   lots = QM_RiskSizerQuantizeLots((double)affordable_steps * snapshot.volume_step,
+                                    snapshot.volume_min,
+                                    snapshot.volume_max,
+                                    snapshot.volume_step);
+   if(lots <= 0.0)
+      return 0.0;
+
+   // Final fail-closed proof on the exact quantized volume returned to Entry.
+   double final_margin = 0.0;
+   ResetLastError();
+   if(!OrderCalcMargin(order_type, symbol, lots, entry_price, final_margin) ||
+      final_margin <= 0.0 || final_margin > margin_budget + margin_epsilon)
+      return 0.0;
+
+   QM_RiskSizerNoteClamp("entry_margin_cap", requested_quantized, lots);
+   return lots;
+  }
+
+double QM_LotsForRiskAtEntryFromMoney(const string symbol,
+                                      const double sl_points,
+                                      const double risk_money,
+                                      const ENUM_ORDER_TYPE order_type,
+                                      const double entry_price)
+  {
+   QM_SymbolRiskSnapshot snapshot;
+   if(!QM_RiskSizerReadSymbolSnapshot(symbol, snapshot))
+      return 0.0;
+
+   const double requested_lots = QM_LotsForRiskAtEntryDirectional(symbol,
+                                                                   sl_points,
+                                                                   risk_money,
+                                                                   order_type,
+                                                                   entry_price,
+                                                                   snapshot);
+   if(requested_lots <= 0.0)
+      return 0.0;
+
+   return QM_RiskSizerCapLotsByOrderMargin(symbol,
+                                            order_type,
+                                            entry_price,
+                                            requested_lots,
+                                            snapshot);
+  }
+
+double QM_LotsForRiskAtEntry(const string symbol,
+                             const double sl_points,
+                             const ENUM_ORDER_TYPE order_type,
+                             const double entry_price)
+  {
+   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   const double risk_money = QM_RiskSizerRiskMoney(equity);
+   if(risk_money <= 0.0)
+      return 0.0;
+   return QM_LotsForRiskAtEntryFromMoney(symbol,
+                                          sl_points,
+                                          risk_money,
+                                          order_type,
+                                          entry_price);
+  }
+
+double QM_LotsForRiskAtEntry(const string symbol,
+                             const double sl_points,
+                             const ENUM_ORDER_TYPE order_type,
+                             const double entry_price,
+                             const double explicit_risk_percent)
+  {
+   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   const double risk_money = QM_RiskSizerRiskMoney(equity, explicit_risk_percent);
+   if(risk_money <= 0.0)
+      return 0.0;
+   return QM_LotsForRiskAtEntryFromMoney(symbol,
+                                          sl_points,
+                                          risk_money,
+                                          order_type,
+                                          entry_price);
+  }
+
+double QM_LotsForRiskAtEntry(const string symbol,
+                             const double sl_points,
+                             const ENUM_ORDER_TYPE order_type,
+                             const double entry_price,
+                             const QM_RiskMode explicit_mode,
+                             const double explicit_value)
+  {
+   if(explicit_mode == QM_RISK_MODE_PERCENT)
+      return QM_LotsForRiskAtEntry(symbol,
+                                    sl_points,
+                                    order_type,
+                                    entry_price,
+                                    explicit_value);
+   if(explicit_mode != QM_RISK_MODE_FIXED)
+      return 0.0;
+
+   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   const double risk_money = QM_RiskSizerRiskMoney(equity, explicit_mode, explicit_value);
+   if(risk_money <= 0.0)
+      return 0.0;
+   return QM_LotsForRiskAtEntryFromMoney(symbol,
+                                          sl_points,
+                                          risk_money,
+                                          order_type,
+                                          entry_price);
   }
 
 #endif // QM_RISKSIZER_MQH

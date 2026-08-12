@@ -1,0 +1,238 @@
+{
+  "blockers": [],
+  "cohort_metrics": {
+    "max_pf": 1.46,
+    "mean_pf": 1.368,
+    "min_pf": 1.31,
+    "per_seed_pf": [
+      [
+        42,
+        1.34
+      ],
+      [
+        17,
+        1.38
+      ],
+      [
+        99,
+        1.31
+      ],
+      [
+        7,
+        1.46
+      ],
+      [
+        2026,
+        1.35
+      ]
+    ],
+    "spread": 0.15,
+    "variance_pct": 10.96
+  },
+  "deterministic": "not_applicable",
+  "ea_id": 10163,
+  "files": {
+    "card": {
+      "modified_utc": "2026-05-21T04:17:13.034960+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10163_tv-rsi-macd-long\\docs\\strategy_card.md",
+      "sha256": "c624349f9ae667677a969ee655f6d3d900427befbe24e6e3ee48de4c35c6b19c",
+      "size_bytes": 3485
+    },
+    "ex5": {
+      "modified_utc": "2026-07-12T17:00:03.606430+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10163_tv-rsi-macd-long\\QM5_10163_tv-rsi-macd-long.ex5",
+      "sha256": "ebcf2d60572fb960d399e46c52628cfe47cb90500a9893950ce9d09207bd9da2",
+      "size_bytes": 317348
+    },
+    "mq5": {
+      "modified_utc": "2026-07-05T13:55:40.312402+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10163_tv-rsi-macd-long\\QM5_10163_tv-rsi-macd-long.mq5",
+      "sha256": "62fab568257268993f4630f6ca70fc054b179e3dd72edf55c2cc445f42842a20",
+      "size_bytes": 15234
+    },
+    "setfile": {
+      "modified_utc": "2026-07-13T10:36:50.526611+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10163_tv-rsi-macd-long\\sets\\QM5_10163_tv-rsi-macd-long_USDJPY.DWX_H1_q06_stress_harsh.set",
+      "sha256": "a04f7166d1f610a97ac9f628eb07f310b23a3fbd95c9d8c37f3cc02ec6e24d56",
+      "size_bytes": 1221
+    },
+    "spec": {
+      "modified_utc": "2026-06-09T20:21:43.750082+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10163_tv-rsi-macd-long\\SPEC.md",
+      "sha256": "18dff1675bc708f1b64d2414afa8c5e7f90be4d819f4f64659cbf2351d136067",
+      "size_bytes": 5389
+    },
+    "summary": {
+      "modified_utc": "2026-07-13T11:16:19.306070+00:00",
+      "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\Q07\\USDJPY_DWX\\aggregate.json",
+      "sha256": "57891a87a27e04bdf73b4996057d4f80ca97b0bc759cfb3bd425fa6d60cc4c1c",
+      "size_bytes": 4111
+    }
+  },
+  "metrics": {
+    "drawdown": 3169.44,
+    "net_profit": 13562.66,
+    "profit_factor": 1.34,
+    "trades": 707
+  },
+  "model": 4,
+  "period": "H1",
+  "phase": "Q07",
+  "promotion_note": "BOUND_PASS does not waive FTMO cost reconciliation or Q04-Q10.",
+  "reports": [
+    {
+      "modified_utc": "2026-07-13T10:44:37.398321+00:00",
+      "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\20260713_103651\\raw\\run_01\\report.htm",
+      "sha256": "71b6677e3421c9398daddc8ea8c422dcb621e143fe18283acaaae27b1f1e0ea1",
+      "size_bytes": 1508140
+    },
+    {
+      "modified_utc": "2026-07-13T10:51:57.212701+00:00",
+      "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\20260713_104440\\raw\\run_01\\report.htm",
+      "sha256": "6f7396f51c332489d65bc5bc691f1881c4174deee74e7dbe4548f1361d54c583",
+      "size_bytes": 1535582
+    },
+    {
+      "modified_utc": "2026-07-13T11:01:01.008555+00:00",
+      "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\20260713_105200\\raw\\run_01\\report.htm",
+      "sha256": "fbe45451c679384597806ca8797dbe8dccbcc9e3c03d562df4153431142f4be2",
+      "size_bytes": 1522700
+    },
+    {
+      "modified_utc": "2026-07-13T11:08:55.138496+00:00",
+      "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\20260713_110103\\raw\\run_01\\report.htm",
+      "sha256": "aa0a1ae96bfb2e05cd5262b59935d161376996de4a58e5f192426cb6a6608d9d",
+      "size_bytes": 1533454
+    },
+    {
+      "modified_utc": "2026-07-13T11:16:17.586587+00:00",
+      "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\20260713_110857\\raw\\run_01\\report.htm",
+      "sha256": "a862d9345a8bf81dfea230b582152cc0adfae9b61181e8bb1fa6945686152af5",
+      "size_bytes": 1514176
+    }
+  ],
+  "run_contract": {
+    "description": "canonical five-seed cohort",
+    "minimum_runs": 5,
+    "observed_runs": 5,
+    "require_identical_metrics": false
+  },
+  "schema_version": 1,
+  "scope": "native_current_binary_q07_only",
+  "seed_evidence": [
+    {
+      "seed": 42,
+      "setfile": {
+        "modified_utc": "2026-07-13T10:36:50.528616+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10163_tv-rsi-macd-long\\sets\\QM5_10163_tv-rsi-macd-long_USDJPY.DWX_H1_q06_stress_harsh_seed42.set",
+        "sha256": "3af4ab0c7565821fba79fb984cdddab71e9d5ee484905b23ffcf3309f35b2b93",
+        "size_bytes": 1237
+      },
+      "summary": {
+        "modified_utc": "2026-07-13T10:44:38.992689+00:00",
+        "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\20260713_103651\\summary.json",
+        "sha256": "d482e0d60b6b60eeae9ac86dc5a0950bebbe4c64613bb08867b4f77c94c75e2d",
+        "size_bytes": 2079
+      },
+      "tester_ini": {
+        "modified_utc": "2026-07-13T10:36:51.839643+00:00",
+        "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\20260713_103651\\raw\\run_01\\tester.ini",
+        "sha256": "1fe65ab7972a7506f6cfe4621db03980c4bf5b85e1f20d543f3507562d0aaa4d",
+        "size_bytes": 473
+      },
+      "timestamp_utc": "2026-07-13T10:44:38.9890652Z"
+    },
+    {
+      "seed": 17,
+      "setfile": {
+        "modified_utc": "2026-07-13T10:44:39.039228+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10163_tv-rsi-macd-long\\sets\\QM5_10163_tv-rsi-macd-long_USDJPY.DWX_H1_q06_stress_harsh_seed17.set",
+        "sha256": "da1852191d290f7559515a43aec0ae2972e09adeacbc18b4db42d3779d90a81f",
+        "size_bytes": 1237
+      },
+      "summary": {
+        "modified_utc": "2026-07-13T10:51:58.960245+00:00",
+        "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\20260713_104440\\summary.json",
+        "sha256": "febe0c1a1f62b8cce888ee8f8732916b6e1619d05877de983287b1d9cc7d22b7",
+        "size_bytes": 2079
+      },
+      "tester_ini": {
+        "modified_utc": "2026-07-13T10:44:40.349054+00:00",
+        "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\20260713_104440\\raw\\run_01\\tester.ini",
+        "sha256": "92877fc2d03bc7cb0e2f14625725c0f4c7e3929b2ba953831b664a49f2492e21",
+        "size_bytes": 473
+      },
+      "timestamp_utc": "2026-07-13T10:51:58.9490290Z"
+    },
+    {
+      "seed": 99,
+      "setfile": {
+        "modified_utc": "2026-07-13T10:51:59.002354+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10163_tv-rsi-macd-long\\sets\\QM5_10163_tv-rsi-macd-long_USDJPY.DWX_H1_q06_stress_harsh_seed99.set",
+        "sha256": "303ac54578588863dec7fcd726e119b03fc0ae617f1cf9253fa929a4ca576576",
+        "size_bytes": 1237
+      },
+      "summary": {
+        "modified_utc": "2026-07-13T11:01:02.766781+00:00",
+        "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\20260713_105200\\summary.json",
+        "sha256": "1f7a0efa34dbaae8f975bb020f8885e5703f0a4d615b64bec0198d6c99150753",
+        "size_bytes": 2079
+      },
+      "tester_ini": {
+        "modified_utc": "2026-07-13T10:52:00.330036+00:00",
+        "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\20260713_105200\\raw\\run_01\\tester.ini",
+        "sha256": "726e291d41b4c999cb6ba8fa4c827a1fbba2584f3ed97d2f223dbcd43c859949",
+        "size_bytes": 473
+      },
+      "timestamp_utc": "2026-07-13T11:01:02.7489062Z"
+    },
+    {
+      "seed": 7,
+      "setfile": {
+        "modified_utc": "2026-07-13T11:01:02.816912+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10163_tv-rsi-macd-long\\sets\\QM5_10163_tv-rsi-macd-long_USDJPY.DWX_H1_q06_stress_harsh_seed7.set",
+        "sha256": "101d74a688fc8bd5f6e69cc478d5eb707f2a771db72f18e25387ed1f2f36de30",
+        "size_bytes": 1236
+      },
+      "summary": {
+        "modified_utc": "2026-07-13T11:08:56.671818+00:00",
+        "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\20260713_110103\\summary.json",
+        "sha256": "3968f337acff7914486d03d41ebf3fe9ee29e9bb24846da745f77a1c101cc8fa",
+        "size_bytes": 2079
+      },
+      "tester_ini": {
+        "modified_utc": "2026-07-13T11:01:04.275739+00:00",
+        "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\20260713_110103\\raw\\run_01\\tester.ini",
+        "sha256": "4ffd5300cc544d4b85a06b38c5c4c644bedb54b5fe15321cda2e401f80eddc13",
+        "size_bytes": 472
+      },
+      "timestamp_utc": "2026-07-13T11:08:56.6680380Z"
+    },
+    {
+      "seed": 2026,
+      "setfile": {
+        "modified_utc": "2026-07-13T11:08:56.719018+00:00",
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10163_tv-rsi-macd-long\\sets\\QM5_10163_tv-rsi-macd-long_USDJPY.DWX_H1_q06_stress_harsh_seed2026.set",
+        "sha256": "714197fa93b7d3c7ca58793c6a1f21813f5451c54312bae790a042d2744778d4",
+        "size_bytes": 1239
+      },
+      "summary": {
+        "modified_utc": "2026-07-13T11:16:19.272853+00:00",
+        "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\20260713_110857\\summary.json",
+        "sha256": "f89f85fd6feeaf745120b093844a99b4eb25f041f3f82227f861132413972341",
+        "size_bytes": 2078
+      },
+      "tester_ini": {
+        "modified_utc": "2026-07-13T11:08:58.000155+00:00",
+        "path": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\10163_q07_seedfix_isolated\\QM5_10163\\20260713_110857\\raw\\run_01\\tester.ini",
+        "sha256": "cdb77746d6a51a4f9f2760acec196fb54ed64d7da05ab701bc778f8e4ad802ac",
+        "size_bytes": 475
+      },
+      "timestamp_utc": "2026-07-13T11:16:19.2541039Z"
+    }
+  ],
+  "source_summary_deterministic": null,
+  "status": "BOUND_PASS",
+  "symbol": "USDJPY.DWX",
+  "terminal": "T2"
+}

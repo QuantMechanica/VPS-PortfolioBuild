@@ -1,0 +1,22 @@
+{
+  "pdf": "forexfactory_340556_swing-trading-heiken-ashi-stochs_p1-3.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forexfactory_340556_swing-trading-heiken-ashi-stochs_p1-3.pdf",
+      "source_pages": "1-2",
+      "source_ref": "Hugh Briss, 'Swing trading with heiken ashi and stochs', ForexFactory thread #340556 (posts #1, #20; HA-doji refinement post #22 p8), https://www.forexfactory.com/thread/340556-swing-trading-with-heiken-ashi-and-stochs (anonymous forum author; no verified statistics)",
+      "strategy_name": "HA + Stoch trend-pullback swing (H4)",
+      "concept": "Trade in the direction of the 100-SMA trend and enter on a Heiken-Ashi colour flip back into the trend confirmed by a Stochastic (8,3,3) cross out of the pullback extreme.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 (Heiken Ashi, 100 SMA, Stochastic 8,3,3) trend-pullback with fixed 50-pip stop and defined MM exits; deterministic, FX-cross data available via .DWX/DXZ, FTMO/DXZ-compatible.",
+      "priority_hint": "MED",
+      "notes": "One core strategy with three MM/exit variants (ONE row): (1) 50-pip SL, hold until HA flips against trend, trail stop behind price; (2) 50-pip SL + 50-pip TP, SL->+1 after +25 pips; (3) 50-pip SL, take half at +25, remainder to breakeven + trail. Entry rule: price vs 100 SMA = trend filter (long only above / short only below); wait for pullback (HA colour change against trend), HA colour flips back into trend AND stoch cross near the extreme, enter on 4H candle close. Refinement (p8, post #22): HA-doji reversal entry (small body, long wicks both ends after a smooth counter-trend pullback). Discretionary currency-strength filter (post #20) to pick among simultaneous signals; CAD/JPY-vs-oil intermarket musing (post #39-42) is a one-off observation, not mechanical. Anonymous forum author, no verified stats; qualitative 'smooth cross/pullback' language must be mechanized (stoch oversold/overbought thresholds, HA colour-change detection). Covers JPY crosses (e.g. cadjpy). Crowded FX trend-follow archetype -> MED."
+    }
+  ],
+  "notes": ["text_layer_extracted_via_pypdf", "single_core_strategy_with_MM_variants_and_HA_doji_refinement"]
+}

@@ -37,11 +37,18 @@ import subprocess
 import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
+from typing import Any
 
 try:
-    from validate_build_guardrails import validate_path as _validate_build_guardrails
+    from validate_build_guardrails import (
+        DEFAULT_MAX_NEWS_STALE_HOURS, _scan_mq5,
+        validate_path as _validate_build_guardrails,
+    )
 except ImportError:  # imported as a package (tools.strategy_farm.compile_ea)
-    from tools.strategy_farm.validate_build_guardrails import validate_path as _validate_build_guardrails
+    from tools.strategy_farm.validate_build_guardrails import (
+        DEFAULT_MAX_NEWS_STALE_HOURS, _scan_mq5,
+        validate_path as _validate_build_guardrails,
+    )
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EAS_DIR = REPO_ROOT / "framework" / "EAs"
@@ -160,7 +167,43 @@ def write_result(result: CompileResult) -> Path:
     return out_path
 
 
-def compile_ea(ea_label: str, force: bool = False, skip_validator: bool = False) -> CompileResult:
+def scoped_guardrails(ea_dir: Path, mq5: Path, symbols: list[str]) -> dict[str, Any]:
+    """Run the build guardrails against only the setfiles this build ships.
+
+    The default guardrail call validates the WHOLE EA directory, so a stale setfile
+    for a symbol that was never promoted blocks the rebuild of an EA whose shipped
+    setfile is clean (observed 2026-07-24: 1567/10919/10939 blocked by sibling
+    setfiles for dead symbols). Scoping keeps the check fail-closed for what we
+    actually deploy without weakening it — validate_path already supports single-file
+    scoping, this just fans it out over the selected set.
+
+    The .mq5 is ALWAYS validated; only the setfile surface is narrowed.
+
+    NOTE: the .mq5 is scanned with _scan_mq5 directly, NOT validate_path(mq5) —
+    validate_path on a .mq5 resolves the strategy-conformance scan to the enclosing
+    EA dir with selected_setfiles=None, which re-expands to every setfile and defeats
+    the scoping. Per-setfile validate_path calls DO scope correctly (they hit the
+    path.suffix == ".set" branch).
+    """
+    findings: list[dict[str, Any]] = _scan_mq5(mq5, DEFAULT_MAX_NEWS_STALE_HOURS)
+    targets: list[Path] = [mq5]
+    sets_dir = ea_dir / "sets"
+    if sets_dir.is_dir():
+        for setfile in sorted(sets_dir.glob("*.set")):
+            if not any(f"_{sym}_" in setfile.name for sym in symbols):
+                continue
+            targets.append(setfile)
+            findings.extend(_validate_build_guardrails(setfile)["findings"])
+    return {
+        "verdict": "PASS" if not findings else "FAIL",
+        "findings": findings,
+        "files_checked": len(targets),
+        "scoped_to": symbols,
+    }
+
+
+def compile_ea(ea_label: str, force: bool = False, skip_validator: bool = False,
+               setfile_scope: list[str] | None = None) -> CompileResult:
     started = dt.datetime.now(dt.UTC)
     ea_dir = EAS_DIR / ea_label
     if not ea_dir.is_dir():
@@ -211,7 +254,8 @@ def compile_ea(ea_label: str, force: bool = False, skip_validator: bool = False)
     # disables the fail-closed news-staleness check (qm_news_stale_max_hours > 336)
     # or uses RISK_PERCENT in a backtest set (must be RISK_FIXED). Catches the
     # Gemini v2 rework bypass at the source, before MetaEditor stamps an .ex5.
-    guardrails = _validate_build_guardrails(ea_dir)
+    guardrails = (scoped_guardrails(ea_dir, mq5, setfile_scope) if setfile_scope
+                  else _validate_build_guardrails(ea_dir))
     if guardrails["verdict"] != "PASS":
         kinds = ",".join(sorted({f["kind"] for f in guardrails["findings"]}))
         r = CompileResult(
@@ -359,6 +403,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--force", action="store_true", help="ignore ex5/mq5 mtime cache")
     ap.add_argument("--skip-validator", action="store_true",
                     help="skip the validate_symbol_scope pre-check")
+    ap.add_argument("--setfile-scope", default=None,
+                    help="comma-separated symbols (e.g. XAUUSD.DWX,NDX.DWX). Restricts the "
+                         "build guardrails to the setfiles for these symbols instead of the "
+                         "whole EA dir. The .mq5 is always checked. Omit for the default "
+                         "whole-directory behaviour.")
     ap.add_argument("--json", action="store_true", help="JSON output to stdout")
     ap.add_argument("--fail-on-error", action="store_true",
                     help="exit 1 if any verdict is not COMPILED or COMPILED_CACHED")
@@ -374,8 +423,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.all:
         results = compile_all(force=args.force, skip_validator=args.skip_validator)
     else:
+        scope = ([s.strip() for s in args.setfile_scope.split(",") if s.strip()]
+                 if args.setfile_scope else None)
         results = [compile_ea(args.ea_label, force=args.force,
-                              skip_validator=args.skip_validator)]
+                              skip_validator=args.skip_validator,
+                              setfile_scope=scope)]
 
     if args.json:
         print(json.dumps([asdict(r) for r in results], indent=2))

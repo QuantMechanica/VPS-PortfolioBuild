@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import json
 import re
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Sequence
 
 try:
     import numpy as np
@@ -53,6 +54,40 @@ class Trade:
     net_of_cost: float
     entry_time: int | None = None
     mae_acct: float | None = None
+
+
+class FrozenStreamValidationError(ValueError):
+    """A resize input is not an immutable, SHA-verified stream bundle."""
+
+
+@dataclass(frozen=True)
+class VerifiedStreamInfo:
+    key: tuple[int, str]
+    path: Path
+    sha256: str
+    size_bytes: int
+    trade_count: int
+    first_close_time: int | None
+    last_close_time: int | None
+    source_starting_capital: float
+    source_risk_pct: float
+
+
+@dataclass(frozen=True)
+class FrozenStreamBundle:
+    """Verified closed-trade streams plus the explicit scale of their source run.
+
+    ``source_risk_pct`` is expressed in account percentage points (1.0 means one
+    percent of the source account), never as a 0.01 fraction.  Requiring that scale
+    next to every SHA prevents the historical ``raw dollars * risk_percent`` unit
+    ambiguity in portfolio resize scripts.
+    """
+
+    manifest_path: Path
+    manifest_sha256: str
+    frozen_root: Path
+    streams: dict[tuple[int, str], list[Trade]]
+    info: dict[tuple[int, str], VerifiedStreamInfo]
 
 
 def key_label(key: tuple[int, str]) -> str:
@@ -267,6 +302,208 @@ def load_streams(
         trades = _load_one_stream(path, mapped[0], mapped[1], model)
         streams[mapped] = trades
     return dict(sorted(streams.items(), key=lambda item: item[0]))
+
+
+def load_frozen_stream_bundle(
+    manifest_path: Path,
+    *,
+    expected_keys: Sequence[tuple[int, str]] | None = None,
+    commission_model: CommissionModel | None = None,
+) -> FrozenStreamBundle:
+    """Load only SHA-pinned streams from a declared frozen root.
+
+    This is the mandatory input path for portfolio resizing.  It deliberately does
+    not discover files in MT5 ``Common\\Files``: those files are mutable exports and
+    produced non-reproducible 23-sleeve recomputes in July 2026.  The caller supplies
+    a JSON manifest with this minimal schema::
+
+        {
+          "schema_version": 1,
+          "frozen": true,
+          "frozen_root": "frozen_streams",
+          "risk_scale": {
+            "unit": "account_percent",
+            "source_starting_capital": 100000,
+            "source_risk_pct": 1.0
+          },
+          "streams": [
+            {"ea_id": 100, "symbol": "EURUSD.DWX",
+             "path": "100_EURUSD_DWX.jsonl", "sha256": "..."}
+          ]
+        }
+
+    Paths must resolve below ``frozen_root`` and may not resolve into the mutable
+    MT5 Common directory.  A bundle is rejected on any missing/extra key, duplicate,
+    hash mismatch, invalid risk scale, or optional trade-count mismatch.
+    """
+
+    manifest = Path(manifest_path).resolve(strict=True)
+    try:
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise FrozenStreamValidationError(f"invalid frozen stream manifest {manifest}: {exc}") from exc
+
+    if payload.get("schema_version") != 1:
+        raise FrozenStreamValidationError("frozen stream manifest schema_version must be 1")
+    if payload.get("frozen") is not True:
+        raise FrozenStreamValidationError("frozen stream manifest must contain frozen=true")
+
+    root_token = payload.get("frozen_root")
+    if not isinstance(root_token, str) or not root_token.strip():
+        raise FrozenStreamValidationError("frozen_root is required")
+    root_candidate = Path(root_token)
+    if not root_candidate.is_absolute():
+        root_candidate = manifest.parent / root_candidate
+    try:
+        frozen_root = root_candidate.resolve(strict=True)
+    except OSError as exc:
+        raise FrozenStreamValidationError(f"frozen_root does not exist: {root_candidate}") from exc
+    if not frozen_root.is_dir():
+        raise FrozenStreamValidationError(f"frozen_root is not a directory: {frozen_root}")
+    if _is_mutable_mt5_common_path(frozen_root):
+        raise FrozenStreamValidationError("frozen_root may not be MT5 Common\\Files")
+
+    risk_scale = payload.get("risk_scale")
+    if not isinstance(risk_scale, dict):
+        raise FrozenStreamValidationError("risk_scale object is required")
+    if risk_scale.get("unit") != "account_percent":
+        raise FrozenStreamValidationError("risk_scale.unit must be 'account_percent'")
+    default_capital = _positive_float(
+        risk_scale.get("source_starting_capital"), "risk_scale.source_starting_capital"
+    )
+    default_risk_pct = _positive_float(
+        risk_scale.get("source_risk_pct"), "risk_scale.source_risk_pct"
+    )
+
+    rows = payload.get("streams")
+    if not isinstance(rows, list) or not rows:
+        raise FrozenStreamValidationError("streams must be a non-empty list")
+
+    model = commission_model if commission_model is not None else load_model()
+    model.reset_degraded()
+    streams: dict[tuple[int, str], list[Trade]] = {}
+    info: dict[tuple[int, str], VerifiedStreamInfo] = {}
+    seen_paths: set[Path] = set()
+    for index, row in enumerate(rows):
+        where = f"streams[{index}]"
+        if not isinstance(row, dict):
+            raise FrozenStreamValidationError(f"{where} must be an object")
+        try:
+            key = (int(row["ea_id"]), str(row["symbol"]))
+        except (KeyError, TypeError, ValueError) as exc:
+            raise FrozenStreamValidationError(f"{where} has invalid ea_id/symbol") from exc
+        if not key[1]:
+            raise FrozenStreamValidationError(f"{where}.symbol may not be empty")
+        if key in streams:
+            raise FrozenStreamValidationError(f"duplicate stream key {key_label(key)}")
+
+        path_token = row.get("path")
+        if not isinstance(path_token, str) or not path_token.strip():
+            raise FrozenStreamValidationError(f"{where}.path is required")
+        candidate = Path(path_token)
+        if not candidate.is_absolute():
+            candidate = frozen_root / candidate
+        try:
+            path = candidate.resolve(strict=True)
+        except OSError as exc:
+            raise FrozenStreamValidationError(f"{where}.path does not exist: {candidate}") from exc
+        try:
+            path.relative_to(frozen_root)
+        except ValueError as exc:
+            raise FrozenStreamValidationError(
+                f"{where}.path escapes frozen_root: {path}"
+            ) from exc
+        if not path.is_file():
+            raise FrozenStreamValidationError(f"{where}.path is not a file: {path}")
+        if _is_mutable_mt5_common_path(path):
+            raise FrozenStreamValidationError(f"{where}.path resolves into MT5 Common\\Files")
+        if path in seen_paths:
+            raise FrozenStreamValidationError(f"stream file reused by multiple sleeves: {path}")
+        seen_paths.add(path)
+
+        expected_sha = str(row.get("sha256", "")).strip().lower()
+        if not re.fullmatch(r"[0-9a-f]{64}", expected_sha):
+            raise FrozenStreamValidationError(f"{where}.sha256 must be 64 lowercase/uppercase hex chars")
+        actual_sha = _sha256_file(path)
+        if actual_sha != expected_sha:
+            raise FrozenStreamValidationError(
+                f"SHA256 mismatch for {key_label(key)}: expected {expected_sha}, got {actual_sha}"
+            )
+
+        source_capital = _positive_float(
+            row.get("source_starting_capital", default_capital),
+            f"{where}.source_starting_capital",
+        )
+        source_risk_pct = _positive_float(
+            row.get("source_risk_pct", default_risk_pct), f"{where}.source_risk_pct"
+        )
+        loaded = _load_one_stream(path, key[0], key[1], model)
+        declared_count = row.get("trade_count")
+        if declared_count is not None:
+            try:
+                count = int(declared_count)
+            except (TypeError, ValueError) as exc:
+                raise FrozenStreamValidationError(f"{where}.trade_count must be an integer") from exc
+            if count != len(loaded):
+                raise FrozenStreamValidationError(
+                    f"trade_count mismatch for {key_label(key)}: expected {count}, got {len(loaded)}"
+                )
+        close_times = [trade.time for trade in loaded]
+        streams[key] = loaded
+        info[key] = VerifiedStreamInfo(
+            key=key,
+            path=path,
+            sha256=actual_sha,
+            size_bytes=path.stat().st_size,
+            trade_count=len(loaded),
+            first_close_time=min(close_times) if close_times else None,
+            last_close_time=max(close_times) if close_times else None,
+            source_starting_capital=source_capital,
+            source_risk_pct=source_risk_pct,
+        )
+
+    if expected_keys is not None:
+        expected = {(int(ea_id), str(symbol)) for ea_id, symbol in expected_keys}
+        actual = set(streams)
+        missing = sorted(expected - actual)
+        extra = sorted(actual - expected)
+        if missing or extra:
+            raise FrozenStreamValidationError(
+                f"frozen bundle key mismatch: missing={missing!r}, extra={extra!r}"
+            )
+
+    return FrozenStreamBundle(
+        manifest_path=manifest,
+        manifest_sha256=_sha256_file(manifest),
+        frozen_root=frozen_root,
+        streams=dict(sorted(streams.items())),
+        info=dict(sorted(info.items())),
+    )
+
+
+def _positive_float(value: Any, label: str) -> float:
+    try:
+        number = float(value)
+    except (TypeError, ValueError) as exc:
+        raise FrozenStreamValidationError(f"{label} must be a positive number") from exc
+    if not (number > 0.0) or number == float("inf"):
+        raise FrozenStreamValidationError(f"{label} must be a finite positive number")
+    return number
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _is_mutable_mt5_common_path(path: Path) -> bool:
+    """Recognize the volatile MT5 export tree without depending on one username."""
+
+    normalized = "/".join(part.lower() for part in path.resolve(strict=False).parts)
+    return "/metaquotes/terminal/common/files" in normalized
 
 
 def to_daily_pnl(trades: Iterable[Trade]) -> dict[dt.date, float]:

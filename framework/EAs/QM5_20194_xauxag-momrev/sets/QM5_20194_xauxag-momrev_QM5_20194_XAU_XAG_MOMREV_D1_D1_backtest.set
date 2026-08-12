@@ -1,0 +1,43 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20194
+; ea_slug:      xauxag-momrev
+; ea_version:   v5.0
+; set_version:  s20260801-001
+; symbol:       QM5_20194_XAU_XAG_MOMREV_D1
+; host_symbol:  XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   ad9aeafa0172ad93571fc64ea37270253cb30e31c551294b895f10b6b67ca7a6
+; author:       Development
+; date:         2026-08-01
+;==========================================================
+qm_ea_id=20194
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_friday_close_enabled=0
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; strategy-specific locked baseline generated from the approved card
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\xauxag-momrev_card.md
+strategy_momentum_months=12
+strategy_reversal_months=18
+strategy_history_bars=520
+strategy_max_boundary_gap_days=10
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=35
+strategy_xau_max_spread_pts=1500
+strategy_xag_max_spread_pts=3000
+strategy_deviation_points=20

@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12710
 ; ea_slug:      commodity-tsmom-12m-atr
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   62bdda90543d6917f41f69b17955e4974b54165aa03664ff8aac09a9b6091ad6
+; build_hash:   d1325c574f821406f5dd56d2f532582cd8b886616bd67ba6ba9e8e809965ac19
 ; author:       Development
 ; date:         2026-06-29
 ;==========================================================

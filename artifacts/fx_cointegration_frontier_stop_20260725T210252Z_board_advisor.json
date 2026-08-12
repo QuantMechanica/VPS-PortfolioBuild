@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0",
+  "captured_at_utc": "2026-07-25T21:02:52Z",
+  "branch": "agents/board-advisor",
+  "inspected_head": "c88c0f6ea3f6c7720951b1269eb9651734c74c2d",
+  "mission": "grow certified V5 portfolio with new forex cointegration sleeves",
+  "decision": "STOP_CPU_CEILING",
+  "frontier": {
+    "unbuilt_eligible_pair_found": false,
+    "source_evidence": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "duplicate_guard": "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md",
+    "anchor_status": {
+      "QM5_12532": {
+        "logical_basket_q02": "PASS",
+        "terminal_gate": "Q05_FAIL",
+        "q02_work_item": "e4890d77-b865-4a48-b946-315faefca920",
+        "terminal_work_item": "82cab3d1-bf05-4aa4-8278-86c8064b16e7"
+      },
+      "QM5_12533": {
+        "logical_basket_q02": "PASS",
+        "terminal_gate": "Q04_FAIL",
+        "q02_work_item": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+        "terminal_work_item": "ff2cb183-8269-4e63-abaf-27ba79afdb62"
+      }
+    },
+    "strict_scan_status": "ALL_SEVEN_QUALIFYING_PAIRS_ALREADY_BUILT_WITH_TERMINAL_Q02_EVIDENCE",
+    "fallback_status": "NO_NON_DUPLICATE_OPEN_SUCCESSOR_IN_GOVERNED_PURE_FX_SCAN"
+  },
+  "capacity": {
+    "mt5_slots_scanned_at": "2026-07-25T21:02:01+00:00",
+    "factory_terminal_processes": [
+      "T1",
+      "T3",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "factory_terminal_process_count": 6,
+    "terminal_workers_with_owned_slots": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "terminal_worker_count": 9,
+    "live_terminal_observed_excluded": {
+      "path": "C:/QM/mt5/T_Live/MT5_Base/terminal64.exe",
+      "pid": 15420
+    },
+    "external_ftmo_terminal_observed_excluded": {
+      "pid": 9900
+    },
+    "scheduler_dry_run": {
+      "available_slots_before": 0,
+      "available_slots_after": 0,
+      "scheduled": 0,
+      "status": "ok"
+    },
+    "classification": "CANONICAL_SCHEDULER_ZERO_CAPACITY"
+  },
+  "actions": {
+    "card_created": false,
+    "ea_built": false,
+    "queue_mutated": false,
+    "mt5_launched": false,
+    "terminal_controlled": false,
+    "autotrading_changed": false,
+    "portfolio_gate_changed": false,
+    "live_manifest_changed": false
+  },
+  "commands": [
+    "python tools/strategy_farm/farmctl.py mt5-slots",
+    "python tools/strategy_farm/farmctl.py work-items --ea QM5_12532",
+    "python tools/strategy_farm/farmctl.py work-items --ea QM5_12533",
+    "python -m framework.scripts.mt5_saturation_scheduler --sqlite D:/QM/reports/pipeline/mt5_queue.db --dispatch-state D:/QM/reports/pipeline/dispatch_state.json --dry-run"
+  ]
+}

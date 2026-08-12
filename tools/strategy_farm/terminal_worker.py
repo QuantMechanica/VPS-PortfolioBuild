@@ -8,8 +8,11 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import atexit
 import faulthandler
+import hashlib
 import json
+import math
 import os
 import random
 import shutil
@@ -23,10 +26,24 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+# ``terminal_worker.py`` is launched by absolute path from the long-running
+# worker starter.  In that execution mode Python adds this file's directory to
+# ``sys.path``, but not the repository root, so imports from ``framework`` fail
+# unless the parent process happens to provide PYTHONPATH.  Make the documented
+# direct entry point self-contained before importing repository packages.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
 import farmctl
+from framework.scripts._phase_utils import cold_cache_summary_signature
+from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
 
 
 POLL_SLEEP_SECONDS = 2.0
+FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS = 5.0
+FACTORY_ADMISSION_LOCK_POLL_SECONDS = 0.01
+NEWS_CALENDAR_GUARD_SLEEP_SECONDS = 30.0
 MAX_WORK_ITEM_RETRIES = 3
 # Disk circuit-breaker (2026-06-19 incident): if free space on the runtime drive
 # drops below this, workers must NOT claim+run backtests (MT5 fails ticks
@@ -46,10 +63,35 @@ _last_disk_purge_trigger = [0.0]
 # terminal cap in start_terminal_workers disabled_terminals.txt). Fail-open.
 RAM_MIN_FREE_GB = 4.0
 RAM_GUARD_SLEEP_SECONDS = 20
+# Free physical RAM did not expose the 2026-07-23 failure mode: Windows still
+# had RAM available while system commit was close enough to its limit that new
+# processes failed with 0xC0000142.  Gate new claims on commit headroom too.
+# Ordinary real-tick jobs typically consume ~6-7GB; 24GB leaves room for the
+# claim-to-launch race between several worker daemons. Commit probe errors pause
+# admission briefly and retry; they must not bypass this crash-prevention gate.
+COMMIT_MIN_FREE_GB = 24.0
+COMMIT_GUARD_SLEEP_SECONDS = 20
+# A claim becomes visible in SQLite before its child has allocated the real-tick
+# working set. Reserve its expected peak during that launch/warm-up window so
+# other workers cannot all pass against the same unchanged OS measurement.
+COMMIT_RESERVATION_SECONDS = 300
+ORDINARY_COMMIT_RESERVATION_GB = 8.0
+WATCHDOG_RESET_BLOCK_FILENAME = "WATCHDOG_RESET_PENDING.json"
 # Multi-symbol real-tick jobs need materially more launch headroom than ordinary
 # single-symbol jobs. A low-memory launch can generate a syntactically valid
 # MT5 report with 0 bars and get misclassified as symbol history failure.
 MULTISYMBOL_RAM_MIN_FREE_GB = 12.0
+# Observed multi-symbol working sets range from 20-44GB.  Keep that worst case
+# plus a small system margin available before admitting another heavy job.
+MULTISYMBOL_COMMIT_MIN_FREE_GB = 48.0
+MULTISYMBOL_COMMIT_RESERVATION_GB = 44.0
+# A multisymbol loader materializes its working set over tens of minutes, so the
+# ordinary 300s window expires long before it stops growing and other jobs get
+# admitted into the balloon phase (2026-07-26 17:45 pagefile storm). Holding the
+# window open is only safe because the reservation decays against measured
+# usage — see _commit_admission_snapshot; a flat hold double-counts and starves
+# the fleet (reverted 347859ad3).
+MULTISYMBOL_COMMIT_RESERVATION_SECONDS = 3600
 # Launch-fault guard (2026-06-20): the spawned phase-runner child vanishing far
 # faster than any real backtest (terminal64 startup + sync alone is ~6-10s) means
 # the run never actually started — a transient pwsh/host launch fault, NOT a clean
@@ -58,6 +100,41 @@ MULTISYMBOL_RAM_MIN_FREE_GB = 12.0
 # 2026-06-19: 250 work_items INFRA_FAIL in 14s).
 LAUNCH_FAULT_MIN_SECONDS = 10.0
 LAUNCH_FAULT_BACKOFF_SECONDS = 30.0
+# A report-missing run can be MT5 history error [32]: the just-used portable
+# terminal profile still owns a custom-symbol history file.  Immediate retries
+# on that same slot deterministically burn the row's retry budget.  Give the
+# profile time to release its handles and route the retry to another slot.
+SUMMARY_MISSING_RETRY_COOLDOWN_SECONDS = 30.0
+# History-lock STORM (2026-07-21 diagnosis, refined by the QM5_20007 diagnosis on
+# 2026-08-02). A FINISHED pass can lose its report when the terminal profile hits a
+# history sharing violation during pass-end re-sync. This is a separate transient
+# retry class, but it is safe only when the token is bound to the CURRENT work item.
+# Every run_smoke launch writes the exact work-item UUID in its tester.ini path to the
+# terminal log. Detection below requires that marker and scans only text after its
+# last occurrence; absent binding fails open to ordinary summary-missing handling.
+HISTORY_LOCK_STORM_TOKENS = (
+    "history synchronization error",
+    "some error after pass finished",
+)
+# Hard cap on transient auto-heal retries before falling through to a real INFRA_FAIL
+# for manual attention (never loop forever). 6 is deliberately > the 3-terminal
+# MAX_WORK_ITEM_RETRIES: with per-retry terminal steering each attempt avoids the
+# previously-sick terminal, so 6 attempts can walk past the worst-case sick fraction of
+# the ~10-terminal fleet and still terminate deterministically. These retries are
+# counted on a SEPARATE payload key (transient_infra_attempts) and never touch
+# attempt_count, so a real strategy failure that later occurs still has its full budget.
+TRANSIENT_INFRA_RETRY_CAP = 6
+TRANSIENT_INFRA_BACKOFF_BASE_SECONDS = 45.0
+TRANSIENT_INFRA_BACKOFF_MAX_SECONDS = 600.0
+# Never read a whole MT5 log — a storm terminal can produce a multi-GB log-bomb
+# (T9 07-19: 1.6 GB). Scan only the tail of the most recently-written logs.
+HISTORY_LOCK_SCAN_TAIL_BYTES = 256 * 1024
+HISTORY_LOCK_SCAN_MAX_FILES = 6
+# farmctl's run_smoke launcher always supplies -Year 2024. Q03 intentionally
+# omits an explicit window, so run_smoke resolves that year to these dates.
+# Evidence binding must freeze the same resolved window instead of persisting
+# null expected dates (which makes every valid run_smoke/v2 summary fail closed).
+DEFAULT_RUN_SMOKE_YEAR = 2024
 # Log-bomb guard. Some EAs spam the MT5 tester journal per-tick (framework
 # symbol_slot resolver logging on every tick), producing 50-60GB .log files that
 # burn D: at ~10GB/min — that is a BUG to kill. But a legit multi-position /
@@ -75,7 +152,11 @@ LOG_BOMB_JOURNAL_CAP_BYTES = LOG_BOMB_HARD_CEIL_BYTES  # back-compat alias (kill
 LOG_BOMB_CHECK_EVERY_ITERS = 5                # ~every 10s (loop sleeps 2s)
 SQLITE_WRITE_RETRIES = 12
 SQLITE_WRITE_RETRY_SLEEP_SECONDS = 1.5
-SMOKE_TERMINAL_EXIT_GRACE_SECONDS = 60.0
+# run_smoke can spend up to 240 seconds publishing a report after terminal_exit.
+# The outer worker therefore waits through that complete contract plus 60 seconds
+# of margin before treating the wrapper as stalled. A 60-second ceiling destroyed
+# valid GDAXI handoffs before summary.json could be published (2026-08-02 diagnosis).
+SMOKE_TERMINAL_EXIT_GRACE_SECONDS = 300.0
 DETACHED_TERMINAL_POLL_SECONDS = 2.0
 SQLITE_LOCK_BACKOFF_SECONDS = 10.0
 STALLDUMP_REQUEST_PATH = Path("D:/QM/reports/state/STALLDUMP_REQUEST")
@@ -111,6 +192,16 @@ def _json_loads(text: str | None) -> dict[str, Any]:
     except json.JSONDecodeError:
         return {}
     return value if isinstance(value, dict) else {}
+
+
+def _resolved_evidence_window(spawn: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Return the exact run_smoke window used for evidence binding."""
+    from_date = spawn.get("expected_from_date")
+    to_date = spawn.get("expected_to_date")
+    if spawn.get("evidence_binding_required") and not from_date and not to_date:
+        year = int(spawn.get("year") or DEFAULT_RUN_SMOKE_YEAR)
+        return f"{year:04d}.01.01", f"{year:04d}.12.31"
+    return from_date, to_date
 
 
 def _parse_utc_iso(value: object) -> datetime | None:
@@ -187,76 +278,13 @@ def _start_stalldump_watcher(terminal: str) -> None:
 
 
 def _priority_pending_query() -> str:
-    return """
-        SELECT w.*,
-          CASE
-            WHEN w.payload_json LIKE '%"priority_track": true%' THEN 0
-            ELSE 1 END AS _priority_track_rank,
-          CASE w.phase
-            -- Downstream phases first so work drains rather than re-pooling
-            -- at the head of the pipeline. Without this Q04+ stars in
-            -- 'ELSE 9' alongside Q02 and lose every FIFO tie to fresh Q02
-            -- inflow, leaving Q03-PASS-promoted Q04 rows starved.
-            -- Legacy P-keys preserved at their original ranks for any work
-            -- still using the old nomenclature.
-            WHEN 'Q10'  THEN 0
-            WHEN 'Q09_PORTFOLIO' THEN 1
-            WHEN 'Q09'  THEN 1
-            WHEN 'Q08'  THEN 2
-            WHEN 'Q07'  THEN 3
-            WHEN 'Q06'  THEN 4
-            WHEN 'Q05'  THEN 5
-            WHEN 'Q04'  THEN 6
-            WHEN 'Q03'  THEN 7
-            WHEN 'Q02'  THEN 8
-            WHEN 'P8'   THEN 0
-            WHEN 'P7'   THEN 1
-            WHEN 'P6'   THEN 2
-            WHEN 'P5c'  THEN 3
-            WHEN 'P5b'  THEN 4
-            WHEN 'P5'   THEN 5
-            WHEN 'P4'   THEN 6
-            WHEN 'P3.5' THEN 7
-            WHEN 'P3'   THEN 8
-            WHEN 'P2'   THEN 9
-            ELSE 9 END AS _phase_rank,
-          CASE
-            WHEN w.phase='Q02' AND w.payload_json LIKE '%"portfolio_scope": "basket"%' THEN 0
-            ELSE 1 END AS _basket_q02_rank,
-          CASE WHEN EXISTS (
-            SELECT 1 FROM work_items wp
-            WHERE wp.ea_id=w.ea_id AND wp.status='done' AND wp.verdict='PASS'
-          ) THEN 0 ELSE 1 END AS _winner_rank,
-          -- Asset-class tie-break (2026-07-09, Claude). Within an otherwise-equal
-          -- (track, phase, basket, winner) tier, prefer the classes that actually
-          -- survive the Q04 net/commission gate. Measured Q04 net-pass by class
-          -- (docs/ops/evidence/q02_q04_survival_by_assetclass_2026-07-09.csv):
-          --   METAL 12.2% > INDEX 6.9% > ENERGY 2.4% > FX 1.6%.
-          -- FX passes the $0-commission Q02 gross pre-screen best (68.6%) but dies
-          -- at Q04, so FIFO order was spending the scarce Q02 CPU front-loading the
-          -- lowest-yield class (FX = 51% of the pending queue). This ONLY reorders
-          -- pre-screens: promoted Q04+ survivors still beat any Q02 via _phase_rank,
-          -- so FX *survivors* are never delayed — only FX *pre-screens* wait behind
-          -- metal/index. Executes OWNER's 2026-07-06 "Index/Metalle zuerst" mandate.
-          -- Reversible; ordering is never a gate. Baskets already jump via
-          -- _basket_q02_rank, so they need no asset boost here.
-          CASE
-            WHEN upper(w.symbol) LIKE 'XAU%' OR upper(w.symbol) LIKE 'XAG%'
-              OR upper(w.symbol) LIKE 'XPT%' OR upper(w.symbol) LIKE 'XCU%' THEN 0
-            WHEN upper(w.symbol) LIKE 'SP500%' OR upper(w.symbol) LIKE 'NDX%'
-              OR upper(w.symbol) LIKE 'WS30%' OR upper(w.symbol) LIKE 'US30%'
-              OR upper(w.symbol) LIKE 'US2000%' OR upper(w.symbol) LIKE 'GDAXI%'
-              OR upper(w.symbol) LIKE 'GER40%' OR upper(w.symbol) LIKE 'UK100%'
-              OR upper(w.symbol) LIKE 'STOXX%' OR upper(w.symbol) LIKE '%225%'
-              OR upper(w.symbol) LIKE 'DAX%' THEN 1
-            WHEN upper(w.symbol) LIKE 'XTI%' OR upper(w.symbol) LIKE 'XBR%'
-              OR upper(w.symbol) LIKE 'XNG%' OR upper(w.symbol) LIKE 'WTI%'
-              OR upper(w.symbol) LIKE 'NGAS%' OR upper(w.symbol) LIKE '%OIL%' THEN 2
-            ELSE 3 END AS _asset_rank
-        FROM work_items w
-        WHERE w.status='pending'
-        ORDER BY _priority_track_rank ASC, _phase_rank ASC, _basket_q02_rank ASC, _winner_rank ASC, _asset_rank ASC, w.updated_at ASC, w.created_at ASC
-    """
+    # ULTRACODE WS-A (2026-07-26): the pending-work ordering now lives in ONE place —
+    # farmctl.pending_claim_order_sql — shared by this production claimant AND the
+    # farmctl.dispatch_work_items secondary claimant, so the two can never diverge.
+    # It preserves the previous priority_track/phase/basket/winner/asset ordering
+    # EXACTLY and only prepends a recovery-last rank (inert until rows are tagged).
+    # The recovery idle-cap is applied in claim_atomic below, not in SQL.
+    return farmctl.pending_claim_order_sql()
 
 
 TERMINAL_NO_SYMBOL_HISTORY_REASON = "TERMINAL_NO_SYMBOL_HISTORY_FOR_PERIOD"
@@ -415,7 +443,15 @@ def _merge_history_window_payload(payload: dict[str, Any], history: dict[str, An
 
 
 MULTISYMBOL_REGISTRY_PATH = Path("D:/QM/strategy_farm/state/multisymbol_eas.txt")
-_multisym_cache: dict[str, Any] = {"mtime": -1.0, "ids": frozenset()}
+_multisym_cache: dict[str, Any] = {
+    "mtime": -1.0,
+    "ids": frozenset(),
+    "loaded": False,
+}
+
+
+class MultisymbolRegistryUnavailable(RuntimeError):
+    """The safety-critical registry is unavailable and has no valid cache."""
 
 
 def _multisymbol_ea_ids() -> frozenset:
@@ -427,23 +463,50 @@ def _multisymbol_ea_ids() -> frozenset:
     launch_fault wedge (2026-06-24 incident, EA QM5_1218 = 44GB x3 = 90GB).
 
     Populated by scanning EA .mq5 for basket markers (g_symbols[], QM_Basket,
-    _SYMBOL_COUNT, Strategy_GroupMembers). Cached, refreshed on file mtime change.
-    Fail-open: an unreadable/missing registry returns an empty set -> NO gating,
-    so the factory is never blocked by this feature going wrong.
+    _SYMBOL_COUNT, Strategy_GroupMembers). Cached, refreshed on file mtime
+    change. A transient read failure reuses the last valid cache; without one,
+    admission fails closed because treating a legacy multisymbol EA as ordinary
+    can recreate the commit-exhaustion incident this registry prevents.
     """
     try:
         st = MULTISYMBOL_REGISTRY_PATH.stat().st_mtime
         if st != _multisym_cache["mtime"]:
             ids = frozenset(
-                ln.strip()
+                ln.strip().split()[0]
                 for ln in MULTISYMBOL_REGISTRY_PATH.read_text(encoding="utf-8").splitlines()
                 if ln.strip() and not ln.lstrip().startswith("#")
             )
+            if not ids:
+                raise ValueError("multisymbol registry is empty")
             _multisym_cache["mtime"] = st
             _multisym_cache["ids"] = ids
+            _multisym_cache["loaded"] = True
         return _multisym_cache["ids"]
-    except Exception:
-        return frozenset()
+    except Exception as exc:
+        if _multisym_cache.get("loaded"):
+            return _multisym_cache["ids"]
+        raise MultisymbolRegistryUnavailable(
+            f"multisymbol registry unavailable: {exc!r}"
+        ) from exc
+
+
+def _watchdog_reset_admission_blocked(root: Path) -> bool:
+    """Block new claims until Factory_ON explicitly completes the handover.
+
+    This is intentionally not time-based. A delayed or hung Factory_ON must
+    never let admissions resume and then kill work it did not see in the fresh
+    pre-reset snapshot. The next watchdog run can remove a provably orphaned
+    pre-handover marker; Factory_ON removes a live marker only after terminating
+    the old worker/terminal fleet.
+    """
+
+    marker = root / "state" / WATCHDOG_RESET_BLOCK_FILENAME
+    try:
+        return marker.exists()
+    except OSError:
+        # An unreadable marker path is safety-significant, but should pause the
+        # worker cleanly rather than crash its long-running loop.
+        return True
 
 
 def _work_item_is_multisymbol(
@@ -472,6 +535,281 @@ def _work_item_is_multisymbol(
         return False
 
 
+_PROCESS_SNAPSHOT_TTL_SECONDS = 3.0
+_process_snapshot_cache: dict[str, Any] = {
+    "at": -1e9, "children": {}, "private": {}, "alive": set(),
+}
+
+
+def _process_private_snapshot() -> tuple[dict[int, list[int]], dict[int, int], set[int]]:
+    """(children-by-parent-pid, private-commit-bytes-by-pid, all-live-pids).
+
+    Toolhelp32 + psapi via ctypes: the admission gate runs on every poll of every
+    worker, so the PowerShell-based probes in ``farmctl`` (hundreds of ms each)
+    are unusable here. Cached for ``_PROCESS_SNAPSHOT_TTL_SECONDS`` because nine
+    workers poll independently. Returns empty maps on any failure — callers must
+    treat that as "unknown", never as "zero usage".
+
+    ``alive`` carries every pid Toolhelp32 reported, including those whose
+    ``OpenProcess`` failed. Without it a running-but-unreadable process is
+    indistinguishable from a dead one (Codex review 2026-07-26).
+    """
+    now = time.monotonic()
+    if now - _process_snapshot_cache["at"] < _PROCESS_SNAPSHOT_TTL_SECONDS:
+        return (_process_snapshot_cache["children"],
+                _process_snapshot_cache["private"],
+                _process_snapshot_cache["alive"])
+    children: dict[int, list[int]] = {}
+    private: dict[int, int] = {}
+    alive: set[int] = set()
+    if sys.platform != "win32":
+        return children, private, alive
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class _PROCESSENTRY32W(ctypes.Structure):
+            _fields_ = [
+                ("dwSize", wintypes.DWORD),
+                ("cntUsage", wintypes.DWORD),
+                ("th32ProcessID", wintypes.DWORD),
+                ("th32DefaultHeapID", ctypes.POINTER(ctypes.c_ulong)),
+                ("th32ModuleID", wintypes.DWORD),
+                ("cntThreads", wintypes.DWORD),
+                ("th32ParentProcessID", wintypes.DWORD),
+                ("pcPriClassBase", ctypes.c_long),
+                ("dwFlags", wintypes.DWORD),
+                ("szExeFile", ctypes.c_wchar * 260),
+            ]
+
+        class _PROCESS_MEMORY_COUNTERS_EX(ctypes.Structure):
+            _fields_ = [
+                ("cb", wintypes.DWORD),
+                ("PageFaultCount", wintypes.DWORD),
+                ("PeakWorkingSetSize", ctypes.c_size_t),
+                ("WorkingSetSize", ctypes.c_size_t),
+                ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
+                ("PagefileUsage", ctypes.c_size_t),
+                ("PeakPagefileUsage", ctypes.c_size_t),
+                ("PrivateUsage", ctypes.c_size_t),
+            ]
+
+        kernel32 = ctypes.windll.kernel32
+        psapi = ctypes.windll.psapi
+        TH32CS_SNAPPROCESS = 0x00000002
+        INVALID_HANDLE_VALUE = ctypes.c_void_p(-1).value
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        PROCESS_VM_READ = 0x0010
+
+        snapshot = kernel32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+        if snapshot == INVALID_HANDLE_VALUE:
+            return children, private, alive
+        try:
+            entry = _PROCESSENTRY32W()
+            entry.dwSize = ctypes.sizeof(_PROCESSENTRY32W)
+            more = kernel32.Process32FirstW(snapshot, ctypes.byref(entry))
+            pids: list[tuple[int, int]] = []
+            while more:
+                pids.append((int(entry.th32ProcessID), int(entry.th32ParentProcessID)))
+                more = kernel32.Process32NextW(snapshot, ctypes.byref(entry))
+        finally:
+            kernel32.CloseHandle(snapshot)
+
+        for pid, ppid in pids:
+            children.setdefault(ppid, []).append(pid)
+            alive.add(pid)
+            handle = kernel32.OpenProcess(
+                PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ, False, pid
+            )
+            if not handle:
+                handle = kernel32.OpenProcess(
+                    PROCESS_QUERY_LIMITED_INFORMATION, False, pid
+                )
+            if not handle:
+                continue
+            try:
+                counters = _PROCESS_MEMORY_COUNTERS_EX()
+                counters.cb = ctypes.sizeof(_PROCESS_MEMORY_COUNTERS_EX)
+                if psapi.GetProcessMemoryInfo(
+                    handle, ctypes.byref(counters), counters.cb
+                ):
+                    private[pid] = int(counters.PrivateUsage)
+            finally:
+                kernel32.CloseHandle(handle)
+    except Exception:
+        return {}, {}, set()
+
+    _process_snapshot_cache["at"] = now
+    _process_snapshot_cache["children"] = children
+    _process_snapshot_cache["private"] = private
+    _process_snapshot_cache["alive"] = alive
+    return children, private, alive
+
+
+def _measured_subtree_gb(pid: Any) -> float | None:
+    """Private commit (GB) held by ``pid`` and every descendant, or None.
+
+    Walks the children map rather than the live parent links: a phase driver's
+    Python parent often exits while its run_smoke/pwsh child keeps running, and
+    Windows leaves the dead parent's id in the child's PPID field, so the
+    subtree stays discoverable. None means "could not measure" — the caller then
+    keeps the full reservation instead of assuming the job uses nothing.
+    """
+    try:
+        root_pid = int(pid)
+    except (TypeError, ValueError):
+        return None
+    children, private, alive = _process_private_snapshot()
+    if not alive:
+        return None
+    total = 0
+    seen: set[int] = set()
+    queue = [root_pid]
+    any_alive = False
+    any_readable = False
+    while queue:
+        current = queue.pop()
+        if current in seen:
+            continue
+        seen.add(current)
+        if current in alive:
+            any_alive = True
+        if current in private:
+            total += private[current]
+            any_readable = True
+        queue.extend(children.get(current, ()))
+    if not any_alive:
+        # No process of this lineage exists any more: the job is over, so there
+        # is no future growth left to reserve for.
+        return float("inf")
+    if not any_readable:
+        # The lineage IS running but every OpenProcess failed (access denied,
+        # protected or exiting process). Codex review 2026-07-26 (33a18bb2e):
+        # the earlier version could not tell this apart from a vanished tree and
+        # released the reservation for a job that was still allocating — exactly
+        # the over-admission this mechanism exists to prevent. Unknown must stay
+        # unknown, so the caller keeps the full reservation.
+        return None
+    return total / (1024 ** 3)
+
+
+def _commit_admission_snapshot(
+    conn: sqlite3.Connection,
+    now_iso: str,
+    multisym_ids: frozenset,
+) -> dict[str, Any]:
+    """Measure commit headroom minus the *unmaterialized* part of active claims.
+
+    Windows' commit charge does not jump at SQLite claim time. Without a durable
+    reservation, every worker can observe the same headroom and over-admit work
+    before any child reaches its peak. Active claims therefore reserve their
+    expected peak — but only the portion that has not been allocated yet:
+
+        reservation = max(0, expected_peak - measured_subtree_private_bytes)
+
+    The OS commit measurement already contains whatever a running job has really
+    taken, so reserving its full peak on top of that double-counts it. Holding a
+    flat 44GB for a ballooning multisymbol job pinned the entire fleet below the
+    admission threshold on a box with 64GB free (2026-07-26, reverted in
+    347859ad3). Decaying against the measurement keeps the launch-race
+    protection at full strength (nothing allocated yet -> full reservation) and
+    fades to zero once the job is at peak, which is what lets the window stay
+    open for the whole balloon phase instead of expiring mid-growth.
+    """
+    live_headroom = _commit_headroom_gb()
+    probe_ok = math.isfinite(live_headroom) or (
+        sys.platform != "win32" and math.isinf(live_headroom) and live_headroom > 0
+    )
+    now_dt = _parse_utc_iso(now_iso) or datetime.now(timezone.utc)
+    reservations: list[dict[str, Any]] = []
+    reserved_gb = 0.0
+    rows = conn.execute(
+        "SELECT id, ea_id, symbol, payload_json FROM work_items WHERE status='active'"
+    ).fetchall()
+    for row in rows:
+        payload = _json_loads(row["payload_json"])
+        item_is_multisym = _work_item_is_multisymbol(row, payload, multisym_ids)
+        window_seconds = (
+            MULTISYMBOL_COMMIT_RESERVATION_SECONDS
+            if item_is_multisym
+            else COMMIT_RESERVATION_SECONDS
+        )
+        until = _parse_utc_iso(payload.get("commit_reservation_until_utc"))
+        claimed_at = _parse_utc_iso(payload.get("claimed_at_iso"))
+        if until is None and claimed_at is not None:
+            until = claimed_at + timedelta(seconds=window_seconds)
+        if until is None or until <= now_dt:
+            continue
+        default_reservation = (
+            MULTISYMBOL_COMMIT_RESERVATION_GB
+            if item_is_multisym
+            else ORDINARY_COMMIT_RESERVATION_GB
+        )
+        try:
+            expected_peak_gb = max(
+                0.0,
+                float(payload.get("commit_reservation_gb") or default_reservation),
+            )
+        except (TypeError, ValueError):
+            expected_peak_gb = default_reservation
+        # Decay the reservation against what the job has already allocated; the
+        # live headroom above already accounts for that part.
+        pid = payload.get("pid")
+        measured_gb = _measured_subtree_gb(pid) if pid else None
+        if measured_gb is None:
+            # Not spawned yet, or the probe failed: keep the full peak reserved.
+            reservation_gb = expected_peak_gb
+        else:
+            reservation_gb = max(0.0, expected_peak_gb - measured_gb)
+        reserved_gb += reservation_gb
+        reservations.append({
+            "item_id": row["id"],
+            "ea_id": row["ea_id"],
+            "reservation_gb": round(reservation_gb, 2),
+            "expected_peak_gb": expected_peak_gb,
+            "measured_gb": (
+                None
+                if measured_gb is None or math.isinf(measured_gb)
+                else round(measured_gb, 2)
+            ),
+            "until_utc": until.isoformat(),
+        })
+    return {
+        "probe_ok": probe_ok,
+        "live_headroom_gb": live_headroom if probe_ok else None,
+        "reserved_gb": reserved_gb,
+        "effective_headroom_gb": live_headroom - reserved_gb if probe_ok else None,
+        "reservations": reservations,
+    }
+
+
+def _set_commit_reservation(
+    payload: dict[str, Any],
+    *,
+    claimed_at_iso: str,
+    multisymbol: bool,
+) -> None:
+    claimed_at = _parse_utc_iso(claimed_at_iso) or datetime.now(timezone.utc)
+    payload["commit_reservation_gb"] = (
+        MULTISYMBOL_COMMIT_RESERVATION_GB
+        if multisymbol
+        else ORDINARY_COMMIT_RESERVATION_GB
+    )
+    payload["commit_reservation_until_utc"] = (
+        claimed_at
+        + timedelta(
+            seconds=(
+                MULTISYMBOL_COMMIT_RESERVATION_SECONDS
+                if multisymbol
+                else COMMIT_RESERVATION_SECONDS
+            )
+        )
+    ).isoformat()
+
+
 def _payload_avoid_terminals(payload: dict[str, Any]) -> set[str]:
     """Return factory terminals this item must not be claimed by."""
     raw = payload.get("avoid_terminals", payload.get("skip_terminals", []))
@@ -495,6 +833,8 @@ _STALE_RUNTIME_PAYLOAD_KEYS = (
     "log_path",
     "claimed_at_iso",
     "claimed_by_worker_pid",
+    "commit_reservation_gb",
+    "commit_reservation_until_utc",
     "terminal",
 )
 
@@ -504,6 +844,240 @@ def _clear_stale_runtime_payload(payload: dict[str, Any]) -> None:
         payload.pop(field, None)
 
 
+def _defer_news_calendar_preflight(
+    root: Path,
+    row: sqlite3.Row | dict[str, Any],
+    terminal: str,
+    calendar: dict[str, Any],
+) -> dict[str, Any]:
+    """Release a pre-spawn claim without consuming attempt/claim capacity."""
+    payload = _json_loads(row["payload_json"])
+    claimed_at = payload.get("claimed_at_iso")
+    _clear_stale_runtime_payload(payload)
+    for field in ("claim_stage", "targeted_factory_off_run", "staged_ex5"):
+        payload.pop(field, None)
+    now = farmctl.utc_now()
+
+    def _release() -> bool:
+        with farmctl.connect(root) as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            cur = conn.execute(
+                """
+                UPDATE work_items
+                SET status='pending', verdict=NULL, claimed_by=NULL,
+                    payload_json=?, updated_at=?
+                WHERE id=? AND status='active' AND claimed_by=?
+                """,
+                (
+                    json.dumps(payload, sort_keys=True),
+                    now,
+                    row["id"],
+                    terminal,
+                ),
+            )
+            if cur.rowcount == 1:
+                farmctl.retract_claim_ledger(
+                    conn,
+                    terminal,
+                    row["id"],
+                    str(claimed_at) if claimed_at else None,
+                )
+            conn.commit()
+            return cur.rowcount == 1
+
+    released = bool(_with_sqlite_retry(_release))
+    return {
+        "status": "pending" if released else str(row.get("status", "active") if isinstance(row, dict) else row["status"]),
+        "reason": f"NEWS_CALENDAR_{calendar.get('status')}",
+        "calendar_preflight_blocked": True,
+        "claim_released": released,
+        "attempt_count_unchanged": True,
+        "principal": calendar.get("principal"),
+        "common_dir": calendar.get("common_dir"),
+        "news_calendar_preflight": calendar,
+    }
+
+
+def _accumulate_avoid_terminal(payload: dict[str, Any], failed_terminal: str | None) -> list[str]:
+    """Add a sick terminal to the item's avoid_terminals steering list.
+
+    Guards against the list eating the whole fleet: if the accumulated set would
+    exclude EVERY enabled factory terminal (which would make the item permanently
+    unclaimable), it is cleared instead — the item retries anywhere rather than
+    deadlocking. Fail-open on any enabled-terminal lookup error (keep the list).
+    """
+    avoid = _payload_avoid_terminals(payload)
+    name = str(failed_terminal or "").strip().upper()
+    if name and farmctl.is_factory_terminal_name(name):
+        avoid.add(name)
+    try:
+        enabled = {t.upper() for t in farmctl.active_mt5_terminals()}
+    except Exception:
+        enabled = set()
+    if enabled and enabled.issubset(avoid):
+        payload.pop("avoid_terminals", None)
+        payload["avoid_terminals_cleared_reason"] = "would_exclude_whole_fleet"
+        print(json.dumps({
+            "event": "avoid_terminals_cleared",
+            "reason": "would_exclude_whole_fleet",
+            "avoid": sorted(avoid),
+            "enabled": sorted(enabled),
+        }, sort_keys=True), flush=True)
+        return []
+    payload["avoid_terminals"] = sorted(avoid)
+    payload.pop("avoid_terminals_cleared_reason", None)
+    return payload["avoid_terminals"]
+
+
+def _transient_infra_backoff_seconds(prior_attempts: Any) -> float:
+    """Exponential backoff (capped) for shared-bases history-lock transient retries."""
+    try:
+        n = int(prior_attempts)
+    except (TypeError, ValueError):
+        n = 0
+    n = max(n, 0)
+    delay = TRANSIENT_INFRA_BACKOFF_BASE_SECONDS * (2 ** n)
+    return min(delay, TRANSIENT_INFRA_BACKOFF_MAX_SECONDS)
+
+
+def _read_tail_bytes(path: Path, max_bytes: int) -> bytes:
+    try:
+        size = path.stat().st_size
+        with open(path, "rb") as fh:
+            if size > max_bytes:
+                start = size - max_bytes
+                if start % 2:  # keep UTF-16-LE code units aligned
+                    start += 1
+                fh.seek(start)
+            return fh.read()
+    except OSError:
+        return b""
+
+
+def _decode_log_tail(raw: bytes) -> str:
+    if not raw:
+        return ""
+    # MT5 terminal/tester logs are UTF-16-LE (ASCII bytes interleaved with 0x00).
+    sample = raw[:512]
+    if sample.count(0) > len(sample) // 4:
+        return raw.decode("utf-16-le", errors="ignore")
+    return raw.decode("utf-8", errors="ignore")
+
+
+def _detect_history_lock_storm(
+    terminal: str | None,
+    mt5_root: Path | None = None,
+    *,
+    work_item_id: str | None = None,
+    started_at_iso: str | None = None,
+) -> dict[str, Any] | None:
+    """Return current-run history-lock evidence, else ``None``.
+
+    The exact work-item UUID in the terminal's tester.ini launch marker is the
+    evidence boundary. Only text after the marker's last occurrence is eligible;
+    a prior run or prior-day tail can never classify the current claim. The scan
+    remains bounded so a multi-GB storm log is never read whole. Any missing or
+    unreadable binding fails open to ordinary summary-missing handling.
+    """
+    name = str(terminal or "").strip().upper()
+    marker = str(work_item_id or "").strip().lower()
+    if not name or not marker:
+        return None
+    root = mt5_root or farmctl.MT5_ROOT
+    term_dir = root / name
+    try:
+        if not term_dir.is_dir():
+            return None
+    except OSError:
+        return None
+    candidates: list[Path] = []
+    search_dirs = [term_dir / "logs", term_dir / "Tester" / "logs"]
+    tester_dir = term_dir / "Tester"
+    try:
+        if tester_dir.is_dir():
+            search_dirs.extend(sorted(tester_dir.glob("Agent-*/logs")))
+    except OSError:
+        pass
+    for sub in search_dirs:
+        try:
+            if sub.is_dir():
+                candidates.extend(p for p in sub.glob("*.log") if p.is_file())
+        except OSError:
+            continue
+    if not candidates:
+        return None
+
+    def _mtime(p: Path) -> float:
+        try:
+            return p.stat().st_mtime
+        except OSError:
+            return 0.0
+
+    started_at = _parse_utc_iso(started_at_iso)
+    started_epoch = started_at.timestamp() - 2.0 if started_at is not None else None
+    candidates.sort(key=_mtime, reverse=True)
+    for path in candidates[:HISTORY_LOCK_SCAN_MAX_FILES]:
+        mtime = _mtime(path)
+        if started_epoch is not None and mtime < started_epoch:
+            continue
+        decoded = _decode_log_tail(_read_tail_bytes(path, HISTORY_LOCK_SCAN_TAIL_BYTES))
+        text = decoded.lower()
+        marker_at = text.rfind(marker)
+        if marker_at < 0:
+            continue
+        current_run_text = text[marker_at:]
+        for token in HISTORY_LOCK_STORM_TOKENS:
+            token_at = current_run_text.find(token)
+            if token_at < 0:
+                continue
+            absolute_at = marker_at + token_at
+            line_start = decoded.rfind("\n", marker_at, absolute_at) + 1
+            line_end = decoded.find("\n", absolute_at)
+            if line_end < 0:
+                line_end = len(decoded)
+            matched_line = decoded[line_start:line_end].strip()
+            return {
+                "terminal": name,
+                "token": token,
+                "log_path": str(path),
+                "matched_line": matched_line,
+                "log_mtime_utc": datetime.fromtimestamp(
+                    mtime, tz=timezone.utc
+                ).isoformat(),
+                "work_item_id": str(work_item_id),
+            }
+    return None
+
+
+def _claim_queue_may_need_mutation(root: Path, terminal: str) -> bool:
+    """Avoid an fsynced global lock when the claim queue is plainly empty.
+
+    A false negative only delays a concurrently inserted item until the next
+    worker poll: the real claim still performs complete transactional selection.
+    Any DB, schema, or probe ambiguity returns ``True`` and takes the locked
+    fail-closed path.
+    """
+
+    db_path = root / farmctl.DB_REL
+    if not db_path.is_file():
+        return True
+    try:
+        uri = f"file:{db_path.as_posix()}?mode=ro"
+        with sqlite3.connect(uri, uri=True, timeout=1) as conn:
+            row = conn.execute(
+                """
+                SELECT 1
+                FROM work_items
+                WHERE status='pending' OR (status='active' AND claimed_by=?)
+                LIMIT 1
+                """,
+                (terminal,),
+            ).fetchone()
+        return row is not None
+    except (OSError, sqlite3.Error):
+        return True
+
+
 def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     """Atomically claim one pending work_item for a terminal.
 
@@ -511,13 +1085,52 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     anywhere in the farm blocks another item with the same symbol. Multi-symbol
     (basket) EAs are additionally serialized to AT MOST ONE active farm-wide, so
     their oversized tick-history working sets never stack and exhaust commit.
-    Multi-symbol claims also require higher free-RAM headroom than ordinary
-    single-symbol jobs to avoid empty-bar MT5 reports caused by allocator failure.
+    Every new claim requires free system-commit headroom. Multi-symbol claims
+    additionally require higher commit and physical-RAM headroom than ordinary
+    single-symbol jobs to avoid process-start and allocator failures.
     """
+    factory_off_flag = root / "state" / "FACTORY_OFF.flag"
+    try:
+        if factory_off_flag.exists():
+            return {
+                "claimed": False,
+                "reason": "factory_off",
+                "flag": str(factory_off_flag),
+            }
+    except OSError as exc:
+        return {
+            "claimed": False,
+            "reason": "factory_admission_interlock_error",
+            "flag": str(factory_off_flag),
+            "error": str(exc),
+        }
+
+    # Read before opening the claim transaction. Cached stat-bound results keep
+    # idle worker polling cheap; every actual spawn performs an uncached re-read.
+    calendar_preflight = farmctl._news_calendar_preflight(use_cache=True)
+    if calendar_preflight.get("ok") and not _claim_queue_may_need_mutation(root, terminal):
+        return {
+            "claimed": False,
+            "reason": "no_pending_claimable",
+            "history_skipped": [],
+            "launch_cooldown_skipped": [],
+            "multisymbol_ram_skipped": [],
+            "multisymbol_commit_skipped": [],
+            "terminal_avoid_skipped": [],
+            "recovery_capped": [],
+        }
+
     def _claim() -> dict[str, Any]:
         farmctl.init_db(root)
         now = farmctl.utc_now()
         db_path = root / farmctl.DB_REL
+        # Warm the process snapshot BEFORE taking the write lock. The admission
+        # gate needs it, and a cold Toolhelp32+psapi scan costs ~8ms — which is
+        # cheap in itself but must not be paid while holding BEGIN IMMEDIATE with
+        # nine workers contending, least of all when the box is paging
+        # (Codex review 2026-07-26, 33a18bb2e). Inside the transaction the call
+        # is then a ~0.4us cache hit. Fail-open: errors are swallowed there.
+        _process_private_snapshot()
         with sqlite3.connect(db_path, timeout=30) as conn:
             conn.row_factory = sqlite3.Row
             conn.execute("PRAGMA busy_timeout=30000")
@@ -588,9 +1201,73 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             (json.dumps(payload, sort_keys=True), now, active_terminal["id"], terminal),
                         )
 
+                if not calendar_preflight.get("ok"):
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "news_calendar_preflight_failed",
+                        "calendar_status": calendar_preflight.get("status"),
+                        "principal": calendar_preflight.get("principal"),
+                        "common_dir": calendar_preflight.get("common_dir"),
+                        "news_calendar_preflight": calendar_preflight,
+                    }
+
                 if root.resolve() == farmctl.DEFAULT_ROOT.resolve() and terminal in farmctl._running_mt5_terminals():
                     conn.commit()
                     return {"claimed": False, "reason": "terminal_process_busy", "terminal": terminal}
+
+                reservation = farmctl.terminal_reservation(root, terminal)
+                if reservation:
+                    decline = {
+                        "event": "terminal_reservation_claim_declined",
+                        "terminal": terminal,
+                        "reserved_by": reservation["reserved_by"],
+                        "until_utc": reservation["until_utc"],
+                        "reason": reservation["reason"],
+                    }
+                    print(json.dumps(decline, sort_keys=True), flush=True)
+                    conn.commit()
+                    return {"claimed": False, **reservation, "reason": "terminal_reserved"}
+
+                if _watchdog_reset_admission_blocked(root):
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "watchdog_reset_pending",
+                        "terminal": terminal,
+                    }
+
+                try:
+                    multisym_ids = _multisymbol_ea_ids()
+                except MultisymbolRegistryUnavailable as exc:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "multisymbol_registry_unavailable",
+                        "error": str(exc),
+                    }
+                admission = _commit_admission_snapshot(conn, now, multisym_ids)
+                if not admission["probe_ok"]:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "commit_probe_failed",
+                        "commit_reserved_gb": round(admission["reserved_gb"], 1),
+                        "commit_reservation_count": len(admission["reservations"]),
+                    }
+                effective_commit_headroom = admission["effective_headroom_gb"]
+                if effective_commit_headroom < COMMIT_MIN_FREE_GB:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "commit_headroom_low",
+                        "commit_headroom_gb": round(admission["live_headroom_gb"], 1),
+                        "commit_reserved_gb": round(admission["reserved_gb"], 1),
+                        "effective_commit_headroom_gb": round(effective_commit_headroom, 1),
+                        "commit_reservation_count": len(admission["reservations"]),
+                        "commit_reservation_detail": admission["reservations"],
+                        "threshold_gb": COMMIT_MIN_FREE_GB,
+                    }
 
                 active_symbols = farmctl._active_work_item_symbols(conn)
                 active_q04_eas = {
@@ -604,7 +1281,6 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 # sets must not stack and exhaust commit). BEGIN IMMEDIATE (above)
                 # makes this active-check + claim atomic across workers, so two
                 # daemons can't both pass the gate. OWNER 2026-06-24.
-                multisym_ids = _multisymbol_ea_ids()
                 multisym_active = any(
                     _work_item_is_multisymbol(row, _json_loads(row["payload_json"]), multisym_ids)
                     for row in conn.execute("SELECT ea_id, payload_json FROM work_items WHERE status='active'")
@@ -612,11 +1288,42 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_history: list[dict[str, Any]] = []
                 skipped_launch_cooldown: list[dict[str, Any]] = []
                 skipped_multisym_ram: list[dict[str, Any]] = []
+                skipped_multisym_commit: list[dict[str, Any]] = []
                 skipped_avoid_terminal: list[dict[str, Any]] = []
                 multisym_free_ram: float | None = None
                 history_registry = farmctl._dwx_symbol_history_registry()
+                # NOTE: do NOT refresh the poison-pill table here. Measured cost of
+                # poison_pill_quarantine.refresh_pending() on the live DB is ~413ms
+                # (full scan + one upsert per finding, 371 today), and this point is
+                # inside BEGIN IMMEDIATE. Nine workers claiming every ~2s would demand
+                # ~3.7s of write lock per 2s window and serialise the whole fleet.
+                # The claim query already excludes quarantined rows through an indexed
+                # NOT EXISTS on the table's primary key, so it only needs the table to
+                # be CURRENT, not freshly rebuilt per claim — and farmctl's dispatch
+                # path already refreshes it every pump cycle in its own transaction
+                # (farmctl.py, before the free-terminal loop).
+                # ULTRACODE WS-A (2026-07-26): recovery idle-cap. Recovery-class rows
+                # sort LAST (pending_claim_order_sql _recovery_rank), so the loop only
+                # reaches one after every eligible priority/frontier row was claimed
+                # (→ returned) or skipped by a resource filter — i.e. the priority lane
+                # is idle for this worker (Operating Rule 22, incl. the resource-filter
+                # fallback). The durable rolling ledger then caps recovery to at most 1
+                # of the last CLAIM_RECOVERY_WINDOW successful claims fleet-wide. The
+                # decision is computed once (recovery rows are contiguous at the tail);
+                # if capped, nothing else is claimable this cycle → stop.
+                recovery_gate_checked = False
+                recovery_allowed = False
+                recovery_capped = False
                 for item in conn.execute(_priority_pending_query()).fetchall():
                     payload = _json_loads(item["payload_json"])
+                    item_is_recovery = farmctl.is_recovery_payload(payload)
+                    if item_is_recovery:
+                        if not recovery_gate_checked:
+                            recovery_allowed = farmctl.recovery_claim_allowed(conn)
+                            recovery_gate_checked = True
+                        if not recovery_allowed:
+                            recovery_capped = True
+                            break
                     avoid_terminals = _payload_avoid_terminals(payload)
                     if str(terminal).upper() in avoid_terminals:
                         skipped_avoid_terminal.append({
@@ -649,6 +1356,16 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     if multisym_active and item_is_multisym:
                         continue
                     if item_is_multisym:
+                        if effective_commit_headroom < MULTISYMBOL_COMMIT_MIN_FREE_GB:
+                            skipped_multisym_commit.append({
+                                "item_id": item["id"],
+                                "ea_id": item["ea_id"],
+                                "commit_headroom_gb": round(admission["live_headroom_gb"], 1),
+                                "commit_reserved_gb": round(admission["reserved_gb"], 1),
+                                "effective_commit_headroom_gb": round(effective_commit_headroom, 1),
+                                "threshold_gb": MULTISYMBOL_COMMIT_MIN_FREE_GB,
+                            })
+                            continue
                         if multisym_free_ram is None:
                             multisym_free_ram = _free_ram_gb()
                         if multisym_free_ram < MULTISYMBOL_RAM_MIN_FREE_GB:
@@ -669,6 +1386,11 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         "claimed_by_worker_pid": os.getpid(),
                         "terminal": terminal,
                     })
+                    _set_commit_reservation(
+                        payload,
+                        claimed_at_iso=now,
+                        multisymbol=item_is_multisym,
+                    )
                     cur = conn.execute(
                         """
                         UPDATE work_items
@@ -678,9 +1400,21 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         (terminal, json.dumps(payload, sort_keys=True), now, item["id"]),
                     )
                     if cur.rowcount == 1:
+                        # Advance the durable claim-class ledger in the SAME
+                        # BEGIN IMMEDIATE transaction as the claim so the fleet-wide
+                        # recovery idle-cap read+advance is atomic against competing
+                        # workers (Codex: "successful eligible claims, not attempts").
+                        farmctl.record_claim_ledger(
+                            conn, terminal, item["id"],
+                            "recovery" if item_is_recovery else "priority", now,
+                        )
                         conn.commit()
                         row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
-                        return {"claimed": True, "item": dict(row)}
+                        return {
+                            "claimed": True,
+                            "item": dict(row),
+                            "claim_class": "recovery" if item_is_recovery else "priority",
+                        }
                 conn.commit()
                 return {
                     "claimed": False,
@@ -688,8 +1422,315 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     "history_skipped": skipped_history,
                     "launch_cooldown_skipped": skipped_launch_cooldown,
                     "multisymbol_ram_skipped": skipped_multisym_ram,
+                    "multisymbol_commit_skipped": skipped_multisym_commit,
                     "terminal_avoid_skipped": skipped_avoid_terminal,
+                    "recovery_capped": recovery_capped,
                 }
+            except Exception:
+                conn.rollback()
+                raise
+
+    # The shared mutation lock closes the OFF-during-claim race. Factory_OFF
+    # asserts its flag first and then waits for this lock to drain. A claim that
+    # acquired the lock before that assertion is an admitted bounded unit; after
+    # acquisition we re-read the flag so no later claimant can cross the fence.
+    mutation_lock_path = path_for_factory_flag(factory_off_flag)
+    admission_deadline = time.monotonic() + FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS
+    while True:
+        mutation_lock = FactoryMutationLock(
+            mutation_lock_path,
+            owner=f"terminal_worker.claim_atomic:{terminal}",
+        )
+        try:
+            mutation_lock.__enter__()
+            break
+        except RuntimeError:
+            # Contending workers serialize here. Re-probe OFF on every retry so
+            # an asserted interlock wins immediately instead of waiting for the
+            # admission timeout.
+            try:
+                if factory_off_flag.exists():
+                    return {
+                        "claimed": False,
+                        "reason": "factory_off",
+                        "flag": str(factory_off_flag),
+                    }
+            except OSError as exc:
+                return {
+                    "claimed": False,
+                    "reason": "factory_admission_interlock_error",
+                    "flag": str(factory_off_flag),
+                    "error": str(exc),
+                }
+            if time.monotonic() >= admission_deadline:
+                return {
+                    "claimed": False,
+                    "reason": "factory_mutation_lock_busy",
+                    "lock": str(mutation_lock_path),
+                }
+            time.sleep(FACTORY_ADMISSION_LOCK_POLL_SECONDS)
+        except OSError as exc:
+            return {
+                "claimed": False,
+                "reason": "factory_admission_interlock_error",
+                "lock": str(mutation_lock_path),
+                "error": str(exc),
+            }
+
+    try:
+        try:
+            if factory_off_flag.exists():
+                return {
+                    "claimed": False,
+                    "reason": "factory_off",
+                    "flag": str(factory_off_flag),
+                }
+        except OSError as exc:
+            return {
+                "claimed": False,
+                "reason": "factory_admission_interlock_error",
+                "flag": str(factory_off_flag),
+                "error": str(exc),
+            }
+
+        try:
+            return _with_sqlite_retry(_claim)
+        except sqlite3.OperationalError as exc:
+            if not _is_sqlite_locked(exc):
+                raise
+            return {"claimed": False, "reason": "sqlite_locked"}
+    finally:
+        mutation_lock.__exit__(None, None, None)
+
+
+def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, Any]:
+    """Claim exactly one pending work item for an isolated Factory-OFF run.
+
+    This is the operator path for a targeted recovery or qualification run. It
+    deliberately refuses to operate without the software interlock so it cannot
+    race the normal priority queue. Unlike ``claim_atomic``, it never substitutes
+    a different work item when the requested row is not currently claimable.
+    """
+    factory_off_flag = root / "state" / "FACTORY_OFF.flag"
+    if not factory_off_flag.exists():
+        return {
+            "claimed": False,
+            "reason": "factory_off_required",
+            "flag": str(factory_off_flag),
+        }
+
+    calendar_preflight = farmctl._news_calendar_preflight(use_cache=True)
+    if not calendar_preflight.get("ok"):
+        return {
+            "claimed": False,
+            "reason": "news_calendar_preflight_failed",
+            "item_id": item_id,
+            "calendar_status": calendar_preflight.get("status"),
+            "principal": calendar_preflight.get("principal"),
+            "common_dir": calendar_preflight.get("common_dir"),
+            "news_calendar_preflight": calendar_preflight,
+        }
+
+    def _claim() -> dict[str, Any]:
+        farmctl.init_db(root)
+        now = farmctl.utc_now()
+        db_path = root / farmctl.DB_REL
+        # Warm the process snapshot BEFORE taking the write lock. The admission
+        # gate needs it, and a cold Toolhelp32+psapi scan costs ~8ms — which is
+        # cheap in itself but must not be paid while holding BEGIN IMMEDIATE with
+        # nine workers contending, least of all when the box is paging
+        # (Codex review 2026-07-26, 33a18bb2e). Inside the transaction the call
+        # is then a ~0.4us cache hit. Fail-open: errors are swallowed there.
+        _process_private_snapshot()
+        with sqlite3.connect(db_path, timeout=30) as conn:
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA busy_timeout=30000")
+            conn.execute("BEGIN IMMEDIATE")
+            try:
+                active_terminal = conn.execute(
+                    "SELECT id FROM work_items WHERE status='active' AND claimed_by=? LIMIT 1",
+                    (terminal,),
+                ).fetchone()
+                if active_terminal:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "terminal_worker_busy",
+                        "item_id": active_terminal["id"],
+                    }
+
+                if root.resolve() == farmctl.DEFAULT_ROOT.resolve() and terminal in farmctl._running_mt5_terminals():
+                    conn.commit()
+                    return {"claimed": False, "reason": "terminal_process_busy", "terminal": terminal}
+
+                item = conn.execute("SELECT * FROM work_items WHERE id=?", (item_id,)).fetchone()
+                if not item:
+                    conn.commit()
+                    return {"claimed": False, "reason": "work_item_missing", "item_id": item_id}
+                if item["status"] != "pending":
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "work_item_not_pending",
+                        "item_id": item_id,
+                        "status": item["status"],
+                    }
+
+                payload = _json_loads(item["payload_json"])
+                avoid_terminals = _payload_avoid_terminals(payload)
+                if terminal.upper() in avoid_terminals:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "terminal_avoided",
+                        "item_id": item_id,
+                        "avoid_terminals": sorted(avoid_terminals),
+                    }
+
+                launch_not_before = _parse_utc_iso(payload.get("launch_not_before_utc"))
+                if launch_not_before is not None:
+                    try:
+                        now_dt = datetime.fromisoformat(now).astimezone(timezone.utc)
+                    except ValueError:
+                        now_dt = datetime.now(timezone.utc)
+                    if launch_not_before > now_dt:
+                        conn.commit()
+                        return {
+                            "claimed": False,
+                            "reason": "launch_cooldown",
+                            "item_id": item_id,
+                            "launch_not_before_utc": launch_not_before.isoformat(),
+                        }
+
+                symbol_key = str(item["symbol"] or "").upper()
+                active_symbols = farmctl._active_work_item_symbols(conn)
+                if symbol_key and symbol_key in active_symbols:
+                    conn.commit()
+                    return {"claimed": False, "reason": "symbol_busy", "item_id": item_id}
+
+                if str(item["phase"]).upper() == "Q04":
+                    active_q04 = conn.execute(
+                        "SELECT id FROM work_items WHERE status='active' AND phase='Q04' AND ea_id=? LIMIT 1",
+                        (item["ea_id"],),
+                    ).fetchone()
+                    if active_q04:
+                        conn.commit()
+                        return {"claimed": False, "reason": "q04_ea_busy", "item_id": item_id}
+
+                if _watchdog_reset_admission_blocked(root):
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "watchdog_reset_pending",
+                        "terminal": terminal,
+                        "item_id": item_id,
+                    }
+
+                try:
+                    multisym_ids = _multisymbol_ea_ids()
+                except MultisymbolRegistryUnavailable as exc:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "multisymbol_registry_unavailable",
+                        "item_id": item_id,
+                        "error": str(exc),
+                    }
+                admission = _commit_admission_snapshot(conn, now, multisym_ids)
+                if not admission["probe_ok"]:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "commit_probe_failed",
+                        "item_id": item_id,
+                        "commit_reserved_gb": round(admission["reserved_gb"], 1),
+                        "commit_reservation_count": len(admission["reservations"]),
+                    }
+                effective_commit_headroom = admission["effective_headroom_gb"]
+                if effective_commit_headroom < COMMIT_MIN_FREE_GB:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "commit_headroom_low",
+                        "item_id": item_id,
+                        "commit_headroom_gb": round(admission["live_headroom_gb"], 1),
+                        "commit_reserved_gb": round(admission["reserved_gb"], 1),
+                        "effective_commit_headroom_gb": round(effective_commit_headroom, 1),
+                        "commit_reservation_count": len(admission["reservations"]),
+                        "commit_reservation_detail": admission["reservations"],
+                        "threshold_gb": COMMIT_MIN_FREE_GB,
+                    }
+
+                item_is_multisym = _work_item_is_multisymbol(item, payload, multisym_ids)
+                if item_is_multisym:
+                    multisym_active = any(
+                        _work_item_is_multisymbol(row, _json_loads(row["payload_json"]), multisym_ids)
+                        for row in conn.execute("SELECT ea_id, payload_json FROM work_items WHERE status='active'")
+                    )
+                    if multisym_active:
+                        conn.commit()
+                        return {"claimed": False, "reason": "multisymbol_busy", "item_id": item_id}
+                    if effective_commit_headroom < MULTISYMBOL_COMMIT_MIN_FREE_GB:
+                        conn.commit()
+                        return {
+                            "claimed": False,
+                            "reason": "multisymbol_commit_headroom_low",
+                            "item_id": item_id,
+                            "commit_headroom_gb": round(admission["live_headroom_gb"], 1),
+                            "commit_reserved_gb": round(admission["reserved_gb"], 1),
+                            "effective_commit_headroom_gb": round(effective_commit_headroom, 1),
+                            "threshold_gb": MULTISYMBOL_COMMIT_MIN_FREE_GB,
+                        }
+                    free_ram = _free_ram_gb()
+                    if free_ram < MULTISYMBOL_RAM_MIN_FREE_GB:
+                        conn.commit()
+                        return {
+                            "claimed": False,
+                            "reason": "multisymbol_ram_low",
+                            "item_id": item_id,
+                            "free_ram_gb": round(free_ram, 1),
+                            "threshold_gb": MULTISYMBOL_RAM_MIN_FREE_GB,
+                        }
+
+                history_ok, history = _p2_history_claimable(
+                    item,
+                    terminal,
+                    farmctl._dwx_symbol_history_registry(),
+                )
+                if not history_ok:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "history_not_claimable",
+                        "item_id": item_id,
+                        "history": history,
+                    }
+                _merge_history_window_payload(payload, history)
+                payload.update({
+                    "claimed_at_iso": now,
+                    "claimed_by_worker_pid": os.getpid(),
+                    "targeted_factory_off_run": True,
+                    "terminal": terminal,
+                })
+                _set_commit_reservation(
+                    payload,
+                    claimed_at_iso=now,
+                    multisymbol=item_is_multisym,
+                )
+                cur = conn.execute(
+                    """
+                    UPDATE work_items
+                    SET status='active', claimed_by=?, payload_json=?, updated_at=?
+                    WHERE id=? AND status='pending'
+                    """,
+                    (terminal, json.dumps(payload, sort_keys=True), now, item_id),
+                )
+                if cur.rowcount != 1:
+                    conn.rollback()
+                    return {"claimed": False, "reason": "claim_race_lost", "item_id": item_id}
+                conn.commit()
+                row = conn.execute("SELECT * FROM work_items WHERE id=?", (item_id,)).fetchone()
+                return {"claimed": True, "item": dict(row), "targeted": True}
             except Exception:
                 conn.rollback()
                 raise
@@ -699,7 +1740,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     except sqlite3.OperationalError as exc:
         if not _is_sqlite_locked(exc):
             raise
-        return {"claimed": False, "reason": "sqlite_locked"}
+        return {"claimed": False, "reason": "sqlite_locked", "item_id": item_id}
 
 
 def release_stale_claims_for_terminal(root: Path, terminal: str) -> list[str]:
@@ -775,7 +1816,80 @@ def _load_fresh_summary(path: Path, payload: dict[str, Any]) -> dict[str, Any] |
         summary = json.loads(path.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError):
         return None
-    return summary if _summary_fresh_for_claim(path, summary, payload) else None
+    if not _summary_fresh_for_claim(path, summary, payload):
+        return None
+    return summary if farmctl._summary_matches_expected_evidence(summary, payload) else None
+
+
+def _find_bound_persisted_pass_summary_data(
+    item: sqlite3.Row,
+    payload: dict[str, Any],
+) -> tuple[Path, dict[str, Any]] | None:
+    """Recover a durable Q02/Q03 PASS that predates the current claim.
+
+    Normal ``report_root`` discovery is intentionally claim-fresh.  A worker
+    restart or a later shared-history-lock retry can nevertheless leave an
+    exact PASS in that item-isolated tree (or in its durable ``evidence_path``)
+    which freshness filtering hides.  Reuse is fail-closed: only v2
+    identity-bound smoke evidence whose window, expert, MQ5, EX5, and setfile
+    still match may bypass claim freshness, and only a derived PASS is
+    latched.  A persisted failure can never suppress a deliberate recovery
+    run.
+    """
+    phase = str(item["phase"] or "").upper()
+    if phase not in {"P2", "P3", "Q02", "Q03"}:
+        return None
+    if not payload.get("evidence_binding_required"):
+        return None
+    candidates: list[Path] = []
+    raw_path = item["evidence_path"]
+    if raw_path:
+        candidates.append(Path(str(raw_path)))
+    report_root = payload.get("report_root")
+    if report_root:
+        root = Path(str(report_root))
+        try:
+            if root.is_dir():
+                candidates.extend(sorted(
+                    root.rglob("summary.json"),
+                    key=lambda path: path.stat().st_mtime,
+                    reverse=True,
+                ))
+        except OSError:
+            pass
+
+    seen: set[str] = set()
+    for path in candidates:
+        key = str(path).casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        try:
+            summary = json.loads(path.read_text(encoding="utf-8-sig"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(summary, dict):
+            continue
+        if not farmctl._summary_matches_expected_evidence(summary, payload):
+            continue
+        if cold_cache_summary_signature(summary):
+            continue
+        effective_min_trades = int(
+            payload.get("effective_min_trades")
+            or summary.get("min_trades_required")
+            or 5
+        )
+        verdict, _ = farmctl._derive_verdict_from_summary(
+            summary,
+            min_trades=effective_min_trades,
+            phase=phase,
+        )
+        if verdict == "PASS":
+            return path, summary
+        # The newest (or explicitly DB-bound) exact outcome is authoritative.
+        # Do not skip a persisted failure and hunt for an older PASS.
+        return None
+    return None
 
 
 def _find_summary(report_root: str | None, payload: dict[str, Any] | None = None) -> Path | None:
@@ -793,9 +1907,90 @@ def _find_summary(report_root: str | None, payload: dict[str, Any] | None = None
     return None
 
 
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _prepare_staged_ex5(item: sqlite3.Row, terminal: str) -> dict[str, Any] | None:
+    payload = _json_loads(item["payload_json"])
+    raw_path = payload.get("staged_ex5_path")
+    raw_sha = payload.get("staged_ex5_sha256")
+    if raw_path is None and raw_sha is None:
+        return None
+    if not raw_path or not raw_sha:
+        raise ValueError("staged_ex5_path_and_sha256_required_together")
+    expected = str(raw_sha).strip().lower()
+    if len(expected) != 64 or any(ch not in "0123456789abcdef" for ch in expected):
+        raise ValueError("staged_ex5_sha256_invalid")
+    source = Path(str(raw_path))
+    if not source.is_file():
+        raise ValueError(f"staged_ex5_missing:{source}")
+    source_sha = _sha256_file(source)
+    if source_sha != expected:
+        raise ValueError(f"staged_ex5_source_sha256_mismatch:{source_sha}")
+
+    ea_dir = farmctl._ea_dir_from_setfile_path(Path(str(item["setfile_path"])), str(item["ea_id"]))
+    if ea_dir is None:
+        ea_dir = farmctl._preferred_ea_dir(str(item["ea_id"]))
+    if ea_dir is None:
+        raise ValueError("staged_ex5_ea_dir_unresolved")
+    destination = farmctl.MT5_ROOT / terminal / "MQL5" / "Experts" / "QM" / f"{ea_dir.name}.ex5"
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_suffix(destination.suffix + f".{os.getpid()}.tmp")
+    try:
+        shutil.copy2(source, temporary)
+        copied_sha = _sha256_file(temporary)
+        if copied_sha != expected:
+            raise ValueError(f"staged_ex5_copy_sha256_mismatch:{copied_sha}")
+        os.replace(temporary, destination)
+    finally:
+        temporary.unlink(missing_ok=True)
+    pre_run_sha = _sha256_file(destination)
+    if pre_run_sha != expected:
+        raise ValueError(f"staged_ex5_pre_run_sha256_mismatch:{pre_run_sha}")
+    return {
+        "source_path": str(source),
+        "destination_path": str(destination),
+        "required_sha256": expected,
+        "pre_run_sha256": pre_run_sha,
+    }
+
+
+def _verify_and_record_staged_ex5(payload: dict[str, Any]) -> dict[str, Any] | None:
+    staging = payload.get("staged_ex5")
+    if not isinstance(staging, dict):
+        return None
+    actual = _sha256_file(Path(str(staging["destination_path"])))
+    staging["post_run_sha256"] = actual
+    staging["verified"] = actual == staging["required_sha256"]
+    summary_path = _find_summary(payload.get("report_root"))
+    if summary_path:
+        summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
+        summary["staged_ex5"] = staging
+        temporary = summary_path.with_suffix(summary_path.suffix + f".{os.getpid()}.tmp")
+        temporary.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        os.replace(temporary, summary_path)
+    if not staging["verified"]:
+        raise ValueError(
+            f"staged_ex5_post_run_sha256_mismatch:{actual}:expected:{staging['required_sha256']}"
+        )
+    return staging
+
+
 def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> tuple[Path, dict[str, Any]] | None:
     phase = str(item["phase"])
     if phase in farmctl.REAL_PHASE_RUNNER_PHASES:
+        exact_evidence = payload.get("phase_evidence_path")
+        if exact_evidence:
+            evidence_path = Path(str(exact_evidence))
+            if not evidence_path.is_file():
+                return None
+            summary = _load_fresh_summary(evidence_path, payload)
+            return (evidence_path, summary) if summary is not None else None
         report_root = payload.get("report_root")
         if report_root:
             summary_path = Path(str(report_root)) / str(item["ea_id"]) / phase / "summary.json"
@@ -839,12 +2034,44 @@ def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> 
             return canonical_summary_path, summary
         return farmctl._phase_artifact_summary(item)
     summary_path = _find_summary(payload.get("report_root"), payload)
-    if not summary_path:
-        return None
-    summary = _load_fresh_summary(summary_path, payload)
-    if summary is None:
-        return None
-    return summary_path, summary
+    if summary_path:
+        summary = _load_fresh_summary(summary_path, payload)
+        if summary is not None:
+            return summary_path, summary
+    return _find_bound_persisted_pass_summary_data(item, payload)
+
+
+def _q09_sidecar_matches(
+    root: Path,
+    item: sqlite3.Row,
+    aggregate_path: Path,
+    aggregate: dict[str, Any],
+) -> bool:
+    """Require the append-only Q09 sidecar before accepting its aggregate."""
+
+    if str(item["phase"] or "").upper() != "Q09_NEWS":
+        return True
+    try:
+        aggregate_sha256 = _sha256_file(aggregate_path)
+        connection = farmctl.connect(root)
+        try:
+            row = connection.execute(
+                """
+                SELECT verdict,aggregate_path,aggregate_sha256
+                FROM q09_news_tests WHERE work_item_id=?
+                """,
+                (str(item["id"]),),
+            ).fetchone()
+        finally:
+            connection.close()
+        return bool(
+            row is not None
+            and str(row["verdict"]) == str(aggregate.get("verdict") or "")
+            and Path(str(row["aggregate_path"])).resolve() == aggregate_path.resolve()
+            and str(row["aggregate_sha256"]) == aggregate_sha256
+        )
+    except (OSError, sqlite3.Error, ValueError):
+        return False
 
 
 def _work_item_has_summary_data(root: Path, item_id: str) -> bool:
@@ -869,7 +2096,9 @@ def _mirror_real_phase_artifacts(item: sqlite3.Row, summary_path: Path, verdict:
         return
     source_dir = summary_path.parent
     target_dir = farmctl._ea_phase_dir(str(item["ea_id"]), str(item["phase"]))
-    if source_dir.resolve() == target_dir.resolve():
+    source_resolved = source_dir.resolve()
+    target_resolved = target_dir.resolve()
+    if source_resolved == target_resolved or source_resolved.is_relative_to(target_resolved):
         return
     target_dir.mkdir(parents=True, exist_ok=True)
     for source in source_dir.iterdir():
@@ -996,7 +2225,12 @@ def _work_item_ownership(root: Path, item_id: str, terminal: str) -> dict[str, A
     return {"owned": True, "status": status, "claimed_by": claimed_by}
 
 
-def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[str, Any]:
+def _finish_work_item(
+    root: Path,
+    item_id: str,
+    exit_code: int | None,
+    runtime_payload_updates: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     def _finish() -> dict[str, Any]:
         now = farmctl.utc_now()
         with farmctl.connect(root) as conn:
@@ -1004,9 +2238,115 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
             if not item:
                 return {"finished": False, "reason": "missing_item"}
             payload = _json_loads(item["payload_json"])
+            if runtime_payload_updates:
+                payload.update(runtime_payload_updates)
             summary_data = _find_work_item_summary_data(item, payload)
+            if summary_data and not _q09_sidecar_matches(
+                root, item, summary_data[0], summary_data[1]
+            ):
+                payload["q09_sidecar_verification"] = "missing_or_mismatched"
+                summary_data = None
             if summary_data:
                 summary_path, summary = summary_data
+                cold_signature = (
+                    cold_cache_summary_signature(summary)
+                    if str(item["phase"]).upper() in {"P2", "P3", "Q02", "Q03"}
+                    else None
+                )
+                if cold_signature:
+                    retry_attempt = int(item["attempt_count"] or 0) + 1
+                    failed_terminal = str(item["claimed_by"] or "").strip().upper()
+                    payload.update({
+                        "prior_failure": "cold_cache_invalid_summary",
+                        "cold_cache_retry_attempt": retry_attempt,
+                        "cold_cache_retry_cap": MAX_WORK_ITEM_RETRIES,
+                        "cold_cache_signature": cold_signature,
+                        "cold_cache_summary_path": str(summary_path),
+                        "run_smoke_exit_code": exit_code,
+                        "verdict_reason": f"cold_cache_retry:{cold_signature}",
+                    })
+                    if failed_terminal:
+                        _accumulate_avoid_terminal(payload, failed_terminal)
+                    payload["launch_not_before_utc"] = (
+                        datetime.now(timezone.utc)
+                        + timedelta(seconds=SUMMARY_MISSING_RETRY_COOLDOWN_SECONDS)
+                    ).isoformat()
+                    _clear_stale_runtime_payload(payload)
+                    print(
+                        json.dumps({
+                            "event": "cold_cache_retry",
+                            "item_id": item_id,
+                            "phase": item["phase"],
+                            "attempt": retry_attempt,
+                            "max_attempts": MAX_WORK_ITEM_RETRIES,
+                            "matched_signature": cold_signature,
+                            "action": (
+                                "requeue"
+                                if retry_attempt < MAX_WORK_ITEM_RETRIES
+                                else "exhausted"
+                            ),
+                        }),
+                        flush=True,
+                    )
+                    if retry_attempt < MAX_WORK_ITEM_RETRIES:
+                        conn.execute(
+                            """
+                            UPDATE work_items
+                            SET status='pending', verdict=NULL, attempt_count=?,
+                                claimed_by=NULL, evidence_path=NULL,
+                                payload_json=?, updated_at=?
+                            WHERE id=?
+                            """,
+                            (
+                                retry_attempt,
+                                json.dumps(payload, sort_keys=True),
+                                now,
+                                item_id,
+                            ),
+                        )
+                        conn.commit()
+                        return {
+                            "finished": True,
+                            "status": "pending",
+                            "verdict": None,
+                            "reason": payload["verdict_reason"],
+                            "attempt": retry_attempt,
+                            "matched_signature": cold_signature,
+                            "aggregate": None,
+                        }
+                    payload["final_failure"] = "cold_cache_retries_exhausted"
+                    payload["verdict_reason"] = (
+                        f"cold_cache_retries_exhausted:{cold_signature}"
+                    )
+                    payload["verdict_taxonomy"] = "infra"
+                    conn.execute(
+                        """
+                        UPDATE work_items
+                        SET status='failed', verdict='INFRA_FAIL', attempt_count=?,
+                            evidence_path=?, claimed_by=NULL,
+                            payload_json=?, updated_at=?
+                        WHERE id=?
+                        """,
+                        (
+                            retry_attempt,
+                            str(summary_path),
+                            json.dumps(payload, sort_keys=True),
+                            now,
+                            item_id,
+                        ),
+                    )
+                    conn.commit()
+                    return {
+                        "finished": True,
+                        "status": "failed",
+                        "verdict": "INFRA_FAIL",
+                        "reason": payload["verdict_reason"],
+                        "attempt": retry_attempt,
+                        "matched_signature": cold_signature,
+                        "aggregate": _aggregate_finished_parent(
+                            root, item["parent_task_id"]
+                        ),
+                    }
                 effective_min_trades = int(
                     payload.get("effective_min_trades")
                     or summary.get("min_trades_required")
@@ -1071,16 +2411,111 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
                     """,
                     (verdict, str(summary_path), json.dumps(payload, sort_keys=True), now, item_id),
                 )
+                promoted = farmctl._promote_zero_trade_q02_cohort_to_draft_defect(
+                    conn, item
+                )
                 conn.commit()
+                if item_id in promoted:
+                    verdict = "DRAFT_DEFECT"
+                    reason = "Q02_ALL_ENQUEUED_SYMBOLS_ZERO_TRADES"
                 aggregate = _aggregate_finished_parent(root, item["parent_task_id"])
                 return {"finished": True, "status": "done", "verdict": verdict, "reason": reason, "aggregate": aggregate}
 
-            attempt = int(item["attempt_count"] or 0) + 1
             payload["run_smoke_exit_code"] = exit_code
-            payload["prior_failure"] = payload.get("prior_failure") or "summary_missing"
+            failed_terminal = str(item["claimed_by"] or "").strip().upper()
+
+            # Shared-bases history-lock STORM auto-heal (see constants above). Only
+            # probe the LIVE factory's MT5 logs (root == DEFAULT_ROOT); on a temp/test
+            # root the probe is skipped so the ordinary summary_missing path is used.
+            # Fail-open: any detection error falls through to the normal path.
+            storm = None
+            try:
+                if root.resolve() == farmctl.DEFAULT_ROOT.resolve():
+                    storm = _detect_history_lock_storm(
+                        failed_terminal,
+                        work_item_id=item_id,
+                        started_at_iso=(
+                            payload.get("started_at_iso")
+                            or payload.get("claimed_at_iso")
+                        ),
+                    )
+            except Exception:
+                storm = None
+
             terminal_stopped = _stop_terminal_slot_for_release(root, item["claimed_by"])
             if terminal_stopped is not None:
                 payload["terminal_stopped_on_release"] = terminal_stopped
+
+            if storm:
+                # Transient INFRA class: SEPARATE counter, does NOT touch attempt_count.
+                transient_attempts = int(payload.get("transient_infra_attempts") or 0) + 1
+                payload["transient_infra_attempts"] = transient_attempts
+                payload["prior_failure"] = "shared_bases_history_lock_storm"
+                payload["transient_infra_signature"] = storm.get("token")
+                payload["transient_infra_evidence_path"] = storm.get("log_path")
+                payload["transient_infra_evidence_line"] = storm.get("matched_line")
+                payload["transient_infra_evidence_mtime_utc"] = storm.get("log_mtime_utc")
+                _accumulate_avoid_terminal(payload, failed_terminal)
+                payload["launch_not_before_utc"] = (
+                    datetime.now(timezone.utc)
+                    + timedelta(seconds=_transient_infra_backoff_seconds(transient_attempts - 1))
+                ).isoformat()
+                # Staged recovery: strip stale runtime keys so the re-claim is clean;
+                # priority_track / requeue reason in the payload are left untouched.
+                _clear_stale_runtime_payload(payload)
+                if transient_attempts <= TRANSIENT_INFRA_RETRY_CAP:
+                    conn.execute(
+                        """
+                        UPDATE work_items
+                        SET status='pending', verdict=NULL, claimed_by=NULL,
+                            payload_json=?, updated_at=?
+                        WHERE id=?
+                        """,
+                        (json.dumps(payload, sort_keys=True), now, item_id),
+                    )
+                    conn.commit()
+                    return {
+                        "finished": True,
+                        "status": "pending",
+                        "verdict": None,
+                        "transient_infra": True,
+                        "transient_infra_attempts": transient_attempts,
+                        "avoid_terminals": payload.get("avoid_terminals", []),
+                        "attempt": int(item["attempt_count"] or 0),
+                        "aggregate": None,
+                    }
+                # Transient cap exhausted -> real INFRA_FAIL for manual attention.
+                payload["final_failure"] = "shared_bases_history_lock_transient_cap_exhausted"
+                farmctl._ensure_verdict_reason(payload)
+                conn.execute(
+                    """
+                    UPDATE work_items
+                    SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL,
+                        payload_json=?, updated_at=?
+                    WHERE id=?
+                    """,
+                    (json.dumps(payload, sort_keys=True), now, item_id),
+                )
+                conn.commit()
+                aggregate = _aggregate_finished_parent(root, item["parent_task_id"])
+                return {
+                    "finished": True,
+                    "status": "failed",
+                    "verdict": "INFRA_FAIL",
+                    "transient_infra": True,
+                    "transient_infra_attempts": transient_attempts,
+                    "attempt": int(item["attempt_count"] or 0),
+                    "aggregate": aggregate,
+                }
+
+            attempt = int(item["attempt_count"] or 0) + 1
+            payload["prior_failure"] = payload.get("prior_failure") or "summary_missing"
+            if failed_terminal:
+                _accumulate_avoid_terminal(payload, failed_terminal)
+            payload["launch_not_before_utc"] = (
+                datetime.now(timezone.utc)
+                + timedelta(seconds=SUMMARY_MISSING_RETRY_COOLDOWN_SECONDS)
+            ).isoformat()
             if attempt < MAX_WORK_ITEM_RETRIES:
                 conn.execute(
                     """
@@ -1094,18 +2529,49 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
                 status = "pending"
                 verdict = None
             else:
+                # Census rank 1 (2026-07-27): stop flattening every summary-missing
+                # exhaustion into a retryable INFRA_FAIL. Classify the fresh run_smoke
+                # log's terminal_exit signature; a DETERMINISTIC no-summary (clean exit
+                # with no report / report latched but unparseable / log-bomb / an
+                # explicit defect token) is not retry-owed transport failure and maps to
+                # the non-retryable INVALID verdict, exactly as the Q08 boundary fix does.
+                # Only transient / unclassified signatures stay retryable INFRA_FAIL.
+                # Fail-open: an unreadable log yields UNCLASSIFIED -> INFRA_FAIL, i.e. the
+                # prior behaviour, so a recoverable run is never wrongly demoted.
                 payload["final_failure"] = "summary_missing_retries_exhausted"
+                log_text = None
+                log_path = payload.get("log_path")
+                if log_path:
+                    try:
+                        log_text = Path(str(log_path)).read_text(
+                            encoding="utf-8-sig", errors="ignore"
+                        )
+                    except OSError:
+                        log_text = None
+                classification = farmctl.classify_summary_missing_run(payload, log_text)
+                payload["failure_class"] = classification["failure_class"]
+                payload["failure_subclass"] = classification["failure_subclass"]
+                payload["failure_class_evidence"] = classification["evidence"]
+                payload["verdict_reason"] = (
+                    f"summary_missing:{classification['failure_subclass']}"
+                )
+                if classification["retryable"]:
+                    verdict = "INFRA_FAIL"
+                    payload["verdict_taxonomy"] = "infra"
+                else:
+                    verdict = "INVALID"
+                    payload["verdict_taxonomy"] = "invalid"
+                farmctl._ensure_verdict_reason(payload)
                 conn.execute(
                     """
                     UPDATE work_items
-                    SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL,
+                    SET status='failed', verdict=?, claimed_by=NULL,
                         payload_json=?, updated_at=?
                     WHERE id=?
                     """,
-                    (json.dumps(payload, sort_keys=True), now, item_id),
+                    (verdict, json.dumps(payload, sort_keys=True), now, item_id),
                 )
                 status = "failed"
-                verdict = "INFRA_FAIL"
             conn.commit()
             aggregate = _aggregate_finished_parent(root, item["parent_task_id"]) if status == "failed" else None
             return {"finished": True, "status": status, "verdict": verdict, "attempt": attempt, "aggregate": aggregate}
@@ -1124,89 +2590,11 @@ def _phase_from_task_kind(kind: str) -> str:
 
 
 def _aggregate_finished_parent(root: Path, parent_task_id: str | None) -> dict[str, Any] | None:
-    if not parent_task_id:
-        return None
-    now = farmctl.utc_now()
-    with farmctl.connect(root) as conn:
-        summary = conn.execute(
-            """
-            SELECT COUNT(*) AS total,
-                   SUM(CASE WHEN status='done' OR status='failed' THEN 1 ELSE 0 END) AS finished
-            FROM work_items
-            WHERE parent_task_id=?
-            """,
-            (parent_task_id,),
-        ).fetchone()
-        if not summary or int(summary["total"] or 0) == 0 or summary["total"] != summary["finished"]:
-            return None
-        parent = conn.execute("SELECT * FROM tasks WHERE id=?", (parent_task_id,)).fetchone()
-        if not parent or parent["status"] == "done":
-            return None
-        wis = conn.execute("SELECT * FROM work_items WHERE parent_task_id=?", (parent_task_id,)).fetchall()
-        phase = _phase_from_task_kind(parent["kind"])
-        pass_symbols = [w["symbol"] for w in wis if w["verdict"] == "PASS"]
-        p2_profit_skipped: list[dict[str, Any]] = []
-        if phase == "P2":
-            surviving, p2_profit_skipped = farmctl._filter_p2_profitable_symbols(conn, parent_task_id, pass_symbols)
-        else:
-            surviving = pass_symbols
-        strategy_fail_count = sum(
-            1 for w in wis if w["verdict"] in {"FAIL", "ZERO_TRADES", "MIN_TRADES_NOT_MET"}
-        )
-        infra_fail_count = sum(
-            1 for w in wis if w["verdict"] in {"INFRA_FAIL", "INVALID", "WAITING_INPUT", "PENDING_RUNNER"}
-        )
-        verdict = (
-            "PASS"
-            if surviving
-            else ("INFRA_FAIL" if infra_fail_count > 0 and strategy_fail_count == 0 else "STRATEGY_FAIL")
-        )
-        classification: dict[str, Any] = {
-            "verdict": verdict,
-            "surviving_symbols": surviving,
-            "counts_by_verdict": {
-                v: sum(1 for w in wis if w["verdict"] == v)
-                for v in ("PASS", "FAIL", "ZERO_TRADES", "MIN_TRADES_NOT_MET", "INVALID", "INFRA_FAIL")
-            },
-            "source": "terminal_worker_aggregate",
-        }
-        if p2_profit_skipped:
-            classification["p2_p3_profit_filter_skipped"] = p2_profit_skipped
-        parent_payload = _json_loads(parent["payload_json"])
-        parent_payload["classification"] = classification
-        parent_payload["completed_at_iso"] = now
-        conn.execute(
-            "UPDATE tasks SET status='done', payload_json=?, updated_at=? WHERE id=?",
-            (json.dumps(parent_payload, sort_keys=True), now, parent_task_id),
-        )
-        conn.commit()
-
-    auto_next = None
-    if verdict == "PASS":
-        next_map = {"P2": "P3", "P3": "P3.5", "P3.5": "P4"}
-        next_phase = next_map.get(phase)
-        if next_phase and next_phase in farmctl.SUPPORTED_BACKTEST_PHASES:
-            npp_kind = next_phase.lower().replace(".", "")
-            with farmctl.connect(root) as conn:
-                existing = conn.execute(
-                    "SELECT id FROM tasks WHERE kind=? AND payload_json LIKE ?",
-                    (f"backtest_{npp_kind}", f"%\"ea_id\": \"{parent_payload.get('ea_id')}\"%"),
-                ).fetchone()
-            if not existing:
-                enq = farmctl.enqueue_backtest(root, parent_task_id, next_phase)
-                if enq.get("enqueued"):
-                    auto_next = {
-                        "phase": next_phase,
-                        "task_id": enq.get("task_id"),
-                        "work_items_created": len(enq.get("work_items_created", [])),
-                    }
-    return {
-        "parent_task_id": parent_task_id,
-        "phase": phase,
-        "verdict": verdict,
-        "surviving_symbols": surviving,
-        "auto_next": auto_next,
-    }
+    return farmctl.aggregate_finished_parent_cas(
+        root,
+        parent_task_id,
+        source="terminal_worker_aggregate",
+    )
 
 
 def _work_item_preflight_failure(item: sqlite3.Row) -> dict[str, Any] | None:
@@ -1249,6 +2637,7 @@ _STALE_PREFLIGHT_PAYLOAD_KEYS = (
     "repair_handler",
     "repair_note",
     "report_root",
+    "phase_evidence_path",
     "pid",
     "started_at_iso",
     "log_path",
@@ -1491,6 +2880,7 @@ def _monitor_spawned_work_item(
     _lb_iter = 0
     _lb_sizes: dict = {}
     _lb_bomb: tuple | None = None
+    post_exit_watchdog: dict[str, Any] | None = None
     child_alive = True
     terminal_alive_after_child_exit = False
     while time.monotonic() < deadline:
@@ -1513,6 +2903,12 @@ def _monitor_spawned_work_item(
                 **ownership,
             }
         if _smoke_terminal_exit_stalled(item, payload):
+            post_exit_watchdog = {
+                "post_exit_watchdog_killed": True,
+                "post_exit_watchdog_killed_at_utc": farmctl.utc_now(),
+                "post_exit_watchdog_grace_seconds": SMOKE_TERMINAL_EXIT_GRACE_SECONDS,
+                "post_exit_watchdog_reason": "terminal_exit_without_summary_after_handoff_grace",
+            }
             farmctl._stop_pid_tree(pid)
             _stop_terminal_slot_for_release(root, terminal)
             break
@@ -1616,7 +3012,11 @@ def _monitor_spawned_work_item(
     ran_seconds = time.monotonic() - spawn_started
     child_alive = farmctl._pid_tree_exists(pid)
     terminal_alive_after_child_exit = (not child_alive) and _terminal_slot_running(root, terminal)
-    if child_alive or terminal_alive_after_child_exit:
+    if post_exit_watchdog is not None:
+        # The wrapper was explicitly killed by this worker; its real return code
+        # is unknown and must never be rewritten as success.
+        exit_code = None
+    elif child_alive or terminal_alive_after_child_exit:
         # Timed out - kill the wrapper and the detached terminal slot, then
         # treat as no-result. MT5 can outlive run_smoke.ps1; stopping only the
         # parent can leave the tester writing a late summary after the DB row
@@ -1666,7 +3066,32 @@ def _monitor_spawned_work_item(
         # Child exited on its own after a plausible runtime, or this worker adopted
         # an already-running child whose runtime began before adoption.
         exit_code = 0
-    return {"action": "finished", "item_id": item["id"], **_finish_work_item(root, item["id"], exit_code)}
+    try:
+        _verify_and_record_staged_ex5(payload)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        with farmctl.connect(root) as conn:
+            row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
+        if row is None:
+            return {"action": "staged_ex5_post_run_failed", "item_id": item["id"], "reason": str(exc)}
+        return {
+            "action": "staged_ex5_post_run_failed",
+            "item_id": item["id"],
+            **_fail_work_item_preflight(
+                root,
+                row,
+                {"reason": "staged_ex5_post_run_sha256_mismatch", "detail": str(exc)},
+            ),
+        }
+    if post_exit_watchdog is None:
+        finish_result = _finish_work_item(root, item["id"], exit_code)
+    else:
+        finish_result = _finish_work_item(
+            root,
+            item["id"],
+            exit_code,
+            runtime_payload_updates=post_exit_watchdog,
+        )
+    return {"action": "finished", "item_id": item["id"], **finish_result}
 
 
 def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_seconds: int) -> dict[str, Any]:
@@ -1733,13 +3158,62 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             timeout_seconds,
             adopted=True,
         )
+    # This early read avoids staging against a known-bad bundle and may reuse the
+    # stat-bound claim cache. The shared spawn boundary below always re-reads
+    # uncached immediately before subprocess creation.
+    calendar_preflight = farmctl._news_calendar_preflight(use_cache=True)
+    if not calendar_preflight.get("ok"):
+        return {
+            "action": "calendar_preflight_deferred",
+            "item_id": item["id"],
+            **_defer_news_calendar_preflight(
+                root,
+                row,
+                terminal,
+                calendar_preflight,
+            ),
+        }
     # Serialize the terminal64 DLL-init window across workers to kill the 0xC0000142
     # launch_fault storm that hits when many terminals launch at once (TTL leaky
     # semaphore, fail-open — see LAUNCH_GATE_* and _acquire_launch_slot).
+    try:
+        staging = _prepare_staged_ex5(row, terminal)
+    except (OSError, ValueError) as exc:
+        return {
+            "action": "staged_ex5_preflight_failed",
+            "item_id": item["id"],
+            **_fail_work_item_preflight(
+                root,
+                row,
+                {"reason": "staged_ex5_preflight_failed", "detail": str(exc)},
+            ),
+        }
+    if staging:
+        existing_payload["staged_ex5"] = staging
+        with farmctl.connect(root) as conn:
+            conn.execute(
+                "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='active'",
+                (json.dumps(existing_payload, sort_keys=True), farmctl.utc_now(), item["id"]),
+            )
+            conn.commit()
+        row = dict(row)
+        row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
     _acquire_launch_slot(terminal)
     spawn = farmctl._spawn_work_item_runner(root, row, terminal)
     now = farmctl.utc_now()
     if not spawn.get("spawned"):
+        if spawn.get("calendar_preflight_blocked"):
+            calendar_preflight = spawn.get("news_calendar_preflight") or {}
+            return {
+                "action": "calendar_preflight_deferred",
+                "item_id": item["id"],
+                **_defer_news_calendar_preflight(
+                    root,
+                    row,
+                    terminal,
+                    calendar_preflight,
+                ),
+            }
         if spawn.get("pending_runner"):
             payload = _json_loads(row["payload_json"])
             payload.update({
@@ -1796,20 +3270,36 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
                 "reason": spawn.get("reason"),
                 "aggregate": _aggregate_finished_parent(root, row["parent_task_id"]),
             }
-        with farmctl.connect(root) as conn:
-            conn.execute(
-                "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL, updated_at=? WHERE id=?",
-                (now, item["id"]),
-            )
-            conn.commit()
-        return {"action": "spawn_failed", "item_id": item["id"], "reason": spawn.get("reason")}
+        refusal_evidence = farmctl.record_work_item_spawn_refusal(
+            root,
+            row,
+            terminal,
+            spawn,
+            failed_at=now,
+        )
+        return {
+            "action": "spawn_failed",
+            "item_id": item["id"],
+            "reason": spawn.get("reason"),
+            "refusal_evidence": refusal_evidence,
+        }
 
     payload = _json_loads(row["payload_json"])
+    expected_from_date, expected_to_date = _resolved_evidence_window(spawn)
     payload.update({
         "started_at_iso": now,
         "pid": spawn["pid"],
+        "process_creation_key": spawn.get("process_creation_key"),
+        "process_image_path": spawn.get("process_image_path"),
+        "process_started_at_epoch": spawn.get("process_started_at_epoch"),
+        "job_object_assigned": spawn.get("job_object_assigned"),
+        "job_object_mode": spawn.get("job_object_mode"),
+        "job_object_registry_key": spawn.get("job_object_registry_key"),
+        "process_started_suspended": spawn.get("process_started_suspended"),
+        "primary_thread_resumed": spawn.get("primary_thread_resumed"),
         "log_path": spawn["log_path"],
         "report_root": spawn["report_root"],
+        "phase_evidence_path": spawn.get("phase_evidence_path"),
         "ea_dir_name": spawn["ea_dir_name"],
         "terminal": terminal,
         "expected_trades_per_year_per_symbol": spawn.get("expected_trades_per_year_per_symbol"),
@@ -1824,6 +3314,15 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         "p2_run_stage": spawn.get("p2_run_stage"),
         "from_date": spawn.get("from_date"),
         "to_date": spawn.get("to_date"),
+        "evidence_binding_required": spawn.get("evidence_binding_required"),
+        "expected_from_date": expected_from_date,
+        "expected_to_date": expected_to_date,
+        "expected_symbol": spawn.get("expected_symbol"),
+        "expected_period": spawn.get("expected_period"),
+        "expected_expert": spawn.get("expected_expert"),
+        "expected_ex5_sha256": spawn.get("expected_ex5_sha256"),
+        "expected_setfile_sha256": spawn.get("expected_setfile_sha256"),
+        "expected_mq5_sha256": spawn.get("expected_mq5_sha256"),
     })
     def _record_spawn() -> None:
         with farmctl.connect(root) as conn:
@@ -1847,12 +3346,16 @@ def _disk_free_gb(root: Path) -> float:
         return float("inf")
 
 
-def _free_ram_gb() -> float:
-    """Free physical RAM (GB) via the Win32 API (no psutil dependency — the SYSTEM
-    Python has none). Fail-open (inf) on any error so a measurement glitch can never
-    wedge the worker."""
+def _memory_headroom_gb() -> tuple[float, float]:
+    """Return (free physical RAM, free system commit) in GB via Win32.
+
+    ``ullAvailPageFile`` is Windows' currently available commit, despite the
+    historic field name. The SYSTEM Python has no psutil dependency. Physical
+    RAM remains fail-open on probe error; commit returns NaN so admission pauses
+    and retries instead of bypassing the crash-prevention gate.
+    """
     if sys.platform != "win32":
-        return float("inf")
+        return float("inf"), float("inf")
     try:
         import ctypes
 
@@ -1872,10 +3375,21 @@ def _free_ram_gb() -> float:
         stat = _MEMSTATEX()
         stat.dwLength = ctypes.sizeof(_MEMSTATEX)
         if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
-            return float("inf")
-        return stat.ullAvailPhys / (1024 ** 3)
+            return float("inf"), float("nan")
+        gib = 1024 ** 3
+        return stat.ullAvailPhys / gib, stat.ullAvailPageFile / gib
     except Exception:
-        return float("inf")
+        return float("inf"), float("nan")
+
+
+def _free_ram_gb() -> float:
+    """Free physical RAM in GB; fail-open on probe error."""
+    return _memory_headroom_gb()[0]
+
+
+def _commit_headroom_gb() -> float:
+    """Free system-commit headroom; NaN makes Windows admission pause on error."""
+    return _memory_headroom_gb()[1]
 
 
 def _trigger_disk_purge() -> None:
@@ -1895,6 +3409,14 @@ def _trigger_disk_purge() -> None:
 
 
 def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
+    """Run the resident production owner for this terminal's runner Jobs.
+
+    Each contained child Job handle lives in farmctl's in-process registry.
+    Keeping this daemon alive until the complete child tree exits is therefore
+    part of the containment contract; orderly worker exit intentionally closes
+    those handles and kills any still-running descendants.
+    """
+
     signal.signal(signal.SIGINT, _handle_stop)
     signal.signal(signal.SIGTERM, _handle_stop)
     released = release_stale_claims_for_terminal(root, terminal)
@@ -1920,6 +3442,55 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
             if claim.get("reason") == "sqlite_locked":
                 print(json.dumps({"event": "sqlite_locked", "terminal": terminal, "action": "claim_backoff"}), flush=True)
                 time.sleep(SQLITE_LOCK_BACKOFF_SECONDS + random.random())
+                continue
+            if claim.get("reason") == "news_calendar_preflight_failed":
+                print(
+                    json.dumps(
+                        {
+                            "event": "news_calendar_preflight_deferred",
+                            "terminal": terminal,
+                            "status": claim.get("calendar_status"),
+                            "principal": claim.get("principal"),
+                            "common_dir": claim.get("common_dir"),
+                            "news_calendar_preflight": claim.get(
+                                "news_calendar_preflight"
+                            ),
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
+                )
+                time.sleep(NEWS_CALENDAR_GUARD_SLEEP_SECONDS)
+                continue
+            if claim.get("reason") in {"commit_probe_failed", "commit_headroom_low"}:
+                print(json.dumps({
+                    "event": (
+                        "commit_probe_failed_pause"
+                        if claim.get("reason") == "commit_probe_failed"
+                        else "commit_headroom_low_pause"
+                    ),
+                    "terminal": terminal,
+                    "commit_headroom_gb": claim.get("commit_headroom_gb"),
+                    "commit_reserved_gb": claim.get("commit_reserved_gb"),
+                    "effective_commit_headroom_gb": claim.get("effective_commit_headroom_gb"),
+                    "commit_reservation_count": claim.get("commit_reservation_count"),
+                    # Per-claim expected peak / measured usage / residual: without
+                    # it a starving fleet looks identical to a busy one (2026-07-26).
+                    "commit_reservation_detail": claim.get("commit_reservation_detail"),
+                    "threshold_gb": claim.get("threshold_gb"),
+                }), flush=True)
+                time.sleep(COMMIT_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
+                continue
+            if claim.get("reason") in {
+                "multisymbol_registry_unavailable",
+                "watchdog_reset_pending",
+            }:
+                print(json.dumps({
+                    "event": f"{claim.get('reason')}_pause",
+                    "terminal": terminal,
+                    "error": claim.get("error"),
+                }), flush=True)
+                time.sleep(POLL_SLEEP_SECONDS + random.uniform(0, 5))
                 continue
             time.sleep(POLL_SLEEP_SECONDS)
             continue
@@ -1957,18 +3528,89 @@ def _acquire_instance_mutex(terminal: str):
     return handle
 
 
+def _install_exit_tracer(terminal: str) -> None:
+    """Log every *orderly* exit path so a hard kill is identifiable by silence.
+
+    Workers have been vanishing with a resource-pause event as their last line
+    and an empty stderr (2026-07-26: T4/T9/T10 17:45, T6/T10 18:29, T2/T8/T10
+    18:40, T4/T7 19:10). No traceback means it is not an unhandled exception,
+    but "no log line either" left clean-exit and external termination
+    indistinguishable. Windows runs neither atexit handlers nor signal handlers
+    on TerminateProcess, so from now on:
+
+        worker_exit present  -> the worker chose to stop (or was signalled)
+        worker_exit absent   -> something killed the process outright
+
+    which is the discriminator the next investigation needs.
+    """
+    def _emit(reason: str, detail: dict[str, Any] | None = None) -> None:
+        try:
+            print(json.dumps({
+                "event": "worker_exit",
+                "terminal": terminal,
+                "reason": reason,
+                "pid": os.getpid(),
+                "free_ram_gb": round(_free_ram_gb(), 1),
+                **(detail or {}),
+            }, sort_keys=True), flush=True)
+        except Exception:
+            pass
+
+    atexit.register(_emit, "atexit")
+    for signal_name in ("SIGTERM", "SIGINT", "SIGBREAK"):
+        handler_signal = getattr(signal, signal_name, None)
+        if handler_signal is None:
+            continue
+        try:
+            signal.signal(
+                handler_signal,
+                lambda signum, frame, _n=signal_name: (
+                    _emit("signal", {"signal": _n}),
+                    sys.exit(128),
+                ),
+            )
+        except (ValueError, OSError):
+            pass
+
+
 def main(argv: list[str] | None = None) -> int:
+    # DL-065: the terminal worker is deterministic factory machinery (trusted
+    # base), not a spawned agent. Without this, a spawn chain that does not
+    # export QM_AGENT_ID leaves the worker as 'unknown' and every post-PASS
+    # cascade enqueue dies fail-closed in agent_scopes.guard (fleet churn
+    # 2026-08-01). setdefault keeps explicit spawned identities intact.
+    os.environ.setdefault("QM_AGENT_ID", "controller")
     parser = argparse.ArgumentParser()
     parser.add_argument("--terminal", required=True, choices=farmctl.MT5_TERMINALS)
     parser.add_argument("--root", type=Path, default=farmctl.DEFAULT_ROOT)
     parser.add_argument("--timeout-minutes", type=float, default=90.0)
+    parser.add_argument(
+        "--work-item-id",
+        help="run exactly this pending work item once; requires FACTORY_OFF.flag",
+    )
     args = parser.parse_args(argv)
     mutex = _acquire_instance_mutex(args.terminal)
     if mutex is False:
         print(json.dumps({"event": "duplicate_instance_exit", "terminal": args.terminal}))
         return 0
     faulthandler.enable()
+    _install_exit_tracer(args.terminal)
+    print(json.dumps({
+        "event": "worker_start",
+        "terminal": args.terminal,
+        "pid": os.getpid(),
+    }, sort_keys=True), flush=True)
     _start_stalldump_watcher(args.terminal)
+    if args.work_item_id:
+        claim = claim_specific_atomic(args.root, args.terminal, args.work_item_id)
+        if not claim.get("claimed"):
+            print(json.dumps({"event": "target_claim_refused", "terminal": args.terminal, **claim}, sort_keys=True))
+            return 2
+        item = claim["item"]
+        print(json.dumps({"event": "target_claimed", "terminal": args.terminal, "item_id": item["id"]}), flush=True)
+        result = _run_claimed_item(args.root, item, args.terminal, int(args.timeout_minutes * 60))
+        print(json.dumps({"event": "target_run_result", "terminal": args.terminal, **result}, sort_keys=True), flush=True)
+        return 0 if result.get("status") == "done" and result.get("verdict") == "PASS" else 1
     return run_loop(args.root, args.terminal, int(args.timeout_minutes * 60))
 
 

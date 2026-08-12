@@ -27,7 +27,9 @@ Usage: python sweep_enqueue_built_eas.py [--apply] [--queue-ceiling N] [--ea QM5
 Default is dry-run. Evidence JSON written either way.
 """
 import csv
+import atexit
 import json
+import os
 import re
 import sqlite3
 import sys
@@ -35,17 +37,61 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
-EAS = Path(r"C:\QM\repo\framework\EAs")
-REGISTRY = Path(r"C:\QM\repo\framework\registry\ea_id_registry.csv")
-EVIDENCE = Path(r"D:\QM\reports\state\claude_sweep_enqueue_2026-06-10.json")
+try:
+    from factory_mutation_lock import FactoryMutationLock
+except ModuleNotFoundError:
+    from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+
+FARM_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
+REPO_ROOT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
+REPORT_ROOT = Path(os.environ.get("QM_REPORT_ROOT", r"D:\QM\reports"))
+DB = FARM_ROOT / "state" / "farm_state.sqlite"
+EAS = REPO_ROOT / "framework" / "EAs"
+REGISTRY = REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv"
+EVIDENCE = REPORT_ROOT / "state" / "claude_sweep_enqueue_2026-06-10.json"
 SETFILE_RE = re.compile(r"_([A-Z][A-Z0-9.]{2,})_([A-Z0-9]+)_backtest\.set$")
 PRIORITY_EAS = {"QM5_1049", "QM5_1047", "QM5_1085", "QM5_1158"}
-_FACTORY_OFF_FLAG = Path(r"D:\QM\strategy_farm\state\FACTORY_OFF.flag")
+_FACTORY_OFF_FLAG = FARM_ROOT / "state" / "FACTORY_OFF.flag"
+_FACTORY_MUTATION_LOCK = FARM_ROOT / "state" / "FACTORY_MUTATION.lock"
 if _FACTORY_OFF_FLAG.exists():
     print(json.dumps({"skipped": "FACTORY_OFF.flag set", "flag": str(_FACTORY_OFF_FLAG)}))
     raise SystemExit(0)
 APPLY = "--apply" in sys.argv
+
+
+def _release_mutation_lock() -> None:
+    global _MUTATION_LOCK
+    if _MUTATION_LOCK is None:
+        return
+    _MUTATION_LOCK.__exit__(None, None, None)
+    _MUTATION_LOCK = None
+
+
+def _acquire_mutation_lock() -> FactoryMutationLock | None:
+    lock = FactoryMutationLock(
+        _FACTORY_MUTATION_LOCK,
+        owner="sweep_enqueue_built_eas",
+    )
+    try:
+        lock.__enter__()
+    except RuntimeError:
+        return None
+    return lock
+
+
+_MUTATION_LOCK: FactoryMutationLock | None = None
+if APPLY:
+    _MUTATION_LOCK = _acquire_mutation_lock()
+    if _MUTATION_LOCK is None:
+        print(json.dumps({
+            "skipped": "factory mutation lock busy",
+            "lock": str(_FACTORY_MUTATION_LOCK),
+        }))
+        raise SystemExit(0)
+    atexit.register(_release_mutation_lock)
+    if _FACTORY_OFF_FLAG.exists():
+        print(json.dumps({"skipped": "FACTORY_OFF.flag set after lock", "flag": str(_FACTORY_OFF_FLAG)}))
+        raise SystemExit(0)
 QUEUE_CEILING = 7000
 if "--queue-ceiling" in sys.argv:
     QUEUE_CEILING = int(sys.argv[sys.argv.index("--queue-ceiling") + 1])
@@ -78,9 +124,51 @@ if "--symbols" in sys.argv:
             TARGET_SYMBOLS.add(symbol)
 NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
 
-sys.path.insert(0, r"C:\QM\repo\tools\strategy_farm")
+sys.path.insert(0, str(REPO_ROOT / "tools" / "strategy_farm"))
 import farmctl  # staging helpers (_stage_q02_setfiles, _record_q02_deferral)
+from q08_recovery_lineage import build_q08_recovery_lineage
 REQUEUE_EXCLUDED_EAS = farmctl.load_requeue_excluded_eas()
+
+# 2026-07-19 (Q08 INFRA_FAIL storm RCA): a deterministic setgen defect in the
+# baseline setfile (zero strategy params, empty value, or a noncanonical
+# duplicate shape) makes the Q08.5 neighborhood runner raise a hard ValueError
+# on EVERY run. Canonical markerless ablation base+override blocks are accepted
+# with MT5 last-value-wins semantics. Pre-validate with the runner's OWN parser
+# (single source of truth) and refuse only the doomed re-enqueue.
+# framework/scripts has no __init__.py -> module import via sys.path, appended
+# (not inserted) so it can never shadow tools/strategy_farm modules.
+try:
+    sys.path.append(str(REPO_ROOT / "framework" / "scripts"))
+    from q08_5_neighborhood_runner import (
+        parse_setfile_assignments as _q08_parse_setfile,
+    )
+except Exception:  # import must NEVER break the sweep
+    _q08_parse_setfile = None
+
+
+def _q08_setfile_deterministic_defect(setfile_path):
+    """Return a defect token if this setfile will deterministically fail Q08.5.
+
+    parse_setfile_assignments raises on duplicate / empty-value strategy params
+    and returns {} when the strategy block has no non-framework params (the
+    `card_defaults_source=not_found` case). None => not a known deterministic
+    setgen defect; allow the retry (transient infra, or a repaired setfile)."""
+    if _q08_parse_setfile is None or not setfile_path:
+        return None
+    try:
+        assignments = _q08_parse_setfile(Path(setfile_path))
+    except ValueError as exc:
+        msg = str(exc).lower()
+        if "duplicate strategy parameter" in msg:
+            return "duplicate_strategy_params"
+        if "empty strategy parameter" in msg:
+            return "empty_strategy_value"
+        return "setfile_parse_error"
+    except OSError:
+        return None
+    return "empty_strategy_params" if not assignments else None
+
+
 try:
     import strategy_priority as _sp
     _SCORES = _sp.compute_scores()
@@ -125,6 +213,7 @@ report = {"generated_at": NOW, "apply": APPLY,
           "wave_budget": budget,
           "part1_never_tested": {"enqueued": [], "skipped": []},
           "part2_stranded": {"enqueued": [], "skipped": []}}
+deferred_records = []
 
 def pending_active_exists(ea_id, symbol, phase):
     return cur.execute(
@@ -132,7 +221,15 @@ def pending_active_exists(ea_id, symbol, phase):
         "AND status IN ('pending','active') LIMIT 1", (ea_id, symbol, phase)
     ).fetchone() is not None
 
-def insert_wi(phase, ea_id, symbol, setfile, payload):
+def insert_wi(
+    phase,
+    ea_id,
+    symbol,
+    setfile,
+    payload,
+    *,
+    allow_logical_basket=False,
+):
     if phase in {"Q02", "P2"} and farmctl.is_q02_requeue_excluded(ea_id, REQUEUE_EXCLUDED_EAS):
         report.setdefault("requeue_excluded_refused", []).append({
             "ea_id": ea_id,
@@ -140,22 +237,26 @@ def insert_wi(phase, ea_id, symbol, setfile, payload):
             "symbol": symbol,
             "setfile": Path(setfile).name,
         })
-        return False
+        return None
     # OWNER directive 2026-06-20: only ever enqueue .DWX custom symbols. Bare
     # broker symbols have no local history -> the tester fails history sync with
     # "file opening or reading error [32]" and the item INFRA_FAILs without ever
     # producing a result. Refuse non-.DWX outright.
-    if not str(symbol).upper().endswith(".DWX"):
+    if (
+        not str(symbol).upper().endswith(".DWX")
+        and not allow_logical_basket
+    ):
         report.setdefault("non_dwx_refused", []).append({"ea_id": ea_id, "symbol": symbol})
-        return False
+        return None
+    work_item_id = str(uuid.uuid4())
     if APPLY:
         cur.execute(
             "INSERT INTO work_items (id, kind, phase, ea_id, symbol, setfile_path, "
             "status, attempt_count, payload_json, created_at, updated_at) "
             "VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, ?, ?, ?)",
-            (str(uuid.uuid4()), phase, ea_id, symbol, str(setfile),
+            (work_item_id, phase, ea_id, symbol, str(setfile),
              json.dumps(payload), NOW, NOW))
-    return True
+    return work_item_id
 
 # ---------- Part 1: built, never tested ----------
 ea_dirs = {}
@@ -203,27 +304,122 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
         report["part1_never_tested"]["skipped"].append(
             {"ea_id": ea_id, "reason": "no_setfiles", "dir": pick.name})
         continue
-    parsed = []
-    for sf in sets:
-        m = SETFILE_RE.search(sf.name)
-        if not m:
+    manifest_path = pick / "basket_manifest.json"
+    basket_manifest = None
+    if manifest_path.exists():
+        try:
+            basket_manifest = json.loads(
+                manifest_path.read_text(encoding="utf-8-sig")
+            )
+        except (OSError, json.JSONDecodeError):
+            basket_manifest = None
+        required_manifest_fields = (
+            "logical_symbol",
+            "host_symbol",
+            "host_timeframe",
+        )
+        if (
+            not isinstance(basket_manifest, dict)
+            or any(
+                not str(basket_manifest.get(field) or "").strip()
+                for field in required_manifest_fields
+            )
+        ):
             report["part1_never_tested"]["skipped"].append(
-                {"ea_id": ea_id, "reason": "setfile_parse_failed", "setfile": sf.name})
+                {
+                    "ea_id": ea_id,
+                    "reason": "basket_manifest_invalid",
+                    "manifest": str(manifest_path),
+                })
             continue
-        symbol = m.group(1)
-        reason = farmctl._q02_symbol_skip_reason(symbol, allow_logical_basket=True)
+        basket_manifest["manifest_path"] = str(manifest_path.resolve())
+    parsed = []
+    if basket_manifest:
+        logical_symbol = str(basket_manifest["logical_symbol"])
+        host_timeframe = str(basket_manifest["host_timeframe"])
+        expected_logical_path = (
+            pick
+            / "sets"
+            / f"{pick.name}_{logical_symbol}_{host_timeframe}_backtest.set"
+        )
+        logical_matches = (
+            [expected_logical_path]
+            if expected_logical_path.exists()
+            else sorted(
+                (pick / "sets").glob(
+                    f"*_{logical_symbol}_{host_timeframe}_backtest.set"
+                )
+            )
+        )
+        if not logical_matches:
+            report["part1_never_tested"]["skipped"].append(
+                {
+                    "ea_id": ea_id,
+                    "reason": "basket_manifest_missing_logical_setfile",
+                    "dir": pick.name,
+                })
+            continue
+        logical_path = logical_matches[0].resolve()
+        payload_extra = farmctl._basket_q02_payload(basket_manifest)
+        parsed.append((
+            logical_path,
+            logical_symbol,
+            host_timeframe,
+            payload_extra,
+        ))
+        for sf in sets:
+            if sf.resolve() != logical_path.resolve():
+                report["part1_never_tested"]["skipped"].append(
+                    {
+                        "ea_id": ea_id,
+                        "reason": "basket_manifest_logical_setfile_preferred",
+                        "setfile": sf.name,
+                    })
+    else:
+        for sf in sets:
+            m = SETFILE_RE.search(sf.name)
+            if not m:
+                report["part1_never_tested"]["skipped"].append(
+                    {"ea_id": ea_id, "reason": "setfile_parse_failed", "setfile": sf.name})
+                continue
+            symbol = m.group(1)
+            reason = farmctl._q02_symbol_skip_reason(symbol)
+            if reason:
+                report["part1_never_tested"]["skipped"].append(
+                    {"ea_id": ea_id, "symbol": symbol, "reason": reason, "setfile": sf.name})
+                continue
+            parsed.append((sf, symbol, m.group(2), {}))
+    eligible_parsed = []
+    for sf, symbol, tf, payload_extra in parsed:
+        reason = farmctl._q02_symbol_skip_reason(
+            symbol,
+            allow_logical_basket=bool(basket_manifest),
+        )
         if reason:
             report["part1_never_tested"]["skipped"].append(
                 {"ea_id": ea_id, "symbol": symbol, "reason": reason, "setfile": sf.name})
             continue
-        parsed.append((sf, symbol, m.group(2)))
+        eligible_parsed.append((sf, symbol, tf, payload_extra))
+    parsed = eligible_parsed
     stage1, deferred = farmctl._stage_q02_setfiles(parsed)
+    # Resolve once before any stage-1 row is inserted. Otherwise the first
+    # insert would make later symbols in the same fresh-EA cohort look like
+    # non-first Q02s and only part of the cohort would receive the marker.
+    priority_track = (
+        ea_id in PRIORITY_EAS
+        or farmctl._q02_priority_track_required(con, REPO_ROOT, ea_id)
+    )
     if deferred and APPLY:
-        farmctl._record_q02_deferral(ea_id, deferred, "sweep_enqueue")
-    for _sf, _sym, _tf in deferred:
+        # Defer the sidecar write until the same final interlock check as the DB
+        # commit.  Otherwise OFF racing this sweep could roll back SQLite while
+        # leaving a promoted/deferred file mutation behind.
+        deferred_records.append((ea_id, deferred, "sweep_enqueue"))
+    for deferred_item in deferred:
+        _sf, _sym, _tf = deferred_item[:3]
         report["part1_never_tested"]["skipped"].append(
             {"ea_id": ea_id, "symbol": _sym, "reason": "staged_deferred_symbol"})
-    for sf, symbol, tf in stage1:
+    for stage1_item in stage1:
+        sf, symbol, tf, payload_extra = stage1_item
         if TARGET_SYMBOLS and symbol not in TARGET_SYMBOLS:
             report["part1_never_tested"]["skipped"].append(
                 {"ea_id": ea_id, "symbol": symbol, "reason": "target_symbol_filter"})
@@ -235,14 +431,25 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
         payload = {"host_symbol": symbol, "host_timeframe": tf,
                    "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
                    "enqueued_at_utc": NOW}
-        if ea_id in PRIORITY_EAS:
+        payload.update(payload_extra)
+        # Keep this legacy sweep aligned with every other Q02 creator. Basket
+        # rows are especially easy to strand because their logical symbol does
+        # not receive an asset-class tie-break from the physical host.
+        if priority_track:
             payload["priority_track"] = True
-        if not insert_wi("Q02", ea_id, symbol, sf, payload):
+        if not insert_wi(
+            "Q02",
+            ea_id,
+            symbol,
+            sf,
+            payload,
+            allow_logical_basket=bool(payload_extra.get("basket_manifest")),
+        ):
             continue
         budget_left -= 1
         report["part1_never_tested"]["enqueued"].append(
             {"ea_id": ea_id, "symbol": symbol, "setfile": sf.name,
-             "priority_track": ea_id in PRIORITY_EAS})
+             "priority_track": priority_track})
 
 # ---------- Part 2: stranded INFRA_FAIL at Q02/Q03/Q08 ----------
 part2_count = 0
@@ -314,6 +521,17 @@ for phase in ("Q02", "Q03", "Q08"):
                 {"ea_id": ea_id, "phase": phase, "symbol": symbol,
                  "reason": "setfile_missing"})
             continue
+        # Q08.5 neighborhood is the only Q08 sub-gate that hard-fails on setfile
+        # structure; scope the deterministic-defect skip to Q08 so Q02/Q03 keep
+        # their own retry semantics.
+        if phase == "Q08":
+            defect = _q08_setfile_deterministic_defect(setfile)
+            if defect:
+                report["part2_stranded"]["skipped"].append(
+                    {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                     "reason": "deterministic_setgen_defect", "defect": defect,
+                     "setfile": Path(setfile).name})
+                continue
         if pending_active_exists(ea_id, symbol, phase):
             report["part2_stranded"]["skipped"].append(
                 {"ea_id": ea_id, "phase": phase, "symbol": symbol,
@@ -327,11 +545,30 @@ for phase in ("Q02", "Q03", "Q08"):
         payload = {"host_symbol": symbol,
                    "enqueued_by": "claude_sweep_enqueue_2026-06-10.stranded_infra_fail",
                    "enqueued_at_utc": NOW}
-        if not insert_wi(phase, ea_id, symbol, setfile, payload):
+        if phase == "Q08":
+            recovery_lineage, lineage_error = build_q08_recovery_lineage(
+                con,
+                REPORT_ROOT,
+                ea_id=ea_id,
+                symbol=symbol,
+                setfile_path=setfile,
+            )
+            if lineage_error:
+                report["part2_stranded"]["skipped"].append(
+                    {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                     "reason": "q08_recovery_lineage_invalid",
+                     "detail": lineage_error,
+                     "setfile": Path(setfile).name})
+                continue
+            if recovery_lineage is not None:
+                payload["q08_recovery_lineage"] = recovery_lineage
+        new_work_item_id = insert_wi(phase, ea_id, symbol, setfile, payload)
+        if not new_work_item_id:
             continue
         report["part2_stranded"]["enqueued"].append(
             {"ea_id": ea_id, "phase": phase, "symbol": symbol,
-             "setfile": Path(setfile).name})
+             "setfile": Path(setfile).name,
+             "work_item_id": new_work_item_id})
         part2_count += 1
         if part2_count >= MAX_PART2_PER_RUN:
             report["part2_stranded"]["rate_limited"] = True
@@ -345,6 +582,7 @@ try:
                       if deferred_file.exists() else {})
 except (json.JSONDecodeError, OSError):
     deferred_state = {}
+deferred_state_present = bool(deferred_state)
 if deferred_state:
     pending_q = cur.execute(
         "SELECT COUNT(*) FROM work_items WHERE status='pending'").fetchone()[0]
@@ -384,6 +622,12 @@ if deferred_state:
                        "enqueued_by": "sweep_enqueue.deferred_promotion",
                        "promotion_reason": "stage1_pass" if has_pass else "spare_capacity",
                        "enqueued_at_utc": NOW}
+            if entry.get("priority_track") is True:
+                payload["priority_track"] = True
+            if entry.get("build_task_id"):
+                payload["build_task_id"] = entry["build_task_id"]
+            if entry.get("q02_cohort_size"):
+                payload["q02_cohort_size"] = entry["q02_cohort_size"]
             if not insert_wi("Q02", ea_id, sf["symbol"], sf["setfile"], payload):
                 continue
             report["part3_deferred_promotion"]["promoted"].append(
@@ -391,12 +635,23 @@ if deferred_state:
                  "reason": payload["promotion_reason"]})
         if APPLY:
             deferred_state.pop(ea_id, None)
-    if APPLY:
+if APPLY:
+    # Factory_OFF writes the flag before stopping this task and waits for the
+    # global mutation lock.  If the flag arrived during the read/plan phase,
+    # roll back every pending SQLite insert and leave sidecars untouched.
+    if _FACTORY_OFF_FLAG.exists():
+        con.rollback()
+        print(json.dumps({
+            "skipped": "FACTORY_OFF.flag set before commit",
+            "flag": str(_FACTORY_OFF_FLAG),
+        }))
+        raise SystemExit(0)
+    con.commit()
+    for ea_id, deferred, source in deferred_records:
+        farmctl._record_q02_deferral(ea_id, deferred, source)
+    if deferred_state_present:
         deferred_file.write_text(json.dumps(deferred_state, indent=1),
                                  encoding="utf-8")
-
-if APPLY:
-    con.commit()
 EVIDENCE.write_text(json.dumps(report, indent=1), encoding="utf-8")
 
 p1, p2 = report["part1_never_tested"], report["part2_stranded"]

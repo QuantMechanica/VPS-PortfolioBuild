@@ -1,0 +1,113 @@
+{
+  "schema_version": "qm.factory-restart-owner-preparation-decision/v1",
+  "decision_id": "FACTORY_PREPARATION_20260802_TEN_WORKER_ZERO_HOLD",
+  "status": "APPROVED",
+  "authority": "OWNER",
+  "recorded_at_utc": "2026-08-02T09:05:00Z",
+  "authorized_at_utc": "2026-08-02T07:47:00Z",
+  "authorization_expires_at_utc": "2026-08-03T07:47:00Z",
+  "decision_channel": "interactive_owner_chat_structured_prompt",
+  "authorized_by": "OWNER",
+  "decision_ref": "docs/ops/evidence/2026-08-02_factory_preparation_owner_decision.json",
+  "source_head_observed_before_implementation": "c7fbc7a2babb24c19344e279d7921af7b565942f",
+  "verbatim_owner_authorization": "Ja — Paket genehmigt: Ich genehmige das Aktivierungspaket: Factory_ON mit 10 Workern T1–T10, keine Hold-Releases, Task-Map-Restore wie vor OFF, Runtime-Decision-Erstellung autorisiert.",
+  "authorization_transcription_note": "Selected 2026-08-02 ~09:47 local via structured in-session prompt presenting exactly this package: (1) Factory_ON with 10 workers T1-T10 (T5 quarantine lifted, ratified 2026-07-31), (2) no restart-hold releases (zero open release-on-restart holds exist), (3) restore of the 21-task map exactly as before the 2026-08-02 OFF, (4) runtime-activation-decision creation with 24h validity. Transcribed by Claude; authorized_at is accurate to the minute.",
+  "external_residuals": {
+    "disposition": "REPAIR_NO_WAIVER",
+    "silent_rebinding_allowed": false,
+    "skip_xfail_or_assertion_weakening_allowed": false,
+    "governance_exit_contract_revision_authorized": false,
+    "required_exit": "ALL_FIVE_DECLARED_EXTERNAL_RESIDUAL_TESTS_PASS",
+    "tests": [
+      "tools/strategy_farm/tests/test_dxz_10939_repair_packet.py::test_real_spec_hash_bindings_pass",
+      "tools/strategy_farm/tests/test_dxz_12567_xau_repair_packet.py::test_spec_is_hash_bound_blocked_and_xau_not_xng",
+      "tools/strategy_farm/tests/test_execution_contract_lint.py::test_dxz23_registry_is_source_bound_and_structurally_clean",
+      "tools/strategy_farm/tests/test_execution_contract_lint.py::test_density_execution_contracts_are_source_and_runtime_binding_clean",
+      "tools/strategy_farm/tests/test_execution_contract_lint.py::test_20009_ftmo_news_calendar_is_exact_and_evidence_bound"
+    ],
+    "repair_scope": [
+      "VERSIONED_BINDING_AMENDMENTS_WITH_DRIFT_LEDGER",
+      "REPOSITORY_EXECUTION_CONTRACT_RECONCILIATION",
+      "HASH_BOUND_NEWS_CALENDAR_COMMON_COPY_RECONCILIATION"
+    ]
+  },
+  "restore_intent": {
+    "factory_off_flag_sha256": "908ec1ddbb79299d640c640dc908f5dbcf69da3310368ad93bf81fec448ba88e",
+    "task_enabled_before_map_approved_without_amendment": true,
+    "task_enabled_before": {
+      "QM_ClaudeParallel_RestoreOnReset": true,
+      "QM_CodexParallel_RestoreOnReset": true,
+      "QM_NewsCalendar_Refresh": true,
+      "QM_Public_Snapshot_Hourly": true,
+      "QM_Repo_Push": true,
+      "QM_StrategyFarm_AgyGovernor": true,
+      "QM_StrategyFarm_CodexFleetPacer": true,
+      "QM_StrategyFarm_FactoryRecycle_Daily": false,
+      "QM_StrategyFarm_HourlyMonitor_60min": true,
+      "QM_StrategyFarm_InboxCleanup_Daily": true,
+      "QM_StrategyFarm_MailboxSourceIntake_Daily": true,
+      "QM_StrategyFarm_PlausibilityScan": true,
+      "QM_StrategyFarm_QuotaGovernor": true,
+      "QM_StrategyFarm_REvalDrain_15min": true,
+      "QM_StrategyFarm_ReportsLogPurge_12h": true,
+      "QM_StrategyFarm_SourcingIntakeSweep": false,
+      "QM_StrategyFarm_SweepEnqueue_Hourly": true,
+      "QM_StrategyFarm_TesterCachePurge": true,
+      "QM_StrategyFarm_WorkerDedupe": true,
+      "QM_StrategyFarm_WorktreeClean_4h": true,
+      "QM_WorkItemLogPruner_Daily_0310": true
+    },
+    "manifest_creation_authorized_after_prerequisites": true,
+    "runtime_flag_upgrade_authorized": false,
+    "legacy_flag_upgrade_executed": false,
+    "factory_on_authorized": false
+  },
+  "worker_policy": {
+    "t5_quarantine_ratified": false,
+    "t5_quarantine_lifted": true,
+    "t5_reactivation_evidence": "docs/ops/evidence/2026-07-31_t5_reactivation.md",
+    "expected_worker_count": 10,
+    "expected_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ]
+  },
+  "restart_holds": {
+    "release_policy": "ONLY_AFTER_POST_START_HEALTH_GATE_PASS",
+    "authorized_release_count": 0,
+    "authorized_work_item_ids": [],
+    "non_releasing_hold_count": 16,
+    "all_other_holds_must_remain_active": true,
+    "release_executed": false,
+    "generation_note": "The seven July-2026 restart holds were released once on 2026-07-31T05:42:49Z (append-only consumption ledger, nonce f685ffd2...). Zero release-on-restart holds exist in this generation; the declared plan is the empty set. The activation's release step verifies zero active release-on-restart holds and burns the nonce with released_hold_count=0."
+  },
+  "mnt003": {
+    "authorization": "CLOSED_NOT_IN_SCOPE",
+    "closure_note": "MNT-003 apply executed and verified 2026-07-31 (~19:42Z); five task contracts on SYSTEM + run_in_console_session helper. No MNT-003 action is part of this preparation."
+  },
+  "explicit_exclusions": {
+    "factory_on": false,
+    "scheduled_task_mutation": false,
+    "factory_off_flag_mutation": false,
+    "hold_release_now": false,
+    "nonlisted_hold_release": false,
+    "process_or_terminal_start_stop": false,
+    "database_mutation": false,
+    "autotrading_toggle": false,
+    "t_live_mutation": false,
+    "live_or_ftmo_task_contract_apply": false,
+    "mnt007_wave_apply": false,
+    "ftmo_paid_challenge": false,
+    "paid_purchase_or_money_action": false,
+    "deployment": false,
+    "draft_pr_merge": false
+  }
+}

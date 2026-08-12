@@ -3,7 +3,6 @@ param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$RunAsUser = "",
     [string]$PythonExe = "python",
-    [bool]$IncludeGateEvaluator = $true,
     [switch]$WhatIf
 )
 
@@ -128,12 +127,6 @@ try {
         Register-TaskFromXml -TaskName $taskName -SourceXml $sourceXml -RenderedXml $renderedXml -RunAsUser $resolvedUser -PythonExe $resolvedPythonExe -WhatIf:$WhatIf.IsPresent
     }
 
-    if ($IncludeGateEvaluator) {
-        $gateTaskName = "QM_GateEvaluator_5min"
-        $gateSourceXml = Join-Path $taskXmlDir "$gateTaskName.xml"
-        $gateRenderedXml = Join-Path $tempDir "$gateTaskName.xml"
-        Register-TaskFromXml -TaskName $gateTaskName -SourceXml $gateSourceXml -RenderedXml $gateRenderedXml -RunAsUser $resolvedUser -PythonExe $resolvedPythonExe -WhatIf:$WhatIf.IsPresent
-    }
 }
 finally {
     Remove-Item -LiteralPath $tempDir -Recurse -Force -ErrorAction SilentlyContinue
@@ -141,9 +134,6 @@ finally {
 
 if (-not $WhatIf.IsPresent) {
     $taskNames = 1..10 | ForEach-Object { "QM_MT5_Worker_T$_" }
-    if ($IncludeGateEvaluator) {
-        $taskNames += "QM_GateEvaluator_5min"
-    }
     foreach ($taskName in $taskNames) {
         schtasks /Query /TN ("\\" + $taskName) /V /FO LIST
     }

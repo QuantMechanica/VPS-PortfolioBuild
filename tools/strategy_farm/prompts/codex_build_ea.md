@@ -84,17 +84,20 @@ setfiles via `gen_setfile.ps1` (see workflow step 9) inherit this pattern.
   full set; the broker does NOT provide tick data for anything outside it.
 - **SP500.DWX is available as a Custom Symbol on T1-T5 since 2026-05-16T19:15Z**
   (OWNER-provided ticks 2018-07→2026-05, 9.4GB; evidence=`docs/ops/evidence/2026-05-16T191500Z_sp500_dwx_custom_symbol_t2_t5_rollout.md`).
-  It is **backtest-only**: the broker does NOT route orders on SP500, so live
-  promotion to T6 is forbidden for SP500.DWX-only EAs — that's a Board Advisor
-  T6-gate concern, not yours. At build time: SP500.DWX is a valid
-  `magic_numbers.csv` registration target exactly like NDX.DWX or WS30.DWX.
-  Use it when the card calls for SP500/SPX/SPY.
+  It is the **backtest alias**; live orders use the bare broker symbol `SP500`,
+  which is **confirmed routable** (accepted entry+close on Darwinex-Live,
+  `ORDER_ROUTABLE_CONFIRMED` in `dwx_symbol_matrix.csv`, evidence
+  `docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md`; QM5_11132
+  trades it in the deployed book). The earlier "backtest-only / live promotion
+  forbidden" rule is **superseded** — do not re-apply it. At build time:
+  SP500.DWX is a valid `magic_numbers.csv` registration target exactly like
+  NDX.DWX or WS30.DWX. Use it when the card calls for SP500/SPX/SPY.
 - **Permanently unavailable** (still): `SPX500.DWX`, `SPY.DWX`, `ES.DWX`, etc.
   — these are NOT the canonical Custom Symbol name. The single available
   Custom Symbol for the S&P 500 is `SP500.DWX`. Do not invent variants.
-- For US large-cap exposure, the available basket is now: **SP500.DWX**
-  (S&P 500, backtest-only), **NDX.DWX** (Nasdaq 100, live-tradable), **WS30.DWX**
-  (Dow 30, live-tradable).
+- For US large-cap exposure, the available basket is: **SP500.DWX/SP500**
+  (S&P 500), **NDX.DWX** (Nasdaq 100), **WS30.DWX** (Dow 30) — all three
+  live-tradable.
 - Other "card-stated symbol not in matrix" cases — port to nearest available
   DWX equivalent and document the choice in `open_questions`:
   - Russell 2000 / IWM → fall back to **WS30.DWX** (no Russell CFD).
@@ -171,6 +174,7 @@ Use these framework helpers — DO NOT reimplement them:
 | SL/TP modify, BE, trailing        | `QM_TM_MoveSL/MoveTP/MoveToBreakEven/TrailATR/TrailStep`           |
 | Stop distance from ATR/structure  | `QM_StopATR / QM_StopStructure / QM_StopVolatility / QM_StopFixedPips` |
 | Lot sizing from SL points         | `QM_LotsForRisk(symbol, sl_points)`                                |
+| Q08 open-position MAE sampling    | `QM_FrameworkTrackOpenPositionMae()` (first statement in `OnTick`) |
 | News gate                         | `QM_NewsAllowsTrade(symbol, broker_time, qm_news_mode)`            |
 | Kill-switch / Friday-close        | `QM_KillSwitchCheck` / `QM_FrameworkHandleFridayClose`             |
 
@@ -179,10 +183,11 @@ gate must sit BELOW `Strategy_ManageOpenPosition` / exit handling and gate ONLY 
 entry path. Position management, stop enforcement, and time/equity exits must keep
 running through news windows — a news gate above management silently suspends risk
 management exactly when spreads spike (worst for EAs whose positions carry no
-server-side SL). Canonical order: kill-switch → Friday-close → NoTradeFilter →
-ManageOpenPosition → ExitSignal → **news gate** → IsNewBar → EntrySignal (see
-QM5_12821 OnTick after commit dc418a720 for the reference implementation). The
-fail-closed news-calendar init in OnInit is unchanged and still mandatory.
+server-side SL). Canonical order: **MAE sampling (before any early return)** →
+kill-switch → Friday-close → NoTradeFilter → ManageOpenPosition → ExitSignal →
+**news gate** → IsNewBar → EntrySignal (see the canonical skeleton; the
+kill-switch retains a compatibility MAE hook for older EAs). The fail-closed
+news-calendar init in OnInit is unchanged and still mandatory.
 
 ### Optional Signal Mixins (`QM_Signals.mqh`)
 
@@ -352,6 +357,18 @@ patterns. The remaining rules cover custom math the framework can't help with:
   custom seasonality math), call `CopyRates` ONCE inside a `QM_IsNewBar` gate
   and cache the result in file-scope variables. Never call it unconditionally
   from `OnTick`.
+- **Cache indicator reads used in per-tick paths.** For closed-bar / intraday
+  EAs (`closed_bar_cache_required` or `intraday: true`), any `QM_*` indicator
+  value read from a function reachable from `OnTick` BEFORE the new-bar gate —
+  e.g. a per-tick no-trade / cost-gate filter or an open-position management
+  hook — MUST be computed ONCE in the once-per-bar advance function (e.g.
+  `AdvanceState_OnNewBar`) and stored in a file-scope `g_*` var; the per-tick
+  path then READS the cached `g_*`. Do NOT call `QM_ATR(...)` (or any `QM_*`
+  reader) directly in a per-tick path, even at shift >= 1: the value is
+  constant within the bar, so a live call is redundant per-tick work and
+  violates the "reads only cached state" contract those O(1) functions
+  advertise. (QM5_20007 defect 2026-07-23: cost-gate ATR + trailing-management
+  ATR were read live per tick instead of cached.)
 - **Logging discipline.** No `Print()` / INFO / DEBUG logging inside `OnTick`
   on the per-tick code path. Gate logs by `QM_IsNewBar` or rate-limit to at
   most once per broker-time hour. In particular, per-tick logging during
@@ -406,6 +423,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae(); // first: no guard may skip Q08 evidence
    if(!QM_FrameworkInit_OK) return;
    // ... framework guards ...
    if(QM_IsNewBar())            // FIRST: advance closed-bar state
@@ -525,8 +543,8 @@ build_result JSON is more valuable than masking it with a hopeful rewrite.
     - § 5 Expected Behaviour: copy the four metrics from the card
       frontmatter (`expected_trades_per_year_per_symbol`,
       `expected_trade_frequency`, hold time, regime)
-    - § 6 Source Citation: source_id + pointer + "all R1–R4 PASS per
-      `artifacts/cards_approved/{{ea_id}}_{{slug}}.md`"
+    - § 6 Source Citation: source_id + pointer + "R1 lineage recorded and
+      R2–R4 PASS per `artifacts/cards_approved/{{ea_id}}_{{slug}}.md`"
     - § 7 Risk Model: keep the template's stock table verbatim (it
       describes the framework convention, not per-EA)
     - Revision History: `| v1 | YYYY-MM-DD | Initial build from card | <build_task_id> |`
@@ -537,7 +555,24 @@ build_result JSON is more valuable than masking it with a hopeful rewrite.
     Must report `PASS`. If FAIL, fix the listed sections before
     continuing.
 
-6. Run `pwsh -File C:\QM\repo\framework\scripts\build_check.ps1 -EALabel {{ea_id}}_{{slug}}`.
+6. Resolve the latest real smoke logger sample, then run `build_check.ps1`.
+   If no valid sample exists yet, omit `-LoggerSamplePath`; `build_check` keeps
+   its embedded-sample fallback.
+   ```powershell
+   $loggerSamplePath = (& python C:\QM\repo\framework\scripts\resolve_logger_sample.py `
+     --report-root D:\QM\reports\smoke | Select-Object -First 1)
+   if ($LASTEXITCODE -ne 0) {
+     throw "resolve_logger_sample.py failed with exit code $LASTEXITCODE"
+   }
+   $buildCheckArgs = @(
+     "-File", "C:\QM\repo\framework\scripts\build_check.ps1",
+     "-EALabel", "{{ea_id}}_{{slug}}"
+   )
+   if (-not [string]::IsNullOrWhiteSpace([string]$loggerSamplePath)) {
+     $buildCheckArgs += @("-LoggerSamplePath", [string]$loggerSamplePath)
+   }
+   & pwsh @buildCheckArgs
+   ```
    Must pass.
 
 7. Run `pwsh -File C:\QM\repo\framework\scripts\compile_one.ps1 -EALabel {{ea_id}}_{{slug}}`.

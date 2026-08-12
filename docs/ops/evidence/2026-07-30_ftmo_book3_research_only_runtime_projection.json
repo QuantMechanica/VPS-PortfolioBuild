@@ -1,0 +1,87 @@
+{
+  "schema_version": "qm.ftmo-book3-runtime-dashboard-projection/v1",
+  "projection_kind": "RESEARCH_ONLY_RUNTIME_EVALUATION",
+  "recorded_at_utc": "2026-07-30T05:14:27Z",
+  "source_commit": "f8593cd4beba7194f2a30fe29dfd43bffda6556d",
+  "external_artifact_verification": "RECORDED_HASHES_NOT_REVALIDATED_BY_DASHBOARD",
+  "external_bindings": {
+    "evaluation_manifest": {
+      "path": "D:\\QM\\strategy_farm\\artifacts\\ftmo_book3_v2_full_lifecycle_20260730_a02\\standalone_diagnostic_f8593cd4b\\evaluation_manifest.json",
+      "sha256": "fdd26cc9d794c8420ab2f2914aa147f60dc3bdc3a7c4df8bd3c05d2ad91081ab"
+    },
+    "evaluation_receipt": {
+      "path": "D:\\QM\\strategy_farm\\artifacts\\ftmo_book3_v2_full_lifecycle_20260730_a02\\standalone_diagnostic_f8593cd4b\\evaluation_receipt.json",
+      "sha256": "303857750a452c538cfad41ea1026b78b717f92d949cc4abc8594c4a1ddb5b38"
+    }
+  },
+  "projection": {
+    "evidence_class": "RESEARCH_ONLY_RUNTIME_PROJECTION",
+    "book_id": "FTMO_BOOK3_STANDALONE_R0_R1_R2",
+    "status": "RESEARCH_MODEL_COMPLETE_STRICT_QUALIFICATION_UNVERIFIED",
+    "source_manifest_sha256": "fdd26cc9d794c8420ab2f2914aa147f60dc3bdc3a7c4df8bd3c05d2ad91081ab",
+    "source_receipt_sha256": "303857750a452c538cfad41ea1026b78b717f92d949cc4abc8594c4a1ddb5b38",
+    "readiness": {
+      "input_integrity": "PASS",
+      "native_stream_reconciliation": "PASS",
+      "shared_account_model": "COMPLETE_RESEARCH_ONLY",
+      "strict_qualification": "UNVERIFIED",
+      "money_gate": "SETUP_DATA_MISSING",
+      "paid_challenge": "NO_GO"
+    },
+    "native_runs": [
+      {
+        "rung": "R0",
+        "ea_id": 9936,
+        "symbol": "USDJPY.DWX",
+        "trades": 1143,
+        "lifecycle_mismatches": 0,
+        "reconciliation": "PASS"
+      },
+      {
+        "rung": "R1",
+        "ea_id": 10145,
+        "symbol": "XAUUSD.DWX",
+        "trades": 291,
+        "lifecycle_mismatches": 0,
+        "reconciliation": "PASS"
+      },
+      {
+        "rung": "R2",
+        "ea_id": 13108,
+        "symbol": "XTIUSD.DWX",
+        "trades": 548,
+        "lifecycle_mismatches": 0,
+        "reconciliation": "PASS"
+      }
+    ],
+    "policy_bootstrap": {
+      "label": "IN_SAMPLE_INTERNAL_POLICY_EOD_SURROGATE",
+      "paths": 25000,
+      "phase1_pass_percent": "67.240%",
+      "two_phase_pass_percent": "44.896%",
+      "official_breach_percent": "33.456%",
+      "gate_eligible": false
+    },
+    "temporal_holdout_diagnostic": {
+      "label": "TEMPORAL_HOLDOUT_DIAGNOSTIC_NOT_SELECTION_SEALED",
+      "starts": 102,
+      "phase1_pass_percent": "84.31%",
+      "two_phase_pass_percent": "81.37%",
+      "official_breach_percent": "3.92%",
+      "gate_eligible": false
+    },
+    "authorization": {
+      "factory_action_authorized": false,
+      "factory_restart_authorized": false,
+      "money_gate_authorized": false,
+      "paid_challenge_purchase_authorized": false,
+      "deployment_allowed": false
+    },
+    "limitations": [
+      "The policy bootstrap uses in-sample evidence and an end-of-day governor surrogate; it is not gate-eligible.",
+      "The temporal holdout is diagnostic because strategy selection was not sealed before the 2018-2025 vintage was observed.",
+      "Event-complete shared-equity, target-crossing, pending-order and forced-flatten traces are missing, so strict qualification and the money gate remain blocked.",
+      "This projection grants no Factory, restart, deployment, paid-challenge, money or trading authority."
+    ]
+  }
+}

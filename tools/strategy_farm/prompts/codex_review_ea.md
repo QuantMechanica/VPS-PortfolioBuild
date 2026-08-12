@@ -81,6 +81,17 @@ For intraday EAs:
   * Full session-sum / cumulative-VWAP recompute
   * Indicator handle creation (must happen in OnInit only)
 
+ALLOWED (do NOT FAIL) — a single pooled `QM_*` indicator read at a FIXED shift >= 1
+(e.g. `QM_ATR(sym, tf, period, 1)`) in a per-tick path. Shift >= 1 reads a CLOSED bar,
+so the value is constant within the current forming bar (closed-bar-correct) and the
+pooled read is O(1); it is none of the forbidden patterns above. If a function's own
+comment claims "reads only cached state / O(1)" while doing this, record a `warn` PERF
+finding recommending the value be cached in the once-per-bar advance function — do NOT
+FAIL on it alone. Reserve FAIL for the enumerated patterns above and for any per-tick
+read at shift 0 (the forming bar) whose value changes intra-bar and feeds signal/entry
+logic. (OWNER 2026-07-23: QM5_20007 was wrongly hard-blocked on a functionally-correct
+per-tick `QM_ATR(...,1)` read.)
+
 PASS = no forbidden patterns in OnTick path. FAIL = caught one.
 
 ### §C Magic-number registry

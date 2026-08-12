@@ -1,6 +1,6 @@
 # V4 Reference Material
 
-V4 source material kept as reference for V5 Wave 0+ to read, learn from, and reuse selectively. **Not V5 input** — none of these files run as-is in V5. Wave 0 (CTO, DevOps, Documentation-KM) reviews and decides what to port, what to redesign, what to discard.
+V4 source material kept as reference for assigned workers to read and reuse selectively. **Not V5 input** — none of these files run as-is in V5. Current technical contracts decide what may be ported, redesigned, or discarded.
 
 ## Folders
 
@@ -28,13 +28,12 @@ V5 inherits patterns and learnings from these scripts but **not their code verba
 - **MT5 watchdog patterns** (`mt5_tester_bar_tmp_watchdog.ps1`): how V4 prevented bar*.tmp disk explosions. Same problem class on VPS.
 - **MT5 load shaping** (`mt5_load_shaping_gate.ps1`): how V4 paused factory work when T6 needed CPU. Directly applicable to V5 same-VPS factory/live coupling per `LIVE_T6_AUTOMATION_RUNBOOK.md`.
 - **WinRM client bootstrap** (`winrm_client_bootstrap.ps1`): how V4 set up remote PowerShell to the VPS from a workstation.
-- **Paperclip ↔ GitHub issues sync** (`paperclip_github_issues_sync.sh`): pattern for keeping public issue board mirrored to internal Paperclip.
 
 ## What's Confusing Or V4-Specific
 
 - `pipeline_feed_guard.py` — V4 TODO.md heartbeat-feed plumbing. V5 doesn't have the same heartbeat shape; useful only as concept reference.
 - `_rewrite_dashboard_template.py` — V4 single-purpose rewrite tool; not portable.
-- `setup_processes_scheduler.ps1` + `setup_strategy_panel_refresh_scheduler.ps1` — V4 Task-Scheduler set-up scripts; V5 needs its own per `WEBSITE_DASHBOARD_PAPERCLIP_STYLE.md`.
+- `setup_processes_scheduler.ps1` + `setup_strategy_panel_refresh_scheduler.ps1` — retired V4 Task-Scheduler examples; current scheduling is defined by active strategy-farm installers.
 - `dashboard_evidence_map.md` — V4 layout of what evidence feeds which dashboard tile. Pattern is good, files are V4.
 
 ## What's NOT Migrated (intentionally)
@@ -44,7 +43,7 @@ V5 inherits patterns and learnings from these scripts but **not their code verba
 - `Company/scripts/forum_research_toolkit/` — large, V4-specific; check on demand
 - `Company/scripts/__pycache__/` — Python build artifacts
 - `Company/HANDOFF.md`, `Company/TODO.md` — V4 operational logs (very large, V4-only)
-- `Company/Status/CTO/current.md` — 80k tokens, V4 operational state
+- legacy V4 role-status snapshots — historical operational state, not V5 input
 
 These are on Drive if needed; not in repo to keep V5 lean.
 

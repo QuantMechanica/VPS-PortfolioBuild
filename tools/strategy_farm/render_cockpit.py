@@ -28,12 +28,27 @@ import datetime as dt
 import glob
 import html
 import json
+import math
 import os
 import re
 import sqlite3
 import subprocess
 import sys
 from pathlib import Path
+
+try:  # package import in tests and module consumers
+    from tools.strategy_farm.pipeline_books_dashboard_status import program_status_snapshot
+except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit.py``
+    from pipeline_books_dashboard_status import program_status_snapshot
+
+try:  # package import in tests and module consumers
+    from tools.strategy_farm.phase_ids import (
+        PHASE_ORDER as Q_DISPLAY_ORDER,
+        Q_TO_LEGACY_ALIASES,
+        phase_label,
+    )
+except ModuleNotFoundError:  # direct ``python tools/strategy_farm/render_cockpit.py``
+    from phase_ids import PHASE_ORDER as Q_DISPLAY_ORDER, Q_TO_LEGACY_ALIASES, phase_label
 
 ROOT = Path(r"D:\QM\strategy_farm")
 REPO = Path(r"C:\QM\repo")
@@ -48,30 +63,41 @@ REPORTS_STATE = Path(r"D:\QM\reports\state")
 LIVE_BOOK_PULSE = REPORTS_STATE / "live_book_pulse.json"
 FTMO_TRIAL_PULSE = REPORTS_STATE / "ftmo_trial_pulse.json"
 OWNER_DECISIONS_FILE = REPORTS_STATE / "owner_decisions.json"
+PROGRAM_REPO = Path(__file__).resolve().parents[2]
+PROGRAM_STATUS_FILE = (
+    PROGRAM_REPO
+    / "tools"
+    / "strategy_farm"
+    / "config"
+    / "pipeline_books_program_status.v1.json"
+)
 
-PHASE_DISPLAY = {
-    "Q01": "Q01",
-    "Q02": "Q02",
-    "Q03": "Q03",
-    "Q04": "Q04",
-    "Q05": "Q05",
-    "Q06": "Q06",
-    "Q07": "Q07",
-    "Q08": "Q08",
-    "Q09": "Q09",
-    "Q10": "Q10",
-    "Q11": "Q11",
-    "P2": "Q02",
-    "P3": "Q03",
-    "P3.5": "Q04",
-    "P4": "Q05",
-    "P5": "Q06",
-    "P5b": "Q07",
-    "P5c": "Q08",
-    "P6": "Q09",
-    "P7": "Q10",
-    "P8": "Q11",
-}
+# Cockpit v7 additions (2026-07-19)
+# FACTORY_OFF.flag distinguishes an intentional maintenance stop from a genuine
+# outage — the top-bar status must never scream CRITICAL for an intentional OFF.
+FACTORY_OFF_FLAG = ROOT / "state" / "FACTORY_OFF.flag"
+# T_Live is READ-ONLY for the cockpit (never write here). The portable data
+# folder is MT5_Base; the terminal journal and the EA-emitted JSON logs live
+# under it.
+TLIVE_ROOT = Path(r"C:\QM\mt5\T_Live")
+TLIVE_JOURNAL_DIR = TLIVE_ROOT / "MT5_Base" / "logs"
+TLIVE_EA_LOG_DIR = TLIVE_ROOT / "MT5_Base" / "MQL5" / "Files" / "QM"
+# Broker deal history exported read-only by the AccountMonitor EA (~60s after
+# new deals). Σ(profit+swap+commission+fee) over all rows incl. the BALANCE
+# deposit row = account balance after the last recorded deal — equals true
+# equity whenever the book is flat. Commission AND swap are broker-booked per
+# deal on the DXZ account (verified 2026-07-25: 52/55 deals commission,
+# both sides charged; Σ comm −$44.30, Σ swap −$48.36).
+TLIVE_MONITOR_DIR = TLIVE_EA_LOG_DIR / "journal"
+TLIVE_DEALS_CSV = TLIVE_MONITOR_DIR / "live_deals_normalized.csv"
+# FTMO terminal (non-portable install): AccountMonitor deployed 2026-07-25
+# (OWNER "ja, deploy es!"), chart13 in the contract-verified Default profile.
+FTMO_MONITOR_DIR = Path(
+    r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal"
+    r"\81A933A9AFC5DE3C23B15CAB19C63850\MQL5\Files\QM\journal"
+)
+FTMO_DEALS_CSV = FTMO_MONITOR_DIR / "live_deals_normalized.csv"
+LIVE_BOOK_SLEEVES = 24  # current live book size (label denominator only)
 
 
 
@@ -184,15 +210,15 @@ def _parse_claude_text(text: str) -> dict:
 
 
 def quota_snapshot() -> dict:
-    """Read Tampermonkey-scraped quota snapshot from D:/QM/.../quota_snapshot.json.
+    """Read the merged quota snapshot from D:/QM/.../quota_snapshot.json.
 
-    Browser userscripts (tools/strategy_farm/userscripts/*.user.js) scrape the
-    authenticated chatgpt.com + claude.ai usage pages every 60s and POST to the
-    local receiver (tools/strategy_farm/quota_receiver.py @ 127.0.0.1:9090).
-    The receiver merges per source.
+    The normal producer is quota_pull.py, which stores shape-normalized API
+    values in ``data.structured``. Legacy browser userscripts may still POST DOM
+    text to quota_receiver.py; that text remains a supported fallback.
 
-    Parsing happens here (Python side) on the rendered DOM text, so we can
-    fix patterns without users having to reinstall Tampermonkey scripts.
+    Structured values are already USED percentages with their matching reset
+    timestamps. DOM parsing happens here only for fields the structured block
+    does not provide.
 
     Returns per-source dicts: {fresh, age_sec, hour_pct, week_pct, plan,
     hour_reset, week_reset, meters, matches, url}.
@@ -248,9 +274,25 @@ def quota_snapshot() -> dict:
 # === Data collection ===
 
 def db_rows(query: str, params: tuple = ()) -> list[dict]:
-    con = sqlite3.connect(str(DB))
+    con = sqlite3.connect(f"file:{DB.as_posix()}?mode=ro", uri=True)
     con.row_factory = sqlite3.Row
     try:
+        con.execute("PRAGMA query_only=ON")
+        return [dict(r) for r in con.execute(query, params).fetchall()]
+    finally:
+        con.close()
+
+
+def db_rows_ro(query: str, params: tuple = ()) -> list[dict]:
+    """Read-only DB query via the sqlite ``mode=ro`` URI.
+
+    Used by the cockpit-v7 additions (LIVE BOOK / FRONTIER). The connection is
+    opened strictly read-only so a query can never mutate farm_state.sqlite.
+    """
+    con = sqlite3.connect(f"file:{DB.as_posix()}?mode=ro", uri=True)
+    con.row_factory = sqlite3.Row
+    try:
+        con.execute("PRAGMA query_only=ON")
         return [dict(r) for r in con.execute(query, params).fetchall()]
     finally:
         con.close()
@@ -451,6 +493,78 @@ def _age_minutes(iso_ts: str | None) -> int | None:
         return None
 
 
+def monitor_account_snapshot(journal_dir: Path) -> dict:
+    """READ-ONLY account_snapshot.json from the QM_AccountMonitor EA.
+
+    Timer-driven (60s, fires on weekends too): terminal-truth equity
+    INCLUDING floating P&L, plus position count. The freshest per-account
+    figure available — callers must gate on age_min before trusting it.
+    """
+    out: dict = {"equity": None, "balance": None, "positions": None,
+                 "floating": None, "age_min": None}
+    try:
+        d = json.loads(
+            (journal_dir / "account_snapshot.json").read_text(encoding="utf-8")
+        )
+        eq = d.get("equity")
+        if isinstance(eq, (int, float)) and math.isfinite(eq):
+            out["equity"] = eq
+        bal = d.get("balance")
+        if isinstance(bal, (int, float)) and math.isfinite(bal):
+            out["balance"] = bal
+        out["positions"] = d.get("open_positions")
+        out["floating"] = d.get("floating_pnl")
+        out["age_min"] = _age_minutes(d.get("time_utc"))
+    except Exception:
+        pass
+    return out
+
+
+def deal_history_balance(deals_csv: Path) -> dict:
+    """READ-ONLY account balance from an AccountMonitor deal export.
+
+    balance = Σ(profit+swap+commission+fee) over ALL rows including the
+    BALANCE deposit row. This is exact realized truth (costs included) and
+    equals current equity whenever the book is flat — fresher than the
+    EA day-close EQUITY_SNAPSHOT, which can lag a full weekend.
+    """
+    out: dict = {"balance": None, "last_deal_ts": None, "age_min": None}
+    fields = ("profit", "swap", "commission", "fee")
+    try:
+        with deals_csv.open(encoding="utf-8-sig", newline="") as fh:
+            reader = csv.DictReader(fh)
+            headers = set(reader.fieldnames or ())
+            # STRICT (Codex review 2026-07-25): a missing header or a single
+            # unparsable/non-finite monetary field voids the WHOLE figure —
+            # a partial sum shown as primary equity is an invented number.
+            if not headers.issuperset(fields) or "time_utc" not in headers:
+                return out
+            bal = 0.0
+            last_ts = ""
+            n_rows = 0
+            for r in reader:
+                n_rows += 1
+                for k in fields:
+                    try:
+                        v = float((r.get(k) or "").strip())
+                    except (TypeError, ValueError):
+                        return out
+                    if not math.isfinite(v):
+                        return out
+                    bal += v
+                ts = str(r.get("time_utc") or "")
+                if ts > last_ts:
+                    last_ts = ts
+        if not n_rows:
+            return out
+        out["balance"] = round(bal, 2)
+        out["last_deal_ts"] = last_ts or None
+        out["age_min"] = _age_minutes(last_ts) if last_ts else None
+    except Exception:
+        pass
+    return out
+
+
 def live_money_snapshot() -> dict:
     """Read-only DXZ live-book + FTMO trial pulse state for the LIVE MONEY row.
 
@@ -475,7 +589,19 @@ def live_money_snapshot() -> dict:
             "autotrading": str((at[-1] or {}).get("state") or "?") if at else "?",
             "account": str(tj.get("account_id") or ""),
             "age_min": _age_minutes(lb.get("generated_at_utc")),
+            # Age of the equity NUMBER itself (day-close snapshot), not of the
+            # pulse file — the tile must never sell a stale figure as fresh.
+            "equity_age_min": _age_minutes(be.get("ts_utc")),
         }
+        _deals = deal_history_balance(TLIVE_DEALS_CSV)
+        out["dxz"]["deal_balance"] = _deals.get("balance")
+        out["dxz"]["deal_last_ts"] = _deals.get("last_deal_ts")
+        out["dxz"]["deal_age_min"] = _deals.get("age_min")
+        _mon = monitor_account_snapshot(TLIVE_MONITOR_DIR)
+        out["dxz"]["mon_equity"] = _mon.get("equity")
+        out["dxz"]["mon_positions"] = _mon.get("positions")
+        out["dxz"]["mon_floating"] = _mon.get("floating")
+        out["dxz"]["mon_age_min"] = _mon.get("age_min")
     except Exception:
         pass
     try:
@@ -491,9 +617,200 @@ def live_money_snapshot() -> dict:
             "expected_magics": ft.get("expected_magics"),
             "terminal_up": bool(ft.get("terminal_up")),
             "age_min": _age_minutes(ft.get("checked_at_utc")),
+            # Age of the equity snapshot the numbers come from (pulse age alone
+            # hides a dead terminal serving day-old figures).
+            "eq_age_min": (
+                int(ft["equity_snapshot_age_minutes"])
+                if isinstance(ft.get("equity_snapshot_age_minutes"), (int, float))
+                else _age_minutes(ft.get("equity_snapshot_ts"))
+            ),
         }
+        _fmon = monitor_account_snapshot(FTMO_MONITOR_DIR)
+        out["ftmo"]["mon_equity"] = _fmon.get("equity")
+        out["ftmo"]["mon_positions"] = _fmon.get("positions")
+        out["ftmo"]["mon_age_min"] = _fmon.get("age_min")
     except Exception:
         pass
+    return out
+
+
+def live_book_snapshot() -> dict:
+    """READ-ONLY T_Live pulse from the terminal journal + EA-emitted logs.
+
+    Sources (never written by the cockpit):
+      journal  C:/QM/mt5/T_Live/MT5_Base/logs/<YYYYMMDD>.log   (UTF-16, terminal)
+      ea logs  C:/QM/mt5/T_Live/MT5_Base/MQL5/Files/QM/*.log    (UTF-8 JSON lines)
+
+    Every field is honestly labelled; an unreadable/absent source stays None so
+    the surface renders 'n/a' rather than a guess. The equity value is the
+    NEWEST EA-emitted EQUITY_SNAPSHOT (a day-close figure) — it is explicitly
+    NOT real-time account equity.
+    """
+    out = {
+        "journal_date": None,
+        "journal_age_sec": None,
+        "deals_today": None,
+        "equity": None,
+        "equity_ts": None,
+        "equity_day_pnl": None,
+        "ea_logs_today": None,
+        "ea_logs_total": None,
+    }
+    # --- terminal journal: today's <YYYYMMDD>.log ---
+    today_name = dt.date.today().strftime("%Y%m%d")
+    journal = TLIVE_JOURNAL_DIR / f"{today_name}.log"
+    try:
+        if journal.exists():
+            out["journal_date"] = today_name
+            out["journal_age_sec"] = int(
+                dt.datetime.now().timestamp() - journal.stat().st_mtime
+            )
+            # MT5 logs live fills as 'deal #<n> ... done' under Trades.
+            text = journal.read_text(encoding="utf-16", errors="ignore")
+            out["deals_today"] = sum(1 for ln in text.splitlines() if "deal #" in ln.lower())
+    except Exception:
+        pass
+    # --- EA logs: newest EQUITY_SNAPSHOT + today-active sleeve count ---
+    try:
+        logs = list(TLIVE_EA_LOG_DIR.glob("QM5_*_ea-*.log"))
+        out["ea_logs_total"] = len(logs)
+        today = dt.date.today()
+        active = 0
+        newest_ts = None
+        for f in logs:
+            try:
+                st = f.stat()
+            except OSError:
+                continue
+            if dt.date.fromtimestamp(st.st_mtime) == today:
+                active += 1
+            try:
+                content = f.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+            for line in content.splitlines():
+                if '"EQUITY_SNAPSHOT"' not in line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                except Exception:
+                    continue
+                ts = str(rec.get("ts_utc") or "")
+                if newest_ts is None or ts > newest_ts:
+                    newest_ts = ts
+                    pay = rec.get("payload") or {}
+                    out["equity"] = pay.get("equity")
+                    out["equity_ts"] = ts
+                    out["equity_day_pnl"] = pay.get("day_pnl")
+        out["ea_logs_today"] = active
+    except Exception:
+        pass
+    return out
+
+
+def frontier_next_book_snapshot(since_iso: str = "2026-07-19T18:00", limit: int = 8) -> dict:
+    """READ-ONLY work_items view for the ~26.07 next-book frontier.
+
+    (a) fresh PASS at Q08/Q09/Q10 since ``since_iso``.
+    (b) Q07-PASS (ea, symbol) pairs whose latest Q08 is still pending/running.
+    Both are deduped per (ea_id, symbol); Qxx labels only.
+    """
+    out = {"fresh_pass": [], "in_flight": [], "fresh_count": 0, "inflight_count": 0}
+    # (a) fresh Q08+ PASS
+    try:
+        fresh = db_rows_ro(
+            """
+            SELECT ea_id, symbol, phase, MAX(updated_at) AS updated_at
+            FROM work_items
+            WHERE verdict='PASS' AND phase IN ('Q08','Q09','Q10','P5c','P6','P7')
+              AND updated_at >= ?
+            GROUP BY ea_id, symbol, phase
+            ORDER BY updated_at DESC
+            """,
+            (since_iso,),
+        )
+    except sqlite3.Error:
+        fresh = []
+    seen: set = set()
+    for r in fresh:
+        key = (r.get("ea_id"), r.get("symbol"))
+        if key in seen:
+            continue
+        seen.add(key)
+        out["fresh_pass"].append({
+            "ea_id": r.get("ea_id"),
+            "symbol": str(r.get("symbol") or "").replace(".DWX", ""),
+            "phase": phase_label(r.get("phase")),
+            "when": str(r.get("updated_at") or "")[:16].replace("T", " "),
+        })
+    out["fresh_count"] = len(out["fresh_pass"])
+
+    # (b) Q07-PASS with Q08 still in flight
+    try:
+        q07 = db_rows_ro(
+            """
+            SELECT ea_id, symbol, MAX(updated_at) AS updated_at
+            FROM work_items
+            WHERE phase IN ('Q07','P5b') AND verdict='PASS'
+            GROUP BY ea_id, symbol
+            ORDER BY updated_at DESC
+            """
+        )
+        q08_rows = db_rows_ro(
+            "SELECT ea_id, symbol, status FROM work_items "
+            "WHERE phase IN ('Q08','P5c') ORDER BY updated_at ASC"
+        )
+    except sqlite3.Error:
+        q07, q08_rows = [], []
+    latest_q08: dict = {}
+    for r in q08_rows:  # ascending → last write wins
+        latest_q08[(r.get("ea_id"), r.get("symbol"))] = str(r.get("status") or "")
+    inflight = []
+    for r in q07:
+        key = (r.get("ea_id"), r.get("symbol"))
+        status = latest_q08.get(key)
+        if status in ("pending", "active"):
+            inflight.append({
+                "ea_id": r.get("ea_id"),
+                "symbol": str(r.get("symbol") or "").replace(".DWX", ""),
+                "status": status,
+                "when": str(r.get("updated_at") or "")[:16].replace("T", " "),
+            })
+    out["inflight_count"] = len(inflight)
+    # Combined display cap: fresh PASS first (more important), then in-flight.
+    out["in_flight"] = inflight[: max(0, limit - out["fresh_count"])]
+    return out
+
+
+def ops_heartbeats_snapshot() -> list[dict]:
+    """File-age heartbeats for the scheduled ops jobs (read-only stat)."""
+    specs = [
+        ("BACKUP NIGHTLY", REPORTS_STATE / "backup_nightly.log", 26 * 3600),
+        ("QUOTA GOVERNOR", REPORTS_STATE / "quota_governor.log", 20 * 60),
+        ("CACHE PURGE", REPORTS_STATE / "tester_cache_purge.log", 10 * 60),
+        ("HEALTH.JSON", ROOT / "state" / "health.json", 20 * 60),
+        # Resident live-terminal supervisor writes its state every ~10s cycle.
+        # It died silently Fri 2026-07-24 ~15:00 and nothing noticed for ~23h
+        # (FTMO terminal stayed dead) — this tile makes that class visible.
+        ("LIVE SUPERVISOR", REPORTS_STATE / "live_session_supervisor.json", 5 * 60),
+    ]
+    out = []
+    for label, path, warn_sec in specs:
+        age = None
+        try:
+            if path.exists():
+                age = int(dt.datetime.now().timestamp() - path.stat().st_mtime)
+        except OSError:
+            age = None
+        if age is None:
+            status = "miss"
+        elif age <= warn_sec:
+            status = "ok"
+        elif age <= warn_sec * 2:
+            status = "warn"
+        else:
+            status = "crit"
+        out.append({"label": label, "age_sec": age, "warn_sec": warn_sec, "status": status})
     return out
 
 
@@ -505,6 +822,265 @@ def q12_review_ready_count() -> int:
         return int(rows[0]["c"]) if rows else 0
     except Exception:
         return 0
+
+
+def _ell(s: str, n: int) -> str:
+    """Truncate with a visible ellipsis — a hard cut mid-word reads as a bug."""
+    s = str(s)
+    return s if len(s) <= n else s[: n - 1].rstrip() + "…"
+
+
+def pipeline_books_program_snapshot(
+    *, now_utc: dt.datetime | None = None
+) -> dict:
+    """Read the hash-bound programme projection without mutating farm state."""
+
+    return program_status_snapshot(
+        PROGRAM_STATUS_FILE,
+        repo_root=PROGRAM_REPO,
+        now_utc=now_utc,
+    )
+
+
+def render_pipeline_books_program(snapshot: dict) -> str:
+    """Render the fail-closed W0--W8 programme panel.
+
+    Missing and invalid sources deliberately render a red, non-empty panel.
+    A stale but hash-valid source retains its detail for diagnosis while its
+    headline remains non-valid and visually blocked.
+    """
+
+    state = str(snapshot.get("state") or "INVALID").upper()
+    state_cls = "fresh" if state == "FRESH" else ("stale" if state == "STALE" else "invalid")
+    as_of = snapshot.get("config_as_of_utc") or "n/a"
+    age = snapshot.get("age_hours")
+    age_text = f"{age:.1f}h old" if isinstance(age, (int, float)) else "age unavailable"
+    error = str(snapshot.get("error") or "")
+    source_detail = f"as of {as_of} // {age_text}"
+    if error:
+        source_detail += f" // {error}"
+
+    work_packages = snapshot.get("work_packages") or []
+    if state in {"MISSING", "INVALID"} or not work_packages:
+        return (
+            f'<div class="pb-program pb-program-{state_cls}">'
+            '<div class="pb-source">'
+            f'<span class="pb-source-state">PROGRAM SOURCE {e(state)}</span>'
+            f'<span class="pb-source-detail">{e(source_detail)}</span>'
+            '</div>'
+            '<div class="pb-invalid-body">'
+            '<b>NO TRUSTED W0–W8 STATUS AVAILABLE.</b> '
+            'The dashboard refuses to replace a missing or invalid source with CLEAR, PASS, or zero blockers.'
+            '</div></div>'
+        )
+
+    bindings = snapshot.get("bindings") or {}
+    plan_hash = str((bindings.get("plan") or {}).get("file_sha256") or "")
+    evidence_hash = str((bindings.get("evidence") or {}).get("file_sha256") or "")
+    source_detail += f" // plan {plan_hash[:12]} // evidence {evidence_hash[:12]}"
+
+    wave_rows: list[str] = []
+    for row in work_packages:
+        status = str(row.get("status") or "UNKNOWN")
+        if "BLOCKED" in status:
+            row_cls = "blocked"
+        elif status == "PLANNED" or "NOT_IMPLEMENTED" in str(row.get("source_status") or ""):
+            row_cls = "planned"
+        elif "SHADOW" in status or "RULEPACK" in status or "FOUNDATION" in status:
+            row_cls = "shadow"
+        else:
+            row_cls = "implemented"
+        wave_rows.append(
+            f'<div class="pb-wave pb-wave-{row_cls}">'
+            f'<div class="pb-wave-id">{e(row.get("id"))}</div>'
+            f'<div class="pb-wave-title">{e(row.get("title"))}</div>'
+            f'<div class="pb-wave-status">{e(status)}</div>'
+            f'<div class="pb-wave-axes">SRC {e(row.get("source_status"))} · '
+            f'RUN {e(row.get("runtime_status"))}</div>'
+            f'<div class="pb-wave-next">NEXT // {e(row.get("next_action"))}</div>'
+            '</div>'
+        )
+
+    safety = snapshot.get("safety") or {}
+    safety_html = (
+        '<div class="pb-safety">'
+        f'<span><b>FACTORY</b> {e(safety.get("factory_state", "UNKNOWN"))}</span>'
+        '<span><b>RUNTIME AUTHORITY</b> NONE</span>'
+        '<span><b>SCHEDULER / MT5 / AUTOTRADING / DEPLOY</b> NO ACTION AUTHORIZED</span>'
+        '</div>'
+    )
+
+    q08 = snapshot.get("q08_v3") or {}
+    verdicts = " · ".join(str(item) for item in (q08.get("verdict_states") or []))
+    policy_hash = str(q08.get("policy_canonical_sha256") or "")
+    q08_html = (
+        '<div class="pb-contract">'
+        '<div class="pb-contract-lbl">Q08 V3 // EVIDENCE</div>'
+        f'<div class="pb-contract-val">{e(q08.get("lifecycle", "UNKNOWN"))}</div>'
+        f'<div class="pb-contract-sub">promotion {e(q08.get("promotion_state", "UNKNOWN"))} '
+        f'// policy {e(policy_hash[:12])}</div>'
+        f'<div class="pb-verdicts">{e(verdicts)}</div>'
+        f'<div class="pb-contract-note">{e(q08.get("evidence_semantics", ""))}</div>'
+        '</div>'
+    )
+
+    lane_cards: list[str] = []
+    for lane in snapshot.get("target_lanes") or []:
+        lane_hash = str(lane.get("rulepack_canonical_sha256") or "")
+        lane_cards.append(
+            '<div class="pb-contract">'
+            f'<div class="pb-contract-lbl">{e(lane.get("label"))}</div>'
+            f'<div class="pb-contract-val">{e(lane.get("state"))}</div>'
+            f'<div class="pb-contract-sub">{e(lane.get("rulepack_id"))} '
+            f'// {e(lane_hash[:12])} // eligibility {e(lane.get("eligibility"))}</div>'
+            f'<div class="pb-contract-note">NEXT // {e(lane.get("next_action"))}</div>'
+            '</div>'
+        )
+
+    ftmo = snapshot.get("ftmo_book3_runtime_evaluation") or {}
+    readiness = ftmo.get("readiness") or {}
+    native_rows = ftmo.get("native_runs") or []
+    native_text = " · ".join(
+        f'{row.get("rung", "?")} QM5_{row.get("ea_id", "?")} '
+        f'{row.get("symbol", "?")} {row.get("trades", "?")} trades / '
+        f'{row.get("lifecycle_mismatches", "?")} lifecycle mismatches'
+        for row in native_rows
+        if isinstance(row, dict)
+    )
+    policy = ftmo.get("policy_bootstrap") or {}
+    holdout = ftmo.get("temporal_holdout_diagnostic") or {}
+    manifest_hash = str(ftmo.get("source_manifest_sha256") or "")
+    receipt_hash = str(ftmo.get("source_receipt_sha256") or "")
+    projection_hash = str(
+        (bindings.get("ftmo_book3_runtime_projection") or {}).get("file_sha256") or ""
+    )
+    ftmo_runtime_html = (
+        '<div class="pb-contract pb-ftmo-runtime">'
+        '<div class="pb-contract-lbl">FTMO BOOK 3 // HASH-BOUND RECORDED RESEARCH PROJECTION</div>'
+        f'<div class="pb-contract-val">{e(ftmo.get("status", "MISSING"))}</div>'
+        '<div class="pb-lane-line pass"><b>INPUT / NATIVE</b> '
+        f'{e(readiness.get("input_integrity", "MISSING"))} / '
+        f'{e(readiness.get("native_stream_reconciliation", "MISSING"))}</div>'
+        '<div class="pb-lane-line residual"><b>STRICT / MONEY / PAID</b> '
+        f'{e(readiness.get("strict_qualification", "MISSING"))} / '
+        f'{e(readiness.get("money_gate", "MISSING"))} / '
+        f'{e(readiness.get("paid_challenge", "MISSING"))}</div>'
+        f'<div class="pb-contract-note">{e(native_text)}</div>'
+        '<div class="pb-contract-note"><b>POLICY BOOTSTRAP · NON-GATE-ELIGIBLE</b> '
+        f'P1 {e(policy.get("phase1_pass_percent", "?"))} · two-phase '
+        f'{e(policy.get("two_phase_pass_percent", "?"))} · breach '
+        f'{e(policy.get("official_breach_percent", "?"))}</div>'
+        '<div class="pb-contract-note"><b>TEMPORAL HOLDOUT DIAGNOSTIC · '
+        'NOT SELECTION-SEALED · NON-GATE-ELIGIBLE</b> '
+        f'P1 {e(holdout.get("phase1_pass_percent", "?"))} · two-phase '
+        f'{e(holdout.get("two_phase_pass_percent", "?"))} · breach '
+        f'{e(holdout.get("official_breach_percent", "?"))}</div>'
+        '<div class="pb-contract-note"><b>AUTHORITY</b> FACTORY / RESTART / MONEY / '
+        'PURCHASE / DEPLOY = FALSE</div>'
+        '<div class="pb-contract-note"><b>PROVENANCE</b> External artifact hashes are '
+        'recorded evidence; this dashboard does not revalidate D: runtime files.</div>'
+        f'<div class="pb-contract-sub">manifest {e(manifest_hash[:12])} // '
+        f'receipt {e(receipt_hash[:12])} // projection {e(projection_hash[:12])}</div>'
+        '</div>'
+    )
+
+    verification = snapshot.get("verification_lanes") or {}
+    green = verification.get("green") or {}
+    residual = verification.get("external_residual") or {}
+    residual_state = str(residual.get("state") or "UNKNOWN")
+    residual_resolved = residual_state == "RESOLVED_PASS"
+    residual_line_class = "pass" if residual_resolved else "residual"
+    residual_expected = residual.get("expected_count", 0)
+    residual_count = (
+        f'{residual.get("pass_count", 0)}/{residual_expected} sentinels passed'
+        if residual_resolved
+        else f"{residual_expected} exact fail-closed sentinels"
+    )
+    exit_receipt_hash = str(
+        (bindings.get("external_residual_exit_receipt") or {}).get("file_sha256")
+        or ""
+    )
+    exit_receipt_note = (
+        f'<div class="pb-contract-sub">exit receipt {e(exit_receipt_hash[:12])}</div>'
+        if residual_resolved
+        else ""
+    )
+    residual_labels = " // ".join(
+        str(item.get("label") or "") for item in (residual.get("items") or [])
+    )
+    verification_html = (
+        '<div class="pb-contract pb-verification">'
+        '<div class="pb-contract-lbl">VERIFICATION LANES</div>'
+        f'<div class="pb-lane-line pass"><b>GREEN {e(green.get("state", "UNKNOWN"))}</b> '
+        f'{e(green.get("passed", 0))} passed · {e(green.get("skipped", 0))} skipped · '
+        f'{e(green.get("deselected", 0))} exact deselected · '
+        f'{e(green.get("subtests_passed", 0))} subtests</div>'
+        f'<div class="pb-lane-line {residual_line_class}"><b>EXTERNAL RESIDUAL '
+        f'{e(residual_state)}</b> · {e(residual_count)}</div>'
+        f'<div class="pb-contract-note">{e(residual_labels)}</div>'
+        f'{exit_receipt_note}'
+        '</div>'
+    )
+
+    blockers = snapshot.get("owner_blockers") or []
+    blocker_rows = "".join(
+        '<div class="pb-blocker">'
+        f'<span class="pb-blocker-id">{e(row.get("id"))}</span>'
+        f'<span class="pb-blocker-title">{e(row.get("title"))}'
+        f'<small>SAFE DEFAULT // {e(row.get("safe_default"))}</small></span>'
+        f'<span class="pb-blocker-blocks">BLOCKS {e(" · ".join(row.get("blocks") or []))}</span>'
+        '</div>'
+        for row in blockers
+    )
+
+    return (
+        f'<div class="pb-program pb-program-{state_cls}">'
+        '<div class="pb-source">'
+        f'<span class="pb-source-state">PROGRAM SOURCE {e(state)}</span>'
+        f'<span class="pb-source-detail">{e(source_detail)}</span>'
+        '</div>'
+        f'{safety_html}'
+        f'<div class="pb-waves">{"".join(wave_rows)}</div>'
+        f'<div class="pb-contracts">{q08_html}{"".join(lane_cards)}{ftmo_runtime_html}{verification_html}</div>'
+        '<div class="pb-blockers-head">'
+        f'<span>OWNER BLOCKERS</span><b>{len(blockers):02d} OPEN</b>'
+        '</div>'
+        f'<div class="pb-blockers">{blocker_rows}</div>'
+        '</div>'
+    )
+
+
+def pipeline_books_owner_decision_rows(snapshot: dict) -> list[dict]:
+    """Project verified programme blockers into the primary OWNER surface."""
+
+    state = str(snapshot.get("state") or "INVALID").upper()
+    blockers = snapshot.get("owner_blockers") or []
+    if not blockers:
+        error = _ell(str(snapshot.get("error") or "trusted status unavailable"), 78)
+        return [
+            {
+                "cat": "PROGRAM STATUS",
+                "title": f"Pipeline Books source {state}",
+                "detail": error,
+                "due": "",
+                "alert": True,
+            }
+        ]
+    rows: list[dict] = []
+    for blocker in blockers:
+        rows.append(
+            {
+                "cat": "PROGRAM",
+                "title": _ell(str(blocker.get("title") or blocker.get("id") or "OWNER decision"), 64),
+                "detail": _ell(
+                    f"{blocker.get('id', '')} // safe: {blocker.get('safe_default', '')}",
+                    96,
+                ),
+                "due": "",
+                "alert": True,
+            }
+        )
+    return rows
 
 
 def owner_decision_rows(q12_count: int) -> list[dict]:
@@ -523,11 +1099,11 @@ def owner_decision_rows(q12_count: int) -> list[dict]:
         for item in data.get("items") or []:
             detail = str(item.get("detail") or "").replace("{q12_count}", str(q12_count))
             rows.append({
-                "cat": str(item.get("cat") or "DECISION")[:16],
-                "title": str(item.get("title") or "?")[:52],
-                "detail": detail[:74],
+                "cat": _ell(str(item.get("cat") or "DECISION"), 16),
+                "title": _ell(str(item.get("title") or "?"), 64),
+                "detail": _ell(detail, 96),
                 "due": str(item.get("due") or ""),
-                "alert": str(item.get("severity") or "").lower() == "alert",
+                "alert": str(item.get("severity") or "").lower() in ("alert", "action"),
             })
     except Exception:
         pass
@@ -557,10 +1133,30 @@ def owner_decision_rows(q12_count: int) -> list[dict]:
         rows.append({
             "cat": "UNBLOCK",
             "title": f"{str(b.get('task_type') or 'task')} {str(b.get('id') or '')[:8]}",
-            "detail": str(b.get("verdict") or "")[:74],
+            "detail": _ell(str(b.get("verdict") or ""), 96),
             "due": "",
             "alert": False,
         })
+
+    # OWNER-actionable rows (severity action/alert) sort ahead of informational
+    # ones, then due-date ascending within each group; items whose due date is
+    # more than 2 days past are dropped as stale so they cannot crowd current
+    # items out of the decisions[:8] panel cutoff (the 07-26 TOTAL_RISK review
+    # was hidden behind expired 07-12 entries in raw file order).
+    today = dt.date.today()
+
+    def _due_date(r: dict) -> dt.date | None:
+        try:
+            return dt.date.fromisoformat(str(r.get("due") or ""))
+        except ValueError:
+            return None
+
+    def _is_stale(r: dict) -> bool:
+        d = _due_date(r)
+        return d is not None and (today - d).days > 2
+
+    rows = [r for r in rows if not _is_stale(r)]
+    rows.sort(key=lambda r: (0 if r["alert"] else 1, _due_date(r) or dt.date.max))
     return rows
 
 
@@ -617,6 +1213,32 @@ def live_worker_terminals() -> set[str]:
         if result.returncode == 0:
             for line in result.stdout.splitlines():
                 m = re.search(r"--terminal\s+(T\d+)", line, re.IGNORECASE)
+                if m:
+                    out.add(m.group(1).upper())
+    except Exception:
+        pass
+    return out
+
+
+def factory_terminal_procs() -> set[str]:
+    """{T1, T8, ...} — path-anchored terminal64.exe processes under D:\\QM\\mt5.
+
+    The farm DB can report 0 running while ad-hoc harnesses (Q07 rerun) or a
+    leaked phase runner still hold terminals; quiescence is only provable by
+    process scan (OWNER 2026-07-25). T_Live (C:) never matches this anchor.
+    """
+    out: set[str] = set()
+    try:
+        result = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command",
+             "Get-CimInstance Win32_Process -Filter \"Name='terminal64.exe'\" | "
+             "Select-Object -ExpandProperty ExecutablePath"],
+            capture_output=True, text=True, timeout=15,
+            creationflags=(subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0),
+        )
+        if result.returncode == 0:
+            for line in result.stdout.splitlines():
+                m = re.match(r"(?i)^D:\\QM\\mt5\\(T\d{1,2})\\terminal64\.exe\s*$", line.strip())
                 if m:
                     out.add(m.group(1).upper())
     except Exception:
@@ -1029,7 +1651,12 @@ def main() -> int:
     q08_rescue = q08_portfolio_rescue_snapshot()
     qsnap = quota_snapshot()
     money = live_money_snapshot()
+    live_book = live_book_snapshot()
+    next_book = frontier_next_book_snapshot()
+    heartbeats = ops_heartbeats_snapshot()
     q12_count = q12_review_ready_count()
+    programme = pipeline_books_program_snapshot()
+    programme_html = render_pipeline_books_program(programme)
 
     # Pipeline health (written by `farmctl health`, scheduled every 15 min)
     health_file = ROOT / "state" / "health.json"
@@ -1043,8 +1670,9 @@ def main() -> int:
     # 7-day trend chart data — counts per day of key events
     def _trend_data() -> dict:
         try:
-            con = sqlite3.connect(str(DB))
+            con = sqlite3.connect(f"file:{DB.as_posix()}?mode=ro", uri=True)
             con.row_factory = sqlite3.Row
+            con.execute("PRAGMA query_only=ON")
             rows = list(con.execute("""
                 SELECT DATE(ts) day, event, COUNT(*) c FROM events
                 WHERE ts >= date('now', '-7 days')
@@ -1058,8 +1686,9 @@ def main() -> int:
             days.setdefault(r["day"], {})[r["event"]] = r["c"]
         # P2-PASS counts per day from work_items (more reliable signal)
         try:
-            con = sqlite3.connect(str(DB))
+            con = sqlite3.connect(f"file:{DB.as_posix()}?mode=ro", uri=True)
             con.row_factory = sqlite3.Row
+            con.execute("PRAGMA query_only=ON")
             for r in con.execute("""
                 SELECT DATE(updated_at) day, COUNT(*) c FROM work_items
                 WHERE phase IN ('Q02','P2') AND status='done' AND verdict='PASS'
@@ -1168,7 +1797,7 @@ def main() -> int:
                 if verdict == "WAITING_INPUT":
                     bucket["waiting_input"] += 1
             if status in {"done", "failed"}:
-                key = f"{PHASE_DISPLAY.get(phase, phase)} {verdict or status}"
+                key = f"{phase_label(phase)} {verdict or status}"
                 by_phase[key] = by_phase.get(key, {"count": 0})
                 by_phase[key]["count"] += 1
             terminal = payload.get("terminal") or row.get("claimed_by")
@@ -1202,9 +1831,14 @@ def main() -> int:
 
     severity, msg = diagnose_bottleneck(procs, q, claude_workers, codex_workers)
 
-    # === HTML — STEEL / EMERALD ===
+    # === HTML — PAPER / INK (Direction C) ===
     now_utc_full = dt.datetime.now(dt.UTC).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%SZ")
     now_local = dt.datetime.now().strftime("%H:%M:%S")
+    # v7 freshness: embed the render epoch (ms) so a small client-side script can
+    # show a live 'Xs/Xm ago' age even when the page is viewed as a stale file://
+    # snapshot — the 2026-07-19 stale-CRITICAL confusion came from a file with no
+    # visible age.
+    render_epoch_ms = int(dt.datetime.now().timestamp() * 1000)
     # Top-bar health pill — map bottleneck severity to NOMINAL/WARN/CRITICAL.
     # OWNER call 2026-05-23: CRITICAL fires only when the Edge Lab itself is
     # down — never on output dryness ("no EA further along" = the actual work,
@@ -1224,7 +1858,26 @@ def main() -> int:
     _factory_fail_checks = [c for c in _fail_checks if c.get("name") in _FACTORY_DOWN_CHECKS]
     _factory_fail = bool(_factory_fail_checks)
     _any_fail = bool(_fail_checks)
-    if _factory_fail:
+    # v7 status hardening (2026-07-19): CRITICAL only when the factory is
+    # GENUINELY down — worker/orchestrator checks FAIL *and* no intentional
+    # FACTORY_OFF.flag present. If the flag exists the stop is deliberate, so
+    # the pill degrades to amber MAINTENANCE, never CRITICAL. Worker liveness
+    # comes from health.json's live-process-scan checks (mt5_worker_saturation)
+    # and live_worker_terminals() — never from pipeline_state.json, whose
+    # content contradicted the DB in the 2026-07-19 audit.
+    factory_off = False
+    try:
+        factory_off = FACTORY_OFF_FLAG.exists()
+    except OSError:
+        factory_off = False
+    if factory_off:
+        pill_label = "MAINTENANCE"; pill_class = "warn"
+        # Pump/worker/orchestrator FAILs are implied by an intentional OFF —
+        # narrating a dead pump's exit code next to "intentional" reads as a
+        # contradiction (OWNER 2026-07-25). Non-factory FAILs still surface
+        # through the WARN branch below and the heartbeat panel.
+        msg = "FACTORY OFF (intentional) — workers paused by FACTORY_OFF.flag"
+    elif _factory_fail:
         pill_label = "CRITICAL"; pill_class = "crit"
         # Topbar must explain the CRITICAL, not narrate the build queue —
         # a red pill next to "coding intentionally paused" is incoherent
@@ -1252,6 +1905,8 @@ def main() -> int:
 
     # ---------- 2. LIVE MONEY ROW (OWNER rework 2026-07-07) ----------
     decisions = owner_decision_rows(q12_count)
+    decisions.extend(pipeline_books_owner_decision_rows(programme))
+    decisions.sort(key=lambda row: (0 if row.get("alert") else 1, str(row.get("due") or "9999-12-31")))
 
     dxz = money.get("dxz") or {}
     ftmo = money.get("ftmo") or {}
@@ -1263,52 +1918,137 @@ def main() -> int:
             return "alert"
         return "warn" if warn else "ok"
 
+    def _fmt_age_min(m) -> str:
+        if not isinstance(m, (int, float)):
+            return "?"
+        m = int(m)
+        if m < 90:
+            return f"{m}m"
+        if m < 48 * 60:
+            return f"{m / 60:.0f}h"
+        return f"{m / 1440:.1f}d"
+
+    def _fmt_pnl(v) -> str:
+        return f"{'+' if v >= 0 else '-'}${abs(v):,.0f}"
+
     if dxz:
         _sleeves = dxz.get("sleeves")
         _eq = dxz.get("equity")
-        dxz_val = (
-            f"${_eq:,.0f}" if isinstance(_eq, (int, float))
-            else (f"{_sleeves} SLEEVES" if _sleeves is not None else "PULSE?")
+        _pos = dxz.get("positions")
+        _dbal = dxz.get("deal_balance")
+        _dbal_age = dxz.get("deal_age_min")
+        _mon_eq = dxz.get("mon_equity")
+        _mon_pos = dxz.get("mon_positions")
+        _mon_flt = dxz.get("mon_floating")
+        _mon_age = dxz.get("mon_age_min")
+        # Source priority (OWNER 2026-07-25): (1) AccountMonitor snapshot —
+        # terminal-truth equity incl. floating, 60s timer — when fresh;
+        # (2) flat book → deal-history balance (realized truth, costs
+        # broker-booked); (3) EA day-close snapshot, honestly aged.
+        _use_monitor = (
+            isinstance(_mon_eq, (int, float))
+            and isinstance(_mon_age, int) and _mon_age <= 5
         )
+        _use_balance = (
+            not _use_monitor and _pos == 0 and isinstance(_dbal, (int, float))
+        )
+        if _use_monitor:
+            dxz_val = f"${_mon_eq:,.0f}"
+        elif _use_balance:
+            dxz_val = f"${_dbal:,.0f}"
+        elif isinstance(_eq, (int, float)):
+            dxz_val = f"${_eq:,.0f}"
+        else:
+            dxz_val = f"{_sleeves} SLEEVES" if _sleeves is not None else "PULSE?"
         dxz_cls = _tile_cls(dxz.get("verdict", "?"), dxz.get("alarms", 0))
         _at = str(dxz.get("autotrading") or "?").upper()
-        _pos = dxz.get("positions")
         _age = dxz.get("age_min")
         _dp = dxz.get("day_pnl")
-        _slv = f"{_sleeves} sleeves // " if _sleeves is not None else ""
-        _dpf = (
-            f"day {'+' if isinstance(_dp, (int, float)) and _dp >= 0 else ''}{_dp:,.0f} // "
-            if isinstance(_dp, (int, float)) else ""
-        )
-        dxz_sub = (
-            f"acct {dxz.get('account') or '?'} // {_slv}AT {_at} // "
-            f"{_dpf}{_pos if _pos is not None else '?'} open pos // "
-            f"verdict {dxz.get('verdict', '?')} // pulse {_age}m ago" if _age is not None else
-            f"acct {dxz.get('account') or '?'} // {_slv}AT {_at} // verdict {dxz.get('verdict', '?')}"
-        )
+        _eqa = dxz.get("equity_age_min")
+        # Day-close cadence is ~24h; >78h covers the weekend gap. Older than
+        # that with an OK verdict still deserves amber — the figure is stale.
+        if (not _use_monitor and not _use_balance and isinstance(_eqa, int)
+                and _eqa > 78 * 60 and dxz_cls == "ok"):
+            dxz_cls = "warn"
+        bits: list[str] = [f"acct {dxz.get('account') or '?'}"]
+        if _sleeves is not None:
+            bits.append(f"{_sleeves} sleeves")
+        bits.append(f"AT {_at}")
+        if _use_monitor:
+            bits.append(f"monitor eq {_fmt_age_min(_mon_age)} ago")
+            if _mon_pos is not None:
+                bits.append(f"{_mon_pos} open pos")
+            if isinstance(_mon_flt, (int, float)) and _mon_flt != 0:
+                bits.append(f"floating {_fmt_pnl(_mon_flt)}")
+        elif _use_balance:
+            bits.append(f"balance, flat book, last deal {_fmt_age_min(_dbal_age)} ago")
+            if isinstance(_eq, (int, float)):
+                bits.append(f"day-close snap ${_eq:,.0f} ({_fmt_age_min(_eqa)} old)")
+        else:
+            if isinstance(_dp, (int, float)):
+                bits.append(f"day P&L {_fmt_pnl(_dp)}")
+            if _eqa is not None:
+                bits.append(f"eq close {_fmt_age_min(_eqa)} old")
+            if isinstance(_dbal, (int, float)):
+                bits.append(f"bal after deals ${_dbal:,.0f} ({_fmt_age_min(_dbal_age)} ago)")
+            if _pos is not None:
+                bits.append(f"{_pos} open pos")
+        bits.append(f"verdict {dxz.get('verdict', '?')}")
+        if _age is not None:
+            bits.append(f"pulse {_age}m ago")
+        dxz_sub = " // ".join(bits)
     else:
         dxz_val, dxz_cls, dxz_sub = "NO PULSE", "alert", "live_book_pulse.json unreadable"
 
     if ftmo:
         _eq = ftmo.get("equity")
-        ftmo_val = f"${_eq:,.0f}" if isinstance(_eq, (int, float)) else "PULSE?"
+        _mon_eq = ftmo.get("mon_equity")
+        _mon_pos = ftmo.get("mon_positions")
+        _mon_age = ftmo.get("mon_age_min")
+        _use_monitor = (
+            isinstance(_mon_eq, (int, float))
+            and isinstance(_mon_age, int) and _mon_age <= 5
+        )
+        if _use_monitor:
+            ftmo_val = f"${_mon_eq:,.0f}"
+            # Live DD against the 100k base — the pulse's figure derives from
+            # the EA day-close snapshot, which can lag days (it hid 2.3% of
+            # drawdown on 2026-07-25).
+            _dd = max(0.0, (100_000.0 - _mon_eq) / 100_000.0 * 100.0)
+        else:
+            ftmo_val = f"${_eq:,.0f}" if isinstance(_eq, (int, float)) else "PULSE?"
+            _dd = ftmo.get("total_dd_pct")
         _dl = ftmo.get("day_loss_pct")
-        _dd = ftmo.get("total_dd_pct")
         _soft_warn = (isinstance(_dl, (int, float)) and _dl >= 3.5) or (
             isinstance(_dd, (int, float)) and _dd >= 6.0)
         ftmo_cls = _tile_cls(ftmo.get("verdict", "?"), ftmo.get("alarms", 0), warn=_soft_warn)
         _dp = ftmo.get("day_pnl")
         _age = ftmo.get("age_min")
-        ftmo_sub = (
-            f"day {'+' if isinstance(_dp, (int, float)) and _dp >= 0 else ''}{_dp:,.0f}"
-            f" ({_dl:.1f}% of 5) // total DD {_dd:.1f}% of 10 // "
-            f"{ftmo.get('magics_seen')}/{ftmo.get('expected_magics')} magics // "
-            f"verdict {ftmo.get('verdict', '?')}"
-            + (f" // {_age}m ago" if _age is not None else "")
-            if isinstance(_dp, (int, float)) and isinstance(_dl, (int, float))
-            and isinstance(_dd, (int, float))
-            else f"verdict {ftmo.get('verdict', '?')}"
-        )
+        _eqa = ftmo.get("eq_age_min")
+        bits = []
+        if not ftmo.get("terminal_up"):
+            bits.append("TERMINAL DOWN")
+        if _use_monitor:
+            bits.append(f"monitor eq {_fmt_age_min(_mon_age)} ago")
+            if _mon_pos is not None:
+                bits.append(f"{_mon_pos} open pos")
+        elif isinstance(_dp, (int, float)):
+            _dlf = f" ({_dl:.1f}% of 5%)" if isinstance(_dl, (int, float)) else ""
+            bits.append(f"day P&L {_fmt_pnl(_dp)}{_dlf}")
+        if isinstance(_dd, (int, float)):
+            bits.append(f"total DD {_dd:.2f}% of 10%")
+        if not _use_monitor and _eqa is not None:
+            bits.append(f"eq snap {_fmt_age_min(_eqa)} old")
+        if ftmo.get("magics_seen") is not None:
+            bits.append(f"{ftmo.get('magics_seen')}/{ftmo.get('expected_magics')} magics")
+        bits.append(f"verdict {ftmo.get('verdict', '?')}")
+        if _age is not None:
+            bits.append(f"pulse {_age}m ago")
+        ftmo_sub = " // ".join(bits)
+        # A book 0.03% above the hard 10% floor is red regardless of what the
+        # (possibly stale) pulse verdict says.
+        if isinstance(_dd, (int, float)) and _dd >= 9.0:
+            ftmo_cls = "alert"
     else:
         ftmo_val, ftmo_cls, ftmo_sub = "NO PULSE", "alert", "ftmo_trial_pulse.json unreadable"
 
@@ -1320,11 +2060,11 @@ def main() -> int:
 
     money_html = f'''
   <div class="frontier">
-    <div class="frontier-tile">
+    <a class="frontier-tile" href="dxz_journal.html" title="Open the DXZ Trading Journal">
       <div class="f-lbl">DXZ Live Book // Darwinex Zero</div>
       <div class="f-val {dxz_cls}">{e(dxz_val)}</div>
       <div class="f-sub">{e(dxz_sub)}</div>
-    </div>
+    </a>
     <div class="frontier-tile">
       <div class="f-lbl">FTMO Trial // 100K</div>
       <div class="f-val {ftmo_cls}">{e(ftmo_val)}</div>
@@ -1347,13 +2087,18 @@ def main() -> int:
     # Only genuine OWNER decisions (OWNER call 2026-07-07: "was muss ich da
     # alles entscheiden?" — the old panel listed Claude review tasks and
     # zombie BLOCKED rows, none of which OWNER can act on).
-    review_pending = db_rows(
-        "SELECT b.id, b.payload_json FROM tasks b "
-        "WHERE b.kind='build_ea' AND b.status='done' "
-        "AND NOT EXISTS (SELECT 1 FROM tasks r WHERE r.kind='ea_review' "
-        "AND r.payload_json LIKE '%\"build_task_id\": \"' || b.id || '\"%') "
-        "LIMIT 8"
+    # Uncapped COUNT — the old LIMIT-8 row fetch silently capped both the
+    # Claude QUE readout and the funnel BUILT stage at 8 (audit 2026-07-25).
+    # json_extract join instead of correlated NOT-EXISTS-LIKE: same result,
+    # ~0.2s vs ~20s in the 2-min render loop (Codex review 2026-07-25).
+    _review_rows = db_rows(
+        "SELECT COUNT(*) AS c FROM tasks b "
+        "LEFT JOIN (SELECT DISTINCT json_extract(payload_json, '$.build_task_id') AS id "
+        "           FROM tasks WHERE kind='ea_review' AND json_valid(payload_json)) r "
+        "  ON r.id = b.id "
+        "WHERE b.kind='build_ea' AND b.status='done' AND r.id IS NULL"
     )
+    review_pending_count = int(_review_rows[0]["c"] or 0) if _review_rows else 0
     attention_rows: list[str] = []
     for d in decisions[:8]:
         row_cls = "attention-row alert" if d.get("alert") else "attention-row"
@@ -1382,7 +2127,7 @@ def main() -> int:
     claude_act = len(claude_workers)
     codex_act = len(codex_workers)
     mt5_act = len(mt5_work)
-    review_q_count = len(review_pending)
+    review_q_count = review_pending_count
 
     # Today's completed work_items counts as "DONE TODAY" for MT5
     cw_today = controlling["windows"]["today"]
@@ -1416,10 +2161,15 @@ def main() -> int:
             r = f' <span class="lim-reset">&rarr;{e(str(reset))}</span>' if reset else ""
             return f'<span class="k">{label}</span> <span class="v {cls}">{int(val)}%</span>{r}'
 
-        parts = [
-            _pct_span("5H", s.get("hour_pct"), s.get("hour_reset")),
-            _pct_span("WK", s.get("week_pct"), s.get("week_reset")),
-        ]
+        # Post-2026-07-12 API change: Codex no longer exposes a 5-hour window —
+        # the weekly limit is now the primary window. Only render the 5H cell
+        # when real 5h data exists (Claude still reports it); otherwise drop it
+        # and mark weekly as PRIMARY rather than showing a mislabeled "5H —".
+        parts = []
+        if isinstance(s.get("hour_pct"), (int, float)):
+            parts.append(_pct_span("5H", s.get("hour_pct"), s.get("hour_reset")))
+        wk_label = "WK" if isinstance(s.get("hour_pct"), (int, float)) else "WK (PRIMARY)"
+        parts.append(_pct_span(wk_label, s.get("week_pct"), s.get("week_reset")))
         if src == "claude" and isinstance(s.get("sonnet_pct"), (int, float)):
             parts.append(_pct_span("WK-SONNET", s.get("sonnet_pct"), None))
         stale = not s.get("fresh")
@@ -1438,19 +2188,39 @@ def main() -> int:
         + len(q.get("pending_backtests_list", []) or [])
         + q.get("work_items_pending", 0)
     )
-    # T1..T10 fleet — active when an mt5_work entry's terminal matches
+    # T1..T10 fleet — farm-active when an mt5_work entry's terminal matches;
+    # amber when a terminal64 process is alive without a farm claim (ad-hoc
+    # harness or leaked runner — visible instead of lying "idle").
     active_terms = {str(w.get("terminal") or "").upper() for w in mt5_work}
+    proc_terms = factory_terminal_procs()
+    try:
+        import farmctl
+        reserved_terms = farmctl.terminal_reservations(ROOT)
+    except Exception:
+        reserved_terms = {}
     term_cells = []
     for i in range(1, 11):
         tname = f"T{i}"
         is_active = any(tname in t or t == tname for t in active_terms)
-        cls = "active" if is_active else "idle"
-        dot = "■" if is_active else "□"
+        is_proc = tname in proc_terms
+        reservation = reserved_terms.get(tname)
+        cls = "active" if is_active else ("reserved" if reservation else ("proc" if is_proc else "idle"))
+        dot = "■" if (is_active or is_proc) else ("R" if reservation else "□")
+        title = ""
+        if reservation:
+            title = (
+                f' title="reserved by {e(reservation["reserved_by"])} '
+                f'until {e(reservation["until_utc"])}: {e(reservation["reason"])}"'
+            )
         term_cells.append(
-            f'<div class="term {cls}"><div class="id">{tname}</div><div class="dot">{dot}</div></div>'
+            f'<div class="term {cls}"{title}><div class="id">{tname}</div><div class="dot">{dot}</div></div>'
         )
     term_row_html = "".join(term_cells)
-    fleet_label = f"T1–T10 Workers // {len(active_terms)} of 10 saturated"
+    fleet_label = (
+        f"T1–T10 Workers // {len(active_terms)} of 10 farm-active // "
+        f"{len(proc_terms)} terminal proc{'s' if len(proc_terms) != 1 else ''} up // "
+        f"{len(reserved_terms)} reserved"
+    )
 
     # Watchdog pulse: last self-heal action + interactive-session state. Answers
     # OWNER's recurring "ist die Factory eigentlich gelaufen?" without log-digging.
@@ -1493,9 +2263,18 @@ def main() -> int:
                     pass
 
                 if age_min is not None and age_min > 30:
-                    # Watchdog stopped cycling — show explicit STALE label
-                    watchdog_str = f"WATCHDOG-STALE since {freshness_ts} // {age_min}m ago"
-                    watchdog_cls = "wd-crit"
+                    if factory_off:
+                        # Watchdog task is disabled together with the factory —
+                        # expected during MAINTENANCE, never CRIT (OWNER rule:
+                        # CRITICAL is reserved for a genuinely down factory).
+                        watchdog_str = (
+                            f"paused with factory (MAINTENANCE) // last beat {age_min}m ago"
+                        )
+                        watchdog_cls = "wd-warn"
+                    else:
+                        # Watchdog stopped cycling — show explicit STALE label
+                        watchdog_str = f"WATCHDOG-STALE since {freshness_ts} // {age_min}m ago"
+                        watchdog_cls = "wd-crit"
                 elif last_op:
                     act = str(last_op.get("action") or "?")
                     sess = "SESSION LOST" if last_op.get("session_lost") else "session ok"
@@ -1512,32 +2291,65 @@ def main() -> int:
         pass
 
     # ---------- 5. PIPELINE FUNNEL ----------
-    # Stage counts:
-    # SRC      — sources pending  (input reservoir)
-    # CARDS    — cards_ready / approved (write-ready EAs)
-    # BUILT    — build_ea active+pending+done not yet reviewed (EAs being built)
-    # BACKTEST Q02  — work_items at Q02 (plus legacy P2 rows)
-    # ROBUST Q05-Q07 — work_items at Q05-Q07 (plus legacy rows)
-    # PORTFOLIO Q11 — work_items PASS at Q11 (plus legacy P8 rows)
+    # One basis across the whole row (numeric audit 2026-07-25): every stage
+    # shows the CUMULATIVE count that reached it, and backtest phases use the
+    # same unit as the prog-strip — distinct (ea_id, symbol) PASS pairs.
+    # Reservoir stocks (pending sources, in-flight builds) live in the meta
+    # lines; the old row mixed stocks (1, 11) with lifetime totals (73203,
+    # dominated 68% by INFRA_FAIL requeues) under flow-implying arrows.
     src_pending = backlog["sources"].get("pending", 0)
     src_done = backlog["sources"].get("done", 0)
     cards_ready = backlog["sources"].get("cards_ready", 0)
-    cards_cum_approved = q.get("cards_approved", 0)
-    # Builds: pending + active + waiting review
-    built_count = q.get("builds_pending", 0) + q.get("builds_active", 0) + review_q_count
-    # Backtest Q02 — count Q02 and any legacy P2 rows.
-    q02_total = 0
-    for r in db_rows("SELECT status, verdict, COUNT(*) AS c FROM work_items WHERE phase IN ('Q02','P2') GROUP BY status, verdict"):
-        q02_total += int(r.get("c") or 0)
-    # ROBUST Q05-Q07: operator surfaces show Qxx only.
-    robust_rows = db_rows(
-        "SELECT phase, COUNT(DISTINCT ea_id) AS c FROM work_items "
-        "WHERE verdict='PASS' AND phase IN ('Q05','Q06','Q07','P4','P5','P5b') GROUP BY phase"
+
+    # Cards total + EAs built (filesystem truth) — also feed section 5b.
+    cards_dir = ROOT / "artifacts" / "cards_approved"
+    cards_total = (sum(1 for p in cards_dir.iterdir()
+                       if p.is_file() and p.suffix == ".md")
+                   if cards_dir.exists() else 0)
+    ea_dir_root = Path(r"C:\QM\repo\framework\EAs")
+    eas_built = 0
+    if ea_dir_root.exists():
+        for d in ea_dir_root.iterdir():
+            if d.is_dir() and d.name.startswith("QM5_"):
+                # Counted as "built" only if the .ex5 exists
+                if any(p.suffix == ".ex5" for p in d.iterdir()):
+                    eas_built += 1
+    eas_to_build = max(0, cards_total - eas_built)
+    builds_inflight = (
+        q.get("builds_pending", 0) + q.get("builds_active", 0) + review_q_count
     )
-    robust_count = sum(int(r.get("c") or 0) for r in robust_rows)
-    _p_to_q = {"P4": "Q05", "P5": "Q06", "P5b": "Q07"}
+
+    def _pass_pairs(phases: tuple[str, ...]) -> int:
+        ph = ",".join(f"'{p}'" for p in phases)
+        rows_ = db_rows(
+            "SELECT COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items "
+            f"WHERE verdict='PASS' AND UPPER(phase) IN ({ph})"
+        )
+        return int(rows_[0]["c"] or 0) if rows_ else 0
+
+    def _phase_read_keys(qid: str) -> tuple[str, ...]:
+        """Canonical key plus every manifest-declared legacy read alias."""
+
+        return (qid, *Q_TO_LEGACY_ALIASES.get(qid, ()))
+
+    q02_pass_pairs = _pass_pairs(("Q02", "P2"))
+    # ROBUST Q05-Q07: deduped across the band (an EA that reached Q07 also has
+    # Q05+Q06 PASS rows — summing per-phase counts triple-counts it).
+    robust_phase_keys = tuple(
+        key for qid in ("Q05", "Q06", "Q07") for key in _phase_read_keys(qid)
+    )
+    robust_phase_sql = ",".join(f"'{phase}'" for phase in robust_phase_keys)
+    robust_by_q: dict[str, int] = {}
+    for r in db_rows(
+        "SELECT phase, COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items "
+        f"WHERE verdict='PASS' AND UPPER(phase) IN ({robust_phase_sql}) GROUP BY phase"
+    ):
+        qk = phase_label(r.get("phase"))
+        robust_by_q[qk] = robust_by_q.get(qk, 0) + int(r.get("c") or 0)
+    robust_pairs = _pass_pairs(robust_phase_keys)
+    q05_pairs = robust_by_q.get("Q05", 0)
     robust_meta = " // ".join(
-        f"{_p_to_q.get(r['phase'], r['phase'])}:{r['c']}" for r in robust_rows
+        f"{k}:{robust_by_q[k]}" for k in ("Q05", "Q06", "Q07") if k in robust_by_q
     ) or "0 PASS"
     portfolio_count = backlog.get("p8_pass_total", 0)
     portfolio_meta = f"TARGET 5 // {portfolio_count}/5"
@@ -1555,42 +2367,40 @@ def main() -> int:
     q03_spark = sparkline_str(_last7("_q03_pass")) if trend else "▁▁▁▁▁▁▁"
     q11_spark = "▁▁▁▁▁▁▁"
 
-    # Funnel drop-off labels
-    review_drop = ""
-    if cards_cum_approved:
-        review_drop = f"▼ {int(100 - 100 * built_count / max(1, cards_cum_approved))}% TO REVIEW"
+    # Funnel drop-off labels — same unit on both ends of every ratio.
+    built_meta = f"{eas_to_build} TO BUILD // {builds_inflight} IN FLIGHT"
     q02_drop = ""
-    if q02_total:
-        q02_drop = f"▼ {int(100 - 100 * robust_count / max(1, q02_total))}% TO Q05"
+    if q02_pass_pairs:
+        q02_drop = f"▼ {int(100 - 100 * q05_pairs / max(1, q02_pass_pairs))}% TO Q05"
 
     funnel_html_inner = (
         '<div class="funnel-stage{src_empty}">'
-        '<div class="stg-lbl">SRC</div>'
-        f'<div class="stg-num">{src_pending}</div>'
-        f'<div class="stg-meta">{src_done} DONE // {src_pending} PEND</div>'
+        '<div class="stg-lbl">SRC DONE</div>'
+        f'<div class="stg-num">{src_done}</div>'
+        f'<div class="stg-meta">{src_pending} PEND</div>'
         '<span class="stg-spark-lbl">7D INTAKE</span>'
         f'<div class="stg-spark">{src_spark}</div>'
         '</div>'
         '<div class="funnel-arrow">→</div>'
         '<div class="funnel-stage{cards_empty}">'
-        '<div class="stg-lbl">CARDS</div>'
-        f'<div class="stg-num">{cards_ready}</div>'
-        f'<div class="stg-meta">{cards_cum_approved} APPROVED CUM</div>'
+        '<div class="stg-lbl">CARDS APPROVED</div>'
+        f'<div class="stg-num">{cards_total:,}</div>'
+        f'<div class="stg-meta">{cards_ready} SRC CARDS-READY</div>'
         '<span class="stg-spark-lbl">7D APPROVED</span>'
         f'<div class="stg-spark">{cards_spark}</div>'
         '</div>'
         '<div class="funnel-arrow">→</div>'
         '<div class="funnel-stage{built_empty}">'
-        '<div class="stg-lbl">BUILT</div>'
-        f'<div class="stg-num">{built_count}</div>'
-        f'<div class="stg-meta drop">{e(review_drop) or "—"}</div>'
+        '<div class="stg-lbl">EAS BUILT</div>'
+        f'<div class="stg-num">{eas_built:,}</div>'
+        f'<div class="stg-meta drop">{e(built_meta)}</div>'
         '<span class="stg-spark-lbl">7D BUILD</span>'
         f'<div class="stg-spark">{build_spark}</div>'
         '</div>'
         '<div class="funnel-arrow">→</div>'
         '<div class="funnel-stage{p2_empty}">'
-        '<div class="stg-lbl">BACKTEST Q02</div>'
-        f'<div class="stg-num">{q02_total}</div>'
+        '<div class="stg-lbl">Q02 PASS PAIRS</div>'
+        f'<div class="stg-num">{q02_pass_pairs:,}</div>'
         f'<div class="stg-meta drop">{e(q02_drop) or "—"}</div>'
         '<span class="stg-spark-lbl">7D Q02 PASS</span>'
         f'<div class="stg-spark">{q02_spark}</div>'
@@ -1598,7 +2408,7 @@ def main() -> int:
         '<div class="funnel-arrow">→</div>'
         '<div class="funnel-stage{robust_empty}">'
         '<div class="stg-lbl">ROBUST Q05-Q07</div>'
-        f'<div class="stg-num">{robust_count}</div>'
+        f'<div class="stg-num">{robust_pairs}</div>'
         f'<div class="stg-meta">{e(robust_meta)}</div>'
         '<span class="stg-spark-lbl">7D Q03 PASS</span>'
         f'<div class="stg-spark">{q03_spark}</div>'
@@ -1613,11 +2423,11 @@ def main() -> int:
         '</div>'
     )
     funnel_html_inner = funnel_html_inner.format(
-        src_empty=" empty" if src_pending == 0 else "",
-        cards_empty=" empty" if cards_ready == 0 else "",
-        built_empty=" empty" if built_count == 0 else "",
-        p2_empty=" empty" if q02_total == 0 else "",
-        robust_empty=" empty" if robust_count == 0 else "",
+        src_empty=" empty" if src_done == 0 else "",
+        cards_empty=" empty" if cards_total == 0 else "",
+        built_empty=" empty" if eas_built == 0 else "",
+        p2_empty=" empty" if q02_pass_pairs == 0 else "",
+        robust_empty=" empty" if robust_pairs == 0 else "",
         portfolio_empty=" empty" if portfolio_count == 0 else "",
     )
 
@@ -1625,26 +2435,8 @@ def main() -> int:
     # snapshot counts still feed the COMPANY FRONTIER Q08-cohort tile.
 
     # ---------- 5b. PIPELINE PROGRESS (per-Q breakdown — OWNER call) ----------
-    # Cards total: filesystem count of cards_approved/
-    cards_dir = ROOT / "artifacts" / "cards_approved"
-    cards_total = (sum(1 for p in cards_dir.iterdir()
-                       if p.is_file() and p.suffix == ".md")
-                   if cards_dir.exists() else 0)
-
-    # EAs built: registry rows where the on-disk EA dir exists
-    ea_registry_path = ROOT.parent.parent.parent / "QM" / "repo" / "framework" / "registry" / "ea_id_registry.csv"
-    if not ea_registry_path.exists():
-        # Try the canonical repo path
-        ea_registry_path = Path(r"C:\QM\repo\framework\registry\ea_id_registry.csv")
-    ea_dir_root = Path(r"C:\QM\repo\framework\EAs")
-    eas_built = 0
-    if ea_dir_root.exists():
-        for d in ea_dir_root.iterdir():
-            if d.is_dir() and d.name.startswith("QM5_"):
-                # Counted as "built" only if the .ex5 exists
-                if any(p.suffix == ".ex5" for p in d.iterdir()):
-                    eas_built += 1
-    eas_to_build = max(0, cards_total - eas_built)
+    # cards_total / eas_built / eas_to_build come from the funnel section
+    # above (single filesystem walk, shared basis).
 
     # Backtest queue totals
     bt_done = 0
@@ -1660,27 +2452,51 @@ def main() -> int:
     # Per-phase progress: distinct (ea_id, symbol) pairs that reached each Qxx
     # with a PASS verdict (or — for phases that don't write per-symbol PASS
     # rows — distinct ea_id count). Reads Qxx-keyed rows directly; legacy
-    # P-keys map via phase_ids.LEGACY_P_TO_Q for any orphan rows.
-    Q_DISPLAY_ORDER = ["Q01", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07",
-                       "Q08", "Q09", "Q10", "Q11", "Q12", "Q13"]
+    # P-keys map via the complete manifest alias inverse for any orphan rows.
     q_counts: dict[str, int] = {q: 0 for q in Q_DISPLAY_ORDER}
+    # Q00 = cards admitted to research intake.
+    q_counts["Q00"] = cards_total
     # Q01 = EAs built (registry intersection w/ disk)
     q_counts["Q01"] = eas_built
-    # Q02..Q10 = distinct (ea_id, symbol) PASS pairs at each Qxx
-    for r in db_rows(
-        "SELECT phase, COUNT(DISTINCT ea_id || '|' || symbol) AS c "
-        "FROM work_items WHERE verdict='PASS' GROUP BY phase"
-    ):
-        phase_raw = r.get("phase") or ""
-        # Map legacy P-keys to Qxx for display
-        _legacy = {"P2": "Q02", "P3": "Q03", "P3.5": "Q04", "P4": "Q05",
-                   "P5": "Q06", "P5b": "Q07", "P5c": "Q08",
-                   "P6": "Q09", "P7": "Q10", "P8": "Q11"}
-        qid = phase_raw if phase_raw in q_counts else _legacy.get(phase_raw)
-        if qid and qid in q_counts:
-            q_counts[qid] += int(r.get("c") or 0)
-    # Q11..Q13 are OWNER-only phases (no work_items yet) — leave at 0 until
-    # the agent_tasks table tracks them. Future iteration.
+    # Q02..Q10 = distinct (ea_id, symbol) PASS pairs at each Qxx. Each Q is
+    # counted over the UNION of its Qxx + every declared legacy P key — summing
+    # spaces double-counts pairs that exist under both (audit 2026-07-25).
+    for qid in Q_DISPLAY_ORDER[2:11]:
+        q_counts[qid] = _pass_pairs(_phase_read_keys(qid))
+    # Q09 stores per-lane sub-keys (Q09_NEWS / Q09_PORTFOLIO) whose PASS
+    # verdicts are lane-specific (CONFIG_LOCKED / PASS_PORTFOLIO) — the generic
+    # PASS-pair filter above never matches them (audit 2026-08-03: chip showed
+    # 0 against 33 real portfolio passes). PENDING_RUNNER placeholders are
+    # sealed plans, not passes, and stay excluded.
+    q09_rows = db_rows(
+        "SELECT COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items "
+        "WHERE (UPPER(phase)='Q09_PORTFOLIO' AND verdict='PASS_PORTFOLIO') "
+        "   OR (UPPER(phase)='Q09_NEWS' AND verdict='CONFIG_LOCKED') "
+        "   OR (UPPER(phase)='Q09' AND verdict='PASS')"
+    )
+    q_counts["Q09"] = int(q09_rows[0]["c"] or 0) if q09_rows else 0
+    # Q11 has no tracked rows yet (truthfully 0). Q12 = EAs sitting in the
+    # OWNER review pool; Q13 = sleeves live on T_Live, from the read-only
+    # pulse projection (evidence chain: terminal logs → live_book_pulse.py).
+    # A missing/unchecked pulse leaves the chip at 0 — never invent a live count.
+    q12_rows = db_rows(
+        "SELECT COUNT(DISTINCT ea_id) AS c FROM portfolio_candidates "
+        "WHERE state='Q12_REVIEW_READY'"
+    )
+    q_counts["Q12"] = int(q12_rows[0]["c"] or 0) if q12_rows else 0
+    try:
+        _pulse_reconcile = (
+            json.loads(LIVE_BOOK_PULSE.read_text(encoding="utf-8"))
+            .get("manifest_reconcile") or {}
+        )
+        if _pulse_reconcile.get("checked"):
+            q_counts["Q13"] = max(
+                0,
+                int(_pulse_reconcile.get("expected_count") or 0)
+                - int(_pulse_reconcile.get("missing_loaded") or 0),
+            )
+    except (OSError, json.JSONDecodeError, TypeError, ValueError):
+        pass
 
     # Build the progress HTML — top-line counters + per-Q chip strip.
     progress_html = f"""
@@ -1708,8 +2524,11 @@ def main() -> int:
       )}
     </div>
     <div class="prog-foot">
-      Q01 = EAs with .ex5 on disk &middot; Q02..Q10 = distinct (EA, symbol) PASS pairs &middot;
-      Q11..Q13 = OWNER phases (live count pending)
+      Q00 = strategy cards &middot; Q01 = EAs with .ex5 on disk &middot;
+      Q02..Q10 = distinct (EA, symbol) PASS pairs, cumulative across gate-regime
+      eras (Q03/Q08 entered mid-history &mdash; adjacent chips are not one
+      regime's funnel) &middot; Q09 = news/portfolio sub-gate passes &middot;
+      Q12 = EAs in OWNER review pool &middot; Q13 = sleeves live on T_Live (pulse)
     </div>
   </div>
 """
@@ -1761,31 +2580,195 @@ def main() -> int:
     except Exception:
         build_sha = "—"
 
-# ==== HTML assembly (STEEL/EMERALD brand · OWNER call 2026-05-23) ====
+    # ---------- v7. FRESHNESS BADGE ----------
+    freshness_html = (
+        '<div class="freshness" id="freshness">'
+        '<span class="lbl">Rendered</span>'
+        f'<span class="rtime">{e(now_local)}</span>'
+        '<span class="age" id="fresh-age">&middot;</span>'
+        '</div>'
+    )
+
+    # ---------- v7. LIVE BOOK (T_Live) ----------
+    def _age_short(sec) -> str:
+        if sec is None:
+            return "n/a"
+        sec = int(sec)
+        if sec < 90:
+            return f"{sec}s"
+        if sec < 5400:
+            return f"{sec // 60}m"
+        if sec < 172800:
+            return f"{sec / 3600:.1f}h"
+        return f"{sec // 86400}d"
+
+    _jage = live_book.get("journal_age_sec")
+    _deals = live_book.get("deals_today")
+    lb_deals_val = f"{_deals} DEALS" if isinstance(_deals, int) else "n/a"
+    lb_deals_cls = "hot" if isinstance(_deals, int) and _deals > 0 else ""
+    if _jage is not None:
+        _fills = (
+            "fills logged today" if isinstance(_deals, int) and _deals > 0
+            else "no fills logged today"
+        )
+        lb_deals_sub = (
+            f"journal {live_book.get('journal_date') or '?'} // last write "
+            f"{_age_short(_jage)} ago // {_fills}"
+        )
+    else:
+        lb_deals_sub = "today journal not found (pre-open / rollover) — n/a"
+
+    _eq = live_book.get("equity")
+    lb_eq_val = f"${_eq:,.2f}" if isinstance(_eq, (int, float)) else "n/a"
+    _edp = live_book.get("equity_day_pnl")
+    _ets = str(live_book.get("equity_ts") or "")[:16].replace("T", " ")
+    if isinstance(_eq, (int, float)):
+        _dp_txt = (
+            f" // day P&L {'+' if _edp >= 0 else '-'}${abs(_edp):,.2f}"
+            if isinstance(_edp, (int, float)) else ""
+        )
+        _dxz_bal = (money.get("dxz") or {}).get("deal_balance")
+        _bal_txt = (
+            f" // bal after deals ${_dxz_bal:,.2f}"
+            if isinstance(_dxz_bal, (int, float)) else ""
+        )
+        lb_eq_sub = (
+            f"last day-close equity (EA-emitted) // {_ets}Z{_dp_txt}{_bal_txt} // NOT real-time"
+        )
+    else:
+        lb_eq_sub = "no EQUITY_SNAPSHOT in EA logs — n/a"
+
+    _at = live_book.get("ea_logs_today")
+    _tot = live_book.get("ea_logs_total")
+    lb_sleeves_val = f"{_at if _at is not None else 'n/a'}/{LIVE_BOOK_SLEEVES}"
+    lb_sleeves_cls = "" if (isinstance(_at, int) and _at >= LIVE_BOOK_SLEEVES) else (
+        "warn" if isinstance(_at, int) else "alert")
+    lb_sleeves_sub = (
+        f"EA logs written today // {_tot if _tot is not None else '?'} log files on disk"
+    )
+    live_book_html = f'''
+  <div class="frontier">
+    <div class="frontier-tile">
+      <div class="f-lbl">Journal // T_Live Terminal</div>
+      <div class="f-val {lb_deals_cls}">{e(lb_deals_val)}</div>
+      <div class="f-sub">{e(lb_deals_sub)}</div>
+    </div>
+    <div class="frontier-tile">
+      <div class="f-lbl">Book Equity // Day-Close</div>
+      <div class="f-val">{e(lb_eq_val)}</div>
+      <div class="f-sub">{e(lb_eq_sub)}</div>
+    </div>
+    <div class="frontier-tile">
+      <div class="f-lbl">Active Sleeves // EA Logs Today</div>
+      <div class="f-val {lb_sleeves_cls}">{e(lb_sleeves_val)}</div>
+      <div class="f-sub">{e(lb_sleeves_sub)}</div>
+    </div>
+  </div>
+'''
+
+    # ---------- v7. NEXT-BOOK FRONTIER (~26.07) ----------
+    nbf_rows: list[str] = []
+    for r in next_book.get("fresh_pass", []):
+        nbf_rows.append(
+            '<div class="nbf-row pass">'
+            f'<span class="nbf-tag">{e(r.get("phase"))} PASS</span>'
+            f'<span class="nbf-ea">{e(r.get("ea_id"))}</span>'
+            f'<span class="nbf-sym">{e(r.get("symbol"))}</span>'
+            f'<span class="nbf-when">{e(r.get("when"))}</span>'
+            '</div>'
+        )
+    for r in next_book.get("in_flight", []):
+        nbf_rows.append(
+            '<div class="nbf-row inflight">'
+            f'<span class="nbf-tag">Q08 {e(str(r.get("status")).upper())}</span>'
+            f'<span class="nbf-ea">{e(r.get("ea_id"))}</span>'
+            f'<span class="nbf-sym">{e(r.get("symbol"))}</span>'
+            f'<span class="nbf-when">Q07 {e(r.get("when"))}</span>'
+            '</div>'
+        )
+    if not nbf_rows:
+        nbf_rows.append(
+            '<div class="nbf-row">'
+            '<span class="nbf-tag" style="color:var(--text-3)">CLEAR</span>'
+            '<span class="nbf-ea">no fresh Q08+ PASS and no Q07&rarr;Q08 in flight</span>'
+            '<span class="nbf-sym"></span><span class="nbf-when"></span>'
+            '</div>'
+        )
+    next_book_html = f'''
+  <div class="nbf">
+    <div class="nbf-summary">
+      <span><b>{next_book.get("fresh_count", 0)}</b> fresh Q08/Q09/Q10 PASS since 19.07 18:00Z</span>
+      <span><b>{next_book.get("inflight_count", 0)}</b> Q07-PASS with Q08 pending/running</span>
+    </div>
+    <div class="nbf-rows">
+      {"".join(nbf_rows)}
+    </div>
+  </div>
+'''
+
+    # ---------- v7. OPS HEARTBEATS ----------
+    def _dur_short(sec: int) -> str:
+        if sec >= 3600 and sec % 3600 == 0:
+            return f"{sec // 3600}h"
+        if sec >= 3600:
+            return f"{sec / 3600:.0f}h"
+        return f"{sec // 60}m"
+
+    hb_tiles: list[str] = []
+    for hb in heartbeats:
+        hb_tiles.append(
+            f'<div class="hb-tile hb-{e(hb["status"])}">'
+            f'<div class="hb-lbl">{e(hb["label"])}</div>'
+            f'<div class="hb-age">{e(_age_short(hb.get("age_sec")))}</div>'
+            f'<div class="hb-exp">expect &lt; {e(_dur_short(hb["warn_sec"]))}</div>'
+            '</div>'
+        )
+    hb_tiles_html = "".join(hb_tiles)
+    health_warns = [c for c in (health.get("checks") or []) if str(c.get("status") or "").upper() == "WARN"]
+    hb_warn_rows: list[str] = []
+    for c in health_warns:
+        hb_warn_rows.append(
+            '<div class="hb-warn-row">'
+            f'<span class="hb-warn-name">{e(c.get("name"))}</span>'
+            f'<span class="hb-warn-detail">{e(str(c.get("detail") or "")[:150])}</span>'
+            '</div>'
+        )
+    if not hb_warn_rows:
+        hb_warn_rows.append(
+            '<div class="hb-warn-row">'
+            '<span class="hb-warn-name" style="color:var(--pass)">NONE</span>'
+            '<span class="hb-warn-detail">no health.json WARN checks</span>'
+            '</div>'
+        )
+    hb_warns_html = "".join(hb_warn_rows)
+
+# ==== HTML assembly (PAPER/INK Direction C · OWNER-DL 2026-07-20) ====
 
     # CSS lives outside the f-string to avoid brace-escaping.
     CSS = r"""
 :root {
-  --bg:            #020617;
-  --surface-1:     #060b18;
-  --surface-2:     #0f172a;
-  --surface-3:     #1e293b;
-  --text:          #f8fafc;
-  --text-2:        #cbd5e1;
-  --text-3:        #94a3b8;
-  --text-4:        #64748b;
-  --border:        rgba(148, 163, 184, 0.08);
-  --border-2:      rgba(148, 163, 184, 0.18);
-  --signal:        #10b981;
-  --signal-bright: #34d399;
-  --signal-dim:    #059669;
-  --pass:          #10b981;
-  --fail:          #ef4444;
-  --warn:          #f97316;
-  --info:          #cbd5e1;
-  --promising:     #f59e0b;
-  --dead:          #6b7280;
-  --live:          #06b6d4;
+  --bg:            #f6f5f2;
+  --surface-1:     #ffffff;
+  --surface-2:     #f1efe8;
+  --surface-3:     #e8e4d9;
+  --text:          #1c1a16;
+  --text-2:        #45403a;
+  --text-3:        #726b60;
+  --text-4:        #9a938a;
+  --border:        #e2ded4;
+  --border-2:      #cfc9bc;
+  --signal:        #2954d4;
+  --signal-bright: #1e42b8;
+  --signal-dim:    #5b7ade;
+  --pass:          #1a8f4c;
+  --fail:          #d13438;
+  --warn:          #b8720a;
+  --info:          #45403a;
+  --promising:     #8f6e06;
+  --dead:          #98918a;
+  --live:          #0e7490;
+  --profit:        #1a8f4c;
+  --loss:          #d13438;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0 !important; }
 html, body {
@@ -1808,12 +2791,27 @@ body { padding: 32px; min-height: 100vh; }
 .topbar {
   grid-column: span 12;
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto 1fr auto auto auto;
   align-items: center;
   gap: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
 }
+/* v7 freshness badge — live 'age' computed client-side vs render epoch */
+.freshness {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-3); white-space: nowrap; text-align: right;
+  border: 1px solid var(--border-2); padding: 7px 12px;
+}
+.freshness .lbl { color: var(--text-4); margin-right: 8px; font-size: 10px; letter-spacing: 0.16em; }
+.freshness .rtime { color: var(--text); font-weight: 700; }
+.freshness .age { color: var(--text-3); margin-left: 8px; }
+.freshness.age-warn { border-color: var(--warn); color: var(--warn); }
+.freshness.age-warn .lbl, .freshness.age-warn .age { color: var(--warn); }
+.freshness.age-crit { border-color: var(--fail); color: var(--fail); }
+.freshness.age-crit .lbl, .freshness.age-crit .age { color: var(--fail); }
 .brand {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-weight: 700; font-size: 14px;
@@ -1929,12 +2927,15 @@ body { padding: 32px; min-height: 100vh; }
 }
 .agent-limits .k { color: var(--text-3); font-size: 10px; letter-spacing: 0.12em; }
 .agent-limits .v { font-weight: 700; }
-.agent-limits .lim-ok { color: var(--signal); }
+.agent-limits .lim-ok { color: var(--pass); }
 .agent-limits .lim-warn { color: var(--warn); }
 .agent-limits .lim-crit { color: var(--fail); }
 .agent-limits .lim-reset { color: var(--text-3); font-size: 10px; }
 .agent-limits .lim-stale { color: var(--warn); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
 .agent-limits .sep { margin: 0 8px; color: var(--border); }
+/* A row followed by its limits line must not draw a bottom border — the
+   limits block is pulled up (-8px) and the border would strike through it. */
+.agent-row.with-limits { border-bottom: none; }
 .watchdog-row {
   display: grid; grid-template-columns: 80px 1fr; gap: 16px;
   padding: 12px 20px; align-items: baseline;
@@ -1947,7 +2948,7 @@ body { padding: 32px; min-height: 100vh; }
   text-transform: uppercase; color: var(--text-3);
 }
 .watchdog-row .wval { color: var(--text-2); }
-.watchdog-row.wd-ok .wval { color: var(--signal); }
+.watchdog-row.wd-ok .wval { color: var(--pass); }
 .watchdog-row.wd-warn .wval { color: var(--warn); }
 .watchdog-row.wd-crit .wval { color: var(--fail); font-weight: 700; }
 .agent-fleet { padding: 16px 20px 18px; border-bottom: none; }
@@ -1973,6 +2974,10 @@ body { padding: 32px; min-height: 100vh; }
 .term.active .dot { color: var(--text); }
 .term.idle   .dot { color: var(--text-3); }
 .term.active .id  { color: var(--text-2); }
+.term.reserved .dot { color: var(--danger); font-size: 9px; }
+.term.reserved .id  { color: var(--danger); }
+.term.proc .dot { color: var(--warn); }
+.term.proc .id  { color: var(--text-2); }
 
 /* PIPELINE PROGRESS — top-line counters + per-Q chip strip (OWNER call) */
 .prog-counters {
@@ -2123,6 +3128,8 @@ body { padding: 32px; min-height: 100vh; }
   background: var(--border); border: 1px solid var(--border);
 }
 .frontier-tile { background: var(--surface-1); padding: 16px 20px; }
+a.frontier-tile { display: block; text-decoration: none; color: inherit; }
+a.frontier-tile:hover { background: var(--surface-2); }
 .frontier-tile .f-lbl {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10px; font-weight: 600; letter-spacing: 0.22em;
@@ -2134,13 +3141,103 @@ body { padding: 32px; min-height: 100vh; }
   font-size: 22px; font-weight: 500; color: var(--text); line-height: 1.05;
 }
 .frontier-tile .f-val.hot { color: var(--live); }
-.frontier-tile .f-val.ok { color: var(--signal); }
+.frontier-tile .f-val.ok { color: var(--pass); }
 .frontier-tile .f-val.warn { color: var(--warn); }
 .frontier-tile .f-val.alert { color: var(--fail); }
 .frontier-tile .f-sub {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10px; color: var(--text-3); margin-top: 7px;
   letter-spacing: 0.05em; line-height: 1.5;
+}
+
+/* PIPELINE BOOKS PROGRAMME — hash-bound W0..W8 source projection */
+.pb-program { background: var(--surface-1); border: 1px solid var(--border); }
+.pb-program-fresh { border-top: 3px solid var(--pass); }
+.pb-program-stale { border-top: 3px solid var(--warn); }
+.pb-program-invalid { border-top: 3px solid var(--fail); }
+.pb-source {
+  display: flex; justify-content: space-between; gap: 24px; align-items: baseline;
+  padding: 11px 16px; border-bottom: 1px solid var(--border);
+  background: var(--surface-2); font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.pb-source-state { font-weight: 700; color: var(--pass); white-space: nowrap; }
+.pb-program-stale .pb-source-state { color: var(--warn); }
+.pb-program-invalid .pb-source-state { color: var(--fail); }
+.pb-source-detail { color: var(--text-3); text-align: right; overflow-wrap: anywhere; }
+.pb-invalid-body {
+  padding: 24px; color: var(--fail); font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px; line-height: 1.6;
+}
+.pb-safety {
+  display: flex; flex-wrap: wrap; gap: 12px 30px; padding: 10px 16px;
+  border-bottom: 1px solid var(--border); color: var(--warn);
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.pb-safety b { color: var(--text-2); margin-right: 5px; }
+.pb-waves {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px; background: var(--border); border-bottom: 1px solid var(--border);
+}
+.pb-wave { background: var(--surface-1); padding: 13px 15px; min-height: 142px; }
+.pb-wave-id {
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 20px;
+  font-weight: 700; color: var(--signal); float: left; margin-right: 11px;
+}
+.pb-wave-title { font-size: 12px; font-weight: 600; min-height: 37px; color: var(--text); }
+.pb-wave-status, .pb-wave-axes {
+  clear: both; padding-top: 7px; font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: var(--pass);
+  overflow-wrap: anywhere;
+}
+.pb-wave-axes { clear: none; padding-top: 3px; color: var(--text-3); font-weight: 400; }
+.pb-wave-next { margin-top: 8px; font-size: 10px; color: var(--text-3); line-height: 1.35; }
+.pb-wave-shadow .pb-wave-status, .pb-wave-planned .pb-wave-status { color: var(--warn); }
+.pb-wave-blocked .pb-wave-id, .pb-wave-blocked .pb-wave-status { color: var(--fail); }
+.pb-contracts {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px; background: var(--border); border-bottom: 1px solid var(--border);
+}
+.pb-contract { background: var(--surface-1); padding: 14px 16px; min-height: 124px; }
+.pb-ftmo-runtime { grid-column: 1 / -1; border-left: 3px solid var(--warn); }
+.pb-contract-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px;
+  font-weight: 700; letter-spacing: 0.13em; color: var(--text-3); text-transform: uppercase;
+}
+.pb-contract-val {
+  margin-top: 7px; font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 15px; font-weight: 700; color: var(--warn); overflow-wrap: anywhere;
+}
+.pb-contract-sub, .pb-verdicts, .pb-lane-line {
+  margin-top: 4px; font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; color: var(--text-3); overflow-wrap: anywhere;
+}
+.pb-verdicts { color: var(--signal); }
+.pb-contract-note { margin-top: 7px; color: var(--text-3); font-size: 10px; line-height: 1.4; }
+.pb-lane-line.pass { color: var(--pass); margin-top: 9px; }
+.pb-lane-line.residual { color: var(--fail); }
+.pb-blockers-head {
+  display: flex; justify-content: space-between; padding: 10px 16px;
+  background: var(--surface-2); border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px;
+  letter-spacing: 0.14em; color: var(--text-3);
+}
+.pb-blockers-head b { color: var(--fail); }
+.pb-blocker {
+  display: grid; grid-template-columns: 205px 1fr 210px; gap: 14px;
+  padding: 9px 16px; border-bottom: 1px solid var(--border); align-items: baseline;
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px;
+}
+.pb-blocker:last-child { border-bottom: none; }
+.pb-blocker-id { color: var(--fail); font-weight: 700; overflow-wrap: anywhere; }
+.pb-blocker-title { color: var(--text-2); }
+.pb-blocker-title small { display: block; color: var(--text-3); margin-top: 3px; }
+.pb-blocker-blocks { color: var(--warn); text-align: right; overflow-wrap: anywhere; }
+@media (max-width: 1050px) {
+  .pb-waves, .pb-contracts { grid-template-columns: 1fr; }
+  .pb-blocker { grid-template-columns: 1fr; gap: 4px; }
+  .pb-blocker-blocks { text-align: left; }
 }
 
 /* BOTTOM BAR */
@@ -2156,6 +3253,68 @@ body { padding: 32px; min-height: 100vh; }
 .botbar .right  { text-align: right; }
 .botbar .key    { color: var(--text-4); margin-right: 8px; }
 .botbar .val    { color: var(--text-2); }
+
+/* v7 NEXT-BOOK FRONTIER */
+.nbf { background: var(--surface-1); border: 1px solid var(--border); }
+.nbf-summary {
+  display: flex; flex-wrap: wrap; gap: 32px;
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3);
+}
+.nbf-summary b { color: var(--signal); font-weight: 700; font-size: 13px; }
+.nbf-row {
+  display: grid; grid-template-columns: 120px 130px 1fr 160px;
+  gap: 14px; padding: 10px 20px; align-items: baseline;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums; font-size: 12px; color: var(--text-2);
+}
+.nbf-row:last-child { border-bottom: none; }
+.nbf-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.nbf-row.pass .nbf-tag { color: var(--pass); }
+.nbf-row.inflight .nbf-tag { color: var(--warn); }
+.nbf-ea { color: var(--text); font-weight: 600; }
+.nbf-sym { color: var(--text-2); }
+.nbf-when { color: var(--text-3); text-align: right; font-size: 10px; letter-spacing: 0.08em; }
+
+/* v7 OPS HEARTBEATS */
+.hb-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px;
+  background: var(--border); border: 1px solid var(--border);
+}
+.hb-tile { background: var(--surface-1); padding: 14px 18px; }
+.hb-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.18em;
+  color: var(--text-3); text-transform: uppercase; margin-bottom: 8px;
+}
+.hb-age {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 24px; font-weight: 500; line-height: 1; color: var(--text); letter-spacing: -0.02em;
+}
+.hb-exp {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; color: var(--text-4); margin-top: 6px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.hb-tile.hb-ok .hb-age   { color: var(--pass); }
+.hb-tile.hb-warn .hb-age { color: var(--warn); }
+.hb-tile.hb-crit .hb-age { color: var(--fail); }
+.hb-tile.hb-miss .hb-age { color: var(--text-4); }
+.hb-warns { background: var(--surface-1); border: 1px solid var(--border); border-top: none; }
+.hb-warn-row {
+  display: grid; grid-template-columns: 230px 1fr; gap: 14px;
+  padding: 9px 20px; align-items: baseline; border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px;
+}
+.hb-warn-row:last-child { border-bottom: none; }
+.hb-warn-name {
+  color: var(--warn); font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; font-size: 10px;
+}
+.hb-warn-detail { color: var(--text-3); line-height: 1.4; }
 """
 
     # ---------- COMPANY FRONTIER (OWNER 2026-06-11: cockpit = company progress) ----------
@@ -2208,7 +3367,7 @@ body { padding: 32px; min-height: 100vh; }
         '<html lang="en"><head>\n'
         '<meta charset="utf-8">\n'
         '<title>QuantMechanica // COCKPIT</title>\n'
-        '<meta http-equiv="refresh" content="30">\n'
+        '<meta http-equiv="refresh" content="120">\n'
         '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
         '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
         '<link rel="preconnect" href="https://api.fontshare.com" crossorigin>\n'
@@ -2230,6 +3389,7 @@ body { padding: 32px; min-height: 100vh; }
       <span class="lbl">UTC // MISSION TIME</span>
       {e(now_utc_full)}
     </div>
+    {freshness_html}
     <div class="health-pill {pill_class}">{e(pill_label)}</div>
   </div>
 
@@ -2241,6 +3401,16 @@ body { padding: 32px; min-height: 100vh; }
       <span class="section-aux">DXZ Book // FTMO Trial // Pulse Evidence</span>
     </div>
     {money_html}
+  </div>
+
+  <!-- 2b. LIVE BOOK (T_Live) -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Live Book // T_Live Terminal</span>
+      <span class="section-aux">Journal + EA Logs (read-only) // day-close, NOT real-time</span>
+    </div>
+    {live_book_html}
   </div>
 
   <!-- 3. OWNER DECISIONS + AGENT STATUS -->
@@ -2262,7 +3432,7 @@ body { padding: 32px; min-height: 100vh; }
       <span class="section-aux">Claude // Codex // MT5</span>
     </div>
     <div class="agent-status">
-      <div class="agent-row">
+      <div class="agent-row with-limits">
         <span class="name">CLAUDE</span>
         <span class="agent-readout">
           <span class="v">{claude_act}</span><span class="k">ACT</span><span class="sep">&middot;</span>
@@ -2271,7 +3441,7 @@ body { padding: 32px; min-height: 100vh; }
         </span>
       </div>
       <div class="agent-limits">{claude_limits_html}</div>
-      <div class="agent-row">
+      <div class="agent-row with-limits">
         <span class="name">CODEX</span>
         <span class="agent-readout">
           <span class="v">{codex_act}</span><span class="k">ACT</span><span class="sep">&middot;</span>
@@ -2299,6 +3469,16 @@ body { padding: 32px; min-height: 100vh; }
     </div>
   </div>
 
+  <!-- 3b. PIPELINE BOOKS PROGRAMME -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Pipeline Books // DXZ + FTMO Programme</span>
+      <span class="section-aux">W0–W8 // Hash-Bound Source // No Runtime Authority</span>
+    </div>
+    {programme_html}
+  </div>
+
   <!-- 4. COMPANY FRONTIER -->
   <div class="section">
     <div class="section-head">
@@ -2307,6 +3487,16 @@ body { padding: 32px; min-height: 100vh; }
       <span class="section-aux">Furthest Candidate // Q08 Cohort // Conversion // Throughput</span>
     </div>
     {frontier_html}
+  </div>
+
+  <!-- 4b. NEXT-BOOK FRONTIER (~26.07) -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Next Book // Frontier ~26.07</span>
+      <span class="section-aux">Fresh Q08+ PASS // Q07&rarr;Q08 In Flight</span>
+    </div>
+    {next_book_html}
   </div>
 
   {progress_html}
@@ -2406,14 +3596,54 @@ body { padding: 32px; min-height: 100vh; }
     </div>
   </div>
 
+  <!-- 7b. OPS HEARTBEATS -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Ops Heartbeats // Scheduled Jobs</span>
+      <span class="section-aux">File Ages // health.json WARNs</span>
+    </div>
+    <div class="hb-grid">
+      {hb_tiles_html}
+    </div>
+    <div class="hb-warns">
+      {hb_warns_html}
+    </div>
+  </div>
+
   <!-- 8. BOTTOM BAR -->
   <div class="botbar">
-    <div><span class="key">Next Refresh</span><span class="val">30S</span></div>
-    <div class="center"><span class="key">Renderer</span><span class="val">v6.0 // STEEL-EMERALD</span></div>
+    <div><span class="key">Next Refresh</span><span class="val">120S</span></div>
+    <div class="center"><span class="key">Renderer</span><span class="val">v7.0 // STEEL-EMERALD</span></div>
     <div class="right"><span class="key">Build</span><span class="val">SHA {e(build_sha)}</span></div>
   </div>
 
 </div>
+<script>
+(function() {{
+  var RENDER_EPOCH = {render_epoch_ms};
+  var ageEl = document.getElementById('fresh-age');
+  var badge = document.getElementById('freshness');
+  if (!ageEl || !badge) return;
+  function fmt(s) {{
+    s = Math.max(0, Math.floor(s));
+    if (s < 60) return s + 's ago';
+    var m = Math.floor(s / 60);
+    if (m < 60) return m + 'm ago';
+    var h = Math.floor(m / 60);
+    return h + 'h ' + (m % 60) + 'm ago';
+  }}
+  function tick() {{
+    var age = (Date.now() - RENDER_EPOCH) / 1000;
+    ageEl.textContent = fmt(age);
+    badge.classList.remove('age-warn', 'age-crit');
+    if (age > 900) badge.classList.add('age-crit');
+    else if (age > 300) badge.classList.add('age-warn');
+  }}
+  tick();
+  setInterval(tick, 1000);
+}})();
+</script>
 '''
         + '\n</body></html>\n'
     )

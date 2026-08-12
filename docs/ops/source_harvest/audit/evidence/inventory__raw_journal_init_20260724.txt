@@ -1,0 +1,27 @@
+source=C:/QM/mt5/T_Live/MT5_Base/logs/20260724.log (UTF-16, broker time GMT+3)
+RG 0 05:17:01.726 Experts expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+LK 0 05:17:01.760 Experts expert QM5_12778_edgelab-audusd-eurjpy-cointegration (AUDUSD,Daily) loaded successfully
+DG 0 05:17:01.807 Experts expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+PO 0 05:17:01.838 Experts expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+HO 0 05:17:01.856 Experts expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+ID 0 05:17:01.893 Experts expert QM5_11708_anon-market-squeeze-d1 (EURUSD,Daily) loaded successfully
+NJ 0 05:17:01.910 Experts expert QM5_10706_tv-mon-ls (GBPUSD,H1) loaded successfully
+DQ 0 05:17:01.929 Experts expert QM5_10939_grimes-context-pb (GBPUSD,H4) loaded successfully
+KP 0 05:17:01.946 Experts expert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully
+HF 0 05:17:01.964 Experts expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully
+LG 0 05:17:01.979 Experts expert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully
+IN 0 05:17:01.995 Experts expert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully
+DH 0 05:17:02.014 Experts expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully
+PJ 0 05:17:02.030 Experts expert QM5_10403_et-turtle20x (XAUUSD,Daily) loaded successfully
+PE 0 05:17:02.048 Experts expert QM5_10513_mql5-ichimoku (XAUUSD,Daily) loaded successfully
+OM 0 05:17:02.083 Experts expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+KH 0 05:17:02.144 Experts expert QM5_12989_grimes-nested-pb-v2 (XAUUSD,H4) loaded successfully
+MK 0 05:17:02.160 Experts expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully
+JP 0 05:17:02.175 Experts expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+OO 0 05:17:02.193 Experts expert QM5_10919_grimes-overshoot (XTIUSD,H4) loaded successfully
+GF 0 05:17:02.209 Experts expert QM5_13117_eurgbp-audjpy (EURGBP,Daily) loaded successfully
+NJ 0 05:17:02.216 Network '4000090541': authorized on Darwinex-Live through Access Server LIVE MT5 New (ping: 36.07 ms, build 5572)
+KD 0 05:17:02.224 Experts expert QM5_13301_balke-minute-range-breakout (GDAXI,M5) loaded successfully
+CF 0 05:17:02.239 Experts expert QM5_13213_balke-gmt3-range-breakout (USDJPY,H1) loaded successfully
+ML 0 05:17:02.254 Experts expert QM5_1567_demark-td-reverse-sequential-h4 (EURUSD,H4) loaded successfully
+DO 0 05:17:02.271 Experts expert QM_AccountMonitor (EURUSD,H1) loaded successfully

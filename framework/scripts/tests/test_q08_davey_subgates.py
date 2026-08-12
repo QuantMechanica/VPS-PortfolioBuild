@@ -560,7 +560,7 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
 
         verdict, classification = aggregate._aggregate_verdict(subs, trades=trades)
 
-        self.assertEqual(verdict, "FAIL_SOFT")
+        self.assertEqual(verdict, "PASS")
         self.assertEqual(classification["8.11_mc_shuffle_dd"], "EDGE_SOFT")
 
     def test_edge_decay_negative_decline_passes(self) -> None:
@@ -677,7 +677,7 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
             {"name": "8.9_runs_test", "status": "INVALID", "detail": "too_few_for_runs"},
         ]
         verdict, _ = aggregate._aggregate_verdict(subs, trades=trades)
-        self.assertEqual(verdict, "INVALID")
+        self.assertEqual(verdict, "INFRA_RECYCLE")
 
     def test_dl077_no_real_quality_pass_is_invalid(self) -> None:
         # Only the trivial 8.1/8.3 passed; nothing real validated the edge -> INVALID.
@@ -777,6 +777,247 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
             }),
             "EDGE_HARD",
         )
+
+    # ---- NARROW C2 (OWNER 2026-07-25): Q08.5/8.7 could-not-compute INVALID -> INFRA_FAIL ----
+    # decisions/2026-07-25_q08_tooling_invalid_is_infra.md
+
+    def test_narrow_c2_invalid_is_tooling_whitelist(self) -> None:
+        is_tooling = aggregate._q08_invalid_is_tooling
+        # could-not-compute (tooling) harness states -> True
+        self.assertTrue(is_tooling("neighborhood_evidence_lineage_invalid:artifact_missing"))
+        self.assertTrue(is_tooling("pbo_refresh_lineage_invalid:fresh_scores_or_meta_missing"))
+        self.assertTrue(is_tooling("perturbations_runner_output_missing:D:/x/perturbations.json"))
+        self.assertTrue(is_tooling("insufficient_distinct_configs:got=1:need>=2"))
+        # deterministic build/setgen defect -> excluded, stays a blocking INVALID
+        self.assertFalse(is_tooling(
+            "neighborhood_evidence_lineage_invalid:baseline_setfile_defect:empty_strategy_params"
+        ))
+        # unknown / genuine / computed details -> not tooling
+        self.assertFalse(is_tooling("degenerate"))
+        self.assertFalse(is_tooling("degenerate_baseline:trades=0:pf=None"))
+        self.assertFalse(is_tooling("3_perturbation_breaches"))
+        self.assertFalse(is_tooling("PBO=88.60%:max=40%"))
+        self.assertFalse(is_tooling(""))
+
+    def test_narrow_c2_neighborhood_lineage_tooling_invalid_is_infra_fail(self) -> None:
+        # 8.5 neighborhood support artifact un-lineage-verifiable = could-not-compute
+        # (harness state) -> INFRA_FAIL (retry-owed), not a terminal blocking INVALID.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.1_correlation", "status": "PASS"},
+            {"name": "8.7_pbo", "status": "PASS"},
+            {"name": "8.5_neighborhood", "status": "INVALID",
+             "detail": "neighborhood_evidence_lineage_invalid:artifact_missing"},
+        ]
+        verdict, classification = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "INFRA_FAIL")
+        self.assertEqual(classification["8.5_neighborhood"], "INVALID")
+
+    def test_narrow_c2_pbo_insufficient_configs_tooling_invalid_is_infra_fail(self) -> None:
+        # 8.7 PBO on a fixed-param card: <2 distinct configs -> could-not-compute -> INFRA_FAIL.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.5_neighborhood", "status": "PASS"},
+            {"name": "8.7_pbo", "status": "INVALID",
+             "detail": "insufficient_distinct_configs:got=1:need>=2"},
+        ]
+        verdict, classification = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "INFRA_FAIL")
+        self.assertEqual(classification["8.7_pbo"], "INVALID")
+
+    def test_narrow_c2_setfile_defect_invalid_stays_blocking(self) -> None:
+        # OTHER DIRECTION: a deterministic build/setgen defect is NOT retry-owed —
+        # re-derivation reproduces it (07-19 RCA), so it stays a blocking INVALID.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.7_pbo", "status": "PASS"},
+            {"name": "8.5_neighborhood", "status": "INVALID",
+             "detail": "neighborhood_evidence_lineage_invalid:baseline_setfile_defect:empty_strategy_params"},
+        ]
+        verdict, _ = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "INVALID")
+
+    def test_narrow_c2_unknown_non_tooling_invalid_stays_blocking(self) -> None:
+        # An unknown / non-whitelisted 8.7 INVALID stays fail-closed as a blocking INVALID.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.7_pbo", "status": "INVALID", "detail": "some_unrecognized_pbo_condition"},
+            {"name": "8.5_neighborhood", "status": "PASS"},
+        ]
+        verdict, _ = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "INVALID")
+
+    def test_narrow_c2_mixed_tooling_invalid_and_computed_fail_fail_wins(self) -> None:
+        # BOUNDARY: one tooling could-not-compute INVALID + one COMPUTED robustness breach
+        # (status FAIL) -> FAIL wins. A tooling INVALID never rescues a real hard failure.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.7_pbo", "status": "INVALID",
+             "detail": "insufficient_distinct_configs:got=1:need>=2"},
+            {"name": "8.5_neighborhood", "status": "FAIL", "detail": "3_perturbation_breaches"},
+        ]
+        verdict, classification = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "FAIL_HARD")
+        self.assertEqual(classification["8.5_neighborhood"], "EDGE_HARD")
+
+    # ---- Census rank 7 (2026-07-27): fixed-parameter strategies have NO neighborhood /
+    #      PBO config family BY CONSTRUCTION -> distinct, non-punitive NOT_APPLICABLE.
+    #      docs/ops/evidence/2026-07-27_q08_evidence_defects_fix.md ----
+
+    def _write_neighborhood_payload(self, tmp, payload) -> Path:
+        p = Path(tmp) / "perturbations.json"
+        p.write_text(json.dumps(payload), encoding="utf-8")
+        return p
+
+    def test_neighborhood_structurally_inapplicable_is_not_applicable_not_invalid(self) -> None:
+        # MECHANISM 1: the runner proved the card has no perturbable parameter, so a
+        # +/-10% neighborhood is undefined. The baseline (the card) traded, so this is
+        # not degenerate. It must be NOT_APPLICABLE, never the punitive vacuous-pass
+        # INVALID (which -> INFRA_FAIL that no retry can ever resolve).
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write_neighborhood_payload(tmp, {
+                "baseline": {"status": "VALID", "trades": 220, "pf": 1.42, "dd": 8500},
+                "perturbations": [],
+                "evidence_status": "INVALID_NO_PERTURBABLE_PARAMS",
+                "structurally_inapplicable": True,
+            })
+            result = sub_8_5_neighborhood.run(perturbations_path=path)
+        self.assertEqual(result["status"], "NOT_APPLICABLE")
+        self.assertFalse(result["passed"])
+        self.assertTrue(result["detail"].startswith("not_applicable"))
+        self.assertIn("no_neighborhood", result["detail"])
+
+    def test_neighborhood_empty_perturbations_without_structural_flag_stays_invalid(self) -> None:
+        # GUARD the other direction: an empty perturbation list that the runner did NOT
+        # mark structurally inapplicable is a genuine could-not-compute (vacuous pass)
+        # and must stay INVALID — NOT silently excused as NOT_APPLICABLE.
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write_neighborhood_payload(tmp, {
+                "baseline": {"status": "VALID", "trades": 220, "pf": 1.42, "dd": 8500},
+                "perturbations": [],
+                "evidence_status": "INVALID_INSUFFICIENT_VALID_PERTURBATIONS",
+                "structurally_inapplicable": False,
+            })
+            result = sub_8_5_neighborhood.run(perturbations_path=path)
+        self.assertEqual(result["status"], "INVALID")
+        self.assertIn("vacuous", result["detail"])
+
+    def test_baseline_is_structurally_inapplicable_helper(self) -> None:
+        # Runner Gap-B fix: structural inapplicability is a property of the FULL strategy
+        # inventory, so an all-fixed card (no continuous/discrete knob) is flagged even
+        # though the fixed-stripped Q03 pick would be empty.
+        fn = q08_5_neighborhood_runner.baseline_is_structurally_inapplicable
+        with tempfile.TemporaryDirectory() as tmp:
+            all_fixed = Path(tmp) / "all_fixed.set"
+            all_fixed.write_text(
+                "\n".join([
+                    "; symbol: EURUSD.DWX",
+                    "RISK_FIXED=1000",
+                    "; strategy-specific params from card must be appended below this line",
+                    "strategy_use_slope_filter=1",
+                    "strategy_direction_mode=1",
+                    "strategy_beta=-0.12202869296345396",
+                    "strategy_pair_name=EURGBP_AUDJPY",
+                ]),
+                encoding="utf-8",
+            )
+            has_knob = Path(tmp) / "has_knob.set"
+            has_knob.write_text(
+                "\n".join([
+                    "; symbol: EURUSD.DWX",
+                    "; strategy-specific params from card must be appended below this line",
+                    "strategy_use_slope_filter=1",
+                    "strategy_beta=-0.12",
+                    "strategy_period=20",
+                ]),
+                encoding="utf-8",
+            )
+            all_fixed_asg = q08_5_neighborhood_runner.parse_setfile_assignments(all_fixed)
+            has_knob_asg = q08_5_neighborhood_runner.parse_setfile_assignments(has_knob)
+        self.assertTrue(fn(all_fixed_asg))
+        self.assertFalse(fn(has_knob_asg))   # a continuous knob exists -> applicable
+        self.assertFalse(fn({}))             # no strategy params at all -> not "structural"
+
+    def test_pbo_meta_invalid_na_is_not_applicable_not_invalid(self) -> None:
+        # MECHANISM 2: the PBO runner's status=INVALID_NA is the authoritative structural
+        # determination (neighborhood proved no perturbable param) -> a >=2-config family
+        # is undefined. Must be NOT_APPLICABLE, not INVALID/INFRA_FAIL.
+        with tempfile.TemporaryDirectory() as tmp:
+            scores = Path(tmp) / "scores.csv"
+            scores.write_text("config_id,slice_id,score\n", encoding="utf-8")
+            scores.with_name("scores_meta.json").write_text(
+                json.dumps({
+                    "schema_version": 2,
+                    "status": "INVALID_NA",
+                    "reason": "structurally_inapplicable_config_family",
+                    "n_configs": 1,
+                    "config_source": "Q08.5_neighborhood",
+                }),
+                encoding="utf-8",
+            )
+            result = sub_8_7_pbo.run(scores_path=scores)
+        self.assertEqual(result["status"], "NOT_APPLICABLE")
+        self.assertFalse(result["passed"])
+        self.assertTrue(result["detail"].startswith("not_applicable"))
+        self.assertIn("structurally_inapplicable_config_family", result["detail"])
+
+    def test_pbo_meta_plain_invalid_stays_invalid(self) -> None:
+        # GUARD: a plain meta INVALID (not proven structural) stays INVALID so NARROW C2
+        # keeps routing the ambiguous <2-config case to INFRA_FAIL, never NOT_APPLICABLE.
+        with tempfile.TemporaryDirectory() as tmp:
+            scores = Path(tmp) / "scores.csv"
+            scores.write_text("config_id,slice_id,score\n", encoding="utf-8")
+            scores.with_name("scores_meta.json").write_text(
+                json.dumps({
+                    "schema_version": 2,
+                    "status": "INVALID",
+                    "reason": "insufficient_distinct_configs:got=0:need>=2",
+                    "n_configs": 0,
+                }),
+                encoding="utf-8",
+            )
+            result = sub_8_7_pbo.run(scores_path=scores)
+        self.assertEqual(result["status"], "INVALID")
+        self.assertIn("insufficient_distinct_configs", result["detail"])
+
+    def test_not_applicable_subgates_do_not_block_clean_pass(self) -> None:
+        # DOWNSTREAM non-punitiveness: a fixed-parameter EA whose 8.5/8.7 are structurally
+        # NOT_APPLICABLE is judged on its APPLICABLE merit gates. With a real quality pass
+        # and profitable trades it earns a clean PASS — never INVALID/INFRA_FAIL/FAIL.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.1_correlation", "status": "PASS"},
+            {"name": "8.3_tail_dependence", "status": "PASS"},
+            {"name": "8.2_dsr_mc_fdr", "status": "PASS"},
+            {"name": "8.5_neighborhood", "status": "NOT_APPLICABLE",
+             "detail": "not_applicable:fixed_parameter_strategy_has_no_neighborhood"},
+            {"name": "8.7_pbo", "status": "NOT_APPLICABLE",
+             "detail": "not_applicable:structurally_inapplicable_config_family"},
+        ]
+        verdict, classification = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "PASS")
+        self.assertEqual(classification["8.5_neighborhood"], "NOT_APPLICABLE")
+        self.assertEqual(classification["8.7_pbo"], "NOT_APPLICABLE")
+
+    def test_not_applicable_never_rescues_a_genuine_hard_fail(self) -> None:
+        # PRECEDENCE: NOT_APPLICABLE carries no weight, so a computed robustness breach
+        # elsewhere still fails hard. NA never launders a real failure into a PASS.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.7_pbo", "status": "NOT_APPLICABLE",
+             "detail": "not_applicable:structurally_inapplicable_config_family"},
+            {"name": "8.5_neighborhood", "status": "FAIL", "detail": "3_perturbation_breaches"},
+        ]
+        verdict, classification = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "FAIL_HARD")
+        self.assertEqual(classification["8.7_pbo"], "NOT_APPLICABLE")
 
     def test_structured_qm_log_loader_finds_tester_agent_equity_stream(self) -> None:
         # Guard the helper's contract directly without requiring a live MT5 tree.
@@ -1293,6 +1534,71 @@ class Q08DurableSleeveStreamTests(unittest.TestCase):
             line = Path(res["path"]).read_text(encoding="utf-8").strip()
             self.assertIn('"event": "TRADE_CLOSED"', line)
             self.assertIn('"volume": 0.2', line)
+
+    def test_serialises_authoritative_set_when_common_copy_undercounts(self) -> None:
+        # WP-6 defect-4 (gate-repair 2026-07-25, Codex review wp2346): a PARTIAL Common\Files
+        # copy alongside a fuller authoritative in-memory set must NOT be copied verbatim.
+        # The undercount guard serialises the authoritative set so the durable stream count
+        # equals n_trades, and reports the true persisted row count (not len(raw_trades)
+        # unconditionally, and not the short common-copy count).
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            common_log = root / "common" / "77_NDX_DWX.jsonl"
+            common_log.parent.mkdir(parents=True)
+            # Volatile copy holds only 3 of the 5 authoritative trades (a truncated export).
+            partial = "".join(
+                json.dumps({"event": "TRADE_CLOSED", "time": i, "net": 1.0,
+                            "volume": 0.1, "notional": 1000.0, "symbol": "NDX.DWX"}) + "\n"
+                for i in range(3)
+            )
+            common_log.write_text(partial, encoding="utf-8")
+            authoritative = [
+                {"time": i, "net": 1.0, "profit": 1.0, "swap": 0.0, "commission": 0.0,
+                 "volume": 0.1, "notional": 1000.0, "symbol": "NDX.DWX"}
+                for i in range(5)
+            ]
+            with patch.object(aggregate, "DURABLE_STREAM_ROOT", root / "durable"), \
+                 patch.object(aggregate, "_common_q08_trade_log", return_value=common_log):
+                res = aggregate._persist_durable_sleeve_stream(77, "NDX.DWX", authoritative)
+            self.assertTrue(res["persisted"])
+            self.assertEqual(res["source"], "serialized_undercount_guard")
+            self.assertEqual(res["n"], 5)              # true persisted count (authoritative)
+            self.assertEqual(res["common_copy_n"], 3)  # the short volatile copy it rejected
+            written = Path(res["path"]).read_text(encoding="utf-8").strip().splitlines()
+            self.assertEqual(len(written), 5)          # durable stream matches n_trades
+
+    def test_serialises_authoritative_when_common_copy_is_equal_count_foreign(self) -> None:
+        # WP-6 defect-3 (round 2, 2026-07-25 Codex re-review): a volatile copy with the SAME
+        # row count but DIFFERENT trades (a foreign run) must NOT be copied verbatim — count
+        # equality is not identity. The identity guard detects the divergence and serialises
+        # the authoritative in-memory set instead, so the durable stream is the graded bytes.
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            common_log = root / "common" / "88_NDX_DWX.jsonl"
+            common_log.parent.mkdir(parents=True)
+            # Foreign volatile copy: 3 rows, but different times / symbols / P&L.
+            foreign = "".join(
+                json.dumps({"event": "TRADE_CLOSED", "time": 9000 + i, "net": -7.0,
+                            "volume": 0.9, "notional": 5000.0, "symbol": "WRONG.DWX"}) + "\n"
+                for i in range(3)
+            )
+            common_log.write_text(foreign, encoding="utf-8")
+            authoritative = [
+                {"time": i, "net": 1.0, "profit": 1.0, "swap": 0.0, "commission": 0.0,
+                 "volume": 0.1, "notional": 1000.0, "symbol": "NDX.DWX"}
+                for i in range(3)
+            ]
+            with patch.object(aggregate, "DURABLE_STREAM_ROOT", root / "durable"), \
+                 patch.object(aggregate, "_common_q08_trade_log", return_value=common_log):
+                res = aggregate._persist_durable_sleeve_stream(88, "NDX.DWX", authoritative)
+            self.assertTrue(res["persisted"])
+            self.assertEqual(res["source"], "serialized_foreign_content_guard")
+            self.assertEqual(res["n"], 3)               # authoritative count, not laundered
+            self.assertEqual(res["common_copy_n"], 3)   # the equal-count foreign copy it rejected
+            written = Path(res["path"]).read_text(encoding="utf-8")
+            # The durable stream carries the authoritative set, NOT the foreign volatile bytes.
+            self.assertIn('"symbol": "NDX.DWX"', written)
+            self.assertNotIn("WRONG.DWX", written)
 
     def test_skips_volume_less_report_fallback_trades(self) -> None:
         with tempfile.TemporaryDirectory() as td:

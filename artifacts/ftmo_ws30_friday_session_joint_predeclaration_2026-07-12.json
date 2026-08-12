@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_PORTFOLIO_SCREEN",
+  "candidate": {
+    "research_key": "RESEARCH:WS30_FRIDAY_SESSION_LONG",
+    "symbol": "WS30.DWX",
+    "timeframe": "M15",
+    "direction": "long",
+    "weekday_new_york": "Friday",
+    "entry": "13:30 America/New_York, the 17th cash-session M15 bar open",
+    "exit": "US cash-session close or 1.0 ATR56 hard stop",
+    "target": "none",
+    "round_trip_cost_points": 4.0,
+    "nominal_risk_money": 1000.0
+  },
+  "lineage": {
+    "screen_code": "tools/strategy_farm/portfolio/ftmo_m15_session_premium_screen.py",
+    "screen_code_sha256": "387152B6B70E1F94B7DFBE374C55ED027C7AAFF848184B35AD5522689C3E7A18",
+    "screen_code_created_utc": "2026-07-11T21:13:48Z",
+    "screen_artifact": "artifacts/ftmo_m15_session_premium_screen_2026-07-11.json",
+    "screen_artifact_sha256": "84D71C46051C28A25DE0D4F9DDEF140229CF3FC2D22421D052A33C5A9FFB3733",
+    "screen_artifact_created_utc": "2026-07-11T21:14:56Z",
+    "selection_uses_holdout": false,
+    "individual_holdout_already_opened": true,
+    "individual_metrics": {
+      "development_2018_2022": {"trades": 222, "profit_factor": 1.251949, "net_r": 40.773064},
+      "validation_2023": {"trades": 49, "profit_factor": 1.442239, "net_r": 14.276020},
+      "confirmation_2024_2025": {"trades": 98, "profit_factor": 1.132820, "net_r": 9.271309}
+    }
+  },
+  "data": {
+    "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\WS30.DWX_M15.csv",
+    "sha256": "0184E19063200F4CEC7330A4E988562BB70E754C76974F651CD9F69B340C8BB8",
+    "timestamp_contract": "Darwinex broker-wall epoch converted to UTC, then America/New_York"
+  },
+  "portfolio_contract": {
+    "base_manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+    "base_manifest_sha256": "56EF3EB7216B743290E8C6ADD61FC5FC321E00FCED6AF438D0C168545B850847",
+    "base_scenario": "path_01_11095_gbpusd_down2",
+    "candidate_weights_pct": [0.5, 1.0, 2.0, 3.0, 5.0, 7.5, 10.0],
+    "risk_neutral": true,
+    "risk_multiplier": 25.0,
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "room_retention": 0.2,
+    "development_years": [2018, 2019, 2021, 2022],
+    "validation_year": 2023,
+    "confirmation_years": [2024, 2025],
+    "development_survivor_rule": "Candidate weight must strictly improve both threshold and adverse development pass rates.",
+    "validation_rule": "Frozen weight must be non-inferior in both threshold and adverse 2023 results.",
+    "confirmation_label": "CONTAMINATED_CONFIRMATION_NOT_HOLDOUT_NOT_DEPLOYMENT_EVIDENCE"
+  },
+  "path_contract": {
+    "normal_fill": "portfolio threshold fill inside M15 bar",
+    "adverse_fill": "observed WS30 M15 low before fixed stop execution; no favorable intrabar sequencing credit",
+    "cost_timing": "half of the four-point round-trip cost at entry and half at exit",
+    "overnight_positions": 0
+  },
+  "native_ea_exists": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_AND_STREAM_GATES",
+  "ea_id": 10115,
+  "symbol": "GDAXI.DWX",
+  "period": "M15",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/20260712_145514/QM5_10115_tv-ma-scalper-relief.compile.log",
+  "compile_log_sha256": "5961502E101E205A2B89EADB0AE150AD8968E06A0B0BAE9D90EC012FED69A078",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10115_gdaxi_m15_wave16_retry_20260712\\QM5_10115\\20260712_150626\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {"path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10115_gdaxi_m15_wave16_retry_20260712\\QM5_10115\\20260712_150626\\raw\\run_01\\report.htm", "sha256": "6863ED7B72C61C802C084502A4339BE48E7DBB6B2662A6DF3D922A9475FF6E3F"},
+    {"path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10115_gdaxi_m15_wave16_retry_20260712\\QM5_10115\\20260712_150626\\raw\\run_02\\report.htm", "sha256": "294F5E2FF1D9D5043DD967E6DDF618661D0F13AF4550C0D5429A10D16170AD9D"}
+  ],
+  "native": {"trades": 430, "profit_factor": 1.083800, "net_profit": 14052.28, "equity_drawdown": 26215.83},
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10115_GDAXI_DWX_T4_FRESH_20260712.jsonl",
+    "rows": 392,
+    "sha256": "C16BDA957B1CA9CED8DD6E9EBFB256E104B4B099CCEAD1FBBFCA1D98E21B7C5F",
+    "report_reconciliation": "FAIL",
+    "count_delta": -38,
+    "missing_mae_rows": 392,
+    "corrected_net_delta": -10034.11,
+    "net_tolerance": 4.30
+  },
+  "current_cost_artifact": "artifacts/ftmo_10115_gdaxi_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 430,
+    "profit_factor": 1.071001,
+    "net_profit": 11947.97,
+    "close_to_close_max_drawdown": 25067.53,
+    "commission_total": 0.0,
+    "swap_total": -8700.16
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "negative_calendar_years": [2018, 2019, 2020],
+    "calendar_years_below_density_floor": [2017],
+    "reason_for_reject": "Fresh native and current-cost PF both fail the strict floor, the first three active years lose money, and the Q08 stream is incomplete with no usable MAE rows."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

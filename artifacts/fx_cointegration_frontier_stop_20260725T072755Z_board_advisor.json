@@ -1,0 +1,109 @@
+{
+  "schema_version": "fx-cointegration-frontier-stop-v1",
+  "generated_at_utc": "2026-07-25T07:27:55.7766452Z",
+  "generated_at_local": "2026-07-25T09:27:55.7759324+02:00",
+  "branch": "agents/board-advisor",
+  "outcome": "CPU_CEILING_STOP_NO_DUPLICATE_TARGET",
+  "decision": {
+    "card_created": false,
+    "ea_built": false,
+    "queue_mutated": false,
+    "backtest_started": false,
+    "reason": "The governed pure-FX cointegration frontier has no unbuilt pair, both anchor baskets are already Q02-cleared with later economic failures, and all nine live factory workers had active work items."
+  },
+  "anchor_baskets": [
+    {
+      "ea_id": "QM5_12532",
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "q02": {
+        "status": "done",
+        "verdict": "PASS",
+        "work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+        "evidence_path": "D:/QM/reports/work_items/e4890d77-b865-4a48-b946-315faefca920/QM5_12532/20260626_164610/summary.json"
+      },
+      "later_terminal": {
+        "phase": "Q05",
+        "status": "done",
+        "verdict": "FAIL",
+        "work_item_id": "82cab3d1-bf05-4aa4-8278-86c8064b16e7",
+        "evidence_path": "D:/QM/reports/work_items/82cab3d1-bf05-4aa4-8278-86c8064b16e7/QM5_12532/Q05/QM5_12532_AUDNZD_COINTEGRATION_D1/aggregate.json"
+      }
+    },
+    {
+      "ea_id": "QM5_12533",
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "q02": {
+        "status": "done",
+        "verdict": "PASS",
+        "work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+        "evidence_path": "D:/QM/reports/work_items/76cb11ee-7e9d-4d75-be9d-626c205bca62/QM5_12533/20260627_092645/summary.json"
+      },
+      "later_terminal": {
+        "phase": "Q04",
+        "status": "done",
+        "verdict": "FAIL",
+        "work_item_id": "ff2cb183-8269-4e63-abaf-27ba79afdb62",
+        "evidence_path": "D:/QM/reports/work_items/ff2cb183-8269-4e63-abaf-27ba79afdb62/QM5_12533/Q04/QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1/aggregate.json"
+      }
+    }
+  ],
+  "frontier_reconciliation": {
+    "original_scan_survivors": 2,
+    "approved_pair_cards_matched_by_filename": 21,
+    "approved_pair_cards_without_matching_ea_directory": 0,
+    "eligible_unbuilt_pure_fx_pairs": [],
+    "governing_evidence": [
+      "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+      "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md"
+    ],
+    "open_rows_excluded_from_pure_fx_fallback": [
+      {
+        "ea_id": "QM5_13087",
+        "logical_symbol": "QM5_13087_XBR_GBPCAD_RSPREAD_D1",
+        "reason": "cross-asset XBR/FX relative spread"
+      },
+      {
+        "ea_id": "QM5_13092",
+        "logical_symbol": "QM5_13092_XBR_EURCAD_RSPREAD_D1",
+        "reason": "cross-asset XBR/FX relative spread"
+      },
+      {
+        "ea_id": "QM5_20012",
+        "logical_symbol": "QM5_20012_XAU_XAG_CMTAR_D1",
+        "reason": "metals basket"
+      }
+    ]
+  },
+  "paced_fleet_snapshot": {
+    "farm_state_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "farm_state_db_last_write_utc": "2026-07-25T07:26:34.5652471Z",
+    "health_snapshot": "D:/QM/strategy_farm/state/health.json",
+    "health_checked_at_utc": "2026-07-25T07:26:41Z",
+    "active_work_items": 9,
+    "pending_work_items": 2289,
+    "live_terminal_worker_daemons": 9,
+    "configured_terminal_worker_threshold": 10,
+    "worker_detail": "9/10 terminal_worker daemons alive (T1, T10, T2, T3, T4, T6, T7, T8, T9)",
+    "factory_terminal64_processes": [
+      "T1",
+      "T2",
+      "T4",
+      "T6",
+      "T8",
+      "T10"
+    ],
+    "factory_terminal64_process_count": 6,
+    "all_live_workers_busy": true,
+    "t_live_observed_only": true,
+    "t_live_excluded_from_factory_count": true
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_process_controlled": false,
+    "autotrading_toggled": false
+  }
+}

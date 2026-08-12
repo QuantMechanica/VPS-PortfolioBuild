@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_stochastic-scalping-strategy_1301055.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_stochastic-scalping-strategy_1301055.pdf",
+      "source_pages": "1-2",
+      "source_ref": "ro_mwan (forum handle), thread 'Stochastic scalping strategy', Babypips forum, 2025, https://forums.babypips.com/t/stochastic-scalping-strategy/1301055",
+      "strategy_name": "Dual-TF Stochastic Scalp (M5 bias / M1 trigger)",
+      "concept": "Multi-timeframe momentum alignment: M5 stochastic above/below its 50 level sets long/short bias while M1 stochastic 80/20 levels time the entry and exit.",
+      "market": "FX",
+      "timeframe": "M1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Standard stochastic indicator, implementable in pure MQL5 on FX M1/M5 (.DWX); entry-direction rule stated, but stochastic settings, exact trigger and stop/exit params must be defined by us.",
+      "priority_hint": "LOW",
+      "notes": "Thin 4-post thread; only evidence is 6 trades on a $140 account (net +10.67). No stochastic periods, no stop-loss/TP, no session filter given. Post #3 is a broker (Valetax) promo-style reply, not independent confirmation. Generic oscillator scalp, not an uncorrelated return driver."
+    }
+  ],
+  "notes": ["Extracted via pypdf (Read tool could not render pages; poppler absent)."]
+}

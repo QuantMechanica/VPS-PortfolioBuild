@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_148885_how-you-place-your-stop-loss.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_148885_how-you-place-your-stop-loss.pdf",
+      "source_pages": "1-14",
+      "source_ref": "ForexFactory thread \"How you place your stop loss?\", started by yyc196, ForexFactory forum, undated, https://www.forexfactory.com/thread/148885 (30 posts)",
+      "strategy_name": "SL-placement discussion (no complete system)",
+      "concept": "A stop-loss placement / money-management opinion thread with no complete deterministic entry+exit strategy defined by any contributor.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Discussion of stop-loss philosophy and money management only; no post specifies a full deterministic entry+exit system, so nothing is implementable as a strategy.",
+      "priority_hint": "LOW",
+      "notes": "Notable fragments: (1) ixbone runs a manual martingale (add to losers, doubling lots, SL removed on final legs) on vague indicator entries -> incompatible with FTMO/DXZ DD limits, REJECTED as martingale/stops-optional. (2) mikkom: 'daily breakout methods' with 2-day-ATR initial stop + Donchian/last-week's-low trail -> the only edge-adjacent idea, but entry is entirely undefined (fails deterministic-entry rule). (3) TJPLD: EUR/USD H4, 50-70 pip stop behind S/R, no TP, move to BE at +50 pips -> exit/stop management only, no entry rule. (4) Dr.Geppynius/Xaron/gspajon/birdt: 1% risk, stop-defines-size, anti-martingale sizing, structure trailing -> MM/exit heuristics, no entries. Thread yields zero usable candidate strategies."
+    }
+  ],
+  "notes": ["single REJECTED summary row: stop-loss/money-management discussion thread with no complete mechanical strategy"]
+}

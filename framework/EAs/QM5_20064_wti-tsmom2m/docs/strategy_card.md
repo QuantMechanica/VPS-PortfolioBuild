@@ -1,0 +1,1 @@
+../../../../../strategy-seeds/cards/approved/QM5_20064_wti-tsmom2m_card.md

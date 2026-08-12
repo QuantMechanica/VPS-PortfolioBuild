@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_376064_how-to-exit-losing-trades.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_376064_how-to-exit-losing-trades.pdf",
+      "source_pages": "1-3",
+      "source_ref": "\"How to exit losing trades\", ForexFactory thread #376064 (20 posts, ~single page), various handles (ibpo, GoodOlJoe, Forexnuts, meng88, etc.), n.d., https://www.forexfactory.com/thread/376064-how-to-exit-losing-trades",
+      "strategy_name": "Exit-losing-trades discussion (no mechanical strategy)",
+      "concept": "Generic trader-psychology chatter on cutting losses (use a stop loss, close with a market order, know your exit before entry, trail stops) with no defined entry edge or parameterized system.",
+      "market": "FX",
+      "timeframe": "M1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Opinion thread on exit discipline only; no entry edge, no complete deterministic rule set or params to ever implement.",
+      "priority_hint": "LOW",
+      "notes": "Isolated fragments (20-35 pip SL, 1:1.5 R:R, 5-pip SL, trailing stops) are exit-management platitudes, not a testable strategy; nothing mechanizable."
+    }
+  ],
+  "notes": ["zero usable candidates -> single REJECTED summary row"]
+}

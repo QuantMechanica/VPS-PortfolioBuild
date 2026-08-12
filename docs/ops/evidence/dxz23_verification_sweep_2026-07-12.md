@@ -1,5 +1,15 @@
 # DXZ-23 Verifikations-Sweep — Befunde (2026-07-12/13)
 
+> **SUPERSEDED FOR QUALIFICATION (2026-07-16):** Dieses Dokument bleibt als
+> historischer Sweep-Record erhalten. Die Aussage „23/23 verifiziert“ ist keine
+> aktuelle Buchqualifikation mehr. Der gehärtete as-live FULL-Lauf erreichte 5/23
+> Evidence-PASS; ein PARTIAL-Retry schloss zusätzlich 12989 nur diagnostisch.
+> Maßgeblich ist
+> [`DXZ23_AS_LIVE_REQUALIFICATION_2026-07-16.md`](./DXZ23_AS_LIVE_REQUALIFICATION_2026-07-16.md).
+> Bis ein expliziter schema-v2-Kandidat mit segmentierter `.DWX`-Historie,
+> zertifizierten Kosten und vollständiger Truth Chain PASS erreicht: kein Deploy,
+> kein Resize und kein gebundener Buchkandidat.
+
 OWNER-Mandat: „Ich möchte, dass du eine saubere Datenlage hast, vl entdeckst du was,
 das uns bisher verborgen blieb?" — vor dem 15→23-Sleeve-Deploy alle Buch-EAs frisch
 backtesten und gegen die Referenz-Streams (Basis der Gewichte + KPIs) verifizieren.

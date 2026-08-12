@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_1233107_your-ea-v3-daily-low-high.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1233107_your-ea-v3-daily-low-high.pdf",
+      "source_pages": "1-2",
+      "source_ref": "rockzz, \"Your EA v3 - Daily Low & High Strategy\", ForexFactory thread 1233107 (2023), https://www.forexfactory.com/thread/1233107/your-ea-v3-daily-low-high (source .mq4/.ex4 attached in first post; strategy rules restated in posts #24 and #55/kai.cao)",
+      "strategy_name": "Daily Wick-Asymmetry Breakout (Your EA v3)",
+      "concept": "On the new daily candle, trade a breakout of the previous day's high or low, choosing direction by the longer of the previous candle's two wicks (open-to-low vs high-to-open).",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic pure-MQL5 daily pending-stop breakout with SL/TP in pips; no ML/external data; FX-major+cross data on .DWX; SL+TP make it FTMO/DXZ compatible.",
+      "priority_hint": "MED",
+      "notes": "Rules: wickBuy = prevOpen - prevLow (lower shadow), wickSell = prevHigh - prevOpen (upper shadow). If wickBuy>wickSell place BuyStop at prevHigh + PipsAboveHigh (SL prevHigh - StopLossPips); if wickSell>wickBuy place SellStop at prevLow - PipsBelowLow (SL prevLow + StopLossPips). TP=TakeProfitPips. Suggested defaults TP=100 SL=30 (~1:3 R:R); emmanuel7788 argues min 1:2. Caveats lowering priority: EA is ChatGPT-generated, OP admits it 'hits stop loss everytime' in live and warns tester results diverge; backtests were control-point not every-tick (ramobomb), skeptics flag overfit/low-winrate (AleksDark) and 'results can't be legit' (ghwatson19); tienphuc2910 disputes wick logic for bull/bear candles. Variants: v3.1 (Cunpa) adds ATR-scaled variable exits and fixes a +2pip offset bug in SL calc; kai.cao requested delete-unfilled-pending-after-1-day and close-at-daily-candle-close TP options. Also demoed on US30 CFD (Indices) by driven18, so applicable beyond FX. Sunday/Friday-candle handling matters (Erebus/emmanuel7788 note different results with/without the small Sunday candle)."
+    }
+  ],
+  "notes": []
+}

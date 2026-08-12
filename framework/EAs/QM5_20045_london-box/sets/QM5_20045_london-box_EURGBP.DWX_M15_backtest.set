@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20045
+; ea_slug:      london-box
+; ea_version:   v5.0
+; set_version:  s20260722-001
+; symbol:       EURGBP.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   4fe0220893f3d73c5669c1bc0ca26ed40a281b32b7de1c3dcda01245c51a148e
+; author:       Development
+; date:         2026-07-22
+;==========================================================
+qm_ea_id=20045
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_variant_id=LONDON_BOX_027_BASELINE
+strategy_timeframe=15
+strategy_box_start_hour_utc=3
+strategy_box_end_hour_utc=6
+strategy_extension_fraction=0.27
+strategy_max_box_pips=40.0
+strategy_pip_size=0.0001
+strategy_pending_expiry_hour_london=12
+strategy_flat_hour_london=16
+strategy_max_spread_points=0

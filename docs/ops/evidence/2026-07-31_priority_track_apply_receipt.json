@@ -1,0 +1,158 @@
+{
+  "schema_version": "qm.priority-track-apply-receipt/v1",
+  "generated_at_utc": "2026-07-31T14:54:04Z",
+  "task_id": "ce3d5cef-f62d-4951-af36-92d83a1696ee",
+  "owner_authority": "OWNER_DECISION_2026-07-31_QM5_20007_PRIORITY_TRACK",
+  "scope": {
+    "ea_id": "QM5_20007",
+    "exact_work_item_ids": [
+      "6dce5d90-4a59-4753-9830-9eebdaeed397"
+    ],
+    "target_symbol": "NDX.DWX",
+    "excluded_symbols": [
+      "SP500.DWX"
+    ],
+    "bulk_or_wave_mutation": false
+  },
+  "source_provenance": {
+    "persistent_registry_commit": "1c6862975a65f95aedf1e05f78923c47254c82f0",
+    "initial_controller_commit": "1a549ae05e1015176c1b04f7a83b9d1e956c10a5",
+    "controller_fix_commit": "9553e90a8b0488d1648c82e1f802adeae9ebfc4d",
+    "corrected_dry_run_commit": "215317e07e93604ac8df2eb474f7709f93db938d",
+    "registry_sha256_lf_normalized": "6f30720bafbb152225e0c256c1aa058a6a4519cff81999945b0cbddaef39d056",
+    "controller_sha256_lf_normalized": "990f95bbfddab76ea2f7d5cdd7ebaa755ef0c468bb4175eb463c09c77f6f7a74",
+    "expectations_sha256": "e54ebf685c65c6a48426fcc4707efae011230ab978ba27877bd3e5df9d6ae228"
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "outcome": "ROLLED_BACK_FAIL_CLOSED",
+      "controller_head_commit": "194cca25d4c0576ff5f99329da6079c936c448a5",
+      "journal_path": "D:\\QM\\reports\\state\\priority_track_20007_ndx_20260731.json",
+      "journal_sha256": "23c8bbf688afa420d3ae5ea5d45640a6fd327a888998e633de5b1aaf11ae1f99",
+      "journal_state": "planned",
+      "error": "post-update claim rank differs from in-memory simulation",
+      "database_transaction_committed": false,
+      "rollback_verified_before_retry": true,
+      "event_ids": [],
+      "note": "The pre-fix controller wrote its durable plan before entering the transaction but did not finalize failed journals. The unchanged database pre-image and absence of a matching event were verified before the corrected retry; the original journal is retained unchanged."
+    },
+    {
+      "attempt": 2,
+      "outcome": "COMMITTED",
+      "controller_head_commit": "215317e07e93604ac8df2eb474f7709f93db938d",
+      "journal_path": "D:\\QM\\reports\\state\\priority_track_20007_ndx_20260731_v2.json",
+      "journal_sha256": "fd558ab765fd7b353590b24d06b6dc8bbdbae9f7b05275308130436d983fb53a",
+      "journal_state": "committed",
+      "committed_at_utc": "2026-07-31T14:49:40Z",
+      "database_transaction_committed": true,
+      "changed_rows": 1,
+      "event_ids": [
+        340273
+      ]
+    }
+  ],
+  "committed_apply": {
+    "work_item_id": "6dce5d90-4a59-4753-9830-9eebdaeed397",
+    "pre_payload_sha256": "d62742d555f23e60f2209fbf376daf8abe01ed62c96673465b8c73a81cc722e0",
+    "post_payload_sha256": "a67a5a9631b5d8bfcf0b1ffa1ced282cc222125d29176a34f0854ec199d16a05",
+    "post_state": {
+      "status": "pending",
+      "phase": "Q02",
+      "verdict": null,
+      "claimed_by": null,
+      "priority_track": true,
+      "priority_reason": "owner_priority_registry_20260731"
+    },
+    "claim_order_displacement_actual": {
+      "method": "CANONICAL_SQL_ON_LIVE_TRANSACTION_BEFORE_AFTER",
+      "pending_rows_before": 2183,
+      "pending_rows_after": 2183,
+      "before_rank": 549,
+      "after_rank": 10,
+      "rank_improvement_and_displaced_rows": 539,
+      "displaced_q04_plus": 51,
+      "displaced_metal": 209,
+      "displaced_ids_sha256": "db14c2d5a4e7935d3b5c2179f81850a5c8987642ad13965dead0b95653b348f9"
+    },
+    "claim_order_simulation_at_apply": {
+      "before_rank": 549,
+      "after_rank": 7,
+      "rank_improvement_and_displaced_rows": 542,
+      "note": "The live transaction measurement is authoritative; canonical tie ordering changed between the snapshot simulation and the post-update query without rank regression."
+    },
+    "pipeline_verdict_changed": false
+  },
+  "post_apply_recensus": [
+    {
+      "work_item_id": "0928164a-2c70-448b-ae23-4cfaf6c06c6a",
+      "symbol": "GDAXI.DWX",
+      "status": "failed",
+      "phase": "Q02",
+      "verdict": "INFRA_FAIL",
+      "payload_sha256": "0795f7c6b1683604b611f3fb2dc0e24bf3a485096eff21b20de33135080a19fa",
+      "action": "UNCHANGED_TERMINAL_RECOVERY_CLASS"
+    },
+    {
+      "work_item_id": "05652c88-8e07-4aaf-934f-1e013ac8deda",
+      "symbol": "GDAXI.DWX",
+      "status": "pending",
+      "phase": "Q02",
+      "verdict": null,
+      "payload_sha256": "d3deb0ad09f78b96385b31e113a0257862f38967aa5b6fc64c9488811177ca7e",
+      "priority_track": false,
+      "action": "UNCHANGED_NOT_OWNER_AUTHORIZED_EXACT_ID",
+      "note": "This separately enqueued recovery row became visible during the final recensus. It was not added to the exact NDX backfill scope."
+    },
+    {
+      "work_item_id": "6dce5d90-4a59-4753-9830-9eebdaeed397",
+      "symbol": "NDX.DWX",
+      "status": "pending",
+      "phase": "Q02",
+      "verdict": null,
+      "payload_sha256": "a67a5a9631b5d8bfcf0b1ffa1ced282cc222125d29176a34f0854ec199d16a05",
+      "priority_track": true,
+      "action": "EXACT_BACKFILL_COMMITTED"
+    },
+    {
+      "work_item_id": "80c64b67-7eaa-461e-ba1c-80892f7cf73d",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "phase": "Q02",
+      "verdict": null,
+      "payload_sha256": "fc7d3fa66d69eca0b96471df0255e91ee5ff2d97d3cc8f0e7304b4651db7408d",
+      "priority_track": true,
+      "action": "UNCHANGED_ALREADY_FLAGGED_RECOVERY_CLASS"
+    }
+  ],
+  "verification": {
+    "focused_pytest": "62 passed, 12 subtests passed",
+    "scorer": {
+      "ea_id": "QM5_20007",
+      "priority_track": true,
+      "priority_track_source": "owner_priority_registry",
+      "asset": "index_metal",
+      "tf": "M5/M15",
+      "target_symbols": [
+        "GDAXI.DWX",
+        "NDX.DWX",
+        "XAUUSD.DWX"
+      ],
+      "excluded_symbols": [
+        "SP500.DWX"
+      ],
+      "built": true,
+      "pipeline_verdict_changed": false
+    },
+    "matching_apply_event_count": 1,
+    "matching_apply_event_id": 340273,
+    "mutation_lock_present_after_apply": false
+  },
+  "guardrails": {
+    "factory_changed": false,
+    "terminal_or_autotrading_changed": false,
+    "sp500_rows_changed": false,
+    "pipeline_verdict_changed": false,
+    "revert_performed": false
+  }
+}

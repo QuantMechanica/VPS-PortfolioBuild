@@ -1,0 +1,54 @@
+{
+  "observed_utc": "2026-07-26T15:15:57Z",
+  "branch": "agents/board-advisor",
+  "mission": "FX cointegration frontier",
+  "selection": {
+    "new_pair_eligible": false,
+    "reason": "The governed 66-pair scan is fully mechanized; creating another scan-derived sleeve would duplicate an existing build.",
+    "anchors": {
+      "QM5_12532": "Q02 PASS; later Q05 FAIL",
+      "QM5_12533": "Q02 PASS; later Q04 FAIL"
+    }
+  },
+  "capacity": {
+    "factory_terminal_count": 7,
+    "factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "excluded_terminals": [
+      "T_Live"
+    ],
+    "scheduler_dry_run": {
+      "available_slots_after": 0,
+      "available_slots_before": 0,
+      "dry_run": true,
+      "duplicate": 0,
+      "invalid": 0,
+      "no_capacity": 0,
+      "queued_scanned": 0,
+      "scheduled": 0,
+      "status": "ok"
+    }
+  },
+  "outcome": "CPU_CEILING_STOP",
+  "mutations": {
+    "card": false,
+    "ea_build": false,
+    "q02_queue": false,
+    "mt5_launch": false,
+    "terminal_control": false,
+    "portfolio_gate": false,
+    "live_manifest": false,
+    "autotrading": false
+  },
+  "commands": [
+    "Get-CimInstance Win32_Process -Filter \"Name='terminal64.exe'\"",
+    "python -m framework.scripts.mt5_saturation_scheduler --sqlite D:/QM/reports/pipeline/mt5_queue.db --dispatch-state D:/QM/reports/pipeline/dispatch_state.json --dry-run"
+  ]
+}

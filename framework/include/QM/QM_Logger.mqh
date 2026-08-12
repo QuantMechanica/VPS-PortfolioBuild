@@ -175,7 +175,7 @@ bool QM_LogEvent(const QM_LogLevel level,
       payload = "{}";
 
    string line = StringFormat(
-      "{\"ts_utc\":\"%s\",\"ts_broker\":\"%s\",\"level\":\"%s\",\"ea_id\":%d,\"slug\":\"%s\",\"symbol\":\"%s\",\"tf\":\"%s\",\"magic\":%I64d,\"event\":\"%s\",\"payload\":%s}",
+      "{\"sv\":1,\"ts_utc\":\"%s\",\"ts_broker\":\"%s\",\"level\":\"%s\",\"ea_id\":%d,\"slug\":\"%s\",\"symbol\":\"%s\",\"tf\":\"%s\",\"magic\":%I64d,\"event\":\"%s\",\"payload\":%s}",
       QM_LoggerIsoTimestamp(TimeGMT(), true),
       QM_LoggerIsoTimestamp(TimeCurrent(), false),
       QM_LoggerLevelToString(level),

@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_my-hedged-healing-circle-positive-swap_207133.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_my-hedged-healing-circle-positive-swap_207133.pdf",
+      "source_pages": "1-16",
+      "source_ref": "\"My Hedged Healing Circle (Positive Swap)\" by PeaceKeeper (with masrois46), Babypips Forums, 2019, https://forums.babypips.com/t/my-hedged-healing-circle-positive-swap/207133",
+      "strategy_name": "Hedged Healing Circle (positive-swap carry basket)",
+      "concept": "Open a ring of mutually-hedging FX/gold positions (weighted by margin ratio) that net to near-zero direction but collect a positive aggregate broker swap, then hold until accrued carry drags the basket to positive equity ('hit and run' at ~0.5-1%).",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Edge is 100% broker-specific positive swap (injected as $0 in our tester, non-reproducible, hard rule against invented swap) with no price signal, no stops, and intentional hold-to-recovery drawdown of 100-200% of margin — incompatible with FTMO daily-loss / DXZ 5%/20% DD gates; author himself states it is 'not backtestable'.",
+      "priority_hint": "LOW",
+      "notes": "Multiple ring variants are the same core carry-basket idea (one row): (1) 12-pair XXXUSD+XXXCHF+XXXJPY safe-haven ring 1-1-1 or 0.5-1-1; (2) 6-pair FX Major USD ring; (3) 10-pair FX Minor ring; (4) XAUUSD-SELL/XAUEUR-BUY gold carry pair (XAUEUR not in .DWX universe anyway); (5) EURCHF/EURJPY swap-arb pair. No deterministic entry timing (just 'open the ring'), exits discretionary. Author admits post #1 that positions are often net-directional ('you are simply buying the dollar'), confirmed by poster #3. Swap values quoted differ per broker (EURJPY, AUDUSD, GBPJPY flip sign) — not modelable."
+    }
+  ],
+  "notes": ["one_rejected_summary_row"]
+}

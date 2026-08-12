@@ -1,4 +1,5 @@
 import json
+import os
 import sqlite3
 import sys
 import tempfile
@@ -13,6 +14,16 @@ import farmctl  # noqa: E402
 
 
 class DwxHistoryRangeFilterTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._old_agent_id = os.environ.get("QM_AGENT_ID")
+        os.environ["QM_AGENT_ID"] = "controller"
+
+    def tearDown(self) -> None:
+        if self._old_agent_id is None:
+            os.environ.pop("QM_AGENT_ID", None)
+        else:
+            os.environ["QM_AGENT_ID"] = self._old_agent_id
+
     def test_p2_enqueue_adjusts_skips_and_leaves_valid_full_window(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "farm"

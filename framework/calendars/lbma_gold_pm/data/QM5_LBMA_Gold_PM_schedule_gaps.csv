@@ -1,0 +1,4 @@
+gap_start,gap_end,gap_code,official_url,resolution_required
+2018-01-01,2018-12-31,OFFICIAL_ANNUAL_PDF_NOT_BYTE_RETRIEVABLE,https://www.ice.com/publicdocs/Gold_Holiday_Calendar_2018.pdf,Obtain a byte-retrievable LBMA or ICE IBA primary document and pin its hash
+2019-01-01,2019-12-31,OFFICIAL_ANNUAL_PDF_NOT_BYTE_RETRIEVABLE,https://www.ice.com/publicdocs/LBMA_Gold_Price_Holiday_Calendar_2019.pdf,Obtain a byte-retrievable LBMA or ICE IBA primary document and pin its hash
+2020-01-01,2025-12-31,NO_HISTORICAL_OPERATIONAL_CANCELLATION_LEDGER,https://www.ice.com/publicdocs/Precious_Metals_Error_Policy.pdf,Bind an official date-level No Publication or cancellation history if actual occurrence rather than scheduled status is required

@@ -49,7 +49,16 @@ im Vault; bei Konflikt gelten Vault-Hard-Rules zuerst.
     Regenerator droppt Zeilen ohne EA-Verzeichnis stillschweigend.
 11. **Terminal-Prozess-Selektion IMMER pfadverankert** (`\mt5\T<n>\`) UND explizit
     `-notmatch 'T_Live'`. Nie bare `T<n>`-Substrings (Case-Insensitive-Match auf 'mt5'
-    killte T_Live am 07-02).
+    killte T_Live am 07-02). Vor jedem OWNER-genehmigten manuellen Terminal-/Worker-
+    Kill MUSS ein non-destruktiver Identitäts-Snapshot geschrieben werden:
+    `python tools/strategy_farm/manual_process_kill_evidence.py --pid <PID>
+    --target-type terminal|worker --actor <wer> --reason <warum>
+    --authority-ref <OWNER-/Task-Beleg>`. Exit 0 und die zurückgegebene `event_id`
+    sind im Operationsbeleg zu zitieren. Der Recorder killt keinen Prozess, lehnt
+    `T_Live` sowie nicht kanonisch pfadverankerte Ziele ab und appendet nach
+    `D:\QM\reports\state\manual_process_kills.jsonl`.
+    *(Zusatz OWNER-ratifiziert 2026-07-31, siehe
+    docs/ops/CONVERGENCE_LEDGER_WEEKEND_2026-07-31.md.)*
 12. **Dedizierte Testfenster** erfordern: Factory_OFF + Watchdog/FactoryON/Reconciler
     disabled + codex_parallel=0 + Kill aller Streu-run_smoke-Wrapper. Der post-run-
     Pump-Hook jedes run_smoke-Laufs reaktiviert sonst die Factory (Resurrection-Kette
@@ -100,7 +109,7 @@ im Vault; bei Konflikt gelten Vault-Hard-Rules zuerst.
     ≥~25/Jahr/Symbol, Index/Commodity bevorzugt (Kommission irrelevant), hartes
     Intraday-DD-Design (Day-Flat, strukturelle Stops, Tages-Loss-Cap). FX-High-Freq
     bleibt tot (Kommission). Erste Slate: QM5_12985–12988
-    (CEO-PROPTRACK-SLATE-2026-07-03). Screening weiter ausschließlich auf Codex'
+    gemäß OWNER-Anweisung vom 2026-07-03. Screening weiter ausschließlich auf Codex'
     report.htm-Basis (BASIS LESSON 06-30, kein paralleler q08-Screen).
 20. **Live-Book-Puls.** Das Live-Buch (T_Live, Konto 4000090541) bekommt eine eigene
     automatisierte Überwachung (Log-basiert, strikt read-only auf T_Live-Dateien, kein
@@ -129,3 +138,14 @@ im Vault; bei Konflikt gelten Vault-Hard-Rules zuerst.
     absoluter EA-Dir-Anker, Kanon-Selbstcheck mit Hard-Abort, Mass-Invalidation-
     Circuit-Breaker (>200 Items/Lauf → Abbruch + Alarm). Agenten-Prompts für
     Factory-Ops müssen `cd C:/QM/repo` explizit vorgeben.
+
+## Amendment 2026-07-24 (OWNER-approved audit implementation)
+
+**Rule 13 superseded.** The "gemini" scheduled lane runs **agy headless** and is
+**operational**, not defective — it completed a real dispatch on 2026-07-23 16:30Z (rc=0)
+and its lane heartbeats are healthy (audit evidence
+`docs/ops/source_harvest/audit/evidence/pipeline__scheduled_tasks.txt`;
+`QM_StrategyFarm_GeminiOrchestration_15min` enabled). The lane **stays ENABLED**; the old
+"keep disabled until Codex-Fix" text is stale and no longer binds. agy job constraints per
+current memory are unchanged (server-side headless `agy -p --dangerously-skip-permissions`,
+≤6 URLs/job, citations mandatory). Reference: `docs/ops/source_harvest/audit/AUDIT_REPORT.md` §1.

@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_RUN",
+  "deployment_allowed": false,
+  "selection_source": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\portfolio\\prop_challenge_ftmo_report_candidate_screen_dedup_fast_20260629.json",
+    "sha256": "05298982B0E80D32BCBD835A5F1444BDF3AA1A992B284AAF756B075DA2FA2404",
+    "rule": "Highest-density unrefreshed NDX archive lead with PF above 1.4; the 2024 selection year is excluded from development and validation."
+  },
+  "candidate": {
+    "ea_id": 10672,
+    "expert": "QM\\QM5_10672_tv-orb-ny-trail",
+    "symbol": "NDX.DWX",
+    "period": "M15",
+    "archive_start": "2024-07-01",
+    "archive_end": "2024-12-30",
+    "archive_profit_factor": 1.4568057466503594,
+    "archive_trades": 347,
+    "archive_trades_per_60d": 113.7704918032787,
+    "source_sha256": "7374DB3E0FC585ACB546D75697663A5056FCA977BBBC1D654D00C09A301C48D0",
+    "ex5_sha256": "EAB1FBEEF69F3B9745D7D2989568FA17640D2DFB75756700A0CED92151948BDA",
+    "setfile": "framework/EAs/QM5_10672_tv-orb-ny-trail/sets/QM5_10672_tv-orb-ny-trail_NDX.DWX_M15_backtest.set",
+    "setfile_sha256": "1A93CDDD10525F6C4EE9D60E0695885093FDA182E8C620B4FC58B20D001AC729"
+  },
+  "data_partition": {
+    "fresh_initial_run": "2017-01-01 through 2024-12-31",
+    "development_years": [2018, 2019, 2020, 2021, 2022],
+    "validation_year": 2023,
+    "selection_contaminated_year": 2024,
+    "sealed_holdout_year": 2025,
+    "holdout_open_rule": "Run 2025 only after exact stream, current-cost, annual-quality, dual-fill development, and frozen-weight 2023 validation gates pass."
+  },
+  "fresh_evidence_contract": {
+    "model": 4,
+    "required_identical_runs": 2,
+    "minimum_trades": 1000,
+    "strict_compile": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "minimum_current_cost_profit_factor": 1.2,
+    "minimum_trades_per_active_calendar_year": 5,
+    "minimum_positive_development_years": 4
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [0.5, 1.0, 2.0, 3.0, 5.0],
+    "development_survivor_rule": "One fixed weight must strictly improve both normal and adverse locked development pass rates.",
+    "validation_rule": "The same frozen weight must strictly improve both normal and adverse 2023 pass rates."
+  },
+  "operational_constraints": {
+    "terminal": "T3",
+    "factory_off_required": true,
+    "symbol_mutex": "NDX.DWX",
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

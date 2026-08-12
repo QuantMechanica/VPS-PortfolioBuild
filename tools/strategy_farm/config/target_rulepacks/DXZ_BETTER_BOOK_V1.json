@@ -1,0 +1,371 @@
+{
+  "schema_version": "target-rulepack/v1",
+  "schema_ref": "tools/strategy_farm/schemas/target_rulepack_v1.schema.json",
+  "rulepack_id": "DXZ_BETTER_BOOK_V1",
+  "profile_version": 1,
+  "target": "DARWINEX_ZERO",
+  "account_or_program": "Darwinex Zero / DarwinIA SILVER and GOLD",
+  "as_of": "2026-07-29",
+  "lifecycle_status": "RESEARCH_CONTRACT_ONLY",
+  "canonicalization": {
+    "algorithm": "QM_CANONICAL_JSON_V1",
+    "hash_algorithm": "SHA-256",
+    "numeric_encoding": "NON_INTEGRAL_AS_DECIMAL_STRING"
+  },
+  "official_sources": [
+    {
+      "source_id": "dxz_risk_engine_official",
+      "title": "How does the risk engine work?",
+      "url": "https://www.darwinexzero.com/docs/en/risk-engine",
+      "authority": "OFFICIAL_PROVIDER",
+      "retrieved_on": "2026-07-29"
+    },
+    {
+      "source_id": "darwinia_program_official",
+      "title": "DarwinIA allocation program",
+      "url": "https://help.darwinex.com/what-is-darwinia",
+      "authority": "OFFICIAL_PROVIDER",
+      "retrieved_on": "2026-07-29"
+    },
+    {
+      "source_id": "dxz_rating_official",
+      "title": "DarwinIA Rating",
+      "url": "https://www.darwinexzero.com/docs/rating",
+      "authority": "OFFICIAL_PROVIDER",
+      "retrieved_on": "2026-07-29"
+    }
+  ],
+  "official_rules": [
+    {
+      "rule_id": "dxz_darwin_target_var",
+      "category": "RISK_ENGINE",
+      "description": "The DARWIN risk engine targets a monthly VaR range rather than reproducing the signal account risk one-for-one.",
+      "scope": ["DARWIN"],
+      "parameters": {
+        "confidence_percent": "95",
+        "minimum_monthly_percent": "3.25",
+        "maximum_monthly_percent": "6.5"
+      },
+      "source_ids": ["dxz_risk_engine_official"]
+    },
+    {
+      "rule_id": "dxz_dleverage_duration_caps",
+      "category": "RISK_ENGINE",
+      "description": "The Risk Engine may adjust open positions to remain within duration-specific D-Leverage limits.",
+      "scope": ["DARWIN", "OPEN_POSITION"],
+      "parameters": {
+        "under_30m": "16.25",
+        "from_30m_to_60m": "13",
+        "over_60m": "9.75"
+      },
+      "source_ids": ["dxz_risk_engine_official"]
+    },
+    {
+      "rule_id": "dxz_risk_engine_lookback",
+      "category": "RISK_ENGINE",
+      "description": "Strategy VaR uses recent exposed days and target VaR uses up to six months of history while tolerating a maximum-to-minimum VaR ratio of two.",
+      "scope": ["SIGNAL_ACCOUNT", "DARWIN"],
+      "parameters": {
+        "strategy_var_exposed_days": 45,
+        "target_var_max_months": 6,
+        "max_var_ratio": "2"
+      },
+      "source_ids": ["dxz_risk_engine_official"]
+    },
+    {
+      "rule_id": "dxz_silver_rating",
+      "category": "ELIGIBILITY",
+      "description": "A DarwinIA SILVER rating of at least 75 guarantees an allocation under the published program rules.",
+      "scope": ["DARWINIA_SILVER"],
+      "parameters": {
+        "minimum_rating": "75",
+        "minimum_allocation_eur": "30000",
+        "allocation_duration_months": 3
+      },
+      "source_ids": ["darwinia_program_official"]
+    },
+    {
+      "rule_id": "dxz_silver_rating_weights",
+      "category": "ELIGIBILITY",
+      "description": "The published SILVER rating weights current return, cumulative six-month return, and six-month maximum drawdown.",
+      "scope": ["DARWINIA_SILVER"],
+      "parameters": {
+        "current_month_return_percent": "22",
+        "six_month_return_percent": "67",
+        "six_month_max_drawdown_percent": "11"
+      },
+      "source_ids": ["dxz_rating_official"]
+    },
+    {
+      "rule_id": "dxz_silver_correlation",
+      "category": "ELIGIBILITY",
+      "description": "SILVER applies stricter correlation eligibility between DARWINs belonging to the same user.",
+      "scope": ["DARWINIA_SILVER"],
+      "parameters": {
+        "same_user_max_exclusive": "0.5",
+        "other_user_max_exclusive": "0.95",
+        "selection_tiebreaker": "HIGHER_CUMULATIVE_SIX_MONTH_RETURN"
+      },
+      "source_ids": ["darwinia_program_official"]
+    },
+    {
+      "rule_id": "dxz_silver_activity",
+      "category": "ELIGIBILITY",
+      "description": "A DARWIN must have opened a trade in the current or previous month to participate in SILVER.",
+      "scope": ["DARWINIA_SILVER"],
+      "parameters": {
+        "activity_lookback_calendar_months": 2,
+        "minimum_opened_trades": 1
+      },
+      "source_ids": ["darwinia_program_official"]
+    },
+    {
+      "rule_id": "dxz_gold_eligibility",
+      "category": "ELIGIBILITY",
+      "description": "GOLD requires more than eight months of signal history and one published return threshold together with Return/Drawdown above 2.5.",
+      "scope": ["DARWINIA_GOLD"],
+      "parameters": {
+        "minimum_history_months_exclusive": 8,
+        "minimum_return_drawdown_ratio_exclusive": "2.5",
+        "return_thresholds_percent": {
+          "one_year": "20",
+          "two_year": "25",
+          "three_year": "30",
+          "four_year": "35",
+          "five_year": "40"
+        },
+        "allocation_duration_months": 6,
+        "allocated_rank_count": 50
+      },
+      "source_ids": ["darwinia_program_official"]
+    },
+    {
+      "rule_id": "dxz_gold_monthly_ranking",
+      "category": "OBJECTIVE",
+      "description": "GOLD ranking is ordered by current calendar-month return among eligible DARWINs.",
+      "scope": ["DARWINIA_GOLD"],
+      "parameters": {
+        "ranking_metric": "CURRENT_CALENDAR_MONTH_RETURN",
+        "ranking_cutoff": "LAST_TRADING_DAY_MARKET_CLOSE"
+      },
+      "source_ids": ["darwinia_program_official"]
+    }
+  ],
+  "internal_guardrails": [
+    {
+      "guardrail_id": "qm_dxz_daily_loss_guardrail",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "OWNER_RATIFIED",
+      "description": "QuantMechanica treats a five-percent daily loss as an internal account-protection boundary.",
+      "scope": ["DXZ_SIGNAL_ACCOUNT"],
+      "parameters": {
+        "percent_of_reference_equity": "5",
+        "provider_rule_publicly_verified": false
+      },
+      "rationale": "Preserves the existing OWNER risk mandate while explicitly avoiding an unsupported claim that it is a public Darwinex Zero rule.",
+      "decision_refs": ["decisions/2026-07-15_book_resize_to_10pct_dd_1pct_cap.md"]
+    },
+    {
+      "guardrail_id": "qm_dxz_total_loss_guardrail",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "OWNER_RATIFIED",
+      "description": "QuantMechanica treats a twenty-percent total loss as an internal account-protection boundary.",
+      "scope": ["DXZ_SIGNAL_ACCOUNT"],
+      "parameters": {
+        "percent_of_reference_equity": "20",
+        "provider_rule_publicly_verified": false
+      },
+      "rationale": "Keeps the standing OWNER boundary operationally visible without mixing it into official provider rules.",
+      "decision_refs": ["decisions/2026-07-15_book_resize_to_10pct_dd_1pct_cap.md"]
+    },
+    {
+      "guardrail_id": "qm_dxz_per_idea_risk_cap",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "OWNER_RATIFIED",
+      "description": "No EA, strategy, symbol, or single idea may risk more than one percent per trade.",
+      "scope": ["DXZ_BOOK", "SLEEVE", "TRADE"],
+      "parameters": {
+        "maximum_percent_of_equity": "1"
+      },
+      "rationale": "Bounds concentration independently of the Darwinex Risk Engine and remains the standing universal OWNER cap.",
+      "decision_refs": ["decisions/2026-07-15_book_resize_to_10pct_dd_1pct_cap.md"]
+    },
+    {
+      "guardrail_id": "qm_dxz_correlated_cluster_risk",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "PROPOSED_FOR_CALIBRATION",
+      "description": "Cap simultaneous planned stop risk within a correlated symbol or mechanism cluster.",
+      "scope": ["DXZ_BOOK", "CORRELATED_CLUSTER"],
+      "parameters": {
+        "maximum_percent_of_equity": "1.5"
+      },
+      "rationale": "A per-sleeve cap does not control several nominally different sleeves expressing the same market risk.",
+      "decision_refs": []
+    },
+    {
+      "guardrail_id": "qm_dxz_open_stop_risk",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "PROPOSED_FOR_CALIBRATION",
+      "description": "Cap simultaneous planned account stop risk across all open sleeves.",
+      "scope": ["DXZ_BOOK"],
+      "parameters": {
+        "maximum_percent_of_equity": "4"
+      },
+      "rationale": "Controls concurrent exposure rather than relying on the sum of static sleeve allocations or historical non-overlap.",
+      "decision_refs": []
+    },
+    {
+      "guardrail_id": "qm_dxz_tail_day_budget",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "PROPOSED_FOR_CALIBRATION",
+      "description": "Require the estimated 99.9th-percentile one-day loss to remain below two percent.",
+      "scope": ["DXZ_BOOK", "EVALUATION"],
+      "parameters": {
+        "quantile": "0.999",
+        "maximum_loss_percent": "2"
+      },
+      "rationale": "Creates distance to the internal daily guardrail using a synchronized mark-to-market book distribution.",
+      "decision_refs": []
+    },
+    {
+      "guardrail_id": "qm_dxz_six_month_drawdown_budget",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "PROPOSED_FOR_CALIBRATION",
+      "description": "Require the 95th-percentile six-month maximum drawdown estimate to remain below eight percent.",
+      "scope": ["DXZ_BOOK", "EVALUATION"],
+      "parameters": {
+        "quantile": "0.95",
+        "maximum_drawdown_percent": "8",
+        "review_drawdown_percent": "5",
+        "owner_halt_drawdown_percent": "10"
+      },
+      "rationale": "Aligns book construction with the six-month SILVER horizon and GOLD Return/Drawdown objective.",
+      "decision_refs": []
+    },
+    {
+      "guardrail_id": "qm_dxz_risk_stability_band",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "PROPOSED_FOR_CALIBRATION",
+      "description": "Keep rolling strategy VaR substantially more stable than the provider's published two-to-one tolerance.",
+      "scope": ["DXZ_SIGNAL_ACCOUNT", "ROLLING_45_EXPOSED_DAYS"],
+      "parameters": {
+        "maximum_to_minimum_var_ratio": "1.35"
+      },
+      "rationale": "Stable underlying risk improves faithful DARWIN replication and avoids treating raw account scaling as free return.",
+      "decision_refs": []
+    },
+    {
+      "guardrail_id": "qm_dxz_weight_turnover",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "PROPOSED_FOR_CALIBRATION",
+      "description": "Freeze weights within a calendar month and cap deliberate month-to-month turnover.",
+      "scope": ["DXZ_BOOK", "PORTFOLIO_WEIGHTS"],
+      "parameters": {
+        "maximum_monthly_turnover_percent": "15",
+        "intramonth_performance_chasing_allowed": false
+      },
+      "rationale": "Avoids destabilizing the Risk Engine input and reduces adaptive selection on recent returns.",
+      "decision_refs": []
+    }
+  ],
+  "q08_evidence_policy": {
+    "policy_id": "dxz_q08_target_evidence_v1",
+    "hard_block_dimensions": [
+      "data_lineage_invalid",
+      "lookahead_or_execution_impossibility",
+      "net_expectancy_non_positive_after_costs",
+      "neighborhood_implosion",
+      "selection_bias_hard_fail",
+      "tail_or_ruin_hard_fail",
+      "binary_or_set_identity_mismatch"
+    ],
+    "soft_evidence_debt_dimensions": [
+      "low_effective_sample_size",
+      "declared_archetype_test_not_applicable",
+      "seasonal_diagnostic_low_power",
+      "conditional_regime_evidence_inconclusive",
+      "monte_carlo_precision_inconclusive"
+    ],
+    "not_applicable_requires_declared_archetype": true,
+    "soft_admission_status": "TARGET_ELIGIBLE_WITH_EVIDENCE_DEBT",
+    "compensation_requirements": [
+      "exact synchronized book mark-to-market validation",
+      "risk weight reflects unresolved evidence",
+      "evidence debt remains visible in the signed book dossier",
+      "minimum-weight forward probation with actual DARWIN metrics",
+      "no universal hard-block dimension is present"
+    ]
+  },
+  "evaluation_profile": {
+    "objective": "Maximize expected six-month DARWIN return while preserving stable Risk Engine mapping, low six-month drawdown, and eligibility for DarwinIA SILVER and GOLD.",
+    "metrics": [
+      {
+        "metric_id": "darwin_six_month_return",
+        "direction": "MAXIMIZE",
+        "description": "Rolling six-month return on the DARWIN-replica basis, not only raw signal-account PnL.",
+        "parameters": {"window_calendar_months": 6, "net_of_costs": true}
+      },
+      {
+        "metric_id": "darwin_six_month_max_drawdown",
+        "direction": "MINIMIZE",
+        "description": "Rolling maximum drawdown over the SILVER rating horizon.",
+        "parameters": {"window_calendar_months": 6, "mark_to_market": true}
+      },
+      {
+        "metric_id": "darwin_return_drawdown_ratio",
+        "direction": "MAXIMIZE",
+        "description": "Return-to-drawdown ratio used as a GOLD eligibility objective.",
+        "parameters": {"published_gold_threshold_exclusive": "2.5"}
+      },
+      {
+        "metric_id": "darwin_risk_replication_quality",
+        "direction": "MAXIMIZE",
+        "description": "Faithfulness and stability of the underlying-to-DARWIN risk mapping.",
+        "parameters": {"observe_var_ratio": true, "observe_dleverage_interventions": true, "observe_rs_ra": true}
+      }
+    ],
+    "go_criteria": [
+      {
+        "criterion_id": "dxz_exact_execution_bundle",
+        "classification": "INTERNAL_DECISION_CRITERION",
+        "description": "Every sleeve and book result is bound to exact source, include, EX5, set, history, calendar, cost-model, and rulepack hashes.",
+        "parameters": {"all_hashes_required": true}
+      },
+      {
+        "criterion_id": "dxz_synchronized_outer_validation",
+        "classification": "INTERNAL_DECISION_CRITERION",
+        "description": "The exact proposed book passes a sealed synchronized mark-to-market outer validation with all internal risk budgets enforced.",
+        "parameters": {"sealed_holdout_required": true, "intratrade_equity_required": true}
+      },
+      {
+        "criterion_id": "dxz_darwin_replica_validation",
+        "classification": "INTERNAL_DECISION_CRITERION",
+        "description": "The decision package reports both raw signal-account and DARWIN-replica metrics including risk-engine intervention sensitivity.",
+        "parameters": {"raw_only_result_rejected": true}
+      },
+      {
+        "criterion_id": "dxz_probation_required",
+        "classification": "INTERNAL_DECISION_CRITERION",
+        "description": "New or soft-evidence sleeves start at minimum weight with a documented forward probation review.",
+        "parameters": {"minimum_days": 42, "preferred_days": 90}
+      },
+      {
+        "criterion_id": "dxz_owner_money_gate",
+        "classification": "INTERNAL_DECISION_CRITERION",
+        "description": "No deployment or risk change follows from this rulepack without a separate signed OWNER manifest decision.",
+        "parameters": {"owner_signature_required": true}
+      }
+    ]
+  },
+  "deployment_boundary": {
+    "runtime_integration": "NOT_IMPLEMENTED",
+    "deploy_authorization": "OWNER_ONLY",
+    "factory_action_authorized": false,
+    "mt5_action_authorized": false,
+    "notes": [
+      "This file is an additive research contract and is not consumed by farmctl, an EA, a terminal, or a deployment script.",
+      "The current live DXZ state must be read from its signed manifest and live evidence before any future integration.",
+      "Official provider facts must be refreshed and version-bumped when Darwinex publishes a material change."
+    ]
+  }
+}

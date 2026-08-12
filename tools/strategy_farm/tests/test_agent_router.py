@@ -14,6 +14,8 @@ class AgentRouterTests(unittest.TestCase):
             f"""---
 ea_id: {ea_id}
 slug: {slug}
+source_id: TEST-SOURCE
+target_symbols: [XAUUSD.DWX]
 g0_status: APPROVED
 r1_track_record: PASS
 r2_mechanical: PASS
@@ -289,6 +291,33 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             self.assertEqual(task["state"], "REVIEW")
             self.assertEqual(task["id"], created["task_id"])
 
+    def test_list_tasks_orders_priority_desc_then_updated_at_desc(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            low = agent_router.enqueue_task(root, "ops_issue", priority=10)
+            high_older = agent_router.enqueue_task(root, "ops_issue", priority=90)
+            high_newer = agent_router.enqueue_task(root, "ops_issue", priority=90)
+
+            with agent_router.connect(root) as conn:
+                timestamps = {
+                    low["task_id"]: "2026-07-31T03:00:00+00:00",
+                    high_older["task_id"]: "2026-07-31T01:00:00+00:00",
+                    high_newer["task_id"]: "2026-07-31T02:00:00+00:00",
+                }
+                conn.executemany(
+                    "UPDATE agent_tasks SET updated_at=? WHERE id=?",
+                    [(updated_at, task_id) for task_id, updated_at in timestamps.items()],
+                )
+                conn.commit()
+
+            listed = agent_router.list_tasks(root)
+
+            self.assertEqual(
+                [task["id"] for task in listed],
+                [high_newer["task_id"], high_older["task_id"], low["task_id"]],
+            )
+            self.assertEqual([task["priority"] for task in listed], [90, 90, 10])
+
     def test_close_review_requires_existing_artifact_for_approval(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
@@ -448,6 +477,8 @@ expected_trades_per_year_per_symbol: 12
                 """---
 ea_id: QM5_900004
 slug: schema-gap
+source_id: TEST-SOURCE-QM5-900004
+target_symbols: [XAUUSD.DWX]
 g0_status: APPROVED
 r1_track_record: PASS
 r2_mechanical: PASS

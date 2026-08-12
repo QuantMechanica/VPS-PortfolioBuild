@@ -1,18 +1,47 @@
 {
- "logical_symbol": "_per_instance",
- "host_symbol": "_per_instance",
- "host_timeframe": "W1",
- "basket_symbols": [
-  "EURUSD.DWX",
-  "GBPUSD.DWX",
-  "USDJPY.DWX",
-  "AUDUSD.DWX",
-  "USDCAD.DWX",
-  "XAUUSD.DWX",
-  "GDAXI.DWX",
-  "NDX.DWX",
-  "WS30.DWX",
-  "XTIUSD.DWX"
- ],
- "notes": "cross-sectional 13w ROC rank; foreign-symbol W1 reads need basket registration"
+  "ea_id": "QM5_10305",
+  "slug": "narang-xmom",
+  "timeframe": "W1",
+  "host_timeframe": "W1",
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "XAUUSD.DWX",
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "XTIUSD.DWX"
+  ],
+  "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "XAUUSD.DWX",
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "XTIUSD.DWX"
+  ],
+  "order_routes": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "XAUUSD.DWX",
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "XTIUSD.DWX"
+  ],
+  "notes": [
+    "Each registered chart symbol is tested as its own order route and magic slot.",
+    "All instances read the same ten-symbol W1 basket to compute the 13-week cross-sectional rank.",
+    "No synthetic logical basket symbol is used; Q02 fans out the ten canonical per-instance setfiles."
+  ]
 }

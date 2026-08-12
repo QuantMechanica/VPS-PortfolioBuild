@@ -26,6 +26,7 @@ EA_ROOT = REPO_ROOT / "framework" / "EAs"
 REQUIRED_EA_COLUMNS = ["ea_id", "slug", "strategy_id", "status", "owner", "created_at"]
 REQUIRED_MAGIC_COLUMNS = ["ea_id", "ea_slug", "symbol_slot", "symbol", "magic", "reserved_at", "reserved_by", "status"]
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]*[a-z0-9]$")
+NAMED_MASTER_DIR_RE = re.compile(r"^QM5_M[A-Z0-9]+_(?P<slug>[a-z0-9][a-z0-9-]*[a-z0-9])$")
 
 
 def read_csv(path: Path) -> tuple[list[str], list[dict[str, str]]]:
@@ -53,6 +54,11 @@ def add_column_issues(name: str, columns: list[str], required: list[str], issues
 
 def validate_ea_registry(rows: list[dict[str, str]], issues: list[str], warnings: list[str]) -> dict[str, dict[str, str]]:
     by_id: dict[str, dict[str, str]] = {}
+    named_master_slugs = {
+        match.group("slug")
+        for entry in EA_ROOT.iterdir()
+        if entry.is_dir() and (match := NAMED_MASTER_DIR_RE.fullmatch(entry.name))
+    } if EA_ROOT.is_dir() else set()
     for line, row in enumerate(rows, start=2):
         ea_id = (row.get("ea_id") or "").strip()
         slug = (row.get("slug") or "").strip()
@@ -78,7 +84,7 @@ def validate_ea_registry(rows: list[dict[str, str]], issues: list[str], warnings
         slug = (row.get("slug") or "").strip()
         if ea_id.isdigit() and slug:
             expected = EA_ROOT / f"QM5_{ea_id}_{slug}"
-            if not expected.exists():
+            if not expected.exists() and slug not in named_master_slugs:
                 warnings.append(f"ea_id_registry:ea_dir_missing:{ea_id}:{slug}")
     return by_id
 

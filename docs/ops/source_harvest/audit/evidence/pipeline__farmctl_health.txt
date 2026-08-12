@@ -1,0 +1,203 @@
+{
+  "checked_at": "2026-07-24T05:11:16Z",
+  "checks": [
+    {
+      "action_hint": "",
+      "detail": "every active numeric ea_id maps to at most one distinct active slug",
+      "name": "ea_id_slug_uniqueness",
+      "status": "OK",
+      "threshold": 0,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "no un-promoted higher-version dirs",
+      "name": "stranded_ea_improvements",
+      "status": "OK",
+      "threshold": 0,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "0/0 FAIL (low volume)",
+      "name": "codex_review_fail_rate_1h",
+      "status": "OK",
+      "threshold": 0.8,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "1 old cards_ready source(s) waiting on in-flight cards",
+      "name": "cards_ready_stagnation",
+      "status": "OK",
+      "threshold": 3,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "last run exit 0",
+      "name": "pump_task_lastresult",
+      "status": "OK",
+      "threshold": 0,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "0 pending promotion",
+      "name": "p2_pass_no_p3",
+      "status": "OK",
+      "threshold": 10,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "54931 rows, refreshed 10m ago",
+      "name": "ea_metrics_fresh",
+      "status": "OK",
+      "threshold": 90,
+      "value": 10
+    },
+    {
+      "action_hint": "",
+      "detail": "no grandchildren",
+      "name": "ablation_grandchildren",
+      "status": "OK",
+      "threshold": 0,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "1 builds past Codex review; Claude disabled, Codex routing active",
+      "name": "claude_review_starved",
+      "status": "OK",
+      "threshold": 5,
+      "value": 1
+    },
+    {
+      "action_hint": "",
+      "detail": "2352 pending, 9 active, 10 pwsh workers, 9 fresh work_item logs",
+      "name": "mt5_dispatch_idle",
+      "status": "OK",
+      "threshold": 5,
+      "value": 2352
+    },
+    {
+      "action_hint": "",
+      "detail": "9/9 enabled terminal_worker daemons alive (T1, T10, T2, T3, T4, T6, T7, T8, T9) // 1 parked by disabled_terminals.txt cap: T5",
+      "name": "mt5_worker_saturation",
+      "status": "OK",
+      "threshold": 9,
+      "value": 9
+    },
+    {
+      "action_hint": "Run farmctl pump; active_timeouts should fail hung rows and release MT5 slots",
+      "detail": "2 active rows exceed phase timeout; worst QM5_10485 USDJPY.DWX Q02 terminal=T4 age=84.6m timeout=45m",
+      "name": "active_row_age",
+      "status": "WARN",
+      "threshold": 45,
+      "value": 84.6
+    },
+    {
+      "action_hint": "",
+      "detail": "1 codex builds in 3h, 3 pending",
+      "name": "codex_zero_activity",
+      "status": "OK",
+      "threshold": 1,
+      "value": 1
+    },
+    {
+      "action_hint": "Add more sources before pool drains",
+      "detail": "only 9 pending sources",
+      "name": "source_pool_drained",
+      "status": "WARN",
+      "threshold": 10,
+      "value": 9
+    },
+    {
+      "action_hint": "",
+      "detail": "no uncovered recurrent zero-trade EAs",
+      "name": "zerotrade_rework_backlog",
+      "status": "OK",
+      "threshold": 1,
+      "value": 0
+    },
+    {
+      "action_hint": "No manual action while Codex slots are full; pump will emit auto-build tasks when a slot frees.",
+      "detail": "352 approved cards await build, Codex/build queue saturated (codex=0, pending_builds=3; QM5_10367, QM5_11032, QM5_11194, QM5_11205, QM5_11212, QM5_11213, QM5_11214, QM5_11263, QM5_1157, QM5_11805)",
+      "name": "unbuilt_cards_count",
+      "status": "WARN",
+      "threshold": 10,
+      "value": 352
+    },
+    {
+      "action_hint": "",
+      "detail": "QM5_11570, QM5_10050, QM5_12507",
+      "name": "unenqueued_eas_count",
+      "status": "OK",
+      "threshold": 3,
+      "value": 3
+    },
+    {
+      "action_hint": "",
+      "detail": "direct pump Codex active (legacy /goal bridge retired 2026-05-17; heartbeat relic 67d old)",
+      "name": "codex_bridge_heartbeat",
+      "status": "OK",
+      "threshold": 1,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "D: free 231.6GB",
+      "name": "disk_free_gb",
+      "status": "OK",
+      "threshold": 80,
+      "value": 231.6
+    },
+    {
+      "action_hint": "",
+      "detail": "3 Q03+ PASS in last 6h",
+      "name": "p_pass_stagnation",
+      "status": "OK",
+      "threshold": 1,
+      "value": 3
+    },
+    {
+      "action_hint": "A gate runner is failing before producing any verdict (crashing runner, CLI arg mismatch, or missing input) \u2014 NOT a strategy-quality issue. Read a recent work_item_<id>.log for that phase; check the phase runner spawn args in farmctl._phase_runner_cmd_for_work_item.",
+      "detail": "Q03: 34/34 INFRA_FAIL, 0 PASS/6h",
+      "name": "phase_infra_graveyard",
+      "status": "FAIL",
+      "threshold": 30,
+      "value": 34
+    },
+    {
+      "action_hint": "",
+      "detail": "codex=255s; claude disabled",
+      "name": "quota_snapshot_fresh",
+      "status": "OK",
+      "threshold": 300,
+      "value": 255
+    },
+    {
+      "action_hint": "",
+      "detail": "verdict=ok qwinsta_ok=True qwinsta_error=None tasks_failing=0/3 logon_session_ok=True spawn_ok=True age=1.2h",
+      "name": "lsm_session_health",
+      "status": "OK",
+      "threshold": "ok",
+      "value": "ok"
+    },
+    {
+      "action_hint": "",
+      "detail": "no 401 errors; auth_age=48.9h",
+      "name": "codex_auth_broken",
+      "status": "OK",
+      "threshold": 1,
+      "value": 0
+    }
+  ],
+  "overall": "FAIL",
+  "summary": {
+    "fail": 1,
+    "ok": 20,
+    "warn": 3
+  }
+}

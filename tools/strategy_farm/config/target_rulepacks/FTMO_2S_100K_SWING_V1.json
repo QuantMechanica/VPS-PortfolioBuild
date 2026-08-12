@@ -1,0 +1,468 @@
+{
+  "schema_version": "target-rulepack/v1",
+  "schema_ref": "tools/strategy_farm/schemas/target_rulepack_v1.schema.json",
+  "rulepack_id": "FTMO_2S_100K_SWING_V1",
+  "profile_version": 1,
+  "target": "FTMO",
+  "account_or_program": "FTMO Challenge 2-Step / USD 100000 / Swing",
+  "as_of": "2026-07-29",
+  "lifecycle_status": "RESEARCH_CONTRACT_ONLY",
+  "canonicalization": {
+    "algorithm": "QM_CANONICAL_JSON_V1",
+    "hash_algorithm": "SHA-256",
+    "numeric_encoding": "NON_INTEGRAL_AS_DECIMAL_STRING"
+  },
+  "official_sources": [
+    {
+      "source_id": "ftmo_trading_objectives_official",
+      "title": "FTMO Trading Objectives",
+      "url": "https://ftmo.com/en/trading-objectives/",
+      "authority": "OFFICIAL_PROVIDER",
+      "retrieved_on": "2026-07-29",
+      "retrieved_at_utc": "2026-07-29T19:25:39Z",
+      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
+    },
+    {
+      "source_id": "ftmo_2_step_challenge_official",
+      "title": "FTMO Challenge: 2-Step",
+      "url": "https://ftmo.com/en/2-step-challenge/",
+      "authority": "OFFICIAL_PROVIDER",
+      "retrieved_on": "2026-07-29",
+      "retrieved_at_utc": "2026-07-29T19:25:39Z",
+      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
+    },
+    {
+      "source_id": "ftmo_news_official",
+      "title": "Can I trade news?",
+      "url": "https://ftmo.com/faq/can-i-trade-news/",
+      "authority": "OFFICIAL_PROVIDER",
+      "retrieved_on": "2026-07-29",
+      "retrieved_at_utc": "2026-07-29T19:25:39Z",
+      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
+    },
+    {
+      "source_id": "ftmo_weekend_official",
+      "title": "Do I have to close my positions overnight or before the weekend?",
+      "url": "https://ftmo.com/en/faq/do-i-have-to-close-my-positions-overnight-or-before-the-weekend/",
+      "authority": "OFFICIAL_PROVIDER",
+      "retrieved_on": "2026-07-29",
+      "retrieved_at_utc": "2026-07-29T19:25:39Z",
+      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
+    },
+    {
+      "source_id": "ftmo_ea_official",
+      "title": "Which instruments can I trade and what strategies am I allowed to use?",
+      "url": "https://ftmo.com/en/faq/which-instruments-can-i-trade-and-what-strategies-am-i-allowed-to-use/",
+      "authority": "OFFICIAL_PROVIDER",
+      "retrieved_on": "2026-07-29",
+      "retrieved_at_utc": "2026-07-29T19:25:39Z",
+      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
+    },
+    {
+      "source_id": "ftmo_forbidden_practices_official",
+      "title": "Forbidden Trading Practices",
+      "url": "https://ftmo.com/en/forbidden-trading-practices/",
+      "authority": "OFFICIAL_PROVIDER",
+      "retrieved_on": "2026-07-29",
+      "retrieved_at_utc": "2026-07-29T19:25:39Z",
+      "snapshot_path": "docs/ops/evidence/2026-07-29_ftmo_official_rules_snapshot.json",
+      "snapshot_sha256": "60f94e0d1d3ff5f64582c6274ef1cffe25383806b9a718104f3a34ad89384b72",
+      "content_identity_basis": "NORMALIZED_PROVIDER_RULE_SNAPSHOT"
+    }
+  ],
+  "official_rules": [
+    {
+      "rule_id": "ftmo_2s_phase1_profit_target",
+      "category": "OBJECTIVE",
+      "description": "The first phase of the 2-Step FTMO Challenge requires profit equal to ten percent of Initial Simulated Capital.",
+      "scope": ["FTMO_2_STEP_PHASE1", "USD_100000"],
+      "parameters": {
+        "percent_of_initial_simulated_capital": "10",
+        "amount_usd": "10000",
+        "balance_usd": "110000"
+      },
+      "source_ids": ["ftmo_trading_objectives_official"]
+    },
+    {
+      "rule_id": "ftmo_2s_verification_profit_target",
+      "category": "OBJECTIVE",
+      "description": "Verification requires profit equal to five percent of Initial Simulated Capital.",
+      "scope": ["FTMO_2_STEP_VERIFICATION", "USD_100000"],
+      "parameters": {
+        "percent_of_initial_simulated_capital": "5",
+        "amount_usd": "5000",
+        "balance_usd": "105000"
+      },
+      "source_ids": ["ftmo_trading_objectives_official"]
+    },
+    {
+      "rule_id": "ftmo_2s_max_daily_loss",
+      "category": "RISK_LIMIT",
+      "description": "Equity may not drop below the CE(S)T midnight balance minus five percent of Initial Simulated Capital; equity includes open PnL, swaps, and commissions.",
+      "scope": ["FTMO_2_STEP_PHASE1", "FTMO_2_STEP_VERIFICATION", "FTMO_ACCOUNT_2_STEP", "USD_100000"],
+      "parameters": {
+        "percent_of_initial_simulated_capital": "5",
+        "amount_usd": "5000",
+        "timezone": "Europe/Prague",
+        "reset_local_time": "00:00:00",
+        "limit_basis": "MIDNIGHT_BALANCE_MINUS_FIXED_AMOUNT",
+        "tested_quantity": "EQUITY_INCLUDING_OPEN_PNL_SWAPS_COMMISSIONS",
+        "breach_operator": "STRICTLY_BELOW_LIMIT"
+      },
+      "source_ids": ["ftmo_trading_objectives_official"]
+    },
+    {
+      "rule_id": "ftmo_2s_maximum_loss",
+      "category": "RISK_LIMIT",
+      "description": "The 2-Step Maximum Loss limit is static at ten percent below Initial Simulated Capital.",
+      "scope": ["FTMO_2_STEP_PHASE1", "FTMO_2_STEP_VERIFICATION", "FTMO_ACCOUNT_2_STEP", "USD_100000"],
+      "parameters": {
+        "model": "STATIC_INITIAL",
+        "percent_of_initial_simulated_capital": "10",
+        "amount_usd": "10000",
+        "floor_usd": "90000",
+        "tested_quantity": "EQUITY_INCLUDING_OPEN_PNL_SWAPS_COMMISSIONS",
+        "breach_operator": "STRICTLY_BELOW_LIMIT"
+      },
+      "source_ids": ["ftmo_trading_objectives_official"]
+    },
+    {
+      "rule_id": "ftmo_2s_minimum_trading_days",
+      "category": "OBJECTIVE",
+      "description": "Both evaluation phases require at least four CE(S)T days on which at least one position is newly opened.",
+      "scope": ["FTMO_2_STEP_PHASE1", "FTMO_2_STEP_VERIFICATION"],
+      "parameters": {
+        "days": 4,
+        "timezone": "Europe/Prague",
+        "qualifying_action": "POSITION_OPENED"
+      },
+      "source_ids": ["ftmo_trading_objectives_official"]
+    },
+    {
+      "rule_id": "ftmo_2s_no_time_limit",
+      "category": "TRADING_CONDITION",
+      "description": "The current 2-Step Evaluation has no maximum trading period.",
+      "scope": ["FTMO_2_STEP_PHASE1", "FTMO_2_STEP_VERIFICATION"],
+      "parameters": {
+        "maximum_trading_period_days": null
+      },
+      "source_ids": ["ftmo_trading_objectives_official"]
+    },
+    {
+      "rule_id": "ftmo_2s_pass_condition",
+      "category": "OBJECTIVE",
+      "description": "The account balance must exceed the applicable target with all positions closed.",
+      "scope": ["FTMO_2_STEP_PHASE1", "FTMO_2_STEP_VERIFICATION"],
+      "parameters": {
+        "balance_operator": "STRICTLY_GREATER_THAN_TARGET",
+        "positions_open": 0
+      },
+      "source_ids": ["ftmo_trading_objectives_official"]
+    },
+    {
+      "rule_id": "ftmo_swing_news",
+      "category": "TRADING_CONDITION",
+      "description": "News restrictions do not apply during Evaluation and the published selected-news restriction does not apply to Swing FTMO Accounts.",
+      "scope": ["FTMO_2_STEP_PHASE1", "FTMO_2_STEP_VERIFICATION", "FTMO_ACCOUNT_SWING"],
+      "parameters": {
+        "evaluation_restricted": false,
+        "ftmo_account_swing_restricted": false
+      },
+      "source_ids": ["ftmo_news_official"]
+    },
+    {
+      "rule_id": "ftmo_swing_weekend",
+      "category": "TRADING_CONDITION",
+      "description": "Overnight and weekend holding restrictions do not apply during Evaluation or to Swing FTMO Accounts.",
+      "scope": ["FTMO_2_STEP_PHASE1", "FTMO_2_STEP_VERIFICATION", "FTMO_ACCOUNT_SWING"],
+      "parameters": {
+        "evaluation_restricted": false,
+        "ftmo_account_swing_restricted": false
+      },
+      "source_ids": ["ftmo_weekend_official"]
+    },
+    {
+      "rule_id": "ftmo_ea_server_limits",
+      "category": "OPERATIONAL_LIMIT",
+      "description": "EAs are allowed subject to platform limits and the prohibition on server-hyperactive automation.",
+      "scope": ["FTMO_EVALUATION", "FTMO_ACCOUNT", "EA"],
+      "parameters": {
+        "ea_allowed": true,
+        "simultaneous_orders": 200,
+        "positions_per_day": 2000,
+        "server_requests_per_day_hyperactive_above": 2000
+      },
+      "source_ids": ["ftmo_ea_official", "ftmo_forbidden_practices_official"]
+    },
+    {
+      "rule_id": "ftmo_replicable_trading_requirement",
+      "category": "TRADING_CONDITION",
+      "description": "Strategies must remain replicable in real markets and must not use prohibited exploitation, overexposure, manipulation, or account-rolling practices.",
+      "scope": ["FTMO_EVALUATION", "FTMO_ACCOUNT", "EA"],
+      "parameters": {
+        "latency_or_feed_exploitation_allowed": false,
+        "server_manipulation_allowed": false,
+        "non_replicable_risk_allowed": false
+      },
+      "source_ids": ["ftmo_forbidden_practices_official"]
+    }
+  ],
+  "internal_guardrails": [
+    {
+      "guardrail_id": "qm_ftmo_initial_balance_risk_anchor",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "PROPOSED_FOR_CALIBRATION",
+      "description": "Size all challenge positions from the immutable USD 100000 starting balance rather than growing or falling live equity.",
+      "scope": ["FTMO_2_STEP_PHASE1", "FTMO_2_STEP_VERIFICATION", "SIZING"],
+      "parameters": {
+        "reference_balance_usd": "100000",
+        "live_equity_compounding_allowed": false
+      },
+      "rationale": "Keeps live sizing faithful to fixed-risk backtest evidence and prevents risk creep while approaching the target.",
+      "decision_refs": []
+    },
+    {
+      "guardrail_id": "qm_ftmo_per_trade_risk_cap",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "PROPOSED_FOR_CALIBRATION",
+      "description": "Cap planned loss on any single trade or idea at one percent of initial balance.",
+      "scope": ["FTMO_BOOK", "SLEEVE", "TRADE"],
+      "parameters": {
+        "maximum_percent_of_initial_balance": "1",
+        "maximum_usd": "1000"
+      },
+      "rationale": "Prevents a technical framework ceiling from becoming the campaign's target risk and avoids 4x or 8x leverage rescue logic.",
+      "decision_refs": []
+    },
+    {
+      "guardrail_id": "qm_ftmo_correlated_cluster_risk",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "PROPOSED_FOR_CALIBRATION",
+      "description": "Cap simultaneous planned stop risk for correlated symbols or mechanics.",
+      "scope": ["FTMO_BOOK", "CORRELATED_CLUSTER"],
+      "parameters": {
+        "maximum_percent_of_initial_balance": "1.5",
+        "maximum_usd": "1500"
+      },
+      "rationale": "Several sleeves can represent one economic trade even when their magic numbers differ.",
+      "decision_refs": []
+    },
+    {
+      "guardrail_id": "qm_ftmo_total_open_stop_risk",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "PROPOSED_FOR_CALIBRATION",
+      "description": "Cap total simultaneous planned stop exposure across the challenge book.",
+      "scope": ["FTMO_BOOK"],
+      "parameters": {
+        "maximum_percent_of_initial_balance": "2.5",
+        "maximum_usd": "2500"
+      },
+      "rationale": "Leaves material execution and gap room inside the official daily limit.",
+      "decision_refs": []
+    },
+    {
+      "guardrail_id": "qm_ftmo_projected_daily_loss_budget",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "PROPOSED_FOR_CALIBRATION",
+      "description": "New entries require projected 99.9th-percentile daily loss to fit inside a three-percent internal budget.",
+      "scope": ["FTMO_BOOK", "ENTRY_GOVERNOR"],
+      "parameters": {
+        "quantile": "0.999",
+        "maximum_percent_of_initial_balance": "3",
+        "official_buffer_percent": "2"
+      },
+      "rationale": "Uses an evidence-based exposure budget while retaining a two-point buffer to the official five-percent daily limit.",
+      "decision_refs": []
+    },
+    {
+      "guardrail_id": "qm_ftmo_total_drawdown_budget",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "PROPOSED_FOR_CALIBRATION",
+      "description": "Do not admit or continue a book whose modeled or observed total drawdown reaches seven percent.",
+      "scope": ["FTMO_BOOK", "ENTRY_GOVERNOR", "EVALUATION"],
+      "parameters": {
+        "maximum_percent_of_initial_balance": "7",
+        "official_buffer_percent": "3"
+      },
+      "rationale": "Avoids repeating a loss-limit death and preserves room for unmodeled intratrade movement and execution costs.",
+      "decision_refs": []
+    },
+    {
+      "guardrail_id": "qm_ftmo_phase1_target_capture_buffer",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "PROPOSED_FOR_CALIBRATION",
+      "description": "Cancel pending orders and flatten the book after an equity target with a buffer; record success only after balance is above the official target and the book is flat.",
+      "scope": ["FTMO_2_STEP_PHASE1", "ACCOUNT_GOVERNOR"],
+      "parameters": {
+        "capture_equity_percent": "10.25",
+        "capture_equity_usd": "110250",
+        "official_pass_balance_usd_exclusive": "110000",
+        "cancel_pending_orders": true,
+        "flatten_positions": true
+      },
+      "rationale": "Separates a conservative internal close trigger from FTMO's official balance-and-flat pass condition.",
+      "decision_refs": []
+    },
+    {
+      "guardrail_id": "qm_ftmo_phase2_target_capture_buffer",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "PROPOSED_FOR_CALIBRATION",
+      "description": "Use a smaller buffered target and lower risk in Verification while retaining the official balance-and-flat condition.",
+      "scope": ["FTMO_2_STEP_VERIFICATION", "ACCOUNT_GOVERNOR"],
+      "parameters": {
+        "capture_equity_percent": "5.15",
+        "capture_equity_usd": "105150",
+        "official_pass_balance_usd_exclusive": "105000",
+        "maximum_phase1_risk_multiplier": "0.75",
+        "cancel_pending_orders": true,
+        "flatten_positions": true
+      },
+      "rationale": "Verification has half the profit target with the same official loss limits, so it does not need Phase-1 risk.",
+      "decision_refs": []
+    },
+    {
+      "guardrail_id": "qm_ftmo_midnight_entry_window",
+      "classification": "INTERNAL_QM_POLICY_NOT_PROVIDER_RULE",
+      "status": "PROPOSED_FOR_CALIBRATION",
+      "description": "Block new entries around the CE(S)T daily-loss reset while continuing to manage existing positions.",
+      "scope": ["FTMO_BOOK", "ENTRY_GOVERNOR"],
+      "parameters": {
+        "timezone": "Europe/Prague",
+        "block_from_local": "23:50:00",
+        "block_until_local": "00:10:00",
+        "position_management_continues": true
+      },
+      "rationale": "Avoids ambiguous exposure changes during the daily balance anchor and gives telemetry time to publish the new day state.",
+      "decision_refs": []
+    }
+  ],
+  "q08_evidence_policy": {
+    "policy_id": "ftmo_q08_target_evidence_v1",
+    "hard_block_dimensions": [
+      "data_lineage_invalid",
+      "lookahead_or_execution_impossibility",
+      "net_expectancy_non_positive_after_ftmo_costs",
+      "neighborhood_implosion",
+      "selection_bias_hard_fail",
+      "tail_or_ruin_hard_fail",
+      "intratrade_equity_missing_for_money_gate",
+      "binary_set_or_symbol_identity_mismatch"
+    ],
+    "soft_evidence_debt_dimensions": [
+      "low_effective_sample_size",
+      "declared_archetype_test_not_applicable",
+      "seasonal_diagnostic_low_power",
+      "conditional_regime_evidence_inconclusive",
+      "monte_carlo_precision_inconclusive"
+    ],
+    "not_applicable_requires_declared_archetype": true,
+    "soft_admission_status": "TARGET_ELIGIBLE_WITH_EVIDENCE_DEBT",
+    "compensation_requirements": [
+      "exact book-level mark-to-market and first-passage validation",
+      "FTMO-specific spread commission swap margin and symbol model",
+      "soft reason is not a universal hard-block dimension",
+      "evidence debt remains visible in the signed challenge dossier",
+      "free-trial execution validation before a paid challenge"
+    ]
+  },
+  "evaluation_profile": {
+    "objective": "Pass the first FTMO 2-Step Swing Challenge with a rule-faithful book while preserving enough risk margin to complete Verification and operate the later Swing FTMO Account.",
+    "metrics": [
+      {
+        "metric_id": "phase1_first_passage_probability",
+        "direction": "MAXIMIZE",
+        "description": "Probability of satisfying all Phase-1 objectives on a sealed, rule-faithful mark-to-market simulation.",
+        "parameters": {"target_percent": "10", "all_rules_concurrent": true}
+      },
+      {
+        "metric_id": "phase2_conditional_pass_probability",
+        "direction": "MAXIMIZE",
+        "description": "Conditional probability of passing Verification after a Phase-1 pass with the lower-risk Phase-2 profile.",
+        "parameters": {"target_percent": "5", "all_rules_concurrent": true}
+      },
+      {
+        "metric_id": "joint_two_phase_pass_probability",
+        "direction": "MAXIMIZE",
+        "description": "Probability of completing both phases rather than optimizing only the first purchase milestone.",
+        "parameters": {"phase_dependence_preserved": true}
+      },
+      {
+        "metric_id": "official_rule_breach_probability",
+        "direction": "MINIMIZE",
+        "description": "Probability of breaching either official equity loss limit before completion.",
+        "parameters": {"intratrade_mark_to_market": true, "prague_midnight": true}
+      }
+    ],
+    "go_criteria": [
+      {
+        "criterion_id": "ftmo_rule_snapshot_fresh",
+        "classification": "INTERNAL_DECISION_CRITERION",
+        "description": "Refresh and hash-bind the official FTMO rule snapshot shortly before any purchase decision.",
+        "parameters": {"maximum_age_days": 7, "all_sources_official": true}
+      },
+      {
+        "criterion_id": "ftmo_execution_fidelity_closed",
+        "classification": "INTERNAL_DECISION_CRITERION",
+        "description": "Exact candidate binaries and sets have complete standalone-to-book entry, exit, timer, and ownership fidelity or an explicit predeclared adjudication.",
+        "parameters": {"unadjudicated_mismatches": 0}
+      },
+      {
+        "criterion_id": "ftmo_complete_mtm_evidence",
+        "classification": "INTERNAL_DECISION_CRITERION",
+        "description": "Simulation uses tick- or event-complete interval minimum equity, Prague day anchors, FTMO symbols, costs, swap, margin, and pending-order state.",
+        "parameters": {"closed_pnl_daily_proxy_allowed": false, "intratrade_equity_required": true}
+      },
+      {
+        "criterion_id": "ftmo_phase1_probability_gate",
+        "classification": "INTERNAL_DECISION_CRITERION",
+        "description": "Phase-1 pass probability and its uncertainty satisfy the internal purchase threshold on a once-sealed holdout.",
+        "parameters": {"point_estimate_min_percent": "80", "lower_95_percent_bound_min_percent": "70"}
+      },
+      {
+        "criterion_id": "ftmo_breach_probability_gate",
+        "classification": "INTERNAL_DECISION_CRITERION",
+        "description": "The upper uncertainty bound for any official loss-rule breach remains within the internal budget.",
+        "parameters": {"upper_95_percent_bound_max_percent": "10"}
+      },
+      {
+        "criterion_id": "ftmo_two_phase_probability_gate",
+        "classification": "INTERNAL_DECISION_CRITERION",
+        "description": "Verification and joint completion probabilities are decision-grade before buying Phase 1.",
+        "parameters": {"phase2_conditional_min_percent": "85", "joint_two_phase_min_percent": "65"}
+      },
+      {
+        "criterion_id": "ftmo_free_trial_gate",
+        "classification": "INTERNAL_DECISION_CRITERION",
+        "description": "At least one exact-profile Free Trial or shadow run completes without a rule, governor, identity, or execution defect and remains inside preregistered prediction bands.",
+        "parameters": {"minimum_runs": 1, "must_reach_profit_target": false, "operational_defects_allowed": 0}
+      },
+      {
+        "criterion_id": "ftmo_owner_purchase_gate",
+        "classification": "INTERNAL_DECISION_CRITERION",
+        "description": "A paid Challenge requires a separate signed OWNER decision after all evidence criteria pass.",
+        "parameters": {"owner_signature_required": true, "automatic_purchase_allowed": false}
+      }
+    ]
+  },
+  "deployment_boundary": {
+    "runtime_integration": "NOT_IMPLEMENTED",
+    "deploy_authorization": "OWNER_ONLY",
+    "factory_action_authorized": false,
+    "mt5_action_authorized": false,
+    "notes": [
+      "This rulepack does not modify or configure QM_PropFirm, QM_FTMOGovernorPolicy, an EA, a terminal, or AutoTrading.",
+      "Swing news and weekend facts are provider rules; every numeric safety buffer and probability gate in internal_guardrails or evaluation_profile is QuantMechanica policy.",
+      "A future runtime integration requires a new reviewed version and explicit OWNER authorization."
+    ]
+  }
+}

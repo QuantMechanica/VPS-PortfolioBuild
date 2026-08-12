@@ -10,7 +10,7 @@ Authority:
   framework/registry/tester_defaults.json
   decisions/DL-038 (Seven Binding Backtest Rules)
 
-Author: Board Advisor 2026-05-01 — draft for CTO review/merge into
+Author: technical-review draft, 2026-05-01 — retained for deterministic integration into
         framework/scripts/pipeline_dispatcher.py and per-phase runners.
 """
 from __future__ import annotations
@@ -26,7 +26,9 @@ from typing import Iterable
 # Constants
 # -------------------------------------------------------------------------
 
-REPO_ROOT = Path(r"C:\QM\repo")
+# Resolve repository-owned gate inputs from the executing source tree.  This is
+# deliberately snapshot-relative for immutable research runs.
+REPO_ROOT = Path(__file__).resolve().parents[2]
 TESTER_DEFAULTS_PATH = REPO_ROOT / "framework" / "registry" / "tester_defaults.json"
 DWX_IMPORT_LOGS = Path(r"D:\QM\mt5\T1\dwx_import\logs")
 T1_BASES_HISTORY = Path(r"D:\QM\mt5\T1\bases\Custom\history")

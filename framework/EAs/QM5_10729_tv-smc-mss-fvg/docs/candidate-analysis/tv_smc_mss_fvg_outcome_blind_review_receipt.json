@@ -1,0 +1,33 @@
+{
+  "artifact_type": "OUTCOME_BLIND_CONTRACT_REVIEW_RECEIPT",
+  "analysis_id": "QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001",
+  "review_task": "/root/freeze_v5_migration/review_10729_freeze",
+  "review_status": "PASS",
+  "reviewed_commit": "3886f15e7",
+  "reviewed_contract_path": "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_m15_two_symbol_full_dev_contract.json",
+  "reviewed_contract_sha256": "0b221d1c79dce4a4fef0aa635de957296511e1fc945523e8a4da556c13311d25",
+  "superseded_stop_release_sha256": "f2c3c51887a3839b4560bcbbcffafca212ac3c98cdb8680eda7d0ae48e316ac6",
+  "verification": {
+    "remaining_blockers": 0,
+    "remaining_majors": 0,
+    "json_artifacts_valid": true,
+    "source_bindings_matching": 15,
+    "source_bindings_total": 15,
+    "input_length_and_last_write_metadata_match": true,
+    "candidate_analysis_paths_clean": true,
+    "reviewed_areas": [
+      "exact Pine and publication-chart-context provenance",
+      "causal start state and missing-bar failure behavior",
+      "per-symbol news, DST and entry-time blackout semantics",
+      "spread, bid/ask exit predicates and exact venue commission",
+      "exact rational arithmetic and canonical encodings",
+      "deterministic conjunctive family gates with no post-hoc subset selection"
+    ]
+  },
+  "outcome_access": {
+    "market_ohlc_or_volume_read": false,
+    "trade_or_performance_result_read": false,
+    "release_status": "AWAITING_EXPLICIT_HASH_NAMED_RELEASE"
+  },
+  "minor_nonblocking_note": "Fields named minimum/maximum use their contractually stated inclusive comparisons; wording could be expanded later only under a new freeze, not after outcome access."
+}

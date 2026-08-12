@@ -1,0 +1,52 @@
+;==========================================================
+; QM5_20009 deterministic Freeze-v5 research set
+; protocol_id: QM5_20009_RESEARCH_FREEZE_V5
+; contract_freeze: 2026-07-20
+; symbol: NDX.DWX
+; timeframe: M1
+; sleeve: index
+; variant: fvg_low
+; changed_parameter: strategy_a_min_fvg_atr
+; freeze_inputs_sha256: c803276a9998ee170c7abd13ca00f33ca3f4d25d75542da1e6ac0c47123412e9
+; ea_sha256: a94e24c3a486011662ea0fc82853569663b0a0b93c85f114d545a589d0812c04
+; rules_sha256: 03970dc0b8576010d1614fe3774c7064fbeb983ece0f10d6510ba89a6f79ccbc
+; contract_sha256: 98a500ae4ecb9ed3733199fee137d2c357e4c4b00d9907feb9aae39e783fc688
+; protocol_sha256: 2ec3d3de1f49b7fde49f0b6433fa3c849bd2cf48b7ca857b72151f6e4df980a4
+; generator_sha256: bebb836f262268f53d8701f1c7c7d987b63f9a6e691972ec8ca4178193f8bbd0
+; ex5_sha256: 2b1d663fb032bd516a007dd5eee1973d9a53cb2f80d0d5cb875ed342a247fcb0
+;==========================================================
+qm_ea_id=20009
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_PERCENT=0.0
+RISK_FIXED=1000.0
+PORTFOLIO_WEIGHT=1.0
+InpQMSimCommissionPerLot=0.0
+qm_news_temporal=3
+qm_news_compliance=2
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=23
+qm_stress_reject_probability=0.0
+qm_chartui_enabled=false
+qm_chartui_corner=0
+strategy_mode=0
+strategy_replay_bars_index=2500
+strategy_replay_bars_fx=10000
+strategy_a_pivot_wing=2
+strategy_a_reclaim_bars=3
+strategy_a_max_bars_to_mss=9
+strategy_a_min_fvg_atr=0.0
+strategy_a_sl_buffer_atr=0.10
+strategy_a_min_rr=2.0
+strategy_b_pivot_wing=2
+strategy_b_reclaim_bars=3
+strategy_b_max_bars_to_mss=12
+strategy_b_min_fvg_atr=0.05
+strategy_b_sl_buffer_atr=0.10
+strategy_b_min_rr=2.0
+strategy_governor_policy_id=
+strategy_challenge_instance_id=
+strategy_governor_heartbeat_max_age_seconds=5

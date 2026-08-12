@@ -9,6 +9,8 @@
 #include "QM_MagicResolver.mqh"
 #include "QM_Logger.mqh"
 #include "QM_SeedRNG.mqh"
+#include "QM_RuntimeExecutionContract.mqh"
+#include "QM_FTMOGovernorClient.mqh"
 
 struct QM_EntryRequest
 {
@@ -45,7 +47,9 @@ enum QM_EntryResult
    QM_ENTRY_REJECTED_RISK,
    QM_ENTRY_REJECTED_BROKER,
    QM_ENTRY_REJECTED_DUPLICATE,
-   QM_ENTRY_REJECTED_STRESS       // FW2: Q06 HARSH simulated trade rejection
+   QM_ENTRY_REJECTED_STRESS,      // FW2: Q06 HARSH simulated trade rejection
+   QM_ENTRY_REJECTED_CONTRACT,
+   QM_ENTRY_REJECTED_GOVERNOR
 };
 
 int                       g_qm_entry_ea_id              = 0;
@@ -82,6 +86,8 @@ string QM_EntryResultToString(const QM_EntryResult result)
       case QM_ENTRY_REJECTED_BROKER:     return "QM_ENTRY_REJECTED_BROKER";
       case QM_ENTRY_REJECTED_DUPLICATE:  return "QM_ENTRY_REJECTED_DUPLICATE";
       case QM_ENTRY_REJECTED_STRESS:     return "QM_ENTRY_REJECTED_STRESS";
+      case QM_ENTRY_REJECTED_CONTRACT:   return "QM_ENTRY_REJECTED_CONTRACT";
+      case QM_ENTRY_REJECTED_GOVERNOR:   return "QM_ENTRY_REJECTED_GOVERNOR";
    }
    return "QM_ENTRY_REJECTED_BROKER";
 }
@@ -122,6 +128,28 @@ bool QM_EntryHasOpenPosition(const long magic, const string symbol)
    return false;
 }
 
+// 2026-07-20 framework audit P0.5 — pending-order duplicate guard. A repeated
+// signal must not stack a second copy of the same pending leg (doubled
+// exposure once both fill). Deliberately scoped to the SAME order type so
+// bracket pairs (buy stop + sell stop) remain legal.
+bool QM_EntryHasPendingOrder(const long magic, const string symbol, const ENUM_ORDER_TYPE order_type)
+{
+   const int total = OrdersTotal();
+   for(int i = 0; i < total; ++i)
+   {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != symbol)
+         continue;
+      if((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE) == order_type)
+         return true;
+   }
+   return false;
+}
+
 double QM_EntrySLPoints(const double entry_price, const double sl_price)
 {
    if(entry_price <= 0.0 || sl_price <= 0.0)
@@ -152,9 +180,34 @@ void QM_EntryLogReject(const QM_EntryRequest &req, const QM_EntryResult result, 
    QM_LogEvent(QM_WARN, "ENTRY_REJECTED", payload);
 }
 
-QM_EntryResult QM_Entry(const QM_EntryRequest &req, ulong &out_ticket)
+QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
+                                ulong &out_ticket,
+                                const int explicit_magic,
+                                const double explicit_risk_percent,
+                                const bool use_explicit_risk_mode,
+                                const QM_RiskMode explicit_risk_mode,
+                                const double explicit_risk_value,
+                                const QM_TradeSendPolicy send_policy)
 {
    out_ticket = 0;
+
+   if(!QM_RuntimeExecutionEntryAllowed())
+   {
+      QM_EntryLogReject(req, QM_ENTRY_REJECTED_CONTRACT,
+                        g_qm_runtime_execution_block_reason);
+      return QM_ENTRY_REJECTED_CONTRACT;
+   }
+
+   const bool v3_execution =
+      (g_qm_runtime_execution_state == QM_RUNTIME_EXECUTION_READY);
+   if(v3_execution &&
+      (g_qm_entry_ea_id != g_qm_runtime_execution_contract.ea_id ||
+       _Symbol != g_qm_runtime_execution_contract.symbol))
+   {
+      QM_EntryLogReject(req, QM_ENTRY_REJECTED_CONTRACT,
+                        "v3_entry_identity_not_contract_bound");
+      return QM_ENTRY_REJECTED_CONTRACT;
+   }
 
    if(!QM_KillSwitchCheck())
    {
@@ -188,10 +241,30 @@ QM_EntryResult QM_Entry(const QM_EntryRequest &req, ulong &out_ticket)
       return QM_ENTRY_REJECTED_RISK;
    }
 
-   const int magic = QM_MagicChecked(g_qm_entry_ea_id, req.symbol_slot, _Symbol);
+   // A positive per-call magic is already registry-checked by QM_MagicFor and
+   // must reach MqlTradeRequest unchanged so the opening deal carries the
+   // sub-strategy identity. Only zero selects the original resolver path; a
+   // negative failed-resolution sentinel must reject rather than silently
+   // opening under the host magic.
+   int magic = explicit_magic;
+   if(magic == 0)
+      magic = QM_MagicChecked(g_qm_entry_ea_id, req.symbol_slot, _Symbol);
    if(magic <= 0)
    {
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_BROKER, "magic_resolution_failed");
+      return QM_ENTRY_REJECTED_BROKER;
+   }
+   if(v3_execution && magic != g_qm_runtime_execution_contract.magic)
+   {
+      // The current V3 schema is deliberately single-magic. Multi-strategy
+      // magic sets require a future explicit/versioned identity contract.
+      QM_EntryLogReject(req, QM_ENTRY_REJECTED_CONTRACT,
+                        "v3_magic_not_contract_bound");
+      return QM_ENTRY_REJECTED_CONTRACT;
+   }
+   if(explicit_magic != 0 && !QM_KillSwitchOwnsMagic((long)magic))
+   {
+      QM_EntryLogReject(req, QM_ENTRY_REJECTED_BROKER, "magic_context_not_registered");
       return QM_ENTRY_REJECTED_BROKER;
    }
 
@@ -201,6 +274,17 @@ QM_EntryResult QM_Entry(const QM_EntryRequest &req, ulong &out_ticket)
    {
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_DUPLICATE, "open_position_same_magic_symbol");
       return QM_ENTRY_REJECTED_DUPLICATE;
+   }
+
+   // audit P0.5: same-type pending duplicate is a stacked bracket leg, not a
+   // new trade. Different-type pendings (the other bracket side) pass.
+   if(QM_OrderTypeIsLimit(req.type) || QM_OrderTypeIsStop(req.type))
+   {
+      if(QM_EntryHasPendingOrder((long)magic, _Symbol, QM_OrderTypeToMT5(req.type)))
+      {
+         QM_EntryLogReject(req, QM_ENTRY_REJECTED_DUPLICATE, "pending_order_same_magic_symbol_type");
+         return QM_ENTRY_REJECTED_DUPLICATE;
+      }
    }
 
    // FW2 (2026-05-23) — Q06 HARSH stress trade-rejection simulation.
@@ -225,7 +309,101 @@ QM_EntryResult QM_Entry(const QM_EntryRequest &req, ulong &out_ticket)
    }
 
    const double sl_points = QM_EntrySLPoints(entry_price, req.sl);
-   const double lots = QM_LotsForRisk(_Symbol, sl_points);
+   const ENUM_ORDER_TYPE margin_order_type = QM_OrderTypeIsBuy(req.type)
+                                              ? ORDER_TYPE_BUY
+                                              : ORDER_TYPE_SELL;
+   if(sl_points <= 0.0 ||
+      (margin_order_type == ORDER_TYPE_BUY && req.sl >= entry_price) ||
+      (margin_order_type == ORDER_TYPE_SELL && req.sl <= entry_price))
+   {
+      QM_EntryLogReject(req, QM_ENTRY_REJECTED_RISK, "invalid_stop_direction");
+      return QM_ENTRY_REJECTED_RISK;
+   }
+   // Exactly zero means no explicit risk override and preserves the configured
+   // global risk-money semantics.  Entry then applies its side/price-aware
+   // OrderCalcMargin rail; direct legacy QM_LotsForRisk callers remain on their
+   // historical path.  Invalid explicit values resolve to zero lots and reject.
+   g_qm_risk_clamp_flag = false;   // audit P1.4: fresh clamp evidence for THIS sizing pass
+   QM_RiskSizerResetProfitFallback();
+   double lots = 0.0;
+   if(use_explicit_risk_mode)
+      lots = QM_LotsForRiskAtEntry(_Symbol,
+                                    sl_points,
+                                    margin_order_type,
+                                    entry_price,
+                                    explicit_risk_mode,
+                                    explicit_risk_value);
+   else
+      lots = (explicit_risk_percent == 0.0)
+             ? QM_LotsForRiskAtEntry(_Symbol,
+                                      sl_points,
+                                      margin_order_type,
+                                      entry_price)
+             : QM_LotsForRiskAtEntry(_Symbol,
+                                      sl_points,
+                                      margin_order_type,
+                                      entry_price,
+                                      explicit_risk_percent);
+
+   if(QM_RuntimeExecutionGovernorRequired())
+   {
+      double governor_scale = 0.0;
+      string governor_reason = "GOVERNOR_UNKNOWN";
+      if(!QM_FTMO_ReadGovernorScale(
+            g_qm_runtime_execution_contract.governor_policy_id,
+            g_qm_runtime_execution_contract.challenge_instance_id,
+            g_qm_runtime_execution_contract.governor_heartbeat_max_age_seconds,
+            governor_scale,
+            governor_reason))
+      {
+         QM_EntryLogReject(req, QM_ENTRY_REJECTED_GOVERNOR, governor_reason);
+         return QM_ENTRY_REJECTED_GOVERNOR;
+      }
+      QM_SymbolRiskSnapshot governor_snapshot;
+      if(!QM_RiskSizerReadSymbolSnapshot(_Symbol, governor_snapshot))
+      {
+         QM_EntryLogReject(req, QM_ENTRY_REJECTED_GOVERNOR,
+                           "GOVERNOR_SYMBOL_SNAPSHOT_INVALID");
+         return QM_ENTRY_REJECTED_GOVERNOR;
+      }
+      lots = QM_RiskSizerQuantizeLots(lots * governor_scale,
+                                       governor_snapshot.volume_min,
+                                       governor_snapshot.volume_max,
+                                       governor_snapshot.volume_step);
+      if(lots <= 0.0)
+      {
+         QM_EntryLogReject(req, QM_ENTRY_REJECTED_GOVERNOR,
+                           "GOVERNOR_SCALE_ZERO_LOTS");
+         return QM_ENTRY_REJECTED_GOVERNOR;
+      }
+   }
+   if(g_qm_risk_profit_fallback_flag)
+   {
+      QM_LogEvent(QM_WARN, "RISK_LOSS_CALC_FALLBACK",
+                  StringFormat("{\"method\":\"snapshot\",\"reason\":\"%s\",\"error\":%d,\"symbol\":\"%s\",\"magic\":%d}",
+                               QM_LoggerEscapeJson(g_qm_risk_profit_fallback_reason),
+                               g_qm_risk_profit_fallback_error,
+                               QM_LoggerEscapeJson(_Symbol),
+                               magic));
+      QM_RiskSizerResetProfitFallback();
+   }
+   // audit P1.4: a sizing clamp (per-trade cap or margin rail) that reduced
+   // this entry below its risk target must leave an evidence line — silent
+   // under-sizing violates evidence-over-claims. Logged before the zero-lot
+   // reject so both outcomes carry the trail.
+   if(g_qm_risk_clamp_flag)
+   {
+      QM_LogEvent(QM_INFO, "RISK_CLAMP",
+                  StringFormat("{\"kind\":\"%s\",\"from\":%.2f,\"to\":%.2f,\"lots\":%.8f,\"symbol\":\"%s\",\"magic\":%d}",
+                               QM_LoggerEscapeJson(g_qm_risk_clamp_kind),
+                               g_qm_risk_clamp_from,
+                               g_qm_risk_clamp_to,
+                               lots,
+                               QM_LoggerEscapeJson(_Symbol),
+                               magic));
+      g_qm_risk_clamp_flag = false;
+   }
+
    if(lots <= 0.0)
    {
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_RISK, "lots_for_risk_zero");
@@ -243,7 +421,7 @@ QM_EntryResult QM_Entry(const QM_EntryRequest &req, ulong &out_ticket)
    trade_req.sl = (req.sl > 0.0) ? NormalizeDouble(req.sl, _Digits) : 0.0;
    trade_req.tp = (req.tp > 0.0) ? NormalizeDouble(req.tp, _Digits) : 0.0;
    trade_req.deviation = g_qm_entry_deviation_points;
-   trade_req.type_filling = QM_TradeContextResolveFilling(_Symbol);
+   trade_req.type_filling = QM_TradeContextResolveRequestFilling(trade_req);
    trade_req.type_time = ORDER_TIME_GTC;
    if(req.expiration_seconds > 0)
    {
@@ -254,7 +432,7 @@ QM_EntryResult QM_Entry(const QM_EntryRequest &req, ulong &out_ticket)
 
    MqlTradeResult trade_res;
    string broker_error_class = "";
-   if(!QM_TradeContextSend(trade_req, trade_res, broker_error_class))
+   if(!QM_TradeContextSend(trade_req, trade_res, broker_error_class, send_policy))
    {
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_BROKER, broker_error_class);
       return QM_ENTRY_REJECTED_BROKER;
@@ -277,6 +455,44 @@ QM_EntryResult QM_Entry(const QM_EntryRequest &req, ulong &out_ticket)
    );
    QM_LogEvent(QM_INFO, "ENTRY_ACCEPTED", payload);
    return QM_ENTRY_OK;
+}
+
+// Legacy/Phase-1 entry signature. The zero-percent sentinel and its sizing
+// expression remain unchanged inside QM_EntryInternal.
+QM_EntryResult QM_Entry(const QM_EntryRequest &req,
+                        ulong &out_ticket,
+                        const int explicit_magic = 0,
+                        const double explicit_risk_percent = 0.0,
+                        const QM_TradeSendPolicy send_policy = QM_TRADE_SEND_RETRY_TRANSIENT)
+{
+   return QM_EntryInternal(req,
+                           out_ticket,
+                           explicit_magic,
+                           explicit_risk_percent,
+                           false,
+                           QM_RISK_MODE_UNSET,
+                           0.0,
+                           send_policy);
+}
+
+// Phase 2.5 explicit per-call mode/value overload. Even an invalid explicit
+// mode routes through the explicit sizer and rejects with zero lots; it never
+// falls back to the process-wide configuration.
+QM_EntryResult QM_Entry(const QM_EntryRequest &req,
+                        ulong &out_ticket,
+                        const int explicit_magic,
+                        const QM_RiskMode explicit_risk_mode,
+                        const double explicit_risk_value,
+                        const QM_TradeSendPolicy send_policy = QM_TRADE_SEND_RETRY_TRANSIENT)
+{
+   return QM_EntryInternal(req,
+                           out_ticket,
+                           explicit_magic,
+                           0.0,
+                           true,
+                           explicit_risk_mode,
+                           explicit_risk_value,
+                           send_policy);
 }
 
 #endif // QM_ENTRY_MQH

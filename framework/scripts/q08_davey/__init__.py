@@ -27,6 +27,20 @@ Common inputs:
   - portfolio:     list of {ea_id, symbol, equity_curve} for active Q11 EAs
                    (needed by 8.1 correlation; empty pool = trivial PASS)
 
+MAE evidence lineage:
+  - True intratrade ``mae_acct`` requires a per-tick
+    ``QM_FrameworkTrackOpenPositionMae`` path. Current canonical sources reach
+    it either directly or through ``QM_KillSwitchCheck`` (the compatibility
+    hook was added in commit 715b0c077 on 2026-06-30).
+  - Streams from binaries compiled before 715b0c077, binaries of unknown
+    compile lineage, or EAs with neither a direct hook nor an initialized
+    kill-switch are untrusted realized-floor MAE: the close serializer falls
+    back to ``min(0, realized_net)``.
+  - Do not recalibrate an MAE-based gate against those legacy/untrusted rows.
+    The 2026-07-26 serial rebuild wave is the conservative fleet-wide trust
+    boundary; post-715b0c077 streams with recorded build provenance can already
+    contain true MAE and must not be mislabeled as degenerate.
+
 Common output (each sub-gate):
     {
       "name":      "8.6_chopping_block",

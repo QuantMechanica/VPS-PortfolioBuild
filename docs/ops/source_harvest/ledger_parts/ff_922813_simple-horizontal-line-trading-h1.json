@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_922813_simple-horizontal-line-trading-h1.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_922813_simple-horizontal-line-trading-h1.pdf",
+      "source_pages": "1-5",
+      "source_ref": "Fx-ken, 'Simple Horizontal Line Trading H1', ForexFactory thread 922813, 2019, https://www.forexfactory.com/thread/922813 (secondary contributor jarfx05). Uses 'Tro's Sweet Spots Gold' round-number indicator set to 25.",
+      "strategy_name": "Round-Number Pending Breakout with SMA50 Trend Filter",
+      "concept": "Pending stop orders placed 3 pip beyond 25-pip round-number levels (000/250/500/750), taken only in the direction of the SMA50 trend, aiming to ride round-number breakouts/momentum on FX crosses.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic and pure-MQL5: SMA50 direction filter + 25-pip round-number grid + pending stop 3 pip past the level + fixed SL 30 / TP 50 pip (RR 1:1.5) + BE+1/5 trail after 10-15 pip; GBPUSD/EURJPY on .DWX; fixed SL is FTMO/DXZ-compatible. Forum source with only anecdotal manual-backtest evidence (20 trades, 55% WR one month) caps priority.",
+      "priority_hint": "MED",
+      "notes": "Core pair set GBPUSD + EURJPY (EURJPY = JPY-cross driver); OP tilts to Asia-to-London hours but explicitly says trade anytime, so no hard session gate. 'Don't enter when the round line is too close to the MA50' needs a chosen distance threshold. Sideway regime: switch to TP 25 / SL 25 (RR 1:1). Variants to fold into one test family: (a) H4/D1 using 100-pip round lines with RR 100/200 or 50/100 (pages 14, 25); (b) MA200 instead of MA50, OP claims higher win rate (page 27); (c) EMA vs SMA interchangeable. Secondary contributor jarfx05 runs the same 00/25/50/75 round-number idea on Renko candles ('Candle Point O', 5-12.5 pip bricks) plus pivot-break entries (WS1) — same concept but Renko-based and under-specified (VAGUE); Renko is awkward for the MT5 tester, so treat as a PARKED-flavored variant, not a separate testable candidate."
+    }
+  ],
+  "notes": []
+}

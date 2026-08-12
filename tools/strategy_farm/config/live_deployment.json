@@ -1,0 +1,7 @@
+{
+  "_comment": "Repo-committed FALLBACK pointer to the currently-deployed DXZ book manifest. morning_brief.py derives the expected live sleeve-count + account from THIS manifest (n_sleeves + book), never from a hard-coded Python constant. This default is DELIBERATELY UNAUTHENTICATED: 'signed' is false and no manifest_sha256/deployment_epoch/expected_account/expected_phase are present, so the Deploy lamp resolves to GELB (AMBER) via this file alone — 'manifest-derived' is not 'derived from the signed manifest'. A GREEN Deploy lamp requires the RUNTIME authenticated deploy-stamp at D:/QM/reports/state/live_deployment_pointer.json, which ops writes at deploy time (see state_contracts_v1.md deploy-stamp contract). Resolution order: direct override -> runtime deploy-stamp -> this repo default -> UNKNOWN.",
+  "manifest_path": "D:\\QM\\reports\\portfolio\\portfolio_manifest_live_24sleeve_20260724.json",
+  "signed": false,
+  "authenticated": false,
+  "note": "Fallback for sleeve-count derivation only. Tonight's deploy MUST write the signed deploy-stamp to the runtime pointer with: manifest_path, manifest_sha256, signed=true, approved_by, deployment_epoch_utc, expected_account, expected_phase. Until then the Deploy lamp is GELB by design (never a false GRÜN)."
+}

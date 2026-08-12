@@ -1,0 +1,3728 @@
+{
+  "evaluated_configurations": 2700,
+  "holdout_pass_count": 0,
+  "predeclaration": "artifacts/ftmo_m15_overnight_session_premium_predeclaration_2026-07-12.json",
+  "preholdout_leaderboard": [
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 35.890267,
+        "net_r": 81.625418,
+        "profit_factor": 1.404667,
+        "trades": 232,
+        "win_rate": 0.211207
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 1,
+        "entry_weekday": 2,
+        "exit_bars_after_next_open": 4,
+        "stop_atr": 1.0,
+        "target_r": 0.0
+      },
+      "positive_development_years": 4,
+      "preholdout_score": 1.319502,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 12.005833,
+        "net_r": 13.702249,
+        "profit_factor": 1.319502,
+        "trades": 51,
+        "win_rate": 0.235294
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 38.777994,
+        "net_r": 67.475932,
+        "profit_factor": 1.339244,
+        "trades": 232,
+        "win_rate": 0.219828
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 1,
+        "entry_weekday": 2,
+        "exit_bars_after_next_open": 2,
+        "stop_atr": 1.0,
+        "target_r": 0.0
+      },
+      "positive_development_years": 4,
+      "preholdout_score": 1.241375,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 15.089762,
+        "net_r": 10.432966,
+        "profit_factor": 1.241375,
+        "trades": 51,
+        "win_rate": 0.215686
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 12.389742,
+        "net_r": 21.067049,
+        "profit_factor": 1.185069,
+        "trades": 228,
+        "win_rate": 0.429825
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 1,
+        "entry_weekday": 3,
+        "exit_bars_after_next_open": 4,
+        "stop_atr": 3.0,
+        "target_r": 0.0
+      },
+      "positive_development_years": 4,
+      "preholdout_score": 1.180024,
+      "symbol": "GDAXI.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 6.40086,
+        "net_r": 4.687725,
+        "profit_factor": 1.180024,
+        "trades": 50,
+        "win_rate": 0.44
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 19.417513,
+        "net_r": 27.79177,
+        "profit_factor": 1.170407,
+        "trades": 231,
+        "win_rate": 0.294372
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 8,
+        "entry_weekday": 2,
+        "exit_bars_after_next_open": 0,
+        "stop_atr": 2.0,
+        "target_r": 0.0
+      },
+      "positive_development_years": 2,
+      "preholdout_score": 1.170407,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 10.211446,
+        "net_r": 12.974882,
+        "profit_factor": 1.373186,
+        "trades": 51,
+        "win_rate": 0.333333
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 41.897532,
+        "net_r": 26.340111,
+        "profit_factor": 1.163612,
+        "trades": 231,
+        "win_rate": 0.320346
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 4,
+        "entry_weekday": 2,
+        "exit_bars_after_next_open": 2,
+        "stop_atr": 2.0,
+        "target_r": 0.0
+      },
+      "positive_development_years": 4,
+      "preholdout_score": 1.163612,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 8.310711,
+        "net_r": 7.694544,
+        "profit_factor": 1.220903,
+        "trades": 51,
+        "win_rate": 0.333333
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 40.756044,
+        "net_r": 26.273832,
+        "profit_factor": 1.162035,
+        "trades": 231,
+        "win_rate": 0.311688
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 4,
+        "entry_weekday": 2,
+        "exit_bars_after_next_open": 4,
+        "stop_atr": 2.0,
+        "target_r": 0.0
+      },
+      "positive_development_years": 4,
+      "preholdout_score": 1.162035,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 8.310711,
+        "net_r": 5.984582,
+        "profit_factor": 1.163778,
+        "trades": 51,
+        "win_rate": 0.313725
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 17.994249,
+        "net_r": 21.390826,
+        "profit_factor": 1.161294,
+        "trades": 231,
+        "win_rate": 0.376623
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 8,
+        "entry_weekday": 2,
+        "exit_bars_after_next_open": 0,
+        "stop_atr": 3.0,
+        "target_r": 0.0
+      },
+      "positive_development_years": 4,
+      "preholdout_score": 1.161294,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 6.034104,
+        "net_r": 13.92418,
+        "profit_factor": 1.523271,
+        "trades": 51,
+        "win_rate": 0.45098
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 20.173886,
+        "net_r": 26.35864,
+        "profit_factor": 1.151209,
+        "trades": 231,
+        "win_rate": 0.281385
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 8,
+        "entry_weekday": 2,
+        "exit_bars_after_next_open": 4,
+        "stop_atr": 2.0,
+        "target_r": 0.0
+      },
+      "positive_development_years": 3,
+      "preholdout_score": 1.151209,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 15.419637,
+        "net_r": 10.304119,
+        "profit_factor": 1.270691,
+        "trades": 51,
+        "win_rate": 0.294118
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 23.137224,
+        "net_r": 25.074135,
+        "profit_factor": 1.142179,
+        "trades": 233,
+        "win_rate": 0.309013
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 4,
+        "entry_weekday": 1,
+        "exit_bars_after_next_open": 0,
+        "stop_atr": 1.0,
+        "target_r": 3.0
+      },
+      "positive_development_years": 3,
+      "preholdout_score": 1.142179,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 12.39923,
+        "net_r": 6.129288,
+        "profit_factor": 1.157393,
+        "trades": 51,
+        "win_rate": 0.313725
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 16.123729,
+        "net_r": 22.305832,
+        "profit_factor": 1.14106,
+        "trades": 231,
+        "win_rate": 0.329004
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 8,
+        "entry_weekday": 1,
+        "exit_bars_after_next_open": 2,
+        "stop_atr": 2.0,
+        "target_r": 0.0
+      },
+      "positive_development_years": 5,
+      "preholdout_score": 1.14106,
+      "symbol": "GDAXI.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 11.239839,
+        "net_r": 7.539445,
+        "profit_factor": 1.190631,
+        "trades": 50,
+        "win_rate": 0.28
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 25.175879,
+        "net_r": 20.933507,
+        "profit_factor": 1.13987,
+        "trades": 228,
+        "win_rate": 0.350877
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 1,
+        "entry_weekday": 3,
+        "exit_bars_after_next_open": 4,
+        "stop_atr": 2.0,
+        "target_r": 0.0
+      },
+      "positive_development_years": 3,
+      "preholdout_score": 1.13987,
+      "symbol": "GDAXI.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 9.424338,
+        "net_r": 5.506243,
+        "profit_factor": 1.162403,
+        "trades": 50,
+        "win_rate": 0.34
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 22.769964,
+        "net_r": 40.228439,
+        "profit_factor": 1.231251,
+        "trades": 232,
+        "win_rate": 0.318966
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 1,
+        "entry_weekday": 2,
+        "exit_bars_after_next_open": 4,
+        "stop_atr": 1.0,
+        "target_r": 3.0
+      },
+      "positive_development_years": 4,
+      "preholdout_score": 1.136445,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 9.012904,
+        "net_r": 5.241178,
+        "profit_factor": 1.136445,
+        "trades": 51,
+        "win_rate": 0.313725
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 18.095676,
+        "net_r": 22.059621,
+        "profit_factor": 1.135533,
+        "trades": 231,
+        "win_rate": 0.333333
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 8,
+        "entry_weekday": 1,
+        "exit_bars_after_next_open": 4,
+        "stop_atr": 2.0,
+        "target_r": 0.0
+      },
+      "positive_development_years": 3,
+      "preholdout_score": 1.135533,
+      "symbol": "GDAXI.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 12.009237,
+        "net_r": 7.777199,
+        "profit_factor": 1.196642,
+        "trades": 50,
+        "win_rate": 0.28
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 28.797159,
+        "net_r": 17.249928,
+        "profit_factor": 1.118611,
+        "trades": 231,
+        "win_rate": 0.367965
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 8,
+        "entry_weekday": 2,
+        "exit_bars_after_next_open": 4,
+        "stop_atr": 3.0,
+        "target_r": 0.0
+      },
+      "positive_development_years": 3,
+      "preholdout_score": 1.118611,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 6.149083,
+        "net_r": 13.92311,
+        "profit_factor": 1.458479,
+        "trades": 51,
+        "win_rate": 0.411765
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 25.193954,
+        "net_r": 20.375149,
+        "profit_factor": 1.117788,
+        "trades": 231,
+        "win_rate": 0.277056
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 8,
+        "entry_weekday": 2,
+        "exit_bars_after_next_open": 2,
+        "stop_atr": 2.0,
+        "target_r": 0.0
+      },
+      "positive_development_years": 3,
+      "preholdout_score": 1.117788,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 11.753481,
+        "net_r": 10.67152,
+        "profit_factor": 1.275738,
+        "trades": 51,
+        "win_rate": 0.254902
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 21.969609,
+        "net_r": 44.574459,
+        "profit_factor": 1.296119,
+        "trades": 231,
+        "win_rate": 0.354978
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 4,
+        "entry_weekday": 2,
+        "exit_bars_after_next_open": 0,
+        "stop_atr": 2.0,
+        "target_r": 0.0
+      },
+      "positive_development_years": 4,
+      "preholdout_score": 1.116018,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 8.310711,
+        "net_r": 3.739502,
+        "profit_factor": 1.116018,
+        "trades": 51,
+        "win_rate": 0.372549
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 22.872767,
+        "net_r": 38.510813,
+        "profit_factor": 1.224002,
+        "trades": 232,
+        "win_rate": 0.323276
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 1,
+        "entry_weekday": 2,
+        "exit_bars_after_next_open": 0,
+        "stop_atr": 1.0,
+        "target_r": 3.0
+      },
+      "positive_development_years": 4,
+      "preholdout_score": 1.114559,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 9.012904,
+        "net_r": 4.275909,
+        "profit_factor": 1.114559,
+        "trades": 51,
+        "win_rate": 0.313725
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 28.320959,
+        "net_r": 15.940855,
+        "profit_factor": 1.112357,
+        "trades": 181,
+        "win_rate": 0.292818
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 8,
+        "entry_weekday": 3,
+        "exit_bars_after_next_open": 2,
+        "stop_atr": 2.0,
+        "target_r": 0.0
+      },
+      "positive_development_years": 1,
+      "preholdout_score": 1.112357,
+      "symbol": "NDX.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 15.005829,
+        "net_r": 7.946588,
+        "profit_factor": 1.21528,
+        "trades": 51,
+        "win_rate": 0.333333
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 25.8811,
+        "net_r": 19.199852,
+        "profit_factor": 1.10667,
+        "trades": 232,
+        "win_rate": 0.297414
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 4,
+        "entry_weekday": 1,
+        "exit_bars_after_next_open": 2,
+        "stop_atr": 1.0,
+        "target_r": 3.0
+      },
+      "positive_development_years": 3,
+      "preholdout_score": 1.10667,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 12.39923,
+        "net_r": 7.278576,
+        "profit_factor": 1.186905,
+        "trades": 51,
+        "win_rate": 0.313725
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 25.8811,
+        "net_r": 19.199852,
+        "profit_factor": 1.10667,
+        "trades": 232,
+        "win_rate": 0.297414
+      },
+      "parameters": {
+        "direction": -1,
+        "entry_bars_before_close": 4,
+        "entry_weekday": 1,
+        "exit_bars_after_next_open": 4,
+        "stop_atr": 1.0,
+        "target_r": 3.0
+      },
+      "positive_development_years": 3,
+      "preholdout_score": 1.10667,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 12.39923,
+        "net_r": 7.278576,
+        "profit_factor": 1.186905,
+        "trades": 51,
+        "win_rate": 0.313725
+      }
+    }
+  ],
+  "preholdout_pass_count": 6,
+  "schema_version": 1,
+  "selected_global_winner": {
+    "holdout_verdict": "FAIL",
+    "metrics": {
+      "annual": {
+        "2018": {
+          "max_drawdown_r": 11.286103,
+          "net_r": 19.07436,
+          "profit_factor": 1.887985,
+          "trades": 25,
+          "win_rate": 0.24
+        },
+        "2019": {
+          "max_drawdown_r": 25.52565,
+          "net_r": 18.277836,
+          "profit_factor": 1.389838,
+          "trades": 51,
+          "win_rate": 0.196078
+        },
+        "2020": {
+          "max_drawdown_r": 14.701948,
+          "net_r": 10.756384,
+          "profit_factor": 1.24286,
+          "trades": 52,
+          "win_rate": 0.211538
+        },
+        "2021": {
+          "max_drawdown_r": 15.906931,
+          "net_r": -10.323042,
+          "profit_factor": 0.792135,
+          "trades": 52,
+          "win_rate": 0.134615
+        },
+        "2022": {
+          "max_drawdown_r": 9.171755,
+          "net_r": 43.83988,
+          "profit_factor": 2.112941,
+          "trades": 52,
+          "win_rate": 0.288462
+        },
+        "2023": {
+          "max_drawdown_r": 12.005833,
+          "net_r": 13.702249,
+          "profit_factor": 1.319502,
+          "trades": 51,
+          "win_rate": 0.235294
+        },
+        "2024": {
+          "max_drawdown_r": 21.979489,
+          "net_r": -7.79473,
+          "profit_factor": 0.842273,
+          "trades": 51,
+          "win_rate": 0.117647
+        },
+        "2025": {
+          "max_drawdown_r": 24.370151,
+          "net_r": -23.553397,
+          "profit_factor": 0.484431,
+          "trades": 50,
+          "win_rate": 0.14
+        }
+      },
+      "dev_2018_2022": {
+        "max_drawdown_r": 35.890267,
+        "net_r": 81.625418,
+        "profit_factor": 1.404667,
+        "trades": 232,
+        "win_rate": 0.211207
+      },
+      "holdout_2024_2025": {
+        "max_drawdown_r": 37.16131,
+        "net_r": -31.348126,
+        "profit_factor": 0.670379,
+        "trades": 101,
+        "win_rate": 0.128713
+      },
+      "validation_2023": {
+        "max_drawdown_r": 12.005833,
+        "net_r": 13.702249,
+        "profit_factor": 1.319502,
+        "trades": 51,
+        "win_rate": 0.235294
+      }
+    },
+    "parameters": {
+      "direction": -1,
+      "entry_bars_before_close": 1,
+      "entry_weekday": 2,
+      "exit_bars_after_next_open": 4,
+      "stop_atr": 1.0,
+      "target_r": 0.0
+    },
+    "preholdout_score": 1.319502,
+    "symbol": "WS30.DWX",
+    "trades": [
+      {
+        "entry_time_utc": "2018-07-04T16:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-07-04",
+        "r_multiple": -1.2231075697211156,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-07-11T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-07-11",
+        "r_multiple": -1.121212121212121,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-07-18T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-07-18",
+        "r_multiple": -1.241119483315393,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-07-25T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-07-25",
+        "r_multiple": -1.1577464788732394,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-08-01T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2018-08-01",
+        "r_multiple": 6.251366120218579,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-08-08T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2018-08-08",
+        "r_multiple": 1.2063492063492063,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-08-15T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-08-15",
+        "r_multiple": -1.1203653949489523,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-08-22T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2018-08-22",
+        "r_multiple": 0.5283018867924527,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-08-29T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2018-08-29",
+        "r_multiple": 5.427312775330396,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-09-05T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-09-05",
+        "r_multiple": -1.1498327759197324,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-09-12T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-09-12",
+        "r_multiple": -1.1461187214611872,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-09-19T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-09-19",
+        "r_multiple": -1.1977052074139451,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-09-26T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-09-26",
+        "r_multiple": -1.2014388489208634,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-10-03T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-10-03",
+        "r_multiple": -1.1797752808988764,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-10-10T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-10-10",
+        "r_multiple": -1.0771084337349397,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-10-17T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-10-17",
+        "r_multiple": -1.085528827796869,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-10-24T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-10-24",
+        "r_multiple": -1.05965379494008,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-10-31T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-10-31",
+        "r_multiple": -1.0872613946240748,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-11-07T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-11-07",
+        "r_multiple": -1.1016795279164775,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-11-14T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2018-11-14",
+        "r_multiple": 3.8116025272831706,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-11-21T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-11-21",
+        "r_multiple": -1.0971379011274935,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-11-28T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-11-28",
+        "r_multiple": -1.1044776119402986,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-12-05T14:30:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2018-12-05",
+        "r_multiple": 23.32993445010925,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-12-12T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-12-12",
+        "r_multiple": -1.0717718679910284,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2018-12-19T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2018-12-19",
+        "r_multiple": -1.0574653668547973,
+        "side": -1,
+        "year": 2018
+      },
+      {
+        "entry_time_utc": "2019-01-02T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-01-02",
+        "r_multiple": -1.0575539568345325,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-01-09T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2019-01-09",
+        "r_multiple": 0.8371717171717172,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-01-16T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2019-01-16",
+        "r_multiple": 2.1261682242990654,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-01-23T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-01-23",
+        "r_multiple": -1.0934111759799834,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-01-30T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-01-30",
+        "r_multiple": -1.104137610413761,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-02-06T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2019-02-06",
+        "r_multiple": 3.97948717948718,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-02-13T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-02-13",
+        "r_multiple": -1.16,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-02-20T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-02-20",
+        "r_multiple": -1.144609425435765,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-02-27T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-02-27",
+        "r_multiple": -1.1460234680573664,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-03-06T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2019-03-06",
+        "r_multiple": 10.194427244582043,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-03-13T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-03-13",
+        "r_multiple": -1.1395638629283489,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-03-20T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-03-20",
+        "r_multiple": -1.1109460128776623,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-03-27T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-03-27",
+        "r_multiple": -1.0988089986766651,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-04-03T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-04-03",
+        "r_multiple": -1.1567529741077678,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-04-10T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-04-10",
+        "r_multiple": -1.1849710982658959,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-04-17T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-04-17",
+        "r_multiple": -1.2007168458781363,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-04-24T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2019-04-24",
+        "r_multiple": 13.987857762359063,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-05-01T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2019-05-01",
+        "r_multiple": 3.5508021390374336,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-05-08T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2019-05-08",
+        "r_multiple": 11.144393876706662,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-05-15T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-05-15",
+        "r_multiple": -1.110836219693221,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-05-22T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2019-05-22",
+        "r_multiple": 12.691508857666463,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-05-29T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-05-29",
+        "r_multiple": -1.0965933592065547,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-06-05T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-06-05",
+        "r_multiple": -1.1202361782071928,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-06-12T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-06-12",
+        "r_multiple": -1.1444229529335912,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-06-19T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-06-19",
+        "r_multiple": -1.1570827489481066,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-06-26T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-06-26",
+        "r_multiple": -1.153529814941741,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-07-03T17:00:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-07-03",
+        "r_multiple": -1.2215628090999011,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-07-10T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-07-10",
+        "r_multiple": -1.1391304347826088,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-07-17T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2019-07-17",
+        "r_multiple": 2.8772597526165558,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-07-24T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-07-24",
+        "r_multiple": -1.1813765182186236,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-07-31T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-07-31",
+        "r_multiple": -1.1242373821408764,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-08-07T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-08-07",
+        "r_multiple": -1.059526973159713,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-08-14T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-08-14",
+        "r_multiple": -1.0645533141210375,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-08-21T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-08-21",
+        "r_multiple": -1.1460234680573664,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-08-28T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-08-28",
+        "r_multiple": -1.0949957591178965,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-09-04T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-09-04",
+        "r_multiple": -1.1549100968188104,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-09-11T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-09-11",
+        "r_multiple": -1.1638624725676665,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-09-18T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-09-18",
+        "r_multiple": -1.1598857958600999,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-09-25T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-09-25",
+        "r_multiple": -1.1252796420581657,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-10-02T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2019-10-02",
+        "r_multiple": 3.774536854552621,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-10-09T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-10-09",
+        "r_multiple": -1.0955631399317407,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-10-16T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-10-16",
+        "r_multiple": -1.1440514469453376,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-10-23T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-10-23",
+        "r_multiple": -1.134777376654633,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-10-30T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-10-30",
+        "r_multiple": -1.1821138211382114,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-11-06T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-11-06",
+        "r_multiple": -1.1887110362257793,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-11-13T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-11-13",
+        "r_multiple": -1.1641025641025642,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-11-20T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-11-20",
+        "r_multiple": -1.132387706855792,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-11-27T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-11-27",
+        "r_multiple": -1.2803504380475594,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-12-04T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-12-04",
+        "r_multiple": -1.1360874848116647,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-12-11T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-12-11",
+        "r_multiple": -1.1606886657101865,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2019-12-18T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2019-12-18",
+        "r_multiple": -1.2514029180695847,
+        "side": -1,
+        "year": 2019
+      },
+      {
+        "entry_time_utc": "2020-01-08T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-01-08",
+        "r_multiple": -1.1105626850937809,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-01-15T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-01-15",
+        "r_multiple": -1.1324659964518036,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-01-22T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-01-22",
+        "r_multiple": -1.1696969696969697,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-01-29T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2020-01-29",
+        "r_multiple": 3.7918140474987365,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-02-05T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-02-05",
+        "r_multiple": -1.0904684975767367,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-02-12T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-02-12",
+        "r_multiple": -1.1549100968188104,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-02-19T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-02-19",
+        "r_multiple": -1.1926053310404128,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-02-26T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2020-02-26",
+        "r_multiple": 7.39622641509434,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-03-04T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-03-04",
+        "r_multiple": -1.041389504804139,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-03-11T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-03-11",
+        "r_multiple": -1.0250727557644952,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-03-18T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-03-18",
+        "r_multiple": -1.0184514003294893,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-03-25T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-03-25",
+        "r_multiple": -1.0184362139917695,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-04-01T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-04-01",
+        "r_multiple": -1.0352700362147693,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-04-08T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-04-08",
+        "r_multiple": -1.0345465761875385,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-04-15T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-04-15",
+        "r_multiple": -1.0501342882721576,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-04-22T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-04-22",
+        "r_multiple": -1.061018795968401,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-04-29T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-04-29",
+        "r_multiple": -1.0618272150151808,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-05-06T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-05-06",
+        "r_multiple": -1.0696734059097979,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-05-13T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-05-13",
+        "r_multiple": -1.0502354788069075,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-05-20T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-05-20",
+        "r_multiple": -1.0758293838862558,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-05-27T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-05-27",
+        "r_multiple": -1.0636363636363637,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-06-03T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-06-03",
+        "r_multiple": -1.0964270340077487,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-06-10T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2020-06-10",
+        "r_multiple": 12.77129269347168,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-06-17T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-06-17",
+        "r_multiple": -1.047098402018503,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-06-24T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2020-06-24",
+        "r_multiple": 0.023693674635075095,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-07-01T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-07-01",
+        "r_multiple": -1.0606552937990794,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-07-08T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-07-08",
+        "r_multiple": -1.067106051527861,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-07-15T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-07-15",
+        "r_multiple": -1.05910290237467,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-07-22T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-07-22",
+        "r_multiple": -1.0870917573872472,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-07-29T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2020-07-29",
+        "r_multiple": 13.145669291338583,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-08-05T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-08-05",
+        "r_multiple": -1.115882048629074,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-08-12T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2020-08-12",
+        "r_multiple": 2.3007200338839473,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-08-19T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2020-08-19",
+        "r_multiple": 2.1738122827346467,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-08-26T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-08-26",
+        "r_multiple": -1.119530416221985,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-09-02T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-09-02",
+        "r_multiple": -1.0983318700614575,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-09-09T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-09-09",
+        "r_multiple": -1.0610520577814118,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-09-16T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-09-16",
+        "r_multiple": -1.08836291913215,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-09-23T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-09-23",
+        "r_multiple": -1.0681887366818874,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-09-30T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-09-30",
+        "r_multiple": -1.054289869122637,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-10-07T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-10-07",
+        "r_multiple": -1.0898876404494382,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-10-14T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2020-10-14",
+        "r_multiple": 5.090909090909091,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-10-21T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2020-10-21",
+        "r_multiple": 1.9640287769784175,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-10-28T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-10-28",
+        "r_multiple": -1.048951048951049,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-11-04T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-11-04",
+        "r_multiple": -1.0340891797291127,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-11-11T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-11-11",
+        "r_multiple": -1.0699562773266709,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-11-18T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2020-11-18",
+        "r_multiple": 4.741605839416058,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-11-25T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-11-25",
+        "r_multiple": -1.0955631399317407,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-12-02T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-12-02",
+        "r_multiple": -1.1020966271649955,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-12-09T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-12-09",
+        "r_multiple": -1.0957264957264958,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-12-16T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-12-16",
+        "r_multiple": -1.1264822134387351,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-12-23T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2020-12-23",
+        "r_multiple": 1.647058823529412,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2020-12-30T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2020-12-30",
+        "r_multiple": -1.148344370860927,
+        "side": -1,
+        "year": 2020
+      },
+      {
+        "entry_time_utc": "2021-01-06T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-01-06",
+        "r_multiple": -1.0541062801932366,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-01-13T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-01-13",
+        "r_multiple": -1.1089494163424125,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-01-20T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-01-20",
+        "r_multiple": -1.1188328912466843,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-01-27T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-01-27",
+        "r_multiple": -1.0522997898669157,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-02-03T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-02-03",
+        "r_multiple": -1.103273397879207,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-02-10T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-02-10",
+        "r_multiple": -1.0949957591178965,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-02-17T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-02-17",
+        "r_multiple": -1.099511328298534,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-02-24T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-02-24",
+        "r_multiple": -1.0804886812791952,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-03-03T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2021-03-03",
+        "r_multiple": 2.555133079847909,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-03-10T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-03-10",
+        "r_multiple": -1.085463563525372,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-03-17T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-03-17",
+        "r_multiple": -1.0990712074303406,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-03-24T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-03-24",
+        "r_multiple": -1.08468809073724,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-03-31T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-03-31",
+        "r_multiple": -1.1284403669724772,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-04-07T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-04-07",
+        "r_multiple": -1.145360155743024,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-04-14T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-04-14",
+        "r_multiple": -1.1225382932166301,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-04-21T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2021-04-21",
+        "r_multiple": 4.69364161849711,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-04-28T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-04-28",
+        "r_multiple": -1.132858837485172,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-05-05T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-05-05",
+        "r_multiple": -1.1215409658166033,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-05-12T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-05-12",
+        "r_multiple": -1.0573036582246098,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-05-19T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-05-19",
+        "r_multiple": -1.0540279787747227,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-05-26T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-05-26",
+        "r_multiple": -1.1333333333333333,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-06-02T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-06-02",
+        "r_multiple": -1.1285878300803673,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-06-09T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-06-09",
+        "r_multiple": -1.1500334896182183,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-06-16T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2021-06-16",
+        "r_multiple": 5.536423841059603,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-06-23T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-06-23",
+        "r_multiple": -1.120042872454448,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-06-30T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-06-30",
+        "r_multiple": -1.1171548117154813,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-07-07T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2021-07-07",
+        "r_multiple": 10.67010752688172,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-07-14T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2021-07-14",
+        "r_multiple": 0.4705882352941176,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-07-21T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-07-21",
+        "r_multiple": -1.0985915492957747,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-07-28T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-07-28",
+        "r_multiple": -1.0905050505050504,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-08-04T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-08-04",
+        "r_multiple": -1.1189591078066914,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-08-11T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-08-11",
+        "r_multiple": -1.1590909090909092,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-08-18T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2021-08-18",
+        "r_multiple": 5.909420289855072,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-08-25T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-08-25",
+        "r_multiple": -1.1711229946524064,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-09-01T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-09-01",
+        "r_multiple": -1.1660489251297257,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-09-08T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-09-08",
+        "r_multiple": -1.084305607828378,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-09-15T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-09-15",
+        "r_multiple": -1.0910939406262707,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-09-22T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-09-22",
+        "r_multiple": -1.0760869565217392,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-09-29T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-09-29",
+        "r_multiple": -1.0685854255970606,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-10-06T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-10-06",
+        "r_multiple": -1.0494372103288456,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-10-13T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-10-13",
+        "r_multiple": -1.073903002309469,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-10-20T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-10-20",
+        "r_multiple": -1.139044072004966,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-10-27T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-10-27",
+        "r_multiple": -1.1056105610561056,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-11-03T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-11-03",
+        "r_multiple": -1.135429262394196,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-11-10T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-11-10",
+        "r_multiple": -1.0975609756097562,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-11-17T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2021-11-17",
+        "r_multiple": 9.504,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-11-24T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-11-24",
+        "r_multiple": -1.08608762490392,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-12-01T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-12-01",
+        "r_multiple": -1.0525451559934318,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-12-08T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-12-08",
+        "r_multiple": -1.08199121522694,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-12-15T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-12-15",
+        "r_multiple": -1.0698907956318253,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-12-22T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-12-22",
+        "r_multiple": -1.109696376101861,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2021-12-29T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2021-12-29",
+        "r_multiple": -1.1438664097623636,
+        "side": -1,
+        "year": 2021
+      },
+      {
+        "entry_time_utc": "2022-01-05T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2022-01-05",
+        "r_multiple": 5.493602171384257,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-01-12T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-01-12",
+        "r_multiple": -1.0757268424611224,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-01-19T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-01-19",
+        "r_multiple": -1.058684831019125,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-01-26T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-01-26",
+        "r_multiple": -1.036848165816746,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-02-02T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-02-02",
+        "r_multiple": -1.0754716981132075,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-02-09T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-02-09",
+        "r_multiple": -1.0998217468805704,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-02-16T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2022-02-16",
+        "r_multiple": 8.50828729281768,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-02-23T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2022-02-23",
+        "r_multiple": 9.864318019519162,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-03-02T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-03-02",
+        "r_multiple": -1.038160136286201,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-03-09T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2022-03-09",
+        "r_multiple": 4.0733104238258875,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-03-16T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-03-16",
+        "r_multiple": -1.047287312645134,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-03-23T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-03-23",
+        "r_multiple": -1.0913539967373573,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-03-30T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-03-30",
+        "r_multiple": -1.0886777513855899,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-04-06T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-04-06",
+        "r_multiple": -1.064516129032258,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-04-13T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-04-13",
+        "r_multiple": -1.072538860103627,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-04-20T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-04-20",
+        "r_multiple": -1.0723514211886305,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-04-27T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-04-27",
+        "r_multiple": -1.0391813888403008,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-05-04T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-05-04",
+        "r_multiple": -1.0526315789473684,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-05-11T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2022-05-11",
+        "r_multiple": 1.4644736842105264,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-05-18T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-05-18",
+        "r_multiple": -1.0562672695302688,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-05-25T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-05-25",
+        "r_multiple": -1.0514233241505968,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-06-01T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2022-06-01",
+        "r_multiple": 5.188088572155764,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-06-08T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-06-08",
+        "r_multiple": -1.06928549334983,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-06-15T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-06-15",
+        "r_multiple": -1.038056405028882,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-06-22T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-06-22",
+        "r_multiple": -1.0525205158264948,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-06-29T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2022-06-29",
+        "r_multiple": 6.456375838926174,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-07-06T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-07-06",
+        "r_multiple": -1.0527182866556837,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-07-13T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2022-07-13",
+        "r_multiple": 6.791002044989775,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-07-20T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2022-07-20",
+        "r_multiple": 5.3955984970477715,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-07-27T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2022-07-27",
+        "r_multiple": 5.531853972798854,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-08-03T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2022-08-03",
+        "r_multiple": 4.015503875968992,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-08-10T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-08-10",
+        "r_multiple": -1.0926385442514475,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-08-17T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-08-17",
+        "r_multiple": -1.082051282051282,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-08-24T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-08-24",
+        "r_multiple": -1.089564174330268,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-08-31T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2022-08-31",
+        "r_multiple": 4.419912303327314,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-09-07T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-09-07",
+        "r_multiple": -1.0649087221095335,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-09-14T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-09-14",
+        "r_multiple": -1.0557075354389456,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-09-21T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-09-21",
+        "r_multiple": -1.0447105788423154,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-09-28T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2022-09-28",
+        "r_multiple": 6.653061224489797,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-10-05T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2022-10-05",
+        "r_multiple": 5.518626155878469,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-10-12T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-10-12",
+        "r_multiple": -1.0512703135729,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-10-19T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-10-19",
+        "r_multiple": -1.051948051948052,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-10-26T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-10-26",
+        "r_multiple": -1.0657662947739284,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-11-02T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2022-11-02",
+        "r_multiple": 3.856887298747764,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-11-09T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-11-09",
+        "r_multiple": -1.0552949888916316,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-11-16T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-11-16",
+        "r_multiple": -1.0695652173913044,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-11-23T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-11-23",
+        "r_multiple": -1.0928689883913765,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-11-30T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-11-30",
+        "r_multiple": -1.064238600516203,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-12-07T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-12-07",
+        "r_multiple": -1.0623781676413255,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-12-14T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-12-14",
+        "r_multiple": -1.0548213411649534,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-12-21T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-12-21",
+        "r_multiple": -1.081306715063521,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2022-12-28T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2022-12-28",
+        "r_multiple": -1.0784588441330998,
+        "side": -1,
+        "year": 2022
+      },
+      {
+        "entry_time_utc": "2023-01-04T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-01-04",
+        "r_multiple": -1.061168760240306,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-01-11T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-01-11",
+        "r_multiple": -1.100044662795891,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-01-18T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2023-01-18",
+        "r_multiple": 4.24151482672383,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-01-25T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-01-25",
+        "r_multiple": -1.0770024063251977,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-02-01T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2023-02-01",
+        "r_multiple": 5.611418584328576,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-02-08T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-02-08",
+        "r_multiple": -1.0784313725490196,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-02-15T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-02-15",
+        "r_multiple": -1.082932247315809,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-02-22T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-02-22",
+        "r_multiple": -1.0788177339901477,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-03-01T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-03-01",
+        "r_multiple": -1.0768702814001372,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-03-08T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-03-08",
+        "r_multiple": -1.0859225163022632,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-03-15T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-03-15",
+        "r_multiple": -1.040764331210191,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-03-22T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2023-03-22",
+        "r_multiple": 0.4011211460604173,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-03-29T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-03-29",
+        "r_multiple": -1.1150487930148947,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-04-05T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-04-05",
+        "r_multiple": -1.0973066898349262,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-04-12T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-04-12",
+        "r_multiple": -1.0869902912621359,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-04-19T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-04-19",
+        "r_multiple": -1.1189591078066914,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-04-26T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-04-26",
+        "r_multiple": -1.0811006517016655,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-05-03T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2023-05-03",
+        "r_multiple": 7.8870588235294115,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-05-10T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2023-05-10",
+        "r_multiple": 6.667957405614714,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-05-17T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-05-17",
+        "r_multiple": -1.1049180327868853,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-05-24T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-05-24",
+        "r_multiple": -1.0821114369501466,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-05-31T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2023-05-31",
+        "r_multiple": 3.1070654529692243,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-06-07T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-06-07",
+        "r_multiple": -1.1167274622199062,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-06-14T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-06-14",
+        "r_multiple": -1.0971379011274935,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-06-21T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2023-06-21",
+        "r_multiple": 1.1952108276939093,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-06-28T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-06-28",
+        "r_multiple": -1.124791086350975,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-07-05T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2023-07-05",
+        "r_multiple": 17.303780964797916,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-07-12T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-07-12",
+        "r_multiple": -1.1111111111111112,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-07-19T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-07-19",
+        "r_multiple": -1.1151670951156811,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-07-26T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-07-26",
+        "r_multiple": -1.106010411736867,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-08-02T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-08-02",
+        "r_multiple": -1.0994229915668,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-08-09T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-08-09",
+        "r_multiple": -1.09973285841496,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-08-16T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-08-16",
+        "r_multiple": -1.0845283018867924,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-08-23T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-08-23",
+        "r_multiple": -1.1141110545084054,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-08-30T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-08-30",
+        "r_multiple": -1.1114427860696516,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-09-06T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-09-06",
+        "r_multiple": -1.116182572614108,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-09-13T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-09-13",
+        "r_multiple": -1.0931780366056572,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-09-20T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2023-09-20",
+        "r_multiple": 4.595994137762579,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-09-27T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-09-27",
+        "r_multiple": -1.0891010342084328,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-10-04T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2023-10-04",
+        "r_multiple": 0.5692985428668248,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-10-11T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-10-11",
+        "r_multiple": -1.0988526037069726,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-10-18T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2023-10-18",
+        "r_multiple": 2.5063460253841017,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-10-25T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-10-25",
+        "r_multiple": -1.0786516853932584,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-11-01T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-11-01",
+        "r_multiple": -1.076975945017182,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-11-08T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-11-08",
+        "r_multiple": -1.1338912133891212,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-11-15T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2023-11-15",
+        "r_multiple": 2.501818181818182,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-11-22T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-11-22",
+        "r_multiple": -1.1188328912466843,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-11-29T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-11-29",
+        "r_multiple": -1.1364190012180269,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-12-06T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-12-06",
+        "r_multiple": -1.1330166270783848,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-12-20T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-12-20",
+        "r_multiple": -1.125069793411502,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2023-12-27T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2023-12-27",
+        "r_multiple": -1.1375921375921376,
+        "side": -1,
+        "year": 2023
+      },
+      {
+        "entry_time_utc": "2024-01-03T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-01-03",
+        "r_multiple": -1.104868913857678,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-01-10T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-01-10",
+        "r_multiple": -1.1178947368421053,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-01-17T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-01-17",
+        "r_multiple": -1.1024234110653863,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-01-24T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-01-24",
+        "r_multiple": -1.119530416221985,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-01-31T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-01-31",
+        "r_multiple": -1.084496416446624,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-02-07T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-02-07",
+        "r_multiple": -1.1210810810810812,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-02-14T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-02-14",
+        "r_multiple": -1.0908353609083536,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-02-21T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-02-21",
+        "r_multiple": -1.097773897861196,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-02-28T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-02-28",
+        "r_multiple": -1.1204301075268817,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-03-06T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-03-06",
+        "r_multiple": -1.0866202629543698,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-03-13T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-03-13",
+        "r_multiple": -1.12348401323043,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-03-20T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-03-20",
+        "r_multiple": -1.0996884735202492,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-03-27T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-03-27",
+        "r_multiple": -1.1266968325791855,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-04-03T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-04-03",
+        "r_multiple": -1.1046240074731435,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-04-10T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-04-10",
+        "r_multiple": -1.055916125811283,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-04-17T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-04-17",
+        "r_multiple": -1.0639817195087118,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-04-24T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2024-04-24",
+        "r_multiple": 15.896623593163818,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-05-01T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-05-01",
+        "r_multiple": -1.0727745289148798,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-05-08T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-05-08",
+        "r_multiple": -1.1458333333333333,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-05-15T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-05-15",
+        "r_multiple": -1.122004357298475,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-05-22T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-05-22",
+        "r_multiple": -1.1185812599258866,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-05-29T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2024-05-29",
+        "r_multiple": 11.17934532042416,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-06-05T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-06-05",
+        "r_multiple": -1.1131313131313132,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-06-12T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-06-12",
+        "r_multiple": -1.0761128100577642,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-06-19T16:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-06-19",
+        "r_multiple": -1.3031123139377536,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-06-26T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-06-26",
+        "r_multiple": -1.120624663435649,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-07-03T17:00:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-07-03",
+        "r_multiple": -1.1430395913154534,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-07-10T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-07-10",
+        "r_multiple": -1.139216904909882,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-07-17T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-07-17",
+        "r_multiple": -1.0802005012531328,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-07-24T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-07-24",
+        "r_multiple": -1.0810712993123417,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-07-31T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-07-31",
+        "r_multiple": -1.0579860212270256,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-08-07T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-08-07",
+        "r_multiple": -1.0479349454312006,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-08-14T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-08-14",
+        "r_multiple": -1.0839265642562759,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-08-21T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-08-21",
+        "r_multiple": -1.093061902783548,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-08-28T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-08-28",
+        "r_multiple": -1.085041761579347,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-09-04T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-09-04",
+        "r_multiple": -1.0685644322007959,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-09-11T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-09-11",
+        "r_multiple": -1.055916125811283,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-09-18T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-09-18",
+        "r_multiple": -1.0660766961651917,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-09-25T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-09-25",
+        "r_multiple": -1.0968020743301643,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-10-02T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-10-02",
+        "r_multiple": -1.0693498452012384,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-10-09T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-10-09",
+        "r_multiple": -1.0895283772981614,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-10-16T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-10-16",
+        "r_multiple": -1.1087906750849927,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-10-23T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2024-10-23",
+        "r_multiple": 1.9034376207029742,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-10-30T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2024-10-30",
+        "r_multiple": 7.571591340676035,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-11-06T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-11-06",
+        "r_multiple": -1.0512117055326933,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-11-13T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-11-13",
+        "r_multiple": -1.0796586059743953,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-11-20T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-11-20",
+        "r_multiple": -1.0687327401043265,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-11-27T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-11-27",
+        "r_multiple": -1.098896247240618,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-12-04T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2024-12-04",
+        "r_multiple": 2.914675767918089,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-12-11T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2024-12-11",
+        "r_multiple": 2.1587301587301586,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2024-12-18T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2024-12-18",
+        "r_multiple": -1.0616061606160616,
+        "side": -1,
+        "year": 2024
+      },
+      {
+        "entry_time_utc": "2025-01-08T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-01-08",
+        "r_multiple": -1.0545144804088586,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-01-15T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-01-15",
+        "r_multiple": -1.0725858716785484,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-01-22T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-01-22",
+        "r_multiple": -1.1076405574243153,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-01-29T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-01-29",
+        "r_multiple": -1.0747414080747415,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-02-05T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-02-05",
+        "r_multiple": -1.081247733043163,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-02-12T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-02-12",
+        "r_multiple": -1.068522483940043,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-02-19T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-02-19",
+        "r_multiple": -1.1027051811095827,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-02-26T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-02-26",
+        "r_multiple": -1.066096193567424,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-03-05T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2025-03-05",
+        "r_multiple": 2.4513064133016624,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-03-12T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2025-03-12",
+        "r_multiple": 1.8061068702290077,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-03-19T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-03-19",
+        "r_multiple": -1.060361088655349,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-03-26T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-03-26",
+        "r_multiple": -1.0730593607305936,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-04-02T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-04-02",
+        "r_multiple": -1.0476798637718179,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-04-09T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-04-09",
+        "r_multiple": -1.0111642743221692,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-04-16T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-04-16",
+        "r_multiple": -1.0373022481265612,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-04-23T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-04-23",
+        "r_multiple": -1.037006443086073,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-04-30T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-04-30",
+        "r_multiple": -1.0441640378548895,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-05-07T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-05-07",
+        "r_multiple": -1.049623393885689,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-05-14T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-05-14",
+        "r_multiple": -1.0794608017027314,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-05-21T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2025-05-21",
+        "r_multiple": 2.0925747348119574,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-05-28T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-05-28",
+        "r_multiple": -1.0886777513855899,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-06-04T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-06-04",
+        "r_multiple": -1.1024702653247942,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-06-11T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2025-06-11",
+        "r_multiple": -0.4307692307692308,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-06-18T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2025-06-18",
+        "r_multiple": 6.447524752475247,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-06-25T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-06-25",
+        "r_multiple": -1.1150487930148947,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-07-02T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-07-02",
+        "r_multiple": -1.0992467877713779,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-07-09T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-07-09",
+        "r_multiple": -1.0879120879120878,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-07-16T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-07-16",
+        "r_multiple": -1.0650784427658337,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-07-23T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-07-23",
+        "r_multiple": -1.0960548885077186,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-07-30T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-07-30",
+        "r_multiple": -1.0794326241134753,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-08-06T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-08-06",
+        "r_multiple": -1.077913043478261,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-08-13T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-08-13",
+        "r_multiple": -1.0916155419222904,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-08-20T19:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2025-08-20",
+        "r_multiple": 3.0451977401129944,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-08-27T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-08-27",
+        "r_multiple": -1.1174004192872118,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-09-03T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-09-03",
+        "r_multiple": -1.0802867383512544,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-09-10T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-09-10",
+        "r_multiple": -1.0782943026913667,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-09-17T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-09-17",
+        "r_multiple": -1.062135922330097,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-09-24T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-09-24",
+        "r_multiple": -1.0973066898349262,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-10-01T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-10-01",
+        "r_multiple": -1.0850740600075959,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-10-08T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-10-08",
+        "r_multiple": -1.0954409884959522,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-10-15T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-10-15",
+        "r_multiple": -1.0629390278168025,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-10-22T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-10-22",
+        "r_multiple": -1.0677966101694916,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-10-29T19:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-10-29",
+        "r_multiple": -1.0640915593705293,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-11-05T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2025-11-05",
+        "r_multiple": 5.610824742268041,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-11-12T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-11-12",
+        "r_multiple": -1.0829015544041452,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-11-19T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-11-19",
+        "r_multiple": -1.0545676004872107,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-11-26T20:45:00+00:00",
+        "exit_reason": "overnight:next_open",
+        "local_date": "2025-11-26",
+        "r_multiple": 0.6773390252579153,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-12-03T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-12-03",
+        "r_multiple": -1.0803155252778773,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-12-10T20:45:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-12-10",
+        "r_multiple": -1.0658629814760365,
+        "side": -1,
+        "year": 2025
+      },
+      {
+        "entry_time_utc": "2025-12-24T18:00:00+00:00",
+        "exit_reason": "overnight:stop",
+        "local_date": "2025-12-24",
+        "r_multiple": -1.1877619446772842,
+        "side": -1,
+        "year": 2025
+      }
+    ]
+  },
+  "selection_contract": {
+    "development": "2018-2022",
+    "holdout_opened": true,
+    "positive_swap_credit": false,
+    "same_bar_rule": "stop_first",
+    "sealed_holdout": "2024-2025",
+    "selection_uses_holdout": false,
+    "validation": "2023",
+    "winner_count": 1
+  },
+  "status": "NO_HOLDOUT_SURVIVOR"
+}

@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECTED_CURRENT_COST_AND_DEVELOPMENT_QUALITY",
+  "deployment_allowed": false,
+  "candidate": {
+    "ea_id": 10788,
+    "symbol": "XAUUSD.DWX",
+    "period": "H4",
+    "deterministic_runs": 2,
+    "native_trades": 224,
+    "native_profit_factor": 1.446351,
+    "native_net_profit": 7896.6,
+    "stream_reconciliation": "PASS",
+    "ftmo_current_cost_profit_factor": 1.127058,
+    "ftmo_current_cost_net_profit": 2546.81,
+    "ftmo_current_swap_total": -5230.82
+  },
+  "development_quality": {
+    "2018_net": -848.79,
+    "2019_net": -2226.76,
+    "2021_net": -918.61,
+    "2022_net": -602.98,
+    "all_active_development_years_negative": true,
+    "edge_concentrated_in_2023_2025": true
+  },
+  "gates": {
+    "minimum_current_cost_profit_factor": 1.2,
+    "current_cost_gate": "FAIL",
+    "portfolio_weight_screen_opened": false,
+    "sealed_holdout_opened": false
+  },
+  "evidence": [
+    "artifacts/ftmo_10788_xau_pipeline_survivor_predeclaration_2026-07-12.json",
+    "artifacts/ftmo_10788_xau_fresh_stream_reconciliation_2026-07-12.json",
+    "artifacts/ftmo_10788_xau_fresh_current_report_cost_reconciliation_2026-07-12.json",
+    "D:/QM/reports/pipeline_ftmo_joint/fresh_10788_xau_h4_wave27_20260712/QM5_10788/20260712_170523/summary.json"
+  ],
+  "label": "RESEARCH_ONLY_NO_GO"
+}

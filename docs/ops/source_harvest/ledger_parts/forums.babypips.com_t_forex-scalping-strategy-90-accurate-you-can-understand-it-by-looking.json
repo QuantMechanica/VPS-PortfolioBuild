@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_forex-scalping-strategy-90-accurate-you-can-understand-it-by-looking-at-these-charts-and-myfxbook-.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_forex-scalping-strategy-90-accurate-you-can-understand-it-by-looking-at-these-charts-and-myfxbook-.pdf",
+      "source_pages": "1-12",
+      "source_ref": "\"Forex scalping strategy 90% accurate: you can understand it by looking at these charts and myfxbook profile\" by Forexerguru, forums.babypips.com, 2023, https://forums.babypips.com/t/forex-scalping-strategy-90-accurate-you-can-understand-it-by-looking-at-these-charts-and-myfxbook",
+      "strategy_name": "Forexerguru 90%-accurate price-action scalper",
+      "concept": "Claims a discretionary exhaustion/price-action scalp on FX crosses (EURSGD, EURCAD, CADJPY, EURAUD) but never states any mechanical trigger.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "No mechanical entry/exit rules stated anywhere; pure chart-screenshot signal-sharing/self-promotion, and poster adds fresh capital during drawdowns (martingale-like) with DD ~2x gains.",
+      "priority_hint": "LOW",
+      "notes": "Timeframe unstated (scalping implied). Legacy '20 EMA + Stochastic + RVGI' system referenced (#8/#9) but poster explicitly disavows indicators (#13) advising unspecified 'price action'. myfxbook DD ~2x gains (#18). Repeated capital injection to survive drawdowns (#22-26: 'I always add more capital when all trades are closed') = incompatible with FTMO/DXZ DD limits. User #38 confirms no strategy explanation exists in the thread."
+    }
+  ],
+  "notes": ["zero usable candidates: thread is discretionary signal-sharing with no stated rules; martingale-style capital-adding"]
+}

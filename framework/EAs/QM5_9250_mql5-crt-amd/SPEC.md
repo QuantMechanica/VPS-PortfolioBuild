@@ -3,8 +3,8 @@
 **EA ID:** QM5_9250
 **Slug:** `mql5-crt-amd`
 **Source:** `ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb`
-**Author of this spec:** Codex
-**Last revised:** 2026-07-07
+**Author of this spec:** Codex; revised by Claude
+**Last revised:** 2026-07-14
 
 ---
 
@@ -39,9 +39,9 @@ The range must be between 0.5 and 2.5 times ATR(14) on H1. Stops use the manipul
 **Designed for:**
 - `EURUSD.DWX` - liquid FX major in the approved DWX matrix and one of the card targets.
 - `GBPUSD.DWX` - liquid FX major in the approved DWX matrix and one of the card targets.
+- `GDAXI.DWX` - port of the card's `GER40.DWX` target; `GER40.DWX` is not a valid symbol in `dwx_symbol_matrix.csv`, `GDAXI.DWX` is the canonical DAX-40 DWX Custom Symbol (per CLAUDE.md DWX symbol-port convention). Registered 2026-07-14 to satisfy the P2 Saturation Rule (the v1 2026-07-07 build had deferred it; that deferral was not a card-sanctioned exception, so the card's full 3-symbol basket is now registered).
 
 **Explicitly NOT for:**
-- `GER40.DWX` - listed on the card, but intentionally deferred in this build because the current mission prioritizes forex diversity over another index sleeve.
 - non-`.DWX` symbols - the farm gates and magic registry are defined for DWX instruments only.
 
 ---
@@ -96,3 +96,4 @@ ENV-mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMA
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-07 | Initial build from approved card | Commit pending |
+| v2 | 2026-07-14 | P2 Saturation Rule fix: registered `GDAXI.DWX` (slot 2, ported from card's `GER40.DWX`) which v1 had deferred without a card-sanctioned exception; also moved the opposite-signal exit check out of the per-tick `Strategy_ExitSignal` path (it previously called an ungated multi-bar `CopyRates` scan every tick while a position was open) into the once-per-closed-bar `Strategy_EntrySignal` scan, closing the prior position there when a fresh opposite setup confirms | build task dc6908f8-c9bb-4f4e-95dd-381e58486b8b |

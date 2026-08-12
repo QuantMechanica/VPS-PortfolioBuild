@@ -1,0 +1,40 @@
+{
+  "pdf": "ff_1311677_horizontal-line-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1311677_horizontal-line-system.pdf",
+      "source_pages": "1, 15, 22-23",
+      "source_ref": "1dominican, \"Horizontal line system\", ForexFactory Trading Systems forum, thread 1311677, n.d. — https://www.forexfactory.com/thread/1311677/horizontal-line-system (community formalization by user rell4 in same thread; TRO / TheRumpledOne daily-open indicator lineage via kreslik.com/forums/therumpledone)",
+      "strategy_name": "Daily-Open Breakout (Horizontal Line System)",
+      "concept": "Breakout-continuation once price commits a fixed pip distance beyond the daily-open reference line, betting intraday momentum keeps extending away from the open.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic daily-open stop-entry + fixed-pip SL, pure-MQL5 buildable on GBPUSD/.DWX, FTMO/DXZ-compatible; only TP is unspecified in the original (design-open — community Fibo-1.618 / trailing variants supply a concrete exit).",
+      "priority_hint": "LOW",
+      "notes": "Core rules (1dominican, p1/p15): buy stop DO+10 pips / sell stop DO-10 pips on GBPUSD (gold & US30 use 20 pips), SL ~1 pip beyond the opposite side of the line (11 pips GBPUSD / 21 pips US30), never simultaneous long+short, single-pair focus, broker-time daily open. Original TP vague ('whatever you can get'). rell4 variant (p22-23): 9-pip line, Fibo 0=SL/1=entry/1.618=TP1, wait for 2nd breakout if a signal fires before 10:30 MT4 time else take the 1st, check calendar (high-impact '3-bull' events invalidate). Silkysilv variant: 10-pip hard SL, BE+1 at +5 pips, 5-pip trailing. No backtest/stats posted; multiple posters warn of whipsaws; low-reputability single-user showcase thread. Distinct from swing-MR — a session/structure (opening-range) breakout driver. Test fixed-R and trailing exit variants."
+    },
+    {
+      "source_file": "ff_1311677_horizontal-line-system.pdf",
+      "source_pages": "36-37",
+      "source_ref": "flashpaul (reply in same thread), ForexFactory thread 1311677, n.d. — https://www.forexfactory.com/thread/1311677/horizontal-line-system",
+      "strategy_name": "EMA 144/89 + Supertrend MTF Confluence (flashpaul template)",
+      "concept": "Enter when M1 EMA144/EMA89 and a multi-timeframe Supertrend(ATR5) align in the strategy's direction, worked in 4-hour blocks.",
+      "market": "FX",
+      "timeframe": "M1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Only 'open the trades when indicators aligned in accord with the strategy' is stated — no concrete entry trigger, SL, or TP; rules too vague to mechanize.",
+      "priority_hint": "LOW",
+      "notes": "Secondary idea appended near thread end; TPL M1-H4.zip attached (chart template only) but no rule specification. Distinct from the main daily-open system; not implementable as written."
+    }
+  ],
+  "notes": [
+    "Text-extractable PDF (fitz); 37 pages, ~60 forum posts. Two distinct strategies recorded: main daily-open breakout (ELIGIBLE, with rell4/Silkysilv exit variants folded in) and flashpaul EMA+Supertrend template (REJECTED, too vague).",
+    "No statistical evidence anywhere in the thread — screenshots only; whipsaw complaints from other posters lower confidence."
+  ]
+}

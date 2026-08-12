@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "FAIL",
+  "reason_classes": [
+    "FIRST_RUN_NO_ROUND_TRIPS",
+    "INDEPENDENT_ROUND_TRIP_MISMATCH",
+    "NONDETERMINISTIC_CURRENT_FRAMEWORK_RESULT"
+  ],
+  "ea_id": 1556,
+  "expert": "QM\\QM5_1556_aa-zak-mom12",
+  "symbol": "XAUUSD.DWX",
+  "period": "D1",
+  "history": "2017-01-01 through 2025-12-31",
+  "model": 4,
+  "runs": [
+    {
+      "terminal": "T3",
+      "run": "run_01",
+      "report_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_1556_xau_d1_20260712\\QM5_1556\\20260712_092036\\raw\\run_01\\report.htm",
+      "report_sha256": "49282b936e0e421f44f5ce347996408e0803e8628fe4fbb057e4309833039169",
+      "report_size_bytes": 22330,
+      "round_trips": 0,
+      "parse_result": "no XAUUSD.DWX round trips"
+    },
+    {
+      "terminal": "T3",
+      "run": "run_02",
+      "report_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_1556_xau_d1_20260712\\QM5_1556\\20260712_092036\\raw\\run_02\\report.htm",
+      "report_sha256": "93bb76f876c66efcd514beb96906557b98ecf14c1d0f6f134418c8e9d8e45b58",
+      "report_size_bytes": 140734,
+      "round_trips": 53,
+      "native_net_profit": 6369.87,
+      "native_profit_factor": 1.93,
+      "equity_drawdown": 2683.23
+    },
+    {
+      "terminal": "T4",
+      "run": "independent_run_01",
+      "report_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_1556_xau_d1_compare_t4_20260712\\QM5_1556\\20260712_093900\\raw\\run_01\\report.htm",
+      "report_sha256": "b3135be6f76dda7f639539b6d290d2dc8a56e3a83f701d6dd6667c92e3750553",
+      "report_size_bytes": 163472,
+      "round_trips": 64,
+      "native_net_profit": 8090.03,
+      "native_profit_factor": 1.99,
+      "equity_drawdown": 2683.23
+    }
+  ],
+  "determinism_contract": "At least two reports must have identical report metrics and exact round-trip sequences.",
+  "determinism_contract_met": false,
+  "stream_admitted": false,
+  "cost_gate_opened": false,
+  "portfolio_gate_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

@@ -60,7 +60,6 @@ double   g_spread_mean = 0.0;
 double   g_spread_sd = 0.0;
 bool     g_state_ready = false;
 datetime g_pair_entry_time = 0;
-datetime g_last_state_bar = 0;
 
 int Strategy_SlotForSymbol(const string symbol)
   {
@@ -187,8 +186,6 @@ bool Strategy_RefreshSpreadState()
 
    g_spread_z = (spreads[0] - g_spread_mean) / g_spread_sd;
    g_state_ready = MathIsValidNumber(g_spread_z);
-   if(g_state_ready)
-      g_last_state_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cheap cached D1 timestamp.
    return g_state_ready;
   }
 
@@ -342,9 +339,6 @@ bool Strategy_ExitSignal()
       return false;
      }
 
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cheap D1 timestamp guard before optional spread refresh.
-   if(current_d1_bar > 0 && current_d1_bar != g_last_state_bar)
-      Strategy_RefreshSpreadState();
    if(g_state_ready && MathAbs(g_spread_z) < strategy_exit_z)
       Strategy_ClosePair(QM_EXIT_STRATEGY);
    else if(Strategy_MaxHoldExceeded())

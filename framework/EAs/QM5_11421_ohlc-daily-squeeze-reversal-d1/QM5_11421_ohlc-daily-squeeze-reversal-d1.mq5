@@ -283,6 +283,11 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_D1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED"))
+      return INIT_FAILED;
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
@@ -330,7 +335,7 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
       return;
 
    QM_EquityStreamOnNewBar();

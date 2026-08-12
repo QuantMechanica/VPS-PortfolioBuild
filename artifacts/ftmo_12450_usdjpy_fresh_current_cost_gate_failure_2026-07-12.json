@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_GATE",
+  "ea_id": 12450,
+  "symbol": "USDJPY.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/20260712_113140/QM5_12450_ea31337-matrend.compile.log",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12450_usdjpy_h1_wave5_20260712\\QM5_12450\\20260712_113201\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12450_usdjpy_h1_wave5_20260712\\QM5_12450\\20260712_113201\\raw\\run_01\\report.htm",
+      "sha256": "53EE7D522206E5DCE8451A224BEFE717594E43CECB100119C2673F664C8535BF"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12450_usdjpy_h1_wave5_20260712\\QM5_12450\\20260712_113201\\raw\\run_02\\report.htm",
+      "sha256": "86179D740908A6FC589FB200DEE2D3C5AE55EC1BAC7AADF42E2032BDEE68BF63"
+    }
+  ],
+  "native": {
+    "trades": 1116,
+    "profit_factor": 0.921353,
+    "net_profit": -17820.6,
+    "equity_drawdown": 28823.73
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\12450_USDJPY_DWX_T1_FRESH_20260712.jsonl",
+    "rows": 1116,
+    "sha256": "0042CBB5136F17A20CEF7ACA1CD9582A43EF3793FA9F357630A4A33E35D101E2",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET"
+  },
+  "current_cost_artifact": "artifacts/ftmo_12450_usdjpy_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 1116,
+    "profit_factor": 0.90388,
+    "net_profit": -21995.34,
+    "close_to_close_max_drawdown": 31409.17,
+    "commission_total": 6043.9,
+    "swap_total": -5007.75
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "annual_density_pass": true,
+    "reason_for_reject": "The fresh native run is already loss-making (PF 0.921353); current FTMO costs reduce pooled PF to 0.903880, with six of nine calendar years loss-making."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

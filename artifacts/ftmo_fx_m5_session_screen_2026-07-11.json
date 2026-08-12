@@ -1,0 +1,935 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-07-11T14:59:45.210899+00:00",
+  "selection_contract": {
+    "development": "2018-2022",
+    "validation": "2023",
+    "sealed_holdout": "2024-2025",
+    "preholdout_gate": "DEV trades>=500 PF>=1.12; VAL trades>=80 PF>=1.05 net>0; >=3 positive DEV years",
+    "holdout_gate": "trades>=160 PF>=1.08 net>0 and both 2024/2025 positive",
+    "selection_rule": "one preholdout winner per family across all symbols",
+    "collision_rule": "stop_first_if_stop_and_target_touch_same_M5_bar",
+    "ambiguous_dual_range_break": "skip_day",
+    "daily_position_limit_per_candidate": 1,
+    "overnight_positions": 0,
+    "cost_basis": "conservative all-in round-trip price deduction"
+  },
+  "instruments": [
+    {
+      "symbol": "EURUSD.DWX",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURUSD.DWX_M5.csv",
+      "timezone": "Europe/London",
+      "round_trip_cost_points": 0.00016
+    },
+    {
+      "symbol": "GBPUSD.DWX",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPUSD.DWX_M5.csv",
+      "timezone": "Europe/London",
+      "round_trip_cost_points": 0.0002
+    },
+    {
+      "symbol": "USDJPY.DWX",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\USDJPY.DWX_M5.csv",
+      "timezone": "Europe/London",
+      "round_trip_cost_points": 0.018
+    },
+    {
+      "symbol": "GBPJPY.DWX",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPJPY.DWX_M5.csv",
+      "timezone": "Europe/London",
+      "round_trip_cost_points": 0.03
+    }
+  ],
+  "evaluated_configurations": 704,
+  "preholdout_pass_count": 0,
+  "preholdout_family_diagnostics": [
+    {
+      "symbol": "USDJPY.DWX",
+      "family": "asia_range_breakout",
+      "parameters": {
+        "range_end_hour": 8,
+        "entry_end_hour": 10,
+        "buffer_fraction": 0.0,
+        "stop_range_fraction": 1.0,
+        "target_r": 1.5,
+        "fade": false
+      },
+      "metrics": {
+        "dev_2018_2022": {
+          "trades": 543,
+          "net_r": 9.064122,
+          "profit_factor": 1.048645,
+          "max_drawdown_r": 27.744664,
+          "win_rate": 0.460405,
+          "mean_mae_r": -0.64552
+        },
+        "validation_2023": {
+          "trades": 145,
+          "net_r": 9.880994,
+          "profit_factor": 1.20222,
+          "max_drawdown_r": 10.88058,
+          "win_rate": 0.503448,
+          "mean_mae_r": -0.703914
+        },
+        "annual": {
+          "2018": {
+            "trades": 117,
+            "net_r": -3.226608,
+            "profit_factor": 0.91139,
+            "max_drawdown_r": 12.752028,
+            "win_rate": 0.42735,
+            "mean_mae_r": -0.622883
+          },
+          "2019": {
+            "trades": 86,
+            "net_r": -16.211725,
+            "profit_factor": 0.484767,
+            "max_drawdown_r": 16.211725,
+            "win_rate": 0.348837,
+            "mean_mae_r": -0.634999
+          },
+          "2020": {
+            "trades": 106,
+            "net_r": 8.263383,
+            "profit_factor": 1.250544,
+            "max_drawdown_r": 4.762837,
+            "win_rate": 0.481132,
+            "mean_mae_r": -0.641695
+          },
+          "2021": {
+            "trades": 122,
+            "net_r": 0.044154,
+            "profit_factor": 1.000883,
+            "max_drawdown_r": 9.199249,
+            "win_rate": 0.467213,
+            "mean_mae_r": -0.717121
+          },
+          "2022": {
+            "trades": 112,
+            "net_r": 20.194919,
+            "profit_factor": 1.569692,
+            "max_drawdown_r": 5.370894,
+            "win_rate": 0.553571,
+            "mean_mae_r": -0.60287
+          },
+          "2023": {
+            "trades": 145,
+            "net_r": 9.880994,
+            "profit_factor": 1.20222,
+            "max_drawdown_r": 10.88058,
+            "win_rate": 0.503448,
+            "mean_mae_r": -0.703914
+          }
+        }
+      },
+      "gate_checks": {
+        "dev_trades": true,
+        "dev_profit_factor": false,
+        "validation_trades": true,
+        "validation_profit_factor": true,
+        "validation_net": true,
+        "positive_dev_years": true
+      }
+    },
+    {
+      "symbol": "GBPJPY.DWX",
+      "family": "asia_range_close_breakout",
+      "parameters": {
+        "range_end_hour": 7,
+        "entry_end_hour": 10,
+        "buffer_fraction": 0.0,
+        "stop_range_fraction": 1.0,
+        "target_r": 1.5,
+        "rejection": false
+      },
+      "metrics": {
+        "dev_2018_2022": {
+          "trades": 641,
+          "net_r": -16.030658,
+          "profit_factor": 0.947307,
+          "max_drawdown_r": 47.817832,
+          "win_rate": 0.452418,
+          "mean_mae_r": -0.788681
+        },
+        "validation_2023": {
+          "trades": 126,
+          "net_r": 22.519015,
+          "profit_factor": 1.424453,
+          "max_drawdown_r": 6.515775,
+          "win_rate": 0.547619,
+          "mean_mae_r": -0.738652
+        },
+        "annual": {
+          "2018": {
+            "trades": 126,
+            "net_r": -11.858419,
+            "profit_factor": 0.819284,
+            "max_drawdown_r": 20.143956,
+            "win_rate": 0.452381,
+            "mean_mae_r": -0.837369
+          },
+          "2019": {
+            "trades": 117,
+            "net_r": -24.956148,
+            "profit_factor": 0.633735,
+            "max_drawdown_r": 25.286448,
+            "win_rate": 0.367521,
+            "mean_mae_r": -0.888432
+          },
+          "2020": {
+            "trades": 130,
+            "net_r": 7.017372,
+            "profit_factor": 1.128868,
+            "max_drawdown_r": 8.881904,
+            "win_rate": 0.492308,
+            "mean_mae_r": -0.721894
+          },
+          "2021": {
+            "trades": 138,
+            "net_r": 8.274114,
+            "profit_factor": 1.141912,
+            "max_drawdown_r": 9.521694,
+            "win_rate": 0.492754,
+            "mean_mae_r": -0.757898
+          },
+          "2022": {
+            "trades": 130,
+            "net_r": 5.492424,
+            "profit_factor": 1.09517,
+            "max_drawdown_r": 10.887747,
+            "win_rate": 0.446154,
+            "mean_mae_r": -0.751179
+          },
+          "2023": {
+            "trades": 126,
+            "net_r": 22.519015,
+            "profit_factor": 1.424453,
+            "max_drawdown_r": 6.515775,
+            "win_rate": 0.547619,
+            "mean_mae_r": -0.738652
+          }
+        }
+      },
+      "gate_checks": {
+        "dev_trades": true,
+        "dev_profit_factor": false,
+        "validation_trades": true,
+        "validation_profit_factor": true,
+        "validation_net": true,
+        "positive_dev_years": true
+      }
+    },
+    {
+      "symbol": "EURUSD.DWX",
+      "family": "asia_range_fade",
+      "parameters": {
+        "range_end_hour": 7,
+        "entry_end_hour": 11,
+        "buffer_fraction": 0.0,
+        "stop_range_fraction": 1.0,
+        "target_r": 1.5,
+        "fade": true
+      },
+      "metrics": {
+        "dev_2018_2022": {
+          "trades": 1169,
+          "net_r": -58.191552,
+          "profit_factor": 0.907333,
+          "max_drawdown_r": 77.075494,
+          "win_rate": 0.443969,
+          "mean_mae_r": -0.869745
+        },
+        "validation_2023": {
+          "trades": 228,
+          "net_r": 5.528622,
+          "profit_factor": 1.045427,
+          "max_drawdown_r": 22.979787,
+          "win_rate": 0.45614,
+          "mean_mae_r": -0.87923
+        },
+        "annual": {
+          "2018": {
+            "trades": 244,
+            "net_r": -1.851381,
+            "profit_factor": 0.985878,
+            "max_drawdown_r": 25.154066,
+            "win_rate": 0.459016,
+            "mean_mae_r": -0.855039
+          },
+          "2019": {
+            "trades": 229,
+            "net_r": -4.173392,
+            "profit_factor": 0.964901,
+            "max_drawdown_r": 19.87086,
+            "win_rate": 0.462882,
+            "mean_mae_r": -0.903557
+          },
+          "2020": {
+            "trades": 227,
+            "net_r": -31.642806,
+            "profit_factor": 0.751356,
+            "max_drawdown_r": 37.47518,
+            "win_rate": 0.405286,
+            "mean_mae_r": -0.860836
+          },
+          "2021": {
+            "trades": 240,
+            "net_r": -4.623523,
+            "profit_factor": 0.964007,
+            "max_drawdown_r": 18.107935,
+            "win_rate": 0.45,
+            "mean_mae_r": -0.871684
+          },
+          "2022": {
+            "trades": 229,
+            "net_r": -15.90045,
+            "profit_factor": 0.869921,
+            "max_drawdown_r": 21.164946,
+            "win_rate": 0.441048,
+            "mean_mae_r": -0.8584
+          },
+          "2023": {
+            "trades": 228,
+            "net_r": 5.528622,
+            "profit_factor": 1.045427,
+            "max_drawdown_r": 22.979787,
+            "win_rate": 0.45614,
+            "mean_mae_r": -0.87923
+          }
+        }
+      },
+      "gate_checks": {
+        "dev_trades": true,
+        "dev_profit_factor": false,
+        "validation_trades": true,
+        "validation_profit_factor": false,
+        "validation_net": true,
+        "positive_dev_years": false
+      }
+    },
+    {
+      "symbol": "EURUSD.DWX",
+      "family": "asia_range_rejection",
+      "parameters": {
+        "range_end_hour": 8,
+        "entry_end_hour": 11,
+        "buffer_fraction": 0.0,
+        "stop_range_fraction": 1.0,
+        "target_r": 1.5,
+        "rejection": true
+      },
+      "metrics": {
+        "dev_2018_2022": {
+          "trades": 988,
+          "net_r": -101.413436,
+          "profit_factor": 0.813483,
+          "max_drawdown_r": 116.350373,
+          "win_rate": 0.427126,
+          "mean_mae_r": -0.882047
+        },
+        "validation_2023": {
+          "trades": 209,
+          "net_r": 9.971577,
+          "profit_factor": 1.093116,
+          "max_drawdown_r": 14.589619,
+          "win_rate": 0.464115,
+          "mean_mae_r": -0.861047
+        },
+        "annual": {
+          "2018": {
+            "trades": 210,
+            "net_r": -30.62662,
+            "profit_factor": 0.750049,
+            "max_drawdown_r": 44.420658,
+            "win_rate": 0.409524,
+            "mean_mae_r": -0.880471
+          },
+          "2019": {
+            "trades": 205,
+            "net_r": -13.551588,
+            "profit_factor": 0.878661,
+            "max_drawdown_r": 16.064974,
+            "win_rate": 0.443902,
+            "mean_mae_r": -0.927038
+          },
+          "2020": {
+            "trades": 188,
+            "net_r": -27.930885,
+            "profit_factor": 0.733332,
+            "max_drawdown_r": 34.826096,
+            "win_rate": 0.393617,
+            "mean_mae_r": -0.868039
+          },
+          "2021": {
+            "trades": 197,
+            "net_r": -1.752298,
+            "profit_factor": 0.982799,
+            "max_drawdown_r": 17.943136,
+            "win_rate": 0.461929,
+            "mean_mae_r": -0.858663
+          },
+          "2022": {
+            "trades": 188,
+            "net_r": -27.552046,
+            "profit_factor": 0.732233,
+            "max_drawdown_r": 30.813612,
+            "win_rate": 0.425532,
+            "mean_mae_r": -0.87326
+          },
+          "2023": {
+            "trades": 209,
+            "net_r": 9.971577,
+            "profit_factor": 1.093116,
+            "max_drawdown_r": 14.589619,
+            "win_rate": 0.464115,
+            "mean_mae_r": -0.861047
+          }
+        }
+      },
+      "gate_checks": {
+        "dev_trades": true,
+        "dev_profit_factor": false,
+        "validation_trades": true,
+        "validation_profit_factor": true,
+        "validation_net": true,
+        "positive_dev_years": false
+      }
+    },
+    {
+      "symbol": "GBPUSD.DWX",
+      "family": "london_fix_continuation",
+      "parameters": {
+        "measure_start_minute": 780,
+        "entry_minute": 960,
+        "exit_minute": 1080,
+        "threshold_atr": 1.5,
+        "stop_atr": 3.0,
+        "target_r": 1.5,
+        "continuation": true
+      },
+      "metrics": {
+        "dev_2018_2022": {
+          "trades": 883,
+          "net_r": -111.776717,
+          "profit_factor": 0.765342,
+          "max_drawdown_r": 117.435655,
+          "win_rate": 0.421291,
+          "mean_mae_r": -0.920819
+        },
+        "validation_2023": {
+          "trades": 187,
+          "net_r": -16.415536,
+          "profit_factor": 0.847447,
+          "max_drawdown_r": 21.578002,
+          "win_rate": 0.433155,
+          "mean_mae_r": -0.995157
+        },
+        "annual": {
+          "2018": {
+            "trades": 180,
+            "net_r": -29.33736,
+            "profit_factor": 0.70908,
+            "max_drawdown_r": 35.613462,
+            "win_rate": 0.383333,
+            "mean_mae_r": -0.963938
+          },
+          "2019": {
+            "trades": 173,
+            "net_r": -7.128568,
+            "profit_factor": 0.90916,
+            "max_drawdown_r": 20.939506,
+            "win_rate": 0.50289,
+            "mean_mae_r": -0.839155
+          },
+          "2020": {
+            "trades": 175,
+            "net_r": -22.55527,
+            "profit_factor": 0.757438,
+            "max_drawdown_r": 32.581359,
+            "win_rate": 0.422857,
+            "mean_mae_r": -0.874414
+          },
+          "2021": {
+            "trades": 184,
+            "net_r": -30.078523,
+            "profit_factor": 0.722033,
+            "max_drawdown_r": 36.51079,
+            "win_rate": 0.38587,
+            "mean_mae_r": -0.952478
+          },
+          "2022": {
+            "trades": 171,
+            "net_r": -22.676996,
+            "profit_factor": 0.763348,
+            "max_drawdown_r": 30.427565,
+            "win_rate": 0.415205,
+            "mean_mae_r": -0.971474
+          },
+          "2023": {
+            "trades": 187,
+            "net_r": -16.415536,
+            "profit_factor": 0.847447,
+            "max_drawdown_r": 21.578002,
+            "win_rate": 0.433155,
+            "mean_mae_r": -0.995157
+          }
+        }
+      },
+      "gate_checks": {
+        "dev_trades": true,
+        "dev_profit_factor": false,
+        "validation_trades": true,
+        "validation_profit_factor": false,
+        "validation_net": false,
+        "positive_dev_years": false
+      }
+    },
+    {
+      "symbol": "GBPUSD.DWX",
+      "family": "london_fix_fade",
+      "parameters": {
+        "measure_start_minute": 780,
+        "entry_minute": 960,
+        "exit_minute": 1080,
+        "threshold_atr": 3.0,
+        "stop_atr": 3.0,
+        "target_r": 1.5,
+        "continuation": false
+      },
+      "metrics": {
+        "dev_2018_2022": {
+          "trades": 581,
+          "net_r": -42.439012,
+          "profit_factor": 0.853954,
+          "max_drawdown_r": 47.13762,
+          "win_rate": 0.454389,
+          "mean_mae_r": -0.865323
+        },
+        "validation_2023": {
+          "trades": 124,
+          "net_r": -3.51259,
+          "profit_factor": 0.949873,
+          "max_drawdown_r": 15.78157,
+          "win_rate": 0.459677,
+          "mean_mae_r": -0.95173
+        },
+        "annual": {
+          "2018": {
+            "trades": 128,
+            "net_r": -4.364596,
+            "profit_factor": 0.930809,
+            "max_drawdown_r": 7.485459,
+            "win_rate": 0.46875,
+            "mean_mae_r": -0.879437
+          },
+          "2019": {
+            "trades": 109,
+            "net_r": -22.981446,
+            "profit_factor": 0.608342,
+            "max_drawdown_r": 23.103659,
+            "win_rate": 0.357798,
+            "mean_mae_r": -0.867941
+          },
+          "2020": {
+            "trades": 113,
+            "net_r": -0.352149,
+            "profit_factor": 0.993463,
+            "max_drawdown_r": 15.796442,
+            "win_rate": 0.486726,
+            "mean_mae_r": -0.828065
+          },
+          "2021": {
+            "trades": 113,
+            "net_r": -2.630049,
+            "profit_factor": 0.951374,
+            "max_drawdown_r": 12.581607,
+            "win_rate": 0.522124,
+            "mean_mae_r": -0.877452
+          },
+          "2022": {
+            "trades": 118,
+            "net_r": -12.110772,
+            "profit_factor": 0.801053,
+            "max_drawdown_r": 14.094198,
+            "win_rate": 0.432203,
+            "mean_mae_r": -0.87166
+          },
+          "2023": {
+            "trades": 124,
+            "net_r": -3.51259,
+            "profit_factor": 0.949873,
+            "max_drawdown_r": 15.78157,
+            "win_rate": 0.459677,
+            "mean_mae_r": -0.95173
+          }
+        }
+      },
+      "gate_checks": {
+        "dev_trades": true,
+        "dev_profit_factor": false,
+        "validation_trades": true,
+        "validation_profit_factor": false,
+        "validation_net": false,
+        "positive_dev_years": false
+      }
+    },
+    {
+      "symbol": "USDJPY.DWX",
+      "family": "london_open_continuation",
+      "parameters": {
+        "measure_start_minute": 420,
+        "entry_minute": 540,
+        "exit_minute": 720,
+        "threshold_atr": 1.0,
+        "stop_atr": 3.0,
+        "target_r": 1.5,
+        "continuation": true
+      },
+      "metrics": {
+        "dev_2018_2022": {
+          "trades": 971,
+          "net_r": -222.701672,
+          "profit_factor": 0.67256,
+          "max_drawdown_r": 243.027718,
+          "win_rate": 0.414006,
+          "mean_mae_r": -1.135479
+        },
+        "validation_2023": {
+          "trades": 183,
+          "net_r": -17.836366,
+          "profit_factor": 0.846709,
+          "max_drawdown_r": 32.942757,
+          "win_rate": 0.431694,
+          "mean_mae_r": -1.036564
+        },
+        "annual": {
+          "2018": {
+            "trades": 189,
+            "net_r": -43.96872,
+            "profit_factor": 0.667168,
+            "max_drawdown_r": 52.435023,
+            "win_rate": 0.402116,
+            "mean_mae_r": -1.112759
+          },
+          "2019": {
+            "trades": 182,
+            "net_r": -69.422217,
+            "profit_factor": 0.492656,
+            "max_drawdown_r": 71.022146,
+            "win_rate": 0.362637,
+            "mean_mae_r": -1.238036
+          },
+          "2020": {
+            "trades": 202,
+            "net_r": -37.270604,
+            "profit_factor": 0.724047,
+            "max_drawdown_r": 47.872114,
+            "win_rate": 0.455446,
+            "mean_mae_r": -1.092496
+          },
+          "2021": {
+            "trades": 198,
+            "net_r": -67.988414,
+            "profit_factor": 0.564925,
+            "max_drawdown_r": 67.988414,
+            "win_rate": 0.383838,
+            "mean_mae_r": -1.232423
+          },
+          "2022": {
+            "trades": 200,
+            "net_r": -4.051717,
+            "profit_factor": 0.966197,
+            "max_drawdown_r": 19.079499,
+            "win_rate": 0.46,
+            "mean_mae_r": -1.011062
+          },
+          "2023": {
+            "trades": 183,
+            "net_r": -17.836366,
+            "profit_factor": 0.846709,
+            "max_drawdown_r": 32.942757,
+            "win_rate": 0.431694,
+            "mean_mae_r": -1.036564
+          }
+        }
+      },
+      "gate_checks": {
+        "dev_trades": true,
+        "dev_profit_factor": false,
+        "validation_trades": true,
+        "validation_profit_factor": false,
+        "validation_net": false,
+        "positive_dev_years": false
+      }
+    },
+    {
+      "symbol": "GBPUSD.DWX",
+      "family": "london_open_fade",
+      "parameters": {
+        "measure_start_minute": 420,
+        "entry_minute": 540,
+        "exit_minute": 720,
+        "threshold_atr": 2.0,
+        "stop_atr": 3.0,
+        "target_r": 1.5,
+        "continuation": false
+      },
+      "metrics": {
+        "dev_2018_2022": {
+          "trades": 682,
+          "net_r": -122.214361,
+          "profit_factor": 0.74674,
+          "max_drawdown_r": 128.879169,
+          "win_rate": 0.423754,
+          "mean_mae_r": -1.169305
+        },
+        "validation_2023": {
+          "trades": 124,
+          "net_r": -23.733356,
+          "profit_factor": 0.733396,
+          "max_drawdown_r": 28.771097,
+          "win_rate": 0.419355,
+          "mean_mae_r": -1.273579
+        },
+        "annual": {
+          "2018": {
+            "trades": 136,
+            "net_r": -17.371683,
+            "profit_factor": 0.814619,
+            "max_drawdown_r": 22.571156,
+            "win_rate": 0.448529,
+            "mean_mae_r": -1.141195
+          },
+          "2019": {
+            "trades": 132,
+            "net_r": -19.133329,
+            "profit_factor": 0.790356,
+            "max_drawdown_r": 26.23723,
+            "win_rate": 0.454545,
+            "mean_mae_r": -1.215533
+          },
+          "2020": {
+            "trades": 130,
+            "net_r": -29.523112,
+            "profit_factor": 0.686174,
+            "max_drawdown_r": 30.007531,
+            "win_rate": 0.392308,
+            "mean_mae_r": -1.170359
+          },
+          "2021": {
+            "trades": 141,
+            "net_r": -29.862044,
+            "profit_factor": 0.710291,
+            "max_drawdown_r": 36.421139,
+            "win_rate": 0.41844,
+            "mean_mae_r": -1.206035
+          },
+          "2022": {
+            "trades": 143,
+            "net_r": -26.324193,
+            "profit_factor": 0.737913,
+            "max_drawdown_r": 31.48506,
+            "win_rate": 0.405594,
+            "mean_mae_r": -1.116195
+          },
+          "2023": {
+            "trades": 124,
+            "net_r": -23.733356,
+            "profit_factor": 0.733396,
+            "max_drawdown_r": 28.771097,
+            "win_rate": 0.419355,
+            "mean_mae_r": -1.273579
+          }
+        }
+      },
+      "gate_checks": {
+        "dev_trades": true,
+        "dev_profit_factor": false,
+        "validation_trades": true,
+        "validation_profit_factor": false,
+        "validation_net": false,
+        "positive_dev_years": false
+      }
+    },
+    {
+      "symbol": "GBPJPY.DWX",
+      "family": "ny_overlap_continuation",
+      "parameters": {
+        "measure_start_minute": 480,
+        "entry_minute": 780,
+        "exit_minute": 1020,
+        "threshold_atr": 2.0,
+        "stop_atr": 3.0,
+        "target_r": 1.5,
+        "continuation": true
+      },
+      "metrics": {
+        "dev_2018_2022": {
+          "trades": 839,
+          "net_r": -75.266654,
+          "profit_factor": 0.835949,
+          "max_drawdown_r": 87.61841,
+          "win_rate": 0.425507,
+          "mean_mae_r": -0.913481
+        },
+        "validation_2023": {
+          "trades": 170,
+          "net_r": -8.122283,
+          "profit_factor": 0.908574,
+          "max_drawdown_r": 19.429147,
+          "win_rate": 0.435294,
+          "mean_mae_r": -0.886608
+        },
+        "annual": {
+          "2018": {
+            "trades": 179,
+            "net_r": -20.11909,
+            "profit_factor": 0.79387,
+            "max_drawdown_r": 33.320231,
+            "win_rate": 0.413408,
+            "mean_mae_r": -0.91985
+          },
+          "2019": {
+            "trades": 154,
+            "net_r": -5.529555,
+            "profit_factor": 0.934851,
+            "max_drawdown_r": 16.816569,
+            "win_rate": 0.474026,
+            "mean_mae_r": -0.929234
+          },
+          "2020": {
+            "trades": 161,
+            "net_r": -4.49138,
+            "profit_factor": 0.945933,
+            "max_drawdown_r": 18.729423,
+            "win_rate": 0.434783,
+            "mean_mae_r": -0.89573
+          },
+          "2021": {
+            "trades": 166,
+            "net_r": -28.135741,
+            "profit_factor": 0.708295,
+            "max_drawdown_r": 34.080623,
+            "win_rate": 0.39759,
+            "mean_mae_r": -0.955443
+          },
+          "2022": {
+            "trades": 179,
+            "net_r": -16.990889,
+            "profit_factor": 0.824471,
+            "max_drawdown_r": 20.967296,
+            "win_rate": 0.413408,
+            "mean_mae_r": -0.87061
+          },
+          "2023": {
+            "trades": 170,
+            "net_r": -8.122283,
+            "profit_factor": 0.908574,
+            "max_drawdown_r": 19.429147,
+            "win_rate": 0.435294,
+            "mean_mae_r": -0.886608
+          }
+        }
+      },
+      "gate_checks": {
+        "dev_trades": true,
+        "dev_profit_factor": false,
+        "validation_trades": true,
+        "validation_profit_factor": false,
+        "validation_net": false,
+        "positive_dev_years": false
+      }
+    },
+    {
+      "symbol": "GBPUSD.DWX",
+      "family": "ny_overlap_fade",
+      "parameters": {
+        "measure_start_minute": 480,
+        "entry_minute": 780,
+        "exit_minute": 1020,
+        "threshold_atr": 4.0,
+        "stop_atr": 3.0,
+        "target_r": 1.5,
+        "continuation": false
+      },
+      "metrics": {
+        "dev_2018_2022": {
+          "trades": 505,
+          "net_r": -37.479276,
+          "profit_factor": 0.86299,
+          "max_drawdown_r": 48.27478,
+          "win_rate": 0.443564,
+          "mean_mae_r": -0.905617
+        },
+        "validation_2023": {
+          "trades": 96,
+          "net_r": -5.834568,
+          "profit_factor": 0.894863,
+          "max_drawdown_r": 11.292291,
+          "win_rate": 0.427083,
+          "mean_mae_r": -0.936678
+        },
+        "annual": {
+          "2018": {
+            "trades": 128,
+            "net_r": -2.438511,
+            "profit_factor": 0.962184,
+            "max_drawdown_r": 15.544289,
+            "win_rate": 0.476562,
+            "mean_mae_r": -0.906199
+          },
+          "2019": {
+            "trades": 95,
+            "net_r": -25.304465,
+            "profit_factor": 0.593342,
+            "max_drawdown_r": 28.537597,
+            "win_rate": 0.357895,
+            "mean_mae_r": -0.979719
+          },
+          "2020": {
+            "trades": 95,
+            "net_r": -6.723226,
+            "profit_factor": 0.865006,
+            "max_drawdown_r": 14.637246,
+            "win_rate": 0.452632,
+            "mean_mae_r": -0.866732
+          },
+          "2021": {
+            "trades": 88,
+            "net_r": -1.25864,
+            "profit_factor": 0.972676,
+            "max_drawdown_r": 11.696722,
+            "win_rate": 0.477273,
+            "mean_mae_r": -0.923554
+          },
+          "2022": {
+            "trades": 99,
+            "net_r": -1.754435,
+            "profit_factor": 0.965583,
+            "max_drawdown_r": 6.195591,
+            "win_rate": 0.444444,
+            "mean_mae_r": -0.855125
+          },
+          "2023": {
+            "trades": 96,
+            "net_r": -5.834568,
+            "profit_factor": 0.894863,
+            "max_drawdown_r": 11.292291,
+            "win_rate": 0.427083,
+            "mean_mae_r": -0.936678
+          }
+        }
+      },
+      "gate_checks": {
+        "dev_trades": true,
+        "dev_profit_factor": false,
+        "validation_trades": true,
+        "validation_profit_factor": false,
+        "validation_net": false,
+        "positive_dev_years": false
+      }
+    }
+  ],
+  "selected_family_winners": [],
+  "holdout_pass_count": 0
+}

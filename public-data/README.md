@@ -2,7 +2,7 @@
 
 JSON snapshot files exported hourly for quantmechanica.com.
 
-Schema and snapshot contract: `docs/ops/WEBSITE_DASHBOARD_PAPERCLIP_STYLE.md`.
+Schema and snapshot contract: `docs/ops/OPTION_A_STRATEGY_FARM_RUNBOOK.md`.
 
 ## v1 Contract (PC6-01)
 
@@ -65,4 +65,4 @@ non-zero on any failure. Negative fixtures live in
 - `company-operating-model.json` includes `updated_at` and `cache_ttl_minutes`.
 - UI should render `As of <updated_at>` from `stale_data_behavior.ui_label_template`.
 - If `now - updated_at > cache_ttl_minutes`, render a stale-warning state and keep last valid data visible.
-- `public-snapshot.json.generated_at` older than 90 minutes triggers the dashboard stale-warning state per `WEBSITE_DASHBOARD_PAPERCLIP_STYLE.md`.
+- `public-snapshot.json.generated_at` older than 90 minutes triggers the dashboard stale-warning state.

@@ -1,0 +1,52 @@
+{
+  "artifact_type": "QM5_10729_PREREGISTERED_DXZ_SPREAD_INPUT",
+  "capture": {
+    "account": "Darwinex-Live 4000090541",
+    "method": "Read-only MetaTrader5 symbol_info plus symbol_info_tick against the already-running T_Live terminal; only symbol metadata, tick timestamp, bid, ask and ask-minus-bid spread were retained.",
+    "terminal_path": "C:/QM/mt5/T_Live/MT5_Base/terminal64.exe"
+  },
+  "limitations": [
+    "framework/registry/venue_cost_model.json explicitly records historical/current spread parity as OPEN and contains no certified per-symbol spread distribution.",
+    "These are single live DXZ observations, not historical quantiles or broker-parity certification.",
+    "The adverse scenario is exactly two times the observed spread and was fixed without strategy-outcome access."
+  ],
+  "scenarios": {
+    "EURUSD.DWX": {
+      "adverse_spread_points": 8,
+      "ask": 1.14385,
+      "bid": 1.14381,
+      "center_spread_points": 4,
+      "digits": 5,
+      "dwx_mapping": "EURUSD.DWX -> live EURUSD",
+      "live_symbol": "EURUSD",
+      "observed_spread_price": 0.00004,
+      "observed_spread_points": 4,
+      "point": 0.00001,
+      "tick_time_utc": "2026-07-20T05:37:19Z",
+      "trade_contract_size": 100000.0,
+      "trade_tick_size": 0.00001,
+      "trade_tick_value_usd": 1.0
+    },
+    "XAUUSD.DWX": {
+      "adverse_spread_points": 118,
+      "ask": 4012.09,
+      "bid": 4011.50,
+      "center_spread_points": 59,
+      "digits": 2,
+      "dwx_mapping": "Custom/Commodities/Metals/XAUUSD.DWX -> live XAUUSD",
+      "live_symbol": "XAUUSD",
+      "observed_spread_price": 0.59,
+      "observed_spread_points": 59,
+      "point": 0.01,
+      "tick_time_utc": "2026-07-20T05:37:22Z",
+      "trade_contract_size": 100.0,
+      "trade_tick_size": 0.01,
+      "trade_tick_value_usd": 1.0
+    }
+  },
+  "source_bindings": {
+    "framework/registry/dwx_symbol_matrix.csv": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d",
+    "framework/registry/venue_cost_model.json": "7dfafe53749e5c45be0cb37568b6e3491c109f546fafaf799f6ea82efdb688d7",
+    "D:/QM/mt5/T1/MQL5/Profiles/Tester/Groups/Darwinex-Live_real.txt": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd"
+  }
+}

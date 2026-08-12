@@ -33,6 +33,30 @@ WINDOWS_DLL_INIT_FAILED_SIGNED = -1073741502
 LAUNCH_FAULT_EXIT_CODES = {WINDOWS_DLL_INIT_FAILED, WINDOWS_DLL_INIT_FAILED_SIGNED}
 DEFAULT_LAUNCH_FAULT_ATTEMPTS = 2
 DEFAULT_LAUNCH_FAULT_BACKOFF_SEC = 30.0
+COLD_CACHE_SIGNATURES = (
+    "BARS_ZERO",
+    "M0_1970_PERIOD",
+    "NO_HISTORY",
+    "INCOMPLETE_RUNS",
+    "EMPTY_EXPERT",
+    "EMPTY_SYMBOL",
+    "RUN_STATUS_INVALID",
+    "HISTORY_CONTEXT_INVALID",
+)
+_NON_RETRYABLE_RUN_SMOKE_REASONS = {
+    "ACCOUNT_NOT_SPECIFIED",
+    "EXECUTION_IDENTITY_DRIFT",
+    "LOG_BOMB",
+    "MIN_TRADES_NOT_MET",
+    "NON_DETERMINISTIC",
+    "ONINIT_FAILED",
+    "SETUP_DATA_MISSING",
+    "TIMEOUT",
+}
+_RUN_SMOKE_SUMMARY_RE = re.compile(r"(?im)^\s*run_smoke\.summary=(.+?)\s*$")
+_HISTORY_SYNC_RE = re.compile(
+    r"(?im)(?<![A-Z0-9_.#-])[A-Z0-9_.#-]+\s*:\s*history synchronization error\b"
+)
 
 
 def is_launch_fault_exit_code(returncode: int | None) -> bool:
@@ -47,39 +71,225 @@ def _format_exit_code(returncode: int | None) -> str:
     return f"0x{returncode:08X}"
 
 
+def _as_text(value: Any) -> str:
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return str(value or "")
+
+
+def _sink_snapshot(sink: Any) -> tuple[str, Any] | None:
+    """Record enough state to read only the next child's additions to a log."""
+    if not hasattr(sink, "write"):
+        return None
+    try:
+        if hasattr(sink, "getvalue"):
+            return ("memory", len(_as_text(sink.getvalue())))
+        sink.flush()
+        name = getattr(sink, "name", None)
+        if name and Path(name).is_file():
+            return ("file", (Path(name), Path(name).stat().st_size))
+    except (OSError, ValueError):
+        pass
+    return None
+
+
+def _sink_text_since(sink: Any, snapshot: tuple[str, Any] | None) -> str:
+    if snapshot is None:
+        return ""
+    kind, state = snapshot
+    try:
+        if kind == "memory":
+            return _as_text(sink.getvalue())[int(state):]
+        path, offset = state
+        sink.flush()
+        with Path(path).open("rb") as handle:
+            handle.seek(int(offset))
+            return handle.read().decode("utf-8", errors="replace")
+    except (OSError, ValueError):
+        return ""
+    return ""
+
+
+def _reason_tokens(value: Any) -> set[str]:
+    if isinstance(value, str):
+        values = re.split(r"[,;|\s]+", value)
+    elif isinstance(value, (list, tuple, set)):
+        values = value
+    else:
+        values = []
+    return {str(item).strip().upper() for item in values if str(item).strip()}
+
+
+def _cold_signature_in_tokens(tokens: set[str]) -> str | None:
+    for signature in COLD_CACHE_SIGNATURES:
+        if signature in tokens:
+            return signature
+        if signature == "NO_HISTORY" and "NO_HISTORY_LOG" in tokens:
+            return signature
+    return None
+
+
+def _cold_signature_from_summary(summary: dict[str, Any]) -> str | None:
+    """Classify an authoritative run_smoke summary without retrying real FAILs.
+
+    run_smoke may retain invalid warm-up attempts in ``runs`` even after it gets
+    a valid report. Once any run is status OK, its non-zero exit is a completed
+    strategy/test contract failure (for example MIN_TRADES_NOT_MET), not a
+    cold-cache launch, so nested warm-up markers must not trigger this wrapper.
+    """
+    if str(summary.get("result") or "").strip().upper() == "PASS":
+        return None
+    reasons = _reason_tokens(summary.get("reason_classes"))
+    if reasons & _NON_RETRYABLE_RUN_SMOKE_REASONS:
+        return None
+    runs = summary.get("runs")
+    run_rows = [row for row in runs if isinstance(row, dict)] if isinstance(runs, list) else []
+    if any(str(row.get("status") or "").strip().upper() == "OK" for row in run_rows):
+        return None
+    signature = _cold_signature_in_tokens(reasons)
+    if signature:
+        return signature
+    nested_tokens: set[str] = set()
+    for row in run_rows:
+        nested_tokens.update(_reason_tokens(row.get("failure")))
+        nested_tokens.update(_reason_tokens(row.get("failure_hints")))
+        nested_tokens.update(_reason_tokens(row.get("invalid_report_reasons")))
+    signature = _cold_signature_in_tokens(nested_tokens)
+    if signature:
+        return signature
+    if any(str(row.get("status") or "").strip().upper() == "INVALID" for row in run_rows):
+        return "RUN_STATUS_INVALID"
+    return None
+
+
+def cold_cache_summary_signature(summary: dict[str, Any]) -> str | None:
+    """Public structured-summary classifier for detached Q02/Q03 workers."""
+    return _cold_signature_from_summary(summary)
+
+
+def _marked_summary_signature(text: str) -> tuple[bool, str | None]:
+    """Return whether a readable marker existed and its authoritative class."""
+    matches = list(_RUN_SMOKE_SUMMARY_RE.finditer(text))
+    for match in reversed(matches):
+        raw_path = match.group(1).strip().strip("\"'")
+        try:
+            path = Path(raw_path)
+            if not path.is_file() or path.stat().st_size > 16 * 1024 * 1024:
+                continue
+            data = json.loads(path.read_text(encoding="utf-8-sig"))
+            if isinstance(data, dict):
+                return True, _cold_signature_from_summary(data)
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            continue
+    return False, None
+
+
+def cold_cache_retry_signature(text: str) -> str | None:
+    """Return the cold-cache signature in one failed attempt, if any.
+
+    A readable run_smoke summary is authoritative. This prevents an invalid
+    warm-up row retained inside a completed strategy FAIL from causing a retry.
+    Raw output is used only when no readable summary was emitted.
+    """
+    summary_found, signature = _marked_summary_signature(text)
+    if summary_found:
+        return signature
+    upper_text = text.upper()
+    result_matches = re.findall(r"(?im)^\s*run_smoke\.result=(\S+)", upper_text)
+    if result_matches and result_matches[-1] == "PASS":
+        return None
+    reason_matches = re.findall(r"(?im)^\s*run_smoke\.reason_classes=(.*?)\s*$", upper_text)
+    if reason_matches:
+        reasons = _reason_tokens(reason_matches[-1])
+        if reasons & _NON_RETRYABLE_RUN_SMOKE_REASONS:
+            return None
+        signature = _cold_signature_in_tokens(reasons)
+        if signature:
+            return signature
+    for signature in COLD_CACHE_SIGNATURES:
+        suffix = r"(?:_LOG)?" if signature == "NO_HISTORY" else ""
+        pattern = (
+            rf"(?<![A-Z0-9_]){re.escape(signature)}{suffix}(?![A-Z0-9_])"
+        )
+        if re.search(pattern, upper_text):
+            return signature
+    if _HISTORY_SYNC_RE.search(text):
+        return "HISTORY_SYNCHRONIZATION_ERROR"
+    return None
+
+
+def _write_retry_log(sink: Any, message: str) -> None:
+    target = sink if hasattr(sink, "write") else sys.stderr
+    try:
+        target.write(message + "\n")
+        target.flush()
+    except (AttributeError, OSError, ValueError):
+        print(message, file=sys.stderr, flush=True)
+
+
 def run_with_launch_fault_retry(
     args: list[str],
     *,
-    runner=subprocess.run,
+    runner=None,
     attempts: int = DEFAULT_LAUNCH_FAULT_ATTEMPTS,
     backoff_sec: float = DEFAULT_LAUNCH_FAULT_BACKOFF_SEC,
     sleep_func=None,
+    retry_log=None,
     **kwargs,
 ) -> subprocess.CompletedProcess:
-    """Retry transient Windows process launch failures before grading evidence.
+    """Retry bounded, evidenced launch/cold-cache failures before grading.
 
     Exit code 0xC0000142 means the child process failed during DLL/process
     initialization. In the farm this can kill pwsh.exe before run_smoke writes
-    any summary, producing a misleading summary_missing INFRA_FAIL.
+    any summary. A non-zero run_smoke exit is also retryable when its *current
+    attempt* carries one of the known cold-cache signatures. Completed strategy
+    failures are deliberately not retryable.
     """
     max_attempts = max(1, int(attempts))
     sleeper = time.sleep if sleep_func is None else sleep_func
+    run_once = subprocess.run if runner is None else runner
     proc = None
     for attempt in range(1, max_attempts + 1):
-        proc = runner(args, **kwargs)
-        if not is_launch_fault_exit_code(getattr(proc, "returncode", None)):
-            return proc
-        if attempt >= max_attempts:
-            return proc
-        stdout = kwargs.get("stdout")
-        if hasattr(stdout, "write"):
-            stdout.write(
-                "launch_fault_retry "
-                f"attempt={attempt} "
-                f"exit_code={_format_exit_code(getattr(proc, 'returncode', None))} "
-                f"backoff_sec={backoff_sec}\n"
+        stdout_sink = kwargs.get("stdout")
+        sink_snapshot = _sink_snapshot(stdout_sink)
+        proc = run_once(args, **kwargs)
+        returncode = getattr(proc, "returncode", None)
+        matched_signature = None
+        if is_launch_fault_exit_code(returncode):
+            matched_signature = "0xC0000142"
+        elif returncode not in (None, 0):
+            attempt_text = "\n".join(
+                part
+                for part in (
+                    _as_text(getattr(proc, "stdout", "")),
+                    _as_text(getattr(proc, "stderr", "")),
+                    _sink_text_since(stdout_sink, sink_snapshot),
+                )
+                if part
             )
-            stdout.flush()
+            matched_signature = cold_cache_retry_signature(attempt_text)
+        if matched_signature is None:
+            return proc
+        log_sink = retry_log if retry_log is not None else stdout_sink
+        if attempt >= max_attempts:
+            _write_retry_log(
+                log_sink,
+                "launch_fault_retry "
+                f"attempt={attempt}/{max_attempts} "
+                f"matched_signature={matched_signature} "
+                f"exit_code={_format_exit_code(returncode)} "
+                "action=exhausted",
+            )
+            return proc
+        _write_retry_log(
+            log_sink,
+            "launch_fault_retry "
+            f"attempt={attempt}/{max_attempts} "
+            f"matched_signature={matched_signature} "
+            f"exit_code={_format_exit_code(returncode)} "
+            f"backoff_sec={backoff_sec} "
+            f"next_attempt={attempt + 1}/{max_attempts}",
+        )
         sleeper(backoff_sec)
     return proc
 

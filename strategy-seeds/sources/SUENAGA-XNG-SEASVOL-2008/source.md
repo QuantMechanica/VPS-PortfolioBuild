@@ -39,6 +39,11 @@ one close-confirmed H4 breakout of the previous completed D1 range per week
 during the source windows. No POTS/GARCH/Kalman model, futures curve, contract
 selection, external feed, or source performance number is imported.
 
+A second bounded card, `xng-seas-trend`, combines the same source timing gate
+with the peer-reviewed Moskowitz-Ooi-Pedersen own-past-return trend mechanic.
+It is monthly D1 rather than weekly H4, and it exits when the source window
+ends. The source still does not establish directional profitability.
+
 ## Source Verdict
 
 - R1: PASS — peer-reviewed named-author paper with DOI and author-hosted PDF.
@@ -46,4 +51,3 @@ selection, external feed, or source performance number is imported.
   explicit.
 - R3: PASS — `XNGUSD.DWX` H4 and D1 history are registered locally.
 - R4: PASS — no ML, grid, martingale, pyramiding, or external runtime data.
-

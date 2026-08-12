@@ -1,0 +1,333 @@
+{
+  "analysis_id": "QM5_13128_PRE_FOMC_NDX_REQUAL_READINESS_20260720_001",
+  "artifact_type": "BLOCKED_REQUALIFICATION_READINESS_CONTRACT",
+  "frozen_at_utc": "2026-07-20T07:20:19Z",
+  "outcome_access_state": "HISTORICAL_2018_2025_OPENED_DIAGNOSTIC_ONLY",
+  "decision": {
+    "state": "BLOCKED_NOT_RELEASED",
+    "execution_authority": "NONE",
+    "tester_authority": "NONE",
+    "promotion_authority": "NONE",
+    "classification": "SETUP_AND_LINEAGE_MISMATCH_NOT_STRATEGY_FAIL",
+    "summary": "The approved Card, current source/SPEC, canonical EX5 and tested binary are not one qualified artifact. No new performance run is admissible until the listed release gates pass without changing strategy rules or thresholds."
+  },
+  "scope": {
+    "ea_id": 13128,
+    "slug": "pre-fomc-drift-ndx",
+    "candidate_role": "possible orthogonal NDX.DWX sleeve only",
+    "symbol": "NDX.DWX",
+    "timeframe": "H1",
+    "tester_started_by_this_audit": false,
+    "parameters_changed_by_this_audit": false,
+    "source_or_card_repaired_by_this_audit": false
+  },
+  "calendar_contract": {
+    "official_primary_sources": [
+      {
+        "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+        "authority": "Federal Reserve Board",
+        "checked_utc_date": "2026-07-20",
+        "finding": "The current 2021-2026 calendar lists the same regular-meeting second-day dates used by the source, including all eight 2026 dates."
+      },
+      {
+        "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20240809a.htm",
+        "authority": "Federal Reserve Board",
+        "checked_utc_date": "2026-07-20",
+        "finding": "The Board announced the 2025 and 2026 schedules and states that policy statements are released at 2:00 p.m. ET on the second meeting day."
+      },
+      {
+        "url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2018.htm",
+        "authority": "Federal Reserve Board",
+        "checked_utc_date": "2026-07-20",
+        "finding": "Historical meeting records support the partial 2018 calendar used by the original frozen research."
+      }
+    ],
+    "economic_primary_sources": [
+      {
+        "url": "https://www.newyorkfed.org/research/staff_reports/sr512.html",
+        "authority": "Federal Reserve Bank of New York",
+        "finding": "Primary research documents excess U.S. equity returns in the twenty-four hours before scheduled FOMC announcements."
+      },
+      {
+        "url": "https://libertystreeteconomics.newyorkfed.org/2018/11/the-pre-fomc-announcement-drift-more-recent-evidence/",
+        "authority": "Federal Reserve Bank of New York",
+        "finding": "Later evidence through June 2018 reports persistence concentrated on press-conference meetings; this supports, but does not qualify, the frozen 2018 selection rule."
+      }
+    ],
+    "verified_source_date_keys": [
+      20180926,
+      20181219,
+      20190130,
+      20190320,
+      20190501,
+      20190619,
+      20190731,
+      20190918,
+      20191030,
+      20191211,
+      20200129,
+      20200429,
+      20200610,
+      20200729,
+      20200916,
+      20201105,
+      20201216,
+      20210127,
+      20210317,
+      20210428,
+      20210616,
+      20210728,
+      20210922,
+      20211103,
+      20211215,
+      20220126,
+      20220316,
+      20220504,
+      20220615,
+      20220727,
+      20220921,
+      20221102,
+      20221214,
+      20230201,
+      20230322,
+      20230503,
+      20230614,
+      20230726,
+      20230920,
+      20231101,
+      20231213,
+      20240131,
+      20240320,
+      20240501,
+      20240612,
+      20240731,
+      20240918,
+      20241107,
+      20241218,
+      20250129,
+      20250319,
+      20250507,
+      20250618,
+      20250730,
+      20250917,
+      20251029,
+      20251210,
+      20260128,
+      20260318,
+      20260429,
+      20260617,
+      20260729,
+      20260916,
+      20261028,
+      20261209
+    ],
+    "source_event_count": 65,
+    "source_valid_through": 20261231,
+    "calendar_value_verdict": "MATCHES_OFFICIAL_REGULAR_MEETING_SECOND_DAYS",
+    "approved_card_declares": {
+      "event_count": 57,
+      "first_year": 2018,
+      "last_year": 2025
+    },
+    "lineage_verdict": "BLOCKED_CARD_57_VS_SOURCE_65",
+    "elapsed_2026_dates_at_freeze": [20260128, 20260318, 20260429, 20260617],
+    "future_2026_dates_at_freeze": [20260729, 20260916, 20261028, 20261209]
+  },
+  "strategy_semantics_frozen_as_observed": {
+    "direction": "LONG_ONLY",
+    "entry": "At the first new H1 bar at broker hour 21 on the calendar day before a listed regular FOMC decision.",
+    "exit": "At the first H1 bar at broker hour 20 on the listed decision day, intended to be one hour before the 14:00 ET statement.",
+    "stop": "Entry minus 2.0 times prior completed D1 ATR(14).",
+    "position_limit": "One framework-owned position on the symbol.",
+    "news": "Both framework news axes OFF; the Card describes this event-flat exception, but it is not a general FTMO news-compliance qualification.",
+    "friday_close": "Framework override enabled at broker hour 21; no approved Card evidence is present for this override.",
+    "risk_identity_conflict": {
+      "backtest_set": "RISK_FIXED=1000, RISK_PERCENT=0",
+      "as_live_preset": "RISK_FIXED=0, RISK_PERCENT=1.0000",
+      "disposition": "Both identities must be evaluated separately; neither can borrow the other's economics."
+    }
+  },
+  "binary_and_build_lineage": {
+    "canonical_repo_and_live_ex5_sha256": "364867a9fe8d58478ade5526aad19deb377a35b313cfdac29763bb2eb82d273b",
+    "canonical_binary_commit": "cf2264bb09f1761b5340381647b0c5bb0144235b",
+    "source_calendar_extension_commit": "2b7e73b83229a8b340e3ac1e57580c8613c8f240",
+    "source_bar_gate_followup_commit": "027f45752cf50a38428f0365eff28d013442a1cd",
+    "current_source_sha256": "e2bd93a2a66700763997af1e8a9713e40ae76e31916b86d941ae08f495e3fb19",
+    "current_source_compile_snapshot_ex5_sha256": "60818ee1ad6c728a23fee908733b9f5f3fb3d4e5958a67f7dac5f54ed518fec8",
+    "compile_snapshot_result": "0 errors, 0 warnings",
+    "verdict": "BLOCKED_CANONICAL_BINARY_PREDATES_CURRENT_SOURCE",
+    "rule": "The compile snapshot proves syntax only. It is not canonical, deployed or requalified and cannot inherit evidence from the older binary."
+  },
+  "historical_evidence_disposition": {
+    "rule": "All listed performance evidence is opened and descriptive. It may diagnose identity and data faults but cannot serve as a new untouched holdout or release this contract.",
+    "tester_ini_inventory": {
+      "matching_files": 117,
+      "model_4_files": 117,
+      "ending_2020_12_31": 4,
+      "ending_2025_12_31": 113,
+      "ending_in_2026": 0,
+      "scan_scope": "D:/QM/reports recursively, tester.ini containing QM5_13128_pre-fomc-drift-ndx"
+    },
+    "original_research": {
+      "symbol": "SP500.DWX",
+      "model": 1,
+      "risk_fixed_usd": 250,
+      "windows": "DEV 2018-2021, validation 2022-2023, opened OOS 2024-2025",
+      "disposition": "Promising source-lineage evidence only; it is neither NDX Model-4 qualification nor current-binary qualification."
+    },
+    "as_live_schema_v1_receipt": {
+      "binary_sha256": "364867a9fe8d58478ade5526aad19deb377a35b313cfdac29763bb2eb82d273b",
+      "preset_sha256": "3aa27e4b869a4f1e0dac25457d3c5056664613e58e3b41556b78a5db18549ffb",
+      "window": "2017-01-01 through 2025-12-31",
+      "trade_count": 56,
+      "identity_result": "exact Q08 signal identity",
+      "cost_defect": "commission_model.degraded=true and NDX.DWX used a default forex fallback",
+      "disposition": "DIAGNOSTIC_ONLY_PER_DXZ_REQUAL_ADJUDICATOR"
+    },
+    "q08": {
+      "verdict": "FAIL_SOFT",
+      "trade_count": 56,
+      "opened_neighborhood_perturbations": true,
+      "low_sample": true,
+      "pbo": "INVALID",
+      "seasonal": "EDGE_SOFT_11_OF_12_MONTHS",
+      "disposition": "No pass promotion and no further parameter search."
+    },
+    "q09": {
+      "verdict": "PASS_PORTFOLIO",
+      "trade_count": 56,
+      "standalone_pf": 2.2882592337,
+      "max_corr_to_then_current_book": 0.1959403086,
+      "disposition": "Opened, stale-book descriptive evidence only; it does not prove current-pair diversification."
+    }
+  },
+  "data_and_time_readiness": {
+    "broker_time_primary_source": {
+      "url": "https://www.darwinexzero.com/docs/de/time-in-darwinex-metatrader-terminals",
+      "checked_utc_date": "2026-07-20",
+      "finding": "Darwinex Zero documents New-York-close server time: GMT+3 during US daylight saving time and GMT+2 otherwise."
+    },
+    "theoretical_mapping": "Because ET and the documented broker clock change on the same US DST schedule, broker 21:00 maps to 14:00 ET and broker 20:00 maps to 13:00 ET.",
+    "empirical_symbol_validation": "MISSING",
+    "expected_wave0_report": "D:/QM/reports/setup/tick-data-timezone/REPORT_2026-04-25_test_eurusd_dst_match.md",
+    "expected_wave0_report_exists_at_freeze": false,
+    "symbol_matrix_state": "FAIL_tail_mid_bars; tail tick missing, mid-window ticks zero, and bars inaccessible in the recorded verification",
+    "history_range_registry_state": "NDX.DWX H1 and D1 claim first_year=2021 while tester evidence requests/uses 2018 onward; lineage/coverage reconciliation is absent.",
+    "known_gap": {
+      "id": "B",
+      "approximate_window": "2023-12-12/13 through 2023-12-18",
+      "overlapping_strategy_event": 20231213,
+      "effect": "The 56-trade stream cannot prove complete coverage of all 57 intended 2018-2025 opportunities."
+    },
+    "ndx_hcc_copies": [
+      {
+        "role": "later T1-T10 shared candidate repair",
+        "bytes": 26773056,
+        "sha256": "b9c94b19673b17c9a36860e6babdda763330d2d334486b3fe5c6eb0d18deb6e4"
+      },
+      {
+        "role": "frozen DXZ Truth sandbox copy",
+        "bytes": 21025377,
+        "sha256": "f7e8f9c4fd6bcc53a12faa79fde12127b8106982a44df662c02007b534c6d8e6"
+      }
+    ],
+    "classification": "SETUP_DATA_MISMATCH_UNRESOLVED",
+    "rule": "The larger HCC is a repair candidate only. It requires provenance, session-aware continuity, endpoint proof and two independent identity reproductions before use."
+  },
+  "cost_readiness": {
+    "known_commission": "DXZ NDX/US100 Index-3 commission is USD 2.75 per side per lot, USD 5.50 round trip; FTMO indices are recorded as commission-free, so the DXZ side is the current worst case.",
+    "spread": "OPEN_BROKER_PARITY_NOT_CERTIFIED",
+    "swap": "OPEN_RUNTIME_SNAPSHOT_MISSING",
+    "slippage": "NOT_EVALUATED",
+    "verdict": "BLOCKED_FIVE_AXIS_COST_EVIDENCE_INCOMPLETE"
+  },
+  "future_forward_fence": {
+    "boundary_utc": "2026-07-20T07:20:19Z",
+    "eligible_not_yet_occurred_events": [20260729, 20260916, 20261028, 20261209],
+    "rule": "Preserve these observations prospectively under the unchanged approved implementation once lineage is repaired. Do not backfill, select among them, alter rules after any outcome, or label four events as a standalone qualification sample.",
+    "standalone_merit_power": "INSUFFICIENT_FOUR_EVENTS",
+    "release_effect": "Forward observations may add evidence but cannot waive Card, binary, data, cost, statistical or FTMO portfolio gates."
+  },
+  "conditional_release_gates_top_down": [
+    {
+      "id": "R01_CARD",
+      "requirement": "CEO plus Quality-Business approve a revised Card that explicitly binds the 65-date calendar/coverage horizon, news exception and Friday-close semantics."
+    },
+    {
+      "id": "R02_SEMANTIC_IDENTITY",
+      "requirement": "Card, SPEC, MQ5 and set defaults are byte/content synchronized without changing entry, exit, ATR, stop or thresholds in response to opened outcomes."
+    },
+    {
+      "id": "R03_BINARY_IDENTITY",
+      "requirement": "Compile and canonically stage one exact EX5 from the approved MQ5; bind MQ5, includes, compiler log, EX5 and set hashes."
+    },
+    {
+      "id": "R04_TIME",
+      "requirement": "Run the full qm-validate-custom-symbol DST comparison and obtain PASS for NDX.DWX broker timestamps; classify any mismatch as setup data, never strategy failure."
+    },
+    {
+      "id": "R05_DATA",
+      "requirement": "Freeze one NDX tick/HCC lineage with proven endpoints and session-aware continuous segments; do not cross gap B or D and do not silently substitute the larger HCC."
+    },
+    {
+      "id": "R06_REPRODUCTION",
+      "requirement": "Produce two serial collision-free Model-4 runs on identical sealed inputs with byte-identical signal/close identities before evaluating economics."
+    },
+    {
+      "id": "R07_COSTS",
+      "requirement": "Bind commission, embedded-spread parity, overnight swap and preregistered adverse slippage; reject any degraded or fallback symbol classification."
+    },
+    {
+      "id": "R08_STATISTICS",
+      "requirement": "Apply the current low-frequency familywise gates exactly as frozen before the run; no threshold loosening, deletion of the 2023-12-13 opportunity, parameter optimization or post-hoc window selection."
+    },
+    {
+      "id": "R09_PORTFOLIO",
+      "requirement": "Recompute synchronized marginal contribution, correlation, joint intraday MTM and FTMO daily/overall-loss constraints against the exact candidate book; historical Q09 cannot be reused."
+    },
+    {
+      "id": "R10_AUTHORITY",
+      "requirement": "Only the normal governance chain may release tester execution, promotion or deployment after R01-R09 are evidenced."
+    }
+  ],
+  "prohibited_until_release": [
+    "Start an MT5 tester run under this blocked contract",
+    "Treat syntax compilation as qualification",
+    "Use any 2018-2025 result as untouched OOS",
+    "Treat elapsed January-June 2026 events as pristine OOS",
+    "Delete the missing 2023-12-13 opportunity from denominators",
+    "Optimize entry hour, exit hour, ATR period, stop multiple, calendar subset or risk after opened outcomes",
+    "Lower sample, PF, drawdown, cost, identity or FTMO gates",
+    "Silently copy the larger NDX HCC into a sealed truth environment",
+    "Claim that this low-frequency sleeve alone can pass an FTMO challenge"
+  ],
+  "source_bindings": {
+    ".private/secret_strategy_lab/pre_fomc_flat/PRE_FOMC_FLAT.mq5": "db8aca87df6a5569ac22ce6338ca98ef97f15df89a94b137ca4f69e82dca6166",
+    ".private/secret_strategy_lab/pre_fomc_flat/PRE_FOMC_FLAT_IDX.mq5": "b10cc55d6e22904214d6c008a4208fc3b9e10e831990b5656697b13189c2e38a",
+    ".private/secret_strategy_lab/pre_fomc_flat/RESEARCH_SPEC.md": "4b9acff8749550c382c17c78789a5f0c98b5998a2db93039d06b2fa5a87917d3",
+    ".private/secret_strategy_lab/pre_fomc_flat/pretest_result.json": "fbdfddebaaa3b810dd949e6a611c809ba4e4f9e5737291119d64701227f73b8e",
+    "D:/QM/reports/QM5_13128/Q09_PORTFOLIO/NDX_DWX/aggregate.json": "1583c09d0f7bce8ab0897419980dae38aa5123a28ca7277cd1af53b00fcb2ea2",
+    "D:/QM/reports/portfolio/dxz23_as_live_requal_20260716_hardened/20260716T051551Z/runs/21_13128_NDX_DWX/receipt.json": "a5d40226a8b9aee4823adff1c2f047082ea3b5092428f9bdb4d56c293d337144",
+    "D:/QM/reports/q08_13128/NDX_DWX/aggregate.json": "0d49342540d33bf2791cd1cb4a01aaa988a342554559bfc221b04505dd71cf60",
+    "D:/QM/strategy_farm/artifacts/cards_approved/QM5_13128_pre-fomc-drift-ndx.md": "abe4f0254659f2a42ab56718cddca5ec82f5ecd565ac9509e7ca8457d500f3b3",
+    "C:/QM/mt5/T_Live/MT5_Base/MQL5/Experts/Live EAs/QM5_13128_pre-fomc-drift-ndx.ex5": "364867a9fe8d58478ade5526aad19deb377a35b313cfdac29763bb2eb82d273b",
+    "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/14_NDX_H1_QM5_13128_pre-fomc-drift-ndx.set": "3aa27e4b869a4f1e0dac25457d3c5056664613e58e3b41556b78a5db18549ffb",
+    "docs/ops/DXZ_REQUAL_ADJUDICATOR.md": "b5aef811afa9dde5b06114782730a64e45bd476f8fe5adb978bd59071db4eb5e",
+    "docs/ops/TICK_DATA_MANAGER_DARWINEX_TIME.md": "0098cc06243dfef37409c21a36e8f3aea8dd86196e100b00daf5a263cd8e473a",
+    "docs/ops/evidence/DXZ23_REFERENCE_HORIZON_AND_DATA_GAPS_2026-07-16.md": "fe9b3d4d9d98ed529a7cba0ed2554a015d2dc8b42a067ac8d47b22a93886c914",
+    "framework/EAs/QM5_13128_pre-fomc-drift-ndx/QM5_13128_pre-fomc-drift-ndx.ex5": "364867a9fe8d58478ade5526aad19deb377a35b313cfdac29763bb2eb82d273b",
+    "framework/EAs/QM5_13128_pre-fomc-drift-ndx/QM5_13128_pre-fomc-drift-ndx.mq5": "e2bd93a2a66700763997af1e8a9713e40ae76e31916b86d941ae08f495e3fb19",
+    "framework/EAs/QM5_13128_pre-fomc-drift-ndx/SPEC.md": "4bb16f72eba357122a3b5a5f79c34c512a00b271c913267c7649a61d272de4cf",
+    "framework/EAs/QM5_13128_pre-fomc-drift-ndx/sets/QM5_13128_pre-fomc-drift-ndx_NDX.DWX_H1_backtest.set": "edca7afabdbcd6409eedab13c396cb0a957c0a82e0fa84fb3868c6c12175044e",
+    "framework/build/fidelity_compile_20260715/logs/QM5_13128_pre-fomc-drift-ndx.log": "a6936eaaa0953948111663a2abeb4bfc339efb8a6445b6bed1ae431a818d7722",
+    "framework/build/fidelity_compile_20260715/src/QM5_13128_pre-fomc-drift-ndx.ex5": "60818ee1ad6c728a23fee908733b9f5f3fb3d4e5958a67f7dac5f54ed518fec8",
+    "framework/build/fidelity_compile_20260715/src/QM5_13128_pre-fomc-drift-ndx.mq5": "e2bd93a2a66700763997af1e8a9713e40ae76e31916b86d941ae08f495e3fb19",
+    "framework/registry/live_commission.json": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197",
+    "framework/registry/venue_cost_model.json": "7dfafe53749e5c45be0cb37568b6e3491c109f546fafaf799f6ea82efdb688d7"
+  },
+  "content_bindings": {
+    "dxz23_execution_contract_ea_13128_canonical_json_sha256": "c0954eb96dc86ab05c6eb19de7317d1e656d33338a9cd9bb5bd17c620e590b74",
+    "dwx_symbol_matrix_ndx_row_canonical_json_sha256": "caec21f2248063f876775fd48c679bedd89e82be2e5b3571af91178004b4e924",
+    "dwx_symbol_history_ranges_ndx_rows_canonical_json_sha256": "5a7014af495c44fa424771e180f427ada415192cd5abe7a5e458a4124dc0f788"
+  }
+}

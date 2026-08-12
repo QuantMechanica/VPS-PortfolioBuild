@@ -52,6 +52,76 @@ double QM_TM_NormalizePrice(const string symbol, const double price)
    return NormalizeDouble(price, digits);
   }
 
+// 2026-07-20 framework audit — failed-modify hygiene. A rejected SLTP modify
+// leaves the position's current SL/TP unchanged, so trailing/BE callers
+// re-send the identical request every tick ([Invalid stops] journal spam +
+// wasted round-trips). We remember the last failed/skipped target per ticket
+// and suppress verbatim retries for a short window; a changed target or an
+// elapsed window retries normally, so transient rejections still recover.
+#define QM_TM_MODIFY_RETRY_SECONDS 30
+struct QM_TM_FailedModify
+  {
+   ulong    ticket;
+   double   sl;
+   double   tp;
+   datetime last_attempt;
+  };
+QM_TM_FailedModify g_qm_tm_failed_modifies[];
+
+int QM_TM_FailedModifyIndex(const ulong ticket)
+  {
+   const int count = ArraySize(g_qm_tm_failed_modifies);
+   for(int i = 0; i < count; ++i)
+      if(g_qm_tm_failed_modifies[i].ticket == ticket)
+         return i;
+   return -1;
+  }
+
+bool QM_TM_ModifySuppressed(const ulong ticket, const double sl, const double tp)
+  {
+   const int idx = QM_TM_FailedModifyIndex(ticket);
+   if(idx < 0)
+      return false;
+   if(MathAbs(g_qm_tm_failed_modifies[idx].sl - sl) > 1e-10 ||
+      MathAbs(g_qm_tm_failed_modifies[idx].tp - tp) > 1e-10)
+      return false;
+   return (TimeCurrent() - g_qm_tm_failed_modifies[idx].last_attempt) < QM_TM_MODIFY_RETRY_SECONDS;
+  }
+
+void QM_TM_RememberFailedModify(const ulong ticket, const double sl, const double tp)
+  {
+   // Adversarial review 2026-07-20: entries older than the retry window can
+   // never suppress again — sweep them here so the array stays bounded by
+   // "tickets that failed within the last window", not terminal lifetime.
+   const datetime now = TimeCurrent();
+   for(int i = ArraySize(g_qm_tm_failed_modifies) - 1; i >= 0; --i)
+      if((now - g_qm_tm_failed_modifies[i].last_attempt) >= QM_TM_MODIFY_RETRY_SECONDS)
+         QM_TM_ClearFailedModify(g_qm_tm_failed_modifies[i].ticket);
+
+   int idx = QM_TM_FailedModifyIndex(ticket);
+   if(idx < 0)
+     {
+      idx = ArraySize(g_qm_tm_failed_modifies);
+      if(ArrayResize(g_qm_tm_failed_modifies, idx + 1) != idx + 1)
+         return;
+     }
+   g_qm_tm_failed_modifies[idx].ticket = ticket;
+   g_qm_tm_failed_modifies[idx].sl = sl;
+   g_qm_tm_failed_modifies[idx].tp = tp;
+   g_qm_tm_failed_modifies[idx].last_attempt = TimeCurrent();
+  }
+
+void QM_TM_ClearFailedModify(const ulong ticket)
+  {
+   const int idx = QM_TM_FailedModifyIndex(ticket);
+   if(idx < 0)
+      return;
+   const int last = ArraySize(g_qm_tm_failed_modifies) - 1;
+   if(idx != last)
+      g_qm_tm_failed_modifies[idx] = g_qm_tm_failed_modifies[last];
+   ArrayResize(g_qm_tm_failed_modifies, last);
+  }
+
 bool QM_TM_SendSLTPModify(const ulong ticket,
                           const double new_sl,
                           const double new_tp,
@@ -69,9 +139,63 @@ bool QM_TM_SendSLTPModify(const ulong ticket,
    request.sl = (new_sl > 0.0) ? QM_TM_NormalizePrice(symbol, new_sl) : 0.0;
    request.tp = (new_tp > 0.0) ? QM_TM_NormalizePrice(symbol, new_tp) : 0.0;
 
+   // Adversarial review 2026-07-20: the modify-hygiene machinery is LIVE-ONLY.
+   // In the tester it would delay a fixed break-even target by up to the retry
+   // window and thereby shift trades against the historical RISK_FIXED
+   // evidence; the tester keeps pre-bundle behavior byte-identical (same
+   // containment as the Q08 deinit guard and the PERCENT cap in this bundle).
+   const bool live_hygiene = (MQLInfoInteger(MQL_TESTER) == 0);
+
+   if(live_hygiene && QM_TM_ModifySuppressed(ticket, request.sl, request.tp))
+      return false;   // identical target already failed/skipped inside the retry window
+
+   // audit: stops-level pre-check — a target inside the broker minimum
+   // distance is a guaranteed [Invalid stops] rejection; skip the round-trip
+   // and log the skip once per target/window instead of once per tick.
+   const long stops_level = SymbolInfoInteger(symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
+   if(live_hygiene && stops_level > 0 && point > 0.0)
+     {
+      const double min_dist = (double)stops_level * point;
+      const bool is_buy = ((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
+      const double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
+      const double ask = SymbolInfoDouble(symbol, SYMBOL_ASK);
+      bool too_close = false;
+      if(is_buy && bid > 0.0)
+        {
+         if(request.sl > 0.0 && (bid - request.sl) < min_dist)
+            too_close = true;
+         if(request.tp > 0.0 && (request.tp - bid) < min_dist)
+            too_close = true;
+        }
+      else if(!is_buy && ask > 0.0)
+        {
+         if(request.sl > 0.0 && (request.sl - ask) < min_dist)
+            too_close = true;
+         if(request.tp > 0.0 && (ask - request.tp) < min_dist)
+            too_close = true;
+        }
+      if(too_close)
+        {
+         QM_TM_RememberFailedModify(ticket, request.sl, request.tp);
+         QM_LogEvent(QM_INFO, "TM_MODIFY_SKIPPED",
+                     StringFormat("{\"ticket\":%I64u,\"symbol\":\"%s\",\"new_sl\":%.8f,\"new_tp\":%.8f,\"reason\":\"%s\",\"detail\":\"stops_level_distance\",\"stops_level\":%I64d}",
+                                  ticket, QM_LoggerEscapeJson(symbol), request.sl, request.tp,
+                                  QM_LoggerEscapeJson(reason), stops_level));
+         return false;
+        }
+     }
+
    MqlTradeResult result;
    string error_class = BROKER_OTHER;
    const bool ok = QM_TradeContextSend(request, result, error_class);
+   if(live_hygiene)
+     {
+      if(ok)
+         QM_TM_ClearFailedModify(ticket);
+      else
+         QM_TM_RememberFailedModify(ticket, request.sl, request.tp);
+     }
 
    const string payload = StringFormat(
       "{\"ticket\":%I64u,\"symbol\":\"%s\",\"new_sl\":%.8f,\"new_tp\":%.8f,\"reason\":\"%s\",\"ok\":%s,\"retcode\":%u,\"retcode_class\":\"%s\"}",
@@ -149,9 +273,46 @@ bool QM_TM_CloseByVolume(const ulong ticket,
    return ok;
   }
 
-bool QM_TM_OpenPosition(const QM_EntryRequest &req, ulong &out_ticket)
+bool QM_TM_OpenPosition(const QM_EntryRequest &req,
+                        ulong &out_ticket,
+                        const int explicit_magic = 0,
+                        const double explicit_risk_percent = 0.0,
+                        const QM_TradeSendPolicy send_policy = QM_TRADE_SEND_RETRY_TRANSIENT)
   {
-   const QM_EntryResult result = QM_Entry(req, out_ticket);
+   const QM_EntryResult result = QM_Entry(req,
+                                          out_ticket,
+                                          explicit_magic,
+                                          explicit_risk_percent,
+                                          send_policy);
+   const bool ok = (result == QM_ENTRY_OK);
+   const string payload = StringFormat(
+      "{\"symbol\":\"%s\",\"type\":\"%s\",\"ok\":%s,\"ticket\":%I64u,\"entry_result\":\"%s\"}",
+      QM_LoggerEscapeJson(_Symbol),
+      QM_LoggerEscapeJson(QM_OrderTypeToString(req.type)),
+      ok ? "true" : "false",
+      out_ticket,
+      QM_LoggerEscapeJson(QM_EntryResultToString(result))
+   );
+   QM_LogEvent(ok ? QM_INFO : QM_WARN, "TM_OPEN", payload);
+   return ok;
+  }
+
+// Phase 2.5 explicit per-call risk mode/value overload. It has distinct arity
+// from the legacy/Phase-1 signature above, so all existing calls retain their
+// original default arguments and percentage semantics.
+bool QM_TM_OpenPosition(const QM_EntryRequest &req,
+                        ulong &out_ticket,
+                        const int explicit_magic,
+                        const QM_RiskMode explicit_risk_mode,
+                        const double explicit_risk_value,
+                        const QM_TradeSendPolicy send_policy = QM_TRADE_SEND_RETRY_TRANSIENT)
+  {
+   const QM_EntryResult result = QM_Entry(req,
+                                          out_ticket,
+                                          explicit_magic,
+                                          explicit_risk_mode,
+                                          explicit_risk_value,
+                                          send_policy);
    const bool ok = (result == QM_ENTRY_OK);
    const string payload = StringFormat(
       "{\"symbol\":\"%s\",\"type\":\"%s\",\"ok\":%s,\"ticket\":%I64u,\"entry_result\":\"%s\"}",
@@ -413,6 +574,76 @@ double QM_TM_OpenPnL(const int magic)
       pnl += PositionGetDouble(POSITION_SWAP);
      }
    return pnl;
+  }
+
+// ---------------------------------------------------------------------------
+// 2026-07-20 framework audit P0.4 — restart-safe held-period exits.
+// Counts COMPLETED tf-periods between a position's open time and `now` by
+// walking the actual bar series (iBarShift), so weekends and holidays are
+// skipped exactly as the chart skips them and an EA restart cannot reset the
+// count: the truth is POSITION_TIME, not a global counter that OnInit zeroes.
+// Returns -1 when either time has no bar (history gap) — callers MUST treat
+// -1 as "unknown", never as "due".
+int QM_TM_HeldPeriods(const string symbol,
+                      const ENUM_TIMEFRAMES tf,
+                      const datetime open_time,
+                      const datetime now = 0)
+  {
+   if(open_time <= 0)
+      return -1;
+   datetime t = now;
+   if(t <= 0)
+      t = TimeCurrent();
+   if(t < open_time)
+      return -1;
+   // Adversarial review 2026-07-20: iBarShift(exact=false) does NOT return -1
+   // for a time BEFORE the series start — it clamps to the oldest bar, which
+   // would overstate the hold and fire a held-period exit early after a
+   // restart with short history. Reject the pre-series case explicitly.
+   const int bars = Bars(symbol, tf);
+   if(bars <= 0)
+      return -1;
+   const datetime series_start = iTime(symbol, tf, bars - 1);
+   if(series_start <= 0 || open_time < series_start)
+      return -1;
+   const int shift_open = iBarShift(symbol, tf, open_time, false);
+   const int shift_now  = iBarShift(symbol, tf, t, false);
+   if(shift_open < 0 || shift_now < 0)
+      return -1;
+   return shift_open - shift_now;
+  }
+
+// Held periods of the LONGEST-held open position owned by (magic, symbol).
+// Returns -1 when no position is open or any owned position's history is
+// unavailable (unknown must not silently understate the hold).
+int QM_TM_HeldPeriodsForMagic(const long magic,
+                              const string symbol,
+                              const ENUM_TIMEFRAMES tf,
+                              const datetime now = 0)
+  {
+   int held_max = -1;
+   bool found = false;
+   const int total = PositionsTotal();
+   for(int i = 0; i < total; i++)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != symbol)
+         continue;
+      const int held = QM_TM_HeldPeriods(symbol, tf,
+                                         (datetime)PositionGetInteger(POSITION_TIME), now);
+      if(held < 0)
+         return -1;
+      found = true;
+      if(held > held_max)
+         held_max = held;
+     }
+   return found ? held_max : -1;
   }
 
 #endif // QM_TRADEMANAGEMENT_MQH

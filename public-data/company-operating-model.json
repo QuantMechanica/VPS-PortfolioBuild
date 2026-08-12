@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
     "schema":  "quantmechanica.company-operating-model.v1",
-    "updated_at":  "2026-05-01T05:11:29.826Z",
+    "updated_at":  "2026-07-22T20:00:00Z",
     "cache_ttl_minutes":  90,
     "menu":  [
                  {
@@ -33,7 +33,7 @@
     "dashboard":  {
                       "control_tower":  {
                                             "title":  "Control Tower",
-                                            "summary":  "CEO sets sequence and gate direction, CTO enforces technical quality, and capability cells execute in bounded scopes.",
+                                            "summary":  "OWNER sets priorities and live-promotion decisions; deterministic gates and capability cells execute the bounded work.",
                                             "signals":  [
                                                             "Current phase and gate",
                                                             "Active blockers and unblock owners",
@@ -114,8 +114,8 @@
                       "first_48h_actions":  [
                                                 {
                                                     "order":  1,
-                                                    "action":  "Confirm sequencing issue and active gate owner.",
-                                                    "owner":  "CEO"
+                                                    "action":  "Confirm the active work item, its acceptance contract, and the next deterministic gate.",
+                                                    "owner":  "OWNER"
                                                 },
                                                 {
                                                     "order":  2,

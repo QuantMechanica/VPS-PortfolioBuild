@@ -1,6 +1,6 @@
 # Strategy Type Flags — V4-Mined Controlled Vocabulary
 
-> **Status (2026-04-27):** CEO-ratified (comment `10bceb95` on QUA-244, accepts coverage; struck `mean-revert-rsi` per Q1; kept `skew-regime-filter` per Q2; kept composite `asian-session-drift` / `intraday-session-pattern` per Q3; approved addition-process per Q4). Awaiting CTO technical-correctness ratification — specifically the §E Modality section against the V5 hard rules.
+> **Status (2026-04-27):** OWNER-ratified (comment `10bceb95` on QUA-244, accepts coverage; struck `mean-revert-rsi` per Q1; kept `skew-regime-filter` per Q2; kept composite `asian-session-drift` / `intraday-session-pattern` per Q3; approved addition-process per Q4). Awaiting Quality-Tech technical-correctness review — specifically the §E Modality section against the V5 hard rules.
 > **Owner:** Research Agent.
 > **Scope:** This file is the **controlled vocabulary** of `strategy_type_flags` used in V5 Strategy Cards (`strategy-seeds/cards/_TEMPLATE.md` field, child issue under QUA-236). It is **mined from V4 archives** — every flag has at least one V4-named example. New flags MUST cite V4 evidence; otherwise propose a new source via Research before adding.
 
@@ -76,7 +76,7 @@ Card reviewers should expect 3–6 flags per card. Fewer than 2 is suspicious (u
 - **V4 examples**: SM_404 ADX5NR6 (ADX(5) + Narrow-Range-6, "Strong holdout PF, 6/8 walk-forward symbols" — `reference/v4_doc/star-ea-reference.md`).
 - **Disambiguation from**: `donchian-breakout` (NR-breakout requires an explicit range-contraction precondition; donchian fires on any N-bar extreme regardless of preceding compression); `vol-regime-gate` (NR is the entry, not just an overlay).
 
-*(Note: a draft `mean-revert-rsi` flag was proposed in the v1 draft but **struck per CEO ratification 2026-04-27** because it had no V4 SM_XXX deployment evidence. Per OWNER directive — vocabulary is mined from V4, not pre-stocked; if a real V5 card surfaces an RSI-mean-reversion strategy, propose the flag at that point via the Research-issue + source-citation + CEO/CTO process documented at the bottom of this file.)*
+*(Note: a draft `mean-revert-rsi` flag was proposed in the v1 draft but **struck per OWNER ratification 2026-04-27** because it had no V4 SM_XXX deployment evidence. Per OWNER directive — vocabulary is mined from V4, not pre-stocked; if a real V5 card surfaces an RSI-mean-reversion strategy, propose the flag at that point via the Research issue + source citation + OWNER approval and Quality-Tech review process documented at the bottom of this file.)*
 
 ---
 
@@ -218,18 +218,18 @@ These flags are already named in `cards/_TEMPLATE.md` §10 (`gridding`, `scalpin
 
 ## Ratification record
 
-CEO ratified the v1 draft on 2026-04-27 (QUA-244 comment `10bceb95`) with the following resolutions to the v1 open questions:
+OWNER ratified the v1 draft on 2026-04-27 (QUA-244 comment `10bceb95`) with the following resolutions to the v1 open questions:
 
 1. **`mean-revert-rsi` flag — STRUCK** per OWNER directive ("no new strategy types invented in V5 — vocabulary mined from V4 first"). No V4 SM_XXX deployment evidence existed, so it does not qualify as mined-from-V4. If a real V5 card surfaces an RSI-mean-reversion strategy, propose the flag at that point via the addition-process below.
 2. **`skew-regime-filter` flag — KEPT.** V4 *research* taxonomy is V5-relevant per OWNER's "all of that was already known there" framing. The Bekaert-Panayotov V4 inspiration spec is part of the V4 archive set OWNER named. Note that no V4 deployed EA carries this gate yet — the flag exists for V5 cards that revive the research line.
-3. **Composite flags `asian-session-drift` + `intraday-session-pattern` — KEPT composite.** V4 named these as units; splitting would lose V4 vocabulary continuity. If a real card needs orthogonal axes (`session-window` + `asset-thesis`), surface that case to CEO before forcing the split — same gate as the addition-process below.
-4. **Addition process — APPROVED.** New flags require: a Research issue + V4 (or new-source) citation + CEO/CTO ratification before being appended here under the matching section. Do not add silently.
+3. **Composite flags `asian-session-drift` + `intraday-session-pattern` — KEPT composite.** V4 named these as units; splitting would lose V4 vocabulary continuity. If a real card needs orthogonal axes (`session-window` + `asset-thesis`), surface that case to OWNER before forcing the split — same gate as the addition process below.
+4. **Addition process — APPROVED.** New flags require a Research issue, a V4 (or new-source) citation, OWNER approval, and Quality-Tech technical review before being appended here under the matching section. Do not add silently.
 
-CTO technical-correctness ratification (specifically §E Modality vs V5 hard rules) is pending.
+Quality-Tech technical-correctness review (specifically §E Modality vs V5 hard rules) is pending.
 
 ---
 
 ## Mirrors
 
-- **Notion**: Documentation-KM will mirror after this commit lands on `main` and CTO ratifies, per QUA-244 comments `10bceb95` (CEO) and `f85914fa` (Doc-KM). The Notion page lives under the V5 project hub as "Strategy Type Flags — V4-Mined Controlled Vocabulary" with a header link back to QUA-244 and the source SHA.
+- **Notion**: Documentation-KM will mirror after this commit lands on `main` and Quality-Tech completes its review, per QUA-244 comments `10bceb95` (OWNER decision) and `f85914fa` (Doc-KM). The Notion page lives under the V5 project hub as "Strategy Type Flags — V4-Mined Controlled Vocabulary" with a header link back to QUA-244 and the source SHA.
 - **Card template enum**: To be wired into `strategy-seeds/cards/_TEMPLATE.md` `strategy_type_flags` enum field per QUA-236 child 2 (separate child issue).

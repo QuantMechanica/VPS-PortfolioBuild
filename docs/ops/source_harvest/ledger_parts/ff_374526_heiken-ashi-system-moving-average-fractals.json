@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_374526_heiken-ashi-system-moving-average-fractals.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_374526_heiken-ashi-system-moving-average-fractals.pdf",
+      "source_pages": "1-2",
+      "source_ref": "gftcfd, 'Heiken-Ashi System + Moving Average + Fractals', ForexFactory forum thread 374526 (5 posts, year n/a), https://www.forexfactory.com/thread/374526",
+      "strategy_name": "HA-Smoothed + LWMA + Fractal Stop-Order",
+      "concept": "Trend-following breakout that enters on a Heiken-Ashi Smoothed color-flip confirmed by close above the LWMA(24), triggered by a stop order parked at the last fractal level.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Long side fully specified with standard MQL5 indicators (HA Smoothed 2,6,3,2; LWMA24 on HL/2; Fractals), deterministic entry/exit with SL+TP; GBPJPY H1 data available via .DWX.",
+      "priority_hint": "LOW",
+      "notes": "JPY-cross fits the desired uncorrelated-driver bucket, but this is a generic trend indicator mashup with only screenshot evidence (no backtest), anonymous single-poster thread. Ambiguities to resolve before build: sell side only implied by an example (author says 'here is a sell order example') not written out - assume symmetric; '+0.2 / -0.2' TP/SL offset units unstated (likely 20 pips on GBPJPY); HA Smoothed repaint/lag risk. Entry: HA color sequence red-blue-blue AND prev close > MA -> stop-buy at last fractal; TP = fractal + 0.2; SL = prev MA - 0.2; author cancels order if HA color changes before fill."
+    }
+  ],
+  "notes": []
+}

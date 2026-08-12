@@ -1,0 +1,100 @@
+{
+  "schema_version": "qm.mnt012.blocked-build-reconciliation.v1",
+  "run_id": "MNT012-20260729-BLOCKED-BUILD-ZOMBIES-01",
+  "generated_at_utc": "2026-07-29T11:30:00+00:00",
+  "mode": "forecast_only_until_explicit_hashbound_apply",
+  "scope": "Transition exactly two pending build_ea rows carrying durable active block evidence to blocked; preserve cards and EA sources byte-for-byte.",
+  "bindings": {
+    "database": {
+      "path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "file_sha256": "b147327029c27ec8f3f3fafcc8d661d4fcb6ecb9fe0e440aa1d8d0ebb941382b",
+      "logical_state_sha256": "b147327029c27ec8f3f3fafcc8d661d4fcb6ecb9fe0e440aa1d8d0ebb941382b"
+    },
+    "factory_off": {
+      "path": "D:\\QM\\strategy_farm\\state\\FACTORY_OFF.flag",
+      "sha256": "09cc4f83e8d5f384f03bc51306beff2cdd165108559a00dbf665097c60b47f1c"
+    }
+  },
+  "operations": [
+    {
+      "task_id": "76b745d5-fe8d-4f63-900e-aa8c6743f551",
+      "expected": {
+        "kind": "build_ea",
+        "status": "pending",
+        "card_id": "QM5_1457",
+        "updated_at": "2026-06-28T07:53:27+00:00",
+        "payload_sha256": "764f05833019d37e9b3ccd5b51c93b6fa2ddef541a584abb80a21d4784247bb7"
+      },
+      "observed_active_block": {
+        "blocked_at_utc": "2026-06-28T07:48:17+00:00",
+        "last_blocked_reason": "non_dwx_rates_inputs_required_by_card"
+      },
+      "card": {
+        "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1457_as-predict-bonds.md",
+        "sha256": "9c3960b2ad7618da0483f414790a2a1a84a6da2d0f52af8fca0b9aa31a796db8",
+        "frontmatter_r3": "PASS",
+        "body_r3": "UNKNOWN",
+        "mutation": "forbidden_in_this_manifest"
+      },
+      "source_diagnostic": {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1457_as-predict-bonds\\QM5_1457_as-predict-bonds.mq5",
+        "sha256": "4444789e25475af4040b8cfef1832763b19a8e110ad3a891314ff3e7e972a7ce",
+        "mutation": "forbidden_in_this_manifest"
+      },
+      "target": {
+        "status": "blocked",
+        "updated_at": "2026-07-29T11:30:00+00:00",
+        "payload_patch": {
+          "blocked_reason": "non_dwx_rates_inputs_required_by_card",
+          "mnt012_reconciliation": {
+            "manifest": "docs/ops/evidence/2026-07-29_mnt012_build_zombie_reconciliation_manifest.json",
+            "reason": "pending task carried durable active block evidence and is not build-claimable",
+            "run_id": "MNT012-20260729-BLOCKED-BUILD-ZOMBIES-01",
+            "transition": "pending_to_blocked"
+          }
+        },
+        "payload_sha256": "6040d8641455e82993775470ff15df2fdba994c3e2d00bbb156fd36c03b8a7fd"
+      }
+    },
+    {
+      "task_id": "08cfd80b-c78c-4527-9143-e650cdc847d1",
+      "expected": {
+        "kind": "build_ea",
+        "status": "pending",
+        "card_id": "QM5_1459",
+        "updated_at": "2026-07-25T19:50:04+00:00",
+        "payload_sha256": "5330987959dfa5cb84723974a5b5d1e5139dbd77296085e760bf87f335c5deef"
+      },
+      "observed_active_block": {
+        "blocked_at_utc": "2026-07-25T11:49:18+00:00",
+        "last_blocked_reason": "r3_missing_lumber_and_ief_dwx_series"
+      },
+      "card": {
+        "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1459_as-lumber-gold.md",
+        "sha256": "8b55ff8e229fa988e4e07d3ebc4ce4517bbae051d1805d525cf75d8f55f36259",
+        "frontmatter_r3": "PASS",
+        "body_r3": "UNKNOWN",
+        "mutation": "forbidden_in_this_manifest"
+      },
+      "source_diagnostic": {
+        "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1459_as-lumber-gold\\QM5_1459_as-lumber-gold.mq5",
+        "sha256": "08e37143feb0c0623a54d3ada67823888082efcc27065efcc025c945b8752c1b",
+        "mutation": "forbidden_in_this_manifest"
+      },
+      "target": {
+        "status": "blocked",
+        "updated_at": "2026-07-29T11:30:00+00:00",
+        "payload_patch": {
+          "blocked_reason": "r3_missing_lumber_and_ief_dwx_series",
+          "mnt012_reconciliation": {
+            "manifest": "docs/ops/evidence/2026-07-29_mnt012_build_zombie_reconciliation_manifest.json",
+            "reason": "pending task carried durable active block evidence and is not build-claimable",
+            "run_id": "MNT012-20260729-BLOCKED-BUILD-ZOMBIES-01",
+            "transition": "pending_to_blocked"
+          }
+        },
+        "payload_sha256": "b7e0e78875cbe4efbd4f501b29046ea647744d702e22e8081e638be60da2f571"
+      }
+    }
+  ]
+}

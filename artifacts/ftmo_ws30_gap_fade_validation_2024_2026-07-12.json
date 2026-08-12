@@ -1,0 +1,28 @@
+{
+  "deployment_allowed": false,
+  "frozen_filter": "momentum5_align",
+  "frozen_parameters": {
+    "gap_atr": 1.0,
+    "mode": "fade",
+    "response_atr": 0.0,
+    "stop_atr": 1.5,
+    "target_r": 3.0
+  },
+  "holdout_2025_open_allowed": false,
+  "holdout_2025_opened": false,
+  "label": "RESEARCH_ONLY_NO_GO",
+  "metrics": {
+    "max_drawdown_r": 10.086075,
+    "net_r": 1.429112,
+    "profit_factor": 1.038287,
+    "trades": 50,
+    "win_rate": 0.3
+  },
+  "predeclaration": "artifacts/ftmo_ws30_gap_fade_nested_filter_predeclaration_2026-07-12.json",
+  "research_selection": "artifacts/ftmo_ws30_gap_fade_nested_filter_research_2026-07-12.json",
+  "schema_version": 1,
+  "status": "VALIDATION_2024_FAIL",
+  "symbol": "WS30.DWX",
+  "validation_gate": "trades>=40, PF>=1.10, net R>0",
+  "validation_year": 2024
+}

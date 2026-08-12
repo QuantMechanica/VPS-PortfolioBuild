@@ -23,6 +23,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import os
 import re
 import shutil
 import sys
@@ -48,7 +49,7 @@ else:
         sub_8_11_mc_shuffle_dd,
     )
 
-from framework.scripts._phase_utils import period_from_setfile
+from framework.scripts._phase_utils import period_from_setfile, run_with_launch_fault_retry
 from framework.scripts.q08_5_neighborhood_runner import (
     ENGINE_VERSION as NEIGHBORHOOD_ENGINE_VERSION,
     EVIDENCE_SCHEMA_VERSION as NEIGHBORHOOD_SCHEMA_VERSION,
@@ -60,6 +61,7 @@ from framework.scripts.q08_7_pbo_runner import (
     ENGINE_VERSION as PBO_ENGINE_VERSION,
     SCORES_SCHEMA_VERSION as PBO_SCHEMA_VERSION,
 )
+from tools.strategy_farm.q08_recovery_lineage import validate_q08_recovery_lineage
 # Execution order matches the Vault Q08 spec numbering.
 SUB_GATES = [
     ("8.1",  sub_8_1_correlation),
@@ -100,6 +102,78 @@ DL077_MIN_QUALITY_PASSES = 1
 DEFAULT_NEIGHBORHOOD_MAX_PARAMS = 2
 NEIGHBORHOOD_RUN_TIMEOUT_SEC = 900
 NEIGHBORHOOD_RUN_HEADROOM_SEC = 120
+
+# DL-082 §3c (OWNER 2026-07-16, ratified 2026-07-19): the non-merit allowance.
+# A clean Q08 PASS tolerates soft signals ONLY from these gates. 8.4/8.6/8.10/8.11
+# measure single-EA robustness across seasons / trade-order / chop / ATR-regime —
+# exactly the risk the Q09 anti-correlation portfolio absorbs by diversification
+# (DL-075). An EDGE_SOFT here is within the allowance and never blocks a PASS.
+# Everything else that soft-fails (8.7 PBO neighborhood-fallback, 8.8 edge-decay,
+# a thin cost cushion, a non-low-sample INVALID) is a real standalone concern and
+# routes the EA to the Q09 portfolio track as FAIL_SOFT.
+ALLOWANCE_SOFT_GATES = ("8.4", "8.6", "8.10", "8.11")
+
+
+def _load_recovery_lineage_manifest(
+    manifest_path: Path | None,
+    expected_sha256: str | None,
+) -> dict | None:
+    """Authenticate the carried recovery contract before any tester work."""
+    if manifest_path is None and not expected_sha256:
+        return None
+    if manifest_path is None or not expected_sha256:
+        raise ValueError("recovery lineage path and expected SHA256 must be paired")
+    expected = str(expected_sha256).strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", expected):
+        raise ValueError("expected recovery lineage SHA256 is invalid")
+    try:
+        manifest_bytes = Path(manifest_path).read_bytes()
+    except OSError as exc:
+        raise ValueError(
+            f"recovery lineage manifest unreadable:{type(exc).__name__}"
+        ) from exc
+    actual = hashlib.sha256(manifest_bytes).hexdigest()
+    if actual != expected:
+        raise ValueError("recovery lineage manifest SHA256 mismatch")
+    try:
+        payload = json.loads(manifest_bytes.decode("utf-8-sig"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("recovery lineage manifest JSON invalid") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("recovery lineage manifest must be an object")
+    ok, reason, normalized = validate_q08_recovery_lineage(payload)
+    if not ok or normalized is None:
+        raise ValueError(f"recovery lineage bindings invalid:{reason}")
+    return {
+        **normalized,
+        "manifest_path": str(Path(manifest_path).resolve()),
+        "manifest_sha256": actual,
+        "validation_status": "PASS",
+        "validation_reason": reason,
+    }
+
+
+def _label_within_pass_allowance(gate_name: str, label: str) -> bool:
+    """True iff this per-gate classification label is compatible with a clean Q08 PASS.
+
+    Within the ratified non-merit allowance (DL-082 §3c):
+      - PASS (the gate passed on merit)
+      - INFORMATIONAL (a frequency-aware gate that is structurally inapplicable at
+        this EA's frequency class — recorded, carries no soft-fail signal; DL-082 §3b)
+      - NOT_APPLICABLE (a parameter-space gate — 8.5 neighborhood / 8.7 PBO — that is
+        structurally undefined for a fixed-parameter strategy: no perturbable parameter
+        means no ±10% neighborhood and no >=2-config family EXISTS BY CONSTRUCTION.
+        Recorded, carries no soft-fail signal and is NOT retry-owed. 2026-07-27.)
+      - LOW_SAMPLE (the Davey statistical battery could-not-compute at low N)
+      - EDGE_SOFT of the frequency-aware trio + MC-shuffle (8.4/8.6/8.10/8.11)
+    Any other label (EDGE_HARD is handled separately as a hard fail; EDGE_SOFT of a
+    non-allowance gate; a genuine INVALID; INFRA_RECYCLE) is OUTSIDE the allowance.
+    """
+    if label in ("PASS", "INFORMATIONAL", "LOW_SAMPLE", "NOT_APPLICABLE"):
+        return True
+    if label == "EDGE_SOFT" and str(gate_name).startswith(ALLOWANCE_SOFT_GATES):
+        return True
+    return False
 
 
 def _neighborhood_artifact_reuse_status(
@@ -230,13 +304,41 @@ def _neighborhood_lineage_invalid_result(sub_gate_input_runs: dict) -> dict | No
         or meta.get("skipped")
         or "neighborhood_lineage_unverified"
     )
-    return common.make_result(
+    # 2026-07-19 (Q08 INFRA_FAIL storm RCA): the neighborhood support runner
+    # raises a hard ValueError when the baseline setfile is structurally
+    # un-Q08-able — zero strategy params (setgen `card_defaults_source=
+    # not_found`, never materialised) or a duplicate/empty strategy assignment.
+    # That is a DETERMINISTIC build/setgen defect, not transient infra: every
+    # retry re-reads the same setfile and reproduces it. Emit a precise token so
+    # evidence is self-describing and the stranded-INFRA sweep can refuse the
+    # doomed re-enqueue. Verdict stays INVALID and still blocks.
+    error_text = str(meta.get("error") or "")
+    is_setfile_defect = False
+    if "has no strategy parameters" in error_text:
+        detail = "baseline_setfile_defect:empty_strategy_params"
+        is_setfile_defect = True
+    elif "duplicate strategy parameter" in error_text:
+        detail = "baseline_setfile_defect:duplicate_strategy_params"
+        is_setfile_defect = True
+    elif "empty strategy parameter" in error_text:
+        detail = "baseline_setfile_defect:empty_strategy_value"
+        is_setfile_defect = True
+    result = common.make_result(
         "8.5_neighborhood",
         "INVALID",
         value=None,
         threshold=None,
         detail=f"neighborhood_evidence_lineage_invalid:{detail}",
     )
+    # DL-082 §3a: a degenerate (0-trade) neighborhood baseline is an infra/setfile
+    # condition (the perturbation baseline could not reproduce the strategy), NOT a
+    # gate verdict. Tag it so the aggregator routes the item to setfile re-derivation
+    # (INFRA_RECYCLE) instead of a blocking INVALID. A structural setgen defect
+    # (empty/duplicate strategy params) is a DETERMINISTIC build defect that re-derivation
+    # will NOT fix (07-19 RCA); it stays a genuine blocking INVALID, never a recycle.
+    if not is_setfile_defect and "degenerate_baseline" in detail:
+        result["infra_condition"] = "degenerate_baseline"
+    return result
 
 
 def _pbo_refresh_artifact_status(
@@ -511,6 +613,138 @@ def _common_q08_trade_log(ea_id: int, symbol: str) -> Path:
 DURABLE_STREAM_ROOT = Path(r"D:\QM\reports\portfolio\sleeve_streams")
 
 
+def _count_trade_closed_rows(path: Path) -> int:
+    """TRADE_CLOSED row count in a jsonl stream (-1 if the file cannot be read)."""
+    try:
+        count = 0
+        with path.open("r", encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if row.get("event", "TRADE_CLOSED") == "TRADE_CLOSED":
+                    count += 1
+        return count
+    except OSError:
+        return -1
+
+
+_STREAM_IDENTITY_FIELDS = (
+    "time", "net", "profit", "swap", "commission", "volume", "notional", "symbol",
+)
+
+
+def _stream_matches_authoritative(common_log: Path, raw_trades: list[dict]) -> bool:
+    """True iff the volatile ``common_log`` rows ARE the authoritative in-memory set.
+
+    Equal row COUNT does not prove identity: a foreign run of the same length would be
+    laundered by a verbatim copy (WP-6 defect-3, 2026-07-25 Codex re-review). Compare, per
+    row and in order, the identity-bearing fields the authoritative in-memory trade
+    actually carries. The volatile stream is allowed to be RICHER (extra fields such as
+    entry_time / mae_acct — the very reason a verbatim copy is preferred), so a field
+    ABSENT (or None) in the in-memory trade is not a conflict; a field PRESENT but
+    DIFFERENT is. Any per-row divergence, row-count divergence, or unparseable / unreadable
+    row => not a match, and the caller serializes the authoritative set rather than copy
+    foreign bytes.
+    """
+    try:
+        rows: list[dict] = []
+        with common_log.open("r", encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    return False
+                if row.get("event", "TRADE_CLOSED") != "TRADE_CLOSED":
+                    continue
+                rows.append(row)
+    except OSError:
+        return False
+    if len(rows) != len(raw_trades):
+        return False
+    for raw, row in zip(raw_trades, rows):
+        for field in _STREAM_IDENTITY_FIELDS:
+            if field not in raw:
+                continue
+            expected = raw.get(field)
+            if expected is None:
+                continue
+            actual = row.get(field)
+            if field == "symbol":
+                if str(actual) != str(expected):
+                    return False
+                continue
+            try:
+                if abs(float(actual) - float(expected)) > 1e-9:
+                    return False
+            except (TypeError, ValueError):
+                return False
+    return True
+
+
+def _atomic_replace_bytes(dst: Path, data: bytes) -> None:
+    """Write ``data`` to a temp sibling then os.replace into ``dst`` (atomic on same FS).
+
+    Gate-repair WP-6 defect-3 (2026-07-25): a crash mid-write must never leave a truncated
+    durable stream — that partial-write failure mode is exactly what stranded the Q09 sleeves.
+    """
+    tmp = dst.with_name(f"{dst.name}.persist.{os.getpid()}.tmp")
+    try:
+        tmp.write_bytes(data)
+        os.replace(tmp, dst)
+    finally:
+        try:
+            if tmp.exists():
+                tmp.unlink()
+        except OSError:
+            pass
+
+
+def _atomic_copyfile(src: Path, dst: Path) -> None:
+    """Copy ``src`` to a temp sibling of ``dst`` then os.replace into place (atomic)."""
+    tmp = dst.with_name(f"{dst.name}.persist.{os.getpid()}.tmp")
+    try:
+        shutil.copyfile(src, tmp)
+        os.replace(tmp, dst)
+    finally:
+        try:
+            if tmp.exists():
+                tmp.unlink()
+        except OSError:
+            pass
+
+
+def _serialize_trades_to_stream(dst: Path, raw_trades: list[dict], symbol: str) -> int:
+    """Write the authoritative in-memory trades to the durable store in builder format.
+
+    Caller guarantees every trade carries ``volume`` (checked before calling), so the
+    portfolio commission model is never fed volume-less rows. Returns the row count.
+    The write is atomic (temp file + os.replace) so a crash cannot truncate the stream.
+    """
+    lines = []
+    for t in raw_trades:
+        lines.append(json.dumps({
+            "event": "TRADE_CLOSED",
+            "time": int(t.get("time") or 0),
+            "net": float(t.get("net") or 0.0),
+            "profit": float(t.get("profit") or 0.0),
+            "swap": float(t.get("swap") or 0.0),
+            "commission": float(t.get("commission") or 0.0),
+            "volume": float(t.get("volume") or 0.0),
+            "notional": t.get("notional"),
+            "symbol": t.get("symbol") or symbol,
+        }))
+    _atomic_replace_bytes(dst, ("\n".join(lines) + "\n").encode("utf-8"))
+    return len(lines)
+
+
 def _persist_durable_sleeve_stream(ea_id: int, symbol: str,
                                    raw_trades: list[dict],
                                    common_log_override: "Path | None" = None) -> dict:
@@ -540,42 +774,66 @@ def _persist_durable_sleeve_stream(ea_id: int, symbol: str,
 
     def _mirror_host_copy() -> None:
         if host_dst is not None:
-            shutil.copyfile(dst, host_dst)
+            _atomic_copyfile(dst, host_dst)
 
     if not raw_trades:
         return {"persisted": False, "reason": "no_trades", "n": 0}
+    raw_n = len(raw_trades)
+    all_have_volume = all("volume" in t for t in raw_trades)
     try:
         dst.parent.mkdir(parents=True, exist_ok=True)
         common_log = common_log_override or _common_q08_trade_log(ea_id, symbol)
         if common_log.exists() and common_log.stat().st_size > 0:
-            shutil.copyfile(common_log, dst)
-            _mirror_host_copy()
-            return {"persisted": True, "source": "common_copy",
-                    "path": str(dst), "n": len(raw_trades),
-                    "host_copy": str(host_dst) if host_dst else None}
-        if all("volume" in t for t in raw_trades):
-            lines = []
-            for t in raw_trades:
-                lines.append(json.dumps({
-                    "event": "TRADE_CLOSED",
-                    "time": int(t.get("time") or 0),
-                    "net": float(t.get("net") or 0.0),
-                    "profit": float(t.get("profit") or 0.0),
-                    "swap": float(t.get("swap") or 0.0),
-                    "commission": float(t.get("commission") or 0.0),
-                    "volume": float(t.get("volume") or 0.0),
-                    "notional": t.get("notional"),
-                    "symbol": t.get("symbol") or symbol,
-                }))
-            dst.write_text("\n".join(lines) + "\n", encoding="utf-8")
+            # Root-cause guard (gate-repair WP-6, 2026-07-25; Codex review wp2346): the
+            # Common\Files stream is a volatile working area that sub-gate perturbation/fold
+            # runs and re-validation churn can leave holding only a PARTIAL (or over-written
+            # foreign) copy of the baseline trades. Copying a stream whose row count differs
+            # from the authoritative in-memory set — while the aggregate records the full
+            # baseline n_trades — is exactly what strands a Q08 passer at Q09 NEED_MORE_DATA.
+            # Round-2 identity guard (2026-07-25 Codex re-review, defect-3): count equality
+            # ALONE does not prove identity — a foreign run of the SAME length would be
+            # laundered by a verbatim copy. Rule: ONLY copy the live stream verbatim when its
+            # count EXACTLY matches the authoritative in-memory set AND its rows ARE that set
+            # (same run, intact — verbatim then preserves the richest original per-trade
+            # fields). On ANY count mismatch (under- OR over-count, unreadable) OR equal-count
+            # foreign content, serialize the authoritative in-memory trades instead when they
+            # carry volume, so the durable stream count == n_trades and the bytes are the
+            # graded set. WP-7 identity binding runs AFTER this in run_all and hashes the
+            # bytes THIS guard actually writes — the correct order.
+            copied_n = _count_trade_closed_rows(common_log)
+            if copied_n == raw_n and _stream_matches_authoritative(common_log, raw_trades):
+                _atomic_copyfile(common_log, dst)
+                _mirror_host_copy()
+                return {"persisted": True, "source": "common_copy",
+                        "path": str(dst), "n": copied_n,
+                        "host_copy": str(host_dst) if host_dst else None}
+            if all_have_volume:
+                serialized_n = _serialize_trades_to_stream(dst, raw_trades, symbol)
+                _mirror_host_copy()
+                if copied_n == raw_n:
+                    guard = "serialized_foreign_content_guard"
+                elif 0 <= copied_n < raw_n:
+                    guard = "serialized_undercount_guard"
+                else:
+                    guard = "serialized_count_mismatch_guard"
+                return {"persisted": True, "source": guard,
+                        "path": str(dst), "n": serialized_n, "common_copy_n": copied_n,
+                        "host_copy": str(host_dst) if host_dst else None}
+            # Count mismatch AND the in-memory trades are volume-less (HTML-report fallback):
+            # neither a verbatim copy nor a serialize can produce a faithful, volume-bearing
+            # durable stream, so refuse rather than persist a wrong-count or volume-less file.
+            return {"persisted": False, "reason": "report_fallback_no_volume",
+                    "n": raw_n, "common_copy_n": copied_n}
+        if all_have_volume:
+            serialized_n = _serialize_trades_to_stream(dst, raw_trades, symbol)
             _mirror_host_copy()
             return {"persisted": True, "source": "serialized",
-                    "path": str(dst), "n": len(lines),
+                    "path": str(dst), "n": serialized_n,
                     "host_copy": str(host_dst) if host_dst else None}
         return {"persisted": False, "reason": "report_fallback_no_volume",
-                "n": len(raw_trades)}
+                "n": raw_n}
     except OSError as exc:
-        return {"persisted": False, "reason": f"oserror:{exc}", "n": len(raw_trades)}
+        return {"persisted": False, "reason": f"oserror:{exc}", "n": raw_n}
 
 
 def _latest_structured_qm_log(ea_id: int, symbol: str, terminal: str | None = None) -> Path | None:
@@ -662,13 +920,33 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
     # Real-tick (Model 4) multi-symbol baskets can exceed 2400s; allow 5400s.
     # The Q08 phase-runner timeout in farmctl must be >= 90 min for basket EAs.
     is_basket = test_symbol != symbol
-    timeout_run = 5400 if is_basket else 2400
+    # 2400s starved heavy full-history H1 baselines (13213 wave evidence
+    # 2026-07-18: TIMEOUT/METATESTER_HUNG at min 40). The budget is a cap,
+    # not a sleep — fast EAs still exit early.
+    timeout_run = 5400 if is_basket else 4800
     timeout_proc = timeout_run + 120
+    # Data-honest window: DWX index/late-start symbols begin 2018.07.02. A fixed
+    # 2017.01.01 request against the cleanly rebuilt NDX store hard-fails the
+    # tester ("history synchronization error", wave evidence 2026-07-18). Clamp
+    # from the symbol-history registry instead of requesting data that never existed.
+    from_date = "2017.01.01"
+    try:
+        import csv as _csv
+        _reg = repo_root / "framework" / "registry" / "dwx_symbol_history_ranges.csv"
+        with _reg.open("r", encoding="utf-8-sig", newline="") as _fh:
+            for _row in _csv.DictReader(_fh):
+                if (str(_row.get("symbol") or "").casefold() == test_symbol.casefold()
+                        and str(_row.get("period") or "").casefold() == period.casefold()):
+                    if int(_row.get("first_year") or 2017) >= 2018:
+                        from_date = "2018.07.02"
+                    break
+    except (OSError, TypeError, ValueError):
+        pass
     args = [
         "pwsh.exe", "-NoProfile", "-File",
         str(repo_root / "framework" / "scripts" / "run_smoke.ps1"),
         "-EAId", str(ea_id), "-Expert", expert, "-Symbol", test_symbol,
-        "-Year", "2025", "-FromDate", "2017.01.01", "-ToDate", "2025.12.31",
+        "-Year", "2025", "-FromDate", from_date, "-ToDate", "2025.12.31",
         "-Terminal", terminal or "T1", "-Period", period,
         "-Runs", "1", "-MinTrades", "1", "-Model", "4",
         "-SetFile", str(baseline), "-ReportRoot", str(report_root),
@@ -678,7 +956,14 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
     ]
     flags = 0x08000000 if sys.platform == "win32" else 0
     try:
-        p = _sp.run(args, capture_output=True, text=True, timeout=timeout_proc, creationflags=flags)
+        p = run_with_launch_fault_retry(
+            args,
+            runner=_sp.run,
+            capture_output=True,
+            text=True,
+            timeout=timeout_proc,
+            creationflags=flags,
+        )
         summary = _latest_baseline_summary(report_root, ea_id, wait_seconds=10,
                                            expected_symbol=test_symbol)
         out = {"exit_code": p.returncode, "expert": expert, "period": period,
@@ -719,22 +1004,206 @@ def _latest_baseline_summary(report_root: Path, ea_id: int, wait_seconds: int = 
         time.sleep(1)
 
 
+def _artifact_identity(path: Path | str | None) -> dict:
+    if not path:
+        return {}
+    candidate = Path(str(path))
+    try:
+        if not candidate.is_file():
+            return {"path": str(candidate)}
+        digest = hashlib.sha256()
+        with candidate.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+        return {
+            "path": str(candidate),
+            "sha256": digest.hexdigest(),
+            "size_bytes": candidate.stat().st_size,
+        }
+    except OSError:
+        return {"path": str(candidate)}
+
+
 def _baseline_report_metadata(summary_path: Path) -> dict:
     try:
         data = json.loads(summary_path.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError):
         return {"baseline_summary_path": str(summary_path)}
-    runs = data.get("runs") or []
-    run = runs[0] if runs else {}
+    runs = [row for row in (data.get("runs") or []) if isinstance(row, dict)]
+    run = next(
+        (row for row in reversed(runs) if str(row.get("status") or "").upper() == "OK"),
+        runs[-1] if runs else {},
+    )
     report_path = run.get("report_canonical_path") or run.get("report_source_path")
+    report_identity = _artifact_identity(report_path)
+    summary_identity = _artifact_identity(summary_path)
+    execution_identity = (
+        data.get("execution_identity")
+        if isinstance(data.get("execution_identity"), dict)
+        else {}
+    )
+    expert_binary = (
+        execution_identity.get("expert_binary")
+        if isinstance(execution_identity.get("expert_binary"), dict)
+        else {}
+    )
+    deployed_ex5 = (
+        expert_binary.get("deployed")
+        if isinstance(expert_binary.get("deployed"), dict)
+        else {}
+    )
+    setfile_identity = (
+        execution_identity.get("setfile")
+        if isinstance(execution_identity.get("setfile"), dict)
+        else {}
+    )
+    source_setfile = (
+        setfile_identity.get("source")
+        if isinstance(setfile_identity.get("source"), dict)
+        else {}
+    )
+    mq5_source = (
+        execution_identity.get("mq5_source")
+        if isinstance(execution_identity.get("mq5_source"), dict)
+        else {}
+    )
     return {
         "baseline_summary_path": str(summary_path),
+        "baseline_summary_sha256": summary_identity.get("sha256"),
         "baseline_result": data.get("result"),
         "baseline_reason_classes": data.get("reason_classes"),
         "baseline_report_path": report_path,
+        "baseline_report_sha256": (
+            run.get("report_sha256") or report_identity.get("sha256")
+        ),
+        "baseline_ex5_path": deployed_ex5.get("path"),
+        "baseline_ex5_sha256": deployed_ex5.get("sha256"),
+        "baseline_setfile_path": source_setfile.get("path"),
+        "baseline_setfile_sha256": source_setfile.get("sha256"),
+        "baseline_mq5_path": mq5_source.get("path"),
+        "baseline_mq5_sha256": mq5_source.get("sha256"),
         "baseline_total_trades": run.get("total_trades"),
         "baseline_profit_factor": run.get("profit_factor"),
     }
+
+
+def _bind_portfolio_stream_identity(
+    *,
+    ea_id: int,
+    symbol: str,
+    portfolio_stream: dict,
+    source_kind: str | None,
+    source_path: Path | None,
+    baseline_run: dict | None,
+) -> dict:
+    """Embed immutable stream/source/report identities into the Q08 aggregate.
+
+    The report hash is included only when a baseline report was actually
+    recorded for the run that produced the source stream. Older paths can lack
+    that artifact; those remain stream/source-bound and state the missing report
+    binding explicitly rather than claiming provenance the evidence cannot show.
+    """
+    bound = dict(portfolio_stream)
+    bound["identity_schema"] = "q08_portfolio_stream/v2"
+    stream_identity = _artifact_identity(bound.get("path"))
+    host_identity = _artifact_identity(bound.get("host_copy"))
+    source_identity = _artifact_identity(source_path)
+    report_identity = _artifact_identity(
+        baseline_run.get("baseline_report_path") if baseline_run else None
+    )
+    summary_identity = _artifact_identity(
+        baseline_run.get("baseline_summary_path") if baseline_run else None
+    )
+
+    bound["content_sha256"] = stream_identity.get("sha256")
+    bound["content_size_bytes"] = stream_identity.get("size_bytes")
+    bound["host_copy_sha256"] = host_identity.get("sha256")
+    bound["host_copy_size_bytes"] = host_identity.get("size_bytes")
+    bound["content_row_count"] = (
+        _count_trade_closed_rows(Path(str(bound["path"])))
+        if bound.get("path")
+        else None
+    )
+    bound["source_artifact_kind"] = source_kind
+    bound["source_artifact_path"] = (
+        str(source_path) if source_path is not None else None
+    )
+    bound["source_artifact_sha256"] = source_identity.get("sha256")
+    bound["source_artifact_size_bytes"] = source_identity.get("size_bytes")
+    bound["source_report_path"] = report_identity.get("path")
+    bound["source_report_sha256"] = (
+        (baseline_run or {}).get("baseline_report_sha256")
+        or report_identity.get("sha256")
+    )
+    bound["source_report_size_bytes"] = report_identity.get("size_bytes")
+    bound["source_summary_path"] = summary_identity.get("path")
+    bound["source_summary_sha256"] = (
+        (baseline_run or {}).get("baseline_summary_sha256")
+        or summary_identity.get("sha256")
+    )
+    bound["source_ex5_path"] = (baseline_run or {}).get("baseline_ex5_path")
+    bound["source_ex5_sha256"] = (baseline_run or {}).get("baseline_ex5_sha256")
+    bound["source_setfile_path"] = (baseline_run or {}).get("baseline_setfile_path")
+    bound["source_setfile_sha256"] = (baseline_run or {}).get(
+        "baseline_setfile_sha256"
+    )
+    bound["source_mq5_path"] = (baseline_run or {}).get("baseline_mq5_path")
+    bound["source_mq5_sha256"] = (baseline_run or {}).get("baseline_mq5_sha256")
+
+    if not bound.get("persisted"):
+        identity_status = "UNAVAILABLE_STREAM_NOT_PERSISTED"
+    elif not bound.get("content_sha256"):
+        identity_status = "UNAVAILABLE_STREAM_UNREADABLE"
+    elif (
+        bound.get("host_copy")
+        and bound.get("host_copy_sha256") != bound.get("content_sha256")
+    ):
+        identity_status = "INVALID_HOST_COPY_HASH_MISMATCH"
+    elif (
+        bound.get("source_report_sha256")
+        and bound.get("source_artifact_sha256")
+        and bound.get("source_ex5_sha256")
+        and bound.get("source_setfile_sha256")
+    ):
+        identity_status = "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT"
+    elif bound.get("source_report_sha256") and bound.get("source_artifact_sha256"):
+        identity_status = "BOUND_STREAM_SOURCE_AND_REPORT_BUILD_BINDING_UNAVAILABLE"
+    elif bound.get("source_artifact_sha256"):
+        identity_status = "BOUND_STREAM_AND_SOURCE_REPORT_UNAVAILABLE"
+    else:
+        identity_status = "BOUND_STREAM_ONLY_REPORT_UNAVAILABLE"
+    bound["identity_status"] = identity_status
+    bound["source_report_binding"] = (
+        "baseline_run_report"
+        if bound.get("source_report_sha256")
+        else (
+            "not_available_for_recorded_source"
+            if source_kind
+            else "source_artifact_unavailable"
+        )
+    )
+    identity_payload = {
+        "content_row_count": bound.get("content_row_count"),
+        "content_sha256": bound.get("content_sha256"),
+        "ea_id": int(ea_id),
+        "host_copy_sha256": bound.get("host_copy_sha256"),
+        "n": bound.get("n"),
+        "source_artifact_kind": source_kind,
+        "source_artifact_sha256": bound.get("source_artifact_sha256"),
+        "source_ex5_sha256": bound.get("source_ex5_sha256"),
+        "source_mq5_sha256": bound.get("source_mq5_sha256"),
+        "source_report_sha256": bound.get("source_report_sha256"),
+        "source_setfile_sha256": bound.get("source_setfile_sha256"),
+        "symbol": symbol,
+    }
+    bound["identity_sha256"] = (
+        hashlib.sha256(
+            json.dumps(identity_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        if bound.get("content_sha256")
+        else None
+    )
+    return bound
 
 
 def _float_or_none(value) -> float | None:
@@ -936,48 +1405,146 @@ def _net_profit_factor(trades: list[dict]) -> float | None:
     return common.profit_factor(profits)
 
 
+# NARROW C2 (OWNER 2026-07-25 push-directive; decisions/2026-07-25_q08_tooling_invalid_is_infra.md).
+# Q08.5 (neighborhood) and Q08.7 (PBO) need a >=2-config optimization grid / neighborhood-support
+# artifact that a fixed-param card EA's Q03 never publishes. When that artifact is ABSENT or
+# un-lineage-verifiable the sub-gate returns INVALID with one of these EXACT detail prefixes. That
+# is a could-not-compute TOOLING state — a retry-owed infrastructure condition (same taxonomy as
+# WP-4 ACTIVE_TIMEOUT / WP-3), NOT a robustness verdict — so the aggregate resolves it to
+# INFRA_FAIL rather than a terminal blocking INVALID. Matched by exact prefix, never loose
+# substring, so the whitelist can never silently absorb a real verdict.
+Q08_TOOLING_INVALID_DETAIL_PREFIXES = (
+    "neighborhood_evidence_lineage_invalid",  # 8.5 lineage un-verifiable (aggregate._neighborhood_lineage_invalid_result)
+    "pbo_refresh_lineage_invalid",            # 8.7 refresh un-verifiable (aggregate._pbo_refresh_invalid_result)
+    "perturbations_runner_output_missing",    # 8.5 neighborhood artifact absent (sub_8_5_neighborhood.run)
+    "insufficient_distinct_configs",          # 8.7 <2-config grid — the fixed-param card case (sub_8_7_pbo.run)
+)
+
+# EXCLUDED — these stay a genuine blocking INVALID and are NEVER reclassified to INFRA_FAIL:
+#   * baseline_setfile_defect:* — a DETERMINISTIC build/setgen defect (07-19 RCA): re-derivation
+#     re-reads the same broken setfile and reproduces it, so it must stay INVALID precisely so the
+#     stranded-INFRA sweep refuses the doomed re-enqueue. It is not retry-owed.
+# (A COMPUTED breach — 8.5 'N_perturbation_breaches' / 8.7 'PBO=..%' FAIL — carries status FAIL,
+#  never INVALID, so it never reaches this classifier and keeps the existing FAIL_HARD path.
+#  A degenerate_baseline INVALID is already routed to INFRA_RECYCLE upstream, DL-082 §3a.)
+Q08_TOOLING_INVALID_EXCLUDE_TOKENS = (
+    "baseline_setfile_defect",
+)
+
+
+def _q08_invalid_is_tooling(detail: str) -> bool:
+    """True iff an 8.5/8.7 INVALID detail is a could-not-compute (tooling) harness state.
+
+    Enumerated whitelist, matched by EXACT prefix (never loose substring). A deterministic
+    build/setgen defect is explicitly excluded and stays a blocking INVALID. See
+    decisions/2026-07-25_q08_tooling_invalid_is_infra.md.
+    """
+    d = str(detail or "").strip().lower()
+    if any(token in d for token in Q08_TOOLING_INVALID_EXCLUDE_TOKENS):
+        return False
+    return any(d.startswith(prefix) for prefix in Q08_TOOLING_INVALID_DETAIL_PREFIXES)
+
+
 def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None,
                        cost_cushion_tier: str | None = None) -> tuple[str, dict[str, str]]:
-    """Combine sub-gate statuses into PASS/FAIL_SOFT/FAIL_HARD/INVALID."""
+    """Combine sub-gate statuses into PASS/FAIL_SOFT/FAIL_HARD/INVALID/INFRA_RECYCLE/INFRA_FAIL.
+
+    DL-082 §3 recalibration:
+      - §3a degenerate (0-trade) Q08.5 neighborhood baseline -> INFRA_RECYCLE (an
+        infra/setfile condition routed to setfile re-derivation, never a gate verdict).
+      - §3b a frequency-aware gate (8.4/8.6/8.10) that is structurally inapplicable at
+        this EA's frequency class emits status INFORMATIONAL -> excluded from the
+        soft-fail set entirely (recorded, no verdict weight).
+      - §3c explicit PASS: all merit gates pass and every remaining soft signal is
+        within the ratified non-merit allowance (EDGE_SOFT of 8.4/8.6/8.10/8.11 +
+        LOW_SAMPLE + INFORMATIONAL). Anything outside that allowance -> FAIL_SOFT.
+      - NARROW C2 (OWNER 2026-07-25): a blocking 8.5/8.7 INVALID whose detail is a
+        could-not-compute TOOLING state (see _q08_invalid_is_tooling) -> INFRA_FAIL
+        (retry-owed infra), never a terminal block. A deterministic build/setgen defect
+        or a COMPUTED FAIL still blocks.
+    """
     classification: dict[str, str] = {}
     hard = False
-    soft = False
-    invalid = False
     blocking_invalid = False
+    tooling_invalid = False
+    degenerate_recycle = False
 
     for result in sub_results:
         name = str(result.get("name") or "unknown")
         status = str(result.get("status") or "").upper()
+        detail_lower = _detail_text(result).lower()
         if status == "PASS":
             classification[name] = "PASS"
             continue
+        # DL-082 §3b: a frequency-aware gate that is structurally inapplicable at this
+        # EA's frequency class (e.g. <12 traded calendar months, <50 trades for the
+        # chopping block, an ATR regime with zero trades) reports INFORMATIONAL — it is
+        # recorded with its measured value but carries NO soft-fail signal.
+        if status == "INFORMATIONAL":
+            classification[name] = "INFORMATIONAL"
+            continue
+        # 2026-07-27 (census rank 7 — Q08 evidence defects): a parameter-space gate
+        # (8.5 neighborhood / 8.7 PBO) that is STRUCTURALLY UNDEFINED for a
+        # fixed-parameter strategy reports NOT_APPLICABLE. A card EA with no perturbable
+        # parameter has no ±10% neighborhood and no >=2-config family by construction —
+        # there is nothing to compute and retrying can never manufacture the evidence, so
+        # this is neither a robustness verdict (INVALID/FAIL) nor a retry-owed infra
+        # condition (INFRA_FAIL). It is recorded with no verdict weight and, per DL-082
+        # §3c, is within the non-merit allowance for a clean PASS. Distinct from the
+        # NARROW C2 'insufficient_distinct_configs' TOOLING INVALID, which the sub-gate
+        # cannot prove is structural from scores.csv alone and which stays INFRA_FAIL;
+        # NOT_APPLICABLE is emitted ONLY on the runner's authoritative
+        # structurally_inapplicable determination.
+        if status == "NOT_APPLICABLE":
+            classification[name] = "NOT_APPLICABLE"
+            continue
+        # DL-082 §3a: a degenerate (0-trade) Q08.5 neighborhood baseline is an
+        # infra/setfile condition — the perturbation baseline could not reproduce the
+        # strategy, so nothing was tested. Route the whole item to setfile
+        # re-derivation (INFRA_RECYCLE), never a blocking INVALID or a FAIL. A
+        # structural setgen defect (baseline_setfile_defect) is deterministic and stays
+        # a genuine blocking INVALID (07-17 ruling untouched).
+        if (
+            name.startswith("8.5")
+            and status == "INVALID"
+            and "baseline_setfile_defect" not in detail_lower
+            and (
+                result.get("infra_condition") == "degenerate_baseline"
+                or "degenerate_baseline" in detail_lower
+            )
+        ):
+            classification[name] = "INFRA_RECYCLE"
+            degenerate_recycle = True
+            continue
         # Portfolio reframe (DL-075, 2026-06-21, OWNER): seasonal (8.4), chopping-block
         # (8.6), regime/crisis (8.10), and MC shuffle DD (8.11) measure SINGLE-EA
-        # robustness across conditions or trade sequencing —
-        # exactly the risk the Q09 anti-correlation portfolio absorbs by diversification.
-        # Requiring each EA to individually survive every season/regime double-counts the
-        # robustness bar and walls off low-freq/regime-dependent edges. So these gates
-        # gates can only contribute a SOFT signal here: never HARD-fail, never block as
-        # INVALID. The EA flows to the Q09 portfolio track where combined robustness is
-        # the real gate. Profitability (portfolio_net_pf, cost_cushion) stays HARD below.
-        if name.startswith(("8.4", "8.6", "8.10", "8.11")):
+        # robustness across conditions or trade sequencing — exactly the risk the Q09
+        # anti-correlation portfolio absorbs by diversification. They contribute only a
+        # SOFT signal here (never HARD, never block as INVALID), and per DL-082 §3c that
+        # EDGE_SOFT is within the non-merit allowance for a clean PASS.
+        if name.startswith(ALLOWANCE_SOFT_GATES):
             classification[name] = "EDGE_SOFT"
-            soft = True
             continue
         if status == "INVALID" and not any(
-            token in _detail_text(result).lower() for token in LOW_SAMPLE_DETAIL_TOKENS
+            token in detail_lower for token in LOW_SAMPLE_DETAIL_TOKENS
         ):
             classification[name] = "INVALID"
-            invalid = True
             if name.startswith(("8.5", "8.7")):
-                blocking_invalid = True
+                # NARROW C2 (OWNER 2026-07-25): split the blocking 8.5/8.7 INVALID label
+                # into (a) a could-not-compute TOOLING state — the >=2-config optimization
+                # grid a fixed-param card EA never publishes was absent / un-verifiable
+                # (retry-owed infra, WP-4 precedent) -> INFRA_FAIL; and (b) a genuine
+                # blocking INVALID (a deterministic build/setgen defect, or an unknown
+                # non-tooling INVALID) that must keep failing. See _q08_invalid_is_tooling.
+                if _q08_invalid_is_tooling(detail_lower):
+                    tooling_invalid = True
+                else:
+                    blocking_invalid = True
             continue
         tier = _classify_fail(result)
         classification[name] = tier
         if tier == "EDGE_HARD":
             hard = True
-        else:
-            soft = True
 
     pf = _net_profit_factor(trades or [])
     if pf is not None and pf < 1.0:
@@ -997,10 +1564,8 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
             hard = True
         else:
             classification["cost_cushion"] = "INVALID"
-            invalid = True
     elif cost_cushion_tier == "EDGE_SOFT":
         classification["cost_cushion"] = "EDGE_SOFT"
-        soft = True
     elif cost_cushion_tier == "PASS":
         classification["cost_cushion"] = "PASS"
     elif cost_cushion_tier == "INVALID":
@@ -1008,32 +1573,53 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
         # commission was un-computable, so BOTH hard profitability gates
         # (cushion + net PF) graded gross. Re-run with a real stream.
         classification["cost_cushion"] = "INVALID"
-        invalid = True
 
     # A zero-trade baseline is not merit evidence.  It must dominate any stale or
     # independently-computed sub-gate result (notably PBO) so an empty Q08 run can
-    # never synthesize FAIL_HARD.
+    # never synthesize FAIL_HARD. (farmctl maps this INVALID+n_trades==0 to INFRA_FAIL.)
     if not trades:
         classification["baseline_trade_count"] = "INVALID"
         return "INVALID", classification
 
-    # HARD dominates: a definitive edge failure (e.g. PBO 88%, net PF < 1.0) means the EA is
-    # not robust regardless of a non-evaluable gate.
+    # HARD dominates everything below (incl. INFRA_RECYCLE): a definitive edge failure
+    # (PBO 88%, net PF < 1.0, real cost fail, 8.5 neighborhood breach) computed from a
+    # VALID main baseline is a real verdict, so the 18 genuine EDGE_HARD breaches keep
+    # failing regardless of a degenerate neighborhood-support run.
     if hard:
         return "FAIL_HARD", classification
 
-    # OWNER 2026-07-17: unresolved neighborhood/PBO tooling evidence is not
-    # admissible. It must remain INVALID until the configured robustness family
-    # is genuinely evaluable; other Davey passes cannot soften this condition.
+    # DL-082 §3a: with no genuine merit hard-fail, a degenerate neighborhood baseline
+    # routes to setfile re-derivation. Ranked ABOVE the blocking INVALID / PASS split
+    # because the setfile itself is the thing to fix (re-derivation re-runs every gate).
+    if degenerate_recycle:
+        return "INFRA_RECYCLE", classification
+
+    # OWNER 2026-07-17 (untouched): a GENUINE blocking 8.5/8.7 INVALID — a deterministic
+    # build/setgen defect (baseline_setfile_defect: re-derivation re-reads the same broken
+    # setfile, 07-19 RCA) or an unknown non-tooling INVALID — is not admissible and stays a
+    # blocking INVALID; other Davey passes cannot soften it. The only 07-17 record governs
+    # neighborhood FAIL and genuine non-evaluable INVALID, NOT a harness could-not-compute
+    # state (verified: no ratifying record blocks the tooling class —
+    # docs/ops/evidence/2026-07-25_codex_review_wp2346.md; decisions/2026-07-25_q08_tooling_invalid_is_infra.md).
     if blocking_invalid:
         return "INVALID", classification
+
+    # NARROW C2 (OWNER 2026-07-25 push-directive): the only blocking 8.5/8.7 INVALIDs are
+    # could-not-compute TOOLING states (the >=2-config grid / neighborhood-support artifact a
+    # fixed-param card EA never publishes was absent or un-lineage-verifiable). That is a
+    # retry-owed infrastructure condition, NOT a robustness verdict — the same taxonomy as
+    # WP-3/WP-4 (ACTIVE_TIMEOUT). Resolve to INFRA_FAIL so the item re-runs when the grid
+    # exists, instead of terminally blocking a fixed-param card EA on evidence it structurally
+    # cannot produce. A COMPUTED FAIL in ANY sub-gate outranks this (handled by `hard` above);
+    # a genuine blocking INVALID outranks it (handled just above).
+    if tooling_invalid:
+        return "INFRA_FAIL", classification
 
     # DL-077 (2026-06-26, OWNER): the Davey statistical battery mostly CANNOT COMPUTE for the
     # low-frequency structural edges this funnel selects (8.2 DSR, 8.6, 8.8, 8.9, 8.10 go
     # INVALID at low trade/daily-return counts). An INVALID sub-gate means "could not test",
     # NOT "failed" -- it must never block a PROFITABLE edge with real evidence (e.g. PBO) from
-    # the Q09 portfolio track. Pre-DL-077 a single non-low-sample INVALID returned the blocking
-    # INVALID verdict -> every low-freq sleeve INFRA_FAILed at Q08 and the book could not grow.
+    # the Q09 portfolio track.
     if pf is None:
         # Profitability itself could not be computed (no baseline trades) -> genuinely invalid.
         return "INVALID", classification
@@ -1045,10 +1631,18 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
     )
     if real_quality_passes < DL077_MIN_QUALITY_PASSES:
         return "INVALID", classification
-    # Profitable, has real evidence, no hard failure: INVALID Davey gates and soft signals
-    # both route to the portfolio track (FAIL_SOFT), never block. Clean gold PASS only when
-    # there are no soft/invalid signals at all.
-    if soft or invalid:
+
+    # DL-082 §3c — explicit PASS. No merit hard-fail, no blocking INVALID, no infra
+    # recycle, profitability computable, and at least one real quality gate passed.
+    # A clean PASS additionally requires that EVERY remaining classification is within
+    # the ratified non-merit allowance (PASS / INFORMATIONAL / LOW_SAMPLE / EDGE_SOFT of
+    # 8.4/8.6/8.10/8.11). Any label outside it — EDGE_SOFT of 8.7/8.8, a thin
+    # cost_cushion, a non-low-sample INVALID — routes the EA to the Q09 portfolio track.
+    outside_allowance = [
+        gate_name for gate_name, verdict in classification.items()
+        if not _label_within_pass_allowance(gate_name, verdict)
+    ]
+    if outside_allowance:
         return "FAIL_SOFT", classification
     return "PASS", classification
 
@@ -1058,14 +1652,27 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             out_dir: Path | None = None,
             terminal: str | None = None,
             baseline_setfile: Path | None = None,
-            neighborhood_max_params: int | None = None) -> dict:
+            neighborhood_max_params: int | None = None,
+            recovery_lineage: dict | None = None) -> dict:
     log_path = Path(log_path)
+    # EQUITY_SNAPSHOT account values are tagged with the physical chart symbol,
+    # which differs from the logical work-item symbol for basket EAs. Resolve
+    # that emitter identity before reading any per-EA tester-agent log.
+    _repo_root_q8 = Path(__file__).resolve().parents[3]
+    _baseline_sf_q8 = baseline_setfile or _guess_baseline_setfile(_repo_root_q8, ea_id, symbol)
+    equity_symbol = (
+        _host_symbol_from_setfile(Path(_baseline_sf_q8), symbol)
+        if _baseline_sf_q8 is not None
+        else symbol
+    )
     trades = common.load_trades_from_log(log_path)
-    equity_stream = common.load_equity_stream(log_path)
+    trade_source_kind: str | None = "input_log" if trades else None
+    trade_source_path: Path | None = log_path if trades else None
+    equity_stream = common.load_equity_stream(log_path, symbol=equity_symbol)
     if not equity_stream:
-        structured_log = _latest_structured_qm_log(ea_id, symbol, terminal)
+        structured_log = _latest_structured_qm_log(ea_id, equity_symbol, terminal)
         if structured_log is not None:
-            equity_stream = common.load_equity_stream(structured_log)
+            equity_stream = common.load_equity_stream(structured_log, symbol=equity_symbol)
     # Tester writes the EA log to the agent sandbox, so the farmctl --log path is empty.
     # The recompiled EA also dumps a TRADE_CLOSED stream to Common\Files; read that, and
     # run a clean baseline backtest first if it's not there yet.
@@ -1076,12 +1683,8 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         # Basket EAs: resolve host-symbol log path. The EA's _Symbol is the physical chart
         # symbol (e.g. GBPJPY.DWX), NOT the logical composite symbol used as the work-item
         # key, so TRADE_CLOSED lands in a per-host path, not the logical-symbol path.
-        _repo_root_q8 = Path(__file__).resolve().parents[3]
-        _baseline_sf_q8 = baseline_setfile or _guess_baseline_setfile(_repo_root_q8, ea_id, symbol)
-        if _baseline_sf_q8 is not None:
-            _h_sym = _host_symbol_from_setfile(Path(_baseline_sf_q8), symbol)
-            if _h_sym and _h_sym != symbol:
-                host_log = _common_q08_trade_log(ea_id, _h_sym)
+        if equity_symbol != symbol:
+            host_log = _common_q08_trade_log(ea_id, equity_symbol)
         # Always run a FRESH full-history baseline so Q08 evaluates a clean run, not a
         # stale per-fold log left by an earlier phase (which would undercount trades and
         # wrongly fail a higher-frequency strategy). Clear the stale log first.
@@ -1107,27 +1710,51 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             if retry_summary is not None:
                 baseline_run.update(_baseline_report_metadata(retry_summary))
         trades = common.load_trades_from_log(common_log)
-        equity_stream = common.load_equity_stream(common_log) or equity_stream
+        if trades:
+            trade_source_kind = "fresh_baseline_common_stream"
+            trade_source_path = common_log
+        equity_stream = common.load_equity_stream(
+            common_log, symbol=equity_symbol
+        ) or equity_stream
         # Basket EA host-symbol fallback: if the logical-symbol path is still empty after
         # the baseline, the EA used _Symbol (physical chart symbol) as its TRADE_CLOSED key.
         if not trades and host_log is not None:
             trades = common.load_trades_from_log(host_log)
-            equity_stream = common.load_equity_stream(host_log) or equity_stream
+            if trades:
+                trade_source_kind = "basket_host_stream"
+                trade_source_path = host_log
+            equity_stream = common.load_equity_stream(
+                host_log, symbol=equity_symbol
+            ) or equity_stream
             if trades and baseline_run is not None:
                 baseline_run["host_sym_log_fallback"] = str(host_log)
-        structured_log = _latest_structured_qm_log(ea_id, symbol, terminal)
+        structured_log = _latest_structured_qm_log(ea_id, equity_symbol, terminal)
         if structured_log is not None:
-            equity_stream = common.load_equity_stream(structured_log) or equity_stream
+            equity_stream = common.load_equity_stream(
+                structured_log, symbol=equity_symbol
+            ) or equity_stream
             if baseline_run is not None:
                 baseline_run["structured_log_path"] = str(structured_log)
         if not trades and baseline_run and baseline_run.get("baseline_report_path"):
-            trades = common.load_trades_from_mt5_report(Path(str(baseline_run["baseline_report_path"])))
+            report_path = Path(str(baseline_run["baseline_report_path"]))
+            trades = common.load_trades_from_mt5_report(report_path)
+            if trades:
+                trade_source_kind = "baseline_mt5_report"
+                trade_source_path = report_path
 
     # Snapshot the per-trade list BEFORE worst-case commission mutates it; the durable
     # portfolio stream carries gross-of-worst-case net (the builder reapplies its own
     # commission model), matching the raw Common\Files stream format.
     raw_trades = [dict(t) for t in trades]
     portfolio_stream = _persist_durable_sleeve_stream(ea_id, symbol, raw_trades, host_log)
+    portfolio_stream = _bind_portfolio_stream_identity(
+        ea_id=ea_id,
+        symbol=symbol,
+        portfolio_stream=portfolio_stream,
+        source_kind=trade_source_kind,
+        source_path=trade_source_path,
+        baseline_run=baseline_run,
+    )
 
     trades, commission_info = _apply_worst_case_commission(trades, symbol)
 
@@ -1183,6 +1810,7 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         sub_results, trades, commission_info.get("cost_cushion_tier"))
 
     aggregate = {
+        "evidence_schema": "q08_aggregate/v2",
         "ea_id": ea_id,
         "symbol": symbol,
         "phase": "Q08",
@@ -1197,6 +1825,11 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             "PBO_NEIGHBORHOOD_FALLBACK_MAX_TIER": "EDGE_SOFT",
             "PBO_UNKNOWN_SOURCE_POLICY": "EDGE_HARD",
             "EDGE_DECAY_HARD_PF_LAST": EDGE_DECAY_HARD_PF_LAST,
+            # DL-082 §3c (OWNER 2026-07-16/19): non-merit allowance for a clean PASS.
+            "DL082_ALLOWANCE_SOFT_GATES": list(ALLOWANCE_SOFT_GATES),
+            "DL082_PASS_ALLOWANCE_LABELS": ["PASS", "INFORMATIONAL", "LOW_SAMPLE",
+                                            "EDGE_SOFT(8.4/8.6/8.10/8.11)"],
+            "DL082_DEGENERATE_BASELINE_OUTCOME": "INFRA_RECYCLE",
         },
         "generated_at_utc": dt.datetime.now(dt.UTC).isoformat(),
         "n_trades": len(trades),
@@ -1214,8 +1847,13 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             "n_pass":    sum(1 for r in sub_results if r["status"] == "PASS"),
             "n_fail":    sum(1 for r in sub_results if r["status"] == "FAIL"),
             "n_invalid": sum(1 for r in sub_results if r["status"] == "INVALID"),
+            "n_not_applicable": sum(
+                1 for r in sub_results if r["status"] == "NOT_APPLICABLE"
+            ),
         },
     }
+    if recovery_lineage is not None:
+        aggregate["recovery_lineage"] = recovery_lineage
     if mc_shuffle_dd:
         aggregate["mc_shuffle_dd"] = mc_shuffle_dd
         aggregate["mc_maxdd_p95"] = mc_shuffle_dd.get("mc_maxdd_p95")
@@ -1251,7 +1889,8 @@ def _print_summary(agg: dict) -> None:
     print(f"\nQ08 · QM5_{agg['ea_id']} {agg['symbol']}  ->  {agg['verdict']}")
     print(f"    trades={agg['n_trades']}  equity_snaps={agg['n_equity_snapshots']}")
     for r in agg["sub_gates"]:
-        flag = {"PASS": "OK", "FAIL": "X ", "INVALID": "? "}.get(r["status"], "  ")
+        flag = {"PASS": "OK", "FAIL": "X ", "INVALID": "? ",
+                "NOT_APPLICABLE": "NA"}.get(r["status"], "  ")
         val = r.get("value")
         thr = r.get("threshold")
         print(f"    {flag} {r['name']:30s}  value={val}  threshold={thr}")
@@ -1264,11 +1903,16 @@ def main() -> int:
     ap.add_argument("--symbol", help="symbol e.g. NDX.DWX")
     ap.add_argument("--log", type=Path, help="path to EA JSON-lines log")
     ap.add_argument("--out-dir", type=Path, help="override output dir")
+    ap.add_argument("--out-prefix", type=Path, help=argparse.SUPPRESS)
     ap.add_argument("--terminal", help="MT5 terminal (T1-T10) for the baseline trade-log backtest")
     ap.add_argument("--baseline-setfile", type=Path,
                     help="explicit baseline setfile for Q08 baseline and neighborhood support runs")
     ap.add_argument("--neighborhood-max-params", type=int,
                     help="override Q08.5 perturbation parameter cap for bounded reruns")
+    ap.add_argument("--recovery-lineage-manifest", type=Path,
+                    help="append-only retry artifact bindings written by farmctl")
+    ap.add_argument("--expected-recovery-lineage-sha256",
+                    help="required SHA256 pin for --recovery-lineage-manifest")
     ap.add_argument("--discover", action="store_true",
                     help="walk Q07-PASS pairs in farm DB and run Q08 on each (TODO)")
     args = ap.parse_args()
@@ -1281,6 +1925,15 @@ def main() -> int:
         ap.print_usage(sys.stderr)
         return 2
 
+    try:
+        recovery_lineage = _load_recovery_lineage_manifest(
+            args.recovery_lineage_manifest,
+            args.expected_recovery_lineage_sha256,
+        )
+    except ValueError as exc:
+        print(f"Q08 recovery lineage refused: {exc}", file=sys.stderr)
+        return 2
+
     agg = run_all(
         args.ea_id,
         args.symbol,
@@ -1289,6 +1942,7 @@ def main() -> int:
         terminal=args.terminal,
         baseline_setfile=args.baseline_setfile,
         neighborhood_max_params=args.neighborhood_max_params,
+        recovery_lineage=recovery_lineage,
     )
     _print_summary(agg)
     return 0 if agg["verdict"] == "PASS" else (1 if agg["verdict"] == "FAIL" else 3)

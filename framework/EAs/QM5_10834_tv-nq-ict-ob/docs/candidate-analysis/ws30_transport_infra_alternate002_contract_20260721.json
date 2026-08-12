@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_10834_WS30_TRANSPORT_INFRA_ALTERNATE_CONTRACT",
+  "status": "IMPLEMENTED_NOT_MATERIALIZED_NOT_AUTHORIZED_NOT_LAUNCHED",
+  "created_utc": "2026-07-21T08:34:04.4847154Z",
+  "analysis_id": "QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001",
+  "attempt": {
+    "type": "PREREGISTERED_SINGLE_INFRASTRUCTURE_ALTERNATE",
+    "attempt_number": 2,
+    "maximum_total_attempts": 2,
+    "further_attempts_forbidden": true,
+    "execution_lane": "DEV2",
+    "resume_forbidden": true,
+    "terminal_hopping_forbidden": true
+  },
+  "primary_contract": {
+    "path": "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/ws30_transport_analysis_contract_20260721.json",
+    "size": 8247,
+    "sha256": "694d91e193f2dc151129683b42f7fdbf81f0d0965b1b6c78ebf2d9d18bafe253"
+  },
+  "primary_invalid_infra_closure": {
+    "path": "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/ws30_primary_attempt001_invalid_infra_closure_20260721.json",
+    "size": 6069,
+    "sha256": "510c100a5a5fa95a38a00d0b023833922b8f1574eb19a13746e21650ce6f3bbc",
+    "required_status": "PRIMARY_INVALID_INFRA_CLOSED_NO_OUTCOME_READ",
+    "required_cause_class": "DEV2_CONTROLLER_FAILED_BEFORE_NATIVE_REPORT",
+    "zero_native_reports_required": true,
+    "strategy_outcomes_read_must_be_false": true,
+    "strategy_merit_adjudicated_must_be_false": true
+  },
+  "identical_evidence_contract": {
+    "research_symbol": "WS30.DWX",
+    "timeframe": "M5",
+    "model": 4,
+    "duplicates_per_cell": 2,
+    "maximum_attempts_per_cell": 4,
+    "windows": [
+      {
+        "cell_id": "DEV",
+        "cohort": "DEV",
+        "from_date": "2018-07-02",
+        "to_date": "2022-12-31"
+      },
+      {
+        "cell_id": "OOS_2023",
+        "cohort": "OOS",
+        "from_date": "2023-01-01",
+        "to_date": "2023-12-31"
+      },
+      {
+        "cell_id": "OOS_2024",
+        "cohort": "OOS",
+        "from_date": "2024-01-01",
+        "to_date": "2024-12-31"
+      },
+      {
+        "cell_id": "OOS_2025",
+        "cohort": "OOS",
+        "from_date": "2025-01-01",
+        "to_date": "2025-12-31"
+      }
+    ],
+    "same_build_receipt_required": true,
+    "same_ea_binary_required": true,
+    "same_set_required": true,
+    "same_tick_data_receipt_required": true,
+    "tick_data_receipt_binding": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\data\\WS30_DWX_201807_202512_DEV2_backtest_data_receipt.json",
+      "size": 29800,
+      "sha256": "bd398f53d31e7c91667069e6b2c5b6ec466bb2630fb0934436a3b8f75aedd401"
+    },
+    "same_strategy_parameters_required": true,
+    "same_cost_schedule_required": true,
+    "same_merit_contract_required": true,
+    "frozen_gate_and_auditor_identity": {
+      "merit_contract_canonical_sha256": "b87795527d7d4b6bfdfc111e03513b74e06a4bb391f8fdab0dd0cd0a1437bf2e",
+      "primary_ws30_adapter_size": 51496,
+      "primary_ws30_adapter_sha256": "d9433850c15557575f6fccac2afa62c4ef09ecdd1007c806ca4f31fcb36c90fb",
+      "base_auditor_size": 239116,
+      "base_auditor_sha256": "58101fefced46392f26bd24aae0e7520d8ee591d97d1e50a759efd46b693f013"
+    },
+    "parameter_tuning_forbidden": true,
+    "gate_relaxation_forbidden": true
+  },
+  "separate_control_namespace": {
+    "run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002",
+    "pre_receipt_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002\\pre_receipt.json",
+    "authorization_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002\\native_outcome_authorization.json",
+    "launch_state_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002\\launch_state.json",
+    "launch_job_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002\\launch_job.json",
+    "post_receipt_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002\\post_receipt.json",
+    "claim_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\claims\\QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001_DEV2_NATIVE_ATTEMPT_002.json",
+    "authorization_scope": "QM5_10834_WS30_TRANSPORT_INFRA_ALTERNATE_002_4_CELLS_X_2_DUPLICATES_MODEL4_MAX_4_NATIVE_STARTS_PER_CELL",
+    "all_primary_paths_forbidden": true
+  },
+  "immutable_runtime": {
+    "source_main_worktree": "C:\\QM\\repo",
+    "main_worktree_scoped_paths_must_be_clean_at_materialization": true,
+    "main_worktree_scoped_paths_must_be_clean_at_pre": true,
+    "main_worktree_scoped_paths_must_be_clean_at_launch": true,
+    "unrelated_main_worktree_paths_may_be_dirty": true,
+    "main_worktree_scoped_path_policy": {
+      "basis": "EXACT_RUNTIME_PRE_INCLUDE_AND_CONTRACT_ARTIFACT_DEPENDENCY_CLOSURE",
+      "path_count": 53,
+      "relative_path_list_canonical_sha256": "1bc5d9e2fe51aa27926bae55e6fb888b3cde1a43a1df08c22e0f78f2b6b8758a",
+      "git_status_uses_literal_pathspecs_only": true,
+      "source_to_runtime_exact_byte_identity_required": true
+    },
+    "runtime_worktree_root": "C:\\QM\\runtime_worktrees\\QM5_10834_WS30_ALT002",
+    "runtime_worktree_must_be_new": true,
+    "runtime_worktree_must_be_detached": true,
+    "runtime_worktree_must_be_normalized_clean": true,
+    "runtime_worktree_staged_diff_forbidden": true,
+    "runtime_worktree_untracked_files_forbidden": true,
+    "runtime_worktree_porcelain_status_is_not_cleanliness_authority": true,
+    "runtime_worktree_cleanliness_policy": {
+      "staged_diff": "GIT_DIFF_CACHED_QUIET_EXIT_ZERO_REQUIRED",
+      "normalized_worktree_diff": "GIT_DIFF_QUIET_EXIT_ZERO_REQUIRED",
+      "untracked_files": "GIT_LS_FILES_OTHERS_INCLUDING_IGNORED_EMPTY_REQUIRED",
+      "porcelain_status": "NON_AUTHORITATIVE_DUE_TO_AUTOCRLF_INDEX_STAT_FALSE_POSITIVES",
+      "raw_bound_file_bytes": "EXACT_SOURCE_RUNTIME_SHA256_SIZE_LEDGER_REQUIRED"
+    },
+    "runtime_worktree_must_not_equal_main_worktree": true,
+    "runtime_root_reparse_components_forbidden": true,
+    "exact_bound_file_byte_overlay_required": true,
+    "post_overlay_normalized_git_clean_required": true,
+    "post_overlay_exact_raw_byte_ledger_required": true,
+    "runtime_head_must_contain_contract_and_closure": true,
+    "primary_contract_absolute_repo_paths_are_evidence_origin_only": true,
+    "runtime_relocation_requires_byte_identical_repository_relative_files": true,
+    "all_repository_pre_and_include_bindings_byte_identity_ledger_required": true,
+    "alternate_pre_and_worker_must_not_open_main_worktree_evidence_files": true,
+    "runtime_tool_relative_path": "framework/EAs/QM5_10834_tv-nq-ict-ob/tools/candidate_analysis/audit_tv_nq_ict_ob_ws30_alternate.py",
+    "pre_binds_runtime_head_and_all_runtime_roles": true,
+    "worker_reasserts_bound_bytes_before_each_native_cell": true,
+    "pump_mutation_of_main_worktree_cannot_change_bound_runtime_bytes": true
+  },
+  "outcome_fence": {
+    "primary_controller_stderr_content_must_not_be_read": true,
+    "primary_native_reports_or_outcomes_must_not_be_read": true,
+    "alternate_pre_reads_no_native_reports_or_outcomes": true,
+    "alternate_worker_seals_opaque_outcome_artifacts_only": true,
+    "alternate_post_requires_complete_state": true,
+    "duplicate_deal_sequence_must_match_exactly": true
+  },
+  "launch_gate": {
+    "runtime_materialization_receipt_required": true,
+    "fresh_owner_authorization_at_reserved_path_required": true,
+    "alternate_pre_receipt_required": true,
+    "scoped_main_paths_and_normalized_clean_runtime_required": true,
+    "unrelated_main_worktree_dirt_does_not_block": true,
+    "primary_closure_must_revalidate_exactly": true,
+    "launch_not_authorized_by_this_contract": true
+  }
+}

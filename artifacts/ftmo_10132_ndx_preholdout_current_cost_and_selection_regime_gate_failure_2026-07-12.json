@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_FLOOR_AND_SELECTION_REGIME_CONCENTRATION",
+  "ea_id": 10132,
+  "symbol": "NDX.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2024-12-31",
+  "model": 4,
+  "deterministic": true,
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10132_ndx_h1_preholdout_wave44_20260712\\QM5_10132\\20260712_191923\\summary.json",
+  "summary_sha256": "1DC4FFA29F725250EE743EF7CE41E84E85A696B741CD3218C2BC9A10A4E1DC3A",
+  "report_sha256": [
+    "63E9EABA79D89F79ED03E922950E7FF3516EADEC2D70BE9A641D2F1A8F18BDD3",
+    "DED4B25D9701FD31CBCC40DFCE434F0010CD72743AC400E487AB6E07F20D8C4C"
+  ],
+  "native": {
+    "trades": 1664,
+    "profit_factor": 1.067219,
+    "net_profit": 33989.16,
+    "close_to_close_max_drawdown": 41711.85
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10132_NDX_H1_T1_PREHOLDOUT_FRESH_20260712.jsonl",
+    "rows": 1664,
+    "sha256": "499A6D570953431192BE745DB69341E14279835DB65B86F616149288A478050B",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET",
+    "missing_mae_rows": 0,
+    "corrected_net_delta": 0.0
+  },
+  "current_cost_artifact": "artifacts/ftmo_10132_ndx_preholdout_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "profit_factor": 1.118085,
+    "net_profit": 58186.08,
+    "close_to_close_max_drawdown": 34183.1,
+    "swap_total": -2827.97
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "negative_development_years": [2019],
+    "validation_2023_profit_factor": 1.065102,
+    "validation_2023_net_profit": 5568.36,
+    "selection_contaminated_2024_profit_factor": 1.623255,
+    "selection_contaminated_2024_net_profit": 43334.59,
+    "reason_for_reject": "The exact dense stream misses the standalone PF floor, and the selection-known 2024 year supplies most of pooled current-cost profit."
+  },
+  "portfolio_screen_opened": false,
+  "selection_contaminated_year": 2024,
+  "sealed_holdout_year": 2025,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

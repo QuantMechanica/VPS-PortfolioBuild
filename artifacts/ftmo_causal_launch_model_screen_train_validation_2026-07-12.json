@@ -1,0 +1,4456 @@
+{
+  "basis": "ridge_launch_model_using_only_features_available_before_start_day",
+  "candidate_count": 60,
+  "control": {
+    "development": {
+      "adverse_bar_fill": {
+        "daily_breach_pct": 25.113739763421293,
+        "max_breach_pct": 13.557779799818018,
+        "not_reached_pct": 11.464968152866243,
+        "pass_ci95_pct": [
+          46.91305068202278,
+          52.814924724051636
+        ],
+        "pass_pct": 49.86351228389445,
+        "runs": 1099
+      },
+      "eligible_pct": 100.0,
+      "eligible_starts": 1099,
+      "median_gap_calendar_days": 1.0,
+      "p95_gap_calendar_days": 1.0,
+      "threshold_fill": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 40.85532302092811,
+        "pass_ci95_pct": [
+          56.211475514656094,
+          62.01417227835816
+        ],
+        "pass_pct": 59.14467697907189,
+        "runs": 1099
+      },
+      "total_starts": 1099
+    },
+    "validation": {
+      "adverse_bar_fill": {
+        "daily_breach_pct": 33.035714285714285,
+        "max_breach_pct": 17.261904761904763,
+        "not_reached_pct": 12.797619047619047,
+        "pass_ci95_pct": [
+          31.92027277960414,
+          42.185299770203486
+        ],
+        "pass_pct": 36.904761904761905,
+        "runs": 336
+      },
+      "eligible_pct": 100.0,
+      "eligible_starts": 336,
+      "median_gap_calendar_days": 1.0,
+      "p95_gap_calendar_days": 1.0,
+      "threshold_fill": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 56.25,
+        "pass_ci95_pct": [
+          38.54593102540925,
+          49.09536496427166
+        ],
+        "pass_pct": 43.75,
+        "runs": 336
+      },
+      "total_starts": 336
+    }
+  },
+  "feature_complete_starts": 1435,
+  "feature_names": [
+    "book_drawdown_020",
+    "book_drawdown_060",
+    "book_drawdown_120",
+    "book_pnl_std_010",
+    "book_pnl_std_020",
+    "book_pnl_std_060",
+    "book_pnl_sum_005",
+    "book_pnl_sum_010",
+    "book_pnl_sum_020",
+    "book_pnl_sum_040",
+    "book_pnl_sum_060",
+    "book_pnl_sum_120",
+    "book_positive_ratio_010",
+    "book_positive_ratio_020",
+    "book_positive_ratio_060",
+    "calendar_month_01",
+    "calendar_month_02",
+    "calendar_month_03",
+    "calendar_month_04",
+    "calendar_month_05",
+    "calendar_month_06",
+    "calendar_month_07",
+    "calendar_month_08",
+    "calendar_month_09",
+    "calendar_month_10",
+    "calendar_month_11",
+    "calendar_month_12",
+    "calendar_weekday_0",
+    "calendar_weekday_1",
+    "calendar_weekday_2",
+    "calendar_weekday_3",
+    "calendar_weekday_4",
+    "calendar_weekday_5",
+    "calendar_weekday_6",
+    "market_ndx_return_20d",
+    "market_ndx_return_5d",
+    "market_ndx_volatility_ratio",
+    "market_usdjpy_return_20d",
+    "market_usdjpy_return_5d",
+    "market_usdjpy_volatility_ratio",
+    "market_xauusd_return_20d",
+    "market_xauusd_return_5d",
+    "market_xauusd_volatility_ratio",
+    "market_xtiusd_return_20d",
+    "market_xtiusd_return_5d",
+    "market_xtiusd_volatility_ratio"
+  ],
+  "leaderboard": [
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 6.666666666666667,
+          "max_breach_pct": 3.6363636363636362,
+          "not_reached_pct": 6.0606060606060606,
+          "pass_ci95_pct": [
+            77.23868813989553,
+            88.50345882762122
+          ],
+          "pass_pct": 83.63636363636363,
+          "runs": 165
+        },
+        "eligible_pct": 15.013648771610555,
+        "eligible_starts": 165,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 15.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 14.545454545454545,
+          "pass_ci95_pct": [
+            79.26916115058602,
+            90.02661538274243
+          ],
+          "pass_pct": 85.45454545454545,
+          "runs": 165
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.15,
+      "model_id": "ridge_10_joint_top_0.15",
+      "preholdout_pass": true,
+      "preholdout_score": 65.45454545454545,
+      "ridge_penalty": 10.0,
+      "score_mode": "joint",
+      "score_threshold": 0.7089664954985608,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 12.727272727272727,
+          "max_breach_pct": 9.090909090909092,
+          "not_reached_pct": 12.727272727272727,
+          "pass_ci95_pct": [
+            52.25390350756162,
+            76.63729045791027
+          ],
+          "pass_pct": 65.45454545454545,
+          "runs": 55
+        },
+        "eligible_pct": 16.36904761904762,
+        "eligible_starts": 55,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.499999999999943,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 23.636363636363637,
+          "pass_ci95_pct": [
+            63.65163381083227,
+            85.63334413026682
+          ],
+          "pass_pct": 76.36363636363637,
+          "runs": 55
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 5.454545454545454,
+          "max_breach_pct": 3.6363636363636362,
+          "not_reached_pct": 3.6363636363636362,
+          "pass_ci95_pct": [
+            81.32660114816575,
+            91.52280495097442
+          ],
+          "pass_pct": 87.27272727272727,
+          "runs": 165
+        },
+        "eligible_pct": 15.013648771610555,
+        "eligible_starts": 165,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 15.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 9.696969696969697,
+          "pass_ci95_pct": [
+            84.82932255907778,
+            93.94279948308193
+          ],
+          "pass_pct": 90.30303030303031,
+          "runs": 165
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.15,
+      "model_id": "ridge_100_joint_top_0.15",
+      "preholdout_pass": true,
+      "preholdout_score": 65.3061224489796,
+      "ridge_penalty": 100.0,
+      "score_mode": "joint",
+      "score_threshold": 0.672046335914032,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 12.244897959183673,
+          "max_breach_pct": 8.16326530612245,
+          "not_reached_pct": 14.285714285714285,
+          "pass_ci95_pct": [
+            51.31119428697273,
+            77.07560716546102
+          ],
+          "pass_pct": 65.3061224489796,
+          "runs": 49
+        },
+        "eligible_pct": 14.583333333333334,
+        "eligible_starts": 49,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 10.149999999999984,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 24.489795918367346,
+          "pass_ci95_pct": [
+            61.91368101239605,
+            85.39765474166023
+          ],
+          "pass_pct": 75.51020408163265,
+          "runs": 49
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 8.636363636363637,
+          "max_breach_pct": 5.0,
+          "not_reached_pct": 5.0,
+          "pass_ci95_pct": [
+            75.69585663095646,
+            85.95492098953048
+          ],
+          "pass_pct": 81.36363636363636,
+          "runs": 220
+        },
+        "eligible_pct": 20.018198362147405,
+        "eligible_starts": 220,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 14.25,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 16.363636363636363,
+          "pass_ci95_pct": [
+            78.17849949091806,
+            87.93972578322735
+          ],
+          "pass_pct": 83.63636363636363,
+          "runs": 220
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.2,
+      "model_id": "ridge_0.1_joint_top_0.20",
+      "preholdout_pass": true,
+      "preholdout_score": 63.07692307692307,
+      "ridge_penalty": 0.1,
+      "score_mode": "joint",
+      "score_threshold": 0.6811988451411394,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 12.307692307692308,
+          "max_breach_pct": 13.846153846153847,
+          "not_reached_pct": 10.76923076923077,
+          "pass_ci95_pct": [
+            50.923817362550025,
+            73.77060412592911
+          ],
+          "pass_pct": 63.07692307692307,
+          "runs": 65
+        },
+        "eligible_pct": 19.345238095238095,
+        "eligible_starts": 65,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 10.799999999999955,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 26.153846153846157,
+          "pass_ci95_pct": [
+            62.04919730397746,
+            82.98180658677862
+          ],
+          "pass_pct": 73.84615384615385,
+          "runs": 65
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 8.636363636363637,
+          "max_breach_pct": 5.0,
+          "not_reached_pct": 5.0,
+          "pass_ci95_pct": [
+            75.69585663095646,
+            85.95492098953048
+          ],
+          "pass_pct": 81.36363636363636,
+          "runs": 220
+        },
+        "eligible_pct": 20.018198362147405,
+        "eligible_starts": 220,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 14.25,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 16.363636363636363,
+          "pass_ci95_pct": [
+            78.17849949091806,
+            87.93972578322735
+          ],
+          "pass_pct": 83.63636363636363,
+          "runs": 220
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.2,
+      "model_id": "ridge_1_joint_top_0.20",
+      "preholdout_pass": true,
+      "preholdout_score": 63.07692307692307,
+      "ridge_penalty": 1.0,
+      "score_mode": "joint",
+      "score_threshold": 0.680024095766638,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 12.307692307692308,
+          "max_breach_pct": 13.846153846153847,
+          "not_reached_pct": 10.76923076923077,
+          "pass_ci95_pct": [
+            50.923817362550025,
+            73.77060412592911
+          ],
+          "pass_pct": 63.07692307692307,
+          "runs": 65
+        },
+        "eligible_pct": 19.345238095238095,
+        "eligible_starts": 65,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 10.799999999999955,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 26.153846153846157,
+          "pass_ci95_pct": [
+            62.04919730397746,
+            82.98180658677862
+          ],
+          "pass_pct": 73.84615384615385,
+          "runs": 65
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 5.454545454545454,
+          "max_breach_pct": 4.242424242424243,
+          "not_reached_pct": 3.0303030303030303,
+          "pass_ci95_pct": [
+            81.32660114816575,
+            91.52280495097442
+          ],
+          "pass_pct": 87.27272727272727,
+          "runs": 165
+        },
+        "eligible_pct": 15.013648771610555,
+        "eligible_starts": 165,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 26.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 9.090909090909092,
+          "pass_ci95_pct": [
+            85.54330061391694,
+            94.41336461684668
+          ],
+          "pass_pct": 90.9090909090909,
+          "runs": 165
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.15,
+      "model_id": "ridge_100_minimum_top_0.15",
+      "preholdout_pass": true,
+      "preholdout_score": 62.5,
+      "ridge_penalty": 100.0,
+      "score_mode": "minimum",
+      "score_threshold": 0.6633651842213812,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 12.5,
+          "max_breach_pct": 10.416666666666668,
+          "not_reached_pct": 14.583333333333334,
+          "pass_ci95_pct": [
+            48.36276351921527,
+            74.7847332391318
+          ],
+          "pass_pct": 62.5,
+          "runs": 48
+        },
+        "eligible_pct": 14.285714285714286,
+        "eligible_starts": 48,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 10.699999999999953,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 27.083333333333332,
+          "pass_ci95_pct": [
+            59.00303501775939,
+            83.43404237254354
+          ],
+          "pass_pct": 72.91666666666666,
+          "runs": 48
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 7.2727272727272725,
+          "max_breach_pct": 4.242424242424243,
+          "not_reached_pct": 4.848484848484849,
+          "pass_ci95_pct": [
+            77.23868813989553,
+            88.50345882762122
+          ],
+          "pass_pct": 83.63636363636363,
+          "runs": 165
+        },
+        "eligible_pct": 15.013648771610555,
+        "eligible_starts": 165,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 25.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 14.545454545454545,
+          "pass_ci95_pct": [
+            79.26916115058602,
+            90.02661538274243
+          ],
+          "pass_pct": 85.45454545454545,
+          "runs": 165
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.15,
+      "model_id": "ridge_0.1_joint_top_0.15",
+      "preholdout_pass": true,
+      "preholdout_score": 62.06896551724138,
+      "ridge_penalty": 0.1,
+      "score_mode": "joint",
+      "score_threshold": 0.7167476303915155,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 13.793103448275861,
+          "max_breach_pct": 12.068965517241379,
+          "not_reached_pct": 12.068965517241379,
+          "pass_ci95_pct": [
+            49.202807192768894,
+            73.43572732271242
+          ],
+          "pass_pct": 62.06896551724138,
+          "runs": 58
+        },
+        "eligible_pct": 17.261904761904763,
+        "eligible_starts": 58,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.799999999999962,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 25.862068965517242,
+          "pass_ci95_pct": [
+            61.62261423525959,
+            83.65445479570303
+          ],
+          "pass_pct": 74.13793103448276,
+          "runs": 58
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 7.2727272727272725,
+          "max_breach_pct": 4.242424242424243,
+          "not_reached_pct": 4.848484848484849,
+          "pass_ci95_pct": [
+            77.23868813989553,
+            88.50345882762122
+          ],
+          "pass_pct": 83.63636363636363,
+          "runs": 165
+        },
+        "eligible_pct": 15.013648771610555,
+        "eligible_starts": 165,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 25.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 14.545454545454545,
+          "pass_ci95_pct": [
+            79.26916115058602,
+            90.02661538274243
+          ],
+          "pass_pct": 85.45454545454545,
+          "runs": 165
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.15,
+      "model_id": "ridge_1_joint_top_0.15",
+      "preholdout_pass": true,
+      "preholdout_score": 62.06896551724138,
+      "ridge_penalty": 1.0,
+      "score_mode": "joint",
+      "score_threshold": 0.7162801088331083,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 13.793103448275861,
+          "max_breach_pct": 12.068965517241379,
+          "not_reached_pct": 12.068965517241379,
+          "pass_ci95_pct": [
+            49.202807192768894,
+            73.43572732271242
+          ],
+          "pass_pct": 62.06896551724138,
+          "runs": 58
+        },
+        "eligible_pct": 17.261904761904763,
+        "eligible_starts": 58,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.799999999999962,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 25.862068965517242,
+          "pass_ci95_pct": [
+            61.62261423525959,
+            83.65445479570303
+          ],
+          "pass_pct": 74.13793103448276,
+          "runs": 58
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 10.545454545454545,
+          "max_breach_pct": 6.181818181818182,
+          "not_reached_pct": 4.363636363636364,
+          "pass_ci95_pct": [
+            73.70599896614503,
+            83.31565078151432
+          ],
+          "pass_pct": 78.9090909090909,
+          "runs": 275
+        },
+        "eligible_pct": 25.02274795268426,
+        "eligible_starts": 275,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 18.5,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 16.727272727272727,
+          "pass_ci95_pct": [
+            78.40983078156073,
+            87.21886043744344
+          ],
+          "pass_pct": 83.27272727272728,
+          "runs": 275
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.25,
+      "model_id": "ridge_0.1_joint_top_0.25",
+      "preholdout_pass": true,
+      "preholdout_score": 61.53846153846154,
+      "ridge_penalty": 0.1,
+      "score_mode": "joint",
+      "score_threshold": 0.6436714238510264,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 14.102564102564102,
+          "max_breach_pct": 12.82051282051282,
+          "not_reached_pct": 11.538461538461538,
+          "pass_ci95_pct": [
+            50.442785608463936,
+            71.55095724433158
+          ],
+          "pass_pct": 61.53846153846154,
+          "runs": 78
+        },
+        "eligible_pct": 23.214285714285715,
+        "eligible_starts": 78,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.200000000000003,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 28.205128205128204,
+          "pass_ci95_pct": [
+            60.969071229398885,
+            80.57466527032598
+          ],
+          "pass_pct": 71.7948717948718,
+          "runs": 78
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 10.909090909090908,
+          "max_breach_pct": 6.181818181818182,
+          "not_reached_pct": 4.363636363636364,
+          "pass_ci95_pct": [
+            73.31792331874091,
+            82.98647297297302
+          ],
+          "pass_pct": 78.54545454545455,
+          "runs": 275
+        },
+        "eligible_pct": 25.02274795268426,
+        "eligible_starts": 275,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 18.5,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 16.727272727272727,
+          "pass_ci95_pct": [
+            78.40983078156073,
+            87.21886043744344
+          ],
+          "pass_pct": 83.27272727272728,
+          "runs": 275
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.25,
+      "model_id": "ridge_1_joint_top_0.25",
+      "preholdout_pass": true,
+      "preholdout_score": 61.53846153846154,
+      "ridge_penalty": 1.0,
+      "score_mode": "joint",
+      "score_threshold": 0.6416694845620876,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 14.102564102564102,
+          "max_breach_pct": 12.82051282051282,
+          "not_reached_pct": 11.538461538461538,
+          "pass_ci95_pct": [
+            50.442785608463936,
+            71.55095724433158
+          ],
+          "pass_pct": 61.53846153846154,
+          "runs": 78
+        },
+        "eligible_pct": 23.214285714285715,
+        "eligible_starts": 78,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.200000000000003,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 28.205128205128204,
+          "pass_ci95_pct": [
+            60.969071229398885,
+            80.57466527032598
+          ],
+          "pass_pct": 71.7948717948718,
+          "runs": 78
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 10.181818181818182,
+          "max_breach_pct": 5.454545454545454,
+          "not_reached_pct": 5.090909090909091,
+          "pass_ci95_pct": [
+            74.09463247185258,
+            83.64427073175217
+          ],
+          "pass_pct": 79.27272727272727,
+          "runs": 275
+        },
+        "eligible_pct": 25.02274795268426,
+        "eligible_starts": 275,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 16.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 16.0,
+          "pass_ci95_pct": [
+            79.20320295968392,
+            87.85999517121105
+          ],
+          "pass_pct": 84.0,
+          "runs": 275
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.25,
+      "model_id": "ridge_1_minimum_top_0.25",
+      "preholdout_pass": true,
+      "preholdout_score": 61.038961038961034,
+      "ridge_penalty": 1.0,
+      "score_mode": "minimum",
+      "score_threshold": 0.625851894192621,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.584415584415584,
+          "max_breach_pct": 12.987012987012985,
+          "not_reached_pct": 10.38961038961039,
+          "pass_ci95_pct": [
+            49.87106689367745,
+            71.15774709359347
+          ],
+          "pass_pct": 61.038961038961034,
+          "runs": 77
+        },
+        "eligible_pct": 22.916666666666668,
+        "eligible_starts": 77,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.25,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 27.27272727272727,
+          "pass_ci95_pct": [
+            61.87910782504654,
+            81.4155092075701
+          ],
+          "pass_pct": 72.72727272727273,
+          "runs": 77
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 9.545454545454547,
+          "max_breach_pct": 5.0,
+          "not_reached_pct": 4.545454545454546,
+          "pass_ci95_pct": [
+            75.20278334203967,
+            85.55450474771558
+          ],
+          "pass_pct": 80.9090909090909,
+          "runs": 220
+        },
+        "eligible_pct": 20.018198362147405,
+        "eligible_starts": 220,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 14.25,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 14.09090909090909,
+          "pass_ci95_pct": [
+            80.69344268497495,
+            89.89223024282896
+          ],
+          "pass_pct": 85.9090909090909,
+          "runs": 220
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.2,
+      "model_id": "ridge_0.1_minimum_top_0.20",
+      "preholdout_pass": true,
+      "preholdout_score": 60.60606060606061,
+      "ridge_penalty": 0.1,
+      "score_mode": "minimum",
+      "score_threshold": 0.6657645059684199,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.151515151515152,
+          "max_breach_pct": 13.636363636363635,
+          "not_reached_pct": 10.606060606060606,
+          "pass_ci95_pct": [
+            48.54840080039292,
+            71.49699950538046
+          ],
+          "pass_pct": 60.60606060606061,
+          "runs": 66
+        },
+        "eligible_pct": 19.642857142857142,
+        "eligible_starts": 66,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 9.799999999999997,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 28.78787878787879,
+          "pass_ci95_pct": [
+            59.36275059135345,
+            80.72805002019328
+          ],
+          "pass_pct": 71.21212121212122,
+          "runs": 66
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 10.181818181818182,
+          "max_breach_pct": 5.454545454545454,
+          "not_reached_pct": 5.090909090909091,
+          "pass_ci95_pct": [
+            74.09463247185258,
+            83.64427073175217
+          ],
+          "pass_pct": 79.27272727272727,
+          "runs": 275
+        },
+        "eligible_pct": 25.02274795268426,
+        "eligible_starts": 275,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 16.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 16.0,
+          "pass_ci95_pct": [
+            79.20320295968392,
+            87.85999517121105
+          ],
+          "pass_pct": 84.0,
+          "runs": 275
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.25,
+      "model_id": "ridge_0.1_minimum_top_0.25",
+      "preholdout_pass": true,
+      "preholdout_score": 60.256410256410255,
+      "ridge_penalty": 0.1,
+      "score_mode": "minimum",
+      "score_threshold": 0.625503378548105,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 16.666666666666664,
+          "max_breach_pct": 12.82051282051282,
+          "not_reached_pct": 10.256410256410255,
+          "pass_ci95_pct": [
+            49.16185829131174,
+            70.3881353556176
+          ],
+          "pass_pct": 60.256410256410255,
+          "runs": 78
+        },
+        "eligible_pct": 23.214285714285715,
+        "eligible_starts": 78,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.200000000000003,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 28.205128205128204,
+          "pass_ci95_pct": [
+            60.969071229398885,
+            80.57466527032598
+          ],
+          "pass_pct": 71.7948717948718,
+          "runs": 78
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 10.181818181818182,
+          "max_breach_pct": 6.181818181818182,
+          "not_reached_pct": 4.363636363636364,
+          "pass_ci95_pct": [
+            74.09463247185258,
+            83.64427073175217
+          ],
+          "pass_pct": 79.27272727272727,
+          "runs": 275
+        },
+        "eligible_pct": 25.02274795268426,
+        "eligible_starts": 275,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 16.5,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 16.727272727272727,
+          "pass_ci95_pct": [
+            78.40983078156073,
+            87.21886043744344
+          ],
+          "pass_pct": 83.27272727272728,
+          "runs": 275
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.25,
+      "model_id": "ridge_10_joint_top_0.25",
+      "preholdout_pass": true,
+      "preholdout_score": 60.0,
+      "ridge_penalty": 10.0,
+      "score_mode": "joint",
+      "score_threshold": 0.6305048675507635,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 14.666666666666666,
+          "max_breach_pct": 13.333333333333334,
+          "not_reached_pct": 12.0,
+          "pass_ci95_pct": [
+            48.68803879621066,
+            70.33748435413321
+          ],
+          "pass_pct": 60.0,
+          "runs": 75
+        },
+        "eligible_pct": 22.321428571428573,
+        "eligible_starts": 75,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.699999999999989,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 29.333333333333332,
+          "pass_ci95_pct": [
+            59.559554832613934,
+            79.75985967809675
+          ],
+          "pass_pct": 70.66666666666667,
+          "runs": 75
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 10.0,
+          "max_breach_pct": 4.545454545454546,
+          "not_reached_pct": 4.545454545454546,
+          "pass_ci95_pct": [
+            75.20278334203967,
+            85.55450474771558
+          ],
+          "pass_pct": 80.9090909090909,
+          "runs": 220
+        },
+        "eligible_pct": 20.018198362147405,
+        "eligible_starts": 220,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 14.25,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 15.0,
+          "pass_ci95_pct": [
+            79.6832344180271,
+            89.1154594483134
+          ],
+          "pass_pct": 85.0,
+          "runs": 220
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.2,
+      "model_id": "ridge_10_joint_top_0.20",
+      "preholdout_pass": true,
+      "preholdout_score": 60.0,
+      "ridge_penalty": 10.0,
+      "score_mode": "joint",
+      "score_threshold": 0.6715761900717448,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 13.846153846153847,
+          "max_breach_pct": 13.846153846153847,
+          "not_reached_pct": 12.307692307692308,
+          "pass_ci95_pct": [
+            47.85599934824049,
+            71.02797002530238
+          ],
+          "pass_pct": 60.0,
+          "runs": 65
+        },
+        "eligible_pct": 19.345238095238095,
+        "eligible_starts": 65,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.849999999999994,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 29.230769230769234,
+          "pass_ci95_pct": [
+            58.803962763499705,
+            80.41658901232009
+          ],
+          "pass_pct": 70.76923076923077,
+          "runs": 65
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 9.545454545454547,
+          "max_breach_pct": 5.0,
+          "not_reached_pct": 4.545454545454546,
+          "pass_ci95_pct": [
+            75.20278334203967,
+            85.55450474771558
+          ],
+          "pass_pct": 80.9090909090909,
+          "runs": 220
+        },
+        "eligible_pct": 20.018198362147405,
+        "eligible_starts": 220,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 14.25,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 14.09090909090909,
+          "pass_ci95_pct": [
+            80.69344268497495,
+            89.89223024282896
+          ],
+          "pass_pct": 85.9090909090909,
+          "runs": 220
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.2,
+      "model_id": "ridge_1_minimum_top_0.20",
+      "preholdout_pass": false,
+      "preholdout_score": 59.375,
+      "ridge_penalty": 1.0,
+      "score_mode": "minimum",
+      "score_threshold": 0.6648298050332139,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.625,
+          "max_breach_pct": 14.0625,
+          "not_reached_pct": 10.9375,
+          "pass_ci95_pct": [
+            47.14520812860451,
+            70.54309075028038
+          ],
+          "pass_pct": 59.375,
+          "runs": 64
+        },
+        "eligible_pct": 19.047619047619047,
+        "eligible_starts": 64,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 10.799999999999997,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 29.6875,
+          "pass_ci95_pct": [
+            58.229798896457076,
+            80.09484867446022
+          ],
+          "pass_pct": 70.3125,
+          "runs": 64
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 9.090909090909092,
+          "max_breach_pct": 5.454545454545454,
+          "not_reached_pct": 4.545454545454546,
+          "pass_ci95_pct": [
+            75.20278334203967,
+            85.55450474771558
+          ],
+          "pass_pct": 80.9090909090909,
+          "runs": 220
+        },
+        "eligible_pct": 20.018198362147405,
+        "eligible_starts": 220,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 14.25,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 14.545454545454545,
+          "pass_ci95_pct": [
+            80.18759890455021,
+            89.50458449252197
+          ],
+          "pass_pct": 85.45454545454545,
+          "runs": 220
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.2,
+      "model_id": "ridge_10_minimum_top_0.20",
+      "preholdout_pass": false,
+      "preholdout_score": 59.01639344262295,
+      "ridge_penalty": 10.0,
+      "score_mode": "minimum",
+      "score_threshold": 0.658255170638489,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 16.39344262295082,
+          "max_breach_pct": 13.114754098360656,
+          "not_reached_pct": 11.475409836065573,
+          "pass_ci95_pct": [
+            46.499792273006925,
+            70.46466256817465
+          ],
+          "pass_pct": 59.01639344262295,
+          "runs": 61
+        },
+        "eligible_pct": 18.154761904761905,
+        "eligible_starts": 61,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 9.099999999999994,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 29.508196721311474,
+          "pass_ci95_pct": [
+            58.11059794277964,
+            80.44498124172395
+          ],
+          "pass_pct": 70.49180327868852,
+          "runs": 61
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 6.666666666666667,
+          "max_breach_pct": 3.6363636363636362,
+          "not_reached_pct": 4.242424242424243,
+          "pass_ci95_pct": [
+            79.26916115058602,
+            90.02661538274243
+          ],
+          "pass_pct": 85.45454545454545,
+          "runs": 165
+        },
+        "eligible_pct": 15.013648771610555,
+        "eligible_starts": 165,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 25.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 12.121212121212121,
+          "pass_ci95_pct": [
+            82.01917964609429,
+            92.0147696416498
+          ],
+          "pass_pct": 87.87878787878788,
+          "runs": 165
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.15,
+      "model_id": "ridge_10_minimum_top_0.15",
+      "preholdout_pass": false,
+      "preholdout_score": 58.82352941176471,
+      "ridge_penalty": 10.0,
+      "score_mode": "minimum",
+      "score_threshold": 0.6989152765017848,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.686274509803921,
+          "max_breach_pct": 11.76470588235294,
+          "not_reached_pct": 13.725490196078432,
+          "pass_ci95_pct": [
+            45.16533720637157,
+            71.24560479541906
+          ],
+          "pass_pct": 58.82352941176471,
+          "runs": 51
+        },
+        "eligible_pct": 15.178571428571429,
+        "eligible_starts": 51,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 8.949999999999974,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 27.450980392156865,
+          "pass_ci95_pct": [
+            59.05334923922092,
+            82.88572476535512
+          ],
+          "pass_pct": 72.54901960784314,
+          "runs": 51
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 9.454545454545455,
+          "max_breach_pct": 6.545454545454546,
+          "not_reached_pct": 4.363636363636364,
+          "pass_ci95_pct": [
+            74.48383442101381,
+            83.97232223853635
+          ],
+          "pass_pct": 79.63636363636364,
+          "runs": 275
+        },
+        "eligible_pct": 25.02274795268426,
+        "eligible_starts": 275,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 16.5,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 16.0,
+          "pass_ci95_pct": [
+            79.20320295968392,
+            87.85999517121105
+          ],
+          "pass_pct": 84.0,
+          "runs": 275
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.25,
+      "model_id": "ridge_10_minimum_top_0.25",
+      "preholdout_pass": false,
+      "preholdout_score": 58.666666666666664,
+      "ridge_penalty": 10.0,
+      "score_mode": "minimum",
+      "score_threshold": 0.6172283503895682,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 14.666666666666666,
+          "max_breach_pct": 14.666666666666666,
+          "not_reached_pct": 12.0,
+          "pass_ci95_pct": [
+            47.36651586070437,
+            69.12227086959368
+          ],
+          "pass_pct": 58.666666666666664,
+          "runs": 75
+        },
+        "eligible_pct": 22.321428571428573,
+        "eligible_starts": 75,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.349999999999994,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 30.666666666666664,
+          "pass_ci95_pct": [
+            58.16954517744293,
+            78.61313291322192
+          ],
+          "pass_pct": 69.33333333333334,
+          "runs": 75
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 6.666666666666667,
+          "max_breach_pct": 3.6363636363636362,
+          "not_reached_pct": 4.242424242424243,
+          "pass_ci95_pct": [
+            79.26916115058602,
+            90.02661538274243
+          ],
+          "pass_pct": 85.45454545454545,
+          "runs": 165
+        },
+        "eligible_pct": 15.013648771610555,
+        "eligible_starts": 165,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 20.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 12.121212121212121,
+          "pass_ci95_pct": [
+            82.01917964609429,
+            92.0147696416498
+          ],
+          "pass_pct": 87.87878787878788,
+          "runs": 165
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.15,
+      "model_id": "ridge_0.1_minimum_top_0.15",
+      "preholdout_pass": false,
+      "preholdout_score": 58.490566037735846,
+      "ridge_penalty": 0.1,
+      "score_mode": "minimum",
+      "score_threshold": 0.7051288799967007,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.09433962264151,
+          "max_breach_pct": 13.20754716981132,
+          "not_reached_pct": 13.20754716981132,
+          "pass_ci95_pct": [
+            45.09442218134437,
+            70.73909122018601
+          ],
+          "pass_pct": 58.490566037735846,
+          "runs": 53
+        },
+        "eligible_pct": 15.773809523809524,
+        "eligible_starts": 53,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.599999999999966,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 28.30188679245283,
+          "pass_ci95_pct": [
+            58.429713583582966,
+            82.03370955366141
+          ],
+          "pass_pct": 71.69811320754717,
+          "runs": 53
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 6.666666666666667,
+          "max_breach_pct": 3.6363636363636362,
+          "not_reached_pct": 4.242424242424243,
+          "pass_ci95_pct": [
+            79.26916115058602,
+            90.02661538274243
+          ],
+          "pass_pct": 85.45454545454545,
+          "runs": 165
+        },
+        "eligible_pct": 15.013648771610555,
+        "eligible_starts": 165,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 20.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 12.121212121212121,
+          "pass_ci95_pct": [
+            82.01917964609429,
+            92.0147696416498
+          ],
+          "pass_pct": 87.87878787878788,
+          "runs": 165
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.15,
+      "model_id": "ridge_1_minimum_top_0.15",
+      "preholdout_pass": false,
+      "preholdout_score": 58.490566037735846,
+      "ridge_penalty": 1.0,
+      "score_mode": "minimum",
+      "score_threshold": 0.7040743446375193,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.09433962264151,
+          "max_breach_pct": 13.20754716981132,
+          "not_reached_pct": 13.20754716981132,
+          "pass_ci95_pct": [
+            45.09442218134437,
+            70.73909122018601
+          ],
+          "pass_pct": 58.490566037735846,
+          "runs": 53
+        },
+        "eligible_pct": 15.773809523809524,
+        "eligible_starts": 53,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.599999999999966,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 28.30188679245283,
+          "pass_ci95_pct": [
+            58.429713583582966,
+            82.03370955366141
+          ],
+          "pass_pct": 71.69811320754717,
+          "runs": 53
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 8.636363636363637,
+          "max_breach_pct": 5.0,
+          "not_reached_pct": 3.1818181818181817,
+          "pass_ci95_pct": [
+            77.67955250015369,
+            87.54518324326003
+          ],
+          "pass_pct": 83.18181818181817,
+          "runs": 220
+        },
+        "eligible_pct": 20.018198362147405,
+        "eligible_starts": 220,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 16.75,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 12.727272727272727,
+          "pass_ci95_pct": [
+            82.22045156104433,
+            91.04568995895464
+          ],
+          "pass_pct": 87.27272727272727,
+          "runs": 220
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.2,
+      "model_id": "ridge_100_joint_top_0.20",
+      "preholdout_pass": false,
+      "preholdout_score": 58.06451612903226,
+      "ridge_penalty": 100.0,
+      "score_mode": "joint",
+      "score_threshold": 0.6349787117796462,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 17.741935483870968,
+          "max_breach_pct": 11.29032258064516,
+          "not_reached_pct": 12.903225806451612,
+          "pass_ci95_pct": [
+            45.66558474484658,
+            69.52241409222806
+          ],
+          "pass_pct": 58.06451612903226,
+          "runs": 62
+        },
+        "eligible_pct": 18.452380952380953,
+        "eligible_starts": 62,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 13.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 29.03225806451613,
+          "pass_ci95_pct": [
+            58.7123542650136,
+            80.77644271138047
+          ],
+          "pass_pct": 70.96774193548387,
+          "runs": 62
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 10.909090909090908,
+          "max_breach_pct": 2.727272727272727,
+          "not_reached_pct": 3.1818181818181817,
+          "pass_ci95_pct": [
+            77.67955250015369,
+            87.54518324326003
+          ],
+          "pass_pct": 83.18181818181817,
+          "runs": 220
+        },
+        "eligible_pct": 20.018198362147405,
+        "eligible_starts": 220,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 14.75,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 10.0,
+          "pass_ci95_pct": [
+            85.32397887557468,
+            93.30309982881447
+          ],
+          "pass_pct": 90.0,
+          "runs": 220
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.2,
+      "model_id": "ridge_0.1_mean_top_0.20",
+      "preholdout_pass": false,
+      "preholdout_score": 57.74647887323944,
+      "ridge_penalty": 0.1,
+      "score_mode": "mean",
+      "score_threshold": 0.7179311172382551,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 21.12676056338028,
+          "max_breach_pct": 11.267605633802818,
+          "not_reached_pct": 9.859154929577464,
+          "pass_ci95_pct": [
+            46.150748022028814,
+            68.54698792985033
+          ],
+          "pass_pct": 57.74647887323944,
+          "runs": 71
+        },
+        "eligible_pct": 21.13095238095238,
+        "eligible_starts": 71,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.549999999999997,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 28.169014084507044,
+          "pass_ci95_pct": [
+            60.457982931193484,
+            80.96290929682961
+          ],
+          "pass_pct": 71.83098591549296,
+          "runs": 71
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 8.636363636363637,
+          "max_breach_pct": 5.454545454545454,
+          "not_reached_pct": 2.727272727272727,
+          "pass_ci95_pct": [
+            77.67955250015369,
+            87.54518324326003
+          ],
+          "pass_pct": 83.18181818181817,
+          "runs": 220
+        },
+        "eligible_pct": 20.018198362147405,
+        "eligible_starts": 220,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 16.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 12.727272727272727,
+          "pass_ci95_pct": [
+            82.22045156104433,
+            91.04568995895464
+          ],
+          "pass_pct": 87.27272727272727,
+          "runs": 220
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.2,
+      "model_id": "ridge_100_minimum_top_0.20",
+      "preholdout_pass": false,
+      "preholdout_score": 57.6271186440678,
+      "ridge_penalty": 100.0,
+      "score_mode": "minimum",
+      "score_threshold": 0.6279955410328278,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 16.94915254237288,
+          "max_breach_pct": 11.864406779661017,
+          "not_reached_pct": 13.559322033898304,
+          "pass_ci95_pct": [
+            44.934482800034296,
+            69.38727256481133
+          ],
+          "pass_pct": 57.6271186440678,
+          "runs": 59
+        },
+        "eligible_pct": 17.55952380952381,
+        "eligible_starts": 59,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 8.749999999999993,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 30.508474576271187,
+          "pass_ci95_pct": [
+            56.85367346805482,
+            79.74636801988395
+          ],
+          "pass_pct": 69.49152542372882,
+          "runs": 59
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 13.818181818181818,
+          "max_breach_pct": 4.7272727272727275,
+          "not_reached_pct": 5.090909090909091,
+          "pass_ci95_pct": [
+            71.00064548620286,
+            81.0002300698387
+          ],
+          "pass_pct": 76.36363636363637,
+          "runs": 275
+        },
+        "eligible_pct": 25.02274795268426,
+        "eligible_starts": 275,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 11.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 15.272727272727273,
+          "pass_ci95_pct": [
+            79.99962881426097,
+            88.4980762285248
+          ],
+          "pass_pct": 84.72727272727273,
+          "runs": 275
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.25,
+      "model_id": "ridge_0.1_mean_top_0.25",
+      "preholdout_pass": false,
+      "preholdout_score": 57.3170731707317,
+      "ridge_penalty": 0.1,
+      "score_mode": "mean",
+      "score_threshold": 0.6876806849966622,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 19.51219512195122,
+          "max_breach_pct": 14.634146341463413,
+          "not_reached_pct": 8.536585365853659,
+          "pass_ci95_pct": [
+            46.52120802857406,
+            67.45805113693667
+          ],
+          "pass_pct": 57.3170731707317,
+          "runs": 82
+        },
+        "eligible_pct": 24.404761904761905,
+        "eligible_starts": 82,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 30.48780487804878,
+          "pass_ci95_pct": [
+            58.861420878352064,
+            78.41660356300986
+          ],
+          "pass_pct": 69.51219512195121,
+          "runs": 82
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 13.454545454545455,
+          "max_breach_pct": 4.363636363636364,
+          "not_reached_pct": 5.090909090909091,
+          "pass_ci95_pct": [
+            71.77100287478265,
+            81.66437959314969
+          ],
+          "pass_pct": 77.0909090909091,
+          "runs": 275
+        },
+        "eligible_pct": 25.02274795268426,
+        "eligible_starts": 275,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 11.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 14.545454545454545,
+          "pass_ci95_pct": [
+            80.79928240726197,
+            89.13292954741459
+          ],
+          "pass_pct": 85.45454545454545,
+          "runs": 275
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.25,
+      "model_id": "ridge_1_mean_top_0.25",
+      "preholdout_pass": false,
+      "preholdout_score": 57.3170731707317,
+      "ridge_penalty": 1.0,
+      "score_mode": "mean",
+      "score_threshold": 0.6871973156455327,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 19.51219512195122,
+          "max_breach_pct": 14.634146341463413,
+          "not_reached_pct": 8.536585365853659,
+          "pass_ci95_pct": [
+            46.52120802857406,
+            67.45805113693667
+          ],
+          "pass_pct": 57.3170731707317,
+          "runs": 82
+        },
+        "eligible_pct": 24.404761904761905,
+        "eligible_starts": 82,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 30.48780487804878,
+          "pass_ci95_pct": [
+            58.861420878352064,
+            78.41660356300986
+          ],
+          "pass_pct": 69.51219512195121,
+          "runs": 82
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 10.909090909090908,
+          "max_breach_pct": 2.727272727272727,
+          "not_reached_pct": 3.6363636363636362,
+          "pass_ci95_pct": [
+            77.18185139576575,
+            87.14939481691628
+          ],
+          "pass_pct": 82.72727272727273,
+          "runs": 220
+        },
+        "eligible_pct": 20.018198362147405,
+        "eligible_starts": 220,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 14.75,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 10.454545454545453,
+          "pass_ci95_pct": [
+            84.80152051468751,
+            92.93206865896995
+          ],
+          "pass_pct": 89.54545454545455,
+          "runs": 220
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.2,
+      "model_id": "ridge_1_mean_top_0.20",
+      "preholdout_pass": false,
+      "preholdout_score": 57.14285714285714,
+      "ridge_penalty": 1.0,
+      "score_mode": "mean",
+      "score_threshold": 0.7179131616400436,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 21.428571428571427,
+          "max_breach_pct": 11.428571428571429,
+          "not_reached_pct": 10.0,
+          "pass_ci95_pct": [
+            45.4778365598502,
+            68.06469112000313
+          ],
+          "pass_pct": 57.14285714285714,
+          "runs": 70
+        },
+        "eligible_pct": 20.833333333333332,
+        "eligible_starts": 70,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 3.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 28.57142857142857,
+          "pass_ci95_pct": [
+            59.94980341827974,
+            80.67777962128025
+          ],
+          "pass_pct": 71.42857142857143,
+          "runs": 70
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 10.909090909090908,
+          "max_breach_pct": 6.181818181818182,
+          "not_reached_pct": 5.090909090909091,
+          "pass_ci95_pct": [
+            72.54340548732202,
+            82.32648389250113
+          ],
+          "pass_pct": 77.81818181818181,
+          "runs": 275
+        },
+        "eligible_pct": 25.02274795268426,
+        "eligible_starts": 275,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 13.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 17.454545454545457,
+          "pass_ci95_pct": [
+            77.61935654537811,
+            86.57482776173524
+          ],
+          "pass_pct": 82.54545454545455,
+          "runs": 275
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.25,
+      "model_id": "ridge_100_minimum_top_0.25",
+      "preholdout_pass": false,
+      "preholdout_score": 57.14285714285714,
+      "ridge_penalty": 100.0,
+      "score_mode": "minimum",
+      "score_threshold": 0.6016636042147223,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.873015873015872,
+          "max_breach_pct": 11.11111111111111,
+          "not_reached_pct": 15.873015873015872,
+          "pass_ci95_pct": [
+            44.86161514309502,
+            68.60308200563566
+          ],
+          "pass_pct": 57.14285714285714,
+          "runs": 63
+        },
+        "eligible_pct": 18.75,
+        "eligible_starts": 63,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 11.699999999999974,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 31.746031746031743,
+          "pass_ci95_pct": [
+            55.996468255831424,
+            78.41331334648034
+          ],
+          "pass_pct": 68.25396825396825,
+          "runs": 63
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 12.121212121212121,
+          "max_breach_pct": 7.988980716253444,
+          "not_reached_pct": 4.958677685950414,
+          "pass_ci95_pct": [
+            70.2272397942801,
+            79.11287584637594
+          ],
+          "pass_pct": 74.93112947658402,
+          "runs": 363
+        },
+        "eligible_pct": 33.03002729754322,
+        "eligible_starts": 363,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 9.299999999999898,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 20.385674931129476,
+          "pass_ci95_pct": [
+            75.17000439130138,
+            83.4384202647265
+          ],
+          "pass_pct": 79.61432506887053,
+          "runs": 363
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.33,
+      "model_id": "ridge_0.1_minimum_top_0.33",
+      "preholdout_pass": false,
+      "preholdout_score": 56.99999999999999,
+      "ridge_penalty": 0.1,
+      "score_mode": "minimum",
+      "score_threshold": 0.5825130010582822,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.0,
+          "max_breach_pct": 17.0,
+          "not_reached_pct": 11.0,
+          "pass_ci95_pct": [
+            47.215389549212304,
+            66.26670147588987
+          ],
+          "pass_pct": 56.99999999999999,
+          "runs": 100
+        },
+        "eligible_pct": 29.761904761904763,
+        "eligible_starts": 100,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.299999999999983,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 32.0,
+          "pass_ci95_pct": [
+            58.337381389547616,
+            76.33085267500091
+          ],
+          "pass_pct": 68.0,
+          "runs": 100
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 12.121212121212121,
+          "max_breach_pct": 7.988980716253444,
+          "not_reached_pct": 4.958677685950414,
+          "pass_ci95_pct": [
+            70.2272397942801,
+            79.11287584637594
+          ],
+          "pass_pct": 74.93112947658402,
+          "runs": 363
+        },
+        "eligible_pct": 33.03002729754322,
+        "eligible_starts": 363,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 9.299999999999898,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 20.385674931129476,
+          "pass_ci95_pct": [
+            75.17000439130138,
+            83.4384202647265
+          ],
+          "pass_pct": 79.61432506887053,
+          "runs": 363
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.33,
+      "model_id": "ridge_1_minimum_top_0.33",
+      "preholdout_pass": false,
+      "preholdout_score": 56.56565656565656,
+      "ridge_penalty": 1.0,
+      "score_mode": "minimum",
+      "score_threshold": 0.5827601703638849,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.151515151515152,
+          "max_breach_pct": 17.17171717171717,
+          "not_reached_pct": 11.11111111111111,
+          "pass_ci95_pct": [
+            46.73745665357267,
+            65.90335975361748
+          ],
+          "pass_pct": 56.56565656565656,
+          "runs": 99
+        },
+        "eligible_pct": 29.464285714285715,
+        "eligible_starts": 99,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.449999999999974,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 32.323232323232325,
+          "pass_ci95_pct": [
+            57.95296789352457,
+            76.07999935660274
+          ],
+          "pass_pct": 67.67676767676768,
+          "runs": 99
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 10.454545454545453,
+          "max_breach_pct": 3.1818181818181817,
+          "not_reached_pct": 3.1818181818181817,
+          "pass_ci95_pct": [
+            77.67955250015369,
+            87.54518324326003
+          ],
+          "pass_pct": 83.18181818181817,
+          "runs": 220
+        },
+        "eligible_pct": 20.018198362147405,
+        "eligible_starts": 220,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 14.75,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 10.454545454545453,
+          "pass_ci95_pct": [
+            84.80152051468751,
+            92.93206865896995
+          ],
+          "pass_pct": 89.54545454545455,
+          "runs": 220
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.2,
+      "model_id": "ridge_10_mean_top_0.20",
+      "preholdout_pass": false,
+      "preholdout_score": 56.52173913043478,
+      "ridge_penalty": 10.0,
+      "score_mode": "mean",
+      "score_threshold": 0.7121957278623043,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 21.73913043478261,
+          "max_breach_pct": 11.594202898550725,
+          "not_reached_pct": 10.144927536231885,
+          "pass_ci95_pct": [
+            44.7884036152743,
+            67.56719736486849
+          ],
+          "pass_pct": 56.52173913043478,
+          "runs": 69
+        },
+        "eligible_pct": 20.535714285714285,
+        "eligible_starts": 69,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.6499999999999986,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 28.985507246376812,
+          "pass_ci95_pct": [
+            59.42855002638685,
+            80.38394202073998
+          ],
+          "pass_pct": 71.01449275362319,
+          "runs": 69
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 11.515151515151516,
+          "max_breach_pct": 1.8181818181818181,
+          "not_reached_pct": 1.8181818181818181,
+          "pass_ci95_pct": [
+            78.58953408730194,
+            89.52169925742261
+          ],
+          "pass_pct": 84.84848484848484,
+          "runs": 165
+        },
+        "eligible_pct": 15.013648771610555,
+        "eligible_starts": 165,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 18.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 7.2727272727272725,
+          "pass_ci95_pct": [
+            87.7192538041669,
+            95.79104099240843
+          ],
+          "pass_pct": 92.72727272727272,
+          "runs": 165
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.15,
+      "model_id": "ridge_1_mean_top_0.15",
+      "preholdout_pass": false,
+      "preholdout_score": 56.25,
+      "ridge_penalty": 1.0,
+      "score_mode": "mean",
+      "score_threshold": 0.7537965304282042,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 23.4375,
+          "max_breach_pct": 9.375,
+          "not_reached_pct": 10.9375,
+          "pass_ci95_pct": [
+            44.08620895699301,
+            67.70599029559693
+          ],
+          "pass_pct": 56.25,
+          "runs": 64
+        },
+        "eligible_pct": 19.047619047619047,
+        "eligible_starts": 64,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 3.8999999999999986,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 28.125,
+          "pass_ci95_pct": [
+            59.86606971779259,
+            81.40662766627217
+          ],
+          "pass_pct": 71.875,
+          "runs": 64
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 8.484848484848486,
+          "max_breach_pct": 2.4242424242424243,
+          "not_reached_pct": 1.2121212121212122,
+          "pass_ci95_pct": [
+            82.01917964609429,
+            92.0147696416498
+          ],
+          "pass_pct": 87.87878787878788,
+          "runs": 165
+        },
+        "eligible_pct": 15.013648771610555,
+        "eligible_starts": 165,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 17.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 6.666666666666667,
+          "pass_ci95_pct": [
+            88.45785014422502,
+            96.2369878409542
+          ],
+          "pass_pct": 93.33333333333333,
+          "runs": 165
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.15,
+      "model_id": "ridge_100_mean_top_0.15",
+      "preholdout_pass": false,
+      "preholdout_score": 56.00000000000001,
+      "ridge_penalty": 100.0,
+      "score_mode": "mean",
+      "score_threshold": 0.7169245415599668,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 22.0,
+          "max_breach_pct": 8.0,
+          "not_reached_pct": 14.000000000000002,
+          "pass_ci95_pct": [
+            42.30602802165686,
+            68.83780078874284
+          ],
+          "pass_pct": 56.00000000000001,
+          "runs": 50
+        },
+        "eligible_pct": 14.880952380952381,
+        "eligible_starts": 50,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 30.0,
+          "pass_ci95_pct": [
+            56.249649535546595,
+            80.89644649911905
+          ],
+          "pass_pct": 70.0,
+          "runs": 50
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 10.909090909090908,
+          "max_breach_pct": 1.8181818181818181,
+          "not_reached_pct": 1.8181818181818181,
+          "pass_ci95_pct": [
+            79.26916115058602,
+            90.02661538274243
+          ],
+          "pass_pct": 85.45454545454545,
+          "runs": 165
+        },
+        "eligible_pct": 15.013648771610555,
+        "eligible_starts": 165,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 21.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 7.2727272727272725,
+          "pass_ci95_pct": [
+            87.7192538041669,
+            95.79104099240843
+          ],
+          "pass_pct": 92.72727272727272,
+          "runs": 165
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.15,
+      "model_id": "ridge_10_mean_top_0.15",
+      "preholdout_pass": false,
+      "preholdout_score": 55.73770491803278,
+      "ridge_penalty": 10.0,
+      "score_mode": "mean",
+      "score_threshold": 0.7485697948341071,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 22.950819672131146,
+          "max_breach_pct": 9.836065573770492,
+          "not_reached_pct": 11.475409836065573,
+          "pass_ci95_pct": [
+            43.303367693143876,
+            67.49219447851712
+          ],
+          "pass_pct": 55.73770491803278,
+          "runs": 61
+        },
+        "eligible_pct": 18.154761904761905,
+        "eligible_starts": 61,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 29.508196721311474,
+          "pass_ci95_pct": [
+            58.11059794277964,
+            80.44498124172395
+          ],
+          "pass_pct": 70.49180327868852,
+          "runs": 61
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 13.818181818181818,
+          "max_breach_pct": 4.0,
+          "not_reached_pct": 5.090909090909091,
+          "pass_ci95_pct": [
+            71.77100287478265,
+            81.66437959314969
+          ],
+          "pass_pct": 77.0909090909091,
+          "runs": 275
+        },
+        "eligible_pct": 25.02274795268426,
+        "eligible_starts": 275,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 11.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 14.545454545454545,
+          "pass_ci95_pct": [
+            80.79928240726197,
+            89.13292954741459
+          ],
+          "pass_pct": 85.45454545454545,
+          "runs": 275
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.25,
+      "model_id": "ridge_10_mean_top_0.25",
+      "preholdout_pass": false,
+      "preholdout_score": 55.69620253164557,
+      "ridge_penalty": 10.0,
+      "score_mode": "mean",
+      "score_threshold": 0.6792970671068917,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 20.253164556962027,
+          "max_breach_pct": 15.18987341772152,
+          "not_reached_pct": 8.860759493670885,
+          "pass_ci95_pct": [
+            44.73191294830839,
+            66.13221248854566
+          ],
+          "pass_pct": 55.69620253164557,
+          "runs": 79
+        },
+        "eligible_pct": 23.511904761904763,
+        "eligible_starts": 79,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.149999999999821,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 31.645569620253166,
+          "pass_ci95_pct": [
+            57.45191237451232,
+            77.55471403312849
+          ],
+          "pass_pct": 68.35443037974683,
+          "runs": 79
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 11.515151515151516,
+          "max_breach_pct": 1.8181818181818181,
+          "not_reached_pct": 1.8181818181818181,
+          "pass_ci95_pct": [
+            78.58953408730194,
+            89.52169925742261
+          ],
+          "pass_pct": 84.84848484848484,
+          "runs": 165
+        },
+        "eligible_pct": 15.013648771610555,
+        "eligible_starts": 165,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 18.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 7.2727272727272725,
+          "pass_ci95_pct": [
+            87.7192538041669,
+            95.79104099240843
+          ],
+          "pass_pct": 92.72727272727272,
+          "runs": 165
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.15,
+      "model_id": "ridge_0.1_mean_top_0.15",
+      "preholdout_pass": false,
+      "preholdout_score": 55.55555555555556,
+      "ridge_penalty": 0.1,
+      "score_mode": "mean",
+      "score_threshold": 0.7543934539547476,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 23.809523809523807,
+          "max_breach_pct": 9.523809523809524,
+          "not_reached_pct": 11.11111111111111,
+          "pass_ci95_pct": [
+            43.319638238682344,
+            67.1529039881082
+          ],
+          "pass_pct": 55.55555555555556,
+          "runs": 63
+        },
+        "eligible_pct": 18.75,
+        "eligible_starts": 63,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 3.9499999999999957,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 28.57142857142857,
+          "pass_ci95_pct": [
+            59.297283432592884,
+            81.0968080135992
+          ],
+          "pass_pct": 71.42857142857143,
+          "runs": 63
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 12.396694214876034,
+          "max_breach_pct": 7.7134986225895315,
+          "not_reached_pct": 4.958677685950414,
+          "pass_ci95_pct": [
+            70.2272397942801,
+            79.11287584637594
+          ],
+          "pass_pct": 74.93112947658402,
+          "runs": 363
+        },
+        "eligible_pct": 33.03002729754322,
+        "eligible_starts": 363,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 10.199999999999932,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 20.66115702479339,
+          "pass_ci95_pct": [
+            74.87710411945628,
+            83.18612588860854
+          ],
+          "pass_pct": 79.33884297520662,
+          "runs": 363
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.33,
+      "model_id": "ridge_10_minimum_top_0.33",
+      "preholdout_pass": false,
+      "preholdout_score": 55.208333333333336,
+      "ridge_penalty": 10.0,
+      "score_mode": "minimum",
+      "score_threshold": 0.5781005834561752,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 14.583333333333334,
+          "max_breach_pct": 18.75,
+          "not_reached_pct": 11.458333333333332,
+          "pass_ci95_pct": [
+            45.251638597747416,
+            64.76424069540184
+          ],
+          "pass_pct": 55.208333333333336,
+          "runs": 96
+        },
+        "eligible_pct": 28.571428571428573,
+        "eligible_starts": 96,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.199999999999989,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 34.375,
+          "pass_ci95_pct": [
+            55.68803111840908,
+            74.35960676103856
+          ],
+          "pass_pct": 65.625,
+          "runs": 96
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 11.84573002754821,
+          "max_breach_pct": 8.539944903581267,
+          "not_reached_pct": 4.958677685950414,
+          "pass_ci95_pct": [
+            69.93874089293944,
+            78.85618009975353
+          ],
+          "pass_pct": 74.65564738292011,
+          "runs": 363
+        },
+        "eligible_pct": 33.03002729754322,
+        "eligible_starts": 363,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 14.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 20.9366391184573,
+          "pass_ci95_pct": [
+            74.58449095775593,
+            82.93354440234583
+          ],
+          "pass_pct": 79.06336088154269,
+          "runs": 363
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.33,
+      "model_id": "ridge_0.1_joint_top_0.33",
+      "preholdout_pass": false,
+      "preholdout_score": 55.00000000000001,
+      "ridge_penalty": 0.1,
+      "score_mode": "joint",
+      "score_threshold": 0.5977134507929635,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 16.0,
+          "max_breach_pct": 17.0,
+          "not_reached_pct": 12.0,
+          "pass_ci95_pct": [
+            45.244602997442136,
+            64.38546202048802
+          ],
+          "pass_pct": 55.00000000000001,
+          "runs": 100
+        },
+        "eligible_pct": 29.761904761904763,
+        "eligible_starts": 100,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.399999999999977,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 34.0,
+          "pass_ci95_pct": [
+            56.27772885472463,
+            74.53847920265183
+          ],
+          "pass_pct": 66.0,
+          "runs": 100
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 11.84573002754821,
+          "max_breach_pct": 8.539944903581267,
+          "not_reached_pct": 4.958677685950414,
+          "pass_ci95_pct": [
+            69.93874089293944,
+            78.85618009975353
+          ],
+          "pass_pct": 74.65564738292011,
+          "runs": 363
+        },
+        "eligible_pct": 33.03002729754322,
+        "eligible_starts": 363,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 14.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 20.9366391184573,
+          "pass_ci95_pct": [
+            74.58449095775593,
+            82.93354440234583
+          ],
+          "pass_pct": 79.06336088154269,
+          "runs": 363
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.33,
+      "model_id": "ridge_1_joint_top_0.33",
+      "preholdout_pass": false,
+      "preholdout_score": 55.00000000000001,
+      "ridge_penalty": 1.0,
+      "score_mode": "joint",
+      "score_threshold": 0.5976078448416744,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 16.0,
+          "max_breach_pct": 17.0,
+          "not_reached_pct": 12.0,
+          "pass_ci95_pct": [
+            45.244602997442136,
+            64.38546202048802
+          ],
+          "pass_pct": 55.00000000000001,
+          "runs": 100
+        },
+        "eligible_pct": 29.761904761904763,
+        "eligible_starts": 100,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.399999999999977,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 34.0,
+          "pass_ci95_pct": [
+            56.27772885472463,
+            74.53847920265183
+          ],
+          "pass_pct": 66.0,
+          "runs": 100
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 12.121212121212121,
+          "max_breach_pct": 7.988980716253444,
+          "not_reached_pct": 4.958677685950414,
+          "pass_ci95_pct": [
+            70.2272397942801,
+            79.11287584637594
+          ],
+          "pass_pct": 74.93112947658402,
+          "runs": 363
+        },
+        "eligible_pct": 33.03002729754322,
+        "eligible_starts": 363,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 13.099999999999966,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 20.9366391184573,
+          "pass_ci95_pct": [
+            74.58449095775593,
+            82.93354440234583
+          ],
+          "pass_pct": 79.06336088154269,
+          "runs": 363
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.33,
+      "model_id": "ridge_10_joint_top_0.33",
+      "preholdout_pass": false,
+      "preholdout_score": 54.63917525773196,
+      "ridge_penalty": 10.0,
+      "score_mode": "joint",
+      "score_threshold": 0.5905431551764746,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.463917525773196,
+          "max_breach_pct": 16.49484536082474,
+          "not_reached_pct": 13.402061855670103,
+          "pass_ci95_pct": [
+            44.74409242951606,
+            64.18080820684112
+          ],
+          "pass_pct": 54.63917525773196,
+          "runs": 97
+        },
+        "eligible_pct": 28.86904761904762,
+        "eligible_starts": 97,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 35.051546391752574,
+          "pass_ci95_pct": [
+            55.04910713012011,
+            73.70890603147528
+          ],
+          "pass_pct": 64.94845360824742,
+          "runs": 97
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 10.181818181818182,
+          "max_breach_pct": 5.818181818181818,
+          "not_reached_pct": 4.7272727272727275,
+          "pass_ci95_pct": [
+            74.09463247185258,
+            83.64427073175217
+          ],
+          "pass_pct": 79.27272727272727,
+          "runs": 275
+        },
+        "eligible_pct": 25.02274795268426,
+        "eligible_starts": 275,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 10.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 16.727272727272727,
+          "pass_ci95_pct": [
+            78.40983078156073,
+            87.21886043744344
+          ],
+          "pass_pct": 83.27272727272728,
+          "runs": 275
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.25,
+      "model_id": "ridge_100_joint_top_0.25",
+      "preholdout_pass": false,
+      "preholdout_score": 54.41176470588235,
+      "ridge_penalty": 100.0,
+      "score_mode": "joint",
+      "score_threshold": 0.6069591971961791,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 19.11764705882353,
+          "max_breach_pct": 11.76470588235294,
+          "not_reached_pct": 14.705882352941178,
+          "pass_ci95_pct": [
+            42.65660642868502,
+            65.69511707260847
+          ],
+          "pass_pct": 54.41176470588235,
+          "runs": 68
+        },
+        "eligible_pct": 20.238095238095237,
+        "eligible_starts": 68,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 11.699999999999996,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 33.82352941176471,
+          "pass_ci95_pct": [
+            54.337239386664905,
+            76.28574678474457
+          ],
+          "pass_pct": 66.17647058823529,
+          "runs": 68
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 12.727272727272727,
+          "max_breach_pct": 4.363636363636364,
+          "not_reached_pct": 2.5454545454545454,
+          "pass_ci95_pct": [
+            75.26398840860017,
+            84.62667516284078
+          ],
+          "pass_pct": 80.36363636363636,
+          "runs": 275
+        },
+        "eligible_pct": 25.02274795268426,
+        "eligible_starts": 275,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 13.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 12.0,
+          "pass_ci95_pct": [
+            83.62655262299201,
+            91.32643352330237
+          ],
+          "pass_pct": 88.0,
+          "runs": 275
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.25,
+      "model_id": "ridge_100_mean_top_0.25",
+      "preholdout_pass": false,
+      "preholdout_score": 54.054054054054056,
+      "ridge_penalty": 100.0,
+      "score_mode": "mean",
+      "score_threshold": 0.66143559376756,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 22.972972972972975,
+          "max_breach_pct": 13.513513513513514,
+          "not_reached_pct": 9.45945945945946,
+          "pass_ci95_pct": [
+            42.78134568803063,
+            64.9266290736203
+          ],
+          "pass_pct": 54.054054054054056,
+          "runs": 74
+        },
+        "eligible_pct": 22.023809523809526,
+        "eligible_starts": 74,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 16.59999999999971,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 32.432432432432435,
+          "pass_ci95_pct": [
+            56.26529887491834,
+            77.13592509223565
+          ],
+          "pass_pct": 67.56756756756756,
+          "runs": 74
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 17.90633608815427,
+          "max_breach_pct": 4.958677685950414,
+          "not_reached_pct": 4.132231404958678,
+          "pass_ci95_pct": [
+            68.21254215538721,
+            77.31121094952746
+          ],
+          "pass_pct": 73.00275482093664,
+          "runs": 363
+        },
+        "eligible_pct": 33.03002729754322,
+        "eligible_starts": 363,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 16.528925619834713,
+          "pass_ci95_pct": [
+            79.30343727196043,
+            86.93771245555013
+          ],
+          "pass_pct": 83.47107438016529,
+          "runs": 363
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.33,
+      "model_id": "ridge_0.1_mean_top_0.33",
+      "preholdout_pass": false,
+      "preholdout_score": 52.88461538461539,
+      "ridge_penalty": 0.1,
+      "score_mode": "mean",
+      "score_threshold": 0.6465522426334658,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 22.115384615384613,
+          "max_breach_pct": 16.346153846153847,
+          "not_reached_pct": 8.653846153846153,
+          "pass_ci95_pct": [
+            43.36020882040901,
+            62.20351413513454
+          ],
+          "pass_pct": 52.88461538461539,
+          "runs": 104
+        },
+        "eligible_pct": 30.952380952380953,
+        "eligible_starts": 104,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 8.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 37.5,
+          "pass_ci95_pct": [
+            52.90673810155041,
+            71.20272803913828
+          ],
+          "pass_pct": 62.5,
+          "runs": 104
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 18.181818181818183,
+          "max_breach_pct": 4.958677685950414,
+          "not_reached_pct": 4.132231404958678,
+          "pass_ci95_pct": [
+            67.92562032156184,
+            77.05293813538978
+          ],
+          "pass_pct": 72.72727272727273,
+          "runs": 363
+        },
+        "eligible_pct": 33.03002729754322,
+        "eligible_starts": 363,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 16.804407713498623,
+          "pass_ci95_pct": [
+            79.00599322504029,
+            86.68996185450723
+          ],
+          "pass_pct": 83.19559228650138,
+          "runs": 363
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.33,
+      "model_id": "ridge_1_mean_top_0.33",
+      "preholdout_pass": false,
+      "preholdout_score": 51.9607843137255,
+      "ridge_penalty": 1.0,
+      "score_mode": "mean",
+      "score_threshold": 0.646521705303818,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 22.54901960784314,
+          "max_breach_pct": 16.666666666666664,
+          "not_reached_pct": 8.823529411764707,
+          "pass_ci95_pct": [
+            42.37112725109654,
+            61.408110152250664
+          ],
+          "pass_pct": 51.9607843137255,
+          "runs": 102
+        },
+        "eligible_pct": 30.357142857142858,
+        "eligible_starts": 102,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 8.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 38.23529411764706,
+          "pass_ci95_pct": [
+            52.069755369724355,
+            70.60566905035886
+          ],
+          "pass_pct": 61.76470588235294,
+          "runs": 102
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 17.355371900826448,
+          "max_breach_pct": 5.5096418732782375,
+          "not_reached_pct": 5.785123966942149,
+          "pass_ci95_pct": [
+            66.4942210401193,
+            75.75836417701709
+          ],
+          "pass_pct": 71.34986225895317,
+          "runs": 363
+        },
+        "eligible_pct": 33.03002729754322,
+        "eligible_starts": 363,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 18.457300275482094,
+          "pass_ci95_pct": [
+            77.22872192597686,
+            85.19606526579237
+          ],
+          "pass_pct": 81.5426997245179,
+          "runs": 363
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.33,
+      "model_id": "ridge_100_mean_top_0.33",
+      "preholdout_pass": false,
+      "preholdout_score": 51.724137931034484,
+      "ridge_penalty": 100.0,
+      "score_mode": "mean",
+      "score_threshold": 0.6263965110412424,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 25.287356321839084,
+          "max_breach_pct": 13.793103448275861,
+          "not_reached_pct": 9.195402298850574,
+          "pass_ci95_pct": [
+            41.37512133636875,
+            61.927335536237734
+          ],
+          "pass_pct": 51.724137931034484,
+          "runs": 87
+        },
+        "eligible_pct": 25.892857142857142,
+        "eligible_starts": 87,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.75,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 36.7816091954023,
+          "pass_ci95_pct": [
+            52.72752508445968,
+            72.59131093885667
+          ],
+          "pass_pct": 63.2183908045977,
+          "runs": 87
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 18.457300275482094,
+          "max_breach_pct": 5.234159779614325,
+          "not_reached_pct": 4.132231404958678,
+          "pass_ci95_pct": [
+            67.35242446022286,
+            76.53574470080264
+          ],
+          "pass_pct": 72.1763085399449,
+          "runs": 363
+        },
+        "eligible_pct": 33.03002729754322,
+        "eligible_starts": 363,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 17.079889807162534,
+          "pass_ci95_pct": [
+            78.70891221597235,
+            86.44184821561213
+          ],
+          "pass_pct": 82.92011019283747,
+          "runs": 363
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.33,
+      "model_id": "ridge_10_mean_top_0.33",
+      "preholdout_pass": false,
+      "preholdout_score": 51.0,
+      "ridge_penalty": 10.0,
+      "score_mode": "mean",
+      "score_threshold": 0.6414917767866355,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 23.0,
+          "max_breach_pct": 17.0,
+          "not_reached_pct": 9.0,
+          "pass_ci95_pct": [
+            41.34801193402717,
+            60.578001069558866
+          ],
+          "pass_pct": 51.0,
+          "runs": 100
+        },
+        "eligible_pct": 29.761904761904763,
+        "eligible_starts": 100,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 9.099999999999994,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 39.0,
+          "pass_ci95_pct": [
+            51.203017045840724,
+            69.98312599360558
+          ],
+          "pass_pct": 61.0,
+          "runs": 100
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 10.454545454545453,
+          "max_breach_pct": 2.272727272727273,
+          "not_reached_pct": 2.272727272727273,
+          "pass_ci95_pct": [
+            79.6832344180271,
+            89.1154594483134
+          ],
+          "pass_pct": 85.0,
+          "runs": 220
+        },
+        "eligible_pct": 20.018198362147405,
+        "eligible_starts": 220,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 12.25,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 8.181818181818182,
+          "pass_ci95_pct": [
+            87.43889957557582,
+            94.7621372517401
+          ],
+          "pass_pct": 91.81818181818183,
+          "runs": 220
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.2,
+      "model_id": "ridge_100_mean_top_0.20",
+      "preholdout_pass": false,
+      "preholdout_score": 50.76923076923077,
+      "ridge_penalty": 100.0,
+      "score_mode": "mean",
+      "score_threshold": 0.6841082993691263,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 23.076923076923077,
+          "max_breach_pct": 15.384615384615385,
+          "not_reached_pct": 10.76923076923077,
+          "pass_ci95_pct": [
+            38.916452487275485,
+            62.536160541458564
+          ],
+          "pass_pct": 50.76923076923077,
+          "runs": 65
+        },
+        "eligible_pct": 19.345238095238095,
+        "eligible_starts": 65,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.699999999999989,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 33.84615384615385,
+          "pass_ci95_pct": [
+            54.03837691551205,
+            76.46649668790333
+          ],
+          "pass_pct": 66.15384615384615,
+          "runs": 65
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 13.498622589531681,
+          "max_breach_pct": 7.162534435261708,
+          "not_reached_pct": 6.336088154269973,
+          "pass_ci95_pct": [
+            68.21254215538721,
+            77.31121094952746
+          ],
+          "pass_pct": 73.00275482093664,
+          "runs": 363
+        },
+        "eligible_pct": 33.03002729754322,
+        "eligible_starts": 363,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 21.487603305785125,
+          "pass_ci95_pct": [
+            74.0001096575966,
+            82.42753640657907
+          ],
+          "pass_pct": 78.51239669421489,
+          "runs": 363
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.33,
+      "model_id": "ridge_100_minimum_top_0.33",
+      "preholdout_pass": false,
+      "preholdout_score": 50.617283950617285,
+      "ridge_penalty": 100.0,
+      "score_mode": "minimum",
+      "score_threshold": 0.5613448121387917,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 17.28395061728395,
+          "max_breach_pct": 17.28395061728395,
+          "not_reached_pct": 14.814814814814813,
+          "pass_ci95_pct": [
+            39.95078470731793,
+            61.22788432301242
+          ],
+          "pass_pct": 50.617283950617285,
+          "runs": 81
+        },
+        "eligible_pct": 24.107142857142858,
+        "eligible_starts": 81,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.34999999999998,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 38.2716049382716,
+          "pass_ci95_pct": [
+            50.841247547241295,
+            71.55346402903538
+          ],
+          "pass_pct": 61.72839506172839,
+          "runs": 81
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 14.325068870523417,
+          "max_breach_pct": 7.43801652892562,
+          "not_reached_pct": 5.5096418732782375,
+          "pass_ci95_pct": [
+            67.92562032156184,
+            77.05293813538978
+          ],
+          "pass_pct": 72.72727272727273,
+          "runs": 363
+        },
+        "eligible_pct": 33.03002729754322,
+        "eligible_starts": 363,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 22.03856749311295,
+          "pass_ci95_pct": [
+            73.41682918783009,
+            81.92042758041947
+          ],
+          "pass_pct": 77.96143250688705,
+          "runs": 363
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.33,
+      "model_id": "ridge_100_joint_top_0.33",
+      "preholdout_pass": false,
+      "preholdout_score": 48.93617021276596,
+      "ridge_penalty": 100.0,
+      "score_mode": "joint",
+      "score_threshold": 0.5682918319910315,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 20.212765957446805,
+          "max_breach_pct": 14.893617021276595,
+          "not_reached_pct": 15.957446808510639,
+          "pass_ci95_pct": [
+            39.07276290915208,
+            58.88311384891502
+          ],
+          "pass_pct": 48.93617021276596,
+          "runs": 94
+        },
+        "eligible_pct": 27.976190476190474,
+        "eligible_starts": 94,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.3999999999999915,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 38.297872340425535,
+          "pass_ci95_pct": [
+            51.59955881639535,
+            70.88579684486635
+          ],
+          "pass_pct": 61.702127659574465,
+          "runs": 94
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.818181818181817,
+          "max_breach_pct": 9.818181818181818,
+          "not_reached_pct": 6.7272727272727275,
+          "pass_ci95_pct": [
+            63.61562251741039,
+            71.41245219788598
+          ],
+          "pass_pct": 67.63636363636364,
+          "runs": 550
+        },
+        "eligible_pct": 50.04549590536852,
+        "eligible_starts": 550,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 25.818181818181817,
+          "pass_ci95_pct": [
+            70.36549214191062,
+            77.66269277700087
+          ],
+          "pass_pct": 74.18181818181819,
+          "runs": 550
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.5,
+      "model_id": "ridge_0.1_minimum_top_0.50",
+      "preholdout_pass": false,
+      "preholdout_score": 48.026315789473685,
+      "ridge_penalty": 0.1,
+      "score_mode": "minimum",
+      "score_threshold": 0.4896061823658927,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 19.736842105263158,
+          "max_breach_pct": 19.078947368421055,
+          "not_reached_pct": 13.157894736842104,
+          "pass_ci95_pct": [
+            40.23080874564109,
+            55.91912462548873
+          ],
+          "pass_pct": 48.026315789473685,
+          "runs": 152
+        },
+        "eligible_pct": 45.23809523809524,
+        "eligible_starts": 152,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.5,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 44.07894736842105,
+          "pass_ci95_pct": [
+            47.97884590559921,
+            63.57135398101133
+          ],
+          "pass_pct": 55.92105263157895,
+          "runs": 152
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.090909090909092,
+          "max_breach_pct": 9.454545454545455,
+          "not_reached_pct": 6.7272727272727275,
+          "pass_ci95_pct": [
+            64.73416896166064,
+            72.46059078757156
+          ],
+          "pass_pct": 68.72727272727272,
+          "runs": 550
+        },
+        "eligible_pct": 50.04549590536852,
+        "eligible_starts": 550,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 25.272727272727273,
+          "pass_ci95_pct": [
+            70.93243229876876,
+            78.17909513711068
+          ],
+          "pass_pct": 74.72727272727273,
+          "runs": 550
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.5,
+      "model_id": "ridge_0.1_joint_top_0.50",
+      "preholdout_pass": false,
+      "preholdout_score": 47.651006711409394,
+      "ridge_penalty": 0.1,
+      "score_mode": "joint",
+      "score_threshold": 0.5023720250532923,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 19.463087248322147,
+          "max_breach_pct": 19.463087248322147,
+          "not_reached_pct": 13.422818791946309,
+          "pass_ci95_pct": [
+            39.79178494975677,
+            55.62830587245132
+          ],
+          "pass_pct": 47.651006711409394,
+          "runs": 149
+        },
+        "eligible_pct": 44.345238095238095,
+        "eligible_starts": 149,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 44.29530201342282,
+          "pass_ci95_pct": [
+            47.68498255732934,
+            63.437654017308134
+          ],
+          "pass_pct": 55.70469798657718,
+          "runs": 149
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.272727272727273,
+          "max_breach_pct": 9.636363636363637,
+          "not_reached_pct": 6.7272727272727275,
+          "pass_ci95_pct": [
+            64.36104957168797,
+            72.11148183289893
+          ],
+          "pass_pct": 68.36363636363636,
+          "runs": 550
+        },
+        "eligible_pct": 50.04549590536852,
+        "eligible_starts": 550,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 25.454545454545453,
+          "pass_ci95_pct": [
+            70.74337001549932,
+            78.00704324805746
+          ],
+          "pass_pct": 74.54545454545455,
+          "runs": 550
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.5,
+      "model_id": "ridge_1_joint_top_0.50",
+      "preholdout_pass": false,
+      "preholdout_score": 47.651006711409394,
+      "ridge_penalty": 1.0,
+      "score_mode": "joint",
+      "score_threshold": 0.5020466373683513,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 19.463087248322147,
+          "max_breach_pct": 19.463087248322147,
+          "not_reached_pct": 13.422818791946309,
+          "pass_ci95_pct": [
+            39.79178494975677,
+            55.62830587245132
+          ],
+          "pass_pct": 47.651006711409394,
+          "runs": 149
+        },
+        "eligible_pct": 44.345238095238095,
+        "eligible_starts": 149,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 44.29530201342282,
+          "pass_ci95_pct": [
+            47.68498255732934,
+            63.437654017308134
+          ],
+          "pass_pct": 55.70469798657718,
+          "runs": 149
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.818181818181817,
+          "max_breach_pct": 9.818181818181818,
+          "not_reached_pct": 6.7272727272727275,
+          "pass_ci95_pct": [
+            63.61562251741039,
+            71.41245219788598
+          ],
+          "pass_pct": 67.63636363636364,
+          "runs": 550
+        },
+        "eligible_pct": 50.04549590536852,
+        "eligible_starts": 550,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 25.818181818181817,
+          "pass_ci95_pct": [
+            70.36549214191062,
+            77.66269277700087
+          ],
+          "pass_pct": 74.18181818181819,
+          "runs": 550
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.5,
+      "model_id": "ridge_1_minimum_top_0.50",
+      "preholdout_pass": false,
+      "preholdout_score": 47.333333333333336,
+      "ridge_penalty": 1.0,
+      "score_mode": "minimum",
+      "score_threshold": 0.49029445149352496,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 20.0,
+          "max_breach_pct": 19.333333333333332,
+          "not_reached_pct": 13.333333333333334,
+          "pass_ci95_pct": [
+            39.509896658720244,
+            55.28994464457616
+          ],
+          "pass_pct": 47.333333333333336,
+          "runs": 150
+        },
+        "eligible_pct": 44.642857142857146,
+        "eligible_starts": 150,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.599999999999994,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 44.666666666666664,
+          "pass_ci95_pct": [
+            47.343118434916654,
+            63.05719895849053
+          ],
+          "pass_pct": 55.333333333333336,
+          "runs": 150
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.090909090909092,
+          "max_breach_pct": 9.636363636363637,
+          "not_reached_pct": 6.909090909090909,
+          "pass_ci95_pct": [
+            64.36104957168797,
+            72.11148183289893
+          ],
+          "pass_pct": 68.36363636363636,
+          "runs": 550
+        },
+        "eligible_pct": 50.04549590536852,
+        "eligible_starts": 550,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.75,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 25.454545454545453,
+          "pass_ci95_pct": [
+            70.74337001549932,
+            78.00704324805746
+          ],
+          "pass_pct": 74.54545454545455,
+          "runs": 550
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.5,
+      "model_id": "ridge_10_joint_top_0.50",
+      "preholdout_pass": false,
+      "preholdout_score": 46.89655172413793,
+      "ridge_penalty": 10.0,
+      "score_mode": "joint",
+      "score_threshold": 0.5023256173008916,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 20.0,
+          "max_breach_pct": 20.0,
+          "not_reached_pct": 13.10344827586207,
+          "pass_ci95_pct": [
+            38.9591367530486,
+            54.994160889080746
+          ],
+          "pass_pct": 46.89655172413793,
+          "runs": 145
+        },
+        "eligible_pct": 43.154761904761905,
+        "eligible_starts": 145,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.849999999999994,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 44.827586206896555,
+          "pass_ci95_pct": [
+            47.04829974711218,
+            63.0295375160056
+          ],
+          "pass_pct": 55.172413793103445,
+          "runs": 145
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 16.545454545454547,
+          "max_breach_pct": 9.454545454545455,
+          "not_reached_pct": 6.909090909090909,
+          "pass_ci95_pct": [
+            63.057253044928544,
+            70.8874791533999
+          ],
+          "pass_pct": 67.0909090909091,
+          "runs": 550
+        },
+        "eligible_pct": 50.04549590536852,
+        "eligible_starts": 550,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 25.818181818181817,
+          "pass_ci95_pct": [
+            70.36549214191062,
+            77.66269277700087
+          ],
+          "pass_pct": 74.18181818181819,
+          "runs": 550
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.5,
+      "model_id": "ridge_10_minimum_top_0.50",
+      "preholdout_pass": false,
+      "preholdout_score": 46.308724832214764,
+      "ridge_penalty": 10.0,
+      "score_mode": "minimum",
+      "score_threshold": 0.4916137511432062,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 20.80536912751678,
+          "max_breach_pct": 19.463087248322147,
+          "not_reached_pct": 13.422818791946309,
+          "pass_ci95_pct": [
+            38.49579354501229,
+            54.30720631845758
+          ],
+          "pass_pct": 46.308724832214764,
+          "runs": 149
+        },
+        "eligible_pct": 44.345238095238095,
+        "eligible_starts": 149,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 46.308724832214764,
+          "pass_ci95_pct": [
+            45.69279368154242,
+            61.50420645498771
+          ],
+          "pass_pct": 53.691275167785236,
+          "runs": 149
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 20.18181818181818,
+          "max_breach_pct": 8.545454545454545,
+          "not_reached_pct": 6.0,
+          "pass_ci95_pct": [
+            61.200258234671125,
+            69.13333224043087
+          ],
+          "pass_pct": 65.27272727272727,
+          "runs": 550
+        },
+        "eligible_pct": 50.04549590536852,
+        "eligible_starts": 550,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.75,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 23.81818181818182,
+          "pass_ci95_pct": [
+            72.44796997727985,
+            79.5524708371807
+          ],
+          "pass_pct": 76.18181818181819,
+          "runs": 550
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.5,
+      "model_id": "ridge_0.1_mean_top_0.50",
+      "preholdout_pass": false,
+      "preholdout_score": 42.857142857142854,
+      "ridge_penalty": 0.1,
+      "score_mode": "mean",
+      "score_threshold": 0.5650833215061672,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 26.70807453416149,
+          "max_breach_pct": 18.012422360248447,
+          "not_reached_pct": 12.422360248447205,
+          "pass_ci95_pct": [
+            35.46723609421455,
+            50.57996333938291
+          ],
+          "pass_pct": 42.857142857142854,
+          "runs": 161
+        },
+        "eligible_pct": 47.916666666666664,
+        "eligible_starts": 161,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 50.31055900621118,
+          "pass_ci95_pct": [
+            42.06400468926115,
+            57.32935180785177
+          ],
+          "pass_pct": 49.68944099378882,
+          "runs": 161
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 20.18181818181818,
+          "max_breach_pct": 8.727272727272728,
+          "not_reached_pct": 6.0,
+          "pass_ci95_pct": [
+            61.01491070900177,
+            68.95756559377759
+          ],
+          "pass_pct": 65.0909090909091,
+          "runs": 550
+        },
+        "eligible_pct": 50.04549590536852,
+        "eligible_starts": 550,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.75,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 24.0,
+          "pass_ci95_pct": [
+            72.25822639934879,
+            79.38110024278915
+          ],
+          "pass_pct": 76.0,
+          "runs": 550
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.5,
+      "model_id": "ridge_1_mean_top_0.50",
+      "preholdout_pass": false,
+      "preholdout_score": 42.5,
+      "ridge_penalty": 1.0,
+      "score_mode": "mean",
+      "score_threshold": 0.5657258009582508,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 26.875,
+          "max_breach_pct": 18.125,
+          "not_reached_pct": 12.5,
+          "pass_ci95_pct": [
+            35.104349819846476,
+            50.24734310772612
+          ],
+          "pass_pct": 42.5,
+          "runs": 160
+        },
+        "eligible_pct": 47.61904761904762,
+        "eligible_starts": 160,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 50.625,
+          "pass_ci95_pct": [
+            41.734162771161934,
+            57.045144972802454
+          ],
+          "pass_pct": 49.375,
+          "runs": 160
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 20.0,
+          "max_breach_pct": 8.90909090909091,
+          "not_reached_pct": 6.181818181818182,
+          "pass_ci95_pct": [
+            60.82962622222167,
+            68.78173590823504
+          ],
+          "pass_pct": 64.9090909090909,
+          "runs": 550
+        },
+        "eligible_pct": 50.04549590536852,
+        "eligible_starts": 550,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 24.181818181818183,
+          "pass_ci95_pct": [
+            72.06857022778124,
+            79.20964224203404
+          ],
+          "pass_pct": 75.81818181818181,
+          "runs": 550
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.5,
+      "model_id": "ridge_10_mean_top_0.50",
+      "preholdout_pass": false,
+      "preholdout_score": 42.2360248447205,
+      "ridge_penalty": 10.0,
+      "score_mode": "mean",
+      "score_threshold": 0.5640928889962034,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 27.32919254658385,
+          "max_breach_pct": 18.012422360248447,
+          "not_reached_pct": 12.422360248447205,
+          "pass_ci95_pct": [
+            34.87455007364688,
+            49.95936235417646
+          ],
+          "pass_pct": 42.2360248447205,
+          "runs": 161
+        },
+        "eligible_pct": 47.916666666666664,
+        "eligible_starts": 161,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.099999999999966,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 50.931677018633536,
+          "pass_ci95_pct": [
+            41.45851170446512,
+            56.72155778687367
+          ],
+          "pass_pct": 49.06832298136646,
+          "runs": 161
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 17.636363636363637,
+          "max_breach_pct": 9.636363636363637,
+          "not_reached_pct": 6.7272727272727275,
+          "pass_ci95_pct": [
+            61.94228336243517,
+            69.8357638019574
+          ],
+          "pass_pct": 66.0,
+          "runs": 550
+        },
+        "eligible_pct": 50.04549590536852,
+        "eligible_starts": 550,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 26.90909090909091,
+          "pass_ci95_pct": [
+            69.23379228809404,
+            76.62770759688162
+          ],
+          "pass_pct": 73.0909090909091,
+          "runs": 550
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.5,
+      "model_id": "ridge_100_minimum_top_0.50",
+      "preholdout_pass": false,
+      "preholdout_score": 41.17647058823529,
+      "ridge_penalty": 100.0,
+      "score_mode": "minimum",
+      "score_threshold": 0.4984735660365442,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 27.205882352941174,
+          "max_breach_pct": 17.647058823529413,
+          "not_reached_pct": 13.970588235294118,
+          "pass_ci95_pct": [
+            33.25825804753728,
+            49.57944959482005
+          ],
+          "pass_pct": 41.17647058823529,
+          "runs": 136
+        },
+        "eligible_pct": 40.476190476190474,
+        "eligible_starts": 136,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.8999999999999915,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 46.32352941176471,
+          "pass_ci95_pct": [
+            45.310240065628996,
+            61.84071508338879
+          ],
+          "pass_pct": 53.67647058823529,
+          "runs": 136
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 17.09090909090909,
+          "max_breach_pct": 9.636363636363637,
+          "not_reached_pct": 6.363636363636363,
+          "pass_ci95_pct": [
+            62.8712618468489,
+            70.71235617915687
+          ],
+          "pass_pct": 66.9090909090909,
+          "runs": 550
+        },
+        "eligible_pct": 50.04549590536852,
+        "eligible_starts": 550,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.75,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 26.181818181818183,
+          "pass_ci95_pct": [
+            69.98793944027514,
+            77.31801713399106
+          ],
+          "pass_pct": 73.81818181818181,
+          "runs": 550
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.5,
+      "model_id": "ridge_100_joint_top_0.50",
+      "preholdout_pass": false,
+      "preholdout_score": 41.007194244604314,
+      "ridge_penalty": 100.0,
+      "score_mode": "joint",
+      "score_threshold": 0.5066735047804695,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 26.618705035971225,
+          "max_breach_pct": 17.985611510791365,
+          "not_reached_pct": 14.388489208633093,
+          "pass_ci95_pct": [
+            33.17955756508697,
+            49.31852092948933
+          ],
+          "pass_pct": 41.007194244604314,
+          "runs": 139
+        },
+        "eligible_pct": 41.36904761904762,
+        "eligible_starts": 139,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.300000000000011,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 44.60431654676259,
+          "pass_ci95_pct": [
+            47.097600593666726,
+            63.40355230958748
+          ],
+          "pass_pct": 55.39568345323741,
+          "runs": 139
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 21.636363636363637,
+          "max_breach_pct": 8.727272727272728,
+          "not_reached_pct": 6.181818181818182,
+          "pass_ci95_pct": [
+            59.34959360883704,
+            67.37285514303854
+          ],
+          "pass_pct": 63.45454545454545,
+          "runs": 550
+        },
+        "eligible_pct": 50.04549590536852,
+        "eligible_starts": 550,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 24.363636363636363,
+          "pass_ci95_pct": [
+            71.87900079602551,
+            79.03809750146712
+          ],
+          "pass_pct": 75.63636363636364,
+          "runs": 550
+        },
+        "total_starts": 1099
+      },
+      "development_top_fraction": 0.5,
+      "model_id": "ridge_100_mean_top_0.50",
+      "preholdout_pass": false,
+      "preholdout_score": 39.00709219858156,
+      "ridge_penalty": 100.0,
+      "score_mode": "mean",
+      "score_threshold": 0.5624983458766714,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 32.62411347517731,
+          "max_breach_pct": 15.602836879432624,
+          "not_reached_pct": 12.76595744680851,
+          "pass_ci95_pct": [
+            31.349773454130116,
+            47.24751474470229
+          ],
+          "pass_pct": 39.00709219858156,
+          "runs": 141
+        },
+        "eligible_pct": 41.964285714285715,
+        "eligible_starts": 141,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 53.191489361702125,
+          "pass_ci95_pct": [
+            38.766558337335944,
+            55.019751139744436
+          ],
+          "pass_pct": 46.808510638297875,
+          "runs": 141
+        },
+        "total_starts": 336
+      }
+    }
+  ],
+  "manifest": "artifacts\\ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "policy": {
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "horizon_calendar_days": 30,
+    "risk_multiplier": 25.0,
+    "room_retention": 0.2
+  },
+  "predeclaration": "artifacts\\ftmo_causal_launch_model_predeclaration_2026-07-12.json",
+  "preholdout_survivor_count": 14,
+  "scenario": "path_01_11095_gbpusd_down2",
+  "schema_version": 1,
+  "selected_winner": {
+    "development": {
+      "adverse_bar_fill": {
+        "daily_breach_pct": 6.666666666666667,
+        "max_breach_pct": 3.6363636363636362,
+        "not_reached_pct": 6.0606060606060606,
+        "pass_ci95_pct": [
+          77.23868813989553,
+          88.50345882762122
+        ],
+        "pass_pct": 83.63636363636363,
+        "runs": 165
+      },
+      "eligible_pct": 15.013648771610555,
+      "eligible_starts": 165,
+      "median_gap_calendar_days": 1.0,
+      "p95_gap_calendar_days": 15.0,
+      "threshold_fill": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 14.545454545454545,
+        "pass_ci95_pct": [
+          79.26916115058602,
+          90.02661538274243
+        ],
+        "pass_pct": 85.45454545454545,
+        "runs": 165
+      },
+      "total_starts": 1099
+    },
+    "development_top_fraction": 0.15,
+    "frozen_models": {
+      "joint": {
+        "coefficients": [
+          -0.07940031499783323,
+          -0.06678788938938258,
+          -0.15461157760688002,
+          0.020272971831552078,
+          0.0674370005142613,
+          -0.029206892641234994,
+          0.02947638684505407,
+          0.019864568096540913,
+          -0.22888917460498584,
+          0.15063946031306613,
+          0.0517493274529573,
+          -0.1905809202949151,
+          -0.05483572703937497,
+          0.10830080492230776,
+          -0.10139208530011773,
+          0.05246840646423384,
+          0.013467329829304072,
+          -0.043676717734689306,
+          -0.014029153464364686,
+          0.08196197764170172,
+          -0.0016309120263639043,
+          -0.02795675893416996,
+          -0.04709100491949787,
+          -0.06660555501894533,
+          -0.016166074567968786,
+          0.039614883122693276,
+          0.0428628834563857,
+          -0.015137401550979526,
+          -0.022456632226866474,
+          -0.01621770895532083,
+          0.025281650470353863,
+          0.03418013703232862,
+          0.005244948534493351,
+          -0.010968630611464029,
+          0.052266904701751334,
+          -0.022159423685779753,
+          0.01410603221009043,
+          -0.00636857474391766,
+          0.014064511564631746,
+          -0.03720638746556444,
+          -0.05835751390223537,
+          0.02120325071479312,
+          -0.051543825854649644,
+          -0.0296284553862248,
+          0.015926998786538256,
+          0.08721073547936284
+        ],
+        "feature_names": [
+          "book_drawdown_020",
+          "book_drawdown_060",
+          "book_drawdown_120",
+          "book_pnl_std_010",
+          "book_pnl_std_020",
+          "book_pnl_std_060",
+          "book_pnl_sum_005",
+          "book_pnl_sum_010",
+          "book_pnl_sum_020",
+          "book_pnl_sum_040",
+          "book_pnl_sum_060",
+          "book_pnl_sum_120",
+          "book_positive_ratio_010",
+          "book_positive_ratio_020",
+          "book_positive_ratio_060",
+          "calendar_month_01",
+          "calendar_month_02",
+          "calendar_month_03",
+          "calendar_month_04",
+          "calendar_month_05",
+          "calendar_month_06",
+          "calendar_month_07",
+          "calendar_month_08",
+          "calendar_month_09",
+          "calendar_month_10",
+          "calendar_month_11",
+          "calendar_month_12",
+          "calendar_weekday_0",
+          "calendar_weekday_1",
+          "calendar_weekday_2",
+          "calendar_weekday_3",
+          "calendar_weekday_4",
+          "calendar_weekday_5",
+          "calendar_weekday_6",
+          "market_ndx_return_20d",
+          "market_ndx_return_5d",
+          "market_ndx_volatility_ratio",
+          "market_usdjpy_return_20d",
+          "market_usdjpy_return_5d",
+          "market_usdjpy_volatility_ratio",
+          "market_xauusd_return_20d",
+          "market_xauusd_return_5d",
+          "market_xauusd_volatility_ratio",
+          "market_xtiusd_return_20d",
+          "market_xtiusd_return_5d",
+          "market_xtiusd_volatility_ratio"
+        ],
+        "intercept": 0.4986351228389444,
+        "means": [
+          474.8388158333702,
+          828.5462120125869,
+          1123.1210363294203,
+          129.84795773899287,
+          136.83766405983988,
+          141.72514492431574,
+          65.10306945292858,
+          126.72053770644541,
+          254.69100639593552,
+          499.0699777089164,
+          720.3249555640506,
+          1534.87287553197,
+          0.3496815286624204,
+          0.3503639672429491,
+          0.3498938428874736,
+          0.056414922656960874,
+          0.050955414012738856,
+          0.056414922656960874,
+          0.0545950864422202,
+          0.08462238398544131,
+          0.0818926296633303,
+          0.08462238398544131,
+          0.11282984531392175,
+          0.1091901728844404,
+          0.11282984531392175,
+          0.1091901728844404,
+          0.08644222020018198,
+          0.14285714285714285,
+          0.14194722474977253,
+          0.14285714285714285,
+          0.14285714285714285,
+          0.14285714285714285,
+          0.1437670609645132,
+          0.14285714285714285,
+          -0.0002975794727123524,
+          -0.0005331851394500179,
+          1.0471705824211825,
+          0.0051024316397990455,
+          0.0012293415420886861,
+          1.0247453075104656,
+          0.005887558274475655,
+          0.001315935105869627,
+          1.007866172501421,
+          0.004684118864952253,
+          0.00030908293711617526,
+          1.0218491029480412
+        ],
+        "scales": [
+          216.60576527541804,
+          349.4242909260445,
+          465.9333566776642,
+          58.67979949634608,
+          49.15363700190941,
+          36.91350455717295,
+          310.8367019015459,
+          409.74123301516977,
+          570.8297045065674,
+          852.3162088437153,
+          1147.7932687658345,
+          1676.0119184871085,
+          0.1404120691659156,
+          0.09811626319741437,
+          0.05021678666773128,
+          0.23072121523295214,
+          0.21990670702715998,
+          0.23072121523295214,
+          0.22718816645808457,
+          0.27831894673927987,
+          0.2742010701477195,
+          0.2783189467392794,
+          0.3163846888209975,
+          0.3118776667700076,
+          0.31638468882099735,
+          0.31187766677000817,
+          0.2810159475315316,
+          0.34992710611188066,
+          0.3489960030367258,
+          0.3499271061118807,
+          0.3499271061118807,
+          0.3499271061118807,
+          0.35085337841631536,
+          0.34992710611188066,
+          0.0601155405286717,
+          0.03178109755862081,
+          0.3158543978760138,
+          0.024636713421966338,
+          0.011162651192127953,
+          0.24841859006546327,
+          0.035400693384200765,
+          0.017772972812480265,
+          0.19443057950659826,
+          0.09837859249352035,
+          0.05282373770588338,
+          0.22137404939051444
+        ]
+      }
+    },
+    "model_id": "ridge_10_joint_top_0.15",
+    "preholdout_pass": true,
+    "preholdout_score": 65.45454545454545,
+    "ridge_penalty": 10.0,
+    "score_mode": "joint",
+    "score_threshold": 0.7089664954985608,
+    "validation": {
+      "adverse_bar_fill": {
+        "daily_breach_pct": 12.727272727272727,
+        "max_breach_pct": 9.090909090909092,
+        "not_reached_pct": 12.727272727272727,
+        "pass_ci95_pct": [
+          52.25390350756162,
+          76.63729045791027
+        ],
+        "pass_pct": 65.45454545454545,
+        "runs": 55
+      },
+      "eligible_pct": 16.36904761904762,
+      "eligible_starts": 55,
+      "median_gap_calendar_days": 1.0,
+      "p95_gap_calendar_days": 6.499999999999943,
+      "threshold_fill": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 23.636363636363637,
+        "pass_ci95_pct": [
+          63.65163381083227,
+          85.63334413026682
+        ],
+        "pass_pct": 76.36363636363637,
+        "runs": 55
+      },
+      "total_starts": 336
+    }
+  },
+  "selection_contract": {
+    "development_top_fractions": [
+      0.15,
+      0.2,
+      0.25,
+      0.33,
+      0.5
+    ],
+    "development_years": [
+      2018,
+      2019,
+      2021,
+      2022
+    ],
+    "maximum_causal_lookback_calendar_days": 120,
+    "minimum_development_starts": 150,
+    "minimum_eligible_pct_each_split": 10.0,
+    "minimum_floor_pct_each_fill_and_split": 60.0,
+    "minimum_improvement_pct_each_fill_and_split": 5.0,
+    "minimum_validation_starts": 30,
+    "ridge_penalties": [
+      0.1,
+      1.0,
+      10.0,
+      100.0
+    ],
+    "score_modes": [
+      "joint",
+      "minimum",
+      "mean"
+    ],
+    "sealed_years_unopened": [
+      2017,
+      2020,
+      2024,
+      2025
+    ],
+    "selection_uses_sealed_years": false,
+    "validation_years": [
+      2023
+    ]
+  },
+  "status": "PREHOLDOUT_SURVIVOR",
+  "timestamp_basis": "darwinex_broker_wall",
+  "trade_paths": 4495
+}

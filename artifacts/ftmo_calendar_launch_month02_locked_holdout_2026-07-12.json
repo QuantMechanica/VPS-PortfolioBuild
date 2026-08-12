@@ -1,0 +1,92 @@
+{
+  "adverse_target_met": false,
+  "basis": "one_time_sealed_holdout_of_frozen_calendar_launch_gate",
+  "control": {
+    "adverse_bar_fill": {
+      "daily_breach_pct": 20.114122681883025,
+      "max_breach_pct": 10.984308131241084,
+      "not_reached_pct": 9.557774607703282,
+      "pass_ci95_pct": [
+        55.66629822559372,
+        62.919441639819816
+      ],
+      "pass_pct": 59.34379457917262,
+      "runs": 701
+    },
+    "eligible_pct": 100.0,
+    "eligible_starts": 701,
+    "median_gap_calendar_days": 1.0,
+    "p95_gap_calendar_days": 1.0,
+    "threshold_fill": {
+      "daily_breach_pct": 0.0,
+      "max_breach_pct": 0.0,
+      "not_reached_pct": 30.099857346647646,
+      "pass_ci95_pct": [
+        66.40366250755213,
+        73.1797071294736
+      ],
+      "pass_pct": 69.90014265335235,
+      "runs": 701
+    },
+    "total_starts": 701
+  },
+  "excluded_years": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+  ],
+  "gate": "month_02",
+  "holdout_years": [
+    2024,
+    2025
+  ],
+  "manifest": "artifacts\\ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "normal_target_met": false,
+  "policy": {
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "horizon_calendar_days": 30,
+    "risk_multiplier": 25.0,
+    "room_retention": 0.2
+  },
+  "scenario": "path_01_11095_gbpusd_down2",
+  "schema_version": 1,
+  "selected": {
+    "adverse_bar_fill": {
+      "daily_breach_pct": 8.771929824561402,
+      "max_breach_pct": 22.807017543859647,
+      "not_reached_pct": 5.263157894736842,
+      "pass_ci95_pct": [
+        50.1777982224952,
+        74.47644296558428
+      ],
+      "pass_pct": 63.1578947368421,
+      "runs": 57
+    },
+    "eligible_pct": 8.131241084165477,
+    "eligible_starts": 57,
+    "median_gap_calendar_days": 1.0,
+    "p95_gap_calendar_days": 1.0,
+    "threshold_fill": {
+      "daily_breach_pct": 0.0,
+      "max_breach_pct": 0.0,
+      "not_reached_pct": 33.33333333333333,
+      "pass_ci95_pct": [
+        53.72251158005143,
+        77.50619392484926
+      ],
+      "pass_pct": 66.66666666666666,
+      "runs": 57
+    },
+    "total_starts": 701
+  },
+  "selection_artifact": "artifacts\\ftmo_calendar_launch_gate_screen_train_validation_2026-07-12.json",
+  "selection_uses_holdout": false,
+  "status": "TARGET_NOT_MET",
+  "target_pass_pct": 80.0,
+  "trade_paths": 1791
+}

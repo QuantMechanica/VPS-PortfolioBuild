@@ -304,6 +304,11 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_H1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED"))
+      return INIT_FAILED;
+
    if(!QM_FrameworkSetRiskCapPct(qm_risk_cap_pct))
       return INIT_FAILED;
 
@@ -357,7 +362,7 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_H1))
       return;
 
    QM_EquityStreamOnNewBar();

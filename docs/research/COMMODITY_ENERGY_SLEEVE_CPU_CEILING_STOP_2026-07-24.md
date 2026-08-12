@@ -1,0 +1,266 @@
+# Commodity/Energy Sleeve — Paced-Fleet CPU-Ceiling Stop
+
+**Date:** 2026-07-24  
+**Branch:** `agents/board-advisor`  
+**Scope:** one new structural, low-frequency commodity/energy card, V5 build,
+and Q02 enqueue  
+**Outcome:** stopped before allocation, card mutation, build, or enqueue
+
+## Deterministic stop condition
+
+At `2026-07-24T02:46:45Z`,
+`python tools/strategy_farm/farmctl.py mt5-slots` reported nine terminal
+workers:
+
+`T1, T2, T3, T4, T6, T7, T8, T9, T10`.
+
+Seven tester terminals were actively running pipeline work:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_10718 | Q03 | NZDUSD.DWX |
+| T2 | QM5_9291 | Q05 | GDAXI.DWX |
+| T3 | QM5_10687 | Q02 | USDJPY.DWX |
+| T4 | QM5_20007 | Q02 | SP500.DWX |
+| T7 | QM5_10582 | Q07 | XAUUSD.DWX |
+| T8 | QM5_11208 | Q02 | GBPUSD.DWX |
+| T9 | QM5_9107 | Q02 | XTIUSD.DWX |
+
+The process scan also saw `T_Live` and the FTMO terminal. They were not
+pipeline runs and were not touched. No tester, smoke test, or backtest was
+started.
+
+The mission says to stop on the backtest CPU ceiling. Therefore no speculative
+Q02 row was added while the paced fleet was saturated.
+
+## Candidate and duplicate audit
+
+The requested candidate families cannot be treated as blank space:
+
+- Fixed-threshold XAU/XAG convergence is already built as
+  `QM5_20012_xauxag-cmtar`.
+- Rolling gold/silver ratio reversion is already built as
+  `QM5_12577_cme-xauxag-ratio`.
+- XAU/XAG momentum baskets are already built as `QM5_20050` and `QM5_20057`.
+- The newest governed allocations already reach `QM5_20094`; recent work
+  includes multiple WTI and XNG calendar, trend, and relative-value carriers.
+- The live XNG comparison target remains
+  `QM5_12567_cum-rsi2-commodity`; a new carrier must differ in information
+  clock and mechanics, not merely in parameter values.
+
+The peer-reviewed `MIGHRI-XAUXAG-CMTAR-2018` source packet is reputable and
+mechanical, but allocating another card from it would duplicate QM5_20012.
+Likewise, ordinary XAU/XAG ratio fading would duplicate QM5_12577. No ID,
+magic row, card, or EA was created merely to satisfy build volume.
+
+## Clean handoff
+
+When capacity is below the paced-fleet ceiling, repeat the repository-wide
+mechanic audit against the then-current branch and select a source-backed edge
+whose exact signal, holding clock, and exposure are absent. Only then:
+
+1. create the approved card and deterministic registry allocations;
+2. build a `RISK_FIXED=1000`, `RISK_PERCENT=0` backtest-only artifact;
+3. compile with strict checks;
+4. verify there is no pending or active sibling Q02 row; and
+5. enqueue exactly one logical Q02 work item.
+
+No portfolio gate, T_Live manifest, live setfile, AutoTrading state, or live
+terminal was changed.
+
+## Recheck at 04:44Z
+
+A second paced-fleet check at `2026-07-24T04:44:22Z` again reached the
+mission's CPU-ceiling stop condition. `farmctl.py mt5-slots` reported eight
+active factory pipeline terminals:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_12538 | Q02 | AUDUSD.DWX |
+| T2 | QM5_10582 | Q07 | XAUUSD.DWX |
+| T3 | QM5_12538 | Q02 | EURJPY.DWX |
+| T4 | QM5_10485 | Q02 | USDJPY.DWX |
+| T6 | QM5_11235 | Q02 | GBPUSD.DWX |
+| T7 | QM5_1560 | Q02 | NDX.DWX |
+| T8 | QM5_12528 | Q03 | WS30.DWX |
+| T9 | QM5_9940 | Q02 | SP500.DWX |
+
+The scan separately identified `T_Live` and the FTMO terminal as non-pipeline
+processes. They were not touched. This recheck made no registry, card, EA,
+queue, portfolio, manifest, terminal, or AutoTrading mutation.
+
+## Recheck at 05:30Z
+
+A third read-only check at `2026-07-24T05:30:58Z` found eight active factory
+terminals, one above the documented paced-fleet ceiling of seven:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_10687 | Q02 | USDJPY.DWX |
+| T2 | QM5_10582 | Q07 | XAUUSD.DWX |
+| T4 | QM5_12538 | Q02 | NZDUSD.DWX |
+| T6 | QM5_10470 | Q03 | GDAXI.DWX |
+| T7 | QM5_11478 | Q03 | GBPUSD.DWX |
+| T8 | QM5_20039 | Q02 | NDX.DWX |
+| T9 | QM5_12538 | Q02 | GBPJPY.DWX |
+| T10 | QM5_20007 | Q02 | SP500.DWX |
+
+The path-anchored scan excluded `T_Live` and the FTMO terminal from the
+factory count. The canonical saturation scheduler was then run with
+`--dry-run`; it returned `available_slots_before=0`,
+`available_slots_after=0`, and `scheduled=0`. Per the explicit CPU-ceiling
+stop rule, this check made no strategy, registry, queue, terminal, portfolio,
+manifest, or live-state mutation.
+
+## Recheck at 06:29Z
+
+A fourth read-only check at `2026-07-24T06:29:43Z` found exactly seven active
+factory pipeline terminals, matching the documented paced-fleet ceiling:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_10485 | Q02 | USDJPY.DWX |
+| T2 | QM5_12365 | Q07 | XAUUSD.DWX |
+| T3 | QM5_12538 | Q02 | USDCAD.DWX |
+| T6 | QM5_11010 | Q04 | GDAXI.DWX |
+| T7 | QM5_1235 | Q03 | GBPUSD.DWX |
+| T9 | QM5_9940 | Q02 | SP500.DWX |
+| T10 | QM5_12591 | Q02 | XTIUSD.DWX |
+
+The path-anchored process scan separately identified `T_Live` and the FTMO
+terminal as non-pipeline processes; neither was touched. Because the ceiling
+was reached, this turn stopped before source approval, card or ID allocation,
+EA build, compilation, Q02 enqueue, tester launch, or any portfolio/live
+mutation.
+
+## Recheck at 07:20Z
+
+A fifth read-only check at `2026-07-24T07:20:09Z` again found exactly seven
+active factory pipeline terminals:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_1642 | Q03 | XTIUSD.DWX |
+| T2 | QM5_12365 | Q07 | XAUUSD.DWX |
+| T3 | QM5_11916 | Q02 | AUDJPY.DWX |
+| T4 | QM5_10911 | Q03 | GDAXI.DWX |
+| T7 | QM5_9940 | Q02 | SP500.DWX |
+| T8 | QM5_13213 | Q08 | pipeline baseline |
+| T10 | QM5_10201 | Q02 | GBPUSD.DWX |
+
+The same path-anchored scan separately identified `T_Live` and the FTMO
+terminal as non-pipeline processes; neither was touched. A proposed
+Mishra-Smyth unconditional weekly XNG contrarian was also rejected during the
+read-only dedup preflight because it is only a horizon variant of existing
+`QM5_20013` and `QM5_20054`, not a load-bearing new mechanic. No source,
+registry, card, EA, queue, tester, portfolio, manifest, or live-state mutation
+was made.
+
+## Recheck at 09:29Z
+
+A sixth read-only check at `2026-07-24T09:29:25Z` found eight active factory
+MT5 testers, one above the documented paced-fleet ceiling of seven:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_10911 | Q03 | GDAXI.DWX |
+| T2 | QM5_10961 | Q03 | EURUSD.DWX |
+| T3 | QM5_1642 | Q03 | XTIUSD.DWX |
+| T4 | QM5_10582 | Q07 | XAUUSD.DWX |
+| T6 | QM5_1127 | Q03 | USDCHF.DWX |
+| T8 | QM5_13213 | pipeline baseline | tester configuration |
+| T9 | QM5_11478 | Q03 | GBPUSD.DWX |
+| T10 | QM5_9940 | Q02 | SP500.DWX |
+
+The path-anchored `farmctl.py mt5-slots` scan separately identified `T_Live`
+and the FTMO terminal as non-pipeline processes; neither was touched. Because
+the ceiling was exceeded, this turn stopped before source approval, card or ID
+allocation, EA build, compilation, Q02 enqueue, tester launch, or any
+portfolio/live mutation.
+
+## Recheck at 12:15Z
+
+A seventh read-only check at `2026-07-24T12:15:05Z` found exactly seven active
+factory tester terminals, matching the documented paced-fleet ceiling:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_11016 | Q04 | GDAXI.DWX |
+| T2 | QM5_10412 | Q03 | NDX.DWX |
+| T3 | QM5_10582 | Q07 | XAUUSD.DWX |
+| T4 | QM5_11016 | Q02 | GBPUSD.DWX |
+| T6 | QM5_10961 | Q03 | EURUSD.DWX |
+| T8 | QM5_13213 | pipeline baseline | tester configuration |
+| T10 | QM5_10565 | Q02 | USDCAD.DWX |
+
+The path-anchored `farmctl.py mt5-slots` scan separately identified `T_Live`
+and the FTMO terminal as non-pipeline processes; neither was touched. The
+mission's CPU-ceiling condition therefore stopped this turn before source
+approval, card or ID allocation, EA build, compilation, Q02 enqueue, tester
+launch, or any portfolio/live mutation.
+
+## Recheck at 18:00Z
+
+An eighth read-only check at `2026-07-24T18:00:22Z` found eight active factory
+tester terminals, one above the documented paced-fleet ceiling of seven:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_13213 | pipeline baseline | tester configuration |
+| T2 | QM5_11910 | Q02 | EURUSD.DWX |
+| T3 | QM5_11910 | Q03 | AUDJPY.DWX |
+| T4 | QM5_10911 | Q03 | GDAXI.DWX |
+| T6 | QM5_11910 | Q02 | EURJPY.DWX |
+| T7 | QM5_12365 | Q07 | XAUUSD.DWX |
+| T8 | QM5_11016 | Q02 | GBPUSD.DWX |
+| T9 | QM5_20039 | Q03 | NDX.DWX |
+
+The path-anchored `farmctl.py mt5-slots` scan separately identified `T_Live`
+as a non-pipeline process; it was not touched. Because the ceiling was
+exceeded, this turn stopped before source approval, card or ID allocation, EA
+build, compilation, Q02 enqueue, tester launch, or any portfolio/live
+mutation. The unrelated pre-existing
+`framework/include/QM/QM_MagicResolver.mqh` worktree modification was also
+left untouched and excluded from the stop-record commit.
+
+## Recheck at 20:15Z
+
+A ninth read-only check at `2026-07-24T20:15:07Z` found exactly seven active
+factory tester terminals, matching the documented paced-fleet ceiling:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_13213 | pipeline baseline | tester configuration |
+| T2 | QM5_10217 | Q02 | NDX.DWX |
+| T3 | QM5_13203 | Q02 | QM5_13203_XTI_XNG_DOWNBETA_D1 |
+| T4 | QM5_11016 | Q02 | GBPUSD.DWX |
+| T6 | QM5_11903 | Q02 | AUDUSD.DWX |
+| T7 | QM5_1230 | Q07 | XAUUSD.DWX |
+| T9 | QM5_9940 | Q02 | SP500.DWX |
+
+The canonical `farmctl.py mt5-slots` scan separately identified `T_Live` as
+a non-pipeline process; it was not touched. Because the ceiling was reached,
+this turn stopped before source approval, card or ID/magic allocation, EA
+build, compilation, Q02 enqueue, tester launch, or any portfolio/live
+mutation.
+
+## Recheck at 21:15Z
+
+A tenth read-only check at `2026-07-24T21:15:08Z` found exactly seven active
+factory tester terminals, matching the documented paced-fleet ceiling:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_13213 | pipeline baseline | tester configuration |
+| T2 | QM5_11903 | Q04 | GBPUSD.DWX |
+| T3 | QM5_9454 | Q04 | XTIUSD.DWX |
+| T4 | QM5_9454 | Q02 | USDCAD.DWX |
+| T6 | QM5_10911 | Q03 | GDAXI.DWX |
+| T7 | QM5_1230 | Q07 | XAUUSD.DWX |
+| T8 | QM5_10581 | Q04 | GBPJPY.DWX |
+
+The canonical path-anchored `farmctl.py mt5-slots` scan separately identified
+`T_Live` as a non-pipeline process; it was not touched. Because the ceiling
+was reached, this turn stopped before source approval, card or ID/magic
+allocation, EA build, compilation, Q02 enqueue, tester launch, or any
+portfolio/live mutation.

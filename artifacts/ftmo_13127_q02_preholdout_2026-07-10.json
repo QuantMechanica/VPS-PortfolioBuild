@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-07-10T21:45:00Z",
+  "ea_id": 13127,
+  "ea_label": "QM5_13127_et-open-atr-long",
+  "symbol": "NDX.DWX",
+  "period": "M5",
+  "model": 4,
+  "binary_sha256": "c097255c018d1f4e5aefc94d7b878f34281bec24cd67e4a265ef953924602b36",
+  "setfile_sha256": "1a64ad0be8fc0ec5451aa895db3cf8daae1c2d1d89e46829b793c0dae6563f3b",
+  "cost_basis": "native MT5 bid/ask spread plus both sides of the canonical 5.5 USD/lot round-trip NDX commission; native swap was zero",
+  "gate": {
+    "profit_factor_floor": 1.2,
+    "verdict": "FAIL",
+    "reasons": [
+      "2022_profit_factor_below_one",
+      "pooled_2021_2023_profit_factor_below_1_20",
+      "seven_trades_crossed_broker_midnight_with_zero_native_swap"
+    ]
+  },
+  "years": [
+    {
+      "year": 2021,
+      "trades": 123,
+      "profit_factor": 1.381728,
+      "net_profit": 11189.57,
+      "close_to_close_max_drawdown": 2759.94,
+      "overnight_trades": 4,
+      "deterministic_ok_runs": 2,
+      "summary_path": "D:\\QM\\reports\\smoke\\QM5_13127_Q02_PREHOLDOUT_20260710\\Y2021\\QM5_13127\\20260710_212950\\summary.json",
+      "summary_sha256": "266283f5891eb1f564817f0ad87509ead1ef1d4b750fb02b370c15252a46a5c8",
+      "report_path": "D:\\QM\\reports\\smoke\\QM5_13127_Q02_PREHOLDOUT_20260710\\Y2021\\QM5_13127\\20260710_212950\\raw\\run_02\\report.htm",
+      "report_sha256": "5395618d06a9789c88fb9f767488584ea9accde21e5a54d539d0d36e7a0c84d6"
+    },
+    {
+      "year": 2022,
+      "trades": 135,
+      "profit_factor": 0.883288,
+      "net_profit": -4294.48,
+      "close_to_close_max_drawdown": 6530.56,
+      "overnight_trades": 1,
+      "deterministic_ok_runs": 2,
+      "summary_path": "D:\\QM\\reports\\smoke\\QM5_13127_Q02_PREHOLDOUT_20260710\\Y2022\\QM5_13127\\20260710_212950\\summary.json",
+      "summary_sha256": "0dba32f3dd2694821aa2e91f51c702959a163f339aaa7fda892b23ea4f9637a2",
+      "report_path": "D:\\QM\\reports\\smoke\\QM5_13127_Q02_PREHOLDOUT_20260710\\Y2022\\QM5_13127\\20260710_212950\\raw\\run_02\\report.htm",
+      "report_sha256": "6494bda7691fd9149016debed512fecaf97282c386d4221197958d87da60b431"
+    },
+    {
+      "year": 2023,
+      "trades": 144,
+      "profit_factor": 1.213912,
+      "net_profit": 7992.17,
+      "close_to_close_max_drawdown": 7402.85,
+      "overnight_trades": 2,
+      "deterministic_ok_runs": 2,
+      "summary_path": "D:\\QM\\reports\\smoke\\QM5_13127_Q02_PREHOLDOUT_20260710\\Y2023\\QM5_13127\\20260710_212950\\summary.json",
+      "summary_sha256": "acb0cf4b86959c188686498ecb6d3fe08452e050d108b55f62d795340a0b3b5f",
+      "report_path": "D:\\QM\\reports\\smoke\\QM5_13127_Q02_PREHOLDOUT_20260710\\Y2023\\QM5_13127\\20260710_212950\\raw\\run_01\\report.htm",
+      "report_sha256": "c7fd0b7bfae3f7d1fa44d7405a13f598e96e10f8189a557817738af0ccc3fbff"
+    }
+  ],
+  "pooled_2021_2023": {
+    "trades": 402,
+    "profit_factor": 1.143879,
+    "net_profit": 14887.26,
+    "gross_profit": 118357.78,
+    "gross_loss": -103470.52,
+    "close_to_close_max_drawdown": 7402.85,
+    "overnight_trades": 7
+  },
+  "infrastructure": {
+    "year_2020": "INVALID_NO_COMPLETE_REPORT_ON_T1; not retried after strategy gate failed",
+    "tester_log_bytes_for_cohort": 3229977448,
+    "log_volume_classification": "SYSTEMIC_FRAMEWORK_LOGGING_ISSUE_NOT_STRATEGY_EVIDENCE"
+  },
+  "holdouts": {
+    "2024": "NOT_RUN",
+    "2025": "NOT_RUN"
+  }
+}

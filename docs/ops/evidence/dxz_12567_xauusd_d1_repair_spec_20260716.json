@@ -1,0 +1,659 @@
+{
+  "schema_version": 1,
+  "artifact_type": "DXZ_12567_XAUUSD_D1_REPAIR_SPEC",
+  "packet_id": "DXZ-12567-XAUUSD-DWX-D1-20260716",
+  "bound_as_of_utc": "2026-07-16T12:35:00Z",
+  "status": "BLOCKED_PENDING_OWNER_AND_NEW_EVIDENCE",
+  "deployment_eligible": false,
+  "scope": {
+    "ea_id": 12567,
+    "ea_slug": "cum-rsi2-commodity",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "magic": 125670003,
+    "platform": "DarwinexZero MT5",
+    "allowed_history": "literal .DWX only",
+    "mutation_authority": "NONE",
+    "mt5_execution_authority": "NONE",
+    "forbidden_execution_roots": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10",
+      "T_Live"
+    ]
+  },
+  "source_semantics": {
+    "citation_url": "https://tradingmarkets.com/recent/the_killer_app_of_cumulative_rsis__3_powerratings_stocks-826745",
+    "citation_checked_utc": "2026-07-16T10:15:00Z",
+    "source_archived_copy_present": false,
+    "source_defined_rules": [
+      "daily RSI(2) readings are accumulated",
+      "a two-day cumulative RSI(2) below 35 was tested on SPY"
+    ],
+    "not_defined_by_cited_page": [
+      "commodity or XAUUSD universe",
+      "SMA(200) trend filter",
+      "RSI(2) above 65 exit",
+      "five-D1-bar time exit",
+      "ATR(14) 2.5x stop",
+      "next-bar market entry",
+      "300-point spread cap",
+      "Friday close",
+      "news policy",
+      "position sizing"
+    ],
+    "classification": "QM_INTERPRETATION_COMMODITY_PORT_NOT_VERBATIM_SOURCE_STRATEGY"
+  },
+  "source_runtime_remediation_contract": {
+    "status": "BLOCKING_REMEDIATION_REQUIRED",
+    "observed_source_sha256": "e40bea7e231ca7366feaa7e4ce0e9f6cc823a39cd6640535a157fe8747bb4025",
+    "observed_defect": "NEWS_RETURNS_PRECEDE_MANDATORY_FRIDAY_CLOSE",
+    "required_runtime_marker": "QM_WEEKEND_FLAT_DEADLINE_V1",
+    "required_weekend_handler": "QM_EnforceWeekendFlatDeadline",
+    "required_order": [
+      "KILL_SWITCH_GUARD_WITH_BOUND_FLATTEN_AND_60S_RETRY",
+      "WEEKEND_DEADLINE_HANDLER",
+      "FRAMEWORK_FRIDAY_21_HANDLER",
+      "NEWS_AND_ENTRY_FILTERS"
+    ],
+    "current_source_qualification_eligible": false
+  },
+  "baseline": {
+    "classification": "RESEARCH_CANDIDATE_NOT_QUALIFIED",
+    "requested_from_date": "2018-03-01",
+    "requested_to_date": "2025-12-31",
+    "native_report": {
+      "trades": 73,
+      "profit_factor": 1.5903558907,
+      "net_eur": 3623.51,
+      "close_to_close_max_drawdown_eur": 1699.08,
+      "history_quality": "100% real ticks",
+      "native_commission_total_eur": 0.0,
+      "recorded_swap_total_eur": 0.0
+    },
+    "commission_adjusted_v3": {
+      "rate_contract": "0.00005 decimal = 0.005 percent = 0.5 basis points round-trip",
+      "commission_status": "COMPLETE",
+      "ambiguous_trade_count": 0,
+      "unbounded_trade_count": 0,
+      "central_profit_factor": 1.5744813899,
+      "central_net_eur": 3540.7357404412,
+      "conservative_profit_factor": 1.5743318807,
+      "conservative_net_eur": 3540.0575756862,
+      "conservative_close_to_close_max_drawdown_eur": 1717.3248900492,
+      "qualification_use": false,
+      "reason": "Commission-only evidence does not certify spread, current broker spread parity, swap or slippage."
+    },
+    "legacy_identity_diagnostic": {
+      "native_round_trips": 73,
+      "old_reference_rows": 73,
+      "entry_timestamp_matches": 73,
+      "exit_timestamp_matches": 73,
+      "gross_outcome_sign_matches": 73,
+      "lot_matches": 9,
+      "native_lot_sum": "9.99",
+      "old_reference_lot_sum": "11.34",
+      "native_net_eur": "3623.51",
+      "old_reference_net": "4676.76",
+      "side_price_reason_stop_target_identity_available": false,
+      "old_reference_provenance": "fixed-risk backtest on historical T8/Common workflow",
+      "old_reference_admissible": false
+    },
+    "legacy_q08": {
+      "rows": 28,
+      "valid_full_identity_rows": 0,
+      "defect": "every row lacks entry_time and the stream covers only 28 of 73 native closes"
+    },
+    "effective_runtime": {
+      "account_currency": "EUR",
+      "deposit": 100000,
+      "risk_mode": "PERCENT",
+      "risk_percent": "0.7938",
+      "risk_fixed": "0",
+      "portfolio_weight": "1",
+      "friday_close_enabled": true,
+      "friday_close_hour_broker": 21,
+      "friday_21_close_count": 45,
+      "news_temporal": 3,
+      "news_compliance": 1,
+      "strategy_parameter_overrides": 0,
+      "unknown_inert_preset_key_count": 11
+    },
+    "lineage_findings": [
+      "The deployed EX5 used by the read-only baseline differs from the repository EX5.",
+      "The deployed preset uses RISK_PERCENT=0.7938 while the repository live preset uses 0.7500.",
+      "The historical source manifest expects RISK_PERCENT=0.793826 and PORTFOLIO_WEIGHT=0.081418, which dimensionally double-scales already allocated sleeve risk.",
+      "The v1 Card does not authorize the effective Friday-21 or exact PRE30/POST30 plus DXZ news contract.",
+      "The current source returns on Strategy_NewsFilterHook/QM_NewsAllowsTrade2 before QM_FrameworkHandleFridayClose, so an active news blackout can suppress the mandatory weekend flatten path.",
+      "Eleven qm_filter_* preset keys are not declared MQL5 inputs and therefore do not configure the effective runtime."
+    ]
+  },
+  "risk_formula": {
+    "source": "framework/include/QM/QM_RiskSizer.mqh",
+    "source_sha256": "e75d7aaa48f3eae0d298ac67ba0db4404089f9b1abc7ea361fee7662c342fbed",
+    "continuous_target_risk_formula": "equity * (RISK_PERCENT / 100) * PORTFOLIO_WEIGHT",
+    "initial_equity_eur": "100000"
+  },
+  "risk_contract_candidates": [
+    {
+      "contract_id": "LIVE_AS_FOUND_RP0_7938_PW1",
+      "RISK_PERCENT": "0.7938",
+      "RISK_FIXED": "0",
+      "PORTFOLIO_WEIGHT": "1",
+      "effective_risk_percent": "0.7938",
+      "initial_continuous_target_risk_eur": "793.8",
+      "owner_selectable": true,
+      "current_anchor_compatible": true,
+      "preset_mutation_required": false,
+      "qualification_class": "AS_LIVE_REQUAL"
+    },
+    {
+      "contract_id": "SOURCE_PRECISION_RP0_793826_PW1",
+      "RISK_PERCENT": "0.793826",
+      "RISK_FIXED": "0",
+      "PORTFOLIO_WEIGHT": "1",
+      "effective_risk_percent": "0.793826",
+      "initial_continuous_target_risk_eur": "793.826",
+      "owner_selectable": true,
+      "current_anchor_compatible": false,
+      "preset_mutation_required": true,
+      "qualification_class": "REMEDIATED_NOT_CURRENTLY_AS_LIVE"
+    },
+    {
+      "contract_id": "DOUBLE_WEIGHT_RP0_793826_PW0_081418",
+      "RISK_PERCENT": "0.793826",
+      "RISK_FIXED": "0",
+      "PORTFOLIO_WEIGHT": "0.081418",
+      "effective_risk_percent": "0.064631725268",
+      "initial_continuous_target_risk_eur": "64.631725268",
+      "owner_selectable": false,
+      "current_anchor_compatible": false,
+      "preset_mutation_required": true,
+      "qualification_class": "REJECTED_DIMENSIONAL_DOUBLE_SCALING"
+    }
+  ],
+  "risk_scale_comparison": {
+    "live_weight_1_vs_manifest_weight_0_081418_factor": "12.281894018896329982462692504",
+    "statement": "Holding every other input constant, the as-found live tuple targets 12.281894018896329982462692504 times the continuous risk of the historical manifest tuple.",
+    "repo_live_preset_risk_percent": "0.7500",
+    "repo_live_preset_status": "UNQUALIFIED_STALE_ALTERNATIVE"
+  },
+  "owner_gates": [
+    {
+      "gate_id": "SOURCE_SEMANTICS_AND_CARD_V2",
+      "status": "PENDING",
+      "required_decision": "QM_INTERPRETATION_COMMODITY_VARIANT_APPROVED",
+      "requirement": "Approve a Card-v2 that separates the two source-defined cumulative-RSI facts from every QM interpretation and declares exit precedence, runtime dependencies and falsification rules."
+    },
+    {
+      "gate_id": "FRIDAY_CLOSE_POLICY",
+      "status": "OWNER_DIRECTIVE_RECORDED_UNSEALED",
+      "required_decision": "FRAMEWORK_OVERRIDE_FRIDAY_21_BROKER",
+      "directive_recorded_utc": "2026-07-16T00:00:00+02:00",
+      "directive_basis": "No weekend holdings; close Friday at broker hour 21 to avoid weekend gaps and prepare the sleeve for prop-firm constraints.",
+      "requirement": "The substantive choice is closed: no weekend holdings, with the effective deadline equal to the earlier of Friday broker hour 21 and the last tradable session close before the weekend. Qualification still requires an OWNER-signed Ed25519 receipt, a complete bound broker-session calendar, and runtime proof; this record is not itself a signature."
+    },
+    {
+      "gate_id": "NEWS_POLICY",
+      "status": "PENDING",
+      "allowed_decisions": [
+        "DXZ_PRE30_POST30",
+        "NO_NEWS_FILTER"
+      ],
+      "requirement": "OWNER must approve or disable the effective high-impact PRE30/POST30 plus DXZ policy and its calendar/staleness dependency."
+    },
+    {
+      "gate_id": "AS_LIVE_RISK_CONTRACT",
+      "status": "PENDING",
+      "allowed_decisions": [
+        "LIVE_AS_FOUND_RP0_7938_PW1",
+        "SOURCE_PRECISION_RP0_793826_PW1"
+      ],
+      "recommended_decision": "LIVE_AS_FOUND_RP0_7938_PW1",
+      "requirement": "Select exactly one PORTFOLIO_WEIGHT=1 percent-risk tuple. The double-weight manifest tuple is prohibited."
+    },
+    {
+      "gate_id": "SOURCE_OF_RECORD_BUILD",
+      "status": "PENDING",
+      "required_decision": "OWNER_SELECTED_SOURCE_CLOSURE",
+      "requirement": "OWNER selects one source/include closure and Development clean-compiles it. The selected source must place a calendar-aware weekend-deadline handler and the framework Friday close before every news/entry return; the preceding kill-switch guard is allowed only with bound trip-flatten plus 60-second halted retry semantics. The current source is ineligible."
+    }
+  ],
+  "weekend_flat_calendar_contract": {
+    "artifact_type": "DXZ_XAU_WEEKEND_FLAT_BROKER_CALENDAR",
+    "symbol": "XAUUSD.DWX",
+    "timezone_basis": "MT5_BROKER_SERVER_TIME",
+    "regular_cutoff": "FRIDAY_21:00:00",
+    "effective_cutoff_rule": "MIN_FRIDAY_21_BROKER_AND_LAST_TRADABLE_SESSION_CLOSE_BEFORE_WEEKEND",
+    "coverage": {
+      "requested_from_date": "2018-03-01",
+      "requested_to_date": "2025-12-31",
+      "effective_from_date": "2018-03-01",
+      "effective_to_date": "2025-12-31"
+    },
+    "qualification_rule": "EVERY_ROUND_TRIP_FLAT_BY_EFFECTIVE_CUTOFF"
+  },
+  "owner_trust_contract": {
+    "status": "PENDING_OWNER_KEY_REGISTRATION",
+    "algorithm": "ED25519",
+    "public_key_format": "RAW_32_BYTES",
+    "signature_encoding": "BASE64",
+    "trusted_public_key_sha256": null,
+    "rule": "A qualification bundle is fail-closed until OWNER registers the public-key hash in a newly sealed spec and the validator caller independently supplies the same absolute key path and expected SHA-256 out of band. Spec or bundle self-pinning is not a trust anchor."
+  },
+  "machine_gates": [
+    "HASH_BOUND_SOURCE_ARCHIVE_CARD_V2_SOURCE_CLOSURE_AND_CLEAN_COMPILE",
+    "HASH_BOUND_LITERAL_DWX_XAU_AND_EUR_CONVERSION_HISTORY",
+    "BOUND_COMPLETE_BROKER_SESSION_CALENDAR_WITH_EARLY_CLOSE_FALLBACK",
+    "ACTUAL_HCC_TKC_CSV_DATA_FILE_MANIFESTS_AND_SEMANTIC_SYMBOL_SPEC_EXPORTS",
+    "SESSION_AWARE_B_C_D_SEGMENT_RECEIPTS",
+    "D1_SMA200_WARMUP_AND_FRESH_STATE_PER_SEGMENT",
+    "WEEKEND_DEADLINE_AND_FRAMEWORK_FRIDAY_CLOSE_PRECEDE_NEWS_AND_ENTRY_FILTERS",
+    "BOUND_KILL_SWITCH_TRIP_FLATTEN_AND_HALTED_60S_RETRY_SEMANTICS",
+    "NO_POSITION_PENDING_ORDER_OR_FORCED_EXIT_ACROSS_GAPS",
+    "FULL_Q08_VERSUS_NATIVE_SIGNAL_ENTRY_EXIT_OUTCOME_LOT_PNL_IDENTITY",
+    "SEMANTIC_NATIVE_MT5_HTML_ROUND_TRIP_PARSE_USING_DXZ_COST_EVIDENCE_PARSER",
+    "DETERMINISTIC_HASH_BOUND_Q08_AND_NATIVE_EXTRACTOR_RECEIPTS",
+    "TWO_UNREFERENCED_SERIAL_BASELINES",
+    "NON_SELF_REFERENTIAL_OWNER_SEAL_OUTSIDE_ALL_RUN_ROOTS",
+    "OUT_OF_BAND_PINNED_ED25519_OWNER_SIGNATURES",
+    "TWO_SERIAL_COLLISION_FREE_HASH_IDENTICAL_QUALIFICATION_REPRODUCTIONS",
+    "GLOBAL_CASEFOLD_UNIQUE_AND_NON_NESTED_RUN_OUTPUT_PATHS_AND_IDS",
+    "EXTERNAL_CONTROL_ARTIFACTS_OUTSIDE_RUN_AND_ALL_MT5_ROOTS",
+    "XAU_SPECIFIC_STRUCTURED_FIVE_AXIS_DARWINEXZERO_COST_CERTIFICATION_BOUND_TO_CANONICAL_V3"
+  ],
+  "history_contract": {
+    "required_symbols": [
+      "EURUSD.DWX",
+      "XAUUSD.DWX"
+    ],
+    "dependency_reason": "XAUUSD profit currency is USD while the account is EUR; EURUSD.DWX conversion continuity is part of sizing and PnL identity.",
+    "required_native_artifacts": [
+      "HCC",
+      "TKC"
+    ],
+    "segmentation_oracles": [
+      "EURUSD.DWX_D1.csv",
+      "XAUUSD.DWX_D1.csv"
+    ],
+    "minimum_warmup_d1_bars": 200,
+    "warmup_derivation": "SMA(200) is the longest strategy dependency; score begins only after 200 complete intersection-valid D1 bars and on the following D1 bar.",
+    "exceptional_dependency_gaps": [
+      {
+        "gap_id": "B",
+        "affected_symbols": [
+          "EURUSD.DWX",
+          "XAUUSD.DWX"
+        ],
+        "last_bar_open_utc": "2023-12-12T00:00:00Z",
+        "next_bar_open_utc": "2023-12-18T00:00:00Z",
+        "delta_hours": 144
+      },
+      {
+        "gap_id": "C",
+        "affected_symbols": [
+          "EURUSD.DWX"
+        ],
+        "host_xau_continuous": true,
+        "last_bar_open_utc": "2025-10-08T00:00:00Z",
+        "next_bar_open_utc": "2025-11-03T00:00:00Z",
+        "delta_hours": 624
+      },
+      {
+        "gap_id": "D",
+        "affected_symbols": [
+          "EURUSD.DWX",
+          "XAUUSD.DWX"
+        ],
+        "last_bar_open_utc": "2025-12-17T00:00:00Z",
+        "next_bar_open_utc": "2025-12-22T00:00:00Z",
+        "delta_hours": 120
+      }
+    ],
+    "segments": [
+      {
+        "segment_id": "S0",
+        "role": "INFERENCE",
+        "warmup_start_utc": "2017-10-02T00:00:00Z",
+        "score_from_utc": "2018-07-12T00:00:00Z",
+        "score_to_exclusive_utc": "2023-12-13T00:00:00Z",
+        "intersection_d1_bars": 1600,
+        "warmup_d1_bars": 200,
+        "requires_nonempty_identity": true
+      },
+      {
+        "segment_id": "S1",
+        "role": "INFERENCE",
+        "warmup_start_utc": "2023-12-18T00:00:00Z",
+        "score_from_utc": "2024-09-26T00:00:00Z",
+        "score_to_exclusive_utc": "2025-10-09T00:00:00Z",
+        "intersection_d1_bars": 467,
+        "warmup_d1_bars": 200,
+        "requires_nonempty_identity": true
+      },
+      {
+        "segment_id": "S2",
+        "role": "CONTINUITY_ONLY",
+        "warmup_start_utc": "2025-11-03T00:00:00Z",
+        "score_from_utc": null,
+        "score_to_exclusive_utc": "2025-12-18T00:00:00Z",
+        "intersection_d1_bars": 33,
+        "warmup_d1_bars": 33,
+        "requires_nonempty_identity": false,
+        "reason": "Only 33 intersection bars exist before gap D, below SMA(200) warmup."
+      },
+      {
+        "segment_id": "S3",
+        "role": "CONTINUITY_ONLY",
+        "warmup_start_utc": "2025-12-22T00:00:00Z",
+        "score_from_utc": null,
+        "score_to_exclusive_utc": "2026-01-01T00:00:00Z",
+        "intersection_d1_bars": 7,
+        "warmup_d1_bars": 7,
+        "requires_nonempty_identity": false,
+        "reason": "Only seven intersection bars exist through year-end, below SMA(200) warmup."
+      }
+    ],
+    "rules": [
+      "Each segment runs in a fresh process and state domain from a frozen literal-.DWX copy.",
+      "No indicator, rolling, Q08, position or pending-order state crosses B, C or D.",
+      "Entries are disabled during warmup and economics are scored only for INFERENCE segments.",
+      "Every endpoint must be flat with no pending orders; tester-forced liquidation invalidates the segment.",
+      "The EURUSD dependency gap C splits the contract even though the XAU host series itself is continuous.",
+      "Pooled 73-trade PF is diagnostic only and cannot be carried into segmented qualification."
+    ]
+  },
+  "identity_contract": {
+    "canonical_stream_format": "UTF-8 JSONL; one normalized round trip per row; decimal monetary, price and volume fields encoded as strings",
+    "required_fields": [
+      "segment_id",
+      "trade_index",
+      "symbol",
+      "side",
+      "signal_bar_open_mt5_server",
+      "signal_value",
+      "entry_time_mt5_server",
+      "entry_price",
+      "entry_reason",
+      "initial_stop",
+      "initial_target",
+      "exit_time_mt5_server",
+      "exit_price",
+      "exit_reason",
+      "volume",
+      "gross_profit",
+      "swap",
+      "commission",
+      "net_profit",
+      "gross_profit_sign"
+    ],
+    "identity_axes": [
+      "signal_identity_sha256",
+      "entry_identity_sha256",
+      "exit_identity_sha256",
+      "outcome_sign_sha256",
+      "lot_identity_sha256",
+      "pnl_identity_sha256",
+      "full_round_trip_identity_sha256"
+    ],
+    "independent_sources": [
+      "instrumented Q08 emitter normalized by a Q08-specific extractor",
+      "native MT5 report normalized by a different native-report extractor"
+    ]
+  },
+  "repeat_protocol": {
+    "baseline_repeat_count": 2,
+    "baseline_mode": "DISCOVERY_COMPLETE_UNREFERENCED",
+    "baseline_is_qualifying": false,
+    "seal_provenance": "OWNER_SEALED_POST_CONSENSUS_BASELINE",
+    "seal_location": "outside every run root",
+    "seal_is_independent_market_reference": false,
+    "qualification_repeat_count": 2,
+    "qualification_mode": "AS_LIVE_REQUAL",
+    "all_runs_serial": true,
+    "requirements": [
+      "Baseline A and B select no reference and exactly agree on every segment identity axis and contract hash.",
+      "The OWNER seal is created only after A and B finish and binds exactly their distinct receipt byte hashes and consensus identity hashes.",
+      "Qualification C and D begin after the seal, select the same seal path/hash and exactly reproduce its consensus.",
+      "All four run roots, isolation IDs, receipts, reports, raw Q08 streams and normalized streams are pairwise distinct.",
+      "Every run, isolation, execution and sandbox ID is globally unique under case-folding; all run and segment output roots are distinct and non-nested.",
+      "No run output, receipt, report or generated identity stream may be its own reference or reside under the seal root.",
+      "Every external control artifact, OWNER receipt, trust key, sealed input, cost manifest and seal resides outside every run/output root and outside every MT5 tree."
+    ]
+  },
+  "execution_cost_contract": {
+    "required_axes": [
+      "commission",
+      "historical_tester_spread",
+      "current_broker_spread_parity",
+      "current_broker_swap_rate_parity",
+      "slippage_stress"
+    ],
+    "all_axes_must_be_xau_specific": true,
+    "all_axes_must_pass": true,
+    "structured_manifest_contract": "DXZ_EXECUTION_COST_EVIDENCE_MANIFEST schema 1, validated with dxz_as_live_requal.load_execution_cost_evidence_manifest; manifest, each axis artifact and every sidecar are hash-bound and semantically revalidated.",
+    "canonical_commission_v3": {
+      "path": "D:/QM/reports/portfolio/dxz_cost_evidence_20260716_v3/report.json",
+      "sha256": "98ea8553f4fb6044d757e90c964c8b6fda4f8f40f653e75510833f8f49c694fd",
+      "payload_sha256": "a3cd2748ddffd571152203bf6485eaeb8b1285614715929523e4e9ce2314fbb6",
+      "schema_version": 3,
+      "rate_unit_contract": "0.00005 decimal = 0.005 percent = 0.5 basis points round-trip",
+      "qualification_role": "COMMISSION_AXIS_BASELINE_ONLY"
+    },
+    "current_evidence_max_age_days": 7,
+    "fixed_minima": {
+      "commission_rate_round_trip_decimal": 0.00005,
+      "historical_spread_min_samples": 100,
+      "current_spread_min_samples": 100,
+      "spread_quantile_min": 0.95,
+      "swap_min_sample_days": 5,
+      "swap_required_sides": [
+        "LONG",
+        "SHORT"
+      ],
+      "swap_triple_rollover_required": true,
+      "slippage_min_samples": 30,
+      "slippage_quantile_min": 0.95,
+      "adverse_multiplier_min": 1.0
+    },
+    "commodity_requirements": [
+      "Commission evidence binds XAU nominal, EUR conversion and the official 0.005-percent round-trip policy.",
+      "Historical spread evidence binds tester-applied spread observations for each inference segment.",
+      "Current broker spread evidence is XAU-specific and cannot use a GLOBAL row.",
+      "Swap evidence covers LONG and SHORT even though the strategy is long-only, binds triple-rollover behavior and current rates.",
+      "Slippage stress combines an adverse XAU quantile with the observed entry/exit gap component and is not zero by declaration."
+    ]
+  },
+  "anchor_files": [
+    {
+      "id": "approved_card_v1",
+      "role": "SEMANTIC_DIAGNOSTIC",
+      "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12567_cum-rsi2-commodity.md",
+      "sha256": "0e594e9a2d190c822165d979b2efd8bcb7d074658920a8d1e63a0f24ad36a338",
+      "bytes": 3331
+    },
+    {
+      "id": "repo_ea_spec",
+      "role": "SEMANTIC_DIAGNOSTIC",
+      "path": "C:/QM/repo/framework/EAs/QM5_12567_cum-rsi2-commodity/SPEC.md",
+      "sha256": "586ed8217050041b980e5463740d7e4f12fb589ce0562573fd5176a60fb2c8d5",
+      "bytes": 3716
+    },
+    {
+      "id": "repo_source",
+      "role": "CANDIDATE_SOURCE_NOT_BINARY_PROOF",
+      "path": "C:/QM/repo/framework/EAs/QM5_12567_cum-rsi2-commodity/QM5_12567_cum-rsi2-commodity.mq5",
+      "sha256": "e40bea7e231ca7366feaa7e4ce0e9f6cc823a39cd6640535a157fe8747bb4025",
+      "bytes": 11610
+    },
+    {
+      "id": "repo_ex5",
+      "role": "UNQUALIFIED_REPOSITORY_BINARY",
+      "path": "C:/QM/repo/framework/EAs/QM5_12567_cum-rsi2-commodity/QM5_12567_cum-rsi2-commodity.ex5",
+      "sha256": "17e7faa9ef1800b204344b349e57024e3afb74d2cde494f07e63175ae9a7b870",
+      "bytes": 322806
+    },
+    {
+      "id": "repo_live_preset",
+      "role": "UNQUALIFIED_STALE_RISK_ALTERNATIVE",
+      "path": "C:/QM/repo/framework/EAs/QM5_12567_cum-rsi2-commodity/sets/QM5_12567_cum-rsi2-commodity_XAUUSD.DWX_D1_live.set",
+      "sha256": "28fb3b1ee3a15c2b0c625703dbddcd94115ac05407eebff7e7232f50fb6e0ce1",
+      "bytes": 1468
+    },
+    {
+      "id": "repo_backtest_preset",
+      "role": "HISTORICAL_FIXED_RISK_DIAGNOSTIC",
+      "path": "C:/QM/repo/framework/EAs/QM5_12567_cum-rsi2-commodity/sets/QM5_12567_cum-rsi2-commodity_XAUUSD.DWX_D1_backtest.set",
+      "sha256": "0d6da981da6d4a6060232109bd8cad975af81824329092d05a3a7580766ccc3a",
+      "bytes": 951
+    },
+    {
+      "id": "deployed_ex5_read_only",
+      "role": "BASELINE_BINARY_READ_ONLY",
+      "path": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Experts/Live EAs/QM5_12567_cum-rsi2-commodity.ex5",
+      "sha256": "086eee8a6fe3ad0f962417f45017c39f490058ac45c5db06eb673a33f9f5e7a1",
+      "bytes": 282416
+    },
+    {
+      "id": "deployed_preset_read_only",
+      "role": "BASELINE_PRESET_READ_ONLY",
+      "path": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/slot3_XAUUSD_D1_QM5_12567_cum-rsi2-commodity_magic125670003_dxz23_live.set",
+      "sha256": "2936790068d32b8a930cb4a0402b1ee084ee5135155c8ef3089d65cc733b94ec",
+      "bytes": 1425
+    },
+    {
+      "id": "e5_receipt",
+      "role": "BASELINE_DIAGNOSTIC",
+      "path": "D:/QM/reports/portfolio/dxz23_as_live_requal_20260716_effective_d1_staged_serial/20260716T080201Z/runs/16_12567_XAUUSD_DWX/receipt.json",
+      "sha256": "357f6f612b1aebde690850968606b3b2a911b5f1082625783c4c254d1e3404e7",
+      "bytes": 7515
+    },
+    {
+      "id": "e5_native_report",
+      "role": "BASELINE_DIAGNOSTIC",
+      "path": "D:/QM/reports/portfolio/dxz23_as_live_requal_20260716_effective_d1_staged_serial/20260716T080201Z/runs/16_12567_XAUUSD_DWX/report.htm",
+      "sha256": "99fce2d12fd6376c3ad371f676404afa95a6738f5dc32e2fe35f1f1f31aef3e9",
+      "bytes": 178440
+    },
+    {
+      "id": "e5_legacy_q08",
+      "role": "KNOWN_INVALID_IDENTITY_EVIDENCE",
+      "path": "D:/QM/reports/portfolio/dxz23_as_live_requal_20260716_effective_d1_staged_serial/20260716T080201Z/runs/16_12567_XAUUSD_DWX/q08_stream.jsonl",
+      "sha256": "95d358706ae40993380e18b5cb3fce1b713f074f4b41fefc9336f6177a0c953b",
+      "bytes": 4449
+    },
+    {
+      "id": "e5_native_trade_stream",
+      "role": "CLOSE_SEQUENCE_DIAGNOSTIC",
+      "path": "D:/QM/reports/portfolio/dxz23_as_live_requal_20260716_effective_d1_staged_serial/20260716T080201Z/runs/16_12567_XAUUSD_DWX/report_trade_stream.jsonl",
+      "sha256": "826c71ed365578053fc8b26eaec7ba3fab5e60b13a416074e23e370b7995e6d8",
+      "bytes": 11017
+    },
+    {
+      "id": "e5_tester_ini",
+      "role": "BASELINE_EXECUTION_CONTRACT",
+      "path": "D:/QM/reports/portfolio/dxz23_as_live_requal_20260716_effective_d1_staged_serial/20260716T080201Z/runs/16_12567_XAUUSD_DWX/tester.ini",
+      "sha256": "17423c7fc4b072923fdbf5d230c58f3e64a84bd7e223571f47c0162ad0027023",
+      "bytes": 467
+    },
+    {
+      "id": "old_fixed_risk_reference",
+      "role": "DIAGNOSTIC_ONLY_NOT_REFERENCE",
+      "path": "D:/QM/reports/portfolio/dxz23_audit_requal_input_20260715T221618Z/streams/12567_XAUUSD_DWX.jsonl",
+      "sha256": "e938a966f4c9a2a1b8653452cbc01f6d8138355909dfad70beb6bde3b5de17f2",
+      "bytes": 14730
+    },
+    {
+      "id": "historical_source_manifest",
+      "role": "DOUBLE_SCALING_DIAGNOSTIC",
+      "path": "D:/QM/reports/portfolio/dxz23_audit_requal_input_20260715T221618Z/source_manifest_AUDIT_REQUAL_INPUT.json",
+      "sha256": "ee47e67f8c9a006452ca39672f8165668381fa78e90999e05a249ac810868ac7",
+      "bytes": 16973
+    },
+    {
+      "id": "historical_t8_sweep",
+      "role": "PROVENANCE_DIAGNOSTIC_ONLY",
+      "path": "D:/QM/reports/portfolio/dxz23_audit_requal_input_20260715T221618Z/evidence/sweep_result_20260712.json",
+      "sha256": "acebcafd18d426b2a4fa27025eb8c4a49623e5d9c6da7b75c792b30374842020",
+      "bytes": 12665
+    },
+    {
+      "id": "lineage_audit_v2",
+      "role": "LINEAGE_DIAGNOSTIC",
+      "path": "D:/QM/reports/portfolio/dxz23_lineage_audit_20260716_v2/report.json",
+      "sha256": "41b540a2bfd78969494ecb03580e2ff0f7965694a717e267149717cabed6a3dd",
+      "bytes": 1128620
+    },
+    {
+      "id": "xau_d1_literal_export",
+      "role": "SEGMENTATION_ORACLE_ONLY",
+      "path": "D:/QM/mt5/T_Export/MQL5/Files/XAUUSD.DWX_D1.csv",
+      "sha256": "105aa27a6d0aff0818b9b76b0eb081d917ea8fb90ec077b599a33ea65ab12f13",
+      "bytes": 116706
+    },
+    {
+      "id": "eur_d1_literal_export",
+      "role": "SEGMENTATION_ORACLE_ONLY",
+      "path": "D:/QM/mt5/T_Export/MQL5/Files/EURUSD.DWX_D1.csv",
+      "sha256": "7ecdc7c45678de73cb9fbe9390b563ee88d3dddd876feace489e3b4add653d0f",
+      "bytes": 119626
+    },
+    {
+      "id": "risk_sizer",
+      "role": "RISK_CONTRACT",
+      "path": "C:/QM/repo/framework/include/QM/QM_RiskSizer.mqh",
+      "sha256": "e75d7aaa48f3eae0d298ac67ba0db4404089f9b1abc7ea361fee7662c342fbed",
+      "bytes": 17737
+    },
+    {
+      "id": "cost_evidence_v3",
+      "role": "COMMISSION_BASELINE_NOT_FIVE_AXIS_CERTIFICATE",
+      "path": "D:/QM/reports/portfolio/dxz_cost_evidence_20260716_v3/report.json",
+      "sha256": "98ea8553f4fb6044d757e90c964c8b6fda4f8f40f653e75510833f8f49c694fd",
+      "bytes": 5275887
+    },
+    {
+      "id": "cost_evidence_v3_sidecar",
+      "role": "INTEGRITY_SIDECAR",
+      "path": "D:/QM/reports/portfolio/dxz_cost_evidence_20260716_v3/report.json.sha256",
+      "sha256": "a06659d647b725deb2bd0e434c5858d59e2f05a12747dc500149b959ac0ccb7a",
+      "bytes": 78
+    }
+  ],
+  "decision_rule": {
+    "qualified_status": "PASS",
+    "requirements": [
+      "all OWNER gates APPROVED",
+      "all machine gates PASS",
+      "all four runs and the external seal satisfy the repeat protocol",
+      "both inference segments are non-empty and all identity axes match Q08, native, seal and both qualification reproductions",
+      "continuity-only segments are reset-safe and contain no scored trades",
+      "all five XAU-specific execution-cost axes are CERTIFIED"
+    ],
+    "prohibited_claims_before_pass": [
+      "sustainable strategy",
+      "DarwinIA-ready",
+      "deployment-ready",
+      "portfolio resize eligible",
+      "pooled baseline PF retained after segmentation"
+    ]
+  },
+  "forbidden_actions": [
+    "EDIT_APPROVED_CARD",
+    "EDIT_EA_SOURCE",
+    "EDIT_PRESET",
+    "EDIT_EX5",
+    "EDIT_REGISTRY",
+    "RUN_ON_T_LIVE",
+    "RUN_ON_T1_T10",
+    "DEPLOY",
+    "TOGGLE_AUTOTRADING"
+  ]
+}

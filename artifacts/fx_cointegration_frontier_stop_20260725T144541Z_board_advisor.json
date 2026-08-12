@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "captured_at_utc": "2026-07-25T14:45:41Z",
+  "branch": "agents/board-advisor",
+  "inspected_head": "3d8e0fe61",
+  "mission": "grow certified V5 portfolio with new forex cointegration sleeves",
+  "decision": "STOP_CPU_CEILING",
+  "frontier": {
+    "unbuilt_eligible_pair_found": false,
+    "anchor_status": {
+      "QM5_12532": "Q02_PASS_THEN_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_THEN_Q04_FAIL"
+    },
+    "strict_scan_status": "ALL_SEVEN_PAIRS_BUILT_WITH_TERMINAL_Q02_EVIDENCE",
+    "fallback_status": "NO_EXISTING_SCAN_SLEEVE_HAS_A_LEGITIMATE_OPEN_SUCCESSOR"
+  },
+  "capacity": {
+    "mt5_slots_scanned_at": "2026-07-25T14:45:41+00:00",
+    "factory_terminal_processes": [
+      "T1",
+      "T9",
+      "T10"
+    ],
+    "factory_terminal_process_count": 3,
+    "live_terminal_observed_excluded": {
+      "path": "C:/QM/mt5/T_Live/MT5_Base/terminal64.exe",
+      "pid": 15420
+    },
+    "external_ftmo_terminal_observed_excluded": {
+      "pid": 9900
+    },
+    "scheduler_dry_run": {
+      "available_slots_before": 0,
+      "available_slots_after": 0,
+      "scheduled": 0,
+      "status": "ok"
+    },
+    "classification": "CANONICAL_SCHEDULER_ZERO_CAPACITY"
+  },
+  "actions": {
+    "card_created": false,
+    "ea_built": false,
+    "queue_mutated": false,
+    "mt5_launched": false,
+    "terminal_controlled": false,
+    "autotrading_changed": false,
+    "portfolio_gate_changed": false,
+    "live_manifest_changed": false
+  },
+  "commands": [
+    "python -u tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm mt5-slots",
+    "python -u -m framework.scripts.mt5_saturation_scheduler --sqlite D:/QM/reports/pipeline/mt5_queue.db --dispatch-state D:/QM/reports/pipeline/dispatch_state.json --dry-run"
+  ]
+}

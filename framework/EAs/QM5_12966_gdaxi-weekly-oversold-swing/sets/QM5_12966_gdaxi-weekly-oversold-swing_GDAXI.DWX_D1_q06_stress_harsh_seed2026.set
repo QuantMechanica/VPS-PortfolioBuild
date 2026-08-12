@@ -1,0 +1,31 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        12966
+; ea_slug:      gdaxi-weekly-oversold-swing
+; ea_version:   v5.0
+; set_version:  s20260723-stress-harsh
+; symbol:       GDAXI.DWX
+; timeframe:    D1
+; environment:  q06_stress_harsh
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   6e2f11d611f9f7917cc0c8f6354b302217f988b9acfd6441dcb62bcebe6b0ca1
+; author:       Development
+; date:         2026-07-23
+;==========================================================
+qm_ea_id=12966
+qm_magic_slot_offset=0
+qm_rng_seed=2026
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12966_gdaxi-weekly-oversold-swing.md
+strategy_sma_regime_period=200
+strategy_entry_lookback_low=10
+strategy_sma_exit_period=10
+strategy_time_stop_days=15
+strategy_atr_period=14
+strategy_atr_sl_mult=2.5

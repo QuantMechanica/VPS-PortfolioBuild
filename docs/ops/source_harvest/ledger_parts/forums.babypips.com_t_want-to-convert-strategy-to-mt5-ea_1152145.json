@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_want-to-convert-strategy-to-mt5-ea_1152145.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_want-to-convert-strategy-to-mt5-ea_1152145.pdf",
+      "source_pages": "1-5",
+      "source_ref": "sylc (OP) with replies from chesterjohn, 'Want to convert strategy to MT5 EA', Babypips forum, 2023, https://forums.babypips.com/t/want-to-convert-strategy-to-mt5-ea/1152145",
+      "strategy_name": "Dual-Supertrend EMA/RSI/ADX Trend Confluence",
+      "concept": "Long/short trend-following on a fast+slow Supertrend flip aligned with EMA slope, RSI momentum and an ADX strength filter.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic pure-indicator rules with all params stated (Supertrend 7/0.9 + 7/1.8, EMA, RSI9>50/<50, ADX9>25); implementable in MQL5, no ML/external runtime; Supertrend must be hand-coded from ATR.",
+      "priority_hint": "LOW",
+      "notes": "Generic retail indicator-confluence trend follower with no uncorrelated return driver; author admits it is untested and replier notes 'not a system until there's evidence'. Text says EMA(99) but the posted code uses EMA period 9 (ambiguous — treat EMA length as a param to sweep). 'RSA(9)' is a typo for RSI(9). Symbol and timeframe are unspecified in the thread (market=FX and TF=H1 are placeholders for a symbol-agnostic trend system). Stop-loss defined at the Supertrend(7,0.9)/(7,1.8) level. Thread also contains an off-topic tangent on order-block trading (no rules stated) — not a candidate."
+    }
+  ],
+  "notes": []
+}

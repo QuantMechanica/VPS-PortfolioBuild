@@ -1,0 +1,39 @@
+{
+  "fail_count": 0,
+  "pass_count": 1,
+  "results": [
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": 0.25,
+      "count_delta": 0,
+      "ea_id": 10805,
+      "net_tolerance": 12.39,
+      "reasons": [],
+      "report": {
+        "drawdown": 28325.31,
+        "exists": true,
+        "net_profit": 21656.82,
+        "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10805_gdaxi_h1_wave7_20260712\\QM5_10805\\20260712_130608\\summary.json",
+        "profit_factor": 1.04,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10805_gdaxi_h1_wave7_20260712\\QM5_10805\\20260712_130608\\raw\\run_02\\report.htm",
+        "result": "PASS",
+        "trade_count": 1239,
+        "usable_run": "run_02"
+      },
+      "status": "PASS",
+      "stream": {
+        "closing_commission": -2550.06,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10805_GDAXI_DWX_T4_FRESH_20260712.jsonl",
+        "raw_net": 24207.13,
+        "round_trip_corrected_net": 21657.07,
+        "trade_count": 1239
+      },
+      "symbol": "GDAXI.DWX"
+    }
+  ],
+  "schema_version": 1,
+  "status": "PASS"
+}

@@ -1,0 +1,25 @@
+magic_numbers.csv + ea_id_registry.csv reconcile for 24 live magics
+magic=15560004 ea=1556 XAUUSD: magic_csv=OK active  ea_id_registry=present active
+magic=15670007 ea=1567 EURUSD: magic_csv=OK active  ea_id_registry=present active
+magic=104030002 ea=10403 XAUUSD: magic_csv=OK active  ea_id_registry=present active
+magic=104400003 ea=10440 NDX: magic_csv=OK active  ea_id_registry=present active
+magic=105130003 ea=10513 XAUUSD: magic_csv=OK active  ea_id_registry=present active
+magic=107060001 ea=10706 GBPUSD: magic_csv=OK active  ea_id_registry=present active
+magic=109110003 ea=10911 GDAXI: magic_csv=OK active  ea_id_registry=present active
+magic=109190001 ea=10919 XTIUSD: magic_csv=OK active  ea_id_registry=present active
+magic=109390001 ea=10939 GBPUSD: magic_csv=OK active  ea_id_registry=present active
+magic=111320000 ea=11132 SP500: magic_csv=OK active  ea_id_registry=present active
+magic=111650002 ea=11165 AUDCAD: magic_csv=OK active  ea_id_registry=present active
+magic=111650000 ea=11165 EURUSD: magic_csv=OK active  ea_id_registry=present active
+magic=114210003 ea=11421 AUDUSD: magic_csv=OK active  ea_id_registry=present active
+magic=114210000 ea=11421 EURUSD: magic_csv=OK active  ea_id_registry=present active
+magic=117080000 ea=11708 EURUSD: magic_csv=OK active  ea_id_registry=present active
+magic=125670003 ea=12567 XAUUSD: magic_csv=OK active  ea_id_registry=present active
+magic=125670002 ea=12567 XNGUSD: magic_csv=OK active  ea_id_registry=present active
+magic=127780000 ea=12778 AUDUSD: magic_csv=OK active  ea_id_registry=present active
+magic=129690000 ea=12969 USDJPY: magic_csv=OK active  ea_id_registry=present active
+magic=129890003 ea=12989 XAUUSD: magic_csv=OK active  ea_id_registry=present active
+magic=131170000 ea=13117 EURGBP: magic_csv=OK active  ea_id_registry=present active
+magic=131280000 ea=13128 NDX: magic_csv=OK active  ea_id_registry=present active
+magic=132130000 ea=13213 USDJPY: magic_csv=OK active  ea_id_registry=*** ABSENT ***
+magic=133010010 ea=13301 GDAXI: magic_csv=OK active  ea_id_registry=present active

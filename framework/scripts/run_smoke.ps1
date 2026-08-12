@@ -9,7 +9,7 @@ param(
     [int]$Year,
     [string]$FromDate,
     [string]$ToDate,
-    [ValidateSet("any", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")]
+    [ValidateSet("any", "DEV1", "DEV2", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")]
     [string]$Terminal = "T1",
     [string]$Expert,
     [string]$Period = "H1",
@@ -31,12 +31,22 @@ param(
     [string]$DispatchPhase = "P1",
     [string]$DispatchVersion = "smoke",
     [string]$DispatchSubGateHash,
+    [switch]$SkipExpertDeploy,
     [switch]$AllowRunningTerminal,
     [switch]$AllowMissingRealTicksLogMarker,
+    # Q09_NEWS authenticates the structured entry stream for every independent
+    # window. Tester agents recreate the FILE sandbox between back-to-back
+    # runs, so preserve any prior EA logger before launch and require a fresh,
+    # exact-byte sample from this run. Default smoke behavior is unchanged.
+    [switch]$RequireFreshLoggerSample,
     # Q04 commission gate: round-trip USD/lot to apply via the tester groups file.
     # 0 (default) = restore the canonical real Darwinex schedule unchanged (Q02/Q03).
     [ValidateRange(0, 1000)]
     [double]$CommissionPerLot = 0,
+    # Exact native-currency amount charged on every IN and OUT deal. This is a
+    # separate, empirically reconciled interface; never pass a USD round trip here.
+    [ValidateRange(0, 1000)]
+    [double]$CommissionPerSideNative = 0,
     [ValidatePattern('^[A-Z]{3}$')]
     [string]$TesterCurrencyOverride,
     [ValidateRange(0, 2147483647)]
@@ -55,6 +65,41 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+if (($Terminal -ieq "DEV1") -and $AllowRunningTerminal.IsPresent) {
+    throw "Refusing -Terminal DEV1 with -AllowRunningTerminal. DEV1 smoke runs require an idle terminal."
+}
+if (($Terminal -ieq "DEV2") -and $AllowRunningTerminal.IsPresent) {
+    throw "Refusing -Terminal DEV2 with -AllowRunningTerminal. DEV2 smoke runs require an idle terminal."
+}
+if ($RequireFreshLoggerSample.IsPresent -and $AllowRunningTerminal.IsPresent) {
+    throw "Refusing -RequireFreshLoggerSample with -AllowRunningTerminal. Fresh logger authentication requires an exclusive tester."
+}
+
+if ($Terminal -ieq "DEV1") {
+    try {
+        $dev1Account = New-Object System.Security.Principal.NTAccount("$env:COMPUTERNAME\QMDev1")
+        $dev1Sid = $dev1Account.Translate([System.Security.Principal.SecurityIdentifier]).Value
+        $currentSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    } catch {
+        throw "Unable to verify the required DEV1 Windows identity '$env:COMPUTERNAME\QMDev1': $($_.Exception.Message)"
+    }
+    if ($currentSid -cne $dev1Sid) {
+        throw "Refusing -Terminal DEV1 under Windows SID '$currentSid'. DEV1 requires the isolated '$env:COMPUTERNAME\QMDev1' identity (SID '$dev1Sid')."
+    }
+}
+if ($Terminal -ieq "DEV2") {
+    try {
+        $dev2Account = New-Object System.Security.Principal.NTAccount("$env:COMPUTERNAME\QMDev2")
+        $dev2Sid = $dev2Account.Translate([System.Security.Principal.SecurityIdentifier]).Value
+        $currentSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    } catch {
+        throw "Unable to verify the required DEV2 Windows identity '$env:COMPUTERNAME\QMDev2': $($_.Exception.Message)"
+    }
+    if ($currentSid -cne $dev2Sid) {
+        throw "Refusing -Terminal DEV2 under Windows SID '$currentSid'. DEV2 requires the isolated '$env:COMPUTERNAME\QMDev2' identity (SID '$dev2Sid')."
+    }
+}
 
 if ($EAId -le 0) {
     if ([string]::IsNullOrWhiteSpace($EALabel) -or $EALabel -notmatch '^(?:QM5_)?(?<id>\d+)') {
@@ -289,6 +334,8 @@ function Test-TesterLogHasNoHistoryForRun {
     $toPattern = [regex]::Escape($ExpectedToDate)
     $runNoHistoryPattern = "(?i)\b${symbolPattern}:\s+no history data from\s+$fromPattern\s+00:00\s+to\s+$toPattern\s+00:00\b"
     $stopPattern = "(?i)\bno history data,\s*stop testing\b"
+    $runStartPattern = "(?i)\b${symbolPattern},[^\r\n]*:\s+testing of Experts\\[^\r\n]+\s+from\s+$fromPattern\s+00:00\s+to\s+$toPattern\s+00:00\b"
+    $syncErrorPattern = "(?i)\b${symbolPattern}:\s+history synchronization error\b"
     $lines = $TesterLogTail -split "\r?\n"
 
     for ($idx = 0; $idx -lt $lines.Count; $idx++) {
@@ -303,7 +350,49 @@ function Test-TesterLogHasNoHistoryForRun {
         }
     }
 
+    # MT5 build 5833 can abort before exporting even an empty report and emits
+    # only "<symbol>: history synchronization error". Scope this shorter form
+    # to the exact EA-run marker and requested date window so an unrelated
+    # failure appended to the shared tester log cannot poison the current run.
+    for ($idx = 0; $idx -lt $lines.Count; $idx++) {
+        if ($lines[$idx] -notmatch $runStartPattern) {
+            continue
+        }
+        $lastContextLine = [Math]::Min($idx + 5, $lines.Count - 1)
+        for ($contextIdx = $idx + 1; $contextIdx -le $lastContextLine; $contextIdx++) {
+            if ($lines[$contextIdx] -match $syncErrorPattern) {
+                return $true
+            }
+        }
+    }
+
     return $false
+}
+
+function Get-TesterLogCurrentRunText {
+    param(
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string]$TesterLogTail
+    )
+
+    if ([string]::IsNullOrWhiteSpace($TesterLogTail)) {
+        return ""
+    }
+
+    # MetaTester reuses one daily journal per terminal agent.  A copied log can
+    # therefore contain a previous EA's OnInit failure before the current run.
+    # The last test-start marker begins the only journal section relevant to
+    # the report we are classifying.
+    $matches = [regex]::Matches(
+        $TesterLogTail,
+        "(?im)^.*\btesting of Experts\\.*\.ex5\s+from\s+.*\bstarted with inputs:\s*$"
+    )
+    if ($matches.Count -eq 0) {
+        return $TesterLogTail
+    }
+
+    return $TesterLogTail.Substring($matches[$matches.Count - 1].Index)
 }
 
 function Resolve-InvalidReportVerdict {
@@ -386,13 +475,70 @@ function Resolve-TerminalRoot {
     )
 
     $root = Join-Path "D:\QM\mt5" $TerminalName
-    if ($TerminalName -notmatch '^T([1-9]|10)$') {
-        throw "Refusing non-factory terminal '$TerminalName'. Allowed factory terminals are T1..T10; T_Live is off limits."
+    $isFactoryTerminal = $TerminalName -match '^T([1-9]|10)$'
+    $isExplicitDevTerminal = $TerminalName -match '^DEV[12]$'
+    if (-not $isFactoryTerminal -and -not $isExplicitDevTerminal) {
+        throw "Refusing terminal '$TerminalName'. Allowed terminals are factory T1..T10 plus explicit development terminals DEV1/DEV2; T_Live is off limits."
     }
     if (-not (Test-Path -LiteralPath $root -PathType Container)) {
         throw "Terminal root does not exist: $root"
     }
     return (Resolve-Path -LiteralPath $root).Path
+}
+
+function Get-FileEvidenceIdentity {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+        [switch]$AllowMissing
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        if ($AllowMissing.IsPresent) {
+            return $null
+        }
+        throw "Evidence artifact is missing: $Path"
+    }
+    $resolved = (Resolve-Path -LiteralPath $Path).Path
+    $item = Get-Item -LiteralPath $resolved
+    return [ordered]@{
+        path = $resolved
+        size_bytes = [int64]$item.Length
+        sha256 = (Get-FileHash -LiteralPath $resolved -Algorithm SHA256).Hash.ToLowerInvariant()
+        last_write_utc = $item.LastWriteTimeUtc.ToString("o")
+    }
+}
+
+function Get-TesterIniEvidence {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    $identity = Get-FileEvidenceIdentity -Path $Path
+    $values = @{}
+    foreach ($line in (Get-Content -LiteralPath $Path)) {
+        if ($line -match '^(?<key>[^=;\s]+)=(?<value>.*)$') {
+            $values[$Matches['key']] = $Matches['value'].Trim()
+        }
+    }
+    foreach ($required in @('Expert', 'Symbol', 'Period', 'Model', 'FromDate', 'ToDate')) {
+        if (-not $values.ContainsKey($required) -or [string]::IsNullOrWhiteSpace([string]$values[$required])) {
+            throw "Generated tester.ini is missing required evidence field '$required': $Path"
+        }
+    }
+    return [ordered]@{
+        path = $identity.path
+        size_bytes = $identity.size_bytes
+        sha256 = $identity.sha256
+        expert = [string]$values['Expert']
+        expert_parameters = $(if ($values.ContainsKey('ExpertParameters')) { [string]$values['ExpertParameters'] } else { $null })
+        symbol = [string]$values['Symbol']
+        period = [string]$values['Period']
+        model = [int]$values['Model']
+        from_date = [string]$values['FromDate']
+        to_date = [string]$values['ToDate']
+    }
 }
 
 function Deploy-ExpertBinaryToTerminal {
@@ -404,7 +550,7 @@ function Deploy-ExpertBinaryToTerminal {
     # runs at a later pipeline stage).
     #
     # ExpertPath format: "<subdir>\<EaLabel>" (e.g. "QM\QM5_1047_halloween-...").
-    # Repo source: C:\QM\repo\framework\EAs\<EaLabel>\<EaLabel>.ex5
+    # Repo source: <this script's resolved repo root>\framework\EAs\<EaLabel>\<EaLabel>.ex5
     # Destination: D:\QM\mt5\<Tn>\MQL5\Experts\<subdir>\<EaLabel>.ex5
     param(
         [Parameter(Mandatory = $true)]
@@ -424,7 +570,8 @@ function Deploy-ExpertBinaryToTerminal {
     $subdir  = $parts[0]
     $eaLabel = $parts[1]
 
-    $repoSource = Join-Path "C:\QM\repo\framework\EAs" (Join-Path $eaLabel "$eaLabel.ex5")
+    $localRepoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..\..")).Path
+    $repoSource = Join-Path (Join-Path $localRepoRoot "framework\EAs") (Join-Path $eaLabel "$eaLabel.ex5")
     if (-not (Test-Path -LiteralPath $repoSource -PathType Leaf)) {
         # No source .ex5 — let the tester surface the missing-binary error so the
         # smoke summary reasoner can classify it. Don't throw here; sometimes the
@@ -448,7 +595,17 @@ function Deploy-ExpertBinaryToTerminal {
     } catch {
         throw ("run_smoke.deploy_failed terminal={0} dest='{1}' err='{2}'" -f $TerminalName, $destFile, $_.Exception.Message)
     }
+    $sourceIdentity = Get-FileEvidenceIdentity -Path $repoSource
+    $deployedIdentity = Get-FileEvidenceIdentity -Path $destFile
+    if ($sourceIdentity.sha256 -cne $deployedIdentity.sha256) {
+        throw "run_smoke.deploy_failed terminal=$TerminalName dest='$destFile' err='source/deployed SHA256 mismatch'"
+    }
     Write-Host ("run_smoke.deploy_ok ea_label={0} subdir={1} terminal={2} source='{3}'" -f $eaLabel, $subdir, $TerminalName, $repoSource)
+    return [ordered]@{
+        source = $sourceIdentity
+        deployed = $deployedIdentity
+        source_matches_deployed = $true
+    }
 }
 
 function Resolve-DispatchTerminal {
@@ -525,6 +682,9 @@ function Resolve-DispatchTerminal {
             $message = if ($decision.PSObject.Properties.Name -contains "message") { [string]$decision.message } else { "No message." }
             $errorCode = if ($decision.PSObject.Properties.Name -contains "error_code") { [string]$decision.error_code } else { "none" }
             throw "Terminal resolution returned no terminal. status=$decisionStatus error_code=$errorCode message=$message"
+        }
+        if ($decisionTerminal -notmatch '^T([1-9]|10)$') {
+            throw "Terminal resolution returned non-factory terminal '$decisionTerminal'. -Terminal any is restricted to T1..T10."
         }
         Write-Host ("run_smoke.dispatch_status={0}" -f $decisionStatus)
         Write-Host ("run_smoke.dispatch_terminal={0}" -f $decisionTerminal)
@@ -628,6 +788,7 @@ function Test-TerminalAlreadyRunning {
     }
     $escapedExe = [regex]::Escape($terminalExe)
     $escapedRoot = [regex]::Escape($TerminalRoot.TrimEnd('\', '/'))
+    $rootWithBoundary = $escapedRoot + '(?:[\\/"]|$)'
     $processes = Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue
     if (-not $processes) {
         return $false
@@ -642,7 +803,7 @@ function Test-TerminalAlreadyRunning {
         $line = [string]$proc.CommandLine
         if ($line -and (
             [regex]::IsMatch($line, $escapedExe, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase) -or
-            [regex]::IsMatch($line, $escapedRoot, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+            [regex]::IsMatch($line, $rootWithBoundary, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
         )) {
             return $true
         }
@@ -788,7 +949,8 @@ function Set-TesterGroupsCommission {
     param(
         [Parameter(Mandatory = $true)][string]$TerminalRoot,
         [Parameter(Mandatory = $true)][string]$SymbolName,
-        [Parameter(Mandatory = $true)][double]$CommissionPerLot
+        [Parameter(Mandatory = $true)][double]$CommissionPerLot,
+        [Parameter(Mandatory = $true)][double]$CommissionPerSideNative
     )
 
     # The MT5 strategy tester reads commission from the server-keyed groups file
@@ -806,40 +968,35 @@ function Set-TesterGroupsCommission {
     $target = Join-Path $groupsDir "Darwinex-Live_real.txt"
 
     $text = [System.IO.File]::ReadAllText($canonical, [System.Text.Encoding]::Unicode)
+    $commissionMatcher = $null
+    $commissionMode = $null
     if ($CommissionPerLot -gt 0) {
-        $assetClass = Get-DwxSymbolAssetClass -RepoRoot $localRepoRoot -SymbolName $SymbolName
-        $commissionMatcher = Get-DwxCommissionMatcher -AssetClass $assetClass -SymbolName $SymbolName
-
-        # Encoding mirrors the canonical file's money-per-lot Forex block
-        # (CommissionMode=1, CommissionType=1, CommissionCharge=2). Exact USD/lot
-        # semantics are confirmed empirically by reading the tester report commission.
-        # InvariantCulture: the VPS locale uses a comma decimal separator, but MT5
-        # groups files require a dot (e.g. 7.0000, matching the canonical entries).
-        $val = $CommissionPerLot.ToString("F4", [System.Globalization.CultureInfo]::InvariantCulture)
-        $block = @(
-            "CommissionSymbol=$commissionMatcher",
-            "CommissionCharge=2",
-            "CommissionRange=0",
-            "CommissionEntry=0",
-            "CommissionValue=$val",
-            "CommissionRangeTo=1000.00",
-            "CommissionMode=1",
-            "CommissionType=1"
-        ) -join "`r`n"
-        $lines = $text -split "`r`n"
-        $out = New-Object System.Collections.Generic.List[string]
-        $inserted = $false
-        foreach ($ln in $lines) {
-            $out.Add($ln)
-            if ((-not $inserted) -and ($ln -match '^CommonUseSettings=')) {
-                $out.Add($block)
-                $inserted = $true
-            }
-        }
-        if (-not $inserted) { $out.Insert(0, $block) }
-        $text = ($out -join "`r`n")
+        # Mode=1 charged the documented USD round trip on both sides in symbol
+        # base currency. A Build-5833 Mode=0 canary then booked exactly 0.00 on
+        # every deal. Until a fixed override is empirically encoded, accepting a
+        # positive value would silently misprice research, so fail closed. The
+        # canonical Custom\... blocks remain active when the value is zero.
+        throw 'UNVALIDATED_FIXED_COMMISSION_OVERRIDE: use CommissionPerLot=0 with the canonical tester group'
+    }
+    if ($CommissionPerSideNative -gt 0) {
+        # Even a correctly dimensioned native block was ignored in an isolated
+        # Build-5833 canary because the offline tester never activated the custom
+        # groups file. Do not expose a value that the report silently drops.
+        throw 'UNAPPLIED_NATIVE_COMMISSION_OVERRIDE: isolated DEV lanes require external deal-level cost reconciliation'
     }
     [System.IO.File]::WriteAllText($target, $text, [System.Text.Encoding]::Unicode)
+    $canonicalHash = (Get-FileHash -LiteralPath $canonical -Algorithm SHA256).Hash.ToLowerInvariant()
+    $installedHash = (Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash.ToLowerInvariant()
+    return [pscustomobject]@{
+        canonical_path = $canonical
+        target_path = $target
+        canonical_sha256 = $canonicalHash
+        installed_sha256 = $installedHash
+        commission_per_lot = $CommissionPerLot
+        commission_per_side_native = $CommissionPerSideNative
+        commission_matcher = $commissionMatcher
+        commission_mode = $commissionMode
+    }
 }
 
 function Get-DwxSymbolAssetClass {
@@ -965,6 +1122,353 @@ function Publish-TesterReportCandidate {
     return $null
 }
 
+function Get-FilePrefixSha256 {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(0, [long]::MaxValue)]
+        [long]$Length
+    )
+
+    $stream = [System.IO.File]::Open(
+        $Path,
+        [System.IO.FileMode]::Open,
+        [System.IO.FileAccess]::Read,
+        [System.IO.FileShare]::ReadWrite
+    )
+    try {
+        if ($stream.Length -lt $Length) {
+            throw "File is shorter than the requested hash prefix: path='$Path' length=$($stream.Length) prefix=$Length"
+        }
+
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        try {
+            $buffer = New-Object byte[] 1048576
+            $remaining = $Length
+            while ($remaining -gt 0) {
+                $requested = [int][Math]::Min([long]$buffer.Length, $remaining)
+                $read = $stream.Read($buffer, 0, $requested)
+                if ($read -le 0) {
+                    throw "Unexpected EOF while hashing '$Path'."
+                }
+                [void]$sha256.TransformBlock($buffer, 0, $read, $null, 0)
+                $remaining -= $read
+            }
+            [void]$sha256.TransformFinalBlock([byte[]]::new(0), 0, 0)
+            return ([System.BitConverter]::ToString($sha256.Hash) -replace '-', '').ToLowerInvariant()
+        } finally {
+            $sha256.Dispose()
+        }
+    } finally {
+        $stream.Dispose()
+    }
+}
+
+function Get-QmLoggerFileState {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot,
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(1, [int]::MaxValue)]
+        [int]$EAIdValue
+    )
+
+    $state = @{}
+    $testerRoot = Join-Path $TerminalRoot "Tester"
+    if (-not (Test-Path -LiteralPath $testerRoot -PathType Container)) {
+        return ,$state
+    }
+
+    $filePattern = "QM5_{0:d4}_ea-{0:d4}.log" -f $EAIdValue
+    $agentDirs = @(Get-ChildItem -LiteralPath $testerRoot -Directory -Filter "Agent-*" -ErrorAction SilentlyContinue |
+        Sort-Object FullName)
+    foreach ($agentDir in $agentDirs) {
+        foreach ($relativeLoggerDir in @("MQL5\Logs\QM", "MQL5\Files\QM")) {
+            $loggerDir = Join-Path $agentDir.FullName $relativeLoggerDir
+            if (-not (Test-Path -LiteralPath $loggerDir -PathType Container)) {
+                continue
+            }
+            $loggerFiles = @(Get-ChildItem -LiteralPath $loggerDir -File -Filter $filePattern -ErrorAction SilentlyContinue |
+                Sort-Object FullName)
+            foreach ($loggerFile in $loggerFiles) {
+                $state[$loggerFile.FullName] = [pscustomobject]@{
+                    length = [long]$loggerFile.Length
+                    prefix_sha256 = Get-FilePrefixSha256 -Path $loggerFile.FullName -Length ([long]$loggerFile.Length)
+                    ends_with_lf = $(if ($loggerFile.Length -eq 0) {
+                        $true
+                    } else {
+                        $tail = New-Object byte[] 1
+                        $tailStream = [System.IO.File]::Open(
+                            $loggerFile.FullName,
+                            [System.IO.FileMode]::Open,
+                            [System.IO.FileAccess]::Read,
+                            [System.IO.FileShare]::ReadWrite
+                        )
+                        try {
+                            [void]$tailStream.Seek(-1, [System.IO.SeekOrigin]::End)
+                            [void]$tailStream.Read($tail, 0, 1)
+                        } finally {
+                            $tailStream.Dispose()
+                        }
+                        ($tail[0] -eq 0x0A)
+                    })
+                }
+            }
+        }
+    }
+
+    return ,$state
+}
+
+function Move-QmLoggerFilesForFreshCapture {
+    param(
+        [Parameter(Mandatory = $true)]
+        [hashtable]$BeforeState,
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot,
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(1, [int]::MaxValue)]
+        [int]$EAIdValue,
+        [Parameter(Mandatory = $true)]
+        [string]$ArchiveRoot
+    )
+
+    New-Item -ItemType Directory -Path $ArchiveRoot -Force | Out-Null
+    $rows = New-Object System.Collections.Generic.List[object]
+    $index = 0
+    foreach ($sourcePath in @($BeforeState.Keys | Sort-Object)) {
+        if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
+            throw "Fresh logger isolation lost a pre-run source: '$sourcePath'."
+        }
+        $sourceItem = Get-Item -LiteralPath $sourcePath -ErrorAction Stop
+        $expectedLength = [long]$BeforeState[$sourcePath].length
+        $expectedHash = [string]$BeforeState[$sourcePath].prefix_sha256
+        if ([long]$sourceItem.Length -ne $expectedLength -or
+            (Get-FilePrefixSha256 -Path $sourcePath -Length $expectedLength) -cne $expectedHash) {
+            throw "Fresh logger isolation detected a changing pre-run source: '$sourcePath'."
+        }
+        $archiveName = "{0:d3}_{1}" -f $index, [System.IO.Path]::GetFileName($sourcePath)
+        $archivePath = Join-Path $ArchiveRoot $archiveName
+        if (Test-Path -LiteralPath $archivePath) {
+            throw "Fresh logger isolation archive already exists: '$archivePath'."
+        }
+        [System.IO.File]::Move($sourcePath, $archivePath)
+        $archivedLength = (Get-Item -LiteralPath $archivePath -ErrorAction Stop).Length
+        $archivedHash = Get-FilePrefixSha256 -Path $archivePath -Length ([long]$archivedLength)
+        if ([long]$archivedLength -ne $expectedLength -or $archivedHash -cne $expectedHash) {
+            throw "Fresh logger isolation archive identity mismatch: '$archivePath'."
+        }
+        $rows.Add([pscustomobject]@{
+            source_path = [System.IO.Path]::GetFullPath($sourcePath)
+            archive_path = [System.IO.Path]::GetFullPath($archivePath)
+            size_bytes = [long]$archivedLength
+            sha256 = $archivedHash
+        })
+        $index++
+    }
+
+    $remaining = Get-QmLoggerFileState -TerminalRoot $TerminalRoot -EAIdValue $EAIdValue
+    if ($remaining.Count -ne 0) {
+        throw "Fresh logger isolation left $($remaining.Count) matching pre-run file(s)."
+    }
+    $manifestPath = Join-Path $ArchiveRoot "manifest.json"
+    $manifest = [ordered]@{
+        schema_version = "run-smoke-pre-run-logger-archive/v1"
+        ea_id = $EAIdValue
+        archived_file_count = $rows.Count
+        archived_files = $rows.ToArray()
+    }
+    $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath -Encoding utf8NoBOM
+    $manifestLength = (Get-Item -LiteralPath $manifestPath -ErrorAction Stop).Length
+    return [pscustomobject]@{
+        manifest_path = [System.IO.Path]::GetFullPath($manifestPath)
+        manifest_sha256 = Get-FilePrefixSha256 -Path $manifestPath -Length ([long]$manifestLength)
+        archived_file_count = $rows.Count
+    }
+}
+
+function Save-QmLoggerDelta {
+    param(
+        [Parameter(Mandatory = $true)]
+        [hashtable]$BeforeState,
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot,
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(1, [int]::MaxValue)]
+        [int]$EAIdValue,
+        [Parameter(Mandatory = $true)]
+        [string]$DestinationPath
+    )
+
+    $afterState = Get-QmLoggerFileState -TerminalRoot $TerminalRoot -EAIdValue $EAIdValue
+    $grownFiles = New-Object System.Collections.Generic.List[object]
+
+    foreach ($beforePath in $BeforeState.Keys) {
+        if (-not $afterState.ContainsKey($beforePath)) {
+            Write-Warning "Structured logger capture skipped: a pre-run logger file disappeared: '$beforePath'."
+            return $null
+        }
+        if ([long]$afterState[$beforePath].length -lt [long]$BeforeState[$beforePath].length) {
+            Write-Warning "Structured logger capture skipped: a pre-run logger file was truncated: '$beforePath'."
+            return $null
+        }
+        if ([long]$afterState[$beforePath].length -eq [long]$BeforeState[$beforePath].length -and
+            [string]$afterState[$beforePath].prefix_sha256 -cne [string]$BeforeState[$beforePath].prefix_sha256) {
+            Write-Warning "Structured logger capture skipped: an unchanged-length logger file was rewritten: '$beforePath'."
+            return $null
+        }
+    }
+
+    foreach ($afterPath in @($afterState.Keys | Sort-Object)) {
+        $beforeLength = [long]0
+        $beforeHash = $null
+        $beforeEndsWithLf = $true
+        if ($BeforeState.ContainsKey($afterPath)) {
+            $beforeLength = [long]$BeforeState[$afterPath].length
+            $beforeHash = [string]$BeforeState[$afterPath].prefix_sha256
+            $beforeEndsWithLf = [bool]$BeforeState[$afterPath].ends_with_lf
+        }
+        $afterLength = [long]$afterState[$afterPath].length
+        if ($afterLength -le $beforeLength) {
+            continue
+        }
+        if (-not $beforeEndsWithLf) {
+            Write-Warning "Structured logger capture skipped: pre-run logger file did not end at a line boundary: '$afterPath'."
+            return $null
+        }
+        if ($beforeLength -gt 0) {
+            $afterPrefixHash = Get-FilePrefixSha256 -Path $afterPath -Length $beforeLength
+            if ($afterPrefixHash -cne $beforeHash) {
+                Write-Warning "Structured logger capture skipped: pre-run logger bytes changed: '$afterPath'."
+                return $null
+            }
+        }
+        $grownFiles.Add([pscustomobject]@{
+            path = $afterPath
+            start_offset = $beforeLength
+            end_offset_exclusive = $afterLength
+            snapshot_sha256 = [string]$afterState[$afterPath].prefix_sha256
+        })
+    }
+
+    if ($grownFiles.Count -ne 1) {
+        Write-Warning ("Structured logger capture skipped: expected exactly one growing logger file, found {0}." -f $grownFiles.Count)
+        return $null
+    }
+
+    $source = $grownFiles[0]
+    $deltaLength = [long]$source.end_offset_exclusive - [long]$source.start_offset
+    if ($deltaLength -le 0 -or $deltaLength -gt [int]::MaxValue) {
+        Write-Warning ("Structured logger capture skipped: invalid delta length {0}." -f $deltaLength)
+        return $null
+    }
+
+    $deltaBytes = New-Object byte[] ([int]$deltaLength)
+    $sourceStream = [System.IO.File]::Open(
+        $source.path,
+        [System.IO.FileMode]::Open,
+        [System.IO.FileAccess]::Read,
+        [System.IO.FileShare]::ReadWrite
+    )
+    try {
+        if ($sourceStream.Length -ne [long]$source.end_offset_exclusive) {
+            Write-Warning "Structured logger capture skipped: logger file changed after the post-run snapshot."
+            return $null
+        }
+        [void]$sourceStream.Seek([long]$source.start_offset, [System.IO.SeekOrigin]::Begin)
+        $totalRead = 0
+        while ($totalRead -lt $deltaBytes.Length) {
+            $read = $sourceStream.Read($deltaBytes, $totalRead, $deltaBytes.Length - $totalRead)
+            if ($read -le 0) {
+                Write-Warning "Structured logger capture skipped: unexpected EOF while reading the logger delta."
+                return $null
+            }
+            $totalRead += $read
+        }
+    } finally {
+        $sourceStream.Dispose()
+    }
+
+    $currentSnapshotHash = Get-FilePrefixSha256 -Path $source.path -Length ([long]$source.end_offset_exclusive)
+    $currentSourceLength = (Get-Item -LiteralPath $source.path -ErrorAction Stop).Length
+    if ($currentSourceLength -ne [long]$source.end_offset_exclusive -or
+        $currentSnapshotHash -cne [string]$source.snapshot_sha256) {
+        Write-Warning "Structured logger capture skipped: logger bytes changed during delta extraction."
+        return $null
+    }
+
+    if ($deltaBytes[$deltaBytes.Length - 1] -ne 0x0A) {
+        Write-Warning "Structured logger capture skipped: logger delta ended with a partial line."
+        return $null
+    }
+
+    try {
+        $utf8 = [System.Text.UTF8Encoding]::new($false, $true)
+        $deltaText = $utf8.GetString($deltaBytes)
+    } catch {
+        Write-Warning "Structured logger capture skipped: exact logger bytes are not valid UTF-8 JSONL."
+        return $null
+    }
+
+    $requiredFields = @("sv", "ts_utc", "ts_broker", "level", "ea_id", "slug", "symbol", "tf", "magic", "event", "payload")
+    $eventCount = 0
+    foreach ($line in @($deltaText -split "`n")) {
+        $candidate = $line.TrimEnd("`r")
+        if ([string]::IsNullOrWhiteSpace($candidate)) {
+            continue
+        }
+        try {
+            $row = $candidate | ConvertFrom-Json -ErrorAction Stop
+        } catch {
+            Write-Warning "Structured logger capture skipped: logger delta contains invalid JSON."
+            return $null
+        }
+        $fieldNames = @($row.PSObject.Properties.Name)
+        foreach ($requiredField in $requiredFields) {
+            if ($fieldNames -notcontains $requiredField) {
+                Write-Warning "Structured logger capture skipped: logger row is missing '$requiredField'."
+                return $null
+            }
+        }
+        try {
+            $rowSchemaVersion = [int]$row.sv
+            $rowEAId = [int]$row.ea_id
+        } catch {
+            Write-Warning "Structured logger capture skipped: logger schema version or EA id is not an integer."
+            return $null
+        }
+        if ($rowSchemaVersion -ne 1 -or $rowEAId -ne $EAIdValue -or
+            -not ($row.event -is [string]) -or [string]::IsNullOrWhiteSpace($row.event)) {
+            Write-Warning "Structured logger capture skipped: logger row has the wrong schema, EA id, or event."
+            return $null
+        }
+        $eventCount++
+    }
+    if ($eventCount -le 0) {
+        Write-Warning "Structured logger capture skipped: logger delta contained no event rows."
+        return $null
+    }
+
+    $destinationDir = Split-Path -Parent $DestinationPath
+    if (-not [string]::IsNullOrWhiteSpace($destinationDir)) {
+        New-Item -ItemType Directory -Path $destinationDir -Force | Out-Null
+    }
+    [System.IO.File]::WriteAllBytes($DestinationPath, $deltaBytes)
+    $sampleHash = Get-FilePrefixSha256 -Path $DestinationPath -Length ([long]$deltaBytes.Length)
+
+    return [pscustomobject]@{
+        path = [System.IO.Path]::GetFullPath($DestinationPath)
+        source_path = [string]$source.path
+        source_offset_start = [long]$source.start_offset
+        source_offset_end_exclusive = [long]$source.end_offset_exclusive
+        source_snapshot_sha256 = [string]$source.snapshot_sha256
+        size_bytes = [long]$deltaBytes.Length
+        sha256 = $sampleHash
+        event_count = $eventCount
+    }
+}
+
 function Get-LatestTesterLog {
     param(
         [Parameter(Mandatory = $true)]
@@ -978,7 +1482,12 @@ function Get-LatestTesterLog {
         return $null
     }
 
-    $candidate = Get-ChildItem -LiteralPath $logsDir -File |
+    # Local tester agents write the decisive NO_HISTORY / OnInit diagnostics
+    # under Tester\Agent-*\logs, while Tester\logs normally contains only the
+    # controller transcript.  Searching only the controller directory turns a
+    # real, classifiable infra fault into REPORT_MISSING and makes the farm burn
+    # both retries without preserving the cause.
+    $candidate = Get-ChildItem -LiteralPath (Join-Path $TerminalRoot "Tester") -File -Recurse -Filter "*.log" |
         Where-Object { $_.LastWriteTimeUtc -ge $SinceUtc.AddMinutes(-2) } |
         Sort-Object LastWriteTimeUtc -Descending |
         Select-Object -First 1
@@ -1107,6 +1616,70 @@ function Test-TesterJournalBomb {
     return $null
 }
 
+function Remove-TesterJournalBombArtifacts {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$ScanDirs,
+        [Parameter(Mandatory = $true)]
+        [string]$PrimaryPath,
+        [int]$RetryCount = 3,
+        [int]$RetryDelayMilliseconds = 2000
+    )
+
+    # A tester run writes the same journal stream to both the dispatcher log
+    # and an Agent-* log. Deleting only the first path detected leaves the
+    # oversized sibling behind, so the next innocent run on that terminal is
+    # killed immediately by the absolute cap and misclassified as LOG_BOMB.
+    # Once the terminal and metatester processes have stopped, reclaim the
+    # detected file plus every other over-cap tester journal in this terminal
+    # root. Smaller journals remain available as diagnostic evidence.
+    $targets = @{}
+    foreach ($dir in $ScanDirs) {
+        if (-not (Test-Path -LiteralPath $dir -PathType Container)) {
+            continue
+        }
+        $logs = @(Get-ChildItem -LiteralPath $dir -Recurse -Filter *.log -File -ErrorAction SilentlyContinue)
+        foreach ($log in $logs) {
+            if ([double]$log.Length -gt $script:LogBombHardCeilBytes) {
+                $targets[$log.FullName] = [long]$log.Length
+            }
+        }
+    }
+
+    if (Test-Path -LiteralPath $PrimaryPath -PathType Leaf) {
+        $primary = Get-Item -LiteralPath $PrimaryPath -ErrorAction SilentlyContinue
+        if ($null -ne $primary) {
+            $targets[$primary.FullName] = [long]$primary.Length
+        }
+    }
+
+    $results = @()
+    foreach ($target in @($targets.GetEnumerator() | Sort-Object Name)) {
+        $removed = $false
+        $lastError = $null
+        for ($attempt = 1; $attempt -le [Math]::Max($RetryCount, 1); $attempt++) {
+            try {
+                Remove-Item -LiteralPath $target.Key -Force -ErrorAction Stop
+                $removed = $true
+                $lastError = $null
+                break
+            } catch {
+                $lastError = $_.Exception.Message
+                if ($attempt -lt [Math]::Max($RetryCount, 1) -and $RetryDelayMilliseconds -gt 0) {
+                    Start-Sleep -Milliseconds $RetryDelayMilliseconds
+                }
+            }
+        }
+        $results += [pscustomobject]@{
+            path = [string]$target.Key
+            size_bytes = [long]$target.Value
+            removed = $removed
+            error = $lastError
+        }
+    }
+    return @($results)
+}
+
 function Start-TesterRun {
     param(
         [Parameter(Mandatory = $true)]
@@ -1169,16 +1742,15 @@ function Start-TesterRun {
                     } catch {
                     }
                 }
-                # Reclaim the disk immediately; the journal is spam, not evidence
-                # (the stage line above records path/size/reason). May be briefly
-                # locked while metatester dies -> short retry, then fail-open.
-                for ($delAttempt = 1; $delAttempt -le 3; $delAttempt++) {
-                    try {
-                        Remove-Item -LiteralPath $logBombHit.path -Force -ErrorAction Stop
-                        break
-                    } catch {
-                        Start-Sleep -Seconds 2
-                    }
+                # Reclaim every oversized copy of the tester journal. MT5 mirrors
+                # the stream into dispatcher and Agent-* logs; leaving one copy
+                # behind gives the next EA a false absolute-cap LOG_BOMB verdict.
+                $reclaimedJournals = @(Remove-TesterJournalBombArtifacts `
+                    -ScanDirs $logBombScanDirs `
+                    -PrimaryPath $logBombHit.path)
+                foreach ($journal in $reclaimedJournals) {
+                    Write-Host ("run_smoke.stage=log_bomb_reclaim journal='{0}' size_bytes={1} removed={2} error='{3}'" -f `
+                        $journal.path, $journal.size_bytes, $journal.removed, [string]$journal.error)
                 }
                 break
             }
@@ -1389,14 +1961,38 @@ function Get-MetaTesterProcessesForTerminalRoot {
     foreach ($proc in $processes) {
         $exePath = [string]$proc.ExecutablePath
         $cmdLine = [string]$proc.CommandLine
+        # BOTH legs must anchor on root + trailing backslash: the unanchored
+        # CommandLine match made "...\T1" a SUBSTRING of "...\T10", so every T1
+        # run_smoke cleanup Force-killed T10's RUNNING tester agent mid-run (no
+        # OnDeinit -> skeleton report + silent q08 stream). 2026-07-15 QM5_13117
+        # zero-trades forensics: D:\QM\reports\deep_dive_13117\FINDINGS.md.
         $matchesRoot = ($exePath -and [regex]::IsMatch($exePath, "^$escapedRoot\\", [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)) -or
-            ($cmdLine -and [regex]::IsMatch($cmdLine, $escapedRoot, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase))
+            ($cmdLine -and [regex]::IsMatch($cmdLine, "$escapedRoot\\", [System.Text.RegularExpressions.RegexOptions]::IgnoreCase))
         if ($matchesRoot) {
             $matches += $proc
         }
     }
 
     return @($matches)
+}
+
+function Wait-ForMetaTesterQuiescence {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot,
+        [ValidateRange(1, 60)]
+        [int]$MaxWaitSeconds = 10
+    )
+
+    $deadline = (Get-Date).ToUniversalTime().AddSeconds($MaxWaitSeconds)
+    do {
+        if (@(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $TerminalRoot).Count -eq 0) {
+            return $true
+        }
+        Start-Sleep -Milliseconds 250
+    } while ((Get-Date).ToUniversalTime() -lt $deadline)
+
+    return (@(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $TerminalRoot).Count -eq 0)
 }
 
 function Wait-ForReportExport {
@@ -1432,6 +2028,32 @@ function Wait-ForReportExport {
         return $false
     }
     return (-not $RequireCompleteMetrics -or (Test-TesterReportHasCompleteMetrics -ReportPath $ReportPath))
+}
+
+function Get-ReportExportWaitSeconds {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ReportPath,
+        [Parameter(Mandatory = $true)]
+        [bool]$WritersQuiescent,
+        [ValidateRange(0, 300)]
+        [int]$DefaultWaitSeconds = 240
+    )
+
+    # Once both the terminal and its metatester writer have stopped, an existing
+    # non-empty report cannot gain missing metrics.  Waiting the full export
+    # grace period only delays publication/classification of MT5's incomplete
+    # shell report (for example after a history-synchronization failure).
+    if ($WritersQuiescent -and (Test-Path -LiteralPath $ReportPath -PathType Leaf)) {
+        $reportInfo = Get-Item -LiteralPath $ReportPath
+        if ($reportInfo.Length -gt 0) {
+            return 0
+        }
+    }
+
+    # A missing/empty report can still materialize after process exit under
+    # filesystem contention, and an active writer must retain the full grace.
+    return $DefaultWaitSeconds
 }
 
 function Convert-RunMetricsToFingerprint {
@@ -1531,32 +2153,57 @@ function Get-ExpectedTradesPerYear {
 }
 
 function Resolve-NewsCalendarDiagnostics {
-    $baseDir = "D:\QM\data\news_calendar"
-    $primary = Join-Path $baseDir "news_calendar_2015_2025.csv"
-    $secondary = Join-Path $baseDir "forex_factory_calendar_clean.csv"
+    $sourceDir = "D:\QM\data\news_calendar"
+    $commonDir = Join-Path $env:APPDATA "MetaQuotes\Terminal\Common\Files"
+    $names = @("news_calendar_2015_2025.csv", "forex_factory_calendar_clean.csv")
+    $sourcePaths = @($names | ForEach-Object { Join-Path $sourceDir $_ })
+    $commonPaths = @($names | ForEach-Object { Join-Path $commonDir $_ })
     $maxAgeHours = 24 * 14
-    $paths = @($primary, $secondary)
-    $missing = @($paths | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Leaf) })
+    $missingSource = @($sourcePaths | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Leaf) })
+    $missingCommon = @($commonPaths | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Leaf) })
     $latestModifiedUtc = $null
-    if (@($missing).Count -eq 0) {
-        $latestModifiedUtc = ($paths | ForEach-Object { (Get-Item -LiteralPath $_).LastWriteTimeUtc } | Sort-Object -Descending | Select-Object -First 1)
+    if (@($missingCommon).Count -eq 0) {
+        # Both files are required by QM_NewsInit, so freshness is bounded by the older copy.
+        $latestModifiedUtc = ($commonPaths | ForEach-Object { (Get-Item -LiteralPath $_).LastWriteTimeUtc } | Sort-Object | Select-Object -First 1)
     }
     $ageHours = $null
     $status = "OK"
-    if (@($missing).Count -gt 0) {
-        $status = "MISSING"
+    $mismatches = @()
+    if (@($missingSource).Count -gt 0) {
+        $status = "MISSING_SOURCE"
+    } elseif (@($missingCommon).Count -gt 0) {
+        $status = "MISSING_COMMON"
     } elseif ($null -ne $latestModifiedUtc) {
         $ageHours = [int][Math]::Floor(((Get-Date).ToUniversalTime() - $latestModifiedUtc).TotalHours)
         if ($ageHours -gt $maxAgeHours) {
-            $status = "STALE"
+            $status = "STALE_COMMON"
+        }
+        foreach ($name in $names) {
+            $sourcePath = Join-Path $sourceDir $name
+            $commonPath = Join-Path $commonDir $name
+            $sourceHash = (Get-FileHash -LiteralPath $sourcePath -Algorithm SHA256).Hash
+            $commonHash = (Get-FileHash -LiteralPath $commonPath -Algorithm SHA256).Hash
+            if ($sourceHash -cne $commonHash) {
+                $mismatches += [pscustomobject]@{
+                    name = $name
+                    source_sha256 = $sourceHash
+                    common_sha256 = $commonHash
+                }
+            }
+        }
+        if (@($mismatches).Count -gt 0) {
+            $status = "COMMON_MISMATCH"
         }
     }
     return [pscustomobject]@{
         status = $status
-        base_dir = $baseDir
-        primary_path = $primary
-        secondary_path = $secondary
-        missing_paths = @($missing)
+        source_dir = $sourceDir
+        common_dir = $commonDir
+        primary_path = $commonPaths[0]
+        secondary_path = $commonPaths[1]
+        missing_source_paths = @($missingSource)
+        missing_common_paths = @($missingCommon)
+        mismatches = @($mismatches)
         latest_modified_utc = $(if ($null -ne $latestModifiedUtc) { $latestModifiedUtc.ToString("o") } else { $null })
         age_hours = $ageHours
         max_age_hours = $maxAgeHours
@@ -1585,13 +2232,34 @@ Write-Host ("run_smoke.stage=resolved_terminal terminal={0}" -f $effectiveTermin
 $terminalRoot = Resolve-TerminalRoot -TerminalName $effectiveTerminal
 $terminalExe = Resolve-TerminalExecutable -TerminalRoot $terminalRoot
 Write-Host ("run_smoke.stage=resolved_terminal_exe terminal={0} exe='{1}'" -f $effectiveTerminal, $terminalExe)
-Set-BacktestTerminalConfig -TerminalRoot $terminalRoot -TerminalName $effectiveTerminal
+
+# Resolve every isolated development-lane boundary before mutating terminal configuration,
+# deploying an expert, or creating report directories.
+$resolvedReportRoot = [System.IO.Path]::GetFullPath($ReportRoot)
+if ($effectiveTerminal -ieq "DEV1") {
+    $dev1ReportRoot = [System.IO.Path]::GetFullPath("D:\QM\reports\dev1")
+    $dev1Prefix = $dev1ReportRoot.TrimEnd('\') + '\'
+    if (($resolvedReportRoot -ine $dev1ReportRoot) -and
+        (-not $resolvedReportRoot.StartsWith($dev1Prefix, [System.StringComparison]::OrdinalIgnoreCase))) {
+        throw "DEV1 ReportRoot must stay under 'D:\QM\reports\dev1'. Got: $resolvedReportRoot"
+    }
+}
+if ($effectiveTerminal -ieq "DEV2") {
+    $dev2ReportRoot = [System.IO.Path]::GetFullPath("D:\QM\reports\dev2")
+    $dev2Prefix = $dev2ReportRoot.TrimEnd('\') + '\'
+    if (($resolvedReportRoot -ine $dev2ReportRoot) -and
+        (-not $resolvedReportRoot.StartsWith($dev2Prefix, [System.StringComparison]::OrdinalIgnoreCase))) {
+        throw "DEV2 ReportRoot must stay under 'D:\QM\reports\dev2'. Got: $resolvedReportRoot"
+    }
+}
 
 if (($Terminal -ine "any") -and (-not $AllowRunningTerminal.IsPresent)) {
     if (Test-TerminalAlreadyRunning -TerminalRoot $terminalRoot) {
         throw "Terminal instance is already running for $terminalRoot. Stop it first or pass -AllowRunningTerminal."
     }
 }
+
+Set-BacktestTerminalConfig -TerminalRoot $terminalRoot -TerminalName $effectiveTerminal
 
 if (-not $Expert) {
     if ($EALabel) {
@@ -1611,18 +2279,54 @@ if (-not $Expert) {
 # Codex build → compile → smoke chains failed at "Experts\QM\<EA>.ex5 not
 # found" because only p2_baseline.py deployed binaries — run_smoke had no
 # self-deploy step. 2026-05-16 QM5_1046 build hit exactly this.
-Deploy-ExpertBinaryToTerminal -ExpertPath $Expert -TerminalName $effectiveTerminal
+$expertBinaryIdentity = if ($SkipExpertDeploy.IsPresent) {
+    Write-Host ("run_smoke.deploy_skip=worker_staged terminal={0} expert='{1}'" -f $effectiveTerminal, $Expert)
+    $null
+} else {
+    Deploy-ExpertBinaryToTerminal -ExpertPath $Expert -TerminalName $effectiveTerminal
+}
+$expertRelativeBinary = if ($Expert.EndsWith('.ex5', [System.StringComparison]::OrdinalIgnoreCase)) { $Expert } else { "$Expert.ex5" }
+$deployedExpertPath = Join-Path (Join-Path $terminalRoot 'MQL5\Experts') $expertRelativeBinary
+$deployedExpertIdentity = Get-FileEvidenceIdentity -Path $deployedExpertPath -AllowMissing
+if ($null -ne $deployedExpertIdentity) {
+    if ($null -eq $expertBinaryIdentity) {
+        $expertBinaryIdentity = [ordered]@{
+            source = $null
+            deployed = $deployedExpertIdentity
+            source_matches_deployed = $null
+        }
+    } else {
+        $expertBinaryIdentity.deployed = $deployedExpertIdentity
+    }
+}
 
 if ($SetFile) {
     $SetFile = (Resolve-Path -LiteralPath $SetFile).Path
 }
 Write-Host ("run_smoke.stage=resolved_setfile setfile='{0}'" -f $SetFile)
 
+$repoRootForEvidence = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
+$expertLeaf = Split-Path -Leaf $Expert
+$mq5Path = Join-Path (Join-Path $repoRootForEvidence 'framework\EAs') (Join-Path $expertLeaf "$expertLeaf.mq5")
+$mq5Identity = Get-FileEvidenceIdentity -Path $mq5Path -AllowMissing
+$setfileIdentity = if ($SetFile) {
+    [ordered]@{
+        source = Get-FileEvidenceIdentity -Path $SetFile
+        deployed = $null
+        source_matches_deployed = $null
+    }
+} else { $null }
+$runSmokeIdentity = Get-FileEvidenceIdentity -Path $PSCommandPath
+
 $runTag = (Get-Date).ToUniversalTime().ToString("yyyyMMdd_HHmmss")
 $eaLabel = "QM5_{0}" -f $EAId
-$reportDir = Join-Path $ReportRoot "$eaLabel\$runTag"
+$reportDir = Join-Path $resolvedReportRoot "$eaLabel\$runTag"
 $rawDir = Join-Path $reportDir "raw"
-$frameworkEvidenceDir = "D:\QM\reports\framework\22"
+$frameworkEvidenceDir = if ($effectiveTerminal -ieq "DEV1" -or $effectiveTerminal -ieq "DEV2") {
+    Join-Path $resolvedReportRoot "_framework_evidence\22"
+} else {
+    "D:\QM\reports\framework\22"
+}
 
 New-Item -ItemType Directory -Path $rawDir -Force | Out-Null
 New-Item -ItemType Directory -Path $frameworkEvidenceDir -Force | Out-Null
@@ -1630,7 +2334,10 @@ New-Item -ItemType Directory -Path $frameworkEvidenceDir -Force | Out-Null
 $fromDate = if ($FromDate) { $FromDate } else { "{0}.01.01" -f $Year }
 $toDate = if ($ToDate) { $ToDate } else { "{0}.12.31" -f $Year }
 $newsCalendarDiagnostics = Resolve-NewsCalendarDiagnostics
-Write-Host ("run_smoke.news_calendar_status={0} latest_modified_utc='{1}' age_hours={2} max_age_hours={3}" -f $newsCalendarDiagnostics.status, $newsCalendarDiagnostics.latest_modified_utc, $newsCalendarDiagnostics.age_hours, $newsCalendarDiagnostics.max_age_hours)
+Write-Host ("run_smoke.news_calendar_status={0} common_path='{1}' latest_modified_utc='{2}' age_hours={3} max_age_hours={4}" -f $newsCalendarDiagnostics.status, $newsCalendarDiagnostics.common_dir, $newsCalendarDiagnostics.latest_modified_utc, $newsCalendarDiagnostics.age_hours, $newsCalendarDiagnostics.max_age_hours)
+if ($newsCalendarDiagnostics.status -ne "OK") {
+    throw ("NEWS_CALENDAR_{0}: EA-readable Common path '{1}' failed pre-run validation" -f $newsCalendarDiagnostics.status, $newsCalendarDiagnostics.common_dir)
+}
 # Q02 trade floor (OWNER 2026-06-26): flat 5 trades/year, NOT coupled to the card's
 # declared frequency. The old `expected * years * 0.5` rule killed genuine low-freq edges
 # whose cards over-declared (ICT Silver Bullet QM5_12571: card 100/yr, reality ~8-14/yr ->
@@ -1654,13 +2361,18 @@ if ($effectiveMinTrades -ne $MinTrades) {
     $MinTrades = $effectiveMinTrades
 }
 
-# Apply (or reset) the tester commission for this run before launching. Q04 passes
-# -CommissionPerLot 7.0 to install a $7/lot round-trip entry matching the .DWX symbol;
-# all other phases pass 0 and get the canonical real schedule restored unchanged.
-Set-TesterGroupsCommission -TerminalRoot $terminalRoot -SymbolName $Symbol -CommissionPerLot $CommissionPerLot
-Write-Host ("run_smoke.commission_per_lot={0} terminal={1} symbol={2}" -f $CommissionPerLot, $effectiveTerminal, $Symbol)
+# Install the canonical tester commission schedule before launching. Positive
+# fixed overrides are fail-closed because both historical encodings were proven
+# materially wrong. The finally block restores and verifies the canonical file.
+$commissionGroupEvidence = $null
+$commissionGroupRestoreEvidence = $null
+try {
+    $commissionGroupEvidence = Set-TesterGroupsCommission -TerminalRoot $terminalRoot -SymbolName $Symbol -CommissionPerLot $CommissionPerLot -CommissionPerSideNative $CommissionPerSideNative
+    Write-Host ("run_smoke.commission_per_lot={0} native_per_side={1} terminal={2} symbol={3} injected_sha256={4}" -f $CommissionPerLot, $CommissionPerSideNative, $effectiveTerminal, $Symbol, $commissionGroupEvidence.installed_sha256)
 
 $runResults = @()
+$testerIniEvidence = New-Object System.Collections.Generic.List[object]
+$loggerSampleCaptures = New-Object System.Collections.Generic.List[object]
 $globalOnInitFailure = $false
 $globalRealTicksMarker = $true
 $globalTimeoutFailure = $false
@@ -1713,11 +2425,53 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         -CurrencyOverride $TesterCurrencyOverride `
         -DepositOverride $TesterDepositOverride
 
+    $iniEvidence = Get-TesterIniEvidence -Path $iniPath
+    if (($iniEvidence.from_date -cne $fromDate) -or ($iniEvidence.to_date -cne $toDate)) {
+        throw "Generated tester.ini window mismatch: requested=$fromDate..$toDate actual=$($iniEvidence.from_date)..$($iniEvidence.to_date) path=$iniPath"
+    }
+    if (($iniEvidence.expert -cne $Expert) -or ($iniEvidence.symbol -cne $Symbol) -or
+        ($iniEvidence.period -cne $Period) -or ($iniEvidence.model -ne $Model)) {
+        throw "Generated tester.ini execution identity mismatch: $iniPath"
+    }
+    $iniEvidence['run'] = $runName
+    $testerIniEvidence.Add([pscustomobject]$iniEvidence)
+    if ($SetFile) {
+        $deployedSetfilePath = Join-Path (Join-Path $terminalRoot 'MQL5\Profiles\Tester') (Split-Path -Leaf $SetFile)
+        $deployedSetfileIdentity = Get-FileEvidenceIdentity -Path $deployedSetfilePath
+        if ($setfileIdentity.source.sha256 -cne $deployedSetfileIdentity.sha256) {
+            throw "Tester-deployed setfile SHA256 mismatch: source='$SetFile' deployed='$deployedSetfilePath'"
+        }
+        $setfileIdentity.deployed = $deployedSetfileIdentity
+        $setfileIdentity.source_matches_deployed = $true
+    }
+
     Write-Host ("run_smoke.stage=ini_written run={0} ini='{1}'" -f $runName, $iniPath)
     if (-not [string]::IsNullOrWhiteSpace($TesterCurrencyOverride)) {
         Write-Host ("run_smoke.tester_currency_override={0} run={1}" -f $TesterCurrencyOverride.Trim().ToUpperInvariant(), $runName)
     }
     Write-Host ("run_smoke.stage=start_terminal terminal={0} run={1} ini='{2}'" -f $effectiveTerminal, $runName, $iniPath)
+    $loggerStateBefore = $null
+    $preRunLoggerArchive = $null
+    if (-not $AllowRunningTerminal.IsPresent) {
+        if ($RequireFreshLoggerSample.IsPresent) {
+            if (-not (Wait-ForMetaTesterQuiescence -TerminalRoot $terminalRoot)) {
+                throw "Fresh logger isolation could not prove tester-writer quiescence for terminal '$effectiveTerminal'."
+            }
+            $loggerStateToArchive = Get-QmLoggerFileState -TerminalRoot $terminalRoot -EAIdValue $EAId
+            $preRunLoggerArchive = Move-QmLoggerFilesForFreshCapture `
+                -BeforeState $loggerStateToArchive `
+                -TerminalRoot $terminalRoot `
+                -EAIdValue $EAId `
+                -ArchiveRoot (Join-Path $runDir "pre_run_logger_archive")
+            Write-Host ("run_smoke.logger_pre_run_archived run={0} files={1} manifest='{2}' sha256={3}" -f $runName, $preRunLoggerArchive.archived_file_count, $preRunLoggerArchive.manifest_path, $preRunLoggerArchive.manifest_sha256)
+        }
+        $loggerStateBefore = Get-QmLoggerFileState -TerminalRoot $terminalRoot -EAIdValue $EAId
+        if ($RequireFreshLoggerSample.IsPresent -and $loggerStateBefore.Count -ne 0) {
+            throw "Fresh logger isolation did not produce an empty pre-run state."
+        }
+    } else {
+        Write-Host ("run_smoke.logger_sample_skipped run={0} reason=allow_running_terminal" -f $runName)
+    }
     try {
         $runExec = Start-TesterRun -TerminalExe $terminalExe -IniPath $iniPath -TimeoutSec $TimeoutSeconds -ReportPath $sourceReportPath -TerminalName $effectiveTerminal
     } catch {
@@ -1775,11 +2529,50 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         continue
     }
 
+    # Capture only after every writer for this stopped tester agent is gone.
+    # Timeout and log-bomb branches continue above, so their partial prefixes
+    # can never become a schema sample. A naturally finishing/latching run may
+    # leave metatester alive briefly while it flushes; skip rather than publish
+    # if that bounded quiescence check cannot be proven.
+    $testerWritersQuiescent = $false
+    if ($null -ne $loggerStateBefore) {
+        $loggerCapture = $null
+        $testerWritersQuiescent = Wait-ForMetaTesterQuiescence -TerminalRoot $terminalRoot
+        if ($testerWritersQuiescent) {
+            $runLoggerSamplePath = Join-Path $runDir "logger_sample.jsonl"
+            $loggerCapture = Save-QmLoggerDelta `
+                -BeforeState $loggerStateBefore `
+                -TerminalRoot $terminalRoot `
+                -EAIdValue $EAId `
+                -DestinationPath $runLoggerSamplePath
+            if ($null -ne $loggerCapture) {
+                $loggerCapture | Add-Member -NotePropertyName run -NotePropertyValue $runName
+                $loggerCapture | Add-Member -NotePropertyName capture_mode -NotePropertyValue $(if ($RequireFreshLoggerSample.IsPresent) { "fresh_required" } else { "delta" })
+                $loggerCapture | Add-Member -NotePropertyName pre_run_archive_manifest_path -NotePropertyValue $(if ($null -ne $preRunLoggerArchive) { $preRunLoggerArchive.manifest_path } else { $null })
+                $loggerCapture | Add-Member -NotePropertyName pre_run_archive_manifest_sha256 -NotePropertyValue $(if ($null -ne $preRunLoggerArchive) { $preRunLoggerArchive.manifest_sha256 } else { $null })
+                $loggerSampleCaptures.Add($loggerCapture)
+                Write-Host ("run_smoke.logger_sample_captured run={0} path='{1}' events={2} bytes={3} sha256={4}" -f $runName, $loggerCapture.path, $loggerCapture.event_count, $loggerCapture.size_bytes, $loggerCapture.sha256)
+            }
+        } else {
+            Write-Warning ("Structured logger capture skipped: metatester writer still active for terminal '{0}'." -f $effectiveTerminal)
+        }
+        if ($RequireFreshLoggerSample.IsPresent -and $null -eq $loggerCapture) {
+            throw "Required fresh structured logger sample was not authenticated for run '$runName'."
+        }
+    }
+
     # MT5 report writes can lag significantly under terminal contention; allow a longer settle window
     # before classifying as infra REPORT_MISSING. A complete report may be latched
     # early, but an incomplete non-empty MT5 shell report is still evidence and must
     # go through INVALID_REPORT parsing instead of being hidden as missing.
-    $reportMaterialized = Wait-ForReportExport -ReportPath $sourceReportPath -TerminalRoot $terminalRoot -MaxWaitSeconds 240 -RequireCompleteMetrics
+    $reportWaitSeconds = Get-ReportExportWaitSeconds `
+        -ReportPath $sourceReportPath `
+        -WritersQuiescent $testerWritersQuiescent `
+        -DefaultWaitSeconds 240
+    if ($reportWaitSeconds -eq 0) {
+        Write-Host ("run_smoke.stage=report_wait_skipped run={0} reason=writers_quiescent_nonempty_report report='{1}'" -f $runName, $sourceReportPath)
+    }
+    $reportMaterialized = Wait-ForReportExport -ReportPath $sourceReportPath -TerminalRoot $terminalRoot -MaxWaitSeconds $reportWaitSeconds -RequireCompleteMetrics
     if (-not $reportMaterialized) {
         [void](Use-LegacyRelativeReportExport -TerminalRoot $terminalRoot -AbsoluteReportPath $reportHtmPath -LegacyRelativePath $legacyRelativeSourcePath)
         $publishedReportPath = Publish-TesterReportCandidate -SourceReportPath $sourceReportPath -CanonicalReportPath $reportHtmPath
@@ -1809,6 +2602,7 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
             $testerLogPath = Join-Path $runDir $testerLog.Name
             Copy-Item -LiteralPath $testerLog.FullName -Destination $testerLogPath -Force
             $testerLogTail = Get-TesterLogTailText -TesterLogPath $testerLogPath -LineCount 120
+            $testerLogTail = Get-TesterLogCurrentRunText -TesterLogTail $testerLogTail
         }
         $failureHints = New-Object System.Collections.Generic.List[string]
         if (Test-TesterLogShowsOnInitFailure -TesterLogTail $testerLogTail) {
@@ -1827,6 +2621,10 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         if (Test-TesterLogShowsAccountNotSpecified -TesterLogTail $testerLogTail) {
             $failureHints.Add("ACCOUNT_NOT_SPECIFIED")
             $reasonClasses.Add("ACCOUNT_NOT_SPECIFIED")
+        }
+        if (Test-TesterLogHasNoHistoryForRun -TesterLogTail $testerLogTail -ExpectedSymbol $Symbol -ExpectedFromDate $fromDate -ExpectedToDate $toDate) {
+            $failureHints.Add("NO_HISTORY_LOG")
+            $reasonClasses.Add("NO_HISTORY_LOG")
         }
         $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRoot)
         if (@($lingeringMeta).Count -gt 0) {
@@ -1942,6 +2740,7 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         $testerLogPath = Join-Path $runDir $testerLog.Name
         Copy-Item -LiteralPath $testerLog.FullName -Destination $testerLogPath -Force
         $testerLogTail = Get-TesterLogTailText -TesterLogPath $testerLogPath -LineCount 800
+        $testerLogTail = Get-TesterLogCurrentRunText -TesterLogTail $testerLogTail
     }
 
     $onInitFailure = $false
@@ -2031,6 +2830,29 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         net_profit_raw = $netProfitRaw
     }
 }
+} finally {
+    $commissionGroupRestoreEvidence = Set-TesterGroupsCommission -TerminalRoot $terminalRoot -SymbolName $Symbol -CommissionPerLot 0 -CommissionPerSideNative 0
+    if ($commissionGroupRestoreEvidence.installed_sha256 -cne $commissionGroupRestoreEvidence.canonical_sha256) {
+        throw "tester groups canonical restore hash mismatch: target=$($commissionGroupRestoreEvidence.installed_sha256) canonical=$($commissionGroupRestoreEvidence.canonical_sha256)"
+    }
+    Write-Host ("run_smoke.commission_groups_restored sha256={0} target='{1}'" -f $commissionGroupRestoreEvidence.installed_sha256, $commissionGroupRestoreEvidence.target_path)
+}
+
+$artifactIdentityStable = $true
+if ($null -ne $expertBinaryIdentity -and $null -ne $expertBinaryIdentity.deployed) {
+    $expertAfter = Get-FileEvidenceIdentity -Path $expertBinaryIdentity.deployed.path -AllowMissing
+    $expertBinaryIdentity['observed_after'] = $expertAfter
+    $expertStable = ($null -ne $expertAfter) -and ($expertAfter.sha256 -ceq $expertBinaryIdentity.deployed.sha256)
+    $expertBinaryIdentity['stable_during_run'] = $expertStable
+    $artifactIdentityStable = $artifactIdentityStable -and $expertStable
+}
+if ($null -ne $setfileIdentity -and $null -ne $setfileIdentity.deployed) {
+    $setfileAfter = Get-FileEvidenceIdentity -Path $setfileIdentity.deployed.path -AllowMissing
+    $setfileIdentity['observed_after'] = $setfileAfter
+    $setfileStable = ($null -ne $setfileAfter) -and ($setfileAfter.sha256 -ceq $setfileIdentity.deployed.sha256)
+    $setfileIdentity['stable_during_run'] = $setfileStable
+    $artifactIdentityStable = $artifactIdentityStable -and $setfileStable
+}
 
 $completedRuns = @($runResults | Where-Object { $_.status -eq "OK" })
 $completedRunCount = @($completedRuns).Count
@@ -2072,6 +2894,10 @@ if ($completedRunCount -eq $Runs) {
     $reasonClasses.Add("INCOMPLETE_RUNS")
 }
 
+if (-not $artifactIdentityStable) {
+    $reasonClasses.Add("EXECUTION_IDENTITY_DRIFT")
+}
+
 $realTicksGatePassed = $globalRealTicksMarker -or $AllowMissingRealTicksLogMarker.IsPresent
 if (-not $realTicksGatePassed -and -not $AllowMissingRealTicksLogMarker.IsPresent) {
     $reasonClasses.Add("MODEL4_MARKER_REQUIRED")
@@ -2083,13 +2909,80 @@ $passed = ($completedRunCount -eq $Runs) -and
     $deterministic -and
     (-not $globalTimeoutFailure) -and
     (-not $globalLogBombFailure) -and
+    $artifactIdentityStable -and
     $realTicksGatePassed
 
 if (@($reasonClasses).Count -eq 0) {
     $reasonClasses.Add("OK")
 }
 
+$loggerSamplePath = $null
+$loggerSampleEvidence = $null
+if ($loggerSampleCaptures.Count -gt 0) {
+    $selectedLoggerCapture = $loggerSampleCaptures[$loggerSampleCaptures.Count - 1]
+    $candidateLoggerSamplePath = Join-Path $reportDir "logger_sample.jsonl"
+    try {
+        $selectedBytes = [System.IO.File]::ReadAllBytes($selectedLoggerCapture.path)
+        [System.IO.File]::WriteAllBytes($candidateLoggerSamplePath, $selectedBytes)
+        $publishedHash = Get-FilePrefixSha256 -Path $candidateLoggerSamplePath -Length ([long]$selectedBytes.Length)
+        if ($publishedHash -cne $selectedLoggerCapture.sha256) {
+            throw "published logger sample hash mismatch"
+        }
+        $loggerSamplePath = [System.IO.Path]::GetFullPath($candidateLoggerSamplePath)
+        $loggerSampleEvidence = [ordered]@{
+            run = $selectedLoggerCapture.run
+            capture_mode = $selectedLoggerCapture.capture_mode
+            path = $loggerSamplePath
+            source_path = $selectedLoggerCapture.source_path
+            source_offset_start = $selectedLoggerCapture.source_offset_start
+            source_offset_end_exclusive = $selectedLoggerCapture.source_offset_end_exclusive
+            source_snapshot_sha256 = $selectedLoggerCapture.source_snapshot_sha256
+            size_bytes = $selectedLoggerCapture.size_bytes
+            sha256 = $selectedLoggerCapture.sha256
+            event_count = $selectedLoggerCapture.event_count
+            exact_byte_copy = $true
+            pre_run_archive_manifest_path = $selectedLoggerCapture.pre_run_archive_manifest_path
+            pre_run_archive_manifest_sha256 = $selectedLoggerCapture.pre_run_archive_manifest_sha256
+        }
+    } catch {
+        Write-Warning ("Structured logger sample publish skipped: {0}" -f $_.Exception.Message)
+        $loggerSamplePath = $null
+        $loggerSampleEvidence = $null
+    }
+}
+
+if ($testerIniEvidence.Count -eq 0) {
+    throw "No generated tester.ini evidence was captured; refusing to publish an unbound summary."
+}
+$actualFromDates = @($testerIniEvidence | ForEach-Object { $_.from_date } | Select-Object -Unique)
+$actualToDates = @($testerIniEvidence | ForEach-Object { $_.to_date } | Select-Object -Unique)
+if (($actualFromDates.Count -ne 1) -or ($actualToDates.Count -ne 1)) {
+    throw "Generated tester.ini files disagree on the tested date window."
+}
+$actualFromDate = [string]$actualFromDates[0]
+$actualToDate = [string]$actualToDates[0]
+$actualYear = $null
+if (($actualFromDate -match '^\d{4}\.') -and
+    ($actualToDate -match '^\d{4}\.') -and
+    ($actualFromDate.Substring(0, 4) -ceq $actualToDate.Substring(0, 4))) {
+    $actualYear = [int]$actualFromDate.Substring(0, 4)
+}
+foreach ($runResult in $runResults) {
+    $matchingIni = $testerIniEvidence | Where-Object { $_.run -ceq $runResult.run } | Select-Object -First 1
+    if ($null -ne $matchingIni) {
+        $runResult | Add-Member -NotePropertyName tester_ini_path -NotePropertyValue $matchingIni.path -Force
+        $runResult | Add-Member -NotePropertyName tester_ini_sha256 -NotePropertyValue $matchingIni.sha256 -Force
+        $runResult | Add-Member -NotePropertyName from_date -NotePropertyValue $matchingIni.from_date -Force
+        $runResult | Add-Member -NotePropertyName to_date -NotePropertyValue $matchingIni.to_date -Force
+    }
+    if ($runResult.report_canonical_path -and (Test-Path -LiteralPath $runResult.report_canonical_path -PathType Leaf)) {
+        $reportIdentity = Get-FileEvidenceIdentity -Path $runResult.report_canonical_path
+        $runResult | Add-Member -NotePropertyName report_sha256 -NotePropertyValue $reportIdentity.sha256 -Force
+    }
+}
+
 $summary = [ordered]@{
+    evidence_schema = "run_smoke/v2"
     timestamp_utc = (Get-Date).ToUniversalTime().ToString("o")
     run_tag = $runTag
     result = $(if ($passed) { "PASS" } else { "FAIL" })
@@ -2098,7 +2991,27 @@ $summary = [ordered]@{
     ea_label = $eaLabel
     expert = $Expert
     symbol = $Symbol
-    year = $Year
+    year = $actualYear
+    requested_year = $Year
+    from_date = $actualFromDate
+    to_date = $actualToDate
+    test_window = [ordered]@{
+        from_date = $actualFromDate
+        to_date = $actualToDate
+        source = "generated_tester_ini"
+        # PowerShell 7.6 cannot bind @($genericList) when the value is a
+        # System.Collections.Generic.List[object] and throws the opaque
+        # "Argument types do not match" error. Materialize a real Object[]
+        # before ConvertTo-Json so completed runs always publish their summary.
+        tester_ini_files = $testerIniEvidence.ToArray()
+    }
+    execution_identity = [ordered]@{
+        expert_binary = $expertBinaryIdentity
+        mq5_source = $mq5Identity
+        setfile = $setfileIdentity
+        run_smoke = $runSmokeIdentity
+        stable_during_run = $artifactIdentityStable
+    }
     terminal = $Terminal
     model = $Model
     period = $Period
@@ -2113,6 +3026,18 @@ $summary = [ordered]@{
     model4_log_marker_detected = $globalRealTicksMarker
     report_dir = $reportDir
     report_export_mode = "relative_with_absolute_fallback"
+    logger_sample_path = $loggerSamplePath
+    logger_sample = $loggerSampleEvidence
+    commission_group = [ordered]@{
+        commission_per_lot = $CommissionPerLot
+        commission_per_side_native = $CommissionPerSideNative
+        commission_matcher = $commissionGroupEvidence.commission_matcher
+        commission_mode = $commissionGroupEvidence.commission_mode
+        injected_sha256 = $commissionGroupEvidence.installed_sha256
+        canonical_sha256 = $commissionGroupEvidence.canonical_sha256
+        restored_sha256 = $commissionGroupRestoreEvidence.installed_sha256
+        restored_to_canonical = ($commissionGroupRestoreEvidence.installed_sha256 -ceq $commissionGroupRestoreEvidence.canonical_sha256)
+    }
     news_calendar = $newsCalendarDiagnostics
     runs = $runResults
 }
@@ -2124,6 +3049,8 @@ $safeSymbol = ($Symbol -replace '[^A-Za-z0-9]+', '_').Trim('_')
 if ([string]::IsNullOrWhiteSpace($safeSymbol)) {
     $safeSymbol = "symbol"
 }
+$ex5HashForEvidence = if ($null -ne $expertBinaryIdentity -and $null -ne $expertBinaryIdentity.deployed) { $expertBinaryIdentity.deployed.sha256 } else { 'missing' }
+$setfileHashForEvidence = if ($null -ne $setfileIdentity) { $setfileIdentity.source.sha256 } else { 'none' }
 $evidencePath = Join-Path $frameworkEvidenceDir ("{0}_{1}_{2}_{3}_run_smoke.md" -f $runTag, $eaLabel, $effectiveTerminal, $safeSymbol)
 $evidenceLines = @(
     "# Step 22 Smoke Evidence",
@@ -2134,12 +3061,18 @@ $evidenceLines = @(
     "- expert: $Expert",
     "- symbol: $Symbol",
     "- terminal: $Terminal",
-    "- year: $Year",
+    "- requested_year: $Year",
+    "- actual_year: $actualYear",
+    "- from_date: $actualFromDate",
+    "- to_date: $actualToDate",
+    "- ex5_sha256: $ex5HashForEvidence",
+    "- setfile_sha256: $setfileHashForEvidence",
     "- model: $Model",
     "- reason_classes: $([string]::Join(', ', $summary.reason_classes))",
     "- summary_json: $summaryPath",
     "- report_dir: $reportDir",
     "- report_export_mode: relative_with_absolute_fallback",
+    "- logger_sample_jsonl: $loggerSamplePath",
     "",
     "## Report Chain Evidence"
 )
@@ -2161,18 +3094,27 @@ Write-Output "run_smoke.reason_classes=$([string]::Join(';', $summary.reason_cla
 Write-Output "run_smoke.summary=$summaryPath"
 Write-Output "run_smoke.report_dir=$reportDir"
 Write-Output "run_smoke.evidence=$evidencePath"
+if (-not [string]::IsNullOrWhiteSpace($loggerSamplePath)) {
+    Write-Output "run_smoke.logger_sample=$loggerSamplePath"
+}
 
     Invoke-DispatchCompletion -OriginalTargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year -SetFilePath $SetFile -DispatchPhaseValue $DispatchPhase -DispatchVersionValue $DispatchVersion -DispatchSubGateHashValue $DispatchSubGateHash
 
-if (Test-Path 'D:\QM\strategy_farm\state\FACTORY_OFF.flag') {
+if ($effectiveTerminal -ieq "DEV1") {
+    Write-Output "run_smoke.stage=post_run_pump_skipped (DEV1 isolation)"
+} elseif ($effectiveTerminal -ieq "DEV2") {
+    Write-Output "run_smoke.stage=post_run_pump_skipped (DEV2 isolation)"
+} elseif (Test-Path 'D:\QM\strategy_farm\state\FACTORY_OFF.flag') {
     Write-Output "run_smoke.stage=post_run_pump_skipped (FACTORY_OFF.flag)"
 } else {
     try {
         $pumpExe = (Get-Command pythonw.exe -ErrorAction SilentlyContinue).Source
         if (-not $pumpExe) { $pumpExe = (Get-Command python.exe).Source }
+        $pumpRepoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
+        $pumpScript = Join-Path $pumpRepoRoot 'tools\strategy_farm\run_pump_task.py'
         Start-Process -FilePath $pumpExe -ArgumentList @(
-            'tools/strategy_farm/run_pump_task.py'
-        ) -WorkingDirectory 'C:/QM/repo' -WindowStyle Hidden
+            $pumpScript
+        ) -WorkingDirectory $pumpRepoRoot -WindowStyle Hidden
         Write-Output "run_smoke.stage=post_run_pump_triggered"
     } catch {
         Write-Host "post-run pump trigger failed (non-fatal): $_"

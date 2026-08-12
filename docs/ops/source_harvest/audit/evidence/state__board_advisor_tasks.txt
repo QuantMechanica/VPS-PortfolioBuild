@@ -1,0 +1,17 @@
+=== codex:agents/board-advisor tasks (30) by type/state ===
+by (type,state):
+   ('build_ea', 'PIPELINE') 4
+   ('infra_repair', 'PASSED') 1
+   ('infra_repair', 'PIPELINE') 1
+   ('ops_issue', 'PASSED') 1
+   ('ops_issue', 'PIPELINE') 1
+   ('q02_infra_repair', 'PIPELINE') 3
+   ('triage_failure', 'BLOCKED') 2
+   ('triage_failure', 'PASSED') 3
+   ('triage_failure', 'PIPELINE') 14
+created range: 2026-05-26T13:19:57+00:00 -> 2026-07-24T01:32:04.176929+00:00
+
+=== sample payloads (first 3) ===
+53d907d1 build_ea PIPELINE | routed_at= None | keys= ['active_repair_claim', 'active_repair_result', 'ea_id', 'review_close_state', 'review_close_verdict', 'review_closed_at', 'slug', 'target_agent_profile']
+f601517d build_ea PIPELINE | routed_at= None | keys= ['active_repair_claim', 'active_repair_result', 'ea_id', 'review_close_state', 'review_close_verdict', 'review_closed_at', 'slug', 'target_agent_profile']
+35726d80 build_ea PIPELINE | routed_at= None | keys= ['active_repair_claim', 'active_repair_result', 'ea_id', 'review_close_state', 'review_close_verdict', 'review_closed_at', 'slug', 'target_agent_profile']

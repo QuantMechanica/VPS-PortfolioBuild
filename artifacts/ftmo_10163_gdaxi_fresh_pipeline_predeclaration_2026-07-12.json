@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_RESEARCH_ONLY",
+  "deployment_allowed": false,
+  "candidate": {
+    "ea_id": 10163,
+    "expert": "QM\\QM5_10163_tv-rsi-macd-long",
+    "symbol": "GDAXI.DWX",
+    "period": "H1",
+    "variant": "baseline",
+    "setfile": "framework/EAs/QM5_10163_tv-rsi-macd-long/sets/QM5_10163_tv-rsi-macd-long_GDAXI.DWX_H1_backtest.set",
+    "source_sha256": "62FAB568257268993F4630F6CA70FC054B179E3DD72EDF55C2CC445F42842A20",
+    "setfile_sha256": "304E0A9513BBBE4BEB092A79DEE2B572457B44D13908EE96AB23787460365BBF"
+  },
+  "selection_basis": {
+    "archive_summary": "D:\\QM\\reports\\work_items\\b026b564-6e30-4625-a50f-0af2c3588373\\QM5_10163\\20260611_220721\\summary.json",
+    "archive_history": "2017-01-01/2024-12-31",
+    "archive_native": {
+      "trades": 355,
+      "profit_factor": 1.347217,
+      "net_profit": 16905.55
+    },
+    "archive_current_ftmo_cost": {
+      "profit_factor": 1.280342,
+      "net_profit": 13929.94,
+      "close_to_close_max_drawdown": 8537.81
+    },
+    "archive_calendar_note": "2018-2020 were negative; 2021-2024 were positive. Fresh 2025 behavior and a fresh MAE stream are required."
+  },
+  "locked_test": {
+    "history": "2017-01-01/2025-12-31",
+    "model": 4,
+    "runs": 2,
+    "minimum_trades": 45,
+    "terminal": "T1",
+    "fresh_q08_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "portfolio_gate": "development normal and adverse must both strictly improve the locked incumbent before 2023 validation",
+    "sealed_years": [
+      2024,
+      2025
+    ]
+  },
+  "operational_constraints": {
+    "factory_off_required": true,
+    "symbol_mutex": "GDAXI.DWX",
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "scope_note": "This evaluates the GDAXI sleeve only; it does not reinstate the rejected 10163 NDX sleeve.",
+  "label": "RESEARCH_ONLY_NO_GO"
+}

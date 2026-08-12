@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_AND_STREAM_GATE",
+  "ea_id": 10585,
+  "symbol": "XAUUSD.DWX",
+  "period": "H6",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/20260712_105113/QM5_10585_mql5-dinapoli.compile.log",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10585_xau_h6_wave4_20260712\\QM5_10585\\20260712_110837\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10585_xau_h6_wave4_20260712\\QM5_10585\\20260712_110837\\raw\\run_01\\report.htm",
+      "sha256": "8F81AB0147AF2AAEAFFC205C2DAD3025A12D7AF74F42C5F127A10F03819387A4"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10585_xau_h6_wave4_20260712\\QM5_10585\\20260712_110837\\raw\\run_02\\report.htm",
+      "sha256": "CBD88BBB6DFC31C596C875809F0D028200A26A555D071FF365B3BD6943A5E658"
+    }
+  ],
+  "native": {
+    "trades": 1972,
+    "profit_factor": 1.197137,
+    "net_profit": 87165.91,
+    "equity_drawdown": 11716.89
+  },
+  "q08": {
+    "expected_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10585_XAUUSD_DWX.jsonl",
+    "exists_after_two_runs": false,
+    "report_reconciliation": "UNAVAILABLE_NO_EMITTED_STREAM"
+  },
+  "current_cost_artifact": "artifacts/ftmo_10585_xau_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 1972,
+    "profit_factor": 1.055264,
+    "net_profit": 26139.26,
+    "close_to_close_max_drawdown": 18695.61,
+    "commission_total": 4913.81,
+    "swap_total": -56112.84
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "annual_density_pass": true,
+    "reason_for_reject": "Native PF is marginally below the floor at 1.197137; current FTMO XAU costs reduce it to 1.055264 and three calendar years are loss-making. The mandatory joint-MAE stream was also not emitted."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

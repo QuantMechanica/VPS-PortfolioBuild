@@ -1,0 +1,22 @@
+{
+  "artifact_type": "QM5_10729_TRADINGVIEW_PUBLICATION_CHART_CONTEXT",
+  "retrieved_utc_date": "2026-07-20",
+  "page_url": "https://www.tradingview.com/script/QpR7OWpA-SMC-ICT-Backtest-XAUUSD-MNQ/",
+  "http_status": 200,
+  "http_response_decoded_utf8_bytes": 648276,
+  "http_response_decoded_utf8_sha256": "32b347fd114d32b61e8e93d4eda21b6e74252647de8624b1e0553796d58b9f97",
+  "extraction": {
+    "method": "Ordinal exact-substring match in the decoded HTML response; each required fragment occurred exactly once.",
+    "required_fragments": [
+      {"text": "\"interval\":\"15\"", "occurrences": 1, "utf16_offset": 161195},
+      {"text": "\"pro_symbol\":\"FUSIONMARKETS:BTCUSD\"", "occurrences": 1, "utf16_offset": 162833},
+      {"text": "\\\"timezone\\\":\\\"America/New_York\\\"", "occurrences": 1, "utf16_offset": 273175}
+    ],
+    "canonical_extracted_context": {
+      "interval": "15",
+      "pro_symbol": "FUSIONMARKETS:BTCUSD",
+      "symbol_info_timezone": "America/New_York"
+    }
+  },
+  "scope_limit": "These fields bind the author's publication-chart snapshot only. Pine v1 itself is chart-timeframe and chart-symbol-timezone generic; transporting this M15/New-York context to XAUUSD.DWX and EURUSD.DWX is a preregistered hypothesis, not a universal Pine property."
+}

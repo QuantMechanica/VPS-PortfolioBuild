@@ -21,6 +21,7 @@ if __package__ is None or __package__ == "":
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from framework.scripts.queue_init import ensure_schema
+from tools.strategy_farm.process_identity import get_process_identity
 
 REPO_ROOT = Path(r"C:/QM/repo")
 DEFAULT_SQLITE = Path(r"D:/QM/reports/pipeline/mt5_queue.db")
@@ -237,12 +238,11 @@ def acquire_terminal_lock(terminal: str, lock_dir: Path) -> tuple[Path, bool]:
         except (ValueError, OSError):
             existing = 0
         if existing > 0 and existing != my_pid:
-            # Check whether existing process is still alive
             try:
-                # Windows-friendly: os.kill(pid, 0) returns OSError if dead
-                os.kill(existing, 0)
-                return lock_path, False
-            except OSError:
+                identity = get_process_identity(existing)
+                if identity and identity.get("is_running", True):
+                    return lock_path, False
+            except Exception:
                 pass  # stale, take over
     lock_path.write_text(str(my_pid), encoding="utf-8")
     return lock_path, True

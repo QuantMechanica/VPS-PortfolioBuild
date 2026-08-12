@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_GATE",
+  "ea_id": 12897,
+  "symbol": "XAGUSD.DWX",
+  "period": "D1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/compile/20260712_142014/QM5_12897_xag-donchian55-trend.compile.log",
+  "compile_log_sha256": "A355FA81187B5144DA546369889B04248B6425C7FAF5B15FC219E972A016D53D",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12897_xag_d1_wave12_20260712\\QM5_12897\\20260712_142034\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {"path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12897_xag_d1_wave12_20260712\\QM5_12897\\20260712_142034\\raw\\run_01\\report.htm", "sha256": "5D2CA5D5A7788B964A50903F4C187E295D425D01EF414A7214BA67CF3A7B0C78"},
+    {"path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12897_xag_d1_wave12_20260712\\QM5_12897\\20260712_142034\\raw\\run_02\\report.htm", "sha256": "A5D93B4432DBC100B96B7A3BB0A1421725D6EFA0DA896597A75338F67A6EA883"}
+  ],
+  "native": {"trades": 89, "profit_factor": 0.649930, "net_profit": -9182.71, "equity_drawdown": 10155.81},
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\12897_XAGUSD_DWX_T3_FRESH_20260712.jsonl",
+    "rows": 89,
+    "sha256": "0761EC3BF6FAB208BD3C31323C45F4BB9D45458396B96EA7CB2BD5EBDB7C647B",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET",
+    "corrected_net_delta": 0.0,
+    "net_tolerance": 1.0
+  },
+  "current_cost_artifact": "artifacts/ftmo_12897_xag_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 89,
+    "profit_factor": 0.555024,
+    "net_profit": -12514.99,
+    "close_to_close_max_drawdown": 12514.99,
+    "commission_total": 54.57,
+    "swap_total": -3277.97
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "negative_calendar_years": [2018, 2019, 2020, 2021, 2022, 2023, 2024],
+    "reason_for_reject": "The approved silver trend port is deeply loss-making natively and deteriorates further under current FTMO XAG commission and rollover costs."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

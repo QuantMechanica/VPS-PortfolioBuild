@@ -17,7 +17,7 @@ LONG. On the decision day at broker hour 20:00 (~1 hour before the 14:00 ET stat
 position — **flat before the announcement by design**. A hard stop sits at 2 × the prior completed
 D1 ATR(14) as a disaster guard; it is rarely hit. One position at a time; no TP, scaling, averaging,
 trailing, grid, or directional bet on the decision itself. FOMC decision dates are a fixed table
-(2018–2025) from the official Federal Reserve calendar.
+(2018–2026) from the official Federal Reserve calendar.
 
 **News handling (load-bearing design choice):** this EA runs with the framework news filter OFF
 (`qm_news_temporal = QM_NEWS_TEMPORAL_OFF`, `qm_news_compliance = QM_NEWS_COMPLIANCE_NONE`). The
@@ -38,7 +38,10 @@ class — it holds the pre-announcement drift window intentionally, including in
 | `strategy_atr_period` | `14` | `>= 1` | Daily ATR period for the disaster stop. |
 | `strategy_stop_atr_mult` | `2.0` | `> 0` | Daily ATR multiple for the hard stop. |
 
-FOMC decision dates are a compiled-in table (57 dates, 2018-09 … 2025-12), not a tunable input.
+FOMC decision dates are a compiled-in table (65 dates, 2018-09 … 2026-12), not a tunable input.
+The execution contract declares coverage through `2026-12-31`. `OnInit` and
+the entry path fail closed with `SETUP_DATA_STALE` after that date until the
+official calendar table and coverage horizon are reviewed and rebuilt.
 
 ---
 

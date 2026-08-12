@@ -10,6 +10,9 @@ created_by: Research
 uri: https://openaccess.city.ac.uk/id/eprint/6416/
 cards_extracted:
   - energy-momcarry
+  - xauxag-xmom12
+  - energy-xmom1
+  - xauxag-xmom3
 ---
 
 # Fuertes-Miffre-Rallis Momentum/Term-Structure Source Packet
@@ -71,6 +74,22 @@ only two instruments, and Q02 cannot represent historical swap changes. The
 fallback makes Q02 a conditional momentum/carry-prior interaction test, not a
 historical carry backtest. No source return, alpha, Sharpe ratio, or correlation
 is imported into the QM prior.
+
+## 2026-07-31 Approved-Scope Extraction
+
+The OWNER commodity/energy sleeve mission authorizes one additional
+market-neutral commodity carrier. The paper explicitly tests one-, three-,
+and twelve-month momentum formation windows with a one-month hold. Existing
+QM builds cover the one- and twelve-month XAU/XAG horizons; the new extraction
+locks the previously unbuilt three-month horizon.
+
+At each broker-month boundary it averages exactly three consecutive completed
+simple monthly returns for XAU and XAG, buys the higher-return metal, shorts
+the lower-return metal, and holds the two-leg package to the next boundary.
+This is a narrow two-CFD falsification, not a claim that the paper's broad
+commodity-futures results transfer. Native completed D1 prices, calendar,
+ATR, symbol metadata, and registered basket execution are the only runtime
+inputs.
 
 ## Non-Duplicate Boundary
 

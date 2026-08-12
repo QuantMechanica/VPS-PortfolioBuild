@@ -1,0 +1,212 @@
+{
+  "duplicate_terminal_workers": {},
+  "orphaned_terminal_processes": [],
+  "processes": [
+    {
+      "command_line": "\"C:\\QM\\mt5\\T_Live\\MT5_Base\\terminal64.exe\" /portable ",
+      "creation_date": "/Date(1784863019927)/",
+      "executable_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\terminal64.exe",
+      "orphaned_work_item_process": false,
+      "parent_pid": 8668,
+      "pid": 9908,
+      "pipeline_run": false,
+      "process_creation_key": "windows-filetime:134293366199278371",
+      "terminal": null,
+      "work_item_id": null,
+      "work_item_status": null
+    },
+    {
+      "command_line": "\"C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe\" ",
+      "creation_date": "/Date(1784863039514)/",
+      "executable_path": "C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe",
+      "orphaned_work_item_process": false,
+      "parent_pid": 10672,
+      "pid": 2836,
+      "pipeline_run": false,
+      "process_creation_key": "windows-filetime:134293366395140346",
+      "terminal": null,
+      "work_item_id": null,
+      "work_item_status": null
+    },
+    {
+      "command_line": "\"D:\\QM\\mt5\\T4\\terminal64.exe\" /portable /config:D:\\QM\\reports\\work_items\\a19a123f-1fc8-4dfe-9aa1-81cadf30c60f\\QM5_10485\\20260724_034619\\raw\\run_01\\tester.ini",
+      "creation_date": "/Date(1784864781255)/",
+      "executable_path": "D:\\QM\\mt5\\T4\\terminal64.exe",
+      "orphaned_work_item_process": false,
+      "parent_pid": 10132,
+      "pid": 8016,
+      "pipeline_run": false,
+      "process_creation_key": "windows-filetime:134293383812559928",
+      "terminal": "T4",
+      "work_item_id": "a19a123f-1fc8-4dfe-9aa1-81cadf30c60f",
+      "work_item_status": {
+        "claimed_by": "T4",
+        "ea_id": "QM5_10485",
+        "id": "a19a123f-1fc8-4dfe-9aa1-81cadf30c60f",
+        "phase": "Q02",
+        "status": "active",
+        "symbol": "USDJPY.DWX"
+      }
+    },
+    {
+      "command_line": "\"D:\\QM\\mt5\\T9\\terminal64.exe\" /portable /config:D:\\QM\\reports\\work_items\\b4248419-255d-471d-8a23-257c007f9274\\QM5_9940\\20260724_035901\\raw\\run_01\\tester.ini",
+      "creation_date": "/Date(1784865542941)/",
+      "executable_path": "D:\\QM\\mt5\\T9\\terminal64.exe",
+      "orphaned_work_item_process": false,
+      "parent_pid": 2944,
+      "pid": 11032,
+      "pipeline_run": false,
+      "process_creation_key": "windows-filetime:134293391429418453",
+      "terminal": "T9",
+      "work_item_id": "b4248419-255d-471d-8a23-257c007f9274",
+      "work_item_status": {
+        "claimed_by": "T9",
+        "ea_id": "QM5_9940",
+        "id": "b4248419-255d-471d-8a23-257c007f9274",
+        "phase": "Q02",
+        "status": "active",
+        "symbol": "SP500.DWX"
+      }
+    },
+    {
+      "command_line": "\"D:\\QM\\mt5\\T1\\terminal64.exe\" /portable /config:D:\\QM\\reports\\work_items\\f4dd9304-18d5-4c80-a131-cd40fbffc6e5\\QM5_12538\\20260724_042714\\raw\\run_01\\tester.ini",
+      "creation_date": "/Date(1784867237185)/",
+      "executable_path": "D:\\QM\\mt5\\T1\\terminal64.exe",
+      "orphaned_work_item_process": false,
+      "parent_pid": 5156,
+      "pid": 12904,
+      "pipeline_run": false,
+      "process_creation_key": "windows-filetime:134293408371858963",
+      "terminal": "T1",
+      "work_item_id": "f4dd9304-18d5-4c80-a131-cd40fbffc6e5",
+      "work_item_status": {
+        "claimed_by": "T1",
+        "ea_id": "QM5_12538",
+        "id": "f4dd9304-18d5-4c80-a131-cd40fbffc6e5",
+        "phase": "Q02",
+        "status": "active",
+        "symbol": "AUDUSD.DWX"
+      }
+    },
+    {
+      "command_line": "\"D:\\QM\\mt5\\T3\\terminal64.exe\" /portable /config:D:\\QM\\reports\\work_items\\0e13b493-e187-46b5-8c72-53cd30295557\\QM5_12538\\20260724_042900\\raw\\run_01\\tester.ini",
+      "creation_date": "/Date(1784867343356)/",
+      "executable_path": "D:\\QM\\mt5\\T3\\terminal64.exe",
+      "orphaned_work_item_process": false,
+      "parent_pid": 2824,
+      "pid": 1380,
+      "pipeline_run": false,
+      "process_creation_key": "windows-filetime:134293409433560150",
+      "terminal": "T3",
+      "work_item_id": "0e13b493-e187-46b5-8c72-53cd30295557",
+      "work_item_status": {
+        "claimed_by": "T3",
+        "ea_id": "QM5_12538",
+        "id": "0e13b493-e187-46b5-8c72-53cd30295557",
+        "phase": "Q02",
+        "status": "active",
+        "symbol": "EURJPY.DWX"
+      }
+    },
+    {
+      "command_line": "\"D:\\QM\\mt5\\T2\\terminal64.exe\" /portable /config:D:\\QM\\reports\\work_items\\ec6090aa-f087-4df7-9b01-8bef195b60e6\\QM5_10582\\20260724_044057\\raw\\run_01\\tester.ini",
+      "creation_date": "/Date(1784868058868)/",
+      "executable_path": "D:\\QM\\mt5\\T2\\terminal64.exe",
+      "orphaned_work_item_process": false,
+      "parent_pid": 6852,
+      "pid": 5380,
+      "pipeline_run": false,
+      "process_creation_key": "windows-filetime:134293416588682560",
+      "terminal": "T2",
+      "work_item_id": "ec6090aa-f087-4df7-9b01-8bef195b60e6",
+      "work_item_status": {
+        "claimed_by": "T2",
+        "ea_id": "QM5_10582",
+        "id": "ec6090aa-f087-4df7-9b01-8bef195b60e6",
+        "phase": "Q07",
+        "status": "active",
+        "symbol": "XAUUSD.DWX"
+      }
+    },
+    {
+      "command_line": "\"D:\\QM\\mt5\\T8\\terminal64.exe\" /portable /config:D:\\QM\\reports\\work_items\\4a5a1dbd-938e-49f7-b3dc-6d65e7923105\\QM5_20039\\20260724_050524\\raw\\run_01\\tester.ini",
+      "creation_date": "/Date(1784869527032)/",
+      "executable_path": "D:\\QM\\mt5\\T8\\terminal64.exe",
+      "orphaned_work_item_process": false,
+      "parent_pid": 13744,
+      "pid": 1332,
+      "pipeline_run": false,
+      "process_creation_key": "windows-filetime:134293431270326395",
+      "terminal": "T8",
+      "work_item_id": "4a5a1dbd-938e-49f7-b3dc-6d65e7923105",
+      "work_item_status": {
+        "claimed_by": "T8",
+        "ea_id": "QM5_20039",
+        "id": "4a5a1dbd-938e-49f7-b3dc-6d65e7923105",
+        "phase": "Q02",
+        "status": "active",
+        "symbol": "NDX.DWX"
+      }
+    },
+    {
+      "command_line": "\"D:\\QM\\mt5\\T10\\terminal64.exe\" /portable /config:D:\\QM\\reports\\work_items\\27d614fa-1d96-4ecd-98c7-e48717a605d5\\QM5_12505\\20260724_051041\\raw\\run_03\\tester.ini",
+      "creation_date": "/Date(1784869892585)/",
+      "executable_path": "D:\\QM\\mt5\\T10\\terminal64.exe",
+      "orphaned_work_item_process": false,
+      "parent_pid": 15656,
+      "pid": 15172,
+      "pipeline_run": false,
+      "process_creation_key": "windows-filetime:134293434925851532",
+      "terminal": "T10",
+      "work_item_id": "27d614fa-1d96-4ecd-98c7-e48717a605d5",
+      "work_item_status": {
+        "claimed_by": "T10",
+        "ea_id": "QM5_12505",
+        "id": "27d614fa-1d96-4ecd-98c7-e48717a605d5",
+        "phase": "Q02",
+        "status": "active",
+        "symbol": "EURUSD.DWX"
+      }
+    }
+  ],
+  "running_mt5_terminals": [
+    "T1",
+    "T10",
+    "T2",
+    "T3",
+    "T4",
+    "T8",
+    "T9"
+  ],
+  "scanned_at": "2026-07-24T05:11:32+00:00",
+  "terminal64_running_count": 9,
+  "terminal_workers": {
+    "T1": [
+      5912
+    ],
+    "T10": [
+      6808
+    ],
+    "T2": [
+      6088
+    ],
+    "T3": [
+      8580
+    ],
+    "T4": [
+      10720
+    ],
+    "T6": [
+      10844
+    ],
+    "T7": [
+      8088
+    ],
+    "T8": [
+      4300
+    ],
+    "T9": [
+      6848
+    ]
+  }
+}

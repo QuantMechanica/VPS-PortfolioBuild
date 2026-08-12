@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_97002_close-all-trades-with-a-push-of-a.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_97002_close-all-trades-with-a-push-of-a.pdf",
+      "source_pages": "1",
+      "source_ref": "\"Close all trades with a push of a button?\" by simple4x, ForexFactory Thread 97002 (2 posts), https://www.forexfactory.com/thread/97002",
+      "strategy_name": "Close-all-trades button (utility request)",
+      "concept": "A user simply asks for an MT4 script/hotkey to close all open positions at once while in profit — no trading edge is described.",
+      "market": "FX",
+      "timeframe": "M1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "No trading edge or entry/exit rules; thread is a request for a close-all-positions utility button, not a strategy.",
+      "priority_hint": "LOW",
+      "notes": "Two-post thread; second post ('ForexPower: Here.') just links a script. Trade-management tooling, not a mechanizable strategy."
+    }
+  ],
+  "notes": ["zero usable candidates: thread is a close-all-trades utility request, not a strategy"]
+}

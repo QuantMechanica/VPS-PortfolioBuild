@@ -1,0 +1,133 @@
+{
+  "control": {
+    "adverse": {
+      "historical_rolling": {
+        "daily_breach_pct": 33.035714285714285,
+        "max_breach_pct": 17.261904761904763,
+        "not_reached_pct": 12.797619047619047,
+        "pass_ci95_pct": [
+          31.92027277960414,
+          42.185299770203486
+        ],
+        "pass_pct": 36.904761904761905,
+        "runs": 336
+      },
+      "mean_accepted_entries": 29.071428571428573,
+      "mean_blocked_entries": 1.3630952380952381,
+      "mean_ending_balance": 99481.13300338697,
+      "mean_minimum_equity": 93152.29003255974,
+      "mean_stop_events": 2.056547619047619,
+      "mean_trading_days": 9.095238095238095,
+      "start_windows": 336
+    },
+    "normal": {
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 56.25,
+        "pass_ci95_pct": [
+          38.54593102540925,
+          49.09536496427166
+        ],
+        "pass_pct": 43.75,
+        "runs": 336
+      },
+      "mean_accepted_entries": 48.142857142857146,
+      "mean_blocked_entries": 4.544642857142857,
+      "mean_ending_balance": 99662.52877631402,
+      "mean_minimum_equity": 91972.30413925144,
+      "mean_stop_events": 3.693452380952381,
+      "mean_trading_days": 15.202380952380953,
+      "start_windows": 336
+    },
+    "policy": {
+      "conditional_steps": [],
+      "name": "fixed_25"
+    }
+  },
+  "deployment_allowed": false,
+  "evaluated_candidates": 1,
+  "excluded_years": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2024,
+    2025,
+    2026
+  ],
+  "label": "RESEARCH_ONLY_NO_GO",
+  "leaderboard": [
+    {
+      "adverse": {
+        "historical_rolling": {
+          "daily_breach_pct": 33.33333333333333,
+          "max_breach_pct": 17.261904761904763,
+          "not_reached_pct": 12.5,
+          "pass_ci95_pct": [
+            31.92027277960414,
+            42.185299770203486
+          ],
+          "pass_pct": 36.904761904761905,
+          "runs": 336
+        },
+        "mean_accepted_entries": 29.020833333333332,
+        "mean_blocked_entries": 1.3541666666666667,
+        "mean_ending_balance": 99483.16188230568,
+        "mean_minimum_equity": 93153.55763614812,
+        "mean_stop_events": 2.0535714285714284,
+        "mean_trading_days": 9.080357142857142,
+        "start_windows": 336
+      },
+      "normal": {
+        "historical_rolling": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 56.25,
+          "pass_ci95_pct": [
+            38.54593102540925,
+            49.09536496427166
+          ],
+          "pass_pct": 43.75,
+          "runs": 336
+        },
+        "mean_accepted_entries": 48.13690476190476,
+        "mean_blocked_entries": 4.5476190476190474,
+        "mean_ending_balance": 99630.17122462839,
+        "mean_minimum_equity": 91970.47371591127,
+        "mean_stop_events": 3.7023809523809526,
+        "mean_trading_days": 15.202380952380953,
+        "start_windows": 336
+      },
+      "pass_delta_pct_points": {
+        "adverse": 0.0,
+        "normal": 0.0
+      },
+      "policy": {
+        "conditional_steps": [
+          {
+            "elapsed_calendar_days": 23,
+            "maximum_profit": 9500.0,
+            "minimum_profit": 0.0,
+            "risk_multiplier": 40.0
+          }
+        ],
+        "name": "d23_p0_9500_r40"
+      },
+      "stage_survivor": false
+    }
+  ],
+  "manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "maximum_individual_breach_increase_pp": 0.5,
+  "predeclaration": "artifacts/ftmo_conditional_deadline_policy_v2_predeclaration_2026-07-12.json",
+  "scenario": "path_01_11095_gbpusd_down2",
+  "schema_version": 1,
+  "selection_uses_sealed": false,
+  "selection_uses_validation": true,
+  "stage": "validation",
+  "status": "LOCKED_VALIDATION_FAILED",
+  "survivor_count": 0,
+  "winner": null
+}

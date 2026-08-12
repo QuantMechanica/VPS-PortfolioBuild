@@ -1,0 +1,8 @@
+[
+  {
+    "ea_id": 10588,
+    "symbol": "USDJPY.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10588_usdjpy_h6_preholdout_wave35_20260712\\QM5_10588\\20260712_180501\\summary.json",
+    "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10588_USDJPY_H6_T1_PREHOLDOUT_FRESH_20260712.jsonl"
+  }
+]

@@ -16,8 +16,30 @@ For each card in your batch (paths listed below):
    R1–R4 criteria (one-time per session is fine).
 2. For each `{{batch_paths}}` card:
    a. Read the card frontmatter + body.
-   b. Apply R1 (reputable source link/attribution), R2 (mechanical Entry +
-      Exit rules), R3 (testable on ≥1 DWX symbol after porting), R4 (no
+      If its path is under `artifacts/cards_recovery`, its legacy EA identity is
+      unsafe. Compare it with the conflicting approved/registry card first.
+      If semantically covered, set `g0_status: COVERED_DUPLICATE` and
+      `recovery_status: COVERED_DUPLICATE` in place. If distinct, run
+      `farmctl reserve-ea-ids` for a fresh ID (use a unique slug, suffix
+      `-r1-recovery` if needed), use the returned numeric ID as
+      `QM5_<id>`, then run:
+      ```
+      python C:/QM/repo/tools/strategy_farm/farmctl.py reidentify-recovery-card \
+        --card "<path>" --ea-id QM5_<id> --slug <reserved-slug>
+      ```
+      This moves both card and claim safely to `cards_draft`; continue G0 on
+      the returned path. Never rename/move it manually and never overwrite an
+      existing approved card, registry row, or EA directory.
+   b. Treat R1 as informational lineage, never as a reputation gate. A linked
+      book/web/forum source, OWNER idea, or AI idea is valid. If `source_id`
+      is absent, set it to
+      `OWNER-FABIAN-GRABNER-R1-RECOVERY-20260723` and record Fabian Grabner
+      (OWNER) as the canonical source. If the card is marked
+      `legacy_contract_repair`, first repair current scalar schema fields from
+      the existing body (`target_symbols` as testable `.DWX` ports and a
+      conservative expected trade-frequency estimate). Do not invent missing
+      strategy mechanics. Apply strict R2 (mechanical Entry +
+      Exit rules), R3 (testable on ≥1 DWX symbol after porting), and R4 (no
       ML / binding HR14).
       R2 must include a plausible trade-frequency estimate. Reject if the
       card cannot support at least 2 expected trades/year/symbol, unless the
@@ -44,7 +66,7 @@ For each card in your batch (paths listed below):
       the swing track (good); over-claiming kills it at the MIN_TRADES gate
       (`effective_min_trades = expected x years x 0.5`). Only a thesis of
       <=~1 trade/year/symbol is genuinely inadmissible.
-   c. If ALL four PASS, also produce two CONSERVATIVE research ESTIMATES from the
+   c. If R2-R4 PASS, also produce two CONSERVATIVE research ESTIMATES from the
       source + mechanics (these are claims, used only to ORDER builds/tests — never
       a gate; the pipeline still judges the EA):
         - `expected_pf`: realistic profit factor, typically 1.1–1.6. Do NOT inflate;
@@ -56,7 +78,7 @@ For each card in your batch (paths listed below):
         --card "<path>" --reasoning "<R1-R4 one-line rationale>" \
         --expected-pf <e.g. 1.3> --expected-dd-pct <e.g. 15>
       ```
-   d. If ANY FAIL:
+   d. If any R2-R4 gate FAILS:
       ```
       python C:/QM/repo/tools/strategy_farm/farmctl.py reject-card \
         --card "<path>" --reason "<which R + why>"

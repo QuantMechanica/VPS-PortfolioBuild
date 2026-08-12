@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_13209_NDX_FACTORY_SUMMARY_MISSING_INVALID_INFRASTRUCTURE_CLOSURE",
+  "status": "INVALID_INFRASTRUCTURE_CLOSED_OUTCOME_BLIND_NO_MERIT_VERDICT",
+  "created_utc": "2026-07-21T11:43:25Z",
+  "ea_id": "QM5_13209",
+  "candidate": "mulham-pm-range-sweep",
+  "research_symbol": "NDX.DWX",
+  "old_workitem": {
+    "workitem_id": "aff5d23f-fe44-43ef-a48f-f29737baf6ca",
+    "queue_status_at_closure": "pending",
+    "attempt_count": 1,
+    "prior_failure": "summary_missing",
+    "evidence": null,
+    "root": "D:\\QM\\reports\\work_items\\aff5d23f-fe44-43ef-a48f-f29737baf6ca"
+  },
+  "filesystem_inventory": {
+    "method": "PATH_KIND_SIZE_SHA256_ONLY_NO_FILE_CONTENT_OPENED",
+    "directories": [
+      "QM5_13209",
+      "QM5_13209/20260721_074735",
+      "QM5_13209/20260721_074735/raw",
+      "QM5_13209/20260721_074735/raw/run_01"
+    ],
+    "files": [
+      {
+        "relative_path": "QM5_13209/20260721_074735/raw/run_01/tester.ini",
+        "size": 459,
+        "sha256": "c330cb04599995fd999a58ff1ce9b440e3fc284478d1d678889ec6bc5cf7e416",
+        "content_opened": false
+      }
+    ],
+    "summary_file_count": 0,
+    "native_report_file_count": 0,
+    "outcome_file_count": 0
+  },
+  "classification": {
+    "cause": "FACTORY_SUMMARY_MISSING_WITH_ONLY_ROOT_TESTER_INI",
+    "infrastructure_only": true,
+    "native_test_proved_started": false,
+    "valid_model4_result_exists": false,
+    "strategy_merit_adjudicated": false,
+    "parameter_information_learned": false
+  },
+  "outcome_fence": {
+    "tester_ini_opened": false,
+    "controller_logs_opened": false,
+    "native_reports_opened": false,
+    "strategy_outcomes_opened": false,
+    "market_values_parsed": false,
+    "live_process_command_lines_read": false,
+    "live_process_command_lines_emitted": false
+  },
+  "disposition": {
+    "old_workitem_is_not_resumed": true,
+    "old_workitem_is_not_retried": true,
+    "old_workitem_tree_is_immutable": true,
+    "queue_row_mutated_by_this_closure": false,
+    "fresh_analysis_is_not_a_merit_retry": true,
+    "fresh_namespace": "D:\\QM\\reports\\candidate_analysis\\QM5_13209\\NDX_PM_RANGE_SWEEP_NATIVE_001\\ATTEMPT_001",
+    "fresh_attempt_budget": 1,
+    "fresh_resume_relaunch_or_retry_forbidden": true
+  },
+  "required_factory_db_end_state_before_fresh_pre": {
+    "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "aff5d23f-fe44-43ef-a48f-f29737baf6ca": {
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "attempt_count": 1,
+      "evidence_path": null,
+      "payload_final_failure": "summary_missing",
+      "closure_binding_stored_in_payload_only": true,
+      "strategy_merit_adjudicated": false
+    },
+    "c9db50a1-8c0c-414f-ae16-36bd7e09985e": {
+      "status": "failed",
+      "verdict": "INVALID",
+      "attempt_count": 0,
+      "evidence_path": null,
+      "duplicate_of": "f5b0237a-3be3-4064-9871-14b2da803118",
+      "superseded_by": "f5b0237a-3be3-4064-9871-14b2da803118",
+      "native_start_count": 0
+    },
+    "f5b0237a-3be3-4064-9871-14b2da803118": {
+      "status": "done",
+      "verdict": "FAIL",
+      "evidence_path": "D:\\QM\\reports\\work_items\\f5b0237a-3be3-4064-9871-14b2da803118\\QM5_13209\\20260721_074932\\summary.json",
+      "evidence_size": 3305,
+      "evidence_sha256": "5f5c9cc543648e9504326044f3c00a384e2cc561e3de315e86c327d91b0eedbe",
+      "existing_strategy_metrics_must_remain_unchanged": true
+    },
+    "closure_json_must_never_be_written_to_evidence_path": true,
+    "no_pending_or_active_qm5_13209_work_items": true
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_1394867_vr-gap-open-source-trading-strategy.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1394867_vr-gap-open-source-trading-strategy.pdf",
+      "source_pages": "1",
+      "source_ref": "Voldemar227, \"VR Gap Open Source Trading Strategy\", ForexFactory thread 1394867 (single post), https://www.forexfactory.com/thread/1394867 ; open-source EA also published on MQL5 Code Base (MT4: https://www.mql5.com/en/code/9994 , MT5: https://www.mql5.com/en/code/72239 ).",
+      "strategy_name": "VR Gap (bar-to-bar gap fade)",
+      "concept": "At each new bar open, if the absolute difference between the previous bar's close and the current bar's open exceeds a threshold, fade the impulse (buy a down-gap, sell an up-gap) betting price returns to close the gap.",
+      "market": "Indices",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic rule-based gap-fade: entry (gap > MinGapSize, fade direction), fixed points SL, TP = gap size; pure MQL5, no indicators, no ML, has stops, FTMO/DXZ compatible.",
+      "priority_hint": "MED",
+      "notes": "Single distinct edge = gap-fill / session-structure return driver, uncorrelated with index/metal swing-MR. On continuous quotes close[1] approx open[0], so bar-to-bar gaps effectively only fire at liquidity breaks: weekend re-opens (FX/Metals) and overnight session gaps (cash indices on D1) - hence market=Indices/timeframe=D1 as best fit though author claims any symbol/any TF; trade frequency likely low, watch Q02 >=5/yr floor. TP=gap-size and fixed points SL will need per-instrument tuning; author warns not for news/high-vol without adjusting MinGapSize. Fixed-lot sizing must be replaced by framework RISK_FIXED. Source is a single-post code-dump by an unknown handle (low reputability) advertising an existing open-source MQL5 EA - lowers priority, does not reject."
+    }
+  ],
+  "notes": []
+}

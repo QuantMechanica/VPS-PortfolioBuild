@@ -1,0 +1,18 @@
+Could not find platform independent libraries <prefix>
+HEADER: ['ea_id', 'ea_slug', 'symbol_slot', 'symbol', 'magic', 'reserved_at', 'reserved_by', 'status']
+TOTAL_DUP_MAGICS: 0
+=== LIVE MAGIC ROWS ===
+MAGIC 15670007: line=1509 :: ['1567', 'demark-td-reverse-sequential-h4', '7', 'EURUSD.DWX', '15670007', '2026-05-19', 'Development', 'active'] :: dup_lines=[1509] dup=False
+MAGIC 105130003: line=4887 :: ['10513', 'mql5-ichimoku', '3', 'XAUUSD.DWX', '105130003', '2026-05-28', 'Development', 'active'] :: dup_lines=[4887] dup=False
+MAGIC 109190001: line=6142 :: ['10919', 'grimes-overshoot', '1', 'XTIUSD.DWX', '109190001', '2026-06-06', 'Development', 'active'] :: dup_lines=[6142] dup=False
+MAGIC 111650000: line=6655 :: ['11165', 'weiss-rsi-ma', '0', 'EURUSD.DWX', '111650000', '2026-06-07', 'Development', 'active'] :: dup_lines=[6655] dup=False
+MAGIC 114210003: line=10867 :: ['11421', 'ohlc-daily-squeeze-reversal-d1', '3', 'AUDUSD.DWX', '114210003', '2026-06-18', 'Claude', 'active'] :: dup_lines=[10867] dup=False
+MAGIC 125670003: line=13524 :: ['12567', 'cum-rsi2-commodity', '3', 'XAUUSD.DWX', '125670003', '2026-06-25', 'Claude', 'active'] :: dup_lines=[13524] dup=False
+MAGIC 129890003: line=14404 :: ['12989', 'grimes-nested-pb-v2', '3', 'XAUUSD.DWX', '129890003', '2026-07-03', 'Codex', 'active'] :: dup_lines=[14404] dup=False
+MAGIC 132130000: line=15042 :: ['13213', 'balke-gmt3-range-breakout', '0', 'USDJPY.DWX', '132130000', '2026-07-14', 'Claude', 'active'] :: dup_lines=[15042] dup=False
+=== CANDIDATE ROWS ===
+CAND 10123/XAUUSD.DWX: line=2336 :: ['10123', 'don20-break', '34', 'XAUUSD.DWX', '101230034', '2026-05-24', 'Development', 'active'] :: dup_lines=[2336] dup=False
+CAND 10183/XAUUSD.DWX: line=3012 :: ['10183', 'carver-multi-sig', '34', 'XAUUSD.DWX', '101830034', '2026-05-24', 'Development', 'active'] :: dup_lines=[3012] dup=False
+CAND 10700/XAUUSD.DWX: line=5316 :: ['10700', 'tv-liq-break', '3', 'XAUUSD.DWX', '107000003', '2026-05-31', 'Development', 'active'] :: dup_lines=[5316] dup=False
+CAND 10815/GDAXI.DWX: line=5848 :: ['10815', 'tv-post-vwap', '4', 'GDAXI.DWX', '108150004', '2026-06-05', 'Development', 'active'] :: dup_lines=[5848] dup=False
+CAND 13013/NDX.DWX: line=14447 :: ['13013', 'grimes-trendday-v2', '0', 'NDX.DWX', '130130000', '2026-07-04', 'Claude', 'active'] :: dup_lines=[14447] dup=False

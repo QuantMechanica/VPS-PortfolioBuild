@@ -1,0 +1,37 @@
+{
+  "pdf": "ff_460041_the-dance-continues.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_460041_the-dance-continues.pdf",
+      "source_pages": "3-11, 33-36",
+      "source_ref": "'The Dance Continues' (revival of 'The Dance' method by eclayf / 'Clay'), ForexFactory thread 460041, started by user '.Hawk.', c.2014 — https://www.forexfactory.com/thread/460041 (original concept thread t=236210). Rules taken from attached 'The Dance Manual.pdf' / 'The M15 Dance Manual.pdf' and .Hawk.'s in-thread trade posts.",
+      "strategy_name": "The Dance — Two-Bar Touch Trade (M15 MA pullback continuation)",
+      "concept": "In an established MA-stacked trend, enter with the trend when price races back in no more than two large bars to 'touch' a moving average (10 EMA, or the 35 SMA/50 EMA cluster) sloping at a steep angle, betting the pullback resumes the trend.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Core subset (3 MAs, trend stack = price+10 EMA on one side of 35/50, retrace-to-touch, fixed ~9-pip SL/TP or bar-extreme trail) is implementable in pure MQL5; but 'steep angle (~45deg)', 'race back' and 'large bar' are discretionary and must be proxied (chart-degree angle is scale-dependent -> normalized MA slope).",
+      "priority_hint": "LOW",
+      "notes": "Discretionary retail price-action method (originator eclayf/Clay); the 10 EMA touch and 35/50 touch are the same mechanic on different MAs -> one row. Trend def: price + 10 EMA above 35/50 (long) or below (short), with 35/50 tight/parallel = strong trend. Entry at the touch, NOT close-of-bar; SL tightened to ~9 pips then trailed, breakeven common; TP ~9-14 pips fixed (1:1 R:R). H1 confluence used as secondary filter; JPY variant (USDJPY) traded 19:30-21:00 GMT+2 Tokyo window. Screenshots only, no statistical evidence; author himself posts several -9 losses. FX-edge doctrine warns generic M15 MA-pullback rarely survives; kept ELIGIBLE per FF-source precedent (Balke), pipeline is the judge."
+    },
+    {
+      "source_file": "ff_460041_the-dance-continues.pdf",
+      "source_pages": "11, 19, 27",
+      "source_ref": "'The Dance Continues', ForexFactory thread 460041, user '.Hawk.', c.2014 — https://www.forexfactory.com/thread/460041 . Constrainment-trade description at p.19 ('3-4 small bars formed against 10 EMA restraining price ... constrainment trades off 10 EMA are weak, off 35 much stronger').",
+      "strategy_name": "The Dance — Constrainment Trade (coil-against-MA continuation)",
+      "concept": "Enter a trend continuation when a cluster of progressively smaller bars 'constrains' price against a moving average (weak off the 10 EMA, stronger against the 35 SMA) before price resumes the prevailing trend.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Concept (small-bar consolidation against a MA -> trend continuation) is mechanizable in principle, but this thread gives no precise trigger, entry level or exit for it beyond the shared ~9-pip stop model; underspecified here.",
+      "priority_hint": "LOW",
+      "notes": "Second of the method's two approaches ('pick one - constrainment or touch trades'). Far less specified than the touch trade in this thread; full definition lives in the linked 'Dance Manual' / 'Three Main Trades of The Dance' PDFs not present in this file. Shares the same 3-MA trend framework and exit model. Revisit / define precisely only if the touch-trade variant shows edge first."
+    }
+  ],
+  "notes": ["Thread is a discretionary FX price-action method (3 MAs on M15: 10 EMA / 35 SMA / 50 EMA); mostly chat + screenshots. Two distinct setups extracted (touch trade, constrainment trade); 10 EMA vs 35/50 touch folded into one row as variants. No MQL5, options, order-flow or ML dependencies; FTMO/DXZ-compatible (has stops, no grid/martingale). Both rows LOW priority: generic retail MA-pullback, heavy discretion, no evidence."]
+}

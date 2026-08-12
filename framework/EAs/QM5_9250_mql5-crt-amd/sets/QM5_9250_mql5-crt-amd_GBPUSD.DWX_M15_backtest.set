@@ -3,16 +3,16 @@
 ; ea_id:        9250
 ; ea_slug:      mql5-crt-amd
 ; ea_version:   v5.0
-; set_version:  s20260707-001
+; set_version:  s20260714-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   54c51ebf8f6591899cb1fb207348133ef1a896b22505f875943a380c2a0b3fd2
+; build_hash:   b52d25f579c425558f1772a24f22bf2df1ee74edacc297bc8896a12b4af880e2
 ; author:       Development
-; date:         2026-07-07
+; date:         2026-07-14
 ;==========================================================
 qm_ea_id=9250
 qm_magic_slot_offset=1

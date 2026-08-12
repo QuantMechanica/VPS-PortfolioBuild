@@ -1,7 +1,13 @@
+> **⚠️ STALE — SUPERSEDED by the 2026-05-23 pipeline rewrite. NOT canonical.**
+> This file describes the OLD 15-gate pipeline (Q00–Q14) with *different gate meanings*
+> (here Q05 = Walk-Forward, Q10 = Statistical Validation). The LIVE pipeline is
+> **14 gates Q00–Q13**. Canonical source: vault `03 Pipeline/` (Q00…Q13 files) +
+> `tools/strategy_farm/phase_ids.py`. Do NOT use the numbering below — kept for history only.
+
 # Pipeline Phase ID Map
 
 Created: 2026-05-20
-Owner: Board Advisor + CTO
+Owner: OWNER
 Status: Canonical display/spec numbering. Runtime DB phase keys remain supported internally.
 
 ## Purpose

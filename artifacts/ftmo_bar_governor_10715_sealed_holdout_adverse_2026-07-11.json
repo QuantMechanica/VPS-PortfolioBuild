@@ -1,0 +1,74 @@
+{
+  "basis": "fresh_start_entry_sized_m15_trade_cancellation_governor",
+  "excluded_years": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+  ],
+  "fill_contract": "adverse_bar",
+  "horizon_calendar_days": 30,
+  "manifest": "artifacts\\ftmo_joint_seven_sleeve_10715_manifest_2026-07-11.json",
+  "results": [
+    {
+      "daily_stop": 4500.0,
+      "full_risk_room": 4000.0,
+      "historical_rolling": {
+        "daily_breach_pct": 36.091298145506414,
+        "max_breach_pct": 11.697574893009985,
+        "not_reached_pct": 15.406562054208273,
+        "pass_ci95_pct": [
+          33.31537747294252,
+          40.43758531254219
+        ],
+        "pass_pct": 36.80456490727532,
+        "runs": 701
+      },
+      "mean_accepted_entries": 8.049928673323823,
+      "mean_blocked_entries": 0.5620542082738944,
+      "mean_ending_balance": 101070.09387222175,
+      "mean_minimum_equity": 94348.31875651533,
+      "mean_stop_events": 1.5477888730385163,
+      "mean_trading_days": 5.87018544935806,
+      "nominal_risk_pct": 25.0,
+      "risk_multiplier": 25.0,
+      "room_retention": 0.2,
+      "scenario": "six_sleeve_scout_balanced",
+      "start_windows": 701
+    },
+    {
+      "daily_stop": 4500.0,
+      "full_risk_room": 4000.0,
+      "historical_rolling": {
+        "daily_breach_pct": 28.245363766048502,
+        "max_breach_pct": 14.550641940085592,
+        "not_reached_pct": 13.980028530670472,
+        "pass_ci95_pct": [
+          39.60352209866164,
+          46.91826960199266
+        ],
+        "pass_pct": 43.22396576319544,
+        "runs": 701
+      },
+      "mean_accepted_entries": 12.87589158345221,
+      "mean_blocked_entries": 0.6148359486447932,
+      "mean_ending_balance": 101296.32643432681,
+      "mean_minimum_equity": 94319.93170246291,
+      "mean_stop_events": 1.3880171184022825,
+      "mean_trading_days": 7.490727532097004,
+      "nominal_risk_pct": 25.0,
+      "risk_multiplier": 25.0,
+      "room_retention": 0.2,
+      "scenario": "ea10715_02",
+      "start_windows": 701
+    }
+  ],
+  "schema_version": 1,
+  "start_windows": 701,
+  "status": "RESEARCH_ONLY",
+  "timestamp_basis": "darwinex_broker_wall",
+  "trade_paths": 795
+}

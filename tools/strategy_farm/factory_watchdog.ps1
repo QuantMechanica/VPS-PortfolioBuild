@@ -7,11 +7,11 @@
 #  producing without a manual "Factory ON" click.
 #
 #  RUNS AS SYSTEM (QM_StrategyFarm_FactoryWatchdog_15min, ServiceAccount) —
-#  it must therefore NEVER spawn workers/terminals directly: a SYSTEM/
-#  session-0 child spawn yields workers whose terminal64 die 0xC0000142
-#  (2026-06-24 broken-respawn class). ALL healing is delegated via
-#  Start-ScheduledTask to interactive qm-admin tasks (FactoryON_AtLogon
-#  for clean-slate, QM_StrategyFarm_WorkerDedupe for surgical spawns).
+#  it must therefore NEVER spawn workers/terminals as a normal SYSTEM/
+#  session-0 child: those workers' terminal64 die 0xC0000142 (2026-06-24
+#  broken-respawn class). Surgical healing uses WTSQueryUserToken +
+#  CreateProcessAsUser to place start_terminal_workers.py in qm-admin's
+#  existing interactive session. Clean-slate healing remains separate.
 #
 #  Deterministic + respects OWNER's ON/OFF:
 #    - OWNER intent is read from the FACTORY tasks' enable-state
@@ -37,7 +37,79 @@ $py   = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.e
 $log  = 'D:\QM\reports\state\factory_watchdog.jsonl'
 $stallDumpRequest = 'D:\QM\reports\state\STALLDUMP_REQUEST'
 $stallDumpDir = 'D:\QM\reports\state\worker_stalldump'
+$rebootDiagnosticPending = 'D:\QM\reports\state\reboot_diagnostic_pending.json'
+$resetAdmissionBlock = 'D:\QM\strategy_farm\state\WATCHDOG_RESET_PENDING.json'
 . (Join-Path $PSScriptRoot 'qm_tasks.manifest.ps1')
+
+function Invoke-InteractiveWorkerDedupe {
+    param(
+        [Parameter(Mandatory = $true)][string]$PythonExe,
+        [Parameter(Mandatory = $true)][int]$WorkersBefore,
+        [Parameter(Mandatory = $true)][int]$ExpectedWorkers
+    )
+
+    $launcher = Join-Path $PSScriptRoot 'run_in_console_session.ps1'
+    $starter = Join-Path $PSScriptRoot 'start_terminal_workers.py'
+    if (-not (Test-Path -LiteralPath $launcher)) { throw "interactive-session launcher missing: $launcher" }
+    if (-not (Test-Path -LiteralPath $starter)) { throw "worker starter missing: $starter" }
+
+    $targetUser = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -ErrorAction SilentlyContinue).DefaultUserName
+    if (-not $targetUser) { $targetUser = 'qm-admin' }
+    # The cached user environment can contain stale PYTHONHOME/PYTHONPATH values
+    # even though the already-running desktop processes are healthy. A token-spawned
+    # Python inherited C:\Python311 and failed importing _ctypes during acceptance.
+    # Clear only those interpreter override variables before starting the pinned exe;
+    # the worker daemons inherit this sanitized interactive-session environment.
+    $spawnScript = @"
+Remove-Item Env:PYTHONHOME -ErrorAction SilentlyContinue
+Remove-Item Env:PYTHONPATH -ErrorAction SilentlyContinue
+& '$PythonExe' '$starter' --repo-root '$repo' --farm-root 'D:\QM\strategy_farm' --dedupe
+exit `$LASTEXITCODE
+"@
+    $encodedSpawn = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($spawnScript))
+    $sessionShell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    $starterArgs = "-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand $encodedSpawn"
+    $launchOutput = @(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
+        -File $launcher -Exe $sessionShell -Arguments $starterArgs -WorkDir $repo `
+        -TargetUser $targetUser -WaitSeconds 180 2>&1)
+    if ($LASTEXITCODE -ne 0) {
+        throw "CreateProcessAsUser launcher rc=$LASTEXITCODE output=$($launchOutput -join ' ')"
+    }
+    $launchText = $launchOutput -join ' '
+    # run_in_console_session.ps1 emits "LAUNCHED pid=<n> into console session <sid>"
+    # (line 158). The session-label word is descriptive ("console"; historically
+    # "interactive") and MUST NOT be pinned: matching only "(?:interactive )?session"
+    # made this throw on every real heal even though the worker starter completed
+    # cleanly (WAIT_EXIT code=0), mislabelling a successful spawn as heal_failed and
+    # skipping the post-spawn verification below (evidence:
+    # docs/ops/evidence/2026-07-27_interactive_task_selfheal_fix.md). Accept any
+    # single session-label word.
+    if ($launchText -notmatch 'LAUNCHED pid=\d+ into (?:\w+ )?session (\d+)') {
+        throw "CreateProcessAsUser launcher returned no session evidence: $launchText"
+    }
+    $targetSession = [int]$matches[1]
+    if ($launchText -notmatch 'WAIT_EXIT pid=\d+ code=0') {
+        throw "interactive worker starter did not complete cleanly: $launchText"
+    }
+    if ($targetSession -eq 0) { throw "refusing worker heal into session 0" }
+
+    Start-Sleep -Seconds 20
+    $workers = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+                 Where-Object { $_.CommandLine -match 'terminal_worker\.py' })
+    $workersAfter = $workers.Count
+    $wrongSession = @($workers | Where-Object { $_.SessionId -ne $targetSession }).Count
+    if ($wrongSession -gt 0) {
+        throw "$wrongSession terminal workers are outside target session $targetSession"
+    }
+    if ($WorkersBefore -lt $ExpectedWorkers -and $workersAfter -le $WorkersBefore) {
+        throw "dedupe launch made no progress: workers_before=$WorkersBefore workers_after=$workersAfter"
+    }
+    return [pscustomobject]@{
+        workers_after = $workersAfter
+        session_id = $targetSession
+        launch = $launchText
+    }
+}
 
 # FACTORY_OFF.flag master switch: owner/claude sets it to suspend all automation.
 # Watchdog must no-op immediately so it cannot resurrect the factory.
@@ -126,6 +198,191 @@ function ConvertFrom-UtcStamp {
     } catch { return $null }
 }
 
+function Set-WatchdogResetAdmissionBlock {
+    param([string]$Reason)
+
+    $requested = (Get-Date).ToUniversalTime()
+    # Exact process identity is part of stale-marker recovery. If it cannot be
+    # captured, abort reset admission instead of inventing an identity.
+    $ownerStarted = (Get-Process -Id $PID -ErrorAction Stop).StartTime.ToUniversalTime()
+    $payload = [ordered]@{
+        schema_version   = 1
+        requested_at_utc = $requested.ToString('yyyy-MM-ddTHH:mm:ssZ')
+        owner_started_at_utc = $ownerStarted.ToString('yyyy-MM-ddTHH:mm:ssZ')
+        reason           = $Reason
+        watchdog_pid     = $PID
+    } | ConvertTo-Json -Compress
+    $directory = Split-Path $resetAdmissionBlock -Parent
+    if (-not (Test-Path -LiteralPath $directory -PathType Container)) {
+        New-Item -ItemType Directory -Path $directory -Force -ErrorAction Stop | Out-Null
+    }
+    $temporary = "$resetAdmissionBlock.tmp.$PID.$([guid]::NewGuid().ToString('N'))"
+    try {
+        [IO.File]::WriteAllText(
+            $temporary,
+            $payload,
+            (New-Object Text.UTF8Encoding($false))
+        )
+        if ([IO.File]::Exists($resetAdmissionBlock)) {
+            [IO.File]::Replace($temporary, $resetAdmissionBlock, $null, $true)
+        } else {
+            [IO.File]::Move($temporary, $resetAdmissionBlock)
+        }
+    } finally {
+        Remove-Item -LiteralPath $temporary -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Clear-WatchdogResetAdmissionBlock {
+    try {
+        if (Test-Path -LiteralPath $resetAdmissionBlock -ErrorAction Stop) {
+            Remove-Item -LiteralPath $resetAdmissionBlock -Force -ErrorAction Stop
+        }
+        if (Test-Path -LiteralPath $resetAdmissionBlock -ErrorAction Stop) {
+            throw 'reset admission marker still exists after removal'
+        }
+    } catch {
+        throw
+    }
+}
+
+function Get-WatchdogResetAdmissionState {
+    try {
+        $markerPresent = Test-Path -LiteralPath $resetAdmissionBlock -PathType Leaf -ErrorAction Stop
+    } catch {
+        return [pscustomobject]@{
+            present = $true
+            valid = $false
+            owner_alive = $true
+            task_probe_ok = $false
+            task_state = 'Unknown'
+            task_error = ''
+            reason = "reset marker path probe failed: $($_.Exception.Message)"
+        }
+    }
+    if (-not $markerPresent) {
+        return [pscustomobject]@{
+            present = $false
+            valid = $true
+            owner_alive = $false
+            task_probe_ok = $true
+            task_state = ''
+            task_error = ''
+            reason = ''
+        }
+    }
+
+    $taskProbeOk = $false
+    $taskState = 'Unknown'
+    $taskError = ''
+    try {
+        $factoryOnTask = Get-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
+        if ($null -eq $factoryOnTask) {
+            throw 'Task Scheduler returned no FactoryON task object'
+        }
+        $taskState = [string]$factoryOnTask.State
+        $taskProbeOk = $true
+    } catch {
+        # Missing task and Scheduler/RPC failures are both fail-closed. A
+        # positive, current task-state response is required before cleanup.
+        $taskError = $_.Exception.Message
+    }
+    try {
+        $marker = Get-Content -LiteralPath $resetAdmissionBlock -Raw -ErrorAction Stop |
+            ConvertFrom-Json -ErrorAction Stop
+        $ownerPid = [int]$marker.watchdog_pid
+        $ownerStarted = ConvertFrom-UtcStamp ([string]$marker.owner_started_at_utc)
+        if ($ownerPid -le 0 -or $null -eq $ownerStarted) {
+            throw 'marker lacks a valid watchdog process identity'
+        }
+        $ownerAlive = $false
+        try {
+            $owner = Get-Process -Id $ownerPid -ErrorAction Stop
+            $actualStarted = $owner.StartTime.ToUniversalTime()
+            $ownerAlive = [math]::Abs(($actualStarted - $ownerStarted).TotalSeconds) -le 2
+        } catch {
+            $ownerAlive = $false
+        }
+        return [pscustomobject]@{
+            present = $true
+            valid = $true
+            owner_alive = $ownerAlive
+            task_probe_ok = $taskProbeOk
+            task_state = $taskState
+            task_error = $taskError
+            reason = [string]$marker.reason
+        }
+    } catch {
+        # A malformed marker is fail-closed. Factory_ON can still acknowledge
+        # and remove it after clearing the old fleet.
+        return [pscustomobject]@{
+            present = $true
+            valid = $false
+            owner_alive = $true
+            task_probe_ok = $taskProbeOk
+            task_state = $taskState
+            task_error = $taskError
+            reason = "unreadable reset marker: $($_.Exception.Message)"
+        }
+    }
+}
+
+function Get-RebootDiagnosticResourceSnapshot {
+    # Persist a compact five-minute resource history for post-reboot causality.
+    # Never persist command lines: they can contain sensitive arguments.
+    $captured = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+    try {
+        $memory = Get-CimInstance Win32_PerfFormattedData_PerfOS_Memory -ErrorAction Stop
+        $os = Get-CimInstance Win32_OperatingSystem -ErrorAction Stop
+        $pageFiles = @(Get-CimInstance Win32_PageFileUsage -ErrorAction SilentlyContinue)
+        $committed = [double]$memory.CommittedBytes
+        $commitLimit = [double]$memory.CommitLimit
+        $pageAllocated = [double](($pageFiles | Measure-Object AllocatedBaseSize -Sum).Sum)
+        $pageCurrent = [double](($pageFiles | Measure-Object CurrentUsage -Sum).Sum)
+        $pagePeak = [double](($pageFiles | Measure-Object PeakUsage -Sum).Sum)
+
+        $top = @(
+            Get-Process -ErrorAction SilentlyContinue |
+                Sort-Object PrivateMemorySize64 -Descending |
+                Select-Object -First 12 |
+                ForEach-Object {
+                    try {
+                        [ordered]@{
+                            name           = $_.ProcessName
+                            pid            = $_.Id
+                            session_id     = $_.SessionId
+                            private_gb     = [math]::Round($_.PrivateMemorySize64 / 1GB, 2)
+                            working_set_gb = [math]::Round($_.WorkingSet64 / 1GB, 2)
+                        }
+                    } catch {}
+                }
+        )
+
+        return [ordered]@{
+            captured_at_utc       = $captured
+            physical_total_gb     = [math]::Round(([double]$os.TotalVisibleMemorySize * 1KB) / 1GB, 2)
+            physical_available_gb = [math]::Round(([double]$os.FreePhysicalMemory * 1KB) / 1GB, 2)
+            committed_gb          = [math]::Round($committed / 1GB, 2)
+            commit_limit_gb       = [math]::Round($commitLimit / 1GB, 2)
+            commit_headroom_gb    = if ($commitLimit -gt 0) { [math]::Round(($commitLimit - $committed) / 1GB, 2) } else { $null }
+            commit_percent        = if ($commitLimit -gt 0) { [math]::Round(($committed / $commitLimit) * 100, 1) } else { $null }
+            available_gb          = [math]::Round(([double]$memory.AvailableBytes) / 1GB, 2)
+            pages_per_sec         = [int64]$memory.PagesPersec
+            pagefile_allocated_mb = [math]::Round($pageAllocated, 0)
+            pagefile_current_mb   = [math]::Round($pageCurrent, 0)
+            pagefile_peak_mb      = [math]::Round($pagePeak, 0)
+            pagefile_percent      = if ($pageAllocated -gt 0) { [math]::Round(($pageCurrent / $pageAllocated) * 100, 1) } else { $null }
+            top_processes         = $top
+        }
+    } catch {
+        return [ordered]@{
+            captured_at_utc = $captured
+            error           = $_.Exception.Message
+            top_processes   = @()
+        }
+    }
+}
+
 function Get-ActiveBacktestProtection {
     param([string]$PythonExe)
 
@@ -136,15 +393,32 @@ import sqlite3
 import time
 
 db = r"D:/QM/strategy_farm/state/farm_state.sqlite"
+multisym_registry = r"D:/QM/strategy_farm/state/multisymbol_eas.txt"
 now = time.time()
 recent_cutoff = now - 600
 out = {
+    "probe_ok": False,
+    "registry_ok": False,
     "active_count": 0,
     "active_multisym_count": 0,
     "active_recent_progress_count": 0,
     "protected_terminals": [],
     "details": [],
 }
+
+try:
+    with open(multisym_registry, "r", encoding="utf-8") as handle:
+        multisym_ea_ids = {
+            line.strip().split()[0]
+            for line in handle
+            if line.strip() and not line.lstrip().startswith("#")
+        }
+    if not multisym_ea_ids:
+        raise RuntimeError("multisymbol registry is empty")
+    out["registry_ok"] = True
+except Exception as exc:
+    out["registry_error"] = repr(exc)
+    multisym_ea_ids = set()
 
 
 def payload_dict(text):
@@ -155,7 +429,9 @@ def payload_dict(text):
         return {}
 
 
-def is_multisym(symbol, payload):
+def is_multisym(ea_id, symbol, payload):
+    if str(ea_id or "").strip() in multisym_ea_ids:
+        return True
     if str(payload.get("portfolio_scope") or "").strip().lower() == "basket":
         return True
     if str(payload.get("basket_manifest") or "").strip():
@@ -213,13 +489,18 @@ def terminal_journal_recent(terminal):
         return False
 
 
+conn = None
 try:
-    conn = sqlite3.connect(db)
+    conn = sqlite3.connect(db, timeout=30)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA busy_timeout=30000")
+    conn.execute("BEGIN IMMEDIATE")
     rows = conn.execute(
         "SELECT id, ea_id, symbol, phase, claimed_by, payload_json "
         "FROM work_items WHERE status='active'"
     ).fetchall()
+    conn.commit()
+    out["probe_ok"] = True
     out["active_count"] = len(rows)
     protected = set()
     for row in rows:
@@ -227,7 +508,7 @@ try:
         terminal = str(row["claimed_by"] or payload.get("terminal") or "").strip().upper()
         if terminal:
             protected.add(terminal)
-        multisym = is_multisym(row["symbol"], payload)
+        multisym = is_multisym(row["ea_id"], row["symbol"], payload)
         if multisym:
             out["active_multisym_count"] += 1
         recent = (
@@ -247,7 +528,19 @@ try:
         })
     out["protected_terminals"] = sorted(protected)
 except Exception as exc:
+    out["probe_ok"] = False
     out["error"] = str(exc)
+    if conn is not None:
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+finally:
+    if conn is not None:
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 print(json.dumps(out, separators=(",", ":")))
 '@
@@ -256,6 +549,8 @@ print(json.dumps(out, separators=(",", ":")))
         return (($probe | & $PythonExe - 2>$null) -join '' | ConvertFrom-Json)
     } catch {
         return [pscustomobject]@{
+            probe_ok = $false
+            registry_ok = $false
             active_count = 0
             active_multisym_count = 0
             active_recent_progress_count = 0
@@ -263,6 +558,98 @@ print(json.dumps(out, separators=(",", ":")))
             details = @()
             error = $_.Exception.Message
         }
+    }
+}
+
+function Enter-GuardedFactoryReset {
+    param(
+        [string]$Reason,
+        [string]$PythonExe
+    )
+
+    try {
+        # The marker is written before taking SQLite's write lock. Workers
+        # inspect it inside their own BEGIN IMMEDIATE claim transaction. Thus a
+        # claim already in flight finishes before this fresh snapshot, while a
+        # later claim is refused until Factory_ON completes the handover.
+        Set-WatchdogResetAdmissionBlock -Reason $Reason
+        $fresh = Get-ActiveBacktestProtection -PythonExe $PythonExe
+        $probeOk = [bool]($fresh.probe_ok | Select-Object -First 1)
+        $registryOk = [bool]($fresh.registry_ok | Select-Object -First 1)
+        $multisymCount = [int]($fresh.active_multisym_count | Select-Object -First 1)
+        $recentCount = [int]($fresh.active_recent_progress_count | Select-Object -First 1)
+        $blockReason = ''
+        if (-not $probeOk) {
+            $blockReason = "fresh active-work probe failed: $($fresh.error)"
+        } elseif (-not $registryOk) {
+            $blockReason = "multisymbol registry unavailable: $($fresh.registry_error)"
+        } elseif ($multisymCount -gt 0) {
+            $blockReason = "active multisymbol/basket work_item present"
+        } elseif ($recentCount -gt 0) {
+            $blockReason = "active work_item progressed in the last 10m"
+        }
+        if ($blockReason) {
+            Clear-WatchdogResetAdmissionBlock
+            return [pscustomobject]@{
+                allowed = $false
+                reason = $blockReason
+                protection = $fresh
+            }
+        }
+        return [pscustomobject]@{
+            allowed = $true
+            reason = ''
+            protection = $fresh
+        }
+    } catch {
+        Clear-WatchdogResetAdmissionBlock
+        return [pscustomobject]@{
+            allowed = $false
+            reason = "reset admission interlock failed: $($_.Exception.Message)"
+            protection = $null
+        }
+    }
+}
+
+# A reset marker has no time-based expiry: only Factory_ON's post-kill
+# acknowledgement releases workers. If a watchdog died before dispatching the
+# task, the next watchdog run may clear the marker only when the exact owner
+# process is gone and Task Scheduler explicitly reports Factory_ON Ready or
+# Disabled. Unreadable/Unknown/ambiguous state remains blocked.
+$existingResetAdmission = Get-WatchdogResetAdmissionState
+if ($existingResetAdmission.present) {
+    $factoryOnSafeForCleanup = $existingResetAdmission.task_state -in @('Ready', 'Disabled')
+    if ($existingResetAdmission.valid -and
+        -not $existingResetAdmission.owner_alive -and
+        $existingResetAdmission.task_probe_ok -and
+        $factoryOnSafeForCleanup) {
+        try {
+            Clear-WatchdogResetAdmissionBlock
+            $staleRecord = [ordered]@{
+                ts = $now
+                action = 'stale_reset_admission_block_cleared'
+                detail = "orphaned marker reason=$($existingResetAdmission.reason) task_state=$($existingResetAdmission.task_state)"
+            } | ConvertTo-Json -Compress
+            try { Add-Content -Path $log -Value $staleRecord -Encoding UTF8 } catch {}
+        } catch {
+            $handoverRecord = [ordered]@{
+                ts = $now
+                action = 'noop_reset_handover_in_progress'
+                detail = "claim admission remains blocked; orphan cleanup failed: $($_.Exception.Message)"
+            } | ConvertTo-Json -Compress
+            try { Add-Content -Path $log -Value $handoverRecord -Encoding UTF8 } catch {}
+            Write-Output $handoverRecord
+            exit 0
+        }
+    } else {
+        $handoverRecord = [ordered]@{
+            ts = $now
+            action = 'noop_reset_handover_in_progress'
+            detail = "claim admission remains blocked; marker_valid=$($existingResetAdmission.valid) owner_alive=$($existingResetAdmission.owner_alive) task_probe_ok=$($existingResetAdmission.task_probe_ok) task_state=$($existingResetAdmission.task_state) task_error=$($existingResetAdmission.task_error) reason=$($existingResetAdmission.reason)"
+        } | ConvertTo-Json -Compress
+        try { Add-Content -Path $log -Value $handoverRecord -Encoding UTF8 } catch {}
+        Write-Output $handoverRecord
+        exit 0
     }
 }
 
@@ -327,6 +714,8 @@ print(str(a) + " " + str(p))
 }
 
 $activeProtection = [pscustomobject]@{
+    probe_ok = $false
+    registry_ok = $false
     active_count = 0
     active_multisym_count = 0
     active_recent_progress_count = 0
@@ -336,6 +725,8 @@ $activeProtection = [pscustomobject]@{
 if ($factoryEnabled) {
     $activeProtection = Get-ActiveBacktestProtection -PythonExe $py
 }
+$activeProtectionProbeOk = [bool]($activeProtection.probe_ok | Select-Object -First 1)
+$multisymRegistryOk = [bool]($activeProtection.registry_ok | Select-Object -First 1)
 $activeMultisymCount = [int]($activeProtection.active_multisym_count | Select-Object -First 1)
 $activeRecentProgressCount = [int]($activeProtection.active_recent_progress_count | Select-Object -First 1)
 $activeProtectionDetail = ''
@@ -345,6 +736,7 @@ try {
     }) -join ';')
 } catch {}
 $realStallSuppressedReason = ''
+$resourceSnapshot = Get-RebootDiagnosticResourceSnapshot
 
 # 2c. SESSION-LOSS detection + reboot-heal (added 2026-06-11).
 # The one case neither respawn nor tscon can fix: the interactive session itself is
@@ -360,6 +752,7 @@ $sessionLost        = $false
 $lsmDegraded        = $false   # FIX 2: qwinsta failed/missing but worker evidence proves session alive
 $qwinstaError       = $null    # FIX 2: error string from qwinsta failure (for jsonl)
 $secretBasis        = ''       # FIX 1: 'lsa_secret' | 'winlogon_fallback_nonsystem' (for jsonl)
+$rebootDiagnosticEventId = $null
 $targetUser = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -ErrorAction SilentlyContinue).DefaultUserName
 if (-not $targetUser) { $targetUser = 'qm-admin' }
 if ($factoryEnabled) {
@@ -445,7 +838,46 @@ if ($factoryEnabled -and $sessionLost) {
         $detail = "NO interactive $targetUser session for 2 consecutive checks (since $($st.pending_since)) while factory ON -> controlled reboot to restore autologon session + FactoryON_AtLogon"
         @{ pending_since = $null; last_reboot = $nowDt.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') } |
             ConvertTo-Json -Compress | Set-Content -Path $healState -Encoding UTF8
-        & shutdown.exe /r /t 60 /d p:4:1 /c "QM factory_watchdog: interactive session lost - auto-reboot to restore autologon session"
+        $shutdownComment = 'QM factory_watchdog: interactive session lost - auto-reboot to restore autologon session'
+        $rebootDiagnosticEventId = [guid]::NewGuid().ToString()
+        $pendingRecord = [ordered]@{
+            schema                = 1
+            event_id              = $rebootDiagnosticEventId
+            source                = 'QM_StrategyFarm_FactoryWatchdog_15min'
+            kind                  = 'session_loss_heal'
+            requested_at_utc      = $nowDt.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+            pending_since_utc     = $st.pending_since
+            shutdown_comment      = $shutdownComment
+            factory_enabled       = $factoryEnabled
+            target_user           = $targetUser
+            workers               = $nWorkers
+            expected_workers      = $ExpectWorkers
+            session_lost          = $sessionLost
+            qwinsta_error         = $qwinstaError
+            active_count          = $nActive
+            pending_count         = $nPending
+            terminal_count        = $nTerm
+            active_items          = @($activeProtection.details)
+            resource_snapshot     = $resourceSnapshot
+        }
+        try {
+            $pendingDir = Split-Path $rebootDiagnosticPending -Parent
+            if (-not (Test-Path -LiteralPath $pendingDir)) {
+                New-Item -ItemType Directory -Path $pendingDir -Force | Out-Null
+            }
+            $pendingTmp = "$rebootDiagnosticPending.$PID.tmp"
+            $pendingRecord | ConvertTo-Json -Depth 8 |
+                Set-Content -LiteralPath $pendingTmp -Encoding UTF8
+            if (Test-Path -LiteralPath $rebootDiagnosticPending) {
+                [IO.File]::Replace($pendingTmp, $rebootDiagnosticPending, $null)
+            } else {
+                [IO.File]::Move($pendingTmp, $rebootDiagnosticPending)
+            }
+            $detail += " | reboot_diagnostic_event=$rebootDiagnosticEventId staged"
+        } catch {
+            $detail += " | reboot_diagnostic_stage_error=$($_.Exception.Message)"
+        }
+        & shutdown.exe /r /t 60 /d p:4:1 /c $shutdownComment
     }
     # clear stale pending flag once a session exists again
 } elseif (Test-Path 'D:\QM\reports\state\watchdog_session_heal.json') {
@@ -524,7 +956,11 @@ print(n)
         $realStallInfo = "realDone15m=$realN metatester64=$mt/$ExpectWorkers (floor=$mtFloor) terminal64=$nTerm ramFreeGb=$ramFreeGb pending=$nPending recentPurge=$recentPurge activeMultisym=$activeMultisymCount activeRecentProgress=$activeRecentProgressCount"
         $realStallCandidate = ((($realN -eq 0) -or ($mt -lt $mtFloor)) -and $nPending -ge $StallPendingThreshold)
         if ($realStallCandidate) {
-            if ($activeMultisymCount -gt 0) {
+            if (-not $activeProtectionProbeOk) {
+                $realStallSuppressedReason = "active-work protection probe failed; refusing full reset"
+            } elseif (-not $multisymRegistryOk) {
+                $realStallSuppressedReason = "multisymbol registry unavailable; refusing full reset"
+            } elseif ($activeMultisymCount -gt 0) {
                 $realStallSuppressedReason = "active multisymbol/basket work_item present; refusing full reset"
             } elseif ($activeRecentProgressCount -gt 0) {
                 $realStallSuppressedReason = "active work_item log/report/journal progressed in last 10m"
@@ -615,16 +1051,27 @@ elseif ($factoryEnabled -and $realStall) {
         # T_Live-sparing FactoryON_AtLogon; keep T_Live detection for the audit record only.
         $tLiveRunning = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
                           Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
-        $action = 'healed_full_reset'
-        $detail = "REAL-STALL confirmed 2x (since $($rst.pending_since)) ($realStallInfo) -> Start FactoryON_AtLogon (interactive, T_Live-sparing recovery; tLiveRunning=$tLiveRunning)"
-        @{ pending_since = $null; last_reset = $nowDt.ToString('yyyy-MM-ddTHH:mm:ssZ') } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8
-        try {
-            Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
-            Start-Sleep -Seconds 25
-            $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
-                       Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
-            $detail += " -> after=$after workers (via FactoryON_AtLogon)"
-        } catch { $action = 'heal_failed'; $detail += " -> ERROR: $_" }
+        $resetGuard = Enter-GuardedFactoryReset -Reason 'realstall' -PythonExe $py
+        if (-not $resetGuard.allowed) {
+            $action = 'realstall_guarded_fresh'
+            $detail = "REAL-STALL reset suppressed by fresh interlocked check: $($resetGuard.reason) ($realStallInfo)"
+            @{ pending_since = $null; last_reset = $rst.last_reset } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8
+        } else {
+            $action = 'healed_full_reset'
+            $detail = "REAL-STALL confirmed 2x (since $($rst.pending_since)) ($realStallInfo) -> Start FactoryON_AtLogon (interactive, T_Live-sparing recovery; tLiveRunning=$tLiveRunning)"
+            @{ pending_since = $null; last_reset = $nowDt.ToString('yyyy-MM-ddTHH:mm:ssZ') } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8
+            try {
+                Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
+                Start-Sleep -Seconds 25
+                $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+                           Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+                $detail += " -> after=$after workers (via FactoryON_AtLogon)"
+            } catch {
+                Clear-WatchdogResetAdmissionBlock
+                $action = 'heal_failed'
+                $detail += " -> ERROR: $_"
+            }
+        }
     }
 }
 elseif ($nWorkers -ge $MinWorkers -and -not $dispatchStalled) {
@@ -698,7 +1145,10 @@ else {
     # detection for the audit record only.
     $tLiveRunning = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
                       Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
-    if ($dispatchStalled -and $activeMultisymCount -gt 0) {
+    if ($dispatchStalled -and (-not $activeProtectionProbeOk -or -not $multisymRegistryOk)) {
+        $action = 'heal_deferred_protection_unknown'
+        $detail += " | active-work protection unavailable (probe_ok=$activeProtectionProbeOk registry_ok=$multisymRegistryOk); refusing full reset"
+    } elseif ($dispatchStalled -and $activeMultisymCount -gt 0) {
         # Multisym guard: dispatch stall needs clean-slate FactoryON (kills terminals), but
         # an active basket/multisym backtest must not be interrupted. Defer the full reset;
         # a pure worker shortage with an active multisym is safe to dedupe-spawn below.
@@ -710,13 +1160,20 @@ else {
         try {
             $dumpDetail = Invoke-StallDumpCapture -RequestPath $stallDumpRequest -DumpDir $stallDumpDir
             $detail += " | $dumpDetail"
-            Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
-            Start-Sleep -Seconds 25
-            $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
-                       Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
-            $action = 'healed_via_factoryon'
-            $detail += " -> Start FactoryON_AtLogon (dispatch stall, interactive, T_Live-sparing; tLiveRunning=$tLiveRunning) -> after=$after/$ExpectWorkers"
+            $resetGuard = Enter-GuardedFactoryReset -Reason 'dispatch_stall' -PythonExe $py
+            if (-not $resetGuard.allowed) {
+                $action = 'heal_deferred_fresh_protection'
+                $detail += " | reset suppressed by fresh interlocked check: $($resetGuard.reason)"
+            } else {
+                Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
+                Start-Sleep -Seconds 25
+                $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+                           Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+                $action = 'healed_via_factoryon'
+                $detail += " -> Start FactoryON_AtLogon (dispatch stall, interactive, T_Live-sparing; tLiveRunning=$tLiveRunning) -> after=$after/$ExpectWorkers"
+            }
         } catch {
+            Clear-WatchdogResetAdmissionBlock
             $action = 'heal_failed'
             $detail += " -> ERROR: $_"
         }
@@ -724,22 +1181,20 @@ else {
         # FIX 3: PURE WORKER SHORTAGE — session alive, no stall, no launch_fault wedge.
         # Surgical dedupe spawn: only fills the missing worker slots; never kills
         # in-flight terminals or interrupts running backtests.
-        # This watchdog runs as SYSTEM: a direct child spawn here would put workers in
-        # session 0 and their terminal64 dies 0xC0000142 (2026-06-24 broken-respawn
-        # class). Delegate to the on-demand interactive task (qm-admin, Interactive,
-        # Highest) exactly like the FactoryON_AtLogon escalation path.
+        # This watchdog runs as SYSTEM: use the logged-on qm-admin token to create the
+        # idempotent starter in that user's existing nonzero session. This bypasses the
+        # Task Scheduler InteractiveToken queue failure without ever making a session-0
+        # worker. run_in_console_session.ps1 selects Active first, then Disconnected.
         # Emits action 'worker_dedupe_heal' with workers_before / workers_after counts.
         $workersBefore = $nWorkers
         try {
-            Start-ScheduledTask -TaskName 'QM_StrategyFarm_WorkerDedupe' -ErrorAction Stop
-            Start-Sleep -Seconds 20
-            $workersAfter = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
-                              Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+            $heal = Invoke-InteractiveWorkerDedupe -PythonExe $py -WorkersBefore $workersBefore -ExpectedWorkers $ExpectWorkers
+            $workersAfter = $heal.workers_after
             $action = 'worker_dedupe_heal'
-            $detail += " -> dedupe via QM_StrategyFarm_WorkerDedupe: workers_before=$workersBefore workers_after=$workersAfter/$ExpectWorkers tLiveRunning=$tLiveRunning"
+            $detail += " -> dedupe via CreateProcessAsUser: session=$($heal.session_id) workers_before=$workersBefore workers_after=$workersAfter/$ExpectWorkers tLiveRunning=$tLiveRunning"
         } catch {
             $action = 'heal_failed'
-            $detail += " -> ERROR: $_ (QM_StrategyFarm_WorkerDedupe task missing? register via install_hygiene_and_lsm_tasks.ps1)"
+            $detail += " -> ERROR: $_ (interactive token worker heal failed)"
         }
     }
 }
@@ -759,6 +1214,9 @@ $record = [ordered]@{
     secret_basis     = $secretBasis         # FIX 1: 'lsa_secret' | 'winlogon_fallback_nonsystem' | ''
     active_multisym  = $activeMultisymCount
     active_progress  = $activeRecentProgressCount
+    active_items     = @($activeProtection.details)
+    resource         = $resourceSnapshot
+    reboot_diagnostic_event_id = $rebootDiagnosticEventId
     action           = $action
     detail           = $detail
 } | ConvertTo-Json -Compress -Depth 4

@@ -3,7 +3,7 @@
 ; ea_id:        10911
 ; ea_slug:      grimes-complex-pb
 ; ea_version:   v5.0
-; set_version:  s20260615-stress-harsh
+; set_version:  s20260802-stress-harsh
 ; symbol:       GDAXI.DWX
 ; timeframe:    H1
 ; environment:  q06_stress_harsh
@@ -12,9 +12,10 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-06-15
+; date:         2026-08-02
 ;==========================================================
 qm_magic_slot_offset=3
+qm_rng_seed=17
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
@@ -33,3 +34,5 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+; time-sensitive strategy params (mq5 defaults, made explicit for build guard 2026-07-10)
+strategy_ema_exit_period=20

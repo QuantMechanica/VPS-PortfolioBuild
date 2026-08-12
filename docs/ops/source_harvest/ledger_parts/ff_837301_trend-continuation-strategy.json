@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_837301_trend-continuation-strategy.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_837301_trend-continuation-strategy.pdf",
+      "source_pages": "1",
+      "source_ref": "GazFx, \"Trend Continuation Strategy\", ForexFactory thread 837301 (~2018), method attributed to Sam Seiden (CME floor trader). https://www.forexfactory.com/thread/837301-trend-continuation-strategy",
+      "strategy_name": "Stochastic-Cross Trend-Continuation Pullback",
+      "concept": "Enter in the EMA50 trend direction on a Stochastic(5,3,3) crossover out of the oversold/overbought zone, targeting continuation of an established trend at a fixed 1:3 risk:reward.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Fully mechanical Stochastic+EMA rule set with explicit SL/TP/trailing; pure-MQL5 implementable, deterministic, data available for FX/metals; forum/indicator-marketing source lowers priority but does not reject.",
+      "priority_hint": "LOW",
+      "notes": "Buy: Stochastic(5,3,3,Close/Close) cross-up at/below 20 while EMA50 slopes up; Sell: cross-down at/above 80 while EMA50 slopes down; ignore when EMA50 flat. SL just below prev low (buy) / above prev high (sell) + 10-pip buffer on H4; TP = 3x SL; trailing stop = entry stop value. Author claims ~60% win / 2.45 PF but unverified and tied to a paid 'Market Scanner' MQL5 indicator upsell. 'Any TF / any symbol' claimed; H4 stated as best, H1 also tested. Scanner covers 28 FX pairs + Gold + Silver; one replier reported it working on DAX (Indices) -> also testable on Metals/Indices. Generic retail Stochastic+EMA pullback = low edge plausibility, hence LOW despite FULL rules."
+    }
+  ],
+  "notes": []
+}

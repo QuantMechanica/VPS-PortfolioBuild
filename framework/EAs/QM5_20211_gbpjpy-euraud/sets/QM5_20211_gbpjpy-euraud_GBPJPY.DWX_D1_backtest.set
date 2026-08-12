@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20211
+; ea_slug:      gbpjpy-euraud
+; ea_version:   v5.0
+; set_version:  s20260804-001
+; symbol:       GBPJPY.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   66a97306a932c90cd147f00156941fe11dcd391e40f87b4c21675d6e4d3fc113
+; author:       Development
+; date:         2026-08-04
+;==========================================================
+qm_ea_id=20211
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_z_lookback_d1=60
+strategy_beta=-1.386054145
+strategy_entry_z=2.0
+strategy_exit_z=0.5
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=2.0
+strategy_deviation_points=20

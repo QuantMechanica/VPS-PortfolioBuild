@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qm.local/schemas/experiment_record_v1.schema.json",
+  "title": "QM append-only experiment record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "experiment_id",
+    "independent_trial_id",
+    "attempt_id",
+    "attempt_kind",
+    "retry_of",
+    "family_fingerprint",
+    "card_sha256",
+    "parameter_cell",
+    "symbol",
+    "timeframe",
+    "data_cut",
+    "dev_seal",
+    "oos_seal",
+    "trial_budget",
+    "created_at_utc",
+    "producer",
+    "record_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "qm.experiment-record/v1"},
+    "experiment_id": {"$ref": "#/$defs/identifier"},
+    "independent_trial_id": {"$ref": "#/$defs/identifier"},
+    "attempt_id": {"$ref": "#/$defs/identifier"},
+    "attempt_kind": {"enum": ["ORIGINAL", "INFRA_RETRY"]},
+    "retry_of": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$"},
+    "family_fingerprint": {"$ref": "#/$defs/sha256"},
+    "card_sha256": {"$ref": "#/$defs/sha256"},
+    "parameter_cell": {"$ref": "#/$defs/parameter_cell"},
+    "symbol": {"type": "string", "pattern": "^[A-Z0-9][A-Z0-9._-]{0,31}$"},
+    "timeframe": {"type": "string", "pattern": "^(?:M[1-9][0-9]*|H[1-9][0-9]*|D1|W1|MN1)$"},
+    "data_cut": {"$ref": "#/$defs/data_cut"},
+    "dev_seal": {"$ref": "#/$defs/seal"},
+    "oos_seal": {"$ref": "#/$defs/seal"},
+    "trial_budget": {"$ref": "#/$defs/trial_budget"},
+    "created_at_utc": {"$ref": "#/$defs/utc"},
+    "producer": {"$ref": "#/$defs/producer"},
+    "record_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "attempt_kind": {"const": "ORIGINAL"},
+        "retry_of": {"type": "null"}
+      }
+    },
+    {
+      "properties": {
+        "attempt_kind": {"const": "INFRA_RETRY"},
+        "retry_of": {"$ref": "#/$defs/identifier"}
+      }
+    }
+  ],
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$"
+    },
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "utc": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$"
+    },
+    "parameter_cell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cell_id", "cell_sha256"],
+      "properties": {
+        "cell_id": {"$ref": "#/$defs/identifier"},
+        "cell_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "data_cut": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cut_id", "dataset_sha256", "cut_at_utc"],
+      "properties": {
+        "cut_id": {"$ref": "#/$defs/identifier"},
+        "dataset_sha256": {"$ref": "#/$defs/sha256"},
+        "cut_at_utc": {"$ref": "#/$defs/utc"}
+      }
+    },
+    "seal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["seal_id", "evidence_sha256", "sealed_at_utc"],
+      "properties": {
+        "seal_id": {"$ref": "#/$defs/identifier"},
+        "evidence_sha256": {"$ref": "#/$defs/sha256"},
+        "sealed_at_utc": {"$ref": "#/$defs/utc"}
+      }
+    },
+    "trial_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["budget_id", "independent_trial_ordinal", "independent_trial_limit"],
+      "properties": {
+        "budget_id": {"$ref": "#/$defs/identifier"},
+        "independent_trial_ordinal": {"type": "integer", "minimum": 1},
+        "independent_trial_limit": {"type": "integer", "minimum": 1}
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authority", "identity"],
+      "properties": {
+        "authority": {"enum": ["AGENT", "OWNER", "SYSTEM"]},
+        "identity": {"type": "string", "minLength": 1, "maxLength": 128}
+      }
+    }
+  }
+}

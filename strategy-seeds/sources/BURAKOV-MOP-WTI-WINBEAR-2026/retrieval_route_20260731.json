@@ -1,0 +1,23 @@
+{
+  "checked_at": "2026-07-31",
+  "reader": "qm-read-trading-source deterministic router",
+  "results": [
+    {
+      "url": "https://www.econjournals.com/index.php/ijeep/article/view/6092",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter": "generic",
+      "adapter_state": "ROUTER_ONLY",
+      "retrieved_at": null
+    },
+    {
+      "url": "https://www.aqr.com/Insights/Research/Journal-Article/Time-Series-Momentum",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter": "generic",
+      "adapter_state": "ROUTER_ONLY",
+      "retrieved_at": null
+    }
+  ],
+  "evidence_boundary": "No fresh generic-source text was retrieved or used. The card relies on the pre-existing OWNER-approved complete repository packets BURAKOV-WTI-HALLOWEEN-2018 and MOP-TSMOM-2012."
+}

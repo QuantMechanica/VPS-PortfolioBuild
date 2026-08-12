@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_forex-price-action_41718.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_forex-price-action_41718.pdf",
+      "source_pages": "3-11",
+      "source_ref": "Forex Price Action - BabyPips.com forum thread started by Johnathon Fox (handle Forex_School_Online / Forex School Online), 2012-01-06. https://forums.babypips.com/t/forex-price-action/41718",
+      "strategy_name": "PA Reversal at S/R (Pin Bar / Engulfing Bar / 2-Bar Reversal)",
+      "concept": "Enter on a stop order at the break of a candlestick reversal signal (pin bar, engulfing bar, or 2-bar reversal) that forms at a pre-marked support/resistance swing level, betting on rejection of that level.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Candle patterns + break entry + buffered SL + TP-at-next-S/R are mechanizable, but the decisive S/R / swing 'level' is discretionary and must be approximated (swing highs/lows + round numbers); no numeric wick/body ratios given.",
+      "priority_hint": "LOW",
+      "notes": "Three trigger patterns are variants sharing identical management: pending stop order set after the setup candle closes (buy stop above high / sell stop below low), buffered SL beyond the candle, TP at next S/R, fixed-$ risk position sizing, avoid the last intraday candle of the week, prefer with-trend after a pullback. Rules for engulfing bar (must fully engulf prior candle, close in last 1/3) and pin bar are stated qualitatively but without numeric thresholds. Discretionary S/R is the crux; candlestick-reversal-at-S/R is the chart-pattern family repeatedly falsified in QM research (Balke/Wyckoff/SMC closed) and is 'yet another swing-reversal' rather than an uncorrelated return driver. Multi-market coverage claimed: FX majors+crosses, indices, oil, metals, some exotics; intraday variant on H4/H8/H12 best at London/NY overlap; primary TF is D1. Retail forum educator selling a PA course - reputability caps priority (does not reject; Balke precedent)."
+    }
+  ],
+  "notes": []
+}

@@ -81,12 +81,20 @@ input double strategy_rr_target         = 1.5;
 input bool   strategy_use_atr_floor     = false;
 input double strategy_min_atr_points    = 0.0;
 
+// Ozymandias is a closed-bar state machine. OnTick refreshes this value once
+// after the framework new-bar gate so entry and adverse-signal exit share the
+// same deterministic result without rebuilding the 240-bar state on each tick.
+int g_ozymandias_closed_bar_signal = 0;
+
 double OzymandiasHighestHigh(const int shift, const int length)
   {
    double highest = 0.0;
    for(int i = 0; i < length; ++i)
      {
-      const double value = iHigh(_Symbol, _Period, shift + i);
+      MqlRates bar;
+      if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, shift + i, bar))
+         return 0.0;
+      const double value = bar.high;
       if(value <= 0.0)
          return 0.0;
       if(i == 0 || value > highest)
@@ -100,7 +108,10 @@ double OzymandiasLowestLow(const int shift, const int length)
    double lowest = 0.0;
    for(int i = 0; i < length; ++i)
      {
-      const double value = iLow(_Symbol, _Period, shift + i);
+      MqlRates bar;
+      if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, shift + i, bar))
+         return 0.0;
+      const double value = bar.low;
       if(value <= 0.0)
          return 0.0;
       if(i == 0 || value < lowest)
@@ -112,12 +123,7 @@ double OzymandiasLowestLow(const int shift, const int length)
 int OzymandiasTrendAt(const int target_shift)
   {
    const int length = MathMax(strategy_ozymandias_length, 2);
-   const int bars = Bars(_Symbol, _Period);
-   if(bars <= target_shift + length + 5)
-      return 0;
-
-   const int available = bars - target_shift - length - 2;
-   const int warmup = MathMax(20, MathMin(strategy_ozymandias_lookback_bars, available));
+   const int warmup = MathMax(20, strategy_ozymandias_lookback_bars);
    if(warmup <= 2)
       return 0;
 
@@ -134,9 +140,14 @@ int OzymandiasTrendAt(const int target_shift)
       const double ll = OzymandiasLowestLow(bar, length);
       const double lma = QM_SMA(_Symbol, _Period, length, bar, PRICE_LOW);
       const double hma = QM_SMA(_Symbol, _Period, length, bar, PRICE_HIGH);
-      const double close_bar = iClose(_Symbol, _Period, bar);
-      const double prev_low = iLow(_Symbol, _Period, bar + 1);
-      const double prev_high = iHigh(_Symbol, _Period, bar + 1);
+      MqlRates current_bar;
+      MqlRates previous_bar;
+      if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, bar, current_bar) ||
+         !QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, bar + 1, previous_bar))
+         return 0;
+      const double close_bar = current_bar.close;
+      const double prev_low = previous_bar.low;
+      const double prev_high = previous_bar.high;
       if(hh <= 0.0 || ll <= 0.0 || lma <= 0.0 || hma <= 0.0 ||
          close_bar <= 0.0 || prev_low <= 0.0 || prev_high <= 0.0)
          return 0;
@@ -201,7 +212,7 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   const int signal = OzymandiasColorChange();
+   const int signal = g_ozymandias_closed_bar_signal;
    if(signal == 0)
       return false;
 
@@ -233,7 +244,7 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int signal = OzymandiasColorChange();
+   const int signal = g_ozymandias_closed_bar_signal;
    if(signal == 0)
       return false;
 
@@ -325,7 +336,15 @@ void OnTick()
    // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   // Both the source entry and its adverse-signal exit are closed-bar rules.
+   // The prior wiring rebuilt two 240-bar Ozymandias states on every tick,
+   // causing full-window Q02 runs to advance only ~2% in 45 minutes.
+   if(!QM_IsNewBar())
+      return;
+
+   g_ozymandias_closed_bar_signal = OzymandiasColorChange();
+
+   // Per-closed-bar: source adverse-signal exit. Separate from hard SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -339,12 +358,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
-   if(!QM_IsNewBar())
-      return;
 
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
    // since last tick. Cheap: most calls early-return on same-day check.

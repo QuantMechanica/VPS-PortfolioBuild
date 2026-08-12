@@ -1,27 +1,26 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        13109
 ; ea_slug:      xng-febjun-long
 ; ea_version:   v5.0
-; set_version:  s20260710-001
+; set_version:  s20260714-001
 ; symbol:       XNGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   417749963295df868ee6048a1b7c962d6b9f3ed2823cfab9b52d6fc57cb5cf2c
-; author:       Codex
-; date:         2026-07-10
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-14
 ;==========================================================
 qm_ea_id=13109
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_friday_close_enabled=true
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_13109_xng-febjun-long_card.md
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\xng-febjun-long_card.md
 strategy_start_month=2
 strategy_end_month=5
 strategy_atr_period=20

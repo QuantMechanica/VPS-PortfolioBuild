@@ -12,7 +12,8 @@
 #    3. ESCALATE (record only, never auto-act): codex_auth_broken, factory down,
 #         T_Live, code bugs. Special-case the codex token-refresh race
 #         (low auth_age + 401 = auth dying right after login).
-#    4. Append one JSON line to the triage log. NO email (GmailAlarm owns that);
+#    4. Append one JSON line to the triage log. NO email (the separate pipeline
+#       FAIL/OK mail channel was OWNER-disabled 2026-07-23);
 #       NO destructive ops; NEVER touches FACTORY/AI enable-state (OWNER's ON/OFF)
 #       or T_Live.
 # =====================================================================
@@ -21,7 +22,16 @@ $ErrorActionPreference = 'Continue'
 $repo = 'C:\QM\repo'
 $py   = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe'
 $triageLog = 'D:\QM\reports\state\hourly_monitor.jsonl'
+$factoryOffFlag = 'D:\QM\strategy_farm\state\FACTORY_OFF.flag'
 . (Join-Path $PSScriptRoot 'qm_tasks.manifest.ps1')
+
+# This monitor historically repaired task-state drift and therefore is a
+# mutator despite its name.  Full maintenance quiescence wins over its
+# ALWAYS_ON legacy classification: while OFF it must not run health writers,
+# re-enable tasks, or append triage state.
+if (Test-Path -LiteralPath $factoryOffFlag -PathType Leaf) {
+    exit 0
+}
 
 $now = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 $actions = @()

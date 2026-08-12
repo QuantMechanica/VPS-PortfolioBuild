@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_33362_50-macd-4hour.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_33362_50-macd-4hour.pdf",
+      "source_pages": "1,19-26,31-32",
+      "source_ref": "the_guvnor (Dean Simpson), \"50 +/- MACD 4hour\" (My Trading plan 50+/-), ForexFactory thread 33362, 2007, https://www.forexfactory.com/thread/33362/50-macd-4hour",
+      "strategy_name": "MACD-50 4H Difference Momentum (GBPUSD)",
+      "concept": "Go long/short when the 4H MACD(5,13,1) main-line value has moved by at least +/-0.00050 between the just-closed bar and the bar two periods (8h) earlier, checked at fixed clock times.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Fully mechanical H4 MACD momentum on GBPUSD; pure MQL5, no ML, deterministic entry + fixed SL/TP exits; GBPUSD via .DWX; FTMO/DXZ-compatible (author's 5%/trade risk is a tunable param, dial down).",
+      "priority_hint": "MED",
+      "notes": "Entry: at 0800/1200/1600/2000 (broker/local clock) evaluate MACD(5,13,1) main value of the just-closed 4H bar vs the value 2 bars earlier (the 'bar B vs bar D' clarification on p.9); |diff|>=0.00050 -> trade in that direction; only if no position open. Exit: two lots, Pos A SL30/TP30, Pos B SL30/TP45, move B to breakeven once A hits TP; positions run to SL/TP; opposite-direction next signal = reverse, same-direction = hold. Variants (same core rules, param tweaks -> one row): (1) noise filter, skip signals with |diff|<0.00150, author reports it removes >half the losers, gnllr 2007 backtest Jan+333/Feb+38/Mar+68/Apr+720 pips; (2) billbss single-lot optimization SL100/TP60, min diff 0.00038, ~+3540 pips over 5/2006-6/2007. Multiple independent forum backtests reported profitable (mild positive), but hand-backtests only, no verified equity curve. Descriptive-only asides NOT candidates: discretionary double-bottom/cup-and-handle chart-pattern overlays (VAGUE, author preferred numeric rules); The Fxorce's ZeroLag-MACD+Heikin-Ashi EA (reported unprofitable); a 'completely new system' the author teases at the end but never describes. Author's optional 'double up after X losses' 10% idea = martingale and was rejected within the thread (coin-has-no-memory argument) and by the author himself; NOT part of the eligible core. Concept is a generic acknowledged derivative of Phillip Nel's 4H-MACD strategy -> MED not HIGH; it is an FX-major momentum driver, not a prioritized uncorrelated theme."
+    }
+  ],
+  "notes": []
+}

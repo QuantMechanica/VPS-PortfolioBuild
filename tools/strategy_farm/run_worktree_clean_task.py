@@ -17,13 +17,20 @@ import sys
 import time
 from pathlib import Path
 
+try:
+    from factory_mutation_lock import FactoryMutationLock
+except ModuleNotFoundError:
+    from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
 
-REPO_ROOT = Path(r"C:\QM\repo")
-FARM_ROOT = Path(r"D:\QM\strategy_farm")
+
+REPO_ROOT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
+FARM_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 DB_PATH = FARM_ROOT / "state" / "farm_state.sqlite"
 LOG_DIR = FARM_ROOT / "logs"
 LOCK_PATH = LOG_DIR / "worktree_clean_task.lock"
 LOCK_STALE_SECONDS = 2 * 60 * 60
+FACTORY_OFF_FLAG = FARM_ROOT / "state" / "FACTORY_OFF.flag"
+FACTORY_MUTATION_LOCK = FARM_ROOT / "state" / "FACTORY_MUTATION.lock"
 
 SHARED_BUILD_PATHS = [
     "framework/include/QM/QM_MagicResolver.mqh",
@@ -59,6 +66,29 @@ def _acquire_lock() -> int | None:
             return os.open(str(LOCK_PATH), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
         except OSError:
             return None
+
+
+def _acquire_factory_mutation_lock() -> FactoryMutationLock | None:
+    """Serialize autonomous repo/DB writers across the Factory OFF boundary."""
+    lock = FactoryMutationLock(FACTORY_MUTATION_LOCK, owner="worktree_clean")
+    try:
+        lock.__enter__()
+    except RuntimeError:
+        return None
+    if FACTORY_OFF_FLAG.exists():
+        lock.__exit__(None, None, None)
+        return None
+    return lock
+
+
+def _release_factory_mutation_lock(lock: FactoryMutationLock | None) -> None:
+    if lock is None:
+        return
+    lock.__exit__(None, None, None)
+
+
+def _write_result_log(log_path: Path, payload: dict) -> None:
+    log_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def _git_status() -> list[str]:
@@ -188,8 +218,46 @@ def main() -> int:
     fd = _acquire_lock()
     if fd is None:
         return 0
+    mutation_lock: FactoryMutationLock | None = None
     try:
         os.write(fd, str(os.getpid()).encode("ascii"))
+        if FACTORY_OFF_FLAG.exists():
+            payload = {
+                "checked_at": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat(),
+                "skipped": "FACTORY_OFF.flag set",
+                "flag": str(FACTORY_OFF_FLAG),
+            }
+            _write_result_log(log_path, payload)
+            print(json.dumps(payload, indent=2, sort_keys=True))
+            return 0
+        mutation_lock = _acquire_factory_mutation_lock()
+        if mutation_lock is None:
+            payload = {
+                "checked_at": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat(),
+                "skipped": (
+                    "FACTORY_OFF.flag set"
+                    if FACTORY_OFF_FLAG.exists()
+                    else "factory mutation lock busy"
+                ),
+                "flag": str(FACTORY_OFF_FLAG),
+                "lock": str(FACTORY_MUTATION_LOCK),
+            }
+            _write_result_log(log_path, payload)
+            print(json.dumps(payload, indent=2, sort_keys=True))
+            return 0
+
+        # The interlock is checked both before and immediately after the global
+        # lock.  Once admitted, this bounded unit may finish while Factory_OFF
+        # waits on the lock; OFF is declared quiescent only after it is released.
+        if FACTORY_OFF_FLAG.exists():
+            payload = {
+                "checked_at": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat(),
+                "skipped": "FACTORY_OFF.flag set after lock",
+                "flag": str(FACTORY_OFF_FLAG),
+            }
+            _write_result_log(log_path, payload)
+            print(json.dumps(payload, indent=2, sort_keys=True))
+            return 0
         status = _git_status()
         completed = _stage_completed_builds(status)
         message = _commit_and_push(completed)
@@ -201,10 +269,11 @@ def main() -> int:
             "completed_dirs": completed,
             "dirty_after": final_status,
         }
-        log_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+        _write_result_log(log_path, payload)
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
     finally:
+        _release_factory_mutation_lock(mutation_lock)
         os.close(fd)
         try:
             LOCK_PATH.unlink()

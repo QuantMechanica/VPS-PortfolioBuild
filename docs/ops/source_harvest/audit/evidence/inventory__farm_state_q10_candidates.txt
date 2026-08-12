@@ -1,0 +1,44 @@
+=== Q10 work_items (phase=Q10) ===
+wi=c042c58f-14f6-40a3-b661-585e1a55e4bf ea=QM5_10123 sym=XAUUSD.DWX status=done verdict=PASS ev=D:\QM\reports\work_items\c042c58f-14f6-40a3-b661-585e1a55e4bf\QM5_10123\Q10\XAUUSD_DWX\aggregate.json
+wi=c3ea0dcb-96f9-4f3f-a79f-7dde50417f62 ea=QM5_10128 sym=XAUUSD.DWX status=done verdict=PASS ev=D:\QM\reports\work_items\c3ea0dcb-96f9-4f3f-a79f-7dde50417f62\QM5_10128\Q10\XAUUSD_DWX\aggregate.json
+wi=8eafc3ce-58c9-4b25-9cd6-b935061c074c ea=QM5_10145 sym=XAUUSD.DWX status=done verdict=PASS ev=D:\QM\reports\work_items\8eafc3ce-58c9-4b25-9cd6-b935061c074c\QM5_10145\Q10\XAUUSD_DWX\aggregate.json
+wi=a4c37b83-b40e-4ed9-abeb-d914fa6a60b4 ea=QM5_10145 sym=XAUUSD.DWX status=done verdict=PASS ev=D:\QM\reports\work_items\a4c37b83-b40e-4ed9-abeb-d914fa6a60b4\QM5_10145\Q10\XAUUSD_DWX\aggregate.json
+wi=7c0b521a-83fb-43db-9286-2c6b9db63e9c ea=QM5_10145 sym=XAUUSD.DWX status=done verdict=PASS ev=D:\QM\reports\work_items\7c0b521a-83fb-43db-9286-2c6b9db63e9c\QM5_10145\Q10\XAUUSD_DWX\aggregate.json
+wi=2e13a544-899a-4bf2-9d23-eb2cfa196b69 ea=QM5_10183 sym=XAUUSD.DWX status=done verdict=PASS ev=D:\QM\reports\work_items\2e13a544-899a-4bf2-9d23-eb2cfa196b69\QM5_10183\Q10\XAUUSD_DWX\aggregate.json
+wi=f8a81085-838d-40f4-82d2-ac91b7484351 ea=QM5_13013 sym=NDX.DWX status=done verdict=PASS ev=D:\QM\reports\work_items\f8a81085-838d-40f4-82d2-ac91b7484351\QM5_13013\Q10\NDX_DWX\aggregate.json
+wi=25adbc0c-7b9e-4340-9f60-c288ba32b3d3 ea=QM5_20048 sym=XTIUSD.DWX status=done verdict=PASS ev=D:\QM\reports\work_items\25adbc0c-7b9e-4340-9f60-c288ba32b3d3\QM5_20048\Q10\XTIUSD_DWX\aggregate.json
+
+=== portfolio_candidates (33) ===
+ea=QM5_10403 sym=XAUUSD.DWX state=Q12_REVIEW_READY q11wi=e12845b9-04fe-4d97-af43-93d37268f2f4 ev=D:\QM\reports\work_items\e12845b9-04fe-4d97-af43-93d37268f2f4\QM5_10403\Q09_PORTFOLIO\XAUUSD_DWX\aggregate.json
+ea=QM5_10440 sym=NDX.DWX state=EVIDENCE_STALE q11wi=9799d0aa-4a75-4925-b58c-fdaa62f823ca ev=D:\QM\reports\portfolio\recert_20260627T113037+0000\summary.json
+ea=QM5_10476 sym=USDCAD.DWX state=Q12_REVIEW_READY q11wi=6e9bc500-5280-490f-9704-afd15259ce90 ev=D:\QM\reports\work_items\6e9bc500-5280-490f-9704-afd15259ce90\QM5_10476\Q09_PORTFOLIO\USDCAD_DWX\aggregate.json
+ea=QM5_10513 sym=XAUUSD.DWX state=Q12_REVIEW_READY q11wi=dd06ad11-3e9e-4d2b-b850-308253539768 ev=D:\QM\reports\portfolio\recert_20260627T113037+0000\summary.json
+ea=QM5_10692 sym=NDX.DWX state=EVIDENCE_STALE q11wi=607f7b0c-ecd8-4f72-a3e7-ca84bbd0b0ca ev=D:\QM\reports\portfolio\recert_20260627T113037+0000\summary.json
+ea=QM5_10700 sym=XAUUSD.DWX state=Q12_REVIEW_READY q11wi=55af03d6-12d2-485e-a154-e890cb02790a ev=D:\QM\reports\work_items\55af03d6-12d2-485e-a154-e890cb02790a\QM5_10700\Q09_PORTFOLIO\XAUUSD_DWX\aggregate.json
+ea=QM5_10706 sym=GBPUSD.DWX state=Q12_REVIEW_READY q11wi=22fca5c5-4480-4c49-95ef-0194086e5de3 ev=D:\QM\reports\work_items\22fca5c5-4480-4c49-95ef-0194086e5de3\QM5_10706\Q09_PORTFOLIO\GBPUSD_DWX\aggregate.json
+ea=QM5_10715 sym=USDJPY.DWX state=EVIDENCE_STALE q11wi=58d8956f-b849-42aa-8734-407d8a48de65 ev=D:\QM\reports\work_items\58d8956f-b849-42aa-8734-407d8a48de65\QM5_10715\Q09_PORTFOLIO\USDJPY_DWX\aggregate.json
+ea=QM5_10715 sym=USDJPY.DWX state=EVIDENCE_STALE q11wi=df72b85a-c537-43a7-90fe-7b342ce03361 ev=D:\QM\reports\work_items\df72b85a-c537-43a7-90fe-7b342ce03361\QM5_10715\Q09_PORTFOLIO\USDJPY_DWX\aggregate.json
+ea=QM5_10815 sym=EURUSD.DWX state=Q12_REVIEW_READY q11wi=a7398b69-db24-4d47-99d7-ee7bf1584583 ev=D:\QM\reports\work_items\a7398b69-db24-4d47-99d7-ee7bf1584583\QM5_10815\Q09_PORTFOLIO\EURUSD_DWX\aggregate.json
+ea=QM5_10815 sym=GDAXI.DWX state=Q12_REVIEW_READY q11wi=ae828ece-f1ab-4670-9f87-214b0400dc5a ev=D:\QM\reports\work_items\ae828ece-f1ab-4670-9f87-214b0400dc5a\QM5_10815\Q09_PORTFOLIO\GDAXI_DWX\aggregate.json
+ea=QM5_10911 sym=GDAXI.DWX state=Q12_REVIEW_READY q11wi=545758f3-e272-447c-985b-6976fe06c6ac ev=D:\QM\reports\work_items\545758f3-e272-447c-985b-6976fe06c6ac\QM5_10911\Q08\GDAXI_DWX\aggregate.json
+ea=QM5_10919 sym=XTIUSD.DWX state=Q12_REVIEW_READY q11wi=c59d8929-2b8a-41d3-be00-753ffb69e33c ev=D:\QM\reports\work_items\c59d8929-2b8a-41d3-be00-753ffb69e33c\QM5_10919\Q09_PORTFOLIO\XTIUSD_DWX\aggregate.json
+ea=QM5_10939 sym=GBPUSD.DWX state=Q12_REVIEW_READY q11wi=dfeb6afb-61e6-4deb-9e61-d8873271eb70 ev=D:\QM\reports\work_items\dfeb6afb-61e6-4deb-9e61-d8873271eb70\QM5_10939\Q09_PORTFOLIO\GBPUSD_DWX\aggregate.json
+ea=QM5_10940 sym=XAUUSD.DWX state=Q12_REVIEW_READY q11wi=e25da444-2e84-402c-9ff1-a4f7493731a6 ev=D:\QM\reports\portfolio\recert_20260627T113037+0000\summary.json
+ea=QM5_11132 sym=SP500.DWX state=Q12_REVIEW_READY q11wi=1ea996fd-ef55-48ce-93d8-2b0a13c4f19a ev=D:\QM\reports\portfolio\recert_20260627T113037+0000\summary.json
+ea=QM5_11132 sym=SP500.DWX state=DUPLICATE_SUPERSEDED q11wi=b258fc3b-e8c3-4988-be44-ba56d072befa ev=D:\QM\reports\work_items\b258fc3b-e8c3-4988-be44-ba56d072befa\QM5_11132\Q09_PORTFOLIO\SP500_DWX\aggregate.json
+ea=QM5_11132 sym=SP500.DWX state=DUPLICATE_SUPERSEDED q11wi=cfea221d-581c-4647-93eb-b58ff31bd663 ev=D:\QM\reports\work_items\cfea221d-581c-4647-93eb-b58ff31bd663\QM5_11132\Q09_PORTFOLIO\SP500_DWX\aggregate.json
+ea=QM5_11165 sym=AUDCAD.DWX state=Q12_REVIEW_READY q11wi=7a8c7433-07d2-451d-a96d-4570d7fc5c17 ev=D:\QM\reports\work_items\7a8c7433-07d2-451d-a96d-4570d7fc5c17\QM5_11165\Q09_PORTFOLIO\AUDCAD_DWX\aggregate.json
+ea=QM5_11165 sym=EURUSD.DWX state=Q12_REVIEW_READY q11wi=80bcdc1b-74ae-40f4-82be-b0b87771d4ea ev=D:\QM\reports\work_items\80bcdc1b-74ae-40f4-82be-b0b87771d4ea\QM5_11165\Q09_PORTFOLIO\EURUSD_DWX\aggregate.json
+ea=QM5_11421 sym=AUDUSD.DWX state=Q12_REVIEW_READY q11wi=2e1111b9-0cb9-4fd2-8e89-3ac2960b58fd ev=D:\QM\reports\work_items\2e1111b9-0cb9-4fd2-8e89-3ac2960b58fd\QM5_11421\Q09_PORTFOLIO\AUDUSD_DWX\aggregate.json
+ea=QM5_11421 sym=EURUSD.DWX state=Q12_REVIEW_READY q11wi=6c25bcc5-2050-44a4-ab52-bbbb4bffb5d6 ev=D:\QM\reports\work_items\6c25bcc5-2050-44a4-ab52-bbbb4bffb5d6\QM5_11421\Q09_PORTFOLIO\EURUSD_DWX\aggregate.json
+ea=QM5_11708 sym=EURUSD.DWX state=Q12_REVIEW_READY q11wi=790edb77-fe2d-4ba8-8127-0c8e5cfb5d33 ev=D:\QM\reports\work_items\790edb77-fe2d-4ba8-8127-0c8e5cfb5d33\QM5_11708\Q09_PORTFOLIO\EURUSD_DWX\aggregate.json
+ea=QM5_12474 sym=GBPUSD.DWX state=Q12_REVIEW_READY q11wi=c028199b-4e70-4948-a9d9-0450492ec852 ev=D:\QM\reports\work_items\c028199b-4e70-4948-a9d9-0450492ec852\QM5_12474\Q09_PORTFOLIO\GBPUSD_DWX\aggregate.json
+ea=QM5_12567 sym=XAUUSD.DWX state=Q12_REVIEW_READY q11wi=d0dae336-db27-4b85-b6ea-c91f6717b5ef ev=D:\QM\reports\work_items\d0dae336-db27-4b85-b6ea-c91f6717b5ef\QM5_12567\Q09_PORTFOLIO\XAUUSD_DWX\aggregate.json
+ea=QM5_12567 sym=XNGUSD.DWX state=Q12_REVIEW_READY q11wi=q09-rescue-12567-xng-619205deb800 ev=D:\QM\reports\portfolio\recert_20260627T113037+0000\summary.json
+ea=QM5_12778 sym=QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1 state=Q12_REVIEW_READY q11wi=0b1fddba-6c4e-47ec-b9b3-6b54273e5832 ev=D:\QM\reports\work_items\0b1fddba-6c4e-47ec-b9b3-6b54273e5832\QM5_12778\Q09_PORTFOLIO\QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1\aggregate.json
+ea=QM5_12969 sym=USDJPY.DWX state=Q12_REVIEW_READY q11wi=de65a075-6bd9-49c9-a775-624a32fc4214 ev=D:\QM\reports\work_items\de65a075-6bd9-49c9-a775-624a32fc4214\QM5_12969\Q09_PORTFOLIO\USDJPY_DWX\aggregate.json
+ea=QM5_13117 sym=QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1 state=Q12_REVIEW_READY q11wi=1d32c07e-126f-4763-9a7f-de73c5328e36 ev=D:\QM\reports\work_items\1d32c07e-126f-4763-9a7f-de73c5328e36\QM5_13117\Q09_PORTFOLIO\QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1\aggregate.json
+ea=QM5_13128 sym=NDX.DWX state=EVIDENCE_STALE q11wi=q09-adhoc-13128-ndx-preFOMC ev=D:/QM/reports/QM5_13128/Q09_PORTFOLIO/NDX_DWX/aggregate.json
+ea=QM5_1556 sym=XAUUSD.DWX state=Q12_REVIEW_READY q11wi=e241bacd-5681-4172-a785-a475fd25140b ev=D:\QM\reports\work_items\e241bacd-5681-4172-a785-a475fd25140b\QM5_1556\Q09_PORTFOLIO\XAUUSD_DWX\aggregate.json
+ea=QM5_1567 sym=EURUSD.DWX state=Q12_REVIEW_READY q11wi=89acf6eb-581b-411b-9aaf-2f19c12c68c5 ev=D:\QM\reports\work_items\89acf6eb-581b-411b-9aaf-2f19c12c68c5\QM5_1567\Q09_PORTFOLIO\EURUSD_DWX\aggregate.json
+ea=QM5_1567 sym=XAGUSD.DWX state=Q12_REVIEW_READY q11wi=acee11e2-7a30-417c-ba86-40b05b2076b5 ev=D:\QM\reports\work_items\acee11e2-7a30-417c-ba86-40b05b2076b5\QM5_1567\Q09_PORTFOLIO\XAGUSD_DWX\aggregate.json

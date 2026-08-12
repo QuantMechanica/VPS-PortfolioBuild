@@ -20,7 +20,8 @@ $neededFunctions = @(
     "Convert-ReportNumber",
     "Test-TesterReportHasCompleteMetrics",
     "Publish-TesterReportCandidate",
-    "Wait-ForReportExport"
+    "Wait-ForReportExport",
+    "Get-ReportExportWaitSeconds"
 )
 
 foreach ($name in $neededFunctions) {
@@ -62,6 +63,32 @@ try {
     if (Wait-ForReportExport -ReportPath $reportPath -TerminalRoot $tmpRoot -MaxWaitSeconds 0 -RequireCompleteMetrics) {
         throw "Incomplete M0/1970 tester report was accepted as materialized."
     }
+    $fullWait = Get-ReportExportWaitSeconds -ReportPath $reportPath -WritersQuiescent $false -DefaultWaitSeconds 240
+    if ($fullWait -ne 240) {
+        throw "Incomplete report with an active/unproven writer lost its export grace: $fullWait"
+    }
+    $quiescentWait = Get-ReportExportWaitSeconds -ReportPath $reportPath -WritersQuiescent $true -DefaultWaitSeconds 240
+    if ($quiescentWait -ne 0) {
+        throw "Quiescent non-empty incomplete report retained the full export wait: $quiescentWait"
+    }
+
+    Remove-Item -LiteralPath $reportPath -Force
+    $missingWait = Get-ReportExportWaitSeconds -ReportPath $reportPath -WritersQuiescent $true -DefaultWaitSeconds 240
+    if ($missingWait -ne 240) {
+        throw "Missing report lost its delayed-export grace: $missingWait"
+    }
+
+    @"
+<html><body><table>
+<tr><td>Expert:</td><td><b></b></td></tr>
+<tr><td>Symbol:</td><td><b></b></td></tr>
+<tr><td>Period:</td><td><b>M0 (1970.01.01 - 1970.01.01)</b></td></tr>
+<tr><td>Bars:</td><td><b>0</b></td></tr>
+<tr><td>Profit Factor:</td><td><b>0.00</b></td></tr>
+<tr><td>Equity Drawdown Maximal:</td><td><b>0 (0%)</b></td></tr>
+<tr><td>Total Trades:</td><td><b>0</b></td></tr>
+</table></body></html>
+"@ | Set-Content -LiteralPath $reportPath -Encoding UTF8
 
     $canonicalReportPath = Join-Path $tmpRoot "canonical-report.htm"
     $publishedPath = Publish-TesterReportCandidate -SourceReportPath $reportPath -CanonicalReportPath $canonicalReportPath

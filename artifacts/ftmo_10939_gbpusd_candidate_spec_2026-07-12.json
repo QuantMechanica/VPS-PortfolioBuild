@@ -1,0 +1,28 @@
+{
+  "candidate_evidence": [
+    "artifacts/ftmo_10939_gbpusd_fresh_stream_reconciliation_2026-07-12.json",
+    "artifacts/ftmo_10939_gbpusd_current_report_cost_reconciliation_2026-07-12.json",
+    "artifacts/ftmo_10939_gbpusd_causal_filter_screen_2026-07-12.json"
+  ],
+  "sleeve": {
+    "ea_id": 10939,
+    "symbol": "GBPUSD.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10939_gbpusd_recompiled_20260712\\QM5_10939\\20260712_053504\\summary.json",
+    "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10939_GBPUSD_DWX_RECOMPILED_20260712.jsonl",
+    "base_risk_fixed": 1000.0,
+    "qualification": "fresh_reconciled_full_complete_year_ftmo_cost_pass_research_only",
+    "cost": {
+      "ftmo_symbol_code": "GBP/USD",
+      "commission_percent_per_side": 0.0,
+      "flat_round_trip_commission_per_lot": 5.0,
+      "swap_long_points": -5.77,
+      "swap_short_points": -4.97,
+      "contract_size": 100000.0,
+      "source_contract_size": 100000.0,
+      "profit_currency_to_account_rate": 1.0,
+      "derive_profit_currency_rate_from_pnl": false,
+      "digits": 5,
+      "triple_weekday": 2
+    }
+  }
+}

@@ -3,7 +3,7 @@
 ; ea_id:        10298
 ; ea_slug:      cinar-force
 ; ea_version:   v5.0
-; set_version:  s20260707-stress-med
+; set_version:  s20260716-stress-med
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  q05_stress_medium
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   8c82e423e048a8299d7f4c1ae93b07314f15cb08e2106f59d109d8fe32c71c23
 ; author:       Development
-; date:         2026-07-07
+; date:         2026-07-16
 ;==========================================================
 qm_magic_slot_offset=34
 RISK_FIXED=1000

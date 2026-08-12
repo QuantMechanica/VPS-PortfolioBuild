@@ -1,0 +1,162 @@
+{
+  "_artifact": "venue_cost_model",
+  "_authority": "OWNER 2026-07-19 directive: cost gate must use REAL Darwinex-Zero / FTMO worst-case costs, not heuristic per-trade class figures. Built ON the OWNER-ratified worst-case model in framework/registry/live_commission.json (2026-06-01) and the DXZ23 requal / FTMO Round24 costing chains.",
+  "generated": "2026-07-19",
+  "account_currency": "USD",
+  "convention": "gate cost = max(dxz, ftmo) worst-case per round-trip lot. Per-trade engine (tools/strategy_farm/portfolio/commission.py) computes cost_rt = max(pct_rate_rt * notional_acct, flat_per_lot_rt * volume). ftmo worst-case (deal/report chain) = profit + swap - max(2x|close_commission|, registry flat round-trip fallback); the flat fallback = live_commission.json flat_per_lot_rt.",
+  "canonical_engine": {
+    "registry": "framework/registry/live_commission.json",
+    "engine": "tools/strategy_farm/portfolio/commission.py (CommissionModel.cost_round_trip)",
+    "class_model": {
+      "forex": {"pct_rate_rt": 0.00005, "flat_per_lot_rt": 5.0},
+      "index": {"pct_rate_rt": 0.00005, "flat_per_lot_rt": 5.5},
+      "commodity": {"pct_rate_rt": 0.00005, "flat_per_lot_rt": 0.0}
+    },
+    "note": "This venue_cost_model refines the class model to PER-SYMBOL, per-venue truth. Where a per-symbol worst_case differs from the class model, it is flagged in the symbol's notes. pct_rate_rt 0.00005 = 0.005% of notional round-trip = 0.5 basis points."
+  },
+  "sources": [
+    {"id": "DXZ_TESTER_GROUPS", "path": "D:/QM/mt5/T1/MQL5/Profiles/Tester/Groups/Darwinex-Live_real.txt", "retrieved": "2026-07-19", "what": "GROUND TRUTH: Darwinex real commission schedule as loaded into the MT5 strategy tester (UTF-16 LE). Per-side CommissionValue + CommissionMode per symbol-path group. This is the broker's actual injected commission table, not an estimate."},
+    {"id": "DXZ_SYMBOL_MATRIX", "path": "framework/registry/dwx_symbol_matrix.csv", "retrieved": "2026-07-19", "what": "Maps each .DWX symbol to its Custom\\... tester group path (=> which CommissionValue applies). Resolves WS30=Index1(cheap), NDX/UK100=Index3, GDAXI=IndexDAX, commodities=Commodities\\*."},
+    {"id": "DXZ_OFFICIAL_EXEC_COSTS", "url": "https://help.darwinex.com/execution-costs", "retrieved": "2026-07-19", "what": "Official DXZ page: forex & commodities gross commission ~0.005% of trade nominal in base currency round-trip; 1 lot EURUSD (EUR100k) = EUR5 RT; charged in instrument/base ccy then FX-converted; DXZ mirrors underlying Darwinex execution conditions."},
+    {"id": "DXZ_ZERO_DOCS", "url": "https://www.darwinexzero.com/docs/trading-commissions-and-swaps", "retrieved": "2026-07-19", "what": "DXZ Zero: execution cost depends on asset and open volume; per-asset commission table is behind darwinexzero.com/assets (login-gated, OWNER-only). Confirms DXZ Zero mirrors real Darwinex commissions/swaps."},
+    {"id": "FTMO_ZERO_INDICES", "url": "https://ftmo.com/en/blog/zero-commissions-on-indices/", "retrieved": "2026-07-19", "what": "Official FTMO: zero commission applies to ALL index symbols."},
+    {"id": "FTMO_SYMBOLS", "url": "https://ftmo.com/en/symbols/", "retrieved": "2026-07-19", "what": "FTMO symbols page; per-instrument commission numbers are on the platform contract specs (not published in page body)."},
+    {"id": "FTMO_FOREX_SECONDARY", "url": "https://www.fxempire.com/prop-firms/ftmo", "retrieved": "2026-07-19", "what": "Secondary review: FTMO forex ~$5/lot round-turn; indices commission-free; oil (cash CFD) commission-free; gold reported very low. Corroborated by 2026 web sources that FTMO Sep-2025 raw model = $2.50/side forex & metals = $5 RT."},
+    {"id": "EVIDENCE_DXZ_RESEARCH", "path": "docs/ops/DXZ_COMMISSION_RESEARCH_2026-06-01.md", "retrieved": "2026-07-19", "what": "Claude research note establishing DXZ is asset-class-specific %-notional/per-contract, NOT a flat $7/lot; FX ~EUR5 RT."},
+    {"id": "EVIDENCE_WORSTCASE_SPEC", "path": "docs/ops/Q08_Q11_WORSTCASE_COMMISSION_SPEC_2026-06-01.md", "retrieved": "2026-07-19", "what": "Engineering spec defining the max(DXZ,FTMO) per-class worst-case model that live_commission.json encodes."},
+    {"id": "EVIDENCE_V5_BASELINE", "path": "docs/ops/V5_SYMBOL_COMMISSION_SWAP_BASELINE.md", "retrieved": "2026-07-19", "what": "Per-symbol commission values copied from the tester Groups file; swap values marked PENDING MT5 runtime snapshot (SYMBOL_SWAP_LONG/SHORT) for ALL symbols."},
+    {"id": "EVIDENCE_DXZ23_COHORT", "path": "docs/ops/evidence/DXZ23_COST_ADJUSTED_CANDIDATE_COHORT_2026-07-16.md", "retrieved": "2026-07-19", "what": "DXZ-23 requal wave: per-sleeve DXZ 0.005% (0.5bp) round-trip commission-adjusted PF; spread/swap/slippage explicitly OPEN (not certified). Registry mixed USD-flat/EUR-notional max() excluded as dimensionally uncertified."},
+    {"id": "EVIDENCE_Q08_RT_HANDOFF", "path": "docs/ops/evidence/Q08_ROUND_TRIP_COMMISSION_HANDOFF_2026-07-10.md", "retrieved": "2026-07-19", "what": "Reconciles Q08 emitted net + missing entry-side commission to MT5 Net Profit for NDX/USDJPY/GDAXI (native tester commissions from the DXZ Groups file)."},
+    {"id": "EVIDENCE_FTMO_SCREEN", "path": "docs/ops/PROP_CHALLENGE_INTRADAY_CANDIDATE_SCREEN_2026-06-29.md", "retrieved": "2026-07-19", "what": "FTMO Round1-30 screen; PnL correction = profit + swap - max(2*abs(close_commission), registry flat round-trip fallback). Defines the FTMO worst-case convention."},
+    {"id": "GROUNDTRUTH_FTMO_JOURNAL", "path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850/logs/2026071*.log", "retrieved": "2026-07-19", "what": "FTMO trial 1513845506 journals (06-17.07). Deal lines present (e.g. XAUUSD @4074.34, US100.cash @29561-29828, USOIL.cash @71.423). PER-DEAL COMMISSION IS NOT FILE-VISIBLE in journals (MT5 journals record only 'deal # ... done', never the commission amount). Reference prices below are drawn from these deals; commission ground-truth would require an exported account history report (not on disk)."},
+    {"id": "GROUNDTRUTH_TLIVE_JOURNAL", "path": "C:/QM/mt5/T_Live/MT5_Base/logs/2026*.log", "retrieved": "2026-07-19", "what": "DXZ live 4000090541 journals since 2026-06-28. grep 'commission' => 0 hits: per-deal commission NOT file-visible. Same limitation as FTMO journal."}
+  ],
+  "ground_truth_note": "Per-deal commission is NOT visible in MT5 terminal journal (.log) files for either live account (DXZ 4000090541) or the FTMO trial (1513845506). MT5 journals log order/deal execution ('deal # ... done') but never the commission charge. The authoritative per-deal commission lives only in the terminal's history DB / an exported account statement, which is not present on disk. Therefore the commission figures below are sourced from (1) the DXZ tester Groups file = Darwinex's real injected commission schedule, and (2) official venue pages + FTMO secondary sources. Indicative per-lot USD figures for %-of-notional instruments use reference prices observed in the FTMO trial journal 2026-07-10 (gold 4074.34, US100 ~29,700, USOIL 71.423) and approximate 2026 FX levels, and are LABELLED indicative because they scale with price.",
+  "reference_prices_indicative_2026_07": {
+    "EURUSD": 1.17, "GBPUSD": 1.27, "AUDUSD": 0.66, "USDJPY": 148.0,
+    "XAUUSD_per_oz": 4074.0, "XAGUSD_per_oz": 38.0,
+    "US100": 29700.0, "US500": 6300.0, "US30": 44000.0, "GER40": 24000.0, "UK100": 9500.0,
+    "USOIL_per_bbl": 71.4, "XNG_per_mmbtu": 3.5,
+    "_note": "Indicative only; gold/US100/oil from FTMO journal 2026-07-10, FX/other approximate. Used ONLY to illustrate %-of-notional commission as a per-lot USD number."
+  },
+  "symbols": {
+    "EURUSD": {
+      "asset_class": "forex", "dwx_symbol": "EURUSD.DWX",
+      "dxz": {"commission_model": "pct_notional_0.005pct_rt", "per_side_base_ccy": 2.5, "commission_rt_base_ccy": 5.0, "commission_rt_per_lot_usd_indicative": 5.85, "commission_rt_basis": "EUR5 RT (2.5 EUR/side, tester Groups Forex\\* Mode=1 base-ccy) => ~$5.85 at EURUSD 1.17; = 0.005% of USD notional", "tester_group": "Forex\\* / Custom\\Forex\\* CommissionValue=2.5000 Mode=1(base ccy)", "spread_typical_points": null, "spread_source": "embedded in .DWX 100% real-tick history; current broker-parity NOT certified (DXZ23 cohort gate S). Secondary/marketing ~0.1-0.6 pip, not our data.", "swap_note": null},
+      "ftmo": {"commission_model": "flat_per_lot_rt", "commission_rt_per_lot_usd": 5.0, "commission_rt_basis": "$2.50/side = $5 RT (FTMO Sep-2025 raw forex/metals model; fxempire secondary). Official contract spec platform-gated.", "swap_note": null},
+      "worst_case_rt_per_lot_usd": 5.85,
+      "notes": "DXZ %-notional ($5.85 at 1.17) > FTMO flat ($5). Registry class-flat $5 is the FTMO floor; the engine's 0.00005*notional term recovers the DXZ figure when notional_acct is supplied. USD-equiv varies with EURUSD level (EUR5 fixed in base ccy)."
+    },
+    "GBPUSD": {
+      "asset_class": "forex", "dwx_symbol": "GBPUSD.DWX",
+      "dxz": {"commission_model": "pct_notional_0.005pct_rt", "per_side_base_ccy": 2.5, "commission_rt_base_ccy": 5.0, "commission_rt_per_lot_usd_indicative": 6.35, "commission_rt_basis": "GBP5 RT (2.5 GBP/side, tester Groups Forex\\* Mode=1 base-ccy) => ~$6.35 at GBPUSD 1.27; = 0.005% of USD notional", "tester_group": "Custom\\Forex\\* CommissionValue=2.5000 Mode=1(base ccy)", "spread_typical_points": null, "spread_source": "embedded in .DWX real-tick history; broker-parity NOT certified.", "swap_note": null},
+      "ftmo": {"commission_model": "flat_per_lot_rt", "commission_rt_per_lot_usd": 5.0, "commission_rt_basis": "$2.50/side = $5 RT (FTMO raw model, secondary).", "swap_note": null},
+      "worst_case_rt_per_lot_usd": 6.35,
+      "notes": "DXZ %-notional dominates because GBP base notional (~$127k/lot) > $100k. Highest forex worst-case in the book. This is the number the Pound-Shorter rescue must use (see scratchpad note b)."
+    },
+    "USDJPY": {
+      "asset_class": "forex", "dwx_symbol": "USDJPY.DWX",
+      "dxz": {"commission_model": "pct_notional_0.005pct_rt", "per_side_base_ccy": 2.5, "commission_rt_base_ccy": 5.0, "commission_rt_per_lot_usd_indicative": 5.0, "commission_rt_basis": "USD5 RT (base ccy = USD, 100k USD notional) = 0.005% of $100k.", "tester_group": "Custom\\Forex\\* CommissionValue=2.5000 Mode=1(base ccy)", "spread_typical_points": null, "spread_source": "embedded in .DWX real-tick history; broker-parity NOT certified.", "swap_note": null},
+      "ftmo": {"commission_model": "flat_per_lot_rt", "commission_rt_per_lot_usd": 5.0, "commission_rt_basis": "$2.50/side = $5 RT (secondary).", "swap_note": null},
+      "worst_case_rt_per_lot_usd": 5.0,
+      "notes": "USD-base pair: DXZ and FTMO both = $5 RT. Registry class-flat $5 exact."
+    },
+    "AUDUSD": {
+      "asset_class": "forex", "dwx_symbol": "AUDUSD.DWX",
+      "dxz": {"commission_model": "pct_notional_0.005pct_rt", "per_side_base_ccy": 2.5, "commission_rt_base_ccy": 5.0, "commission_rt_per_lot_usd_indicative": 3.30, "commission_rt_basis": "AUD5 RT (2.5 AUD/side base ccy) => ~$3.30 at AUDUSD 0.66; = 0.005% of ~$66k USD notional.", "tester_group": "Custom\\Forex\\* CommissionValue=2.5000 Mode=1(base ccy)", "spread_typical_points": null, "spread_source": "embedded in .DWX real-tick history; broker-parity NOT certified.", "swap_note": null},
+      "ftmo": {"commission_model": "flat_per_lot_rt", "commission_rt_per_lot_usd": 5.0, "commission_rt_basis": "$2.50/side = $5 RT (secondary).", "swap_note": null},
+      "worst_case_rt_per_lot_usd": 5.0,
+      "notes": "FTMO flat $5 DOMINATES because AUD base notional (~$66k) makes DXZ %-notional only ~$3.30. Registry class-flat $5 correct here."
+    },
+    "XAUUSD": {
+      "asset_class": "commodity", "dwx_symbol": "XAUUSD.DWX", "contract_size_oz": 100,
+      "dxz": {"commission_model": "pct_notional_0.005pct_rt", "per_side_pct": 0.0025, "commission_rt_per_lot_usd_indicative": 20.37, "commission_rt_basis": "0.005% of notional RT; at gold $4074/oz x 100oz = $407,400 notional => $20.37 per FULL lot. tester Groups Commodities\\* CommissionValue=0.0025 Mode=4. Official DXZ page confirms commodities 0.005% notional RT.", "tester_group": "Commodities\\* / Custom\\Commodities\\* CommissionValue=0.0025 Mode=4(points)", "spread_typical_points": null, "spread_source": "embedded in .DWX real-tick history; broker-parity NOT certified. Card cites ~20-30c indicative.", "swap_note": null},
+      "ftmo": {"commission_model": "pct_notional_metals", "commission_rt_per_lot_usd_indicative": 20.37, "commission_rt_basis": "FTMO metals 0.0025%/side = 0.005% RT (FTMO US spec, secondary) ~= DXZ. Some reviews report lower (~0.0014%). Use 0.005% RT as conservative.", "swap_note": null},
+      "worst_case_rt_per_lot_usd": 20.37,
+      "notes": "%-of-notional, flat floor $0. Per-lot $20.37 is a FULL 1.0 lot at $4074 gold; realised per-trade at RISK_FIXED $1000 sizing is far smaller (~$0.7-2/trade for typical ATR stops, up to ~$6 for tight stops) because lots are small. DXZ ~= FTMO metals; both %-notional."
+    },
+    "XAGUSD": {
+      "asset_class": "commodity", "dwx_symbol": "XAGUSD.DWX", "contract_size_oz": 5000,
+      "dxz": {"commission_model": "pct_notional_0.005pct_rt", "per_side_pct": 0.0025, "commission_rt_per_lot_usd_indicative": 9.5, "commission_rt_basis": "0.005% of notional RT; at silver ~$38/oz x 5000oz = ~$190,000 => ~$9.5 per full lot (INDICATIVE, silver price approximate). tester Groups Commodities\\* 0.0025 Mode=4.", "tester_group": "Custom\\Commodities\\Metals\\XAGUSD.DWX under Commodities\\* 0.0025 Mode=4", "spread_typical_points": null, "spread_source": "embedded in .DWX real-tick history; broker-parity NOT certified.", "swap_note": null},
+      "ftmo": {"commission_model": "pct_notional_metals", "commission_rt_per_lot_usd_indicative": 9.5, "commission_rt_basis": "FTMO metals 0.005% RT (secondary) ~= DXZ.", "swap_note": null},
+      "worst_case_rt_per_lot_usd": 9.5,
+      "notes": "Silver contract 5000oz; silver reference price approximate (not in FTMO journal). %-notional both venues."
+    },
+    "SP500": {
+      "asset_class": "index", "dwx_symbol": "SP500.DWX", "live_order_symbol": "SP500",
+      "dxz": {"commission_model": "flat_margin_ccy_or_pct", "commission_rt_per_lot_usd": null, "commission_rt_basis": "UNRESOLVED: SP500.DWX has an EMPTY import_log_path in dwx_symbol_matrix.csv (OWNER-provided custom symbol) so its tester Groups path (Index 1/2/3) is not determinable from files. If Index 2 => $0.55 RT (0.275/side); if Index 3 => $5.50 RT (2.75/side).", "tester_group": "UNKNOWN (symbol path not in matrix)", "spread_typical_points": null, "spread_source": "embedded in .DWX real-tick history; broker-parity NOT certified.", "swap_note": null},
+      "ftmo": {"commission_model": "commission_free", "commission_rt_per_lot_usd": 0.0, "commission_rt_basis": "FTMO indices commission-free (official blog).", "swap_note": null},
+      "worst_case_rt_per_lot_usd": null,
+      "notes": "worst_case = DXZ figure (FTMO=$0). RESOLVE by reading SYMBOL_PATH of SP500.DWX on T1 or its tester group; bounded $0.55-$5.50 RT. Registry class-flat currently charges $5.5 (upper bound, conservative)."
+    },
+    "US500": {
+      "asset_class": "index", "alias_of": "SP500",
+      "notes": "US500 == SP500 (DXZ .DWX alias SP500.DWX, live order symbol SP500). See SP500 entry."
+    },
+    "US100": {
+      "asset_class": "index", "dwx_symbol": "NDX.DWX", "aka": "NDX/NAS100",
+      "dxz": {"commission_model": "flat_margin_ccy", "per_side_margin_ccy_usd": 2.75, "commission_rt_per_lot_usd": 5.50, "commission_rt_basis": "2.75 USD/side (margin ccy USD) => $5.50 RT. tester Groups Indices\\Index 3\\* Mode=3(margin ccy). Symbol matrix: NDX.DWX under Custom\\Indices\\Index 3.", "tester_group": "Indices\\Index 3\\* CommissionValue=2.7500 Mode=3(margin ccy)", "spread_typical_points": null, "spread_source": "embedded in .DWX real-tick history; broker-parity NOT certified.", "swap_note": null},
+      "ftmo": {"commission_model": "commission_free", "commission_rt_per_lot_usd": 0.0, "commission_rt_basis": "FTMO indices commission-free (official).", "swap_note": null},
+      "worst_case_rt_per_lot_usd": 5.50,
+      "notes": "worst_case = DXZ $5.50 (FTMO=$0). Matches registry index class-flat $5.5 exactly. Reconciled to native tester commission in Q08_ROUND_TRIP_COMMISSION_HANDOFF (QM5_10375/NDX)."
+    },
+    "NDX": {"asset_class": "index", "alias_of": "US100", "notes": "NDX.DWX == US100/NAS100. See US100."},
+    "WS30": {
+      "asset_class": "index", "dwx_symbol": "WS30.DWX", "aka": "US30/DJ30/DOW",
+      "dxz": {"commission_model": "flat_margin_ccy", "per_side_margin_ccy_usd": 0.35, "commission_rt_per_lot_usd": 0.70, "commission_rt_basis": "0.35 USD/side (margin ccy) => $0.70 RT. tester Groups Indices\\Index 1\\* Mode=3. Symbol matrix: WS30.DWX under Custom\\Indices\\Index 1.", "tester_group": "Indices\\Index 1\\* CommissionValue=0.3500 Mode=3(margin ccy)", "spread_typical_points": null, "spread_source": "embedded in .DWX real-tick history; broker-parity NOT certified.", "swap_note": null},
+      "ftmo": {"commission_model": "commission_free", "commission_rt_per_lot_usd": 0.0, "commission_rt_basis": "FTMO indices commission-free (official).", "swap_note": null},
+      "worst_case_rt_per_lot_usd": 0.70,
+      "notes": "DISCREPANCY: WS30 real DXZ = $0.70 RT but the registry index class-flat charges $5.5 => WS30 is ~8x OVER-COSTED by the current class model. US30 is the cheapest index to trade. Fix candidate: per-symbol index rates."
+    },
+    "US30": {"asset_class": "index", "alias_of": "WS30", "notes": "US30 == WS30.DWX. See WS30 ($0.70 RT, cheapest index)."},
+    "GER40": {
+      "asset_class": "index", "dwx_symbol": "GDAXI.DWX", "aka": "DE40/DAX",
+      "dxz": {"commission_model": "flat_margin_ccy", "per_side_margin_ccy_eur": 2.75, "commission_rt_margin_ccy_eur": 5.50, "commission_rt_per_lot_usd_indicative": 6.05, "commission_rt_basis": "2.75 EUR/side (margin ccy EUR) => EUR5.50 RT => ~$6.05 at EURUSD 1.10-1.17. tester Groups Indices\\Index DAX\\* Mode=3. Symbol matrix: GDAXI.DWX under Custom\\Indices\\Index DAX.", "tester_group": "Indices\\Index DAX\\* CommissionValue=2.7500 Mode=3(margin ccy)", "spread_typical_points": null, "spread_source": "embedded in .DWX real-tick history; broker-parity NOT certified.", "swap_note": null},
+      "ftmo": {"commission_model": "commission_free", "commission_rt_per_lot_usd": 0.0, "commission_rt_basis": "FTMO indices commission-free (official).", "swap_note": null},
+      "worst_case_rt_per_lot_usd": 6.05,
+      "notes": "Margin ccy EUR => EUR5.50 RT (~$6.05). Slightly ABOVE registry class-flat $5.5 in USD terms because charged in EUR. Reconciled native tester commission in Q08 handoff (QM5_12986/GDAXI)."
+    },
+    "GDAXI": {"asset_class": "index", "alias_of": "GER40", "notes": "GDAXI.DWX == GER40/DE40/DAX. See GER40."},
+    "UK100": {
+      "asset_class": "index", "dwx_symbol": "UK100.DWX", "aka": "FTSE100",
+      "dxz": {"commission_model": "flat_margin_ccy", "per_side_margin_ccy_gbp": 2.75, "commission_rt_margin_ccy_gbp": 5.50, "commission_rt_per_lot_usd_indicative": 6.99, "commission_rt_basis": "2.75 GBP/side (margin ccy GBP) => GBP5.50 RT => ~$6.99 at GBPUSD 1.27. tester Groups Indices\\Index 3\\* Mode=3. Symbol matrix: UK100.DWX under Custom\\Indices\\Index 3.", "tester_group": "Indices\\Index 3\\* CommissionValue=2.7500 Mode=3(margin ccy)", "spread_typical_points": null, "spread_source": "embedded in .DWX real-tick history; broker-parity NOT certified.", "swap_note": null},
+      "ftmo": {"commission_model": "commission_free", "commission_rt_per_lot_usd": 0.0, "commission_rt_basis": "FTMO indices commission-free (official).", "swap_note": null},
+      "worst_case_rt_per_lot_usd": 6.99,
+      "notes": "Margin ccy GBP => GBP5.50 RT (~$6.99). ABOVE registry class-flat $5.5 in USD terms (charged in GBP). Most expensive index in USD terms."
+    },
+    "XTIUSD": {
+      "asset_class": "commodity", "dwx_symbol": "XTIUSD.DWX", "aka": "USOIL/WTI", "contract_size_bbl": 1000,
+      "dxz": {"commission_model": "pct_notional_0.005pct_rt", "per_side_pct": 0.0025, "commission_rt_per_lot_usd_indicative": 3.57, "commission_rt_basis": "0.005% of notional RT; at WTI $71.4/bbl x 1000 = $71,400 notional => ~$3.57 per full lot (oil price 71.423 from FTMO journal 2026-07-10). tester Groups Commodities\\* 0.0025 Mode=4.", "tester_group": "Custom\\Commodities\\Energies\\XTIUSD.DWX under Commodities\\* 0.0025 Mode=4", "spread_typical_points": null, "spread_source": "embedded in .DWX real-tick history; broker-parity NOT certified.", "swap_note": null},
+      "ftmo": {"commission_model": "commission_free", "commission_rt_per_lot_usd": 0.0, "commission_rt_basis": "FTMO crude oil (cash CFD) commission-free (official/secondary).", "swap_note": null},
+      "worst_case_rt_per_lot_usd": 3.57,
+      "notes": "worst_case = DXZ 0.005% notional (FTMO oil = $0). Contract 1000 bbl. Realised per-trade small at $1000-risk sizing."
+    },
+    "USOIL": {"asset_class": "commodity", "alias_of": "XTIUSD", "notes": "USOIL/WTI == XTIUSD.DWX. See XTIUSD."},
+    "XBRUSD": {
+      "asset_class": "commodity", "dwx_symbol": null, "aka": "Brent/UKOIL",
+      "dxz": {"commission_model": null, "commission_rt_per_lot_usd": null, "commission_rt_basis": "NOT in DXZ .DWX universe (no XBRUSD.DWX in dwx_symbol_matrix.csv; only WTI XTIUSD and nat-gas XNGUSD energies). If added it would inherit Commodities\\* 0.005% notional RT.", "tester_group": null, "spread_typical_points": null, "spread_source": null, "swap_note": null},
+      "ftmo": {"commission_model": "commission_free", "commission_rt_per_lot_usd": 0.0, "commission_rt_basis": "FTMO Brent (cash CFD) commission-free (official/secondary).", "swap_note": null},
+      "worst_case_rt_per_lot_usd": null,
+      "notes": "AVAILABILITY GAP: Brent not tradable on our DXZ .DWX symbol set. worst_case unresolved until XBRUSD.DWX is imported; would be 0.005% notional (~$3.75/full lot at $75) under Commodities\\*."
+    },
+    "XNGUSD": {
+      "asset_class": "commodity", "dwx_symbol": "XNGUSD.DWX", "aka": "NatGas/XNG",
+      "dxz": {"commission_model": "pct_notional_0.005pct_rt", "per_side_pct": 0.0025, "commission_rt_per_lot_usd_indicative": null, "commission_rt_basis": "0.005% of notional RT; tester Groups Commodities\\* 0.0025 Mode=4. Per-lot USD null: nat-gas contract size/notional not pinned from files (custom_tv=10.0; nat gas ~$3.5/MMBtu). Model is 0.005% of notional.", "tester_group": "Custom\\Commodities\\Energies\\XNGUSD.DWX under Commodities\\* 0.0025 Mode=4", "spread_typical_points": null, "spread_source": "embedded in .DWX real-tick history; broker-parity NOT certified.", "swap_note": null},
+      "ftmo": {"commission_model": "commission_free", "commission_rt_per_lot_usd": 0.0, "commission_rt_basis": "FTMO nat gas (cash CFD) commission-free (official/secondary).", "swap_note": null},
+      "worst_case_rt_per_lot_usd": null,
+      "notes": "worst_case = DXZ 0.005% notional (FTMO=$0). Per-lot USD unresolved: RESOLVE by reading SYMBOL_TRADE_CONTRACT_SIZE for XNGUSD.DWX on T1. Memory reports realised XNG commission ~$0.4-6.7/trade."
+    }
+  },
+  "open_axes_not_covered": {
+    "spread": "OPEN for all symbols. .DWX 100% real-tick history embeds historical spread in tester prices but does NOT certify current or broker-parity spread (DXZ23 cohort gate S). No per-symbol current spread is captured to disk; spread_typical_points=null everywhere. RESOLVE by a T1 SYMBOL_SPREAD / live-tick snapshot vs .DWX comparison.",
+    "swap": "OPEN for all symbols. V5_SYMBOL_COMMISSION_SWAP_BASELINE marks SYMBOL_SWAP_LONG/SHORT as PENDING MT5 runtime snapshot for every symbol; no real swap numbers exist on disk. swap_note=null everywhere (never invented). RESOLVE by a T1 script exporting SYMBOL_SWAP_MODE/LONG/SHORT/ROLLOVER3DAYS. Weekend-flat D1 strategies (e.g. XAU Friday) are swap-immune by construction.",
+    "slippage": "NOT_EVALUATED (DXZ23 cohort). Not modelled here."
+  },
+  "discrepancies_vs_old_heuristics": [
+    "Heuristic per-trade class figures (reference_commission_by_asset_class 2026-06-26: FX ~$45/trade, index ~$4.4/trade, commodity ~$0.4-6.7/trade) are REALISED-per-trade averages that fold in our lot sizing; they are NOT venue rates and must not be used as gate cost constants ('fantasy figures' per OWNER 2026-07-19). Use the per-lot venue rates here x actual trade volume/notional instead.",
+    "WS30/US30 is ~8x OVER-COSTED by the current live_commission.json index class-flat ($5.5) vs real DXZ $0.70 RT.",
+    "GBPUSD/UK100/GER40 are UNDER-COSTED in USD terms by the class-flat when charged in a base/margin currency stronger than USD (GBPUSD real $6.35 vs $5 flat; UK100 ~$6.99 vs $5.5; GER40 ~$6.05 vs $5.5).",
+    "Legacy flat $7/lot (q04_walkforward.py COMMISSION_PER_LOT_ROUND_TRIP, line 41) is a stale fallback only; primary Q04 path already uses per-class realistic rates (DL-073). The $7 is ~40% above real forex and wrong-model for index/commodity.",
+    "FTMO forex worst-case ($5 RT) EQUALS the registry forex flat $5 (confirmed, not under-costed) — earlier concern that FTMO might be $6 RT is not supported by current sources (Sep-2025 raw model = $2.50/side)."
+  ]
+}

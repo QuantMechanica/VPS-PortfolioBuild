@@ -1,0 +1,54 @@
+{
+  "analysis_id": "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001",
+  "artifact_type": "QM5_20002_SHORT_NY_SET_MANIFEST",
+  "compile_binding_commit": "d2aedce42af670b18b2518d5c25e468f11fcfd8c",
+  "compile_binding_sha256": "2c6ed058f0152f90565830fb5d5a194d21830798ce1827b8ddb8e3c8ec050f32",
+  "compile_evidence_sha256": "8c342e34ca9a23ffe01b0db02ae18e7c3b00e7bfc4b4090ec68b955bd2663064",
+  "compiled_ex5_git_commit": "2d4e400849bd222aba3294aae6520edcbe478e87",
+  "compiled_ex5_sha256": "71d1715d1b403ed85e7261ec058b17e88c43ca5f61bb5be5fb81ebde87207a11",
+  "contract_commit": "d902b04932c340dd1212b9420077d7cec6b0d80d",
+  "contract_sha256": "6ee74c60a823fe87b03b40a2737ba67d113b2e52e7c09a05f42ba2084e17fefa",
+  "schema_version": 2,
+  "sets": [
+    {
+      "arm": "A_SHORT_NY_NO_HTF",
+      "magic_slot": 0,
+      "path": "sets/candidate-analysis/QM5_20002_EURUSD_DWX_M1_short_ny_no_htf.set",
+      "sha256": "8888ec23227ff955ffe8a1324031d1101fbbaf48171e43309a3ab6bc97e99552",
+      "size": 1703,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M1",
+      "visible_input_count": 52
+    },
+    {
+      "arm": "A_SHORT_NY_NO_HTF",
+      "magic_slot": 1,
+      "path": "sets/candidate-analysis/QM5_20002_GBPUSD_DWX_M1_short_ny_no_htf.set",
+      "sha256": "7455fa2605bc0e501734bf712b41a34f6cb701b19882ea66dc71ff05ccfc061f",
+      "size": 1703,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M1",
+      "visible_input_count": 52
+    },
+    {
+      "arm": "B_SHORT_NY_H1_BIAS",
+      "magic_slot": 0,
+      "path": "sets/candidate-analysis/QM5_20002_EURUSD_DWX_M1_short_ny_h1_bias.set",
+      "sha256": "a012c2c865ca67cbf71bba0e4f417f9688d02137d97c5ea7eec516e92446ad00",
+      "size": 1703,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M1",
+      "visible_input_count": 52
+    },
+    {
+      "arm": "B_SHORT_NY_H1_BIAS",
+      "magic_slot": 1,
+      "path": "sets/candidate-analysis/QM5_20002_GBPUSD_DWX_M1_short_ny_h1_bias.set",
+      "sha256": "45f7950e2ee92fc2fa79bf8de17aa6cb4aa1cd5c0d3d9cfa9b61b9b5e836bb6d",
+      "size": 1703,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M1",
+      "visible_input_count": 52
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20119
+; ea_slug:      macd50-ukgrid-gbpusd
+; ea_version:   v5.0
+; set_version:  s20260724-001
+; symbol:       GBPUSD.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-24
+;==========================================================
+qm_ea_id=20119
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_macd_fast=5
+strategy_macd_slow=13
+strategy_delta_price=0.00050
+strategy_p1_tp_pips=30.0
+strategy_p2_tp_pips=45.0
+strategy_sl_pips=30.0
+strategy_seed_bars=240

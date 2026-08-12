@@ -1,0 +1,4657 @@
+[
+  {
+    "text": "So if you guys have any questions feel",
+    "start": 1.92,
+    "duration": 3.68
+  },
+  {
+    "text": "free to drop them in the chat. I'm going",
+    "start": 3.76,
+    "duration": 3.76
+  },
+  {
+    "text": "to move through this whole keynote and",
+    "start": 5.6,
+    "duration": 4.16
+  },
+  {
+    "text": "then at the end I share a strategy with",
+    "start": 7.52,
+    "duration": 4.48
+  },
+  {
+    "text": "you as always. I think it will be a very",
+    "start": 9.76,
+    "duration": 3.919
+  },
+  {
+    "text": "interesting session because we're going",
+    "start": 12.0,
+    "duration": 3.28
+  },
+  {
+    "text": "to talk about prop firms how to get",
+    "start": 13.679,
+    "duration": 4.161
+  },
+  {
+    "text": "funding and also my overall journey",
+    "start": 15.28,
+    "duration": 4.88
+  },
+  {
+    "text": "towards profitable trading and how you",
+    "start": 17.84,
+    "duration": 5.04
+  },
+  {
+    "text": "can use profactus to reach that. So",
+    "start": 20.16,
+    "duration": 5.359
+  },
+  {
+    "text": "Profactus AI first of all what is it?",
+    "start": 22.88,
+    "duration": 4.8
+  },
+  {
+    "text": "What is our mission? Well, simplifying",
+    "start": 25.519,
+    "duration": 4.481
+  },
+  {
+    "text": "automated trading for everyone is our",
+    "start": 27.68,
+    "duration": 4.8
+  },
+  {
+    "text": "goal. Why we started this company. But",
+    "start": 30.0,
+    "duration": 4.64
+  },
+  {
+    "text": "what is Profactus AI? Well, real quick,",
+    "start": 32.48,
+    "duration": 4.72
+  },
+  {
+    "text": "it's the easy tole learn no code builder",
+    "start": 34.64,
+    "duration": 5.439
+  },
+  {
+    "text": "to automate any trading strategy",
+    "start": 37.2,
+    "duration": 5.039
+  },
+  {
+    "text": "allowing everyone to trade FX, crypto,",
+    "start": 40.079,
+    "duration": 4.48
+  },
+  {
+    "text": "and stocks uh automatically. So, with",
+    "start": 42.239,
+    "duration": 4.241
+  },
+  {
+    "text": "algorithms, but without having to code.",
+    "start": 44.559,
+    "duration": 4.16
+  },
+  {
+    "text": "So we built a no coding platform for",
+    "start": 46.48,
+    "duration": 3.84
+  },
+  {
+    "text": "every trader to just automate your",
+    "start": 48.719,
+    "duration": 4.081
+  },
+  {
+    "text": "trading plan and then use it in the",
+    "start": 50.32,
+    "duration": 4.559
+  },
+  {
+    "text": "markets to stay consistent and be",
+    "start": 52.8,
+    "duration": 3.759
+  },
+  {
+    "text": "consistent while you work out, while you",
+    "start": 54.879,
+    "duration": 3.761
+  },
+  {
+    "text": "sleep, while you do whatever you want to",
+    "start": 56.559,
+    "duration": 3.84
+  },
+  {
+    "text": "do during the day, your trades are taken",
+    "start": 58.64,
+    "duration": 4.8
+  },
+  {
+    "text": "and managed. So I always have this",
+    "start": 60.399,
+    "duration": 4.48
+  },
+  {
+    "text": "statement, if you were trading for a",
+    "start": 63.44,
+    "duration": 3.76
+  },
+  {
+    "text": "living tomorrow, you use perfect AI. And",
+    "start": 64.879,
+    "duration": 4.401
+  },
+  {
+    "text": "what I mean with that is is to figure",
+    "start": 67.2,
+    "duration": 4.48
+  },
+  {
+    "text": "out, okay, how can you really achieve",
+    "start": 69.28,
+    "duration": 4.08
+  },
+  {
+    "text": "your goal with trading? And when I",
+    "start": 71.68,
+    "duration": 4.08
+  },
+  {
+    "text": "started 10 years ago, my goal was to",
+    "start": 73.36,
+    "duration": 4.16
+  },
+  {
+    "text": "live from this, be independent, be a",
+    "start": 75.76,
+    "duration": 3.6
+  },
+  {
+    "text": "trader, make money from the markets. And",
+    "start": 77.52,
+    "duration": 3.84
+  },
+  {
+    "text": "that's why I started learning this",
+    "start": 79.36,
+    "duration": 4.32
+  },
+  {
+    "text": "skill. And I think if you master",
+    "start": 81.36,
+    "duration": 4.64
+  },
+  {
+    "text": "Proactors AI, the software platform,",
+    "start": 83.68,
+    "duration": 4.24
+  },
+  {
+    "text": "then you can reach this goal. And I'm",
+    "start": 86.0,
+    "duration": 4.24
+  },
+  {
+    "text": "going to dive into that. Why? Let's",
+    "start": 87.92,
+    "duration": 3.92
+  },
+  {
+    "text": "break it down. The goal, the method, and",
+    "start": 90.24,
+    "duration": 3.76
+  },
+  {
+    "text": "the metrics, the three steps to take.",
+    "start": 91.84,
+    "duration": 4.4
+  },
+  {
+    "text": "The goal first is becoming free,",
+    "start": 94.0,
+    "duration": 4.32
+  },
+  {
+    "text": "independent, making return on your",
+    "start": 96.24,
+    "duration": 4.48
+  },
+  {
+    "text": "capital, maybe reach financial freedom",
+    "start": 98.32,
+    "duration": 5.04
+  },
+  {
+    "text": "or whatever it is. That was my goal and",
+    "start": 100.72,
+    "duration": 4.88
+  },
+  {
+    "text": "I think it's very similar to the goals",
+    "start": 103.36,
+    "duration": 5.2
+  },
+  {
+    "text": "you guys have. The method is having a",
+    "start": 105.6,
+    "duration": 5.519
+  },
+  {
+    "text": "profitable strategy and how to know that",
+    "start": 108.56,
+    "duration": 4.8
+  },
+  {
+    "text": "the strategy is profitable is by testing",
+    "start": 111.119,
+    "duration": 4.241
+  },
+  {
+    "text": "it and seeing results in the live",
+    "start": 113.36,
+    "duration": 3.759
+  },
+  {
+    "text": "markets but also seeing results in your",
+    "start": 115.36,
+    "duration": 4.0
+  },
+  {
+    "text": "back test. So you need a strategy that",
+    "start": 117.119,
+    "duration": 4.0
+  },
+  {
+    "text": "worked last year the year before that",
+    "start": 119.36,
+    "duration": 3.84
+  },
+  {
+    "text": "but also that works this year right that",
+    "start": 121.119,
+    "duration": 4.241
+  },
+  {
+    "text": "is how I define a profitable strategy.",
+    "start": 123.2,
+    "duration": 4.88
+  },
+  {
+    "text": "So that's the method to reach this goal.",
+    "start": 125.36,
+    "duration": 4.399
+  },
+  {
+    "text": "But what are the metrics? And the",
+    "start": 128.08,
+    "duration": 4.799
+  },
+  {
+    "text": "metrics are often forgotten. And this is",
+    "start": 129.759,
+    "duration": 5.2
+  },
+  {
+    "text": "where the journey of every trader comes",
+    "start": 132.879,
+    "duration": 4.241
+  },
+  {
+    "text": "down to executing the strategy",
+    "start": 134.959,
+    "duration": 4.081
+  },
+  {
+    "text": "perfectly. I can give you the most",
+    "start": 137.12,
+    "duration": 4.4
+  },
+  {
+    "text": "profitable strategy on earth. But still,",
+    "start": 139.04,
+    "duration": 4.24
+  },
+  {
+    "text": "because some trades happen while you",
+    "start": 141.52,
+    "duration": 3.52
+  },
+  {
+    "text": "sleep, some trades happen while you're",
+    "start": 143.28,
+    "duration": 3.84
+  },
+  {
+    "text": "just not at the charts or you're",
+    "start": 145.04,
+    "duration": 3.6
+  },
+  {
+    "text": "emotional and you don't execute the",
+    "start": 147.12,
+    "duration": 4.479
+  },
+  {
+    "text": "trades. Those are all reasons why you're",
+    "start": 148.64,
+    "duration": 6.08
+  },
+  {
+    "text": "not reaching this goal. So, Pracus AI is",
+    "start": 151.599,
+    "duration": 5.36
+  },
+  {
+    "text": "built to help you find those profitable",
+    "start": 154.72,
+    "duration": 4.799
+  },
+  {
+    "text": "strategies, but also execute them",
+    "start": 156.959,
+    "duration": 5.121
+  },
+  {
+    "text": "without error. And that's the goal of",
+    "start": 159.519,
+    "duration": 4.72
+  },
+  {
+    "text": "also this call and every call we do",
+    "start": 162.08,
+    "duration": 4.72
+  },
+  {
+    "text": "every month is to help you find those",
+    "start": 164.239,
+    "duration": 4.881
+  },
+  {
+    "text": "strategies, build those strategies, test",
+    "start": 166.8,
+    "duration": 4.719
+  },
+  {
+    "text": "them to see for yourself that they work",
+    "start": 169.12,
+    "duration": 5.199
+  },
+  {
+    "text": "and then you can reach your goal that",
+    "start": 171.519,
+    "duration": 5.201
+  },
+  {
+    "text": "you well you started trading for, right?",
+    "start": 174.319,
+    "duration": 4.56
+  },
+  {
+    "text": "So to go back if you were trading for a",
+    "start": 176.72,
+    "duration": 4.48
+  },
+  {
+    "text": "living tomorrow you use profactus AI",
+    "start": 178.879,
+    "duration": 4.241
+  },
+  {
+    "text": "this every time I share this statement",
+    "start": 181.2,
+    "duration": 3.52
+  },
+  {
+    "text": "just think about the goal the method and",
+    "start": 183.12,
+    "duration": 4.16
+  },
+  {
+    "text": "the metrics. All right. So, I'm",
+    "start": 184.72,
+    "duration": 4.72
+  },
+  {
+    "text": "currently uh standing to the right",
+    "start": 187.28,
+    "duration": 3.92
+  },
+  {
+    "text": "there. You can see that they upgraded",
+    "start": 189.44,
+    "duration": 3.84
+  },
+  {
+    "text": "the screen. But here you can see I'm",
+    "start": 191.2,
+    "duration": 4.08
+  },
+  {
+    "text": "standing here on the trading floor and",
+    "start": 193.28,
+    "duration": 3.599
+  },
+  {
+    "text": "this is the history of this trading",
+    "start": 195.28,
+    "duration": 3.2
+  },
+  {
+    "text": "floor. And why this is important is",
+    "start": 196.879,
+    "duration": 3.601
+  },
+  {
+    "text": "because to the left you see a lot of",
+    "start": 198.48,
+    "duration": 3.759
+  },
+  {
+    "text": "chaos, a lot of people standing here,",
+    "start": 200.48,
+    "duration": 4.16
+  },
+  {
+    "text": "these desks like this all this wasn't",
+    "start": 202.239,
+    "duration": 4.161
+  },
+  {
+    "text": "there, right? You can see that a screen",
+    "start": 204.64,
+    "duration": 4.08
+  },
+  {
+    "text": "didn't exist. And why I'm telling that",
+    "start": 206.4,
+    "duration": 4.88
+  },
+  {
+    "text": "is because here in Amsterdam uh in the",
+    "start": 208.72,
+    "duration": 5.92
+  },
+  {
+    "text": "17th century it all started. uh we in",
+    "start": 211.28,
+    "duration": 5.28
+  },
+  {
+    "text": "Amsterdam the people living here",
+    "start": 214.64,
+    "duration": 4.64
+  },
+  {
+    "text": "invented the stock market the first uh",
+    "start": 216.56,
+    "duration": 5.44
+  },
+  {
+    "text": "company and when that happened also",
+    "start": 219.28,
+    "duration": 5.12
+  },
+  {
+    "text": "price action was discovered right prices",
+    "start": 222.0,
+    "duration": 4.4
+  },
+  {
+    "text": "move and therefore technical analysis",
+    "start": 224.4,
+    "duration": 5.119
+  },
+  {
+    "text": "was used by people here already hundreds",
+    "start": 226.4,
+    "duration": 5.6
+  },
+  {
+    "text": "of years ago and some people still trade",
+    "start": 229.519,
+    "duration": 4.401
+  },
+  {
+    "text": "like the same technical analysis from",
+    "start": 232.0,
+    "duration": 4.319
+  },
+  {
+    "text": "back then right so that was the first",
+    "start": 233.92,
+    "duration": 5.679
+  },
+  {
+    "text": "invention then the second invention was",
+    "start": 236.319,
+    "duration": 5.441
+  },
+  {
+    "text": "um the computers existed right market",
+    "start": 239.599,
+    "duration": 4.64
+  },
+  {
+    "text": "data exploded there were more companies",
+    "start": 241.76,
+    "duration": 5.28
+  },
+  {
+    "text": "like that first uh stock market company",
+    "start": 244.239,
+    "duration": 5.28
+  },
+  {
+    "text": "that just went more and more and more",
+    "start": 247.04,
+    "duration": 3.919
+  },
+  {
+    "text": "companies and therefore there was so",
+    "start": 249.519,
+    "duration": 4.161
+  },
+  {
+    "text": "much data uh creating a tech revolution",
+    "start": 250.959,
+    "duration": 4.56
+  },
+  {
+    "text": "and human beings couldn't really handle",
+    "start": 253.68,
+    "duration": 4.559
+  },
+  {
+    "text": "it so it had to be automated then we had",
+    "start": 255.519,
+    "duration": 5.521
+  },
+  {
+    "text": "the next invention and that was PCs this",
+    "start": 258.239,
+    "duration": 5.041
+  },
+  {
+    "text": "allowed data analysis beyond human",
+    "start": 261.04,
+    "duration": 4.8
+  },
+  {
+    "text": "capacity this is where the Jim Simons",
+    "start": 263.28,
+    "duration": 4.639
+  },
+  {
+    "text": "like the the billionaire hedge fund",
+    "start": 265.84,
+    "duration": 4.96
+  },
+  {
+    "text": "manager that started with automating",
+    "start": 267.919,
+    "duration": 5.521
+  },
+  {
+    "text": "technical analysis started that During",
+    "start": 270.8,
+    "duration": 5.839
+  },
+  {
+    "text": "this time when PCs existed or started to",
+    "start": 273.44,
+    "duration": 5.44
+  },
+  {
+    "text": "uh pop up everywhere, the professionals,",
+    "start": 276.639,
+    "duration": 4.641
+  },
+  {
+    "text": "the hatchants started to automate what",
+    "start": 278.88,
+    "duration": 4.96
+  },
+  {
+    "text": "manual traders were doing and this was",
+    "start": 281.28,
+    "duration": 4.639
+  },
+  {
+    "text": "gamechanging. This literally created",
+    "start": 283.84,
+    "duration": 4.16
+  },
+  {
+    "text": "billionaires u in our industry in the",
+    "start": 285.919,
+    "duration": 4.481
+  },
+  {
+    "text": "trading and investing space. Then the",
+    "start": 288.0,
+    "duration": 5.04
+  },
+  {
+    "text": "next invention was the internet and the",
+    "start": 290.4,
+    "duration": 4.48
+  },
+  {
+    "text": "internet created market access for",
+    "start": 293.04,
+    "duration": 3.68
+  },
+  {
+    "text": "everyone. You and me, we're not talking",
+    "start": 294.88,
+    "duration": 4.0
+  },
+  {
+    "text": "through the internet, right? But also I",
+    "start": 296.72,
+    "duration": 4.96
+  },
+  {
+    "text": "can access my broker account and every",
+    "start": 298.88,
+    "duration": 4.319
+  },
+  {
+    "text": "financial market through the internet",
+    "start": 301.68,
+    "duration": 3.84
+  },
+  {
+    "text": "now by my phone, by my laptop. And this",
+    "start": 303.199,
+    "duration": 4.241
+  },
+  {
+    "text": "changed everything like even more data,",
+    "start": 305.52,
+    "duration": 3.84
+  },
+  {
+    "text": "more people could trade, more volume,",
+    "start": 307.44,
+    "duration": 4.56
+  },
+  {
+    "text": "more liquidity, markets became safer and",
+    "start": 309.36,
+    "duration": 6.08
+  },
+  {
+    "text": "better uh and easier to to trade. And",
+    "start": 312.0,
+    "duration": 5.84
+  },
+  {
+    "text": "then right now, where are we currently?",
+    "start": 315.44,
+    "duration": 4.64
+  },
+  {
+    "text": "Well, you can call this more or less the",
+    "start": 317.84,
+    "duration": 5.52
+  },
+  {
+    "text": "cloud and the AI um period. You can",
+    "start": 320.08,
+    "duration": 6.24
+  },
+  {
+    "text": "automate anything. You can test it. You",
+    "start": 323.36,
+    "duration": 6.0
+  },
+  {
+    "text": "can trade it and you can get funded. And",
+    "start": 326.32,
+    "duration": 5.76
+  },
+  {
+    "text": "this is uh ridiculous that we are so",
+    "start": 329.36,
+    "duration": 5.6
+  },
+  {
+    "text": "lucky that we're now able to trade in",
+    "start": 332.08,
+    "duration": 4.88
+  },
+  {
+    "text": "this time, right? It is never it has",
+    "start": 334.96,
+    "duration": 5.04
+  },
+  {
+    "text": "never been easier to automate anything,",
+    "start": 336.96,
+    "duration": 4.959
+  },
+  {
+    "text": "test it if it really works, to trade it,",
+    "start": 340.0,
+    "duration": 4.479
+  },
+  {
+    "text": "to access the markets, and also how to",
+    "start": 341.919,
+    "duration": 4.081
+  },
+  {
+    "text": "get funded. Back in the days, it was",
+    "start": 344.479,
+    "duration": 4.401
+  },
+  {
+    "text": "super hard to uh to get funding and get",
+    "start": 346.0,
+    "duration": 5.759
+  },
+  {
+    "text": "money to trade with, right? So how I",
+    "start": 348.88,
+    "duration": 5.68
+  },
+  {
+    "text": "define a modern profitable trader is",
+    "start": 351.759,
+    "duration": 4.321
+  },
+  {
+    "text": "someone that moved through these five",
+    "start": 354.56,
+    "duration": 4.24
+  },
+  {
+    "text": "steps. Study the basics of analysis.",
+    "start": 356.08,
+    "duration": 4.72
+  },
+  {
+    "text": "This can be technical analysis. This can",
+    "start": 358.8,
+    "duration": 4.239
+  },
+  {
+    "text": "be fundamental analysis. Doesn't really",
+    "start": 360.8,
+    "duration": 4.16
+  },
+  {
+    "text": "matter. But at least you know the basics",
+    "start": 363.039,
+    "duration": 4.241
+  },
+  {
+    "text": "of the markets. If you don't, there's so",
+    "start": 364.96,
+    "duration": 3.84
+  },
+  {
+    "text": "much information online about the",
+    "start": 367.28,
+    "duration": 3.52
+  },
+  {
+    "text": "basics. What is a pip? What is what is",
+    "start": 368.8,
+    "duration": 3.6
+  },
+  {
+    "text": "trading? How to buy and sell? How to",
+    "start": 370.8,
+    "duration": 3.28
+  },
+  {
+    "text": "work with a broker. Right? That's step",
+    "start": 372.4,
+    "duration": 4.4
+  },
+  {
+    "text": "one. I think most of you guys here are",
+    "start": 374.08,
+    "duration": 4.8
+  },
+  {
+    "text": "well past that step one. But some of you",
+    "start": 376.8,
+    "duration": 4.8
+  },
+  {
+    "text": "guys are stuck at step two and that is",
+    "start": 378.88,
+    "duration": 5.28
+  },
+  {
+    "text": "the skill of automation. Uh back in the",
+    "start": 381.6,
+    "duration": 4.8
+  },
+  {
+    "text": "days you had to become a developer,",
+    "start": 384.16,
+    "duration": 4.159
+  },
+  {
+    "text": "learn to code for many years and then",
+    "start": 386.4,
+    "duration": 4.96
+  },
+  {
+    "text": "you were able to automate a strategy.",
+    "start": 388.319,
+    "duration": 5.121
+  },
+  {
+    "text": "Still it took you a lot of time and",
+    "start": 391.36,
+    "duration": 4.08
+  },
+  {
+    "text": "hours and months or years even to",
+    "start": 393.44,
+    "duration": 4.8
+  },
+  {
+    "text": "automate one strategy. But now we teach",
+    "start": 395.44,
+    "duration": 5.12
+  },
+  {
+    "text": "you guys the skill or offer you a",
+    "start": 398.24,
+    "duration": 4.16
+  },
+  {
+    "text": "platform where you can learn the skill",
+    "start": 400.56,
+    "duration": 4.079
+  },
+  {
+    "text": "to automate your trading plan without",
+    "start": 402.4,
+    "duration": 4.16
+  },
+  {
+    "text": "writing any code. So you can build way",
+    "start": 404.639,
+    "duration": 3.921
+  },
+  {
+    "text": "quicker. you can instead of you having",
+    "start": 406.56,
+    "duration": 4.32
+  },
+  {
+    "text": "to code a strategy, you can now drag and",
+    "start": 408.56,
+    "duration": 4.8
+  },
+  {
+    "text": "drop it and you can build well 10 times",
+    "start": 410.88,
+    "duration": 5.039
+  },
+  {
+    "text": "faster than a developer. So that is step",
+    "start": 413.36,
+    "duration": 5.679
+  },
+  {
+    "text": "two and then step three is able to back",
+    "start": 415.919,
+    "duration": 6.081
+  },
+  {
+    "text": "test very quickly. Like I said, uh if",
+    "start": 419.039,
+    "duration": 4.641
+  },
+  {
+    "text": "you didn't test your strategy, how do",
+    "start": 422.0,
+    "duration": 3.36
+  },
+  {
+    "text": "you know it works, right? So it's very",
+    "start": 423.68,
+    "duration": 3.6
+  },
+  {
+    "text": "important to test the strategy because",
+    "start": 425.36,
+    "duration": 4.32
+  },
+  {
+    "text": "if it worked in the past it's likely to",
+    "start": 427.28,
+    "duration": 4.319
+  },
+  {
+    "text": "work in the future at least more likely",
+    "start": 429.68,
+    "duration": 4.079
+  },
+  {
+    "text": "than if you didn't test something or you",
+    "start": 431.599,
+    "duration": 4.561
+  },
+  {
+    "text": "test something and it is really a bad",
+    "start": 433.759,
+    "duration": 4.081
+  },
+  {
+    "text": "system then you know it probably won't",
+    "start": 436.16,
+    "duration": 4.0
+  },
+  {
+    "text": "work in the future right so step three",
+    "start": 437.84,
+    "duration": 4.4
+  },
+  {
+    "text": "is super important and then four is",
+    "start": 440.16,
+    "duration": 4.64
+  },
+  {
+    "text": "trades without any errors. How do you do",
+    "start": 442.24,
+    "duration": 4.799
+  },
+  {
+    "text": "that? Well, automation solves more or",
+    "start": 444.8,
+    "duration": 5.04
+  },
+  {
+    "text": "less all the problems uh for manual",
+    "start": 447.039,
+    "duration": 4.961
+  },
+  {
+    "text": "traders. And that's just because yeah,",
+    "start": 449.84,
+    "duration": 4.16
+  },
+  {
+    "text": "the trade is executed. It's followed by",
+    "start": 452.0,
+    "duration": 3.919
+  },
+  {
+    "text": "the plan. There are no emotions",
+    "start": 454.0,
+    "duration": 4.0
+  },
+  {
+    "text": "involved. Yeah. The charts when they",
+    "start": 455.919,
+    "duration": 4.241
+  },
+  {
+    "text": "move, a trade is taken, right? Uh",
+    "start": 458.0,
+    "duration": 4.639
+  },
+  {
+    "text": "instead of you having to be stuck to",
+    "start": 460.16,
+    "duration": 5.039
+  },
+  {
+    "text": "your charts and then has large capital",
+    "start": 462.639,
+    "duration": 4.161
+  },
+  {
+    "text": "opportunities. This is like that step",
+    "start": 465.199,
+    "duration": 3.601
+  },
+  {
+    "text": "five that is so important to talk about",
+    "start": 466.8,
+    "duration": 3.519
+  },
+  {
+    "text": "and that is the topic of today's",
+    "start": 468.8,
+    "duration": 4.48
+  },
+  {
+    "text": "webinar. So before I continue, any",
+    "start": 470.319,
+    "duration": 6.641
+  },
+  {
+    "text": "questions guys? All right. So, capital,",
+    "start": 473.28,
+    "duration": 6.0
+  },
+  {
+    "text": "how to get it and how to keep it. My",
+    "start": 476.96,
+    "duration": 4.48
+  },
+  {
+    "text": "journey was uh a lot different because",
+    "start": 479.28,
+    "duration": 4.16
+  },
+  {
+    "text": "it started 10 years ago. So, there",
+    "start": 481.44,
+    "duration": 5.039
+  },
+  {
+    "text": "weren't prop firms or I didn't no prop",
+    "start": 483.44,
+    "duration": 4.8
+  },
+  {
+    "text": "firms existed. I don't think there were",
+    "start": 486.479,
+    "duration": 4.241
+  },
+  {
+    "text": "prop firms 10 years ago. But, so my",
+    "start": 488.24,
+    "duration": 4.959
+  },
+  {
+    "text": "journey was very uh different compared",
+    "start": 490.72,
+    "duration": 5.039
+  },
+  {
+    "text": "to what traders have right now. But we",
+    "start": 493.199,
+    "duration": 5.12
+  },
+  {
+    "text": "also walk the prop firm journey as well.",
+    "start": 495.759,
+    "duration": 3.84
+  },
+  {
+    "text": "And that is what we're going to talk",
+    "start": 498.319,
+    "duration": 3.681
+  },
+  {
+    "text": "about. So, method one is using prop",
+    "start": 499.599,
+    "duration": 4.641
+  },
+  {
+    "text": "firms online. today's topic and in",
+    "start": 502.0,
+    "duration": 5.12
+  },
+  {
+    "text": "future webinars maybe I do a a session",
+    "start": 504.24,
+    "duration": 5.76
+  },
+  {
+    "text": "about how I did it how I got private",
+    "start": 507.12,
+    "duration": 5.68
+  },
+  {
+    "text": "capital and started to go uh walk that",
+    "start": 510.0,
+    "duration": 4.56
+  },
+  {
+    "text": "path more or less the old way of doing",
+    "start": 512.8,
+    "duration": 4.239
+  },
+  {
+    "text": "things. All right so method one using",
+    "start": 514.56,
+    "duration": 5.2
+  },
+  {
+    "text": "prop firms online is how to get capital",
+    "start": 517.039,
+    "duration": 4.0
+  },
+  {
+    "text": "real quick for people that don't know",
+    "start": 519.76,
+    "duration": 2.959
+  },
+  {
+    "text": "what a prop firm is a company that",
+    "start": 521.039,
+    "duration": 3.92
+  },
+  {
+    "text": "provides capital and resources to",
+    "start": 522.719,
+    "duration": 5.041
+  },
+  {
+    "text": "skilled traders so they can trade on its",
+    "start": 524.959,
+    "duration": 5.121
+  },
+  {
+    "text": "behalf in financial markets. So a",
+    "start": 527.76,
+    "duration": 4.8
+  },
+  {
+    "text": "company invests in you, you trade that",
+    "start": 530.08,
+    "duration": 4.879
+  },
+  {
+    "text": "company for a profit split. They win,",
+    "start": 532.56,
+    "duration": 4.24
+  },
+  {
+    "text": "you win, right? That is at least what",
+    "start": 534.959,
+    "duration": 4.801
+  },
+  {
+    "text": "you think. The skill uh the skill test",
+    "start": 536.8,
+    "duration": 5.12
+  },
+  {
+    "text": "uh companies give you to to you to prove",
+    "start": 539.76,
+    "duration": 4.32
+  },
+  {
+    "text": "that you actually can trade, right? The",
+    "start": 541.92,
+    "duration": 4.8
+  },
+  {
+    "text": "prop firm tests the trader skill by",
+    "start": 544.08,
+    "duration": 5.04
+  },
+  {
+    "text": "giving a trading challenge. Normally you",
+    "start": 546.72,
+    "duration": 3.92
+  },
+  {
+    "text": "get a trading account. You need to make",
+    "start": 549.12,
+    "duration": 4.56
+  },
+  {
+    "text": "10% uh following a lot of rules. And if",
+    "start": 550.64,
+    "duration": 4.72
+  },
+  {
+    "text": "you make that 10%, you pass the",
+    "start": 553.68,
+    "duration": 3.68
+  },
+  {
+    "text": "challenge. And then you have a second",
+    "start": 555.36,
+    "duration": 4.0
+  },
+  {
+    "text": "challenge and that's the verification",
+    "start": 557.36,
+    "duration": 4.32
+  },
+  {
+    "text": "where you need to make another 5% or",
+    "start": 559.36,
+    "duration": 4.72
+  },
+  {
+    "text": "more or less that is the the system most",
+    "start": 561.68,
+    "duration": 5.04
+  },
+  {
+    "text": "firms offer uh like FTMO like that is",
+    "start": 564.08,
+    "duration": 4.96
+  },
+  {
+    "text": "one of the biggest one in the world has",
+    "start": 566.72,
+    "duration": 4.799
+  },
+  {
+    "text": "this skill test. Then what's the",
+    "start": 569.04,
+    "duration": 5.28
+  },
+  {
+    "text": "business model from their uh their point",
+    "start": 571.519,
+    "duration": 5.041
+  },
+  {
+    "text": "of view? Well the trader pays the prop",
+    "start": 574.32,
+    "duration": 5.12
+  },
+  {
+    "text": "firm for that skill test. So to take",
+    "start": 576.56,
+    "duration": 4.8
+  },
+  {
+    "text": "that skill you need to to pay them a few",
+    "start": 579.44,
+    "duration": 4.24
+  },
+  {
+    "text": "hundred bucks. And if the trader wins",
+    "start": 581.36,
+    "duration": 3.84
+  },
+  {
+    "text": "and he proves that he can trade, he",
+    "start": 583.68,
+    "duration": 4.24
+  },
+  {
+    "text": "passes the 10% and the 5% he gets",
+    "start": 585.2,
+    "duration": 5.84
+  },
+  {
+    "text": "capital and they refund the money he",
+    "start": 587.92,
+    "duration": 5.52
+  },
+  {
+    "text": "paid for the skill test. Right? So",
+    "start": 591.04,
+    "duration": 4.64
+  },
+  {
+    "text": "that's the business model, how it works",
+    "start": 593.44,
+    "duration": 5.44
+  },
+  {
+    "text": "from a prop firm point of view. The",
+    "start": 595.68,
+    "duration": 5.599
+  },
+  {
+    "text": "statistics, how does this work in real",
+    "start": 598.88,
+    "duration": 4.959
+  },
+  {
+    "text": "life? Well, most traders fill the test",
+    "start": 601.279,
+    "duration": 4.24
+  },
+  {
+    "text": "and a prop firm makes a lot of money",
+    "start": 603.839,
+    "duration": 4.0
+  },
+  {
+    "text": "because they keep the money that people",
+    "start": 605.519,
+    "duration": 5.121
+  },
+  {
+    "text": "pay for uh for the skill test, right?",
+    "start": 607.839,
+    "duration": 4.961
+  },
+  {
+    "text": "The money is used to pay out the select",
+    "start": 610.64,
+    "duration": 4.319
+  },
+  {
+    "text": "few of traders that actually do pass the",
+    "start": 612.8,
+    "duration": 4.08
+  },
+  {
+    "text": "skill test and make money. So you have a",
+    "start": 614.959,
+    "duration": 4.641
+  },
+  {
+    "text": "lot of people losing and uh selection",
+    "start": 616.88,
+    "duration": 4.8
+  },
+  {
+    "text": "making money. We are one of those people",
+    "start": 619.6,
+    "duration": 3.76
+  },
+  {
+    "text": "and in this call probably many of you",
+    "start": 621.68,
+    "duration": 3.839
+  },
+  {
+    "text": "guys have been working with prop firms",
+    "start": 623.36,
+    "duration": 4.0
+  },
+  {
+    "text": "and got payouts. But that is the",
+    "start": 625.519,
+    "duration": 3.281
+  },
+  {
+    "text": "business model. You have a lot of losing",
+    "start": 627.36,
+    "duration": 3.039
+  },
+  {
+    "text": "traders and they pay the winning traders",
+    "start": 628.8,
+    "duration": 3.52
+  },
+  {
+    "text": "because you're not actually trading real",
+    "start": 630.399,
+    "duration": 3.921
+  },
+  {
+    "text": "capital. You're trading in demo account.",
+    "start": 632.32,
+    "duration": 5.36
+  },
+  {
+    "text": "So if you make 10k profits, that money",
+    "start": 634.32,
+    "duration": 5.12
+  },
+  {
+    "text": "didn't really exist, but they still pay",
+    "start": 637.68,
+    "duration": 4.719
+  },
+  {
+    "text": "you your profit split. Yeah. All right.",
+    "start": 639.44,
+    "duration": 5.92
+  },
+  {
+    "text": "So FTMO is the biggest one to prove how",
+    "start": 642.399,
+    "duration": 5.041
+  },
+  {
+    "text": "much money this industry is making with",
+    "start": 645.36,
+    "duration": 5.28
+  },
+  {
+    "text": "prop firms is insane. I put in uh from",
+    "start": 647.44,
+    "duration": 6.079
+  },
+  {
+    "text": "last year August there is the turnover",
+    "start": 650.64,
+    "duration": 7.04
+  },
+  {
+    "text": "of FTMO. They made 213 million um which",
+    "start": 653.519,
+    "duration": 6.56
+  },
+  {
+    "text": "is ridiculous. So this is really an",
+    "start": 657.68,
+    "duration": 4.719
+  },
+  {
+    "text": "industry on its own. But we're going to",
+    "start": 660.079,
+    "duration": 4.32
+  },
+  {
+    "text": "talk about how to beat them, right? How",
+    "start": 662.399,
+    "duration": 5.281
+  },
+  {
+    "text": "to how to still be at a good side in",
+    "start": 664.399,
+    "duration": 6.481
+  },
+  {
+    "text": "this overall plan. So, what I've learned",
+    "start": 667.68,
+    "duration": 6.719
+  },
+  {
+    "text": "in the building thousands of strategies",
+    "start": 670.88,
+    "duration": 6.56
+  },
+  {
+    "text": "uh over the past years is you have",
+    "start": 674.399,
+    "duration": 6.641
+  },
+  {
+    "text": "strategies to pass the skill test. So,",
+    "start": 677.44,
+    "duration": 6.079
+  },
+  {
+    "text": "the 10% and 5% for instance, you have",
+    "start": 681.04,
+    "duration": 5.2
+  },
+  {
+    "text": "specifically created strategies to",
+    "start": 683.519,
+    "duration": 5.201
+  },
+  {
+    "text": "achieve that. And you also have",
+    "start": 686.24,
+    "duration": 4.96
+  },
+  {
+    "text": "strategies to get payouts, right? So you",
+    "start": 688.72,
+    "duration": 4.72
+  },
+  {
+    "text": "have two types of strategies to pursue",
+    "start": 691.2,
+    "duration": 5.44
+  },
+  {
+    "text": "this and you mostly need two strategies.",
+    "start": 693.44,
+    "duration": 5.12
+  },
+  {
+    "text": "Sometimes you can use the same strategy",
+    "start": 696.64,
+    "duration": 4.16
+  },
+  {
+    "text": "but I'm not going to share that with you",
+    "start": 698.56,
+    "duration": 4.399
+  },
+  {
+    "text": "because I want to give you the highest",
+    "start": 700.8,
+    "duration": 4.24
+  },
+  {
+    "text": "probability to to make money with this.",
+    "start": 702.959,
+    "duration": 4.801
+  },
+  {
+    "text": "Right. Today we talk about payout",
+    "start": 705.04,
+    "duration": 4.88
+  },
+  {
+    "text": "strategies. Maybe in a future webinar",
+    "start": 707.76,
+    "duration": 4.079
+  },
+  {
+    "text": "we're going to talk about uh passing",
+    "start": 709.92,
+    "duration": 4.4
+  },
+  {
+    "text": "prop firms but right now we're going to",
+    "start": 711.839,
+    "duration": 4.24
+  },
+  {
+    "text": "talk about how to get the payouts",
+    "start": 714.32,
+    "duration": 4.24
+  },
+  {
+    "text": "consistently. This will blow your mind",
+    "start": 716.079,
+    "duration": 5.521
+  },
+  {
+    "text": "to be honest. So take your notes. The",
+    "start": 718.56,
+    "duration": 5.76
+  },
+  {
+    "text": "most consistently profitable algorithms",
+    "start": 721.6,
+    "duration": 6.08
+  },
+  {
+    "text": "you see online are the riskiest.",
+    "start": 724.32,
+    "duration": 6.079
+  },
+  {
+    "text": "Almost everything you see regarding bots",
+    "start": 727.68,
+    "duration": 5.68
+  },
+  {
+    "text": "and algorithms online are the most risky",
+    "start": 730.399,
+    "duration": 5.041
+  },
+  {
+    "text": "systems with the best track records and",
+    "start": 733.36,
+    "duration": 3.68
+  },
+  {
+    "text": "the most consistent results. And I'm",
+    "start": 735.44,
+    "duration": 3.519
+  },
+  {
+    "text": "going to show you how that works, why",
+    "start": 737.04,
+    "duration": 5.039
+  },
+  {
+    "text": "that is uh the reason because if you",
+    "start": 738.959,
+    "duration": 5.201
+  },
+  {
+    "text": "don't know that, you can fall in a trap.",
+    "start": 742.079,
+    "duration": 3.681
+  },
+  {
+    "text": "And also if you know this, you can use",
+    "start": 744.16,
+    "duration": 4.08
+  },
+  {
+    "text": "it for prop terms. So, these systems",
+    "start": 745.76,
+    "duration": 5.12
+  },
+  {
+    "text": "have a very large stop-loss and a very",
+    "start": 748.24,
+    "duration": 5.52
+  },
+  {
+    "text": "small target. All right? Creating a very",
+    "start": 750.88,
+    "duration": 4.8
+  },
+  {
+    "text": "high win rate because it's so easy to",
+    "start": 753.76,
+    "duration": 3.92
+  },
+  {
+    "text": "hit your target versus your stop-loss.",
+    "start": 755.68,
+    "duration": 4.32
+  },
+  {
+    "text": "Imagine that you have a huge stop-loss",
+    "start": 757.68,
+    "duration": 4.399
+  },
+  {
+    "text": "and you have a very tiny target. The",
+    "start": 760.0,
+    "duration": 4.56
+  },
+  {
+    "text": "market just statistically is more likely",
+    "start": 762.079,
+    "duration": 5.681
+  },
+  {
+    "text": "to quickly tap your uh target than move",
+    "start": 764.56,
+    "duration": 4.64
+  },
+  {
+    "text": "all the way down to your stop- loss.",
+    "start": 767.76,
+    "duration": 3.04
+  },
+  {
+    "text": "Right? That's what I'm trying to say",
+    "start": 769.2,
+    "duration": 3.199
+  },
+  {
+    "text": "here. and therefore you have very high",
+    "start": 770.8,
+    "duration": 3.76
+  },
+  {
+    "text": "win rate but your risk-to-reward is",
+    "start": 772.399,
+    "duration": 5.68
+  },
+  {
+    "text": "negative for the more advanced traders",
+    "start": 774.56,
+    "duration": 6.0
+  },
+  {
+    "text": "creating profitable results. This",
+    "start": 778.079,
+    "duration": 4.56
+  },
+  {
+    "text": "strategy creating profitable results",
+    "start": 780.56,
+    "duration": 5.2
+  },
+  {
+    "text": "month in month out until the market does",
+    "start": 782.639,
+    "duration": 5.2
+  },
+  {
+    "text": "something crazy and blows up the",
+    "start": 785.76,
+    "duration": 5.199
+  },
+  {
+    "text": "account. This is probably uh the",
+    "start": 787.839,
+    "duration": 5.281
+  },
+  {
+    "text": "algorithm that you have seen everywhere",
+    "start": 790.959,
+    "duration": 5.201
+  },
+  {
+    "text": "online. uh if you ever Googled FX",
+    "start": 793.12,
+    "duration": 5.36
+  },
+  {
+    "text": "algorithms or whatever algorithm yeah",
+    "start": 796.16,
+    "duration": 5.119
+  },
+  {
+    "text": "you have seen very steep equity charts",
+    "start": 798.48,
+    "duration": 4.72
+  },
+  {
+    "text": "and I will show you examples I've seen",
+    "start": 801.279,
+    "duration": 4.0
+  },
+  {
+    "text": "these systems come and go for the past",
+    "start": 803.2,
+    "duration": 4.56
+  },
+  {
+    "text": "10 years so I'm not just telling you",
+    "start": 805.279,
+    "duration": 4.641
+  },
+  {
+    "text": "I've seen this and it's sort of an",
+    "start": 807.76,
+    "duration": 4.16
+  },
+  {
+    "text": "obsession for me to see if people trade",
+    "start": 809.92,
+    "duration": 4.32
+  },
+  {
+    "text": "it on capital to see okay how long will",
+    "start": 811.92,
+    "duration": 5.359
+  },
+  {
+    "text": "they survive right so have here you",
+    "start": 814.24,
+    "duration": 5.599
+  },
+  {
+    "text": "create uh you have one that we created",
+    "start": 817.279,
+    "duration": 4.401
+  },
+  {
+    "text": "this is uh one of those strategies we",
+    "start": 819.839,
+    "duration": 5.201
+  },
+  {
+    "text": "built um together with my team. You can",
+    "start": 821.68,
+    "duration": 5.839
+  },
+  {
+    "text": "see it is super consistent, right? Every",
+    "start": 825.04,
+    "duration": 6.64
+  },
+  {
+    "text": "month of the 14 months is profit. The",
+    "start": 827.519,
+    "duration": 6.88
+  },
+  {
+    "text": "cumulative return is ridiculous. It is",
+    "start": 831.68,
+    "duration": 4.959
+  },
+  {
+    "text": "just a straight line, right? All right.",
+    "start": 834.399,
+    "duration": 5.68
+  },
+  {
+    "text": "So, it looks great indeed. I promise",
+    "start": 836.639,
+    "duration": 5.361
+  },
+  {
+    "text": "this account will blow up one day.",
+    "start": 840.079,
+    "duration": 3.521
+  },
+  {
+    "text": "Account gone, everything gone. It will",
+    "start": 842.0,
+    "duration": 4.72
+  },
+  {
+    "text": "be a minus 100% uh month. And why do I",
+    "start": 843.6,
+    "duration": 5.52
+  },
+  {
+    "text": "say that to you? Well, this is a risky",
+    "start": 846.72,
+    "duration": 5.679
+  },
+  {
+    "text": "system to run on private capital. Um but",
+    "start": 849.12,
+    "duration": 5.04
+  },
+  {
+    "text": "they always do they always explode. This",
+    "start": 852.399,
+    "duration": 4.88
+  },
+  {
+    "text": "one is now running for 14 months and one",
+    "start": 854.16,
+    "duration": 5.679
+  },
+  {
+    "text": "day maybe another 14 months will be very",
+    "start": 857.279,
+    "duration": 6.24
+  },
+  {
+    "text": "good and then it will be bad. Yeah, I",
+    "start": 859.839,
+    "duration": 7.041
+  },
+  {
+    "text": "will show you um why in a second. So",
+    "start": 863.519,
+    "duration": 4.721
+  },
+  {
+    "text": "here you have another system. This is",
+    "start": 866.88,
+    "duration": 3.36
+  },
+  {
+    "text": "not my system. This is a public system.",
+    "start": 868.24,
+    "duration": 3.44
+  },
+  {
+    "text": "This track record I've been following",
+    "start": 870.24,
+    "duration": 3.52
+  },
+  {
+    "text": "for many years. It's currently up",
+    "start": 871.68,
+    "duration": 4.48
+  },
+  {
+    "text": "11,710%",
+    "start": 873.76,
+    "duration": 6.639
+  },
+  {
+    "text": "in profits. Yeah. but it blew up but the",
+    "start": 876.16,
+    "duration": 6.4
+  },
+  {
+    "text": "owner deposited double the money to save",
+    "start": 880.399,
+    "duration": 4.321
+  },
+  {
+    "text": "it. So you had a big draw down and then",
+    "start": 882.56,
+    "duration": 4.399
+  },
+  {
+    "text": "it was margin call and the owner had the",
+    "start": 884.72,
+    "duration": 4.32
+  },
+  {
+    "text": "money to double the account and saved it",
+    "start": 886.959,
+    "duration": 4.0
+  },
+  {
+    "text": "and that's what you can see here uh in",
+    "start": 889.04,
+    "duration": 4.479
+  },
+  {
+    "text": "the big spike right. So also this system",
+    "start": 890.959,
+    "duration": 5.361
+  },
+  {
+    "text": "blew up but yeah if it's a small account",
+    "start": 893.519,
+    "duration": 4.56
+  },
+  {
+    "text": "you can just double your money but if",
+    "start": 896.32,
+    "duration": 3.92
+  },
+  {
+    "text": "you do this on a on a million you better",
+    "start": 898.079,
+    "duration": 4.0
+  },
+  {
+    "text": "have a million in cash also laying there",
+    "start": 900.24,
+    "duration": 4.24
+  },
+  {
+    "text": "otherwise the million is gone right so",
+    "start": 902.079,
+    "duration": 5.76
+  },
+  {
+    "text": "this is how those strategies look and",
+    "start": 904.48,
+    "duration": 5.44
+  },
+  {
+    "text": "why do I talk about this why do I share",
+    "start": 907.839,
+    "duration": 4.481
+  },
+  {
+    "text": "this with you guys because yeah it's a",
+    "start": 909.92,
+    "duration": 4.8
+  },
+  {
+    "text": "little bit of a yeah a weird thing to",
+    "start": 912.32,
+    "duration": 4.0
+  },
+  {
+    "text": "share right to talk about systems that",
+    "start": 914.72,
+    "duration": 4.72
+  },
+  {
+    "text": "blow up well what if you can trade these",
+    "start": 916.32,
+    "duration": 5.6
+  },
+  {
+    "text": "strategies and not worry about blow",
+    "start": 919.44,
+    "duration": 4.0
+  },
+  {
+    "text": "blowing up. So you can be very",
+    "start": 921.92,
+    "duration": 3.919
+  },
+  {
+    "text": "consistent month in month out making",
+    "start": 923.44,
+    "duration": 5.44
+  },
+  {
+    "text": "half a percent 1% maybe more and not",
+    "start": 925.839,
+    "duration": 5.761
+  },
+  {
+    "text": "worrying about blowing up. Well, this is",
+    "start": 928.88,
+    "duration": 5.04
+  },
+  {
+    "text": "where prop firms come in because it's",
+    "start": 931.6,
+    "duration": 4.239
+  },
+  {
+    "text": "not your own capital. It's not even real",
+    "start": 933.92,
+    "duration": 5.039
+  },
+  {
+    "text": "capital. So if it blows up after x",
+    "start": 935.839,
+    "duration": 5.44
+  },
+  {
+    "text": "amount of months, you did collect the",
+    "start": 938.959,
+    "duration": 4.56
+  },
+  {
+    "text": "real money payouts, right? So I will",
+    "start": 941.279,
+    "duration": 4.481
+  },
+  {
+    "text": "bring this home for people that see this",
+    "start": 943.519,
+    "duration": 3.841
+  },
+  {
+    "text": "for the first time. I think whoa, what",
+    "start": 945.76,
+    "duration": 4.56
+  },
+  {
+    "text": "what is this? I'll slowly step by step",
+    "start": 947.36,
+    "duration": 5.919
+  },
+  {
+    "text": "show it to you. So if we go back to to",
+    "start": 950.32,
+    "duration": 5.199
+  },
+  {
+    "text": "our track record here, you count 14",
+    "start": 953.279,
+    "duration": 5.281
+  },
+  {
+    "text": "profitable months equaling 14 payouts",
+    "start": 955.519,
+    "duration": 5.921
+  },
+  {
+    "text": "from prop firms, right? When we blow up,",
+    "start": 958.56,
+    "duration": 5.519
+  },
+  {
+    "text": "I already made good returns. So one of",
+    "start": 961.44,
+    "duration": 4.88
+  },
+  {
+    "text": "our founders of Profus is also here in",
+    "start": 964.079,
+    "duration": 5.841
+  },
+  {
+    "text": "the chat and he proved this for almost a",
+    "start": 966.32,
+    "duration": 5.519
+  },
+  {
+    "text": "year now that since December running",
+    "start": 969.92,
+    "duration": 4.96
+  },
+  {
+    "text": "this system on FTMO on prop firms and",
+    "start": 971.839,
+    "duration": 6.24
+  },
+  {
+    "text": "getting payouts, right? And this is what",
+    "start": 974.88,
+    "duration": 4.959
+  },
+  {
+    "text": "I'm about to teach you today. And also",
+    "start": 978.079,
+    "duration": 3.76
+  },
+  {
+    "text": "give you a strategy that does this. And",
+    "start": 979.839,
+    "duration": 3.521
+  },
+  {
+    "text": "then you can test it for yourself. Of",
+    "start": 981.839,
+    "duration": 5.041
+  },
+  {
+    "text": "course, um you need to test it yourself",
+    "start": 983.36,
+    "duration": 5.599
+  },
+  {
+    "text": "and play around with it. So of course",
+    "start": 986.88,
+    "duration": 4.079
+  },
+  {
+    "text": "your own decision, but I just want to",
+    "start": 988.959,
+    "duration": 3.601
+  },
+  {
+    "text": "show you how to build these type of",
+    "start": 990.959,
+    "duration": 4.0
+  },
+  {
+    "text": "strategies on proactives AI because a",
+    "start": 992.56,
+    "duration": 3.76
+  },
+  {
+    "text": "long time ago I made the promise you can",
+    "start": 994.959,
+    "duration": 3.44
+  },
+  {
+    "text": "automate anything. So also these type of",
+    "start": 996.32,
+    "duration": 5.04
+  },
+  {
+    "text": "systems. So how the industry names these",
+    "start": 998.399,
+    "duration": 5.841
+  },
+  {
+    "text": "crazy stupid and risky strategies is",
+    "start": 1001.36,
+    "duration": 5.52
+  },
+  {
+    "text": "normally either martingale grid systems",
+    "start": 1004.24,
+    "duration": 5.519
+  },
+  {
+    "text": "or sculping systems. Yeah, you have you",
+    "start": 1006.88,
+    "duration": 5.84
+  },
+  {
+    "text": "can really investigate a lot of systems",
+    "start": 1009.759,
+    "duration": 4.88
+  },
+  {
+    "text": "you see online and they probably look",
+    "start": 1012.72,
+    "duration": 3.76
+  },
+  {
+    "text": "like this or that and then they have a",
+    "start": 1014.639,
+    "duration": 4.481
+  },
+  {
+    "text": "big draw down uh floating but they close",
+    "start": 1016.48,
+    "duration": 5.76
+  },
+  {
+    "text": "in profits and they do generate uh",
+    "start": 1019.12,
+    "duration": 4.88
+  },
+  {
+    "text": "consistent returns but one day they blow",
+    "start": 1022.24,
+    "duration": 3.52
+  },
+  {
+    "text": "up but on prop firms it doesn't really",
+    "start": 1024.0,
+    "duration": 3.679
+  },
+  {
+    "text": "matter right because you have more",
+    "start": 1025.76,
+    "duration": 5.12
+  },
+  {
+    "text": "payouts than uh than the probability of",
+    "start": 1027.679,
+    "duration": 6.321
+  },
+  {
+    "text": "losing the account. So far questions.",
+    "start": 1030.88,
+    "duration": 5.6
+  },
+  {
+    "text": "Let me quickly check how that um again",
+    "start": 1034.0,
+    "duration": 4.64
+  },
+  {
+    "text": "never use these on real capital not",
+    "start": 1036.48,
+    "duration": 4.24
+  },
+  {
+    "text": "worth the risk to reward. So for some of",
+    "start": 1038.64,
+    "duration": 4.08
+  },
+  {
+    "text": "you guys you might build uh take the",
+    "start": 1040.72,
+    "duration": 4.8
+  },
+  {
+    "text": "strategy we share today and you uh",
+    "start": 1042.72,
+    "duration": 5.199
+  },
+  {
+    "text": "change it a little bit be creative learn",
+    "start": 1045.52,
+    "duration": 4.159
+  },
+  {
+    "text": "from it and do all of that and then",
+    "start": 1047.919,
+    "duration": 3.521
+  },
+  {
+    "text": "you're thinking like oh maybe I do run",
+    "start": 1049.679,
+    "duration": 3.921
+  },
+  {
+    "text": "it on private capital. Of course, it's",
+    "start": 1051.44,
+    "duration": 3.92
+  },
+  {
+    "text": "your money. Do what with it, whatever.",
+    "start": 1053.6,
+    "duration": 3.36
+  },
+  {
+    "text": "But my disclaimer is pretty clear,",
+    "start": 1055.36,
+    "duration": 4.4
+  },
+  {
+    "text": "right? These strategies are risky but",
+    "start": 1056.96,
+    "duration": 5.76
+  },
+  {
+    "text": "consistent. And",
+    "start": 1059.76,
+    "duration": 4.799
+  },
+  {
+    "text": "um what you will figure out is like if",
+    "start": 1062.72,
+    "duration": 4.4
+  },
+  {
+    "text": "you make a 100% gain because your draw",
+    "start": 1064.559,
+    "duration": 5.12
+  },
+  {
+    "text": "down is 100%. Right? If you know that",
+    "start": 1067.12,
+    "duration": 5.439
+  },
+  {
+    "text": "you might lose your account, you need to",
+    "start": 1069.679,
+    "duration": 5.36
+  },
+  {
+    "text": "have crazy good returns every month to",
+    "start": 1072.559,
+    "duration": 4.641
+  },
+  {
+    "text": "cover that 100%. So therefore, it's not",
+    "start": 1075.039,
+    "duration": 3.441
+  },
+  {
+    "text": "worth the risk to reward. You can",
+    "start": 1077.2,
+    "duration": 3.599
+  },
+  {
+    "text": "calculate it yourself, but it is for",
+    "start": 1078.48,
+    "duration": 4.96
+  },
+  {
+    "text": "prop firms ideal. To follow prop firm",
+    "start": 1080.799,
+    "duration": 4.641
+  },
+  {
+    "text": "rules, it is important that you adjust",
+    "start": 1083.44,
+    "duration": 3.92
+  },
+  {
+    "text": "the strategy. The entries, the exits,",
+    "start": 1085.44,
+    "duration": 3.76
+  },
+  {
+    "text": "everything needs to be adjusted because",
+    "start": 1087.36,
+    "duration": 4.0
+  },
+  {
+    "text": "we are not allowed to all trade the same",
+    "start": 1089.2,
+    "duration": 6.16
+  },
+  {
+    "text": "strategies. Um, so when you start with a",
+    "start": 1091.36,
+    "duration": 6.64
+  },
+  {
+    "text": "strategy like this, when you do trust",
+    "start": 1095.36,
+    "duration": 4.48
+  },
+  {
+    "text": "that you tested it yourself, it's",
+    "start": 1098.0,
+    "duration": 3.28
+  },
+  {
+    "text": "important to adjust it and therefore you",
+    "start": 1099.84,
+    "duration": 2.8
+  },
+  {
+    "text": "need to learn a little bit about how to",
+    "start": 1101.28,
+    "duration": 4.72
+  },
+  {
+    "text": "use perfect AI. So let's dive into that.",
+    "start": 1102.64,
+    "duration": 6.56
+  },
+  {
+    "text": "Let's build a strategy like this step by",
+    "start": 1106.0,
+    "duration": 6.32
+  },
+  {
+    "text": "step and then I share with you the a",
+    "start": 1109.2,
+    "duration": 4.96
+  },
+  {
+    "text": "link the link will be shared here in the",
+    "start": 1112.32,
+    "duration": 4.64
+  },
+  {
+    "text": "Google uh meets later on and then yeah",
+    "start": 1114.16,
+    "duration": 4.879
+  },
+  {
+    "text": "you can just click on it and if you",
+    "start": 1116.96,
+    "duration": 3.44
+  },
+  {
+    "text": "don't have an account sign up and then",
+    "start": 1119.039,
+    "duration": 3.201
+  },
+  {
+    "text": "download it and play around with it",
+    "start": 1120.4,
+    "duration": 4.72
+  },
+  {
+    "text": "adjust it export it and run it. All",
+    "start": 1122.24,
+    "duration": 7.04
+  },
+  {
+    "text": "right. So this is the equity chart uh on",
+    "start": 1125.12,
+    "duration": 8.64
+  },
+  {
+    "text": "a CAD on the 15minut time frame. So 15",
+    "start": 1129.28,
+    "duration": 6.96
+  },
+  {
+    "text": "and this is what the strategy I'm about",
+    "start": 1133.76,
+    "duration": 4.4
+  },
+  {
+    "text": "to share with you. It's very consistent.",
+    "start": 1136.24,
+    "duration": 4.08
+  },
+  {
+    "text": "It is not the same strategy as this.",
+    "start": 1138.16,
+    "duration": 4.32
+  },
+  {
+    "text": "This is a different strategy but ID is",
+    "start": 1140.32,
+    "duration": 4.719
+  },
+  {
+    "text": "the same and it's also uh well you can",
+    "start": 1142.48,
+    "duration": 5.199
+  },
+  {
+    "text": "test for yourself right. All right",
+    "start": 1145.039,
+    "duration": 4.401
+  },
+  {
+    "text": "trading plan for buys. Let's dive into",
+    "start": 1147.679,
+    "duration": 3.441
+  },
+  {
+    "text": "the trading plan because first we need",
+    "start": 1149.44,
+    "duration": 4.0
+  },
+  {
+    "text": "to know what is this doing step by step",
+    "start": 1151.12,
+    "duration": 4.32
+  },
+  {
+    "text": "and then how to transform the trading",
+    "start": 1153.44,
+    "duration": 5.119
+  },
+  {
+    "text": "plan in building blocks in perfect AI.",
+    "start": 1155.44,
+    "duration": 7.04
+  },
+  {
+    "text": "So we have three u rules here for buy.",
+    "start": 1158.559,
+    "duration": 6.161
+  },
+  {
+    "text": "So what do I need to see the market",
+    "start": 1162.48,
+    "duration": 5.36
+  },
+  {
+    "text": "doing to buy and of course also for",
+    "start": 1164.72,
+    "duration": 5.04
+  },
+  {
+    "text": "sales. What does the market need to show",
+    "start": 1167.84,
+    "duration": 4.48
+  },
+  {
+    "text": "me before I click sell? Of course we are",
+    "start": 1169.76,
+    "duration": 4.08
+  },
+  {
+    "text": "not manually clicking buy and sell. The",
+    "start": 1172.32,
+    "duration": 3.84
+  },
+  {
+    "text": "algorithm will do that. Um, we're living",
+    "start": 1173.84,
+    "duration": 6.4
+  },
+  {
+    "text": "in uh 2025, right? Every 15 minutes,",
+    "start": 1176.16,
+    "duration": 5.759
+  },
+  {
+    "text": "check candle closed is below the",
+    "start": 1180.24,
+    "duration": 3.2
+  },
+  {
+    "text": "bowlinger band low. I will show you a",
+    "start": 1181.919,
+    "duration": 4.321
+  },
+  {
+    "text": "chart example soon. Then check if we",
+    "start": 1183.44,
+    "duration": 6.479
+  },
+  {
+    "text": "don't have trades open, then buy with a",
+    "start": 1186.24,
+    "duration": 7.36
+  },
+  {
+    "text": "lot size, an x amount of lots. If we do",
+    "start": 1189.919,
+    "duration": 6.401
+  },
+  {
+    "text": "have trades open, check how far away we",
+    "start": 1193.6,
+    "duration": 5.04
+  },
+  {
+    "text": "are from this trade and use a different",
+    "start": 1196.32,
+    "duration": 4.8
+  },
+  {
+    "text": "lot size. So it's possible that you take",
+    "start": 1198.64,
+    "duration": 5.76
+  },
+  {
+    "text": "a buy, price goes against you and then",
+    "start": 1201.12,
+    "duration": 4.72
+  },
+  {
+    "text": "you take another buy. So you have two",
+    "start": 1204.4,
+    "duration": 3.2
+  },
+  {
+    "text": "positions open, sometimes you have three",
+    "start": 1205.84,
+    "duration": 3.68
+  },
+  {
+    "text": "positions open, sometimes you have four",
+    "start": 1207.6,
+    "duration": 4.4
+  },
+  {
+    "text": "positions open. Yeah, I'll show you with",
+    "start": 1209.52,
+    "duration": 4.88
+  },
+  {
+    "text": "examples. Then the trading plan for",
+    "start": 1212.0,
+    "duration": 5.76
+  },
+  {
+    "text": "sells is the same but then check uh",
+    "start": 1214.4,
+    "duration": 6.639
+  },
+  {
+    "text": "every 15 minutes check candle closed is",
+    "start": 1217.76,
+    "duration": 5.279
+  },
+  {
+    "text": "above the bowlinger bands high. Super",
+    "start": 1221.039,
+    "duration": 4.481
+  },
+  {
+    "text": "simple strategy. This works on so many",
+    "start": 1223.039,
+    "duration": 5.361
+  },
+  {
+    "text": "strate uh so many different uh simple",
+    "start": 1225.52,
+    "duration": 6.8
+  },
+  {
+    "text": "rules. We have check if we don't have",
+    "start": 1228.4,
+    "duration": 6.08
+  },
+  {
+    "text": "trades open then sell with this lot size",
+    "start": 1232.32,
+    "duration": 3.839
+  },
+  {
+    "text": "and then if we do have trades open check",
+    "start": 1234.48,
+    "duration": 4.079
+  },
+  {
+    "text": "how far away we are from this trade and",
+    "start": 1236.159,
+    "duration": 4.961
+  },
+  {
+    "text": "use a different lot size. Pretty easy",
+    "start": 1238.559,
+    "duration": 4.881
+  },
+  {
+    "text": "trading plan right? All right. How does",
+    "start": 1241.12,
+    "duration": 4.08
+  },
+  {
+    "text": "that look? Well, here we have the",
+    "start": 1243.44,
+    "duration": 4.56
+  },
+  {
+    "text": "algorithm uh opened. When you open a",
+    "start": 1245.2,
+    "duration": 5.52
+  },
+  {
+    "text": "profactive AI algorithm, you can see you",
+    "start": 1248.0,
+    "duration": 4.32
+  },
+  {
+    "text": "can recognize the colors that this",
+    "start": 1250.72,
+    "duration": 3.839
+  },
+  {
+    "text": "created on our platform and you see the",
+    "start": 1252.32,
+    "duration": 4.16
+  },
+  {
+    "text": "bowlinger band, right? So you see uh",
+    "start": 1254.559,
+    "duration": 4.24
+  },
+  {
+    "text": "more or less a moving channel with three",
+    "start": 1256.48,
+    "duration": 3.92
+  },
+  {
+    "text": "lines. You have the lower line, the",
+    "start": 1258.799,
+    "duration": 4.561
+  },
+  {
+    "text": "midline and the high uh higher line, the",
+    "start": 1260.4,
+    "duration": 5.84
+  },
+  {
+    "text": "top line. Well, the rule for a cell if",
+    "start": 1263.36,
+    "duration": 5.76
+  },
+  {
+    "text": "we go back is check candle closed above",
+    "start": 1266.24,
+    "duration": 5.439
+  },
+  {
+    "text": "the band high. Well, we see that right",
+    "start": 1269.12,
+    "duration": 4.559
+  },
+  {
+    "text": "now. Right now the trade is taken. We",
+    "start": 1271.679,
+    "duration": 4.48
+  },
+  {
+    "text": "have a sell and we have a huge target uh",
+    "start": 1273.679,
+    "duration": 4.961
+  },
+  {
+    "text": "huge stop loss and a very tiny target as",
+    "start": 1276.159,
+    "duration": 6.64
+  },
+  {
+    "text": "I I explained. What happens when p price",
+    "start": 1278.64,
+    "duration": 6.32
+  },
+  {
+    "text": "moves higher? Well, then I want another",
+    "start": 1282.799,
+    "duration": 4.801
+  },
+  {
+    "text": "sell because one day it will do that. So",
+    "start": 1284.96,
+    "duration": 5.599
+  },
+  {
+    "text": "I forwarded it and now you have a sell",
+    "start": 1287.6,
+    "duration": 5.68
+  },
+  {
+    "text": "trade one that's to the left. You have",
+    "start": 1290.559,
+    "duration": 5.681
+  },
+  {
+    "text": "sell trade two to the right. So you were",
+    "start": 1293.28,
+    "duration": 5.44
+  },
+  {
+    "text": "in a sale, price moved against you, you",
+    "start": 1296.24,
+    "duration": 4.96
+  },
+  {
+    "text": "took another sell, and then the the",
+    "start": 1298.72,
+    "duration": 5.52
+  },
+  {
+    "text": "floating profit of both of the systems",
+    "start": 1301.2,
+    "duration": 5.52
+  },
+  {
+    "text": "was positive, and then you close all",
+    "start": 1304.24,
+    "duration": 4.319
+  },
+  {
+    "text": "cell trades. But we're going to dive",
+    "start": 1306.72,
+    "duration": 3.68
+  },
+  {
+    "text": "into that a little bit more now, but",
+    "start": 1308.559,
+    "duration": 3.841
+  },
+  {
+    "text": "this is how the strategy works. You can",
+    "start": 1310.4,
+    "duration": 3.44
+  },
+  {
+    "text": "also see in the middle, I don't know if",
+    "start": 1312.4,
+    "duration": 3.12
+  },
+  {
+    "text": "you can clearly see, but in the middle",
+    "start": 1313.84,
+    "duration": 4.88
+  },
+  {
+    "text": "there was also a buy trade taken. Uh buy",
+    "start": 1315.52,
+    "duration": 5.12
+  },
+  {
+    "text": "trade taken, and it was a quick win. But",
+    "start": 1318.72,
+    "duration": 4.64
+  },
+  {
+    "text": "let's focus on these sell trades now.",
+    "start": 1320.64,
+    "duration": 5.84
+  },
+  {
+    "text": "And well let's buy the uh also do the",
+    "start": 1323.36,
+    "duration": 6.559
+  },
+  {
+    "text": "buy side. So every 15 minutes check",
+    "start": 1326.48,
+    "duration": 5.6
+  },
+  {
+    "text": "candle closed below the bowlinger band",
+    "start": 1329.919,
+    "duration": 6.24
+  },
+  {
+    "text": "low is now transformed to five blocks in",
+    "start": 1332.08,
+    "duration": 6.64
+  },
+  {
+    "text": "profactus AI. We have block number one",
+    "start": 1336.159,
+    "duration": 4.88
+  },
+  {
+    "text": "run pair candle. We have block number",
+    "start": 1338.72,
+    "duration": 4.48
+  },
+  {
+    "text": "two run in session. We have then a",
+    "start": 1341.039,
+    "duration": 4.481
+  },
+  {
+    "text": "trading rule. We have count trades and",
+    "start": 1343.2,
+    "duration": 4.88
+  },
+  {
+    "text": "we have a buy now. These are five blocks",
+    "start": 1345.52,
+    "duration": 4.399
+  },
+  {
+    "text": "you need right now and we're going to",
+    "start": 1348.08,
+    "duration": 3.92
+  },
+  {
+    "text": "build more and more and more. So run per",
+    "start": 1349.919,
+    "duration": 3.681
+  },
+  {
+    "text": "candle. What does that mean? Well, every",
+    "start": 1352.0,
+    "duration": 3.919
+  },
+  {
+    "text": "candlestick close, I want to look at the",
+    "start": 1353.6,
+    "duration": 4.0
+  },
+  {
+    "text": "charts and see if we have a break of",
+    "start": 1355.919,
+    "duration": 3.361
+  },
+  {
+    "text": "that bowlinger band high, right? Or the",
+    "start": 1357.6,
+    "duration": 4.959
+  },
+  {
+    "text": "low. All right. So, the algorithm always",
+    "start": 1359.28,
+    "duration": 7.04
+  },
+  {
+    "text": "starts with run per candle. Then run in",
+    "start": 1362.559,
+    "duration": 5.681
+  },
+  {
+    "text": "session a block is used when to trade.",
+    "start": 1366.32,
+    "duration": 3.68
+  },
+  {
+    "text": "Well, normally you trade almost all the",
+    "start": 1368.24,
+    "duration": 5.2
+  },
+  {
+    "text": "hours because FX is almost 24 hours a",
+    "start": 1370.0,
+    "duration": 5.84
+  },
+  {
+    "text": "day open. So, you want to trade let's",
+    "start": 1373.44,
+    "duration": 6.239
+  },
+  {
+    "text": "say 22 hours um per day. That is what",
+    "start": 1375.84,
+    "duration": 6.16
+  },
+  {
+    "text": "you do here. So every candlestick close",
+    "start": 1379.679,
+    "duration": 5.12
+  },
+  {
+    "text": "on a 15minut time frame run in session",
+    "start": 1382.0,
+    "duration": 4.72
+  },
+  {
+    "text": "and then the trade rule. Well, can you",
+    "start": 1384.799,
+    "duration": 3.76
+  },
+  {
+    "text": "guess it? What is the trade rule? Check",
+    "start": 1386.72,
+    "duration": 4.64
+  },
+  {
+    "text": "if the candle close uh that just closed",
+    "start": 1388.559,
+    "duration": 5.441
+  },
+  {
+    "text": "is below the bowlinger band. All right,",
+    "start": 1391.36,
+    "duration": 4.16
+  },
+  {
+    "text": "then",
+    "start": 1394.0,
+    "duration": 4.24
+  },
+  {
+    "text": "check if we don't have trades open then",
+    "start": 1395.52,
+    "duration": 4.8
+  },
+  {
+    "text": "buy with this lot size. What you can see",
+    "start": 1398.24,
+    "duration": 4.16
+  },
+  {
+    "text": "here is count trades. Well, the name",
+    "start": 1400.32,
+    "duration": 4.96
+  },
+  {
+    "text": "already tells you we are counting if we",
+    "start": 1402.4,
+    "duration": 5.279
+  },
+  {
+    "text": "have any trades open. Well, right now we",
+    "start": 1405.28,
+    "duration": 4.72
+  },
+  {
+    "text": "don't have trades open. So that is also",
+    "start": 1407.679,
+    "duration": 4.721
+  },
+  {
+    "text": "valid. And then we have buy now and the",
+    "start": 1410.0,
+    "duration": 4.159
+  },
+  {
+    "text": "trade is executed. You have that that",
+    "start": 1412.4,
+    "duration": 3.519
+  },
+  {
+    "text": "happened here. But then this is a sell",
+    "start": 1414.159,
+    "duration": 7.441
+  },
+  {
+    "text": "example. Um and then this is done. Okay.",
+    "start": 1415.919,
+    "duration": 9.281
+  },
+  {
+    "text": "Now that is just one trade. We have now",
+    "start": 1421.6,
+    "duration": 5.6
+  },
+  {
+    "text": "another tree. And this is a lot of copy",
+    "start": 1425.2,
+    "duration": 4.16
+  },
+  {
+    "text": "paste work. It's just copy paste copy",
+    "start": 1427.2,
+    "duration": 3.839
+  },
+  {
+    "text": "paste. So it's not really getting more",
+    "start": 1429.36,
+    "duration": 3.84
+  },
+  {
+    "text": "complex the more blocks we use. But we",
+    "start": 1431.039,
+    "duration": 4.321
+  },
+  {
+    "text": "have a lot of trades we need to take. So",
+    "start": 1433.2,
+    "duration": 5.839
+  },
+  {
+    "text": "if we have one trade open, if we are far",
+    "start": 1435.36,
+    "duration": 6.88
+  },
+  {
+    "text": "away from that trade one, I want to take",
+    "start": 1439.039,
+    "duration": 5.441
+  },
+  {
+    "text": "trade two if the candle closes again",
+    "start": 1442.24,
+    "duration": 4.319
+  },
+  {
+    "text": "below the bowling band. So that is what",
+    "start": 1444.48,
+    "duration": 4.88
+  },
+  {
+    "text": "we did see here with this example. U",
+    "start": 1446.559,
+    "duration": 4.961
+  },
+  {
+    "text": "again for sales, we had a close above uh",
+    "start": 1449.36,
+    "duration": 6.16
+  },
+  {
+    "text": "that level and then I'm looking to get a",
+    "start": 1451.52,
+    "duration": 7.039
+  },
+  {
+    "text": "sell to uh trade two. Right? So you can",
+    "start": 1455.52,
+    "duration": 5.84
+  },
+  {
+    "text": "see here we have a second tree again run",
+    "start": 1458.559,
+    "duration": 4.561
+  },
+  {
+    "text": "per candle on the 15-minut time frame",
+    "start": 1461.36,
+    "duration": 3.679
+  },
+  {
+    "text": "running in that same session but now we",
+    "start": 1463.12,
+    "duration": 4.88
+  },
+  {
+    "text": "count if we have a buy one trade open.",
+    "start": 1465.039,
+    "duration": 4.721
+  },
+  {
+    "text": "You can just do that select that in the",
+    "start": 1468.0,
+    "duration": 5.52
+  },
+  {
+    "text": "that block itself and then select uh",
+    "start": 1469.76,
+    "duration": 5.76
+  },
+  {
+    "text": "that buy one trade. So select the trade",
+    "start": 1473.52,
+    "duration": 4.56
+  },
+  {
+    "text": "that was already open. Then check how",
+    "start": 1475.52,
+    "duration": 4.159
+  },
+  {
+    "text": "much profits it is running. Is it",
+    "start": 1478.08,
+    "duration": 4.24
+  },
+  {
+    "text": "running 15 pips in profit or is it",
+    "start": 1479.679,
+    "duration": 6.48
+  },
+  {
+    "text": "running uh in a in a loss? How far away",
+    "start": 1482.32,
+    "duration": 6.32
+  },
+  {
+    "text": "is it current price and that all trade",
+    "start": 1486.159,
+    "duration": 4.4
+  },
+  {
+    "text": "because you don't want to enter more",
+    "start": 1488.64,
+    "duration": 3.919
+  },
+  {
+    "text": "trades on the same level, right? You",
+    "start": 1490.559,
+    "duration": 4.321
+  },
+  {
+    "text": "want to see markets far away from that",
+    "start": 1492.559,
+    "duration": 4.72
+  },
+  {
+    "text": "first trade and then trade rule. Well,",
+    "start": 1494.88,
+    "duration": 4.64
+  },
+  {
+    "text": "trade rule is close on the below the",
+    "start": 1497.279,
+    "duration": 4.4
+  },
+  {
+    "text": "bowlinger band and then you buy for the",
+    "start": 1499.52,
+    "duration": 5.36
+  },
+  {
+    "text": "second time. All right, so here you have",
+    "start": 1501.679,
+    "duration": 4.88
+  },
+  {
+    "text": "two trees. You have buy trade one and",
+    "start": 1504.88,
+    "duration": 4.08
+  },
+  {
+    "text": "you have buy trade two. All right, let's",
+    "start": 1506.559,
+    "duration": 4.641
+  },
+  {
+    "text": "continue. But the markets can keep going",
+    "start": 1508.96,
+    "duration": 5.199
+  },
+  {
+    "text": "against us. So we want more trades. This",
+    "start": 1511.2,
+    "duration": 5.44
+  },
+  {
+    "text": "is how these systems work, right? It is",
+    "start": 1514.159,
+    "duration": 4.481
+  },
+  {
+    "text": "again uh just for prop firms. Never run",
+    "start": 1516.64,
+    "duration": 5.2
+  },
+  {
+    "text": "this on private capital. Um but we have",
+    "start": 1518.64,
+    "duration": 6.08
+  },
+  {
+    "text": "here a trade number one, then price",
+    "start": 1521.84,
+    "duration": 4.56
+  },
+  {
+    "text": "falls more. We have trade number two,",
+    "start": 1524.72,
+    "duration": 3.36
+  },
+  {
+    "text": "then price falls more. You have trade",
+    "start": 1526.4,
+    "duration": 4.159
+  },
+  {
+    "text": "number three, price falls more, and then",
+    "start": 1528.08,
+    "duration": 4.24
+  },
+  {
+    "text": "you have your fourth trade. And that one",
+    "start": 1530.559,
+    "duration": 5.041
+  },
+  {
+    "text": "plays out. And the more trades you have,",
+    "start": 1532.32,
+    "duration": 5.44
+  },
+  {
+    "text": "the lot size of each position also",
+    "start": 1535.6,
+    "duration": 4.48
+  },
+  {
+    "text": "changes. So the last trade that banks",
+    "start": 1537.76,
+    "duration": 4.64
+  },
+  {
+    "text": "banks more than the other ones and",
+    "start": 1540.08,
+    "duration": 4.4
+  },
+  {
+    "text": "therefore combined you can close all",
+    "start": 1542.4,
+    "duration": 4.159
+  },
+  {
+    "text": "four positions for profit because the",
+    "start": 1544.48,
+    "duration": 3.76
+  },
+  {
+    "text": "last trade is the biggest one. That's",
+    "start": 1546.559,
+    "duration": 3.681
+  },
+  {
+    "text": "how normally Martin Gills work or great",
+    "start": 1548.24,
+    "duration": 5.76
+  },
+  {
+    "text": "systems. Again be careful with them. We",
+    "start": 1550.24,
+    "duration": 6.0
+  },
+  {
+    "text": "repeat the same process again just copy",
+    "start": 1554.0,
+    "duration": 4.0
+  },
+  {
+    "text": "paste and change some settings. So we're",
+    "start": 1556.24,
+    "duration": 4.24
+  },
+  {
+    "text": "going to just uh we have now two trades",
+    "start": 1558.0,
+    "duration": 5.12
+  },
+  {
+    "text": "and we need let's say eight trades. So",
+    "start": 1560.48,
+    "duration": 6.0
+  },
+  {
+    "text": "it's quite a big uh piece of code. You",
+    "start": 1563.12,
+    "duration": 4.559
+  },
+  {
+    "text": "don't have to build it because we're",
+    "start": 1566.48,
+    "duration": 3.439
+  },
+  {
+    "text": "going to share this very soon. But uh I",
+    "start": 1567.679,
+    "duration": 4.801
+  },
+  {
+    "text": "want you to analyze it, practice it,",
+    "start": 1569.919,
+    "duration": 5.441
+  },
+  {
+    "text": "learn from it, be be active, right? Then",
+    "start": 1572.48,
+    "duration": 5.04
+  },
+  {
+    "text": "you can build hundreds or thousands of",
+    "start": 1575.36,
+    "duration": 4.48
+  },
+  {
+    "text": "these systems yourself. So now we have",
+    "start": 1577.52,
+    "duration": 5.36
+  },
+  {
+    "text": "the the whole piece of code. Um it's the",
+    "start": 1579.84,
+    "duration": 5.28
+  },
+  {
+    "text": "same. You can see by trade two that tree",
+    "start": 1582.88,
+    "duration": 4.56
+  },
+  {
+    "text": "looks exactly the same as the tree next",
+    "start": 1585.12,
+    "duration": 4.88
+  },
+  {
+    "text": "to it and the by trade four, five, six,",
+    "start": 1587.44,
+    "duration": 4.479
+  },
+  {
+    "text": "seven, eight. So this is the whole",
+    "start": 1590.0,
+    "duration": 4.0
+  },
+  {
+    "text": "build. uh within the blocks we have",
+    "start": 1591.919,
+    "duration": 4.721
+  },
+  {
+    "text": "small changes and you can see that if",
+    "start": 1594.0,
+    "duration": 4.32
+  },
+  {
+    "text": "you analyze the blocks when you have the",
+    "start": 1596.64,
+    "duration": 4.32
+  },
+  {
+    "text": "code but uh the difference between let's",
+    "start": 1598.32,
+    "duration": 5.28
+  },
+  {
+    "text": "say buy trade two that tree of blocks",
+    "start": 1600.96,
+    "duration": 6.319
+  },
+  {
+    "text": "and buy trade three that tree of blocks",
+    "start": 1603.6,
+    "duration": 6.48
+  },
+  {
+    "text": "we uh just have to count trades you just",
+    "start": 1607.279,
+    "duration": 4.481
+  },
+  {
+    "text": "count if you already have a position",
+    "start": 1610.08,
+    "duration": 6.0
+  },
+  {
+    "text": "open uh on uh by trade one or two or you",
+    "start": 1611.76,
+    "duration": 7.2
+  },
+  {
+    "text": "don't have uh positions open uh of the",
+    "start": 1616.08,
+    "duration": 4.4
+  },
+  {
+    "text": "other trades because that's the only",
+    "start": 1618.96,
+    "duration": 4.8
+  },
+  {
+    "text": "complex thing here. All right.",
+    "start": 1620.48,
+    "duration": 5.28
+  },
+  {
+    "text": "Then we have management. How to manage",
+    "start": 1623.76,
+    "duration": 4.72
+  },
+  {
+    "text": "this uh algorithm? Well, we have this",
+    "start": 1625.76,
+    "duration": 5.279
+  },
+  {
+    "text": "stream. Select all trades. Check how",
+    "start": 1628.48,
+    "duration": 4.48
+  },
+  {
+    "text": "much profit we have floating. So all the",
+    "start": 1631.039,
+    "duration": 3.681
+  },
+  {
+    "text": "trades combined that we have open. Are",
+    "start": 1632.96,
+    "duration": 4.56
+  },
+  {
+    "text": "we floating combined in profits or loss?",
+    "start": 1634.72,
+    "duration": 5.04
+  },
+  {
+    "text": "If floating profit is enough, something",
+    "start": 1637.52,
+    "duration": 4.56
+  },
+  {
+    "text": "you can of course adjust yourself. If we",
+    "start": 1639.76,
+    "duration": 5.039
+  },
+  {
+    "text": "are in good floating profit, then we",
+    "start": 1642.08,
+    "duration": 4.8
+  },
+  {
+    "text": "want to uh close all the trades and we",
+    "start": 1644.799,
+    "duration": 4.24
+  },
+  {
+    "text": "take our profit and we wait for the next",
+    "start": 1646.88,
+    "duration": 4.799
+  },
+  {
+    "text": "setups. And yeah, this is how you build",
+    "start": 1649.039,
+    "duration": 5.441
+  },
+  {
+    "text": "it. You do it. Select all the trades, a",
+    "start": 1651.679,
+    "duration": 4.961
+  },
+  {
+    "text": "formula to calculate all the the",
+    "start": 1654.48,
+    "duration": 3.6
+  },
+  {
+    "text": "floating profit. So let's say you have",
+    "start": 1656.64,
+    "duration": 3.44
+  },
+  {
+    "text": "five trades open, then you have a a",
+    "start": 1658.08,
+    "duration": 4.64
+  },
+  {
+    "text": "quick formula block there where you",
+    "start": 1660.08,
+    "duration": 5.839
+  },
+  {
+    "text": "count all the the trades combined. And",
+    "start": 1662.72,
+    "duration": 7.199
+  },
+  {
+    "text": "then trade rule. Um so is the profit",
+    "start": 1665.919,
+    "duration": 7.041
+  },
+  {
+    "text": "higher than what I want? Yes. Okay. Then",
+    "start": 1669.919,
+    "duration": 5.601
+  },
+  {
+    "text": "once per trade, close all the trades.",
+    "start": 1672.96,
+    "duration": 5.12
+  },
+  {
+    "text": "And this is how it works. The complexity",
+    "start": 1675.52,
+    "duration": 4.96
+  },
+  {
+    "text": "of this system is in using group",
+    "start": 1678.08,
+    "duration": 4.64
+  },
+  {
+    "text": "numbers. I'm going to explain that real",
+    "start": 1680.48,
+    "duration": 4.4
+  },
+  {
+    "text": "quick. Remember you have that buy trade",
+    "start": 1682.72,
+    "duration": 4.64
+  },
+  {
+    "text": "one. You have the buy trade two. Perhaps",
+    "start": 1684.88,
+    "duration": 4.399
+  },
+  {
+    "text": "you have three, four, five, six, seven,",
+    "start": 1687.36,
+    "duration": 3.679
+  },
+  {
+    "text": "eight. You have a lot of trades, right?",
+    "start": 1689.279,
+    "duration": 3.681
+  },
+  {
+    "text": "What you can do is tag them. So give",
+    "start": 1691.039,
+    "duration": 4.88
+  },
+  {
+    "text": "them a name. Buy trade one has the name",
+    "start": 1692.96,
+    "duration": 5.52
+  },
+  {
+    "text": "group one. By trade two has the name",
+    "start": 1695.919,
+    "duration": 4.081
+  },
+  {
+    "text": "group two. And then you can separate",
+    "start": 1698.48,
+    "duration": 3.36
+  },
+  {
+    "text": "your trades. And that's done within the",
+    "start": 1700.0,
+    "duration": 3.44
+  },
+  {
+    "text": "platform within the blocks. But that's",
+    "start": 1701.84,
+    "duration": 4.079
+  },
+  {
+    "text": "just the only complex thing of this",
+    "start": 1703.44,
+    "duration": 4.88
+  },
+  {
+    "text": "algorithm for if you're totally new to",
+    "start": 1705.919,
+    "duration": 4.48
+  },
+  {
+    "text": "building this, you quickly have to get",
+    "start": 1708.32,
+    "duration": 3.76
+  },
+  {
+    "text": "used to it. We have a lot of templates",
+    "start": 1710.399,
+    "duration": 4.88
+  },
+  {
+    "text": "and we have a big docks also where you",
+    "start": 1712.08,
+    "duration": 5.28
+  },
+  {
+    "text": "can just take a lot of tutorials to",
+    "start": 1715.279,
+    "duration": 4.321
+  },
+  {
+    "text": "learn. But this the complex thingy uh",
+    "start": 1717.36,
+    "duration": 4.88
+  },
+  {
+    "text": "for this strategy. All right. Uh please",
+    "start": 1719.6,
+    "duration": 4.559
+  },
+  {
+    "text": "open the strategy and learn how it",
+    "start": 1722.24,
+    "duration": 4.319
+  },
+  {
+    "text": "works. The link will now be shared by",
+    "start": 1724.159,
+    "duration": 7.041
+  },
+  {
+    "text": "Yoast in this chat. So, Yos, can you",
+    "start": 1726.559,
+    "duration": 8.321
+  },
+  {
+    "text": "share the template link and then you can",
+    "start": 1731.2,
+    "duration": 5.28
+  },
+  {
+    "text": "download it. Of course, this is only",
+    "start": 1734.88,
+    "duration": 4.24
+  },
+  {
+    "text": "available for you guys here online. So,",
+    "start": 1736.48,
+    "duration": 4.799
+  },
+  {
+    "text": "thank you for hopping in and let's cover",
+    "start": 1739.12,
+    "duration": 3.84
+  },
+  {
+    "text": "some questions. Yeah, let's cover some",
+    "start": 1741.279,
+    "duration": 3.76
+  },
+  {
+    "text": "questions. Ask me in the chat here. Let",
+    "start": 1742.96,
+    "duration": 4.56
+  },
+  {
+    "text": "me know. Did you guys like this? Was",
+    "start": 1745.039,
+    "duration": 4.24
+  },
+  {
+    "text": "this beneficial? Was this too advanced?",
+    "start": 1747.52,
+    "duration": 5.639
+  },
+  {
+    "text": "Was this too easy?",
+    "start": 1749.279,
+    "duration": 3.88
+  },
+  {
+    "text": "All right. Yos, thank you for sharing.",
+    "start": 1753.279,
+    "duration": 6.961
+  },
+  {
+    "text": "Really good. Thanks. Perfect. What's the",
+    "start": 1757.6,
+    "duration": 5.12
+  },
+  {
+    "text": "average max draw down of this strategy?",
+    "start": 1760.24,
+    "duration": 5.439
+  },
+  {
+    "text": "All right. Yeah. So, uh if you uh",
+    "start": 1762.72,
+    "duration": 4.559
+  },
+  {
+    "text": "download the strategy, you have inputs",
+    "start": 1765.679,
+    "duration": 3.441
+  },
+  {
+    "text": "and inputs are the settings of your",
+    "start": 1767.279,
+    "duration": 3.841
+  },
+  {
+    "text": "strategy. And there you can adjust the",
+    "start": 1769.12,
+    "duration": 4.64
+  },
+  {
+    "text": "lot size. So, play around with that. Run",
+    "start": 1771.12,
+    "duration": 4.4
+  },
+  {
+    "text": "a back test. See what the floating draw",
+    "start": 1773.76,
+    "duration": 4.72
+  },
+  {
+    "text": "down is. And then if it's too much for",
+    "start": 1775.52,
+    "duration": 5.36
+  },
+  {
+    "text": "you, then just in decrease the size,",
+    "start": 1778.48,
+    "duration": 4.48
+  },
+  {
+    "text": "right? If it's too small, then increase",
+    "start": 1780.88,
+    "duration": 4.0
+  },
+  {
+    "text": "the size. Just play around with it. If",
+    "start": 1782.96,
+    "duration": 4.88
+  },
+  {
+    "text": "you want to have a max risk uh max draw",
+    "start": 1784.88,
+    "duration": 5.84
+  },
+  {
+    "text": "down of 5%. Then you need to decrease",
+    "start": 1787.84,
+    "duration": 5.36
+  },
+  {
+    "text": "the lot size a bit. But if you have for",
+    "start": 1790.72,
+    "duration": 6.24
+  },
+  {
+    "text": "instance uh 10% room then you can maybe",
+    "start": 1793.2,
+    "duration": 6.079
+  },
+  {
+    "text": "trade a little bit more risk. For me,",
+    "start": 1796.96,
+    "duration": 4.24
+  },
+  {
+    "text": "what we personally do with our accounts",
+    "start": 1799.279,
+    "duration": 4.561
+  },
+  {
+    "text": "is to just target half a percent, 1% a",
+    "start": 1801.2,
+    "duration": 4.88
+  },
+  {
+    "text": "month on prop ter firms and then let's",
+    "start": 1803.84,
+    "duration": 4.8
+  },
+  {
+    "text": "say you are 400k funded, you just",
+    "start": 1806.08,
+    "duration": 5.36
+  },
+  {
+    "text": "passively make 4k. But you can also up",
+    "start": 1808.64,
+    "duration": 4.72
+  },
+  {
+    "text": "the risk, but then the probability of",
+    "start": 1811.44,
+    "duration": 3.599
+  },
+  {
+    "text": "losing the account and having big draw",
+    "start": 1813.36,
+    "duration": 4.24
+  },
+  {
+    "text": "down once in the 12 months or in the 24",
+    "start": 1815.039,
+    "duration": 6.24
+  },
+  {
+    "text": "months or 36 months or whatever. Um it",
+    "start": 1817.6,
+    "duration": 5.84
+  },
+  {
+    "text": "yeah, it all depends on do you want big",
+    "start": 1821.279,
+    "duration": 4.4
+  },
+  {
+    "text": "payouts fast or consistent and long",
+    "start": 1823.44,
+    "duration": 4.4
+  },
+  {
+    "text": "term. That's uh always the the thing,",
+    "start": 1825.679,
+    "duration": 4.88
+  },
+  {
+    "text": "right? All right. Uh this is great.",
+    "start": 1827.84,
+    "duration": 4.4
+  },
+  {
+    "text": "Thank you. Very good topic. Crazy",
+    "start": 1830.559,
+    "duration": 4.24
+  },
+  {
+    "text": "strategy. What's the formula for",
+    "start": 1832.24,
+    "duration": 5.12
+  },
+  {
+    "text": "defining target on each new trade? All",
+    "start": 1834.799,
+    "duration": 4.561
+  },
+  {
+    "text": "right. So, uh good one. I didn't cover",
+    "start": 1837.36,
+    "duration": 4.4
+  },
+  {
+    "text": "that. The first trade I believe has a a",
+    "start": 1839.36,
+    "duration": 6.799
+  },
+  {
+    "text": "small target. And every second trade, uh",
+    "start": 1841.76,
+    "duration": 6.08
+  },
+  {
+    "text": "so if you have one position open and a",
+    "start": 1846.159,
+    "duration": 3.361
+  },
+  {
+    "text": "new one, a new one, a new one, they",
+    "start": 1847.84,
+    "duration": 4.8
+  },
+  {
+    "text": "don't have um targets. And that's",
+    "start": 1849.52,
+    "duration": 5.44
+  },
+  {
+    "text": "because you sum all the floating profit",
+    "start": 1852.64,
+    "duration": 3.68
+  },
+  {
+    "text": "together. So you don't need to target,",
+    "start": 1854.96,
+    "duration": 3.599
+  },
+  {
+    "text": "you just want to stack your positions",
+    "start": 1856.32,
+    "duration": 4.8
+  },
+  {
+    "text": "and when you move into profits uh",
+    "start": 1858.559,
+    "duration": 5.441
+  },
+  {
+    "text": "combined if your profit is uh there like",
+    "start": 1861.12,
+    "duration": 5.76
+  },
+  {
+    "text": "maybe you're floating uh 500 bucks uh",
+    "start": 1864.0,
+    "duration": 4.559
+  },
+  {
+    "text": "maybe that's what you have in the",
+    "start": 1866.88,
+    "duration": 3.76
+  },
+  {
+    "text": "algorithm then everything is closed so",
+    "start": 1868.559,
+    "duration": 3.681
+  },
+  {
+    "text": "you don't need the target. It's just",
+    "start": 1870.64,
+    "duration": 3.44
+  },
+  {
+    "text": "managed every every tick. I hope that",
+    "start": 1872.24,
+    "duration": 3.6
+  },
+  {
+    "text": "answers it.",
+    "start": 1874.08,
+    "duration": 3.599
+  },
+  {
+    "text": ">> Um nice that you explained the strategy",
+    "start": 1875.84,
+    "duration": 5.6
+  },
+  {
+    "text": "in detail before sharing. Yeah. Yeah. We",
+    "start": 1877.679,
+    "duration": 6.081
+  },
+  {
+    "text": "can also build it like really build it",
+    "start": 1881.44,
+    "duration": 4.479
+  },
+  {
+    "text": "in the platform step by step. But I",
+    "start": 1883.76,
+    "duration": 4.88
+  },
+  {
+    "text": "think that will be maybe too overkill",
+    "start": 1885.919,
+    "duration": 4.801
+  },
+  {
+    "text": "but especially with a big project like",
+    "start": 1888.64,
+    "duration": 4.72
+  },
+  {
+    "text": "this but maybe u in the future we can",
+    "start": 1890.72,
+    "duration": 4.8
+  },
+  {
+    "text": "also just not do a keynote and just",
+    "start": 1893.36,
+    "duration": 4.48
+  },
+  {
+    "text": "build that I just built a strategy live",
+    "start": 1895.52,
+    "duration": 4.159
+  },
+  {
+    "text": "with you. You can ask questions and be",
+    "start": 1897.84,
+    "duration": 5.439
+  },
+  {
+    "text": "very uh very nice there. Uh great for",
+    "start": 1899.679,
+    "duration": 5.521
+  },
+  {
+    "text": "further development. Combining it with",
+    "start": 1903.279,
+    "duration": 5.201
+  },
+  {
+    "text": "simple breakout strats from for me makes",
+    "start": 1905.2,
+    "duration": 4.719
+  },
+  {
+    "text": "understanding somewhat more complex",
+    "start": 1908.48,
+    "duration": 4.559
+  },
+  {
+    "text": "strategies easier. Nice.",
+    "start": 1909.919,
+    "duration": 5.12
+  },
+  {
+    "text": "Will there be tutorials on loops and",
+    "start": 1913.039,
+    "duration": 3.841
+  },
+  {
+    "text": "perfect? Maybe in later Thursday",
+    "start": 1915.039,
+    "duration": 4.561
+  },
+  {
+    "text": "meetings for example. We can do advanced",
+    "start": 1916.88,
+    "duration": 6.08
+  },
+  {
+    "text": "uh concepts. I try to get these um try",
+    "start": 1919.6,
+    "duration": 5.84
+  },
+  {
+    "text": "to cover both right to do uh for",
+    "start": 1922.96,
+    "duration": 4.8
+  },
+  {
+    "text": "beginners and advanced traders. uh but",
+    "start": 1925.44,
+    "duration": 5.44
+  },
+  {
+    "text": "we can do uh an advanced topic maybe uh",
+    "start": 1927.76,
+    "duration": 6.96
+  },
+  {
+    "text": "later this year for the the more active",
+    "start": 1930.88,
+    "duration": 6.08
+  },
+  {
+    "text": "builders that have a little bit more",
+    "start": 1934.72,
+    "duration": 3.92
+  },
+  {
+    "text": "experience and loops. Yeah, loops are",
+    "start": 1936.96,
+    "duration": 6.48
+  },
+  {
+    "text": "easy to build in perfect uh you you just",
+    "start": 1938.64,
+    "duration": 7.279
+  },
+  {
+    "text": "uh you don't uh need too many blocks. So",
+    "start": 1943.44,
+    "duration": 5.52
+  },
+  {
+    "text": "I will definitely teach you guys that.",
+    "start": 1945.919,
+    "duration": 4.88
+  },
+  {
+    "text": "Uh what about stacking positive",
+    "start": 1948.96,
+    "duration": 5.28
+  },
+  {
+    "text": "positions? MT Martingale",
+    "start": 1950.799,
+    "duration": 6.24
+  },
+  {
+    "text": "maybe that's it, right? Go test it. go",
+    "start": 1954.24,
+    "duration": 4.96
+  },
+  {
+    "text": "try build it and play around with it. Uh",
+    "start": 1957.039,
+    "duration": 5.441
+  },
+  {
+    "text": "it's an interesting uh idea indeed.",
+    "start": 1959.2,
+    "duration": 6.479
+  },
+  {
+    "text": "Uh we run this on all the mean reversion",
+    "start": 1962.48,
+    "duration": 4.88
+  },
+  {
+    "text": "pairs. So think about a cat for",
+    "start": 1965.679,
+    "duration": 3.36
+  },
+  {
+    "text": "instance. Aussie cat really never move",
+    "start": 1967.36,
+    "duration": 4.88
+  },
+  {
+    "text": "somewhere. Uh just like a kiwi kiwi cat",
+    "start": 1969.039,
+    "duration": 5.52
+  },
+  {
+    "text": "those pairs are the best. And then run",
+    "start": 1972.24,
+    "duration": 4.159
+  },
+  {
+    "text": "this system again on the 15minut time",
+    "start": 1974.559,
+    "duration": 5.36
+  },
+  {
+    "text": "frame and just test for yourself. All",
+    "start": 1976.399,
+    "duration": 6.081
+  },
+  {
+    "text": "right. Thanks for explaining same",
+    "start": 1979.919,
+    "duration": 5.76
+  },
+  {
+    "text": "questions on lot size. Uh you can see",
+    "start": 1982.48,
+    "duration": 4.64
+  },
+  {
+    "text": "that in the settings when you download",
+    "start": 1985.679,
+    "duration": 3.36
+  },
+  {
+    "text": "the system uh you have eight different",
+    "start": 1987.12,
+    "duration": 3.84
+  },
+  {
+    "text": "lot sizes and they stack so you can",
+    "start": 1989.039,
+    "duration": 4.0
+  },
+  {
+    "text": "adjust that see what better results you",
+    "start": 1990.96,
+    "duration": 4.4
+  },
+  {
+    "text": "have but we gave you default settings",
+    "start": 1993.039,
+    "duration": 4.48
+  },
+  {
+    "text": "that already work on rcat for instance",
+    "start": 1995.36,
+    "duration": 4.0
+  },
+  {
+    "text": "but you can play around with it make",
+    "start": 1997.519,
+    "duration": 4.241
+  },
+  {
+    "text": "drone",
+    "start": 1999.36,
+    "duration": 4.559
+  },
+  {
+    "text": "general question I see new cap isn't",
+    "start": 2001.76,
+    "duration": 4.48
+  },
+  {
+    "text": "taking anyone any more members is the",
+    "start": 2003.919,
+    "duration": 4.88
+  },
+  {
+    "text": "course to remain for",
+    "start": 2006.24,
+    "duration": 5.36
+  },
+  {
+    "text": "uh it's we yeah so new cap is a",
+    "start": 2008.799,
+    "duration": 5.921
+  },
+  {
+    "text": "different company than profactus but Um",
+    "start": 2011.6,
+    "duration": 7.439
+  },
+  {
+    "text": "we will launch a uh a big course on uh",
+    "start": 2014.72,
+    "duration": 7.12
+  },
+  {
+    "text": "uh on proactus as well but",
+    "start": 2019.039,
+    "duration": 4.88
+  },
+  {
+    "text": "that is not a main priority now we are",
+    "start": 2021.84,
+    "duration": 4.079
+  },
+  {
+    "text": "building the best platform out there",
+    "start": 2023.919,
+    "duration": 5.76
+  },
+  {
+    "text": "that cannot be all places at once right",
+    "start": 2025.919,
+    "duration": 5.441
+  },
+  {
+    "text": "so if you want to learn YouTube has a",
+    "start": 2029.679,
+    "duration": 3.36
+  },
+  {
+    "text": "lot of tutorials a lot of people know",
+    "start": 2031.36,
+    "duration": 3.76
+  },
+  {
+    "text": "how to build they want to to share that",
+    "start": 2033.039,
+    "duration": 3.441
+  },
+  {
+    "text": "create content if you're an advanced",
+    "start": 2035.12,
+    "duration": 3.2
+  },
+  {
+    "text": "builder right go to YouTube make an",
+    "start": 2036.48,
+    "duration": 4.16
+  },
+  {
+    "text": "account and start sharing uh good",
+    "start": 2038.32,
+    "duration": 4.88
+  },
+  {
+    "text": "content that's uh we also have Enso here",
+    "start": 2040.64,
+    "duration": 5.68
+  },
+  {
+    "text": "he's I Dubai in his background he uh",
+    "start": 2043.2,
+    "duration": 5.52
+  },
+  {
+    "text": "good life he uh is Dutch he has a Dutch",
+    "start": 2046.32,
+    "duration": 5.68
+  },
+  {
+    "text": "community teaching about profactus so",
+    "start": 2048.72,
+    "duration": 5.119
+  },
+  {
+    "text": "more people will uh teach you about",
+    "start": 2052.0,
+    "duration": 4.079
+  },
+  {
+    "text": "building we are just here to to make",
+    "start": 2053.839,
+    "duration": 3.76
+  },
+  {
+    "text": "sure the platform is suitable for",
+    "start": 2056.079,
+    "duration": 3.76
+  },
+  {
+    "text": "everyone and works",
+    "start": 2057.599,
+    "duration": 5.841
+  },
+  {
+    "text": "uh let's see a lot of questions guys",
+    "start": 2059.839,
+    "duration": 5.84
+  },
+  {
+    "text": "uh are your best systems the ones with",
+    "start": 2063.44,
+    "duration": 4.719
+  },
+  {
+    "text": "the most blocks or not necessarily no",
+    "start": 2065.679,
+    "duration": 5.281
+  },
+  {
+    "text": "keep it keep it so simple this is what",
+    "start": 2068.159,
+    "duration": 4.561
+  },
+  {
+    "text": "every also the people that learned",
+    "start": 2070.96,
+    "duration": 4.8
+  },
+  {
+    "text": "building And if I interview them quite",
+    "start": 2072.72,
+    "duration": 5.28
+  },
+  {
+    "text": "quite often like what what have you",
+    "start": 2075.76,
+    "duration": 4.079
+  },
+  {
+    "text": "built? And we of course also built",
+    "start": 2078.0,
+    "duration": 4.56
+  },
+  {
+    "text": "thousands of strategies, simple wins,",
+    "start": 2079.839,
+    "duration": 5.84
+  },
+  {
+    "text": "simple wins. Focus on simple strategies",
+    "start": 2082.56,
+    "duration": 5.92
+  },
+  {
+    "text": "like the amount of blocks I shared today",
+    "start": 2085.679,
+    "duration": 6.0
+  },
+  {
+    "text": "or Yos shared with you today is is just",
+    "start": 2088.48,
+    "duration": 4.72
+  },
+  {
+    "text": "a lot of blocks because you have",
+    "start": 2091.679,
+    "duration": 4.641
+  },
+  {
+    "text": "multiple trades but it has one trade",
+    "start": 2093.2,
+    "duration": 6.08
+  },
+  {
+    "text": "rule, right? Keep it simple.",
+    "start": 2096.32,
+    "duration": 5.36
+  },
+  {
+    "text": "Three trading rules max, maybe five, but",
+    "start": 2099.28,
+    "duration": 4.319
+  },
+  {
+    "text": "don't over complicate it.",
+    "start": 2101.68,
+    "duration": 4.64
+  },
+  {
+    "text": "Bjorn, uh, with imperfectus, it would be",
+    "start": 2103.599,
+    "duration": 4.721
+  },
+  {
+    "text": "great if you can get a tutorial on how",
+    "start": 2106.32,
+    "duration": 3.84
+  },
+  {
+    "text": "to determine the bias for a trade.",
+    "start": 2108.32,
+    "duration": 3.519
+  },
+  {
+    "text": "Example, only enter when an overall",
+    "start": 2110.16,
+    "duration": 3.84
+  },
+  {
+    "text": "higher high is made and execute on a",
+    "start": 2111.839,
+    "duration": 4.481
+  },
+  {
+    "text": "trade when price pulls back to point to",
+    "start": 2114.0,
+    "duration": 4.32
+  },
+  {
+    "text": "fib. Yeah, I have built these type of",
+    "start": 2116.32,
+    "duration": 5.12
+  },
+  {
+    "text": "strategies myself. Uh, I can uh post",
+    "start": 2118.32,
+    "duration": 6.0
+  },
+  {
+    "text": "more of them like these small tutorials",
+    "start": 2121.44,
+    "duration": 6.72
+  },
+  {
+    "text": "in the docs. So, docs.practice.ai,",
+    "start": 2124.32,
+    "duration": 5.44
+  },
+  {
+    "text": "that's also in the builder. You have",
+    "start": 2128.16,
+    "duration": 3.76
+  },
+  {
+    "text": "like a question mark down right. open",
+    "start": 2129.76,
+    "duration": 4.4
+  },
+  {
+    "text": "that and you find a lot of tutorials but",
+    "start": 2131.92,
+    "duration": 4.96
+  },
+  {
+    "text": "I will uh feed that more I will build",
+    "start": 2134.16,
+    "duration": 6.64
+  },
+  {
+    "text": "these tutorials there um simple question",
+    "start": 2136.88,
+    "duration": 5.84
+  },
+  {
+    "text": "is how we can build a tradable range",
+    "start": 2140.8,
+    "duration": 4.48
+  },
+  {
+    "text": "when positions are executed",
+    "start": 2142.72,
+    "duration": 5.68
+  },
+  {
+    "text": "only yeah so it's a little bit too much",
+    "start": 2145.28,
+    "duration": 6.0
+  },
+  {
+    "text": "work to to share that tutorial right now",
+    "start": 2148.4,
+    "duration": 7.12
+  },
+  {
+    "text": "um but I'll ASAP make a tutorial on it",
+    "start": 2151.28,
+    "duration": 6.559
+  },
+  {
+    "text": "it's like for the other people uh",
+    "start": 2155.52,
+    "duration": 4.319
+  },
+  {
+    "text": "listening what if the market is in a",
+    "start": 2157.839,
+    "duration": 3.601
+  },
+  {
+    "text": "trending environment can you tell your",
+    "start": 2159.839,
+    "duration": 3.76
+  },
+  {
+    "text": "algorithm to just trade in that training",
+    "start": 2161.44,
+    "duration": 4.32
+  },
+  {
+    "text": "environment or markets are consolidating",
+    "start": 2163.599,
+    "duration": 4.561
+  },
+  {
+    "text": "can you just ask your system to to to",
+    "start": 2165.76,
+    "duration": 4.319
+  },
+  {
+    "text": "trade in a consolidation market like",
+    "start": 2168.16,
+    "duration": 3.6
+  },
+  {
+    "text": "those are good filters interesting",
+    "start": 2170.079,
+    "duration": 4.721
+  },
+  {
+    "text": "filters I'll share that possible to make",
+    "start": 2171.76,
+    "duration": 5.12
+  },
+  {
+    "text": "a B different uh with different time",
+    "start": 2174.8,
+    "duration": 3.92
+  },
+  {
+    "text": "frames so for example daily time frame",
+    "start": 2176.88,
+    "duration": 5.28
+  },
+  {
+    "text": "bias and 4hour entry yeah so any time",
+    "start": 2178.72,
+    "duration": 5.119
+  },
+  {
+    "text": "frame is possible you can look at the",
+    "start": 2182.16,
+    "duration": 3.919
+  },
+  {
+    "text": "weekly and the daily the 4 hour the one",
+    "start": 2183.839,
+    "duration": 3.841
+  },
+  {
+    "text": "hour and then execute on the one minute",
+    "start": 2186.079,
+    "duration": 7.961
+  },
+  {
+    "text": "if you want um Yeah, all possible.",
+    "start": 2187.68,
+    "duration": 6.36
+  },
+  {
+    "text": "All right. All right.",
+    "start": 2196.8,
+    "duration": 5.6
+  },
+  {
+    "text": "Any more questions?",
+    "start": 2199.359,
+    "duration": 4.801
+  },
+  {
+    "text": "And did you download the system? Because",
+    "start": 2202.4,
+    "duration": 5.28
+  },
+  {
+    "text": "after this call, it's gone. So, make",
+    "start": 2204.16,
+    "duration": 7.04
+  },
+  {
+    "text": "sure you got it. Yeah.",
+    "start": 2207.68,
+    "duration": 5.919
+  },
+  {
+    "text": "But you have the link. So, it will be",
+    "start": 2211.2,
+    "duration": 4.399
+  },
+  {
+    "text": "fine.",
+    "start": 2213.599,
+    "duration": 4.881
+  },
+  {
+    "text": "All right, guys. If there are no more",
+    "start": 2215.599,
+    "duration": 4.881
+  },
+  {
+    "text": "questions, it was already almost a",
+    "start": 2218.48,
+    "duration": 5.119
+  },
+  {
+    "text": "40inut call. Thank you for being here.",
+    "start": 2220.48,
+    "duration": 5.52
+  },
+  {
+    "text": "Next month, every second Thursday of",
+    "start": 2223.599,
+    "duration": 5.921
+  },
+  {
+    "text": "every month, we host a live webinar and",
+    "start": 2226.0,
+    "duration": 5.359
+  },
+  {
+    "text": "it's always at the same time. So, put it",
+    "start": 2229.52,
+    "duration": 5.36
+  },
+  {
+    "text": "in your calendar and yeah, happy to keep",
+    "start": 2231.359,
+    "duration": 6.48
+  },
+  {
+    "text": "sharing good stuff with you guys. Um,",
+    "start": 2234.88,
+    "duration": 5.959
+  },
+  {
+    "text": "thanks.",
+    "start": 2237.839,
+    "duration": 3.0
+  },
+  {
+    "text": ">> No, this is not the machine you're",
+    "start": 2241.52,
+    "duration": 6.16
+  },
+  {
+    "text": "all right. All right, guys. Thank you",
+    "start": 2244.32,
+    "duration": 8.84
+  },
+  {
+    "text": "and we speak next month. Bye-bye.",
+    "start": 2247.68,
+    "duration": 5.48
+  },
+  {
+    "text": "[Music]",
+    "start": 2257.96,
+    "duration": 3.19
+  }
+]

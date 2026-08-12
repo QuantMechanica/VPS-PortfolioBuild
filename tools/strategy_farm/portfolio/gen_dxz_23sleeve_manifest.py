@@ -59,11 +59,17 @@ for ea,sym in book23:
     sleeves.append(dict(ea_id=ea, symbol=sym, ea_label=lbl, magic_number=magics.get((ea,sym)),
         weight=weight, risk_percent=weight, ex5_path=ex5, backtest_set=setf,
         new_candidate=(ea,sym) in new3, trades=len(st.get((ea,sym),[])),
-        set_file_expectation={"ENV":"live","RISK_FIXED":0.0,"RISK_PERCENT":weight,"PORTFOLIO_WEIGHT":round(weight/TOTAL_RISK,6)}))
+        # ``weight`` is already the absolute allocated account-risk percentage.
+        # The framework multiplies RISK_PERCENT by PORTFOLIO_WEIGHT, so applying
+        # weight/TOTAL_RISK here would double-scale every sleeve.
+        set_file_expectation={"ENV":"live","RISK_FIXED":0.0,"RISK_PERCENT":weight,"PORTFOLIO_WEIGHT":1.0}))
 
 manifest=dict(
     book="DXZ", status="DRAFT", n_sleeves=len(sleeves), starting_capital=STARTING_CAPITAL,
     total_risk_pct=TOTAL_RISK, weight_method="capped_inverse_vol_cap1.0_total9.75",
+    risk_application_contract={"RISK_PERCENT":"absolute_allocated_sleeve_risk",
+      "PORTFOLIO_WEIGHT":1.0,"effective_risk_formula":"RISK_PERCENT * PORTFOLIO_WEIGHT",
+      "relative_weights_are_analytics_only":True},
     generated_by="claude_faithful_recompute_on_fresh_q08fixed_streams",
     kpis=kpis, note=("23-sleeve = DXZ-20 (fresh streams) + 3 new candidates 13128/1556/10706. "
       "Weights = capped inverse-vol RECOMPUTED from q08-SL/TP-fixed streams. KPIs verified EXACT vs "

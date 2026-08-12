@@ -1,0 +1,44 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10571
+; ea_slug:      mql5-pchan-stop
+; ea_version:   v5.0
+; set_version:  s20260801-stress-med
+; symbol:       XAUUSD.DWX
+; timeframe:    H4
+; environment:  q05_stress_medium
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   81caf525b52fe998185795e34ec37cd7297be200246b733a32708799bc74acd0
+; author:       Development
+; date:         2026-08-01
+;==========================================================
+qm_ea_id=10571
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.0000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10571_mql5-pchan-stop.md
+strategy_signal_tf=PERIOD_H4
+strategy_model=8
+strategy_fast_period=14
+strategy_mid_period=21
+strategy_slow_period=50
+strategy_adx_period=14
+strategy_rsi_period=14
+strategy_atr_period=14
+strategy_channel_bars=22
+strategy_momentum_period=14
+strategy_time_stop_bars=40
+strategy_volume_lookback=20
+strategy_atr_sl_mult=2.00
+strategy_tp_r_mult=1.50
+strategy_delta=0.0
+strategy_min_distance_points=5.0
+strategy_max_spread_points=250.0
+strategy_min_atr_points=0.0
+strategy_breakout_buffer_points=10.0
+strategy_volume_mult=1.0

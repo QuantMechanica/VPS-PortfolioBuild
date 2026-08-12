@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_SCREEN",
+  "family": "session_vwap_reversion",
+  "hypothesis": "A completed intraday close materially displaced from the causal session VWAP mean-reverts toward the frozen signal-time VWAP, adding non-breakout return density.",
+  "data": {
+    "root": "D:\\QM\\mt5\\T_Export\\MQL5\\Files",
+    "symbols": ["GDAXI.DWX", "NDX.DWX", "SP500.DWX", "WS30.DWX", "XAUUSD.DWX"],
+    "timeframe": "M15",
+    "price": "typical_price=(high+low+close)/3",
+    "weight": "native tickvol",
+    "allowed_end_year": 2025
+  },
+  "parameter_grid": {
+    "warmup_bars": [4, 8, 12],
+    "active_bars": [4, 8, 16],
+    "deviation_atr": [0.5, 0.75, 1.0],
+    "stop_to_target_ratio": [1.0, 1.5, 2.0]
+  },
+  "evaluated_configurations": 405,
+  "execution_contract": {
+    "signal": "First completed active-window bar closing beyond the fixed ATR deviation from causal cumulative session VWAP.",
+    "entry": "Next M15 bar open; skip if that open has already crossed the frozen VWAP target.",
+    "target": "Signal-time cumulative session VWAP, frozen before entry.",
+    "stop": "Fixed multiple of entry-to-target distance.",
+    "same_bar_rule": "stop_first",
+    "daily_position_limit": 1,
+    "overnight_positions": 0,
+    "round_trip_costs_in_points": {
+      "GDAXI.DWX": 3.0,
+      "NDX.DWX": 4.0,
+      "SP500.DWX": 1.0,
+      "WS30.DWX": 4.0,
+      "XAUUSD.DWX": 0.8
+    }
+  },
+  "selection_contract": {
+    "development": "2018-2022",
+    "validation": "2023",
+    "sealed_holdout": "2024-2025",
+    "preholdout_gate": "DEV trades>=150 PF>=1.15 net>0; validation trades>=25 PF>=1.05 net>0; at least four positive development years",
+    "selection": "One global family winner by the lower of development and validation PF.",
+    "holdout_gate": "trades>=50 PF>=1.10 net>0 and both 2024 and 2025 positive"
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

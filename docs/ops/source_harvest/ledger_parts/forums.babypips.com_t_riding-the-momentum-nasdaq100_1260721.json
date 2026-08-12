@@ -1,0 +1,37 @@
+{
+  "pdf": "forums.babypips.com_t_riding-the-momentum-nasdaq100_1260721.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_riding-the-momentum-nasdaq100_1260721.pdf",
+      "source_pages": "1",
+      "source_ref": "tommor, 'Riding the momentum - NASDAQ100' (BabyPips forum thread, OP post #1), 2024-2025, https://forums.babypips.com/t/riding-the-momentum-nasdaq100/1260721",
+      "strategy_name": "NASDAQ D1 50-EMA Breakout Momentum",
+      "concept": "On D1, breakout of the prior day's high (long) or low (short) in the direction of the 50-EMA, exiting at the next profitable close.",
+      "market": "Indices",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic pure-MQL5 D1 buy/sell-stop with stop-loss at day's low/high on NDX .DWX data; FTMO/DXZ-compatible in principle.",
+      "priority_hint": "LOW",
+      "notes": "Fully specified: close>50EMA -> buy-stop at day's high, SL at day's low, exit at next profitable close, cancel pending if close<50EMA; mirror for shorts. Author (OP) himself abandoned it (#3): structural negative R:R (stop = full day's range, gains usually < half a day's range) and 40% drawdowns -> Q05 DD gate is the likely killer. Variant discussed (#2/#6) drops the EMA/order-cancel and adds ATR-scaled $-per-point sizing."
+    },
+    {
+      "source_file": "forums.babypips.com_t_riding-the-momentum-nasdaq100_1260721.pdf",
+      "source_pages": "1",
+      "source_ref": "tommor, 'Riding the momentum - NASDAQ100' (BabyPips forum thread, post #5), 2025, https://forums.babypips.com/t/riding-the-momentum-nasdaq100/1260721",
+      "strategy_name": "US-Index Long-Only Swing Pullback",
+      "concept": "After a higher swing low and a D1 close above the prior swing high, buy the next day's high on a lower-high day (long-only US indices).",
+      "market": "Indices",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "No stop-loss or exit rule stated and swing-low/high lookback undefined -- too underspecified to mechanize.",
+      "priority_hint": "LOW",
+      "notes": "tommor's newer replacement (#5) for the breakout method; only the entry setup is sketched, no exit/stop/params."
+    }
+  ],
+  "notes": ["15-post thread; single author (tommor) proposes one fully-specified D1 breakout system and later mentions a vague swing replacement. Remaining posts are drawdown-tolerance discussion, no additional rules."]
+}

@@ -1,0 +1,1961 @@
+#!/usr/bin/env python3
+"""Exact, contract-bound offline full-DEV audit for QM5_10729.
+
+The loader stops after reading only the timestamp prefix of the first row at
+or after 2023-01-01.  All decision-bearing arithmetic uses ``Fraction``;
+integer-cent deal commissions are the sole rounded quantities.
+"""
+
+from __future__ import annotations
+
+import argparse
+import bisect
+import csv
+import hashlib
+import json
+import os
+import stat
+import tempfile
+from collections import Counter, defaultdict
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta, timezone
+from decimal import Decimal, InvalidOperation, ROUND_HALF_EVEN, localcontext
+from fractions import Fraction
+from pathlib import Path, PurePosixPath
+from typing import Any, Iterable, Mapping, Sequence
+
+
+TOOL_PATH = Path(__file__).resolve()
+EA_ROOT = TOOL_PATH.parents[2]
+REPO_ROOT = EA_ROOT.parents[2]
+EVIDENCE_ROOT = EA_ROOT / "docs" / "candidate-analysis"
+CONTRACT_PATH = EVIDENCE_ROOT / "tv_smc_mss_fvg_m15_two_symbol_full_dev_contract.json"
+REVIEW_PATH = EVIDENCE_ROOT / "tv_smc_mss_fvg_outcome_blind_review_receipt.json"
+EXPECTED_CONTRACT_SHA256 = "0b221d1c79dce4a4fef0aa635de957296511e1fc945523e8a4da556c13311d25"
+EXPECTED_REVIEW_SHA256 = "2d009fa440a125514d3d6109ae00d91be295c1b052d53e9e47b5ee9121358d99"
+EXPECTED_SNAPSHOT_MANIFEST_SHA256 = "2a3b4e79c005b368fc67886ed9e3eb260b3d71f27abc5db2ed1b78d98353101e"
+CONTRACT_COMMIT = "3886f15e756b622f0b9cc9f9e1890bce173d653d"
+ANALYSIS_ID = "QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001"
+
+DEFAULT_OUTPUT = EVIDENCE_ROOT / "tv_smc_mss_fvg_m15_two_symbol_full_dev_result.json"
+DEFAULT_REPORT = EVIDENCE_ROOT / "tv_smc_mss_fvg_m15_two_symbol_full_dev_report.md"
+NEWS_FILTER_CONTRACT_PATH = "framework/Include/QM/QM_NewsFilter.mqh"
+NEWS_FILTER_GIT_PATH = "framework/include/QM/QM_NewsFilter.mqh"
+NEWS_FILTER_COMMIT = "5b21b9b1d4851538ddf0f62ddaa2a70db82990c3"
+NEWS_FILTER_BLOB = "5b398bb428c3fe14200a779a4b393884aae0dae6"
+CURRENT_EXCEPTION_SIZES = {
+    "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10729_tv-smc-mss-fvg.md": 4161,
+    "D:/QM/data/news_calendar/news_calendar_2015_2025.csv": 4436657,
+}
+EXPECTED_SNAPSHOT_ID = "release_0b221d1c_2d009fa4_mixed_exact_fenced_v2"
+MARKET_PROJECTION = (
+    "HEADER_PLUS_PRESTART_TIMESTAMP_ONLY_PLUS_EXACT_IN_WINDOW_ROWS_PLUS_"
+    "FIRST_EXCLUDED_TIMESTAMP_PREFIX_ONLY"
+)
+INVALID_FULL_HASH_MANIFEST_SHA256 = (
+    "66dc5e8ea9842a570686940b3c7df90d33164aaefa2bf48911c730d9ea70b5ca"
+)
+INVALID_EVIDENCE_COMMITS = (
+    "b119e97e7271a7fcf1089a3b7024da3ccd0210fe",
+    "52c5031bab44e2cda860136bf6c8edbba7c8719c",
+)
+
+EPOCH = datetime(1970, 1, 1)
+UTC_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
+START_EPOCH = int((datetime(2018, 1, 1) - EPOCH).total_seconds())
+END_EPOCH = int((datetime(2023, 1, 1) - EPOCH).total_seconds())
+M5_SECONDS = 300
+M15_SECONDS = 900
+FULL_YEARS = (2019, 2020, 2021, 2022)
+ANALYSIS_YEARS = (2018, 2019, 2020, 2021, 2022)
+SCENARIOS = ("CENTER", "ADVERSE")
+SYMBOLS = ("EURUSD.DWX", "XAUUSD.DWX")
+SESSIONS = ("LONDON_LABEL", "NEW_YORK_LABEL")
+SIDES = ("LONG", "SHORT")
+RISK_USD = Fraction(1000)
+
+SYMBOL_SPEC: dict[str, dict[str, Any]] = {
+    "EURUSD.DWX": {
+        "source_period": 5,
+        "value_per_price_lot": Fraction(100000),
+        "point": Fraction(1, 100000),
+        "center_points": 4,
+        "adverse_points": 8,
+        "expected_all_rows": 391732,
+        "expected_selected_rows": 373203,
+        "expected_m15_rows": 123943,
+        "expected_partial_buckets": 704,
+        "expected_first_excluded": "2023-01-02T00:05:00",
+    },
+    "XAUUSD.DWX": {
+        "source_period": 15,
+        "value_per_price_lot": Fraction(100),
+        "point": Fraction(1, 100),
+        "center_points": 59,
+        "adverse_points": 118,
+        "expected_all_rows": 118159,
+        "expected_selected_rows": 118159,
+        "expected_m15_rows": 118159,
+        "expected_partial_buckets": 0,
+        "expected_first_excluded": "2023-01-03T01:00:00",
+    },
+}
+
+
+class AuditError(RuntimeError):
+    """Fail-closed contract or data-integrity error."""
+
+
+class DataIntegrityError(AuditError):
+    """A released market path cannot support an unambiguous simulation."""
+
+
+@dataclass(frozen=True)
+class Bar:
+    timestamp: int
+    open: Fraction
+    high: Fraction
+    low: Fraction
+    close: Fraction
+    tickvol: int
+
+
+@dataclass(frozen=True)
+class MarketIdentity:
+    path: str
+    source_period: str
+    raw_slice_sha256: str
+    canonical_m15_sha256: str
+    all_rows_before_2023: int
+    selected_raw_rows: int
+    m15_rows: int
+    incomplete_m15_buckets: int
+    first_selected_raw_time: str
+    last_selected_raw_time: str
+    first_m15_time: str
+    last_m15_time: str
+    first_excluded_timestamp: str
+    future_ohlc_parsed: bool
+
+
+@dataclass(frozen=True)
+class MarketSlice:
+    symbol: str
+    bars: tuple[Bar, ...]
+    identity: MarketIdentity
+
+
+@dataclass(frozen=True)
+class Signal:
+    index: int
+    direction: int
+    session: str
+    structural_id: str
+
+
+@dataclass
+class Position:
+    symbol: str
+    scenario: str
+    direction: int
+    session: str
+    structural_id: str
+    entry_timestamp: int
+    entry: Fraction
+    stop: Fraction
+    target: Fraction
+    lots: Fraction
+    entry_commission_cents: int
+    expected_next_open: int
+    flat_timestamp: int
+
+
+@dataclass(frozen=True)
+class Trade:
+    trade_id: str
+    scenario: str
+    symbol: str
+    session: str
+    side: str
+    structural_id: str
+    entry_timestamp: int
+    exit_timestamp: int
+    entry: Fraction
+    stop: Fraction
+    target: Fraction
+    exit_price: Fraction
+    lots: Fraction
+    gross_usd: Fraction
+    gross_r: Fraction
+    entry_commission_cents: int
+    exit_commission_cents: int
+    commission_cents: int
+    adjusted_usd: Fraction
+    adjusted_r: Fraction
+    exit_reason: str
+    same_bar_sl_tp_conflict: bool
+
+
+@dataclass(frozen=True)
+class Metric:
+    trades: int
+    gross_net_r: Fraction
+    gross_profit_r: Fraction
+    gross_loss_r: Fraction
+    adjusted_net_r: Fraction
+    adjusted_profit_r: Fraction
+    adjusted_loss_r: Fraction
+    external_commission_cents: int
+    adjusted_expectancy_r: Fraction | None
+    adjusted_pf: Fraction | str | None
+    gross_pf: Fraction | str | None
+    adjusted_win_rate: Fraction | None
+    max_closed_balance_dd_r: Fraction
+    worst_closed_day_r: Fraction
+    top_two_winner_share: Fraction | None
+    leave_best_trade_r: Fraction
+    leave_best_year_r: Fraction
+    positive_full_years: int
+    yearly: Mapping[str, Fraction]
+    same_bar_conflicts: int
+    exit_reasons: Mapping[str, int]
+    cost_burden: Fraction | None
+    max_concurrent_positions: int
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def epoch_to_datetime(value: int) -> datetime:
+    return EPOCH + timedelta(seconds=value)
+
+
+def stamp_epoch(value: int) -> str:
+    return epoch_to_datetime(value).isoformat(timespec="seconds")
+
+
+def fraction_text(value: Fraction) -> str:
+    return f"{value.numerator}/{value.denominator}"
+
+
+def decimal_text(value: Fraction) -> str:
+    """Canonical non-exponent decimal for terminating base-10 fractions."""
+    numerator = value.numerator
+    denominator = value.denominator
+    twos = 0
+    fives = 0
+    while denominator % 2 == 0:
+        denominator //= 2
+        twos += 1
+    while denominator % 5 == 0:
+        denominator //= 5
+        fives += 1
+    if denominator != 1:
+        raise AuditError(f"non-terminating decimal requested: {value}")
+    scale = max(twos, fives)
+    scaled = numerator * (2 ** (scale - twos)) * (5 ** (scale - fives))
+    sign = "-" if scaled < 0 else ""
+    digits = str(abs(scaled))
+    if scale == 0:
+        return sign + digits
+    digits = digits.rjust(scale + 1, "0")
+    rendered = sign + digits[:-scale] + "." + digits[-scale:]
+    rendered = rendered.rstrip("0").rstrip(".")
+    return "0" if rendered in {"-0", ""} else rendered
+
+
+def parse_decimal(raw: str, row_number: int, field: str) -> Fraction:
+    try:
+        value = Decimal(raw)
+    except InvalidOperation as exc:
+        raise DataIntegrityError(f"row {row_number}: invalid {field}") from exc
+    if not value.is_finite():
+        raise DataIntegrityError(f"row {row_number}: non-finite {field}")
+    return Fraction(value)
+
+
+def round_half_up_cents(value_usd: Fraction) -> int:
+    if value_usd < 0:
+        raise AuditError("commission cannot be negative")
+    scaled = value_usd * 100
+    quotient, remainder = divmod(scaled.numerator, scaled.denominator)
+    return quotient + (1 if 2 * remainder >= scaled.denominator else 0)
+
+
+def _read_timestamp_prefix(handle: Any, row_number: int) -> bytes | None:
+    prefix = bytearray()
+    while True:
+        current = handle.read(1)
+        if not current:
+            if not prefix:
+                return None
+            raise DataIntegrityError(f"row {row_number}: truncated timestamp prefix")
+        if current == b",":
+            if not prefix:
+                raise DataIntegrityError(f"row {row_number}: empty timestamp")
+            return bytes(prefix)
+        if current in {b"\r", b"\n"}:
+            raise DataIntegrityError(f"row {row_number}: missing comma after timestamp")
+        prefix.extend(current)
+        if len(prefix) > 32:
+            raise DataIntegrityError(f"row {row_number}: timestamp prefix too long")
+
+
+def _parse_bar(timestamp: int, raw_tail: bytes, row_number: int) -> Bar:
+    try:
+        tail = raw_tail.rstrip(b"\r\n").decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise DataIntegrityError(f"row {row_number}: non-UTF8 market row") from exc
+    parts = tail.split(",")
+    if len(parts) != 5:
+        raise DataIntegrityError(f"row {row_number}: expected five row-tail fields")
+    open_, high, low, close = (
+        parse_decimal(raw, row_number, field)
+        for raw, field in zip(parts[:4], ("open", "high", "low", "close"))
+    )
+    try:
+        tickvol = int(parts[4])
+    except ValueError as exc:
+        raise DataIntegrityError(f"row {row_number}: invalid tickvol") from exc
+    if (
+        min(open_, high, low, close) <= 0
+        or low > min(open_, close)
+        or max(open_, close) > high
+        or low > high
+        or tickvol < 0
+    ):
+        raise DataIntegrityError(f"row {row_number}: invalid OHLC/tickvol")
+    return Bar(timestamp, open_, high, low, close, tickvol)
+
+
+def canonical_m15_bytes(bar: Bar) -> bytes:
+    return (
+        "{"
+        f'"time":{bar.timestamp},'
+        f'"open":"{decimal_text(bar.open)}",'
+        f'"high":"{decimal_text(bar.high)}",'
+        f'"low":"{decimal_text(bar.low)}",'
+        f'"close":"{decimal_text(bar.close)}",'
+        f'"tickvol":{bar.tickvol}'
+        "}\n"
+    ).encode("utf-8")
+
+
+def _aggregate_m15(raw_bars: Sequence[Bar]) -> tuple[list[Bar], int]:
+    output: list[Bar] = []
+    partial = 0
+    bucket: int | None = None
+    slots: dict[int, Bar] = {}
+
+    def finish() -> None:
+        nonlocal partial
+        if bucket is None:
+            return
+        if set(slots) != {0, 1, 2}:
+            partial += 1
+            return
+        rows = [slots[index] for index in (0, 1, 2)]
+        output.append(
+            Bar(
+                bucket,
+                rows[0].open,
+                max(row.high for row in rows),
+                min(row.low for row in rows),
+                rows[2].close,
+                sum(row.tickvol for row in rows),
+            )
+        )
+
+    for bar in raw_bars:
+        current_bucket = bar.timestamp - (bar.timestamp % M15_SECONDS)
+        slot = (bar.timestamp - current_bucket) // M5_SECONDS
+        if bucket is None:
+            bucket = current_bucket
+        elif current_bucket != bucket:
+            finish()
+            bucket = current_bucket
+            slots = {}
+        if slot in slots or slot not in {0, 1, 2}:
+            raise DataIntegrityError(f"invalid/duplicate M5 slot at {bar.timestamp}")
+        slots[slot] = bar
+    finish()
+    return output, partial
+
+
+def parse_market(
+    path: Path, symbol: str, source_period: int, *, enforce_expected: bool = True
+) -> MarketSlice:
+    if not path.is_file():
+        raise AuditError(f"market file missing: {path}")
+    raw_digest = hashlib.sha256()
+    raw_selected: list[Bar] = []
+    prior_timestamp: int | None = None
+    first_selected_raw: int | None = None
+    last_selected_raw: int | None = None
+    first_excluded: int | None = None
+    all_rows = 0
+    selected_rows = 0
+    alignment = M5_SECONDS if source_period == 5 else M15_SECONDS
+
+    with path.open("rb", buffering=0) as handle:
+        header = handle.readline().rstrip(b"\r\n")
+        if header != b"time,open,high,low,close,tickvol":
+            raise DataIntegrityError(f"unexpected header: {header!r}")
+        row_number = 2
+        while True:
+            prefix = _read_timestamp_prefix(handle, row_number)
+            if prefix is None:
+                break
+            try:
+                raw_timestamp = prefix.decode("ascii")
+                timestamp = int(raw_timestamp)
+            except (UnicodeDecodeError, ValueError) as exc:
+                raise DataIntegrityError(f"row {row_number}: invalid timestamp") from exc
+            if prior_timestamp is not None and timestamp <= prior_timestamp:
+                raise DataIntegrityError(f"row {row_number}: timestamps not increasing")
+            prior_timestamp = timestamp
+            if timestamp >= END_EPOCH:
+                first_excluded = timestamp
+                break  # Critical: the future OHLC tail remains unread.
+            all_rows += 1
+            tail = handle.readline()
+            if not tail:
+                raise DataIntegrityError(f"row {row_number}: missing row tail")
+            if timestamp < START_EPOCH:
+                row_number += 1
+                continue
+            if timestamp % alignment != 0:
+                raise DataIntegrityError(f"row {row_number}: off-grid timestamp")
+            bar = _parse_bar(timestamp, tail, row_number)
+            raw_selected.append(bar)
+            selected_rows += 1
+            first_selected_raw = timestamp if first_selected_raw is None else first_selected_raw
+            last_selected_raw = timestamp
+            raw_digest.update(prefix + b"," + tail.rstrip(b"\r\n") + b"\n")
+            row_number += 1
+
+    if first_excluded is None:
+        raise DataIntegrityError("cannot prove future fence: no >=2023 timestamp")
+    if not raw_selected or first_selected_raw is None or last_selected_raw is None:
+        raise DataIntegrityError("selected market slice is empty")
+
+    if source_period == 5:
+        m15, partial = _aggregate_m15(raw_selected)
+    elif source_period == 15:
+        m15, partial = list(raw_selected), 0
+    else:
+        raise AuditError(f"unsupported source period: {source_period}")
+    if not m15:
+        raise DataIntegrityError("constructed M15 slice is empty")
+    m15_digest = hashlib.sha256()
+    for bar in m15:
+        m15_digest.update(canonical_m15_bytes(bar))
+
+    spec = SYMBOL_SPEC[symbol]
+    observed = {
+        "all": all_rows,
+        "selected": selected_rows,
+        "m15": len(m15),
+        "partial": partial,
+        "excluded": stamp_epoch(first_excluded),
+    }
+    expected = {
+        "all": spec["expected_all_rows"],
+        "selected": spec["expected_selected_rows"],
+        "m15": spec["expected_m15_rows"],
+        "partial": spec["expected_partial_buckets"],
+        "excluded": spec["expected_first_excluded"],
+    }
+    if enforce_expected and observed != expected:
+        raise DataIntegrityError(f"availability drift for {symbol}: {observed} != {expected}")
+
+    return MarketSlice(
+        symbol=symbol,
+        bars=tuple(m15),
+        identity=MarketIdentity(
+            path=str(path.resolve()),
+            source_period=f"M{source_period}",
+            raw_slice_sha256=raw_digest.hexdigest(),
+            canonical_m15_sha256=m15_digest.hexdigest(),
+            all_rows_before_2023=all_rows,
+            selected_raw_rows=selected_rows,
+            m15_rows=len(m15),
+            incomplete_m15_buckets=partial,
+            first_selected_raw_time=stamp_epoch(first_selected_raw),
+            last_selected_raw_time=stamp_epoch(last_selected_raw),
+            first_m15_time=stamp_epoch(m15[0].timestamp),
+            last_m15_time=stamp_epoch(m15[-1].timestamp),
+            first_excluded_timestamp=stamp_epoch(first_excluded),
+            future_ohlc_parsed=False,
+        ),
+    )
+
+
+def _nth_sunday(year: int, month: int, nth: int) -> date:
+    cursor = date(year, month, 1)
+    seen = 0
+    while True:
+        if cursor.weekday() == 6:
+            seen += 1
+            if seen == nth:
+                return cursor
+        cursor += timedelta(days=1)
+
+
+def broker_offset_for_utc(value: datetime) -> int:
+    if value.tzinfo is None:
+        raise AuditError("UTC datetime must be timezone-aware")
+    value = value.astimezone(timezone.utc)
+    start_day = _nth_sunday(value.year, 3, 2)
+    end_day = _nth_sunday(value.year, 11, 1)
+    start = datetime(value.year, 3, start_day.day, 7, tzinfo=timezone.utc)
+    end = datetime(value.year, 11, end_day.day, 6, tzinfo=timezone.utc)
+    return 3 if start <= value < end else 2
+
+
+def broker_to_utc_epoch(broker_timestamp: int) -> int:
+    broker = epoch_to_datetime(broker_timestamp)
+    candidate_standard = (broker - timedelta(hours=2)).replace(tzinfo=timezone.utc)
+    candidate_dst = (broker - timedelta(hours=3)).replace(tzinfo=timezone.utc)
+    if broker_offset_for_utc(candidate_standard) == 2:
+        selected = candidate_standard
+    elif broker_offset_for_utc(candidate_dst) == 3:
+        selected = candidate_dst
+    else:
+        selected = candidate_standard
+    return int((selected - UTC_EPOCH).total_seconds())
+
+
+def news_affects_symbol(currency: str, symbol: str) -> bool:
+    currency = currency.strip().upper().strip('"')
+    if not currency or currency == "ALL":
+        return True
+    normalized = symbol.upper().replace(".DWX", "")
+    base = normalized[:3]
+    quote = normalized[3:6]
+    return base in currency or quote in currency
+
+
+class NewsBook:
+    def __init__(self, events_by_symbol: Mapping[str, Iterable[int]]):
+        self.events = {
+            symbol: tuple(sorted(events)) for symbol, events in events_by_symbol.items()
+        }
+
+    def blocks(self, symbol: str, broker_entry_timestamp: int) -> bool:
+        entry_utc = broker_to_utc_epoch(broker_entry_timestamp)
+        events = self.events[symbol]
+        index = bisect.bisect_left(events, entry_utc - 1800)
+        return index < len(events) and events[index] <= entry_utc + 1800
+
+
+def load_news(path: Path, expected_sha256: str) -> tuple[NewsBook, dict[str, Any]]:
+    observed_sha = sha256_file(path)
+    if observed_sha != expected_sha256:
+        raise AuditError(f"news hash drift: {observed_sha}")
+    events_by_symbol: dict[str, list[int]] = {symbol: [] for symbol in SYMBOLS}
+    first: datetime | None = None
+    last: datetime | None = None
+    high_rows = 0
+    flag_disagreements = 0
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        required = {"datetime", "currency", "event_name", "impact", "is_high_impact"}
+        if not required.issubset(reader.fieldnames or []):
+            raise AuditError("news header missing required fields")
+        for row_number, row in enumerate(reader, start=2):
+            raw_time = (row.get("datetime") or "").strip()
+            currency = (row.get("currency") or "").strip().upper()
+            event_name = (row.get("event_name") or "").strip()
+            impact = (row.get("impact") or "").strip().upper()
+            high_flag = (row.get("is_high_impact") or "").strip()
+            if not raw_time or not event_name or high_flag not in {"0", "1"}:
+                raise AuditError(f"malformed news row {row_number}")
+            try:
+                event_utc = datetime.strptime(raw_time, "%Y-%m-%d %H:%M:%S").replace(
+                    tzinfo=timezone.utc
+                )
+            except ValueError as exc:
+                raise AuditError(f"invalid news timestamp row {row_number}") from exc
+            first = event_utc if first is None or event_utc < first else first
+            last = event_utc if last is None or event_utc > last else last
+            if (impact == "HIGH") != (high_flag == "1"):
+                flag_disagreements += 1
+            if impact != "HIGH":
+                continue
+            high_rows += 1
+            event_epoch = int((event_utc - UTC_EPOCH).total_seconds())
+            for symbol in SYMBOLS:
+                if news_affects_symbol(currency, symbol):
+                    events_by_symbol[symbol].append(event_epoch)
+    if first is None or last is None or first.year > 2018 or last.year < 2022:
+        raise AuditError("news calendar does not cover analysis")
+    book = NewsBook(events_by_symbol)
+    return book, {
+        "path": str(path.resolve()),
+        "sha256": observed_sha,
+        "first_utc": first.isoformat(),
+        "last_utc": last.isoformat(),
+        "high_impact_rows_by_impact_field": high_rows,
+        "impact_flag_disagreements": flag_disagreements,
+        "selected_events_by_symbol": {
+            symbol: len(book.events[symbol]) for symbol in SYMBOLS
+        },
+        "matching": "QM_NewsEventAffectsSymbol base/quote plus empty/ALL",
+        "blackout": "entry timestamp only, inclusive UTC +/-30 minutes",
+    }
+
+
+def session_for_timestamp(timestamp: int) -> str | None:
+    value = epoch_to_datetime(timestamp)
+    minute = value.hour * 60 + value.minute
+    if 14 * 60 <= minute < 17 * 60:
+        return "LONDON_LABEL"
+    if 19 * 60 + 30 <= minute < 23 * 60:
+        return "NEW_YORK_LABEL"
+    return None
+
+
+def session_end_timestamp(timestamp: int, session: str) -> int:
+    value = epoch_to_datetime(timestamp)
+    if session == "LONDON_LABEL":
+        end = value.replace(hour=17, minute=0, second=0, microsecond=0)
+    elif session == "NEW_YORK_LABEL":
+        end = value.replace(hour=23, minute=0, second=0, microsecond=0)
+    else:
+        raise AuditError(f"unknown session {session}")
+    return int((end - EPOCH).total_seconds())
+
+
+def friday_cutoff_timestamp(timestamp: int) -> int | None:
+    value = epoch_to_datetime(timestamp)
+    if value.weekday() != 4:
+        return None
+    cutoff = value.replace(hour=21, minute=0, second=0, microsecond=0)
+    return int((cutoff - EPOCH).total_seconds())
+
+
+def generate_signals(
+    symbol: str, bars: Sequence[Bar]
+) -> tuple[dict[int, Signal], dict[str, int]]:
+    signals: dict[int, Signal] = {}
+    funnel: Counter[str] = Counter(bars=len(bars))
+    last_high: Fraction | None = None
+    last_low: Fraction | None = None
+    for index, bar in enumerate(bars):
+        if index >= 10:
+            center = index - 5
+            candidate = bars[center]
+            neighbors = [*bars[center - 5 : center], *bars[center + 1 : center + 6]]
+            if all(candidate.high > other.high for other in neighbors):
+                last_high = candidate.high
+                funnel["pivot_high_confirmations"] += 1
+            if all(candidate.low < other.low for other in neighbors):
+                last_low = candidate.low
+                funnel["pivot_low_confirmations"] += 1
+        if index < 2:
+            continue
+        bull_sweep = last_low is not None and bar.low < last_low and bar.close > last_low
+        bear_sweep = last_high is not None and bar.high > last_high and bar.close < last_high
+        if bull_sweep:
+            funnel["raw_long_sweep_reclaim"] += 1
+        if bear_sweep:
+            funnel["raw_short_sweep_reclaim"] += 1
+        bull_mss = bull_sweep and bar.close > bars[index - 1].high
+        bear_mss = bear_sweep and bar.close < bars[index - 1].low
+        if bull_mss:
+            funnel["raw_long_same_bar_mss"] += 1
+        if bear_mss:
+            funnel["raw_short_same_bar_mss"] += 1
+        bull_fvg = bar.low > bars[index - 2].high
+        bear_fvg = bar.high < bars[index - 2].low
+        if bull_fvg:
+            funnel["raw_bull_fvg"] += 1
+        if bear_fvg:
+            funnel["raw_bear_fvg"] += 1
+        session = session_for_timestamp(bar.timestamp)
+        direction = 1 if bull_mss and bull_fvg else -1 if bear_mss and bear_fvg else 0
+        if not direction or session is None:
+            continue
+        if index in signals:
+            raise AuditError(f"both signal directions at {symbol} {bar.timestamp}")
+        side = "LONG" if direction > 0 else "SHORT"
+        structural_id = f"{symbol}|{bar.timestamp}|{side}"
+        signals[index] = Signal(index, direction, session, structural_id)
+        funnel[f"complete_source_signal_{side}"] += 1
+        funnel[f"complete_source_signal_{session}"] += 1
+        funnel[f"complete_source_signal_{side}_{session}"] += 1
+    funnel["complete_source_signals"] = len(signals)
+    return signals, dict(sorted(funnel.items()))
+
+
+def spread_for(symbol: str, scenario: str) -> Fraction:
+    spec = SYMBOL_SPEC[symbol]
+    points = spec["center_points"] if scenario == "CENTER" else spec["adverse_points"]
+    return spec["point"] * points
+
+
+def commission_side_cents(symbol: str, lots: Fraction, price: Fraction) -> int:
+    if symbol == "EURUSD.DWX":
+        rate = max(Fraction(5, 2), Fraction(5, 2) * price)
+        raw = rate * lots
+    elif symbol == "XAUUSD.DWX":
+        raw = price * 100 * lots * Fraction(25, 1_000_000)
+    else:
+        raise AuditError(f"no commission rule for {symbol}")
+    return round_half_up_cents(raw)
+
+
+def close_trade(
+    position: Position,
+    *,
+    exit_timestamp: int,
+    exit_price: Fraction,
+    exit_reason: str,
+    conflict: bool,
+) -> Trade:
+    value_per_price = SYMBOL_SPEC[position.symbol]["value_per_price_lot"]
+    gross_usd = (
+        position.direction
+        * (exit_price - position.entry)
+        * value_per_price
+        * position.lots
+    )
+    exit_commission = commission_side_cents(position.symbol, position.lots, exit_price)
+    total_commission = position.entry_commission_cents + exit_commission
+    adjusted_usd = gross_usd - Fraction(total_commission, 100)
+    side = "LONG" if position.direction > 0 else "SHORT"
+    trade_id = (
+        f"{position.scenario}|{position.symbol}|{position.entry_timestamp}|"
+        f"{side}|{position.structural_id}"
+    )
+    return Trade(
+        trade_id=trade_id,
+        scenario=position.scenario,
+        symbol=position.symbol,
+        session=position.session,
+        side=side,
+        structural_id=position.structural_id,
+        entry_timestamp=position.entry_timestamp,
+        exit_timestamp=exit_timestamp,
+        entry=position.entry,
+        stop=position.stop,
+        target=position.target,
+        exit_price=exit_price,
+        lots=position.lots,
+        gross_usd=gross_usd,
+        gross_r=gross_usd / RISK_USD,
+        entry_commission_cents=position.entry_commission_cents,
+        exit_commission_cents=exit_commission,
+        commission_cents=total_commission,
+        adjusted_usd=adjusted_usd,
+        adjusted_r=adjusted_usd / RISK_USD,
+        exit_reason=exit_reason,
+        same_bar_sl_tp_conflict=conflict,
+    )
+
+
+def _process_position_bar(
+    position: Position, bar: Bar, spread: Fraction
+) -> Trade | None:
+    if bar.timestamp != position.expected_next_open:
+        raise DataIntegrityError(
+            f"{position.scenario} {position.symbol}: missing expected M15 bar "
+            f"{stamp_epoch(position.expected_next_open)} while position open; "
+            f"next={stamp_epoch(bar.timestamp)}"
+        )
+    conflict = False
+    if position.direction > 0:
+        if bar.open <= position.stop:
+            return close_trade(
+                position,
+                exit_timestamp=bar.timestamp,
+                exit_price=bar.open,
+                exit_reason="SL_GAP",
+                conflict=False,
+            )
+        if bar.open >= position.target:
+            return close_trade(
+                position,
+                exit_timestamp=bar.timestamp,
+                exit_price=position.target,
+                exit_reason="TP_GAP",
+                conflict=False,
+            )
+        stop_hit = bar.low <= position.stop
+        target_hit = bar.high >= position.target
+    else:
+        ask_open = bar.open + spread
+        if ask_open >= position.stop:
+            return close_trade(
+                position,
+                exit_timestamp=bar.timestamp,
+                exit_price=ask_open,
+                exit_reason="SL_GAP",
+                conflict=False,
+            )
+        if ask_open <= position.target:
+            return close_trade(
+                position,
+                exit_timestamp=bar.timestamp,
+                exit_price=position.target,
+                exit_reason="TP_GAP",
+                conflict=False,
+            )
+        stop_hit = bar.high + spread >= position.stop
+        target_hit = bar.low + spread <= position.target
+    conflict = stop_hit and target_hit
+    if stop_hit:
+        return close_trade(
+            position,
+            exit_timestamp=bar.timestamp + M15_SECONDS,
+            exit_price=position.stop,
+            exit_reason="SL" if not conflict else "SL_CONSERVATIVE_CONFLICT",
+            conflict=conflict,
+        )
+    if target_hit:
+        return close_trade(
+            position,
+            exit_timestamp=bar.timestamp + M15_SECONDS,
+            exit_price=position.target,
+            exit_reason="TP",
+            conflict=False,
+        )
+    bar_close = bar.timestamp + M15_SECONDS
+    if bar_close > position.flat_timestamp:
+        raise DataIntegrityError(
+            f"{position.scenario} {position.symbol}: crossed flat boundary without bar"
+        )
+    if bar_close == position.flat_timestamp:
+        exit_price = bar.close if position.direction > 0 else bar.close + spread
+        friday = epoch_to_datetime(position.flat_timestamp).weekday() == 4 and (
+            epoch_to_datetime(position.flat_timestamp).hour == 21
+        )
+        return close_trade(
+            position,
+            exit_timestamp=bar_close,
+            exit_price=exit_price,
+            exit_reason="FRIDAY_FLAT" if friday else "SESSION_FLAT",
+            conflict=False,
+        )
+    position.expected_next_open = bar_close
+    return None
+
+
+def simulate_symbol_scenario(
+    market: MarketSlice,
+    signals: Mapping[int, Signal],
+    structural_funnel: Mapping[str, int],
+    news: NewsBook,
+    scenario: str,
+) -> tuple[list[Trade], dict[str, int]]:
+    symbol = market.symbol
+    bars = market.bars
+    spread = spread_for(symbol, scenario)
+    funnel: Counter[str] = Counter(structural_funnel)
+    trades: list[Trade] = []
+    position: Position | None = None
+
+    for index, bar in enumerate(bars):
+        if position is not None:
+            completed = _process_position_bar(position, bar, spread)
+            if completed is not None:
+                trades.append(completed)
+                funnel[f"exit_{completed.exit_reason}"] += 1
+                position = None
+
+        signal = signals.get(index)
+        if signal is None:
+            continue
+        entry_timestamp = bar.timestamp + M15_SECONDS
+        session_end = session_end_timestamp(bar.timestamp, signal.session)
+        friday_cutoff = friday_cutoff_timestamp(bar.timestamp)
+        if friday_cutoff is not None and entry_timestamp >= friday_cutoff:
+            funnel["rejected_friday_cutoff"] += 1
+            continue
+        if entry_timestamp >= session_end:
+            funnel["rejected_final_session_bar"] += 1
+            continue
+        if position is not None:
+            funnel["ignored_while_position_open"] += 1
+            continue
+        if news.blocks(symbol, entry_timestamp):
+            funnel["rejected_news_entry_timestamp"] += 1
+            continue
+
+        if signal.direction > 0:
+            entry = bar.close + spread
+            stop = bar.low
+            risk_distance = entry - stop
+            target = entry + 2 * risk_distance
+        else:
+            entry = bar.close
+            stop = bar.high + spread
+            risk_distance = stop - entry
+            target = entry - 2 * risk_distance
+        if risk_distance <= 0 or target <= 0:
+            funnel["invalid_risk"] += 1
+            continue
+        lots = RISK_USD / (
+            risk_distance * SYMBOL_SPEC[symbol]["value_per_price_lot"]
+        )
+        entry_commission = commission_side_cents(symbol, lots, entry)
+        flat_timestamp = session_end
+        if friday_cutoff is not None:
+            flat_timestamp = min(flat_timestamp, friday_cutoff)
+        position = Position(
+            symbol=symbol,
+            scenario=scenario,
+            direction=signal.direction,
+            session=signal.session,
+            structural_id=signal.structural_id,
+            entry_timestamp=entry_timestamp,
+            entry=entry,
+            stop=stop,
+            target=target,
+            lots=lots,
+            entry_commission_cents=entry_commission,
+            expected_next_open=entry_timestamp,
+            flat_timestamp=flat_timestamp,
+        )
+        funnel["filled"] += 1
+        funnel[f"filled_{signal.session}"] += 1
+        funnel[f"filled_{'LONG' if signal.direction > 0 else 'SHORT'}"] += 1
+
+    if position is not None:
+        raise DataIntegrityError(
+            f"{scenario} {symbol}: data ended with position open at "
+            f"{stamp_epoch(position.entry_timestamp)}"
+        )
+    if funnel["filled"] != len(trades):
+        raise AuditError(
+            f"{scenario} {symbol}: filled/trade mismatch {funnel['filled']} != {len(trades)}"
+        )
+    return trades, dict(sorted(funnel.items()))
+
+
+def trade_sort_key(trade: Trade) -> tuple[Any, ...]:
+    return (
+        trade.exit_timestamp,
+        0 if trade.adjusted_r < 0 else 1,
+        trade.adjusted_r,
+        trade.symbol,
+        trade.session,
+        trade.entry_timestamp,
+        trade.trade_id,
+    )
+
+
+def _profit_factor(profit: Fraction, loss: Fraction) -> Fraction | str | None:
+    if profit <= 0:
+        return None
+    if loss == 0:
+        return "INF"
+    return profit / abs(loss)
+
+
+def _max_concurrency(trades: Sequence[Trade]) -> int:
+    events: list[tuple[int, int]] = []
+    for trade in trades:
+        events.append((trade.entry_timestamp, 1))
+        events.append((trade.exit_timestamp, -1))
+    current = 0
+    maximum = 0
+    for _timestamp, delta in sorted(events, key=lambda item: (item[0], item[1])):
+        current += delta
+        if current < 0:
+            raise AuditError("negative concurrency")
+        maximum = max(maximum, current)
+    return maximum
+
+
+def compute_metric(trades: Sequence[Trade]) -> Metric:
+    ordered = sorted(trades, key=trade_sort_key)
+    gross_net = sum((trade.gross_r for trade in ordered), Fraction(0))
+    gross_profit = sum(
+        (trade.gross_r for trade in ordered if trade.gross_r > 0), Fraction(0)
+    )
+    gross_loss = sum(
+        (trade.gross_r for trade in ordered if trade.gross_r < 0), Fraction(0)
+    )
+    adjusted_net = sum((trade.adjusted_r for trade in ordered), Fraction(0))
+    adjusted_profit = sum(
+        (trade.adjusted_r for trade in ordered if trade.adjusted_r > 0), Fraction(0)
+    )
+    adjusted_loss = sum(
+        (trade.adjusted_r for trade in ordered if trade.adjusted_r < 0), Fraction(0)
+    )
+    commission_cents = sum(trade.commission_cents for trade in ordered)
+    winners = sorted(
+        (trade.adjusted_r for trade in ordered if trade.adjusted_r > 0), reverse=True
+    )
+    balance = Fraction(0)
+    peak = Fraction(0)
+    drawdown = Fraction(0)
+    daily: dict[str, Fraction] = defaultdict(Fraction)
+    yearly: dict[str, Fraction] = defaultdict(Fraction)
+    for trade in ordered:
+        balance += trade.adjusted_r
+        peak = max(peak, balance)
+        drawdown = max(drawdown, peak - balance)
+        exit_dt = epoch_to_datetime(trade.exit_timestamp)
+        daily[exit_dt.date().isoformat()] += trade.adjusted_r
+        yearly[str(exit_dt.year)] += trade.adjusted_r
+    top_two = (
+        sum(winners[:2], Fraction(0)) / sum(winners, Fraction(0)) if winners else None
+    )
+    best_trade = max((trade.adjusted_r for trade in ordered), default=Fraction(0))
+    best_year = max((yearly.get(str(year), Fraction(0)) for year in ANALYSIS_YEARS), default=Fraction(0))
+    cost_burden = (
+        Fraction(commission_cents, 100_000) / gross_profit
+        if gross_profit > 0
+        else None
+    )
+    return Metric(
+        trades=len(ordered),
+        gross_net_r=gross_net,
+        gross_profit_r=gross_profit,
+        gross_loss_r=gross_loss,
+        adjusted_net_r=adjusted_net,
+        adjusted_profit_r=adjusted_profit,
+        adjusted_loss_r=adjusted_loss,
+        external_commission_cents=commission_cents,
+        adjusted_expectancy_r=adjusted_net / len(ordered) if ordered else None,
+        adjusted_pf=_profit_factor(adjusted_profit, adjusted_loss),
+        gross_pf=_profit_factor(gross_profit, gross_loss),
+        adjusted_win_rate=Fraction(len(winners), len(ordered)) if ordered else None,
+        max_closed_balance_dd_r=drawdown,
+        worst_closed_day_r=min(daily.values(), default=Fraction(0)),
+        top_two_winner_share=top_two,
+        leave_best_trade_r=adjusted_net - best_trade,
+        leave_best_year_r=adjusted_net - best_year,
+        positive_full_years=sum(
+            yearly.get(str(year), Fraction(0)) > 0 for year in FULL_YEARS
+        ),
+        yearly={str(year): yearly.get(str(year), Fraction(0)) for year in ANALYSIS_YEARS},
+        same_bar_conflicts=sum(trade.same_bar_sl_tp_conflict for trade in ordered),
+        exit_reasons=dict(sorted(Counter(trade.exit_reason for trade in ordered).items())),
+        cost_burden=cost_burden,
+        max_concurrent_positions=_max_concurrency(ordered),
+    )
+
+
+def encode_exact(value: Any) -> Any:
+    if isinstance(value, Fraction):
+        return fraction_text(value)
+    if isinstance(value, Mapping):
+        return {str(key): encode_exact(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [encode_exact(item) for item in value]
+    return value
+
+
+def metric_payload(metric: Metric) -> dict[str, Any]:
+    return encode_exact(
+        {
+            "trades": metric.trades,
+            "gross_net_r": metric.gross_net_r,
+            "gross_net_usd": metric.gross_net_r * RISK_USD,
+            "gross_profit_r": metric.gross_profit_r,
+            "gross_loss_r": metric.gross_loss_r,
+            "gross_profit_factor": metric.gross_pf or "UNDEFINED",
+            "external_commission_cents": metric.external_commission_cents,
+            "external_commission_usd": Fraction(metric.external_commission_cents, 100),
+            "external_commission_r": Fraction(metric.external_commission_cents, 100_000),
+            "cost_burden_fraction_of_gross_positive_r": metric.cost_burden
+            if metric.cost_burden is not None
+            else "UNDEFINED",
+            "adjusted_net_r": metric.adjusted_net_r,
+            "adjusted_net_usd": metric.adjusted_net_r * RISK_USD,
+            "adjusted_profit_r": metric.adjusted_profit_r,
+            "adjusted_loss_r": metric.adjusted_loss_r,
+            "adjusted_profit_factor": metric.adjusted_pf or "UNDEFINED",
+            "adjusted_expectancy_r": metric.adjusted_expectancy_r
+            if metric.adjusted_expectancy_r is not None
+            else "UNDEFINED",
+            "adjusted_win_rate": metric.adjusted_win_rate
+            if metric.adjusted_win_rate is not None
+            else "UNDEFINED",
+            "max_adjusted_closed_balance_drawdown_r": metric.max_closed_balance_dd_r,
+            "worst_closed_exit_broker_day_r": metric.worst_closed_day_r,
+            "top_two_adjusted_winner_share": metric.top_two_winner_share
+            if metric.top_two_winner_share is not None
+            else "UNDEFINED",
+            "leave_best_trade_out_adjusted_net_r": metric.leave_best_trade_r,
+            "leave_best_year_out_adjusted_net_r": metric.leave_best_year_r,
+            "positive_full_common_years": metric.positive_full_years,
+            "analysis_year_adjusted_net_r": metric.yearly,
+            "same_bar_sl_tp_conflicts": metric.same_bar_conflicts,
+            "exit_reasons": metric.exit_reasons,
+            "max_concurrent_positions": metric.max_concurrent_positions,
+        }
+    )
+
+
+def trade_payload(trade: Trade) -> dict[str, Any]:
+    return encode_exact(
+        {
+            "trade_id": trade.trade_id,
+            "scenario": trade.scenario,
+            "symbol": trade.symbol,
+            "session": trade.session,
+            "side": trade.side,
+            "structural_id": trade.structural_id,
+            "entry_timestamp": trade.entry_timestamp,
+            "entry_time_broker": stamp_epoch(trade.entry_timestamp),
+            "exit_timestamp": trade.exit_timestamp,
+            "exit_time_broker": stamp_epoch(trade.exit_timestamp),
+            "entry": trade.entry,
+            "stop": trade.stop,
+            "target": trade.target,
+            "exit_price": trade.exit_price,
+            "lots": trade.lots,
+            "gross_usd": trade.gross_usd,
+            "gross_r": trade.gross_r,
+            "entry_commission_cents": trade.entry_commission_cents,
+            "exit_commission_cents": trade.exit_commission_cents,
+            "commission_cents": trade.commission_cents,
+            "adjusted_usd": trade.adjusted_usd,
+            "adjusted_r": trade.adjusted_r,
+            "exit_reason": trade.exit_reason,
+            "same_bar_sl_tp_conflict": trade.same_bar_sl_tp_conflict,
+            "entry_bar_exit": False,
+        }
+    )
+
+
+def _pf_at_least(metric: Metric, threshold: Fraction) -> bool:
+    if metric.adjusted_pf == "INF":
+        return True
+    return isinstance(metric.adjusted_pf, Fraction) and metric.adjusted_pf >= threshold
+
+
+def gate_row(gate: str, observed: Any, rule: str, passed: bool) -> dict[str, Any]:
+    return {
+        "gate": gate,
+        "observed": encode_exact(observed),
+        "rule": rule,
+        "pass": bool(passed),
+    }
+
+
+def _group_metrics(
+    trades: Sequence[Trade], attribute: str, expected: Sequence[str]
+) -> tuple[dict[str, Metric], dict[str, dict[str, Any]]]:
+    groups: dict[str, list[Trade]] = {key: [] for key in expected}
+    for trade in trades:
+        if attribute == "symbol_session":
+            key = f"{trade.symbol}|{trade.session}"
+        elif attribute == "year":
+            key = str(epoch_to_datetime(trade.exit_timestamp).year)
+        elif attribute == "symbol_year":
+            key = f"{trade.symbol}|{epoch_to_datetime(trade.exit_timestamp).year}"
+        else:
+            key = str(getattr(trade, attribute))
+        groups.setdefault(key, []).append(trade)
+    internal = {key: compute_metric(groups[key]) for key in sorted(groups)}
+    payload = {key: metric_payload(metric) for key, metric in internal.items()}
+    return internal, payload
+
+
+def scenario_report(trades: Sequence[Trade]) -> tuple[dict[str, Any], dict[str, Any]]:
+    pooled = compute_metric(trades)
+    by_symbol_i, by_symbol = _group_metrics(trades, "symbol", SYMBOLS)
+    by_session_i, by_session = _group_metrics(trades, "session", SESSIONS)
+    by_side_i, by_side = _group_metrics(trades, "side", SIDES)
+    cells = tuple(f"{symbol}|{session}" for symbol in SYMBOLS for session in SESSIONS)
+    by_cell_i, by_cell = _group_metrics(trades, "symbol_session", cells)
+    year_keys = tuple(str(year) for year in ANALYSIS_YEARS)
+    by_year_i, by_year = _group_metrics(trades, "year", year_keys)
+    symbol_year_keys = tuple(
+        f"{symbol}|{year}" for symbol in SYMBOLS for year in ANALYSIS_YEARS
+    )
+    by_symbol_year_i, by_symbol_year = _group_metrics(
+        trades, "symbol_year", symbol_year_keys
+    )
+    payload = {
+        "pooled": metric_payload(pooled),
+        "by_symbol": by_symbol,
+        "by_session": by_session,
+        "by_side": by_side,
+        "by_symbol_session": by_cell,
+        "by_year": by_year,
+        "by_symbol_year": by_symbol_year,
+        "trades": [
+            trade_payload(trade)
+            for trade in sorted(
+                trades,
+                key=lambda item: (
+                    item.entry_timestamp,
+                    item.symbol,
+                    item.session,
+                    item.trade_id,
+                ),
+            )
+        ],
+    }
+    internal = {
+        "pooled": pooled,
+        "by_symbol": by_symbol_i,
+        "by_session": by_session_i,
+        "by_side": by_side_i,
+        "by_symbol_session": by_cell_i,
+        "by_year": by_year_i,
+        "by_symbol_year": by_symbol_year_i,
+    }
+    return internal, payload
+
+
+def evaluate_gates(
+    center: Mapping[str, Any], adverse: Mapping[str, Any]
+) -> tuple[list[dict[str, Any]], str]:
+    gates: list[dict[str, Any]] = []
+    pooled: Metric = center["pooled"]
+    adverse_pooled: Metric = adverse["pooled"]
+
+    gates.append(gate_row("CENTER_POOLED_FILLS", pooled.trades, ">=120", pooled.trades >= 120))
+    for symbol in SYMBOLS:
+        metric = center["by_symbol"][symbol]
+        gates.append(gate_row(f"CENTER_{symbol}_FILLS", metric.trades, ">=40", metric.trades >= 40))
+    for session in SESSIONS:
+        metric = center["by_session"][session]
+        gates.append(gate_row(f"CENTER_{session}_FILLS", metric.trades, ">=30", metric.trades >= 30))
+    for side in SIDES:
+        metric = center["by_side"][side]
+        gates.append(gate_row(f"CENTER_{side}_FILLS", metric.trades, ">=30", metric.trades >= 30))
+    for symbol in SYMBOLS:
+        for session in SESSIONS:
+            key = f"{symbol}|{session}"
+            metric = center["by_symbol_session"][key]
+            gates.append(gate_row(f"CENTER_{key}_FILLS", metric.trades, ">=12", metric.trades >= 12))
+
+    net_scopes: list[tuple[str, Metric]] = [("POOLED", pooled)]
+    net_scopes.extend((symbol, center["by_symbol"][symbol]) for symbol in SYMBOLS)
+    net_scopes.extend((session, center["by_session"][session]) for session in SESSIONS)
+    net_scopes.extend((side, center["by_side"][side]) for side in SIDES)
+    net_scopes.extend(
+        (f"{symbol}|{session}", center["by_symbol_session"][f"{symbol}|{session}"])
+        for symbol in SYMBOLS
+        for session in SESSIONS
+    )
+    for name, metric in net_scopes:
+        gates.append(
+            gate_row(
+                f"CENTER_{name}_ADJ_NET",
+                metric.adjusted_net_r,
+                ">0",
+                metric.adjusted_net_r > 0,
+            )
+        )
+
+    gates.append(
+        gate_row(
+            "CENTER_POOLED_EXPECTANCY",
+            pooled.adjusted_expectancy_r
+            if pooled.adjusted_expectancy_r is not None
+            else "UNDEFINED",
+            ">=1/20R",
+            pooled.adjusted_expectancy_r is not None
+            and pooled.adjusted_expectancy_r >= Fraction(1, 20),
+        )
+    )
+    pf_scopes: list[tuple[str, Metric, Fraction]] = [("POOLED", pooled, Fraction(6, 5))]
+    pf_scopes.extend((symbol, center["by_symbol"][symbol], Fraction(6, 5)) for symbol in SYMBOLS)
+    pf_scopes.extend((session, center["by_session"][session], Fraction(11, 10)) for session in SESSIONS)
+    pf_scopes.extend((side, center["by_side"][side], Fraction(1)) for side in SIDES)
+    pf_scopes.extend(
+        (
+            f"{symbol}|{session}",
+            center["by_symbol_session"][f"{symbol}|{session}"],
+            Fraction(1),
+        )
+        for symbol in SYMBOLS
+        for session in SESSIONS
+    )
+    for name, metric, threshold in pf_scopes:
+        gates.append(
+            gate_row(
+                f"CENTER_{name}_PF",
+                metric.adjusted_pf or "UNDEFINED",
+                f">={fraction_text(threshold)}",
+                _pf_at_least(metric, threshold),
+            )
+        )
+
+    gates.append(
+        gate_row(
+            "CENTER_POOLED_POSITIVE_YEARS",
+            pooled.positive_full_years,
+            ">=3 of 4",
+            pooled.positive_full_years >= 3,
+        )
+    )
+    for symbol in SYMBOLS:
+        metric = center["by_symbol"][symbol]
+        gates.append(
+            gate_row(
+                f"CENTER_{symbol}_POSITIVE_YEARS",
+                metric.positive_full_years,
+                ">=2 of 4",
+                metric.positive_full_years >= 2,
+            )
+        )
+    for session in SESSIONS:
+        metric = center["by_session"][session]
+        gates.append(
+            gate_row(
+                f"CENTER_{session}_POSITIVE_YEARS",
+                metric.positive_full_years,
+                ">=2 of 4",
+                metric.positive_full_years >= 2,
+            )
+        )
+
+    gates.append(
+        gate_row(
+            "CENTER_POOLED_DD",
+            pooled.max_closed_balance_dd_r,
+            "<=10R",
+            pooled.max_closed_balance_dd_r <= 10,
+        )
+    )
+    for symbol in SYMBOLS:
+        metric = center["by_symbol"][symbol]
+        gates.append(
+            gate_row(
+                f"CENTER_{symbol}_DD",
+                metric.max_closed_balance_dd_r,
+                "<=10R",
+                metric.max_closed_balance_dd_r <= 10,
+            )
+        )
+    gates.append(
+        gate_row(
+            "CENTER_WORST_CLOSED_DAY",
+            pooled.worst_closed_day_r,
+            ">=-5R",
+            pooled.worst_closed_day_r >= -5,
+        )
+    )
+    gates.append(
+        gate_row(
+            "CENTER_TOP2_SHARE",
+            pooled.top_two_winner_share
+            if pooled.top_two_winner_share is not None
+            else "UNDEFINED",
+            "<=1/2",
+            pooled.top_two_winner_share is not None
+            and pooled.top_two_winner_share <= Fraction(1, 2),
+        )
+    )
+    gates.append(
+        gate_row(
+            "CENTER_LEAVE_BEST_TRADE",
+            pooled.leave_best_trade_r,
+            ">0",
+            pooled.leave_best_trade_r > 0,
+        )
+    )
+    gates.append(
+        gate_row(
+            "CENTER_LEAVE_BEST_YEAR",
+            pooled.leave_best_year_r,
+            ">0",
+            pooled.leave_best_year_r > 0,
+        )
+    )
+    gates.append(
+        gate_row(
+            "CENTER_COST_BURDEN",
+            pooled.cost_burden if pooled.cost_burden is not None else "UNDEFINED",
+            "<=1/4",
+            pooled.cost_burden is not None and pooled.cost_burden <= Fraction(1, 4),
+        )
+    )
+
+    gates.append(
+        gate_row(
+            "ADVERSE_POOLED_ADJ_NET",
+            adverse_pooled.adjusted_net_r,
+            ">0",
+            adverse_pooled.adjusted_net_r > 0,
+        )
+    )
+    gates.append(
+        gate_row(
+            "ADVERSE_POOLED_PF",
+            adverse_pooled.adjusted_pf or "UNDEFINED",
+            ">=1",
+            _pf_at_least(adverse_pooled, Fraction(1)),
+        )
+    )
+    for symbol in SYMBOLS:
+        metric = adverse["by_symbol"][symbol]
+        gates.append(
+            gate_row(
+                f"ADVERSE_{symbol}_ADJ_NET",
+                metric.adjusted_net_r,
+                ">0",
+                metric.adjusted_net_r > 0,
+            )
+        )
+    for session in SESSIONS:
+        metric = adverse["by_session"][session]
+        gates.append(
+            gate_row(
+                f"ADVERSE_{session}_ADJ_NET",
+                metric.adjusted_net_r,
+                ">0",
+                metric.adjusted_net_r > 0,
+            )
+        )
+    gates.append(
+        gate_row(
+            "ADVERSE_POOLED_DD",
+            adverse_pooled.max_closed_balance_dd_r,
+            "<=10R",
+            adverse_pooled.max_closed_balance_dd_r <= 10,
+        )
+    )
+    gates.append(
+        gate_row(
+            "ADVERSE_WORST_CLOSED_DAY",
+            adverse_pooled.worst_closed_day_r,
+            ">=-5R",
+            adverse_pooled.worst_closed_day_r >= -5,
+        )
+    )
+    verdict = (
+        "CONJUNCTIVE_FAMILY_MERIT"
+        if all(row["pass"] for row in gates)
+        else "NO_CONJUNCTIVE_FAMILY_MERIT"
+    )
+    return gates, verdict
+
+
+def _snapshot_path(root: Path, raw_relative: str) -> Path:
+    relative = PurePosixPath(raw_relative)
+    if relative.is_absolute() or ".." in relative.parts:
+        raise AuditError(f"unsafe snapshot relative path: {raw_relative}")
+    unresolved = root / relative
+    current = root
+    for part in relative.parts:
+        current = current / part
+        if current.is_symlink() or (
+            hasattr(current, "is_junction") and current.is_junction()
+        ):
+            raise AuditError(f"snapshot link/junction rejected: {current}")
+    candidate = unresolved.resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError as exc:
+        raise AuditError(f"snapshot path escapes root: {raw_relative}") from exc
+    return candidate
+
+
+def _is_read_only(path: Path) -> bool:
+    status = path.stat()
+    attributes = getattr(status, "st_file_attributes", 0)
+    readonly_attribute = getattr(stat, "FILE_ATTRIBUTE_READONLY", 1)
+    if os.name == "nt":
+        return bool(attributes & readonly_attribute)
+    return not bool(status.st_mode & stat.S_IWUSR)
+
+
+def _verify_snapshot_file(
+    root: Path, entry: Mapping[str, Any], expected_sha: str
+) -> tuple[Path, dict[str, Any]]:
+    if entry.get("sha256") != expected_sha:
+        raise AuditError("snapshot manifest SHA does not match frozen binding")
+    path = _snapshot_path(root, str(entry["snapshot_relpath"]))
+    if not path.is_file():
+        raise AuditError(f"snapshot file missing: {path}")
+    if not _is_read_only(path):
+        raise AuditError(f"snapshot file is not read-only: {path}")
+    if path.stat().st_size != int(entry["bytes"]):
+        raise AuditError(f"snapshot byte-length drift: {path}")
+    observed = sha256_file(path)
+    if observed != expected_sha:
+        raise AuditError(f"snapshot hash drift: {path}: {observed} != {expected_sha}")
+    identity = {
+        "snapshot_path": str(path),
+        "sha256": observed,
+        "bytes": path.stat().st_size,
+        "provenance": entry["provenance"],
+    }
+    if entry["provenance"] == "GIT_BLOB_EXACT":
+        identity.update(
+            {
+                "git_commit": entry["git_commit"],
+                "git_path": entry["git_path"],
+                "git_blob_sha1": entry["git_blob_sha1"],
+                "materialization": entry["materialization"],
+            }
+        )
+    return path, identity
+
+
+def verify_release(
+    manifest_path: Path, expected_manifest_sha256: str
+) -> tuple[
+    dict[str, Any],
+    dict[str, dict[str, Any]],
+    dict[str, Any],
+    Path,
+    dict[str, Path],
+]:
+    if expected_manifest_sha256 != EXPECTED_SNAPSHOT_MANIFEST_SHA256:
+        raise AuditError("snapshot manifest is not the released exact manifest")
+    if len(expected_manifest_sha256) != 64 or any(
+        character not in "0123456789abcdef" for character in expected_manifest_sha256
+    ):
+        raise AuditError("snapshot manifest SHA256 must be 64 lowercase hex characters")
+    manifest_path = manifest_path.resolve()
+    snapshot_root = manifest_path.parent.resolve()
+    try:
+        manifest_path.relative_to(REPO_ROOT.resolve())
+    except ValueError:
+        pass
+    else:
+        raise AuditError("snapshot manifest must be outside the live worktree")
+    if not manifest_path.is_file() or manifest_path.name != "manifest.json":
+        raise AuditError(f"snapshot manifest missing: {manifest_path}")
+    if not _is_read_only(manifest_path):
+        raise AuditError("snapshot manifest is not read-only")
+    manifest_sha = sha256_file(manifest_path)
+    if manifest_sha != expected_manifest_sha256:
+        raise AuditError(f"snapshot manifest hash drift: {manifest_sha}")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if manifest.get("schema_version") != 2 or manifest.get("analysis_id") != ANALYSIS_ID:
+        raise AuditError("snapshot manifest identity drift")
+    if manifest.get("snapshot_id") != EXPECTED_SNAPSHOT_ID:
+        raise AuditError("snapshot ID drift")
+    if manifest.get("runtime_policy") != (
+        "ALL_CONTROL_BINDING_NEWS_AND_MARKET_INPUTS_FROM_THIS_READ_ONLY_SNAPSHOT_ONLY"
+    ):
+        raise AuditError("snapshot runtime policy drift")
+
+    contract_entry = manifest["contract"]
+    review_entry = manifest["review_receipt"]
+    contract_path, _contract_identity = _verify_snapshot_file(
+        snapshot_root, contract_entry, EXPECTED_CONTRACT_SHA256
+    )
+    review_path, _review_identity = _verify_snapshot_file(
+        snapshot_root, review_entry, EXPECTED_REVIEW_SHA256
+    )
+    contract_sha = sha256_file(contract_path)
+    review_sha = sha256_file(review_path)
+    if contract_sha != EXPECTED_CONTRACT_SHA256:
+        raise AuditError(f"contract hash drift: {contract_sha}")
+    if review_sha != EXPECTED_REVIEW_SHA256:
+        raise AuditError(f"review hash drift: {review_sha}")
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    review = json.loads(review_path.read_text(encoding="utf-8"))
+    if contract.get("analysis_id") != ANALYSIS_ID:
+        raise AuditError("analysis_id drift")
+    if review.get("review_status") != "PASS" or review.get("reviewed_contract_sha256") != contract_sha:
+        raise AuditError("review receipt does not release this contract")
+
+    manifest_bindings = {
+        entry["contract_path"]: entry for entry in manifest["source_bindings"]
+    }
+    if set(manifest_bindings) != set(contract["source_bindings"]):
+        raise AuditError("snapshot binding key set differs from contract")
+    observed: dict[str, dict[str, Any]] = {}
+    snapshot_binding_paths: dict[str, Path] = {}
+    for raw_path, expected in contract["source_bindings"].items():
+        entry = manifest_bindings[raw_path]
+        provenance = entry.get("provenance")
+        required_provenance = (
+            "GIT_BLOB_EXACT" if raw_path == NEWS_FILTER_CONTRACT_PATH else "CURRENT_EXACT"
+        )
+        if provenance != required_provenance:
+            raise AuditError(f"snapshot provenance drift for {raw_path}: {provenance}")
+        if raw_path in CURRENT_EXCEPTION_SIZES and int(entry.get("bytes", -1)) != (
+            CURRENT_EXCEPTION_SIZES[raw_path]
+        ):
+            raise AuditError(f"released current-exact byte length drift: {raw_path}")
+        if raw_path == NEWS_FILTER_CONTRACT_PATH:
+            if (
+                entry.get("git_commit") != NEWS_FILTER_COMMIT
+                or entry.get("git_path") != NEWS_FILTER_GIT_PATH
+                or entry.get("git_blob_sha1") != NEWS_FILTER_BLOB
+                or entry.get("materialization") != "NORMALIZE_LF_THEN_LF_TO_CRLF"
+            ):
+                raise AuditError("NewsFilter Git recovery provenance drift")
+        path, identity = _verify_snapshot_file(snapshot_root, entry, expected)
+        snapshot_binding_paths[raw_path] = path
+        observed[raw_path] = identity
+    if len(observed) != 15:
+        raise AuditError(f"expected 15 source bindings, got {len(observed)}")
+
+    manifest_markets = {entry["symbol"]: entry for entry in manifest["market_files"]}
+    if set(manifest_markets) != set(contract["data_contract"]["files"]):
+        raise AuditError("snapshot market symbol set differs from contract")
+    market_paths: dict[str, Path] = {}
+    market_identities: dict[str, dict[str, Any]] = {}
+    for symbol, spec in contract["data_contract"]["files"].items():
+        entry = manifest_markets[symbol]
+        if entry.get("provenance") != "CURRENT_FENCED_EXACT":
+            raise AuditError(f"snapshot market provenance drift: {symbol}")
+        if entry.get("projection") != MARKET_PROJECTION:
+            raise AuditError(f"snapshot market projection drift: {symbol}")
+        if entry.get("future_ohlc_tail_read") is not False:
+            raise AuditError(f"snapshot future-tail boundary failed: {symbol}")
+        if entry.get("contract_path") != spec["path"]:
+            raise AuditError(f"snapshot market contract path drift: {symbol}")
+        if int(entry.get("source_length_bytes_at_copy", -1)) != int(
+            spec["file_length_bytes_at_freeze"]
+        ):
+            raise AuditError(f"snapshot market frozen length drift: {symbol}")
+        if entry.get("source_last_write_utc_at_copy") != spec[
+            "file_last_write_utc_at_freeze"
+        ]:
+            raise AuditError(f"snapshot market frozen last-write drift: {symbol}")
+        availability = spec["timestamp_only_scan_before_2023"]
+        if symbol == "EURUSD.DWX":
+            expected_rows = availability["selected_rows_all_available"]
+            expected_in_window = availability["selected_rows_on_or_after_analysis_start"]
+        else:
+            expected_rows = availability["selected_rows"]
+            expected_in_window = availability["selected_rows"]
+        if int(entry.get("rows_before_fence", -1)) != int(expected_rows):
+            raise AuditError(f"snapshot market availability count drift: {symbol}")
+        if int(entry.get("exact_in_window_rows", -1)) != int(expected_in_window):
+            raise AuditError(f"snapshot market in-window count drift: {symbol}")
+        if entry.get("first_excluded_timestamp") != availability[
+            "first_timestamp_at_or_after_2023"
+        ]:
+            raise AuditError(f"snapshot market first-excluded drift: {symbol}")
+        path, identity = _verify_snapshot_file(snapshot_root, entry, entry["sha256"])
+        identity.update(
+            {
+                "projection": entry["projection"],
+                "rows_before_fence": entry["rows_before_fence"],
+                "prestart_timestamp_only_rows": entry[
+                    "prestart_timestamp_only_rows"
+                ],
+                "exact_in_window_rows": entry["exact_in_window_rows"],
+                "first_excluded_timestamp": entry["first_excluded_timestamp"],
+                "future_ohlc_tail_read": False,
+            }
+        )
+        market_paths[symbol] = path
+        market_identities[symbol] = identity
+
+    news_contract_path = contract["news_contract"]["calendar_path"]
+    if news_contract_path not in snapshot_binding_paths:
+        raise AuditError("news calendar is absent from snapshot bindings")
+    snapshot_identity = {
+        "path": str(manifest_path),
+        "root": str(snapshot_root),
+        "sha256": manifest_sha,
+        "snapshot_id": manifest["snapshot_id"],
+        "runtime_policy": manifest["runtime_policy"],
+        "read_only": True,
+        "contract_path": str(contract_path),
+        "review_path": str(review_path),
+        "market_files": market_identities,
+    }
+    return (
+        contract,
+        dict(sorted(observed.items())),
+        snapshot_identity,
+        snapshot_binding_paths[news_contract_path],
+        market_paths,
+    )
+
+
+def build_reports(
+    trades_by_scenario: Mapping[str, Sequence[Trade]]
+) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]], str]:
+    internal: dict[str, Any] = {}
+    payload: dict[str, Any] = {}
+    for scenario in SCENARIOS:
+        internal[scenario], payload[scenario] = scenario_report(trades_by_scenario[scenario])
+    gates, verdict = evaluate_gates(internal["CENTER"], internal["ADVERSE"])
+    return internal, payload, gates, verdict
+
+
+def run_analysis(manifest_path: Path, manifest_sha256: str) -> dict[str, Any]:
+    contract, bindings, snapshot_identity, news_path, market_paths = verify_release(
+        manifest_path, manifest_sha256
+    )
+    news, news_identity = load_news(
+        news_path, contract["news_contract"]["calendar_sha256"]
+    )
+    markets: dict[str, MarketSlice] = {}
+    structural: dict[str, Any] = {}
+    execution: dict[str, dict[str, Any]] = {scenario: {} for scenario in SCENARIOS}
+    trades_by_scenario: dict[str, list[Trade]] = {scenario: [] for scenario in SCENARIOS}
+    for symbol in SYMBOLS:
+        data_spec = contract["data_contract"]["files"][symbol]
+        source_period = int(str(data_spec["source_period"]).removeprefix("M"))
+        market = parse_market(market_paths[symbol], symbol, source_period)
+        markets[symbol] = market
+        signals, funnel = generate_signals(symbol, market.bars)
+        structural[symbol] = {
+            "funnel": funnel,
+            "signals": len(signals),
+        }
+        for scenario in SCENARIOS:
+            trades, scenario_funnel = simulate_symbol_scenario(
+                market, signals, funnel, news, scenario
+            )
+            trades_by_scenario[scenario].extend(trades)
+            execution[scenario][symbol] = {
+                "funnel": scenario_funnel,
+                "trades": len(trades),
+            }
+    _internal, scenario_payload, gates, verdict = build_reports(trades_by_scenario)
+    return {
+        "analysis_id": ANALYSIS_ID,
+        "artifact_type": "QM5_10729_M15_TWO_SYMBOL_OFFLINE_FULL_DEV_RESULT",
+        "contract": {
+            "path": snapshot_identity["contract_path"],
+            "commit": CONTRACT_COMMIT,
+            "sha256": EXPECTED_CONTRACT_SHA256,
+        },
+        "review_receipt": {
+            "path": snapshot_identity["review_path"],
+            "sha256": EXPECTED_REVIEW_SHA256,
+            "status": "PASS",
+        },
+        "supersession": {
+            "status": "FENCED_V2_SUPERSEDES_CONTRACT_INVALID_EVIDENCE",
+            "invalid_reason": "CONTRACT_INVALID_FUTURE_TAIL_HASHED",
+            "invalid_snapshot_manifest_sha256": INVALID_FULL_HASH_MANIFEST_SHA256,
+            "invalid_evidence_commits": list(INVALID_EVIDENCE_COMMITS),
+            "post_2022_pristine_oos_status": "CONTAMINATED_NEVER_CLAIM_PRISTINE",
+        },
+        "input_snapshot": snapshot_identity,
+        "integrity": {
+            "status": "PASS",
+            "issues": [],
+            "no_live_worktree_inputs": True,
+            "post_2022_pristine_oos_status": "CONTAMINATED_BY_SUPERSEDED_FULL_FILE_HASHING_NEVER_CLAIM_PRISTINE",
+            "future_ohlc_parsed": False,
+            "future_ohlc_parsed_by_symbol": {symbol: False for symbol in SYMBOLS},
+            "source_bindings": bindings,
+            "tool_sha256": sha256_file(TOOL_PATH),
+            "numeric_arithmetic": "exact reduced Fraction; commission-only HALF_UP cents",
+        },
+        "market_slices": {
+            symbol: vars(markets[symbol].identity) for symbol in SYMBOLS
+        },
+        "news": news_identity,
+        "fixed_inputs": {
+            "symbols": list(SYMBOLS),
+            "scenarios": list(SCENARIOS),
+            "timeframe": "M15",
+            "swing_length": 5,
+            "reward_risk": "2/1",
+            "risk_usd": 1000,
+            "sessions_broker_half_open": {
+                "LONDON_LABEL": "[14:00,17:00)",
+                "NEW_YORK_LABEL": "[19:30,23:00)",
+            },
+            "full_common_years": list(FULL_YEARS),
+            "selection": "NONE_COMPOSITE_INSEPARABLE",
+        },
+        "structural_funnels": structural,
+        "execution_funnels": execution,
+        "scenarios": scenario_payload,
+        "gates": gates,
+        "failed_gates": [row["gate"] for row in gates if not row["pass"]],
+        "verdict": verdict,
+        "selection": "NO_SYMBOL_SESSION_SIDE_OR_SCENARIO_SELECTION",
+        "post_fail_rule": "NO_TUNING_NO_OPTIMIZATION_NO_SUBSET_SELECTION",
+    }
+
+
+def canonical_json(payload: Mapping[str, Any]) -> bytes:
+    return (
+        json.dumps(payload, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+        + "\n"
+    ).encode("utf-8")
+
+
+def write_atomic(path: Path, data: bytes) -> None:
+    path = path.resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
+    )
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    except Exception:
+        try:
+            os.unlink(temporary)
+        except OSError:
+            pass
+        raise
+
+
+def _parse_exact(raw: Any) -> Fraction | None:
+    if not isinstance(raw, str) or raw in {"INF", "UNDEFINED"}:
+        return None
+    numerator, denominator = raw.split("/", 1)
+    return Fraction(int(numerator), int(denominator))
+
+
+def _display(raw: Any, places: int = 12) -> str:
+    if raw in {"INF", "UNDEFINED"}:
+        return str(raw)
+    value = _parse_exact(raw)
+    if value is None:
+        return str(raw)
+    precision = max(
+        50,
+        len(str(abs(value.numerator))) + len(str(value.denominator)) + places + 10,
+    )
+    with localcontext() as context:
+        context.prec = precision
+        rendered = Decimal(value.numerator) / Decimal(value.denominator)
+        quantum = Decimal(1).scaleb(-places)
+        return format(rendered.quantize(quantum, rounding=ROUND_HALF_EVEN), "f")
+
+
+def render_report(payload: Mapping[str, Any]) -> bytes:
+    lines = [
+        "# QM5_10729 M15 two-symbol full-DEV result",
+        "",
+        f"- Verdict: **{payload['verdict']}**",
+        f"- Contract SHA256: `{payload['contract']['sha256']}`",
+        f"- Review SHA256: `{payload['review_receipt']['sha256']}`",
+        f"- Fenced snapshot SHA256: `{payload['input_snapshot']['sha256']}`",
+        f"- Supersession: `{payload['supersession']['invalid_reason']}` -> fenced v2",
+        f"- Post-2022 pristine OOS: `{payload['supersession']['post_2022_pristine_oos_status']}`",
+        f"- Result integrity: `{payload['integrity']['status']}`; future OHLC parsed: `{str(payload['integrity']['future_ohlc_parsed']).lower()}`",
+        f"- Failed gates: `{len(payload['failed_gates'])}`",
+        "",
+        "No tuning, symbol/session/side selection, future data, or production EA change was used.",
+        "All rendered decimals below are 12-place display-only values; gates use exact rational strings in JSON.",
+        "",
+        "## Pooled center/adverse",
+        "",
+        "| Scenario | Trades | Adj net R | PF | Expectancy R | DD R | Worst day R | Commission USD |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    for scenario in SCENARIOS:
+        metric = payload["scenarios"][scenario]["pooled"]
+        lines.append(
+            f"| {scenario} | {metric['trades']} | {_display(metric['adjusted_net_r'])} | "
+            f"{_display(metric['adjusted_profit_factor'])} | {_display(metric['adjusted_expectancy_r'])} | "
+            f"{_display(metric['max_adjusted_closed_balance_drawdown_r'])} | "
+            f"{_display(metric['worst_closed_exit_broker_day_r'])} | {_display(metric['external_commission_usd'])} |"
+        )
+    for heading, key in (
+        ("By symbol", "by_symbol"),
+        ("By session", "by_session"),
+        ("By side", "by_side"),
+        ("By symbol/session", "by_symbol_session"),
+        ("By exit year", "by_year"),
+    ):
+        lines.extend(
+            [
+                "",
+                f"## {heading}",
+                "",
+                "| Scenario | Scope | Trades | Adj net R | PF | Expectancy R | Positive years |",
+                "|---|---|---:|---:|---:|---:|---:|",
+            ]
+        )
+        for scenario in SCENARIOS:
+            for scope, metric in payload["scenarios"][scenario][key].items():
+                lines.append(
+                    f"| {scenario} | {scope} | {metric['trades']} | {_display(metric['adjusted_net_r'])} | "
+                    f"{_display(metric['adjusted_profit_factor'])} | {_display(metric['adjusted_expectancy_r'])} | "
+                    f"{metric['positive_full_common_years']} |"
+                )
+    lines.extend(["", "## Gate failures", ""])
+    if payload["failed_gates"]:
+        lines.extend(f"- `{gate}`" for gate in payload["failed_gates"])
+    else:
+        lines.append("- None")
+    lines.extend(["", "## Data hashes", ""])
+    for symbol, identity in payload["market_slices"].items():
+        lines.append(
+            f"- {symbol}: raw `{identity['raw_slice_sha256']}`, M15 `{identity['canonical_m15_sha256']}`, "
+            f"rows `{identity['m15_rows']}`"
+        )
+    return ("\n".join(lines) + "\n").encode("utf-8")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--snapshot-manifest", type=Path, required=True)
+    parser.add_argument("--snapshot-manifest-sha256", required=True)
+    parser.add_argument("--preflight-only", action="store_true")
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    try:
+        if args.preflight_only:
+            contract, bindings, snapshot, _news_path, market_paths = verify_release(
+                args.snapshot_manifest, args.snapshot_manifest_sha256
+            )
+            print(
+                json.dumps(
+                    {
+                        "status": "PASS",
+                        "mode": "PREFLIGHT_ONLY_NO_OHLC_PARSE",
+                        "analysis_id": contract["analysis_id"],
+                        "contract_sha256": EXPECTED_CONTRACT_SHA256,
+                        "review_sha256": EXPECTED_REVIEW_SHA256,
+                        "snapshot_manifest_sha256": snapshot["sha256"],
+                        "source_bindings": len(bindings),
+                        "market_files": len(market_paths),
+                        "future_ohlc_parsed": False,
+                    },
+                    sort_keys=True,
+                )
+            )
+            return 0
+        payload = run_analysis(args.snapshot_manifest, args.snapshot_manifest_sha256)
+        result_bytes = canonical_json(payload)
+        write_atomic(args.output, result_bytes)
+        if args.report:
+            write_atomic(args.report, render_report(payload))
+        summary = {
+            "status": "PASS",
+            "output": str(args.output.resolve()),
+            "sha256": hashlib.sha256(result_bytes).hexdigest(),
+            "report": str(args.report.resolve()),
+            "verdict": payload["verdict"],
+            "failed_gates": len(payload["failed_gates"]),
+            "center_trades": payload["scenarios"]["CENTER"]["pooled"]["trades"],
+            "adverse_trades": payload["scenarios"]["ADVERSE"]["pooled"]["trades"],
+            "future_ohlc_parsed": payload["integrity"]["future_ohlc_parsed"],
+        }
+        print(json.dumps(summary, sort_keys=True))
+        return 0
+    except (AuditError, OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+        print(
+            json.dumps(
+                {
+                    "status": "REJECT",
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                },
+                sort_keys=True,
+            )
+        )
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

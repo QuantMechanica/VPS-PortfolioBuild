@@ -311,8 +311,7 @@ bool Strategy_NoTradeFilter()
       return true;
    if(Strategy_SlotForSymbol(_Symbol) != qm_magic_slot_offset)
       return true;
-   const ENUM_TIMEFRAMES chart_tf = (ENUM_TIMEFRAMES)_Period;
-   if(chart_tf != PERIOD_H1 && chart_tf != PERIOD_D1)
+   if((ENUM_TIMEFRAMES)_Period != PERIOD_D1)
       return true;
    return false;
   }
@@ -424,6 +423,20 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_D1,
+                                             QM_FRIDAY_CLOSE_CARD_RULE,
+                                             "CARD_EXIT_RULE"))
+      return INIT_FAILED;
+
+   if(MQLInfoInteger(MQL_TESTER) != 0 && AccountInfoString(ACCOUNT_CURRENCY) != "EUR")
+     {
+      QM_LogEvent(QM_ERROR,
+                  SETUP_DATA_MISMATCH,
+                  StringFormat("{\"field\":\"tester_currency\",\"expected\":\"EUR\",\"actual\":\"%s\"}",
+                               QM_LoggerEscapeJson(AccountInfoString(ACCOUNT_CURRENCY))));
+      return INIT_FAILED;
+     }
+
    Strategy_EnsureBasketScope();
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -480,7 +493,7 @@ void OnTick()
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
    // per-tick recompute mistakes — EntrySignal sees one new closed bar per
    // call, not every incoming tick.
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
       return;
 
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled

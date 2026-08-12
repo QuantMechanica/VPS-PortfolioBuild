@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_NATIVE_CURRENT_FTMO_ECONOMICS_AND_REGIME_QUALITY",
+  "ea_id": 10580,
+  "symbol": "USDJPY.DWX",
+  "period": "H4",
+  "history": "2017-01-01/2024-12-31",
+  "model": 4,
+  "deterministic": true,
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10580_usdjpy_h4_preholdout_wave45_20260712\\QM5_10580\\20260712_192840\\summary.json",
+  "summary_sha256": "5500E403A0CF08E45427A231630C3BEC1C011861CED8951FCC74409CCE749CB8",
+  "report_sha256": [
+    "5D554DD267E5B9C02A87410EBB0B1067CCE9579734D65088EE82C4F778D0B04D",
+    "53C7730859109C1B9A50D5B261CD9841EE59AE91F7ED0409FC0B3090E3D24EDA"
+  ],
+  "native": {
+    "trades": 1366,
+    "profit_factor": 0.988645,
+    "net_profit": -4341.69,
+    "close_to_close_max_drawdown": 33460.41
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10580_USDJPY_H4_T2_PREHOLDOUT_FRESH_20260712.jsonl",
+    "rows": 1366,
+    "sha256": "A524C83C9F0C9D8AC9943554D409CAFAA3D09EE62330C2A9947315DE3562F96E",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET",
+    "corrected_net_delta": 0.0
+  },
+  "current_cost_artifact": "artifacts/ftmo_10580_usdjpy_preholdout_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "profit_factor": 0.958611,
+    "net_profit": -16072.78,
+    "close_to_close_max_drawdown": 39501.2,
+    "commission_total": 14517.45,
+    "swap_total": -20787.47
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "negative_development_years": [2019, 2020, 2021],
+    "validation_2023_profit_factor": 0.964462,
+    "validation_2023_net_profit": -2097.38,
+    "selection_contaminated_2024_profit_factor": 0.923341,
+    "selection_contaminated_2024_net_profit": -4403.4,
+    "reason_for_reject": "Fresh native economics are negative, current FTMO costs deepen the loss, and both 2023 validation and selection-known 2024 lose money."
+  },
+  "portfolio_screen_opened": false,
+  "selection_contaminated_year": 2024,
+  "sealed_holdout_year": 2025,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

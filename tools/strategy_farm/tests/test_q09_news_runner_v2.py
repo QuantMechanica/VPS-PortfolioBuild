@@ -1,0 +1,580 @@
+import json
+import sys
+import tempfile
+import unittest
+from contextlib import closing
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
+
+
+REPO = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
+
+import q09_news_contract as contract  # noqa: E402
+import q09_news_calendar as calendar_bundle  # noqa: E402
+import q09_news_runner as runner  # noqa: E402
+import q09_news_schema as schema  # noqa: E402
+import farmctl  # noqa: E402
+
+
+def metrics(sharpe: float) -> dict:
+    return {
+        "trades": 30,
+        "profit_factor": 1.2,
+        "drawdown_pct": 10.0,
+        "sharpe": sharpe,
+        "net_r": 100.0,
+        "original_entries": 100,
+        "blocked_entries": 0,
+        "affected_entries": 0,
+    }
+
+
+class Q09NewsRunnerV2Tests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+        self.root = Path(self.temporary.name)
+        self.q08 = self.root / "q08.json"
+        self.setfile = self.root / "baseline.set"
+        self.setfile.write_bytes(
+            b"qm_rng_seed=42\r\nqm_news_temporal=3\r\nqm_news_compliance=1\r\n"
+            b"qm_news_stale_max_hours=336\r\nRISK_FIXED=1000\r\nRISK_PERCENT=0\r\n"
+        )
+        self.ex5 = self.root / "ea.ex5"
+        self.ex5.write_bytes(b"compiled")
+        self.q08.write_text(
+            json.dumps(
+                {
+                    "verdict": "PASS",
+                    "baseline_run": {
+                        "period": "H1",
+                        "baseline_setfile_path": str(self.setfile.resolve()),
+                        "baseline_setfile_sha256": contract.sha256_file(self.setfile),
+                        "baseline_ex5_sha256": contract.sha256_file(self.ex5),
+                    },
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        self.includes = self.root / "includes.json"
+        self.includes.write_text('{"closure":"sealed"}\n', encoding="utf-8")
+        calendar_source = self.root / "calendar.csv"
+        calendar_source.write_text(
+            "datetime,currency,event_name,impact\n2024-01-10 13:30:00,USD,CPI,high\n",
+            encoding="utf-8",
+        )
+        calendar_receipt = self.root / "calendar_receipt.json"
+        calendar_receipt.write_text(
+            json.dumps(
+                {
+                    "approved_by": "OWNER",
+                    "approved_at": "2026-07-29T08:00:00Z",
+                    "reason": "sealed test calendar",
+                }
+            ),
+            encoding="utf-8",
+        )
+        calendar_plan = calendar_bundle.build_bundle_plan(
+            source_csv=calendar_source,
+            receipt_path=calendar_receipt,
+            coverage_from_utc="2019-01-01T00:00:00Z",
+            coverage_to_utc="2026-01-01T00:00:00Z",
+            publication_reason="INITIAL",
+        )
+        published = calendar_bundle.publish_bundle(calendar_plan, self.root / "calendar_bundles")
+        self.calendar = Path(published["manifest_path"])
+
+    def tearDown(self) -> None:
+        self.temporary.cleanup()
+
+    def build(self, *, target: str = "DXZ", output: str = "experiment", news: bool = False) -> dict:
+        return runner.build_run_plan(
+            work_item_id="q09-news-1",
+            candidate_lineage_key=contract.sha256_bytes(b"candidate"),
+            deployment_target=target,
+            q08_work_item_id="q08-1",
+            q08_evidence_path=self.q08,
+            baseline_setfile_path=self.setfile,
+            ex5_path=self.ex5,
+            include_closure_path=self.includes,
+            calendar_manifest_path=self.calendar,
+            calendar_common_relative_path="q09_news/sealed/events.csv",
+            full_from_utc="2020-01-01T00:00:00Z",
+            full_to_utc="2025-01-01T00:00:00Z",
+            selection_from_utc="2020-01-01T00:00:00Z",
+            selection_to_utc="2022-12-31T23:59:59Z",
+            holdout_from_utc="2023-01-01T00:00:00Z",
+            holdout_to_utc="2025-01-01T00:00:00Z",
+            complete_months=60,
+            holdout_complete_months=24,
+            tester_model="REAL_TICKS",
+            cost_profile="DXZ_MED",
+            output_root=self.root / output,
+            news_or_event_strategy=news,
+        )
+
+    def write_receipt(self, spec: dict) -> None:
+        seed_index = contract.SEEDS.index(spec["seed"])
+        control_selection = 0.50 + seed_index * 0.01
+        control_holdout = 0.40 + seed_index * 0.01
+        delta = 0.10 if spec["arm"] == "POLICY_ON" and spec["temporal_mode"] == "PRE30" else 0.0
+        report = Path(spec["receipt_path"]).with_name("report.json")
+        evidence = Path(spec["receipt_path"]).with_name("summary.json")
+        report.write_text(spec["run_identity_sha256"] + "\n", encoding="utf-8")
+        cell_metrics = {
+            "selection": metrics(control_selection + delta),
+            "holdout": metrics(control_holdout + delta),
+            "full": metrics((control_selection + control_holdout) / 2 + delta),
+        }
+        evidence.write_bytes(
+            contract.canonical_json_bytes(
+                {
+                    "schema_version": runner.CELL_EVIDENCE_SCHEMA,
+                    "run_identity_sha256": spec["run_identity_sha256"],
+                    "paired_base_identity_sha256": spec["paired_base_identity_sha256"],
+                    "requested_seed": spec["seed"],
+                    "effective_seed": spec["seed"],
+                    "setfile_sha256": spec["setfile_sha256"],
+                    "report_sha256": contract.sha256_file(report),
+                    "metrics": cell_metrics,
+                    "q07_seed_stability_pass": True,
+                    "flat_at_event_receipt_sha256": None,
+                }
+            )
+        )
+        receipt = {
+            "schema_version": runner.CELL_RECEIPT_SCHEMA,
+            "run_identity_sha256": spec["run_identity_sha256"],
+            "paired_base_identity_sha256": spec["paired_base_identity_sha256"],
+            "arm": spec["arm"],
+            "temporal_mode": spec["temporal_mode"],
+            "compliance_mode": spec["compliance_mode"],
+            "seed": spec["seed"],
+            "requested_seed": spec["seed"],
+            "effective_seed": spec["seed"],
+            "setfile_sha256": spec["setfile_sha256"],
+            "report_path": str(report),
+            "report_sha256": contract.sha256_file(report),
+            "evidence_path": str(evidence),
+            "evidence_sha256": contract.sha256_file(evidence),
+            "metrics": cell_metrics,
+            "q07_seed_stability_pass": True,
+        }
+        Path(spec["receipt_path"]).write_bytes(contract.canonical_json_bytes(receipt))
+
+    def write_receipts(self, plan: dict) -> None:
+        for spec in plan["cells"]:
+            self.write_receipt(spec)
+
+    def setup_bound_farm(self, plan: dict, *, activate: bool) -> tuple[Path, str]:
+        farm_root = self.root / "farm"
+        farmctl.init_db(farm_root)
+        q07_evidence = self.root / "q07.json"
+        q07_evidence.write_text('{"verdict":"MULTI_SEED_PASS"}\n', encoding="utf-8")
+        now = "2026-08-02T00:00:00+00:00"
+        with closing(farmctl.connect(farm_root)) as connection:
+            for values in (
+                (
+                    "q07-1", "Q07", "done", "MULTI_SEED_PASS",
+                    str(q07_evidence), "{}",
+                ),
+                (
+                    "q08-1", "Q08", "done", "PASS", str(self.q08),
+                    json.dumps({"promoted_from_work_item": "q07-1"}),
+                ),
+                (
+                    "q09-news-1", "Q09_NEWS", "pending", None, None, "{}",
+                ),
+            ):
+                connection.execute(
+                    """
+                    INSERT INTO work_items(
+                        id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                        attempt_count,parent_task_id,evidence_path,claimed_by,
+                        payload_json,created_at,updated_at
+                    ) VALUES(?, 'backtest', ?, 'QM5_9999', 'EURUSD.DWX', ?, ?, ?,
+                             0, NULL, ?, NULL, ?, ?, ?)
+                    """,
+                    (
+                        values[0], values[1], str(self.setfile), values[2],
+                        values[3], values[4], values[5], now, now,
+                    ),
+                )
+            schema.add_dependency(
+                connection,
+                child_work_item_id="q09-news-1",
+                dependency_role="Q08_INPUT",
+                parent_work_item_id="q08-1",
+                parent_evidence_sha256=contract.sha256_file(self.q08),
+                required_verdicts=["PASS"],
+            )
+            schema.hold_until_plan_bound(connection, "q09-news-1", now=now)
+            connection.commit()
+        plan_hash = contract.sha256_file(Path(plan["plan_path"]))
+        binding = runner.bind_plan_to_work_item(
+            farm_root,
+            work_item_id="q09-news-1",
+            plan_path=Path(plan["plan_path"]),
+            expected_plan_file_sha256=plan_hash,
+            cell_timeout_sec=60,
+        )
+        self.assertTrue(binding["activation_hold_released"])
+        self.assertEqual(binding["activation_state"], "RUNNABLE_BOUND")
+        with closing(farmctl.connect(farm_root)) as connection:
+            hold = connection.execute(
+                "SELECT active,release_note FROM work_item_holds WHERE work_item_id='q09-news-1'"
+            ).fetchone()
+            payload = json.loads(
+                connection.execute(
+                    "SELECT payload_json FROM work_items WHERE id='q09-news-1'"
+                ).fetchone()[0]
+            )
+        self.assertEqual(hold[0], 0)
+        self.assertIn("sealed Q09 run plan bound", hold[1])
+        self.assertEqual(payload["q09_activation_state"], "RUNNABLE_BOUND")
+        if activate:
+            with closing(farmctl.connect(farm_root)) as connection:
+                connection.execute(
+                    "UPDATE work_items SET status='active',claimed_by='T1' WHERE id='q09-news-1'"
+                )
+                connection.commit()
+        return farm_root, plan_hash
+
+    def test_plan_materializes_40_paired_cells_without_touching_source(self) -> None:
+        source_before = self.setfile.read_bytes()
+        plan = self.build()
+        self.assertEqual(plan["cell_count"], 40)
+        self.assertEqual(plan["matrix_scope"], "7x1_target_compliance")
+        self.assertEqual(self.setfile.read_bytes(), source_before)
+        control = next(cell for cell in plan["cells"] if cell["arm"] == "CONTROL_OFF" and cell["seed"] == 42)
+        text = Path(control["setfile_path"]).read_text(encoding="utf-8")
+        self.assertIn("qm_news_temporal=0", text)
+        self.assertIn("qm_news_compliance=0", text)
+        manifest = json.loads(self.calendar.read_text(encoding="utf-8"))
+        self.assertIn("qm_news_calendar_bundle_id=" + manifest["bundle_id"], text)
+        repeated = self.build()
+        self.assertEqual(repeated["plan_sha256"], plan["plan_sha256"])
+
+    def test_prop_or_event_strategy_plans_full_7x4_matrix(self) -> None:
+        ftmo = self.build(target="FTMO", output="ftmo")
+        self.assertEqual(ftmo["cell_count"], 145)
+        self.assertEqual(ftmo["matrix_scope"], "7x4")
+        event_strategy = self.build(news=True, output="event")
+        self.assertEqual(event_strategy["cell_count"], 145)
+
+    def test_execution_guard_refuses_weakened_stale_news_or_percent_risk(self) -> None:
+        self.setfile.write_bytes(
+            self.setfile.read_bytes().replace(
+                b"qm_news_stale_max_hours=336", b"qm_news_stale_max_hours=337"
+            )
+        )
+        stale_plan = self.build(output="stale-guard")
+        _, stale_manifest = runner.load_authenticated_plan(Path(stale_plan["plan_path"]))
+        with self.assertRaisesRegex(runner.RunnerError, "336-hour maximum"):
+            runner._validate_cell_setfile(stale_plan["cells"][0], stale_manifest)
+
+        self.setfile.write_bytes(
+            self.setfile.read_bytes()
+            .replace(b"qm_news_stale_max_hours=337", b"qm_news_stale_max_hours=336")
+            .replace(b"RISK_PERCENT=0", b"RISK_PERCENT=1")
+        )
+        percent_plan = self.build(output="percent-risk-guard")
+        _, percent_manifest = runner.load_authenticated_plan(Path(percent_plan["plan_path"]))
+        with self.assertRaisesRegex(runner.RunnerError, "RISK_FIXED > 0 and RISK_PERCENT = 0"):
+            runner._validate_cell_setfile(percent_plan["cells"][0], percent_manifest)
+
+    def test_executor_fixture_report_consumes_sealed_calendar_bundle_inputs(self) -> None:
+        plan = self.build(output="effective-calendar-inputs")
+        _, manifest = runner.load_authenticated_plan(Path(plan["plan_path"]))
+        spec = plan["cells"][0]
+        report = self.root / "effective-inputs.htm"
+        effective = {
+            "qm_rng_seed": str(spec["seed"]),
+            "qm_news_temporal": str(contract.TEMPORAL_MODE_IDS[spec["temporal_mode"]]),
+            "qm_news_compliance": str(runner.COMPLIANCE_MODE_IDS[spec["compliance_mode"]]),
+            "qm_news_calendar_bundle_id": manifest["calendar_bundle"]["bundle_id"],
+            "qm_news_calendar_expected_sha256": manifest["calendar_bundle"][
+                "content_sha256"
+            ],
+            "qm_news_calendar_common_relative_path": manifest["calendar_bundle"][
+                "common_relative_path"
+            ],
+            "RISK_FIXED": "1000",
+            "RISK_PERCENT": "0",
+            "qm_news_stale_max_hours": "336",
+        }
+
+        def write_report(values: dict[str, str]) -> None:
+            rendered = "".join(f"<b>{key}={value}</b>" for key, value in values.items())
+            report.write_text(
+                "<html><table><tr><td colspan=\"3\">Inputs:</td>"
+                f"<td>{rendered}</td></tr></table></html>",
+                encoding="utf-8",
+            )
+
+        write_report(effective)
+        parsed = runner._validate_report_effective_inputs(
+            report,
+            spec=spec,
+            input_manifest=manifest,
+            risk_fixed=1000.0,
+        )
+        for field in (
+            "qm_news_calendar_bundle_id",
+            "qm_news_calendar_expected_sha256",
+            "qm_news_calendar_common_relative_path",
+        ):
+            self.assertEqual(parsed[field], effective[field])
+
+        del effective["qm_news_calendar_expected_sha256"]
+        write_report(effective)
+        with self.assertRaisesRegex(
+            runner.RunnerError,
+            "effective input qm_news_calendar_expected_sha256 mismatch",
+        ):
+            runner._validate_report_effective_inputs(
+                report,
+                spec=spec,
+                input_manifest=manifest,
+                risk_fixed=1000.0,
+            )
+
+    def test_collector_authenticates_artifacts_and_locks_robust_policy(self) -> None:
+        plan = self.build()
+        self.write_receipts(plan)
+        result = runner.collect_run_plan(Path(plan["plan_path"]))
+        self.assertEqual(result["verdict"], "CONFIG_LOCKED")
+        self.assertEqual(result["adjudication"]["chosen_config"]["temporal_mode"], "PRE30")
+        self.assertTrue(Path(result["aggregate_path"]).is_file())
+        first_receipt = Path(plan["cells"][0]["receipt_path"])
+        original_receipt = first_receipt.read_bytes()
+        contradictory = json.loads(original_receipt)
+        contradictory["metrics"]["selection"]["sharpe"] += 1.0
+        first_receipt.write_bytes(contract.canonical_json_bytes(contradictory))
+        with self.assertRaisesRegex(runner.RunnerError, "contradict hashed cell evidence"):
+            runner.collect_run_plan(Path(plan["plan_path"]))
+        first_receipt.write_bytes(original_receipt)
+        first_set = Path(plan["cells"][0]["setfile_path"])
+        first_set.write_bytes(first_set.read_bytes() + b"tamper")
+        with self.assertRaisesRegex(runner.RunnerError, "setfile.*SHA-256 mismatch"):
+            runner.collect_run_plan(Path(plan["plan_path"]))
+
+    def test_status_collector_never_locks_partial_or_tampered_cells(self) -> None:
+        partial = self.build(output="partial")
+        self.write_receipt(partial["cells"][0])
+        partial_result = runner.collect_run_plan_status(Path(partial["plan_path"]))
+        self.assertEqual(partial_result["verdict"], "REVIEW_REQUIRED")
+        self.assertEqual(partial_result["authenticated_cell_count"], 1)
+        self.assertEqual(partial_result["missing_cell_count"], 39)
+        self.assertEqual(partial_result["adjudication"]["locked_arms"], [])
+
+        tampered = self.build(output="tampered")
+        self.write_receipts(tampered)
+        first = Path(tampered["cells"][0]["receipt_path"])
+        payload = json.loads(first.read_text(encoding="utf-8"))
+        payload["effective_seed"] = 999
+        first.write_bytes(contract.canonical_json_bytes(payload))
+        tampered_result = runner.collect_run_plan_status(Path(tampered["plan_path"]))
+        self.assertEqual(tampered_result["verdict"], "INVALID_EVIDENCE")
+        self.assertEqual(tampered_result["invalid_cell_count"], 1)
+        self.assertEqual(tampered_result["adjudication"]["locked_arms"], [])
+
+    def test_executor_surfaces_a_failed_cell_instead_of_reporting_every_cell_missing(self) -> None:
+        plan = self.build(output="failed-cell")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+
+        def fail_first_cell(spec: dict, _context: dict) -> None:
+            raise runner.RunnerError(
+                f"fixture tester failure for {spec['run_identity_sha256']}"
+            )
+
+        result = runner.execute_run_plan(
+            Path(plan["plan_path"]),
+            output_root=self.root / "failed-cell-output",
+            farm_root=farm_root,
+            work_item_id="q09-news-1",
+            terminal="T1",
+            expected_plan_file_sha256=plan_hash,
+            ea_id=9999,
+            expert="QM5_9999_demo",
+            symbol="EURUSD.DWX",
+            work_item_symbol="EURUSD.DWX",
+            period=None,
+            repo_root=REPO,
+            common_root=self.root / "common-failed-cell",
+            dispatch_cell=fail_first_cell,
+        )
+        self.assertEqual(result["verdict"], "REVIEW_REQUIRED")
+        self.assertEqual(result["adjudication"]["reason_codes"], ["cell_execution_failed"])
+        self.assertEqual(result["failed_cell_count"], 1)
+        self.assertEqual(result["missing_cell_count"], 39)
+        failed = result["adjudication"]["details"]["failed_cells"]
+        self.assertEqual(len(failed), 1)
+        self.assertIn("fixture tester failure", failed[0]["error"])
+        failure_path = Path(failed[0]["failure_path"])
+        self.assertTrue(failure_path.is_file())
+        self.assertEqual(contract.sha256_file(failure_path), failed[0]["failure_sha256"])
+        top_level_failure = json.loads(
+            Path(result["execution_failure_path"]).read_text(encoding="utf-8")
+        )
+        self.assertEqual(top_level_failure["cell_failure_path"], str(failure_path))
+
+    def test_production_multi_cell_execute_writes_receipts_and_collects(self) -> None:
+        plan = self.build(output="production-multi-cell")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+        commands: list[list[str]] = []
+
+        def fake_run(command: list[str], **_kwargs: object) -> SimpleNamespace:
+            commands.append(command)
+            self.assertIn("-RequireFreshLoggerSample", command)
+            report_root = Path(command[command.index("-ReportRoot") + 1])
+            summary = report_root / "QM5_9999" / "fixture" / "summary.json"
+            summary.parent.mkdir(parents=True, exist_ok=True)
+            summary.write_text("{}\n", encoding="utf-8")
+            return SimpleNamespace(returncode=0, stdout="fixture PASS\n", stderr="")
+
+        def fake_validate(summary_path: Path, **kwargs: object) -> tuple[dict, dict]:
+            spec = kwargs["spec"]
+            self.assertIsInstance(spec, dict)
+            window = next(name for name in runner.WINDOW_NAMES if name in summary_path.parts)
+            seed_index = contract.SEEDS.index(spec["seed"])
+            selection = 0.50 + seed_index * 0.01
+            holdout = 0.40 + seed_index * 0.01
+            values = {
+                "selection": selection,
+                "holdout": holdout,
+                "full": (selection + holdout) / 2,
+            }
+            delta = (
+                0.10
+                if spec["arm"] == "POLICY_ON" and spec["temporal_mode"] == "PRE30"
+                else 0.0
+            )
+            return metrics(values[window] + delta), {
+                "cost_execution_identity_sha256": "c" * 64,
+            }
+
+        with (
+            patch.object(runner.subprocess, "run", side_effect=fake_run),
+            patch.object(runner, "_validate_window_summary", side_effect=fake_validate),
+        ):
+            result = runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=self.root / "production-multi-cell-output",
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period=None,
+                repo_root=REPO,
+                common_root=self.root / "common-production-multi-cell",
+            )
+        self.assertEqual(result["verdict"], "CONFIG_LOCKED")
+        self.assertEqual(result["authenticated_cell_count"], 40)
+        self.assertEqual(len(commands), 40 * len(runner.WINDOW_NAMES))
+        self.assertEqual(
+            len(list((self.root / "production-multi-cell").rglob("cell_receipt.json"))),
+            40,
+        )
+
+    def test_plan_binding_refuses_file_hash_drift(self) -> None:
+        plan = self.build(output="binding-drift")
+        farm_root, _ = self.setup_bound_farm(plan, activate=False)
+        # A second bind with a false exact-file identity must fail before any
+        # payload mutation, even though the plan's internal logical hash is valid.
+        with self.assertRaisesRegex(runner.RunnerError, "run-plan artifact SHA-256 mismatch"):
+            runner.bind_plan_to_work_item(
+                farm_root,
+                work_item_id="q09-news-1",
+                plan_path=Path(plan["plan_path"]),
+                expected_plan_file_sha256="0" * 64,
+                cell_timeout_sec=60,
+            )
+
+    def test_executor_refuses_without_active_factory_capacity(self) -> None:
+        plan = self.build(output="capacity")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=False)
+        with self.assertRaisesRegex(runner.CapacityError, "active terminal claim"):
+            runner.execute_run_plan(
+                Path(plan["plan_path"]),
+                output_root=self.root / "capacity-output",
+                farm_root=farm_root,
+                work_item_id="q09-news-1",
+                terminal="T1",
+                expected_plan_file_sha256=plan_hash,
+                ea_id=9999,
+                expert="QM5_9999_demo",
+                symbol="EURUSD.DWX",
+                work_item_symbol="EURUSD.DWX",
+                period="H1",
+                repo_root=REPO,
+                common_root=self.root / "common-capacity",
+                dispatch_cell=lambda *_: self.fail("capacity refusal dispatched a cell"),
+            )
+
+    def test_end_to_end_bound_dispatch_collect_and_sidecar_config_lock(self) -> None:
+        plan = self.build(output="end-to-end")
+        farm_root, plan_hash = self.setup_bound_farm(plan, activate=True)
+
+        def fixture_dispatch(spec: dict, context: dict) -> None:
+            self.assertEqual(context["period"], "H1")
+            self.write_receipt(spec)
+
+        result = runner.execute_run_plan(
+            Path(plan["plan_path"]),
+            output_root=self.root / "end-to-end-output",
+            farm_root=farm_root,
+            work_item_id="q09-news-1",
+            terminal="T1",
+            expected_plan_file_sha256=plan_hash,
+            ea_id=9999,
+            expert="QM5_9999_demo",
+            symbol="EURUSD.DWX",
+            work_item_symbol="EURUSD.DWX",
+            period=None,
+            repo_root=REPO,
+            common_root=self.root / "common-end-to-end",
+            dispatch_cell=fixture_dispatch,
+        )
+        self.assertEqual(result["verdict"], "CONFIG_LOCKED")
+        self.assertEqual(result["authenticated_cell_count"], 40)
+        self.assertEqual(result["sidecar"]["status"], "RECORDED")
+        with closing(farmctl.connect(farm_root)) as connection:
+            test = connection.execute(
+                "SELECT verdict,aggregate_sha256 FROM q09_news_tests WHERE work_item_id='q09-news-1'"
+            ).fetchone()
+            self.assertEqual(test["verdict"], "CONFIG_LOCKED")
+            self.assertEqual(test["aggregate_sha256"], result["aggregate_sha256"])
+            self.assertEqual(
+                connection.execute(
+                    "SELECT count(*) FROM q09_news_cells WHERE q09_news_work_item_id='q09-news-1'"
+                ).fetchone()[0],
+                40,
+            )
+            self.assertEqual(
+                connection.execute(
+                    "SELECT count(*) FROM q09_news_arms WHERE q09_news_work_item_id='q09-news-1'"
+                ).fetchone()[0],
+                2,
+            )
+
+    def test_executor_refuses_period_that_contradicts_sealed_q08(self) -> None:
+        plan = self.build(output="period-contradiction")
+        _, manifest = runner.load_authenticated_plan(Path(plan["plan_path"]))
+        self.assertEqual(runner.resolve_execution_period(manifest, None), "H1")
+        self.assertEqual(runner.resolve_execution_period(manifest, "h1"), "H1")
+        with self.assertRaisesRegex(
+            runner.RunnerError,
+            "--period M15 contradicts sealed Q09 period H1",
+        ):
+            runner.resolve_execution_period(manifest, "M15")
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_1323194_144-x-77-ema-and-77-ema-method.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1323194_144-x-77-ema-and-77-ema-method.pdf",
+      "source_pages": "1",
+      "source_ref": "jamesagnew, '144 x 77 ema and 77 ema method', ForexFactory thread 1323194 (2 posts, complete), https://www.forexfactory.com/thread/1323194",
+      "strategy_name": "144/77 EMA Pullback Trend-Follow",
+      "concept": "In the direction of the 77-EMA vs 144-EMA(shift 77) trend, enter pullbacks that touch the 77 EMA, targeting the prior swing extreme with a 1:1 stop.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic EMA-pullback trend-follower on FX majors M15; pure-MQL5 implementable, no ML, has a 1:1 stop, FTMO/DXZ-compatible.",
+      "priority_hint": "LOW",
+      "notes": "Low-reputability 3-post forum thread, poster calls it a 'new idea' (unverified). Generic EMA-pullback trend-follower (yet another MA system, critiqued in-thread by flashpaul). Needs fixed params for swing-target lookback and the '144 EMA shift 77' semantics before build. flashpaul's alt suggestion (M1/M5, EMA 144/89, session-open windows) depends on proprietary indicators (I-Session, MA MTF Display nmc, M-candle) and is too vague to implement separately."
+    }
+  ],
+  "notes": []
+}

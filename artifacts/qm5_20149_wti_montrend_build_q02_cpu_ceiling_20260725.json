@@ -1,0 +1,120 @@
+{
+  "date": "2026-07-25",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_20149",
+  "slug": "wti-montrend",
+  "ea_slug": "wti-montrend",
+  "strategy_id": "QUAY-MOP-WTI-MONTREND-2026_S01",
+  "source_id": "QUAY-MOP-WTI-MONTREND-2026",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_20149_wti-montrend",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_20149_wti-montrend/QM5_20149_wti-montrend.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_20149_wti-montrend/QM5_20149_wti-montrend.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_20149_wti-montrend/SPEC.md",
+  "card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_20149_wti-montrend_card.md",
+  "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-07-25_qm5_20149_wti_montrend_build_q02_cpu_ceiling_stop.md",
+  "magic_base": 201490000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_20149_wti-montrend/sets/QM5_20149_wti-montrend_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "source_retrieval": {
+    "status": "EXISTING_GOVERNED_PEER_REVIEWED_PACKETS",
+    "packets": [
+      "QUAY-WTI-DOW-2019",
+      "MOP-TSMOM-2012"
+    ],
+    "bounded_packets_read_completely": true,
+    "new_web_claims_imported": false
+  },
+  "dedup": {
+    "registry_rows_scanned_pre_allocation": 4206,
+    "research_cards_scanned_pre_allocation": 376,
+    "exact_duplicates": 0,
+    "deterministic_verdict": "CLEAN",
+    "manual_neighbors": [
+      "QM5_12596_wti-mon-fade",
+      "QM5_12603_wti-tsmom12m",
+      "QM5_12750_wti-weekend-gap-fade",
+      "QM5_12779_wti-weekend-gap-bounce",
+      "QM5_20016_xti-xng-mon-rv",
+      "QM5_20029_wti-monfri-daily",
+      "QM5_20141_wti-sumtrend",
+      "QM5_20145_wti-fri-trend",
+      "QM5_12567_cum-rsi2-commodity"
+    ],
+    "manual_resolution": "the jointly load-bearing state is a genuine Monday WTI short plus a strictly negative completed 252-D1 return; neither parent rule alone is this candidate"
+  },
+  "validation": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "spec_validation": "PASS",
+    "candidate_build_guard": "PASS",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260725_092129.json",
+    "strict_compile": "PASS",
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_log_path": "C:/QM/repo/framework/build/compile/20260725_091919/QM5_20149_wti-montrend.compile.log"
+  },
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_q02",
+  "smoke_skipped_reason": "paced Q02 owns the first Model-4 trade-generation run; no manual backtest was authorized",
+  "blocked_reason": "backtest_cpu_ceiling_7_of_7_factory_terminals",
+  "q02": {
+    "status": "NOT_ENQUEUED_CPU_CEILING",
+    "work_item_id": null,
+    "work_item_count_after_stop": 0
+  },
+  "factory_state": {
+    "scan_command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at": "2026-07-25T09:22:48+00:00",
+    "running_pipeline_mt5_terminals": 7,
+    "factory_terminals_observed": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T7",
+      "T8",
+      "T10"
+    ],
+    "terminal64_processes_observed": 8,
+    "observed_process_scope": "seven factory terminals plus the excluded pre-existing T_Live terminal",
+    "backtest_cpu_ceiling_hit": true,
+    "manual_backtest_started": false
+  },
+  "hashes_sha256": {
+    "card": "34D14B18512938DD659F823B436CF70CC7222636295549317E93D2A0499B5B0E",
+    "source_packet": "E55A8BA2E5A795294F846E1318896F39730609DFCAD4B24085EF1A8D1733099A",
+    "mq5": "BB77FF8A7F113800113E262975F38476E583DDDDE556A9A22D337B2E641EEDF9",
+    "ex5": "A2DF63F4B05F558E98C039C84EF39D050A544842A9E1CA10E161B1AC4FDB3BB5",
+    "spec": "76F1FC535D781B08C134F85567BE1D276578814DA761397C8B7F0B91C4CA0481",
+    "ea_local_card": "EEB3B2C324E05DF186BB94CF395B23E9C79A8AC8D5E0D944DCDB9E44CC5071A7",
+    "setfile": "4506ADAE290D1236B2C2A3C396A4686A52F69B182C770DCEABC9DAB13B2FFCF9"
+  },
+  "resolver_note": "The EA directory was created before registry allocation; the resolver was regenerated and magic 201490000 was verified before compile. Existing missing-directory warnings for legacy IDs 1001, 1015, and 1016 were not introduced by this candidate.",
+  "build_recorded": false,
+  "build_task_id": null,
+  "manual_backtest_started": false,
+  "t_live_touched": false,
+  "autotrading_touched": false,
+  "t_live_manifest_touched": false,
+  "portfolio_gate_touched": false,
+  "portfolio_admission_claimed": false,
+  "correlation_claimed": false,
+  "open_questions": [
+    "Q02 must falsify whether the trend-gated Monday packages clear the five-trades-per-year floor and costs after the omitted weekend return.",
+    "Q09 and the unchanged portfolio gate remain authoritative for realized correlation and any admission."
+  ]
+}

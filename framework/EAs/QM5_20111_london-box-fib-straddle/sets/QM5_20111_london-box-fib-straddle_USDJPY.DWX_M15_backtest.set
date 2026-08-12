@@ -1,0 +1,27 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20111
+; ea_slug:      london-box-fib-straddle
+; ea_version:   v5.0
+; set_version:  s20260724-001
+; symbol:       USDJPY.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   47efb6e8a2f7a92b6c86d70d74bef7012f8e1492e665708e12d728fa3e1fda63
+; author:       Development
+; date:         2026-07-24
+;==========================================================
+qm_ea_id=20111
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_box_start_utc_hour=3
+strategy_box_end_utc_hour=6
+strategy_entry_ext_pct=32.6
+strategy_max_box_pips=40.0

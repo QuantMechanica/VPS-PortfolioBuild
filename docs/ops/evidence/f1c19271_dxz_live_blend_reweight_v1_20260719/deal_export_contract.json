@@ -1,0 +1,50 @@
+{
+  "accepted_formats": [
+    "csv",
+    "json",
+    "jsonl"
+  ],
+  "account_login_required": "4000090541",
+  "entry_contract": "IN/OUT/OUT_BY or MT5 numeric 0/1/3; INOUT is refused",
+  "metadata_required_fields": [
+    "schema_version",
+    "account_login",
+    "server",
+    "source_kind",
+    "complete",
+    "read_only_export",
+    "scope",
+    "history_from_utc",
+    "history_to_utc_exclusive",
+    "exported_at_utc",
+    "deal_history_basename",
+    "deal_history_sha256",
+    "source_row_count"
+  ],
+  "metadata_sidecar_required": true,
+  "net_contract": "profit + swap + commission + fee, aggregated once per position lifecycle",
+  "normalization_contract": "book complete lifecycle net on final close UTC day and divide by RISK_PERCENT at first entry",
+  "optional_trade_fields": [],
+  "ownership_contract": "export must include every opening deal needed to resolve position_id; magic=0 broker closes inherit opening magic",
+  "required_trade_fields": [
+    "deal_id",
+    "position_id",
+    "time_utc",
+    "type",
+    "entry",
+    "magic",
+    "symbol",
+    "volume",
+    "profit",
+    "swap",
+    "commission",
+    "fee"
+  ],
+  "risk_schedule_required": true,
+  "schema_version": 1,
+  "scope_required": "ALL_ACCOUNT_DEALS_UNFILTERED",
+  "server_required": "Darwinex-Live",
+  "terminal_api_used_by_this_tool": false,
+  "time_contract": "UTC timestamp with explicit offset, or Unix epoch seconds",
+  "type_contract": "BUY/SELL or MT5 numeric 0/1; any non-trade row with non-zero profit/swap/commission/fee is refused as unallocated cashflow"
+}

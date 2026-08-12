@@ -1,0 +1,105 @@
+{
+  "observed_utc": "2026-07-29T07:47:55Z",
+  "branch": "agents/board-advisor",
+  "mission": "FX cointegration portfolio growth",
+  "selection": {
+    "new_pair_eligible": false,
+    "reason": "The governed 66-pair scan and strict sign-aware extension are fully mechanized; another scan-derived pure-FX pair would duplicate an existing card and build.",
+    "approved_filename_audit": {
+      "pattern": "cointegration|coint",
+      "unique_ea_ids": 15,
+      "missing_ea_directories": []
+    },
+    "anchors": {
+      "QM5_12532": "logical-basket Q02 PASS; Q04 PASS; later Q05 FAIL",
+      "QM5_12533": "logical-basket Q02 PASS; later Q04 FAIL"
+    },
+    "legacy_queue": {
+      "queued_count": 4,
+      "rows": [
+        {
+          "ea_id": "QM5_12760",
+          "phase": "Q02",
+          "symbol": "GBPUSD.DWX",
+          "classification": "pure-FX cross-ledger duplicate"
+        },
+        {
+          "ea_id": "QM5_13086",
+          "phase": "Q02",
+          "symbol": "XBRUSD.DWX",
+          "classification": "cross-asset XBR/FX; not a new pure-FX scan pair"
+        },
+        {
+          "ea_id": "QM5_13119",
+          "phase": "Q02",
+          "symbol": "USDJPY.DWX",
+          "classification": "pure-FX cross-ledger duplicate"
+        },
+        {
+          "ea_id": "QM5_12757",
+          "phase": "Q02",
+          "symbol": "XTIUSD.DWX",
+          "classification": "XTI-only trend pullback; not a new pure-FX scan pair"
+        }
+      ]
+    }
+  },
+  "capacity": {
+    "factory_terminal_count": 0,
+    "factory_terminals": [],
+    "excluded_terminals": [
+      {
+        "name": "T_Live",
+        "pid": 5220
+      }
+    ],
+    "terminal_workers_alive": 0,
+    "terminal_workers_enabled": 9,
+    "farm_pending_work_items": 2177,
+    "farm_active_work_items": 6,
+    "dispatch_ledger_running": {
+      "T1": 3,
+      "T2": 3,
+      "T3": 3,
+      "T4": 3,
+      "T5": 3,
+      "T6": 3,
+      "T7": 3,
+      "T8": 3,
+      "T9": 3,
+      "T10": 3
+    },
+    "scheduler_dry_run": {
+      "available_slots_after": 0,
+      "available_slots_before": 0,
+      "dry_run": true,
+      "duplicate": 0,
+      "invalid": 0,
+      "no_capacity": 0,
+      "queued_scanned": 0,
+      "scheduled": 0,
+      "status": "ok"
+    },
+    "classification": "POST_REBOOT_STALE_DISPATCH_LEDGER_CPU_CEILING"
+  },
+  "outcome": "CPU_CEILING_STOP",
+  "mutations": {
+    "card": false,
+    "ea_build": false,
+    "q02_queue": false,
+    "mt5_launch": false,
+    "terminal_control": false,
+    "scheduler_recovery": false,
+    "portfolio_gate": false,
+    "live_manifest": false,
+    "autotrading": false
+  },
+  "commands": [
+    "python tools/strategy_farm/farmctl.py work-items --ea QM5_12532",
+    "python tools/strategy_farm/farmctl.py work-items --ea QM5_12533",
+    "python tools/strategy_farm/farmctl.py mt5-slots",
+    "python tools/strategy_farm/farmctl.py health",
+    "python -m framework.scripts.mt5_queue_status --sqlite D:/QM/reports/pipeline/mt5_queue.db",
+    "python -m framework.scripts.mt5_saturation_scheduler --sqlite D:/QM/reports/pipeline/mt5_queue.db --dispatch-state D:/QM/reports/pipeline/dispatch_state.json --dry-run"
+  ]
+}

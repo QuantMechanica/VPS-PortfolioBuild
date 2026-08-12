@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-07-25T02:02:27.071633+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_11224",
+  "ea_label": "QM5_11224_ft-tdseq",
+  "symbol": "USDJPY.DWX",
+  "timeframe": "H1",
+  "mission_lane": "priority_2_diverse_fx_q02_infra_recovery",
+  "source": {
+    "approval": "G0_APPROVED_R1_R4_PASS",
+    "source_id": "1580128f-e465-5454-bb97-a7572a6cfd6d",
+    "repository": "freqtrade/freqtrade-strategies",
+    "repository_commit": "dbd5b0b21cfbf5ee80588d37458ace2467b7f8a4",
+    "expected_trades_per_year_per_symbol": 35,
+    "structural": true,
+    "ml": false
+  },
+  "farm": {
+    "claim_id": "3bf7770c-bd83-4a40-a44b-55789612aba0",
+    "work_item_id": "1c4f5354-d44e-4bf1-9dcc-71974b9bbb69",
+    "prior_status": "done",
+    "prior_verdict": "INFRA_FAIL",
+    "prior_reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+    "requeued_status": "pending",
+    "requeued_at_utc": "2026-07-25T01:59:22.788595+00:00",
+    "factory_terminals_at_capacity_check": 0,
+    "factory_cpu_ceiling": 7,
+    "duplicate_row_inserted": false,
+    "manual_dispatch": false
+  },
+  "repair": {
+    "old_ex5_sha256": "2601cba459bf08263c928f29e4c699515aa09e316d2c30470b51bc40172fcdb3",
+    "cause_fixed": "DWX zero-spread quotes were incorrectly rejected by ask<=bid guard",
+    "alpha_changed": false,
+    "risk_changed": false,
+    "registry_changed": false
+  },
+  "bindings": {
+    "mq5_sha256": "e4f99258521f68d0d1dfb75069f361bb280b4796278e0bc80fb38cb1e66b153d",
+    "ex5_sha256": "3770229660c2aa642045398bfe3c4ce3aa3f33658abf5b8465fc1f1f6cd109fc",
+    "setfile_sha256": "450d5b2a0f56c4dd36ddce2bae288f67d13f76c84d2b3d9b9deb470f9d7064d6",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0
+  },
+  "validation": {
+    "strict_compile": "PASS_0_ERRORS_0_WARNINGS",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260725_020144\\QM5_11224_ft-tdseq.compile.log",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260725_015649.json",
+    "build_guardrails": "PASS_NO_FINDINGS",
+    "spec_validation": "PASS_1_OF_1",
+    "backtest_run": false
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false,
+    "live_setfile_touched": false
+  }
+}

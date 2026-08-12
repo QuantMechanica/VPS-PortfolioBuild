@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_13209_NDX_PRESCREEN_BUILD_REVIEW_GATE_RECEIPT",
+  "status": "APPROVED_FOR_BACKTEST",
+  "created_utc": "2026-07-21T11:43:25Z",
+  "ea_id": "QM5_13209",
+  "candidate": "mulham-pm-range-sweep",
+  "research_symbol": "NDX.DWX",
+  "timeframe": "M5",
+  "source_commit": "8d762f66321ef9a2aa3503ae8b464ea378e5a34f",
+  "build_result": {
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13209_mulham-pm-range-sweep\\docs\\candidate-analysis\\build_result_superseding_20260721.json",
+    "size": 4400,
+    "sha256": "013bae0650e5a36106ad6773063a24a7bac683c973e8d089818a9eaeca1b1214",
+    "build_check_passed": true,
+    "compile_succeeded": true,
+    "smoke_result": "passed"
+  },
+  "canonical_build_result": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\builds\\d54ae7b2-bed6-4c7d-85a2-5030944f3127.json",
+    "size": 2278,
+    "sha256": "a6f60f690b5ec26293ea5e14f6e693d5a7d90ea5f4880d54f93997d881b27293"
+  },
+  "artifact_bindings": {
+    "mq5": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13209_mulham-pm-range-sweep\\QM5_13209_mulham-pm-range-sweep.mq5",
+      "size": 28088,
+      "sha256": "2ce6bfaef7dc9f08158af935dded46c934147d1ba29055ddf66dc71d43f17f9e"
+    },
+    "ex5": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13209_mulham-pm-range-sweep\\QM5_13209_mulham-pm-range-sweep.ex5",
+      "size": 344314,
+      "sha256": "72d24764971a975380cfa7448e53a64dfbe0946d3dab895c6b80686bb10846b1"
+    },
+    "spec": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13209_mulham-pm-range-sweep\\SPEC.md",
+      "size": 5966,
+      "sha256": "5cd0d1a66f2c9ed297ba51a1237169f0faeaef5db1d63dba82479b45d417ddb0"
+    },
+    "ndx_m5_set": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13209_mulham-pm-range-sweep\\sets\\QM5_13209_mulham-pm-range-sweep_NDX.DWX_M5_backtest.set",
+      "size": 1222,
+      "sha256": "54f6a194f8365eb11c6da8c4b782c88acb146c027980b7141ac875397b58d416"
+    }
+  },
+  "review_gate": {
+    "review_task_id": "6154711f-fb6e-4900-a208-17fe7df355b2",
+    "required_verdict": "APPROVE_FOR_BACKTEST",
+    "verdict_artifact": {
+      "path": "D:\\QM\\strategy_farm\\artifacts\\verdicts\\review_6154711f-fb6e-4900-a208-17fe7df355b2.json",
+      "size": 3390,
+      "sha256": "7f59367de9c6dd826b059eeec843154610e2d3a4b3017b865d7886599940f45f"
+    },
+    "verdict_invented": false,
+    "preflight_must_fail_closed_unless_exactly_bound": true
+  },
+  "activation_rule": "PRE requires this exact build, canonical build result and APPROVE_FOR_BACKTEST review binding."
+}

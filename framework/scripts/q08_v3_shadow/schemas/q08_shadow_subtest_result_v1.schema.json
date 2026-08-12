@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.local/schemas/q08_shadow_subtest_result_v1.schema.json",
+  "title": "Q08 v3 Shadow Subtest Result v1",
+  "description": "detail is optional; when omitted its contract value is the empty string.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["test_id", "status"],
+  "properties": {
+    "test_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "status": {
+      "enum": ["PASS", "FAIL", "INSUFFICIENT", "NOT_APPLICABLE", "INVALID"]
+    },
+    "detail": {
+      "type": "string",
+      "default": ""
+    }
+  }
+}

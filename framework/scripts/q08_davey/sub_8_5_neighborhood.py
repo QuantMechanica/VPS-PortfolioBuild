@@ -57,6 +57,8 @@ def run(ea_id: int | None = None, symbol: str | None = None,
 
     baseline = data.get("baseline") or {}
     perturbs = data.get("perturbations") or []
+    evidence_status = str(data.get("evidence_status") or "")
+    structurally_inapplicable = data.get("structurally_inapplicable") is True
 
     # Defensive guard: if the BASELINE run itself produced no trades (or no PF), the
     # neighborhood backtests did not reproduce the strategy — the gate did not actually
@@ -69,6 +71,28 @@ def run(ea_id: int | None = None, symbol: str | None = None,
                            value=base_trades, threshold=None,
                            detail=f"degenerate_baseline:trades={base_trades}:pf={baseline.get('pf')}",
                            evidence={"baseline": baseline})
+
+    # NOT-APPLICABLE (2026-07-27, census rank 7): the runner authoritatively determined the
+    # strategy has NO perturbable parameter — every strategy input is fixed/structural, so a
+    # ±10% neighborhood is UNDEFINED BY CONSTRUCTION. The baseline (the card itself) traded, so
+    # this is not a degenerate run; there is simply no plateau to probe. Emit a distinct,
+    # non-punitive NOT_APPLICABLE (never the vacuous-pass INVALID below, which reads as failure
+    # and — via the NARROW C2 tooling whitelist — as a retry-owed INFRA_FAIL that no retry can
+    # ever resolve). Requires BOTH the explicit evidence_status and the structurally_inapplicable
+    # flag so a mere empty-perturbation bug is not silently excused.
+    if (
+        not perturbs
+        and structurally_inapplicable
+        and evidence_status == "INVALID_NO_PERTURBABLE_PARAMS"
+    ):
+        return make_result(
+            GATE_NAME, "NOT_APPLICABLE",
+            value=0, threshold=None,
+            detail="not_applicable:fixed_parameter_strategy_has_no_neighborhood",
+            evidence={"baseline_pf": baseline.get("pf"),
+                      "baseline_trades": base_trades,
+                      "evidence_status": evidence_status,
+                      "structurally_inapplicable": True})
 
     # No perturbations recorded = the gate tested nothing -> a PASS here would be a VACUOUS
     # pass (claims a robust plateau that was never probed). 141 historical runs passed this

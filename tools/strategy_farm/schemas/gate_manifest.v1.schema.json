@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "qm.gate-manifest/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "pipeline_version", "canonical_id_pattern", "write_policy",
+    "legacy_policy", "verdict_dimensions", "gates", "legacy_aliases"
+  ],
+  "properties": {
+    "schema_version": {"const": "qm.gate-manifest/v1"},
+    "pipeline_version": {"type": "string", "minLength": 1},
+    "canonical_id_pattern": {"const": "^Q(?:0[0-9]|1[0-3])$"},
+    "write_policy": {"const": "CANONICAL_ONLY"},
+    "legacy_policy": {"const": "READ_AND_MIGRATION_ONLY"},
+    "verdict_dimensions": {
+      "type": "array", "minItems": 5, "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "gates": {
+      "type": "array", "minItems": 14, "maxItems": 14,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "ordinal", "name", "authority", "runner", "evidence_role", "next"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^Q(?:0[0-9]|1[0-3])$"},
+          "ordinal": {"type": "integer", "minimum": 0, "maximum": 13},
+          "name": {"type": "string", "minLength": 1},
+          "authority": {"enum": ["OWNER", "DEVELOPMENT", "PIPELINE"]},
+          "runner": {"enum": ["MANUAL", "MANUAL_OR_ROUTED", "AUTOMATED", "MANUAL_OR_ANALYTIC"]},
+          "evidence_role": {"type": "string", "minLength": 1},
+          "next": {"type": ["string", "null"], "pattern": "^Q(?:0[0-9]|1[0-3])$"}
+        }
+      }
+    },
+    "legacy_aliases": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "pattern": "^Q(?:0[0-9]|1[0-3])$"}
+    }
+  }
+}

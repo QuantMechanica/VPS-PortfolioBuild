@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_10834_WS30_ALT002_SUPERSEDING_RUNTIME_MATERIALIZATION_CONTRACT",
+  "status": "IMPLEMENTED_NOT_MATERIALIZED_NOT_AUTHORIZED_NOT_LAUNCHED",
+  "created_utc": "2026-07-21T10:12:22.4471032Z",
+  "analysis_id": "QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001",
+  "fix_id": "WS30_ALT002_RUNTIME_FIX001",
+  "historical_attempt_contract": {
+    "path": "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/ws30_transport_infra_alternate002_contract_20260721.json",
+    "size": 7777,
+    "sha256": "8414d4d52bf8e3c31d08fc27189ce259cc156695be108052af0ffa55ab22a284"
+  },
+  "invalid_materialization_closure": {
+    "path": "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/ws30_alt002_runtime_materialization_invalid_closure_20260721.json",
+    "size": 4477,
+    "sha256": "ba32fcfcdd8c5b30efdf8ca5db0816a50d4339950cd334cef2b608e70bbf5674",
+    "required_status": "INVALID_RUNTIME_MATERIALIZATION_CLOSED_BEFORE_PRE_ATTEMPT_UNCONSUMED"
+  },
+  "native_attempt_identity": {
+    "attempt_number": 2,
+    "claim_sequence": 2,
+    "maximum_total_attempts": 2,
+    "run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002",
+    "claim_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\claims\\QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001_DEV2_NATIVE_ATTEMPT_002.json",
+    "authorization_scope": "QM5_10834_WS30_TRANSPORT_INFRA_ALTERNATE_002_4_CELLS_X_2_DUPLICATES_MODEL4_MAX_4_NATIVE_STARTS_PER_CELL",
+    "pre_receipt_created_before_fix": false,
+    "authorization_created_before_fix": false,
+    "claim_created_before_fix": false,
+    "launch_created_before_fix": false,
+    "attempt_consumed_before_fix": false,
+    "same_native_attempt_not_a_retry": true,
+    "resume_forbidden": true,
+    "further_attempts_forbidden": true
+  },
+  "superseding_runtime_materialization": {
+    "scope": "RUNTIME_MATERIALIZATION_ONLY",
+    "invalid_runtime_worktree": "C:\\QM\\runtime_worktrees\\QM5_10834_WS30_ALT002",
+    "invalid_runtime_receipt": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runtime\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002_runtime_receipt.json",
+    "invalid_runtime_and_receipt_must_remain_immutable": true,
+    "runtime_worktree_root": "C:\\QM\\runtime_worktrees\\QM5_10834_WS30_ALT002_FIX001",
+    "runtime_receipt_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runtime\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002_runtime_fix001_receipt.json",
+    "runtime_worktree_must_be_new": true,
+    "runtime_receipt_atomic_create_once": true,
+    "runtime_worktree_must_be_detached": true,
+    "runtime_worktree_must_be_normalized_clean": true,
+    "runtime_worktree_staged_diff_forbidden": true,
+    "runtime_worktree_untracked_files_forbidden": true,
+    "runtime_worktree_porcelain_status_is_not_cleanliness_authority": true,
+    "runtime_root_reparse_components_forbidden": true,
+    "all_bound_files_exact_byte_overlay_required": true,
+    "all_bound_files_source_runtime_byte_identity_required": true,
+    "worker_reasserts_runtime_provenance_before_each_native_cell": true
+  },
+  "dependency_closure": {
+    "historical_materialization_path_count": 53,
+    "historical_materialization_path_list_canonical_sha256": "1bc5d9e2fe51aa27926bae55e6fb888b3cde1a43a1df08c22e0f78f2b6b8758a",
+    "technical_diagnosis_path_count": 54,
+    "technical_diagnosis_path_list_canonical_sha256": "69a9ddbb82904c625a84ae1559d3f6182f1ff14e6820a21d1e019f76556117ed",
+    "technical_diagnosis_adds_identity_probe_child": true,
+    "executable_fix001_path_count": 56,
+    "executable_fix001_path_list_canonical_sha256": "b6f88751e1eb4345a48dc041d795c49fa2023da472abe59a115bcb7290ec31fd",
+    "executable_fix001_also_adds_invalid_closure_and_fix_contract": true,
+    "all_56_paths_raw_byte_identical_and_clean_required": true,
+    "git_status_uses_literal_pathspecs_only": true
+  },
+  "credential_receipt_origin_projection": {
+    "signed_machine_credential_helper_path_must_equal": "C:\\QM\\repo\\framework\\scripts\\dev2_machine_credential.ps1",
+    "signed_identity_probe_child_path_must_equal": "C:\\QM\\repo\\framework\\scripts\\invoke_dev2_identity_probe.ps1",
+    "signed_helper_hash_must_equal_bound_runtime_helper_hash": true,
+    "signed_identity_child_hash_must_equal_bound_runtime_child_hash": true,
+    "bound_helper_path_must_be_exact_fix001_runtime_relative_path": true,
+    "bound_identity_child_path_must_be_exact_fix001_runtime_relative_path": true,
+    "main_origin_files_must_not_be_opened_by_pre_or_worker": true,
+    "temporary_in_memory_projection_only": true,
+    "load_hook_must_be_restored_in_finally": true,
+    "reported_receipt_payload_hash_must_describe_raw_signed_payload": true
+  },
+  "frozen_native_evidence": {
+    "research_symbol": "WS30.DWX",
+    "timeframe": "M5",
+    "model": 4,
+    "duplicates_per_cell": 2,
+    "maximum_attempts_per_cell": 4,
+    "same_build_and_ea_binary": true,
+    "same_tick_data_receipt": true,
+    "same_set_and_strategy_parameters": true,
+    "same_dev_and_oos_windows": true,
+    "same_cost_schedule": true,
+    "same_merit_gates_and_auditor": true,
+    "parameter_tuning_forbidden": true,
+    "gate_relaxation_forbidden": true
+  },
+  "outcome_fence": {
+    "invalid_materialization_native_reports_opened": false,
+    "invalid_materialization_controller_logs_opened": false,
+    "strategy_outcomes_read": false,
+    "strategy_merit_adjudicated": false,
+    "fix001_pre_reads_no_native_reports_or_outcomes": true,
+    "post_requires_complete_state": true
+  },
+  "launch_gate": {
+    "this_contract_does_not_authorize_native_launch": true,
+    "fix001_materialization_receipt_required": true,
+    "fresh_owner_authorization_at_existing_alt002_path_required": true,
+    "successful_pre_at_existing_alt002_path_required": true,
+    "existing_alt002_claim_must_still_be_absent_before_launch": true,
+    "old_runtime_must_never_be_used_or_resumed": true
+  }
+}

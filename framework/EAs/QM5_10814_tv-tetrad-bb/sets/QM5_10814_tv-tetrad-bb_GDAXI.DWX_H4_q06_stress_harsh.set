@@ -3,7 +3,7 @@
 ; ea_id:        10814
 ; ea_slug:      tv-tetrad-bb
 ; ea_version:   v5.0
-; set_version:  s20260709-stress-harsh
+; set_version:  s20260715-stress-harsh
 ; symbol:       GDAXI.DWX
 ; timeframe:    H4
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-07-09
+; date:         2026-07-15
 ;==========================================================
 qm_magic_slot_offset=4
 RISK_FIXED=1000
@@ -33,3 +33,7 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+strategy_middle_exit=true
+strategy_max_bars_exit=true
+strategy_max_hold_bars_h1=96
+strategy_max_hold_bars_h4=60

@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_423512_best-trading-system-only-momentum.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_423512_best-trading-system-only-momentum.pdf",
+      "source_pages": "1-5",
+      "source_ref": "muhiuddin (handle), \"Best Trading System (Only Momentum)\" [MOMENTUM PRICE SYSTEM], ForexFactory thread 423512, forums.forexfactory.com, n.d. — https://www.forexfactory.com/thread/423512/best-trading-system-only-momentum",
+      "strategy_name": "Momentum-Divergence Swing (F-break reversal)",
+      "concept": "Trade regular price/Momentum(28) divergence: enter on the close after momentum breaks its intra-divergence extreme (point F), betting the divergence resolves into a reversal.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic entry/exit/TP once divergence is fixed, pure-MQL5, stops + defined DD (FTMO/DXZ-compatible); but divergence-line identification is subjective and needs a mechanized swing/pivot heuristic.",
+      "priority_hint": "LOW",
+      "notes": "Rules: Momentum(28,close) on H4-D1. Bearish setup=price HH vs momentum LH; mark highest price as C, lowest momentum as F; short 2 lots on bar-close when F is penetrated. Bullish=mirror. SL at price C. TP1=|C-entry| (exit 1 lot, SL->BE), TP2=2xTP1 (trail 50% of profit each new candle), TP3=4xTP1 (trail 75%). Divergence swing lookback 8-28 bars. Author claims FX majors+crosses (incl JPY crosses: CADJPY/GBPJPY) + crude oil (XTIUSD), untested gold/silver; anecdotal forward-test only, no backtest, self-reported ~3.5-10%/mo with 32% DD, and multiple posters note different brokers show different momentum values -> divergence non-reproducible. Variant: pampaq applied same divergence idea to CCI14 on M15/M60 (same core, not a separate row). homealbum's EMA(21,8)+Bollinger 'price action' comment and KnSquare's Donchian breakout aside are too vague to be candidates. If built, the divergence detector (pivot-based regular-divergence, F=momentum extreme break confirmation) is the load-bearing mechanization risk."
+    }
+  ],
+  "notes": ["single thread = one implementable strategy (momentum-divergence swing); remaining posts are vague commentary or attached indicators, not distinct candidates"]
+}

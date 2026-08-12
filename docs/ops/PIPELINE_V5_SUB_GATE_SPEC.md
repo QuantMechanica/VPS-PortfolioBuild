@@ -9,7 +9,7 @@ Important 2026-05-20 corrections:
 - Q11 hard PASS requires real MT5 news-mode reruns plus deal replay; synthetic news matrices do not promote.
 
 Created: 2026-04-26
-Owner: CTO + Quality-Tech (defaults), OWNER (acceptance)
+Owner: OWNER
 Reviewer: Claude Board Advisor (architecture + V5 boundary)
 Replaces: the three missing V4 receipts `CODEX_PIPELINE_V2.1_SPEC.md`, `CODEX_PIPELINE_V2.1_IMPACT.md`, `CODEX_PIPELINE_V2.1_DIFF.md` (Codex 2026-04-26 second-pass confirmed they do not exist anywhere on the laptop or in Drive backups).
 
@@ -187,7 +187,9 @@ V5 starts with this list (provisional, OWNER may add):
 
 ### Acceptance
 
-P5c is **report-first**. There is no automatic FAIL — the report flags abnormal behaviour (DD spike, trade dropout, PF inversion) and the human reviewer (CEO + Quality-Tech) decides whether the EA is fit for live in regimes where similar crises may recur.
+P5c is **report-first**. There is no automatic FAIL — the report flags abnormal
+behaviour (DD spike, trade dropout, PF inversion). OWNER decides any live-fitness
+exception using this report together with the complete promotion evidence.
 
 ### Output
 

@@ -1,0 +1,62 @@
+compliance3 chunk 3/3 — consolidated findings
+generated 2026-07-24 (read-only audit)
+
+ROW SELECTION (deterministic)
+Live (magic asc, i%3==2): 104030002,107060001,109390001,111650002,117080000,127780000,131170000,133010010
+Candidates ((ea_id,symbol) asc, i%3==2): 10128/XAUUSD.DWX, 10476/USDCAD.DWX, 10715/USDJPY.DWX, 10940/XAUUSD.DWX, 20048/XTIUSD.DWX
+
+MAGIC REGISTRY (framework/registry/magic_numbers.csv)
+- All 8 live magics present, unique, magic==ea_id*10000+slot. Lines: 104030002=3666,107060001=5645,
+  109390001=6231,111650002=6657,117080000=11672,127780000=13888,131170000=14932,133010010=15056.
+- Registry-wide duplicate-magic scan: NO duplicate magic values across 15186 data rows. THIS magic collides = NO (all).
+- Candidate magic rows: 10128/XAUUSD=101280034 L2454; 10476/USDCAD=104760004 L4694; 10715/USDJPY=107150004 L5609;
+  10940/XAUUSD=109400003 L6238; 20048/XTIUSD=200480000 L15154. All present/active.
+
+DEPLOYED LIVE .SET (all UTF-8, under C:\QM\mt5\T_Live\MT5_Base\MQL5\Presets)
+All 8 live sets: RISK_FIXED=0, RISK_PERCENT>0 (live-compliant risk mode). Header risk_mode:PERCENT, environment:live.
+ RISK_PERCENT: 104030002=0.2204, 107060001=0.0530, 109390001=0.1887, 111650002=0.5230, 117080000=0.5080,
+ 127780000=0.4905, 131170000=0.4199, 133010010=0.0692  (all <= 1.0% default ceiling).
+News set-file inputs:
+ - 104030002,107060001,109390001,111650002,117080000: qm_filter_news_enabled=1, qm_filter_news_mode=3 (news ON).
+ - 127780000,131170000: qm_filter_news_enabled=0, qm_filter_news_mode=0 (news filter OFF in set) plus qm_news_temporal=0,
+   qm_news_compliance=0, qm_news_mode_legacy=0, qm_news_stale_max_hours=336, qm_news_min_impact=high.
+ - 133010010: NO news inputs in set at all (balke-minute-range-breakout has no news params).
+Friday close set-file input: only 107060001 has FridayExitHourBroker=18, FridayExitMinuteBroker=30. Others: none present
+   (framework EA_Skeleton default-on when absent).
+Daily-loss / KS / max-dd set-file inputs: NONE in any of the 8 sets (framework-hardcoded, not set inputs).
+
+T_LIVE RUNTIME LOG EVIDENCE — CRITICAL GAP
+Read logs (once each): C:\QM\mt5\T_Live\MT5_Base\logs\20260724.log(60 ln), 20260723.log(103), 20260722.log(173)
+ and MQL5\Logs\20260719.log, 20260722.log.
+- Terminal logs contain only: Terminal/Network/Trades/Signal lines + Experts "loaded successfully"/"removed" journal lines.
+- NO EA OnInit Print() diagnostics anywhere: no KILL_SWITCH_INIT, no KS_* events, no daily_loss_halt_pct, no FRIDAY_CLOSE_*,
+  no news/Calendar INIT lines for ANY magic across the 3 most recent live days. Only QM_ hit = QM_AccountMonitor utility.
+- MQL5\Logs files hold only "Abnormal termination" crash lines (11165 AUDCAD+EURUSD, 11421, 10706 on 07-19 & 07-22).
+- Consequence: cells daily_loss_kill / news_filter-runtime / max_dd_kill / friday_close-runtime / killswitch-runtime have
+  NO runtime log confirmation available -> MISSING (runtime evidence absent), not a proven off-state.
+- Trade activity IS present 20260724 (buy/sell stop XAUUSD, USDJPY 0.33, GDAXI market sell 0.11, AUDUSD) confirming EAs trade.
+
+EX5 RE-STAT (local ISO) + KS VINTAGE (D:\QM\reports\state\tlive_ks_vintage_20260720.csv; killswitch fix commit 47f1d9709 = 2026-07-05 21:12)
+ mtimes match inventory exactly (no rebuild since 07-20 vintage scan):
+ 104030002 10403 2026-07-13T06:46:21 -> OK_POST_FIX (CSV L40)
+ 107060001 10706 2026-07-13T06:46:46 -> OK_POST_FIX (CSV L45)
+ 109390001 10939 2026-06-28T09:11:37 -> DEAD_PRE_FIX (CSV L49)  <== killswitch channel dead, predates fix
+ 111650002 11165 2026-07-17T16:30:45 -> OK_POST_FIX (CSV L51)
+ 117080000 11708 2026-07-13T06:47:25 -> OK_POST_FIX (CSV L53)
+ 127780000 12778 2026-07-13T06:47:35 -> OK_POST_FIX (CSV L55)
+ 131170000 13117 2026-07-14T15:21:18 -> OK_POST_FIX (CSV L58)
+ 133010010 13301 2026-07-16T07:02:28 -> OK_POST_FIX (CSV L61)
+
+CANDIDATES (NOT deployed live; T_Live cells = N_A)
+- 10128 XAUUSD.DWX: factory BACKTEST set (wi 4f70d70b Q04/F1): env=backtest, risk_mode=FIXED, RISK_FIXED=1000, RISK_PERCENT=0
+   (backtest-compliant). news enabled=1 mode=3. No ex5 in T_Live (ABSENT). Candidate own wi c3ea0dcb Q10_PASS.
+- 20048 XTIUSD.DWX: factory BACKTEST set (wi 178597bc Q04/F1): env=backtest, risk_mode=FIXED, RISK_FIXED=1000, RISK_PERCENT=0.
+   No news/friday inputs. No ex5 in T_Live (ABSENT). Candidate own wi 25adbc0c Q10_PASS.
+- 10476 USDCAD.DWX: NO Q04 backtest set found under work_items; only portfolio staged-LIVE draft preset
+   (s4_composite_2026-07-06, magic104760004): env=live, RISK_FIXED=0, RISK_PERCENT=0.2061, news enabled=1 mode=3.
+   Retained ex5 in T_Live Live EAs = 2026-07-04, ks_halt_channel=DEAD_PRE_FIX (CSV L42), swapped out ~07-19, NOT loaded.
+- 10715 USDJPY.DWX: NO USDJPY Q04 backtest set (Q04 backtests were NDX/EURUSD/etc.); only staged-LIVE draft preset
+   (USDJPY_M15, magic107150004): env=live, RISK_FIXED=0, RISK_PERCENT=0.5011, news enabled=1 mode=3.
+   Retained ex5 = 2026-06-28, ks_halt_channel=DEAD_PRE_FIX (CSV L46), swapped out, NOT loaded.
+- 10940 XAUUSD.DWX: NO Q04 backtest set found; staged-LIVE draft presets exist (XAUUSD_H4, magic109400003):
+   env=live, RISK_FIXED=0, RISK_PERCENT=0.8478, news enabled=1 mode=3. No ex5 in T_Live (ABSENT, fully retired).

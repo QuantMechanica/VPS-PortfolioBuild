@@ -4,7 +4,7 @@
 **Slug:** `xti-eurcad-rspr`
 **Source:** `BOC-EURCAD-OIL-RSPREAD-2026` (see `strategy-seeds/sources/BOC-EURCAD-OIL-RSPREAD-2026/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-07-08
+**Last revised:** 2026-07-24
 
 ---
 
@@ -50,9 +50,16 @@ only one leg remains open.
 - `EURCAD.DWX` - inverse-CAD FX leg representing CAD commodity exposure against EUR.
 - `QM5_13060_XTI_EURCAD_RSPREAD_D1` - logical Q02 basket symbol backed by the two traded legs above.
 
+**History-only USD tester valuation dependencies:**
+- `USDCAD.DWX` - converts the EURCAD leg's CAD P/L into the USD tester account.
+- `EURUSD.DWX` - converts the EURCAD leg's EUR margin into the USD tester account.
+
+These conversion symbols are selected and warmed before entry, but are never
+traded and have no magic-number rows.
+
 **Explicitly NOT for:**
 - `XNGUSD.DWX` - natural gas dynamics are outside the approved card.
-- `USDCAD.DWX` - related CAD exposure, but this card specifically uses EURCAD.
+- `USDCAD.DWX` as a signal or traded leg - it is conversion history only.
 - `CADJPY.DWX`, `CADCHF.DWX`, or `AUDCAD.DWX` - covered by separate oil/CAD baskets.
 - `EURNZD.DWX` - FX-only CAD-cross or EUR-cross ideas are not this energy/FX sleeve.
 - `XBRUSD.DWX` - Brent is excluded; the card is WTI against EURCAD.
@@ -109,4 +116,6 @@ ENV to mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MI
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-08 | Initial build from approved card | manual-codex-2026-07-08-xti-eurcad-rspr |
+| v2 | 2026-07-24 | Route the XTI host leg through `QM_TM_OpenPosition`; retain EURCAD as the off-host basket leg | farm ops claim `721f3d6d-54cb-4d6b-963f-4ee64de2b71b` |
+| v3 | 2026-07-24 | Preload USD-account conversion history before EURCAD package entry | farm ops claim `4b4624c4-a32d-4542-ba89-72d04543b0ba` |
 

@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_265214_best-trading-systems-on-forexfactory.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_265214_best-trading-systems-on-forexfactory.pdf",
+      "source_pages": "1-20",
+      "source_ref": "whatfx et al., \"Best trading systems on forexfactory\" (ForexFactory thread 265214, ~2010-2011), https://www.forexfactory.com/thread/265214/best-trading-systems-on-forexfactory",
+      "strategy_name": "Meta thread - system recommendations (no rules)",
+      "concept": "A survey/opinion thread pointing to other systems by name/link with no mechanical rules of its own.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Pure meta-discussion: lists/links other threads (Nanningbob 4HR, The Dance/Choros, Vegas Tunnel, DIBS, THV, Igrok, mouteki, fozzy, SRDC 2, Philip Nel, Sonic R, 'daily 95 pips') and trading psychology chatter; no entry/exit/params stated for any strategy in this thread.",
+      "priority_hint": "LOW",
+      "notes": "Only quasi-rules present: Ronald Raygun coin-toss (heads long/tails short + discretionary manage = random entry, not a system) and a passing note that 'zaman's 2 lines' = 9pm close +/-30 pips (signal-line construction, no exit). The named referenced systems would each need to be harvested from their own source threads, not this one."
+    }
+  ],
+  "notes": ["meta_thread_pointer_only"]
+}

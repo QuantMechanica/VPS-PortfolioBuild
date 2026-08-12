@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_10834_WS30_ALT002_RUNTIME_MATERIALIZATION_INVALID_CLOSURE",
+  "status": "INVALID_RUNTIME_MATERIALIZATION_CLOSED_BEFORE_PRE_ATTEMPT_UNCONSUMED",
+  "created_utc": "2026-07-21T10:12:22.4471032Z",
+  "analysis_id": "QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001",
+  "native_attempt": {
+    "attempt_number": 2,
+    "claim_sequence": 2,
+    "run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002",
+    "claim_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\claims\\QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001_DEV2_NATIVE_ATTEMPT_002.json",
+    "pre_receipt_created": false,
+    "authorization_created": false,
+    "claim_created": false,
+    "launch_job_created": false,
+    "launch_state_created": false,
+    "native_process_started": false,
+    "attempt_consumed": false
+  },
+  "historical_contract": {
+    "path": "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/ws30_transport_infra_alternate002_contract_20260721.json",
+    "size": 7777,
+    "sha256": "8414d4d52bf8e3c31d08fc27189ce259cc156695be108052af0ffa55ab22a284"
+  },
+  "invalid_materialization": {
+    "runtime_worktree": "C:\\QM\\runtime_worktrees\\QM5_10834_WS30_ALT002",
+    "runtime_receipt": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runtime\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002_runtime_receipt.json",
+      "size": 13053,
+      "sha256": "5877c55922fae1a57e975709fef606662137e480ed251ec30ba4f6d5d1a5149c"
+    },
+    "runtime_head": "e39e54093e88fabdf5ee41d4f394715fe222269e",
+    "materialization_receipt_status": "PASS",
+    "materialization_created_utc": "2026-07-21T09:51:01.870458+00:00",
+    "repository_binding_path_count": 53,
+    "repository_binding_path_list_canonical_sha256": "1bc5d9e2fe51aa27926bae55e6fb888b3cde1a43a1df08c22e0f78f2b6b8758a",
+    "classification": "MECHANICALLY_SEALED_BUT_PRE_UNEXECUTABLE_CREDENTIAL_RUNTIME_BINDING",
+    "failure_stage": "PRE_MACHINE_CREDENTIAL_ROTATION_RECEIPT_VALIDATION",
+    "must_remain_immutable": true,
+    "must_never_be_resumed": true
+  },
+  "credential_rotation_evidence": {
+    "signed_receipt": {
+      "path": "C:\\ProgramData\\QM\\DEV2\\credential.machine-dpapi.rotation-receipt.json",
+      "size": 1624,
+      "sha256": "019b7f01fdce4d83db9fc51b7583fb0b729a6c662a6fead61dde01ede3022244"
+    },
+    "machine_credential_helper": {
+      "signed_origin_path": "C:\\QM\\repo\\framework\\scripts\\dev2_machine_credential.ps1",
+      "signed_sha256": "bd3077f5ff671d80a377a820e35cd233cdf8ad1b25d376d579da4714c323ad2c",
+      "main_origin_size": 23740,
+      "invalid_runtime_path": "C:\\QM\\runtime_worktrees\\QM5_10834_WS30_ALT002\\framework\\scripts\\dev2_machine_credential.ps1",
+      "invalid_runtime_size": 23740,
+      "invalid_runtime_sha256": "bd3077f5ff671d80a377a820e35cd233cdf8ad1b25d376d579da4714c323ad2c",
+      "bytes_match_but_signed_path_is_origin_only": true
+    },
+    "identity_probe_child": {
+      "signed_origin_path": "C:\\QM\\repo\\framework\\scripts\\invoke_dev2_identity_probe.ps1",
+      "signed_sha256": "fa14caeacfef311a30717e31e553d8c93b1eaa66a8495b63debfee5957f96f48",
+      "main_origin_size": 9886,
+      "invalid_runtime_path": "C:\\QM\\runtime_worktrees\\QM5_10834_WS30_ALT002\\framework\\scripts\\invoke_dev2_identity_probe.ps1",
+      "invalid_runtime_size": 10102,
+      "invalid_runtime_sha256": "140c361e7f0f40d28ef8a6a8edf103133b3cb0fe30496fc9dad6a64dc59d69ad",
+      "missing_from_53_path_overlay_and_byte_ledger": true,
+      "runtime_bytes_do_not_match_signed_hash": true
+    }
+  },
+  "outcome_fence": {
+    "pre_receipt_opened": false,
+    "native_reports_opened": false,
+    "controller_logs_opened": false,
+    "deal_rows_parsed": false,
+    "market_values_parsed": false,
+    "strategy_outcomes_read": false,
+    "strategy_merit_adjudicated": false
+  },
+  "disposition": {
+    "old_runtime_and_receipt_are_historical_evidence_only": true,
+    "old_runtime_and_receipt_must_not_be_deleted_or_modified": true,
+    "superseding_scope_is_runtime_materialization_only": true,
+    "native_attempt_number_remains_2": true,
+    "native_attempt_budget_unchanged": true,
+    "native_control_namespace_unchanged": true,
+    "strategy_build_data_parameters_windows_costs_and_gates_unchanged": true,
+    "superseding_contract_path": "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/ws30_transport_infra_alternate002_runtime_fix001_contract_20260721.json"
+  }
+}

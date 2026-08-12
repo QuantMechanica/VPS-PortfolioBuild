@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_20196_EURUSD_USDJPY_COINTEGRATION_D1",
+  "host_symbol": "EURUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "USDJPY.DWX"
+  ],
+  "traded_symbols": [
+    "EURUSD.DWX",
+    "USDJPY.DWX"
+  ],
+  "notes": [
+    "Dedicated two-leg EURUSD/USDJPY D1 cointegration sleeve selected after QM5_20195 as rank 13 in the fixed sign-aware 66-pair scan. QM5_1156 is an adaptive M30 umbrella, not this fixed-beta logical package.",
+    "DEV Sharpe 0.662 and OOS Sharpe 0.686 are weak/adverse frontier evidence; Q02 is a one-shot retirement gate with no refit. The fixed beta is negative, so long spread buys both legs and short spread sells both legs. Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget."
+  ]
+}

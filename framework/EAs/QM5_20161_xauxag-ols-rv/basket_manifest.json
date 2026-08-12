@@ -1,0 +1,14 @@
+{
+  "logical_symbol": "QM5_20161_XAUUSD_XAGUSD_OLS_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "One Q02 logical work item evaluates the simultaneous gold/silver spread. Standalone leg tests are invalid because the edge is the package."
+  ]
+}

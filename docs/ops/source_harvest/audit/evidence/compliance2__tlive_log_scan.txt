@@ -1,0 +1,127 @@
+FILES_SCANNED: ['20260722.log|Logs', '20260720.log|logs', '20260721.log|logs', '20260722.log|logs', '20260723.log|logs', '20260724.log|logs']
+
+######################################################################
+FILE: C:\QM\mt5\T_Live\MT5_Base\MQL5\Logs\20260722.log  enc=utf-16  hits=4
+L1 [L:QM5_11165_weiss-rsi-ma]: JQ	2	07:24:11.355	QM5_11165_weiss-rsi-ma (AUDCAD,H1)	Abnormal termination
+L2 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: HE	2	07:24:11.683	QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,D1)	Abnormal termination
+L3 [L:QM5_11165_weiss-rsi-ma]: RM	2	07:24:11.836	QM5_11165_weiss-rsi-ma (EURUSD,H1)	Abnormal termination
+L4 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: LK	2	07:24:12.011	QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,D1)	Abnormal termination
+
+######################################################################
+FILE: C:\QM\mt5\T_Live\MT5_Base\logs\20260720.log  enc=utf-16  hits=10
+L41 [L:QM5_11165_weiss-rsi-ma]: GN	0	12:31:44.832	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+L43 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: CH	0	12:31:44.971	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+L44 [L:QM5_11165_weiss-rsi-ma]: ED	0	12:31:45.048	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+L45 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: IF	0	12:31:45.062	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+L55 [L:QM5_10513_mql5-ichimoku]: RK	0	12:31:45.346	Experts	expert QM5_10513_mql5-ichimoku (XAUUSD,Daily) loaded successfully
+L58 [L:QM5_12567_cum-rsi2-commodity]: CE	0	12:31:45.378	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+L59 [L:QM5_12989_grimes-nested-pb-v2]: CP	0	12:31:45.417	Experts	expert QM5_12989_grimes-nested-pb-v2 (XAUUSD,H4) loaded successfully
+L61 [L:QM5_12567_cum-rsi2-commodity]: CI	0	12:31:45.478	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+L64 [L:QM5_13213_balke-gmt3-range-breakout]: EM	0	12:31:45.870	Experts	expert QM5_13213_balke-gmt3-range-breakout (USDJPY,H1) loaded successfully
+L67 [L:QM5_1567_demark-td-reverse-sequential-h4]: ED	0	12:31:45.943	Experts	expert QM5_1567_demark-td-reverse-sequential-h4 (EURUSD,H4) loaded successfully
+
+######################################################################
+FILE: C:\QM\mt5\T_Live\MT5_Base\logs\20260721.log  enc=utf-16  hits=30
+L64 [L:QM5_11165_weiss-rsi-ma]: RF	0	19:15:28.182	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+L66 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: GG	0	19:15:28.354	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+L67 [L:QM5_11165_weiss-rsi-ma]: RO	0	19:15:28.414	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+L68 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: CO	0	19:15:28.457	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+L82 [L:QM5_10513_mql5-ichimoku]: FQ	0	19:15:29.390	Experts	expert QM5_10513_mql5-ichimoku (XAUUSD,Daily) loaded successfully
+L83 [L:QM5_12567_cum-rsi2-commodity]: EN	0	19:15:29.414	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+L84 [L:QM5_12989_grimes-nested-pb-v2]: QK	0	19:15:29.443	Experts	expert QM5_12989_grimes-nested-pb-v2 (XAUUSD,H4) loaded successfully
+L86 [L:QM5_12567_cum-rsi2-commodity]: JS	0	19:15:29.517	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+L89 [L:QM5_13213_balke-gmt3-range-breakout]: NF	0	19:15:29.768	Experts	expert QM5_13213_balke-gmt3-range-breakout (USDJPY,H1) loaded successfully
+L90 [L:QM5_1567_demark-td-reverse-sequential-h4]: JM	0	19:15:29.792	Experts	expert QM5_1567_demark-td-reverse-sequential-h4 (EURUSD,H4) loaded successfully
+L95 [L:QM5_11165_weiss-rsi-ma]: CL	0	19:16:58.732	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+L97 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: GI	0	19:16:58.808	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+L98 [L:QM5_11165_weiss-rsi-ma]: MJ	0	19:16:58.824	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+L99 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: HP	0	19:16:58.836	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+L109 [L:QM5_10513_mql5-ichimoku]: DH	0	19:16:59.206	Experts	expert QM5_10513_mql5-ichimoku (XAUUSD,Daily) loaded successfully
+L110 [L:QM5_12567_cum-rsi2-commodity]: QG	0	19:16:59.221	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+L111 [L:QM5_12989_grimes-nested-pb-v2]: GR	0	19:16:59.234	Experts	expert QM5_12989_grimes-nested-pb-v2 (XAUUSD,H4) loaded successfully
+L113 [L:QM5_12567_cum-rsi2-commodity]: IK	0	19:16:59.259	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+L116 [L:QM5_13213_balke-gmt3-range-breakout]: KO	0	19:16:59.327	Experts	expert QM5_13213_balke-gmt3-range-breakout (USDJPY,H1) loaded successfully
+L119 [L:QM5_1567_demark-td-reverse-sequential-h4]: LF	0	19:16:59.341	Experts	expert QM5_1567_demark-td-reverse-sequential-h4 (EURUSD,H4) loaded successfully
+L142 [L:QM5_11165_weiss-rsi-ma]: HI	0	20:25:59.594	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+L146 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: KL	0	20:26:00.440	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+L149 [L:QM5_11165_weiss-rsi-ma]: ID	0	20:26:00.530	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+L150 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: RF	0	20:26:00.614	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+L160 [L:QM5_10513_mql5-ichimoku]: MJ	0	20:26:01.964	Experts	expert QM5_10513_mql5-ichimoku (XAUUSD,Daily) loaded successfully
+L161 [L:QM5_12567_cum-rsi2-commodity]: PE	0	20:26:01.978	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+L162 [L:QM5_12989_grimes-nested-pb-v2]: PP	0	20:26:01.998	Experts	expert QM5_12989_grimes-nested-pb-v2 (XAUUSD,H4) loaded successfully
+L164 [L:QM5_12567_cum-rsi2-commodity]: KI	0	20:26:02.034	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+L167 [L:QM5_13213_balke-gmt3-range-breakout]: CM	0	20:26:02.108	Experts	expert QM5_13213_balke-gmt3-range-breakout (USDJPY,H1) loaded successfully
+L168 [L:QM5_1567_demark-td-reverse-sequential-h4]: MP	0	20:26:02.129	Experts	expert QM5_1567_demark-td-reverse-sequential-h4 (EURUSD,H4) loaded successfully
+
+######################################################################
+FILE: C:\QM\mt5\T_Live\MT5_Base\logs\20260722.log  enc=utf-16  hits=42
+L8 [L:QM5_11165_weiss-rsi-ma]: DR	0	06:17:31.232	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+L10 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: JK	0	06:17:31.430	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+L11 [L:QM5_11165_weiss-rsi-ma]: DK	0	06:17:31.494	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+L12 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: PS	0	06:17:31.595	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+L26 [L:QM5_10513_mql5-ichimoku]: OE	0	06:17:32.230	Experts	expert QM5_10513_mql5-ichimoku (XAUUSD,Daily) loaded successfully
+L27 [L:QM5_12567_cum-rsi2-commodity]: GR	0	06:17:32.258	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+L28 [L:QM5_12989_grimes-nested-pb-v2]: FO	0	06:17:32.284	Experts	expert QM5_12989_grimes-nested-pb-v2 (XAUUSD,H4) loaded successfully
+L31 [L:QM5_12567_cum-rsi2-commodity]: EN	0	06:17:32.390	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+L34 [L:QM5_13213_balke-gmt3-range-breakout]: GP	0	06:17:32.587	Experts	expert QM5_13213_balke-gmt3-range-breakout (USDJPY,H1) loaded successfully
+L35 [L:QM5_1567_demark-td-reverse-sequential-h4]: KS	0	06:17:32.618	Experts	expert QM5_1567_demark-td-reverse-sequential-h4 (EURUSD,H4) loaded successfully
+L55 [L:QM5_11165_weiss-rsi-ma]: RS	0	07:24:11.493	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) removed
+L56 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: IS	0	07:24:11.777	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) removed
+L57 [L:QM5_11165_weiss-rsi-ma]: II	0	07:24:11.917	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) removed
+L58 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: IL	0	07:24:12.073	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) removed
+L60 [L:QM5_12567_cum-rsi2-commodity]: RD	0	07:24:12.184	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) removed
+L67 [L:QM5_10513_mql5-ichimoku]: PO	0	07:24:12.247	Experts	expert QM5_10513_mql5-ichimoku (XAUUSD,Daily) removed
+L68 [L:QM5_12567_cum-rsi2-commodity]: OS	0	07:24:12.250	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) removed
+L69 [L:QM5_12989_grimes-nested-pb-v2]: QH	0	07:24:12.251	Experts	expert QM5_12989_grimes-nested-pb-v2 (XAUUSD,H4) removed
+L73 [L:QM5_13213_balke-gmt3-range-breakout]: RQ	0	07:24:12.279	Experts	expert QM5_13213_balke-gmt3-range-breakout (USDJPY,H1) removed
+L74 [L:QM5_1567_demark-td-reverse-sequential-h4]: QJ	0	07:24:12.279	Experts	expert QM5_1567_demark-td-reverse-sequential-h4 (EURUSD,H4) removed
+L82 [L:QM5_11165_weiss-rsi-ma]: CG	0	07:25:59.464	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+L84 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: DG	0	07:25:59.746	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+L85 [L:QM5_11165_weiss-rsi-ma]: CO	0	07:25:59.950	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+L88 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: GO	0	07:26:00.232	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+L100 [L:QM5_10513_mql5-ichimoku]: CQ	0	07:26:04.016	Experts	expert QM5_10513_mql5-ichimoku (XAUUSD,Daily) loaded successfully
+L101 [L:QM5_12567_cum-rsi2-commodity]: HI	0	07:26:04.224	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+L102 [L:QM5_12989_grimes-nested-pb-v2]: PD	0	07:26:04.376	Experts	expert QM5_12989_grimes-nested-pb-v2 (XAUUSD,H4) loaded successfully
+L104 [L:QM5_12567_cum-rsi2-commodity]: LL	0	07:26:04.803	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+L105 [L:QM5_10919_grimes-overshoot]: MK	0	07:26:05.028	Experts	expert QM5_10919_grimes-overshoot (XTIUSD,H4) loaded successfully
+L108 [L:QM5_13213_balke-gmt3-range-breakout]: DM	0	07:26:05.969	Experts	expert QM5_13213_balke-gmt3-range-breakout (USDJPY,H1) loaded successfully
+L109 [L:QM5_1567_demark-td-reverse-sequential-h4]: CP	0	07:26:06.270	Experts	expert QM5_1567_demark-td-reverse-sequential-h4 (EURUSD,H4) loaded successfully
+L123 [L:QM5_11165_weiss-rsi-ma]: OI	0	13:25:21.990	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+L125 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: PM	0	13:25:22.101	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+L126 [L:QM5_11165_weiss-rsi-ma]: IQ	0	13:25:22.120	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+L127 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: ME	0	13:25:22.142	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+L139 [L:QM5_10513_mql5-ichimoku]: LL	0	13:25:22.545	Experts	expert QM5_10513_mql5-ichimoku (XAUUSD,Daily) loaded successfully
+L140 [L:QM5_12567_cum-rsi2-commodity]: OK	0	13:25:22.564	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+L141 [L:QM5_12989_grimes-nested-pb-v2]: QF	0	13:25:22.579	Experts	expert QM5_12989_grimes-nested-pb-v2 (XAUUSD,H4) loaded successfully
+L143 [L:QM5_12567_cum-rsi2-commodity]: NO	0	13:25:22.641	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+L144 [L:QM5_10919_grimes-overshoot]: HI	0	13:25:22.691	Experts	expert QM5_10919_grimes-overshoot (XTIUSD,H4) loaded successfully
+L149 [L:QM5_13213_balke-gmt3-range-breakout]: PK	0	13:25:22.854	Experts	expert QM5_13213_balke-gmt3-range-breakout (USDJPY,H1) loaded successfully
+L150 [L:QM5_1567_demark-td-reverse-sequential-h4]: FJ	0	13:25:22.886	Experts	expert QM5_1567_demark-td-reverse-sequential-h4 (EURUSD,H4) loaded successfully
+
+######################################################################
+FILE: C:\QM\mt5\T_Live\MT5_Base\logs\20260723.log  enc=utf-16  hits=11
+L24 [L:QM5_11165_weiss-rsi-ma]: MM	0	05:51:57.300	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+L26 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: QI	0	05:51:57.467	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+L27 [L:QM5_11165_weiss-rsi-ma]: FE	0	05:51:57.514	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+L30 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: OF	0	05:51:57.539	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+L42 [L:QM5_10513_mql5-ichimoku]: PF	0	05:51:58.225	Experts	expert QM5_10513_mql5-ichimoku (XAUUSD,Daily) loaded successfully
+L43 [L:QM5_12567_cum-rsi2-commodity]: KP	0	05:51:58.240	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+L44 [L:QM5_12989_grimes-nested-pb-v2]: LL	0	05:51:58.256	Experts	expert QM5_12989_grimes-nested-pb-v2 (XAUUSD,H4) loaded successfully
+L46 [L:QM5_12567_cum-rsi2-commodity]: LE	0	05:51:58.286	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+L47 [L:QM5_10919_grimes-overshoot]: OR	0	05:51:58.323	Experts	expert QM5_10919_grimes-overshoot (XTIUSD,H4) loaded successfully
+L50 [L:QM5_13213_balke-gmt3-range-breakout]: MD	0	05:51:58.416	Experts	expert QM5_13213_balke-gmt3-range-breakout (USDJPY,H1) loaded successfully
+L51 [L:QM5_1567_demark-td-reverse-sequential-h4]: IO	0	05:51:58.431	Experts	expert QM5_1567_demark-td-reverse-sequential-h4 (EURUSD,H4) loaded successfully
+
+######################################################################
+FILE: C:\QM\mt5\T_Live\MT5_Base\logs\20260724.log  enc=utf-16  hits=11
+L23 [L:QM5_11165_weiss-rsi-ma]: RG	0	05:17:01.726	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+L25 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: DG	0	05:17:01.807	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+L26 [L:QM5_11165_weiss-rsi-ma]: PO	0	05:17:01.838	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+L27 [L:QM5_11421_ohlc-daily-squeeze-reversal-d1]: HO	0	05:17:01.856	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+L37 [L:QM5_10513_mql5-ichimoku]: PE	0	05:17:02.048	Experts	expert QM5_10513_mql5-ichimoku (XAUUSD,Daily) loaded successfully
+L38 [L:QM5_12567_cum-rsi2-commodity]: OM	0	05:17:02.083	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+L39 [L:QM5_12989_grimes-nested-pb-v2]: KH	0	05:17:02.144	Experts	expert QM5_12989_grimes-nested-pb-v2 (XAUUSD,H4) loaded successfully
+L41 [L:QM5_12567_cum-rsi2-commodity]: JP	0	05:17:02.175	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+L42 [L:QM5_10919_grimes-overshoot]: OO	0	05:17:02.193	Experts	expert QM5_10919_grimes-overshoot (XTIUSD,H4) loaded successfully
+L47 [L:QM5_13213_balke-gmt3-range-breakout]: CF	0	05:17:02.239	Experts	expert QM5_13213_balke-gmt3-range-breakout (USDJPY,H1) loaded successfully
+L48 [L:QM5_1567_demark-td-reverse-sequential-h4]: ML	0	05:17:02.254	Experts	expert QM5_1567_demark-td-reverse-sequential-h4 (EURUSD,H4) loaded successfully

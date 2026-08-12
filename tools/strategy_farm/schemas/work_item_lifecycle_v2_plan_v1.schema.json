@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.local/schemas/work_item_lifecycle_v2_plan_v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "mode", "database_sha256", "runtime_action",
+    "owner_approval_required_before_apply", "apply_implemented",
+    "overlay_contract", "typed_state_counts", "rows", "plan_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "work-item-lifecycle-v2-plan/v1"},
+    "mode": {"const": "READ_ONLY_DRY_RUN"},
+    "database_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "runtime_action": {"const": "NONE"},
+    "owner_approval_required_before_apply": {"const": true},
+    "apply_implemented": {"const": false},
+    "overlay_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["append_only", "historical_rows_rewritten", "second_apply_expected_changes"],
+      "properties": {
+        "append_only": {"const": true},
+        "historical_rows_rewritten": {"const": false},
+        "second_apply_expected_changes": {"const": 0}
+      }
+    },
+    "typed_state_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ACTIVE", "BLOCKED", "FAILED", "PENDING", "QUARANTINED", "SUCCEEDED", "WAITING_INPUT"],
+      "properties": {
+        "ACTIVE": {"type": "integer", "minimum": 0},
+        "BLOCKED": {"type": "integer", "minimum": 0},
+        "FAILED": {"type": "integer", "minimum": 0},
+        "PENDING": {"type": "integer", "minimum": 0},
+        "QUARANTINED": {"type": "integer", "minimum": 0},
+        "SUCCEEDED": {"type": "integer", "minimum": 0},
+        "WAITING_INPUT": {"type": "integer", "minimum": 0}
+      }
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["work_item_id", "legacy_status", "legacy_verdict", "typed_state", "terminal", "reason", "source_updated_at", "idempotency_key"],
+        "properties": {
+          "work_item_id": {"type": "string", "minLength": 1},
+          "legacy_status": {"type": "string", "minLength": 1},
+          "legacy_verdict": {"type": ["string", "null"]},
+          "typed_state": {"enum": ["PENDING", "ACTIVE", "WAITING_INPUT", "BLOCKED", "QUARANTINED", "SUCCEEDED", "FAILED"]},
+          "terminal": {"type": "boolean"},
+          "reason": {"type": "string", "minLength": 1},
+          "source_updated_at": {"type": ["string", "null"]},
+          "idempotency_key": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

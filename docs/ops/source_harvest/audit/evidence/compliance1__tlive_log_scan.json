@@ -1,0 +1,2483 @@
+{
+ "terminal_logs": {
+  "20260424.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260424.log",
+   "n_lines": 47,
+   "hits": [],
+   "n_hits": 0
+  },
+  "20260628.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260628.log",
+   "n_lines": 54,
+   "hits": [
+    {
+     "line": 14,
+     "text": "NR\t0\t11:12:43.306\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 20,
+     "text": "DJ\t0\t11:12:44.238\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 22,
+     "text": "KI\t0\t11:12:44.410\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 23,
+     "text": "RJ\t0\t11:12:44.480\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 24,
+     "text": "NG\t0\t11:12:44.669\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,H1) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 25,
+     "text": "CO\t0\t11:13:17.377\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 26,
+     "text": "RO\t0\t11:13:49.271\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 31,
+     "text": "NI\t0\t15:30:13.868\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 35,
+     "text": "HI\t0\t15:30:14.176\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 38,
+     "text": "JD\t0\t15:30:14.435\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 40,
+     "text": "KR\t0\t15:30:14.594\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 41,
+     "text": "DM\t0\t15:30:14.654\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 42,
+     "text": "QN\t0\t15:30:14.972\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 43,
+     "text": "EH\t0\t15:30:15.022\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,H1) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    }
+   ],
+   "n_hits": 14
+  },
+  "20260629.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260629.log",
+   "n_lines": 28,
+   "hits": [],
+   "n_hits": 0
+  },
+  "20260630.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260630.log",
+   "n_lines": 33,
+   "hits": [],
+   "n_hits": 0
+  },
+  "20260701.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260701.log",
+   "n_lines": 31,
+   "hits": [
+    {
+     "line": 8,
+     "text": "KK\t0\t08:45:05.743\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 12,
+     "text": "RK\t0\t08:45:05.989\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 15,
+     "text": "LF\t0\t08:45:06.159\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 17,
+     "text": "DM\t0\t08:45:06.275\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 18,
+     "text": "LN\t0\t08:45:06.327\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 19,
+     "text": "PH\t0\t08:45:06.385\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 20,
+     "text": "NG\t0\t08:45:06.436\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,H1) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    }
+   ],
+   "n_hits": 7
+  },
+  "20260702.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260702.log",
+   "n_lines": 51,
+   "hits": [
+    {
+     "line": 26,
+     "text": "NK\t0\t14:08:47.238\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 30,
+     "text": "JK\t0\t14:08:47.479\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 33,
+     "text": "CF\t0\t14:08:47.629\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 35,
+     "text": "NL\t0\t14:08:47.726\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 38,
+     "text": "EN\t0\t14:08:47.778\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 39,
+     "text": "GK\t0\t14:08:47.831\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 40,
+     "text": "KE\t0\t14:08:47.887\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    }
+   ],
+   "n_hits": 7
+  },
+  "20260703.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260703.log",
+   "n_lines": 13,
+   "hits": [],
+   "n_hits": 0
+  },
+  "20260704.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260704.log",
+   "n_lines": 8,
+   "hits": [],
+   "n_hits": 0
+  },
+  "20260705.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260705.log",
+   "n_lines": 100,
+   "hits": [
+    {
+     "line": 50,
+     "text": "QO\t0\t15:20:16.779\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 54,
+     "text": "FG\t0\t15:20:17.093\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 57,
+     "text": "LR\t0\t15:20:17.220\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 59,
+     "text": "QQ\t0\t15:20:17.284\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 60,
+     "text": "OR\t0\t15:20:17.318\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 61,
+     "text": "MO\t0\t15:20:17.484\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 62,
+     "text": "KI\t0\t15:20:17.496\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 70,
+     "text": "LN\t0\t15:27:05.881\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 74,
+     "text": "CF\t0\t15:27:06.015\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 77,
+     "text": "EE\t0\t15:27:06.060\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 79,
+     "text": "PQ\t0\t15:27:06.095\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 80,
+     "text": "OM\t0\t15:27:06.113\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 81,
+     "text": "LO\t0\t15:27:06.192\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 82,
+     "text": "PJ\t0\t15:27:06.205\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    }
+   ],
+   "n_hits": 14
+  },
+  "20260706.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260706.log",
+   "n_lines": 17,
+   "hits": [],
+   "n_hits": 0
+  },
+  "20260707.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260707.log",
+   "n_lines": 70,
+   "hits": [
+    {
+     "line": 22,
+     "text": "NQ\t0\t19:10:06.039\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 26,
+     "text": "QQ\t0\t19:10:06.220\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 28,
+     "text": "GH\t0\t19:10:06.297\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 30,
+     "text": "IN\t0\t19:10:06.391\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 31,
+     "text": "LI\t0\t19:10:06.435\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 32,
+     "text": "HJ\t0\t19:10:06.479\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 33,
+     "text": "CF\t0\t19:10:06.608\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 52,
+     "text": "ER\t0\t23:01:41.304\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 56,
+     "text": "PR\t0\t23:01:41.564\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 58,
+     "text": "JM\t0\t23:01:41.623\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 60,
+     "text": "II\t0\t23:01:41.667\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 61,
+     "text": "GE\t0\t23:01:41.694\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 62,
+     "text": "EG\t0\t23:01:41.717\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 63,
+     "text": "IR\t0\t23:01:41.738\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    }
+   ],
+   "n_hits": 14
+  },
+  "20260708.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260708.log",
+   "n_lines": 68,
+   "hits": [
+    {
+     "line": 11,
+     "text": "QQ\t0\t07:02:42.636\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 19,
+     "text": "RR\t0\t07:02:43.936\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 21,
+     "text": "CM\t0\t07:02:44.057\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 23,
+     "text": "II\t0\t07:02:44.111\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 24,
+     "text": "CJ\t0\t07:02:44.133\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 25,
+     "text": "EG\t0\t07:02:44.153\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 26,
+     "text": "MQ\t0\t07:02:44.178\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 48,
+     "text": "DL\t0\t19:01:42.017\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 56,
+     "text": "QI\t0\t19:01:42.767\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 58,
+     "text": "FQ\t0\t19:01:42.818\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 60,
+     "text": "HF\t0\t19:01:42.886\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 61,
+     "text": "JQ\t0\t19:01:42.912\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 62,
+     "text": "OS\t0\t19:01:42.940\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 63,
+     "text": "IN\t0\t19:01:42.961\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    }
+   ],
+   "n_hits": 14
+  },
+  "20260709.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260709.log",
+   "n_lines": 48,
+   "hits": [],
+   "n_hits": 0
+  },
+  "20260710.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260710.log",
+   "n_lines": 26,
+   "hits": [],
+   "n_hits": 0
+  },
+  "20260711.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260711.log",
+   "n_lines": 8,
+   "hits": [],
+   "n_hits": 0
+  },
+  "20260712.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260712.log",
+   "n_lines": 51,
+   "hits": [],
+   "n_hits": 0
+  },
+  "20260713.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260713.log",
+   "n_lines": 92,
+   "hits": [
+    {
+     "line": 8,
+     "text": "FE\t0\t07:36:37.025\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) removed",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 15,
+     "text": "EM\t0\t07:36:39.788\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) removed",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 17,
+     "text": "NQ\t0\t07:36:40.574\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) removed",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 19,
+     "text": "HH\t0\t07:36:41.268\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) removed",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 20,
+     "text": "IM\t0\t07:36:41.616\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) removed",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 21,
+     "text": "LQ\t0\t07:36:41.983\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) removed",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 22,
+     "text": "EE\t0\t07:36:42.322\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) removed",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 25,
+     "text": "HM\t0\t08:26:21.101\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 27,
+     "text": "NE\t0\t08:27:31.785\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 31,
+     "text": "MF\t0\t08:29:23.225\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 32,
+     "text": "CO\t0\t08:29:44.641\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 33,
+     "text": "KM\t0\t08:31:00.424\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 35,
+     "text": "MJ\t0\t08:31:55.504\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 37,
+     "text": "FI\t0\t08:32:50.590\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 41,
+     "text": "QK\t0\t08:35:04.958\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 43,
+     "text": "PN\t0\t08:35:52.611\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 44,
+     "text": "IN\t0\t08:36:18.533\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 58,
+     "text": "MG\t0\t22:46:46.457\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 60,
+     "text": "LO\t0\t22:46:46.489\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 64,
+     "text": "LP\t0\t22:46:46.594\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 65,
+     "text": "LF\t0\t22:46:46.612\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 66,
+     "text": "QG\t0\t22:46:46.626\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 68,
+     "text": "ED\t0\t22:46:46.654\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 72,
+     "text": "JR\t0\t22:46:46.686\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 78,
+     "text": "MO\t0\t22:46:47.160\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 80,
+     "text": "DI\t0\t22:46:47.240\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 81,
+     "text": "GS\t0\t22:46:47.394\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    }
+   ],
+   "n_hits": 27
+  },
+  "20260714.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260714.log",
+   "n_lines": 14,
+   "hits": [],
+   "n_hits": 0
+  },
+  "20260715.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260715.log",
+   "n_lines": 17,
+   "hits": [],
+   "n_hits": 0
+  },
+  "20260716.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260716.log",
+   "n_lines": 26,
+   "hits": [],
+   "n_hits": 0
+  },
+  "20260717.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260717.log",
+   "n_lines": 19,
+   "hits": [],
+   "n_hits": 0
+  },
+  "20260718.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260718.log",
+   "n_lines": 20,
+   "hits": [],
+   "n_hits": 0
+  },
+  "20260719.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260719.log",
+   "n_lines": 223,
+   "hits": [
+    {
+     "line": 8,
+     "text": "KS\t0\t04:10:05.662\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 10,
+     "text": "QK\t0\t04:10:05.752\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 16,
+     "text": "NE\t0\t04:10:05.880\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 17,
+     "text": "KJ\t0\t04:10:05.912\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 18,
+     "text": "GP\t0\t04:10:06.005\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 22,
+     "text": "PM\t0\t04:10:06.090\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 24,
+     "text": "OI\t0\t04:10:06.170\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 28,
+     "text": "LK\t0\t04:10:06.343\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 30,
+     "text": "RM\t0\t04:10:06.459\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 31,
+     "text": "GO\t0\t04:10:06.497\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 102,
+     "text": "CL\t0\t15:33:53.897\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) removed",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 107,
+     "text": "KM\t0\t15:33:58.371\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) removed",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 108,
+     "text": "KP\t0\t15:33:58.457\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) removed",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 110,
+     "text": "JK\t0\t15:33:58.470\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) removed",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 111,
+     "text": "HP\t0\t15:33:58.479\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) removed",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 114,
+     "text": "OS\t0\t15:33:58.489\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) removed",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 116,
+     "text": "HQ\t0\t15:33:58.500\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) removed",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 117,
+     "text": "KM\t0\t15:33:58.504\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) removed",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 120,
+     "text": "ME\t0\t15:33:58.513\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) removed",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 121,
+     "text": "ND\t0\t15:33:58.513\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) removed",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 132,
+     "text": "HK\t0\t15:34:02.091\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 134,
+     "text": "IS\t0\t15:34:02.139\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 138,
+     "text": "EL\t0\t15:34:02.244\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 139,
+     "text": "MR\t0\t15:34:02.272\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 140,
+     "text": "RK\t0\t15:34:02.299\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 141,
+     "text": "CJ\t0\t15:34:02.330\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 142,
+     "text": "IL\t0\t15:34:02.367\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 145,
+     "text": "HQ\t0\t15:34:02.471\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 147,
+     "text": "LG\t0\t15:34:02.532\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 148,
+     "text": "FD\t0\t15:34:02.564\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 160,
+     "text": "CE\t0\t15:50:27.208\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) removed",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 162,
+     "text": "IH\t0\t15:50:27.272\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) removed",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 163,
+     "text": "PL\t0\t15:50:27.282\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) removed",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 164,
+     "text": "DQ\t0\t15:50:27.282\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) removed",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 165,
+     "text": "MF\t0\t15:50:27.282\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) removed",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 167,
+     "text": "PM\t0\t15:50:27.282\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) removed",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 169,
+     "text": "MD\t0\t15:50:27.291\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) removed",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 170,
+     "text": "HP\t0\t15:50:27.302\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) removed",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 180,
+     "text": "FG\t0\t15:50:27.328\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) removed",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 181,
+     "text": "IL\t0\t15:50:27.329\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) removed",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 191,
+     "text": "NH\t0\t15:50:30.443\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 193,
+     "text": "PF\t0\t15:50:30.634\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 197,
+     "text": "RK\t0\t15:50:30.835\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 198,
+     "text": "CM\t0\t15:50:30.888\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 199,
+     "text": "GN\t0\t15:50:30.936\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 202,
+     "text": "KF\t0\t15:50:30.980\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 203,
+     "text": "MP\t0\t15:50:31.024\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 208,
+     "text": "EQ\t0\t15:50:31.166\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 210,
+     "text": "CP\t0\t15:50:31.274\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 211,
+     "text": "CD\t0\t15:50:31.325\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    }
+   ],
+   "n_hits": 50
+  },
+  "20260720.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260720.log",
+   "n_lines": 102,
+   "hits": [
+    {
+     "line": 43,
+     "text": "CH\t0\t12:31:44.971\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 45,
+     "text": "IF\t0\t12:31:45.062\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 49,
+     "text": "CK\t0\t12:31:45.197\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 50,
+     "text": "LM\t0\t12:31:45.214\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 51,
+     "text": "LN\t0\t12:31:45.227\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 52,
+     "text": "OI\t0\t12:31:45.245\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 53,
+     "text": "FQ\t0\t12:31:45.264\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 58,
+     "text": "CE\t0\t12:31:45.378\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 60,
+     "text": "ES\t0\t12:31:45.444\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 61,
+     "text": "CI\t0\t12:31:45.478\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    }
+   ],
+   "n_hits": 10
+  },
+  "20260721.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260721.log",
+   "n_lines": 182,
+   "hits": [
+    {
+     "line": 66,
+     "text": "GG\t0\t19:15:28.354\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 68,
+     "text": "CO\t0\t19:15:28.457\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 74,
+     "text": "KP\t0\t19:15:29.019\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 75,
+     "text": "IF\t0\t19:15:29.135\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 76,
+     "text": "JD\t0\t19:15:29.170\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 79,
+     "text": "KS\t0\t19:15:29.202\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 80,
+     "text": "JK\t0\t19:15:29.232\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 83,
+     "text": "EN\t0\t19:15:29.414\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 85,
+     "text": "PH\t0\t19:15:29.488\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 86,
+     "text": "JS\t0\t19:15:29.517\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 97,
+     "text": "GI\t0\t19:16:58.808\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 99,
+     "text": "HP\t0\t19:16:58.836\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 103,
+     "text": "KM\t0\t19:16:58.937\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 104,
+     "text": "NS\t0\t19:16:58.953\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 105,
+     "text": "KI\t0\t19:16:58.972\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 106,
+     "text": "FK\t0\t19:16:59.043\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 107,
+     "text": "FR\t0\t19:16:59.083\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 110,
+     "text": "QG\t0\t19:16:59.221\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 112,
+     "text": "HQ\t0\t19:16:59.246\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 113,
+     "text": "IK\t0\t19:16:59.259\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 146,
+     "text": "KL\t0\t20:26:00.440\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 150,
+     "text": "RF\t0\t20:26:00.614\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 154,
+     "text": "JK\t0\t20:26:01.645\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 155,
+     "text": "MM\t0\t20:26:01.685\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 156,
+     "text": "GO\t0\t20:26:01.720\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 157,
+     "text": "DI\t0\t20:26:01.771\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 158,
+     "text": "GP\t0\t20:26:01.796\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 161,
+     "text": "PE\t0\t20:26:01.978\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 163,
+     "text": "NS\t0\t20:26:02.018\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 164,
+     "text": "KI\t0\t20:26:02.034\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    }
+   ],
+   "n_hits": 30
+  },
+  "20260722.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260722.log",
+   "n_lines": 173,
+   "hits": [
+    {
+     "line": 10,
+     "text": "JK\t0\t06:17:31.430\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 12,
+     "text": "PS\t0\t06:17:31.595\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 18,
+     "text": "FL\t0\t06:17:31.756\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 19,
+     "text": "PR\t0\t06:17:31.777\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 20,
+     "text": "MK\t0\t06:17:31.819\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 21,
+     "text": "LJ\t0\t06:17:31.871\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 22,
+     "text": "NS\t0\t06:17:32.012\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 27,
+     "text": "GR\t0\t06:17:32.258\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 29,
+     "text": "ED\t0\t06:17:32.308\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 31,
+     "text": "EN\t0\t06:17:32.390\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 52,
+     "text": "HE\t0\t07:24:06.943\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) removed",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 56,
+     "text": "IS\t0\t07:24:11.777\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) removed",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 58,
+     "text": "IL\t0\t07:24:12.073\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) removed",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 60,
+     "text": "RD\t0\t07:24:12.184\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) removed",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 61,
+     "text": "IJ\t0\t07:24:12.200\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) removed",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 62,
+     "text": "QL\t0\t07:24:12.209\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) removed",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 65,
+     "text": "RR\t0\t07:24:12.233\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) removed",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 68,
+     "text": "OS\t0\t07:24:12.250\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) removed",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 71,
+     "text": "MI\t0\t07:24:12.256\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) removed",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 72,
+     "text": "DE\t0\t07:24:12.270\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) removed",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 84,
+     "text": "DG\t0\t07:25:59.746\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 88,
+     "text": "GO\t0\t07:26:00.232\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 94,
+     "text": "CD\t0\t07:26:01.737\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 95,
+     "text": "OJ\t0\t07:26:02.230\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 96,
+     "text": "MS\t0\t07:26:02.698\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 97,
+     "text": "QR\t0\t07:26:03.069\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 98,
+     "text": "QD\t0\t07:26:03.469\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 101,
+     "text": "HI\t0\t07:26:04.224\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 103,
+     "text": "QO\t0\t07:26:04.603\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 104,
+     "text": "LL\t0\t07:26:04.803\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 125,
+     "text": "PM\t0\t13:25:22.101\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 127,
+     "text": "ME\t0\t13:25:22.142\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 131,
+     "text": "LF\t0\t13:25:22.238\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 132,
+     "text": "QH\t0\t13:25:22.267\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 133,
+     "text": "IM\t0\t13:25:22.290\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 134,
+     "text": "CD\t0\t13:25:22.330\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 135,
+     "text": "CE\t0\t13:25:22.419\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 140,
+     "text": "OK\t0\t13:25:22.564\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 142,
+     "text": "JM\t0\t13:25:22.611\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 143,
+     "text": "NO\t0\t13:25:22.641\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    }
+   ],
+   "n_hits": 40
+  },
+  "20260723.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260723.log",
+   "n_lines": 103,
+   "hits": [
+    {
+     "line": 26,
+     "text": "QI\t0\t05:51:57.467\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 30,
+     "text": "OF\t0\t05:51:57.539\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 36,
+     "text": "CO\t0\t05:51:58.018\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 37,
+     "text": "GQ\t0\t05:51:58.101\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 38,
+     "text": "QJ\t0\t05:51:58.129\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 39,
+     "text": "RM\t0\t05:51:58.161\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 40,
+     "text": "OL\t0\t05:51:58.180\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 43,
+     "text": "KP\t0\t05:51:58.240\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 45,
+     "text": "KG\t0\t05:51:58.271\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 46,
+     "text": "LE\t0\t05:51:58.286\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    }
+   ],
+   "n_hits": 10
+  },
+  "20260724.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260724.log",
+   "n_lines": 60,
+   "hits": [
+    {
+     "line": 25,
+     "text": "DG\t0\t05:17:01.807\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 27,
+     "text": "HO\t0\t05:17:01.856\tExperts\texpert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 31,
+     "text": "KP\t0\t05:17:01.946\tExperts\texpert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully",
+     "tok": [
+      "10911_grimes-complex",
+      "QM5_10911_grimes-complex-pb"
+     ],
+     "kw": []
+    },
+    {
+     "line": 32,
+     "text": "HF\t0\t05:17:01.964\tExperts\texpert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_13128_pre-fomc-drift-ndx",
+      "13128_pre-fomc-drift"
+     ],
+     "kw": []
+    },
+    {
+     "line": 33,
+     "text": "LG\t0\t05:17:01.979\tExperts\texpert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully",
+     "tok": [
+      "QM5_10440_mql5-ohlc-mtf",
+      "10440_mql5-ohlc"
+     ],
+     "kw": []
+    },
+    {
+     "line": 34,
+     "text": "IN\t0\t05:17:01.995\tExperts\texpert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully",
+     "tok": [
+      "11132_tm-cum-rsi2",
+      "QM5_11132_tm-cum-rsi2"
+     ],
+     "kw": []
+    },
+    {
+     "line": 35,
+     "text": "DH\t0\t05:17:02.014\tExperts\texpert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully",
+     "tok": [
+      "12969_usdjpy-gotobi",
+      "QM5_12969_usdjpy-gotobi-nakane-fix"
+     ],
+     "kw": []
+    },
+    {
+     "line": 38,
+     "text": "OM\t0\t05:17:02.083\tExperts\texpert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    },
+    {
+     "line": 40,
+     "text": "MK\t0\t05:17:02.160\tExperts\texpert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully",
+     "tok": [
+      "1556_aa-zak",
+      "QM5_1556_aa-zak-mom12"
+     ],
+     "kw": []
+    },
+    {
+     "line": 41,
+     "text": "JP\t0\t05:17:02.175\tExperts\texpert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully",
+     "tok": [
+      "12567_cum-rsi2-commodity",
+      "QM5_12567_cum-rsi2-commodity"
+     ],
+     "kw": []
+    }
+   ],
+   "n_hits": 10
+  }
+ },
+ "expert_logs": {
+  "20260719.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Logs\\20260719.log",
+   "n_lines": 3,
+   "hits": [
+    {
+     "line": 2,
+     "text": "JE\t2\t15:33:58.315\tQM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,D1)\tAbnormal termination",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    }
+   ],
+   "n_hits": 1
+  },
+  "20260722.log": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Logs\\20260722.log",
+   "n_lines": 5,
+   "hits": [
+    {
+     "line": 2,
+     "text": "HE\t2\t07:24:11.683\tQM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,D1)\tAbnormal termination",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    },
+    {
+     "line": 4,
+     "text": "LK\t2\t07:24:12.011\tQM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,D1)\tAbnormal termination",
+     "tok": [
+      "11421_ohlc-daily-squeeze",
+      "QM5_11421_ohlc-daily-squeeze-reversal-d1"
+     ],
+     "kw": []
+    }
+   ],
+   "n_hits": 2
+  }
+ },
+ "files_scanned": [
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260424.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260628.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260629.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260630.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260701.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260702.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260703.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260704.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260705.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260706.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260707.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260708.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260709.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260710.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260711.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260712.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260713.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260714.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260715.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260716.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260717.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260718.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260719.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260720.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260721.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260722.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260723.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260724.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Logs\\20260719.log",
+  "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Logs\\20260722.log"
+ ]
+}

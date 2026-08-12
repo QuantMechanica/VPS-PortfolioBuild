@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "bundle_id": "QM5_LONDON_CALENDARS",
+  "timezone": "Europe/London",
+  "outside_coverage_policy": "FAIL_CLOSED",
+  "consumer_policy": {
+    "jurisdictional_holiday_is_not_fx_closure": true,
+    "lse_cash_calendar_must_not_gate_fx_routes": true,
+    "wmr_calendar_must_not_be_inferred_from_uk_holidays": true,
+    "broker_session_calendar_still_required_for_fx": true
+  },
+  "england_wales_public_holidays": {
+    "coverage_start": "2018-01-01",
+    "coverage_end": "2025-12-31",
+    "coverage_status": "COMPLETE",
+    "runtime_file": "QM5_GOVUK_England_Wales_public_holidays_20180101_20251231.csv",
+    "runtime_rows": 67,
+    "runtime_sha256": "8a54e3f2fb7437fded65e8db05b4317f7b2881abc0d3090efe23db1349fe1a75",
+    "provenance_file": "QM5_GOVUK_England_Wales_public_holidays_provenance.csv",
+    "provenance_rows": 67,
+    "provenance_sha256": "bf936fa31dc012812a27e1e0d140a8ea366d6ba7d6df59289a628eff13abc94b"
+  },
+  "lse_cash_sessions": {
+    "coverage_start": "2018-01-01",
+    "coverage_end": "2025-12-31",
+    "coverage_status": "COMPLETE_SCHEDULED_EXCEPTIONS",
+    "normal_open_london": "08:00",
+    "normal_close_london": "16:30",
+    "early_close_london": "12:30",
+    "runtime_file": "QM5_LSE_cash_session_exceptions_20180101_20251231.csv",
+    "runtime_rows": 83,
+    "runtime_sha256": "166a391fbb59a49d42a363ff347286139725853cd9f70d30d8cd71a404dd7d8d",
+    "full_close_rows": 67,
+    "early_close_rows": 16,
+    "provenance_file": "QM5_LSE_cash_session_exceptions_provenance.csv",
+    "provenance_rows": 83,
+    "provenance_sha256": "b624de03eb650b167b75f6468f11cf455aff7e5eeccdcfd00440c6fda34aa2d9"
+  },
+  "wmr_1600_london_spot_service": {
+    "requested_study_start": "2018-01-01",
+    "requested_study_end": "2025-12-31",
+    "coverage_start": "2025-01-01",
+    "coverage_end": "2025-12-31",
+    "coverage_status": "PARTIAL_FAIL_CLOSED",
+    "uncovered_period": "2018-01-01/2024-12-31",
+    "ordinary_weekday_policy_within_coverage": "NORMAL_1600_FIX_AVAILABLE_UNLESS_LISTED",
+    "runtime_file": "QM5_WMR_1600_London_service_exceptions_20250101_20251231.csv",
+    "runtime_rows": 7,
+    "runtime_sha256": "544f347a39e82e1b4ef3354d16110591a76a7c6cce70a7f599dca886706006f2",
+    "no_1600_fix_rows": 3,
+    "available_1600_fix_rows": 4,
+    "provenance_file": "QM5_WMR_1600_London_service_exceptions_provenance.csv",
+    "provenance_rows": 7,
+    "provenance_sha256": "060f322c9d9208f57486d27c48cfd84302390894540841a39a63e429339cf89f"
+  },
+  "sources_file": "QM5_London_calendar_sources.csv",
+  "source_rows": 9,
+  "sources_sha256": "c3cdbdbe71a0f7652f56ba28afee7d9c6dbdc4eb12e74974cd3c681a8144df69",
+  "source_policy": "GOVUK_LSE_LSEG_PRIMARY_ONLY"
+}

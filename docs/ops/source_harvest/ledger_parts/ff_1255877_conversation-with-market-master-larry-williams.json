@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_1255877_conversation-with-market-master-larry-williams.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1255877_conversation-with-market-master-larry-williams.pdf",
+      "source_pages": "1-7",
+      "source_ref": "\"Conversation with Market Master: Larry Williams\", interview hosted by dr Darius Swierk (excerpt from the ebook \"Conversations with Forex Market Masters\"), ForexFactory thread 1255877, forexfactory.com, https://www.forexfactory.com/thread/1255877/conversation-with-market-master-larry-williams",
+      "strategy_name": "Larry Williams interview (no strategy)",
+      "concept": "Biographical/mindset interview about Larry Williams' 60-year trading career and psychology, with no mechanical rules disclosed.",
+      "market": "Futures",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "No usable edge: an inspirational career/psychology interview promoting an ebook; no entry/exit rules, parameters, or tradeable system stated.",
+      "priority_hint": "LOW",
+      "notes": "Name-drops indicators he created (Williams %R, Ultimate Oscillator, COT indices, accumulation/distribution) and mentions he runs mechanical systems on crude oil, e-mini S&P, gold and bonds, but discloses zero rule logic. Explicitly disparages Forex trading. Marketing funnel to www.ForexMarketMasters.com/ebook. Nothing implementable."
+    }
+  ],
+  "notes": ["Single-post ForexFactory thread; interview transcript only, no mechanical strategy to harvest."]
+}

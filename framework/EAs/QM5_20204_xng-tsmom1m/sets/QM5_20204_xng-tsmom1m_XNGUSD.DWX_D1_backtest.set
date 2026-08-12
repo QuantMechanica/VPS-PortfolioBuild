@@ -1,0 +1,28 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20204
+; ea_slug:      xng-tsmom1m
+; ea_version:   v5.0
+; set_version:  s20260802-001
+; symbol:       XNGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   8ddc6b5d21b7b87477d6225227d16bf3a39c06245fde4b39184b64d43941bd08
+; author:       Development
+; date:         2026-08-02
+;==========================================================
+qm_ea_id=20204
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\xng-tsmom1m_card.md
+strategy_history_bars=80
+strategy_atr_period=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=40
+strategy_max_spread_points=3000

@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_20190_WTI_BRENT_CAL_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XBRUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XBRUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg WTI/Brent monthly same-calendar relative-seasonality basket. On the first XTI D1 bar of each broker month, inspect exactly ten prior years and retain at least five synchronized paired returns; buy the crude benchmark with the higher historical same-month return, short the other, and evaluate combined package PnL and costs at Q02 rather than standalone legs."
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_993524_roadmap-a-way-to-read-markets.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_993524_roadmap-a-way-to-read-markets.pdf",
+      "source_pages": "1-5, 18-19",
+      "source_ref": "LauraT, 'Roadmap - A Way To Read Markets', ForexFactory thread 993524 (2020), https://www.forexfactory.com/thread/993524-roadmap-a-way-to-read-markets",
+      "strategy_name": "Roadmap 8EMA-Channel vs SMA200 Trend-Pullback",
+      "concept": "When an 8-EMA high/low channel sits fully above (below) the SMA200 the bias is long (short), and you enter on price pulling back to the opposite channel band, filtered by a composite multi-timeframe RSI>50/<50 and an SMA200 multi-timeframe dashboard, exiting at prior-day high/low or the daily-open line.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Entry skeleton (channel-vs-SMA200 bias + pullback-to-band + RSI/MTF filters) is mechanizable in pure MQL5 with available data, but stops/exits are only heuristic and the author states human judgement is essential and her own automation attempts failed to replicate performance.",
+      "priority_hint": "LOW",
+      "notes": "Discretionary indicator suite, not an algo; OP explicitly says she tried twice with skilled coders and could not automate it. Two named setups fold into this one core: (1) 'channel trade' = pullback entry after channel fully crosses SMA200; (2) 'channel failure' = channel pokes past SMA200 then falls back, treated as higher-probability reversal entry (same execution: wait for channel on one side, enter when price reaches opposite band). Instrument/TF-agnostic in the thread: she trades M1 for indices (Dow) and oil, M5/M15 for FX crosses (GBPUSD, EURAUD), also H4/D1; representative M15/FX chosen for the row. Filters: composite RSI = RSI2/RSI9 blended across W1/D1/H4 (>50 bullish); MTF dashboard wants >=2 relevant-TF SMA200 readings agreeing. Exits vague: prior-day High/Low, daily-open line (broker-midnight, CET), or discretionary 'take profit on spikes'; no fixed SL stated. Advanced ADR-locked reversal element mentioned but deferred with no rules. Generic MA-channel trend-pullback with no uncorrelated return driver -> low value; exits would need framework redesign (cf. T-WIN/Balke 'edge real, exits amputate' pattern)."
+    }
+  ],
+  "notes": ["classified_1_candidate_row"]
+}

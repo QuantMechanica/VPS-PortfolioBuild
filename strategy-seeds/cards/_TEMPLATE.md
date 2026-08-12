@@ -2,11 +2,11 @@
 
 > **V5 source:** authored 2026-04-26 from `docs/ops/RESEARCH_METHODOLOGY_V2.md` § Step 2 + V5 Hub Fragenkatalog conventions.
 > **Owner:** Research Agent (Wave 0)
-> **Review:** CEO + Quality-Business
+> **Review:** OWNER + Quality-Business
 
-This is the canonical template for V5 Strategy Cards. Research extracts every distinct strategy from an approved source and produces one card per strategy. Cards are reviewed by CEO + Quality-Business; on APPROVE they become Development's input.
+This is the canonical template for V5 Strategy Cards. Research extracts every distinct strategy from an OWNER-approved source and produces one card per strategy. Cards are reviewed by OWNER + Quality-Business; on APPROVE they become Development's input.
 
-**Filename convention.** New cards use `strategy-seeds/cards/<slug>_card.md` — `slug` is allocated at extraction (lowercase kebab-case ≤ 16 chars). `ea_id` is allocated later by CEO + CTO at APPROVED stage and lives only inside the card's Header, not in the filename. This replaces the prior `QM5_NNNN_<slug>_card.md` pattern; existing cards keep their current filenames, only new cards follow the new pattern.
+**Filename convention.** New cards use `strategy-seeds/cards/<slug>_card.md` — `slug` is allocated at extraction (lowercase kebab-case ≤ 16 chars). After OWNER approval, Development allocates `ea_id` through the deterministic registry; the ID lives only inside the card's Header, not in the filename. This replaces the prior `QM5_NNNN_<slug>_card.md` pattern; existing cards keep their current filenames, only new cards follow the new pattern.
 
 Copy this file to `strategy-seeds/cards/<slug>_card.md` and fill in. Do not delete unfilled fields — leave them as `TBD` so reviewers can see what is missing.
 
@@ -16,7 +16,7 @@ Copy this file to `strategy-seeds/cards/<slug>_card.md` and fill in. Do not dele
 
 ```yaml
 strategy_id: SRC{source_id}_S{n}            # e.g., SRC001_S03 = source 1, strategy 3
-ea_id: TBD                                   # allocated by CEO + CTO at approval (1000-9999 production, 5000-8999 sandbox)
+ea_id: TBD                                   # allocated by Development after OWNER approval, using the deterministic registry
 slug: TBD                                    # lowercase kebab-case ≤ 16 chars (e.g., "breakout-atr"); becomes the card filename
 status: DRAFT                                # DRAFT / IN_REVIEW / APPROVED / REJECTED / IN_BUILD / IN_PIPELINE / DEPLOYED / RETIRED
 created: YYYY-MM-DD
@@ -148,7 +148,7 @@ ml_required: false                           # hard-fail in V5 if true
 
 ## 11. Strategy Allowability Check (V5 framework)
 
-Before submitting card to CEO:
+Before submitting the card for OWNER review:
 
 - [ ] Strategy concept is mechanical (no discretionary judgment)
 - [ ] No Machine Learning required (V5 ban — `EA_ML_FORBIDDEN`)
@@ -160,7 +160,7 @@ Before submitting card to CEO:
 
 ## 12. Framework Alignment
 
-Map this strategy onto the V5 4-Module pattern + flag any V5 Hard Rule that is at risk. Research fills this; CTO sanity-checks at APPROVED stage. See `framework/V5_FRAMEWORK_DESIGN.md` for module hooks and inherited V4 rules.
+Map this strategy onto the V5 4-Module pattern + flag any V5 Hard Rule that is at risk. Research fills this; Development sanity-checks it during the approved build and Quality-Tech validates the technical contract. See `framework/V5_FRAMEWORK_DESIGN.md` for module hooks and inherited V4 rules.
 
 ```yaml
 modules_used:
@@ -180,7 +180,7 @@ modules_used:
 
 ```yaml
 hard_rules_at_risk:                          # MULTI. Mark every Hard Rule this strategy could
-                                             # plausibly stress so CTO + Quality-Tech know what to
+                                             # plausibly stress so Development + Quality-Tech know what to
                                              # validate. Allowed values:
   # - friday_close                           # strategy holds positions across Fri 21:00 broker time
   # - risk_mode_dual                         # any non-standard sizing path (RISK_PERCENT / RISK_FIXED)
@@ -200,7 +200,7 @@ at_risk_explanation: |
   comply (or where the strategy proposes a documented exception per V5 Hard Rules).
 ```
 
-## 13. Implementation Notes (CTO fills in at APPROVED stage)
+## 13. Implementation Notes (Development fills in for an OWNER-approved build)
 
 ```yaml
 target_modules:
@@ -227,7 +227,7 @@ Verdicts: `IN_PROGRESS` / `PASS` / `FAIL` / `RETIRED` / `SUPERSEDED`.
 
 ## 15. Pipeline Phase Status (current `_v<n>`)
 
-Per-phase tracker for the **current** rebuild only. Pipeline-Operator + CEO update as each phase completes; reset / re-baseline whenever a new row is added to § 14.
+Per-phase tracker for the **current** rebuild only. Pipeline-Operator records executable phase evidence; OWNER records manual approval decisions. Reset / re-baseline whenever a new row is added to § 14.
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|

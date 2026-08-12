@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_GATE",
+  "ea_id": 10469,
+  "symbol": "GDAXI.DWX",
+  "period": "H4",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/20260712_112836/QM5_10469_mql5-explode.compile.log",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10469_gdaxi_h4_wave5_20260712\\QM5_10469\\20260712_112900\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10469_gdaxi_h4_wave5_20260712\\QM5_10469\\20260712_112900\\raw\\run_01\\report.htm",
+      "sha256": "64B2239E51D1B3F5A6B4F0242867CDC49261FCCBADA218B3C17511C42E65B6D6"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10469_gdaxi_h4_wave5_20260712\\QM5_10469\\20260712_112900\\raw\\run_02\\report.htm",
+      "sha256": "36312E790257D8D1A6A2018FFFCD867CE6C4EF779229617B6F0C7AC6570CA552"
+    }
+  ],
+  "native": {
+    "trades": 2409,
+    "profit_factor": 1.058909,
+    "net_profit": 72435.17,
+    "equity_drawdown": 31380.82
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10469_GDAXI_DWX_FRESH_20260712.jsonl",
+    "rows": 2409,
+    "sha256": "802A5D8B4AE5C4A072FB86362F920F7804AE4FF8231C199B580BF42EE8AD24EC",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET"
+  },
+  "current_cost_artifact": "artifacts/ftmo_10469_gdaxi_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 2409,
+    "profit_factor": 1.050462,
+    "net_profit": 62103.53,
+    "close_to_close_max_drawdown": 30336.0,
+    "commission_total": 0.0,
+    "swap_total": -41388.83
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "annual_density_pass": true,
+    "reason_for_reject": "The old one-year PF 1.2962 does not persist: full-history current-cost PF is 1.050462, with 2018, 2019, and 2023 loss-making."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

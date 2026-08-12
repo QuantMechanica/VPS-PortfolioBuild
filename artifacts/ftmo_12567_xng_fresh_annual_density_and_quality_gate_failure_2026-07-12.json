@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_ANNUAL_DENSITY_AND_QUALITY_GATES",
+  "ea_id": 12567,
+  "symbol": "XNGUSD.DWX",
+  "period": "D1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "source_sha256": "1692D5CF7E6F7108762A70A57BC812132824064B3CACAD5A71C5737CC9B5857D",
+  "setfile_sha256": "8C92E3B8C015B8712D9F1232923E74DAF08BC5ACD1D8E12E6F563C21D02180C9",
+  "compile_log": "framework/build/compile/20260712_170506/QM5_12567_cum-rsi2-commodity.compile.log",
+  "compile_log_sha256": "054708ED9CD43089B79584D5CDFFE45CCC806C3928BEAE405AE040A54F1057FE",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12567_xng_d1_wave28_20260712\\QM5_12567\\20260712_170541\\summary.json",
+  "deterministic": true,
+  "native": {
+    "trades": 58,
+    "profit_factor": 1.31095,
+    "net_profit": 1791.18,
+    "equity_drawdown": 2248.27
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\12567_XNGUSD_DWX_D1_T4_FRESH_20260712.jsonl",
+    "rows": 58,
+    "sha256": "65FE45EB6468AE8830A2AA2BB13E0F7E55BAF9F5E6F8535A9442ABA53601B743",
+    "report_reconciliation": "PASS",
+    "count_delta": 0,
+    "missing_mae_rows": 0,
+    "corrected_net_delta": 0.0,
+    "net_tolerance": 1.0
+  },
+  "current_cost_artifact": "artifacts/ftmo_12567_xng_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 58,
+    "profit_factor": 1.214927,
+    "net_profit": 1285.09,
+    "close_to_close_max_drawdown": 2133.63,
+    "commission_total": 10.42,
+    "swap_total": -496.49
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "negative_calendar_years": [
+      2018,
+      2022,
+      2023,
+      2024
+    ],
+    "calendar_years_below_density_floor": [
+      2017,
+      2018,
+      2019,
+      2022
+    ],
+    "reason_for_reject": "The pooled PF barely clears 1.2, but four calendar years lose money and four years miss the predeclared five-trade floor. No low-frequency exception was allowed."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

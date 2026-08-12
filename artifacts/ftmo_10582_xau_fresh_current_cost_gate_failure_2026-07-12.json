@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_GATE",
+  "ea_id": 10582,
+  "symbol": "XAUUSD.DWX",
+  "period": "H6",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/20260712_105059/QM5_10582_mql5-ema-pred.compile.log",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10582_xau_h6_wave4_20260712\\QM5_10582\\20260712_105547\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10582_xau_h6_wave4_20260712\\QM5_10582\\20260712_105547\\raw\\run_01\\report.htm",
+      "sha256": "C7D6ED7C6F5FBA7D5F09CD45175FF514F3D24EF2443CC708530F4028B0ABE290"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10582_xau_h6_wave4_20260712\\QM5_10582\\20260712_105547\\raw\\run_02\\report.htm",
+      "sha256": "476D18149440F8C198FA43F9AC8C0B910266C240C1E76FAC2DEB56F8CB670F6F"
+    }
+  ],
+  "native": {
+    "trades": 3115,
+    "profit_factor": 1.106509,
+    "net_profit": 56638.07,
+    "equity_drawdown": 12512.82
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10582_XAUUSD_DWX_T4_FRESH_20260712.jsonl",
+    "rows": 3115,
+    "sha256": "3A6F23EFA596089B06B801C3D58A8242D01D08419A1AB63105967907CFFBA377",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET"
+  },
+  "current_cost_artifact": "artifacts/ftmo_10582_xau_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 3115,
+    "profit_factor": 0.98505,
+    "net_profit": -8416.3,
+    "close_to_close_max_drawdown": 42974.89,
+    "commission_total": 7617.38,
+    "swap_total": -57436.99
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "annual_density_pass": true,
+    "reason_for_reject": "The fresh native PF is only 1.106509. Current FTMO XAU costs and rollover turn the stream negative at PF 0.985050; six of nine calendar years are loss-making."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

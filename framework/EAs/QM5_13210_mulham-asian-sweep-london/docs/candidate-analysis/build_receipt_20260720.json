@@ -1,0 +1,32 @@
+{
+  "artifact_type": "QM5_13210_BUILD_RECEIPT",
+  "schema_version": 1,
+  "created_utc": "2026-07-21T08:38:25Z",
+  "ea_id": "QM5_13210",
+  "build_commit": "9e6c17e1e954aa6854afcc93dc72b64926316fd1",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "source_sha256": "366ad6715258615f1de7dcd0669fc68e5ce8ce8bb27a1d37fc53e19147beca71",
+  "ex5_sha256": "377840ec44833eed5420a030519b77b37ebfd6b8e2a1161e7c3f57721fb0cccc",
+  "spec_sha256": "2c7a93598501e527d2bcb93401fd6532af18cdf7d26c6aca7ea0ceca334ab9d2",
+  "card_sha256": "c9138af20679962b694b253a07488a08085868bb65b81ee1887780cd0e01c11e",
+  "setfile_sha256": {
+    "EURUSD.DWX": "53832bf9410eab2c9fd230ffc0e02d663dc9168ef28439fe78883cd28db89c69",
+    "XAUUSD.DWX": "c0f3c09b71dc710ab81f4ea99f387577a659c20a8a24015b078b4ae8a12edcdd"
+  },
+  "compile_evidence": {
+    "compile_log": {
+      "path": "C:/QM/repo/framework/build/compile/20260721_083541/QM5_13210_mulham-asian-sweep-london.compile.log",
+      "size": 20562,
+      "sha256": "e514a321141c3aeb98f06ef3df6a9905e42b43894700d74590fcf74247d6236b"
+    },
+    "summary": {
+      "path": "D:/QM/reports/compile/20260721_083541/summary.csv",
+      "size": 2381,
+      "sha256": "80711e60b3f6d1b983315654027b01706f76b5820e12af42362a9006b5e7754c"
+    }
+  },
+  "scope": "BUILD_ONLY_NO_BACKTEST_NO_MERIT_CLAIM"
+}

@@ -1,0 +1,350 @@
+{
+  "contract": {
+    "all_sleeves_strictly_qualified": true,
+    "all_streams_report_reconciled": true,
+    "partial_book_approval": false
+  },
+  "nominal_risk_fixed_sum": 8999.0,
+  "qualification_ready_count": 0,
+  "ready_count": 0,
+  "reconciliation_pass_count": 2,
+  "schema_version": 1,
+  "sleeve_count": 12,
+  "sleeves": [
+    {
+      "blockers": [
+        "qualification_not_ready:NOT_QUALIFIED",
+        "stream_reconciliation_fail"
+      ],
+      "ea_id": 10163,
+      "qualification_blockers": [
+        "q03_evidence_predates_build",
+        "q04_not_pass:PASS_SOFT",
+        "q04_evidence_predates_build",
+        "q05_evidence_predates_build",
+        "q06_evidence_predates_build",
+        "q07_evidence_predates_build",
+        "q08_not_pass:FAIL_HARD",
+        "q08_evidence_predates_build",
+        "q10_pass_missing",
+        "fresh_intraday_mae_stream_missing"
+      ],
+      "qualification_state": "NOT_QUALIFIED",
+      "ready": false,
+      "reconciliation_reasons": [
+        "stream_missing_mae_rows:504",
+        "trade_count_mismatch:504!=570",
+        "corrected_net_mismatch:delta=-12524.62:tolerance=5.70"
+      ],
+      "reconciliation_status": "FAIL",
+      "risk_fixed": 422.0,
+      "symbol": "NDX.DWX",
+      "timeframe": "H1"
+    },
+    {
+      "blockers": [
+        "qualification_not_ready:NOT_QUALIFIED",
+        "stream_reconciliation_fail"
+      ],
+      "ea_id": 10286,
+      "qualification_blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_not_pass:FAIL",
+        "q04_evidence_predates_build",
+        "q05_pass_missing",
+        "q06_pass_missing",
+        "q07_pass_missing",
+        "q08_not_pass:FAIL_HARD",
+        "q10_pass_missing"
+      ],
+      "qualification_state": "NOT_QUALIFIED",
+      "ready": false,
+      "reconciliation_reasons": [
+        "trade_count_mismatch:485!=488",
+        "corrected_net_mismatch:delta=-51393.58:tolerance=4.88"
+      ],
+      "reconciliation_status": "FAIL",
+      "risk_fixed": 518.0,
+      "symbol": "XTIUSD.DWX",
+      "timeframe": "D1"
+    },
+    {
+      "blockers": [
+        "qualification_not_ready:NOT_QUALIFIED",
+        "stream_reconciliation_fail"
+      ],
+      "ea_id": 10440,
+      "qualification_blockers": [
+        "q04_not_pass:PASS_SOFT",
+        "q05_not_pass:FAIL",
+        "q06_not_pass:FAIL",
+        "q06_evidence_predates_build",
+        "q07_not_pass:INFRA_FAIL",
+        "q07_evidence_predates_build",
+        "q08_not_pass:FAIL_SOFT",
+        "q08_evidence_predates_build",
+        "q10_pass_missing",
+        "fresh_intraday_mae_stream_missing"
+      ],
+      "qualification_state": "NOT_QUALIFIED",
+      "ready": false,
+      "reconciliation_reasons": [
+        "stream_missing_mae_rows:441",
+        "trade_count_mismatch:441!=451",
+        "corrected_net_mismatch:delta=-3705.96:tolerance=4.51"
+      ],
+      "reconciliation_status": "FAIL",
+      "risk_fixed": 459.0,
+      "symbol": "NDX.DWX",
+      "timeframe": "H1"
+    },
+    {
+      "blockers": [
+        "qualification_not_ready:NOT_QUALIFIED",
+        "stream_reconciliation_fail"
+      ],
+      "ea_id": 10692,
+      "qualification_blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_not_pass:INFRA_FAIL",
+        "q04_evidence_predates_build",
+        "q05_evidence_predates_build",
+        "q06_evidence_predates_build",
+        "q07_evidence_predates_build",
+        "q08_not_pass:FAIL_SOFT",
+        "q10_pass_missing"
+      ],
+      "qualification_state": "NOT_QUALIFIED",
+      "ready": false,
+      "reconciliation_reasons": [
+        "trade_count_mismatch:675!=676",
+        "corrected_net_mismatch:delta=638.44:tolerance=6.76"
+      ],
+      "reconciliation_status": "FAIL",
+      "risk_fixed": 1117.0,
+      "symbol": "NDX.DWX",
+      "timeframe": "H1"
+    },
+    {
+      "blockers": [
+        "qualification_not_ready:NOT_QUALIFIED",
+        "stream_reconciliation_missing"
+      ],
+      "ea_id": 10700,
+      "qualification_blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_evidence_predates_build",
+        "q05_not_pass:FAIL",
+        "q05_evidence_predates_build",
+        "q06_pass_missing",
+        "q07_pass_missing",
+        "q08_pass_missing",
+        "q10_pass_missing",
+        "q08_baseline_stream_unlinked:q08_evidence_unavailable"
+      ],
+      "qualification_state": "NOT_QUALIFIED",
+      "ready": false,
+      "reconciliation_reasons": null,
+      "reconciliation_status": null,
+      "risk_fixed": 624.0,
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "H1"
+    },
+    {
+      "blockers": [
+        "qualification_not_ready:NOT_QUALIFIED",
+        "stream_reconciliation_missing"
+      ],
+      "ea_id": 10847,
+      "qualification_blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_not_pass:PASS_SOFT",
+        "q04_evidence_predates_build",
+        "q05_not_pass:FAIL",
+        "q05_evidence_predates_build",
+        "q06_pass_missing",
+        "q07_pass_missing",
+        "q08_pass_missing",
+        "q10_pass_missing",
+        "q08_baseline_stream_unlinked:q08_evidence_unavailable"
+      ],
+      "qualification_state": "NOT_QUALIFIED",
+      "ready": false,
+      "reconciliation_reasons": null,
+      "reconciliation_status": null,
+      "risk_fixed": 389.0,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "H1"
+    },
+    {
+      "blockers": [
+        "qualification_not_ready:NOT_QUALIFIED"
+      ],
+      "ea_id": 10848,
+      "qualification_blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_not_pass:PASS_SOFT",
+        "q04_evidence_predates_build",
+        "q05_not_pass:FAIL",
+        "q05_evidence_predates_build",
+        "q06_pass_missing",
+        "q07_pass_missing",
+        "q08_not_pass:FAIL_SOFT",
+        "q10_pass_missing"
+      ],
+      "qualification_state": "NOT_QUALIFIED",
+      "ready": false,
+      "reconciliation_reasons": [],
+      "reconciliation_status": "PASS",
+      "risk_fixed": 838.0,
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "H1"
+    },
+    {
+      "blockers": [
+        "qualification_not_ready:NOT_QUALIFIED",
+        "stream_reconciliation_fail"
+      ],
+      "ea_id": 10911,
+      "qualification_blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_evidence_predates_build",
+        "q05_not_pass:INFRA_FAIL",
+        "q05_evidence_predates_build",
+        "q06_evidence_predates_build",
+        "q07_evidence_predates_build",
+        "q08_not_pass:FAIL_SOFT",
+        "q08_evidence_predates_build",
+        "q10_pass_missing",
+        "fresh_intraday_mae_stream_missing"
+      ],
+      "qualification_state": "NOT_QUALIFIED",
+      "ready": false,
+      "reconciliation_reasons": [
+        "stream_missing_mae_rows:268",
+        "trade_count_mismatch:268!=296",
+        "corrected_net_mismatch:delta=-5099.59:tolerance=2.96"
+      ],
+      "reconciliation_status": "FAIL",
+      "risk_fixed": 1256.0,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "H1"
+    },
+    {
+      "blockers": [
+        "qualification_not_ready:NOT_QUALIFIED",
+        "stream_reconciliation_missing"
+      ],
+      "ea_id": 11476,
+      "qualification_blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_not_pass:PASS_SOFT",
+        "q04_evidence_predates_build",
+        "q05_not_pass:FAIL",
+        "q05_evidence_predates_build",
+        "q06_pass_missing",
+        "q07_pass_missing",
+        "q08_pass_missing",
+        "q10_pass_missing",
+        "q08_baseline_stream_unlinked:q08_evidence_unavailable"
+      ],
+      "qualification_state": "NOT_QUALIFIED",
+      "ready": false,
+      "reconciliation_reasons": null,
+      "reconciliation_status": null,
+      "risk_fixed": 1435.0,
+      "symbol": "USDJPY.DWX",
+      "timeframe": "H1"
+    },
+    {
+      "blockers": [
+        "qualification_not_ready:NOT_QUALIFIED",
+        "stream_reconciliation_fail"
+      ],
+      "ea_id": 12475,
+      "qualification_blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_not_pass:FAIL",
+        "q04_evidence_predates_build",
+        "q05_pass_missing",
+        "q06_pass_missing",
+        "q07_pass_missing",
+        "q08_not_pass:FAIL_SOFT",
+        "q10_pass_missing"
+      ],
+      "qualification_state": "NOT_QUALIFIED",
+      "ready": false,
+      "reconciliation_reasons": [
+        "trade_count_mismatch:1805!=1816",
+        "corrected_net_mismatch:delta=4462.83:tolerance=18.16"
+      ],
+      "reconciliation_status": "FAIL",
+      "risk_fixed": 325.0,
+      "symbol": "NDX.DWX",
+      "timeframe": "H1"
+    },
+    {
+      "blockers": [
+        "qualification_not_ready:NOT_QUALIFIED",
+        "stream_reconciliation_fail"
+      ],
+      "ea_id": 12958,
+      "qualification_blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_evidence_predates_build",
+        "q05_evidence_predates_build",
+        "q06_evidence_predates_build",
+        "q07_evidence_predates_build",
+        "q08_not_pass:FAIL_SOFT",
+        "q08_evidence_predates_build",
+        "q10_pass_missing",
+        "intraday_mae_stream_predates_build"
+      ],
+      "qualification_state": "NOT_QUALIFIED",
+      "ready": false,
+      "reconciliation_reasons": [
+        "trade_count_mismatch:201!=202",
+        "corrected_net_mismatch:delta=27.44:tolerance=2.02"
+      ],
+      "reconciliation_status": "FAIL",
+      "risk_fixed": 1256.0,
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "D1"
+    },
+    {
+      "blockers": [
+        "qualification_not_ready:NOT_QUALIFIED"
+      ],
+      "ea_id": 12990,
+      "qualification_blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_evidence_predates_build",
+        "q05_evidence_predates_build",
+        "q06_evidence_predates_build",
+        "q07_evidence_predates_build",
+        "q08_not_pass:FAIL_SOFT",
+        "q08_evidence_predates_build",
+        "q10_pass_missing",
+        "intraday_mae_stream_predates_build"
+      ],
+      "qualification_state": "NOT_QUALIFIED",
+      "ready": false,
+      "reconciliation_reasons": [],
+      "reconciliation_status": "PASS",
+      "risk_fixed": 360.0,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "H4"
+    }
+  ],
+  "status": "NO_GO"
+}

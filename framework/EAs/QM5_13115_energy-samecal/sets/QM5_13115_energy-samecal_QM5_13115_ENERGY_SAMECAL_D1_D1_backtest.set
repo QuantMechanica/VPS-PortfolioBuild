@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        13115
 ; ea_slug:      energy-samecal
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5a83b14f80e561ae4a4a72449f9f3eb6cbd5349477c2904db08aeb2a3f062940
+; build_hash:   a402f7cbeefcc06fdd9be6d9d62d79e4f492f90249fe8443c5208ed4124b11c3
 ; author:       Development
 ; date:         2026-07-10
 ;==========================================================

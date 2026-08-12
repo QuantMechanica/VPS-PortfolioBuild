@@ -1,0 +1,42 @@
+{
+ "window": "2024.01.01..2024.12.31",
+ "period": "H4",
+ "per_magic": {
+  "10403": {
+   "magic": 104030002,
+   "trades": 25,
+   "net": 1082.83
+  },
+  "10513": {
+   "magic": 105130003,
+   "trades": 14,
+   "net": 1804.53
+  },
+  "12567": {
+   "magic": 125670003,
+   "trades": 15,
+   "net": 4521.4
+  },
+  "12989": {
+   "magic": 129890003,
+   "trades": 6,
+   "net": 3274.81
+  },
+  "1556": {
+   "magic": 15560004,
+   "trades": 9,
+   "net": 3912.22
+  }
+ },
+ "master_init_ok": true,
+ "active_modules": 5,
+ "sample_entry_lots": {
+  "10403": 0.03,
+  "12567": 0.3,
+  "10513": 0.45,
+  "1556": 0.17,
+  "12989": 0.38
+ },
+ "all5_modules_traded": true,
+ "verdict": "GREEN_LIVE_PERCENT_OK"
+}

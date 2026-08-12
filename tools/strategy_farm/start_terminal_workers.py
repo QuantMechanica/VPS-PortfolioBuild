@@ -123,19 +123,9 @@ def _installed_terminals(mt5_root: Path) -> tuple[str, ...]:
 
 
 def _stop_pid(pid: int) -> bool:
-    if pid <= 0 or sys.platform != "win32":
-        return False
-    try:
-        result = subprocess.run(
-            ["taskkill", "/PID", str(pid), "/T", "/F"],
-            capture_output=True,
-            text=True,
-            timeout=15,
-            creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0,
-        )
-        return result.returncode == 0
-    except Exception:
-        return False
+    # A bare PID is not a safe termination authority because it may be reused
+    # between discovery and this call. Fail closed until an identity-bound stop exists.
+    return False
 
 
 def _load_existing(pid_file: Path) -> dict[str, int]:
@@ -157,6 +147,11 @@ def _load_existing(pid_file: Path) -> dict[str, int]:
 
 
 def main() -> int:
+    # DL-065: spawned terminal workers inherit this env. The spawner and the
+    # workers are deterministic factory machinery (trusted base 'controller');
+    # a spawn context without QM_AGENT_ID must not produce 'unknown' workers
+    # whose cascade enqueues die fail-closed (fleet churn 2026-08-01).
+    os.environ.setdefault("QM_AGENT_ID", "controller")
     parser = argparse.ArgumentParser(description="Start strategy-farm terminal workers.")
     parser.add_argument("--repo-root", default=r"C:\QM\repo")
     parser.add_argument("--farm-root", default=r"D:\QM\strategy_farm")
@@ -191,7 +186,12 @@ def main() -> int:
     for terminal in terminals:
         candidates = [pid for pid in discovered.get(terminal, []) if _pid_alive(pid)]
         existing_pid = existing.get(terminal, 0)
-        if existing_pid and _pid_alive(existing_pid) and existing_pid not in candidates:
+        # PID-reuse guard (incident class 2026-07-08): a PID from worker_pids.json
+        # counts only if the live commandline scan also returned it for THIS
+        # terminal. purge/watchdog kill workers without updating the JSON, so a
+        # bare-alive stale PID may be a reused, unrelated process — keeping it
+        # silently starves the slot; deduping it kills an innocent process.
+        if existing_pid and existing_pid in discovered.get(terminal, []) and _pid_alive(existing_pid) and existing_pid not in candidates:
             candidates.insert(0, existing_pid)
 
         if candidates:

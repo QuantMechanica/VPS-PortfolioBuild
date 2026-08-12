@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_3-little-pigs-trading-system_54174.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_3-little-pigs-trading-system_54174.pdf",
+      "source_pages": "1-2",
+      "source_ref": "harmonicphil et al., \"3 Little Pigs Trading System\", BabyPips forum thread, 2013, https://forums.babypips.com/t/3-little-pigs-trading-system/54174 — strategy originates from the free 'Forex Useful' (Jon) e-book/manual; SL detail p.1-2, ATR-symmetric TP EA variant p.13/17.",
+      "strategy_name": "3 Little Pigs Multi-TF SMA Trend Swing",
+      "concept": "Trade in the direction of three aligned timeframes: enter only when price is on the same side of the 55-SMA (Weekly), 21-SMA (Daily) and 34-SMA (H4).",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Fully specified deterministic multi-TF SMA trend system on FX majors/crosses; implementable in pure MQL5, no ML, all data on .DWX (W1/D1/H4).",
+      "priority_hint": "MED",
+      "notes": "Entry: buy when Close>SMA55(W1) AND Close>SMA21(D1) AND an H4 candle touches then closes above SMA34(H4) (enter on that close); sell vice versa. SL = SMA34(H4) offset by 25%*(ATR14_high+ATR14_low) pips; trail behind SMA34. Pairs: AUDUSD,EURGBP,EURJPY,EURUSD,GBPUSD,USDCAD,USDCHF,USDJPY; risk 1%/trade; positions held over weekend. Exit variants (same core rules => one row): (a) OP author = trailing-stop-only, open target; (b) nicolas74 EA = symmetric ATR take-profit TP=Close+/-25%(ATRmin+ATRmax)+/-(Close-SMA34) over last 30 H4 bars; (c) kashif = fixed SL/TP. Caveats: generic triple-MA trend follower, choppy-market weak; multiple thread EA-builders reported inconsistent/negative results and that trailing-SMA stop and fixed SL both underperform, and one MT4 backtest had SL-not-hit coding bug (unreliable evidence). A paid MT4 confirmation indicator exists but is NOT required — all logic is stated. 'PAST' system name-dropped (p.2) but never specified."
+    }
+  ],
+  "notes": ["single core strategy with 3 exit variants merged into one row"]
+}

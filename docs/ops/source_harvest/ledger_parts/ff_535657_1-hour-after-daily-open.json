@@ -1,0 +1,37 @@
+{
+  "pdf": "ff_535657_1-hour-after-daily-open.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_535657_1-hour-after-daily-open.pdf",
+      "source_pages": "1",
+      "source_ref": "\"1 Hour after daily open\", author Nik13, ForexFactory thread #535657 (~2014, not explicitly dated in the excerpt). https://www.forexfactory.com/thread/535657/1-hour-after-daily-open",
+      "strategy_name": "Daily-Open First-Hour Breakout (continuation)",
+      "concept": "After the daily (Sydney) open, the close of the first H1 candle relative to the daily-open line signals directional continuation through the low-volatility pre-London session.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "Asia",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 deterministic daily-open/first-hour-close breakout with fixed 10-pip SL/TP on EURUSD/GBPUSD; .DWX data available, has stops, FTMO/DXZ-compatible.",
+      "priority_hint": "MED",
+      "notes": "Base rules: buy if first H1 closes above the daily-open line, sell if below; SL=TP=10 pips; EURUSD+GBPUSD opened together with a basket equity-TP (close both when combined +10 pips). Symmetric 1:1 with very tight stops - author concedes SL likely hit >75% and member Mariodrugs reports a 2-week test as 'not worth'; edge doubtful but cheap to test as a session-structure driver. Optional martingale MM overlay (pages 12-13) is OUT OF SCOPE / incompatible with FTMO+DXZ. imran.78p's discretionary variant (DO +-15-20 entry, opposite-side stop, MA100/200 hourly filter, hold for the day) is VAGUE/manual and not carried as a separate row."
+    },
+    {
+      "source_file": "ff_535657_1-hour-after-daily-open.pdf",
+      "source_pages": "13",
+      "source_ref": "\"1 Hour after daily open\", author Nik13, ForexFactory thread #535657 (~2014, not explicitly dated in the excerpt); 'Another similar system' post. https://www.forexfactory.com/thread/535657/1-hour-after-daily-open",
+      "strategy_name": "Daily-Open First-Hour Re-Cross (pending-stop fade)",
+      "concept": "Fade the first post-open hour by placing a pending stop at the daily-open line opposite to the first H1 candle's direction, betting price re-crosses the open.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "Asia",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic pending-stop re-cross of the daily-open line on FX majors; implementable in pure MQL5 with stops, but TP not firmly specified by the author.",
+      "priority_hint": "LOW",
+      "notes": "Nik13's 'another similar system' (page 13): if the first H1 candle is bearish place a BUY-STOP at the daily-open line, if bullish place a SELL-STOP; SL 10, TP ~10 ('but not sure, may be more'). Distinct edge from Row 1 (re-cross/fade vs continuation), hence a separate row. No forward/backtest evidence provided in the thread."
+    }
+  ],
+  "notes": ["Forum thread, low reputability (anecdotal, no verified track record) - reflected in MED/LOW priority per harvest rules, not a REJECT. Two mechanical candidates split by trade logic (continuation market entry vs re-cross pending stop). Discretionary/martingale material folded into notes rather than separate rows."]
+}

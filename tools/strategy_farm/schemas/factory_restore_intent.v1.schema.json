@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.local/schemas/factory_restore_intent.v1.schema.json",
+  "title": "QuantMechanica Factory legacy-OFF restore intent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest_id",
+    "legacy_off_flag",
+    "owner_authorization",
+    "task_enabled_before"
+  ],
+  "properties": {
+    "schema_version": { "const": "qm.factory-restore-intent/v1" },
+    "manifest_id": { "type": "string", "minLength": 1 },
+    "legacy_off_flag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "owner_authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authority",
+        "authorized_by",
+        "authorized_at_utc",
+        "decision",
+        "decision_ref",
+        "scope"
+      ],
+      "properties": {
+        "authority": { "const": "OWNER" },
+        "authorized_by": { "type": "string", "minLength": 1 },
+        "authorized_at_utc": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "(?:Z|[+-]00:00)$"
+        },
+        "decision": { "const": "RESTORE_EXACT_PRE_OFF_TASK_INTENT" },
+        "decision_ref": { "type": "string", "minLength": 1 },
+        "scope": { "const": "QM_QUIESCENCE_TASKS_RESTORE_INTENT" }
+      }
+    },
+    "task_enabled_before": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "QM_CodexParallel_RestoreOnReset",
+        "QM_ClaudeParallel_RestoreOnReset",
+        "QM_NewsCalendar_Refresh",
+        "QM_Repo_Push",
+        "QM_StrategyFarm_AgyGovernor",
+        "QM_StrategyFarm_CodexFleetPacer",
+        "QM_StrategyFarm_FactoryRecycle_Daily",
+        "QM_StrategyFarm_SweepEnqueue_Hourly",
+        "QM_StrategyFarm_MailboxSourceIntake_Daily",
+        "QM_StrategyFarm_InboxCleanup_Daily",
+        "QM_StrategyFarm_PlausibilityScan",
+        "QM_StrategyFarm_QuotaGovernor",
+        "QM_StrategyFarm_REvalDrain_15min",
+        "QM_StrategyFarm_ReportsLogPurge_12h",
+        "QM_StrategyFarm_SourcingIntakeSweep",
+        "QM_Public_Snapshot_Hourly",
+        "QM_StrategyFarm_TesterCachePurge",
+        "QM_StrategyFarm_WorkerDedupe",
+        "QM_StrategyFarm_WorktreeClean_4h",
+        "QM_StrategyFarm_HourlyMonitor_60min",
+        "QM_WorkItemLogPruner_Daily_0310"
+      ],
+      "properties": {
+        "QM_CodexParallel_RestoreOnReset": { "type": "boolean" },
+        "QM_ClaudeParallel_RestoreOnReset": { "type": "boolean" },
+        "QM_NewsCalendar_Refresh": { "type": "boolean" },
+        "QM_Repo_Push": { "type": "boolean" },
+        "QM_StrategyFarm_AgyGovernor": { "type": "boolean" },
+        "QM_StrategyFarm_CodexFleetPacer": { "type": "boolean" },
+        "QM_StrategyFarm_FactoryRecycle_Daily": { "type": "boolean" },
+        "QM_StrategyFarm_SweepEnqueue_Hourly": { "type": "boolean" },
+        "QM_StrategyFarm_MailboxSourceIntake_Daily": { "type": "boolean" },
+        "QM_StrategyFarm_InboxCleanup_Daily": { "type": "boolean" },
+        "QM_StrategyFarm_PlausibilityScan": { "type": "boolean" },
+        "QM_StrategyFarm_QuotaGovernor": { "type": "boolean" },
+        "QM_StrategyFarm_REvalDrain_15min": { "type": "boolean" },
+        "QM_StrategyFarm_ReportsLogPurge_12h": { "type": "boolean" },
+        "QM_StrategyFarm_SourcingIntakeSweep": { "type": "boolean" },
+        "QM_Public_Snapshot_Hourly": { "type": "boolean" },
+        "QM_StrategyFarm_TesterCachePurge": { "type": "boolean" },
+        "QM_StrategyFarm_WorkerDedupe": { "type": "boolean" },
+        "QM_StrategyFarm_WorktreeClean_4h": { "type": "boolean" },
+        "QM_StrategyFarm_HourlyMonitor_60min": { "type": "boolean" },
+        "QM_WorkItemLogPruner_Daily_0310": { "type": "boolean" }
+      }
+    }
+  }
+}

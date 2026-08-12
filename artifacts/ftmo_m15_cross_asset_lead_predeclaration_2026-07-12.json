@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_SCREEN",
+  "deployment_allowed": false,
+  "hypothesis": "Completed DAX or gold bars before the US cash entry can contain cross-asset risk information that is distinct from the incumbent trade streams.",
+  "data": {
+    "timestamp_basis": "Darwinex broker-wall converted to UTC before joining",
+    "source_symbols": ["GDAXI.DWX", "XAUUSD.DWX"],
+    "target_symbols": ["NDX.DWX", "SP500.DWX", "WS30.DWX"],
+    "paths": {
+      "GDAXI.DWX": "D:/QM/mt5/T_Export/MQL5/Files/GDAXI.DWX_M15.csv",
+      "XAUUSD.DWX": "D:/QM/mt5/T_Export/MQL5/Files/XAUUSD.DWX_M15.csv",
+      "NDX.DWX": "D:/QM/mt5/T_Export/MQL5/Files/NDX.DWX_M15.csv",
+      "SP500.DWX": "D:/QM/mt5/T_Export/MQL5/Files/SP500.DWX_M15.csv",
+      "WS30.DWX": "D:/QM/mt5/T_Export/MQL5/Files/WS30.DWX_M15.csv"
+    },
+    "sha256": {
+      "GDAXI.DWX": "8BC3BF7E7913EE8C6C3F96AB29EEEBD9F0FD24A1A21E45895E0F7E813474E072",
+      "XAUUSD.DWX": "8A4BFDD6630C54D6DCD1042C89E90BF03C428311A6746C7EB2A572152504E1EB",
+      "NDX.DWX": "DAB877F9914D8390DEB5A559E8775C341106B69AAA28212F049BC01A95762CBE",
+      "SP500.DWX": "91011A4C8CD66E987324971239DCB8A92A2F217525F284500A52830BBA23A6F8",
+      "WS30.DWX": "0184E19063200F4CEC7330A4E988562BB70E754C76974F651CD9F69B340C8BB8"
+    }
+  },
+  "causal_contract": {
+    "signal": "Source close-to-close move over completed M15 bars, normalized by source ATR56.",
+    "join": "The newest source bar must have completed no later than the target entry and no more than 30 minutes earlier.",
+    "entry": "Target session open plus 0, 2, or 4 M15 bars.",
+    "intrabar_ambiguity": "Stop before target.",
+    "maximum_one_trade_per_target_day": true
+  },
+  "fixed_grid": {
+    "source_lookback_bars": [8, 16, 32],
+    "target_entry_offset_bars": [0, 2, 4],
+    "source_move_atr_threshold": [0.5, 1.0],
+    "mapping": ["continuation", "inverse"],
+    "target_stop_atr": [0.75, 1.25],
+    "target_r_multiple": [1.5, 3.0],
+    "maximum_hold_bars": [8, 16],
+    "total_configurations": 1728
+  },
+  "selection_contract": {
+    "development": "2018-2022",
+    "validation": "2023",
+    "sealed_holdout": "2024-2025",
+    "minimum_development_trades": 250,
+    "minimum_development_profit_factor": 1.18,
+    "minimum_positive_development_years": 4,
+    "minimum_validation_trades": 40,
+    "minimum_validation_profit_factor": 1.1,
+    "winner_count": 1,
+    "winner_score": "maximum of min(development PF, validation PF), then trade count",
+    "holdout_open_rule": "Open 2024-2025 only for the single global winner if every preholdout gate passes.",
+    "holdout_pass_rule": "At least 100 trades, PF >= 1.10, positive pooled net R, and positive 2024 and 2025 net R."
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

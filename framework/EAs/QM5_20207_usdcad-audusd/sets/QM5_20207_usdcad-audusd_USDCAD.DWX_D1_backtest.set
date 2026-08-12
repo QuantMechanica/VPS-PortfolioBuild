@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20207
+; ea_slug:      usdcad-audusd
+; ea_version:   v5.0
+; set_version:  s20260803-001
+; symbol:       USDCAD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   d56b3c91cf71e1516aef0830685e5d41612a16782a2e8498491113e064791737
+; author:       Development
+; date:         2026-08-03
+;==========================================================
+qm_ea_id=20207
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_z_lookback_d1=60
+strategy_beta=-0.460267756
+strategy_entry_z=2.0
+strategy_exit_z=0.5
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=2.0
+strategy_deviation_points=20
+

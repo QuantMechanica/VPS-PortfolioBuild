@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_RESEARCH_ONLY",
+  "deployment_allowed": false,
+  "candidate": {
+    "ea_id": 11165,
+    "expert": "QM\\QM5_11165_weiss-rsi-ma",
+    "symbol": "AUDCAD.DWX",
+    "period": "H1",
+    "setfile": "framework/EAs/QM5_11165_weiss-rsi-ma/sets/QM5_11165_weiss-rsi-ma_AUDCAD.DWX_H1_backtest_ablation_00.set"
+  },
+  "selection_basis": {
+    "q04_fold_profit_factors": [2.094, 2.589, 1.741],
+    "q05_profit_factor": 1.15,
+    "q06_harsh_profit_factor": 1.24,
+    "q07_min_profit_factor": 1.24,
+    "q07_variance_pct": 0.0,
+    "portfolio_rationale": "AUDCAD is absent from the locked incumbent and provides a non-index, non-gold FX return driver. No decorrelation benefit is assumed before joint bar-MAE testing."
+  },
+  "locked_test": {
+    "history": "2017-01-01/2025-12-31",
+    "model": 4,
+    "runs": 2,
+    "minimum_trades": 45,
+    "terminal": "T4",
+    "fresh_q08_stream_required": true,
+    "current_ftmo_cost_reconciliation_required": true,
+    "portfolio_gate": "development normal and adverse must both strictly improve the locked incumbent before 2023 validation",
+    "sealed_years": [2024, 2025]
+  },
+  "operational_constraints": {
+    "factory_off_required": true,
+    "allowed_terminals": ["T1", "T2", "T3", "T4"],
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

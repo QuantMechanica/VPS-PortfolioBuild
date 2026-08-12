@@ -1,0 +1,320 @@
+{
+  "schema_version": "qm.pipeline-books-dashboard-status/v1",
+  "program_id": "PIPELINE_BOOKS_DXZ_FTMO_2026_07",
+  "as_of_utc": "2026-07-30T09:56:00Z",
+  "freshness_max_age_hours": 168,
+  "authority": "SOURCE_STATUS_ONLY_NO_RUNTIME_AUTHORITY",
+  "binding_hash_contract": "TEXT_BYTES_CRLF_TO_LF_SHA256_V1",
+  "safety": {
+    "factory_state": "INTENTIONALLY_OFF",
+    "factory_action_authorized": false,
+    "scheduler_action_authorized": false,
+    "mt5_action_authorized": false,
+    "autotrading_action_authorized": false,
+    "deployment_authorized": false,
+    "statement": "Status projection only; Factory OFF, scheduler, MT5, deployment and AutoTrading remain separately OWNER-controlled."
+  },
+  "bindings": {
+    "plan": {
+      "path": "docs/ops/MASTER_PIPELINE_BOOKS_IMPLEMENTATION_PLAN_2026-07-29.md",
+      "file_sha256": "175e53e650b12c61decfed2bb9ada3c6f7fca45bfd418bebe82d2fdebbe46796"
+    },
+    "evidence": {
+      "path": "docs/ops/evidence/2026-07-29_pipeline_books_w6_w8_dashboard_wave.md",
+      "file_sha256": "49fb9710babfeddd13acdaba6be1e26b3cb96036bb532de244aa1d3965a7c6ae"
+    },
+    "ftmo_book3_runtime_projection": {
+      "path": "docs/ops/evidence/2026-07-30_ftmo_book3_research_only_runtime_projection.json",
+      "file_sha256": "edd27325e7597cc6df730b91addc9937ca33d4bdc2b8121aa662abc936547352"
+    },
+    "q08_policy": {
+      "path": "framework/scripts/q08_v3_shadow/archetype_policy_v1.json",
+      "file_sha256": "453d8f9456dcb6a206d8f945154d7ffa79423044704ea1346b286e68ca46a4cd",
+      "canonical_sha256": "8c8930beb9966467abd68fc657ed440acb79ef8870ecc0d5de5952956f82e52b"
+    },
+    "test_lanes": {
+      "path": "tools/strategy_farm/config/test_lanes.v2.json",
+      "file_sha256": "b10c9e59a2a9ee419adfb3dcfd006ec022f6ddb132de9b01369c02338dfcdecd"
+    },
+    "external_residual_exit_receipt": {
+      "path": "docs/ops/evidence/2026-07-30_external_residual_exit_receipt.json",
+      "file_sha256": "ab923cbd13334a23227c73cacb31043d5c45ed70d453e39635c6723df41f4ecd"
+    },
+    "rulepacks": [
+      {
+        "rulepack_id": "DXZ_BETTER_BOOK_V1",
+        "path": "tools/strategy_farm/config/target_rulepacks/DXZ_BETTER_BOOK_V1.json",
+        "file_sha256": "923836bb1879fd0b00b25322a8d6c5a7be1d0ac75a95cf1bf7692d97cf58300d",
+        "canonical_sha256": "9cd49385808f2d7b7041135c4f5aaf0d7b62a3020e31e51bee9f8b1904b6f284"
+      },
+      {
+        "rulepack_id": "FTMO_2S_100K_SWING_V1",
+        "path": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V1.json",
+        "file_sha256": "d446e03526ad03de502cb8cbc38c810362c36d968cf01fb5881cd68d339f4e77",
+        "canonical_sha256": "e65f58fc7dc43becbfc5e671bc4f3c526af998b086a787994be8694780b62d59"
+      }
+    ]
+  },
+  "work_packages": [
+    {
+      "id": "W0",
+      "title": "Audit and safety closure",
+      "status": "SOURCE_IMPLEMENTED_WITH_OWNER_RESIDUALS",
+      "source_status": "IMPLEMENTED",
+      "runtime_status": "DEFERRED_FACTORY_OFF",
+      "authority_status": "NO_RUNTIME_AUTHORITY",
+      "next_action": "Sequence Vault MNT-024..029 and resolve the listed OWNER/design decisions."
+    },
+    {
+      "id": "W1",
+      "title": "Canonical contracts and execution identity",
+      "status": "FOUNDATION_SOURCE_IMPLEMENTED",
+      "source_status": "FOUNDATION_IMPLEMENTED",
+      "runtime_status": "NOT_INTEGRATED",
+      "authority_status": "NO_RUNTIME_AUTHORITY",
+      "next_action": "Wire manifest, bundle and orthogonal verdict fields into the transactional canonical write path."
+    },
+    {
+      "id": "W2",
+      "title": "OWNER control, Strategy Card V3 and experiment ledger",
+      "status": "FOUNDATION_SOURCE_IMPLEMENTED",
+      "source_status": "FOUNDATION_IMPLEMENTED",
+      "runtime_status": "NOT_INTEGRATED",
+      "authority_status": "NO_RUNTIME_AUTHORITY",
+      "next_action": "Persist append-only records and wire family fingerprints, corpus manifests and Vault projections."
+    },
+    {
+      "id": "W3",
+      "title": "Return, cost, stress and statistical foundations",
+      "status": "PARTIAL_SHADOW_SOURCE_IMPLEMENTED",
+      "source_status": "PARTIAL_SHADOW_IMPLEMENTED",
+      "runtime_status": "SHADOW_ONLY",
+      "authority_status": "NO_RUNTIME_AUTHORITY",
+      "next_action": "Complete MTM paths, nested walk-forward, calibrated costs, execution Monte Carlo and DSR/FDR goldens."
+    },
+    {
+      "id": "W4",
+      "title": "Q08 v3 evidence dossier",
+      "status": "SHADOW_FOUNDATION_SOURCE_IMPLEMENTED",
+      "source_status": "SHADOW_FOUNDATION_IMPLEMENTED",
+      "runtime_status": "SHADOW_ONLY",
+      "authority_status": "NO_RUNTIME_AUTHORITY",
+      "next_action": "Implement production subtests, calibrate, dual-evaluate and request separate OWNER promotion approval."
+    },
+    {
+      "id": "W5",
+      "title": "Target admission and portfolio truth",
+      "status": "RULEPACK_FOUNDATION_SOURCE_IMPLEMENTED",
+      "source_status": "RULEPACK_FOUNDATION_IMPLEMENTED",
+      "runtime_status": "RESEARCH_ONLY",
+      "authority_status": "NO_RUNTIME_AUTHORITY",
+      "next_action": "Add authenticated candidate views, synchronized book simulation, marginal contribution and manifests."
+    },
+    {
+      "id": "W6",
+      "title": "EA framework and account-wide risk authority",
+      "status": "PARTIAL_SOURCE_IMPLEMENTED_RUNTIME_MIGRATION_BLOCKED",
+      "source_status": "PARTIAL_IMPLEMENTED",
+      "runtime_status": "MIGRATION_NOT_APPLIED",
+      "authority_status": "NO_RUNTIME_AUTHORITY",
+      "next_action": "Physically isolate runner history, migrate a compile-tested EA cohort, apply typed lifecycle only with OWNER approval, then prove governor parity and Windows fault behavior."
+    },
+    {
+      "id": "W7",
+      "title": "Migration and re-adjudication",
+      "status": "DRY_RUN_SOURCE_IMPLEMENTED_OWNER_APPLY_BLOCKED",
+      "source_status": "DRY_RUN_IMPLEMENTED",
+      "runtime_status": "NOT_APPLIED",
+      "authority_status": "NO_RUNTIME_AUTHORITY",
+      "next_action": "Ratify current targets, resolve 46 collision groups, attach real V3 decisions and request OWNER approval before a separately reviewed append-only apply."
+    },
+    {
+      "id": "W8",
+      "title": "DXZ and FTMO outcome lanes",
+      "status": "FTMO_RESEARCH_RUNTIME_EVALUATED_STRICT_UNVERIFIED_NO_GO",
+      "source_status": "EVALUATOR_IMPLEMENTED",
+      "runtime_status": "RESEARCH_MODEL_COMPLETE_STRICT_QUALIFICATION_UNVERIFIED",
+      "authority_status": "NO_RUNTIME_AUTHORITY",
+      "next_action": "Close event-complete governor and shared-equity evidence, then run a separately preregistered exact-profile free trial before any money decision."
+    }
+  ],
+  "q08_v3": {
+    "lifecycle": "SHADOW_ONLY",
+    "promotion_state": "NOT_OWNER_APPROVED",
+    "canonical_q08_unchanged": true,
+    "policy_canonical_sha256": "8c8930beb9966467abd68fc657ed440acb79ef8870ecc0d5de5952956f82e52b",
+    "verdict_states": [
+      "SUPPORTED",
+      "CONDITIONAL",
+      "INSUFFICIENT",
+      "CONTRADICTED",
+      "INVALID"
+    ],
+    "evidence_semantics": "A conditional research lane remains available, but missing evidence is not PASS and hard contradiction or invalid lineage cannot be weighted away."
+  },
+  "target_lanes": [
+    {
+      "lane_id": "DXZ_BETTER_BOOK",
+      "label": "Darwinex Zero better book",
+      "state": "RESEARCH_EVALUATOR_SOURCE_IMPLEMENTED",
+      "rulepack_id": "DXZ_BETTER_BOOK_V1",
+      "rulepack_canonical_sha256": "9cd49385808f2d7b7041135c4f5aaf0d7b62a3020e31e51bee9f8b1904b6f284",
+      "eligibility": "NOT_EVALUATED",
+      "deployment_authority": "NONE",
+      "next_action": "Feed the implemented dossier with authenticated candidate and synchronized book evidence before challenger probation."
+    },
+    {
+      "lane_id": "FTMO_2S_100K_SWING",
+      "label": "FTMO two-step 100K swing",
+      "state": "RESEARCH_RUNTIME_EVALUATED_STRICT_UNVERIFIED",
+      "rulepack_id": "FTMO_2S_100K_SWING_V1",
+      "rulepack_canonical_sha256": "e65f58fc7dc43becbfc5e671bc4f3c526af998b086a787994be8694780b62d59",
+      "eligibility": "STRICT_QUALIFICATION_UNVERIFIED",
+      "deployment_authority": "NONE",
+      "next_action": "Treat the completed native model as research only; close missing setup data and pass a separately preregistered exact-profile free trial before any money gate."
+    }
+  ],
+  "ftmo_book3_runtime_evaluation": {
+    "evidence_class": "RESEARCH_ONLY_RUNTIME_PROJECTION",
+    "book_id": "FTMO_BOOK3_STANDALONE_R0_R1_R2",
+    "status": "RESEARCH_MODEL_COMPLETE_STRICT_QUALIFICATION_UNVERIFIED",
+    "source_manifest_sha256": "fdd26cc9d794c8420ab2f2914aa147f60dc3bdc3a7c4df8bd3c05d2ad91081ab",
+    "source_receipt_sha256": "303857750a452c538cfad41ea1026b78b717f92d949cc4abc8594c4a1ddb5b38",
+    "readiness": {
+      "input_integrity": "PASS",
+      "native_stream_reconciliation": "PASS",
+      "shared_account_model": "COMPLETE_RESEARCH_ONLY",
+      "strict_qualification": "UNVERIFIED",
+      "money_gate": "SETUP_DATA_MISSING",
+      "paid_challenge": "NO_GO"
+    },
+    "native_runs": [
+      {
+        "rung": "R0",
+        "ea_id": 9936,
+        "symbol": "USDJPY.DWX",
+        "trades": 1143,
+        "lifecycle_mismatches": 0,
+        "reconciliation": "PASS"
+      },
+      {
+        "rung": "R1",
+        "ea_id": 10145,
+        "symbol": "XAUUSD.DWX",
+        "trades": 291,
+        "lifecycle_mismatches": 0,
+        "reconciliation": "PASS"
+      },
+      {
+        "rung": "R2",
+        "ea_id": 13108,
+        "symbol": "XTIUSD.DWX",
+        "trades": 548,
+        "lifecycle_mismatches": 0,
+        "reconciliation": "PASS"
+      }
+    ],
+    "policy_bootstrap": {
+      "label": "IN_SAMPLE_INTERNAL_POLICY_EOD_SURROGATE",
+      "paths": 25000,
+      "phase1_pass_percent": "67.240%",
+      "two_phase_pass_percent": "44.896%",
+      "official_breach_percent": "33.456%",
+      "gate_eligible": false
+    },
+    "temporal_holdout_diagnostic": {
+      "label": "TEMPORAL_HOLDOUT_DIAGNOSTIC_NOT_SELECTION_SEALED",
+      "starts": 102,
+      "phase1_pass_percent": "84.31%",
+      "two_phase_pass_percent": "81.37%",
+      "official_breach_percent": "3.92%",
+      "gate_eligible": false
+    },
+    "authorization": {
+      "factory_action_authorized": false,
+      "factory_restart_authorized": false,
+      "money_gate_authorized": false,
+      "paid_challenge_purchase_authorized": false,
+      "deployment_allowed": false
+    },
+    "limitations": [
+      "The policy bootstrap uses in-sample evidence and an end-of-day governor surrogate; it is not gate-eligible.",
+      "The temporal holdout is diagnostic because strategy selection was not sealed before the 2018-2025 vintage was observed.",
+      "Event-complete shared-equity, target-crossing, pending-order and forced-flatten traces are missing, so strict qualification and the money gate remain blocked.",
+      "This projection grants no Factory, restart, deployment, paid-challenge, money or trading authority."
+    ]
+  },
+  "verification_lanes": {
+    "green": {
+      "state": "PASS",
+      "passed": 3511,
+      "skipped": 1,
+      "deselected": 0,
+      "subtests_passed": 49,
+      "statement": "All five external sentinels passed without skip, xfail, deselection or weakening; full suite: 3511 passed, 1 skipped, 49 subtests passed."
+    },
+    "external_residual": {
+      "state": "RESOLVED_PASS",
+      "expected_count": 5,
+      "pass_count": 5,
+      "items": [
+        {
+          "node_id": "tools/strategy_farm/tests/test_dxz_10939_repair_packet.py::test_real_spec_hash_bindings_pass",
+          "label": "DXZ10939 real spec binding",
+          "owner_items": ["MNT-021", "MNT-043"]
+        },
+        {
+          "node_id": "tools/strategy_farm/tests/test_dxz_12567_xau_repair_packet.py::test_spec_is_hash_bound_blocked_and_xau_not_xng",
+          "label": "DXZ12567 immutable spec binding",
+          "owner_items": ["MNT-021", "MNT-043"]
+        },
+        {
+          "node_id": "tools/strategy_farm/tests/test_execution_contract_lint.py::test_dxz23_registry_is_source_bound_and_structurally_clean",
+          "label": "DXZ23 registry and calendar structure",
+          "owner_items": ["MNT-021", "MNT-043"]
+        },
+        {
+          "node_id": "tools/strategy_farm/tests/test_execution_contract_lint.py::test_density_execution_contracts_are_source_and_runtime_binding_clean",
+          "label": "Density setfile runtime bindings",
+          "owner_items": ["MNT-021", "MNT-043"]
+        },
+        {
+          "node_id": "tools/strategy_farm/tests/test_execution_contract_lint.py::test_20009_ftmo_news_calendar_is_exact_and_evidence_bound",
+          "label": "QM20009 news-calendar binding",
+          "owner_items": ["MNT-045"]
+        }
+      ],
+      "exit_condition": "All five node IDs PASS without skip, xfail, assertion weakening or silent rebinding."
+    }
+  },
+  "owner_blockers": [
+    {
+      "id": "OWNER-UNREADABLE-LINKS-FRIDAY",
+      "title": "Confirm desired OFF/ON policy for QM_StrategyFarm_UnreadableLinks_Friday",
+      "state": "OPEN_OWNER_DECISION",
+      "safe_default": "Preserve the observed disabled state.",
+      "blocks": ["W0", "MNT-028"]
+    },
+    {
+      "id": "OWNER-RGATE-R3",
+      "title": "Decide the frontmatter-only R-gate rule and repair both contradictory R3 cards",
+      "state": "OPEN_OWNER_DECISION",
+      "safe_default": "Warn and refuse the known contradictory cards.",
+      "blocks": ["W7", "MNT-012"]
+    },
+    {
+      "id": "OWNER-Q09-MIGRATION",
+      "title": "Approve Q09 tail handling and the live/staged overlay companion path",
+      "state": "OPEN_OWNER_DECISION",
+      "safe_default": "Do not run an undersized tail or apply a migration.",
+      "blocks": ["W7", "MNT-007", "MNT-050"]
+    },
+    {
+      "id": "OWNER-FTMO-GOVERNOR-MONEY",
+      "title": "Approve the exact FTMO book/governor policy and any paid challenge action",
+      "state": "OPEN_OWNER_DECISION",
+      "safe_default": "No compile, run, purchase, deployment or trading authority.",
+      "blocks": ["W6", "W8", "FTMO_MONEY_GATE"]
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_20002_G1_PRE_OUTCOME_CLOSURE_LANDED",
+  "created_utc": "2026-07-21T06:11:14.471965+00:00",
+  "analysis_id": "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001",
+  "run_id": "20260721T025051Z_24ed7b13baac4e9ea10a2cff755ae5f5",
+  "status": "TERMINAL_REJECT_EVIDENCE_CLOSED",
+  "reason_code": "SCHEDULER_TRIGGER_NULL_COLLECTION_CONTRACT_DEFECT",
+  "closure_freeze": {
+    "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/g1_pre_outcome_closure_freeze_20260721.json",
+    "size": 7233,
+    "sha256": "84aa9a569d5e6a369ebf65fd6e40062070aa3b40cc4ff96e11d7d1b91586e453",
+    "commit": "dc6b25d6e9db156dbbcf6853f78081b7239eae2e"
+  },
+  "closure_intent": {
+    "path": "D:\\QM\\reports\\qm20002\\short_ny_reverse_time\\runs\\20260721T025051Z_24ed7b13baac4e9ea10a2cff755ae5f5\\g1_pre_outcome_closure_intent.json",
+    "size": 8109,
+    "sha256": "791aa3a1798eaa7be51a18809ea5bfe6518d5d43fc2ad898ef712bde8acf3fab"
+  },
+  "quiescence_anchor": {
+    "path": "D:\\QM\\reports\\qm20002\\short_ny_reverse_time\\runs\\20260721T025051Z_24ed7b13baac4e9ea10a2cff755ae5f5\\g1_pre_outcome_quiescence_anchor.json",
+    "size": 10504,
+    "sha256": "fbd1457974d276fe421265e43e9e583d2adf51e52a6060446e1ec348d4f70f84"
+  },
+  "launch_state": {
+    "path": "D:\\QM\\reports\\qm20002\\short_ny_reverse_time\\runs\\20260721T025051Z_24ed7b13baac4e9ea10a2cff755ae5f5\\launch_state.json",
+    "size": 7936,
+    "sha256": "71876c77e8a26f1371bc4cb2080ce8c92e6f7c2cdabe80ac45d4a39bbae7e212",
+    "state_status": "REJECT",
+    "resume_allowed": false,
+    "post_allowed": false,
+    "evidence_closed": true
+  },
+  "closure_receipt": {
+    "path": "D:\\QM\\reports\\qm20002\\short_ny_reverse_time\\runs\\20260721T025051Z_24ed7b13baac4e9ea10a2cff755ae5f5\\g1_pre_outcome_closure_receipt.json",
+    "size": 6739,
+    "sha256": "cb8c6470123ee86fd110bea0ee2c06439b47552ebf45be93489df1d2839cee6b"
+  },
+  "verification": {
+    "first_invocation": "CLOSED",
+    "exact_replay": "ALREADY_CLOSED",
+    "status_classification": "TERMINAL_REJECT_EVIDENCE_CLOSED",
+    "scheduled_task_absent": true,
+    "worker_absent": true,
+    "post_receipt_absent": true,
+    "no_resume": true,
+    "outcome_fence_crossed": false,
+    "outcome_data_read": false
+  },
+  "g2_gate": {
+    "must_validate_all_bindings_recursively": true,
+    "must_reprobe_scheduled_task_absence": true,
+    "must_reject_any_g1_outcome_or_post_artifact": true,
+    "must_use_separate_control_root": "D:\\QM\\reports\\qm20002\\short_ny_reverse_time_g2"
+  }
+}

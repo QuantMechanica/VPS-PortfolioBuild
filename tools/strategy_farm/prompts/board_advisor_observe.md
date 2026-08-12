@@ -198,6 +198,13 @@ Exit cleanly.
 - **DO NOT** modify the `autonomous_wake` decision tree without OWNER sign-off
   in this session (separate change control — this wake observes, doesn't redesign).
 - **DO NOT** push commits to `origin/main`. Stay on `agents/board-advisor`.
+- **DO NOT** write `agent_tasks` rows by direct SQL with invented agent labels.
+  `assigned_agent` MUST be a registry agent id (`codex` | `claude` | `gemini`) —
+  never a composite like `codex:agents/board-advisor` (30 such rows were invisible
+  to cockpit attribution; audit 2026-07-24 FB-08). Prefer the router CLI
+  (`agent_router.py enqueue/update-task/close-review`) over direct SQL; if direct
+  SQL is unavoidable, use only canonical agent ids and payload keys that exist in
+  the codebase.
 - **DO NOT** exceed 30 min total wake duration.
 - **DO** commit any repo fixes with `fix(strategy_farm): <one-line> via observe wake <utc-iso>`.
 

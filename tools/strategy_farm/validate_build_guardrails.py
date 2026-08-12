@@ -30,13 +30,14 @@ TIME_PARAM_TOKENS = (
     "hhmm",
     "minute",
     "session",
+    "friday",
+    "time",
+)
+TIME_PARAM_PHRASES = (
     "range_start",
     "range_end",
     "entry_start",
     "entry_end",
-    "exit",
-    "friday",
-    "time",
 )
 TACTICAL_KEYWORDS = (
     "asian",
@@ -118,7 +119,10 @@ def _time_strategy_inputs(strategy_inputs: set[str]) -> set[str]:
     result: set[str] = set()
     for name in strategy_inputs:
         lower = name.lower()
-        if any(token in lower for token in TIME_PARAM_TOKENS):
+        words = set(re.findall(r"[a-z0-9]+", lower))
+        if any(token in words for token in TIME_PARAM_TOKENS) or any(
+            phrase in lower for phrase in TIME_PARAM_PHRASES
+        ):
             result.add(name)
     return result
 
@@ -130,7 +134,7 @@ def _is_tactical_ea(ea_dir: Path, mq5_path: Path) -> bool:
         if candidate.exists():
             chunks.append(candidate.read_text(encoding="utf-8", errors="ignore"))
     haystack = "\n".join(chunks).lower()
-    return any(keyword in haystack for keyword in TACTICAL_KEYWORDS)
+    return any(re.search(rf"\b{re.escape(keyword)}\b", haystack) for keyword in TACTICAL_KEYWORDS)
 
 
 def _scan_setfile(path: Path, max_news_stale_hours: int) -> list[dict[str, Any]]:

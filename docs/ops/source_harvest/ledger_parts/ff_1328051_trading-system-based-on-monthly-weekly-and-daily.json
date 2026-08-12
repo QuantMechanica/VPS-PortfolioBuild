@@ -1,0 +1,40 @@
+{
+  "pdf": "ff_1328051_trading-system-based-on-monthly-weekly-and-daily.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1328051_trading-system-based-on-monthly-weekly-and-daily.pdf",
+      "source_pages": "1-2",
+      "source_ref": "Sol72, 'Trading System Based on Monthly, Weekly, and Daily Opening Prices,' ForexFactory thread 1328051 (2025), https://www.forexfactory.com/thread/1328051/trading-system-based-on-monthly-weekly-and-daily",
+      "strategy_name": "Opening-Price Levels (MOP/WOP/DOP) Bounce/Rejection",
+      "concept": "Monthly/weekly/daily opening prices act as S/R levels; trade bounces off them (long) or rejections of them (short), filtered by RSI-50 and candlestick confirmation.",
+      "market": "Metals",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 level reaction with RSI/candle filter, deterministic once the entry trigger is pinned; D1/W1/M1 opens computable for FX/metals/indices; has SL + 1:2 RR and Friday-close fits framework.",
+      "priority_hint": "MED",
+      "notes": "Weekly/monthly-open anchor is a genuine session-structure reference (mild differentiation from index/metal swing-MR). But 'bounce + confirmation' is subjective and needs a concrete trigger (e.g. pin-bar at open + RSI cross) before build. Variants in thread, same core level-reaction idea: flashpaul's D1 rejection-wick fade at monthly/weekly open (p.5, 31-32) and LucasFX7's enter-at-close (p.32). Example prices ~2500-2900 (gold-range); concept ports to FX/Indices."
+    },
+    {
+      "source_file": "ff_1328051_trading-system-based-on-monthly-weekly-and-daily.pdf",
+      "source_pages": "14-15",
+      "source_ref": "Sol72, 'Algorithm for Entering a Trade' (weekly-open break + order block + extreme volume), in ForexFactory thread 1328051 (2025), https://www.forexfactory.com/thread/1328051/trading-system-based-on-monthly-weekly-and-daily",
+      "strategy_name": "Weekly-Open Break + Order-Block Liquidity Sweep (ICT/SMC)",
+      "concept": "After price breaks/sweeps the weekly opening level, enter a limit order at the extreme-volume order-block candle once price closes back beyond it — a liquidity-grab reversal.",
+      "market": "Metals",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Fully specified and deterministic OB/sweep/confirmation-close/limit-entry mechanics in pure MQL5, SL beyond OB + 1:2 RR; but the core 'extreme volume' filter needs real exchange volume (only tick-volume proxy on .DWX) and this ICT/SMC order-block/liquidity-sweep family is already falsified in-house.",
+      "priority_hint": "LOW",
+      "notes": "Author traded ETH/USDT on Bybit (crypto, out of universe); himself notes tick vs real volume makes FX/gold application hard (p.11, 16) then later de-emphasizes volume to 'confirmation only' (p.25), so the OB/sweep core is buildable without it. Strong dead-end precedent: icy-tea/first-swing/Silver-Bullet/Wyckoff-SMC all RETIRE / no mechanical edge. TP options given: next weekly/daily level, next OB, FVG midpoint, or 1:2 RR."
+    }
+  ],
+  "notes": [
+    "Thread is largely a live trade journal on ETH/USDT (crypto); two distinct mechanizable rule sets extracted, neither depends on the crypto data itself.",
+    "Year inferred as 2025 from the 'Bybit robbery' reference (Feb-2025 Bybit hack)."
+  ]
+}

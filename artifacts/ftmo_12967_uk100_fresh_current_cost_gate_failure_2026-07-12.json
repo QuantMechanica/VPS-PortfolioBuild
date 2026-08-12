@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_GATE",
+  "ea_id": 12967,
+  "symbol": "UK100.DWX",
+  "period": "D1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/compile/20260712_142127/QM5_12967_uk100-weekly-oversold-swing.compile.log",
+  "compile_log_sha256": "78425A1729566CFA009E03F618076AA5E5DFD06346AF70654CBE9DE9CBCBF388",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12967_uk100_d1_wave13_20260712\\QM5_12967\\20260712_142209\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {"path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12967_uk100_d1_wave13_20260712\\QM5_12967\\20260712_142209\\raw\\run_01\\report.htm", "sha256": "ACC6BAC3A724B738A2F63AF7E2B31E8D6DC2D7D920C8F3020812244095CA79E9"},
+    {"path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12967_uk100_d1_wave13_20260712\\QM5_12967\\20260712_142209\\raw\\run_02\\report.htm", "sha256": "C973FC6D24DE4A86A1A0767469E5ABA53DF90DC7884BA07EFB325D007F2F8877"}
+  ],
+  "native": {"trades": 65, "profit_factor": 0.636801, "net_profit": -8011.89, "equity_drawdown": 9492.35},
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\12967_UK100_DWX_T4_FRESH_20260712.jsonl",
+    "rows": 65,
+    "sha256": "7CCA900AFC7FB1BDC3AD3FA0243C32A7304B56901D280E7929462B34BC152EC0",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET",
+    "corrected_net_delta": 0.0,
+    "net_tolerance": 1.0
+  },
+  "current_cost_artifact": "artifacts/ftmo_12967_uk100_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 65,
+    "profit_factor": 0.584583,
+    "net_profit": -9380.43,
+    "close_to_close_max_drawdown": 10125.51,
+    "commission_total": 0.0,
+    "swap_total": -4357.55
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "negative_calendar_years": [2019, 2020, 2022, 2023, 2024, 2025],
+    "calendar_years_below_density_floor": [2017, 2018],
+    "reason_for_reject": "The approved UK100 weekly oversold port is deeply loss-making natively and deteriorates further under current FTMO UK100 rollover costs."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

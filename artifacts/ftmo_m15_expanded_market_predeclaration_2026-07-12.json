@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_SCREEN",
+  "family": "expanded_market_m15_baselines",
+  "hypothesis": "The existing UK index, silver, crude-oil, and natural-gas M15 exports may add return density and diversification not present in the index/gold-focused research universe.",
+  "data": {
+    "root": "D:\\QM\\mt5\\T_Export\\MQL5\\Files",
+    "symbols": ["UK100.DWX", "XAGUSD.DWX", "XTIUSD.DWX", "XNGUSD.DWX"],
+    "timeframe": "M15",
+    "allowed_end_year": 2025,
+    "xti_tick_export_validation": "artifacts/ftmo_xti_m15_tick_export_validation_2026-07-11.json",
+    "other_symbols_native_validation_required_if_selected": true
+  },
+  "instrument_contract": [
+    {"symbol": "UK100.DWX", "timezone": "Europe/London", "session": "08:00-16:30", "round_trip_cost_points": 4.0},
+    {"symbol": "XAGUSD.DWX", "timezone": "America/New_York", "session": "08:30-17:00", "round_trip_cost_points": 0.03},
+    {"symbol": "XTIUSD.DWX", "timezone": "America/New_York", "session": "09:00-14:30", "round_trip_cost_points": 0.05},
+    {"symbol": "XNGUSD.DWX", "timezone": "America/New_York", "session": "09:00-14:30", "round_trip_cost_points": 0.02}
+  ],
+  "families": {
+    "opening_range_breakout": {
+      "range_bars": [1, 2, 4],
+      "active_bars": [4, 8],
+      "buffer_atr": [0.05, 0.10],
+      "max_range_atr": [1.5, 2.5],
+      "target_r": [2.0, 3.0, 5.0]
+    },
+    "opening_impulse": {
+      "range_bars": [2, 4],
+      "impulse_atr": [0.5, 1.0],
+      "stop_atr": [0.5, 1.0],
+      "target_r": [2.0, 3.0, 5.0],
+      "mode": ["fade", "continuation"]
+    },
+    "session_gap": {
+      "gap_atr": [0.25, 0.5, 1.0],
+      "stop_atr": [0.5, 1.0],
+      "target_r": [2.0, 3.0],
+      "mode": ["fade", "continuation"]
+    }
+  },
+  "evaluated_configurations": 576,
+  "selection_contract": {
+    "development": "2018-2022",
+    "validation": "2023",
+    "sealed_holdout": "2024-2025",
+    "preholdout_gate": "DEV trades>=150 PF>=1.15 net>0; validation trades>=25 PF>=1.05 net>0; at least four positive development years",
+    "selection": "At most one winner per named family by the lower of development and validation PF.",
+    "holdout_open_rule": "Only a preholdout family winner may be recomputed through 2025.",
+    "holdout_gate": "trades>=50 PF>=1.10 net>0 and both 2024 and 2025 positive",
+    "downstream_gate": "Any holdout survivor still requires native MT5 parity, exact Q08 MAE reconciliation, current FTMO cost reconstruction, and marginal portfolio improvement."
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

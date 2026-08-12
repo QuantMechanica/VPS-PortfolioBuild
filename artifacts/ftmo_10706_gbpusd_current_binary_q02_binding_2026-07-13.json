@@ -1,0 +1,81 @@
+{
+  "blockers": [],
+  "cohort_metrics": null,
+  "deterministic": true,
+  "ea_id": 10706,
+  "files": {
+    "card": {
+      "modified_utc": "2026-05-22T07:44:01.075232+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\docs\\strategy_card.md",
+      "sha256": "54b67c13235f6be8e47a1054a31b4e4391423f2fb870d71a327f001d17a3d366",
+      "size_bytes": 5305
+    },
+    "ex5": {
+      "modified_utc": "2026-07-13T04:46:46.915326+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+      "sha256": "01e34b2059de6ed505d445ce9fcbac7da0eb10d51e5cbcbbd18d38a968916078",
+      "size_bytes": 323650
+    },
+    "mq5": {
+      "modified_utc": "2026-07-10T18:52:52.620420+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.mq5",
+      "sha256": "2432e648553dc730ed4b2f5ffd47d864854ad081486b1d585b93678187022692",
+      "size_bytes": 17319
+    },
+    "setfile": {
+      "modified_utc": "2026-07-12T06:11:22.234753+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest.set",
+      "sha256": "32d8bbc918f56335761026e6f0701af2f03801b4621fe639435ca4694488553c",
+      "size_bytes": 1335
+    },
+    "spec": {
+      "modified_utc": "2026-06-05T14:39:22.743901+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\SPEC.md",
+      "sha256": "e0bb872fdfaa1cff415127d826872bb6c13529661fe18932fd9ffa67e440c647",
+      "size_bytes": 4616
+    },
+    "summary": {
+      "modified_utc": "2026-07-13T09:06:47.473008+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260713\\10706_gbpusd_q02_current\\QM5_10706\\20260713_085534\\summary.json",
+      "sha256": "ffe609b84afd7aae5e395f2200ab9f8431200b3e6fe39674335a11fce90bc61a",
+      "size_bytes": 2943
+    }
+  },
+  "metrics": {
+    "drawdown": 19628.74,
+    "net_profit": 71673.3,
+    "profit_factor": 1.34,
+    "trades": 367
+  },
+  "model": 4,
+  "period": "H1",
+  "phase": "Q02",
+  "promotion_note": "BOUND_PASS does not waive FTMO cost reconciliation or Q04-Q10.",
+  "reports": [
+    {
+      "modified_utc": "2026-07-13T09:01:35.266103+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260713\\10706_gbpusd_q02_current\\QM5_10706\\20260713_085534\\raw\\run_01\\report.htm",
+      "sha256": "467881bc6ea595371fedf489f75fb38e5350c5132d298e82bcca5e6b1af5a482",
+      "size_bytes": 788820
+    },
+    {
+      "modified_utc": "2026-07-13T09:06:43.560977+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260713\\10706_gbpusd_q02_current\\QM5_10706\\20260713_085534\\raw\\run_02\\report.htm",
+      "sha256": "f935edf546c8f0c6e50727ae3b79321302e890ae6fe5f2c318f40757441cfded",
+      "size_bytes": 788820
+    }
+  ],
+  "run_contract": {
+    "description": "current-binary deterministic replay",
+    "minimum_runs": 2,
+    "observed_runs": 2,
+    "require_identical_metrics": true
+  },
+  "schema_version": 1,
+  "scope": "native_current_binary_q02_only",
+  "seed_evidence": [],
+  "source_summary_deterministic": true,
+  "status": "BOUND_PASS",
+  "symbol": "GBPUSD.DWX",
+  "terminal": "T3"
+}

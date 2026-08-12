@@ -3,16 +3,16 @@
 ; ea_id:        11125
 ; ea_slug:      tm-rsi2-extreme
 ; ea_version:   v5.0
-; set_version:  s20260620-stress-med
+; set_version:  s20260715-stress-med
 ; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  q05_stress_medium
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8553ad94aae69237ab346cfe7b70471a3530050772034d37b4e0cb439c6b0d79
+; build_hash:   1141e15ff327ce5bf93c1552828fe3568277d9c77ad237c8a2ced0a503a6a4e5
 ; author:       Development
-; date:         2026-06-20
+; date:         2026-07-15
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

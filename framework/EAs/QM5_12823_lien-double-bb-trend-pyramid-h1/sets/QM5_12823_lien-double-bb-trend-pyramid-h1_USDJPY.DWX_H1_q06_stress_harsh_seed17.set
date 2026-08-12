@@ -1,0 +1,55 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12823
+; ea_slug:      lien-double-bb-trend-pyramid-h1
+; ea_version:   v5.0
+; set_version:  s20260714-stress-harsh
+; symbol:       USDJPY.DWX
+; timeframe:    H1
+; environment:  q06_stress_harsh
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-14
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
+qm_rng_seed=17
+qm_news_stale_max_hours=336
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.1000
+strategy_bb_period=20
+strategy_bb_dev_inner=1.0
+strategy_bb_dev_outer=2.0
+strategy_slope_bars=5
+strategy_sl_fixed_pips=40.0
+strategy_sl_cap_pips=60.0
+strategy_spread_cap_pips=20.0
+strategy_no_friday_entry=1
+strategy_max_adds=3
+strategy_add_size_mode=0
+strategy_scale_mode=0
+strategy_aggregate_risk_cap_pct=1.0
+strategy_trail_method=0
+strategy_trail_structure_bars=10
+strategy_trail_atr_period=20
+strategy_trail_atr_mult=2.0

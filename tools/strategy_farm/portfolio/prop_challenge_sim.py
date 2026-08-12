@@ -114,11 +114,17 @@ def evaluate_phase(
     max_loss_floor = starting_capital * (1.0 - phase.max_loss_pct / 100.0)
     equity = starting_capital
     target_day: int | None = None
+    trading_days = 0
     max_closed_daily_loss_pct = 0.0
     max_total_loss_pct = 0.0
 
     for day_index, raw_pnl in enumerate(daily_pnl, start=1):
         pnl = float(raw_pnl)
+        # Q08 daily streams do not retain position-open markers. A non-zero
+        # closed-PnL day is a conservative proxy: it cannot turn an idle
+        # calendar day into an FTMO trading day.
+        if abs(pnl) > EPSILON:
+            trading_days += 1
         equity += pnl
         if pnl < 0.0:
             max_closed_daily_loss_pct = max(
@@ -138,6 +144,7 @@ def evaluate_phase(
                 reason="daily_loss_breach",
                 days=day_index,
                 target_day=target_day,
+                trading_days=trading_days,
                 terminal_equity=equity,
                 max_closed_daily_loss_pct=max_closed_daily_loss_pct,
                 max_total_loss_pct=max_total_loss_pct,
@@ -149,6 +156,7 @@ def evaluate_phase(
                 reason="max_loss_breach",
                 days=day_index,
                 target_day=target_day,
+                trading_days=trading_days,
                 terminal_equity=equity,
                 max_closed_daily_loss_pct=max_closed_daily_loss_pct,
                 max_total_loss_pct=max_total_loss_pct,
@@ -156,13 +164,18 @@ def evaluate_phase(
 
         if equity + EPSILON >= target_equity and target_day is None:
             target_day = day_index
-        if target_day is not None and day_index >= phase.min_trading_days:
+        if (
+            target_day is not None
+            and trading_days >= phase.min_trading_days
+            and equity + EPSILON >= target_equity
+        ):
             return _phase_result(
                 phase,
                 passed=True,
                 reason="passed",
                 days=day_index,
                 target_day=target_day,
+                trading_days=trading_days,
                 terminal_equity=equity,
                 max_closed_daily_loss_pct=max_closed_daily_loss_pct,
                 max_total_loss_pct=max_total_loss_pct,
@@ -174,6 +187,7 @@ def evaluate_phase(
         reason="target_not_reached",
         days=len(daily_pnl),
         target_day=target_day,
+        trading_days=trading_days,
         terminal_equity=equity,
         max_closed_daily_loss_pct=max_closed_daily_loss_pct,
         max_total_loss_pct=max_total_loss_pct,
@@ -517,6 +531,7 @@ def _phase_result(
     reason: str,
     days: int,
     target_day: int | None,
+    trading_days: int,
     terminal_equity: float,
     max_closed_daily_loss_pct: float,
     max_total_loss_pct: float,
@@ -526,6 +541,7 @@ def _phase_result(
         "passed": passed,
         "reason": reason,
         "days": days,
+        "trading_days": trading_days,
         "target_day": target_day,
         "terminal_equity": _round_float(terminal_equity),
         "max_closed_daily_loss_pct": _round_float(max_closed_daily_loss_pct),

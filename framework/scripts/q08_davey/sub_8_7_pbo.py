@@ -62,19 +62,38 @@ def run(ea_id: int | None = None, symbol: str | None = None,
         meta_status = str(meta.get("status") or "").upper()
         if meta_status in {"INVALID", "INVALID_NA"}:
             reason = str(meta.get("reason") or "pbo_config_family_invalid")
+            common_evidence = {
+                "scores_path": str(scores_path),
+                "scores_meta_path": str(meta_path),
+                "n_configs": int(meta.get("n_configs") or 0),
+                "n_common_slices": int(meta.get("n_common_slices") or 0),
+                "config_source": meta.get("config_source"),
+            }
+            # NOT-APPLICABLE (2026-07-27, census rank 7): status INVALID_NA is the PBO
+            # runner's AUTHORITATIVE structural determination — the neighborhood runner
+            # proved the strategy has no perturbable parameter, so a >=2-config PBO family
+            # is UNDEFINED BY CONSTRUCTION for this fixed-parameter card. That is neither a
+            # model-selection verdict nor a retry-owed infra condition (no retry can invent
+            # a config family), so it must NOT read as a failure. Distinct from a plain
+            # meta INVALID (insufficient_distinct_configs / non-even slices), which the
+            # sub-gate cannot prove is structural and which stays a NARROW C2 tooling
+            # INVALID -> INFRA_FAIL.
+            if meta_status == "INVALID_NA":
+                return make_result(
+                    GATE_NAME,
+                    "NOT_APPLICABLE",
+                    value=None,
+                    threshold=PBO_MAX_PCT,
+                    detail=f"not_applicable:{reason}",
+                    evidence=common_evidence,
+                )
             return make_result(
                 GATE_NAME,
                 "INVALID",
                 value=None,
                 threshold=PBO_MAX_PCT,
-                detail=(f"INVALID_NA:{reason}" if meta_status == "INVALID_NA" else reason),
-                evidence={
-                    "scores_path": str(scores_path),
-                    "scores_meta_path": str(meta_path),
-                    "n_configs": int(meta.get("n_configs") or 0),
-                    "n_common_slices": int(meta.get("n_common_slices") or 0),
-                    "config_source": meta.get("config_source"),
-                },
+                detail=reason,
+                evidence=common_evidence,
             )
 
     try:

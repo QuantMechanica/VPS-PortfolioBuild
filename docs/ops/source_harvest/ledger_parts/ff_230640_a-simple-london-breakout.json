@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_230640_a-simple-london-breakout.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_230640_a-simple-london-breakout.pdf",
+      "source_pages": "1-6, 13-14",
+      "source_ref": "mer071898, \"A Simple London Breakout\", ForexFactory thread 230640 (2010), https://www.forexfactory.com/thread/230640-a-simple-london-breakout",
+      "strategy_name": "London Open Range Breakout (box + stop orders)",
+      "concept": "Session-open range breakout: draw a box over the 03:00-06:00 GMT pre-Frankfurt-open range on M15, place buy/sell stop orders at the box edges (or just-inside fib-extension levels), take profit equal to the box size, stop loss at the opposite box edge, and skip days when the box exceeds ~40-50 pips.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "London",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic session-open range breakout, pure-MQL5 implementable with a hard SL and fixed TP; FX majors/crosses available via .DWX; FTMO/DXZ compatible (defined stops, Friday-close exists).",
+      "priority_hint": "MED",
+      "notes": "Session-structure driver (favored over index/metal swing-MR) and JPY-crosses included, but a heavily-traded pattern with only marginal demonstrated edge. Best pair GBP/USD (cleanest London open after quiet Asian hours); also EUR/USD, USD/JPY, EUR/JPY, USD/CHF, EUR/GBP. In-thread backtest (xmph, GBP/USD 2009, 0.1 lot, 1 trade/day, no entry after 5pm): 251 trades, PF 1.14, 60% win, max DD 17.25% -- but 2010 YTD was a net loss (3000->2700). Variants of same core rules (ONE candidate): simple box-edge breach without fibs (Uberscalper), SL at box middle for smaller losses (nightyhawk), 07:00-10:00 GMT window + 161.8-fib TP (stringfx), 84-EMA trend filter (ingmarforex). Optional martingale-on-losers is mentioned but explicitly risky -- exclude it (violates FTMO/DXZ DD rules); base rules keep a hard SL. Box is anchored to GMT so broker-time/DST offset must be handled (poster is GMT+1, uses 04:00-07:00). Close open trades before the next box (~03:00 GMT)."
+    }
+  ],
+  "notes": ["Single London-open box-breakout candidate; all in-thread tweaks are variants of the same core rules, folded into notes."]
+}

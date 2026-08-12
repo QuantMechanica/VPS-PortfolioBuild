@@ -135,11 +135,20 @@ def run(trades: list[dict], equity_stream: list[dict] | None = None, **_) -> dic
                       "crisis_informational": crisis_info})
 
     if missing:
+        # DL-082 §3b (frequency-aware). Structural requirement math: the gate needs
+        # >=1 trade in each of the 3 ATR regimes, then each net-positive. Profitability
+        # "in all 3 regimes" is STRUCTURALLY unevaluable when the EA never opened a
+        # position in one of them — a low-frequency survivor may simply never trade
+        # during the (rare) high-ATR regime. Demote to INFORMATIONAL (recorded with
+        # per-regime counts, carrying no soft-fail signal). When all 3 regimes carry
+        # trades the gate evaluates exactly as before (an unprofitable regime FAILs).
+        # NOTE: genuine data/join failures above (regime_input_missing, regime_join_*)
+        # stay INVALID — those are infra/data conditions, not frequency-structural.
         return make_result(
-            GATE_NAME, "FAIL",
+            GATE_NAME, "INFORMATIONAL",
             value={r: regime_count[r] for r in REQUIRED_REGIMES},
             threshold={r: ">0 trades" for r in REQUIRED_REGIMES},
-            detail=f"regimes_with_zero_trades:{missing}",
+            detail=f"structurally_inapplicable_low_frequency:regimes_with_zero_trades={missing}",
             evidence={"regime_pnl": {r: round(regime_pnl[r], 2) for r in REQUIRED_REGIMES},
                       "regime_count": dict(regime_count),
                       "unclassified_trades": unclassified,

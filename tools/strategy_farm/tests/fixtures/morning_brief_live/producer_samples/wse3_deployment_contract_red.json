@@ -1,0 +1,155 @@
+{
+  "tool": "verify_live_deployment_contract",
+  "version": "1.0",
+  "generated_utc": "2026-07-26T07:36:34.539668+00:00",
+  "trigger": "periodic",
+  "overall_status": "RED",
+  "resolved_paths": {
+    "manifest": "D:\\QM\\reports\\portfolio\\portfolio_manifest_live_24sleeve_20260724.json",
+    "profile_dir": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Profiles\\Charts\\DarwinexZero_V2_LiveOps",
+    "event_log_dir": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM",
+    "account_snapshot": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\journal\\account_snapshot.json",
+    "common_ini": "C:\\QM\\mt5\\T_Live\\MT5_Base\\config\\common.ini",
+    "database": "none (this tool opens no DB; strictly read-only filesystem)"
+  },
+  "manifest": {
+    "path": "D:\\QM\\reports\\portfolio\\portfolio_manifest_live_24sleeve_20260724.json",
+    "file_sha256": "8C719B080E18D30D83432F0999D694F699F2859CEF72C0CE7738631FB084EAB6",
+    "declared_status": "LIVE",
+    "declared_approved_by": "OWNER (Fabian) 2026-07-24 - countersigned via chat ('1 bestaetigt ... alles freigegeben') + vault NEEDS_FABIAN checkbox; countersigned content sha256 a766b5baed6075decaf26617a3871c413e6879f6286fa498d7b1b01de3db6908; record: decisions/2026-07-24_owner_approvals_audit_package.md",
+    "book": "DXZ_4000090541",
+    "n_expected_sleeves": 24,
+    "deployment_epoch": null,
+    "deployment_epoch_source": "freshness_window",
+    "freshness_window_hours": 24.0
+  },
+  "identity": {
+    "expected_account": "4000090541",
+    "expected_server": null,
+    "config_account": "4000090541",
+    "config_server": "Darwinex-Live",
+    "config_account_match": true,
+    "config_server_match": true,
+    "runtime_account": 4000090541,
+    "terminal_heartbeat_utc": "2026-07-26T07:35:39Z",
+    "terminal_heartbeat_age_sec": 55.5,
+    "terminal_heartbeat_fresh": true
+  },
+  "disk_profile": {
+    "label": "DISK-PROFILE TRUTH (recovery profile on disk; NOT proof of runtime attachment)",
+    "status": "RED",
+    "profile_dir": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Profiles\\Charts\\DarwinexZero_V2_LiveOps",
+    "chart_files_total": 25,
+    "trading_parseable": 23,
+    "unparseable": 1,
+    "monitor_count": 1,
+    "monitor_status": "OK",
+    "expected_present_ok": 23,
+    "expected_missing": 1,
+    "expected_field_mismatch": 0,
+    "duplicates": 0,
+    "orphans": 0,
+    "sleeves": [
+      {
+        "magic": 133010010,
+        "ea_id": 13301,
+        "symbol": "GDAXI.DWX",
+        "ea_label": "QM5_13301_balke-minute-range-breakout",
+        "expected_tf": "M5",
+        "expected_risk_percent": 0.0692,
+        "expected_binary_sha256": null,
+        "observed": {
+          "chart": "chart22.chr",
+          "symbol": "GDAXI",
+          "tf": "M5",
+          "period_type": "0",
+          "period_size": "5",
+          "name": "QM5_13301_balke-minute-range-breakout",
+          "expertmode": "1",
+          "magic": 133010010,
+          "risk_percent": "0.0692",
+          "risk_fixed": "0",
+          "portfolio_weight": "1",
+          "binary_path": "Experts\\Live EAs\\QM5_13301_balke-minute-range-breakout.ex5",
+          "binary_abs": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_13301_balke-minute-range-breakout.ex5",
+          "binary_sha256": "D7F10A684BDB007D9CB5B55E894A8E3B26192E38D3015E80550B9FA317E26483"
+        },
+        "checks": {
+          "symbol": true,
+          "tf": true,
+          "ea_name": true,
+          "magic": true,
+          "expertmode": true,
+          "risk_fixed_zero": true,
+          "risk_percent": true,
+          "binary": "UNKNOWN_NO_MANIFEST_PIN"
+        },
+        "present": true,
+        "status": "OK"
+      }
+    ],
+    "orphan_charts": [],
+    "unparseable_charts": [
+      {
+        "chart": "chart02.chr",
+        "empty": true,
+        "error": "empty file (0 bytes) -- MT5 truncated/lost the chart",
+        "n_experts": 0
+      }
+    ]
+  },
+  "runtime": {
+    "label": "RUNTIME TRUTH (fresh post-start INIT_OK / magic / EA identity heartbeats)",
+    "status": "RED",
+    "event_log_dir": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM",
+    "n_logs_indexed": 25,
+    "sleeves": [
+      {
+        "magic": 133010010,
+        "ea_id": 13301,
+        "expected_symbol": "GDAXI.DWX",
+        "log_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_13301_ea-13301.log",
+        "log_exists": true,
+        "last_event": "INIT_OK",
+        "last_ts_utc": "2026-07-26T04:39:37.187Z",
+        "last_init_ok_utc": "2026-07-26T04:39:37.187Z",
+        "last_deinit_utc": "2026-07-25T22:24:11.265Z",
+        "n_init_ok": 13,
+        "runtime_symbol": "GDAXI",
+        "identity_symbol_match": true,
+        "state": "ATTACHED_FRESH",
+        "fresh": true
+      }
+    ]
+  },
+  "findings": [
+    {
+      "severity": "CRITICAL",
+      "category": "MISSING_CHART",
+      "layer": "disk",
+      "magic": 127780000,
+      "ea_id": 12778,
+      "symbol": "AUDUSD.DWX",
+      "chart": null,
+      "detail": "no parseable chart carries magic 127780000 (EA 12778 / AUDUSD.DWX)",
+      "evidence": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Profiles\\Charts\\DarwinexZero_V2_LiveOps"
+    },
+    {
+      "severity": "INFO",
+      "category": "BINARY_UNKNOWN",
+      "layer": "disk",
+      "magic": null,
+      "ea_id": null,
+      "symbol": null,
+      "chart": null,
+      "detail": "manifest pins no binary SHA for 23 sleeve(s); observed SHAs are recorded in disk_profile.sleeves[].observed.binary_sha256 but cannot be verified against the manifest",
+      "evidence": "D:\\QM\\reports\\portfolio\\portfolio_manifest_live_24sleeve_20260724.json"
+    }
+  ],
+  "summary": {
+    "critical": 3,
+    "warn": 0,
+    "info": 1,
+    "headline": "RED; disk 23/24 ok; runtime 23/24 attached-fresh; monitor OK; 1 MISSING; 1 UNPARSEABLE"
+  }
+}

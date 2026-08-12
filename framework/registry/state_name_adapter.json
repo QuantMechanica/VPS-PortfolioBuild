@@ -14,7 +14,7 @@
     },
     "EA_BUILD_REQUESTED": {
       "phase": "G0",
-      "verdict_when": "QB approved card, CEO issued build to Development",
+      "verdict_when": "OWNER recorded g0_status=APPROVED and the deterministic build request exists",
       "display_phase": "Q00"
     },
     "EA_BUILT": {
@@ -55,27 +55,27 @@
     "NEWS_FILTER_STAGE_QUEUED": {
       "phase": "P8",
       "verdict_when": "Decision (2026-05-12): V5 P8 (post-statval mode selection) is the news stage. There is no inter-baseline-sweep news stage.",
-      "display_phase": "Q11"
+      "display_phase": "Q08"
     },
     "NEWS_FILTER_STAGE_RUNNING": {
       "phase": "P8",
       "verdict_when": "p8_news_driver.py invocation in flight",
-      "display_phase": "Q11"
+      "display_phase": "Q08"
     },
     "NEWS_FILTER_STAGE_COMPLETED": {
       "phase": "P8",
       "verdict_when": "P8 result.json present",
-      "display_phase": "Q11"
+      "display_phase": "Q08"
     },
     "NEWS_FILTER_STAGE_PASSED": {
       "phase": "P8",
       "verdict_when": "P8 verdict=MODE_SELECTED (mapped to PASS)",
-      "display_phase": "Q11"
+      "display_phase": "Q08"
     },
     "NEWS_FILTER_STAGE_FAILED": {
       "phase": "P8",
       "verdict_when": "P8 returns no eligible mode (all 7 modes PF<1.0 or 0 trades)",
-      "display_phase": "Q11"
+      "display_phase": "Q08"
     },
     "SWEEP_BACKTEST_QUEUED": {
       "phase": "P3",
@@ -105,32 +105,32 @@
     "FORWARD_TEST_QUEUED": {
       "phase": "P4",
       "verdict_when": "P4 walk-forward enqueued. Note: V5 also has P3.5 cross-sectional robustness immediately before P4.",
-      "display_phase": "Q05"
+      "display_phase": "Q04"
     },
     "FORWARD_TEST_RUNNING": {
       "phase": "P4",
       "verdict_when": "p4_walk_forward.py running",
-      "display_phase": "Q05"
+      "display_phase": "Q04"
     },
     "FORWARD_TEST_COMPLETED": {
       "phase": "P4",
       "verdict_when": "P4 result.json present",
-      "display_phase": "Q05"
+      "display_phase": "Q04"
     },
     "FORWARD_TEST_PASSED": {
       "phase": "P4",
       "verdict_when": "P4 verdict=PASS (≥6 anchored folds, dev_end<oos_start embargo, regime labels)",
-      "display_phase": "Q05"
+      "display_phase": "Q04"
     },
     "FORWARD_TEST_FAILED": {
       "phase": "P4",
       "verdict_when": "P4 verdict=FAIL",
-      "display_phase": "Q05"
+      "display_phase": "Q04"
     },
     "PIPELINE_PASSED": {
       "phase": "P8+",
       "verdict_when": "All automated phases through P8 verdict=PASS; aggregate index.json final_verdict=READY",
-      "display_phase": "Q11+"
+      "display_phase": "Q08"
     },
     "PIPELINE_FAILED": {
       "phase": "any",
@@ -139,21 +139,21 @@
     "READY_FOR_LIVE_REVIEW": {
       "phase": "P9",
       "verdict_when": "Pipeline passed AND queued for OWNER P9 portfolio-construction review (manual gate)",
-      "display_phase": "Q12"
+      "display_phase": "Q11"
     },
     "LIVE_ELIGIBLE": {
       "phase": "P9b",
       "verdict_when": "OWNER passed P9 + P9b operational-readiness sign-off; eligible for P10 burn-in",
-      "display_phase": "Q13"
+      "display_phase": "Q12"
     },
     "LIVE_DEPLOYED": {
       "phase": "P10",
-      "verdict_when": "EA deployed to T_Live with AutoTrading enabled by OWNER+Board-Advisor (Hard Rule)",
-      "display_phase": "Q14"
+      "verdict_when": "Exact manifest-bound EA deployed to T_Live; any trading enablement is a separate OWNER action",
+      "display_phase": "Q13"
     },
     "REJECTED": {
       "phase": "any",
-      "verdict_when": "OWNER or QB explicitly rejected the EA card / strategy"
+      "verdict_when": "OWNER explicitly rejected the EA card or strategy"
     },
     "REVIEW_REQUIRED": {
       "phase": "any",
@@ -246,22 +246,22 @@
     "P1": "Q01",
     "P2": "Q02",
     "P3": "Q03",
-    "P3.5": "Q04",
-    "P4": "Q05",
-    "P5": "Q06",
-    "P5b": "Q07",
-    "P5c": "Q08",
-    "P6": "Q09",
-    "P7": "Q10",
-    "P8": "Q11",
-    "P9": "Q12",
-    "P9b": "Q13",
-    "P10": "Q14"
+    "P3.5": "Q03",
+    "P4": "Q04",
+    "P5": "Q05",
+    "P5b": "Q05",
+    "P5c": "Q05",
+    "P6": "Q07",
+    "P7": "Q08",
+    "P8": "Q08",
+    "P9": "Q11",
+    "P9b": "Q12",
+    "P10": "Q13"
   },
   "phase_alias_owner_to_display": {
     "BASELINE": "Q02",
     "SWEEP": "Q03",
-    "FORWARD": "Q05",
-    "NEWS_FILTER": "Q11"
+    "FORWARD": "Q04",
+    "NEWS_FILTER": "Q08"
   }
 }

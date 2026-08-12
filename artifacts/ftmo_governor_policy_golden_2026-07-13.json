@@ -1,0 +1,261 @@
+{
+  "cases": {
+    "daily_floor_flatten": {
+      "expected": {
+        "daily_floor": 95500.0,
+        "effective_floor": 95500.0,
+        "entry_allowed": false,
+        "flatten_required": true,
+        "minimum_days_complete": false,
+        "persist_lock": true,
+        "prague_day": "2026-01-15",
+        "protected_profit_floor": 92000.0,
+        "reason": "EFFECTIVE_DAILY_FLOOR",
+        "risk_scale": 0.0,
+        "target_complete": false,
+        "target_reached": false
+      },
+      "input": {
+        "balance": 96000,
+        "equity": 95500,
+        "midnight_balance": 100000,
+        "orders_pending": 0,
+        "persisted_day_lock": false,
+        "persisted_total_lock": false,
+        "positions_open": 2,
+        "timestamp_utc": "2026-01-15T14:00:00+00:00",
+        "trading_days": 1
+      }
+    },
+    "daily_headroom_scale": {
+      "expected": {
+        "daily_floor": 95500.0,
+        "effective_floor": 95500.0,
+        "entry_allowed": true,
+        "flatten_required": false,
+        "minimum_days_complete": false,
+        "persist_lock": false,
+        "prague_day": "2026-01-15",
+        "protected_profit_floor": 92000.0,
+        "reason": "ALLOW",
+        "risk_scale": 0.1,
+        "target_complete": false,
+        "target_reached": false
+      },
+      "input": {
+        "balance": 95900,
+        "equity": 95900,
+        "midnight_balance": 100000,
+        "orders_pending": 0,
+        "persisted_day_lock": false,
+        "persisted_total_lock": false,
+        "positions_open": 0,
+        "timestamp_utc": "2026-01-15T13:00:00+00:00",
+        "trading_days": 1
+      }
+    },
+    "full_risk": {
+      "expected": {
+        "daily_floor": 95500.0,
+        "effective_floor": 95500.0,
+        "entry_allowed": true,
+        "flatten_required": false,
+        "minimum_days_complete": false,
+        "persist_lock": false,
+        "prague_day": "2026-01-15",
+        "protected_profit_floor": 92000.0,
+        "reason": "ALLOW",
+        "risk_scale": 1.0,
+        "target_complete": false,
+        "target_reached": false
+      },
+      "input": {
+        "balance": 100000,
+        "equity": 100000,
+        "midnight_balance": 100000,
+        "orders_pending": 0,
+        "persisted_day_lock": false,
+        "persisted_total_lock": false,
+        "positions_open": 0,
+        "timestamp_utc": "2026-01-15T12:00:00+00:00",
+        "trading_days": 1
+      }
+    },
+    "spring_dst_after": {
+      "expected": {
+        "daily_floor": 95500.0,
+        "effective_floor": 95500.0,
+        "entry_allowed": true,
+        "flatten_required": false,
+        "minimum_days_complete": false,
+        "persist_lock": false,
+        "prague_day": "2026-03-29",
+        "protected_profit_floor": 92000.0,
+        "reason": "ALLOW",
+        "risk_scale": 1.0,
+        "target_complete": false,
+        "target_reached": false
+      },
+      "input": {
+        "balance": 100000,
+        "equity": 100000,
+        "midnight_balance": 100000,
+        "orders_pending": 0,
+        "persisted_day_lock": false,
+        "persisted_total_lock": false,
+        "positions_open": 0,
+        "timestamp_utc": "2026-03-29T01:30:00+00:00",
+        "trading_days": 1
+      }
+    },
+    "spring_dst_before": {
+      "expected": {
+        "daily_floor": 95500.0,
+        "effective_floor": 95500.0,
+        "entry_allowed": true,
+        "flatten_required": false,
+        "minimum_days_complete": false,
+        "persist_lock": false,
+        "prague_day": "2026-03-29",
+        "protected_profit_floor": 92000.0,
+        "reason": "ALLOW",
+        "risk_scale": 1.0,
+        "target_complete": false,
+        "target_reached": false
+      },
+      "input": {
+        "balance": 100000,
+        "equity": 100000,
+        "midnight_balance": 100000,
+        "orders_pending": 0,
+        "persisted_day_lock": false,
+        "persisted_total_lock": false,
+        "positions_open": 0,
+        "timestamp_utc": "2026-03-29T00:30:00+00:00",
+        "trading_days": 1
+      }
+    },
+    "target_capture_open": {
+      "expected": {
+        "daily_floor": 104500.0,
+        "effective_floor": 104500.0,
+        "entry_allowed": false,
+        "flatten_required": true,
+        "minimum_days_complete": true,
+        "persist_lock": true,
+        "prague_day": "2026-07-01",
+        "protected_profit_floor": 93800.0,
+        "reason": "TARGET_CAPTURE",
+        "risk_scale": 1.0,
+        "target_complete": false,
+        "target_reached": true
+      },
+      "input": {
+        "balance": 109500,
+        "equity": 110100,
+        "midnight_balance": 109000,
+        "orders_pending": 0,
+        "persisted_day_lock": false,
+        "persisted_total_lock": false,
+        "positions_open": 1,
+        "timestamp_utc": "2026-07-01T12:00:00+00:00",
+        "trading_days": 4
+      }
+    },
+    "target_complete": {
+      "expected": {
+        "daily_floor": 104500.0,
+        "effective_floor": 104500.0,
+        "entry_allowed": false,
+        "flatten_required": false,
+        "minimum_days_complete": true,
+        "persist_lock": true,
+        "prague_day": "2026-07-02",
+        "protected_profit_floor": 93800.0,
+        "reason": "TARGET_COMPLETE",
+        "risk_scale": 1.0,
+        "target_complete": true,
+        "target_reached": true
+      },
+      "input": {
+        "balance": 110100,
+        "equity": 110100,
+        "midnight_balance": 109000,
+        "orders_pending": 0,
+        "persisted_day_lock": false,
+        "persisted_total_lock": false,
+        "positions_open": 0,
+        "timestamp_utc": "2026-07-02T12:00:00+00:00",
+        "trading_days": 4
+      }
+    },
+    "target_pending": {
+      "expected": {
+        "daily_floor": 104500.0,
+        "effective_floor": 104500.0,
+        "entry_allowed": false,
+        "flatten_required": true,
+        "minimum_days_complete": true,
+        "persist_lock": true,
+        "prague_day": "2026-07-02",
+        "protected_profit_floor": 93800.0,
+        "reason": "TARGET_CAPTURE",
+        "risk_scale": 1.0,
+        "target_complete": false,
+        "target_reached": true
+      },
+      "input": {
+        "balance": 110100,
+        "equity": 110100,
+        "midnight_balance": 109000,
+        "orders_pending": 1,
+        "persisted_day_lock": false,
+        "persisted_total_lock": false,
+        "positions_open": 0,
+        "timestamp_utc": "2026-07-02T12:00:00+00:00",
+        "trading_days": 4
+      }
+    },
+    "target_too_few_days": {
+      "expected": {
+        "daily_floor": 104500.0,
+        "effective_floor": 104500.0,
+        "entry_allowed": false,
+        "flatten_required": false,
+        "minimum_days_complete": false,
+        "persist_lock": true,
+        "prague_day": "2026-07-01",
+        "protected_profit_floor": 93800.0,
+        "reason": "TARGET_CAPTURE",
+        "risk_scale": 1.0,
+        "target_complete": false,
+        "target_reached": true
+      },
+      "input": {
+        "balance": 110100,
+        "equity": 110100,
+        "midnight_balance": 109000,
+        "orders_pending": 0,
+        "persisted_day_lock": false,
+        "persisted_total_lock": false,
+        "positions_open": 0,
+        "timestamp_utc": "2026-07-01T12:00:00+00:00",
+        "trading_days": 3
+      }
+    }
+  },
+  "contract_revision": 1,
+  "policy": {
+    "execution_daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "minimum_trading_days": 4,
+    "policy_id": "FTMO_P1_GOVERNOR_V1",
+    "profit_room_retention": 0.2,
+    "start_balance": 100000.0,
+    "target_balance": 110000.0,
+    "total_loss_floor": 90000.0
+  },
+  "policy_fingerprint_number": 3543540590062,
+  "policy_sha256": "03390b7a65ee33153f4fe63064bb163c4bcc692436b694cdd2ed1be7f1117e3d",
+  "schema_version": 2
+}

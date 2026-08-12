@@ -245,8 +245,8 @@ conversion, spread, and real-tick costs are delegated to the pipeline.
   selection.
 - [x] No existing card or EA folder names the USDJPY/EURAUD pair as of
   2026-07-10.
-- [x] CEO + Quality-Business approval and CEO + CTO EA-ID allocation supplied
-  by the explicit forex-book mission; atomic allocation reserved QM5_13119.
+- [x] OWNER + Quality-Business approval supplied by the explicit forex-book
+  mission; Development's atomic registry allocation reserved QM5_13119.
 
 ## 12. Framework Alignment
 

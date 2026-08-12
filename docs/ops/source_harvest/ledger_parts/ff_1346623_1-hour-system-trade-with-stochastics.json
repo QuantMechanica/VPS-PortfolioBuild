@@ -1,0 +1,25 @@
+{
+  "pdf": "ff_1346623_1-hour-system-trade-with-stochastics.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1346623_1-hour-system-trade-with-stochastics.pdf",
+      "source_pages": "1-7",
+      "source_ref": "jamesagnew, \"1 hour system trade with stochastics\", ForexFactory thread 1346623 (n.d.), https://www.forexfactory.com/thread/1346623-1-hour-system-trade-with-stochastics",
+      "strategy_name": "1H EMA / Stochastic Crossover (jamesagnew soup)",
+      "concept": "Enter when fast EMAs (3/5) cross the 13 EMA with a stochastic 50-level cross confirmation and fixed pip stop/target — a lagging trend-ignition crossover on H1 FX majors.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Plain lagging EMA-crossover + stochastic confirmation with no structural edge; serial low-quality poster, zero backtest data (author: 'backtesting is useless'), rules mutate across ~5 templates with no stable parameter set.",
+      "priority_hint": "LOW",
+      "notes": "Single core idea presented as 5 mutating variants (all one row): (1) base = 3/5 EMA cross 13 EMA + stochastic cross 50, SL 40 then 20 pips, TP 40 pips, all majors; (2) simplified 13-EMA open/close breakout, hold until 1H close crosses back, TP up to 80; (3) 26-EMA trail entry/exit; (4) '5x5' = 5 EMA shift 5, hold until price breaches, multi-entry scale-out 20/40/60 pips (120 total risk); (5) 5x5 high/low breakout. Community + poster's own churn signal noise; matches FX-edge doctrine of edgeless indicator crossovers. Forum source, but rejection is on absence of usable edge, not reputability."
+    }
+  ],
+  "notes": [
+    "Read tool could not render PDF (poppler missing); extracted text layer via PyMuPDF (fitz) — 7 pages, 36 posts, full thread.",
+    "Zero usable candidates: single REJECTED summary row per schema."
+  ]
+}

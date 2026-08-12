@@ -1,0 +1,23 @@
+{
+  "evaluated_configurations": 1670,
+  "holdout_pass_count": 0,
+  "preholdout_candidates": [],
+  "preholdout_pass_count": 0,
+  "schema_version": 1,
+  "selected_family_winners": [],
+  "selection_contract": {
+    "bar_resolution": "M15 OHLC",
+    "daily_position_limit": 1,
+    "development": "2018-2022",
+    "dual_oco_touch_rule": "pessimistic_stop",
+    "holdout_gate": "trades>=50 PF>=1.10 net>0 and both years positive",
+    "overnight_positions": 0,
+    "preholdout_gate": "DEV trades>=150 PF>=1.15 net>0; VAL trades>=25 PF>=1.05 net>0; >=4 positive DEV years",
+    "same_bar_rule": "stop_first",
+    "sealed_holdout": "2024-2025",
+    "selection_uses_holdout": false,
+    "timestamp_basis": "Darwinex broker wall GMT+2/+3 converted to UTC",
+    "validation": "2023"
+  },
+  "status": "NO_HOLDOUT_SURVIVOR"
+}

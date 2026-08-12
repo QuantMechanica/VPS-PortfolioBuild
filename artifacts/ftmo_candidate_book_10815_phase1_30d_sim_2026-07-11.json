@@ -1,0 +1,4108 @@
+{
+  "basis": "report_reconciled_trade_level_ftmo_cost_continuous_calendar_conservative_mae",
+  "limitations": [
+    "Open trades are assumed to reach MAE simultaneously on every open calendar day.",
+    "Current FTMO swap snapshot is applied to the full historical sample.",
+    "Block bootstrap estimates research frequency and is not a pass guarantee."
+  ],
+  "results": [
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.25,
+      "nominal_risk_fixed": 500.0,
+      "nominal_risk_pct": 0.5,
+      "scenario": "core_equal",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.5,
+      "nominal_risk_fixed": 1000.0,
+      "nominal_risk_pct": 1.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.75,
+      "nominal_risk_fixed": 1500.0,
+      "nominal_risk_pct": 1.5,
+      "scenario": "core_equal",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.0,
+      "nominal_risk_fixed": 2000.0,
+      "nominal_risk_pct": 2.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.25,
+      "nominal_risk_fixed": 2500.0,
+      "nominal_risk_pct": 2.5,
+      "scenario": "core_equal",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 99.95555555555555,
+        "pass_pct": 0.044444444444444446,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.5,
+      "nominal_risk_fixed": 3000.0,
+      "nominal_risk_pct": 3.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 99.63333333333333,
+        "pass_pct": 0.36666666666666664,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.0,
+      "nominal_risk_fixed": 4000.0,
+      "nominal_risk_pct": 4.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.022222222222222223,
+        "not_reached_pct": 98.61111111111111,
+        "pass_pct": 1.3666666666666667,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.28629032258065,
+        "pass_pct": 1.7137096774193548,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.5,
+      "nominal_risk_fixed": 5000.0,
+      "nominal_risk_pct": 5.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 1.077777777777778,
+        "max_breach_pct": 0.08888888888888889,
+        "not_reached_pct": 96.33333333333334,
+        "pass_pct": 2.5,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 1.0416666666666665,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 96.16935483870968,
+        "pass_pct": 2.788978494623656,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 3.0,
+      "nominal_risk_fixed": 6000.0,
+      "nominal_risk_pct": 6.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 4.277777777777778,
+        "max_breach_pct": 0.7222222222222222,
+        "not_reached_pct": 89.97777777777777,
+        "pass_pct": 5.022222222222222,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 4.099462365591398,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 90.22177419354838,
+        "pass_pct": 5.678763440860215,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 4.0,
+      "nominal_risk_fixed": 8000.0,
+      "nominal_risk_pct": 8.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 33.71111111111111,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 57.67777777777777,
+        "pass_pct": 8.61111111111111,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 33.770161290322584,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 55.846774193548384,
+        "pass_pct": 10.383064516129032,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 5.0,
+      "nominal_risk_fixed": 10000.0,
+      "nominal_risk_pct": 10.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 36.67777777777778,
+        "max_breach_pct": 0.011111111111111112,
+        "not_reached_pct": 53.21111111111111,
+        "pass_pct": 10.100000000000001,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 37.56720430107527,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 51.00806451612904,
+        "pass_pct": 11.424731182795698,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 6.0,
+      "nominal_risk_fixed": 12000.0,
+      "nominal_risk_pct": 12.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 42.18888888888889,
+        "max_breach_pct": 0.03333333333333333,
+        "not_reached_pct": 47.71111111111111,
+        "pass_pct": 10.066666666666666,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 41.36424731182796,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 47.91666666666667,
+        "pass_pct": 10.719086021505376,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 7.0,
+      "nominal_risk_fixed": 14000.0,
+      "nominal_risk_pct": 14.000000000000002,
+      "scenario": "core_equal",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 48.144444444444446,
+        "max_breach_pct": 0.13333333333333333,
+        "not_reached_pct": 42.93333333333334,
+        "pass_pct": 8.78888888888889,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 47.14381720430107,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 43.68279569892473,
+        "pass_pct": 9.173387096774194,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 8.0,
+      "nominal_risk_fixed": 16000.0,
+      "nominal_risk_pct": 16.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 99.9888888888889,
+        "pass_pct": 0.011111111111111112,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.25,
+      "nominal_risk_fixed": 750.0,
+      "nominal_risk_pct": 0.75,
+      "scenario": "core_wti",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.21111111111111,
+        "pass_pct": 1.7888888888888888,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.55559287873699,
+        "pass_pct": 1.4444071212630165,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.5,
+      "nominal_risk_fixed": 1500.0,
+      "nominal_risk_pct": 1.5,
+      "scenario": "core_wti",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 96.83333333333334,
+        "pass_pct": 3.166666666666667,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 97.71582129660732,
+        "pass_pct": 2.2841787033926773,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.75,
+      "nominal_risk_fixed": 2250.0,
+      "nominal_risk_pct": 2.25,
+      "scenario": "core_wti",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.011111111111111112,
+        "not_reached_pct": 94.78888888888889,
+        "pass_pct": 5.2,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 95.70036949949613,
+        "pass_pct": 4.299630500503863,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.0,
+      "nominal_risk_fixed": 3000.0,
+      "nominal_risk_pct": 3.0,
+      "scenario": "core_wti",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.08888888888888889,
+        "not_reached_pct": 92.92222222222222,
+        "pass_pct": 6.988888888888889,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 93.98723547195162,
+        "pass_pct": 6.012764528048371,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.25,
+      "nominal_risk_fixed": 3750.0,
+      "nominal_risk_pct": 3.75,
+      "scenario": "core_wti",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.5777777777777777,
+        "not_reached_pct": 91.04444444444444,
+        "pass_pct": 8.377777777777778,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 1.41081625797783,
+        "not_reached_pct": 91.19919381928115,
+        "pass_pct": 7.389989922741015,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.5,
+      "nominal_risk_fixed": 4500.0,
+      "nominal_risk_pct": 4.5,
+      "scenario": "core_wti",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 1.0222222222222224,
+        "max_breach_pct": 3.7555555555555555,
+        "not_reached_pct": 83.63333333333334,
+        "pass_pct": 11.588888888888889,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 1.0077258985555928,
+        "max_breach_pct": 4.7027208599261,
+        "not_reached_pct": 84.58179375209943,
+        "pass_pct": 9.707759489418878,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.0,
+      "nominal_risk_fixed": 6000.0,
+      "nominal_risk_pct": 6.0,
+      "scenario": "core_wti",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 10.100000000000001,
+        "max_breach_pct": 5.6000000000000005,
+        "not_reached_pct": 70.15555555555557,
+        "pass_pct": 14.144444444444446,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 9.203896540141082,
+        "max_breach_pct": 6.550218340611353,
+        "not_reached_pct": 70.37285858246557,
+        "pass_pct": 13.873026536781996,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.5,
+      "nominal_risk_fixed": 7500.0,
+      "nominal_risk_pct": 7.5,
+      "scenario": "core_wti",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 22.72222222222222,
+        "max_breach_pct": 8.011111111111111,
+        "not_reached_pct": 52.93333333333333,
+        "pass_pct": 16.333333333333332,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 21.83406113537118,
+        "max_breach_pct": 9.87571380584481,
+        "not_reached_pct": 50.990930466913,
+        "pass_pct": 17.29929459187101,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 3.0,
+      "nominal_risk_fixed": 9000.0,
+      "nominal_risk_pct": 9.0,
+      "scenario": "core_wti",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 48.644444444444446,
+        "max_breach_pct": 10.11111111111111,
+        "not_reached_pct": 26.322222222222223,
+        "pass_pct": 14.922222222222222,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 48.03493449781659,
+        "max_breach_pct": 12.865300638226401,
+        "not_reached_pct": 24.890829694323145,
+        "pass_pct": 14.20893516963386,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 4.0,
+      "nominal_risk_fixed": 12000.0,
+      "nominal_risk_pct": 12.0,
+      "scenario": "core_wti",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 81.74444444444444,
+        "max_breach_pct": 2.0888888888888886,
+        "not_reached_pct": 6.144444444444445,
+        "pass_pct": 10.022222222222222,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 78.50184749748068,
+        "max_breach_pct": 1.7467248908296942,
+        "not_reached_pct": 9.304669129996642,
+        "pass_pct": 10.44675848169298,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 5.0,
+      "nominal_risk_fixed": 15000.0,
+      "nominal_risk_pct": 15.0,
+      "scenario": "core_wti",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 92.56666666666666,
+        "max_breach_pct": 0.011111111111111112,
+        "not_reached_pct": 1.5222222222222221,
+        "pass_pct": 5.8999999999999995,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 87.67215317433657,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 3.4934497816593884,
+        "pass_pct": 8.83439704400403,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 6.0,
+      "nominal_risk_fixed": 18000.0,
+      "nominal_risk_pct": 18.0,
+      "scenario": "core_wti",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 95.12222222222222,
+        "max_breach_pct": 0.044444444444444446,
+        "not_reached_pct": 0.5111111111111112,
+        "pass_pct": 4.322222222222223,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 88.44474302989586,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 2.2505878401074906,
+        "pass_pct": 9.304669129996642,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 7.0,
+      "nominal_risk_fixed": 21000.0,
+      "nominal_risk_pct": 21.0,
+      "scenario": "core_wti",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 96.83333333333334,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 0.14444444444444443,
+        "pass_pct": 3.022222222222222,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 90.05710446758482,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 2.1498152502519314,
+        "pass_pct": 7.793080282163252,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 8.0,
+      "nominal_risk_fixed": 24000.0,
+      "nominal_risk_pct": 24.0,
+      "scenario": "core_wti",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.25,
+      "nominal_risk_fixed": 500.0,
+      "nominal_risk_pct": 0.5,
+      "scenario": "core_wti_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 99.96666666666667,
+        "pass_pct": 0.03333333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.5,
+      "nominal_risk_fixed": 1000.0,
+      "nominal_risk_pct": 1.0,
+      "scenario": "core_wti_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.6888888888889,
+        "pass_pct": 1.3111111111111111,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.99227410144441,
+        "pass_pct": 1.0077258985555928,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.75,
+      "nominal_risk_fixed": 1500.0,
+      "nominal_risk_pct": 1.5,
+      "scenario": "core_wti_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.13333333333333,
+        "pass_pct": 1.866666666666667,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.4884111521666,
+        "pass_pct": 1.5115888478333892,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.0,
+      "nominal_risk_fixed": 2000.0,
+      "nominal_risk_pct": 2.0,
+      "scenario": "core_wti_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 97.12222222222222,
+        "pass_pct": 2.8777777777777778,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.21968424588512,
+        "pass_pct": 1.7803157541148806,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.25,
+      "nominal_risk_fixed": 2500.0,
+      "nominal_risk_pct": 2.5,
+      "scenario": "core_wti_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 96.39999999999999,
+        "pass_pct": 3.5999999999999996,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 97.34632180047026,
+        "pass_pct": 2.6536781995297276,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.5,
+      "nominal_risk_fixed": 3000.0,
+      "nominal_risk_pct": 3.0,
+      "scenario": "core_wti_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.03333333333333333,
+        "not_reached_pct": 94.37777777777778,
+        "pass_pct": 5.5888888888888895,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 95.26368827678871,
+        "pass_pct": 4.736311723211287,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.0,
+      "nominal_risk_fixed": 4000.0,
+      "nominal_risk_pct": 4.0,
+      "scenario": "core_wti_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.2777777777777778,
+        "not_reached_pct": 92.06666666666666,
+        "pass_pct": 7.655555555555556,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.20154517971111857,
+        "not_reached_pct": 93.48337252267383,
+        "pass_pct": 6.315082297615049,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.5,
+      "nominal_risk_fixed": 5000.0,
+      "nominal_risk_pct": 5.0,
+      "scenario": "core_wti_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 1.3666666666666667,
+        "not_reached_pct": 88.97777777777777,
+        "pass_pct": 9.655555555555557,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 1.948270070540813,
+        "not_reached_pct": 88.98219684245885,
+        "pass_pct": 9.069533087000337,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 3.0,
+      "nominal_risk_fixed": 6000.0,
+      "nominal_risk_pct": 6.0,
+      "scenario": "core_wti_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 11.3,
+        "max_breach_pct": 3.3000000000000003,
+        "not_reached_pct": 71.94444444444444,
+        "pass_pct": 13.455555555555557,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 10.34598589183742,
+        "max_breach_pct": 4.669129996640914,
+        "not_reached_pct": 72.32112865300638,
+        "pass_pct": 12.663755458515283,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 4.0,
+      "nominal_risk_fixed": 8000.0,
+      "nominal_risk_pct": 8.0,
+      "scenario": "core_wti_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 25.77777777777778,
+        "max_breach_pct": 4.333333333333334,
+        "not_reached_pct": 53.355555555555554,
+        "pass_pct": 16.53333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 26.872690628149144,
+        "max_breach_pct": 6.4158548874706085,
+        "not_reached_pct": 48.70675176352032,
+        "pass_pct": 18.004702720859925,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 5.0,
+      "nominal_risk_fixed": 10000.0,
+      "nominal_risk_pct": 10.0,
+      "scenario": "core_wti_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 41.18888888888889,
+        "max_breach_pct": 5.977777777777778,
+        "not_reached_pct": 36.077777777777776,
+        "pass_pct": 16.755555555555556,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 40.61135371179039,
+        "max_breach_pct": 7.524353375881761,
+        "not_reached_pct": 33.22136378904938,
+        "pass_pct": 18.642929123278467,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 6.0,
+      "nominal_risk_fixed": 12000.0,
+      "nominal_risk_pct": 12.0,
+      "scenario": "core_wti_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 52.46666666666666,
+        "max_breach_pct": 6.6000000000000005,
+        "not_reached_pct": 25.11111111111111,
+        "pass_pct": 15.822222222222221,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 52.53611017803158,
+        "max_breach_pct": 8.968760497144777,
+        "not_reached_pct": 24.890829694323145,
+        "pass_pct": 13.604299630500504,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 7.0,
+      "nominal_risk_fixed": 14000.0,
+      "nominal_risk_pct": 14.000000000000002,
+      "scenario": "core_wti_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 63.788888888888884,
+        "max_breach_pct": 7.211111111111111,
+        "not_reached_pct": 15.933333333333334,
+        "pass_pct": 13.066666666666665,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 60.26200873362445,
+        "max_breach_pct": 11.555256970104132,
+        "not_reached_pct": 17.29929459187101,
+        "pass_pct": 10.883439704400404,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 8.0,
+      "nominal_risk_fixed": 16000.0,
+      "nominal_risk_pct": 16.0,
+      "scenario": "core_wti_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 99.9888888888889,
+        "pass_pct": 0.011111111111111112,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.25,
+      "nominal_risk_fixed": 1000.0,
+      "nominal_risk_pct": 1.0,
+      "scenario": "core_wti_rsi",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.2,
+        "pass_pct": 1.7999999999999998,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.52200201545179,
+        "pass_pct": 1.4779979845482027,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.5,
+      "nominal_risk_fixed": 2000.0,
+      "nominal_risk_pct": 2.0,
+      "scenario": "core_wti_rsi",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 96.8,
+        "pass_pct": 3.2,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 97.74941215989251,
+        "pass_pct": 2.2505878401074906,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.75,
+      "nominal_risk_fixed": 3000.0,
+      "nominal_risk_pct": 3.0,
+      "scenario": "core_wti_rsi",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.011111111111111112,
+        "not_reached_pct": 94.72222222222221,
+        "pass_pct": 5.266666666666667,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 95.90191467920725,
+        "pass_pct": 4.098085320792745,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.0,
+      "nominal_risk_fixed": 4000.0,
+      "nominal_risk_pct": 4.0,
+      "scenario": "core_wti_rsi",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.08888888888888889,
+        "not_reached_pct": 92.85555555555555,
+        "pass_pct": 7.055555555555555,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 93.8192811555257,
+        "pass_pct": 6.1807188444743035,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.25,
+      "nominal_risk_fixed": 5000.0,
+      "nominal_risk_pct": 5.0,
+      "scenario": "core_wti_rsi",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.6111111111111112,
+        "not_reached_pct": 90.87777777777778,
+        "pass_pct": 8.511111111111111,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.7389989922741014,
+        "not_reached_pct": 91.80382935841452,
+        "pass_pct": 7.4571716493113875,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.5,
+      "nominal_risk_fixed": 6000.0,
+      "nominal_risk_pct": 6.0,
+      "scenario": "core_wti_rsi",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 1.0222222222222224,
+        "max_breach_pct": 3.7555555555555555,
+        "not_reached_pct": 83.54444444444444,
+        "pass_pct": 11.677777777777777,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 1.0077258985555928,
+        "max_breach_pct": 3.8629492777964396,
+        "not_reached_pct": 84.31306684581794,
+        "pass_pct": 10.81625797783003,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.0,
+      "nominal_risk_fixed": 8000.0,
+      "nominal_risk_pct": 8.0,
+      "scenario": "core_wti_rsi",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 11.644444444444444,
+        "max_breach_pct": 5.711111111111111,
+        "not_reached_pct": 68.43333333333334,
+        "pass_pct": 14.21111111111111,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 10.043668122270741,
+        "max_breach_pct": 7.423580786026202,
+        "not_reached_pct": 68.29022505878402,
+        "pass_pct": 14.242526032919045,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.5,
+      "nominal_risk_fixed": 10000.0,
+      "nominal_risk_pct": 10.0,
+      "scenario": "core_wti_rsi",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 26.122222222222224,
+        "max_breach_pct": 7.5888888888888895,
+        "not_reached_pct": 50.144444444444446,
+        "pass_pct": 16.144444444444446,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 24.756466241182398,
+        "max_breach_pct": 9.741350352704064,
+        "not_reached_pct": 49.009069533087,
+        "pass_pct": 16.493113873026537,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 3.0,
+      "nominal_risk_fixed": 12000.0,
+      "nominal_risk_pct": 12.0,
+      "scenario": "core_wti_rsi",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 54.08888888888889,
+        "max_breach_pct": 8.744444444444445,
+        "not_reached_pct": 23.022222222222222,
+        "pass_pct": 14.144444444444446,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 52.4689284514612,
+        "max_breach_pct": 11.555256970104132,
+        "not_reached_pct": 22.808196170641583,
+        "pass_pct": 13.16761840779308,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 4.0,
+      "nominal_risk_fixed": 16000.0,
+      "nominal_risk_pct": 16.0,
+      "scenario": "core_wti_rsi",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 82.94444444444444,
+        "max_breach_pct": 1.8777777777777778,
+        "not_reached_pct": 5.366666666666667,
+        "pass_pct": 9.81111111111111,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 79.67752771246222,
+        "max_breach_pct": 1.6795431642593215,
+        "not_reached_pct": 7.725898555592879,
+        "pass_pct": 10.91703056768559,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 5.0,
+      "nominal_risk_fixed": 20000.0,
+      "nominal_risk_pct": 20.0,
+      "scenario": "core_wti_rsi",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 93.11111111111111,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 1.1444444444444444,
+        "pass_pct": 5.7444444444444445,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 87.8736983540477,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 2.9559959690964055,
+        "pass_pct": 9.170305676855897,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 6.0,
+      "nominal_risk_fixed": 24000.0,
+      "nominal_risk_pct": 24.0,
+      "scenario": "core_wti_rsi",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 95.6,
+        "max_breach_pct": 0.03333333333333333,
+        "not_reached_pct": 0.36666666666666664,
+        "pass_pct": 4.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 89.3516963385959,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 1.9146792072556267,
+        "pass_pct": 8.73362445414847,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 7.0,
+      "nominal_risk_fixed": 28000.0,
+      "nominal_risk_pct": 28.000000000000004,
+      "scenario": "core_wti_rsi",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 97.26666666666667,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 0.06666666666666667,
+        "pass_pct": 2.666666666666667,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 90.72892173328854,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 1.8474974806852538,
+        "pass_pct": 7.423580786026202,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 8.0,
+      "nominal_risk_fixed": 32000.0,
+      "nominal_risk_pct": 32.0,
+      "scenario": "core_wti_rsi",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.25,
+      "nominal_risk_fixed": 900.0,
+      "nominal_risk_pct": 0.8999999999999999,
+      "scenario": "five_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.8,
+        "10476:USDCAD.DWX": 0.6,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.6,
+        "12969:USDJPY.DWX": 0.8,
+        "12990:GBPUSD.DWX": 0.8
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.66666666666667,
+        "pass_pct": 1.3333333333333335,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.99227410144441,
+        "pass_pct": 1.0077258985555928,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.5,
+      "nominal_risk_fixed": 1800.0,
+      "nominal_risk_pct": 1.7999999999999998,
+      "scenario": "five_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.8,
+        "10476:USDCAD.DWX": 0.6,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.6,
+        "12969:USDJPY.DWX": 0.8,
+        "12990:GBPUSD.DWX": 0.8
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 97.25555555555555,
+        "pass_pct": 2.7444444444444445,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.2532751091703,
+        "pass_pct": 1.7467248908296942,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.75,
+      "nominal_risk_fixed": 2700.0,
+      "nominal_risk_pct": 2.7,
+      "scenario": "five_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.8,
+        "10476:USDCAD.DWX": 0.6,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.6,
+        "12969:USDJPY.DWX": 0.8,
+        "12990:GBPUSD.DWX": 0.8
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.022222222222222223,
+        "not_reached_pct": 95.87777777777777,
+        "pass_pct": 4.1000000000000005,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 96.20423244877394,
+        "pass_pct": 3.7957675512260667,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.0,
+      "nominal_risk_fixed": 3600.0,
+      "nominal_risk_pct": 3.5999999999999996,
+      "scenario": "five_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.8,
+        "10476:USDCAD.DWX": 0.6,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.6,
+        "12969:USDJPY.DWX": 0.8,
+        "12990:GBPUSD.DWX": 0.8
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.15555555555555556,
+        "not_reached_pct": 93.78888888888889,
+        "pass_pct": 6.055555555555555,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.40309035942223714,
+        "not_reached_pct": 94.92777964393684,
+        "pass_pct": 4.669129996640914,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.25,
+      "nominal_risk_fixed": 4500.0,
+      "nominal_risk_pct": 4.5,
+      "scenario": "five_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.8,
+        "10476:USDCAD.DWX": 0.6,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.6,
+        "12969:USDJPY.DWX": 0.8,
+        "12990:GBPUSD.DWX": 0.8
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.7666666666666666,
+        "not_reached_pct": 91.23333333333333,
+        "pass_pct": 8.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 1.2764528048370842,
+        "not_reached_pct": 91.97178367484045,
+        "pass_pct": 6.751763520322472,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.5,
+      "nominal_risk_fixed": 5400.0,
+      "nominal_risk_pct": 5.4,
+      "scenario": "five_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.8,
+        "10476:USDCAD.DWX": 0.6,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.6,
+        "12969:USDJPY.DWX": 0.8,
+        "12990:GBPUSD.DWX": 0.8
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 5.5888888888888895,
+        "max_breach_pct": 1.9555555555555555,
+        "not_reached_pct": 80.75555555555556,
+        "pass_pct": 11.700000000000001,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 5.777628485052066,
+        "max_breach_pct": 2.1834061135371177,
+        "not_reached_pct": 82.06247900571044,
+        "pass_pct": 9.97648639570037,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.0,
+      "nominal_risk_fixed": 7200.0,
+      "nominal_risk_pct": 7.199999999999999,
+      "scenario": "five_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.8,
+        "10476:USDCAD.DWX": 0.6,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.6,
+        "12969:USDJPY.DWX": 0.8,
+        "12990:GBPUSD.DWX": 0.8
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 16.81111111111111,
+        "max_breach_pct": 3.6111111111111107,
+        "not_reached_pct": 64.36666666666667,
+        "pass_pct": 15.211111111111112,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 17.601612361437688,
+        "max_breach_pct": 4.8034934497816595,
+        "not_reached_pct": 63.41954988243198,
+        "pass_pct": 14.175344306348672,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.5,
+      "nominal_risk_fixed": 9000.0,
+      "nominal_risk_pct": 9.0,
+      "scenario": "five_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.8,
+        "10476:USDCAD.DWX": 0.6,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.6,
+        "12969:USDJPY.DWX": 0.8,
+        "12990:GBPUSD.DWX": 0.8
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 30.266666666666666,
+        "max_breach_pct": 5.666666666666666,
+        "not_reached_pct": 47.46666666666667,
+        "pass_pct": 16.6,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 29.963050050386297,
+        "max_breach_pct": 6.247900571044676,
+        "not_reached_pct": 47.262344642257304,
+        "pass_pct": 16.52670473631172,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 3.0,
+      "nominal_risk_fixed": 10800.0,
+      "nominal_risk_pct": 10.8,
+      "scenario": "five_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.8,
+        "10476:USDCAD.DWX": 0.6,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.6,
+        "12969:USDJPY.DWX": 0.8,
+        "12990:GBPUSD.DWX": 0.8
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 57.111111111111114,
+        "max_breach_pct": 5.888888888888888,
+        "not_reached_pct": 21.122222222222224,
+        "pass_pct": 15.877777777777776,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 52.87201881088344,
+        "max_breach_pct": 7.793080282163252,
+        "not_reached_pct": 22.237151494793416,
+        "pass_pct": 17.097749412159892,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 4.0,
+      "nominal_risk_fixed": 14400.0,
+      "nominal_risk_pct": 14.399999999999999,
+      "scenario": "five_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.8,
+        "10476:USDCAD.DWX": 0.6,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.6,
+        "12969:USDJPY.DWX": 0.8,
+        "12990:GBPUSD.DWX": 0.8
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 71.22222222222221,
+        "max_breach_pct": 5.544444444444444,
+        "not_reached_pct": 10.033333333333333,
+        "pass_pct": 13.200000000000001,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 68.22304333221363,
+        "max_breach_pct": 6.684581793752099,
+        "not_reached_pct": 9.606986899563319,
+        "pass_pct": 15.485387974470942,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 5.0,
+      "nominal_risk_fixed": 18000.0,
+      "nominal_risk_pct": 18.0,
+      "scenario": "five_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.8,
+        "10476:USDCAD.DWX": 0.6,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.6,
+        "12969:USDJPY.DWX": 0.8,
+        "12990:GBPUSD.DWX": 0.8
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 84.35555555555555,
+        "max_breach_pct": 3.5555555555555554,
+        "not_reached_pct": 3.255555555555555,
+        "pass_pct": 8.833333333333334,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 79.91266375545851,
+        "max_breach_pct": 3.459858918374202,
+        "not_reached_pct": 5.777628485052066,
+        "pass_pct": 10.849848841115218,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 6.0,
+      "nominal_risk_fixed": 21600.0,
+      "nominal_risk_pct": 21.6,
+      "scenario": "five_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.8,
+        "10476:USDCAD.DWX": 0.6,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.6,
+        "12969:USDJPY.DWX": 0.8,
+        "12990:GBPUSD.DWX": 0.8
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 93.75555555555556,
+        "max_breach_pct": 0.022222222222222223,
+        "not_reached_pct": 0.7222222222222222,
+        "pass_pct": 5.5,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 89.95633187772926,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 0.8397715821296607,
+        "pass_pct": 9.203896540141082,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 7.0,
+      "nominal_risk_fixed": 25200.0,
+      "nominal_risk_pct": 25.2,
+      "scenario": "five_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.8,
+        "10476:USDCAD.DWX": 0.6,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.6,
+        "12969:USDJPY.DWX": 0.8,
+        "12990:GBPUSD.DWX": 0.8
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 96.08888888888889,
+        "max_breach_pct": 0.011111111111111112,
+        "not_reached_pct": 0.2222222222222222,
+        "pass_pct": 3.6777777777777776,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 90.96405777628485,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 0.5710446758481693,
+        "pass_pct": 8.46489754786698,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 8.0,
+      "nominal_risk_fixed": 28800.0,
+      "nominal_risk_pct": 28.799999999999997,
+      "scenario": "five_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.8,
+        "10476:USDCAD.DWX": 0.6,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.6,
+        "12969:USDJPY.DWX": 0.8,
+        "12990:GBPUSD.DWX": 0.8
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 99.96666666666667,
+        "pass_pct": 0.03333333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 2870,
+      "data_end": "2025-12-31",
+      "data_start": "2018-02-22",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2841
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.25,
+      "nominal_risk_fixed": 250.0,
+      "nominal_risk_pct": 0.25,
+      "scenario": "wti_only",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.65555555555555,
+        "pass_pct": 1.3444444444444446,
+        "runs": 9000
+      },
+      "data_calendar_days": 2870,
+      "data_end": "2025-12-31",
+      "data_start": "2018-02-22",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.73284054910243,
+        "pass_pct": 1.2671594508975714,
+        "runs": 2841
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.5,
+      "nominal_risk_fixed": 500.0,
+      "nominal_risk_pct": 0.5,
+      "scenario": "wti_only",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 97.72222222222223,
+        "pass_pct": 2.2777777777777777,
+        "runs": 9000
+      },
+      "data_calendar_days": 2870,
+      "data_end": "2025-12-31",
+      "data_start": "2018-02-22",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 97.88806758183738,
+        "pass_pct": 2.1119324181626187,
+        "runs": 2841
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.75,
+      "nominal_risk_fixed": 750.0,
+      "nominal_risk_pct": 0.75,
+      "scenario": "wti_only",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 96.37777777777778,
+        "pass_pct": 3.6222222222222227,
+        "runs": 9000
+      },
+      "data_calendar_days": 2870,
+      "data_end": "2025-12-31",
+      "data_start": "2018-02-22",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 96.76170362548399,
+        "pass_pct": 3.2382963745160156,
+        "runs": 2841
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.0,
+      "nominal_risk_fixed": 1000.0,
+      "nominal_risk_pct": 1.0,
+      "scenario": "wti_only",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.044444444444444446,
+        "not_reached_pct": 94.55555555555556,
+        "pass_pct": 5.4,
+        "runs": 9000
+      },
+      "data_calendar_days": 2870,
+      "data_end": "2025-12-31",
+      "data_start": "2018-02-22",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 95.10735656458994,
+        "pass_pct": 4.892643435410067,
+        "runs": 2841
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.25,
+      "nominal_risk_fixed": 1250.0,
+      "nominal_risk_pct": 1.25,
+      "scenario": "wti_only",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.37777777777777777,
+        "not_reached_pct": 92.9888888888889,
+        "pass_pct": 6.633333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 2870,
+      "data_end": "2025-12-31",
+      "data_start": "2018-02-22",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.21119324181626187,
+        "not_reached_pct": 94.22738472368884,
+        "pass_pct": 5.561422034494896,
+        "runs": 2841
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.5,
+      "nominal_risk_fixed": 1500.0,
+      "nominal_risk_pct": 1.5,
+      "scenario": "wti_only",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 2.4444444444444446,
+        "not_reached_pct": 89.06666666666668,
+        "pass_pct": 8.488888888888889,
+        "runs": 9000
+      },
+      "data_calendar_days": 2870,
+      "data_end": "2025-12-31",
+      "data_start": "2018-02-22",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 3.2030975008799722,
+        "not_reached_pct": 88.34917282646956,
+        "pass_pct": 8.447729672650475,
+        "runs": 2841
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.0,
+      "nominal_risk_fixed": 2000.0,
+      "nominal_risk_pct": 2.0,
+      "scenario": "wti_only",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.8555555555555556,
+        "max_breach_pct": 6.51111111111111,
+        "not_reached_pct": 82.76666666666667,
+        "pass_pct": 9.866666666666667,
+        "runs": 9000
+      },
+      "data_calendar_days": 2870,
+      "data_end": "2025-12-31",
+      "data_start": "2018-02-22",
+      "historical_rolling": {
+        "daily_breach_pct": 1.0559662090813093,
+        "max_breach_pct": 5.737416402675114,
+        "not_reached_pct": 83.7029215065118,
+        "pass_pct": 9.503695881731785,
+        "runs": 2841
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.5,
+      "nominal_risk_fixed": 2500.0,
+      "nominal_risk_pct": 2.5,
+      "scenario": "wti_only",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 1.7888888888888888,
+        "max_breach_pct": 12.077777777777778,
+        "not_reached_pct": 75.25555555555556,
+        "pass_pct": 10.877777777777778,
+        "runs": 9000
+      },
+      "data_calendar_days": 2870,
+      "data_end": "2025-12-31",
+      "data_start": "2018-02-22",
+      "historical_rolling": {
+        "daily_breach_pct": 2.1119324181626187,
+        "max_breach_pct": 11.650827173530447,
+        "not_reached_pct": 75.36078845476945,
+        "pass_pct": 10.876451953537487,
+        "runs": 2841
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 3.0,
+      "nominal_risk_fixed": 3000.0,
+      "nominal_risk_pct": 3.0,
+      "scenario": "wti_only",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 6.633333333333333,
+        "max_breach_pct": 22.566666666666666,
+        "not_reached_pct": 59.51111111111111,
+        "pass_pct": 11.288888888888888,
+        "runs": 9000
+      },
+      "data_calendar_days": 2870,
+      "data_end": "2025-12-31",
+      "data_start": "2018-02-22",
+      "historical_rolling": {
+        "daily_breach_pct": 4.892643435410067,
+        "max_breach_pct": 20.204153467089053,
+        "not_reached_pct": 62.12601196761703,
+        "pass_pct": 12.777191129883844,
+        "runs": 2841
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 4.0,
+      "nominal_risk_fixed": 4000.0,
+      "nominal_risk_pct": 4.0,
+      "scenario": "wti_only",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 52.33333333333333,
+        "max_breach_pct": 11.011111111111111,
+        "not_reached_pct": 28.644444444444446,
+        "pass_pct": 8.011111111111111,
+        "runs": 9000
+      },
+      "data_calendar_days": 2870,
+      "data_end": "2025-12-31",
+      "data_start": "2018-02-22",
+      "historical_rolling": {
+        "daily_breach_pct": 41.78106300598381,
+        "max_breach_pct": 10.982048574445617,
+        "not_reached_pct": 35.58606124604013,
+        "pass_pct": 11.650827173530447,
+        "runs": 2841
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 5.0,
+      "nominal_risk_fixed": 5000.0,
+      "nominal_risk_pct": 5.0,
+      "scenario": "wti_only",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 89.21111111111111,
+        "max_breach_pct": 0.2555555555555556,
+        "not_reached_pct": 6.777777777777779,
+        "pass_pct": 3.7555555555555555,
+        "runs": 9000
+      },
+      "data_calendar_days": 2870,
+      "data_end": "2025-12-31",
+      "data_start": "2018-02-22",
+      "historical_rolling": {
+        "daily_breach_pct": 80.25343189017951,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 11.263639563533967,
+        "pass_pct": 8.48292854628652,
+        "runs": 2841
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 6.0,
+      "nominal_risk_fixed": 6000.0,
+      "nominal_risk_pct": 6.0,
+      "scenario": "wti_only",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 94.69999999999999,
+        "max_breach_pct": 0.1,
+        "not_reached_pct": 2.666666666666667,
+        "pass_pct": 2.533333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 2870,
+      "data_end": "2025-12-31",
+      "data_start": "2018-02-22",
+      "historical_rolling": {
+        "daily_breach_pct": 86.02604716649067,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 6.124604012671594,
+        "pass_pct": 7.849348820837733,
+        "runs": 2841
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 7.0,
+      "nominal_risk_fixed": 7000.0,
+      "nominal_risk_pct": 7.000000000000001,
+      "scenario": "wti_only",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 96.12222222222222,
+        "max_breach_pct": 0.05555555555555555,
+        "not_reached_pct": 1.8333333333333333,
+        "pass_pct": 1.988888888888889,
+        "runs": 9000
+      },
+      "data_calendar_days": 2870,
+      "data_end": "2025-12-31",
+      "data_start": "2018-02-22",
+      "historical_rolling": {
+        "daily_breach_pct": 88.0675818373812,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 3.907074973600845,
+        "pass_pct": 8.025343189017951,
+        "runs": 2841
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 8.0,
+      "nominal_risk_fixed": 8000.0,
+      "nominal_risk_pct": 8.0,
+      "scenario": "wti_only",
+      "weights": {
+        "10286:XTIUSD.DWX": 1.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.0,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.25,
+      "nominal_risk_fixed": 500.0,
+      "nominal_risk_pct": 0.5,
+      "scenario": "core_ger_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.5,
+      "nominal_risk_fixed": 1000.0,
+      "nominal_risk_pct": 1.0,
+      "scenario": "core_ger_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.75,
+      "nominal_risk_fixed": 1500.0,
+      "nominal_risk_pct": 1.5,
+      "scenario": "core_ger_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.0,
+      "nominal_risk_fixed": 2000.0,
+      "nominal_risk_pct": 2.0,
+      "scenario": "core_ger_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.25,
+      "nominal_risk_fixed": 2500.0,
+      "nominal_risk_pct": 2.5,
+      "scenario": "core_ger_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.5,
+      "nominal_risk_fixed": 3000.0,
+      "nominal_risk_pct": 3.0,
+      "scenario": "core_ger_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 99.94444444444444,
+        "pass_pct": 0.05555555555555555,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.0,
+      "nominal_risk_fixed": 4000.0,
+      "nominal_risk_pct": 4.0,
+      "scenario": "core_ger_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 99.64444444444445,
+        "pass_pct": 0.35555555555555557,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.5,
+      "nominal_risk_fixed": 5000.0,
+      "nominal_risk_pct": 5.0,
+      "scenario": "core_ger_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.011111111111111112,
+        "not_reached_pct": 99.05555555555556,
+        "pass_pct": 0.9333333333333335,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 99.66397849462365,
+        "pass_pct": 0.33602150537634407,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 3.0,
+      "nominal_risk_fixed": 6000.0,
+      "nominal_risk_pct": 6.0,
+      "scenario": "core_ger_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 2.0666666666666664,
+        "max_breach_pct": 0.16666666666666669,
+        "not_reached_pct": 94.92222222222222,
+        "pass_pct": 2.8444444444444446,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 2.049731182795699,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 95.26209677419355,
+        "pass_pct": 2.6881720430107525,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 4.0,
+      "nominal_risk_fixed": 8000.0,
+      "nominal_risk_pct": 8.0,
+      "scenario": "core_ger_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 4.944444444444445,
+        "max_breach_pct": 0.7444444444444445,
+        "not_reached_pct": 89.03333333333333,
+        "pass_pct": 5.277777777777778,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 5.073924731182795,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 88.87768817204301,
+        "pass_pct": 6.048387096774194,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 5.0,
+      "nominal_risk_fixed": 10000.0,
+      "nominal_risk_pct": 10.0,
+      "scenario": "core_ger_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 8.911111111111111,
+        "max_breach_pct": 1.5666666666666667,
+        "not_reached_pct": 80.05555555555556,
+        "pass_pct": 9.466666666666667,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 8.131720430107526,
+        "max_breach_pct": 0.6384408602150538,
+        "not_reached_pct": 80.27553763440861,
+        "pass_pct": 10.954301075268818,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 6.0,
+      "nominal_risk_fixed": 12000.0,
+      "nominal_risk_pct": 12.0,
+      "scenario": "core_ger_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 35.21111111111111,
+        "max_breach_pct": 0.011111111111111112,
+        "not_reached_pct": 53.34444444444445,
+        "pass_pct": 11.433333333333334,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 34.711021505376344,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 52.38575268817204,
+        "pass_pct": 12.903225806451612,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 7.0,
+      "nominal_risk_fixed": 14000.0,
+      "nominal_risk_pct": 14.000000000000002,
+      "scenario": "core_ger_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 37.48888888888889,
+        "max_breach_pct": 0.044444444444444446,
+        "not_reached_pct": 50.13333333333333,
+        "pass_pct": 12.333333333333334,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 37.73521505376344,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 49.159946236559136,
+        "pass_pct": 13.104838709677418,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 8.0,
+      "nominal_risk_fixed": 16000.0,
+      "nominal_risk_pct": 16.0,
+      "scenario": "core_ger_total2",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.0,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.25,
+      "nominal_risk_fixed": 625.0,
+      "nominal_risk_pct": 0.625,
+      "scenario": "core_wti_ger_total2_5",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 99.97777777777777,
+        "pass_pct": 0.022222222222222223,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.5,
+      "nominal_risk_fixed": 1250.0,
+      "nominal_risk_pct": 1.25,
+      "scenario": "core_wti_ger_total2_5",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.67777777777778,
+        "pass_pct": 1.3222222222222222,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.99227410144441,
+        "pass_pct": 1.0077258985555928,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.75,
+      "nominal_risk_fixed": 1875.0,
+      "nominal_risk_pct": 1.875,
+      "scenario": "core_wti_ger_total2_5",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.05555555555556,
+        "pass_pct": 1.9444444444444444,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.4884111521666,
+        "pass_pct": 1.5115888478333892,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.0,
+      "nominal_risk_fixed": 2500.0,
+      "nominal_risk_pct": 2.5,
+      "scenario": "core_wti_ger_total2_5",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 97.1,
+        "pass_pct": 2.9000000000000004,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 97.88377561303325,
+        "pass_pct": 2.116224386966745,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.25,
+      "nominal_risk_fixed": 3125.0,
+      "nominal_risk_pct": 3.125,
+      "scenario": "core_wti_ger_total2_5",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 96.44444444444444,
+        "pass_pct": 3.5555555555555554,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 97.0440040309036,
+        "pass_pct": 2.9559959690964055,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.5,
+      "nominal_risk_fixed": 3750.0,
+      "nominal_risk_pct": 3.75,
+      "scenario": "core_wti_ger_total2_5",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.03333333333333333,
+        "not_reached_pct": 94.42222222222222,
+        "pass_pct": 5.544444444444444,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 95.49882431978502,
+        "pass_pct": 4.501175680214981,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.0,
+      "nominal_risk_fixed": 5000.0,
+      "nominal_risk_pct": 5.0,
+      "scenario": "core_wti_ger_total2_5",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.3111111111111111,
+        "not_reached_pct": 91.95555555555556,
+        "pass_pct": 7.733333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.20154517971111857,
+        "not_reached_pct": 93.71850856567013,
+        "pass_pct": 6.0799462546187435,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.5,
+      "nominal_risk_fixed": 6250.0,
+      "nominal_risk_pct": 6.25,
+      "scenario": "core_wti_ger_total2_5",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.8777777777777779,
+        "max_breach_pct": 1.3444444444444446,
+        "not_reached_pct": 88.03333333333333,
+        "pass_pct": 9.744444444444444,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 1.0077258985555928,
+        "max_breach_pct": 1.6123614376889486,
+        "not_reached_pct": 87.40342626805509,
+        "pass_pct": 9.97648639570037,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 3.0,
+      "nominal_risk_fixed": 7500.0,
+      "nominal_risk_pct": 7.5,
+      "scenario": "core_wti_ger_total2_5",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 13.077777777777778,
+        "max_breach_pct": 3.144444444444444,
+        "not_reached_pct": 70.85555555555555,
+        "pass_pct": 12.92222222222222,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 12.395028552233793,
+        "max_breach_pct": 4.3332213637890495,
+        "not_reached_pct": 71.0110849848841,
+        "pass_pct": 12.260665099093046,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 4.0,
+      "nominal_risk_fixed": 10000.0,
+      "nominal_risk_pct": 10.0,
+      "scenario": "core_wti_ger_total2_5",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 27.955555555555556,
+        "max_breach_pct": 4.277777777777778,
+        "not_reached_pct": 51.455555555555556,
+        "pass_pct": 16.311111111111114,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 28.518642929123278,
+        "max_breach_pct": 6.449445750755794,
+        "not_reached_pct": 47.36311723211287,
+        "pass_pct": 17.66879408800806,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 5.0,
+      "nominal_risk_fixed": 12500.0,
+      "nominal_risk_pct": 12.5,
+      "scenario": "core_wti_ger_total2_5",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 44.31111111111111,
+        "max_breach_pct": 5.333333333333334,
+        "not_reached_pct": 33.93333333333333,
+        "pass_pct": 16.42222222222222,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 42.79475982532751,
+        "max_breach_pct": 6.483036614040981,
+        "not_reached_pct": 31.844138394356737,
+        "pass_pct": 18.878065166274773,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 6.0,
+      "nominal_risk_fixed": 15000.0,
+      "nominal_risk_pct": 15.0,
+      "scenario": "core_wti_ger_total2_5",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 56.14444444444444,
+        "max_breach_pct": 5.966666666666667,
+        "not_reached_pct": 22.733333333333334,
+        "pass_pct": 15.155555555555555,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 55.1897883775613,
+        "max_breach_pct": 8.028216325159557,
+        "not_reached_pct": 22.87537789721196,
+        "pass_pct": 13.906617400067182,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 7.0,
+      "nominal_risk_fixed": 17500.0,
+      "nominal_risk_pct": 17.5,
+      "scenario": "core_wti_ger_total2_5",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 66.77777777777779,
+        "max_breach_pct": 6.211111111111111,
+        "not_reached_pct": 14.277777777777779,
+        "pass_pct": 12.733333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 62.949277796439375,
+        "max_breach_pct": 10.44675848169298,
+        "not_reached_pct": 14.981525025193148,
+        "pass_pct": 11.622438696674504,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 8.0,
+      "nominal_risk_fixed": 20000.0,
+      "nominal_risk_pct": 20.0,
+      "scenario": "core_wti_ger_total2_5",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.5,
+        "10476:USDCAD.DWX": 0.0,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.0,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.25,
+      "nominal_risk_fixed": 900.0,
+      "nominal_risk_pct": 0.8999999999999999,
+      "scenario": "six_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.7,
+        "10476:USDCAD.DWX": 0.5,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.7,
+        "12990:GBPUSD.DWX": 0.7
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.75555555555555,
+        "pass_pct": 1.2444444444444445,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.99227410144441,
+        "pass_pct": 1.0077258985555928,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.5,
+      "nominal_risk_fixed": 1800.0,
+      "nominal_risk_pct": 1.7999999999999998,
+      "scenario": "six_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.7,
+        "10476:USDCAD.DWX": 0.5,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.7,
+        "12990:GBPUSD.DWX": 0.7
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 97.93333333333332,
+        "pass_pct": 2.0666666666666664,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.4884111521666,
+        "pass_pct": 1.5115888478333892,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.75,
+      "nominal_risk_fixed": 2700.0,
+      "nominal_risk_pct": 2.7,
+      "scenario": "six_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.7,
+        "10476:USDCAD.DWX": 0.5,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.7,
+        "12990:GBPUSD.DWX": 0.7
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 96.57777777777777,
+        "pass_pct": 3.4222222222222225,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 96.74168626133691,
+        "pass_pct": 3.258313738663084,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.0,
+      "nominal_risk_fixed": 3600.0,
+      "nominal_risk_pct": 3.5999999999999996,
+      "scenario": "six_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.7,
+        "10476:USDCAD.DWX": 0.5,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.7,
+        "12990:GBPUSD.DWX": 0.7
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.03333333333333333,
+        "not_reached_pct": 95.34444444444445,
+        "pass_pct": 4.622222222222222,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.03359086328518643,
+        "not_reached_pct": 96.06986899563319,
+        "pass_pct": 3.896540141081626,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.25,
+      "nominal_risk_fixed": 4500.0,
+      "nominal_risk_pct": 4.5,
+      "scenario": "six_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.7,
+        "10476:USDCAD.DWX": 0.5,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.7,
+        "12990:GBPUSD.DWX": 0.7
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.17777777777777778,
+        "not_reached_pct": 93.30000000000001,
+        "pass_pct": 6.522222222222222,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.5038629492777964,
+        "not_reached_pct": 94.59187101108498,
+        "pass_pct": 4.904266039637219,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.5,
+      "nominal_risk_fixed": 5400.0,
+      "nominal_risk_pct": 5.4,
+      "scenario": "six_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.7,
+        "10476:USDCAD.DWX": 0.5,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.7,
+        "12990:GBPUSD.DWX": 0.7
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 1.988888888888889,
+        "max_breach_pct": 1.4333333333333333,
+        "not_reached_pct": 86.97777777777777,
+        "pass_pct": 9.6,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 2.0154517971111856,
+        "max_breach_pct": 1.948270070540813,
+        "not_reached_pct": 86.73160900235136,
+        "pass_pct": 9.304669129996642,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.0,
+      "nominal_risk_fixed": 7200.0,
+      "nominal_risk_pct": 7.199999999999999,
+      "scenario": "six_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.7,
+        "10476:USDCAD.DWX": 0.5,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.7,
+        "12990:GBPUSD.DWX": 0.7
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 9.077777777777778,
+        "max_breach_pct": 2.722222222222222,
+        "not_reached_pct": 75.0,
+        "pass_pct": 13.200000000000001,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 8.632851864292912,
+        "max_breach_pct": 3.392677191803829,
+        "not_reached_pct": 76.55357742693987,
+        "pass_pct": 11.420893516963385,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.5,
+      "nominal_risk_fixed": 9000.0,
+      "nominal_risk_pct": 9.0,
+      "scenario": "six_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.7,
+        "10476:USDCAD.DWX": 0.5,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.7,
+        "12990:GBPUSD.DWX": 0.7
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 19.555555555555557,
+        "max_breach_pct": 3.844444444444445,
+        "not_reached_pct": 60.78888888888889,
+        "pass_pct": 15.811111111111112,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 19.549882431978503,
+        "max_breach_pct": 4.433993953644609,
+        "not_reached_pct": 59.690964057776284,
+        "pass_pct": 16.325159556600603,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 3.0,
+      "nominal_risk_fixed": 10800.0,
+      "nominal_risk_pct": 10.8,
+      "scenario": "six_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.7,
+        "10476:USDCAD.DWX": 0.5,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.7,
+        "12990:GBPUSD.DWX": 0.7
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 44.93333333333333,
+        "max_breach_pct": 5.855555555555555,
+        "not_reached_pct": 33.17777777777778,
+        "pass_pct": 16.03333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 42.72757809875714,
+        "max_breach_pct": 7.961034598589184,
+        "not_reached_pct": 33.22136378904938,
+        "pass_pct": 16.090023513604297,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 4.0,
+      "nominal_risk_fixed": 14400.0,
+      "nominal_risk_pct": 14.399999999999999,
+      "scenario": "six_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.7,
+        "10476:USDCAD.DWX": 0.5,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.7,
+        "12990:GBPUSD.DWX": 0.7
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 62.78888888888889,
+        "max_breach_pct": 5.5888888888888895,
+        "not_reached_pct": 16.244444444444444,
+        "pass_pct": 15.37777777777778,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 57.87705744037622,
+        "max_breach_pct": 7.3563990594558275,
+        "not_reached_pct": 17.66879408800806,
+        "pass_pct": 17.097749412159892,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 5.0,
+      "nominal_risk_fixed": 18000.0,
+      "nominal_risk_pct": 18.0,
+      "scenario": "six_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.7,
+        "10476:USDCAD.DWX": 0.5,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.7,
+        "12990:GBPUSD.DWX": 0.7
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 77.08888888888889,
+        "max_breach_pct": 4.277777777777778,
+        "not_reached_pct": 6.644444444444445,
+        "pass_pct": 11.988888888888889,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 73.19449109842124,
+        "max_breach_pct": 4.534766543500169,
+        "not_reached_pct": 7.524353375881761,
+        "pass_pct": 14.746388982196843,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 6.0,
+      "nominal_risk_fixed": 21600.0,
+      "nominal_risk_pct": 21.6,
+      "scenario": "six_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.7,
+        "10476:USDCAD.DWX": 0.5,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.7,
+        "12990:GBPUSD.DWX": 0.7
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 87.92222222222222,
+        "max_breach_pct": 1.8888888888888888,
+        "not_reached_pct": 2.1444444444444444,
+        "pass_pct": 8.044444444444444,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 84.17870339267719,
+        "max_breach_pct": 1.7803157541148806,
+        "not_reached_pct": 2.754450789385287,
+        "pass_pct": 11.28653006382264,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 7.0,
+      "nominal_risk_fixed": 25200.0,
+      "nominal_risk_pct": 25.2,
+      "scenario": "six_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.7,
+        "10476:USDCAD.DWX": 0.5,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.7,
+        "12990:GBPUSD.DWX": 0.7
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 93.74444444444444,
+        "max_breach_pct": 0.044444444444444446,
+        "not_reached_pct": 0.5777777777777777,
+        "pass_pct": 5.633333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 3006,
+      "data_end": "2025-12-31",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 89.31810547531072,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 0.8397715821296607,
+        "pass_pct": 9.842122942559623,
+        "runs": 2977
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 8.0,
+      "nominal_risk_fixed": 28800.0,
+      "nominal_risk_pct": 28.799999999999997,
+      "scenario": "six_balanced",
+      "weights": {
+        "10286:XTIUSD.DWX": 0.7,
+        "10476:USDCAD.DWX": 0.5,
+        "10815:GDAXI.DWX": 0.5,
+        "11125:SP500.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.7,
+        "12990:GBPUSD.DWX": 0.7
+      }
+    }
+  ],
+  "rules": {
+    "daily_loss_amount": 5000.0,
+    "maximum_loss_amount": 10000.0,
+    "minimum_trading_days": 4,
+    "phase1_target": 110000.00000000001,
+    "starting_balance": 100000.0,
+    "timezone": "Europe/Prague"
+  },
+  "schema_version": 1,
+  "sleeves": [
+    {
+      "base_risk_fixed": 1000.0,
+      "ftmo_commission": 1722.85,
+      "ftmo_net": 9041.43,
+      "ftmo_swap": 1083.41,
+      "key": "12969:USDJPY.DWX",
+      "native_net": 10974.78,
+      "trades": 331
+    },
+    {
+      "base_risk_fixed": 1000.0,
+      "ftmo_commission": 754.0,
+      "ftmo_net": 24622.19,
+      "ftmo_swap": -1229.29,
+      "key": "12990:GBPUSD.DWX",
+      "native_net": 25624.41,
+      "trades": 91
+    },
+    {
+      "base_risk_fixed": 1000.0,
+      "ftmo_commission": 8406.2,
+      "ftmo_net": 49168.7,
+      "ftmo_swap": -2136.43,
+      "key": "10476:USDCAD.DWX",
+      "native_net": 51303.81,
+      "trades": 257
+    },
+    {
+      "base_risk_fixed": 1000.0,
+      "ftmo_commission": 0.0,
+      "ftmo_net": 7026.09,
+      "ftmo_swap": -84.94,
+      "key": "11125:SP500.DWX",
+      "native_net": 6583.74,
+      "trades": 51
+    },
+    {
+      "base_risk_fixed": 1000.0,
+      "ftmo_commission": 0.0,
+      "ftmo_net": 80628.65,
+      "ftmo_swap": -13176.45,
+      "key": "10286:XTIUSD.DWX",
+      "native_net": 93790.6,
+      "trades": 488
+    },
+    {
+      "base_risk_fixed": 1000.0,
+      "ftmo_commission": 0.0,
+      "ftmo_net": 9562.83,
+      "ftmo_swap": -839.1,
+      "key": "10815:GDAXI.DWX",
+      "native_net": 9428.9,
+      "trades": 79
+    }
+  ],
+  "snapshot_date": "2026-07-11"
+}

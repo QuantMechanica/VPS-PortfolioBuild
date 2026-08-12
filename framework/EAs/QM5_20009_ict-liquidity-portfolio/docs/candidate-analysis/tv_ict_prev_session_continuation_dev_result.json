@@ -1,0 +1,159 @@
+{
+  "admissibility": "NO_OUTCOME_RUN_NO_MT5_NO_PIPELINE_NO_FTMO",
+  "analysis_id": "QM5_20009_TV_ICT_PREV_SESSION_CONTINUATION_DEV_001",
+  "decision": "NOT_ADJUDICATED",
+  "frozen_center": {
+    "break": "Body-cross predicates exactly as source_semantics.known_from_current_description; closed bars only.",
+    "day_flat": {
+      "enabled": true,
+      "provisional_description_only": "Close at New York day end; no timestamp or ordering is invented.",
+      "semantic_status": "AMBIGUOUS_BLOCKED_PENDING_PINE"
+    },
+    "directions": [
+      "LONG",
+      "SHORT"
+    ],
+    "entry_direction": "CONTINUATION",
+    "entry_tolerance_pips": 5,
+    "max_trades_per_new_york_day": 1,
+    "minimum_bars_after_break": 3,
+    "new_session_roll": "06:00:00 Europe/Rome",
+    "pyramiding": 0,
+    "reentry_level_pips_inside": 5,
+    "reference": "Immediately preceding complete 06:00-to-06:00 Europe/Rome session high and low; no Asia/London/NY sub-session ranges.",
+    "session_timezone": "Europe/Rome",
+    "signal_to_fill": "A qualifying retest is decided only after the M5 bar closes. The conservative offline market proxy fills once at the next M5 bar open: LONG at Ask=open+spread, SHORT at Bid=open. No close-bar fill or price improvement.",
+    "stop_loss_pips_from_actual_fill": 10,
+    "symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "take_profit_pips_from_actual_fill": 20,
+    "timeframe": "M5",
+    "variant_notes": [
+      "max_trades=1 and pyramiding=0 are the explicitly requested safety-restricted center even though the published inputs permit other values.",
+      "No parameter, symbol, side, year, or spread selection is permitted after outcomes."
+    ]
+  },
+  "identity": {
+    "auditor_path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/candidate_analysis/audit_tv_ict_prev_session_continuation.py",
+    "auditor_sha256": "5c58eb33d21fc423dfe27887d3f2640d8d458f23a9a439abb24b06af96c8df4b",
+    "bound_evidence": {
+      "D:/QM/strategy_farm/artifacts/cards_approved/QM5_9987_tv-ict-session-break-reentry-retest.md": "869c581c20f6d8516cd94c1633c4a02652ecf15a126a99c9bffb5f78e96e6e56",
+      "D:/QM/strategy_farm/artifacts/source_notes/30591366-874b-5bee-b47c-da2fca20b728.md": "c39a1dbe7b9df2a6c4ff2c760fe83201b6256f04cae6d424e9aa5a10414f6665",
+      "framework/EAs/QM5_9987_tv-ict-session-break-reentry-retest/QM5_9987_tv-ict-session-break-reentry-retest.mq5": "15ae1ab6b862fd0d558c19f2e46285fc69201b283037583301053fef425c3631",
+      "framework/EAs/QM5_9987_tv-ict-session-break-reentry-retest/SPEC.md": "234ce3b7952d67cbac08fd032cbfc620621c6f51c2dbca421c700c321f603bdd"
+    },
+    "contract": {
+      "commit": "b88fd932797517bea2d6e4f19131e3e94ec91b26",
+      "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/docs/candidate-analysis/tv_ict_prev_session_continuation_dev_contract.json",
+      "sha256": "cb2b775eae86ff319cf94f0572b32ba5165d6325dfeb3e107b0e726a4f46820f"
+    },
+    "mismatch_path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/docs/candidate-analysis/tv_ict_source_mismatch_qm5_9987.md",
+    "mismatch_sha256": "b253c789c959dd483f5d7d7f9bb064c2a09314e751ab59cb6e2a0fa7e43b3c4e",
+    "test_path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tests/candidate_analysis/test_audit_tv_ict_prev_session_continuation.py",
+    "test_sha256": "0092debaa8136b5fa796d05ea3a2f0287d326b828018dea1349856e3f562338f"
+  },
+  "merit": {
+    "decision": "NOT_ADJUDICATED",
+    "evaluated_checks": 0,
+    "failed_checks": [],
+    "reason": "Exact source semantics are unavailable; no outcome was computed."
+  },
+  "outcome_input_access": {
+    "future_ohlc_parsed": false,
+    "market_files_opened": 0,
+    "market_ohlc_rows_parsed": 0,
+    "market_paths_planned": [
+      "D:/QM/mt5/T_Export/MQL5/Files/EURUSD.DWX_M5.csv",
+      "D:/QM/mt5/T_Export/MQL5/Files/GBPUSD.DWX_M5.csv"
+    ],
+    "market_rows_parsed": 0,
+    "news_files_opened": 0,
+    "news_path_planned": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
+    "news_rows_parsed": 0,
+    "reason": "SOURCE_PREFLIGHT_BLOCK_PRECEDES_ALL_OUTCOME_INPUT_IO"
+  },
+  "performance": null,
+  "predeclared_joint_merit_gate": {
+    "center_4_point_conditions": {
+      "best_full_year_adjusted_gross_profit_share_max": 0.4,
+      "best_symbol_adjusted_gross_profit_share_max": 0.65,
+      "each_full_year_pooled_fills_min": 10,
+      "each_side_adjusted_net_r_strictly_positive": true,
+      "each_side_adjusted_pf_min": 1.0,
+      "each_side_fills_min": 40,
+      "each_symbol_adjusted_net_r_strictly_positive": true,
+      "each_symbol_adjusted_pf_min": 1.05,
+      "each_symbol_fills_min": 50,
+      "each_symbol_max_adjusted_drawdown_r_max": 12.0,
+      "each_symbol_positive_full_years_min_of_5": 3,
+      "integrity_pass": true,
+      "leave_best_full_year_out_adjusted_net_r_strictly_positive": true,
+      "leave_best_symbol_out_adjusted_net_r_strictly_positive": true,
+      "leave_best_trade_out_adjusted_net_r_strictly_positive": true,
+      "pooled_adjusted_net_r_strictly_positive": true,
+      "pooled_adjusted_pf_min": 1.2,
+      "pooled_fills_min": 120,
+      "pooled_max_adjusted_drawdown_r_max": 15.0,
+      "pooled_positive_full_years_min_of_5": 4,
+      "top_two_adjusted_winner_share_max": 0.2
+    },
+    "decision": "MERIT only if every center and spread-8 condition passes; otherwise NO_MERIT. A source blocker yields NOT_ADJUDICATED, never FAIL or MERIT.",
+    "familywise_note": "This is one frozen variant with a conjunctive intersection gate across all predeclared symbol/year/side/spread cells; no best-cell selection is allowed. The gate is deliberately stricter but is not a statistical FWER guarantee. If inferential p-values are added later, every simultaneous cell/hypothesis must be preregistered and Holm-Bonferroni adjusted at family alpha 0.05; none are computed here.",
+    "spread_8_point_conditions": {
+      "each_side_adjusted_net_r_strictly_positive": true,
+      "each_symbol_adjusted_net_r_strictly_positive": true,
+      "pooled_adjusted_net_r_strictly_positive": true,
+      "pooled_adjusted_pf_min": 1.05
+    }
+  },
+  "prohibitions": [
+    "NO_MT5_OR_DEV2_RUN",
+    "NO_EA_OR_SET_CHANGE",
+    "NO_PINE_RECONSTRUCTION_PRESENTED_AS_SOURCE",
+    "NO_MARKET_OR_NEWS_READ_WHILE_SOURCE_BLOCKED",
+    "NO_POST_RESULT_TUNING",
+    "NO_SYMBOL_SIDE_YEAR_OR_SPREAD_SELECTION",
+    "NO_OOS_HOLDOUT_PIPELINE_FTMO_OR_LIVE_CLAIM"
+  ],
+  "required_next_action": [
+    "Recover and hash the exact Pine revision named ICT_Session_Breakout_Published.pine.",
+    "Resolve every blocker against executable Pine lines.",
+    "Create and commit a new pre-outcome contract/analysis_id before any data read."
+  ],
+  "schema_version": 1,
+  "source_preflight": {
+    "blocking_ambiguities": [
+      {
+        "id": "DAY_FLAT_EXACT_BOUNDARY_AND_ORDER",
+        "reason": "The description says optional flat at New York day end but does not define the exact timestamp, timezone transition implementation, bar on which close_all executes, or precedence versus same-bar SL/TP."
+      },
+      {
+        "id": "REENTRY_TOLERANCE_PREDICATE",
+        "reason": "The description names a 5-pip inside level and says tolerance is a band for reentry plus retest wick, but does not expose the exact high/low/close inequalities or inclusive endpoints."
+      },
+      {
+        "id": "RETEST_PREDICATE_AND_SAME_BAR_TRANSITIONS",
+        "reason": "The description does not prove whether reentry, minimum-bar maturation, and retest may transition on one bar or which event has precedence."
+      },
+      {
+        "id": "MIN_BARS_COUNTER_ORIGIN",
+        "reason": "The description does not prove whether the break bar, first post-break bar, or reentry bar is bar zero for min-bars-after-break."
+      },
+      {
+        "id": "OPPOSITE_BREAK_RESET_PRECEDENCE",
+        "reason": "The reset is described but its precedence against same-bar reentry/retest and an already-armed same-side setup is not visible."
+      },
+      {
+        "id": "PINE_ORDER_PROCESSING_MODE",
+        "reason": "Without Pine, strategy process_orders_on_close/calc_on_order_fills settings and therefore exact TradingView order timing cannot be verified. This contract's conservative next-bar proxy is explicit but cannot be claimed source-identical."
+      }
+    ],
+    "direct_page_state": "publication_deleted",
+    "pine_source_available": false,
+    "status": "BLOCKED",
+    "unblock_requirement": "Archive the exact Pine revision behind the publication, hash it, and map every blocker to executable lines. A description, screenshot, reconstructed clone, or a different EA is insufficient."
+  },
+  "status": "BLOCKED_SOURCE_AMBIGUITY"
+}

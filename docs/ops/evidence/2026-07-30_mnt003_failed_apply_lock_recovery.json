@@ -1,0 +1,63 @@
+{
+  "schema_version": "qm.mnt003-failed-apply-lock-recovery/v1",
+  "plan_id": "720d17a050c84023da17b8557efcbc277e6bd9239530dd6203c95ee80dab288f",
+  "source_commit": "19a31245e378fe579f65fea2879075325d15ca7e",
+  "owner_authorization": {
+    "path": "D:\\QM\\reports\\maintenance\\factory_restart\\2026-07-30_mnt003_restore_upgrade_owner_authorization.json",
+    "sha256": "967b25270ff1bfd0bbe42c97687648f2e586e42c91b0a594553dda377cc2c3a9"
+  },
+  "failed_apply_receipt": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\task_contract_fix_2026-07-28\\apply-FACTORY_PREACTIVATION_MNT003_AND_RESTORE_UPGRADE_20260730-720d17a050c84023.json",
+    "sha256": "d6a757100784e70d60fec45354de2f3a80b8d4f59c643df293e2c0a2c7b422c7",
+    "status": "FAILED_COMPENSATED",
+    "attempted_tasks": [
+      "QM_StrategyFarm_AgyGovernor"
+    ],
+    "compensation": "RESTORED_VERIFIED"
+  },
+  "post_failure_pre_recovery": {
+    "factory_off_flag_sha256": "09cc4f83e8d5f384f03bc51306beff2cdd165108559a00dbf665097c60b47f1c",
+    "factory_off_flag_bytes": 66,
+    "all_five_tasks_replanned_as": "BEFORE_DISABLED",
+    "recomputed_plan_id": "720d17a050c84023da17b8557efcbc277e6bd9239530dd6203c95ee80dab288f",
+    "mutation_lock": {
+      "sha256": "51f03fab09d5e4579d5507f20f3a110ccf14a01ee33191ba2a57b46c2b12c167",
+      "pid": 12324,
+      "owner": "task_contract_fix_2026-07-28",
+      "nonce": "4a6d422ea28f47c3a2fa9a5772a0c259",
+      "created_at_utc": "2026-07-30T11:14:22.2105854Z",
+      "owner_pid_live": false
+    }
+  },
+  "recovery": {
+    "operation": "EXACT_IDENTITY_STALE_LOCK_RECOVERY",
+    "protocol_version": 2,
+    "method": "Remove-QmFactoryMutationLockIfUnchanged",
+    "safe_to_reap_reason": "owner_pid_not_live",
+    "exact_content_match_required": true,
+    "removed": true,
+    "lock_exists_after": false,
+    "completed_at_utc": "2026-07-30T11:18:37.1305597Z"
+  },
+  "root_cause_evidence": {
+    "target_xml_com_parse_result": "FAIL",
+    "target_xml_first_hresult": "0x8004131A",
+    "target_xml_first_error": "unable to switch the encoding",
+    "target_xml_second_hresult_after_in_memory_utf16_normalization": "0x80041318",
+    "target_xml_second_error": "LogonType:ServiceAccount",
+    "validated_in_memory_correction": "UTF-16 BSTR declaration plus omitted LogonType for S-1-5-18 parses as SYSTEM with TASK_LOGON_SERVICE_ACCOUNT (5)",
+    "affected_target_xml_count": 5,
+    "cleanup_scope_defect": "The mutation protocol was dot-sourced inside Enter-TaskContractMutationLock, so Remove-QmFactoryMutationLockIfUnchanged was not visible to the later exit function."
+  },
+  "authorization_boundaries": {
+    "retry_under_old_plan": false,
+    "factory_on": false,
+    "restart_hold_release": false,
+    "worker_start": false,
+    "scheduler_enable": false,
+    "mt5": false,
+    "autotrading": false,
+    "flag_upgrade_attempted": false
+  },
+  "status": "FAILED_APPLY_COMPENSATED_AND_STALE_LOCK_RECOVERED"
+}

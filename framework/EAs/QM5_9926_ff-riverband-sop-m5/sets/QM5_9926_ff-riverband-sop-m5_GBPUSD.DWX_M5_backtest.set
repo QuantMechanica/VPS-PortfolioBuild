@@ -3,7 +3,7 @@
 ; ea_id:        9926
 ; ea_slug:      ff-riverband-sop-m5
 ; ea_version:   v5.0
-; set_version:  s20260611-001
+; set_version:  s20260725-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
@@ -12,23 +12,29 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-06-11
+; date:         2026-07-25
 ;==========================================================
+qm_ea_id=9926
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9926_ff-riverband-sop-m5.md
+strategy_atr_period=14
+strategy_atr_percentile_lookback=60
+strategy_atr_percentile_min=20.0
+strategy_level_proximity_atr=0.35
+strategy_sweep_depth_atr=0.20
+strategy_sweep_window_bars=6
+strategy_bos_lookback_bars=5
+strategy_sl_buffer_atr=0.30
+strategy_max_stop_atr=2.20
+strategy_take_profit_r=1.80
+strategy_time_stop_bars=36
+strategy_session_window_minutes=180
+strategy_tokyo_open_hour=0
+strategy_london_open_hour=8
+strategy_newyork_open_hour=13
+strategy_max_spread_points=0
+strategy_be_buffer_points=0

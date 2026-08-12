@@ -1,0 +1,164 @@
+{
+  "schema_version": 1,
+  "candidate_id": "QM5_20009_V6_LONDON_KZ_CABLE_SWEEP_001",
+  "status": "PREREGISTERED_DEV_OFFLINE_ONLY",
+  "outcome_blind_contract": true,
+  "purpose": "Decide whether the corrected QM5_12539 London-killzone mechanism merits a separate EA implementation; this is not pipeline, qualification, FTMO, or live evidence.",
+  "provenance": {
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12539_ict-london-kz-cable-sweep.md",
+    "approved_card_sha256": "7fbac87d81d188307fe11c929f6524e9827306a00f1e37cc112058211d41e65c",
+    "historical_commit": "92e5ea7e2501c5f88e75a543f7290bc3e5ab0ca7",
+    "historical_mq5_blob": "df89c453622b1ffcb480fa5bd911b12b24f638cc",
+    "historical_spec_blob": "367c5b40494a6fd658005947c7e12f6eb5e3638d",
+    "chronology_repairs": [
+      "Freeze every daily pool before London instead of recomputing pools from later closes.",
+      "Latch the first sweep and its then-confirmed MSS pivot; do not retrospectively replace either.",
+      "Count only post-sweep bars 1 through 8 for MSS; historical bar 1 exclusion/bar 9 inclusion is forbidden.",
+      "Require all three FVG bars after the latched MSS and select the earliest chronological FVG.",
+      "Use a restart-replayable virtual limit; server-side pending orders and RAM-only daily/partial state are outside this candidate.",
+      "Risk and flat management always precede news and entry gates."
+    ]
+  },
+  "market_data": {
+    "symbols": [
+      "GBPUSD.DWX",
+      "EURUSD.DWX"
+    ],
+    "source_template": "D:/QM/mt5/T_Export/MQL5/Files/{symbol}_M5.csv",
+    "allowed_bar_open_range": {
+      "from_inclusive": "2017-10-01 00:00:00",
+      "to_exclusive": "2023-01-01 00:00:00"
+    },
+    "future_outcome_fence": "Stream in ascending timestamp order and stop before parsing the first row at or after 2023-01-01; never hash or inspect the later tail.",
+    "time_basis": "Naive CSV timestamps are broker NY-close time. Broker time equals America/New_York civil time plus seven hours year-round.",
+    "m15_aggregation": {
+      "rule": "One M15 bar consists only of M5 opens q, q+5m, q+10m where q.minute mod 15 is zero.",
+      "ohlc": "open=first open; high=max highs; low=min lows; close=last close; volume fields=sum.",
+      "causality": "The aggregate becomes visible only at q+15m. Missing, duplicate, non-monotone, or off-grid M5 rows invalidate that M15 bar; no forward fill."
+    },
+    "selected_slice_identity": "Hash canonical parsed M5 rows strictly inside the allowed range separately per symbol; do not compute a whole-file hash."
+  },
+  "calendar": {
+    "source": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
+    "timestamp_column": "datetime interpreted as UTC, converted to America/New_York and then plus seven hours",
+    "impact_rule": "is_high_impact must equal 1",
+    "relevant_currencies": {
+      "GBPUSD.DWX": [
+        "GBP",
+        "USD"
+      ],
+      "EURUSD.DWX": [
+        "EUR",
+        "USD"
+      ]
+    },
+    "blackout": "Closed interval from 30 minutes before through 30 minutes after each relevant event.",
+    "fail_closed": "Missing, malformed, duplicate-conflicting, or uncovered calendar evidence invalidates the run. FVG arm and limit touch must both pass. A touched M15 bar overlapping any blackout voids the consumed setup rather than deferring its fill."
+  },
+  "mechanism": {
+    "timeframe": "M15",
+    "broker_sessions": {
+      "asia": "[01:00,09:00)",
+      "london_killzone": "[09:00,12:00)",
+      "hard_flat": "17:00",
+      "ny_equivalents": "Asia is previous-NY-date [18:00,02:00); London is [02:00,05:00); hard flat is 10:00."
+    },
+    "day_key": "Broker calendar date containing the London session.",
+    "daily_reference": {
+      "completeness": "Require all 32 Asia M15 bars and the 08:45 close; otherwise the day is ASIA_INCOMPLETE.",
+      "pdh_pdl": "High and low across all valid M15 bars of the most recent earlier broker date containing data; Monday therefore uses Friday when no intervening broker date exists.",
+      "pivot_definition": "Strict three-bar pivot: center.high > both adjacent highs or center.low < both adjacent lows. Ties are not pivots.",
+      "pivot_window": "At 09:00 scan centers among the 96 immediately preceding valid M15 bars, accepting only pivots whose right-neighbour close is no later than 09:00.",
+      "pivot_extremes": "Use only the lowest confirmed pivot low and highest confirmed pivot high from that window, matching the approved card's literal extreme-pivot wording.",
+      "freeze": "At 09:00 freeze Asia high/low, PDH/PDL, pivot extremes, and the 08:45 close. No later bar may change them.",
+      "pool_choice": "Against the frozen 08:45 close choose the nearest strictly lower price from {Asia low, PDL, lowest pivot low} and nearest strictly higher price from {Asia high, PDH, highest pivot high}. Equal-price duplicates collapse with priority ASIA, PD, PIVOT; distance ties use that priority. If either side has no eligible pool, the day is POOL_INCOMPLETE."
+    },
+    "sweep": {
+      "scan": "Evaluate fully closed London bars chronologically by bar open from 09:00 through 11:45.",
+      "long": "low < frozen downside pool and close > that pool",
+      "short": "high > frozen upside pool and close < that pool",
+      "strictness": "Touch/equality is not a sweep or reclaim.",
+      "consumption": "The first qualifying sweep/reclaim consumes the day even if every later gate fails. A bar qualifying in both directions consumes the day as DUAL_SWEEP_VOID; no directional precedence."
+    },
+    "mss": {
+      "reference": "At sweep close latch the most recent confirmed reversal-direction pivot: pivot high for long, pivot low for short. Its center must be strictly earlier than the sweep bar; the sweep bar may be its right confirmation neighbour.",
+      "window": "Sweep bar is index 0. Only the next eight fully closed M15 bars, indices 1..8 inclusive, and only closes no later than 12:00 are eligible.",
+      "confirmation": "First close strictly above the latched pivot for long or strictly below it for short. Equality fails. Sweep and MSS can never share a bar. The pivot and MSS event are immutable."
+    },
+    "fvg": {
+      "chronology": "After MSS, inspect new closed bars in chronological order. All constituent bars A, B, C must open at or after the MSS close; the event exists only at C close.",
+      "long": "A.high < C.low",
+      "short": "A.low > C.high",
+      "strictness": "Gap equality fails. B has no extra body rule; the FVG is the sole mechanical displacement evidence.",
+      "choice": "Latch the earliest FVG only. There is no unstated FVG-bar-count limit, but C must close before 12:00. A later FVG cannot replace a void earliest FVG."
+    },
+    "risk_and_order": {
+      "atr": "At FVG C close freeze SMA of True Range over the 14 most recent fully closed M15 bars including C; TR=max(high-low,abs(high-prev_close),abs(low-prev_close)).",
+      "entry": "FVG midpoint. Long requires C.close > midpoint; short requires C.close < midpoint, otherwise EARLIEST_FVG_NOT_LIMIT_VOID.",
+      "stop": "Long sweep extreme minus 0.3 ATR; short sweep extreme plus 0.3 ATR.",
+      "risk_gate": "Entry-to-stop distance must be positive and <=2.5 ATR; equality is allowed.",
+      "opposite_target": "Long chooses the nearest frozen target strictly above entry from {Asia high, PDH}; short chooses the nearest strictly below entry from {Asia low, PDL}. No pivot target and no fallback target. Missing/behind-entry target voids the setup.",
+      "tp1": "Fifty percent exits at the nearer of the opposite target and 2.0R.",
+      "runner": "Remaining fifty percent exits at 3.0R, original stop, or hard flat; stop never moves.",
+      "immutability": "ATR, entry, stop, R, TP1, TP3, arm time, and deadline never change after arm.",
+      "virtual_limit": "Arm after C close. It is eligible only on the next eight M15 bars and strictly before 12:00. Long touch is low <= entry; short touch is high >= entry. Expiry/session cutoff wins over a simultaneous touch. First touch consumes before fill handling. No fill on the FVG-defining bar.",
+      "daily_cap": "At most one consumed sweep, one arm attempt, and one fill per symbol/day. No later setup is substituted after any failure or expiry."
+    },
+    "management": {
+      "hard_flat": "Cancel virtual orders at 12:00. Close any position at the 17:00 M15 open before evaluating profit actions. Daily flat also guarantees Friday/weekend flat; Friday London entries are otherwise allowed.",
+      "priority": [
+        "session expiry/cancel before entry",
+        "hard flat before profit actions",
+        "stop before TP1 or TP3 when a bar contains both",
+        "on the fill bar, a touched stop realizes -1R and no same-bar favorable target is credited",
+        "on a fill bar without stop, favorable target touches are ignored until the next bar",
+        "after TP1, original stop precedes TP3 if both occur in one later bar"
+      ],
+      "missing_17_open": "Use the last valid close strictly before 17:00 and label the trade DATA_FORCED_FLAT; if none exists, invalidate that trade and the run.",
+      "persistence_requirement_for_future_ea": "Atomically persist/replay pools, sweep, MSS pivot/event, FVG, ATR/order geometry, deadlines, touch consumption, daily fill, tickets, initial volume, TP1 and partial state. Replay never sends orders and preserves original event times. Unknown open-trade state fails closed. Risk/flat management cannot be blocked by news or entry gates."
+    }
+  },
+  "offline_execution_proxy": {
+    "price_series": "CSV OHLC is treated as one executable price series. Bid/ask spread and slippage cannot be recovered and are not invented; results are mechanism proxies, not venue PnL.",
+    "risk_fixed_usd": 1000.0,
+    "lot_proxy": "For USD-quote FX, lots = 1000 / (abs(entry-stop) * 100000).",
+    "gross_r": "Normalize all partial and final price PnL by the immutable initial R.",
+    "external_commission": "For each entry/exit deal side, USD cost=max(2.5*deal_volume*deal_price, 2.5*deal_volume), rounded to USD cents half-up; partial exits are costed separately.",
+    "cost_adjusted_r": "gross_r minus summed external commission divided by 1000.",
+    "unmodelled": [
+      "historical bid/ask spread",
+      "slippage",
+      "swap (structurally absent because every position is intraday)"
+    ]
+  },
+  "required_report": {
+    "identity": [
+      "contract commit and SHA256",
+      "tool SHA256",
+      "synthetic-test result",
+      "calendar SHA256",
+      "per-symbol selected M5 slice SHA256 and row/time bounds"
+    ],
+    "funnel": "Report every terminal state from input/day completeness through pools, sweep side/dual void, MSS, FVG, geometry/news/expiry, fill and exit reason.",
+    "performance": "Report fills, gross and commission-adjusted R/net/PF/expectancy/win rate by symbol, combined, year and side.",
+    "robustness": "Report top-one/top-two winner share, leave-best-out adjusted R, chronological maximum peak-to-trough adjusted-R drawdown, and every same-bar conservative-ordering count.",
+    "years": "2017 is explicitly partial and excluded from full-year stability counts; full years are 2018..2022."
+  },
+  "ea_implementation_merit_gate": {
+    "decision": "MERIT only if every condition passes; otherwise NO_MERIT. This gate authorizes neither EA build nor pipeline execution.",
+    "conditions": {
+      "pooled_fills_min": 80,
+      "fills_per_symbol_min": 25,
+      "fills_per_side_min": 15,
+      "pooled_commission_adjusted_pf_min": 1.2,
+      "pooled_commission_adjusted_net_r_strictly_positive": true,
+      "each_symbol_adjusted_net_r_strictly_positive": true,
+      "each_side_adjusted_net_r_strictly_positive": true,
+      "pooled_positive_full_years_min_of_5": 3,
+      "each_symbol_positive_full_years_min_of_5": 2,
+      "pooled_max_adjusted_drawdown_r_max": 10.0,
+      "top_two_winner_share_max": 0.5,
+      "leave_best_out_adjusted_net_r_strictly_positive": true
+    }
+  }
+}

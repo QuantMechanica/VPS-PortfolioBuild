@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_452780_price-action-made-simple-with-supply-and-demand.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_452780_price-action-made-simple-with-supply-and-demand.pdf",
+      "source_pages": "1-4",
+      "source_ref": "thomaas, 'Price Action made simple with Supply and Demand levels', ForexFactory thread 452780, https://www.forexfactory.com/thread/452780-price-action-made-simple-with-supply-and-demand (author's free companion site www.21pips.com; method credited to Sam Seiden S&D videos and other FF threads)",
+      "strategy_name": "S&D Zone Fresh-Retest Limit (thomaas)",
+      "concept": "A consolidation 'base' preceding a strong impulse move is an unfilled supply/demand zone; a fresh first retest of that zone reverses price, entered with a limit order for a fixed risk:reward.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Core mechanic (impulse+base zone detection, fresh-only limit retest, SL beyond distal edge, fixed 1:2-1:3 TP) is deterministic and pure-MQL5 buildable, but the 'filter bad levels' and 'precisely draw levels' sections are [To come] and never delivered, so departure-strength / base-size thresholds must be parametrized by us.",
+      "priority_hint": "LOW",
+      "notes": "Zone types DBD/DBR/RBR/RBD; author says RBD and DBR are best. Filters: freshness (first touch only), strong departure (2-3 big same-colour candles), few candles in base. Entry at proximal edge, SL few pips beyond distal edge, TP fixed 1:2 or 1:3, risk 2.5%, pending orders, ~1-2 trades/wk. Primarily EUR/USD H1 but author claims any pair/TF and specifically notes gold (XAUUSD) works well -> testable on FX majors/crosses + XAUUSD. LOW priority: this is a classic support/resistance / S&D chart-pattern mean-reversion, the exact family the FX-edge doctrine (07-16) and Wyckoff/SMC closure (07-19/20) treat as structurally dead; brings no uncorrelated return driver. Variant in-thread (FerruFx #47): wait for a reversal pattern + momentum-break confirmation at the zone instead of a blind limit -> same core, fold into this row. redteamgo's discretionary crude/NG order-flow scaling is not mechanizable and not a separate candidate."
+    }
+  ],
+  "notes": []
+}

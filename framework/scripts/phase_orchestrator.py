@@ -279,7 +279,7 @@ def read_phase_verdict(ea: str, phase: str) -> tuple[str, dict]:
     """Read phase result for EA. Returns (verdict, raw_json_or_csv_summary).
 
     PASS = phase complete, can advance.
-    REVIEW_REQUIRED = needs human/CEO judgment.
+    REVIEW_REQUIRED = needs OWNER judgment.
     BLOCKED = phase ran but failed.
     NOT_RUN = no report.csv / no result file.
     """

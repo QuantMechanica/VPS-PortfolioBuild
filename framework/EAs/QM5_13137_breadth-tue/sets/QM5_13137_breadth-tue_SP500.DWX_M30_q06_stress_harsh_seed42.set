@@ -3,7 +3,7 @@
 ; ea_id:        13137
 ; ea_slug:      breadth-tue
 ; ea_version:   v5.0
-; set_version:  s20260711-stress-harsh
+; set_version:  s20260721-stress-harsh
 ; symbol:       SP500.DWX
 ; timeframe:    M30
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   235b47d3587b2aa7f3c3bec49811150ea4ac6e8f6424466c22f8b3f8f2116172
 ; author:       Development
-; date:         2026-07-11
+; date:         2026-07-21
 ;==========================================================
 qm_ea_id=13137
 qm_magic_slot_offset=0

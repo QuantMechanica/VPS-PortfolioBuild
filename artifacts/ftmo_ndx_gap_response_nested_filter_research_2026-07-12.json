@@ -1,0 +1,376 @@
+{
+  "control": {
+    "metrics": {
+      "annual": {
+        "2018": {
+          "max_drawdown_r": 9.043097,
+          "net_r": 6.758472,
+          "profit_factor": 1.187434,
+          "trades": 47,
+          "win_rate": 0.382979
+        },
+        "2019": {
+          "max_drawdown_r": 21.814026,
+          "net_r": -13.618767,
+          "profit_factor": 0.840202,
+          "trades": 101,
+          "win_rate": 0.316832
+        },
+        "2021": {
+          "max_drawdown_r": 7.388292,
+          "net_r": 32.868031,
+          "profit_factor": 1.727852,
+          "trades": 75,
+          "win_rate": 0.453333
+        },
+        "2022": {
+          "max_drawdown_r": 9.712798,
+          "net_r": 9.043924,
+          "profit_factor": 1.147145,
+          "trades": 90,
+          "win_rate": 0.366667
+        },
+        "2023": {
+          "max_drawdown_r": 16.199308,
+          "net_r": 4.835159,
+          "profit_factor": 1.072701,
+          "trades": 88,
+          "win_rate": 0.306818
+        }
+      },
+      "pooled": {
+        "max_drawdown_r": 25.830143,
+        "net_r": 39.886818,
+        "profit_factor": 1.13548,
+        "trades": 401,
+        "win_rate": 0.359102
+      },
+      "positive_years": 4,
+      "worst_annual_profit_factor": 0.840202
+    },
+    "name": "raw_control"
+  },
+  "evaluated_filters": [
+    {
+      "metrics": {
+        "annual": {
+          "2018": {
+            "max_drawdown_r": 9.043097,
+            "net_r": 6.758472,
+            "profit_factor": 1.187434,
+            "trades": 47,
+            "win_rate": 0.382979
+          },
+          "2019": {
+            "max_drawdown_r": 21.814026,
+            "net_r": -13.618767,
+            "profit_factor": 0.840202,
+            "trades": 101,
+            "win_rate": 0.316832
+          },
+          "2021": {
+            "max_drawdown_r": 7.388292,
+            "net_r": 32.868031,
+            "profit_factor": 1.727852,
+            "trades": 75,
+            "win_rate": 0.453333
+          },
+          "2022": {
+            "max_drawdown_r": 9.712798,
+            "net_r": 9.043924,
+            "profit_factor": 1.147145,
+            "trades": 90,
+            "win_rate": 0.366667
+          },
+          "2023": {
+            "max_drawdown_r": 16.199308,
+            "net_r": 4.835159,
+            "profit_factor": 1.072701,
+            "trades": 88,
+            "win_rate": 0.306818
+          }
+        },
+        "pooled": {
+          "max_drawdown_r": 25.830143,
+          "net_r": 39.886818,
+          "profit_factor": 1.13548,
+          "trades": 401,
+          "win_rate": 0.359102
+        },
+        "positive_years": 4,
+        "worst_annual_profit_factor": 0.840202
+      },
+      "name": "raw_control"
+    },
+    {
+      "metrics": {
+        "annual": {
+          "2018": {
+            "max_drawdown_r": 3.433,
+            "net_r": -1.369915,
+            "profit_factor": 0.89792,
+            "trades": 17,
+            "win_rate": 0.352941
+          },
+          "2019": {
+            "max_drawdown_r": 7.352262,
+            "net_r": 0.794071,
+            "profit_factor": 1.017147,
+            "trades": 59,
+            "win_rate": 0.355932
+          },
+          "2021": {
+            "max_drawdown_r": 5.782144,
+            "net_r": 30.000539,
+            "profit_factor": 2.17282,
+            "trades": 47,
+            "win_rate": 0.510638
+          },
+          "2022": {
+            "max_drawdown_r": 7.467845,
+            "net_r": 0.513993,
+            "profit_factor": 1.01707,
+            "trades": 42,
+            "win_rate": 0.333333
+          },
+          "2023": {
+            "max_drawdown_r": 8.528708,
+            "net_r": 8.719717,
+            "profit_factor": 1.28313,
+            "trades": 45,
+            "win_rate": 0.355556
+          }
+        },
+        "pooled": {
+          "max_drawdown_r": 8.528708,
+          "net_r": 38.658406,
+          "profit_factor": 1.26439,
+          "trades": 210,
+          "win_rate": 0.385714
+        },
+        "positive_years": 4,
+        "worst_annual_profit_factor": 0.89792
+      },
+      "name": "sma20_align"
+    },
+    {
+      "metrics": {
+        "annual": {
+          "2018": {
+            "max_drawdown_r": 7.002067,
+            "net_r": -2.45515,
+            "profit_factor": 0.857657,
+            "trades": 21,
+            "win_rate": 0.333333
+          },
+          "2019": {
+            "max_drawdown_r": 6.185129,
+            "net_r": 12.280611,
+            "profit_factor": 1.315475,
+            "trades": 54,
+            "win_rate": 0.407407
+          },
+          "2021": {
+            "max_drawdown_r": 8.07538,
+            "net_r": 19.446241,
+            "profit_factor": 1.622506,
+            "trades": 50,
+            "win_rate": 0.44
+          },
+          "2022": {
+            "max_drawdown_r": 11.222881,
+            "net_r": -5.607798,
+            "profit_factor": 0.850541,
+            "trades": 49,
+            "win_rate": 0.285714
+          },
+          "2023": {
+            "max_drawdown_r": 16.739212,
+            "net_r": -9.422108,
+            "profit_factor": 0.732665,
+            "trades": 43,
+            "win_rate": 0.232558
+          }
+        },
+        "pooled": {
+          "max_drawdown_r": 18.446755,
+          "net_r": 14.241796,
+          "profit_factor": 1.088912,
+          "trades": 217,
+          "win_rate": 0.345622
+        },
+        "positive_years": 2,
+        "worst_annual_profit_factor": 0.732665
+      },
+      "name": "momentum5_align"
+    },
+    {
+      "metrics": {
+        "annual": {
+          "2018": {
+            "max_drawdown_r": 5.211123,
+            "net_r": 9.530535,
+            "profit_factor": 1.595503,
+            "trades": 24,
+            "win_rate": 0.458333
+          },
+          "2019": {
+            "max_drawdown_r": 8.142205,
+            "net_r": 14.955948,
+            "profit_factor": 1.414252,
+            "trades": 51,
+            "win_rate": 0.411765
+          },
+          "2021": {
+            "max_drawdown_r": 3.49073,
+            "net_r": 25.839274,
+            "profit_factor": 2.231674,
+            "trades": 41,
+            "win_rate": 0.536585
+          },
+          "2022": {
+            "max_drawdown_r": 5.310654,
+            "net_r": 16.261038,
+            "profit_factor": 1.685576,
+            "trades": 41,
+            "win_rate": 0.463415
+          },
+          "2023": {
+            "max_drawdown_r": 15.757346,
+            "net_r": -9.265634,
+            "profit_factor": 0.734484,
+            "trades": 41,
+            "win_rate": 0.219512
+          }
+        },
+        "pooled": {
+          "max_drawdown_r": 15.757346,
+          "net_r": 57.321161,
+          "profit_factor": 1.435233,
+          "trades": 198,
+          "win_rate": 0.414141
+        },
+        "positive_years": 4,
+        "worst_annual_profit_factor": 0.734484
+      },
+      "name": "prior_session_align"
+    },
+    {
+      "metrics": {
+        "annual": {
+          "2018": {
+            "max_drawdown_r": 5.722416,
+            "net_r": 1.678846,
+            "profit_factor": 1.105134,
+            "trades": 21,
+            "win_rate": 0.380952
+          },
+          "2019": {
+            "max_drawdown_r": 7.352262,
+            "net_r": 5.937507,
+            "profit_factor": 1.143317,
+            "trades": 54,
+            "win_rate": 0.37037
+          },
+          "2021": {
+            "max_drawdown_r": 6.920646,
+            "net_r": 26.038554,
+            "profit_factor": 2.019288,
+            "trades": 46,
+            "win_rate": 0.5
+          },
+          "2022": {
+            "max_drawdown_r": 5.48595,
+            "net_r": 4.544424,
+            "profit_factor": 1.145689,
+            "trades": 45,
+            "win_rate": 0.355556
+          },
+          "2023": {
+            "max_drawdown_r": 11.19197,
+            "net_r": -2.029051,
+            "profit_factor": 0.934053,
+            "trades": 40,
+            "win_rate": 0.275
+          }
+        },
+        "pooled": {
+          "max_drawdown_r": 11.19197,
+          "net_r": 36.17028,
+          "profit_factor": 1.249615,
+          "trades": 206,
+          "win_rate": 0.378641
+        },
+        "positive_years": 4,
+        "worst_annual_profit_factor": 0.934053
+      },
+      "name": "majority_2_of_3_align"
+    }
+  ],
+  "frozen_base_parameters": {
+    "gap_atr": 1.0,
+    "mode": "continuation",
+    "response_atr": 0.15,
+    "stop_atr": 1.5,
+    "target_r": 3.0
+  },
+  "holdout_2025_opened": false,
+  "predeclaration": "artifacts/ftmo_ndx_gap_response_nested_filter_predeclaration_2026-07-12.json",
+  "schema_version": 1,
+  "selected_filter": {
+    "metrics": {
+      "annual": {
+        "2018": {
+          "max_drawdown_r": 5.722416,
+          "net_r": 1.678846,
+          "profit_factor": 1.105134,
+          "trades": 21,
+          "win_rate": 0.380952
+        },
+        "2019": {
+          "max_drawdown_r": 7.352262,
+          "net_r": 5.937507,
+          "profit_factor": 1.143317,
+          "trades": 54,
+          "win_rate": 0.37037
+        },
+        "2021": {
+          "max_drawdown_r": 6.920646,
+          "net_r": 26.038554,
+          "profit_factor": 2.019288,
+          "trades": 46,
+          "win_rate": 0.5
+        },
+        "2022": {
+          "max_drawdown_r": 5.48595,
+          "net_r": 4.544424,
+          "profit_factor": 1.145689,
+          "trades": 45,
+          "win_rate": 0.355556
+        },
+        "2023": {
+          "max_drawdown_r": 11.19197,
+          "net_r": -2.029051,
+          "profit_factor": 0.934053,
+          "trades": 40,
+          "win_rate": 0.275
+        }
+      },
+      "pooled": {
+        "max_drawdown_r": 11.19197,
+        "net_r": 36.17028,
+        "profit_factor": 1.249615,
+        "trades": 206,
+        "win_rate": 0.378641
+      },
+      "positive_years": 4,
+      "worst_annual_profit_factor": 0.934053
+    },
+    "name": "majority_2_of_3_align"
+  },
+  "stage": "RESEARCH_2018_2023_ONLY",
+  "status": "RESEARCH_SURVIVOR_FOUND",
+  "survivor_count": 1,
+  "symbol": "NDX.DWX",
+  "validation_2024_opened": false
+}

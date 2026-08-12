@@ -1,0 +1,20 @@
+CARD RESERVOIR SNAPSHOT (2026-07-24)
+farm artifacts dir: D:/QM/strategy_farm/artifacts/
+  cards_approved : 3048 .md files
+  cards_review   : 244 .md files
+  cards_draft    : 109 .md files
+Router research-throttle threshold: min_ready_strategy_cards = 5
+  (agent_router.py:602; replenish() reports ready_strategy_cards vs 5)
+Router replenish() status: FROZEN
+  reason="generic_research_replenishment_frozen_edge_lab_primary_2026-05-22"
+  (agent_router.py:619-620) -> generic reservoir replenishment is frozen;
+  only matrix-DIRECTED Edge-Lab research seeds new research_strategy tasks.
+Reservoir 3048 approved >> threshold 5 -> generic research throttle OFF regardless.
+ready_count (approved minus schema-blocked/dupes/already-built) NOT executed
+  (would require running farm code that opens the DB); filesystem approved-count
+  is the read-only ground truth cited above.
+cards_review backlog:
+  count 244, oldest QM5_10349_savor-wilson-macro-announcement-idx.md mtime 2026-05-21T18:58Z (~64d)
+  newest QM5_20024_london-fix-reversion.md mtime 2026-07-21T04:47Z
+other card pools present: cards_rejected, cards_recovery, cards_blocked_r3_data,
+  card_duplicates_g0, cards_approved_bak_freqfill_20260625T151220Z

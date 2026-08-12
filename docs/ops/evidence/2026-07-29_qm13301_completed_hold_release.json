@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-07-29T11:00:51Z",
+  "work_item_id": "8ac4c99e-6c0d-4263-af55-785920a129e7",
+  "ea_id": "QM5_13301",
+  "terminal": "T6",
+  "operation": "release_completed_hold",
+  "terminal_precondition": {
+    "status": "done",
+    "verdict": "PASS",
+    "hold_code": "ISOLATED_T6_ONE_SHOT_REQUIRED",
+    "hold_active_before": true,
+    "release_on_restart": false
+  },
+  "release_note": "QM5_13301 isolated T6 timer-v2 run completed; immutable run and recovery receipts captured",
+  "factory_state": {
+    "factory_off_remained_asserted": true,
+    "factory_off_sha256": "09cc4f83e8d5f384f03bc51306beff2cdd165108559a00dbf665097c60b47f1c"
+  },
+  "database_binding": {
+    "pre_file_sha256": "1d3c588f0b903175b76d351ec0a670a1fc770848e2d25c5f58f35b1bbe2f9ac6",
+    "pre_logical_state_sha256": "1d3c588f0b903175b76d351ec0a670a1fc770848e2d25c5f58f35b1bbe2f9ac6",
+    "post_file_sha256": "5ba8c364427c8e66b9221eeab278f7740ce38ad142e74e0bb95c7a9731b0c35c",
+    "post_logical_state_sha256": "5ba8c364427c8e66b9221eeab278f7740ce38ad142e74e0bb95c7a9731b0c35c",
+    "wal_checkpoint_busy": 0
+  },
+  "snapshot": {
+    "path": "D:\\QM\\reports\\maintenance\\2026-07-29_mnt_program\\qm13301_completed_hold_pre_release_20260729_110051Z.sqlite",
+    "sha256": "30632fe02b835e1f6b5dac5fb0bffe2750305785749e9c66fda9cd83aa76c21d"
+  },
+  "safety": {
+    "global_mutation_lock": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "factory_started": false,
+    "t_live_touched": false,
+    "auto_trading_touched": false
+  }
+}

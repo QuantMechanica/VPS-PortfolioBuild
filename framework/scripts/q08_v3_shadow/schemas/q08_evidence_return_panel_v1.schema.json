@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.local/schemas/q08_evidence_return_panel_v1.schema.json",
+  "title": "Q08 Evidence Return Panel v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "calendar_basis",
+    "annualization_periods",
+    "coverage_start",
+    "coverage_end",
+    "axis",
+    "axis_sha256",
+    "panel_sha256",
+    "sleeves"
+  ],
+  "properties": {
+    "schema_version": {"const": "q08_evidence_return_panel/v1"},
+    "calendar_basis": {"enum": ["WEEKDAY_252", "ALL_DAYS_365"]},
+    "annualization_periods": {"enum": [252, 365]},
+    "coverage_start": {"type": "string", "format": "date"},
+    "coverage_end": {"type": "string", "format": "date"},
+    "axis": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "format": "date"}
+    },
+    "axis_sha256": {"$ref": "#/$defs/sha256"},
+    "panel_sha256": {"$ref": "#/$defs/sha256"},
+    "sleeves": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/sleeve"}
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"calendar_basis": {"const": "WEEKDAY_252"}}},
+      "then": {"properties": {"annualization_periods": {"const": 252}}}
+    },
+    {
+      "if": {"properties": {"calendar_basis": {"const": "ALL_DAYS_365"}}},
+      "then": {"properties": {"annualization_periods": {"const": 365}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "referenceCapital": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amount", "currency", "source_id", "source_sha256", "binding_sha256"],
+      "properties": {
+        "amount": {"type": "number", "exclusiveMinimum": 0},
+        "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+        "source_id": {"type": "string", "minLength": 1},
+        "source_sha256": {"$ref": "#/$defs/sha256"},
+        "binding_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "sleeve": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sleeve_id",
+        "source_value_kind",
+        "reference_capital",
+        "observed_day_count",
+        "zero_filled_day_count",
+        "returns",
+        "sharpe_annualized",
+        "series_sha256"
+      ],
+      "properties": {
+        "sleeve_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "source_value_kind": {"enum": ["RETURN", "PNL"]},
+        "reference_capital": {
+          "oneOf": [{"type": "null"}, {"$ref": "#/$defs/referenceCapital"}]
+        },
+        "observed_day_count": {"type": "integer", "minimum": 0},
+        "zero_filled_day_count": {"type": "integer", "minimum": 0},
+        "returns": {"type": "array", "minItems": 1, "items": {"type": "number"}},
+        "sharpe_annualized": {"type": ["number", "null"]},
+        "series_sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"source_value_kind": {"const": "PNL"}}},
+          "then": {"properties": {"reference_capital": {"$ref": "#/$defs/referenceCapital"}}}
+        },
+        {
+          "if": {"properties": {"source_value_kind": {"const": "RETURN"}}},
+          "then": {"properties": {"reference_capital": {"type": "null"}}}
+        }
+      ]
+    }
+  }
+}

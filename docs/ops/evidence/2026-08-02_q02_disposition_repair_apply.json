@@ -1,0 +1,18 @@
+{
+  "authority_plan_sha256": "5abc62608f1fc5ebce7ee226490c261132aa592a1d5569601bf74cb35666a25d",
+  "backup": {
+    "bytes": 356241408,
+    "created_at_utc": "2026-08-02T07:30:53Z",
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_pre_q02_disposition_repair_20260802T073050529013Z.sqlite",
+    "quick_check": "ok",
+    "sha256": "b1b1e53a37ef186fe97d0dfa109c07fe6a3adc57c657cffc75e19aee7becdad5"
+  },
+  "execution_plan_sha256": "764a23d001a2fa3a7f952a170db97eebbc5d3e50c416ab581d4d4188ce366fd8",
+  "journal_path": "D:\\QM\\strategy_farm\\state\\q02_disposition_repair_20260802_journal.json",
+  "journal_sha256": "93936d0ffb4957ede80a77eedaf560d1d8323d0ed776ef685916b16fccd90b04",
+  "pipeline_verdict_inferred": false,
+  "post_commit_quick_check": "ok",
+  "rerun_or_enqueue_performed": false,
+  "row_count": 10,
+  "status": "APPLIED"
+}

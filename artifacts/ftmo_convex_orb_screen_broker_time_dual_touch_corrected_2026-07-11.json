@@ -1,0 +1,25 @@
+{
+  "evaluated_configurations": 312,
+  "holdout_pass_count": 0,
+  "preholdout_candidates": [],
+  "preholdout_pass_count": 0,
+  "schema_version": 1,
+  "selected_family_winners": [],
+  "selection_contract": {
+    "collision_rule": "stop_first_if_stop_and_target_touch_same_H1_bar",
+    "development": "2018-2022",
+    "dual_pending_touch_rule": "count_as_pessimistic_stop",
+    "evidence_end_year": 2025,
+    "holdout_gate": "trades>=30 PF>=1.10 net>0 and both 2024/2025 positive",
+    "preholdout_gate": "DEV trades>=100 PF>=1.15; validation trades>=15 PF>=1.05 net>0; >=3 positive DEV years",
+    "sealed_holdout": "2024-2025",
+    "selection_uses_holdout": false,
+    "target_grid_r": [
+      3.0,
+      5.0,
+      8.0
+    ],
+    "validation": "2023"
+  },
+  "status": "NO_HOLDOUT_SURVIVOR"
+}

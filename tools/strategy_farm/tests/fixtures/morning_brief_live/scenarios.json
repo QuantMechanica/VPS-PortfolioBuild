@@ -1,0 +1,227 @@
+{
+  "_doc": "Frozen fixtures for morning_brief.live_status(). Each scenario overrides a GREEN, fresh, authenticated baseline (see the test's _BASELINE) with the state it is testing, then asserts the resulting lamp outcome. The state-file schemas here are the ones the producers ACTUALLY emit: the WS-E1 alarm state (schema_version/generated_utc/author/watchdog_status/maintenance/reboot_suppressed/any_alarm/sessions{T_LIVE,FTMO}) mirrors D:/QM/reports/ultracode_20260726/wse1/samples/*; the WS-E3 deployment-contract state (overall_status/generated_utc/summary/disk_profile/runtime/findings) mirrors wse3/live_run_state.json. Verbatim producer bytes are additionally exercised from producer_samples/ by test_producer_samples_conformance. A file value of null or '__absent__' => that source is ABSENT (missing). A dict with a __raw__ key => write that literal text (malformed JSON). Deploy-stamp sentinels: manifest_path '__manifest__' -> the materialized manifest path; manifest_sha256 '__manifest_sha256__' -> the real SHA-256 of that manifest. All ages are computed against fixed_now => fully deterministic, NO live/T_Live access.",
+  "fixed_now": "2026-07-26T08:00:00Z",
+  "scenarios": {
+    "green": {
+      "desc": "baseline unchanged: all live sources fresh/healthy, deploy signed+authenticated => overall GRUEN",
+      "files": {},
+      "expect": {"overall": "GRÜN", "expected_sleeves": 24, "account": "4000090541",
+                 "watchdog_level": "GRÜN", "ftmo_level": "GRÜN", "deploy_level": "GRÜN",
+                 "subject_has": "LIVE GRÜN", "ftmo_prose_has": "aktiv", "ftmo_prose_hasnot": "Trial beendet"}
+    },
+
+    "e1_alarm_all_ok": {
+      "desc": "WS-E1 producer schema, both sessions ok => watchdog GRUEN by content",
+      "files": {
+        "alarm": {"schema_version": 1, "generated_utc": "2026-07-26T07:59:30Z", "author": "T_Live_Watchdog",
+                  "watchdog_status": "healthy", "maintenance": false, "reboot_suppressed": false, "any_alarm": false,
+                  "sessions": {
+                    "T_LIVE": {"session": "T_LIVE", "condition": "ok", "detail": "terminal_running", "alarm": false, "since_utc": "2026-07-26T07:00:00Z", "last_change": "2026-07-26T07:00:00Z", "transitions": 0, "previous_condition": null},
+                    "FTMO": {"session": "FTMO", "condition": "ok", "detail": "terminal_running", "alarm": false, "since_utc": "2026-07-26T07:00:00Z", "last_change": "2026-07-26T07:00:00Z", "transitions": 0, "previous_condition": null}}}
+      },
+      "expect": {"overall": "GRÜN", "watchdog_level": "GRÜN", "watchdog_value": "DXZ ✓ · FTMO ✓"}
+    },
+
+    "e1_alarm_tlive_missing": {
+      "desc": "WS-E1 producer schema, T_LIVE (DXZ money-book terminal) missing => watchdog ROT by content",
+      "files": {
+        "alarm": {"schema_version": 1, "generated_utc": "2026-07-26T07:59:30Z", "author": "T_Live_Watchdog",
+                  "watchdog_status": "degraded", "maintenance": false, "reboot_suppressed": false, "any_alarm": true,
+                  "sessions": {
+                    "T_LIVE": {"session": "T_LIVE", "condition": "missing", "detail": "terminal_absent_recovery_pending", "alarm": true, "since_utc": "2026-07-26T07:55:00Z", "last_change": "2026-07-26T07:55:00Z", "transitions": 1, "previous_condition": "ok"},
+                    "FTMO": {"session": "FTMO", "condition": "ok", "detail": "terminal_running", "alarm": false, "since_utc": "2026-07-26T07:00:00Z", "last_change": "2026-07-26T07:00:00Z", "transitions": 0, "previous_condition": null}}}
+      },
+      "expect": {"overall": "ROT", "watchdog_level": "ROT", "subject_reason_has": "Live-MT5 ROT"}
+    },
+
+    "e1_alarm_critical_both_missing": {
+      "desc": "WS-E1 producer schema, both sessions missing, reboot suppressed => watchdog ROT",
+      "files": {
+        "alarm": {"schema_version": 1, "generated_utc": "2026-07-26T07:59:30Z", "author": "T_Live_Watchdog",
+                  "watchdog_status": "critical", "maintenance": false, "reboot_suppressed": true, "any_alarm": true,
+                  "sessions": {
+                    "T_LIVE": {"session": "T_LIVE", "condition": "missing", "detail": "terminal_absent_no_interactive_session", "alarm": true, "since_utc": "2026-07-26T07:55:00Z", "last_change": "2026-07-26T07:55:00Z", "transitions": 1, "previous_condition": "ok"},
+                    "FTMO": {"session": "FTMO", "condition": "missing", "detail": "terminal_absent_no_interactive_session", "alarm": true, "since_utc": "2026-07-26T07:55:00Z", "last_change": "2026-07-26T07:55:00Z", "transitions": 1, "previous_condition": "ok"}}}
+      },
+      "expect": {"overall": "ROT", "watchdog_level": "ROT"}
+    },
+
+    "e1_alarm_maintenance": {
+      "desc": "WS-E1 producer schema, maintenance => watchdog GELB (not an alarm, recovery paused)",
+      "files": {
+        "alarm": {"schema_version": 1, "generated_utc": "2026-07-26T07:59:30Z", "author": "T_Live_Watchdog",
+                  "watchdog_status": "maintenance", "maintenance": true, "reboot_suppressed": false, "any_alarm": false,
+                  "sessions": {
+                    "T_LIVE": {"session": "T_LIVE", "condition": "maintenance", "detail": "maintenance_flag_active", "alarm": false, "since_utc": "2026-07-26T07:00:00Z", "last_change": "2026-07-26T07:00:00Z", "transitions": 0, "previous_condition": null},
+                    "FTMO": {"session": "FTMO", "condition": "maintenance", "detail": "maintenance_flag_active", "alarm": false, "since_utc": "2026-07-26T07:00:00Z", "last_change": "2026-07-26T07:00:00Z", "transitions": 0, "previous_condition": null}}}
+      },
+      "expect": {"overall_not": "GRÜN", "watchdog_level": "GELB"}
+    },
+
+    "e1_alarm_stale": {
+      "desc": "WS-E1 alarm state older than the 15m RED SLA => watchdog ROT STALE, never green",
+      "files": {
+        "alarm": {"schema_version": 1, "generated_utc": "2026-07-26T07:30:00Z", "author": "T_Live_Watchdog",
+                  "watchdog_status": "healthy", "maintenance": false, "reboot_suppressed": false, "any_alarm": false,
+                  "sessions": {
+                    "T_LIVE": {"session": "T_LIVE", "condition": "ok", "detail": "terminal_running", "alarm": false, "since_utc": "2026-07-26T07:00:00Z", "last_change": "2026-07-26T07:00:00Z", "transitions": 0, "previous_condition": null},
+                    "FTMO": {"session": "FTMO", "condition": "ok", "detail": "terminal_running", "alarm": false, "since_utc": "2026-07-26T07:00:00Z", "last_change": "2026-07-26T07:00:00Z", "transitions": 0, "previous_condition": null}}}
+      },
+      "expect": {"overall": "ROT", "watchdog_level": "ROT", "watchdog_value": "STALE"}
+    },
+
+    "watchdog_fallback_degraded": {
+      "desc": "No E1 alarm file yet; falls back to the shipped uptime-watchdog atomic state (real schema) with status degraded => GELB",
+      "files": {
+        "alarm": "__absent__",
+        "watchdog": {"ts": "2026-07-26T07:59:30Z", "status": "degraded", "maintenance": false, "process_probe_ok": true, "dxz_running": true, "ftmo_running": true, "errors": ["session_supervisor_not_ready:not_scheduler_owned"]}
+      },
+      "expect": {"overall_not": "GRÜN", "watchdog_level": "GELB", "watchdog_value": "DXZ ✓ · FTMO ✓"}
+    },
+
+    "malformed_alarm_and_ftmo": {
+      "desc": "alarm + ftmo state files corrupt => UNBEKANNT, never green-by-absence",
+      "files": {
+        "alarm": {"__raw__": "{ this is not valid json ,,, "},
+        "watchdog": "__absent__",
+        "ftmo": {"__raw__": "not-json garbage {[ ,,,"}
+      },
+      "expect": {"overall_in": ["UNBEKANNT", "ROT"], "overall_not": "GRÜN",
+                 "watchdog_level": "UNBEKANNT", "ftmo_level": "UNBEKANNT"}
+    },
+
+    "missing_ftmo": {
+      "desc": "FTMO account state absent => FTMO UNBEKANNT, prose from state (never retained 'Trial beendet')",
+      "files": {"ftmo": "__absent__"},
+      "expect": {"overall_not": "GRÜN", "ftmo_level": "UNBEKANNT",
+                 "ftmo_prose_has": "kein Account-State", "ftmo_prose_hasnot": "Trial beendet"}
+    },
+
+    "red_ftmo_over_limit": {
+      "desc": "FTMO total DD >= 10% limit => ROT, prose says exhausted/TOT",
+      "files": {
+        "ftmo": {"checked_at_utc": "2026-07-26T07:59:00Z", "verdict": "ALARM", "terminal_up": true, "total_dd_pct": 10.5, "day_loss_pct": 2.1, "equity": 89500.0}
+      },
+      "expect": {"overall": "ROT", "ftmo_level": "ROT", "subject_reason_has": "FTMO ROT", "ftmo_prose_has": "Limit"}
+    },
+
+    "red_ddguard": {
+      "desc": "DXZ DD-guard breached => overall ROT and DD-Guard in subject",
+      "files": {
+        "ddguard": {"blind_runs": 90, "breached": true, "halt_dd_pct": 10.0, "hwm_equity": 101871.44, "last_dd_pct": 10.6, "last_equity": 90900.0, "last_run_utc": "2026-07-26T07:59:00+00:00"}
+      },
+      "expect": {"overall": "ROT", "subject_has": "LIVE ROT", "subject_reason_has": "DD-Guard ROT"}
+    },
+
+    "e3_contract_red": {
+      "desc": "WS-E3 deployment-contract overall_status RED (real schema) => contract ROT by content, value 23/24",
+      "files": {
+        "contract": {"tool": "verify_live_deployment_contract", "version": "1.0", "generated_utc": "2026-07-26T07:55:00+00:00", "trigger": "periodic", "overall_status": "RED",
+                     "disk_profile": {"status": "RED", "chart_files_total": 25, "trading_parseable": 23, "unparseable": 1, "monitor_count": 1, "monitor_status": "OK", "expected_present_ok": 23, "expected_missing": 1, "expected_field_mismatch": 0, "duplicates": 0, "orphans": 0, "sleeves": []},
+                     "runtime": {"status": "RED", "n_logs_indexed": 24, "sleeves": []},
+                     "findings": [], "summary": {"critical": 3, "warn": 0, "info": 1, "headline": "RED; disk 23/24 ok; 1 MISSING; 1 UNPARSEABLE"}}
+      },
+      "expect": {"overall": "ROT", "contract_level": "ROT", "contract_value": "23/24", "subject_reason_has": "Deploy-Contract ROT"}
+    },
+
+    "e3_contract_green": {
+      "desc": "WS-E3 deployment-contract overall_status GREEN => contract GRUEN, overall GRUEN",
+      "files": {
+        "contract": {"tool": "verify_live_deployment_contract", "version": "1.0", "generated_utc": "2026-07-26T07:55:00+00:00", "trigger": "periodic", "overall_status": "GREEN",
+                     "disk_profile": {"status": "GREEN", "chart_files_total": 25, "trading_parseable": 24, "unparseable": 0, "monitor_count": 1, "monitor_status": "OK", "expected_present_ok": 24, "expected_missing": 0, "expected_field_mismatch": 0, "duplicates": 0, "orphans": 0, "sleeves": []},
+                     "runtime": {"status": "GREEN", "n_logs_indexed": 24, "sleeves": []},
+                     "findings": [], "summary": {"critical": 0, "warn": 0, "info": 1, "headline": "GREEN; disk 24/24 ok"}}
+      },
+      "expect": {"overall": "GRÜN", "contract_level": "GRÜN", "contract_value": "24/24"}
+    },
+
+    "e3_contract_absent": {
+      "desc": "WS-E3 verifier not scheduled yet => contract UNBEKANNT advisory (never green)",
+      "files": {"contract": "__absent__"},
+      "expect": {"overall_not": "GRÜN", "contract_level": "UNBEKANNT"}
+    },
+
+    "news_missing": {
+      "desc": "news calendar absent => hard ROT (live news filter would have no data)",
+      "files": {}, "news_age_sec": null,
+      "expect": {"overall": "ROT", "news_level": "ROT"}
+    },
+
+    "no_pointer": {
+      "desc": "no manifest override / pointer / default => expected_sleeves UNKNOWN, deploy UNBEKANNT (never a constant)",
+      "files": {"deploy_pointer": "__absent__", "deploy_default": "__absent__"},
+      "expect": {"overall_not": "GRÜN", "deploy_level": "UNBEKANNT", "expected_sleeves_null": true}
+    },
+
+    "deploy_repo_default_amber": {
+      "desc": "only the UNauthenticated repo default resolves (signed false) => deploy GELB, sleeve count still derived",
+      "files": {
+        "deploy_pointer": "__absent__",
+        "deploy_default": {"manifest_path": "__manifest__", "signed": false, "authenticated": false}
+      },
+      "expect": {"overall_not": "GRÜN", "deploy_level": "GELB", "expected_sleeves": 24}
+    },
+
+    "deploy_unsigned_amber": {
+      "desc": "runtime stamp present but signed!=true and no manifest_sha256 => deploy GELB (manifest-derived, NOT authenticated)",
+      "files": {
+        "deploy_pointer": {"manifest_path": "__manifest__", "signed": false, "approved_by": "", "deployment_epoch_utc": "2026-07-25T20:00:00Z", "expected_account": "4000090541", "expected_phase": "DXZ_LIVE"}
+      },
+      "expect": {"overall_not": "GRÜN", "deploy_level": "GELB", "expected_sleeves": 24}
+    },
+
+    "deploy_sha_mismatch_red": {
+      "desc": "signed stamp but manifest_sha256 does not match the actual manifest file => deploy ROT (tamper/wrong file)",
+      "files": {
+        "deploy_pointer": {"manifest_path": "__manifest__", "manifest_sha256": "deadbeef00000000000000000000000000000000000000000000000000000000", "signed": true, "approved_by": "OWNER (Fabian) 2026-07-25", "deployment_epoch_utc": "2026-07-25T20:00:00Z", "expected_account": "4000090541", "expected_phase": "DXZ_LIVE"}
+      },
+      "expect": {"overall": "ROT", "deploy_level": "ROT", "expected_sleeves": 24}
+    },
+
+    "deploy_incomplete_stamp_amber": {
+      "desc": "signed + matching sha but deployment_epoch/expected_phase missing => deploy GELB (incomplete authentication)",
+      "files": {
+        "deploy_pointer": {"manifest_path": "__manifest__", "manifest_sha256": "__manifest_sha256__", "signed": true, "approved_by": "OWNER (Fabian) 2026-07-25", "expected_account": "4000090541"}
+      },
+      "expect": {"overall_not": "GRÜN", "deploy_level": "GELB", "expected_sleeves": 24}
+    },
+
+    "deploy_account_mismatch_red": {
+      "desc": "signed + matching sha but expected_account != the manifest book account => deploy ROT",
+      "files": {
+        "deploy_pointer": {"manifest_path": "__manifest__", "manifest_sha256": "__manifest_sha256__", "signed": true, "approved_by": "OWNER (Fabian) 2026-07-25", "deployment_epoch_utc": "2026-07-25T20:00:00Z", "expected_account": "9999999999", "expected_phase": "DXZ_LIVE"}
+      },
+      "expect": {"overall": "ROT", "deploy_level": "ROT", "expected_sleeves": 24}
+    },
+
+    "manifest_not_live_amber": {
+      "desc": "fully signed+authenticated stamp but the manifest's own status is DRAFT/STAGE_ONLY => deploy GELB, count still shown",
+      "files": {
+        "manifest_file": {"book": "DXZ_4000090541", "status": "DRAFT", "n_sleeves": 24, "sleeves": []},
+        "deploy_pointer": {"manifest_path": "__manifest__", "manifest_sha256": "__manifest_sha256__", "signed": true, "approved_by": "OWNER (Fabian) 2026-07-25", "deployment_epoch_utc": "2026-07-25T20:00:00Z", "expected_account": "4000090541", "expected_phase": "DXZ_LIVE"}
+      },
+      "expect": {"overall_not": "GRÜN", "deploy_level": "GELB", "expected_sleeves": 24}
+    },
+
+    "e1_schema_incomplete_alarm": {
+      "desc": "HOSTILE (Codex round-3 case 1, VERBATIM): a parseable E1 object with NO generated_utc and NO required session blocks. Round-2 rendered GRÜN; the required-schema guard must make it UNBEKANNT (never green-by-schema-absence).",
+      "files": {"alarm": {"watchdog_status": "healthy", "sessions": {}}},
+      "expect": {"overall_not": "GRÜN", "watchdog_level": "UNBEKANNT", "watchdog_value": "SCHEMA?"}
+    },
+
+    "e3_schema_incomplete_contract": {
+      "desc": "HOSTILE (Codex round-3 case 2, VERBATIM): a parseable E3 object with overall_status GREEN but NO generated_utc, summary, runtime or findings. Round-2 rendered GRÜN 24/24; the required-schema guard must make it UNBEKANNT.",
+      "files": {"contract": {"overall_status": "GREEN", "disk_profile": {"expected_present_ok": 24, "expected_missing": 0}}},
+      "expect": {"overall_not": "GRÜN", "contract_level": "UNBEKANNT", "contract_value": "SCHEMA?"}
+    },
+
+    "deploy_unbindable_account": {
+      "desc": "HOSTILE (Codex round-3 case 3, VERBATIM): a fully signed stamp with a matching manifest SHA, but a manifest whose book is just 'DXZ' — no account digits are derivable, so the expected_account cannot be bound. Round-2 authenticated GRÜN; the bindable-account requirement must make it UNBEKANNT and deploy_authenticated false.",
+      "files": {
+        "manifest_file": {"book": "DXZ", "status": "LIVE", "n_sleeves": 24, "sleeves": []},
+        "deploy_pointer": {"manifest_path": "__manifest__", "manifest_sha256": "__manifest_sha256__", "signed": true, "approved_by": "OWNER (Fabian) 2026-07-25", "deployment_epoch_utc": "2026-07-25T20:00:00Z", "expected_account": "4000090541", "expected_phase": "DXZ_LIVE"}
+      },
+      "expect": {"overall_not": "GRÜN", "deploy_level": "UNBEKANNT", "expected_sleeves": 24, "account": null}
+    }
+  }
+}

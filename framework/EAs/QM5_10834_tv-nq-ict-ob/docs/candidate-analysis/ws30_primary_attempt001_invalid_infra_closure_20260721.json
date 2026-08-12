@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_10834_WS30_PRIMARY_INVALID_INFRA_CLOSURE",
+  "status": "PRIMARY_INVALID_INFRA_CLOSED_NO_OUTCOME_READ",
+  "created_utc": "2026-07-21T08:34:04.4847154Z",
+  "analysis_id": "QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001",
+  "candidate": {
+    "ea_id": "QM5_10834",
+    "research_symbol": "WS30.DWX",
+    "timeframe": "M5",
+    "model": 4,
+    "duplicates_per_cell": 2
+  },
+  "terminal_disposition": "INVALID_TERMINAL_INFRASTRUCTURE_NO_MERIT_ADJUDICATION",
+  "allowed_alternate_cause_class": "DEV2_CONTROLLER_FAILED_BEFORE_NATIVE_REPORT",
+  "primary_attempt": {
+    "attempt_number": 1,
+    "run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_NATIVE_ATTEMPT_001",
+    "pre_receipt": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_NATIVE_ATTEMPT_001\\pre_receipt.json",
+      "size": 73661,
+      "sha256": "53ca4f23d16c877f69b062812e3e098d97fca20025f67b0d05b2032e6491ff92"
+    },
+    "authorization": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_NATIVE_ATTEMPT_001\\native_outcome_authorization.json",
+      "size": 1571,
+      "sha256": "40cf7159e3892fda1db98543ff0c94a36b64f36694e054c6e528acff04f8e153"
+    },
+    "launch_job": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_NATIVE_ATTEMPT_001\\launch_job.json",
+      "size": 2076,
+      "sha256": "c377b7fc058b04aeebe93b39c5f7f4f7fcbe8eeff12032af60d4efc9b77258ac"
+    },
+    "launch_state": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_NATIVE_ATTEMPT_001\\launch_state.json",
+      "size": 7383,
+      "sha256": "e4aaedf0d4b01d30f2512fb33338ebd0cbbcb59365a764a9209482894106039f"
+    },
+    "native_claim": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\claims\\QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001_DEV2_NATIVE_ATTEMPT_001.json",
+      "size": 4296,
+      "sha256": "07f318a2638e680bbbb7f9310436b1e931751c786c04d7ca2d09b13de8fb8efe"
+    },
+    "launch_state_control_facts": {
+      "status": "INVALID_TERMINAL",
+      "worker_pid": null,
+      "resume_count": 0,
+      "finished_utc": null,
+      "active_cell_id": "WS30_DWX_DEV",
+      "active_cell_status": "OUTCOME_POSSIBLE_NO_RESUME",
+      "first_cell_status": "INVALID_TERMINAL_OUTPUT",
+      "first_cell_attempt_count": 1,
+      "first_attempt_exit_code": 1,
+      "first_attempt_native_result": null,
+      "first_attempt_native_root": null,
+      "first_attempt_summary": null,
+      "first_attempt_outcome_artifacts": [],
+      "remaining_cell_statuses": [
+        "PENDING",
+        "PENDING",
+        "PENDING"
+      ],
+      "remaining_cell_attempt_counts": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "directory_metadata_closure": {
+    "inspection_mode": "PATH_TYPE_SIZE_SHA256_ONLY_NO_LOG_OR_REPORT_CONTENT_READ",
+    "directories_exact": [
+      "control",
+      "native",
+      "native\\DEV"
+    ],
+    "files_exact": [
+      {
+        "relative_path": "control\\dev2_machine_credential_probe.json",
+        "size": 747,
+        "sha256": "4f4b6e815b92a35ef225638b3f589d565d0fe68420544996b6587f926614f61f"
+      },
+      {
+        "relative_path": "control\\dev2_machine_credential_probe.stderr.log",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "relative_path": "control\\dev2_machine_credential_probe.stdout.log",
+        "size": 48,
+        "sha256": "e28ad5859d8acd2dbe9e04c21db9d3fe507afaa2b19b52db6c7bfbc82340e856"
+      },
+      {
+        "relative_path": "launch_job.json",
+        "size": 2076,
+        "sha256": "c377b7fc058b04aeebe93b39c5f7f4f7fcbe8eeff12032af60d4efc9b77258ac"
+      },
+      {
+        "relative_path": "launch_state.json",
+        "size": 7383,
+        "sha256": "e4aaedf0d4b01d30f2512fb33338ebd0cbbcb59365a764a9209482894106039f"
+      },
+      {
+        "relative_path": "native_outcome_authorization.json",
+        "size": 1571,
+        "sha256": "40cf7159e3892fda1db98543ff0c94a36b64f36694e054c6e528acff04f8e153"
+      },
+      {
+        "relative_path": "native\\DEV\\controller.stderr.log",
+        "size": 312,
+        "sha256": "854a59a927aa016d66e12a287cec83692db22ab08c215a655593ca626e839241"
+      },
+      {
+        "relative_path": "native\\DEV\\controller.stdout.log",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "relative_path": "pre_receipt.json",
+        "size": 73661,
+        "sha256": "53ca4f23d16c877f69b062812e3e098d97fca20025f67b0d05b2032e6491ff92"
+      }
+    ],
+    "exact_file_closure": true,
+    "native_report_file_count": 0,
+    "native_outcome_file_count": 0,
+    "controller_stdout_size": 0,
+    "controller_stderr_size": 312,
+    "controller_stderr_semantics_read": false,
+    "controller_logs_are_opaque_hash_bindings_only": true
+  },
+  "outcome_fence": {
+    "native_report_content_opened": false,
+    "controller_stderr_content_opened": false,
+    "strategy_outcomes_read": false,
+    "strategy_merit_adjudicated": false,
+    "primary_resume_permitted": false,
+    "primary_post_permitted": false,
+    "primary_artifacts_must_remain_immutable": true
+  },
+  "reserved_alternate": {
+    "attempt_number": 2,
+    "run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002",
+    "claim_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\claims\\QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001_DEV2_NATIVE_ATTEMPT_002.json",
+    "authorization_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002\\native_outcome_authorization.json",
+    "authorization_scope": "QM5_10834_WS30_TRANSPORT_INFRA_ALTERNATE_002_4_CELLS_X_2_DUPLICATES_MODEL4_MAX_4_NATIVE_STARTS_PER_CELL",
+    "same_strategy_parameters_required": true,
+    "same_merit_gates_required": true,
+    "no_resume": true,
+    "further_attempts_forbidden": true
+  }
+}

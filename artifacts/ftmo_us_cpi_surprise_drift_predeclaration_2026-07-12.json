@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_SCREEN",
+  "deployment_allowed": false,
+  "hypothesis": "A nonzero USD headline CPI surprise continues in the implied USD direction after the mandatory two- or three-hour blackout because institutional repricing is not instantaneous.",
+  "calendar_validation": "artifacts/ftmo_us_cpi_calendar_timestamp_validation_2026-07-12.json",
+  "calendar_sha256": "C2B196EE2A097E2B45E4A8C4CA39D50A240D23D0214A4FA7FC06398006D66A69",
+  "price_data_sha256": {
+    "EURUSD.DWX": "B7EC4FAE50B0E257832CB3E1217A34236F2A1E212844F9EE35B0CC7B86CE91F9",
+    "GBPUSD.DWX": "E483E548E28F611B0D53143EB1E329EFF9A568F7D8A7076AFC4CE59A8ABA31BC",
+    "USDJPY.DWX": "27D1DC7569385978EF42AE33DFCBBE1B36ED162F06ED031692A157B196159DD4"
+  },
+  "engine_contract": {
+    "event": "USD high-impact CPI m/m rows with numeric actual and forecast",
+    "timestamp_transform": "validated local timestamp +1 day -7 hours to UTC",
+    "surprise": "actual percentage points minus forecast percentage points",
+    "direction": "Positive surprise: short EURUSD and GBPUSD, long USDJPY; negative surprise reverses all three legs.",
+    "entry": "First common M5 open at or after the corrected event time plus the fixed blackout.",
+    "sizing": "Equal initial ATR risk across the three legs; package R is their arithmetic mean.",
+    "exit": "Independent fixed ATR stop or target, otherwise time exit after the fixed number of available M5 bars.",
+    "same_bar_rule": "Stop before target.",
+    "base_round_trip_cost_price": {"EURUSD.DWX": 0.00015, "GBPUSD.DWX": 0.00018, "USDJPY.DWX": 0.0225},
+    "rollover_stress": "For holds of eight hours or longer add one current worst-side swap allowance: EURUSD 0.0001103, GBPUSD 0.0000577, USDJPY 0.02241.",
+    "maximum_one_package_per_release": true
+  },
+  "fixed_grid": {
+    "minimum_absolute_surprise_pct_points": [0.05, 0.15],
+    "blackout_minutes": [120, 180],
+    "stop_atr5": [8.0, 16.0, 24.0],
+    "target_r": [0.0, 1.0, 2.0],
+    "hold_bars": [48, 96, 288],
+    "total_configurations": 108
+  },
+  "selection_contract": {
+    "development": "2018-2022",
+    "validation": "2023",
+    "sealed_holdout": "2024-2025",
+    "minimum_development_trades": 40,
+    "minimum_development_profit_factor": 1.15,
+    "minimum_positive_development_years": 4,
+    "minimum_validation_trades": 8,
+    "minimum_validation_profit_factor": 1.05,
+    "winner_count": 1,
+    "winner_rule": "Maximize min(development PF, validation PF), then development trades.",
+    "holdout_open_rule": "Open 2024-2025 only for the one locked global preholdout winner.",
+    "holdout_pass_rule": "At least 15 trades, pooled PF >= 1.10, positive pooled net R, and positive net R in both 2024 and 2025."
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}
