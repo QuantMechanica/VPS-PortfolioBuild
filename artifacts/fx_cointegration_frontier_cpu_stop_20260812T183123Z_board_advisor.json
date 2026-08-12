@@ -1,0 +1,156 @@
+{
+  "artifact_type": "fx_cointegration_frontier_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-12T18:31:23Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "50aa4bed8add18372665c6fac3a45b70f8d9db7f",
+  "mission_outcome": "STOPPED_AT_PACED_BACKTEST_CPU_CEILING",
+  "frontier": {
+    "scan_relationship_count": 66,
+    "covered_relationship_count": 66,
+    "unbuilt_relationship_count": 0,
+    "coverage_evidence_commit": "a804932912a449aed19bbc8fe61f1f5846556743",
+    "post_audit_cointegration_build_added": false
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_status": "done",
+      "q02_verdict": "PASS",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "existing_fx_fallbacks": [
+    {
+      "scan_rank": 58,
+      "pair": [
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "ea_id": "QM5_1257",
+      "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+      "phase": "Q02",
+      "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+      "status": "pending",
+      "attempt_count": 0,
+      "claimed_by": null,
+      "duplicate_enqueue_performed": false
+    },
+    {
+      "scan_rank": 65,
+      "pair": [
+        "USDCHF.DWX",
+        "AUDUSD.DWX"
+      ],
+      "ea_id": "QM5_1156",
+      "logical_symbol": "QM5_1156_USDCHF_AUDUSD_COINTEGRATION_M30",
+      "phase": "Q02",
+      "work_item_id": "415cd6d3-560c-46d8-a9f9-ee4a5b399100",
+      "status": "pending",
+      "attempt_count": 0,
+      "claimed_by": null,
+      "duplicate_enqueue_performed": false
+    },
+    {
+      "scan_rank": null,
+      "pair": null,
+      "ea_id": "QM5_20292",
+      "logical_symbol": "QM5_20292_FX_CARRY_UNWIND_D1",
+      "phase": "Q02",
+      "work_item_id": "774accb9-8957-44df-9da8-156134610f74",
+      "status": "pending",
+      "attempt_count": 0,
+      "claimed_by": null,
+      "duplicate_enqueue_performed": false
+    }
+  ],
+  "capacity_sample": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-12T18:31:23Z",
+    "paced_launch_gate_max": 1,
+    "running_factory_terminal_count": 7,
+    "running_factory_terminals": [
+      {
+        "terminal": "T1",
+        "work_item_id": "a9e94a4a-8c5e-475d-a294-fa4b76d5fcc0",
+        "ea_id": "QM5_10649",
+        "phase": "Q04",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T2",
+        "work_item_id": "72fff543-bbb6-4f73-96ba-8ac29a60e1d1",
+        "ea_id": "QM5_1287",
+        "phase": "Q04",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": null,
+        "ea_id": "QM5_11177",
+        "phase": null,
+        "symbol": null,
+        "pipeline_run": true
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "3e7736da-c1a2-4e0f-aa96-7781acee7386",
+        "ea_id": "QM5_11167",
+        "phase": "Q02",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "8617e683-85d9-4c25-8019-e7d067ec9c84",
+        "ea_id": "QM5_12982",
+        "phase": "Q02",
+        "symbol": "XTIUSD.DWX"
+      },
+      {
+        "terminal": "T9",
+        "work_item_id": "d8e1c25b-087c-4108-b83f-7b00f8589704",
+        "ea_id": "QM5_20206",
+        "phase": "Q02",
+        "symbol": "QM5_20206_XAU_XAG_MOMIVOL_D1"
+      },
+      {
+        "terminal": "T10",
+        "work_item_id": "6f05f300-bf47-400c-b80f-ed11c0791116",
+        "ea_id": "QM5_10973",
+        "phase": "Q04",
+        "symbol": "WS30.DWX"
+      }
+    ],
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ],
+    "ceiling_binding": true
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "q02_enqueue_or_requeue": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "The governed scan has no unbuilt relationship, all eligible fallbacks already have exact pending Q02 identities, and seven running factory jobs exceed the paced maximum of one."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
