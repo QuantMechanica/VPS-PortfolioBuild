@@ -55,8 +55,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0_APPROVED
-q01_status: PENDING
+pipeline_phase: Q01
+q01_status: PASS
 q02_status: PENDING
 review_focus: "Falsify a direct WTI monthly trend whose twelve historical month returns are separately normalized by their own completed daily L2 paths and then weighted equally, unlike cumulative, path-efficiency, variance-ratio, volatility-gated, robust-location, and sign-vote neighbors; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -330,11 +330,12 @@ or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-12 | initial source-bounded WTI volatility-normalized monthly trend card | G0 | APPROVED |
+| v1-q01 | 2026-08-12 | deterministic V5 build, strict compile, target validation, and volatility-normalized statistic vectors | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-12 | APPROVED | `decisions/2026-08-12_qm5_20288_wti_volnorm_mom_g0.md` |
-| Q01 Build Validation | - | PENDING | - |
+| Q01 Build Validation | 2026-08-12 | PASS | `D:/QM/reports/compile/20260812_060749/summary.csv`; `D:/QM/reports/framework/21/build_check_20260812_060748.json`; `D:/QM/reports/pipeline/QM5_20288/P1/P1_QM5_20288_result.json` |
 | Q02 Baseline Screening | - | NOT QUEUED | - |
