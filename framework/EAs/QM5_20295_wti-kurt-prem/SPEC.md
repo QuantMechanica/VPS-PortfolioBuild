@@ -137,6 +137,7 @@ waiver is authorized.
 | v1 | 2026-08-13 | Initial scaffold from approved card | Build pending |
 | v2 | 2026-08-13 | Implemented locked statistic and monthly lifecycle | Strict compile and reference checks pass |
 | v3 | 2026-08-13 | Completed target Q01 validation | Build check and P1 PASS |
+| v4 | 2026-08-13 | Enqueued one paced fixed-risk baseline | Q02 pending; no dispatch issued |
 
 ## 12. Q01 Status
 
@@ -149,6 +150,8 @@ passed; and P1 artifact validation found the compiled `.ex5`.
 
 ## 13. Q02 Handoff
 
-READY, NOT ENQUEUED. Exactly one paced `XTIUSD.DWX` D1 work item may be
-enqueued after the path-anchored backtest CPU sample remains below the binding
-ceiling. No dispatch or manual tester run is authorized.
+ENQUEUED. Work item `0ed36c55-2a83-49ad-a5f0-71b25700ff18` is the sole Q02
+baseline row and was pending at immediate readback with attempt 0, no claim,
+no evidence, and no verdict. The pre- and post-enqueue path-anchored factory
+samples both found zero active T1-T10 terminals, below the ceiling of seven.
+No dispatch or manual tester run was issued.
