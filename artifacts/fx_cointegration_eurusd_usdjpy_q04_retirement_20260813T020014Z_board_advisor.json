@@ -1,0 +1,180 @@
+{
+  "schema": "qm.fx_cointegration_existing_card_q04_retirement/v1",
+  "generated_at_utc": "2026-08-13T02:00:14Z",
+  "branch": "agents/board-advisor",
+  "inspected_head": "9ec73e61d49d71cf86dab34675266493f0776870",
+  "mission_outcome": "ADVANCED_EXISTING_PAIR_TO_TERMINAL_Q04_FAIL",
+  "selection": {
+    "frozen_66_pair_frontier_exhausted": true,
+    "frontier_audit_commit": "a80493291",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_card_or_build_created": false,
+    "anchor_q02_blocker_found": false,
+    "qm5_12532_state": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "qm5_12533_state": "Q02_PASS_Q04_FAIL",
+    "reason": "Rank-13 QM5_20196 had current-binary logical Q02 PASS and one governed append-only Q04 retry awaiting terminal classification; ranks 58 and 65 already had separate prioritized Q02 rows."
+  },
+  "pair": {
+    "ea_id": "QM5_20196",
+    "slug": "QM5_20196_eurusd-jpy-coint",
+    "logical_symbol": "QM5_20196_EURUSD_USDJPY_COINTEGRATION_D1",
+    "host_symbol": "EURUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "EURUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "scan_rank": 13,
+    "scan_mode": "--include-negative-hedges",
+    "scan_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "scan_script_sha256": "870e3c67d7c05a75f62ab9e89d421dd94d337288f5c623395cafcf03300433d6",
+    "scan_evidence": {
+      "dev_net_sharpe": 0.661899,
+      "oos_net_sharpe": 0.68645,
+      "oos_return_percent": 4.994192,
+      "oos_state_changes": 20,
+      "dev_beta": -0.505485905,
+      "half_life_d1_bars": 87.404
+    }
+  },
+  "source_and_allowability": {
+    "approved_card": "strategy-seeds/cards/approved/QM5_20196_eurusd-jpy-coint_card.md",
+    "approved_card_sha256": "d6f42538b40a717a02f923d380cb863cf9783c1a471e23118ff165ba14aa51fd",
+    "g0_status": "APPROVED",
+    "primary_method_source": "Ernest P. Chan, Quantitative Trading (Wiley, 2009), OWNER-ratified Tier-A SRC02 extraction",
+    "source_claim_boundary": "structural OLS residual-reversion method only; no profitability claim for EURUSD/USDJPY",
+    "card_schema_lint": {
+      "status": "ok",
+      "missing_sections": [],
+      "ml_hits": []
+    },
+    "structural": true,
+    "low_frequency": true,
+    "ml": false,
+    "banned_indicator": false,
+    "external_data_api": false
+  },
+  "build_and_risk": {
+    "strict_build_check": {
+      "status": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "path": "D:/QM/reports/framework/21/build_check_20260813_015323.json",
+      "sha256": "258479d14c1a54b906d87e4ee856d8a3aa9552db4e9f9a976a11bfa6d4ac2be4"
+    },
+    "artifacts_sha256": {
+      "mq5": "8de25f66c15be8e2fdd1791d5d22acff6dab2162ea96860dfb7c5d51d70815dd",
+      "ex5": "b8b268676f8cd3e8312e1e30ea71abf65efc2e8970eb618c75db281ae7947bb2",
+      "basket_manifest": "5b36889e87a44fa2a2961d2cfda9696fd1531e487af9be3325a05d81da114a64",
+      "host_backtest_setfile": "bf7e4f8ec5163320a9c8e1ed0116339ae566839f2752451d7325bb31d99a235e",
+      "logical_backtest_setfile": "b2f3c239b82655f4a95d3756db2f68cdf31b93a33be7aef21c7d0dfad106abe3"
+    },
+    "setfile_metadata_only_change": "strict build validation refreshed the build_hash header in the host and logical setfiles",
+    "trading_mechanics_changed": false,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "q02": {
+    "work_item_id": "a34c39c1-7ef6-43e2-b1b4-eb6a717271b2",
+    "status": "done",
+    "verdict": "PASS",
+    "evidence_path": "D:/QM/reports/work_items/a34c39c1-7ef6-43e2-b1b4-eb6a717271b2/QM5_20196/20260801_153909/summary.json",
+    "evidence_sha256": "085074f3dfcd4b7f7c0c50850fd800b5e707a55fc81a46654d9f8877251665f5",
+    "trades": 36,
+    "profit_factor": 0.91,
+    "net_profit": -324.38,
+    "ex5_sha256": "b8b268676f8cd3e8312e1e30ea71abf65efc2e8970eb618c75db281ae7947bb2"
+  },
+  "preserved_q04": {
+    "work_item_id": "e2dde9f5-0ec1-488c-af5c-e6a64dce6710",
+    "status": "done",
+    "verdict": "INFRA_FAIL",
+    "evidence_path": "D:/QM/reports/pipeline/QM5_20196/Q04/QM5_20196_EURUSD_USDJPY_COINTEGRATION_D1__e2dde9f5-0ec1-488c-af5c-e6a64dce6710/aggregate.json",
+    "evidence_sha256": "8727c5050dc60c4de3e7ee8f2280e5e4423408e45ee0bc3b2acdfbdc691489b0",
+    "reason": "recovered cold-cache attempts were graded BARS_ZERO/RUN_STATUS_INVALID",
+    "historical_work_item_preserved": true
+  },
+  "q04_retry": {
+    "work_item_id": "6d420834-e8d0-481e-ae3d-806bddb17ec4",
+    "append_only": true,
+    "rerun_of_work_item": "e2dde9f5-0ec1-488c-af5c-e6a64dce6710",
+    "promoted_from_phase": "Q02",
+    "promoted_from_work_item": "a34c39c1-7ef6-43e2-b1b4-eb6a717271b2",
+    "status": "done",
+    "verdict": "FAIL",
+    "verdict_taxonomy": "strategy",
+    "verdict_reason": "F1:trades=0;F2:trades=0;F3:pf_net=0.460 || lowfreq:INVALID:lowfreq_insufficient_pooled_trades:2<15(>=5/yr)",
+    "folds": [
+      {
+        "id": "F1",
+        "oos_year": 2023,
+        "trades": 0,
+        "status": "FAIL",
+        "verdict_reason": "STRATEGY_ZERO_TRADES"
+      },
+      {
+        "id": "F2",
+        "oos_year": 2024,
+        "trades": 0,
+        "status": "FAIL",
+        "verdict_reason": "STRATEGY_ZERO_TRADES"
+      },
+      {
+        "id": "F3",
+        "oos_year": 2025,
+        "trades": 2,
+        "pf_net": 0.45976252434143694,
+        "gross_total": -97.59,
+        "sim_commission_total": 3.7686,
+        "status": "FAIL",
+        "verdict_reason": "STRATEGY_MIN_TRADES_NOT_MET"
+      }
+    ],
+    "pooled_trades": 2,
+    "minimum_pooled_trades": 15,
+    "evidence_path": "D:/QM/reports/pipeline/QM5_20196/Q04/QM5_20196_EURUSD_USDJPY_COINTEGRATION_D1__6d420834-e8d0-481e-ae3d-806bddb17ec4/aggregate.json",
+    "evidence_sha256": "c1557e01549dea410e6ddb43dad33056d47df1da69d2d1901f1d2d003694d1cc",
+    "aggregate_identity_sha256": "2371737c70d6d5032b6be88419bca91e48d0b3e29c72f00d096a9bf3584b5cd0",
+    "disposition": "RETIRED_NO_REFIT_NO_RESCUE_NO_REQUEUE"
+  },
+  "paced_execution": {
+    "paced_launch_gate_max": 1,
+    "factory_terminal_count_before": 0,
+    "exact_worker_terminal": "T1",
+    "factory_terminal_count_during": 1,
+    "ceiling_consumed_during_run": true,
+    "additional_launches": 0,
+    "worker_exit": "normal",
+    "factory_terminal_count_after": 0,
+    "terminal_workers_after": 0,
+    "terminal_reservations_after": 0,
+    "orphaned_factory_processes_after": 0,
+    "excluded_from_factory_count_and_not_controlled": [
+      "FTMO"
+    ]
+  },
+  "temporary_interlock": {
+    "path": "D:/QM/strategy_farm/state/FACTORY_OFF.flag",
+    "sha256": "e80f776f6903abbfb7e0218ee55174cee52e553a99c7375a2a69712f431d94aa",
+    "identity_revalidated_before_removal": true,
+    "removed_after_worker_exit": true,
+    "present_at_handoff": false
+  },
+  "safety": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "magic_registry_mutation": false,
+    "tuning_or_refit": false,
+    "duplicate_enqueue_or_requeue": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "t_live_manifest_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  }
+}
