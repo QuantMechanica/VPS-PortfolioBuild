@@ -136,10 +136,18 @@ waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-13 | Initial scaffold from approved card | Build pending |
+| v2 | 2026-08-13 | Implemented locked statistic and monthly lifecycle | Strict compile and reference checks pass |
+| v3 | 2026-08-13 | Completed target Q01 validation | Build check and P1 PASS |
 
 ## 12. Q01 Status
 
-PENDING BUILD.
+PASS. The registered one-slot EA implements the exact nested estimator,
+restart-safe monthly attempt state, one-position lifecycle, frozen hard stop,
+and fixed-risk contract. Strict compile passed with zero errors and zero
+warnings; the target build check passed with zero failures and zero warnings;
+six independent denominator, direction, support, invariance, chronology,
+count, and freshness tests passed; and P1 artifact validation found the
+compiled `.ex5`.
 
 ## 13. Q02 Handoff
 
