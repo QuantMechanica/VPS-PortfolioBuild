@@ -48,6 +48,19 @@ def _write_log(log_path: Path, payload: dict) -> None:
 
 def _arm_wall_clock_watchdog(log_path: Path) -> None:
     def _abort() -> None:
+        # 2026-08-13: dump every thread's stack BEFORE dying. Three SYSTEM-context
+        # instances froze to this watchdog tonight while the identical run_once
+        # completed in 60s interactively; the kill was eating the only evidence
+        # of WHERE they freeze. The stack file turns the next freeze into a
+        # diagnosis instead of a mystery.
+        stack_path = log_path.with_suffix(".freeze_stack.txt")
+        try:
+            import faulthandler
+
+            with open(stack_path, "w", encoding="utf-8") as stream:
+                faulthandler.dump_traceback(file=stream, all_threads=True)
+        except Exception:
+            pass
         _write_log(
             log_path,
             {
@@ -55,6 +68,7 @@ def _arm_wall_clock_watchdog(log_path: Path) -> None:
                 "error": "wall_clock_timeout",
                 "timeout_seconds": WALL_CLOCK_TIMEOUT_SECONDS,
                 "pid": os.getpid(),
+                "freeze_stack": str(stack_path),
             },
         )
         os._exit(75)
