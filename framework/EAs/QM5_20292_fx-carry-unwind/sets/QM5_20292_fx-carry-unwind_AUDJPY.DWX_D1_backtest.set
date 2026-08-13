@@ -3,32 +3,24 @@
 ; ea_id:        20292
 ; ea_slug:      fx-carry-unwind
 ; ea_version:   v5.0
-; set_version:  s20260812-001
-; symbol:       QM5_20292_FX_CARRY_UNWIND_D1
-; host_symbol:  AUDCHF.DWX
+; set_version:  s20260813-001
+; symbol:       AUDJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   31907eecc45e419393c92ee0ba765d0fcf473ed86e428987835aad27ee7ff279
+; build_hash:   c1f764dd93e6da9b30ada75b1a4a4a0fa26b9aa4a50c88f6f1eee79a8f97b08b
 ; author:       Development
-; date:         2026-08-12
+; date:         2026-08-13
 ;==========================================================
 qm_ea_id=20292
-qm_magic_slot_offset=0
-qm_rng_seed=42
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_mode_legacy=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_friday_close_enabled=1
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\fx-carry-unwind_card.md
 strategy_rv_window_d1=21
 strategy_rv_baseline_observations=252
 strategy_min_valid_signal_symbols=5
