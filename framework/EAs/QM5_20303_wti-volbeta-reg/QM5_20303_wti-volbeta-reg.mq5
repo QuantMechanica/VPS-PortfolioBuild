@@ -1,27 +1,27 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_20302 WTI Self-Relative Amihud-Illiquidity Regime"
+#property description "QM5_20303 WTI Self-Relative Smooth-Volatility-Beta Regime"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_20302 - WTI Self-Relative Amihud-Illiquidity Regime
+// QM5_20303 - WTI Self-Relative Smooth-Volatility-Beta Regime
 // -----------------------------------------------------------------------------
-// Source lineage: Qin, Cai, Zhu & Webb (2025) define ALIQ as prior-year mean
-// absolute daily return divided by dollar volume and use monthly high-minus-
-// low sorts. MT5 tick volume is an explicit activity proxy, not dollar volume.
-// The self-relative WTI comparison below is a locked QM translation, not a
-// source-tested WTI rule. At each genuine
-// broker-month transition:
-//   1. load exactly 505 completed D1 MqlRates bars;
-//   2. form two disjoint blocks of exactly 252 log returns;
-//   3. average abs(log return)/same-bar tick volume * 1,000,000 per block;
-//   4. buy higher recent ALIQ, sell lower recent ALIQ, consume a tie flat.
-// Runtime uses native XTIUSD.DWX price, tick volume, and broker data only.
+// Source lineage: Hollstein, Prokopczuk & Tharann (2021) define a monthly
+// smooth aggregate-volatility beta commodity characteristic and report a
+// positive high-minus-low baseline spread. This EA is a disclosed price-native
+// time-series translation, not a replication of their option-derived factor.
+// At each genuine broker-month transition it:
+//   1. loads exactly 545 synchronized completed XTI/XNG D1 closes;
+//   2. forms two disjoint blocks of exactly 272 chronological simple returns;
+//   3. independently builds an inverse-volatility common-energy factor,
+//      two-sigma jump-zeroed 20-return volatility changes, and 252-row OLS;
+//   4. buys WTI when recent smooth-volatility beta is higher, sells when lower,
+//      and consumes a tie or invalid state flat. XNG is read-only.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 20302;
+input int    qm_ea_id                    = 20303;
 input int    qm_magic_slot_offset        = 0;
 input uint   qm_rng_seed                 = 42;
 
@@ -45,18 +45,22 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_returns_per_block        = 252;
-input int    strategy_prior_block_offset       = 252;
-input int    strategy_history_bars_d1          = 505;
-input double strategy_aliq_scale               = 1000000.0;
+input int    strategy_returns_per_block        = 272;
+input int    strategy_ols_observations         = 252;
+input int    strategy_recent_block_offset      = 272;
+input int    strategy_history_bars_d1          = 545;
+input int    strategy_rv_window_d1             = 20;
+input double strategy_jump_exclusion_z         = 2.0;
+input int    strategy_min_smooth_days          = 200;
 input int    strategy_max_endpoint_gap_days    = 10;
-input double strategy_aliq_tolerance           = 1.0e-12;
+input double strategy_beta_tolerance           = 1.0e-12;
 input int    strategy_atr_period_d1             = 20;
 input double strategy_atr_sl_mult               = 3.5;
 input int    strategy_max_hold_days             = 40;
 input int    strategy_max_spread_points         = 1500;
 
 const string g_strategy_symbol = "XTIUSD.DWX";
+const string g_factor_symbol   = "XNGUSD.DWX";
 
 bool   g_monthly_rebalance_bar  = false;
 bool   g_cache_signal_valid     = false;
@@ -65,12 +69,18 @@ int    g_cache_month_key        = 0;
 int    g_last_attempt_month_key = 0;
 string g_attempt_state_key      = "";
 datetime g_decision_bar_time    = 0;
-double g_cache_recent_aliq       = 0.0;
-double g_cache_preceding_aliq    = 0.0;
-double g_cache_aliq_difference   = 0.0;
+double g_cache_recent_beta       = 0.0;
+double g_cache_preceding_beta    = 0.0;
+double g_cache_beta_difference   = 0.0;
+double g_cache_recent_xti_weight = 0.0;
+double g_cache_recent_xng_weight = 0.0;
+double g_cache_preceding_xti_weight = 0.0;
+double g_cache_preceding_xng_weight = 0.0;
 int    g_cache_rate_count        = 0;
-int    g_cache_recent_observations = 0;
-int    g_cache_preceding_observations = 0;
+int    g_cache_recent_ols_rows   = 0;
+int    g_cache_preceding_ols_rows = 0;
+int    g_cache_recent_smooth_days = 0;
+int    g_cache_preceding_smooth_days = 0;
 string g_cache_state_reason     = "uninitialized";
 
 bool Strategy_IsHostChart()
@@ -260,61 +270,258 @@ void Strategy_ResetCachedState()
   {
    g_cache_signal_valid = false;
    g_cache_signal = 0;
-   g_cache_recent_aliq = 0.0;
-   g_cache_preceding_aliq = 0.0;
-   g_cache_aliq_difference = 0.0;
+   g_cache_recent_beta = 0.0;
+   g_cache_preceding_beta = 0.0;
+   g_cache_beta_difference = 0.0;
+   g_cache_recent_xti_weight = 0.0;
+   g_cache_recent_xng_weight = 0.0;
+   g_cache_preceding_xti_weight = 0.0;
+   g_cache_preceding_xng_weight = 0.0;
    g_cache_rate_count = 0;
-   g_cache_recent_observations = 0;
-   g_cache_preceding_observations = 0;
+   g_cache_recent_ols_rows = 0;
+   g_cache_preceding_ols_rows = 0;
+   g_cache_recent_smooth_days = 0;
+   g_cache_preceding_smooth_days = 0;
    g_cache_state_reason = "not_evaluated";
   }
 
-bool Strategy_ComputeAliqBlock(MqlRates &rates[],
-                               const int block_offset,
-                               double &aliq_measure,
-                               int &observation_count)
+bool Strategy_RollingSampleStd(const double &values[],
+                               const int end_index,
+                               const int window,
+                               double &stddev)
   {
-   aliq_measure = 0.0;
-   observation_count = 0;
-   const int rate_count = ArraySize(rates);
-   if(block_offset < 0 ||
-      strategy_returns_per_block != 252 ||
-      MathAbs(strategy_aliq_scale - 1000000.0) > 1.0e-6 ||
-      block_offset + strategy_returns_per_block >= rate_count)
+   stddev = 0.0;
+   const int first = end_index - window + 1;
+   if(window < 2 || first < 0 || end_index >= ArraySize(values))
       return false;
 
-   double aliq_sum = 0.0;
-   for(int k = 0; k < strategy_returns_per_block; ++k)
+   double sum = 0.0;
+   for(int i = first; i <= end_index; ++i)
      {
-      const int return_index = block_offset + k;
-      const double close_now = rates[return_index].close;
-      const double close_prior = rates[return_index + 1].close;
-      const long tick_volume = rates[return_index].tick_volume;
-      if(close_now <= 0.0 || close_prior <= 0.0 ||
-         tick_volume <= 0 ||
-         !MathIsValidNumber(close_now) || !MathIsValidNumber(close_prior))
+      if(!MathIsValidNumber(values[i]))
          return false;
+      sum += values[i];
+     }
+   const double mean = sum / (double)window;
 
-      const double price_ratio = close_now / close_prior;
-      if(price_ratio <= 0.0 || !MathIsValidNumber(price_ratio))
+   double ss = 0.0;
+   for(int i = first; i <= end_index; ++i)
+     {
+      const double centered = values[i] - mean;
+      ss += centered * centered;
+     }
+   stddev = MathSqrt(ss / (double)(window - 1));
+   return (stddev > 0.0 && MathIsValidNumber(stddev));
+  }
+
+bool Strategy_ComputeVolBetaBlock(const double &xti_returns[],
+                                  const double &xng_returns[],
+                                  const int block_offset,
+                                  double &smooth_beta,
+                                  double &xti_weight,
+                                  double &xng_weight,
+                                  int &ols_rows,
+                                  int &smooth_days)
+  {
+   smooth_beta = 0.0;
+   xti_weight = 0.0;
+   xng_weight = 0.0;
+   ols_rows = 0;
+   smooth_days = 0;
+
+   const int total_returns = ArraySize(xti_returns);
+   if(total_returns != ArraySize(xng_returns) ||
+      strategy_returns_per_block != 272 ||
+      strategy_ols_observations != 252 ||
+      strategy_rv_window_d1 != 20 ||
+      strategy_returns_per_block - strategy_rv_window_d1 !=
+         strategy_ols_observations ||
+      block_offset < 0 ||
+      block_offset + strategy_returns_per_block > total_returns)
+      return false;
+
+   const int rank_start = strategy_rv_window_d1;
+   double xti_sum = 0.0;
+   double xng_sum = 0.0;
+   for(int local = rank_start; local < strategy_returns_per_block; ++local)
+     {
+      const int index = block_offset + local;
+      if(!MathIsValidNumber(xti_returns[index]) ||
+         !MathIsValidNumber(xng_returns[index]))
          return false;
-      const double log_return = MathLog(price_ratio);
-      const double aliq_term = MathAbs(log_return) /
-                               (double)tick_volume *
-                               strategy_aliq_scale;
-      if(!MathIsValidNumber(log_return) ||
-         aliq_term < 0.0 || !MathIsValidNumber(aliq_term))
+      xti_sum += xti_returns[index];
+      xng_sum += xng_returns[index];
+     }
+   const double xti_mean =
+      xti_sum / (double)strategy_ols_observations;
+   const double xng_mean =
+      xng_sum / (double)strategy_ols_observations;
+
+   double xti_ss = 0.0;
+   double xng_ss = 0.0;
+   for(int local = rank_start; local < strategy_returns_per_block; ++local)
+     {
+      const int index = block_offset + local;
+      const double xti_centered = xti_returns[index] - xti_mean;
+      const double xng_centered = xng_returns[index] - xng_mean;
+      xti_ss += xti_centered * xti_centered;
+      xng_ss += xng_centered * xng_centered;
+     }
+   const double xti_stddev =
+      MathSqrt(xti_ss / (double)(strategy_ols_observations - 1));
+   const double xng_stddev =
+      MathSqrt(xng_ss / (double)(strategy_ols_observations - 1));
+   if(xti_stddev <= 1.0e-12 || xng_stddev <= 1.0e-12 ||
+      !MathIsValidNumber(xti_stddev) ||
+      !MathIsValidNumber(xng_stddev))
+      return false;
+
+   const double inverse_vol_sum =
+      1.0 / xti_stddev + 1.0 / xng_stddev;
+   if(inverse_vol_sum <= 0.0 || !MathIsValidNumber(inverse_vol_sum))
+      return false;
+   xti_weight = (1.0 / xti_stddev) / inverse_vol_sum;
+   xng_weight = (1.0 / xng_stddev) / inverse_vol_sum;
+   if(xti_weight <= 0.0 || xng_weight <= 0.0 ||
+      !MathIsValidNumber(xti_weight) ||
+      !MathIsValidNumber(xng_weight) ||
+      MathAbs(xti_weight + xng_weight - 1.0) > 1.0e-12)
+      return false;
+
+   double market_returns[];
+   if(ArrayResize(market_returns, strategy_returns_per_block) !=
+      strategy_returns_per_block)
+      return false;
+   for(int local = 0; local < strategy_returns_per_block; ++local)
+     {
+      const int index = block_offset + local;
+      market_returns[local] =
+         xti_weight * xti_returns[index] +
+         xng_weight * xng_returns[index];
+      if(!MathIsValidNumber(market_returns[local]))
          return false;
-      aliq_sum += aliq_term;
-      if(!MathIsValidNumber(aliq_sum))
-         return false;
-      ++observation_count;
      }
 
-   if(observation_count != strategy_returns_per_block)
+   double market_sum = 0.0;
+   for(int local = rank_start; local < strategy_returns_per_block; ++local)
+      market_sum += market_returns[local];
+   const double market_mean =
+      market_sum / (double)strategy_ols_observations;
+
+   double market_ss = 0.0;
+   for(int local = rank_start; local < strategy_returns_per_block; ++local)
+     {
+      const double centered = market_returns[local] - market_mean;
+      market_ss += centered * centered;
+     }
+   const double market_stddev =
+      MathSqrt(market_ss / (double)(strategy_ols_observations - 1));
+   if(market_stddev <= 1.0e-12 || !MathIsValidNumber(market_stddev))
       return false;
-   aliq_measure = aliq_sum / (double)observation_count;
-   return (aliq_measure >= 0.0 && MathIsValidNumber(aliq_measure));
+
+   const double jump_threshold =
+      strategy_jump_exclusion_z * market_stddev;
+   if(jump_threshold <= 0.0 || !MathIsValidNumber(jump_threshold))
+      return false;
+
+   double normal[3][4];
+   for(int row = 0; row < 3; ++row)
+      for(int col = 0; col < 4; ++col)
+         normal[row][col] = 0.0;
+
+   for(int local = rank_start; local < strategy_returns_per_block; ++local)
+     {
+      double rv_current = 0.0;
+      double rv_previous = 0.0;
+      if(!Strategy_RollingSampleStd(market_returns,
+                                    local,
+                                    strategy_rv_window_d1,
+                                    rv_current) ||
+         !Strategy_RollingSampleStd(market_returns,
+                                    local - 1,
+                                    strategy_rv_window_d1,
+                                    rv_previous))
+         return false;
+
+      const bool jump_day =
+         (MathAbs(market_returns[local] - market_mean) >= jump_threshold);
+      const double smooth_change =
+         jump_day ? 0.0 : rv_current - rv_previous;
+      if(!jump_day)
+         ++smooth_days;
+
+      double x[3];
+      x[0] = 1.0;
+      x[1] = market_returns[local];
+      x[2] = smooth_change;
+      const double y = xti_returns[block_offset + local];
+      if(!MathIsValidNumber(y) || !MathIsValidNumber(smooth_change))
+         return false;
+
+      for(int row = 0; row < 3; ++row)
+        {
+         for(int col = 0; col < 3; ++col)
+            normal[row][col] += x[row] * x[col];
+         normal[row][3] += x[row] * y;
+        }
+      ++ols_rows;
+     }
+
+   if(ols_rows != strategy_ols_observations ||
+      smooth_days < strategy_min_smooth_days)
+      return false;
+   for(int row = 0; row < 3; ++row)
+      for(int col = 0; col < 4; ++col)
+         if(!MathIsValidNumber(normal[row][col]))
+            return false;
+
+   // Deterministic partial-pivot Gaussian elimination of the 3x3 normal
+   // equation. A singular or nonfinite state consumes the month flat.
+   for(int pivot_col = 0; pivot_col < 3; ++pivot_col)
+     {
+      int pivot_row = pivot_col;
+      double pivot_abs = MathAbs(normal[pivot_col][pivot_col]);
+      for(int candidate = pivot_col + 1; candidate < 3; ++candidate)
+        {
+         const double candidate_abs =
+            MathAbs(normal[candidate][pivot_col]);
+         if(candidate_abs > pivot_abs)
+           {
+            pivot_abs = candidate_abs;
+            pivot_row = candidate;
+           }
+        }
+      if(pivot_abs <= 1.0e-16 || !MathIsValidNumber(pivot_abs))
+         return false;
+
+      if(pivot_row != pivot_col)
+        {
+         for(int col = pivot_col; col < 4; ++col)
+           {
+            const double swap_value = normal[pivot_col][col];
+            normal[pivot_col][col] = normal[pivot_row][col];
+            normal[pivot_row][col] = swap_value;
+           }
+        }
+
+      const double divisor = normal[pivot_col][pivot_col];
+      if(MathAbs(divisor) <= 1.0e-16 || !MathIsValidNumber(divisor))
+         return false;
+      for(int col = pivot_col; col < 4; ++col)
+         normal[pivot_col][col] /= divisor;
+
+      for(int row = 0; row < 3; ++row)
+        {
+         if(row == pivot_col)
+            continue;
+         const double factor = normal[row][pivot_col];
+         for(int col = pivot_col; col < 4; ++col)
+            normal[row][col] -= factor * normal[pivot_col][col];
+        }
+     }
+
+   smooth_beta = normal[2][3];
+   return MathIsValidNumber(smooth_beta);
   }
 
 bool Strategy_LoadSignalState(const datetime decision_bar_time,
@@ -322,99 +529,163 @@ bool Strategy_LoadSignalState(const datetime decision_bar_time,
   {
    signal = 0;
    if(decision_bar_time <= 0 ||
-      strategy_returns_per_block != 252 ||
-      strategy_prior_block_offset != 252 ||
-      strategy_history_bars_d1 != 505 ||
-      MathAbs(strategy_aliq_scale - 1000000.0) > 1.0e-6 ||
+      strategy_returns_per_block != 272 ||
+      strategy_ols_observations != 252 ||
+      strategy_recent_block_offset != 272 ||
+      strategy_history_bars_d1 != 545 ||
+      strategy_rv_window_d1 != 20 ||
+      MathAbs(strategy_jump_exclusion_z - 2.0) > 1.0e-12 ||
+      strategy_min_smooth_days != 200 ||
       strategy_max_endpoint_gap_days != 10 ||
-      MathAbs(strategy_aliq_tolerance - 1.0e-12) > 1.0e-22)
+      MathAbs(strategy_beta_tolerance - 1.0e-12) > 1.0e-22)
      {
-      g_cache_state_reason = "bad_aliq_contract";
+      g_cache_state_reason = "bad_volbeta_contract";
       return false;
      }
 
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, // perf-allowed: bounded completed-D1 read only on the monthly decision bar.
-                                PERIOD_D1,
-                                1,
-                                strategy_history_bars_d1,
-                                rates);
-   if(copied != strategy_history_bars_d1 ||
-      ArraySize(rates) != strategy_history_bars_d1)
+   MqlRates xti_rates[];
+   MqlRates xng_rates[];
+   ArraySetAsSeries(xti_rates, true);
+   ArraySetAsSeries(xng_rates, true);
+   const int xti_count = CopyRates(g_strategy_symbol, // perf-allowed: two bounded completed-D1 reads only on the monthly decision bar.
+                                   PERIOD_D1,
+                                   1,
+                                   strategy_history_bars_d1,
+                                   xti_rates);
+   const int xng_count = CopyRates(g_factor_symbol, // perf-allowed: read-only synchronized factor history on the same monthly path.
+                                   PERIOD_D1,
+                                   1,
+                                   strategy_history_bars_d1,
+                                   xng_rates);
+   if(xti_count != strategy_history_bars_d1 ||
+      xng_count != strategy_history_bars_d1 ||
+      ArraySize(xti_rates) != strategy_history_bars_d1 ||
+      ArraySize(xng_rates) != strategy_history_bars_d1)
      {
-      g_cache_state_reason = "insufficient_completed_history";
+      g_cache_state_reason = "insufficient_synchronized_history";
       return false;
      }
 
-   const datetime newest_completed_time = rates[0].time;
-   if(newest_completed_time <= 0 || newest_completed_time >= decision_bar_time)
+   const datetime newest_completed_time = xti_rates[0].time;
+   if(newest_completed_time <= 0 ||
+      newest_completed_time != xng_rates[0].time ||
+      newest_completed_time >= decision_bar_time)
      {
       g_cache_state_reason = "invalid_completed_endpoint";
       return false;
      }
-   const long endpoint_gap = (long)(decision_bar_time - newest_completed_time);
-   const long maximum_gap = (long)strategy_max_endpoint_gap_days * 86400;
+   const long endpoint_gap =
+      (long)(decision_bar_time - newest_completed_time);
+   const long maximum_gap =
+      (long)strategy_max_endpoint_gap_days * 86400;
    if(endpoint_gap < 0 || endpoint_gap > maximum_gap)
      {
       g_cache_state_reason = "stale_completed_endpoint";
       return false;
      }
 
-   for(int i = 0; i < copied - 1; ++i)
+   for(int i = 0; i < strategy_history_bars_d1; ++i)
      {
-      const datetime newer_time = rates[i].time;
-      const datetime older_time = rates[i + 1].time;
-      const double newer_close = rates[i].close;
-      const double older_close = rates[i + 1].close;
-      if(newer_time <= 0 || older_time <= 0 || newer_time <= older_time ||
-         newer_close <= 0.0 || older_close <= 0.0 ||
-         !MathIsValidNumber(newer_close) || !MathIsValidNumber(older_close))
+      if(xti_rates[i].time <= 0 ||
+         xti_rates[i].time != xng_rates[i].time ||
+         xti_rates[i].close <= 0.0 ||
+         xng_rates[i].close <= 0.0 ||
+         !MathIsValidNumber(xti_rates[i].close) ||
+         !MathIsValidNumber(xng_rates[i].close))
+        {
+         g_cache_state_reason = "invalid_synchronized_close";
+         return false;
+        }
+      if(i + 1 < strategy_history_bars_d1 &&
+         xti_rates[i].time <= xti_rates[i + 1].time)
         {
          g_cache_state_reason = "invalid_series_chronology";
          return false;
         }
      }
 
-   if(!Strategy_ComputeAliqBlock(rates,
-                                 0,
-                                 g_cache_recent_aliq,
-                                 g_cache_recent_observations))
+   const int total_returns =
+      strategy_returns_per_block * 2;
+   double xti_returns[];
+   double xng_returns[];
+   if(ArrayResize(xti_returns, total_returns) != total_returns ||
+      ArrayResize(xng_returns, total_returns) != total_returns)
      {
-      g_cache_state_reason = "invalid_recent_aliq";
-      return false;
-     }
-   if(!Strategy_ComputeAliqBlock(rates,
-                                 strategy_prior_block_offset,
-                                 g_cache_preceding_aliq,
-                                 g_cache_preceding_observations))
-     {
-      g_cache_state_reason = "invalid_preceding_aliq";
+      g_cache_state_reason = "return_allocation_failed";
       return false;
      }
 
-   g_cache_aliq_difference = g_cache_recent_aliq - g_cache_preceding_aliq;
-   g_cache_rate_count = copied;
-   if(g_cache_recent_observations != strategy_returns_per_block ||
-      g_cache_preceding_observations != strategy_returns_per_block ||
-      !MathIsValidNumber(g_cache_aliq_difference))
+   // CopyRates is newest-first; write the 544 simple returns oldest-first so
+   // indices 0..271 are preceding and 272..543 are recent.
+   for(int sample = 0; sample < total_returns; ++sample)
      {
-      g_cache_state_reason = "invalid_aliq_difference";
+      const int older_index = total_returns - sample;
+      const int newer_index = older_index - 1;
+      const double xti_value =
+         xti_rates[newer_index].close / xti_rates[older_index].close - 1.0;
+      const double xng_value =
+         xng_rates[newer_index].close / xng_rates[older_index].close - 1.0;
+      if(!MathIsValidNumber(xti_value) ||
+         !MathIsValidNumber(xng_value))
+        {
+         g_cache_state_reason = "invalid_simple_return";
+         return false;
+        }
+      xti_returns[sample] = xti_value;
+      xng_returns[sample] = xng_value;
+     }
+
+   if(!Strategy_ComputeVolBetaBlock(xti_returns,
+                                    xng_returns,
+                                    0,
+                                    g_cache_preceding_beta,
+                                    g_cache_preceding_xti_weight,
+                                    g_cache_preceding_xng_weight,
+                                    g_cache_preceding_ols_rows,
+                                    g_cache_preceding_smooth_days))
+     {
+      g_cache_state_reason = "invalid_preceding_volbeta";
+      return false;
+     }
+   if(!Strategy_ComputeVolBetaBlock(xti_returns,
+                                    xng_returns,
+                                    strategy_recent_block_offset,
+                                    g_cache_recent_beta,
+                                    g_cache_recent_xti_weight,
+                                    g_cache_recent_xng_weight,
+                                    g_cache_recent_ols_rows,
+                                    g_cache_recent_smooth_days))
+     {
+      g_cache_state_reason = "invalid_recent_volbeta";
       return false;
      }
 
-   // Preserve the source high-minus-low ALIQ orientation: buy when recent
-   // price impact per unit of quote-tick activity is higher, sell when lower.
-   if(g_cache_aliq_difference > strategy_aliq_tolerance)
+   g_cache_beta_difference =
+      g_cache_recent_beta - g_cache_preceding_beta;
+   g_cache_rate_count = xti_count;
+   if(g_cache_preceding_ols_rows != strategy_ols_observations ||
+      g_cache_recent_ols_rows != strategy_ols_observations ||
+      g_cache_preceding_smooth_days < strategy_min_smooth_days ||
+      g_cache_recent_smooth_days < strategy_min_smooth_days ||
+      !MathIsValidNumber(g_cache_beta_difference))
+     {
+      g_cache_state_reason = "invalid_beta_comparison";
+      return false;
+     }
+
+   // Preserve the source's positive high-minus-low orientation in the
+   // translated own-history state: high recent beta is long WTI.
+   if(g_cache_beta_difference > strategy_beta_tolerance)
       signal = 1;
-   else if(g_cache_aliq_difference < -strategy_aliq_tolerance)
+   else if(g_cache_beta_difference < -strategy_beta_tolerance)
       signal = -1;
    else
      {
-      g_cache_state_reason = "aliq_tie";
+      g_cache_state_reason = "volbeta_tie";
       return true;
      }
-   g_cache_state_reason = (signal > 0) ? "qualified_long" : "qualified_short";
+   g_cache_state_reason =
+      (signal > 0) ? "qualified_long" : "qualified_short";
    return true;
   }
 
@@ -474,17 +745,22 @@ void Strategy_PrepareMonthlySignal()
       Strategy_LoadSignalState(g_decision_bar_time, g_cache_signal);
    QM_LogEvent(QM_INFO,
                "MONTHLY_STATE",
-               StringFormat("{\"month\":%d,\"decision_bar\":%I64d,\"valid\":%s,\"signal\":%d,\"recent_aliq\":%.12e,\"preceding_aliq\":%.12e,\"difference\":%.12e,\"scale\":%.1f,\"recent_observations\":%d,\"preceding_observations\":%d,\"rates\":%d,\"state\":\"%s\"}",
+               StringFormat("{\"month\":%d,\"decision_bar\":%I64d,\"valid\":%s,\"signal\":%d,\"recent_beta\":%.12e,\"preceding_beta\":%.12e,\"difference\":%.12e,\"recent_xti_weight\":%.10f,\"recent_xng_weight\":%.10f,\"preceding_xti_weight\":%.10f,\"preceding_xng_weight\":%.10f,\"recent_ols_rows\":%d,\"preceding_ols_rows\":%d,\"recent_smooth_days\":%d,\"preceding_smooth_days\":%d,\"rates\":%d,\"state\":\"%s\"}",
                              g_cache_month_key,
                              (long)g_decision_bar_time,
                              g_cache_signal_valid ? "true" : "false",
                              g_cache_signal,
-                             g_cache_recent_aliq,
-                             g_cache_preceding_aliq,
-                             g_cache_aliq_difference,
-                             strategy_aliq_scale,
-                             g_cache_recent_observations,
-                             g_cache_preceding_observations,
+                             g_cache_recent_beta,
+                             g_cache_preceding_beta,
+                             g_cache_beta_difference,
+                             g_cache_recent_xti_weight,
+                             g_cache_recent_xng_weight,
+                             g_cache_preceding_xti_weight,
+                             g_cache_preceding_xng_weight,
+                             g_cache_recent_ols_rows,
+                             g_cache_preceding_ols_rows,
+                             g_cache_recent_smooth_days,
+                             g_cache_preceding_smooth_days,
                              g_cache_rate_count,
                              g_cache_state_reason));
   }
@@ -500,7 +776,7 @@ bool Strategy_MaxHoldExceeded()
 
 bool Strategy_NoTradeFilter()
   {
-   if(!Strategy_IsHostChart() || qm_ea_id != 20302 ||
+   if(!Strategy_IsHostChart() || qm_ea_id != 20303 ||
       qm_magic_slot_offset != 0 || qm_rng_seed != 42)
       return true;
    if(RISK_PERCENT != 0.0 || RISK_FIXED != 1000.0 ||
@@ -513,12 +789,15 @@ bool Strategy_NoTradeFilter()
       return true;
    if(qm_stress_reject_probability != 0.0)
       return true;
-   if(strategy_returns_per_block != 252 ||
-      strategy_prior_block_offset != 252 ||
-      strategy_history_bars_d1 != 505 ||
-      MathAbs(strategy_aliq_scale - 1000000.0) > 1.0e-6 ||
+   if(strategy_returns_per_block != 272 ||
+      strategy_ols_observations != 252 ||
+      strategy_recent_block_offset != 272 ||
+      strategy_history_bars_d1 != 545 ||
+      strategy_rv_window_d1 != 20 ||
+      MathAbs(strategy_jump_exclusion_z - 2.0) > 1.0e-12 ||
+      strategy_min_smooth_days != 200 ||
       strategy_max_endpoint_gap_days != 10 ||
-      MathAbs(strategy_aliq_tolerance - 1.0e-12) > 1.0e-22)
+      MathAbs(strategy_beta_tolerance - 1.0e-12) > 1.0e-22)
       return true;
    if(strategy_atr_period_d1 != 20 ||
       MathAbs(strategy_atr_sl_mult - 3.5) > 1.0e-12)
@@ -538,7 +817,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_20302_WTI_ALIQ_REGIME";
+   req.reason = "QM5_20303_WTI_VOLBETA_REGIME";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -556,7 +835,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.type = (g_cache_signal > 0) ? QM_BUY : QM_SELL;
-   req.reason = (g_cache_signal > 0) ? "ALIQ_REGIME_XTI_LONG" : "ALIQ_REGIME_XTI_SHORT";
+   req.reason = (g_cache_signal > 0) ? "VOLBETA_REGIME_XTI_LONG" : "VOLBETA_REGIME_XTI_SHORT";
    const double entry_price = QM_EntryMarketPrice(req.type);
    if(entry_price <= 0.0 || !MathIsValidNumber(entry_price))
       return false;
@@ -628,6 +907,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 int OnInit()
   {
    SymbolSelect(g_strategy_symbol, true);
+   SymbolSelect(g_factor_symbol, true);
 
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
@@ -648,7 +928,7 @@ int OnInit()
       return INIT_FAILED;
 
    g_attempt_state_key =
-      StringFormat("QM5_20302_MONTH_ATTEMPT_%d", QM_FrameworkMagic());
+      StringFormat("QM5_20303_MONTH_ATTEMPT_%d", QM_FrameworkMagic());
    if((bool)MQLInfoInteger(MQL_TESTER))
      {
       if(GlobalVariableCheck(g_attempt_state_key))
@@ -658,13 +938,13 @@ int OnInit()
    else
       Strategy_LoadAttemptState(TimeCurrent());
 
-   string warmup_symbols[1] = {g_strategy_symbol};
+   string warmup_symbols[2] = {g_strategy_symbol, g_factor_symbol};
    QM_SymbolGuardInit(warmup_symbols);
    QM_BasketWarmupHistory(warmup_symbols,
                           PERIOD_D1,
                           strategy_history_bars_d1);
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_20302\",\"ea\":\"wti-aliq-regime\",\"stat\":\"two_disjoint_252_logreturn_tickvolume_aliq_blocks\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_20303\",\"ea\":\"wti-volbeta-reg\",\"stat\":\"two_disjoint_272_return_block_local_smooth_volatility_beta\",\"xng\":\"read_only\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -737,4 +1017,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
