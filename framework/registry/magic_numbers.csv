@@ -15964,3 +15964,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20297,xng-kurt-prem,0,XNGUSD.DWX,202970000,2026-08-13,Research+Development,active
 20298,wti-vov-regime,0,XTIUSD.DWX,202980000,2026-08-13,Research+Development,active
 20299,xng-vov-regime,0,XNGUSD.DWX,202990000,2026-08-13,Research+Development,active
+20300,wti-max-regime,0,XTIUSD.DWX,203000000,2026-08-13,Research+Development,active
