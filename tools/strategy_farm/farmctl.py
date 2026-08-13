@@ -14684,24 +14684,49 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
     #     Zero-trade builds were already short-circuited in §4b — they
     #     won't appear here.
     result["codex_review_spawns"] = []
+    # 2026-08-14: the previous correlated NOT-EXISTS ran a LIKE over
+    # payload_json for every (done build x codex_review) pair -- 1,809 x 1,895
+    # = 3.4M JSON-blob scans the night it wedged `farmctl pump` for 50-59
+    # minutes per cycle, starved every other DB writer (`database is locked`
+    # on the agent router), and failed four Factory_ON health gates in a row
+    # (py-spy stack: _pump_unlocked at this query). Two linear scans + a
+    # Python set preserve the exact semantics: a build is reviewable unless a
+    # non-superseded codex_review exists for the same build_task_id AND the
+    # same build_generation (absent generations coalesce to 0 on both sides).
     with connect(root) as conn:
-        builds_needing_codex_review = conn.execute(
-            """
-            SELECT b.* FROM tasks b
-            WHERE b.kind='build_ea' AND b.status='done'
-              AND NOT EXISTS (
-                SELECT 1 FROM tasks r
-                WHERE r.kind='codex_review'
-                  AND r.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
-                  AND COALESCE(CAST(json_extract(r.payload_json, '$.build_generation') AS INTEGER), 0)
-                      = COALESCE(CAST(json_extract(b.payload_json, '$.build_generation') AS INTEGER), 0)
-                  AND json_extract(r.payload_json, '$.superseded_by_build_generation') IS NULL
-              )
-            ORDER BY b.updated_at ASC LIMIT ?
-            """
-            ,
-            (MAX_PARALLEL_CODEX_REVIEW,),
-        ).fetchall()
+        reviewed_keys: set[tuple[str, int]] = set()
+        for row in conn.execute(
+            "SELECT payload_json FROM tasks WHERE kind='codex_review'"
+        ):
+            try:
+                payload = json.loads(row["payload_json"] or "{}")
+            except (TypeError, ValueError):
+                continue
+            if payload.get("superseded_by_build_generation") is not None:
+                continue
+            build_task_id = payload.get("build_task_id")
+            if not build_task_id:
+                continue
+            try:
+                generation = int(payload.get("build_generation") or 0)
+            except (TypeError, ValueError):
+                generation = 0
+            reviewed_keys.add((str(build_task_id), generation))
+        builds_needing_codex_review = []
+        for b in conn.execute(
+            "SELECT * FROM tasks WHERE kind='build_ea' AND status='done' "
+            "ORDER BY updated_at ASC"
+        ):
+            try:
+                b_payload = json.loads(b["payload_json"] or "{}")
+                b_generation = int(b_payload.get("build_generation") or 0)
+            except (TypeError, ValueError):
+                b_generation = 0
+            if (str(b["id"]), b_generation) in reviewed_keys:
+                continue
+            builds_needing_codex_review.append(b)
+            if len(builds_needing_codex_review) >= MAX_PARALLEL_CODEX_REVIEW:
+                break
     for b in builds_needing_codex_review:
         # Respect total-codex cap: builds + reviews + research (all share the pool)
         builds_now = len([s for s in (result.get("codex_spawns_all") or []) if isinstance(s, dict) and s.get("spawned")])
