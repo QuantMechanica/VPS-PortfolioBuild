@@ -353,7 +353,11 @@ function Wait-QmFactoryPostStartHealth {
         # Pump attempts are hard-capped at PT10M, and five of 13 measured runs
         # reached that ceiling. Permit the guarded caller to span multiple
         # 5-minute retries; the wait still exits immediately on fresh success.
-        [ValidateRange(1, 1800)]
+        # Ceiling 1800 -> 3600 (2026-08-13): the guarded window's own repair
+        # phase can hold DB write locks for 27+ minutes after a heavy day,
+        # and the budget must cover repair PLUS router retries (see the
+        # matching Factory_ON.ps1 change, commit d912c7769).
+        [ValidateRange(1, 3600)]
         [int]$TimeoutSeconds = 300,
 
         [ValidateRange(1, 60)]
