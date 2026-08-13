@@ -146,8 +146,17 @@ waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-13 | Initial scaffold from approved card | Build pending |
+| v2 | 2026-08-13 | Implemented locked XNG common-jump-beta carrier | Strict compile, build, deployment, reference, and Q01 checks pass |
 
 ## 12. Q01 Status
 
-PENDING. Build, strict compile, deterministic reference checks, and Q01
-validation have not yet run.
+PASS. The registered one-slot EA implements the exact synchronized two-block
+common-energy jump-beta estimator, block-local inverse-volatility weights,
+inclusive two-sigma realized-jump factor, three-column XNG-return OLS,
+restart-safe monthly attempt state, one-position lifecycle, frozen hard stop,
+and fixed-risk contract. Strict compile passed with zero errors and zero
+warnings; the target build check passed with zero failures and zero warnings;
+eight independent formula, carrier, direction, support, block-boundary,
+count, chronology, and freshness tests passed; all T1-T10 research-factory
+binary hashes match; and P1 artifact validation found the compiled `.ex5`.
+XTI remains a read-only factor input.

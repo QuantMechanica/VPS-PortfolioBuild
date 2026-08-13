@@ -55,8 +55,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0_APPROVED
-q01_status: PENDING
+pipeline_phase: Q01
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify an XNG monthly common-energy jump-sensitivity state that is symmetric and slow, unlike certified QM5_12567's short-horizon long-only cumulative-RSI pullback. The paired jump-beta Q08 runs failure is adverse evidence; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -100,6 +100,80 @@ Family evidence is explicit. The paired `QM5_13147` build passed Q02-Q07 but
 failed Q08 hard on runs clustering, with negative low- and normal-volatility
 regime P&L. `QM5_20304` implements the same estimator on WTI. Neither sibling
 can transfer performance, correlation, or a waiver to this carrier.
+
+## Source-defined rules
+
+The source uses the prior twelve months of daily observations, estimates each
+commodity's aggregate-jump beta while controlling for market return, ranks a
+broad commodity-futures cross-section monthly, holds for one month, and finds
+a negative high-minus-low relation. Therefore only the low-beta-long,
+high-beta-short orientation, daily formation horizon, and monthly renewal are
+source-defined. The source does not define this card's XNG carrier, realized
+two-CFD factor, own-history comparison, hard stop, spread gate, or time stop.
+
+## QM interpretations
+
+Variant `HOLLSTEIN-AGGJUMP-2021_XNG_TS_S03` locks the following QM additions:
+
+- substitute the synchronized inverse-volatility XTI/XNG return for the
+  unavailable option-derived aggregate-jump factor;
+- classify an inclusive two-sample-standard-deviation factor innovation as a
+  realized jump and retain all non-jump rows at zero;
+- compare XNG jump beta between two disjoint 252-return blocks instead of
+  ranking a broad cross-section;
+- require six jump rows, deterministic partial-pivot OLS, and a `1e-12`
+  comparison tolerance; and
+- use the fixed spread, ATR stop, consumed monthly attempt, renewal, and stale
+  lifecycle specified below.
+
+These interpretations are hypotheses subject to Q02-Q10, not source claims.
+
+## Framework execution overrides
+
+- Kill-switch processing remains first and can always flatten or block.
+- Both news axes are OFF for the sole Q02 baseline; no event calendar is a
+  signal input.
+- Friday close is OFF so the month-hold source cadence is not fragmented.
+- The framework fixed-risk route sizes one slot-0 XNG position from the frozen
+  broker hard stop; XTI has no order or magic route.
+- Monthly replacement, malformed-state cleanup, and the forty-day stale close
+  remain active regardless of entry-only gates.
+
+## Exit precedence
+
+1. Framework kill-switch or authorized manual halt.
+2. Broker-side frozen `3.5 * ATR(20,D1)` hard stop.
+3. Malformed or duplicate owned-state cleanup.
+4. First processed D1 bar of the next genuine broker month.
+5. Forty-calendar-day stale close when a month boundary was missed.
+
+There is no take-profit, Friday close, news exit, trailing stop, break-even,
+partial close, or intramonth opposite-signal exit.
+
+## Runtime data dependencies
+
+- Host/order route: `XNGUSD.DWX`, D1, slot 0, magic `203060000`.
+- Read-only factor route: `XTIUSD.DWX`, D1, no magic and no order authority.
+- History: exactly 505 synchronized completed native DWX D1 bars per symbol;
+  the current registry window is 2017 onward and the actual run binds its
+  deployed history identity.
+- Clock: Darwinex NY-close broker time; month transitions use broker calendar
+  keys and require no separate DST calculation.
+- Tester account currency: USD. The only setfile is the D1 backtest preset.
+- Finite external datasets/calendars: none. News is OFF and no web, options,
+  futures, inventory, or event file is read at runtime.
+
+## Falsification and requalification
+
+The baseline is falsified below five completed positions per full post-warm-up
+year, on nonpositive governed economics, or at a later gate's hard rejection.
+Any change to carrier/dependent return, factor constituents, return type,
+history support, block offsets, weights, jump threshold, deviation
+denominator, jump-row floor, OLS design, direction, cadence, stop, spread,
+hold, retry, risk, news, or Friday-close contract requires a new binary and
+full stream/pipeline/portfolio requalification. Unresolved ambiguity is
+`BLOCKED`; Development may not fill it. `execution_contract_status: DRAFT`
+authorizes build and non-live evidence only and is not promotion approval.
 
 ## Concept And Formula
 
@@ -281,11 +355,12 @@ authorized.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-13 | initial XNG self-relative common-jump-beta carrier | G0 | APPROVED; build pending |
+| v2 | 2026-08-13 | locked XNG carrier implementation and validation | Q01 | PASS; Q02 not enqueued |
 
 ## Pipeline Phase Status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-13 | APPROVED; R1-R4 PASS | `decisions/2026-08-13_qm5_20306_xng_jumpbeta_reg_g0.md`; bounded source packet |
-| Q01 Build Validation | - | PENDING | - |
+| Q01 Build Validation | 2026-08-13 | PASS; strict compile/build check/reference/deploy validation | `D:/QM/reports/compile/20260813_122441/summary.csv`; `D:/QM/reports/framework/21/build_check_20260813_122441.json`; `D:/QM/reports/pipeline/QM5_20306/P1/P1_QM5_20306_result.json` |
 | Q02 Baseline Screening | - | NOT ENQUEUED | - |
