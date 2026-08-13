@@ -200,3 +200,63 @@ def test_not_included_by_qm_common():
 @pytest.mark.parametrize("guard", ["b.count < QM_PP_RequiredBars(id)"])
 def test_evaluate_guards_its_own_window(guard):
     assert guard in SRC, "each evaluation must verify its own bar requirement"
+
+
+# ---------------------------------------------------------------------------
+# Implemented-set guard (added for the P2/P3 census).
+#
+# The census feeds a predicate id in from OUTSIDE the binary (one trial per
+# predicate x direction). QM_PP_Evaluate's default branch returns false for an
+# unknown id -- correct for evaluation, but a measurement hazard: a kill-list
+# or typo'd id would never fire, come out identical to the control, and be
+# recorded as "this predicate has no effect". These tests pin the three lists
+# that make such an id impossible to smuggle into a profile.
+# ---------------------------------------------------------------------------
+
+def _implemented_case_ids() -> set[str]:
+    m = re.search(r"bool QM_PP_IsImplemented\(.*?\)\s*\{(.*?)\n  \}", CODE, re.S)
+    assert m, "QM_PP_IsImplemented not found"
+    return set(re.findall(r"case\s+(QM_PP_[A-Z0-9_]+)\s*:", m.group(1)))
+
+
+def _evaluate_case_ids() -> set[str]:
+    start = CODE.index("bool QM_PP_Evaluate(")
+    end = CODE.index("QM_PermissionResult QM_PatternPermissionEvaluate(")
+    return set(re.findall(r"case\s+(QM_PP_[A-Z0-9_]+)\s*:", CODE[start:end]))
+
+
+def test_enum_evaluate_and_implemented_sets_agree_exactly():
+    """Three-way equality. Adding an enum member without wiring it fails here."""
+    enum_names = set(_enum_ids()) - {"QM_PP_NONE"}
+    evaluated = _evaluate_case_ids()
+    implemented = _implemented_case_ids()
+    assert enum_names == evaluated, (
+        f"enum vs evaluate mismatch: only-enum={sorted(enum_names - evaluated)} "
+        f"only-evaluate={sorted(evaluated - enum_names)}")
+    assert enum_names == implemented, (
+        f"enum vs implemented mismatch: only-enum={sorted(enum_names - implemented)} "
+        f"only-implemented={sorted(implemented - enum_names)}")
+
+
+def test_build_scope_is_exactly_77_predicates():
+    """OWNER-decided scope: 72 portable + 4 reclassified bar-counters + 1 proxy."""
+    assert len(set(_enum_ids()) - {"QM_PP_NONE"}) == 77
+
+
+def test_profile_construction_rejects_unimplemented_ids():
+    """An id that cannot fire must be refused at profile build, not silently kept."""
+    for fn in ("QM_PP_ProfileAddBuy", "QM_PP_ProfileAddSell"):
+        body = re.search(rf"bool {fn}\(.*?\n  \}}", CODE, re.S)
+        assert body, f"{fn} not found"
+        assert "!QM_PP_IsImplemented(id)" in body.group(0), (
+            f"{fn} must reject unimplemented ids so a census trial cannot "
+            f"measure a predicate that can never fire")
+
+
+def test_implemented_guard_excludes_kill_list_and_controls():
+    ids = _enum_ids()
+    for name in _implemented_case_ids():
+        value = ids[name]
+        assert value not in KILL_LIST_IDS, f"{name}={value} is kill-list material"
+        assert value not in CONTROL_IDS, f"{name}={value} is a degenerate control"
+        assert value != 0, "QM_PP_NONE must never be implemented"

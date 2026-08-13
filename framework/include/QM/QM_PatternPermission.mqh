@@ -137,6 +137,110 @@ enum QM_PatternId
   };
 
 //+------------------------------------------------------------------+
+//| Implemented-set guard.                                            |
+//|                                                                    |
+//| QM_PP_Evaluate's default branch returns false for an unknown id.   |
+//| That is correct for evaluation (an unknown pattern must not block) |
+//| but it is a measurement hazard: an ablation trial naming a         |
+//| kill-list or typo'd id would never fire, produce results identical |
+//| to the control, and be recorded as "this predicate has no effect". |
+//| Callers that ACCEPT an id from outside the binary (census trials,  |
+//| setfiles) must reject it up front instead. Profile construction    |
+//| below does exactly that, so no such id can reach a profile.        |
+//|                                                                    |
+//| The list is generated from the enum and pinned by                  |
+//| test_pattern_permission_contract.py, which asserts three-way set   |
+//| equality (enum == QM_PP_Evaluate cases == this switch). Adding an  |
+//| enum member without implementing it fails that test.               |
+//+------------------------------------------------------------------+
+bool QM_PP_IsImplemented(const QM_PatternId id)
+  {
+   switch(id)
+     {
+      case QM_PP_DOJI:
+      case QM_PP_DRAGONFLY_DOJI:
+      case QM_PP_GRAVESTONE_DOJI:
+      case QM_PP_HAMMER:
+      case QM_PP_INVERTED_HAMMER:
+      case QM_PP_HANGING_MAN:
+      case QM_PP_SHOOTING_STAR:
+      case QM_PP_PIN_BAR_BULL:
+      case QM_PP_PIN_BAR_BEAR:
+      case QM_PP_LONG_LOWER_WICK:
+      case QM_PP_LONG_UPPER_WICK:
+      case QM_PP_MARUBOZU_BULL:
+      case QM_PP_MARUBOZU_BEAR:
+      case QM_PP_BELT_HOLD_BULL:
+      case QM_PP_BELT_HOLD_BEAR:
+      case QM_PP_SPINNING_TOP:
+      case QM_PP_ENGULFING_BULL:
+      case QM_PP_ENGULFING_BEAR:
+      case QM_PP_HARAMI_BULL:
+      case QM_PP_HARAMI_BEAR:
+      case QM_PP_PIERCING_LINE:
+      case QM_PP_DARK_CLOUD_COVER:
+      case QM_PP_TWEEZER_BOTTOM:
+      case QM_PP_TWEEZER_TOP:
+      case QM_PP_MORNING_STAR:
+      case QM_PP_EVENING_STAR:
+      case QM_PP_THREE_WHITE_SOLDIERS:
+      case QM_PP_THREE_BLACK_CROWS:
+      case QM_PP_THREE_INSIDE_UP:
+      case QM_PP_THREE_INSIDE_DOWN:
+      case QM_PP_THREE_OUTSIDE_UP:
+      case QM_PP_THREE_OUTSIDE_DOWN:
+      case QM_PP_RISING_THREE_METHODS:
+      case QM_PP_FALLING_THREE_METHODS:
+      case QM_PP_MAT_HOLD_BULL:
+      case QM_PP_MAT_HOLD_BEAR:
+      case QM_PP_INSIDE_BAR:
+      case QM_PP_DOUBLE_INSIDE_BAR:
+      case QM_PP_OUTSIDE_BAR:
+      case QM_PP_NR4:
+      case QM_PP_NR7:
+      case QM_PP_WIDE_RANGE_BAR:
+      case QM_PP_GAP_UP:
+      case QM_PP_GAP_DOWN:
+      case QM_PP_GAP_AND_GO_BULL:
+      case QM_PP_GAP_AND_GO_BEAR:
+      case QM_PP_EXHAUSTION_GAP_UP:
+      case QM_PP_EXHAUSTION_GAP_DOWN:
+      case QM_PP_HIGHER_HIGH:
+      case QM_PP_LOWER_LOW:
+      case QM_PP_THREE_DAY_RISING:
+      case QM_PP_THREE_DAY_FALLING:
+      case QM_PP_CLOSE_ABOVE_PREV_HIGH:
+      case QM_PP_CLOSE_BELOW_PREV_LOW:
+      case QM_PP_LOW_VOLATILITY:
+      case QM_PP_HIGH_VOLATILITY:
+      case QM_PP_VOL_CONTRACTION:
+      case QM_PP_VOL_EXPANSION:
+      case QM_PP_TREND_STRENGTH_UP_STRONG:
+      case QM_PP_TREND_STRENGTH_UP_WEAK:
+      case QM_PP_RANGING:
+      case QM_PP_TREND_STRENGTH_DOWN_WEAK:
+      case QM_PP_TREND_STRENGTH_DOWN_STRONG:
+      case QM_PP_HIGH_VOL_REGIME:
+      case QM_PP_REGIME_TRANSITION:
+      case QM_PP_TREND_EXHAUSTION:
+      case QM_PP_MEAN_REVERSION_SETUP:
+      case QM_PP_ZSCORE_HIGH:
+      case QM_PP_ZSCORE_LOW:
+      case QM_PP_VOL_PERCENTILE_HIGH:
+      case QM_PP_VOL_PERCENTILE_LOW:
+      case QM_PP_FRACTAL_BREAKOUT:
+      case QM_PP_EFFICIENCY_RATIO_HIGH:
+      case QM_PP_EFFICIENCY_RATIO_LOW:
+      case QM_PP_VOLUME_CLIMAX:
+      case QM_PP_THIRD_FRIDAY:
+      case QM_PP_QUARTER_END:
+         return true;
+      default:
+         return false;
+     }
+  }
+
+//+------------------------------------------------------------------+
 //| Result / profile types                                            |
 //+------------------------------------------------------------------+
 struct QM_PermissionResult
@@ -202,7 +306,7 @@ void QM_PP_ProfileInit(QM_PatternProfile &p, const string profile_name,
 
 bool QM_PP_ProfileAddBuy(QM_PatternProfile &p, const QM_PatternId id)
   {
-   if(p.buy_count >= QM_PP_MAX_PREDICATES || id == QM_PP_NONE)
+   if(p.buy_count >= QM_PP_MAX_PREDICATES || !QM_PP_IsImplemented(id))
       return false;
    p.buy_predicates[p.buy_count] = id;
    p.buy_count++;
@@ -211,7 +315,7 @@ bool QM_PP_ProfileAddBuy(QM_PatternProfile &p, const QM_PatternId id)
 
 bool QM_PP_ProfileAddSell(QM_PatternProfile &p, const QM_PatternId id)
   {
-   if(p.sell_count >= QM_PP_MAX_PREDICATES || id == QM_PP_NONE)
+   if(p.sell_count >= QM_PP_MAX_PREDICATES || !QM_PP_IsImplemented(id))
       return false;
    p.sell_predicates[p.sell_count] = id;
    p.sell_count++;

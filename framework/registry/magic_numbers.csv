@@ -15971,3 +15971,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20304,wti-jumpbeta-reg,0,XTIUSD.DWX,203040000,2026-08-13,Research+Development,active
 20305,xng-aliq-regime,0,XNGUSD.DWX,203050000,2026-08-13,Research+Development,active
 20306,xng-jumpbeta-reg,0,XNGUSD.DWX,203060000,2026-08-13,Research+Development,active
+21501,balke-gmt3-range-breakout-ppcensus,0,USDJPY.DWX,215010000,2026-08-13,Claude,active
