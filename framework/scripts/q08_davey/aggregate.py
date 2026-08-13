@@ -1653,7 +1653,8 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             terminal: str | None = None,
             baseline_setfile: Path | None = None,
             neighborhood_max_params: int | None = None,
-            recovery_lineage: dict | None = None) -> dict:
+            recovery_lineage: dict | None = None,
+            selection_trial_count: int | None = None) -> dict:
     log_path = Path(log_path)
     # EQUITY_SNAPSHOT account values are tagged with the physical chart symbol,
     # which differs from the logical work-item symbol for basket EAs. Resolve
@@ -1786,6 +1787,10 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
                 portfolio=portfolio,
                 ea_id=ea_id,
                 symbol=symbol,
+                # Optimization-track selection multiplicity (plan v2 A3). None for
+                # every ordinary run; sub-gates that do not consume it absorb it
+                # through their **_ catch-all, so behaviour is unchanged.
+                selection_trial_count=selection_trial_count,
             )
         except Exception as exc:
             res = common.make_result(
