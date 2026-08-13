@@ -139,6 +139,7 @@ waiver is authorized.
 | v1 | 2026-08-13 | Initial scaffold from approved card | Build pending |
 | v2 | 2026-08-13 | Implemented locked statistic and monthly lifecycle | Strict compile and reference checks pass |
 | v3 | 2026-08-13 | Completed target Q01 validation | Build check and P1 PASS |
+| v4 | 2026-08-13 | Completed paced target-only Q02 handoff | One pending work item; no dispatch or backtest run |
 
 ## 12. Q01 Status
 
@@ -151,5 +152,10 @@ passed; and P1 artifact validation found the compiled `.ex5`.
 
 ## 13. Q02 Handoff
 
-NOT ENQUEUED. Q01 passed; the paced factory-capacity and duplicate checks are
-pending.
+ENQUEUED. The pre-apply duplicate read returned zero rows, the target-only dry
+run selected exactly one fresh Q02 row, and both path-anchored capacity samples
+found zero running T1-T10 factory terminals. Work item
+`8a3e73ec-caca-4306-89fb-4941d953a05a` was pending at immediate readback,
+attempt 0 and unclaimed. No dispatch tick or manual backtest was run; durable
+details are in
+`docs/ops/evidence/2026-08-13_qm5_20297_xng_kurt_prem_q01_q02_enqueue.md`.
