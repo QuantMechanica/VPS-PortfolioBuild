@@ -1,8 +1,8 @@
 {
-  "artifact_type": "qm5_20303_q01_pass_q02_enqueued_cpu_gate_stop",
-  "generated_at_utc": "2026-08-13T09:59:20Z",
+  "artifact_type": "qm5_20303_q01_pass_q02_pending_cpu_dispatch_stop",
+  "generated_at_utc": "2026-08-13T10:02:19.7202628Z",
   "branch": "agents/board-advisor",
-  "mission_outcome": "Q01_PASS_Q02_ENQUEUED_PENDING_PACED_CPU_CEILING",
+  "mission_outcome": "Q01_PASS_ONE_Q02_PENDING_NO_DISPATCH_CPU_CEILING",
   "candidate": {
     "ea_id": "QM5_20303",
     "slug": "wti-volbeta-reg",
@@ -11,34 +11,12 @@
     "read_only_symbol": "XNGUSD.DWX",
     "timeframe": "D1",
     "magic": 203030000,
-    "mechanic": "monthly WTI self-relative two-disjoint-block smooth common-energy volatility beta regime",
+    "mechanic": "monthly WTI self-relative two-disjoint-block smooth common-energy volatility-beta regime",
     "dedup_verdict": "CLEAN_AUTHORIZED_WTI_TIME_SERIES_SMOOTH_VOL_BETA_AFTER_MANUAL_REVIEW"
-  },
-  "source": {
-    "citation": "Hollstein, Prokopczuk, and Tharann (2021), Anomalies in Commodity Futures Markets, Quarterly Journal of Finance 11(4), 2150017",
-    "doi": "10.1142/S2010139221500178",
-    "bounded_packet": "strategy-seeds/sources/HOLLSTEIN-WTI-VOLBETA-REG-2026/source.md",
-    "g0_decision": "decisions/2026-08-13_qm5_20303_wti_volbeta_reg_g0.md",
-    "adverse_family_evidence": "QM5_13151 reached Q08 then failed hard on runs p=0.02295 and a losing low-volatility regime"
-  },
-  "locked_contract": {
-    "history_closes_each_symbol": 545,
-    "chronological_simple_returns": 544,
-    "returns_per_block": 272,
-    "ols_rows_per_block": 252,
-    "rv_window": 20,
-    "jump_zeroing_sigma": 2.0,
-    "minimum_non_jump_rows": 200,
-    "risk_fixed": 1000,
-    "risk_percent": 0,
-    "portfolio_weight": 1,
-    "atr_stop_multiple": 3.5,
-    "maximum_hold_days": 40,
-    "maximum_spread_points": 1500
   },
   "q01": {
     "verdict": "PASS",
-    "strict_compile_summary": "D:/QM/reports/compile/20260813_095341/summary.csv",
+    "strict_compile_summary": "D:/QM/reports/compile/20260813_095442/summary.csv",
     "compile_errors": 0,
     "compile_warnings": 0,
     "build_check": "D:/QM/reports/framework/21/build_check_20260813_095552.json",
@@ -48,6 +26,16 @@
     "p1_result": "D:/QM/reports/pipeline/QM5_20303/P1/P1_QM5_20303_result.json",
     "factory_deploy_evidence": "D:/QM/strategy_farm/artifacts/deploy/QM5_20303_wti-volbeta-reg_deploy_20260813T0956Z.json",
     "factory_deploy_verdict": "PASS_T1_T10_HASH_CONVERGED"
+  },
+  "coordination": {
+    "build_task_id": "ab9ebab8-c37c-4e38-b935-835ee1b1de32",
+    "router_task_id": "0f9884af-dfa7-4921-aec3-f1cac4df76df",
+    "build_task_final_status": "done",
+    "router_task_final_state": "PIPELINE",
+    "build_result_sha256": "49A06B91E6CCC31F1E42FDDF52EC9858EBAB8D0021607E329E751952FFB44F61",
+    "record_build_auto_enqueue": [],
+    "record_build_skipped_reason": "existing_q02_pending",
+    "duplicate_q02_created": false
   },
   "capacity_samples": [
     {
@@ -65,49 +53,39 @@
       "ceiling_source": "D:/QM/strategy_farm/state/launch_gate_max.txt",
       "paced_launch_gate_max": 1,
       "running_factory_terminal_count": 4,
-      "running_factory_terminals": ["T10", "T5", "T7", "T9"],
+      "running_factory_terminals": ["T5", "T7", "T9", "T10"],
       "ceiling_binding": true
     }
   ],
   "q02": {
-    "existing_work_items_at_initial_capacity_stop": 0,
     "work_item_id": "81939741-407c-40dc-b6ad-91baa91c0e92",
-    "created_at_utc": "2026-08-13T09:53:13Z",
+    "created_at_utc": "2026-08-13T09:53:13+00:00",
+    "created_by": "claude_sweep_enqueue_2026-06-10.never_tested",
+    "phase": "Q02",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
     "status_at_final_readback": "pending",
     "claimed_by": null,
     "attempt_count": 0,
     "evidence_path": null,
     "verdict": null,
-    "enqueue_origin": "concurrent canonical producer; not issued by this agent",
-    "dispatch_performed_by_this_mission": false,
-    "tester_or_backtest_run_by_this_mission": false,
-    "reason_for_stop": "Factory usage rose from two to four running terminals against the paced maximum of one; the enqueued row was left pending and unclaimed with no dispatch."
+    "dispatch_performed_by_mission": false,
+    "tester_or_backtest_run_by_mission": false,
+    "reason_for_stop": "The paced launch maximum was already exceeded; the existing queued row was left pending."
   },
   "artifact_hashes_sha256": {
-    "approved_card": "7E39AE805FE45E3D1BF19095502D78AFD941CFFC4833F949853470A487908159",
     "mq5": "DCE1A65098E5E6A81EB3C9568C42A07C5F31A9284747419BCCA2BA053F3A4145",
     "ex5": "EA2EC9A3BC16E363F2A610DB0D679941331884FF44D5C62AD611BAE47C50C83D",
-    "spec": "A611AA7D743AD41B2E7AC256233725F2D8C7A3E6B7395BD6AD246D66576F0763",
     "backtest_set": "42A5FFB5807149DA590963F80B22679B47FDD187C244A9FE18D20C09C1D0A2BC",
     "reference_test": "67C9BBF32DD18FE09EA40086D3E937219FF4990F4A0CD5C0E07982D2E5989A7F",
-    "magic_resolver": "4C1CF9E668FD06C2F34DC47A8B1DF43C6A3BD5D698F35219B797DAFDFA2E05A7",
     "deploy_receipt": "20526BFE1240EFA26D05C3288061FB69FB941CFD389742E19F8DEF87A74433B3"
   },
-  "commits": {
-    "g0_decision": "fadc7aa22",
-    "approved_card": "7063bb40a",
-    "ea_id_reservation": "c32ee5235",
-    "magic_allocation": "7b3441218",
-    "initial_build": "2ca1168d3",
-    "source_binary_binding_fix": "fd89295ca",
-    "independent_build_review": "98ce2e969"
-  },
-  "prohibited_surfaces_touched": {
+  "safety": {
     "manual_backtest": false,
-    "portfolio_gate": false,
-    "portfolio_admission": false,
-    "t_live_manifest": false,
-    "t_live_or_autotrading": false,
+    "dispatch_tick": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_or_autotrading_touched": false,
     "excluded_and_not_controlled": ["T_Live", "FTMO"]
   }
 }
