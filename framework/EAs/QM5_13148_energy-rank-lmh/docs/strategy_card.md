@@ -8,4 +8,6 @@ Strategy ID: FERNHOLZ-KOCH-RANK-2016_XTI_XNG_S01
 EA ID: QM5_13148
 
 This build is limited to the approved monthly XTI/XNG fixed-origin normalized-
-price rank basket. No live or portfolio-admission artifact is authorized.
+price rank basket. Router task `97cf24af-ecc1-49a3-b911-e943880c90e3`
+authorizes the governed first-common-history rebind to `2017-10-02`; all other
+mechanics remain locked. No live or portfolio-admission artifact is authorized.

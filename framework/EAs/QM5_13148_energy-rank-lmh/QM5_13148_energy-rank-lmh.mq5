@@ -9,7 +9,7 @@
 // QM5_13148 - XTI/XNG Fixed-Origin Normalized-Price Rank
 // -----------------------------------------------------------------------------
 // Monthly structural energy basket:
-//   - normalize each leg to the locked 2017-01-03 completed D1 close
+//   - normalize each leg to the locked 2017-10-02 completed D1 close
 //   - wait at least 20 completed D1 bars after the common anchor
 //   - long the lower normalized-price rank and short the higher rank
 //   - renew the opposite-side package on each broker-month transition
@@ -41,7 +41,7 @@ input group "Stress"
 input double qm_stress_reject_probability  = 0.0;
 
 input group "Strategy"
-input string strategy_anchor_date               = "2017.01.03";
+input string strategy_anchor_date               = "2017.10.02";
 input int    strategy_max_anchor_gap_days       = 7;
 input int    strategy_min_anchor_age_bars       = 20;
 input int    strategy_history_bars              = 3000;
@@ -60,7 +60,6 @@ bool     g_monthly_rebalance_bar = false;
 bool     g_cache_signal_valid = false;
 int      g_cache_pair_direction = 0;
 int      g_cache_period_key = 0;
-int      g_cache_decision_month_key = 0;
 int      g_last_entry_period_key = 0;
 datetime g_pair_entry_time = 0;
 double   g_cache_xti_normalized = 0.0;
@@ -137,20 +136,14 @@ datetime Strategy_CurrentPairEntryTime()
    return earliest;
   }
 
-int Strategy_MonthKeyForTime(const datetime value)
+int Strategy_PeriodKeyForTime(const datetime value)
   {
    if(value <= 0)
       return 0;
-   MqlDateTime parts;
-   TimeToStruct(value, parts);
-   if(parts.year <= 0 || parts.mon < 1 || parts.mon > 12)
+   const int shift = iBarShift(_Symbol, PERIOD_D1, value, false);
+   if(shift < 0)
       return 0;
-   return parts.year * 100 + parts.mon;
-  }
-
-int Strategy_PeriodKeyForTime(const datetime value)
-  {
-   return Strategy_MonthKeyForTime(value);
+   return QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, shift);
   }
 
 bool Strategy_PairCompositionValid()
@@ -315,10 +308,9 @@ bool Strategy_IsPairMagic(const long magic)
    return (magic == xti_magic || magic == xng_magic);
   }
 
-bool Strategy_PeriodAlreadyEntered(const int period_key,
-                                   const int decision_month_key)
+bool Strategy_PeriodAlreadyEntered(const int period_key)
   {
-   if(period_key <= 0 || decision_month_key <= 0)
+   if(period_key <= 0)
       return true;
    if(g_last_entry_period_key == period_key)
       return true;
@@ -333,13 +325,10 @@ bool Strategy_PeriodAlreadyEntered(const int period_key,
          return true;
      }
 
-   MqlDateTime start_parts;
-   ZeroMemory(start_parts);
-   start_parts.year = decision_month_key / 100;
-   start_parts.mon = decision_month_key % 100;
-   start_parts.day = 1;
-   const datetime period_start = StructToTime(start_parts);
-   if(period_start <= 0 || !HistorySelect(period_start, TimeCurrent()))
+   const datetime history_to = TimeCurrent();
+   const datetime history_from = (datetime)MathMax(0,
+      (long)history_to - (long)45 * 86400);
+   if(history_to <= 0 || !HistorySelect(history_from, history_to))
       return true; // Fail closed: a restart must not bypass the one-package-per-period guard.
 
    const int deal_count = HistoryDealsTotal();
@@ -364,17 +353,18 @@ bool Strategy_PeriodAlreadyEntered(const int period_key,
 void Strategy_AdvanceSignal_OnNewBar()
   {
    g_monthly_rebalance_bar = false;
-   const datetime decision_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cached timestamp on the D1 new-bar path.
-   const datetime prior_bar_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: exact first-tradable-bar monthly transition check.
-   const int current_month_key = Strategy_MonthKeyForTime(decision_bar_time);
-   const int prior_month_key = Strategy_MonthKeyForTime(prior_bar_time);
+   MqlRates decision_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, decision_bar))
+      return;
+   const datetime decision_bar_time = decision_bar.time;
+   const int current_month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int prior_month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
    if(current_month_key <= 0 || prior_month_key <= 0 ||
       current_month_key == prior_month_key)
       return;
 
    g_monthly_rebalance_bar = true;
-   g_cache_period_key = Strategy_PeriodKeyForTime(decision_bar_time);
-   g_cache_decision_month_key = current_month_key;
+   g_cache_period_key = current_month_key;
    g_cache_signal_valid = Strategy_LoadSignalState(decision_bar_time,
                                                    g_cache_pair_direction);
   }
@@ -485,7 +475,7 @@ bool Strategy_NoTradeFilter()
   {
    if(!Strategy_IsHostChart())
       return true;
-   if(strategy_anchor_date != "2017.01.03")
+   if(strategy_anchor_date != "2017.10.02")
       return true;
    if(strategy_max_anchor_gap_days != 7 || strategy_min_anchor_age_bars != 20)
       return true;
@@ -512,11 +502,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!g_monthly_rebalance_bar || g_cache_period_key <= 0 ||
-      g_cache_decision_month_key <= 0)
+   if(!g_monthly_rebalance_bar || g_cache_period_key <= 0)
       return false;
-   if(Strategy_PeriodAlreadyEntered(g_cache_period_key,
-                                    g_cache_decision_month_key))
+   if(Strategy_PeriodAlreadyEntered(g_cache_period_key))
       return false;
    if(Strategy_OpenPairLegCount() > 0)
       return false;

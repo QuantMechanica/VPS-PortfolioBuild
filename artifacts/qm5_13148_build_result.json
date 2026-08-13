@@ -1,0 +1,137 @@
+{
+  "task_id": "b4396bff-5c04-4810-a974-ede2d6d2a063",
+  "build_generation": 2,
+  "build_attempt_token": "d44d28f8-b9bb-451f-bdd3-82235da8c04b",
+  "ea_id": "QM5_13148",
+  "ea_label": "QM5_13148_energy-rank-lmh",
+  "slug": "energy-rank-lmh",
+  "strategy": "Monthly XTI/XNG fixed-origin normalized-price low-minus-high rank basket",
+  "strategy_id": "FERNHOLZ-KOCH-RANK-2016_XTI_XNG_S01",
+  "source_id": "FERNHOLZ-KOCH-RANK-2016",
+  "source_links": [
+    "https://www.dallasfed.org/-/media/documents/research/papers/2016/wp1607.pdf",
+    "https://arxiv.org/abs/1607.07510"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13148_XTI_XNG_RANK_LMH_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13148_energy-rank-lmh",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13148_energy-rank-lmh\\QM5_13148_energy-rank-lmh.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13148_energy-rank-lmh\\QM5_13148_energy-rank-lmh.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13148_energy-rank-lmh\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13148_energy-rank-lmh\\basket_manifest.json",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13148_energy-rank-lmh.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13148_energy-rank-lmh_card.md",
+  "canonical_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\energy-rank-lmh_card.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13148_energy-rank-lmh\\sets\\QM5_13148_energy-rank-lmh_QM5_13148_XTI_XNG_RANK_LMH_D1_D1_backtest.set"
+  ],
+  "magic_base": 131480000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 131480000,
+      "registry_status": "active"
+    },
+    {
+      "slot": 1,
+      "symbol": "XNGUSD.DWX",
+      "magic": 131480001,
+      "registry_status": "active"
+    }
+  ],
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260813_070305\\QM5_13148_energy-rank-lmh.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260813_070305\\summary.csv",
+  "compile_reproducibility": "PASS_STRICT_0_ERRORS_0_WARNINGS",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260813_065613.json",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS",
+  "setfile_build_hash": "622f3c2934785b5a050a34d1d56cead30eaebf7bb399c296cc718b75ba87ab60",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Build-only paced Q02 handoff requested; no manual MT5 tester, dispatch tick, worker tick, terminal launch, or backtest was started.",
+  "blocked_reason": null,
+  "open_questions": [
+    "The source uses 30 daily-rebalanced collateralized futures; this executable uses two continuous CFDs and monthly renewal, so it is a falsification proxy rather than a replication.",
+    "Continuous-CFD construction, financing, XNG gaps, monthly legging, and costs may dominate the rank signal.",
+    "Opposite directions and equal fixed-risk halves do not by themselves establish market neutrality or portfolio orthogonality."
+  ],
+  "validations": {
+    "dedup": "FUZZY_ENERGY_RANK_SLUG_FAMILY_MANUALLY_RESOLVED_DISTINCT",
+    "card_schema": "PASS",
+    "g0_card": "PASS",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "strict_compile": "PASS_0_ERRORS_0_WARNINGS",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "risk_mode": "PASS",
+    "calendar_helper": "PASS_QM_CalendarPeriodKey_NO_RAW_iTime",
+    "data_contract_rebind": "AUTHORIZED_2017.10.02_FIRST_COMMON_HISTORY"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1,
+    "package_allocation": "equal fixed-risk halves with independent frozen ATR(20) x 3.5 hard stops"
+  },
+  "q02_handoff": {
+    "work_item_id": "798a71de-9de3-4b50-af17-c4043359e232",
+    "status_at_build_record": "pending",
+    "symbol": "QM5_13148_XTI_XNG_RANK_LMH_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "from_date": "2018.07.02",
+    "to_date": "2025.12.31",
+    "historical_rows_preserved": [
+      "ce2bf983-059f-446f-ac69-f02b4a5f594d",
+      "f3299c06-4cde-4c3d-93d5-be613ee2436a"
+    ]
+  },
+  "file_hashes_sha256": {
+    "mq5": "fd885ae916905fcf3187aa5e143d56959bf2819ce36bb9af47d574fa59a15e79",
+    "ex5": "ace050087f8599625827cd741dd3e4766c982dc5884424b14cd27cacb53da4c7",
+    "spec": "ebebda12cf862a846e6bf264c0e830a4bf02aa1acda5cb280f1aa48512119f6",
+    "basket_manifest": "c262dfb9dd3a62b37a1a25152b27909a0268190e3389a3444347c4bd76e90b7b",
+    "setfile": "e9b0640648995d05be20b2b439400436c41085906fc06cba1a9bfaedef8fda3a",
+    "runtime_card": "4ba58fae121b39b5f32f4a2926daa7edb3f14b928177819261bb14afb8f78b52",
+    "repo_card": "eb61def5243652916ef577e84bb507e0251f08e6c2fff1b69a8bf752cac264f1",
+    "approved_card": "ac21914c191cb8182ed98175122d090bbba849c4da3757594eaff2a61cb7574",
+    "ea_card_pointer": "ab9ed501b7f2f59f3e57709efbd77fef20b4fcea6e74822450c2a216a6637e80"
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "market_neutral_claimed": false,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  }
+}

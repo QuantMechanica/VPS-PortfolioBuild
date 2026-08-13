@@ -8,7 +8,7 @@ status: APPROVED
 g0_status: APPROVED
 created: 2026-07-11
 created_by: Research
-last_updated: 2026-07-11
+last_updated: 2026-08-13
 target_symbols: [XTIUSD.DWX, XNGUSD.DWX]
 logical_symbol: QM5_13148_XTI_XNG_RANK_LMH_D1
 period: D1
@@ -23,15 +23,23 @@ pipeline_phase: Q02
 # Approved Card Copy - QM5_13148_energy-rank-lmh
 
 The canonical approved card is
-`strategy-seeds/cards/energy-rank-lmh_card.md`. Approval covers exactly the
-locked 2017-01-03 normalization origin; seven-day anchor bound; common anchor
-and completed endpoint timestamps; 20-bar post-anchor warm-up; direct
+`strategy-seeds/cards/energy-rank-lmh_card.md`. Router task
+`97cf24af-ecc1-49a3-b911-e943880c90e3` authorizes a same-lineage data-contract
+repair from the unsatisfiable 2017-01-03 origin to the locked 2017-10-02 first
+common canonical-history origin. Approval covers that origin, the seven-day
+anchor bound, common anchor and completed endpoint timestamps, 20-bar
+post-anchor warm-up, direct
 low-normalized-price versus high-normalized-price direction; monthly cadence;
 equal fixed-risk paired package; frozen ATR hard stops; next-month and stale
 exits; same-month deal-history guard; and orphan cleanup.
 
-Approval preserves the broad-futures-to-two-CFD narrowing, daily-to-monthly
+Both prior bound Q02 runs produced zero trades, so this repair had no signal
+selection contact. Approval preserves the broad-futures-to-two-CFD narrowing, daily-to-monthly
 translation, fixed-origin dependence, continuous-CFD basis, financing, gaps,
-legging, and costs as binding Q02 kill risks. Q01 passed and logical basket
-work item `ce2bf983-059f-446f-ac69-f02b4a5f594d` is pending at Q02. Live
-artifacts, portfolio admission, and portfolio-gate changes are not approved.
+legging, and costs as binding Q02 kill risks. Historical Q02 work items
+`ce2bf983-059f-446f-ac69-f02b4a5f594d` and
+`f3299c06-4cde-4c3d-93d5-be613ee2436a` remain immutable. Append-only work
+item `798a71de-9de3-4b50-af17-c4043359e232` is pending on the current binary
+and the full 2018-07-02 through 2025-12-31 Q02 window; it carries no verdict.
+Live artifacts, portfolio admission, and portfolio-gate changes are not
+approved.

@@ -6,7 +6,7 @@ slug: energy-rank-lmh
 status: APPROVED
 created: 2026-07-11
 created_by: Research
-last_updated: 2026-07-11
+last_updated: 2026-08-13
 g0_status: APPROVED
 source_citations:
   - type: institutional_working_paper
@@ -22,7 +22,7 @@ primary_target_symbols: [XTIUSD.DWX, XNGUSD.DWX]
 single_symbol_only: false
 logical_symbol: QM5_13148_XTI_XNG_RANK_LMH_D1
 period: D1
-expected_trade_frequency: "One XTI/XNG normalized-price rank package per broker calendar month after the fixed 2017-01-03 anchor and 20 completed D1 bars; approximately 12 completed packages/year before Q02 validation."
+expected_trade_frequency: "One XTI/XNG normalized-price rank package per broker calendar month after the fixed 2017-10-02 first-common-history anchor and 20 completed D1 bars; approximately 12 completed packages/year before Q02 validation."
 expected_trades_per_year_per_symbol: 12
 expected_pf: 1.02
 expected_dd_pct: 30.0
@@ -37,7 +37,9 @@ review_focus: "Falsify whether the source's low-minus-high normalized-price rank
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 hard_rules_at_risk: [basket_execution, friday_close, magic_schema, risk_mode_dual, cfd_futures_basis, fixed_anchor, low_frequency, narrow_cross_section]
-g0_approval_reasoning: "APPROVED under the OWNER commodity-sleeve mission: R1 complete Federal Reserve working paper and arXiv manuscript from named authors, with non-peer-reviewed status disclosed; R2 locked 2017-01-03 origin, seven-day anchor bound, 20-bar warm-up, direct normalized-price low-minus-high comparison, monthly basket, hard stops, and lifecycle guards; R3 registered native XTI/XNG D1 data; R4 no ML, banned indicator, external runtime feed, grid, martingale, or pyramiding. Canonical fuzzy matches on the energy-rank slug family were manually resolved by signal/input/window/direction as distinct. The two-name narrowing, daily-to-monthly translation, fixed-origin dependence, continuous-CFD basis, and legging are binding Q02 kill risks."
+g0_approval_reasoning: "APPROVED under the OWNER commodity-sleeve mission: R1 complete Federal Reserve working paper and arXiv manuscript from named authors, with non-peer-reviewed status disclosed; R2 locked first-common-history origin, seven-day anchor bound, 20-bar warm-up, direct normalized-price low-minus-high comparison, monthly basket, hard stops, and lifecycle guards; R3 registered native XTI/XNG D1 data; R4 no ML, banned indicator, external runtime feed, grid, martingale, or pyramiding. Canonical fuzzy matches on the energy-rank slug family were manually resolved by signal/input/window/direction as distinct. The two-name narrowing, daily-to-monthly translation, fixed-origin dependence, continuous-CFD basis, and legging are binding Q02 kill risks."
+data_contract_rebind_authorization: "Router task 97cf24af-ecc1-49a3-b911-e943880c90e3 Claude decision: rebind the unsatisfiable 2017-01-03 origin to 2017-10-02, the first common canonical DWX energy-history date; preserve all mechanics and run one fresh evidence-bound Q02 through the append-only path."
+data_contract_rebind_rationale: "Both canonical feeds begin 2017-10-02. The two prior bound Q02 runs produced zero trades, so no signal selection or economic contact occurred before this full-history repair."
 ---
 
 # XTI/XNG Monthly Fixed-Origin Rank Low-Minus-High
@@ -75,7 +77,7 @@ imported into the QM prior.
 Use one immutable common broker-date origin:
 
 ```text
-anchor_date = 2017-01-03 00:00
+anchor_date = 2017-10-02 00:00
 
 anchor_close_i = first completed D1 close on or after anchor_date
 normalized_i,t = latest completed D1 close before decision_t / anchor_close_i
@@ -115,7 +117,7 @@ authorized baseline. Anything not stated here is out of scope.
 - Require exact host `XTIUSD.DWX`, timeframe D1, and magic slot 0.
 - Detect the first tradable host D1 bar of each broker month using completed
   host bar dates; do not depend on MN1 bars.
-- Parse the locked `2017.01.03` anchor. For each leg, load bounded completed
+- Parse the locked `2017.10.02` anchor. For each leg, load bounded completed
   D1 history, find the first close on/after that origin, require it within
   seven calendar days, and require identical anchor timestamps across legs.
 - Require at least 20 completed bars strictly after the anchor close.
@@ -163,7 +165,7 @@ authorized baseline. Anything not stated here is out of scope.
 
 | parameter | default | authorized range | role |
 |---|---:|---|---|
-| `strategy_anchor_date` | `2017.01.03` | locked | immutable normalization origin |
+| `strategy_anchor_date` | `2017.10.02` | locked | immutable first-common-history normalization origin |
 | `strategy_max_anchor_gap_days` | 7 | locked | prevents a drifting substitute origin |
 | `strategy_min_anchor_age_bars` | 20 | locked | source-specified rank warm-up |
 | `strategy_history_bars` | 3000 | [2600, 3000, 3600] | bounded retrieval buffer only |
@@ -199,8 +201,8 @@ queue admission; it does not validate the two-CFD monthly carrier.
 - Do not move the anchor, shorten the warm-up, add a z-score/threshold, reverse
   direction, substitute rolling value or momentum, or relax alignment/package
   guards to rescue weak economics.
-- The daily-to-monthly translation, broad-to-two-name narrowing, arbitrary but
-  locked origin, source endpoint, futures/CFD basis, financing, gaps, legging,
+- The daily-to-monthly translation, broad-to-two-name narrowing, first-common
+  but locked origin, source endpoint, futures/CFD basis, financing, gaps, legging,
   and costs are kill risks, never waiver grounds.
 
 ## Strategy Allowability Check
@@ -252,6 +254,7 @@ portfolio admission, or portfolio KPI path is authorized.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-11 | initial fixed-origin XTI/XNG normalized-price rank | Q02 | Q01 PASS; Q02 ENQUEUED |
+| v2 | 2026-08-13 | governed rebind of unsatisfiable origin to first common canonical history; framework calendar-key repair | Q02 | Q01 strict build PASS; fresh full-history Q02 pending review |
 
 ## Pipeline Phase Status
 
@@ -259,10 +262,19 @@ portfolio admission, or portfolio KPI path is authorized.
 |---|---|---|---|
 | G0 Research Intake | 2026-07-11 | APPROVED under OWNER commodity-sleeve mission; R1-R4 and dedup clean | this card |
 | Q01 Build Validation | 2026-07-11 | PASS - strict compile 0 errors/0 warnings; validators PASS | `docs/ops/evidence/2026-07-11_qm5_13148_energy_rank_lmh_q02_enqueue.md` |
-| Q02 Baseline Screening | 2026-07-11 | ENQUEUED - pending, attempt 0, unclaimed | work item `ce2bf983-059f-446f-ac69-f02b4a5f594d` |
+| Q01 Build Validation | 2026-08-13 | PASS - governed data-contract recovery; strict compile and build check both clean | `docs/ops/evidence/2026-08-13_qm5_13148_energy_rank_data_contract_recovery_q02.md` |
+| Q02 Baseline Screening | 2026-07-20 | FAIL - zero trades, MIN_TRADES_NOT_MET | work item `ce2bf983-059f-446f-ac69-f02b4a5f594d` |
+| Q02 Baseline Screening | 2026-07-25 | ZERO_TRADES - bound recovery window also produced zero trades | work item `f3299c06-4cde-4c3d-93d5-be613ee2436a` |
+| Q02 Baseline Screening | 2026-08-13 | PENDING - append-only current-binary run, full canonical window 2018-07-02 through 2025-12-31; no verdict claimed | work item `798a71de-9de3-4b50-af17-c4043359e232`; `docs/ops/evidence/2026-08-13_qm5_13148_energy_rank_data_contract_recovery_q02.md` |
 
 ## Lessons Captured
 
 - 2026-07-11: The rank edge remains distinct only while the normalization
   origin is immutable and the signal directly compares normalized levels;
   rolling the anchor would collapse it into relative value or reversal.
+- 2026-08-13: The original 2017-01-03 origin preceded both canonical energy
+  feeds by nine months and made the card impossible to execute. A governed
+  same-lineage data-contract repair locked 2017-10-02, the first common
+  available date. All signal, risk, cadence, exit, and lifecycle mechanics
+  remain unchanged; prior Q02 runs had zero trades and supplied no selection
+  contact.

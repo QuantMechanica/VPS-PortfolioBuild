@@ -4,14 +4,20 @@
 **Slug:** energy-rank-lmh
 **Strategy ID:** FERNHOLZ-KOCH-RANK-2016_XTI_XNG_S01
 **Source:** Fernholz and Koch (2016), Federal Reserve Bank of Dallas Working Paper 1607
-**Last revised:** 2026-07-11
+**Last revised:** 2026-08-13
 
 ## 1. Strategy Logic
 
 The EA runs one D1 logical basket from XTIUSD.DWX. On the first host bar of
 each broker month, it divides each leg's latest completed close by that leg's
-completed close at one locked common 2017-01-03 origin. It buys the lower
+completed close at one locked common 2017-10-02 origin. It buys the lower
 normalized-price leg and shorts the higher one.
+
+The original 2017-01-03 card origin was unsatisfiable because the canonical
+XTIUSD.DWX and XNGUSD.DWX histories both begin on 2017-10-02. The governed
+recovery rebinds the immutable origin to that first common available date.
+This is a data-contract repair after two zero-trade Q02 runs; it does not alter
+the rank direction, warm-up, cadence, exits, sizing, or any other mechanics.
 
 Fixed package risk is split equally, both legs receive frozen ATR(20) times
 3.5 hard stops, and the package closes at the next monthly transition, after
@@ -23,7 +29,7 @@ not a replication.
 
 | Parameter | Default | Authorized range | Meaning |
 |---|---:|---|---|
-| strategy_anchor_date | 2017.01.03 | locked | immutable normalization origin |
+| strategy_anchor_date | 2017.10.02 | locked | immutable first-common-history normalization origin |
 | strategy_max_anchor_gap_days | 7 | locked | maximum substitute-bar delay from origin |
 | strategy_min_anchor_age_bars | 20 | locked | completed post-anchor warm-up |
 | strategy_history_bars | 3000 | 2600-3600 | bounded D1 retrieval buffer |
@@ -59,7 +65,7 @@ broker month. Current D1 bars are excluded from normalization.
 - Typical hold is one broker month, bounded by a 40-day stale guard.
 - The carrier is opposite-side and equal fixed-risk, not guaranteed dollar,
   beta, volatility, factor, rank, or realized market neutral.
-- XNG gaps, legging, the arbitrary but locked origin, two-name concentration,
+- XNG gaps, legging, the first-common but locked origin, two-name concentration,
   daily-to-monthly translation, and continuous-CFD basis make risk high.
 
 ## 6. Source Citation And Evidence Boundary
@@ -110,3 +116,4 @@ ML is authorized.
 | Version | Date | Change | Task |
 |---|---|---|---|
 | v1 | 2026-07-11 | Initial build from approved card | b4396bff-5c04-4810-a974-ede2d6d2a063 |
+| v2 | 2026-08-13 | Governed data-contract rebind to first common DWX history; framework calendar-key repair | 97cf24af-ecc1-49a3-b911-e943880c90e3 |
