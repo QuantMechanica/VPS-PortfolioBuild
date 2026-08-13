@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.local/schemas/opt_dev_sweep.v1.schema.json",
+  "title": "QuantMechanica Q15 DEV-only sweep evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "card_id", "window", "selection_metric", "trials", "selection"],
+  "properties": {
+    "schema": {"const": "qm.opt-dev-sweep/v1"},
+    "card_id": {"type": "string", "pattern": "^OPT-[A-Za-z0-9-]+$"},
+    "window": {
+      "type": "object",
+      "required": ["kind", "start", "end"],
+      "properties": {
+        "kind": {"const": "DEV_IS"},
+        "start": {"type": "string", "format": "date"},
+        "end": {"type": "string", "format": "date"}
+      }
+    },
+    "selection_metric": {
+      "type": "object",
+      "required": ["name", "direction"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "direction": {"const": "MAXIMIZE"}
+      }
+    },
+    "trials": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["trial_id", "parameters", "metric_value", "evidence"],
+        "properties": {
+          "trial_id": {"type": "string", "minLength": 1},
+          "parameters": {"type": "object", "minProperties": 1, "maxProperties": 1},
+          "metric_value": {"type": "number"},
+          "evidence": {"$ref": "#/$defs/binding"}
+        }
+      }
+    },
+    "selection": {
+      "type": "object",
+      "required": ["chosen_trial_id"],
+      "properties": {"chosen_trial_id": {"type": "string", "minLength": 1}}
+    }
+  },
+  "$defs": {
+    "binding": {
+      "type": "object",
+      "required": ["path", "sha256", "size_bytes"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "size_bytes": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

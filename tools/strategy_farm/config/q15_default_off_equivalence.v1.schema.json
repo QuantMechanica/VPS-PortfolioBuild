@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.local/schemas/q15_default_off_equivalence.v1.schema.json",
+  "title": "QuantMechanica Q15 default-OFF equivalence evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "card_id", "lever_control", "smoke_window", "parent", "challenger"],
+  "properties": {
+    "schema": {"const": "qm.q15-default-off-equivalence/v1"},
+    "card_id": {"type": "string", "pattern": "^OPT-[A-Za-z0-9-]+$"},
+    "lever_control": {
+      "type": "object",
+      "required": ["name", "value"],
+      "properties": {
+        "name": {"const": "strategy_opt_enabled"},
+        "value": {"const": false}
+      }
+    },
+    "smoke_window": {
+      "type": "object",
+      "required": ["symbol", "timeframe", "start", "end"],
+      "properties": {
+        "symbol": {"type": "string", "pattern": "^[A-Z0-9_]+\\.DWX$"},
+        "timeframe": {"type": "string", "pattern": "^(M1|M5|M15|M30|H1|H4|D1|W1|MN1)$"},
+        "start": {"type": "string", "format": "date"},
+        "end": {"type": "string", "format": "date"}
+      }
+    },
+    "parent": {"$ref": "#/$defs/side"},
+    "challenger": {"$ref": "#/$defs/side"}
+  },
+  "$defs": {
+    "binding": {
+      "type": "object",
+      "required": ["path", "sha256", "size_bytes"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "size_bytes": {"type": "integer", "minimum": 0}
+      }
+    },
+    "side": {
+      "type": "object",
+      "required": ["binary", "setfile", "behavior_trace"],
+      "properties": {
+        "binary": {"$ref": "#/$defs/binding"},
+        "setfile": {"$ref": "#/$defs/binding"},
+        "behavior_trace": {"$ref": "#/$defs/binding"}
+      }
+    }
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.local/schemas/opt_card_freeze.v1.schema.json",
+  "title": "QuantMechanica Q15 optimization-card freeze addendum",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "card_id",
+    "opt_card",
+    "q14_admission",
+    "parent",
+    "challenger",
+    "lever",
+    "dev_selection",
+    "default_off_equivalence",
+    "trial_ledger",
+    "risk_contract"
+  ],
+  "properties": {
+    "schema": {"const": "qm.opt-card-freeze/v1"},
+    "card_id": {"type": "string", "pattern": "^OPT-[A-Za-z0-9-]+$"},
+    "opt_card": {"$ref": "#/$defs/binding"},
+    "q14_admission": {
+      "type": "object",
+      "required": ["work_item_id", "verdict", "evidence_sha256"],
+      "properties": {
+        "work_item_id": {"type": "string", "minLength": 1},
+        "verdict": {"const": "OPT_ELIGIBLE"},
+        "evidence_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "parent": {"$ref": "#/$defs/identity"},
+    "challenger": {
+      "allOf": [
+        {"$ref": "#/$defs/identity"},
+        {
+          "type": "object",
+          "required": ["slug", "source", "backtest_setfile", "timeframe", "registries"],
+          "properties": {
+            "slug": {"type": "string", "minLength": 1},
+            "source": {"$ref": "#/$defs/binding"},
+            "backtest_setfile": {"$ref": "#/$defs/binding"},
+            "timeframe": {"type": "string", "pattern": "^(M1|M5|M15|M30|H1|H4|D1|W1|MN1)$"},
+            "registries": {
+              "type": "object",
+              "required": ["ea_id_registry", "magic_numbers", "magic_resolver"],
+              "properties": {
+                "ea_id_registry": {"$ref": "#/$defs/binding"},
+                "magic_numbers": {"$ref": "#/$defs/binding"},
+                "magic_resolver": {"$ref": "#/$defs/binding"}
+              }
+            }
+          }
+        }
+      ]
+    },
+    "lever": {
+      "type": "object",
+      "required": ["name", "enable_input", "parameter", "chosen_trial_id", "chosen_value", "chosen_parameters"],
+      "properties": {
+        "name": {"enum": ["EXIT_SURGERY", "VOL_REGIME_FILTER", "LOCKED_PORT", "MTF_ENTRY"]},
+        "enable_input": {"const": "strategy_opt_enabled"},
+        "parameter": {"type": "string", "pattern": "^[A-Za-z_]\\w*$"},
+        "chosen_trial_id": {"type": "string", "minLength": 1},
+        "chosen_value": {},
+        "chosen_parameters": {"type": "object", "minProperties": 1, "maxProperties": 1}
+      }
+    },
+    "dev_selection": {
+      "type": "object",
+      "required": ["evidence", "window", "metric", "best_metric_value", "plateau_relative_tolerance", "plateau_trial_ids"],
+      "properties": {
+        "evidence": {"$ref": "#/$defs/binding"},
+        "window": {"$ref": "#/$defs/window"},
+        "metric": {"type": "string", "minLength": 1},
+        "best_metric_value": {"type": "number"},
+        "plateau_relative_tolerance": {"const": 0.05},
+        "plateau_trial_ids": {"type": "array", "minItems": 2, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "default_off_equivalence": {
+      "type": "object",
+      "required": ["evidence", "behavior_sha256", "event_count", "smoke_window"],
+      "properties": {
+        "evidence": {"$ref": "#/$defs/binding"},
+        "behavior_sha256": {"$ref": "#/$defs/sha256"},
+        "event_count": {"type": "integer", "minimum": 1},
+        "smoke_window": {"type": "object"}
+      }
+    },
+    "trial_ledger": {
+      "type": "object",
+      "required": ["path", "declared_trial_count"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "declared_trial_count": {"type": "integer", "minimum": 2}
+      }
+    },
+    "risk_contract": {
+      "type": "object",
+      "required": ["RISK_FIXED", "RISK_PERCENT"],
+      "properties": {
+        "RISK_FIXED": {"const": 1000.0},
+        "RISK_PERCENT": {"const": 0.0}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "binding": {
+      "type": "object",
+      "required": ["path", "sha256", "size_bytes"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size_bytes": {"type": "integer", "minimum": 0}
+      }
+    },
+    "identity": {
+      "type": "object",
+      "required": ["ea_id", "symbol", "binary"],
+      "properties": {
+        "ea_id": {"type": "string", "pattern": "^QM5_[0-9]+$"},
+        "symbol": {"type": "string", "pattern": "^[A-Z0-9_]+\\.DWX$"},
+        "binary": {"$ref": "#/$defs/binding"},
+        "setfile": {"$ref": "#/$defs/binding"}
+      }
+    },
+    "window": {
+      "type": "object",
+      "required": ["kind", "start", "end"],
+      "properties": {
+        "kind": {"const": "DEV_IS"},
+        "start": {"type": "string", "format": "date"},
+        "end": {"type": "string", "format": "date"}
+      }
+    }
+  }
+}

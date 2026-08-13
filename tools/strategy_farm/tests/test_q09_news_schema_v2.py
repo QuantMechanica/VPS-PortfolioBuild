@@ -156,7 +156,7 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
             self.conn.execute("SELECT 1 FROM sqlite_master WHERE type='view' AND name='portfolio_candidates_eligible'").fetchone()
         )
 
-    def test_v3_dependency_rows_migrate_byte_for_byte_and_q16_roles_open(self) -> None:
+    def test_v3_dependency_rows_migrate_byte_for_byte_and_new_roles_open(self) -> None:
         add_work_item(self.conn, "q08", "Q08", "PASS")
         add_work_item(self.conn, "q09n", "Q09_NEWS", "CONFIG_LOCKED")
         self.conn.executescript(
@@ -200,11 +200,12 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
         ).fetchone()[0]
         self.assertIn("PARENT_LINEAGE", table_sql)
         self.assertIn("CHALLENGER_Q10", table_sql)
+        self.assertIn("Q14_ADMISSION", table_sql)
         self.assertEqual(
             self.conn.execute(
                 "SELECT schema_version FROM q09_news_schema_meta WHERE schema_name='q09_news'"
             ).fetchone()[0],
-            4,
+            5,
         )
 
         add_work_item(self.conn, "q10", "Q10", "PASS")
@@ -218,6 +219,17 @@ class Q09NewsSchemaV2Tests(unittest.TestCase):
                 parent_evidence_sha256=_hash(role),
                 required_verdicts=["PASS"],
             )
+
+        add_work_item(self.conn, "q14", "Q14", "OPT_ELIGIBLE")
+        add_work_item(self.conn, "q15", "Q15", "CHALLENGER_SPAWNED")
+        schema.add_dependency(
+            self.conn,
+            child_work_item_id="q15",
+            dependency_role="Q14_ADMISSION",
+            parent_work_item_id="q14",
+            parent_evidence_sha256=_hash("q14"),
+            required_verdicts=["OPT_ELIGIBLE"],
+        )
 
     def test_dependency_trigger_rejects_missing_parent_with_foreign_keys_off(self) -> None:
         add_work_item(self.conn, "q09n", "Q09_NEWS", None)
