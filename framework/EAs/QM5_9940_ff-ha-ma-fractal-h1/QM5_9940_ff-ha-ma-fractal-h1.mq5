@@ -83,6 +83,15 @@ input double strategy_nonjpy_tp_atr     = 1.50;   // Non-JPY TP distance from en
 input double strategy_nonjpy_sl_atr     = 0.80;   // Non-JPY SL offset from LWMA.
 input double strategy_max_sl_atr        = 2.20;   // Skip entries whose entry-to-SL distance is too wide.
 
+// Heiken-Ashi reconstruction is deliberately cached by the latest completed
+// H1 bar.  The strategy management and exit hooks run on every tick; rebuilding
+// three HA states there would otherwise perform hundreds of CopyBuffer reads per
+// tick and can exhaust the tester timeout on dense .DWX histories.
+datetime g_ha_cache_closed_bar = 0;
+bool     g_ha_cache_valid      = false;
+double   g_ha_cache_open[4];
+double   g_ha_cache_close[4];
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -99,7 +108,7 @@ double Strategy_NormalizePrice(const double price)
    return NormalizeDouble(price, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
   }
 
-bool Strategy_HASmoothed(const int shift, double &ha_open, double &ha_close)
+bool Strategy_ComputeHASmoothed(const int shift, double &ha_open, double &ha_close)
   {
    ha_open = 0.0;
    ha_close = 0.0;
@@ -146,12 +155,37 @@ bool Strategy_HASmoothed(const int shift, double &ha_open, double &ha_close)
    return true;
   }
 
+bool Strategy_RefreshHACache()
+  {
+   const datetime closed_bar = iTime(_Symbol, PERIOD_H1, 1); // perf-allowed: O(1) cache key.
+   if(closed_bar <= 0)
+      return false;
+   if(closed_bar == g_ha_cache_closed_bar)
+      return g_ha_cache_valid;
+
+   g_ha_cache_closed_bar = closed_bar;
+   g_ha_cache_valid = false;
+   ArrayInitialize(g_ha_cache_open, 0.0);
+   ArrayInitialize(g_ha_cache_close, 0.0);
+
+   for(int shift = 1; shift <= 3; ++shift)
+     {
+      if(!Strategy_ComputeHASmoothed(shift,
+                                     g_ha_cache_open[shift],
+                                     g_ha_cache_close[shift]))
+         return false;
+     }
+
+   g_ha_cache_valid = true;
+   return true;
+  }
+
 int Strategy_HAColor(const int shift)
   {
-   double ha_open = 0.0;
-   double ha_close = 0.0;
-   if(!Strategy_HASmoothed(shift, ha_open, ha_close))
+   if(shift < 1 || shift > 3 || !Strategy_RefreshHACache())
       return 0;
+   const double ha_open = g_ha_cache_open[shift];
+   const double ha_close = g_ha_cache_close[shift];
    if(ha_close > ha_open)
       return 1;
    if(ha_close < ha_open)
@@ -346,6 +380,8 @@ void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
+      return;
+   if(!Strategy_HasOurPendingOrder())
       return;
 
    const int latest_color = Strategy_HAColor(1);
