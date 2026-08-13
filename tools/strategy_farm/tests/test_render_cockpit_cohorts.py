@@ -143,9 +143,13 @@ def test_cohort_renderer_labels_mixed_era_chips_and_q09_q10_contracts(
         render_cockpit.pipeline_cohort_snapshot()
     )
 
+    # The label must name the range the strip actually renders (Q00..Q16) and must
+    # keep the two honesty tokens: the counts are lifetime and span gate-regime eras.
     assert render_cockpit.LIFETIME_PASS_CHIP_LABEL == (
-        "Q02-Q10 // LIFETIME DISTINCT PASS (MIXED ERAS)"
+        "Q00-Q16 // PIPELINE OCCUPANCY (LIFETIME, MIXED ERAS)"
     )
+    assert "LIFETIME" in render_cockpit.LIFETIME_PASS_CHIP_LABEL
+    assert "MIXED ERAS" in render_cockpit.LIFETIME_PASS_CHIP_LABEL
     assert "qm.cockpit-adjacent-cohort/v1" in page
     assert "Q08 -&gt; Q09 NEWS" in page
     assert "Q08 -&gt; Q09 PORTFOLIO" in page

@@ -111,7 +111,7 @@ FTMO_MONITOR_DIR = Path(
 FTMO_DEALS_CSV = FTMO_MONITOR_DIR / "live_deals_normalized.csv"
 LIVE_BOOK_SLEEVES = 24  # current live book size (label denominator only)
 
-LIFETIME_PASS_CHIP_LABEL = "Q02-Q10 // LIFETIME DISTINCT PASS (MIXED ERAS)"
+LIFETIME_PASS_CHIP_LABEL = "Q00-Q16 // PIPELINE OCCUPANCY (LIFETIME, MIXED ERAS)"
 PIPELINE_COHORT_SCHEMA_VERSION = "qm.cockpit-adjacent-cohort/v1"
 PIPELINE_COHORT_BUCKETS = ("NO_ROW", "OPEN", "INFRA", "SOFT", "HARD", "PASS")
 PIPELINE_COHORT_TRANSITIONS = (
@@ -3411,7 +3411,7 @@ body { padding: 32px; min-height: 100vh; }
 }
 .prog-strip {
   display: grid;
-  grid-template-columns: repeat(13, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
   gap: 6px;
   background: var(--surface-1); border: 1px solid var(--border);
   padding: 14px 20px;
