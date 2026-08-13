@@ -1,0 +1,91 @@
+{
+  "group": "_template_single_bar_shape_reference",
+  "author": "Claude",
+  "note": "Reference template. Two predicates worked through completely so every other group file has an unambiguous model to follow. bars[0] is the REFERENCE (most recently closed) bar; index increases going back in time. Bars are [open, high, low, close, tick_volume].",
+  "conventions": {
+    "index_direction": "bars[0] = reference bar, bars[1] = one bar older, ...",
+    "expected_derivation": "positive/negative cases must be derived from what the pattern IS, never from reading the source thresholds. Only boundary cases may cite a source threshold, and must declare basis=implementation_threshold.",
+    "floating_point": "NEVER place a boundary fixture exactly ON a threshold. Double arithmetic makes exact equality unreliable (e.g. 100.2 - 100.0 = 0.19999999999999574, which is NOT equal to 0.10 * 2.0). Write one fixture clearly INSIDE the threshold and one clearly OUTSIDE it, with at least ~5% margin, and state which side it is on.",
+    "filler_series": "Optional list of bars cycled to reach the predicate's required window length. Use it for long-window predicates so the fixture stays readable; make sure the filler does not accidentally create the pattern.",
+    "anchor_date": "Optional date of bars[0] (YYYY-MM-DD). Only the calendar predicates read bar timestamps; everything else can leave it at the default.",
+    "default_filler_series": "Group-level padding, cycled to reach each predicate's required window. Every predicate needs at least 3 bars even when it only reads bar[0], so this keeps single-bar fixtures readable. Override per fixture when the padding is itself under test."
+  },
+  "default_filler_series": [
+    [100.0, 100.6, 99.4, 100.1, 4000],
+    [100.1, 100.7, 99.5, 99.9, 4200]
+  ],
+  "fixtures": [
+    {
+      "id": "TEMPLATE_DOJI_positive_canonical",
+      "predicate": "QM_PP_DOJI",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A doji is a candle whose open and close are effectively equal, so the session ended undecided after ranging in both directions. Open 100.00 vs close 100.02 on a 2.00 range is exactly that: a body of 1% of the range.",
+      "bars": [[100.0, 101.0, 99.0, 100.02, 5000]]
+    },
+    {
+      "id": "TEMPLATE_DOJI_negative_decisive_body",
+      "predicate": "QM_PP_DOJI",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The opposite of undecided: the candle opens at its low and closes near its high, spending 90% of its range on directional body. No trader would read this as a doji.",
+      "bars": [[100.0, 102.0, 100.0, 101.8, 5000]]
+    },
+    {
+      "id": "TEMPLATE_DOJI_boundary_inside",
+      "predicate": "QM_PP_DOJI",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Body is 0.18 on a range of 2.00 = 9% of range, comfortably inside the 10%-of-range body ceiling the implementation declares. Deliberately not placed exactly on 10%: double arithmetic cannot be trusted at equality.",
+      "bars": [[100.0, 101.0, 99.0, 100.18, 5000]]
+    },
+    {
+      "id": "TEMPLATE_DOJI_boundary_outside",
+      "predicate": "QM_PP_DOJI",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Body is 0.22 on a range of 2.00 = 11% of range, clearly outside the 10% ceiling. Paired with the inside case this brackets the threshold from both directions without relying on exact float equality.",
+      "bars": [[100.0, 101.0, 99.0, 100.22, 5000]]
+    },
+    {
+      "id": "TEMPLATE_HAMMER_positive_canonical",
+      "predicate": "QM_PP_HAMMER",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A hammer is a small body sitting at the top of the range with a long lower shadow and almost no upper shadow: price was driven far down and fully rejected. Body 0.50, lower wick 4.50 (9x the body), upper wick 0.10.",
+      "bars": [[99.5, 100.1, 95.0, 100.0, 5000]]
+    },
+    {
+      "id": "TEMPLATE_HAMMER_negative_inverted_shape",
+      "predicate": "QM_PP_HAMMER",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Same small body, but the long shadow is on the WRONG side: a 5.00 upper wick and a 0.10 lower wick. This is the shape of upside rejection, the mirror image of a hammer, and must not be reported as one.",
+      "bars": [[99.5, 105.0, 99.4, 100.0, 5000]]
+    },
+    {
+      "id": "TEMPLATE_HAMMER_boundary_upper_wick_inside",
+      "predicate": "QM_PP_HAMMER",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Body 0.50, upper wick 0.14 = 28% of the body, inside the 30%-of-body upper-wick ceiling. Lower wick and body-to-range stay comfortably valid so this fixture isolates the upper-wick condition alone.",
+      "bars": [[99.5, 100.14, 95.0, 100.0, 5000]]
+    },
+    {
+      "id": "TEMPLATE_HAMMER_boundary_upper_wick_outside",
+      "predicate": "QM_PP_HAMMER",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Identical to the inside case except the upper wick is 0.16 = 32% of the body, outside the 30% ceiling. The single changed value isolates which condition rejected the candle.",
+      "bars": [[99.5, 100.16, 95.0, 100.0, 5000]]
+    }
+  ]
+}
