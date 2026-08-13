@@ -146,4 +146,8 @@ validation found the compiled `.ex5`.
 
 ## 13. Q02 Handoff
 
-NOT ENQUEUED.
+ENQUEUED. Work item `42f8f5dd-b01e-493f-ba28-c51e9ff2b9d8` was active
+on T3 at immediate readback, attempt 0, with no evidence path or verdict.
+The target-only paced enqueue ran below the seven-terminal fleet ceiling. No
+dispatch tick or manual backtest was run. See
+`docs/ops/evidence/2026-08-13_qm5_20300_wti_max_regime_q01_q02_enqueue.md`.
