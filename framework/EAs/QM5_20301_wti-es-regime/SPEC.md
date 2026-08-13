@@ -150,5 +150,8 @@ validation found the compiled `.ex5`.
 
 ## 13. Q02 Handoff
 
-NOT ENQUEUED. Q01 is PASS; a fresh seven-terminal capacity check remains
-required immediately before the target-only paced handoff.
+ENQUEUED. Work item `391694f4-f6d3-400a-9f3b-9f8f5d700ae0` was pending at
+immediate readback, attempt 0, with no evidence path or verdict. The target-
+only paced enqueue ran below the seven-terminal fleet ceiling. No dispatch
+tick or manual backtest was run. See
+`docs/ops/evidence/2026-08-13_qm5_20301_wti_es_regime_q01_q02_enqueue.md`.
