@@ -152,5 +152,8 @@ passed; and P1 artifact validation found the compiled `.ex5`.
 
 ## 13. Q02 Handoff
 
-NOT ENQUEUED. Q02 requires Q01 PASS plus a fresh seven-terminal capacity
-check.
+ENQUEUED. Work item `9666a9ef-f51a-464f-a883-90a89945d45d` was active on T6
+at immediate readback, attempt 0, with no evidence path or verdict. The
+target-only paced enqueue ran below the seven-terminal fleet ceiling. No
+dispatch tick or manual backtest was run. See
+`docs/ops/evidence/2026-08-13_qm5_20302_wti_aliq_regime_q01_q02_enqueue.md`.
