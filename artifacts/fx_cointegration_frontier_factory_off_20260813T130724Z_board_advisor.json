@@ -1,0 +1,197 @@
+{
+  "artifact_type": "fx_cointegration_frontier_factory_off_handoff",
+  "generated_at_utc": "2026-08-13T13:07:24Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "c28be23c8",
+  "mission_outcome": "EXISTING_Q02_PRESERVED_FACTORY_OWNER_OFF",
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "frontier_reconciliation": {
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "coverage_source_commit": "a80493291",
+    "scan_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "scan_script_sha256": "870e3c67d7c05a75f62ab9e89d421dd94d337288f5c623395cafcf03300433d6",
+    "scan_mode": "--include-negative-hedges",
+    "rank_contract": "all 66 combinations sorted by OOS net Sharpe descending",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "latest_exact_identity_summary": {
+      "done_pass": 54,
+      "done_fail": 10,
+      "failed_infra_fail": 1,
+      "pending": 1
+    },
+    "new_card_or_ea_would_duplicate_existing_relationship": true
+  },
+  "selected_existing_pair": {
+    "selection_reason": "No unbuilt relationship remains; rank 58 is now the sole frozen-scan relationship without a terminal exact logical Q02 verdict.",
+    "scan_rank": 58,
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "ea_id": "QM5_1257",
+    "ea_slug": "lemishko-fx-cointpair",
+    "pair_slot": 8,
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "source": {
+      "citation": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+      "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1257_lemishko-fx-cointpair.md",
+      "approved_card_sha256": "d1c36d0c6c13647eded8bd7ae4cb8424d8746b51d703d2854900c5094b440dd9",
+      "g0_status": "APPROVED",
+      "r1_track_record": "PASS",
+      "r2_mechanical": "PASS",
+      "r3_data_available": "PASS",
+      "r4_ml_forbidden": "PASS"
+    },
+    "artifacts": {
+      "mq5": {
+        "path": "framework/EAs/QM5_1257_lemishko-fx-cointpair/QM5_1257_lemishko-fx-cointpair.mq5",
+        "sha256": "28bd88d0a7a7401ec7fe3b3a4f99ef3ba6b9fec146298c512b1c76e1adf7e12b"
+      },
+      "ex5": {
+        "path": "framework/EAs/QM5_1257_lemishko-fx-cointpair/QM5_1257_lemishko-fx-cointpair.ex5",
+        "sha256": "86c6e9f077e37ddd5aea1e15b253cd4509c7f180c846cc6aebd806fa17d95cbd"
+      },
+      "basket_manifest": {
+        "path": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json",
+        "sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3"
+      },
+      "fixed_risk_setfile": {
+        "path": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+        "sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4"
+      }
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "q02": {
+      "task_id": "39ee6910-5d04-4087-83b0-65a6fd6b22f9",
+      "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+      "exact_logical_row_count": 1,
+      "canonical_claim_rank": 8,
+      "status": "pending",
+      "attempt_count": 0,
+      "claimed_by": null,
+      "priority_track": true,
+      "hold_count": 0,
+      "quarantine_count": 0,
+      "last_observed_updated_at_utc": "2026-08-12T22:50:25Z",
+      "duplicate_enqueue_performed": false
+    }
+  },
+  "newly_terminal_relationship": {
+    "scan_rank": 65,
+    "pair": [
+      "USDCHF.DWX",
+      "AUDUSD.DWX"
+    ],
+    "ea_id": "QM5_1156",
+    "logical_symbol": "QM5_1156_USDCHF_AUDUSD_COINTEGRATION_M30",
+    "work_item_id": "415cd6d3-560c-46d8-a9f9-ee4a5b399100",
+    "status": "done",
+    "verdict": "FAIL",
+    "verdict_reason": "run_smoke_fail:MIN_TRADES_NOT_MET",
+    "oninit_failure_detected": false,
+    "total_trades": 14,
+    "min_trades_required": 25,
+    "profit_factor": 1.01,
+    "evidence_path": "D:/QM/reports/work_items/415cd6d3-560c-46d8-a9f9-ee4a5b399100/QM5_1156/20260813_033503/summary.json",
+    "updated_at_utc": "2026-08-13T03:47:37Z"
+  },
+  "factory_owner_state": {
+    "observed_at_utc": "2026-08-13T13:07:24Z",
+    "pump_task": {
+      "name": "QM_StrategyFarm_Pump_5min",
+      "state": "Disabled",
+      "enabled": false
+    },
+    "tick_task": {
+      "name": "QM_StrategyFarm_Tick_5min",
+      "state": "Disabled",
+      "enabled": false
+    },
+    "watchdog_observation": {
+      "timestamp_utc": "2026-08-13T13:05:03Z",
+      "factory_enabled": false,
+      "workers": 0,
+      "action": "noop_factory_off",
+      "detail": "FACTORY tasks disabled (OWNER OFF); workers=0 - leaving alone"
+    },
+    "running_factory_terminal_count": 0,
+    "running_factory_terminals": [],
+    "paced_launch_gate_max": 1,
+    "cpu_ceiling_binding": false,
+    "owner_off_binding": true,
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "verification": {
+    "json_parse": "PASS",
+    "build_guardrails": {
+      "command": "python tools/strategy_farm/validate_build_guardrails.py framework/EAs/QM5_1257_lemishko-fx-cointpair",
+      "verdict": "PASS",
+      "files_checked": 45,
+      "findings": 0
+    },
+    "symbol_scope": {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_1257_lemishko-fx-cointpair --json --fail-on-leak",
+      "verdict": "BASKET_OK",
+      "violations": 0
+    },
+    "basket_manifest_regressions": {
+      "command": "python -m pytest -q tools/strategy_farm/tests/test_fx_basket_manifests.py",
+      "result": "44 passed"
+    },
+    "legacy_approved_card_schema_lint": {
+      "command": "python framework/scripts/skill_card_schema_lint.py --card D:/QM/strategy_farm/artifacts/cards_approved/QM5_1257_lemishko-fx-cointpair.md",
+      "status": "error",
+      "ml_hits": [],
+      "missing_sections": [
+        "## hypothesis",
+        "## rules",
+        "## risk"
+      ],
+      "disposition": "No new Card was drafted. The immutable approved legacy Card retains G0 APPROVED and R1-R4 PASS; it was not rewritten or re-approved solely to match the newer heading template."
+    }
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "basket_manifest_mutation": false,
+    "setfile_mutation": false,
+    "q02_enqueue_or_requeue": false,
+    "dispatch_tick": false,
+    "worker_or_terminal_start": false,
+    "tester_or_backtest_run": false,
+    "repository_evidence_record_created": true,
+    "reason": "The 66-pair frontier is fully covered, the sole unresolved relationship already has exactly one healthy Q02 row, and OWNER-disabled Factory tasks prohibit dispatch."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
