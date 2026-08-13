@@ -11,7 +11,9 @@
 #property strict
 #property script_show_inputs
 
+#include <QM/QM_Common.mqh>
 #include <QM/QM_PatternPermission.mqh>
+#include <QM/QM_PatternPermissionStraddle.mqh>
 
 void OnStart()
   {
@@ -49,5 +51,15 @@ void OnStart()
             fired++;
       PrintFormat("pp_compile_test probes=%d fired=%d", ArraySize(probes), fired);
      }
+
+   // A1/A2 straddle integration: plan -> pure decision -> (no placement here).
+   QM_StraddlePlan plan;
+   QM_PPS_InitPlan(plan);
+   plan.want_buy = true;
+   plan.want_sell = true;
+   QM_StraddleDecision dec = QM_PPS_Decide(plan, res);
+   PrintFormat("pps_compile_test buy=%s sell=%s valid=%s markday=%s reason=%s",
+               (string)dec.place_buy, (string)dec.place_sell,
+               (string)dec.permission_valid, (string)dec.mark_day_complete, dec.reason);
   }
 //+------------------------------------------------------------------+
