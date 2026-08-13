@@ -141,7 +141,18 @@ $QM_OWNER_DECISION_BLOB = '2247ace7ec310bfb0c76dfdc455193e209683463'
 # p75=599.982s, and five reached the 600s ceiling. First-attempt success is
 # therefore unreliable under load. Span the 5-minute retry cadence while
 # retaining the guarded restart window; early success exits without waiting.
-$factoryPostStartHealthTimeoutSeconds = 1800
+#
+# 1800 -> 3600 (2026-08-13, evidenced): the health clock starts while this
+# script's own `farmctl repair` phase is still writing. After a heavy day the
+# repair backlog alone held DB write locks for 27+ minutes (WAL 34MB), every
+# AgentRouter_5min cycle died on `database is locked`, and two ON attempts
+# failed the gate back-to-back -- a structural self-deadlock, since each
+# retry re-runs repair against the same backlog. Standalone repair is
+# fail-closed outside this window (farmctl repair: blocked, reason
+# factory_off), so the budget must cover worst-case repair PLUS several
+# 5-minute router retries on the then-quiet DB. Success criteria unchanged:
+# the router must still genuinely complete; early success still exits early.
+$factoryPostStartHealthTimeoutSeconds = 3600
 $QM_PREPARATION_DECISION_WORKER_TERMINALS = @(
     'T1','T2','T3','T4','T5','T6','T7','T8','T9','T10'
 )
