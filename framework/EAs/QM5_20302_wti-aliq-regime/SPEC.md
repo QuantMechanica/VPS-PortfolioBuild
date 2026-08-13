@@ -138,14 +138,19 @@ waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-13 | Initial scaffold from approved card | Build pending |
+| v2 | 2026-08-13 | Implemented locked WTI carrier and monthly lifecycle | Strict compile and reference checks pass |
 
 ## 12. Q01 Status
 
-PENDING. The EA source, canonical setfile, compiled artifact, and deterministic
-reference evidence have not yet been created.
+PASS. The registered one-slot EA implements the exact two-block ALIQ
+estimator, same-bar tick-volume alignment, restart-safe monthly attempt state,
+one-position lifecycle, frozen hard stop, and fixed-risk contract. Strict
+compile passed with zero errors and zero warnings; the target build check
+passed with zero failures and zero warnings; six independent formula,
+direction, support, scale, volume, chronology, count, and freshness tests
+passed; and P1 artifact validation found the compiled `.ex5`.
 
 ## 13. Q02 Handoff
 
 NOT ENQUEUED. Q02 requires Q01 PASS plus a fresh seven-terminal capacity
 check.
-

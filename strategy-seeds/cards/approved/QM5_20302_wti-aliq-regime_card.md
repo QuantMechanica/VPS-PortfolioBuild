@@ -54,8 +54,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0_APPROVED
-q01_status: PENDING
+pipeline_phase: Q01_PASS
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify an outright monthly WTI activity-price-impact regime using two disjoint own-history ALIQ blocks, unlike paired energy ALIQ, WTI ES/MAX/skew/kurtosis/VoV, return trend/reversal, calendar, event, and XNG RSI neighbors; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -302,9 +302,11 @@ portfolio admission; or a correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-13 | initial WTI self-relative Amihud-illiquidity regime | G0 | APPROVED; build pending |
+| v1-q01 | 2026-08-13 | deterministic V5 build, strict compile, target guardrails, independent ALIQ vectors, and P1 artifact validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-13 | APPROVED; R1-R4 PASS | `decisions/2026-08-13_qm5_20302_wti_aliq_regime_g0.md`; bounded source packet |
+| Q01 Build Validation | 2026-08-13 | PASS; strict compile 0 errors/0 warnings, build check 0 failures/0 warnings, 6 reference tests PASS, P1 PASS | `D:/QM/reports/compile/20260813_083041/summary.csv`; `D:/QM/reports/framework/21/build_check_20260813_083200.json`; `D:/QM/reports/pipeline/QM5_20302/P1/P1_QM5_20302_result.json` |
