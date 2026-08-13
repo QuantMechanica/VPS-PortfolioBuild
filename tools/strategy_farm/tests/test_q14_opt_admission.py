@@ -137,6 +137,19 @@ def _surface(name: str = "strategy_test") -> dict[str, object]:
     }
 
 
+def _categorical_surface() -> dict[str, object]:
+    return {
+        "surface_type": "CATEGORICAL",
+        "fixed_parameters": {"strategy_opt_enabled": True},
+        "parameters": [],
+        "minimum_dev_fire_count": 30,
+        "predicate_trials": [
+            {"predicate_id": "QM_PP_DOJI", "direction": "buy"},
+            {"predicate_id": "QM_PP_HAMMER", "direction": "SELL"},
+        ],
+    }
+
+
 def _program(cohort: list[dict[str, object]], *, max_cards: int = 12, max_parent: int = 2) -> dict[str, object]:
     return {
         "schema": "qm.opt-program/v1",
@@ -156,6 +169,7 @@ def _program(cohort: list[dict[str, object]], *, max_cards: int = 12, max_parent
                 "enabled": True, "order": 20, "min_trades": 150,
                 "min_max_drawdown_pct": 12, "success_metric": _success(),
             },
+            "PREDICATE_ABLATION": {"enabled": True, "order": 25, "success_metric": _success()},
             "MTF_ENTRY": {"enabled": True, "order": 30, "backlog_only": True, "success_metric": _success()},
         },
         "surface_profiles": {
@@ -195,6 +209,64 @@ def test_dry_run_is_deterministic_and_uses_latest_distinct_q10(tmp_path: Path) -
     assert first["counts"] == {"OPT_ELIGIBLE": 1, "OPT_REJECTED": 0}
     assert first["decisions"][0]["source_q10_work_item_id"] == latest_id
     assert not reports.exists()
+
+
+def test_categorical_predicate_surface_is_deterministic_and_emits_named_trials(tmp_path: Path) -> None:
+    db = _database(tmp_path / "farm.sqlite")
+    repo = tmp_path / "repo"
+    _insert_q10(db, repo, 20008, "EURUSD", trades=200, drawdown=8)
+    config = _write_program(tmp_path / "program.json", _program([
+        _cohort(20008, "EURUSD", {
+            "PREDICATE_ABLATION": {
+                "parameter_surface": _categorical_surface(),
+                "hypothesis": "Named blacklist predicates reduce weak entries without numeric ordering.",
+            },
+        }),
+    ]))
+    reports = tmp_path / "reports"
+
+    first = q14.run_admission(db_path=db, config_path=config, repo_root=repo, report_root=reports)
+    second = q14.run_admission(db_path=db, config_path=config, repo_root=repo, report_root=reports)
+
+    assert first == second
+    decision = first["decisions"][0]
+    assert decision["verdict"] == "OPT_ELIGIBLE"
+    assert decision["reason"] == "PREDICATE_ABLATION_Q10_PASS"
+    normalized_surface, planned_trials = q14._surface(
+        {"parameter_surface": _categorical_surface()}, "PREDICATE_ABLATION"
+    )
+    assert normalized_surface == {
+        "surface_type": "CATEGORICAL",
+        "fixed_parameters": {"strategy_opt_enabled": True},
+        "parameters": [],
+        "minimum_dev_fire_count": 30,
+        "predicate_trials": [
+            {"predicate_id": "QM_PP_DOJI", "direction": "BUY"},
+            {"predicate_id": "QM_PP_HAMMER", "direction": "SELL"},
+        ],
+    }
+    assert planned_trials == [
+        {"trial_id": "T001", "predicate_id": "QM_PP_DOJI", "direction": "BUY"},
+        {"trial_id": "T002", "predicate_id": "QM_PP_HAMMER", "direction": "SELL"},
+    ]
+    assert not reports.exists()
+
+
+def test_numeric_surface_still_rejects_named_candidates() -> None:
+    surface = _surface()
+    parameter = surface["parameters"][0]
+    assert isinstance(parameter, dict)
+    parameter["candidate_values"] = ["QM_PP_DOJI", "QM_PP_HAMMER"]
+
+    with pytest.raises(q14.Q14Error, match="bounds/values must be numeric"):
+        q14._surface({"parameter_surface": surface}, "EXIT_SURGERY")
+
+
+def test_opt_card_schema_declares_predicate_ablation() -> None:
+    schema_path = Path(__file__).resolve().parents[1] / "config" / "opt_card.v1.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+
+    assert "PREDICATE_ABLATION" in schema["properties"]["lever"]["enum"]
 
 
 @pytest.mark.parametrize(

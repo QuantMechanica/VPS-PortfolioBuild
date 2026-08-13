@@ -96,7 +96,8 @@
         "EXIT_SURGERY",
         "VOL_REGIME_FILTER",
         "LOCKED_PORT",
-        "MTF_ENTRY"
+        "MTF_ENTRY",
+        "PREDICATE_ABLATION"
       ]
     },
     "hypothesis": {
@@ -115,6 +116,42 @@
         },
         "parameters": {
           "type": "array"
+        },
+        "surface_type": {
+          "enum": [
+            "NUMERIC",
+            "CATEGORICAL"
+          ]
+        },
+        "minimum_dev_fire_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "predicate_trials": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "predicate_id",
+              "direction"
+            ],
+            "properties": {
+              "predicate_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+              },
+              "direction": {
+                "enum": [
+                  "BUY",
+                  "SELL"
+                ]
+              }
+            }
+          }
         }
       }
     },
@@ -164,6 +201,39 @@
       "minLength": 1
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "lever": {
+            "const": "PREDICATE_ABLATION"
+          }
+        },
+        "required": [
+          "lever"
+        ]
+      },
+      "then": {
+        "properties": {
+          "parameter_surface": {
+            "required": [
+              "surface_type",
+              "minimum_dev_fire_count",
+              "predicate_trials"
+            ],
+            "properties": {
+              "surface_type": {
+                "const": "CATEGORICAL"
+              },
+              "parameters": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "sha256": {
       "type": "string",

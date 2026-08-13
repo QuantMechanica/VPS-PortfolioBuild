@@ -238,6 +238,112 @@ def _run(paths: dict[str, Path | str], *, apply: bool = False) -> dict:
     )
 
 
+def _categorical_selection_fixture(tmp_path: Path) -> dict[str, object]:
+    card_id = "OPT-13213-USDJPY-PREDICATE-ABLATION-fixture01"
+    card = {
+        "schema": q15.OPT_CARD_SCHEMA,
+        "card_id": card_id,
+        "parent": {"ea_id": "QM5_13213", "symbol": "USDJPY.DWX"},
+        "lever": q15.PREDICATE_ABLATION_LEVER,
+        "parameter_surface": {
+            "surface_type": q15.CATEGORICAL_SURFACE_TYPE,
+            "fixed_parameters": {"strategy_opt_enabled": True},
+            "parameters": [],
+            "minimum_dev_fire_count": 20,
+            "predicate_trials": [
+                {"predicate_id": "QM_PP_DOJI", "direction": "BUY"},
+                {"predicate_id": "QM_PP_HAMMER", "direction": "SELL"},
+            ],
+        },
+        "success_metric": {
+            "primary": "annual_return_pct",
+            "direction": "MAXIMIZE",
+            "minimum_improvement": 0.1,
+        },
+        "comparison_windows": [
+            {"id": "F1", "kind": "Q04_ANCHORED_OOS", "start": "2023-01-01", "end": "2023-12-31"},
+        ],
+    }
+    card_info = q15._validate_card(card, card_id)
+    ledger_path = tmp_path / "trial_ledger.json"
+    ledger = {
+        "schema": q15.TRIAL_LEDGER_SCHEMA,
+        "card_id": card_id,
+        "status": "OPENED",
+        "declared_trial_count": 2,
+        "planned_trials": [
+            {"trial_id": "T001", "predicate_id": "QM_PP_DOJI", "direction": "BUY"},
+            {"trial_id": "T002", "predicate_id": "QM_PP_HAMMER", "direction": "SELL"},
+        ],
+        "trials": [],
+    }
+    _write(ledger_path, ledger)
+    ledger_info = q15._validate_ledger(ledger, card_id=card_id, expected_path=ledger_path)
+    incumbent_evidence = _write(tmp_path / "evidence" / "incumbent.json", {"metric": 1.0})
+    trial_1 = _write(tmp_path / "evidence" / "T001.json", {"metric": 1.2})
+    trial_2 = _write(tmp_path / "evidence" / "T002.json", {"metric": 1.05})
+    sweep = {
+        "schema": q15.DEV_SWEEP_SCHEMA,
+        "card_id": card_id,
+        "window": {"kind": "DEV_IS", "start": "2019-01-01", "end": "2021-12-31"},
+        "selection_metric": {"name": "annual_return_pct", "direction": "MAXIMIZE"},
+        "incumbent": {
+            "metric_value": 1.0,
+            "evidence": _bound(incumbent_evidence),
+            "time_thirds": [
+                {"id": "DEV_1", "start": "2019-01-01", "end": "2019-12-31", "metric_value": 1.0},
+                {"id": "DEV_2", "start": "2020-01-01", "end": "2020-12-31", "metric_value": 1.0},
+                {"id": "DEV_3", "start": "2021-01-01", "end": "2021-12-31", "metric_value": 1.0},
+            ],
+        },
+        "trials": [
+            {
+                "trial_id": "T001",
+                "predicate_id": "QM_PP_DOJI",
+                "direction": "BUY",
+                "metric_value": 1.2,
+                "fire_count": 20,
+                "time_thirds": [
+                    {"id": "DEV_1", "metric_value": 1.1},
+                    {"id": "DEV_2", "metric_value": 0.9},
+                    {"id": "DEV_3", "metric_value": 1.1},
+                ],
+                "evidence": _bound(trial_1),
+            },
+            {
+                "trial_id": "T002",
+                "predicate_id": "QM_PP_HAMMER",
+                "direction": "SELL",
+                "metric_value": 1.05,
+                "fire_count": 25,
+                "time_thirds": [
+                    {"id": "DEV_1", "metric_value": 1.02},
+                    {"id": "DEV_2", "metric_value": 1.01},
+                    {"id": "DEV_3", "metric_value": 1.02},
+                ],
+                "evidence": _bound(trial_2),
+            },
+        ],
+        "selection": {"chosen_trial_id": "T001"},
+    }
+    sweep_path = _write(tmp_path / "dev_sweep.json", sweep)
+    return {
+        "card_id": card_id,
+        "card_info": card_info,
+        "ledger_info": ledger_info,
+        "sweep_path": sweep_path,
+    }
+
+
+def _run_categorical_selection(paths: dict[str, object]) -> dict:
+    return q15._validate_sweep(
+        Path(paths["sweep_path"]),
+        card_info=paths["card_info"],
+        ledger_info=paths["ledger_info"],
+        card_id=str(paths["card_id"]),
+    )
+
+
 def test_q15_dry_run_is_read_only_and_deterministic(tmp_path: Path) -> None:
     paths = _fixture(tmp_path)
     before = Path(paths["ledger_path"]).read_bytes()
@@ -250,6 +356,129 @@ def test_q15_dry_run_is_read_only_and_deterministic(tmp_path: Path) -> None:
     assert Path(paths["ledger_path"]).read_bytes() == before
     with farmctl.connect(Path(paths["farm"])) as conn:
         assert conn.execute("SELECT count(*) FROM work_items WHERE phase IN ('Q15','Q02')").fetchone()[0] == 0
+
+
+def test_categorical_selection_passes_all_three_rules_without_ordered_plateau(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    paths = _categorical_selection_fixture(tmp_path)
+
+    def _ordered_path_must_not_run(*args: object, **kwargs: object) -> dict:
+        raise AssertionError("ordered numeric plateau path entered for a categorical card")
+
+    monkeypatch.setattr(q15, "_validate_numeric_selection", _ordered_path_must_not_run)
+    result = _run_categorical_selection(paths)
+
+    assert result["chosen_parameters"] == {"predicate_id": "QM_PP_DOJI", "direction": "BUY"}
+    assert result["plateau_trial_ids"] == []
+    assert result["selection_contract"] == {
+        "type": "CATEGORICAL_PREDICATE_ROBUSTNESS",
+        "incumbent_metric_value": 1.0,
+        "selected_metric_value": 1.2,
+        "minimum_improvement": 0.1,
+        "observed_improvement": pytest.approx(0.2),
+        "minimum_dev_fire_count": 20,
+        "selected_dev_fire_count": 20,
+        "eligible_trial_ids": ["T001", "T002"],
+        "leading_time_thirds": ["DEV_1", "DEV_3"],
+        "required_leading_time_thirds": 2,
+        "time_thirds": [
+            {"id": "DEV_1", "start": "2019-01-01", "end": "2019-12-31", "metric_value": 1.0},
+            {"id": "DEV_2", "start": "2020-01-01", "end": "2020-12-31", "metric_value": 1.0},
+            {"id": "DEV_3", "start": "2021-01-01", "end": "2021-12-31", "metric_value": 1.0},
+        ],
+    }
+
+
+def test_categorical_selection_rejects_low_fire_before_objective_comparison(tmp_path: Path) -> None:
+    paths = _categorical_selection_fixture(tmp_path)
+    sweep_path = Path(paths["sweep_path"])
+    sweep = json.loads(sweep_path.read_text(encoding="utf-8"))
+    sweep["trials"][0]["fire_count"] = 19
+    sweep["trials"][0]["metric_value"] = 0.0
+    _write(sweep_path, sweep)
+
+    with pytest.raises(q15.Q15Error, match="not candidate-eligible.*fire_count"):
+        _run_categorical_selection(paths)
+
+
+def test_categorical_selection_rejects_knife_edge_time_thirds(tmp_path: Path) -> None:
+    paths = _categorical_selection_fixture(tmp_path)
+    sweep_path = Path(paths["sweep_path"])
+    sweep = json.loads(sweep_path.read_text(encoding="utf-8"))
+    sweep["trials"][0]["time_thirds"][2]["metric_value"] = 0.95
+    _write(sweep_path, sweep)
+
+    with pytest.raises(q15.Q15Error, match="at least 2 of 3 DEV time_thirds"):
+        _run_categorical_selection(paths)
+
+
+def test_categorical_selection_rejects_below_declared_minimum_improvement(tmp_path: Path) -> None:
+    paths = _categorical_selection_fixture(tmp_path)
+    sweep_path = Path(paths["sweep_path"])
+    sweep = json.loads(sweep_path.read_text(encoding="utf-8"))
+    sweep["trials"][0]["metric_value"] = 1.09
+    _write(sweep_path, sweep)
+
+    with pytest.raises(q15.Q15Error, match="declared minimum improvement"):
+        _run_categorical_selection(paths)
+
+
+def test_numeric_card_still_requires_one_numeric_parameter(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    card = json.loads(Path(paths["card_path"]).read_text(encoding="utf-8"))
+    card["parameter_surface"]["parameters"][0]["candidate_values"] = ["QM_PP_DOJI", "QM_PP_HAMMER"]
+    with pytest.raises(q15.Q15Error, match="plateau validation requires numeric candidate values"):
+        q15._validate_card(card, str(paths["card_id"]))
+
+    card["parameter_surface"]["parameters"] = []
+    with pytest.raises(q15.Q15Error, match="exactly one tunable lever parameter"):
+        q15._validate_card(card, str(paths["card_id"]))
+
+
+def test_categorical_path_requires_matching_lever_and_surface_type(tmp_path: Path) -> None:
+    paths = _categorical_selection_fixture(tmp_path)
+    card_info = paths["card_info"]
+    assert isinstance(card_info, dict)
+    assert card_info["lever"] == q15.PREDICATE_ABLATION_LEVER
+    assert card_info["surface_type"] == q15.CATEGORICAL_SURFACE_TYPE
+
+    card_id = str(paths["card_id"])
+    surface = {
+        "surface_type": q15.CATEGORICAL_SURFACE_TYPE,
+        "fixed_parameters": {},
+        "parameters": [],
+        "minimum_dev_fire_count": 20,
+        "predicate_trials": [
+            {"predicate_id": "QM_PP_DOJI", "direction": "BUY"},
+            {"predicate_id": "QM_PP_HAMMER", "direction": "SELL"},
+        ],
+    }
+    mismatched = {
+        "schema": q15.OPT_CARD_SCHEMA,
+        "card_id": card_id,
+        "parent": {"ea_id": "QM5_13213", "symbol": "USDJPY.DWX"},
+        "lever": "EXIT_SURGERY",
+        "parameter_surface": surface,
+    }
+    with pytest.raises(q15.Q15Error, match="must be paired"):
+        q15._validate_card(mismatched, card_id)
+
+
+def test_dev_sweep_schema_declares_numeric_and_categorical_contracts() -> None:
+    schema_path = Path(__file__).resolve().parents[1] / "config" / "opt_dev_sweep.v1.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+
+    trial_refs = schema["properties"]["trials"]["items"]["oneOf"]
+    assert trial_refs == [
+        {"$ref": "#/$defs/numeric_trial"},
+        {"$ref": "#/$defs/categorical_trial"},
+    ]
+    assert "incumbent" in schema["properties"]
+    assert set(schema["$defs"]["categorical_trial"]["required"]) >= {
+        "predicate_id", "direction", "fire_count", "time_thirds",
+    }
 
 
 def test_q15_apply_freezes_ledger_binds_q14_and_seeds_one_q02(tmp_path: Path) -> None:

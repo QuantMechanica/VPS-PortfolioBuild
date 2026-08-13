@@ -29,23 +29,111 @@
       "type": "array",
       "minItems": 2,
       "items": {
-        "type": "object",
-        "required": ["trial_id", "parameters", "metric_value", "evidence"],
-        "properties": {
-          "trial_id": {"type": "string", "minLength": 1},
-          "parameters": {"type": "object", "minProperties": 1, "maxProperties": 1},
-          "metric_value": {"type": "number"},
-          "evidence": {"$ref": "#/$defs/binding"}
-        }
+        "oneOf": [
+          {"$ref": "#/$defs/numeric_trial"},
+          {"$ref": "#/$defs/categorical_trial"}
+        ]
       }
     },
+    "incumbent": {"$ref": "#/$defs/categorical_incumbent"},
     "selection": {
       "type": "object",
       "required": ["chosen_trial_id"],
       "properties": {"chosen_trial_id": {"type": "string", "minLength": 1}}
     }
   },
+  "oneOf": [
+    {
+      "not": {"required": ["incumbent"]},
+      "properties": {
+        "trials": {
+          "items": {"$ref": "#/$defs/numeric_trial"}
+        }
+      }
+    },
+    {
+      "required": ["incumbent"],
+      "properties": {
+        "trials": {
+          "items": {"$ref": "#/$defs/categorical_trial"}
+        }
+      }
+    }
+  ],
   "$defs": {
+    "numeric_trial": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trial_id", "parameters", "metric_value", "evidence"],
+      "properties": {
+        "trial_id": {"type": "string", "minLength": 1},
+        "parameters": {"type": "object", "minProperties": 1, "maxProperties": 1},
+        "metric_value": {"type": "number"},
+        "evidence": {"$ref": "#/$defs/binding"}
+      }
+    },
+    "categorical_trial": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trial_id",
+        "predicate_id",
+        "direction",
+        "metric_value",
+        "fire_count",
+        "time_thirds",
+        "evidence"
+      ],
+      "properties": {
+        "trial_id": {"type": "string", "minLength": 1},
+        "predicate_id": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"},
+        "direction": {"enum": ["BUY", "SELL"]},
+        "metric_value": {"type": "number"},
+        "fire_count": {"type": "integer", "minimum": 0},
+        "time_thirds": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {"$ref": "#/$defs/candidate_third"}
+        },
+        "evidence": {"$ref": "#/$defs/binding"}
+      }
+    },
+    "categorical_incumbent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metric_value", "time_thirds", "evidence"],
+      "properties": {
+        "metric_value": {"type": "number"},
+        "time_thirds": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {"$ref": "#/$defs/incumbent_third"}
+        },
+        "evidence": {"$ref": "#/$defs/binding"}
+      }
+    },
+    "candidate_third": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "metric_value"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "metric_value": {"type": "number"}
+      }
+    },
+    "incumbent_third": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "start", "end", "metric_value"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "start": {"type": "string", "format": "date"},
+        "end": {"type": "string", "format": "date"},
+        "metric_value": {"type": "number"}
+      }
+    },
     "binding": {
       "type": "object",
       "required": ["path", "sha256", "size_bytes"],

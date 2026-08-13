@@ -18,6 +18,7 @@ import csv
 import datetime as dt
 import hashlib
 import json
+import math
 import os
 import re
 import sqlite3
@@ -42,6 +43,10 @@ RISK_FIXED = 1000.0
 RISK_PERCENT = 0.0
 LEVER_ENABLE_INPUT = "strategy_opt_enabled"
 PLATEAU_RELATIVE_TOLERANCE = 0.05
+PREDICATE_ABLATION_LEVER = "PREDICATE_ABLATION"
+CATEGORICAL_SURFACE_TYPE = "CATEGORICAL"
+NUMERIC_SURFACE_TYPE = "NUMERIC"
+PREDICATE_DIRECTIONS = {"BUY", "SELL"}
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_FARM_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
@@ -376,26 +381,88 @@ def _validate_card(card: Mapping[str, Any], card_id: str) -> dict[str, Any]:
     surface = card.get("parameter_surface")
     if not isinstance(surface, Mapping):
         raise Q15Error("opt-card parameter_surface is missing")
+    lever = str(card.get("lever") or "").strip().upper()
+    surface_type = str(surface.get("surface_type") or NUMERIC_SURFACE_TYPE).strip().upper()
+    categorical = lever == PREDICATE_ABLATION_LEVER
+    if categorical != (surface_type == CATEGORICAL_SURFACE_TYPE):
+        raise Q15Error(
+            f"{PREDICATE_ABLATION_LEVER} cards and {CATEGORICAL_SURFACE_TYPE} surfaces must be paired"
+        )
     parameters = surface.get("parameters")
-    if not isinstance(parameters, list) or len(parameters) != 1 or not isinstance(parameters[0], Mapping):
-        raise Q15Error("Q15 requires exactly one tunable lever parameter")
-    parameter = dict(parameters[0])
-    name = str(parameter.get("name") or "").strip()
-    values = parameter.get("candidate_values")
-    if not re.fullmatch(r"[A-Za-z_]\w*", name) or not isinstance(values, list) or len(values) < 2:
-        raise Q15Error("single lever parameter needs a valid name and at least two candidate values")
-    try:
-        numeric_values = [float(value) for value in values]
-    except (TypeError, ValueError) as exc:
-        raise Q15Error("Q15 plateau validation requires numeric candidate values") from exc
-    if len(set(numeric_values)) != len(numeric_values):
-        raise Q15Error("lever candidate values must be unique")
+    parameter: dict[str, Any] | None
+    name: str | None
+    values: list[Any]
+    numeric_values: list[float]
+    predicate_trials: list[dict[str, str]]
+    minimum_dev_fire_count: int | None
+    if categorical:
+        if not isinstance(parameters, list) or parameters:
+            raise Q15Error("categorical predicate surface must declare parameters=[]")
+        raw_trials = surface.get("predicate_trials")
+        if not isinstance(raw_trials, list) or len(raw_trials) < 2:
+            raise Q15Error("categorical predicate surface requires at least two predicate_trials")
+        predicate_trials = []
+        seen_trials: set[tuple[str, str]] = set()
+        for index, raw_trial in enumerate(raw_trials):
+            if not isinstance(raw_trial, Mapping):
+                raise Q15Error(f"predicate_trials[{index}] must be an object")
+            predicate_id = str(raw_trial.get("predicate_id") or "").strip()
+            direction = str(raw_trial.get("direction") or "").strip().upper()
+            if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", predicate_id):
+                raise Q15Error(f"predicate_trials[{index}] predicate_id is invalid")
+            if direction not in PREDICATE_DIRECTIONS:
+                raise Q15Error(f"predicate_trials[{index}] direction must be BUY or SELL")
+            key = (predicate_id, direction)
+            if key in seen_trials:
+                raise Q15Error(f"categorical predicate surface repeats {predicate_id}/{direction}")
+            seen_trials.add(key)
+            predicate_trials.append({"predicate_id": predicate_id, "direction": direction})
+        raw_minimum_fire_count = surface.get("minimum_dev_fire_count")
+        if (
+            isinstance(raw_minimum_fire_count, bool)
+            or not isinstance(raw_minimum_fire_count, int)
+            or raw_minimum_fire_count <= 0
+        ):
+            raise Q15Error("categorical predicate surface requires a positive integer minimum_dev_fire_count")
+        minimum_dev_fire_count = raw_minimum_fire_count
+        parameter = None
+        name = None
+        values = []
+        numeric_values = []
+    else:
+        if surface_type != NUMERIC_SURFACE_TYPE:
+            raise Q15Error(f"unsupported opt-card surface_type: {surface_type!r}")
+        if not isinstance(parameters, list) or len(parameters) != 1 or not isinstance(parameters[0], Mapping):
+            raise Q15Error("Q15 requires exactly one tunable lever parameter")
+        parameter = dict(parameters[0])
+        name = str(parameter.get("name") or "").strip()
+        values = parameter.get("candidate_values")
+        if not re.fullmatch(r"[A-Za-z_]\w*", name) or not isinstance(values, list) or len(values) < 2:
+            raise Q15Error("single lever parameter needs a valid name and at least two candidate values")
+        try:
+            numeric_values = [float(value) for value in values]
+        except (TypeError, ValueError) as exc:
+            raise Q15Error("Q15 plateau validation requires numeric candidate values") from exc
+        if len(set(numeric_values)) != len(numeric_values):
+            raise Q15Error("lever candidate values must be unique")
+        predicate_trials = []
+        minimum_dev_fire_count = None
     success = card.get("success_metric")
     if not isinstance(success, Mapping) or str(success.get("direction") or "").upper() != "MAXIMIZE":
         raise Q15Error("Q15 currently requires a MAXIMIZE success metric")
     metric_name = str(success.get("primary") or "").strip()
     if not metric_name:
         raise Q15Error("opt-card success_metric.primary is required")
+    minimum_improvement: float | None = None
+    if categorical:
+        if "minimum_improvement" not in success:
+            raise Q15Error("categorical success_metric.minimum_improvement must be declared")
+        try:
+            minimum_improvement = float(success["minimum_improvement"])
+        except (TypeError, ValueError) as exc:
+            raise Q15Error("categorical success_metric.minimum_improvement must be numeric") from exc
+        if not math.isfinite(minimum_improvement) or minimum_improvement < 0:
+            raise Q15Error("categorical success_metric.minimum_improvement must be finite and non-negative")
     windows = card.get("comparison_windows")
     if not isinstance(windows, list) or not windows:
         raise Q15Error("opt-card comparison windows are missing")
@@ -408,11 +475,16 @@ def _validate_card(card: Mapping[str, Any], card_id: str) -> dict[str, Any]:
         "parent": parent,
         "parent_ea_number": parent_ea,
         "symbol": symbol,
-        "lever": str(card.get("lever") or "").strip().upper(),
+        "lever": lever,
+        "surface_type": surface_type,
+        "categorical": categorical,
         "parameter": parameter,
         "parameter_name": name,
         "candidate_values": list(values),
         "candidate_numeric": numeric_values,
+        "predicate_trials": predicate_trials,
+        "minimum_dev_fire_count": minimum_dev_fire_count,
+        "minimum_improvement": minimum_improvement,
         "metric_name": metric_name,
         "first_oos_start": min(oos_starts),
     }
@@ -438,69 +510,108 @@ def _validate_ledger(ledger: Mapping[str, Any], *, card_id: str, expected_path: 
     return {"path": expected_path, "declared": declared, "planned": planned}
 
 
-def _validate_sweep(
-    path: Path,
+def _finite_float(value: Any, label: str) -> float:
+    try:
+        result = float(value)
+    except (TypeError, ValueError) as exc:
+        raise Q15Error(f"{label} must be numeric") from exc
+    if not math.isfinite(result):
+        raise Q15Error(f"{label} must be finite")
+    return result
+
+
+def _nonnegative_int(value: Any, label: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise Q15Error(f"{label} must be a non-negative integer")
+    return value
+
+
+def _validate_categorical_incumbent(
+    raw: Any,
+    *,
+    base: Path,
+    window_start: dt.date,
+    window_end: dt.date,
+) -> dict[str, Any]:
+    if not isinstance(raw, Mapping):
+        raise Q15Error("categorical DEV sweep incumbent control is missing")
+    metric_value = _finite_float(raw.get("metric_value"), "categorical incumbent metric_value")
+    _, evidence = _validate_binding(raw.get("evidence"), "categorical incumbent evidence", base=base)
+    thirds = raw.get("time_thirds")
+    if not isinstance(thirds, list) or len(thirds) != 3:
+        raise Q15Error("categorical incumbent must declare exactly three DEV time_thirds")
+    normalized: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    for index, third in enumerate(thirds):
+        if not isinstance(third, Mapping):
+            raise Q15Error(f"categorical incumbent time_thirds[{index}] must be an object")
+        third_id = str(third.get("id") or "").strip()
+        if not third_id or third_id in seen_ids:
+            raise Q15Error("categorical incumbent time_thirds need unique non-empty ids")
+        start = _iso_date(third.get("start"), f"categorical incumbent time_thirds[{index}].start")
+        end = _iso_date(third.get("end"), f"categorical incumbent time_thirds[{index}].end")
+        if start > end:
+            raise Q15Error(f"categorical incumbent time_thirds[{index}] starts after it ends")
+        seen_ids.add(third_id)
+        normalized.append({
+            "id": third_id,
+            "start": start,
+            "end": end,
+            "metric_value": _finite_float(
+                third.get("metric_value"),
+                f"categorical incumbent time_thirds[{index}].metric_value",
+            ),
+        })
+    normalized.sort(key=lambda item: (item["start"], item["end"], item["id"]))
+    if normalized[0]["start"] != window_start or normalized[-1]["end"] != window_end:
+        raise Q15Error("categorical incumbent time_thirds must cover the complete DEV window")
+    for left, right in zip(normalized, normalized[1:]):
+        if right["start"] != left["end"] + dt.timedelta(days=1):
+            raise Q15Error("categorical incumbent time_thirds must be disjoint and contiguous")
+    durations = [(item["end"] - item["start"]).days + 1 for item in normalized]
+    if max(durations) - min(durations) > 1:
+        raise Q15Error("categorical incumbent DEV time_thirds must be equal-sized to within one day")
+    return {
+        "metric_value": metric_value,
+        "evidence": evidence,
+        "time_thirds": [
+            {
+                "id": item["id"],
+                "start": item["start"].isoformat(),
+                "end": item["end"].isoformat(),
+                "metric_value": item["metric_value"],
+            }
+            for item in normalized
+        ],
+        "third_metric_by_id": {item["id"]: item["metric_value"] for item in normalized},
+    }
+
+
+def _validate_candidate_thirds(raw: Any, *, trial_id: str, expected_ids: set[str]) -> dict[str, float]:
+    if not isinstance(raw, list) or len(raw) != 3:
+        raise Q15Error(f"categorical DEV trial {trial_id} must declare exactly three time_thirds")
+    result: dict[str, float] = {}
+    for index, third in enumerate(raw):
+        if not isinstance(third, Mapping):
+            raise Q15Error(f"categorical DEV trial {trial_id} time_thirds[{index}] must be an object")
+        third_id = str(third.get("id") or "").strip()
+        if not third_id or third_id in result:
+            raise Q15Error(f"categorical DEV trial {trial_id} time_thirds need unique non-empty ids")
+        result[third_id] = _finite_float(
+            third.get("metric_value"),
+            f"categorical DEV trial {trial_id} time_thirds[{index}].metric_value",
+        )
+    if set(result) != expected_ids:
+        raise Q15Error(f"categorical DEV trial {trial_id} time_thirds differ from the incumbent partition")
+    return result
+
+
+def _validate_numeric_selection(
+    observed: Mapping[str, Mapping[str, Any]],
     *,
     card_info: Mapping[str, Any],
-    ledger_info: Mapping[str, Any],
-    card_id: str,
+    chosen_id: str,
 ) -> dict[str, Any]:
-    sweep = _read_json(path, "DEV sweep evidence")
-    if sweep.get("schema") != DEV_SWEEP_SCHEMA or sweep.get("card_id") != card_id:
-        raise Q15Error(f"DEV sweep evidence must use {DEV_SWEEP_SCHEMA} and match the opt-card")
-    window = sweep.get("window")
-    if not isinstance(window, Mapping) or str(window.get("kind") or "").upper() != "DEV_IS":
-        raise Q15Error("DEV sweep evidence requires window.kind=DEV_IS")
-    start = _iso_date(window.get("start"), "DEV window start")
-    end = _iso_date(window.get("end"), "DEV window end")
-    if start > end or end >= card_info["first_oos_start"]:
-        raise Q15Error("DEV sweep window must end before every sealed OOS window")
-    metric = sweep.get("selection_metric")
-    if (
-        not isinstance(metric, Mapping)
-        or str(metric.get("name") or "") != card_info["metric_name"]
-        or str(metric.get("direction") or "").upper() != "MAXIMIZE"
-    ):
-        raise Q15Error("DEV sweep selection metric differs from the opt-card")
-    trials = sweep.get("trials")
-    if not isinstance(trials, list) or len(trials) != ledger_info["declared"]:
-        raise Q15Error("DEV sweep must contain exactly the declared trial count")
-    planned_by_id = {
-        str(row["trial_id"]): row for row in ledger_info["planned"] if isinstance(row, Mapping)
-    }
-    observed: dict[str, dict[str, Any]] = {}
-    for index, raw in enumerate(trials):
-        if not isinstance(raw, Mapping):
-            raise Q15Error(f"DEV sweep trial[{index}] must be an object")
-        trial_id = str(raw.get("trial_id") or "")
-        if trial_id not in planned_by_id or trial_id in observed:
-            raise Q15Error(f"DEV sweep has undeclared or duplicate trial id: {trial_id!r}")
-        parameters = raw.get("parameters")
-        planned_parameters = planned_by_id[trial_id].get("parameters")
-        if parameters != planned_parameters:
-            raise Q15Error(f"DEV sweep parameters differ from planned trial {trial_id}")
-        try:
-            metric_value = float(raw.get("metric_value"))
-        except (TypeError, ValueError) as exc:
-            raise Q15Error(f"DEV sweep trial {trial_id} metric_value is invalid") from exc
-        evidence_path, evidence_binding = _validate_binding(
-            raw.get("evidence"), f"DEV sweep trial {trial_id} evidence", base=path.parent
-        )
-        observed[trial_id] = {
-            "trial_id": trial_id,
-            "parameters": dict(parameters) if isinstance(parameters, Mapping) else parameters,
-            "metric_value": metric_value,
-            "evidence": evidence_binding,
-            "evidence_path": evidence_path,
-        }
-    if set(observed) != set(planned_by_id):
-        raise Q15Error("DEV sweep does not cover every declared trial")
-    selection = sweep.get("selection")
-    if not isinstance(selection, Mapping):
-        raise Q15Error("DEV sweep selection is missing")
-    chosen_id = str(selection.get("chosen_trial_id") or "")
-    if chosen_id not in observed:
-        raise Q15Error("DEV sweep chosen_trial_id is not a declared observed trial")
     chosen = observed[chosen_id]
     chosen_parameters = chosen["parameters"]
     parameter_name = card_info["parameter_name"]
@@ -510,7 +621,7 @@ def _validate_sweep(
     candidates = card_info["candidate_values"]
     if not any(_same_scalar(str(chosen_value), value) for value in candidates):
         raise Q15Error("chosen DEV value is outside the opt-card candidate surface")
-    by_value: dict[float, dict[str, Any]] = {}
+    by_value: dict[float, Mapping[str, Any]] = {}
     for trial in observed.values():
         params = trial["parameters"]
         if not isinstance(params, Mapping) or set(params) != {parameter_name}:
@@ -543,18 +654,223 @@ def _validate_sweep(
     if not neighbors.intersection(plateau_values):
         raise Q15Error("chosen DEV value is not supported by an adjacent plateau value")
     return {
-        "body": sweep,
-        "binding": _binding(path),
-        "window": {"kind": "DEV_IS", "start": start.isoformat(), "end": end.isoformat()},
-        "chosen_trial_id": chosen_id,
         "chosen_parameters": dict(chosen_parameters),
         "chosen_value": chosen_value,
         "best_metric_value": best,
         "plateau_trial_ids": sorted(
             trial["trial_id"] for value, trial in by_value.items() if value in plateau_values
         ),
+        "selection_contract": {
+            "type": "ORDERED_NUMERIC_PLATEAU",
+            "plateau_relative_tolerance": PLATEAU_RELATIVE_TOLERANCE,
+        },
+    }
+
+
+def _validate_categorical_selection(
+    observed: Mapping[str, Mapping[str, Any]],
+    *,
+    card_info: Mapping[str, Any],
+    incumbent: Mapping[str, Any],
+    chosen_id: str,
+) -> dict[str, Any]:
+    chosen = observed[chosen_id]
+    minimum_fire_count = int(card_info["minimum_dev_fire_count"])
+    eligible_trials = {
+        trial_id: trial
+        for trial_id, trial in observed.items()
+        if trial["fire_count"] >= minimum_fire_count
+    }
+    if chosen_id not in eligible_trials:
+        raise Q15Error(
+            f"chosen categorical predicate is not candidate-eligible: DEV fire_count "
+            f"{chosen['fire_count']} is below declared minimum {minimum_fire_count}"
+        )
+
+    minimum_improvement = float(card_info["minimum_improvement"])
+    observed_improvement = chosen["metric_value"] - incumbent["metric_value"]
+    if observed_improvement + 1e-12 < minimum_improvement:
+        raise Q15Error(
+            "chosen categorical predicate does not beat the DEV incumbent by the declared minimum improvement"
+        )
+
+    incumbent_thirds = incumbent["third_metric_by_id"]
+    chosen_thirds = chosen["third_metric_by_id"]
+    leading_thirds = sorted(
+        third_id
+        for third_id, candidate_value in chosen_thirds.items()
+        if candidate_value > incumbent_thirds[third_id]
+    )
+    if len(leading_thirds) < 2:
+        raise Q15Error("chosen categorical predicate does not lead in at least 2 of 3 DEV time_thirds")
+
+    eligible_trial_ids = sorted(eligible_trials)
+    return {
+        "chosen_parameters": {
+            "predicate_id": chosen["predicate_id"],
+            "direction": chosen["direction"],
+        },
+        "chosen_value": f"{chosen['predicate_id']}:{chosen['direction']}",
+        "best_metric_value": max(trial["metric_value"] for trial in eligible_trials.values()),
+        "plateau_trial_ids": [],
+        "selection_contract": {
+            "type": "CATEGORICAL_PREDICATE_ROBUSTNESS",
+            "incumbent_metric_value": incumbent["metric_value"],
+            "selected_metric_value": chosen["metric_value"],
+            "minimum_improvement": minimum_improvement,
+            "observed_improvement": observed_improvement,
+            "minimum_dev_fire_count": minimum_fire_count,
+            "selected_dev_fire_count": chosen["fire_count"],
+            "eligible_trial_ids": eligible_trial_ids,
+            "leading_time_thirds": leading_thirds,
+            "required_leading_time_thirds": 2,
+            "time_thirds": incumbent["time_thirds"],
+        },
+    }
+
+
+def _validate_sweep(
+    path: Path,
+    *,
+    card_info: Mapping[str, Any],
+    ledger_info: Mapping[str, Any],
+    card_id: str,
+) -> dict[str, Any]:
+    sweep = _read_json(path, "DEV sweep evidence")
+    if sweep.get("schema") != DEV_SWEEP_SCHEMA or sweep.get("card_id") != card_id:
+        raise Q15Error(f"DEV sweep evidence must use {DEV_SWEEP_SCHEMA} and match the opt-card")
+    window = sweep.get("window")
+    if not isinstance(window, Mapping) or str(window.get("kind") or "").upper() != "DEV_IS":
+        raise Q15Error("DEV sweep evidence requires window.kind=DEV_IS")
+    start = _iso_date(window.get("start"), "DEV window start")
+    end = _iso_date(window.get("end"), "DEV window end")
+    if start > end or end >= card_info["first_oos_start"]:
+        raise Q15Error("DEV sweep window must end before every sealed OOS window")
+    metric = sweep.get("selection_metric")
+    if (
+        not isinstance(metric, Mapping)
+        or str(metric.get("name") or "") != card_info["metric_name"]
+        or str(metric.get("direction") or "").upper() != "MAXIMIZE"
+    ):
+        raise Q15Error("DEV sweep selection metric differs from the opt-card")
+    trials = sweep.get("trials")
+    if not isinstance(trials, list) or len(trials) != ledger_info["declared"]:
+        raise Q15Error("DEV sweep must contain exactly the declared trial count")
+    planned_by_id = {
+        str(row["trial_id"]): row for row in ledger_info["planned"] if isinstance(row, Mapping)
+    }
+    categorical = bool(card_info["categorical"])
+    incumbent: dict[str, Any] | None = None
+    if categorical:
+        planned_identity: list[dict[str, str]] = []
+        for index, planned in enumerate(ledger_info["planned"]):
+            if not isinstance(planned, Mapping) or set(planned) != {"trial_id", "predicate_id", "direction"}:
+                raise Q15Error(
+                    f"categorical ledger planned_trials[{index}] must contain exactly "
+                    "trial_id, predicate_id, and direction"
+                )
+            predicate_id = str(planned.get("predicate_id") or "").strip()
+            direction = str(planned.get("direction") or "").strip().upper()
+            planned_identity.append({"predicate_id": predicate_id, "direction": direction})
+        if planned_identity != card_info["predicate_trials"]:
+            raise Q15Error("categorical ledger planned trials differ from the opt-card predicate surface")
+        incumbent = _validate_categorical_incumbent(
+            sweep.get("incumbent"),
+            base=path.parent,
+            window_start=start,
+            window_end=end,
+        )
+    observed: dict[str, dict[str, Any]] = {}
+    for index, raw in enumerate(trials):
+        if not isinstance(raw, Mapping):
+            raise Q15Error(f"DEV sweep trial[{index}] must be an object")
+        trial_id = str(raw.get("trial_id") or "")
+        if trial_id not in planned_by_id or trial_id in observed:
+            raise Q15Error(f"DEV sweep has undeclared or duplicate trial id: {trial_id!r}")
+        try:
+            metric_value = float(raw.get("metric_value"))
+        except (TypeError, ValueError) as exc:
+            raise Q15Error(f"DEV sweep trial {trial_id} metric_value is invalid") from exc
+        evidence_path, evidence_binding = _validate_binding(
+            raw.get("evidence"), f"DEV sweep trial {trial_id} evidence", base=path.parent
+        )
+        if categorical:
+            if not math.isfinite(metric_value):
+                raise Q15Error(f"categorical DEV sweep trial {trial_id} metric_value must be finite")
+            planned = planned_by_id[trial_id]
+            predicate_id = str(raw.get("predicate_id") or "").strip()
+            direction = str(raw.get("direction") or "").strip().upper()
+            if predicate_id != planned["predicate_id"] or direction != planned["direction"]:
+                raise Q15Error(f"categorical DEV sweep identity differs from planned trial {trial_id}")
+            assert incumbent is not None
+            third_metric_by_id = _validate_candidate_thirds(
+                raw.get("time_thirds"),
+                trial_id=trial_id,
+                expected_ids=set(incumbent["third_metric_by_id"]),
+            )
+            observed[trial_id] = {
+                "trial_id": trial_id,
+                "predicate_id": predicate_id,
+                "direction": direction,
+                "parameters": {"predicate_id": predicate_id, "direction": direction},
+                "metric_value": metric_value,
+                "fire_count": _nonnegative_int(
+                    raw.get("fire_count"), f"categorical DEV trial {trial_id} fire_count"
+                ),
+                "time_thirds": [
+                    {"id": third_id, "metric_value": third_metric_by_id[third_id]}
+                    for third_id in sorted(third_metric_by_id)
+                ],
+                "third_metric_by_id": third_metric_by_id,
+                "evidence": evidence_binding,
+                "evidence_path": evidence_path,
+            }
+        else:
+            parameters = raw.get("parameters")
+            planned_parameters = planned_by_id[trial_id].get("parameters")
+            if parameters != planned_parameters:
+                raise Q15Error(f"DEV sweep parameters differ from planned trial {trial_id}")
+            observed[trial_id] = {
+                "trial_id": trial_id,
+                "parameters": dict(parameters) if isinstance(parameters, Mapping) else parameters,
+                "metric_value": metric_value,
+                "evidence": evidence_binding,
+                "evidence_path": evidence_path,
+            }
+    if set(observed) != set(planned_by_id):
+        raise Q15Error("DEV sweep does not cover every declared trial")
+    selection = sweep.get("selection")
+    if not isinstance(selection, Mapping):
+        raise Q15Error("DEV sweep selection is missing")
+    chosen_id = str(selection.get("chosen_trial_id") or "")
+    if chosen_id not in observed:
+        raise Q15Error("DEV sweep chosen_trial_id is not a declared observed trial")
+    if categorical:
+        assert incumbent is not None
+        selection_result = _validate_categorical_selection(
+            observed,
+            card_info=card_info,
+            incumbent=incumbent,
+            chosen_id=chosen_id,
+        )
+    else:
+        selection_result = _validate_numeric_selection(
+            observed,
+            card_info=card_info,
+            chosen_id=chosen_id,
+        )
+    return {
+        "body": sweep,
+        "binding": _binding(path),
+        "window": {"kind": "DEV_IS", "start": start.isoformat(), "end": end.isoformat()},
+        "chosen_trial_id": chosen_id,
+        **selection_result,
         "ledger_trials": [
-            {key: value for key, value in observed[str(row["trial_id"])].items() if key != "evidence_path"}
+            {
+                key: value
+                for key, value in observed[str(row["trial_id"])].items()
+                if key not in {"evidence_path", "third_metric_by_id"}
+            }
             for row in ledger_info["planned"]
         ],
     }

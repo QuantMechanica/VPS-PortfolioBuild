@@ -17,6 +17,7 @@ import datetime as dt
 import hashlib
 import itertools
 import json
+import math
 import os
 import re
 import sqlite3
@@ -35,6 +36,9 @@ PLAN_SCHEMA = "qm.q14-admission-plan/v1"
 Q14_PAYLOAD_SCHEMA = "qm.q14-opt-admission/v1"
 RISK_FIXED = 1000.0
 RISK_PERCENT = 0.0
+PREDICATE_ABLATION_LEVER = "PREDICATE_ABLATION"
+CATEGORICAL_SURFACE_TYPE = "CATEGORICAL"
+PREDICATE_DIRECTIONS = {"BUY", "SELL"}
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm")) / "state" / "farm_state.sqlite"
@@ -169,10 +173,19 @@ def _validate_success_metric(raw: Any, lever: str) -> dict[str, Any]:
     if str(result.get("direction") or "").upper() != "MAXIMIZE":
         raise Q14Error(f"lever {lever} success metric must use direction=MAXIMIZE")
     result["direction"] = "MAXIMIZE"
+    if lever == PREDICATE_ABLATION_LEVER and "minimum_improvement" not in result:
+        raise Q14Error(f"lever {lever} minimum_improvement must be declared")
     try:
         result["minimum_improvement"] = float(result.get("minimum_improvement", 0.0))
     except (TypeError, ValueError) as exc:
         raise Q14Error(f"lever {lever} minimum_improvement must be numeric") from exc
+    if lever == PREDICATE_ABLATION_LEVER and (
+        not math.isfinite(result["minimum_improvement"])
+        or result["minimum_improvement"] < 0
+    ):
+        raise Q14Error(
+            f"lever {lever} minimum_improvement must be finite and non-negative"
+        )
     return result
 
 
@@ -204,7 +217,13 @@ def validate_program(config: Mapping[str, Any]) -> dict[str, Any]:
     levers_raw = config.get("levers")
     if not isinstance(levers_raw, Mapping) or not levers_raw:
         raise Q14Error("levers must be a non-empty object")
-    supported = {"EXIT_SURGERY", "VOL_REGIME_FILTER", "LOCKED_PORT", "MTF_ENTRY"}
+    supported = {
+        "EXIT_SURGERY",
+        "VOL_REGIME_FILTER",
+        "LOCKED_PORT",
+        "MTF_ENTRY",
+        PREDICATE_ABLATION_LEVER,
+    }
     levers: dict[str, dict[str, Any]] = {}
     for name, raw in levers_raw.items():
         lever = str(name).upper()
@@ -381,6 +400,57 @@ def _surface(entry: Mapping[str, Any], lever: str) -> tuple[dict[str, Any], list
     fixed = result.get("fixed_parameters", {})
     if not isinstance(parameters, list) or not isinstance(fixed, Mapping):
         raise Q14Error(f"{lever} parameter surface needs parameters list and fixed_parameters object")
+
+    surface_type = str(result.get("surface_type") or "NUMERIC").strip().upper()
+    if lever == PREDICATE_ABLATION_LEVER:
+        if surface_type != CATEGORICAL_SURFACE_TYPE:
+            raise Q14Error(
+                f"{PREDICATE_ABLATION_LEVER} requires surface_type={CATEGORICAL_SURFACE_TYPE}"
+            )
+        if parameters:
+            raise Q14Error(f"{PREDICATE_ABLATION_LEVER} categorical surface cannot declare numeric parameters")
+        minimum_fire_count = result.get("minimum_dev_fire_count")
+        if isinstance(minimum_fire_count, bool) or not isinstance(minimum_fire_count, int) or minimum_fire_count <= 0:
+            raise Q14Error(
+                f"{PREDICATE_ABLATION_LEVER} requires a positive integer minimum_dev_fire_count"
+            )
+        raw_trials = result.get("predicate_trials")
+        if not isinstance(raw_trials, list) or len(raw_trials) < 2:
+            raise Q14Error(f"{PREDICATE_ABLATION_LEVER} requires at least two predicate_trials")
+        normalized_trials: list[dict[str, str]] = []
+        seen_trials: set[tuple[str, str]] = set()
+        for index, raw_trial in enumerate(raw_trials):
+            if not isinstance(raw_trial, Mapping):
+                raise Q14Error(f"{PREDICATE_ABLATION_LEVER} predicate_trials[{index}] must be an object")
+            predicate_id = str(raw_trial.get("predicate_id") or "").strip()
+            direction = str(raw_trial.get("direction") or "").strip().upper()
+            if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", predicate_id):
+                raise Q14Error(
+                    f"{PREDICATE_ABLATION_LEVER} predicate_trials[{index}] has an invalid predicate_id"
+                )
+            if direction not in PREDICATE_DIRECTIONS:
+                raise Q14Error(
+                    f"{PREDICATE_ABLATION_LEVER} predicate_trials[{index}] direction must be BUY or SELL"
+                )
+            key = (predicate_id, direction)
+            if key in seen_trials:
+                raise Q14Error(
+                    f"{PREDICATE_ABLATION_LEVER} predicate_trials contains duplicate {predicate_id}/{direction}"
+                )
+            seen_trials.add(key)
+            normalized_trials.append({"predicate_id": predicate_id, "direction": direction})
+        result["surface_type"] = CATEGORICAL_SURFACE_TYPE
+        result["predicate_trials"] = normalized_trials
+        planned = [
+            {"trial_id": f"T{index:03d}", **trial}
+            for index, trial in enumerate(normalized_trials, 1)
+        ]
+        if len(planned) > 64:
+            raise Q14Error(f"{lever} surface declares too many trials: {len(planned)}")
+        return result, planned
+
+    if surface_type != "NUMERIC":
+        raise Q14Error(f"{lever} does not support surface_type={surface_type or '<empty>'}")
     names: set[str] = set()
     value_axes: list[tuple[str, list[Any]]] = []
     for index, parameter in enumerate(parameters):
@@ -437,6 +507,8 @@ def _eligibility(row: Q10Row, lever: str, definition: Mapping[str, Any], entry: 
         return True, "LOCKED_PORT_CARRIER_LIST_FROZEN"
     if row.trades is None or row.drawdown_pct is None:
         return False, "Q10_METRICS_MISSING"
+    if lever == PREDICATE_ABLATION_LEVER:
+        return True, "PREDICATE_ABLATION_Q10_PASS"
     if lever == "EXIT_SURGERY":
         minimum = int(definition["min_trades"])
         if row.trades < minimum:
