@@ -150,11 +150,20 @@ waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-13 | Initial scaffold from approved card | Build pending |
+| v2 | 2026-08-13 | Implemented locked WTI carrier and monthly lifecycle | Strict compile, deploy, and reference checks pass |
 
 ## 12. Q01 Status
 
-PENDING BUILD.
+PASS. The registered one-slot EA implements the exact synchronized two-block
+smooth-volatility-beta estimator, block-local inverse-volatility weights,
+fixed jump zeroing, restart-safe monthly attempt state, one-position lifecycle,
+frozen hard stop, and fixed-risk contract. Strict compile passed with zero
+errors and zero warnings; the target build check passed with zero failures and
+zero warnings; six independent formula, direction, support, denominator,
+jump, chronology, count, and freshness tests passed; all T1-T10 research
+factory binary hashes match; and P1 artifact validation found the compiled
+`.ex5`.
 
 ## 13. Q02 Handoff
 
-NOT ENQUEUED.
+NOT ENQUEUED. Q02 requires Q01 PASS plus a fresh paced-factory capacity check.

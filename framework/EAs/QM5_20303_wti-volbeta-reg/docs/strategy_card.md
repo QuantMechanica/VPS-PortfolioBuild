@@ -337,3 +337,4 @@ portfolio admission; or a correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-13 | APPROVED; R1-R4 PASS | `decisions/2026-08-13_qm5_20303_wti_volbeta_reg_g0.md`; bounded source packet |
 | Q01 Build Validation | 2026-08-13 | PASS; strict compile 0 errors/0 warnings, build check 0 failures/0 warnings, 6 reference tests PASS, deploy verification PASS, P1 PASS | `D:/QM/reports/compile/20260813_094101/summary.csv`; `D:/QM/reports/framework/21/build_check_20260813_094101.json`; `D:/QM/reports/pipeline/QM5_20303/P1/P1_QM5_20303_result.json` |
+
