@@ -93,10 +93,16 @@ def main() -> int:
         print(f'verifier table updated: chart09 {m.group(2)[:12]}... -> {after[:12]}...')
 
     # Prove the chain: the verifier must now pass in recovery mode.
+    # Drop PSModulePath from the child env: when this script is invoked from a
+    # Git-Bash `!` chain, an inherited PSModulePath can hide the PS5.1 module
+    # dirs and Get-FileHash stops resolving (observed 2026-08-13). With the
+    # variable absent, PowerShell 5.1 reconstructs its own default path.
+    child_env = {k: v for k, v in __import__('os').environ.items()
+                 if k.upper() != 'PSMODULEPATH'}
     proc = subprocess.run(
         [PS51, '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
          '-File', str(VERIFIER), '-VerifyOnly'],
-        capture_output=True, text=True, timeout=120)
+        capture_output=True, text=True, timeout=120, env=child_env)
     print(proc.stdout.strip())
     if proc.stderr.strip():
         print(proc.stderr.strip())
