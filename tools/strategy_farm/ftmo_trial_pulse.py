@@ -31,9 +31,17 @@ STATE_JSON = Path(r"D:\QM\reports\state\ftmo_trial_pulse.json")
 STATE_LOG = Path(r"D:\QM\reports\state\ftmo_trial_pulse.log")
 MAINTENANCE_FLAG = Path(r"D:\QM\reports\state\LIVE_UPTIME_MAINTENANCE.flag")
 
-# OWNER state contract (2026-07-26). This is deliberately baked into the
-# existing pulse rather than hidden in a second, potentially stale flag file.
-EXPECTED_STATE = "PARKED"
+# OWNER state contract. Deliberately baked into the existing pulse rather than
+# hidden in a second, potentially stale flag file.
+#
+# 2026-08-13 (OWNER, chat): "da haben wir ja am Wochenende ein Demokonto
+# gestartet, das lassen wir einfach laufen" -- supersedes the 2026-07-26 PARKED
+# contract. The demo runs; the terminal being up with QM trading is the
+# expected state, not an alarm. Review date kept at 2026-08-25 so the contract
+# forces a fresh OWNER decision then. NOTE: no signed deploy manifest exists
+# for the demo book; EXPECTED_MAGICS below pins the single magic OWNER
+# ratified by keeping it running. Anything else appearing is still an anomaly.
+EXPECTED_STATE = "RUNNING"
 EXPECTED_STATE_REVIEW_EXPIRES_UTC = "2026-08-25T00:00:00Z"
 
 BASE_EQUITY = 100_000.0
@@ -64,9 +72,13 @@ EQUITY_SNAPSHOT_STALE_MINUTES = 180
 # inert: if present it is reported as an ignored no-op (see main()).
 LEGACY_ARM_FLAG = Path(r"D:\QM\reports\state\FTMO_DD_FLOOR_ARMED.flag")
 
+# 2026-08-13: replaced the stale r25-book set (12 magics, never deployed to
+# this terminal) with the demo state OWNER ratified today. 107060001 =
+# QM5_10706 / GBPUSD slot 1, the position observed open when OWNER confirmed
+# the demo keeps running. A magic outside this set is still reported missing/
+# unexpected -- the guard against silent scope growth stays armed.
 EXPECTED_MAGICS = {
-    114760002, 109110003, 129580000, 106920005, 108480002, 107000003,
-    102860036, 104400003, 101630000, 108470001, 129900001, 124750003,
+    107060001,
 }
 SERVER_REQUEST_EVENTS = {"TM_OPEN", "TM_CLOSE", "TM_MODIFY", "TM_REMOVE_PENDING"}
 

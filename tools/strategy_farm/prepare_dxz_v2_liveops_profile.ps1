@@ -154,6 +154,11 @@ try {
     Write-Host "CREATED+VERIFIED: $operationalName"
     exit 0
 } catch {
-    Write-Error "DXZ LiveOps profile preparation failed: $($_.Exception.Message)"
+    # PS5.1 trap: with $ErrorActionPreference='Stop', Write-Error itself throws,
+    # so the documented `exit 2` was never reached and callers observed exit 1
+    # (live_launcher_events.jsonl recorded verifier_exit_code=1 on 2026-08-12/13).
+    # Host output keeps the message visible without re-throwing.
+    $ErrorActionPreference = 'Continue'
+    Write-Host "DXZ LiveOps profile preparation failed: $($_.Exception.Message)"
     exit 2
 }
