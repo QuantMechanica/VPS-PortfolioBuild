@@ -1,0 +1,34 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20304
+; ea_slug:      wti-jumpbeta-reg
+; ea_version:   v5.0
+; set_version:  s20260813-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   65b40c1c03895b2d35757621694e3f40b69e7cbe767f7a5f58a6eb94e2402301
+; author:       Development
+; date:         2026-08-13
+;==========================================================
+qm_ea_id=20304
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-jumpbeta-reg_card.md
+strategy_returns_per_block=252
+strategy_recent_block_offset=252
+strategy_history_bars_d1=505
+strategy_jump_z=2.0
+strategy_min_jump_days=6
+strategy_max_endpoint_gap_days=10
+strategy_beta_tolerance=1.0e-12
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=40
+strategy_max_spread_points=1500

@@ -15968,3 +15968,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20301,wti-es-regime,0,XTIUSD.DWX,203010000,2026-08-13,Research+Development,active
 20302,wti-aliq-regime,0,XTIUSD.DWX,203020000,2026-08-13,Research+Development,active
 20303,wti-volbeta-reg,0,XTIUSD.DWX,203030000,2026-08-13,Research+Development,active
+20304,wti-jumpbeta-reg,0,XTIUSD.DWX,203040000,2026-08-13,Research+Development,active
