@@ -53,9 +53,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01_PASS
+pipeline_phase: Q02_ENQUEUED
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 review_focus: "Falsify an outright WTI monthly uncertainty premium whose two disjoint own-history realized-VoV blocks differ from paired energy/metal VoV ranks, raw-volatility fades, return trend/reversal, calendar, variance-ratio, event, and XNG RSI logic; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -299,11 +299,12 @@ correlation waivers.
 |---|---|---|---|---|
 | v1 | 2026-08-13 | initial source-bounded WTI self-relative realized-VoV regime | G0 | APPROVED; build pending |
 | v1-q01 | 2026-08-13 | deterministic V5 build, strict compile, target guardrails, independent VoV vectors, and P1 artifact validation | Q01 | PASS |
+| v1-q02 | 2026-08-13 | target-only paced queue handoff after duplicate and factory-capacity checks | Q02 | ENQUEUED; pending |
 
 ## Pipeline Phase Status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-13 | APPROVED; R1-R4 PASS | `decisions/2026-08-13_qm5_20298_wti_vov_regime_g0.md`; bounded source packet |
-| Q01 Build Validation | 2026-08-13 | PASS; strict compile 0 errors/0 warnings, build check 0 failures/0 warnings, 6 reference tests PASS, P1 PASS | `D:/QM/reports/compile/20260813_024519/summary.csv`; `D:/QM/reports/framework/21/build_check_20260813_024519.json`; `D:/QM/reports/pipeline/QM5_20298/P1/P1_QM5_20298_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q01 Build Validation | 2026-08-13 | PASS; strict compile 0 errors/0 warnings, build check 0 failures/0 warnings, 6 reference tests PASS, P1 PASS | `D:/QM/reports/compile/20260813_024446/summary.csv`; `D:/QM/reports/framework/21/build_check_20260813_024519.json`; `D:/QM/reports/pipeline/QM5_20298/P1/P1_QM5_20298_result.json` |
+| Q02 Baseline Screening | 2026-08-13 | ENQUEUED; pending, attempt 0, unclaimed | work item `16e088fa-2b19-49d8-b0c2-027e94ddfa50`; `docs/ops/evidence/2026-08-13_qm5_20298_wti_vov_regime_q01_q02_enqueue.md` |

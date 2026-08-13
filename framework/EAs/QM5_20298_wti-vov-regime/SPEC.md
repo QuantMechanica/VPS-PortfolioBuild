@@ -138,6 +138,7 @@ waiver is authorized.
 | v1 | 2026-08-13 | Initial scaffold from approved card | Build pending |
 | v2 | 2026-08-13 | Implemented locked statistic and monthly lifecycle | Strict compile and reference checks pass |
 | v3 | 2026-08-13 | Completed target Q01 validation | Build check and P1 PASS |
+| v4 | 2026-08-13 | Completed paced target-only Q02 handoff | One pending work item; no dispatch or backtest run |
 
 ## 12. Q01 Status
 
@@ -151,4 +152,10 @@ compiled `.ex5`.
 
 ## 13. Q02 Handoff
 
-NOT ENQUEUED.
+ENQUEUED. The pre-apply duplicate read returned zero rows, the target-only dry
+run selected exactly one fresh Q02 row, and all path-anchored capacity samples
+remained below the seven-terminal CPU ceiling. Work item
+`16e088fa-2b19-49d8-b0c2-027e94ddfa50` was pending at immediate readback,
+attempt 0 and unclaimed. No dispatch tick or manual backtest was run; durable
+details are in
+`docs/ops/evidence/2026-08-13_qm5_20298_wti_vov_regime_q01_q02_enqueue.md`.
