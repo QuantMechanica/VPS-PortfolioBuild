@@ -1,0 +1,134 @@
+{
+  "artifact_type": "fx_cointegration_frontier_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-13T05:03:32Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "db634897fe1bcf0ed0ad6fb9cad8a683d60241d8",
+  "mission_outcome": "STOPPED_AT_PACED_BACKTEST_CPU_CEILING",
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "frontier_reconciliation": {
+    "coverage_source_commit": "a80493291",
+    "scan_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "scan_script_sha256": "870e3c67d7c05a75f62ab9e89d421dd94d337288f5c623395cafcf03300433d6",
+    "scan_mode": "--include-negative-hedges",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "latest_exact_identity_summary": {
+      "done_pass": 54,
+      "done_fail": 10,
+      "failed_infra_fail": 1,
+      "pending": 1
+    },
+    "new_card_or_ea_would_duplicate_existing_relationship": true,
+    "material_delta_since_2026-08-13T03:08:01Z": {
+      "scan_rank": 65,
+      "pair": [
+        "USDCHF.DWX",
+        "AUDUSD.DWX"
+      ],
+      "ea_id": "QM5_1156",
+      "logical_symbol": "QM5_1156_USDCHF_AUDUSD_COINTEGRATION_M30",
+      "work_item_id": "415cd6d3-560c-46d8-a9f9-ee4a5b399100",
+      "prior_status": "pending",
+      "current_status": "done",
+      "current_verdict": "FAIL",
+      "updated_at_utc": "2026-08-13T03:47:37Z"
+    }
+  },
+  "selected_existing_pair": {
+    "selection_reason": "No unbuilt relationship remains; rank 58 is the sole frozen-scan relationship without a terminal exact logical Q02 verdict.",
+    "scan_rank": 58,
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "ea_id": "QM5_1257",
+    "pair_slot": 8,
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "source": {
+      "citation": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+      "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1257_lemishko-fx-cointpair.md",
+      "approved_card_sha256": "d1c36d0c6c13647eded8bd7ae4cb8424d8746b51d703d2854900c5094b440dd9",
+      "g0_status": "APPROVED",
+      "r1_track_record": "PASS",
+      "r2_mechanical": "PASS",
+      "r3_data_available": "PASS",
+      "r4_ml_forbidden": "PASS"
+    },
+    "basket_manifest": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json",
+    "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+    "fixed_risk_setfile": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "q02": {
+      "task_id": "39ee6910-5d04-4087-83b0-65a6fd6b22f9",
+      "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+      "status": "pending",
+      "attempt_count": 0,
+      "claimed_by": null,
+      "last_observed_updated_at_utc": "2026-08-12T22:50:25Z",
+      "duplicate_enqueue_performed": false
+    }
+  },
+  "capacity_sample": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-13T05:03:32Z",
+    "paced_launch_gate_max": 1,
+    "running_factory_terminal_count": 5,
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T9",
+      "T10"
+    ],
+    "running_factory_work_items": [
+      "45d8e81e-b5ab-46f1-b4fe-bcfa547bf8db",
+      "508692f2-969c-425d-90b4-5377a244bdf7",
+      "fbe16151-4f78-446d-a61f-a399f1c6659a",
+      "9955db14-9eba-49e5-bc0c-2e4dbdb38335",
+      "cb6cf70b-1662-42ae-a923-08732974fb78"
+    ],
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ],
+    "ceiling_binding": true
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "basket_manifest_mutation": false,
+    "q02_enqueue_or_requeue": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "All 66 relationships are covered, rank 58 already has one exact pending Q02 row, and five running factory terminals exceed the paced ceiling of one."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
