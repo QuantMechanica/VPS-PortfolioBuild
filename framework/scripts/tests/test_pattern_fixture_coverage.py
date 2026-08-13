@@ -101,9 +101,15 @@ def test_no_fixture_relies_on_exact_float_equality():
     """Double arithmetic makes equality unreliable.
 
     100.2 - 100.0 is 0.19999999999999574, not 0.2. A boundary fixture placed
-    exactly on a threshold would pass or fail on rounding rather than on the
-    rule, so every fixture must clear its threshold by a visible margin. The
-    rationale must say which side it sits on.
+    exactly on a COMPUTED threshold would pass or fail on rounding rather than
+    on the rule, so it must clear that threshold by a visible margin and say
+    which side it sits on.
+
+    Exact equality IS admissible in one case: when the predicate compares two
+    values that both come straight from the fixture with no arithmetic between
+    them (e.g. GAP_UP's open[0] > high[1]). There the equality is deterministic
+    and is precisely the boundary worth testing, because it is what proves the
+    comparison is strict. Those fixtures say "equal" or "touching" instead.
     """
     offenders = []
     for fx in FIXTURES:
@@ -111,7 +117,8 @@ def test_no_fixture_relies_on_exact_float_equality():
             continue
         text = fx["rationale"].lower()
         if not any(w in text for w in ("inside", "outside", "above", "below",
-                                       "under", "over", "within", "beyond")):
+                                       "under", "over", "within", "beyond",
+                                       "equal", "touching", "exact")):
             offenders.append(fx["id"])
     assert not offenders, (
         "every boundary fixture's rationale must state which side of the "

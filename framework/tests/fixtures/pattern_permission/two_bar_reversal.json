@@ -1,0 +1,558 @@
+{
+  "group": "two_bar_reversal",
+  "author": "two_bar_reversal",
+  "note": "bars[0] is the reference (most recently closed) bar; index increases going back in time. Bars are [open, high, low, close, tick_volume]. Engulfing/harami/piercing/dark-cloud read only bars 0 and 1; the third bar is padded by default_filler_series and is inert for those. Tweezers read bar 2, so bar 2 is always supplied explicitly.",
+  "default_filler_series": [
+    [100.0, 100.6, 99.4, 100.1, 4000],
+    [100.1, 100.7, 99.5, 99.9, 4200]
+  ],
+  "fixtures": [
+    {
+      "id": "ENGULFING_BULL_positive_canonical",
+      "predicate": "QM_PP_ENGULFING_BULL",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Bullish engulfing: the OLDER bar (bar 1) is bearish, body 101->99; the reference bar (bar 0) is bullish and its body 98.5->101.5 completely swallows the prior body. close0=101.5 sits above open1=101 and open0=98.5 sits below close1=99, so buyers reversed and overwhelmed the prior sellers.",
+      "bars": [[98.5, 101.6, 98.4, 101.5, 5000], [101.0, 101.2, 98.8, 99.0, 4000]]
+    },
+    {
+      "id": "ENGULFING_BULL_negative_prior_not_bearish",
+      "predicate": "QM_PP_ENGULFING_BULL",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar 0 engulfs the prior body, but the OLDER bar (bar 1) is bullish (99->101), not bearish. A bullish engulfing must reverse a down-candle; engulfing another up-candle is a continuation, not a reversal, so this is not the pattern.",
+      "bars": [[98.5, 101.6, 98.4, 101.5, 5000], [99.0, 101.2, 98.8, 101.0, 4000]]
+    },
+    {
+      "id": "ENGULFING_BULL_negative_reference_bearish",
+      "predicate": "QM_PP_ENGULFING_BULL",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The prior bar is bearish, but the reference bar (bar 0) is itself bearish (101.5->98.5). A bullish engulfing requires the reference candle to be up; a down reference candle cannot signal a bullish reversal.",
+      "bars": [[101.5, 101.6, 98.4, 98.5, 5000], [101.0, 101.2, 98.8, 99.0, 4000]]
+    },
+    {
+      "id": "ENGULFING_BULL_negative_does_not_engulf",
+      "predicate": "QM_PP_ENGULFING_BULL",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar 1 bearish, bar 0 bullish, but bar 0's body top close0=100.5 does not reach above the prior body top open1=101, so the reference body only partially covers the prior body. Not an engulfing.",
+      "bars": [[98.5, 100.6, 98.4, 100.5, 5000], [101.0, 101.2, 98.8, 99.0, 4000]]
+    },
+    {
+      "id": "ENGULFING_BULL_boundary_top_inside",
+      "predicate": "QM_PP_ENGULFING_BULL",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the close0 >= open1 clause. open1=101, close0=101.3 is inside (above) the engulf-top threshold. open0=98.5 <= close1=99 stays valid so only the top condition is under test.",
+      "bars": [[98.5, 101.4, 98.4, 101.3, 5000], [101.0, 101.2, 98.8, 99.0, 4000]]
+    },
+    {
+      "id": "ENGULFING_BULL_boundary_top_outside",
+      "predicate": "QM_PP_ENGULFING_BULL",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same window with close0=100.7, outside (below) the engulf-top threshold open1=101. Only this one value changed from the inside case, so a failure isolates the close0 >= open1 clause.",
+      "bars": [[98.5, 101.0, 98.4, 100.7, 5000], [101.0, 101.2, 98.8, 99.0, 4000]]
+    },
+    {
+      "id": "ENGULFING_BULL_boundary_bottom_inside",
+      "predicate": "QM_PP_ENGULFING_BULL",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the open0 <= close1 clause. close1=99, open0=98.7 is inside (below) the engulf-bottom threshold. close0=101.5 >= open1=101 stays valid so only the bottom condition is under test.",
+      "bars": [[98.7, 101.6, 98.4, 101.5, 5000], [101.0, 101.2, 98.8, 99.0, 4000]]
+    },
+    {
+      "id": "ENGULFING_BULL_boundary_bottom_outside",
+      "predicate": "QM_PP_ENGULFING_BULL",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same window with open0=99.3, outside (above) the engulf-bottom threshold close1=99. The single changed value isolates the open0 <= close1 clause.",
+      "bars": [[99.3, 101.6, 98.4, 101.5, 5000], [101.0, 101.2, 98.8, 99.0, 4000]]
+    },
+
+    {
+      "id": "ENGULFING_BEAR_positive_canonical",
+      "predicate": "QM_PP_ENGULFING_BEAR",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Bearish engulfing: the OLDER bar (bar 1) is bullish, body 99->101; the reference bar (bar 0) is bearish, body 101.5->98.5, swallowing the prior body. open0=101.5 >= close1=101 and close0=98.5 <= open1=99, so sellers reversed and overwhelmed the prior buyers.",
+      "bars": [[101.5, 101.6, 98.4, 98.5, 5000], [99.0, 101.2, 98.8, 101.0, 4000]]
+    },
+    {
+      "id": "ENGULFING_BEAR_negative_prior_not_bullish",
+      "predicate": "QM_PP_ENGULFING_BEAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar 0 engulfs the prior body, but the OLDER bar (bar 1) is bearish (101->99), not bullish. A bearish engulfing must reverse an up-candle; engulfing another down-candle is a continuation.",
+      "bars": [[101.5, 101.6, 98.4, 98.5, 5000], [101.0, 101.2, 98.8, 99.0, 4000]]
+    },
+    {
+      "id": "ENGULFING_BEAR_negative_reference_bullish",
+      "predicate": "QM_PP_ENGULFING_BEAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The prior bar is bullish, but the reference bar (bar 0) is itself bullish (98.5->101.5). A bearish engulfing requires the reference candle to be down.",
+      "bars": [[98.5, 101.6, 98.4, 101.5, 5000], [99.0, 101.2, 98.8, 101.0, 4000]]
+    },
+    {
+      "id": "ENGULFING_BEAR_negative_does_not_engulf",
+      "predicate": "QM_PP_ENGULFING_BEAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar 1 bullish, bar 0 bearish, but bar 0's body top open0=100.5 does not reach above the prior body top close1=101, so the reference body only partially covers the prior body. Not an engulfing.",
+      "bars": [[100.5, 101.6, 98.4, 98.5, 5000], [99.0, 101.2, 98.8, 101.0, 4000]]
+    },
+    {
+      "id": "ENGULFING_BEAR_boundary_top_inside",
+      "predicate": "QM_PP_ENGULFING_BEAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the open0 >= close1 clause. close1=101, open0=101.3 is inside (above) the engulf-top threshold. close0=98.5 <= open1=99 stays valid.",
+      "bars": [[101.3, 101.6, 98.4, 98.5, 5000], [99.0, 101.2, 98.8, 101.0, 4000]]
+    },
+    {
+      "id": "ENGULFING_BEAR_boundary_top_outside",
+      "predicate": "QM_PP_ENGULFING_BEAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same window with open0=100.7, outside (below) the engulf-top threshold close1=101. The single changed value isolates the open0 >= close1 clause.",
+      "bars": [[100.7, 101.6, 98.4, 98.5, 5000], [99.0, 101.2, 98.8, 101.0, 4000]]
+    },
+    {
+      "id": "ENGULFING_BEAR_boundary_bottom_inside",
+      "predicate": "QM_PP_ENGULFING_BEAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the close0 <= open1 clause. open1=99, close0=98.7 is inside (below) the engulf-bottom threshold. open0=101.5 >= close1=101 stays valid.",
+      "bars": [[101.5, 101.6, 98.4, 98.7, 5000], [99.0, 101.2, 98.8, 101.0, 4000]]
+    },
+    {
+      "id": "ENGULFING_BEAR_boundary_bottom_outside",
+      "predicate": "QM_PP_ENGULFING_BEAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same window with close0=99.3, outside (above) the engulf-bottom threshold open1=99. The single changed value isolates the close0 <= open1 clause.",
+      "bars": [[101.5, 101.6, 98.4, 99.3, 5000], [99.0, 101.2, 98.8, 101.0, 4000]]
+    },
+
+    {
+      "id": "HARAMI_BULL_positive_canonical",
+      "predicate": "QM_PP_HARAMI_BULL",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Bullish harami: a large bearish OLDER bar (body 102->98, size 4) followed by a small bullish reference bar (body 99->101, size 2) whose body sits entirely inside the prior body. close0=101 <= open1=102, open0=99 >= close1=98, and the prior body 4 is larger than the reference body 2. This is the inverse of engulfing.",
+      "bars": [[99.0, 101.2, 98.8, 101.0, 5000], [102.0, 102.2, 97.8, 98.0, 4000]]
+    },
+    {
+      "id": "HARAMI_BULL_negative_prior_not_bearish",
+      "predicate": "QM_PP_HARAMI_BULL",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The small reference body is contained, but the OLDER bar (bar 1) is bullish (98->102), not bearish. A bullish harami must follow a down-candle to signal a stall of the decline.",
+      "bars": [[99.0, 101.2, 98.8, 101.0, 5000], [98.0, 102.2, 97.8, 102.0, 4000]]
+    },
+    {
+      "id": "HARAMI_BULL_negative_not_contained",
+      "predicate": "QM_PP_HARAMI_BULL",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar 1 bearish, bar 0 bullish, but the reference body top close0=102.5 protrudes above the prior body top open1=102, so the reference candle is not contained inside the prior body. That is engulfing-direction, not harami.",
+      "bars": [[99.0, 102.6, 98.8, 102.5, 5000], [102.0, 102.2, 97.8, 98.0, 4000]]
+    },
+    {
+      "id": "HARAMI_BULL_negative_bodies_equal",
+      "predicate": "QM_PP_HARAMI_BULL",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Reference body exactly fills the prior body (open0=99=close1, close0=101=open1, both bodies size 2). A harami requires the second body to be smaller than the first (an inside body); two equal bodies is not a harami. body1 > body0 is false.",
+      "bars": [[99.0, 101.2, 98.8, 101.0, 5000], [101.0, 101.5, 98.5, 99.0, 4000]]
+    },
+    {
+      "id": "HARAMI_BULL_boundary_top_inside",
+      "predicate": "QM_PP_HARAMI_BULL",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the close0 <= open1 containment clause. open1=102, close0=101.5 is inside (below) the containment ceiling. open0=99 >= close1=98 and prior body 4 > reference body 2.5 stay valid.",
+      "bars": [[99.0, 101.7, 98.8, 101.5, 5000], [102.0, 102.2, 97.8, 98.0, 4000]]
+    },
+    {
+      "id": "HARAMI_BULL_boundary_top_outside",
+      "predicate": "QM_PP_HARAMI_BULL",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same window with close0=102.4, outside (above) the containment ceiling open1=102. Prior body 4 > reference body 3.4 still holds so the single changed value isolates the close0 <= open1 clause.",
+      "bars": [[99.0, 102.6, 98.8, 102.4, 5000], [102.0, 102.2, 97.8, 98.0, 4000]]
+    },
+    {
+      "id": "HARAMI_BULL_boundary_bottom_inside",
+      "predicate": "QM_PP_HARAMI_BULL",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the open0 >= close1 containment clause. close1=98, open0=98.3 is inside (above) the containment floor. close0=101 <= open1=102 stays valid.",
+      "bars": [[98.3, 101.2, 98.1, 101.0, 5000], [102.0, 102.2, 97.8, 98.0, 4000]]
+    },
+    {
+      "id": "HARAMI_BULL_boundary_bottom_outside",
+      "predicate": "QM_PP_HARAMI_BULL",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same window with open0=97.6, outside (below) the containment floor close1=98. The single changed value isolates the open0 >= close1 clause.",
+      "bars": [[97.6, 101.2, 97.4, 101.0, 5000], [102.0, 102.2, 97.8, 98.0, 4000]]
+    },
+
+    {
+      "id": "HARAMI_BEAR_positive_canonical",
+      "predicate": "QM_PP_HARAMI_BEAR",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Bearish harami: a large bullish OLDER bar (body 98->102, size 4) followed by a small bearish reference bar (body 101->99, size 2) contained inside the prior body. open0=101 <= close1=102, close0=99 >= open1=98, and prior body 4 > reference body 2.",
+      "bars": [[101.0, 101.2, 98.8, 99.0, 5000], [98.0, 102.2, 97.8, 102.0, 4000]]
+    },
+    {
+      "id": "HARAMI_BEAR_negative_prior_not_bullish",
+      "predicate": "QM_PP_HARAMI_BEAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The small reference body is contained, but the OLDER bar (bar 1) is bearish (102->98), not bullish. A bearish harami must follow an up-candle to signal a stall of the advance.",
+      "bars": [[101.0, 101.2, 98.8, 99.0, 5000], [102.0, 102.2, 97.8, 98.0, 4000]]
+    },
+    {
+      "id": "HARAMI_BEAR_negative_not_contained",
+      "predicate": "QM_PP_HARAMI_BEAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar 1 bullish, bar 0 bearish, but the reference body top open0=102.5 protrudes above the prior body top close1=102, so the reference candle is not contained. That is engulfing-direction, not harami.",
+      "bars": [[102.5, 102.7, 98.8, 99.0, 5000], [98.0, 102.2, 97.8, 102.0, 4000]]
+    },
+    {
+      "id": "HARAMI_BEAR_negative_bodies_equal",
+      "predicate": "QM_PP_HARAMI_BEAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Reference body exactly fills the prior body (open0=101=close1, close0=99=open1, both size 2). A harami requires the second body to be strictly smaller (inside); equal bodies fail body1 > body0.",
+      "bars": [[101.0, 101.2, 98.8, 99.0, 5000], [99.0, 101.5, 98.5, 101.0, 4000]]
+    },
+    {
+      "id": "HARAMI_BEAR_boundary_top_inside",
+      "predicate": "QM_PP_HARAMI_BEAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the open0 <= close1 containment clause. close1=102, open0=101.5 is inside (below) the containment ceiling. close0=99 >= open1=98 and prior body 4 > reference body stay valid.",
+      "bars": [[101.5, 101.7, 98.8, 99.0, 5000], [98.0, 102.2, 97.8, 102.0, 4000]]
+    },
+    {
+      "id": "HARAMI_BEAR_boundary_top_outside",
+      "predicate": "QM_PP_HARAMI_BEAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same window with open0=102.4, outside (above) the containment ceiling close1=102. The single changed value isolates the open0 <= close1 clause.",
+      "bars": [[102.4, 102.6, 98.8, 99.0, 5000], [98.0, 102.2, 97.8, 102.0, 4000]]
+    },
+    {
+      "id": "HARAMI_BEAR_boundary_bottom_inside",
+      "predicate": "QM_PP_HARAMI_BEAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the close0 >= open1 containment clause. open1=98, close0=98.3 is inside (above) the containment floor. open0=101 <= close1=102 stays valid.",
+      "bars": [[101.0, 101.2, 98.1, 98.3, 5000], [98.0, 102.2, 97.8, 102.0, 4000]]
+    },
+    {
+      "id": "HARAMI_BEAR_boundary_bottom_outside",
+      "predicate": "QM_PP_HARAMI_BEAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same window with close0=97.6, outside (below) the containment floor open1=98. The single changed value isolates the close0 >= open1 clause.",
+      "bars": [[101.0, 101.2, 97.4, 97.6, 5000], [98.0, 102.2, 97.8, 102.0, 4000]]
+    },
+
+    {
+      "id": "PIERCING_LINE_positive_canonical",
+      "predicate": "QM_PP_PIERCING_LINE",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Piercing line: OLDER bar bearish (open1=104, close1=100, low1=99.5). Reference bar gaps down to open0=99 below the prior low, then rallies to close0=103, which is above the prior body midpoint (104+100)/2=102 but below the prior open 104. Buyers reclaimed more than half the prior real body.",
+      "bars": [[99.0, 103.2, 98.8, 103.0, 5000], [104.0, 104.2, 99.5, 100.0, 4000]]
+    },
+    {
+      "id": "PIERCING_LINE_negative_prior_not_bearish",
+      "predicate": "QM_PP_PIERCING_LINE",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Geometry otherwise fits, but the OLDER bar (bar 1) is bullish (100->104), not bearish. A piercing line must pierce back into a prior DOWN candle to be a bullish reversal.",
+      "bars": [[99.0, 103.2, 98.8, 103.0, 5000], [100.0, 104.2, 99.5, 104.0, 4000]]
+    },
+    {
+      "id": "PIERCING_LINE_negative_no_gap_down",
+      "predicate": "QM_PP_PIERCING_LINE",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Prior bar bearish and close pierces the midpoint, but the reference bar opens at 100, NOT below the prior low 99.5. A piercing line requires the open to gap below the prior low; without that gap it is just an inside-range rally.",
+      "bars": [[100.0, 103.2, 99.8, 103.0, 5000], [104.0, 104.2, 99.5, 100.0, 4000]]
+    },
+    {
+      "id": "PIERCING_LINE_negative_body_midpoint_not_range_midpoint",
+      "predicate": "QM_PP_PIERCING_LINE",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Distinguishes body-midpoint from range-midpoint. Prior bar open1=104, close1=101, high1=104.5, low1=99: body midpoint=(104+101)/2=102.5, range midpoint=(104.5+99)/2=101.75. Reference close0=102.0 is above the range midpoint (would pass a range-mid reading) but below the body midpoint, so it does NOT pierce half the real body. Piercing is defined on the body, so this is not the pattern.",
+      "bars": [[98.5, 102.2, 98.4, 102.0, 5000], [104.0, 104.5, 99.0, 101.0, 4000]]
+    },
+    {
+      "id": "PIERCING_LINE_negative_closes_above_prior_open",
+      "predicate": "QM_PP_PIERCING_LINE",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Reference close0=104.5 finishes above the prior open 104, fully covering the prior body. That is a bullish engulfing (close beyond the body top), not a piercing line, which by definition stops short of the prior open.",
+      "bars": [[99.0, 104.6, 98.8, 104.5, 5000], [104.0, 104.2, 99.5, 100.0, 4000]]
+    },
+    {
+      "id": "PIERCING_LINE_boundary_midpoint_inside",
+      "predicate": "QM_PP_PIERCING_LINE",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the close0 > Mid(b,1) clause. Prior body midpoint (104+100)/2=102; close0=102.6 is inside (above) it. open0=99 < low1=99.5 and close0 < open1=104 stay valid.",
+      "bars": [[99.0, 102.8, 98.8, 102.6, 5000], [104.0, 104.2, 99.5, 100.0, 4000]]
+    },
+    {
+      "id": "PIERCING_LINE_boundary_midpoint_outside",
+      "predicate": "QM_PP_PIERCING_LINE",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same window with close0=101.4, outside (below) the prior body midpoint 102. The reference fails to reclaim half the prior body; the single changed value isolates the close0 > Mid(b,1) clause.",
+      "bars": [[99.0, 101.6, 98.8, 101.4, 5000], [104.0, 104.2, 99.5, 100.0, 4000]]
+    },
+    {
+      "id": "PIERCING_LINE_boundary_gap_inside",
+      "predicate": "QM_PP_PIERCING_LINE",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the open0 < low1 gap clause. low1=99.5; open0=99.2 is inside (below) the gap threshold. close0=103 > Mid 102 and < open1 104 stay valid.",
+      "bars": [[99.2, 103.2, 99.0, 103.0, 5000], [104.0, 104.2, 99.5, 100.0, 4000]]
+    },
+    {
+      "id": "PIERCING_LINE_boundary_gap_outside",
+      "predicate": "QM_PP_PIERCING_LINE",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same window with open0=99.8, outside (above) the prior low 99.5, so there is no gap down. The single changed value isolates the open0 < low1 clause.",
+      "bars": [[99.8, 103.2, 99.6, 103.0, 5000], [104.0, 104.2, 99.5, 100.0, 4000]]
+    },
+
+    {
+      "id": "DARK_CLOUD_COVER_positive_canonical",
+      "predicate": "QM_PP_DARK_CLOUD_COVER",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Dark cloud cover: OLDER bar bullish (open1=100, close1=104, high1=104.5). Reference bar gaps up to open0=105 above the prior high, then sells off to close0=101, below the prior body midpoint (100+104)/2=102 but above the prior open 100. Sellers erased more than half the prior real body.",
+      "bars": [[105.0, 105.2, 100.8, 101.0, 5000], [100.0, 104.5, 99.8, 104.0, 4000]]
+    },
+    {
+      "id": "DARK_CLOUD_COVER_negative_prior_not_bullish",
+      "predicate": "QM_PP_DARK_CLOUD_COVER",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Geometry otherwise fits, but the OLDER bar (bar 1) is bearish (104->100), not bullish. A dark cloud cover must cap a prior UP candle to be a bearish reversal.",
+      "bars": [[105.0, 105.2, 100.8, 101.0, 5000], [104.0, 104.5, 99.8, 100.0, 4000]]
+    },
+    {
+      "id": "DARK_CLOUD_COVER_negative_no_gap_up",
+      "predicate": "QM_PP_DARK_CLOUD_COVER",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Prior bar bullish and close is below the midpoint, but the reference bar opens at 104, NOT above the prior high 104.5. Dark cloud cover requires the open to gap above the prior high; without that gap it is just an inside-range fade.",
+      "bars": [[104.0, 104.2, 100.8, 101.0, 5000], [100.0, 104.5, 99.8, 104.0, 4000]]
+    },
+    {
+      "id": "DARK_CLOUD_COVER_negative_body_midpoint_not_range_midpoint",
+      "predicate": "QM_PP_DARK_CLOUD_COVER",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Distinguishes body-midpoint from range-midpoint. Prior bar open1=100, close1=103, high1=105, low1=99.5: body midpoint=(100+103)/2=101.5, range midpoint=(105+99.5)/2=102.25. Reference close0=102.0 is below the range midpoint (would pass a range-mid reading) but above the body midpoint, so it does NOT erase half the real body. Dark cloud is defined on the body, so this is not the pattern.",
+      "bars": [[105.5, 105.7, 101.8, 102.0, 5000], [100.0, 105.0, 99.5, 103.0, 4000]]
+    },
+    {
+      "id": "DARK_CLOUD_COVER_negative_closes_below_prior_open",
+      "predicate": "QM_PP_DARK_CLOUD_COVER",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Reference close0=99.5 finishes below the prior open 100, fully covering the prior body. That is a bearish engulfing (close beyond the body bottom), not a dark cloud cover, which by definition stops short of the prior open.",
+      "bars": [[105.0, 105.2, 99.3, 99.5, 5000], [100.0, 104.5, 99.8, 104.0, 4000]]
+    },
+    {
+      "id": "DARK_CLOUD_COVER_boundary_midpoint_inside",
+      "predicate": "QM_PP_DARK_CLOUD_COVER",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the close0 < Mid(b,1) clause. Prior body midpoint (100+104)/2=102; close0=101.4 is inside (below) it. open0=105 > high1=104.5 and close0 > open1=100 stay valid.",
+      "bars": [[105.0, 105.2, 101.2, 101.4, 5000], [100.0, 104.5, 99.8, 104.0, 4000]]
+    },
+    {
+      "id": "DARK_CLOUD_COVER_boundary_midpoint_outside",
+      "predicate": "QM_PP_DARK_CLOUD_COVER",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same window with close0=102.6, outside (above) the prior body midpoint 102. The reference fails to erase half the prior body; the single changed value isolates the close0 < Mid(b,1) clause.",
+      "bars": [[105.0, 105.2, 102.4, 102.6, 5000], [100.0, 104.5, 99.8, 104.0, 4000]]
+    },
+    {
+      "id": "DARK_CLOUD_COVER_boundary_gap_inside",
+      "predicate": "QM_PP_DARK_CLOUD_COVER",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the open0 > high1 gap clause. high1=104.5; open0=104.8 is inside (above) the gap threshold. close0=101 < Mid 102 and > open1 100 stay valid.",
+      "bars": [[104.8, 105.0, 100.8, 101.0, 5000], [100.0, 104.5, 99.8, 104.0, 4000]]
+    },
+    {
+      "id": "DARK_CLOUD_COVER_boundary_gap_outside",
+      "predicate": "QM_PP_DARK_CLOUD_COVER",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same window with open0=104.2, outside (below) the prior high 104.5, so there is no gap up. The single changed value isolates the open0 > high1 clause.",
+      "bars": [[104.2, 104.4, 100.8, 101.0, 5000], [100.0, 104.5, 99.8, 104.0, 4000]]
+    },
+
+    {
+      "id": "TWEEZER_BOTTOM_positive_canonical",
+      "predicate": "QM_PP_TWEEZER_BOTTOM",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Tweezer bottom: after a higher-low bar 2 (low2=101), the two most recent bars print near-identical lows (low1=100.00, low0=100.02) that both undercut low2, testing and holding the same support twice. |low0-low1|=0.02 is a tiny fraction of the prior range 1.5.",
+      "bars": [[100.5, 101.0, 100.02, 100.8, 5000], [101.0, 101.5, 100.0, 100.5, 4000], [102.0, 102.5, 101.0, 101.5, 3000]]
+    },
+    {
+      "id": "TWEEZER_BOTTOM_negative_lows_not_matching",
+      "predicate": "QM_PP_TWEEZER_BOTTOM",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Both lows are below low2=101, but low0=100.5 and low1=100.0 differ by 0.5, far more than 5% of the prior range 1.5 (=0.075). The two bars do not test the same level, so there is no tweezer.",
+      "bars": [[100.6, 101.0, 100.5, 100.8, 5000], [101.0, 101.5, 100.0, 100.5, 4000], [102.0, 102.5, 101.0, 101.5, 3000]]
+    },
+    {
+      "id": "TWEEZER_BOTTOM_negative_not_below_prior_bar",
+      "predicate": "QM_PP_TWEEZER_BOTTOM",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The two recent lows match (100.00 and 100.02), but bar 2 already made a lower low (low2=99.5). A tweezer bottom marks a fresh double-tested support after a decline; here the pair sits above the preceding bar, so low0 < low2 and low1 < low2 both fail and it is not a bottom.",
+      "bars": [[100.5, 101.0, 100.02, 100.8, 5000], [101.0, 101.5, 100.0, 100.5, 4000], [100.0, 100.5, 99.5, 100.0, 3000]]
+    },
+    {
+      "id": "TWEEZER_BOTTOM_boundary_match_inside",
+      "predicate": "QM_PP_TWEEZER_BOTTOM",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the |low0-low1| <= 0.05*Range(b,1) clause. Prior range=2.0 so the tolerance is 0.10; |low0-low1|=|100.08-100.00|=0.08 is inside it. Both lows stay below low2=101.5.",
+      "bars": [[100.5, 101.0, 100.08, 100.8, 5000], [101.0, 102.0, 100.0, 100.5, 4000], [103.0, 103.5, 101.5, 102.0, 3000]]
+    },
+    {
+      "id": "TWEEZER_BOTTOM_boundary_match_outside",
+      "predicate": "QM_PP_TWEEZER_BOTTOM",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same window with low0=100.12, so |low0-low1|=0.12 is outside the 0.10 tolerance (5% of the prior range 2.0). The single changed value isolates the matching-lows clause.",
+      "bars": [[100.5, 101.0, 100.12, 100.8, 5000], [101.0, 102.0, 100.0, 100.5, 4000], [103.0, 103.5, 101.5, 102.0, 3000]]
+    },
+
+    {
+      "id": "TWEEZER_TOP_positive_canonical",
+      "predicate": "QM_PP_TWEEZER_TOP",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Tweezer top: after a lower-high bar 2 (high2=100), the two most recent bars print near-identical highs (high1=101.00, high0=101.02) that both exceed high2, testing and rejecting the same resistance twice. |high0-high1|=0.02 is a tiny fraction of the prior range 1.5.",
+      "bars": [[100.5, 101.02, 100.0, 100.2, 5000], [100.3, 101.0, 99.5, 99.8, 4000], [99.0, 100.0, 98.5, 99.5, 3000]]
+    },
+    {
+      "id": "TWEEZER_TOP_negative_highs_not_matching",
+      "predicate": "QM_PP_TWEEZER_TOP",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Both highs are above high2=100, but high0=100.5 and high1=101.0 differ by 0.5, far more than 5% of the prior range 1.5 (=0.075). The two bars do not reject the same level, so there is no tweezer.",
+      "bars": [[100.2, 100.5, 100.0, 100.3, 5000], [100.3, 101.0, 99.5, 99.8, 4000], [99.0, 100.0, 98.5, 99.5, 3000]]
+    },
+    {
+      "id": "TWEEZER_TOP_negative_not_above_prior_bar",
+      "predicate": "QM_PP_TWEEZER_TOP",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The two recent highs match (101.00 and 101.02), but bar 2 already made a higher high (high2=102). A tweezer top marks a fresh double-tested resistance after an advance; here the pair sits below the preceding bar, so high0 > high2 and high1 > high2 both fail and it is not a top.",
+      "bars": [[100.5, 101.02, 100.0, 100.2, 5000], [100.3, 101.0, 99.5, 99.8, 4000], [101.5, 102.0, 101.0, 101.5, 3000]]
+    },
+    {
+      "id": "TWEEZER_TOP_boundary_match_inside",
+      "predicate": "QM_PP_TWEEZER_TOP",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the |high0-high1| <= 0.05*Range(b,1) clause. Prior range=2.0 so the tolerance is 0.10; |high0-high1|=|102.08-102.00|=0.08 is inside it. Both highs stay above high2=99.",
+      "bars": [[101.0, 102.08, 100.5, 101.5, 5000], [100.0, 102.0, 100.0, 100.5, 4000], [98.0, 99.0, 97.5, 98.5, 3000]]
+    },
+    {
+      "id": "TWEEZER_TOP_boundary_match_outside",
+      "predicate": "QM_PP_TWEEZER_TOP",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same window with high0=102.12, so |high0-high1|=0.12 is outside the 0.10 tolerance (5% of the prior range 2.0). The single changed value isolates the matching-highs clause.",
+      "bars": [[101.0, 102.12, 100.5, 101.5, 5000], [100.0, 102.0, 100.0, 100.5, 4000], [98.0, 99.0, 97.5, 98.5, 3000]]
+    }
+  ]
+}

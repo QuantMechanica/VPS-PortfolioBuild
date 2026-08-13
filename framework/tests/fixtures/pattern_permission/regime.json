@@ -1,0 +1,3803 @@
+{
+  "group": "regime",
+  "author": "regime",
+  "note": "Regime predicates 77-84, 93-94. bars[0] is the reference (newest closed) bar; index increases going back in time. Trend-strength/RANGING windows read bars 0..9; the 11th bar (index10) is inert filler. HIGH_VOL_REGIME and REGIME_TRANSITION use flat doji rangebars whose true range equals the stated span. See suspected_defects for the band overlap/gap findings.",
+  "default_filler_series": [
+    [
+      100.0,
+      100.5,
+      99.5,
+      100.0,
+      4000
+    ]
+  ],
+  "fixtures": [
+    {
+      "id": "TREND_STRENGTH_UP_STRONG_positive_ten_bull_rising",
+      "predicate": "QM_PP_TREND_STRENGTH_UP_STRONG",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A strong up regime is a run where almost every bar closes up and price is net higher: all 10 bars bullish and close[0]=105 far above close[9]=100.5.",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.2,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          102.7,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.2,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          101.7,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.2,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          100.7,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.2,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_UP_STRONG_negative_only_three_bull",
+      "predicate": "QM_PP_TREND_STRENGTH_UP_STRONG",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Only 3 of 10 bars close up even though price drifts higher; a market that is up on a minority of bars is not a strong uptrend, so this must not fire.",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.8,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          103.3,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.8,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          102.3,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_UP_STRONG_negative_ten_bull_net_down",
+      "predicate": "QM_PP_TREND_STRENGTH_UP_STRONG",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "All 10 bars close above their own open yet each bar gaps lower so close[0]=100 sits BELOW close[9]=104.5: net direction is down, not a strong uptrend. This also shows the band leaves a gap (10 bulls but net-down fires nothing).",
+      "bars": [
+        [
+          99.7,
+          100.4,
+          99.6,
+          100.0,
+          4000
+        ],
+        [
+          100.2,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ],
+        [
+          100.7,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          101.2,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.7,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          102.2,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          102.7,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          103.2,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_UP_STRONG_boundary_seven_bull_inside",
+      "predicate": "QM_PP_TREND_STRENGTH_UP_STRONG",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "bulls=7 sits just inside the bulls>=7 floor and close[0]>close[9] holds, so the predicate fires. Integer count, so inside means exactly at the floor.",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.8,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          102.7,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.8,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          101.7,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          100.7,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.2,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_UP_STRONG_boundary_six_bull_outside",
+      "predicate": "QM_PP_TREND_STRENGTH_UP_STRONG",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "One fewer bull than the inside case: bulls=6 is below the bulls>=7 floor, so UP_STRONG does not fire even though price is still net up.",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.8,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          102.7,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.8,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          101.7,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          100.7,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_UP_WEAK_positive_six_bull",
+      "predicate": "QM_PP_TREND_STRENGTH_UP_WEAK",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A weak up regime is a mild bullish majority: 6 of 10 bars close up, more than half but far from a dominant trend.",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.2,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          102.7,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.2,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          102.3,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_UP_WEAK_negative_eight_bull",
+      "predicate": "QM_PP_TREND_STRENGTH_UP_WEAK",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "8 of 10 bars close up: that is a dominant, strong bull majority, not a weak one, so the weak band must not claim it.",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.2,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          102.7,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.2,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          101.7,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.2,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_UP_WEAK_negative_three_bull",
+      "predicate": "QM_PP_TREND_STRENGTH_UP_WEAK",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Only 3 of 10 bars close up: bears are the majority, so this is not any kind of up regime and the weak-up band must not fire.",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.8,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          103.3,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.8,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          102.3,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_UP_WEAK_boundary_five_bull_inside",
+      "predicate": "QM_PP_TREND_STRENGTH_UP_WEAK",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "bulls=5 is just inside the [5,6] band's lower edge, so UP_WEAK fires. NOTE: this SAME 5-bull/5-bear window also fires DOWN_WEAK (bears=5 within [5,6]) - the two bands overlap at a balanced count.",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.2,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          102.7,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.8,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          102.3,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_UP_WEAK_boundary_four_bull_outside",
+      "predicate": "QM_PP_TREND_STRENGTH_UP_WEAK",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "bulls=4 is one below the band's lower edge and thus outside [5,6]; UP_WEAK does not fire.",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.2,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          103.3,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.8,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          102.3,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_UP_WEAK_boundary_six_bull_inside_upper",
+      "predicate": "QM_PP_TREND_STRENGTH_UP_WEAK",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "bulls=6 sits on the inside of the band's upper edge (<=6), so UP_WEAK fires. Distinct bar arrangement from the positive case.",
+      "bars": [
+        [
+          105.3,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.8,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          104.3,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.8,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          102.7,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.2,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          101.7,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.2,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          100.7,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.2,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_UP_WEAK_boundary_seven_bull_outside_upper",
+      "predicate": "QM_PP_TREND_STRENGTH_UP_WEAK",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "bulls=7 is one above the band's upper edge (>6), so it lies outside [5,6] and UP_WEAK does not fire (UP_STRONG territory instead).",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.2,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          102.7,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.2,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          101.7,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "RANGING_positive_close_at_midpoint",
+      "predicate": "QM_PP_RANGING",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Ranging means price oscillates and closes near the middle of its recent band. Over 10 bars hi=110 lo=100 mid=105; close[0]=105.0 sits dead on the midpoint.",
+      "bars": [
+        [
+          104.8,
+          105.3,
+          104.7,
+          105.0,
+          4000
+        ],
+        [
+          108.0,
+          110.0,
+          107.5,
+          109.0,
+          4000
+        ],
+        [
+          107.0,
+          108.0,
+          106.0,
+          107.5,
+          4000
+        ],
+        [
+          106.0,
+          107.0,
+          105.0,
+          106.5,
+          4000
+        ],
+        [
+          105.0,
+          106.0,
+          104.0,
+          105.5,
+          4000
+        ],
+        [
+          104.0,
+          105.0,
+          103.0,
+          104.5,
+          4000
+        ],
+        [
+          103.0,
+          104.0,
+          102.0,
+          103.5,
+          4000
+        ],
+        [
+          102.0,
+          103.0,
+          101.0,
+          102.5,
+          4000
+        ],
+        [
+          101.0,
+          102.0,
+          100.5,
+          101.5,
+          4000
+        ],
+        [
+          101.0,
+          101.5,
+          100.0,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "RANGING_negative_close_near_high",
+      "predicate": "QM_PP_RANGING",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "close[0]=109.8 is pinned near the top of the 100-110 band (|109.8-105|=4.8, way past 25% of the 10-point span). Price at the range high is a breakout posture, not ranging.",
+      "bars": [
+        [
+          109.5,
+          109.9,
+          109.0,
+          109.8,
+          4000
+        ],
+        [
+          108.0,
+          110.0,
+          107.5,
+          109.0,
+          4000
+        ],
+        [
+          107.0,
+          108.0,
+          106.0,
+          107.5,
+          4000
+        ],
+        [
+          106.0,
+          107.0,
+          105.0,
+          106.5,
+          4000
+        ],
+        [
+          105.0,
+          106.0,
+          104.0,
+          105.5,
+          4000
+        ],
+        [
+          104.0,
+          105.0,
+          103.0,
+          104.5,
+          4000
+        ],
+        [
+          103.0,
+          104.0,
+          102.0,
+          103.5,
+          4000
+        ],
+        [
+          102.0,
+          103.0,
+          101.0,
+          102.5,
+          4000
+        ],
+        [
+          101.0,
+          102.0,
+          100.5,
+          101.5,
+          4000
+        ],
+        [
+          101.0,
+          101.5,
+          100.0,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "RANGING_negative_close_near_low",
+      "predicate": "QM_PP_RANGING",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "close[0]=100.6 is pinned near the bottom of the band (|100.6-105|=4.4, well past 25% of the 10-point span). Price at the range low is breakdown posture, not ranging.",
+      "bars": [
+        [
+          100.9,
+          101.0,
+          100.4,
+          100.6,
+          4000
+        ],
+        [
+          108.0,
+          110.0,
+          107.5,
+          109.0,
+          4000
+        ],
+        [
+          107.0,
+          108.0,
+          106.0,
+          107.5,
+          4000
+        ],
+        [
+          106.0,
+          107.0,
+          105.0,
+          106.5,
+          4000
+        ],
+        [
+          105.0,
+          106.0,
+          104.0,
+          105.5,
+          4000
+        ],
+        [
+          104.0,
+          105.0,
+          103.0,
+          104.5,
+          4000
+        ],
+        [
+          103.0,
+          104.0,
+          102.0,
+          103.5,
+          4000
+        ],
+        [
+          102.0,
+          103.0,
+          101.0,
+          102.5,
+          4000
+        ],
+        [
+          101.0,
+          102.0,
+          100.5,
+          101.5,
+          4000
+        ],
+        [
+          101.0,
+          101.5,
+          100.0,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "RANGING_boundary_inside",
+      "predicate": "QM_PP_RANGING",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "span=10, 25% of span=2.5. close[0]=107.3 gives |107.3-105|=2.3, inside the 0.25*span cutoff (2.3<2.5) so RANGING fires.",
+      "bars": [
+        [
+          107.0,
+          107.5,
+          106.7,
+          107.3,
+          4000
+        ],
+        [
+          108.0,
+          110.0,
+          107.5,
+          109.0,
+          4000
+        ],
+        [
+          107.0,
+          108.0,
+          106.0,
+          107.5,
+          4000
+        ],
+        [
+          106.0,
+          107.0,
+          105.0,
+          106.5,
+          4000
+        ],
+        [
+          105.0,
+          106.0,
+          104.0,
+          105.5,
+          4000
+        ],
+        [
+          104.0,
+          105.0,
+          103.0,
+          104.5,
+          4000
+        ],
+        [
+          103.0,
+          104.0,
+          102.0,
+          103.5,
+          4000
+        ],
+        [
+          102.0,
+          103.0,
+          101.0,
+          102.5,
+          4000
+        ],
+        [
+          101.0,
+          102.0,
+          100.5,
+          101.5,
+          4000
+        ],
+        [
+          101.0,
+          101.5,
+          100.0,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "RANGING_boundary_outside",
+      "predicate": "QM_PP_RANGING",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same band, close[0]=107.7 gives |107.7-105|=2.7, outside the 0.25*span cutoff (2.7>2.5) so RANGING does not fire. Bar0 high 107.9 keeps hi=110 unchanged.",
+      "bars": [
+        [
+          107.5,
+          107.9,
+          107.0,
+          107.7,
+          4000
+        ],
+        [
+          108.0,
+          110.0,
+          107.5,
+          109.0,
+          4000
+        ],
+        [
+          107.0,
+          108.0,
+          106.0,
+          107.5,
+          4000
+        ],
+        [
+          106.0,
+          107.0,
+          105.0,
+          106.5,
+          4000
+        ],
+        [
+          105.0,
+          106.0,
+          104.0,
+          105.5,
+          4000
+        ],
+        [
+          104.0,
+          105.0,
+          103.0,
+          104.5,
+          4000
+        ],
+        [
+          103.0,
+          104.0,
+          102.0,
+          103.5,
+          4000
+        ],
+        [
+          102.0,
+          103.0,
+          101.0,
+          102.5,
+          4000
+        ],
+        [
+          101.0,
+          102.0,
+          100.5,
+          101.5,
+          4000
+        ],
+        [
+          101.0,
+          101.5,
+          100.0,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_DOWN_WEAK_positive_six_bear",
+      "predicate": "QM_PP_TREND_STRENGTH_DOWN_WEAK",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A weak down regime is a mild bearish majority: 6 of 10 bars close down (bulls=4), more than half but not a dominant downtrend.",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.2,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          103.3,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.8,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          102.3,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_DOWN_WEAK_negative_eight_bear",
+      "predicate": "QM_PP_TREND_STRENGTH_DOWN_WEAK",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "8 of 10 bars close down (bulls=2): a dominant, strong bear majority, not a weak one, so the weak-down band must not claim it.",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          104.3,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.8,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          103.3,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.8,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          102.3,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_DOWN_WEAK_negative_seven_bull",
+      "predicate": "QM_PP_TREND_STRENGTH_DOWN_WEAK",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "7 of 10 bars close up (bears=3): the market is up on a majority of bars, so a down regime of any strength must not fire.",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.2,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          102.7,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.2,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          101.7,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_DOWN_WEAK_boundary_five_bear_inside",
+      "predicate": "QM_PP_TREND_STRENGTH_DOWN_WEAK",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "bears=5 is just inside the [5,6] band, so DOWN_WEAK fires. This is the SAME balanced 5-bull/5-bear window used for UP_WEAK's inside case: both weak bands fire together - an overlap.",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.2,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          102.7,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.8,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          102.3,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_DOWN_WEAK_boundary_four_bear_outside",
+      "predicate": "QM_PP_TREND_STRENGTH_DOWN_WEAK",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "bears=4 (bulls=6) is one below the band's lower edge and outside [5,6], so DOWN_WEAK does not fire.",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.2,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          102.7,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.2,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          102.3,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_DOWN_WEAK_boundary_six_bear_inside_upper",
+      "predicate": "QM_PP_TREND_STRENGTH_DOWN_WEAK",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "bears=6 (bulls=4) sits on the inside of the band's upper edge (<=6), so DOWN_WEAK fires. Distinct arrangement from the positive case.",
+      "bars": [
+        [
+          105.3,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.8,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          104.3,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.8,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          102.7,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.2,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          101.7,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.2,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_DOWN_WEAK_boundary_seven_bear_outside_upper",
+      "predicate": "QM_PP_TREND_STRENGTH_DOWN_WEAK",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "bears=7 (bulls=3) is above the band's upper edge (>6), outside [5,6], so DOWN_WEAK does not fire (DOWN_STRONG territory).",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          103.7,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.8,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          103.3,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.8,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          102.3,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_DOWN_STRONG_positive_eight_bear_falling",
+      "predicate": "QM_PP_TREND_STRENGTH_DOWN_STRONG",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A strong down regime is a run where almost every bar closes down and price is net lower: 8 of 10 bars bearish and close[0]=100 well below close[9]=104.5.",
+      "bars": [
+        [
+          99.7,
+          100.4,
+          99.6,
+          100.0,
+          4000
+        ],
+        [
+          100.2,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          102.3,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          102.8,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          103.3,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          103.8,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          104.3,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          104.8,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_DOWN_STRONG_negative_six_bear",
+      "predicate": "QM_PP_TREND_STRENGTH_DOWN_STRONG",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Only 6 of 10 bars close down (bears=6) though price is net lower; a minority-dominated slide is at most a weak downtrend, not a strong one.",
+      "bars": [
+        [
+          99.7,
+          100.4,
+          99.6,
+          100.0,
+          4000
+        ],
+        [
+          100.2,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ],
+        [
+          100.7,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          101.2,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          102.3,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          102.8,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          103.3,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          103.8,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          104.3,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          104.8,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_DOWN_STRONG_negative_eight_bear_net_up",
+      "predicate": "QM_PP_TREND_STRENGTH_DOWN_STRONG",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "8 of 10 bars close down yet each bar gaps higher so close[0]=105 sits ABOVE close[9]=100.5: net direction is up, not a strong downtrend. Shows the close test can veto a heavy bear count (a band gap).",
+      "bars": [
+        [
+          104.7,
+          105.4,
+          104.6,
+          105.0,
+          4000
+        ],
+        [
+          104.2,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ],
+        [
+          104.3,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          103.8,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          103.3,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          102.8,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          102.3,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          101.3,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          100.8,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_DOWN_STRONG_boundary_seven_bear_inside",
+      "predicate": "QM_PP_TREND_STRENGTH_DOWN_STRONG",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "bears=7 sits just inside the bears>=7 floor and close[0]<close[9], so the predicate fires.",
+      "bars": [
+        [
+          99.7,
+          100.4,
+          99.6,
+          100.0,
+          4000
+        ],
+        [
+          100.2,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ],
+        [
+          100.7,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          101.8,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          102.3,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          102.8,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          103.3,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          103.8,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          104.3,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          104.8,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_STRENGTH_DOWN_STRONG_boundary_six_bear_outside",
+      "predicate": "QM_PP_TREND_STRENGTH_DOWN_STRONG",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "One fewer bear than the inside case: bears=6 is below the bears>=7 floor, so DOWN_STRONG does not fire though price is still net down.",
+      "bars": [
+        [
+          99.7,
+          100.4,
+          99.6,
+          100.0,
+          4000
+        ],
+        [
+          100.2,
+          100.9,
+          100.1,
+          100.5,
+          4000
+        ],
+        [
+          100.7,
+          101.4,
+          100.6,
+          101.0,
+          4000
+        ],
+        [
+          101.2,
+          101.9,
+          101.1,
+          101.5,
+          4000
+        ],
+        [
+          102.3,
+          102.4,
+          101.6,
+          102.0,
+          4000
+        ],
+        [
+          102.8,
+          102.9,
+          102.1,
+          102.5,
+          4000
+        ],
+        [
+          103.3,
+          103.4,
+          102.6,
+          103.0,
+          4000
+        ],
+        [
+          103.8,
+          103.9,
+          103.1,
+          103.5,
+          4000
+        ],
+        [
+          104.3,
+          104.4,
+          103.6,
+          104.0,
+          4000
+        ],
+        [
+          104.8,
+          104.9,
+          104.1,
+          104.5,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "HIGH_VOL_REGIME_positive_range_spike",
+      "predicate": "QM_PP_HIGH_VOL_REGIME",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A high-vol regime is a bar whose range dwarfs recent volatility. 20 prior bars each span 1.0 (atr20=1.0); the reference bar spans 3.0 = 3x atr, a clear spike.",
+      "bars": [
+        [
+          100.0,
+          101.5,
+          98.5,
+          100.0,
+          4000
+        ]
+      ],
+      "filler_series": [
+        [
+          100.0,
+          100.5,
+          99.5,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "HIGH_VOL_REGIME_negative_normal_range",
+      "predicate": "QM_PP_HIGH_VOL_REGIME",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The reference bar spans 1.0, identical to the 20 prior bars (atr20=1.0). A bar in line with recent range is normal volatility, not a spike.",
+      "bars": [
+        [
+          100.0,
+          100.5,
+          99.5,
+          100.0,
+          4000
+        ]
+      ],
+      "filler_series": [
+        [
+          100.0,
+          100.5,
+          99.5,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "HIGH_VOL_REGIME_negative_high_absolute_no_spike",
+      "predicate": "QM_PP_HIGH_VOL_REGIME",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Every bar, including the reference, spans 3.0 so atr20=3.0. Volatility is high in absolute terms but the reference bar is NOT elevated relative to it (3.0 < 2*3.0). Regime is about a relative spike, so this must not fire.",
+      "bars": [
+        [
+          100.0,
+          101.5,
+          98.5,
+          100.0,
+          4000
+        ]
+      ],
+      "filler_series": [
+        [
+          100.0,
+          101.5,
+          98.5,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "HIGH_VOL_REGIME_boundary_inside",
+      "predicate": "QM_PP_HIGH_VOL_REGIME",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "atr20=1.0; reference range 2.2 is above the 2.0*atr cutoff (2.2>2.0), inside the firing region.",
+      "bars": [
+        [
+          100.0,
+          101.1,
+          98.9,
+          100.0,
+          4000
+        ]
+      ],
+      "filler_series": [
+        [
+          100.0,
+          100.5,
+          99.5,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "HIGH_VOL_REGIME_boundary_outside",
+      "predicate": "QM_PP_HIGH_VOL_REGIME",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "atr20=1.0; reference range 1.8 is below the 2.0*atr cutoff (1.8<2.0), outside the firing region.",
+      "bars": [
+        [
+          100.0,
+          100.9,
+          99.1,
+          100.0,
+          4000
+        ]
+      ],
+      "filler_series": [
+        [
+          100.0,
+          100.5,
+          99.5,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "REGIME_TRANSITION_positive_recent_expansion",
+      "predicate": "QM_PP_REGIME_TRANSITION",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A regime transition is volatility expanding fast: the last 5 bars each span 3.0 while the 20-bar backdrop averages ~1.5 (atr5=3.0, atr20=1.5, ratio 2.0). Short-term vol has jumped well above the long-term baseline.",
+      "bars": [
+        [
+          100.0,
+          101.5,
+          98.5,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          101.5,
+          98.5,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          101.5,
+          98.5,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          101.5,
+          98.5,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          101.5,
+          98.5,
+          100.0,
+          4000
+        ]
+      ],
+      "filler_series": [
+        [
+          100.0,
+          100.5,
+          99.5,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "REGIME_TRANSITION_negative_uniform_vol",
+      "predicate": "QM_PP_REGIME_TRANSITION",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Every bar spans 1.0 so atr5=atr20=1.0 (ratio 1.0). A steady, unchanging volatility level is the opposite of a transition.",
+      "bars": [
+        [
+          100.0,
+          100.5,
+          99.5,
+          100.0,
+          4000
+        ]
+      ],
+      "filler_series": [
+        [
+          100.0,
+          100.5,
+          99.5,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "REGIME_TRANSITION_negative_contraction",
+      "predicate": "QM_PP_REGIME_TRANSITION",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Recent 5 bars span 1.0 while the older backdrop spans 3.0: atr5=1.0, atr20=2.5, ratio 0.4. Volatility is CONTRACTING, not expanding, so a transition-to-high-vol reading is wrong.",
+      "bars": [
+        [
+          100.0,
+          100.5,
+          99.5,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          100.5,
+          99.5,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          100.5,
+          99.5,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          100.5,
+          99.5,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          100.5,
+          99.5,
+          100.0,
+          4000
+        ]
+      ],
+      "filler_series": [
+        [
+          100.0,
+          101.5,
+          98.5,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "REGIME_TRANSITION_boundary_inside",
+      "predicate": "QM_PP_REGIME_TRANSITION",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Recent 5 bars span 2.0 over a range-1.0 backdrop: atr5=2.0, atr20=(5*2+15*1)/20=1.25, ratio 1.6 is above the 1.5 cutoff (inside firing region).",
+      "bars": [
+        [
+          100.0,
+          101.0,
+          99.0,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          101.0,
+          99.0,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          101.0,
+          99.0,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          101.0,
+          99.0,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          101.0,
+          99.0,
+          100.0,
+          4000
+        ]
+      ],
+      "filler_series": [
+        [
+          100.0,
+          100.5,
+          99.5,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "REGIME_TRANSITION_boundary_outside",
+      "predicate": "QM_PP_REGIME_TRANSITION",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Recent 5 bars span 1.6 over a range-1.0 backdrop: atr5=1.6, atr20=(5*1.6+15)/20=1.15, ratio 1.39 is below the 1.5 cutoff (outside firing region).",
+      "bars": [
+        [
+          100.0,
+          100.8,
+          99.2,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          100.8,
+          99.2,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          100.8,
+          99.2,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          100.8,
+          99.2,
+          100.0,
+          4000
+        ],
+        [
+          100.0,
+          100.8,
+          99.2,
+          100.0,
+          4000
+        ]
+      ],
+      "filler_series": [
+        [
+          100.0,
+          100.5,
+          99.5,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_EXHAUSTION_positive_stalling_after_advance",
+      "predicate": "QM_PP_TREND_EXHAUSTION",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Price advanced (close[4]=100 up to close[2]=106) then the latest bar barely moves: |close0-close1|=0.2 is tiny next to the early thrust |close3-close4|=4 (0.2 < 0.3*4=1.2). Momentum has stalled after a rise: exhaustion.",
+      "bars": [
+        [
+          107.2,
+          107.5,
+          106.9,
+          107.2,
+          4000
+        ],
+        [
+          107.0,
+          107.3,
+          106.7,
+          107.0,
+          4000
+        ],
+        [
+          106.0,
+          106.3,
+          105.7,
+          106.0,
+          4000
+        ],
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_EXHAUSTION_negative_no_prior_advance",
+      "predicate": "QM_PP_TREND_EXHAUSTION",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "There is no prior advance to exhaust: close[4]=106 is ABOVE close[2]=100, so price fell over that span. The up-move precondition fails and this must not fire.",
+      "bars": [
+        [
+          99.0,
+          99.3,
+          98.7,
+          99.0,
+          4000
+        ],
+        [
+          99.1,
+          99.4,
+          98.8,
+          99.1,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ],
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          106.0,
+          106.3,
+          105.7,
+          106.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_EXHAUSTION_negative_momentum_still_strong",
+      "predicate": "QM_PP_TREND_EXHAUSTION",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The advance is real (close[4]=100 below close[2]=106) but the latest bar moves hard: |close0-close1|=3.0 is larger than the early thrust's 30% (0.3*4=1.2). Momentum is intact, not exhausted.",
+      "bars": [
+        [
+          110.0,
+          110.3,
+          109.7,
+          110.0,
+          4000
+        ],
+        [
+          107.0,
+          107.3,
+          106.7,
+          107.0,
+          4000
+        ],
+        [
+          106.0,
+          106.3,
+          105.7,
+          106.0,
+          4000
+        ],
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_EXHAUSTION_boundary_inside",
+      "predicate": "QM_PP_TREND_EXHAUSTION",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Early thrust |close3-close4|=4 so cutoff=0.3*4=1.2. Latest move |close0-close1|=1.0 is under the cutoff (1.0<1.2), inside the firing region.",
+      "bars": [
+        [
+          108.0,
+          108.3,
+          107.7,
+          108.0,
+          4000
+        ],
+        [
+          107.0,
+          107.3,
+          106.7,
+          107.0,
+          4000
+        ],
+        [
+          106.0,
+          106.3,
+          105.7,
+          106.0,
+          4000
+        ],
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "TREND_EXHAUSTION_boundary_outside",
+      "predicate": "QM_PP_TREND_EXHAUSTION",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same early thrust and cutoff 1.2, but latest move |close0-close1|=1.4 is over the cutoff (1.4>1.2), outside the firing region.",
+      "bars": [
+        [
+          108.4,
+          108.7,
+          108.1,
+          108.4,
+          4000
+        ],
+        [
+          107.0,
+          107.3,
+          106.7,
+          107.0,
+          4000
+        ],
+        [
+          106.0,
+          106.3,
+          105.7,
+          106.0,
+          4000
+        ],
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "EFFICIENCY_RATIO_HIGH_positive_straight_line",
+      "predicate": "QM_PP_EFFICIENCY_RATIO_HIGH",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "High efficiency means net move ~ total path: a straight 100->110 climb one point per bar has net=10 and path=10, er=1.0. Every step of travel counted.",
+      "bars": [
+        [
+          110.0,
+          110.3,
+          109.7,
+          110.0,
+          4000
+        ],
+        [
+          109.0,
+          109.3,
+          108.7,
+          109.0,
+          4000
+        ],
+        [
+          108.0,
+          108.3,
+          107.7,
+          108.0,
+          4000
+        ],
+        [
+          107.0,
+          107.3,
+          106.7,
+          107.0,
+          4000
+        ],
+        [
+          106.0,
+          106.3,
+          105.7,
+          106.0,
+          4000
+        ],
+        [
+          105.0,
+          105.3,
+          104.7,
+          105.0,
+          4000
+        ],
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          103.0,
+          103.3,
+          102.7,
+          103.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          101.0,
+          101.3,
+          100.7,
+          101.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "EFFICIENCY_RATIO_HIGH_negative_pure_chop",
+      "predicate": "QM_PP_EFFICIENCY_RATIO_HIGH",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Price oscillates 100<->102 and ends where it began: net=0 over path=20, er=0. Maximum back-and-forth, zero efficiency, must not read as high.",
+      "bars": [
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "EFFICIENCY_RATIO_HIGH_negative_moderate",
+      "predicate": "QM_PP_EFFICIENCY_RATIO_HIGH",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Net move 4 over a wandering path of 10 gives er=0.4: a middling, choppy advance, well short of an efficient trend.",
+      "bars": [
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          103.0,
+          103.3,
+          102.7,
+          103.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          101.0,
+          101.3,
+          100.7,
+          101.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          103.0,
+          103.3,
+          102.7,
+          103.0,
+          4000
+        ],
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          103.0,
+          103.3,
+          102.7,
+          103.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          101.0,
+          101.3,
+          100.7,
+          101.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "EFFICIENCY_RATIO_HIGH_boundary_inside",
+      "predicate": "QM_PP_EFFICIENCY_RATIO_HIGH",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "net=8, path=10 gives er=0.8, above the 0.7 cutoff (inside firing region).",
+      "bars": [
+        [
+          108.0,
+          108.3,
+          107.7,
+          108.0,
+          4000
+        ],
+        [
+          109.0,
+          109.3,
+          108.7,
+          109.0,
+          4000
+        ],
+        [
+          108.0,
+          108.3,
+          107.7,
+          108.0,
+          4000
+        ],
+        [
+          107.0,
+          107.3,
+          106.7,
+          107.0,
+          4000
+        ],
+        [
+          106.0,
+          106.3,
+          105.7,
+          106.0,
+          4000
+        ],
+        [
+          105.0,
+          105.3,
+          104.7,
+          105.0,
+          4000
+        ],
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          103.0,
+          103.3,
+          102.7,
+          103.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          101.0,
+          101.3,
+          100.7,
+          101.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "EFFICIENCY_RATIO_HIGH_boundary_outside",
+      "predicate": "QM_PP_EFFICIENCY_RATIO_HIGH",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "net=6, path=10 gives er=0.6, below the 0.7 cutoff (outside firing region).",
+      "bars": [
+        [
+          106.0,
+          106.3,
+          105.7,
+          106.0,
+          4000
+        ],
+        [
+          107.0,
+          107.3,
+          106.7,
+          107.0,
+          4000
+        ],
+        [
+          108.0,
+          108.3,
+          107.7,
+          108.0,
+          4000
+        ],
+        [
+          107.0,
+          107.3,
+          106.7,
+          107.0,
+          4000
+        ],
+        [
+          106.0,
+          106.3,
+          105.7,
+          106.0,
+          4000
+        ],
+        [
+          105.0,
+          105.3,
+          104.7,
+          105.0,
+          4000
+        ],
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          103.0,
+          103.3,
+          102.7,
+          103.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          101.0,
+          101.3,
+          100.7,
+          101.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "EFFICIENCY_RATIO_LOW_positive_pure_chop",
+      "predicate": "QM_PP_EFFICIENCY_RATIO_LOW",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Low efficiency means much travel, little net progress: 100<->102 oscillation ends flat, net=0 over path=20, er=0. Textbook inefficient/choppy market.",
+      "bars": [
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "EFFICIENCY_RATIO_LOW_negative_straight_line",
+      "predicate": "QM_PP_EFFICIENCY_RATIO_LOW",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A straight 100->110 climb has net=path=10, er=1.0: perfectly efficient trending, the opposite of low efficiency.",
+      "bars": [
+        [
+          110.0,
+          110.3,
+          109.7,
+          110.0,
+          4000
+        ],
+        [
+          109.0,
+          109.3,
+          108.7,
+          109.0,
+          4000
+        ],
+        [
+          108.0,
+          108.3,
+          107.7,
+          108.0,
+          4000
+        ],
+        [
+          107.0,
+          107.3,
+          106.7,
+          107.0,
+          4000
+        ],
+        [
+          106.0,
+          106.3,
+          105.7,
+          106.0,
+          4000
+        ],
+        [
+          105.0,
+          105.3,
+          104.7,
+          105.0,
+          4000
+        ],
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          103.0,
+          103.3,
+          102.7,
+          103.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          101.0,
+          101.3,
+          100.7,
+          101.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "EFFICIENCY_RATIO_LOW_negative_moderate",
+      "predicate": "QM_PP_EFFICIENCY_RATIO_LOW",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Net move 4 over path 10 gives er=0.4: middling efficiency, above the low threshold, so not an inefficient/choppy regime.",
+      "bars": [
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          103.0,
+          103.3,
+          102.7,
+          103.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          101.0,
+          101.3,
+          100.7,
+          101.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          103.0,
+          103.3,
+          102.7,
+          103.0,
+          4000
+        ],
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          103.0,
+          103.3,
+          102.7,
+          103.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          101.0,
+          101.3,
+          100.7,
+          101.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "EFFICIENCY_RATIO_LOW_boundary_inside",
+      "predicate": "QM_PP_EFFICIENCY_RATIO_LOW",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "net=2, path=8 gives er=0.25, below the 0.3 cutoff (inside the low-efficiency firing region).",
+      "bars": [
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          103.0,
+          103.3,
+          102.7,
+          103.0,
+          4000
+        ],
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          105.0,
+          105.3,
+          104.7,
+          105.0,
+          4000
+        ],
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          103.0,
+          103.3,
+          102.7,
+          103.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          101.0,
+          101.3,
+          100.7,
+          101.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ]
+      ]
+    },
+    {
+      "id": "EFFICIENCY_RATIO_LOW_boundary_outside",
+      "predicate": "QM_PP_EFFICIENCY_RATIO_LOW",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "net=3, path=9 gives er=0.333, above the 0.3 cutoff (outside the low-efficiency firing region).",
+      "bars": [
+        [
+          103.0,
+          103.3,
+          102.7,
+          103.0,
+          4000
+        ],
+        [
+          103.0,
+          103.3,
+          102.7,
+          103.0,
+          4000
+        ],
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          105.0,
+          105.3,
+          104.7,
+          105.0,
+          4000
+        ],
+        [
+          106.0,
+          106.3,
+          105.7,
+          106.0,
+          4000
+        ],
+        [
+          105.0,
+          105.3,
+          104.7,
+          105.0,
+          4000
+        ],
+        [
+          104.0,
+          104.3,
+          103.7,
+          104.0,
+          4000
+        ],
+        [
+          103.0,
+          103.3,
+          102.7,
+          103.0,
+          4000
+        ],
+        [
+          102.0,
+          102.3,
+          101.7,
+          102.0,
+          4000
+        ],
+        [
+          101.0,
+          101.3,
+          100.7,
+          101.0,
+          4000
+        ],
+        [
+          100.0,
+          100.3,
+          99.7,
+          100.0,
+          4000
+        ]
+      ]
+    }
+  ]
+}

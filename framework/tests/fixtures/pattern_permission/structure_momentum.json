@@ -1,0 +1,375 @@
+{
+  "group": "structure_momentum",
+  "author": "structure_momentum",
+  "note": "Predicates 51-56: structure/momentum. bars[0] = reference (most recently closed) bar; index increases going back in time. Bars are [open, high, low, close, tick_volume]. These predicates read only closes/highs/lows of the first few bars; the default filler pads inert trailing indices (index 2 for the 2-bar predicates). THREE_DAY predicates read close[0..3] so all four bars are supplied explicitly and the filler is never consulted.",
+  "default_filler_series": [
+    [100.0, 100.5, 99.5, 100.0, 3000]
+  ],
+  "fixtures": [
+    {
+      "id": "QM_PP_HIGHER_HIGH_positive_up_shifted_bar",
+      "predicate": "QM_PP_HIGHER_HIGH",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A higher high in structure terms is an up-shifted bar: the whole range steps up, making BOTH a higher high and a higher low. bar1 high 100.0 / low 99.0; bar0 high 101.0 / low 99.5. high 101>100 and low 99.5>99, the range shifted up.",
+      "bars": [[99.6, 101.0, 99.5, 100.8, 3000], [99.2, 100.0, 99.0, 99.8, 3000]]
+    },
+    {
+      "id": "QM_PP_HIGHER_HIGH_negative_outside_bar",
+      "predicate": "QM_PP_HIGHER_HIGH",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "An outside bar makes a higher high (101>100) but ALSO a lower low (98.5<99): the range engulfed the prior bar, it did not shift up. This is expansion, not an up-shift, so it is not a structural higher high.",
+      "bars": [[99.0, 101.0, 98.5, 100.0, 3000], [99.5, 100.0, 99.0, 99.3, 3000]]
+    },
+    {
+      "id": "QM_PP_HIGHER_HIGH_negative_down_shifted_bar",
+      "predicate": "QM_PP_HIGHER_HIGH",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The range stepped DOWN: bar0 high 99.0 / low 98.0 sits entirely below bar1 high 100.0 / low 99.0. high 99<100 fails; this is the opposite of a higher high.",
+      "bars": [[98.5, 99.0, 98.0, 98.8, 3000], [99.5, 100.0, 99.0, 99.7, 3000]]
+    },
+    {
+      "id": "QM_PP_HIGHER_HIGH_negative_higher_low_lower_high",
+      "predicate": "QM_PP_HIGHER_HIGH",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "An inside-style bar: higher low (99.2>99.0) but a LOWER high (99.5<100.0). The bar coiled inside the prior high, so there is no new higher high; the high clause must reject it.",
+      "bars": [[99.3, 99.5, 99.2, 99.4, 3000], [99.5, 100.0, 99.0, 99.6, 3000]]
+    },
+    {
+      "id": "QM_PP_HIGHER_HIGH_boundary_high_inside",
+      "predicate": "QM_PP_HIGHER_HIGH",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the high[0]>high[1] threshold with the low clause safely satisfied (99.5>99.0). bar0 high 100.5 is above bar1 high 100.0, comfortably clear of equality, so the strict > passes: expected true, inside the threshold.",
+      "bars": [[99.6, 100.5, 99.5, 100.2, 3000], [99.4, 100.0, 99.0, 99.8, 3000]]
+    },
+    {
+      "id": "QM_PP_HIGHER_HIGH_boundary_high_outside",
+      "predicate": "QM_PP_HIGHER_HIGH",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same low clause satisfied (99.4>99.0) but bar0 high 99.5 is below bar1 high 100.0, clearly under the threshold. Only the high value changed from the inside case, isolating which clause rejects: expected false, outside the threshold.",
+      "bars": [[99.42, 99.5, 99.4, 99.44, 3000], [99.5, 100.0, 99.0, 99.7, 3000]]
+    },
+    {
+      "id": "QM_PP_HIGHER_HIGH_boundary_low_inside",
+      "predicate": "QM_PP_HIGHER_HIGH",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the low[0]>low[1] threshold with the high clause satisfied (101.0>100.0). bar0 low 99.5 is above bar1 low 99.0, clear of equality, so the strict > passes: expected true, inside the threshold.",
+      "bars": [[99.6, 101.0, 99.5, 100.5, 3000], [99.4, 100.0, 99.0, 99.8, 3000]]
+    },
+    {
+      "id": "QM_PP_HIGHER_HIGH_boundary_low_outside",
+      "predicate": "QM_PP_HIGHER_HIGH",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "High clause satisfied (101.0>100.0) but bar0 low 98.9 is below bar1 low 99.0, under the threshold by a clear margin. Only the low value moved across the threshold from the inside case: expected false, outside the threshold.",
+      "bars": [[99.1, 101.0, 98.9, 100.0, 3000], [99.5, 100.0, 99.0, 99.3, 3000]]
+    },
+
+    {
+      "id": "QM_PP_LOWER_LOW_positive_down_shifted_bar",
+      "predicate": "QM_PP_LOWER_LOW",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A lower low in structure terms is a down-shifted bar: the whole range steps down, making BOTH a lower low and a lower high. bar1 high 100.0 / low 99.0; bar0 high 99.5 / low 98.5. low 98.5<99 and high 99.5<100.",
+      "bars": [[99.4, 99.5, 98.5, 98.7, 3000], [99.8, 100.0, 99.0, 99.2, 3000]]
+    },
+    {
+      "id": "QM_PP_LOWER_LOW_negative_outside_bar",
+      "predicate": "QM_PP_LOWER_LOW",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "An outside bar makes a lower low (98.5<99) but ALSO a higher high (101>100): the range engulfed the prior bar, it did not shift down. Expansion, not a down-shift, so it is not a structural lower low.",
+      "bars": [[99.0, 101.0, 98.5, 100.0, 3000], [99.5, 100.0, 99.0, 99.3, 3000]]
+    },
+    {
+      "id": "QM_PP_LOWER_LOW_negative_up_shifted_bar",
+      "predicate": "QM_PP_LOWER_LOW",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The range stepped UP: bar0 high 101.0 / low 99.5 sits above bar1 high 100.0 / low 99.0. low 99.5>99.0 fails; this is the opposite of a lower low.",
+      "bars": [[99.6, 101.0, 99.5, 100.5, 3000], [99.4, 100.0, 99.0, 99.8, 3000]]
+    },
+    {
+      "id": "QM_PP_LOWER_LOW_negative_lower_high_higher_low",
+      "predicate": "QM_PP_LOWER_LOW",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "An inside-style bar: lower high (99.5<100.0) but a HIGHER low (99.2>99.0). The bar coiled inside the prior low, so there is no new lower low; the low clause must reject it.",
+      "bars": [[99.3, 99.5, 99.2, 99.4, 3000], [99.6, 100.0, 99.0, 99.7, 3000]]
+    },
+    {
+      "id": "QM_PP_LOWER_LOW_boundary_low_inside",
+      "predicate": "QM_PP_LOWER_LOW",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the low[0]<low[1] threshold with the high clause satisfied (99.5<100.0). bar0 low 98.5 is below bar1 low 99.0, clear of equality, so the strict < passes: expected true, inside the threshold.",
+      "bars": [[99.3, 99.5, 98.5, 98.8, 3000], [99.8, 100.0, 99.0, 99.2, 3000]]
+    },
+    {
+      "id": "QM_PP_LOWER_LOW_boundary_low_outside",
+      "predicate": "QM_PP_LOWER_LOW",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "High clause satisfied (99.6<100.0) but bar0 low 99.5 is above bar1 low 99.0, over the threshold. Only the low value changed from the inside case: the low clause fails, expected false, outside the threshold.",
+      "bars": [[99.52, 99.6, 99.5, 99.55, 3000], [99.8, 100.0, 99.0, 99.2, 3000]]
+    },
+    {
+      "id": "QM_PP_LOWER_LOW_boundary_high_inside",
+      "predicate": "QM_PP_LOWER_LOW",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the high[0]<high[1] threshold with the low clause satisfied (98.5<99.0). bar0 high 99.5 is below bar1 high 100.0, clear of equality, so the strict < passes: expected true, inside the threshold.",
+      "bars": [[99.3, 99.5, 98.5, 98.9, 3000], [99.8, 100.0, 99.0, 99.2, 3000]]
+    },
+    {
+      "id": "QM_PP_LOWER_LOW_boundary_high_outside",
+      "predicate": "QM_PP_LOWER_LOW",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Low clause satisfied (98.5<99.0) but bar0 high 100.5 is above bar1 high 100.0, over the threshold. Only the high value moved across from the inside case: the high clause fails, expected false, outside the threshold.",
+      "bars": [[99.0, 100.5, 98.5, 99.8, 3000], [99.5, 100.0, 99.0, 99.3, 3000]]
+    },
+
+    {
+      "id": "QM_PP_THREE_DAY_RISING_positive_monotonic",
+      "predicate": "QM_PP_THREE_DAY_RISING",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Three consecutive up-closes across four bars: oldest to newest close 99.0 -> 99.5 -> 100.0 -> 100.5. Each close exceeds the one before, the definition of a three-day rise (close[0]>close[1]>close[2]>close[3]).",
+      "bars": [[100.2, 100.7, 100.0, 100.5, 3000], [99.7, 100.2, 99.5, 100.0, 3000], [99.2, 99.7, 99.0, 99.5, 3000], [98.7, 99.2, 98.5, 99.0, 3000]]
+    },
+    {
+      "id": "QM_PP_THREE_DAY_RISING_negative_middle_dip",
+      "predicate": "QM_PP_THREE_DAY_RISING",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The middle rise is broken: closes oldest->newest are 99.0, 100.0, 99.5, 100.5, so close[1]=99.5 is NOT above close[2]=100.0. One down-close inside the sequence disqualifies a three-day rise.",
+      "bars": [[100.0, 100.7, 99.9, 100.5, 3000], [99.8, 100.1, 99.3, 99.5, 3000], [99.5, 100.2, 99.4, 100.0, 3000], [98.7, 99.2, 98.5, 99.0, 3000]]
+    },
+    {
+      "id": "QM_PP_THREE_DAY_RISING_negative_all_falling",
+      "predicate": "QM_PP_THREE_DAY_RISING",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The opposite sequence: closes oldest->newest 100.5, 100.0, 99.5, 99.0, a monotonic decline. close[0]=99.0 is below close[1]=99.5, so no rise exists at all.",
+      "bars": [[99.3, 99.6, 98.8, 99.0, 3000], [99.8, 100.0, 99.4, 99.5, 3000], [100.2, 100.5, 99.9, 100.0, 3000], [100.7, 101.0, 100.4, 100.5, 3000]]
+    },
+    {
+      "id": "QM_PP_THREE_DAY_RISING_negative_last_close_flat",
+      "predicate": "QM_PP_THREE_DAY_RISING",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The earliest two rises hold (99.0->99.5->100.0) but the most recent close 99.8 falls back below the prior 100.0, so close[0]>close[1] fails. The newest bar breaks the rise even though older bars rose.",
+      "bars": [[99.9, 100.1, 99.6, 99.8, 3000], [99.7, 100.2, 99.5, 100.0, 3000], [99.2, 99.7, 99.0, 99.5, 3000], [98.7, 99.2, 98.5, 99.0, 3000]]
+    },
+    {
+      "id": "QM_PP_THREE_DAY_RISING_boundary_newest_inside",
+      "predicate": "QM_PP_THREE_DAY_RISING",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the close[0]>close[1] threshold with the two older rises satisfied (99.0<99.5<100.0). bar0 close 100.05 is just above bar1 close 100.0, clear of equality, so the strict > passes: expected true, inside the threshold.",
+      "bars": [[99.95, 100.2, 99.9, 100.05, 3000], [99.7, 100.2, 99.5, 100.0, 3000], [99.2, 99.7, 99.0, 99.5, 3000], [98.7, 99.2, 98.5, 99.0, 3000]]
+    },
+    {
+      "id": "QM_PP_THREE_DAY_RISING_boundary_newest_outside",
+      "predicate": "QM_PP_THREE_DAY_RISING",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Older rises still satisfied (99.0<99.5<100.0) but bar0 close 99.95 is just below bar1 close 100.0, under the threshold. Only the newest close moved across from the inside case: expected false, outside the threshold.",
+      "bars": [[99.9, 100.1, 99.85, 99.95, 3000], [99.7, 100.2, 99.5, 100.0, 3000], [99.2, 99.7, 99.0, 99.5, 3000], [98.7, 99.2, 98.5, 99.0, 3000]]
+    },
+
+    {
+      "id": "QM_PP_THREE_DAY_FALLING_positive_monotonic",
+      "predicate": "QM_PP_THREE_DAY_FALLING",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Three consecutive down-closes across four bars: oldest to newest close 101.0 -> 100.5 -> 100.0 -> 99.5. Each close is below the one before, the definition of a three-day fall (close[0]<close[1]<close[2]<close[3]).",
+      "bars": [[99.8, 100.0, 99.3, 99.5, 3000], [100.3, 100.5, 99.8, 100.0, 3000], [100.8, 101.0, 100.3, 100.5, 3000], [101.3, 101.5, 100.8, 101.0, 3000]]
+    },
+    {
+      "id": "QM_PP_THREE_DAY_FALLING_negative_middle_bump",
+      "predicate": "QM_PP_THREE_DAY_FALLING",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The middle fall is broken: closes oldest->newest are 101.0, 99.5, 100.0, 99.0, so close[1]=100.0 is NOT below close[2]=99.5. One up-close inside the sequence disqualifies a three-day fall.",
+      "bars": [[99.3, 99.6, 98.8, 99.0, 3000], [99.7, 100.2, 99.5, 100.0, 3000], [99.2, 99.8, 99.0, 99.5, 3000], [101.3, 101.5, 100.8, 101.0, 3000]]
+    },
+    {
+      "id": "QM_PP_THREE_DAY_FALLING_negative_all_rising",
+      "predicate": "QM_PP_THREE_DAY_FALLING",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The opposite sequence: closes oldest->newest 99.0, 99.5, 100.0, 100.5, a monotonic rise. close[0]=100.5 is above close[1]=100.0, so no fall exists at all.",
+      "bars": [[100.2, 100.7, 100.0, 100.5, 3000], [99.7, 100.2, 99.5, 100.0, 3000], [99.2, 99.7, 99.0, 99.5, 3000], [98.7, 99.2, 98.5, 99.0, 3000]]
+    },
+    {
+      "id": "QM_PP_THREE_DAY_FALLING_negative_last_close_up",
+      "predicate": "QM_PP_THREE_DAY_FALLING",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The earliest two falls hold (101.0->100.5->100.0) but the most recent close 100.2 ticks back above the prior 100.0, so close[0]<close[1] fails. The newest bar breaks the fall even though older bars fell.",
+      "bars": [[100.0, 100.4, 99.8, 100.2, 3000], [100.3, 100.5, 99.8, 100.0, 3000], [100.8, 101.0, 100.3, 100.5, 3000], [101.3, 101.5, 100.8, 101.0, 3000]]
+    },
+    {
+      "id": "QM_PP_THREE_DAY_FALLING_boundary_newest_inside",
+      "predicate": "QM_PP_THREE_DAY_FALLING",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Isolates the close[0]<close[1] threshold with the two older falls satisfied (101.0>100.5>100.0). bar0 close 99.95 is just below bar1 close 100.0, clear of equality, so the strict < passes: expected true, inside the threshold.",
+      "bars": [[99.98, 100.1, 99.9, 99.95, 3000], [100.3, 100.5, 99.8, 100.0, 3000], [100.8, 101.0, 100.3, 100.5, 3000], [101.3, 101.5, 100.8, 101.0, 3000]]
+    },
+    {
+      "id": "QM_PP_THREE_DAY_FALLING_boundary_newest_outside",
+      "predicate": "QM_PP_THREE_DAY_FALLING",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Older falls still satisfied (101.0>100.5>100.0) but bar0 close 100.05 is just above bar1 close 100.0, over the threshold. Only the newest close moved across from the inside case: expected false, outside the threshold.",
+      "bars": [[100.0, 100.2, 99.9, 100.05, 3000], [100.3, 100.5, 99.8, 100.0, 3000], [100.8, 101.0, 100.3, 100.5, 3000], [101.3, 101.5, 100.8, 101.0, 3000]]
+    },
+
+    {
+      "id": "QM_PP_CLOSE_ABOVE_PREV_HIGH_positive_breakout_close",
+      "predicate": "QM_PP_CLOSE_ABOVE_PREV_HIGH",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "The reference bar closes above the entire prior bar: close 101.0 exceeds bar1 high 100.0. A close that clears the previous bar's high is a breakout close.",
+      "bars": [[100.2, 101.2, 100.0, 101.0, 3000], [99.5, 100.0, 99.3, 99.8, 3000]]
+    },
+    {
+      "id": "QM_PP_CLOSE_ABOVE_PREV_HIGH_negative_close_within_range",
+      "predicate": "QM_PP_CLOSE_ABOVE_PREV_HIGH",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The reference bar closes at 99.9, still inside the prior bar's range (high 100.0). No breakout occurred: the close did not clear the previous high.",
+      "bars": [[99.5, 100.0, 99.3, 99.9, 3000], [99.5, 100.0, 99.3, 99.7, 3000]]
+    },
+    {
+      "id": "QM_PP_CLOSE_ABOVE_PREV_HIGH_negative_high_pierces_close_fails",
+      "predicate": "QM_PP_CLOSE_ABOVE_PREV_HIGH",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Intraday the bar traded above the prior high (high 100.5 > 100.0) but it CLOSED back at 99.8, below that high. The pattern is defined on the close, not the high, so a failed breakout must not register.",
+      "bars": [[99.6, 100.5, 99.5, 99.8, 3000], [99.5, 100.0, 99.3, 99.7, 3000]]
+    },
+    {
+      "id": "QM_PP_CLOSE_ABOVE_PREV_HIGH_negative_bearish_close_below",
+      "predicate": "QM_PP_CLOSE_ABOVE_PREV_HIGH",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A down bar closing at 99.0, well beneath the prior high 100.0. Nowhere near a breakout close above the previous high.",
+      "bars": [[99.8, 99.9, 98.8, 99.0, 3000], [99.5, 100.0, 99.3, 99.7, 3000]]
+    },
+    {
+      "id": "QM_PP_CLOSE_ABOVE_PREV_HIGH_boundary_inside",
+      "predicate": "QM_PP_CLOSE_ABOVE_PREV_HIGH",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "close[0]=100.5 is above the prior high 100.0 by a clear margin, well clear of equality, so the strict close[0]>high[1] passes: expected true, above the threshold.",
+      "bars": [[100.0, 100.7, 99.9, 100.5, 3000], [99.5, 100.0, 99.3, 99.8, 3000]]
+    },
+    {
+      "id": "QM_PP_CLOSE_ABOVE_PREV_HIGH_boundary_outside",
+      "predicate": "QM_PP_CLOSE_ABOVE_PREV_HIGH",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "close[0]=99.5 is below the prior high 100.0, clearly under the threshold. Only the close moved down relative to the inside case: expected false, below the threshold.",
+      "bars": [[99.7, 99.9, 99.4, 99.5, 3000], [99.5, 100.0, 99.3, 99.8, 3000]]
+    },
+
+    {
+      "id": "QM_PP_CLOSE_BELOW_PREV_LOW_positive_breakdown_close",
+      "predicate": "QM_PP_CLOSE_BELOW_PREV_LOW",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "The reference bar closes below the entire prior bar: close 98.5 is beneath bar1 low 99.0. A close that breaks the previous bar's low is a breakdown close.",
+      "bars": [[99.3, 99.4, 98.3, 98.5, 3000], [99.5, 100.0, 99.0, 99.7, 3000]]
+    },
+    {
+      "id": "QM_PP_CLOSE_BELOW_PREV_LOW_negative_close_within_range",
+      "predicate": "QM_PP_CLOSE_BELOW_PREV_LOW",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The reference bar closes at 99.5, still inside the prior bar's range (low 99.0). No breakdown occurred: the close did not break the previous low.",
+      "bars": [[99.8, 100.0, 99.4, 99.5, 3000], [99.5, 100.0, 99.0, 99.7, 3000]]
+    },
+    {
+      "id": "QM_PP_CLOSE_BELOW_PREV_LOW_negative_low_pierces_close_fails",
+      "predicate": "QM_PP_CLOSE_BELOW_PREV_LOW",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Intraday the bar traded below the prior low (low 98.5 < 99.0) but it CLOSED back at 99.5, above that low. The pattern is defined on the close, not the low, so a failed breakdown must not register.",
+      "bars": [[99.6, 99.9, 98.5, 99.5, 3000], [99.5, 100.0, 99.0, 99.7, 3000]]
+    },
+    {
+      "id": "QM_PP_CLOSE_BELOW_PREV_LOW_negative_bullish_close_above",
+      "predicate": "QM_PP_CLOSE_BELOW_PREV_LOW",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "An up bar closing at 100.0, well above the prior low 99.0. Nowhere near a breakdown close below the previous low.",
+      "bars": [[99.5, 100.2, 99.4, 100.0, 3000], [99.5, 100.0, 99.0, 99.7, 3000]]
+    },
+    {
+      "id": "QM_PP_CLOSE_BELOW_PREV_LOW_boundary_inside",
+      "predicate": "QM_PP_CLOSE_BELOW_PREV_LOW",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "close[0]=98.5 is below the prior low 99.0 by a clear margin, well clear of equality, so the strict close[0]<low[1] passes: expected true, below the threshold.",
+      "bars": [[99.0, 99.2, 98.3, 98.5, 3000], [99.5, 100.0, 99.0, 99.7, 3000]]
+    },
+    {
+      "id": "QM_PP_CLOSE_BELOW_PREV_LOW_boundary_outside",
+      "predicate": "QM_PP_CLOSE_BELOW_PREV_LOW",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "close[0]=99.5 is above the prior low 99.0, clearly over the threshold. Only the close moved up relative to the inside case: expected false, above the threshold.",
+      "bars": [[99.3, 99.6, 99.1, 99.5, 3000], [99.5, 100.0, 99.0, 99.7, 3000]]
+    }
+  ]
+}

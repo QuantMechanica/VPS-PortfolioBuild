@@ -1,0 +1,658 @@
+{
+  "group": "continuation_consolidation",
+  "author": "continuation_consolidation",
+  "note": "bars[0] is the reference (most recently closed) bar; index increases going back in time. For the three-methods and mat-hold predicates the long anchor bar is bars[4] (oldest); those five bars are all supplied explicitly so no filler lands inside the read span. Bars are [open, high, low, close, tick_volume].",
+  "default_filler_series": [
+    [100.0, 100.6, 99.4, 100.1, 3000]
+  ],
+  "fixtures": [
+    {
+      "id": "RISING_THREE_METHODS_positive_canonical",
+      "predicate": "QM_PP_RISING_THREE_METHODS",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Rising three methods is a bullish continuation: a long white bar (bar4: 100->109), then three small bearish pullback bars (bars 3,2,1) that stay inside the long bar's 99..110 range, then a strong white bar (bar0) that closes at 111.5, above the long bar's 110 high. Every clause holds.",
+      "bars": [[104, 112, 103.5, 111.5, 5000], [105, 106, 103, 103.5, 3000], [106, 107, 104, 104.5, 3000], [108, 108.5, 105, 105.5, 3000], [100, 110, 99, 109, 6000]]
+    },
+    {
+      "id": "RISING_THREE_METHODS_negative_no_breakout",
+      "predicate": "QM_PP_RISING_THREE_METHODS",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The final bar is bullish but closes at 108.5, still below the long bar's 110 high, so the continuation never breaks out. Without the breakout it is just a pullback that failed to resume, not rising three methods.",
+      "bars": [[104, 109, 103.5, 108.5, 5000], [105, 106, 103, 103.5, 3000], [106, 107, 104, 104.5, 3000], [108, 108.5, 105, 105.5, 3000], [100, 110, 99, 109, 6000]]
+    },
+    {
+      "id": "RISING_THREE_METHODS_negative_containment_broken",
+      "predicate": "QM_PP_RISING_THREE_METHODS",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar2 dips to a low of 98, below the long bar's 99 low, so the pullback is no longer contained within the long bar. A pullback that pierces the long bar's low is a breakdown, not a healthy continuation setup.",
+      "bars": [[104, 112, 103.5, 111.5, 5000], [105, 106, 103, 103.5, 3000], [100, 101, 98, 98.5, 3000], [108, 108.5, 105, 105.5, 3000], [100, 110, 99, 109, 6000]]
+    },
+    {
+      "id": "RISING_THREE_METHODS_negative_middle_not_bearish",
+      "predicate": "QM_PP_RISING_THREE_METHODS",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar1 closes at 105.5 above its 103 open, making it bullish. The three middle bars must be a bearish pullback; a bullish middle bar breaks the down-drift the pattern requires.",
+      "bars": [[104, 112, 103.5, 111.5, 5000], [103, 106, 103, 105.5, 3000], [106, 107, 104, 104.5, 3000], [108, 108.5, 105, 105.5, 3000], [100, 110, 99, 109, 6000]]
+    },
+    {
+      "id": "RISING_THREE_METHODS_boundary_breakout_inside",
+      "predicate": "QM_PP_RISING_THREE_METHODS",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "close[0]=111 is above the long bar's high[4]=110, so the strict close>high breakout clause fires true. Kept clearly above 110 to avoid float-equality ambiguity.",
+      "bars": [[104, 112, 103.5, 111, 5000], [105, 106, 103, 103.5, 3000], [106, 107, 104, 104.5, 3000], [108, 108.5, 105, 105.5, 3000], [100, 110, 99, 109, 6000]]
+    },
+    {
+      "id": "RISING_THREE_METHODS_boundary_breakout_outside",
+      "predicate": "QM_PP_RISING_THREE_METHODS",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Identical to the breakout-inside case except close[0]=109 is below high[4]=110, so the close>high breakout clause is false. The final bar is still bullish, isolating the breakout clause.",
+      "bars": [[104, 112, 103.5, 109, 5000], [105, 106, 103, 103.5, 3000], [106, 107, 104, 104.5, 3000], [108, 108.5, 105, 105.5, 3000], [100, 110, 99, 109, 6000]]
+    },
+    {
+      "id": "RISING_THREE_METHODS_boundary_containment_inside",
+      "predicate": "QM_PP_RISING_THREE_METHODS",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Bar1 high=109.9 is within the long bar's high[4]=110, so high[1]<=high[4] holds and the containment clause passes. Everything else stays at the positive canonical values.",
+      "bars": [[104, 112, 103.5, 111.5, 5000], [105, 109.9, 103, 103.5, 3000], [106, 107, 104, 104.5, 3000], [108, 108.5, 105, 105.5, 3000], [100, 110, 99, 109, 6000]]
+    },
+    {
+      "id": "RISING_THREE_METHODS_boundary_containment_outside",
+      "predicate": "QM_PP_RISING_THREE_METHODS",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Only change from the containment-inside case: bar1 high=110.1 is beyond high[4]=110, so high[1]<=high[4] fails. Single isolated change identifies the containment clause as the rejecter.",
+      "bars": [[104, 112, 103.5, 111.5, 5000], [105, 110.1, 103, 103.5, 3000], [106, 107, 104, 104.5, 3000], [108, 108.5, 105, 105.5, 3000], [100, 110, 99, 109, 6000]]
+    },
+
+    {
+      "id": "FALLING_THREE_METHODS_positive_canonical",
+      "predicate": "QM_PP_FALLING_THREE_METHODS",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Falling three methods is the bearish mirror: a long black bar (bar4: 110->101), three small bullish bars (bars 3,2,1) that stay inside the 100..111 range, then a strong black bar (bar0) closing at 99, below the long bar's 100 low. All clauses hold.",
+      "bars": [[106, 106.5, 98, 99, 5000], [104, 107, 103, 106.5, 3000], [103, 106, 102, 105.5, 3000], [102, 105, 101.5, 104.5, 3000], [110, 111, 100, 101, 6000]]
+    },
+    {
+      "id": "FALLING_THREE_METHODS_negative_no_breakdown",
+      "predicate": "QM_PP_FALLING_THREE_METHODS",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The final bar is bearish but closes at 101, still above the long bar's 100 low, so no downside breakdown occurs. The bearish continuation is not confirmed.",
+      "bars": [[106, 106.5, 100.5, 101, 5000], [104, 107, 103, 106.5, 3000], [103, 106, 102, 105.5, 3000], [102, 105, 101.5, 104.5, 3000], [110, 111, 100, 101, 6000]]
+    },
+    {
+      "id": "FALLING_THREE_METHODS_negative_containment_broken",
+      "predicate": "QM_PP_FALLING_THREE_METHODS",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar2 rallies to a high of 112, above the long bar's 111 high, so the counter-rally escapes the long bar's range. A counter-rally that clears the long bar's high is not the contained pause the pattern needs.",
+      "bars": [[106, 106.5, 98, 99, 5000], [104, 107, 103, 106.5, 3000], [103, 112, 102, 111.5, 3000], [102, 105, 101.5, 104.5, 3000], [110, 111, 100, 101, 6000]]
+    },
+    {
+      "id": "FALLING_THREE_METHODS_negative_middle_not_bullish",
+      "predicate": "QM_PP_FALLING_THREE_METHODS",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar1 closes at 104 below its 107 open, making it bearish. The three middle bars must be a bullish counter-rally; a bearish middle bar breaks the up-drift the pattern requires.",
+      "bars": [[106, 106.5, 98, 99, 5000], [107, 107.5, 103, 104, 3000], [103, 106, 102, 105.5, 3000], [102, 105, 101.5, 104.5, 3000], [110, 111, 100, 101, 6000]]
+    },
+    {
+      "id": "FALLING_THREE_METHODS_boundary_breakdown_inside",
+      "predicate": "QM_PP_FALLING_THREE_METHODS",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "close[0]=99.5 is below the long bar's low[4]=100, so the strict close<low breakdown clause fires true. Kept clearly below 100 to avoid float-equality ambiguity.",
+      "bars": [[106, 106.5, 98, 99.5, 5000], [104, 107, 103, 106.5, 3000], [103, 106, 102, 105.5, 3000], [102, 105, 101.5, 104.5, 3000], [110, 111, 100, 101, 6000]]
+    },
+    {
+      "id": "FALLING_THREE_METHODS_boundary_breakdown_outside",
+      "predicate": "QM_PP_FALLING_THREE_METHODS",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Only change from breakdown-inside: close[0]=100.5 is above low[4]=100, so close<low is false. The final bar is still bearish, isolating the breakdown clause.",
+      "bars": [[106, 106.5, 98, 100.5, 5000], [104, 107, 103, 106.5, 3000], [103, 106, 102, 105.5, 3000], [102, 105, 101.5, 104.5, 3000], [110, 111, 100, 101, 6000]]
+    },
+    {
+      "id": "FALLING_THREE_METHODS_boundary_containment_inside",
+      "predicate": "QM_PP_FALLING_THREE_METHODS",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Bar1 low=100.1 is within the long bar's low[4]=100, so low[1]>=low[4] holds and containment passes. Everything else at positive canonical values.",
+      "bars": [[106, 106.5, 98, 99, 5000], [104, 107, 100.1, 106.5, 3000], [103, 106, 102, 105.5, 3000], [102, 105, 101.5, 104.5, 3000], [110, 111, 100, 101, 6000]]
+    },
+    {
+      "id": "FALLING_THREE_METHODS_boundary_containment_outside",
+      "predicate": "QM_PP_FALLING_THREE_METHODS",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Only change from containment-inside: bar1 low=99.9 is beyond low[4]=100, so low[1]>=low[4] fails. Single isolated change identifies the containment clause.",
+      "bars": [[106, 106.5, 98, 99, 5000], [104, 107, 99.9, 106.5, 3000], [103, 106, 102, 105.5, 3000], [102, 105, 101.5, 104.5, 3000], [110, 111, 100, 101, 6000]]
+    },
+
+    {
+      "id": "MAT_HOLD_BULL_positive_canonical",
+      "predicate": "QM_PP_MAT_HOLD_BULL",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Mat hold bull: a long white bar (bar4: 100->107, range 8.5), a gap up so the first small bar (bar3) opens entirely above the long bar's 108 high (low[3]=108.5), three small consolidation bodies (0.2,0.3,0.3, each well under half the 8.5 range), then bar0 closes at 110.5, above the long bar's 108 high.",
+      "bars": [[108.5, 111, 108, 110.5, 4000], [108.8, 109.2, 108.3, 108.5, 3000], [109, 109.5, 108.5, 108.7, 3000], [109, 110, 108.5, 108.8, 3000], [100, 108, 99.5, 107, 6000]]
+    },
+    {
+      "id": "MAT_HOLD_BULL_negative_anchor_not_bull",
+      "predicate": "QM_PP_MAT_HOLD_BULL",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The anchor bar4 closes at 100 below its 107 open, making it bearish. Mat hold bull requires a long WHITE anchor; a bearish anchor cannot start a bullish continuation. Gap and breakout clauses stay intact so only the anchor direction fails.",
+      "bars": [[108.5, 111, 108, 110.5, 4000], [108.8, 109.2, 108.3, 108.5, 3000], [109, 109.5, 108.5, 108.7, 3000], [109, 110, 108.5, 108.8, 3000], [107, 108, 99.5, 100, 6000]]
+    },
+    {
+      "id": "MAT_HOLD_BULL_negative_no_gap",
+      "predicate": "QM_PP_MAT_HOLD_BULL",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The first small bar (bar3) has low=106, so it overlaps the long bar rather than gapping above its 108 high. Mat hold requires the consolidation to hold above the long bar (a rising window); without the gap up it is an ordinary pullback.",
+      "bars": [[108.5, 111, 108, 110.5, 4000], [108.8, 109.2, 108.3, 108.5, 3000], [109, 109.5, 108.5, 108.7, 3000], [107, 107.5, 106, 106.5, 3000], [100, 108, 99.5, 107, 6000]]
+    },
+    {
+      "id": "MAT_HOLD_BULL_negative_body_too_large",
+      "predicate": "QM_PP_MAT_HOLD_BULL",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar2 has a body of 5.0 (109->104), larger than half the long bar's 8.5 range. The three middle bars must be small consolidation candles; a full-size body is not consolidation and the pattern must reject it.",
+      "bars": [[108.5, 111, 108, 110.5, 4000], [108.8, 109.2, 108.3, 108.5, 3000], [109, 109.5, 103.5, 104, 3000], [109, 110, 108.5, 108.8, 3000], [100, 108, 99.5, 107, 6000]]
+    },
+    {
+      "id": "MAT_HOLD_BULL_boundary_body_inside",
+      "predicate": "QM_PP_MAT_HOLD_BULL",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Bar1 body=4.0 is under the 0.5*Range(4)=4.25 body ceiling, so Body(1)<=0.5*Range(4) holds. Margin ~6% below the threshold keeps it clear of float equality.",
+      "bars": [[108.5, 111, 108, 110.5, 4000], [108.5, 112.6, 108.3, 112.5, 3000], [109, 109.5, 108.5, 108.7, 3000], [109, 110, 108.5, 108.8, 3000], [100, 108, 99.5, 107, 6000]]
+    },
+    {
+      "id": "MAT_HOLD_BULL_boundary_body_outside",
+      "predicate": "QM_PP_MAT_HOLD_BULL",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Only change from body-inside: bar1 body=4.5 is over the 0.5*Range(4)=4.25 ceiling, so Body(1)<=0.5*Range(4) fails. Isolates the body-size clause.",
+      "bars": [[108.5, 111, 108, 110.5, 4000], [108.5, 113.1, 108.3, 113, 3000], [109, 109.5, 108.5, 108.7, 3000], [109, 110, 108.5, 108.8, 3000], [100, 108, 99.5, 107, 6000]]
+    },
+    {
+      "id": "MAT_HOLD_BULL_boundary_gap_inside",
+      "predicate": "QM_PP_MAT_HOLD_BULL",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Bar3 low=108.2 is above the long bar's high[4]=108, so the strict low[3]>high[4] gap clause fires true. Kept above 108 with clear margin.",
+      "bars": [[108.5, 111, 108, 110.5, 4000], [108.8, 109.2, 108.3, 108.5, 3000], [109, 109.5, 108.5, 108.7, 3000], [109, 110, 108.2, 108.8, 3000], [100, 108, 99.5, 107, 6000]]
+    },
+    {
+      "id": "MAT_HOLD_BULL_boundary_gap_outside",
+      "predicate": "QM_PP_MAT_HOLD_BULL",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Only change from gap-inside: bar3 low=107.8 is below high[4]=108, so low[3]>high[4] is false. Isolates the gap clause.",
+      "bars": [[108.5, 111, 108, 110.5, 4000], [108.8, 109.2, 108.3, 108.5, 3000], [109, 109.5, 108.5, 108.7, 3000], [108.5, 110, 107.8, 108.8, 3000], [100, 108, 99.5, 107, 6000]]
+    },
+
+    {
+      "id": "MAT_HOLD_BEAR_positive_canonical",
+      "predicate": "QM_PP_MAT_HOLD_BEAR",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Mat hold bear mirror: a long black bar (bar4: 108->101, range 8.5), a gap down so the first small bar (bar3) sits entirely below the long bar's 100 low (high[3]=99.5), three small consolidation bodies (0.2 each, under half the 8.5 range), then bar0 closes at 96.5, below the long bar's 100 low.",
+      "bars": [[99, 99.5, 96, 96.5, 4000], [98.8, 99.3, 98.3, 98.6, 3000], [99, 99.5, 98.5, 99.2, 3000], [99, 99.5, 98.5, 98.8, 3000], [108, 108.5, 100, 101, 6000]]
+    },
+    {
+      "id": "MAT_HOLD_BEAR_negative_anchor_not_bear",
+      "predicate": "QM_PP_MAT_HOLD_BEAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The anchor bar4 closes at 108 above its 101 open, making it bullish. Mat hold bear requires a long BLACK anchor; a bullish anchor cannot start a bearish continuation. Gap and breakdown clauses stay intact so only the anchor direction fails.",
+      "bars": [[99, 99.5, 96, 96.5, 4000], [98.8, 99.3, 98.3, 98.6, 3000], [99, 99.5, 98.5, 99.2, 3000], [99, 99.5, 98.5, 98.8, 3000], [101, 108.5, 100, 108, 6000]]
+    },
+    {
+      "id": "MAT_HOLD_BEAR_negative_no_gap",
+      "predicate": "QM_PP_MAT_HOLD_BEAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The first small bar (bar3) has high=101, so it overlaps the long bar rather than gapping below its 100 low. Mat hold bear requires the consolidation to hold below the long bar (a falling window); without the gap down it is an ordinary bounce.",
+      "bars": [[99, 99.5, 96, 96.5, 4000], [98.8, 99.3, 98.3, 98.6, 3000], [99, 99.5, 98.5, 99.2, 3000], [100.5, 101, 99.5, 100.2, 3000], [108, 108.5, 100, 101, 6000]]
+    },
+    {
+      "id": "MAT_HOLD_BEAR_negative_body_too_large",
+      "predicate": "QM_PP_MAT_HOLD_BEAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar2 has a body of 5.0 (99->104), larger than half the long bar's 8.5 range. The middle bars must be small consolidation candles; a full-size body is not consolidation and the pattern must reject it.",
+      "bars": [[99, 99.5, 96, 96.5, 4000], [98.8, 99.3, 98.3, 98.6, 3000], [99, 104.5, 98.5, 104, 3000], [99, 99.5, 98.5, 98.8, 3000], [108, 108.5, 100, 101, 6000]]
+    },
+    {
+      "id": "MAT_HOLD_BEAR_boundary_body_inside",
+      "predicate": "QM_PP_MAT_HOLD_BEAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Bar1 body=4.0 is under the 0.5*Range(4)=4.25 body ceiling, so Body(1)<=0.5*Range(4) holds. Margin ~6% below the threshold.",
+      "bars": [[99, 99.5, 96, 96.5, 4000], [98.8, 102.9, 98, 102.8, 3000], [99, 99.5, 98.5, 99.2, 3000], [99, 99.5, 98.5, 98.8, 3000], [108, 108.5, 100, 101, 6000]]
+    },
+    {
+      "id": "MAT_HOLD_BEAR_boundary_body_outside",
+      "predicate": "QM_PP_MAT_HOLD_BEAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Only change from body-inside: bar1 body=4.5 is over the 0.5*Range(4)=4.25 ceiling, so Body(1)<=0.5*Range(4) fails. Isolates the body-size clause.",
+      "bars": [[99, 99.5, 96, 96.5, 4000], [98.8, 103.4, 98, 103.3, 3000], [99, 99.5, 98.5, 99.2, 3000], [99, 99.5, 98.5, 98.8, 3000], [108, 108.5, 100, 101, 6000]]
+    },
+    {
+      "id": "MAT_HOLD_BEAR_boundary_gap_inside",
+      "predicate": "QM_PP_MAT_HOLD_BEAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Bar3 high=99.8 is below the long bar's low[4]=100, so the strict high[3]<low[4] gap clause fires true. Kept below 100 with clear margin.",
+      "bars": [[99, 99.5, 96, 96.5, 4000], [98.8, 99.3, 98.3, 98.6, 3000], [99, 99.5, 98.5, 99.2, 3000], [99, 99.8, 98.5, 98.8, 3000], [108, 108.5, 100, 101, 6000]]
+    },
+    {
+      "id": "MAT_HOLD_BEAR_boundary_gap_outside",
+      "predicate": "QM_PP_MAT_HOLD_BEAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Only change from gap-inside: bar3 high=100.2 is above low[4]=100, so high[3]<low[4] is false. Isolates the gap clause.",
+      "bars": [[99, 99.5, 96, 96.5, 4000], [98.8, 99.3, 98.3, 98.6, 3000], [99, 99.5, 98.5, 99.2, 3000], [99, 100.2, 98.5, 98.8, 3000], [108, 108.5, 100, 101, 6000]]
+    },
+
+    {
+      "id": "INSIDE_BAR_positive_canonical",
+      "predicate": "QM_PP_INSIDE_BAR",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "An inside bar's whole range sits within the prior bar's range. Bar0 (high 103, low 97) is fully inside bar1 (high 105, low 95): high[0]<=high[1] and low[0]>=low[1]. Textbook consolidation bar.",
+      "bars": [[100, 103, 97, 101, 3000], [100, 105, 95, 101, 4000]]
+    },
+    {
+      "id": "INSIDE_BAR_negative_breaks_high",
+      "predicate": "QM_PP_INSIDE_BAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar0 high=106 exceeds bar1 high=105, so the current bar pokes above the prior range. A bar that makes a higher high is not contained and is not an inside bar.",
+      "bars": [[100, 106, 97, 101, 3000], [100, 105, 95, 101, 4000]]
+    },
+    {
+      "id": "INSIDE_BAR_negative_breaks_low",
+      "predicate": "QM_PP_INSIDE_BAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar0 low=94 undercuts bar1 low=95, so the current bar pokes below the prior range. A bar that makes a lower low is not contained and is not an inside bar.",
+      "bars": [[100, 103, 94, 101, 3000], [100, 105, 95, 101, 4000]]
+    },
+    {
+      "id": "INSIDE_BAR_boundary_inside",
+      "predicate": "QM_PP_INSIDE_BAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Bar0 high=104.9 stays within bar1 high=105 and bar0 low=95.1 stays within bar1 low=95, so both containment inequalities hold. Just inside both bounds.",
+      "bars": [[100, 104.9, 95.1, 101, 3000], [100, 105, 95, 101, 4000]]
+    },
+    {
+      "id": "INSIDE_BAR_boundary_high_outside",
+      "predicate": "QM_PP_INSIDE_BAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Bar0 high=105.1 is beyond bar1 high=105, so high[0]<=high[1] fails while the low stays contained. Isolates the high containment clause.",
+      "bars": [[100, 105.1, 97, 101, 3000], [100, 105, 95, 101, 4000]]
+    },
+    {
+      "id": "INSIDE_BAR_boundary_low_outside",
+      "predicate": "QM_PP_INSIDE_BAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Bar0 low=94.9 is below bar1 low=95, so low[0]>=low[1] fails while the high stays contained. Isolates the low containment clause.",
+      "bars": [[100, 103, 94.9, 101, 3000], [100, 105, 95, 101, 4000]]
+    },
+
+    {
+      "id": "DOUBLE_INSIDE_BAR_positive_canonical",
+      "predicate": "QM_PP_DOUBLE_INSIDE_BAR",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Two successive inside bars: bar1 (high 107, low 93) is inside bar2 (high 110, low 90), and bar0 (high 104, low 96) is inside bar1. A tightening two-step consolidation.",
+      "bars": [[100, 104, 96, 101, 3000], [100, 107, 93, 101, 3500], [100, 110, 90, 101, 4000]]
+    },
+    {
+      "id": "DOUBLE_INSIDE_BAR_negative_inner_breaks",
+      "predicate": "QM_PP_DOUBLE_INSIDE_BAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar0 high=108 exceeds bar1 high=107, so the newest bar is not inside its predecessor. The second inside relationship is broken, so it is not a double inside bar.",
+      "bars": [[100, 108, 96, 101, 3000], [100, 107, 93, 101, 3500], [100, 110, 90, 101, 4000]]
+    },
+    {
+      "id": "DOUBLE_INSIDE_BAR_negative_outer_breaks_low",
+      "predicate": "QM_PP_DOUBLE_INSIDE_BAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar1 low=89 undercuts bar2 low=90, so the middle bar is not inside the oldest bar. The first inside relationship is broken.",
+      "bars": [[100, 104, 96, 101, 3000], [100, 107, 89, 101, 3500], [100, 110, 90, 101, 4000]]
+    },
+    {
+      "id": "DOUBLE_INSIDE_BAR_negative_outer_breaks_high",
+      "predicate": "QM_PP_DOUBLE_INSIDE_BAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar1 high=111 exceeds bar2 high=110, so the middle bar breaks above the oldest bar. Attacks the outer high containment clause specifically.",
+      "bars": [[100, 104, 96, 101, 3000], [100, 111, 93, 101, 3500], [100, 110, 90, 101, 4000]]
+    },
+    {
+      "id": "DOUBLE_INSIDE_BAR_boundary_outer_inside",
+      "predicate": "QM_PP_DOUBLE_INSIDE_BAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Bar1 high=109.9 is within bar2 high=110, so high[1]<=high[2] holds; bar0 still inside bar1. Just inside the outer bound.",
+      "bars": [[100, 104, 96, 101, 3000], [100, 109.9, 93, 101, 3500], [100, 110, 90, 101, 4000]]
+    },
+    {
+      "id": "DOUBLE_INSIDE_BAR_boundary_outer_outside",
+      "predicate": "QM_PP_DOUBLE_INSIDE_BAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Only change from outer-inside: bar1 high=110.1 is beyond bar2 high=110, so high[1]<=high[2] fails. Isolates the outer high clause.",
+      "bars": [[100, 104, 96, 101, 3000], [100, 110.1, 93, 101, 3500], [100, 110, 90, 101, 4000]]
+    },
+    {
+      "id": "DOUBLE_INSIDE_BAR_boundary_inner_inside",
+      "predicate": "QM_PP_DOUBLE_INSIDE_BAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Bar0 low=93.1 is within bar1 low=93, so low[0]>=low[1] holds; the outer relationship stays intact. Just inside the inner bound.",
+      "bars": [[100, 104, 93.1, 101, 3000], [100, 107, 93, 101, 3500], [100, 110, 90, 101, 4000]]
+    },
+    {
+      "id": "DOUBLE_INSIDE_BAR_boundary_inner_outside",
+      "predicate": "QM_PP_DOUBLE_INSIDE_BAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Only change from inner-inside: bar0 low=92.9 is below bar1 low=93, so low[0]>=low[1] fails. Isolates the inner low clause.",
+      "bars": [[100, 104, 92.9, 101, 3000], [100, 107, 93, 101, 3500], [100, 110, 90, 101, 4000]]
+    },
+
+    {
+      "id": "OUTSIDE_BAR_positive_canonical",
+      "predicate": "QM_PP_OUTSIDE_BAR",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "An outside bar engulfs the prior bar's range. Bar0 (high 105, low 95) covers bar1 (high 103, low 97): high[0]>=high[1] and low[0]<=low[1]. A higher high and a lower low than the prior bar.",
+      "bars": [[100, 105, 95, 101, 3000], [100, 103, 97, 101, 4000]]
+    },
+    {
+      "id": "OUTSIDE_BAR_negative_no_cover_high",
+      "predicate": "QM_PP_OUTSIDE_BAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar0 high=102 fails to reach bar1 high=103, so the current bar does not engulf the top of the prior range. Without a higher high it is not an outside bar.",
+      "bars": [[100, 102, 95, 101, 3000], [100, 103, 97, 101, 4000]]
+    },
+    {
+      "id": "OUTSIDE_BAR_negative_no_cover_low",
+      "predicate": "QM_PP_OUTSIDE_BAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar0 low=98 fails to reach bar1 low=97, so the current bar does not engulf the bottom of the prior range. Without a lower low it is not an outside bar.",
+      "bars": [[100, 105, 98, 101, 3000], [100, 103, 97, 101, 4000]]
+    },
+    {
+      "id": "OUTSIDE_BAR_negative_inside_bar",
+      "predicate": "QM_PP_OUTSIDE_BAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar0 (high 102, low 98) is fully inside bar1 (high 103, low 97): it is an inside bar, the exact opposite of engulfing. Both engulfing clauses fail.",
+      "bars": [[100, 102, 98, 101, 3000], [100, 103, 97, 101, 4000]]
+    },
+    {
+      "id": "OUTSIDE_BAR_boundary_inside",
+      "predicate": "QM_PP_OUTSIDE_BAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Bar0 high=103.1 is above bar1 high=103 and bar0 low=96.9 is below bar1 low=97, so both engulfing inequalities hold. Just beyond both bounds on the engulfing side.",
+      "bars": [[100, 103.1, 96.9, 101, 3000], [100, 103, 97, 101, 4000]]
+    },
+    {
+      "id": "OUTSIDE_BAR_boundary_high_outside",
+      "predicate": "QM_PP_OUTSIDE_BAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Bar0 high=102.9 is below bar1 high=103, so high[0]>=high[1] fails while the low still engulfs. Isolates the high engulfing clause (falls short of the top).",
+      "bars": [[100, 102.9, 95, 101, 3000], [100, 103, 97, 101, 4000]]
+    },
+    {
+      "id": "OUTSIDE_BAR_boundary_low_outside",
+      "predicate": "QM_PP_OUTSIDE_BAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Bar0 low=97.1 is above bar1 low=97, so low[0]<=low[1] fails while the high still engulfs. Isolates the low engulfing clause (falls short of the bottom).",
+      "bars": [[100, 105, 97.1, 101, 3000], [100, 103, 97, 101, 4000]]
+    },
+
+    {
+      "id": "NR4_positive_canonical",
+      "predicate": "QM_PP_NR4",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "NR4 means the reference bar has the narrowest range of the last four bars. Bar0 range=1.0 is strictly smaller than bar1=2.0, bar2=3.0 and bar3=2.5. The narrowest bar of the group.",
+      "bars": [[100, 100.5, 99.5, 100, 3000], [100, 101, 99, 100, 3000], [100, 101.5, 98.5, 100, 3000], [100, 101.25, 98.75, 100, 3000]]
+    },
+    {
+      "id": "NR4_negative_not_narrowest",
+      "predicate": "QM_PP_NR4",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar1 range=0.8 is narrower than bar0 range=1.0, so bar0 is not the narrowest of the four. An NR4 requires the reference bar to be the single narrowest.",
+      "bars": [[100, 100.5, 99.5, 100, 3000], [100, 100.4, 99.6, 100, 3000], [100, 101.5, 98.5, 100, 3000], [100, 101.25, 98.75, 100, 3000]]
+    },
+    {
+      "id": "NR4_negative_tie",
+      "predicate": "QM_PP_NR4",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar0 range=1.0 exactly ties bar3 range=1.0. A tie means bar0 is not strictly the narrowest, so the pattern (narrowest of four) is not satisfied; the strict '<' comparison correctly rejects the tie. This is the tie-handling proof.",
+      "bars": [[100, 100.5, 99.5, 100, 3000], [100, 101, 99, 100, 3000], [100, 101.5, 98.5, 100, 3000], [100, 100.5, 99.5, 100, 3000]]
+    },
+    {
+      "id": "NR4_negative_widest",
+      "predicate": "QM_PP_NR4",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar0 range=10.0 is by far the widest of the four bars, the opposite of a narrow-range bar. Every range comparison fails.",
+      "bars": [[100, 105, 95, 100, 3000], [100, 101, 99, 100, 3000], [100, 101.5, 98.5, 100, 3000], [100, 101.25, 98.75, 100, 3000]]
+    },
+    {
+      "id": "NR4_boundary_inside",
+      "predicate": "QM_PP_NR4",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Bar0 range=1.9 is below the smallest prior range (bar1=2.0, with bar2=3.0, bar3=2.5), so r0<Range(i) for all i and NR4 fires. Just under the nearest competitor.",
+      "bars": [[100, 100.95, 99.05, 100, 3000], [100, 101, 99, 100, 3000], [100, 101.5, 98.5, 100, 3000], [100, 101.25, 98.75, 100, 3000]]
+    },
+    {
+      "id": "NR4_boundary_outside",
+      "predicate": "QM_PP_NR4",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Only change from NR4 boundary-inside: bar0 range=2.1 is above bar1 range=2.0, so r0<Range(1) fails. Just over the nearest competitor.",
+      "bars": [[100, 101.05, 98.95, 100, 3000], [100, 101, 99, 100, 3000], [100, 101.5, 98.5, 100, 3000], [100, 101.25, 98.75, 100, 3000]]
+    },
+
+    {
+      "id": "NR7_positive_canonical",
+      "predicate": "QM_PP_NR7",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "NR7 means the reference bar has the narrowest range of the last seven bars. Bar0 range=1.0 is strictly below all six older ranges (2.0, 3.0, 4.0, 5.0, 2.4, 3.6). The narrowest of seven.",
+      "bars": [[100, 100.5, 99.5, 100, 3000], [100, 101, 99, 100, 3000], [100, 101.5, 98.5, 100, 3000], [100, 102, 98, 100, 3000], [100, 102.5, 97.5, 100, 3000], [100, 101.2, 98.8, 100, 3000], [100, 101.8, 98.2, 100, 3000]]
+    },
+    {
+      "id": "NR7_negative_not_narrowest",
+      "predicate": "QM_PP_NR7",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar5 range=0.9 is narrower than bar0 range=1.0, so bar0 is not the narrowest of the seven bars. NR7 requires the reference bar to be the single narrowest.",
+      "bars": [[100, 100.5, 99.5, 100, 3000], [100, 101, 99, 100, 3000], [100, 101.5, 98.5, 100, 3000], [100, 102, 98, 100, 3000], [100, 102.5, 97.5, 100, 3000], [100, 100.45, 99.55, 100, 3000], [100, 101.8, 98.2, 100, 3000]]
+    },
+    {
+      "id": "NR7_negative_tie",
+      "predicate": "QM_PP_NR7",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar0 range=1.0 exactly ties bar3 range=1.0, so bar0 is not strictly the narrowest of seven; the strict '<' comparison correctly rejects the tie. Tie-handling proof for the seven-bar window.",
+      "bars": [[100, 100.5, 99.5, 100, 3000], [100, 101, 99, 100, 3000], [100, 101.5, 98.5, 100, 3000], [100, 100.5, 99.5, 100, 3000], [100, 102.5, 97.5, 100, 3000], [100, 101.2, 98.8, 100, 3000], [100, 101.8, 98.2, 100, 3000]]
+    },
+    {
+      "id": "NR7_negative_widest",
+      "predicate": "QM_PP_NR7",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar0 range=12.0 is the widest bar of the seven, the opposite of a narrow-range bar. Fails against the very first comparison.",
+      "bars": [[100, 106, 94, 100, 3000], [100, 101, 99, 100, 3000], [100, 101.5, 98.5, 100, 3000], [100, 102, 98, 100, 3000], [100, 102.5, 97.5, 100, 3000], [100, 101.2, 98.8, 100, 3000], [100, 101.8, 98.2, 100, 3000]]
+    },
+    {
+      "id": "NR7_boundary_inside",
+      "predicate": "QM_PP_NR7",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Bar0 range=1.9 is below the smallest prior range (bar1=2.0), so r0<Range(i) holds for all six older bars and NR7 fires. Just under the nearest competitor.",
+      "bars": [[100, 100.95, 99.05, 100, 3000], [100, 101, 99, 100, 3000], [100, 101.5, 98.5, 100, 3000], [100, 102, 98, 100, 3000], [100, 102.5, 97.5, 100, 3000], [100, 101.2, 98.8, 100, 3000], [100, 101.8, 98.2, 100, 3000]]
+    },
+    {
+      "id": "NR7_boundary_outside",
+      "predicate": "QM_PP_NR7",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Only change from NR7 boundary-inside: bar0 range=2.1 is above bar1 range=2.0, so the loop finds r0>=Range(1) and returns false. Just over the nearest competitor.",
+      "bars": [[100, 101.05, 98.95, 100, 3000], [100, 101, 99, 100, 3000], [100, 101.5, 98.5, 100, 3000], [100, 102, 98, 100, 3000], [100, 102.5, 97.5, 100, 3000], [100, 101.2, 98.8, 100, 3000], [100, 101.8, 98.2, 100, 3000]]
+    },
+
+    {
+      "id": "WIDE_RANGE_BAR_positive_canonical",
+      "predicate": "QM_PP_WIDE_RANGE_BAR",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A wide range bar's range dwarfs the recent average. The prior five bars each span 2.0 (ATR=2.0); bar0 spans 4.0, which is 2x the ATR and above the 1.5x expansion the pattern calls for. A clear volatility burst.",
+      "bars": [[100, 102, 98, 101, 4000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000]]
+    },
+    {
+      "id": "WIDE_RANGE_BAR_negative_normal_range",
+      "predicate": "QM_PP_WIDE_RANGE_BAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Bar0 spans 2.0, the same as the recent bars (ATR=2.0), so there is no expansion at all. A bar merely matching the average range is not a wide range bar.",
+      "bars": [[100, 101, 99, 100, 4000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000]]
+    },
+    {
+      "id": "WIDE_RANGE_BAR_negative_relative_not_wide",
+      "predicate": "QM_PP_WIDE_RANGE_BAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Wide range is relative, not absolute. Here the recent bars each span 4.0 (ATR=4.0) and bar0 spans 5.0; 5.0 is only 1.25x the ATR, below the expansion threshold. A big bar in an already-volatile regime is not a wide range bar.",
+      "bars": [[100, 102.5, 97.5, 100, 4000], [100, 102, 98, 100, 3000], [100, 102, 98, 100, 3000], [100, 102, 98, 100, 3000], [100, 102, 98, 100, 3000], [100, 102, 98, 100, 3000], [100, 102, 98, 100, 3000]]
+    },
+    {
+      "id": "WIDE_RANGE_BAR_negative_flat_no_baseline",
+      "predicate": "QM_PP_WIDE_RANGE_BAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The prior five bars have zero range (flat, ATR=0), so there is no established volatility baseline for bar0 to be 'wide' relative to. With an undefined/zero reference the ratio cannot be formed and the bar is not classified as an expansion. See suspected_defect: pattern-wise a large bar after a dead-flat run is arguably the widest possible, but the atr>0 guard fails it closed.",
+      "bars": [[100, 110, 90, 100, 4000], [100, 100, 100, 100, 3000], [100, 100, 100, 100, 3000], [100, 100, 100, 100, 3000], [100, 100, 100, 100, 3000], [100, 100, 100, 100, 3000], [100, 100, 100, 100, 3000]]
+    },
+    {
+      "id": "WIDE_RANGE_BAR_boundary_inside",
+      "predicate": "QM_PP_WIDE_RANGE_BAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "ATR of the prior five bars is 2.0, so the 1.5x threshold is 3.0. Bar0 range=3.3 is above 3.0 (about 10% over), so r0>1.5*atr5 fires true.",
+      "bars": [[100, 101.65, 98.35, 100, 4000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000]]
+    },
+    {
+      "id": "WIDE_RANGE_BAR_boundary_outside",
+      "predicate": "QM_PP_WIDE_RANGE_BAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same ATR=2.0 baseline (threshold 3.0). Bar0 range=2.7 is below 3.0 (about 10% under), so r0>1.5*atr5 is false. Brackets the boundary from below.",
+      "bars": [[100, 101.35, 98.65, 100, 4000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000], [100, 101, 99, 100, 3000]]
+    }
+  ]
+}

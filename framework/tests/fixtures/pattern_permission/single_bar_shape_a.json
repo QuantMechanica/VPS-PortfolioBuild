@@ -1,0 +1,640 @@
+{
+  "group": "single_bar_shape_a",
+  "author": "single_bar_shape_a",
+  "note": "Predicates 3-11: DOJI, DRAGONFLY_DOJI, GRAVESTONE_DOJI, HAMMER, INVERTED_HAMMER, HANGING_MAN, SHOOTING_STAR, PIN_BAR_BULL, PIN_BAR_BEAR. bars[0] is the reference (most recently closed) bar; index increases going back in time. For any bar, range == upperWick + body + lowerWick exactly; that identity drives the boundary construction. DOJI and HAMMER also appear in the TEMPLATE file under TEMPLATE_* ids; these SBA_* ids are distinct and add depth. HANGING_MAN and SHOOTING_STAR read close[1] and close[2] (prior-uptrend context), so those fixtures supply all three bars explicitly and never rely on filler for the context bars.",
+  "default_filler_series": [
+    [100.0, 100.6, 99.4, 100.1, 3000],
+    [100.1, 100.7, 99.5, 99.9, 3100]
+  ],
+  "fixtures": [
+    {
+      "id": "SBA_DOJI_positive_long_legged",
+      "predicate": "QM_PP_DOJI",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A long-legged doji: price ranged 2.00 in both directions but open 100.00 and close 100.05 finished essentially equal, body 0.05 = 2.5% of range. Session ended undecided, which is exactly what a doji is.",
+      "bars": [[100.0, 101.0, 99.0, 100.05, 5000]]
+    },
+    {
+      "id": "SBA_DOJI_negative_moderate_body",
+      "predicate": "QM_PP_DOJI",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Body 0.80 on a 2.00 range = 40% of range. That is a decisive directional candle (spinning-top-to-trend territory), not an undecided doji.",
+      "bars": [[100.0, 101.0, 99.0, 100.8, 5000]]
+    },
+    {
+      "id": "SBA_DOJI_negative_near_marubozu",
+      "predicate": "QM_PP_DOJI",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Open 99.10 to close 100.90 spends 1.80 of a 2.00 range on body = 90%. An almost-full-body candle is the polar opposite of a doji.",
+      "bars": [[99.1, 101.0, 99.0, 100.9, 5000]]
+    },
+    {
+      "id": "SBA_DOJI_boundary_body_inside",
+      "predicate": "QM_PP_DOJI",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Body 0.24 on a 3.00 range = 8%, inside the 10%-of-range body ceiling (0.10*3.00 = 0.30, and 0.24 < 0.30 with 20% relative margin). Not placed on the threshold to avoid float equality.",
+      "bars": [[100.0, 101.5, 98.5, 100.24, 5000]]
+    },
+    {
+      "id": "SBA_DOJI_boundary_body_outside",
+      "predicate": "QM_PP_DOJI",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Body 0.36 on a 3.00 range = 12%, outside the 10% ceiling (0.36 > 0.30 by 20%). Paired with the inside case this brackets the 10%-of-range body threshold from both sides.",
+      "bars": [[100.0, 101.5, 98.5, 100.36, 5000]]
+    },
+
+    {
+      "id": "SBA_DRAGONFLY_DOJI_positive_canonical",
+      "predicate": "QM_PP_DRAGONFLY_DOJI",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Tiny body pinned at the top of the range with a long lower shadow and no upper shadow: sellers drove price down 1.90 then buyers pushed it all the way back to the open. Body 0.05, upper wick 0.05, lower wick 1.90 on a 2.00 range.",
+      "bars": [[100.9, 101.0, 99.0, 100.95, 5000]]
+    },
+    {
+      "id": "SBA_DRAGONFLY_DOJI_negative_gravestone_shape",
+      "predicate": "QM_PP_DRAGONFLY_DOJI",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The mirror image: tiny body at the BOTTOM with a 1.90 upper shadow and 0.05 lower shadow. This is a gravestone doji (upside rejection), not a dragonfly, and must not be reported as one.",
+      "bars": [[99.05, 101.0, 99.0, 99.1, 5000]]
+    },
+    {
+      "id": "SBA_DRAGONFLY_DOJI_negative_long_legged",
+      "predicate": "QM_PP_DRAGONFLY_DOJI",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A long-legged doji with balanced shadows: upper wick 0.95 and lower wick 1.00 on a 2.00 range. The 0.95 upper shadow is far too large for a dragonfly, whose defining trait is no upper shadow.",
+      "bars": [[100.0, 101.0, 99.0, 100.05, 5000]]
+    },
+    {
+      "id": "SBA_DRAGONFLY_DOJI_negative_bull_hammer_body",
+      "predicate": "QM_PP_DRAGONFLY_DOJI",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Long lower wick and no upper wick but a real 0.45 body (22.5% of the 2.00 range). A dragonfly requires an essentially non-existent body; this decisive body makes it a bullish hammer, not a doji.",
+      "bars": [[100.5, 101.0, 99.0, 100.95, 5000]]
+    },
+    {
+      "id": "SBA_DRAGONFLY_DOJI_boundary_body_inside",
+      "predicate": "QM_PP_DRAGONFLY_DOJI",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Body 0.15 = 7.5% of the 2.00 range, inside the 10% body ceiling (0.20). Upper wick 0.05 and lower wick 1.80 keep the other clauses comfortably valid so this isolates the body threshold.",
+      "bars": [[100.8, 101.0, 99.0, 100.95, 5000]]
+    },
+    {
+      "id": "SBA_DRAGONFLY_DOJI_boundary_body_outside",
+      "predicate": "QM_PP_DRAGONFLY_DOJI",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Body 0.25 = 12.5% of the 2.00 range, outside the 10% body ceiling (0.20). Only the body changed from the inside case; upper wick 0.05 and lower wick 1.70 still pass, so the body clause is what rejects it.",
+      "bars": [[100.7, 101.0, 99.0, 100.95, 5000]]
+    },
+    {
+      "id": "SBA_DRAGONFLY_DOJI_boundary_upperwick_inside",
+      "predicate": "QM_PP_DRAGONFLY_DOJI",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Upper wick 0.16 = 8% of the 2.00 range, inside the 10% upper-wick ceiling (0.20). Body 0.05 and lower wick 1.79 stay valid, isolating the upper-wick threshold.",
+      "bars": [[100.79, 101.0, 99.0, 100.84, 5000]]
+    },
+    {
+      "id": "SBA_DRAGONFLY_DOJI_boundary_upperwick_outside",
+      "predicate": "QM_PP_DRAGONFLY_DOJI",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Upper wick 0.24 = 12% of the 2.00 range, outside the 10% upper-wick ceiling (0.20). Body 0.05 still passes; the enlarged upper wick alone rejects it, bracketing the upper-wick threshold from above.",
+      "bars": [[100.71, 101.0, 99.0, 100.76, 5000]]
+    },
+
+    {
+      "id": "SBA_GRAVESTONE_DOJI_positive_canonical",
+      "predicate": "QM_PP_GRAVESTONE_DOJI",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Tiny body pinned at the bottom of the range with a long upper shadow and no lower shadow: buyers drove price up 1.90 then sellers rejected it all the way back down. Body 0.05, lower wick 0.05, upper wick 1.90 on a 2.00 range.",
+      "bars": [[99.05, 101.0, 99.0, 99.1, 5000]]
+    },
+    {
+      "id": "SBA_GRAVESTONE_DOJI_negative_dragonfly_shape",
+      "predicate": "QM_PP_GRAVESTONE_DOJI",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The mirror image: tiny body at the TOP with a 1.90 lower shadow and 0.05 upper shadow. This is a dragonfly doji (downside rejection), not a gravestone.",
+      "bars": [[100.9, 101.0, 99.0, 100.95, 5000]]
+    },
+    {
+      "id": "SBA_GRAVESTONE_DOJI_negative_long_legged",
+      "predicate": "QM_PP_GRAVESTONE_DOJI",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A long-legged doji with balanced shadows: lower wick 1.00 and upper wick 0.95 on a 2.00 range. The 1.00 lower shadow is far too large for a gravestone, whose defining trait is no lower shadow.",
+      "bars": [[100.0, 101.0, 99.0, 100.05, 5000]]
+    },
+    {
+      "id": "SBA_GRAVESTONE_DOJI_negative_bear_body",
+      "predicate": "QM_PP_GRAVESTONE_DOJI",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Long upper wick and no lower wick but a real 0.40 body (20% of the 2.00 range). A gravestone requires an essentially non-existent body; this decisive bearish body makes it a shooting-star-like candle, not a doji.",
+      "bars": [[99.5, 101.0, 99.0, 99.1, 5000]]
+    },
+    {
+      "id": "SBA_GRAVESTONE_DOJI_boundary_body_inside",
+      "predicate": "QM_PP_GRAVESTONE_DOJI",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Body 0.15 = 7.5% of the 2.00 range, inside the 10% body ceiling (0.20). Lower wick 0.05 and upper wick 1.80 keep the other clauses valid, isolating the body threshold.",
+      "bars": [[99.05, 101.0, 99.0, 99.2, 5000]]
+    },
+    {
+      "id": "SBA_GRAVESTONE_DOJI_boundary_body_outside",
+      "predicate": "QM_PP_GRAVESTONE_DOJI",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Body 0.25 = 12.5% of the 2.00 range, outside the 10% body ceiling (0.20). Only the body grew from the inside case; lower wick 0.05 and upper wick 1.70 still pass, so the body clause rejects it.",
+      "bars": [[99.05, 101.0, 99.0, 99.3, 5000]]
+    },
+    {
+      "id": "SBA_GRAVESTONE_DOJI_boundary_lowerwick_inside",
+      "predicate": "QM_PP_GRAVESTONE_DOJI",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Lower wick 0.16 = 8% of the 2.00 range, inside the 10% lower-wick ceiling (0.20). Body 0.05 and upper wick 1.79 stay valid, isolating the lower-wick threshold.",
+      "bars": [[99.16, 101.0, 99.0, 99.21, 5000]]
+    },
+    {
+      "id": "SBA_GRAVESTONE_DOJI_boundary_lowerwick_outside",
+      "predicate": "QM_PP_GRAVESTONE_DOJI",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Lower wick 0.24 = 12% of the 2.00 range, outside the 10% lower-wick ceiling (0.20). Body 0.05 still passes; the enlarged lower wick alone rejects it, bracketing the lower-wick threshold from above.",
+      "bars": [[99.24, 101.0, 99.0, 99.29, 5000]]
+    },
+
+    {
+      "id": "SBA_HAMMER_positive_canonical",
+      "predicate": "QM_PP_HAMMER",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Small body at the top of the range, long lower shadow, almost no upper shadow: price was driven down and fully rejected. Body 0.60, lower wick 5.40 (9x the body), upper wick 0.15 (25% of the body) on a 6.15 range.",
+      "bars": [[99.4, 100.15, 94.0, 100.0, 5000]]
+    },
+    {
+      "id": "SBA_HAMMER_negative_inverted_shape",
+      "predicate": "QM_PP_HAMMER",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Small body but the long shadow is on the wrong side: upper wick 5.00, lower wick 0.10. This is upside rejection (inverted-hammer shape), the mirror of a hammer.",
+      "bars": [[99.5, 105.0, 99.4, 100.0, 5000]]
+    },
+    {
+      "id": "SBA_HAMMER_negative_big_body",
+      "predicate": "QM_PP_HAMMER",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A near-marubozu: body 5.00 on a 5.20 range = 96%, with a 0.10 lower wick. There is no long lower shadow and no small body, so nothing about this is a hammer.",
+      "bars": [[95.0, 100.1, 94.9, 100.0, 5000]]
+    },
+    {
+      "id": "SBA_HAMMER_negative_upper_wick_dominant",
+      "predicate": "QM_PP_HAMMER",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Body 0.50 with a genuine 2.00 lower shadow but also a 0.30 upper shadow = 60% of the body. A hammer's rejection should leave almost no upper shadow; this notable upper wick disqualifies it.",
+      "bars": [[99.5, 100.3, 97.5, 100.0, 5000]]
+    },
+    {
+      "id": "SBA_HAMMER_boundary_upperwick_inside",
+      "predicate": "QM_PP_HAMMER",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Body 0.50, upper wick 0.12 = 24% of the body, inside the 30%-of-body upper-wick ceiling (0.15). Lower wick 5.50 and body-to-range stay valid, isolating the upper-wick condition.",
+      "bars": [[99.5, 100.12, 94.0, 100.0, 5000]]
+    },
+    {
+      "id": "SBA_HAMMER_boundary_upperwick_outside",
+      "predicate": "QM_PP_HAMMER",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Identical to the inside case except upper wick 0.18 = 36% of the body, outside the 30% ceiling (0.15). The single changed value shows the upper-wick clause rejected it.",
+      "bars": [[99.5, 100.18, 94.0, 100.0, 5000]]
+    },
+    {
+      "id": "SBA_HAMMER_boundary_lowerwick_inside",
+      "predicate": "QM_PP_HAMMER",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Body 0.40, lower wick 0.90 = 2.25x the body, inside (above) the required 2.0x lower-wick floor (0.80). Upper wick 0.04 and body-to-range (29.9%) pass, isolating the lower-wick floor.",
+      "bars": [[99.6, 100.04, 98.7, 100.0, 5000]]
+    },
+    {
+      "id": "SBA_HAMMER_boundary_lowerwick_outside",
+      "predicate": "QM_PP_HAMMER",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Lower wick 0.76 = 1.9x the 0.40 body, below the required 2.0x floor (0.80). Body-to-range (0.40/1.20 = 33.3%) still passes the 35% ceiling and upper wick 0.04 passes, so the lower-wick floor is what rejects it.",
+      "bars": [[99.6, 100.04, 98.84, 100.0, 5000]]
+    },
+
+    {
+      "id": "SBA_INVERTED_HAMMER_positive_canonical",
+      "predicate": "QM_PP_INVERTED_HAMMER",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Small body at the bottom of the range, long upper shadow, almost no lower shadow: price probed up and was rejected but the close held. Body 0.50, upper wick 2.00 (4x body), lower wick 0.10 (20% of body) on a 2.60 range.",
+      "bars": [[99.5, 102.0, 99.4, 100.0, 5000]]
+    },
+    {
+      "id": "SBA_INVERTED_HAMMER_negative_hammer_shape",
+      "predicate": "QM_PP_INVERTED_HAMMER",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The mirror image: small body with a long 4.60 lower shadow and 0.10 upper shadow. This is a hammer (downside rejection), not an inverted hammer.",
+      "bars": [[99.5, 100.1, 95.0, 100.0, 5000]]
+    },
+    {
+      "id": "SBA_INVERTED_HAMMER_negative_big_body",
+      "predicate": "QM_PP_INVERTED_HAMMER",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Body 2.00 on a 2.60 range = 77% with only a 0.50 upper wick. The upper shadow is not even 1x the body, let alone the long shadow an inverted hammer needs; the candle is body-dominated.",
+      "bars": [[98.0, 100.5, 97.9, 100.0, 5000]]
+    },
+    {
+      "id": "SBA_INVERTED_HAMMER_negative_lower_wick_dominant",
+      "predicate": "QM_PP_INVERTED_HAMMER",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Body 0.50 with a genuine 2.00 upper shadow but also a 0.30 lower shadow = 60% of the body. An inverted hammer should leave almost no lower shadow; this notable lower wick disqualifies it.",
+      "bars": [[99.5, 102.0, 99.2, 100.0, 5000]]
+    },
+    {
+      "id": "SBA_INVERTED_HAMMER_boundary_lowerwick_inside",
+      "predicate": "QM_PP_INVERTED_HAMMER",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Body 0.50, lower wick 0.12 = 24% of the body, inside the 30%-of-body lower-wick ceiling (0.15). Upper wick 2.00 passes the 2x floor, isolating the lower-wick condition.",
+      "bars": [[99.5, 102.0, 99.38, 100.0, 5000]]
+    },
+    {
+      "id": "SBA_INVERTED_HAMMER_boundary_lowerwick_outside",
+      "predicate": "QM_PP_INVERTED_HAMMER",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Lower wick 0.18 = 36% of the 0.50 body, outside the 30% ceiling (0.15). Only the low changed; upper wick 2.00 still passes, so the lower-wick clause rejects it.",
+      "bars": [[99.5, 102.0, 99.32, 100.0, 5000]]
+    },
+    {
+      "id": "SBA_INVERTED_HAMMER_boundary_upperwick_inside",
+      "predicate": "QM_PP_INVERTED_HAMMER",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Body 0.40, upper wick 0.90 = 2.25x the body, inside (above) the required 2.0x upper-wick floor (0.80). Lower wick 0.10 and body-to-range (28.6%) pass, isolating the upper-wick floor.",
+      "bars": [[99.6, 100.9, 99.5, 100.0, 5000]]
+    },
+    {
+      "id": "SBA_INVERTED_HAMMER_boundary_upperwick_outside",
+      "predicate": "QM_PP_INVERTED_HAMMER",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Upper wick 0.70 = 1.75x the 0.40 body, below the required 2.0x floor (0.80). Lower wick 0.10 (<= 0.12) and body-to-range (0.40/1.20 = 33.3%) still pass, so the upper-wick floor is what rejects it.",
+      "bars": [[99.6, 100.7, 99.5, 100.0, 5000]]
+    },
+
+    {
+      "id": "SBA_HANGING_MAN_positive_canonical",
+      "predicate": "QM_PP_HANGING_MAN",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A hammer-shaped bar (body 0.60, lower wick 5.40, upper wick 0.15 on a 6.15 range) appearing AFTER an uptrend: close[2]=98.00 rose to close[1]=99.00. A hanging man is a hammer shape in an uptrend, and both parts are present.",
+      "bars": [[99.4, 100.15, 94.0, 100.0, 5000], [98.5, 99.1, 98.4, 99.0, 4000], [97.5, 98.1, 97.4, 98.0, 4000]]
+    },
+    {
+      "id": "SBA_HANGING_MAN_negative_no_uptrend",
+      "predicate": "QM_PP_HANGING_MAN",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Identical hammer shape on bar[0], but the prior context is falling: close[2]=99.00 fell to close[1]=98.00. Without a preceding uptrend a hammer shape is just a hammer, not a hanging man; the defining context is absent.",
+      "bars": [[99.4, 100.15, 94.0, 100.0, 5000], [98.5, 98.6, 97.9, 98.0, 4000], [98.5, 99.1, 98.4, 99.0, 4000]]
+    },
+    {
+      "id": "SBA_HANGING_MAN_negative_inverted_shape",
+      "predicate": "QM_PP_HANGING_MAN",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A clear uptrend (close[2]=98.00 to close[1]=99.00) but bar[0] has the wrong shape: a 5.00 upper wick and 0.10 lower wick (inverted-hammer/shooting-star shape). A hanging man requires a long LOWER shadow.",
+      "bars": [[99.5, 105.0, 99.4, 100.0, 5000], [98.5, 99.1, 98.4, 99.0, 4000], [97.5, 98.1, 97.4, 98.0, 4000]]
+    },
+    {
+      "id": "SBA_HANGING_MAN_negative_big_body",
+      "predicate": "QM_PP_HANGING_MAN",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Uptrend present (close[2]=98.00 to close[1]=99.00) but bar[0] is a near-marubozu: body 5.00 on a 5.20 range with a 0.10 lower wick. No small body and no long lower shadow, so it is not a hanging man.",
+      "bars": [[95.0, 100.1, 94.9, 100.0, 5000], [98.5, 99.1, 98.4, 99.0, 4000], [97.5, 98.1, 97.4, 98.0, 4000]]
+    },
+    {
+      "id": "SBA_HANGING_MAN_boundary_shape_lowerwick_inside",
+      "predicate": "QM_PP_HANGING_MAN",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Uptrend fixed (close[2]=98.00 to close[1]=99.00). Bar[0] lower wick 0.90 = 2.25x the 0.40 body, inside (above) the 2.0x floor (0.80); upper wick 0.04 passes. Isolates the shape lower-wick floor within a valid uptrend.",
+      "bars": [[99.6, 100.04, 98.7, 100.0, 5000], [98.5, 99.1, 98.4, 99.0, 4000], [97.5, 98.1, 97.4, 98.0, 4000]]
+    },
+    {
+      "id": "SBA_HANGING_MAN_boundary_shape_lowerwick_outside",
+      "predicate": "QM_PP_HANGING_MAN",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same uptrend; bar[0] lower wick 0.76 = 1.9x the 0.40 body, below the 2.0x floor (0.80). Body-to-range (33.3%) and upper wick 0.04 still pass, so the shape lower-wick floor rejects it despite the valid trend.",
+      "bars": [[99.6, 100.04, 98.84, 100.0, 5000], [98.5, 99.1, 98.4, 99.0, 4000], [97.5, 98.1, 97.4, 98.0, 4000]]
+    },
+    {
+      "id": "SBA_HANGING_MAN_boundary_trend_above",
+      "predicate": "QM_PP_HANGING_MAN",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Bar[0] is a valid hammer shape; the trend clause close[1] > close[2] is tested just above: close[1]=99.00 is above close[2]=98.90. Distinct values (0.10 apart) avoid float equality on the strict inequality.",
+      "bars": [[99.4, 100.15, 94.0, 100.0, 5000], [98.95, 99.05, 98.85, 99.0, 4000], [98.85, 98.95, 98.8, 98.9, 4000]]
+    },
+    {
+      "id": "SBA_HANGING_MAN_boundary_trend_below",
+      "predicate": "QM_PP_HANGING_MAN",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same valid hammer shape; the trend is just below the strict close[1] > close[2] requirement: close[1]=98.90 is below close[2]=99.00. This brackets the trend inequality from the failing side.",
+      "bars": [[99.4, 100.15, 94.0, 100.0, 5000], [98.85, 98.95, 98.8, 98.9, 4000], [98.95, 99.05, 98.85, 99.0, 4000]]
+    },
+
+    {
+      "id": "SBA_SHOOTING_STAR_positive_canonical",
+      "predicate": "QM_PP_SHOOTING_STAR",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "An inverted-hammer-shaped bar (body 0.50, upper wick 2.00, lower wick 0.10 on a 2.60 range) appearing AFTER an uptrend: close[2]=98.00 rose to close[1]=99.00. A shooting star is an inverted-hammer shape in an uptrend; both parts present.",
+      "bars": [[99.5, 102.0, 99.4, 100.0, 5000], [98.5, 99.1, 98.4, 99.0, 4000], [97.5, 98.1, 97.4, 98.0, 4000]]
+    },
+    {
+      "id": "SBA_SHOOTING_STAR_negative_no_uptrend",
+      "predicate": "QM_PP_SHOOTING_STAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Identical inverted-hammer shape on bar[0], but context is falling: close[2]=99.00 fell to close[1]=98.00. Without a preceding uptrend it is just an inverted hammer, not a shooting star.",
+      "bars": [[99.5, 102.0, 99.4, 100.0, 5000], [98.5, 98.6, 97.9, 98.0, 4000], [98.5, 99.1, 98.4, 99.0, 4000]]
+    },
+    {
+      "id": "SBA_SHOOTING_STAR_negative_hammer_shape",
+      "predicate": "QM_PP_SHOOTING_STAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A clear uptrend (close[2]=98.00 to close[1]=99.00) but bar[0] has the wrong shape: a 5.00 lower wick and 0.10 upper wick (hammer shape). A shooting star requires a long UPPER shadow.",
+      "bars": [[99.5, 100.1, 95.0, 100.0, 5000], [98.5, 99.1, 98.4, 99.0, 4000], [97.5, 98.1, 97.4, 98.0, 4000]]
+    },
+    {
+      "id": "SBA_SHOOTING_STAR_negative_big_body",
+      "predicate": "QM_PP_SHOOTING_STAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Uptrend present (close[2]=98.00 to close[1]=99.00) but bar[0] is body-dominated: body 2.00 on a 2.60 range with only a 0.50 upper wick (not even 1x the body). No small body and no long upper shadow.",
+      "bars": [[98.0, 100.5, 97.9, 100.0, 5000], [98.5, 99.1, 98.4, 99.0, 4000], [97.5, 98.1, 97.4, 98.0, 4000]]
+    },
+    {
+      "id": "SBA_SHOOTING_STAR_boundary_shape_upperwick_inside",
+      "predicate": "QM_PP_SHOOTING_STAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Uptrend fixed (close[2]=98.00 to close[1]=99.00). Bar[0] upper wick 0.90 = 2.25x the 0.40 body, inside (above) the 2.0x floor (0.80); lower wick 0.10 passes. Isolates the shape upper-wick floor within a valid uptrend.",
+      "bars": [[99.6, 100.9, 99.5, 100.0, 5000], [98.5, 99.1, 98.4, 99.0, 4000], [97.5, 98.1, 97.4, 98.0, 4000]]
+    },
+    {
+      "id": "SBA_SHOOTING_STAR_boundary_shape_upperwick_outside",
+      "predicate": "QM_PP_SHOOTING_STAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same uptrend; bar[0] upper wick 0.70 = 1.75x the 0.40 body, below the 2.0x floor (0.80). Lower wick 0.10 (<= 0.12) and body-to-range (33.3%) still pass, so the shape upper-wick floor rejects it despite the valid trend.",
+      "bars": [[99.6, 100.7, 99.5, 100.0, 5000], [98.5, 99.1, 98.4, 99.0, 4000], [97.5, 98.1, 97.4, 98.0, 4000]]
+    },
+    {
+      "id": "SBA_SHOOTING_STAR_boundary_trend_above",
+      "predicate": "QM_PP_SHOOTING_STAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Bar[0] is a valid inverted-hammer shape; the trend clause close[1] > close[2] is tested just above: close[1]=99.00 is above close[2]=98.90 (0.10 apart to avoid float equality).",
+      "bars": [[99.5, 102.0, 99.4, 100.0, 5000], [98.95, 99.05, 98.85, 99.0, 4000], [98.85, 98.95, 98.8, 98.9, 4000]]
+    },
+    {
+      "id": "SBA_SHOOTING_STAR_boundary_trend_below",
+      "predicate": "QM_PP_SHOOTING_STAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Same valid inverted-hammer shape; the trend is just below the strict close[1] > close[2] requirement: close[1]=98.90 is below close[2]=99.00. Brackets the trend inequality from the failing side.",
+      "bars": [[99.5, 102.0, 99.4, 100.0, 5000], [98.85, 98.95, 98.8, 98.9, 4000], [98.95, 99.05, 98.85, 99.0, 4000]]
+    },
+
+    {
+      "id": "SBA_PIN_BAR_BULL_positive_canonical",
+      "predicate": "QM_PP_PIN_BAR_BULL",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A bullish pin bar: the lower wick dominates the range. Lower wick 2.10 = 70% of the 3.00 range, upper wick 0.30 = 10%, body 0.60. Price was rejected sharply from below, the defining trait.",
+      "bars": [[99.1, 100.0, 97.0, 99.7, 5000]]
+    },
+    {
+      "id": "SBA_PIN_BAR_BULL_negative_bear_pin",
+      "predicate": "QM_PP_PIN_BAR_BULL",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The wick is on the wrong side: upper wick 2.10 = 70% of range, lower wick 0.30 = 10%. This is a bearish pin bar (rejection from above); a bullish pin requires the long shadow below.",
+      "bars": [[97.3, 100.0, 97.0, 97.9, 5000]]
+    },
+    {
+      "id": "SBA_PIN_BAR_BULL_negative_marubozu",
+      "predicate": "QM_PP_PIN_BAR_BULL",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A near-full-body candle: body 2.80 on a 3.00 range, lower wick 0.10 = 3.3%. There is no long lower shadow at all, so it cannot be a bullish pin bar.",
+      "bars": [[97.1, 100.0, 97.0, 99.9, 5000]]
+    },
+    {
+      "id": "SBA_PIN_BAR_BULL_negative_balanced",
+      "predicate": "QM_PP_PIN_BAR_BULL",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A balanced candle with both shadows near half the range: lower wick 1.40 = 46.7% and upper wick 1.40 = 46.7% on a 3.00 range. The lower wick does not dominate, so no directional rejection is signalled.",
+      "bars": [[98.4, 100.0, 97.0, 98.6, 5000]]
+    },
+    {
+      "id": "SBA_PIN_BAR_BULL_boundary_lowerwick_inside",
+      "predicate": "QM_PP_PIN_BAR_BULL",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Lower wick 1.40 = 70% of the 2.00 range, inside (above) the 66%-of-range lower-wick floor (1.32). Upper wick 0.20 = 10% passes its ceiling, isolating the lower-wick floor.",
+      "bars": [[99.4, 100.0, 98.0, 99.8, 5000]]
+    },
+    {
+      "id": "SBA_PIN_BAR_BULL_boundary_lowerwick_outside",
+      "predicate": "QM_PP_PIN_BAR_BULL",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Lower wick 1.24 = 62% of the 2.00 range, below the 66% floor (1.32). Upper wick 0.20 = 10% still passes, so the lower-wick floor is what rejects it, bracketing 66% from below.",
+      "bars": [[99.24, 100.0, 98.0, 99.8, 5000]]
+    },
+    {
+      "id": "SBA_PIN_BAR_BULL_boundary_upperwick_inside",
+      "predicate": "QM_PP_PIN_BAR_BULL",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Upper wick 0.45 = 22.5% of the 2.00 range, inside the 25%-of-range upper-wick ceiling (0.50). Lower wick 1.35 = 67.5% stays above its floor, isolating the upper-wick ceiling.",
+      "bars": [[99.35, 100.0, 98.0, 99.55, 5000]]
+    },
+    {
+      "id": "SBA_PIN_BAR_BULL_boundary_upperwick_outside",
+      "predicate": "QM_PP_PIN_BAR_BULL",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Upper wick 0.55 = 27.5% of the 2.00 range, outside the 25% ceiling (0.50). Lower wick 1.35 = 67.5% still passes its floor, so the upper-wick ceiling rejects it, bracketing 25% from above.",
+      "bars": [[99.35, 100.0, 98.0, 99.45, 5000]]
+    },
+
+    {
+      "id": "SBA_PIN_BAR_BEAR_positive_canonical",
+      "predicate": "QM_PP_PIN_BAR_BEAR",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A bearish pin bar: the upper wick dominates the range. Upper wick 2.10 = 70% of the 3.00 range, lower wick 0.30 = 10%, body 0.60. Price was rejected sharply from above, the defining trait.",
+      "bars": [[97.3, 100.0, 97.0, 97.9, 5000]]
+    },
+    {
+      "id": "SBA_PIN_BAR_BEAR_negative_bull_pin",
+      "predicate": "QM_PP_PIN_BAR_BEAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The wick is on the wrong side: lower wick 2.10 = 70% of range, upper wick 0.30 = 10%. This is a bullish pin bar (rejection from below); a bearish pin requires the long shadow above.",
+      "bars": [[99.1, 100.0, 97.0, 99.7, 5000]]
+    },
+    {
+      "id": "SBA_PIN_BAR_BEAR_negative_marubozu",
+      "predicate": "QM_PP_PIN_BAR_BEAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A near-full-body bearish candle: body 2.80 on a 3.00 range, upper wick 0.10 = 3.3%. There is no long upper shadow at all, so it cannot be a bearish pin bar.",
+      "bars": [[99.9, 100.0, 97.0, 97.1, 5000]]
+    },
+    {
+      "id": "SBA_PIN_BAR_BEAR_negative_balanced",
+      "predicate": "QM_PP_PIN_BAR_BEAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A balanced candle with both shadows near half the range: upper wick 1.40 = 46.7% and lower wick 1.40 = 46.7% on a 3.00 range. The upper wick does not dominate, so no directional rejection is signalled.",
+      "bars": [[98.4, 100.0, 97.0, 98.6, 5000]]
+    },
+    {
+      "id": "SBA_PIN_BAR_BEAR_boundary_upperwick_inside",
+      "predicate": "QM_PP_PIN_BAR_BEAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Upper wick 1.40 = 70% of the 2.00 range, inside (above) the 66%-of-range upper-wick floor (1.32). Lower wick 0.20 = 10% passes its ceiling, isolating the upper-wick floor.",
+      "bars": [[98.2, 100.0, 98.0, 98.6, 5000]]
+    },
+    {
+      "id": "SBA_PIN_BAR_BEAR_boundary_upperwick_outside",
+      "predicate": "QM_PP_PIN_BAR_BEAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Upper wick 1.24 = 62% of the 2.00 range, below the 66% floor (1.32). Lower wick 0.20 = 10% still passes, so the upper-wick floor is what rejects it, bracketing 66% from below.",
+      "bars": [[98.2, 100.0, 98.0, 98.76, 5000]]
+    },
+    {
+      "id": "SBA_PIN_BAR_BEAR_boundary_lowerwick_inside",
+      "predicate": "QM_PP_PIN_BAR_BEAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Lower wick 0.40 = 20% of the 2.00 range, inside the 25%-of-range lower-wick ceiling (0.50). Upper wick 1.40 = 70% stays above its floor, isolating the lower-wick ceiling.",
+      "bars": [[98.4, 100.0, 98.0, 98.6, 5000]]
+    },
+    {
+      "id": "SBA_PIN_BAR_BEAR_boundary_lowerwick_outside",
+      "predicate": "QM_PP_PIN_BAR_BEAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Lower wick 0.60 = 30% of the 2.00 range, outside the 25% ceiling (0.50). Upper wick 1.35 = 67.5% still passes its floor, so the lower-wick ceiling rejects it, bracketing 25% from above.",
+      "bars": [[98.6, 100.0, 98.0, 98.65, 5000]]
+    }
+  ]
+}

@@ -1,0 +1,467 @@
+{
+  "group": "three_bar_reversal",
+  "author": "three_bar_reversal",
+  "note": "bars[0] is the reference (most recently closed) bar; index increases going back in time. In MORNING_STAR/EVENING_STAR the OLDEST of the three bars is index 2. THREE_INSIDE_UP/DOWN are dead predicates (see suspected_defects): their canonical-pattern positives are written to the pattern definition and will MISMATCH the implementation on purpose.",
+  "default_filler_series": [
+    [100.0, 100.5, 99.5, 100.1, 2000]
+  ],
+  "fixtures": [
+    {
+      "id": "MORNING_STAR_positive_canonical",
+      "predicate": "QM_PP_MORNING_STAR",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Textbook morning star: bar2 (oldest) a large bearish candle (open110 close100), bar1 a small-bodied star (body0.2 on range2.0), bar0 a bullish candle closing 106, above Mid(bar2)=(110+100)/2=105. A bullish bottom reversal.",
+      "bars": [[100.0, 106.5, 99.5, 106.0, 5000], [99.0, 100.0, 98.0, 99.2, 3000], [110.0, 110.5, 99.5, 100.0, 4000]]
+    },
+    {
+      "id": "MORNING_STAR_negative_oldest_bar_bullish",
+      "predicate": "QM_PP_MORNING_STAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A morning star must begin from a downtrend: the oldest bar (index 2) must be bearish. Here bar2 opens 100 and closes 110 (bullish), so there is no prior selloff to reverse and the shape is not a morning star.",
+      "bars": [[100.0, 106.5, 99.5, 106.0, 5000], [99.0, 100.0, 98.0, 99.2, 3000], [100.0, 110.5, 99.5, 110.0, 4000]]
+    },
+    {
+      "id": "MORNING_STAR_negative_reference_bar_bearish",
+      "predicate": "QM_PP_MORNING_STAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The confirming third candle (bar0) must be bullish to signal the reversal up. Here bar0 opens 106 and closes 100 (bearish), continuing the decline rather than reversing it, so it is not a morning star.",
+      "bars": [[106.0, 106.5, 99.5, 100.0, 5000], [99.0, 100.0, 98.0, 99.2, 3000], [110.0, 110.5, 99.5, 100.0, 4000]]
+    },
+    {
+      "id": "MORNING_STAR_negative_close_below_prior_body_mid",
+      "predicate": "QM_PP_MORNING_STAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A morning star needs the third candle to push back deep into the first candle's body. Here bar0 closes 104, below Mid(bar2)=105, so the recovery is too shallow to qualify as a bottom reversal.",
+      "bars": [[100.0, 104.9, 99.5, 104.0, 5000], [99.0, 100.0, 98.0, 99.2, 3000], [110.0, 110.5, 99.5, 100.0, 4000]]
+    },
+    {
+      "id": "MORNING_STAR_negative_middle_body_too_large",
+      "predicate": "QM_PP_MORNING_STAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The middle candle must be a small-bodied star reflecting indecision. Here bar1 has body 1.9 on range 3.0 (63%), a large decisive candle, not a star, so the three-bar shape is not a morning star.",
+      "bars": [[100.0, 106.5, 99.5, 106.0, 5000], [99.0, 101.0, 98.0, 100.9, 3000], [110.0, 110.5, 99.5, 100.0, 4000]]
+    },
+    {
+      "id": "MORNING_STAR_boundary_star_body_inside",
+      "predicate": "QM_PP_MORNING_STAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Star body is 0.6 on range 2.0 = 30%, inside the 35%-of-range star-body ceiling. Only bar1 changed from the canonical positive so this isolates the star-body clause. Kept off the exact 35% to avoid float equality.",
+      "bars": [[100.0, 106.5, 99.5, 106.0, 5000], [99.0, 100.0, 98.0, 99.6, 3000], [110.0, 110.5, 99.5, 100.0, 4000]]
+    },
+    {
+      "id": "MORNING_STAR_boundary_star_body_outside",
+      "predicate": "QM_PP_MORNING_STAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Star body is 0.8 on range 2.0 = 40%, outside the 35%-of-range ceiling, so the middle candle is too large to be a star. Single changed value (bar1 close) isolates the rejecting clause.",
+      "bars": [[100.0, 106.5, 99.5, 106.0, 5000], [99.0, 100.0, 98.0, 99.8, 3000], [110.0, 110.5, 99.5, 100.0, 4000]]
+    },
+
+    {
+      "id": "EVENING_STAR_positive_canonical",
+      "predicate": "QM_PP_EVENING_STAR",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Textbook evening star: bar2 (oldest) a large bullish candle (open100 close110), bar1 a small-bodied star (body0.2 on range2.0), bar0 a bearish candle closing 104, below Mid(bar2)=(100+110)/2=105. A bearish top reversal.",
+      "bars": [[110.0, 110.5, 103.5, 104.0, 5000], [111.0, 112.0, 110.0, 110.8, 3000], [100.0, 110.5, 99.5, 110.0, 4000]]
+    },
+    {
+      "id": "EVENING_STAR_negative_oldest_bar_bearish",
+      "predicate": "QM_PP_EVENING_STAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "An evening star must top out from an uptrend: the oldest bar (index 2) must be bullish. Here bar2 opens 110 and closes 100 (bearish), so there is no prior rally to reverse and the shape is not an evening star.",
+      "bars": [[110.0, 110.5, 103.5, 104.0, 5000], [111.0, 112.0, 110.0, 110.8, 3000], [110.0, 110.5, 99.5, 100.0, 4000]]
+    },
+    {
+      "id": "EVENING_STAR_negative_reference_bar_bullish",
+      "predicate": "QM_PP_EVENING_STAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The confirming third candle (bar0) must be bearish to signal the reversal down. Here bar0 opens 104 and closes 110 (bullish), continuing the advance rather than reversing it, so it is not an evening star.",
+      "bars": [[104.0, 110.5, 103.5, 110.0, 5000], [111.0, 112.0, 110.0, 110.8, 3000], [100.0, 110.5, 99.5, 110.0, 4000]]
+    },
+    {
+      "id": "EVENING_STAR_negative_close_above_prior_body_mid",
+      "predicate": "QM_PP_EVENING_STAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "An evening star needs the third candle to push back deep into the first candle's body. Here bar0 closes 106, above Mid(bar2)=105, so the pullback is too shallow to qualify as a top reversal.",
+      "bars": [[110.0, 110.5, 105.1, 106.0, 5000], [111.0, 112.0, 110.0, 110.8, 3000], [100.0, 110.5, 99.5, 110.0, 4000]]
+    },
+    {
+      "id": "EVENING_STAR_negative_middle_body_too_large",
+      "predicate": "QM_PP_EVENING_STAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The middle candle must be a small-bodied star. Here bar1 has body 1.9 on range 2.0 (95%), a large decisive candle, not a star, so the three-bar shape is not an evening star.",
+      "bars": [[110.0, 110.5, 103.5, 104.0, 5000], [110.0, 112.0, 110.0, 111.9, 3000], [100.0, 110.5, 99.5, 110.0, 4000]]
+    },
+    {
+      "id": "EVENING_STAR_boundary_star_body_inside",
+      "predicate": "QM_PP_EVENING_STAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Star body is 0.6 on range 2.0 = 30%, inside the 35%-of-range star-body ceiling. Only bar1 changed from the canonical positive so this isolates the star-body clause. Kept off the exact 35% to avoid float equality.",
+      "bars": [[110.0, 110.5, 103.5, 104.0, 5000], [111.0, 112.0, 110.0, 111.6, 3000], [100.0, 110.5, 99.5, 110.0, 4000]]
+    },
+    {
+      "id": "EVENING_STAR_boundary_star_body_outside",
+      "predicate": "QM_PP_EVENING_STAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Star body is 0.8 on range 2.0 = 40%, outside the 35%-of-range ceiling, so the middle candle is too large to be a star. Single changed value (bar1 close) isolates the rejecting clause.",
+      "bars": [[110.0, 110.5, 103.5, 104.0, 5000], [111.0, 112.0, 110.0, 111.8, 3000], [100.0, 110.5, 99.5, 110.0, 4000]]
+    },
+
+    {
+      "id": "THREE_WHITE_SOLDIERS_positive_canonical",
+      "predicate": "QM_PP_THREE_WHITE_SOLDIERS",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Three consecutive bullish candles with rising closes 102 (bar2) < 104 (bar1) < 106 (bar0), each opening within the prior candle's body: open0=103<=close1=104, open1=101<=close2=102. Classic sustained advance.",
+      "bars": [[103.0, 106.2, 102.8, 106.0, 5000], [101.0, 104.2, 100.8, 104.0, 4000], [100.0, 102.2, 99.8, 102.0, 3000]]
+    },
+    {
+      "id": "THREE_WHITE_SOLDIERS_negative_one_bar_bearish",
+      "predicate": "QM_PP_THREE_WHITE_SOLDIERS",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "All three soldiers must be bullish. Here the middle bar (bar1) opens 104 and closes 101 (bearish), breaking the run of white candles, so it is not three white soldiers.",
+      "bars": [[103.0, 106.2, 102.8, 106.0, 5000], [104.0, 104.2, 100.8, 101.0, 4000], [100.0, 102.2, 99.8, 102.0, 3000]]
+    },
+    {
+      "id": "THREE_WHITE_SOLDIERS_negative_closes_not_ascending",
+      "predicate": "QM_PP_THREE_WHITE_SOLDIERS",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Each soldier must close higher than the last. Here bar0 closes 103.5, below bar1's close 104, so the newest candle fails to make progress and the advance is not intact.",
+      "bars": [[103.0, 104.0, 102.8, 103.5, 5000], [101.0, 104.2, 100.8, 104.0, 4000], [100.0, 102.2, 99.8, 102.0, 3000]]
+    },
+    {
+      "id": "THREE_WHITE_SOLDIERS_negative_gap_open_above_prior_close",
+      "predicate": "QM_PP_THREE_WHITE_SOLDIERS",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Soldiers open within the prior candle's real body, not gapped above it. Here bar0 opens 105, above bar1's close 104, an exhaustion gap rather than an orderly march, so it is not three white soldiers.",
+      "bars": [[105.0, 106.2, 102.8, 106.0, 5000], [101.0, 104.2, 100.8, 104.0, 4000], [100.0, 102.2, 99.8, 102.0, 3000]]
+    },
+    {
+      "id": "THREE_WHITE_SOLDIERS_boundary_open_within_body_inside",
+      "predicate": "QM_PP_THREE_WHITE_SOLDIERS",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "bar0 opens 103.5, below the prior close 104, so it is inside the open<=close[1] limit. Only bar0's open changed from the positive, isolating that clause; separation of 0.5 keeps it clear of equality.",
+      "bars": [[103.5, 106.2, 102.8, 106.0, 5000], [101.0, 104.2, 100.8, 104.0, 4000], [100.0, 102.2, 99.8, 102.0, 3000]]
+    },
+    {
+      "id": "THREE_WHITE_SOLDIERS_boundary_open_within_body_outside",
+      "predicate": "QM_PP_THREE_WHITE_SOLDIERS",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "bar0 opens 104.5, above the prior close 104, so it is outside the open<=close[1] limit. Single changed value isolates the rejecting clause; separation of 0.5 keeps it clear of equality.",
+      "bars": [[104.5, 106.2, 102.8, 106.0, 5000], [101.0, 104.2, 100.8, 104.0, 4000], [100.0, 102.2, 99.8, 102.0, 3000]]
+    },
+    {
+      "id": "THREE_WHITE_SOLDIERS_negative_middle_gap_above_prior_close",
+      "predicate": "QM_PP_THREE_WHITE_SOLDIERS",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Every soldier, not just the newest, must open inside the prior candle's real body. Here the middle bar (bar1) opens 103, above bar2's close 102, gapping up out of the prior body, so the march is not orderly and it is not three white soldiers.",
+      "bars": [[103.0, 106.2, 102.8, 106.0, 5000], [103.0, 104.2, 100.8, 104.0, 4000], [100.0, 102.2, 99.8, 102.0, 3000]]
+    },
+
+    {
+      "id": "THREE_BLACK_CROWS_positive_canonical",
+      "predicate": "QM_PP_THREE_BLACK_CROWS",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Three consecutive bearish candles with falling closes 108 (bar2) > 106 (bar1) > 104 (bar0), each opening within the prior candle's body: open0=107>=close1=106, open1=109>=close2=108. Classic sustained decline.",
+      "bars": [[107.0, 107.2, 103.8, 104.0, 5000], [109.0, 109.2, 105.8, 106.0, 4000], [110.0, 110.2, 107.8, 108.0, 3000]]
+    },
+    {
+      "id": "THREE_BLACK_CROWS_negative_one_bar_bullish",
+      "predicate": "QM_PP_THREE_BLACK_CROWS",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "All three crows must be bearish. Here the middle bar (bar1) opens 106 and closes 109 (bullish), breaking the run of black candles, so it is not three black crows.",
+      "bars": [[107.0, 107.2, 103.8, 104.0, 5000], [106.0, 109.2, 105.8, 109.0, 4000], [110.0, 110.2, 107.8, 108.0, 3000]]
+    },
+    {
+      "id": "THREE_BLACK_CROWS_negative_closes_not_descending",
+      "predicate": "QM_PP_THREE_BLACK_CROWS",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Each crow must close lower than the last. Here bar0 closes 106.5, above bar1's close 106, so the newest candle fails to extend the decline and the run is not intact.",
+      "bars": [[107.0, 107.2, 104.0, 106.5, 5000], [109.0, 109.2, 105.8, 106.0, 4000], [110.0, 110.2, 107.8, 108.0, 3000]]
+    },
+    {
+      "id": "THREE_BLACK_CROWS_negative_gap_open_below_prior_close",
+      "predicate": "QM_PP_THREE_BLACK_CROWS",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Crows open within the prior candle's real body, not gapped below it. Here bar0 opens 105, below bar1's close 106, an exhaustion gap rather than an orderly decline, so it is not three black crows.",
+      "bars": [[105.0, 105.2, 103.8, 104.0, 5000], [109.0, 109.2, 105.8, 106.0, 4000], [110.0, 110.2, 107.8, 108.0, 3000]]
+    },
+    {
+      "id": "THREE_BLACK_CROWS_boundary_open_within_body_inside",
+      "predicate": "QM_PP_THREE_BLACK_CROWS",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "bar0 opens 106.5, above the prior close 106, so it is inside the open>=close[1] limit. Only bar0's open changed from the positive, isolating that clause; separation of 0.5 keeps it clear of equality.",
+      "bars": [[106.5, 107.2, 103.8, 104.0, 5000], [109.0, 109.2, 105.8, 106.0, 4000], [110.0, 110.2, 107.8, 108.0, 3000]]
+    },
+    {
+      "id": "THREE_BLACK_CROWS_boundary_open_within_body_outside",
+      "predicate": "QM_PP_THREE_BLACK_CROWS",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "bar0 opens 105.5, below the prior close 106, so it is outside the open>=close[1] limit. Single changed value isolates the rejecting clause; separation of 0.5 keeps it clear of equality.",
+      "bars": [[105.5, 107.2, 103.8, 104.0, 5000], [109.0, 109.2, 105.8, 106.0, 4000], [110.0, 110.2, 107.8, 108.0, 3000]]
+    },
+    {
+      "id": "THREE_BLACK_CROWS_negative_middle_gap_below_prior_close",
+      "predicate": "QM_PP_THREE_BLACK_CROWS",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Every crow, not just the newest, must open inside the prior candle's real body. Here the middle bar (bar1) opens 107, below bar2's close 108, gapping down out of the prior body, so the decline is not orderly and it is not three black crows.",
+      "bars": [[107.0, 107.2, 103.8, 104.0, 5000], [107.0, 109.2, 105.8, 106.0, 4000], [110.0, 110.2, 107.8, 108.0, 3000]]
+    },
+
+    {
+      "id": "THREE_INSIDE_UP_positive_canonical",
+      "predicate": "QM_PP_THREE_INSIDE_UP",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Textbook three-inside-up: bar2 large bearish (open110 close100), bar1 small bullish harami inside bar2's body (open102 close104), bar0 bullish confirmation closing 107 above bar1's high 104.5. This IS the pattern; the implementation returns false (dead predicate, see suspected_defects) so this fixture documents the disagreement.",
+      "bars": [[104.0, 107.5, 103.5, 107.0, 5000], [102.0, 104.5, 101.5, 104.0, 3000], [110.0, 110.5, 99.5, 100.0, 4000]]
+    },
+    {
+      "id": "THREE_INSIDE_UP_negative_no_reversal_setup",
+      "predicate": "QM_PP_THREE_INSIDE_UP",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Three bullish candles marching up with no prior bearish candle and no harami: there is nothing to reverse, so this is not three-inside-up. Both the pattern and the implementation return false.",
+      "bars": [[103.0, 106.0, 102.5, 105.0, 5000], [101.0, 104.0, 100.5, 103.5, 3000], [100.0, 102.0, 99.5, 101.8, 4000]]
+    },
+    {
+      "id": "THREE_INSIDE_UP_negative_harami_without_confirmation",
+      "predicate": "QM_PP_THREE_INSIDE_UP",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A valid bearish-then-inside setup, but the third candle (bar0, close 104.1) fails to break above bar1's high 104.5, so the reversal is unconfirmed and it is not three-inside-up. Both pattern and implementation return false.",
+      "bars": [[103.9, 104.4, 103.5, 104.1, 5000], [102.0, 104.5, 101.5, 104.0, 3000], [110.0, 110.5, 99.5, 100.0, 4000]]
+    },
+    {
+      "id": "THREE_INSIDE_UP_boundary_confirmation_inside",
+      "predicate": "QM_PP_THREE_INSIDE_UP",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "bar0 closes 105.0, above bar1's high 104.5, so it is inside the confirmed close[0]>high[1] region per the pattern definition. The implementation still returns false (dead predicate), so this documents the defect from the inside of the threshold.",
+      "bars": [[104.0, 105.5, 103.5, 105.0, 5000], [102.0, 104.5, 101.5, 104.0, 3000], [110.0, 110.5, 99.5, 100.0, 4000]]
+    },
+    {
+      "id": "THREE_INSIDE_UP_boundary_confirmation_outside",
+      "predicate": "QM_PP_THREE_INSIDE_UP",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "bar0 closes 104.3, below bar1's high 104.5, so it is outside the confirmed close[0]>high[1] region: no breakout, not three-inside-up. Both pattern and implementation return false here.",
+      "bars": [[104.0, 104.4, 103.5, 104.3, 5000], [102.0, 104.5, 101.5, 104.0, 3000], [110.0, 110.5, 99.5, 100.0, 4000]]
+    },
+
+    {
+      "id": "THREE_INSIDE_DOWN_positive_canonical",
+      "predicate": "QM_PP_THREE_INSIDE_DOWN",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Textbook three-inside-down: bar2 large bullish (open100 close110), bar1 small bearish harami inside bar2's body (open108 close106), bar0 bearish confirmation closing 103 below bar1's low 105.5. This IS the pattern; the implementation returns false (dead predicate, see suspected_defects) so this fixture documents the disagreement.",
+      "bars": [[106.0, 106.5, 102.5, 103.0, 5000], [108.0, 108.5, 105.5, 106.0, 3000], [100.0, 110.5, 99.5, 110.0, 4000]]
+    },
+    {
+      "id": "THREE_INSIDE_DOWN_negative_no_reversal_setup",
+      "predicate": "QM_PP_THREE_INSIDE_DOWN",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Three bearish candles marching down with no prior bullish candle and no harami: there is nothing to reverse, so this is not three-inside-down. Both the pattern and the implementation return false.",
+      "bars": [[104.0, 104.5, 101.5, 102.0, 5000], [107.0, 107.5, 104.5, 105.0, 3000], [110.0, 110.5, 107.5, 108.0, 4000]]
+    },
+    {
+      "id": "THREE_INSIDE_DOWN_negative_harami_without_confirmation",
+      "predicate": "QM_PP_THREE_INSIDE_DOWN",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A valid bullish-then-inside setup, but the third candle (bar0, close 105.9) fails to break below bar1's low 105.5, so the reversal is unconfirmed and it is not three-inside-down. Both pattern and implementation return false.",
+      "bars": [[106.1, 106.3, 105.6, 105.9, 5000], [108.0, 108.5, 105.5, 106.0, 3000], [100.0, 110.5, 99.5, 110.0, 4000]]
+    },
+    {
+      "id": "THREE_INSIDE_DOWN_boundary_confirmation_inside",
+      "predicate": "QM_PP_THREE_INSIDE_DOWN",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "bar0 closes 105.0, below bar1's low 105.5, so it is inside the confirmed close[0]<low[1] region per the pattern definition. The implementation still returns false (dead predicate), so this documents the defect from the inside of the threshold.",
+      "bars": [[106.0, 106.5, 104.5, 105.0, 5000], [108.0, 108.5, 105.5, 106.0, 3000], [100.0, 110.5, 99.5, 110.0, 4000]]
+    },
+    {
+      "id": "THREE_INSIDE_DOWN_boundary_confirmation_outside",
+      "predicate": "QM_PP_THREE_INSIDE_DOWN",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "bar0 closes 105.8, above bar1's low 105.5, so it is outside the confirmed close[0]<low[1] region: no breakdown, not three-inside-down. Both pattern and implementation return false here.",
+      "bars": [[106.0, 106.5, 105.6, 105.8, 5000], [108.0, 108.5, 105.5, 106.0, 3000], [100.0, 110.5, 99.5, 110.0, 4000]]
+    },
+
+    {
+      "id": "THREE_OUTSIDE_UP_positive_canonical",
+      "predicate": "QM_PP_THREE_OUTSIDE_UP",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Bullish engulfing (bar1 bearish open105 close100; bar0 bullish open99 close106 fully engulfs bar1's body) followed by a close 106 above bar1's high 105.2. Engulfing plus breakout confirmation is three-outside-up. bar2 is unread padding.",
+      "bars": [[99.0, 106.5, 98.5, 106.0, 5000], [105.0, 105.2, 99.8, 100.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+    },
+    {
+      "id": "THREE_OUTSIDE_UP_negative_not_engulfing",
+      "predicate": "QM_PP_THREE_OUTSIDE_UP",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The setup candle (bar1) is bullish (open100 close105), so bar0 is not engulfing a prior bearish candle. Without a bullish engulfing there is no three-outside-up. Implementation also false.",
+      "bars": [[99.0, 106.5, 98.5, 106.0, 5000], [100.0, 105.2, 99.8, 105.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+    },
+    {
+      "id": "THREE_OUTSIDE_UP_negative_engulfing_but_no_breakout",
+      "predicate": "QM_PP_THREE_OUTSIDE_UP",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "bar0 engulfs bar1's body (open99 close106 vs bar1 open105 close100) but closes 106, still below bar1's tall upper wick high 108, so there is no breakout confirmation and it is not three-outside-up. Isolates the added close-beyond clause.",
+      "bars": [[99.0, 106.5, 98.5, 106.0, 5000], [105.0, 108.0, 99.8, 100.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+    },
+    {
+      "id": "THREE_OUTSIDE_UP_negative_reference_bar_bearish",
+      "predicate": "QM_PP_THREE_OUTSIDE_UP",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The reversal candle (bar0) must be bullish to engulf upward. Here bar0 opens 106 and closes 99 (bearish), so there is no bullish engulfing and it is not three-outside-up. Implementation also false.",
+      "bars": [[106.0, 106.5, 98.5, 99.0, 5000], [105.0, 105.2, 99.8, 100.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+    },
+    {
+      "id": "THREE_OUTSIDE_UP_boundary_close_beyond_high_inside",
+      "predicate": "QM_PP_THREE_OUTSIDE_UP",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "bar0 closes 105.5, above bar1's high 105.2, so it is inside the close[0]>high[1] breakout region while still engulfing (close 105.5 >= bar1 open 104.9). Only bar0's close differs from the outside case.",
+      "bars": [[99.0, 106.5, 98.5, 105.5, 5000], [104.9, 105.2, 99.8, 100.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+    },
+    {
+      "id": "THREE_OUTSIDE_UP_boundary_close_beyond_high_outside",
+      "predicate": "QM_PP_THREE_OUTSIDE_UP",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "bar0 closes 105.0, below bar1's high 105.2, so it is outside the close[0]>high[1] breakout region though it still engulfs (close 105.0 >= bar1 open 104.9). Single changed value isolates the breakout clause.",
+      "bars": [[99.0, 106.5, 98.5, 105.0, 5000], [104.9, 105.2, 99.8, 100.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+    },
+
+    {
+      "id": "THREE_OUTSIDE_DOWN_positive_canonical",
+      "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Bearish engulfing (bar1 bullish open100 close105; bar0 bearish open106 close99 fully engulfs bar1's body) followed by a close 99 below bar1's low 99.8. Engulfing plus breakdown confirmation is three-outside-down. bar2 is unread padding.",
+      "bars": [[106.0, 106.5, 98.5, 99.0, 5000], [100.0, 105.2, 99.8, 105.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+    },
+    {
+      "id": "THREE_OUTSIDE_DOWN_negative_not_engulfing",
+      "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The setup candle (bar1) is bearish (open105 close100), so bar0 is not engulfing a prior bullish candle. Without a bearish engulfing there is no three-outside-down. Implementation also false.",
+      "bars": [[106.0, 106.5, 98.5, 99.0, 5000], [105.0, 105.2, 99.8, 100.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+    },
+    {
+      "id": "THREE_OUTSIDE_DOWN_negative_engulfing_but_no_breakdown",
+      "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "bar0 engulfs bar1's body (open106 close99 vs bar1 open100 close105) but closes 99, still above bar1's long lower wick low 96, so there is no breakdown confirmation and it is not three-outside-down. Isolates the added close-beyond clause.",
+      "bars": [[106.0, 106.5, 98.5, 99.0, 5000], [100.0, 105.2, 96.0, 105.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+    },
+    {
+      "id": "THREE_OUTSIDE_DOWN_negative_reference_bar_bullish",
+      "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "The reversal candle (bar0) must be bearish to engulf downward. Here bar0 opens 99 and closes 106 (bullish), so there is no bearish engulfing and it is not three-outside-down. Implementation also false.",
+      "bars": [[99.0, 106.5, 98.5, 106.0, 5000], [100.0, 105.2, 99.8, 105.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+    },
+    {
+      "id": "THREE_OUTSIDE_DOWN_boundary_close_beyond_low_inside",
+      "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "bar0 closes 99.5, below bar1's low 99.8, so it is inside the close[0]<low[1] breakdown region while still engulfing (close 99.5 <= bar1 open 100.2). Only bar0's close differs from the outside case.",
+      "bars": [[106.0, 106.5, 98.5, 99.5, 5000], [100.2, 105.2, 99.8, 105.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+    },
+    {
+      "id": "THREE_OUTSIDE_DOWN_boundary_close_beyond_low_outside",
+      "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "bar0 closes 99.9, above bar1's low 99.8, so it is outside the close[0]<low[1] breakdown region though it still engulfs (close 99.9 <= bar1 open 100.2). Single changed value isolates the breakdown clause.",
+      "bars": [[106.0, 106.5, 98.5, 99.9, 5000], [100.2, 105.2, 99.8, 105.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+    }
+  ]
+}

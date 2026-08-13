@@ -1,0 +1,375 @@
+{
+  "group": "gaps",
+  "author": "gaps",
+  "note": "bars[0] is the reference (most recently closed) bar; index increases going back in time. Every fixture fixes bars[1] as the prior bar [100.0,101.0,99.0,100.5,4000] (high=101.0, low=99.0, range=2.0). Gap predicates compare open[0] strictly against high[1]/low[1]; exhaustion variants add r0 < 0.5*range[1] = r0 < 1.0. Only bars 0 and 1 (and range[1]) are read, so the index-2 filler is inert.",
+  "default_filler_series": [
+    [100.0, 101.0, 99.0, 100.0, 4000]
+  ],
+  "fixtures": [
+    {
+      "id": "QM_PP_GAP_UP_positive_clear_gap",
+      "predicate": "QM_PP_GAP_UP",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A gap up means the session opens above the entire prior bar: open 102.0 is above the prior high 101.0, so price jumped with no overlap. This is the defining shape of a bullish gap.",
+      "bars": [[102.0, 103.0, 101.8, 102.5, 4200], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_UP_negative_open_within_range",
+      "predicate": "QM_PP_GAP_UP",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Open 100.5 sits inside the prior bar's 99.0-101.0 range, so the market opened where yesterday already traded. No gap exists: continuous trading, not a jump.",
+      "bars": [[100.5, 101.2, 100.0, 100.8, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_UP_negative_gap_down_instead",
+      "predicate": "QM_PP_GAP_UP",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Open 98.0 is below the prior low 99.0: this is a gap in the opposite direction (down), which is emphatically not a gap up and must not be reported as one.",
+      "bars": [[98.0, 98.5, 97.5, 98.2, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_UP_boundary_open_above_high_true",
+      "predicate": "QM_PP_GAP_UP",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Open 101.5 is above the prior high 101.0 by 0.5, clearly inside the gap-up region (over the strict open>high[1] threshold). Bracketed from above the threshold.",
+      "bars": [[101.5, 102.0, 101.3, 101.8, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_UP_boundary_open_below_high_false",
+      "predicate": "QM_PP_GAP_UP",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Open 100.8 is below the prior high 101.0 by 0.2, just under the open>high[1] threshold, so no gap. Paired with the above-case to bracket the threshold from below without float equality.",
+      "bars": [[100.8, 101.5, 100.5, 101.0, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_UP_boundary_touching_equal_false",
+      "predicate": "QM_PP_GAP_UP",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Open 101.0 exactly equals the prior high 101.0: touching, not gapping. Both are the same stored literal so equality is exact; the strict open>high[1] comparison excludes equality, proving strictness is intended (expected false, on the threshold).",
+      "bars": [[101.0, 101.5, 100.5, 101.2, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+
+    {
+      "id": "QM_PP_GAP_DOWN_positive_clear_gap",
+      "predicate": "QM_PP_GAP_DOWN",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A gap down means the session opens below the entire prior bar: open 98.0 is beneath the prior low 99.0, a downward jump with no overlap. The defining shape of a bearish gap.",
+      "bars": [[98.0, 98.5, 97.0, 97.8, 4200], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_DOWN_negative_open_within_range",
+      "predicate": "QM_PP_GAP_DOWN",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Open 100.0 lies inside the prior 99.0-101.0 range: the market reopened where it already traded, so there is no downward gap, just continuous trading.",
+      "bars": [[100.0, 100.8, 99.5, 99.8, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_DOWN_negative_gap_up_instead",
+      "predicate": "QM_PP_GAP_DOWN",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Open 102.0 is above the prior high 101.0: a gap in the opposite (up) direction, which is not a gap down and must not be reported as one.",
+      "bars": [[102.0, 103.0, 101.5, 102.5, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_DOWN_boundary_open_below_low_true",
+      "predicate": "QM_PP_GAP_DOWN",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Open 98.5 is below the prior low 99.0 by 0.5, clearly inside the gap-down region (under the strict open<low[1] threshold). Bracketed from below the threshold.",
+      "bars": [[98.5, 99.2, 98.0, 98.8, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_DOWN_boundary_open_above_low_false",
+      "predicate": "QM_PP_GAP_DOWN",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Open 99.2 is above the prior low 99.0 by 0.2, just over the open<low[1] threshold, so no gap down. Paired with the below-case to bracket the threshold from above without float equality.",
+      "bars": [[99.2, 100.0, 99.0, 99.8, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_DOWN_boundary_touching_equal_false",
+      "predicate": "QM_PP_GAP_DOWN",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Open 99.0 exactly equals the prior low 99.0: touching, not gapping. Same stored literal so equality is exact; the strict open<low[1] comparison excludes equality, proving strictness is intended (expected false, on the threshold).",
+      "bars": [[99.0, 99.8, 98.5, 99.5, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+
+    {
+      "id": "QM_PP_GAP_AND_GO_BULL_positive_gap_and_bull",
+      "predicate": "QM_PP_GAP_AND_GO_BULL",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Gap and go up: opens 102.0 above the prior high 101.0 (the gap) and then closes 103.0 above its open 102.0 (the go). Buyers held the gap and pushed further; the pattern's two halves are both present.",
+      "bars": [[102.0, 103.5, 101.8, 103.0, 4200], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_AND_GO_BULL_negative_no_gap_but_bull",
+      "predicate": "QM_PP_GAP_AND_GO_BULL",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Attacks the gap clause: the bar is bullish (close 101.2 > open 100.5) but opens 100.5 inside the prior range, so there is no gap to run from. A rally without a gap is not gap-and-go.",
+      "bars": [[100.5, 101.5, 100.2, 101.2, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_AND_GO_BULL_negative_gap_but_bearish",
+      "predicate": "QM_PP_GAP_AND_GO_BULL",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Attacks the continuation clause: it gaps up (open 102.0 > prior high 101.0) but then closes 101.0 below its open 102.0. The gap was sold, the opposite of 'go' - this is failed follow-through, not gap-and-go.",
+      "bars": [[102.0, 102.5, 100.5, 101.0, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_AND_GO_BULL_negative_gap_but_flat",
+      "predicate": "QM_PP_GAP_AND_GO_BULL",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Attacks the continuation clause at its edge: it gaps up but closes 102.0 exactly at its open 102.0. A flat bar has no directional 'go'; IsBull requires close strictly above open, so this is not gap-and-go.",
+      "bars": [[102.0, 102.5, 101.5, 102.0, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_AND_GO_BULL_boundary_open_above_high_true",
+      "predicate": "QM_PP_GAP_AND_GO_BULL",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Open 101.3 is above the prior high 101.0 by 0.3 (over the gap threshold) and the bar is bullish (101.8 > 101.3). Isolates the gap clause just inside the threshold with the continuation clause satisfied.",
+      "bars": [[101.3, 102.0, 101.1, 101.8, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_AND_GO_BULL_boundary_open_below_high_false",
+      "predicate": "QM_PP_GAP_AND_GO_BULL",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Open 100.8 is below the prior high 101.0 by 0.2 (under the gap threshold) though the bar is bullish. Changing only the open from the inside-case shows the gap clause is what rejects it, below the threshold.",
+      "bars": [[100.8, 101.5, 100.6, 101.3, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_AND_GO_BULL_boundary_touching_equal_false",
+      "predicate": "QM_PP_GAP_AND_GO_BULL",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Open 101.0 exactly equals the prior high 101.0: touching, not gapping, even though the bar is bullish. Exact literal equality; the strict open>high[1] gap clause excludes equality, so no gap-and-go (on the threshold).",
+      "bars": [[101.0, 101.8, 100.8, 101.5, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+
+    {
+      "id": "QM_PP_GAP_AND_GO_BEAR_positive_gap_and_bear",
+      "predicate": "QM_PP_GAP_AND_GO_BEAR",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Gap and go down: opens 98.0 below the prior low 99.0 (the gap) and then closes 97.0 below its open 98.0 (the go). Sellers held the gap and drove lower; both halves present.",
+      "bars": [[98.0, 98.2, 96.5, 97.0, 4200], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_AND_GO_BEAR_negative_no_gap_but_bear",
+      "predicate": "QM_PP_GAP_AND_GO_BEAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Attacks the gap clause: the bar is bearish (close 99.3 < open 99.5) but opens 99.5 inside the prior range, so there is no downward gap to run from. A decline without a gap is not gap-and-go.",
+      "bars": [[99.5, 100.0, 99.2, 99.3, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_AND_GO_BEAR_negative_gap_but_bullish",
+      "predicate": "QM_PP_GAP_AND_GO_BEAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Attacks the continuation clause: it gaps down (open 98.0 < prior low 99.0) but then closes 99.0 above its open 98.0. The gap was bought back, the opposite of a bearish 'go'.",
+      "bars": [[98.0, 99.5, 97.8, 99.0, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_AND_GO_BEAR_negative_gap_but_flat",
+      "predicate": "QM_PP_GAP_AND_GO_BEAR",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Attacks the continuation clause at its edge: it gaps down but closes 98.0 exactly at its open 98.0. A flat bar has no directional 'go'; IsBear requires close strictly below open, so this is not gap-and-go.",
+      "bars": [[98.0, 98.5, 97.5, 98.0, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_AND_GO_BEAR_boundary_open_below_low_true",
+      "predicate": "QM_PP_GAP_AND_GO_BEAR",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Open 98.7 is below the prior low 99.0 by 0.3 (under the gap threshold) and the bar is bearish (98.2 < 98.7). Isolates the gap clause just inside the threshold with continuation satisfied.",
+      "bars": [[98.7, 98.9, 98.0, 98.2, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_AND_GO_BEAR_boundary_open_above_low_false",
+      "predicate": "QM_PP_GAP_AND_GO_BEAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Open 99.2 is above the prior low 99.0 by 0.2 (over the gap threshold) though the bar is bearish. Changing only the open from the inside-case shows the gap clause rejects it, above the threshold.",
+      "bars": [[99.2, 99.8, 99.0, 99.1, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_GAP_AND_GO_BEAR_boundary_touching_equal_false",
+      "predicate": "QM_PP_GAP_AND_GO_BEAR",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Open 99.0 exactly equals the prior low 99.0: touching, not gapping, even though the bar is bearish. Exact literal equality; the strict open<low[1] gap clause excludes equality, so no gap-and-go (on the threshold).",
+      "bars": [[99.0, 99.5, 98.5, 98.8, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+
+    {
+      "id": "QM_PP_EXHAUSTION_GAP_UP_positive_gap_reverse_narrow",
+      "predicate": "QM_PP_EXHAUSTION_GAP_UP",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Exhaustion gap up: opens 101.5 above the prior high 101.0 (gap), then reverses to close 101.2 below its open (bearish), on a narrow range of 0.7 that is well under half the prior range 2.0 (0.5*2.0=1.0). The gap stalled and turned - all three halves present.",
+      "bars": [[101.5, 101.7, 101.0, 101.2, 4200], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_EXHAUSTION_GAP_UP_negative_no_gap",
+      "predicate": "QM_PP_EXHAUSTION_GAP_UP",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Attacks the gap clause: bar is bearish and narrow (range 0.7) but opens 100.5 inside the prior range - no gap up to exhaust. Without the initial gap there is nothing for exhaustion to describe.",
+      "bars": [[100.5, 100.7, 100.0, 100.2, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_EXHAUSTION_GAP_UP_negative_bullish_follow_through",
+      "predicate": "QM_PP_EXHAUSTION_GAP_UP",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Attacks the reversal clause: gaps up (open 101.5 > prior high 101.0) and range is narrow (0.6), but closes 101.8 above its open (bullish). A gap that follows through up is gap-and-go, not exhaustion.",
+      "bars": [[101.5, 101.9, 101.3, 101.8, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_EXHAUSTION_GAP_UP_negative_wide_range",
+      "predicate": "QM_PP_EXHAUSTION_GAP_UP",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Attacks the range-shrink clause: gaps up and closes bearish, but the range is 2.0 (high 103.0 - low 101.0), not the small/stalling bar the exhaustion condition r0 < 0.5*prior-range (1.0) requires. A wide reversal bar is a different animal.",
+      "bars": [[101.5, 103.0, 101.0, 101.2, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_EXHAUSTION_GAP_UP_boundary_range_inside_true",
+      "predicate": "QM_PP_EXHAUSTION_GAP_UP",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Range 0.9 (101.9-101.0) is inside the r0 < 0.5*range[1] = 1.0 shrink threshold. Gap (101.5>101.0) and bearish close (101.2<101.5) hold, isolating the range clause just below the threshold.",
+      "bars": [[101.5, 101.9, 101.0, 101.2, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_EXHAUSTION_GAP_UP_boundary_range_outside_false",
+      "predicate": "QM_PP_EXHAUSTION_GAP_UP",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Range 1.1 (102.2-101.1) is outside (above) the 1.0 shrink threshold. Only the range changed from the inside-case; gap and bearish close still hold, so the range clause is what rejects it, over the threshold.",
+      "bars": [[101.5, 102.2, 101.1, 101.2, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_EXHAUSTION_GAP_UP_boundary_gap_touching_false",
+      "predicate": "QM_PP_EXHAUSTION_GAP_UP",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Open 101.0 exactly equals the prior high 101.0: touching, not gapping, though bearish and narrow (range 0.5). Exact literal equality; the strict open>high[1] gap clause excludes equality, so no exhaustion gap (on the gap threshold).",
+      "bars": [[101.0, 101.3, 100.8, 100.9, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+
+    {
+      "id": "QM_PP_EXHAUSTION_GAP_DOWN_positive_gap_reverse_narrow",
+      "predicate": "QM_PP_EXHAUSTION_GAP_DOWN",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "Exhaustion gap down: opens 98.5 below the prior low 99.0 (gap), then reverses to close 98.6 above its open (bullish), on a narrow range of 0.7 well under half the prior range 2.0 (threshold 1.0). The gap stalled and turned up - all three halves present.",
+      "bars": [[98.5, 98.8, 98.1, 98.6, 4200], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_EXHAUSTION_GAP_DOWN_negative_no_gap",
+      "predicate": "QM_PP_EXHAUSTION_GAP_DOWN",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Attacks the gap clause: bar is bullish and narrow (range 0.6) but opens 99.5 inside the prior range - no gap down to exhaust. Without the initial gap there is nothing for exhaustion to describe.",
+      "bars": [[99.5, 99.8, 99.2, 99.6, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_EXHAUSTION_GAP_DOWN_negative_bearish_follow_through",
+      "predicate": "QM_PP_EXHAUSTION_GAP_DOWN",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Attacks the reversal clause: gaps down (open 98.5 < prior low 99.0) and range is narrow (0.7), but closes 98.2 below its open (bearish). A gap that follows through down is gap-and-go, not exhaustion.",
+      "bars": [[98.5, 98.7, 98.0, 98.2, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_EXHAUSTION_GAP_DOWN_negative_wide_range",
+      "predicate": "QM_PP_EXHAUSTION_GAP_DOWN",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Attacks the range-shrink clause: gaps down and closes bullish, but the range is 2.0 (high 99.0 - low 97.0), not the small/stalling bar the exhaustion condition r0 < 0.5*prior-range (1.0) requires. A wide reversal bar is a different animal.",
+      "bars": [[98.5, 99.0, 97.0, 98.6, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_EXHAUSTION_GAP_DOWN_boundary_range_inside_true",
+      "predicate": "QM_PP_EXHAUSTION_GAP_DOWN",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "Range 0.9 (98.9-98.0) is inside the r0 < 0.5*range[1] = 1.0 shrink threshold. Gap (98.5<99.0) and bullish close (98.6>98.5) hold, isolating the range clause just below the threshold.",
+      "bars": [[98.5, 98.9, 98.0, 98.6, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_EXHAUSTION_GAP_DOWN_boundary_range_outside_false",
+      "predicate": "QM_PP_EXHAUSTION_GAP_DOWN",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Range 1.1 (99.0-97.9) is outside (above) the 1.0 shrink threshold. Only the range changed from the inside-case; gap and bullish close still hold, so the range clause is what rejects it, over the threshold.",
+      "bars": [[98.5, 99.0, 97.9, 98.6, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    },
+    {
+      "id": "QM_PP_EXHAUSTION_GAP_DOWN_boundary_gap_touching_false",
+      "predicate": "QM_PP_EXHAUSTION_GAP_DOWN",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Open 99.0 exactly equals the prior low 99.0: touching, not gapping, though bullish and narrow (range 0.6). Exact literal equality; the strict open<low[1] gap clause excludes equality, so no exhaustion gap (on the gap threshold).",
+      "bars": [[99.0, 99.4, 98.8, 99.2, 4000], [100.0, 101.0, 99.0, 100.5, 4000]]
+    }
+  ]
+}

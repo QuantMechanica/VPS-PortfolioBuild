@@ -1,0 +1,264 @@
+{
+  "group": "volume_calendar",
+  "author": "volume_calendar",
+  "note": "Predicates 98/99/100. bars[0] is the reference (most recently closed) bar; index increases going back in time. VOLUME_CLIMAX reads bars 0..21 (volume avg over 1..20, ATR over 1..21). The default filler makes every padded bar identical (range 2.0, close 100, tick_volume 1000) so vavg=1000 and atr20=2.0 are exact. The two calendar predicates read ONLY b.time[0], set via anchor_date; their bar shape is inert.",
+  "default_filler_series": [
+    [100.0, 101.0, 99.0, 100.0, 1000]
+  ],
+  "fixtures": [
+    {
+      "id": "VOLUME_CLIMAX_positive_spike_and_wide",
+      "predicate": "QM_PP_VOLUME_CLIMAX",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "A volume climax is a blow-off/capitulation bar: an extreme surge in participation printed on an unusually wide price move. Filler bars each carry tick_volume 1000 (avg 1000) and range 2.0 (atr20 2.0). Bar0 has tick_volume 5000 (5x the average) and range 7.0 (3.5x atr20). Both the volume surge and the wide range are present, so it is a climax.",
+      "bars": [[100.0, 106.0, 99.0, 104.0, 5000]]
+    },
+    {
+      "id": "VOLUME_CLIMAX_negative_spike_but_narrow",
+      "predicate": "QM_PP_VOLUME_CLIMAX",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Volume surges to 5000 (5x the 1000 average) but the bar barely moves: range 1.2 against an atr20 of 2.0. Heavy volume inside a tight range is absorption/churn, not a climactic blow-off. A climax requires the price to travel far, so this is not one. (Attacks the wide-range clause.)",
+      "bars": [[100.0, 100.6, 99.4, 100.2, 5000]]
+    },
+    {
+      "id": "VOLUME_CLIMAX_negative_wide_but_normal_volume",
+      "predicate": "QM_PP_VOLUME_CLIMAX",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "Range is wide (7.0, 3.5x atr20) but tick_volume is 1000, exactly the recent average. A wide bar on ordinary participation is a routine directional move; the defining feature of a climax is the volume blow-off, which is absent here. (Attacks the volume-surge clause.)",
+      "bars": [[100.0, 106.0, 99.0, 104.0, 1000]]
+    },
+    {
+      "id": "VOLUME_CLIMAX_negative_ordinary_bar",
+      "predicate": "QM_PP_VOLUME_CLIMAX",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "A perfectly unremarkable bar: range 2.0 (equal to atr20) and tick_volume 1200 (1.2x the 1000 average). Neither the price expansion nor the volume surge that define a climax is present, so both clauses fail.",
+      "bars": [[100.0, 101.0, 99.0, 100.5, 1200]]
+    },
+    {
+      "id": "VOLUME_CLIMAX_boundary_volume_inside",
+      "predicate": "QM_PP_VOLUME_CLIMAX",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "vavg is 1000 so the tick_volume[0] > 3*vavg gate sits at 3000. tick_volume 3300 is 10% above 3000, inside the surge threshold. Range stays wide (7.0 vs atr20 2.0) so this isolates the volume clause. Not placed exactly on 3000.",
+      "bars": [[100.0, 106.0, 99.0, 104.0, 3300]]
+    },
+    {
+      "id": "VOLUME_CLIMAX_boundary_volume_outside",
+      "predicate": "QM_PP_VOLUME_CLIMAX",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Identical wide bar (range 7.0) but tick_volume 2700 is 10% below the 3000 surge threshold (3*vavg), outside it. Only the volume value changes from the inside case, so a false result pins the rejection to the volume clause.",
+      "bars": [[100.0, 106.0, 99.0, 104.0, 2700]]
+    },
+    {
+      "id": "VOLUME_CLIMAX_boundary_range_inside",
+      "predicate": "QM_PP_VOLUME_CLIMAX",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "atr20 is 2.0 so the r0 > 1.5*atr20 gate sits at 3.0. Bar0 range is 3.3 (103.3-100.0), 10% above 3.0, inside the wide-range threshold. Volume held high at 5000 (>3000) so this isolates the range clause. Not placed exactly on 3.0.",
+      "bars": [[100.0, 103.3, 100.0, 103.0, 5000]]
+    },
+    {
+      "id": "VOLUME_CLIMAX_boundary_range_outside",
+      "predicate": "QM_PP_VOLUME_CLIMAX",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "Range is 2.7 (102.7-100.0), 10% below the 3.0 wide-range threshold (1.5*atr20), outside it. Volume stays high at 5000 so a false result pins the rejection to the range clause alone.",
+      "bars": [[100.0, 102.7, 100.0, 102.5, 5000]]
+    },
+
+    {
+      "id": "THIRD_FRIDAY_positive_canonical",
+      "predicate": "QM_PP_THIRD_FRIDAY",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "2026-01-16 is a Friday and the third Friday of January 2026 (Fridays fall on the 2nd, 9th, 16th, 23rd, 30th). The third Friday is the monthly options/index-futures expiration, which is exactly what this predicate marks, so it must fire.",
+      "anchor_date": "2026-01-16",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "THIRD_FRIDAY_negative_second_friday",
+      "predicate": "QM_PP_THIRD_FRIDAY",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "2026-05-08 is a Friday but the SECOND Friday of May 2026 (Fridays on the 1st, 8th, 15th, 22nd, 29th). It is a Friday yet not the third, so a predicate that means 'third Friday' must not fire. (Attacks the which-Friday selection.)",
+      "anchor_date": "2026-05-08",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "THIRD_FRIDAY_negative_fourth_friday",
+      "predicate": "QM_PP_THIRD_FRIDAY",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "2026-08-28 is a Friday but the FOURTH Friday of August 2026 (Fridays on the 7th, 14th, 21st, 28th). A Friday later than the third must not be reported as the third Friday. (Attacks the which-Friday selection from the other side.)",
+      "anchor_date": "2026-08-28",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "THIRD_FRIDAY_negative_nonfriday_in_window",
+      "predicate": "QM_PP_THIRD_FRIDAY",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "2026-05-18 is a Monday whose day-of-month (18) sits inside the 15-21 window, but it is not a Friday. Only a Friday can be the third Friday, so the day-of-week requirement must reject this. (Attacks the Friday clause independently of the day range.)",
+      "anchor_date": "2026-05-18",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "THIRD_FRIDAY_boundary_day15_inside",
+      "predicate": "QM_PP_THIRD_FRIDAY",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "The implementation gates on day >= 15. 2026-05-15 is a Friday on day 15, on/above the lower edge and therefore inside the window. Day-of-month is an integer comparison so the edge value is exact and reliably included; paired with the day-14 case it brackets the lower bound.",
+      "anchor_date": "2026-05-15",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "THIRD_FRIDAY_boundary_day14_outside",
+      "predicate": "QM_PP_THIRD_FRIDAY",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "2026-08-14 is a Friday on day 14, one below the day >= 15 lower edge and therefore outside the window. It differs from the day-15 inside case only in the day-of-month, so a false result pins the rejection to the lower-bound clause.",
+      "anchor_date": "2026-08-14",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "THIRD_FRIDAY_boundary_day21_inside",
+      "predicate": "QM_PP_THIRD_FRIDAY",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "The implementation gates on day <= 21. 2026-08-21 is a Friday on day 21, on/within the upper edge and therefore inside the window. Integer day comparison makes the edge exact; paired with the day-22 case it brackets the upper bound.",
+      "anchor_date": "2026-08-21",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "THIRD_FRIDAY_boundary_day22_outside",
+      "predicate": "QM_PP_THIRD_FRIDAY",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "2026-05-22 is a Friday on day 22, one beyond the day <= 21 upper edge and therefore outside the window. Only the day-of-month differs from the day-21 inside case, pinning the rejection to the upper-bound clause.",
+      "anchor_date": "2026-05-22",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+
+    {
+      "id": "QUARTER_END_positive_mar31",
+      "predicate": "QM_PP_QUARTER_END",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "2026-03-31 is the last calendar day of Q1 (March 31, a trading Tuesday). This is the genuine quarter-end where index rebalancing and window-dressing concentrate, exactly what the predicate names, so it must fire.",
+      "anchor_date": "2026-03-31",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "QUARTER_END_positive_jun30",
+      "predicate": "QM_PP_QUARTER_END",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "2026-06-30 is the last calendar day of Q2 (June has 30 days). The genuine quarter-end must fire.",
+      "anchor_date": "2026-06-30",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "QUARTER_END_positive_sep30",
+      "predicate": "QM_PP_QUARTER_END",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "2026-09-30 is the last calendar day of Q3 (September has 30 days). The genuine quarter-end must fire.",
+      "anchor_date": "2026-09-30",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "QUARTER_END_positive_dec31",
+      "predicate": "QM_PP_QUARTER_END",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "rationale": "2026-12-31 is the last calendar day of Q4 (December 31). The genuine year/quarter-end must fire.",
+      "anchor_date": "2026-12-31",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "QUARTER_END_negative_nonquarter_month_jan31",
+      "predicate": "QM_PP_QUARTER_END",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "2026-01-31 is the last day of January, but January does not end a quarter. The last day of a non-quarter month is not a quarter-end, so this must not fire. (Attacks the quarter-month clause.)",
+      "anchor_date": "2026-01-31",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "QUARTER_END_negative_nonquarter_month_apr30",
+      "predicate": "QM_PP_QUARTER_END",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "2026-04-30 is the last day of April, deep in day>=24 territory, but April is the first month of Q2, not its end. A month-end of a non-quarter-closing month is not a quarter-end. (Attacks the quarter-month clause from a late day-of-month.)",
+      "anchor_date": "2026-04-30",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "QUARTER_END_negative_defect_mar27",
+      "predicate": "QM_PP_QUARTER_END",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "2026-03-27 is a Friday four days before the Q1 close on March 31. It is NOT the quarter-end, so the correct answer is false. The implementation (quarter_month && day>=24) returns TRUE here, mislabeling an ordinary late-March day as quarter-end. Fixture written to the pattern definition; the mismatch is a suspected defect. (Attacks the day>=24 clause.)",
+      "anchor_date": "2026-03-27",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "QUARTER_END_negative_defect_sep26",
+      "predicate": "QM_PP_QUARTER_END",
+      "case": "negative",
+      "expected": false,
+      "basis": "pattern_definition",
+      "rationale": "2026-09-26 is four days before the Q3 close on September 30 and is not the quarter-end, so the correct answer is false. The implementation returns TRUE (September, day 26 >= 24), a second instance of the day>=24 over-firing across a different quarter. Written to the pattern definition; mismatch is the same suspected defect.",
+      "anchor_date": "2026-09-26",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "QUARTER_END_boundary_day25_inside",
+      "predicate": "QM_PP_QUARTER_END",
+      "case": "boundary",
+      "expected": true,
+      "basis": "implementation_threshold",
+      "rationale": "The implementation admits any quarter-month day >= 24. 2026-03-25 (March, day 25) is above the 24 cutoff, inside the admitted range, so the code returns true. This documents the implementation's actual behavior; whether day 25 SHOULD count as quarter-end is the subject of the defect fixtures above.",
+      "anchor_date": "2026-03-25",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    },
+    {
+      "id": "QUARTER_END_boundary_day22_outside",
+      "predicate": "QM_PP_QUARTER_END",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "rationale": "2026-03-22 (March, day 22) is below the day >= 24 cutoff, outside the admitted range, so the code returns false. Differs from the day-25 inside case only in day-of-month, bracketing the 24 threshold from below.",
+      "anchor_date": "2026-03-22",
+      "bars": [[100.0, 101.0, 99.0, 100.0, 1000]]
+    }
+  ]
+}
