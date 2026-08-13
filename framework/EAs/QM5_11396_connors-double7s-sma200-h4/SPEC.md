@@ -4,7 +4,7 @@
 **Slug:** connors-double7s-sma200-h4
 **Source:** ea4596d1-24e0-5e43-9106-66fd575a5370
 **Author of this spec:** Codex
-**Last revised:** 2026-06-21
+**Last revised:** 2026-08-13
 
 ---
 
@@ -90,3 +90,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-21 | Initial build from card | 2fd4f862-4bbb-4fee-90ea-e3ee4228f2d2 |
+| v2 | 2026-08-13 | Recover stale build blocked by unrelated registry infrastructure; modernize V5 lifecycle and enqueue Q02 | 07c901e4-0b2d-4c1e-8ca0-3e99f5dfc2b7 |
