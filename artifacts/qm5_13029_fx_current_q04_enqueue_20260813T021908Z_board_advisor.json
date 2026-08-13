@@ -1,0 +1,146 @@
+{
+  "artifact_type": "fx_cointegration_existing_current_binary_q04_enqueue",
+  "generated_at_utc": "2026-08-13T02:19:08Z",
+  "local_date": "2026-08-13",
+  "timezone": "Europe/Berlin",
+  "operator": "codex-headless-board-advisor",
+  "branch": "agents/board-advisor",
+  "base_commit": "776a2f06773af2bd83103bd35994b7d36b9ee77e",
+  "mission_outcome": "EXISTING_FOREX_CARD_ADVANCED_TO_Q04",
+  "frontier_decision": {
+    "relationship_audit_commit": "a80493291",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_pair_built": false,
+    "duplicate_pair_created": false,
+    "anchor_triage": {
+      "QM5_12532": "Q02_PASS_THEN_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_THEN_Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "fallback_reason": "All frozen scan relationships are mechanized and neither anchor has an open Q02 setup blocker."
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_13029",
+    "slug": "gbpcad-gbpnzd-coint",
+    "pair": [
+      "GBPCAD.DWX",
+      "GBPNZD.DWX"
+    ],
+    "logical_symbol": "QM5_13029_GBPCAD_GBPNZD_COINTEGRATION_D1",
+    "host_symbol": "GBPCAD.DWX",
+    "timeframe": "D1",
+    "g0_status": "APPROVED",
+    "source_citation": "Chan, Ernest P. (2009), Quantitative Trading, Wiley, Chapter 7, plus the OWNER-directed extended Darwinex FX cointegration screen.",
+    "screen_evidence": {
+      "oos_net_sharpe": 1.66,
+      "dev_net_sharpe": -0.11,
+      "estimated_half_life_d1_bars": 84.8,
+      "fixed_beta": 0.346,
+      "disposition": "CURRENT_90_BAR_IDENTITY_FULL_UNCHANGED_CASCADE"
+    }
+  },
+  "structural_contract": {
+    "market_neutral_pair_package": true,
+    "low_frequency_d1": true,
+    "online_refit": false,
+    "ml": false,
+    "banned_indicator": false,
+    "grid": false,
+    "martingale": false,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "current_bindings": {
+    "approved_card_sha256": "966f6a3e52c577fb44892cb00c41ce250ec31a1d583de86db9abee2bb932ec8b",
+    "ea_local_card_sha256": "966f6a3e52c577fb44892cb00c41ce250ec31a1d583de86db9abee2bb932ec8b",
+    "mq5_sha256": "6d51cdb12a515d26c1ca2fddd3a75eb9927e39dcfd4ceac7422758e4f7ff77bf",
+    "ex5_sha256": "957b7065a6fc75d3e81feeab5e4a691872763a8b11203f067676da3758438525",
+    "basket_manifest_sha256": "3295e479a33e2e6ab9ffa71e26f5bdabd88af0d26cdf2897157d584c34dd8069",
+    "setfile_sha256": "0f9a304236e2352de8eca4c4048d7ad07be544889174dbbfab390b9b9c65e693"
+  },
+  "current_funnel_evidence": {
+    "q02": {
+      "work_item_id": "614cc154-31e1-4919-9a1e-de7bc5e0c5f3",
+      "verdict": "PASS"
+    },
+    "q03": {
+      "work_item_id": "493a64ad-c9ed-46f4-9d05-1444ef50e645",
+      "verdict": "PASS",
+      "summary_path": "D:/QM/reports/work_items/493a64ad-c9ed-46f4-9d05-1444ef50e645/QM5_13029/20260812_113607/summary.json",
+      "summary_sha256": "1a8c14045993572cfce39bf37d6c3f26822f0f2c94e8743d375a32303a445bf7",
+      "deterministic_runs": 2,
+      "trades_each": 128,
+      "profit_factor_each": 1.1,
+      "net_profit_each": 1604.0,
+      "drawdown_each": 3998.1,
+      "drawdown_percent_each": 3.82,
+      "reason_classes": [
+        "OK"
+      ],
+      "oninit_failure": false
+    }
+  },
+  "preserved_q04": {
+    "work_item_id": "629d9f34-d7a4-42e6-82f0-c7b4d26289b7",
+    "identity": "60_BAR",
+    "status": "done",
+    "verdict": "FAIL",
+    "aggregate_path": "D:/QM/reports/work_items/629d9f34-d7a4-42e6-82f0-c7b4d26289b7/QM5_13029/Q04/QM5_13029_GBPCAD_GBPNZD_COINTEGRATION_D1/aggregate.json",
+    "aggregate_sha256": "bc182ed679d05efc5f3e91b8f6c7fabafd021425896e703a41bda6409ba490cc",
+    "fold_net_pf": {
+      "F1": 0.92034904059262,
+      "F2": 1.4201396671964197
+    },
+    "historical_evidence_preserved": true
+  },
+  "queue_mutation": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "action": "APPEND_ONLY_Q04_ENQUEUE",
+    "created_work_item_id": "1c2f3328-71e3-4c47-a8f5-5a583193b4cb",
+    "promoted_from_phase": "Q03",
+    "promoted_from_work_item": "493a64ad-c9ed-46f4-9d05-1444ef50e645",
+    "append_only_rerun_of_work_item": "629d9f34-d7a4-42e6-82f0-c7b4d26289b7",
+    "status_at_verification": "pending",
+    "attempt_count_at_verification": 0,
+    "claimed_by_at_verification": null,
+    "claim_rank_at_verification": 5,
+    "active_holds": 0,
+    "rows_created": 1,
+    "rows_requeued": 0,
+    "rows_skipped": 0,
+    "open_current_q04_rows": 1,
+    "duplicate_work_item_created": false,
+    "event_id": 347676,
+    "event": "cascade_backtest_enqueued"
+  },
+  "validation": {
+    "strategy_card_schema_lint": "PASS",
+    "strategy_card_ml_hits": [],
+    "spec_validation": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "symbol_scope_violations": 0
+  },
+  "capacity": {
+    "sample_before_utc": "2026-08-13T02:19:02Z",
+    "paced_launch_gate_max": 1,
+    "factory_terminals_running_before": 0,
+    "factory_off_before": false,
+    "factory_terminals_running_after": 0,
+    "ceiling_binding": false,
+    "dispatch_tick": false,
+    "tester_or_backtest_run": false
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "live_setfile_change_committed": false
+  }
+}
