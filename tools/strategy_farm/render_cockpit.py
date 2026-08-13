@@ -2907,7 +2907,18 @@ def main() -> int:
     if q08_advancing >= q08_strict_pass:
         q_counts["Q08"] = q08_advancing
         q_chip_subnote["Q08"] = f"({q08_strict_pass:,} pass)"
-    # Q11 has no tracked rows yet (truthfully 0). Q12 = EAs sitting in the
+    # Q11 (portfolio admission) never gets a work_items row — the portfolio layer
+    # records its state in `portfolio_candidates` instead. Reading only work_items
+    # therefore showed 0 while Q12 showed 25 and Q13 showed 24 live sleeves, which
+    # is self-contradictory: nothing reaches the review pool or the live book
+    # without having been admitted to the portfolio layer first. Project Q11 from
+    # the same store as Q12, excluding superseded duplicates.
+    q11_rows = db_rows(
+        "SELECT COUNT(DISTINCT ea_id) AS c FROM portfolio_candidates "
+        "WHERE state <> 'DUPLICATE_SUPERSEDED'"
+    )
+    q_counts["Q11"] = int(q11_rows[0]["c"] or 0) if q11_rows else 0
+    # Q12 = EAs sitting in the
     # OWNER review pool; Q13 = sleeves live on T_Live, from the read-only
     # pulse projection (evidence chain: terminal logs → live_book_pulse.py).
     # A missing/unchecked pulse leaves the chip at 0 — never invent a live count.
@@ -2967,7 +2978,7 @@ def main() -> int:
       eras (Q03/Q08 entered mid-history &mdash; adjacent chips are not one
       regime's funnel) &middot; Q09 = union of news/portfolio sub-gate passes &middot;
       Q10 = historical-visible PASS pairs, not current-contract binding &middot;
-      Q12 = EAs in OWNER review pool &middot; Q13 = sleeves live on T_Live (pulse) &middot;
+      Q11 = EAs admitted to the portfolio layer &middot; Q12 = EAs in OWNER review pool &middot; Q13 = sleeves live on T_Live (pulse) &middot;
       Q14 = OPT_ELIGIBLE &middot; Q15 = CHALLENGER_SPAWNED &middot;
       Q16 = PROMOTE_CHALLENGER + KEEP_INCUMBENT + ADMIT_BOTH on the explicit Q10 fork
     </div>
