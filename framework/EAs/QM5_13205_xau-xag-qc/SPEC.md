@@ -5,7 +5,7 @@
 **Strategy ID:** `SCHWEIKERT-QC-2018_XAU_XAG_S01`
 **Source:** `SCHWEIKERT-QC-2018`
 **Author of this spec:** Codex
-**Last revised:** 2026-07-12
+**Last revised:** 2026-08-13
 
 ## 1. Strategy Logic
 
@@ -21,6 +21,10 @@ On initialization, the EA finds the first host D1 bar of the current broker
 month and rebuilds from the history strictly preceding that anchor. This
 reproduces the same frozen month window after a mid-month restart instead of
 silently sliding the estimator forward.
+
+Monthly and weekly cadence are keyed exclusively through the V5 framework's
+D1-derived `QM_CalendarPeriodKey` helper. The EA does not depend on unavailable
+MN1/W1 custom-symbol bars or maintain a hand-rolled calendar key.
 
 For each tau, alpha at a candidate beta is the empirical tau residual
 quantile. The constrained exact beta is selected from the sorted pairwise
@@ -159,3 +163,4 @@ runtime feed, or manual tester run is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-12 | Initial build from approved card | OWNER mission; restart-safe month anchor and attempt marker |
+| v2 | 2026-08-13 | Framework-calendar compliance rebuild | Replaced raw EA month/week key arithmetic with `QM_CalendarPeriodKey`; signal, estimator, risk, and exits unchanged; build task `2774ef4d-0a43-47e6-b5ff-abf01a614630` |

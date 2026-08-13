@@ -1,9 +1,9 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        13205
 ; ea_slug:      xau-xag-qc
-; ea_version:   v5.0
-; set_version:  s20260712-001
+; ea_version:   v5.1
+; set_version:  s20260813-002
 ; symbol:       QM5_13205_XAU_XAG_QC_D1
 ; host_symbol:  XAUUSD.DWX
 ; timeframe:    D1
@@ -11,9 +11,9 @@
 ; magic_slot:   0
 ; risk_mode:    RISK_FIXED
 ; portfolio_weight: 1
-; build_hash:   8195bf0199d5392ecdf086c8e85645b20495297e7798b4b547909e1956db7602
+; build_hash:   9e4344a8fe1f927c189b71d6b338b0f7e4dc2c548209adbee9f3e561042fd349
 ; author:       Development
-; date:         2026-07-12
+; date:         2026-08-13
 ;==========================================================
 qm_ea_id=13205
 qm_magic_slot_offset=0

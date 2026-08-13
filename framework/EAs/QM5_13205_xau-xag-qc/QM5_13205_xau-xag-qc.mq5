@@ -1,5 +1,5 @@
 #property strict
-#property version   "5.0"
+#property version   "5.1"
 #property description "QM5_13205 XAU XAG state-dependent quantile envelope"
 
 #include <QM/QM_Common.mqh>
@@ -221,54 +221,51 @@ void Strategy_ClosePair(const QM_ExitReason reason)
    g_pair_entry_time = 0;
   }
 
-int Strategy_MonthKey(const datetime value)
+bool Strategy_FirstHostBarOfMonth(const datetime reference_time,
+                                  const int expected_month_key,
+                                  datetime &first_bar,
+                                  int &first_week_key)
   {
-   MqlDateTime parts;
-   if(value <= 0 || !TimeToStruct(value, parts))
-      return 0;
-   return parts.year * 100 + parts.mon;
-  }
-
-int Strategy_WeekKey(const datetime value)
-  {
-   MqlDateTime parts;
-   if(value <= 0 || !TimeToStruct(value, parts))
-      return 0;
-   const int days_since_monday = (parts.day_of_week + 6) % 7;
-   const datetime monday = value - (datetime)((long)days_since_monday * 86400);
-   MqlDateTime monday_parts;
-   if(monday <= 0 || !TimeToStruct(monday, monday_parts))
-      return 0;
-   return monday_parts.year * 1000 + monday_parts.day_of_year;
-  }
-
-datetime Strategy_FirstHostBarOfMonth(const datetime reference_time)
-  {
-   if(reference_time <= 0)
-      return 0;
+   first_bar = 0;
+   first_week_key = 0;
+   if(reference_time <= 0 || expected_month_key <= 0)
+      return false;
    const int reference_shift = iBarShift(_Symbol, PERIOD_D1,
                                          reference_time, false); // perf-allowed: bounded restart reconstruction.
    if(reference_shift < 0)
-      return 0;
-   const datetime reference_bar = iTime(_Symbol, PERIOD_D1, // perf-allowed: one bounded calendar anchor.
-                                        reference_shift); // perf-allowed: one bounded calendar anchor.
-   const int month_key = Strategy_MonthKey(reference_bar);
-   if(reference_bar <= 0 || month_key <= 0)
-      return 0;
+      return false;
+   MqlRates reference_bar;
+   const int reference_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, reference_shift);
+   const int reference_week =
+      QM_CalendarPeriodKey(PERIOD_W1, _Symbol, reference_shift);
+   if(reference_month != expected_month_key || reference_week <= 0 ||
+      !QM_ReadBar(_Symbol, PERIOD_D1, reference_shift, reference_bar) ||
+      reference_bar.time <= 0)
+      return false;
 
-   datetime first_bar = reference_bar;
+   first_bar = reference_bar.time;
+   first_week_key = reference_week;
    for(int shift = reference_shift + 1;
        shift <= reference_shift + 35; ++shift)
      {
-      const datetime candidate = iTime(_Symbol, PERIOD_D1, // perf-allowed: at most 35 D1 calendar probes on restart.
-                                       shift); // perf-allowed: at most 35 D1 calendar probes on restart.
-      if(candidate <= 0)
-         return 0;
-      if(Strategy_MonthKey(candidate) != month_key)
+      const int candidate_month =
+         QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, shift);
+      if(candidate_month <= 0)
+         return false;
+      if(candidate_month != expected_month_key)
          break;
-      first_bar = candidate;
+      const int candidate_week =
+         QM_CalendarPeriodKey(PERIOD_W1, _Symbol, shift);
+      MqlRates candidate_bar;
+      if(candidate_week <= 0 ||
+         !QM_ReadBar(_Symbol, PERIOD_D1, shift, candidate_bar) ||
+         candidate_bar.time <= 0)
+         return false;
+      first_bar = candidate_bar.time;
+      first_week_key = candidate_week;
      }
-   return first_bar;
+   return (first_bar > 0 && first_week_key > 0);
   }
 
 string Strategy_AttemptStateKey()
@@ -276,11 +273,10 @@ string Strategy_AttemptStateKey()
    return StringFormat("QM5_%d_%s_QR_ATTEMPT_WEEK", qm_ea_id, g_leg_xau);
   }
 
-void Strategy_LoadAttemptState(const datetime reference_time)
+void Strategy_LoadAttemptState(const int current_week)
   {
    g_attempt_state_key = Strategy_AttemptStateKey();
    g_last_entry_week_key = 0;
-   const int current_week = Strategy_WeekKey(reference_time);
    if(current_week <= 0 || !GlobalVariableCheck(g_attempt_state_key))
       return;
    const int stored_week = (int)GlobalVariableGet(g_attempt_state_key);
@@ -324,10 +320,15 @@ bool Strategy_LoadSynchronizedLogPairs(const datetime decision_bar_time,
                                             decision_bar_time, false); // perf-allowed: one anchor lookup per bounded history copy.
    if(xau_decision_shift < 0 || xag_decision_shift < 0)
       return false;
-   const datetime xau_anchor_time = iTime(g_leg_xau, PERIOD_D1, // perf-allowed: validate strict decision cutoff.
-                                          xau_decision_shift); // perf-allowed: validate strict decision cutoff.
-   const datetime xag_anchor_time = iTime(g_leg_xag, PERIOD_D1, // perf-allowed: validate strict decision cutoff.
-                                          xag_decision_shift); // perf-allowed: validate strict decision cutoff.
+   MqlRates xau_anchor_bar;
+   MqlRates xag_anchor_bar;
+   if(!QM_ReadBar(g_leg_xau, PERIOD_D1, xau_decision_shift,
+                  xau_anchor_bar) ||
+      !QM_ReadBar(g_leg_xag, PERIOD_D1, xag_decision_shift,
+                  xag_anchor_bar))
+      return false;
+   const datetime xau_anchor_time = xau_anchor_bar.time;
+   const datetime xag_anchor_time = xag_anchor_bar.time;
    if(xau_anchor_time <= 0 || xag_anchor_time <= 0 ||
       xau_anchor_time > decision_bar_time ||
       xag_anchor_time > decision_bar_time)
@@ -654,11 +655,10 @@ bool Strategy_RestoreMonthlyModel(const datetime decision_bar_time,
                                   const int month_key,
                                   const int week_key)
   {
-   const datetime month_anchor =
-      Strategy_FirstHostBarOfMonth(decision_bar_time);
-   const int anchor_week = Strategy_WeekKey(month_anchor);
-   if(month_anchor <= 0 || Strategy_MonthKey(month_anchor) != month_key ||
-      anchor_week <= 0 ||
+   datetime month_anchor = 0;
+   int anchor_week = 0;
+   if(!Strategy_FirstHostBarOfMonth(decision_bar_time, month_key,
+                                    month_anchor, anchor_week) ||
       !Strategy_RefitMonthlyModel(month_anchor, month_key, anchor_week))
       return false;
    if(month_anchor == decision_bar_time)
@@ -672,19 +672,19 @@ void Strategy_AdvanceSignalOnNewBar()
    g_weekly_signal_bar = false;
    g_signal_ready = false;
 
-   MqlRates decision_rates[1];
-   if(CopyRates(_Symbol, PERIOD_D1, 0, 1, decision_rates) != 1 || // perf-allowed
-      decision_rates[0].time <= 0)
+   MqlRates decision_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, decision_bar) ||
+      decision_bar.time <= 0)
       return;
-   const datetime decision_time = decision_rates[0].time;
-   const datetime previous_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: one prior D1 timestamp on the new-bar calendar gate.
-   if(previous_time <= 0)
-      return;
-
-   const int current_month = Strategy_MonthKey(decision_time);
-   const int previous_month = Strategy_MonthKey(previous_time);
-   const int current_week = Strategy_WeekKey(decision_time);
-   const int previous_week = Strategy_WeekKey(previous_time);
+   const datetime decision_time = decision_bar.time;
+   const int current_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int previous_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
+   const int current_week =
+      QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
+   const int previous_week =
+      QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 1);
    if(current_month <= 0 || previous_month <= 0 ||
       current_week <= 0 || previous_week <= 0)
       return;
@@ -712,18 +712,39 @@ bool Strategy_WeekAlreadyEntered(const int week_key,
       return true;
    if(g_last_entry_week_key == week_key)
       return true;
+   const int decision_shift = iBarShift(_Symbol, PERIOD_D1,
+                                        decision_bar_time, false); // perf-allowed: bounded weekly history anchor.
+   if(decision_shift < 0 ||
+      QM_CalendarPeriodKey(PERIOD_W1, _Symbol, decision_shift) != week_key)
+      return true;
+   datetime week_start = 0;
+   for(int shift = decision_shift; shift <= decision_shift + 10; ++shift)
+     {
+      const int candidate_week =
+         QM_CalendarPeriodKey(PERIOD_W1, _Symbol, shift);
+      if(candidate_week <= 0)
+         return true;
+      if(candidate_week != week_key)
+         break;
+      MqlRates candidate_bar;
+      if(!QM_ReadBar(_Symbol, PERIOD_D1, shift, candidate_bar) ||
+         candidate_bar.time <= 0)
+         return true;
+      week_start = candidate_bar.time;
+     }
+   if(week_start <= 0)
+      return true;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
       if(ticket == 0 || !PositionSelectByTicket(ticket) ||
          !Strategy_IsPairPosition())
          continue;
-      if(Strategy_WeekKey((datetime)PositionGetInteger(POSITION_TIME)) == week_key)
+      if((datetime)PositionGetInteger(POSITION_TIME) >= week_start)
          return true;
      }
 
-   const datetime history_start = decision_bar_time - (datetime)(21 * 86400);
-   if(history_start <= 0 || !HistorySelect(history_start, TimeCurrent()))
+   if(!HistorySelect(week_start, TimeCurrent()))
       return true;
    for(int i = HistoryDealsTotal() - 1; i >= 0; --i)
      {
@@ -735,8 +756,7 @@ bool Strategy_WeekAlreadyEntered(const int week_key,
          (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal_ticket, DEAL_ENTRY);
       if(entry_kind != DEAL_ENTRY_IN && entry_kind != DEAL_ENTRY_INOUT)
          continue;
-      if(Strategy_WeekKey((datetime)HistoryDealGetInteger(deal_ticket, DEAL_TIME)) ==
-         week_key)
+      if((datetime)HistoryDealGetInteger(deal_ticket, DEAL_TIME) >= week_start)
          return true;
      }
    return false;
@@ -966,10 +986,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       g_signal_week_key <= 0 || g_signal_pair_direction == 0 ||
       g_signal_entry_beta <= 0.0 || Strategy_OpenPairLegCount() > 0)
       return false;
-   MqlRates decision_rates[1];
-   if(CopyRates(_Symbol, PERIOD_D1, 0, 1, decision_rates) != 1 || // perf-allowed
-      decision_rates[0].time <= 0 ||
-      Strategy_WeekAlreadyEntered(g_signal_week_key, decision_rates[0].time))
+   MqlRates decision_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, decision_bar) ||
+      decision_bar.time <= 0 ||
+      Strategy_WeekAlreadyEntered(g_signal_week_key, decision_bar.time))
       return false;
 
    // A failed package is still this week's attempt in the current runtime.
@@ -1056,12 +1076,16 @@ int OnInit()
    QM_SymbolGuardInit(basket_symbols);
    QM_BasketWarmupHistory(basket_symbols, PERIOD_D1,
                           MathMax(800, strategy_history_bars));
-   const datetime current_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: restart state anchor.
-   Strategy_LoadAttemptState(current_bar_time);
-   const int current_month = Strategy_MonthKey(current_bar_time);
-   const int current_week = Strategy_WeekKey(current_bar_time);
-   if(current_month > 0 && current_week > 0 && !Strategy_NoTradeFilter())
-      Strategy_RestoreMonthlyModel(current_bar_time,
+   MqlRates current_bar;
+   const int current_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int current_week =
+      QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
+   Strategy_LoadAttemptState(current_week);
+   if(QM_ReadBar(_Symbol, PERIOD_D1, 0, current_bar) &&
+      current_bar.time > 0 && current_month > 0 && current_week > 0 &&
+      !Strategy_NoTradeFilter())
+      Strategy_RestoreMonthlyModel(current_bar.time,
                                    current_month, current_week);
    QM_LogEvent(QM_INFO, "INIT_OK",
                "{\"card\":\"QM5_13205\",\"ea\":\"xau-xag-qc\"}");
