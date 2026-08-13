@@ -139,6 +139,7 @@ waiver is authorized.
 |---|---|---|---|
 | v1 | 2026-08-13 | Initial scaffold from approved card | Build pending |
 | v2 | 2026-08-13 | Implemented locked XNG carrier and monthly lifecycle | Strict compile and reference checks pass |
+| v3 | 2026-08-13 | Completed paced target-only Q02 handoff | One pending work item; no dispatch or manual backtest |
 
 ## 12. Q01 Status
 
@@ -152,4 +153,8 @@ compiled `.ex5`.
 
 ## 13. Q02 Handoff
 
-NOT ENQUEUED.
+ENQUEUED. Work item `19cae282-9ed8-4791-b439-868b1c51e867` was pending at
+immediate readback, attempt 0, unclaimed, with no evidence path or verdict.
+The target-only paced enqueue ran below the seven-terminal fleet ceiling. No
+dispatch tick or manual backtest was run. See
+`docs/ops/evidence/2026-08-13_qm5_20299_xng_vov_regime_q01_q02_enqueue.md`.

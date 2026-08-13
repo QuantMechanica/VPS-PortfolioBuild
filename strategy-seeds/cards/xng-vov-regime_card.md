@@ -53,9 +53,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01_PASS_Q02_NOT_ENQUEUED
+pipeline_phase: Q02_ENQUEUED
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 review_focus: "Falsify an outright XNG monthly uncertainty premium whose two disjoint own-history realized-VoV blocks differ from paired energy/metal VoV ranks, raw-volatility fades, return trend/reversal, calendar, variance-ratio, event, and XNG RSI logic; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -307,6 +307,7 @@ correlation waivers.
 |---|---|---|---|---|
 | v1 | 2026-08-13 | initial source-bounded XNG self-relative realized-VoV regime | G0 | APPROVED; build pending |
 | v1-q01 | 2026-08-13 | deterministic V5 build, strict compile, target guardrails, independent VoV vectors, and P1 artifact validation | Q01 | PASS |
+| v1-q02 | 2026-08-13 | target-only paced queue handoff after duplicate and factory-capacity checks | Q02 | ENQUEUED; pending |
 
 ## Pipeline Phase Status
 
@@ -314,4 +315,4 @@ correlation waivers.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-13 | APPROVED; R1-R4 PASS | `decisions/2026-08-13_qm5_20299_xng_vov_regime_g0.md`; bounded source packet |
 | Q01 Build Validation | 2026-08-13 | PASS; strict compile 0 errors/0 warnings, build check 0 failures/0 warnings, 6 reference tests PASS, P1 PASS | `D:/QM/reports/compile/20260813_042814/summary.csv`; `D:/QM/reports/framework/21/build_check_20260813_042838.json`; `D:/QM/reports/pipeline/QM5_20299/P1/P1_QM5_20299_result.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-13 | ENQUEUED; pending, attempt 0, unclaimed | work item `19cae282-9ed8-4791-b439-868b1c51e867`; `docs/ops/evidence/2026-08-13_qm5_20299_xng_vov_regime_q01_q02_enqueue.md` |
