@@ -166,4 +166,7 @@ factory binary hashes match; and P1 artifact validation found the compiled
 
 ## 13. Q02 Handoff
 
-NOT ENQUEUED. Q02 requires Q01 PASS plus a fresh paced-factory capacity check.
+ENQUEUED. Canonical work item `81939741-407c-40dc-b6ad-91baa91c0e92`
+was pending and unclaimed at the capacity-stop readback, with no evidence path
+or verdict. This mission issued no dispatch tick because the paced factory
+ceiling was binding.

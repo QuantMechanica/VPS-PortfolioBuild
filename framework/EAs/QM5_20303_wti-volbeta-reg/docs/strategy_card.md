@@ -56,9 +56,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01_PASS
+pipeline_phase: Q02_ENQUEUED
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 review_focus: "Falsify an outright WTI monthly smooth common-energy volatility-beta regime whose two own-history coefficient blocks differ from the existing paired energy rank, WTI realized-VoV, tail, moment, trend, calendar, event, and XNG oscillator neighbors; Q09 alone may establish realized book decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -330,6 +330,7 @@ portfolio admission; or a correlation waiver.
 |---|---|---|---|---|
 | v1 | 2026-08-13 | initial WTI self-relative smooth-volatility-beta regime | G0 | APPROVED; build pending |
 | v1-q01 | 2026-08-13 | deterministic V5 build, strict compile, synchronized-history guardrails, independent beta vectors, and P1 artifact validation | Q01 | PASS |
+| v1-q02 | 2026-08-13 | canonical producer handoff observed after Q01 while the paced CPU ceiling was binding | Q02 | ENQUEUED; pending and unclaimed; no dispatch by this mission |
 
 ## Pipeline Phase Status
 
@@ -337,3 +338,4 @@ portfolio admission; or a correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-13 | APPROVED; R1-R4 PASS | `decisions/2026-08-13_qm5_20303_wti_volbeta_reg_g0.md`; bounded source packet |
 | Q01 Build Validation | 2026-08-13 | PASS; strict compile 0 errors/0 warnings, build check 0 failures/0 warnings, 6 reference tests PASS, deploy verification PASS, P1 PASS | `D:/QM/reports/compile/20260813_095341/summary.csv`; `D:/QM/reports/framework/21/build_check_20260813_095552.json`; `D:/QM/reports/pipeline/QM5_20303/P1/P1_QM5_20303_result.json` |
+| Q02 Baseline Screening | 2026-08-13 | ENQUEUED; pending and unclaimed at capacity-stop readback | work item `81939741-407c-40dc-b6ad-91baa91c0e92`; no evidence path or verdict |
