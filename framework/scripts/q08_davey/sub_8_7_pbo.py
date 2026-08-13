@@ -109,7 +109,53 @@ def run(ea_id: int | None = None, symbol: str | None = None,
                 detail=f"insufficient_distinct_configs:got={n_configs}:need>=2",
                 evidence={"scores_path": str(scores_path), "n_configs": n_configs},
             )
-        common_slices = set.intersection(*(set(v.keys()) for v in scores.values()))
+        # Exact-family enforcement (plan v2 A3 / codex review finding 3). PBO is only
+        # defined over a rectangular (config x slice) matrix drawn from ONE configuration
+        # family. A ragged matrix means some configs were evaluated on fewer slices —
+        # typically the losers, which crash, zero-trade or time out more often. Silently
+        # intersecting or dropping them biases PBO downward (the set looks less overfit
+        # than it is). Fail closed instead, and say exactly which configs are short.
+        slice_sets = {cfg: set(v.keys()) for cfg, v in scores.items()}
+        common_slices = set.intersection(*slice_sets.values())
+        all_slices = set.union(*slice_sets.values())
+        if common_slices != all_slices:
+            ragged = sorted(
+                (cfg, len(all_slices - s)) for cfg, s in slice_sets.items() if s != all_slices
+            )
+            return make_result(
+                GATE_NAME, "INVALID",
+                value=None, threshold=PBO_MAX_PCT,
+                detail=("pbo_family_not_rectangular:"
+                        f"configs={n_configs}:slices_union={len(all_slices)}:"
+                        f"slices_common={len(common_slices)}:short_configs={len(ragged)}"),
+                evidence={
+                    "scores_path": str(scores_path),
+                    "n_configs": n_configs,
+                    "n_slices_union": len(all_slices),
+                    "n_slices_common": len(common_slices),
+                    "short_configs": [{"config_id": c, "missing_slices": m}
+                                      for c, m in ragged[:20]],
+                    "config_source": str(meta.get("config_source") or "UNKNOWN"),
+                    "rule": "PBO requires one family on a complete config x slice grid",
+                },
+            )
+        # A declared config count that exceeds what the scores file carries proves
+        # configurations were lost between the runner and this gate.
+        declared_configs = meta.get("n_configs")
+        try:
+            declared_configs = int(declared_configs) if declared_configs is not None else None
+        except (TypeError, ValueError):
+            declared_configs = None
+        if declared_configs is not None and declared_configs > n_configs:
+            return make_result(
+                GATE_NAME, "INVALID",
+                value=None, threshold=PBO_MAX_PCT,
+                detail=(f"pbo_configs_lost:declared={declared_configs}:present={n_configs}"),
+                evidence={"scores_path": str(scores_path),
+                          "declared_n_configs": declared_configs,
+                          "present_n_configs": n_configs,
+                          "config_source": str(meta.get("config_source") or "UNKNOWN")},
+            )
         result = compute_pbo(scores)
     except Exception as exc:
         return make_result(GATE_NAME, "INVALID",
