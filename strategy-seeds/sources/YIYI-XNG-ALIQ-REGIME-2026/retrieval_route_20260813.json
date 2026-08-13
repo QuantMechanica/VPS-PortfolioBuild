@@ -1,0 +1,10 @@
+{
+  "status": "PERMISSION_REQUIRED",
+  "adapter": "generic",
+  "url": "https://onlinelibrary.wiley.com/doi/10.1002/fut.22559",
+  "retrieved_at": null,
+  "lead_status": "DEFERRED:SOURCE_POLICY",
+  "reason": "generic runtime retrieval is disabled until a cryptographic OWNER authorization verifier exists",
+  "adapter_state": "ROUTER_ONLY",
+  "next_action": "review the source policy and defer the lead"
+}
