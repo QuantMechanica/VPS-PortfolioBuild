@@ -1,0 +1,116 @@
+{
+  "artifact_type": "fx_cointegration_frontier_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-13T03:08:01Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "5155bf39274d61c5143e76a03ec8cf18ff2d73cf",
+  "mission_outcome": "STOPPED_AT_PACED_BACKTEST_CPU_CEILING",
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "frontier_reconciliation": {
+    "coverage_source_commit": "a80493291",
+    "scan_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "scan_mode": "--include-negative-hedges",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_card_or_ea_would_duplicate_existing_relationship": true
+  },
+  "highest_ranked_existing_nonterminal_pair": {
+    "rank": 58,
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "ea_id": "QM5_1257",
+    "pair_slot": 8,
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "last_observed_updated_at": "2026-08-12T22:50:25Z",
+    "duplicate_enqueue_performed": false,
+    "approved_source": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "other_pending_fx_work_preserved": [
+    {
+      "ea_id": "QM5_1156",
+      "logical_symbol": "QM5_1156_USDCHF_AUDUSD_COINTEGRATION_M30",
+      "scan_rank": 65,
+      "work_item_id": "415cd6d3-560c-46d8-a9f9-ee4a5b399100",
+      "status": "pending",
+      "attempt_count": 0,
+      "claimed_by": null
+    },
+    {
+      "ea_id": "QM5_20292",
+      "logical_symbol": "QM5_20292_FX_CARRY_UNWIND_D1",
+      "work_item_id": "774accb9-8957-44df-9da8-156134610f74",
+      "status": "pending",
+      "attempt_count": 0,
+      "claimed_by": null
+    }
+  ],
+  "capacity_sample": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-08-13T03:05:36Z",
+    "paced_launch_gate_max": 1,
+    "running_factory_terminal_count": 5,
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T8"
+    ],
+    "running_factory_work_items": [
+      "9530fb6c-c497-4f54-b539-f63c0af91fa0",
+      "256c501f-a465-4950-b968-a622c2ea3d8c",
+      "508692f2-969c-425d-90b4-5377a244bdf7",
+      "81037b0f-058e-4f94-acc2-b6c5b5f84094",
+      "1c2f3328-71e3-4c47-a8f5-5a583193b4cb"
+    ],
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ],
+    "ceiling_binding": true
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "basket_manifest_mutation": false,
+    "q02_enqueue_or_requeue": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "All 66 frozen scan relationships are represented, the highest-ranked nonterminal fallback already has one exact pending Q02 row, and five running factory terminals exceed the paced ceiling of one."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
