@@ -32,6 +32,14 @@ from .common import make_result, trade_timestamp
 GATE_NAME = "8.2_dsr_mc_fdr"
 DSR_P_MIN = 0.05
 N_CANDIDATE_STRATEGIES = 369   # rough V5 candidate count; updates as the farm grows
+# Optimization-track selection multiplicity (DL-084 / plan v2 A3).
+# `selection_trial_count` is the number of configurations the evaluated one was
+# SELECTED FROM, not the number measured. Under the plan-v2 firewall (E0-1) a
+# source-derived, pre-registered predicate is selected from 1 candidate even when
+# a census measured 154 — measurement is not selection. A max-selected winner
+# passes its full trial count. Absent/None/<=1 leaves the fleet default untouched,
+# so ordinary Q08 runs (which carry no trial ledger) are bit-identical to before.
+MIN_SELECTION_TRIALS_FOR_DEFLATION = 2
 # Minimum peer cohort below which DSR deflation is not applicable (no
 # selection bias to correct). Mirrors the first-entry trivial-pass used by
 # 8.1 / 8.3. TODO(calibration): once the farm wires a real candidate-Sharpe
@@ -102,7 +110,26 @@ def _deflated_sharpe_pvalue(observed_sr: float, sharpe_std: float, skew: float,
     return max(0.0, min(1.0, p))
 
 
-def run(trades: list[dict], *, portfolio: list[dict] | None = None, **_) -> dict:
+def _effective_candidate_count(selection_trial_count) -> tuple[int, str, int | None]:
+    """Resolve the DSR selection pool from the optional optimization-track count.
+
+    Returns (n_strats, mode, normalized_count). A missing, unparseable or <2 count
+    yields the untouched fleet default so non-optimization runs never change.
+    """
+    try:
+        count = int(selection_trial_count)
+    except (TypeError, ValueError):
+        return N_CANDIDATE_STRATEGIES, "fleet_default", None
+    if count < MIN_SELECTION_TRIALS_FOR_DEFLATION:
+        return N_CANDIDATE_STRATEGIES, "fleet_default", count if count > 0 else None
+    # Additive family expansion: the sleeve competed against the farm cohort AND
+    # against its own (count-1) sibling configurations. The sleeve itself is
+    # already one member of the fleet cohort, hence count-1 and not count.
+    return N_CANDIDATE_STRATEGIES + count - 1, "optimization_selection_expanded", count
+
+
+def run(trades: list[dict], *, portfolio: list[dict] | None = None,
+        selection_trial_count: int | None = None, **_) -> dict:
     returns = _trade_returns_per_day(trades)
     if len(returns) < 60:  # ~3 months of trading days
         # Genuine infrastructure / data gap — INVALID is correct here (re-runnable).
@@ -133,8 +160,9 @@ def run(trades: list[dict], *, portfolio: list[dict] | None = None, **_) -> dict
 
     # Cohort mode — deflate against the candidate set's max-Sharpe selection bias.
     sharpe_std_estimate = 1.0  # placeholder; see TODO(calibration) on MIN_COHORT_PEERS
+    n_strats, selection_mode, selection_count = _effective_candidate_count(selection_trial_count)
     p_value = _deflated_sharpe_pvalue(sharpe, sharpe_std_estimate, skew, kurt_ex,
-                                      n_obs, N_CANDIDATE_STRATEGIES)
+                                      n_obs, n_strats)
 
     if p_value < DSR_P_MIN:
         return make_result(GATE_NAME, "PASS",
@@ -143,7 +171,12 @@ def run(trades: list[dict], *, portfolio: list[dict] | None = None, **_) -> dict
                            evidence={"sharpe": round(sharpe, 4), "skew": round(skew, 4),
                                      "excess_kurtosis": round(kurt_ex, 4),
                                      "n_obs_days": n_obs, "n_peers": n_peers,
-                                     "tier": "core"})
+                                     "tier": "core",
+                                     "n_candidate_strategies": n_strats,
+                                     "selection_mode": selection_mode,
+                                     "selection_trial_count": selection_count,
+                                     "sharpe_std_estimate": sharpe_std_estimate,
+                                     "sharpe_std_calibrated": False})
 
     # Tier-1 statistical fail. There is no batch-level BH-FDR rescue pass in the
     # aggregator yet, so resolve to a real verdict (FAIL) rather than a permanent
@@ -154,4 +187,9 @@ def run(trades: list[dict], *, portfolio: list[dict] | None = None, **_) -> dict
                        evidence={"sharpe": round(sharpe, 4), "skew": round(skew, 4),
                                  "excess_kurtosis": round(kurt_ex, 4),
                                  "n_obs_days": n_obs, "n_peers": n_peers,
-                                 "tier": "fdr_rescue_eligible"})
+                                 "tier": "fdr_rescue_eligible",
+                                 "n_candidate_strategies": n_strats,
+                                 "selection_mode": selection_mode,
+                                 "selection_trial_count": selection_count,
+                                 "sharpe_std_estimate": sharpe_std_estimate,
+                                 "sharpe_std_calibrated": False})
