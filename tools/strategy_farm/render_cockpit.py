@@ -2867,6 +2867,8 @@ def main() -> int:
     # rows — distinct ea_id count). Reads Qxx-keyed rows directly; legacy
     # P-keys map via the complete manifest alias inverse for any orphan rows.
     q_counts: dict[str, int] = {q: 0 for q in Q_DISPLAY_ORDER}
+    # Optional parenthesised sub-line under a chip number (e.g. Q08 strict passes).
+    q_chip_subnote: dict[str, str] = {}
     # Q00 = cards admitted to research intake.
     q_counts["Q00"] = cards_total
     # Q01 = EAs built (registry intersection w/ disk)
@@ -2888,6 +2890,23 @@ def main() -> int:
         "   OR (UPPER(phase)='Q09' AND verdict='PASS')"
     )
     q_counts["Q09"] = int(q09_rows[0]["c"] or 0) if q09_rows else 0
+    # Q08 advances more than it strictly passes: FAIL_SOFT is routed onward to the
+    # Q09 portfolio track (framework/scripts/q08_davey/aggregate.py), so a chip
+    # showing only strict PASS understates what actually reaches the next gate
+    # (OWNER call 2026-08-13). The chip therefore counts PASS + FAIL_SOFT and
+    # carries the strict-PASS subset as a parenthesised sub-line.
+    q08_strict_pass = q_counts.get("Q08", 0)
+    q08_adv_rows = db_rows(
+        "SELECT COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items "
+        "WHERE UPPER(phase) IN ('Q08','P7','P8') "
+        "  AND verdict IN ('PASS','FAIL_SOFT')"
+    )
+    q08_advancing = int(q08_adv_rows[0]["c"] or 0) if q08_adv_rows else 0
+    # Never let the display invent advancement: strict PASS is a subset of
+    # advancing by construction, so a smaller union means a read defect.
+    if q08_advancing >= q08_strict_pass:
+        q_counts["Q08"] = q08_advancing
+        q_chip_subnote["Q08"] = f"({q08_strict_pass:,} pass)"
     # Q11 has no tracked rows yet (truthfully 0). Q12 = EAs sitting in the
     # OWNER review pool; Q13 = sleeves live on T_Live, from the read-only
     # pulse projection (evidence chain: terminal logs → live_book_pulse.py).
@@ -2936,7 +2955,9 @@ def main() -> int:
           f'<div class="prog-chip{" empty" if q_counts[q] == 0 else ""}">'
           f'<div class="prog-chip-q">{q}</div>'
           f'<div class="prog-chip-n">{q_counts[q]:,}</div>'
-          f'</div>'
+          + (f'<div class="prog-chip-sub">{e(q_chip_subnote[q])}</div>'
+             if q_chip_subnote.get(q) else '')
+          + f'</div>'
           for q in Q_DISPLAY_ORDER
       )}
     </div>
@@ -3413,6 +3434,13 @@ body { padding: 32px; min-height: 100vh; }
   font-variant-numeric: tabular-nums;
   font-size: 18px; font-weight: 500; line-height: 1;
   color: var(--signal); letter-spacing: -0.02em;
+}
+.prog-chip-sub {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 9px; font-weight: 500; line-height: 1;
+  color: var(--text-3); letter-spacing: 0.02em;
+  margin-top: 3px;
 }
 .prog-foot {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
