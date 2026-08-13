@@ -1,0 +1,35 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11468
+; ea_slug:      nekritin-peters-last-kiss-d1h4
+; ea_version:   v5.0
+; set_version:  s20260813-001
+; symbol:       USDCAD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   4
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   45398a81746f52ba27e8bfab404ffef703a21978fa74cadbdcc4dd2ffdc25a0a
+; author:       Development
+; date:         2026-08-13
+;==========================================================
+qm_ea_id=11468
+qm_magic_slot_offset=4
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11468_nekritin-peters-last-kiss-d1h4.md
+strategy_box_bars=10
+strategy_box_min_pips=30
+strategy_box_max_pips=120
+strategy_zone_buffer_pips=10
+strategy_retouch_window=10
+strategy_entry_offset_pips=1
+strategy_pending_expiry_bars=1
+strategy_sl_cap_pips=120
+strategy_tp_swing_lookback=30
+strategy_tp_box_mult=1.5
+strategy_time_stop_bars=20
+strategy_spread_cap_pips=25

@@ -11160,11 +11160,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11467,duplooy-multiMA-knot-straddle-h1,2,USDJPY.DWX,114670002,2026-06-18,Claude,reserved
 11467,duplooy-multiMA-knot-straddle-h1,3,AUDUSD.DWX,114670003,2026-06-18,Claude,reserved
 11467,duplooy-multiMA-knot-straddle-h1,4,USDCAD.DWX,114670004,2026-06-18,Claude,reserved
-11468,nekritin-peters-last-kiss-d1h4,0,EURUSD.DWX,114680000,2026-06-18,Claude,reserved
-11468,nekritin-peters-last-kiss-d1h4,1,GBPUSD.DWX,114680001,2026-06-18,Claude,reserved
-11468,nekritin-peters-last-kiss-d1h4,2,USDJPY.DWX,114680002,2026-06-18,Claude,reserved
-11468,nekritin-peters-last-kiss-d1h4,3,AUDUSD.DWX,114680003,2026-06-18,Claude,reserved
-11468,nekritin-peters-last-kiss-d1h4,4,USDCAD.DWX,114680004,2026-06-18,Claude,reserved
+11468,nekritin-peters-last-kiss-d1h4,0,EURUSD.DWX,114680000,2026-06-18,Claude,active
+11468,nekritin-peters-last-kiss-d1h4,1,GBPUSD.DWX,114680001,2026-06-18,Claude,active
+11468,nekritin-peters-last-kiss-d1h4,2,USDJPY.DWX,114680002,2026-06-18,Claude,active
+11468,nekritin-peters-last-kiss-d1h4,3,AUDUSD.DWX,114680003,2026-06-18,Claude,active
+11468,nekritin-peters-last-kiss-d1h4,4,USDCAD.DWX,114680004,2026-06-18,Claude,active
 11473,carter-t-smma55-channel-wpr-stoch-h1,0,EURUSD.DWX,114730000,2026-06-18,Claude,reserved
 11473,carter-t-smma55-channel-wpr-stoch-h1,1,GBPUSD.DWX,114730001,2026-06-18,Claude,reserved
 11474,carter-t-mtf-candle-alignment-h1,0,EURUSD.DWX,114740000,2026-06-18,Claude,active
