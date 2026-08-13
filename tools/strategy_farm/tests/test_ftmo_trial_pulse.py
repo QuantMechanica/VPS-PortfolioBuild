@@ -46,17 +46,99 @@ def test_expected_state_parked_off_is_ok() -> None:
     state = ftmo_trial_pulse.assess_expected_state(terminal_up=False, now=now)
 
     assert state["expected_state"] == "PARKED"
-    assert state["condition"] == "parked"
+    assert state["condition"] == "parked_terminal_stopped"
     assert state["alarm"] is None
 
 
-def test_expected_state_parked_running_is_alarm() -> None:
+def test_expected_state_parked_running_without_qm_magics_is_ok() -> None:
+    now = datetime(2026, 7, 28, tzinfo=timezone.utc)
+
+    state = ftmo_trial_pulse.assess_expected_state(
+        terminal_up=True,
+        now=now,
+        magics_seen=0,
+    )
+
+    assert state["condition"] == "parked_terminal_running_no_qm_trading"
+    assert state["alarm"] is None
+
+
+def test_expected_state_parked_running_with_qm_magic_is_alarm() -> None:
+    now = datetime(2026, 7, 28, tzinfo=timezone.utc)
+
+    state = ftmo_trial_pulse.assess_expected_state(
+        terminal_up=True,
+        now=now,
+        magics_seen=1,
+    )
+
+    assert state["condition"] == "parked_qm_trading_active"
+    assert state["alarm"] == "ftmo_qm_magics_active_while_parked:1"
+
+
+def test_expected_state_parked_running_fails_closed_on_unknown_magic_probe() -> None:
     now = datetime(2026, 7, 28, tzinfo=timezone.utc)
 
     state = ftmo_trial_pulse.assess_expected_state(terminal_up=True, now=now)
 
-    assert state["condition"] == "unexpected_running"
-    assert state["alarm"] == "ftmo_terminal_running_while_parked"
+    assert state["condition"] == "parked_magic_probe_unknown"
+    assert state["alarm"] == "ftmo_parked_magic_probe_unknown"
+
+
+def test_open_qm_positions_come_from_broker_deal_lifecycle(tmp_path: Path) -> None:
+    path = tmp_path / "live_deals_normalized.csv"
+    path.write_text(
+        "deal_id,position_id,time_utc,entry,deal_magic,logical_magic,symbol,profit,swap,commission,fee,net_actual,risk_percent_in_force,net_per_1pct_risk,magic,type,volume,price,order,time_broker,comment\n"
+        "1,100,2026-08-12T10:00:00Z,IN,107060001,,GBPUSD,0,0,0,0,0,,,107060001,SELL,0.2,1.2,10,2026-08-12 13:00:00,open\n"
+        "2,100,2026-08-12T11:00:00Z,OUT,0,,GBPUSD,2,0,0,0,2,,,0,BUY,0.2,1.1,11,2026-08-12 14:00:00,close\n"
+        "3,200,2026-08-12T12:00:00Z,IN,133010010,,GER40.cash,0,0,0,0,0,,,133010010,BUY,0.1,26000,12,2026-08-12 15:00:00,open\n",
+        encoding="utf-8",
+    )
+
+    state = ftmo_trial_pulse.read_open_qm_positions(path)
+
+    assert state["ok"] is True
+    assert state["magics"] == [133010010]
+    assert [row["position_id"] for row in state["positions"]] == [200]
+
+
+def test_open_qm_positions_fail_closed_on_missing_contract_column(tmp_path: Path) -> None:
+    path = tmp_path / "live_deals_normalized.csv"
+    path.write_text("position_id,entry,magic\n1,IN,107060001\n", encoding="utf-8")
+
+    state = ftmo_trial_pulse.read_open_qm_positions(path)
+
+    assert state["ok"] is False
+    assert state["reason"].startswith("deal_export_header_missing:")
+
+
+def test_parked_activity_requires_fresh_matching_account_position_count() -> None:
+    activity = {
+        "ok": True,
+        "reason": "ok",
+        "positions": [{"position_id": 200, "magic": 133010010, "closed": False}],
+        "magics": [133010010],
+    }
+
+    matching = ftmo_trial_pulse.reconcile_parked_activity(
+        activity,
+        {"fresh": True, "open_positions": 1},
+    )
+    mismatch = ftmo_trial_pulse.reconcile_parked_activity(
+        activity,
+        {"fresh": True, "open_positions": 0},
+    )
+    missing_count = ftmo_trial_pulse.reconcile_parked_activity(
+        activity,
+        {"fresh": True},
+    )
+
+    assert matching == {"ok": True, "reason": "ok", "magics_seen": 1}
+    assert mismatch["ok"] is False
+    assert mismatch["reason"] == "account_position_count_mismatch:0!=1"
+    assert mismatch["magics_seen"] is None
+    assert missing_count["reason"] == "account_open_positions_invalid"
+    assert missing_count["magics_seen"] is None
 
 
 def test_expected_state_expiry_fails_closed() -> None:

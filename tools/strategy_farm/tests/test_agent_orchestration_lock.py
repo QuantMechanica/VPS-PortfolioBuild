@@ -13,6 +13,15 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 import run_agent_orchestration_task as orchestration  # noqa: E402
 
 
+def test_headless_prompt_reserves_main_integration_for_claude_owner() -> None:
+    prompt = orchestration.build_prompt("codex", REPO)
+
+    assert "committed on\n  agents/board-advisor only" in prompt
+    assert "Main integration is performed exclusively\n  by Claude+OWNER close-outs" in prompt
+    assert "C:/QM/worktrees/cto_main" in prompt
+    assert "merged to the main branch" not in prompt
+
+
 def test_live_lock_owner_is_never_displaced_by_age(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(orchestration, "LOCK_DIR", tmp_path)
     acquired, first = orchestration.acquire_lock("codex", stale_minutes=1)

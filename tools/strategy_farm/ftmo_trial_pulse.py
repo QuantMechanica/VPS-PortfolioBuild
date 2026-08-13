@@ -5,7 +5,9 @@ Mirrors the intent of live_book_pulse.py (T_Live) for the FTMO Round25 deploymen
 QM EA logs only; never touches the terminal.
 
 Checks:
-  1. FTMO terminal64 process matches the baked RUNNING/PARKED/MAINTENANCE state.
+  1. FTMO terminal64 process and broker-confirmed QM activity match the baked
+     RUNNING/PARKED/MAINTENANCE state. PARKED permits a warm terminal but no
+     open QM positions.
   2. Today's journal: disconnects / errors.
   3. QM EA logs: all 12 expected magics seen, ERROR-level events.
   4. Latest EQUITY_SNAPSHOT: equity + day_pnl vs FTMO limits
@@ -16,6 +18,7 @@ Scheduled: QM_FTMO_TrialPulse (30 min). Exit 0 = OK/WARN, 1 = ALARM.
 """
 from __future__ import annotations
 
+import csv
 import json
 import re
 import sys
@@ -76,6 +79,7 @@ def assess_expected_state(
     *,
     terminal_up: bool | None,
     now: datetime,
+    magics_seen: int | None = None,
     maintenance: bool = False,
     expected_state: str = EXPECTED_STATE,
     review_expires_utc: str = EXPECTED_STATE_REVIEW_EXPIRES_UTC,
@@ -104,10 +108,16 @@ def assess_expected_state(
         condition, alarm = "maintenance", None
     elif terminal_up is None:
         condition, alarm = "probe_unknown", "ftmo_terminal_process_probe_unknown"
-    elif expected == "PARKED" and terminal_up:
-        condition, alarm = "unexpected_running", "ftmo_terminal_running_while_parked"
     elif expected == "PARKED":
-        condition, alarm = "parked", None
+        if not terminal_up:
+            condition, alarm = "parked_terminal_stopped", None
+        elif magics_seen is None:
+            condition, alarm = "parked_magic_probe_unknown", "ftmo_parked_magic_probe_unknown"
+        elif magics_seen > 0:
+            condition = "parked_qm_trading_active"
+            alarm = f"ftmo_qm_magics_active_while_parked:{magics_seen}"
+        else:
+            condition, alarm = "parked_terminal_running_no_qm_trading", None
     elif not terminal_up:
         condition, alarm = "missing", "ftmo_terminal_not_running"
     else:
@@ -119,6 +129,117 @@ def assess_expected_state(
         "review_expired": review_expired,
         "condition": condition,
         "alarm": alarm,
+    }
+
+
+MONITOR_DEALS_CSV = QM_DIR / "journal" / "live_deals_normalized.csv"
+_CLOSING_DEAL_ENTRIES = {"OUT", "OUT_BY", "INOUT"}
+
+
+def read_open_qm_positions(path: Path = MONITOR_DEALS_CSV) -> dict:
+    """Resolve currently open QM positions from the broker deal export.
+
+    The AccountMonitor export is broker history keyed by position_id, so it is
+    authoritative for successful fills and closes. EA log presence is not an
+    activity signal: PARKED profiles may retain attached instrumentation EAs,
+    and historical logs persist after positions close.
+    """
+    required = {"deal_id", "position_id", "entry", "deal_magic", "logical_magic", "magic", "type"}
+    positions: dict[int, dict] = {}
+    try:
+        with path.open("r", encoding="utf-8-sig", newline="") as fh:
+            reader = csv.DictReader(fh)
+            fields = set(reader.fieldnames or [])
+            missing = sorted(required - fields)
+            if missing:
+                return {
+                    "ok": False,
+                    "reason": "deal_export_header_missing:" + ",".join(missing),
+                    "positions": [],
+                    "magics": [],
+                }
+            for row in reader:
+                try:
+                    position_id = int(str(row.get("position_id") or "0"))
+                except ValueError:
+                    return {
+                        "ok": False,
+                        "reason": "deal_export_position_id_invalid",
+                        "positions": [],
+                        "magics": [],
+                    }
+                if position_id <= 0 or str(row.get("type") or "").upper() == "BALANCE":
+                    continue
+                magic = 0
+                for column in ("logical_magic", "deal_magic", "magic"):
+                    try:
+                        candidate = int(str(row.get(column) or "0"))
+                    except ValueError:
+                        return {
+                            "ok": False,
+                            "reason": f"deal_export_{column}_invalid",
+                            "positions": [],
+                            "magics": [],
+                        }
+                    if candidate:
+                        magic = candidate
+                        break
+                state = positions.setdefault(
+                    position_id,
+                    {"position_id": position_id, "magic": 0, "closed": False},
+                )
+                if magic and state["magic"] and state["magic"] != magic:
+                    return {
+                        "ok": False,
+                        "reason": f"position_magic_mismatch:{position_id}",
+                        "positions": [],
+                        "magics": [],
+                    }
+                if magic and not state["magic"]:
+                    state["magic"] = magic
+                if str(row.get("entry") or "").strip().upper() in _CLOSING_DEAL_ENTRIES:
+                    state["closed"] = True
+    except (OSError, UnicodeDecodeError, csv.Error) as exc:
+        return {
+            "ok": False,
+            "reason": f"deal_export_unreadable:{exc.__class__.__name__}",
+            "positions": [],
+            "magics": [],
+        }
+
+    active = [row for row in positions.values() if not row["closed"]]
+    unattributed = [row["position_id"] for row in active if not row["magic"]]
+    if unattributed:
+        return {
+            "ok": False,
+            "reason": "open_position_magic_unattributed:" + ",".join(map(str, sorted(unattributed))),
+            "positions": active,
+            "magics": [],
+        }
+    magics = sorted({int(row["magic"]) for row in active})
+    return {"ok": True, "reason": "ok", "positions": active, "magics": magics}
+
+
+def reconcile_parked_activity(activity: dict, monitor: dict | None) -> dict:
+    """Bind deal-derived QM positions to a fresh account-level position count."""
+    if not activity.get("ok"):
+        return {"ok": False, "reason": activity.get("reason") or "deal_activity_unknown", "magics_seen": None}
+    if not monitor or not monitor.get("fresh"):
+        return {"ok": False, "reason": "account_snapshot_missing_or_stale", "magics_seen": None}
+    open_positions = monitor.get("open_positions")
+    if isinstance(open_positions, bool) or not isinstance(open_positions, int) or open_positions < 0:
+        return {"ok": False, "reason": "account_open_positions_invalid", "magics_seen": None}
+    activity_count = len(activity.get("positions") or [])
+    if open_positions != activity_count:
+        return {
+            "ok": False,
+            "reason": f"account_position_count_mismatch:{open_positions}!={activity_count}",
+            "magics_seen": None,
+        }
+    return {
+        "ok": True,
+        "reason": "ok",
+        "magics_seen": len(activity.get("magics") or []),
     }
 
 
@@ -301,14 +422,32 @@ def main() -> int:
     warns: list[str] = []
 
     up = terminal_running()
+    parked_activity = {
+        "ok": True,
+        "reason": "terminal_stopped",
+        "positions": [],
+        "magics": [],
+    }
+    parked_monitor: dict | None = None
+    parked_magics_seen: int | None = None
+    if EXPECTED_STATE == "PARKED" and up:
+        parked_activity = read_open_qm_positions()
+        parked_monitor = read_monitor_snapshot(now)
+        reconciliation = reconcile_parked_activity(parked_activity, parked_monitor)
+        parked_activity["ok"] = reconciliation["ok"]
+        parked_activity["reason"] = reconciliation["reason"]
+        parked_magics_seen = reconciliation["magics_seen"]
+    elif EXPECTED_STATE == "PARKED" and up is False:
+        parked_magics_seen = 0
     contract = assess_expected_state(
         terminal_up=up,
         now=now,
+        magics_seen=parked_magics_seen,
         maintenance=MAINTENANCE_FLAG.exists(),
     )
-    # A PARKED or MAINTENANCE target has no journal/magic/equity freshness SLA.
-    # Short-circuiting prevents the old monitor from turning an intentionally
-    # stopped terminal into a permanent alarm storm.
+    # PARKED has no journal/equity SLA, but it does retain a fail-closed
+    # broker-deal activity contract. Short-circuiting avoids RUNNING-only
+    # checks after that bounded PARKED assessment.
     if contract["effective_state"] != "RUNNING" or contract["alarm"]:
         if contract["alarm"]:
             alarms.append(contract["alarm"])
@@ -324,13 +463,19 @@ def main() -> int:
             "expected_state_condition": contract["condition"],
             "expected_state_review_expires_utc": contract["review_expires_utc"],
             "expected_state_review_expired": contract["review_expired"],
-            "magics_seen": 0,
-            "expected_magics": len(EXPECTED_MAGICS),
+            "magics_seen": parked_magics_seen,
+            "expected_magics": 0 if contract["expected_state"] == "PARKED" else len(EXPECTED_MAGICS),
+            "active_qm_magics": parked_activity["magics"],
+            "active_qm_position_ids": [
+                row["position_id"] for row in parked_activity["positions"]
+            ],
+            "parked_activity_evidence_ok": parked_activity["ok"],
+            "parked_activity_evidence_reason": parked_activity["reason"],
             "equity": None,
             "day_pnl": None,
             "equity_source": None,
-            "monitor_age_minutes": None,
-            "open_positions": None,
+            "monitor_age_minutes": (parked_monitor or {}).get("age_minutes"),
+            "open_positions": (parked_monitor or {}).get("open_positions"),
             "total_dd_pct": None,
             "day_loss_pct": None,
             "equity_snapshot_ts": None,

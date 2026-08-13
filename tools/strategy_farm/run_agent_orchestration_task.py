@@ -244,11 +244,12 @@ Hard rules:
   <=10% total DD, mandatory news blackout, swing/scalping horizon only, no HFT,
   no martingale/grid, mechanical only, no ML in EA.
 - Strategy card drafts go to D:/QM/strategy_farm/artifacts/cards_review/.
-- Evidence docs and ops artifacts MUST be committed to the canonical checkout
-  C:/QM/repo/docs/ops/evidence/ (absolute path) and merged to the main branch
-  from its registered worktree or via the board-advisor branch.
-  Do NOT leave evidence files stranded in a non-main agent-worktree branch only.
-  (2026-07-02: 7 docs stranded in worktree branches; this rule prevents recurrence.)
+- Evidence docs and ops artifacts MUST be written in the canonical checkout at
+  C:/QM/repo/docs/ops/evidence/ (absolute path) and committed on
+  agents/board-advisor only, using explicit pathspecs.
+- Do NOT cherry-pick, merge, commit, reset, or otherwise advance main or the
+  C:/QM/worktrees/cto_main worktree. Main integration is performed exclusively
+  by Claude+OWNER close-outs. Leave the board-advisor artifact in REVIEW.
 """
 
 
