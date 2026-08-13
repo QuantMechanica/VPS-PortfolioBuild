@@ -159,7 +159,14 @@ def run(trades: list[dict], *, portfolio: list[dict] | None = None,
                                      "tier": "standalone_pending_cohort"})
 
     # Cohort mode — deflate against the candidate set's max-Sharpe selection bias.
-    sharpe_std_estimate = 1.0  # placeholder; see TODO(calibration) on MIN_COHORT_PEERS
+    # Deliberately conservative, NOT an un-investigated placeholder: the 2026-08-13
+    # calibration study (docs/ops/evidence/2026-08-13_dsr_sharpe_std_calibration_study.md)
+    # measured 0.892 across the 26 EAs with a recorded Q08 Sharpe, but that sample is
+    # survivors-only — selection truncates the low tail and shrinks the dispersion, so
+    # adopting it would SHRINK E[max] and silently loosen this gate. 1.0 is kept until a
+    # loser-inclusive candidate distribution exists; changing it is an OWNER-ratified
+    # gate recalibration, not a side effect.
+    sharpe_std_estimate = 1.0
     n_strats, selection_mode, selection_count = _effective_candidate_count(selection_trial_count)
     p_value = _deflated_sharpe_pvalue(sharpe, sharpe_std_estimate, skew, kurt_ex,
                                       n_obs, n_strats)
