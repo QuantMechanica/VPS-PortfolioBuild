@@ -143,6 +143,7 @@ waiver is authorized.
 | v1 | 2026-08-13 | Initial scaffold from approved card | Build pending |
 | v2 | 2026-08-13 | Implemented locked statistic and monthly lifecycle | Strict compile and reference checks pass |
 | v3 | 2026-08-13 | Completed target Q01 validation | Build check and P1 PASS |
+| v4 | 2026-08-13 | Enqueued one paced fixed-risk baseline | Q02 pending; no dispatch issued |
 
 ## 12. Q01 Status
 
@@ -156,5 +157,8 @@ validation found the compiled `.ex5`.
 
 ## 13. Q02 Handoff
 
-READY FOR CAPACITY CHECK. No queue mutation is permitted unless a path-
-anchored T1-T10 factory sample is below the binding CPU ceiling.
+ENQUEUED. Work item `36cc9282-c16c-449f-b5a1-455809f8a9d4` is the sole Q02
+baseline row and was pending at immediate readback with attempt 0, no claim,
+no evidence, and no verdict. The pre- and post-enqueue path-anchored factory
+samples both found zero active T1-T10 terminals, below the ceiling of seven.
+No dispatch or manual tester run was issued.
