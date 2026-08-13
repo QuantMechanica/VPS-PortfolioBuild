@@ -228,6 +228,32 @@ double Strategy_LotsForLeg(const string symbol, const double risk_weight, const 
    return MathMin(max_lot, NormalizeDouble(lots, 8));
   }
 
+bool Strategy_RiskForWeight(const double risk_weight,
+                            const double risk_weight_sum,
+                            QM_RiskMode &risk_mode,
+                            double &risk_value)
+  {
+   risk_mode = QM_RISK_MODE_UNSET;
+   risk_value = 0.0;
+   if(risk_weight <= 0.0 || risk_weight_sum <= 0.0)
+      return false;
+
+   const double risk_fraction = risk_weight / risk_weight_sum;
+   if(RISK_FIXED > 0.0 && RISK_PERCENT <= 0.0)
+     {
+      risk_mode = QM_RISK_MODE_FIXED;
+      risk_value = RISK_FIXED * risk_fraction;
+      return (risk_value > 0.0);
+     }
+   if(RISK_PERCENT > 0.0 && RISK_FIXED <= 0.0)
+     {
+      risk_mode = QM_RISK_MODE_PERCENT;
+      risk_value = RISK_PERCENT * risk_fraction;
+      return (risk_value > 0.0);
+     }
+   return false;
+  }
+
 bool Strategy_OpenLeg(const string symbol,
                       const QM_OrderType type,
                       const double risk_weight,
@@ -246,6 +272,31 @@ bool Strategy_OpenLeg(const string symbol,
 
    const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    const double stop_dist = strategy_atr_sl_mult * atr;
+
+   if(symbol == _Symbol)
+     {
+      QM_RiskMode risk_mode;
+      double risk_value = 0.0;
+      if(!Strategy_RiskForWeight(risk_weight, risk_weight_sum, risk_mode, risk_value))
+         return false;
+
+      QM_EntryRequest host_req;
+      host_req.type = type;
+      host_req.price = 0.0;
+      host_req.sl = QM_OrderTypeIsBuy(type) ? NormalizeDouble(entry - stop_dist, digits)
+                                            : NormalizeDouble(entry + stop_dist, digits);
+      host_req.tp = 0.0;
+      host_req.reason = reason;
+      host_req.symbol_slot = slot;
+      host_req.expiration_seconds = 0;
+
+      ulong host_ticket = 0;
+      return QM_TM_OpenPosition(host_req,
+                                host_ticket,
+                                0,
+                                risk_mode,
+                                risk_value);
+     }
 
    const double lots = Strategy_LotsForLeg(symbol, risk_weight, risk_weight_sum);
    if(lots <= 0.0)
@@ -436,21 +487,19 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 lifecycle sampling must precede every early-return guard.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
+   if(QM_FrameworkFridayCloseNow(broker_now))
+     {
+      Strategy_ClosePair(QM_EXIT_FRIDAY_CLOSE);
+      QM_FrameworkHandleFridayClose();
       return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+     }
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -475,10 +524,22 @@ void OnTick()
         }
      }
 
+   // News blackouts gate new entries only. Package management and exits above
+   // continue to run while either leg is inside a news window.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
    // per-tick recompute mistakes — EntrySignal sees one new closed bar per
    // call, not every incoming tick.
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
       return;
 
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled

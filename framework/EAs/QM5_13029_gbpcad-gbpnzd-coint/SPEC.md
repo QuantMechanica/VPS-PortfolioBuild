@@ -4,7 +4,7 @@
 **Slug:** gbpcad-gbpnzd-coint
 **Source:** QM-COINT-SCREEN-EXT-2026-07-06_GBPCAD-GBPNZD plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-08-12
+**Last revised:** 2026-08-13
 
 ---
 
@@ -67,7 +67,7 @@ judge whether the slow residual is tradable after costs.
 |---|---|
 | Base timeframe | D1 |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_D1)` |
 
 ---
 
@@ -122,3 +122,4 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 | v1 | 2026-07-07 | Initial extended-screen FX cointegration basket build | Built from the 13024 two-leg basket pattern with sign-aware positive-beta leg direction |
 | v2 | 2026-08-12 | Mechanize the approved slow-horizon variant | Changed only the pre-authorized z-score window from 60 to 90 D1 bars to align with the 84.8-day source half-life; task `41092da0-e9a5-4983-b615-2c85993668fa` |
 | v3 | 2026-08-12 | Advance the current binary after Q02 PASS | Q02 work item `614cc154-31e1-4919-9a1e-de7bc5e0c5f3` passed; append-only Q03 work item `493a64ad-c9ed-46f4-9d05-1444ef50e645` was enqueued without dispatching a tester |
+| v4 | 2026-08-13 | Bounded Codex review rework | Routed the chart-host leg through `QM_TM_OpenPosition`, made the entry gate explicitly D1, and moved news gating below package management and exits; build task `6000e70b-9b3d-41c2-97ce-113858c6a77d` |

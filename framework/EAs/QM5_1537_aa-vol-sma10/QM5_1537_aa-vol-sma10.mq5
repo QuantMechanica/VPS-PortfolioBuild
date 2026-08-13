@@ -7,40 +7,17 @@
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Fill in only the five Strategy_* hooks below. Everything else is framework
-// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails). The framework provides:
-//
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
-//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
-//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
-//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
-//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
-//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
-//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkTrackOpenPositionMae / QM_FrameworkHandleFridayClose /
-//     QM_KillSwitchCheck / QM_NewsAllowsTrade
-//
-// DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
-//     use the QM_* readers above. The framework pools handles and releases them
-//     on shutdown.
-//   - CopyRates over warmup windows on every tick. If you genuinely need raw
-//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
-//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
-//     to magic_numbers.csv, run:
-//         python framework/scripts/update_magic_resolver.py
-//     This is idempotent and preserves all rows.
+// Card mechanics: once per calendar month, rank the complete portable DWX
+// universe by annualized realized volatility over 252 closed D1 returns and
+// admit the top three symbols. On each new D1 bar, a selected symbol enters
+// long after the prior close crosses above SMA(10) and exits after a cross
+// below. The optional short variant is disabled by default. Each entry carries
+// the card's 2.5 x ATR(14, D1) initial stop and no discretionary trailing stop.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 1537;
 input int    qm_magic_slot_offset       = 0;
-// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
-// All other phases use 42 by default. Stress / noise dimensions read from
-// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -49,102 +26,286 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
-//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
-//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
-// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
-// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
-// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled    = true;
-input int    qm_friday_close_hour_broker = 21;
+input bool   qm_friday_close_enabled      = true;
+input int    qm_friday_close_hour_broker  = 21;
 
 input group "Stress"
-// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
-// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
-// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
-// deterministic per qm_rng_seed). MED slip/spread/commission live in the
-// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_sma_period           = 10;   // SMA(10, D1) timing MA per card
-input int    strategy_min_daily_bars       = 270;  // card: min 270 D1 bars before eligibility
-input int    strategy_atr_period           = 14;   // ATR(14, D1) for initial SL
-input double strategy_atr_sl_mult          = 2.5;  // card: SL = 2.5 x ATR(14, D1)
-input int    strategy_vol_lookback_days    = 252;  // card: prior-year realized volatility window
-// Literal proxy for the card's "top volatility decile / top 3" cross-sectional
-// selection: a per-symbol annualized realized-volatility floor. The registered
-// basket (metals, energies, major indices) is the naturally high-realized-vol
-// slice of the DWX universe; this floor keeps a symbol admitted only while its
-// own trailing 252-day realized vol stays elevated, and re-evaluates monthly —
-// see UpdateVolatilitySleeveMembership().
-input double strategy_min_annualized_vol_pct = 15.0;
-input int    strategy_max_spread_points    = 0;    // 0 = disabled (DWX quotes 0 spread in tester)
+input int    strategy_sma_period          = 10;
+input int    strategy_min_daily_bars      = 270;
+input int    strategy_vol_lookback_days   = 252;
+input int    strategy_top_symbols         = 3;
+input int    strategy_atr_period          = 14;
+input double strategy_atr_sl_mult         = 2.5;
+input bool   strategy_enable_short        = false;
+input int    strategy_max_spread_points   = 0;
 
-// -----------------------------------------------------------------------------
-// Volatility-sleeve state — cached, recomputed once per calendar month via
-// QM_IsNewCalendarPeriod(PERIOD_MN1) (never per-tick; see NoTradeFilter below).
-// -----------------------------------------------------------------------------
-bool   g_vol_sleeve_active        = false;
-bool   g_vol_sleeve_initialized   = false;
-double g_realized_vol_annualized_pct = 0.0;
-
-// Recompute this symbol's trailing 252-day annualized realized volatility and
-// update sleeve membership. Called at most once per calendar month (gated by
-// QM_IsNewCalendarPeriod in Strategy_NoTradeFilter) — never per-tick.
-void UpdateVolatilitySleeveMembership()
+// Registry slot order. Every entry is present in dwx_symbol_matrix.csv and in
+// magic_numbers.csv for QM5_1537. Each per-symbol EA instance computes the same
+// monthly basket ranking and acts only on its own chart symbol.
+string g_strategy_basket[37] =
   {
+   "XAUUSD.DWX", "XAGUSD.DWX", "XNGUSD.DWX", "XTIUSD.DWX",
+   "NDX.DWX", "WS30.DWX", "GDAXI.DWX", "UK100.DWX", "SP500.DWX",
+   "AUDCAD.DWX", "AUDCHF.DWX", "AUDJPY.DWX", "AUDNZD.DWX", "AUDUSD.DWX",
+   "CADCHF.DWX", "CADJPY.DWX", "CHFJPY.DWX", "EURAUD.DWX", "EURCAD.DWX",
+   "EURCHF.DWX", "EURGBP.DWX", "EURJPY.DWX", "EURNZD.DWX", "EURUSD.DWX",
+   "GBPAUD.DWX", "GBPCAD.DWX", "GBPCHF.DWX", "GBPJPY.DWX", "GBPNZD.DWX",
+   "GBPUSD.DWX", "NZDCAD.DWX", "NZDCHF.DWX", "NZDJPY.DWX", "NZDUSD.DWX",
+   "USDCAD.DWX", "USDCHF.DWX", "USDJPY.DWX"
+  };
+
+bool   g_sleeve_initialized       = false;
+bool   g_sleeve_active            = false;
+double g_host_realized_vol_pct    = 0.0;
+int    g_host_vol_rank            = -1;
+int    g_valid_vol_symbols        = 0;
+
+bool   g_daily_signal_ready       = false;
+bool   g_crossed_above_sma        = false;
+bool   g_crossed_below_sma        = false;
+double g_cached_atr_d1            = 0.0;
+
+#define QM1537_DIR_FLAT   0
+#define QM1537_DIR_LONG   1
+#define QM1537_DIR_SHORT -1
+
+bool Strategy_ParametersValid()
+  {
+   if(strategy_sma_period < 2)
+      return false;
+   if(strategy_vol_lookback_days < 2)
+      return false;
+   if(strategy_min_daily_bars < strategy_vol_lookback_days + 1)
+      return false;
+   if(strategy_top_symbols < 1)
+      return false;
+   if(strategy_atr_period < 1 || strategy_atr_sl_mult <= 0.0)
+      return false;
+   if(strategy_max_spread_points < 0)
+      return false;
+   return true;
+  }
+
+bool Strategy_HostRegistrationMatches()
+  {
+   const int n = ArraySize(g_strategy_basket);
+   if(qm_magic_slot_offset < 0 || qm_magic_slot_offset >= n)
+      return false;
+   return (g_strategy_basket[qm_magic_slot_offset] == _Symbol);
+  }
+
+int Strategy_CurrentPositionDirection()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return QM1537_DIR_FLAT;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+
+      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY)
+         return QM1537_DIR_LONG;
+      return QM1537_DIR_SHORT;
+     }
+   return QM1537_DIR_FLAT;
+  }
+
+bool Strategy_SpreadAllowsEntry()
+  {
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+   if(strategy_max_spread_points <= 0)
+      return true;
+   if(!(ask > bid))
+      return true;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return false;
+   const double cap = (double)strategy_max_spread_points * point;
+   return ((ask - bid) <= cap);
+  }
+
+// Bespoke cross-sectional statistic from the approved card. This is evaluated
+// only from the monthly calendar edge in Strategy_ManageOpenPosition.
+bool Strategy_RealizedVolatility(const string sym, double &out_vol_pct)
+  {
+   out_vol_pct = 0.0;
+   if(!QM_SymbolAssertOrLog(sym))
+      return false;
+
+   int need = strategy_min_daily_bars;
+   const int return_closes = strategy_vol_lookback_days + 1;
+   if(need < return_closes)
+      need = return_closes;
+
    double closes[];
    ArraySetAsSeries(closes, true);
-   // perf-allowed: bespoke realized-volatility ranking proxy has no QM_*
-   // equivalent; bounded to strategy_vol_lookback_days+1 bars and gated to
-   // fire at most once per calendar month.
-   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, strategy_vol_lookback_days + 1, closes);
-   if(copied < strategy_vol_lookback_days + 1)
-     {
-      g_vol_sleeve_active = false;
-      g_vol_sleeve_initialized = true;
-      return;
-     }
+   const int copied = CopyClose(sym, PERIOD_D1, 1, need, closes); // perf-allowed: monthly 252-return cross-sectional realized-volatility ranking
+   if(copied != need)
+      return false;
 
    double sum = 0.0;
    double sum_sq = 0.0;
-   int n = 0;
-   for(int i = 0; i < strategy_vol_lookback_days; ++i)
+   const int n = strategy_vol_lookback_days;
+   for(int i = 0; i < n; ++i)
      {
       if(closes[i] <= 0.0 || closes[i + 1] <= 0.0)
-         continue;
-      const double log_ret = MathLog(closes[i] / closes[i + 1]);
-      sum += log_ret;
-      sum_sq += log_ret * log_ret;
-      n++;
-     }
-   if(n < strategy_vol_lookback_days / 2)
-     {
-      g_vol_sleeve_active = false;
-      g_vol_sleeve_initialized = true;
-      return;
+         return false;
+      const double daily_return = MathLog(closes[i] / closes[i + 1]);
+      sum += daily_return;
+      sum_sq += daily_return * daily_return;
      }
 
-   const double mean = sum / n;
-   double variance = (sum_sq / n) - (mean * mean);
+   const double mean = sum / (double)n;
+   double variance = (sum_sq - (double)n * mean * mean) / (double)(n - 1);
    if(variance < 0.0)
       variance = 0.0;
-   const double daily_vol = MathSqrt(variance);
-   g_realized_vol_annualized_pct = daily_vol * MathSqrt(252.0) * 100.0;
-   g_vol_sleeve_active = (g_realized_vol_annualized_pct >= strategy_min_annualized_vol_pct);
-   g_vol_sleeve_initialized = true;
+   out_vol_pct = MathSqrt(variance) * MathSqrt(252.0) * 100.0;
+   return true;
+  }
+
+bool Strategy_ComputeMonthlySelection(bool &out_selected,
+                                      double &out_host_vol_pct,
+                                      int &out_host_rank,
+                                      int &out_valid_count)
+  {
+   out_selected = false;
+   out_host_vol_pct = 0.0;
+   out_host_rank = -1;
+   out_valid_count = 0;
+
+   const int n = ArraySize(g_strategy_basket);
+   double vol[];
+   bool valid[];
+   ArrayResize(vol, n);
+   ArrayResize(valid, n);
+
+   int host_index = -1;
+   for(int i = 0; i < n; ++i)
+     {
+      double value = 0.0;
+      valid[i] = Strategy_RealizedVolatility(g_strategy_basket[i], value);
+      vol[i] = value;
+      if(valid[i])
+         out_valid_count++;
+      if(g_strategy_basket[i] == _Symbol)
+         host_index = i;
+     }
+
+   if(host_index < 0 || out_valid_count <= 0)
+      return false;
+   if(!valid[host_index])
+      return true;
+
+   int ranked[];
+   ArrayResize(ranked, out_valid_count);
+   int k = 0;
+   for(int i = 0; i < n; ++i)
+     {
+      if(!valid[i])
+         continue;
+      ranked[k] = i;
+      k++;
+     }
+
+   // Stable descending insertion sort; basket/slot order resolves exact ties.
+   for(int i = 1; i < out_valid_count; ++i)
+     {
+      const int key_index = ranked[i];
+      const double key_vol = vol[key_index];
+      int j = i - 1;
+      while(j >= 0 && vol[ranked[j]] < key_vol)
+        {
+         ranked[j + 1] = ranked[j];
+         j--;
+        }
+      ranked[j + 1] = key_index;
+     }
+
+   for(int i = 0; i < out_valid_count; ++i)
+     {
+      if(ranked[i] == host_index)
+        {
+         out_host_rank = i;
+         break;
+        }
+     }
+   out_host_vol_pct = vol[host_index];
+
+   int selected_count = strategy_top_symbols;
+   if(selected_count > out_valid_count)
+      selected_count = out_valid_count;
+   out_selected = (out_host_rank >= 0 && out_host_rank < selected_count);
+   return true;
+  }
+
+void Strategy_AdvanceMonthlyState()
+  {
+   if(!QM_IsNewCalendarPeriod(PERIOD_MN1))
+      return;
+
+   bool selected = false;
+   double host_vol_pct = 0.0;
+   int host_rank = -1;
+   int valid_count = 0;
+   const bool ready = Strategy_ComputeMonthlySelection(selected,
+                                                        host_vol_pct,
+                                                        host_rank,
+                                                        valid_count);
+   g_sleeve_initialized = ready;
+   g_sleeve_active = (ready && selected);
+   g_host_realized_vol_pct = host_vol_pct;
+   g_host_vol_rank = host_rank;
+   g_valid_vol_symbols = valid_count;
+  }
+
+void Strategy_AdvanceDailyState()
+  {
+   if(!QM_IsNewCalendarPeriod(PERIOD_D1))
+      return;
+
+   g_daily_signal_ready = false;
+   g_crossed_above_sma = false;
+   g_crossed_below_sma = false;
+   g_cached_atr_d1 = 0.0;
+
+   const double sma_now = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1);
+   const double sma_prev = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 2);
+   const double close_now = QM_SMA(_Symbol, PERIOD_D1, 1, 1);
+   const double close_prev = QM_SMA(_Symbol, PERIOD_D1, 1, 2);
+   const double atr_now = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(sma_now <= 0.0 || sma_prev <= 0.0 ||
+      close_now <= 0.0 || close_prev <= 0.0 || atr_now <= 0.0)
+      return;
+
+   g_crossed_above_sma = (close_prev <= sma_prev && close_now > sma_now);
+   g_crossed_below_sma = (close_prev >= sma_prev && close_now < sma_now);
+   g_cached_atr_d1 = atr_now;
+   g_daily_signal_ready = true;
   }
 
 // -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
+// Strategy hooks
 // -----------------------------------------------------------------------------
 
 // No Trade Filter (time, spread, news)
@@ -152,31 +313,15 @@ bool Strategy_NoTradeFilter()
   {
    if(_Period != PERIOD_D1)
       return true;
-
-   if(qm_magic_slot_offset == 0 && _Symbol != "XAUUSD.DWX") return true;
-   if(qm_magic_slot_offset == 1 && _Symbol != "XAGUSD.DWX") return true;
-   if(qm_magic_slot_offset == 2 && _Symbol != "XNGUSD.DWX") return true;
-   if(qm_magic_slot_offset == 3 && _Symbol != "XTIUSD.DWX") return true;
-   if(qm_magic_slot_offset == 4 && _Symbol != "NDX.DWX")    return true;
-   if(qm_magic_slot_offset == 5 && _Symbol != "WS30.DWX")   return true;
-   if(qm_magic_slot_offset == 6 && _Symbol != "GDAXI.DWX")  return true;
-   if(qm_magic_slot_offset == 7 && _Symbol != "UK100.DWX")  return true;
-   if(qm_magic_slot_offset == 8 && _Symbol != "SP500.DWX")  return true;
-   if(qm_magic_slot_offset < 0 || qm_magic_slot_offset > 8)
+   if(!Strategy_ParametersValid() || !Strategy_HostRegistrationMatches())
       return true;
 
-   // Card: "Recompute volatility sleeve monthly." Cheap on every tick except
-   // the first tick of a new month, when it does the bounded 252-bar pass.
-   if(QM_IsNewCalendarPeriod(PERIOD_MN1))
-      UpdateVolatilitySleeveMembership();
-
-   if(strategy_max_spread_points > 0)
-     {
-      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread_points > strategy_max_spread_points)
-         return true;
-     }
-
+   // News is handled by the central two-axis entry gate below management.
+   // A wide spread blocks new exposure only; open-position management and
+   // signal exits remain active.
+   if(Strategy_CurrentPositionDirection() == QM1537_DIR_FLAT &&
+      !Strategy_SpreadAllowsEntry())
+      return true;
    return false;
   }
 
@@ -187,124 +332,79 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "AA_VOL_SMA10_CROSS_ABOVE";
+   req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(_Period != PERIOD_D1)
+   if(!g_sleeve_initialized || !g_sleeve_active || !g_daily_signal_ready)
       return false;
-   if(strategy_sma_period <= 0 ||
-      strategy_min_daily_bars < strategy_sma_period ||
-      strategy_atr_period <= 0 ||
-      strategy_atr_sl_mult <= 0.0)
+   if(Strategy_CurrentPositionDirection() != QM1537_DIR_FLAT)
       return false;
-
-   // Card: long/cash default mode — only trade while this symbol sits in the
-   // high-realized-volatility sleeve.
-   if(!g_vol_sleeve_initialized || !g_vol_sleeve_active)
+   if(!Strategy_SpreadAllowsEntry())
       return false;
 
-   const double warmup_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_min_daily_bars, 1);
-   if(warmup_sma <= 0.0)
+   int entry_direction = QM1537_DIR_FLAT;
+   if(g_crossed_above_sma)
+      entry_direction = QM1537_DIR_LONG;
+   else if(strategy_enable_short && g_crossed_below_sma)
+      entry_direction = QM1537_DIR_SHORT;
+   if(entry_direction == QM1537_DIR_FLAT)
       return false;
 
-   const double sma10_now  = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1);
-   const double sma10_prev = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 2);
-   // QM_SMA(period=1) of the closed bar is exactly that bar's close price —
-   // avoids a raw iClose() call for the cross check.
-   const double close_now  = QM_SMA(_Symbol, PERIOD_D1, 1, 1);
-   const double close_prev = QM_SMA(_Symbol, PERIOD_D1, 1, 2);
-   if(sma10_now <= 0.0 || sma10_prev <= 0.0 || close_now <= 0.0 || close_prev <= 0.0)
+   const bool go_long = (entry_direction == QM1537_DIR_LONG);
+   const double entry = go_long ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(entry <= 0.0 || g_cached_atr_d1 <= 0.0)
       return false;
 
-   const bool crossed_above = (close_prev <= sma10_prev) && (close_now > sma10_now);
-   if(!crossed_above)
+   req.type = go_long ? QM_BUY : QM_SELL;
+   req.sl = QM_StopATRFromValue(_Symbol,
+                                req.type,
+                                entry,
+                                g_cached_atr_d1,
+                                strategy_atr_sl_mult);
+   req.reason = go_long ? "AA_VOL_SMA10_CROSS_ABOVE"
+                        : "AA_VOL_SMA10_CROSS_BELOW_SHORT";
+   if(req.sl <= 0.0)
       return false;
-
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      return false; // one position per symbol/magic — no pyramiding (card)
-     }
-
-   const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(entry <= 0.0)
+   if(go_long && req.sl >= entry)
       return false;
-
-   req.sl = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_atr_sl_mult);
-   if(req.sl <= 0.0 || req.sl >= entry)
+   if(!go_long && req.sl <= entry)
       return false;
-
    return true;
   }
 
 // Trade Management
 void Strategy_ManageOpenPosition()
   {
-   // Card defines no trailing, break-even, partial close, or pyramiding —
-   // exit is driven entirely by Strategy_ExitSignal (SMA10 cross-below or
-   // sleeve departure) and the initial ATR stop loss.
+   Strategy_AdvanceMonthlyState();
+   Strategy_AdvanceDailyState();
+   // Card specifies no trailing stop, break-even, partial close, or pyramiding.
   }
 
 // Trade Close
 bool Strategy_ExitSignal()
   {
-   if(_Period != PERIOD_D1)
+   const int direction = Strategy_CurrentPositionDirection();
+   if(direction == QM1537_DIR_FLAT)
       return false;
-   if(strategy_sma_period <= 0)
-      return false;
-
-   const int magic = QM_FrameworkMagic();
-   bool has_long = false;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY)
-        {
-         has_long = true;
-         break;
-        }
-     }
-   if(!has_long)
-      return false;
-
-   // Card: "close symbols that leave the high-volatility sleeve" — checked
-   // every tick from the monthly-cached flag (cheap bool read).
-   if(g_vol_sleeve_initialized && !g_vol_sleeve_active)
+   if(g_sleeve_initialized && !g_sleeve_active)
       return true;
-
-   const double sma10_now  = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1);
-   const double sma10_prev = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 2);
-   const double close_now  = QM_SMA(_Symbol, PERIOD_D1, 1, 1);
-   const double close_prev = QM_SMA(_Symbol, PERIOD_D1, 1, 2);
-   if(sma10_now <= 0.0 || sma10_prev <= 0.0 || close_now <= 0.0 || close_prev <= 0.0)
+   if(!g_daily_signal_ready)
       return false;
-
-   return (close_prev >= sma10_prev) && (close_now < sma10_now);
+   if(direction == QM1537_DIR_LONG)
+      return g_crossed_below_sma;
+   return g_crossed_above_sma;
   }
 
 // News Filter Hook (callable for P8 News Impact phase)
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   return false;
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -314,18 +414,26 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
+
+   QM_SymbolGuardInit(g_strategy_basket);
+   int warmup_bars = strategy_min_daily_bars;
+   if(warmup_bars < strategy_vol_lookback_days + 1)
+      warmup_bars = strategy_vol_lookback_days + 1;
+   if(warmup_bars < 300)
+      warmup_bars = 300;
+   QM_BasketWarmupHistory(g_strategy_basket, PERIOD_D1, warmup_bars + 2);
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
@@ -339,9 +447,6 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
-   // Q08 evidence lifecycle: sample floating P&L before any per-tick guard can
-   // return. QM_KillSwitchCheck retains the same call as a compatibility
-   // fallback for pre-template EAs; keep this explicit hook in all new builds.
    QM_FrameworkTrackOpenPositionMae();
 
    if(!QM_KillSwitchCheck())
@@ -356,14 +461,8 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
-   // Per-tick: trade management can adjust SL/TP on open positions.
-   // Management, rule-based exits and the Friday sweep above MUST keep
-   // running through news windows — the news gate below blocks NEW entries
-   // only (2026-07-02 audit rule; canonical order per QM5_12821 OnTick,
-   // commit dc418a720).
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -378,30 +477,27 @@ void OnTick()
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults. Gates NEW entries only —
-   // never the management/exit paths above.
    bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol,
+                                        broker_now,
+                                        qm_news_temporal,
+                                        qm_news_compliance);
    else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+      news_allows = QM_NewsAllowsTrade(_Symbol,
+                                       broker_now,
+                                       qm_news_mode_legacy);
    if(!news_allows)
       return;
 
    if(!QM_IsNewBar())
       return;
 
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
-   ZeroMemory(req); // symbol_slot=0 (host slot) + expiration=0 defaults; garbage
-                    // in unset fields = the silent-zero-trades class (9e4cfedb1)
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
@@ -418,8 +514,6 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
-   // FW4: feeds closing-deal net-profits to the KS kill-switch.
-   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
