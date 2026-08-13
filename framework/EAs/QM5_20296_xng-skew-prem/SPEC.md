@@ -141,13 +141,20 @@ waiver is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-13 | Initial scaffold from approved card | Build pending |
+| v2 | 2026-08-13 | Implemented locked statistic and monthly lifecycle | Strict compile and reference checks pass |
+| v3 | 2026-08-13 | Completed target Q01 validation | Build check and P1 PASS |
 
 ## 12. Q01 Status
 
-NOT STARTED. The approved card and deterministic EA-ID row exist; magic
-allocation, implementation, strict compile, and artifact validation remain.
+PASS. The registered one-slot EA implements the exact twelve-complete-month
+Pearson-skewness contract, restart-safe monthly attempt state, one-position
+lifecycle, frozen hard stop, and fixed-risk contract. Strict compile passed
+with zero errors and zero warnings; the target build check passed with zero
+failures and zero warnings; the independent statistic, direction, chronology,
+coverage, count, and freshness reference vectors passed; and P1 artifact
+validation found the compiled `.ex5`.
 
 ## 13. Q02 Handoff
 
-NOT READY. No queue mutation is permitted until Q01 passes and a path-anchored
-factory capacity sample is below the binding CPU ceiling.
+READY FOR CAPACITY CHECK. No queue mutation is permitted unless a path-
+anchored T1-T10 factory sample is below the binding CPU ceiling.
