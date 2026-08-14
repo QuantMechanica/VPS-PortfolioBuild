@@ -4194,6 +4194,14 @@ def _pause_after_unclaimed(claim: dict[str, Any], terminal: str) -> None:
             "history_skipped": len(claim.get("history_skipped") or []),
             "launch_cooldown_skipped": len(claim.get("launch_cooldown_skipped") or []),
         }), flush=True)
+    if reason == "factory_mutation_lock_busy":
+        # A held restart window lasts minutes. Ten workers cycling the full
+        # gate+claim path every 2s are exactly the WAL reader/writer churn
+        # that starved the ceremony's post-commit FULL-checkpoint evidence
+        # (2026-08-14 Factory_ON abort: log 57->64 while checkpointed 54->55
+        # across the whole 36x2.5s envelope).
+        time.sleep(COMMIT_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
+        return
     time.sleep(POLL_SLEEP_SECONDS)
 
 

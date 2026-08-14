@@ -104,6 +104,28 @@ adoption/atomic_claim/lock_storm/identity/q_phase_stall/staged_ex5).
 
 Ceremony outcomes are appended below after execution.
 
+## Ceremony record (appended)
+
+- 13:57:01Z containment released (standing pair DL-086:
+  `archive_manifest_owner_approved_standing.json` +
+  `owner_window_receipt_standing_unlimited.json`, dual audits 3+4). Stale T5
+  lease reaped fail-closed (owner pid 11276 dead; `.stale` sidecar archived);
+  orphaned claim c997529a reset to pending.
+- ON attempt 1 (RTA-2026-08-14-DEFERFIX): post-start health gate PASSED,
+  aborted at restart-hold release — `database is locked` (>30s writer).
+  Flag → OFF_RECOVERY_REQUIRED per runbook.
+- OFF recovery ×2 blocked by a SYSTEM-context managed Codex review exec
+  (`job_open_failed error 5`, the known 2026-08-12 class; lease-capped
+  60 min). Exec finished on its own; third OFF run QUIESCENT 14:23Z.
+- ON attempt 2 (RTA-2026-08-14-DEFERFIX2): hold plan COMMITTED, aborted at
+  post-commit evidence — WAL FULL checkpoint starved by moving reader/writer
+  churn (log 57→64, checkpointed 54→55 across 36×2.5s). Root: with
+  containment now released, ten workers cycle gate+claim every 2s against the
+  held mutation lock (yesterday's ceremonies ran under lease-serialized
+  quiet, hiding this). Fix: dedicated 20–30s backoff for
+  `factory_mutation_lock_busy` declines (logging kept, 60s-throttled) +
+  checkpoint envelope 36→72 attempts.
+
 ## Residual risk / follow-ups
 
 - The archive eater's root cause (shared family inodes × exclusive MT5 opens)
