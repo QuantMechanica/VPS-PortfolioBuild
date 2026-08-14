@@ -1,0 +1,183 @@
+{
+  "artifact_type": "fx_cointegration_frontier_resource_ceiling_stop",
+  "generated_at_utc": "2026-08-14T21:58:56.432113Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "a366cf6dc0d80e8f04ca24660ebaf9671eb0686d",
+  "mission_outcome": "STOPPED_AT_BACKTEST_RESOURCE_CEILING",
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "frontier_reconciliation": {
+    "scan_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "scan_mode": "--include-negative-hedges",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_card_or_ea_would_duplicate_existing_relationship": true,
+    "controlling_repository_evidence": "artifacts/fx_cointegration_frontier_active_basket_cpu_stop_20260814T194820Z_board_advisor.json"
+  },
+  "selected_existing_pair": {
+    "selection_reason": "The frozen scan has no unbuilt relationship; rank 58 remains the only exact logical relationship without a terminal Q02 verdict.",
+    "scan_rank": 58,
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "ea_id": "QM5_1257",
+    "pair_slot": 8,
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "source_citation": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+    "g0_status": "APPROVED",
+    "r1_r4_status": "PASS",
+    "basket_manifest": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json",
+    "fixed_risk_setfile": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "q02": {
+      "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+      "status": "pending",
+      "verdict": null,
+      "attempt_count": 1,
+      "claimed_by": null,
+      "evidence_path": null,
+      "created_at_utc": "2026-08-11T23:53:50+00:00",
+      "last_observed_updated_at_utc": "2026-08-14T06:52:39+00:00",
+      "prior_failure": "summary_missing",
+      "run_smoke_exit_code": 0,
+      "avoid_terminals": [
+        "T4"
+      ],
+      "priority_track": true,
+      "priority_reason": "board_advisor_fx_fallback_full_66_pair_frontier_covered",
+      "exact_logical_row_count": 1,
+      "exact_open_row_count": 1,
+      "duplicate_enqueue_performed": false,
+      "manual_requeue_performed": false,
+      "priority_mutation_performed": false
+    }
+  },
+  "resource_stop": {
+    "sampled_at_utc": "2026-08-14T21:58:56.432113Z",
+    "active_work_item_count": 2,
+    "active_work_items": [
+      {
+        "id": "6aa74109-ba4a-43ca-9421-ff5c6a524c1a",
+        "ea_id": "QM5_1537",
+        "symbol": "GDAXI.DWX",
+        "phase": "Q02",
+        "claimed_by": "T3",
+        "attempt_count": 2,
+        "updated_at_utc": "2026-08-14T21:41:04+00:00"
+      },
+      {
+        "id": "cfca974d-3225-4804-bd79-cac07b3c577d",
+        "ea_id": "QM5_1537",
+        "symbol": "XAGUSD.DWX",
+        "phase": "Q02",
+        "claimed_by": "T5",
+        "attempt_count": 2,
+        "updated_at_utc": "2026-08-14T21:42:21+00:00"
+      }
+    ],
+    "physical_memory": {
+      "free_gib": 1.08,
+      "total_gib": 63.12
+    },
+    "process_enumeration": {
+      "status": "FAILED_RESOURCE_EXHAUSTION",
+      "error": "Get-CimInstance Win32_Process: Not enough memory resources are available to complete this operation."
+    },
+    "last_successful_process_sample": {
+      "sampled_at_utc": "2026-08-14T21:57:26.511474Z",
+      "factory_terminals": [
+        "T3",
+        "T4",
+        "T5",
+        "T10"
+      ],
+      "work_item_bound_terminals": [
+        "T3",
+        "T4",
+        "T5"
+      ],
+      "separate_pipeline_terminal": "T10",
+      "t_live_observed_and_excluded": true,
+      "ftmo_terminal_observed_and_excluded": true
+    },
+    "custom_history_containment": {
+      "enabled": true,
+      "schema_version": "qm.custom-history-containment-mode/v1",
+      "recorded_at_utc": "2026-08-14T21:49:45.428343+00:00",
+      "reason": "custom_history_isolation_gate_failure",
+      "source": "automatic_stop_condition",
+      "authorization_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+      "mode_sha256": "7762386ccc727229007d46a6ff1244e8dc988669b24a111f71a0cff5385c1740",
+      "record_file_sha256": "fbc566af507eb93269f1ae0677dc1a95f9c4ced954dd237cd30bbc6b99b1c334"
+    },
+    "stop_reason": "Physical memory fell to 1.08 GiB free and process enumeration itself failed from resource exhaustion while signed Custom-history containment was enabled. The mission explicitly requires stopping at the backtest CPU/resource ceiling."
+  },
+  "target_hashes": {
+    "mq5_sha256": "28bd88d0a7a7401ec7fe3b3a4f99ef3ba6b9fec146298c512b1c76e1adf7e12b",
+    "ex5_sha256": "86c6e9f077e37ddd5aea1e15b253cd4509c7f180c846cc6aebd806fa17d95cbd",
+    "strategy_card_sha256": "aa0313ea4218ed418432adcdf3a34b49cd3c4f46e725fefd31ec5b2266b2f9ae",
+    "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+    "fixed_risk_setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4"
+  },
+  "changed_since_prior_frontier_sample": {
+    "prior_evidence": "artifacts/fx_cointegration_frontier_active_basket_cpu_stop_20260814T194820Z_board_advisor.json",
+    "prior_free_physical_memory_gib": 54.34,
+    "current_free_physical_memory_gib": 1.08,
+    "prior_containment_reason": "custom_history_gate_exception:OSError",
+    "current_containment_reason": "custom_history_isolation_gate_failure",
+    "prior_process_enumeration_status": "PASS",
+    "current_process_enumeration_status": "FAILED_RESOURCE_EXHAUSTION",
+    "target_q02_state_changed": false
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "basket_manifest_mutation": false,
+    "setfile_mutation": false,
+    "q02_enqueue_or_requeue": false,
+    "priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run_started": false,
+    "history_or_containment_mutation": false,
+    "factory_recovery": false,
+    "process_cleanup": false,
+    "repository_evidence_record_created": true,
+    "reason": "The full frontier makes a new build duplicative; the exact fallback is already queued once; current resource exhaustion and signed containment require an immediate paced-fleet stop."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false,
+    "live_deployment_artifacts": false
+  },
+  "unrelated_worktree_changes_preserved": [
+    "docs/ops/evidence/2026-08-14_containment_oserror_resource_selftrip.md",
+    "tools/strategy_farm/custom_history_gate.py",
+    "tools/strategy_farm/custom_history_master.py",
+    "tools/strategy_farm/terminal_worker.py",
+    "tools/strategy_farm/tests/test_custom_history_master.py",
+    "tools/strategy_farm/tests/test_terminal_worker_custom_history_isolation.py"
+  ]
+}
