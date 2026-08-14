@@ -1,0 +1,112 @@
+{
+  "artifact_type": "fx_cointegration_existing_pair_active_cpu_stop",
+  "generated_at_utc": "2026-08-14T06:48:11Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "eb444e8b43fb8c5a55127c4ebcf7ef4954d07996",
+  "mission_outcome": "EXISTING_PAIR_Q02_ACTIVE_STOPPED_AT_CPU_CEILING",
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "frontier_reconciliation": {
+    "coverage_source_commit": "a804932912a449aed19bbc8fe61f1f5846556743",
+    "scan_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "scan_mode": "--include-negative-hedges",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_card_or_ea_would_duplicate_existing_relationship": true
+  },
+  "selected_existing_pair": {
+    "selection_reason": "All 66 scan relationships are covered; frozen-scan rank 58 was the non-terminal exact logical Q02 fallback.",
+    "scan_rank": 58,
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "ea_id": "QM5_1257",
+    "pair_slot": 8,
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "source_citation": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+    "g0_status": "APPROVED",
+    "r1_r4_status": "PASS",
+    "basket_manifest": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json",
+    "fixed_risk_setfile": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "q02": {
+      "task_id": "39ee6910-5d04-4087-83b0-65a6fd6b22f9",
+      "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+      "status": "active",
+      "attempt_count": 0,
+      "claimed_by": "T4",
+      "last_observed_updated_at_utc": "2026-08-14T06:38:24Z",
+      "tester_config": "D:/QM/reports/work_items/d4cd660c-c81a-41d3-8a4c-ad21d3319816/QM5_1257/20260814_063902/raw/run_01/tester.ini",
+      "duplicate_enqueue_performed": false,
+      "priority_mutation_performed": false
+    }
+  },
+  "farm_stop": {
+    "sampled_at_utc": "2026-08-14T06:48:11Z",
+    "running_factory_terminal_count": 10,
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "backtest_cpu_ceiling_binding": true,
+    "selected_pair_terminal": "T4",
+    "t_live_observed_but_excluded": true,
+    "external_ftmo_terminal_observed_but_excluded": true,
+    "stop_reason": "All ten governed factory terminals are occupied and the selected non-duplicate fallback is already running on T4."
+  },
+  "changed_since_prior_frontier_sample": {
+    "prior_evidence": "artifacts/fx_cointegration_frontier_history_containment_stop_20260814T051114Z_board_advisor.json",
+    "prior_selected_pair_state": "pending",
+    "current_selected_pair_state": "active",
+    "custom_history_containment_released_at_utc": "2026-08-14T06:35:58Z",
+    "state_change": "The canonical worker claimed the already-enqueued rank-58 logical Q02 row on T4."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "basket_manifest_mutation": false,
+    "setfile_mutation": false,
+    "q02_enqueue_or_requeue": false,
+    "priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run_started": false,
+    "repository_evidence_record_created": true,
+    "reason": "The non-duplicate fallback advanced through the canonical queue and is active; the 10/10 CPU ceiling forbids additional work."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false,
+    "live_deployment_artifacts": false
+  }
+}
