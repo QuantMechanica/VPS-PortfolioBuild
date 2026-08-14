@@ -103,7 +103,7 @@ def _wal_checkpoint_once(path: Path) -> tuple[int, int, int]:
 def checkpoint_wal(
     path: Path,
     *,
-    attempts: int = 72,
+    attempts: int = 240,
     delay_seconds: float = 2.5,
     sleeper=time.sleep,
 ) -> dict[str, int]:
