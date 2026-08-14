@@ -16003,3 +16003,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 21001,balke-gmt3-range-breakout-exit-c1,0,USDJPY.DWX,210010000,2026-08-14,Codex,active
 21504,xng-flowrev,0,XNGUSD.DWX,215040000,2026-08-14,Codex,active
 21516,wti-decoup-trend,0,XTIUSD.DWX,215160000,2026-08-14,Research+Development,active
+21517,xauxag-seas-rv,0,XAUUSD.DWX,215170000,2026-08-14,Research+Development,active
+21517,xauxag-seas-rv,1,XAGUSD.DWX,215170001,2026-08-14,Research+Development,active
