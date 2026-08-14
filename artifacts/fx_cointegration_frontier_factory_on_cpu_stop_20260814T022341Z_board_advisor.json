@@ -1,0 +1,138 @@
+{
+  "artifact_type": "fx_cointegration_frontier_factory_on_cpu_ceiling_stop",
+  "generated_at_utc": "2026-08-14T02:23:41Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "6f529f339a6286bd8e1d8823d224782ac61964d0",
+  "mission_outcome": "STOPPED_AT_GOVERNED_ONE_BASKET_CAPACITY_CEILING",
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "frontier_reconciliation": {
+    "coverage_source_commit": "a80493291",
+    "scan_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "scan_mode": "--include-negative-hedges",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_card_or_ea_would_duplicate_existing_relationship": true
+  },
+  "selected_existing_pair": {
+    "selection_reason": "No unbuilt relationship remains; rank 58 is the only frozen-scan relationship without a terminal exact logical Q02 verdict.",
+    "scan_rank": 58,
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "ea_id": "QM5_1257",
+    "pair_slot": 8,
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "source_citation": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+    "g0_status": "APPROVED",
+    "r1_r4_status": "PASS",
+    "basket_manifest": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json",
+    "fixed_risk_setfile": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "q02": {
+      "task_id": "39ee6910-5d04-4087-83b0-65a6fd6b22f9",
+      "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+      "exact_logical_row_count": 1,
+      "status": "pending",
+      "attempt_count": 0,
+      "claimed_by": null,
+      "selector_rank": 13,
+      "active_hold_count": 0,
+      "active_quarantine_count": 0,
+      "last_observed_updated_at_utc": "2026-08-12T22:50:25Z",
+      "duplicate_enqueue_performed": false,
+      "priority_mutation_performed": false
+    }
+  },
+  "capacity_sample": {
+    "factory_off_flag_present": false,
+    "factory_tasks_enabled": true,
+    "database_sampled_at_utc": "2026-08-14T02:23:41Z",
+    "active_work_item_count": 6,
+    "pending_selector_count": 1008,
+    "os_process_sampled_at_utc": "2026-08-14T02:18:13Z",
+    "running_factory_terminal_count": 8,
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "terminal_worker_count": 10,
+    "active_multisymbol_work_item": {
+      "work_item_id": "72efce53-2be9-4ada-a554-75a7e619c06c",
+      "ea_id": "QM5_13029",
+      "logical_symbol": "QM5_13029_GBPCAD_GBPNZD_COINTEGRATION_D1",
+      "phase": "Q02",
+      "terminal": "T4",
+      "started_at_utc": "2026-08-14T02:08:44Z",
+      "commit_reservation_class": "multi_leg_fx_basket",
+      "commit_reservation_gb": 32
+    },
+    "multisymbol_concurrency_contract": "AT_MOST_ONE_ACTIVE_FARMWIDE",
+    "selected_pair_resource_blocked": true,
+    "excluded_from_factory_count_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ],
+    "ceiling_binding": true
+  },
+  "verification": {
+    "basket_manifest_test": {
+      "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+      "result": "PASS",
+      "tests_passed": 44
+    },
+    "target_build_artifacts_present": true,
+    "target_registry_rows_active": true,
+    "static_build_check": {
+      "result": "OBSERVATION_TIMEOUT",
+      "timeout_seconds": 120,
+      "persistent_repository_side_effects": false
+    }
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "basket_manifest_mutation": false,
+    "setfile_mutation": false,
+    "q02_enqueue_or_requeue": false,
+    "priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run_started": false,
+    "repository_evidence_record_created": true,
+    "reason": "All 66 relationships are covered, rank 58 already has exactly one pending Q02 row, and another multi-symbol Q02 basket owns the governed one-basket capacity."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false,
+    "live_deployment_artifacts": false
+  }
+}
