@@ -58,3 +58,37 @@ also blocked it, correctly).
 Who deleted the three T8 archive files (~19:09 local)? The 14:29 reboot's
 interrupted copy-on-claim is the prime suspect; a cache/purge path is second.
 Owed a proper investigation once the factory produces again — it can recur.
+
+---
+
+## CLOSED — 2026-08-14 ~04:45 local
+
+**R8 (RTA-2026-08-14-T8RESTORE-R8) completed with exit 0** — the first clean
+Factory_ON of the night. `FACTORY STARTED - 10/10 daemons live`, flag and
+mutation lock cleanly absent, watchdog completed its dispatch-stall reset and
+cleared its own block.
+
+The decisive fixes of the final hours, both found via the instrumentation
+built mid-incident (freeze_stack 20260814T010101Z):
+
+- pump §5a quadratic scan → linear set lookup (3cc89099e)
+- `work_items(verdict, ea_id)` index via init_db's sanctioned schema path
+  (4b1a87397): the replenish-path killer query fell **10.4s → 0.01s**; the
+  first router cycle after the index went live returned **result 0** — the
+  first router success of the night, immediately and repeatably.
+
+**Production evidence at close:**
+
+```
+T9 claim 04602f48-0155-4bed-81b3-088952008a27
+  -> run_result: done, verdict=PASS, pf=1.610, dd_pct=1.86
+work_items updated last 20 min: 9 active, 2 done/PASS
+```
+
+The claim passed through the same custom-history gate that tripped at 19:51Z,
+now against the restored, hash-verified T8 archives — the incident's opening
+and closing bracket are the same control, both times doing its job.
+
+**Ceremony count: 8. Live impact: zero** — T_Live and FTMO traded untouched
+throughout. Total factory outage 19:51Z → ~02:45Z (~7h), all of it with the
+book live and safe.
