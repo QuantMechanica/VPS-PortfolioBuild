@@ -103,3 +103,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 |---|---|---|---|
 | v1 | 2026-07-02 | Initial build from card | farm task 84c638cb-3129-4083-9bc9-5d4645b5af8b |
 | v2 | 2026-07-05 | Q01 rework (2x codex_review_fail on zero_trades): relaxed strategy_min_eligible_symbols 6->4 (top_n+1, more literal reading -- card never mandates a universe-wide minimum beyond per-instrument history skip); re-verified cross-symbol multi-year basket lookback works in this tester (QM5_10328 precedent, 1800-bar warmup, 31 trades in a 6-month window) | farm task 84c638cb-3129-4083-9bc9-5d4645b5af8b |
+| v3 | 2026-08-14 | Q02 cohort-wide zero-trade setup recovery | Re-request exact D1 depth once per symbol/day until ready, fail `OnInit` with `SETUP_DATA_MISSING` when fewer than four basket members can form the approved score, and emit bounded readiness/rank/signal evidence; no strategy economics changed. |

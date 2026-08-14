@@ -58,6 +58,10 @@ string g_strategy_symbols[STRATEGY_SYMBOL_COUNT] =
 
 int g_last_entry_month_key = 0;
 int g_last_exit_month_key = 0;
+int g_last_readiness_month_key = 0;
+int g_last_readiness_eligible_count = -1;
+int g_last_selection_month_key = 0;
+int g_history_retry_day_keys[STRATEGY_SYMBOL_COUNT];
 
 int Strategy_MaxInt(const int a, const int b)
   {
@@ -67,6 +71,13 @@ int Strategy_MaxInt(const int a, const int b)
 int Strategy_MinInt(const int a, const int b)
   {
    return (a < b ? a : b);
+  }
+
+int Strategy_RequiredD1Bars()
+  {
+   const int max_lookback = Strategy_MaxInt(strategy_momentum_lookback_days,
+                                             strategy_value_lookback_days);
+   return strategy_skip_recent_days + max_lookback + 5;
   }
 
 int Strategy_SymbolSlot(const string symbol)
@@ -126,16 +137,54 @@ bool Strategy_WideSpread()
    return (spread_points > strategy_max_spread_points);
   }
 
-bool Strategy_RawSignals(const string symbol, double &momentum, double &value)
+void Strategy_AppendMissingSymbol(string &missing_symbols, const string symbol)
+  {
+   if(StringLen(missing_symbols) > 0)
+      missing_symbols += ",";
+   missing_symbols += "\"" + QM_LoggerEscapeJson(symbol) + "\"";
+  }
+
+int Strategy_RefreshHistoryDepth(const string symbol, const int required_bars)
+  {
+   int available_bars = Bars(symbol, PERIOD_D1); // perf-allowed: monthly D1 readiness check.
+   if(available_bars >= required_bars)
+      return available_bars;
+
+   const int symbol_slot = Strategy_SymbolSlot(symbol);
+   const int retry_day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 0);
+   if(symbol_slot < 0)
+      return available_bars;
+   if(retry_day_key > 0 && g_history_retry_day_keys[symbol_slot] == retry_day_key)
+      return available_bars;
+
+   if(retry_day_key > 0)
+      g_history_retry_day_keys[symbol_slot] = retry_day_key;
+
+   // The framework warmup is intentionally fire-and-forget. Retry the exact
+   // long-lookback request on the decision path so an asynchronous/partial
+   // OnInit load cannot become a silent zero-trade condition.
+   double warmup[];
+   ArraySetAsSeries(warmup, true);
+   const int copied = CopyClose(symbol, PERIOD_D1, 0, required_bars, warmup); // perf-allowed: once per symbol/day until ready.
+   if(copied > available_bars)
+      available_bars = copied;
+   return available_bars;
+  }
+
+bool Strategy_RawSignals(const string symbol,
+                         double &momentum,
+                         double &value,
+                         int &available_bars)
   {
    momentum = 0.0;
    value = 0.0;
+   available_bars = 0;
    if(!QM_SymbolAssertOrLog(symbol))
       return false;
 
-   const int max_lookback = Strategy_MaxInt(strategy_momentum_lookback_days, strategy_value_lookback_days);
-   const int required_bars = strategy_skip_recent_days + max_lookback + 5;
-   if(Bars(symbol, PERIOD_D1) < required_bars) // perf-allowed: monthly D1 history sufficiency check.
+   const int required_bars = Strategy_RequiredD1Bars();
+   available_bars = Strategy_RefreshHistoryDepth(symbol, required_bars);
+   if(available_bars < required_bars)
       return false;
 
    const int signal_shift = strategy_skip_recent_days;
@@ -151,6 +200,45 @@ bool Strategy_RawSignals(const string symbol, double &momentum, double &value)
    momentum = (signal_close / momentum_close) - 1.0;
    value = -1.0 * ((signal_close / value_close) - 1.0);
    return true;
+  }
+
+int Strategy_HistoryReadyCount(string &missing_symbols)
+  {
+   missing_symbols = "";
+   int ready_count = 0;
+   for(int i = 0; i < STRATEGY_SYMBOL_COUNT; ++i)
+     {
+      double momentum = 0.0;
+      double value = 0.0;
+      int available_bars = 0;
+      if(Strategy_RawSignals(g_strategy_symbols[i], momentum, value, available_bars))
+         ready_count++;
+      else
+         Strategy_AppendMissingSymbol(missing_symbols, g_strategy_symbols[i]);
+     }
+   return ready_count;
+  }
+
+void Strategy_LogScoreReadiness(const int eligible_count,
+                                const string missing_symbols)
+  {
+   const int month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   if(month_key == g_last_readiness_month_key &&
+      eligible_count == g_last_readiness_eligible_count)
+      return;
+
+   g_last_readiness_month_key = month_key;
+   g_last_readiness_eligible_count = eligible_count;
+   const string payload =
+      StringFormat("{\"month_key\":%d,\"eligible\":%d,\"required\":%d,\"missing\":[%s]}",
+                   month_key,
+                   eligible_count,
+                   strategy_min_eligible_symbols,
+                   missing_symbols);
+   if(eligible_count >= strategy_min_eligible_symbols)
+      QM_LogEvent(QM_INFO, "STRATEGY_DIAG", payload);
+   else
+      QM_LogEvent(QM_WARN, "STRATEGY_DIAG", payload);
   }
 
 double Strategy_Mean(const double &values[], const bool &eligible[])
@@ -196,18 +284,24 @@ int Strategy_BuildScores(double &scores[], bool &eligible[])
    ArrayResize(eligible, STRATEGY_SYMBOL_COUNT);
 
    int eligible_count = 0;
+   string missing_symbols = "";
    for(int i = 0; i < STRATEGY_SYMBOL_COUNT; ++i)
      {
       momentum[i] = 0.0;
       value[i] = 0.0;
       scores[i] = 0.0;
       eligible[i] = false;
-      if(!Strategy_RawSignals(g_strategy_symbols[i], momentum[i], value[i]))
+      int available_bars = 0;
+      if(!Strategy_RawSignals(g_strategy_symbols[i], momentum[i], value[i], available_bars))
+        {
+         Strategy_AppendMissingSymbol(missing_symbols, g_strategy_symbols[i]);
          continue;
+        }
       eligible[i] = true;
       eligible_count++;
      }
 
+   Strategy_LogScoreReadiness(eligible_count, missing_symbols);
    if(eligible_count < strategy_min_eligible_symbols)
       return eligible_count;
 
@@ -268,7 +362,21 @@ bool Strategy_IsSelectedTopScore()
       return false;
 
    const int rank = Strategy_DescendingRank(symbol_slot, scores, eligible);
-   return (rank <= selected_n);
+   const bool selected = (rank <= selected_n);
+   const int month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   if(month_key != g_last_selection_month_key)
+     {
+      g_last_selection_month_key = month_key;
+      QM_LogEvent(QM_INFO,
+                  "STRATEGY_STATE",
+                  StringFormat("{\"month_key\":%d,\"symbol\":\"%s\",\"eligible\":%d,\"rank\":%d,\"selected\":%s}",
+                               month_key,
+                               QM_LoggerEscapeJson(_Symbol),
+                               eligible_count,
+                               rank,
+                               selected ? "true" : "false"));
+     }
+   return selected;
   }
 
 bool Strategy_NoTradeFilter()
@@ -332,6 +440,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.sl <= 0.0 || req.sl >= entry_price)
       return false;
 
+   QM_LogEvent(QM_INFO,
+               "ENTRY_SIGNAL_FIRE",
+               StringFormat("{\"month_key\":%d,\"symbol\":\"%s\",\"slot\":%d}",
+                            month_key,
+                            QM_LoggerEscapeJson(_Symbol),
+                            qm_magic_slot_offset));
    g_last_entry_month_key = month_key;
    return true;
   }
@@ -388,6 +502,26 @@ int OnInit()
                            20;
    QM_BasketWarmupHistory(g_strategy_symbols, PERIOD_D1, warmup_bars);
    QM_BasketWarmupHistory(g_strategy_symbols, PERIOD_M30, 96);
+
+   string missing_symbols = "";
+   const int ready_count = Strategy_HistoryReadyCount(missing_symbols);
+   QM_LogEvent(QM_INFO,
+               "STRATEGY_DIAG",
+               StringFormat("{\"ready\":%d,\"required\":%d,\"required_bars\":%d,\"missing\":[%s]}",
+                            ready_count,
+                            strategy_min_eligible_symbols,
+                            Strategy_RequiredD1Bars(),
+                            missing_symbols));
+   if(ready_count < strategy_min_eligible_symbols)
+     {
+      QM_LogEvent(QM_ERROR,
+                  "SETUP_DATA_MISSING",
+                  StringFormat("{\"component\":\"basket_d1_history\",\"ready\":%d,\"required\":%d,\"missing\":[%s]}",
+                               ready_count,
+                               strategy_min_eligible_symbols,
+                               missing_symbols));
+      return INIT_FAILED;
+     }
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12919\",\"ea\":\"amp-value-momentum-xasset\"}");
    return INIT_SUCCEEDED;
