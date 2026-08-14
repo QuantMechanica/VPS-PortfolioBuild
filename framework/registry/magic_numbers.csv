@@ -16005,3 +16005,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 21516,wti-decoup-trend,0,XTIUSD.DWX,215160000,2026-08-14,Research+Development,active
 21517,xauxag-seas-rv,0,XAUUSD.DWX,215170000,2026-08-14,Research+Development,active
 21517,xauxag-seas-rv,1,XAGUSD.DWX,215170001,2026-08-14,Research+Development,active
+21518,wti-brent-cfm,0,XTIUSD.DWX,215180000,2026-08-14,Research+Development,active

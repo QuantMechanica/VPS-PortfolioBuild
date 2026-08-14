@@ -1,0 +1,124 @@
+{
+  "task_id": "manual-codex-2026-08-14-wti-brent-cfm",
+  "ea_id": "QM5_21518",
+  "slug": "wti-brent-cfm",
+  "strategy": "WTI twelve-month time-series trend with same-sign Brent benchmark confirmation",
+  "strategy_id": "MOP-CME-WTI-BRENT-CFM-2026_S01",
+  "source_id": "MOP-CME-WTI-BRENT-CFM-2026",
+  "source_links": [
+    "https://doi.org/10.1016/j.jfineco.2011.11.003",
+    "https://www.aqr.com/Insights/Research/Journal-Article/Time-Series-Momentum",
+    "https://www.cmegroup.com/markets/energy/crude-oil/wti-brent-ice-calendar-swap-futures.html",
+    "https://www.ice.com/products/1242/Brent-WTI-Futures-Spread/data",
+    "https://www.eia.gov/todayinenergy/detail.php?id=67424"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "XBRUSD.DWX"
+  ],
+  "traded_symbol": "XTIUSD.DWX",
+  "read_only_symbol": "XBRUSD.DWX",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_21518_wti-brent-cfm",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21518_wti-brent-cfm\\QM5_21518_wti-brent-cfm.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21518_wti-brent-cfm\\QM5_21518_wti-brent-cfm.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21518_wti-brent-cfm\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\wti-brent-cfm_card.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\MOP-CME-WTI-BRENT-CFM-2026\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_21518_wti-brent-cfm\\sets\\QM5_21518_wti-brent-cfm_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "c268ba50fb6bce0e1dd719e144dfa2ab7102ad1a27820c3cb77193797e3bcc07",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 215180000,
+        "registry_status": "active"
+      }
+    ],
+    "read_only_companion_has_magic": false
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_21518_wti-brent-cfm/QM5_21518_wti-brent-cfm.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260814_072443\\QM5_21518_wti-brent-cfm.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260814_072443\\summary.csv",
+    "ex5_size_bytes": 386472
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_21518_wti-brent-cfm -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260814_073500.json"
+  },
+  "validations": {
+    "card_schema": "PASS (root, approved, EA-doc copies)",
+    "spec_doc": "PASS (1/1)",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS",
+    "reference_tests": "PASS (6/6)",
+    "p1": "PASS",
+    "p1_report_path": "D:\\QM\\reports\\pipeline\\QM5_21518\\P1\\P1_QM5_21518_result.json",
+    "dedup": "CLEAN_AUTHORIZED_WTI_BRENT_BENCHMARK_CONFIRMED_TREND"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "baee9255-3daf-4a85-b300-07a4f57ac0cf",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21518_wti-brent-cfm\\sets\\QM5_21518_wti-brent-cfm_XTIUSD.DWX_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "created_at_utc": "2026-08-14T07:27:21+00:00",
+    "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
+    "priority_track": true
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "No manual MT5 backtest was launched; the paced Q02 fleet owns the first tester run.",
+  "cpu_ceiling_check": {
+    "checked_at_utc": "2026-08-14T07:30:23+00:00",
+    "factory_terminals_active": 2,
+    "factory_terminals_total": 10,
+    "running_factory_terminals": [
+      "T3",
+      "T5"
+    ],
+    "terminal64_running_count_including_non_factory": 4,
+    "ceiling_hit": false
+  },
+  "non_duplicate_reason": "This EA trades WTI outright only when independently reconstructed synchronized twelve-month WTI and Brent own-return signs strictly agree. Existing WTI-Brent sleeves form and trade spread states; unconditional WTI trend never reads Brent; Brent trend sleeves order Brent; and other WTI confirmation sleeves use WTI-only horizons or daily technical state.",
+  "source_access_note": "The governed composite packet is bounded to already approved repository reviews of the complete MOP paper and CME/ICE/EIA benchmark materials. MOP supports own-return time-series momentum and WTI membership; the benchmark materials support WTI and Brent as linked but distinct crude benchmarks. The exact same-sign filter, synchronized CFD endpoint construction, WTI-only carrier, risk contract, and performance expectations are falsifiable QM choices rather than source claims.",
+  "registry_validation_note": "Targeted EA-ID/magic/build guardrails passed. The repository-wide registry validator still reports unrelated pre-existing legacy-row and duplicate-magic debt; no such finding references QM5_21518.",
+  "hashes": {
+    "mq5_sha256": "d53de404af5459d550a637fa287d8adac6ca00af8e1f681b51dfd2d8fc7b5401",
+    "ex5_sha256": "256fb2ee38024739bd7b68432925eeb054ab6bf21d1720a564e20e98df749a08",
+    "setfile_sha256": "de83c04619f3ef565153536c34c3d778207f440628e0f7e4a45207b28b3ee118",
+    "card_sha256": "e181a26faaf87369816a7d4b59c6af04af8be26a45ef892dd4dd3042c17e6a0d",
+    "source_sha256": "6603e88e0118ad312acb39891425f00d912281cb70456fd6da927c1e3f3a85fd"
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_manifest_touched": false
+  }
+}
