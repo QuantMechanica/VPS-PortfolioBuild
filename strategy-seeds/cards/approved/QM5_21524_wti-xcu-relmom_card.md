@@ -71,9 +71,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: PENDING
 review_focus: "Falsify a monthly energy-versus-industrial-metal relative-momentum package designed to remove common commodity direction; Q09 alone may establish realized decorrelation from the XAU/SP500/NDX/XNG book."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -330,7 +330,7 @@ change; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-14 | initial WTI/copper twelve-month cross-sectional momentum package | G0 | APPROVED; build pending |
-| v2 | 2026-08-14 | implement synchronized relative-rank basket and atomic lifecycle | Q01 | PASS; Q02 not enqueued |
+| v2 | 2026-08-14 | implement synchronized relative-rank basket and atomic lifecycle | Q02 | Q01 PASS; Q02 enqueued |
 
 ## Pipeline Phase Status
 
@@ -338,4 +338,4 @@ change; or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-14 | APPROVED; R1-R4 PASS | `decisions/2026-08-14_qm5_21524_wti_xcu_relmom_g0.md`; governed composite source packet |
 | Q01 Build Validation | 2026-08-14 | PASS | strict compile 0/0; build check 0/0; nine reference tests; P1 artifact PASS |
-| Q02 Baseline Screening | — | NOT ENQUEUED | — |
+| Q02 Baseline Screening | 2026-08-14 | ENQUEUED; pending | work item `7ff04187-385e-4b3d-9064-7348b50b3733`; no tester dispatched by this build |
