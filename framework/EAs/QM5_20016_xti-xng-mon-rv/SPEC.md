@@ -4,7 +4,7 @@
 **Slug:** `xti-xng-mon-rv`  
 **Source:** `TGIF-WTI-WEEKEND-2017` (see `strategy-seeds/sources/TGIF-WTI-WEEKEND-2017/`)  
 **Author of this spec:** Codex  
-**Last revised:** 2026-07-20
+**Last revised:** 2026-08-14
 
 ## 1. Strategy Logic
 
@@ -99,3 +99,4 @@ it does not authorize a live preset or deployment action.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-20 | Initial build from card | task `45b03eb8-039c-4f1e-a6df-2b2a3a50ea8c` |
+| v1.1 | 2026-08-14 | Same-lineage zero-trade implementation repair | Broker-calendar Monday now uses the genuine primed D1 new-bar tick; session-labelled bars remain synchronization anchors. |

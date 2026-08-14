@@ -161,6 +161,44 @@ bool Strategy_SymbolReady(const string symbol)
            Strategy_SpreadAllowed(symbol));
   }
 
+bool Strategy_D1HistoryReady(const string symbol,
+                             const datetime expected_bar)
+  {
+   MqlRates current_bar;
+   MqlRates completed_bar;
+   ZeroMemory(current_bar);
+   ZeroMemory(completed_bar);
+   if(expected_bar <= 0 ||
+      !QM_ReadBar(symbol, PERIOD_D1, 0, current_bar) ||
+      !QM_ReadBar(symbol, PERIOD_D1, 1, completed_bar))
+      return false;
+   if(current_bar.time != expected_bar || completed_bar.time <= 0 ||
+      current_bar.time <= completed_bar.time)
+      return false;
+   return ((long)(current_bar.time - completed_bar.time) <= 3L * 86400L);
+  }
+
+datetime Strategy_CurrentD1BarTime(const string symbol)
+  {
+   MqlRates current_bar;
+   ZeroMemory(current_bar);
+   if(!QM_ReadBar(symbol, PERIOD_D1, 0, current_bar))
+      return 0;
+   return current_bar.time;
+  }
+
+void Strategy_LogEntryDecision(const string event_name,
+                               const string reason,
+                               const datetime broker_now)
+  {
+   QM_LogEvent(QM_INFO, event_name,
+               StringFormat("{\"reason\":\"%s\",\"broker_day_key\":%d,"
+                            "\"host_bar_time\":%I64d}",
+                            reason,
+                            Strategy_DayKey(broker_now),
+                            (long)g_current_host_bar));
+  }
+
 int Strategy_OpenOwnedPositionCount()
   {
    int count = 0;
@@ -481,15 +519,35 @@ bool Strategy_OpenPair()
    double xti_stop = 0.0;
    double xng_stop = 0.0;
    if(!Strategy_PreparePackage(xti_lots, xng_lots, xti_stop, xng_stop))
+     {
+      Strategy_LogEntryDecision("ENTRY_REJECTED",
+                                "package_geometry_invalid", TimeCurrent());
       return false;
+     }
    if(!Strategy_OpenLeg(g_leg_xti, QM_SELL, xti_lots, xti_stop))
+     {
+      Strategy_LogEntryDecision("ENTRY_REJECTED",
+                                "host_leg_rejected", TimeCurrent());
       return false;
+     }
    if(Strategy_OpenLeg(g_leg_xng, QM_BUY, xng_lots, xng_stop) &&
       Strategy_PairCompositionValid() && Strategy_PairNotionalValid())
      {
       g_pair_entry_time = Strategy_CurrentPairEntryTime();
-      return (g_pair_entry_time > 0);
+      if(g_pair_entry_time <= 0)
+        {
+         Strategy_LogEntryDecision("ENTRY_REJECTED",
+                                   "pair_entry_time_missing", TimeCurrent());
+         Strategy_CloseAllOwned(QM_EXIT_STRATEGY);
+         return false;
+        }
+      Strategy_LogEntryDecision("ENTRY_ACCEPTED",
+                                "paired_package_open", TimeCurrent());
+      return true;
      }
+   Strategy_LogEntryDecision("ENTRY_REJECTED",
+                             "foreign_leg_or_pair_invariant_failed",
+                             TimeCurrent());
    Strategy_CloseAllOwned(QM_EXIT_STRATEGY);
    return false;
   }
@@ -499,23 +557,42 @@ bool Strategy_NoTradeFilter()
    return (!Strategy_IsHostChart() || !Strategy_InputsValid());
   }
 
-bool Strategy_EntryWindowReady()
+bool Strategy_EntryWindowReady(const datetime broker_now)
   {
    if(!g_is_new_bar || g_current_host_bar <= 0 ||
-      Strategy_DayOfWeek(g_current_host_bar) != strategy_entry_dow ||
-      Strategy_OpenOwnedPositionCount() > 0)
+      Strategy_DayOfWeek(broker_now) != strategy_entry_dow)
       return false;
-   const long opening_delay = (long)(TimeCurrent() - g_current_host_bar);
-   if(opening_delay < 0 ||
-      opening_delay > (long)strategy_entry_grace_minutes * 60)
+   Strategy_LogEntryDecision("ENTRY_ATTEMPT",
+                             "broker_monday_new_d1_bar", broker_now);
+   if(Strategy_OpenOwnedPositionCount() > 0)
+     {
+      Strategy_LogEntryDecision("ENTRY_REJECTED",
+                                "owned_position_exists", broker_now);
       return false;
-   const datetime xng_bar = iTime(g_leg_xng, PERIOD_D1, 0); // perf-allowed: new-bar synchronized-basket gate.
-   if(xng_bar <= 0 || xng_bar != g_current_host_bar)
+     }
+   // Darwinex energy D1 bars are session-labelled with the prior calendar
+   // date. QM_IsNewBar() supplies the genuine first tradable session tick;
+   // the bar labels remain alignment/history anchors only.
+   if(!Strategy_D1HistoryReady(g_leg_xti, g_current_host_bar) ||
+      !Strategy_D1HistoryReady(g_leg_xng, g_current_host_bar))
+     {
+      Strategy_LogEntryDecision("ENTRY_REJECTED",
+                                "d1_history_not_synchronized", broker_now);
       return false;
-   const int day_key = Strategy_DayKey(g_current_host_bar);
-   if(day_key <= 0 || Strategy_DayAlreadyEntered(day_key, g_current_host_bar) ||
-      !Strategy_SymbolReady(g_leg_xti) || !Strategy_SymbolReady(g_leg_xng))
+     }
+   const int day_key = Strategy_DayKey(broker_now);
+   if(day_key <= 0 || Strategy_DayAlreadyEntered(day_key, broker_now))
+     {
+      Strategy_LogEntryDecision("ENTRY_REJECTED",
+                                "broker_day_already_consumed", broker_now);
       return false;
+     }
+   if(!Strategy_SymbolReady(g_leg_xti) || !Strategy_SymbolReady(g_leg_xng))
+     {
+      Strategy_LogEntryDecision("ENTRY_REJECTED",
+                                "symbol_or_spread_not_ready", broker_now);
+      return false;
+     }
    g_signal_day_key = day_key;
    return true;
   }
@@ -532,6 +609,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &request)
    if(!g_entry_ready || g_signal_day_key <= 0 ||
       Strategy_OpenOwnedPositionCount() > 0)
       return false;
+   Strategy_LogEntryDecision("ENTRY_SIGNAL_FIRE",
+                             "sell_xti_buy_xng", TimeCurrent());
    Strategy_OpenPair();
    return false;
   }
@@ -614,8 +693,13 @@ int OnInit()
    string basket_symbols[2] = {g_leg_xti, g_leg_xng};
    QM_SymbolGuardInit(basket_symbols);
    QM_BasketWarmupHistory(basket_symbols, PERIOD_D1, 80);
-   g_current_host_bar = iTime(g_leg_xti, PERIOD_D1, 0); // perf-allowed: restart state anchor.
-   Strategy_LoadAttemptState(g_current_host_bar);
+   g_current_host_bar = Strategy_CurrentD1BarTime(g_leg_xti);
+   if(g_current_host_bar <= 0)
+      return INIT_FAILED;
+   // Prime the shared tracker so a mid-session attach cannot synthesize a
+   // new-bar edge and bypass the locked five-minute opening grace.
+   QM_IsNewBar();
+   Strategy_LoadAttemptState(TimeCurrent());
    g_pair_entry_time = Strategy_CurrentPairEntryTime();
    QM_LogEvent(QM_INFO, "INIT_OK",
                "{\"card\":\"QM5_20016\",\"ea\":\"xti-xng-mon-rv\"}");
@@ -644,22 +728,30 @@ void OnTick()
    if(g_is_new_bar)
      {
       QM_EquityStreamOnNewBar();
-      g_current_host_bar = iTime(g_leg_xti, PERIOD_D1, 0); // perf-allowed: new-bar lifecycle and entry anchor.
+      g_current_host_bar = Strategy_CurrentD1BarTime(g_leg_xti);
      }
 
    // Repair and lifecycle exits always precede entry filters and news gates.
    Strategy_ManageOpenPosition();
    if(Strategy_OpenOwnedPositionCount() > 0 || Strategy_NoTradeFilter())
       return;
-   if(!Strategy_EntryWindowReady())
+   if(!Strategy_EntryWindowReady(broker_now))
       return;
 
    // Consume this broker Monday before news or order submission. A restart,
    // news block, rejection, or repaired partial package cannot retry today.
    if(!Strategy_RecordAttemptState(g_signal_day_key))
+     {
+      Strategy_LogEntryDecision("ENTRY_REJECTED",
+                                "attempt_state_persist_failed", broker_now);
       return;
+     }
    if(Strategy_NewsFilterHook(broker_now))
+     {
+      Strategy_LogEntryDecision("ENTRY_REJECTED",
+                                "news_policy_blocked", broker_now);
       return;
+     }
 
    g_entry_ready = true;
    QM_EntryRequest request;

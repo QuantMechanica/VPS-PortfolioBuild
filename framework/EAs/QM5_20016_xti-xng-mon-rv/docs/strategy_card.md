@@ -38,10 +38,14 @@ expected_pf: 1.01
 expected_dd_pct: 20.0
 risk_class: high
 ml_required: false
-r1_track_record: TIER_B
+r1_track_record: PASS
+r1_reasoning: "Single source_id (TGIF-WTI-WEEKEND-2017) with a complete peer-reviewed, DOI-bearing journal article as the sole attribution; R1 is source-agnostic on author repute and only requires one traceable source, which is satisfied."
 r2_mechanical: PASS
+r2_reasoning: "Entry/exit/sizing/repair rules are fully coded (locked weekday, fixed directions, joint ATR-stop lot solve, next-D1 close, stale-hold close, malformed-package repair) with no discretionary judgment."
 r3_data_available: PASS
+r3_reasoning: "Both legs (XTIUSD.DWX, XNGUSD.DWX) are canonical-name-verified in dwx_symbol_matrix.csv and already backtested at D1 across numerous existing EAs (e.g. QM5_20015, QM5_20014, QM5_13203)."
 r4_ml_forbidden: PASS
+r4_reasoning: "Stops are fixed ATR(20) multiples derived only from price history, no ML/adaptive-fit/online-learning component, and the two-magic package is explicitly bounded (no grid, martingale, or pyramiding)."
 pipeline_phase: Q01
 q01_status: PENDING
 q02_status: NOT_QUEUED
