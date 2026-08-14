@@ -1,0 +1,10 @@
+{
+  "status": "PERMISSION_REQUIRED",
+  "adapter": "generic",
+  "url": "https://www.cmegroup.com/articles/2024/through-the-lens-of-gold.html",
+  "retrieved_at": null,
+  "lead_status": "DEFERRED:SOURCE_POLICY",
+  "reason": "generic runtime retrieval is disabled until a cryptographic OWNER authorization verifier exists",
+  "adapter_state": "ROUTER_ONLY",
+  "next_action": "review the source policy and defer the lead"
+}
