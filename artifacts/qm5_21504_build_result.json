@@ -22,7 +22,7 @@
   "setfiles_generated": [
     "C:\\QM\\repo\\framework\\EAs\\QM5_21504_xng-flowrev\\sets\\QM5_21504_xng-flowrev_XNGUSD.DWX_D1_backtest.set"
   ],
-  "setfile_build_hash": "0a8141b1252d6d191d9b690f1bd9d822fda78855573578dd8682dfc2687a0a4b",
+  "setfile_build_hash": "e77e2a0b3cb7eab48069f1f55d389efc24b0ba2a362b055c0fec604f1554cbd3",
   "risk_mode": {
     "RISK_FIXED": 1000,
     "RISK_PERCENT": 0,
@@ -46,15 +46,16 @@
     "result": "COMPILED",
     "errors": 0,
     "warnings": 0,
-    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260814_025900\\QM5_21504_xng-flowrev.compile.log",
-    "ex5_size_bytes": 377854
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260814_031455\\QM5_21504_xng-flowrev.compile.log",
+    "ex5_size_bytes": 378260,
+    "isolation_note": "Final compile used a detached worktree whose resolver contained only the committed QM5_21504 registry delta; concurrent QM5_21001 work was excluded. The log was copied to the canonical ignored compile-evidence directory."
   },
   "build_check": {
     "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_21504_xng-flowrev -Strict -SkipCompile",
     "result": "PASS",
     "failures": 0,
     "warnings": 0,
-    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260814_025929.json"
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260814_031557.json"
   },
   "validations": {
     "card_schema": "PASS",
@@ -91,8 +92,8 @@
   "source_access_note": "The governed packet contains metadata and accessible abstract/methodology summaries. Full-text retrieval was deferred by source policy; tick volume is explicitly a falsifiable proxy, not the paper's position-flow signal.",
   "hashes": {
     "mq5_sha256": "BA2AB43C31AF15C39EC638C1B0C0468A39F7BD8F61C1E4B52D986952863B6319",
-    "ex5_sha256": "8F70765B45403F7B0096D5106CCD2201AFF9413D36C3F4980EF023E20CA8F16C",
-    "setfile_sha256": "B1C063121F8D4A2144C90ADDCA6C9BF8403FB9A3A0A7BB90359FC7CBCCAADB82"
+    "ex5_sha256": "993AA33A25771E57D5CAC127E90D31C2E59300FEFEBFA83044C004E38992C1B7",
+    "setfile_sha256": "5A04C37A47C31FE7504F16C7D8363823B05E228C0C55D31D20A2AB4374481493"
   },
   "live_safety": {
     "t_live_touched": false,

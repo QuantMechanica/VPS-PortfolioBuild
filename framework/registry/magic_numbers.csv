@@ -16000,3 +16000,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1537,aa-vol-sma10,34,USDCAD.DWX,15370034,2026-08-13,Claude,active
 1537,aa-vol-sma10,35,USDCHF.DWX,15370035,2026-08-13,Claude,active
 1537,aa-vol-sma10,36,USDJPY.DWX,15370036,2026-08-13,Claude,active
+21504,xng-flowrev,0,XNGUSD.DWX,215040000,2026-08-14,Codex,active

@@ -82,15 +82,17 @@ Registry allocation:
   `python tools/strategy_farm/compile_ea.py --ea-label QM5_21504_xng-flowrev --force --json --fail-on-error`
   - Result: COMPILED, 0 errors, 0 warnings.
   - Log:
-    `C:\QM\repo\framework\build\compile\20260814_025900\QM5_21504_xng-flowrev.compile.log`
-  - EX5 size: 377854 bytes.
+    `C:\QM\repo\framework\build\compile\20260814_031455\QM5_21504_xng-flowrev.compile.log`
+  - EX5 size: 378260 bytes.
+  - The final compile used a detached worktree containing only the committed
+    `QM5_21504` registry delta, excluding a concurrent unrelated registry edit.
 - Framework check:
   `framework/scripts/build_check.ps1 -EALabel QM5_21504_xng-flowrev -Strict -SkipCompile`
   - Result: PASS, 0 failures, 0 warnings.
   - Report:
-    `D:\QM\reports\framework\21\build_check_20260814_025929.json`.
+    `D:\QM\reports\framework\21\build_check_20260814_031557.json`.
 - EX5 SHA-256:
-  `8F70765B45403F7B0096D5106CCD2201AFF9413D36C3F4980EF023E20CA8F16C`.
+  `993AA33A25771E57D5CAC127E90D31C2E59300FEFEBFA83044C004E38992C1B7`.
 
 ## Q02 queue
 
