@@ -40,6 +40,22 @@ _JOB_OBJECT_EXTENDED_LIMIT_INFORMATION_CLASS = 9
 _JOB_OBJECT_QUERY = 0x0004
 _JOB_OBJECT_TERMINATE = 0x0008
 _SYNCHRONIZE = 0x00100000
+# Orchestration scheduled tasks spawn supervisors as SYSTEM while the reaper
+# (codex_fleet_pacer / Factory_OFF managed drain) runs as the interactive
+# admin. A job created with the SYSTEM token's default DACL is unopenable
+# cross-identity (OpenJobObjectW error 5 blocked every OFF drain on
+# 2026-08-14), so every job is created with an explicit DACL granting SYSTEM
+# and BUILTIN\Administrators full access.
+_JOB_SECURITY_SDDL = "D:(A;;GA;;;SY)(A;;GA;;;BA)"
+_SDDL_REVISION_1 = 1
+
+
+class _SECURITY_ATTRIBUTES(ctypes.Structure):
+    _fields_ = [
+        ("nLength", wintypes.DWORD),
+        ("lpSecurityDescriptor", ctypes.c_void_p),
+        ("bInheritHandle", wintypes.BOOL),
+    ]
 
 
 class _JOBOBJECT_BASIC_LIMIT_INFORMATION(ctypes.Structure):
@@ -100,6 +116,34 @@ def _windows_kernel32() -> Any:
     return ctypes.WinDLL("kernel32", use_last_error=True)
 
 
+def _build_job_security_descriptor() -> ctypes.c_void_p:
+    """Self-relative security descriptor for cross-identity job control.
+
+    The caller owns the returned LocalAlloc'd pointer and must LocalFree it
+    after CreateJobObjectW returns (the kernel copies the descriptor).
+    """
+
+    advapi32 = ctypes.WinDLL("advapi32", use_last_error=True)
+    advapi32.ConvertStringSecurityDescriptorToSecurityDescriptorW.argtypes = [
+        wintypes.LPCWSTR,
+        wintypes.DWORD,
+        ctypes.POINTER(ctypes.c_void_p),
+        ctypes.POINTER(wintypes.ULONG),
+    ]
+    advapi32.ConvertStringSecurityDescriptorToSecurityDescriptorW.restype = (
+        wintypes.BOOL
+    )
+    descriptor = ctypes.c_void_p()
+    if not advapi32.ConvertStringSecurityDescriptorToSecurityDescriptorW(
+        _JOB_SECURITY_SDDL, _SDDL_REVISION_1, ctypes.byref(descriptor), None
+    ):
+        raise OSError(
+            ctypes.get_last_error(),
+            f"job security descriptor build failed for {_JOB_SECURITY_SDDL!r}",
+        )
+    return descriptor
+
+
 def _create_windows_job(job_name: str) -> int:
     """Create a unique named Job Object with kill-on-last-handle-close."""
 
@@ -115,10 +159,22 @@ def _create_windows_job(job_name: str) -> int:
     kernel32.SetInformationJobObject.restype = wintypes.BOOL
     kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
     kernel32.CloseHandle.restype = wintypes.BOOL
+    kernel32.LocalFree.argtypes = [ctypes.c_void_p]
+    kernel32.LocalFree.restype = ctypes.c_void_p
 
-    ctypes.set_last_error(0)
-    handle = kernel32.CreateJobObjectW(None, str(job_name))
-    create_error = ctypes.get_last_error()
+    descriptor = _build_job_security_descriptor()
+    attributes = _SECURITY_ATTRIBUTES()
+    attributes.nLength = ctypes.sizeof(_SECURITY_ATTRIBUTES)
+    attributes.lpSecurityDescriptor = descriptor
+    attributes.bInheritHandle = False
+    try:
+        ctypes.set_last_error(0)
+        handle = kernel32.CreateJobObjectW(
+            ctypes.byref(attributes), str(job_name)
+        )
+        create_error = ctypes.get_last_error()
+    finally:
+        kernel32.LocalFree(descriptor)
     if not handle:
         raise OSError(create_error, f"CreateJobObjectW({job_name!r}) failed")
     if create_error == 183:  # ERROR_ALREADY_EXISTS
