@@ -2738,6 +2738,74 @@ def _work_item_ownership(root: Path, item_id: str, terminal: str) -> dict[str, A
     return {"owned": True, "status": status, "claimed_by": claimed_by}
 
 
+def _finish_harness_work_item(
+    conn: sqlite3.Connection,
+    item: sqlite3.Row,
+    payload: dict[str, Any],
+    exit_code: int | None,
+    now: str,
+    item_id: str,
+) -> dict[str, Any]:
+    """Finish a kind='harness' work_item.
+
+    A harness never trades, so the generic summary.json / min-trades verdict
+    pipeline does not apply (there is no summary.json -- OnTester returns a
+    flat 0.0 and the tester report is discarded). Success means run_smoke
+    exited cleanly AND the runner's own verdict CSV was collected out of the
+    shared MT5 Common\\Files folder without weakening the staleness guard.
+    """
+    payload["run_smoke_exit_code"] = exit_code
+    harness_type = str(payload.get("harness_type") or "")
+    verdict = "HARNESS_FAIL"
+    reason = "unknown_harness_type"
+    collection: dict[str, Any] | None = None
+    if harness_type == "pattern_permission_fixture":
+        from framework.scripts import collect_pattern_fixture_harness_results as _collector
+
+        source_csv = Path(str(payload.get("results_csv_path") or ""))
+        bundle_csv = Path(str(payload.get("bundle_csv_path") or _collector.DEFAULT_BUNDLE_CSV))
+        try:
+            collection = _collector.collect_results(
+                source_csv=source_csv, bundle_csv=bundle_csv, dest_csv=_collector.DEFAULT_DEST_CSV,
+            )
+            report_root = payload.get("report_root")
+            if report_root:
+                collection["journal_purged"] = _collector.purge_report_root_journal(Path(report_root))
+            if exit_code not in (0, None):
+                verdict, reason = "HARNESS_FAIL", f"run_smoke_exit_code_{exit_code}"
+            else:
+                verdict, reason = "HARNESS_OK", "collected"
+        except FileNotFoundError as exc:
+            reason = f"results_missing:{exc}"
+        except _collector.StaleResultsError as exc:
+            reason = f"stale_results:{exc}"
+        except Exception as exc:  # never crash the poll loop on a harness item
+            reason = f"collection_error:{exc!r}"
+    else:
+        reason = f"unknown_harness_type:{harness_type}"
+    payload["harness_verdict_reason"] = reason
+    if collection is not None:
+        payload["harness_collection"] = collection
+    conn.execute(
+        """
+        UPDATE work_items
+        SET status='done', verdict=?, evidence_path=?, claimed_by=NULL,
+            payload_json=?, updated_at=?
+        WHERE id=?
+        """,
+        (
+            verdict,
+            (collection or {}).get("dest_csv"),
+            json.dumps(payload, sort_keys=True),
+            now,
+            item_id,
+        ),
+    )
+    conn.commit()
+    return {"finished": True, "status": "done", "verdict": verdict, "reason": reason,
+            "aggregate": None}
+
+
 def _finish_work_item(
     root: Path,
     item_id: str,
@@ -2753,6 +2821,8 @@ def _finish_work_item(
             payload = _json_loads(item["payload_json"])
             if runtime_payload_updates:
                 payload.update(runtime_payload_updates)
+            if item["kind"] == farmctl.HARNESS_WORK_ITEM_KIND:
+                return _finish_harness_work_item(conn, item, payload, exit_code, now, item_id)
             summary_data = _find_work_item_summary_data(item, payload)
             if summary_data and not _q09_sidecar_matches(
                 root, item, summary_data[0], summary_data[1]

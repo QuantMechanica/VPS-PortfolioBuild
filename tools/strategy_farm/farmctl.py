@@ -271,6 +271,24 @@ REAL_PHASE_RUNNER_PHASES = (
     "Q04", "Q05", "Q06", "Q07", "Q08", "Q09_NEWS", "Q09_PORTFOLIO", "Q10",
     "P5", "P5b", "P5c", "P6", "P7", "P8",
 )
+# 2026-08-14 — MQL5 test-harness work-item class (task 50d5752c-daf2). A
+# 'harness' work_item never trades: it runs a history-free test EA (e.g. the
+# pattern-permission fixture runner) through the SAME claim -> Custom-history
+# privatize -> real tester path a backtest uses, so the Custom-history
+# isolation gate (custom_history_smoke_admission.py) is satisfied honestly
+# instead of being hand-fed a forged QM_WORK_ITEM_ID. See
+# docs/ops/evidence/2026-08-13_fixture_runner_execution_route.md.
+HARNESS_WORK_ITEM_KIND = "harness"
+HARNESS_PP_FIXTURE_PHASE = "HARNESS_PP_FIXTURE"
+HARNESS_PP_FIXTURE_EA_ID = "QM_PP_FIXTURE_HARNESS"
+HARNESS_PP_FIXTURE_EA_LABEL = "QM_pattern_permission_fixture_runner"
+HARNESS_PP_FIXTURE_SOURCE_DIR = REPO_ROOT / "framework" / "tests"
+# The factory terminals (T1-T10) always run as Administrator; the shared
+# MQL5 FILE_COMMON root every other consumer in this codebase hardcodes
+# (analyze_ftmo_costs.py, health.py, repair.py, isolated_work_item_runner.py, ...).
+COMMON_FILES_ROOT = Path(
+    r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files"
+)
 Q09_PORTFOLIO_MIN_TRADES = 20
 Q09_NEWS_SUCCESS_VERDICTS = frozenset({"CONFIG_LOCKED"})
 Q08_NEIGHBORHOOD_MAX_PARAMS = 2
@@ -5074,6 +5092,197 @@ def _worker_staged_ex5_spawn_failure(
     return None
 
 
+def enqueue_pattern_fixture_harness(
+    root: Path,
+    *,
+    symbol: str = "EURUSD.DWX",
+    period: str = "D1",
+    year: int = 2024,
+    from_date: str = "2024.01.02",
+    to_date: str = "2024.01.10",
+    timeout_seconds: int = 600,
+) -> dict[str, Any]:
+    """Enqueue a kind='harness' work_item that runs the pattern-permission
+    fixture suite (framework/tests/QM_pattern_permission_fixture_runner.ex5)
+    through the real claim -> Custom-history-privatize -> tester path.
+
+    `symbol` must be one covered by the live Custom-history isolation
+    manifest (D:\\QM\\strategy_farm\\state\\custom_history_isolation_activation.json
+    -> manifest_path) so privatization runs for real and the isolation gate
+    reports PASS_ISOLATED honestly rather than being skipped. EURUSD.DWX is
+    covered as of 2026-08-14.
+    """
+    import shutil as _shutil
+
+    ex5_path = HARNESS_PP_FIXTURE_SOURCE_DIR / f"{HARNESS_PP_FIXTURE_EA_LABEL}.ex5"
+    if not ex5_path.is_file():
+        raise SystemExit(
+            f"fixture harness .ex5 missing: {ex5_path} (compile it first: "
+            f"compile_ea.py or compile_one against the .mq5 in the same dir)"
+        )
+    repo_bundle_csv = (
+        REPO_ROOT / "framework" / "tests" / "fixtures" / "pattern_permission"
+        / "_bundle" / "pattern_fixtures.csv"
+    )
+    if not repo_bundle_csv.is_file():
+        raise SystemExit(
+            f"repo fixture bundle CSV missing: {repo_bundle_csv} (run "
+            f"framework/scripts/build_pattern_fixture_bundle.py --emit first)"
+        )
+    # Deploy: push the repo's canonical bundle into the shared MQL5 Common
+    # folder the runner EA actually reads (FILE_COMMON), so this one call is
+    # the whole runbook -- no separate manual copy step. Hardcoded, not
+    # %APPDATA%-derived: the factory terminals always run as Administrator,
+    # but the CALLING process (headless SYSTEM scheduled task, an
+    # interactive RDP session, ...) can have a different profile, silently
+    # writing the bundle somewhere the terminals never read (caught in
+    # dry-run: SYSTEM's profile has an unrelated pattern_fixtures.csv from
+    # some other/older process, same filename, different row count). Every
+    # other Common\\Files consumer in this codebase hardcodes this same path
+    # for the same reason (analyze_ftmo_costs.py, health.py, repair.py, ...).
+    common_files = COMMON_FILES_ROOT
+    bundle_csv = common_files / "QM" / "pattern_fixtures.csv"
+    bundle_csv.parent.mkdir(parents=True, exist_ok=True)
+    _shutil.copyfile(repo_bundle_csv, bundle_csv)
+    init_db(root)
+    now = utc_now()
+    item_id = str(uuid.uuid4())
+    payload = {
+        "harness_type": "pattern_permission_fixture",
+        "harness_ea_label": HARNESS_PP_FIXTURE_EA_LABEL,
+        "harness_source_dir": str(HARNESS_PP_FIXTURE_SOURCE_DIR),
+        "harness_period": period,
+        "harness_year": year,
+        "from_date": from_date,
+        "to_date": to_date,
+        "harness_timeout_seconds": timeout_seconds,
+        "bundle_csv_path": str(bundle_csv),
+        "bundle_csv_sha256": _sha256_file(bundle_csv),
+        "results_csv_path": str(common_files / "QM" / "pattern_fixture_results.csv"),
+    }
+    with connect(root) as conn:
+        conn.execute(
+            "INSERT INTO work_items (id, kind, phase, ea_id, symbol, setfile_path, "
+            "status, attempt_count, payload_json, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, '', 'pending', 0, ?, ?, ?)",
+            (
+                item_id,
+                HARNESS_WORK_ITEM_KIND,
+                HARNESS_PP_FIXTURE_PHASE,
+                HARNESS_PP_FIXTURE_EA_ID,
+                symbol,
+                json.dumps(payload, sort_keys=True),
+                now,
+                now,
+            ),
+        )
+        conn.commit()
+    return {"enqueued": True, "work_item_id": item_id, "symbol": symbol, "payload": payload}
+
+
+def _spawn_harness_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
+                                            terminal: str) -> dict[str, Any]:
+    """Spawn run_smoke.ps1 for a kind='harness' work_item.
+
+    A harness never trades and needs no EA registry lookup, compile gate, or
+    SHA-bound evidence-identity checks a strategy backtest needs -- but it
+    still goes through the exact same claim -> privatize -> reserve ->
+    tester path, so QM_WORK_ITEM_ID / custom_history_smoke_admission.py stay
+    completely untouched. Only the -Expert deploy step differs: the fixture
+    EA lives under framework/tests/, not framework/EAs/, so it is staged
+    into the terminal's Experts dir here instead of via
+    Deploy-ExpertBinaryToTerminal's framework/EAs/<label> convention.
+    """
+    import shutil as _shutil
+
+    try:
+        item_payload = json.loads(item_row["payload_json"] or "{}")
+    except json.JSONDecodeError:
+        item_payload = {}
+    harness_label = str(item_payload.get("harness_ea_label") or "")
+    harness_source_dir = Path(str(item_payload.get("harness_source_dir") or ""))
+    symbol = item_row["symbol"]
+    period = str(item_payload.get("harness_period") or "D1")
+    from_date = str(item_payload.get("from_date") or "")
+    to_date = str(item_payload.get("to_date") or "")
+    if not harness_label or not harness_source_dir.is_dir():
+        return {"spawned": False, "reason": "harness_payload_incomplete"}
+    source_ex5 = harness_source_dir / f"{harness_label}.ex5"
+    if not source_ex5.is_file():
+        return {"spawned": False, "reason": f"harness ex5 missing: {source_ex5}"}
+
+    dest_dir = Path(r"D:\QM\mt5") / terminal / "MQL5" / "Experts" / "QM"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest_ex5 = dest_dir / f"{harness_label}.ex5"
+    _shutil.copyfile(source_ex5, dest_ex5)
+    expected_ex5_sha256 = _sha256_file(dest_ex5)
+
+    report_root = Path(r"D:\QM\reports\work_items") / item_row["id"]
+    report_root.mkdir(parents=True, exist_ok=True)
+    log_path = root / "logs" / f"work_item_{item_row['id']}.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    cmd = [
+        "pwsh.exe", "-NoProfile", "-File",
+        str(REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"),
+        "-EAId", "0",
+        "-EALabel", harness_label,
+        "-Symbol", symbol,
+        "-Year", str(item_payload.get("harness_year") or 2024),
+        "-Terminal", terminal,
+        "-Expert", f"QM\\{harness_label}",
+        "-Period", period,
+        "-Runs", "1",
+        "-MinTrades", "0",
+        "-Model", "4",
+        "-ReportRoot", str(report_root),
+        "-AllowMissingRealTicksLogMarker",
+        "-TimeoutSeconds", str(item_payload.get("harness_timeout_seconds") or 600),
+        "-ExpectedExpertSha256", expected_ex5_sha256,
+        "-SkipExpertDeploy",
+    ]
+    if from_date:
+        cmd.extend(["-FromDate", from_date])
+    if to_date:
+        cmd.extend(["-ToDate", to_date])
+
+    reap_finished_job_objects()
+    log_fh = open(log_path, "w", encoding="utf-8")
+    creationflags = suspended_runner_creation_flags()
+    env = {**os.environ}
+    env["QM_WORK_ITEM_ID"] = str(item_row["id"])
+    env["QM_WORK_ITEM_TERMINAL"] = str(terminal).upper()
+    proc = subprocess.Popen(
+        cmd,
+        cwd=str(REPO_ROOT),
+        stdout=log_fh,
+        stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL,
+        creationflags=creationflags,
+        close_fds=True,
+        env=env,
+    )
+    try:
+        process_identity = bind_spawned_process_to_kill_job(
+            proc,
+            _capture_spawned_process_identity,
+            process_created_suspended=(sys.platform == "win32"),
+        )
+    finally:
+        log_fh.close()
+    return {
+        "spawned": True,
+        "pid": proc.pid,
+        **process_identity,
+        "log_path": str(log_path),
+        "report_root": str(report_root),
+        "harness_ea_label": harness_label,
+        "expected_expert": f"QM\\{harness_label}",
+        "expected_ex5_sha256": expected_ex5_sha256,
+        "runner_symbol": symbol,
+    }
+
+
 def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
                                     terminal: str) -> dict[str, Any]:
     """Spawn run_smoke.ps1 for one work_item, pinned to a specific terminal.
@@ -5082,6 +5291,8 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     dir are stored in the work_item payload so the next dispatch cycle can
     find the result.
     """
+    if "kind" in item_row.keys() and item_row["kind"] == HARNESS_WORK_ITEM_KIND:
+        return _spawn_harness_run_smoke_for_work_item(root, item_row, terminal)
     ea_id = item_row["ea_id"]  # e.g. QM5_1049
     symbol = item_row["symbol"]
     original_setfile_path = item_row["setfile_path"]
@@ -21645,6 +21856,20 @@ def build_parser() -> argparse.ArgumentParser:
             "candidate-specific Q03"
         ),
     )
+    harness_pp = sub.add_parser(
+        "enqueue-pattern-fixture-harness",
+        help=(
+            "Enqueue the pattern-permission fixture-runner harness through the "
+            "real claim/privatize/tester path (task 50d5752c-daf2)"
+        ),
+    )
+    harness_pp.add_argument("--symbol", default="EURUSD.DWX")
+    harness_pp.add_argument("--period", default="D1")
+    harness_pp.add_argument("--year", type=int, default=2024)
+    harness_pp.add_argument("--from-date", default="2024.01.02")
+    harness_pp.add_argument("--to-date", default="2024.01.10")
+    harness_pp.add_argument("--timeout-seconds", type=int, default=600)
+
     seed_fresh_q02 = sub.add_parser(
         "seed-fresh-q02",
         help=(
@@ -21819,6 +22044,7 @@ _CANONICAL_CHECKOUT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo
 _STATE_MUTATING_COMMANDS = frozenset({
     "init", "pump", "repair", "dispatch-tick", "tick", "backfill-work-items",
     "enqueue-backtest", "seed-fresh-q02", "bind-q09-plan", "approve-card", "reidentify-recovery-card",
+    "enqueue-pattern-fixture-harness",
     "reject-card", "seed-sources", "record-build", "record-review",
     "claude-prompt", "build-ea", "claude-review-prompt", "claim-source", "set-source-status",
     "reserve-ea-ids", "reserve-terminal", "release-terminal",
@@ -22042,6 +22268,16 @@ def main(argv: list[str] | None = None) -> int:
                 "enqueued": False,
                 "reason": "Provide --review-task-id for the review-task path or --ea for an exact/cascade Q-phase path.",
             })
+    elif args.command == "enqueue-pattern-fixture-harness":
+        print_json(enqueue_pattern_fixture_harness(
+            root,
+            symbol=args.symbol,
+            period=args.period,
+            year=args.year,
+            from_date=args.from_date,
+            to_date=args.to_date,
+            timeout_seconds=args.timeout_seconds,
+        ))
     elif args.command == "seed-fresh-q02":
         print_json(enqueue_fresh_q02_seed(
             root,
