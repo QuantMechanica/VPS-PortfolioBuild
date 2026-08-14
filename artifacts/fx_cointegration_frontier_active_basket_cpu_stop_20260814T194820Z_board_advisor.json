@@ -1,0 +1,172 @@
+{
+  "artifact_type": "fx_cointegration_frontier_active_basket_cpu_stop",
+  "generated_at_utc": "2026-08-14T19:48:20.469Z",
+  "process_sampled_at_utc": "2026-08-14T19:47:19+00:00",
+  "branch": "agents/board-advisor",
+  "base_commit": "43ba4f20b0d29ea683f978e5800a23c011070e74",
+  "mission_outcome": "STOPPED_AT_ACTIVE_MULTISYMBOL_CPU_CEILING",
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "frontier_reconciliation": {
+    "scan_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "scan_mode": "--include-negative-hedges",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_card_or_ea_would_duplicate_existing_relationship": true
+  },
+  "selected_existing_pair": {
+    "selection_reason": "All 66 relationships are covered; frozen-scan rank 58 remains the sole relationship without a terminal exact-logical Q02 verdict.",
+    "scan_rank": 58,
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "ea_id": "QM5_1257",
+    "pair_slot": 8,
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "source_citation": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+    "g0_status": "APPROVED",
+    "r1_r4_status": "PASS",
+    "basket_manifest": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json",
+    "fixed_risk_setfile": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "q02": {
+      "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+      "status": "pending",
+      "verdict": null,
+      "attempt_count": 1,
+      "claimed_by": null,
+      "evidence_path": null,
+      "created_at_utc": "2026-08-11T23:53:50+00:00",
+      "last_observed_updated_at_utc": "2026-08-14T06:52:39+00:00",
+      "prior_failure": "summary_missing",
+      "run_smoke_exit_code": 0,
+      "avoid_terminals": [
+        "T4"
+      ],
+      "priority_track": true,
+      "priority_reason": "board_advisor_fx_fallback_full_66_pair_frontier_covered",
+      "canonical_selector_rank": 7,
+      "canonical_selector_count": 1017,
+      "exact_logical_row_count": 1,
+      "exact_open_row_count": 1,
+      "active_hold_count": 0,
+      "active_quarantine_count": 0,
+      "duplicate_enqueue_performed": false,
+      "manual_requeue_performed": false,
+      "priority_mutation_performed": false
+    }
+  },
+  "farm_stop": {
+    "database_sampled_at_utc": "2026-08-14T19:48:20.469Z",
+    "normal_paced_cpu_ceiling": 7,
+    "active_work_item_count": 1,
+    "normal_paced_cpu_ceiling_binding": false,
+    "multisymbol_active_ceiling": 1,
+    "multisymbol_active_ceiling_binding": true,
+    "selected_target_is_multisymbol": true,
+    "active_multisymbol_work_item": {
+      "id": "be182dfd-bf33-4577-904c-761bf87c4ccc",
+      "phase": "Q02",
+      "ea_id": "QM5_20294",
+      "symbol": "QM5_20294_XAU_XAG_LOWMAX_D1",
+      "claimed_by": "T8",
+      "updated_at_utc": "2026-08-14T18:53:32+00:00"
+    },
+    "free_physical_memory_gib": 54.34,
+    "total_physical_memory_gib": 63.12,
+    "custom_history_containment": {
+      "enabled": true,
+      "schema_version": "qm.custom-history-containment-mode/v1",
+      "recorded_at_utc": "2026-08-14T18:11:54.181584+00:00",
+      "reason": "custom_history_gate_exception:OSError",
+      "source": "automatic_stop_condition",
+      "authorization_sha256": "0089c8b613a1181ff4d2304a9b2d7102da5445e6f7e9970841739dd5533f3672",
+      "mode_sha256": "7aa58d845a61ec05f27928ee7dc23f62f260a832268f293f205b0902b7ba43ac",
+      "record_file_sha256": "7b17d777302bcf8d478dfb6637991158e3501c3dce4c3322c04eb747d3d8d78e"
+    },
+    "process_snapshot": {
+      "sampled_at_utc": "2026-08-14T19:47:19+00:00",
+      "running_factory_terminals": [
+        "T8"
+      ],
+      "running_factory_terminal_count": 1,
+      "orphaned_factory_process_count": 0,
+      "active_terminal_process": {
+        "pid": 14584,
+        "parent_pid": 16520,
+        "terminal": "T8",
+        "executable_path": "D:\\QM\\mt5\\T8\\terminal64.exe",
+        "config_path": "D:\\QM\\reports\\work_items\\be182dfd-bf33-4577-904c-761bf87c4ccc\\QM5_20294\\20260814_185529\\raw\\run_01\\tester.ini",
+        "work_item_uuid_bound": true
+      },
+      "terminal_reservation_until_utc": "2026-08-14T23:25:08.438339+00:00",
+      "t_live_observed_and_excluded": true,
+      "ftmo_terminal_observed_and_excluded": true
+    },
+    "stop_reason": "The canonical worker permits only one active multisymbol backtest; the path-bound T8 basket occupies that lane and signed Custom-history containment is enabled. This is the mission's effective backtest CPU ceiling."
+  },
+  "target_hashes": {
+    "mq5_sha256": "28bd88d0a7a7401ec7fe3b3a4f99ef3ba6b9fec146298c512b1c76e1adf7e12b",
+    "ex5_sha256": "86c6e9f077e37ddd5aea1e15b253cd4509c7f180c846cc6aebd806fa17d95cbd",
+    "strategy_card_sha256": "aa0313ea4218ed418432adcdf3a34b49cd3c4f46e725fefd31ec5b2266b2f9ae",
+    "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+    "fixed_risk_setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4"
+  },
+  "changed_since_prior_frontier_sample": {
+    "prior_evidence": "artifacts/fx_cointegration_frontier_multisymbol_ceiling_stop_20260814T185046Z_board_advisor.json",
+    "prior_active_multisymbol_work_item": "be182dfd-bf33-4577-904c-761bf87c4ccc",
+    "current_active_multisymbol_work_item": "be182dfd-bf33-4577-904c-761bf87c4ccc",
+    "prior_active_item_had_observed_terminal_child": false,
+    "current_active_item_has_observed_terminal_child": true,
+    "prior_orphaned_factory_process_count": 2,
+    "current_orphaned_factory_process_count": 0,
+    "prior_active_work_item_count": 2,
+    "current_active_work_item_count": 1,
+    "prior_target_selector_rank": 6,
+    "current_target_selector_rank": 7,
+    "target_q02_state_changed": false
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "basket_manifest_mutation": false,
+    "setfile_mutation": false,
+    "q02_enqueue_or_requeue": false,
+    "priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run_started": false,
+    "history_or_containment_mutation": false,
+    "factory_recovery": false,
+    "orphan_process_cleanup": false,
+    "repository_evidence_record_created": true,
+    "reason": "The complete frontier makes a new build duplicative; the exact fallback Q02 row already exists once; the path-bound active multisymbol item and signed containment state bind the effective backtest CPU ceiling."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false,
+    "live_deployment_artifacts": false
+  }
+}
