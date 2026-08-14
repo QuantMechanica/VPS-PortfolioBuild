@@ -36,3 +36,16 @@ def test_worker_shortage_uses_interactive_token_launcher_not_interactive_task() 
     assert "Remove-Item Env:PYTHONPATH" in source
     assert "-WaitSeconds 180" in source
     assert "WAIT_EXIT pid=" in source
+
+
+def test_stale_reset_cleanup_yields_before_dispatch_stall_recheck() -> None:
+    source = WATCHDOG.read_text(encoding="utf-8")
+    cleanup = source.index("action = 'stale_reset_admission_block_cleared'")
+    owner_intent = source.index("# 1. OWNER intent", cleanup)
+    handover = source[cleanup:owner_intent]
+
+    # Clearing WATCHDOG_RESET_PENDING releases claims. The watchdog must not
+    # immediately mistake the workers' reset-backoff window for another stall
+    # and recreate the same marker in this invocation.
+    assert "Write-Output $staleRecord" in handover
+    assert "exit 0" in handover

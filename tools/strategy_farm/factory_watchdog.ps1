@@ -628,9 +628,17 @@ if ($existingResetAdmission.present) {
             $staleRecord = [ordered]@{
                 ts = $now
                 action = 'stale_reset_admission_block_cleared'
-                detail = "orphaned marker reason=$($existingResetAdmission.reason) task_state=$($existingResetAdmission.task_state)"
+                detail = "orphaned marker reason=$($existingResetAdmission.reason) task_state=$($existingResetAdmission.task_state); yielding one watchdog cycle for worker claims"
             } | ConvertTo-Json -Compress
             try { Add-Content -Path $log -Value $staleRecord -Encoding UTF8 } catch {}
+            # The marker was the claim gate. Do not evaluate dispatch-stall in
+            # this same invocation: every worker may still be inside its
+            # watchdog-reset backoff, so the intentionally empty handover
+            # snapshot (0 active / 0 terminal64) would immediately recreate
+            # the marker and livelock admissions. The next scheduled watchdog
+            # sample is the first legitimate post-handover health decision.
+            Write-Output $staleRecord
+            exit 0
         } catch {
             $handoverRecord = [ordered]@{
                 ts = $now
