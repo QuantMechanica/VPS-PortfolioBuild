@@ -1367,6 +1367,13 @@ def init_db(root: Path) -> None:
                 ON work_items(parent_task_id);
             CREATE INDEX IF NOT EXISTS idx_work_items_ea_phase
                 ON work_items(ea_id, phase);
+            -- 2026-08-14: verdict-filtered aggregations (strategy_priority
+            -- load_portfolio_counts and friends) were full-scanning 107k rows
+            -- at 10.4s per call; inside the router's replenish path several
+            -- calls per cycle pushed cycles past the 600s wall clock during
+            -- recovery windows (freeze_stack evidence 20260814T010101Z).
+            CREATE INDEX IF NOT EXISTS idx_work_items_verdict_ea
+                ON work_items(verdict, ea_id);
 
             CREATE TABLE IF NOT EXISTS poison_pill_quarantine (
                 ea_id TEXT NOT NULL,
