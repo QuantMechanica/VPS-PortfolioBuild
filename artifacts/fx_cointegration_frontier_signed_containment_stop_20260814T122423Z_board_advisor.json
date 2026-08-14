@@ -1,0 +1,164 @@
+{
+  "artifact_type": "fx_cointegration_frontier_signed_containment_stop",
+  "generated_at_utc": "2026-08-14T12:24:23Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "45ed706661e2da58e953ca8083c672f86add778e",
+  "mission_outcome": "STOPPED_AT_SIGNED_SERIAL_BACKTEST_CEILING",
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "frontier_reconciliation": {
+    "scan_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "scan_mode": "--include-negative-hedges",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_card_or_ea_would_duplicate_existing_relationship": true
+  },
+  "selected_existing_pair": {
+    "scan_rank": 58,
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "ea_id": "QM5_1257",
+    "pair_slot": 8,
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "source_citation": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+    "g0_status": "APPROVED",
+    "r1_r4_status": "PASS",
+    "basket_manifest": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json",
+    "fixed_risk_setfile": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "q02": {
+      "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+      "status": "pending",
+      "verdict": null,
+      "attempt_count": 1,
+      "claimed_by": null,
+      "evidence_path": null,
+      "exact_logical_row_count": 1,
+      "last_observed_updated_at_utc": "2026-08-14T06:52:39+00:00",
+      "prior_failure": "summary_missing",
+      "run_smoke_exit_code": 0,
+      "avoid_terminals": [
+        "T4"
+      ],
+      "priority_track": true,
+      "priority_reason": "board_advisor_fx_fallback_full_66_pair_frontier_covered",
+      "duplicate_enqueue_performed": false,
+      "manual_requeue_performed": false,
+      "priority_mutation_performed": false
+    }
+  },
+  "validation": {
+    "strategy_card_schema_lint": {
+      "status": "PASS",
+      "missing_sections": [],
+      "ml_hits": []
+    },
+    "basket_regression_tests": {
+      "command": "python -m pytest -q tools/strategy_farm/tests/test_fx_basket_manifests.py tools/strategy_farm/tests/test_basket_work_items.py",
+      "status": "PASS",
+      "passed": 59
+    },
+    "symbol_scope": {
+      "status": "BASKET_OK",
+      "violations": 0,
+      "manifest_symbols": [
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ]
+    }
+  },
+  "farm_stop": {
+    "sampled_at_utc": "2026-08-14T12:24:23Z",
+    "normal_paced_cpu_ceiling": 7,
+    "active_work_item_count": 1,
+    "normal_paced_cpu_ceiling_binding": false,
+    "active_multisymbol_work_item": null,
+    "active_work_items": [
+      {
+        "id": "c997529a-9111-4d8e-af98-b338209b5941",
+        "phase": "Q08",
+        "ea_id": "QM5_12849",
+        "symbol": "XTIUSD.DWX",
+        "claimed_by": "T5"
+      }
+    ],
+    "custom_history_containment": {
+      "enabled": true,
+      "schema_version": "qm.custom-history-containment-mode/v1",
+      "recorded_at_utc": "2026-08-14T11:18:26.833961+00:00",
+      "reason": "runtime_stop_condition:isolation_gate",
+      "source": "automatic_stop_condition",
+      "authorization_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+      "previous_mode_sha256": "d424e0346845b334a5a8a4c94b830fc31ea8207ad72f130f8b6fe9c43a6b8744",
+      "mode_sha256": "8c88c4092c25c0cbc16f5b557aae0b755b9b045b611a07d368b4fd76ab8c2f23"
+    },
+    "global_lease": {
+      "write_held": true,
+      "other_worker_observation": "custom_history_lease_busy",
+      "effective_concurrency_ceiling": 1,
+      "effective_concurrency_ceiling_binding": true
+    },
+    "disk_free_gb": 146.87,
+    "stop_reason": "The signed Custom-history containment mode serializes the factory through one global lease; that lease is held by the sole active run. Releasing containment requires a governed OWNER recovery window."
+  },
+  "target_hashes": {
+    "mq5_sha256": "28bd88d0a7a7401ec7fe3b3a4f99ef3ba6b9fec146298c512b1c76e1adf7e12b",
+    "ex5_sha256": "86c6e9f077e37ddd5aea1e15b253cd4509c7f180c846cc6aebd806fa17d95cbd",
+    "strategy_card_sha256": "aa0313ea4218ed418432adcdf3a34b49cd3c4f46e725fefd31ec5b2266b2f9ae",
+    "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+    "fixed_risk_setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4"
+  },
+  "changed_since_prior_frontier_sample": {
+    "prior_evidence": "artifacts/fx_cointegration_frontier_q02_cpu_ceiling_stop_20260814T111644Z_board_advisor.json",
+    "prior_active_work_item_count": 7,
+    "current_active_work_item_count": 1,
+    "prior_normal_paced_cpu_ceiling_binding": true,
+    "current_normal_paced_cpu_ceiling_binding": false,
+    "signed_containment_reengaged_after_prior_sample": true,
+    "signed_containment_recorded_at_utc": "2026-08-14T11:18:26.833961+00:00",
+    "current_effective_serial_ceiling_binding": true,
+    "target_q02_state_changed": false
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "basket_manifest_mutation": false,
+    "setfile_mutation": false,
+    "q02_enqueue_or_requeue": false,
+    "priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run_started": false,
+    "history_or_containment_mutation": false,
+    "repository_evidence_record_created": true,
+    "reason": "The complete frontier makes a new build duplicative; the exact fallback Q02 row already exists once; the signed global containment lease is the binding one-run ceiling."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false,
+    "live_deployment_artifacts": false
+  }
+}
