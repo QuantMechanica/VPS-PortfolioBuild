@@ -8,7 +8,7 @@ ea_id: QM5_21523
 slug: wti-xau-div-tr
 status: APPROVED
 execution_contract_ref: strategy-seeds/cards/approved/QM5_21523_wti-xau-div-tr_card.md
-execution_contract_status: DRAFT
+execution_contract_status: APPROVED
 created: 2026-08-14
 created_by: Research+Development
 last_updated: 2026-08-14
@@ -63,8 +63,8 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_STARTED
+q01_status: PASS
+q02_status: NOT_ENQUEUED
 review_focus: "Falsify a WTI twelve-month trend stream admitted only while synchronized gold trends in the strict opposite direction; verify gold remains read-only. Q09 alone may establish realized decorrelation from XAU, SP500, NDX, and XNG."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -306,11 +306,12 @@ admission; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-14 | initial WTI twelve-month trend in strict gold-divergence state | G0 | APPROVED; build pending |
+| v2 | 2026-08-14 | implement synchronized opposite-sign gate and WTI lifecycle | Q01 | PASS; Q02 handoff pending |
 
 ## Pipeline Phase Status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-14 | APPROVED; R1-R4 PASS | `decisions/2026-08-14_qm5_21523_wti_xau_div_trend_g0.md`; governed composite source packet |
-| Q01 Build Validation | TBD | PENDING | TBD |
-| Q02 Baseline Screening | TBD | NOT_STARTED | TBD |
+| Q01 Build Validation | 2026-08-14 | PASS | strict compile 0/0; build check 0/0; seven reference tests; P1 artifact PASS |
+| Q02 Baseline Screening | 2026-08-14 | NOT_ENQUEUED | requires Q01 PASS and CPU-capacity check |
