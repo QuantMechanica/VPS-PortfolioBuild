@@ -410,6 +410,79 @@ def test_bad_parent_risk_is_rejected_without_artifact(tmp_path: Path) -> None:
     assert not reports.exists()
 
 
+def test_program_scoped_cap_pools_do_not_share_headroom(tmp_path: Path) -> None:
+    db = _database(tmp_path / "farm.sqlite")
+    repo = tmp_path / "repo"
+    _insert_q10(db, repo, 30001, "EURUSD", trades=200, drawdown=20)
+    _insert_q10(db, repo, 30002, "GBPUSD", trades=200, drawdown=20)
+    levers = {"EXIT_SURGERY": {"surface_profile": "exit", "hypothesis": "Exit hypothesis."}}
+
+    wave1_config = _write_program(tmp_path / "wave1.json", {
+        **_program([_cohort(30001, "EURUSD", levers)], max_cards=1, max_parent=1),
+        "program_id": "WAVE1_FIXTURE",
+    })
+    wave1_result = q14.run_admission(
+        db_path=db, config_path=wave1_config, repo_root=repo, report_root=tmp_path / "reports_wave1", apply=True
+    )
+    assert wave1_result["decisions"][0]["verdict"] == "OPT_ELIGIBLE"
+
+    census_config = _write_program(tmp_path / "census.json", {
+        **_program([_cohort(30002, "GBPUSD", levers)], max_cards=1, max_parent=1),
+        "program_id": "CENSUS_FIXTURE",
+    })
+    census_result = q14.run_admission(
+        db_path=db, config_path=census_config, repo_root=repo, report_root=tmp_path / "reports_census", apply=True
+    )
+    # A shared global counter would reject this: wave-1 already holds the only global slot.
+    assert census_result["decisions"][0]["verdict"] == "OPT_ELIGIBLE"
+    assert census_result["open_opt_cards_before"] == 0
+
+    # Wave-1's own pool is still correctly capped by its own open card, independent of census.
+    _insert_q10(db, repo, 30003, "AUDUSD", trades=200, drawdown=20)
+    wave1_config_2 = _write_program(tmp_path / "wave1_second.json", {
+        **_program([_cohort(30003, "AUDUSD", levers)], max_cards=1, max_parent=1),
+        "program_id": "WAVE1_FIXTURE",
+    })
+    wave1_result_2 = q14.run_admission(
+        db_path=db, config_path=wave1_config_2, repo_root=repo, report_root=tmp_path / "reports_wave1_2", apply=True
+    )
+    assert wave1_result_2["decisions"][0]["verdict"] == "OPT_REJECTED"
+    assert wave1_result_2["decisions"][0]["reason"] == "MAX_CONCURRENT_OPT_CARDS_1"
+
+
+def test_existing_card_state_never_shares_a_counter_across_programs(tmp_path: Path) -> None:
+    db = _database(tmp_path / "farm.sqlite")
+    conn = sqlite3.connect(db)
+    conn.row_factory = sqlite3.Row
+    now = "2026-08-14T00:00:00+00:00"
+    rows = [
+        ("q14-a", "QM5_1", "EURUSD.DWX", {"card_id": "OPT-A", "program_id": "WAVE1_FIXTURE"}),
+        ("q14-b", "QM5_2", "GBPUSD.DWX", {"card_id": "OPT-B", "program_id": "CENSUS_FIXTURE"}),
+        ("q14-c", "QM5_3", "USDJPY.DWX", {"card_id": "OPT-C"}),  # legacy row: no program_id recorded
+    ]
+    for item_id, ea_id, symbol, payload in rows:
+        conn.execute(
+            """
+            INSERT INTO work_items(
+              id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,
+              parent_task_id,evidence_path,claimed_by,payload_json,created_at,updated_at
+            ) VALUES(?, 'analytic','Q14',?,?, 'x','done','OPT_ELIGIBLE',0,NULL,NULL,NULL,?,?,?)
+            """,
+            (item_id, ea_id, symbol, json.dumps(payload), now, now),
+        )
+    conn.commit()
+
+    wave1_cards, _ = q14._existing_card_state(conn, program_id="WAVE1_FIXTURE")
+    census_cards, _ = q14._existing_card_state(conn, program_id="CENSUS_FIXTURE")
+    conn.close()
+
+    # Each program sees its own card plus the legacy (program-blind) row -- never the other program's card.
+    assert wave1_cards == {"OPT-A", "OPT-C"}
+    assert census_cards == {"OPT-B", "OPT-C"}
+    assert "OPT-B" not in wave1_cards
+    assert "OPT-A" not in census_cards
+
+
 def test_farmctl_subcommand_is_dry_run_by_default_and_apply_is_mutating() -> None:
     parser = farmctl.build_parser()
     dry = parser.parse_args(["enqueue-opt-admission"])

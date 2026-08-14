@@ -568,7 +568,18 @@ def _work_item_id(row: Q10Row, lever: str, config_sha256: str) -> str:
     return str(uuid.uuid5(uuid.NAMESPACE_URL, f"qm:q14:{row.work_item_id}:{lever}:{config_sha256}"))
 
 
-def _existing_card_state(conn: sqlite3.Connection) -> tuple[set[str], Counter[tuple[int, str]]]:
+def _existing_card_state(
+    conn: sqlite3.Connection, *, program_id: str
+) -> tuple[set[str], Counter[tuple[int, str]]]:
+    """Open-card pool for cap enforcement, scoped to a single program's own cards.
+
+    A census program and the live wave-1 opt-cards must never share a counter
+    (plan v2 A6): each program's ``max_concurrent_opt_cards``/``max_cards_per_parent``
+    cap is checked only against cards admitted under that same ``program_id``.
+    A row admitted before ``program_id`` was recorded (no key present) is
+    conservatively counted toward every program's pool rather than silently
+    dropped from cap enforcement.
+    """
     open_cards: dict[str, tuple[int, str]] = {}
     q14_rows = conn.execute(
         "SELECT ea_id,symbol,payload_json FROM work_items WHERE upper(phase)='Q14' AND upper(coalesce(verdict,''))='OPT_ELIGIBLE'"
@@ -579,6 +590,9 @@ def _existing_card_state(conn: sqlite3.Connection) -> tuple[set[str], Counter[tu
             card_id = str(payload["card_id"])
             key = (_ea_number(row["ea_id"]), _symbol(row["symbol"]))
         except (KeyError, TypeError, ValueError, json.JSONDecodeError, Q14Error):
+            continue
+        row_program_id = payload.get("program_id")
+        if row_program_id is not None and str(row_program_id) != program_id:
             continue
         open_cards[card_id] = key
     q16_rows = conn.execute(
@@ -604,11 +618,13 @@ def _decision_payload(
     card_id: str | None,
     card_path: Path | None,
     card_sha256: str | None,
+    program_id: str,
 ) -> dict[str, Any]:
     return {
         "schema": Q14_PAYLOAD_SCHEMA,
         "phase": "Q14",
         "source_q10_work_item_id": row.work_item_id,
+        "program_id": program_id,
         "program_config_sha256": config_sha256,
         "q10_snapshot_sha256": snapshot_sha256,
         "lever": lever,
@@ -633,7 +649,7 @@ def build_plan(
     q10_rows = load_q10_population(conn)
     q10_by_key = {row.key: row for row in q10_rows}
     snapshot_sha256 = _snapshot_hash(q10_rows)
-    open_cards, open_by_parent = _existing_card_state(conn)
+    open_cards, open_by_parent = _existing_card_state(conn, program_id=str(config["program_id"]))
     max_concurrent = int(config["caps"]["max_concurrent_opt_cards"])
     max_parent = int(config["caps"]["max_cards_per_parent"])
     decisions: list[dict[str, Any]] = []
@@ -724,6 +740,7 @@ def build_plan(
             row=row, lever=lever, verdict=verdict, reason=reason,
             config_sha256=config_sha256, snapshot_sha256=snapshot_sha256,
             card_id=card_id, card_path=card_path, card_sha256=card_sha256,
+            program_id=str(config["program_id"]),
         )
         decisions.append({
             "work_item_id": work_item_id,
