@@ -1251,6 +1251,51 @@ def _apply_restart_hold_release_transaction(
     runtime_authorization: dict[str, Any],
     factory_off_flag: Path | None = None,
     factory_off_request: Path | None = None,
+    attempts: int = 8,
+    delay_seconds: float = 25.0,
+    sleeper=time.sleep,
+) -> dict[str, Any]:
+    """Bounded lock-retry around the single-shot release transaction.
+
+    'database is locked' here means another writer outlasted the 30s busy
+    timeout (2026-08-14: an hourly ea_metrics-scale writer aborted two
+    Factory_ON ceremonies at this exact step). Nothing has committed when
+    that exception surfaces — the transaction rolls back before re-raising —
+    and the append-only activation-nonce consumption guard makes a duplicate
+    commit impossible, so the whole transaction is safe to retry. Every
+    other failure class stays fail-closed on its first occurrence,
+    including the OFF-wins intent check inside each attempt.
+    """
+
+    last: sqlite3.OperationalError | None = None
+    for attempt in range(max(1, int(attempts))):
+        try:
+            return _apply_restart_hold_release_transaction_once(
+                db,
+                release_note=release_note,
+                runtime_authorization=runtime_authorization,
+                factory_off_flag=factory_off_flag,
+                factory_off_request=factory_off_request,
+            )
+        except sqlite3.OperationalError as exc:
+            message = str(exc).casefold()
+            if "locked" not in message and "busy" not in message:
+                raise
+            last = exc
+            if attempt + 1 < max(1, int(attempts)):
+                sleeper(delay_seconds)
+    raise RuntimeError(
+        f"restart-hold release stayed database-locked across {attempts} attempts"
+    ) from last
+
+
+def _apply_restart_hold_release_transaction_once(
+    db: Path,
+    *,
+    release_note: str,
+    runtime_authorization: dict[str, Any],
+    factory_off_flag: Path | None = None,
+    factory_off_request: Path | None = None,
 ) -> dict[str, Any]:
     expected_ids = tuple(sorted(_runtime_restart_hold_ids(runtime_authorization)))
     activation_nonce = runtime_authorization.get("activation_nonce")
