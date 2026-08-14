@@ -1,0 +1,23 @@
+{
+  "action": "record_before_state_stray_sweep_enqueue_row",
+  "recorded_at_utc": "2026-08-14T07:20:00Z",
+  "recorded_by": "claude (Q15 independent review, ticket 661a36b1)",
+  "reason": "hourly sweep auto-enqueued Q15 challenger QM5_21001/USDJPY.DWX as a normal EA outside the Q15 lineage; q15_freeze_check --apply fail-closes on ANY non-Q15 Q02 row for the pair (query has no status filter) and maintenance_control hold/quarantine keeps the row visible, so the row must be deleted (OWNER-executed). The deterministic Q15 Q02 row 545caffe-8e28-5bed-b49c-1f75af70192c replaces it via q15_freeze_check --apply.",
+  "before_state": {
+    "id": "3ba5b885-edee-402c-8a1f-2beb4391dcac",
+    "ea_id": "QM5_21001",
+    "phase": "Q02",
+    "status": "pending",
+    "claimed_by": null,
+    "created_at": "2026-08-14T02:52:58",
+    "updated_at": "2026-08-14T02:52:58",
+    "payload_json": {
+      "host_symbol": "USDJPY.DWX",
+      "host_timeframe": "H1",
+      "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
+      "enqueued_at_utc": "2026-08-14T02:52:58+00:00",
+      "priority_track": true
+    }
+  },
+  "note": "row was created 02:52:58Z, BEFORE the final challenger binary existed (04:25Z compile) and never claimed by any terminal"
+}
