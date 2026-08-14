@@ -1,0 +1,119 @@
+{
+  "task_id": "manual-codex-2026-08-14-wti-xau-div-tr",
+  "ea_id": "QM5_21523",
+  "slug": "wti-xau-div-tr",
+  "strategy": "WTI exact twelve-completed-month trend admitted only when synchronized read-only gold has the strict opposite twelve-month sign",
+  "strategy_id": "MOP-CME-WTI-XAU-DIV-2026_S01",
+  "source_id": "MOP-CME-WTI-XAU-DIV-2026",
+  "source_citations": [
+    "Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104(2), 228-250",
+    "CME Group (2024), Through the Lens of Gold"
+  ],
+  "symbol": "XTIUSD.DWX",
+  "read_only_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_21523_wti-xau-div-tr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21523_wti-xau-div-tr\\QM5_21523_wti-xau-div-tr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21523_wti-xau-div-tr\\QM5_21523_wti-xau-div-tr.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21523_wti-xau-div-tr\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_21523_wti-xau-div-tr_card.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\MOP-CME-WTI-XAU-DIV-2026\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_21523_wti-xau-div-tr\\sets\\QM5_21523_wti-xau-div-tr_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "d7925d35a38e406f4da4bc69a03733e395ea53ef2dd6850b77b6f56b1d18bde9",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "symbol_slot": 0,
+    "symbol": "XTIUSD.DWX",
+    "magic": 215230000,
+    "registry_status": "active",
+    "resolver_registry_rows": 15958,
+    "resolver_registry_sha256": "0C59C6D012CD277374FBEE28CE6D01C26BFA8BF8BF7549B6BE90DE33FB28A5E7"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_21523_wti-xau-div-tr/QM5_21523_wti-xau-div-tr.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260814_193421\\QM5_21523_wti-xau-div-tr.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260814_193421\\summary.csv",
+    "ex5_size_bytes": 388708
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_21523_wti-xau-div-tr -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260814_194631.json"
+  },
+  "validations": {
+    "card_schema": "PASS (root, approved, and EA-doc copies)",
+    "g0_lint": "PASS",
+    "build_guard": "PASS",
+    "spec": "PASS",
+    "reference_tests": "PASS (7/7)",
+    "p1": "PASS",
+    "p1_report_path": "D:\\QM\\reports\\pipeline\\QM5_21523\\P1\\P1_QM5_21523_result.json",
+    "dedup": "CLEAN across 4,395 EA-registry rows and 491 root cards; no fuzzy collision"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "6353edf7-625d-412e-b928-51ebe6715e7e",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21523_wti-xau-div-tr\\sets\\QM5_21523_wti-xau-div-tr_XTIUSD.DWX_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "created_at_utc": "2026-08-14T19:42:26+00:00",
+    "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
+    "priority_track": true
+  },
+  "smoke_result": "deferred_to_q02_fleet",
+  "smoke_skipped_reason": "No manual MT5 backtest was launched; the paced Q02 fleet owns the first tester run.",
+  "cpu_ceiling_check": {
+    "checked_at_utc": "2026-08-14T19:41:58+00:00",
+    "running_factory_terminals": ["T8"],
+    "factory_terminals_active": 1,
+    "factory_terminals_total": 10,
+    "terminal64_running_count_including_non_factory": 3,
+    "pending_queue_before_enqueue": 1023,
+    "queue_ceiling": 7000,
+    "wave_budget_before_enqueue": 5977,
+    "ceiling_hit": false
+  },
+  "non_duplicate_reason": "Existing oil/gold EAs trade ratios, breakouts, return spreads, or two-leg baskets; unconditional WTI TSMOM has no gold state. QM5_21523 instead intersects exact WTI/gold monthly endpoints, requires strict opposite twelve-month signs, orders only WTI, and consumes one attempt per broker month.",
+  "source_access_note": "The complete peer-reviewed MOP packet and governed CME exchange packet were used. A fresh generic CME route returned DEFERRED:SOURCE_POLICY; no access-control bypass or unsupported source-performance transfer was attempted.",
+  "commits": {
+    "source_approval": "681cbf483",
+    "g0_and_allocation": "82616a31e",
+    "strategy_card": "9e15a6c42",
+    "magic_and_resolver": "d05481743",
+    "build": "cad75ad6e"
+  },
+  "hashes": {
+    "mq5_sha256": "c121c3499fb8668a97cc7f5ac063f0dc4036c6d519f241980ce23f8422ee5617",
+    "ex5_sha256": "4a5ca16724d08270497b157dc0f2535f56cf42ebb0a3d14253a5e65fa760eb17",
+    "setfile_sha256": "555ab22470f5262f8337ab92278803fa8fe21baea25f76acc1cabaddd1194330",
+    "card_sha256": "31446c6c0490556cbc0695d3229ee25c2df23dd9725099cfc6d78bf882d33e05",
+    "source_sha256": "249b399fc7306d9e2e174e9c10ac2c6611ab946fb60ef9abd713a8223f192dc0",
+    "g0_decision_sha256": "7a2f57a49548218ab9f33d6dea8d8b3ea1b9982d114614aa68ddefcf00f12e2f"
+  },
+  "live_safety": {
+    "t_live_files_or_settings_modified": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_manifest_touched": false,
+    "terminal_reserved_or_started_by_build": false
+  }
+}
