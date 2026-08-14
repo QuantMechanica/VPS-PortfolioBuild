@@ -1,0 +1,168 @@
+{
+  "artifact_type": "fx_cointegration_frontier_history_containment_stop",
+  "generated_at_utc": "2026-08-14T05:11:14Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "5ee9de92dc5de6f51c90f2978b1aa0be49884538",
+  "mission_outcome": "STOPPED_AT_SIGNED_CUSTOM_HISTORY_FAIL_CLOSED",
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "frontier_reconciliation": {
+    "coverage_source_commit": "a804932912a449aed19bbc8fe61f1f5846556743",
+    "scan_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "scan_mode": "--include-negative-hedges",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_card_or_ea_would_duplicate_existing_relationship": true
+  },
+  "selected_existing_pair": {
+    "selection_reason": "All 66 relationships are covered; frozen-scan rank 58 is the sole relationship without a terminal exact logical Q02 verdict.",
+    "scan_rank": 58,
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "ea_id": "QM5_1257",
+    "pair_slot": 8,
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "source_citation": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+    "g0_status": "APPROVED",
+    "r1_r4_status": "PASS",
+    "basket_manifest": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json",
+    "fixed_risk_setfile": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "q02": {
+      "task_id": "39ee6910-5d04-4087-83b0-65a6fd6b22f9",
+      "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+      "status": "pending",
+      "attempt_count": 0,
+      "claimed_by": null,
+      "exact_logical_row_count": 1,
+      "priority_track": true,
+      "canonical_selector_rank": 9,
+      "canonical_selector_count": 1014,
+      "active_hold_count": 0,
+      "active_quarantine_count": 0,
+      "last_observed_updated_at_utc": "2026-08-12T22:50:25Z",
+      "duplicate_enqueue_performed": false,
+      "priority_mutation_performed": false
+    }
+  },
+  "farm_stop": {
+    "sampled_at_utc": "2026-08-14T05:11:14Z",
+    "factory_off_flag_present": false,
+    "running_factory_terminal_count": 0,
+    "active_work_item_count": 0,
+    "backtest_cpu_ceiling_binding": false,
+    "watchdog_reset_pending": true,
+    "watchdog_reset_reason": "dispatch_stall",
+    "watchdog_reset_requested_at_utc": "2026-08-14T05:10:14Z",
+    "custom_history_containment_enabled": true,
+    "custom_history_containment_reason": "custom_history_isolation_gate_failure",
+    "custom_history_containment_mode_sha256": "a582766816629d578065b801378372993e84b639b20cbb9555d65951ab0ef2e6",
+    "worker_gate": {
+      "status": "FAIL_CLOSED",
+      "terminal_sample": "T1",
+      "audit_sha256": "e6447376d2440189d64d7fa8504771999f1711f1e1bd2acae94de001d0126392",
+      "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+      "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+      "ramp_sha256": "d6084d754547353e3bc72bf794f92d2213492b48de25870d2165c9d46e6ff922",
+      "missing_archive_count": 9,
+      "missing_archives": [
+        "T2:history/GBPNZD.DWX/2022.hcc",
+        "T3:history/EURAUD.DWX/2022.hcc",
+        "T3:history/NZDJPY.DWX/2022.hcc",
+        "T5:history/CADCHF.DWX/2022.hcc",
+        "T5:history/WS30.DWX/2022.hcc",
+        "T7:history/EURGBP.DWX/2022.hcc",
+        "T7:history/EURNZD.DWX/2019.hcc",
+        "T7:history/NZDCAD.DWX/2019.hcc",
+        "T9:history/GBPAUD.DWX/2022.hcc"
+      ],
+      "finding_count": 18,
+      "finding_codes": [
+        "MANIFEST_ARCHIVE_FILE_MISSING",
+        "TERMINAL_MANIFEST_INCOMPLETE"
+      ]
+    },
+    "stop_reason": "The signed fleet-wide history-integrity gate blocks all governed claims. Bypassing containment or restoring terminal archives without a bounded OWNER-authorized operations receipt is outside this branch-only mission."
+  },
+  "verification": {
+    "strategy_card_schema_lint": {
+      "result": "PASS",
+      "missing_sections": [],
+      "ml_hits": []
+    },
+    "basket_manifest_tests": {
+      "result": "PASS",
+      "tests_passed": 44
+    },
+    "symbol_scope": {
+      "result": "BASKET_OK",
+      "violations": 0
+    },
+    "target_build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260814_050942.json",
+      "checker_generated_setfile_header_churn_reverted": true
+    },
+    "target_hashes": {
+      "mq5_sha256": "28bd88d0a7a7401ec7fe3b3a4f99ef3ba6b9fec146298c512b1c76e1adf7e12b",
+      "ex5_sha256": "86c6e9f077e37ddd5aea1e15b253cd4509c7f180c846cc6aebd806fa17d95cbd",
+      "card_sha256": "aa0313ea4218ed418432adcdf3a34b49cd3c4f46e725fefd31ec5b2266b2f9ae",
+      "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+      "fixed_risk_setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4"
+    },
+    "target_tree_clean_after_validation": true
+  },
+  "changed_since_prior_frontier_sample": {
+    "prior_evidence": "artifacts/fx_cointegration_frontier_factory_on_cpu_stop_20260814T040650Z_board_advisor.json",
+    "prior_active_basket_work_item": "b9bde578-9476-470f-a051-fda0a11116c6",
+    "prior_active_basket_current_state": "done/INFRA_FAIL",
+    "prior_active_basket_finished_at_utc": "2026-08-14T04:48:19Z",
+    "current_governed_blocker": "custom_history_isolation_gate_failure"
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "basket_manifest_mutation": false,
+    "setfile_mutation": false,
+    "q02_enqueue_or_requeue": false,
+    "priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run_started": false,
+    "history_archive_mutation": false,
+    "repository_evidence_record_created": true,
+    "reason": "All scan relationships are covered, the selected existing pair is already enqueued exactly once, and the signed history gate forbids governed execution."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false,
+    "live_deployment_artifacts": false
+  }
+}
