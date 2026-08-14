@@ -1,5 +1,5 @@
 #property strict
-#property version   "5.0"
+#property version   "5.1"
 #property description "QM5_11483 Williams-L Outside Bar Exhaustion Reversal D1"
 
 #include <QM/QM_Common.mqh>
@@ -114,22 +114,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_SelectOurPosition(existing_ticket, existing_type, existing_open, existing_profit))
       return false;
 
-   const datetime signal_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: fixed closed-bar day-of-week read; no QM_Time helper exists.
-   if(signal_time <= 0 || Strategy_IsFriday(signal_time))
+   MqlRates signal_bar;
+   MqlRates prior_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, signal_bar) ||
+      !QM_ReadBar(_Symbol, PERIOD_D1, 2, prior_bar))
       return false;
 
-   const double high_1 = iHigh(_Symbol, PERIOD_D1, 1);   // perf-allowed: fixed closed-bar outside-bar high; no QM_High helper exists.
-   const double low_1 = iLow(_Symbol, PERIOD_D1, 1);     // perf-allowed: fixed closed-bar outside-bar low; no QM_Low helper exists.
-   const double close_1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: fixed closed-bar exhaustion close; no QM_Close helper exists.
-   const double high_2 = iHigh(_Symbol, PERIOD_D1, 2);   // perf-allowed: fixed closed-bar prior high; no QM_High helper exists.
-   const double low_2 = iLow(_Symbol, PERIOD_D1, 2);     // perf-allowed: fixed closed-bar prior low; no QM_Low helper exists.
-
-   if(high_1 <= 0.0 || low_1 <= 0.0 || close_1 <= 0.0 || high_2 <= 0.0 || low_2 <= 0.0)
+   if(Strategy_IsFriday(signal_bar.time))
       return false;
-   if(!(high_1 > high_2 && low_1 < low_2))
+   if(signal_bar.high <= 0.0 || signal_bar.low <= 0.0 || signal_bar.close <= 0.0 ||
+      prior_bar.high <= 0.0 || prior_bar.low <= 0.0)
+      return false;
+   if(!(signal_bar.high > prior_bar.high && signal_bar.low < prior_bar.low))
       return false;
 
-   if(close_1 < low_2 && strategy_direction_mode != 2)
+   if(signal_bar.close < prior_bar.low && strategy_direction_mode != 2)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       const double sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, strategy_stop_pips);
@@ -144,7 +143,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   if(close_1 > high_2 && strategy_direction_mode != 1)
+   if(signal_bar.close > prior_bar.high && strategy_direction_mode != 1)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_stop_pips);
@@ -235,19 +234,15 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any per-tick guard can
+   // return. The kill switch retains a compatibility fallback for older EAs.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
-      return;
-
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -273,12 +268,23 @@ void OnTick()
         }
      }
 
+   // News blocks new exposure only. Position management and strategy exits
+   // above remain active throughout blackout windows.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

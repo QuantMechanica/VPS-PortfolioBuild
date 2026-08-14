@@ -4,7 +4,7 @@
 **Slug:** williams-l-outside-bar-exhaustion-d1
 **Source:** 729c9425-1ec7-5842-a8b8-3db326d892e5
 **Author of this spec:** Codex
-**Last revised:** 2026-06-11
+**Last revised:** 2026-08-14
 
 ---
 
@@ -48,7 +48,7 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 |---|---|
 | Base timeframe | D1 |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` via the framework entry path |
+| Bar gating | `QM_IsNewBar()` on the attached D1 chart via the framework entry path |
 
 ---
 
@@ -92,3 +92,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 9feb0a4e-16eb-43b3-aa21-6ec16d71b102 |
+| v2 | 2026-08-14 | Q01 framework-corset repair and Q02 handoff | Replaced raw series reads with `QM_ReadBar`, restored canonical lifecycle wiring, task `557db8df-51ab-4636-b361-58b314813f0b`. |
