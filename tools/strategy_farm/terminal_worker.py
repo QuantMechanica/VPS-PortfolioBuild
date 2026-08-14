@@ -1059,19 +1059,22 @@ def _defer_custom_history_gate(
 
 
 def _is_transient_gate_io_error(exc: BaseException) -> bool:
-    """Concurrency artifacts of the mixed-topology gate, not isolation breaches.
+    """Concurrency/resource artifacts of the gate, not isolation breaches.
 
     A running terminal's MT5 holds privatized archives write-open (sharing
     violation → PermissionError) and copy-on-claim swaps files atomically
-    (FileNotFoundError mid-scan). Both defer THIS claim attempt only; engaging
-    fleet-wide containment for them serializes the whole factory.
+    (FileNotFoundError mid-scan). MemoryError joined 2026-08-14: an audit under
+    tester RAM pressure ran out of memory and engaged fleet-wide containment
+    (reason custom_history_gate_exception:MemoryError, 10:04Z) although no
+    integrity fact was in question. All of these defer THIS claim attempt
+    only; engaging fleet-wide containment for them serializes the factory.
     """
 
     seen: set[int] = set()
     current: BaseException | None = exc
     while current is not None and id(current) not in seen:
         seen.add(id(current))
-        if isinstance(current, (PermissionError, FileNotFoundError)):
+        if isinstance(current, (PermissionError, FileNotFoundError, MemoryError)):
             return True
         current = current.__cause__ or current.__context__
     return False
