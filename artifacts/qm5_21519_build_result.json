@@ -1,0 +1,108 @@
+{
+  "task_id": "manual-codex-2026-08-14-xng-wkend-hold",
+  "ea_id": "QM5_21519",
+  "slug": "xng-wkend-hold",
+  "strategy": "XNG pre-weekend to Monday structural hold",
+  "strategy_id": "TGIF-XNG-WEEKEND-2017_S04",
+  "source_id": "TGIF-EIA-XNG-WKEND-2026",
+  "source_links": [
+    "https://doi.org/10.58886/jfi.v16i1.2264",
+    "https://www.eia.gov/energyexplained/natural-gas/factors-affecting-natural-gas-prices.php"
+  ],
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "traded_symbol": "XNGUSD.DWX",
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "H1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_21519_xng-wkend-hold",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21519_xng-wkend-hold\\QM5_21519_xng-wkend-hold.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21519_xng-wkend-hold\\QM5_21519_xng-wkend-hold.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21519_xng-wkend-hold\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\xng-wkend-hold_card.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\TGIF-EIA-XNG-WKEND-2026\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_21519_xng-wkend-hold\\sets\\QM5_21519_xng-wkend-hold_XNGUSD.DWX_H1_backtest.set"
+  ],
+  "setfile_build_hash": "c4659dc1a1b0456d001790b2413ab9a0bac5bc42c129987115092c039d3eef4f",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XNGUSD.DWX",
+        "magic": 215190000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_21519_xng-wkend-hold/QM5_21519_xng-wkend-hold.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260814_081808\\QM5_21519_xng-wkend-hold.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260814_081808\\summary.csv",
+    "ex5_size_bytes": 373666
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_21519_xng-wkend-hold -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260814_082128.json"
+  },
+  "validations": {
+    "card_schema": "PASS (root, approved, EA-doc copies; identical)",
+    "spec_doc": "PASS (1/1)",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS",
+    "reference_tests": "PASS (7/7)",
+    "p1": "PASS",
+    "p1_report_path": "D:\\QM\\reports\\pipeline\\QM5_21519\\P1\\P1_QM5_21519_result.json",
+    "dedup": "CLEAN_AUTHORIZED_XNG_PREWEEKEND_TO_MONDAY_HOLD_AFTER_FAMILY_REVIEW"
+  },
+  "q02_enqueue": {
+    "status": "blocked_factory_off",
+    "attempted_at_utc": "2026-08-14T08:26:13.2216551Z",
+    "command": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_21519 --phase Q02",
+    "reason": "factory_off",
+    "factory_off_flag": "D:\\QM\\strategy_farm\\state\\FACTORY_OFF.flag",
+    "factory_off_sha256": "6c9aaf4a4aafce4a887e41d9d6cb46622c2be5efb42c6788da5cb88052b86c3c",
+    "work_item_count_after_attempt": 0,
+    "work_item_id": null
+  },
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "No manual MT5 backtest was launched; the canonical Q02 handoff is fail-closed under the OWNER forensic factory pause.",
+  "cpu_ceiling_check": {
+    "checked_at_utc": "2026-08-14T08:21:49+00:00",
+    "factory_terminals_active": 0,
+    "factory_terminals_total": 10,
+    "running_factory_terminals": [],
+    "terminal64_running_count_including_non_factory": 2,
+    "ceiling_hit": false
+  },
+  "non_duplicate_reason": "The EA enters XNG before the closed-market weekend and holds to Monday without an oscillator, trend, realized-gap, or cross-asset condition. Existing close neighbors enter after Monday begins, trade the realized gap, pair XNG with WTI, or use cumulative-RSI pullbacks.",
+  "source_access_note": "The bounded composite packet relies on a complete governed review of the peer-reviewed energy-weekend paper and official EIA demand context. A fresh journal URL route returned DEFERRED:SOURCE_POLICY, so no access workaround or new webpage text was used. Exact CFD timing, risk, stop, costs, performance, and correlation remain QM hypotheses.",
+  "registry_validation_note": "Targeted EA-ID, magic, resolver, and build guardrails passed. The repository-wide registry validator still reports unrelated pre-existing legacy-row and duplicate-magic debt; no such finding references QM5_21519.",
+  "hashes": {
+    "mq5_sha256": "dfcf93e17690a22bc967c5e54100779e09dea9203713ea48f246987e984eec00",
+    "ex5_sha256": "35d5af689b56003f73e17c8677546c5d1ef66696b0c14c48f1ecae1761da6eaa",
+    "setfile_sha256": "a9ce60c474f2212c490f718eea496b833d527ca5d6b49ac00bf5a285e33006fb",
+    "card_sha256": "b1bb27c6f30a7f349f87e54198139ebbec481498d5be9d1d5b11c8d7b146ce93",
+    "source_sha256": "88d7f9987f3aa0d9c757fec0c7df97996cf3f8480114ed3ce4c7cf93e870cf70"
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_manifest_touched": false
+  }
+}

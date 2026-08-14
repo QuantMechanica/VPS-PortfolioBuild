@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        21519
 ; ea_slug:      xng-wkend-hold
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   eba69b488d145261526d4e1221e36ff4b84ad8aff3834c4c44d064898fa58c89
+; build_hash:   c4659dc1a1b0456d001790b2413ab9a0bac5bc42c129987115092c039d3eef4f
 ; author:       Development
 ; date:         2026-08-14
 ;==========================================================
