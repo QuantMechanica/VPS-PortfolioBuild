@@ -4,7 +4,7 @@
 **Slug:** `wti-feb-prem`
 **Source:** `GORSKA-WTI-CAL-2015`
 **Author of this spec:** Codex
-**Last revised:** 2026-07-02
+**Last revised:** 2026-08-14
 
 ## 1. Strategy Logic
 
@@ -39,6 +39,8 @@ information sets and entry logic. This EA is a pure February calendar anomaly.
 - Base timeframe: D1.
 - Multi-timeframe refs: none.
 - Bar gating: `QM_IsNewBar()`.
+- Calendar identity: `QM_CalendarPeriodKey(PERIOD_D1)`; no per-EA raw
+  `iTime` cadence.
 
 ## 5. Expected Behaviour
 
@@ -69,3 +71,4 @@ touched by this build.
 |---|---|---|---|
 | v1 | 2026-06-27 | Initial build from card | first structural build |
 | v2 | 2026-07-02 | OnTick ordering fix per 2026-07-02 audit rule; remove duplicate CloseTimeExpired call from EntrySignal | eba2ee32-da67-477d-9cb7-7131b40c01ad |
+| v3 | 2026-08-14 | Replace raw calendar reads, refresh current V5 lifecycle wiring, and add bounded entry-layer diagnostics | eba2ee32-da67-477d-9cb7-7131b40c01ad generation 2 |

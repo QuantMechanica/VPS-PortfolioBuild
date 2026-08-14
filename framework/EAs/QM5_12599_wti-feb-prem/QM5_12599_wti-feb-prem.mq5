@@ -1,5 +1,5 @@
 #property strict
-#property version   "5.0"
+#property version   "5.1"
 #property description "QM5_12599 WTI February Calendar Premium"
 
 #include <QM/QM_Common.mqh>
@@ -46,6 +46,9 @@ input double strategy_atr_sl_mult        = 2.25;
 input int    strategy_max_hold_days      = 1;
 input int    strategy_max_spread_points  = 1000;
 
+int g_current_day_key = 0;
+int g_current_month   = 0;
+
 // -----------------------------------------------------------------------------
 // Strategy helpers
 // -----------------------------------------------------------------------------
@@ -62,11 +65,30 @@ int Strategy_DayKey(const datetime t)
    return dt.year * 10000 + dt.mon * 100 + dt.day;
   }
 
-int Strategy_Month(const datetime t)
+int Strategy_MonthFromDayKey(const int day_key)
   {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.mon;
+   if(day_key <= 0)
+      return 0;
+   return ((day_key / 100) % 100);
+  }
+
+void Strategy_RefreshCalendarState()
+  {
+   // Central framework calendar key: avoids per-EA raw iTime cadence and is
+   // tester-robust for Darwinex custom symbols.
+   g_current_day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 0);
+   g_current_month = Strategy_MonthFromDayKey(g_current_day_key);
+  }
+
+void Strategy_LogEntryDecision(const string event_name,
+                               const string reason)
+  {
+   QM_LogEvent(QM_INFO,
+               event_name,
+               StringFormat("{\"reason\":\"%s\",\"day_key\":%d,\"month\":%d}",
+                            reason,
+                            g_current_day_key,
+                            g_current_month));
   }
 
 bool Strategy_HasOpenPosition()
@@ -90,9 +112,6 @@ void Strategy_CloseTimeExpiredPositions()
   {
    const int magic = QM_FrameworkMagic();
    const datetime now = TimeCurrent();
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: single iTime read for D1 bar-open time; used for month/day-key time-exit math only.
-   const int current_month = (current_d1_bar > 0) ? Strategy_Month(current_d1_bar) : Strategy_Month(now);
-   const int current_day_key = (current_d1_bar > 0) ? Strategy_DayKey(current_d1_bar) : Strategy_DayKey(now);
    const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -107,8 +126,9 @@ void Strategy_CloseTimeExpiredPositions()
 
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
       const int opened_day_key = Strategy_DayKey(opened);
-      bool should_close = (current_month != strategy_entry_month);
-      if(current_day_key > opened_day_key)
+      bool should_close = (g_current_month > 0 &&
+                           g_current_month != strategy_entry_month);
+      if(g_current_day_key > opened_day_key)
          should_close = true;
       if(opened > 0 && now - opened >= (datetime)hold_seconds)
          should_close = true;
@@ -125,6 +145,8 @@ void Strategy_CloseTimeExpiredPositions()
 bool Strategy_NoTradeFilter()
   {
    if(!Strategy_IsXtiD1())
+      return true;
+   if(qm_ea_id != 12599)
       return true;
    if(qm_magic_slot_offset != 0)
       return true;
@@ -148,33 +170,51 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    if(Strategy_HasOpenPosition())
+     {
+      Strategy_LogEntryDecision("ENTRY_REJECTED", "owned_position_exists");
       return false;
+     }
 
    if(strategy_max_spread_points > 0)
      {
       const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
       if(spread_points > strategy_max_spread_points)
+        {
+         Strategy_LogEntryDecision("ENTRY_REJECTED", "spread_cap_exceeded");
          return false;
+        }
      }
 
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: single iTime read for D1 bar-open time; used for entry month filter only.
-   if(current_d1_bar <= 0)
+   if(g_current_day_key <= 0 || g_current_month <= 0)
+     {
+      Strategy_LogEntryDecision("ENTRY_REJECTED", "calendar_key_unavailable");
       return false;
-   if(Strategy_Month(current_d1_bar) != strategy_entry_month)
+     }
+   if(g_current_month != strategy_entry_month)
       return false;
 
    const double atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(atr_last <= 0.0)
+     {
+      Strategy_LogEntryDecision("ENTRY_REJECTED", "atr_unavailable");
       return false;
+     }
 
    const double entry_price = QM_EntryMarketPrice(req.type);
    if(entry_price <= 0.0)
+     {
+      Strategy_LogEntryDecision("ENTRY_REJECTED", "entry_price_unavailable");
       return false;
+     }
 
    req.sl = QM_StopATR(_Symbol, req.type, entry_price, strategy_atr_period, strategy_atr_sl_mult);
    if(req.sl <= 0.0)
+     {
+      Strategy_LogEntryDecision("ENTRY_REJECTED", "atr_stop_invalid");
       return false;
+     }
 
+   Strategy_LogEntryDecision("ENTRY_SIGNAL_FIRE", "february_long");
    return true;
   }
 
@@ -217,6 +257,12 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   // Prime the bar tracker so an attach/restart inside an existing D1 bar
+   // cannot manufacture a calendar entry. The first genuine D1 boundary is
+   // the first signal opportunity.
+   QM_IsNewBar();
+   Strategy_RefreshCalendarState();
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12599\",\"ea\":\"wti-feb-prem\"}");
    return INIT_SUCCEEDED;
   }
@@ -229,19 +275,26 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
-   // Canonical 2026-07-02 OnTick order: kill-switch → Friday-close →
-   // NoTradeFilter → ManageOpenPosition → ExitSignal → news gate →
-   // IsNewBar → EntrySignal. Management must run through news windows so
-   // time exits and SL enforcement keep working when spreads spike.
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
+   const bool is_new_bar = QM_IsNewBar();
+   if(is_new_bar)
+     {
+      Strategy_RefreshCalendarState();
+      QM_EquityStreamOnNewBar();
+     }
+
+   // Position management remains above every entry-only news guard. The
+   // calendar cache is advanced only on a genuine D1 boundary.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -252,29 +305,42 @@ void OnTick()
          const ulong ticket = PositionGetTicket(i);
          if(!PositionSelectByTicket(ticket))
             continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
 
+   if(!is_new_bar)
+      return;
+
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
+     {
+      if(g_current_month == strategy_entry_month)
+         Strategy_LogEntryDecision("ENTRY_REJECTED", "strategy_news_hook");
       return;
+     }
+
+   if(g_current_month == strategy_entry_month)
+      Strategy_LogEntryDecision("ENTRY_ATTEMPT", "february_new_d1_bar");
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
    else
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
+     {
+      if(g_current_month == strategy_entry_month)
+         Strategy_LogEntryDecision("ENTRY_REJECTED", "framework_news_gate");
       return;
-
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
+     }
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

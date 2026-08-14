@@ -1,26 +1,115 @@
 {
   "task_id": "eba2ee32-da67-477d-9cb7-7131b40c01ad",
+  "build_generation": 2,
+  "build_attempt_token": "d397d6e6-eed7-4240-901d-411e6feb20a7",
   "ea_id": "QM5_12599",
-  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12599_wti-feb-prem",
-  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12599_wti-feb-prem\\QM5_12599_wti-feb-prem.mq5",
-  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12599_wti-feb-prem\\QM5_12599_wti-feb-prem.ex5",
-  "magic_base": 125990000,
+  "ea_label": "QM5_12599_wti-feb-prem",
+  "slug": "wti-feb-prem",
+  "source_id": "GORSKA-WTI-CAL-2015",
+  "strategy": "WTI February D1 calendar premium",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12599_wti-feb-prem.md",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_12599_wti-feb-prem",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12599_wti-feb-prem/QM5_12599_wti-feb-prem.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_12599_wti-feb-prem/QM5_12599_wti-feb-prem.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_12599_wti-feb-prem/SPEC.md",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
   "symbols_registered": [
     "XTIUSD.DWX"
   ],
   "setfiles_generated": [
-    "C:\\QM\\repo\\framework\\EAs\\QM5_12599_wti-feb-prem\\sets\\QM5_12599_wti-feb-prem_XTIUSD.DWX_D1_backtest.set"
+    "C:/QM/repo/framework/EAs/QM5_12599_wti-feb-prem/sets/QM5_12599_wti-feb-prem_XTIUSD.DWX_D1_backtest.set"
   ],
-  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12599_wti-feb-prem\\SPEC.md",
+  "magic_base": 125990000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 125990000,
+      "registry_status": "active"
+    }
+  ],
   "build_check_passed": true,
+  "build_check_strict": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260814_103426.json",
   "compile_succeeded": true,
-  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260627_060752\\QM5_12599_wti-feb-prem.compile.log",
-  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260627_060812.json",
+  "compile_strict": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:/QM/repo/framework/build/compile/20260814_103540/QM5_12599_wti-feb-prem.compile.log",
+  "compile_summary": "D:/QM/reports/compile/20260814_103540/summary.csv",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
   "smoke_result": "deferred_p2_smoke",
-  "smoke_skipped_reason": "q02_enqueued_for_paced_fleet_no_manual_backtest",
   "smoke_report_path": null,
-  "blocked_reason": null,
+  "smoke_skipped_reason": "Paced-fleet capacity scan found all T1-T10 occupied by ten active work items and three CPU samples averaging 97.8%; no smoke, tester, dispatch, worker tick, optimization, or backtest was started by this unit.",
+  "blocked_reason": "",
+  "q02_enqueued": false,
+  "q02_enqueue_deferred_reason": "BACKTEST_CPU_CEILING",
+  "rework": {
+    "review_finding": "Replace raw iTime-derived monthly calendar cadence with QM_CalendarPeriodKey.",
+    "historical_q02_result": "Three deterministic Model-4 full-window runs each completed one trade and failed MIN_TRADES_NOT_MET.",
+    "repair": "Use the framework D1 calendar key, prime the framework new-bar tracker, cache the broker calendar once per genuine D1 boundary, refresh current MAE and request-zeroing lifecycle wiring, and emit bounded registered entry-decision events.",
+    "mechanics_changed": false
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "capacity_snapshot": {
+    "observed_at_utc": "2026-08-14T10:36:20Z",
+    "active_work_items": 10,
+    "active_tester_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "cpu_samples_percent": [
+      97.1,
+      97.8,
+      98.4
+    ],
+    "cpu_average_percent": 97.8,
+    "logical_processors": 16
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_source": true,
+    "tester_launched": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  },
+  "file_hashes_sha256": {
+    "mq5": "c692a2e36ac5155cbfb24069ef8f14b2321184fcbc479c3eda7df56a10329e34",
+    "ex5": "e40ee4d97eec6656096d828c8cc0f08a7988a7e74d469e68d1562a00c82e4a60",
+    "spec": "b878075c40ef4b602a6b72e9a9374554423392556064e30ac8d12695eb1944da",
+    "setfile": "a9d70beb8de318094ee161408fca8044fbf35a5602fc785e2a763d95e8816b1b",
+    "approved_card": "e8e36f57ff5fe766022802433fa2a80156df95b11795c688a6afaf81a4137551",
+    "build_check_report": "28329914e2dd64d91dfd75d6cf8476655de13a86e70a308af3067990bdf0664e",
+    "compile_log": "28318d1ad74ae6d4f6743ca2daa8ae8370e8c21c9eea2aa9ce2fcde574229427",
+    "compile_summary": "8b302142f813b82918b66dd2f0f49f2eede4a5c113b9e7d4c3571ede9023f752"
+  },
   "open_questions": [
-    "No manual backtest launched; Q02 is delegated to paced farm workers."
+    "The refreshed current-framework binary still requires a full-window Q02 run to prove that the historical one-trade failure is cleared and that the card's approximately 18-22 entries/year are reachable.",
+    "The entry-layer events distinguish calendar, position, spread, news, ATR, price, and stop rejection in the next exact-bound run."
   ]
 }
