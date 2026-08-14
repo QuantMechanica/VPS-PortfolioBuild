@@ -8,7 +8,7 @@ ea_id: QM5_21520
 slug: xng-flow-mom
 status: APPROVED
 execution_contract_ref: strategy-seeds/cards/approved/QM5_21520_xng-flow-mom_card.md
-execution_contract_status: DRAFT
+execution_contract_status: APPROVED
 created: 2026-08-14
 created_by: Research+Development
 last_updated: 2026-08-14
@@ -55,9 +55,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_STARTED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: READY
 review_focus: "Falsify a quiet native-tick-volume XNG weekly continuation driver distinct from the certified cumulative-RSI pullback; Q09 alone may establish realized decorrelation from XAU/SP500/NDX/XNG."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -226,11 +226,12 @@ portfolio admission; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-14 | initial XNG bottom-quartile tick-volume weekly continuation card | G0 | APPROVED; build pending |
+| v2 | 2026-08-14 | implement locked quiet-flow continuation and fixed-risk lifecycle | Q01 | PASS; Q02 ready |
 
 ## Pipeline phase status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-14 | APPROVED; R1-R4 PASS | `decisions/2026-08-14_qm5_21520_xng_flow_mom_g0.md`; bounded source packet |
-| Q01 Build Validation | - | PENDING | build not yet started |
-| Q02 Baseline Screening | - | NOT STARTED | paced enqueue requires Q01 PASS and available CPU capacity |
+| Q01 Build Validation | 2026-08-14 | PASS | strict compile 0/0; build check 0/0; six reference tests; P1 artifact PASS |
+| Q02 Baseline Screening | 2026-08-14 | READY | paced enqueue requires available CPU capacity |

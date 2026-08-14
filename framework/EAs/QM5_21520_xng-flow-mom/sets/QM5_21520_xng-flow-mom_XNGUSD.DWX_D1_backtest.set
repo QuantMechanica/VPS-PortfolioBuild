@@ -1,0 +1,29 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        21520
+; ea_slug:      xng-flow-mom
+; ea_version:   v5.0
+; set_version:  s20260814-001
+; symbol:       XNGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   6d9b045edfe1fe40d916adc0bd171cdd59306d55b6a3f71359a075bdb3949cff
+; author:       Development
+; date:         2026-08-14
+;==========================================================
+qm_ea_id=21520
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\xng-flow-mom_card.md
+strategy_vol_lookback=40
+strategy_vol_percentile_cap=25.0
+strategy_atr_period=14
+strategy_atr_sl_mult=2.5
+strategy_max_hold_bars=5
+strategy_max_spread_points=600

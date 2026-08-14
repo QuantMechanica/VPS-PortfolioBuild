@@ -16007,3 +16007,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 21517,xauxag-seas-rv,1,XAGUSD.DWX,215170001,2026-08-14,Research+Development,active
 21518,wti-brent-cfm,0,XTIUSD.DWX,215180000,2026-08-14,Research+Development,active
 21519,xng-wkend-hold,0,XNGUSD.DWX,215190000,2026-08-14,Research+Development,active
+21520,xng-flow-mom,0,XNGUSD.DWX,215200000,2026-08-14,Research+Development,active
