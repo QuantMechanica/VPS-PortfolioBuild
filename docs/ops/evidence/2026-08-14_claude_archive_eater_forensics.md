@@ -62,6 +62,38 @@ manifest gap → containment. Multisym runs multiply the exposed file set.
   STAT_ONLY handling and shrink the hashed surface.
 - Codex USN forensics dispatched (ground truth: which process deleted what when).
 
+## ACL deep-dive (added ~09:20Z)
+
+- The 08-09 hardening DID apply+verify an explicit deny ACE
+  (Write|Delete|ChangePermissions|TakeOwnership for runner SID -500) on all
+  3946 files (`acl_apply.json` 05:56Z PASS; amended2 16:42Z; verify_4 PASS).
+- TODAY zero explicit ACEs exist on sampled files INCLUDING canonical T1
+  (`T1\...\CADCHF.DWX\2018.hcc`: inherited defaults only). The hardening was
+  stripped fleet-wide — prime suspect: the Variant-A per-terminal migration
+  (08-10) created new inodes/copies that inherit directory defaults.
+- **Detection hole:** when an `acl_evidence_path` is bound,
+  `audit_history_isolation` REPLACES the live ACL probe with a static
+  always-true stub (`mt5_history_isolation.py:998-1005`,
+  `source: bound_acl_verification_receipt`) — the 08-09 receipt vouches
+  forever; live erosion is invisible to every audit since.
+- **Design contradiction:** re-applying deny-delete would BREAK copy-on-claim
+  (its `os.replace` needs delete rights, and workers + MT5 run as the SAME
+  admin identity). ACL hardening and claim-time privatization cannot coexist
+  under a single runner identity. Fix options for cross-review:
+  (a) split identities (MT5 processes vs workers) and deny only MT5;
+  (b) privatize fully up-front per terminal, then hard-deny deletes fleet-wide
+      (no claim-time replace needed anymore);
+  (c) no ACLs; eliminate hash-vs-MT5 collisions and accept+auto-repair rare
+      MT5 rebuild losses (fail-closed gate already catches them).
+
+## Restore readiness (prepared, NOT yet applied)
+
+49 missing instances = 32 distinct paths; ALL 32 have surviving FAMILY-inode
+donors (manifest file_id match) — hardlink restore plan dry-run PASS
+(`restore_hardlink_family.py`, scratchpad; evidence JSON on apply). Full
+inventory: `D:\QM\reports\state\archive_missing_inventory_20260814.txt`.
+No further losses since FACTORY_OFF.flag (~08:40Z) — damage is static.
+
 ## Open questions (USN pass)
 
 - Exact delete timestamps + originating process for wave-1 AND wave-2 files.
