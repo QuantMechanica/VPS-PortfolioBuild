@@ -1,5 +1,5 @@
 #property strict
-#property version   "5.0"
+#property version   "5.1"
 #property description "QM5_11480 Capra Pristine PBS/PSS Pullback D1"
 
 #include <QM/QM_Common.mqh>
@@ -85,6 +85,11 @@ input int    strategy_trail_after_bars  = 2;
 input int    strategy_time_stop_bars    = 5;
 input double strategy_spread_cap_pips   = 25.0;
 
+// Set exactly once by the framework new-bar gate in OnTick.  The card's
+// bar-extreme trail is therefore evaluated once per completed D1 bar, not on
+// every incoming tick.
+bool g_strategy_is_new_bar = false;
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -160,20 +165,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // perf-allowed: D1 OHLC structural pullback pattern, evaluated only after the framework new-bar gate.
-   const double close1 = iClose(_Symbol, tf, 1);
-   const double high1 = iHigh(_Symbol, tf, 1);
-   const double high2 = iHigh(_Symbol, tf, 2);
-   const double high3 = iHigh(_Symbol, tf, 3);
-   const double high4 = iHigh(_Symbol, tf, 4);
-   const double low1 = iLow(_Symbol, tf, 1);
-   const double low2 = iLow(_Symbol, tf, 2);
-   const double low3 = iLow(_Symbol, tf, 3);
-   const double low4 = iLow(_Symbol, tf, 4);
-   const double open1 = iOpen(_Symbol, tf, 1);
-   const double open2 = iOpen(_Symbol, tf, 2);
-   const double open3 = iOpen(_Symbol, tf, 3);
-   const double close2 = iClose(_Symbol, tf, 2);
-   const double close3 = iClose(_Symbol, tf, 3);
+   const double close1 = iClose(_Symbol, tf, 1); // perf-allowed: one bounded bespoke D1 pullback read behind QM_IsNewBar.
+   const double high1 = iHigh(_Symbol, tf, 1);   // perf-allowed: one bounded bespoke D1 pullback read behind QM_IsNewBar.
+   const double high2 = iHigh(_Symbol, tf, 2);   // perf-allowed: one bounded bespoke D1 pullback read behind QM_IsNewBar.
+   const double high3 = iHigh(_Symbol, tf, 3);   // perf-allowed: one bounded bespoke D1 pullback read behind QM_IsNewBar.
+   const double high4 = iHigh(_Symbol, tf, 4);   // perf-allowed: one bounded bespoke D1 pullback read behind QM_IsNewBar.
+   const double low1 = iLow(_Symbol, tf, 1);     // perf-allowed: one bounded bespoke D1 pullback read behind QM_IsNewBar.
+   const double low2 = iLow(_Symbol, tf, 2);     // perf-allowed: one bounded bespoke D1 pullback read behind QM_IsNewBar.
+   const double low3 = iLow(_Symbol, tf, 3);     // perf-allowed: one bounded bespoke D1 pullback read behind QM_IsNewBar.
+   const double low4 = iLow(_Symbol, tf, 4);     // perf-allowed: one bounded bespoke D1 pullback read behind QM_IsNewBar.
+   const double open1 = iOpen(_Symbol, tf, 1);   // perf-allowed: one bounded bespoke D1 pullback read behind QM_IsNewBar.
+   const double open2 = iOpen(_Symbol, tf, 2);   // perf-allowed: one bounded bespoke D1 pullback read behind QM_IsNewBar.
+   const double open3 = iOpen(_Symbol, tf, 3);   // perf-allowed: one bounded bespoke D1 pullback read behind QM_IsNewBar.
+   const double close2 = iClose(_Symbol, tf, 2); // perf-allowed: one bounded bespoke D1 pullback read behind QM_IsNewBar.
+   const double close3 = iClose(_Symbol, tf, 3); // perf-allowed: one bounded bespoke D1 pullback read behind QM_IsNewBar.
    if(close1 <= 0.0 || high1 <= 0.0 || high2 <= 0.0 || high3 <= 0.0 || high4 <= 0.0 ||
       low1 <= 0.0 || low2 <= 0.0 || low3 <= 0.0 || low4 <= 0.0 ||
       open1 <= 0.0 || open2 <= 0.0 || open3 <= 0.0 || close2 <= 0.0 || close3 <= 0.0)
@@ -183,8 +188,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double prior_low = DBL_MAX;
    for(int shift = 2; shift < 2 + strategy_pivot_lookback; ++shift)
      {
-      prior_high = MathMax(prior_high, iHigh(_Symbol, tf, shift));
-      prior_low = MathMin(prior_low, iLow(_Symbol, tf, shift));
+       prior_high = MathMax(prior_high, iHigh(_Symbol, tf, shift)); // perf-allowed: bounded D1 pivot scan behind QM_IsNewBar.
+       prior_low = MathMin(prior_low, iLow(_Symbol, tf, shift));    // perf-allowed: bounded D1 pivot scan behind QM_IsNewBar.
      }
    if(prior_high <= 0.0 || prior_low <= 0.0 || prior_low == DBL_MAX)
       return false;
@@ -240,6 +245,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   if(!g_strategy_is_new_bar)
+      return;
+
    const int magic = QM_FrameworkMagic();
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(point <= 0.0)
@@ -247,8 +255,6 @@ void Strategy_ManageOpenPosition()
 
    const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
    const double pip = (digits == 3 || digits == 5) ? point * 10.0 : point;
-   const datetime now = TimeCurrent();
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -260,7 +266,8 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      if(now - opened < strategy_trail_after_bars * 24 * 60 * 60)
+      const int holding_bars = iBarShift(_Symbol, PERIOD_D1, opened, false);
+      if(holding_bars < strategy_trail_after_bars)
          continue;
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
@@ -268,13 +275,13 @@ void Strategy_ManageOpenPosition()
       // perf-allowed: one closed D1 bar extreme for card-defined bar-by-bar trail.
       if(ptype == POSITION_TYPE_BUY)
         {
-         const double trail_sl = NormalizeDouble(iLow(_Symbol, PERIOD_D1, 1) - pip, digits);
+         const double trail_sl = NormalizeDouble(iLow(_Symbol, PERIOD_D1, 1) - pip, digits); // perf-allowed: card-defined D1 trail behind QM_IsNewBar.
          if(trail_sl > 0.0 && (current_sl <= 0.0 || trail_sl > current_sl + point))
             QM_TM_MoveSL(ticket, trail_sl, "CAPRA_PBS_TRAIL_D1_LOW");
         }
       else if(ptype == POSITION_TYPE_SELL)
         {
-         const double trail_sl = NormalizeDouble(iHigh(_Symbol, PERIOD_D1, 1) + pip, digits);
+         const double trail_sl = NormalizeDouble(iHigh(_Symbol, PERIOD_D1, 1) + pip, digits); // perf-allowed: card-defined D1 trail behind QM_IsNewBar.
          if(trail_sl > 0.0 && (current_sl <= 0.0 || trail_sl < current_sl - point))
             QM_TM_MoveSL(ticket, trail_sl, "CAPRA_PSS_TRAIL_D1_HIGH");
         }
@@ -286,7 +293,6 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   const datetime now = TimeCurrent();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -298,7 +304,8 @@ bool Strategy_ExitSignal()
          continue;
 
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      if(now - opened >= strategy_time_stop_bars * 24 * 60 * 60)
+      const int holding_bars = iBarShift(_Symbol, PERIOD_D1, opened, false);
+      if(holding_bars >= strategy_time_stop_bars)
          return true;
      }
    return false;
@@ -348,28 +355,18 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   if(Strategy_NoTradeFilter())
-      return;
+   g_strategy_is_new_bar = QM_IsNewBar();
 
-   // Per-tick: trade management can adjust SL/TP on open positions.
+   // Management and exits are never suppressed by entry-only news/spread gates.
    Strategy_ManageOpenPosition();
 
    // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
@@ -379,25 +376,39 @@ void OnTick()
       for(int i = PositionsTotal() - 1; i >= 0; --i)
         {
          const ulong ticket = PositionGetTicket(i);
-         if(!PositionSelectByTicket(ticket))
+         if(ticket == 0 || !PositionSelectByTicket(ticket))
             continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic)
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol ||
+            PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
-   if(!QM_IsNewBar())
+   if(!g_strategy_is_new_bar)
       return;
 
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
+   // FW1 news and card spread constraints gate new entries only.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol,
+                                        broker_now,
+                                        qm_news_temporal,
+                                        qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol,
+                                       broker_now,
+                                       qm_news_mode_legacy);
+   if(!news_allows || Strategy_NoTradeFilter())
+      return;
+
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

@@ -4,13 +4,13 @@
 **Slug:** capra-pristine-pbs-pss-pullback-d1
 **Source:** 60dd4b99-251b-5bb7-95d3-aca347a243ca (see `sources/capra-greg-pristine-trading-method`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-11
+**Last revised:** 2026-08-14
 
 ---
 
 ## 1. Strategy Logic
 
-The EA trades Greg Capra and Oliver Velez's Pristine Buy Setup and Pristine Sell Setup on D1 FX bars. Long entries require price above a rising EMA20 and either three consecutive lower highs or three consecutive bearish bars; a one-day buy stop is placed one pip above the last pullback bar. Short entries mirror the rule below a falling EMA20 with three higher lows or three bullish bars and a one-day sell stop below the rally bar. Stops use the pullback/rally extreme with an 80-pip cap; exits are prior 10-bar pivot target, D1 bar trailing after two days, framework SL/TP, Friday close, or a five-day time stop.
+The EA trades Greg Capra and Oliver Velez's Pristine Buy Setup and Pristine Sell Setup on D1 FX bars. Long entries require price above a rising EMA20 and either three consecutive lower highs or three consecutive bearish bars; a one-bar buy stop is placed one pip above the last pullback bar. Short entries mirror the rule below a falling EMA20 with three higher lows or three bullish bars and a one-bar sell stop below the rally bar. Stops use the pullback/rally extreme with an 80-pip cap; exits are prior 10-bar pivot target, D1 bar trailing after two completed bars, framework SL/TP, Friday close, or a five-completed-D1-bar time stop.
 
 ---
 
@@ -96,3 +96,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | a3936943-659e-4e9a-be4c-2fcb43cd0a55 |
+| v2 | 2026-08-14 | Framework recovery build | Resolve raw-series gate, lifecycle ordering, completed-bar exits, and Q02 handoff under task 8eb64d87-8e0e-4471-b63a-0e4810d0b221. |
