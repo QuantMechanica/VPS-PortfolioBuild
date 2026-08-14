@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        21521
+; ea_slug:      wti-flow-switch
+; ea_version:   v5.0
+; set_version:  s20260814-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   bd5b04d47c032aa1896ba85412b5a2aaf28ac53834297ba93390e8aac0d2f230
+; author:       Development
+; date:         2026-08-14
+;==========================================================
+qm_ea_id=21521
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-flow-switch_card.md
+strategy_vol_lookback=40
+strategy_low_rank_cap=25.0
+strategy_high_rank_floor=75.0
+strategy_atr_period=14
+strategy_atr_sl_mult=2.75
+strategy_max_hold_bars=5
+strategy_max_spread_points=400
