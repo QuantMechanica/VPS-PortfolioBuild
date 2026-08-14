@@ -1,0 +1,145 @@
+{
+  "artifact_type": "fx_cointegration_existing_pair_retry_containment_stop",
+  "generated_at_utc": "2026-08-14T07:38:22Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "cef8f30421d439f63e31dcc493badc23dcb0f445",
+  "mission_outcome": "EXISTING_PAIR_Q02_REQUEUED_INFRA_STOPPED_AT_CONTAINMENT_AND_CAPACITY",
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "frontier_reconciliation": {
+    "coverage_source_commit": "a804932912a449aed19bbc8fe61f1f5846556743",
+    "scan_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "scan_mode": "--include-negative-hedges",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_card_or_ea_would_duplicate_existing_relationship": true
+  },
+  "selected_existing_pair": {
+    "selection_reason": "All 66 scan relationships are covered; frozen-scan rank 58 remains the sole relationship without a terminal exact logical Q02 verdict.",
+    "scan_rank": 58,
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "ea_id": "QM5_1257",
+    "pair_slot": 8,
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "source_citation": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+    "g0_status": "APPROVED",
+    "r1_r4_status": "PASS",
+    "basket_manifest": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json",
+    "fixed_risk_setfile": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "q02": {
+      "task_id": "39ee6910-5d04-4087-83b0-65a6fd6b22f9",
+      "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+      "status": "pending",
+      "verdict": null,
+      "attempt_count": 1,
+      "claimed_by": null,
+      "last_attempt_terminal": "T4",
+      "last_attempt_started_at_utc": "2026-08-14T06:38:24Z",
+      "last_observed_updated_at_utc": "2026-08-14T06:52:39Z",
+      "prior_failure": "summary_missing",
+      "run_smoke_exit_code": 0,
+      "avoid_terminals": [
+        "T4"
+      ],
+      "produced_report": false,
+      "only_run_artifact": "D:/QM/reports/work_items/d4cd660c-c81a-41d3-8a4c-ad21d3319816/QM5_1257/20260814_063902/raw/run_01/tester.ini",
+      "active_hold_count": 0,
+      "active_quarantine_count": 0,
+      "duplicate_enqueue_performed": false,
+      "priority_mutation_performed": false
+    }
+  },
+  "farm_stop": {
+    "sampled_at_utc": "2026-08-14T07:38:22Z",
+    "running_factory_terminal_count": 2,
+    "running_factory_terminals": [
+      "T3",
+      "T5"
+    ],
+    "active_work_item_count": 2,
+    "pending_work_item_count": 1023,
+    "prior_cpu_ceiling_binding": true,
+    "prior_cpu_ceiling_sample_utc": "2026-08-14T06:48:11Z",
+    "current_memory_pressure": {
+      "total_visible_memory_kib": 66185976,
+      "free_physical_memory_kib": 2370660,
+      "terminal_worker_memory_errors_observed": true
+    },
+    "custom_history_containment": {
+      "enabled": true,
+      "reason": "custom_history_isolation_gate_failure",
+      "recorded_at_utc": "2026-08-14T07:30:38.476213Z",
+      "authorization_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+      "mode_sha256": "a650fa35aebe2e3dc305178b3122d216174c79c65b3bdae18c19bc87b411d635",
+      "mode_file_sha256": "2094f65238e28e4d5dab4e0024b5187c36ee05b16d001830f7d511e5abbb1b00",
+      "worker_gate_status": "FAIL_CLOSED",
+      "audit_sha256": "faff615961831140381b8d8ac9a3ef8ad87c6ce313b5f89e9dcb51517bb8c81c",
+      "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+      "ramp_sha256": "d6084d754547353e3bc72bf794f92d2213492b48de25870d2165c9d46e6ff922",
+      "missing_archive_count": 3,
+      "missing_archives": [
+        "T8:history/SP500.DWX/2020.hcc",
+        "T8:history/SP500.DWX/2021.hcc",
+        "T8:history/UK100.DWX/2022.hcc"
+      ],
+      "finding_count": 6,
+      "finding_codes": [
+        "MANIFEST_ARCHIVE_FILE_MISSING",
+        "TERMINAL_MANIFEST_INCOMPLETE"
+      ]
+    },
+    "stop_reason": "The target already hit the 10/10 paced-fleet ceiling, returned pending after a summary-missing infrastructure attempt, and the signed history-integrity gate now blocks all governed claims while the host remains under severe memory pressure."
+  },
+  "changed_since_prior_frontier_sample": {
+    "prior_evidence": "artifacts/fx_cointegration_gbpusd_usdjpy_active_cpu_stop_20260814T064811Z_board_advisor.json",
+    "prior_selected_pair_state": "active",
+    "current_selected_pair_state": "pending",
+    "state_change": "The canonical T4 attempt ended without a summary and the exact row was requeued in place for a different terminal; signed containment then re-engaged."
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "basket_manifest_mutation": false,
+    "setfile_mutation": false,
+    "q02_enqueue_or_requeue": false,
+    "priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run_started": false,
+    "history_archive_mutation": false,
+    "repository_evidence_record_created": true,
+    "reason": "The non-duplicate fallback is already enqueued exactly once; current infrastructure controls forbid a retry, and a new pair would duplicate the exhausted frontier."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false,
+    "live_deployment_artifacts": false
+  }
+}
