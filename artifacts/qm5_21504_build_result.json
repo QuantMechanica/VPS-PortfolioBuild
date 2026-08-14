@@ -1,0 +1,103 @@
+{
+  "task_id": "manual-codex-2026-08-14-xng-flowrev",
+  "ea_id": "QM5_21504",
+  "slug": "xng-flowrev",
+  "strategy": "XNG D1 weekly high-tick-volume flow-proxy reversal",
+  "strategy_id": "ZHAO-ST-MOMREV-2026_XNG_S03",
+  "source_id": "28681f5d-aa78-584e-9698-750d1402e485",
+  "source_links": [
+    "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6425598"
+  ],
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_21504_xng-flowrev",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21504_xng-flowrev\\QM5_21504_xng-flowrev.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21504_xng-flowrev\\QM5_21504_xng-flowrev.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21504_xng-flowrev\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\QM5_21504_xng-flowrev_card.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\28681f5d-aa78-584e-9698-750d1402e485\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_21504_xng-flowrev\\sets\\QM5_21504_xng-flowrev_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "0a8141b1252d6d191d9b690f1bd9d822fda78855573578dd8682dfc2687a0a4b",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XNGUSD.DWX",
+        "magic": 215040000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_21504_xng-flowrev --force --json --fail-on-error",
+    "result": "COMPILED",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260814_025900\\QM5_21504_xng-flowrev.compile.log",
+    "ex5_size_bytes": 377854
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_21504_xng-flowrev -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260814_025929.json"
+  },
+  "validations": {
+    "card_schema": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS",
+    "reference_tests": "PASS (5/5)",
+    "dedup": "CLEAN_XNG_WEEKLY_TICK_VOLUME_CONDITIONED_REVERSAL_AFTER_FAMILY_REVIEW"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "3231be16-d309-46c8-945f-d3dc30d03136",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XNGUSD.DWX",
+    "host_symbol": "XNGUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21504_xng-flowrev\\sets\\QM5_21504_xng-flowrev_XNGUSD.DWX_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "created_at_utc": "2026-08-14T02:52:58+00:00",
+    "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "No manual MT5 backtest was launched; the paced Q02 fleet owns the first tester run.",
+  "cpu_ceiling_check": {
+    "checked_at_utc": "2026-08-14T03:03:07+00:00",
+    "factory_terminals_active": 2,
+    "factory_terminals_total": 10,
+    "terminal64_running_count_including_non_factory": 5,
+    "ceiling_hit": false
+  },
+  "non_duplicate_reason": "Symmetric weekly raw-return fade conditioned only on non-overlapping tick-volume rank; unlike QM5_12567 cumulative-RSI pullback and unlike QM5_13102 realized-volatility/shock reversal.",
+  "source_access_note": "The governed packet contains metadata and accessible abstract/methodology summaries. Full-text retrieval was deferred by source policy; tick volume is explicitly a falsifiable proxy, not the paper's position-flow signal.",
+  "hashes": {
+    "mq5_sha256": "BA2AB43C31AF15C39EC638C1B0C0468A39F7BD8F61C1E4B52D986952863B6319",
+    "ex5_sha256": "8F70765B45403F7B0096D5106CCD2201AFF9413D36C3F4980EF023E20CA8F16C",
+    "setfile_sha256": "B1C063121F8D4A2144C90ADDCA6C9BF8403FB9A3A0A7BB90359FC7CBCCAADB82"
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_manifest_touched": false
+  }
+}

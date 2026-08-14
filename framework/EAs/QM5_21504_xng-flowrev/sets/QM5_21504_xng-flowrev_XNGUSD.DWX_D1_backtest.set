@@ -1,0 +1,29 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        21504
+; ea_slug:      xng-flowrev
+; ea_version:   v5.0
+; set_version:  s20260814-001
+; symbol:       XNGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   0a8141b1252d6d191d9b690f1bd9d822fda78855573578dd8682dfc2687a0a4b
+; author:       Development
+; date:         2026-08-14
+;==========================================================
+qm_ea_id=21504
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_21504_xng-flowrev_card.md
+strategy_vol_lookback=40
+strategy_vol_percentile=75.0
+strategy_atr_period=14
+strategy_atr_sl_mult=2.5
+strategy_max_hold_bars=5
+strategy_max_spread_points=600
