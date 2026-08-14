@@ -16011,3 +16011,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 21521,wti-flow-switch,0,XTIUSD.DWX,215210000,2026-08-14,Research+Development,active
 21522,wti-lowdb-trend,0,XTIUSD.DWX,215220000,2026-08-14,Research+Development,active
 21523,wti-xau-div-tr,0,XTIUSD.DWX,215230000,2026-08-14,Research+Development,active
+21524,wti-xcu-relmom,0,XTIUSD.DWX,215240000,2026-08-14,Research+Development,active
+21524,wti-xcu-relmom,1,XCUUSD.DWX,215240001,2026-08-14,Research+Development,active

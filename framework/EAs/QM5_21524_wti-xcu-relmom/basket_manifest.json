@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_21524_WTI_XCU_RELMOM_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XCUUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XCUUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg WTI/copper monthly package. Q02 must evaluate combined package PnL, costs, density, and correlation; neither leg is a standalone strategy.",
+    "The signal buys the higher and shorts the lower arithmetic mean of exactly twelve synchronized completed broker-month simple returns. Aggregate RISK_FIXED is split equally by per-leg stop risk."
+  ]
+}
