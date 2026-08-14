@@ -1,0 +1,106 @@
+{
+  "task_id": "manual-codex-2026-08-14-xng-flow-mom",
+  "ea_id": "QM5_21520",
+  "slug": "xng-flow-mom",
+  "strategy": "XNG weekly five-day return continuation in the bottom quartile of native tick-volume flow",
+  "strategy_id": "ZHAO-ST-MOMREV-2026_XNG_S04",
+  "source_id": "ZHAO-XNG-QUIETFLOW-2026",
+  "source_link": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6425598",
+  "symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_21520_xng-flow-mom",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21520_xng-flow-mom\\QM5_21520_xng-flow-mom.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21520_xng-flow-mom\\QM5_21520_xng-flow-mom.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21520_xng-flow-mom\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\xng-flow-mom_card.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\ZHAO-XNG-QUIETFLOW-2026\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_21520_xng-flow-mom\\sets\\QM5_21520_xng-flow-mom_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "6d9b045edfe1fe40d916adc0bd171cdd59306d55b6a3f71359a075bdb3949cff",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "symbol_slot": 0,
+    "symbol": "XNGUSD.DWX",
+    "magic": 215200000,
+    "registry_status": "active",
+    "resolver_registry_rows": 15955,
+    "resolver_registry_sha256": "632AA72A31CBA9ED12E4647E052EC1C52527CF04AA0C1EE2FEFE53002F966562"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_21520_xng-flow-mom/QM5_21520_xng-flow-mom.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260814_120842\\QM5_21520_xng-flow-mom.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260814_120842\\summary.csv",
+    "ex5_size_bytes": 377128
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_21520_xng-flow-mom -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260814_120920.json"
+  },
+  "validations": {
+    "card_schema": "PASS (root, approved, EA-doc copies)",
+    "spec_doc": "PASS (1/1)",
+    "symbol_scope": "SINGLE_SYMBOL_OK (0 violations)",
+    "build_guardrails": "PASS",
+    "reference_tests": "PASS (6/6)",
+    "p1": "PASS",
+    "p1_report_path": "D:\\QM\\reports\\pipeline\\QM5_21520\\P1\\P1_QM5_21520_result.json",
+    "dedup": "CLEAN_XNG_WEEKLY_QUIET_FLOW_MOMENTUM_AFTER_SOURCE_FAMILY_REVIEW"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "981d76d7-dcb8-4ef0-a891-03dc8f6edaa3",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21520_xng-flow-mom\\sets\\QM5_21520_xng-flow-mom_XNGUSD.DWX_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "created_at_utc": "2026-08-14T12:12:26+00:00",
+    "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
+    "targeted_sweep": true,
+    "priority_track": true
+  },
+  "smoke_result": "deferred_to_q02_fleet",
+  "smoke_skipped_reason": "No manual MT5 backtest was launched; the paced Q02 fleet owns the first tester run.",
+  "cpu_ceiling_check": {
+    "checked_at_utc": "2026-08-14T12:11:42+00:00",
+    "factory_terminals_active": 1,
+    "factory_terminals_total": 10,
+    "running_factory_terminals": ["T6"],
+    "terminal64_running_count_including_non_factory": 3,
+    "pending_queue_before_enqueue": 1026,
+    "queue_ceiling": 7000,
+    "ceiling_hit": false
+  },
+  "non_duplicate_reason": "QM5_12567 is a long-only cumulative-RSI pullback; QM5_13101 uses a return shock threshold plus low realized-volatility rank and a signal exit; QM5_21504 admits the upper tick-volume tail and reverses; QM5_21520 admits the disjoint lower tail and continues. The preallocated QM5_21505 is an unbuilt silver carrier and contributes no XNG implementation or evidence.",
+  "source_access_note": "The deterministic source router returned PERMISSION_REQUIRED / DEFERRED:SOURCE_POLICY for the SSRN URL. No bypass was attempted. The approved card is bounded to the repository's complete governed metadata and abstract/methodology note, and explicitly treats low native tick volume as an unproven proxy rather than the paper's investor-position residual series.",
+  "hashes": {
+    "mq5_sha256": "c4e0e886c5a3c2cb83fc42a199394f9435ca18b48df675175b382b517eb62334",
+    "ex5_sha256": "c175286f41907d5bbe0bf89c3777424fa28ca688f1b4a2b1d590fc8e2316a776",
+    "setfile_sha256": "21a23c68a52cf0e9bada55c36e3f47a8b79bc53d1565f731801255f439258338",
+    "card_sha256": "4cc1d338810ad0175bad81a33eb75fcb225d6f48e5e57ee8277ed1b2870c3ac9",
+    "source_sha256": "344025d064e3d99ed6baf32104a97d8484aa59608532136ab08bc2fa303a06fa"
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_manifest_touched": false
+  }
+}

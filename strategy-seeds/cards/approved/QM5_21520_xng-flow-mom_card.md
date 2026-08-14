@@ -57,7 +57,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: READY
+q02_status: PENDING
 review_focus: "Falsify a quiet native-tick-volume XNG weekly continuation driver distinct from the certified cumulative-RSI pullback; Q09 alone may establish realized decorrelation from XAU/SP500/NDX/XNG."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -226,7 +226,7 @@ portfolio admission; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-14 | initial XNG bottom-quartile tick-volume weekly continuation card | G0 | APPROVED; build pending |
-| v2 | 2026-08-14 | implement locked quiet-flow continuation and fixed-risk lifecycle | Q01 | PASS; Q02 ready |
+| v2 | 2026-08-14 | implement locked quiet-flow continuation and fixed-risk lifecycle | Q02 | Q01 PASS; Q02 enqueued |
 
 ## Pipeline phase status
 
@@ -234,4 +234,4 @@ portfolio admission; or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-14 | APPROVED; R1-R4 PASS | `decisions/2026-08-14_qm5_21520_xng_flow_mom_g0.md`; bounded source packet |
 | Q01 Build Validation | 2026-08-14 | PASS | strict compile 0/0; build check 0/0; six reference tests; P1 artifact PASS |
-| Q02 Baseline Screening | 2026-08-14 | READY | paced enqueue requires available CPU capacity |
+| Q02 Baseline Screening | 2026-08-14 | ENQUEUED; pending | work item `981d76d7-dcb8-4ef0-a891-03dc8f6edaa3`; no tester dispatched by this build |
