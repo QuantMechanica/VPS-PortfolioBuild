@@ -94,8 +94,26 @@ donors (manifest file_id match) — hardlink restore plan dry-run PASS
 inventory: `D:\QM\reports\state\archive_missing_inventory_20260814.txt`.
 No further losses since FACTORY_OFF.flag (~08:40Z) — damage is static.
 
-## Open questions (USN pass)
+## USN outcome + error-32 correlation (~09:45Z) — ATTRIBUTION CLOSED
 
-- Exact delete timestamps + originating process for wave-1 AND wave-2 files.
-- Was the full-audit CLI (or any full-hash caller) active 06:35Z-08:06Z?
-- Did the 2026-08-13 T8 incident (3 files) follow the same non-kill mechanism?
+- **USN journal on D: does not exist** (FSCTL error 1179; $Extend\$UsnJrnl absent;
+  C: control has an active journal). No retroactive per-file deletion timeline is
+  recoverable; no process auditing enabled. Journal absence itself is anomalous —
+  cause undatable. Action: create the journal going forward.
+- **Error-32 correlation across ALL affected terminals** (MT5 journals, UTF-16):
+  per terminal, the set of symbols with `file opening or reading error [32]`
+  matches the set of symbols with missing year files almost exactly
+  (T1: NZDCAD=NZDCAD; T6: 6/6 exact; T7: 17 error-symbols ⊇ 15 loss-symbols;
+  T2: 7≈6; T9: 6≈5). ALL terminals burst in the SAME window 08:46–08:51 local
+  (06:46–06:51Z, the 10-wide claim wave after release); a second smaller cluster
+  05:32–05:38 local matches wave-1 losses — **wave 1 was the same mechanism,
+  not watchdog-kill collateral**.
+- **Closed mechanism:** fleet-wide gate audits open a file handle on EVERY
+  archive file of EVERY terminal (`file_identity` uses open() +
+  GetFileInformationByHandle without delete/write share) → collides with the
+  exclusive write-opens of concurrently RUNNING MT5 testers → MT5 gets
+  error 32 on its own history file → discards the custom-symbol year file
+  (no server to re-sync) → manifest gap → containment. Collision probability
+  scales with concurrent runs (multisym waves), audit frequency, and the count
+  of TERMINAL_PRIVATE inodes (post-restore/privatization hash load). The
+  2026-08-13 T8 incident (3 files) fits the same class.
