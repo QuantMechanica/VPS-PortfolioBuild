@@ -9,16 +9,58 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 import terminal_worker  # noqa: E402
 
 
-def test_gate_failure_reengages_containment(monkeypatch, tmp_path: Path) -> None:
+def _failing_gate(terminal: str, **extra) -> dict:
+    return {
+        "required": True,
+        "status": "FAIL_CLOSED",
+        "terminal": terminal,
+        "activation_sha256": "a" * 64,
+        **extra,
+    }
+
+
+def test_benign_gate_failure_defers_without_containment(
+    monkeypatch, tmp_path: Path
+) -> None:
+    # DL-085: torn link counts and master-repairable manifest gaps self-heal;
+    # they defer the claim attempt but must not stop the fleet.
     monkeypatch.setattr(
         terminal_worker.custom_history_gate,
         "run_worker_gate",
-        lambda root, terminal: {
-            "required": True,
-            "status": "FAIL_CLOSED",
-            "terminal": terminal,
-            "activation_sha256": "a" * 64,
-        },
+        lambda root, terminal: _failing_gate(
+            terminal,
+            findings=[
+                {"code": "ARCHIVE_LINK_COUNT_TOO_LOW", "terminal": "T7"},
+                {"code": "MANIFEST_ARCHIVE_FILE_MISSING", "terminal": "T2"},
+                {"code": "TERMINAL_MANIFEST_INCOMPLETE", "terminal": "T2"},
+            ],
+            master_repair={"status": "REPAIRED", "failed_count": 0},
+        ),
+    )
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append((root, kwargs)),
+    )
+
+    gate = terminal_worker._custom_history_gate(tmp_path, "T3")
+
+    assert gate["status"] == "FAIL_CLOSED"
+    assert calls == []
+
+
+def test_master_repair_failure_reengages_containment(
+    monkeypatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        terminal_worker.custom_history_gate,
+        "run_worker_gate",
+        lambda root, terminal: _failing_gate(
+            terminal,
+            findings=[{"code": "MANIFEST_ARCHIVE_FILE_MISSING", "terminal": "T2"}],
+            master_repair={"status": "PARTIAL", "failed_count": 1},
+        ),
     )
     calls = []
     monkeypatch.setattr(
@@ -41,6 +83,33 @@ def test_gate_failure_reengages_containment(monkeypatch, tmp_path: Path) -> None
     ]
 
 
+def test_non_benign_finding_reengages_containment(
+    monkeypatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        terminal_worker.custom_history_gate,
+        "run_worker_gate",
+        lambda root, terminal: _failing_gate(
+            terminal,
+            findings=[
+                {"code": "ARCHIVE_LINK_COUNT_TOO_LOW", "terminal": "T7"},
+                {"code": "ARCHIVE_RUNNER_WRITE_NOT_DENIED", "terminal": "T4"},
+            ],
+        ),
+    )
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append((root, kwargs)),
+    )
+
+    gate = terminal_worker._custom_history_gate(tmp_path, "T3")
+
+    assert gate["status"] == "FAIL_CLOSED"
+    assert len(calls) == 1
+
+
 def test_runtime_history_stop_conditions_are_fail_safe() -> None:
     assert terminal_worker._custom_history_stop_condition(
         {"detail": "history synchronization error"}
@@ -54,6 +123,75 @@ def test_runtime_history_stop_conditions_are_fail_safe() -> None:
     assert terminal_worker._custom_history_stop_condition(
         {"detail": "ordinary strategy fail"}
     ) is None
+
+
+def test_gate_defer_result_does_not_trip_stop_condition() -> None:
+    # The defer's own reason string carries the fail-closed token; scanning
+    # it re-tripped containment on every benign self-heal (2026-08-14 11:18Z).
+    for action in sorted(terminal_worker.CUSTOM_HISTORY_GATE_DEFER_ACTIONS):
+        assert terminal_worker._custom_history_stop_condition(
+            {
+                "action": action,
+                "reason": "CUSTOM_HISTORY_ISOLATION_FAIL_CLOSED",
+                "custom_history_gate": {"status": "FAIL_CLOSED"},
+            }
+        ) is None
+    # A real run result with eater evidence still stops the fleet.
+    assert terminal_worker._custom_history_stop_condition(
+        {"action": "finished", "detail": "History 'CADCHF.DWX' error [32]"}
+    ) == "history_error_32"
+
+
+def test_transient_copy_on_claim_error_defers_without_containment(
+    monkeypatch, tmp_path: Path
+) -> None:
+    def raise_sharing_violation(root):
+        raise PermissionError(13, "Permission denied")
+
+    monkeypatch.setattr(
+        terminal_worker.custom_history_gate, "load_activation", raise_sharing_violation
+    )
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append((root, kwargs)),
+    )
+
+    result = terminal_worker._privatize_custom_history_claim(
+        tmp_path,
+        {"id": "item-1", "payload_json": "{}", "ea_id": "QM5_1", "symbol": "EURUSD.DWX"},
+        "T3",
+        {"required": True, "status": "PASS_ISOLATED", "activation_sha256": "a" * 64},
+    )
+
+    assert result["status"] == "FAIL_CLOSED"
+    assert result["reason"] == "custom_history_copy_on_claim_failure"
+    assert calls == []
+
+
+def test_non_transient_copy_on_claim_error_engages_containment(
+    monkeypatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        terminal_worker.custom_history_gate, "load_activation", lambda root: None
+    )
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append((root, kwargs)),
+    )
+
+    result = terminal_worker._privatize_custom_history_claim(
+        tmp_path,
+        {"id": "item-1", "payload_json": "{}", "ea_id": "QM5_1", "symbol": "EURUSD.DWX"},
+        "T3",
+        {"required": True, "status": "PASS_ISOLATED", "activation_sha256": "a" * 64},
+    )
+
+    assert result["status"] == "FAIL_CLOSED"
+    assert len(calls) == 1
 
 
 def test_claim_history_scope_includes_host_conversion_and_basket_dependencies(

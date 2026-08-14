@@ -40,6 +40,7 @@ import custom_history_contract
 import custom_history_copy_on_claim
 import custom_history_gate
 import custom_history_lease
+import custom_history_master
 from framework.scripts._phase_utils import cold_cache_summary_signature
 from factory_mutation_lock import FactoryMutationLock, path_for_factory_flag
 
@@ -51,6 +52,24 @@ CUSTOM_HISTORY_GATE_PASS_STATUSES = frozenset(
 )
 CUSTOM_HISTORY_COPY_PASS_STATUSES = frozenset(
     {"PASS_PRIVATIZED", "SKIPPED_OWNER_ROLLBACK_TOPOLOGY"}
+)
+# DL-085: these audit findings self-heal — torn family link counts reconcile
+# on re-audit, manifest gaps repair from the verified master tree. They defer
+# one claim attempt; only master loss or a non-benign topology finding may
+# stop the whole fleet.
+CUSTOM_HISTORY_BENIGN_FINDING_CODES = (
+    frozenset({"ARCHIVE_LINK_COUNT_TOO_LOW"})
+    | custom_history_master.REPAIRABLE_FINDING_CODES
+)
+# Administrative defers release the claim without a run; their reason string
+# carries the gate's own fail-closed token and must never feed the run-result
+# stop-condition text scan (2026-08-14 11:18Z containment trip).
+CUSTOM_HISTORY_GATE_DEFER_ACTIONS = frozenset(
+    {
+        "custom_history_gate_deferred",
+        "custom_history_copy_on_claim_deferred",
+        "custom_history_post_copy_gate_deferred",
+    }
 )
 FACTORY_ADMISSION_LOCK_TIMEOUT_SECONDS = 5.0
 FACTORY_ADMISSION_LOCK_POLL_SECONDS = 0.01
@@ -1116,7 +1135,11 @@ def _custom_history_gate(root: Path, terminal: str) -> dict[str, Any]:
             "error": repr(exc),
             "activation_sha256": activation_hash,
         }
-    if gate.get("required") and gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES:
+    if (
+        gate.get("required")
+        and gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES
+        and _custom_history_gate_fail_is_emergency(gate)
+    ):
         try:
             custom_history_lease.engage_emergency_mode(
                 root,
@@ -1126,6 +1149,26 @@ def _custom_history_gate(root: Path, terminal: str) -> dict[str, Any]:
         except Exception:
             pass
     return gate
+
+
+def _custom_history_gate_fail_is_emergency(gate: dict[str, Any]) -> bool:
+    """DL-085: containment is for master loss, not for self-healing audits.
+
+    A failing audit whose findings are all benign classes (torn family link
+    counts, manifest gaps the master tree repairs) defers this claim attempt
+    only. The fleet-wide emergency stop engages when the master tree cannot
+    vouch for content (repair status ERROR/PARTIAL) or a finding outside the
+    benign classes appears (cross-terminal alias, ACL, protected-root).
+    """
+
+    master_repair = gate.get("master_repair") or {}
+    if str(master_repair.get("status") or "") in {"ERROR", "PARTIAL"}:
+        return True
+    findings = list(gate.get("findings") or [])
+    return any(
+        str(finding.get("code")) not in CUSTOM_HISTORY_BENIGN_FINDING_CODES
+        for finding in findings
+    )
 
 
 def _custom_history_copy_receipt_path(root: Path, item_id: str, terminal: str) -> Path:
@@ -1199,14 +1242,19 @@ def _privatize_custom_history_claim(
             "receipt_file_sha256": receipt["receipt_file_sha256"],
         }
     except Exception as exc:
-        try:
-            custom_history_lease.engage_emergency_mode(
-                root,
-                reason=f"custom_history_copy_on_claim_failure:{type(exc).__name__}",
-                activation_sha256=activation_sha256,
-            )
-        except Exception:
-            pass
+        # Sharing violations / mid-swap misses while other terminals' MT5
+        # processes hold archives open are concurrency artifacts of THIS
+        # attempt, not integrity breaches — defer without fleet containment
+        # (same classification as the gate's transient-IO path).
+        if not _is_transient_gate_io_error(exc):
+            try:
+                custom_history_lease.engage_emergency_mode(
+                    root,
+                    reason=f"custom_history_copy_on_claim_failure:{type(exc).__name__}",
+                    activation_sha256=activation_sha256,
+                )
+            except Exception:
+                pass
         return {
             "required": True,
             "status": "FAIL_CLOSED",
@@ -1276,6 +1324,12 @@ def _acquire_custom_history_lease(
 
 
 def _custom_history_stop_condition(result: dict[str, Any]) -> str | None:
+    # DL-085: an administrative gate defer releases the claim without a run;
+    # its reason string carries the gate's own fail-closed token, so scanning
+    # it would re-trip fleet containment on every benign self-heal defer
+    # (2026-08-14 11:18Z trip). Only real run results are scanned.
+    if str(result.get("action") or "") in CUSTOM_HISTORY_GATE_DEFER_ACTIONS:
+        return None
     text = json.dumps(result, sort_keys=True, default=str).casefold()
     tokens = {
         "history_error_32": ("error [32]", "error 32", "sharing_violation"),

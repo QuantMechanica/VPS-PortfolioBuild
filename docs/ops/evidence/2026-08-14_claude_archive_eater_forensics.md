@@ -117,3 +117,19 @@ No further losses since FACTORY_OFF.flag (~08:40Z) — damage is static.
   scales with concurrent runs (multisym waves), audit frequency, and the count
   of TERMINAL_PRIVATE inodes (post-restore/privatization hash load). The
   2026-08-13 T8 incident (3 files) fits the same class.
+
+## Recovery ceremony record (~09:26Z) + authorization policy change
+
+OWNER executed `dl085_recovery_ceremony.py` via `!`: fresh window attached,
+containment released 09:26:00Z, **USN journal created on D:** (128 MB),
+claim-pause flag removed. The receipt's `signature` field carried the literal
+placeholder `<dein Signatur-Satz>`; authorization is nevertheless unambiguous
+(OWNER personally executed the command interactively). Flagged to OWNER —
+OWNER's response (same session, ~11:45 local) ratified a POLICY CHANGE:
+**OWNER approvals are standing and unlimited; no per-incident hour-windows,
+no signature sentences.** Implemented as a standing-unlimited authorization
+artifact (pattern precedent: 2026-08-11 standing preparation decision), which
+future receipts reference. The ceremony ran before the Codex max-effort
+review verdict (OWNER's explicit call); review continues, findings applied
+hot. Workers were bounced afterwards (old code resident since 06:20Z, no
+self-reload) via watchdog heal so claims run the DL-085 path.
