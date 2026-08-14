@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        21517
 ; ea_slug:      xauxag-seas-rv
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   9dc97bc4f03f92d4d0a1f1b2edf4ff3a218c625bf7d887eff7a584931503fabb
 ; author:       Development
 ; date:         2026-08-14
 ;==========================================================

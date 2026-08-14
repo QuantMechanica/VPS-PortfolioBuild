@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_21517_XAU_XAG_SEASRV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg XAU/XAG monthly package. Q02 must evaluate combined package PnL, costs, density, and correlation; neither leg is a standalone strategy.",
+    "The signal fades the just-completed XAU-minus-XAG monthly return only after subtracting and scaling by its prior-ten-year same-calendar relative-return sample."
+  ]
+}

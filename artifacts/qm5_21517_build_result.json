@@ -1,0 +1,120 @@
+{
+  "task_id": "manual-codex-2026-08-14-xauxag-seas-rv",
+  "ea_id": "QM5_21517",
+  "slug": "xauxag-seas-rv",
+  "strategy": "XAU/XAG monthly standardized seasonal-surprise reversion basket",
+  "strategy_id": "KELOHARJU-SCHWEIKERT-XAUXAG-SEASRV-2026_S01",
+  "source_id": "KELOHARJU-SCHWEIKERT-XAUXAG-SEASRV-2026",
+  "source_links": [
+    "https://doi.org/10.1111/jofi.12398",
+    "https://www.nber.org/papers/w20815",
+    "https://www.sciencedirect.com/science/article/pii/S0378426617302807",
+    "https://www.sciencedirect.com/science/article/abs/pii/S0301420721000623",
+    "https://www.cmegroup.com/education/lessons/gold-and-silver-ratio-spread-trade"
+  ],
+  "symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_21517_XAU_XAG_SEASRV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_21517_xauxag-seas-rv",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21517_xauxag-seas-rv\\QM5_21517_xauxag-seas-rv.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21517_xauxag-seas-rv\\QM5_21517_xauxag-seas-rv.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21517_xauxag-seas-rv\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\xauxag-seas-rv_card.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\KELOHARJU-SCHWEIKERT-XAUXAG-SEASRV-2026\\source.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21517_xauxag-seas-rv\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_21517_xauxag-seas-rv\\sets\\QM5_21517_xauxag-seas-rv_QM5_21517_XAU_XAG_SEASRV_D1_D1_backtest.set"
+  ],
+  "setfile_build_hash": "9dc97bc4f03f92d4d0a1f1b2edf4ff3a218c625bf7d887eff7a584931503fabb",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XAUUSD.DWX",
+        "magic": 215170000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "XAGUSD.DWX",
+        "magic": 215170001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_21517_xauxag-seas-rv/QM5_21517_xauxag-seas-rv.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260814_053215\\QM5_21517_xauxag-seas-rv.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260814_053215\\summary.csv",
+    "ex5_size_bytes": 381502
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_21517_xauxag-seas-rv -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260814_053252.json"
+  },
+  "validations": {
+    "card_schema": "PASS (root, approved, EA-doc copies)",
+    "spec_doc": "PASS (1/1)",
+    "symbol_scope": "BASKET_OK",
+    "build_guardrails": "PASS",
+    "reference_tests": "PASS (8/8)",
+    "dedup": "CLEAN_AUTHORIZED_XAUXAG_STANDARDIZED_SEASONAL_SURPRISE_REVERSION"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "774d944c-7220-4c22-8a74-93a0791168c8",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_21517_XAU_XAG_SEASRV_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21517_xauxag-seas-rv\\sets\\QM5_21517_xauxag-seas-rv_QM5_21517_XAU_XAG_SEASRV_D1_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "created_at_utc": "2026-08-14T05:34:46+00:00",
+    "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
+    "priority_track": true
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "No manual MT5 backtest was launched; the paced Q02 fleet owns the first tester run.",
+  "cpu_ceiling_check": {
+    "checked_at_utc": "2026-08-14T05:34:19+00:00",
+    "factory_terminals_active": 1,
+    "factory_terminals_total": 10,
+    "terminal64_running_count_including_non_factory": 3,
+    "ceiling_hit": false
+  },
+  "enqueue_retry_note": "The first governed apply attempt hit a transient SQLite database lock and created no row. An immediate readback confirmed zero rows; the idempotent targeted retry created exactly one pending Q02 item.",
+  "non_duplicate_reason": "This monthly basket fades the standardized just-completed XAU-minus-XAG return after subtracting its prior-ten-year same-calendar mean. Existing sleeves instead follow seasonal means or sign agreement, follow raw relative momentum, or trade ratio/residual/tail/channel/run/rank/rolling-D1 state objects.",
+  "source_access_note": "The governed composite packet is bounded to already approved repository reviews. The source literature supports recurring calendar return structure and a state-dependent gold/silver relation; the exact standardized contrarian conjunction, thresholds, CFD port, and performance expectations are QM hypotheses rather than source claims.",
+  "hashes": {
+    "mq5_sha256": "0A04D8B303812A900B1F0DBC69CD7B9EC8E33BB295938DDBF33F585AE29C1672",
+    "ex5_sha256": "6378EC7EC790846684685BEC488492FB7B63F7A00289384BD72D554C7ACB6049",
+    "setfile_sha256": "59E222FB89B884A4474A2BE4D97B2303BF18A066DEDAEC4B4246BD2223AE46B9"
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_manifest_touched": false
+  }
+}
