@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import atexit
+import errno
 import faulthandler
 import hashlib
 import json
@@ -1077,6 +1078,13 @@ def _defer_custom_history_gate(
     }
 
 
+# Windows resource-exhaustion I/O failures: ERROR_NOT_ENOUGH_MEMORY (8),
+# ERROR_OUTOFMEMORY (14), ERROR_NO_SYSTEM_RESOURCES (1450),
+# ERROR_COMMITMENT_LIMIT (1455). Deliberately narrow — device/corruption
+# OSErrors must keep engaging containment.
+_RESOURCE_EXHAUSTION_WINERRORS = frozenset({8, 14, 1450, 1455})
+
+
 def _is_transient_gate_io_error(exc: BaseException) -> bool:
     """Concurrency/resource artifacts of the gate, not isolation breaches.
 
@@ -1085,8 +1093,11 @@ def _is_transient_gate_io_error(exc: BaseException) -> bool:
     (FileNotFoundError mid-scan). MemoryError joined 2026-08-14: an audit under
     tester RAM pressure ran out of memory and engaged fleet-wide containment
     (reason custom_history_gate_exception:MemoryError, 10:04Z) although no
-    integrity fact was in question. All of these defer THIS claim attempt
-    only; engaging fleet-wide containment for them serializes the factory.
+    integrity fact was in question. Resource-exhaustion OSErrors joined the
+    same day: winerror 1450 ("Insufficient system resources", surfaced as
+    OSError errno 22) tripped containment at 18:11Z under 8-wide tester load.
+    All of these defer THIS claim attempt only; engaging fleet-wide
+    containment for them serializes the factory.
     """
 
     seen: set[int] = set()
@@ -1094,6 +1105,11 @@ def _is_transient_gate_io_error(exc: BaseException) -> bool:
     while current is not None and id(current) not in seen:
         seen.add(id(current))
         if isinstance(current, (PermissionError, FileNotFoundError, MemoryError)):
+            return True
+        if isinstance(current, OSError) and (
+            getattr(current, "winerror", None) in _RESOURCE_EXHAUSTION_WINERRORS
+            or current.errno == errno.ENOMEM
+        ):
             return True
         current = current.__cause__ or current.__context__
     return False

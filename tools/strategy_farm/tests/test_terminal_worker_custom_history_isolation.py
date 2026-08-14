@@ -294,6 +294,80 @@ def test_wrapped_transient_cause_defers_without_containment(
     assert calls == []
 
 
+def test_resource_exhaustion_oserror_defers_without_containment(
+    monkeypatch, tmp_path: Path
+) -> None:
+    def raise_no_system_resources(root, terminal):
+        exc = OSError(
+            22, "Insufficient system resources exist to complete the requested service"
+        )
+        exc.winerror = 1450
+        raise exc
+
+    monkeypatch.setattr(
+        terminal_worker.custom_history_gate,
+        "run_worker_gate",
+        raise_no_system_resources,
+    )
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append((root, kwargs)),
+    )
+
+    gate = terminal_worker._custom_history_gate(tmp_path, "T1")
+
+    assert gate["status"] == "FAIL_CLOSED"
+    assert gate["reason"] == "custom_history_gate_transient_io"
+    assert calls == []
+
+
+def test_enomem_oserror_defers_without_containment(monkeypatch, tmp_path: Path) -> None:
+    import errno as _errno
+
+    def raise_enomem(root, terminal):
+        raise OSError(_errno.ENOMEM, "Not enough space")
+
+    monkeypatch.setattr(
+        terminal_worker.custom_history_gate, "run_worker_gate", raise_enomem
+    )
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append((root, kwargs)),
+    )
+
+    gate = terminal_worker._custom_history_gate(tmp_path, "T7")
+
+    assert gate["reason"] == "custom_history_gate_transient_io"
+    assert calls == []
+
+
+def test_unlisted_oserror_still_engages_containment(monkeypatch, tmp_path: Path) -> None:
+    def raise_crc_error(root, terminal):
+        exc = OSError(5, "Data error (cyclic redundancy check)")
+        exc.winerror = 23
+        raise exc
+
+    monkeypatch.setattr(
+        terminal_worker.custom_history_gate, "run_worker_gate", raise_crc_error
+    )
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append((root, kwargs)),
+    )
+
+    gate = terminal_worker._custom_history_gate(tmp_path, "T3")
+
+    assert gate["reason"] == "custom_history_gate_exception"
+    assert len(calls) == 1
+    assert calls[0][1]["reason"] == "custom_history_gate_exception:OSError"
+
+
 def test_non_transient_gate_exception_still_engages_containment(
     monkeypatch, tmp_path: Path
 ) -> None:
