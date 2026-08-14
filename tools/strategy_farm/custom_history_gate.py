@@ -610,13 +610,38 @@ def run_worker_gate(
                 repaired_by=f"worker_gate:{target}",
             )
         except Exception as exc:
-            repair_summary = {"status": "ERROR", "error": repr(exc)}
-        else:
+            # A repair pass that dies on a transient copy-environment error
+            # (sharing violation, resource exhaustion) defers this claim only;
+            # ERROR remains the master-cannot-vouch emergency class.
             repair_summary = {
-                "status": "REPAIRED" if not repair["failed"] else "PARTIAL",
+                "status": (
+                    "ERROR_TRANSIENT_IO"
+                    if custom_history_master.is_transient_repair_io_error(exc)
+                    else "ERROR"
+                ),
+                "error": repr(exc),
+            }
+        else:
+            failed_transient = [
+                record for record in repair["failed"] if record.get("transient_io")
+            ]
+            if not repair["failed"]:
+                repair_status = "REPAIRED"
+            elif len(failed_transient) == len(repair["failed"]):
+                # Every failure is a copy race / resource artifact while the
+                # master still vouches -> defer, never fleet-stop (2026-08-14
+                # 21:49Z: 1-of-4 transient failure reported PARTIAL and
+                # engaged containment although a concurrent sibling repair of
+                # the same file succeeded in the same second).
+                repair_status = "PARTIAL_TRANSIENT_IO"
+            else:
+                repair_status = "PARTIAL"
+            repair_summary = {
+                "status": repair_status,
                 "repaired_count": len(repair["repaired"]),
                 "already_present_count": len(repair["already_present"]),
                 "failed_count": len(repair["failed"]),
+                "failed_transient_io_count": len(failed_transient),
                 "receipts_path": repair["receipts_path"],
             }
             if not repair["failed"]:

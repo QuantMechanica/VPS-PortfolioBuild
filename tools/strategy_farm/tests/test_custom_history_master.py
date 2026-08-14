@@ -162,6 +162,8 @@ def test_repair_fails_closed_on_master_corruption(tmp_path: Path) -> None:
         repaired_by="test",
     )
     assert len(result["failed"]) == 1
+    assert result["failed"][0]["transient_io"] is False
+    assert result["failed"][0]["exception_type"] == "CustomHistoryMasterError"
     assert not victim.exists()
     # no stray temp files
     assert not list((mt5_root / "T2").rglob("*.master-repair.*.tmp"))
@@ -347,7 +349,71 @@ def test_worker_gate_stays_fail_closed_when_repair_fails(monkeypatch, tmp_path: 
     assert verdict["status"] == "FAIL_CLOSED"
     assert verdict["master_repair"]["status"] == "PARTIAL"
     assert verdict["master_repair"]["failed_count"] == 1
+    assert verdict["master_repair"]["failed_transient_io_count"] == 0
     assert len(calls) == 1  # no post-repair audit after a failed repair
+
+
+def test_worker_gate_reports_partial_transient_io_when_all_failures_transient(
+    monkeypatch, tmp_path: Path
+) -> None:
+    missing = {
+        "status": "FAIL_CLOSED",
+        "audit_sha256": "d" * 64,
+        "findings": [],
+        "variant_a_file_audit": {
+            "findings": [
+                {
+                    "code": "MANIFEST_ARCHIVE_FILE_MISSING",
+                    "terminal": "T2",
+                    "relative_path": "history/EURUSD.DWX/2025.hcc",
+                }
+            ]
+        },
+    }
+    calls = _gate_fixture(monkeypatch, tmp_path, [missing])
+    monkeypatch.setattr(
+        gate.custom_history_master,
+        "repair_missing_archives",
+        lambda **kwargs: {
+            "repaired": [],
+            "already_present": [],
+            "failed": [
+                {
+                    "result": "FAILED",
+                    "error": "PermissionError(13, 'Permission denied')",
+                    "transient_io": True,
+                }
+            ],
+            "receipts_path": str(tmp_path / "repairs.jsonl"),
+        },
+    )
+
+    verdict = gate.run_worker_gate(tmp_path, terminal="T1")
+
+    assert verdict["status"] == "FAIL_CLOSED"
+    assert verdict["master_repair"]["status"] == "PARTIAL_TRANSIENT_IO"
+    assert verdict["master_repair"]["failed_transient_io_count"] == 1
+    assert len(calls) == 1  # still no post-repair audit; the claim just defers
+
+
+def test_transient_repair_io_classifier() -> None:
+    resource = OSError(22, "Insufficient system resources")
+    resource.winerror = 1450
+    crc = OSError(23, "Data error (cyclic redundancy check)")
+    crc.winerror = 23
+    wrapped_vouch = master.CustomHistoryMasterError("sha mismatch")
+    wrapped_vouch.__cause__ = PermissionError(13, "Permission denied")
+
+    assert master.is_transient_repair_io_error(PermissionError(13, "denied"))
+    assert master.is_transient_repair_io_error(FileNotFoundError(2, "gone"))
+    assert master.is_transient_repair_io_error(MemoryError())
+    assert master.is_transient_repair_io_error(resource)
+    assert not master.is_transient_repair_io_error(crc)
+    assert not master.is_transient_repair_io_error(
+        master.CustomHistoryMasterError("master file missing")
+    )
+    # A vouching failure anywhere in the chain always wins over transient IO.
+    assert not master.is_transient_repair_io_error(wrapped_vouch)
 
 
 def test_worker_gate_does_not_repair_foreign_codes(monkeypatch, tmp_path: Path) -> None:

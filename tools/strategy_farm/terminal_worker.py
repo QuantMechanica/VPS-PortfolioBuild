@@ -1175,6 +1175,9 @@ def _custom_history_gate_fail_is_emergency(gate: dict[str, Any]) -> bool:
     only. The fleet-wide emergency stop engages when the master tree cannot
     vouch for content (repair status ERROR/PARTIAL) or a finding outside the
     benign classes appears (cross-terminal alias, ACL, protected-root).
+    Repair statuses ERROR_TRANSIENT_IO / PARTIAL_TRANSIENT_IO (every failure
+    a copy race or resource artifact while the master vouches) deliberately
+    stay outside the emergency set — they defer like any benign-only fail.
     """
 
     master_repair = gate.get("master_repair") or {}

@@ -23,6 +23,7 @@ the atomic move and appended as a receipt to
 from __future__ import annotations
 
 import datetime as dt
+import errno
 import json
 import os
 from pathlib import Path
@@ -46,6 +47,49 @@ REPAIRABLE_FINDING_CODES = frozenset(
 
 class CustomHistoryMasterError(RuntimeError):
     """The master tree cannot vouch for the requested archive content."""
+
+
+# Windows resource-exhaustion I/O failures (mirrors the terminal_worker gate
+# whitelist): ERROR_NOT_ENOUGH_MEMORY (8), ERROR_OUTOFMEMORY (14),
+# ERROR_NO_SYSTEM_RESOURCES (1450), ERROR_COMMITMENT_LIMIT (1455).
+_RESOURCE_EXHAUSTION_WINERRORS = frozenset({8, 14, 1450, 1455})
+
+
+def is_transient_repair_io_error(exc: BaseException) -> bool:
+    """Copy-environment artifacts of a repair, not master-vouching failures.
+
+    A repair destination can be write-open in a running tester (sharing
+    violation -> PermissionError on the atomic replace), race a concurrent
+    repair (FileNotFoundError), or fail under RAM/handle pressure
+    (MemoryError, resource-exhaustion OSErrors). None of these question the
+    master's content; the next gate cycle retries. CustomHistoryMasterError
+    anywhere in the chain (master missing / size / sha mismatch) is the
+    genuine vouching-failure class and always wins: 2026-08-14 21:49Z a
+    single such transient failure (1 of 4, concurrent with a successful
+    sibling repair of the same file) reported master_repair PARTIAL and
+    stopped the fleet although the master vouched throughout.
+    """
+
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if isinstance(current, CustomHistoryMasterError):
+            return False
+        current = current.__cause__ or current.__context__
+    seen.clear()
+    current = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if isinstance(current, (PermissionError, FileNotFoundError, MemoryError)):
+            return True
+        if isinstance(current, OSError) and (
+            getattr(current, "winerror", None) in _RESOURCE_EXHAUSTION_WINERRORS
+            or current.errno == errno.ENOMEM
+        ):
+            return True
+        current = current.__cause__ or current.__context__
+    return False
 
 
 def _utc_now() -> str:
@@ -190,6 +234,7 @@ def repair_missing_archives(
         }
         if row is None or not terminal:
             record["result"] = "FAILED_NOT_IN_MANIFEST"
+            record["transient_io"] = False
             failed.append(record)
             continue
         destination = (
@@ -212,6 +257,8 @@ def repair_missing_archives(
         except (CustomHistoryMasterError, OSError) as exc:
             record["result"] = "FAILED"
             record["error"] = repr(exc)
+            record["exception_type"] = type(exc).__name__
+            record["transient_io"] = is_transient_repair_io_error(exc)
             failed.append(record)
             continue
         record["result"] = "REPAIRED_VERIFIED"

@@ -60,3 +60,40 @@ Tests: `test_terminal_worker_custom_history_isolation.py` — new
 Ceremony outcomes appended below after execution.
 
 ## Ceremony record (appended)
+
+- 20:49Z Factory_OFF #1: workers/terminals drained, managed Codex drain
+  FAILED (SYSTEM max-review exec started 20:45Z, lease cap 230 min).
+  Bounded wait; exec ended on its own ~21:07Z.
+- 21:14Z Factory_OFF #2: FACTORY QUIESCENT.
+- 21:15Z stale lease swept (`.stale_t8_pid12908_dead_20260814T211548Z`,
+  holder pid dead), orphaned claim be182dfd (QM5_20294 Q02) reset to
+  pending, worker-release semantics + claim-ledger retraction.
+- 21:16Z release-containment COMMITTED (standing pair DL-086, dual audits
+  3+4, mode_sha 24b2ee81…).
+- 21:33Z Factory_ON (RTA-2026-08-14-OSERRFIX): mutation committed,
+  post-commit evidence PASS (WAL 43/43), 10/10 daemons live. Note: the ON
+  argv guard requires backslash-canonical `-File` argv — a forward-slash
+  path aborts pre-mutation (decision stays valid).
+- 21:41Z dispatch fanned out to 8 concurrent claims (T1–T7, T10).
+
+## Re-trip 21:49Z: master_repair PARTIAL conflates transient copy races
+
+- 21:49:45Z containment re-engaged, reason
+  `custom_history_isolation_gate_failure`: T8's gate repair pass reported
+  `master_repair PARTIAL` (failed_count=1, already_present=3). The failed
+  file `history/GBPAUD.DWX/2022.hcc` exists in the master and was
+  REPAIRED_VERIFIED for another terminal in the same second (21:49:40Z,
+  sha 293716f3…) — a concurrent-repair copy race, not a vouching failure.
+- Fix (second commit tonight): `custom_history_master.repair_missing_archives`
+  now classifies each failure (`transient_io`, `exception_type`) via
+  `is_transient_repair_io_error` (CustomHistoryMasterError anywhere in the
+  chain always wins = non-transient); `custom_history_gate` reports
+  `PARTIAL_TRANSIENT_IO` / `ERROR_TRANSIENT_IO` when every failure is
+  transient; those statuses defer the claim without engaging containment
+  (`_custom_history_gate_fail_is_emergency` unchanged: only ERROR/PARTIAL
+  contain). Tests: +2 isolation defers, +1 gate PARTIAL_TRANSIENT_IO,
+  +classifier unit tests (31 passed; full custom-history/isolation selection
+  80 passed + 1 PRE-EXISTING order-dependent failure
+  `test_privatize_fails_closed_without_master_state`, fails identically
+  without this change, passes standalone).
+- Second release ceremony required (workers have no self-reload).

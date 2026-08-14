@@ -83,6 +83,62 @@ def test_master_repair_failure_reengages_containment(
     ]
 
 
+def test_master_repair_partial_transient_io_defers_without_containment(
+    monkeypatch, tmp_path: Path
+) -> None:
+    # Every repair failure a copy race / resource artifact while the master
+    # vouches -> defer this claim only (2026-08-14 21:49Z over-containment).
+    monkeypatch.setattr(
+        terminal_worker.custom_history_gate,
+        "run_worker_gate",
+        lambda root, terminal: _failing_gate(
+            terminal,
+            findings=[{"code": "MANIFEST_ARCHIVE_FILE_MISSING", "terminal": "T8"}],
+            master_repair={
+                "status": "PARTIAL_TRANSIENT_IO",
+                "failed_count": 1,
+                "failed_transient_io_count": 1,
+            },
+        ),
+    )
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append((root, kwargs)),
+    )
+
+    gate = terminal_worker._custom_history_gate(tmp_path, "T8")
+
+    assert gate["status"] == "FAIL_CLOSED"
+    assert calls == []
+
+
+def test_master_repair_error_transient_io_defers_without_containment(
+    monkeypatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        terminal_worker.custom_history_gate,
+        "run_worker_gate",
+        lambda root, terminal: _failing_gate(
+            terminal,
+            findings=[{"code": "MANIFEST_ARCHIVE_FILE_MISSING", "terminal": "T2"}],
+            master_repair={"status": "ERROR_TRANSIENT_IO", "error": "OSError(22, ...)"},
+        ),
+    )
+    calls = []
+    monkeypatch.setattr(
+        terminal_worker.custom_history_lease,
+        "engage_emergency_mode",
+        lambda root, **kwargs: calls.append((root, kwargs)),
+    )
+
+    gate = terminal_worker._custom_history_gate(tmp_path, "T2")
+
+    assert gate["status"] == "FAIL_CLOSED"
+    assert calls == []
+
+
 def test_non_benign_finding_reengages_containment(
     monkeypatch, tmp_path: Path
 ) -> None:
