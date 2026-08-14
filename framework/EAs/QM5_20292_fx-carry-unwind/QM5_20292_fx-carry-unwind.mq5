@@ -747,6 +747,42 @@ bool Strategy_PrepareLeg(const StrategyCarryCandidate &candidate,
    return (request.sl > 0.0);
   }
 
+bool Strategy_OpenPreparedLeg(const QM_BasketOrderRequest &basket_request,
+                              ulong &out_ticket)
+  {
+   out_ticket = 0;
+   if(basket_request.symbol != _Symbol)
+      return QM_BasketOpenPosition(qm_ea_id,
+                                   qm_news_mode_legacy,
+                                   strategy_deviation_points,
+                                   basket_request,
+                                   out_ticket);
+
+   QM_EntryRequest host_request;
+   ZeroMemory(host_request);
+   host_request.type = basket_request.type;
+   host_request.price = basket_request.price;
+   host_request.sl = basket_request.sl;
+   host_request.tp = basket_request.tp;
+   host_request.reason = basket_request.reason;
+   host_request.symbol_slot = basket_request.symbol_slot;
+   host_request.expiration_seconds = basket_request.expiration_seconds;
+
+   const int host_magic = QM_MagicChecked(qm_ea_id,
+                                          basket_request.symbol_slot,
+                                          _Symbol);
+   if(host_magic <= 0)
+      return false;
+
+   const double leg_risk_fixed =
+      RISK_FIXED / (double)QM5_20292_PACKAGE_LEGS;
+   return QM_TM_OpenPosition(host_request,
+                             out_ticket,
+                             host_magic,
+                             QM_RISK_MODE_FIXED,
+                             leg_risk_fixed);
+  }
+
 bool Strategy_OpenCarryUnwindPackage()
   {
    if(Strategy_OpenPackageLegCount() > 0 ||
@@ -764,19 +800,11 @@ bool Strategy_OpenCarryUnwindPackage()
          return false;
 
    ulong first_ticket = 0;
-   if(!QM_BasketOpenPosition(qm_ea_id,
-                             qm_news_mode_legacy,
-                             strategy_deviation_points,
-                             requests[0],
-                             first_ticket))
+   if(!Strategy_OpenPreparedLeg(requests[0], first_ticket))
       return false;
 
    ulong second_ticket = 0;
-   if(QM_BasketOpenPosition(qm_ea_id,
-                            qm_news_mode_legacy,
-                            strategy_deviation_points,
-                            requests[1],
-                            second_ticket))
+   if(Strategy_OpenPreparedLeg(requests[1], second_ticket))
       return true;
 
    Strategy_ClosePackage(QM_EXIT_STRATEGY);
