@@ -21,7 +21,7 @@
   "setfiles_generated": [
     "C:\\QM\\repo\\framework\\EAs\\QM5_21522_wti-lowdb-trend\\sets\\QM5_21522_wti-lowdb-trend_XTIUSD.DWX_D1_backtest.set"
   ],
-  "setfile_build_hash": "aa6020d9beba7c4c0e274423a68acb4b4f7d82854d20d52270290b087da77db1",
+  "setfile_build_hash": "f547b555eb8dfa7207e8916cd004cc713177a8a95d3e8acaf22b7ed3dbcd0856",
   "risk_mode": {
     "RISK_FIXED": 1000,
     "RISK_PERCENT": 0,
@@ -42,16 +42,16 @@
     "result": "PASS",
     "errors": 0,
     "warnings": 0,
-    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260814_174323\\QM5_21522_wti-lowdb-trend.compile.log",
-    "summary_path": "D:\\QM\\reports\\compile\\20260814_174323\\summary.csv",
-    "ex5_size_bytes": 391862
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260814_181926\\QM5_21522_wti-lowdb-trend.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260814_181926\\summary.csv",
+    "ex5_size_bytes": 392178
   },
   "build_check": {
     "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_21522_wti-lowdb-trend -Strict -SkipCompile",
     "result": "PASS",
     "failures": 0,
     "warnings": 0,
-    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260814_174436.json"
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260814_182028.json"
   },
   "validations": {
     "card_schema": "PASS (root, approved, and EA-doc copies)",
@@ -111,8 +111,8 @@
   },
   "hashes": {
     "mq5_sha256": "aa6020d9beba7c4c0e274423a68acb4b4f7d82854d20d52270290b087da77db1",
-    "ex5_sha256": "168733a42c321b703c58019572ddb1b149aa672984c7ad7e5c0096e5db24c3be",
-    "setfile_sha256": "81642c0d5a94e34dd634e7643f3f84974022501343d06cfb4c133863828e8821",
+    "ex5_sha256": "4f46ff72eb8a5331fae498b925e10a98d8cedff7fd123605e11a3a53d2641361",
+    "setfile_sha256": "bba6cab28777505f0a5433afe8d84b979c231a49673320bcff81b74d67adffe5",
     "card_sha256": "f04beea13059a2930073dc5c2ce33bd263cabc6ccfbf77fd0fc77adff511fb58",
     "source_sha256": "35a8aa052e49aca750a01bb8e8f6903c2d4260b83dadc106b396362b4e0e3077",
     "g0_decision_sha256": "bf832984c4ac30767f0497528ee1642616c0dbd818775a81efe20ecc720636ea"
