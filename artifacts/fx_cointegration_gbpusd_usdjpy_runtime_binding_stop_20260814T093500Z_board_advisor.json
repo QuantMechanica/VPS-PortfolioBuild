@@ -1,0 +1,91 @@
+{
+  "schema_version": "qm.fx-cointegration-runtime-binding-stop/v1",
+  "captured_at_utc": "2026-08-14T09:35:00.5841241Z",
+  "branch": "agents/board-advisor",
+  "head_commit": "4b43760ee5d82ccc0f2ba873de1ee86e9a21ab3c",
+  "mission_result": "EXISTING_PAIR_Q02_PENDING_RUNTIME_BINDING_STOP",
+  "frontier": {
+    "governed_scan_relationship_count": 66,
+    "uncovered_scan_relationships": 0,
+    "new_card_or_build_created": false,
+    "reason": "The frozen sign-aware 66-pair scan is fully represented by governed builds; another scan-derived card would be duplicate work."
+  },
+  "anchor_repair_preflight": {
+    "QM5_12532_AUDNZD_COINTEGRATION_D1": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1": "Q02_PASS_Q04_FAIL",
+    "open_q02_oninit_or_no_history_blocker": false
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_1257",
+    "ea_slug": "lemishko-fx-cointpair",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "scan_relationship_rank": 58,
+    "basket_manifest": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json",
+    "setfile": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+    "risk_contract": {
+      "environment": "backtest",
+      "risk_mode": "FIXED",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "canonical_q02_row": {
+    "id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 1,
+    "claimed_by": null,
+    "open_exact_row_count": 1,
+    "priority_track": true,
+    "priority_reason": "board_advisor_fx_fallback_full_66_pair_frontier_covered",
+    "dedupe_note": "existing_exact_logical_q02_row_promoted_in_place_no_enqueue",
+    "prior_failure": "summary_missing",
+    "avoid_terminals": [
+      "T4"
+    ],
+    "expected_ex5_sha256": "86c6e9f077e37ddd5aea1e15b253cd4509c7f180c846cc6aebd806fa17d95cbd",
+    "expected_setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4"
+  },
+  "capacity_snapshot": {
+    "physical_total_gb": 63.12,
+    "physical_free_gb": 54.31,
+    "factory_terminal_count": 0,
+    "terminal_worker_count": 0,
+    "active_work_item_count": 0,
+    "pending_work_item_count": 1026,
+    "t_live_observed_count": 1,
+    "cpu_ceiling_reached": false
+  },
+  "runtime_activation_blocker": {
+    "decision_id": "RTA-2026-08-14-T8RESTORE-R8",
+    "decision_status": "APPROVED_BUT_SOURCE_BINDING_INVALID_AFTER_DL085",
+    "decision_sha256": "a86f2d8f8a2675e7819e260553445ad8aafd03785544f5419b8faadb0948fb6f",
+    "validator_command": "python tools/strategy_farm/factory_runtime_activation.py --repo-root C:\\QM\\repo",
+    "validator_exit_code": 1,
+    "failed_binding": "tools/strategy_farm/farmctl.py",
+    "expected_sha256": "9c463d7479fe8984e52f192abdb6b2a5acd7125539761cf595909ef4c1bf9592",
+    "actual_sha256": "4da48df4a70859dd03e5e56c05f78e8bb452b980b844530ebe4562a6fc89b4ba",
+    "scheduled_factory_on_last_run_local": "2026-08-14T11:30:30+02:00",
+    "scheduled_factory_on_last_result": 1,
+    "watchdog_reset_admission_block_present": true,
+    "required_next_authority": "A fresh OWNER-signed runtime activation decision binding the post-DL-085 source hashes."
+  },
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "registry": false,
+    "queue": false,
+    "dispatch": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "autotrading": false
+  }
+}
