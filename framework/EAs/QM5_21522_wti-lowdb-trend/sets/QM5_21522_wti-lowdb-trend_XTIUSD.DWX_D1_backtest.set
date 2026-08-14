@@ -1,0 +1,37 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        21522
+; ea_slug:      wti-lowdb-trend
+; ea_version:   v5.0
+; set_version:  s20260814-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   61dbdf4edb06cfdd7f7b8d1e4dfb4a5da55abdc1248f38f1f08c39d9242c9636
+; author:       Development
+; date:         2026-08-14
+;==========================================================
+qm_ea_id=21522
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-lowdb-trend_card.md
+strategy_trend_months=12
+strategy_trend_history_bars_d1=500
+strategy_beta_returns_per_block=252
+strategy_beta_recent_block_offset=252
+strategy_beta_common_closes=505
+strategy_beta_history_bars_d1=900
+strategy_min_down_days=100
+strategy_beta_tolerance=1.0e-12
+strategy_variance_epsilon=1.0e-16
+strategy_max_endpoint_gap_days=10
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=40
+strategy_max_spread_points=1500

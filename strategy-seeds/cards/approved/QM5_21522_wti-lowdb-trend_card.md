@@ -8,7 +8,7 @@ ea_id: QM5_21522
 slug: wti-lowdb-trend
 status: APPROVED
 execution_contract_ref: strategy-seeds/cards/approved/QM5_21522_wti-lowdb-trend_card.md
-execution_contract_status: DRAFT
+execution_contract_status: APPROVED
 created: 2026-08-14
 created_by: Research+Development
 last_updated: 2026-08-14
@@ -64,8 +64,8 @@ r1_track_record: PASS_WITH_ADVERSE_EVIDENCE
 r2_mechanical: PASS
 r3_data_available: PASS_FOR_DISCLOSED_PROXY
 r4_ml_forbidden: PASS
-pipeline_phase: G0_APPROVED
-q01_status: PENDING
+pipeline_phase: Q01
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify a WTI twelve-month trend stream admitted only after a strict fall in SP500 downside beta across disjoint daily blocks; verify read-only factor discipline and preserve the DownBeta null. Q09 alone may establish realized decorrelation from XAU, SP500, NDX, and XNG."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -359,12 +359,12 @@ admission; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-14 | initial WTI falling-downside-beta-gated twelve-month trend | G0 | APPROVED; build pending |
+| v2 | 2026-08-14 | implement locked disjoint-block downside-beta gate and WTI lifecycle | Q01 | PASS; Q02 handoff pending |
 
 ## Pipeline Phase Status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-14 | APPROVED; R1-R4 PASS with DownBeta null | decisions/2026-08-14_qm5_21522_wti_lowdb_trend_g0.md; governed composite source packet |
-| Q01 Build Validation | 2026-08-14 | PENDING | build not yet started |
+| Q01 Build Validation | 2026-08-14 | PASS | strict compile 0/0; build check 0/0; seven reference tests; P1 artifact PASS |
 | Q02 Baseline Screening | 2026-08-14 | NOT_ENQUEUED | requires Q01 PASS and CPU-capacity check |
-

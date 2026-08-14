@@ -368,3 +368,4 @@ admission; or correlation waiver.
 | G0 Research Intake | 2026-08-14 | APPROVED; R1-R4 PASS with DownBeta null | decisions/2026-08-14_qm5_21522_wti_lowdb_trend_g0.md; governed composite source packet |
 | Q01 Build Validation | 2026-08-14 | PASS | strict compile 0/0; build check 0/0; seven reference tests; P1 artifact PASS |
 | Q02 Baseline Screening | 2026-08-14 | NOT_ENQUEUED | requires Q01 PASS and CPU-capacity check |
+
