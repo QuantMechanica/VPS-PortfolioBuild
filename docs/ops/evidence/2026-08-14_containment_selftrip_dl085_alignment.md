@@ -125,6 +125,25 @@ Ceremony outcomes are appended below after execution.
   quiet, hiding this). Fix: dedicated 20–30s backoff for
   `factory_mutation_lock_busy` declines (logging kept, 60s-throttled) +
   checkpoint envelope 36→72 attempts.
+- ON attempt 3 (RTA-2026-08-14-DEFERFIX3): `database is locked` at the
+  release again (~:10 past the hour, same as attempt 1 at :14 — an hourly
+  ea_metrics-scale writer outlasts the 30s busy timeout; attempt 2 released
+  clean mid-hour at ~:42). Fix: bounded lock-retry around the release
+  transaction, 8×(30s busy + 25s sleep) — provably safe (rollback before
+  re-raise + append-only nonce-consumption guard) (b8930c05f).
+- ON attempt 4 (RTA-2026-08-14-DEFERFIX4): release COMMITTED via retry;
+  post-commit evidence converged to 43/44 frames exactly as the 72×2.5s
+  envelope expired (a reader pinned frame 24 for ~3 min, then released).
+  Fix: envelope 72→240 attempts / 10 min (137551183). Reader identity still
+  open — same class as the 2026-08-12 WAL-reader-pin note.
+- Recurring OFF-drain blocker between attempts: the Codex orchestration
+  task runs directly as SYSTEM, so its exec job objects are SYSTEM-owned
+  while the pacer (reaper) relaunches into the console session as qm-admin
+  → `job_open_failed error 5`. Worked around via a transient one-shot
+  SYSTEM pacer task, then via bounded waits for the 60-min lease caps.
+  **Follow-up: align spawner/reaper identities (route the orchestration
+  action through run_in_console_session.ps1 like the pacer, or run the
+  pacer as SYSTEM).**
 
 ## Residual risk / follow-ups
 
