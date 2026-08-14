@@ -1176,6 +1176,9 @@ def _privatize_custom_history_claim(
             terminal=terminal,
             symbols=symbols,
             receipt_path=receipt_path,
+            # DL-085: privatization reads come from the standalone verified
+            # master tree, never from the cross-terminal shared family inode.
+            farm_root=root,
         )
         return {
             "required": True,

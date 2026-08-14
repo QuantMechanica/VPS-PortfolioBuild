@@ -1021,6 +1021,13 @@ def audit_history_isolation(
     payload["variant_a_file_audit"] = file_audit
     payload["manifest_path"] = str(Path(manifest_path).absolute())
     payload["archive_acl_evidence"] = acl_binding
+    # Honest labeling (2026-08-14): with a bound receipt the per-row ACL probe
+    # is a static voucher, NOT a live check — live ACLs may have eroded (they
+    # had, fleet-wide, since the 08-10 Variant-A migration). Live enforcement
+    # returns with the identity-separation project.
+    payload["acl_probe_mode"] = (
+        "receipt_bound_static" if acl_binding is not None else "live"
+    )
     payload["status"] = (
         "PASS_ISOLATED"
         if topology["status"] == "PASS_ISOLATED"
@@ -1044,8 +1051,44 @@ def main() -> int:
         action="store_true",
         help="metadata-only scoped check; valid only with independently bound dual full-audit receipts",
     )
+    parser.add_argument(
+        "--farm-root",
+        type=Path,
+        default=Path(r"D:\QM\strategy_farm"),
+        help="farm root used for the factory-quiescence guard",
+    )
+    parser.add_argument(
+        "--allow-live-full-hash",
+        action="store_true",
+        help=(
+            "override the quiescence guard. DANGEROUS: full hashing data-opens "
+            "every archive file; against a live fleet this collides with "
+            "exclusive MT5 opens and MT5 discards custom year files "
+            "(error-32 class, 2026-08-14 forensics)"
+        ),
+    )
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
+    if not args.skip_archive_hash and not args.allow_live_full_hash:
+        off_flag = Path(args.farm_root) / "state" / "FACTORY_OFF.flag"
+        if not off_flag.exists():
+            print(
+                json.dumps(
+                    {
+                        "status": "REFUSED_FACTORY_LIVE",
+                        "detail": (
+                            "full-hash audit requires factory quiescence: "
+                            f"{off_flag} absent. Data-opening archive files while "
+                            "MT5 testers run triggers the error-32 discard class "
+                            "(DL-085). Stop the factory or pass "
+                            "--allow-live-full-hash if you have proven quiescence "
+                            "another way."
+                        ),
+                    },
+                    indent=2,
+                )
+            )
+            return 3
     payload = audit_history_isolation(
         mt5_root=args.mt5_root,
         terminals=tuple(args.terminals or DEFAULT_RUNNER_TERMINALS),

@@ -29,6 +29,7 @@ try:
         validate_manifest,
         write_json_atomic,
     )
+    import custom_history_master
 except ImportError:  # pragma: no cover - package import path
     from tools.strategy_farm.custom_history_contract import (
         canonical_bytes,
@@ -38,6 +39,7 @@ except ImportError:  # pragma: no cover - package import path
         validate_manifest,
         write_json_atomic,
     )
+    from tools.strategy_farm import custom_history_master
 
 
 RECEIPT_SCHEMA = "qm.custom-history-copy-on-claim/v1"
@@ -155,10 +157,24 @@ def privatize_terminal_archives(
     terminal: str,
     symbols: Sequence[object],
     receipt_path: Path | str | None = None,
+    farm_root: Path | str | None = None,
 ) -> dict[str, Any]:
-    """Copy and atomically privatize one terminal's claimed archive subset."""
+    """Copy and atomically privatize one terminal's claimed archive subset.
+
+    With ``farm_root`` given (production), the copy READS from the standalone
+    verified master tree (DL-085) instead of from the cross-terminal shared
+    family inode: a data-open of the family inode collides with the exclusive
+    opens of other terminals' running MT5 processes (error-32 discard class,
+    2026-08-14 forensics). Master problems fail closed. Without ``farm_root``
+    the legacy family-inode read is kept (hermetic tests).
+    """
 
     validated = validate_manifest(manifest, require_owner_approval=True)
+    master_root: Path | None = None
+    if farm_root is not None:
+        master_root = custom_history_master.load_master_state(
+            farm_root, manifest=validated
+        )["master_root"]
     target_terminal = str(terminal or "").strip().upper()
     if target_terminal not in validated["runner_terminals"]:
         raise CustomHistoryCopyOnClaimError(
@@ -202,13 +218,23 @@ def privatize_terminal_archives(
             action = "ALREADY_PRIVATE_VERIFIED"
             already_private += 1
         else:
+            if master_root is not None:
+                copy_source = custom_history_master.master_file_path(
+                    master_root, relative
+                )
+                if not copy_source.is_file():
+                    raise CustomHistoryCopyOnClaimError(
+                        f"master archive file missing for privatization: {copy_source}"
+                    )
+            else:
+                copy_source = target
             temporary = target.parent / (
                 f".{target.name}.copy-on-claim.{os.getpid()}.{uuid.uuid4().hex}.tmp"
             )
             try:
                 # copyfile intentionally does not clone the source file ACL.  The
                 # new file inherits the terminal-private directory policy.
-                shutil.copyfile(target, temporary)
+                shutil.copyfile(copy_source, temporary)
                 temp_identity = file_identity(temporary)
                 if int(temp_identity["size"]) != expected_size:
                     raise CustomHistoryCopyOnClaimError(
@@ -251,6 +277,7 @@ def privatize_terminal_archives(
         "schema_version": RECEIPT_SCHEMA,
         "status": "PASS_PRIVATIZED",
         "runtime_action": "COPY_ON_CLAIM",
+        "privatization_source": "master" if master_root is not None else "family_inode",
         "recorded_at_utc": _utc_now(),
         "terminal": target_terminal,
         "manifest_sha256": validated["manifest_sha256"],

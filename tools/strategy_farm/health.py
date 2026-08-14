@@ -891,6 +891,64 @@ def chk_factory_mutation_lock() -> dict:
     )
 
 
+CUSTOM_HISTORY_REPAIR_WARN_24H = 10
+CUSTOM_HISTORY_REPAIR_FAIL_24H = 50
+
+
+def chk_custom_history_repairs() -> dict:
+    """DL-085 self-heal telemetry: archive repairs are routine, a RISING rate
+    means a new eater class is active and needs forensics before it outruns
+    the master tree's ability to vouch."""
+    try:
+        from custom_history_master import count_recent_repairs
+    except ImportError:  # pragma: no cover
+        from tools.strategy_farm.custom_history_master import count_recent_repairs
+    try:
+        count = count_recent_repairs(ROOT, hours=24.0)
+    except Exception as exc:
+        return _check("custom_history_repairs_24h", "WARN", "unreadable", CUSTOM_HISTORY_REPAIR_WARN_24H,
+                      f"repair receipts unreadable: {exc!r}",
+                      "Inspect state/custom_history_repairs.jsonl")
+    status = "OK"
+    if count > CUSTOM_HISTORY_REPAIR_FAIL_24H:
+        status = "FAIL"
+    elif count > CUSTOM_HISTORY_REPAIR_WARN_24H:
+        status = "WARN"
+    return _check(
+        "custom_history_repairs_24h",
+        status,
+        count,
+        CUSTOM_HISTORY_REPAIR_WARN_24H,
+        f"{count} master-repairs in 24h (DL-085 self-heal)",
+        "" if status == "OK" else
+        "Rising repair rate = active archive eater; run dual forensics "
+        "(docs/ops/evidence/2026-08-14_claude_archive_eater_forensics.md) "
+        "before it exceeds master coverage.",
+    )
+
+
+def chk_usn_journal_d() -> dict:
+    """The 08-14 forensics died on D: having no USN journal. Keep it alive."""
+    try:
+        proc = subprocess.run(
+            ["fsutil", "usn", "queryjournal", "D:"],
+            capture_output=True, text=True, timeout=20,
+            creationflags=_creationflags_no_window(),
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        return _check("usn_journal_d", "WARN", "probe_error", 0,
+                      f"fsutil probe failed: {exc!r}", "")
+    active = proc.returncode == 0
+    return _check(
+        "usn_journal_d",
+        "OK" if active else "FAIL",
+        "active" if active else "absent",
+        0,
+        "NTFS change journal on D:" + (" active" if active else " ABSENT - deletions are forensically invisible"),
+        "" if active else "fsutil usn createjournal m=0x8000000 a=0x800000 D: (admin)",
+    )
+
+
 def chk_p2_pass_no_p3(con) -> dict:
     """Profitable Q02-PASS work_items that lack a corresponding Q03 work_item.
 
@@ -3087,6 +3145,8 @@ ALL_CHECKS = [
     ("cards_ready_stagnation", chk_cards_ready_stagnation, True),
     ("pump_task_health",       chk_pump_task_health,       False),
     ("factory_mutation_lock",  chk_factory_mutation_lock,  False),
+    ("custom_history_repairs_24h", chk_custom_history_repairs, False),
+    ("usn_journal_d",          chk_usn_journal_d,          False),
     ("work_items_timestamp_sanity", chk_work_items_timestamp_sanity, True),
     ("p2_pass_no_p3",          chk_p2_pass_no_p3,          True),
     ("ea_metrics_fresh",       chk_ea_metrics_fresh,       True),

@@ -22,6 +22,7 @@ try:
         write_json_atomic,
     )
     import mt5_history_isolation
+    import custom_history_master
 except ImportError:  # pragma: no cover - package import path
     from tools.strategy_farm.custom_history_contract import (
         ACTIVATION_SCHEMA,
@@ -35,6 +36,7 @@ except ImportError:  # pragma: no cover - package import path
         write_json_atomic,
     )
     from tools.strategy_farm import mt5_history_isolation
+    from tools.strategy_farm import custom_history_master
 
 
 ACTIVATION_RELATIVE_PATH = Path("state/custom_history_isolation_activation.json")
@@ -587,6 +589,53 @@ def run_worker_gate(
                 findings = []
             else:
                 findings = reconciliation["remaining"]
+
+    # DL-085 repair-first: a manifest archive gap is repaired from the
+    # standalone verified master tree (sha-verified copy + receipt) instead of
+    # fail-closing the fleet. Containment remains for master loss/mismatch —
+    # any repair failure keeps the original FAIL status untouched.
+    repair_summary: dict[str, Any] | None = None
+    if status != "PASS_ISOLATED" and findings and {
+        str(finding.get("code")) for finding in findings
+    } <= set(custom_history_master.REPAIRABLE_FINDING_CODES):
+        try:
+            manifest = load_manifest(
+                Path(activation["manifest_path"]), require_owner_approval=True
+            )
+            repair = custom_history_master.repair_missing_archives(
+                farm_root=root,
+                mt5_root=mt5_root,
+                manifest=manifest,
+                findings=findings,
+                repaired_by=f"worker_gate:{target}",
+            )
+        except Exception as exc:
+            repair_summary = {"status": "ERROR", "error": repr(exc)}
+        else:
+            repair_summary = {
+                "status": "REPAIRED" if not repair["failed"] else "PARTIAL",
+                "repaired_count": len(repair["repaired"]),
+                "already_present_count": len(repair["already_present"]),
+                "failed_count": len(repair["failed"]),
+                "receipts_path": repair["receipts_path"],
+            }
+            if not repair["failed"]:
+                verification = mt5_history_isolation.audit_history_isolation(
+                    mt5_root=mt5_root,
+                    terminals=tuple(activation["runner_terminals"]),
+                    protected_roots=tuple(
+                        Path(value) for value in activation["protected_roots"]
+                    ),
+                    manifest_path=Path(activation["manifest_path"]),
+                    require_owner_approval=True,
+                    verify_archive_hashes=False,
+                    hash_private_terminals=(target,),
+                )
+                repair_summary["post_repair_status"] = str(verification["status"])
+                if verification["status"] == "PASS_ISOLATED":
+                    audit = verification
+                    status = "PASS_ISOLATED"
+                    findings = []
     result = {
         "required": True,
         "status": status,
@@ -601,4 +650,6 @@ def run_worker_gate(
     }
     if reconciliation_summary is not None:
         result["link_count_reconciliation"] = reconciliation_summary
+    if repair_summary is not None:
+        result["master_repair"] = repair_summary
     return result
