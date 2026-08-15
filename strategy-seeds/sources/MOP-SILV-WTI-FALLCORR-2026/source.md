@@ -8,7 +8,8 @@ created: 2026-08-15
 created_by: Research+Development
 primary_url: https://www.aqr.com/Insights/Research/Journal-Article/Time-Series-Momentum
 correlation_url: https://doi.org/10.1016/j.intfin.2012.11.007
-cards_extracted: []
+cards_extracted:
+  - wti-fallcorr-tr
 ---
 
 # WTI Trend In A Falling Equity-Correlation State
