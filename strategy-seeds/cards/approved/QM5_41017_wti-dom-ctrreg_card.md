@@ -64,7 +64,10 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: ENQUEUED
+q02_status: ZERO_TRADES
+q02_work_item_id: 7eb89f24-8be4-49a0-8b94-5501e124f059
+q02_recovery_status: BLOCKED_CARD_MECHANICS
+q02_recovery_evidence: docs/ops/evidence/2026-08-16_qm5_41017_q02_zero_trades_classification.md
 review_focus: "Falsify whether significant WTI numbered-day directions are concentrated in the opposing completed 252-D1 regime, producing a sparse physical-crude calendar stream distinct from the certified XAU/SP500/NDX/XNG book; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -335,6 +338,7 @@ waivers.
 | v1 | 2026-08-15 | initial exact-date counter-regime extraction | G0 | APPROVED |
 | v2 | 2026-08-15 | initial V5 implementation and strict validation | Q01 | PASS |
 | v3 | 2026-08-16 | paced never-tested baseline enqueue | Q02 | ENQUEUED; pending |
+| v3-z1 | 2026-08-16 | classify the valid bound zero-trade result without changing mechanics | Q02 recovery | `ZERO_TRADES`; frozen five-minute D1-open rule requires a new approved variant |
 
 ## Pipeline Phase Status
 
@@ -342,4 +346,5 @@ waivers.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-15 | APPROVED; R1-R4 reviewed | source packet, source-approval decision, G0 decision, and this card |
 | Q01 Build Validation | 2026-08-15 | PASS; 0 errors, 0 warnings | `D:\QM\reports\framework\21\build_check_20260815_221224.json`; deterministic reference tests 8/8 PASS |
-| Q02 Baseline Screening | 2026-08-16 | ENQUEUED; pending, not a verdict | work item `7eb89f24-8be4-49a0-8b94-5501e124f059` |
+| Q02 Baseline Screening | 2026-08-16 | `ZERO_TRADES`; valid bound run, not PASS or certification | work item `7eb89f24-8be4-49a0-8b94-5501e124f059`; `D:/QM/reports/work_items/7eb89f24-8be4-49a0-8b94-5501e124f059/QM5_41017/20260815_222420/summary.json` |
+| Q02 Zero-Trades Recovery | 2026-08-16 | `BLOCKED_CARD_MECHANICS`; normal WTI first ticks miss the frozen five-minute nominal D1-open gate | `docs/ops/evidence/2026-08-16_qm5_41017_q02_zero_trades_classification.md` |

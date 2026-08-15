@@ -95,3 +95,4 @@ live-manifest change is authorized.
 |---|---|---|---|
 | v1 | 2026-08-15 | initial approved build scaffold | magic 410170000 registered; strict Q01 PASS |
 | v2 | 2026-08-16 | paced Q02 admission | work item `7eb89f24-8be4-49a0-8b94-5501e124f059` pending; no dispatch |
+| v3 | 2026-08-16 | Q02 zero-trades classification | valid bound run returned zero trades; the frozen five-minute nominal D1-open gate requires a new approved variant before repair |
