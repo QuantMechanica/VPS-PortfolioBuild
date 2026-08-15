@@ -81,5 +81,5 @@ authorized.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-08-15 | initial approved build scaffold | G0 approved; magic registration pending verification |
-
+| v1 | 2026-08-15 | initial approved build scaffold | G0 approved |
+| v1-build | 2026-08-15 | deterministic implementation | magic/resolver verified; strict compile and build check PASS |
