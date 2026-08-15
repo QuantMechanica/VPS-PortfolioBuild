@@ -74,7 +74,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: PENDING
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify a CADF-qualified WTI/copper price-level residual fade that removes some common commodity direction; Q09 alone may establish realized decorrelation from the XAU/SP500/NDX/XNG book."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -335,11 +335,12 @@ waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-15 | initial WTI/copper CADF residual-reversion package | G0 | APPROVED; build pending |
+| v2 | 2026-08-15 | implement CADF-qualified OLS basket and atomic lifecycle | Q01 | PASS; Q02 not enqueued |
 
 ## Pipeline Phase Status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-15 | APPROVED; R1-R4 PASS | `decisions/2026-08-15_qm5_21525_wti_xcu_cadf_g0.md`; governed composite source packet |
-| Q01 Build Validation | - | PENDING | build not yet started |
-| Q02 Baseline Screening | - | NOT ENQUEUED | build and Q01 required |
+| Q01 Build Validation | 2026-08-15 | PASS | strict compile 0/0; build check 0/0; ten reference tests; P1 artifact PASS |
+| Q02 Baseline Screening | - | NOT ENQUEUED | paced logical-basket enqueue pending |
