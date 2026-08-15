@@ -1,0 +1,74 @@
+{
+  "schema_version": "qm.fx-cointegration-resource-stop/v1",
+  "sampled_at_utc": "2026-08-15T17:50:25.2038179+00:00",
+  "branch": "agents/board-advisor",
+  "head_before_evidence_commit": "886b1f97d",
+  "outcome": "RESOURCE_CEILING_STOP",
+  "frontier": {
+    "frozen_pair_count": 66,
+    "fully_mechanized": true,
+    "qm5_12532_terminal_path": [
+      "Q02_PASS",
+      "Q04_PASS",
+      "Q05_FAIL"
+    ],
+    "qm5_12533_terminal_path": [
+      "Q02_PASS",
+      "Q04_FAIL"
+    ],
+    "selection": "existing_rank_58_qm5_1257_gbpusd_usdjpy"
+  },
+  "target": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 2,
+    "claimed_by": null,
+    "evidence_path": null,
+    "updated_at_utc": "2026-08-15T13:03:04.898529+00:00",
+    "open_identity_count": 1,
+    "implementation_repair_commit": "751cb391d8f388f5b61641ba3299011cdf9a09ed",
+    "exit_repair_commit": "f9ef37c1c"
+  },
+  "fresh_queue_read": {
+    "command": "python tools/strategy_farm/farmctl.py work-items --ea QM5_1257",
+    "qm5_1257_row_count": 29,
+    "summary": {
+      "Q02_done_FAIL": 1,
+      "Q02_done_SUPERSEDED_BY_LOGICAL_BASKET": 21,
+      "Q02_failed_OBSOLETE_NON_DWX_SYMBOL": 6,
+      "Q02_pending": 1
+    },
+    "exact_target_still_unique_and_pending": true
+  },
+  "resources": {
+    "cpu_load_percent_single_sample": 2.0,
+    "free_physical_memory_gib": 0.4,
+    "total_physical_memory_gib": 63.12,
+    "free_physical_memory_percent": 0.63,
+    "binding_guard": "physical_memory_exhaustion",
+    "context": "The same host previously raised System.OutOfMemoryException during the target strict compile with materially more free memory."
+  },
+  "runtime_authority_context": {
+    "current_repository_decision_id": "RTA-2026-08-15-POST-CONTAINMENT-RELEASE-2",
+    "decision_commit": "c979258c907b6a28362f7816a7065774980adae5",
+    "containment_release_changes_resource_verdict": false
+  },
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "registry": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "q02_enqueue_or_requeue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_control": false,
+    "containment": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "auto_trading": false
+  }
+}
