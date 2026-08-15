@@ -4,7 +4,7 @@
 **Slug:** `rsioma-reversal`
 **Source:** `0693c604-4f96-56ef-be79-15efe9f48b86` (see `strategy-seeds/sources/0693c604-4f96-56ef-be79-15efe9f48b86/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-07
+**Last revised:** 2026-08-16
 
 ---
 
@@ -98,3 +98,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-07 | Initial build from card | 737642a0-ff83-4c63-a857-3b992bc74632 |
+| v2 | 2026-08-16 | Canonical framework-wiring repair and strict rebuild | fa7fdd32-621a-465c-b4f9-03ab0c5c9d4b |
