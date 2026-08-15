@@ -50,6 +50,43 @@ def test_benign_gate_failure_defers_without_containment(
     assert calls == []
 
 
+def test_claim_gate_forwards_sparse_scope_and_restore_phase(
+    monkeypatch, tmp_path: Path
+) -> None:
+    calls = []
+
+    def fake_gate(root, **kwargs):
+        calls.append((root, kwargs))
+        return {
+            "required": True,
+            "status": "PASS_ISOLATED",
+            "terminal": kwargs["terminal"],
+        }
+
+    monkeypatch.setattr(
+        terminal_worker.custom_history_gate, "run_worker_gate", fake_gate
+    )
+
+    result = terminal_worker._custom_history_gate(
+        tmp_path,
+        "T3",
+        required_symbols=["EURUSD.DWX", "USDJPY.DWX"],
+        allow_required_restore=True,
+    )
+
+    assert result["status"] == "PASS_ISOLATED"
+    assert calls == [
+        (
+            tmp_path,
+            {
+                "terminal": "T3",
+                "required_symbols": ["EURUSD.DWX", "USDJPY.DWX"],
+                "allow_required_restore": True,
+            },
+        )
+    ]
+
+
 def test_master_repair_failure_reengages_containment(
     monkeypatch, tmp_path: Path
 ) -> None:
@@ -289,9 +326,9 @@ def test_gate_and_lease_precede_claim_and_spawn_boundaries() -> None:
     ) < loop.index("claim_atomic(root, terminal)")
 
     run = source[source.index("def _run_claimed_item"):source.index("def _disk_free_gb")]
-    pre_gate = run.index("history_gate = _custom_history_gate(root, terminal)")
+    pre_gate = run.index("history_gate = _custom_history_gate(")
     copy = run.index("copy_on_claim = _privatize_custom_history_claim")
-    post_gate = run.index("post_copy_gate = _custom_history_gate(root, terminal)")
+    post_gate = run.index("post_copy_gate = _custom_history_gate(")
     launch = run.index("_acquire_launch_slot(terminal)")
     spawn = run.index("farmctl._spawn_work_item_runner")
     assert pre_gate < copy < post_gate < launch < spawn

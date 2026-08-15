@@ -440,8 +440,16 @@ def run_worker_gate(
     *,
     terminal: str,
     mt5_root: Path | str = mt5_history_isolation.DEFAULT_MT5_ROOT,
+    required_symbols: Sequence[object] | None = None,
+    allow_required_restore: bool = False,
 ) -> dict[str, Any]:
-    """Run the immediate metadata/file-ID gate; full hashes bind via dual receipts."""
+    """Run the sparse immediate gate; full hashes bind via dual receipts.
+
+    ``required_symbols=None`` is the worker's pre-claim admission check, where
+    no terminal archive completeness is required.  A claimed item supplies its
+    host/dependency set.  Its pre-copy pass may allow those paths to be absent
+    so verified copy-on-claim can restore them; the post-copy pass may not.
+    """
 
     activation = load_activation(root)
     if activation is None:
@@ -511,6 +519,30 @@ def run_worker_gate(
             "activation_sha256": activation["activation_sha256"],
         }
 
+    claim_symbols = tuple(required_symbols or ())
+    required_archive_paths: set[str] = set()
+    if required_symbols is not None:
+        # The sparse terminal tree is intentionally incomplete, but the
+        # standalone master record remains globally bound to the complete,
+        # OWNER-approved manifest.  Any missing/mismatched master state raises
+        # and the terminal_worker wrapper fails the claim closed.
+        manifest = load_manifest(
+            Path(activation["manifest_path"]), require_owner_approval=True
+        )
+        custom_history_master.load_master_state(root, manifest=manifest)
+        custom_symbols = {
+            str(symbol or "").strip().upper()
+            for symbol in claim_symbols
+            if str(symbol or "").strip().upper().endswith(".DWX")
+        }
+        required_archive_paths = {
+            str(row["relative_path"]).casefold()
+            for row in manifest["files"]
+            if len(str(row["relative_path"]).split("/")) == 3
+            and str(row["relative_path"]).split("/")[1].upper()
+            in custom_symbols
+        }
+
     # The dual fresh-process receipts bind full family content hashes.  The
     # immediate gate re-enumerates file IDs, sizes, dynamic family link counts,
     # and topology. Only the claiming terminal's private inodes are content
@@ -536,6 +568,10 @@ def run_worker_gate(
             require_owner_approval=True,
             verify_archive_hashes=False,
             hash_private_terminals=(target,),
+            sparse_contract=True,
+            claim_terminal=target,
+            required_symbols=claim_symbols,
+            allow_required_restore=allow_required_restore,
         )
         if audit["status"] == "PASS_ISOLATED":
             break
@@ -574,6 +610,10 @@ def run_worker_gate(
                 terminals=tuple(activation["runner_terminals"]),
                 manifest=manifest,
                 findings=findings,
+                sparse_contract=True,
+                claim_terminal=target,
+                required_symbols=claim_symbols,
+                allow_required_restore=allow_required_restore,
             )
         except Exception as exc:
             reconciliation_summary = {"status": "ERROR", "error": repr(exc)}
@@ -590,14 +630,27 @@ def run_worker_gate(
             else:
                 findings = reconciliation["remaining"]
 
-    # DL-085 repair-first: a manifest archive gap is repaired from the
-    # standalone verified master tree (sha-verified copy + receipt) instead of
-    # fail-closing the fleet. Containment remains for master loss/mismatch —
-    # any repair failure keeps the original FAIL status untouched.
+    # DL-085 repair-first remains only for a required claim archive that
+    # disappears after copy-on-claim. Sparse bystanders are PRUNED_BY_DESIGN
+    # observations, never missing findings. The explicit target/path filter is
+    # a second guard against ever recreating one. A real required gap is
+    # repaired from the standalone verified master tree (sha-verified copy +
+    # receipt) instead of fail-closing the fleet. Containment remains for
+    # master loss/mismatch — any repair failure keeps the original FAIL status
+    # untouched.
     repair_summary: dict[str, Any] | None = None
     if status != "PASS_ISOLATED" and findings and {
         str(finding.get("code")) for finding in findings
-    } <= set(custom_history_master.REPAIRABLE_FINDING_CODES):
+    } <= set(custom_history_master.REPAIRABLE_FINDING_CODES) and (
+        required_symbols is not None
+        and not allow_required_restore
+        and all(
+            str(finding.get("terminal") or "").upper() == target
+            and str(finding.get("relative_path") or "").casefold()
+            in required_archive_paths
+            for finding in findings
+        )
+    ):
         try:
             manifest = load_manifest(
                 Path(activation["manifest_path"]), require_owner_approval=True
@@ -655,6 +708,10 @@ def run_worker_gate(
                     require_owner_approval=True,
                     verify_archive_hashes=False,
                     hash_private_terminals=(target,),
+                    sparse_contract=True,
+                    claim_terminal=target,
+                    required_symbols=claim_symbols,
+                    allow_required_restore=allow_required_restore,
                 )
                 repair_summary["post_repair_status"] = str(verification["status"])
                 if verification["status"] == "PASS_ISOLATED":
@@ -672,6 +729,23 @@ def run_worker_gate(
         "ramp_limit": ramp["limit"],
         "ramp_sha256": ramp["ramp_sha256"],
         "findings": findings,
+    }
+    scope_observations = audit.get("variant_a_file_audit", {}).get(
+        "observations", []
+    )
+    observation_counts: dict[str, int] = {}
+    for observation in scope_observations:
+        code = str(observation.get("code") or "")
+        if code:
+            observation_counts[code] = observation_counts.get(code, 0) + 1
+    result["archive_scope"] = {
+        "contract": "SPARSE_ACTIVE_CUSTOM_HISTORY",
+        "required_symbols": list(claim_symbols),
+        "allow_required_restore": bool(allow_required_restore),
+        "observations": [
+            {"code": code, "file_count": count}
+            for code, count in sorted(observation_counts.items())
+        ],
     }
     if reconciliation_summary is not None:
         result["link_count_reconciliation"] = reconciliation_summary

@@ -225,6 +225,8 @@ def _variant_a_fixture(tmp_path: Path) -> tuple[Path, Path]:
     source_files = {
         "history/EURUSD.DWX/2025.hcc": b"archive-bars",
         "ticks/EURUSD.DWX/202501.tkc": b"archive-ticks",
+        "history/GBPUSD.DWX/2025.hcc": b"gbp-archive-bars",
+        "ticks/GBPUSD.DWX/202501.tkc": b"gbp-archive-ticks",
         "history/EURUSD.DWX/2026.hcc": b"private-bars",
         "state.dat": b"private-state",
     }
@@ -267,6 +269,89 @@ def test_variant_a_file_ids_and_manifest_equality_pass(tmp_path: Path) -> None:
     assert payload["status"] == "PASS_ISOLATED", payload
     assert payload["variant_a_file_audit"]["status"] == "PASS_ISOLATED"
     assert len(payload["variant_a_file_audit"]["terminal_summaries"]) == 10
+
+
+def test_sparse_dispatch_records_absent_bystanders_as_pruned_by_design(
+    tmp_path: Path,
+) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    manifest = history_contract.load_manifest(manifest_path)
+    for row in manifest["files"]:
+        if "GBPUSD.DWX" in str(row["relative_path"]):
+            (
+                mt5_root
+                / "T1"
+                / "Bases"
+                / "Custom"
+                / Path(row["relative_path"])
+            ).unlink()
+
+    payload = isolation.audit_history_isolation(
+        mt5_root=mt5_root,
+        protected_roots=(),
+        manifest_path=manifest_path,
+        verify_archive_hashes=False,
+        hash_private_terminals=("T1",),
+        sparse_contract=True,
+        claim_terminal="T1",
+        required_symbols=("EURUSD.DWX",),
+    )
+
+    assert payload["status"] == "PASS_ISOLATED", payload
+    audit = payload["variant_a_file_audit"]
+    observations = [
+        row for row in audit["observations"] if row["code"] == "PRUNED_BY_DESIGN"
+    ]
+    assert len(observations) == 2
+    assert {row["terminal"] for row in observations} == {"T1"}
+    assert all("GBPUSD.DWX" in row["relative_path"] for row in observations)
+    assert not {
+        "MANIFEST_ARCHIVE_FILE_MISSING",
+        "TERMINAL_MANIFEST_INCOMPLETE",
+    } & {row["code"] for row in audit["findings"]}
+
+
+def test_sparse_dispatch_allows_pre_copy_restore_but_requires_post_copy_file(
+    tmp_path: Path,
+) -> None:
+    mt5_root, manifest_path = _variant_a_fixture(tmp_path)
+    required = (
+        mt5_root
+        / "T1"
+        / "Bases"
+        / "Custom"
+        / "history"
+        / "EURUSD.DWX"
+        / "2025.hcc"
+    )
+    required.unlink()
+    options = {
+        "mt5_root": mt5_root,
+        "protected_roots": (),
+        "manifest_path": manifest_path,
+        "verify_archive_hashes": False,
+        "hash_private_terminals": ("T1",),
+        "sparse_contract": True,
+        "claim_terminal": "T1",
+        "required_symbols": ("EURUSD.DWX",),
+    }
+
+    pre_copy = isolation.audit_history_isolation(
+        **options, allow_required_restore=True
+    )
+    post_copy = isolation.audit_history_isolation(
+        **options, allow_required_restore=False
+    )
+
+    assert pre_copy["status"] == "PASS_ISOLATED", pre_copy
+    assert "RESTORE_ON_DEMAND_REQUIRED" in {
+        row["code"]
+        for row in pre_copy["variant_a_file_audit"]["observations"]
+    }
+    assert post_copy["status"] == "FAIL_CLOSED"
+    assert "MANIFEST_ARCHIVE_FILE_MISSING" in {
+        row["code"] for row in post_copy["variant_a_file_audit"]["findings"]
+    }
 
 
 def test_variant_a_mixed_family_and_private_archives_pass_without_acl_deny(

@@ -78,18 +78,24 @@ def test_copy_on_claim_is_scoped_atomic_and_idempotent(tmp_path: Path) -> None:
     assert first["ignored_non_custom_symbols"] == ["SYNTHETIC_BASKET"]
     assert first["selected_file_count"] == 2
     assert first["copied_file_count"] == 2
+    assert first["restored_file_count"] == 0
     assert first["already_private_file_count"] == 0
+    assert first["pruned_file_count"] == 2
+    assert first["already_pruned_file_count"] == 0
+    assert {row["action"] for row in first["pruned_files"]} == {
+        "PRUNED_BY_DESIGN"
+    }
     assert json.loads(receipt_path.read_text(encoding="utf-8"))["receipt_sha256"] == first["receipt_sha256"]
 
     for row in manifest["files"]:
         target = mt5_root / "T3" / "Bases" / "Custom" / Path(row["relative_path"])
-        identity = contract.file_identity(target)
         if "EURUSD.DWX" in row["relative_path"]:
+            identity = contract.file_identity(target)
             assert identity["file_id"] != row["file_id"]
             assert identity["link_count"] == 1
             assert contract.sha256_file(target) == row["sha256"]
         else:
-            assert identity["file_id"] == row["file_id"]
+            assert not target.exists()
     assert not list((mt5_root / "T3").rglob("*.copy-on-claim.*.tmp"))
 
     second = copy_on_claim.privatize_terminal_archives(
@@ -99,7 +105,10 @@ def test_copy_on_claim_is_scoped_atomic_and_idempotent(tmp_path: Path) -> None:
         symbols=["EURUSD.DWX"],
     )
     assert second["copied_file_count"] == 0
+    assert second["restored_file_count"] == 0
     assert second["already_private_file_count"] == 2
+    assert second["pruned_file_count"] == 0
+    assert second["already_pruned_file_count"] == 2
 
 
 def test_copy_on_claim_refuses_private_sha_mismatch(tmp_path: Path) -> None:
@@ -138,4 +147,3 @@ def test_copy_on_claim_refuses_undeclared_custom_symbol(tmp_path: Path) -> None:
             terminal="T2",
             symbols=["XAUUSD.DWX"],
         )
-
