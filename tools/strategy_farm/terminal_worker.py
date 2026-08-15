@@ -92,8 +92,33 @@ _last_disk_purge_trigger = [0.0]
 # RAM is below this floor — let the in-flight terminals finish and release RAM first.
 # This dynamically caps concurrency by RAM availability (complements the static
 # terminal cap in start_terminal_workers disabled_terminals.txt). Fail-open.
-RAM_MIN_FREE_GB = 4.0
+# OWNER 2026-08-15 ("warten, bis die Situation sich nachhaltig verbessert hat"):
+# the floor is a two-threshold hysteresis latch. Once a worker observes free RAM
+# below RAM_MIN_FREE_GB it keeps deferring claims until free RAM has recovered to
+# RAM_RESUME_FREE_GB — a single sample above the trip floor is not sustained
+# improvement (an ordinary job allocates 6-7GB right after launch, and single
+# testers have been observed at 46.8GB working set, 2026-08-15 T6 SP500).
+RAM_MIN_FREE_GB = 6.0
+RAM_RESUME_FREE_GB = 12.0
 RAM_GUARD_SLEEP_SECONDS = 20
+# CPU admission (OWNER 2026-08-15): don't add testers while the box is already
+# compute-saturated. The load sample is a GetSystemTimes delta over the whole
+# previous worker-loop iteration (>= POLL_SLEEP_SECONDS), so a trip is a
+# sustained average, not an instantaneous spike. Same hysteresis shape as RAM.
+# Deliberate throughput tradeoff: with multi-threaded tick-generation testers
+# the box saturates below 10 slots; pacing claims to sustained CPU headroom is
+# OWNER's call over maximal slot occupancy.
+CPU_MAX_LOAD_PERCENT = 97.0
+CPU_RESUME_LOAD_PERCENT = 90.0
+CPU_GUARD_SLEEP_SECONDS = 20
+# Fleet-wide claim stagger (OWNER 2026-08-15: "Die Worker müssen nach und nach
+# starten"): at most one successful claim per CLAIM_SPACING_SECONDS across all
+# workers, checked atomically against claim_class_ledger inside BEGIN IMMEDIATE.
+# Each new tester's real memory footprint is then visible to the commit/RAM
+# admission gates before the next launch — no post-restart thundering herd.
+CLAIM_SPACING_SECONDS = 60.0
+# Per-worker resource hysteresis latches (process-local; workers are resident).
+_RESOURCE_LATCH = {"ram_low": False, "cpu_high": False}
 # Free physical RAM did not expose the 2026-07-23 failure mode: Windows still
 # had RAM available while system commit was close enough to its limit that new
 # processes failed with 0xC0000142.  Gate new claims on commit headroom too.
@@ -1713,6 +1738,23 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         "claimed": False,
                         "reason": "watchdog_reset_pending",
                         "terminal": terminal,
+                    }
+
+                # Fleet-wide claim stagger, atomic under this BEGIN IMMEDIATE:
+                # the ledger read and the eventual claim commit cannot interleave
+                # with another worker's, so exactly one worker wins each window.
+                farmctl.ensure_claim_class_ledger(conn)
+                last_claim_iso = conn.execute(
+                    "SELECT MAX(claimed_at_utc) FROM claim_class_ledger"
+                ).fetchone()[0]
+                spacing_wait = _claim_spacing_remaining_seconds(last_claim_iso, now)
+                if spacing_wait > 0:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "claim_spacing_wait",
+                        "retry_after_seconds": round(spacing_wait, 1),
+                        "last_claim_at_utc": last_claim_iso,
                     }
 
                 try:
@@ -4132,6 +4174,76 @@ def _free_ram_gb() -> float:
     return _memory_headroom_gb()[0]
 
 
+_CPU_SAMPLE_PREV: dict[str, int] = {}
+
+
+def _cpu_load_percent() -> float:
+    """System CPU load (percent) since the previous call; 0.0 on first call.
+
+    GetSystemTimes delta over the caller's own loop cadence — the worker loop
+    sleeps multiple seconds between iterations, so the value is a sustained
+    average over that window, not an instantaneous spike. Fail-open (0.0) on
+    probe errors, matching the RAM probe's crash-prevention-only contract.
+    """
+    try:
+        import ctypes
+
+        class _FileTime(ctypes.Structure):
+            _fields_ = [("lo", ctypes.c_uint32), ("hi", ctypes.c_uint32)]
+
+        idle, kernel, user = _FileTime(), _FileTime(), _FileTime()
+        if not ctypes.windll.kernel32.GetSystemTimes(
+            ctypes.byref(idle), ctypes.byref(kernel), ctypes.byref(user)
+        ):
+            return 0.0
+
+        def _ticks(ft: "_FileTime") -> int:
+            return (int(ft.hi) << 32) | int(ft.lo)
+
+        idle_ticks = _ticks(idle)
+        # Kernel time includes idle time; busy = (kernel - idle) + user.
+        busy_ticks = (_ticks(kernel) - idle_ticks) + _ticks(user)
+        prev_idle = _CPU_SAMPLE_PREV.get("idle")
+        prev_busy = _CPU_SAMPLE_PREV.get("busy")
+        _CPU_SAMPLE_PREV["idle"] = idle_ticks
+        _CPU_SAMPLE_PREV["busy"] = busy_ticks
+        if prev_idle is None or prev_busy is None:
+            return 0.0
+        delta_idle = idle_ticks - prev_idle
+        delta_busy = busy_ticks - prev_busy
+        total = delta_idle + delta_busy
+        if total <= 0:
+            return 0.0
+        return 100.0 * delta_busy / total
+    except Exception:
+        return 0.0
+
+
+def _claim_spacing_remaining_seconds(last_claim_iso: "str | None", now_iso: str) -> float:
+    """Seconds until the fleet-wide claim stagger admits the next claim.
+
+    One successful claim per CLAIM_SPACING_SECONDS across all workers (OWNER
+    2026-08-15). Missing or unparseable ledger timestamps fail open — the
+    stagger is a ramp-shaping aid, never a correctness gate.
+    """
+    if not last_claim_iso:
+        return 0.0
+    try:
+        last_dt = datetime.fromisoformat(str(last_claim_iso))
+        now_dt = datetime.fromisoformat(str(now_iso))
+    except ValueError:
+        return 0.0
+    if last_dt.tzinfo is None:
+        last_dt = last_dt.replace(tzinfo=timezone.utc)
+    if now_dt.tzinfo is None:
+        now_dt = now_dt.replace(tzinfo=timezone.utc)
+    elapsed = (now_dt - last_dt).total_seconds()
+    if elapsed < 0:
+        # Clock skew / future timestamp: fail open rather than wedge the fleet.
+        return 0.0
+    return max(0.0, CLAIM_SPACING_SECONDS - elapsed)
+
+
 def _commit_headroom_gb() -> float:
     """Free system-commit headroom; NaN makes Windows admission pause on error."""
     return _memory_headroom_gb()[1]
@@ -4221,6 +4333,13 @@ def _pause_after_unclaimed(claim: dict[str, Any], terminal: str) -> None:
         # across the whole 36x2.5s envelope).
         time.sleep(COMMIT_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
         return
+    if reason == "claim_spacing_wait":
+        # Sleep out (most of) the stagger window instead of hammering the
+        # write lock every POLL_SLEEP_SECONDS; jitter de-synchronizes the
+        # fleet so a random worker wins the next window.
+        retry_after = float(claim.get("retry_after_seconds") or CLAIM_SPACING_SECONDS)
+        time.sleep(min(CLAIM_SPACING_SECONDS, max(retry_after, 1.0)) + random.uniform(0, 5))
+        return
     time.sleep(POLL_SLEEP_SECONDS)
 
 
@@ -4249,12 +4368,32 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
             time.sleep(DISK_GUARD_SLEEP_SECONDS)
             continue
         free_ram = _free_ram_gb()
-        if free_ram < RAM_MIN_FREE_GB:
+        # Hysteresis: after a low-RAM trip, claims stay paused until free RAM
+        # recovers to RAM_RESUME_FREE_GB — sustained improvement, not the first
+        # sample that crawls back over the trip floor (OWNER 2026-08-15).
+        ram_floor = RAM_RESUME_FREE_GB if _RESOURCE_LATCH["ram_low"] else RAM_MIN_FREE_GB
+        if free_ram < ram_floor:
+            _RESOURCE_LATCH["ram_low"] = True
             print(json.dumps({"event": "ram_low_pause", "terminal": terminal,
-                              "free_ram_gb": round(free_ram, 1), "threshold_gb": RAM_MIN_FREE_GB}), flush=True)
+                              "free_ram_gb": round(free_ram, 1), "threshold_gb": ram_floor,
+                              "hysteresis_latched": True}), flush=True)
             # jitter so the fleet doesn't wake in lockstep and re-spike RAM together
             time.sleep(RAM_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
             continue
+        _RESOURCE_LATCH["ram_low"] = False
+        cpu_load = _cpu_load_percent()
+        cpu_ceiling = (
+            CPU_RESUME_LOAD_PERCENT if _RESOURCE_LATCH["cpu_high"] else CPU_MAX_LOAD_PERCENT
+        )
+        if cpu_load > cpu_ceiling:
+            _RESOURCE_LATCH["cpu_high"] = True
+            print(json.dumps({"event": "cpu_high_pause", "terminal": terminal,
+                              "cpu_load_percent": round(cpu_load, 1),
+                              "threshold_percent": cpu_ceiling,
+                              "hysteresis_latched": True}), flush=True)
+            time.sleep(CPU_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
+            continue
+        _RESOURCE_LATCH["cpu_high"] = False
         if not _claim_queue_may_need_mutation(root, terminal):
             time.sleep(POLL_SLEEP_SECONDS)
             continue

@@ -6929,7 +6929,9 @@ def _active_work_item_symbols(conn: sqlite3.Connection) -> dict[str, str]:
 # thundering herds when the queue degenerates into a single-symbol
 # monoculture (2026-08-12: 504 of 1031 pending rows were XAUUSD behind one
 # active run).
-CLAIM_SYMBOL_ACTIVE_CAP = 4
+# OWNER 2026-08-15: the fourth concurrent same-symbol backtest must divert to
+# a different symbol (was 4 since 2026-08-12).
+CLAIM_SYMBOL_ACTIVE_CAP = 3
 
 
 def _active_symbol_claim_state(
