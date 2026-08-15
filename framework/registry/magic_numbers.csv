@@ -16000,3 +16000,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41014,xtixng-thu-rv,1,XNGUSD.DWX,410140001,2026-08-15,Research+Development,active
 41015,xtixng-tue-rv,0,XTIUSD.DWX,410150000,2026-08-15,Research+Development,active
 41015,xtixng-tue-rv,1,XNGUSD.DWX,410150001,2026-08-15,Research+Development,active
+41016,wti-mclose-mom,0,XTIUSD.DWX,410160000,2026-08-15,Research+Development,active
