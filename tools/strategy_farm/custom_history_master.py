@@ -51,8 +51,10 @@ class CustomHistoryMasterError(RuntimeError):
 
 # Windows resource-exhaustion I/O failures (mirrors the terminal_worker gate
 # whitelist): ERROR_NOT_ENOUGH_MEMORY (8), ERROR_OUTOFMEMORY (14),
+# ERROR_HANDLE_DISK_FULL (39), ERROR_DISK_FULL (112),
 # ERROR_NO_SYSTEM_RESOURCES (1450), ERROR_COMMITMENT_LIMIT (1455).
-_RESOURCE_EXHAUSTION_WINERRORS = frozenset({8, 14, 1450, 1455})
+# Disk exhaustion joined 2026-08-15 20:47Z (D:-full containment self-trip).
+_RESOURCE_EXHAUSTION_WINERRORS = frozenset({8, 14, 39, 112, 1450, 1455})
 
 
 def is_transient_repair_io_error(exc: BaseException) -> bool:
@@ -85,7 +87,7 @@ def is_transient_repair_io_error(exc: BaseException) -> bool:
             return True
         if isinstance(current, OSError) and (
             getattr(current, "winerror", None) in _RESOURCE_EXHAUSTION_WINERRORS
-            or current.errno == errno.ENOMEM
+            or current.errno in (errno.ENOMEM, errno.ENOSPC)
         ):
             return True
         current = current.__cause__ or current.__context__
