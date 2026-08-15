@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_21525_WTI_XCU_CADF_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XCUUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XCUUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg WTI/copper CADF-qualified residual-reversion package. Q02 must evaluate combined package PnL, costs, density, and correlation; neither leg is a standalone strategy.",
+    "The EA fits log(WTI) on log(copper), admits only the locked residual CADF/half-life state, and fades a fresh standardized residual crossing. Aggregate RISK_FIXED is split by normalized entry weights 1.0 and abs(beta)."
+  ]
+}
