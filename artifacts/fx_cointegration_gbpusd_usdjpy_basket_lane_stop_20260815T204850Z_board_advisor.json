@@ -1,0 +1,126 @@
+{
+  "schema_version": "qm.fx-cointegration-basket-lane-stop/v1",
+  "sample_window_utc": {
+    "start": "2026-08-15T20:48:49.6047622Z",
+    "end": "2026-08-15T20:48:56.1430681Z"
+  },
+  "branch": "agents/board-advisor",
+  "sampled_head": "109f5976e45a85e1e9f6b7cd6ee1cb80053b25d4",
+  "outcome": "GOVERNED_BASKET_LANE_AND_CONTAINMENT_STOP",
+  "frontier": {
+    "frozen_pair_count": 66,
+    "fully_mechanized": true,
+    "approved_coint_card_count": 25,
+    "approved_coint_cards_without_build": 0,
+    "qm5_12532_terminal_path": [
+      "Q02_PASS",
+      "Q04_PASS",
+      "Q05_FAIL"
+    ],
+    "qm5_12533_terminal_path": [
+      "Q02_PASS",
+      "Q04_FAIL"
+    ],
+    "anchor_q02_oninit_or_no_history_blocker": false,
+    "selection": "existing_rank_58_qm5_1257_gbpusd_usdjpy"
+  },
+  "target": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 2,
+    "claimed_by": null,
+    "evidence_path": null,
+    "updated_at_utc": "2026-08-15T13:03:04.898529+00:00",
+    "exact_open_row_count": 1,
+    "enqueue_action": "SKIPPED_DUPLICATE_ROW_ALREADY_PENDING",
+    "implementation_repair_commit": "751cb391d8f388f5b61641ba3299011cdf9a09ed",
+    "exit_repair_commit": "f9ef37c1c",
+    "bindings": {
+      "mq5_sha256": "f1e0bc08e65c6b46eea7c1397551ebb6c17aa466b48ef1d48d67e573361b9b27",
+      "ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+      "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+      "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+      "payload_matches_repository": true
+    },
+    "risk_contract": {
+      "timeframe": "H1",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1
+    }
+  },
+  "fleet": {
+    "active_work_item_count": 1,
+    "active_multisymbol_q02_count": 1,
+    "basket_lane_available": false,
+    "active_work_item": {
+      "id": "a52d580e-bcef-42c7-8855-1b6be0fded0f",
+      "ea_id": "QM5_20206",
+      "symbol": "QM5_20206_XAU_XAG_MOMIVOL_D1",
+      "phase": "Q02",
+      "claimed_by": "T3",
+      "attempt_count": 1,
+      "terminal_pid": 17816,
+      "terminal_executable": "D:/QM/mt5/T3/terminal64.exe"
+    },
+    "factory_terminals": [
+      "T3"
+    ],
+    "orphaned_factory_terminal_processes": 0,
+    "t_live_observed_separately_and_excluded": true
+  },
+  "resources": {
+    "cpu_samples_percent": [
+      83.02003463207703,
+      85.13208586954242,
+      69.92962263272868
+    ],
+    "cpu_average_percent": 79.3605810447827,
+    "cpu_hard_trip_percent": 97.0,
+    "cpu_claim_resume_percent": 90.0,
+    "free_physical_memory_kib": 44283808,
+    "total_visible_memory_kib": 66185976,
+    "free_physical_memory_gib": 42.23,
+    "d_volume_free_bytes": 217749463040,
+    "d_volume_free_gib": 202.79,
+    "soft_resource_headroom_recovered": true
+  },
+  "guards": {
+    "factory_off": false,
+    "custom_history_containment": {
+      "enabled": true,
+      "reason": "custom_history_isolation_gate_failure",
+      "source": "automatic_stop_condition",
+      "recorded_at_utc": "2026-08-15T18:47:21.344593+00:00",
+      "authorization_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+      "mode_sha256": "a7347f04df93de2d752f60e51ddeeb94a07c4912e0440664e96570379c1813bc",
+      "file_sha256": "8ff87f53b111aeb589f9e91fed8d716e88ec700807f6bd3dd9b36c51e0a074cb"
+    }
+  },
+  "non_duplicate_delta": {
+    "prior_sample_utc": "2026-08-15T19:55:21.738938+00:00",
+    "prior_active_work_items": 2,
+    "current_active_work_items": 1,
+    "prior_d_volume_free_gib": 56.30,
+    "current_d_volume_free_gib": 202.79,
+    "description": "Post-cleanup disk and memory headroom recovered and the active set contracted, but one multisymbol Q02 still owns the serialized basket lane while signed containment remains enabled."
+  },
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "registry": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "q02_enqueue_or_requeue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_control": false,
+    "containment": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "auto_trading": false
+  }
+}
