@@ -1,0 +1,189 @@
+{
+  "schema_version": "qm.fx-cointegration-basket-lane-stop/v1",
+  "sample_window_utc": {
+    "start": "2026-08-15T22:17:04.9519829Z",
+    "end": "2026-08-15T22:18:49.7925992Z",
+    "mt5_process_scan": "2026-08-15T22:17:36Z"
+  },
+  "branch": "agents/board-advisor",
+  "sampled_head": "aa7485fe3e346b65e1b3918c7cd0a332ba77e94f",
+  "outcome": "GOVERNED_BASKET_LANE_OCCUPIED_TARGET_PENDING_ONCE",
+  "frontier": {
+    "frozen_pair_count": 66,
+    "fully_mechanized": true,
+    "approved_coint_card_count": 25,
+    "approved_coint_cards_without_build": 0,
+    "qm5_12532_terminal_path": [
+      "Q02_PASS",
+      "Q04_PASS",
+      "Q05_FAIL"
+    ],
+    "qm5_12533_terminal_path": [
+      "Q02_PASS",
+      "Q04_FAIL"
+    ],
+    "anchor_open_q02_row_count": 0,
+    "anchor_q02_oninit_or_no_history_blocker": false,
+    "selection": "existing_rank_58_qm5_1257_gbpusd_usdjpy"
+  },
+  "target": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 2,
+    "claimed_by": null,
+    "evidence_path": null,
+    "updated_at_utc": "2026-08-15T13:03:04.898529Z",
+    "exact_identity_row_count": 1,
+    "exact_open_row_count": 1,
+    "enqueue_action": "SKIPPED_DUPLICATE_ROW_ALREADY_PENDING",
+    "bindings": {
+      "mq5_sha256": "f1e0bc08e65c6b46eea7c1397551ebb6c17aa466b48ef1d48d67e573361b9b27",
+      "ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+      "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+      "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+      "strategy_card_sha256": "aa0313ea4218ed418432adcdf3a34b49cd3c4f46e725fefd31ec5b2266b2f9ae",
+      "payload_matches_repository": true
+    },
+    "basket_contract": {
+      "host_symbol": "GBPUSD.DWX",
+      "host_timeframe": "H1",
+      "basket_symbols": [
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1,
+      "g0_status": "APPROVED",
+      "r1_r4": "PASS",
+      "source": "Lemishko, Landi, and Caicedo-Llano (2024), SSRN 4771108",
+      "structural_only": true,
+      "ml_or_banned_indicator": false
+    }
+  },
+  "fleet": {
+    "active_work_item_count": 7,
+    "active_multisymbol_count": 1,
+    "basket_lane_available": false,
+    "active_multisymbol_work_item": {
+      "id": "c21cab69-2e64-44b6-bc67-4e7db3e5befd",
+      "ea_id": "QM5_20236",
+      "symbol": "QM5_20236_XAU_XAG_VOV_D1",
+      "phase": "Q02",
+      "claimed_by": "T8",
+      "attempt_count": 1,
+      "basket_symbols": [
+        "XAUUSD.DWX",
+        "XAGUSD.DWX"
+      ],
+      "terminal_pid": 4800,
+      "terminal_executable": "D:/QM/mt5/T8/terminal64.exe",
+      "tester_config": "D:/QM/reports/work_items/c21cab69-2e64-44b6-bc67-4e7db3e5befd/QM5_20236/20260815_214424/raw/run_01/tester.ini"
+    },
+    "other_active_work_items": [
+      {
+        "id": "8b1f7736-e55e-4cab-8fc0-8e406ff04e3d",
+        "ea_id": "QM5_11424",
+        "phase": "Q02",
+        "claimed_by": "T5"
+      },
+      {
+        "id": "ce01d890-2c39-4756-803e-0e4939a7b099",
+        "ea_id": "QM5_12430",
+        "phase": "Q02",
+        "claimed_by": "T2"
+      },
+      {
+        "id": "db16e50b-7244-4c8d-9baa-6889b603ef83",
+        "ea_id": "QM5_21527",
+        "phase": "Q04",
+        "claimed_by": "T6"
+      },
+      {
+        "id": "f911a7ec-6ec8-4fc9-be1c-29bace22c6dc",
+        "ea_id": "QM5_11480",
+        "phase": "Q04",
+        "claimed_by": "T10"
+      },
+      {
+        "id": "cc1f7e35-6e01-4eef-9f9d-eca2ba15be7d",
+        "ea_id": "QM5_11483",
+        "phase": "Q04",
+        "claimed_by": "T4"
+      },
+      {
+        "id": "2674c604-e66c-4c88-84d8-1c78e04ea893",
+        "ea_id": "QM5_21001",
+        "phase": "Q02",
+        "claimed_by": "T1"
+      }
+    ],
+    "factory_terminals_with_tester_children": [
+      "T4",
+      "T6",
+      "T8"
+    ],
+    "terminal_worker_daemons": [
+      "T1",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "orphaned_factory_terminal_processes": 0,
+    "t_live_observed_separately_and_excluded": true,
+    "ftmo_terminal_observed_separately_and_excluded": true
+  },
+  "resources": {
+    "cpu_samples_percent": [
+      75,
+      67,
+      70
+    ],
+    "cpu_average_percent": 70.67,
+    "cpu_hard_trip_percent": 97.0,
+    "free_physical_memory_kib": 44945636,
+    "total_visible_memory_kib": 66185976,
+    "free_physical_memory_gib": 42.86,
+    "d_volume_free_bytes": 207530377216,
+    "d_volume_free_gib": 193.28,
+    "soft_resource_headroom_available": true,
+    "binding_ceiling": "farm_wide_single_multisymbol_serialization_lane"
+  },
+  "guards": {
+    "multisymbol_serialization": {
+      "enabled": true,
+      "policy": "at_most_one_active_farm_wide",
+      "source": "tools/strategy_farm/terminal_worker.py:claim_atomic"
+    }
+  },
+  "non_duplicate_delta": {
+    "prior_sample_utc": "2026-08-15T21:33:59.3119631Z",
+    "prior_active_work_items": 5,
+    "current_active_work_items": 7,
+    "prior_basket_owner": "QM5_20016_Q05_T4",
+    "current_basket_owner": "QM5_20236_Q02_T8",
+    "description": "The sole governed multisymbol owner changed from QM5_20016 Q05 on T4 to QM5_20236 Q02 on T8 while the exact FX target remained pending once with unchanged hash bindings. This proves the basket lane is progressing and the target has not been duplicated or drifted."
+  },
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "registry": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "q02_enqueue_or_requeue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_control": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "auto_trading": false,
+    "repository_evidence_files": true
+  }
+}
