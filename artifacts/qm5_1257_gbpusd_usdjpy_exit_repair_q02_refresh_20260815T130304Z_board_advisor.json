@@ -1,0 +1,100 @@
+{
+  "schema_version": "qm_fx_cointegration_exit_repair_q02_refresh/v1",
+  "generated_at_utc": "2026-08-15T13:03:04.898529+00:00",
+  "branch": "agents/board-advisor",
+  "mission_disposition": "existing_forex_card_advanced",
+  "selection": {
+    "new_pair_created": false,
+    "reason": "The governed 66-pair frontier has no unbuilt relationship; QM5_12532 and QM5_12533 are already beyond Q02.",
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "scan_relationship_rank": 58,
+    "alpha_change": false
+  },
+  "repair": {
+    "classification": "same_lineage_card_conformance_exit_repair",
+    "implementation_commit": "f9ef37c1c",
+    "economics_changed": false,
+    "thresholds_changed": false,
+    "items": [
+      "replace exact floating-point z==0 exit with the Card-authorized directional mean crossing",
+      "allow the existing D1 structural-stop path to read its requested two completed closes"
+    ]
+  },
+  "artifact_hashes": {
+    "mq5_sha256": "f1e0bc08e65c6b46eea7c1397551ebb6c17aa466b48ef1d48d67e573361b9b27",
+    "ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+    "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+    "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3"
+  },
+  "validation": {
+    "strict_compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "summary": "D:/QM/reports/compile/20260815_130020/summary.csv",
+      "log": "C:/QM/repo/framework/build/compile/20260815_130020/QM5_1257_lemishko-fx-cointpair.compile.log"
+    },
+    "strict_build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260815_130045.json"
+    },
+    "guardrails": "PASS (45 files, no findings)",
+    "symbol_scope": "BASKET_OK (GBPUSD.DWX, USDJPY.DWX; 0 violations)",
+    "regression_tests": "45 passed in 2.63s"
+  },
+  "q02_refresh": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "operation": "existing_exact_row_refreshed_in_place",
+    "duplicate_created": false,
+    "attempt_count": 2,
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "updated_at": "2026-08-15T13:03:04.898529+00:00",
+    "payload_sha256_after": "0b8d0b355d1f750ded28c08e853e2178c24944c6d7f3c16020b02cc3e3b35c6b",
+    "open_exact_identity_count": 1,
+    "hold_ledger_seq": 1845,
+    "refresh_ledger_seq": 1846,
+    "hold_backup_path": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_1257_exit_repair_hold_20260815T125919Z.sqlite",
+    "hold_backup_sha256": "79d87e8f3bb7bc3acfe40f9ed5f300d420b63b3af651ebb7d583d320e3eb4117",
+    "refresh_backup_path": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_1257_exit_repair_refresh_20260815T130304Z.sqlite",
+    "refresh_backup_sha256": "fea8fb9fa48df889c0d81fe366f4c4de223995c250b1e3d6504ba1830bb7e9db",
+    "backup_quick_checks": "ok",
+    "hold_released": true
+  },
+  "paced_execution": {
+    "manual_backtest_started": false,
+    "blocking_active_basket_work_item": "a070ff3f-aec1-4d32-b2c4-3444a42a4d54",
+    "blocking_active_basket_ea": "QM5_20202",
+    "reason": "The factory serializes multisymbol backtests; the exact QM5_1257 row remains next eligible after the active basket clears.",
+    "cpu_samples_percent": [
+      49.0,
+      76.7,
+      53.6,
+      43.6,
+      63.4
+    ],
+    "cpu_max_percent": 76.7,
+    "cpu_ceiling_percent": 97.0,
+    "free_ram_gib": 53.57
+  },
+  "safety": {
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "structural_only": true,
+    "basket_manifest_changed": false,
+    "setfile_changed": false,
+    "registries_changed": false,
+    "portfolio_gate_changed": false,
+    "t_live_manifest_changed": false,
+    "autotrading_toggled": false
+  },
+  "verdict": "Q02_REFRESHED_PENDING_SERIALIZED_BASKET_SLOT",
+  "q02_pass_claimed": false
+}
