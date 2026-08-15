@@ -220,6 +220,16 @@ def test_qm5_1257_zero_trade_repair_keeps_stationary_math_and_atomic_leg_identit
     assert "RISK_FIXED=1000" in logical_set
     assert "RISK_PERCENT=0" in logical_set
 
+    # Card exits remain reachable: the D1 structural stop may request its
+    # two-close observation, and convergence is directional rather than an
+    # exact floating-point equality at z == 0.
+    assert "if (bars < 1) return false;" in source
+    assert "int ActivePairDirection()" in source
+    assert "pair_direction < 0 && g_current_z >= -strategy_exit_z" in source
+    assert "pair_direction > 0 && g_current_z <=  strategy_exit_z" in source
+    assert "ReadLogCloses(g_pair_a, logx_d, 2)" in source
+    assert "ReadLogCloses(g_pair_b, logy_d, 2)" in source
+
 
 def test_qm5_9184_manifest_has_logical_audusd_nzdusd_setfile() -> None:
     ea_dir = REPO / "framework" / "EAs" / "QM5_9184_jstm-pair-cointegration-fx"

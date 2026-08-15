@@ -91,7 +91,11 @@ double AdfCriticalFromP(const double p_value)
 
 bool ReadLogCloses(const string symbol, double &out[], const int bars)
 {
-   if (bars < 30) return false;
+   // Formation callers enforce their own >=30-bar statistical window.  Exit
+   // management intentionally requests only the two most recent D1 closes for
+   // the Card's structural-stop observation, so the shared reader must not
+   // reject that bounded read before CopyClose() is reached.
+   if (bars < 1) return false;
    double closes[];
    ArraySetAsSeries(closes, true);
    if (CopyClose(symbol, PERIOD_D1, 1, bars, closes) != bars) // perf-allowed: bounded D1 formation window, called only from the QM_IsNewBar-gated path.
@@ -602,6 +606,28 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
 }
 
+int ActivePairDirection()
+{
+   if (!ResolvePair(strategy_pair_slot, g_pair_a, g_pair_b)) return 0;
+
+   const int companion_slot = strategy_pair_slot + 21;
+   const int companion_magic = QM_MagicChecked(qm_ea_id, companion_slot, g_pair_b);
+   if (companion_magic <= 0) return 0;
+
+   for (int i = 0; i < PositionsTotal(); ++i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if (ticket == 0 || !PositionSelectByTicket(ticket)) continue;
+      if (PositionGetString(POSITION_SYMBOL) != g_pair_b) continue;
+      if ((int)PositionGetInteger(POSITION_MAGIC) != companion_magic) continue;
+
+      const ENUM_POSITION_TYPE type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if (type == POSITION_TYPE_BUY) return -1;  // long residual
+      if (type == POSITION_TYPE_SELL) return 1; // short residual
+   }
+   return 0;
+}
+
 void Strategy_ManageOpenPosition()
 {
 }
@@ -615,7 +641,16 @@ bool Strategy_ExitSignal()
    {
       H1ZScoreRefresh();
 
-      if (MathAbs(g_current_z) <= strategy_exit_z)
+      // The Card exits when the spread crosses its mean.  Testing
+      // abs(z) <= 0 with the default zero band required an exact floating-point
+      // zero and was effectively unreachable.  The companion leg identifies
+      // whether the package owns a long or short residual, allowing the proper
+      // directional crossing (or entry into a configured non-zero exit band).
+      const int pair_direction = ActivePairDirection();
+      const bool mean_crossed =
+         (pair_direction < 0 && g_current_z >= -strategy_exit_z) ||
+         (pair_direction > 0 && g_current_z <=  strategy_exit_z);
+      if (mean_crossed)
       {
          ClosePair(QM_EXIT_STRATEGY);
          return false;
