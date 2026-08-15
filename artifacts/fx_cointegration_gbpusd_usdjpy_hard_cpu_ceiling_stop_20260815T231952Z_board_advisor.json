@@ -1,0 +1,171 @@
+{
+  "schema_version": "qm.fx-cointegration-hard-cpu-ceiling-stop/v1",
+  "captured_at_utc": "2026-08-15T23:19:52.8366031Z",
+  "captured_at_local": "2026-08-16T01:19:52.8481625+02:00",
+  "branch": "agents/board-advisor",
+  "sampled_head": "284072a6bd15f21a8f3089962ad05c15f175f928",
+  "outcome": "HARD_CPU_CEILING_TARGET_PENDING_ONCE",
+  "frontier": {
+    "frozen_pair_count": 66,
+    "strict_scan_survivor_count": 2,
+    "fully_mechanized": true,
+    "approved_coint_card_filename_count": 25,
+    "approved_coint_cards_without_matching_build": 0,
+    "qm5_12532_terminal_path": [
+      "Q02_PASS",
+      "Q04_PASS",
+      "Q05_FAIL"
+    ],
+    "qm5_12533_terminal_path": [
+      "Q02_PASS",
+      "Q04_FAIL"
+    ],
+    "anchor_open_q02_row_count": 0,
+    "anchor_q02_oninit_or_no_history_blocker": false,
+    "selection": "existing_rank_58_qm5_1257_gbpusd_usdjpy"
+  },
+  "target": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 2,
+    "claimed_by": null,
+    "evidence_path": null,
+    "updated_at_utc": "2026-08-15T13:03:04.898529+00:00",
+    "exact_identity_row_count": 1,
+    "exact_open_row_count": 1,
+    "enqueue_action": "SKIPPED_DUPLICATE_ROW_ALREADY_PENDING",
+    "bindings": {
+      "mq5_sha256": "f1e0bc08e65c6b46eea7c1397551ebb6c17aa466b48ef1d48d67e573361b9b27",
+      "ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+      "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+      "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+      "payload_matches_repository": true
+    },
+    "basket_contract": {
+      "host_symbol": "GBPUSD.DWX",
+      "host_timeframe": "H1",
+      "basket_symbols": [
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1,
+      "g0_status": "APPROVED",
+      "r1_r4": "PASS",
+      "source": "Lemishko, Landi, and Caicedo-Llano (2024), SSRN 4771108",
+      "structural_only": true,
+      "ml_or_banned_indicator": false
+    }
+  },
+  "fleet": {
+    "active_work_item_count": 7,
+    "active_multisymbol_count": 1,
+    "basket_lane_available": false,
+    "active_multisymbol_work_item": {
+      "id": "c21cab69-2e64-44b6-bc67-4e7db3e5befd",
+      "ea_id": "QM5_20236",
+      "symbol": "QM5_20236_XAU_XAG_VOV_D1",
+      "phase": "Q02",
+      "claimed_by": "T8",
+      "attempt_count": 1,
+      "basket_symbols": [
+        "XAUUSD.DWX",
+        "XAGUSD.DWX"
+      ],
+      "terminal_pid": 4800,
+      "tester_pid": 8884,
+      "terminal_executable": "D:/QM/mt5/T8/terminal64.exe",
+      "tester_executable": "D:/QM/mt5/T8/metatester64.exe",
+      "tester_config": "D:/QM/reports/work_items/c21cab69-2e64-44b6-bc67-4e7db3e5befd/QM5_20236/20260815_214424/raw/run_01/tester.ini",
+      "tester_config_sha256": "6db08949600e2a5bc95d99076e33214a665aa0c5d782f2f05699bd02d8ae73a6",
+      "tester_config_last_write_utc": "2026-08-15T21:44:25.2475908Z"
+    },
+    "other_active_work_items": [
+      {
+        "id": "36f0fa30-aa45-4339-9549-863d3ae7d894",
+        "ea_id": "QM5_12354",
+        "phase": "Q07",
+        "claimed_by": "T1"
+      },
+      {
+        "id": "2cb7ff75-1b54-484c-8368-5a69b80003cf",
+        "ea_id": "QM5_21501",
+        "phase": "Q04",
+        "claimed_by": "T10"
+      },
+      {
+        "id": "ce01d890-2c39-4756-803e-0e4939a7b099",
+        "ea_id": "QM5_12430",
+        "phase": "Q02",
+        "claimed_by": "T2"
+      },
+      {
+        "id": "e81d72ed-fd22-41fa-8c7f-28761b13cb79",
+        "ea_id": "QM5_10484",
+        "phase": "Q04",
+        "claimed_by": "T4"
+      },
+      {
+        "id": "41bf53fd-3972-4aa4-9bfa-d0a7f6c0e87b",
+        "ea_id": "QM5_12708",
+        "phase": "Q07",
+        "claimed_by": "T7"
+      },
+      {
+        "id": "f8c53f40-9319-443f-bf17-49b186d4ed91",
+        "ea_id": "QM5_10591",
+        "phase": "Q02",
+        "claimed_by": "T9"
+      }
+    ],
+    "t_live_observed_separately_and_excluded": true,
+    "ftmo_terminal_observed_separately_and_excluded": true
+  },
+  "resources": {
+    "cpu_sample_interval_seconds": 2,
+    "cpu_samples_percent": [
+      94.85,
+      99.90,
+      99.32
+    ],
+    "cpu_average_percent": 98.02,
+    "cpu_hard_trip_percent": 97.0,
+    "cpu_hard_trip": true,
+    "free_physical_memory_kib": 22073220,
+    "total_visible_memory_kib": 66185976,
+    "d_volume_free_bytes": 195088674816,
+    "binding_ceiling": [
+      "cpu_hard_trip",
+      "farm_wide_single_multisymbol_serialization_lane"
+    ]
+  },
+  "non_duplicate_delta": {
+    "prior_evidence": "artifacts/fx_cointegration_gbpusd_usdjpy_basket_lane_stop_20260815T221849Z_board_advisor.json",
+    "prior_cpu_average_percent": 70.67,
+    "current_cpu_average_percent": 98.02,
+    "prior_cpu_hard_trip": false,
+    "current_cpu_hard_trip": true,
+    "same_basket_owner": true,
+    "changed_nonbasket_active_work_items": 5,
+    "description": "The target remains pending exactly once and the same live T8 basket still owns the serialized lane, but the farm moved from CPU headroom to a governed 98.02% hard trip while five of six non-basket active identities changed. This is a materially new capacity stop, not a duplicate queue or strategy artifact."
+  },
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "registry": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "q02_enqueue_or_requeue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_control": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "auto_trading": false,
+    "repository_evidence_files": true
+  }
+}
