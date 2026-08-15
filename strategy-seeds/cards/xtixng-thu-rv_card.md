@@ -58,7 +58,8 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_STARTED
+q02_status: PENDING
+q02_work_item_id: 60cde14d-6d7a-4024-990b-79a582c4b373
 review_focus: "Falsify the source-coefficient Thursday long-WTI/short-XNG differential after CFD session mapping, costs, synchronized attachment, equal-notional rounding, combined stop risk, and legging. It adds a cross-energy weekday package rather than another index, outright metal, or XNG oscillator; Q09 alone may establish realized book correlation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -299,6 +300,7 @@ correlation with XAU, SP500, NDX, and XNG.
 |---|---|---|---|---|
 | v1 | 2026-08-15 | initial Thursday XTI/XNG source-differential card | G0 | APPROVED |
 | v1-q01 | 2026-08-15 | strict compile, build guardrails, reference tests, and P1 validation | Q01 | PASS |
+| v1-q02 | 2026-08-15 | enqueue the locked logical-basket baseline without dispatch | Q02 | ENQUEUED; pending |
 
 ## Pipeline Phase Status
 
@@ -306,7 +308,7 @@ correlation with XAU, SP500, NDX, and XNG.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-15 | APPROVED | `decisions/2026-08-15_xtixng_thursday_relative_value_g0.md` |
 | Q01 Build Validation | 2026-08-15 | PASS | `D:/QM/reports/pipeline/QM5_41014/P1/P1_QM5_41014_result.json` |
-| Q02 Baseline Screening | TBD | NOT_STARTED | TBD |
+| Q02 Baseline Screening | 2026-08-15 | ENQUEUED; pending | work item `60cde14d-6d7a-4024-990b-79a582c4b373`; no tester dispatched by this build |
 
 ## Safety Boundary
 
