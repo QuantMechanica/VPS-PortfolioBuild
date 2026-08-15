@@ -1,0 +1,117 @@
+{
+  "schema_version": "qm_fx_cointegration_q02_refresh/v1",
+  "generated_at_utc": "2026-08-15T12:14:09.463931+00:00",
+  "branch": "agents/board-advisor",
+  "mission_disposition": "existing_forex_card_advanced",
+  "selection": {
+    "new_pair_created": false,
+    "reason": "The durable 66-pair duplicate guard records every scanned relationship as mechanized; both anchor baskets are already beyond Q02, so the authorized fallback is an existing approved forex card.",
+    "frontier_duplicate_guard": "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md",
+    "discovery_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "ea_id": "QM5_1257",
+    "ea_label": "QM5_1257_lemishko-fx-cointpair",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "pair": ["GBPUSD.DWX", "USDJPY.DWX"],
+    "scan_relationship_rank": 58,
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1257_lemishko-fx-cointpair.md",
+    "source": "Lemishko, Landi, and Caicedo-Llano (2024), SSRN",
+    "alpha_change": false
+  },
+  "prior_bound_q02": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "summary_path": "D:/QM/reports/work_items/d4cd660c-c81a-41d3-8a4c-ad21d3319816/QM5_1257/20260815_082908/summary.json",
+    "summary_sha256": "76fcd6351b98f8cc16250a5fd7e3bc2fb47e6b868cd9ce4619102c5f64bc1526",
+    "result": "FAIL",
+    "reason_classes": ["MIN_TRADES_NOT_MET"],
+    "run_status": "OK",
+    "oninit_failure": false,
+    "total_trades": 0,
+    "window": ["2018.07.02", "2022.12.31"],
+    "logger_events": 1411,
+    "entry_events": 0,
+    "first_failed_layer": "entry_implementation"
+  },
+  "repair": {
+    "classification": "same_lineage_entry_implementation_repair",
+    "economics_changed": false,
+    "items": [
+      "accept negative mean-reverting lambda through phi=1+lambda and compute half-life as -log(2)/log(phi)",
+      "compare bid/ask costs in relative units against the log-residual spread",
+      "map negative-beta hedge directions correctly",
+      "resolve host and companion magics from registry slots 8 and 29",
+      "make two-leg entry atomic and roll back a partial fill",
+      "latch monthly qualification outcomes and emit bounded registered diagnostics"
+    ],
+    "implementation_commit": "751cb391d8f388f5b61641ba3299011cdf9a09ed",
+    "set_metadata_restore_commit": "82a1bf44319a26fee1dbe5eb8463c7986f0304e6",
+    "net_repository_delta": [
+      "framework/EAs/QM5_1257_lemishko-fx-cointpair/QM5_1257_lemishko-fx-cointpair.mq5",
+      "framework/EAs/QM5_1257_lemishko-fx-cointpair/QM5_1257_lemishko-fx-cointpair.ex5",
+      "tools/strategy_farm/tests/test_fx_basket_manifests.py"
+    ]
+  },
+  "artifact_hashes": {
+    "mq5_sha256": "7885452d1f3289bd928fa5b6e78718c6c6e96044381b0c02968a0a69729e74f2",
+    "ex5_sha256": "673c446100d6871ce426f5b9a5799530d8ef2fd73990599a7ca1afc74d26f207",
+    "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+    "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3"
+  },
+  "validation": {
+    "strict_build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260815_115834.json"
+    },
+    "strict_compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "summary": "D:/QM/reports/compile/20260815_115849/summary.csv",
+      "log": "C:/QM/repo/framework/build/compile/20260815_115849/QM5_1257_lemishko-fx-cointpair.compile.log"
+    },
+    "guardrails": "PASS (45 files, no findings)",
+    "symbol_scope": "BASKET_OK (GBPUSD.DWX, USDJPY.DWX; 0 violations)",
+    "regression_tests": "45 passed in 1.89s"
+  },
+  "q02_refresh": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "operation": "existing_exact_row_refreshed_in_place",
+    "duplicate_created": false,
+    "attempt_count_before": 2,
+    "attempt_count_after": 2,
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "updated_at": "2026-08-15T12:14:09.463931+00:00",
+    "payload_sha256_after": "3adee718bbb1377bebc67ba4e774321ae790c853e7de8825b58dd3075dd4d04b",
+    "hold_released": true,
+    "transition_ledger_seq": 1844,
+    "transition_action": "implementation_repair_refresh",
+    "backup_path": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_1257_q02_refresh_20260815T121051Z.sqlite",
+    "backup_sha256": "637738583eeef32dbba07fda7a844daccea55c50e7e8a1723e8131f9c6774bc6",
+    "backup_quick_check": "ok"
+  },
+  "resource_boundary": {
+    "cpu_samples_percent": [46.2, 36.6, 54.8, 50.5, 48.0],
+    "cpu_average_percent": 47.2,
+    "cpu_ceiling_percent": 97.0,
+    "free_ram_gib_at_refresh": 1.19,
+    "basket_admission_floor_gib": 12.0,
+    "manual_backtest_started": false,
+    "execution_owner": "paced_worker_after_resource_recovery"
+  },
+  "safety": {
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "timeframe": "H1",
+    "structural_only": true,
+    "basket_manifest_changed": false,
+    "setfile_semantics_changed": false,
+    "registries_changed": false,
+    "portfolio_gate_changed": false,
+    "t_live_manifest_changed": false,
+    "autotrading_toggled": false
+  },
+  "verdict": "Q02_REFRESHED_PENDING_RESOURCE_GUARD",
+  "q02_pass_claimed": false
+}
