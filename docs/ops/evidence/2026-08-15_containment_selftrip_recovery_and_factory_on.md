@@ -171,6 +171,48 @@ distinct symbols (XAGUSD, WS30, XAU_XAG basket, GDAXI). Suite evidence:
 calendar-gate, adoption, maintenance-control) + new `test_claim_spacing.py`;
 `tests/conftest.py` zeroes the stagger for queue-semantics tests.
 
+## Act 4 — sparse-contract field regression, terminal healing, restart
+
+The activated sparse contract (act 3) caused a total production stall:
+**100% of post-activation runs returned BARS_ZERO** despite verified
+restores (receipt 108/108 restored `PASS_PRIVATIZED`; files on disk).
+Controlled experiments in the OFF window isolated the layer:
+
+- Runs A-C (T3/GBPUSD direct terminal64 invocations): invalidating the
+  per-symbol `.hc` bar caches, `ticks.dat`, agent bases, and tester cache
+  all left "0 ticks, 0 bars / 42 bytes of tick data".
+- Run D: even T3's never-pruned first-claim symbol (XAGUSD) was dead —
+  the prune poisons terminal-level data visibility beyond restored files.
+- Run E (control, untouched T9): healthy — 1171 bars, 214.3M real ticks.
+- Key mechanism: **MT5's `ticks.dat` is an import-time tick catalog the
+  terminal does NOT regenerate from `.tkc` archives** (deleted → recreated
+  empty). Restore-the-files alone can never recover tick visibility.
+
+A plain code rollback was insufficient: terminals were already physically
+pruned, and the pre-sparse gate would have healed them via per-terminal
+private master copies (~80GB × 7 > D: free). The emergency OFF stopped the
+first post-rollback ON before any claim ran.
+
+**Healing (executed ~17:03 local):** untouched T9 (T5/T10 also intact)
+served as source: 26,758 hardlinks restored the missing manifest archives
+into T1-T4/T6-T8 (0 bytes, family topology = the pre-sparse Variant-A
+layout), T9's 37 per-symbol `ticks.dat` catalogs copied to each, stale
+`.hc` caches dropped for rebuild. Claim-privatized files kept. Verification
+on healed T3: 260 bars / 46.6M ticks (1-year window) vs 0/0 before.
+Script: session scratchpad `heal_pruned_terminals.py`; receipts in this
+doc's counts.
+
+Restart: decision `RTA-2026-08-15-HEAL-PRUNED-TERMINALS`, ON exit 0
+(~17:15 local). Sparse task 71eba21c reset to OPS_FIX_REQUIRED with the
+catalog-lifecycle requirement and a MANDATORY real-terminal acceptance run
+before any future activation.
+
+**Process lesson (mine):** I activated on 196 green unit tests and made
+the acceptance observational-after instead of the pre-activation
+real-terminal run the design called for. Unit tests cannot see MT5
+terminal internals; ceremony-gated activations of Custom-history behavior
+get a live acceptance run first, every time.
+
 ## Open risks
 
 - **RAM exhaustion is the recurring ambient cause** (2 events in ~30h:
