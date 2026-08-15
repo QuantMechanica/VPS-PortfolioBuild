@@ -75,4 +75,3 @@ lot or the 15% notional tolerance cannot be satisfied.
 This build has no live preset or live authorization. AutoTrading, T_Live,
 deploy manifests, portfolio admission, and portfolio-gate changes are outside
 scope.
-
