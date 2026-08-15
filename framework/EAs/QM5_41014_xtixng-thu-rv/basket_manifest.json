@@ -1,0 +1,20 @@
+{
+  "logical_symbol": "QM5_41014_XTI_XNG_THU_RV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.01.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "One source-backed Thursday-session package: BUY XTI and SELL XNG, target 1:1 absolute USD notionals within 15%, and cap both ATR stops to one RISK_FIXED=1000 budget. Enter only on a synchronized genuine broker-Thursday D1 boundary after a completed Wednesday and flatten at broker hour 21. The paper reports the separate weekday coefficients but does not test this pair, CFD carrier, covariance, costs, or neutrality. Only combined logical-package PnL is valid. No standalone result, live preset, portfolio admission, or decorrelation claim is authorized."
+  ]
+}
