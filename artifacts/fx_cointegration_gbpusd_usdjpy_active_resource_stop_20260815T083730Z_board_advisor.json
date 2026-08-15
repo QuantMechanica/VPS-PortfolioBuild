@@ -1,0 +1,175 @@
+{
+  "artifact_type": "fx_cointegration_existing_pair_active_resource_stop",
+  "generated_at_utc": "2026-08-15T08:37:30.927009Z",
+  "branch": "agents/board-advisor",
+  "base_commit": "330d5256df768ef53adabd4d3cbb319e1138634f",
+  "mission_outcome": "EXISTING_PAIR_ADVANCED_TO_ACTIVE_Q02_STOPPED_AT_RESOURCE_CEILING",
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "frontier_reconciliation": {
+    "scan_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "scan_mode": "--include-negative-hedges",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_card_or_ea_would_duplicate_existing_relationship": true,
+    "controlling_repository_evidence": "artifacts/fx_cointegration_frontier_active_basket_cpu_stop_20260814T194820Z_board_advisor.json"
+  },
+  "selected_existing_pair": {
+    "selection_reason": "The frozen scan has no unbuilt relationship; this exact governed fallback was already pending once and has now advanced to active Q02.",
+    "scan_rank": 58,
+    "pair": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "ea_id": "QM5_1257",
+    "pair_slot": 8,
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "source_citation": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+    "g0_status": "APPROVED",
+    "r1_r4_status": "PASS",
+    "basket_manifest": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json",
+    "fixed_risk_setfile": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "q02": {
+      "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+      "status": "active",
+      "verdict": null,
+      "attempt_count": 1,
+      "claimed_by": "T8",
+      "evidence_path": null,
+      "created_at_utc": "2026-08-11T23:53:50+00:00",
+      "last_observed_updated_at_utc": "2026-08-15T08:28:17+00:00",
+      "exact_logical_row_count": 1,
+      "duplicate_enqueue_performed": false,
+      "manual_requeue_performed": false,
+      "priority_mutation_performed": false,
+      "terminal_process": {
+        "pid": 15028,
+        "executable_path": "D:\\QM\\mt5\\T8\\terminal64.exe",
+        "tester_config_root_contains_work_item_id": true,
+        "process_sampled_at_utc": "2026-08-15T08:36:06+00:00"
+      }
+    }
+  },
+  "resource_stop": {
+    "active_work_item_count": 9,
+    "active_phase_counts": {
+      "Q02": 8,
+      "Q08": 1
+    },
+    "claimed_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "factory_terminal_children_observed": [
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "worker_daemons_observed": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "orphaned_factory_terminal_process_count": 0,
+    "physical_memory": {
+      "sampled_at_utc": "2026-08-15T08:37:30.927009Z",
+      "free_kib": 566536,
+      "total_kib": 66185976,
+      "free_gib": 0.54,
+      "total_gib": 63.12
+    },
+    "custom_history_containment": {
+      "enabled": false,
+      "schema_version": "qm.custom-history-containment-mode/v1",
+      "recorded_at_utc": "2026-08-15T06:58:17.840003+00:00",
+      "reason": "selftrip_repair_race_partial_ram_exhaustion_classifier_fix_a366cf6dc",
+      "source": "dual_cutover_audits_passed_before_ramp",
+      "authorization_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+      "mode_sha256": "28a20f8ebb3e3e5b70acad1f497f8f834b5dc39d53151d3646acc96e41dba529"
+    },
+    "t_live_observed_and_excluded": true,
+    "ftmo_terminal_observed_and_excluded": true,
+    "stop_reason": "The selected existing FX pair is already active under its one canonical Q02 row, nine work items occupy T2-T10, and only 0.54 GiB physical memory remains free. The mission requires stopping at the backtest CPU/resource ceiling."
+  },
+  "target_hashes": {
+    "mq5_sha256": "28bd88d0a7a7401ec7fe3b3a4f99ef3ba6b9fec146298c512b1c76e1adf7e12b",
+    "ex5_sha256": "86c6e9f077e37ddd5aea1e15b253cd4509c7f180c846cc6aebd806fa17d95cbd",
+    "strategy_card_sha256": "aa0313ea4218ed418432adcdf3a34b49cd3c4f46e725fefd31ec5b2266b2f9ae",
+    "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+    "fixed_risk_setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4"
+  },
+  "changed_since_prior_frontier_sample": {
+    "prior_evidence": "artifacts/fx_cointegration_frontier_resource_ceiling_stop_20260814T215856Z_board_advisor.json",
+    "prior_target_q02_status": "pending",
+    "current_target_q02_status": "active",
+    "prior_target_claimed_by": null,
+    "current_target_claimed_by": "T8",
+    "prior_free_physical_memory_gib": 1.08,
+    "current_free_physical_memory_gib": 0.54,
+    "prior_containment_enabled": true,
+    "current_containment_enabled": false,
+    "target_q02_state_changed": true
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "registry_mutation": false,
+    "basket_manifest_mutation": false,
+    "setfile_mutation": false,
+    "q02_enqueue_or_requeue": false,
+    "priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run_started": false,
+    "history_or_containment_mutation": false,
+    "factory_recovery": false,
+    "process_cleanup": false,
+    "repository_evidence_record_created": true,
+    "reason": "The full frontier makes a new build duplicative; the exact fallback is actively advancing through Q02; current fleet load and physical-memory exhaustion require an immediate stop."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false,
+    "live_deployment_artifacts": false
+  }
+}
