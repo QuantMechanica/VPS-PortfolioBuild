@@ -1,0 +1,152 @@
+{
+  "schema_version": "qm.fx-cointegration-containment-stop/v1",
+  "sample_window_utc": {
+    "start": "2026-08-15T19:54:58.1216088Z",
+    "end": "2026-08-15T19:55:21.738938+00:00"
+  },
+  "branch": "agents/board-advisor",
+  "head_before_evidence_commit": "c7ea4990eb2d981191992c89949d2d1a0c053240",
+  "outcome": "GOVERNED_CONTAINMENT_STOP",
+  "frontier": {
+    "frozen_pair_count": 66,
+    "fully_mechanized": true,
+    "qm5_12532_terminal_path": [
+      "Q02_PASS",
+      "Q04_PASS",
+      "Q05_FAIL"
+    ],
+    "qm5_12533_terminal_path": [
+      "Q02_PASS",
+      "Q04_FAIL"
+    ],
+    "anchor_q02_oninit_or_no_history_blocker": false,
+    "selection": "existing_rank_58_qm5_1257_gbpusd_usdjpy"
+  },
+  "source": {
+    "citation": "Lemishko, Landi, and Caicedo-Llano (2024), Cointegration-Based Strategies in Forex Pairs Trading, SSRN 4771108",
+    "approved_artifact": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1257_lemishko-fx-cointpair.md",
+    "approved_artifact_sha256": "d1c36d0c6c13647eded8bd7ae4cb8424d8746b51d703d2854900c5094b440dd9",
+    "g0_r1_r4": "PASS",
+    "mechanics_changed": false
+  },
+  "target": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 2,
+    "claimed_by": null,
+    "evidence_path": null,
+    "updated_at_utc": "2026-08-15T13:03:04.898529+00:00",
+    "exact_identity_count": 1,
+    "open_identity_count": 1,
+    "priority_track": true,
+    "avoid_terminals": [
+      "T4",
+      "T8"
+    ],
+    "implementation_repair_commit": "751cb391d8f388f5b61641ba3299011cdf9a09ed",
+    "exit_repair_commit": "f9ef37c1c",
+    "bindings": {
+      "mq5_sha256": "f1e0bc08e65c6b46eea7c1397551ebb6c17aa466b48ef1d48d67e573361b9b27",
+      "ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+      "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+      "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+      "payload_matches_repository": true
+    },
+    "risk_contract": {
+      "timeframe": "H1",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1
+    }
+  },
+  "validation": {
+    "card_schema_lint": {
+      "status": "PASS",
+      "missing_sections": 0,
+      "ml_hits": 0
+    },
+    "symbol_scope": {
+      "status": "BASKET_OK",
+      "violations": 0,
+      "manifest_symbols": [
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ]
+    },
+    "fx_basket_manifest_tests": {
+      "passed": 45,
+      "failed": 0
+    },
+    "build_check": {
+      "status": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260815_195251.json",
+      "checker_generated_setfile_header_delta_reversed": true,
+      "target_worktree_clean_after_reversal": true
+    }
+  },
+  "fleet": {
+    "active_work_item_count": 2,
+    "factory_terminal_count": 2,
+    "active_work_items": [
+      {
+        "id": "a52d580e-bcef-42c7-8855-1b6be0fded0f",
+        "ea_id": "QM5_20206",
+        "symbol": "QM5_20206_XAU_XAG_MOMIVOL_D1",
+        "phase": "Q02",
+        "claimed_by": "T3",
+        "terminal_pid": 17816
+      },
+      {
+        "id": "143f71c2-6fed-49bc-8431-c6513de7cb9d",
+        "ea_id": "QM5_1537",
+        "symbol": "NZDJPY.DWX",
+        "phase": "Q02",
+        "claimed_by": "T4",
+        "terminal_pid": 19468
+      }
+    ],
+    "t_live_observed_separately_and_excluded": true
+  },
+  "resources": {
+    "cpu_average_percent_three_samples": 90.82,
+    "cpu_hard_trip_percent": 97.0,
+    "cpu_resume_percent": 90.0,
+    "free_physical_memory_kib": 30782660,
+    "total_physical_memory_kib": 66185976,
+    "free_physical_memory_gib": 29.36,
+    "d_volume_free_bytes": 60451737600,
+    "d_volume_free_gib": 56.30,
+    "prior_disk_ceiling_cleared": true
+  },
+  "custom_history_containment": {
+    "enabled": true,
+    "reason": "custom_history_isolation_gate_failure",
+    "source": "automatic_stop_condition",
+    "recorded_at_utc": "2026-08-15T18:47:21.344593+00:00",
+    "authorization_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+    "mode_sha256": "a7347f04df93de2d752f60e51ddeeb94a07c4912e0440664e96570379c1813bc",
+    "file_sha256": "8ff87f53b111aeb589f9e91fed8d716e88ec700807f6bd3dd9b36c51e0a074cb",
+    "global_lease_exists_and_write_held": true,
+    "canonical_release_requires_owner_invocation_and_quiescence": true
+  },
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "registry": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "q02_enqueue_or_requeue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_control": false,
+    "containment": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "auto_trading": false
+  }
+}
