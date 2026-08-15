@@ -1,0 +1,172 @@
+{
+  "schema_version": "qm.fx-cointegration-basket-lane-stop/v1",
+  "sample_window_utc": {
+    "start": "2026-08-15T21:33:45.5739877+00:00",
+    "end": "2026-08-15T21:33:59.3119631+00:00"
+  },
+  "branch": "agents/board-advisor",
+  "sampled_head": "ec56f41709a10794bc937748279551b1e1241ea7",
+  "outcome": "GOVERNED_BASKET_LANE_STOP_AFTER_FULL_PARALLELISM_RESTORE",
+  "frontier": {
+    "frozen_pair_count": 66,
+    "fully_mechanized": true,
+    "approved_coint_card_count": 25,
+    "approved_coint_cards_without_build": 0,
+    "qm5_12532_terminal_path": [
+      "Q02_PASS",
+      "Q04_PASS",
+      "Q05_FAIL"
+    ],
+    "qm5_12533_terminal_path": [
+      "Q02_PASS",
+      "Q04_FAIL"
+    ],
+    "anchor_q02_oninit_or_no_history_blocker": false,
+    "selection": "existing_rank_58_qm5_1257_gbpusd_usdjpy"
+  },
+  "target": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 2,
+    "claimed_by": null,
+    "evidence_path": null,
+    "updated_at_utc": "2026-08-15T13:03:04.898529+00:00",
+    "exact_identity_row_count": 1,
+    "exact_open_row_count": 1,
+    "enqueue_action": "SKIPPED_DUPLICATE_ROW_ALREADY_PENDING",
+    "implementation_repair_commit": "751cb391d8f388f5b61641ba3299011cdf9a09ed",
+    "exit_repair_commit": "f9ef37c1c",
+    "bindings": {
+      "mq5_sha256": "f1e0bc08e65c6b46eea7c1397551ebb6c17aa466b48ef1d48d67e573361b9b27",
+      "ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+      "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+      "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+      "payload_matches_repository": true
+    },
+    "risk_contract": {
+      "timeframe": "H1",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1
+    }
+  },
+  "fleet": {
+    "active_work_item_count": 5,
+    "active_multisymbol_count": 1,
+    "basket_lane_available": false,
+    "active_multisymbol_work_item": {
+      "id": "64b6953d-2886-4227-a520-0b235deeb87a",
+      "ea_id": "QM5_20016",
+      "symbol": "QM5_20016_XTI_XNG_MON_RV_D1",
+      "phase": "Q05",
+      "claimed_by": "T4",
+      "attempt_count": 0,
+      "basket_symbols": [
+        "XTIUSD.DWX",
+        "XNGUSD.DWX"
+      ],
+      "terminal_pid": 8916,
+      "terminal_executable": "D:/QM/mt5/T4/terminal64.exe"
+    },
+    "other_active_work_items": [
+      {
+        "id": "79ee26fe-f116-4cf9-b695-dbf9a016ee42",
+        "ea_id": "QM5_11480",
+        "phase": "Q02",
+        "claimed_by": "T5"
+      },
+      {
+        "id": "f2e7b05f-6194-4a21-a2cc-2f71a5d52e9a",
+        "ea_id": "QM5_21527",
+        "phase": "Q02",
+        "claimed_by": "T8"
+      },
+      {
+        "id": "fc856d31-f549-456c-8b56-9224e71d7b6e",
+        "ea_id": "QM5_41013",
+        "phase": "Q03",
+        "claimed_by": "T3"
+      },
+      {
+        "id": "52032468-6d7e-46ac-a46a-310185ddf5cd",
+        "ea_id": "QM5_41016",
+        "phase": "Q02",
+        "claimed_by": "T2"
+      }
+    ],
+    "factory_terminals_with_tester_children": [
+      "T2",
+      "T4",
+      "T8"
+    ],
+    "orphaned_factory_terminal_processes": 0,
+    "t_live_observed_separately_and_excluded": true
+  },
+  "resources": {
+    "cpu_samples_percent": [
+      87.0,
+      82.0,
+      72.0
+    ],
+    "cpu_average_percent": 80.33,
+    "cpu_hard_trip_percent": 97.0,
+    "cpu_claim_resume_percent": 90.0,
+    "free_physical_memory_kib": 48216660,
+    "total_visible_memory_kib": 66185976,
+    "free_physical_memory_gib": 45.98,
+    "d_volume_free_bytes": 216162361344,
+    "d_volume_free_gib": 201.32,
+    "soft_resource_headroom_available": true
+  },
+  "guards": {
+    "factory_off": false,
+    "runtime_activation": {
+      "decision_id": "RTA-2026-08-15-ENOSPC-FIX-FULL-PARALLELISM",
+      "status": "APPROVED",
+      "decision_sha256": "17bc69521179a0073f52b894fc98d070651d84954263eb54c685b5dcc70d3b92"
+    },
+    "custom_history_containment": {
+      "enabled": false,
+      "reason": "enospc_fix_load_and_full_parallelism_restore_20260815",
+      "source": "dual_cutover_audits_passed_before_ramp",
+      "recorded_at_utc": "2026-08-15T21:06:24.914395+00:00",
+      "authorization_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+      "previous_mode_sha256": "a7347f04df93de2d752f60e51ddeeb94a07c4912e0440664e96570379c1813bc",
+      "mode_sha256": "e18cd68ebdb77b6821e9a468b9e10f527b93b65a6bbd4670a4e2bb5177c2bbac",
+      "file_sha256": "e2197e05e6e842a0adf3588a6ce66f78390db9d5076d08d05d5472d7e9ce7694"
+    },
+    "multisymbol_serialization": {
+      "enabled": true,
+      "policy": "at_most_one_active_farm_wide",
+      "source": "tools/strategy_farm/terminal_worker.py:claim_atomic"
+    }
+  },
+  "non_duplicate_delta": {
+    "prior_sample_utc": "2026-08-15T20:48:56.1430681+00:00",
+    "prior_active_work_items": 1,
+    "current_active_work_items": 5,
+    "prior_basket_owner": "QM5_20206_Q02_T3",
+    "current_basket_owner": "QM5_20016_Q05_T4",
+    "prior_containment_enabled": true,
+    "current_containment_enabled": false,
+    "description": "The OWNER-authorized runtime restoration released signed Custom-history containment and restored general parallel claims. The sole multisymbol owner changed from QM5_20206 Q02 on T3 to QM5_20016 Q05 on T4, so the repaired FX Q02 remains correctly pending behind the still-binding basket serialization guard."
+  },
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "registry": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "q02_enqueue_or_requeue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_control": false,
+    "containment": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "auto_trading": false
+  }
+}
