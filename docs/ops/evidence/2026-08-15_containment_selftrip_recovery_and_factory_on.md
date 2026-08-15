@@ -132,6 +132,45 @@ production on first contact.
   copy-on-claim spin-up. Pending queue draining (1025 → 1015).
 - Containment `enabled:false`, RAM 53.7 GiB free.
 
+## Act 3 — claim-time backtest orchestration (OWNER directive, same day)
+
+OWNER observed the restart pattern "many MT5s start, then collapse to ~2"
+and asked for staggered worker starts, same-symbol diversion, and
+resource-gated waiting ("bis die Situation sich nachhaltig verbessert hat").
+Root evidence for the collapse: single testers ballooning (46.8 GiB working
+set on T6, QM5_1537 SP500.DWX Q02, 12:15 local) starving the rest of the
+fleet into MemoryError/INFRA_FAIL churn.
+
+Design answer: no separate orchestrator component — the atomic claim gate in
+`terminal_worker.claim_atomic` (BEGIN IMMEDIATE) already is the
+deterministic orchestrator (symbol cap, (ea,symbol) dedupe, multisymbol
+serialization, commit-headroom admission). Extended it in `6dcb202df`:
+
+- Fleet-wide claim stagger: max one successful claim per 60s
+  (`claim_class_ledger` read + claim commit in one transaction).
+- RAM hysteresis: trip <6 GiB free, resume only >=12 GiB.
+- CPU admission: GetSystemTimes delta over the loop cadence; trip >97%
+  sustained, resume <=90%. Deliberate OWNER tradeoff vs maximal slot count.
+- `CLAIM_SYMBOL_ACTIVE_CAP` 4 -> 3 (the fourth same-symbol claim diverts).
+
+Codex lane (revived by the 08:20Z ON) concurrently fixed the stall watchdog:
+a valid-report latch now gets 1200s bounded post-process grace (300s flat
+grace had released QM5_1257 between report 08:39Z and summary 08:46Z —
+duplicate retry). Claude-reviewed and committed `3f9aac730`; its unfinished
+QM5_1257 half-life sign-fix rework was preserved as
+`codex_outbox/QM5_1257_halflife_sign_fix_20260815_partial.patch` and the
+source restored (stale-binary/phantom-build hygiene).
+
+Ceremony: OFF 10:20:49Z (MNT-046 `...102049Z_2320.json`) → decision
+`RTA-2026-08-15-CLAIM-ORCHESTRATION` (`b3a76f2b6`) → ON exit 0 ~10:30Z.
+
+**Ramp verification (10:41Z):** post-ON claims at 10:35:07 / 10:36:52 /
+10:38:46 / 10:40:44 — ~2 min apart instead of a thundering herd, on four
+distinct symbols (XAGUSD, WS30, XAU_XAG basket, GDAXI). Suite evidence:
+156 tests green (atomic-claim, dispatch-serialization, WSA-claim,
+calendar-gate, adoption, maintenance-control) + new `test_claim_spacing.py`;
+`tests/conftest.py` zeroes the stagger for queue-semantics tests.
+
 ## Open risks
 
 - **RAM exhaustion is the recurring ambient cause** (2 events in ~30h:
