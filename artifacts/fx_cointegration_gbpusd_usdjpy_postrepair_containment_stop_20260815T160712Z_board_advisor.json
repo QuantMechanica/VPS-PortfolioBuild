@@ -1,0 +1,91 @@
+{
+  "schema_version": "qm.fx-cointegration-resource-stop/v1",
+  "sampled_at_utc": "2026-08-15T16:07:12.798376+00:00",
+  "branch": "agents/board-advisor",
+  "head_before_evidence_commit": "73adff2d7693f7472b340359d7a9e4b72daf0816",
+  "outcome": "RESOURCE_CEILING_STOP",
+  "frontier": {
+    "frozen_pair_count": 66,
+    "fully_mechanized": true,
+    "qm5_12532_terminal_path": [
+      "Q02_PASS",
+      "Q04_PASS",
+      "Q05_FAIL"
+    ],
+    "qm5_12533_terminal_path": [
+      "Q02_PASS",
+      "Q04_FAIL"
+    ],
+    "selection": "existing_rank_58_qm5_1257_gbpusd_usdjpy"
+  },
+  "target": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 2,
+    "claimed_by": null,
+    "evidence_path": null,
+    "updated_at_utc": "2026-08-15T13:03:04.898529+00:00",
+    "open_identity_count": 1,
+    "priority_track": true,
+    "implementation_repair_commit": "751cb391d8f388f5b61641ba3299011cdf9a09ed",
+    "exit_repair_commit": "f9ef37c1c",
+    "bindings": {
+      "mq5_sha256": "f1e0bc08e65c6b46eea7c1397551ebb6c17aa466b48ef1d48d67e573361b9b27",
+      "ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+      "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+      "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3"
+    },
+    "risk_contract": {
+      "timeframe": "H1",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1
+    }
+  },
+  "active_multisymbol_lane": {
+    "work_item_id": "2b2f3c8b-3d1e-49c1-b414-a28573be3b2c",
+    "ea_id": "QM5_20016",
+    "logical_symbol": "QM5_20016_XTI_XNG_MON_RV_D1",
+    "phase": "Q04",
+    "status": "active",
+    "claimed_by": "T3",
+    "started_at_utc": "2026-08-15T15:55:12+00:00",
+    "basket_symbols": [
+      "XTIUSD.DWX",
+      "XNGUSD.DWX"
+    ]
+  },
+  "resources": {
+    "cpu_percent_single_sample": 82.56,
+    "global_cpu_ceiling_percent": 97,
+    "free_physical_memory_gib": 54.34,
+    "total_physical_memory_gib": 63.12,
+    "binding_guard": "single_multisymbol_lane_plus_signed_custom_history_containment"
+  },
+  "custom_history_containment": {
+    "enabled": true,
+    "reason": "custom_history_isolation_gate_failure",
+    "recorded_at_utc": "2026-08-15T15:33:12.328993+00:00",
+    "authorization_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+    "mode_sha256": "bf022842dc775460356070c1c3b90260b5684abb217b2bc927ee070aa6db5891",
+    "file_sha256": "82082949011bf67e60acb543eb9ce218147d4ca31dff4ce6e99eceeb27f20ebd"
+  },
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "registry": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "q02_enqueue_or_requeue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_control": false,
+    "containment": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "auto_trading": false
+  }
+}
