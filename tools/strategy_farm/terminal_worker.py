@@ -157,6 +157,16 @@ MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX = "two_leg_fx_pair"
 MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX = "multi_leg_fx_basket"
 MULTISYMBOL_COMMIT_CLASS_HEAVY = "heavy_or_unknown_multisymbol"
 MULTISYMBOL_HEAVY_SYMBOL_COUNT = 10
+# Single-symbol INDEX real-tick jobs are not "ordinary": dense index tick
+# years privately commit far beyond the 8GB ordinary class (metatester64
+# observed at 45.7GB private / 46.8GB WS on SP500 Q02, 2026-08-15). The 44GB
+# reservation plus the 24GB effective-headroom floor hard-serializes index
+# monsters (two can never stack against the 122.6GB commit limit) while
+# ordinary jobs keep flowing beside one.
+COMMIT_CLASS_SINGLE_INDEX_TICK = "single_index_tick"
+SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB = 44.0
+# DWX index universe seen in farm dispatch; extend with evidence, not guesses.
+INDEX_TICK_SYMBOL_BASES = frozenset({"GDAXI", "SP500", "WS30", "NDX", "UK100"})
 # Legacy source-scanned EAs do not carry basket_symbols in their old work-item
 # payloads. Keep this narrow and host-specific: the audited QM5_11240 FX hosts
 # each exercise one two-leg FX sleeve; its metal/index hosts remain heavy.
@@ -649,9 +659,16 @@ def _multisymbol_commit_class(
     Only a complete, internally consistent ``basket_symbols`` list can lower a
     multisymbol reservation. A bare count or malformed list is not enough: an
     unclassified item must retain the historical 44GB fail-safe reservation.
+    Non-multisymbol items refine into the index-tick class when the host
+    symbol is a dense-tick index (COMMIT_CLASS_SINGLE_INDEX_TICK).
     """
 
     if not multisymbol:
+        host = str(
+            _work_item_value(item, "symbol", "") or payload.get("host_symbol") or ""
+        ).strip().upper()
+        if host.split(".")[0] in INDEX_TICK_SYMBOL_BASES:
+            return COMMIT_CLASS_SINGLE_INDEX_TICK
         return MULTISYMBOL_COMMIT_CLASS_ORDINARY
 
     raw_symbols = payload.get("basket_symbols")
@@ -685,6 +702,8 @@ def _multisymbol_commit_class(
 def _commit_reservation_gb(commit_class: str) -> float:
     if commit_class == MULTISYMBOL_COMMIT_CLASS_ORDINARY:
         return ORDINARY_COMMIT_RESERVATION_GB
+    if commit_class == COMMIT_CLASS_SINGLE_INDEX_TICK:
+        return SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB
     if commit_class == MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX:
         return MULTISYMBOL_TWO_LEG_FX_COMMIT_RESERVATION_GB
     if commit_class == MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX:
