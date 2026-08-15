@@ -57,8 +57,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: NOT_STARTED
+pipeline_phase: Q02
+q01_status: PASS
 q02_status: NOT_STARTED
 review_focus: "Falsify a fixed-clock WTI month-opening return-sign continuation package. Verify exact first-five segmentation and no late restart entries; Q09 alone may establish realized decorrelation from XAU, SP500, NDX, and XNG."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -281,13 +281,14 @@ realized correlation with the certified book.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-15 | initial fixed month-opening momentum build | G0 | APPROVED |
+| v1-q01 | 2026-08-15 | V5 implementation, strict compile/build checks, reference vectors, and artifact validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-15 | APPROVED | `decisions/2026-08-15_wti_mopen_momentum_g0.md` |
-| Q01 Build Validation | TBD | NOT_STARTED | TBD |
+| Q01 Build Validation | 2026-08-15 | PASS | `D:/QM/reports/pipeline/QM5_41013/P1/P1_QM5_41013_result.json` |
 | Q02 Baseline Screening | TBD | NOT_STARTED | TBD |
 
 ## Safety Boundary

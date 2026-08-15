@@ -1,0 +1,40 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41013
+; ea_slug:      wti-mopen-mom
+; ea_version:   v5.0
+; set_version:  s20260815-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   c3fd21626cd4323bb0d8b97949251e7e7225d244f0ecdf0429ca3c0ed2200ee1
+; author:       Development
+; date:         2026-08-15
+;==========================================================
+qm_ea_id=41013
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Native-price structural signal; both news axes are intentionally OFF.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+; Residual-month hold; Friday flattening is intentionally disabled.
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-mopen-mom_card.md
+strategy_formation_bars=5
+strategy_history_bars=120
+strategy_atr_period=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=35
+strategy_max_spread_points=1500
