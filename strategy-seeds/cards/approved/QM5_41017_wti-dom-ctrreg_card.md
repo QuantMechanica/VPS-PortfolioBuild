@@ -63,7 +63,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: PENDING
+q01_status: PASS
 q02_status: NOT_STARTED
 review_focus: "Falsify whether significant WTI numbered-day directions are concentrated in the opposing completed 252-D1 regime, producing a sparse physical-crude calendar stream distinct from the certified XAU/SP500/NDX/XNG book; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -333,11 +333,12 @@ waivers.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-15 | initial exact-date counter-regime extraction | G0 | APPROVED |
+| v2 | 2026-08-15 | initial V5 implementation and strict validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-15 | APPROVED; R1-R4 reviewed | source packet, source-approval decision, G0 decision, and this card |
-| Q01 Build Validation | - | PENDING | - |
+| Q01 Build Validation | 2026-08-15 | PASS; 0 errors, 0 warnings | `D:\QM\reports\framework\21\build_check_20260815_221224.json`; deterministic reference tests 8/8 PASS |
 | Q02 Baseline Screening | - | NOT STARTED | - |
