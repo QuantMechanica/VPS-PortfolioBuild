@@ -16015,3 +16015,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 21524,wti-xcu-relmom,1,XCUUSD.DWX,215240001,2026-08-14,Research+Development,active
 21525,wti-xcu-cadf,0,XTIUSD.DWX,215250000,2026-08-15,Research+Development,active
 21525,wti-xcu-cadf,1,XCUUSD.DWX,215250001,2026-08-15,Research+Development,active
+21526,xau-xag-cadf,0,XAUUSD.DWX,215260000,2026-08-15,Research+Development,active
+21526,xau-xag-cadf,1,XAGUSD.DWX,215260001,2026-08-15,Research+Development,active
