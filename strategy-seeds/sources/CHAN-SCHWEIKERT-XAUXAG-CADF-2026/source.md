@@ -15,7 +15,8 @@ parent_sha256:
   CME_GSR_SPREAD_2025: 2B5903457BD861771821A81F554BE95CA369AD56C1AA45494E0B81555493AF93
 created: 2026-08-15
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_21526_xau-xag-cadf
 ---
 
 # XAU/XAG Annual CADF Residual Reversion — Source Packet
