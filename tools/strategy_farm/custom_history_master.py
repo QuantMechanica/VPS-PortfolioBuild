@@ -275,7 +275,14 @@ def repair_missing_archives(
 
 
 def count_recent_repairs(farm_root: Path | str, *, hours: float = 24.0) -> int:
-    """Count repair receipts younger than ``hours`` (health telemetry)."""
+    """Count organic worker-gate repair receipts younger than ``hours``.
+
+    Health telemetry for the archive-loss rate. Only ``worker_gate:*``
+    receipts count: administrative bulk restores (e.g.
+    ``claude_dl085_mass_restore_20260814``, 49 receipts) sit in the same
+    ledger and inflated the 24h window to 114 while the organic loss rate was
+    ~3-13/day (2026-08-15 forensics).
+    """
 
     path = repairs_log_path(farm_root)
     if not path.is_file():
@@ -289,7 +296,10 @@ def count_recent_repairs(farm_root: Path | str, *, hours: float = 24.0) -> int:
                 if not line:
                     continue
                 try:
-                    stamp = str(json.loads(line).get("repaired_at_utc") or "")
+                    record = json.loads(line)
+                    if not str(record.get("repaired_by") or "").startswith("worker_gate:"):
+                        continue
+                    stamp = str(record.get("repaired_at_utc") or "")
                     when = dt.datetime.fromisoformat(stamp)
                 except (json.JSONDecodeError, ValueError):
                     continue

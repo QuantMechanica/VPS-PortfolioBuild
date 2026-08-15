@@ -3,14 +3,22 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from pathlib import Path
 
 import pytest
 
-from tools.strategy_farm import custom_history_contract as contract
-from tools.strategy_farm import custom_history_copy_on_claim as copy_on_claim
-from tools.strategy_farm import custom_history_gate as gate
-from tools.strategy_farm import custom_history_master as master
+# Flat imports like the rest of the suite and the modules themselves: the
+# package-style `from tools.strategy_farm import ...` duplicated every module
+# (tools.strategy_farm.custom_history_master vs custom_history_master), so
+# exception classes raised inside copy_on_claim no longer matched the classes
+# this file caught whenever another test had imported the flat graph first.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+import custom_history_contract as contract  # noqa: E402
+import custom_history_copy_on_claim as copy_on_claim  # noqa: E402
+import custom_history_gate as gate  # noqa: E402
+import custom_history_master as master  # noqa: E402
 
 
 def _approved_manifest(tmp_path: Path) -> tuple[Path, dict]:
@@ -117,7 +125,7 @@ def test_repair_restores_missing_file_with_receipt(tmp_path: Path) -> None:
         mt5_root=mt5_root,
         manifest=manifest,
         findings=[_finding("T5", str(row["relative_path"]))],
-        repaired_by="test",
+        repaired_by="worker_gate:test",
     )
 
     assert [r["result"] for r in result["repaired"]] == ["REPAIRED_VERIFIED"]
@@ -137,7 +145,7 @@ def test_repair_restores_missing_file_with_receipt(tmp_path: Path) -> None:
         mt5_root=mt5_root,
         manifest=manifest,
         findings=[_finding("T5", str(row["relative_path"]))],
-        repaired_by="test",
+        repaired_by="worker_gate:test",
     )
     assert [r["result"] for r in again["already_present"]] == ["ALREADY_PRESENT_VERIFIED"]
     assert not again["repaired"] and not again["failed"]
@@ -159,7 +167,7 @@ def test_repair_fails_closed_on_master_corruption(tmp_path: Path) -> None:
         mt5_root=mt5_root,
         manifest=manifest,
         findings=[_finding("T2", str(row["relative_path"]))],
-        repaired_by="test",
+        repaired_by="worker_gate:test",
     )
     assert len(result["failed"]) == 1
     assert result["failed"][0]["transient_io"] is False
@@ -178,7 +186,7 @@ def test_repair_refuses_non_repairable_codes(tmp_path: Path) -> None:
             mt5_root=tmp_path / "mt5",
             manifest=manifest,
             findings=[_finding("T1", "history/EURUSD.DWX/2025.hcc", code="MUTABLE_FILE_CONFLICT")],
-            repaired_by="test",
+            repaired_by="worker_gate:test",
         )
 
 
