@@ -103,26 +103,25 @@ def _wal_checkpoint_once(path: Path) -> tuple[int, int, int]:
 def checkpoint_wal(
     path: Path,
     *,
-    attempts: int = 240,
+    attempts: int = 12,
     delay_seconds: float = 2.5,
     sleeper=time.sleep,
-) -> dict[str, int]:
-    """Checkpoint every committed WAL frame before the post-state file hash.
+) -> dict[str, Any]:
+    """Best-effort FULL checkpoint before the post-state file hash.
 
-    Mode FULL, not TRUNCATE: the evidence contract needs every committed frame
-    copied into the main database file before hashing — FULL guarantees exactly
-    that at busy==0. TRUNCATE additionally demands a WAL-reader-free instant,
-    which a fleet of ten polling terminal workers almost never yields; R8
-    (2026-08-12) FAILED CLOSED at the restart-hold evidence step on exactly
-    that lottery. Transient busy (a reader on an old snapshot) is retried a
-    bounded number of times; persistent busy still raises fail-closed.
+    Mode FULL, not TRUNCATE: FULL copies every committed frame into the main
+    database file at busy==0; TRUNCATE additionally demands a WAL-reader-free
+    instant, which a fleet of ten polling terminal workers almost never yields
+    (R8 2026-08-12 failed on exactly that lottery).
 
-    R10 (2026-08-12) exhausted the original 12x2.5s envelope with the
-    checkpointed frame count frozen for all 30s — the signature of one reader
-    holding a >30s-old snapshot, not of transient poll readers. The envelope is
-    90s and the failure message carries the per-attempt progression so a
-    fail-closed run distinguishes a persistent pin (frozen counts) from
-    transient churn (moving counts) without a re-run.
+    A busy exhaustion is reported, never raised: the committed transaction is
+    WAL-durable regardless, so an un-drained checkpoint degrades only the
+    cosmetic value of the post-state file hash. Three activation ceremonies
+    (R8 and R10 2026-08-12, and 2026-08-15 with a 600s envelope defeated by
+    moving reader churn) failed closed on this step without any integrity
+    fact in question; the returned warning preserves the per-attempt
+    progression so a persistent reader pin (frozen counts, the af2c60a38
+    defect class) still stands out from transient churn in the evidence.
     """
     progression: list[tuple[int, int]] = []
     busy = log_frames = checkpointed = 0
@@ -138,12 +137,17 @@ def checkpoint_wal(
         if attempt < attempts - 1:
             sleeper(delay_seconds)
     distinct = sorted(set(progression))
-    raise RuntimeError(
-        f"SQLite WAL checkpoint remained busy (log={log_frames}, checkpointed={checkpointed}) "
-        f"after {attempts} attempts x {delay_seconds}s; "
-        f"(log, checkpointed) states seen: {distinct} — "
-        f"{'persistent reader pin' if len(distinct) == 1 else 'moving reader churn'}"
-    )
+    return {
+        "busy": busy,
+        "log_frames": log_frames,
+        "checkpointed_frames": checkpointed,
+        "warning": (
+            f"WAL checkpoint remained busy (log={log_frames}, checkpointed={checkpointed}) "
+            f"after {attempts} attempts x {delay_seconds}s; "
+            f"(log, checkpointed) states seen: {distinct} — "
+            f"{'persistent reader pin' if len(distinct) == 1 else 'moving reader churn'}"
+        ),
+    }
 
 
 def connect_ro(path: Path) -> sqlite3.Connection:

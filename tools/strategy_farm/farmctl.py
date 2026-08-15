@@ -11968,12 +11968,18 @@ def _detect_zerotrade_dead_eas(con: sqlite3.Connection, root: Path = DEFAULT_ROO
     build_ea retry task plus one bridge .md task, de-duped over 6 hours.
     Once all three reworks are exhausted, preserve the first/changed terminal
     signal and throttle identical raw events over a rolling 24-hour window.
+
+    The scan is bounded to 14 days of work_items: the zero-trade classifier
+    falls back to reading each row's evidence file from disk, and an unbounded
+    all-history sweep held the pump's write transaction for 40+ minutes on a
+    cold cache (2026-08-15, blocking every other farm DB writer).
     """
     rows = con.execute(
         """
         SELECT ea_id, verdict, payload_json, evidence_path, updated_at
         FROM work_items
         WHERE phase in ('Q02', 'P2') AND status in ('done', 'failed')
+          AND datetime(updated_at) >= datetime('now', '-14 days')
         """
     ).fetchall()
 

@@ -1503,11 +1503,15 @@ def chk_zerotrade_rework_backlog(con) -> dict:
     which indicates a systemic build/strategy-class issue rather than a
     single bad EA.
     """
+    # 14-day bound for the same reason as _detect_zerotrade_dead_eas: the
+    # classifier reads evidence files from disk per row, and an all-history
+    # sweep crawled for 30+ minutes on a cold cache (2026-08-15).
     rows = con.execute(
         """
         SELECT ea_id, status, verdict, payload_json, evidence_path
         FROM work_items
         WHERE phase IN ('Q02', 'P2') AND status IN ('done', 'failed')
+          AND datetime(updated_at) >= datetime('now', '-14 days')
         ORDER BY ea_id
         """
     ).fetchall()
