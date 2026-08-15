@@ -125,4 +125,3 @@ optimization setfiles; AutoTrading; `T_Live`; deploy or T_Live manifests;
 portfolio-gate changes; portfolio admission; and correlation waivers. Q02 may
 be enqueued once. If the factory resource ceiling is binding, do not dispatch,
 reserve, stop, reap, reprioritize, or otherwise control a tester.
-
