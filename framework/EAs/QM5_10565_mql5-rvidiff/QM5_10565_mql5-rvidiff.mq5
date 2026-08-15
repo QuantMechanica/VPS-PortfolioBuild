@@ -79,6 +79,10 @@ input int    strategy_atr_period        = 14;
 input double strategy_atr_sl_mult       = 2.0;
 input double strategy_rr_target         = 1.5;
 
+// RVIDiff is a closed-bar signal. OnTick refreshes this value only behind the
+// framework's signal-timeframe QM_IsNewBar edge, then exit and entry reuse it.
+int g_rvidiff_bar_turn = 0;
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -91,10 +95,10 @@ double Strategy_RviRaw(const string sym, const ENUM_TIMEFRAMES tf, const int shi
      {
       const int weight = (i == 1 || i == 2) ? 2 : 1;
       const int bar = shift + i;
-      const double open = iOpen(sym, tf, bar);
-      const double close = iClose(sym, tf, bar);
-      const double high = iHigh(sym, tf, bar);
-      const double low = iLow(sym, tf, bar);
+      const double open = iOpen(sym, tf, bar);   // perf-allowed: source-exact RVI OHLC kernel, H6 new-bar gated.
+      const double close = iClose(sym, tf, bar); // perf-allowed: source-exact RVI OHLC kernel, H6 new-bar gated.
+      const double high = iHigh(sym, tf, bar);   // perf-allowed: source-exact RVI OHLC kernel, H6 new-bar gated.
+      const double low = iLow(sym, tf, bar);     // perf-allowed: source-exact RVI OHLC kernel, H6 new-bar gated.
       if(open <= 0.0 || close <= 0.0 || high <= 0.0 || low <= 0.0 || high <= low)
          return 0.0;
       numerator += weight * (close - open);
@@ -203,7 +207,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_HasOurPosition())
       return false;
 
-   const int turn = Strategy_RviDiffTurn(_Symbol, strategy_signal_tf, strategy_rvi_period);
+   const int turn = g_rvidiff_bar_turn;
    if(turn == 0)
       return false;
 
@@ -240,7 +244,7 @@ bool Strategy_ExitSignal()
    if(!Strategy_ReadOurPositionType(position_type))
       return false;
 
-   const int turn = Strategy_RviDiffTurn(_Symbol, strategy_signal_tf, strategy_rvi_period);
+   const int turn = g_rvidiff_bar_turn;
    if(position_type == POSITION_TYPE_BUY && turn < 0)
       return true;
    if(position_type == POSITION_TYPE_SELL && turn > 0)
@@ -317,7 +321,21 @@ void OnTick()
    // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   // Source-exact cadence: RVIDiff turns form only at the H6 bar close. The
+   // framework gate keeps the bespoke OHLC kernel off the modeled-tick path.
+   if(!QM_IsNewBar(_Symbol, strategy_signal_tf))
+      return;
+
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
+
+   // Calculate once for this completed signal bar and reuse for both the
+   // opposite-turn exit and the same-bar reversal entry.
+   g_rvidiff_bar_turn = Strategy_RviDiffTurn(_Symbol,
+                                             strategy_signal_tf,
+                                             strategy_rvi_period);
+
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -331,16 +349,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
-   if(!QM_IsNewBar())
-      return;
-
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

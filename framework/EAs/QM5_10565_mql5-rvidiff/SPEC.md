@@ -4,7 +4,7 @@
 **Slug:** `mql5-rvidiff`
 **Source:** `b8b5125a-c67f-5bbc-baff-33456e08f5b2` (see `strategy-seeds/sources/b8b5125a-c67f-5bbc-baff-33456e08f5b2/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-29
+**Last revised:** 2026-08-15
 
 ---
 
@@ -94,3 +94,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-29 | Initial build from card | 9d0d3c57-eebf-4f70-8899-259c178b099f |
+| v2 | 2026-08-15 | Q02 performance repair | Cache the closed-H6 RVIDiff turn once per signal bar so entry and exit reuse the same source-exact signal instead of rebuilding it on every modeled tick. |

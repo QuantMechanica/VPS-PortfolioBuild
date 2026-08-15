@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        10565
 ; ea_slug:      mql5-rvidiff
@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   1cc4ae78cb13754a0f3a3c74f6527788997eca112814ab93ef8a53afbdd0497e
+; build_hash:   d34db5ef9a449bbfc2071f304f5a1e48ab3bcd6c1c636bc69204b9c43f615604
 ; author:       Development
 ; date:         2026-05-29
 ;==========================================================
