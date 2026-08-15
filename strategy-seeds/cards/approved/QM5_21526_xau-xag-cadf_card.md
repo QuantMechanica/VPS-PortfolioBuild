@@ -67,9 +67,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: PENDING
-q02_status: PENDING
+pipeline_phase: Q01
+q01_status: PASS
+q02_status: NOT_ENQUEUED
 review_focus: "Falsify a stationarity-qualified annual gold/silver residual stream designed to remove common precious-metal direction from the certified XAU/SP500/NDX/XNG book; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -105,6 +105,36 @@ gold/silver relationship context, and CME supplies the intermarket carrier.
 No source tests this Darwinex CFD package, annual reconstruction, parameter
 set, hard-stop translation, fixed-risk sizing, costs, density, or QM book.
 No source performance or decorrelation statistic transfers.
+
+## Source-Defined Rules
+
+- Chan defines the two-step pair method: estimate the hedge relationship on a
+  bounded training sample, test the fitted residual for stationarity, measure
+  deviations in residual standard deviations, fade sufficiently large
+  deviations, and exit toward the fitted mean.
+- Chan distinguishes cointegration from correlation and uses a separate
+  training/test discipline plus fitted mean-reversion half-life.
+- Schweikert and Yaya, Vo, and Olayinka support only a state-dependent
+  long-run gold/silver relationship. CME supports only gold and silver as an
+  intermarket ratio/spread carrier.
+- No source defines this Darwinex CFD pair, broker-year anchor, exact critical
+  value implementation, entry threshold, ATR stop, spread cap, risk split,
+  atomic order sequence, or persistent attempt state.
+
+## QM Interpretations
+
+- `XAUUSD.DWX` and `XAGUSD.DWX` are spot-CFD carriers, not the source ETFs or
+  matched futures. Their price levels, financing, contract sizes, calendars,
+  and execution costs are separate empirical questions.
+- The first broker D1 bar of each year is the walk-forward boundary. The
+  nearest 252 synchronized observations strictly before it are formation;
+  every later current-year observation is out of sample for that frozen fit.
+- The log-gold-on-log-silver orientation, intercept, one residual-difference
+  lag, `-3.343` boundary, OU half-life formula, `[2,30]` admission range,
+  fresh `1.0` crossing, `0.5` convergence, beta-weighted risk split, and
+  `3.5*ATR(20,D1)` stops are fixed pre-result QM translations.
+- Opposing legs are an exposure construction, not a claim of dollar, beta,
+  volatility, factor, market, or portfolio neutrality.
 
 ## Non-Duplicate Decision
 
@@ -249,6 +279,43 @@ same calendar anchor after a midyear restart; it may never slide intrayear.
 - No randomness, adaptive PnL fitting, external state, partial close,
   scale-in, grid, martingale, or pyramiding is allowed.
 
+## Framework Execution Overrides
+
+- News temporal mode: OFF.
+- News compliance profile: NONE.
+- Legacy news mode: OFF.
+- Friday close: disabled for the fitted multi-session hold.
+- Stress rejection: zero for the Q02 baseline.
+- Framework kill switch and server-side broker hard stops: authoritative.
+- Forced session flatten: none; annual rollover, fitted time stop, convergence,
+  invalid state, and malformed-package repair are strategy-owned exits.
+
+## Exit Precedence
+
+1. Framework kill switch and each server-side hard stop.
+2. Malformed, orphaned, duplicated, wrong-side, wrong-symbol/magic, or
+   missing-stop package repair.
+3. Broker-calendar-year rollover before any replacement model or new entry.
+4. Invalid frozen model or synchronized signal state.
+5. `ceil(frozen_half_life)` calendar-day time stop.
+6. Frozen-model convergence at `abs(z) <= 0.5`.
+7. No Friday, news, target, trailing, break-even, partial, or discretionary
+   exit is added.
+
+## Runtime Data Dependencies
+
+- Exact chart route: `XAUUSD.DWX`, D1; synchronized companion route:
+  `XAGUSD.DWX`, D1.
+- Native tester data: D1 timestamps and closes, completed `ATR(20,D1)`,
+  executable bid/ask, spread, contract and volume metadata, broker calendar,
+  positions, deals, and terminal-persistent global variables.
+- The terminal marker and exact entry-deal tag provide restart-safe
+  no-retry state. Historical tester initialization removes only a marker that
+  lies in the future of the restarted test clock.
+- No external file, API, event calendar, futures chain, trained artifact,
+  analyst input, optimizer output, or portfolio state is read at runtime.
+- Tester account currency and fixed-risk lot sizing remain framework-owned.
+
 ## Parameters To Test
 
 Q02 uses only the locked defaults. The table records the contract and does not
@@ -317,6 +384,23 @@ retry a consumed excursion to rescue results.
   validity, convergence, and fitted time-stop processing before entry gates.
 - trade_close: framework close helper, broker hard stops, and kill switch.
 
+## Falsification And Requalification
+
+Retire at Q02 on zero trades, fewer than five completed packages per full
+post-warm-up year, or nonpositive governed economics. Invalid anchor
+reconstruction, any formation/signal overlap, timestamp mismatch, wrong CADF
+degrees of freedom or comparison, intrayear refit, wrong direction,
+same-signal retry, malformed package retention, aggregate-risk breach, or
+nondeterminism is an implementation failure rather than a tunable result.
+
+Any change to the carrier, orientation, annual anchor, synchronized sample,
+training count, OLS/CADF/OU formula, critical value, beta or half-life gate,
+entry/exit threshold, stop, spread cap, risk split, attempt lifecycle, symbol,
+timeframe, news/Friday mode, or risk mode requires a new binary and full
+pipeline requalification. Realized diversification may only be assessed at
+the unchanged portfolio-correlation gate; a correlation failure receives no
+waiver here.
+
 ## Safety Boundary
 
 This card authorizes only deterministic allocation, one branch build, strict
@@ -331,11 +415,12 @@ admission; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-15 | initial annual XAU/XAG CADF residual card | G0 | APPROVED; build pending |
+| v2 | 2026-08-15 | implement annual reconstruction, CADF/OU gates, and atomic basket lifecycle | Q01 | PASS; Q02 not enqueued |
 
 ## Pipeline Phase Status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-15 | APPROVED; R1-R4 PASS | `decisions/2026-08-15_qm5_21526_xau_xag_cadf_g0.md`; approved composite packet |
-| Q01 Build Validation | TBD | PENDING | branch build required |
-| Q02 Baseline Screening | TBD | PENDING | enqueue only after Q01 PASS and capacity check |
+| Q01 Build Validation | 2026-08-15 | PASS | strict compile 0/0; build check 0/0; fourteen reference tests; P1 artifact PASS |
+| Q02 Baseline Screening | - | NOT ENQUEUED | paced logical-basket enqueue pending capacity check |
