@@ -1166,21 +1166,11 @@ def _is_transient_gate_io_error(exc: BaseException) -> bool:
     return False
 
 
-def _custom_history_gate(
-    root: Path,
-    terminal: str,
-    *,
-    required_symbols: list[str] | None = None,
-    allow_required_restore: bool = False,
-) -> dict[str, Any]:
+def _custom_history_gate(root: Path, terminal: str) -> dict[str, Any]:
     """Run the activation-bound gate; every error is a dispatch refusal."""
 
     try:
-        gate_kwargs: dict[str, Any] = {"terminal": terminal}
-        if required_symbols is not None:
-            gate_kwargs["required_symbols"] = required_symbols
-            gate_kwargs["allow_required_restore"] = allow_required_restore
-        gate = custom_history_gate.run_worker_gate(root, **gate_kwargs)
+        gate = custom_history_gate.run_worker_gate(root, terminal=terminal)
     except Exception as exc:
         activation_file = custom_history_gate.activation_path(root)
         try:
@@ -1316,10 +1306,7 @@ def _privatize_custom_history_claim(
             "ignored_non_custom_symbols": receipt["ignored_non_custom_symbols"],
             "selected_file_count": receipt["selected_file_count"],
             "copied_file_count": receipt["copied_file_count"],
-            "restored_file_count": receipt["restored_file_count"],
             "already_private_file_count": receipt["already_private_file_count"],
-            "pruned_file_count": receipt["pruned_file_count"],
-            "already_pruned_file_count": receipt["already_pruned_file_count"],
             "receipt_sha256": receipt["receipt_sha256"],
             "receipt_path": receipt["receipt_path"],
             "receipt_file_sha256": receipt["receipt_file_sha256"],
@@ -3973,13 +3960,7 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         conn.commit()
     row = dict(row)
     row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
-    history_symbols = _work_item_history_symbols(row, existing_payload)
-    history_gate = _custom_history_gate(
-        root,
-        terminal,
-        required_symbols=history_symbols,
-        allow_required_restore=True,
-    )
+    history_gate = _custom_history_gate(root, terminal)
     if history_gate.get("required") and (
         history_gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES
         or history_gate.get("admission_allowed") is False
@@ -4012,15 +3993,9 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
 
     # Re-audit the mixed topology after every mutation.  This proves both the
-    # dynamic family link minima, the sparse claim scope, and every selected
-    # private manifest SHA before spawn.
+    # dynamic family link minima and every private manifest SHA before spawn.
     if copy_on_claim.get("status") == "PASS_PRIVATIZED":
-        post_copy_gate = _custom_history_gate(
-            root,
-            terminal,
-            required_symbols=history_symbols,
-            allow_required_restore=False,
-        )
+        post_copy_gate = _custom_history_gate(root, terminal)
         if (
             post_copy_gate.get("status") not in CUSTOM_HISTORY_GATE_PASS_STATUSES
             or post_copy_gate.get("admission_allowed") is False

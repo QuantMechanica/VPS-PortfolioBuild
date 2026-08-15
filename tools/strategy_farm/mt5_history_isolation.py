@@ -372,40 +372,6 @@ def _manifest_rows(manifest: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
     }
 
 
-def _archive_symbol(relative_path: str) -> str | None:
-    parts = tuple(normalize_relative_path(relative_path).split("/"))
-    if len(parts) != 3 or parts[0].casefold() not in {"history", "ticks"}:
-        return None
-    return parts[1].upper()
-
-
-def _required_archive_paths(
-    manifest: Mapping[str, Any], required_symbols: Sequence[object]
-) -> tuple[set[str], list[str]]:
-    requested = sorted(
-        {
-            str(value or "").strip().upper()
-            for value in required_symbols
-            if str(value or "").strip().upper().endswith(".DWX")
-        }
-    )
-    wanted = set(requested)
-    matched: set[str] = set()
-    paths: set[str] = set()
-    for row in manifest["files"]:
-        symbol = _archive_symbol(str(row["relative_path"]))
-        if symbol not in wanted:
-            continue
-        matched.add(symbol)
-        paths.add(str(row["relative_path"]).casefold())
-    missing = sorted(wanted - matched)
-    if missing:
-        raise ValueError(
-            "manifest has no archive rows for required symbols: " + ",".join(missing)
-        )
-    return paths, requested
-
-
 def load_acl_evidence(
     path: Path,
     *,
@@ -588,28 +554,13 @@ def evaluate_variant_a_file_inventory(
     *,
     manifest: Mapping[str, Any],
     verify_archive_hashes: bool,
-    sparse_contract: bool = False,
-    claim_terminal: str | None = None,
-    required_symbols: Sequence[object] = (),
-    allow_required_restore: bool = False,
 ) -> dict[str, Any]:
     """Pure evaluator for mutable-file isolation and archive manifest equality."""
 
     validated = validate_manifest(manifest, require_owner_approval=False)
     archive_rows = _manifest_rows(validated)
     terminals = tuple(sorted({str(value).upper() for value in validated["runner_terminals"]}))
-    target = str(claim_terminal or "").strip().upper()
-    if sparse_contract and target not in terminals:
-        raise ValueError(f"sparse claim terminal is outside the manifest runner set: {target}")
-    if not sparse_contract and (target or required_symbols or allow_required_restore):
-        raise ValueError("claim-scoped archive options require sparse_contract=True")
-    required_paths, normalized_required_symbols = (
-        _required_archive_paths(validated, required_symbols)
-        if sparse_contract
-        else (set(), [])
-    )
     findings: list[dict[str, Any]] = []
-    observations: list[dict[str, Any]] = []
     mutable_identities: dict[str, list[dict[str, str]]] = {}
     mutable_paths_by_terminal: dict[str, dict[str, int]] = {
         terminal: {} for terminal in terminals
@@ -659,25 +610,6 @@ def evaluate_variant_a_file_inventory(
             )
             continue
         if not bool(row.get("exists")):
-            if sparse_contract:
-                if terminal != target or folded not in required_paths:
-                    observations.append(
-                        {
-                            "code": "PRUNED_BY_DESIGN",
-                            "terminal": terminal,
-                            "relative_path": relative,
-                        }
-                    )
-                    continue
-                if allow_required_restore:
-                    observations.append(
-                        {
-                            "code": "RESTORE_ON_DEMAND_REQUIRED",
-                            "terminal": terminal,
-                            "relative_path": relative,
-                        }
-                    )
-                    continue
             findings.append(
                 {
                     "code": "MANIFEST_ARCHIVE_FILE_MISSING",
@@ -790,39 +722,16 @@ def evaluate_variant_a_file_inventory(
                     }
                 )
 
-    if sparse_contract:
-        # A selected path can disappear after enumeration but before its hash
-        # completes. The collector intentionally omits that torn row; enforce
-        # claim completeness from the evaluator's observed set so the post-copy
-        # dispatch audit cannot pass such a race.
-        for folded in sorted(required_paths - observed_by_terminal[target]):
-            if allow_required_restore:
-                observation = {
-                    "code": "RESTORE_ON_DEMAND_REQUIRED",
-                    "terminal": target,
-                    "relative_path": archive_rows[folded]["relative_path"],
-                }
-                if observation not in observations:
-                    observations.append(observation)
-            else:
-                finding = {
-                    "code": "MANIFEST_ARCHIVE_FILE_MISSING",
-                    "terminal": target,
-                    "relative_path": archive_rows[folded]["relative_path"],
-                }
-                if finding not in findings:
-                    findings.append(finding)
-    else:
-        expected_paths = set(archive_rows)
-        for terminal in terminals:
-            for folded in sorted(expected_paths - observed_by_terminal[terminal]):
-                finding = {
-                    "code": "TERMINAL_MANIFEST_INCOMPLETE",
-                    "terminal": terminal,
-                    "relative_path": archive_rows[folded]["relative_path"],
-                }
-                if finding not in findings:
-                    findings.append(finding)
+    expected_paths = set(archive_rows)
+    for terminal in terminals:
+        for folded in sorted(expected_paths - observed_by_terminal[terminal]):
+            finding = {
+                "code": "TERMINAL_MANIFEST_INCOMPLETE",
+                "terminal": terminal,
+                "relative_path": archive_rows[folded]["relative_path"],
+            }
+            if finding not in findings:
+                findings.append(finding)
 
     for file_id, locations in sorted(mutable_identities.items()):
         distinct_terminals = sorted({row["terminal"] for row in locations})
@@ -893,13 +802,6 @@ def evaluate_variant_a_file_inventory(
             str(finding.get("file_id") or ""),
         )
     )
-    observations.sort(
-        key=lambda observation: (
-            str(observation["code"]),
-            str(observation.get("terminal") or ""),
-            str(observation.get("relative_path") or ""),
-        )
-    )
     summary_rows = []
     for terminal in terminals:
         terminal_rows = [row for row in rows if str(row.get("terminal", "")).upper() == terminal]
@@ -923,24 +825,16 @@ def evaluate_variant_a_file_inventory(
             for row in terminal_rows
             if row.get("exists")
         ]
-        summary = {
-            "terminal": terminal,
-            "archive_files": len(archive),
-            "family_archive_files": len(family_archive),
-            "private_archive_files": len(private_archive),
-            "mutable_files": len(mutable),
-            "inventory_sha256": hashlib.sha256(
-                contract_canonical_bytes({"files": digest_rows})
-            ).hexdigest(),
-        }
-        if sparse_contract:
-            summary["pruned_by_design_files"] = sum(
-                1
-                for observation in observations
-                if observation["code"] == "PRUNED_BY_DESIGN"
-                and observation["terminal"] == terminal
-            )
-        summary_rows.append(summary)
+        summary_rows.append(
+            {
+                "terminal": terminal,
+                "archive_files": len(archive),
+                "family_archive_files": len(family_archive),
+                "private_archive_files": len(private_archive),
+                "mutable_files": len(mutable),
+                "inventory_sha256": hashlib.sha256(contract_canonical_bytes({"files": digest_rows})).hexdigest(),
+            }
+        )
     stat_only_private = any(
         str(row.get("sha256_verification") or "") == "STAT_ONLY"
         and row.get("archive_storage_mode") == "TERMINAL_PRIVATE"
@@ -958,14 +852,6 @@ def evaluate_variant_a_file_inventory(
         "terminal_summaries": summary_rows,
         "findings": findings,
     }
-    if sparse_contract:
-        payload["sparse_contract"] = {
-            "enabled": True,
-            "claim_terminal": target,
-            "required_symbols": normalized_required_symbols,
-            "allow_required_restore": bool(allow_required_restore),
-        }
-        payload["observations"] = observations
     payload["file_audit_sha256"] = hashlib.sha256(contract_canonical_bytes(payload)).hexdigest()
     return payload
 
@@ -991,10 +877,6 @@ def reconcile_archive_link_count_findings(
     terminals: Sequence[str],
     manifest: Mapping[str, Any],
     findings: Sequence[Mapping[str, Any]],
-    sparse_contract: bool = False,
-    claim_terminal: str | None = None,
-    required_symbols: Sequence[object] = (),
-    allow_required_restore: bool = False,
     attempts: int = 5,
     delay_seconds: float = 0.05,
     sleeper: Callable[[float], None] = time.sleep,
@@ -1016,14 +898,6 @@ def reconcile_archive_link_count_findings(
     archive_rows = _manifest_rows(validated)
     root = Path(mt5_root)
     terms = tuple(sorted({str(value).upper() for value in terminals}))
-    target = str(claim_terminal or "").strip().upper()
-    if sparse_contract and target not in terms:
-        raise ValueError(f"sparse claim terminal is outside the runner set: {target}")
-    required_paths, _ = (
-        _required_archive_paths(validated, required_symbols)
-        if sparse_contract
-        else (set(), [])
-    )
     cleared: list[dict[str, Any]] = []
     remaining: list[dict[str, Any]] = []
     recounts: list[dict[str, Any]] = []
@@ -1054,16 +928,7 @@ def reconcile_archive_link_count_findings(
                 path = path.joinpath(*relative_parts)
                 try:
                     identity = file_identity(path)
-                except FileNotFoundError:
-                    if sparse_contract and (
-                        terminal != target
-                        or folded not in required_paths
-                        or allow_required_restore
-                    ):
-                        continue
-                    valid = False
-                    break
-                except OSError:
+                except (FileNotFoundError, OSError):
                     valid = False
                     break
                 if int(identity["size"]) != int(manifest_row["size"]):
@@ -1114,10 +979,6 @@ def audit_history_isolation(
     require_owner_approval: bool = False,
     verify_archive_hashes: bool = True,
     hash_private_terminals: Sequence[str] | None = None,
-    sparse_contract: bool = False,
-    claim_terminal: str | None = None,
-    required_symbols: Sequence[object] = (),
-    allow_required_restore: bool = False,
     acl_probe: Callable[[Path, str], Mapping[str, Any]] = archive_acl_write_denied,
     acl_evidence_path: Path | str | None = None,
 ) -> dict[str, Any]:
@@ -1154,10 +1015,6 @@ def audit_history_isolation(
         file_rows,
         manifest=manifest,
         verify_archive_hashes=verify_archive_hashes,
-        sparse_contract=sparse_contract,
-        claim_terminal=claim_terminal,
-        required_symbols=required_symbols,
-        allow_required_restore=allow_required_restore,
     )
     payload = dict(topology)
     payload["topology_audit_sha256"] = payload.pop("audit_sha256")

@@ -232,49 +232,6 @@ def test_privatize_reads_from_master_when_farm_root_given(tmp_path: Path) -> Non
     assert legacy["privatization_source"] == "family_inode"
 
 
-def test_sparse_claim_restores_new_symbol_from_master_on_demand(
-    tmp_path: Path,
-) -> None:
-    source, manifest = _approved_manifest(tmp_path)
-    mt5_root = tmp_path / "mt5"
-    _fan_out(mt5_root, source, manifest)
-    farm_root, _ = _build_master(tmp_path, source, manifest)
-
-    first = copy_on_claim.privatize_terminal_archives(
-        manifest=manifest,
-        mt5_root=mt5_root,
-        terminal="T3",
-        symbols=["EURUSD.DWX"],
-        farm_root=farm_root,
-    )
-    assert first["pruned_file_count"] == 2
-
-    second = copy_on_claim.privatize_terminal_archives(
-        manifest=manifest,
-        mt5_root=mt5_root,
-        terminal="T3",
-        symbols=["GBPUSD.DWX"],
-        farm_root=farm_root,
-    )
-
-    assert second["status"] == "PASS_PRIVATIZED"
-    assert second["restored_file_count"] == 2
-    assert second["copied_file_count"] == 2
-    assert second["pruned_file_count"] == 2
-    assert {row["action"] for row in second["files"]} == {
-        "RESTORED_FROM_MASTER_AND_PRIVATIZED"
-    }
-    for row in manifest["files"]:
-        target = mt5_root / "T3" / "Bases" / "Custom" / Path(row["relative_path"])
-        if "GBPUSD.DWX" in str(row["relative_path"]):
-            identity = contract.file_identity(target)
-            assert identity["file_id"] != row["file_id"]
-            assert identity["link_count"] == 1
-            assert contract.sha256_file(target) == row["sha256"]
-        else:
-            assert not target.exists()
-
-
 def test_privatize_fails_closed_without_master_state(tmp_path: Path) -> None:
     source, manifest = _approved_manifest(tmp_path)
     mt5_root = tmp_path / "mt5"
@@ -312,20 +269,7 @@ def _gate_fixture(monkeypatch, tmp_path: Path, audits: list[dict]) -> list:
         },
     )
     monkeypatch.setattr(gate.time, "sleep", lambda seconds: None)
-    monkeypatch.setattr(
-        gate,
-        "load_manifest",
-        lambda path, require_owner_approval: {
-            "files": [
-                {"relative_path": "history/EURUSD.DWX/2025.hcc"}
-            ]
-        },
-    )
-    monkeypatch.setattr(
-        gate.custom_history_master,
-        "load_master_state",
-        lambda root, manifest: {"master_root": tmp_path / "master"},
-    )
+    monkeypatch.setattr(gate, "load_manifest", lambda path, require_owner_approval: {"files": []})
     calls: list = []
     results = [dict(a) for a in audits]
     monkeypatch.setattr(
@@ -345,7 +289,7 @@ def test_worker_gate_repairs_archive_gap_and_passes(monkeypatch, tmp_path: Path)
             "findings": [
                 {
                     "code": "MANIFEST_ARCHIVE_FILE_MISSING",
-                    "terminal": "T1",
+                    "terminal": "T2",
                     "relative_path": "history/EURUSD.DWX/2025.hcc",
                 }
             ]
@@ -371,9 +315,7 @@ def test_worker_gate_repairs_archive_gap_and_passes(monkeypatch, tmp_path: Path)
 
     monkeypatch.setattr(gate.custom_history_master, "repair_missing_archives", fake_repair)
 
-    verdict = gate.run_worker_gate(
-        tmp_path, terminal="T1", required_symbols=["EURUSD.DWX"]
-    )
+    verdict = gate.run_worker_gate(tmp_path, terminal="T1")
 
     assert verdict["status"] == "PASS_ISOLATED"
     assert verdict["master_repair"]["status"] == "REPAIRED"
@@ -392,7 +334,7 @@ def test_worker_gate_stays_fail_closed_when_repair_fails(monkeypatch, tmp_path: 
             "findings": [
                 {
                     "code": "TERMINAL_MANIFEST_INCOMPLETE",
-                    "terminal": "T1",
+                    "terminal": "T2",
                     "relative_path": "history/EURUSD.DWX/2025.hcc",
                 }
             ]
@@ -410,9 +352,7 @@ def test_worker_gate_stays_fail_closed_when_repair_fails(monkeypatch, tmp_path: 
         },
     )
 
-    verdict = gate.run_worker_gate(
-        tmp_path, terminal="T1", required_symbols=["EURUSD.DWX"]
-    )
+    verdict = gate.run_worker_gate(tmp_path, terminal="T1")
 
     assert verdict["status"] == "FAIL_CLOSED"
     assert verdict["master_repair"]["status"] == "PARTIAL"
@@ -432,7 +372,7 @@ def test_worker_gate_reports_partial_transient_io_when_all_failures_transient(
             "findings": [
                 {
                     "code": "MANIFEST_ARCHIVE_FILE_MISSING",
-                    "terminal": "T1",
+                    "terminal": "T2",
                     "relative_path": "history/EURUSD.DWX/2025.hcc",
                 }
             ]
@@ -456,9 +396,7 @@ def test_worker_gate_reports_partial_transient_io_when_all_failures_transient(
         },
     )
 
-    verdict = gate.run_worker_gate(
-        tmp_path, terminal="T1", required_symbols=["EURUSD.DWX"]
-    )
+    verdict = gate.run_worker_gate(tmp_path, terminal="T1")
 
     assert verdict["status"] == "FAIL_CLOSED"
     assert verdict["master_repair"]["status"] == "PARTIAL_TRANSIENT_IO"
@@ -514,37 +452,5 @@ def test_worker_gate_does_not_repair_foreign_codes(monkeypatch, tmp_path: Path) 
     )
 
     verdict = gate.run_worker_gate(tmp_path, terminal="T1")
-    assert verdict["status"] == "FAIL_CLOSED"
-    assert "master_repair" not in verdict
-
-
-def test_worker_gate_never_repairs_non_required_sparse_path(
-    monkeypatch, tmp_path: Path
-) -> None:
-    bystander_gap = {
-        "status": "FAIL_CLOSED",
-        "audit_sha256": "d" * 64,
-        "findings": [],
-        "variant_a_file_audit": {
-            "findings": [
-                {
-                    "code": "MANIFEST_ARCHIVE_FILE_MISSING",
-                    "terminal": "T1",
-                    "relative_path": "history/GBPUSD.DWX/2025.hcc",
-                }
-            ]
-        },
-    }
-    _gate_fixture(monkeypatch, tmp_path, [bystander_gap])
-    monkeypatch.setattr(
-        gate.custom_history_master,
-        "repair_missing_archives",
-        lambda **kwargs: pytest.fail("a sparse bystander must never be repaired"),
-    )
-
-    verdict = gate.run_worker_gate(
-        tmp_path, terminal="T1", required_symbols=["EURUSD.DWX"]
-    )
-
     assert verdict["status"] == "FAIL_CLOSED"
     assert "master_repair" not in verdict
