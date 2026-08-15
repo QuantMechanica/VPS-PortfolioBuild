@@ -59,7 +59,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_STARTED
+q02_status: ENQUEUED
 review_focus: "Falsify whether WTI's final five completed sessions of one broker month continue through the first five sessions of the next. Verify exact endpoints, first-bar attachment, and fifth-bar exit; Q09 alone may establish realized decorrelation from XAU, SP500, NDX, and XNG."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -296,6 +296,7 @@ book.
 |---|---|---|---|---|
 | v1 | 2026-08-15 | initial final-five-to-first-five WTI card | G0 | APPROVED |
 | v1-build | 2026-08-15 | deterministic V5 implementation and strict validation | Q01 | PASS |
+| v1-queue | 2026-08-15 | first canonical fixed-risk baseline work item | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -303,7 +304,7 @@ book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-15 | APPROVED | `decisions/2026-08-15_wti_mclose_momentum_g0.md` |
 | Q01 Build Validation | 2026-08-15 | PASS | `D:/QM/reports/framework/21/build_check_20260815_202228.json` |
-| Q02 Baseline Screening | - | NOT_STARTED | enqueue only after Q01 PASS |
+| Q02 Baseline Screening | 2026-08-15 | ENQUEUED; pending | `docs/ops/evidence/2026-08-15_qm5_41016_wti_mclose_mom_build_q02_enqueue.md` |
 
 ## Safety Boundary
 
