@@ -56,7 +56,9 @@ double   g_residual_mean = 0.0;
 double   g_residual_sd = 0.0;
 double   g_current_z = 0.0;
 double   g_current_adf_t = 0.0;
+double   g_current_half_life = 0.0;
 bool     g_state_ready = false;
+bool     g_month_qualified = false;
 int      g_estimate_month_key = -1;
 datetime g_entry_bar_time = 0;
 
@@ -199,21 +201,58 @@ bool ComputeHalfLife(const double &residuals[], const int bars, double &hl)
    const double dn = (double)n;
    const double denom = sxx - sx * sx / dn;
    if (MathAbs(denom) < 1e-12 || n <= 2) return false;
-   const double theta = (sxy - sx * sy / dn) / denom;
-   if (theta <= 0.0 || theta >= 1.0) return false;
-   hl = MathLog(2.0) / (-MathLog(1.0 - theta));
+   // delta(residual) = lambda * lagged(residual) + error. A stationary,
+   // mean-reverting residual has lambda < 0 and AR(1) phi = 1 + lambda in
+   // (0,1). The previous implementation rejected exactly that valid case.
+   const double lambda = (sxy - sx * sy / dn) / denom;
+   const double phi = 1.0 + lambda;
+   if (phi <= 0.0 || phi >= 1.0) return false;
+   hl = -MathLog(2.0) / MathLog(phi);
    return (MathIsValidNumber(hl) && hl > 0.0);
+}
+
+bool RelativeSpreadCost(const string symbol, double &relative_cost)
+{
+   relative_cost = 0.0;
+   const double ask = SymbolInfoDouble(symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
+   const double mid = 0.5 * (ask + bid);
+   if (ask <= 0.0 || bid <= 0.0 || ask < bid || mid <= 0.0) return false;
+   relative_cost = (ask - bid) / mid;
+   return (relative_cost >= 0.0 && MathIsValidNumber(relative_cost));
 }
 
 bool SpreadCostOk(const string a, const string b)
 {
-   const double spread_a = (SymbolInfoDouble(a, SYMBOL_ASK) - SymbolInfoDouble(a, SYMBOL_BID));
-   const double spread_b = (SymbolInfoDouble(b, SYMBOL_ASK) - SymbolInfoDouble(b, SYMBOL_BID));
-   if (spread_a <= 0.0 || spread_b <= 0.0) return false;
-   const double total_spread_cost = spread_a + spread_b * MathAbs(g_beta);
+   double relative_cost_a = 0.0;
+   double relative_cost_b = 0.0;
+   if (!RelativeSpreadCost(a, relative_cost_a) || !RelativeSpreadCost(b, relative_cost_b))
+      return false;
+   // Residual units are log(b) - beta*log(a), so both transaction costs must
+   // be expressed in relative/log-price units before they are combined.
+   const double total_spread_cost = relative_cost_b + MathAbs(g_beta) * relative_cost_a;
    const double expected_revert = MathAbs(g_current_z) * g_residual_sd;
    if (expected_revert <= 0.0) return false;
    return (total_spread_cost / expected_revert <= strategy_max_spread_cost_frac);
+}
+
+void LogMonthlyQualification(const string reason,
+                             const bool qualified,
+                             const double adf_t,
+                             const double half_life)
+{
+   QM_LogEvent(qualified ? QM_INFO : QM_WARN,
+               "MONTHLY_STATE",
+               StringFormat("{\"month_key\":%d,\"pair_slot\":%d,\"pair_a\":\"%s\",\"pair_b\":\"%s\",\"qualified\":%s,\"reason\":\"%s\",\"beta\":%.10f,\"adf_t\":%.6f,\"half_life_days\":%.6f}",
+                            g_estimate_month_key,
+                            strategy_pair_slot,
+                            g_pair_a,
+                            g_pair_b,
+                            qualified ? "true" : "false",
+                            reason,
+                            g_beta,
+                            adf_t,
+                            half_life));
 }
 
 bool RefreshState()
@@ -249,8 +288,15 @@ bool RefreshState()
    }
    if (g_estimate_month_key < 0 || month_key != g_estimate_month_key)
    {
+      // Freeze both PASS and FAIL outcomes for the month. Without this latch a
+      // rejected pair was re-estimated on every H1 bar, contrary to the Card's
+      // monthly selection contract and at substantial tester cost.
+      g_estimate_month_key = month_key;
+      g_month_qualified = false;
+      g_current_half_life = 0.0;
       if (!EstimateOls(logx, logy, formation, g_alpha, g_beta))
       {
+         LogMonthlyQualification("OLS_INVALID", false, 0.0, 0.0);
          g_state_ready = false;
          return false;
       }
@@ -259,26 +305,37 @@ bool RefreshState()
       BuildResiduals(logx, logy, formation, residuals_hl);
       if (!AdfTStat(residuals_hl, formation, adf_check))
       {
+         LogMonthlyQualification("ADF_INVALID", false, 0.0, 0.0);
          g_state_ready = false;
          return false;
       }
       if (adf_check > AdfCriticalFromP(strategy_coint_entry_p))
       {
+         LogMonthlyQualification("ADF_REJECT", false, adf_check, 0.0);
          g_state_ready = false;
          return false;
       }
       double hl = 0.0;
       if (!ComputeHalfLife(residuals_hl, formation, hl))
       {
+         LogMonthlyQualification("HALF_LIFE_INVALID", false, adf_check, 0.0);
          g_state_ready = false;
          return false;
       }
       if (hl < strategy_half_life_min || hl > strategy_half_life_max)
       {
+         LogMonthlyQualification("HALF_LIFE_OUT_OF_RANGE", false, adf_check, hl);
          g_state_ready = false;
          return false;
       }
-      g_estimate_month_key = month_key;
+      g_current_half_life = hl;
+      g_month_qualified = true;
+      LogMonthlyQualification("QUALIFIED", true, adf_check, hl);
+   }
+   if (!g_month_qualified)
+   {
+      g_state_ready = false;
+      return false;
    }
 
    double residuals[];
@@ -342,8 +399,15 @@ bool H1ZScoreRefresh()
 bool IsPairPosition()
 {
    const string symbol = PositionGetString(POSITION_SYMBOL);
+   int slot = -1;
+   if (symbol == g_pair_a)
+      slot = strategy_pair_slot;
+   else if (symbol == g_pair_b)
+      slot = strategy_pair_slot + 21;
+   if (slot < 0)
+      return false;
    const int magic = (int)PositionGetInteger(POSITION_MAGIC);
-   return ((symbol == g_pair_a || symbol == g_pair_b) && magic == QM_Magic(qm_ea_id, strategy_pair_slot));
+   return (magic == QM_MagicChecked(qm_ea_id, slot, symbol));
 }
 
 bool HasPairPosition()
@@ -409,7 +473,15 @@ double LotsForLeg(const string symbol, const double weight, const double weight_
 
 bool SendLeg(const string symbol, const bool buy, const double weight, const double weight_sum)
 {
-   const int magic = QM_Magic(qm_ea_id, strategy_pair_slot);
+   int symbol_slot = -1;
+   if (symbol == g_pair_a)
+      symbol_slot = strategy_pair_slot;
+   else if (symbol == g_pair_b)
+      symbol_slot = strategy_pair_slot + 21;
+   if (symbol_slot < 0) return false;
+
+   const int magic = QM_MagicChecked(qm_ea_id, symbol_slot, symbol);
+   if (magic <= 0) return false;
    const double atr = QM_ATR(symbol, PERIOD_D1, strategy_atr_period, 1);
    const double lots = LotsForLeg(symbol, weight, weight_sum);
    if (atr <= 0.0 || lots <= 0.0) return false;
@@ -442,7 +514,7 @@ bool SendLeg(const string symbol, const bool buy, const double weight, const dou
    if (!ok || (result.retcode != TRADE_RETCODE_DONE && result.retcode != TRADE_RETCODE_PLACED))
    {
       QM_LogEvent(QM_WARN, "PAIR_LEG_OPEN_FAIL",
-                  StringFormat("{\"symbol\":\"%s\",\"slot\":%d,\"retcode\":%u}", symbol, strategy_pair_slot, result.retcode));
+                  StringFormat("{\"symbol\":\"%s\",\"slot\":%d,\"retcode\":%u}", symbol, symbol_slot, result.retcode));
       return false;
    }
    return true;
@@ -455,18 +527,25 @@ bool OpenPair(const int direction)
    const double weight_sum = weight_y + weight_x;
    if (weight_sum <= 0.0) return false;
 
-   const bool buy_y = (direction < 0);
-   const bool buy_x = (direction > 0);
-   bool opened = false;
-   if (SendLeg(g_pair_b, buy_y, weight_y, weight_sum))
-      opened = true;
-   if (SendLeg(g_pair_a, buy_x, weight_x, weight_sum))
-      opened = true;
-   if (opened)
-      g_entry_bar_time = TimeCurrent();
-   else
+   const bool long_spread = (direction < 0);
+   const bool buy_y = long_spread;
+   // residual = y - beta*x. A negative beta means both legs point in the
+   // same direction; a positive beta means they point in opposite directions.
+   const bool buy_x = long_spread ? (g_beta < 0.0) : (g_beta > 0.0);
+
+   if (!SendLeg(g_pair_b, buy_y, weight_y, weight_sum))
+   {
       ClosePair(QM_EXIT_STRATEGY);
-   return opened;
+      return false;
+   }
+   if (!SendLeg(g_pair_a, buy_x, weight_x, weight_sum))
+   {
+      ClosePair(QM_EXIT_STRATEGY);
+      return false;
+   }
+
+   g_entry_bar_time = TimeCurrent();
+   return true;
 }
 
 bool Strategy_NoTradeFilter()
@@ -496,10 +575,29 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if (!SpreadCostOk(g_pair_a, g_pair_b))
       return false;
 
+   int direction = 0;
    if (g_current_z >= strategy_entry_z)
-      OpenPair(1);
+      direction = 1;
    else if (g_current_z <= -strategy_entry_z)
-      OpenPair(-1);
+      direction = -1;
+
+   if (direction != 0)
+   {
+      QM_LogEvent(QM_INFO,
+                  "PAIR_ENTRY_SIGNAL",
+                  StringFormat("{\"pair_slot\":%d,\"pair_a_slot\":%d,\"pair_b_slot\":%d,\"pair_a\":\"%s\",\"pair_b\":\"%s\",\"direction\":%d,\"z\":%.6f,\"beta\":%.10f,\"half_life_days\":%.6f}",
+                               strategy_pair_slot,
+                               strategy_pair_slot,
+                               strategy_pair_slot + 21,
+                               g_pair_a,
+                               g_pair_b,
+                               direction,
+                               g_current_z,
+                               g_beta,
+                               g_current_half_life));
+      if (!OpenPair(direction))
+         QM_LogEvent(QM_WARN, "PAIR_OPEN_ROLLBACK", StringFormat("{\"pair_slot\":%d}", strategy_pair_slot));
+   }
 
    return false;
 }

@@ -173,6 +173,54 @@ def test_qm5_1257_manifest_declares_gbpusd_usdjpy_logical_pair() -> None:
     }
 
 
+def test_qm5_1257_zero_trade_repair_keeps_stationary_math_and_atomic_leg_identity() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_1257_lemishko-fx-cointpair"
+    source = (ea_dir / f"{ea_dir.name}.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    logical_set = (
+        ea_dir
+        / "sets"
+        / (
+            f"{ea_dir.name}_QM5_1257_GBPUSD_USDJPY_"
+            "COINTEGRATION_H1_H1_backtest.set"
+        )
+    ).read_text(encoding="utf-8-sig")
+
+    # delta(residual) regression must admit the negative lambda associated with
+    # a stationary AR(1), then convert it to the positive persistence phi.
+    assert "const double phi = 1.0 + lambda;" in source
+    assert "if (phi <= 0.0 || phi >= 1.0) return false;" in source
+    assert "hl = -MathLog(2.0) / MathLog(phi);" in source
+
+    # The log-residual cost gate and negative-beta direction stay dimensionally
+    # correct for the frozen rank-58 GBPUSD/USDJPY binding.
+    assert (
+        "relative_cost_b + MathAbs(g_beta) * relative_cost_a" in source
+    )
+    assert (
+        "const bool buy_x = long_spread ? (g_beta < 0.0) : (g_beta > 0.0);"
+        in source
+    )
+
+    # Pair slot 8 owns GBPUSD and companion slot 29 owns USDJPY. Both opens
+    # must succeed; otherwise the package is flattened and reported as failed.
+    assert source.count("strategy_pair_slot + 21") >= 3
+    assert source.count("QM_MagicChecked(qm_ea_id") >= 2
+    assert "if (!SendLeg(g_pair_b, buy_y, weight_y, weight_sum))" in source
+    assert "if (!SendLeg(g_pair_a, buy_x, weight_x, weight_sum))" in source
+    assert "PAIR_OPEN_ROLLBACK" in source
+
+    # A rejected monthly qualification is latched before its OLS attempt, so it
+    # is not recomputed on every H1 bar. The Q02 preset remains fixed-risk.
+    assert source.index("g_estimate_month_key = month_key;") < source.index(
+        "if (!EstimateOls(logx, logy, formation, g_alpha, g_beta))"
+    )
+    assert "if (!g_month_qualified)" in source
+    assert "RISK_FIXED=1000" in logical_set
+    assert "RISK_PERCENT=0" in logical_set
+
+
 def test_qm5_9184_manifest_has_logical_audusd_nzdusd_setfile() -> None:
     ea_dir = REPO / "framework" / "EAs" / "QM5_9184_jstm-pair-cointegration-fx"
     manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
