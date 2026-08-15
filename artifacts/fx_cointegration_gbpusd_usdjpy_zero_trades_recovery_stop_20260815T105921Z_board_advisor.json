@@ -1,0 +1,109 @@
+{
+  "schema_version": "fx_cointegration_zero_trades_recovery_stop/v1",
+  "recorded_at_utc": "2026-08-15T10:59:21.0965820Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_1257",
+  "ea_slug": "lemishko-fx-cointpair",
+  "pair": [
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+  ],
+  "scan_relationship_rank": 58,
+  "anchors": {
+    "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_Q04_FAIL"
+  },
+  "frontier_unbuilt_relationship_count": 0,
+  "work_item": {
+    "id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 2,
+    "claimed_by": null,
+    "updated_at": "2026-08-15T08:39:29+00:00",
+    "duplicate_row_created": false,
+    "queue_mutated": false
+  },
+  "bound_run": {
+    "summary_path": "D:/QM/reports/work_items/d4cd660c-c81a-41d3-8a4c-ad21d3319816/QM5_1257/20260815_082908/summary.json",
+    "summary_sha256": "76fcd6351b98f8cc16250a5fd7e3bc2fb47e6b868cd9ce4619102c5f64bc1526",
+    "report_path": "D:/QM/reports/work_items/d4cd660c-c81a-41d3-8a4c-ad21d3319816/QM5_1257/20260815_082908/raw/run_01/report.htm",
+    "report_sha256": "22e10ae2cb3b9080164f89a5b78f141c7f02be4d8752b55e3f68a201ab7b766f",
+    "logger_sample_path": "D:/QM/reports/work_items/d4cd660c-c81a-41d3-8a4c-ad21d3319816/QM5_1257/20260815_082908/logger_sample.jsonl",
+    "logger_sample_sha256": "b4baef4f3ae9ce6d4b76bf8e742188fc341a24952abf7315e87c646b486afab7",
+    "timestamp_utc": "2026-08-15T08:46:23.0869486Z",
+    "host_symbol": "GBPUSD.DWX",
+    "period": "H1",
+    "model": 4,
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "result": "FAIL",
+    "reason_classes": [
+      "MIN_TRADES_NOT_MET"
+    ],
+    "total_trades": 0,
+    "min_trades_required": 25,
+    "oninit_failure_detected": false,
+    "log_bomb_detected": false,
+    "identity_stable": true,
+    "mq5_sha256": "28bd88d0a7a7401ec7fe3b3a4f99ef3ba6b9fec146298c512b1c76e1adf7e12b",
+    "ex5_sha256": "86c6e9f077e37ddd5aea1e15b253cd4509c7f180c846cc6aebd806fa17d95cbd",
+    "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4"
+  },
+  "classification": {
+    "harness": "PASS",
+    "setup": "PASS",
+    "first_failed_layer": "ENTRY_IMPLEMENTATION",
+    "root_cause": "mean_reversion_half_life_sign_inverted",
+    "additional_required_same_lineage_repairs": [
+      "freeze_monthly_qualification_result",
+      "normalize_spread_cost_to_log_price_units",
+      "apply_negative_beta_leg_direction",
+      "use_registered_per_leg_magic_slots_8_and_29",
+      "require_atomic_two_leg_success_and_flatten_partial",
+      "add_bounded_monthly_qualification_and_signal_events"
+    ],
+    "strategy_mechanics_change_authorized": false,
+    "threshold_change_made": false
+  },
+  "compile_attempt": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_1257_lemishko-fx-cointpair/QM5_1257_lemishko-fx-cointpair.mq5 -Strict",
+    "exit_code": 1,
+    "error": "System.OutOfMemoryException",
+    "verdict": "BLOCKED_RESOURCE_CEILING",
+    "retried": false,
+    "source_repair_retained": false,
+    "ex5_changed": false
+  },
+  "resource_sample": {
+    "sample_utc": "2026-08-15T10:59:21.0965820Z",
+    "free_gib": 20.95,
+    "total_gib": 63.12,
+    "factory_terminals": [
+      "T1",
+      "T3",
+      "T9",
+      "T10"
+    ],
+    "factory_terminal_count": 4,
+    "terminal_worker_count": 10,
+    "active_work_item_count": 3,
+    "pending_work_item_count": 1019
+  },
+  "actions": {
+    "card_created": false,
+    "ea_created": false,
+    "registry_changed": false,
+    "manifest_changed": false,
+    "setfile_changed": false,
+    "q02_enqueued": false,
+    "q02_requeued": false,
+    "tester_launched": false,
+    "terminal_controlled": false,
+    "autotrading_changed": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "next_action": "Reapply the evidence-bound same-lineage implementation repair when paced compile capacity is available, strict-compile serially, then refresh the existing Q02 identity in place with new hashes; never insert a duplicate row."
+}
