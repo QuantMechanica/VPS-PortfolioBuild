@@ -33,8 +33,11 @@ it is the **residual DL-085 mechanism applied to bystander symbols**:
 - **Process attribution** (MT5 journals): `D:\QM\mt5\T4\logs\20260815.log`
   12:06:38.351/.353 and `D:\QM\mt5\T6\logs\20260815.log` 12:06:38.854 —
   `'AUDCAD.DWX' file opening or reading error [32]` within 503 ms of each
-  other, on a symbol NEITHER terminal was testing (T4: AUDJPY run, T6:
-  SP500 run), 90 s before the 10:08:01Z gate repairs of exactly those files.
+  other, on a symbol NEITHER terminal was testing (per the immutable
+  tester.ini configs the hosts were XNGUSD on T4 and CADCHF on T6 —
+  corrected in cross-review from my active-row-snapshot inference of
+  AUDJPY/SP500; AUDCAD is a bystander under either account), 90 s before
+  the 10:08:01Z gate repairs of exactly those files.
 - Same pattern for the big sweep: `D:\QM\mt5\T5\logs\20260814.log` has 25
   error-32 events; the 18:39 local cluster (UK100, SP500, AUDCAD ×2,
   AUDCHF …) precedes the 16:42Z repair sweep by 3 minutes, right after the
@@ -65,3 +68,22 @@ report: the counter now counts only organic `worker_gate:*` receipts.
   ~3-13 repairs/day. Zero code risk.
 - Not viable: full-fleet physical privatization (≈87 GB × 10 terminals
   exceeds D: free space).
+
+## Cross-review (appended after reading the Codex B-side)
+
+Codex (`2026-08-15_codex_archive_eater_forensics.md`, task bc487116)
+independently reached the identical mechanism and hardened it with USN
+namespace evidence: `HARD_LINK_CHANGE|CLOSE` records at 12:06:38 local for
+exactly T4's AUDCAD 2017/2018 and T6's AUDCAD 2019 pathnames (file IDs and
+parent-directory IDs mapped via fsutil, surviving family links enumerated),
+plus copy-on-claim receipts proving AUDCAD was selected by neither claim,
+plus tester_cache_purge exclusion. One detail of this A-side corrected: the
+incident hosts were XNGUSD (T4) and CADCHF (T6) per the immutable
+tester.ini, not AUDJPY/SP500 (inferred from a later active-row snapshot).
+
+**Joint verdict: CONFIRMED.** Both sides converge on the same minimal fix —
+the sparse active Custom-history contract (bystander trim at claim +
+`PRUNED_BY_DESIGN` audit semantics + master-sourced restore on demand),
+with Codex's acceptance test as the activation gate. Implementation routed
+back to the Codex build lane; Claude reviews; one ceremony activates it
+together with the index-tick reservation class (ad1b025c2).
