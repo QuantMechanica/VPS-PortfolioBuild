@@ -246,6 +246,26 @@ was interrupted. Sources inspected only:
 `D:\QM\strategy_farm\artifacts\ops\custom_history_copy_on_claim\`, and
 `D:\$Extend\$UsnJrnl:$J`.
 
+## Focused verification receipt
+
+Read-only assertions run after drafting returned PASS for: 117 ledger rows,
+49 administrative restore rows, 68 `worker_gate:*` rows, the final three
+T4/T4/T6 AUDCAD repairs, XNGUSD/CADCHF host configs, AUDCAD error 32 on both
+terminals, and purge exclusion. Sources:
+`D:\QM\strategy_farm\state\custom_history_repairs.jsonl`,
+`D:\QM\reports\work_items\1c14beae-358f-402c-84ac-a6ed6f51d90f\QM5_1537\20260815_100146\raw\run_01\tester.ini`,
+`D:\QM\reports\work_items\23954007-b614-45d4-b563-ba480d085ccc\QM5_1537\20260815_100258\raw\run_02\tester.ini`,
+`D:\QM\mt5\T4\logs\20260815.log`,
+`D:\QM\mt5\T6\logs\20260815.log`, and
+`D:\QM\reports\state\tester_cache_purge.log`.
+
+Independent `fsutil file queryfileid` assertions reproduced both parent IDs
+and all three old family IDs in the table. A full journal replay filtered by
+record number reproduced USNs `467170640`, `467170720`, `467193280`,
+`471151712`, and `471196368` with the cited times, reasons, file IDs, and
+parent IDs. Sources: the six `D:\QM\mt5\T*\Bases\Custom\history\AUDCAD.DWX`
+paths cited above and `D:\$Extend\$UsnJrnl:$J`.
+
 ## Cross-review note
 
 This B-side agrees with the A-side residual-bystander mechanism in
