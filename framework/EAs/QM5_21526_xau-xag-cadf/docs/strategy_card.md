@@ -67,9 +67,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: PENDING
 review_focus: "Falsify a stationarity-qualified annual gold/silver residual stream designed to remove common precious-metal direction from the certified XAU/SP500/NDX/XNG book; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -415,7 +415,7 @@ admission; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-15 | initial annual XAU/XAG CADF residual card | G0 | APPROVED; build pending |
-| v2 | 2026-08-15 | implement annual reconstruction, CADF/OU gates, and atomic basket lifecycle | Q01 | PASS; Q02 not enqueued |
+| v2 | 2026-08-15 | implement annual reconstruction, CADF/OU gates, and atomic basket lifecycle | Q02 | Q01 PASS; Q02 enqueued |
 
 ## Pipeline Phase Status
 
@@ -423,4 +423,4 @@ admission; or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-15 | APPROVED; R1-R4 PASS | `decisions/2026-08-15_qm5_21526_xau_xag_cadf_g0.md`; approved composite packet |
 | Q01 Build Validation | 2026-08-15 | PASS | strict compile 0/0; build check 0/0; fourteen reference tests; P1 artifact PASS |
-| Q02 Baseline Screening | - | NOT ENQUEUED | paced logical-basket enqueue pending capacity check |
+| Q02 Baseline Screening | 2026-08-15 | ENQUEUED; pending | work item `427f21c5-ac7f-4948-9f38-f5df4e8bb63f`; no tester dispatched by this build |
