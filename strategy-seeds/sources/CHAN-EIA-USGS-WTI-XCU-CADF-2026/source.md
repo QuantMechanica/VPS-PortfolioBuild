@@ -14,7 +14,8 @@ parent_sha256:
   EIA_CME_USGS_XTI_XCU_RSPREAD_2026: 26B943B0F10682B71AD657610716A51C7DFF262852FFB83B3E0221EADDCDE140
 created: 2026-08-15
 created_by: Research+Development
-cards_extracted: []
+cards_extracted:
+  - QM5_21525_wti-xcu-cadf
 ---
 
 # WTI/Copper CADF Residual Reversion — Source Packet
