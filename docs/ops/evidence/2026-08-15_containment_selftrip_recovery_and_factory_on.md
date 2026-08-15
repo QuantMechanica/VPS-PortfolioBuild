@@ -213,6 +213,52 @@ real-terminal run the design called for. Unit tests cannot see MT5
 terminal internals; ceremony-gated activations of Custom-history behavior
 get a live acceptance run first, every time.
 
+## Act 5 — QM5_1537 family-stop after disk-burn orphan (evening, ~20:00-20:20Z)
+
+Context: Codex delivered both QM5_1537 rescue analyses (tasks 5b827de5 +
+6aa33aa5); Claude review closed both APPROVED at ~19:47Z. Root cause on
+record: every host symbol of the 37-symbol basket triggers full foreign
+tick-corpus synchronization (`CopyClose` on tick-backed `.DWX` symbols) —
+~137GB agent workspace, host-independent. FX hosts are additionally proven
+no-signal by the lower-bound rank replay (rank never better than 4; adding
+symbols cannot improve ordinal rank). Implementation task `a96ddcdd`
+(bound monthly sleeve calendar) enqueued and IN_PROGRESS at Codex.
+
+Observation (20:00-20:10Z): NZDJPY run_03 on T4 was rebuilding the tick
+corpus at ~1GB/min; D: fell 71.5 -> 41.9GB free (ENOSPC in ~40min — the
+same window that killed runs 1-2 and tripped containment at 18:47Z). The
+watchdog had requeued row `143f71c2` to pending at 20:07Z (silent
+tick-sync phase reads as a stall), so the T4 tester pair was an **orphan**
+burning disk for an unclaimed row that was immediately re-claimable.
+
+Actions (evidence-first, in order):
+
+1. **Family-stop (reversible):** all 28 pending `QM5_1537` rows deferred via
+   `launch_not_before_utc=2026-08-25T00:00:00Z`, reason
+   `qm5_1537_family_stop_await_a96ddcdd_calendar_rework_20260815_footprint_137gb`.
+   Verdicts untouched; post-rework the family requalifies via
+   `seed-fresh-q02` with the new ex5 sha regardless. This also extends the
+   four heavy rows whose earlier deferral would have lifted 08-16T08:00Z
+   straight back into the footprint trap.
+2. **Orphan kill (path-anchored):** T4 `terminal64.exe` + `metatester64.exe`
+   (command lines verified `D:\QM\mt5\T4\*`); T_Live, FTMO, T3 untouched.
+3. **Reclaim:** `QM_StrategyFarm_TesterCachePurge` triggered; D: free
+   41.9 -> 203.2GB.
+
+Rationale for not letting run_03 finish: the run could not complete on the
+available disk (corpus already ~137GB, D: 41.9GB free, burn ongoing), its
+predicted outcome (genuine 0 trades) was already mathematically established
+by the approved analysis, and another ENOSPC window would have endangered
+the healthy T3 metals-basket run plus re-tripped containment through the
+resident workers' pre-fix classifier (ENOSPC whitelist loads only at the
+next ceremony). The earlier "first FX data point" value assessment was made
+before the no-signal proof existed; the informative runs for this family
+are XNGUSD/XTIUSD/XAGUSD (post-rework), not FX hosts.
+
+Remaining after Act 5: T3 QM5_20206 XAU/XAG basket is the only active
+claim; zero-active window (release + ENOSPC-fix ceremony) arrives when it
+completes.
+
 ## Open risks
 
 - **RAM exhaustion is the recurring ambient cause** (2 events in ~30h:
