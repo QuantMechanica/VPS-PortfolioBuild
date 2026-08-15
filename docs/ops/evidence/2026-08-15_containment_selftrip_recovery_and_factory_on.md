@@ -92,6 +92,46 @@ already historically expired and superseded by DL-086.
   window where stale-active cleanup is needed; today that cost one extra
   ON-before-release ordering constraint.
 
+## Act 2 — first ON aborted at the evidence lottery; fixed and re-run
+
+The 06:42Z Factory_ON passed its post-start health gate (46 tasks,
+10 workers) and then FAILED CLOSED at 07:32Z in the restart-hold
+post-commit evidence step: `checkpoint_wal` (FULL, 240×2.5s) never saw
+busy==0 under moving reader churn, and `Invoke-FailClosedRollback` re-asserted
+`OFF_RECOVERY_REQUIRED` (task map preserved) while retaining the mutation
+lock. Two root causes, both fixed in `a4bbf2a9e`:
+
+1. **Pump/health zero-trade detectors swept all 74,365 historical Q02/P2
+   rows with per-row evidence-file disk reads.** On the cold post-recovery
+   cache the 06:52Z pump held its DB write transaction for 40+ minutes
+   inside `_detect_zerotrade_dead_eas` (py-spy stack evidence), starving
+   the agent router (`database is locked`, 4 consecutive 0x1 runs) — the
+   exact latch the ON envelope was waiting for. Two `farmctl health` runs
+   crawled the same sweep read-only, providing the reader churn that
+   defeated the checkpoint. Both scans are now bounded to 14 days
+   (2,545 rows).
+2. **`checkpoint_wal` raised fail-closed on busy exhaustion** although the
+   released-holds transaction is WAL-durable regardless; third ceremony
+   lost to this step (R8, R10 2026-08-12, today). It now returns a warning
+   carrying the pin-vs-churn progression and the envelope is 12×2.5s.
+
+Retry ceremony: Factory_OFF 08:02:14Z (MNT-046
+`mnt046_factory_off_quiescence_20260815T080214Z_16848.json`, stale
+mutation lock reaped by the drain helper), decision
+`RTA-2026-08-15-CHECKPOINT-BESTEFFORT-RETRY` (commit `f3fab77cd`),
+Factory_ON exit 0 at ~08:20Z with `post_commit_evidence.status=PASS` and
+the checkpoint recorded as warning — the fix observed working in
+production on first contact.
+
+## Outcome (08:33Z)
+
+- 10/10 terminals hold active claims (Q02/Q04/Q08 mix, including the
+  QM5_1537 family from last night and the QM5_1257 GBPUSD/USDJPY
+  cointegration fallback on T8).
+- terminal64 + metatester64 testers running on T1/T5/T9; remaining slots in
+  copy-on-claim spin-up. Pending queue draining (1025 → 1015).
+- Containment `enabled:false`, RAM 53.7 GiB free.
+
 ## Open risks
 
 - **RAM exhaustion is the recurring ambient cause** (2 events in ~30h:
