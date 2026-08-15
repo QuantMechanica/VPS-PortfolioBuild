@@ -2,13 +2,13 @@
 source_id: MOP-WTI-MOPEN-MOM-2026
 title: WTI Fixed Month-Opening Segment Momentum
 source_type: governed_peer_reviewed_translation_packet
-status: approved_source_complete
+status: cards_ready
 approval_basis: OWNER commodity/energy portfolio mission 2026-08-15
 created: 2026-08-15
 created_by: Research+Development
 primary_url: https://www.aqr.com/Insights/Research/Journal-Article/Time-Series-Momentum
 parent_source_id: MOP-TSMOM-2012
-cards_extracted: []
+cards_extracted: [wti-mopen-mom]
 ---
 
 # WTI Fixed Month-Opening Segment Momentum
