@@ -64,9 +64,9 @@ r1_track_record: PASS_FOR_DISCLOSED_PROXY
 r2_mechanical: PASS
 r3_data_available: PASS_FOR_DISCLOSED_PROXY
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: PENDING
 review_focus: "Falsify a WTI twelve-month trend admitted only after absolute WTI/SP500 correlation falls across disjoint daily blocks; verify SP500 stays read-only. Q09 alone may establish realized decorrelation from XAU, SP500, NDX, and XNG."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -364,7 +364,7 @@ portfolio admission; or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-15 | initial falling-equity-correlation-gated WTI trend | G0 | APPROVED; build pending |
-| v2 | 2026-08-15 | implement locked disjoint-block falling-correlation gate and WTI lifecycle | Q01 | PASS; Q02 handoff pending |
+| v2 | 2026-08-15 | implement locked disjoint-block falling-correlation gate and WTI lifecycle | Q02 | Q01 PASS; Q02 enqueued |
 
 ## Pipeline Phase Status
 
@@ -372,4 +372,4 @@ portfolio admission; or correlation waiver.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-15 | APPROVED; R1-R4 pass for disclosed proxy | `decisions/2026-08-15_qm5_21527_wti_fallcorr_trend_g0.md`; governed composite source packet |
 | Q01 Build Validation | 2026-08-15 | PASS | strict compile 0/0; build check 0/0; seven reference tests; SPEC and P1 PASS |
-| Q02 Baseline Screening | - | NOT ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-15 | ENQUEUED; pending | work item `4ec8fc49-9460-47a1-a938-619b9d50251a`; no tester dispatched by this build |
