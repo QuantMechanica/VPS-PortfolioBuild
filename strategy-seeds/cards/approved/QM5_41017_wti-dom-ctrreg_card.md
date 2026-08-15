@@ -11,7 +11,7 @@ execution_contract_ref: strategy-seeds/cards/approved/QM5_41017_wti-dom-ctrreg_c
 execution_contract_status: APPROVED
 created: 2026-08-15
 created_by: Research+Development
-last_updated: 2026-08-15
+last_updated: 2026-08-16
 g0_status: APPROVED
 g0_decision: decisions/2026-08-15_wti_dom_counterregime_g0.md
 source_approval: decisions/2026-08-15_wti_dom_counterregime_source_approval.md
@@ -62,9 +62,9 @@ r1_track_record: PASS_WITH_MULTIPLE_TESTING_RISK
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_STARTED
+q02_status: ENQUEUED
 review_focus: "Falsify whether significant WTI numbered-day directions are concentrated in the opposing completed 252-D1 regime, producing a sparse physical-crude calendar stream distinct from the certified XAU/SP500/NDX/XNG book; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -334,6 +334,7 @@ waivers.
 |---|---|---|---|---|
 | v1 | 2026-08-15 | initial exact-date counter-regime extraction | G0 | APPROVED |
 | v2 | 2026-08-15 | initial V5 implementation and strict validation | Q01 | PASS |
+| v3 | 2026-08-16 | paced never-tested baseline enqueue | Q02 | ENQUEUED; pending |
 
 ## Pipeline Phase Status
 
@@ -341,4 +342,4 @@ waivers.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-15 | APPROVED; R1-R4 reviewed | source packet, source-approval decision, G0 decision, and this card |
 | Q01 Build Validation | 2026-08-15 | PASS; 0 errors, 0 warnings | `D:\QM\reports\framework\21\build_check_20260815_221224.json`; deterministic reference tests 8/8 PASS |
-| Q02 Baseline Screening | - | NOT STARTED | - |
+| Q02 Baseline Screening | 2026-08-16 | ENQUEUED; pending, not a verdict | work item `7eb89f24-8be4-49a0-8b94-5501e124f059` |

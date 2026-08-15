@@ -5,7 +5,7 @@
 **Strategy ID:** `BOROWSKI-MOP-WTI-DOMCOUNTER-2026_S01`  
 **Source:** `BOROWSKI-MOP-WTI-DOMCOUNTER-2026`  
 **Author:** Research+Development  
-**Last revised:** 2026-08-15
+**Last revised:** 2026-08-16
 
 ## 1. Strategy Logic
 
@@ -94,3 +94,4 @@ live-manifest change is authorized.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-15 | initial approved build scaffold | magic 410170000 registered; strict Q01 PASS |
+| v2 | 2026-08-16 | paced Q02 admission | work item `7eb89f24-8be4-49a0-8b94-5501e124f059` pending; no dispatch |
