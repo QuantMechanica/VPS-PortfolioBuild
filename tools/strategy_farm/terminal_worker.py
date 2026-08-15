@@ -241,6 +241,13 @@ SQLITE_WRITE_RETRY_SLEEP_SECONDS = 1.5
 # of margin before treating the wrapper as stalled. A 60-second ceiling destroyed
 # valid GDAXI handoffs before summary.json could be published (2026-08-02 diagnosis).
 SMOKE_TERMINAL_EXIT_GRACE_SECONDS = 300.0
+# A latched report can still need several minutes of deterministic parser/logger
+# post-processing before summary.json is atomically published.  QM5_1257 produced
+# a valid report at 08:39Z and its identity-bound summary at 08:46Z; the ordinary
+# five-minute watchdog released the row in between and caused a duplicate retry.
+# Keep the short grace for true no-report exits, but give an explicit report latch
+# enough bounded time to finish evidence publication.
+SMOKE_VALID_REPORT_POSTPROCESS_GRACE_SECONDS = 1200.0
 DETACHED_TERMINAL_POLL_SECONDS = 2.0
 SQLITE_LOCK_BACKOFF_SECONDS = 10.0
 STALLDUMP_REQUEST_PATH = Path("D:/QM/reports/state/STALLDUMP_REQUEST")
@@ -2793,32 +2800,47 @@ def _acquire_launch_slot(terminal: str) -> None:
         time.sleep(0.5 + random.uniform(0, 0.5))
 
 
-def _smoke_terminal_exit_stalled(item: dict[str, Any], payload: dict[str, Any]) -> bool:
-    """Detect run_smoke wrappers stuck after MT5 already exited.
+def _smoke_terminal_exit_stall_grace_seconds(
+    item: dict[str, Any], payload: dict[str, Any]
+) -> float | None:
+    """Return the elapsed grace for a run_smoke wrapper proven stalled.
 
     Q02/Q03 (and legacy P2/P3 aliases) use a single run_smoke.ps1 child. If
     its log has reached terminal_exit but no summary appears and the log is
     quiet, waiting for the full worker timeout only blocks the symbol dedupe
-    queue.
+    queue.  A valid-report latch receives a longer bounded grace because report
+    parsing and logger-sample publication continue after terminal_exit.
     """
     if str(item.get("phase") or "").upper() not in {"Q02", "Q03", "P2", "P3"}:
-        return False
+        return None
     if _find_summary(payload.get("report_root"), payload):
-        return False
+        return None
     log_path = payload.get("log_path")
     if not log_path:
-        return False
+        return None
     path = Path(str(log_path))
     try:
         stat = path.stat()
-        if time.time() - stat.st_mtime < SMOKE_TERMINAL_EXIT_GRACE_SECONDS:
-            return False
         text = path.read_text(encoding="utf-8-sig", errors="ignore")
     except OSError:
-        return False
+        return None
     last_start = text.rfind("run_smoke.stage=terminal_start")
     last_exit = text.rfind("run_smoke.stage=terminal_exit")
-    return last_exit >= 0 and last_start >= 0 and last_exit > last_start
+    if last_exit < 0 or last_start < 0 or last_exit <= last_start:
+        return None
+    last_latch = text.rfind("run_smoke.stage=valid_report_latched")
+    grace_seconds = (
+        SMOKE_VALID_REPORT_POSTPROCESS_GRACE_SECONDS
+        if last_start < last_latch < last_exit
+        else SMOKE_TERMINAL_EXIT_GRACE_SECONDS
+    )
+    if time.time() - stat.st_mtime < grace_seconds:
+        return None
+    return grace_seconds
+
+
+def _smoke_terminal_exit_stalled(item: dict[str, Any], payload: dict[str, Any]) -> bool:
+    return _smoke_terminal_exit_stall_grace_seconds(item, payload) is not None
 
 
 def _stop_terminal_slot_for_release(root: Path, terminal: str | None) -> bool | None:
@@ -3620,11 +3642,12 @@ def _monitor_spawned_work_item(
                 "terminal_stopped": terminal_stopped,
                 **ownership,
             }
-        if _smoke_terminal_exit_stalled(item, payload):
+        stalled_grace_seconds = _smoke_terminal_exit_stall_grace_seconds(item, payload)
+        if stalled_grace_seconds is not None:
             post_exit_watchdog = {
                 "post_exit_watchdog_killed": True,
                 "post_exit_watchdog_killed_at_utc": farmctl.utc_now(),
-                "post_exit_watchdog_grace_seconds": SMOKE_TERMINAL_EXIT_GRACE_SECONDS,
+                "post_exit_watchdog_grace_seconds": stalled_grace_seconds,
                 "post_exit_watchdog_reason": "terminal_exit_without_summary_after_handoff_grace",
             }
             farmctl._stop_pid_tree(pid)

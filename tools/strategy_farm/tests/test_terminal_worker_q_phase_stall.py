@@ -42,7 +42,24 @@ class TerminalWorkerQPhaseStallTests(unittest.TestCase):
                 )
             )
 
-            stale_at = time.time() - terminal_worker.SMOKE_TERMINAL_EXIT_GRACE_SECONDS - 1
+            ordinary_stale_at = (
+                time.time() - terminal_worker.SMOKE_TERMINAL_EXIT_GRACE_SECONDS - 1
+            )
+            os.utime(log_path, (ordinary_stale_at, ordinary_stale_at))
+
+            # Once a report is latched, evidence parsing may legitimately take
+            # longer than the no-report watchdog grace.
+            self.assertFalse(
+                terminal_worker._smoke_terminal_exit_stalled(
+                    {"phase": "Q02"}, payload
+                )
+            )
+
+            stale_at = (
+                time.time()
+                - terminal_worker.SMOKE_VALID_REPORT_POSTPROCESS_GRACE_SECONDS
+                - 1
+            )
             os.utime(log_path, (stale_at, stale_at))
 
             for phase in ("Q02", "Q03", "P2", "P3"):
@@ -56,6 +73,18 @@ class TerminalWorkerQPhaseStallTests(unittest.TestCase):
             self.assertFalse(
                 terminal_worker._smoke_terminal_exit_stalled(
                     {"phase": "Q04"}, payload
+                )
+            )
+
+            log_path.write_text(
+                "run_smoke.stage=terminal_start\n"
+                "run_smoke.stage=terminal_exit\n",
+                encoding="utf-8",
+            )
+            os.utime(log_path, (ordinary_stale_at, ordinary_stale_at))
+            self.assertTrue(
+                terminal_worker._smoke_terminal_exit_stalled(
+                    {"phase": "Q02"}, payload
                 )
             )
 
