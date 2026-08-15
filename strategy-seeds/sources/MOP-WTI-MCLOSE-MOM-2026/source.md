@@ -8,7 +8,7 @@ created: 2026-08-15
 created_by: Research+Development
 primary_url: https://www.aqr.com/Insights/Research/Journal-Article/Time-Series-Momentum
 parent_source_id: MOP-TSMOM-2012
-cards_extracted: []
+cards_extracted: [wti-mclose-mom]
 ---
 
 # WTI Final-Five To First-Five Month-Boundary Momentum
