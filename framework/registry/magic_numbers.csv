@@ -14151,7 +14151,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9905,ff-wmd-bop-hook-h1,3,XAUUSD.DWX,99050003,2026-07-01,Development,active
 12840,xti-xng-rspread,0,XTIUSD.DWX,128400000,2026-07-01,Codex,active
 12840,xti-xng-rspread,1,XNGUSD.DWX,128400001,2026-07-01,Codex,active
-12841,brent-thu-prem,0,XBRUSD.DWX,128410000,2026-07-01,Codex,retired
 12842,williams-vol-bo-xti,0,XTIUSD.DWX,128420000,2026-07-01,Codex,active
 12843,wti-brent-spread,0,XTIUSD.DWX,128430000,2026-07-01,Codex,active
 12843,wti-brent-spread,1,XBRUSD.DWX,128430001,2026-07-01,Codex,active
@@ -14173,7 +14172,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9450,brooks-failed-spike-and-channel-h4,13,SP500.DWX,94500013,2026-07-01,Codex,active
 12848,wti-brent-brk,0,XTIUSD.DWX,128480000,2026-07-01,Codex,active
 12848,wti-brent-brk,1,XBRUSD.DWX,128480001,2026-07-01,Codex,active
-12849,brent-tsmom12m,0,XBRUSD.DWX,128490000,2026-07-01,Codex,retired
 12836,turnaround-tuesday-ws30,0,WS30.DWX,128360000,2026-07-01,Claude,active
 12836,turnaround-tuesday-ws30,1,SP500.DWX,128360001,2026-07-01,Claude,active
 12836,turnaround-tuesday-ws30,2,NDX.DWX,128360002,2026-07-01,Claude,active
@@ -14200,14 +14198,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9401,demark-tdprl-fade-h4,11,WS30.DWX,94010011,2026-07-01,Codex,active
 9401,demark-tdprl-fade-h4,12,UK100.DWX,94010012,2026-07-01,Codex,active
 12852,wti-may-prem,0,XTIUSD.DWX,128520000,2026-07-01,Codex,active
-12853,brent-may-prem,0,XBRUSD.DWX,128530000,2026-07-01,Codex,retired
-12854,brent-dec-fade,0,XBRUSD.DWX,128540000,2026-07-01,Codex,retired
-12855,brent-nov-fade,0,XBRUSD.DWX,128550000,2026-07-01,Codex,retired
-12856,brent-mon-fade,0,XBRUSD.DWX,128560000,2026-07-01,Codex,retired
 12857,xbr-xng-vcb,0,XBRUSD.DWX,128570000,2026-07-01,Codex,active
 12857,xbr-xng-vcb,1,XNGUSD.DWX,128570001,2026-07-01,Codex,active
 12858,rigcount-fri-mom,0,XTIUSD.DWX,128580000,2026-07-01,Codex,active
-12859,brent-52w-anchor,0,XBRUSD.DWX,128590000,2026-07-01,Codex,retired
 12860,wti-brent-rshock,0,XTIUSD.DWX,128600000,2026-07-01,Codex,active
 12860,wti-brent-rshock,1,XBRUSD.DWX,128600001,2026-07-01,Codex,active
 11902,bermuda-triangle-123-fib-extension-h1,0,EURUSD.DWX,119020000,2026-07-01,Codex,active
@@ -14254,8 +14247,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12623,comm-mom-rev-interaction-xauusd,0,XAUUSD.DWX,126230000,2026-07-01,Codex,active
 12864,oilsilver-rspr,0,XTIUSD.DWX,128640000,2026-07-01,Codex,active
 12864,oilsilver-rspr,1,XAGUSD.DWX,128640001,2026-07-01,Codex,active
-12865,brent-fri-prem,0,XBRUSD.DWX,128650000,2026-07-02,Codex,retired
-12866,brent-apr-prem,0,XBRUSD.DWX,128660000,2026-07-02,Codex,retired
 1530,connors-double-sevens-h4,0,EURUSD.DWX,15300000,2026-07-02,Codex,active
 1530,connors-double-sevens-h4,1,GBPUSD.DWX,15300001,2026-07-02,Codex,active
 1530,connors-double-sevens-h4,2,USDJPY.DWX,15300002,2026-07-02,Codex,active
@@ -14301,14 +14292,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9350,brooks-failed-ttr-h4,12,GDAXI.DWX,93500012,2026-07-02,Codex,active
 9350,brooks-failed-ttr-h4,13,UK100.DWX,93500013,2026-07-02,Codex,active
 12870,wti-jan-fade,0,XTIUSD.DWX,128700000,2026-07-02,Codex,active
-12871,brent-jan-fade,0,XBRUSD.DWX,128710000,2026-07-02,Codex,retired
 12893,xng-12m-carry,0,XNGUSD.DWX,128930000,2026-07-02,Codex,active
 12895,xng-6m-reversal,0,XNGUSD.DWX,128950000,2026-07-02,Codex,active
 12896,xng-oct-turn-long,0,XNGUSD.DWX,128960000,2026-07-02,Codex,active
 12613,tsmom-3m-commodity-xauusd,0,XAUUSD.DWX,126130000,2026-07-02,Development,active
 12619,comm-reversal-4wk-xauusd,0,XAUUSD.DWX,126190000,2026-07-02,Development,active
 12910,wti-dist-unwind,0,XTIUSD.DWX,129100000,2026-07-02,Codex,active
-12911,brent-aug-prem,0,XBRUSD.DWX,129110000,2026-07-02,Codex,retired
 12912,rigcount-fri-fade,0,XTIUSD.DWX,129120000,2026-07-02,Codex,active
 12913,xti-12m-carry,0,XTIUSD.DWX,129130000,2026-07-02,Codex,active
 12874,xng-inject-slope-short,0,XNGUSD.DWX,128740000,2026-07-02,Codex,active
@@ -14357,7 +14346,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12953,mql5-gator-ma-card,0,EURUSD.DWX,129530000,2026-07-02,Codex,active
 12953,mql5-gator-ma-card,1,GBPUSD.DWX,129530001,2026-07-02,Codex,active
 12953,mql5-gator-ma-card,2,XAUUSD.DWX,129530002,2026-07-02,Codex,active
-12976,brent-mar-prem,0,XBRUSD.DWX,129760000,2026-07-03,Codex,retired
 9575,pring-kst-monthly,0,EURUSD.DWX,95750000,2026-07-03,Codex,active
 9575,pring-kst-monthly,1,GBPUSD.DWX,95750001,2026-07-03,Codex,active
 9575,pring-kst-monthly,2,USDJPY.DWX,95750002,2026-07-03,Codex,active
@@ -14392,9 +14380,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9278,mql5-lw-outside,1,GBPUSD.DWX,92780001,2026-07-03,Codex,active
 9278,mql5-lw-outside,2,XAUUSD.DWX,92780002,2026-07-03,Codex,active
 9278,mql5-lw-outside,3,GDAXI.DWX,92780003,2026-07-03,Codex,active
-12980,brent-6m-rev,0,XBRUSD.DWX,129800000,2026-07-03,Codex,retired
-12981,brent-febsep-prem,0,XBRUSD.DWX,129810000,2026-07-03,Codex,retired
-12982,brent-sep-prem,0,XBRUSD.DWX,129820000,2026-07-03,Codex,retired
 12969,usdjpy-gotobi-nakane-fix,0,USDJPY.DWX,129690000,2026-07-03,Codex,active
 12983,wti-tom-mom,0,XTIUSD.DWX,129830000,2026-07-03,Codex,active
 12973,eurusd-monthend-fix-fade,0,EURUSD.DWX,129730000,2026-07-03,Codex,active
@@ -14708,13 +14693,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9453,chande-cmo-vr-composite-h4,11,WS30.DWX,94530011,2026-07-08,Codex,active
 9453,chande-cmo-vr-composite-h4,12,UK100.DWX,94530012,2026-07-08,Codex,active
 13051,xng-vrp-proxy,0,XNGUSD.DWX,130510000,2026-07-08,Codex,active
-13052,brent-jul-prem,0,XBRUSD.DWX,130520000,2026-07-08,Codex,retired
 13053,brentsilver-rspr,0,XBRUSD.DWX,130530000,2026-07-08,Codex,active
 13053,brentsilver-rspr,1,XAGUSD.DWX,130530001,2026-07-08,Codex,active
 12482,gh-oil-nok,0,USDJPY.DWX,124820000,2026-07-08,Codex,active
-13054,brent-tom-mom,0,XBRUSD.DWX,130540000,2026-07-08,Codex,retired
-13055,xbr-1w-mom-vol,0,XBRUSD.DWX,130550000,2026-07-08,Codex,retired
-13056,xbr-1w-rev-vol,0,XBRUSD.DWX,130560000,2026-07-08,Codex,retired
 12894,xng-mar-transseason-short,0,XNGUSD.DWX,128940000,2026-07-08,Codex,active
 13057,xti-gbpcad-rspr,0,XTIUSD.DWX,130570000,2026-07-08,Codex,active
 13057,xti-gbpcad-rspr,1,GBPCAD.DWX,130570001,2026-07-08,Codex,active
@@ -14724,7 +14705,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13059,xti-audjpy-rspr,1,AUDJPY.DWX,130590001,2026-07-08,Codex,active
 13060,xti-eurcad-rspr,0,XTIUSD.DWX,130600000,2026-07-08,Codex,active
 13060,xti-eurcad-rspr,1,EURCAD.DWX,130600001,2026-07-08,Codex,active
-13061,brent-jun-prem,0,XBRUSD.DWX,130610000,2026-07-08,Codex,retired
 13062,audcad-eurusd-coint,0,AUDCAD.DWX,130620000,2026-07-08,Development,active
 13062,audcad-eurusd-coint,1,EURUSD.DWX,130620001,2026-07-08,Development,active
 13063,xti-padd2-draw,0,XTIUSD.DWX,130630000,2026-07-08,Codex,active
@@ -14775,7 +14755,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13071,xti-usdchf-rspr,1,USDCHF.DWX,130710001,2026-07-08,Codex,active
 13036,balke-go-long-regime,0,NDX.DWX,130360000,2026-07-08,Codex,active
 13036,balke-go-long-regime,1,GDAXI.DWX,130360001,2026-07-08,Codex,active
-13072,brent-feb-prem,0,XBRUSD.DWX,130720000,2026-07-08,Codex,retired
 13073,xti-audusd-rspr,0,XTIUSD.DWX,130730000,2026-07-08,Codex,active
 13073,xti-audusd-rspr,1,AUDUSD.DWX,130730001,2026-07-08,Codex,active
 13074,eia-jetfuel-fade,0,XTIUSD.DWX,130740000,2026-07-09,Codex,active
@@ -14844,7 +14823,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13089,xti-xng-carry,1,XNGUSD.DWX,130890001,2026-07-09,Codex,active
 13090,xti-xcu-rspread,0,XTIUSD.DWX,130900000,2026-07-09,Codex,active
 13090,xti-xcu-rspread,1,XCUUSD.DWX,130900001,2026-07-09,Codex,active
-13091,xbr-vrp-proxy,0,XBRUSD.DWX,130910000,2026-07-09,Codex,retired
 13092,xbr-eurcad-rspr,0,XBRUSD.DWX,130920000,2026-07-09,Codex,active
 13092,xbr-eurcad-rspr,1,EURCAD.DWX,130920001,2026-07-09,Codex,active
 9639,ehlers-highpass-raw-h4,0,EURUSD.DWX,96390000,2026-07-09,Codex,active
@@ -15341,7 +15319,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20168,xng-autumn-dualtrend,0,XNGUSD.DWX,201680000,2026-07-26T05:40:00Z,Codex,active
 20169,wti-thu-bear,0,XTIUSD.DWX,201690000,2026-07-26T06:30:00Z,Codex,active
 20170,wti-wed-bear,0,XTIUSD.DWX,201700000,2026-07-26T07:20:00Z,Codex,active
-20171,brent-tsmom3m,0,XBRUSD.DWX,201710000,2026-07-26T08:10:00Z,Codex,retired
 20172,wti-fri-bear,0,XTIUSD.DWX,201720000,2026-07-26T09:55:00Z,Codex,active
 20173,wti-mon-bullfade,0,XTIUSD.DWX,201730000,2026-07-26T12:45:00Z,Codex,active
 20174,wti-tue-bullfade,0,XTIUSD.DWX,201740000,2026-07-26T13:30:00Z,Codex,active
