@@ -1,0 +1,103 @@
+{
+  "schema_version": "qm.fx-cointegration-resource-stop/v1",
+  "sampled_at_utc": "2026-08-15T18:47:34.5207324+00:00",
+  "branch": "agents/board-advisor",
+  "head_before_evidence_commit": "a5873ae6829e07b5e11233a0d80e3347db70dd10",
+  "outcome": "RESOURCE_CEILING_STOP",
+  "frontier": {
+    "frozen_pair_count": 66,
+    "fully_mechanized": true,
+    "qm5_12532_terminal_path": [
+      "Q02_PASS",
+      "Q04_PASS",
+      "Q05_FAIL"
+    ],
+    "qm5_12533_terminal_path": [
+      "Q02_PASS",
+      "Q04_FAIL"
+    ],
+    "selection": "existing_rank_58_qm5_1257_gbpusd_usdjpy"
+  },
+  "target": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 2,
+    "claimed_by": null,
+    "evidence_path": null,
+    "updated_at_utc": "2026-08-15T13:03:04.898529+00:00",
+    "open_identity_count": 1,
+    "implementation_repair_commit": "751cb391d8f388f5b61641ba3299011cdf9a09ed",
+    "exit_repair_commit": "f9ef37c1c"
+  },
+  "target_artifacts": {
+    "mq5_sha256": "f1e0bc08e65c6b46eea7c1397551ebb6c17aa466b48ef1d48d67e573361b9b27",
+    "ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+    "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+    "risk_fixed_setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4"
+  },
+  "fresh_queue_read": {
+    "command": "python tools/strategy_farm/farmctl.py work-items --ea QM5_1257",
+    "qm5_1257_row_count": 29,
+    "summary": {
+      "Q02_done_FAIL": 1,
+      "Q02_done_SUPERSEDED_BY_LOGICAL_BASKET": 21,
+      "Q02_failed_OBSOLETE_NON_DWX_SYMBOL": 6,
+      "Q02_pending": 1
+    },
+    "exact_target_still_unique_and_pending": true
+  },
+  "fleet": {
+    "active_work_item_count": 5,
+    "active_q02_count": 5,
+    "running_factory_terminals": [
+      "T2",
+      "T3",
+      "T4",
+      "T7",
+      "T9"
+    ],
+    "active_work_item_ids": [
+      "ac001456-14e7-4091-ab33-95c1286b1971",
+      "d6165caf-abc9-4fcb-b7e6-e6882b1782fa",
+      "143f71c2-6fed-49bc-8431-c6513de7cb9d",
+      "cbe65bb9-2b76-48b2-81d5-bd878415adfd",
+      "5c9a69fd-c4d2-4761-9537-60fd07d7d3a8"
+    ],
+    "orphaned_factory_terminal_processes": 0,
+    "t_live_observed_separately_and_excluded": true
+  },
+  "resources": {
+    "cpu_load_percent_single_sample": 68.0,
+    "free_physical_memory_gib": 5.18,
+    "total_physical_memory_gib": 63.12,
+    "free_physical_memory_percent": 8.21,
+    "d_volume_free_bytes": 454656,
+    "d_volume_total_bytes": 1024192409600,
+    "d_volume_free_percent": 0.00004439,
+    "binding_guard": "d_volume_exhaustion",
+    "context": "D: hosts the canonical Strategy Farm runtime, reports, and custom-history inputs; a new tester or dispatch cannot safely write evidence with only 454656 bytes free."
+  },
+  "custom_history_containment": {
+    "enabled": false,
+    "reason": "topology_conform_v2_verified_flood_findings_resolved",
+    "recorded_at_utc": "2026-08-15T16:34:07.414744+00:00"
+  },
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "registry": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "q02_enqueue_or_requeue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_control": false,
+    "containment": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "auto_trading": false
+  }
+}
