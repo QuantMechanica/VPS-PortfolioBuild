@@ -16007,3 +16007,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41018,xtixng-wed-rv,1,XNGUSD.DWX,410180001,2026-08-16,Research+Development,active
 41019,wti-wopen-mom,0,XTIUSD.DWX,410190000,2026-08-16,Research+Development,active
 41020,wti-wclose-mom,0,XTIUSD.DWX,410200000,2026-08-16,Research+Development,active
+21514,qs-klinger-vol-osc-xag,0,XAGUSD.DWX,215140000,2026-08-16,Development,active

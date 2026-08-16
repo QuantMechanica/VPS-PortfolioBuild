@@ -1,0 +1,40 @@
+;==========================================================
+; QM5 Q15 Frozen Q02 Set File
+; ea_id:        21001
+; ea_slug:      balke-gmt3-range-breakout-exit-c1
+; ea_version:   v5.0
+; set_version:  s20260816-stress-harsh
+; symbol:       USDJPY.DWX
+; timeframe:    H1
+; environment:  q06_stress_harsh
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   1f2dc03590ab9a58606d2a8d3ecb28c459237295d51faa4d469aaa15ca1c0308
+; author:       Codex
+; date:         2026-08-16
+;==========================================================
+ENV=backtest
+qm_ea_id=21001
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=QM_NEWS_TEMPORAL_PRE30_POST30
+qm_news_compliance=QM_NEWS_COMPLIANCE_DXZ
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=QM_NEWS_OFF
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.1000
+strategy_range_start_hour=3
+strategy_range_end_hour=6
+strategy_opt_enabled=true
+strategy_exit_hour=20
+strategy_atr_period=14
+strategy_min_range_atr_mult=0.4
+strategy_max_range_atr_mult=2.5
+strategy_trail_trigger_r=1.0
+strategy_range_scan_bars=36
