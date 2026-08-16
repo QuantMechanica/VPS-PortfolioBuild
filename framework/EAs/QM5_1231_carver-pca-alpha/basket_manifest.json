@@ -1,0 +1,33 @@
+{
+  "ea_id": "QM5_1231",
+  "slug": "carver-pca-alpha",
+  "timeframe": "D1",
+  "basket_symbols": [
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "UK100.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "USDJPY.DWX",
+    "USDCHF.DWX",
+    "USDCAD.DWX"
+  ],
+  "traded_symbols": [
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "UK100.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "USDJPY.DWX",
+    "USDCHF.DWX",
+    "USDCAD.DWX"
+  ],
+  "notes": [
+    "Ten-host D1 PCA alpha universe from approved card QM5_1231. Each registered .DWX setfile remains a real host work item, and every host instance reads the full ten-symbol basket before its monthly rebalance decision.",
+    "This is a multi-symbol dependency manifest, not a synthetic logical-basket manifest. Omitting logical_symbol/host_symbol/host_timeframe preserves per-symbol farm fanout while ensuring admission, isolation, and copy-on-claim cover every foreign-symbol history read."
+  ]
+}

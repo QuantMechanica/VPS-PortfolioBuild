@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_1231 Carver PCA Alpha Persistence"
+#property description "QM5_1231 Carver PCA Alpha Persistence (10-symbol dependency-bound)"
 
 #include <QM/QM_Common.mqh>
 
