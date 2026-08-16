@@ -93,6 +93,9 @@ bool   g_rsioma_exit_long = false;
 bool   g_rsioma_exit_short = false;
 double g_rsioma_closed = 0.0;
 double g_rsioma_previous = 0.0;
+// RSIOMA depends only on completed bars. OnTick refreshes this cache once
+// behind QM_IsNewBar(), then the exit and entry paths reuse the same state.
+bool   g_rsioma_state_ready = false;
 
 double Strategy_RsiomaMa(const int shift)
   {
@@ -213,7 +216,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return false;
-   if(!Strategy_UpdateRsiomaState())
+   if(!g_rsioma_state_ready)
       return false;
 
    const int magic = QM_FrameworkMagic();
@@ -283,7 +286,7 @@ bool Strategy_ExitSignal()
       break;
      }
 
-   if(!has_position || !Strategy_UpdateRsiomaState())
+   if(!has_position || !g_rsioma_state_ready)
       return false;
 
    if(position_type == POSITION_TYPE_BUY)
@@ -362,7 +365,19 @@ void OnTick()
    // commit dc418a720).
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   // RSIOMA can change only when the PERIOD_CURRENT closed bar advances. Keep
+   // its repeated EMA reads off the modeled-tick path, and use one calculation
+   // for the opposite-signal exit plus any same-bar reversal entry.
+   if(!QM_IsNewBar())
+      return;
+
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
+
+   g_rsioma_state_ready = Strategy_UpdateRsiomaState();
+
+   // Per-closed-bar discretionary exit. Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -377,9 +392,6 @@ void OnTick()
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
    // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
    // when both new axes are at their OFF defaults. Gates NEW entries only —
    // never the management/exit paths above.
@@ -390,13 +402,6 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
       return;
-
-   if(!QM_IsNewBar())
-      return;
-
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    ZeroMemory(req); // symbol_slot=0 (host slot) + expiration=0 defaults; garbage

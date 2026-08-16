@@ -99,3 +99,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 |---|---|---|---|
 | v1 | 2026-06-07 | Initial build from card | 737642a0-ff83-4c63-a857-3b992bc74632 |
 | v2 | 2026-08-16 | Canonical framework-wiring repair and strict rebuild | fa7fdd32-621a-465c-b4f9-03ab0c5c9d4b |
+| v3 | 2026-08-16 | Gate RSIOMA computation to completed H4 bars | Closed-bar state is calculated once and reused by exit and entry. |
