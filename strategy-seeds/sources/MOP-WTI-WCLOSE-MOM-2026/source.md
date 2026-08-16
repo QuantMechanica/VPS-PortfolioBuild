@@ -161,9 +161,11 @@ the item may be enqueued but no tester may be controlled.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial fixed week-closing extraction | G0 | APPROVED |
+| v2 | 2026-08-16 | V5 build, calendar-label fixtures, strict compile, and deterministic validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | phase | date | verdict | evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-16 | APPROVED; R1-R4 reviewed | source packet, source-approval decision, G0 decision, and Strategy Card |
+| Q01 Build Validation | 2026-08-16 | PASS; 0 errors, 0 warnings | `D:\QM\reports\framework\21\build_check_20260816_025236.json`; reference tests 9/9 PASS |

@@ -68,6 +68,7 @@ r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
 q02_status: PENDING
+q02_work_item_id: 5a4a93ac-0a38-4e71-a12e-298609ee2449
 review_focus: "Falsify a jointly risked Wednesday crude-versus-natural-gas differential outside the certified index/metal/XNG book; adverse modern XNG evidence and Q09 correlation are binding downstream tests."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]

@@ -57,9 +57,9 @@ r1_track_record: PASS_WITH_HORIZON_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_STARTED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: PENDING
 review_focus: "Falsify an exact-clock WTI week-closing return-sign continuation sleeve outside the certified XAU/SP500/NDX/XNG book. Verify weekday continuity, completed endpoints, no late restart entry, and first-Wednesday flattening; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -317,14 +317,15 @@ establish realized correlation with the certified book.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial fixed week-closing momentum extraction | G0 | APPROVED |
+| v2 | 2026-08-16 | V5 build, calendar-label fixtures, strict compile, and deterministic validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-16 | APPROVED | `decisions/2026-08-16_wti_week_closing_momentum_g0.md` |
-| Q01 Build Validation | pending | PENDING | build not started |
-| Q02 Baseline Screening | pending | NOT STARTED | enqueue only after strict Q01 PASS |
+| Q01 Build Validation | 2026-08-16 | PASS; compiler and build check 0 errors, 0 warnings; reference tests 9/9 PASS | `D:\QM\reports\framework\21\build_check_20260816_025236.json`; compile summary `D:\QM\reports\compile\20260816_024658\summary.csv` |
+| Q02 Baseline Screening | pending | PENDING | not yet enqueued |
 
 ## Safety Boundary
 
