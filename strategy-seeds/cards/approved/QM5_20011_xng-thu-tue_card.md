@@ -6,7 +6,7 @@ slug: xng-thu-tue
 status: APPROVED
 created: 2026-07-19
 created_by: Research
-last_updated: 2026-07-19
+last_updated: 2026-08-16
 g0_status: APPROVED
 source_citation: "Meek, Andrew C. and Hoelscher, Seth A. (2023). Day-of-the-week effect: Petroleum and petroleum products. Cogent Economics & Finance 11(1), 2213876. DOI 10.1080/23322039.2023.2213876."
 source_citations:
@@ -107,3 +107,19 @@ Q01 passed on 2026-07-19 with zero compile errors/warnings and zero build-check
 failures/warnings. Q02 work item
 `aa33ca98-bc8a-4015-abc7-24f3f6e5b2ab` is pending, attempt 0 and unclaimed.
 Smoke was deferred at the paced-fleet CPU ceiling; no tester was launched.
+
+## OWNER-approved session-tick entry-clock amendment (2026-08-16)
+
+This amendment supersedes every earlier raw-D1-label/five-minute entry-clock
+description in this card. No formation, signal, direction, exit, sizing,
+risk, consumed-attempt, or original advance/never-shift mechanic changes.
+
+- Anchor the qualifying window at
+  `D1_bar_open + strategy_session_offset_min`, not the raw D1 label.
+- `strategy_session_offset_min = 61.6` minutes: **UNVERIFIED estimate for `XNGUSD.DWX`, inferred from the XTIUSD.DWX measurement**. Independent XNG tick measurement remains a recommended follow-up.
+- `strategy_entry_grace_minutes = 10`, measured tightly around that anchor.
+- `strategy_min_stub_ticks = 20`; a thin weekend/holiday D1 stub consumes
+  the card's original attempt/date/window flat.
+- `strategy_min_attach_ticks = 20` within five minutes after the qualifying
+  tick; failure consumes the original attempt/date/window flat.
+- Preserve this card's existing advance-versus-never-shift semantics exactly.

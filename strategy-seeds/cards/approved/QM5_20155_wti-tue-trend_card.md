@@ -12,7 +12,7 @@ execution_contract_ref: strategy-seeds/cards/approved/QM5_20155_wti-tue-trend_ca
 execution_contract_status: DRAFT
 created: 2026-07-25
 created_by: Research+Development
-last_updated: 2026-07-25
+last_updated: 2026-08-16
 source_authors: "A. Gorska, M. Krawiec; Tobias J. Moskowitz, Yao Hua Ooi, Lasse Heje Pedersen"
 strategy_mechanic: tuesday-wti-short-only-when-completed-252d-return-is-negative
 source_citation: "Gorska and Krawiec (2015), Calendar Effects in the Market of Crude Oil, Quantitative Methods in Economics 16(4); Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104."
@@ -241,7 +241,10 @@ cap, retry policy, or risk mode requires a new card and binary.
 |---|---:|---|---|
 | `strategy_momentum_lookback_d1` | 252 | [252] | completed own-return horizon |
 | `strategy_min_abs_return_pct` | 0.0 | [0.0] | strict negative sign; no deadband |
-| `strategy_entry_grace_minutes` | 5 | [5] | maximum Tuesday-bar attachment delay |
+| `strategy_session_offset_min` | 61.6 | [61.6] | XTIUSD.DWX tick-measured maximum |
+| `strategy_entry_grace_minutes` | 10 | [10] | tight window around the session-tick anchor |
+| `strategy_min_stub_ticks` | 20 | [20] | reject thin weekend/holiday D1 stubs |
+| `strategy_min_attach_ticks` | 20 | [20] | minimum ticks within 5 minutes of the qualifying tick |
 | `strategy_atr_period` | 20 | [20] | completed D1 risk estimator |
 | `strategy_atr_sl_mult` | 3.0 | [3.0] | frozen hard-stop distance |
 | `strategy_max_hold_days` | 2 | [2] | next-D1 stale repair |
@@ -371,3 +374,19 @@ KPI claim, or correlation waiver.
 | G0 Research Intake | 2026-07-25 | APPROVED | this card |
 | Q01 Build Validation | 2026-07-25 | PASS: strict compile 0 errors/0 warnings; targeted build check PASS | `docs/ops/evidence/2026-07-25_qm5_20155_wti_tue_trend_build_q02.md` |
 | Q02 Baseline Screening | 2026-07-25 | ENQUEUED: `5d2b088b-bf75-4703-9a07-74158fbe4224` | same evidence |
+
+## OWNER-approved session-tick entry-clock amendment (2026-08-16)
+
+This amendment supersedes every earlier raw-D1-label/five-minute entry-clock
+description in this card. No formation, signal, direction, exit, sizing,
+risk, consumed-attempt, or original advance/never-shift mechanic changes.
+
+- Anchor the qualifying window at
+  `D1_bar_open + strategy_session_offset_min`, not the raw D1 label.
+- `strategy_session_offset_min = 61.6` minutes: conservative tick-measured maximum for `XTIUSD.DWX`.
+- `strategy_entry_grace_minutes = 10`, measured tightly around that anchor.
+- `strategy_min_stub_ticks = 20`; a thin weekend/holiday D1 stub consumes
+  the card's original attempt/date/window flat.
+- `strategy_min_attach_ticks = 20` within five minutes after the qualifying
+  tick; failure consumes the original attempt/date/window flat.
+- Preserve this card's existing advance-versus-never-shift semantics exactly.

@@ -235,7 +235,10 @@ authorized.
 | `strategy_short_day` | 26 | [26] | exact source-negative short date |
 | `strategy_momentum_lookback_d1` | 252 | [252] | completed slow-state horizon |
 | `strategy_min_abs_return_pct` | 0.0 | [0.0] | strict sign; no deadband |
-| `strategy_entry_grace_minutes` | 5 | [5] | exact-bar attachment bound |
+| `strategy_session_offset_min` | 61.6 | [61.6] | XTIUSD.DWX tick-measured maximum |
+| `strategy_entry_grace_minutes` | 10 | [10] | tight window around the session-tick anchor |
+| `strategy_min_stub_ticks` | 20 | [20] | reject thin weekend/holiday D1 stubs |
+| `strategy_min_attach_ticks` | 20 | [20] | minimum ticks within 5 minutes of the qualifying tick |
 | `strategy_atr_period` | 20 | [20] | completed hard-stop estimator |
 | `strategy_atr_sl_mult` | 2.75 | [2.75] | frozen stop distance |
 | `strategy_max_hold_days` | 1 | [1] | next-D1 stale guard |
@@ -348,3 +351,19 @@ waivers.
 | Q01 Build Validation | 2026-08-15 | PASS; 0 errors, 0 warnings | `D:\QM\reports\framework\21\build_check_20260815_221224.json`; deterministic reference tests 8/8 PASS |
 | Q02 Baseline Screening | 2026-08-16 | `ZERO_TRADES`; valid bound run, not PASS or certification | work item `7eb89f24-8be4-49a0-8b94-5501e124f059`; `D:/QM/reports/work_items/7eb89f24-8be4-49a0-8b94-5501e124f059/QM5_41017/20260815_222420/summary.json` |
 | Q02 Zero-Trades Recovery | 2026-08-16 | `BLOCKED_CARD_MECHANICS`; normal WTI first ticks miss the frozen five-minute nominal D1-open gate | `docs/ops/evidence/2026-08-16_qm5_41017_q02_zero_trades_classification.md` |
+
+## OWNER-approved session-tick entry-clock amendment (2026-08-16)
+
+This amendment supersedes every earlier raw-D1-label/five-minute entry-clock
+description in this card. No formation, signal, direction, exit, sizing,
+risk, consumed-attempt, or original advance/never-shift mechanic changes.
+
+- Anchor the qualifying window at
+  `D1_bar_open + strategy_session_offset_min`, not the raw D1 label.
+- `strategy_session_offset_min = 61.6` minutes: conservative tick-measured maximum for `XTIUSD.DWX`.
+- `strategy_entry_grace_minutes = 10`, measured tightly around that anchor.
+- `strategy_min_stub_ticks = 20`; a thin weekend/holiday D1 stub consumes
+  the card's original attempt/date/window flat.
+- `strategy_min_attach_ticks = 20` within five minutes after the qualifying
+  tick; failure consumes the original attempt/date/window flat.
+- Preserve this card's existing advance-versus-never-shift semantics exactly.

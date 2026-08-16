@@ -239,7 +239,10 @@ is authorized.
 |---|---:|---|---|
 | `strategy_closing_intervals` | 5 | [5] | locked final-five prior-month intervals |
 | `strategy_hold_bars` | 5 | [5] | locked first-five current-month sessions |
-| `strategy_entry_grace_minutes` | 5 | [5] | first-bar attachment bound |
+| `strategy_session_offset_min` | 61.6 | [61.6] | XTIUSD.DWX tick-measured maximum |
+| `strategy_entry_grace_minutes` | 10 | [10] | tight window around the session-tick anchor |
+| `strategy_min_stub_ticks` | 20 | [20] | reject thin weekend/holiday D1 stubs |
+| `strategy_min_attach_ticks` | 20 | [20] | minimum ticks within 5 minutes of the qualifying tick |
 | `strategy_history_bars` | 80 | [80] | bounded two-month endpoint reconstruction |
 | `strategy_atr_period` | 20 | [20] | frozen hard-stop estimate |
 | `strategy_atr_sl_mult` | 3.5 | [3.5] | frozen hard-stop distance |
@@ -345,3 +348,19 @@ strict Q01, one `RISK_FIXED` backtest setfile, and one paced Q02 enqueue. It
 authorizes no manual tester; live/demo/shadow/stress/optimization setfile;
 AutoTrading; `T_Live`; deploy or T_Live manifest; portfolio admission;
 portfolio-gate change; or correlation waiver.
+
+## OWNER-approved session-tick entry-clock amendment (2026-08-16)
+
+This amendment supersedes every earlier raw-D1-label/five-minute entry-clock
+description in this card. No formation, signal, direction, exit, sizing,
+risk, consumed-attempt, or original advance/never-shift mechanic changes.
+
+- Anchor the qualifying window at
+  `D1_bar_open + strategy_session_offset_min`, not the raw D1 label.
+- `strategy_session_offset_min = 61.6` minutes: conservative tick-measured maximum for `XTIUSD.DWX`.
+- `strategy_entry_grace_minutes = 10`, measured tightly around that anchor.
+- `strategy_min_stub_ticks = 20`; a thin weekend/holiday D1 stub consumes
+  the card's original attempt/date/window flat.
+- `strategy_min_attach_ticks = 20` within five minutes after the qualifying
+  tick; failure consumes the original attempt/date/window flat.
+- Preserve this card's existing advance-versus-never-shift semantics exactly.

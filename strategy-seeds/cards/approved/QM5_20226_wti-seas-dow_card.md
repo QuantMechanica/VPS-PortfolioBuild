@@ -12,7 +12,7 @@ execution_contract_ref: strategy-seeds/cards/approved/QM5_20226_wti-seas-dow_car
 execution_contract_status: DRAFT
 created: 2026-08-05
 created_by: Research+Development
-last_updated: 2026-08-05
+last_updated: 2026-08-16
 source_authors: "Dmitry Burakov; Max Freidin; Yuriy Solovyev; Anna Gorska; Malgorzata Krawiec"
 strategy_mechanic: wti-fixed-physical-season-direction-agrees-with-signed-genuine-weekday-session
 source_citation: "Burakov, Freidin, and Solovyev (2018), International Journal of Energy Economics and Policy 8(2), 121-126; Gorska and Krawiec (2015), Problems of World Agriculture 15(4), 62-70."
@@ -220,7 +220,10 @@ weekday sweep, or post-result rescue path.
 | `strategy_summer_last_month` | 10 | [10] | negative-season end |
 | `strategy_long_weekday` | 5 | [5] | broker Friday BUY event |
 | `strategy_short_weekday` | 1 | [1] | broker Monday SELL event |
-| `strategy_entry_grace_minutes` | 5 | [5] | maximum attachment delay |
+| `strategy_session_offset_min` | 61.6 | [61.6] | XTIUSD.DWX tick-measured maximum |
+| `strategy_entry_grace_minutes` | 10 | [10] | tight window around the session-tick anchor |
+| `strategy_min_stub_ticks` | 20 | [20] | reject thin weekend/holiday D1 stubs |
+| `strategy_min_attach_ticks` | 20 | [20] | minimum ticks within 5 minutes of the qualifying tick |
 | `strategy_atr_period` | 20 | [20] | completed D1 stop estimator |
 | `strategy_atr_sl_mult` | 3.0 | [3.0] | frozen hard-stop distance |
 | `strategy_max_hold_days` | 3 | [3] | missed-exit stale guard |
@@ -290,3 +293,19 @@ correlation waiver.
 | G0 Research Intake | 2026-08-05 | APPROVED; R1-R4 PASS | `decisions/2026-08-05_qm5_20226_wti_seas_dow_g0.md` |
 | Q01 Compile / Static Validation | 2026-08-05 | PASS | `framework/build/compile/20260805_160700/QM5_20226_wti-seas-dow.compile.log`; `D:/QM/reports/framework/21/build_check_20260805_160700.json` |
 | Q02 Baseline Screening | 2026-08-05 | ENQUEUED | `docs/ops/evidence/2026-08-05_qm5_20226_wti_seas_dow_q02_enqueue.md` |
+
+## OWNER-approved session-tick entry-clock amendment (2026-08-16)
+
+This amendment supersedes every earlier raw-D1-label/five-minute entry-clock
+description in this card. No formation, signal, direction, exit, sizing,
+risk, consumed-attempt, or original advance/never-shift mechanic changes.
+
+- Anchor the qualifying window at
+  `D1_bar_open + strategy_session_offset_min`, not the raw D1 label.
+- `strategy_session_offset_min = 61.6` minutes: conservative tick-measured maximum for `XTIUSD.DWX`.
+- `strategy_entry_grace_minutes = 10`, measured tightly around that anchor.
+- `strategy_min_stub_ticks = 20`; a thin weekend/holiday D1 stub consumes
+  the card's original attempt/date/window flat.
+- `strategy_min_attach_ticks = 20` within five minutes after the qualifying
+  tick; failure consumes the original attempt/date/window flat.
+- Preserve this card's existing advance-versus-never-shift semantics exactly.

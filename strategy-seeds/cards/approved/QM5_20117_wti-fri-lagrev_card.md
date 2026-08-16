@@ -8,7 +8,7 @@ status: APPROVED
 g0_status: APPROVED
 created: 2026-07-24
 created_by: Research+Development
-last_updated: 2026-07-24
+last_updated: 2026-08-16
 source_authors: "Andrew C. Meek; Seth A. Hoelscher"
 strategy_mechanic: friday-short-after-4p5pct-thursday-wti-log-surge
 source_citation: "Meek, Andrew C. and Hoelscher, Seth A. (2023). Day-of-the-week effect: Petroleum and petroleum products. Cogent Economics and Finance 11(1), 2213876. DOI 10.1080/23322039.2023.2213876."
@@ -145,7 +145,7 @@ adding a trend/event filter creates a new card.
    `100 * ln(ThursdayClose / WednesdayClose)` and require it to be at least
    `strategy_min_thu_log_return_pct=4.5`.
 5. Require the first observed host tick to be within
-   `strategy_entry_grace_minutes=5` of the Friday D1 open. A late attach
+   `strategy_entry_grace_minutes=10` of the `D1_bar_open + strategy_session_offset_min`. A late attach
    consumes the week and remains flat.
 6. Before fallible history, signal, news, spread, ATR, price, or order checks,
    persist the Friday attempt. Position/deal history and a terminal-global
@@ -193,7 +193,10 @@ hard-stop, stale, or kill-switch exits.
 | parameter | default | authorized values | role |
 |---|---:|---|---|
 | `strategy_min_thu_log_return_pct` | 4.5 | [4.5] | above every Table 2 Friday/lag break-even |
-| `strategy_entry_grace_minutes` | 5 | [5] | first-Friday-tick tolerance |
+| `strategy_session_offset_min` | 61.6 | [61.6] | XTIUSD.DWX tick-measured maximum |
+| `strategy_entry_grace_minutes` | 10 | [10] | tight window around the session-tick anchor |
+| `strategy_min_stub_ticks` | 20 | [20] | reject thin weekend/holiday D1 stubs |
+| `strategy_min_attach_ticks` | 20 | [20] | minimum ticks within 5 minutes of the qualifying tick |
 | `strategy_atr_period` | 20 | [20] | completed-bar stop estimator |
 | `strategy_atr_sl_mult` | 3.0 | [3.0] | frozen hard-stop distance |
 | `strategy_max_hold_days` | 3 | [3] | stale guard only |
@@ -266,3 +269,19 @@ correlation waiver.
 | G0 Research Intake | 2026-07-24 | APPROVED under OWNER mission; R1-R4 PASS | this card |
 | Q01 Build Validation | 2026-07-24 | PASS; compile 0 errors/0 warnings | `docs/ops/evidence/2026-07-24_qm5_20117_wti_fri_lagrev_build_cpu_ceiling_stop.md` |
 | Q02 Baseline Screening | 2026-07-24 | PENDING; not queued at seven-factory CPU ceiling | same evidence |
+
+## OWNER-approved session-tick entry-clock amendment (2026-08-16)
+
+This amendment supersedes every earlier raw-D1-label/five-minute entry-clock
+description in this card. No formation, signal, direction, exit, sizing,
+risk, consumed-attempt, or original advance/never-shift mechanic changes.
+
+- Anchor the qualifying window at
+  `D1_bar_open + strategy_session_offset_min`, not the raw D1 label.
+- `strategy_session_offset_min = 61.6` minutes: conservative tick-measured maximum for `XTIUSD.DWX`.
+- `strategy_entry_grace_minutes = 10`, measured tightly around that anchor.
+- `strategy_min_stub_ticks = 20`; a thin weekend/holiday D1 stub consumes
+  the card's original attempt/date/window flat.
+- `strategy_min_attach_ticks = 20` within five minutes after the qualifying
+  tick; failure consumes the original attempt/date/window flat.
+- Preserve this card's existing advance-versus-never-shift semantics exactly.

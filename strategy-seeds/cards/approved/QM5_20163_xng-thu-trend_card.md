@@ -35,7 +35,7 @@ q02_status: NOT_STARTED
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 review_focus: "Falsify a direct XNG Thursday/negative-trend return stream distinct from the certified RSI2 commodity pullback; no decorrelation claim before Q09."
 g0_approval_reasoning: "OWNER commodity/energy sleeve mission: R1 PASS governed academic weekday and futures-momentum sources; R2 PASS locked Thursday XNG short gated by negative completed 252-D1 return, ATR stop, next-bar exit and consumed week; R3 PASS registered XNGUSD.DWX D1; R4 PASS native deterministic arithmetic onl"
-last_updated: 2026-07-25
+last_updated: 2026-08-16
 ---
 
 # QM5_20163 XNG Thursday Negative-Trend Short
@@ -79,7 +79,10 @@ week are frozen pre-result choices.
 |---|---:|---|
 | `strategy_momentum_lookback_d1` | 252 | [252] |
 | `strategy_min_abs_return_pct` | 0.0 | [0.0] |
-| `strategy_entry_grace_minutes` | 5 | [5] |
+| `strategy_session_offset_min` | 61.6 | [61.6] | UNVERIFIED XNGUSD.DWX estimate inferred from XTIUSD.DWX; independent XNG tick measurement remains required follow-up |
+| `strategy_entry_grace_minutes` | 10 | [10] | tight window around the session-tick anchor |
+| `strategy_min_stub_ticks` | 20 | [20] | reject thin weekend/holiday D1 stubs |
+| `strategy_min_attach_ticks` | 20 | [20] | minimum ticks within 5 minutes of the qualifying tick |
 | `strategy_atr_period` | 20 | [20] |
 | `strategy_atr_sl_mult` | 3.0 | [3.0] |
 | `strategy_max_hold_days` | 2 | [2] |
@@ -128,3 +131,19 @@ binary and full requalification.
 This card permits build, compile, one fixed-risk backtest set, and paced Q02
 enqueue only. It authorizes no manual backtest, live setfile, T_Live action,
 manifest change, portfolio-gate change, or portfolio admission.
+
+## OWNER-approved session-tick entry-clock amendment (2026-08-16)
+
+This amendment supersedes every earlier raw-D1-label/five-minute entry-clock
+description in this card. No formation, signal, direction, exit, sizing,
+risk, consumed-attempt, or original advance/never-shift mechanic changes.
+
+- Anchor the qualifying window at
+  `D1_bar_open + strategy_session_offset_min`, not the raw D1 label.
+- `strategy_session_offset_min = 61.6` minutes: **UNVERIFIED estimate for `XNGUSD.DWX`, inferred from the XTIUSD.DWX measurement**. Independent XNG tick measurement remains a recommended follow-up.
+- `strategy_entry_grace_minutes = 10`, measured tightly around that anchor.
+- `strategy_min_stub_ticks = 20`; a thin weekend/holiday D1 stub consumes
+  the card's original attempt/date/window flat.
+- `strategy_min_attach_ticks = 20` within five minutes after the qualifying
+  tick; failure consumes the original attempt/date/window flat.
+- Preserve this card's existing advance-versus-never-shift semantics exactly.

@@ -11,7 +11,7 @@ execution_contract_ref: strategy-seeds/cards/approved/QM5_41015_xtixng-tue-rv_ca
 execution_contract_status: APPROVED
 created: 2026-08-15
 created_by: Research+Development
-last_updated: 2026-08-15
+last_updated: 2026-08-16
 g0_status: APPROVED
 g0_decision: decisions/2026-08-15_xtixng_tuesday_relative_value_g0.md
 source_approval: decisions/2026-08-15_xtixng_tuesday_relative_value_source_approval.md
@@ -222,7 +222,10 @@ filter, or parameter sweep is authorized.
 | parameter | default | declared range | role |
 |---|---:|---|---|
 | `strategy_entry_dow` | 2 | [2] | broker Tuesday, Sunday=0 |
-| `strategy_entry_grace_minutes` | 5 | [5] | first-tick attachment bound |
+| `strategy_session_offset_min` | 61.6 | [61.6] | XTIUSD.DWX tick-measured maximum; XNGUSD.DWX explicitly UNVERIFIED estimate inferred from XTI |
+| `strategy_entry_grace_minutes` | 10 | [10] | tight window around the session-tick anchor |
+| `strategy_min_stub_ticks` | 20 | [20] | reject thin weekend/holiday D1 stubs |
+| `strategy_min_attach_ticks` | 20 | [20] | minimum ticks within 5 minutes of the qualifying tick |
 | `strategy_exit_hour_broker` | 21 | [21] | same-session normal flatten |
 | `strategy_atr_period` | 20 | [20] | completed D1 hard-stop estimate |
 | `strategy_atr_sl_mult` | 3.5 | [3.5] | frozen per-leg hard-stop distance |
@@ -321,3 +324,19 @@ Research/backtest only. This card does not authorize a manual tester; live,
 demo, shadow, stress, or optimization setfiles; AutoTrading; `T_Live`; a
 deploy or T_Live manifest; portfolio admission; a portfolio-gate edit; or a
 correlation waiver.
+
+## OWNER-approved session-tick entry-clock amendment (2026-08-16)
+
+This amendment supersedes every earlier raw-D1-label/five-minute entry-clock
+description in this card. No formation, signal, direction, exit, sizing,
+risk, consumed-attempt, or original advance/never-shift mechanic changes.
+
+- Anchor the qualifying window at
+  `D1_bar_open + strategy_session_offset_min`, not the raw D1 label.
+- `strategy_session_offset_min = 61.6` minutes: tick-measured conservative maximum for `XTIUSD.DWX`; the identical `XNGUSD.DWX` value is an **UNVERIFIED estimate inferred from XTI**, not a measurement.
+- `strategy_entry_grace_minutes = 10`, measured tightly around that anchor.
+- `strategy_min_stub_ticks = 20`; a thin weekend/holiday D1 stub consumes
+  the card's original attempt/date/window flat.
+- `strategy_min_attach_ticks = 20` within five minutes after the qualifying
+  tick; failure consumes the original attempt/date/window flat.
+- Preserve this card's existing advance-versus-never-shift semantics exactly.

@@ -205,7 +205,10 @@ synchronized and the previous completed host bar must be Tuesday.
 |---|---:|---:|---|
 | `strategy_xng_symbol` | `XNGUSD.DWX` | locked | paired symbol |
 | `strategy_entry_dow` | 3 | 3 | broker Wednesday, Sunday=0 |
-| `strategy_entry_grace_minutes` | 5 | 5 | first-tick tolerance |
+| `strategy_session_offset_min` | 61.6 | [61.6] | XTIUSD.DWX tick-measured maximum; XNGUSD.DWX explicitly UNVERIFIED estimate inferred from XTI |
+| `strategy_entry_grace_minutes` | 10 | [10] | tight window around the session-tick anchor |
+| `strategy_min_stub_ticks` | 20 | [20] | reject thin weekend/holiday D1 stubs |
+| `strategy_min_attach_ticks` | 20 | [20] | minimum ticks within 5 minutes of the qualifying tick |
 | `strategy_atr_period_d1` | 20 | 20 | completed D1 stop estimate |
 | `strategy_atr_sl_mult` | 3.5 | 3.5 | frozen per-leg stop distance |
 | `strategy_exit_hour_broker` | 21 | 21 | Wednesday package close |
@@ -283,3 +286,19 @@ This card authorizes one branch-only non-live build, strict Q01, one
 manual backtest, live/demo/shadow/stress/optimization setfile, AutoTrading,
 `T_Live`, deploy/T_Live manifest, portfolio admission, portfolio-gate change,
 or correlation waiver.
+
+## OWNER-approved session-tick entry-clock amendment (2026-08-16)
+
+This amendment supersedes every earlier raw-D1-label/five-minute entry-clock
+description in this card. No formation, signal, direction, exit, sizing,
+risk, consumed-attempt, or original advance/never-shift mechanic changes.
+
+- Anchor the qualifying window at
+  `D1_bar_open + strategy_session_offset_min`, not the raw D1 label.
+- `strategy_session_offset_min = 61.6` minutes: tick-measured conservative maximum for `XTIUSD.DWX`; the identical `XNGUSD.DWX` value is an **UNVERIFIED estimate inferred from XTI**, not a measurement.
+- `strategy_entry_grace_minutes = 10`, measured tightly around that anchor.
+- `strategy_min_stub_ticks = 20`; a thin weekend/holiday D1 stub consumes
+  the card's original attempt/date/window flat.
+- `strategy_min_attach_ticks = 20` within five minutes after the qualifying
+  tick; failure consumes the original attempt/date/window flat.
+- Preserve this card's existing advance-versus-never-shift semantics exactly.

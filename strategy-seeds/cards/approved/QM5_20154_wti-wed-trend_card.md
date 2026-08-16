@@ -81,7 +81,10 @@ weekly attempt are frozen pre-result QM execution choices.
 |---|---:|---|
 | `strategy_momentum_lookback_d1` | 252 | [252] |
 | `strategy_min_abs_return_pct` | 0.0 | [0.0] |
-| `strategy_entry_grace_minutes` | 5 | [5] |
+| `strategy_session_offset_min` | 61.6 | [61.6] | XTIUSD.DWX tick-measured maximum |
+| `strategy_entry_grace_minutes` | 10 | [10] | tight window around the session-tick anchor |
+| `strategy_min_stub_ticks` | 20 | [20] | reject thin weekend/holiday D1 stubs |
+| `strategy_min_attach_ticks` | 20 | [20] | minimum ticks within 5 minutes of the qualifying tick |
 | `strategy_atr_period` | 20 | [20] |
 | `strategy_atr_sl_mult` | 3.0 | [3.0] |
 | `strategy_max_hold_days` | 2 | [2] |
@@ -133,3 +136,19 @@ This approval covers the card, deterministic allocation, compile, one
 RISK_FIXED backtest setfile, and paced Q02 enqueue. It authorizes no manual
 backtest, live setfile, T_Live or AutoTrading action, deploy/T_Live manifest,
 portfolio-gate change, portfolio admission, or correlation claim.
+
+## OWNER-approved session-tick entry-clock amendment (2026-08-16)
+
+This amendment supersedes every earlier raw-D1-label/five-minute entry-clock
+description in this card. No formation, signal, direction, exit, sizing,
+risk, consumed-attempt, or original advance/never-shift mechanic changes.
+
+- Anchor the qualifying window at
+  `D1_bar_open + strategy_session_offset_min`, not the raw D1 label.
+- `strategy_session_offset_min = 61.6` minutes: conservative tick-measured maximum for `XTIUSD.DWX`.
+- `strategy_entry_grace_minutes = 10`, measured tightly around that anchor.
+- `strategy_min_stub_ticks = 20`; a thin weekend/holiday D1 stub consumes
+  the card's original attempt/date/window flat.
+- `strategy_min_attach_ticks = 20` within five minutes after the qualifying
+  tick; failure consumes the original attempt/date/window flat.
+- Preserve this card's existing advance-versus-never-shift semantics exactly.
