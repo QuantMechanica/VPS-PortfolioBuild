@@ -85,3 +85,4 @@ authorized.
 |---|---|---|---|
 | v1 | 2026-08-16 | initial approved build scaffold | G0 approved |
 | v1-build | 2026-08-16 | deterministic implementation | magic/resolver verified; strict compile and build check PASS |
+| v1-queue | 2026-08-16 | Q02 baseline enqueue | one fixed-risk XTIUSD.DWX D1 work item pending |

@@ -141,3 +141,4 @@ risk mode, or nonpositive governed economics.
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial month-boundary dual-horizon extraction | G0 | APPROVED |
 | v1-build | 2026-08-16 | deterministic V5 implementation and strict validation | Q01 | PASS |
+| v1-queue | 2026-08-16 | first canonical fixed-risk baseline work item | Q02 | ENQUEUED |

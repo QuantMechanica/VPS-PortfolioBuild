@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-08-16T09:37:51+00:00",
+  "branch": "agents/board-advisor",
+  "mission": "new_structural_commodity_energy_sleeve",
+  "decision": "BUILD_AND_ENQUEUE_NEW_WTI_DUAL_HORIZON_MOMENTUM",
+  "candidate": {
+    "ea_id": "QM5_41021",
+    "slug": "wti-mdual-mom",
+    "strategy_id": "MOP-WTI-MDUAL-MOM-2026_S01",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "g0_status": "APPROVED",
+    "magic_slot": 0,
+    "magic": 410210000,
+    "build_commit": "95f0cedf628bc46f3dbad60cf13ac23f6be21eb7",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "q01": {
+    "compile_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_log": "C:/QM/repo/framework/build/compile/20260816_093059/QM5_41021_wti-mdual-mom.compile.log",
+    "build_check_result": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260816_093059.json",
+    "reference_tests_passed": 8,
+    "p1_result": "PASS",
+    "p1_evidence": "D:/QM/reports/pipeline/QM5_41021/P1/P1_QM5_41021_result.json"
+  },
+  "artifact_sha256": {
+    "bounded_source_packet": "3856D9680C207E3306416156C6C96673654C773BDB0BA41CAA1A64717244A469",
+    "parent_source_review": "C8B07ECD62C1D5EF9E3D7975EEE6A3B6C46C1C566D0B20B42237613D9B3A7042",
+    "source_approval": "2EB5FE6918FA226A2344942663C98ECC5062021B535B48FA2F3CC6DE4D26264B",
+    "g0_decision": "5D702C2B3812941FD2BC8E5062580119845A9C4FBC0BC68369AF2E9921CD2E16",
+    "canonical_approved_build_card": "320826E5CCB71F2594275FD101697ABDC5E410B1AFA80BB197CB5919E05D3751",
+    "mq5": "BE87538C04026EE20098A0F84E09B2851A6161FCD3F796B3D7BE536130785024",
+    "ex5": "57DB97F8580CC69E44407E204178D18D42CF54FFF62AA4D3AEB5218943AE3A17",
+    "spec": "A6C585B222E00C68D2FDA5BEE1EEBD26F01CE2E57149215738E1DDC481F4BEBD",
+    "reference_suite": "678F92EC8B23879D218AC33313142BC6519647BBAC3F0E336BA7076B86874FD6",
+    "backtest_set": "FA91B0500B1E2DD4DD2394414ADF8D2BD17CFE261E33E87A6BE5659642A1B9FD",
+    "magic_resolver": "77FB8636694307F0AFF9239C66AE2EFBB2ADB53B8BC8C7B2AC4B4F4468EF1A8A"
+  },
+  "capacity_preapply": {
+    "scanned_at_utc": "2026-08-16T09:37:01.7523650+00:00",
+    "running_factory_terminals": ["T5", "T7", "T8"],
+    "running_factory_count": 3,
+    "ceiling": 7,
+    "below_ceiling": true,
+    "t_live_excluded": true,
+    "unrelated_ftmo_terminal_excluded": true
+  },
+  "enqueue": {
+    "dry_run_selected_rows": 1,
+    "dry_run_skipped_rows": 0,
+    "selector": "python tools/strategy_farm/sweep_enqueue_built_eas.py --apply --ea QM5_41021 --symbols XTIUSD.DWX --max-part2-per-run 0",
+    "pending_before": 965,
+    "queue_ceiling": 7000,
+    "selected_rows": 1,
+    "priority_track": true,
+    "work_item_id": "d23c5d11-4bd5-409f-9927-ab9683dbee15",
+    "phase": "Q02",
+    "kind": "backtest",
+    "created_at_utc": "2026-08-16T09:37:01+00:00",
+    "status_at_verification": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "verdict": null
+  },
+  "capacity_postenqueue": {
+    "scanned_at_utc": "2026-08-16T09:37:51.2592743+00:00",
+    "running_factory_terminals": ["T5", "T7", "T8", "T9"],
+    "running_factory_count": 4,
+    "ceiling": 7,
+    "below_ceiling": true
+  },
+  "safety": {
+    "manual_backtest_started": false,
+    "pipeline_phase_runner_started": false,
+    "dispatch_tick_run": false,
+    "terminal_control_performed": false,
+    "autotrading_changed": false,
+    "t_live_changed": false,
+    "portfolio_gate_changed": false,
+    "live_artifact_created": false
+  }
+}
