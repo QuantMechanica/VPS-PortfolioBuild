@@ -1,144 +1,157 @@
 {
-  "schema": "qm.near-miss-register/v1",
-  "window_hours": 72,
-  "tolerance_pct": 5.0,
-  "policy": "priority list for targeted rework waves; gates are NOT overridden (OWNER DL territory)",
-  "count": 8,
-  "entries": [
-    {
-      "kind": "walkforward_folds",
-      "value": 1.0,
-      "floor": 1.0,
-      "gap_pct": 0.0,
-      "folds": [
-        1.05,
-        1.0,
-        1.15
-      ],
-      "work_item": "c334e45c-9555-4336-a6f7-cd3aa2ffb45a",
-      "ea": "QM5_10132",
-      "symbol": "XAUUSD.DWX",
-      "phase": "Q04",
-      "verdict": "FAIL",
-      "at": "2026-08-16T05:51:23",
-      "reason": "F1:pf_net=1.050;F2:pf_net=1.000;F3:pf_net=1.150"
-    },
-    {
-      "kind": "pf_below_floor",
-      "value": 1.0,
-      "floor": 1.0,
-      "gap_pct": 0.0,
-      "work_item": "99d1aadd-363f-46aa-8c2d-0fafe5002b37",
-      "ea": "QM5_21504",
-      "symbol": "XNGUSD.DWX",
-      "phase": "Q05",
-      "verdict": "FAIL",
-      "at": "2026-08-14T18:22:28",
-      "reason": "pf_below_floor:pf=1.000:floor=1.0"
-    },
-    {
-      "kind": "pf_below_floor",
-      "value": 0.99,
-      "floor": 1.0,
-      "gap_pct": 1.0,
-      "work_item": "d0049c13-0245-4851-b036-ca1d266ea026",
-      "ea": "QM5_10714",
-      "symbol": "XAUUSD.DWX",
-      "phase": "Q06",
-      "verdict": "FAIL",
-      "at": "2026-08-16T11:09:20",
-      "reason": "pf_below_floor:pf=0.990:floor=1.0"
-    },
-    {
-      "kind": "walkforward_folds",
-      "value": 0.988,
-      "floor": 1.0,
-      "gap_pct": 1.2,
-      "folds": [
-        1.051,
-        0.988,
-        1.107
-      ],
-      "work_item": "7542c68a-c37a-4dba-ada5-d120e911ed2d",
-      "ea": "QM5_9940",
-      "symbol": "EURJPY.DWX",
-      "phase": "Q04",
-      "verdict": "FAIL",
-      "at": "2026-08-16T05:59:15",
-      "reason": "F1:pf_net=1.051;F2:pf_net=0.988;F3:pf_net=1.107"
-    },
-    {
-      "kind": "walkforward_folds",
-      "value": 0.98,
-      "floor": 1.0,
-      "gap_pct": 2.0,
-      "folds": [
-        1.05,
-        0.98,
-        1.05
-      ],
-      "work_item": "fb7864f2-a993-467f-9114-cc44485ee2db",
-      "ea": "QM5_10242",
-      "symbol": "XAUUSD.DWX",
-      "phase": "Q04",
-      "verdict": "FAIL",
-      "at": "2026-08-16T09:58:49",
-      "reason": "F1:pf_net=1.050;F2:pf_net=0.980;F3:pf_net=1.050"
-    },
-    {
-      "kind": "walkforward_folds",
-      "value": 0.97,
-      "floor": 1.0,
-      "gap_pct": 3.0,
-      "folds": [
-        0.97,
-        1.03,
-        1.13
-      ],
-      "work_item": "f3f80981-0c0d-438b-9f5a-ed2ebab0310d",
-      "ea": "QM5_1638",
-      "symbol": "XAUUSD.DWX",
-      "phase": "Q04",
-      "verdict": "FAIL",
-      "at": "2026-08-16T06:05:48",
-      "reason": "F1:pf_net=0.970;F2:pf_net=1.030;F3:pf_net=1.130"
-    },
-    {
-      "kind": "walkforward_folds",
-      "value": 0.97,
-      "floor": 1.0,
-      "gap_pct": 3.0,
-      "folds": [
-        0.97,
-        1.0,
-        1.12
-      ],
-      "work_item": "c03316b9-a919-49c3-a39d-44b657e0b0cc",
-      "ea": "QM5_10515",
-      "symbol": "XAUUSD.DWX",
-      "phase": "Q04",
-      "verdict": "FAIL",
-      "at": "2026-08-15T23:47:55",
-      "reason": "F1:pf_net=0.970;F2:pf_net=1.000;F3:pf_net=1.120"
-    },
-    {
-      "kind": "walkforward_folds",
-      "value": 0.97,
-      "floor": 1.0,
-      "gap_pct": 3.0,
-      "folds": [
-        1.05,
-        0.97,
-        1.1
-      ],
-      "work_item": "479a2c88-aee9-4e3b-a6c7-13aba98886fe",
-      "ea": "QM5_10501",
-      "symbol": "XAUUSD.DWX",
-      "phase": "Q04",
-      "verdict": "FAIL",
-      "at": "2026-08-15T23:45:47",
-      "reason": "F1:pf_net=1.050;F2:pf_net=0.970;F3:pf_net=1.100"
-    }
-  ],
-  "repeat_offenders": {}
+ "schema": "qm.near-miss-register/v1",
+ "window_hours": 72,
+ "tolerance_pct": 5.0,
+ "policy": "priority list for targeted rework waves; gates are NOT overridden (OWNER DL territory)",
+ "count": 9,
+ "entries": [
+  {
+   "kind": "walkforward_folds",
+   "value": 1.0,
+   "floor": 1.0,
+   "gap_pct": 0.0,
+   "folds": [
+    1.05,
+    1.0,
+    1.15
+   ],
+   "work_item": "c334e45c-9555-4336-a6f7-cd3aa2ffb45a",
+   "ea": "QM5_10132",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-16T05:51:23",
+   "reason": "F1:pf_net=1.050;F2:pf_net=1.000;F3:pf_net=1.150"
+  },
+  {
+   "kind": "pf_below_floor",
+   "value": 1.0,
+   "floor": 1.0,
+   "gap_pct": 0.0,
+   "work_item": "99d1aadd-363f-46aa-8c2d-0fafe5002b37",
+   "ea": "QM5_21504",
+   "symbol": "XNGUSD.DWX",
+   "phase": "Q05",
+   "verdict": "FAIL",
+   "at": "2026-08-14T18:22:28",
+   "reason": "pf_below_floor:pf=1.000:floor=1.0"
+  },
+  {
+   "kind": "pf_below_floor",
+   "value": 0.99,
+   "floor": 1.0,
+   "gap_pct": 1.0,
+   "work_item": "d0049c13-0245-4851-b036-ca1d266ea026",
+   "ea": "QM5_10714",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q06",
+   "verdict": "FAIL",
+   "at": "2026-08-16T11:09:20",
+   "reason": "pf_below_floor:pf=0.990:floor=1.0"
+  },
+  {
+   "kind": "walkforward_folds",
+   "value": 0.988,
+   "floor": 1.0,
+   "gap_pct": 1.2,
+   "folds": [
+    1.051,
+    0.988,
+    1.107
+   ],
+   "work_item": "7542c68a-c37a-4dba-ada5-d120e911ed2d",
+   "ea": "QM5_9940",
+   "symbol": "EURJPY.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-16T05:59:15",
+   "reason": "F1:pf_net=1.051;F2:pf_net=0.988;F3:pf_net=1.107"
+  },
+  {
+   "kind": "walkforward_folds",
+   "value": 0.98,
+   "floor": 1.0,
+   "gap_pct": 2.0,
+   "folds": [
+    1.05,
+    0.98,
+    1.05
+   ],
+   "work_item": "fb7864f2-a993-467f-9114-cc44485ee2db",
+   "ea": "QM5_10242",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-16T09:58:49",
+   "reason": "F1:pf_net=1.050;F2:pf_net=0.980;F3:pf_net=1.050"
+  },
+  {
+   "kind": "walkforward_folds",
+   "value": 0.97,
+   "floor": 1.0,
+   "gap_pct": 3.0,
+   "folds": [
+    0.97,
+    1.03,
+    1.13
+   ],
+   "work_item": "f3f80981-0c0d-438b-9f5a-ed2ebab0310d",
+   "ea": "QM5_1638",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-16T06:05:48",
+   "reason": "F1:pf_net=0.970;F2:pf_net=1.030;F3:pf_net=1.130"
+  },
+  {
+   "kind": "walkforward_folds",
+   "value": 0.97,
+   "floor": 1.0,
+   "gap_pct": 3.0,
+   "folds": [
+    0.97,
+    1.0,
+    1.12
+   ],
+   "work_item": "c03316b9-a919-49c3-a39d-44b657e0b0cc",
+   "ea": "QM5_10515",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-15T23:47:55",
+   "reason": "F1:pf_net=0.970;F2:pf_net=1.000;F3:pf_net=1.120"
+  },
+  {
+   "kind": "walkforward_folds",
+   "value": 0.97,
+   "floor": 1.0,
+   "gap_pct": 3.0,
+   "folds": [
+    1.05,
+    0.97,
+    1.1
+   ],
+   "work_item": "479a2c88-aee9-4e3b-a6c7-13aba98886fe",
+   "ea": "QM5_10501",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q04",
+   "verdict": "FAIL",
+   "at": "2026-08-15T23:45:47",
+   "reason": "F1:pf_net=1.050;F2:pf_net=0.970;F3:pf_net=1.100"
+  },
+  {
+   "kind": "pf_below_floor",
+   "value": 0.98,
+   "floor": 1.0,
+   "gap_pct": 2.0,
+   "work_item": "dd400099-7183-4f7a-bfa3-5ff166a3a42b",
+   "ea": "QM5_20082",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q06",
+   "verdict": "FAIL",
+   "at": "2026-08-16T22:51:50",
+   "reason": "pf_below_floor:pf=0.980:floor=1.0"
+  }
+ ],
+ "repeat_offenders": {}
 }
