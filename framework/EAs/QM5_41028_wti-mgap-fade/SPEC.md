@@ -113,3 +113,4 @@ changes, portfolio admission, and correlation waivers.
 |---|---|---|---|
 | v1 | 2026-08-16 | initial approved build scaffold | G0 approved |
 | v1-build | 2026-08-16 | deterministic implementation | Q01 PASS |
+| v1-q02-hold | 2026-08-16 | paced handoff stopped before queue commands | Q02 NOT_ENQUEUED; 8 factory testers exceeded the 7-terminal ceiling |

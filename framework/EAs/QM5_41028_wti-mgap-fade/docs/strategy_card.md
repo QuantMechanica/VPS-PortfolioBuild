@@ -336,6 +336,7 @@ pipeline requalification.
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial WTI month-boundary gap-fade extraction | G0 | APPROVED |
 | v1-build | 2026-08-16 | deterministic V5 implementation and strict validation | Q01 | PASS |
+| v1-q02-hold | 2026-08-16 | paced handoff stopped before queue commands at the 8-terminal tester CPU ceiling | Q02 | NOT_ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -343,7 +344,7 @@ pipeline requalification.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-16 | APPROVED | `decisions/2026-08-16_wti_month_boundary_gap_fade_g0.md` |
 | Q01 Build Validation | 2026-08-16 | PASS | strict compile `framework/build/compile/20260816_180551/QM5_41028_wti-mgap-fade.compile.log`; build check `D:/QM/reports/framework/21/build_check_20260816_180637.json`; static P1 `D:/QM/reports/pipeline/QM5_41028/P1/P1_QM5_41028_result.json`; eight reference tests PASS |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | Q01 must pass first |
+| Q02 Baseline Screening | 2026-08-16 | NOT_ENQUEUED; stopped at the 8-terminal tester CPU ceiling | `docs/ops/evidence/2026-08-16_qm5_41028_wti_mgap_fade_q01_cpu_ceiling_stop.md` |
 
 ## Safety Boundary
 
