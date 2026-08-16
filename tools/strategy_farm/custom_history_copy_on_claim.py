@@ -72,13 +72,42 @@ def _archive_symbol(relative_path: str) -> str | None:
     return parts[1].upper()
 
 
+# One validated symbol index per manifest OBJECT (2026-08-16 regression fix).
+# The admission gate (commit 7df940703) calls this once per card during the
+# router's ready-card inventory; each call re-validated all 3946 manifest rows
+# and re-parsed every relative_path, so agent_router froze on the 600s wall
+# clock every run from ~03:42 and the whole agent lane stopped dispatching.
+# Memoization only: a DIFFERENT manifest object is still fully validated, so
+# the fail-closed contract is unchanged. The cache pins its key object, which
+# keeps id() stable, and holds exactly one entry (the active manifest).
+_VALIDATED_INDEX_CACHE: dict[int, tuple[Mapping[str, Any], dict[str, list[tuple[int, dict[str, Any]]]]]] = {}
+
+
+def _validated_symbol_index(
+    manifest: Mapping[str, Any],
+) -> dict[str, list[tuple[int, dict[str, Any]]]]:
+    cached = _VALIDATED_INDEX_CACHE.get(id(manifest))
+    if cached is not None and cached[0] is manifest:
+        return cached[1]
+    validated = validate_manifest(manifest, require_owner_approval=True)
+    index: dict[str, list[tuple[int, dict[str, Any]]]] = {}
+    for position, source_row in enumerate(validated["files"]):
+        symbol = _archive_symbol(str(source_row["relative_path"]))
+        if symbol is None:
+            continue
+        index.setdefault(symbol, []).append((position, dict(source_row)))
+    _VALIDATED_INDEX_CACHE.clear()
+    _VALIDATED_INDEX_CACHE[id(manifest)] = (manifest, index)
+    return index
+
+
 def select_archive_rows_for_symbols(
     manifest: Mapping[str, Any],
     symbols: Sequence[object],
 ) -> tuple[list[dict[str, Any]], list[str], list[str]]:
     """Return canonical manifest rows for the real Custom symbols in a claim."""
 
-    validated = validate_manifest(manifest, require_owner_approval=True)
+    index = _validated_symbol_index(manifest)
     requested = _unique_symbols(symbols)
     # Synthetic basket labels and broker symbols do not name Custom archive
     # directories.  The farm's governed history surface is the .DWX set.
@@ -91,14 +120,17 @@ def select_archive_rows_for_symbols(
 
     wanted = set(selected_symbols)
     matched: set[str] = set()
-    rows: list[dict[str, Any]] = []
-    for source_row in validated["files"]:
-        row = dict(source_row)
-        symbol = _archive_symbol(str(row["relative_path"]))
-        if symbol not in wanted:
+    positioned: list[tuple[int, dict[str, Any]]] = []
+    for symbol in wanted:
+        symbol_rows = index.get(symbol)
+        if not symbol_rows:
             continue
         matched.add(symbol)
-        rows.append(row)
+        positioned.extend(symbol_rows)
+    # Manifest order is preserved via the recorded positions, so callers see
+    # exactly the sequence the pre-index implementation produced.
+    positioned.sort(key=lambda item: item[0])
+    rows: list[dict[str, Any]] = [dict(row) for _, row in positioned]
 
     missing = sorted(wanted - matched)
     if missing:

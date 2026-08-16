@@ -2852,6 +2852,26 @@ CUSTOM_HISTORY_ARCHIVE_ADMISSION_INVALID = (
 )
 
 
+# Re-reading and re-validating the activation record + 3946-row manifest for
+# EVERY admission call froze agent_router on its 600s wall clock once the gate
+# went live (2026-08-16: 204 ms/card x 3272 approved cards = 668s per pass, of
+# which 99% was this loader). Cache the pair by the on-disk identity of BOTH
+# files; any change to either forces a full fail-closed reload.
+_ACTIVE_ARCHIVE_MANIFEST_CACHE: dict[
+    tuple[str, int, int],
+    tuple[tuple[str, int, int] | None, tuple[dict[str, Any] | None, dict[str, Any]]],
+] = {}
+
+
+def _file_identity(path: Path) -> tuple[str, int, int] | None:
+    """(path, size, mtime_ns) or None when the file cannot be stat-ed."""
+    try:
+        stat = path.stat()
+    except OSError:
+        return None
+    return (str(path), int(stat.st_size), int(stat.st_mtime_ns))
+
+
 def _load_active_custom_history_archive_manifest(
     root: Path,
 ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
@@ -2863,6 +2883,20 @@ def _load_active_custom_history_archive_manifest(
     except ModuleNotFoundError:  # pragma: no cover - package import path
         from tools.strategy_farm import custom_history_contract, custom_history_gate
 
+    # Both loaders re-validate their whole payload (the activation record alone
+    # costs ~0.49s because validate_activation re-walks the manifest), so the
+    # cache has to sit ABOVE load_activation, not between it and load_manifest.
+    # Identity = the two files on disk; either one changing forces a full
+    # fail-closed reload, so the contract is unchanged.
+    activation_file = custom_history_gate.activation_path(root)
+    identity = _file_identity(activation_file)
+    if identity is not None:
+        cached = _ACTIVE_ARCHIVE_MANIFEST_CACHE.get(identity)
+        if cached is not None:
+            manifest_identity, result = cached
+            if _file_identity(Path(str(result[1].get("manifest_path") or ""))) == manifest_identity:
+                return result
+
     activation = custom_history_gate.load_activation(root)
     if activation is None:
         return None, {"required": False, "status": "NOT_ACTIVE"}
@@ -2871,13 +2905,23 @@ def _load_active_custom_history_archive_manifest(
         manifest_path,
         require_owner_approval=True,
     )
-    return manifest, {
-        "required": True,
-        "status": "ACTIVE",
-        "activation_sha256": str(activation.get("activation_sha256") or ""),
-        "manifest_path": str(manifest_path),
-        "manifest_sha256": str(manifest.get("manifest_sha256") or ""),
-    }
+    result = (
+        manifest,
+        {
+            "required": True,
+            "status": "ACTIVE",
+            "activation_sha256": str(activation.get("activation_sha256") or ""),
+            "manifest_path": str(manifest_path),
+            "manifest_sha256": str(manifest.get("manifest_sha256") or ""),
+        },
+    )
+    if identity is not None:
+        _ACTIVE_ARCHIVE_MANIFEST_CACHE.clear()
+        _ACTIVE_ARCHIVE_MANIFEST_CACHE[identity] = (
+            _file_identity(manifest_path),
+            result,
+        )
+    return result
 
 
 def _custom_history_admission_symbols(
