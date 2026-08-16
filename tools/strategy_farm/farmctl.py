@@ -1108,7 +1108,12 @@ def pending_claim_order_sql() -> str:
             WHEN 'P2'   THEN 9
             ELSE 9 END AS _phase_rank,
           CASE
-            WHEN w.phase='Q02' AND w.payload_json LIKE '%"portfolio_scope": "basket"%' THEN 0
+            WHEN w.phase='Q02'
+             AND json_valid(w.payload_json)=1
+             AND lower(trim(COALESCE(
+               json_extract(w.payload_json, '$.portfolio_scope'), ''
+             )))='basket'
+            THEN 0
             ELSE 1 END AS _basket_q02_rank,
           CASE
             -- Within an otherwise-equal downstream tier, preserve ordinary

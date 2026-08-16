@@ -233,6 +233,22 @@ class SharedOrderingTests(unittest.TestCase):
     def test_priority_track_invalid_json_fails_closed_without_error(self) -> None:
         self._assert_payload_priority('{"priority_track": true', expected=False)
 
+    def test_compact_json_basket_q02_gets_basket_rank(self) -> None:
+        db = _FarmDB()
+        self.addCleanup(db.close)
+        db.insert(
+            "compact-basket",
+            "Q02",
+            "QM5_TEST_AAA_BBB_COINTEGRATION_H1",
+            raw_payload_json='{"portfolio_scope":"basket","priority_track":true}',
+        )
+        with closing(db.conn()) as conn:
+            rows = {
+                row["id"]: row
+                for row in conn.execute(farmctl.pending_claim_order_sql()).fetchall()
+            }
+        self.assertEqual(rows["compact-basket"]["_basket_q02_rank"], 0)
+
 
 class RecoveryCapPrimitiveTests(unittest.TestCase):
     def test_cap_holds_one_in_five_while_frontier_has_work(self) -> None:
