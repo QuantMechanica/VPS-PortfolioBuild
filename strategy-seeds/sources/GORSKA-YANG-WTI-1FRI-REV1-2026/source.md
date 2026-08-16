@@ -140,3 +140,4 @@ economics.
 | version | date | event | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-16 | bounded composite source extraction | G0 | APPROVED_SOURCE |
+| v1-build | 2026-08-16 | first-Friday reversal EA, fixed-risk setfile, strict compile/build check, and static artifact validation | Q01 | PASS |
