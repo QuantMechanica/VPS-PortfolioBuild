@@ -1,3 +1,12 @@
+"""Contract tests for the FTMO trial pulse.
+
+The four PARKED-branch tests below pass ``expected_state="PARKED"`` explicitly.
+They used to rely on the module default, which OWNER changed from PARKED to
+RUNNING on 2026-08-13 when the demo was ratified as running -- so all four went
+red and stayed red. A branch test must pin the branch it tests, not inherit
+whatever the current operational default happens to be; a permanently red test
+in the live-monitoring suite trains everyone to ignore red.
+"""
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -43,7 +52,9 @@ def test_snapshot_age_rejects_invalid_timestamp() -> None:
 def test_expected_state_parked_off_is_ok() -> None:
     now = datetime(2026, 7, 28, tzinfo=timezone.utc)
 
-    state = ftmo_trial_pulse.assess_expected_state(terminal_up=False, now=now)
+    state = ftmo_trial_pulse.assess_expected_state(
+        terminal_up=False, now=now, expected_state="PARKED"
+    )
 
     assert state["expected_state"] == "PARKED"
     assert state["condition"] == "parked_terminal_stopped"
@@ -57,6 +68,7 @@ def test_expected_state_parked_running_without_qm_magics_is_ok() -> None:
         terminal_up=True,
         now=now,
         magics_seen=0,
+        expected_state="PARKED",
     )
 
     assert state["condition"] == "parked_terminal_running_no_qm_trading"
@@ -70,6 +82,7 @@ def test_expected_state_parked_running_with_qm_magic_is_alarm() -> None:
         terminal_up=True,
         now=now,
         magics_seen=1,
+        expected_state="PARKED",
     )
 
     assert state["condition"] == "parked_qm_trading_active"
@@ -79,7 +92,9 @@ def test_expected_state_parked_running_with_qm_magic_is_alarm() -> None:
 def test_expected_state_parked_running_fails_closed_on_unknown_magic_probe() -> None:
     now = datetime(2026, 7, 28, tzinfo=timezone.utc)
 
-    state = ftmo_trial_pulse.assess_expected_state(terminal_up=True, now=now)
+    state = ftmo_trial_pulse.assess_expected_state(
+        terminal_up=True, now=now, expected_state="PARKED"
+    )
 
     assert state["condition"] == "parked_magic_probe_unknown"
     assert state["alarm"] == "ftmo_parked_magic_probe_unknown"

@@ -68,15 +68,52 @@ def _parse_utc(value: object) -> dt.datetime | None:
     return parsed.astimezone(UTC)
 
 
+class JsonLoadError(Exception):
+    """A JSON load that failed, carrying the path that actually failed.
+
+    The top-level handler used to report ``args.alarm_file`` as the source of any
+    exception. On 2026-08-17 that misdirection cost about 45 hours of silence: the
+    real failure was the consumer-state file, the error named the alarm file, and
+    anyone checking the named file found it perfectly healthy.
+    """
+
+    def __init__(self, path: Path, cause: Exception) -> None:
+        super().__init__(f"{type(cause).__name__}: {cause} ({path})")
+        self.path = path
+        self.cause = cause
+
+
 def _load_json(path: Path, *, required: bool = False) -> dict[str, Any]:
     if not path.is_file():
         if required:
             raise FileNotFoundError(path)
         return {}
-    value = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError, OSError) as exc:
+        raise JsonLoadError(path, exc) from exc
     if not isinstance(value, dict):
-        raise ValueError(f"JSON root must be an object: {path}")
+        raise JsonLoadError(path, ValueError("JSON root must be an object"))
     return value
+
+
+def _load_consumer_state(path: Path) -> tuple[dict[str, Any], str | None]:
+    """Load a 'what did I already send' cache, tolerating corruption.
+
+    This file is not an input to the alarm decision -- it only suppresses repeats.
+    Losing it can therefore cause at most one duplicate page, while refusing to
+    read it takes the whole channel down. Those two failure modes are not
+    comparable for a live-trading alarm, so corruption degrades to "nothing sent
+    yet" and is reported in the event rather than raised.
+
+    Found 2026-08-17: live_alarm_mailer_state.json held 643 NUL bytes (metadata
+    committed, data never flushed). Every run since 2026-08-15T02:45Z had aborted
+    on it, so the T_Live alarm channel was dead while the book traded.
+    """
+    try:
+        return _load_json(path), None
+    except JsonLoadError as exc:
+        return {}, f"{type(exc.cause).__name__}: {exc.cause}"
 
 
 def _atomic_write_json(path: Path, value: dict[str, Any]) -> None:
@@ -323,7 +360,7 @@ def process_once(
     sender: Sender = _send_mail_with_retries,
 ) -> dict[str, Any]:
     source = _load_json(alarm_file, required=True)
-    previous = _load_json(consumer_state_file)
+    previous, consumer_state_degraded = _load_consumer_state(consumer_state_file)
     decision, alerts, next_state = _decide(
         source,
         previous,
@@ -339,6 +376,11 @@ def process_once(
         "alert_count": len(alerts),
         "dry_run": dry_run,
     }
+    if consumer_state_degraded is not None:
+        # visible, but never fatal: a lost repeat-suppression cache can only
+        # duplicate a page, and a duplicate page beats a silent channel
+        event["consumer_state_reset"] = str(consumer_state_file)
+        event["consumer_state_error"] = consumer_state_degraded
 
     if decision in {"RAISE", "CLEAR", "ESCALATION"}:
         subject, text_body, html_body = _build_mail(decision, alerts, source, now)
@@ -431,7 +473,7 @@ def process_morning_safety_once(
     run_id = str(safety.get("generated_utc") or "")
     if not run_id:
         raise ValueError("morning safety state is missing generated_utc")
-    previous = _load_json(mail_state_file)
+    previous, mail_state_degraded = _load_consumer_state(mail_state_file)
     event: dict[str, Any] = {
         "ts": _utc_stamp(now),
         "decision": "NONE",
@@ -440,6 +482,9 @@ def process_morning_safety_once(
         "failure_count": len(failures),
         "dry_run": dry_run,
     }
+    if mail_state_degraded is not None:
+        event["consumer_state_reset"] = str(mail_state_file)
+        event["consumer_state_error"] = mail_state_degraded
     if not failures:
         _append_log(log_file, event)
         return event
@@ -517,12 +562,18 @@ def main(argv: list[str] | None = None) -> int:
                 dry_run=args.dry_run,
             )
     except Exception as exc:
+        # name the file that ACTUALLY failed. Reporting args.alarm_file for every
+        # exception sent the 2026-08-17 investigation to a healthy file and let a
+        # dead alarm channel look like a puzzling but localised error for ~45 h.
+        failed_path = getattr(exc, "path", None)
         error = {
             "ts": _utc_stamp(now),
             "decision": "ERROR",
             "error": f"{type(exc).__name__}: {exc}",
-            "source": str(args.alarm_file),
+            "source": str(failed_path if failed_path is not None else args.alarm_file),
         }
+        if failed_path is not None and Path(failed_path) != args.alarm_file:
+            error["alarm_file"] = str(args.alarm_file)
         try:
             _append_log(args.log_file, error)
         except Exception:
