@@ -119,9 +119,18 @@ any live or portfolio manifest.
 - build report: `D:/QM/reports/framework/21/build_check_20260816_231231.json`
 - P1 report: `D:/QM/reports/pipeline/QM5_41033/P1/P1_QM5_41033_result.json`
 
+## Q02 Capacity Stop
+
+The exact-path sample at `2026-08-16T23:13:27.1452304Z` found seven running
+factory roots (`T1/T3/T5/T6/T7/T8/T9`) against the seven-terminal ceiling.
+No queue dry run or enqueue command was invoked. Read-only target readback
+returned zero work items. Evidence:
+`docs/ops/evidence/2026-08-17_qm5_41033_wti_flowdom_q01_cpu_ceiling_stop.md`.
+
 ## Revision History
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-17 | approved identity shell | G0 approved |
 | v1-build | 2026-08-17 | deterministic implementation | Q01 PASS |
+| v1-q02-hold | 2026-08-17 | binding paced-fleet capacity gate | Q02 not enqueued |

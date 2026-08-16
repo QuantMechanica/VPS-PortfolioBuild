@@ -176,3 +176,4 @@ governed economics.
 | v1 | 2026-08-17 | bounded composite source extraction | G0 | APPROVED_SOURCE |
 | v1-card | 2026-08-17 | locked card extraction and OWNER G0 authorization | G0 | APPROVED |
 | v1-build | 2026-08-17 | deterministic V5 build, strict compile, and static validation | Q01 | PASS |
+| v1-q02-hold | 2026-08-17 | paced handoff stopped before queue commands at the binding 7/7 tester ceiling | Q02 | NOT_ENQUEUED_CPU_CEILING |
