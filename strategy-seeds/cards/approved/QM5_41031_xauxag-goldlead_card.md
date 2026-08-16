@@ -67,7 +67,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: PENDING
+q01_status: PASS
 q02_status: NOT_ENQUEUED
 review_focus: "Falsify a one-way gold-to-silver daily catch-up package outside the directional certified XAU/SP500/NDX/XNG book. Verify completed-return ordering, gold-only leadership, bounded silver response, no current-bar leakage, atomic equal-notional sizing, and first-next-D1 flattening; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -190,7 +190,7 @@ sweep is authorized.
    `abs(s) <= abs(g)`. SELL XAU and BUY XAG.
 8. Negative gold lead: require `g <= -0.0075`, `s > 0.50*g`, and
    `abs(s) <= abs(g)`. BUY XAU and SELL XAG.
-9. Exact threshold/response equality, `abs(g) < 0.0075`, a completed or
+9. Exact response equality, `abs(g) < 0.0075`, a completed or
    excessive silver response, invalid arithmetic, and every other state
    consume the date flat. Silver never leads gold. Signal magnitude never
    scales risk.
@@ -341,8 +341,8 @@ Q01 must prove:
 
 1. synchronized current and completed timestamps accept only the intended two
    completed close pairs and reject cross-symbol mismatch;
-2. positive and negative gold-lead boundary cases map to exact opposite leg
-   sides, while equality and every non-lead state remain flat;
+2. positive and negative gold-threshold boundary cases map to exact opposite
+   leg sides, while response equality and every non-lead state remain flat;
 3. current D1 prices cannot enter either return;
 4. silver never predicts gold and the absolute-response cap rejects an
    opposite extreme;
@@ -367,13 +367,14 @@ establish realized correlation with the certified book.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial asymmetric gold-lead card extraction | G0 | APPROVED |
+| v1-build | 2026-08-16 | deterministic gold-lead logical-basket implementation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-16 | APPROVED | `decisions/2026-08-16_xauxag_gold_lead_lag_g0.md` |
-| Q01 Build Validation | - | PENDING | - |
+| Q01 Build Validation | 2026-08-16 | PASS | `D:/QM/reports/framework/21/build_check_20260816_211706.json` |
 | Q02 Baseline Screening | - | NOT_ENQUEUED | - |
 
 ## Safety Boundary
