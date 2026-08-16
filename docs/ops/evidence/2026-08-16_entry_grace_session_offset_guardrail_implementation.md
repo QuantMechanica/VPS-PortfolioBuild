@@ -107,4 +107,3 @@ not compile, enqueue, or run any backtest.
 - No pipeline verdict is asserted by this evidence.
 - The news-staleness ceiling and fixed-risk guardrails were not weakened.
 - Unrelated working-tree files were neither staged nor modified.
-
