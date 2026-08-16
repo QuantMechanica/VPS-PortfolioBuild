@@ -342,6 +342,7 @@ realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial XAU/XAG relative-flow divergence extraction | G0 | APPROVED |
 | v1-build | 2026-08-16 | deterministic XAU/XAG logical-basket implementation | Q01 | PASS |
+| v1-q02-hold | 2026-08-16 | paced handoff stopped before queue commands at the 8-terminal tester CPU ceiling | Q02 | NOT_ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -349,7 +350,7 @@ realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-16 | APPROVED | `decisions/2026-08-16_xauxag_relative_flow_divergence_g0.md` |
 | Q01 Build Validation | 2026-08-16 | PASS | `D:/QM/reports/framework/21/build_check_20260816_200126.json` |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-16 | NOT_ENQUEUED; stopped at the 8-terminal tester CPU ceiling | `docs/ops/evidence/2026-08-16_qm5_41030_xauxag_flowdiv_q01_cpu_ceiling_stop.md` |
 
 ## Safety Boundary
 
