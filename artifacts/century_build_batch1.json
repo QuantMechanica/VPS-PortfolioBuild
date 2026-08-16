@@ -1,0 +1,326 @@
+[
+ {
+  "ea": "QM5_30001",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_30001_bollinger-bands-grid-waka-waka.md"
+ },
+ {
+  "ea": "QM5_30002",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_30002_zigzag-gold-breakout-happy-gold.md"
+ },
+ {
+  "ea": "QM5_30003",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_30003_multisystem-gold-scalper-forex-gold-investor.md"
+ },
+ {
+  "ea": "QM5_30005",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_30005_bollinger-bands-grid-dark-venus.md"
+ },
+ {
+  "ea": "QM5_30006",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_30006_adx-ma-trend-grid-dark-kronos.md"
+ },
+ {
+  "ea": "QM5_30008",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_30008_rollover-hour-multifilter-forex-fury.md"
+ },
+ {
+  "ea": "QM5_31002",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_31002_us-indices-opening-range-breakout.md"
+ },
+ {
+  "ea": "QM5_31003",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_31003_london-open-currency-strength-dispersion.md"
+ },
+ {
+  "ea": "QM5_31004",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_31004_xauusd-vwap-liquidity-sweep-scalp.md"
+ },
+ {
+  "ea": "QM5_31005",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_31005_japanstrike-tokyo-liquidity-breakout.md"
+ },
+ {
+  "ea": "QM5_31006",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_31006_night-forex-bot-asian-stochastic-scalper.md"
+ },
+ {
+  "ea": "QM5_31007",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_31007_forex-trend-hunter-triple-ema.md"
+ },
+ {
+  "ea": "QM5_32001",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_32001_nq-micro-momentum-apex-scalper.md"
+ },
+ {
+  "ea": "QM5_32007",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_32007_london-fix-wm-reuters-currency-drift.md"
+ },
+ {
+  "ea": "QM5_32008",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_32008_euro-triplet-statistical-arbitrage-eurostable.md"
+ },
+ {
+  "ea": "QM5_33001",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_33001_kaufman-adaptive-moving-average-breakout.md"
+ },
+ {
+  "ea": "QM5_33002",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_33002_larry-williams-volatility-expansion-breakout.md"
+ },
+ {
+  "ea": "QM5_33003",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_33003_ehlers-superpassband-fisher-cycle-scalper.md"
+ },
+ {
+  "ea": "QM5_33004",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_33004_kevin-davey-3bar-momentum-expansion.md"
+ },
+ {
+  "ea": "QM5_33005",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_33005_andrea-unger-dax-intraday-bias-breakout.md"
+ },
+ {
+  "ea": "QM5_33006",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_33006_andrea-unger-turtle-soup-false-breakout.md"
+ },
+ {
+  "ea": "QM5_33007",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_33007_george-pruitt-king-keltner-trend-buster.md"
+ },
+ {
+  "ea": "QM5_33008",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_33008_thomas-stridsman-rvi-noise-buster.md"
+ },
+ {
+  "ea": "QM5_34001",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_34001_kalman-filter-state-estimation-scalper.md"
+ },
+ {
+  "ea": "QM5_34003",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_34003_triple-timeframe-williams-r-champion.md"
+ },
+ {
+  "ea": "QM5_34004",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_34004_kositsin-step-trend-parabolic-envelope.md"
+ },
+ {
+  "ea": "QM5_34005",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_34005_sokolov-cstrategy-donchian-atr-breakout.md"
+ },
+ {
+  "ea": "QM5_34006",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_34006_golubev-pricechannel-parabolic-breakout.md"
+ },
+ {
+  "ea": "QM5_34007",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_34007_sergeev-hft-tick-momentum-interceptor.md"
+ },
+ {
+  "ea": "QM5_34008",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_34008_multicurrency-basket-dispersion-hedger.md"
+ },
+ {
+  "ea": "QM5_35001",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_35001_cowabunga-multi-timeframe-trend-system.md"
+ },
+ {
+  "ea": "QM5_35002",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_35002_hlhb-trend-catcher-system.md"
+ },
+ {
+  "ea": "QM5_35003",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_35003_three-ducks-multi-timeframe-system.md"
+ },
+ {
+  "ea": "QM5_35004",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_35004_babypips-asian-box-london-breakout.md"
+ },
+ {
+  "ea": "QM5_35005",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_35005_sma-crossover-pullback-system.md"
+ },
+ {
+  "ea": "QM5_35006",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_35006_guppy-multiple-moving-average-breakout.md"
+ },
+ {
+  "ea": "QM5_35007",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_35007_inside-bar-momentum-breakout-system.md"
+ },
+ {
+  "ea": "QM5_35008",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_35008_short-term-bollinger-reversion-system.md"
+ },
+ {
+  "ea": "QM5_36001",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36001_nnfx-classic-mcginley-ssl-wae.md"
+ },
+ {
+  "ea": "QM5_36002",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36002_nnfx-kijunsen-absolute-strength-damiani.md"
+ },
+ {
+  "ea": "QM5_36003",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc.md"
+ },
+ {
+  "ea": "QM5_36004",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper.md"
+ },
+ {
+  "ea": "QM5_36005",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36005_nnfx-coral-trendlord-woodies-harvester.md"
+ },
+ {
+  "ea": "QM5_36006",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36006_nnfx-halftrend-jurik-coppock-engine.md"
+ },
+ {
+  "ea": "QM5_36007",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36007_nnfx-vidya-trix-fisher-momentum.md"
+ },
+ {
+  "ea": "QM5_36008",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36008_nnfx-gold-kama-vortex-supertrend.md"
+ },
+ {
+  "ea": "QM5_37001",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_37001_ernest-chan-ornstein-uhlenbeck-statarb.md"
+ },
+ {
+  "ea": "QM5_37002",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_37002_dual-thrust-asymmetric-range-breakout.md"
+ },
+ {
+  "ea": "QM5_37003",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_37003_hurst-exponent-dynamic-regime-switch.md"
+ },
+ {
+  "ea": "QM5_37004",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_37004_volatility-targeted-momentum-kelly.md"
+ },
+ {
+  "ea": "QM5_37005",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_37005_chan-bollinger-adx-mean-reversion.md"
+ },
+ {
+  "ea": "QM5_37006",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_37006_cusum-filter-structural-breakout.md"
+ },
+ {
+  "ea": "QM5_37007",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_37007_cross-sectional-momentum-factor-dispersion.md"
+ },
+ {
+  "ea": "QM5_37008",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_37008_garch-volatility-forecast-breakout.md"
+ },
+ {
+  "ea": "QM5_38001",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_38001_codetrading-vwap-bollinger-rsi-scalper.md"
+ },
+ {
+  "ea": "QM5_38002",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_38002_codetrading-macd-ema-trend-pullback.md"
+ },
+ {
+  "ea": "QM5_38003",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_38003_codetrading-bollinger-engulfing-reversal.md"
+ },
+ {
+  "ea": "QM5_38004",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_38004_codetrading-triple-ema-momentum-scalper.md"
+ },
+ {
+  "ea": "QM5_38005",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_38005_codetrading-ascending-triangle-breakout.md"
+ },
+ {
+  "ea": "QM5_38006",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_38006_codetrading-doji-hammer-pivot-rejection.md"
+ },
+ {
+  "ea": "QM5_38007",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_38007_codetrading-python-atr-grid-engine.md"
+ },
+ {
+  "ea": "QM5_38008",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_38008_codetrading-optimized-bollinger-trend-breakout.md"
+ },
+ {
+  "ea": "QM5_39001",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_39001_forexfactory-trading-made-simple-tms.md"
+ },
+ {
+  "ea": "QM5_39002",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_39002_forexfactory-sonic-r-system.md"
+ },
+ {
+  "ea": "QM5_39003",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_39003_forexfactory-james16-price-action-ppz.md"
+ },
+ {
+  "ea": "QM5_39004",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_39004_forexfactory-thv-cobra-trix-scalper.md"
+ },
+ {
+  "ea": "QM5_39005",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_39005_forexfactory-genesis-matrix-scalper.md"
+ },
+ {
+  "ea": "QM5_39006",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_39006_forexfactory-spudfyre-stochastic-ribbon.md"
+ },
+ {
+  "ea": "QM5_39007",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_39007_forexfactory-100-pips-early-bird-breakout.md"
+ },
+ {
+  "ea": "QM5_39008",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_39008_forexfactory-symphonie-matrix-system.md"
+ },
+ {
+  "ea": "QM5_40002",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_40002_quantpedia-fx-momentum-volatility-parity.md"
+ },
+ {
+  "ea": "QM5_40005",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_40005_tradingview-multitimeframe-supertrend-atr.md"
+ },
+ {
+  "ea": "QM5_40008",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_40008_aqr-value-and-momentum-everywhere.md"
+ },
+ {
+  "ea": "QM5_41001",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41001_keith-fitschen-aberration-trading-system.md"
+ },
+ {
+  "ea": "QM5_41002",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41002_robert-pardo-checkmate-breakout-engine.md"
+ },
+ {
+  "ea": "QM5_41003",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41003_kaufman-ready-set-go-momentum.md"
+ },
+ {
+  "ea": "QM5_41005",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41005_richard-donchian-50day-cta-benchmark.md"
+ },
+ {
+  "ea": "QM5_41006",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41006_man-ahl-multispeed-ewma-trend.md"
+ },
+ {
+  "ea": "QM5_41009",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41009_volume-profile-value-area-rejection.md"
+ },
+ {
+  "ea": "QM5_41010",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41010_developing-poc-migration-scalper.md"
+ },
+ {
+  "ea": "QM5_41011",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41011_tokyo-london-bank-flow-handover.md"
+ }
+]
