@@ -10,6 +10,7 @@ last_updated: 2026-08-16
 approved_by: "OWNER commodity/energy portfolio mission 2026-08-16"
 approved_at: 2026-08-16
 source_approval: decisions/2026-08-16_wti_month_opening_reversal_source_approval.md
+approval_commit: 664785e3f
 strategy_ids:
   - MOP-YANG-WTI-MOPEN-REV1-2026_S01
 parent_sources:
