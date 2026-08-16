@@ -524,7 +524,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.reason = "overlay_buy";
       req.symbol_slot = qm_magic_slot_offset;
       req.expiration_seconds = 0;
-      g_last_buy_entry_time = iTime(_Symbol, _Period, 0); // perf-allowed
       return true;
      }
 
@@ -555,7 +554,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.reason = "overlay_sell";
       req.symbol_slot = qm_magic_slot_offset;
       req.expiration_seconds = 0;
-      g_last_sell_entry_time = iTime(_Symbol, _Period, 0); // perf-allowed
       return true;
      }
 
@@ -727,6 +725,8 @@ int OnInit()
    g_bars_in_trade = 0;
    g_sl_moved_to_be = false;
    g_partial_close_done = false;
+   g_last_buy_entry_time = 0;
+   g_last_sell_entry_time = 0;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
@@ -793,6 +793,10 @@ void OnTick()
       if(QM_TM_OpenPosition(req, out_ticket))
         {
          g_entry_bar_time = iTime(_Symbol, _Period, 0); // perf-allowed
+         if(req.type == QM_BUY)
+            g_last_buy_entry_time = iTime(_Symbol, _Period, 0); // perf-allowed
+         else if(req.type == QM_SELL)
+            g_last_sell_entry_time = iTime(_Symbol, _Period, 0); // perf-allowed
          g_bars_in_trade = 0;
          g_sl_moved_to_be = false;
          g_partial_close_done = false;

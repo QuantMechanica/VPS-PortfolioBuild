@@ -190,7 +190,7 @@ bool GetBuyStopSignal(double &order_price, double &order_sl, double &order_tp1, 
    order_tp1 = order_price + strategy_tp1_fib_extension * leg;
    order_tp2 = order_price + strategy_tp2_fib_extension * leg;
    
-   expire_seconds = (10 - (fractal_bar - 3)) * 3600;
+   expire_seconds = (10 - (fractal_bar - 3)) * PeriodSeconds(tf);
    return true;
 }
 
@@ -270,7 +270,7 @@ bool GetShortStopSignal(double &order_price, double &order_sl, double &order_tp1
    order_tp1 = order_price - strategy_tp1_fib_extension * leg;
    order_tp2 = order_price - strategy_tp2_fib_extension * leg;
    
-   expire_seconds = (10 - (fractal_bar - 3)) * 3600;
+   expire_seconds = (10 - (fractal_bar - 3)) * PeriodSeconds(tf);
    return true;
 }
 
@@ -423,7 +423,7 @@ void Strategy_ManageOpenPosition()
       if(pos_magic == magic1 || pos_magic == magic2)
       {
          datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-         if(TimeCurrent() - open_time >= 120 * 3600)
+         if(TimeCurrent() - open_time >= 120 * PeriodSeconds(GetStrategyTimeframe()))
          {
             QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
          }
