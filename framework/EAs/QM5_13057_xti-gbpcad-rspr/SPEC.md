@@ -4,7 +4,7 @@
 **Slug:** `xti-gbpcad-rspr`
 **Source:** `BOC-GBPCAD-OIL-RSPREAD-2026` (see `strategy-seeds/sources/BOC-GBPCAD-OIL-RSPREAD-2026/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-07-08
+**Last revised:** 2026-08-16
 
 ---
 
@@ -108,4 +108,5 @@ ENV to mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MI
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
+| v2 | 2026-08-16 | Code-review rework | Route the XTI host entry through `QM_TM_OpenPosition` with its proportional risk allocation; retain `QM_BasketOrder` for the GBPCAD satellite. |
 | v1 | 2026-07-08 | Initial build from approved card | manual-codex-2026-07-08-xti-gbpcad-rspr |

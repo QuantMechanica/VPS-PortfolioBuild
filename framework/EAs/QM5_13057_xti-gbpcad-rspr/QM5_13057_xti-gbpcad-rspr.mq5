@@ -12,8 +12,9 @@
 //   rspread = log(XTI[t] / XTI[t-L]) + beta_gbpcad * log(GBPCAD[t] / GBPCAD[t-L])
 //   z > entry: short return spread = sell WTI, sell GBPCAD
 //   z < -entry: long return spread = buy WTI, buy GBPCAD
-// The EA runs from the XTIUSD.DWX host chart and trades both registered legs
-// through QM_BasketOrder. Runtime uses MT5 OHLC only; no external feed.
+// The EA runs from the XTIUSD.DWX host chart. The host leg enters through the
+// framework trade manager; the registered GBPCAD satellite uses QM_BasketOrder.
+// Runtime uses MT5 OHLC only; no external feed.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -210,6 +211,22 @@ double Strategy_LotsForLeg(const string symbol, const double risk_weight, const 
    return MathMin(max_lot, NormalizeDouble(lots, 8));
   }
 
+double Strategy_RiskValueForLeg(const double risk_weight, const double risk_weight_sum)
+  {
+   if(risk_weight <= 0.0 || risk_weight_sum <= 0.0)
+      return 0.0;
+
+   double configured_risk = 0.0;
+   if(g_qm_risk_mode == QM_RISK_MODE_FIXED)
+      configured_risk = g_qm_risk_fixed;
+   else if(g_qm_risk_mode == QM_RISK_MODE_PERCENT)
+      configured_risk = g_qm_risk_percent;
+
+   if(configured_risk <= 0.0)
+      return 0.0;
+   return configured_risk * risk_weight / risk_weight_sum;
+  }
+
 bool Strategy_OpenLeg(const string symbol,
                       const QM_OrderType type,
                       const double risk_weight,
@@ -228,6 +245,39 @@ bool Strategy_OpenLeg(const string symbol,
 
    const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    const double stop_dist = strategy_atr_sl_mult * atr;
+
+   const double sl = QM_OrderTypeIsBuy(type) ? NormalizeDouble(entry - stop_dist, digits)
+                                              : NormalizeDouble(entry + stop_dist, digits);
+
+   // The host must enter through the framework trade manager so the standard
+   // entry contract, kill switch, news gate, and risk rails remain authoritative.
+   if(symbol == g_leg_xti)
+     {
+      if(symbol != _Symbol)
+         return false;
+
+      const int magic = QM_MagicChecked(qm_ea_id, slot, symbol);
+      const double risk_value = Strategy_RiskValueForLeg(risk_weight, risk_weight_sum);
+      if(magic <= 0 || risk_value <= 0.0)
+         return false;
+
+      QM_EntryRequest host_req;
+      host_req.type = type;
+      host_req.price = 0.0;
+      host_req.sl = sl;
+      host_req.tp = 0.0;
+      host_req.reason = reason;
+      host_req.symbol_slot = slot;
+      host_req.expiration_seconds = 0;
+
+      ulong host_ticket = 0;
+      return QM_TM_OpenPosition(host_req,
+                                host_ticket,
+                                magic,
+                                g_qm_risk_mode,
+                                risk_value);
+     }
+
    const double lots = Strategy_LotsForLeg(symbol, risk_weight, risk_weight_sum);
    if(lots <= 0.0)
       return false;
@@ -236,8 +286,7 @@ bool Strategy_OpenLeg(const string symbol,
    req.symbol = symbol;
    req.type = type;
    req.price = 0.0;
-   req.sl = QM_OrderTypeIsBuy(type) ? NormalizeDouble(entry - stop_dist, digits)
-                                    : NormalizeDouble(entry + stop_dist, digits);
+   req.sl = sl;
    req.tp = 0.0;
    req.lots = lots;
    req.reason = reason;
