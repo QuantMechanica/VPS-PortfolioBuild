@@ -53,52 +53,85 @@ input bool   strategy_breakeven_after_tp1 = true;
 
 bool Strategy_NoTradeFilter() { return false; }
 
-bool IsBullishFractal(int shift)
+ENUM_TIMEFRAMES GetStrategyTimeframe()
 {
-   double h = iHigh(_Symbol, PERIOD_H1, shift);
-   return (h > iHigh(_Symbol, PERIOD_H1, shift + 1) &&
-           h > iHigh(_Symbol, PERIOD_H1, shift + 2) &&
-           h > iHigh(_Symbol, PERIOD_H1, shift - 1) &&
-           h > iHigh(_Symbol, PERIOD_H1, shift - 2));
+   if(strategy_timeframe == "M1") return PERIOD_M1;
+   if(strategy_timeframe == "M5") return PERIOD_M5;
+   if(strategy_timeframe == "M15") return PERIOD_M15;
+   if(strategy_timeframe == "M30") return PERIOD_M30;
+   if(strategy_timeframe == "H1") return PERIOD_H1;
+   if(strategy_timeframe == "H4") return PERIOD_H4;
+   if(strategy_timeframe == "D1") return PERIOD_D1;
+   return PERIOD_H1;
 }
 
-bool IsBearishFractal(int shift)
+int ParseHourFromHHMM(const string s)
 {
-   double l = iLow(_Symbol, PERIOD_H1, shift);
-   return (l < iLow(_Symbol, PERIOD_H1, shift + 1) &&
-           l < iLow(_Symbol, PERIOD_H1, shift + 2) &&
-           l < iLow(_Symbol, PERIOD_H1, shift - 1) &&
-           l < iLow(_Symbol, PERIOD_H1, shift - 2));
+   string parts[];
+   if(StringSplit(s, ':', parts) >= 1)
+      return (int)StringToInteger(parts[0]);
+   return (int)StringToInteger(s);
+}
+
+bool IsBullishFractal(int shift, int lookback_bars = 5)
+{
+   int wing = (lookback_bars - 1) / 2;
+   if(wing < 1) wing = 2;
+   const ENUM_TIMEFRAMES tf = GetStrategyTimeframe();
+   double h = iHigh(_Symbol, tf, shift); // perf-allowed
+   for(int i = 1; i <= wing; ++i)
+   {
+      if(h <= iHigh(_Symbol, tf, shift + i) || h <= iHigh(_Symbol, tf, shift - i)) // perf-allowed
+         return false;
+   }
+   return true;
+}
+
+bool IsBearishFractal(int shift, int lookback_bars = 5)
+{
+   int wing = (lookback_bars - 1) / 2;
+   if(wing < 1) wing = 2;
+   const ENUM_TIMEFRAMES tf = GetStrategyTimeframe();
+   double l = iLow(_Symbol, tf, shift); // perf-allowed
+   for(int i = 1; i <= wing; ++i)
+   {
+      if(l >= iLow(_Symbol, tf, shift + i) || l >= iLow(_Symbol, tf, shift - i)) // perf-allowed
+         return false;
+   }
+   return true;
 }
 
 bool IsTimeAllowed(datetime time_broker)
 {
-   if(_Symbol != "EURUSD.DWX" && _Symbol != "GBPUSD.DWX")
+   if(StringFind(strategy_time_filter_majors_pairs, _Symbol) < 0 && _Symbol != "EURUSD.DWX" && _Symbol != "GBPUSD.DWX")
       return true;
    int broker_gmt_offset = (int)(TimeCurrent() - TimeGMT());
    datetime gmt_time = time_broker - broker_gmt_offset;
    MqlDateTime dt;
    TimeToStruct(gmt_time, dt);
-   return (dt.hour >= 7 && dt.hour < 17);
+   int start_hr = ParseHourFromHHMM(strategy_time_filter_majors_start_gmt);
+   int end_hr = ParseHourFromHHMM(strategy_time_filter_majors_end_gmt);
+   return (dt.hour >= start_hr && dt.hour < end_hr);
 }
 
 bool GetBuyStopSignal(double &order_price, double &order_sl, double &order_tp1, double &order_tp2, int &expire_seconds)
 {
+   const ENUM_TIMEFRAMES tf = GetStrategyTimeframe();
    int cross_bar = -1;
    for(int x = 1; x <= 50; ++x)
    {
-      double ema_upper = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_upper_period, x);
-      double ema_lower = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_lower_period, x);
+      double ema_upper = QM_EMA(_Symbol, tf, strategy_ema_upper_period, x);
+      double ema_lower = QM_EMA(_Symbol, tf, strategy_ema_lower_period, x);
       double max_ema = MathMax(ema_upper, ema_lower);
       
-      if(iClose(_Symbol, PERIOD_H1, x) > max_ema)
+      if(iClose(_Symbol, tf, x) > max_ema) // perf-allowed
       {
          bool prior_below = false;
          for(int y = x + 1; y <= x + 10; ++y)
          {
-            double ema_u_y = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_upper_period, y);
-            double ema_l_y = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_lower_period, y);
-            if(iClose(_Symbol, PERIOD_H1, y) < MathMin(ema_u_y, ema_l_y))
+            double ema_u_y = QM_EMA(_Symbol, tf, strategy_ema_upper_period, y);
+            double ema_l_y = QM_EMA(_Symbol, tf, strategy_ema_lower_period, y);
+            if(iClose(_Symbol, tf, y) < MathMin(ema_u_y, ema_l_y)) // perf-allowed
             {
                prior_below = true;
                break;
@@ -117,7 +150,7 @@ bool GetBuyStopSignal(double &order_price, double &order_sl, double &order_tp1, 
    int fractal_bar = -1;
    for(int f = 3; f < cross_bar && (cross_bar - f) <= 20 && f <= 12; ++f)
    {
-      if(IsBullishFractal(f))
+      if(IsBullishFractal(f, strategy_fractal_lookback_bars))
       {
          fractal_bar = f;
          break;
@@ -130,20 +163,20 @@ bool GetBuyStopSignal(double &order_price, double &order_sl, double &order_tp1, 
    int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
    double pip = (digits == 3 || digits == 5) ? point * 10.0 : point;
    
-   double fractal_high = iHigh(_Symbol, PERIOD_H1, fractal_bar);
-   order_price = fractal_high + 3.0 * pip;
+   double fractal_high = iHigh(_Symbol, tf, fractal_bar); // perf-allowed
+   order_price = fractal_high + (double)strategy_fractal_filter_pips * pip;
    
-   double ema_u_now = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_upper_period, 1);
-   double ema_l_now = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_lower_period, 1);
+   double ema_u_now = QM_EMA(_Symbol, tf, strategy_ema_upper_period, 1);
+   double ema_l_now = QM_EMA(_Symbol, tf, strategy_ema_lower_period, 1);
    double min_ema_now = MathMin(ema_u_now, ema_l_now);
    double sl_channel = min_ema_now - 5.0 * pip;
    
    double sl_fractal = 0.0;
    for(int f = 1; f <= 100; ++f)
    {
-      if(IsBearishFractal(f))
+      if(IsBearishFractal(f, strategy_fractal_lookback_bars))
       {
-         sl_fractal = iLow(_Symbol, PERIOD_H1, f);
+         sl_fractal = iLow(_Symbol, tf, f); // perf-allowed
          break;
       }
    }
@@ -153,7 +186,7 @@ bool GetBuyStopSignal(double &order_price, double &order_sl, double &order_tp1, 
    else
       order_sl = sl_channel;
    
-   double leg = MathAbs(fractal_high - iClose(_Symbol, PERIOD_H1, cross_bar));
+   double leg = MathAbs(fractal_high - iClose(_Symbol, tf, cross_bar)); // perf-allowed
    order_tp1 = order_price + strategy_tp1_fib_extension * leg;
    order_tp2 = order_price + strategy_tp2_fib_extension * leg;
    
@@ -163,21 +196,22 @@ bool GetBuyStopSignal(double &order_price, double &order_sl, double &order_tp1, 
 
 bool GetShortStopSignal(double &order_price, double &order_sl, double &order_tp1, double &order_tp2, int &expire_seconds)
 {
+   const ENUM_TIMEFRAMES tf = GetStrategyTimeframe();
    int cross_bar = -1;
    for(int x = 1; x <= 50; ++x)
    {
-      double ema_upper = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_upper_period, x);
-      double ema_lower = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_lower_period, x);
+      double ema_upper = QM_EMA(_Symbol, tf, strategy_ema_upper_period, x);
+      double ema_lower = QM_EMA(_Symbol, tf, strategy_ema_lower_period, x);
       double min_ema = MathMin(ema_upper, ema_lower);
       
-      if(iClose(_Symbol, PERIOD_H1, x) < min_ema)
+      if(iClose(_Symbol, tf, x) < min_ema) // perf-allowed
       {
          bool prior_above = false;
          for(int y = x + 1; y <= x + 10; ++y)
          {
-            double ema_u_y = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_upper_period, y);
-            double ema_l_y = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_lower_period, y);
-            if(iClose(_Symbol, PERIOD_H1, y) > MathMax(ema_u_y, ema_l_y))
+            double ema_u_y = QM_EMA(_Symbol, tf, strategy_ema_upper_period, y);
+            double ema_l_y = QM_EMA(_Symbol, tf, strategy_ema_lower_period, y);
+            if(iClose(_Symbol, tf, y) > MathMax(ema_u_y, ema_l_y)) // perf-allowed
             {
                prior_above = true;
                break;
@@ -196,7 +230,7 @@ bool GetShortStopSignal(double &order_price, double &order_sl, double &order_tp1
    int fractal_bar = -1;
    for(int f = 3; f < cross_bar && (cross_bar - f) <= 20 && f <= 12; ++f)
    {
-      if(IsBearishFractal(f))
+      if(IsBearishFractal(f, strategy_fractal_lookback_bars))
       {
          fractal_bar = f;
          break;
@@ -209,20 +243,20 @@ bool GetShortStopSignal(double &order_price, double &order_sl, double &order_tp1
    int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
    double pip = (digits == 3 || digits == 5) ? point * 10.0 : point;
    
-   double fractal_low = iLow(_Symbol, PERIOD_H1, fractal_bar);
-   order_price = fractal_low - 3.0 * pip;
+   double fractal_low = iLow(_Symbol, tf, fractal_bar); // perf-allowed
+   order_price = fractal_low - (double)strategy_fractal_filter_pips * pip;
    
-   double ema_u_now = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_upper_period, 1);
-   double ema_l_now = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_lower_period, 1);
+   double ema_u_now = QM_EMA(_Symbol, tf, strategy_ema_upper_period, 1);
+   double ema_l_now = QM_EMA(_Symbol, tf, strategy_ema_lower_period, 1);
    double max_ema_now = MathMax(ema_u_now, ema_l_now);
    double sl_channel = max_ema_now + 5.0 * pip;
    
    double sl_fractal = 0.0;
    for(int f = 1; f <= 100; ++f)
    {
-      if(IsBullishFractal(f))
+      if(IsBullishFractal(f, strategy_fractal_lookback_bars))
       {
-         sl_fractal = iHigh(_Symbol, PERIOD_H1, f);
+         sl_fractal = iHigh(_Symbol, tf, f); // perf-allowed
          break;
       }
    }
@@ -232,7 +266,7 @@ bool GetShortStopSignal(double &order_price, double &order_sl, double &order_tp1
    else
       order_sl = sl_channel;
    
-   double leg = MathAbs(fractal_low - iClose(_Symbol, PERIOD_H1, cross_bar));
+   double leg = MathAbs(fractal_low - iClose(_Symbol, tf, cross_bar)); // perf-allowed
    order_tp1 = order_price - strategy_tp1_fib_extension * leg;
    order_tp2 = order_price - strategy_tp2_fib_extension * leg;
    
@@ -278,10 +312,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             
             ulong ticket1 = 0, ticket2 = 0;
             QM_RiskMode r_mode = g_qm_risk_mode;
-            double r_val = (r_mode == QM_RISK_MODE_PERCENT) ? (RISK_PERCENT / 2.0) : (RISK_FIXED / 2.0);
+            double r_total = (r_mode == QM_RISK_MODE_PERCENT) ? RISK_PERCENT : RISK_FIXED;
+            double r_val1 = r_total * strategy_scale_out_fraction;
+            double r_val2 = r_total * (1.0 - strategy_scale_out_fraction);
             
-            QM_TM_OpenPosition(req1, ticket1, magic1, r_mode, r_val);
-            QM_TM_OpenPosition(req2, ticket2, magic2, r_mode, r_val);
+            QM_TM_OpenPosition(req1, ticket1, magic1, r_mode, r_val1);
+            QM_TM_OpenPosition(req2, ticket2, magic2, r_mode, r_val2);
          }
       }
    }
@@ -319,10 +355,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             
             ulong ticket1 = 0, ticket2 = 0;
             QM_RiskMode r_mode = g_qm_risk_mode;
-            double r_val = (r_mode == QM_RISK_MODE_PERCENT) ? (RISK_PERCENT / 2.0) : (RISK_FIXED / 2.0);
+            double r_total = (r_mode == QM_RISK_MODE_PERCENT) ? RISK_PERCENT : RISK_FIXED;
+            double r_val1 = r_total * strategy_scale_out_fraction;
+            double r_val2 = r_total * (1.0 - strategy_scale_out_fraction);
             
-            QM_TM_OpenPosition(req1, ticket1, magic1, r_mode, r_val);
-            QM_TM_OpenPosition(req2, ticket2, magic2, r_mode, r_val);
+            QM_TM_OpenPosition(req1, ticket1, magic1, r_mode, r_val1);
+            QM_TM_OpenPosition(req2, ticket2, magic2, r_mode, r_val2);
          }
       }
    }
@@ -360,7 +398,7 @@ void Strategy_ManageOpenPosition()
       }
    }
    
-   if(magic2_ticket > 0 && !magic1_open)
+   if(strategy_breakeven_after_tp1 && magic2_ticket > 0 && !magic1_open)
    {
       bool is_buy = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
       bool sl_at_entry = false;

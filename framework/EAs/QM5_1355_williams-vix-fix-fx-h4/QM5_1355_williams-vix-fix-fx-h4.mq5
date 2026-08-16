@@ -75,7 +75,8 @@ double g_atr_at_entry = 0.0;
 double WVF(int shift)
 {
    double max_close = -DBL_MAX;
-   for(int i = 0; i < 22; i++)
+   int lookback = MathMax(1, strategy_wvf_lookback);
+   for(int i = 0; i < lookback; i++)
    {
       double c = iClose(_Symbol, PERIOD_H4, shift + i); // perf-allowed: range scan
       if(c > max_close) max_close = c;
@@ -88,20 +89,22 @@ double WVF(int shift)
 void GetWvfStats(int shift, double &ma, double &sd, double &range_high)
 {
    double sum = 0.0;
-   double wvf_values[20];
-   for(int i = 0; i < 20; i++)
+   int ma_period = MathMax(1, strategy_wvf_ma_period);
+   double wvf_values[];
+   ArrayResize(wvf_values, ma_period);
+   for(int i = 0; i < ma_period; i++)
    {
       wvf_values[i] = WVF(shift + i);
       sum += wvf_values[i];
    }
-   ma = sum / 20.0;
+   ma = sum / (double)ma_period;
 
    double sum_sq = 0.0;
-   for(int i = 0; i < 20; i++)
+   for(int i = 0; i < ma_period; i++)
    {
       sum_sq += (wvf_values[i] - ma) * (wvf_values[i] - ma);
    }
-   sd = MathSqrt(sum_sq / 20.0);
+   sd = MathSqrt(sum_sq / (double)ma_period);
 
    double max_wvf_51 = -DBL_MAX;
    for(int i = 0; i < 51; i++)
@@ -109,7 +112,7 @@ void GetWvfStats(int shift, double &ma, double &sd, double &range_high)
       double w = WVF(shift + i);
       if(w > max_wvf_51) max_wvf_51 = w;
    }
-   range_high = 0.85 * max_wvf_51;
+   range_high = strategy_wvf_range_pct * max_wvf_51;
 }
 
 void AdvanceState_OnNewBar()
@@ -120,8 +123,8 @@ void AdvanceState_OnNewBar()
    GetWvfStats(1, g_wvf_ma_1, g_wvf_sd_1, g_wvf_range_high_1);
    GetWvfStats(2, g_wvf_ma_2, g_wvf_sd_2, g_wvf_range_high_2);
 
-   g_ema200_h4_1 = QM_EMA(_Symbol, PERIOD_H4, 200, 1);
-   g_atr_1 = QM_ATR(_Symbol, PERIOD_H4, 14, 1);
+   g_ema200_h4_1 = QM_EMA(_Symbol, PERIOD_H4, strategy_ema_filter_period, 1);
+   g_atr_1 = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
 
    const double bid      = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask_now  = SymbolInfoDouble(_Symbol, SYMBOL_ASK);

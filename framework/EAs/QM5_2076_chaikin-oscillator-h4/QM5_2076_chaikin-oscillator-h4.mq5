@@ -80,7 +80,7 @@ bool ReadChaikinData(double &co[], double &volume_mean, double &stddev_co)
 {
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   int copied = CopyRates(_Symbol, PERIOD_CURRENT, 1, 250, rates);
+   int copied = CopyRates(_Symbol, PERIOD_CURRENT, 1, 250, rates); // perf-allowed
    if(copied < 250)
       return false;
       
@@ -117,22 +117,25 @@ bool ReadChaikinData(double &co[], double &volume_mean, double &stddev_co)
    for(int i = 0; i < 250; ++i)
       co[i] = ema3[i] - ema10[i]; // co[249] is newest (index 1 of closed bar), co[248] is index 2, etc.
       
-   // Volume mean of last 50 closed bars (rates[0] to rates[49], corresponding to co[249] down to co[200])
+   // Volume mean of last strategy_volume_mean_bars closed bars
+   int vol_bars = MathMin(MathMax(1, strategy_volume_mean_bars), 250);
    double vol_sum = 0.0;
-   for(int i = 0; i < 50; ++i)
+   for(int i = 0; i < vol_bars; ++i)
       vol_sum += (double)rates[i].tick_volume;
-   volume_mean = vol_sum / 50.0;
+   volume_mean = vol_sum / (double)vol_bars;
    
-   // StdDev of CO over last 50 closed bars
+   // StdDev of CO over last strategy_stddev_period closed bars
+   int sd_bars = MathMin(MathMax(1, strategy_stddev_period), 250);
    double sum = 0.0;
-   for(int i = 200; i <= 249; ++i)
+   int start_co = 250 - sd_bars;
+   for(int i = start_co; i <= 249; ++i)
       sum += co[i];
-   double mean_co = sum / 50.0;
+   double mean_co = sum / (double)sd_bars;
    
    double sum_sq = 0.0;
-   for(int i = 200; i <= 249; ++i)
+   for(int i = start_co; i <= 249; ++i)
       sum_sq += (co[i] - mean_co) * (co[i] - mean_co);
-   stddev_co = MathSqrt(sum_sq / 50.0);
+   stddev_co = MathSqrt(sum_sq / (double)sd_bars);
    
    return true;
 }
@@ -195,7 +198,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double ema50_d1 = QM_EMA(_Symbol, PERIOD_D1, 50, 1);
    if(ema50_d1 <= 0.0)
       return false;
-   double close1 = iClose(_Symbol, PERIOD_CURRENT, 1);
+   double close1 = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed
 
    // Slope check values
    double required_slope = 0.5 * atr_val * vol_mean;
@@ -206,7 +209,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(close1 > ema50_d1)
       {
          req.type = QM_BUY;
-         req.sl = iLow(_Symbol, PERIOD_CURRENT, 1) - strategy_atr_sl_mult * atr_val;
+         req.sl = iLow(_Symbol, PERIOD_CURRENT, 1) - strategy_atr_sl_mult * atr_val; // perf-allowed
          req.tp = 0.0; // no fixed TP
          req.reason = "CHAIKIN_CO_LONG";
          return true;
@@ -217,7 +220,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(close1 < ema50_d1)
       {
          req.type = QM_SELL;
-         req.sl = iHigh(_Symbol, PERIOD_CURRENT, 1) + strategy_atr_sl_mult * atr_val;
+         req.sl = iHigh(_Symbol, PERIOD_CURRENT, 1) + strategy_atr_sl_mult * atr_val; // perf-allowed
          req.tp = 0.0; // no fixed TP
          req.reason = "CHAIKIN_CO_SHORT";
          return true;
@@ -267,7 +270,7 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
 {
    static datetime last_check_bar = 0;
-   datetime current_bar_time = iTime(_Symbol, _Period, 0);
+   datetime current_bar_time = iTime(_Symbol, _Period, 0); // perf-allowed
    if(current_bar_time == last_check_bar)
       return false; // only check exit signals once per closed bar
    
@@ -317,7 +320,7 @@ bool Strategy_ExitSignal()
    // Check Pressure-acceleration divergence
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   if(CopyRates(_Symbol, _Period, 1, 250, rates) < 250)
+   if(CopyRates(_Symbol, _Period, 1, 250, rates) < 250) // perf-allowed
       return false;
       
    if(position_type == POSITION_TYPE_BUY)

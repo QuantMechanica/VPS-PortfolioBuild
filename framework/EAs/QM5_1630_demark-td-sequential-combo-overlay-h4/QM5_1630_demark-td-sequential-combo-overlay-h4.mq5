@@ -98,6 +98,8 @@ bool     g_combo_sell_cd_complete = false;
 bool     g_fire_buy = false;
 bool     g_fire_sell = false;
 datetime g_fire_seq_start_time = 0;
+datetime g_last_buy_entry_time = 0;
+datetime g_last_sell_entry_time = 0;
 
 bool     g_buy_setup_began_this_bar = false;
 bool     g_sell_setup_began_this_bar = false;
@@ -111,10 +113,10 @@ datetime g_entry_bar_time = 0;
 // Helper: lowest low / highest high across raw H4 bars
 double SetupLowestLow(const int start, const int len)
 {
-   double lo = iLow(_Symbol, _Period, start);
+   double lo = iLow(_Symbol, _Period, start); // perf-allowed
    for(int s = start + 1; s < start + len; ++s)
      {
-      const double v = iLow(_Symbol, _Period, s);
+      const double v = iLow(_Symbol, _Period, s); // perf-allowed
       if(v > 0.0 && v < lo)
          lo = v;
      }
@@ -123,10 +125,10 @@ double SetupLowestLow(const int start, const int len)
 
 double SetupHighestHigh(const int start, const int len)
 {
-   double hi = iHigh(_Symbol, _Period, start);
+   double hi = iHigh(_Symbol, _Period, start); // perf-allowed
    for(int s = start + 1; s < start + len; ++s)
      {
-      const double v = iHigh(_Symbol, _Period, s);
+      const double v = iHigh(_Symbol, _Period, s); // perf-allowed
       if(v > hi)
          hi = v;
      }
@@ -141,8 +143,8 @@ void AdvanceState()
    g_buy_setup_began_this_bar = false;
    g_sell_setup_began_this_bar = false;
 
-   const double open1  = iOpen(_Symbol, _Period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
+   const double open1  = iOpen(_Symbol, _Period, 1); // perf-allowed
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed
 
    // --- 1) Confirmation bar check for Sequential countdown completion --------
    if(g_seq_buy_cd_complete && close1 > 0.0 && open1 > 0.0)
@@ -201,7 +203,7 @@ void AdvanceState()
      }
 
    // --- 2) TD-Sequential Setup running counts -------------------------------
-   const double close_ref = iClose(_Symbol, _Period, 5); // lookback = 4
+   const double close_ref = iClose(_Symbol, _Period, 5); // perf-allowed: lookback = 4
    if(close1 > 0.0 && close_ref > 0.0)
      {
       if(close1 < close_ref)
@@ -209,7 +211,7 @@ void AdvanceState()
          g_seq_buy_setup_count++;
          if(g_seq_buy_setup_count == 1)
            {
-            g_seq_buy_setup_start_time = iTime(_Symbol, _Period, 1);
+            g_seq_buy_setup_start_time = iTime(_Symbol, _Period, 1); // perf-allowed
             g_buy_setup_began_this_bar = true;
            }
          g_seq_sell_setup_count = 0;
@@ -219,7 +221,7 @@ void AdvanceState()
          g_seq_sell_setup_count++;
          if(g_seq_sell_setup_count == 1)
            {
-            g_seq_sell_setup_start_time = iTime(_Symbol, _Period, 1);
+            g_seq_sell_setup_start_time = iTime(_Symbol, _Period, 1); // perf-allowed
             g_sell_setup_began_this_bar = true;
            }
          g_seq_buy_setup_count = 0;
@@ -252,8 +254,8 @@ void AdvanceState()
      }
 
    // --- 4) TD-Sequential Countdown progression -------------------------------
-   const double low_ref_3  = iLow(_Symbol, _Period, 3);  // ref = 2
-   const double high_ref_3 = iHigh(_Symbol, _Period, 3); // ref = 2
+   const double low_ref_3  = iLow(_Symbol, _Period, 3);  // perf-allowed: ref = 2
+   const double high_ref_3 = iHigh(_Symbol, _Period, 3); // perf-allowed: ref = 2
 
    if(g_seq_buy_cd_armed && !g_seq_buy_cd_complete)
      {
@@ -291,7 +293,7 @@ void AdvanceState()
    // --- 5) TD-Combo Setup running counts ------------------------------------
    if(close1 > 0.0 && low_ref_3 > 0.0)
      {
-      const double low1 = iLow(_Symbol, _Period, 1);
+      const double low1 = iLow(_Symbol, _Period, 1); // perf-allowed
       if(close1 <= low_ref_3 && low1 <= low_ref_3)
         {
          g_combo_buy_setup_count++;
@@ -302,7 +304,7 @@ void AdvanceState()
      }
    if(close1 > 0.0 && high_ref_3 > 0.0)
      {
-      const double high1 = iHigh(_Symbol, _Period, 1);
+      const double high1 = iHigh(_Symbol, _Period, 1); // perf-allowed
       if(close1 >= high_ref_3 && high1 >= high_ref_3)
         {
          g_combo_sell_setup_count++;
@@ -331,14 +333,14 @@ void AdvanceState()
      }
 
    // --- 7) TD-Combo Countdown progression ------------------------------------
-   const double low_ref_2  = iLow(_Symbol, _Period, 2);
-   const double high_ref_2 = iHigh(_Symbol, _Period, 2);
-   const double close_ref_2 = iClose(_Symbol, _Period, 2);
+   const double low_ref_2  = iLow(_Symbol, _Period, 2);   // perf-allowed
+   const double high_ref_2 = iHigh(_Symbol, _Period, 2);  // perf-allowed
+   const double close_ref_2 = iClose(_Symbol, _Period, 2); // perf-allowed
 
    if(g_combo_buy_cd_armed)
      {
       g_combo_buy_cd_age++;
-      const double low1 = iLow(_Symbol, _Period, 1);
+      const double low1 = iLow(_Symbol, _Period, 1); // perf-allowed
       bool qual = (close1 <= low_ref_3 && low1 < low_ref_2 && close1 < close_ref_2);
       if(qual && g_combo_buy_cd_count > 0)
         {
@@ -352,7 +354,7 @@ void AdvanceState()
          g_combo_buy_cd_count++;
          if(g_combo_buy_cd_count >= strategy_countdown_length)
            {
-            g_combo_buy_cd_completed_time = iTime(_Symbol, _Period, 1);
+            g_combo_buy_cd_completed_time = iTime(_Symbol, _Period, 1); // perf-allowed
             g_combo_buy_cd_complete = true;
             g_combo_buy_cd_armed = false;
             g_combo_buy_cd_count = 0;
@@ -368,7 +370,7 @@ void AdvanceState()
    if(g_combo_sell_cd_armed)
      {
       g_combo_sell_cd_age++;
-      const double high1 = iHigh(_Symbol, _Period, 1);
+      const double high1 = iHigh(_Symbol, _Period, 1); // perf-allowed
       bool qual = (close1 >= high_ref_3 && high1 > high_ref_2 && close1 > close_ref_2);
       if(qual && g_combo_sell_cd_count > 0)
         {
@@ -382,7 +384,7 @@ void AdvanceState()
          g_combo_sell_cd_count++;
          if(g_combo_sell_cd_count >= strategy_countdown_length)
            {
-            g_combo_sell_cd_completed_time = iTime(_Symbol, _Period, 1);
+            g_combo_sell_cd_completed_time = iTime(_Symbol, _Period, 1); // perf-allowed
             g_combo_sell_cd_complete = true;
             g_combo_sell_cd_armed = false;
             g_combo_sell_cd_count = 0;
@@ -415,9 +417,9 @@ bool CalculateTDRiskLevel(datetime seq_start_time, bool is_long, double entry_pr
    int max_tr_shift = -1;
    for(int s = 1; s <= start_shift; ++s)
      {
-      double prev_c = iClose(_Symbol, PERIOD_H4, s + 1);
-      double h = iHigh(_Symbol, PERIOD_H4, s);
-      double l = iLow(_Symbol, PERIOD_H4, s);
+      double prev_c = iClose(_Symbol, PERIOD_H4, s + 1); // perf-allowed
+      double h = iHigh(_Symbol, PERIOD_H4, s); // perf-allowed
+      double l = iLow(_Symbol, PERIOD_H4, s); // perf-allowed
       if(prev_c <= 0.0 || h <= 0.0 || l <= 0.0)
          continue;
       double tr = MathMax(h, prev_c) - MathMin(l, prev_c);
@@ -431,8 +433,8 @@ bool CalculateTDRiskLevel(datetime seq_start_time, bool is_long, double entry_pr
    if(max_tr_shift < 1)
       return false;
 
-   double h_max = iHigh(_Symbol, PERIOD_H4, max_tr_shift);
-   double l_max = iLow(_Symbol, PERIOD_H4, max_tr_shift);
+   double h_max = iHigh(_Symbol, PERIOD_H4, max_tr_shift); // perf-allowed
+   double l_max = iLow(_Symbol, PERIOD_H4, max_tr_shift);  // perf-allowed
 
    if(is_long)
      {
@@ -491,12 +493,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double sma200_d1 = QM_SMA(_Symbol, PERIOD_D1, 200, 1);
-   const double close_d1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double close_d1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed
    if(sma200_d1 <= 0.0 || close_d1 <= 0.0)
       return false;
 
    if(g_fire_buy)
      {
+      if(g_last_buy_entry_time > 0)
+        {
+         int bars_since = iBarShift(_Symbol, _Period, g_last_buy_entry_time);
+         if(bars_since >= 0 && bars_since < strategy_cooldown_bars)
+            return false;
+        }
+
       if(close_d1 <= sma200_d1)
          return false;
 
@@ -513,11 +522,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = sl;
       req.tp     = tp;
       req.reason = "overlay_buy";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
+      g_last_buy_entry_time = iTime(_Symbol, _Period, 0); // perf-allowed
       return true;
      }
 
    if(g_fire_sell)
      {
+      if(g_last_sell_entry_time > 0)
+        {
+         int bars_since = iBarShift(_Symbol, _Period, g_last_sell_entry_time);
+         if(bars_since >= 0 && bars_since < strategy_cooldown_bars)
+            return false;
+        }
+
       if(close_d1 >= sma200_d1)
          return false;
 
@@ -534,6 +553,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = sl;
       req.tp     = tp;
       req.reason = "overlay_sell";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
+      g_last_sell_entry_time = iTime(_Symbol, _Period, 0); // perf-allowed
       return true;
      }
 
@@ -770,7 +792,7 @@ void OnTick()
       ulong out_ticket = 0;
       if(QM_TM_OpenPosition(req, out_ticket))
         {
-         g_entry_bar_time = iTime(_Symbol, _Period, 0);
+         g_entry_bar_time = iTime(_Symbol, _Period, 0); // perf-allowed
          g_bars_in_trade = 0;
          g_sl_moved_to_be = false;
          g_partial_close_done = false;

@@ -176,7 +176,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl                  = QM_StopRulesNormalizePrice(_Symbol, sl_price);
    req.tp                  = QM_StopRulesNormalizePrice(_Symbol, tp_price);
    req.reason               = long_setup ? "velox_mtf_marubozu_long" : "velox_mtf_marubozu_short";
-   req.symbol_slot          = 0;
+   req.symbol_slot          = qm_magic_slot_offset;
    req.expiration_seconds   = 0;
    return true;
   }

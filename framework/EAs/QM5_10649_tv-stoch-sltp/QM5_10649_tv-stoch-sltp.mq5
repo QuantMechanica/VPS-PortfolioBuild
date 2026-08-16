@@ -79,7 +79,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl                 = QM_StopRulesNormalizePrice(_Symbol, entry_price * (1.0 - strategy_sl_pct / 100.0));
    req.tp                 = QM_StopRulesNormalizePrice(_Symbol, entry_price * (1.0 + strategy_tp_pct / 100.0));
    req.reason              = "stoch_oversold_cross";
-   req.symbol_slot         = 0;
+   req.symbol_slot         = qm_magic_slot_offset;
    req.expiration_seconds  = 0;
    return true;
   }
