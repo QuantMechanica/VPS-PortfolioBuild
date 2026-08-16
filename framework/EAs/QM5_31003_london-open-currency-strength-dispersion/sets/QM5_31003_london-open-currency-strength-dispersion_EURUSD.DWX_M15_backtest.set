@@ -1,0 +1,25 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        31003
+; ea_slug:      london-open-currency-strength-dispersion
+; ea_version:   v5.0
+; set_version:  s20260816-001
+; symbol:       EURUSD.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   ffc12e82c06cdae5ef142bdfb0422a9316e5973556433b210492a6323b4bc3b9
+; author:       Development
+; date:         2026-08-16
+;==========================================================
+qm_ea_id=31003
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_31003_london-open-currency-strength-dispersion.md
+InpEvalHourGMT=8
+InpMinDispersion=0.80

@@ -16110,3 +16110,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41029,wti-flow-agree,0,XTIUSD.DWX,410290000,2026-08-16T19:02:14Z,Codex,active
 41030,xauxag-flowdiv,0,XAUUSD.DWX,410300000,2026-08-16T19:44:18Z,Codex,active
 41030,xauxag-flowdiv,1,XAGUSD.DWX,410300001,2026-08-16T19:44:18Z,Codex,active
+30002,zigzag-gold-breakout-happy-gold,0,XAUUSD.DWX,300020000,2026-08-16T20:45:59Z,Codex,active
+30003,multisystem-gold-scalper-forex-gold-investor,0,XAUUSD.DWX,300030000,2026-08-16T20:45:59Z,Codex,active
+30008,rollover-hour-multifilter-forex-fury,0,EURUSD.DWX,300080000,2026-08-16T20:45:59Z,Codex,active
+30008,rollover-hour-multifilter-forex-fury,1,GBPUSD.DWX,300080001,2026-08-16T20:45:59Z,Codex,active
+30008,rollover-hour-multifilter-forex-fury,2,USDCHF.DWX,300080002,2026-08-16T20:45:59Z,Codex,active
+31002,us-indices-opening-range-breakout,0,WS30.DWX,310020000,2026-08-16T20:45:59Z,Codex,active
+31002,us-indices-opening-range-breakout,1,NDX.DWX,310020001,2026-08-16T20:45:59Z,Codex,active
+31003,london-open-currency-strength-dispersion,0,GBPJPY.DWX,310030000,2026-08-16T20:45:59Z,Codex,active
+31003,london-open-currency-strength-dispersion,1,EURUSD.DWX,310030001,2026-08-16T20:45:59Z,Codex,active
+31003,london-open-currency-strength-dispersion,2,AUDUSD.DWX,310030002,2026-08-16T20:45:59Z,Codex,active
