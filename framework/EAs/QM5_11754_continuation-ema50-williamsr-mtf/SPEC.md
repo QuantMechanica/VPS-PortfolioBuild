@@ -4,7 +4,7 @@
 **Slug:** `continuation-ema50-williamsr-mtf`
 **Source:** `8fc38d7b-ef60-57f3-97f3-24eab132b1d9` (see approved card source citation)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-11
+**Last revised:** 2026-08-16
 
 ---
 
@@ -76,7 +76,7 @@ This card was mechanised from:
 **Source ID:** `8fc38d7b-ef60-57f3-97f3-24eab132b1d9`
 **Source type:** book / trading PDF
 **Pointer:** Cecil Robles, "The Continuation Method", in `459341651-6-Simple-Strategies-for-Trading-Forex-pdf.pdf`, pages 35-54.
-**R1-R4 verdict (Q00):** all R1-R4 PASS per `artifacts/cards_approved/QM5_11754_continuation-ema50-williamsr-mtf.md`
+**R1-R4 verdict (Q00):** G0 is `APPROVED`; R1 lineage is recorded and R2-R4 are PASS per `artifacts/cards_approved/QM5_11754_continuation-ema50-williamsr-mtf.md`. The card body retains an older R1 FAIL assessment that conflicts with its approved frontmatter and is disclosed for reviewer follow-up.
 
 ---
 
@@ -97,3 +97,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 5751e7a0-f1c0-43cd-bb8c-f00e07e30436 |
+| v2 | 2026-08-16 | Rebuilt on the current V5 skeleton; restored MAE/news/entry wiring and once-per-bar SMA trail caching | c46de7c2-9a6c-4a82-a1cf-85d9eec4231c |

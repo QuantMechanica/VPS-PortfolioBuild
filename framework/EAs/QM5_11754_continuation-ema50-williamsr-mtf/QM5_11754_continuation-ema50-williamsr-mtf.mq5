@@ -83,6 +83,50 @@ input int    strategy_atr_period        = 14;
 input double strategy_atr_tp_mult       = 5.0;
 input int    strategy_sl_buffer_points  = 10;
 
+// Closed-bar cache for the card's post-2R SMA(5) trail.  OnTick advances
+// these values exactly once per H4 bar; the per-tick management path only
+// compares cached values with the current Bid/Ask.
+double g_trail_close_1 = 0.0;
+double g_trail_close_2 = 0.0;
+double g_trail_sma_1   = 0.0;
+double g_trail_sma_2   = 0.0;
+bool   g_trail_cache_ready = false;
+
+// One position per (magic, symbol) is enforced by the framework.  Retain its
+// original stop distance so moving the stop never changes the 2R trigger.
+ulong  g_initial_risk_ticket = 0;
+double g_initial_risk_price  = 0.0;
+bool   g_trail_armed         = false;
+
+void AdvanceState_OnNewBar()
+  {
+   g_trail_cache_ready = false;
+   g_trail_close_1 = 0.0;
+   g_trail_close_2 = 0.0;
+   g_trail_sma_1 = 0.0;
+   g_trail_sma_2 = 0.0;
+
+   if(strategy_trail_sma_period < 2)
+      return;
+
+   MqlRates bar_1;
+   MqlRates bar_2;
+   if(!QM_ReadBar(_Symbol, PERIOD_H4, 1, bar_1) ||
+      !QM_ReadBar(_Symbol, PERIOD_H4, 2, bar_2))
+      return;
+
+   const double sma_1 = QM_SMA(_Symbol, PERIOD_H4, strategy_trail_sma_period, 1);
+   const double sma_2 = QM_SMA(_Symbol, PERIOD_H4, strategy_trail_sma_period, 2);
+   if(bar_1.close <= 0.0 || bar_2.close <= 0.0 || sma_1 <= 0.0 || sma_2 <= 0.0)
+      return;
+
+   g_trail_close_1 = bar_1.close;
+   g_trail_close_2 = bar_2.close;
+   g_trail_sma_1 = sma_1;
+   g_trail_sma_2 = sma_2;
+   g_trail_cache_ready = true;
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -118,12 +162,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const string sym = _Symbol;
-   const double d1_close = iClose(sym, PERIOD_D1, 1); // perf-allowed: closed-bar card price reference
+   MqlRates d1_bar;
+   MqlRates h4_bar;
+   if(!QM_ReadBar(sym, PERIOD_D1, 1, d1_bar) ||
+      !QM_ReadBar(sym, PERIOD_H4, 1, h4_bar))
+      return false;
+
+   const double d1_close = d1_bar.close;
    const double d1_ema = QM_EMA(sym, PERIOD_D1, strategy_ema_period, 1);
    const double d1_ema_prev = QM_EMA(sym, PERIOD_D1, strategy_ema_period, 2);
-   const double h4_close = iClose(sym, PERIOD_H4, 1); // perf-allowed: closed signal-bar pullback check
-   const double h4_high = iHigh(sym, PERIOD_H4, 1); // perf-allowed: signal-bar structure stop
-   const double h4_low = iLow(sym, PERIOD_H4, 1); // perf-allowed: signal-bar structure stop
+   const double h4_close = h4_bar.close;
+   const double h4_high = h4_bar.high;
+   const double h4_low = h4_bar.low;
    const double h4_ema = QM_EMA(sym, PERIOD_H4, strategy_ema_period, 1);
    const double wpr_now = QM_WPR(sym, PERIOD_H4, strategy_wpr_period, 1);
    const double wpr_prev = QM_WPR(sym, PERIOD_H4, strategy_wpr_period, 2);
@@ -175,19 +225,15 @@ void Strategy_ManageOpenPosition()
    // Trade Management: after price reaches 2R, trail SL with the last two
    // H4 closes relative to SMA(5), as specified by the card.
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
+   if(magic <= 0 || !g_trail_cache_ready || strategy_trail_rr_trigger <= 0.0)
       return;
 
-   const double close1 = iClose(_Symbol, PERIOD_H4, 1); // perf-allowed: O(1) closed-bar trail reference
-   const double close2 = iClose(_Symbol, PERIOD_H4, 2); // perf-allowed: O(1) closed-bar trail reference
-   const double sma1 = QM_SMA(_Symbol, PERIOD_H4, strategy_trail_sma_period, 1);
-   const double sma2 = QM_SMA(_Symbol, PERIOD_H4, strategy_trail_sma_period, 2);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(close1 <= 0.0 || close2 <= 0.0 || sma1 <= 0.0 || sma2 <= 0.0 ||
-      bid <= 0.0 || ask <= 0.0)
+   if(bid <= 0.0 || ask <= 0.0)
       return;
 
+   bool found_position = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -198,36 +244,56 @@ void Strategy_ManageOpenPosition()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
+      found_position = true;
+
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double current_sl = PositionGetDouble(POSITION_SL);
       if(open_price <= 0.0 || current_sl <= 0.0)
          continue;
 
-      const double risk = MathAbs(open_price - current_sl);
-      if(risk <= 0.0)
+      if(g_initial_risk_ticket != ticket || g_initial_risk_price <= 0.0)
+        {
+         g_initial_risk_ticket = ticket;
+         g_initial_risk_price = MathAbs(open_price - current_sl);
+         g_trail_armed = false;
+        }
+      if(g_initial_risk_price <= 0.0)
          continue;
 
       if(ptype == POSITION_TYPE_BUY)
         {
-         if((bid - open_price) < risk * strategy_trail_rr_trigger)
+         if(!g_trail_armed &&
+            (bid - open_price) >= g_initial_risk_price * strategy_trail_rr_trigger)
+            g_trail_armed = true;
+         if(!g_trail_armed)
             continue;
-         if(!(close1 < sma1 && close2 < sma2))
+         if(!(g_trail_close_1 < g_trail_sma_1 && g_trail_close_2 < g_trail_sma_2))
             continue;
-         const double new_sl = NormalizeDouble(MathMin(close1, close2), _Digits);
+         const double new_sl = NormalizeDouble(MathMin(g_trail_close_1, g_trail_close_2), _Digits);
          if(new_sl > current_sl && new_sl < bid)
             QM_TM_MoveSL(ticket, new_sl, "SMA5_AFTER_2R_LONG");
         }
       else if(ptype == POSITION_TYPE_SELL)
         {
-         if((open_price - ask) < risk * strategy_trail_rr_trigger)
+         if(!g_trail_armed &&
+            (open_price - ask) >= g_initial_risk_price * strategy_trail_rr_trigger)
+            g_trail_armed = true;
+         if(!g_trail_armed)
             continue;
-         if(!(close1 > sma1 && close2 > sma2))
+         if(!(g_trail_close_1 > g_trail_sma_1 && g_trail_close_2 > g_trail_sma_2))
             continue;
-         const double new_sl = NormalizeDouble(MathMax(close1, close2), _Digits);
+         const double new_sl = NormalizeDouble(MathMax(g_trail_close_1, g_trail_close_2), _Digits);
          if(new_sl < current_sl && new_sl > ask)
             QM_TM_MoveSL(ticket, new_sl, "SMA5_AFTER_2R_SHORT");
         }
+     }
+
+   if(!found_position)
+     {
+      g_initial_risk_ticket = 0;
+      g_initial_risk_price = 0.0;
+      g_trail_armed = false;
      }
   }
 
@@ -285,28 +351,30 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any per-tick guard can
+   // return. The kill-switch retains a compatibility fallback for older EAs.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   // Per-tick: trade management can adjust SL/TP on open positions.
+   // Consume the closed-bar event once. Refresh indicator/bar state before the
+   // per-tick management hook; the hook itself reads only this cache.
+   const bool is_new_bar = QM_IsNewBar();
+   if(is_new_bar)
+     {
+      AdvanceState_OnNewBar();
+      QM_EquityStreamOnNewBar();
+     }
+
+   // Per-tick: trade management can adjust SL/TP from cached closed-bar state.
    Strategy_ManageOpenPosition();
 
    // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
@@ -324,17 +392,20 @@ void OnTick()
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
-   if(!QM_IsNewBar())
+   // News blackouts suppress new entries only. Position management and exits
+   // above continue through the blackout window.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows || !is_new_bar)
       return;
 
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
-   QM_EquityStreamOnNewBar();
-
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
