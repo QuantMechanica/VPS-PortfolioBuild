@@ -38,26 +38,38 @@ input int    strategy_max_hold_bars     = 12;
 double g_active_pattern_high = 0.0;
 double g_active_pattern_low  = 0.0;
 
-bool PatternPySignal(int &direction, double &pattern_high, double &pattern_low)
+bool PatternPySignal(int &direction,
+                     double &pattern_high,
+                     double &pattern_low,
+                     double &close_last)
   {
    direction = 0;
    pattern_high = 0.0;
    pattern_low = 0.0;
+   close_last = 0.0;
 
    if(strategy_window != 3 || strategy_threshold <= 0.0)
       return false;
 
-   if(Bars(_Symbol, _Period) < 6) // perf-allowed: bounded PatternPy warmup guard; no QM_Bars helper exists.
+   MqlRates right_bar;
+   MqlRates mid_bar;
+   MqlRates left_bar;
+   MqlRates roll_prev2_bar;
+   if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, right_bar) ||
+      !QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 2, mid_bar) ||
+      !QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 3, left_bar) ||
+      !QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 4, roll_prev2_bar))
       return false;
 
-   const double h_roll_prev2 = iHigh(_Symbol, _Period, 4); // perf-allowed: PatternPy rolling-window source rule.
-   const double h_left       = iHigh(_Symbol, _Period, 3); // perf-allowed: PatternPy source High.shift(1).
-   const double h_mid        = iHigh(_Symbol, _Period, 2); // perf-allowed: PatternPy labelled bar High.
-   const double h_right      = iHigh(_Symbol, _Period, 1); // perf-allowed: PatternPy source High.shift(-1), now closed.
-   const double l_roll_prev2 = iLow(_Symbol, _Period, 4);  // perf-allowed: PatternPy rolling-window source rule.
-   const double l_left       = iLow(_Symbol, _Period, 3);  // perf-allowed: PatternPy source Low.shift(1).
-   const double l_mid        = iLow(_Symbol, _Period, 2);  // perf-allowed: PatternPy labelled bar Low.
-   const double l_right      = iLow(_Symbol, _Period, 1);  // perf-allowed: PatternPy source Low.shift(-1), now closed.
+   const double h_roll_prev2 = roll_prev2_bar.high;
+   const double h_left       = left_bar.high;
+   const double h_mid        = mid_bar.high;
+   const double h_right      = right_bar.high;
+   const double l_roll_prev2 = roll_prev2_bar.low;
+   const double l_left       = left_bar.low;
+   const double l_mid        = mid_bar.low;
+   const double l_right      = right_bar.low;
+   close_last = right_bar.close;
 
    if(h_roll_prev2 <= 0.0 || h_left <= 0.0 || h_mid <= 0.0 || h_right <= 0.0 ||
       l_roll_prev2 <= 0.0 || l_left <= 0.0 || l_mid <= 0.0 || l_right <= 0.0)
@@ -146,7 +158,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    int direction = 0;
    double pattern_high = 0.0;
    double pattern_low = 0.0;
-   if(!PatternPySignal(direction, pattern_high, pattern_low))
+   double close_last = 0.0;
+   if(!PatternPySignal(direction, pattern_high, pattern_low, close_last))
+      return false;
+   if(close_last <= 0.0)
       return false;
 
    const QM_OrderType side = (direction > 0) ? QM_BUY : QM_SELL;
@@ -192,7 +207,8 @@ bool Strategy_ExitSignal()
    int direction = 0;
    double pattern_high = 0.0;
    double pattern_low = 0.0;
-   const bool have_pattern = PatternPySignal(direction, pattern_high, pattern_low);
+   double close_last = 0.0;
+   const bool have_pattern = PatternPySignal(direction, pattern_high, pattern_low, close_last);
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -210,7 +226,6 @@ bool Strategy_ExitSignal()
       if(opened_at > 0 && hold_seconds > 0 && TimeCurrent() - opened_at >= hold_seconds)
          return true;
 
-      const double close_last = iClose(_Symbol, _Period, 1); // perf-allowed: fixed closed-bar pattern-break exit.
       if(close_last > 0.0)
         {
          if(ptype == POSITION_TYPE_BUY && g_active_pattern_low > 0.0 && close_last < g_active_pattern_low)
@@ -269,21 +284,17 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any per-tick guard can
+   // return. QM_KillSwitchCheck retains the same call as a compatibility
+   // fallback for pre-template EAs; keep this explicit hook in all new builds.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
-
    if(QM_FrameworkHandleFridayClose())
       return;
    if(Strategy_NoTradeFilter())
@@ -307,12 +318,23 @@ void OnTick()
         }
      }
 
+   // News blackouts suppress new entries only. Position management and exits
+   // above continue to run through the blackout window.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

@@ -4,7 +4,7 @@
 **Slug:** pp-double-tb
 **Source:** 72f9fcfa-6c75-5544-80c4-31e15c9817ab
 **Author of this spec:** Codex
-**Last revised:** 2026-06-11
+**Last revised:** 2026-08-16
 
 ---
 
@@ -94,3 +94,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 1bed8e64-2280-4cfb-8061-e50d98ad444c |
+| v2 | 2026-08-16 | Rebuilt on the current V5 skeleton; replaced raw OHLC calls with `QM_ReadBar` and restored canonical MAE/news/entry wiring | c3507ac8-0628-4236-ae09-7a90710325ff |
