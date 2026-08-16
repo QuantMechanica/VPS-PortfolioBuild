@@ -49,6 +49,11 @@ spread never blocks (no fail-closed).
   - Stage 2 (profit ≥ `1.5 × ATR(14)`): switch to a Parabolic SAR(0.02, 0.2) trail;
     move the stop to the closed-bar SAR level only when it improves (tightens) the
     current stop.
+- **Operational bound:** the opposite-stack exit remains evaluated per tick,
+  while stop submissions are deduplicated to one attempt per position, closed
+  H4 bar, and trailing stage. A Stage 1→Stage 2 transition may therefore submit
+  once in the same H4 bar. This preserves the closed-bar trailing inputs while
+  preventing favorable ticks from generating unbounded `TM_MODIFY` traffic.
 - The fresh-cross gate applies at entry only, never as a continuous exit
   (per Hopwood's TS5 rationale — freshness keeps us out of late entries, it does
   not chop us out of winners).
@@ -157,3 +162,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-11 | Initial build from card | R1-recovery build (recovered from QM5_1621); commit pending |
+| v1.1 | 2026-08-16 | Q02 log-bomb containment | Deduplicate trail submissions by ticket, closed H4 bar, and stage; per-tick opposite-stack exit unchanged. |

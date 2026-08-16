@@ -79,6 +79,44 @@ input int    cooldown_bars              = 4;     // no same-direction re-entry w
 datetime g_last_long_entry_time  = 0;
 datetime g_last_short_entry_time = 0;
 
+// Log-bomb containment for the per-tick management hook.  The trailing
+// inputs are closed-bar values, so repeatedly submitting the same stage for
+// the same ticket inside one H4 bar only ratchets the stop by individual
+// ticks.  That produced 1.59m TM_MODIFY events in one Q02 run and tripped the
+// tester-journal rate guard.  Keep exits per-tick, but admit at most one trail
+// submission per (ticket, closed bar, stage).  A Stage 1 -> Stage 2 transition
+// remains eligible in the same bar because the stage is part of the key.
+struct StrategyTrailAttempt
+  {
+   ulong    ticket;
+   datetime closed_bar_time;
+   int      stage;
+  };
+StrategyTrailAttempt g_trail_attempts[];
+
+bool Strategy_AllowTrailAttempt(const ulong ticket,
+                                const datetime closed_bar_time,
+                                const int stage)
+  {
+   const int count = ArraySize(g_trail_attempts);
+   for(int i = 0; i < count; ++i)
+     {
+      if(g_trail_attempts[i].ticket != ticket || g_trail_attempts[i].stage != stage)
+         continue;
+      if(g_trail_attempts[i].closed_bar_time == closed_bar_time)
+         return false;
+      g_trail_attempts[i].closed_bar_time = closed_bar_time;
+      return true;
+     }
+
+   if(ArrayResize(g_trail_attempts, count + 1) != count + 1)
+      return false;
+   g_trail_attempts[count].ticket = ticket;
+   g_trail_attempts[count].closed_bar_time = closed_bar_time;
+   g_trail_attempts[count].stage = stage;
+   return true;
+  }
+
 // -----------------------------------------------------------------------------
 // Bespoke bounded structural helpers (no QM_* reader exists for Donchian /
 // fresh-cross-age). Called only from the new-bar-gated entry path and the
@@ -322,6 +360,8 @@ void Strategy_ManageOpenPosition()
       if(profit_dist >= trail_activate_atr_mult * atr14_1)
         {
          // Stage 2 — PSAR trail; only move SL if PSAR improves the current stop.
+         if(!Strategy_AllowTrailAttempt(ticket, c1.time, 2))
+            continue;
          if(ptype == POSITION_TYPE_BUY)
            {
             if(sar_1 > 0.0 && sar_1 < bid && (cur_sl <= 0.0 || sar_1 > cur_sl))
@@ -335,8 +375,9 @@ void Strategy_ManageOpenPosition()
         }
       else
         {
-         // Stage 1 — ATR trail.
-         QM_TM_TrailATR(ticket, atr_period, sl_atr_mult);
+         // Stage 1 — ATR trail, bounded to one submission per closed H4 bar.
+         if(Strategy_AllowTrailAttempt(ticket, c1.time, 1))
+            QM_TM_TrailATR(ticket, atr_period, sl_atr_mult);
         }
      }
   }
