@@ -4,7 +4,7 @@
 **Slug:** lien-perfect-order-sma-stack
 **Source:** b840c053-5cd2-5e17-b25b-d495e73a33ab
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-08-16
 
 ---
 
@@ -97,3 +97,5 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | 9951ede4-0a97-41bc-b834-9268c0b80de3 |
+| v1.1 | 2026-08-11 | Q02 runtime repair | Cached the closed-D1 Perfect Order state and SMA trail values; strategy mechanics unchanged. |
+| v1.2 | 2026-08-16 | Framework rebind | Recompiled the repaired EA against the committed host-slot magic fix; strategy mechanics unchanged. |
