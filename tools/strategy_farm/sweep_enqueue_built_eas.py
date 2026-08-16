@@ -171,7 +171,10 @@ def _q08_setfile_deterministic_defect(setfile_path):
 
 try:
     import strategy_priority as _sp
-    _SCORES = _sp.compute_scores()
+    _SCORES = _sp.compute_scores(
+        cards_dir=FARM_ROOT / "artifacts" / "cards_approved",
+        db=DB,
+    )
 except Exception:
     _SCORES = {}
 
@@ -248,6 +251,24 @@ def insert_wi(
     ):
         report.setdefault("non_dwx_refused", []).append({"ea_id": ea_id, "symbol": symbol})
         return None
+    archive_admission = farmctl.custom_history_archive_admission(
+        FARM_ROOT,
+        ea_id=str(ea_id),
+        symbols=[symbol],
+        payload=payload,
+    )
+    if not archive_admission.get("ok"):
+        report.setdefault("archive_coverage_refused", []).append({
+            "ea_id": ea_id,
+            "phase": phase,
+            "symbol": symbol,
+            "setfile": Path(setfile).name,
+            "reason": archive_admission.get("reason"),
+            "detail": archive_admission.get("detail"),
+            "missing_symbols": archive_admission.get("missing_symbols") or [],
+        })
+        return None
+    farmctl._stamp_custom_history_archive_admission(payload, archive_admission)
     farmctl._apply_q02_multisymbol_timeout_min(
         payload,
         phase=phase,

@@ -2193,6 +2193,19 @@ def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> d
     except OSError:
         pass
 
+    archive_admission = custom_history_archive_admission(
+        root,
+        ea_id=ea_id,
+        card_path=card_path,
+    )
+    if not archive_admission.get("ok"):
+        archive_detail = ",".join(
+            archive_admission.get("missing_symbols") or []
+        ) or str(archive_admission.get("detail") or "unknown")
+        errors.append(
+            f"{archive_admission.get('reason')}:{archive_detail}"
+        )
+
     slug_index = _ea_registry_slug_index(REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv")
     if ea_id and slug:
         registry_ea_id = ea_id[4:] if ea_id.upper().startswith("QM5_") else ea_id
@@ -2221,7 +2234,12 @@ def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> d
     if len(sibling_cards) > 1:
         warnings.append(f"multiple_approved_cards_for_ea:{ea_id}:{sibling_cards}")
 
-    return {"ok": not errors, "errors": errors, "warnings": warnings}
+    return {
+        "ok": not errors,
+        "errors": errors,
+        "warnings": warnings,
+        "custom_history_archive_admission": archive_admission,
+    }
 
 
 def strategy_card_fingerprint(card_path: Path, fm: dict[str, Any] | None = None) -> str:
@@ -2824,6 +2842,213 @@ def _card_universe_symbols(card_text: str) -> set[str]:
         r")(?:\.DWX)?\b"
     )
     return {_normalise_card_symbol(m.group(0)) for m in symbol_re.finditer(search_text)}
+
+
+CUSTOM_HISTORY_ARCHIVE_COVERAGE_MISSING = (
+    "custom_history_manifest_archive_coverage_missing"
+)
+CUSTOM_HISTORY_ARCHIVE_ADMISSION_INVALID = (
+    "custom_history_manifest_admission_invalid"
+)
+
+
+def _load_active_custom_history_archive_manifest(
+    root: Path,
+) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    """Load the OWNER-approved archive manifest bound by the active gate."""
+
+    try:
+        import custom_history_contract
+        import custom_history_gate
+    except ModuleNotFoundError:  # pragma: no cover - package import path
+        from tools.strategy_farm import custom_history_contract, custom_history_gate
+
+    activation = custom_history_gate.load_activation(root)
+    if activation is None:
+        return None, {"required": False, "status": "NOT_ACTIVE"}
+    manifest_path = Path(str(activation.get("manifest_path") or ""))
+    manifest = custom_history_contract.load_manifest(
+        manifest_path,
+        require_owner_approval=True,
+    )
+    return manifest, {
+        "required": True,
+        "status": "ACTIVE",
+        "activation_sha256": str(activation.get("activation_sha256") or ""),
+        "manifest_path": str(manifest_path),
+        "manifest_sha256": str(manifest.get("manifest_sha256") or ""),
+    }
+
+
+def _custom_history_admission_symbols(
+    ea_id: str,
+    *,
+    symbols: list[object] | tuple[object, ...] | set[object] | None = None,
+    payload: dict[str, Any] | None = None,
+    basket_manifest: dict[str, Any] | None = None,
+    card_path: Path | None = None,
+) -> list[str]:
+    """Resolve every real Custom-history symbol an EA can read."""
+
+    values: list[object] = list(symbols or [])
+    for source in (payload, basket_manifest):
+        if not isinstance(source, dict):
+            continue
+        values.append(source.get("host_symbol"))
+        for field in ("basket_symbols", "conversion_symbols", "traded_symbols"):
+            declared = source.get(field)
+            if isinstance(declared, list):
+                values.extend(declared)
+
+    dependency_manifest = basket_manifest
+    if dependency_manifest is None:
+        dependency_manifest = _load_multisymbol_dependency_manifest(str(ea_id))
+    if isinstance(dependency_manifest, dict):
+        values.append(dependency_manifest.get("host_symbol"))
+        for field in ("basket_symbols", "conversion_symbols", "traded_symbols"):
+            declared = dependency_manifest.get(field)
+            if isinstance(declared, list):
+                values.extend(declared)
+
+    if card_path is not None:
+        try:
+            values.extend(
+                sorted(
+                    _card_universe_symbols(
+                        Path(card_path).read_text(
+                            encoding="utf-8-sig",
+                            errors="ignore",
+                        )
+                    )
+                )
+            )
+        except OSError:
+            pass
+
+    resolved: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        symbol = str(value or "").strip().upper()
+        if not symbol or symbol in seen:
+            continue
+        seen.add(symbol)
+        resolved.append(symbol)
+    return resolved
+
+
+def custom_history_archive_admission(
+    root: Path,
+    *,
+    ea_id: str,
+    symbols: list[object] | tuple[object, ...] | set[object] | None = None,
+    payload: dict[str, Any] | None = None,
+    basket_manifest: dict[str, Any] | None = None,
+    card_path: Path | None = None,
+    archive_manifest: dict[str, Any] | None = None,
+    activation_metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Fail an admission before queueing when any declared archive is absent.
+
+    The active Custom-history isolation manifest is the authority.  A supplied
+    manifest is supported for callers that already loaded the same authority
+    and for hermetic regression tests; it is still fully validated by the
+    copy-on-claim selector.
+    """
+
+    requested = _custom_history_admission_symbols(
+        str(ea_id),
+        symbols=symbols,
+        payload=payload,
+        basket_manifest=basket_manifest,
+        card_path=card_path,
+    )
+    metadata = dict(activation_metadata or {})
+    try:
+        if archive_manifest is None:
+            archive_manifest, metadata = _load_active_custom_history_archive_manifest(
+                Path(root)
+            )
+        else:
+            metadata.setdefault("required", True)
+            metadata.setdefault("status", "ACTIVE")
+            metadata.setdefault(
+                "manifest_sha256",
+                str(archive_manifest.get("manifest_sha256") or ""),
+            )
+        if archive_manifest is None:
+            return {
+                "ok": True,
+                "ea_id": str(ea_id),
+                "requested_symbols": requested,
+                **metadata,
+            }
+
+        try:
+            import custom_history_copy_on_claim
+        except ModuleNotFoundError:  # pragma: no cover - package import path
+            from tools.strategy_farm import custom_history_copy_on_claim
+
+        rows, selected, ignored = (
+            custom_history_copy_on_claim.select_archive_rows_for_symbols(
+                archive_manifest,
+                requested,
+            )
+        )
+    except Exception as exc:
+        detail = str(exc)
+        missing_prefix = "manifest has no archive rows for claimed symbols:"
+        missing_symbols: list[str] = []
+        reason = CUSTOM_HISTORY_ARCHIVE_ADMISSION_INVALID
+        if detail.startswith(missing_prefix):
+            reason = CUSTOM_HISTORY_ARCHIVE_COVERAGE_MISSING
+            missing_symbols = [
+                item.strip().upper()
+                for item in detail[len(missing_prefix):].split(",")
+                if item.strip()
+            ]
+        return {
+            **metadata,
+            "ok": False,
+            "required": True,
+            "status": "FAIL",
+            "reason": reason,
+            "detail": detail,
+            "ea_id": str(ea_id),
+            "requested_symbols": requested,
+            "missing_symbols": missing_symbols,
+        }
+
+    return {
+        "ok": True,
+        "ea_id": str(ea_id),
+        "requested_symbols": requested,
+        "selected_symbols": selected,
+        "ignored_non_custom_symbols": ignored,
+        "selected_archive_rows": len(rows),
+        **metadata,
+    }
+
+
+def _stamp_custom_history_archive_admission(
+    payload: dict[str, Any],
+    admission: dict[str, Any],
+) -> None:
+    """Bind the successful active-manifest admission into a work-item payload."""
+
+    if not admission.get("ok") or not admission.get("required"):
+        return
+    payload["custom_history_archive_admission"] = {
+        key: admission[key]
+        for key in (
+            "status",
+            "activation_sha256",
+            "manifest_path",
+            "manifest_sha256",
+            "selected_symbols",
+            "selected_archive_rows",
+        )
+        if key in admission
+    }
 
 
 def _is_multi_asset_card(card_text: str, symbols: set[str]) -> bool:
@@ -16819,6 +17044,24 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
     if surviving_symbols:
         symbol_set = set(surviving_symbols)
         setfiles = [(s, p) for s, p in setfiles if s in symbol_set]
+    if not setfiles:
+        return [], skipped
+    archive_admission = custom_history_archive_admission(
+        root,
+        ea_id=str(ea_id),
+        symbols=[symbol for symbol, _ in setfiles],
+        basket_manifest=basket_manifest,
+    )
+    if not archive_admission.get("ok"):
+        skipped.append({
+            "ea_id": ea_id,
+            "phase": phase,
+            "reason": archive_admission.get("reason"),
+            "detail": archive_admission.get("detail"),
+            "missing_symbols": archive_admission.get("missing_symbols") or [],
+            "custom_history_archive_admission": archive_admission,
+        })
+        return [], skipped
     now = utc_now()
     period = _detect_ea_period(ea_id)
     # Fast-track scored EAs plus force-build / first-Q02 EAs.  The latter two
@@ -16888,6 +17131,7 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
                 _log_p2_history_filter(root, message)
                 payload["history_adjusted"] = True
                 payload["history_adjustment_message"] = message
+        _stamp_custom_history_archive_admission(payload, archive_admission)
         if _priority_track:
             payload["priority_track"] = True
         _apply_q02_multisymbol_timeout_min(
@@ -17688,6 +17932,24 @@ def enqueue_fresh_q02_seed(
                 **risk_detail,
             }
 
+        archive_admission = custom_history_archive_admission(
+            root,
+            ea_id=str(ea_id),
+            symbols=[source["symbol"]],
+            payload=source_payload,
+        )
+        if not archive_admission.get("ok"):
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "old_work_item_id": source_id,
+                "reason": archive_admission.get("reason"),
+                "detail": archive_admission.get("detail"),
+                "missing_symbols": archive_admission.get("missing_symbols") or [],
+                "custom_history_archive_admission": archive_admission,
+            }
+
         open_row = conn.execute(
             """
             SELECT id,status,setfile_path FROM work_items
@@ -17806,6 +18068,7 @@ def enqueue_fresh_q02_seed(
                 },
                 "setfile_reconciliation": reconciliation,
             })
+        _stamp_custom_history_archive_admission(payload, archive_admission)
         _apply_q02_multisymbol_timeout_min(
             payload,
             phase=phase,
@@ -18315,6 +18578,24 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "host_symbol": str(target["symbol"]),
                 "host_timeframe": dependency_manifest["host_timeframe"],
             })
+        archive_admission = custom_history_archive_admission(
+            root,
+            ea_id=str(ea_id),
+            symbols=[target["symbol"]],
+            payload=payload,
+            basket_manifest=dependency_manifest,
+        )
+        if not archive_admission.get("ok"):
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "source_work_item_id": source_id,
+                "reason": archive_admission.get("reason"),
+                "detail": archive_admission.get("detail"),
+                "missing_symbols": archive_admission.get("missing_symbols") or [],
+                "custom_history_archive_admission": archive_admission,
+            }
         payload.update({
             "append_only_rerun": True,
             "append_only_rerun_of_work_item": source_id,
@@ -18342,6 +18623,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
             "expected_period": bindings["expected_period"],
             "expected_symbol": bindings["expected_symbol"],
         })
+        _stamp_custom_history_archive_admission(payload, archive_admission)
         if stale_pass:
             payload.update({
                 "expected_current_ex5_sha256": source_transition_detail[
@@ -18774,6 +19056,24 @@ def _enqueue_q03_exact_identity(
                 "risk_percent": risk_detail["risk_percent"],
             },
         )
+        archive_admission = custom_history_archive_admission(
+            root,
+            ea_id=str(ea_id),
+            symbols=[predecessor["symbol"]],
+            payload=payload,
+        )
+        if not archive_admission.get("ok"):
+            return {
+                "enqueued": False,
+                "ea_id": ea_id,
+                "phase": phase,
+                "predecessor_work_item_id": predecessor_id,
+                "reason": archive_admission.get("reason"),
+                "detail": archive_admission.get("detail"),
+                "missing_symbols": archive_admission.get("missing_symbols") or [],
+                "custom_history_archive_admission": archive_admission,
+            }
+        _stamp_custom_history_archive_admission(payload, archive_admission)
         if rerun_of:
             payload.update({
                 "append_only_rerun": True,
@@ -19034,6 +19334,25 @@ def enqueue_cascade_backtest_for_ea(
                     "requeued_at": now,
                 },
             )
+            archive_admission = custom_history_archive_admission(
+                root,
+                ea_id=str(ea_id),
+                symbols=[prev["symbol"]],
+                payload=payload,
+            )
+            if not archive_admission.get("ok"):
+                skipped.append({
+                    "id": prev["id"],
+                    "symbol": prev["symbol"],
+                    "reason": archive_admission.get("reason"),
+                    "detail": archive_admission.get("detail"),
+                    "missing_symbols": (
+                        archive_admission.get("missing_symbols") or []
+                    ),
+                    "custom_history_archive_admission": archive_admission,
+                })
+                continue
+            _stamp_custom_history_archive_admission(payload, archive_admission)
             if phase == "Q04":
                 payload["q04_default_probe"] = True
                 _apply_q04_latest_full_year_from_history(prev, payload)
@@ -20225,6 +20544,21 @@ def approve_card(root: Path, card_path_str: str, reasoning: str,
             "card_path": str(card_path),
         }
 
+    archive_admission = custom_history_archive_admission(
+        root,
+        ea_id=str(ea_id),
+        card_path=card_path,
+    )
+    if not archive_admission.get("ok"):
+        return {
+            "approved": False,
+            "reason": archive_admission.get("reason"),
+            "detail": archive_admission.get("detail"),
+            "missing_symbols": archive_admission.get("missing_symbols") or [],
+            "custom_history_archive_admission": archive_admission,
+            "card_path": str(card_path),
+        }
+
     today = dt.datetime.now(dt.UTC).strftime("%Y-%m-%d")
     quoted = '"' + reasoning.replace('"', "'").replace("\n", " ").strip()[:300] + '"'
     updates = {
@@ -21250,6 +21584,28 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
                     "reason": "basket_manifest_logical_setfile_preferred",
                 })
 
+    archive_admission = custom_history_archive_admission(
+        root,
+        ea_id=str(ea_id),
+        symbols=[symbol for _path, symbol, _tf, _extra in parsed],
+        basket_manifest=basket_manifest,
+    ) if parsed else {"ok": True, "required": False, "status": "NOT_APPLICABLE"}
+    if not archive_admission.get("ok"):
+        for setfile_path, symbol, _tf, _payload_extra in parsed:
+            skipped.append({
+                "setfile": setfile_path.name,
+                "symbol": symbol,
+                "reason": archive_admission.get("reason"),
+                "detail": archive_admission.get("detail"),
+                "missing_symbols": archive_admission.get("missing_symbols") or [],
+            })
+        return {
+            "enqueued": [],
+            "skipped": skipped,
+            "ea_id": ea_id,
+            "custom_history_archive_admission": archive_admission,
+        }
+
     # OWNER gate-acceleration #2 (2026-06-10): diverse stage-1 wave, rest
     # deferred to the sidecar (promoted on any stage-1 PASS / spare capacity).
     stage1, deferred = _stage_q02_setfiles(parsed)
@@ -21295,6 +21651,7 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
                 "q02_cohort_size": cohort_size,
             }
             payload.update(payload_extra)
+            _stamp_custom_history_archive_admission(payload, archive_admission)
             if priority_track:
                 payload["priority_track"] = True
             _apply_q02_multisymbol_timeout_min(
