@@ -218,7 +218,25 @@ def compile_ea(ea_label: str, force: bool = False, skip_validator: bool = False,
     ex5 = ea_dir / f"{ea_label}.ex5"
     mq5_mtime = mq5.stat().st_mtime
 
-    # Cache check
+    # Build policy is evaluated before the artifact cache. Otherwise a stale
+    # but timestamp-current EX5 can bypass a newly landed fail-closed guardrail
+    # and be reported as buildable without validating its source/set contract.
+    guardrails = (scoped_guardrails(ea_dir, mq5, setfile_scope) if setfile_scope
+                  else _validate_build_guardrails(ea_dir))
+    if guardrails["verdict"] != "PASS":
+        kinds = ",".join(sorted({f["kind"] for f in guardrails["findings"]}))
+        r = CompileResult(
+            ea_label=ea_label, verdict="BUILD_GUARDRAILS_FAILED",
+            reason=f"build guardrails failed: {kinds}",
+            mq5_mtime_utc=file_mtime_iso(mq5),
+            symbol_scope_verdict="NOT_RUN_GUARDRAIL_FAILURE",
+            timestamp_utc=utc_now_iso(),
+            elapsed_seconds=round((dt.datetime.now(dt.UTC) - started).total_seconds(), 2),
+        )
+        write_result(r)
+        return r
+
+    # Cache check (only after current build policy passes).
     if not force and ex5.exists():
         ex5_stat = ex5.stat()
         if ex5_stat.st_size > 0 and ex5_stat.st_mtime >= mq5_mtime:
@@ -249,25 +267,6 @@ def compile_ea(ea_label: str, force: bool = False, skip_validator: bool = False,
             return r
     else:
         scope_verdict = "SKIPPED"
-
-    # Pre-compile build guardrails (deterministic): refuse to compile an EA that
-    # disables the fail-closed news-staleness check (qm_news_stale_max_hours > 336)
-    # or uses RISK_PERCENT in a backtest set (must be RISK_FIXED). Catches the
-    # Gemini v2 rework bypass at the source, before MetaEditor stamps an .ex5.
-    guardrails = (scoped_guardrails(ea_dir, mq5, setfile_scope) if setfile_scope
-                  else _validate_build_guardrails(ea_dir))
-    if guardrails["verdict"] != "PASS":
-        kinds = ",".join(sorted({f["kind"] for f in guardrails["findings"]}))
-        r = CompileResult(
-            ea_label=ea_label, verdict="BUILD_GUARDRAILS_FAILED",
-            reason=f"build guardrails failed: {kinds}",
-            mq5_mtime_utc=file_mtime_iso(mq5),
-            symbol_scope_verdict=scope_verdict,
-            timestamp_utc=utc_now_iso(),
-            elapsed_seconds=round((dt.datetime.now(dt.UTC) - started).total_seconds(), 2),
-        )
-        write_result(r)
-        return r
 
     # Pre-compile magic-registration gate (fail-closed): refuse to compile an EA whose
     # ea_id is not in magic_numbers.csv. Without a registered magic the QM_MagicResolver
