@@ -16,7 +16,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02_PASS
+pipeline_phase: Q04_PENDING
 last_updated: 2026-08-16
 g0_approval_reasoning: "SSRN Lemishko-Landi-Caicedo 2024 (abstract 4771108) R1-R4 PASS: named authors+SSRN URL, Engle-Granger coint + frozen monthly OLS hedge ratio (no online adaptation), 7-pair major FX DWX universe, no ML"
 ---
@@ -104,6 +104,11 @@ empirical pipeline question.
   Model-4 trades over 2018-07-02 through 2022-12-31. The run had no ONINIT
   failure and retained stable EX5 and fixed-risk setfile bindings. Q04 enqueue
   was deferred because the explicit backtest CPU ceiling was binding.
+- Q04: 2026-08-16, canonical automation promoted the passing Q02 lineage to
+  exactly one pending early-probe work item,
+  `d48dfb37-d28b-4e9d-aebe-376b7afe12dd`. Dispatch was left to the paced
+  fleet because a five-sample CPU check averaged 99.8% and crossed the 97%
+  hard ceiling.
 
 ## Verwandte Strategien
 - [[strategies/QM5_1129_gatev-distance-pairs]] - distance-based pairs; this card uses cointegration and Forex pairs.
