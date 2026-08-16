@@ -162,7 +162,15 @@ bool QM_BasketOpenPosition(const int ea_id,
       return false;
    }
 
-   const int magic = QM_MagicChecked(ea_id, req.symbol_slot, req.symbol);
+   // Basket slot zero has the same relative-host meaning as QM_Entry only
+   // when this leg is the configured host identity. Foreign basket legs keep
+   // absolute registry-slot semantics and pass through QM_MagicChecked.
+   const bool host_slot_request = (req.symbol_slot == 0 &&
+                                   ea_id == g_qm_entry_ea_id &&
+                                   req.symbol == _Symbol);
+   const int magic = host_slot_request
+                     ? QM_EntryConfiguredHostMagic(ea_id, req.symbol)
+                     : QM_MagicChecked(ea_id, req.symbol_slot, req.symbol);
    if(magic <= 0)
    {
       QM_BasketLogReject(req, "QM_BASKET_REJECTED_BROKER", "magic_resolution_failed");

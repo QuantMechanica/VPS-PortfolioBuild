@@ -252,7 +252,7 @@ bool QM_FrameworkInitCoreAfterRuntimeStateArmed(const int ea_id,
      }
 
    QM_EntryConfigure(ea_id, news_mode, 20, stress_reject_probability,
-                     news_temporal, news_compliance);
+                      news_temporal, news_compliance, g_qm_fw_magic);
    QM_KillSwitchInit(ea_id, g_qm_fw_magic, 3.0, 0.0, 1.0);
 
    // FW4 2026-05-23 — KS-test kill-switch (Q13 burn-in safety).

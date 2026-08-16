@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        11388
 ; ea_slug:      russ-horn-golden-smma55-wpr55-stoch555
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9aab7e8874e4cf70b56ae2443c69df487053618fa51e8cba45703be624db2e5e
+; build_hash:   3595bf998272d760a55d515108bd7d014c847a1646e40a8be49c32deaa1d8dc7
 ; author:       Development
 ; date:         2026-08-10
 ;==========================================================
@@ -19,6 +19,9 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11388_russ-horn-golden-smma55-wpr55-stoch555.md
 strategy_smma_period=55

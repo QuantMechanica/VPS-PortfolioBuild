@@ -46,6 +46,21 @@ int OnInit()
    req.reason = "ENTRY_IDENTITY_SMOKE";
    ulong ticket = 0;
 
+   // Slot zero is the relative framework host slot. Prove that it preserves
+   // a non-zero absolute host assignment and that explicit magics still pass
+   // through unchanged. No broker operation is reached by these checks.
+   g_qm_entry_ea_id = 1002;
+   g_qm_entry_host_magic = 10020001;
+   g_qm_entry_host_magic_ea_id = 1002;
+   g_qm_entry_host_magic_symbol = _Symbol;
+   req.symbol_slot = 0;
+   if(QM_EntryResolveRequestMagic(req, 0) != 10020001)
+      return INIT_FAILED;
+   if(QM_EntryResolveRequestMagic(req, 10020002) != 10020002)
+      return INIT_FAILED;
+   if(QM_EntryConfiguredHostMagic(1003, _Symbol) >= 0)
+      return INIT_FAILED;
+
    if(!BindEntryContract(contract))
       return INIT_FAILED;
    g_qm_entry_ea_id = 1003;

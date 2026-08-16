@@ -53,6 +53,9 @@ enum QM_EntryResult
 };
 
 int                       g_qm_entry_ea_id              = 0;
+int                       g_qm_entry_host_magic         = 0;
+int                       g_qm_entry_host_magic_ea_id   = 0;
+string                    g_qm_entry_host_magic_symbol  = "";
 QM_NewsMode               g_qm_entry_news_mode          = QM_NEWS_OFF;  // legacy
 QM_NewsTemporalMode       g_qm_entry_news_temporal      = QM_NEWS_TEMPORAL_OFF;
 QM_NewsComplianceProfile  g_qm_entry_news_compliance    = QM_NEWS_COMPLIANCE_NONE;
@@ -64,15 +67,51 @@ void QM_EntryConfigure(const int ea_id,
                        const int deviation_points = 20,
                        const double stress_reject_probability = 0.0,
                        const QM_NewsTemporalMode news_temporal = QM_NEWS_TEMPORAL_OFF,
-                       const QM_NewsComplianceProfile news_compliance = QM_NEWS_COMPLIANCE_NONE)
+                       const QM_NewsComplianceProfile news_compliance = QM_NEWS_COMPLIANCE_NONE,
+                       const int host_magic = 0)
 {
    g_qm_entry_ea_id = ea_id;
+   // The framework resolves and validates its absolute registry slot during
+   // initialization. Preserve that host identity for the relative slot-0
+   // request contract. A later policy-only reconfigure may omit host_magic;
+   // retain the already-bound identity only for the same EA/symbol.
+   if(host_magic > 0)
+   {
+      g_qm_entry_host_magic = host_magic;
+      g_qm_entry_host_magic_ea_id = ea_id;
+      g_qm_entry_host_magic_symbol = _Symbol;
+   }
    g_qm_entry_news_mode = news_mode;
    g_qm_entry_news_temporal = news_temporal;
    g_qm_entry_news_compliance = news_compliance;
    g_qm_entry_deviation_points = (deviation_points > 0) ? deviation_points : 20;
    g_qm_entry_stress_reject_prob = (stress_reject_probability < 0.0) ? 0.0
-                                  : ((stress_reject_probability > 1.0) ? 1.0 : stress_reject_probability);
+                                   : ((stress_reject_probability > 1.0) ? 1.0 : stress_reject_probability);
+}
+
+int QM_EntryConfiguredHostMagic(const int ea_id, const string symbol)
+{
+   if(g_qm_entry_host_magic <= 0 ||
+      g_qm_entry_host_magic_ea_id != ea_id ||
+      g_qm_entry_host_magic_symbol != symbol)
+      return -1;
+   return g_qm_entry_host_magic;
+}
+
+int QM_EntryResolveRequestMagic(const QM_EntryRequest &req,
+                                const int explicit_magic)
+{
+   if(explicit_magic != 0)
+      return explicit_magic;
+
+   // QM_EntryRequest::symbol_slot=0 is RELATIVE: it means the framework
+   // host identity, not absolute registry slot zero. The framework magic
+   // already encodes qm_magic_slot_offset and was checked against _Symbol
+   // during initialization. Non-zero request slots remain absolute for
+   // explicit multi-magic/sub-strategy paths.
+   if(req.symbol_slot == 0)
+      return QM_EntryConfiguredHostMagic(g_qm_entry_ea_id, _Symbol);
+   return QM_MagicChecked(g_qm_entry_ea_id, req.symbol_slot, _Symbol);
 }
 
 string QM_EntryResultToString(const QM_EntryResult result)
@@ -246,9 +285,7 @@ QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
    // sub-strategy identity. Only zero selects the original resolver path; a
    // negative failed-resolution sentinel must reject rather than silently
    // opening under the host magic.
-   int magic = explicit_magic;
-   if(magic == 0)
-      magic = QM_MagicChecked(g_qm_entry_ea_id, req.symbol_slot, _Symbol);
+   const int magic = QM_EntryResolveRequestMagic(req, explicit_magic);
    if(magic <= 0)
    {
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_BROKER, "magic_resolution_failed");
