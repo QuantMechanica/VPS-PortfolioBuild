@@ -453,6 +453,41 @@ def test_exact_infra_q02_refuses_noninfra_result_for_same_setfile(
     assert result["reason"] == "q02_pair_already_has_noninfra_terminal_result"
 
 
+def test_exact_infra_q02_ignores_noninfra_result_for_other_binary_same_setfile(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-infra-current-binary",
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=_payload(art, stale=False),
+    )
+    _insert_work_item(
+        art,
+        item_id="q02-pass-other-binary",
+        phase="Q02",
+        status="done",
+        verdict="PASS",
+        payload=_payload(art, stale=True),
+    )
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        art["root"],
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id="q02-infra-current-binary",
+        append_only_rerun_of="q02-infra-current-binary",
+        rerun_reason="the other binary does not disposition this identity",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    assert _work_item_count(art) == 3
+
+
 def test_exact_infra_q02_accepts_payload_bound_transient_evidence_append_only(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -509,6 +544,189 @@ def test_exact_infra_q02_accepts_payload_bound_transient_evidence_append_only(
     )
     assert successor_payload["historical_work_item_preserved"] is True
     assert successor_payload["expected_ex5_sha256"] == art["current_ex5"]
+
+
+def test_exact_q15_seeded_infra_accepts_authenticated_freeze_evidence(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    q02_id = "q02-q15-pre-spawn-refusal"
+    q15_id = "q15-challenger-freeze"
+    card_id = "OPT-9901-EXIT-SURGERY"
+    freeze = tmp_path / "freeze_addendum.json"
+    freeze.write_text('{"freeze":"sealed"}\n', encoding="utf-8")
+    freeze_sha256 = farmctl._sha256_file(freeze)
+    payload = _payload(art, stale=False)
+    payload.update(
+        {
+            "card_id": card_id,
+            "freeze_addendum_sha256": freeze_sha256,
+            "source_q15_work_item_id": q15_id,
+            "spawn_refusal": {
+                "phase": "Q02",
+                "reason": "staged_ex5_sha256_mismatch_before_spawn",
+            },
+        }
+    )
+    _insert_work_item(
+        art,
+        item_id=q02_id,
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=payload,
+    )
+    root = art["root"]
+    assert isinstance(root, Path)
+    setfile = art["setfile"]
+    assert isinstance(setfile, Path)
+    q15_payload = {
+        "card_id": card_id,
+        "freeze_addendum": {
+            "path": str(freeze),
+            "sha256": freeze_sha256,
+            "size_bytes": freeze.stat().st_size,
+        },
+        "q02_work_item_id": q02_id,
+        "schema": "qm.q15-challenger-freeze/v1",
+    }
+    now = "2026-08-14T08:05:58Z"
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        conn.execute("UPDATE work_items SET evidence_path=NULL WHERE id=?", (q02_id,))
+        conn.execute(
+            """
+            INSERT INTO work_items(
+                id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                attempt_count,parent_task_id,evidence_path,claimed_by,payload_json,
+                created_at,updated_at
+            ) VALUES(?, 'development', 'Q15', ?, 'EURUSD.DWX', ?, 'done',
+                     'CHALLENGER_SPAWNED', 0, NULL, ?, NULL, ?, ?, ?)
+            """,
+            (
+                q15_id,
+                art["ea_id"],
+                str(setfile),
+                str(freeze),
+                json.dumps(q15_payload, sort_keys=True),
+                now,
+                now,
+            ),
+        )
+        conn.commit()
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        root,
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id=q02_id,
+        append_only_rerun_of=q02_id,
+        rerun_reason="retry the exact Q15 challenger after pre-spawn refusal",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    assert _work_item_count(art) == 3
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        historical = conn.execute(
+            "SELECT status,verdict,evidence_path FROM work_items WHERE id=?",
+            (q02_id,),
+        ).fetchone()
+        successor_payload = json.loads(
+            conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?",
+                (result["created"][0]["id"],),
+            ).fetchone()[0]
+        )
+    assert historical == ("failed", "INFRA_FAIL", None)
+    assert successor_payload["rerun_source_evidence_binding"] == (
+        "payload.source_q15_work_item_id->work_items.evidence_path"
+    )
+    assert successor_payload["rerun_source_evidence_path"] == str(freeze)
+    assert successor_payload["rerun_source_evidence_sha256"] == freeze_sha256
+    assert successor_payload["rerun_source_q15_freeze_authenticated"] is True
+    assert successor_payload["rerun_source_q15_work_item_id"] == q15_id
+    assert successor_payload["historical_work_item_preserved"] is True
+
+
+def test_exact_q15_seeded_infra_refuses_tampered_freeze_evidence(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    q02_id = "q02-q15-tampered-freeze"
+    q15_id = "q15-tampered-freeze"
+    card_id = "OPT-9901-TAMPERED"
+    freeze = tmp_path / "tampered_freeze_addendum.json"
+    freeze.write_text('{"freeze":"original"}\n', encoding="utf-8")
+    sealed_sha256 = farmctl._sha256_file(freeze)
+    payload = _payload(art, stale=False)
+    payload.update(
+        {
+            "card_id": card_id,
+            "freeze_addendum_sha256": sealed_sha256,
+            "source_q15_work_item_id": q15_id,
+            "spawn_refusal": {
+                "reason": "staged_ex5_sha256_mismatch_before_spawn",
+            },
+        }
+    )
+    _insert_work_item(
+        art,
+        item_id=q02_id,
+        phase="Q02",
+        status="failed",
+        verdict="INFRA_FAIL",
+        payload=payload,
+    )
+    root = art["root"]
+    assert isinstance(root, Path)
+    setfile = art["setfile"]
+    assert isinstance(setfile, Path)
+    q15_payload = {
+        "card_id": card_id,
+        "freeze_addendum": {"path": str(freeze), "sha256": sealed_sha256},
+        "q02_work_item_id": q02_id,
+        "schema": "qm.q15-challenger-freeze/v1",
+    }
+    now = "2026-08-14T08:05:58Z"
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        conn.execute("UPDATE work_items SET evidence_path=NULL WHERE id=?", (q02_id,))
+        conn.execute(
+            """
+            INSERT INTO work_items(
+                id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                attempt_count,parent_task_id,evidence_path,claimed_by,payload_json,
+                created_at,updated_at
+            ) VALUES(?, 'development', 'Q15', ?, 'EURUSD.DWX', ?, 'done',
+                     'CHALLENGER_SPAWNED', 0, NULL, ?, NULL, ?, ?, ?)
+            """,
+            (
+                q15_id,
+                art["ea_id"],
+                str(setfile),
+                str(freeze),
+                json.dumps(q15_payload, sort_keys=True),
+                now,
+                now,
+            ),
+        )
+        conn.commit()
+    freeze.write_text('{"freeze":"tampered"}\n', encoding="utf-8")
+
+    result = farmctl.enqueue_cascade_backtest_for_ea(
+        root,
+        art["ea_id"],
+        "Q02",
+        predecessor_work_item_id=q02_id,
+        append_only_rerun_of=q02_id,
+        rerun_reason="must remain fail closed",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "q02_q15_freeze_evidence_sha256_mismatch"
+    assert result["expected_sha256"] == sealed_sha256
+    assert result["actual_sha256"] == farmctl._sha256_file(freeze)
+    assert _work_item_count(art) == 2
 
 
 def test_exact_active_timeout_q02_accepts_payload_bound_runner_log_append_only(

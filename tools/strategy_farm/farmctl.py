@@ -17864,6 +17864,121 @@ def enqueue_fresh_q02_seed(
     }
 
 
+def _q02_authenticated_q15_freeze_evidence(
+    conn: sqlite3.Connection,
+    target: sqlite3.Row,
+    source_payload: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Resolve evidence for a Q15-seeded Q02 pre-spawn refusal.
+
+    Q15 challenger creation seals a freeze addendum before its Q02 row exists.
+    A tester refusal can therefore leave the Q02 row without a summary or log,
+    while the immutable Q15 row still carries the exact, hash-bound evidence.
+    Accept only that explicit lineage; unrelated null-evidence INFRA rows remain
+    fail closed in the ordinary append-only rerun path.
+    """
+    spawn_refusal = source_payload.get("spawn_refusal")
+    if not isinstance(spawn_refusal, dict) or str(
+        spawn_refusal.get("reason") or ""
+    ).strip() != "staged_ex5_sha256_mismatch_before_spawn":
+        return None
+
+    source_q15_id = str(
+        source_payload.get("source_q15_work_item_id") or ""
+    ).strip()
+    expected_sha256 = str(
+        source_payload.get("freeze_addendum_sha256") or ""
+    ).strip().lower()
+    if not source_q15_id or not re.fullmatch(r"[0-9a-f]{64}", expected_sha256):
+        return {
+            "ok": False,
+            "reason": "q02_q15_freeze_evidence_invalid",
+            "binding": "source_q15_work_item_id+freeze_addendum_sha256",
+            "source_q15_work_item_id": source_q15_id,
+        }
+
+    q15_row = conn.execute(
+        "SELECT * FROM work_items WHERE id=?", (source_q15_id,)
+    ).fetchone()
+    identity_ok = bool(
+        q15_row
+        and q15_row["kind"] == "development"
+        and q15_row["phase"] == "Q15"
+        and q15_row["ea_id"] == target["ea_id"]
+        and q15_row["symbol"] == target["symbol"]
+        and q15_row["setfile_path"] == target["setfile_path"]
+        and q15_row["status"] == "done"
+        and q15_row["verdict"] == "CHALLENGER_SPAWNED"
+        and not q15_row["claimed_by"]
+    )
+    if not identity_ok:
+        return {
+            "ok": False,
+            "reason": "q02_q15_freeze_evidence_invalid",
+            "binding": "source_q15_work_item_identity",
+            "source_q15_work_item_id": source_q15_id,
+        }
+    try:
+        q15_payload = json.loads(q15_row["payload_json"] or "{}")
+    except json.JSONDecodeError:
+        q15_payload = {}
+    if not isinstance(q15_payload, dict):
+        q15_payload = {}
+    freeze = q15_payload.get("freeze_addendum")
+    q15_evidence_path = str(q15_row["evidence_path"] or "").strip()
+    q15_card_id = str(q15_payload.get("card_id") or "").strip()
+    target_card_id = str(source_payload.get("card_id") or "").strip()
+    payload_ok = bool(
+        isinstance(freeze, dict)
+        and str(q15_payload.get("schema") or "").strip()
+        == "qm.q15-challenger-freeze/v1"
+        and str(q15_payload.get("q02_work_item_id") or "").strip()
+        == str(target["id"])
+        and q15_card_id
+        and q15_card_id == target_card_id
+        and str(freeze.get("sha256") or "").strip().lower() == expected_sha256
+        and q15_evidence_path
+        and str(freeze.get("path") or "").strip() == q15_evidence_path
+    )
+    if not payload_ok:
+        return {
+            "ok": False,
+            "reason": "q02_q15_freeze_evidence_invalid",
+            "binding": "source_q15_freeze_payload",
+            "source_q15_work_item_id": source_q15_id,
+        }
+
+    evidence_path = Path(q15_evidence_path)
+    if not evidence_path.is_file():
+        return {
+            "ok": False,
+            "reason": "q02_q15_freeze_evidence_missing",
+            "binding": "source_q15_work_items.evidence_path",
+            "source_q15_work_item_id": source_q15_id,
+            "evidence_path": str(evidence_path),
+        }
+    actual_sha256 = _sha256_file(evidence_path)
+    if actual_sha256 != expected_sha256:
+        return {
+            "ok": False,
+            "reason": "q02_q15_freeze_evidence_sha256_mismatch",
+            "binding": "freeze_addendum_sha256",
+            "source_q15_work_item_id": source_q15_id,
+            "evidence_path": str(evidence_path),
+            "expected_sha256": expected_sha256,
+            "actual_sha256": actual_sha256,
+        }
+    return {
+        "ok": True,
+        "evidence_binding": (
+            "payload.source_q15_work_item_id->work_items.evidence_path"
+        ),
+        "evidence_path": evidence_path,
+        "evidence_sha256": actual_sha256,
+        "source_q15_work_item_id": source_q15_id,
+    }
+
+
 def _enqueue_q02_append_only_exact_row_rerun(
     root: Path,
     ea_id: str,
@@ -17939,6 +18054,8 @@ def _enqueue_q02_append_only_exact_row_rerun(
             }
 
         evidence_binding = "work_items.evidence_path"
+        evidence_sha256: str | None = None
+        evidence_metadata: dict[str, Any] = {}
         evidence_path_raw = str(target["evidence_path"] or "").strip()
         if not evidence_path_raw and target["verdict"] == "INFRA_FAIL":
             # Legacy transient-infrastructure rows can predate MNT-009 evidence
@@ -17962,6 +18079,28 @@ def _enqueue_q02_append_only_exact_row_rerun(
             # just like the legacy purpose-specific transient evidence above.
             evidence_path_raw = str(source_payload.get("log_path") or "").strip()
             evidence_binding = "payload.log_path"
+        if not evidence_path_raw and target["verdict"] == "INFRA_FAIL":
+            q15_evidence = _q02_authenticated_q15_freeze_evidence(
+                conn, target, source_payload
+            )
+            if q15_evidence is not None:
+                if not q15_evidence.get("ok"):
+                    return {
+                        "enqueued": False,
+                        "ea_id": ea_id,
+                        "phase": phase,
+                        "source_work_item_id": source_id,
+                        **q15_evidence,
+                    }
+                evidence_path_raw = str(q15_evidence["evidence_path"])
+                evidence_binding = str(q15_evidence["evidence_binding"])
+                evidence_sha256 = str(q15_evidence["evidence_sha256"])
+                evidence_metadata = {
+                    "rerun_source_q15_freeze_authenticated": True,
+                    "rerun_source_q15_work_item_id": str(
+                        q15_evidence["source_q15_work_item_id"]
+                    ),
+                }
         if not evidence_path_raw:
             return {
                 "enqueued": False,
@@ -17983,7 +18122,8 @@ def _enqueue_q02_append_only_exact_row_rerun(
                 "evidence_binding": evidence_binding,
                 "evidence_path": str(evidence_path),
             }
-        evidence_sha256 = _sha256_file(evidence_path)
+        if evidence_sha256 is None:
+            evidence_sha256 = _sha256_file(evidence_path)
 
         risk_ok, risk_detail = _q02_fixed_risk_contract(str(target["setfile_path"]))
         if not risk_ok:
@@ -18123,9 +18263,23 @@ def _enqueue_q02_append_only_exact_row_rerun(
                   AND setfile_path=?
                   AND status IN ('done','failed')
                   AND COALESCE(verdict, '') <> 'INFRA_FAIL'
+                  AND (
+                    lower(COALESCE(
+                      json_extract(payload_json, '$.expected_ex5_sha256'), ''
+                    ))=?
+                    OR COALESCE(
+                      json_extract(payload_json, '$.expected_ex5_sha256'), ''
+                    )=''
+                  )
                 ORDER BY updated_at DESC LIMIT 1
                 """,
-                (ea_id, target["symbol"], source_id, target["setfile_path"]),
+                (
+                    ea_id,
+                    target["symbol"],
+                    source_id,
+                    target["setfile_path"],
+                    bindings["artifact_sha256"]["expected_ex5_sha256"],
+                ),
             ).fetchone()
             if noninfra_row:
                 return {
@@ -18177,6 +18331,7 @@ def _enqueue_q02_append_only_exact_row_rerun(
             "rerun_source_status": target["status"],
             "rerun_source_updated_at": target["updated_at"],
             "rerun_source_verdict": target["verdict"],
+            **evidence_metadata,
             "stale_pass_rerun": stale_pass,
             "repaired_infra_rerun": repaired_infra,
             "repaired_draft_defect_rerun": repaired_draft_defect,
