@@ -62,9 +62,9 @@ r1_track_record: PASS_WITH_COMPOSITE_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 review_focus: "Falsify an exact-calendar WTI weekly public/professional-flow divergence sleeve outside the certified XAU/SP500/NDX/XNG book. Verify all ten completed close/open endpoints, strict component opposition, session-following direction, no late or repeated Monday entry, and Friday flattening; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -333,6 +333,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial WTI weekly flow-divergence extraction | G0 | APPROVED |
 | v1-build | 2026-08-17 | deterministic WTI weekly flow-divergence implementation | Q01 | PASS |
+| v1-q02 | 2026-08-17 | one paced WTI baseline row created | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
@@ -340,7 +341,7 @@ establish realized correlation with the certified book.
 |---|---|---|---|
 | G0 Research Intake | 2026-08-16 | APPROVED | `decisions/2026-08-16_wti_weekly_flow_divergence_g0.md` |
 | Q01 Build Validation | 2026-08-17 | PASS | `D:/QM/reports/framework/21/build_check_20260816_220604.json`; static P1 `D:/QM/reports/pipeline/QM5_41032/P1/P1_QM5_41032_result.json`; 12 reference tests |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q02 Baseline Screening | 2026-08-17 | ENQUEUED | work item `ec025b29-077d-46ba-bedc-4f45033d520b` |
 
 ## Safety Boundary
 

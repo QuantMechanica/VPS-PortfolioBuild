@@ -166,3 +166,4 @@ nondeterminism, invalid risk mode, or nonpositive governed economics.
 | v1 | 2026-08-16 | bounded composite source extraction | G0 | APPROVED_SOURCE |
 | v1-card | 2026-08-16 | locked card extraction and OWNER G0 authorization | G0 | APPROVED |
 | v1-build | 2026-08-17 | deterministic EA, fixed-risk setfile, strict compile/build check, reference suite, and static artifact validation | Q01 | PASS |
+| v1-q02 | 2026-08-17 | one target-only paced baseline row enqueued below the factory ceiling | Q02 | ENQUEUED |

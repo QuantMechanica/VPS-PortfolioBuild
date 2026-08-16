@@ -118,3 +118,4 @@ live or portfolio manifest.
 |---|---|---|---|
 | v1 | 2026-08-16 | approved identity shell | G0 approved |
 | v1-build | 2026-08-17 | deterministic implementation | Q01 PASS |
+| v1-q02 | 2026-08-17 | paced target-only handoff | one XTIUSD.DWX Q02 row enqueued |
