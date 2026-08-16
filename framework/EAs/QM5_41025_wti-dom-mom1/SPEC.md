@@ -108,3 +108,4 @@ portfolio-gate changes, portfolio admission, and correlation waivers.
 |---|---|---|---|
 | v1 | 2026-08-16 | initial approved build scaffold | G0 approved |
 | v1-build | 2026-08-16 | deterministic implementation | magic/resolver verified; strict compile, targeted build check, static P1, and reference suite PASS |
+| v1-q02 | 2026-08-16 | target-only paced baseline handoff | work item `e96b97cd-e777-401d-aed8-af621853fff7` enqueued; pending and unclaimed at observation |
