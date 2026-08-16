@@ -89,3 +89,4 @@ authorized.
 |---|---|---|---|
 | v1 | 2026-08-16 | initial approved build scaffold | G0 approved |
 | v1-build | 2026-08-16 | deterministic implementation | magic/resolver verified; strict compile and build check PASS |
+| v1-queue | 2026-08-16 | target-only fixed-risk baseline queue handoff | Q02 ENQUEUED; work item `255bc16d-bce6-4311-b84e-45ffe6b79038` |

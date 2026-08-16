@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-08-16T12:53:02.5258101Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41023",
+  "strategy_id": "MOP-WTI-MENDS-MOM-2026_S01",
+  "slug": "wti-mends-mom",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "state": {
+    "q01": "PASS",
+    "q02": "ENQUEUED",
+    "certified": false,
+    "portfolio_admitted": false,
+    "decorrelation_proven": false
+  },
+  "commits": {
+    "source_approval": "75f0881c0ff35cb1ad8744d9b086f4606cbe64ec",
+    "allocation": "496b59a7e1af0f0d2045394228e397076d12b9b3",
+    "g0": "5e2c619557b7e7f4eb21fa757e758ab104f13113",
+    "build_q01": "95fbf9f4ee483ff352759cbd86ba8c8cdc79fc16"
+  },
+  "risk_contract": {
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "atr_period_d1": 20,
+    "atr_stop_multiplier": 3.5,
+    "take_profit": false,
+    "max_spread_points": 1500
+  },
+  "q01_evidence": {
+    "reference_tests_passed": 10,
+    "compile_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_log": "C:/QM/repo/framework/build/compile/20260816_124841/QM5_41023_wti-mends-mom.compile.log",
+    "build_check": "D:/QM/reports/framework/21/build_check_20260816_124841.json",
+    "p1": "D:/QM/reports/pipeline/QM5_41023/P1/P1_QM5_41023_result.json"
+  },
+  "capacity": {
+    "ceiling": 7,
+    "initial": {
+      "sampled_utc": "2026-08-16T12:52:41.7413937Z",
+      "running": 4
+    },
+    "pre_apply": {
+      "sampled_utc": "2026-08-16T12:52:58.1135204Z",
+      "running": 3
+    },
+    "post_enqueue": {
+      "sampled_utc": "2026-08-16T12:53:02.5258101Z",
+      "running": 3
+    }
+  },
+  "enqueue": {
+    "dry_run_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --ea QM5_41023 --symbols XTIUSD.DWX --max-part2-per-run 0",
+    "dry_run_selected": 1,
+    "apply_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --apply --ea QM5_41023 --symbols XTIUSD.DWX --max-part2-per-run 0",
+    "applied": 1,
+    "stranded_retries_applied": 0,
+    "queue_report": "D:/QM/reports/state/claude_sweep_enqueue_2026-06-10.json",
+    "queue_report_sha256": "fd25c4e9daa8352a6074db5e0817fcc2f207c00ea7de10b57049f3919cf96dc3"
+  },
+  "work_item_observation": {
+    "observed_at_utc": "2026-08-16T12:53:08Z",
+    "matching_q02_rows": 1,
+    "id": "255bc16d-bce6-4311-b84e-45ffe6b79038",
+    "kind": "backtest",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "created_at": "2026-08-16T12:52:58+00:00",
+    "updated_at": "2026-08-16T12:52:58+00:00",
+    "setfile": "C:/QM/repo/framework/EAs/QM5_41023_wti-mends-mom/sets/QM5_41023_wti-mends-mom_XTIUSD.DWX_D1_backtest.set"
+  },
+  "sha256": {
+    "source_approval": "98bb6d49df8a97fea29244859df588375713f153d4e080b9f83127dbd3171619",
+    "g0_decision": "6d0d77f0e5152ccd236c043fabc2c14d40d6bccab0ea8b02cd0b1824df70a413",
+    "source_packet": "e0bb223973fe31ca4aba92c0219095ced61517e675cc96c1ca209f163536dae9",
+    "card_each_of_three": "a4ba09bd8fa37906d48da87c3a7e20b8b7a245d057c961de7119adda4561adb4",
+    "mq5": "bcf2b0671d56f55e286d10e625d3d6551df2ff3df1b72a8ade4a8d80c26ed000",
+    "ex5": "af0643ab2bf268e8c398f199f272435f4e3e09b659f9df599ebc7968a0d25cd0",
+    "setfile": "52ed85d7adbb70e151eb53787b246a74fb9e793e2ed05919e45bd14adad5ef45",
+    "reference_test": "2bc0e2621f00aa41437f04147405e04cd4b20804555b8001ed334d6b438f0905",
+    "build_check": "59e13e99a587e67f134423da15c2b07f1fd89d9e00161000183b5f5f2cd13411",
+    "p1": "add9a9638f818f2176b97f749ae47587772a428d9ea61452fd13d2abefb7c736"
+  },
+  "safety": {
+    "manual_backtest_started": false,
+    "pipeline_phase_runner_started": false,
+    "dispatcher_tick_invoked": false,
+    "terminal_control_performed": false,
+    "autotrading_changed": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
