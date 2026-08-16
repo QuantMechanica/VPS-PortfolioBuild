@@ -1,0 +1,100 @@
+{
+  "schema": "qm.host-slot-magic-runtime-proof/v1",
+  "generated_at_utc": "2026-08-16T13:49:43.880859+00:00",
+  "agent_task_id": "18954866-6166-4529-8ec6-8485ef25c023",
+  "verdict": "IMPLEMENTATION_VERIFIED_Q04_ECONOMIC_FAIL",
+  "pipeline_work_item": {
+    "id": "93dbb878-fa90-4546-840d-fd5c4db9d35d",
+    "phase": "Q04",
+    "ea": "QM5_11424_williams-fakeout-day-stop-entry-d1",
+    "symbol": "GBPUSD.DWX",
+    "terminal": "T3",
+    "status": "done",
+    "verdict": "FAIL",
+    "verdict_reason": "F1:pf_net=0.811;F2:pf_net=0.848;F3:pf_net=0.696",
+    "run_smoke_exit_code": 0,
+    "aggregate_path": "D:/QM/reports/pipeline/QM5_11424/Q04/GBPUSD.DWX__93dbb878-fa90-4546-840d-fd5c4db9d35d/aggregate.json",
+    "aggregate_sha256": "88a19ffc687c2316f207e4cd24252ddfdf6438265cea6dc1c7a05a3b2a47e5a0",
+    "aggregate_identity_sha256": "12e82fc7af214a6256fb67da0f7bc6ce93d2c3b75c29689dda8cb6871c0120d0"
+  },
+  "execution_binding": {
+    "registry_magic": 114240001,
+    "registry_slot": 1,
+    "ex5_path": "C:/QM/repo/framework/EAs/QM5_11424_williams-fakeout-day-stop-entry-d1/QM5_11424_williams-fakeout-day-stop-entry-d1.ex5",
+    "ex5_sha256": "4e2448aae80a1f9af301373374bb55dbdf7e31c530de7859bc0578d4326c13b4",
+    "setfile_sha256": "eac794601e6ff54ed305d7f7f80a11eb2d32756cdf8e6036e6bf73d1d22ea6ec",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "news_stale_ceiling_hours": 336
+  },
+  "folds": [
+    {
+      "id": "F1",
+      "oos_year": 2023,
+      "status": "OK",
+      "trades": 14,
+      "pf_net": 0.8108956502773358,
+      "commission_basis": "venue_dxz_stream",
+      "commission_per_lot_used": 6.35,
+      "summary_sha256": "2238fe0ed8bca1143676e542cdcb82498fd3b98647d47ca08e159626e1da6eb3"
+    },
+    {
+      "id": "F2",
+      "oos_year": 2024,
+      "status": "OK",
+      "trades": 17,
+      "pf_net": 0.8476205293126948,
+      "commission_basis": "venue_dxz_stream",
+      "commission_per_lot_used": 6.35
+    },
+    {
+      "id": "F3",
+      "oos_year": 2025,
+      "status": "OK",
+      "trades": 20,
+      "pf_net": 0.6960393170474681,
+      "commission_basis": "venue_dxz_stream",
+      "commission_per_lot_used": 6.35
+    }
+  ],
+  "common_files": {
+    "q04_sim": {
+      "path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/Common/Files/QM/q04_sim/11424_GBPUSD_DWX.json",
+      "bytes": 170,
+      "sha256": "8fd6a1b31c2dfa8e3ea7eaca51e53388b6aead089bb4f73abf70c7b9e6593fc7",
+      "closed_deals": 19,
+      "pf_net": 0.675,
+      "sim_commission_total": 246.63
+    },
+    "q08_trade_stream": {
+      "path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/Common/Files/QM/q08_trades/11424_GBPUSD_DWX.jsonl",
+      "bytes": 8287,
+      "sha256": "9fa9cd5ea1b6949993d5ee2e1d1a4d6e4c98d16f925206b2988ecb609ace0e96",
+      "rows": 20,
+      "unique_magics": [114240001],
+      "unique_symbols": ["GBPUSD.DWX"]
+    }
+  },
+  "logger_identity": {
+    "path": "D:/QM/mt5/T3/Tester/Agent-127.0.0.1-3003/MQL5/Files/QM/QM5_11424_ea-11424.log",
+    "bytes": 128998,
+    "sha256": "16be8d9fe3eebd8e9e033f63616b2eab801f787907df6a71d7f74a5128e1d682",
+    "kill_switch_init": {
+      "count": 1,
+      "unique_magics": [114240001]
+    },
+    "init": {
+      "count": 1,
+      "unique_magics": [114240001]
+    },
+    "entry_accepted": {
+      "count": 33,
+      "unique_magics": [114240001],
+      "unique_symbol_slots": [0]
+    }
+  },
+  "safety_gate_observation": {
+    "manual_attempt_launched_mt5": false,
+    "reason": "Custom-history admission refused a non-worker-bound run before terminal launch; the append-only worker-bound rerun above is the only accepted runtime evidence."
+  }
+}
