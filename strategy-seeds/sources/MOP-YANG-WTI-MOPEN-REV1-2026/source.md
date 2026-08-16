@@ -140,3 +140,4 @@ governed economics.
 |---|---|---|---|---|
 | v1 | 2026-08-16 | bounded composite source extraction | G0 | APPROVED_SOURCE |
 | v1-build | 2026-08-16 | month-opening reversal EA, fixed-risk setfile, strict compile/build check, and static artifact validation | Q01 | PASS |
+| v1-q02-hold | 2026-08-16 | paced handoff stopped before queue commands at the 7-terminal tester CPU ceiling | Q02 | NOT_ENQUEUED |
