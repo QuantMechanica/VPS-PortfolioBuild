@@ -17,7 +17,17 @@ def test_cockpit_programme_snapshot_uses_source_repo_and_is_fresh() -> None:
     assert len(snapshot["work_packages"]) == 9
 
 
-def test_programme_panel_renders_all_required_contracts() -> None:
+def test_programme_panel_renders_all_required_contracts(
+    tmp_path: Path, monkeypatch
+) -> None:
+    factory_off = tmp_path / "FACTORY_OFF.flag"
+    factory_off.write_text("intentional test fixture\n", encoding="utf-8")
+    monkeypatch.setattr(render_cockpit, "FACTORY_OFF_FLAG", factory_off)
+    monkeypatch.setattr(
+        render_cockpit,
+        "FACTORY_ON_CEREMONY_INCOMPLETE",
+        tmp_path / "FACTORY_ON_CEREMONY_INCOMPLETE.json",
+    )
     snapshot = render_cockpit.pipeline_books_program_snapshot(now_utc=NOW)
     page = render_cockpit.render_pipeline_books_program(snapshot)
 
@@ -25,7 +35,7 @@ def test_programme_panel_renders_all_required_contracts() -> None:
     assert "W0" in page and "W8" in page
     assert "SOURCE_IMPLEMENTED_WITH_OWNER_RESIDUALS" in page
     assert "FTMO_RESEARCH_RUNTIME_EVALUATED_STRICT_UNVERIFIED_NO_GO" in page
-    assert "FACTORY</b> INTENTIONALLY_OFF" in page
+    assert "FACTORY</b> OFF (INTENTIONAL)" in page
     assert "NO ACTION AUTHORIZED" in page
     assert "Q08 V3 // EVIDENCE" in page
     assert "SUPPORTED · CONDITIONAL · INSUFFICIENT · CONTRADICTED · INVALID" in page

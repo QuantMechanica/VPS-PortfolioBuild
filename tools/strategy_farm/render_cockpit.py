@@ -88,6 +88,9 @@ PROGRAM_STATUS_FILE = (
 # FACTORY_OFF.flag distinguishes an intentional maintenance stop from a genuine
 # outage — the top-bar status must never scream CRITICAL for an intentional OFF.
 FACTORY_OFF_FLAG = ROOT / "state" / "FACTORY_OFF.flag"
+FACTORY_ON_CEREMONY_INCOMPLETE = (
+    ROOT / "state" / "FACTORY_ON_CEREMONY_INCOMPLETE.json"
+)
 # T_Live is READ-ONLY for the cockpit (never write here). The portable data
 # folder is MT5_Base; the terminal journal and the EA-emitted JSON logs live
 # under it.
@@ -1237,6 +1240,15 @@ def _ell(s: str, n: int) -> str:
     return s if len(s) <= n else s[: n - 1].rstrip() + "…"
 
 
+def factory_on_ceremony_incomplete_marker_present() -> bool:
+    """Fail closed when the ceremony marker cannot be inspected."""
+
+    try:
+        return FACTORY_ON_CEREMONY_INCOMPLETE.exists()
+    except OSError:
+        return True
+
+
 def pipeline_books_program_snapshot(
     *, now_utc: dt.datetime | None = None
 ) -> dict:
@@ -1311,7 +1323,10 @@ def render_pipeline_books_program(snapshot: dict) -> str:
     # The programme snapshot is a hash-bound projection that can be days old;
     # its factory_state claim must never contradict the live flag (a stale
     # INTENTIONALLY_OFF rendered while the fleet was running, 2026-08-10).
-    live_factory = "OFF (INTENTIONAL)" if FACTORY_OFF_FLAG.exists() else "ON"
+    if factory_on_ceremony_incomplete_marker_present():
+        live_factory = "CRITICAL (FACTORY_ON CEREMONY INCOMPLETE)"
+    else:
+        live_factory = "OFF (INTENTIONAL)" if FACTORY_OFF_FLAG.exists() else "ON"
     safety_html = (
         '<div class="pb-safety">'
         f'<span><b>FACTORY</b> {e(live_factory)}</span>'
@@ -2253,13 +2268,15 @@ def main() -> int:
     render_epoch_ms = int(dt.datetime.now().timestamp() * 1000)
     # Top-bar health pill — map bottleneck severity to NOMINAL/WARN/CRITICAL.
     # OWNER call 2026-05-23: CRITICAL fires only when the Edge Lab itself is
-    # down — never on output dryness ("no EA further along" = the actual work,
-    # not a fault). Output-flow checks degrade the pill at most to WARN.
+    # down or a Factory_ON mutation window remains uncertified — never on
+    # output dryness ("no EA further along" = the actual work, not a fault).
+    # Output-flow checks degrade the pill at most to WARN.
     _FACTORY_DOWN_CHECKS = {
         "mt5_worker_saturation",   # T1-T10 daemons dead
         "codex_auth_broken",       # cannot build EAs
         "disk_free_gb",            # storage blocker
         "pump_task_lastresult",    # orchestrator failing
+        "factory_on_ceremony_incomplete",  # mutation window never certified
         "ablation_grandchildren",  # state-integrity violation
         "active_row_age",          # rows stuck past phase timeout
     }
@@ -2270,10 +2287,10 @@ def main() -> int:
     _factory_fail_checks = [c for c in _fail_checks if c.get("name") in _FACTORY_DOWN_CHECKS]
     _factory_fail = bool(_factory_fail_checks)
     _any_fail = bool(_fail_checks)
-    # v7 status hardening (2026-07-19): CRITICAL only when the factory is
-    # GENUINELY down — worker/orchestrator checks FAIL *and* no intentional
-    # FACTORY_OFF.flag present. If the flag exists the stop is deliberate, so
-    # the pill degrades to amber MAINTENANCE, never CRITICAL. Worker liveness
+    # v7 status hardening (2026-07-19): ordinary worker/orchestrator FAILs are
+    # CRITICAL only when no intentional FACTORY_OFF.flag exists. The
+    # ceremony-incomplete marker is the fail-closed exception and wins even
+    # while rollback has asserted OFF. Worker liveness
     # comes from health.json's live-process-scan checks (mt5_worker_saturation)
     # and live_worker_terminals() — never from pipeline_state.json, whose
     # content contradicted the DB in the 2026-07-19 audit.
@@ -2282,7 +2299,23 @@ def main() -> int:
         factory_off = FACTORY_OFF_FLAG.exists()
     except OSError:
         factory_off = False
-    if factory_off:
+    ceremony_incomplete = factory_on_ceremony_incomplete_marker_present()
+    if ceremony_incomplete:
+        pill_label = "CRITICAL"; pill_class = "crit"
+        marker_failure = next(
+            (
+                c
+                for c in _fail_checks
+                if c.get("name") == "factory_on_ceremony_incomplete"
+            ),
+            None,
+        )
+        msg = (
+            str(marker_failure.get("detail"))[:180]
+            if marker_failure
+            else "Factory_ON ceremony incomplete — AI orchestration quiet zone is not certified"
+        )
+    elif factory_off:
         pill_label = "MAINTENANCE"; pill_class = "warn"
         # Pump/worker/orchestrator FAILs are implied by an intentional OFF —
         # narrating a dead pump's exit code next to "intentional" reads as a

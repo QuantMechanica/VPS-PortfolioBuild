@@ -80,6 +80,9 @@ MT5_SATURATION_MIN_WORKERS = 7
 # enabled subset is WARN whenever fewer than all ten installed slots are usable.
 DISABLED_TERMINALS_FILE = ROOT / "state" / "disabled_terminals.txt"
 FACTORY_MUTATION_LOCK_LIVE_WARN_SECONDS = 10 * 60.0
+FACTORY_ON_CEREMONY_INCOMPLETE_PATH = (
+    ROOT / "state" / "FACTORY_ON_CEREMONY_INCOMPLETE.json"
+)
 
 # --- WS-F standing vacuousness audit (ULTRACODE 2026-07-26) ------------------
 # Detectors that authenticate provenance before flagging a gate as vacuous. Every
@@ -888,6 +891,73 @@ def chk_factory_mutation_lock() -> dict:
         int(FACTORY_MUTATION_LOCK_LIVE_WARN_SECONDS),
         f"unexpected mutation lock inspection state: {state}",
         "Inspect FACTORY_MUTATION.lock and health check implementation.",
+    )
+
+
+def chk_factory_on_ceremony_incomplete() -> dict:
+    """Fail while a Factory_ON mutation window lacks certified completion."""
+
+    path = FACTORY_ON_CEREMONY_INCOMPLETE_PATH
+    try:
+        if not path.exists():
+            return _check(
+                "factory_on_ceremony_incomplete",
+                "OK",
+                "absent",
+                "absent",
+                "Factory_ON ceremony-incomplete marker absent",
+                "",
+            )
+        if not path.is_file():
+            raise ValueError("marker path exists but is not a regular file")
+        payload = json.loads(path.read_text(encoding="utf-8-sig"))
+        if not isinstance(payload, dict):
+            raise ValueError("marker root is not an object")
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
+        return _check(
+            "factory_on_ceremony_incomplete",
+            "FAIL",
+            "invalid",
+            "absent",
+            f"Factory_ON ceremony marker is present but invalid/unreadable: {exc}",
+            "Treat the factory as CRITICAL. Do not enable orchestration tasks manually; "
+            "inspect the marker and the last Factory_ON attempt.",
+        )
+
+    expected_tasks = {
+        "QM_StrategyFarm_CodexOrchestration_15min",
+        "QM_StrategyFarm_GeminiOrchestration_15min",
+        "QM_StrategyFarm_ClaudeOrchestration_15min",
+        "QM_StrategyFarm_CodexFleetPacer",
+        "QM_StrategyFarm_AgyGovernor",
+    }
+    observed_tasks = payload.get("quiet_zone_tasks")
+    observed_task_set = (
+        {str(item) for item in observed_tasks}
+        if isinstance(observed_tasks, list)
+        else set()
+    )
+    identity_valid = (
+        payload.get("schema_version") == 1
+        and payload.get("kind") == "qm.factory_on_ceremony_incomplete"
+        and payload.get("state") == "CRITICAL"
+        and payload.get("quiet_zone_release_certified") is False
+        and observed_task_set == expected_tasks
+    )
+    ceremony_id = str(payload.get("ceremony_id") or "unknown")
+    created_at = str(payload.get("created_at_utc") or "unknown")
+    identity_note = "valid" if identity_valid else "INVALID"
+    return _check(
+        "factory_on_ceremony_incomplete",
+        "FAIL",
+        ceremony_id,
+        "absent",
+        "Factory_ON ceremony is incomplete; AI orchestration quiet-zone release is "
+        f"not certified (marker={identity_note}, created_at={created_at}, "
+        f"ceremony_id={ceremony_id}).",
+        "Treat this as CRITICAL. Do not enable lanes manually. Claude must inspect "
+        "the failed ceremony and use a fresh OWNER-authorized canonical Factory_ON "
+        "decision; only a fully successful ceremony clears the marker.",
     )
 
 
@@ -3149,6 +3219,7 @@ ALL_CHECKS = [
     ("cards_ready_stagnation", chk_cards_ready_stagnation, True),
     ("pump_task_health",       chk_pump_task_health,       False),
     ("factory_mutation_lock",  chk_factory_mutation_lock,  False),
+    ("factory_on_ceremony_incomplete", chk_factory_on_ceremony_incomplete, False),
     ("custom_history_repairs_24h", chk_custom_history_repairs, False),
     ("usn_journal_d",          chk_usn_journal_d,          False),
     ("work_items_timestamp_sanity", chk_work_items_timestamp_sanity, True),

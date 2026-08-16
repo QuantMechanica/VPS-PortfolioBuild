@@ -58,8 +58,8 @@ def test_factory_on_health_gate_precedes_restart_hold_release() -> None:
 
     assert load_gate < remove_off
     assert quota_start < router_start < pump_start < health_wait < release_hold
-    assert "factoryPostStartHealthTimeoutSeconds = 1800" in source
-    assert "[ValidateRange(1, 1800)]" in HEALTH_GATE.read_text(encoding="utf-8-sig")
+    assert "factoryPostStartHealthTimeoutSeconds = 3600" in source
+    assert "[ValidateRange(1, 3600)]" in HEALTH_GATE.read_text(encoding="utf-8-sig")
     assert "Invoke-FailClosedRollbackWithLockRetention" in source[health_wait:]
 
 
@@ -93,6 +93,31 @@ def test_ai_orchestration_quiet_zone_enables_only_after_health_gate() -> None:
     assert source.index(
         "-ExpectedTaskEnabledState $expectedTaskEnabledState ", pre_release
     ) > pre_release
+
+
+def test_ceremony_marker_brackets_the_complete_factory_on_mutation_window() -> None:
+    source = FACTORY_ON.read_text(encoding="utf-8-sig")
+
+    marker_write = source.index("Write-FactoryOnCeremonyIncompleteMarker | Out-Null")
+    remove_off = source.index("Remove-BoundFactoryOffRecord", marker_write)
+    health_wait = source.index("$postStartHealth = Wait-QmFactoryPostStartHealth")
+    quiet_enable = source.index("before enabling quiet-zone task", health_wait)
+    hold_release = source.rindex("$restartHoldRelease = Invoke-RestartHoldReleaseWithMutationLock")
+    marker_complete = source.index("Complete-FactoryOnCeremonyMarker", hold_release)
+    green = source.index("FACTORY STARTED", marker_complete)
+
+    assert marker_write < remove_off < health_wait < quiet_enable < hold_release
+    assert hold_release < marker_complete < green
+    assert source.count("Complete-FactoryOnCeremonyMarker") == 2  # definition + success call
+    assert "FACTORY_ON_CEREMONY_INCOMPLETE.json" in source
+    marker_helper = _ps_function(source, "Write-FactoryOnCeremonyIncompleteMarker")
+    assert "qm.factory_on_ceremony_incomplete" in marker_helper
+    assert "quiet_zone_release_certified = $false" in marker_helper
+    assert "quiet_zone_tasks = @($QM_AI_ORCHESTRATION_QUIET_ZONE_TASKS)" in marker_helper
+    assert "Move-Item" in marker_helper
+    completion_helper = _ps_function(source, "Complete-FactoryOnCeremonyMarker")
+    assert "Remove-QmFileIfContentMatches" in completion_helper
+    assert "changed, disappeared, or could not be deleted exactly" in completion_helper
 
 
 def test_psmodulepath_self_heal_present_in_off_and_on() -> None:
@@ -471,8 +496,12 @@ def test_health_evaluator_is_fail_closed_for_fresh_tasks_and_exact_workers() -> 
     assert "enabled-state mismatch" in source
     assert "last run predates this restart window" in source
     assert "has not advanced beyond its pre-start baseline" in source
-    assert "does not have a successful result" in source
-    assert "-ne 'Ready'" in source
+    assert "$script:QmRunningStartCriticalTaskAllowList" in source
+    assert "'QM_StrategyFarm_AgentRouter_5min'" in source
+    assert "fresh_running_start" in source
+    assert "pending_overlap" in source
+    assert "execution_failure" in source
+    assert "starved_tasks=[$starvedText]" in source
     assert "Unexpected worker terminal" in source
     assert "is duplicated" in source
     assert "is not visible" in source

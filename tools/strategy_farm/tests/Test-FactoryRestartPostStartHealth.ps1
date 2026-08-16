@@ -134,17 +134,96 @@ Assert-ContainsError -Assessment $assessment -Pattern 'predates this restart win
 Assert-ContainsError -Assessment $assessment -Pattern 'not advanced beyond' `
     -Message 'unchanged critical baseline must fail'
 
-$running = New-HealthySnapshot
-$running.tasks[1].state = 'Running'
-$assessment = Test-QmFactoryPostStartHealth -Snapshot $running @common
-Assert-ContainsError -Assessment $assessment -Pattern 'not freshly completed' `
-    -Message 'still-running task must not reuse an older successful result'
+# Regression contract 1: only the long-running Router may latch from a fresh
+# post-baseline Running start, and its poisoned prior result is not consulted.
+$routerRunningFresh = New-HealthySnapshot
+$routerRunningFresh.tasks[1].state = 'Running'
+$routerRunningFresh.tasks[1].last_task_result = 2147946720
+$assessment = Test-QmFactoryPostStartHealth -Snapshot $routerRunningFresh @common
+Assert-True -Condition $assessment.healthy `
+    -Message 'fresh allow-listed Router Running start must pass'
+$routerFreshness = Get-QmCriticalTaskFreshnessAssessment `
+    -Row $routerRunningFresh.tasks[1] `
+    -TaskName 'QM_StrategyFarm_AgentRouter_5min' `
+    -FreshFloor ([datetimeoffset]'2026-07-30T10:00:08Z') `
+    -BaselineText $baselines['QM_StrategyFarm_AgentRouter_5min']
+Assert-True -Condition ($routerFreshness.accepted -and `
+    $routerFreshness.acceptance_mode -eq 'fresh_running_start') `
+    -Message 'Router Running acceptance must identify fresh_running_start mode'
 
+$script:routerRunningFreshSnapshot = $routerRunningFresh
+$routerRunningProbe = { param([string[]]$TaskNames) $script:routerRunningFreshSnapshot }
+$script:fakeNow = [datetimeoffset]'2026-07-30T10:00:12Z'
+$routerClockProbe = {
+    $result = $script:fakeNow
+    $script:fakeNow = $script:fakeNow.AddSeconds(1)
+    return $result
+}
+$noSleepProbe = { param([int]$Seconds) }
+$routerRunningLatch = Wait-QmFactoryPostStartHealth @common `
+    -TimeoutSeconds 3 -PollSeconds 1 `
+    -SnapshotProbe $routerRunningProbe -UtcNowProbe $routerClockProbe -SleepProbe $noSleepProbe
+$routerLatchEvidence = $routerRunningLatch.latched_critical_tasks['QM_StrategyFarm_AgentRouter_5min']
+Assert-True -Condition ($routerLatchEvidence.acceptance_mode -eq 'fresh_running_start' -and `
+    $routerLatchEvidence.observed_start_utc -eq '2026-07-30T10:00:11.0000000+00:00') `
+    -Message 'Router Running latch must record mode and observed start timestamp'
+
+# Regression contract 2: a stale/unchanged Router Running start remains closed.
+$routerRunningStale = New-HealthySnapshot
+$routerRunningStale.tasks[1].state = 'Running'
+$routerRunningStale.tasks[1].last_task_result = 2147946720
+$routerRunningStale.tasks[1].last_run_utc = '2026-07-30T10:00:00Z'
+$assessment = Test-QmFactoryPostStartHealth -Snapshot $routerRunningStale @common
+Assert-True -Condition (-not $assessment.healthy) `
+    -Message 'stale unchanged Router Running start must fail'
+Assert-ContainsError -Assessment $assessment -Pattern 'not advanced beyond' `
+    -Message 'stale Router Running failure must identify unchanged baseline'
+
+# Regression contract 3: no other critical task receives Running acceptance.
+$pumpRunning = New-HealthySnapshot
+$pumpRunning.tasks[2].state = 'Running'
+$pumpRunning.tasks[2].last_task_result = 267009
+$assessment = Test-QmFactoryPostStartHealth -Snapshot $pumpRunning @common
+Assert-ContainsError -Assessment $assessment -Pattern 'not freshly completed or allow-listed as running' `
+    -Message 'non-allow-listed Pump Running state must fail'
+
+# Regression contract 4: the ordinary fresh Ready/result=0 path still passes.
+$routerReady = New-HealthySnapshot
+$routerReadyFreshness = Get-QmCriticalTaskFreshnessAssessment `
+    -Row $routerReady.tasks[1] `
+    -TaskName 'QM_StrategyFarm_AgentRouter_5min' `
+    -FreshFloor ([datetimeoffset]'2026-07-30T10:00:08Z') `
+    -BaselineText $baselines['QM_StrategyFarm_AgentRouter_5min']
+Assert-True -Condition ($routerReadyFreshness.accepted -and `
+    $routerReadyFreshness.acceptance_mode -eq 'fresh_ready_success') `
+    -Message 'fresh Router Ready result zero must retain completed-success acceptance'
+
+# Regression contract 5: Ready/0x800710E0 is pending, never an execution failure.
+$routerReadyOverlap = New-HealthySnapshot
+$routerReadyOverlap.tasks[1].last_task_result = 2147946720
+$routerOverlapFreshness = Get-QmCriticalTaskFreshnessAssessment `
+    -Row $routerReadyOverlap.tasks[1] `
+    -TaskName 'QM_StrategyFarm_AgentRouter_5min' `
+    -FreshFloor ([datetimeoffset]'2026-07-30T10:00:08Z') `
+    -BaselineText $baselines['QM_StrategyFarm_AgentRouter_5min']
+Assert-True -Condition (-not $routerOverlapFreshness.accepted -and `
+    $routerOverlapFreshness.disposition -eq 'pending_overlap') `
+    -Message 'Ready overlap refusal must remain pending'
+
+# Regression contract 6: an ordinary nonzero completion is an execution failure.
 $failed = New-HealthySnapshot
 $failed.tasks[2].last_task_result = 1
+$failedFreshness = Get-QmCriticalTaskFreshnessAssessment `
+    -Row $failed.tasks[2] `
+    -TaskName 'QM_StrategyFarm_Pump_5min' `
+    -FreshFloor ([datetimeoffset]'2026-07-30T10:00:08Z') `
+    -BaselineText $baselines['QM_StrategyFarm_Pump_5min']
+Assert-True -Condition (-not $failedFreshness.accepted -and `
+    $failedFreshness.disposition -eq 'execution_failure') `
+    -Message 'ordinary nonzero completion must be classified execution_failure'
 $assessment = Test-QmFactoryPostStartHealth -Snapshot $failed @common
-Assert-ContainsError -Assessment $assessment -Pattern 'does not have a successful result' `
-    -Message 'nonzero critical result must fail'
+Assert-ContainsError -Assessment $assessment -Pattern 'completed with nonzero result' `
+    -Message 'nonzero critical result must fail explicitly'
 
 $missingWorker = New-HealthySnapshot
 $missingWorker.workers = @($missingWorker.workers | Where-Object { $_.terminal -ne 'T2' })
@@ -202,27 +281,50 @@ try {
 }
 Assert-True -Condition $timeoutThrown -Message 'bounded wait must throw detailed timeout failure'
 
-# Latch semantics (2026-08-10): short 5-minute-cadence critical tasks are
-# legitimately 'Running' again moments after a fresh success, and overlapping
-# triggers poison LastTaskResult with 0x800710E0. One observed fresh
-# post-baseline success per task must satisfy the gate for the whole restart
-# window; without a latch the same snapshot must keep failing closed.
+# Regression contract 7: the deadline names exactly the critical tasks that
+# never latched, sorted deterministically before the detailed assessment.
+$starvedSnapshot = New-HealthySnapshot
+$starvedSnapshot.tasks[1].state = 'Running'
+$starvedSnapshot.tasks[1].last_task_result = 2147946720
+$starvedSnapshot.tasks[1].last_run_utc = '2026-07-30T10:00:00Z'
+$starvedSnapshot.tasks[2].state = 'Running'
+$starvedSnapshot.tasks[2].last_task_result = 267009
+$script:starvedSnapshot = $starvedSnapshot
+$starvedProbe = { param([string[]]$TaskNames) $script:starvedSnapshot }
+$script:fakeNow = [datetimeoffset]'2026-07-30T10:00:12Z'
+$starvedDeadlineExact = $false
+try {
+    Wait-QmFactoryPostStartHealth @common -TimeoutSeconds 1 -PollSeconds 1 `
+        -SnapshotProbe $starvedProbe -UtcNowProbe $clockProbe -SleepProbe $sleepProbe | Out-Null
+} catch {
+    $starvedNeedle = ('starved_tasks=[QM_StrategyFarm_AgentRouter_5min,' +
+        'QM_StrategyFarm_Pump_5min]')
+    $starvedDeadlineExact = $_.Exception.Message.Contains($starvedNeedle) -and `
+        -not $_.Exception.Message.Contains('starved_tasks=[QM_StrategyFarm_QuotaPull') -and `
+        $_.Exception.Message.Contains('last_assessment=')
+}
+Assert-True -Condition $starvedDeadlineExact `
+    -Message 'deadline must list exactly the sorted unlatchable critical tasks'
+
+# Latch semantics (2026-08-10): an overlapping trigger can replace the last
+# result with 0x800710E0 after an earlier fresh success/start. One observed
+# fresh post-baseline acceptance per task must satisfy the gate for the whole
+# restart window; without a latch the same overlap snapshot stays pending.
 $latchedRouterOnly = [ordered]@{
     'QM_StrategyFarm_AgentRouter_5min' = [ordered]@{
         latched_at_utc = '2026-07-30T10:00:13Z'
         last_run_utc = '2026-07-30T10:00:11Z'
     }
 }
-$routerRunningAgain = New-HealthySnapshot
-$routerRunningAgain.tasks[1].state = 'Running'
-$routerRunningAgain.tasks[1].last_task_result = 2147946720
-$assessment = Test-QmFactoryPostStartHealth -Snapshot $routerRunningAgain @common
+$routerOverlapAfterLatch = New-HealthySnapshot
+$routerOverlapAfterLatch.tasks[1].last_task_result = 2147946720
+$assessment = Test-QmFactoryPostStartHealth -Snapshot $routerOverlapAfterLatch @common
 Assert-True -Condition (-not $assessment.healthy) `
-    -Message 'running critical task without latch must still fail closed'
-$assessment = Test-QmFactoryPostStartHealth -Snapshot $routerRunningAgain @common `
+    -Message 'overlap refusal without an earlier latch must remain pending'
+$assessment = Test-QmFactoryPostStartHealth -Snapshot $routerOverlapAfterLatch @common `
     -LatchedCriticalTasks $latchedRouterOnly
 Assert-True -Condition $assessment.healthy `
-    -Message 'latched critical task must pass despite Running state and poisoned result'
+    -Message 'previously latched critical task must survive a later overlap refusal'
 
 $snapA = New-HealthySnapshot
 $snapA.tasks[2].state = 'Running'

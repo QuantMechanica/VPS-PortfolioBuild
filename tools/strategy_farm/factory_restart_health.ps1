@@ -7,6 +7,10 @@
 # =====================================================================
 
 $script:QmFactoryRestartHealthProtocolVersion = 1
+$script:QmRunningStartCriticalTaskAllowList = @(
+    'QM_StrategyFarm_AgentRouter_5min'
+)
+$script:QmTaskSchedulerOverlapRefusalResult = 2147946720L # 0x800710E0
 
 function Add-QmExpectedTaskEnabledState {
     [CmdletBinding()]
@@ -125,7 +129,7 @@ function ConvertTo-QmFactoryHealthUtc {
     return $parsed.ToUniversalTime()
 }
 
-function Get-QmCriticalTaskFreshnessErrors {
+function Get-QmCriticalTaskFreshnessAssessment {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]$Row,
@@ -135,34 +139,90 @@ function Get-QmCriticalTaskFreshnessErrors {
     )
 
     $errors = New-Object System.Collections.Generic.List[string]
-    if ([string]$Row.state -ne 'Ready') {
-        [void]$errors.Add("Critical task '$TaskName' is not freshly completed (state='$($Row.state)').")
+    $acceptanceMode = $null
+    $disposition = 'rejected_state'
+    $state = [string]$Row.state
+    if ($state -eq 'Ready') {
+        $lastTaskResult = 0L
+        if ($null -eq $Row.last_task_result -or
+            -not [int64]::TryParse([string]$Row.last_task_result, [ref]$lastTaskResult)) {
+            $disposition = 'invalid_result'
+            [void]$errors.Add("Critical task '$TaskName' has no parseable completed result.")
+        } elseif ($lastTaskResult -eq 0) {
+            $acceptanceMode = 'fresh_ready_success'
+            $disposition = 'accepted'
+        } elseif ($lastTaskResult -eq $script:QmTaskSchedulerOverlapRefusalResult) {
+            $disposition = 'pending_overlap'
+            [void]$errors.Add(
+                "Critical task '$TaskName' overlap refusal 0x800710E0 is pending a fresh success or running start; it is not an execution failure."
+            )
+        } else {
+            $disposition = 'execution_failure'
+            [void]$errors.Add(
+                "Critical task '$TaskName' completed with nonzero result '$lastTaskResult'."
+            )
+        }
+    } elseif ($state -eq 'Running' -and
+        $script:QmRunningStartCriticalTaskAllowList -ccontains $TaskName) {
+        # For the narrow allow-list, a fresh post-baseline Running start is the
+        # authoritative evidence.  Deliberately do not read last_task_result:
+        # an overlapping five-minute trigger can replace it with 0x800710E0
+        # while the legitimate long instance is still running.
+        $acceptanceMode = 'fresh_running_start'
+        $disposition = 'accepted'
+    } else {
+        [void]$errors.Add(
+            "Critical task '$TaskName' is not freshly completed or allow-listed as running (state='$state')."
+        )
     }
-    $lastTaskResult = 0L
-    if ($null -eq $Row.last_task_result -or
-        -not [int64]::TryParse([string]$Row.last_task_result, [ref]$lastTaskResult) -or
-        $lastTaskResult -ne 0) {
-        [void]$errors.Add("Critical task '$TaskName' does not have a successful result.")
-    }
+
     $lastRunUtc = ConvertTo-QmFactoryHealthUtc -Value $Row.last_run_utc
     if ($null -eq $lastRunUtc) {
         [void]$errors.Add("Critical task '$TaskName' has no parseable last-run timestamp.")
-        return @($errors)
+    } else {
+        if ($lastRunUtc -lt $FreshFloor) {
+            [void]$errors.Add("Critical task '$TaskName' last run predates this restart window.")
+        }
+        if ($null -eq $BaselineText) {
+            [void]$errors.Add("Critical task '$TaskName' has no pre-start baseline.")
+        } else {
+            $baselineUtc = ConvertTo-QmFactoryHealthUtc -Value $BaselineText
+            if ($null -eq $baselineUtc) {
+                [void]$errors.Add("Critical task '$TaskName' baseline is not parseable.")
+            } elseif ($lastRunUtc -le $baselineUtc) {
+                [void]$errors.Add("Critical task '$TaskName' has not advanced beyond its pre-start baseline.")
+            }
+        }
     }
-    if ($lastRunUtc -lt $FreshFloor) {
-        [void]$errors.Add("Critical task '$TaskName' last run predates this restart window.")
+
+    return [pscustomobject][ordered]@{
+        accepted = ($errors.Count -eq 0 -and $null -ne $acceptanceMode)
+        disposition = $disposition
+        acceptance_mode = $acceptanceMode
+        observed_start_utc = if ($null -eq $lastRunUtc) {
+            $null
+        } else {
+            $lastRunUtc.ToString('o')
+        }
+        errors = @($errors)
     }
-    if ($null -eq $BaselineText) {
-        [void]$errors.Add("Critical task '$TaskName' has no pre-start baseline.")
-        return @($errors)
-    }
-    $baselineUtc = ConvertTo-QmFactoryHealthUtc -Value $BaselineText
-    if ($null -eq $baselineUtc) {
-        [void]$errors.Add("Critical task '$TaskName' baseline is not parseable.")
-    } elseif ($lastRunUtc -le $baselineUtc) {
-        [void]$errors.Add("Critical task '$TaskName' has not advanced beyond its pre-start baseline.")
-    }
-    return @($errors)
+}
+
+function Get-QmCriticalTaskFreshnessErrors {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]$Row,
+        [Parameter(Mandatory = $true)][string]$TaskName,
+        [Parameter(Mandatory = $true)][datetimeoffset]$FreshFloor,
+        $BaselineText
+    )
+
+    $assessment = Get-QmCriticalTaskFreshnessAssessment `
+        -Row $Row `
+        -TaskName $TaskName `
+        -FreshFloor $FreshFloor `
+        -BaselineText $BaselineText
+    return @($assessment.errors)
 }
 
 function Test-QmFactoryPostStartHealth {
@@ -406,15 +466,17 @@ function Wait-QmFactoryPostStartHealth {
             if ($CriticalTaskBaselines.Contains($taskName)) {
                 $baselineText = $CriticalTaskBaselines[$taskName]
             }
-            $freshnessErrors = @(Get-QmCriticalTaskFreshnessErrors `
+            $freshnessAssessment = Get-QmCriticalTaskFreshnessAssessment `
                 -Row $row `
                 -TaskName $taskName `
                 -FreshFloor $freshFloor `
-                -BaselineText $baselineText)
-            if ($freshnessErrors.Count -eq 0) {
+                -BaselineText $baselineText
+            if ($freshnessAssessment.accepted) {
                 $latchedCriticalTasks[$taskName] = [ordered]@{
                     latched_at_utc = ([datetimeoffset](& $UtcNowProbe)).ToUniversalTime().ToString('o')
-                    last_run_utc = [string]$row.last_run_utc
+                    acceptance_mode = [string]$freshnessAssessment.acceptance_mode
+                    observed_start_utc = [string]$freshnessAssessment.observed_start_utc
+                    last_run_utc = [string]$freshnessAssessment.observed_start_utc
                 }
             }
         }
@@ -437,8 +499,13 @@ function Wait-QmFactoryPostStartHealth {
 
         $now = [datetimeoffset](& $UtcNowProbe)
         if ($now -ge $deadline) {
+            $starvedTasks = @($CriticalTaskNames |
+                Sort-Object -Unique |
+                Where-Object { -not $latchedCriticalTasks.Contains([string]$_) })
+            $starvedText = $starvedTasks -join ','
             $details = @($lastAssessment.errors) -join '; '
-            throw "Factory post-start health gate timed out after $TimeoutSeconds seconds: $details"
+            throw ("Factory post-start health gate timed out after $TimeoutSeconds seconds: " +
+                "starved_tasks=[$starvedText]; last_assessment=$details")
         }
         & $SleepProbe -Seconds $PollSeconds
     }

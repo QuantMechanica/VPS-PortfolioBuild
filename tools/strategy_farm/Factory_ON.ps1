@@ -116,6 +116,7 @@ try {
 $factoryOffFlagPath = 'D:\QM\strategy_farm\state\FACTORY_OFF.flag'
 $factoryOffRequestPath = 'D:\QM\strategy_farm\state\FACTORY_OFF_REQUEST.flag'
 $factoryMutationLockPath = 'D:\QM\strategy_farm\state\FACTORY_MUTATION.lock'
+$factoryOnCeremonyIncompletePath = 'D:\QM\strategy_farm\state\FACTORY_ON_CEREMONY_INCOMPLETE.json'
 $codexParallelPath = 'D:\QM\strategy_farm\state\codex_parallel.txt'
 $watchdogResetBlockPath = 'D:\QM\strategy_farm\state\WATCHDOG_RESET_PENDING.json'
 $disabledTerminalsPath = 'D:\QM\strategy_farm\state\disabled_terminals.txt'
@@ -833,6 +834,65 @@ function Write-FactoryOffRecord([System.Collections.IDictionary]$Record) {
     }
 }
 
+function Write-FactoryOnCeremonyIncompleteMarker {
+    [CmdletBinding()]
+    param()
+
+    if ([string]::IsNullOrWhiteSpace([string]$script:factoryMutationLockNonce)) {
+        throw 'cannot publish Factory_ON ceremony marker without the held mutation-lock nonce'
+    }
+    $parent = Split-Path -Parent $factoryOnCeremonyIncompletePath
+    New-Item -ItemType Directory -Path $parent -Force | Out-Null
+    $record = [ordered]@{
+        schema_version = 1
+        kind = 'qm.factory_on_ceremony_incomplete'
+        state = 'CRITICAL'
+        ceremony_id = [string]$script:factoryMutationLockNonce
+        created_at_utc = [datetimeoffset]::UtcNow.ToString('o')
+        process_id = [int64]$PID
+        mutation_point = 'before_factory_off_release'
+        quiet_zone_release_certified = $false
+        quiet_zone_tasks = @($QM_AI_ORCHESTRATION_QUIET_ZONE_TASKS)
+        runtime_decision_id = [string]$script:runtimeAuthorization.decision_id
+        runtime_decision_sha256 = [string]$script:runtimeAuthorization.decision_sha256
+    }
+    $json = $record | ConvertTo-Json -Depth 8
+    $encoding = New-Object System.Text.UTF8Encoding($false)
+    [byte[]]$bytes = $encoding.GetBytes($json + [Environment]::NewLine)
+    $tmp = "$factoryOnCeremonyIncompletePath.$PID.tmp"
+    try {
+        [System.IO.File]::WriteAllBytes($tmp, $bytes)
+        Move-Item -LiteralPath $tmp -Destination $factoryOnCeremonyIncompletePath -Force
+    } finally {
+        Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+    }
+
+    [byte[]]$published = [System.IO.File]::ReadAllBytes($factoryOnCeremonyIncompletePath)
+    $expectedBase64 = [Convert]::ToBase64String($bytes)
+    $publishedBase64 = [Convert]::ToBase64String($published)
+    if ($publishedBase64 -cne $expectedBase64) {
+        throw 'Factory_ON ceremony marker changed during publication'
+    }
+    $script:factoryOnCeremonyMarkerRawBytesBase64 = $expectedBase64
+    return [pscustomobject]$record
+}
+
+function Complete-FactoryOnCeremonyMarker {
+    [CmdletBinding()]
+    param()
+
+    if ([string]::IsNullOrWhiteSpace([string]$script:factoryOnCeremonyMarkerRawBytesBase64)) {
+        throw 'Factory_ON ceremony marker identity is unavailable at completion'
+    }
+    $removed = Remove-QmFileIfContentMatches `
+        -Path $factoryOnCeremonyIncompletePath `
+        -ExpectedRawBytesBase64 $script:factoryOnCeremonyMarkerRawBytesBase64
+    if (-not $removed) {
+        throw 'Factory_ON ceremony marker changed, disappeared, or could not be deleted exactly'
+    }
+    $script:factoryOnCeremonyMarkerRawBytesBase64 = $null
+}
+
 function Assert-FactoryOffRecoveryRecord([string]$ExpectedReason) {
     if (-not (Test-Path -LiteralPath $factoryOffFlagPath -PathType Leaf)) {
         throw 'FACTORY_OFF recovery record was not reasserted'
@@ -1323,6 +1383,7 @@ $script:retainFactoryMutationLock = $false
 $script:factoryRollbackOffSha256 = $null
 $script:restartHoldMutationCommitted = $false
 $script:restartHoldEvidenceFailedAfterCommit = $false
+$script:factoryOnCeremonyMarkerRawBytesBase64 = $null
 try {
     [void](Assert-BoundFactoryOffRecordUnchanged `
         -Context 'immediately after Factory_ON lock acquisition')
@@ -1353,6 +1414,11 @@ try {
     # contractually enabled components are restored in this bounded block.
     Assert-CanonicalPublicSnapshotTaskAction -Context 'immediately before OFF release'
     Assert-CleanFactoryCheckout -Context 'immediately before OFF release' | Out-Null
+    # Publish the fail-closed marker BEFORE removing the OFF interlock.  If the
+    # host is terminated anywhere in the mutation window, this durable marker
+    # survives and forces health/cockpit CRITICAL instead of reporting a green
+    # factory with the five orchestration lanes still disabled.
+    Write-FactoryOnCeremonyIncompleteMarker | Out-Null
     Remove-BoundFactoryOffRecord
     $released = $true
 
@@ -1518,6 +1584,10 @@ try {
     Assert-NoFactoryOffIntent -Context 'immediately before restart-hold release'
     $restartHoldRelease = Invoke-RestartHoldReleaseWithMutationLock
     Assert-NoFactoryOffIntent -Context 'immediately after restart-hold release'
+    # Exact-CAS deletion is the final success mutation.  Every abnormal exit
+    # after OFF release, including an externally killed host that cannot run a
+    # finally block, therefore leaves machine-checkable CRITICAL evidence.
+    Complete-FactoryOnCeremonyMarker
 
     Write-Host ("  FACTORY STARTED - {0}/{1} daemons live in session {2}." -f $startedWorkers.observed_count,$expectWorkers,$mySession) -ForegroundColor Green
         Write-Host '  Factory-owned scheduled components were released in one restart window.'
