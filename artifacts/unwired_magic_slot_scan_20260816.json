@@ -1,0 +1,6070 @@
+{
+  "schema": "qm.unwired-magic-slot-scan/v1",
+  "defect": "QM_EntryRequest.symbol_slot never wired to qm_magic_slot_offset",
+  "proof_ea": "QM5_11424 (INIT magic 114240001 vs ENTRY_ACCEPTED magic 114240000 slot 0)",
+  "control_group_wired": [
+    "QM5_11104",
+    "QM5_1638",
+    "QM5_10118"
+  ],
+  "counts": {
+    "eas_wired": 2860,
+    "eas_unwired": 708,
+    "affected_pairs": 797,
+    "open_work_items": 48,
+    "pass_verdicts_to_recheck": 121
+  },
+  "unwired_eas": [
+    "QM5_10282",
+    "QM5_10416",
+    "QM5_10475",
+    "QM5_10490",
+    "QM5_10492",
+    "QM5_10493",
+    "QM5_10496",
+    "QM5_10516",
+    "QM5_10518",
+    "QM5_10519",
+    "QM5_10521",
+    "QM5_10541",
+    "QM5_10557",
+    "QM5_10571",
+    "QM5_10577",
+    "QM5_10597",
+    "QM5_10620",
+    "QM5_10645",
+    "QM5_10652",
+    "QM5_10653",
+    "QM5_10655",
+    "QM5_10660",
+    "QM5_10662",
+    "QM5_10663",
+    "QM5_10666",
+    "QM5_10669",
+    "QM5_10675",
+    "QM5_10737",
+    "QM5_10844",
+    "QM5_10875",
+    "QM5_10879",
+    "QM5_10946",
+    "QM5_10970",
+    "QM5_10990",
+    "QM5_10994",
+    "QM5_11001",
+    "QM5_11005",
+    "QM5_11016",
+    "QM5_11040",
+    "QM5_11041",
+    "QM5_11043",
+    "QM5_11044",
+    "QM5_11049",
+    "QM5_11052",
+    "QM5_11054",
+    "QM5_11055",
+    "QM5_11056",
+    "QM5_11058",
+    "QM5_11059",
+    "QM5_11065",
+    "QM5_11069",
+    "QM5_11073",
+    "QM5_11074",
+    "QM5_11082",
+    "QM5_11083",
+    "QM5_11084",
+    "QM5_11089",
+    "QM5_11092",
+    "QM5_11098",
+    "QM5_11101",
+    "QM5_11102",
+    "QM5_11103",
+    "QM5_11105",
+    "QM5_11106",
+    "QM5_11107",
+    "QM5_11122",
+    "QM5_11130",
+    "QM5_11133",
+    "QM5_11135",
+    "QM5_11136",
+    "QM5_11137",
+    "QM5_11138",
+    "QM5_11139",
+    "QM5_11140",
+    "QM5_11141",
+    "QM5_11142",
+    "QM5_11146",
+    "QM5_11148",
+    "QM5_11149",
+    "QM5_11150",
+    "QM5_11151",
+    "QM5_11152",
+    "QM5_11154",
+    "QM5_11156",
+    "QM5_11159",
+    "QM5_11161",
+    "QM5_11193",
+    "QM5_11216",
+    "QM5_11219",
+    "QM5_11220",
+    "QM5_11225",
+    "QM5_11226",
+    "QM5_11230",
+    "QM5_11231",
+    "QM5_11236",
+    "QM5_11245",
+    "QM5_11257",
+    "QM5_11258",
+    "QM5_11259",
+    "QM5_11261",
+    "QM5_11266",
+    "QM5_11272",
+    "QM5_11273",
+    "QM5_11276",
+    "QM5_11278",
+    "QM5_11279",
+    "QM5_11287",
+    "QM5_11291",
+    "QM5_11292",
+    "QM5_11294",
+    "QM5_11299",
+    "QM5_11300",
+    "QM5_11304",
+    "QM5_11305",
+    "QM5_11306",
+    "QM5_11322",
+    "QM5_11344",
+    "QM5_11345",
+    "QM5_11350",
+    "QM5_11351",
+    "QM5_11365",
+    "QM5_11366",
+    "QM5_11367",
+    "QM5_11371",
+    "QM5_11375",
+    "QM5_11376",
+    "QM5_11380",
+    "QM5_11383",
+    "QM5_11391",
+    "QM5_11394",
+    "QM5_11395",
+    "QM5_11408",
+    "QM5_11412",
+    "QM5_11413",
+    "QM5_11414",
+    "QM5_11423",
+    "QM5_11424",
+    "QM5_11426",
+    "QM5_11428",
+    "QM5_11436",
+    "QM5_11437",
+    "QM5_11438",
+    "QM5_11441",
+    "QM5_11448",
+    "QM5_11464",
+    "QM5_11465",
+    "QM5_11466",
+    "QM5_11473",
+    "QM5_11488",
+    "QM5_11490",
+    "QM5_11493",
+    "QM5_11495",
+    "QM5_11496",
+    "QM5_11504",
+    "QM5_11516",
+    "QM5_11517",
+    "QM5_11518",
+    "QM5_11522",
+    "QM5_11530",
+    "QM5_11540",
+    "QM5_11543",
+    "QM5_11544",
+    "QM5_11547",
+    "QM5_1157",
+    "QM5_11573",
+    "QM5_11574",
+    "QM5_11576",
+    "QM5_11584",
+    "QM5_11587",
+    "QM5_11588",
+    "QM5_11589",
+    "QM5_11591",
+    "QM5_11601",
+    "QM5_11605",
+    "QM5_11612",
+    "QM5_11614",
+    "QM5_11615",
+    "QM5_11622",
+    "QM5_11623",
+    "QM5_11624",
+    "QM5_11625",
+    "QM5_11626",
+    "QM5_11632",
+    "QM5_11638",
+    "QM5_11639",
+    "QM5_11640",
+    "QM5_11641",
+    "QM5_11642",
+    "QM5_11643",
+    "QM5_11657",
+    "QM5_11658",
+    "QM5_11659",
+    "QM5_11662",
+    "QM5_11666",
+    "QM5_11671",
+    "QM5_11672",
+    "QM5_11675",
+    "QM5_11676",
+    "QM5_11678",
+    "QM5_11679",
+    "QM5_11680",
+    "QM5_11685",
+    "QM5_11688",
+    "QM5_11701",
+    "QM5_11702",
+    "QM5_11705",
+    "QM5_11709",
+    "QM5_11713",
+    "QM5_11715",
+    "QM5_11720",
+    "QM5_11735",
+    "QM5_11742",
+    "QM5_11743",
+    "QM5_11744",
+    "QM5_11745",
+    "QM5_11751",
+    "QM5_11759",
+    "QM5_11764",
+    "QM5_11765",
+    "QM5_11766",
+    "QM5_11768",
+    "QM5_11769",
+    "QM5_11770",
+    "QM5_11783",
+    "QM5_11784",
+    "QM5_11785",
+    "QM5_11789",
+    "QM5_11790",
+    "QM5_11791",
+    "QM5_11792",
+    "QM5_11793",
+    "QM5_11799",
+    "QM5_11800",
+    "QM5_11801",
+    "QM5_11802",
+    "QM5_11803",
+    "QM5_11804",
+    "QM5_11807",
+    "QM5_11808",
+    "QM5_11809",
+    "QM5_11810",
+    "QM5_11811",
+    "QM5_11812",
+    "QM5_11813",
+    "QM5_11822",
+    "QM5_11824",
+    "QM5_11825",
+    "QM5_11829",
+    "QM5_11834",
+    "QM5_11835",
+    "QM5_11836",
+    "QM5_11837",
+    "QM5_11842",
+    "QM5_11843",
+    "QM5_11844",
+    "QM5_11845",
+    "QM5_11846",
+    "QM5_11847",
+    "QM5_11850",
+    "QM5_11851",
+    "QM5_11852",
+    "QM5_11853",
+    "QM5_11865",
+    "QM5_11872",
+    "QM5_11873",
+    "QM5_11880",
+    "QM5_11881",
+    "QM5_11886",
+    "QM5_11892",
+    "QM5_11893",
+    "QM5_12074",
+    "QM5_1223",
+    "QM5_12247",
+    "QM5_12361",
+    "QM5_12369",
+    "QM5_12378",
+    "QM5_12392",
+    "QM5_12394",
+    "QM5_12396",
+    "QM5_12425",
+    "QM5_12429",
+    "QM5_12478",
+    "QM5_12479",
+    "QM5_12481",
+    "QM5_12483",
+    "QM5_12484",
+    "QM5_12485",
+    "QM5_12486",
+    "QM5_12487",
+    "QM5_12488",
+    "QM5_12494",
+    "QM5_12503",
+    "QM5_12504",
+    "QM5_12508",
+    "QM5_12510",
+    "QM5_12517",
+    "QM5_12519",
+    "QM5_12521",
+    "QM5_12522",
+    "QM5_12523",
+    "QM5_12525",
+    "QM5_12526",
+    "QM5_12527",
+    "QM5_12612",
+    "QM5_1267",
+    "QM5_1268",
+    "QM5_1269",
+    "QM5_1271",
+    "QM5_1272",
+    "QM5_12720",
+    "QM5_1273",
+    "QM5_1274",
+    "QM5_1275",
+    "QM5_1276",
+    "QM5_1281",
+    "QM5_1286",
+    "QM5_1288",
+    "QM5_1289",
+    "QM5_1290",
+    "QM5_1291",
+    "QM5_12920",
+    "QM5_12921",
+    "QM5_12922",
+    "QM5_12923",
+    "QM5_12924",
+    "QM5_12925",
+    "QM5_12927",
+    "QM5_12928",
+    "QM5_12929",
+    "QM5_12930",
+    "QM5_12931",
+    "QM5_12932",
+    "QM5_12936",
+    "QM5_12937",
+    "QM5_12938",
+    "QM5_12939",
+    "QM5_12940",
+    "QM5_12941",
+    "QM5_12942",
+    "QM5_12943",
+    "QM5_12944",
+    "QM5_12945",
+    "QM5_12946",
+    "QM5_12947",
+    "QM5_12948",
+    "QM5_12949",
+    "QM5_12950",
+    "QM5_12951",
+    "QM5_12952",
+    "QM5_12954",
+    "QM5_12955",
+    "QM5_1296",
+    "QM5_1297",
+    "QM5_1298",
+    "QM5_12985",
+    "QM5_12986",
+    "QM5_1305",
+    "QM5_1309",
+    "QM5_1311",
+    "QM5_1312",
+    "QM5_1313",
+    "QM5_1314",
+    "QM5_1315",
+    "QM5_1316",
+    "QM5_1317",
+    "QM5_1318",
+    "QM5_1320",
+    "QM5_13208",
+    "QM5_1321",
+    "QM5_13211",
+    "QM5_1323",
+    "QM5_1324",
+    "QM5_1326",
+    "QM5_1338",
+    "QM5_1345",
+    "QM5_1350",
+    "QM5_1353",
+    "QM5_1367",
+    "QM5_1370",
+    "QM5_1372",
+    "QM5_1373",
+    "QM5_1374",
+    "QM5_1375",
+    "QM5_1379",
+    "QM5_1382",
+    "QM5_1390",
+    "QM5_1401",
+    "QM5_1402",
+    "QM5_1404",
+    "QM5_1405",
+    "QM5_1407",
+    "QM5_1408",
+    "QM5_1409",
+    "QM5_1410",
+    "QM5_1416",
+    "QM5_1417",
+    "QM5_1425",
+    "QM5_1426",
+    "QM5_1428",
+    "QM5_1429",
+    "QM5_1430",
+    "QM5_1431",
+    "QM5_1432",
+    "QM5_1436",
+    "QM5_1437",
+    "QM5_1438",
+    "QM5_1439",
+    "QM5_1441",
+    "QM5_1444",
+    "QM5_1445",
+    "QM5_1447",
+    "QM5_1449",
+    "QM5_1457",
+    "QM5_1459",
+    "QM5_1480",
+    "QM5_1481",
+    "QM5_1482",
+    "QM5_1485",
+    "QM5_1487",
+    "QM5_1488",
+    "QM5_1489",
+    "QM5_1502",
+    "QM5_1503",
+    "QM5_1504",
+    "QM5_1507",
+    "QM5_1508",
+    "QM5_1509",
+    "QM5_1511",
+    "QM5_1521",
+    "QM5_1524",
+    "QM5_1525",
+    "QM5_1526",
+    "QM5_1527",
+    "QM5_1528",
+    "QM5_1529",
+    "QM5_1531",
+    "QM5_1532",
+    "QM5_1533",
+    "QM5_1538",
+    "QM5_1539",
+    "QM5_1541",
+    "QM5_1545",
+    "QM5_1546",
+    "QM5_1547",
+    "QM5_1550",
+    "QM5_1553",
+    "QM5_1557",
+    "QM5_1562",
+    "QM5_1563",
+    "QM5_1564",
+    "QM5_1566",
+    "QM5_1572",
+    "QM5_1577",
+    "QM5_1578",
+    "QM5_1581",
+    "QM5_1582",
+    "QM5_1583",
+    "QM5_1585",
+    "QM5_1591",
+    "QM5_1592",
+    "QM5_1593",
+    "QM5_1594",
+    "QM5_1595",
+    "QM5_1604",
+    "QM5_1605",
+    "QM5_1606",
+    "QM5_1607",
+    "QM5_1611",
+    "QM5_1612",
+    "QM5_1613",
+    "QM5_1617",
+    "QM5_1618",
+    "QM5_1622",
+    "QM5_1623",
+    "QM5_1629",
+    "QM5_1630",
+    "QM5_1635",
+    "QM5_1636",
+    "QM5_1640",
+    "QM5_1645",
+    "QM5_1647",
+    "QM5_1648",
+    "QM5_1649",
+    "QM5_1650",
+    "QM5_1651",
+    "QM5_1652",
+    "QM5_1653",
+    "QM5_1670",
+    "QM5_1671",
+    "QM5_1673",
+    "QM5_1701",
+    "QM5_1702",
+    "QM5_1750",
+    "QM5_1751",
+    "QM5_1753",
+    "QM5_1802",
+    "QM5_1803",
+    "QM5_1856",
+    "QM5_1857",
+    "QM5_1858",
+    "QM5_1859",
+    "QM5_1911",
+    "QM5_1912",
+    "QM5_1913",
+    "QM5_1914",
+    "QM5_1965",
+    "QM5_1966",
+    "QM5_1967",
+    "QM5_1968",
+    "QM5_1969",
+    "QM5_2001",
+    "QM5_2002",
+    "QM5_2003",
+    "QM5_2004",
+    "QM5_20048",
+    "QM5_2005",
+    "QM5_2006",
+    "QM5_20065",
+    "QM5_2007",
+    "QM5_20074",
+    "QM5_20075",
+    "QM5_20076",
+    "QM5_20077",
+    "QM5_20078",
+    "QM5_20079",
+    "QM5_20080",
+    "QM5_20081",
+    "QM5_20082",
+    "QM5_20085",
+    "QM5_20086",
+    "QM5_20087",
+    "QM5_20088",
+    "QM5_20166",
+    "QM5_20175",
+    "QM5_20176",
+    "QM5_20177",
+    "QM5_20178",
+    "QM5_2020",
+    "QM5_2021",
+    "QM5_2022",
+    "QM5_2023",
+    "QM5_2025",
+    "QM5_2135",
+    "QM5_2186",
+    "QM5_2187",
+    "QM5_2188",
+    "QM5_2189",
+    "QM5_2190",
+    "QM5_2241",
+    "QM5_2242",
+    "QM5_2243",
+    "QM5_2244",
+    "QM5_2296",
+    "QM5_2297",
+    "QM5_2298",
+    "QM5_2299",
+    "QM5_2300",
+    "QM5_2351",
+    "QM5_2352",
+    "QM5_2353",
+    "QM5_2354",
+    "QM5_2355",
+    "QM5_2406",
+    "QM5_2407",
+    "QM5_2408",
+    "QM5_2409",
+    "QM5_2410",
+    "QM5_2461",
+    "QM5_2462",
+    "QM5_2463",
+    "QM5_2464",
+    "QM5_2465",
+    "QM5_3001",
+    "QM5_3002",
+    "QM5_3003",
+    "QM5_3004",
+    "QM5_3005",
+    "QM5_4001",
+    "QM5_4002",
+    "QM5_4003",
+    "QM5_4004",
+    "QM5_4005",
+    "QM5_5001",
+    "QM5_5002",
+    "QM5_5003",
+    "QM5_5004",
+    "QM5_5005",
+    "QM5_6001",
+    "QM5_6002",
+    "QM5_6003",
+    "QM5_6004",
+    "QM5_6005",
+    "QM5_7001",
+    "QM5_7002",
+    "QM5_7003",
+    "QM5_8001",
+    "QM5_8002",
+    "QM5_9010",
+    "QM5_9102",
+    "QM5_9103",
+    "QM5_9104",
+    "QM5_9111",
+    "QM5_9112",
+    "QM5_9113",
+    "QM5_9147",
+    "QM5_9165",
+    "QM5_9166",
+    "QM5_9167",
+    "QM5_9168",
+    "QM5_9169",
+    "QM5_9176",
+    "QM5_9177",
+    "QM5_9181",
+    "QM5_9182",
+    "QM5_9183",
+    "QM5_9196",
+    "QM5_9203",
+    "QM5_9204",
+    "QM5_9205",
+    "QM5_9208",
+    "QM5_9209",
+    "QM5_9211",
+    "QM5_9212",
+    "QM5_9215",
+    "QM5_9216",
+    "QM5_9220",
+    "QM5_9222",
+    "QM5_9223",
+    "QM5_9224",
+    "QM5_9225",
+    "QM5_9230",
+    "QM5_9231",
+    "QM5_9232",
+    "QM5_9233",
+    "QM5_9234",
+    "QM5_9241",
+    "QM5_9247",
+    "QM5_9251",
+    "QM5_9252",
+    "QM5_9254",
+    "QM5_9256",
+    "QM5_9264",
+    "QM5_9270",
+    "QM5_9273",
+    "QM5_9275",
+    "QM5_9276",
+    "QM5_9277",
+    "QM5_9279",
+    "QM5_9280",
+    "QM5_9281",
+    "QM5_9282",
+    "QM5_9284",
+    "QM5_9297",
+    "QM5_9303",
+    "QM5_9304",
+    "QM5_9353",
+    "QM5_9363",
+    "QM5_9406",
+    "QM5_9410",
+    "QM5_9417",
+    "QM5_9461",
+    "QM5_9462",
+    "QM5_9465",
+    "QM5_9466",
+    "QM5_9467",
+    "QM5_9468",
+    "QM5_9511",
+    "QM5_9516",
+    "QM5_9519",
+    "QM5_9521",
+    "QM5_9579",
+    "QM5_9580",
+    "QM5_9583",
+    "QM5_9637",
+    "QM5_9716",
+    "QM5_9717",
+    "QM5_9718",
+    "QM5_9719",
+    "QM5_9720",
+    "QM5_9721",
+    "QM5_9727",
+    "QM5_9730",
+    "QM5_9904",
+    "QM5_9908",
+    "QM5_9909",
+    "QM5_9910",
+    "QM5_9911",
+    "QM5_9913",
+    "QM5_9914",
+    "QM5_9921",
+    "QM5_9922",
+    "QM5_9923",
+    "QM5_9924",
+    "QM5_9925",
+    "QM5_9932",
+    "QM5_9933",
+    "QM5_9934",
+    "QM5_9946",
+    "QM5_9947",
+    "QM5_9949",
+    "QM5_9961",
+    "QM5_9963",
+    "QM5_9964",
+    "QM5_9965",
+    "QM5_9971",
+    "QM5_9972",
+    "QM5_9979",
+    "QM5_9983"
+  ],
+  "affected_pairs": [
+    {
+      "ea": "QM5_10282",
+      "symbol": "EURUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10282",
+      "symbol": "NDX.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10282",
+      "symbol": "WS30.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_10282",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10416",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10416",
+      "symbol": "NDX.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10416",
+      "symbol": "WS30.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10416",
+      "symbol": "XAUUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_10475",
+      "symbol": "AUDUSD.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_10475",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10475",
+      "symbol": "NZDUSD.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_10475",
+      "symbol": "USDCAD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_10475",
+      "symbol": "USDCHF.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10475",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10490",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10490",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10490",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10492",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10492",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10492",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10493",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10493",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10493",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10496",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10496",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10496",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10516",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10516",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10516",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10518",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10518",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10518",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10519",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10519",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10519",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10521",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10521",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10521",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10541",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10541",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10541",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10557",
+      "symbol": "EURUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10557",
+      "symbol": "GBPJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10557",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10571",
+      "symbol": "EURJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10571",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10571",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10577",
+      "symbol": "EURUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10577",
+      "symbol": "GBPJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10577",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10597",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10597",
+      "symbol": "USDCHF.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10597",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10620",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10620",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10620",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10645",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10645",
+      "symbol": "GER40.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_10645",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10645",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10652",
+      "symbol": "EURUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10652",
+      "symbol": "NDX.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10652",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10653",
+      "symbol": "EURUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10653",
+      "symbol": "NDX.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10653",
+      "symbol": "WS30.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10655",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10655",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10655",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_10655",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10660",
+      "symbol": "EURUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10660",
+      "symbol": "GBPUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10660",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10660",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_10662",
+      "symbol": "GDAXI.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10662",
+      "symbol": "NDX.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10663",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10663",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10663",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_10663",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10666",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10666",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10666",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_10666",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10669",
+      "symbol": "EURUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_10669",
+      "symbol": "GDAXI.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10669",
+      "symbol": "WS30.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10669",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10675",
+      "symbol": "EURUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_10675",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10675",
+      "symbol": "NDX.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10675",
+      "symbol": "XAGUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10737",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10737",
+      "symbol": "NDX.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10737",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10844",
+      "symbol": "EURUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_10844",
+      "symbol": "GDAXI.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10844",
+      "symbol": "WS30.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10844",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10875",
+      "symbol": "NDX.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10875",
+      "symbol": "WS30.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10879",
+      "symbol": "NDX.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10879",
+      "symbol": "WS30.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10946",
+      "symbol": "EURUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10946",
+      "symbol": "NDX.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_10946",
+      "symbol": "SP500.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_10946",
+      "symbol": "USDJPY.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10946",
+      "symbol": "WS30.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_10946",
+      "symbol": "XTIUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10970",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10970",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10970",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10990",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10990",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10990",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_10994",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_10994",
+      "symbol": "GDAXI.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_10994",
+      "symbol": "NDX.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11001",
+      "symbol": "EURJPY.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11001",
+      "symbol": "EURUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11001",
+      "symbol": "GBPUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11001",
+      "symbol": "XAUUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11005",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11005",
+      "symbol": "GDAXI.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11005",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11005",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11016",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11016",
+      "symbol": "GDAXI.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11016",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11016",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11040",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11040",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11040",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11041",
+      "symbol": "EURUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11041",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11041",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11043",
+      "symbol": "EURJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11043",
+      "symbol": "EURUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11043",
+      "symbol": "USDJPY.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11044",
+      "symbol": "EURJPY.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11044",
+      "symbol": "GBPUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11044",
+      "symbol": "USDJPY.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11049",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11049",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11049",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11049",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11049",
+      "symbol": "WS30.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11049",
+      "symbol": "XAUUSD.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_11052",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11052",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11052",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11052",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11052",
+      "symbol": "WS30.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11052",
+      "symbol": "XAUUSD.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_11054",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11054",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11054",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11054",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11054",
+      "symbol": "WS30.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11054",
+      "symbol": "XAUUSD.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_11055",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11055",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11055",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11055",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11055",
+      "symbol": "WS30.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11055",
+      "symbol": "XAUUSD.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_11056",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11056",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11056",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11056",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11056",
+      "symbol": "WS30.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11056",
+      "symbol": "XAUUSD.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_11058",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11058",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11058",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11058",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11058",
+      "symbol": "WS30.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11058",
+      "symbol": "XAUUSD.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_11059",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11059",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11059",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11059",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11059",
+      "symbol": "WS30.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11059",
+      "symbol": "XAUUSD.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_11065",
+      "symbol": "EURJPY.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11065",
+      "symbol": "EURUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11065",
+      "symbol": "GBPJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11069",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11069",
+      "symbol": "USDCAD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11069",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11073",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11073",
+      "symbol": "USDCAD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11073",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11074",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11074",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11074",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11082",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11082",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11082",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11083",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11083",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11083",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11084",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11084",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11084",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11089",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11089",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11089",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11092",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11092",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11092",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11098",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11098",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11098",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11101",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11101",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11101",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11102",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11102",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11102",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11103",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11103",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11103",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11105",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11105",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11105",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11106",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11106",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11106",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11107",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11107",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11107",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11122",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11122",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11122",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11130",
+      "symbol": "NDX.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11130",
+      "symbol": "WS30.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11133",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11133",
+      "symbol": "NDX.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11133",
+      "symbol": "WS30.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11135",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11135",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11135",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11135",
+      "symbol": "SP500.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_11135",
+      "symbol": "WS30.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11135",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11136",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11136",
+      "symbol": "GDAXI.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11136",
+      "symbol": "NDX.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11136",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11136",
+      "symbol": "WS30.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_11136",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11137",
+      "symbol": "EURUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11137",
+      "symbol": "GBPUSD.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11137",
+      "symbol": "GDAXI.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11137",
+      "symbol": "SP500.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_11137",
+      "symbol": "WS30.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11137",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11138",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11138",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11138",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11138",
+      "symbol": "SP500.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_11138",
+      "symbol": "WS30.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11138",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11139",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11139",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11139",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11139",
+      "symbol": "WS30.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11139",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11140",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11140",
+      "symbol": "GDAXI.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11140",
+      "symbol": "NDX.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11140",
+      "symbol": "SP500.DWX",
+      "slot": 7
+    },
+    {
+      "ea": "QM5_11140",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11140",
+      "symbol": "WS30.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_11140",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11141",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11141",
+      "symbol": "GDAXI.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11141",
+      "symbol": "NDX.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11141",
+      "symbol": "SP500.DWX",
+      "slot": 7
+    },
+    {
+      "ea": "QM5_11141",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11141",
+      "symbol": "WS30.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_11141",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11142",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11142",
+      "symbol": "GDAXI.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11142",
+      "symbol": "NDX.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11142",
+      "symbol": "SP500.DWX",
+      "slot": 7
+    },
+    {
+      "ea": "QM5_11142",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11142",
+      "symbol": "WS30.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_11142",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11146",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11146",
+      "symbol": "GDAXI.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11146",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11146",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11148",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11148",
+      "symbol": "NDX.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11148",
+      "symbol": "WS30.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11149",
+      "symbol": "NDX.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11149",
+      "symbol": "WS30.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11150",
+      "symbol": "NDX.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11150",
+      "symbol": "WS30.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11151",
+      "symbol": "NDX.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11151",
+      "symbol": "WS30.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11152",
+      "symbol": "NDX.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11152",
+      "symbol": "WS30.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11154",
+      "symbol": "NDX.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11154",
+      "symbol": "WS30.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11156",
+      "symbol": "NDX.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11156",
+      "symbol": "WS30.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11156",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11159",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11159",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11159",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11161",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11161",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11193",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11193",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11193",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11216",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11216",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11216",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11219",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11219",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11219",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11220",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11220",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11220",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11225",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11225",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11225",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11226",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11226",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11226",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11230",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11230",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11230",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11230",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11231",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11231",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11231",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11231",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11236",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11236",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11236",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11236",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11245",
+      "symbol": "AUDUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11245",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11245",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11245",
+      "symbol": "NZDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11245",
+      "symbol": "WS30.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11257",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11257",
+      "symbol": "GDAXI.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11257",
+      "symbol": "NDX.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11257",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11258",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11258",
+      "symbol": "GDAXI.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11258",
+      "symbol": "NDX.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11258",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11259",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11259",
+      "symbol": "GDAXI.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11259",
+      "symbol": "NDX.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11259",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11261",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11261",
+      "symbol": "GDAXI.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11261",
+      "symbol": "NDX.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11261",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11266",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11266",
+      "symbol": "GDAXI.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11266",
+      "symbol": "NDX.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11266",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11272",
+      "symbol": "GDAXI.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11272",
+      "symbol": "XAUUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11273",
+      "symbol": "GDAXI.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11273",
+      "symbol": "XAUUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11276",
+      "symbol": "GDAXI.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11276",
+      "symbol": "XAUUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11278",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11278",
+      "symbol": "EURJPY.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11278",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11278",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11279",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11279",
+      "symbol": "EURJPY.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11279",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11279",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11287",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11287",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11304",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11304",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11304",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11305",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11305",
+      "symbol": "NDX.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11305",
+      "symbol": "SP500.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11306",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11306",
+      "symbol": "NDX.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11306",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11322",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11322",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11344",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11344",
+      "symbol": "GDAXI.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11344",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11344",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11345",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11345",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11350",
+      "symbol": "AUDUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11350",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11350",
+      "symbol": "USDJPY.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11351",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11351",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11351",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11365",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11365",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11365",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11366",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11366",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11366",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11367",
+      "symbol": "AUDUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11367",
+      "symbol": "EURUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11367",
+      "symbol": "GBPJPY.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11367",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11371",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11371",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11383",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11391",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11391",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11394",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11394",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11395",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11395",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11395",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11408",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11408",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11408",
+      "symbol": "USDCAD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11408",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11412",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11412",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11412",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11413",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11413",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11413",
+      "symbol": "USDCAD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11413",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11414",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11414",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11414",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11423",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11423",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11423",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11424",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11424",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11424",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11426",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11426",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11426",
+      "symbol": "USDCAD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11426",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11428",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11428",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11428",
+      "symbol": "USDCAD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11428",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11436",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11436",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11436",
+      "symbol": "USDCAD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11436",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11437",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11437",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11437",
+      "symbol": "USDCAD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11437",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11438",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11438",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11438",
+      "symbol": "USDCAD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11438",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11441",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11441",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11441",
+      "symbol": "USDCAD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11441",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11493",
+      "symbol": "GBPJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11493",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11504",
+      "symbol": "EURUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11504",
+      "symbol": "GBPUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11522",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11522",
+      "symbol": "USDCHF.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11522",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11547",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11659",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11659",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11659",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11659",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11701",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11701",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11701",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11852",
+      "symbol": "EURJPY.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11852",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_11886",
+      "symbol": "AUDUSD.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_11886",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_11886",
+      "symbol": "USDCAD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_11886",
+      "symbol": "USDCHF.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_11886",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_12486",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_12486",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_12486",
+      "symbol": "NDX.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_12486",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_12486",
+      "symbol": "WS30.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_12486",
+      "symbol": "XAUUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_12510",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_12510",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_12510",
+      "symbol": "GDAXI.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_12510",
+      "symbol": "NDX.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_12510",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_12510",
+      "symbol": "WS30.DWX",
+      "slot": 7
+    },
+    {
+      "ea": "QM5_12510",
+      "symbol": "XAUUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_12517",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_1286",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_1286",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_1286",
+      "symbol": "GDAXI.DWX",
+      "slot": 7
+    },
+    {
+      "ea": "QM5_1286",
+      "symbol": "NDX.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_1286",
+      "symbol": "UK100.DWX",
+      "slot": 8
+    },
+    {
+      "ea": "QM5_1286",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_1286",
+      "symbol": "WS30.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_1286",
+      "symbol": "XAUUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_12985",
+      "symbol": "GDAXI.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_12985",
+      "symbol": "SP500.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_1312",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_1312",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_1312",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_1630",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_1630",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_1630",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "AUDCHF.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "AUDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "AUDNZD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "AUDUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "CADCHF.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "CADJPY.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "CHFJPY.DWX",
+      "slot": 7
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "EURAUD.DWX",
+      "slot": 8
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "EURCAD.DWX",
+      "slot": 9
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "EURCHF.DWX",
+      "slot": 10
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "EURGBP.DWX",
+      "slot": 11
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "EURJPY.DWX",
+      "slot": 12
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "EURNZD.DWX",
+      "slot": 13
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "EURUSD.DWX",
+      "slot": 14
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "GBPAUD.DWX",
+      "slot": 15
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "GBPCAD.DWX",
+      "slot": 16
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "GBPCHF.DWX",
+      "slot": 17
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "GBPJPY.DWX",
+      "slot": 18
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "GBPNZD.DWX",
+      "slot": 19
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "GBPUSD.DWX",
+      "slot": 20
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "GDAXI.DWX",
+      "slot": 21
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "NDX.DWX",
+      "slot": 22
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "NZDCAD.DWX",
+      "slot": 23
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "NZDCHF.DWX",
+      "slot": 24
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "NZDJPY.DWX",
+      "slot": 25
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "NZDUSD.DWX",
+      "slot": 26
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "SP500.DWX",
+      "slot": 27
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "UK100.DWX",
+      "slot": 28
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "USDCAD.DWX",
+      "slot": 29
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "USDCHF.DWX",
+      "slot": 30
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "USDJPY.DWX",
+      "slot": 31
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "WS30.DWX",
+      "slot": 32
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "XAGUSD.DWX",
+      "slot": 33
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "XAUUSD.DWX",
+      "slot": 34
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "XNGUSD.DWX",
+      "slot": 35
+    },
+    {
+      "ea": "QM5_2001",
+      "symbol": "XTIUSD.DWX",
+      "slot": 36
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "AUDCHF.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "AUDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "AUDNZD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "AUDUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "CADCHF.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "CADJPY.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "CHFJPY.DWX",
+      "slot": 7
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "EURAUD.DWX",
+      "slot": 8
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "EURCAD.DWX",
+      "slot": 9
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "EURCHF.DWX",
+      "slot": 10
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "EURGBP.DWX",
+      "slot": 11
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "EURJPY.DWX",
+      "slot": 12
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "EURNZD.DWX",
+      "slot": 13
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "EURUSD.DWX",
+      "slot": 14
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "GBPAUD.DWX",
+      "slot": 15
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "GBPCAD.DWX",
+      "slot": 16
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "GBPCHF.DWX",
+      "slot": 17
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "GBPJPY.DWX",
+      "slot": 18
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "GBPNZD.DWX",
+      "slot": 19
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "GBPUSD.DWX",
+      "slot": 20
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "GDAXI.DWX",
+      "slot": 21
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "NDX.DWX",
+      "slot": 22
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "NZDCAD.DWX",
+      "slot": 23
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "NZDCHF.DWX",
+      "slot": 24
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "NZDJPY.DWX",
+      "slot": 25
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "NZDUSD.DWX",
+      "slot": 26
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "SP500.DWX",
+      "slot": 27
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "UK100.DWX",
+      "slot": 28
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "USDCAD.DWX",
+      "slot": 29
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "USDCHF.DWX",
+      "slot": 30
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "USDJPY.DWX",
+      "slot": 31
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "WS30.DWX",
+      "slot": 32
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "XAGUSD.DWX",
+      "slot": 33
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "XAUUSD.DWX",
+      "slot": 34
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "XNGUSD.DWX",
+      "slot": 35
+    },
+    {
+      "ea": "QM5_2002",
+      "symbol": "XTIUSD.DWX",
+      "slot": 36
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "AUDCHF.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "AUDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "AUDNZD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "AUDUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "CADCHF.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "CADJPY.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "CHFJPY.DWX",
+      "slot": 7
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "EURAUD.DWX",
+      "slot": 8
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "EURCAD.DWX",
+      "slot": 9
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "EURCHF.DWX",
+      "slot": 10
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "EURGBP.DWX",
+      "slot": 11
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "EURJPY.DWX",
+      "slot": 12
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "EURNZD.DWX",
+      "slot": 13
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "EURUSD.DWX",
+      "slot": 14
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "GBPAUD.DWX",
+      "slot": 15
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "GBPCAD.DWX",
+      "slot": 16
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "GBPCHF.DWX",
+      "slot": 17
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "GBPJPY.DWX",
+      "slot": 18
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "GBPNZD.DWX",
+      "slot": 19
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "GBPUSD.DWX",
+      "slot": 20
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "GDAXI.DWX",
+      "slot": 21
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "NDX.DWX",
+      "slot": 22
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "NZDCAD.DWX",
+      "slot": 23
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "NZDCHF.DWX",
+      "slot": 24
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "NZDJPY.DWX",
+      "slot": 25
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "NZDUSD.DWX",
+      "slot": 26
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "SP500.DWX",
+      "slot": 27
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "UK100.DWX",
+      "slot": 28
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "USDCAD.DWX",
+      "slot": 29
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "USDCHF.DWX",
+      "slot": 30
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "USDJPY.DWX",
+      "slot": 31
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "WS30.DWX",
+      "slot": 32
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "XAGUSD.DWX",
+      "slot": 33
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "XAUUSD.DWX",
+      "slot": 34
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "XNGUSD.DWX",
+      "slot": 35
+    },
+    {
+      "ea": "QM5_2003",
+      "symbol": "XTIUSD.DWX",
+      "slot": 36
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "AUDCHF.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "AUDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "AUDNZD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "AUDUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "CADCHF.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "CADJPY.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "CHFJPY.DWX",
+      "slot": 7
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "EURAUD.DWX",
+      "slot": 8
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "EURCAD.DWX",
+      "slot": 9
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "EURCHF.DWX",
+      "slot": 10
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "EURGBP.DWX",
+      "slot": 11
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "EURJPY.DWX",
+      "slot": 12
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "EURNZD.DWX",
+      "slot": 13
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "EURUSD.DWX",
+      "slot": 14
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "GBPAUD.DWX",
+      "slot": 15
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "GBPCAD.DWX",
+      "slot": 16
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "GBPCHF.DWX",
+      "slot": 17
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "GBPJPY.DWX",
+      "slot": 18
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "GBPNZD.DWX",
+      "slot": 19
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "GBPUSD.DWX",
+      "slot": 20
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "GDAXI.DWX",
+      "slot": 21
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "NDX.DWX",
+      "slot": 22
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "NZDCAD.DWX",
+      "slot": 23
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "NZDCHF.DWX",
+      "slot": 24
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "NZDJPY.DWX",
+      "slot": 25
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "NZDUSD.DWX",
+      "slot": 26
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "SP500.DWX",
+      "slot": 27
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "UK100.DWX",
+      "slot": 28
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "USDCAD.DWX",
+      "slot": 29
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "USDCHF.DWX",
+      "slot": 30
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "USDJPY.DWX",
+      "slot": 31
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "WS30.DWX",
+      "slot": 32
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "XAGUSD.DWX",
+      "slot": 33
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "XAUUSD.DWX",
+      "slot": 34
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "XNGUSD.DWX",
+      "slot": 35
+    },
+    {
+      "ea": "QM5_2004",
+      "symbol": "XTIUSD.DWX",
+      "slot": 36
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "AUDCHF.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "AUDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "AUDNZD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "AUDUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "CADCHF.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "CADJPY.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "CHFJPY.DWX",
+      "slot": 7
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "EURAUD.DWX",
+      "slot": 8
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "EURCAD.DWX",
+      "slot": 9
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "EURCHF.DWX",
+      "slot": 10
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "EURGBP.DWX",
+      "slot": 11
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "EURJPY.DWX",
+      "slot": 12
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "EURNZD.DWX",
+      "slot": 13
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "EURUSD.DWX",
+      "slot": 14
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "GBPAUD.DWX",
+      "slot": 15
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "GBPCAD.DWX",
+      "slot": 16
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "GBPCHF.DWX",
+      "slot": 17
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "GBPJPY.DWX",
+      "slot": 18
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "GBPNZD.DWX",
+      "slot": 19
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "GBPUSD.DWX",
+      "slot": 20
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "GDAXI.DWX",
+      "slot": 21
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "NDX.DWX",
+      "slot": 22
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "NZDCAD.DWX",
+      "slot": 23
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "NZDCHF.DWX",
+      "slot": 24
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "NZDJPY.DWX",
+      "slot": 25
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "NZDUSD.DWX",
+      "slot": 26
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "SP500.DWX",
+      "slot": 27
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "UK100.DWX",
+      "slot": 28
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "USDCAD.DWX",
+      "slot": 29
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "USDCHF.DWX",
+      "slot": 30
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "USDJPY.DWX",
+      "slot": 31
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "WS30.DWX",
+      "slot": 32
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "XAGUSD.DWX",
+      "slot": 33
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "XAUUSD.DWX",
+      "slot": 34
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "XNGUSD.DWX",
+      "slot": 35
+    },
+    {
+      "ea": "QM5_2005",
+      "symbol": "XTIUSD.DWX",
+      "slot": 36
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "AUDCHF.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "AUDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "AUDNZD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "AUDUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "CADCHF.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "CADJPY.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "CHFJPY.DWX",
+      "slot": 7
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "EURAUD.DWX",
+      "slot": 8
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "EURCAD.DWX",
+      "slot": 9
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "EURCHF.DWX",
+      "slot": 10
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "EURGBP.DWX",
+      "slot": 11
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "EURJPY.DWX",
+      "slot": 12
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "EURNZD.DWX",
+      "slot": 13
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "EURUSD.DWX",
+      "slot": 14
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "GBPAUD.DWX",
+      "slot": 15
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "GBPCAD.DWX",
+      "slot": 16
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "GBPCHF.DWX",
+      "slot": 17
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "GBPJPY.DWX",
+      "slot": 18
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "GBPNZD.DWX",
+      "slot": 19
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "GBPUSD.DWX",
+      "slot": 20
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "GDAXI.DWX",
+      "slot": 21
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "NDX.DWX",
+      "slot": 22
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "NZDCAD.DWX",
+      "slot": 23
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "NZDCHF.DWX",
+      "slot": 24
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "NZDJPY.DWX",
+      "slot": 25
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "NZDUSD.DWX",
+      "slot": 26
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "SP500.DWX",
+      "slot": 27
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "UK100.DWX",
+      "slot": 28
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "USDCAD.DWX",
+      "slot": 29
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "USDCHF.DWX",
+      "slot": 30
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "USDJPY.DWX",
+      "slot": 31
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "WS30.DWX",
+      "slot": 32
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "XAGUSD.DWX",
+      "slot": 33
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "XAUUSD.DWX",
+      "slot": 34
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "XNGUSD.DWX",
+      "slot": 35
+    },
+    {
+      "ea": "QM5_2006",
+      "symbol": "XTIUSD.DWX",
+      "slot": 36
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "AUDCHF.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "AUDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "AUDNZD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "AUDUSD.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "CADCHF.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "CADJPY.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "CHFJPY.DWX",
+      "slot": 7
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "EURAUD.DWX",
+      "slot": 8
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "EURCAD.DWX",
+      "slot": 9
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "EURCHF.DWX",
+      "slot": 10
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "EURGBP.DWX",
+      "slot": 11
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "EURJPY.DWX",
+      "slot": 12
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "EURNZD.DWX",
+      "slot": 13
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "EURUSD.DWX",
+      "slot": 14
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "GBPAUD.DWX",
+      "slot": 15
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "GBPCAD.DWX",
+      "slot": 16
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "GBPCHF.DWX",
+      "slot": 17
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "GBPJPY.DWX",
+      "slot": 18
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "GBPNZD.DWX",
+      "slot": 19
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "GBPUSD.DWX",
+      "slot": 20
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "GDAXI.DWX",
+      "slot": 21
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "NDX.DWX",
+      "slot": 22
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "NZDCAD.DWX",
+      "slot": 23
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "NZDCHF.DWX",
+      "slot": 24
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "NZDJPY.DWX",
+      "slot": 25
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "NZDUSD.DWX",
+      "slot": 26
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "SP500.DWX",
+      "slot": 27
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "UK100.DWX",
+      "slot": 28
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "USDCAD.DWX",
+      "slot": 29
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "USDCHF.DWX",
+      "slot": 30
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "USDJPY.DWX",
+      "slot": 31
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "WS30.DWX",
+      "slot": 32
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "XAGUSD.DWX",
+      "slot": 33
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "XAUUSD.DWX",
+      "slot": 34
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "XNGUSD.DWX",
+      "slot": 35
+    },
+    {
+      "ea": "QM5_2007",
+      "symbol": "XTIUSD.DWX",
+      "slot": 36
+    },
+    {
+      "ea": "QM5_9212",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_9212",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_9247",
+      "symbol": "CHFJPY.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_9247",
+      "symbol": "GBPJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_9270",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_9270",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_9270",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_9462",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_9462",
+      "symbol": "GDAXI.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_9462",
+      "symbol": "XAUUSD.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_9511",
+      "symbol": "AUDUSD.DWX",
+      "slot": 3
+    },
+    {
+      "ea": "QM5_9511",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_9511",
+      "symbol": "NDX.DWX",
+      "slot": 4
+    },
+    {
+      "ea": "QM5_9511",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_9511",
+      "symbol": "WS30.DWX",
+      "slot": 5
+    },
+    {
+      "ea": "QM5_9511",
+      "symbol": "XAUUSD.DWX",
+      "slot": 6
+    },
+    {
+      "ea": "QM5_9511",
+      "symbol": "XTIUSD.DWX",
+      "slot": 7
+    },
+    {
+      "ea": "QM5_9637",
+      "symbol": "GBPUSD.DWX",
+      "slot": 1
+    },
+    {
+      "ea": "QM5_9637",
+      "symbol": "USDJPY.DWX",
+      "slot": 2
+    },
+    {
+      "ea": "QM5_9637",
+      "symbol": "XAUUSD.DWX",
+      "slot": 3
+    }
+  ],
+  "open_work_items": [
+    {
+      "id": "4a269f0f-841d-4b8c-9695-4d3e7ad2551c",
+      "ea_id": "QM5_11245",
+      "symbol": "WS30.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "4bdcdb12-c12a-44ee-bf1f-53ce83a9c199",
+      "ea_id": "QM5_11245",
+      "symbol": "AUDUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "e3d3165c-2923-479d-8c3a-34ccdea813c6",
+      "ea_id": "QM5_11245",
+      "symbol": "NZDUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "e10d568b-b63f-4585-a1b5-855371f1bebc",
+      "ea_id": "QM5_11049",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "8667428d-e934-4d49-a55d-52ca414c01da",
+      "ea_id": "QM5_11074",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "abb69d30-56a1-4e58-a312-cd04678297fd",
+      "ea_id": "QM5_11226",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "3449557c-faf8-4ea9-aaaa-1727b19ade57",
+      "ea_id": "QM5_11230",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "d0d2ea7a-06d2-42dc-b26b-f2b8cd5b6a52",
+      "ea_id": "QM5_11231",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "e22256fc-bfb2-4fac-b73e-0bf222265aca",
+      "ea_id": "QM5_11236",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "e9e3940d-2e3f-4862-a7dd-f65ad9a2af25",
+      "ea_id": "QM5_11052",
+      "symbol": "AUDUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "282f5c7a-30b6-47a4-b294-ab5c88f61dee",
+      "ea_id": "QM5_11052",
+      "symbol": "WS30.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "bada7e0e-daed-4da3-9e38-cce6bea73a15",
+      "ea_id": "QM5_11052",
+      "symbol": "USDJPY.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "fa18b576-816f-4b06-b2e7-5d1bdfe6a6de",
+      "ea_id": "QM5_2001",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "813e9034-876e-4f2c-be26-9629f03c42e2",
+      "ea_id": "QM5_2005",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "121413ca-292f-45d4-a281-10aaa24ce031",
+      "ea_id": "QM5_2006",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "ea1f0042-89ba-40e5-b88e-ef7b6418a6af",
+      "ea_id": "QM5_2007",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "c022762b-2370-4f7d-a330-0d7ba9521bbe",
+      "ea_id": "QM5_9270",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "2232edba-0748-400b-a986-033e2b04a71e",
+      "ea_id": "QM5_9462",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "c6e83519-a3bf-4a6a-bae0-f41ff53883fc",
+      "ea_id": "QM5_9511",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "51feb0b7-3f12-4230-99b6-fa0b3804a61d",
+      "ea_id": "QM5_11083",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "9f854f6b-ed10-4d13-80cd-8b3eb03484b0",
+      "ea_id": "QM5_11052",
+      "symbol": "GBPUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "af7c5f58-c1f6-4e5b-8e9a-38ab086e289e",
+      "ea_id": "QM5_2003",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "69b2ab8f-25f0-40c4-9e52-a8ea5ddd1620",
+      "ea_id": "QM5_10519",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "c06b6c5a-4442-49c9-8e4f-b958b71e3af0",
+      "ea_id": "QM5_11041",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "c973b4d3-ead4-470f-a539-2f9c0502be0f",
+      "ea_id": "QM5_11052",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "c3237a9a-b409-45e4-ab44-b7ba21d7370f",
+      "ea_id": "QM5_11056",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "b8504b98-c51f-4dbd-b78a-6d7dc9fea8f6",
+      "ea_id": "QM5_11059",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "8d3ed2d4-c9c0-4a9b-9344-985f0917889c",
+      "ea_id": "QM5_11103",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "8b43cabf-b7c7-4a89-a3ab-f31501110ac2",
+      "ea_id": "QM5_11122",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "bb31547c-3b32-490c-8252-77573299a72b",
+      "ea_id": "QM5_11193",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "3a91062d-5c26-4159-b1f3-bbce8d81f3d3",
+      "ea_id": "QM5_11258",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "ef531a56-2166-4726-ad65-ea8ff8dab3a6",
+      "ea_id": "QM5_11266",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "bb29f18e-2b08-461c-8fad-59f7cabec2a9",
+      "ea_id": "QM5_11058",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "95c70216-5edb-4fa9-8d0d-99dada224f1d",
+      "ea_id": "QM5_11107",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "51286632-30b1-4077-8637-d8dd5605bdf9",
+      "ea_id": "QM5_10990",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "97bdf327-b6ba-41f8-99dd-7c80479894e4",
+      "ea_id": "QM5_11058",
+      "symbol": "GBPUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "67e148d1-648b-41d2-a860-ce470085e48f",
+      "ea_id": "QM5_11102",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "d4f00bff-ef31-4a90-b08f-5967b7dd0e2e",
+      "ea_id": "QM5_11055",
+      "symbol": "AUDUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "44efc146-4da3-4769-bf2e-e1e4aa1d0a64",
+      "ea_id": "QM5_11055",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "d9b9e66a-5962-416d-bcdd-5f128de5d587",
+      "ea_id": "QM5_11055",
+      "symbol": "USDJPY.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "085917d9-e986-4476-8723-5f56b4be28f8",
+      "ea_id": "QM5_11055",
+      "symbol": "GBPUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "3aa95260-fb27-40e2-98d8-f98617fecda3",
+      "ea_id": "QM5_12510",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "6475fcbb-591c-4b24-9df4-b3a7a20dc152",
+      "ea_id": "QM5_11245",
+      "symbol": "NDX.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "d7067d48-a42c-43a7-b81c-7d9dc7198deb",
+      "ea_id": "QM5_11052",
+      "symbol": "NDX.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "7cab7a4e-9165-458c-a08b-e688edd6bbc8",
+      "ea_id": "QM5_11058",
+      "symbol": "NDX.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "8410aa38-9557-4050-9580-d7c88f6058f0",
+      "ea_id": "QM5_11055",
+      "symbol": "NDX.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "dedcde09-eb00-470c-a68e-a289577e3121",
+      "ea_id": "QM5_10571",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-07-26T10:38:56+00:00"
+    },
+    {
+      "id": "4619255d-47b9-415f-9eb3-514c744479af",
+      "ea_id": "QM5_2002",
+      "symbol": "XAUUSD.DWX",
+      "status": "pending",
+      "verdict": null,
+      "updated_at": "2026-08-13T19:53:03+00:00"
+    }
+  ],
+  "pass_verdicts_to_recheck": [
+    {
+      "id": "25438601-df61-4fc7-81da-8076049dd847",
+      "ea_id": "QM5_10492",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-26T15:32:34+00:00"
+    },
+    {
+      "id": "c6d316ed-ff32-4f30-b2c7-faeb968e50ae",
+      "ea_id": "QM5_10493",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-08T02:14:10+00:00"
+    },
+    {
+      "id": "1a985e09-ef54-4dba-8877-441f02bccd19",
+      "ea_id": "QM5_10496",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-22T11:23:58+00:00"
+    },
+    {
+      "id": "eb2eb075-b121-4f2d-81a5-eb2a8d65d691",
+      "ea_id": "QM5_10541",
+      "symbol": "GDAXI.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-27T19:00:53+00:00"
+    },
+    {
+      "id": "cf3519f6-dead-4ad0-b82f-7e23382b7c3c",
+      "ea_id": "QM5_10577",
+      "symbol": "GBPJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-26T15:26:28+00:00"
+    },
+    {
+      "id": "7a418589-b9bd-44e7-88e0-35cc97894cab",
+      "ea_id": "QM5_10516",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-22T11:37:30+00:00"
+    },
+    {
+      "id": "bd5bbb1f-1679-409c-b068-3beca43c6de8",
+      "ea_id": "QM5_10516",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-22T11:43:24+00:00"
+    },
+    {
+      "id": "58d25cf5-fbbb-4090-a80a-cd59c409f604",
+      "ea_id": "QM5_10516",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-22T11:49:42+00:00"
+    },
+    {
+      "id": "034d008d-c86a-4ec1-afb2-67f2cfa3a8c0",
+      "ea_id": "QM5_10516",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-10T01:21:18+00:00"
+    },
+    {
+      "id": "19b504c4-5990-40a6-865e-19e064b07775",
+      "ea_id": "QM5_10492",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-28T06:50:31+00:00"
+    },
+    {
+      "id": "1a9920b5-dd3b-48f5-96ff-a0a936f7afb3",
+      "ea_id": "QM5_10493",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-27T22:28:35+00:00"
+    },
+    {
+      "id": "16b8e212-fcc9-4a94-af68-68df53a67279",
+      "ea_id": "QM5_10518",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-27T22:39:40+00:00"
+    },
+    {
+      "id": "399836d0-de7d-44b6-b2ae-2bccbc70fa6d",
+      "ea_id": "QM5_10577",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-28T07:05:23+00:00"
+    },
+    {
+      "id": "22be6db0-e921-4390-8fc8-c8a192175d5e",
+      "ea_id": "QM5_10493",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-22T10:42:00+00:00"
+    },
+    {
+      "id": "7dd037fa-a85a-4037-b61b-dcec397f2d1b",
+      "ea_id": "QM5_10490",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-19T13:00:13+00:00"
+    },
+    {
+      "id": "5df34d9b-5f0f-4d7d-b567-d7822450708d",
+      "ea_id": "QM5_10490",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-19T13:00:12+00:00"
+    },
+    {
+      "id": "4ab0cd77-d5e1-494a-9c59-8a836b500fbd",
+      "ea_id": "QM5_10490",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-19T13:00:13+00:00"
+    },
+    {
+      "id": "1a6008fb-edbc-45f4-9c5e-bdc585fc0801",
+      "ea_id": "QM5_10518",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-28T12:49:44+00:00"
+    },
+    {
+      "id": "00841514-e11e-4988-8e68-3d8876b6bc9a",
+      "ea_id": "QM5_10541",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-27T19:30:09+00:00"
+    },
+    {
+      "id": "00c0c418-e7fe-4ec0-9a63-92f6cb1edfdc",
+      "ea_id": "QM5_10541",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-28T07:24:44+00:00"
+    },
+    {
+      "id": "87683e9f-7204-413f-8751-fea0ab219fde",
+      "ea_id": "QM5_10571",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-27T02:18:07+00:00"
+    },
+    {
+      "id": "22e5a9d7-1383-4cf9-be62-adc0bce72c56",
+      "ea_id": "QM5_10571",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-28T04:10:17+00:00"
+    },
+    {
+      "id": "0ac77992-3aec-47e5-b124-e844003f760a",
+      "ea_id": "QM5_2004",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-22T16:46:18+00:00"
+    },
+    {
+      "id": "5bc6fe31-c3b7-4c1e-abed-02144e611b7d",
+      "ea_id": "QM5_10970",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T11:37:00+00:00"
+    },
+    {
+      "id": "63e0bec7-3980-4adc-a2da-1eaa084e90ec",
+      "ea_id": "QM5_10970",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T11:24:10+00:00"
+    },
+    {
+      "id": "a116aa61-7cd2-4775-be4f-01c97acb00cc",
+      "ea_id": "QM5_11044",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T12:29:07+00:00"
+    },
+    {
+      "id": "8d6aacc6-d774-4b40-ad2e-fa25e41f60ca",
+      "ea_id": "QM5_11084",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T18:17:55+00:00"
+    },
+    {
+      "id": "bccd7975-a732-46cb-99d1-01ade2b5c68d",
+      "ea_id": "QM5_11084",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T18:19:40+00:00"
+    },
+    {
+      "id": "ff50cd34-bbde-4fa1-92ad-5bdc99d7cfaf",
+      "ea_id": "QM5_11089",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T22:37:42+00:00"
+    },
+    {
+      "id": "3e9dd741-96e0-4590-9527-d2192cc7fd61",
+      "ea_id": "QM5_11092",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T14:29:18+00:00"
+    },
+    {
+      "id": "41f76607-f66b-40d8-b552-9fe22bcb0fe4",
+      "ea_id": "QM5_12510",
+      "symbol": "AUDUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T10:02:57+00:00"
+    },
+    {
+      "id": "e4e57a3b-9ea5-4b0a-af0e-22ace917a18a",
+      "ea_id": "QM5_12510",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T10:06:57+00:00"
+    },
+    {
+      "id": "2086e6d6-ca7e-4c86-9592-7ba826980d1e",
+      "ea_id": "QM5_12510",
+      "symbol": "GDAXI.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T10:05:59+00:00"
+    },
+    {
+      "id": "ad47ddc5-9669-4002-856d-ff1827c2f21f",
+      "ea_id": "QM5_12510",
+      "symbol": "NDX.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T09:54:18+00:00"
+    },
+    {
+      "id": "5540bf3c-c075-4352-aa60-40623b339d1e",
+      "ea_id": "QM5_12510",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T10:07:33+00:00"
+    },
+    {
+      "id": "a32e771e-1c22-4554-afea-53f9a1ad6f64",
+      "ea_id": "QM5_12510",
+      "symbol": "WS30.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T10:01:54+00:00"
+    },
+    {
+      "id": "ad8cac82-ad91-4565-97f1-8da9d03fa312",
+      "ea_id": "QM5_10490",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T07:26:36+00:00"
+    },
+    {
+      "id": "eb4a9840-411c-4f45-b409-8f867ccd3132",
+      "ea_id": "QM5_10970",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T11:46:12+00:00"
+    },
+    {
+      "id": "fa1b2ed8-20a7-44d9-a1f8-694be4ee39da",
+      "ea_id": "QM5_11092",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-21T17:16:49+00:00"
+    },
+    {
+      "id": "8feb5f6a-f979-4fa5-a76b-2a8f1f51606d",
+      "ea_id": "QM5_11105",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-22T22:49:27+00:00"
+    },
+    {
+      "id": "2abfa245-d70a-4588-8873-9c61e684d0c7",
+      "ea_id": "QM5_11089",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-22T18:35:29+00:00"
+    },
+    {
+      "id": "f435bcc6-4192-49b9-9783-933908c63a6a",
+      "ea_id": "QM5_12517",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-28T19:06:01+00:00"
+    },
+    {
+      "id": "4cfeae7f-3f1a-46af-9444-cf9e61122427",
+      "ea_id": "QM5_2002",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-22T17:37:39+00:00"
+    },
+    {
+      "id": "2aaff504-0d0c-4f9b-8133-1811d34a5728",
+      "ea_id": "QM5_2002",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-13T10:47:40+00:00"
+    },
+    {
+      "id": "4ce06663-baad-40d6-b0ef-6a87c72c9d9e",
+      "ea_id": "QM5_10970",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-29T22:31:19+00:00"
+    },
+    {
+      "id": "28ca69a6-8aef-4244-b09f-9dd255b38ad7",
+      "ea_id": "QM5_11092",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-01T09:39:15+00:00"
+    },
+    {
+      "id": "81ff1ec1-0dca-4404-8eeb-efd38f177803",
+      "ea_id": "QM5_10516",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-09T06:45:57+00:00"
+    },
+    {
+      "id": "cfa070ed-0488-4ae7-81cd-6a3b7e8855bd",
+      "ea_id": "QM5_11089",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-02T01:23:06+00:00"
+    },
+    {
+      "id": "467bfef7-8ddf-4434-b0da-98f1164f0e28",
+      "ea_id": "QM5_11049",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-26T10:00:00+00:00"
+    },
+    {
+      "id": "45dd9317-8732-4de1-ab1a-677161b07100",
+      "ea_id": "QM5_11082",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-08T10:41:44+00:00"
+    },
+    {
+      "id": "48ec867f-73bc-42b6-a6ba-fb637e8fbfa1",
+      "ea_id": "QM5_10516",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-09T22:59:40+00:00"
+    },
+    {
+      "id": "2bcc0882-a38c-47d6-80f6-41c673258781",
+      "ea_id": "QM5_10557",
+      "symbol": "GBPJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-03T23:29:55+00:00"
+    },
+    {
+      "id": "44b4625c-6d4d-4b34-b664-e6e856874bfd",
+      "ea_id": "QM5_2004",
+      "symbol": "GBPCHF.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-03T23:30:02+00:00"
+    },
+    {
+      "id": "6774bb5c-db77-4530-9f34-8ca82b80d151",
+      "ea_id": "QM5_2004",
+      "symbol": "CADCHF.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-03T23:35:02+00:00"
+    },
+    {
+      "id": "14463dba-2d8a-4fca-b91f-d9ed23018d93",
+      "ea_id": "QM5_2004",
+      "symbol": "EURAUD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-03T23:46:59+00:00"
+    },
+    {
+      "id": "058487ac-b63b-4239-a2d8-7b903fd8a4c2",
+      "ea_id": "QM5_2004",
+      "symbol": "EURGBP.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-03T23:45:47+00:00"
+    },
+    {
+      "id": "cd3283fb-2e6a-4131-9723-bf1546e3e2a4",
+      "ea_id": "QM5_2004",
+      "symbol": "CADJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-03T23:51:40+00:00"
+    },
+    {
+      "id": "37ca7596-3cce-43b4-a1bb-34e55f51a7af",
+      "ea_id": "QM5_2004",
+      "symbol": "EURJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-03T23:57:03+00:00"
+    },
+    {
+      "id": "56ef4cbc-ac41-4b73-91c6-ee5ca180af61",
+      "ea_id": "QM5_2004",
+      "symbol": "SP500.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-03T23:55:15+00:00"
+    },
+    {
+      "id": "dc1a2443-f2ce-4c59-9c25-c0fb3dcc5747",
+      "ea_id": "QM5_10557",
+      "symbol": "EURUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-04T00:00:39+00:00"
+    },
+    {
+      "id": "6deb4d2a-17fc-4ea5-a6ad-5db1b69c5248",
+      "ea_id": "QM5_2004",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-04T00:01:47+00:00"
+    },
+    {
+      "id": "124cd8e9-a7c5-4d17-872f-55336b73f179",
+      "ea_id": "QM5_10946",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-01T21:31:15+00:00"
+    },
+    {
+      "id": "77687d71-8609-404e-9e58-c5f0f6d725f3",
+      "ea_id": "QM5_10737",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-14T01:32:48+00:00"
+    },
+    {
+      "id": "ce54084b-61e7-4de5-8199-b49cb6841549",
+      "ea_id": "QM5_10521",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-05T10:52:37+00:00"
+    },
+    {
+      "id": "8260d5ce-03d9-45d5-a664-f29c7b1c7f97",
+      "ea_id": "QM5_10516",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-07T14:22:35+00:00"
+    },
+    {
+      "id": "e37c422b-ae3e-4f66-bc1b-70c45a81e3b6",
+      "ea_id": "QM5_10620",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-05T14:02:42+00:00"
+    },
+    {
+      "id": "e1319f5c-eef9-46a3-9854-f2f97f58f931",
+      "ea_id": "QM5_11059",
+      "symbol": "AUDUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-01T22:35:23+00:00"
+    },
+    {
+      "id": "710efa0d-0660-4fd8-940f-f4e308a17a50",
+      "ea_id": "QM5_11056",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-01T02:39:48+00:00"
+    },
+    {
+      "id": "773604c5-aa26-43b9-8db2-1a7fe865e6e5",
+      "ea_id": "QM5_11059",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-01T23:05:59+00:00"
+    },
+    {
+      "id": "b73cd771-565d-442b-a4aa-d6ed606976da",
+      "ea_id": "QM5_11056",
+      "symbol": "AUDUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-01T02:18:28+00:00"
+    },
+    {
+      "id": "c5422343-39b2-4b58-b05b-5c9ba70d7a77",
+      "ea_id": "QM5_2002",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-22T17:21:23+00:00"
+    },
+    {
+      "id": "99386a70-0c1a-47a1-bd4f-ec139422cd17",
+      "ea_id": "QM5_2002",
+      "symbol": "EURUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-22T18:19:45+00:00"
+    },
+    {
+      "id": "63a5c9ef-9432-4565-9efa-1dd0c378c718",
+      "ea_id": "QM5_2004",
+      "symbol": "EURUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-04T00:06:32+00:00"
+    },
+    {
+      "id": "770bb981-562f-4399-a85f-a7978d929108",
+      "ea_id": "QM5_10496",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-30T10:28:05+00:00"
+    },
+    {
+      "id": "057a0c5a-0d84-418a-a8a0-9b8e899617d6",
+      "ea_id": "QM5_2004",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-03T08:16:54+00:00"
+    },
+    {
+      "id": "6188999f-987b-42ed-9840-394daff74e51",
+      "ea_id": "QM5_10557",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-03T08:28:12+00:00"
+    },
+    {
+      "id": "40ef7ca9-1380-44c7-b893-114e2fbc9bb6",
+      "ea_id": "QM5_11886",
+      "symbol": "USDCAD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-10T12:11:41+00:00"
+    },
+    {
+      "id": "b15e84f7-98d8-4e65-b2b5-f39a2d06fa40",
+      "ea_id": "QM5_11886",
+      "symbol": "USDCHF.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-10T12:09:52+00:00"
+    },
+    {
+      "id": "8fe75c68-b3ff-419e-937f-8bdc10126b47",
+      "ea_id": "QM5_11886",
+      "symbol": "AUDUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-10T12:19:24+00:00"
+    },
+    {
+      "id": "cd9e5af6-4c19-4188-bcbd-b4600c26078c",
+      "ea_id": "QM5_11886",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-10T13:24:41+00:00"
+    },
+    {
+      "id": "d4d9c339-84f5-40b3-8d7a-efc3c7382e2a",
+      "ea_id": "QM5_11886",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-10T14:01:45+00:00"
+    },
+    {
+      "id": "5a4abdd9-d177-482d-86d4-5eb83d8b2d97",
+      "ea_id": "QM5_11016",
+      "symbol": "GDAXI.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-24T12:06:27+00:00"
+    },
+    {
+      "id": "72047ef1-7866-4db2-8e29-726182b2cadb",
+      "ea_id": "QM5_11016",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-26T04:59:25+00:00"
+    },
+    {
+      "id": "0ade9600-f774-4d1b-8381-fd08a2a9d9c9",
+      "ea_id": "QM5_10970",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-06-29T22:45:45+00:00"
+    },
+    {
+      "id": "0b5fe5e2-51fd-481e-86c5-56a1232e6614",
+      "ea_id": "QM5_2004",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-03T18:13:41+00:00"
+    },
+    {
+      "id": "bbd5b480-8a75-41d3-9691-7782d5903563",
+      "ea_id": "QM5_10557",
+      "symbol": "GBPJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-03T23:45:35+00:00"
+    },
+    {
+      "id": "a4d77cfe-3a3a-4768-bb77-2030b4447c6f",
+      "ea_id": "QM5_10557",
+      "symbol": "EURUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-04T00:17:30+00:00"
+    },
+    {
+      "id": "91d429cf-8a53-40dd-b292-b78949db938d",
+      "ea_id": "QM5_2004",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-04T00:14:18+00:00"
+    },
+    {
+      "id": "d6178174-471c-4e3e-8c15-bda78ba66f7d",
+      "ea_id": "QM5_10516",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-09T07:12:24+00:00"
+    },
+    {
+      "id": "b2ae903f-ed3d-45c3-b32f-ec90528e4290",
+      "ea_id": "QM5_11886",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-14T03:13:58+00:00"
+    },
+    {
+      "id": "74fd1031-eb98-4d45-935d-90539674066c",
+      "ea_id": "QM5_10571",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-27T07:50:30+00:00"
+    },
+    {
+      "id": "e809c752-5e9b-42b9-bc53-a744b8a45007",
+      "ea_id": "QM5_10571",
+      "symbol": "EURJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-05T05:35:15+00:00"
+    },
+    {
+      "id": "4c976450-3d12-455a-9103-54ac4f072830",
+      "ea_id": "QM5_2002",
+      "symbol": "NDX.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-22T17:16:31+00:00"
+    },
+    {
+      "id": "1ef55765-f263-4802-884a-d96859f9f5e9",
+      "ea_id": "QM5_2002",
+      "symbol": "USDCAD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-22T17:24:17+00:00"
+    },
+    {
+      "id": "fb7f31f9-476c-4bc8-9814-ecad1a6e0746",
+      "ea_id": "QM5_2002",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-22T18:15:33+00:00"
+    },
+    {
+      "id": "efa5bb14-0a3c-4119-b9a7-0d6fe2303390",
+      "ea_id": "QM5_11049",
+      "symbol": "NDX.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-26T09:03:10+00:00"
+    },
+    {
+      "id": "dd66149e-2ccd-4146-9903-1b3f4526ab97",
+      "ea_id": "QM5_11230",
+      "symbol": "NDX.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-26T09:10:20+00:00"
+    },
+    {
+      "id": "cb51d45c-c61e-48ec-ae53-8f6242180283",
+      "ea_id": "QM5_11016",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-25T07:17:20+00:00"
+    },
+    {
+      "id": "b729a79c-5e55-470f-abef-2ba7a4d967c3",
+      "ea_id": "QM5_11016",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-25T09:03:17+00:00"
+    },
+    {
+      "id": "efbeda0e-33d5-4229-a8d4-dede518d0b06",
+      "ea_id": "QM5_11059",
+      "symbol": "NDX.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-07T17:48:49+00:00"
+    },
+    {
+      "id": "fffaf7db-08f1-49ea-a3b7-e4e193ee30b5",
+      "ea_id": "QM5_10571",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-03T06:04:37+00:00"
+    },
+    {
+      "id": "1dcc2a5d-fd38-4e09-83bf-d68c47202c27",
+      "ea_id": "QM5_10571",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS_SOFT",
+      "updated_at": "2026-07-28T08:52:38+00:00"
+    },
+    {
+      "id": "700dd8e0-07fa-411e-9fb5-1a8081ee4aa4",
+      "ea_id": "QM5_10571",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-28T16:46:16+00:00"
+    },
+    {
+      "id": "42cb13b0-11d3-475f-bc5e-a96cfcd2c8f7",
+      "ea_id": "QM5_10571",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-28T17:14:40+00:00"
+    },
+    {
+      "id": "cbcaa64a-090e-4e48-80ac-a09dfae138c7",
+      "ea_id": "QM5_10571",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-01T01:33:42+00:00"
+    },
+    {
+      "id": "c36efc32-ef33-40fb-ad07-78871731978b",
+      "ea_id": "QM5_10571",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-31T23:20:04+00:00"
+    },
+    {
+      "id": "1c529230-6c0b-4bb0-9976-27f236bf3a2d",
+      "ea_id": "QM5_10946",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-01T22:04:23+00:00"
+    },
+    {
+      "id": "28ab0c09-a225-4c22-875e-6418562d04e7",
+      "ea_id": "QM5_11659",
+      "symbol": "NDX.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-06T09:10:06+00:00"
+    },
+    {
+      "id": "6d51842a-5e6d-4652-b15e-73ad826d2da6",
+      "ea_id": "QM5_10645",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-10T17:18:38+00:00"
+    },
+    {
+      "id": "1837b9bd-97e2-40ce-8115-b21543fe4ab0",
+      "ea_id": "QM5_10645",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-10T19:29:14+00:00"
+    },
+    {
+      "id": "5dc1a06a-f182-474a-aaa2-d1aed451dda1",
+      "ea_id": "QM5_11504",
+      "symbol": "EURUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-10T20:23:11+00:00"
+    },
+    {
+      "id": "891435c5-703d-4d0b-866a-92738573aeb9",
+      "ea_id": "QM5_11504",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-10T22:54:55+00:00"
+    },
+    {
+      "id": "a812f3bd-0ff6-4e7c-bb24-e34feb8dc3a6",
+      "ea_id": "QM5_1312",
+      "symbol": "XAUUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-10T22:43:26+00:00"
+    },
+    {
+      "id": "852e048d-11b4-45fa-86a3-10c50e83d5e3",
+      "ea_id": "QM5_1312",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-10T23:32:25+00:00"
+    },
+    {
+      "id": "dde5ca9b-67fc-484e-9044-b7103cb54041",
+      "ea_id": "QM5_11504",
+      "symbol": "EURUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-11T12:09:28+00:00"
+    },
+    {
+      "id": "b2e44330-2847-4e3a-bb38-bd7f3f50068e",
+      "ea_id": "QM5_11287",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-11T23:30:21+00:00"
+    },
+    {
+      "id": "2a585f9e-6f52-4614-8a2e-c455dfb29fe6",
+      "ea_id": "QM5_11287",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-11T23:15:24+00:00"
+    },
+    {
+      "id": "8b1f7736-e55e-4cab-8fc0-8e406ff04e3d",
+      "ea_id": "QM5_11424",
+      "symbol": "AUDUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-15T23:12:19+00:00"
+    },
+    {
+      "id": "2d4a39d5-31ac-4aa8-9279-398842a98e27",
+      "ea_id": "QM5_11424",
+      "symbol": "GBPUSD.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-15T22:11:50+00:00"
+    },
+    {
+      "id": "bad5fb59-85c8-42f1-8d3d-7c76a3ab0858",
+      "ea_id": "QM5_11424",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-15T22:12:50+00:00"
+    },
+    {
+      "id": "1ce5837d-b47e-4334-81a3-47850f2c89a3",
+      "ea_id": "QM5_11424",
+      "symbol": "USDJPY.DWX",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-08-16T04:17:40+00:00"
+    }
+  ]
+}
