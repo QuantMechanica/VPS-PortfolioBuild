@@ -138,3 +138,4 @@ length, nondeterminism, invalid risk mode, or nonpositive governed economics.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial prior-month boundary-segment extraction | G0 | APPROVED |
+| v1-build | 2026-08-16 | deterministic V5 implementation and strict validation | Q01 | PASS |

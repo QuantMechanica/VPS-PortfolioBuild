@@ -16010,6 +16010,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 21514,qs-klinger-vol-osc-xag,0,XAGUSD.DWX,215140000,2026-08-16,Development,active
 41021,wti-mdual-mom,0,XTIUSD.DWX,410210000,2026-08-16,Research+Development,active
 41022,wti-wdual-mom,0,XTIUSD.DWX,410220000,2026-08-16,Research+Development,active
+41023,wti-mends-mom,0,XTIUSD.DWX,410230000,2026-08-16,Research+Development,active
 20074,trendline-horizontal-sr-retest,0,EURUSD.DWX,200740000,2026-08-16,Codex,active
 20074,trendline-horizontal-sr-retest,1,GBPUSD.DWX,200740001,2026-08-16,Codex,active
 20074,trendline-horizontal-sr-retest,2,XAUUSD.DWX,200740002,2026-08-16,Codex,active
