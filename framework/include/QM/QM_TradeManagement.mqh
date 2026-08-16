@@ -139,6 +139,31 @@ bool QM_TM_SendSLTPModify(const ulong ticket,
    request.sl = (new_sl > 0.0) ? QM_TM_NormalizePrice(symbol, new_sl) : 0.0;
    request.tp = (new_tp > 0.0) ? QM_TM_NormalizePrice(symbol, new_tp) : 0.0;
 
+   // 2026-08-16 throughput repair — NO-OP MODIFY GUARD, tester AND live.
+   //
+   // A caller that compares its RAW target against the position's current SL
+   // ("does this improve the stop?") can pass that test while the NORMALIZED
+   // target rounds back onto the stop that is already set. The request then
+   // asks the server to change nothing, MT5 answers [Invalid stops], the
+   // position is untouched, and the caller re-sends the identical request on
+   // the very next tick — forever. Measured on 2026-08-16: QM5_20176 emitted
+   // 6,204,547 such rejections across five terminals in one day (~2.3 GB of
+   // tester journal, every line a synchronous write inside the run), which is
+   // what pushed its heavy-symbol runs past their budget into
+   // summary_missing/INFRA_FAIL.
+   //
+   // Unlike the retry-window suppression below, this guard cannot change any
+   // outcome anywhere: the server rejects a no-op SLTP modify, so the position
+   // state after "send and be rejected" and after "do not send" is identical,
+   // and both paths return false. It therefore runs in the tester too, where
+   // the retry window deliberately does not.
+   const double live_sl = PositionGetDouble(POSITION_SL);
+   const double live_tp = PositionGetDouble(POSITION_TP);
+   const double price_point = SymbolInfoDouble(symbol, SYMBOL_POINT);
+   const double same_eps = (price_point > 0.0) ? (price_point * 0.5) : 1e-10;
+   if(MathAbs(request.sl - live_sl) < same_eps && MathAbs(request.tp - live_tp) < same_eps)
+      return false;   // request changes nothing — the server would reject it unchanged
+
    // Adversarial review 2026-07-20: the modify-hygiene machinery is LIVE-ONLY.
    // In the tester it would delay a fixed break-even target by up to the retry
    // window and thereby shift trades against the historical RISK_FIXED
