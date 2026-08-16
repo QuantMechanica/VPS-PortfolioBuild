@@ -10,9 +10,11 @@ last_updated: 2026-08-16
 approved_by: "OWNER commodity/energy portfolio mission 2026-08-16"
 approved_at: 2026-08-16
 source_approval: decisions/2026-08-16_xauxag_relative_flow_divergence_source_approval.md
-approval_commit: PENDING_SOURCE_APPROVAL_COMMIT
+approval_commit: ee6468d58337120ca856dd365a1295e2138000c3
 strategy_ids:
   - WILLIAMS-SCHWEIKERT-XAUXAG-FLOWDIV-2026_S01
+cards_extracted:
+  - xauxag-flowdiv
 parent_sources:
   - SRC03
   - SCHWEIKERT-XAUXAG-RATIO-2026
@@ -180,3 +182,4 @@ governed economics.
 | version | date | event | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-16 | bounded composite source extraction | G0 | APPROVED_SOURCE |
+| v1-card | 2026-08-16 | locked card extraction and OWNER G0 authorization | G0 | APPROVED |
