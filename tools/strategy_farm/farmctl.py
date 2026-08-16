@@ -4699,6 +4699,21 @@ def _p2_date_span_days(from_date: str, to_date: str) -> int:
     return max(1, (end - start).days + 1)
 
 
+def _payload_timeout_floor_seconds(payload: dict[str, Any]) -> int:
+    """Smoke-timeout floor from the payload timeout_min override (0 if unset).
+
+    Capped at 25200s (7h) like the member-count formula; the override can only
+    EXTEND a computed budget, never shrink it (callers take max()).
+    """
+    try:
+        timeout_min = int(payload.get("timeout_min") or 0)
+    except (TypeError, ValueError):
+        return 0
+    if timeout_min <= 0:
+        return 0
+    return min(25200, timeout_min * 60)
+
+
 def _p2_full_timeout_seconds(payload: dict[str, Any], from_date: str, to_date: str) -> int:
     # Basket / multi-symbol EAs pay a one-time cold tick-sync of EVERY member
     # symbol over the full window (~10 min/member) that single-symbol EAs never
@@ -4717,6 +4732,12 @@ def _p2_full_timeout_seconds(payload: dict[str, Any], from_date: str, to_date: s
         _basket_n = 1
     if _basket_n > 1:
         floor_sec = max(P2_FULL_TIMEOUT_MIN_SECONDS, min(25200, 1800 + _basket_n * 600))
+    # Member COUNT under-budgets member WEIGHT: a 2-member XAU/XAG basket gets
+    # the flat 2h floor although its full-window real-tick runtime exceeds it
+    # (20206/20236/20294 burned every attempt on 2026-08-15/16). The payload
+    # timeout_min override already governs the worker watchdog; honor it here
+    # too so one field budgets both nets, capped like the member formula.
+    floor_sec = max(floor_sec, _payload_timeout_floor_seconds(payload))
     runtime_sec = float(payload.get("p2_prescreen_runtime_sec") or 0.0)
     prescreen_from = str(payload.get("p2_prescreen_from_date") or "")
     prescreen_to = str(payload.get("p2_prescreen_to_date") or "")
@@ -5721,6 +5742,9 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         timeout_seconds = max(
             P2_FULL_TIMEOUT_MIN_SECONDS,
             min(25200, 1800 + _basket_n * 600),
+            # Same weight-blindness as the Q02 full branch: honor the payload
+            # timeout_min override so heavy few-member baskets get their budget.
+            _payload_timeout_floor_seconds(item_payload),
         )
     # Clamp the backtest start to where .DWX data actually exists, else NO_HISTORY.
     # FX/metals/energy .DWX history begins 2017.10.02, but the index .DWX symbols
