@@ -107,6 +107,7 @@ class Violation:
     func: str
     first_arg: str
     raw_call: str
+    resolved_symbol: str | None = None
 
 
 @dataclass
@@ -180,10 +181,57 @@ def classify_arg(arg: str) -> tuple[str, str | None]:
     return "expression", a
 
 
+STRING_ARRAY_DECL_RE = re.compile(
+    r"\b(?:const\s+)?string\s+([A-Za-z_][A-Za-z0-9_]*)\s*"
+    r"\[[^\]]*\]\s*=\s*\{(.*?)\}\s*;",
+    re.DOTALL,
+)
+STRING_SCALAR_DECL_RE = re.compile(
+    r'\b(?:const\s+)?string\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*'
+    r'("[A-Za-z][A-Za-z0-9._/\-]{2,}")\s*;'
+)
+QUOTED_SYMBOL_RE = re.compile(r'"([A-Za-z][A-Za-z0-9._/\-]{2,})"')
+ARRAY_ELEMENT_ARG_RE = re.compile(
+    r"^([A-Za-z_][A-Za-z0-9_]*)\s*\[[^\]]+\]$"
+)
+
+
+def extract_string_symbol_bindings(source: str) -> dict[str, set[str]]:
+    """Resolve simple file-scope string literals used as symbol arguments.
+
+    MQL basket EAs commonly keep their universe in a ``string symbols[]``
+    initializer and later call ``CopyClose(symbols[i], ...)``. Looking only for
+    a literal first argument misses that access completely. This deliberately
+    handles only static scalar/array initializers; computed values remain
+    unresolved and are reported in the result note rather than guessed.
+    """
+    bindings: dict[str, set[str]] = {}
+    for match in STRING_ARRAY_DECL_RE.finditer(source):
+        values = set(QUOTED_SYMBOL_RE.findall(match.group(2)))
+        if values:
+            bindings[match.group(1)] = values
+    for match in STRING_SCALAR_DECL_RE.finditer(source):
+        literal = SYMBOL_LITERAL_RE.match(match.group(2))
+        if literal:
+            bindings.setdefault(match.group(1), set()).add(literal.group(1))
+    return bindings
+
+
+def binding_name(kind: str, value: str | None, arg: str) -> str | None:
+    if kind == "variable":
+        return value
+    if kind == "expression":
+        match = ARRAY_ELEMENT_ARG_RE.match(arg.strip())
+        if match:
+            return match.group(1)
+    return None
+
+
 def find_violations(ea_label: str, mq5_path: Path) -> tuple[list[Violation], set[str], set[str]]:
     """Walk the .mq5 source. Return (violations, foreign_literals, unknown_vars)."""
     raw = mq5_path.read_text(encoding="utf-8", errors="replace")
     text = strip_comments(raw)
+    symbol_bindings = extract_string_symbol_bindings(text)
     violations: list[Violation] = []
     foreign_literals: set[str] = set()
     unknown_vars: set[str] = set()
@@ -218,11 +266,25 @@ def find_violations(ea_label: str, mq5_path: Path) -> tuple[list[Violation], set
             violations.append(Violation(
                 ea_label=ea_label, file=str(mq5_path), line=line, col=col,
                 func=func, first_arg=arg, raw_call=text[m.start():_end + 1][:120],
+                resolved_symbol=val,
             ))
-        elif kind == "variable":
-            # Variable holding a symbol — could be self or foreign. Record as
-            # unknown rather than violation to avoid false positives.
-            unknown_vars.add(val or arg)
+        else:
+            name = binding_name(kind, val, arg)
+            resolved = symbol_bindings.get(name or "")
+            if resolved:
+                line, col = pos_to_line_col(m.start())
+                for symbol in sorted(resolved):
+                    foreign_literals.add(symbol)
+                    violations.append(Violation(
+                        ea_label=ea_label, file=str(mq5_path), line=line, col=col,
+                        func=func, first_arg=arg,
+                        raw_call=text[m.start():_end + 1][:120],
+                        resolved_symbol=symbol,
+                    ))
+            else:
+                # A computed symbol could be self or foreign. Record it as
+                # unresolved rather than guessing and creating false positives.
+                unknown_vars.add(name or arg)
 
     return violations, foreign_literals, unknown_vars
 
@@ -284,8 +346,7 @@ def audit_ea(ea_label: str, ea_dir: Path) -> EAResult:
             referenced_foreign_symbols=sorted(foreign_literals),
             manifest_symbols=manifest_syms,
             violations=[v for v in violations
-                       if SYMBOL_LITERAL_RE.match(v.first_arg)
-                       and SYMBOL_LITERAL_RE.match(v.first_arg).group(1) in not_in_manifest],
+                       if v.resolved_symbol in not_in_manifest],
             note=("Symbols referenced in source but not in basket_manifest.json: "
                   + ", ".join(not_in_manifest)) + (" | " + " | ".join(note_parts) if note_parts else ""),
         )
@@ -361,7 +422,8 @@ def main(argv: list[str] | None = None) -> int:
             if args.verbose:
                 d["violations"] = [
                     {"file": v.file, "line": v.line, "col": v.col,
-                     "func": v.func, "first_arg": v.first_arg, "raw_call": v.raw_call}
+                     "func": v.func, "first_arg": v.first_arg,
+                     "resolved_symbol": v.resolved_symbol, "raw_call": v.raw_call}
                     for v in r.violations[:25]
                 ]
             out.append(d)

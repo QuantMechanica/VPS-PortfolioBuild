@@ -16127,3 +16127,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 33004,kevin-davey-3bar-momentum-expansion,1,XAUUSD.DWX,330040001,2026-08-16T22:09:58Z,Codex,active
 33004,kevin-davey-3bar-momentum-expansion,2,EURUSD.DWX,330040002,2026-08-16T22:09:58Z,Codex,active
 41033,wti-flow-dom,0,XTIUSD.DWX,410330000,2026-08-16T23:00:46Z,Codex,active
+31004,xauusd-vwap-liquidity-sweep-scalp,0,XAUUSD.DWX,310040000,2026-08-16T23:12:59Z,Codex,active
+31005,japanstrike-tokyo-liquidity-breakout,0,USDJPY.DWX,310050000,2026-08-16T23:12:59Z,Codex,active
+31005,japanstrike-tokyo-liquidity-breakout,1,GBPJPY.DWX,310050001,2026-08-16T23:12:59Z,Codex,active
+31006,night-forex-bot-asian-stochastic-scalper,0,USDCAD.DWX,310060000,2026-08-16T23:12:59Z,Codex,active
+31006,night-forex-bot-asian-stochastic-scalper,1,AUDUSD.DWX,310060001,2026-08-16T23:12:59Z,Codex,active
+31006,night-forex-bot-asian-stochastic-scalper,2,EURCHF.DWX,310060002,2026-08-16T23:12:59Z,Codex,active
+31007,forex-trend-hunter-triple-ema,0,EURUSD.DWX,310070000,2026-08-16T23:12:59Z,Codex,active
+31007,forex-trend-hunter-triple-ema,1,GBPJPY.DWX,310070001,2026-08-16T23:12:59Z,Codex,active
+31007,forex-trend-hunter-triple-ema,2,XAUUSD.DWX,310070002,2026-08-16T23:12:59Z,Codex,active
+32001,nq-micro-momentum-apex-scalper,0,NDX.DWX,320010000,2026-08-16T23:12:59Z,Codex,active
