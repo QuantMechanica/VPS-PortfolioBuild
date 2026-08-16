@@ -1,0 +1,176 @@
+{
+  "schema_version": "qm.fx-cointegration-serialized-lane-stop/v1",
+  "captured_at_utc": "2026-08-16T09:49:31.0299426Z",
+  "captured_at_local": "2026-08-16T11:49:31.0299426+02:00",
+  "branch": "agents/board-advisor",
+  "sampled_head": "1d66c2edfe6752ffda02ea7d05fae0d8da3c1afb",
+  "outcome": "SERIALIZED_BASKET_LANE_OCCUPIED_TARGET_PENDING_ONCE",
+  "frontier": {
+    "frozen_pair_count": 66,
+    "strict_scan_survivor_count": 2,
+    "fully_mechanized": true,
+    "approved_coint_card_filename_count": 25,
+    "approved_coint_cards_without_matching_build": 0,
+    "qm5_12532_terminal_path": [
+      "Q02_PASS",
+      "Q04_PASS",
+      "Q05_FAIL"
+    ],
+    "qm5_12533_terminal_path": [
+      "Q02_PASS",
+      "Q04_FAIL"
+    ],
+    "anchor_open_q02_row_count": 0,
+    "anchor_q02_oninit_or_no_history_blocker": false,
+    "selection": "existing_rank_58_qm5_1257_gbpusd_usdjpy"
+  },
+  "target": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "parent_task_id": "39ee6910-5d04-4087-83b0-65a6fd6b22f9",
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "phase": "Q02",
+    "status": "pending",
+    "parent_task_status": "pending",
+    "verdict": null,
+    "attempt_count": 2,
+    "claimed_by": null,
+    "evidence_path": null,
+    "updated_at_utc": "2026-08-15T13:03:04.898529+00:00",
+    "exact_identity_row_count": 1,
+    "exact_open_row_count": 1,
+    "active_hold_count": 0,
+    "canonical_eligible_pending_count": 954,
+    "canonical_selector_rank": 12,
+    "priority_track": true,
+    "enqueue_action": "SKIPPED_DUPLICATE_ROW_ALREADY_PENDING",
+    "dispatch_action": "SKIPPED_SERIALIZED_MULTISYMBOL_LANE_OCCUPIED",
+    "bindings": {
+      "mq5_sha256": "f1e0bc08e65c6b46eea7c1397551ebb6c17aa466b48ef1d48d67e573361b9b27",
+      "ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+      "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+      "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+      "payload_matches_repository": true
+    },
+    "repair_lineage": {
+      "entry_repair_commit": "751cb391d8f388f5b61641ba3299011cdf9a09ed",
+      "exit_repair_commit": "f9ef37c1c26686758567b493b0411c65079286d8",
+      "set_metadata_restore_commit": "82a1bf44319a26fee1dbe5eb8463c7986f0304e6",
+      "prior_zero_trade_summary": "D:/QM/reports/work_items/d4cd660c-c81a-41d3-8a4c-ad21d3319816/QM5_1257/20260815_082908/summary.json",
+      "prior_zero_trade_summary_sha256": "76fcd6351b98f8cc16250a5fd7e3bc2fb47e6b868cd9ce4619102c5f64bc1526"
+    },
+    "basket_contract": {
+      "host_symbol": "GBPUSD.DWX",
+      "host_timeframe": "H1",
+      "basket_symbols": [
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1,
+      "timeout_min": 450,
+      "g0_status": "APPROVED",
+      "r1_r4": "PASS",
+      "source": "Lemishko, Landi, and Caicedo-Llano (2024), SSRN 4771108",
+      "structural_only": true,
+      "ml_or_banned_indicator": false
+    },
+    "focused_validation": {
+      "command": "python -m pytest -q tools/strategy_farm/tests/test_fx_basket_manifests.py -k qm5_1257",
+      "passed": 2,
+      "failed": 0,
+      "deselected": 43,
+      "elapsed_seconds": 0.29
+    }
+  },
+  "fleet": {
+    "active_work_item_count": 4,
+    "active_multisymbol_count": 1,
+    "basket_lane_available": false,
+    "active_multisymbol_work_item": {
+      "id": "92235bb9-1fc0-4aeb-90c3-f8771ca9e2bd",
+      "ea_id": "QM5_20233",
+      "symbol": "QM5_20233_XAU_XAG_SKEW_RANK_D1",
+      "phase": "Q02",
+      "claimed_by": "T8",
+      "attempt_count": 1,
+      "basket_symbols": [
+        "XAUUSD.DWX",
+        "XAGUSD.DWX"
+      ],
+      "runner_pid": 17136,
+      "terminal_pid": 1628,
+      "runner_executable": "C:/Program Files/PowerShell/7/pwsh.exe",
+      "terminal_executable": "D:/QM/mt5/T8/terminal64.exe",
+      "tester_config": "D:/QM/reports/work_items/92235bb9-1fc0-4aeb-90c3-f8771ca9e2bd/QM5_20233/20260816_043334/raw/run_01/tester.ini",
+      "timeout_seconds": 25200,
+      "started_at_utc": "2026-08-16T04:32:09+00:00",
+      "process_chain_live": true
+    },
+    "other_active_work_items": [
+      {
+        "id": "fe5f411c-d432-4269-acf5-1dff851fc790",
+        "ea_id": "QM5_12354",
+        "phase": "Q08",
+        "claimed_by": "T7"
+      },
+      {
+        "id": "5a5c71bf-629a-422c-8949-d13f6f14caf3",
+        "ea_id": "QM5_10207",
+        "phase": "Q04",
+        "claimed_by": "T4"
+      },
+      {
+        "id": "fb7864f2-a993-467f-9114-cc44485ee2db",
+        "ea_id": "QM5_10242",
+        "phase": "Q04",
+        "claimed_by": "T3"
+      }
+    ],
+    "t_live_observed_separately_and_excluded": true,
+    "ftmo_terminal_observed_separately_and_excluded": true
+  },
+  "resources": {
+    "cpu_sample_interval_seconds": 2,
+    "cpu_samples_percent": [
+      67.83,
+      74.59,
+      74.08
+    ],
+    "cpu_average_percent": 72.17,
+    "cpu_max_percent": 74.59,
+    "cpu_hard_trip_percent": 97.0,
+    "cpu_hard_trip": false,
+    "free_physical_memory_kib": 41210860,
+    "total_visible_memory_kib": 66185976,
+    "d_volume_free_bytes": 166011117568,
+    "binding_ceiling": [
+      "farm_wide_single_multisymbol_serialization_lane"
+    ]
+  },
+  "non_duplicate_delta": {
+    "prior_evidence": "artifacts/fx_cointegration_gbpusd_usdjpy_serialized_lane_stop_20260816T085232Z_board_advisor.json",
+    "prior_sampled_at_utc": "2026-08-16T08:52:32.6480913Z",
+    "current_sampled_at_utc": "2026-08-16T09:49:31.0299426Z",
+    "same_live_basket_owner_revalidated": true,
+    "prior_cpu_average_percent": 61.0,
+    "current_cpu_average_percent": 72.17,
+    "current_canonical_selector_rank": 12,
+    "description": "The exact repaired FX row remains eligible, priority-tracked, hash-clean, and pending once. Nearly an hour after the prior handoff, the same T8 basket still has a live runner/terminal chain while three additional claimed work items occupy T3, T4, and T7; CPU rose by 11.17 percentage points. This revalidates an occupied serialized lane under changed concurrent fleet load and quantifies the target at rank 12 of 954 eligible rows without duplicating or mutating it."
+  },
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "registry": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "q02_enqueue_or_requeue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_control": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "auto_trading": false,
+    "repository_evidence_files": true
+  }
+}
