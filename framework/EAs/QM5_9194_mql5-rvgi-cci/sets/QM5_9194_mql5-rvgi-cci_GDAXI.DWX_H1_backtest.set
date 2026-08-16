@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        9194
 ; ea_slug:      mql5-rvgi-cci
@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   3f03c9c3c3a126cdf44d0ba20d60140c00265fc0337182091f1c60707e83e359
 ; author:       Development
 ; date:         2026-06-10
 ;==========================================================
