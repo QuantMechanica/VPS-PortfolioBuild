@@ -1,0 +1,158 @@
+{
+  "schema_version": "qm.fx-cointegration-hard-cpu-ceiling-stop/v1",
+  "captured_at_utc": "2026-08-16T13:03:33.894Z",
+  "captured_at_local": "2026-08-16T15:03:33.894+02:00",
+  "branch": "agents/board-advisor",
+  "sampled_head": "7d575a0c59e57d62afbbbd352426bd6c78662519",
+  "outcome": "HARD_CPU_CEILING_STOP_EXISTING_FX_Q02_PENDING_ONCE",
+  "mission_reconciliation": {
+    "frozen_pair_count": 66,
+    "mechanized_pair_count": 66,
+    "unbuilt_pair_count": 0,
+    "duplicate_card_or_ea_created": false,
+    "anchor_state": {
+      "QM5_12532_AUDNZD_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_PASS",
+        "Q05_FAIL"
+      ],
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_FAIL"
+      ]
+    },
+    "selected_fallback": {
+      "scan_rank": 58,
+      "ea_id": "QM5_1257",
+      "pair_slot": 8,
+      "pair": [
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1"
+    }
+  },
+  "target": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "parent_task_id": "39ee6910-5d04-4087-83b0-65a6fd6b22f9",
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 2,
+    "claimed_by": null,
+    "evidence_path": null,
+    "created_at_utc": "2026-08-11T23:53:50+00:00",
+    "updated_at_utc": "2026-08-15T13:03:04.898529+00:00",
+    "open_logical_pair_q02_row_count": 1,
+    "priority_track": true,
+    "avoid_terminals": [
+      "T4",
+      "T8"
+    ],
+    "enqueue_action": "SKIPPED_EXACT_ROW_ALREADY_PENDING",
+    "requeue_action": "SKIPPED_NO_DUPLICATE_RETRY",
+    "priority_mutation": "SKIPPED_ALREADY_PRIORITY_TRACKED"
+  },
+  "resources": {
+    "cpu_sample_count": 5,
+    "cpu_sample_interval_seconds": 2,
+    "cpu_samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "cpu_average_percent": 100.0,
+    "cpu_max_percent": 100.0,
+    "cpu_hard_trip_percent": 97.0,
+    "cpu_hard_trip": true,
+    "free_physical_gib": 44.94,
+    "active_work_item_count": 7,
+    "active_work_items": [
+      {
+        "id": "7c7b288d-033a-4e92-9573-386091194f60",
+        "ea_id": "QM5_20082",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q02",
+        "claimed_by": "T1"
+      },
+      {
+        "id": "2cf89273-e809-4f5b-b79e-42d71882da9b",
+        "ea_id": "QM5_11363",
+        "symbol": "GBPJPY.DWX",
+        "phase": "Q04",
+        "claimed_by": "T10"
+      },
+      {
+        "id": "25a4be40-5824-468d-a515-fcb90376c134",
+        "ea_id": "QM5_20086",
+        "symbol": "XAUUSD.DWX",
+        "phase": "Q02",
+        "claimed_by": "T2"
+      },
+      {
+        "id": "f6a7dbcd-eee3-45b1-83e2-adea340809e2",
+        "ea_id": "QM5_20074",
+        "symbol": "GDAXI.DWX",
+        "phase": "Q04",
+        "claimed_by": "T3"
+      },
+      {
+        "id": "5e832838-5d29-4405-86b1-b4840eac22cf",
+        "ea_id": "QM5_1537",
+        "symbol": "XAGUSD.DWX",
+        "phase": "Q07",
+        "claimed_by": "T6"
+      },
+      {
+        "id": "c044a289-e8c6-4888-99da-bf1c54ee1d95",
+        "ea_id": "QM5_11362",
+        "symbol": "AUDUSD.DWX",
+        "phase": "Q04",
+        "claimed_by": "T7"
+      },
+      {
+        "id": "00b0d320-8b5c-4a9f-82a8-5818a9929224",
+        "ea_id": "QM5_20071",
+        "symbol": "USDCHF.DWX",
+        "phase": "Q04",
+        "claimed_by": "T8"
+      }
+    ]
+  },
+  "non_duplicate_delta": {
+    "prior_evidence": "artifacts/fx_cointegration_gbpusd_usdjpy_governed_queue_handoff_20260816T122623Z_board_advisor.json",
+    "prior_cpu_average_percent": 65.87,
+    "prior_cpu_max_percent": 73.68,
+    "prior_cpu_hard_trip": false,
+    "prior_active_work_item_count": 3,
+    "current_cpu_average_percent": 100.0,
+    "current_cpu_max_percent": 100.0,
+    "current_cpu_hard_trip": true,
+    "current_active_work_item_count": 7,
+    "description": "The resource gate changed from clear to a five-of-five 100% hard CPU trip while the sole FX fallback remained pending exactly once."
+  },
+  "actions": {
+    "card_created_or_changed": false,
+    "ea_created_or_changed": false,
+    "registry_changed": false,
+    "setfile_changed": false,
+    "basket_manifest_changed": false,
+    "q02_enqueue_or_requeue": false,
+    "priority_or_timestamp_changed": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_or_factory_control": false,
+    "repository_stop_evidence_created": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_terminal": false,
+    "auto_trading": false
+  }
+}
