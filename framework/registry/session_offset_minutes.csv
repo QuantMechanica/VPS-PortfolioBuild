@@ -1,0 +1,111 @@
+# session_offset_minutes.csv  (v2, 2026-08-16, consolidated by router task 31f2e242)
+# Per-symbol label-to-first-tradable-tick offset for the (not-yet-implemented) build-preflight
+# entry-grace gate.
+#
+# PURPOSE
+#   A card's declared strategy_entry_grace_minutes is the window, measured from a bar's
+#   own label/open timestamp, during which the EA's first-tick entry check stays valid.
+#   On symbols with an exchange session break, the first tradable tick of a D1 bar lands
+#   materially AFTER the D1 label. If declared grace < that offset, the entry window
+#   closes before the first tradable tick ever arrives and the EA silently zero-trades
+#   forever. Root cause + measurement: router fea371c2 / census 6dfa3117 / archive-bar
+#   measurement + XAU/XAG reconciliation ee0922a7 (docs/ops/evidence/
+#   2026-08-16_session_offset_registry_measurement_and_xau_reconciliation.md).
+#
+# GATE STATUS -- NOT YET IMPLEMENTED. READ THIS BEFORE TRUSTING ANY EARLIER NOTE HERE.
+#   Two earlier drafts of this file (and the ee0922a7 evidence doc) asserted that a scan
+#   function (variously named validate_build_guardrails._scan_session_offset_grace or
+#   _scan_entry_grace_vs_session_offset) and a SESSION_OFFSET_REGISTRY_PATH constant
+#   already exist and just need this CSV to be "armed". Verified false by router task
+#   31f2e242 on 2026-08-16: neither name appears anywhere in
+#   tools/strategy_farm/validate_build_guardrails.py, in any commit in this repo's full
+#   history (git grep across git rev-list --all), nor in tools/strategy_farm/tests/
+#   test_build_guardrails.py. The design doc these drafts cited
+#   (docs/ops/evidence/2026-08-16_entry_grace_session_offset_guardrail.md) also does not
+#   exist on disk. This file is therefore reference DATA only -- no build path currently
+#   reads it. Implementing the actual scan/wiring/regression-tests is separate, unstarted
+#   engineering work; do not assume grace=5 cards on affected symbols are being caught
+#   until that lands and this note is removed.
+#
+# SCHEMA
+#   offset_minutes: best-estimate first-tradable-tick delay from the D1 00:00 label, in
+#     minutes. Blank when offset_source is unmeasured_session_break_risk (unknown -- must
+#     not be treated as 0).
+#   offset_source:
+#     measured                    -> archive-bar or tick measurement exists for this exact
+#                                     symbol (see measurement_ref).
+#     inferred_energy_sibling      -> not directly measured; inferred equal to a measured
+#                                     sibling on the same session/venue.
+#     inferred_fx_continuous       -> not directly measured (no local intraday export);
+#                                     inferred 0 by asset-class consistency (17/17 measured
+#                                     FX pairs show modal offset 0, continuous session).
+#     default_continuous_unverified -> legacy default from v1; superseded below wherever a
+#                                     real measurement exists (see notes).
+#     unmeasured_session_break_risk -> offset unknown AND the symbol is known/suspected to
+#                                     have a session break; treat as fail-closed once a gate
+#                                     exists, i.e. measure before enabling a tight D1 grace
+#                                     card on these.
+#
+# PROVENANCE
+#   XTIUSD.DWX: independently tick-measured (fea371c2, real-tick D1 replay: first tick
+#     3,600-3,696s after the 00:00 D1 label -> 60.0-61.6 min); offset_minutes stores the
+#     conservative max.
+#   XAUUSD.DWX / XAGUSD.DWX / 5 indices / 17 FX pairs: archive-bar measured (ee0922a7,
+#     2026-08-16): per symbol, modal first-bar-of-day offset across all cached
+#     D:/QM/mt5/T_Export intraday days (M5>M15>M30>H1 preference). Validated against
+#     tick-level ground truth on XTIUSD (method returns 60.0 min modal vs. 60.0-61.6 min
+#     tick-measured -- residual is bar-open-vs-first-tick granularity, not method error).
+#     Bar-level, not tick-level -- same caveat XNGUSD's inferred value already carried.
+#   ee0922a7 section 3 correction: XAUUSD.DWX/XAGUSD.DWX were previously defaulted to
+#     offset=0/continuous_session_structural on an unmeasured claim disproven by both the
+#     archive measurement (60.0 min modal, 99.5-99.8% consistency) and by direct inspection
+#     of the two EAs (QM5_20019, QM5_20095) cited as counter-evidence for that claim -- both
+#     anchor entry-grace to the current H1 bar, not the D1 label, so they cannot exhibit the
+#     defect regardless of whether XAUUSD has a session break, and are not valid evidence
+#     that XAUUSD is continuous. No approved card currently combines XAUUSD.DWX/XAGUSD.DWX
+#     with the D1-label-anchored tight-grace idiom (checked, see ee0922a7 section 3) -- so
+#     there is no live defect today, but the registry must not encode 0/continuous here.
+#   11 FX crosses without a local intraday export (CADJPY, CHFJPY, EURCAD, EURCHF, EURNZD,
+#     GBPAUD, GBPCAD, GBPCHF, GBPNZD, NZDCHF, NZDJPY): not measured; offset_source
+#     inferred_fx_continuous (see SCHEMA). Import an export and measure before treating as
+#     equal-confidence to the 17 measured FX pairs.
+#
+symbol,asset_class,offset_minutes,offset_min_measured,offset_max_measured,offset_source,measurement_ref,measured_utc,notes
+XTIUSD.DWX,commodities,61.6,60.0,61.6,measured,fea371c2,2026-08-16,"WTI energy CFD; first tradable tick 3600-3696s after D1 label in XTIUSD.DWX_D1.csv real-tick replay"
+XNGUSD.DWX,commodities,61.6,,,inferred_energy_sibling,fea371c2,2026-08-16,"NatGas energy CFD; shares NYMEX/Globex energy session with XTIUSD; offset inferred equal to XTIUSD pending own measurement; 6 confirmed-affected grace=5 cards"
+XAUUSD.DWX,commodities,60.0,,,measured,ee0922a7,2026-08-16,"Metal; archive-bar modal offset 60.0 min, 99.5% consistency over 2124 days; corrects v1's unsound default_continuous_unverified/offset=0 (see PROVENANCE); bar-level not tick-level"
+XAGUSD.DWX,commodities,60.0,,,measured,ee0922a7,2026-08-16,"Metal; archive-bar modal offset 60.0 min, 99.8% consistency over 1093 days; corrects v1's unsound default_continuous_unverified/offset=0 (see PROVENANCE); bar-level not tick-level"
+AUDCAD.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX cross; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+AUDCHF.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX cross; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+AUDJPY.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX major; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+AUDNZD.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX cross; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+AUDUSD.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX major; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+CADCHF.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX cross; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+CADJPY.DWX,forex,0.0,,,inferred_fx_continuous,ee0922a7,2026-08-16,"FX cross; no local intraday export; offset inferred 0 by asset-class consistency (17/17 measured FX pairs show modal offset 0); not directly measured"
+CHFJPY.DWX,forex,0.0,,,inferred_fx_continuous,ee0922a7,2026-08-16,"FX cross; no local intraday export; offset inferred 0 by asset-class consistency (17/17 measured FX pairs show modal offset 0); not directly measured"
+EURAUD.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX cross; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+EURCAD.DWX,forex,0.0,,,inferred_fx_continuous,ee0922a7,2026-08-16,"FX cross; no local intraday export; offset inferred 0 by asset-class consistency (17/17 measured FX pairs show modal offset 0); not directly measured"
+EURCHF.DWX,forex,0.0,,,inferred_fx_continuous,ee0922a7,2026-08-16,"FX cross; no local intraday export; offset inferred 0 by asset-class consistency (17/17 measured FX pairs show modal offset 0); not directly measured"
+EURGBP.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX cross; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+EURJPY.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX cross; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+EURNZD.DWX,forex,0.0,,,inferred_fx_continuous,ee0922a7,2026-08-16,"FX cross; no local intraday export; offset inferred 0 by asset-class consistency (17/17 measured FX pairs show modal offset 0); not directly measured"
+EURUSD.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX major; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+GBPAUD.DWX,forex,0.0,,,inferred_fx_continuous,ee0922a7,2026-08-16,"FX cross; no local intraday export; offset inferred 0 by asset-class consistency (17/17 measured FX pairs show modal offset 0); not directly measured"
+GBPCAD.DWX,forex,0.0,,,inferred_fx_continuous,ee0922a7,2026-08-16,"FX cross; no local intraday export; offset inferred 0 by asset-class consistency (17/17 measured FX pairs show modal offset 0); not directly measured"
+GBPCHF.DWX,forex,0.0,,,inferred_fx_continuous,ee0922a7,2026-08-16,"FX cross; no local intraday export; offset inferred 0 by asset-class consistency (17/17 measured FX pairs show modal offset 0); not directly measured"
+GBPJPY.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX cross; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+GBPNZD.DWX,forex,0.0,,,inferred_fx_continuous,ee0922a7,2026-08-16,"FX cross; no local intraday export; offset inferred 0 by asset-class consistency (17/17 measured FX pairs show modal offset 0); not directly measured"
+GBPUSD.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX major; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+NZDCAD.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX cross; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+NZDCHF.DWX,forex,0.0,,,inferred_fx_continuous,ee0922a7,2026-08-16,"FX cross; no local intraday export; offset inferred 0 by asset-class consistency (17/17 measured FX pairs show modal offset 0); not directly measured"
+NZDJPY.DWX,forex,0.0,,,inferred_fx_continuous,ee0922a7,2026-08-16,"FX cross; no local intraday export; offset inferred 0 by asset-class consistency (17/17 measured FX pairs show modal offset 0); not directly measured"
+NZDUSD.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX major; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+USDCAD.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX major; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+USDCHF.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX major; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+USDJPY.DWX,forex,0.0,,,measured,ee0922a7,2026-08-16,"FX major; archive-bar modal offset 0.0 min (24x5 continuous), 69-100% consistency, 1880-2210 sample days across the 17-pair measured cohort"
+GDAXI.DWX,indices,210.0,,,measured,ee0922a7,2026-08-16,"Index CFD; archive-bar modal offset 210.0 min, 80.9% consistency over 1902 days (narrower European day session); no current card uses the entry-grace idiom on this symbol, but any future tight D1-label grace card must consult this value"
+NDX.DWX,indices,60.0,,,measured,ee0922a7,2026-08-16,"Index CFD; archive-bar modal offset 60.0 min, 98.1% consistency over 1674 days; no current card uses the entry-grace idiom on this symbol, but any future tight D1-label grace card must consult this value"
+SP500.DWX,indices,60.0,,,measured,ee0922a7,2026-08-16,"Index CFD; archive-bar modal offset 60.0 min, 99.2% consistency over 1933 days; no current card uses the entry-grace idiom on this symbol, but any future tight D1-label grace card must consult this value"
+UK100.DWX,indices,60.0,,,measured,ee0922a7,2026-08-16,"Index CFD; archive-bar modal offset 60.0 min, 97.1% consistency over 1096 days; no current card uses the entry-grace idiom on this symbol, but any future tight D1-label grace card must consult this value"
+WS30.DWX,indices,60.0,,,measured,ee0922a7,2026-08-16,"Index CFD; archive-bar modal offset 60.0 min, 98.8% consistency over 1932 days; no current card uses the entry-grace idiom on this symbol, but any future tight D1-label grace card must consult this value"
+XCUUSD.DWX,commodities,,,,unmeasured_session_break_risk,,,"Copper CFD; NOT in dwx_symbol_matrix.csv (2026-08-16 coverage trip, see memory); session-break-prone like the energies; offset NOT measured; grace-idiom cards (e.g. QM5_20053) must not be treated as safe until measured"
