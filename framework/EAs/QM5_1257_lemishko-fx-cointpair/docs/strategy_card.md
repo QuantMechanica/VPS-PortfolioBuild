@@ -16,8 +16,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q04_PENDING
-last_updated: 2026-08-16
+pipeline_phase: DEAD
+last_updated: 2026-08-17
 g0_approval_reasoning: "SSRN Lemishko-Landi-Caicedo 2024 (abstract 4771108) R1-R4 PASS: named authors+SSRN URL, Engle-Granger coint + frozen monthly OLS hedge ratio (no online adaptation), 7-pair major FX DWX universe, no ML"
 ---
 
@@ -67,7 +67,7 @@ empirical pipeline question.
 - Skip if pair spread cost exceeds 20% of the expected z-score reversion distance.
 - Do not re-estimate hedge ratio intramonth; this avoids online parameter adaptation.
 
-### Active Q02 Binding
+### Terminal Q02/Q04 Binding
 - Pair slot: `8`.
 - Host and first traded leg: `GBPUSD.DWX`, H1.
 - Companion traded leg: `USDJPY.DWX`.
@@ -105,10 +105,12 @@ empirical pipeline question.
   failure and retained stable EX5 and fixed-risk setfile bindings. Q04 enqueue
   was deferred because the explicit backtest CPU ceiling was binding.
 - Q04: 2026-08-16, canonical automation promoted the passing Q02 lineage to
-  exactly one pending early-probe work item,
-  `d48dfb37-d28b-4e9d-aebe-376b7afe12dd`. Dispatch was left to the paced
-  fleet because a five-sample CPU check averaged 99.8% and crossed the 97%
-  hard ceiling.
+  exactly one early-probe work item,
+  `d48dfb37-d28b-4e9d-aebe-376b7afe12dd`. It completed with terminal strategy
+  `FAIL`: F1 PF-net `0.82` on 72 trades, F2 zero trades, and F3 PF-net `1.90`
+  on 52 trades. The aggregate is bound to the same EX5 and fixed-risk setfile
+  as Q02. No Q05 successor exists; the exact GBPUSD/USDJPY binding is retired
+  without a rerun, refit, filter, or rescue.
 
 ## Verwandte Strategien
 - [[strategies/QM5_1129_gatev-distance-pairs]] - distance-based pairs; this card uses cointegration and Forex pairs.
@@ -118,6 +120,10 @@ empirical pipeline question.
 - Q02 established executable basket cadence, not economic merit. The bound
   run was adverse (PF 0.65, net profit -7,003.44, drawdown 7,920.49 / 7.90%),
   so no rescue tuning, refit, filter, or profitability claim is authorized.
+- Q04 supplied the terminal economic verdict. The 2023 fold failed the PF-net
+  floor and the 2024 fold produced no trades despite valid two-leg history;
+  one profitable 2025 fold cannot override those failures. The Card is DEAD
+  at Q04 and must not advance to Q05.
 
 ---
 

@@ -1,0 +1,133 @@
+{
+  "schema_version": "qm.fx-cointegration-q04-retirement/v1",
+  "captured_at_utc": "2026-08-16T23:51:34.4089286Z",
+  "captured_at_local": "2026-08-17T01:51:34.4160964+02:00",
+  "branch": "agents/board-advisor",
+  "sampled_head": "a45de326240faadd6fd11e059928cfb3bef2afe1",
+  "outcome": "EXISTING_FOREX_FALLBACK_Q04_STRATEGY_FAIL_RETIRED",
+  "mission_reconciliation": {
+    "frozen_pair_count": 66,
+    "mechanized_pair_count": 66,
+    "unbuilt_pair_count": 0,
+    "duplicate_card_or_ea_created": false,
+    "anchor_state": {
+      "QM5_12532_AUDNZD_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_PASS",
+        "Q05_FAIL"
+      ],
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_FAIL"
+      ]
+    },
+    "selected_fallback": {
+      "scan_rank": 58,
+      "ea_id": "QM5_1257",
+      "pair_slot": 8,
+      "pair": [
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+      "source": "Lemishko, Landi, and Caicedo-Llano (2024), SSRN 4771108",
+      "structural_only": true,
+      "low_frequency": true,
+      "ml_or_banned_indicator": false
+    }
+  },
+  "database_read": {
+    "path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "mode": "read_only",
+    "quick_check": "ok",
+    "exact_q04_row_count": 1,
+    "open_exact_logical_row_count": 0,
+    "q05_or_later_exact_logical_row_count": 0
+  },
+  "q02_lineage": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "status": "done",
+    "verdict": "PASS",
+    "updated_at_utc": "2026-08-16T17:14:14+00:00"
+  },
+  "q04_result": {
+    "work_item_id": "d48dfb37-d28b-4e9d-aebe-376b7afe12dd",
+    "promoted_from_work_item": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "status": "done",
+    "verdict": "FAIL",
+    "verdict_taxonomy": "strategy",
+    "verdict_reason": "F1:pf_net=0.820;F2:trades=0;F3:pf_net=1.900",
+    "created_at_utc": "2026-08-16T20:41:38+00:00",
+    "updated_at_utc": "2026-08-16T21:43:37+00:00",
+    "evidence_path": "D:/QM/reports/pipeline/QM5_1257/Q04/QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1__d48dfb37-d28b-4e9d-aebe-376b7afe12dd/aggregate.json",
+    "evidence_sha256": "eea6f86baaaeb436ef19705f90ca6ef0d7891e23dcb0788f3e9ef2e83804557d",
+    "aggregate_identity_sha256": "c4dcc89d0163e8005524a5242ea2ecb69790bd2d3f8d71cb4951051b05058e7f",
+    "folds": [
+      {
+        "id": "F1",
+        "oos_year": 2023,
+        "trades": 72,
+        "pf_net": 0.82,
+        "verdict_reason": "STRATEGY_PF_AT_OR_BELOW_FLOOR",
+        "invalid_reason": null
+      },
+      {
+        "id": "F2",
+        "oos_year": 2024,
+        "trades": 0,
+        "pf_net": null,
+        "verdict_reason": "STRATEGY_ZERO_TRADES",
+        "invalid_reason": null
+      },
+      {
+        "id": "F3",
+        "oos_year": 2025,
+        "trades": 52,
+        "pf_net": 1.9,
+        "verdict_reason": "FOLD_COMPLETE",
+        "invalid_reason": null
+      }
+    ]
+  },
+  "artifact_bindings": {
+    "mq5_sha256": "f1e0bc08e65c6b46eea7c1397551ebb6c17aa466b48ef1d48d67e573361b9b27",
+    "ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+    "basket_manifest_sha256": "518ac63c8b796fbf3f397fc11a59b294d940afb4ec727e64f318ce0303b3c8f3",
+    "fixed_risk_setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4"
+  },
+  "card_reconciliation": {
+    "path": "framework/EAs/QM5_1257_lemishko-fx-cointpair/docs/strategy_card.md",
+    "sha256_before": "05632957839306dace6d463b2e2c30acebcfbaea28e4135505d7770cbc0a93f3",
+    "sha256_after": "737fa8e5a3224c3eee9aaa2e1041df8cb9da104b5dacc699513793012e40d544",
+    "pipeline_phase_before": "Q04_PENDING",
+    "pipeline_phase_after": "DEAD",
+    "strategy_rules_changed": false,
+    "risk_settings_changed": false,
+    "retirement_reason": "terminal_q04_strategy_fail"
+  },
+  "execution": {
+    "backtest_or_dispatch_attempted": false,
+    "queue_mutation": false,
+    "cpu_ceiling_evaluation": "NOT_REQUIRED_TERMINAL_STRATEGY_FAIL",
+    "downstream_action": "STOP_NO_Q05"
+  },
+  "mutations": {
+    "card_pipeline_metadata": true,
+    "repository_evidence_files": true,
+    "card_strategy_rules": false,
+    "ea_or_ex5": false,
+    "setfile_or_basket_manifest": false,
+    "registry_or_magic": false,
+    "runtime_queue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_or_factory_control": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_terminal": false,
+    "auto_trading": false
+  }
+}
