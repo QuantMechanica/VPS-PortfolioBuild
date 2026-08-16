@@ -1,0 +1,117 @@
+{
+  "schema_version": "qm.fx-cointegration-q02-pass-cpu-ceiling-stop/v1",
+  "captured_at_utc": "2026-08-16T17:20:01.392Z",
+  "captured_at_local": "2026-08-16T19:20:01.392+02:00",
+  "branch": "agents/board-advisor",
+  "sampled_head": "6a0fe8f90d831416793936e6a60b3e963108a6cd",
+  "outcome": "EXISTING_FOREX_FALLBACK_Q02_PASS_HARD_CPU_CEILING_STOP_BEFORE_DOWNSTREAM_ENQUEUE",
+  "mission_reconciliation": {
+    "frozen_pair_count": 66,
+    "mechanized_pair_count": 66,
+    "unbuilt_pair_count": 0,
+    "duplicate_card_or_ea_created": false,
+    "anchor_state": {
+      "QM5_12532_AUDNZD_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_PASS",
+        "Q05_FAIL"
+      ],
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1": [
+        "Q02_PASS",
+        "Q04_FAIL"
+      ]
+    },
+    "selected_fallback": {
+      "scan_rank": 58,
+      "ea_id": "QM5_1257",
+      "pair_slot": 8,
+      "pair": [
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+      "selection_reason": "The checked-in sign-aware reconciliation covers all 66 frozen relationships; this repaired existing pair was the sole governed pending Q02 fallback."
+    }
+  },
+  "q02_result": {
+    "work_item_id": "d4cd660c-c81a-41d3-8a4c-ad21d3319816",
+    "ea_id": "QM5_1257",
+    "logical_symbol": "QM5_1257_GBPUSD_USDJPY_COINTEGRATION_H1",
+    "phase": "Q02",
+    "status": "done",
+    "verdict": "PASS",
+    "attempt_count": 2,
+    "updated_at_utc": "2026-08-16T17:14:14+00:00",
+    "evidence_path": "D:/QM/reports/work_items/d4cd660c-c81a-41d3-8a4c-ad21d3319816/QM5_1257/20260816_165134/summary.json",
+    "evidence_sha256": "caeaee89354ae7d68a1700eed1eca07ab25e2cae1af77df07f446712993e079f",
+    "model": 4,
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "total_trades": 290,
+    "minimum_trades_required": 25,
+    "profit_factor": 0.65,
+    "net_profit": -7003.44,
+    "drawdown": 7920.49,
+    "drawdown_percent": 7.90,
+    "oninit_failure_detected": false,
+    "reason_classes": [
+      "OK"
+    ],
+    "deterministic": true,
+    "expert_binary_stable_during_run": true,
+    "setfile_stable_during_run": true,
+    "source_ex5_sha256": "cc4337c6cfc05a734cc75d30f85af6a07136739017314f27efc7535eceb65516",
+    "setfile_sha256": "f7efb0a2183acdaee85f0882a0858447014f970a2e5782227e1c4980e98298d4",
+    "interpretation": "Q02 establishes trade capability and infrastructure validity only. The adverse PF and net result are not promoted or waived; the ordinary downstream gates remain binding."
+  },
+  "resources": {
+    "sample_window_local": {
+      "start": "2026-08-16T19:19:53.181+02:00",
+      "end": "2026-08-16T19:20:01.392+02:00"
+    },
+    "cpu_sample_interval_seconds": 2,
+    "cpu_samples_percent": [
+      96.27,
+      99.95,
+      99.95,
+      97.86,
+      89.41
+    ],
+    "cpu_max_percent": 99.95,
+    "cpu_hard_trip_percent": 97.0,
+    "cpu_hard_trip": true,
+    "active_factory_terminal_processes_observed_before_sample": 7,
+    "binding_stop_reason": "The explicit backtest CPU ceiling was crossed while the paced factory already owned active work."
+  },
+  "downstream_handoff": {
+    "q04_enqueue_created": false,
+    "manual_tester_started": false,
+    "dispatch_tick_started": false,
+    "priority_or_timestamp_mutated": false,
+    "recommended_next_action": "After CPU falls below the governed ceiling, reconcile whether automation created the exact logical Q04 row; enqueue at most one non-duplicate downstream row only through the canonical path."
+  },
+  "prior_evidence": [
+    "artifacts/fx_cointegration_gbpusd_usdjpy_governed_queue_handoff_20260816T122623Z_board_advisor.json",
+    "artifacts/fx_cointegration_gbpusd_usdjpy_post_selector_cpu_ceiling_stop_20260816T161844Z_board_advisor.json"
+  ],
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "registry": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "q02_enqueue_or_requeue": false,
+    "downstream_enqueue": false,
+    "dispatch_or_tester_launch": false,
+    "terminal_or_factory_control": false,
+    "repository_evidence_files": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_terminal": false,
+    "auto_trading": false
+  }
+}
