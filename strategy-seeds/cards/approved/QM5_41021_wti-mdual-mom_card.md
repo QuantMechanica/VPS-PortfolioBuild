@@ -58,7 +58,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: PENDING
+q01_status: PASS
 q02_status: NOT_STARTED
 review_focus: "Falsify a WTI month-boundary continuation sleeve outside the certified XAU/SP500/NDX/XNG book. Verify independent complete-month and final-five-session endpoints, strict same-sign agreement, no late/repeated entry, and exact first-five-session ownership; Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -327,13 +327,14 @@ correlation with the certified book.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-16 | initial month-boundary dual-horizon WTI extraction | G0 | APPROVED |
+| v1-build | 2026-08-16 | deterministic V5 implementation and strict validation | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-08-16 | APPROVED | `decisions/2026-08-16_wti_month_dual_momentum_g0.md` |
-| Q01 Build Validation | pending | PENDING | build not started |
+| Q01 Build Validation | 2026-08-16 | PASS | `D:/QM/reports/framework/21/build_check_20260816_093059.json` |
 | Q02 Baseline Screening | pending | NOT STARTED | enqueue only after strict Q01 PASS |
 
 ## Safety Boundary
@@ -343,4 +344,3 @@ strict Q01, one `RISK_FIXED` backtest setfile, and one paced Q02 enqueue. It
 authorizes no manual tester; live/demo/shadow/stress/optimization setfile;
 AutoTrading; `T_Live`; deploy or T_Live manifest; portfolio admission;
 portfolio-gate change; or correlation waiver.
-
