@@ -10,7 +10,7 @@ last_updated: 2026-08-16
 approved_by: "OWNER commodity/energy portfolio mission 2026-08-16"
 approved_at: 2026-08-16
 source_approval: decisions/2026-08-16_xauxag_gold_lead_lag_source_approval.md
-approval_commit: PENDING_BRANCH_COMMIT
+approval_commit: f4aa2f4c7
 strategy_ids:
   - KRAWIEC-SCHWEIKERT-XAUXAG-GOLDLEAD-2026_S01
 cards_extracted:
@@ -197,4 +197,4 @@ economics.
 | version | date | event | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-08-16 | bounded composite source extraction | G0 | APPROVED_SOURCE |
-
+| v1-card | 2026-08-16 | locked card extraction and OWNER G0 authorization | G0 | APPROVED |
